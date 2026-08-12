@@ -1,0 +1,26 @@
+
+> ucrm@0.0.1 dev
+> vite dev --port 5174 --strictPort
+
+svelte.config.js is ignored when options are passed via your Vite config
+
+  [32m[1mVITE[22m v8.2.0[39m  [2mready in [0m[1m1397[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5174[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m7:37:40 AM[22m [31m[1m[vite][22m[39m [31m[2m(ssr)[22m[39m [31mError when evaluating SSR module /src/routes/demo/buttons/+page.svelte: D:/Projects/Ucrm/src/routes/demo/buttons/+page.svelte:101:1 Expected a valid CSS identifier
+https://svelte.dev/e/css_expected_identifier
+
+- Did you forget to add a scss preprocessor? See https://github.com/sveltejs/vite-plugin-svelte/blob/main/docs/preprocess.md for more information.[39m
+  Plugin: [35mvite-plugin-svelte:compile[39m
+  File: [36mD:/Projects/Ucrm/src/routes/demo/buttons/+page.svelte[39m:101:1
+[33m    99 |  
+   100 |  <style lang="scss">
+   101 |    // =============================================================================
+            ^
+   102 |    // BUTTON — design system component demo (mirrors .codex/skills/design/buttons.md)
+   103 |    // =============================================================================[39m
+
+[1;31m[500] GET /demo/buttons[0m
+

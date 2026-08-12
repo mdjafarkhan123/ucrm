@@ -1,0 +1,17 @@
+[2m8:46:25 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mFailed to hydrate:  TypeError: Cannot read properties of undefined (reading 'call')
+    at get_next_sibling (http://localhost:5174/node_modules/.vite/deps/runtime-Cysu5OSU.js?v=74f67a09:4127:29)
+    at remove_effect_dom (http://localhost:5174/node_modules/.vite/deps/runtime-Cysu5OSU.js?v=74f67a09:4627:52)
+    at destroy_effect (http://localhost:5174/node_modules/.vite/deps/runtime-Cysu5OSU.js?v=74f67a09:4603:3)
+    at create_effect (http://localhost:5174/node_modules/.vite/deps/runtime-Cysu5OSU.js?v=74f67a09:4337:4)
+    at branch (http://localhost:5174/node_modules/.vite/deps/runtime-Cysu5OSU.js?v=74f67a09:4544:9)
+    at http://localhost:5174/node_modules/.vite/deps/index-client-CmMffmLX.js?v=74f67a09:245:13
+    at update_reaction (http://localhost:5174/node_modules/.vite/deps/runtime-Cysu5OSU.js?v=74f67a09:4914:16)
+    at update_effect (http://localhost:5174/node_modules/.vite/deps/runtime-Cysu5OSU.js?v=74f67a09:5021:18)
+    at create_effect (http://localhost:5174/node_modules/.vite/deps/runtime-Cysu5OSU.js?v=74f67a09:4335:4)
+    at block (http://localhost:5174/node_modules/.vite/deps/runtime-Cysu5OSU.js?v=74f67a09:4527:15)
+
+[1;31m[404] GET /jafar/orgs/cc5ba47e-f179-4cdf-a036-60d6aa852950[0m
+
+[1;31m[404] GET /jafar/orgs/cc5ba47e-f179-4cdf-a036-60d6aa852950[0m
+
+[1;31m[404] GET /sw.js[0m

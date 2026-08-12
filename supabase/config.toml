@@ -1,0 +1,23 @@
+project_id = "ucrm"
+
+[api]
+enabled = true
+
+[db]
+major_version = 15
+
+[db.migrations]
+enabled = true
+
+[studio]
+enabled = false
+
+[inbucket]
+enabled = false
+
+[storage]
+enabled = false
+
+[analytics]
+enabled = false
+

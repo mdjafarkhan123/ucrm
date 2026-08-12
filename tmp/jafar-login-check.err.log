@@ -1,0 +1,7 @@
+owner credential diagnostics {
+  email: 'dev.jafarkhan@gmail.com',
+  configuredEmail: 'dev.jafarkhan@gmail.com',
+  passwordLength: 11,
+  hashLength: 38
+}
+owner hash length 38

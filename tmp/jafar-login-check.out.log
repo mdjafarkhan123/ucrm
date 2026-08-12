@@ -1,0 +1,20 @@
+
+> ucrm@0.0.1 dev
+> vite dev --host 127.0.0.1
+
+[2m1:26:33 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+[2m1:26:33 PM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m Re-optimizing dependencies because vite config has changed
+
+  [32m[1mVITE[22m v8.2.0[39m  [2mready in [0m[1m1697[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m1:27:21 PM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m [32mpage reload [39m[2msrc/lib/server/auth/owner.ts[22m
+[2m1:27:41 PM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m1:27:42 PM[22m [36m[1m[vite][22m[39m server restarted.
+[2m1:27:56 PM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m [32mpage reload [39m[2msrc/lib/server/auth/owner.ts[22m
+[2m1:28:11 PM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m1:28:11 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Forced re-optimization of dependencies
+[2m1:28:11 PM[22m [36m[1m[vite][22m[39m server restarted.
+[2m1:28:31 PM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m [32mpage reload [39m[2msrc/lib/server/auth/owner.ts[22m
+[2m5:02:49 PM[22m [36m[1m[vite][22m[39m changed tsconfig file detected: D:/Projects/Ucrm/workers/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.

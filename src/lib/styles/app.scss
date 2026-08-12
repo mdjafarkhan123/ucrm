@@ -1,0 +1,208 @@
+// =============================================================================
+// CONTRACTOR CRM — GLOBAL STYLESHEET
+// Entry point imported once in src/routes/+layout.svelte.
+// Responsibilities: design tokens, @font-face, reset, base element rules,
+// layout helpers, and keyframe animations.
+// =============================================================================
+
+@use './variables' as *;
+
+// =============================================================================
+// FONTS — self-hosted, no Google Fonts round-trip.
+// font-display:swap paints fallback text immediately so the page isn't blank
+// while the font file downloads.
+// =============================================================================
+
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('/fonts/inter-v20-latin-regular.woff2') format('woff2');
+}
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+	src: url('/fonts/inter-v20-latin-500.woff2') format('woff2');
+}
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 600;
+	font-display: swap;
+	src: url('/fonts/inter-v20-latin-600.woff2') format('woff2');
+}
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url('/fonts/inter-v20-latin-700.woff2') format('woff2');
+}
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 800;
+	font-display: swap;
+	src: url('/fonts/inter-v20-latin-800.woff2') format('woff2');
+}
+
+// =============================================================================
+// RESET — minimal. Only what preflight used to handle; nothing opinionated.
+// =============================================================================
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+* {
+	margin: 0;
+}
+
+html {
+	font-family: var(--typography--fontFamily-normal);
+	font-size: 100%;
+	line-height: var(--typography--lineHeight-base);
+	color: var(--color-text);
+	background: var(--color-surface--background);
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	min-width: 320px;
+	min-height: 100vh;
+	background: var(--color-surface--background);
+}
+
+button,
+input,
+select,
+textarea {
+	font: inherit;
+}
+
+button,
+[role='button'] {
+	cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled='true'] {
+	cursor: not-allowed;
+}
+
+a {
+	color: var(--color-interactive);
+	text-decoration: underline;
+	text-decoration-thickness: var(--space-minuscule);
+	text-underline-offset: var(--space-smaller);
+	transition:
+		color var(--timing-quick) ease,
+		text-decoration-color var(--timing-quick) ease;
+}
+
+a:hover {
+	color: var(--color-interactive--hover);
+}
+
+:focus-visible {
+	outline: none;
+	box-shadow: var(--shadow-focus);
+}
+
+::placeholder {
+	font-size: var(--typography--fontSize-base);
+}
+
+::selection {
+	color: var(--color-text--reverse);
+	background: var(--color-interactive);
+}
+
+// =============================================================================
+// SKELETON — reusable loading placeholders for page and component loading
+// states. Apply .skeleton to a block, then use the modifiers for common shapes.
+// =============================================================================
+
+@keyframes skeleton-shimmer {
+	0% {
+		background-position: 200% 0;
+	}
+
+	100% {
+		background-position: -200% 0;
+	}
+}
+
+.skeleton {
+	display: block;
+	min-height: var(--space-base);
+	border-radius: var(--radius-small);
+	background: linear-gradient(
+		90deg,
+		var(--color-surface--background) 25%,
+		var(--color-surface--hover) 50%,
+		var(--color-surface--background) 75%
+	);
+	background-size: 400% 100%;
+	animation: skeleton-shimmer var(--timing-loading--extended) ease-in-out infinite;
+}
+
+.skeleton--text {
+	width: 100%;
+	height: 1em;
+	min-height: 0;
+}
+
+.skeleton--text-short {
+	width: 60%;
+}
+
+.skeleton--heading {
+	width: 42%;
+	height: var(--typography--fontSize-largest);
+	min-height: 0;
+	border-radius: var(--radius-base);
+}
+
+.skeleton--avatar {
+	width: var(--space-larger);
+	height: var(--space-larger);
+	min-height: 0;
+	border-radius: var(--radius-circle);
+}
+
+.skeleton--button {
+	width: 112px;
+	height: 40px;
+	min-height: 0;
+	border-radius: var(--radius-base);
+}
+
+.skeleton--card {
+	width: 100%;
+	height: 160px;
+	min-height: 0;
+	border-radius: var(--radius-base);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		scroll-behavior: auto !important;
+		transition-duration: 0.01ms !important;
+	}
+
+	.skeleton {
+		background: var(--color-surface--hover);
+	}
+}

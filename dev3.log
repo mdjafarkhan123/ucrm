@@ -1,0 +1,19 @@
+
+> ucrm@0.0.1 dev
+> vite dev --port 5174 --strictPort
+
+[31mfailed to load config from D:\Projects\Ucrm\vite.config.ts[39m
+[31merror when starting dev server:
+file:///D:/Projects/Ucrm/node_modules/.vite-temp/vite.config.ts.timestamp-1786153147574-34b54c5f244f4.mjs:5
+import { sveltekit, vitePreprocess } from "file:///D:/Projects/Ucrm/node_modules/@sveltejs/vite-plugin-svelte/src/index.js";
+         ^^^^^^^^^
+SyntaxError: The requested module 'file:///D:/Projects/Ucrm/node_modules/@sveltejs/vite-plugin-svelte/src/index.js' does not provide an export named 'sveltekit'
+    at ModuleJob._instantiate (node:internal/modules/esm/module_job:220:21)
+    at async ModuleJob.run (node:internal/modules/esm/module_job:321:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async loadConfigFromBundledFile (file:///D:/Projects/Ucrm/node_modules/vite/dist/node/chunks/node.js:37011:12)
+    at async bundleAndLoadConfigFile (file:///D:/Projects/Ucrm/node_modules/vite/dist/node/chunks/node.js:36864:21)
+    at async loadConfigFromFile (file:///D:/Projects/Ucrm/node_modules/vite/dist/node/chunks/node.js:36824:42)
+    at async resolveConfig (file:///D:/Projects/Ucrm/node_modules/vite/dist/node/chunks/node.js:36433:22)
+    at async _createServer (file:///D:/Projects/Ucrm/node_modules/vite/dist/node/chunks/node.js:26269:65)
+    at async CAC.<anonymous> (file:///D:/Projects/Ucrm/node_modules/vite/dist/node/cli.js:708:18)[39m

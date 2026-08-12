@@ -1,0 +1,28 @@
+Error: Cannot use `cookies.set(...)` after the response has been generated
+    at event.cookies.set (D:/Projects/Ucrm/node_modules/@sveltejs/kit/src/runtime/server/respond.js?v=2d403317:619:11)
+    at eval (D:/Projects/Ucrm/src/hooks.server.ts:14:19)
+    at Array.forEach (<anonymous>)
+    at setAll (D:/Projects/Ucrm/src/hooks.server.ts:13:17)
+    at applyServerStorage (D:\Projects\Ucrm\node_modules\@supabase\ssr\dist\main\cookies.js:481:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Object.callback (D:\Projects\Ucrm\node_modules\@supabase\ssr\dist\main\createServerClient.js:61:13)
+    at async D:\Projects\Ucrm\node_modules\@supabase\auth-js\dist\main\GoTrueClient.js:4331:21
+    at async Promise.all (index 1)
+    at async SupabaseAuthClient._notifyAllSubscribers (D:\Projects\Ucrm\node_modules\@supabase\auth-js\dist\main\GoTrueClient.js:4337:13)
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+Error: Cannot use `cookies.set(...)` after the response has been generated
+    at event.cookies.set (D:/Projects/Ucrm/node_modules/@sveltejs/kit/src/runtime/server/respond.js?v=2d403317:619:11)
+    at eval (D:/Projects/Ucrm/src/hooks.server.ts:14:19)
+    at Array.forEach (<anonymous>)
+    at setAll (D:/Projects/Ucrm/src/hooks.server.ts:13:17)
+    at applyServerStorage (D:\Projects\Ucrm\node_modules\@supabase\ssr\dist\main\cookies.js:481:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Object.callback (D:\Projects\Ucrm\node_modules\@supabase\ssr\dist\main\createServerClient.js:61:13)
+    at async D:\Projects\Ucrm\node_modules\@supabase\auth-js\dist\main\GoTrueClient.js:4331:21
+    at async Promise.all (index 1)
+    at async SupabaseAuthClient._notifyAllSubscribers (D:\Projects\Ucrm\node_modules\@supabase\auth-js\dist\main\GoTrueClient.js:4337:13)
+
+Node.js v24.19.0

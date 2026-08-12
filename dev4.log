@@ -1,0 +1,74 @@
+
+> ucrm@0.0.1 dev
+> vite dev --port 5174 --strictPort
+
+[2m7:39:33 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Forced re-optimization of dependencies
+
+  [32m[1mVITE[22m v8.2.0[39m  [2mready in [0m[1m1373[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5174[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m7:51:40 AM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m [32mpage reload [39m[2m.svelte-kit/generated/shared/error-template.js[22m
+[2m7:51:40 AM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m [32mpage reload [39m[2m.svelte-kit/generated/server/internal.js[22m
+[2m7:51:40 AM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m [32mpage reload [39m[2m.svelte-kit/generated/root.svelte[22m
+[2m7:51:40 AM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m [32mpage reload [39m[2m.svelte-kit/generated/root.js[22m
+[2m7:55:31 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2m.svelte-kit/generated/client/nodes/6.js[22m
+[2m7:55:31 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2m.svelte-kit/generated/client/nodes/7.js[22m
+[2m7:55:31 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2m.svelte-kit/generated/client/app.js[22m
+[2m7:55:34 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/routes/demo/+page.svelte[22m
+[2m7:55:34 AM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m [32mpage reload [39m[2msrc/routes/demo/+page.svelte[22m
+[2m7:56:58 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2m.svelte-kit/generated/client/nodes/7.js[22m
+[2m7:56:58 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2m.svelte-kit/generated/client/app.js[22m
+[2m7:57:09 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/routes/demo/+page.svelte[22m
+[2m7:57:09 AM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m [32mpage reload [39m[2msrc/routes/demo/+page.svelte[22m
+[2m7:57:26 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2m.svelte-kit/generated/client/app.js[22m
+7:58:10 AM [vite-plugin-svelte] src/routes/demo/modal/+page.svelte:227:0 Unused CSS selector ".modal__close span"
+https://svelte.dev/e/css_unused_selector
+[2m9:51:26 AM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m9:51:26 AM[22m [36m[1m[vite][22m[39m server restarted.
+[2m9:51:58 AM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m9:51:58 AM[22m [36m[1m[vite][22m[39m server restarted.
+[2m10:04:24 AM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m10:04:24 AM[22m [36m[1m[vite][22m[39m server restarted.
+[2m10:04:28 AM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m10:04:28 AM[22m [36m[1m[vite][22m[39m server restarted.
+[2m10:04:32 AM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m10:04:33 AM[22m [36m[1m[vite][22m[39m server restarted.
+[2m10:06:07 AM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m10:06:08 AM[22m [36m[1m[vite][22m[39m server restarted.
+[2m10:06:31 AM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m10:06:31 AM[22m [36m[1m[vite][22m[39m server restarted.
+[2m10:06:32 AM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m10:06:32 AM[22m [36m[1m[vite][22m[39m server restarted.
+[2m10:06:36 AM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m10:06:37 AM[22m [36m[1m[vite][22m[39m server restarted.
+[2m10:33:03 AM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m10:33:03 AM[22m [36m[1m[vite][22m[39m server restarted.
+[2m10:33:05 AM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m10:33:05 AM[22m [36m[1m[vite][22m[39m server restarted.
+[2m10:48:32 AM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m10:48:32 AM[22m [36m[1m[vite][22m[39m server restarted.
+[2m10:50:10 AM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m10:50:11 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because lockfile has changed
+[2m10:50:11 AM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m Re-optimizing dependencies because lockfile has changed
+[2m10:50:11 AM[22m [36m[1m[vite][22m[39m server restarted.
+[2m1:16:47 PM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m1:16:48 PM[22m [36m[1m[vite][22m[39m server restarted.
+ENOENT: no such file or directory, stat 'D:\Projects\Ucrm\.svelte-kit\types\src\routes\$types.d.ts'
+[2m1:24:37 PM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m1:24:37 PM[22m [36m[1m[vite][22m[39m server restarted.
+[2m1:24:46 PM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m1:24:46 PM[22m [36m[1m[vite][22m[39m server restarted.
+[2m1:24:48 PM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m1:24:48 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Forced re-optimization of dependencies
+[2m1:24:48 PM[22m [36m[1m[vite][22m[39m server restarted.
+[2m1:27:41 PM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m1:27:41 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+[2m1:27:41 PM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m Re-optimizing dependencies because vite config has changed
+[2m1:27:41 PM[22m [36m[1m[vite][22m[39m server restarted.
+[2m1:28:11 PM[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m1:28:11 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+[2m1:28:11 PM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m Re-optimizing dependencies because vite config has changed
+[2m1:28:12 PM[22m [36m[1m[vite][22m[39m server restarted.
+[2m5:02:49 PM[22m [36m[1m[vite][22m[39m changed tsconfig file detected: D:/Projects/Ucrm/workers/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.

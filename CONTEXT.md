@@ -1,0 +1,29 @@
+# UpliftContractor glossary
+
+## Platform onboarding
+
+- **Prospect** — A contractor business that has submitted the platform onboarding form but does not yet have an UpliftContractor organization, a contractor login, or tenant data.
+- **Onboarding application** — The platform-owned record of a prospect's submitted business, administrator, and selected-package information.
+- **Payment confirmed** — The Platform Owner has manually verified that the prospect's offsite subscription payment is received. It is not a payment record held or processed by UpliftContractor.
+- **Organization** — An active or suspended contractor tenant created only after payment confirmation and successful account provisioning.
+- **Initial contractor administrator** — The first user for a newly provisioned organization. This person administers that contractor tenant; the Platform Owner never becomes a tenant member.
+- **Activated package** — The package applied to an organization at provisioning. It normally matches the prospect's selected package, but the Platform Owner may correct it to match the package actually paid for and must record a private reason.
+- **Not proceeding** — A platform-owned final prospect outcome used when no account will be created. It is not an organization lifecycle state.
+- **Needs attention** — A prospect outcome meaning payment is confirmed but safe account provisioning cannot proceed without an owner resolving a specific problem. It is not an organization lifecycle state.
+- **Possible duplicate** — A prospect submission that may represent an existing prospect. It requires owner review; it never authorizes automatic merging or replacement of submitted information.
+- **Package** — A platform-owned commercial offering defined only in the `/jafar` package-management area. It is the single source of truth for what a prospect may select and what can be activated for an organization.
+- **Package version** — The dated, immutable record of a package's price, inclusions, and limits at a point in time. A later package edit creates a new version; it does not rewrite prior commercial terms.
+- **Package exception** — A time-bound or permanent organization-specific difference from the activated package. It is explicitly recorded and does not redefine the package.
+- **Activated package version** — The specific package version an organization bought. It remains its commercial and access baseline until the Platform Owner explicitly changes the organization to another version.
+- **Paid-through date** — The last date of paid access recorded by the Platform Owner for an organization whose subscription payment is handled outside UpliftContractor.
+- **Legacy organization** — An organization created before the paid-prospect onboarding flow. Its current package and paid-through date may be recorded, but missing prospect or payment history is never invented.
+- **Onboarding package snapshot** — The exact package version, USD price, and inclusions presented when a prospect submits the public form. It preserves what was selected even if the package is later revised or retired.
+- **Platform price** — The fixed USD monthly price set by UpliftContractor for a package. A payment provider may add its own separate fee; that fee is not part of the platform price and is not calculated by UpliftContractor.
+- **Organization entitlement** — Platform-controlled access that determines which product capabilities and limits are available to a contractor organization. It is separate from team-member permissions.
+- **Team member** — A person with access to a contractor organization, including its owner, office staff, sales staff, field workers, finance staff, or subcontractors. _Avoid_: Employee, when referring to every organization user.
+- **Team-member permission** — A contractor-controlled rule describing what one team member may do inside the organization. The contractor owner or administrator normally manages it.
+- **Integration eligibility** — Platform-controlled permission and provider readiness that determine whether an organization may use an integration. It overrides but preserves the contractor's integration preferences.
+- **Integration preference** — Contractor-controlled configuration describing how an eligible integration behaves for that organization.
+- **Commercial timezone** — The owner-controlled timezone used for paid-through and grace-period deadlines. It is separate from the contractor-controlled operational timezone.
+- **Suspension** — A temporary platform lifecycle action that blocks contractor access and pauses new outbound activity while preserving tenant data and required inbound or reconciliation processing.
+- **Closure** — A controlled later-phase organization state with an impact preview and recovery period before policy-driven retention, anonymization, or removal. _Avoid_: Immediate deletion.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bits UI"
+  short_description: "Use Bits UI controls safely in Svelte."
+  default_prompt: "Use $bits-ui to build an accessible Svelte interaction with Bits UI."
