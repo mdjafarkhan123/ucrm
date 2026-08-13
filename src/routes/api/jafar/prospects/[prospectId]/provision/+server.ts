@@ -6,6 +6,7 @@ import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { issueSetupLink } from '$lib/server/jafar/setup-link';
 import { recordOperationOutcome } from '$lib/server/events/outbox';
+import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { prospectIdSchema } from '$lib/server/validation/prospect.schema';
 
@@ -186,6 +187,18 @@ export const POST: RequestHandler = async (event) => {
 				success: false,
 				error: rpcError.message
 			});
+			try {
+				await raiseOwnerAlert(client, {
+					kind: 'onboarding_application_provisioning_failed',
+					severity: 'urgent',
+					title: `Provisioning failed for ${application.business_name}`,
+					body: `The application was moved to needs attention. ${rpcError.message}`.slice(0, 500),
+					target: { targetKind: 'onboarding_application', targetId: applicationId },
+					origin: event.url.origin
+				});
+			} catch (alertError) {
+				console.error('Could not raise the provisioning-failure alert.', alertError);
+			}
 			console.error('Could not provision the organization.', rpcError);
 			return json(
 				{

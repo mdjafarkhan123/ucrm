@@ -2,6 +2,7 @@
 	import Sidebar, { type NavItem } from './Sidebar.svelte';
 	import Topbar from './Topbar.svelte';
 	import MobileNav from './MobileNav.svelte';
+	import NotificationBell from '$lib/components/jafar/NotificationBell.svelte';
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -51,7 +52,9 @@ let {
 							? 'Templates'
 							: page.url.pathname.startsWith('/jafar/settings')
 								? 'Settings'
-								: 'Platform overview'
+								: page.url.pathname.startsWith('/jafar/notifications')
+									? 'Notifications'
+									: 'Platform overview'
 	);
 	const title = $derived(variant === 'owner' ? ownerTitle : 'Contractor workspace');
 	let isSigningOut = $state(false);
@@ -86,6 +89,8 @@ let {
 		<Topbar {eyebrow} {title} onmenutoggle={() => (mobileOpen = true)}>
 			{#if variant === 'contractor'}
 				<a class="app-shell__security" href={resolve('/settings/security')}>Security</a>
+			{:else}
+				<NotificationBell />
 			{/if}
 			<button
 				class="app-shell__sign-out"

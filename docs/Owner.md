@@ -6,10 +6,11 @@ This is the permanent product and implementation context for UpliftContractor's 
 workspace. Read it before designing or changing `/jafar`, organization provisioning, platform-level
 entitlements, organization lifecycle controls, or privileged operational tools.
 
-The approved current mission and phased roadmap are recorded in
-docs/jafar-organization-management-mission.md. The paid onboarding rules remain in
-docs/jafar-onboarding-implementation-contract.md and ADR 0001. Where this older audit contains an
-open decision or recommendation resolved by those approved documents, the approved documents win.
+The newest approved A-Z behavior is recorded in `docs/jafar-completion-contract.md`. Supporting
+owner boundaries and source traceability remain in `docs/jafar-organization-management-mission.md`.
+The paid onboarding rules remain in `docs/jafar-onboarding-implementation-contract.md` and ADR 0001.
+Where this older audit contains an open decision or recommendation resolved by those approved
+documents, the newer approved document wins.
 
 The document uses four evidence labels:
 

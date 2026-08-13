@@ -17,6 +17,12 @@ select is(has_table_privilege('service_role', 'public.platform_owner_settings', 
 
 set local role postgres;
 
+-- Real usage may already have created the singleton row (settings are auto-created on first
+-- visit to /jafar/settings, not seeded by migration) -- clear it inside this transaction so
+-- the singleton tests below start from the same empty-table state they'd see on a fresh
+-- database. The transaction rolls back at the end, so the real row is restored either way.
+delete from public.platform_owner_settings;
+
 -- The boolean primary key defaulting to true and checked as true is the whole singleton
 -- guarantee: only one row can ever exist, and only with id = true.
 select throws_ok(
@@ -38,6 +44,19 @@ select throws_ok(
 
 set local role service_role;
 
+-- Real usage may already have its own history of 'owner_settings.updated' audit events, so
+-- the assertion below checks the count increased by exactly one rather than assuming an
+-- absolute count -- correct whether this runs against a fresh database or a live one.
+do $$
+begin
+  perform set_config(
+    'test.baseline_audit_count',
+    (select count(*)::text from public.platform_owner_audit_events
+      where target_type = 'platform_owner_settings' and event_type = 'owner_settings.updated'),
+    true
+  );
+end $$;
+
 select lives_ok(
   $$select public.update_owner_settings(
     'owner@example.test', 'https://example.test/privacy', 'v2', 'Pay by bank transfer.',
@@ -51,7 +70,9 @@ select is(
   'the update is applied to the singleton row'
 );
 select is(
-  (select count(*)::integer from public.platform_owner_audit_events where target_type = 'platform_owner_settings' and event_type = 'owner_settings.updated'),
+  (select count(*)::int from public.platform_owner_audit_events
+    where target_type = 'platform_owner_settings' and event_type = 'owner_settings.updated')
+  - current_setting('test.baseline_audit_count')::int,
   1,
   'the settings update creates a matching private audit event'
 );

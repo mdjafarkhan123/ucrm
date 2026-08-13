@@ -56,16 +56,16 @@
 		}
 
 		.kpi-card__icon {
-			width: 24px;
-			height: 24px;
-			flex-basis: 24px;
-			border-radius: var(--radius-small);
+			width: 40px;
+			height: 40px;
+			flex-basis: 40px;
+			border-radius: var(--radius-base);
 			background: transparent;
 		}
 
 		.kpi-card__icon :global(svg) {
-			width: 20px;
-			height: 20px;
+			width: 24px;
+			height: 24px;
 		}
 
 		&.kpi-card--brand .kpi-card__icon {

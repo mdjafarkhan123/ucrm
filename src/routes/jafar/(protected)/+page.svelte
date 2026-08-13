@@ -7,7 +7,17 @@
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
 	import pauseIcon from '@tabler/icons/outline/player-pause.svg?raw';
+	import bellIcon from '@tabler/icons/outline/bell.svg?raw';
 	import KpiCard from '$lib/components/data-display/KpiCard.svelte';
+	import {
+		exactTime,
+		fetchNotifications,
+		notificationHref,
+		notificationsKey,
+		relativeTime,
+		severityLabel,
+		type NotificationListResponse
+	} from '$lib/jafar/notifications';
 
 	type LifecycleStatus = 'pending_setup' | 'active' | 'suspended';
 	type Organization = {
@@ -30,6 +40,18 @@
 		}
 	}));
 
+	/**
+	 * Unread alerts are shown on the dashboard as well as in the bell, so a failed setup email
+	 * cannot sit unnoticed behind a menu Jafar never opened.
+	 */
+	const alerts = createQuery<NotificationListResponse>(() => ({
+		queryKey: [...notificationsKey, 'dashboard'],
+		queryFn: () => fetchNotifications({ status: 'unread', limit: 5 })
+	}));
+
+	const alertList = $derived(alerts.data?.notifications ?? []);
+	const alertTotal = $derived(alerts.data?.unread_count ?? 0);
+
 	const organizationList = $derived(organizations.data?.organizations ?? []);
 	const activeCount = $derived(
 		organizationList.filter((organization) => organization.lifecycle_status === 'active').length
@@ -47,12 +69,24 @@
 		return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(value));
 	}
 
+	/**
+	 * Provisioning creates organizations straight into `active`, so anything still sitting at
+	 * `pending_setup` came from the retired direct-create path. It is a record to reconcile, not
+	 * a setup step someone is waiting on, and the dashboard has to say so.
+	 */
 	function statusLabel(status: LifecycleStatus) {
 		return status === 'pending_setup'
-			? 'Pending setup'
+			? 'Legacy record'
 			: status === 'active'
 				? 'Active'
 				: 'Suspended';
+	}
+
+	function attentionNote(organization: Organization) {
+		const created = `created ${formatDate(organization.created_at)}`;
+		return organization.lifecycle_status === 'pending_setup'
+			? `Legacy record · needs reconciliation · ${created}`
+			: `Suspended · ${created}`;
 	}
 </script>
 
@@ -79,7 +113,7 @@
 			value={String(organizationList.length)}
 			note="All provisioned workspaces"
 			icon={buildingIcon}
-			tone="brand"
+			tone="informative"
 		/>
 		<KpiCard
 			label="Active"
@@ -91,7 +125,7 @@
 		<KpiCard
 			label="Needs attention"
 			value={String(attentionCount)}
-			note={`${pendingCount} pending setup · ${suspendedCount} suspended`}
+			note={`${suspendedCount} suspended · ${pendingCount} legacy to reconcile`}
 			icon={alertIcon}
 			tone="warning"
 		/>
@@ -103,6 +137,43 @@
 			tone="critical"
 		/>
 	</section>
+
+	{#if alertList.length > 0}
+		<section class="owner-overview__panel" aria-labelledby="alerts-title">
+			<header class="owner-overview__panel-header">
+				<div>
+					<p class="owner-overview__eyebrow">Alerts</p>
+					<h2 id="alerts-title">Waiting on you</h2>
+				</div>
+				<span class="owner-overview__count">{alertTotal} unread</span>
+			</header>
+			<div class="owner-overview__attention-list">
+				{#each alertList as alert (alert.id)}
+					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- notificationHref() already resolves the path; the target is only known at runtime. -->
+					<a class="owner-overview__attention-item" href={notificationHref(alert)}>
+						<span
+							class:owner-overview__attention-icon--warning={alert.severity === 'attention'}
+							class:owner-overview__attention-icon--critical={alert.severity === 'urgent'}
+							class="owner-overview__attention-icon"
+						>
+							{@html alert.severity === 'info' ? bellIcon : alertIcon}
+						</span>
+						<span class="owner-overview__attention-content"
+							><strong>{alert.title}</strong><small title={exactTime(alert.created_at)}
+								>{severityLabel(alert.severity)} · {relativeTime(alert.created_at)}</small
+							></span
+						>
+						<span class="owner-overview__attention-arrow">{@html arrowRightIcon}</span>
+					</a>
+				{/each}
+			</div>
+			<footer class="owner-overview__panel-footer">
+				<a href={resolve('/jafar/notifications')}
+					>Open all notifications <span>{@html arrowRightIcon}</span></a
+				>
+			</footer>
+		</section>
+	{/if}
 
 	<div class="owner-overview__grid">
 		<section class="owner-overview__panel" aria-labelledby="attention-title">
@@ -126,11 +197,17 @@
 					<span>No organization lifecycle action is waiting for review.</span>
 				</div>
 			{:else}
+				{#if pendingCount > 0}
+					<p class="owner-overview__panel-note">
+						Legacy records were created before paid onboarding existed. Nobody is waiting on them,
+						so open each one when you have time and decide what it should become.
+					</p>
+				{/if}
 				<div class="owner-overview__attention-list">
 					{#each organizationList.filter((organization) => organization.lifecycle_status !== 'active') as organization (organization.id)}
 						<a
 							class="owner-overview__attention-item"
-							href={resolve(`/jafar/organizations?organization=${organization.id}`)}
+							href={resolve(`/jafar/organizations/${organization.id}`)}
 						>
 							<span
 								class:owner-overview__attention-icon--warning={organization.lifecycle_status ===
@@ -142,10 +219,7 @@
 								{@html organization.lifecycle_status === 'pending_setup' ? clockIcon : pauseIcon}
 							</span>
 							<span class="owner-overview__attention-content"
-								><strong>{organization.name}</strong><small
-									>{statusLabel(organization.lifecycle_status)} · created {formatDate(
-										organization.created_at
-									)}</small
+								><strong>{organization.name}</strong><small>{attentionNote(organization)}</small
 								></span
 							>
 							<span class="owner-overview__attention-arrow">{@html arrowRightIcon}</span>
@@ -183,7 +257,7 @@
 					{#each organizationList.slice(0, 4) as organization (organization.id)}
 						<a
 							class="owner-overview__recent-item"
-							href={resolve(`/jafar/organizations?organization=${organization.id}`)}
+							href={resolve(`/jafar/organizations/${organization.id}`)}
 						>
 							<span class="owner-overview__recent-mark">{@html buildingIcon}</span>
 							<span
@@ -329,6 +403,14 @@
 	.owner-overview__attention-list,
 	.owner-overview__recent-list {
 		padding: var(--space-small) var(--space-large);
+	}
+	.owner-overview__panel-note {
+		margin: var(--space-base) var(--space-large) 0;
+		padding: var(--space-small) var(--space-base);
+		border-radius: var(--radius-base);
+		color: var(--color-text--secondary);
+		background: var(--color-surface--background--subtle);
+		font-size: var(--typography--fontSize-small);
 	}
 	.owner-overview__attention-item,
 	.owner-overview__recent-item {

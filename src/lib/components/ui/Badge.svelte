@@ -30,8 +30,9 @@
 		color: var(--color-heading);
 		background: var(--color-inactive--surface);
 		border-radius: var(--radius-large);
-		font-weight: 400;
+		font-weight: 600;
 		line-height: 1;
+		text-transform: capitalize;
 	}
 	.badge--small {
 		padding: var(--space-smallest) var(--space-small);

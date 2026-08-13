@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const onboardingApplicationSubmissionSchema = z.object({
+const onboardingApplicationFieldsSchema = z.object({
 	business_name: z.string().trim().min(1, 'Enter your business name.').max(160),
 	main_contact_name: z.string().trim().min(1, 'Enter the main contact name.').max(160),
 	main_contact_email: z
@@ -29,6 +29,27 @@ export const onboardingApplicationSubmissionSchema = z.object({
 		.refine((value) => value === true, 'You must agree to the privacy policy to continue.'),
 	turnstile_token: z.string().trim().optional().default('')
 });
+
+// The browser form hides the administrator fields while the contact is the administrator, so the
+// server has to be the one that insists on them when they differ. Without this an application could
+// be saved with nobody to send the account setup link to, and only fail much later at provisioning.
+export const onboardingApplicationSubmissionSchema = onboardingApplicationFieldsSchema.superRefine(
+	(value, ctx) => {
+		if (value.is_administrator_same_as_contact) return;
+		if (!value.initial_administrator_name)
+			ctx.addIssue({
+				code: 'custom',
+				path: ['initial_administrator_name'],
+				message: 'Enter the administrator name.'
+			});
+		if (!value.initial_administrator_email)
+			ctx.addIssue({
+				code: 'custom',
+				path: ['initial_administrator_email'],
+				message: 'Enter the administrator email address.'
+			});
+	}
+);
 
 export type OnboardingApplicationSubmission = z.infer<typeof onboardingApplicationSubmissionSchema>;
 

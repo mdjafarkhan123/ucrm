@@ -250,6 +250,15 @@ Routine status changes belong in Recent Activity rather than interrupting users.
 
 Users control in-app and push preferences by notification type.
 
+Contractor notifications are a separate system from the platform owner notifications built for
+`/jafar`, and deliberately so. They share the front end only: the header bell, the recent panel, the
+history page, read/unread behavior, and the rule that opening a linked record marks it read. Those
+pieces move into shared components when the contractor side is built. Everything underneath is its
+own: rows belong to an organization and to one member, so they need tenant isolation and RLS; read
+state is per person; volume needs paging and the Recent Activity split above; delivery spans in-app,
+email, and SMS with per-user, per-type preferences; and live updates matter far more than they do for
+a single owner. No shared notification layer is built ahead of that work.
+
 ## 22. Business settings and platform administration
 
 Contractor settings cover profile, branding, timezone, hours, team, permissions, stages, catalog, quote templates, job fields, job forms, quick replies, booking, availability, email identity, forwarding, phone number, messaging registration, SMS usage, payments, Messenger, notifications, and automations.

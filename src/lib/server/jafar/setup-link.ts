@@ -2,7 +2,8 @@ import { createHash, randomBytes } from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import { sendTransactionalEmail } from '$lib/server/email/brevo';
-import { recordOperationOutcome, createOwnerNotification } from '$lib/server/events/outbox';
+import { recordOperationOutcome } from '$lib/server/events/outbox';
+import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
 import { renderTemplate, htmlToPlainText } from '$lib/server/jafar/message-templates';
 
 const SETUP_LINK_TTL_MS = 24 * 60 * 60 * 1000;
@@ -108,12 +109,13 @@ export async function issueSetupLink(
 			success: false,
 			error: message
 		});
-		await createOwnerNotification(client, {
+		await raiseOwnerAlert(client, {
 			kind: 'setup_email_failed',
 			severity: 'urgent',
 			title: `Setup email failed for ${params.businessName}`,
 			body: message,
-			target
+			target,
+			origin: params.origin
 		});
 		return { sent: false as const, error: message };
 	}

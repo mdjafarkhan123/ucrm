@@ -170,6 +170,195 @@ export type Database = {
           },
         ]
       }
+      organization_commercial_events: {
+        Row: {
+          actor_kind: string
+          actor_owner_email: string | null
+          amount_usd_cents: number | null
+          commercial_timezone_after: string | null
+          commercial_timezone_before: string | null
+          created_at: string
+          deadline_recalculated: boolean
+          event_kind: string
+          grace_ends_at_after: string | null
+          id: string
+          idempotency_key: string
+          is_legacy_import: boolean
+          occurred_at: string
+          organization_id: string
+          original_confirmation_id: string | null
+          paid_through_after: string | null
+          paid_through_before: string | null
+          paid_through_effect: string
+          private_reason: string | null
+          private_reference: string | null
+          source_event_id: string | null
+          summary: string
+          suspension_category: string | null
+        }
+        Insert: {
+          actor_kind?: string
+          actor_owner_email?: string | null
+          amount_usd_cents?: number | null
+          commercial_timezone_after?: string | null
+          commercial_timezone_before?: string | null
+          created_at?: string
+          deadline_recalculated?: boolean
+          event_kind: string
+          grace_ends_at_after?: string | null
+          id?: string
+          idempotency_key: string
+          is_legacy_import?: boolean
+          occurred_at?: string
+          organization_id: string
+          original_confirmation_id?: string | null
+          paid_through_after?: string | null
+          paid_through_before?: string | null
+          paid_through_effect: string
+          private_reason?: string | null
+          private_reference?: string | null
+          source_event_id?: string | null
+          summary: string
+          suspension_category?: string | null
+        }
+        Update: {
+          actor_kind?: string
+          actor_owner_email?: string | null
+          amount_usd_cents?: number | null
+          commercial_timezone_after?: string | null
+          commercial_timezone_before?: string | null
+          created_at?: string
+          deadline_recalculated?: boolean
+          event_kind?: string
+          grace_ends_at_after?: string | null
+          id?: string
+          idempotency_key?: string
+          is_legacy_import?: boolean
+          occurred_at?: string
+          organization_id?: string
+          original_confirmation_id?: string | null
+          paid_through_after?: string | null
+          paid_through_before?: string | null
+          paid_through_effect?: string
+          private_reason?: string | null
+          private_reference?: string | null
+          source_event_id?: string | null
+          summary?: string
+          suspension_category?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_commercial_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_commercial_events_original_confirmation_id_fkey"
+            columns: ["original_confirmation_id"]
+            isOneToOne: false
+            referencedRelation: "organization_payment_confirmations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_commercial_events_source_event_id_fkey"
+            columns: ["source_event_id"]
+            isOneToOne: false
+            referencedRelation: "organization_commercial_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_commercial_settings: {
+        Row: {
+          commercial_timezone: string
+          created_at: string
+          imported_at: string | null
+          imported_operational_timezone: string | null
+          organization_id: string
+          timezone_source: string
+          updated_at: string
+        }
+        Insert: {
+          commercial_timezone: string
+          created_at?: string
+          imported_at?: string | null
+          imported_operational_timezone?: string | null
+          organization_id: string
+          timezone_source?: string
+          updated_at?: string
+        }
+        Update: {
+          commercial_timezone?: string
+          created_at?: string
+          imported_at?: string | null
+          imported_operational_timezone?: string | null
+          organization_id?: string
+          timezone_source?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_commercial_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_commercial_state: {
+        Row: {
+          created_at: string
+          grace_basis_timezone: string | null
+          grace_ends_at: string | null
+          last_event_id: string | null
+          organization_id: string
+          paid_through_date: string | null
+          paid_through_source: string | null
+          state_version: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          grace_basis_timezone?: string | null
+          grace_ends_at?: string | null
+          last_event_id?: string | null
+          organization_id: string
+          paid_through_date?: string | null
+          paid_through_source?: string | null
+          state_version?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          grace_basis_timezone?: string | null
+          grace_ends_at?: string | null
+          last_event_id?: string | null
+          organization_id?: string
+          paid_through_date?: string | null
+          paid_through_source?: string | null
+          state_version?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_commercial_state_last_event_id_fkey"
+            columns: ["last_event_id"]
+            isOneToOne: false
+            referencedRelation: "organization_commercial_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_commercial_state_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_feature_overrides: {
         Row: {
           created_at: string
@@ -466,6 +655,51 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "organization_payment_confirmations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_safe_events: {
+        Row: {
+          commercial_event_id: string
+          created_at: string
+          id: string
+          occurred_at: string
+          organization_id: string
+          safe_kind: string
+          safe_payload: Json
+        }
+        Insert: {
+          commercial_event_id: string
+          created_at?: string
+          id?: string
+          occurred_at?: string
+          organization_id: string
+          safe_kind: string
+          safe_payload?: Json
+        }
+        Update: {
+          commercial_event_id?: string
+          created_at?: string
+          id?: string
+          occurred_at?: string
+          organization_id?: string
+          safe_kind?: string
+          safe_payload?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_safe_events_commercial_event_id_fkey"
+            columns: ["commercial_event_id"]
+            isOneToOne: true
+            referencedRelation: "organization_commercial_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_safe_events_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -798,7 +1032,7 @@ export type Database = {
           {
             foreignKeyName: "platform_onboarding_application_payment_con_application_id_fkey"
             columns: ["application_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "platform_onboarding_applications"
             referencedColumns: ["id"]
           },
@@ -807,6 +1041,54 @@ export type Database = {
             columns: ["package_version_id"]
             isOneToOne: false
             referencedRelation: "platform_package_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_onboarding_application_payment_reversals: {
+        Row: {
+          actor_owner_email: string
+          application_id: string
+          confirmation_id: string
+          created_at: string
+          id: string
+          reason: string
+          reversed_amount_usd_cents: number
+          reversed_at: string
+        }
+        Insert: {
+          actor_owner_email: string
+          application_id: string
+          confirmation_id: string
+          created_at?: string
+          id?: string
+          reason: string
+          reversed_amount_usd_cents: number
+          reversed_at?: string
+        }
+        Update: {
+          actor_owner_email?: string
+          application_id?: string
+          confirmation_id?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          reversed_amount_usd_cents?: number
+          reversed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_onboarding_application_payment_re_confirmation_id_fkey"
+            columns: ["confirmation_id"]
+            isOneToOne: false
+            referencedRelation: "platform_onboarding_application_payment_confirmations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_onboarding_application_payment_rev_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "platform_onboarding_applications"
             referencedColumns: ["id"]
           },
         ]
@@ -954,6 +1236,8 @@ export type Database = {
         Row: {
           business_name: string
           city_country: string
+          duplicate_acknowledged_at: string | null
+          duplicate_acknowledged_by_owner_email: string | null
           id: string
           initial_administrator_email: string | null
           initial_administrator_name: string | null
@@ -964,6 +1248,7 @@ export type Database = {
           note: string | null
           package_snapshot: Json
           package_version_id: string
+          payment_reversed_at: string | null
           personal_data_purge_after: string
           possible_duplicate: boolean
           stage: string
@@ -975,6 +1260,8 @@ export type Database = {
         Insert: {
           business_name: string
           city_country: string
+          duplicate_acknowledged_at?: string | null
+          duplicate_acknowledged_by_owner_email?: string | null
           id?: string
           initial_administrator_email?: string | null
           initial_administrator_name?: string | null
@@ -985,6 +1272,7 @@ export type Database = {
           note?: string | null
           package_snapshot: Json
           package_version_id: string
+          payment_reversed_at?: string | null
           personal_data_purge_after?: string
           possible_duplicate?: boolean
           stage?: string
@@ -996,6 +1284,8 @@ export type Database = {
         Update: {
           business_name?: string
           city_country?: string
+          duplicate_acknowledged_at?: string | null
+          duplicate_acknowledged_by_owner_email?: string | null
           id?: string
           initial_administrator_email?: string | null
           initial_administrator_name?: string | null
@@ -1006,6 +1296,7 @@ export type Database = {
           note?: string | null
           package_snapshot?: Json
           package_version_id?: string
+          payment_reversed_at?: string | null
           personal_data_purge_after?: string
           possible_duplicate?: boolean
           stage?: string
@@ -1622,6 +1913,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      acknowledge_onboarding_application_duplicate: {
+        Args: { actor_email: string; target_application_id: string }
+        Returns: undefined
+      }
+      apply_organization_commercial_command: {
+        Args: {
+          actor_owner_email?: string
+          amount_usd_cents?: number
+          commercial_timezone?: string
+          event_kind: string
+          idempotency_key: string
+          is_legacy_import?: boolean
+          occurred_at?: string
+          original_confirmation_id?: string
+          paid_through_date?: string
+          paid_through_effect: string
+          private_reason?: string
+          private_reference?: string
+          recalculate_deadline?: boolean
+          safe_kind?: string
+          safe_payload?: Json
+          source_event_id?: string
+          summary: string
+          suspension_category?: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       check_rate_limit: {
         Args: {
           target_bucket_key: string
@@ -1678,6 +1997,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      correct_onboarding_application_package: {
+        Args: {
+          actor_email: string
+          correction_reason: string
+          new_package_version_id: string
+          target_application_id: string
+        }
+        Returns: undefined
+      }
       manage_platform_package_version: {
         Args: {
           actor_email?: string
@@ -1695,6 +2023,14 @@ export type Database = {
         Returns: string
       }
       mark_onboarding_application_not_proceeding: {
+        Args: {
+          actor_email: string
+          reason?: string
+          target_application_id: string
+        }
+        Returns: undefined
+      }
+      mark_onboarding_application_reviewed: {
         Args: { actor_email: string; target_application_id: string }
         Returns: undefined
       }
@@ -1737,6 +2073,14 @@ export type Database = {
           target_package_version_id: string
           target_paid_through_date: string
           target_reason: string
+        }
+        Returns: undefined
+      }
+      reverse_onboarding_application_payment: {
+        Args: {
+          actor_email: string
+          reason: string
+          target_application_id: string
         }
         Returns: undefined
       }

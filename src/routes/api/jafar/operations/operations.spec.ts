@@ -99,6 +99,18 @@ describe('platform owner operations list API boundary', () => {
 		expect(calls.some((call) => call.method === 'neq')).toBe(false);
 	});
 
+	// A notification can link to an attempt that has since succeeded, so the panel needs a way
+	// to ask for every status without naming one.
+	it('applies no status filter at all when every status is asked for', async () => {
+		mockedOwnerSession.mockReturnValue(session());
+		mockedClient.mockReturnValue({ from: () => query([{ id: 'op-3', status: 'succeeded' }]) } as never);
+
+		const response = await GET(event('http://localhost/api/jafar/operations?status=all'));
+		expect(response.status).toBe(200);
+		expect(calls.some((call) => call.method === 'neq')).toBe(false);
+		expect(calls.some((call) => call.method === 'eq' && call.args[0] === 'status')).toBe(false);
+	});
+
 	it('filters by target id when provided', async () => {
 		mockedOwnerSession.mockReturnValue(session());
 		mockedClient.mockReturnValue({ from: () => query([]) } as never);

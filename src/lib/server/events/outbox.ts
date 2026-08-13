@@ -91,6 +91,11 @@ export async function recordOperationOutcome(
 	}
 }
 
+/**
+ * Writes one in-app owner notification and returns its id. The id is the anchor an alert
+ * email dedupes on (see raiseOwnerAlert), so one recorded event can only ever produce one
+ * email per recipient no matter how often the send is retried.
+ */
 export async function createOwnerNotification(
 	client: SupabaseClient<Database>,
 	params: {
@@ -102,14 +107,19 @@ export async function createOwnerNotification(
 		correlationId?: string;
 	}
 ) {
-	const { error } = await client.from('platform_owner_notifications').insert({
-		kind: params.kind,
-		severity: params.severity,
-		title: params.title,
-		body: params.body ?? null,
-		target_kind: params.target.targetKind,
-		target_id: params.target.targetId,
-		correlation_id: params.correlationId ?? null
-	});
+	const { data, error } = await client
+		.from('platform_owner_notifications')
+		.insert({
+			kind: params.kind,
+			severity: params.severity,
+			title: params.title,
+			body: params.body ?? null,
+			target_kind: params.target.targetKind,
+			target_id: params.target.targetId,
+			correlation_id: params.correlationId ?? null
+		})
+		.select('id')
+		.single();
 	if (error) throw error;
+	return data.id;
 }

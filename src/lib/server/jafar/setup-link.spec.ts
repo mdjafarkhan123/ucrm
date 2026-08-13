@@ -1,17 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { issueSetupLink } from './setup-link';
 import { sendTransactionalEmail } from '$lib/server/email/brevo';
-import { recordOperationOutcome, createOwnerNotification } from '$lib/server/events/outbox';
+import { recordOperationOutcome } from '$lib/server/events/outbox';
+import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
 
 vi.mock('$lib/server/email/brevo', () => ({ sendTransactionalEmail: vi.fn() }));
 vi.mock('$lib/server/events/outbox', () => ({
 	recordOperationOutcome: vi.fn(),
 	createOwnerNotification: vi.fn()
 }));
+vi.mock('$lib/server/jafar/owner-alerts', () => ({ raiseOwnerAlert: vi.fn() }));
 
 const mockedSendEmail = vi.mocked(sendTransactionalEmail);
 const mockedRecordOutcome = vi.mocked(recordOperationOutcome);
-const mockedCreateNotification = vi.mocked(createOwnerNotification);
+const mockedRaiseAlert = vi.mocked(raiseOwnerAlert);
 
 const DEFAULT_TEMPLATE = {
 	subject_published: 'Set up your {{business_name}} administrator account',
@@ -107,7 +109,7 @@ describe('issueSetupLink', () => {
 			client,
 			expect.objectContaining({ operationType: 'setup_email_delivery', success: true })
 		);
-		expect(mockedCreateNotification).not.toHaveBeenCalled();
+		expect(mockedRaiseAlert).not.toHaveBeenCalled();
 	});
 
 	it('throws before creating any link when the password setup template has not been published', async () => {
@@ -173,7 +175,7 @@ describe('issueSetupLink', () => {
 				actorEmail: 'owner@example.com'
 			})
 		);
-		expect(mockedCreateNotification).toHaveBeenCalledWith(
+		expect(mockedRaiseAlert).toHaveBeenCalledWith(
 			client,
 			expect.objectContaining({
 				kind: 'setup_email_failed',

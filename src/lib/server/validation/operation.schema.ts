@@ -11,7 +11,12 @@ export const operationStatusSchema = z.enum([
 export const operationIdSchema = z.string().uuid();
 
 export const operationListQuerySchema = z.object({
-	status: operationStatusSchema.optional(),
+	/**
+	 * No status means the working view: everything that has not succeeded. `all` is the
+	 * explicit opt-in to see succeeded attempts too, which is what a link into one specific
+	 * operation needs, since it may well have succeeded on retry before Jafar opened it.
+	 */
+	status: z.union([operationStatusSchema, z.literal('all')]).optional(),
 	target_id: z.string().uuid().optional()
 });
 

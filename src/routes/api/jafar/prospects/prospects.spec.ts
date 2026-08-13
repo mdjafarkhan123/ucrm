@@ -104,7 +104,10 @@ describe('platform owner prospect read API boundary', () => {
 					platform_onboarding_applications: query({ id: 'prospect-1', stage: 'new' }),
 					platform_onboarding_application_submissions: query({ application_id: 'prospect-1' }),
 					platform_onboarding_application_corrections: query([{ id: 'correction-1' }]),
-					platform_onboarding_application_setup_links: query(null)
+					platform_onboarding_application_setup_links: query(null),
+					platform_onboarding_application_payment_confirmations: query([]),
+					platform_onboarding_application_payment_reversals: query([]),
+					platform_onboarding_application_provisions: query(null)
 				})[table] as never
 		} as never);
 

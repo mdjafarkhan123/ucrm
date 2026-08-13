@@ -3,11 +3,13 @@ import { POST } from './+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { issueSetupLink } from '$lib/server/jafar/setup-link';
+import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 
 vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
 vi.mock('$lib/server/jafar/setup-link', () => ({ issueSetupLink: vi.fn() }));
+vi.mock('$lib/server/jafar/owner-alerts', () => ({ raiseOwnerAlert: vi.fn() }));
 vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/server/security/rate-limit')>()),
 	checkRateLimit: vi.fn()
@@ -17,6 +19,7 @@ const mockedOwnerSession = vi.mocked(getOwnerSession);
 const mockedClient = vi.mocked(getOwnerSupabaseClient);
 const mockedIssueSetupLink = vi.mocked(issueSetupLink);
 const mockedCheckRateLimit = vi.mocked(checkRateLimit);
+const mockedRaiseAlert = vi.mocked(raiseOwnerAlert);
 
 const prospectId = '123e4567-e89b-12d3-a456-426614174000';
 
@@ -374,6 +377,32 @@ describe('platform owner prospect provisioning API boundary', () => {
 		// fresh login account rather than reusing one that no longer exists.
 		expect(client.__provisionUpdateCalls).toContainEqual(
 			expect.objectContaining({ status: 'failed', administrator_user_id: null })
+		);
+		// A failed provisioning is one of the few events Jafar is emailed about, not just shown
+		// in the panel -- a paid prospect is stuck until someone acts.
+		expect(mockedRaiseAlert).toHaveBeenCalledWith(
+			client,
+			expect.objectContaining({
+				kind: 'onboarding_application_provisioning_failed',
+				severity: 'urgent',
+				target: { targetKind: 'onboarding_application', targetId: prospectId }
+			})
+		);
+	});
+
+	it('still returns the failure response when the provisioning alert itself cannot be raised', async () => {
+		mockedOwnerSession.mockReturnValue(session());
+		mockedRaiseAlert.mockRejectedValue(new Error('notifications table unreachable'));
+		const client = clientWith({
+			applicationStage: 'payment_confirmed',
+			rpcResult: { error: { message: 'Payment must be confirmed before provisioning.' } }
+		});
+		mockedClient.mockReturnValue(client as never);
+
+		const response = await POST(event(prospectId));
+		expect(response.status).toBe(500);
+		expect(client.__applicationUpdateCalls).toContainEqual(
+			expect.objectContaining({ stage: 'needs_attention' })
 		);
 	});
 

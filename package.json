@@ -49,6 +49,7 @@
 		"@tanstack/svelte-query": "^6.1.38",
 		"bcryptjs": "^3.0.3",
 		"bits-ui": "^2.18.1",
+		"country-state-city": "^3.2.1",
 		"zod": "^4.4.3"
 	}
 }

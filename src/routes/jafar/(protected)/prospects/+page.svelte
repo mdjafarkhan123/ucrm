@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { replaceState } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { markRecordNotificationsRead, notificationsKey } from '$lib/jafar/notifications';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
@@ -10,6 +14,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 
@@ -45,6 +50,18 @@
 		initial_administrator_email: string | null;
 		note: string | null;
 		personal_data_purge_after: string;
+		duplicate_acknowledged_at: string | null;
+		duplicate_acknowledged_by_owner_email: string | null;
+		payment_reversed_at: string | null;
+	};
+	type DuplicateMatch = {
+		id: string;
+		business_name: string;
+		main_contact_email: string;
+		initial_administrator_email: string | null;
+		stage: ProspectStage;
+		submitted_at: string;
+		matched_on: string[];
 	};
 	type OriginalSubmission = {
 		id: string;
@@ -69,13 +86,63 @@
 		last_sent_at: string;
 		last_error: string | null;
 	};
+	type PaymentConfirmation = {
+		id: string;
+		actor_owner_email: string;
+		amount_usd_cents: number;
+		currency: string;
+		private_reference: string;
+		mismatch_reason: string | null;
+		confirmed_at: string;
+	};
+	type PaymentReversal = {
+		id: string;
+		actor_owner_email: string;
+		reason: string;
+		reversed_amount_usd_cents: number;
+		reversed_at: string;
+	};
+	type ProvisionStatus = {
+		status: string;
+		last_error: string | null;
+		attempt_count: number;
+		updated_at: string;
+	};
+	type PackageVersionOption = {
+		id: string;
+		status: string;
+		display_name: string;
+		price_usd_cents: number | null;
+		currency: string;
+	};
+	type PackagesResponse = {
+		packages: { versions: PackageVersionOption[] }[];
+		error?: string;
+	};
 	type ProspectListResponse = { prospects: ProspectSummary[]; error?: string };
 	type ProspectDetailResponse = {
 		prospect: ProspectDetail;
 		original_submission: OriginalSubmission | null;
 		corrections: Correction[];
 		setup_link: SetupLink | null;
+		duplicate_matches: DuplicateMatch[];
+		payment_confirmations: PaymentConfirmation[];
+		payment_reversals: PaymentReversal[];
+		provision: ProvisionStatus | null;
 		error?: string;
+	};
+
+	const correctionFieldLabels: Record<string, string> = {
+		business_name: 'Business name',
+		main_contact_name: 'Main contact name',
+		main_contact_email: 'Main contact email',
+		main_contact_phone: 'Main contact phone',
+		initial_administrator_name: 'Administrator name',
+		initial_administrator_email: 'Administrator email',
+		trade: 'Trade',
+		city_country: 'City / country',
+		time_zone: 'Time zone',
+		note: 'Applicant note'
 	};
 
 	const stages: { value: string; label: string }[] = [
@@ -101,6 +168,10 @@
 		note: string;
 		reason: string;
 	};
+	type PackageCorrectionForm = {
+		package_version_id: string;
+		reason: string;
+	};
 	type PaymentConfirmationForm = {
 		amountDollars: string;
 		private_reference: string;
@@ -116,16 +187,22 @@
 	];
 	const unpaidStages: ProspectStage[] = ['new', 'awaiting_payment', 'needs_attention'];
 	const provisionableStages: ProspectStage[] = ['payment_confirmed', 'needs_attention'];
+	const reversibleStages: ProspectStage[] = ['payment_confirmed', 'needs_attention'];
 
 	let search = $state('');
 	let stageFilter = $state('');
 	let selectedProspectId = $state<string | null>(null);
 	let editingCorrection = $state(false);
+	let editingPackage = $state(false);
 	let confirmingNotProceeding = $state(false);
 	let confirmingPayment = $state(false);
 	let confirmingProvision = $state(false);
+	let confirmingReversal = $state(false);
 	let correctionForm = $state<CorrectionForm>(emptyCorrectionForm());
+	let packageCorrectionForm = $state<PackageCorrectionForm>(emptyPackageCorrectionForm());
 	let paymentForm = $state<PaymentConfirmationForm>(emptyPaymentForm());
+	let notProceedingReason = $state('');
+	let reversalReason = $state('');
 	let actionError = $state('');
 	let actionMessage = $state('');
 
@@ -145,6 +222,10 @@
 		};
 	}
 
+	function emptyPackageCorrectionForm(): PackageCorrectionForm {
+		return { package_version_id: '', reason: '' };
+	}
+
 	function emptyPaymentForm(): PaymentConfirmationForm {
 		return { amountDollars: '', private_reference: '', mismatch_reason: '' };
 	}
@@ -156,9 +237,11 @@
 
 	function openCorrectionForm(detail: ProspectDetail) {
 		clearFeedback();
+		editingPackage = false;
 		confirmingNotProceeding = false;
 		confirmingPayment = false;
 		confirmingProvision = false;
+		confirmingReversal = false;
 		correctionForm = {
 			business_name: detail.business_name,
 			main_contact_name: detail.main_contact_name,
@@ -175,11 +258,35 @@
 		editingCorrection = true;
 	}
 
-	function openPaymentForm() {
+	function openPackageCorrectionForm(detail: ProspectDetail) {
 		clearFeedback();
 		editingCorrection = false;
 		confirmingNotProceeding = false;
+		confirmingPayment = false;
 		confirmingProvision = false;
+		confirmingReversal = false;
+		packageCorrectionForm = { package_version_id: detail.package_version_id, reason: '' };
+		editingPackage = true;
+	}
+
+	function openNotProceedingConfirm() {
+		clearFeedback();
+		editingCorrection = false;
+		editingPackage = false;
+		confirmingPayment = false;
+		confirmingProvision = false;
+		confirmingReversal = false;
+		notProceedingReason = '';
+		confirmingNotProceeding = true;
+	}
+
+	function openPaymentForm() {
+		clearFeedback();
+		editingCorrection = false;
+		editingPackage = false;
+		confirmingNotProceeding = false;
+		confirmingProvision = false;
+		confirmingReversal = false;
 		paymentForm = emptyPaymentForm();
 		confirmingPayment = true;
 	}
@@ -187,9 +294,30 @@
 	function openProvisionConfirm() {
 		clearFeedback();
 		editingCorrection = false;
+		editingPackage = false;
 		confirmingNotProceeding = false;
 		confirmingPayment = false;
+		confirmingReversal = false;
 		confirmingProvision = true;
+	}
+
+	function openReversalConfirm() {
+		clearFeedback();
+		editingCorrection = false;
+		editingPackage = false;
+		confirmingNotProceeding = false;
+		confirmingPayment = false;
+		confirmingProvision = false;
+		reversalReason = '';
+		confirmingReversal = true;
+	}
+
+	function canProvision(detail: ProspectDetail) {
+		return provisionableStages.includes(detail.stage) && !detail.payment_reversed_at;
+	}
+
+	function canReversePayment(detail: ProspectDetail) {
+		return reversibleStages.includes(detail.stage) && !detail.payment_reversed_at;
 	}
 
 	function administratorEmail(detail: ProspectDetail) {
@@ -221,6 +349,23 @@
 			return result;
 		}
 	}));
+
+	const packageOptionsQuery = createQuery<PackagesResponse>(() => ({
+		queryKey: ['jafar', 'packages'],
+		enabled: editingPackage,
+		queryFn: async () => {
+			const response = await fetch('/api/jafar/packages');
+			const result = (await response.json()) as PackagesResponse;
+			if (!response.ok) throw new Error(result.error ?? 'Packages could not be loaded.');
+			return result;
+		}
+	}));
+
+	const publishedPackageVersions = $derived(
+		(packageOptionsQuery.data?.packages ?? [])
+			.flatMap((packageDefinition) => packageDefinition.versions)
+			.filter((version) => version.status === 'published')
+	);
 
 	const prospectList = $derived(prospects.data?.prospects ?? []);
 	const attentionCount = $derived(
@@ -260,11 +405,35 @@
 		}
 	}));
 
+	const correctPackage = createMutation<ActionResponse, Error, void>(() => ({
+		mutationFn: async () => {
+			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/correct-package`, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify(packageCorrectionForm)
+			});
+			const result = (await response.json()) as ActionResponse;
+			if (!response.ok) throw new Error(result.error ?? 'The package could not be changed.');
+			return result;
+		},
+		onMutate: () => clearFeedback(),
+		onError: (error) => (actionError = error.message),
+		onSuccess: () => {
+			editingPackage = false;
+			actionMessage = 'Package changed.';
+			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospects'] });
+			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospect', selectedProspectId] });
+		}
+	}));
+
 	const markNotProceeding = createMutation<ActionResponse, Error, void>(() => ({
 		mutationFn: async () => {
 			if (!selectedProspectId) throw new Error('Choose a prospect first.');
 			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/not-proceeding`, {
-				method: 'POST'
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ reason: notProceedingReason.trim() || null })
 			});
 			const result = (await response.json()) as ActionResponse;
 			if (!response.ok) throw new Error(result.error ?? 'The application could not be updated.');
@@ -275,6 +444,45 @@
 		onSuccess: () => {
 			confirmingNotProceeding = false;
 			actionMessage = 'Application marked not proceeding.';
+			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospects'] });
+			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospect', selectedProspectId] });
+		}
+	}));
+
+	const markReviewed = createMutation<ActionResponse, Error, void>(() => ({
+		mutationFn: async () => {
+			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/mark-reviewed`, {
+				method: 'POST'
+			});
+			const result = (await response.json()) as ActionResponse;
+			if (!response.ok) throw new Error(result.error ?? 'The application could not be updated.');
+			return result;
+		},
+		onMutate: () => clearFeedback(),
+		onError: (error) => (actionError = error.message),
+		onSuccess: () => {
+			actionMessage = 'Application marked reviewed.';
+			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospects'] });
+			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospect', selectedProspectId] });
+		}
+	}));
+
+	const acknowledgeDuplicate = createMutation<ActionResponse, Error, void>(() => ({
+		mutationFn: async () => {
+			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			const response = await fetch(
+				`/api/jafar/prospects/${selectedProspectId}/acknowledge-duplicate`,
+				{ method: 'POST' }
+			);
+			const result = (await response.json()) as ActionResponse;
+			if (!response.ok) throw new Error(result.error ?? 'The application could not be updated.');
+			return result;
+		},
+		onMutate: () => clearFeedback(),
+		onError: (error) => (actionError = error.message),
+		onSuccess: () => {
+			actionMessage = 'Marked as not a duplicate.';
 			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospects'] });
 			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospect', selectedProspectId] });
 		}
@@ -336,6 +544,28 @@
 		}
 	}));
 
+	const reversePayment = createMutation<ActionResponse, Error, void>(() => ({
+		mutationFn: async () => {
+			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/reverse-payment`, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ reason: reversalReason.trim() })
+			});
+			const result = (await response.json()) as ActionResponse;
+			if (!response.ok) throw new Error(result.error ?? 'The payment could not be reversed.');
+			return result;
+		},
+		onMutate: () => clearFeedback(),
+		onError: (error) => (actionError = error.message),
+		onSuccess: () => {
+			confirmingReversal = false;
+			actionMessage = 'Payment reversed. The application now needs attention.';
+			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospects'] });
+			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospect', selectedProspectId] });
+		}
+	}));
+
 	const resendSetupEmail = createMutation<ActionResponse, Error, void>(() => ({
 		mutationFn: async () => {
 			if (!selectedProspectId) throw new Error('Choose a prospect first.');
@@ -363,20 +593,46 @@
 	function clearSelection() {
 		selectedProspectId = null;
 		editingCorrection = false;
+		editingPackage = false;
 		confirmingNotProceeding = false;
 		confirmingPayment = false;
 		confirmingProvision = false;
+		confirmingReversal = false;
+		notProceedingReason = '';
+		reversalReason = '';
 		clearFeedback();
 	}
 
 	function selectProspect(id: string) {
 		selectedProspectId = id;
 		editingCorrection = false;
+		editingPackage = false;
 		confirmingNotProceeding = false;
 		confirmingPayment = false;
 		confirmingProvision = false;
+		confirmingReversal = false;
+		notProceedingReason = '';
+		reversalReason = '';
 		clearFeedback();
 	}
+
+	/**
+	 * `?application=<id>` is how a notification or an alert email opens a specific prospect.
+	 * The panel opens straight away, anything unread about that application is cleared, and the
+	 * parameter is dropped from the address so a later refresh or a Back does not force the
+	 * panel open again.
+	 */
+	$effect(() => {
+		const applicationId = page.url.searchParams.get('application');
+		if (!applicationId) return;
+
+		selectProspect(applicationId);
+		void markRecordNotificationsRead('onboarding_application', applicationId).then(() =>
+			queryClient.invalidateQueries({ queryKey: notificationsKey })
+		);
+
+		replaceState(resolve('/jafar/prospects'), page.state);
+	});
 
 	function handleProspectRowKeydown(event: KeyboardEvent, id: string) {
 		if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -437,6 +693,44 @@
 			style: 'currency',
 			currency: textValue(record?.currency, 'USD')
 		}).format(cents / 100);
+	}
+
+	function formatCents(cents: number, currency: string) {
+		return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(cents / 100);
+	}
+
+	function packageVersionOptionLabel(version: PackageVersionOption) {
+		if (version.price_usd_cents === null) return version.display_name;
+		const price = new Intl.NumberFormat(undefined, {
+			style: 'currency',
+			currency: version.currency
+		}).format(version.price_usd_cents / 100);
+		return `${version.display_name} · ${price} monthly`;
+	}
+
+	function correctionChanges(correction: Correction) {
+		const before = asRecord(correction.before_state);
+		const after = asRecord(correction.after_state);
+		if (!before || !after) return [];
+
+		if ('package_version_id' in before || 'package_version_id' in after) {
+			return [
+				{
+					label: 'Package',
+					before: `${packageName(before.package_snapshot)} · ${packagePrice(before.package_snapshot)}`,
+					after: `${packageName(after.package_snapshot)} · ${packagePrice(after.package_snapshot)}`
+				}
+			];
+		}
+
+		const changes: { label: string; before: string; after: string }[] = [];
+		for (const [key, label] of Object.entries(correctionFieldLabels)) {
+			const beforeValue = textValue(before[key], '—');
+			const afterValue = textValue(after[key], '—');
+			if (beforeValue !== afterValue)
+				changes.push({ label, before: beforeValue, after: afterValue });
+		}
+		return changes;
 	}
 
 	function paymentAmountMismatches(detail: ProspectDetail) {
@@ -522,8 +816,11 @@
 				onchange={clearSelection}
 			/>
 		</div>
-		<Button type="button" variant="secondary" variation="subtle" size="small" onclick={clearFilters}
-			>Clear filters</Button
+		<Button
+			type="button"
+			variant="secondary"
+			variation="destructive"
+			onclick={clearFilters}>Clear filters</Button
 		>
 	</section>
 
@@ -643,13 +940,68 @@
 					</div>
 					<p>
 						{#if detail.possible_duplicate}
-							This application may duplicate an existing organization. Compare it before creating an
-							account.
+							This application may duplicate an existing onboarding record. Compare it before
+							creating an account.
 						{:else}
 							Review the application, contact details, and selected package before the next
 							onboarding step.
 						{/if}
 					</p>
+
+					{#if detail.possible_duplicate}
+						<div class="prospects__duplicate-panel">
+							{#if detail.duplicate_acknowledged_at}
+								<p>
+									<span aria-hidden="true">{@html checkIcon}</span>
+									Acknowledged by <strong>{detail.duplicate_acknowledged_by_owner_email}</strong> on {formatDate(
+										detail.duplicate_acknowledged_at
+									)} — not a duplicate.
+								</p>
+							{:else}
+								<p>
+									<span aria-hidden="true">{@html alertIcon}</span>
+									Matches an existing onboarding record. Compare before proceeding.
+								</p>
+								{#if prospectDetail.data.duplicate_matches.length > 0}
+									<ul class="prospects__duplicate-matches">
+										{#each prospectDetail.data.duplicate_matches as match (match.id)}
+											<li>
+												<strong>{match.business_name}</strong>
+												<Badge status={stageTone(match.stage)}>{stageLabel(match.stage)}</Badge>
+												<small
+													>{match.main_contact_email} · Submitted {formatDate(
+														match.submitted_at
+													)}</small
+												>
+												<small class="prospects__duplicate-reasons"
+													>Matched on: {match.matched_on.join(', ')}</small
+												>
+											</li>
+										{/each}
+									</ul>
+								{/if}
+								{#if unpaidStages.includes(detail.stage)}
+									<div class="prospects__duplicate-actions">
+										<Button
+											type="button"
+											variant="tertiary"
+											loading={acknowledgeDuplicate.isPending}
+											onclick={() => acknowledgeDuplicate.mutate()}
+											>Acknowledge — not a duplicate</Button
+										>
+										<Button
+											type="button"
+											variant="tertiary"
+											variation="destructive"
+											disabled={confirmingNotProceeding}
+											onclick={openNotProceedingConfirm}>Close as duplicate</Button
+										>
+									</div>
+								{/if}
+							{/if}
+						</div>
+					{/if}
+
 					<dl class="prospects__review-details">
 						<div>
 							<dt>Primary contact</dt>
@@ -682,6 +1034,13 @@
 
 					{#if correctableStages.includes(detail.stage) || unpaidStages.includes(detail.stage)}
 						<div class="prospects__owner-actions">
+							{#if detail.stage === 'new'}
+								<Button
+									type="button"
+									loading={markReviewed.isPending}
+									onclick={() => markReviewed.mutate()}>Mark reviewed</Button
+								>
+							{/if}
 							{#if correctableStages.includes(detail.stage)}
 								<Button
 									type="button"
@@ -694,25 +1053,36 @@
 								<Button
 									type="button"
 									variant="tertiary"
-									disabled={confirmingPayment}
-									onclick={openPaymentForm}>Confirm payment</Button
+									disabled={editingPackage}
+									onclick={() => openPackageCorrectionForm(detail)}>Change package</Button
 								>
 								<Button
 									type="button"
 									variant="tertiary"
-									disabled={confirmingNotProceeding}
-									onclick={() => {
-										clearFeedback();
-										editingCorrection = false;
-										confirmingPayment = false;
-										confirmingProvision = false;
-										confirmingNotProceeding = true;
-									}}>Mark not proceeding</Button
+									disabled={confirmingPayment}
+									onclick={openPaymentForm}>Confirm payment</Button
 								>
+								{#if !(detail.possible_duplicate && !detail.duplicate_acknowledged_at)}
+									<Button
+										type="button"
+										variant="tertiary"
+										disabled={confirmingNotProceeding}
+										onclick={openNotProceedingConfirm}>Mark not proceeding</Button
+									>
+								{/if}
 							{/if}
-							{#if provisionableStages.includes(detail.stage)}
+							{#if canProvision(detail)}
 								<Button type="button" disabled={confirmingProvision} onclick={openProvisionConfirm}
 									>Provision organization</Button
+								>
+							{/if}
+							{#if canReversePayment(detail)}
+								<Button
+									type="button"
+									variant="tertiary"
+									variation="destructive"
+									disabled={confirmingReversal}
+									onclick={openReversalConfirm}>Reverse payment</Button
 								>
 							{/if}
 						</div>
@@ -858,6 +1228,56 @@
 						</form>
 					{/if}
 
+					{#if editingPackage}
+						<form
+							class="prospects__correction-form"
+							onsubmit={(event) => {
+								event.preventDefault();
+								correctPackage.mutate();
+							}}
+						>
+							<div class="prospects__form-grid">
+								<label class="prospects__form-wide"
+									><span>Package</span>
+									{#if packageOptionsQuery.isPending}
+										<p>Loading packages…</p>
+									{:else if packageOptionsQuery.isError}
+										<p class="prospects__feedback prospects__feedback--error" role="alert">
+											{packageOptionsQuery.error.message}
+										</p>
+									{:else}
+										<Select
+											id="package-correction-version"
+											ariaLabel="Package"
+											bind:value={packageCorrectionForm.package_version_id}
+											required
+											options={publishedPackageVersions.map((version) => ({
+												value: version.id,
+												label: packageVersionOptionLabel(version)
+											}))}
+										/>
+									{/if}
+								</label>
+								<label class="prospects__form-wide"
+									><span>Private reason for this change</span><textarea
+										bind:value={packageCorrectionForm.reason}
+										required
+										maxlength="500"></textarea></label
+								>
+							</div>
+							<div class="prospects__form-actions">
+								<Button
+									type="button"
+									variant="secondary"
+									variation="subtle"
+									disabled={correctPackage.isPending}
+									onclick={() => (editingPackage = false)}>Cancel</Button
+								>
+								<Button type="submit" loading={correctPackage.isPending}>Save package</Button>
+							</div>
+						</form>
+					{/if}
+
 					{#if confirmingPayment}
 						<form
 							class="prospects__correction-form"
@@ -909,54 +1329,79 @@
 					{/if}
 
 					{#if confirmingNotProceeding}
-						<div class="prospects__not-proceeding-confirm" role="alertdialog" aria-live="assertive">
-							<span aria-hidden="true">{@html alertIcon}</span>
+						{@const closingDuplicate =
+							detail.possible_duplicate && !detail.duplicate_acknowledged_at}
+						<ConfirmDialog
+							open={confirmingNotProceeding}
+							title="Confirm not proceeding"
+							icon={alertIcon}
+							tone="critical"
+							destructive
+							confirmLabel="Confirm not proceeding"
+							loading={markNotProceeding.isPending}
+							confirmDisabled={closingDuplicate && notProceedingReason.trim().length === 0}
+							onConfirm={() => markNotProceeding.mutate()}
+							onClose={() => (confirmingNotProceeding = false)}
+						>
 							<p>
 								This marks the application as not proceeding. It can no longer be corrected,
 								confirmed for payment, or provisioned.
 							</p>
-							<div class="prospects__not-proceeding-actions">
-								<Button
-									type="button"
-									variant="tertiary"
-									disabled={markNotProceeding.isPending}
-									onclick={() => (confirmingNotProceeding = false)}>Cancel</Button
+							{#if closingDuplicate}
+								<label class="prospects__not-proceeding-reason"
+									><span>Private reason this duplicate is being closed</span><textarea
+										bind:value={notProceedingReason}
+										required
+										maxlength="500"></textarea></label
 								>
-								<Button
-									type="button"
-									variation="destructive"
-									loading={markNotProceeding.isPending}
-									onclick={() => markNotProceeding.mutate()}>Confirm not proceeding</Button
-								>
-							</div>
-						</div>
+							{/if}
+						</ConfirmDialog>
 					{/if}
 
 					{#if confirmingProvision}
-						<div class="prospects__provision-confirm" role="alertdialog" aria-live="assertive">
-							<span aria-hidden="true">{@html checkIcon}</span>
-							<div>
-								<p>
-									This creates the <strong>{detail.business_name}</strong> organization and its
-									first administrator account, <strong>{administratorEmail(detail)}</strong>, on the
-									<strong>{packageName(detail.package_snapshot)}</strong> package. A single-use password-setup
-									email is sent to the administrator immediately; they cannot sign in until they use it.
-								</p>
-								<div class="prospects__provision-actions">
-									<Button
-										type="button"
-										variant="tertiary"
-										disabled={provisionOrganization.isPending}
-										onclick={() => (confirmingProvision = false)}>Cancel</Button
-									>
-									<Button
-										type="button"
-										loading={provisionOrganization.isPending}
-										onclick={() => provisionOrganization.mutate()}>Confirm provisioning</Button
-									>
-								</div>
-							</div>
-						</div>
+						<ConfirmDialog
+							open={confirmingProvision}
+							title="Confirm provisioning"
+							icon={checkIcon}
+							tone="success"
+							confirmLabel="Confirm provisioning"
+							loading={provisionOrganization.isPending}
+							onConfirm={() => provisionOrganization.mutate()}
+							onClose={() => (confirmingProvision = false)}
+						>
+							<p>
+								This creates the <strong>{detail.business_name}</strong> organization and its first
+								administrator account, <strong>{administratorEmail(detail)}</strong>, on the
+								<strong>{packageName(detail.package_snapshot)}</strong> package. A single-use password-setup
+								email is sent to the administrator immediately; they cannot sign in until they use it.
+							</p>
+						</ConfirmDialog>
+					{/if}
+
+					{#if confirmingReversal}
+						<ConfirmDialog
+							open={confirmingReversal}
+							title="Reverse payment"
+							icon={alertIcon}
+							tone="critical"
+							destructive
+							confirmLabel="Reverse payment"
+							loading={reversePayment.isPending}
+							confirmDisabled={reversalReason.trim().length === 0}
+							onConfirm={() => reversePayment.mutate()}
+							onClose={() => (confirmingReversal = false)}
+						>
+							<p>
+								This moves <strong>{detail.business_name}</strong> back to needs attention and blocks
+								provisioning until payment is re-confirmed.
+							</p>
+							<label class="prospects__not-proceeding-reason"
+								><span>Private reason for this reversal</span><textarea
+									bind:value={reversalReason}
+									required
+									maxlength="500"></textarea></label
+							>
+						</ConfirmDialog>
 					{/if}
 
 					<details class="prospects__history">
@@ -998,13 +1443,78 @@
 								<div class="prospects__corrections">
 									<h3>Correction history</h3>
 									{#each prospectDetail.data.corrections as correction (correction.id)}
+										{@const changes = correctionChanges(correction)}
 										<article>
 											<strong>{correction.reason}</strong>
+											{#if changes.length > 0}
+												<ul class="prospects__correction-changes">
+													{#each changes as change (change.label)}
+														<li>
+															<span class="prospects__correction-changes-label">{change.label}</span
+															>
+															{change.before} → {change.after}
+														</li>
+													{/each}
+												</ul>
+											{/if}
 											<small
 												>{correction.actor_owner_email} · {formatDate(correction.created_at)}</small
 											>
 										</article>
 									{/each}
+								</div>
+							{/if}
+							{#if prospectDetail.data.payment_confirmations.length > 0}
+								<div class="prospects__corrections">
+									<h3>Payment confirmations</h3>
+									{#each prospectDetail.data.payment_confirmations as confirmation (confirmation.id)}
+										<article>
+											<strong
+												>{formatCents(confirmation.amount_usd_cents, confirmation.currency)} · {confirmation.private_reference}</strong
+											>
+											{#if confirmation.mismatch_reason}
+												<p>Amount differs from package price: {confirmation.mismatch_reason}</p>
+											{/if}
+											<small
+												>{confirmation.actor_owner_email} · {formatDate(
+													confirmation.confirmed_at
+												)}</small
+											>
+										</article>
+									{/each}
+								</div>
+							{/if}
+							{#if prospectDetail.data.payment_reversals.length > 0}
+								<div class="prospects__corrections">
+									<h3>Payment reversals</h3>
+									{#each prospectDetail.data.payment_reversals as reversal (reversal.id)}
+										<article>
+											<strong
+												>{formatCents(reversal.reversed_amount_usd_cents, 'USD')} reversed · {reversal.reason}</strong
+											>
+											<small
+												>{reversal.actor_owner_email} · {formatDate(reversal.reversed_at)}</small
+											>
+										</article>
+									{/each}
+								</div>
+							{/if}
+							{#if prospectDetail.data.provision}
+								{@const provision = prospectDetail.data.provision}
+								<div class="prospects__setup-status">
+									<p>
+										<span aria-hidden="true"
+											>{@html provision.status === 'failed' ? alertIcon : checkIcon}</span
+										>
+										Provisioning status: <strong>{provision.status}</strong>
+										({provision.attempt_count} attempt{provision.attempt_count === 1 ? '' : 's'},
+										last updated {formatDate(provision.updated_at)}).
+										{#if provision.last_error}
+											<span class="prospects__setup-status-error"
+												>Last error: {provision.last_error}</span
+											>
+										{/if}
+									</p>
 								</div>
 							{/if}
 						</div>
@@ -1460,64 +1970,78 @@
 		gap: var(--space-small);
 	}
 
-	.prospects__not-proceeding-confirm {
+	.prospects__not-proceeding-reason {
+		display: grid;
+		gap: var(--space-small);
+		color: var(--color-critical--onSurface);
+		font-weight: 600;
+
+		textarea {
+			min-height: 72px;
+			box-sizing: border-box;
+			padding: var(--space-small);
+			border: var(--border-base) solid var(--color-critical);
+			border-radius: var(--radius-base);
+			color: var(--color-text);
+			background: var(--color-surface);
+			font: inherit;
+			resize: vertical;
+		}
+	}
+
+	.prospects__duplicate-panel {
 		display: grid;
 		gap: var(--space-small);
 		margin-top: var(--space-base);
 		padding: var(--space-base);
-		border: var(--border-base) solid var(--color-critical);
+		border: var(--border-base) solid var(--color-warning);
 		border-radius: var(--radius-base);
-		color: var(--color-critical--onSurface);
-		background: var(--color-critical--surface);
+		color: var(--color-warning--onSurface);
+		background: var(--color-warning--surface);
 		font-size: var(--typography--fontSize-small);
 
-		span {
-			color: var(--color-critical);
-		}
-
-		span :global(svg) {
-			width: 20px;
-			height: 20px;
-		}
-	}
-
-	.prospects__not-proceeding-actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: var(--space-small);
-	}
-
-	.prospects__provision-confirm {
-		display: flex;
-		align-items: flex-start;
-		gap: var(--space-small);
-		margin-top: var(--space-base);
-		padding: var(--space-base);
-		border: var(--border-base) solid var(--color-success);
-		border-radius: var(--radius-base);
-		color: var(--color-success--onSurface);
-		background: var(--color-success--surface);
-		font-size: var(--typography--fontSize-small);
-
-		> span {
-			color: var(--color-success);
-		}
-
-		> span :global(svg) {
-			width: 20px;
-			height: 20px;
-		}
-
-		p {
+		> p {
+			display: flex;
+			align-items: flex-start;
+			gap: var(--space-smaller);
 			line-height: var(--typography--lineHeight-large);
 		}
+
+		> p span :global(svg) {
+			width: 18px;
+			height: 18px;
+		}
 	}
 
-	.prospects__provision-actions {
-		display: flex;
-		justify-content: flex-end;
+	.prospects__duplicate-matches {
+		display: grid;
 		gap: var(--space-small);
-		margin-top: var(--space-base);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+
+		li {
+			display: grid;
+			gap: var(--space-smaller);
+			padding: var(--space-small) var(--space-base);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-small);
+			background: var(--color-surface);
+		}
+
+		small {
+			color: var(--color-text--secondary);
+		}
+	}
+
+	.prospects__duplicate-reasons {
+		font-style: italic;
+	}
+
+	.prospects__duplicate-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-small);
 	}
 
 	.prospects__history {
@@ -1574,6 +2098,25 @@
 		small {
 			color: var(--color-text--secondary);
 		}
+	}
+
+	.prospects__correction-changes {
+		display: grid;
+		gap: var(--space-smaller);
+		list-style: none;
+		font-size: var(--typography--fontSize-small);
+		color: var(--color-text--secondary);
+
+		li {
+			display: flex;
+			flex-wrap: wrap;
+			gap: var(--space-smaller);
+		}
+	}
+
+	.prospects__correction-changes-label {
+		font-weight: 600;
+		color: var(--color-text);
 	}
 
 	.prospects__sr-only {

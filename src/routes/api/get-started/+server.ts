@@ -4,11 +4,16 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { verifyTurnstileToken } from '$lib/server/security/turnstile';
 import { getOrCreateOwnerSettings } from '$lib/server/jafar/owner-settings';
-import { createOwnerNotification } from '$lib/server/events/outbox';
+import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
+import { sendApplicationReceipt } from '$lib/server/jafar/application-receipt';
 import {
 	onboardingApplicationSubmissionSchema,
 	zodOnboardingApplicationFieldErrors
 } from '$lib/server/validation/get-started.schema';
+
+// Postgres codes raised by submit_onboarding_application when the chosen package version is no
+// longer published (check_violation) or no longer exists (foreign_key_violation).
+const UNAVAILABLE_PACKAGE_CODES = new Set(['23514', '23503']);
 
 export const POST: RequestHandler = async (event) => {
 	let body: unknown;
@@ -84,29 +89,57 @@ export const POST: RequestHandler = async (event) => {
 				}
 			}
 		);
+		// The package can be retired or removed between the visitor loading the page and submitting it.
+		// The database refuses that on purpose, so it is the visitor's problem to fix, not a fault
+		// worth waking the owner for: ask them to pick again instead of showing a server error.
+		if (submitError && UNAVAILABLE_PACKAGE_CODES.has(submitError.code))
+			return json(
+				{
+					error: 'That package is no longer available. Please choose another one.',
+					field_errors: {
+						package_version_id: 'That package is no longer available. Please choose another one.'
+					}
+				},
+				{ status: 422 }
+			);
 		if (submitError) throw submitError;
 
 		try {
-			await createOwnerNotification(client, {
+			await raiseOwnerAlert(client, {
 				kind: 'onboarding_application_submitted',
 				severity: 'attention',
 				title: `New application from ${data.business_name}`,
-				target: { targetKind: 'onboarding_application', targetId: applicationId }
+				body: `${data.main_contact_name} applied for ${data.trade} in ${data.city_country}.`,
+				target: { targetKind: 'onboarding_application', targetId: applicationId },
+				origin: event.url.origin
 			});
 		} catch (notificationError) {
 			console.error('Could not record the new-application notification.', notificationError);
 		}
 
-		return json({ ok: true });
+		if (applicationId) {
+			try {
+				await sendApplicationReceipt(client, {
+					applicationId,
+					recipientEmail: data.main_contact_email,
+					paymentInstructions: settings.payment_instructions ?? ''
+				});
+			} catch (receiptError) {
+				console.error('Could not send the application receipt email.', receiptError);
+			}
+		}
+
+		return json({ ok: true, applicationId });
 	} catch (error) {
 		console.error('Could not save the onboarding application.', error);
 		try {
-			await createOwnerNotification(client, {
+			await raiseOwnerAlert(client, {
 				kind: 'onboarding_application_submission_failed',
 				severity: 'urgent',
 				title: `An application from ${data.business_name} failed to save`,
 				body: error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500),
-				target: { targetKind: 'platform', targetId: null }
+				target: { targetKind: 'platform', targetId: null },
+				origin: event.url.origin
 			});
 		} catch (notificationError) {
 			console.error('Could not record the submission-failure alert.', notificationError);

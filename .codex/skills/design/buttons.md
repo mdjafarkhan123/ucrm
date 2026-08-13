@@ -59,10 +59,10 @@ The variation sets the semantic action color variables:
 
 | Variation   | `--button--color-variation`        | `--button--color-variation--hover`        | Use for                                                                    |
 | ----------- | ---------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------- |
-| Work        | `var(--color-interactive)`         | `var(--color-interactive--hover)`         | Starting, completing, confirming, canceling, or reversing workflow actions |
+| Work        | `var(--color-interactive)`         | `var(--color-interactive--hover)`         | Starting, completing, confirming, or advancing workflow actions            |
 | Learning    | `var(--color-interactive--subtle)` | `var(--color-interactive--subtle--hover)` | Educational, onboarding, or discovery actions                              |
 | Subtle      | `var(--color-interactive--subtle)` | `var(--color-interactive--subtle--hover)` | Low-priority actions, dismissals, and secondary navigation                 |
-| Destructive | `var(--color-destructive)`         | `var(--color-destructive--hover)`         | Actions that destroy or remove data                                        |
+| Destructive | `var(--color-destructive)`         | `var(--color-destructive--hover)`         | Negative actions, including canceling, clearing, deleting, or removing data |
 
 ### Work
 
@@ -80,9 +80,10 @@ actions. Apply the same primary, secondary, and tertiary hierarchy as Work.
 
 ### Destructive
 
-Use only for real destructive actions. Use a secondary or tertiary destructive
-button to open a confirmation step for high-impact or permanent actions. Use a
-primary destructive button for the final confirmed action.
+Use this red variation for negative actions, including Cancel, Clear, Delete,
+and Remove. Use a secondary or tertiary destructive button for canceling,
+clearing, and other reversible negative actions. Use a primary destructive
+button only for a final, confirmed high-impact or permanent action.
 
 ### Subtle
 

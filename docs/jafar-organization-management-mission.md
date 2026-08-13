@@ -2,12 +2,15 @@
 
 ## Status and authority
 
-**Approved.** This document records the product and security decisions resolved after auditing
-Ucrm, ContractorOs, the accepted onboarding ADR, the approved onboarding contract, and the Platform
-Owner decision rounds.
+**Approved supporting context.** This document records the product and security decisions resolved
+after auditing Ucrm, ContractorOs, the accepted onboarding ADR, the approved onboarding contract,
+and the initial Platform Owner decision rounds. The newer
+`docs/jafar-completion-contract.md` owns the approved A-Z completion behavior and wins where the two
+documents differ.
 
 It works with:
 
+- docs/jafar-completion-contract.md
 - docs/jafar-onboarding-implementation-contract.md
 - docs/adr/0001-paid-prospect-provisioning-and-versioned-packages.md
 - CONTEXT.md

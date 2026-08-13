@@ -25,9 +25,11 @@ export const GET: RequestHandler = async (event) => {
 			.order('updated_at', { ascending: false })
 			.limit(100);
 
-		query = parsed.data.status
-			? query.eq('status', parsed.data.status)
-			: query.neq('status', 'succeeded');
+		if (parsed.data.status && parsed.data.status !== 'all') {
+			query = query.eq('status', parsed.data.status);
+		} else if (!parsed.data.status) {
+			query = query.neq('status', 'succeeded');
+		}
 		if (parsed.data.target_id) query = query.eq('target_id', parsed.data.target_id);
 
 		const { data, error } = await query;

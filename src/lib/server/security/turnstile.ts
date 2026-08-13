@@ -19,7 +19,11 @@ export async function verifyTurnstileToken(token: string, remoteIp: string) {
 			headers: { 'content-type': 'application/x-www-form-urlencoded' },
 			body: new URLSearchParams({ secret: secretKey, response: token, remoteip: remoteIp })
 		});
-		const result = (await response.json()) as { success: boolean };
+		const result = (await response.json()) as { success: boolean; 'error-codes'?: string[] };
+		// Cloudflare explains a rejection only in `error-codes`. Without it a failure is
+		// indistinguishable from a wrong key, a spent token, or an expired one.
+		if (result.success !== true)
+			console.warn('Spam check rejected the token.', result['error-codes'] ?? []);
 		return result.success === true;
 	} catch (error) {
 		console.error('Could not verify the spam-check token.', error);

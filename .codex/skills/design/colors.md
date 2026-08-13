@@ -63,8 +63,8 @@ icons, labels, or accessible descriptions.
 | `--color-interactive--background` | `var(--color-base-taupe--300)` | `var(--color-base-blue--700)` | Interactive background separated from its surface |
 | `--color-interactive--background--hover` | `var(--color-base-taupe--400)` | `var(--color-base-blue--600)` | Hover state of an interactive background |
 | `--color-interactive--background--subtle--hover` | `var(--color-base-green--200)` | `var(--color-base-green--800)` | Subtle interactive background hover |
-| `--color-destructive` | `var(--color-base-red--600)` | `var(--color-base-red--500)` | Interaction that destroys or removes data |
-| `--color-destructive--hover` | `var(--color-base-red--700)` | `var(--color-base-red--400)` | Hover state of a destructive action |
+| `--color-destructive` | `var(--color-base-red--600)` | `var(--color-base-red--500)` | Negative interaction, including canceling, clearing, deleting, or removing data |
+| `--color-destructive--hover` | `var(--color-base-red--700)` | `var(--color-base-red--400)` | Hover state of a negative action |
 | `--color-disabled` | `var(--color-base-grey--500)` | `var(--color-base-grey--500)` | Disabled text, icons, or controls |
 | `--color-disabled--secondary` | `var(--color-base-grey--200)` | `var(--color-base-grey--700)` | Secondary disabled color, such as a control background |
 | `--color-focus` | `var(--color-base-blue--500)` | `var(--color-base-blue--500)` | Focus ring color; use through `--shadow-focus` |

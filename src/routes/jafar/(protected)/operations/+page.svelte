@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { replaceState } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { markRecordNotificationsRead, notificationsKey } from '$lib/jafar/notifications';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
@@ -38,6 +42,7 @@
 
 	const statuses: { value: string; label: string }[] = [
 		{ value: '', label: 'Open (not succeeded)' },
+		{ value: 'all', label: 'All statuses' },
 		{ value: 'pending', label: 'Pending' },
 		{ value: 'retrying', label: 'Retrying' },
 		{ value: 'acknowledged', label: 'Acknowledged' },
@@ -58,6 +63,8 @@
 
 	let statusFilter = $state('');
 	let selectedOperationId = $state<string | null>(null);
+	/** Set only when arriving from a notification link, so a stale link can say so instead of doing nothing. */
+	let linkedOperationId = $state<string | null>(null);
 	let resolvingOperation = $state(false);
 	let resolutionNote = $state('');
 	let actionError = $state('');
@@ -82,6 +89,25 @@
 		clearFeedback();
 	}
 
+	/**
+	 * `?operation=<id>` is how a notification or an alert email opens one specific attempt.
+	 * The filter is switched to every status first, because a failure that already succeeded
+	 * on retry is hidden by the default working view and the link would land on nothing.
+	 */
+	$effect(() => {
+		const operationId = page.url.searchParams.get('operation');
+		if (!operationId) return;
+
+		statusFilter = 'all';
+		linkedOperationId = operationId;
+		selectOperation(operationId);
+		void markRecordNotificationsRead('operation_attempt', operationId).then(() =>
+			queryClient.invalidateQueries({ queryKey: notificationsKey })
+		);
+
+		replaceState(resolve('/jafar/operations'), page.state);
+	});
+
 	function handleRowKeydown(event: KeyboardEvent, id: string) {
 		if (event.key !== 'Enter' && event.key !== ' ') return;
 		event.preventDefault();
@@ -104,6 +130,11 @@
 	const operationList = $derived(operations.data?.operations ?? []);
 	const selectedOperation = $derived(
 		operationList.find((operation) => operation.id === selectedOperationId) ?? null
+	);
+	const linkedOperationMissing = $derived(
+		Boolean(linkedOperationId) &&
+			!operations.isPending &&
+			!operationList.some((operation) => operation.id === linkedOperationId)
 	);
 	const retryingCount = $derived(
 		operationList.filter((operation) => operation.status === 'retrying').length
@@ -255,6 +286,13 @@
 			/>
 		</div>
 	</section>
+
+	{#if linkedOperationMissing}
+		<p class="operations__linked-missing" role="status">
+			That notification points at an operation that is no longer in the last 100 attempts. The
+			full list is below.
+		</p>
+	{/if}
 
 	<section class="operations__table-panel" aria-labelledby="operation-list-title">
 		<h2 id="operation-list-title" class="operations__sr-only">Operation list</h2>
@@ -509,6 +547,15 @@
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
 		box-shadow: var(--shadow-low);
+	}
+
+	.operations__linked-missing {
+		padding: var(--space-small) var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		color: var(--color-text--secondary);
+		background: var(--color-surface);
+		font-size: var(--typography--fontSize-small);
 	}
 
 	.operations__filter-field {

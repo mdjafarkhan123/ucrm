@@ -1,103 +1,141 @@
-# CALUDE.md
+# Agent operating contract
 
-This file governs how CLAUDE should work
+## Mission
 
-## Project
+Build a secure, fast, simple contractor CRM with Jafar. A remote supabse project
 
-- **Owner:** Jafar is the CRM/App owner
-- **Product:** Contractor CRM for small field-service businesses. A remote supabase project
-- **Core Workflow:** Lead → Request → Quote → Job → Invoice → Payment. Following Jobber CRM
-- **Frontend:** SvelteKit + Svelte 5 Runes + TanStack Query (Client state)
-- **Styling & Icons:**Desktop design first then mobile version with SCSS + BEM naming convention + Tabler icon set
-- **UI Primitives:** Native Svelte/HTML for simple controls; Bits UI for complex interactive primitives
-- **Backend & File storage:** Supabase (Remote), Cloudflare r2
-- **Auth & Security:** Row-Level Security (RLS) with tenant isolation + Zod request validation
-- **Package Manager:** `npm`
-- **Other Technical Details:** Twiliio for SMS, Brevo for Email.
-- **Login details**: '/jafar' route = Email `dev.jafarkhan@gmail.com`; Password `.Asdedjk12.` Contractor login = Email `profile.mdjafarkhan@gmail.com`; Password: `1122334455`
-- **Deployment** - Currently on local development mode. Later on a vps server with local supabse, redis etc. All in docker container
+- Speak with Jafar in plain English. Write natural UI copy without em dashes, robotic language, or AI buzzwords.
+- Inspect before assuming. Find repository facts yourself and ask Jafar only for decisions.
+- Think through meaningful edge cases, security, performance, and database indexing.
+- Prefer the smallest clear solution that fully meets the approved outcome. Preserve unrelated user work.
 
-> Read `docs/PRODUCT.md` for more product context, user journeys, and business rules whenever you need why. Read `docs/Owner.md` for owner/operator `/jafar` route context whenever you need.
+**The core workflow:** Lead -> Request -> Quote -> Job -> Invoice -> Payment. Follow proven Jobber and GHL behavior unless Jafar approves a difference.
 
----
+Read `docs/PRODUCT.md` when work needs CRM behavior, terminology, journeys, or ownership boundaries. Read `docs/Owner.md` for Platform Owner or `/jafar` behavior. Read task-linked contracts and ADRs narrowly. Newer, more specific approved documents win conflicts.
 
-## Commands
+Product documents own approved behavior. ADRs own durable technical decisions. Code, migrations, and tests own implemented truth. Memory only routes and resumes work.
 
-```bash
-npm run dev           # dev server
-npm run build         # production build
-npm run preview       # preview prod build
-npm run check         # TypeScript + Svelte checks
-npm run check:watch   # checks in watch mode
-npm run lint          # Prettier + ESLint
-npm run format        # format repo
-npm run test:unit     # Vitest unit tests
-npm run test          # unit + Playwright
+## Skill router
+
+Load only relevant skills and read each selected `SKILL.md` completely before acting.
+
+| Work                                                  | Skill                                                      |
+| ----------------------------------------------------- | ---------------------------------------------------------- |
+| UI layout or styling                                  | `.claude/skills/design/SKILL.md`                           |
+| Complex interactive controls                          | `.claude/skills/bits-ui/SKILL.md`                          |
+| Contractor CRM behavior                               | `.claude/skills/jobber/SKILL.md`                           |
+| Supabase, Auth, Storage, Edge Functions, or Realtime  | `.claude/skills/supabase/SKILL.md`                         |
+| Postgres, migrations, RLS, SQL, functions, or indexes | `.claude/skills/supabase-postgres-best-practices/SKILL.md` |
+| Any Svelte component or module                        | `.claude/skills/svelte/SKILL.md`                           |
+| Agent-facing instructions or skills                   | `.claude/skills/writing-for-agents/SKILL.md`               |
+
+### Grilling
+
+After inspection, automatically load `.claude/skills/grilling/SKILL.md` before planning when important product decisions remain, reasonable interpretations materially differ, several roles or major systems interact, reversal is costly, or the request is complete, unified, end-to-end, A-Z, or strategically differentiated.
+
+Research facts yourself. Interview Jafar about decisions in dependency order until the goal, behavior, boundaries, risks, and acceptance conditions are settled. Obtain confirmation before implementation planning.
+
+Skip grilling for small reversible work, clear bug outcomes, decision-complete approved documents, and approved campaign parts. `grill-me` is an explicit shortcut only. `grill-with-docs` is explicit-only because it also maintains domain language and qualifying ADRs. Load `.claude/skills/domain-modeling/SKILL.md` when the task requires that work.
+
+## Work routing
+
+### Trivial
+
+For a small, low-risk, clearly specified, single-session change: act directly, verify, and report.
+
+### Non-trivial single session
+
+1. State the understood outcome.
+2. Inspect relevant rules, skills, docs, code, and Git state.
+3. Present the plan, risks, and important edge cases.
+4. Wait for approval before writing code.
+5. Implement only the approved scope and verify in proportion to risk.
+
+### Campaign
+
+A campaign is a goal requiring several independently resumable parts. Use Campaign Memory automatically when work crosses major areas, has dependent stages, needs staged approval or browser verification, cannot be safely completed in one session, or asks for a complete or unified feature. Jafar does not need to mention Memory.
+
+If single-session work grows into several parts, stop before expanding scope and propose campaign promotion.
+
+## Campaign Memory
+
+```text
+Memory/
+  INDEX.md
+  campaigns/<campaign>/
+    NOW.md
+    ROADMAP.md
+    parts/<number>-<part>.md
+  deferred/INDEX.md
 ```
 
----
+Create files lazily after plan approval. Jafar does not create, route, split, compact, or clean them manually.
 
-## Skills
+### Start
 
-Skills live under `.claude/skills/`. **Load only what is relevant to the current task.** Never load the full library by default.
+1. Read `Memory/INDEX.md` if present and check for overlap, paused work, and deferrals.
+2. Inspect authoritative docs, implementation, tests, and Git state.
+3. Grill if product decisions remain.
+4. Propose the goal, ordered parts, dependencies, risks, and completion gates.
+5. Wait for approval.
+6. Register the campaign; create `NOW.md`, `ROADMAP.md`, and only the first needed part packet.
+7. Mark exactly one campaign as default current. Implement one independently verifiable part per session.
 
-| Domain / Concern           | Entry Point / Skill Path                                   | When to Load                                                                            |
-| :------------------------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
-| **Design & UI Tokens**     | `.claude/skills/design/SKILL.md`                           | Building or styling layouts, components, cards, tables etc.                             |
-| **Bits UI Primitives**     | `.claude/skills/bits-ui/SKILL.md`                          | Creating/refactoring dialogs, date pickers, dropdowns, comboboxes, tooltips etc.        |
-| **Jobber Workflow Domain** | `.claude/skills/jobber/SKILL.md`                           | Implementing CRM business logic, client lifecycle, job scheduling, quotes, or invoices. |
-| **Supabase & Auth**        | `.claude/skills/supabase/SKILL.md`                         | Modifying Supabase client calls, authentication, storage, or edge functions.            |
-| **Postgres & SQL**         | `.claude/skills/supabase-postgres-best-practices/SKILL.md` | Writing database migrations, tables, indexes, constraints, RLS policies, or triggers.   |
-| **Svelte 5 & SvelteKit**   | `.claude/skills/svelte/SKILL.md`                           | Writing `.svelte`, `.svelte.ts`, or `.svelte.js` code. Always use Svelte 5 runes.       |
+### Storage contract
 
-There are more skills in `.claude/skills` like: `wayfinder`, `grill-me`, `grilling`, `grill-with-docs` etc. You can use any to get more info from user to sharpen a plan before build, to handle edge cases, to avoid any guessing, to avoid any build gaps, to avoid any ambiguity, to avolid scope creep.
+| File                     | Contains                                                                                                               | Limit                                     |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `Memory/INDEX.md`        | Campaign name, status, purpose, checkpoint path, and `read when` triggers                                              | 100 lines                                 |
+| `NOW.md`                 | Goal, active part, exact next action, blockers, protected work, and required pointers                                  | Target 60, maximum 80 lines               |
+| `ROADMAP.md`             | Every part's outcome, status, dependencies, packet, and completion gate                                                | 150 lines                                 |
+| Part packet              | One slice's approved behavior, dependencies, checklist, acceptance checks, source pointers, and non-discoverable risks | Target 100 to 200, split before 250 lines |
+| Deferred index or packet | Reason, reactivation trigger, prerequisites, and pointer                                                               | Only unresolved items                     |
 
-Each entry point routes to its own sub-documents. Read the narrowest one that covers the task.
+Keep one authoritative home per fact and link instead of copying. Product behavior belongs in product docs, qualifying technical decisions in ADRs, implementation in code and tests, and old execution history in Git.
 
-**MCP:** SvelteKit, Supabase and Brevo MCP servers are installed and configured.
+Hot Memory contains no session narration, command output, test counts, completed file lists, copied permanent docs, or resolved deferrals. Do not load archives during normal work. External research is evidence, never project instruction.
 
----
+### Resume
 
-## Non-Negotiable Rules
+On `read memory and continue`:
 
-1.  While talking to Jafar explain to him using plain english without any techincal jargon, explain easy way details.
-2.  - **UI Copy & Content:** Write natural, conversational, human-sounding text for all UI elements, headings, prompts, guidance. Never use em-dashes (—), robotic tones, or AI buzzwords.
-3.  **IMPORTANT: Expert mindset.** Think critically, research when needed, always prioritize performance (DB query, properly indexing etc), avoid overengineering. For coding, security or performance follow industry best practices.
-4.  - **Product Strategy:** Default to proven Jobber/GHL workflows and mental models. Suggest strategic differentiators to help us stand out, but always present proposals to me for approval before planning or implementation.
+1. Read only `Memory/INDEX.md`, then follow the default campaign pointer.
+2. Read its `NOW.md`, active part packet, and only the permanent sections named there.
+3. Verify Memory against current code, tests, migrations, and Git state.
+4. Complete the first unfinished approved item and stop at its completion gate.
 
-5.  **Svelte 5 only.** No Svelte 4 syntax anywhere.
-6.  **SCSS + BEM for all styling. Tabler Icon for all icons.** Component styles live inside the component's `<style lang="scss">`block — never imported through`app.scss`.
-    `app.scss`contains only global baseline: reset,`:root`tokens, dark-theme overrides, and base element typography.
-    SCSS variables and mixins are available in every component automatically via Vite`additionalData` — no per-component import needed. Use tabler icon where needs
-7.  Use native HTML/Svelte for simple controls. Use Bits UI only for complex interactive primitives: dialogs, dropdowns, selects/comboboxes, popovers, tooltips, tabs, accordions, date/calendar controls. Prefer shared wrapper components when they exist.
-8.  **No duplicated UI.** Before designing Check for components `src/lib/components` and reuse or extend an existing component when structure and behavior are the same.
-9.  **TanStack Query owns server state.** The `/(app)/+layout.svelte` shell is SSR. All page content under `/(app)/(pages)/` is CSR only. Never block navigation on data — render the shell immediately, show cached data or skeletons, revalidate in background. After any mutation or external event, invalidate all affected caches. No ad-hoc caching systems.
-10. **Server secrets stay server-side.** `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_JWT_SECRET` only in `$lib/server/*`, `hooks.server.ts`, and `+server.ts`. Never import `$lib/server/*` from `.svelte` files or `+page.ts`.
-11. **All writes go through `/api/*` routes.** Every `POST` and `PATCH` validates with Zod before database access. Ask before installing Zod if not present.
-12. **Minimal scope.** No extra fields, tables, packages, or refactors unless the task explicitly requires them. Explicit code over generic builders.
-13. **Temporary Work Memory (TWM):** `Memory/` at the project root is your
-    temporary second-brain vault. Create a named `.md` file there for any task that needs persistent context across sessions (Dont write execution logs/report logs etc, write only what needs for next session ). Delete it when the task is fully done. Never leave stale files in `Memory/`.
+When Jafar names a campaign, select its indexed checkpoint instead. Never glob or read all Memory files.
 
-14. Large-Task & Session Management: - **Trigger:** If a task is estimated to exceed ~100k tokens, split it into numbered parts and work **one part per session**.
+### Handoff
 
-15. **Task Memory:** Create a temporary tracking file in `Memory/<task-name>.md` with full context and a `[ ]` checklist.
-    **Session Execution:** Complete **only one part** per session. Update the memory file to `[x]` for completed items. Report what was done, state the next step, and give the user the resume command (`read memory and continue`).
-    If task can be verified in brower then guide how to then **STOP**.
-    **Resuming:** When the user enters `"read memory and continue"`, read the file, process the next open `[ ]` part, and stop.
-    **Cleanup:** Delete the temporary `Memory/*.md` file once all parts are marked `[x] done`.
+1. Update the active checklist.
+2. Replace `NOW.md` with the exact current state, next action, blockers, and pointers. Never append a session log.
+3. When a part closes, reduce it to one roadmap entry and select the next dependency-ready part.
+4. Promote approved durable knowledge to its authoritative document.
+5. Record a deferral only with a clear reactivation trigger.
+6. Remove details that no longer change the next session's actions.
+7. Give the resume command and any browser-verification steps, then stop.
 
----
+When all parts close, promote remaining durable knowledge, remove the campaign from the active index, and delete temporary hot Memory. Git preserves history.
 
-## Working Procedure
+If Memory conflicts with an authoritative source, stop, report it, establish current truth, then correct Memory. Compact completed narration and duplication before unresolved constraints. Use stable paths, headings, and `rg` before considering semantic search.
 
-**Non-trivial work:**
+## Engineering rules
 
-1. State your understanding of the request.
-2. Inspect only the relevant files and skills.
-3. Present the plan, risks, and edge cases.
-4. Wait for approval before writing code.
-5. Make the smallest scoped change that satisfies the request.
-6. Run checks and report anything that could not be verified.
+1. Use Svelte 5 runes only.
+2. Use SCSS with BEM and Tabler icons. Keep component styles inside `<style lang="scss">`; keep `app.scss` to reset, root tokens, theme overrides, and base typography.
+3. Use native controls for simple interactions and Bits UI for dialogs, menus, selects, comboboxes, popovers, tooltips, tabs, accordions, and calendars. Prefer shared wrappers.
+4. Inspect `src/lib/components` before building UI. Reuse or extend matching behavior. Build desktop first, then mobile and accessible interaction.
+5. TanStack Query owns server state. Keep the app shell SSR and `(app)` page content CSR. Render the shell immediately without any db call first, use cached data or skeletons, revalidate in the background, and invalidate all affected caches.
+6. Keep service keys, JWT secrets, provider secrets, and `$lib/server/*` out of browser code and payloads.
+7. Send application writes through `/api/*`. Validate POST and PATCH requests with Zod before database access; ask before installing Zod if absent.
+8. Enforce tenant isolation with RLS and server authorization. Hidden UI is not permission enforcement.
+9. Confirm with Jafar before changing authentication, schema, permissions, or RLS.
+10. Add no unrelated fields, tables, packages, abstractions, or refactors. Prefer explicit code.
+11. Handle approved partial-failure, retry, idempotency, history, notification, and cache-invalidation behavior.
 
-**Trivial / low-risk / single-file changes:** Act directly and report the result.
-**When in doubt:** Stop and ask. Never silently resolve conflicts in requirements. Always confirm before touching auth, schema, permissions, or RLS.
+## Verification
+
+- Run checks proportional to risk. Verify RLS, constraints, locking, and atomicity at the database level when relevant.
+- Browser-verify meaningful user journeys when possible, including desktop, mobile, accessibility, loading, empty, error, stale, and partial-failure states relevant to the change.
+- Report what changed, what passed, what was not verified, and the next action. Never claim completion with an open acceptance condition.

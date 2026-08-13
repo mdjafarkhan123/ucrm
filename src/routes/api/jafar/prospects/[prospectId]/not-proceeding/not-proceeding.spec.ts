@@ -11,11 +11,13 @@ const mockedClient = vi.mocked(getOwnerSupabaseClient);
 
 const prospectId = '123e4567-e89b-12d3-a456-426614174000';
 
-function event(id: string) {
+function event(id: string, body: unknown = {}) {
 	return {
 		params: { prospectId: id },
 		request: new Request('http://localhost/api/jafar/prospects/' + id + '/not-proceeding', {
-			method: 'POST'
+			method: 'POST',
+			body: JSON.stringify(body),
+			headers: { 'content-type': 'application/json' }
 		}),
 		url: new URL('http://localhost/api/jafar/prospects/' + id + '/not-proceeding'),
 		cookies: {}
@@ -68,7 +70,7 @@ describe('platform owner prospect not-proceeding API boundary', () => {
 		expect(response.status).toBe(409);
 	});
 
-	it('marks an unpaid application not proceeding', async () => {
+	it('marks an unpaid application not proceeding with no reason', async () => {
 		mockedOwnerSession.mockReturnValue(session());
 		const client = clientWith();
 		mockedClient.mockReturnValue(client as never);
@@ -77,8 +79,35 @@ describe('platform owner prospect not-proceeding API boundary', () => {
 		expect(response.status).toBe(200);
 		expect(client.__rpc).toHaveBeenCalledWith('mark_onboarding_application_not_proceeding', {
 			target_application_id: prospectId,
-			actor_email: 'owner@example.com'
+			actor_email: 'owner@example.com',
+			reason: undefined
 		});
+	});
+
+	it('passes a supplied reason through to close a possible duplicate', async () => {
+		mockedOwnerSession.mockReturnValue(session());
+		const client = clientWith();
+		mockedClient.mockReturnValue(client as never);
+
+		const response = await POST(event(prospectId, { reason: 'Same business, different form fill.' }));
+		expect(response.status).toBe(200);
+		expect(client.__rpc).toHaveBeenCalledWith('mark_onboarding_application_not_proceeding', {
+			target_application_id: prospectId,
+			actor_email: 'owner@example.com',
+			reason: 'Same business, different form fill.'
+		});
+	});
+
+	it('returns 422 with a field error when closing an unacknowledged duplicate without a reason', async () => {
+		mockedOwnerSession.mockReturnValue(session());
+		mockedClient.mockReturnValue(
+			clientWith({ message: 'A private reason is required to close a possible duplicate.' }) as never
+		);
+
+		const response = await POST(event(prospectId));
+		expect(response.status).toBe(422);
+		const body = await response.json();
+		expect(body.field_errors.reason).toBeDefined();
 	});
 
 	it('returns a safe server error when the update fails', async () => {

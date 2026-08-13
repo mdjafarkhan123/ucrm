@@ -5,6 +5,12 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 export default defineConfig({
+	server: {
+		// The `local-crm` Cloudflare tunnel forwards app.upliftcontractor.com to this dev server, so
+		// Turnstile sees a hostname its widget allows and emailed links carry a real domain. Vite
+		// otherwise refuses Host headers it does not recognise. Dev server only.
+		allowedHosts: true
+	},
 	plugins: [
 		sveltekit({
 			preprocess: vitePreprocess(),
