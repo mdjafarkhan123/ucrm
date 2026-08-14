@@ -115,6 +115,18 @@ const baseRows = {
 		],
 		error: null
 	},
+	organization_commercial_state: {
+		data: {
+			paid_through_date: '2026-12-31',
+			paid_through_source: 'renewal',
+			grace_ends_at: '2027-01-08T04:59:59.999Z'
+		},
+		error: null
+	},
+	organization_commercial_settings: {
+		data: { commercial_timezone: 'America/New_York' },
+		error: null
+	},
 	organization_package_assignments: { data: [], error: null },
 	organization_members: { data: { user_id: 'user-a', role: 'sales' }, error: null },
 	role_permissions: {
@@ -151,6 +163,7 @@ describe('resolveOrganizationAccess', () => {
 		expect(access.limits.employee_seats).toEqual({
 			value: 4,
 			is_unlimited: false,
+			state: 'numeric',
 			source: 'override'
 		});
 		expect(access.permissions).toMatchObject({
@@ -177,6 +190,192 @@ describe('resolveOrganizationAccess', () => {
 		expect(access.package.current_key).toBe('growth');
 		expect(access.package.effective_key).toBe('elite');
 		expect(access.features['growth.reputation']).toBe(true);
+	});
+
+	it('uses the commercial calendar date and stored grace deadline across a DST boundary', async () => {
+		const rows = structuredClone(baseRows) as Record<string, QueryResult>;
+		rows.organization_commercial_state = {
+			data: {
+				paid_through_date: '2026-03-08',
+				paid_through_source: 'renewal',
+				grace_ends_at: '2026-03-16T03:59:59.999Z'
+			},
+			error: null
+		};
+
+		const beforeLocalMidnight = await resolveOrganizationAccess(
+			clientFor(rows),
+			'org-a',
+			undefined,
+			new Date('2026-03-09T03:30:00.000Z')
+		);
+		const afterLocalMidnight = await resolveOrganizationAccess(
+			clientFor(rows),
+			'org-a',
+			undefined,
+			new Date('2026-03-09T04:30:00.000Z')
+		);
+
+		expect(beforeLocalMidnight.billing).toMatchObject({
+			paid_through_date: '2026-03-08',
+			is_overdue: false,
+			is_in_grace: false
+		});
+		expect(afterLocalMidnight.billing).toEqual({
+			paid_through_date: '2026-03-08',
+			paid_through_source: 'renewal',
+			grace_ends_at: '2026-03-16T03:59:59.999Z',
+			is_overdue: true,
+			is_in_grace: true
+		});
+	});
+
+	it('reports no free access grant and unmodified overdue billing when none exists', async () => {
+		const rows = structuredClone(baseRows) as Record<string, QueryResult>;
+		rows.organization_commercial_state = {
+			data: {
+				paid_through_date: '2026-01-01',
+				paid_through_source: 'renewal',
+				grace_ends_at: '2026-01-08T04:59:59.999Z'
+			},
+			error: null
+		};
+
+		const access = await resolveOrganizationAccess(
+			clientFor(rows),
+			'org-a',
+			undefined,
+			new Date('2026-08-09T00:00:00.000Z')
+		);
+
+		expect(access.free_access).toEqual({ active: null, future: null });
+		expect(access.billing.is_overdue).toBe(true);
+	});
+
+	it('an active free access grant overrides overdue billing regardless of the paid-through date', async () => {
+		const rows = structuredClone(baseRows) as Record<string, QueryResult>;
+		rows.organization_commercial_state = {
+			data: {
+				paid_through_date: '2026-01-01',
+				paid_through_source: 'renewal',
+				grace_ends_at: '2026-01-08T04:59:59.999Z'
+			},
+			error: null
+		};
+		rows.organization_free_access_events = {
+			data: [
+				{
+					id: 'grant-1',
+					target_grant_id: null,
+					action: 'grant',
+					starts_at: '2026-08-01',
+					access_until_date: '2026-09-01',
+					occurred_at: '2026-08-01T00:00:00.000Z'
+				}
+			],
+			error: null
+		};
+
+		const access = await resolveOrganizationAccess(
+			clientFor(rows),
+			'org-a',
+			undefined,
+			new Date('2026-08-09T00:00:00.000Z')
+		);
+
+		expect(access.free_access.active).toEqual({
+			grant_id: 'grant-1',
+			starts_at: '2026-08-01',
+			access_until_date: '2026-09-01'
+		});
+		expect(access.free_access.future).toBeNull();
+		expect(access.billing.is_overdue).toBe(false);
+		expect(access.billing.is_in_grace).toBe(false);
+	});
+
+	it('folds a grant, an extension, and a scheduled future grant to their current active and future state', async () => {
+		const rows = structuredClone(baseRows) as Record<string, QueryResult>;
+		rows.organization_free_access_events = {
+			data: [
+				{
+					id: 'grant-1',
+					target_grant_id: null,
+					action: 'grant',
+					starts_at: '2026-08-01',
+					access_until_date: '2026-08-15',
+					occurred_at: '2026-08-01T00:00:00.000Z'
+				},
+				{
+					id: 'extend-1',
+					target_grant_id: 'grant-1',
+					action: 'extend',
+					starts_at: '2026-08-01',
+					access_until_date: '2026-09-01',
+					occurred_at: '2026-08-05T00:00:00.000Z'
+				},
+				{
+					id: 'grant-2',
+					target_grant_id: null,
+					action: 'grant',
+					starts_at: '2026-10-01',
+					access_until_date: null,
+					occurred_at: '2026-08-06T00:00:00.000Z'
+				}
+			],
+			error: null
+		};
+
+		const access = await resolveOrganizationAccess(
+			clientFor(rows),
+			'org-a',
+			undefined,
+			new Date('2026-08-09T00:00:00.000Z')
+		);
+
+		expect(access.free_access.active).toEqual({
+			grant_id: 'grant-1',
+			starts_at: '2026-08-01',
+			access_until_date: '2026-09-01'
+		});
+		expect(access.free_access.future).toEqual({
+			grant_id: 'grant-2',
+			starts_at: '2026-10-01',
+			access_until_date: null
+		});
+	});
+
+	it('excludes an ended grant from the active and future free access state', async () => {
+		const rows = structuredClone(baseRows) as Record<string, QueryResult>;
+		rows.organization_free_access_events = {
+			data: [
+				{
+					id: 'grant-1',
+					target_grant_id: null,
+					action: 'grant',
+					starts_at: '2026-08-01',
+					access_until_date: null,
+					occurred_at: '2026-08-01T00:00:00.000Z'
+				},
+				{
+					id: 'end-1',
+					target_grant_id: 'grant-1',
+					action: 'end',
+					starts_at: '2026-08-01',
+					access_until_date: null,
+					occurred_at: '2026-08-05T00:00:00.000Z'
+				}
+			],
+			error: null
+		};
+
+		const access = await resolveOrganizationAccess(
+			clientFor(rows),
+			'org-a',
+			undefined,
+			new Date('2026-08-09T00:00:00.000Z')
+		);
+
+		expect(access.free_access).toEqual({ active: null, future: null });
 	});
 
 	it('throws a typed not-found error when the organization is absent', async () => {
@@ -250,6 +449,7 @@ describe('resolveOrganizationAccess', () => {
 		expect(access.limits.employee_seats).toEqual({
 			value: 10,
 			is_unlimited: false,
+			state: 'numeric',
 			source: 'package'
 		});
 	});

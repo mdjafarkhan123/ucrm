@@ -6,11 +6,11 @@
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
 
 	import logoutIcon from '@tabler/icons/outline/logout.svg?raw';
 
-let {
+	let {
 		children,
 		variant = 'contractor'
 	}: { children: import('svelte').Snippet; variant?: 'contractor' | 'owner' } = $props();
@@ -39,20 +39,21 @@ let {
 	const items = $derived(variant === 'owner' ? ownerItems : contractorItems);
 	const brand = $derived(variant === 'owner' ? 'Control Room' : 'Contractor CRM');
 	const eyebrow = $derived(variant === 'owner' ? 'Platform owner' : 'Workspace');
+	const currentPath = $derived(navigating.to?.url.pathname ?? page.url.pathname);
 	const ownerTitle = $derived(
-		page.url.pathname.startsWith('/jafar/organizations')
+		currentPath.startsWith('/jafar/organizations')
 			? 'Organizations'
-			: page.url.pathname.startsWith('/jafar/prospects')
+			: currentPath.startsWith('/jafar/prospects')
 				? 'Prospects'
-				: page.url.pathname.startsWith('/jafar/packages')
+				: currentPath.startsWith('/jafar/packages')
 					? 'Packages'
-					: page.url.pathname.startsWith('/jafar/operations')
+					: currentPath.startsWith('/jafar/operations')
 						? 'Operations'
-						: page.url.pathname.startsWith('/jafar/message-templates')
+						: currentPath.startsWith('/jafar/message-templates')
 							? 'Templates'
-							: page.url.pathname.startsWith('/jafar/settings')
+							: currentPath.startsWith('/jafar/settings')
 								? 'Settings'
-								: page.url.pathname.startsWith('/jafar/notifications')
+								: currentPath.startsWith('/jafar/notifications')
 									? 'Notifications'
 									: 'Platform overview'
 	);
@@ -84,7 +85,7 @@ let {
 </script>
 
 <div class={`app-shell app-shell--${variant}`}>
-	<Sidebar {items} {brand} {eyebrow} />
+	<Sidebar {items} {brand} {eyebrow} instantNavigation={variant === 'owner'} />
 	<div class="app-shell__body">
 		<Topbar {eyebrow} {title} onmenutoggle={() => (mobileOpen = true)}>
 			{#if variant === 'contractor'}
@@ -101,11 +102,18 @@ let {
 				<span aria-hidden="true">{@html logoutIcon}</span>
 				{isSigningOut ? 'Signing out…' : 'Sign out'}
 			</button>
-			{#if signOutError}<span class="app-shell__sign-out-error" role="alert">{signOutError}</span>{/if}
+			{#if signOutError}<span class="app-shell__sign-out-error" role="alert">{signOutError}</span
+				>{/if}
 		</Topbar>
 		<div class="app-shell__main">{@render children()}</div>
 	</div>
-	<MobileNav bind:open={mobileOpen} {items} {brand} {eyebrow} />
+	<MobileNav
+		bind:open={mobileOpen}
+		{items}
+		{brand}
+		{eyebrow}
+		instantNavigation={variant === 'owner'}
+	/>
 </div>
 
 <style lang="scss">

@@ -2,6 +2,7 @@
 	import { dev } from '$app/environment';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import type { CalendarDate } from '@internationalized/date';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowLeftIcon from '@tabler/icons/outline/arrow-left.svg?raw';
@@ -19,16 +20,29 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
-	import Checkbox from '$lib/components/ui/Checkbox.svelte';
+	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
+	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
-	import OwnerReconfirmDialog from '$lib/components/jafar/OwnerReconfirmDialog.svelte';
+	import CommercialActions from '$lib/components/jafar/CommercialActions.svelte';
+	import FreeAccessActions from '$lib/components/jafar/FreeAccessActions.svelte';
+	import LegacyReconcileActions from '$lib/components/jafar/LegacyReconcileActions.svelte';
+	import LifecycleActions from '$lib/components/jafar/LifecycleActions.svelte';
 	import {
 		getOrganizationDetailPreview,
 		organizationDetailScenarioLabel
 	} from '$lib/jafar/organization-detail-preview';
+	import type { DateTimePickerValue } from '$lib/components/ui/date-time';
+	import {
+		calendarDateFromString,
+		calendarDateToString,
+		dateTimePickerValueFromDate,
+		dateTimePickerValueFromLocalString,
+		dateTimePickerValueToLocalString,
+		localDateTimeToIso
+	} from '$lib/components/ui/date-time';
 
 	const queryClient = useQueryClient();
 
@@ -61,22 +75,46 @@
 		package_features: Record<string, boolean>;
 		feature_overrides: Record<
 			string,
-			{ state: 'on' | 'off'; starts_at: string; expires_at: string | null }
+			{
+				state: 'on' | 'off';
+				starts_at: string;
+				expires_at: string | null;
+				reason: string | null;
+				is_legacy_import: boolean;
+			}
 		>;
 		limits: Record<
 			'employee_seats',
-			{ value: number | null; is_unlimited: boolean; source: 'package' | 'override' }
+			{
+				state: 'unlimited' | 'not_included' | 'numeric';
+				value: number | null;
+				is_unlimited: boolean;
+				source: 'package' | 'override';
+			}
 		>;
+		free_access: {
+			active: { grant_id: string; starts_at: string; access_until_date: string | null } | null;
+			future: { grant_id: string; starts_at: string; access_until_date: string | null } | null;
+		};
 	};
 	type AccessResponse = { access: EffectiveAccess; error?: string };
-
-	type FreeAccessStatus = 'paid' | 'until_date' | 'forever' | 'expired';
-	type FreeAccessState = {
-		assignment: { package_version_id: string } | null;
-		free_access: {
-			status: FreeAccessStatus;
-			access_until_date: string | null;
-		};
+	type CommercialState = {
+		organization: { id: string; name: string; lifecycle_status: string };
+		state: {
+			paid_through_date: string | null;
+			paid_through_source: string | null;
+			grace_ends_at: string | null;
+		} | null;
+		settings: { commercial_timezone: string; timezone_source: string } | null;
+		original_events: {
+			id: string;
+			event_kind: string;
+			occurred_at: string;
+			summary: string;
+			amount_usd_cents: number | null;
+			paid_through_after: string | null;
+			private_reference: string | null;
+		}[];
 		error?: string;
 	};
 
@@ -160,19 +198,30 @@
 		'free_access.grant': 'Free access granted',
 		'free_access.extend': 'Free access extended',
 		'free_access.convert_to_forever': 'Free access converted to forever',
-		'free_access.end': 'Free access ended'
+		'free_access.end': 'Free access ended',
+		'commercial.initial_payment_confirmed': 'Initial payment confirmed',
+		'commercial.renewal_confirmed': 'Renewal recorded',
+		'commercial.payment_correction_recorded': 'Payment correction recorded',
+		'commercial.refund_recorded': 'Refund recorded',
+		'commercial.payment_reversal_recorded': 'Payment reversal recorded',
+		'commercial.organization_suspended': 'Organization suspended',
+		'commercial.organization_reactivated': 'Organization reactivated',
+		'commercial.package_version_changed': 'Package version changed',
+		'commercial.feature_exception_changed': 'Feature exception changed',
+		'commercial.limit_exception_changed': 'Limit exception changed',
+		'commercial.pending_setup_resolved': 'Legacy organization reviewed'
 	};
 
-	const PACKAGE_ORDER: Record<PackageKey, number> = { starter: 1, growth: 2, elite: 3 };
-	const PACKAGE_OPTIONS = [
-		{ value: 'starter', label: 'Starter' },
-		{ value: 'growth', label: 'Growth' },
-		{ value: 'elite', label: 'Elite' }
-	];
 	const OVERRIDE_STATE_OPTIONS = [
 		{ value: 'inherit', label: 'Inherit from package' },
 		{ value: 'on', label: 'Force on' },
 		{ value: 'off', label: 'Force off' }
+	];
+	const LIMIT_OVERRIDE_STATE_OPTIONS = [
+		{ value: 'inherit', label: 'Inherit from package' },
+		{ value: 'numeric', label: 'Set a numeric limit' },
+		{ value: 'not_included', label: 'Not included' },
+		{ value: 'unlimited', label: 'Unlimited' }
 	];
 
 	function formatCalendarDate(value: string | null) {
@@ -191,6 +240,10 @@
 	function formatPrice(cents: number | null, currency: string, period: string) {
 		if (cents === null) return 'Not priced';
 		return `$${(cents / 100).toFixed(2)} ${currency}/${period}`;
+	}
+
+	function localDateTimeValue(value: Date) {
+		return dateTimePickerValueToLocalString(dateTimePickerValueFromDate(value));
 	}
 
 	const scenario = $derived(page.url.searchParams.get('scenario'));
@@ -217,13 +270,13 @@
 	const isInitialError = $derived(!preview && accessQuery.isError && !access);
 	const isStaleData = $derived(!preview && accessQuery.isError && Boolean(access));
 
-	const freeAccessQuery = createQuery<FreeAccessState>(() => ({
-		queryKey: ['jafar', 'organizations', organizationId, 'free-access'],
+	const commercialQuery = createQuery<CommercialState>(() => ({
+		queryKey: ['jafar', 'organizations', organizationId, 'commercial'],
 		enabled: !preview && Boolean(organizationId) && Boolean(access),
 		queryFn: async () => {
-			const response = await fetch(`/api/jafar/organizations/${organizationId}/free-access`);
-			const result = (await response.json()) as FreeAccessState;
-			if (!response.ok) throw new Error(result.error ?? 'Free access could not be loaded.');
+			const response = await fetch(`/api/jafar/organizations/${organizationId}/commercial`);
+			const result = (await response.json()) as CommercialState;
+			if (!response.ok) throw new Error(result.error ?? 'Commercial access could not be loaded.');
 			return result;
 		}
 	}));
@@ -254,7 +307,7 @@
 
 	const packagesCatalogQuery = createQuery<PackagesCatalogResponse>(() => ({
 		queryKey: ['jafar', 'packages'],
-		enabled: !preview && isLegacyUnversioned,
+		enabled: !preview && Boolean(access),
 		queryFn: async () => {
 			const response = await fetch('/api/jafar/packages');
 			const result = (await response.json()) as PackagesCatalogResponse;
@@ -296,53 +349,15 @@
 		void queryClient.invalidateQueries({ queryKey: ['jafar', 'organizations'] });
 	}
 
-	// Lifecycle (suspend/reactivate) --------------------------------------
-	let lifecycleReconfirmOpen = $state(false);
-	let pendingLifecycleStatus = $state<'active' | 'suspended' | null>(null);
-
-	const lifecycleMutation = createMutation<MutationResponse, Error, 'active' | 'suspended'>(() => ({
-		mutationFn: async (status) => {
-			const response = await fetch(`/api/jafar/organizations/${organizationId}/lifecycle`, {
-				method: 'PATCH',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ status })
-			});
-			const result = (await response.json()) as MutationResponse;
-			if (!response.ok)
-				throw new Error(result.error ?? 'Organization status could not be changed.');
-			return result;
-		},
-		onMutate: clearFeedback,
-		onError: (error) => (actionError = error.message),
-		onSuccess: (_result, status) => {
-			actionMessage =
-				status === 'suspended' ? 'Organization suspended.' : 'Organization reactivated.';
-			invalidateOrganization();
-		}
-	}));
-
-	function requestLifecycleChange(status: 'active' | 'suspended') {
-		pendingLifecycleStatus = status;
-		lifecycleReconfirmOpen = true;
-	}
-	function confirmLifecycleChange() {
-		if (pendingLifecycleStatus) lifecycleMutation.mutate(pendingLifecycleStatus);
-	}
-
-	// Package change (legacy, unversioned orgs only) -----------------------
+	// Package change ----------------------------------------------------------
 	let editingPackage = $state(false);
-	let packageChangeTarget = $state<PackageKey | ''>('');
-	let packageChangeEffectiveAt = $state('');
-	const packageChangeIsDowngrade = $derived(
-		access && packageChangeTarget
-			? PACKAGE_ORDER[packageChangeTarget] < PACKAGE_ORDER[access.package.current_key]
-			: false
-	);
+	let packageChangeTarget = $state('');
+	let packageChangeReason = $state('');
 
 	const packageChangeMutation = createMutation<
 		MutationResponse,
 		Error,
-		{ package_key: PackageKey; effective_at?: string }
+		{ package_version_id: string; reason: string; idempotency_key: string }
 	>(() => ({
 		mutationFn: async (input) => {
 			const response = await fetch(`/api/jafar/organizations/${organizationId}/package`, {
@@ -358,6 +373,8 @@
 		onError: (error) => (actionError = error.message),
 		onSuccess: () => {
 			editingPackage = false;
+			packageChangeTarget = '';
+			packageChangeReason = '';
 			actionMessage = 'Package updated.';
 			invalidateOrganization();
 		}
@@ -365,12 +382,11 @@
 
 	function submitPackageChange(event: SubmitEvent) {
 		event.preventDefault();
-		if (!packageChangeTarget) return;
+		if (!packageChangeTarget || !packageChangeReason.trim()) return;
 		packageChangeMutation.mutate({
-			package_key: packageChangeTarget,
-			effective_at: packageChangeIsDowngrade
-				? new Date(packageChangeEffectiveAt).toISOString()
-				: undefined
+			package_version_id: packageChangeTarget,
+			reason: packageChangeReason.trim(),
+			idempotency_key: crypto.randomUUID()
 		});
 	}
 
@@ -421,12 +437,29 @@
 	// Feature overrides ------------------------------------------------------
 	let editingFeatureKey = $state<string | null>(null);
 	let featureOverrideState = $state<'inherit' | 'on' | 'off'>('inherit');
+	let featureOverrideStartsAt = $state('');
 	let featureOverrideExpiry = $state('');
+	let featureOverrideReason = $state('');
+
+	function handleFeatureOverrideStartsAtChange(value: DateTimePickerValue) {
+		featureOverrideStartsAt = dateTimePickerValueToLocalString(value);
+	}
+
+	function handleFeatureOverrideExpiryChange(value: CalendarDate | undefined) {
+		featureOverrideExpiry = calendarDateToString(value);
+	}
 
 	const featureOverrideMutation = createMutation<
 		MutationResponse,
 		Error,
-		{ featureKey: string; override_state: 'inherit' | 'on' | 'off'; expires_at: string | null }
+		{
+			featureKey: string;
+			override_state: 'inherit' | 'on' | 'off';
+			starts_at: string;
+			expires_at: string | null;
+			reason: string;
+			idempotency_key: string;
+		}
 	>(() => ({
 		mutationFn: async (input) => {
 			const response = await fetch(
@@ -436,7 +469,10 @@
 					headers: { 'content-type': 'application/json' },
 					body: JSON.stringify({
 						override_state: input.override_state,
-						expires_at: input.expires_at
+						starts_at: input.starts_at,
+						expires_at: input.expires_at,
+						reason: input.reason,
+						idempotency_key: input.idempotency_key
 					})
 				}
 			);
@@ -449,6 +485,7 @@
 		onError: (error) => (actionError = error.message),
 		onSuccess: () => {
 			editingFeatureKey = null;
+			featureOverrideReason = '';
 			actionMessage = 'Feature exception updated.';
 			invalidateOrganization();
 		}
@@ -458,35 +495,52 @@
 		editingFeatureKey = featureKey;
 		const existing = access?.feature_overrides[featureKey];
 		featureOverrideState = existing ? existing.state : 'inherit';
+		featureOverrideStartsAt = existing?.starts_at
+			? existing.starts_at.slice(0, 16)
+			: localDateTimeValue(new Date());
 		featureOverrideExpiry = existing?.expires_at ? existing.expires_at.slice(0, 10) : '';
+		featureOverrideReason = '';
 	}
 	function submitFeatureOverride(event: SubmitEvent) {
 		event.preventDefault();
 		if (!editingFeatureKey) return;
+		if (!featureOverrideReason.trim() || !featureOverrideStartsAt) return;
 		featureOverrideMutation.mutate({
 			featureKey: editingFeatureKey,
 			override_state: featureOverrideState,
-			expires_at:
-				featureOverrideState !== 'inherit' && featureOverrideExpiry
-					? new Date(featureOverrideExpiry).toISOString()
-					: null
+			starts_at: localDateTimeToIso(featureOverrideStartsAt),
+			expires_at: featureOverrideExpiry ? new Date(featureOverrideExpiry).toISOString() : null,
+			reason: featureOverrideReason.trim(),
+			idempotency_key: crypto.randomUUID()
 		});
 	}
 
 	// Limit override (employee_seats) ---------------------------------------
 	let editingLimit = $state(false);
-	let limitOverrideUnlimited = $state(false);
+	let limitOverrideState = $state<'inherit' | 'unlimited' | 'not_included' | 'numeric'>('numeric');
 	let limitOverrideValue = $state('');
+	let limitOverrideStartsAt = $state('');
 	let limitOverrideExpiry = $state('');
+	let limitOverrideReason = $state('');
+
+	function handleLimitOverrideStartsAtChange(value: DateTimePickerValue) {
+		limitOverrideStartsAt = dateTimePickerValueToLocalString(value);
+	}
+
+	function handleLimitOverrideExpiryChange(value: CalendarDate | undefined) {
+		limitOverrideExpiry = calendarDateToString(value);
+	}
 
 	const limitOverrideMutation = createMutation<
 		MutationResponse,
 		Error,
 		{
-			override_state: 'inherit' | 'on';
-			is_unlimited?: boolean;
+			override_state: 'inherit' | 'unlimited' | 'not_included' | 'numeric';
 			limit_value?: number | null;
+			starts_at: string;
 			expires_at: string | null;
+			reason: string;
+			idempotency_key: string;
 		}
 	>(() => ({
 		mutationFn: async (input) => {
@@ -513,96 +567,33 @@
 
 	function startEditingLimit() {
 		editingLimit = true;
-		limitOverrideUnlimited = access?.limits.employee_seats.is_unlimited ?? false;
+		limitOverrideState = access?.limits.employee_seats.state ?? 'numeric';
 		limitOverrideValue = access?.limits.employee_seats.value?.toString() ?? '';
+		limitOverrideStartsAt = localDateTimeValue(new Date());
 		limitOverrideExpiry = '';
+		limitOverrideReason = '';
 	}
 	function submitLimitOverride(event: SubmitEvent) {
 		event.preventDefault();
+		if (!limitOverrideReason.trim() || !limitOverrideStartsAt) return;
 		limitOverrideMutation.mutate({
-			override_state: 'on',
-			is_unlimited: limitOverrideUnlimited,
-			limit_value: limitOverrideUnlimited ? null : Number(limitOverrideValue),
-			expires_at: limitOverrideExpiry ? new Date(limitOverrideExpiry).toISOString() : null
+			override_state: limitOverrideState,
+			limit_value: limitOverrideState === 'numeric' ? Number(limitOverrideValue) : null,
+			starts_at: localDateTimeToIso(limitOverrideStartsAt),
+			expires_at: limitOverrideExpiry ? new Date(limitOverrideExpiry).toISOString() : null,
+			reason: limitOverrideReason.trim(),
+			idempotency_key: crypto.randomUUID()
 		});
 	}
 	function clearLimitOverride() {
-		limitOverrideMutation.mutate({ override_state: 'inherit', expires_at: null });
+		editingLimit = true;
+		limitOverrideState = 'inherit';
+		limitOverrideStartsAt = localDateTimeValue(new Date());
+		limitOverrideExpiry = '';
+		limitOverrideReason = '';
 	}
 
-	// Free access -------------------------------------------------------------
-	let freeAccessForeverOpen = $state(false);
-	let freeAccessReason = $state('');
-	let freeAccessUntil = $state('');
-	let freeAccessForeverToggle = $state(false);
-	let pendingFreeAccessAction = $state<'grant' | 'extend' | 'convert_to_forever' | null>(null);
-
-	const freeAccessMutation = createMutation<
-		MutationResponse,
-		Error,
-		{
-			action: 'grant' | 'extend' | 'convert_to_forever' | 'end';
-			access_until_date?: string | null;
-			reason: string;
-		}
-	>(() => ({
-		mutationFn: async (input) => {
-			const response = await fetch(`/api/jafar/organizations/${organizationId}/free-access`, {
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify(input)
-			});
-			const result = (await response.json()) as MutationResponse;
-			if (!response.ok) throw new Error(result.error ?? 'Free access could not be changed.');
-			return result;
-		},
-		onMutate: clearFeedback,
-		onError: (error) => (actionError = error.message),
-		onSuccess: () => {
-			freeAccessReason = '';
-			freeAccessUntil = '';
-			freeAccessForeverToggle = false;
-			actionMessage = 'Free access updated.';
-			invalidateOrganization();
-			void queryClient.invalidateQueries({
-				queryKey: ['jafar', 'organizations', organizationId, 'free-access']
-			});
-		}
-	}));
-
-	function submitFreeAccessGrant(event: SubmitEvent, action: 'grant' | 'extend') {
-		event.preventDefault();
-		if (!freeAccessReason.trim()) return;
-		if (freeAccessForeverToggle) {
-			pendingFreeAccessAction = action;
-			freeAccessForeverOpen = true;
-			return;
-		}
-		freeAccessMutation.mutate({
-			action,
-			access_until_date: freeAccessUntil || null,
-			reason: freeAccessReason.trim()
-		});
-	}
-	function requestConvertToForever() {
-		if (!freeAccessReason.trim()) {
-			actionError = 'Enter a private reason before converting to forever access.';
-			return;
-		}
-		pendingFreeAccessAction = 'convert_to_forever';
-		freeAccessForeverOpen = true;
-	}
-	function confirmForeverFreeAccess() {
-		if (!pendingFreeAccessAction) return;
-		freeAccessMutation.mutate({ action: pendingFreeAccessAction, reason: freeAccessReason.trim() });
-	}
-	function endFreeAccess() {
-		if (!freeAccessReason.trim()) {
-			actionError = 'Enter a private reason before ending free access.';
-			return;
-		}
-		freeAccessMutation.mutate({ action: 'end', reason: freeAccessReason.trim() });
-	}
+	// Free access is managed by FreeAccessActions.svelte.
 </script>
 
 <svelte:head><title>{pageTitle}</title></svelte:head>
@@ -712,7 +703,10 @@
 							? 'success'
 							: access.organization.lifecycle_status === 'suspended'
 								? 'critical'
-								: 'warning'}>{access.organization.lifecycle_status}</Badge
+								: 'warning'}
+						>{access.organization.lifecycle_status === 'pending_setup'
+							? 'Needs review'
+							: access.organization.lifecycle_status}</Badge
 					>
 				</div>
 				<p class="organization-detail__description">{access.organization.slug}</p>
@@ -767,33 +761,39 @@
 						class="organization-detail__card-icon organization-detail__card-icon--{access
 							.organization.lifecycle_status === 'active'
 							? 'success'
-							: 'critical'}"
+							: access.organization.lifecycle_status === 'pending_setup'
+								? 'warning'
+								: 'critical'}"
 					>
-						{@html access.organization.lifecycle_status === 'active' ? checkIcon : lockIcon}
+						{@html access.organization.lifecycle_status === 'active'
+							? checkIcon
+							: access.organization.lifecycle_status === 'pending_setup'
+								? alertIcon
+								: lockIcon}
 					</div>
 					<div>
 						<p class="organization-detail__card-label">Lifecycle</p>
-						<h3>{access.organization.lifecycle_status}</h3>
+						<h3>
+							{access.organization.lifecycle_status === 'pending_setup'
+								? 'Needs review'
+								: access.organization.lifecycle_status}
+						</h3>
 						<p>
 							{access.organization.lifecycle_status === 'suspended'
 								? 'New contractor actions are paused while records stay preserved.'
-								: 'Commercial access is currently allowed.'}
+								: access.organization.lifecycle_status === 'pending_setup'
+									? 'This legacy organization predates paid onboarding and needs a one-time review.'
+									: 'Commercial access is currently allowed.'}
 						</p>
 					</div>
 					<div class="organization-detail__status-line">
-						{#if access.organization.lifecycle_status === 'active'}
-							<Button
-								variant="secondary"
-								variation="destructive"
-								loading={lifecycleMutation.isPending}
-								onclick={() => requestLifecycleChange('suspended')}>Suspend organization</Button
-							>
+						{#if access.organization.lifecycle_status === 'pending_setup'}
+							<LegacyReconcileActions organizationId={access.organization.id} />
 						{:else}
-							<Button
-								variant="secondary"
-								loading={lifecycleMutation.isPending}
-								onclick={() => requestLifecycleChange('active')}>Reactivate organization</Button
-							>
+							<LifecycleActions
+								organizationId={access.organization.id}
+								lifecycleStatus={access.organization.lifecycle_status}
+							/>
 						{/if}
 					</div>
 				</Card>
@@ -804,15 +804,15 @@
 					</div>
 					<div>
 						<p class="organization-detail__card-label">Next safe action</p>
-						{#if access.organization.lifecycle_status === 'suspended'}
+						{#if access.organization.lifecycle_status === 'pending_setup'}
+							<h3>One-time legacy review</h3>
+							<p>Resolve the checklist below, then activate or suspend this organization.</p>
+						{:else if access.organization.lifecycle_status === 'suspended'}
 							<h3>Review before reactivating</h3>
 							<p>Confirm the reason for suspension no longer applies before reactivating.</p>
-						{:else if isLegacyUnversioned}
-							<h3>Assign a published package version</h3>
-							<p>
-								This organization is still on the legacy package column. Assign a published version
-								and paid-through date to unlock free access and real billing tracking.
-							</p>
+						{:else if packagesCatalogQuery.isPending}
+							<h3>Loading package versions</h3>
+							<p>Published package versions are loading before the next commercial action.</p>
 						{:else if access.billing.is_overdue && !access.billing.is_in_grace}
 							<h3>Paid-through date is past grace</h3>
 							<p>Review commercial eligibility before any further lifecycle change.</p>
@@ -847,21 +847,25 @@
 				<span class="organization-detail__mini-icon">{@html shieldIcon}</span>
 				<div>
 					<p>Free access</p>
-					{#if freeAccessQuery.isPending}
-						<strong>Loading…</strong>
-					{:else if freeAccessQuery.data}
+					{#if access.free_access.active}
 						<strong
-							>{freeAccessQuery.data.free_access.status === 'paid'
-								? 'Paid access'
-								: freeAccessQuery.data.free_access.status === 'forever'
-									? 'Free forever'
-									: freeAccessQuery.data.free_access.status === 'expired'
-										? 'Free access expired'
-										: `Free until ${formatCalendarDate(freeAccessQuery.data.free_access.access_until_date)}`}</strong
+							>{access.free_access.active.access_until_date === null
+								? 'Free forever'
+								: `Free until ${formatCalendarDate(access.free_access.active.access_until_date)}`}</strong
 						>
-						<small>Managed in Commercial access below</small>
+						{#if access.free_access.future}
+							<small>Another grant is scheduled</small>
+						{:else}
+							<small>Managed in Commercial access below</small>
+						{/if}
+					{:else if access.free_access.future}
+						<strong>Paid access</strong>
+						<small
+							>Free access starts {formatCalendarDate(access.free_access.future.starts_at)}</small
+						>
 					{:else}
-						<strong>Not available</strong>
+						<strong>Paid access</strong>
+						<small>Managed in Commercial access below</small>
 					{/if}
 				</div>
 			</article>
@@ -902,53 +906,43 @@
 							)}
 						</p>
 					</div>
-					{#if access.package.scheduled_key}
-						<p class="organization-detail__safe-label">
-							Scheduled to change to {access.package.scheduled_key} on {formatDateTime(
-								access.package.scheduled_effective_at
-							)}
-						</p>
-					{/if}
-					{#if isLegacyUnversioned}
-						{#if editingPackage}
-							<form onsubmit={submitPackageChange} class="organization-detail__inline-form">
-								<Select
-									id="package-change-target"
-									ariaLabel="Target package"
-									placeholder="Choose a package"
-									options={PACKAGE_OPTIONS.filter(
-										(option) => option.value !== access?.package.current_key
-									)}
-									bind:value={packageChangeTarget}
-								/>
-								{#if packageChangeIsDowngrade}
-									<Input
-										id="package-change-effective-at"
-										label="Effective date (future, downgrade)"
-										type="date"
-										bind:value={packageChangeEffectiveAt}
-									/>
-								{/if}
-								<div class="organization-detail__inline-form-actions">
-									<Button type="submit" loading={packageChangeMutation.isPending}
-										>Save package change</Button
-									>
-									<Button
-										type="button"
-										variant="secondary"
-										variation="subtle"
-										onclick={() => (editingPackage = false)}>Cancel</Button
-									>
-								</div>
-							</form>
-						{:else}
-							<Button variant="secondary" variation="subtle" onclick={() => (editingPackage = true)}
-								>Change package</Button
-							>
-						{/if}
+					{#if editingPackage}
+						<form onsubmit={submitPackageChange} class="organization-detail__inline-form">
+							<Select
+								id="package-change-target"
+								ariaLabel="Target published package version"
+								placeholder={packagesCatalogQuery.isPending
+									? 'Loading published versions…'
+									: 'Choose a published version'}
+								options={publishedVersionOptions.filter(
+									(option) => option.value !== access?.package.version_id
+								)}
+								bind:value={packageChangeTarget}
+							/>
+							<Input
+								id="package-change-reason"
+								label="Private reason"
+								bind:value={packageChangeReason}
+							/>
+							<p class="organization-detail__form-note">
+								The selected published version takes effect immediately. The prior version, new
+								version, reason, and time are retained in owner history.
+							</p>
+							<div class="organization-detail__inline-form-actions">
+								<Button type="submit" loading={packageChangeMutation.isPending}
+									>Save package change</Button
+								>
+								<Button
+									type="button"
+									variant="secondary"
+									variation="subtle"
+									onclick={() => (editingPackage = false)}>Cancel</Button
+								>
+							</div>
+						</form>
 					{:else}
-						<span class="organization-detail__safe-label"
-							>Package changes for versioned organizations aren't available yet</span
+						<Button variant="secondary" variation="subtle" onclick={() => (editingPackage = true)}
+							>Change package</Button
 						>
 					{/if}
 				</Card>
@@ -966,14 +960,55 @@
 									: 'Not in grace'}
 						</p>
 					</div>
+					<Badge
+						status={!access.billing.paid_through_date
+							? 'warning'
+							: access.billing.is_overdue && !access.billing.is_in_grace
+								? 'critical'
+								: access.billing.is_in_grace
+									? 'warning'
+									: 'success'}
+						>{!access.billing.paid_through_date
+							? 'Needs setup'
+							: access.billing.is_overdue && !access.billing.is_in_grace
+								? 'Past grace'
+								: access.billing.is_in_grace
+									? 'In grace'
+									: 'Current'}</Badge
+					>
 					<dl>
 						<div>
 							<dt>Source</dt>
 							<dd>{access.billing.paid_through_source ?? 'Not recorded'}</dd>
 						</div>
+						<div>
+							<dt>Commercial timezone</dt>
+							<dd>{commercialQuery.data?.settings?.commercial_timezone ?? 'Not recorded'}</dd>
+						</div>
 					</dl>
 				</Card>
 			</div>
+
+			<Card class="organization-detail__commercial-explainer">
+				{#if commercialQuery.isPending}
+					<LoadingSkeleton variant="text" label="Loading commercial actions" />
+				{:else if commercialQuery.isError}
+					<ErrorState
+						title="Commercial actions could not be loaded"
+						description={commercialQuery.error instanceof Error
+							? commercialQuery.error.message
+							: 'Commercial actions could not be loaded. Try again.'}
+						retry={() => commercialQuery.refetch()}
+					/>
+				{:else if commercialQuery.data}
+					<CommercialActions
+						organizationId={access.organization.id}
+						lifecycleStatus={access.organization.lifecycle_status}
+						currentPaidThroughDate={commercialQuery.data.state?.paid_through_date ?? null}
+						originalEvents={commercialQuery.data.original_events}
+					/>
+				{/if}
+			</Card>
 
 			{#if isLegacyUnversioned}
 				<Card class="organization-detail__commercial-explainer">
@@ -994,11 +1029,11 @@
 									options={publishedVersionOptions}
 									bind:value={legacyVersionId}
 								/>
-								<Input
+								<CalendarPicker
 									id="legacy-assign-paid-through"
 									label="Paid-through date"
-									type="date"
-									bind:value={legacyPaidThrough}
+									value={calendarDateFromString(legacyPaidThrough)}
+									onchange={(value) => (legacyPaidThrough = calendarDateToString(value))}
 								/>
 								<Input id="legacy-assign-reason" label="Private reason" bind:value={legacyReason} />
 								<div class="organization-detail__inline-form-actions">
@@ -1024,87 +1059,11 @@
 			<Card class="organization-detail__commercial-explainer">
 				<div>
 					<h3>Free access</h3>
-					{#if freeAccessQuery.isPending}
-						<p>Loading free access state…</p>
-					{:else if freeAccessQuery.data}
-						{@const state = freeAccessQuery.data.free_access}
-						<p>
-							{state.status === 'paid'
-								? 'This organization is on paid access.'
-								: state.status === 'forever'
-									? 'Free access is granted forever.'
-									: state.status === 'expired'
-										? 'Free access has expired.'
-										: `Free access runs until ${formatCalendarDate(state.access_until_date)}.`}
-						</p>
-						{#if isLegacyUnversioned}
-							<span class="organization-detail__safe-label"
-								>Assign a published package version before granting free access</span
-							>
-						{:else}
-							<div class="organization-detail__inline-form">
-								<Input
-									id="free-access-reason"
-									label="Private reason"
-									bind:value={freeAccessReason}
-								/>
-								{#if state.status === 'paid'}
-									<Input
-										id="free-access-until"
-										label="Free until (leave blank for forever)"
-										type="date"
-										bind:value={freeAccessUntil}
-									/>
-									{#if !freeAccessUntil}
-										<Checkbox
-											id="free-access-forever"
-											label="Grant forever (requires password reconfirmation)"
-											bind:checked={freeAccessForeverToggle}
-										/>
-									{/if}
-									<div class="organization-detail__inline-form-actions">
-										<Button
-											loading={freeAccessMutation.isPending}
-											onclick={(event) =>
-												submitFreeAccessGrant(event as unknown as SubmitEvent, 'grant')}
-											>Grant free access</Button
-										>
-									</div>
-								{:else}
-									<Input
-										id="free-access-extend-until"
-										label="Extend until (leave blank for forever)"
-										type="date"
-										bind:value={freeAccessUntil}
-									/>
-									<div class="organization-detail__inline-form-actions">
-										<Button
-											loading={freeAccessMutation.isPending}
-											onclick={(event) =>
-												submitFreeAccessGrant(event as unknown as SubmitEvent, 'extend')}
-											>Extend free access</Button
-										>
-										{#if state.status !== 'forever'}
-											<Button
-												variant="secondary"
-												variation="subtle"
-												loading={freeAccessMutation.isPending}
-												onclick={requestConvertToForever}>Convert to forever</Button
-											>
-										{/if}
-										<Button
-											variant="secondary"
-											variation="destructive"
-											loading={freeAccessMutation.isPending}
-											onclick={endFreeAccess}>End free access</Button
-										>
-									</div>
-								{/if}
-							</div>
-						{/if}
-					{:else}
-						<p>Free access could not be loaded.</p>
-					{/if}
+					<FreeAccessActions
+						organizationId={access.organization.id}
+						hasPackageAssignment={!isLegacyUnversioned}
+						freeAccess={access.free_access}
+					/>
 				</div>
 			</Card>
 
@@ -1118,6 +1077,7 @@
 								<th scope="col">Package default</th>
 								<th scope="col">Effective</th>
 								<th scope="col">Exception</th>
+								<th scope="col">Private reason</th>
 								<th scope="col"></th>
 							</tr>
 						</thead>
@@ -1136,6 +1096,8 @@
 										>{override
 											? `${override.state === 'on' ? 'Forced on' : 'Forced off'}${override.expires_at ? ` until ${formatCalendarDate(override.expires_at.slice(0, 10))}` : ' (permanent)'}`
 											: 'None'}</td
+									>
+									<td>{override?.is_legacy_import ? 'Legacy import' : (override?.reason ?? '—')}</td
 									>
 									<td>
 										<Button
@@ -1160,13 +1122,26 @@
 							bind:value={featureOverrideState}
 						/>
 						{#if featureOverrideState !== 'inherit'}
-							<Input
+							<CalendarPicker
 								id="feature-override-expiry"
 								label="Expires (leave blank for permanent)"
-								type="date"
-								bind:value={featureOverrideExpiry}
+								value={calendarDateFromString(featureOverrideExpiry)}
+								onchange={handleFeatureOverrideExpiryChange}
 							/>
 						{/if}
+						<DateTimePicker
+							id="feature-override-starts-at"
+							dateLabel="Starts at date"
+							timeLabel="Starts at time"
+							value={dateTimePickerValueFromLocalString(featureOverrideStartsAt)}
+							required
+							onchange={handleFeatureOverrideStartsAtChange}
+						/>
+						<Input
+							id="feature-override-reason"
+							label="Private reason"
+							bind:value={featureOverrideReason}
+						/>
 						<div class="organization-detail__inline-form-actions">
 							<Button type="submit" loading={featureOverrideMutation.isPending}
 								>Save exception</Button
@@ -1186,9 +1161,9 @@
 				<div>
 					<h3>Employee seat limit</h3>
 					<p>
-						{access.limits.employee_seats.is_unlimited
+						{access.limits.employee_seats.state === 'unlimited'
 							? 'Unlimited seats'
-							: access.limits.employee_seats.value !== null
+							: access.limits.employee_seats.state === 'numeric'
 								? `${access.limits.employee_seats.value} seats`
 								: 'Not included'}
 						<Badge
@@ -1202,12 +1177,13 @@
 					</p>
 					{#if editingLimit}
 						<form onsubmit={submitLimitOverride} class="organization-detail__inline-form">
-							<Checkbox
-								id="limit-override-unlimited"
-								label="Unlimited"
-								bind:checked={limitOverrideUnlimited}
+							<Select
+								id="limit-override-state"
+								ariaLabel="Seat limit exception state"
+								options={LIMIT_OVERRIDE_STATE_OPTIONS}
+								bind:value={limitOverrideState}
 							/>
-							{#if !limitOverrideUnlimited}
+							{#if limitOverrideState === 'numeric'}
 								<Input
 									id="limit-override-value"
 									label="Seat count"
@@ -1216,11 +1192,24 @@
 									bind:value={limitOverrideValue}
 								/>
 							{/if}
-							<Input
+							<CalendarPicker
 								id="limit-override-expiry"
 								label="Expires (leave blank for permanent)"
-								type="date"
-								bind:value={limitOverrideExpiry}
+								value={calendarDateFromString(limitOverrideExpiry)}
+								onchange={handleLimitOverrideExpiryChange}
+							/>
+							<DateTimePicker
+								id="limit-override-starts-at"
+								dateLabel="Starts at date"
+								timeLabel="Starts at time"
+								value={dateTimePickerValueFromLocalString(limitOverrideStartsAt)}
+								required
+								onchange={handleLimitOverrideStartsAtChange}
+							/>
+							<Input
+								id="limit-override-reason"
+								label="Private reason"
+								bind:value={limitOverrideReason}
 							/>
 							<div class="organization-detail__inline-form-actions">
 								<Button type="submit" loading={limitOverrideMutation.isPending}
@@ -1770,24 +1759,6 @@
 	<!-- eslint-enable svelte/no-at-html-tags -->
 {/if}
 
-<OwnerReconfirmDialog
-	bind:open={lifecycleReconfirmOpen}
-	title={pendingLifecycleStatus === 'suspended' ? 'Confirm suspension' : 'Confirm reactivation'}
-	description="Suspension and reactivation both require a recent password reconfirmation."
-	confirmLabel={pendingLifecycleStatus === 'suspended'
-		? 'Suspend organization'
-		: 'Reactivate organization'}
-	onConfirm={confirmLifecycleChange}
-/>
-
-<OwnerReconfirmDialog
-	bind:open={freeAccessForeverOpen}
-	title="Confirm permanent free access"
-	description="Granting free access forever requires a recent password reconfirmation."
-	confirmLabel="Grant forever"
-	onConfirm={confirmForeverFreeAccess}
-/>
-
 <style lang="scss">
 	.organization-detail {
 		display: grid;
@@ -1996,7 +1967,12 @@
 	}
 	.organization-detail__section {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: var(--space-base);
+		min-width: 0;
+	}
+	.organization-detail__section > * {
+		min-width: 0;
 	}
 	.organization-detail__overview-grid {
 		display: grid;

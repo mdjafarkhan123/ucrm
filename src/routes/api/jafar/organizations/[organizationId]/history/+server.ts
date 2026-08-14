@@ -17,6 +17,11 @@ type HistoryEvent = {
 	after_state: Json | null;
 };
 
+function jsonObject(value: Json | null): Record<string, Json> {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+	return value as Record<string, Json>;
+}
+
 export const GET: RequestHandler = async (event) => {
 	if (!getOwnerSession(event)) return ownerUnauthorized();
 	const parsedId = organizationIdSchema.safeParse(event.params.organizationId);
@@ -36,7 +41,8 @@ export const GET: RequestHandler = async (event) => {
 
 		const [
 			{ data: auditRows, error: auditError },
-			{ data: freeAccessRows, error: freeAccessError }
+			{ data: freeAccessRows, error: freeAccessError },
+			{ data: commercialRows, error: commercialError }
 		] = await Promise.all([
 			client
 				.from('access_audit_events')
@@ -53,10 +59,19 @@ export const GET: RequestHandler = async (event) => {
 				)
 				.eq('organization_id', parsedId.data)
 				.order('occurred_at', { ascending: false })
+				.limit(100),
+			client
+				.from('organization_commercial_events')
+				.select(
+					'id, event_kind, summary, private_reason, private_reference, amount_usd_cents, original_confirmation_id, paid_through_effect, paid_through_before, paid_through_after, change_before, change_after, actor_owner_email, occurred_at'
+				)
+				.eq('organization_id', parsedId.data)
+				.order('occurred_at', { ascending: false })
 				.limit(100)
 		]);
 		if (auditError) throw auditError;
 		if (freeAccessError) throw freeAccessError;
+		if (commercialError) throw commercialError;
 
 		const auditEvents: HistoryEvent[] = (auditRows ?? []).map((row) => ({
 			id: `audit:${row.id}`,
@@ -84,7 +99,37 @@ export const GET: RequestHandler = async (event) => {
 			}
 		}));
 
-		const events = [...auditEvents, ...freeAccessEvents].sort((a, b) =>
+		const freeAccessCommercialKinds = new Set([
+			'free_access_granted',
+			'free_access_extended',
+			'free_access_converted_forever',
+			'free_access_ended'
+		]);
+		const commercialEvents: HistoryEvent[] = (commercialRows ?? [])
+			.filter((row) => !freeAccessCommercialKinds.has(row.event_kind))
+			.map((row) => {
+				const changeAfter = jsonObject(row.change_after);
+				return {
+					id: `commercial:${row.id}`,
+					event_type: `commercial.${row.event_kind}`,
+					target_type: 'organization.commercial_access',
+					target_key: row.original_confirmation_id,
+					actor_email: row.actor_owner_email,
+					occurred_at: row.occurred_at,
+					before_state: row.change_before ?? { paid_through_date: row.paid_through_before },
+					after_state: {
+						...changeAfter,
+						summary: row.summary,
+						private_reason: row.private_reason,
+						private_reference: row.private_reference,
+						amount_usd_cents: row.amount_usd_cents,
+						paid_through_effect: row.paid_through_effect,
+						paid_through_date: row.paid_through_after
+					}
+				};
+			});
+
+		const events = [...auditEvents, ...freeAccessEvents, ...commercialEvents].sort((a, b) =>
 			a.occurred_at < b.occurred_at ? 1 : a.occurred_at > b.occurred_at ? -1 : 0
 		);
 

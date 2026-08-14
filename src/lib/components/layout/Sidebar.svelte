@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import dashboardIcon from '@tabler/icons/outline/layout-dashboard.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
@@ -21,8 +21,15 @@
 		items,
 		brand = 'Contractor CRM',
 		eyebrow = 'Workspace',
-		onnavigate
-	}: { items: NavItem[]; brand?: string; eyebrow?: string; onnavigate?: () => void } = $props();
+		onnavigate,
+		instantNavigation = false
+	}: {
+		items: NavItem[];
+		brand?: string;
+		eyebrow?: string;
+		onnavigate?: () => void;
+		instantNavigation?: boolean;
+	} = $props();
 
 	const iconMap: Record<string, string> = {
 		dashboard: dashboardIcon,
@@ -41,8 +48,9 @@
 		mail: mailIcon
 	};
 
+	const currentPath = $derived(navigating.to?.url.pathname ?? page.url.pathname);
 	const activeHref = $derived.by(() => {
-		const pathname = page.url.pathname;
+		const pathname = currentPath;
 		return items
 			.filter(
 				(item) =>
@@ -55,7 +63,12 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<aside class="sidebar" aria-label={`${eyebrow} navigation`}>
+<aside
+	class="sidebar"
+	aria-label={`${eyebrow} navigation`}
+	data-sveltekit-preload-data={instantNavigation ? 'false' : undefined}
+	data-sveltekit-preload-code={instantNavigation ? 'eager' : undefined}
+>
 	<a class="sidebar__brand" href={toPath(items[0]?.href ?? '/')}>
 		<span class="sidebar__mark" aria-hidden="true"
 			><span class="sidebar__mark-icon">{@html iconMap.hammer}</span></span

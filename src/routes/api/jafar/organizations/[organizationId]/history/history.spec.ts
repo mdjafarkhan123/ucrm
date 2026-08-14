@@ -57,7 +57,7 @@ describe('platform owner history API boundary', () => {
 		expect(response.status).toBe(404);
 	});
 
-	it('merges audit events and free-access events into one feed sorted newest first', async () => {
+	it('merges audit, free-access, and commercial events into one feed sorted newest first', async () => {
 		mockedOwnerSession.mockReturnValue({
 			email: 'owner@example.com',
 			expiresAt: Date.now() + 1000
@@ -82,8 +82,8 @@ describe('platform owner history API boundary', () => {
 							eq: () => ({
 								order: () => ({
 									limit: async () => ({
-										data: [
-											{
+						data: [
+							{
 												id: 'audit-1',
 												event_type: 'organization.lifecycle_changed',
 												target_type: 'organization.lifecycle_status',
@@ -125,6 +125,51 @@ describe('platform owner history API boundary', () => {
 						})
 					};
 				}
+				if (table === 'organization_commercial_events') {
+					return {
+						select: () => ({
+							eq: () => ({
+								order: () => ({
+									limit: async () => ({
+										data: [
+											{
+												id: 'commercial-2',
+												event_kind: 'package_version_changed',
+												summary: 'Package changed.',
+												private_reason: 'Pilot upgrade',
+												private_reference: null,
+												amount_usd_cents: null,
+												original_confirmation_id: null,
+												paid_through_effect: 'unchanged',
+												paid_through_before: '2026-08-31',
+												paid_through_after: '2026-08-31',
+												change_before: { package_version_id: 'version-1', version_number: 1 },
+												change_after: { package_version_id: 'version-2', version_number: 2 },
+												actor_owner_email: 'owner@example.com',
+												occurred_at: '2026-08-12T12:00:00Z'
+											},
+											{
+												id: 'commercial-1',
+												event_kind: 'renewal_confirmed',
+												summary: 'Renewal recorded.',
+												private_reason: null,
+												private_reference: 'bank-123',
+												amount_usd_cents: 9900,
+												original_confirmation_id: null,
+												paid_through_effect: 'set',
+												paid_through_before: '2026-08-31',
+												paid_through_after: '2026-09-30',
+												actor_owner_email: 'owner@example.com',
+												occurred_at: '2026-08-12T00:00:00Z'
+											}
+										],
+										error: null
+									})
+								})
+							})
+						})
+					};
+				}
 				throw new Error(`unexpected table ${table}`);
 			}
 		} as never);
@@ -134,6 +179,42 @@ describe('platform owner history API boundary', () => {
 
 		expect(response.status).toBe(200);
 		expect(body.events).toEqual([
+			{
+				id: 'commercial:commercial-2',
+				event_type: 'commercial.package_version_changed',
+				target_type: 'organization.commercial_access',
+				target_key: null,
+				actor_email: 'owner@example.com',
+				occurred_at: '2026-08-12T12:00:00Z',
+				before_state: { package_version_id: 'version-1', version_number: 1 },
+				after_state: {
+					package_version_id: 'version-2',
+					version_number: 2,
+					summary: 'Package changed.',
+					private_reason: 'Pilot upgrade',
+					private_reference: null,
+					amount_usd_cents: null,
+					paid_through_effect: 'unchanged',
+					paid_through_date: '2026-08-31'
+				}
+			},
+			{
+				id: 'commercial:commercial-1',
+				event_type: 'commercial.renewal_confirmed',
+				target_type: 'organization.commercial_access',
+				target_key: null,
+				actor_email: 'owner@example.com',
+				occurred_at: '2026-08-12T00:00:00Z',
+				before_state: { paid_through_date: '2026-08-31' },
+				after_state: {
+					summary: 'Renewal recorded.',
+					private_reason: null,
+					private_reference: 'bank-123',
+					amount_usd_cents: 9900,
+					paid_through_effect: 'set',
+					paid_through_date: '2026-09-30'
+				}
+			},
 			{
 				id: 'free_access:free-1',
 				event_type: 'free_access.grant',

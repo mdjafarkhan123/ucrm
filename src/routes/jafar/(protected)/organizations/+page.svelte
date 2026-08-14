@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { createQuery } from '@tanstack/svelte-query';
+	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import buildingIcon from '@tabler/icons/outline/building.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
@@ -14,7 +15,7 @@
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 
-	type LifecycleStatus = 'active' | 'suspended';
+	type LifecycleStatus = 'active' | 'suspended' | 'pending_setup';
 	type Organization = {
 		id: string;
 		name: string;
@@ -29,7 +30,8 @@
 	const lifecycleOptions = [
 		{ value: '', label: 'All lifecycle states' },
 		{ value: 'active', label: 'Active' },
-		{ value: 'suspended', label: 'Suspended' }
+		{ value: 'suspended', label: 'Suspended' },
+		{ value: 'pending_setup', label: 'Needs review' }
 	];
 
 	let search = $state('');
@@ -62,6 +64,10 @@
 	const suspendedCount = $derived(
 		organizationList.filter((organization) => organization.lifecycle_status === 'suspended').length
 	);
+	const needsReviewCount = $derived(
+		organizationList.filter((organization) => organization.lifecycle_status === 'pending_setup')
+			.length
+	);
 	const filtersApplied = $derived(Boolean(search || lifecycleFilter));
 
 	function clearFilters() {
@@ -70,11 +76,15 @@
 	}
 
 	function lifecycleLabel(lifecycle: LifecycleStatus) {
-		return lifecycle === 'active' ? 'Active' : 'Suspended';
+		if (lifecycle === 'active') return 'Active';
+		if (lifecycle === 'pending_setup') return 'Needs review';
+		return 'Suspended';
 	}
 
-	function lifecycleTone(lifecycle: LifecycleStatus): 'success' | 'critical' {
-		return lifecycle === 'active' ? 'success' : 'critical';
+	function lifecycleTone(lifecycle: LifecycleStatus): 'success' | 'critical' | 'warning' {
+		if (lifecycle === 'active') return 'success';
+		if (lifecycle === 'pending_setup') return 'warning';
+		return 'critical';
 	}
 
 	function formatDate(value: string) {
@@ -120,6 +130,14 @@
 			tone="critical"
 			variant="compact"
 		/>
+		<KpiCard
+			label="Needs review"
+			value={String(needsReviewCount)}
+			note="Legacy organizations pending one-time review"
+			icon={alertIcon}
+			tone="warning"
+			variant="compact"
+		/>
 	</section>
 
 	<section class="organization-directory__filters" aria-label="Organization filters">
@@ -144,8 +162,7 @@
 		<Button
 			type="button"
 			variant="secondary"
-			variation="subtle"
-			size="small"
+			variation="destructive"
 			disabled={!filtersApplied}
 			onclick={clearFilters}>Clear filters</Button
 		>
@@ -286,7 +303,7 @@
 
 	.organization-directory__summary {
 		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: var(--space-base);
 	}
 

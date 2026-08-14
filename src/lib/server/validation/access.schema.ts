@@ -22,42 +22,44 @@ const isoDateTime = z.string().refine((value) => !Number.isNaN(Date.parse(value)
 });
 
 export const packageChangeSchema = z.object({
-	package_key: packageKeySchema,
-	effective_at: isoDateTime.optional()
+	package_version_id: z.string().uuid(),
+	reason: z.string().trim().min(1, 'Enter a private reason.').max(1000),
+	idempotency_key: z.string().trim().min(8).max(200)
 });
 
 export const legacyPackageAssignmentSchema = z.object({
 	package_version_id: z.string().uuid(),
-	paid_through_date: z
-		.string()
-		.regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a valid paid-through date.'),
+	paid_through_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a valid paid-through date.'),
 	reason: z.string().trim().min(1, 'Enter a private reason.').max(500)
 });
 
 const overrideWindowSchema = z.object({
-	override_state: z.enum(['on', 'off', 'inherit']),
-	starts_at: isoDateTime.optional(),
-	expires_at: isoDateTime.nullish()
+	starts_at: isoDateTime,
+	expires_at: isoDateTime.nullish(),
+	reason: z.string().trim().min(1, 'Enter a private reason.').max(1000),
+	idempotency_key: z.string().trim().min(8).max(200)
 });
 
-export const featureOverrideSchema = overrideWindowSchema.superRefine((value, context) => {
-	if (
-		value.expires_at &&
-		value.starts_at &&
-		Date.parse(value.expires_at) <= Date.parse(value.starts_at)
-	) {
-		context.addIssue({
-			code: 'custom',
-			path: ['expires_at'],
-			message: 'Expiry must be later than the start time.'
-		});
-	}
-});
+export const featureOverrideSchema = overrideWindowSchema
+	.extend({ override_state: z.enum(['on', 'off', 'inherit']) })
+	.superRefine((value, context) => {
+		if (
+			value.expires_at &&
+			value.starts_at &&
+			Date.parse(value.expires_at) <= Date.parse(value.starts_at)
+		) {
+			context.addIssue({
+				code: 'custom',
+				path: ['expires_at'],
+				message: 'Expiry must be later than the start time.'
+			});
+		}
+	});
 
 export const limitOverrideSchema = overrideWindowSchema
 	.extend({
-		limit_value: z.number().int().nonnegative().nullable().optional(),
-		is_unlimited: z.boolean().optional().default(false)
+		override_state: z.enum(['unlimited', 'not_included', 'numeric', 'inherit']),
+		limit_value: z.number().int().nonnegative().nullable().optional()
 	})
 	.superRefine((value, context) => {
 		if (
@@ -71,21 +73,26 @@ export const limitOverrideSchema = overrideWindowSchema
 				message: 'Expiry must be later than the start time.'
 			});
 		}
-		if (value.override_state !== 'inherit') {
-			if (value.is_unlimited && value.limit_value !== null && value.limit_value !== undefined) {
-				context.addIssue({
-					code: 'custom',
-					path: ['limit_value'],
-					message: 'Unlimited limits cannot include a numeric value.'
-				});
-			}
-			if (!value.is_unlimited && value.limit_value === null) {
-				context.addIssue({
-					code: 'custom',
-					path: ['limit_value'],
-					message: 'Enter a numeric limit or choose unlimited.'
-				});
-			}
+		if (
+			value.override_state === 'numeric' &&
+			(value.limit_value === null || value.limit_value === undefined)
+		) {
+			context.addIssue({
+				code: 'custom',
+				path: ['limit_value'],
+				message: 'Enter a numeric limit.'
+			});
+		}
+		if (
+			value.override_state !== 'numeric' &&
+			value.limit_value !== null &&
+			value.limit_value !== undefined
+		) {
+			context.addIssue({
+				code: 'custom',
+				path: ['limit_value'],
+				message: 'Only numeric limits can include a value.'
+			});
 		}
 	});
 

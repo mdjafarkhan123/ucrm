@@ -6,8 +6,16 @@
 		items,
 		brand,
 		eyebrow,
-		onnavigate
-	}: { open?: boolean; items: NavItem[]; brand?: string; eyebrow?: string; onnavigate?: () => void } = $props();
+		onnavigate,
+		instantNavigation = false
+	}: {
+		open?: boolean;
+		items: NavItem[];
+		brand?: string;
+		eyebrow?: string;
+		onnavigate?: () => void;
+		instantNavigation?: boolean;
+	} = $props();
 </script>
 
 {#if open}
@@ -18,7 +26,18 @@
 			aria-label="Close navigation"
 			onclick={() => (open = false)}
 		></button>
-		<div class="mobile-nav__panel"><Sidebar {items} {brand} {eyebrow} onnavigate={() => { open = false; onnavigate?.(); }} /></div>
+		<div class="mobile-nav__panel">
+			<Sidebar
+				{items}
+				{brand}
+				{eyebrow}
+				{instantNavigation}
+				onnavigate={() => {
+					open = false;
+					onnavigate?.();
+				}}
+			/>
+		</div>
 	</div>
 {/if}
 

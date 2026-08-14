@@ -134,11 +134,16 @@
 	}
 	@media (max-width: 767px) {
 		.topbar {
+			flex-wrap: wrap;
 			padding-inline: var(--space-base);
 		}
 		.topbar__menu {
 			display: inline-grid;
 			place-items: center;
+		}
+		.topbar__actions {
+			flex: 0 0 100%;
+			justify-content: flex-end;
 		}
 	}
 </style>

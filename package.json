@@ -43,6 +43,7 @@
 		"vitest-browser-svelte": "^2.1.1"
 	},
 	"dependencies": {
+		"@internationalized/date": "^3.12.3",
 		"@supabase/ssr": "^0.12.4",
 		"@supabase/supabase-js": "^2.112.2",
 		"@tabler/icons": "^3.46.0",

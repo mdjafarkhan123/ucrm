@@ -175,6 +175,8 @@ export type Database = {
           actor_kind: string
           actor_owner_email: string | null
           amount_usd_cents: number | null
+          change_after: Json | null
+          change_before: Json | null
           commercial_timezone_after: string | null
           commercial_timezone_before: string | null
           created_at: string
@@ -200,6 +202,8 @@ export type Database = {
           actor_kind?: string
           actor_owner_email?: string | null
           amount_usd_cents?: number | null
+          change_after?: Json | null
+          change_before?: Json | null
           commercial_timezone_after?: string | null
           commercial_timezone_before?: string | null
           created_at?: string
@@ -225,6 +229,8 @@ export type Database = {
           actor_kind?: string
           actor_owner_email?: string | null
           amount_usd_cents?: number | null
+          change_after?: Json | null
+          change_before?: Json | null
           commercial_timezone_after?: string | null
           commercial_timezone_before?: string | null
           created_at?: string
@@ -258,7 +264,7 @@ export type Database = {
             foreignKeyName: "organization_commercial_events_original_confirmation_id_fkey"
             columns: ["original_confirmation_id"]
             isOneToOne: false
-            referencedRelation: "organization_payment_confirmations"
+            referencedRelation: "organization_commercial_events"
             referencedColumns: ["id"]
           },
           {
@@ -361,29 +367,38 @@ export type Database = {
       }
       organization_feature_overrides: {
         Row: {
+          actor_owner_email: string | null
           created_at: string
           expires_at: string | null
           feature_key: string
+          is_legacy_import: boolean
           organization_id: string
           override_state: string
+          reason: string | null
           starts_at: string
           updated_at: string
         }
         Insert: {
+          actor_owner_email?: string | null
           created_at?: string
           expires_at?: string | null
           feature_key: string
+          is_legacy_import?: boolean
           organization_id: string
           override_state: string
+          reason?: string | null
           starts_at?: string
           updated_at?: string
         }
         Update: {
+          actor_owner_email?: string | null
           created_at?: string
           expires_at?: string | null
           feature_key?: string
+          is_legacy_import?: boolean
           organization_id?: string
           override_state?: string
+          reason?: string | null
           starts_at?: string
           updated_at?: string
         }
@@ -416,6 +431,8 @@ export type Database = {
           organization_id: string
           package_version_id: string
           reason: string
+          starts_at: string
+          target_grant_id: string | null
         }
         Insert: {
           access_until_date?: string | null
@@ -428,6 +445,8 @@ export type Database = {
           organization_id: string
           package_version_id: string
           reason: string
+          starts_at: string
+          target_grant_id?: string | null
         }
         Update: {
           access_until_date?: string | null
@@ -440,6 +459,8 @@ export type Database = {
           organization_id?: string
           package_version_id?: string
           reason?: string
+          starts_at?: string
+          target_grant_id?: string | null
         }
         Relationships: [
           {
@@ -456,36 +477,55 @@ export type Database = {
             referencedRelation: "platform_package_versions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "organization_free_access_events_target_grant_id_fkey"
+            columns: ["target_grant_id"]
+            isOneToOne: false
+            referencedRelation: "organization_free_access_events"
+            referencedColumns: ["id"]
+          },
         ]
       }
       organization_limit_overrides: {
         Row: {
+          actor_owner_email: string | null
           created_at: string
           expires_at: string | null
+          is_legacy_import: boolean
           is_unlimited: boolean
           limit_key: string
+          limit_state: string
           limit_value: number | null
           organization_id: string
+          reason: string | null
           starts_at: string
           updated_at: string
         }
         Insert: {
+          actor_owner_email?: string | null
           created_at?: string
           expires_at?: string | null
+          is_legacy_import?: boolean
           is_unlimited?: boolean
           limit_key: string
+          limit_state?: string
           limit_value?: number | null
           organization_id: string
+          reason?: string | null
           starts_at?: string
           updated_at?: string
         }
         Update: {
+          actor_owner_email?: string | null
           created_at?: string
           expires_at?: string | null
+          is_legacy_import?: boolean
           is_unlimited?: boolean
           limit_key?: string
+          limit_state?: string
           limit_value?: number | null
           organization_id?: string
+          reason?: string | null
           starts_at?: string
           updated_at?: string
         }
@@ -1941,6 +1981,103 @@ export type Database = {
         }
         Returns: Json
       }
+      apply_organization_feature_exception: {
+        Args: {
+          actor_owner_email: string
+          idempotency_key: string
+          occurred_at?: string
+          private_reason: string
+          target_expires_at: string
+          target_feature_key: string
+          target_organization_id: string
+          target_override_state: string
+          target_starts_at: string
+        }
+        Returns: Json
+      }
+      apply_organization_free_access_change: {
+        Args: {
+          actor_owner_email: string
+          idempotency_key: string
+          occurred_at?: string
+          private_reason: string
+          target_access_until_date: string
+          target_action: string
+          target_grant_id: string
+          target_organization_id: string
+          target_starts_at: string
+        }
+        Returns: Json
+      }
+      apply_organization_late_renewal_reactivation: {
+        Args: {
+          actor_owner_email?: string
+          amount_usd_cents?: number
+          idempotency_key: string
+          occurred_at?: string
+          original_confirmation_id?: string
+          paid_through_date?: string
+          paid_through_effect: string
+          private_reason?: string
+          private_reference?: string
+          reactivate?: boolean
+          safe_kind?: string
+          safe_payload?: Json
+          summary: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
+      apply_organization_lifecycle_change: {
+        Args: {
+          actor_owner_email: string
+          idempotency_key: string
+          occurred_at?: string
+          private_reason: string
+          target_organization_id: string
+          target_status: string
+          target_suspension_category: string
+        }
+        Returns: Json
+      }
+      apply_organization_limit_exception: {
+        Args: {
+          actor_owner_email: string
+          idempotency_key: string
+          occurred_at?: string
+          private_reason: string
+          target_expires_at: string
+          target_limit_key: string
+          target_limit_state: string
+          target_limit_value: number
+          target_organization_id: string
+          target_starts_at: string
+        }
+        Returns: Json
+      }
+      apply_organization_package_change: {
+        Args: {
+          actor_owner_email: string
+          idempotency_key: string
+          occurred_at?: string
+          private_reason: string
+          target_organization_id: string
+          target_package_version_id: string
+        }
+        Returns: Json
+      }
+      apply_organization_pending_setup_reconciliation: {
+        Args: {
+          actor_owner_email: string
+          idempotency_key: string
+          occurred_at?: string
+          private_reason: string
+          target_organization_id: string
+          target_status: string
+          target_suspension_category: string
+        }
+        Returns: Json
+      }
       check_rate_limit: {
         Args: {
           target_bucket_key: string
@@ -2033,6 +2170,10 @@ export type Database = {
       mark_onboarding_application_reviewed: {
         Args: { actor_email: string; target_application_id: string }
         Returns: undefined
+      }
+      organization_legacy_readiness: {
+        Args: { target_organization_id: string }
+        Returns: Json
       }
       provision_organization_from_application: {
         Args: {

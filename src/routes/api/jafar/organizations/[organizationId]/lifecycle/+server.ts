@@ -1,7 +1,11 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { consumeOwnerStepUp, getOwnerSession } from '$lib/server/auth/owner';
-import { recordOwnerAccessAudit } from '$lib/server/access/owner';
+import { ownerUnauthorized } from '$lib/server/access/owner';
+import {
+	OrganizationAccessNotFoundError,
+	resolveOrganizationAccess
+} from '$lib/server/access/effective';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import {
 	organizationLifecycleSchema,
@@ -9,20 +13,19 @@ import {
 } from '$lib/server/validation/owner.schema';
 import { organizationIdSchema } from '$lib/server/validation/access.schema';
 
-function unauthorized() {
-	return json({ error: 'Platform owner authentication required.' }, { status: 401 });
-}
-
 function stepUpRequired() {
 	return json(
-		{ error: 'Confirm your password before changing organization status.', step_up_required: true },
+		{
+			error: 'Confirm your password before changing organization status.',
+			step_up_required: true
+		},
 		{ status: 403 }
 	);
 }
 
 export const PATCH: RequestHandler = async (event) => {
 	const session = getOwnerSession(event);
-	if (!session) return unauthorized();
+	if (!session) return ownerUnauthorized();
 
 	const parsedOrganizationId = organizationIdSchema.safeParse(event.params.organizationId);
 	if (!parsedOrganizationId.success) {
@@ -50,53 +53,33 @@ export const PATCH: RequestHandler = async (event) => {
 	if (!consumeOwnerStepUp(event, session)) return stepUpRequired();
 
 	try {
-		const supabase = getOwnerSupabaseClient();
-
-		const { data: existing, error: existingError } = await supabase
-			.from('organizations')
-			.select('id, lifecycle_status')
-			.eq('id', parsedOrganizationId.data)
-			.maybeSingle();
-		if (existingError) throw existingError;
-		if (!existing) return json({ error: 'Organization was not found.' }, { status: 404 });
-
-		if (parsed.data.status === 'active') {
-			const { count, error: membershipError } = await supabase
-				.from('organization_members')
-				.select('*', { count: 'exact', head: true })
-				.eq('organization_id', parsedOrganizationId.data)
-				.eq('role', 'owner');
-			if (membershipError) throw membershipError;
-			if (!count)
-				return json(
-					{ error: 'Invite the first administrator before activation.' },
-					{ status: 409 }
-				);
-		}
-
-		const { data, error } = await supabase
-			.from('organizations')
-			.update({ lifecycle_status: parsed.data.status, updated_at: new Date().toISOString() })
-			.eq('id', parsedOrganizationId.data)
-			.select('id, lifecycle_status, updated_at')
-			.single();
+		const client = getOwnerSupabaseClient();
+		const organizationId = parsedOrganizationId.data;
+		const { data: command, error } = await client.rpc('apply_organization_lifecycle_change', {
+			target_organization_id: organizationId,
+			target_status: parsed.data.status,
+			target_suspension_category: (parsed.data.status === 'suspended'
+				? parsed.data.suspension_category
+				: null) as string,
+			idempotency_key: parsed.data.idempotency_key,
+			private_reason: parsed.data.reason,
+			actor_owner_email: session.email
+		});
 		if (error) {
-			if (error.code === 'PGRST116')
-				return json({ error: 'Organization was not found.' }, { status: 404 });
+			if (['23503', '23505', '23514', '40001'].includes(error.code ?? '')) {
+				return json({ error: error.message }, { status: 409 });
+			}
 			throw error;
 		}
 
-		await recordOwnerAccessAudit(supabase, {
-			organization_id: parsedOrganizationId.data,
-			email: session.email,
-			event_type: 'organization.lifecycle_changed',
-			target_type: 'organization.lifecycle_status',
-			before_state: { lifecycle_status: existing.lifecycle_status },
-			after_state: { lifecycle_status: data.lifecycle_status }
+		return json({
+			command,
+			access: await resolveOrganizationAccess(client, organizationId)
 		});
-
-		return json({ organization: data });
 	} catch (error) {
+		if (error instanceof OrganizationAccessNotFoundError) {
+			return json({ error: error.message }, { status: 404 });
+		}
 		console.error('Could not change organization lifecycle status.', error);
 		return json({ error: 'Organization status could not be changed.' }, { status: 500 });
 	}

@@ -3,11 +3,9 @@ import type { RequestHandler } from './$types';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import {
 	OrganizationAccessNotFoundError,
-	PACKAGE_ORDER,
-	resolveOrganizationAccess,
-	type PackageKey
+	resolveOrganizationAccess
 } from '$lib/server/access/effective';
-import { ownerUnauthorized, recordOwnerAccessAudit } from '$lib/server/access/owner';
+import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import {
 	organizationIdSchema,
@@ -51,65 +49,22 @@ export const PATCH: RequestHandler = async (event) => {
 	try {
 		const client = getOwnerSupabaseClient();
 		const organizationId = parsedOrganizationId.data;
-		const access = await resolveOrganizationAccess(client, organizationId);
-		const targetKey = parsed.data.package_key as PackageKey;
-		const currentKey = access.package.effective_key;
-		const targetOrder = PACKAGE_ORDER[targetKey];
-		const currentOrder = PACKAGE_ORDER[currentKey];
-		const effectiveAt = parsed.data.effective_at ? new Date(parsed.data.effective_at) : null;
-
-		if (targetOrder > currentOrder && effectiveAt) {
-			return json({ error: 'Package upgrades take effect immediately.' }, { status: 422 });
-		}
-		if (targetOrder === currentOrder && effectiveAt) {
-			return json({ error: 'The current package cannot be scheduled.' }, { status: 422 });
-		}
-		if (targetOrder < currentOrder && (!effectiveAt || effectiveAt.getTime() <= Date.now())) {
-			return json(
-				{ error: 'Package downgrades require a future effective date.' },
-				{ status: 422 }
-			);
-		}
-
-		const update =
-			targetOrder < currentOrder
-				? {
-						package_key: currentKey,
-						scheduled_package_key: targetKey,
-						scheduled_package_effective_at: effectiveAt!.toISOString(),
-						updated_at: new Date().toISOString()
-					}
-				: {
-						package_key: targetKey,
-						scheduled_package_key: null,
-						scheduled_package_effective_at: null,
-						updated_at: new Date().toISOString()
-					};
-
-		const { data, error } = await client
-			.from('organizations')
-			.update(update)
-			.eq('id', organizationId)
-			.select('id, package_key, scheduled_package_key, scheduled_package_effective_at, updated_at')
-			.single();
-		if (error) throw error;
-
-		await recordOwnerAccessAudit(client, {
-			organization_id: organizationId,
-			email: session.email,
-			event_type: 'package.updated',
-			target_type: 'organization.package',
-			before_state: {
-				package_key: access.package.current_key,
-				effective_package_key: access.package.effective_key,
-				scheduled_package_key: access.package.scheduled_key,
-				scheduled_package_effective_at: access.package.scheduled_effective_at
-			},
-			after_state: data
+		const { data: command, error } = await client.rpc('apply_organization_package_change', {
+			target_organization_id: organizationId,
+			target_package_version_id: parsed.data.package_version_id,
+			idempotency_key: parsed.data.idempotency_key,
+			private_reason: parsed.data.reason,
+			actor_owner_email: session.email
 		});
+		if (error) {
+			if (['23503', '23505', '23514', '40001'].includes(error.code ?? '')) {
+				return json({ error: error.message }, { status: 409 });
+			}
+			throw error;
+		}
 
 		return json({
-			organization: data,
+			command,
 			access: await resolveOrganizationAccess(client, organizationId)
 		});
 	} catch (error) {

@@ -6,7 +6,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(25);
+select plan(26);
 
 -- Privileges: only the owner service role may call any of these.
 select is(has_function_privilege('anon', 'public.claim_onboarding_application_provision(uuid, interval)', 'execute'), false, 'anonymous callers cannot claim a provisioning attempt');
@@ -176,9 +176,20 @@ select is(
   'organization settings were created for the new organization'
 );
 select is(
-  (select count(*)::int from public.organization_billing_accounts where organization_id = '80000000-0000-0000-0000-000000000098'),
+  (select paid_through_date from public.organization_commercial_state where organization_id = '80000000-0000-0000-0000-000000000098'),
+  (
+    select (confirmed_at::date + interval '1 month')::date
+    from public.platform_onboarding_application_payment_confirmations
+    where application_id = '80000000-0000-0000-0000-000000000010'
+    order by confirmed_at desc
+    limit 1
+  ),
+  'provisioning writes the initial payment through the commercial-command seam, not the legacy billing table'
+);
+select is(
+  (select count(*)::int from public.organization_commercial_events where organization_id = '80000000-0000-0000-0000-000000000098' and event_kind = 'initial_payment_confirmed'),
   1,
-  'a billing account was created for the new organization'
+  'provisioning recorded exactly one initial-payment commercial event'
 );
 
 -- consume_onboarding_application_setup_link: single-use, recipient-bound, expiry-bound.

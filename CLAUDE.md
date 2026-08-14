@@ -2,16 +2,10 @@
 
 ## Mission
 
-Build a secure, fast, simple contractor CRM with Jafar. A remote supabse project
-
-- Speak with Jafar in plain English. Write natural UI copy without em dashes, robotic language, or AI buzzwords.
-- Inspect before assuming. Find repository facts yourself and ask Jafar only for decisions.
-- Think through meaningful edge cases, security, performance, and database indexing.
-- Prefer the smallest clear solution that fully meets the approved outcome. Preserve unrelated user work.
-
-**The core workflow:** Lead -> Request -> Quote -> Job -> Invoice -> Payment. Follow proven Jobber and GHL behavior unless Jafar approves a difference.
-
-Read `docs/PRODUCT.md` when work needs CRM behavior, terminology, journeys, or ownership boundaries. Read `docs/Owner.md` for Platform Owner or `/jafar` behavior. Read task-linked contracts and ADRs narrowly. Newer, more specific approved documents win conflicts.
+- Build a secure, fast, simple contractor CRM with Jafar. A remote supabase supabase project.
+- All current data is demo data since Jafar the owner is currently developing the project
+- The core workflow is Lead -> Request -> Quote -> Job -> Invoice -> Payment. Follow proven Jobber and GHL behavior unless Jafar approves a difference.
+- Read `docs/PRODUCT.md` when work needs CRM behavior, terminology, journeys, or ownership boundaries. Read `docs/Owner.md` for Platform Owner or `/jafar` behavior. Read task-linked contracts and ADRs narrowly. Newer, more specific approved documents win conflicts.
 
 Product documents own approved behavior. ADRs own durable technical decisions. Code, migrations, and tests own implemented truth. Memory only routes and resumes work.
 
@@ -31,11 +25,11 @@ Load only relevant skills and read each selected `SKILL.md` completely before ac
 
 ### Grilling
 
-After inspection, automatically load `.claude/skills/grilling/SKILL.md` before planning when important product decisions remain, reasonable interpretations materially differ, several roles or major systems interact, reversal is costly, or the request is complete, unified, end-to-end, A-Z, or strategically differentiated.
+Load `.claude/skills/grilling/SKILL.md` only for unresolved product decisions about user-facing behavior, workflows, or the mental model. Coding choices such as table names, schemas, APIs, components, libraries, and tests are implementation work; inspect the repository and decide them directly.
 
-Research facts yourself. Interview Jafar about decisions in dependency order until the goal, behavior, boundaries, risks, and acceptance conditions are settled. Obtain confirmation before implementation planning.
+When grilling is triggered, research facts yourself, interview Jafar in dependency order, and obtain confirmation before implementation planning.
 
-Skip grilling for small reversible work, clear bug outcomes, decision-complete approved documents, and approved campaign parts. `grill-me` is an explicit shortcut only. `grill-with-docs` is explicit-only because it also maintains domain language and qualifying ADRs. Load `.claude/skills/domain-modeling/SKILL.md` when the task requires that work.
+Skip grilling for clear bugs, small reversible work, approved behavior, and approved campaign parts. `grill-me` is explicit-only. `grill-with-docs` is explicit-only because it also maintains domain language and qualifying ADRs. Load `.claude/skills/domain-modeling/SKILL.md` only when terminology or durable domain decisions need recording.
 
 ## Work routing
 
@@ -120,22 +114,26 @@ When all parts close, promote remaining durable knowledge, remove the campaign f
 
 If Memory conflicts with an authoritative source, stop, report it, establish current truth, then correct Memory. Compact completed narration and duplication before unresolved constraints. Use stable paths, headings, and `rg` before considering semantic search.
 
-## Engineering rules
+## Non negotiable rules:
 
-1. Use Svelte 5 runes only.
-2. Use SCSS with BEM and Tabler icons. Keep component styles inside `<style lang="scss">`; keep `app.scss` to reset, root tokens, theme overrides, and base typography.
-3. Use native controls for simple interactions and Bits UI for dialogs, menus, selects, comboboxes, popovers, tooltips, tabs, accordions, and calendars. Prefer shared wrappers.
-4. Inspect `src/lib/components` before building UI. Reuse or extend matching behavior. Build desktop first, then mobile and accessible interaction.
-5. TanStack Query owns server state. Keep the app shell SSR and `(app)` page content CSR. Render the shell immediately without any db call first, use cached data or skeletons, revalidate in the background, and invalidate all affected caches.
-6. Keep service keys, JWT secrets, provider secrets, and `$lib/server/*` out of browser code and payloads.
-7. Send application writes through `/api/*`. Validate POST and PATCH requests with Zod before database access; ask before installing Zod if absent.
-8. Enforce tenant isolation with RLS and server authorization. Hidden UI is not permission enforcement.
-9. Confirm with Jafar before changing authentication, schema, permissions, or RLS.
-10. Add no unrelated fields, tables, packages, abstractions, or refactors. Prefer explicit code.
-11. Handle approved partial-failure, retry, idempotency, history, notification, and cache-invalidation behavior.
+1. Speak with Jafar in plain English. Write natural UI copy without em dashes, robotic language, or AI buzzwords.
+2. Inspect before assuming. Find repository facts yourself and ask Jafar only for decisions.
+3. Think through meaningful edge cases, security, performance, and database indexing.
+4. Prefer the smallest clear solution that fully meets the approved outcome. Preserve unrelated user work.
+5. Use Svelte 5 runes only.
+6. Use SCSS with BEM and Tabler icons. Keep component styles inside `<style lang="scss">`; keep `app.scss` to reset, root tokens, theme overrides, and base typography.
+7. Use native controls for simple interactions and Bits UI for dialogs, menus, selects, comboboxes, popovers, tooltips, tabs, accordions, and calendars. Prefer shared wrappers.
+8. Inspect `src/lib/components` before building UI. Reuse or extend matching behavior. Build desktop first, then mobile and accessible interaction.
+9. TanStack Query owns server state. SSR the persistent shell and server auth; keep internal navigation CSR. Render the shell or skeleton first, then fetch route data in the browser. Show cached data immediately, revalidate stale data in the background, and never block navigation on uncached data. Preload code, not data, and invalidate affected caches after writes.
+10. Keep service keys, JWT secrets, provider secrets, and `$lib/server/*` out of browser code and payloads.
+11. Send application writes through `/api/*`. Validate POST and PATCH requests with Zod before database access; ask before installing Zod if absent.
+12. Enforce tenant isolation with RLS and server authorization. Hidden UI is not permission enforcement.
+13. Confirm with Jafar before changing authentication, schema, permissions, or RLS.
+14. Add no unrelated fields, tables, packages, abstractions, or refactors. Prefer explicit code.
+15. Handle approved partial-failure, retry, idempotency, history, notification, and cache-invalidation behavior.
 
 ## Verification
 
 - Run checks proportional to risk. Verify RLS, constraints, locking, and atomicity at the database level when relevant.
-- Browser-verify meaningful user journeys when possible, including desktop, mobile, accessibility, loading, empty, error, stale, and partial-failure states relevant to the change.
+- If browser verification is meaningful and possible for a task guide Jafar/User how to verify explaining all why need and how to do it, otherwise you do it.
 - Report what changed, what passed, what was not verified, and the next action. Never claim completion with an open acceptance condition.

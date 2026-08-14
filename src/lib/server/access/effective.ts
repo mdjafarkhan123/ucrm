@@ -4,6 +4,7 @@ import type { Database, Tables } from '$lib/database.types';
 export type AccessClient = SupabaseClient<Database>;
 export type PackageKey = 'starter' | 'growth' | 'elite';
 export type LimitKey = 'employee_seats';
+export type LimitState = 'unlimited' | 'not_included' | 'numeric';
 
 export const PACKAGE_ORDER: Record<PackageKey, number> = {
 	starter: 1,
@@ -17,6 +18,17 @@ export type OrganizationBilling = {
 	grace_ends_at: string | null;
 	is_overdue: boolean;
 	is_in_grace: boolean;
+};
+
+export type FreeAccessGrant = {
+	grant_id: string;
+	starts_at: string;
+	access_until_date: string | null;
+};
+
+export type FreeAccessState = {
+	active: FreeAccessGrant | null;
+	future: FreeAccessGrant | null;
 };
 
 export type EffectiveOrganizationAccess = {
@@ -41,20 +53,38 @@ export type EffectiveOrganizationAccess = {
 	package_features: Record<string, boolean>;
 	feature_overrides: Record<
 		string,
-		{ state: 'on' | 'off'; starts_at: string; expires_at: string | null }
+		{
+			state: 'on' | 'off';
+			starts_at: string;
+			expires_at: string | null;
+			reason: string | null;
+			is_legacy_import: boolean;
+		}
 	>;
 	limits: Record<
 		LimitKey,
-		{ value: number | null; is_unlimited: boolean; source: 'package' | 'override' }
+		{
+			state: LimitState;
+			value: number | null;
+			is_unlimited: boolean;
+			source: 'package' | 'override';
+		}
 	>;
 	limit_overrides: Partial<
 		Record<
 			LimitKey,
-			{ value: number | null; is_unlimited: boolean; starts_at: string; expires_at: string | null }
+			{
+				state: LimitState;
+				value: number | null;
+				is_unlimited: boolean;
+				starts_at: string;
+				expires_at: string | null;
+			}
 		>
 	>;
 	member: { user_id: string; role: string } | null;
 	permissions: Record<string, boolean>;
+	free_access: FreeAccessState;
 };
 
 export class OrganizationAccessNotFoundError extends Error {
@@ -90,15 +120,24 @@ const permissionFeaturePrefixes: Array<[string, string]> = [
 	['settings.', 'core.team']
 ];
 
-const GRACE_PERIOD_DAYS = 7;
-
-function endOfUtcDay(date: string) {
-	return new Date(`${date}T23:59:59.999Z`);
+function todayInTimeZone(timezone: string, now: Date) {
+	return new Intl.DateTimeFormat('en-CA', {
+		timeZone: timezone,
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit'
+	}).format(now);
 }
 
-function computeBilling(
-	row: { paid_through_date: string | null; paid_through_source: string | null } | null,
-	now: number
+function computeCommercialBilling(
+	row: {
+		paid_through_date: string | null;
+		paid_through_source: string | null;
+		grace_ends_at: string | null;
+	} | null,
+	commercialTimezone: string | null,
+	now: Date,
+	hasActiveFreeAccess: boolean
 ): OrganizationBilling {
 	const paidThroughDate = row?.paid_through_date ?? null;
 	if (!paidThroughDate) {
@@ -111,17 +150,74 @@ function computeBilling(
 		};
 	}
 
-	const paidThroughEnd = endOfUtcDay(paidThroughDate);
-	const graceEndsAt = new Date(paidThroughEnd.getTime() + GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000);
-	const isOverdue = now > paidThroughEnd.getTime();
+	if (hasActiveFreeAccess) {
+		return {
+			paid_through_date: paidThroughDate,
+			paid_through_source: row?.paid_through_source ?? null,
+			grace_ends_at: row?.grace_ends_at ?? null,
+			is_overdue: false,
+			is_in_grace: false
+		};
+	}
+
+	const isOverdue = todayInTimeZone(commercialTimezone ?? 'UTC', now) > paidThroughDate;
+	const graceEndsAt = row?.grace_ends_at ?? null;
 
 	return {
 		paid_through_date: paidThroughDate,
 		paid_through_source: row?.paid_through_source ?? null,
-		grace_ends_at: graceEndsAt.toISOString(),
+		grace_ends_at: graceEndsAt,
 		is_overdue: isOverdue,
-		is_in_grace: isOverdue && now <= graceEndsAt.getTime()
+		is_in_grace:
+			isOverdue && graceEndsAt !== null && now.getTime() <= new Date(graceEndsAt).getTime()
 	};
+}
+
+function computeFreeAccessState(
+	events: Array<{
+		id: string;
+		target_grant_id: string | null;
+		action: string;
+		starts_at: string;
+		access_until_date: string | null;
+		occurred_at: string;
+	}>,
+	todayDate: string
+): FreeAccessState {
+	const roots = new Map<string, typeof events>();
+	for (const event of events) {
+		const rootId = event.target_grant_id ?? event.id;
+		const group = roots.get(rootId);
+		if (group) group.push(event);
+		else roots.set(rootId, [event]);
+	}
+
+	let active: FreeAccessGrant | null = null;
+	let future: FreeAccessGrant | null = null;
+	for (const [rootId, group] of roots) {
+		const latest = [...group].sort(
+			(a, b) => Date.parse(b.occurred_at) - Date.parse(a.occurred_at)
+		)[0];
+		if (latest.action === 'end') continue;
+		const rootEvent = group.find((item) => item.target_grant_id === null);
+		if (!rootEvent) continue;
+
+		const grant: FreeAccessGrant = {
+			grant_id: rootId,
+			starts_at: rootEvent.starts_at,
+			access_until_date: latest.access_until_date
+		};
+		if (
+			rootEvent.starts_at <= todayDate &&
+			(grant.access_until_date === null || grant.access_until_date >= todayDate)
+		) {
+			active = grant;
+		} else if (rootEvent.starts_at > todayDate) {
+			future = grant;
+		}
+	}
+
+	return { active, future };
 }
 
 function packageKey(value: string): PackageKey {
@@ -141,6 +237,8 @@ function buildFeatureOverridesMap(
 		override_state: string;
 		starts_at: string;
 		expires_at: string | null;
+		reason?: string | null;
+		is_legacy_import?: boolean;
 	}>
 ): EffectiveOrganizationAccess['feature_overrides'] {
 	return Object.fromEntries(
@@ -149,7 +247,9 @@ function buildFeatureOverridesMap(
 			{
 				state: item.override_state as 'on' | 'off',
 				starts_at: item.starts_at,
-				expires_at: item.expires_at
+				expires_at: item.expires_at,
+				reason: item.reason ?? null,
+				is_legacy_import: item.is_legacy_import ?? true
 			}
 		])
 	);
@@ -158,10 +258,13 @@ function buildFeatureOverridesMap(
 function buildLimitOverridesMap(
 	limitOverrides: Array<{
 		limit_key: string;
+		limit_state?: string;
 		limit_value: number | null;
 		is_unlimited: boolean;
 		starts_at: string;
 		expires_at: string | null;
+		reason?: string | null;
+		is_legacy_import?: boolean;
 	}>
 ): EffectiveOrganizationAccess['limit_overrides'] {
 	return Object.fromEntries(
@@ -170,8 +273,17 @@ function buildLimitOverridesMap(
 			{
 				value: item.limit_value,
 				is_unlimited: item.is_unlimited,
+				state:
+					(item.limit_state as LimitState | undefined) ??
+					(item.is_unlimited
+						? 'unlimited'
+						: item.limit_value === null
+							? 'not_included'
+							: 'numeric'),
 				starts_at: item.starts_at,
-				expires_at: item.expires_at
+				expires_at: item.expires_at,
+				reason: item.reason ?? null,
+				is_legacy_import: item.is_legacy_import ?? true
 			}
 		])
 	) as EffectiveOrganizationAccess['limit_overrides'];
@@ -211,7 +323,9 @@ async function resolveLegacyOrganizationAccess(
 		packageLimitsResult,
 		featureOverridesResult,
 		limitOverridesResult,
-		billingResult
+		commercialStateResult,
+		commercialSettingsResult,
+		freeAccessEventsResult
 	] = await Promise.all([
 		client
 			.from('platform_packages')
@@ -223,17 +337,26 @@ async function resolveLegacyOrganizationAccess(
 		client.from('package_limits').select('package_key, limit_key, limit_value, is_unlimited'),
 		client
 			.from('organization_feature_overrides')
-			.select('feature_key, override_state, starts_at, expires_at')
+			.select('feature_key, override_state, starts_at, expires_at, reason, is_legacy_import')
 			.eq('organization_id', organizationId),
 		client
 			.from('organization_limit_overrides')
-			.select('limit_key, limit_value, is_unlimited, starts_at, expires_at')
+			.select('limit_key, limit_state, limit_value, is_unlimited, starts_at, expires_at')
 			.eq('organization_id', organizationId),
 		client
-			.from('organization_billing_accounts')
-			.select('paid_through_date, paid_through_source')
+			.from('organization_commercial_state')
+			.select('paid_through_date, paid_through_source, grace_ends_at')
 			.eq('organization_id', organizationId)
-			.maybeSingle()
+			.maybeSingle(),
+		client
+			.from('organization_commercial_settings')
+			.select('commercial_timezone')
+			.eq('organization_id', organizationId)
+			.maybeSingle(),
+		client
+			.from('organization_free_access_events')
+			.select('id, target_grant_id, action, starts_at, access_until_date, occurred_at')
+			.eq('organization_id', organizationId)
 	]);
 
 	const queryResults = [
@@ -243,10 +366,18 @@ async function resolveLegacyOrganizationAccess(
 		packageLimitsResult,
 		featureOverridesResult,
 		limitOverridesResult,
-		billingResult
+		commercialStateResult,
+		commercialSettingsResult,
+		freeAccessEventsResult
 	];
 	const failedQuery = queryResults.find((result) => result.error);
 	if (failedQuery?.error) throw failedQuery.error;
+
+	const commercialTimezone = commercialSettingsResult.data?.commercial_timezone ?? null;
+	const freeAccessState = computeFreeAccessState(
+		freeAccessEventsResult.data ?? [],
+		todayInTimeZone(commercialTimezone ?? 'UTC', now)
+	);
 
 	const packages = packagesResult.data ?? [];
 	const currentPackageKey = packageKey(organization.package_key);
@@ -297,10 +428,24 @@ async function resolveLegacyOrganizationAccess(
 	const limitOverrideByKey = new Map(limitOverrides.map((item) => [item.limit_key, item]));
 	const employeeSeatLimit =
 		limitOverrideByKey.get('employee_seats') ?? packageLimitByKey.get('employee_seats');
+	const employeeSeatState: LimitState = limitOverrideByKey.has('employee_seats')
+		? ((employeeSeatLimit as { limit_state?: LimitState }).limit_state ??
+			(employeeSeatLimit?.is_unlimited
+				? 'unlimited'
+				: employeeSeatLimit?.limit_value === null
+					? 'not_included'
+					: 'numeric'))
+		: ((employeeSeatLimit as { limit_state?: LimitState })?.limit_state ??
+			(employeeSeatLimit?.is_unlimited
+				? 'unlimited'
+				: employeeSeatLimit?.limit_value === null
+					? 'not_included'
+					: 'numeric'));
 	const limits = {
 		employee_seats: {
 			value: employeeSeatLimit?.limit_value ?? null,
 			is_unlimited: employeeSeatLimit?.is_unlimited ?? false,
+			state: employeeSeatState,
 			source: limitOverrideByKey.has('employee_seats')
 				? ('override' as const)
 				: ('package' as const)
@@ -353,7 +498,12 @@ async function resolveLegacyOrganizationAccess(
 			slug: organization.slug,
 			lifecycle_status: organization.lifecycle_status
 		},
-		billing: computeBilling(billingResult.data ?? null, now.getTime()),
+		billing: computeCommercialBilling(
+			commercialStateResult.data ?? null,
+			commercialTimezone,
+			now,
+			freeAccessState.active !== null
+		),
 		package: {
 			current_key: currentPackageKey,
 			effective_key: effectivePackageKey,
@@ -375,7 +525,8 @@ async function resolveLegacyOrganizationAccess(
 		limits,
 		limit_overrides: buildLimitOverridesMap(limitOverrides),
 		member,
-		permissions
+		permissions,
+		free_access: freeAccessState
 	};
 }
 
@@ -403,7 +554,9 @@ async function resolveVersionedOrganizationAccess(
 		packageLimitsResult,
 		featureOverridesResult,
 		limitOverridesResult,
-		billingResult
+		commercialStateResult,
+		commercialSettingsResult,
+		freeAccessEventsResult
 	] = await Promise.all([
 		client
 			.from('platform_package_versions')
@@ -423,17 +576,26 @@ async function resolveVersionedOrganizationAccess(
 			.eq('package_version_id', assignment.package_version_id),
 		client
 			.from('organization_feature_overrides')
-			.select('feature_key, override_state, starts_at, expires_at')
+			.select('feature_key, override_state, starts_at, expires_at, reason, is_legacy_import')
 			.eq('organization_id', organization.id),
 		client
 			.from('organization_limit_overrides')
-			.select('limit_key, limit_value, is_unlimited, starts_at, expires_at')
+			.select('limit_key, limit_state, limit_value, is_unlimited, starts_at, expires_at')
 			.eq('organization_id', organization.id),
 		client
-			.from('organization_billing_accounts')
-			.select('paid_through_date, paid_through_source')
+			.from('organization_commercial_state')
+			.select('paid_through_date, paid_through_source, grace_ends_at')
 			.eq('organization_id', organization.id)
-			.maybeSingle()
+			.maybeSingle(),
+		client
+			.from('organization_commercial_settings')
+			.select('commercial_timezone')
+			.eq('organization_id', organization.id)
+			.maybeSingle(),
+		client
+			.from('organization_free_access_events')
+			.select('id, target_grant_id, action, starts_at, access_until_date, occurred_at')
+			.eq('organization_id', organization.id)
 	]);
 
 	const queryResults = [
@@ -443,11 +605,19 @@ async function resolveVersionedOrganizationAccess(
 		packageLimitsResult,
 		featureOverridesResult,
 		limitOverridesResult,
-		billingResult
+		commercialStateResult,
+		commercialSettingsResult,
+		freeAccessEventsResult
 	];
 	const failedQuery = queryResults.find((result) => result.error);
 	if (failedQuery?.error) throw failedQuery.error;
 	if (!versionResult.data) throw new Error('The organization package version is missing.');
+
+	const commercialTimezone = commercialSettingsResult.data?.commercial_timezone ?? null;
+	const freeAccessState = computeFreeAccessState(
+		freeAccessEventsResult.data ?? [],
+		todayInTimeZone(commercialTimezone ?? 'UTC', now)
+	);
 	const packageResult = await client
 		.from('platform_packages')
 		.select('package_id, package_key')
@@ -488,6 +658,16 @@ async function resolveVersionedOrganizationAccess(
 	const packageLimit = (packageLimitsResult.data ?? []).find(
 		(item) => item.limit_key === 'employee_seats'
 	);
+	const overrideState: LimitState | null = limitOverride
+		? ((limitOverride.limit_state as LimitState | undefined) ??
+			(limitOverride.is_unlimited
+				? 'unlimited'
+				: limitOverride.limit_value === null
+					? 'not_included'
+					: 'numeric'))
+		: null;
+	const packageState: LimitState =
+		(packageLimit?.limit_state as LimitState | undefined) ?? 'not_included';
 	const limits = {
 		employee_seats: {
 			value: limitOverride
@@ -498,6 +678,7 @@ async function resolveVersionedOrganizationAccess(
 			is_unlimited: limitOverride
 				? limitOverride.is_unlimited
 				: packageLimit?.limit_state === 'unlimited',
+			state: overrideState ?? packageState,
 			source: limitOverride ? ('override' as const) : ('package' as const)
 		}
 	};
@@ -548,7 +729,12 @@ async function resolveVersionedOrganizationAccess(
 			slug: organization.slug,
 			lifecycle_status: organization.lifecycle_status
 		},
-		billing: computeBilling(billingResult.data ?? null, now.getTime()),
+		billing: computeCommercialBilling(
+			commercialStateResult.data ?? null,
+			commercialTimezone,
+			now,
+			freeAccessState.active !== null
+		),
 		package: {
 			current_key: currentPackageKey,
 			effective_key: currentPackageKey,
@@ -570,7 +756,8 @@ async function resolveVersionedOrganizationAccess(
 		limits,
 		limit_overrides: buildLimitOverridesMap(limitOverrides),
 		member,
-		permissions
+		permissions,
+		free_access: freeAccessState
 	};
 }
 

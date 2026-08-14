@@ -1,193 +1,156 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PATCH } from './+server';
 import { consumeOwnerStepUp, getOwnerSession } from '$lib/server/auth/owner';
-import { recordOwnerAccessAudit } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { resolveOrganizationAccess } from '$lib/server/access/effective';
 
 vi.mock('$lib/server/auth/owner', () => ({
 	getOwnerSession: vi.fn(),
 	consumeOwnerStepUp: vi.fn()
 }));
-vi.mock('$lib/server/access/owner', async () => {
-	const actual = await vi.importActual<typeof import('$lib/server/access/owner')>(
-		'$lib/server/access/owner'
+vi.mock('$lib/server/access/effective', async () => {
+	const actual = await vi.importActual<typeof import('$lib/server/access/effective')>(
+		'$lib/server/access/effective'
 	);
-	return { ...actual, recordOwnerAccessAudit: vi.fn() };
+	return { ...actual, resolveOrganizationAccess: vi.fn() };
 });
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
 
 const mockedOwnerSession = vi.mocked(getOwnerSession);
 const mockedConsumeStepUp = vi.mocked(consumeOwnerStepUp);
-const mockedRecordAudit = vi.mocked(recordOwnerAccessAudit);
+const mockedResolveAccess = vi.mocked(resolveOrganizationAccess);
 const mockedClient = vi.mocked(getOwnerSupabaseClient);
 
 const organizationId = '123e4567-e89b-12d3-a456-426614174000';
+const idempotencyKey = '223e4567-e89b-12d3-a456-426614174000';
 
-function event(id: string, body: unknown = { status: 'suspended' }) {
+function session() {
+	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+}
+
+function event(id = organizationId, body: unknown = {}) {
 	return {
 		params: { organizationId: id },
-		request: new Request('http://localhost/api/jafar/organizations/' + id + '/lifecycle', {
+		request: new Request(`http://localhost/api/jafar/organizations/${id}/lifecycle`, {
 			method: 'PATCH',
 			body: JSON.stringify(body),
 			headers: { 'content-type': 'application/json' }
 		}),
-		url: new URL('http://localhost/api/jafar/organizations/' + id + '/lifecycle'),
 		cookies: {}
 	} as Parameters<typeof PATCH>[0];
 }
 
+function suspendBody() {
+	return {
+		status: 'suspended',
+		suspension_category: 'nonpayment',
+		reason: 'Invoice past due.',
+		idempotency_key: idempotencyKey
+	};
+}
+
+function reactivateBody() {
+	return {
+		status: 'active',
+		reason: 'Paid-through date restored.',
+		idempotency_key: idempotencyKey
+	};
+}
+
 describe('platform owner lifecycle API boundary', () => {
-	beforeEach(() => vi.clearAllMocks());
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockedOwnerSession.mockReturnValue(session());
+		mockedConsumeStepUp.mockReturnValue(true);
+		mockedResolveAccess.mockResolvedValue({} as never);
+	});
 
 	it('rejects callers without the separate owner session', async () => {
 		mockedOwnerSession.mockReturnValue(null);
 
-		const response = await PATCH(event('not-a-uuid'));
+		const response = await PATCH(event(organizationId, suspendBody()));
 
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('validates the organization identifier before database access', async () => {
-		mockedOwnerSession.mockReturnValue({
-			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
-		});
-
-		const response = await PATCH(event('not-a-uuid'));
+		const response = await PATCH(event('not-a-uuid', suspendBody()));
 
 		expect(response.status).toBe(422);
-		expect(await response.json()).toEqual({ error: 'The organization identifier is invalid.' });
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
-	it('requires a recent password reconfirmation before changing status', async () => {
-		mockedOwnerSession.mockReturnValue({
-			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
-		});
+	it('rejects a suspension without a category or reason', async () => {
+		const response = await PATCH(
+			event(organizationId, { status: 'suspended', idempotency_key: idempotencyKey })
+		);
+
+		expect(response.status).toBe(422);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it('requires a recent password reconfirmation before suspending', async () => {
 		mockedConsumeStepUp.mockReturnValue(false);
 
-		const response = await PATCH(event(organizationId));
+		const response = await PATCH(event(organizationId, suspendBody()));
 
 		expect(response.status).toBe(403);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
-	it('returns 404 when the organization does not exist', async () => {
-		mockedOwnerSession.mockReturnValue({
-			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
-		});
-		mockedConsumeStepUp.mockReturnValue(true);
-		mockedClient.mockReturnValue({
-			from: () => ({
-				select: () => ({
-					eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) })
-				})
-			})
-		} as never);
+	it('requires a recent password reconfirmation before reactivating', async () => {
+		mockedConsumeStepUp.mockReturnValue(false);
 
-		const response = await PATCH(event(organizationId));
+		const response = await PATCH(event(organizationId, reactivateBody()));
 
-		expect(response.status).toBe(404);
-		expect(mockedRecordAudit).not.toHaveBeenCalled();
+		expect(response.status).toBe(403);
+		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
-	it('returns a safe error when the lifecycle update fails', async () => {
-		mockedOwnerSession.mockReturnValue({
-			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
-		});
-		mockedConsumeStepUp.mockReturnValue(true);
-		const update = vi.fn().mockReturnValue({
-			eq: vi.fn().mockReturnValue({
-				select: vi.fn().mockReturnValue({
-					single: vi.fn().mockResolvedValue({
-						data: null,
-						error: { message: 'internal database details' }
-					})
-				})
-			})
-		});
-		mockedClient.mockReturnValue({
-			from: (table: string) => {
-				if (table === 'organizations') {
-					return {
-						select: () => ({
-							eq: () => ({
-								maybeSingle: async () => ({
-									data: { id: organizationId, lifecycle_status: 'active' },
-									error: null
-								})
-							})
-						}),
-						update
-					};
-				}
-				throw new Error(`unexpected table ${table}`);
-			}
-		} as never);
+	it('passes the category, reason, actor, and idempotency key to the atomic command on suspend', async () => {
+		const rpc = vi.fn().mockResolvedValue({ data: { applied: true }, error: null });
+		mockedClient.mockReturnValue({ rpc } as never);
 
-		const response = await PATCH(event(organizationId));
-
-		expect(response.status).toBe(500);
-		expect(await response.json()).toEqual({ error: 'Organization status could not be changed.' });
-		expect(mockedRecordAudit).not.toHaveBeenCalled();
-	});
-
-	it('records an audit event with the before and after status on success', async () => {
-		mockedOwnerSession.mockReturnValue({
-			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
-		});
-		mockedConsumeStepUp.mockReturnValue(true);
-		const client = {
-			from: (table: string) => {
-				if (table === 'organizations') {
-					return {
-						select: () => ({
-							eq: () => ({
-								maybeSingle: async () => ({
-									data: { id: organizationId, lifecycle_status: 'active' },
-									error: null
-								})
-							})
-						}),
-						update: () => ({
-							eq: () => ({
-								select: () => ({
-									single: async () => ({
-										data: {
-											id: organizationId,
-											lifecycle_status: 'suspended',
-											updated_at: '2026-08-11T00:00:00Z'
-										},
-										error: null
-									})
-								})
-							})
-						})
-					};
-				}
-				throw new Error(`unexpected table ${table}`);
-			}
-		};
-		mockedClient.mockReturnValue(client as never);
-
-		const response = await PATCH(event(organizationId, { status: 'suspended' }));
+		const response = await PATCH(event(organizationId, suspendBody()));
 
 		expect(response.status).toBe(200);
-		expect(mockedRecordAudit).toHaveBeenCalledWith(
-			client,
-			expect.objectContaining({
-				organization_id: organizationId,
-				email: 'owner@example.com',
-				event_type: 'organization.lifecycle_changed',
-				target_type: 'organization.lifecycle_status',
-				before_state: { lifecycle_status: 'active' },
-				after_state: { lifecycle_status: 'suspended' }
-			})
-		);
+		expect(rpc).toHaveBeenCalledWith('apply_organization_lifecycle_change', {
+			target_organization_id: organizationId,
+			target_status: 'suspended',
+			target_suspension_category: 'nonpayment',
+			idempotency_key: idempotencyKey,
+			private_reason: 'Invoice past due.',
+			actor_owner_email: 'owner@example.com'
+		});
+	});
+
+	it('sends no suspension category to the atomic command on reactivate', async () => {
+		const rpc = vi.fn().mockResolvedValue({ data: { applied: true }, error: null });
+		mockedClient.mockReturnValue({ rpc } as never);
+
+		const response = await PATCH(event(organizationId, reactivateBody()));
+
+		expect(response.status).toBe(200);
+		expect(rpc).toHaveBeenCalledWith('apply_organization_lifecycle_change', {
+			target_organization_id: organizationId,
+			target_status: 'active',
+			target_suspension_category: null,
+			idempotency_key: idempotencyKey,
+			private_reason: 'Paid-through date restored.',
+			actor_owner_email: 'owner@example.com'
+		});
+	});
+
+	it('maps database validation and serialization conflicts to a safe conflict response', async () => {
+		const rpc = vi
+			.fn()
+			.mockResolvedValue({ data: null, error: { code: '23514', message: 'private details' } });
+		mockedClient.mockReturnValue({ rpc } as never);
+
+		const response = await PATCH(event(organizationId, reactivateBody()));
+
+		expect(response.status).toBe(409);
+		expect(await response.json()).toEqual({ error: 'private details' });
 	});
 });

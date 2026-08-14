@@ -2,68 +2,27 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { consumeOwnerStepUp, getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
+import { resolveOrganizationAccess } from '$lib/server/access/effective';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { freeAccessChangeSchema, zodOwnerFieldErrors } from '$lib/server/validation/owner.schema';
 import { organizationIdSchema } from '$lib/server/validation/access.schema';
 
 const eventSelect =
-	'id, organization_id, package_version_id, action, access_until_date, reason, actor_kind, actor_owner_email, occurred_at, created_at';
+	'id, organization_id, package_version_id, action, starts_at, access_until_date, target_grant_id, reason, actor_kind, actor_owner_email, occurred_at, created_at';
 
-type FreeAccessEvent = {
-	action: 'grant' | 'extend' | 'convert_to_forever' | 'end';
-	access_until_date: string | null;
-	package_version_id: string;
-	[key: string]: unknown;
-};
-
-function todayInTimeZone(timezone: string | undefined) {
-	try {
-		return new Intl.DateTimeFormat('en-CA', {
-			timeZone: timezone || 'UTC',
-			year: 'numeric',
-			month: '2-digit',
-			day: '2-digit'
-		}).format(new Date());
-	} catch {
-		return new Date().toISOString().slice(0, 10);
-	}
-}
-
-function summarize(events: FreeAccessEvent[], timezone?: string) {
-	const latest = events[0] ?? null;
-	if (!latest || latest.action === 'end') {
-		return { status: 'paid', access_until_date: null, package_version_id: null, latest };
-	}
-
-	const expired =
-		latest.access_until_date !== null && latest.access_until_date < todayInTimeZone(timezone);
-	return {
-		status: expired ? 'expired' : latest.access_until_date ? 'until_date' : 'forever',
-		access_until_date: latest.access_until_date,
-		package_version_id: latest.package_version_id,
-		latest
-	};
-}
-
-async function getOrganizationState(organizationId: string) {
-	const client = getOwnerSupabaseClient();
+async function getFreeAccessState(client: ReturnType<typeof getOwnerSupabaseClient>, organizationId: string) {
 	const [
 		{ data: organization, error: organizationError },
-		{ data: settings, error: settingsError },
 		{ data: assignment, error: assignmentError },
 		{ data: events, error: eventsError }
 	] = await Promise.all([
 		client.from('organizations').select('id, name').eq('id', organizationId).maybeSingle(),
 		client
-			.from('organization_settings')
-			.select('timezone')
-			.eq('organization_id', organizationId)
-			.maybeSingle(),
-		client
 			.from('organization_package_assignments')
-			.select('id, package_version_id, effective_at, assignment_source, reason')
+			.select('id, package_version_id')
 			.eq('organization_id', organizationId)
 			.order('effective_at', { ascending: false })
+			.order('id', { ascending: false })
 			.limit(1)
 			.maybeSingle(),
 		client
@@ -75,16 +34,14 @@ async function getOrganizationState(organizationId: string) {
 	]);
 
 	if (organizationError) throw organizationError;
-	if (settingsError) throw settingsError;
 	if (assignmentError) throw assignmentError;
 	if (eventsError) throw eventsError;
 	if (!organization) return null;
 
 	return {
 		organization,
-		assignment,
-		events: (events ?? []) as FreeAccessEvent[],
-		free_access: summarize((events ?? []) as FreeAccessEvent[], settings?.timezone)
+		has_package_assignment: assignment !== null,
+		events: events ?? []
 	};
 }
 
@@ -95,8 +52,16 @@ export const GET: RequestHandler = async (event) => {
 		return json({ error: 'The organization identifier is invalid.' }, { status: 422 });
 
 	try {
-		const state = await getOrganizationState(parsedId.data);
-		return state ? json(state) : json({ error: 'Organization was not found.' }, { status: 404 });
+		const client = getOwnerSupabaseClient();
+		const state = await getFreeAccessState(client, parsedId.data);
+		if (!state) return json({ error: 'Organization was not found.' }, { status: 404 });
+		const access = await resolveOrganizationAccess(client, parsedId.data);
+		return json({
+			organization: state.organization,
+			has_package_assignment: state.has_package_assignment,
+			free_access: access.free_access,
+			events: state.events
+		});
 	} catch (error) {
 		console.error('Could not load organization free access.', error);
 		return json({ error: 'Free access could not be loaded.' }, { status: 500 });
@@ -142,35 +107,37 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	try {
-		const state = await getOrganizationState(parsedId.data);
-		if (!state) return json({ error: 'Organization was not found.' }, { status: 404 });
-		if (!state.assignment) {
-			return json(
-				{ error: 'Assign a published package version before granting free access.' },
-				{ status: 409 }
-			);
-		}
-		if (parsed.data.action === 'extend' && state.free_access.status === 'paid') {
-			return json({ error: 'Free access is not active for this organization.' }, { status: 409 });
-		}
-
 		const client = getOwnerSupabaseClient();
-		const { data: created, error } = await client
-			.from('organization_free_access_events')
-			.insert({
-				organization_id: parsedId.data,
-				package_version_id: state.assignment.package_version_id,
-				action: parsed.data.action,
-				access_until_date: parsed.data.access_until_date ?? null,
-				reason: parsed.data.reason,
-				actor_owner_email: session.email
-			})
-			.select(eventSelect)
-			.single();
-		if (error) throw error;
+		const organizationId = parsedId.data;
+		const { data: command, error } = await client.rpc('apply_organization_free_access_change', {
+			target_organization_id: organizationId,
+			target_action: parsed.data.action,
+			target_grant_id: (parsed.data.action === 'grant' ? null : parsed.data.grant_id) as string,
+			target_starts_at: (parsed.data.action === 'grant' ? parsed.data.starts_at : null) as string,
+			target_access_until_date: (parsed.data.action === 'grant' || parsed.data.action === 'extend'
+				? (parsed.data.access_until_date ?? null)
+				: null) as string,
+			idempotency_key: parsed.data.idempotency_key,
+			private_reason: parsed.data.reason,
+			actor_owner_email: session.email
+		});
+		if (error) {
+			if (['23503', '23505', '23514', '40001'].includes(error.code ?? '')) {
+				return json({ error: error.message }, { status: 409 });
+			}
+			throw error;
+		}
 
-		const next = await getOrganizationState(parsedId.data);
-		return json({ event: created, ...(next ?? {}) });
+		const state = await getFreeAccessState(client, organizationId);
+		if (!state) return json({ error: 'Organization was not found.' }, { status: 404 });
+		const access = await resolveOrganizationAccess(client, organizationId);
+		return json({
+			command,
+			organization: state.organization,
+			has_package_assignment: state.has_package_assignment,
+			free_access: access.free_access,
+			events: state.events
+		});
 	} catch (error) {
 		console.error('Could not change organization free access.', error);
 		return json({ error: 'Free access could not be changed.' }, { status: 500 });

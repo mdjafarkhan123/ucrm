@@ -7,35 +7,44 @@ control, support recovery, closure, and dependency-linked provider controls.
 
 ## Active part
 
-Part 6B: payments and paid-through control. Not planned yet.
+6E closed 2026-08-14 (legacy `pending_setup` organization reconciliation) — browser-verified live:
+suspended the real admin-less `xdasd` organization end to end, and confirmed the full activation
+readiness checklist and step-up gate on a seeded fully-eligible legacy organization (`Riverside
+Legacy Demo`, stopped at the password prompt per credential-entry policy — Jafar can complete that
+single click himself later if he wants the full round trip witnessed). All acceptance checks pass;
+see the closed packet for durable gotchas (a real 6A check-constraint bug found and fixed via pgTAP
+before it reached the API layer).
+
+6F (searchable organization directory and attention queues) is next, dependencies 6A/6E both
+complete, but its packet does not exist yet. The current directory
+(`src/routes/jafar/(protected)/organizations/+page.svelte`) loads every organization client-side
+with client-side search/filter — no server pagination yet.
+`docs/jafar-completion-contract.md` heading `Commercial control decisions` already gives the approved
+shape: "Protected directory search covers organization name, slug, and primary administrator email.
+Pagination uses `created_at, id` with a default page size of 50." Attention-queue specifics (which
+summaries/filters count as "needs attention" beyond lifecycle status) are not yet pinned down.
 
 ## Exact next action
 
-Plan Part 6B against the commercial seam delivered in 6A, then create its part packet after Jafar
-approves the plan. 6B builds owner routes and UI for initial payment, renewal, correction, refund,
-reversal, and optional late-renewal reactivation. Every write goes through
-`public.apply_organization_commercial_command`; nothing else may write commercial history or the
-projection. Confirm before any further remote schema change.
+Start 6F: read `docs/jafar-completion-contract.md` heading `Organization and commercial control` and
+`docs/jafar-organization-management-mission.md` heading `Organization-detail structure`, check how
+many real organizations exist in the remote project (client-side loading is currently fine at this
+scale but the acceptance gate requires server pagination regardless), grill Jafar on attention-queue
+specifics, then propose the plan and wait for approval before creating
+`Memory/campaigns/jafar-panel/parts/6f-*.md`.
 
 ## Current truth
 
-- Parts 0 through 6A are complete.
-- The commercial seam lives in `supabase/migrations/20260813200000_organization_commercial_control_foundation.sql`
-  and is applied to the linked remote project: `organization_commercial_settings`,
-  `organization_commercial_events`, `organization_commercial_state`, `organization_safe_events`, and
-  the single command function.
-- Existing operational timezones were imported once as commercial baselines and existing
-  `organization_billing_accounts` paid-through values were imported into the projection.
-- `src/lib/server/access/effective.ts` still computes grace from UTC and fixed 24-hour periods. It
-  must move onto `organization_commercial_state.grace_ends_at` during 6B so only one grace truth
-  survives.
-- `organization_billing_accounts` remains the legacy mutable projection. 6B decides when reads move
-  across and when writes to it stop.
+- Parts 0 through 6E are complete.
+- `xdasd` is now permanently `suspended` (real action on real data, not a test rollback).
+  `Riverside Legacy Demo` (`7e37a58f-60e4-40ee-bb4a-cf13966a7a3d`) is a seeded demo org, still
+  `pending_setup` and fully activation-eligible, safe to leave as is.
+- `database.types.ts` was regenerated against the remote project as part of 6E.
 
 ## Blockers
 
-None. Docker is unavailable, so local Supabase cannot run. Database work uses the linked remote
-project, and every remote execution needs Jafar's approval at execution time.
+- None for 6E. Docker and the Supabase/psql CLIs remain unavailable locally; database work continues
+  to go through the linked remote project via Supabase MCP tools, not `db push`.
 
 ## Protected work
 
@@ -45,15 +54,13 @@ project, and every remote execution needs Jafar's approval at execution time.
 
 ## Required pointers
 
-- `docs/jafar-completion-contract.md`, heading `Organization and commercial control`, including the
-  promoted `Commercial control decisions`.
-- `docs/jafar-organization-management-mission.md` headings `Commercial rules` and `Lifecycle`.
-- `docs/adr/0001-paid-prospect-provisioning-and-versioned-packages.md`.
-- `docs/testing/database.md` for the remote test path.
-- `supabase/tests/database/organization_commercial_control.sql` for the 6A acceptance coverage.
 - `Memory/campaigns/jafar-panel/ROADMAP.md`.
+- `Memory/campaigns/jafar-panel/parts/6e-legacy-organization-reconciliation.md` (closed — reference
+  only, do not resume).
+- `docs/jafar-completion-contract.md`, heading `Organization and commercial control`.
+- `docs/jafar-organization-management-mission.md`, heading `Organization-detail structure`.
 
 ## Active-part completion gate
 
-Stop when Jafar approves the Part 6B plan and its packet exists. Do not write 6B routes or UI before
-that approval.
+All 6F acceptance checks in the part packet pass, including pgTAP/route tests where relevant, remote
+advisors, and browser verification on real organizations.
