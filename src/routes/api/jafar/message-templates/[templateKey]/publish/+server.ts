@@ -7,7 +7,7 @@ import { missingRequiredPlaceholders } from '$lib/server/jafar/message-templates
 import { templateKeySchema } from '$lib/server/validation/message-template.schema';
 
 export const POST: RequestHandler = async (event) => {
-	const session = getOwnerSession(event);
+	const session = await getOwnerSession(event);
 	if (!session) return ownerUnauthorized();
 
 	const parsedKey = templateKeySchema.safeParse(event.params.templateKey);

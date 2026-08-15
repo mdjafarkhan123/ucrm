@@ -13,7 +13,7 @@ import { restoreVersionSchema, templateKeySchema } from '$lib/server/validation/
  * this version" action on an older entry both call this same endpoint.
  */
 export const POST: RequestHandler = async (event) => {
-	if (!getOwnerSession(event)) return ownerUnauthorized();
+	if (!await getOwnerSession(event)) return ownerUnauthorized();
 
 	const parsedKey = templateKeySchema.safeParse(event.params.templateKey);
 	if (!parsedKey.success) return json({ error: 'Unknown message template.' }, { status: 404 });

@@ -19,7 +19,7 @@ describe('platform owner history API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 
 		const response = await GET(event());
 
@@ -28,9 +28,9 @@ describe('platform owner history API boundary', () => {
 	});
 
 	it('rejects an invalid organization identifier', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 
 		const response = await GET(event('not-a-uuid'));
@@ -40,9 +40,9 @@ describe('platform owner history API boundary', () => {
 	});
 
 	it('returns 404 when the organization does not exist', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		mockedClient.mockReturnValue({
 			from: () => ({
@@ -58,9 +58,9 @@ describe('platform owner history API boundary', () => {
 	});
 
 	it('merges audit, free-access, and commercial events into one feed sorted newest first', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		mockedClient.mockReturnValue({
 			from: (table: string) => {
@@ -71,6 +71,24 @@ describe('platform owner history API boundary', () => {
 								maybeSingle: async () => ({
 									data: { id: organizationId, name: 'Ridgeway Electric' },
 									error: null
+								})
+							})
+						})
+					};
+				}
+				if (table === 'platform_onboarding_application_provisions') {
+					return {
+						select: () => ({
+							eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) })
+						})
+					};
+				}
+				if (table === 'platform_owner_audit_events') {
+					return {
+						select: () => ({
+							eq: () => ({
+								eq: () => ({
+									order: () => ({ limit: async () => ({ data: [], error: null }) })
 								})
 							})
 						})
@@ -234,6 +252,130 @@ describe('platform owner history API boundary', () => {
 				occurred_at: '2026-08-10T00:00:00Z',
 				before_state: { lifecycle_status: 'active' },
 				after_state: { lifecycle_status: 'suspended' }
+			}
+		]);
+	});
+
+	it('merges the linked application\'s onboarding trail into the same feed', async () => {
+		mockedOwnerSession.mockResolvedValue({
+			email: 'owner@example.com',
+			sessionId: 'session-id'
+		});
+		const applicationId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+		mockedClient.mockReturnValue({
+			from: (table: string) => {
+				if (table === 'organizations') {
+					return {
+						select: () => ({
+							eq: () => ({
+								maybeSingle: async () => ({
+									data: { id: organizationId, name: 'Ridgeway Electric' },
+									error: null
+								})
+							})
+						})
+					};
+				}
+				if (table === 'platform_onboarding_application_provisions') {
+					return {
+						select: () => ({
+							eq: () => ({ maybeSingle: async () => ({ data: { application_id: applicationId }, error: null }) })
+						})
+					};
+				}
+				if (table === 'platform_owner_audit_events') {
+					return {
+						select: () => ({
+							eq: (column: string, value: string) => ({
+								eq: (targetKeyColumn: string, targetKeyValue: string) => ({
+									order: () => ({
+										limit: async () => {
+											if (value === 'organization') {
+												return {
+													data: [
+														{
+															id: 'owner-audit-provisioned',
+															event_type: 'onboarding_application.provisioned',
+															target_type: 'organization',
+															target_key: targetKeyValue,
+															actor_owner_email: 'owner@example.com',
+															before_state: null,
+															after_state: { application_id: applicationId },
+															created_at: '2026-08-09T00:00:00Z'
+														}
+													],
+													error: null
+												};
+											}
+											return {
+												data: [
+													{
+														id: 'owner-audit-reviewed',
+														event_type: 'onboarding_application.reviewed',
+														target_type: 'onboarding_application',
+														target_key: targetKeyValue,
+														actor_owner_email: 'owner@example.com',
+														before_state: null,
+														after_state: null,
+														created_at: '2026-08-08T00:00:00Z'
+													}
+												],
+												error: null
+											};
+										}
+									})
+								})
+							})
+						})
+					};
+				}
+				if (table === 'access_audit_events' || table === 'organization_free_access_events') {
+					return {
+						select: () => ({
+							eq: () => ({
+								order: () => ({ limit: async () => ({ data: [], error: null }) })
+							})
+						})
+					};
+				}
+				if (table === 'organization_commercial_events') {
+					return {
+						select: () => ({
+							eq: () => ({
+								order: () => ({ limit: async () => ({ data: [], error: null }) })
+							})
+						})
+					};
+				}
+				throw new Error(`unexpected table ${table}`);
+			}
+		} as never);
+
+		const response = await GET(event());
+		const body = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(body.applicationId).toBe(applicationId);
+		expect(body.events).toEqual([
+			{
+				id: 'owner_audit:owner-audit-provisioned',
+				event_type: 'onboarding_application.provisioned',
+				target_type: 'organization',
+				target_key: organizationId,
+				actor_email: 'owner@example.com',
+				occurred_at: '2026-08-09T00:00:00Z',
+				before_state: null,
+				after_state: { application_id: applicationId }
+			},
+			{
+				id: 'owner_audit:owner-audit-reviewed',
+				event_type: 'onboarding_application.reviewed',
+				target_type: 'onboarding_application',
+				target_key: applicationId,
+				actor_email: 'owner@example.com',
+				occurred_at: '2026-08-08T00:00:00Z',
+				before_state: null,
+				after_state: null
 			}
 		]);
 	});

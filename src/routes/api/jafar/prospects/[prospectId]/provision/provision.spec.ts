@@ -35,7 +35,7 @@ function event(id: string) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 type ClaimRow = {
@@ -185,14 +185,14 @@ describe('platform owner prospect provisioning API boundary', () => {
 	});
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await POST(event(prospectId));
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('returns 429 once the per-owner-session rate limit is exceeded', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ applicationStage: 'payment_confirmed' }) as never);
 		mockedCheckRateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 30 });
 
@@ -202,14 +202,14 @@ describe('platform owner prospect provisioning API boundary', () => {
 	});
 
 	it('validates the prospect identifier before database access', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event('not-a-uuid'));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('returns 404 when the prospect does not exist', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ applicationStage: null }) as never);
 
 		const response = await POST(event(prospectId));
@@ -217,7 +217,7 @@ describe('platform owner prospect provisioning API boundary', () => {
 	});
 
 	it('rejects provisioning when the application is not payment_confirmed or needs_attention', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ applicationStage: 'new' }) as never);
 
 		const response = await POST(event(prospectId));
@@ -225,7 +225,7 @@ describe('platform owner prospect provisioning API boundary', () => {
 	});
 
 	it('replays the existing organization when already successfully provisioned, even if the stage moved on', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith({
 			applicationStage: 'account_created',
 			existingProvision: { status: 'succeeded', organization_id: 'org-1' }
@@ -240,7 +240,7 @@ describe('platform owner prospect provisioning API boundary', () => {
 	});
 
 	it('rejects a concurrent request while another claim is in progress', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith({
 			applicationStage: 'payment_confirmed',
 			claimResult: {
@@ -263,7 +263,7 @@ describe('platform owner prospect provisioning API boundary', () => {
 	});
 
 	it('provisions the organization on the happy path', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith({ applicationStage: 'payment_confirmed' });
 		mockedClient.mockReturnValue(client as never);
 
@@ -314,7 +314,7 @@ describe('platform owner prospect provisioning API boundary', () => {
 	});
 
 	it('rejects provisioning when the administrator email is already registered', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith({
 			applicationStage: 'payment_confirmed',
 			createUserResult: {
@@ -333,7 +333,7 @@ describe('platform owner prospect provisioning API boundary', () => {
 	});
 
 	it('resumes with an earlier interrupted attempt\'s login account instead of creating a new one', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith({
 			applicationStage: 'needs_attention',
 			claimResult: {
@@ -360,7 +360,7 @@ describe('platform owner prospect provisioning API boundary', () => {
 	});
 
 	it('compensates the administrator account and marks the application needs_attention when provisioning fails', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith({
 			applicationStage: 'payment_confirmed',
 			rpcResult: { error: { message: 'Payment must be confirmed before provisioning.' } }
@@ -391,7 +391,7 @@ describe('platform owner prospect provisioning API boundary', () => {
 	});
 
 	it('still returns the failure response when the provisioning alert itself cannot be raised', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedRaiseAlert.mockRejectedValue(new Error('notifications table unreachable'));
 		const client = clientWith({
 			applicationStage: 'payment_confirmed',
@@ -407,7 +407,7 @@ describe('platform owner prospect provisioning API boundary', () => {
 	});
 
 	it('keeps the stored administrator id when compensating deletion itself fails, so a retry can still resume', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith({
 			applicationStage: 'payment_confirmed',
 			rpcResult: { error: { message: 'Payment must be confirmed before provisioning.' } },

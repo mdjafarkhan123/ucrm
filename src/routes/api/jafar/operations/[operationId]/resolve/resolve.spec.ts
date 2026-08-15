@@ -24,7 +24,7 @@ function event(id: string, body: unknown) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function clientWith(options: {
@@ -44,28 +44,28 @@ describe('platform owner operation resolve API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await POST(event(operationId, { note: 'Handled manually.' }));
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('rejects an invalid operation identifier', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event('not-a-uuid', { note: 'Handled manually.' }));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('requires a resolution note', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event(operationId, { note: '' }));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('returns 404 when the operation does not exist', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ selectData: null }) as never);
 
 		const response = await POST(event(operationId, { note: 'Handled manually.' }));
@@ -73,7 +73,7 @@ describe('platform owner operation resolve API boundary', () => {
 	});
 
 	it('rejects resolving an already-closed operation', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({ selectData: { status: 'manually_resolved' } }) as never
 		);
@@ -83,7 +83,7 @@ describe('platform owner operation resolve API boundary', () => {
 	});
 
 	it('resolves an open operation with the given note', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith({ selectData: { status: 'retrying' } });
 		mockedClient.mockReturnValue(client as never);
 
@@ -100,7 +100,7 @@ describe('platform owner operation resolve API boundary', () => {
 	});
 
 	it('returns a safe server error when the update fails', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				selectData: { status: 'pending' },

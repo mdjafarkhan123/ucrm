@@ -29,7 +29,7 @@ describe('platform owner package read API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 
 		const response = await GET(event());
 
@@ -38,9 +38,9 @@ describe('platform owner package read API boundary', () => {
 	});
 
 	it('returns package versions with controlled feature and limit assignments', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		mockedClient.mockReturnValue({
 			from: (table: string) =>
@@ -78,9 +78,9 @@ describe('platform owner package read API boundary', () => {
 	});
 
 	it('returns a server error when a package query fails', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		mockedClient.mockReturnValue({
 			from: () => query([], { message: 'database unavailable' })
@@ -93,9 +93,9 @@ describe('platform owner package read API boundary', () => {
 	});
 
 	it('returns service unavailable when the owner package service throws', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		mockedClient.mockImplementation(() => {
 			throw new Error('service unavailable');

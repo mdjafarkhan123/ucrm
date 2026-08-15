@@ -60,8 +60,16 @@ export async function enqueueEmailDelivery(
 	return deliveryId;
 }
 
-/** Re-sends the exact content stored on a queued delivery row. Used for both the initial send and later retries. */
-export async function dispatchOutboxDelivery(client: SupabaseClient<Database>, deliveryId: string) {
+/**
+ * Re-sends the exact content stored on a queued delivery row. Used for both the initial send and
+ * later retries. `actorEmail` is only supplied when a human explicitly triggered this attempt (an
+ * owner retrying from Operations) -- the original automated enqueue has no human actor to attribute.
+ */
+export async function dispatchOutboxDelivery(
+	client: SupabaseClient<Database>,
+	deliveryId: string,
+	actorEmail?: string
+) {
 	const { data: delivery, error: loadError } = await client
 		.from('platform_outbox_deliveries')
 		.select('id, recipient_email, attempt_count, target_kind, target_id, correlation_id, payload, status')
@@ -105,6 +113,7 @@ export async function dispatchOutboxDelivery(client: SupabaseClient<Database>, d
 			operationType: 'outbox_email_delivery',
 			idempotencyKey: deliveryId,
 			target,
+			actorEmail,
 			success: false,
 			error
 		});

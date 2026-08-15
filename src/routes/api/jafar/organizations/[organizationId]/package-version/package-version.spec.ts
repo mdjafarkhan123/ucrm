@@ -39,14 +39,14 @@ function event(id: string, body: unknown = validBody) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 describe('platform owner legacy package assignment API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 
 		const response = await POST(event(organizationId));
 
@@ -55,7 +55,7 @@ describe('platform owner legacy package assignment API boundary', () => {
 	});
 
 	it('validates the organization identifier before database access', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 
 		const response = await POST(event('not-a-uuid'));
 
@@ -64,7 +64,7 @@ describe('platform owner legacy package assignment API boundary', () => {
 	});
 
 	it('validates the assignment body before database access', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 
 		const response = await POST(event(organizationId, { ...validBody, reason: '' }));
 
@@ -73,7 +73,7 @@ describe('platform owner legacy package assignment API boundary', () => {
 	});
 
 	it('returns a conflict when the database rejects a duplicate assignment', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue({
 			rpc: vi.fn().mockResolvedValue({ error: { code: '23505', message: 'duplicate' } })
 		} as never);
@@ -85,7 +85,7 @@ describe('platform owner legacy package assignment API boundary', () => {
 	});
 
 	it('returns a server error for unexpected database failures', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue({
 			rpc: vi
 				.fn()
@@ -98,7 +98,7 @@ describe('platform owner legacy package assignment API boundary', () => {
 	});
 
 	it('assigns the legacy package and records the audit trail on success', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const rpc = vi.fn().mockResolvedValue({ error: null });
 		mockedClient.mockReturnValue({ rpc } as never);
 

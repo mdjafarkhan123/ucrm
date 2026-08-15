@@ -23,7 +23,7 @@ const organizationId = '123e4567-e89b-12d3-a456-426614174000';
 const featureKey = 'communications.inbox';
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function event(
@@ -49,12 +49,12 @@ function event(
 describe('platform owner feature exception API boundary', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedResolveAccess.mockResolvedValue({} as never);
 	});
 
 	it('requires owner authentication for both mutation and legacy delete attempts', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		expect((await PUT(event(PUT))).status).toBe(401);
 		expect((await DELETE(event(DELETE))).status).toBe(401);
 	});

@@ -7,7 +7,7 @@ import { prospectIdSchema, prospectCorrectionSchema } from '$lib/server/validati
 import { zodOwnerFieldErrors } from '$lib/server/validation/owner.schema';
 
 export const POST: RequestHandler = async (event) => {
-	const session = getOwnerSession(event);
+	const session = await getOwnerSession(event);
 	if (!session) return ownerUnauthorized();
 
 	const parsedId = prospectIdSchema.safeParse(event.params.prospectId);

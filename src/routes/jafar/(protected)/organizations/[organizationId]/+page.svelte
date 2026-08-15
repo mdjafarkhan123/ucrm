@@ -26,10 +26,12 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import ClosureActions from '$lib/components/jafar/ClosureActions.svelte';
 	import CommercialActions from '$lib/components/jafar/CommercialActions.svelte';
 	import FreeAccessActions from '$lib/components/jafar/FreeAccessActions.svelte';
 	import LegacyReconcileActions from '$lib/components/jafar/LegacyReconcileActions.svelte';
 	import LifecycleActions from '$lib/components/jafar/LifecycleActions.svelte';
+	import TeamAccessActions from '$lib/components/jafar/TeamAccessActions.svelte';
 	import {
 		getOrganizationDetailPreview,
 		organizationDetailScenarioLabel
@@ -115,6 +117,7 @@
 			paid_through_after: string | null;
 			private_reference: string | null;
 		}[];
+		closure: { id: string; reason: string; started_at: string; deadline_at: string } | null;
 		error?: string;
 	};
 
@@ -138,6 +141,7 @@
 		created_at: string;
 		full_name: string | null;
 		email: string | null;
+		permission_overrides: { permission_key: string; override_state: string }[];
 	};
 	type TeamResponse = {
 		organization: { id: string; name: string };
@@ -157,6 +161,22 @@
 	type HistoryResponse = {
 		organization: { id: string; name: string };
 		events: HistoryEvent[];
+		applicationId: string | null;
+		error?: string;
+	};
+
+	type OperationAttempt = {
+		id: string;
+		operation_type: string;
+		target_kind: string;
+		target_id: string;
+		status: string;
+		attempt_count: number;
+		last_error: string | null;
+		updated_at: string;
+	};
+	type OperationListResponse = {
+		operations: OperationAttempt[];
 		error?: string;
 	};
 
@@ -178,14 +198,6 @@
 		'reporting.advanced': 'Advanced reporting'
 	};
 
-	const ROLE_LABELS: Record<string, string> = {
-		owner: 'Owner',
-		admin: 'Admin',
-		office: 'Office',
-		sales: 'Sales',
-		field: 'Field',
-		finance: 'Finance'
-	};
 
 	const HISTORY_EVENT_LABELS: Record<string, string> = {
 		'organization.lifecycle_changed': 'Status changed',
@@ -209,7 +221,28 @@
 		'commercial.package_version_changed': 'Package version changed',
 		'commercial.feature_exception_changed': 'Feature exception changed',
 		'commercial.limit_exception_changed': 'Limit exception changed',
-		'commercial.pending_setup_resolved': 'Legacy organization reviewed'
+		'commercial.pending_setup_resolved': 'Legacy organization reviewed',
+		'onboarding_application.provisioned': 'Organization provisioned from application',
+		'onboarding_application.reviewed': 'Application marked reviewed',
+		'onboarding_application.corrected': 'Application corrected',
+		'onboarding_application.payment_confirmed': 'Application payment confirmed',
+		'onboarding_application.payment_reversed': 'Application payment reversed',
+		'onboarding_application.package_corrected': 'Application package corrected',
+		'onboarding_application.duplicate_acknowledged': 'Marked not a duplicate',
+		'onboarding_application.not_proceeding': 'Application marked not proceeding',
+		'organization_member.profile_corrected': 'Team member profile corrected',
+		'organization_member.administrator_email_recovered': 'Administrator email recovered'
+	};
+
+	const OPERATION_TYPE_LABELS: Record<string, string> = {
+		setup_email_delivery: 'Setup email delivery',
+		outbox_email_delivery: 'Queued email delivery',
+		onboarding_application_provisioning: 'Organization provisioning'
+	};
+	const OPERATION_STATUS_LABELS: Record<string, string> = {
+		pending: 'Pending',
+		retrying: 'Retrying',
+		acknowledged: 'Acknowledged'
 	};
 
 	const OVERRIDE_STATE_OPTIONS = [
@@ -302,6 +335,37 @@
 			return result;
 		}
 	}));
+
+	const applicationId = $derived(historyQuery.data?.applicationId ?? null);
+
+	const organizationOperationsQuery = createQuery<OperationListResponse>(() => ({
+		queryKey: ['jafar', 'operations', 'target', organizationId],
+		enabled: !preview && Boolean(organizationId) && Boolean(access),
+		queryFn: async () => {
+			const response = await fetch(`/api/jafar/operations?target_id=${organizationId}`);
+			const result = (await response.json()) as OperationListResponse;
+			if (!response.ok) throw new Error(result.error ?? 'Operations could not be loaded.');
+			return result;
+		}
+	}));
+
+	const applicationOperationsQuery = createQuery<OperationListResponse>(() => ({
+		queryKey: ['jafar', 'operations', 'target', applicationId],
+		enabled: !preview && Boolean(applicationId) && Boolean(access),
+		queryFn: async () => {
+			const response = await fetch(`/api/jafar/operations?target_id=${applicationId}`);
+			const result = (await response.json()) as OperationListResponse;
+			if (!response.ok) throw new Error(result.error ?? 'Operations could not be loaded.');
+			return result;
+		}
+	}));
+
+	const attentionOperations = $derived(
+		[
+			...(organizationOperationsQuery.data?.operations ?? []),
+			...(applicationOperationsQuery.data?.operations ?? [])
+		].sort((a, b) => (a.updated_at < b.updated_at ? 1 : a.updated_at > b.updated_at ? -1 : 0))
+	);
 
 	const isLegacyUnversioned = $derived(access ? access.package.version_id === null : false);
 
@@ -701,12 +765,18 @@
 					<Badge
 						status={access.organization.lifecycle_status === 'active'
 							? 'success'
-							: access.organization.lifecycle_status === 'suspended'
+							: access.organization.lifecycle_status === 'suspended' ||
+								  access.organization.lifecycle_status === 'pending_closure' ||
+								  access.organization.lifecycle_status === 'closed'
 								? 'critical'
 								: 'warning'}
 						>{access.organization.lifecycle_status === 'pending_setup'
 							? 'Needs review'
-							: access.organization.lifecycle_status}</Badge
+							: access.organization.lifecycle_status === 'pending_closure'
+								? 'Closing'
+								: access.organization.lifecycle_status === 'closed'
+									? 'Closed'
+									: access.organization.lifecycle_status}</Badge
 					>
 				</div>
 				<p class="organization-detail__description">{access.organization.slug}</p>
@@ -769,30 +839,48 @@
 							? checkIcon
 							: access.organization.lifecycle_status === 'pending_setup'
 								? alertIcon
-								: lockIcon}
+								: access.organization.lifecycle_status === 'pending_closure'
+									? clockIcon
+									: lockIcon}
 					</div>
 					<div>
 						<p class="organization-detail__card-label">Lifecycle</p>
 						<h3>
 							{access.organization.lifecycle_status === 'pending_setup'
 								? 'Needs review'
-								: access.organization.lifecycle_status}
+								: access.organization.lifecycle_status === 'pending_closure'
+									? 'Closing'
+									: access.organization.lifecycle_status === 'closed'
+										? 'Closed'
+										: access.organization.lifecycle_status}
 						</h3>
 						<p>
 							{access.organization.lifecycle_status === 'suspended'
 								? 'New contractor actions are paused while records stay preserved.'
 								: access.organization.lifecycle_status === 'pending_setup'
 									? 'This legacy organization predates paid onboarding and needs a one-time review.'
-									: 'Commercial access is currently allowed.'}
+									: access.organization.lifecycle_status === 'pending_closure'
+										? 'Contractor access is blocked. Restore before the deadline or it deletes automatically.'
+										: access.organization.lifecycle_status === 'closed'
+											? 'This organization has been permanently deleted.'
+											: 'Commercial access is currently allowed.'}
 						</p>
 					</div>
 					<div class="organization-detail__status-line">
 						{#if access.organization.lifecycle_status === 'pending_setup'}
 							<LegacyReconcileActions organizationId={access.organization.id} />
 						{:else}
-							<LifecycleActions
+							{#if access.organization.lifecycle_status !== 'pending_closure' && access.organization.lifecycle_status !== 'closed'}
+								<LifecycleActions
+									organizationId={access.organization.id}
+									lifecycleStatus={access.organization.lifecycle_status}
+								/>
+							{/if}
+							<ClosureActions
 								organizationId={access.organization.id}
+								organizationName={access.organization.name}
 								lifecycleStatus={access.organization.lifecycle_status}
+								closure={commercialQuery.data?.closure ?? null}
 							/>
 						{/if}
 					</div>
@@ -807,6 +895,15 @@
 						{#if access.organization.lifecycle_status === 'pending_setup'}
 							<h3>One-time legacy review</h3>
 							<p>Resolve the checklist below, then activate or suspend this organization.</p>
+						{:else if access.organization.lifecycle_status === 'pending_closure'}
+							<h3>Closing organization</h3>
+							<p>
+								Restore before the deadline shown above, or let the countdown finish and delete
+								everything.
+							</p>
+						{:else if access.organization.lifecycle_status === 'closed'}
+							<h3>Organization deleted</h3>
+							<p>All records for this organization have been permanently removed.</p>
 						{:else if access.organization.lifecycle_status === 'suspended'}
 							<h3>Review before reactivating</h3>
 							<p>Confirm the reason for suspension no longer applies before reactivating.</p>
@@ -1265,7 +1362,8 @@
 				<h2 id="team-title">Read-only access review</h2>
 				<p>
 					Contractor owners and administrators manage their team. Jafar can inspect roles and
-					administrator readiness without silently changing access.
+					administrator readiness, fix a support-case profile correction, and recover a locked-out
+					administrator's login without silently changing permissions.
 				</p>
 			</div>
 			<Card class="organization-detail__team-card">
@@ -1280,31 +1378,10 @@
 						retry={() => teamQuery.refetch()}
 					/>
 				{:else}
-					<div class="organization-detail__table-wrap">
-						<table>
-							<caption>Team members</caption>
-							<thead>
-								<tr>
-									<th scope="col">Team member</th>
-									<th scope="col">Email</th>
-									<th scope="col">Role</th>
-									<th scope="col">Joined</th>
-								</tr>
-							</thead>
-							<tbody>
-								{#each teamQuery.data?.members ?? [] as member (member.user_id)}
-									<tr>
-										<td>{member.full_name ?? 'Unnamed'}</td>
-										<td>{member.email ?? 'Not recorded'}</td>
-										<td>{ROLE_LABELS[member.role] ?? member.role}</td>
-										<td>{formatDateTime(member.created_at)}</td>
-									</tr>
-								{:else}
-									<tr><td colspan="4">No team members yet.</td></tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
+					<TeamAccessActions
+						organizationId={access.organization.id}
+						members={teamQuery.data?.members ?? []}
+					/>
 					<div class="organization-detail__recovery-note">
 						<span
 							class="organization-detail__card-icon organization-detail__card-icon--{teamQuery.data
@@ -1324,6 +1401,68 @@
 						<Badge status={teamQuery.data?.has_administrator ? 'success' : 'warning'}
 							>{teamQuery.data?.has_administrator ? 'Ready' : 'Needs attention'}</Badge
 						>
+					</div>
+				{/if}
+			</Card>
+		</section>
+
+		<section class="organization-detail__section" aria-labelledby="attention-title">
+			<div class="organization-detail__section-heading">
+				<p class="organization-detail__eyebrow">Needs attention</p>
+				<h2 id="attention-title">Open recovery items</h2>
+				<p>Background work that has not succeeded yet for this organization.</p>
+			</div>
+			<Card class="organization-detail__history-card">
+				{#if organizationOperationsQuery.isPending || (applicationId && applicationOperationsQuery.isPending)}
+					<LoadingSkeleton variant="table" label="Loading open recovery items" />
+				{:else if organizationOperationsQuery.isError || (applicationId && applicationOperationsQuery.isError)}
+					<ErrorState
+						title="Open recovery items could not be loaded"
+						description={organizationOperationsQuery.error instanceof Error
+							? organizationOperationsQuery.error.message
+							: applicationOperationsQuery.error instanceof Error
+								? applicationOperationsQuery.error.message
+								: 'Open recovery items could not be loaded. Try again.'}
+						retry={() => {
+							organizationOperationsQuery.refetch();
+							applicationOperationsQuery.refetch();
+						}}
+					/>
+				{:else if attentionOperations.length === 0}
+					<p class="organization-detail__muted">No open issues.</p>
+				{:else}
+					<div class="organization-detail__table-wrap">
+						<table>
+							<caption>Open recovery items</caption>
+							<thead>
+								<tr>
+									<th scope="col">Type</th>
+									<th scope="col">Status</th>
+									<th scope="col">Attempts</th>
+									<th scope="col">Updated</th>
+									<th scope="col"><span class="organization-detail__sr-only">Open</span></th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each attentionOperations as operation (operation.id)}
+									<tr>
+										<td>{OPERATION_TYPE_LABELS[operation.operation_type] ?? operation.operation_type}</td>
+										<td
+											><Badge status="warning"
+												>{OPERATION_STATUS_LABELS[operation.status] ?? operation.status}</Badge
+											></td
+										>
+										<td>{operation.attempt_count}</td>
+										<td>{formatDateTime(operation.updated_at)}</td>
+										<td
+											><a href={`${resolve('/jafar/operations')}?operation=${operation.id}`}
+												>View in Operations</a
+											></td
+										>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
 					</div>
 				{/if}
 			</Card>
@@ -2262,6 +2401,22 @@
 		display: grid;
 		align-content: start;
 		gap: var(--space-base);
+	}
+	.organization-detail__muted {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		margin: 0;
+	}
+	.organization-detail__sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 	.organization-detail__history-list {
 		display: grid;

@@ -8,7 +8,7 @@ function unauthorized() {
 }
 
 export const POST: RequestHandler = async (event) => {
-	const session = getOwnerSession(event);
+	const session = await getOwnerSession(event);
 	if (!session) return unauthorized();
 
 	let body: unknown;

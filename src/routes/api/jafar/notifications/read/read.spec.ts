@@ -39,7 +39,7 @@ function postEvent(body: unknown) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 const ID = '123e4567-e89b-12d3-a456-426614174000';
@@ -50,27 +50,27 @@ describe('platform owner notification read-state API boundary', () => {
 	});
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await POST(postEvent({ all: true }));
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('rejects a body that is neither a mark-all nor a list of ids', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(postEvent({ read: true }));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('rejects an id that is not a uuid', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(postEvent({ ids: ['not-a-uuid'], read: true }));
 		expect(response.status).toBe(422);
 	});
 
 	it('marks every unread notification read in one pass', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith();
 		mockedClient.mockReturnValue(client as never);
 
@@ -81,7 +81,7 @@ describe('platform owner notification read-state API boundary', () => {
 	});
 
 	it('marks the listed notifications read', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith();
 		mockedClient.mockReturnValue(client as never);
 
@@ -92,7 +92,7 @@ describe('platform owner notification read-state API boundary', () => {
 	});
 
 	it('clears the read stamp when a notification is marked unread again', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith();
 		mockedClient.mockReturnValue(client as never);
 
@@ -102,7 +102,7 @@ describe('platform owner notification read-state API boundary', () => {
 	});
 
 	it('rejects a record target that is not a known kind', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(postEvent({ target_kind: 'invoice', target_id: ID }));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
@@ -111,7 +111,7 @@ describe('platform owner notification read-state API boundary', () => {
 	// Opening a record from an alert email has to settle the bell too, otherwise a problem
 	// Jafar already dealt with keeps showing as unread.
 	it('marks everything unread about one record read when that record is opened', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith();
 		mockedClient.mockReturnValue(client as never);
 
@@ -126,7 +126,7 @@ describe('platform owner notification read-state API boundary', () => {
 	});
 
 	it('leaves notifications about other records untouched', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith();
 		mockedClient.mockReturnValue(client as never);
 
@@ -135,7 +135,7 @@ describe('platform owner notification read-state API boundary', () => {
 	});
 
 	it('returns a safe server error when the update fails', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ message: 'internal database details' }) as never);
 
 		const response = await POST(postEvent({ all: true }));

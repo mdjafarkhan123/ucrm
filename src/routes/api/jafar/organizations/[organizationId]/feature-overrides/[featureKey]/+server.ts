@@ -16,7 +16,7 @@ import {
 const featureKeyPattern = /^[a-z][a-z0-9_.-]{1,79}$/;
 
 export const PUT: RequestHandler = async (event) => {
-	const session = getOwnerSession(event);
+	const session = await getOwnerSession(event);
 	if (!session) return ownerUnauthorized();
 
 	const parsedOrganizationId = organizationIdSchema.safeParse(event.params.organizationId);
@@ -77,7 +77,7 @@ export const PUT: RequestHandler = async (event) => {
 };
 
 export const DELETE: RequestHandler = async (event) => {
-	if (!getOwnerSession(event)) return ownerUnauthorized();
+	if (!await getOwnerSession(event)) return ownerUnauthorized();
 	const parsedOrganizationId = organizationIdSchema.safeParse(event.params.organizationId);
 	if (!parsedOrganizationId.success || !featureKeyPattern.test(event.params.featureKey)) {
 		return json({ error: 'The organization or feature identifier is invalid.' }, { status: 422 });

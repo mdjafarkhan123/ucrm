@@ -367,6 +367,7 @@
 	<Dialog
 		open={Boolean(selectedOperation)}
 		title={selectedOperation ? operationLabel(selectedOperation) : ''}
+		size="large"
 		onClose={clearSelection}
 	>
 		{#if selectedOperation}
@@ -635,6 +636,7 @@
 
 	.operations tbody tr {
 		transition: background-color var(--timing-quick);
+		cursor: pointer;
 
 		&:hover,
 		&.operations__table-row--selected {

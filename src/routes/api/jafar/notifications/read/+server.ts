@@ -11,7 +11,7 @@ import { notificationReadSchema } from '$lib/server/validation/notification.sche
  * page, and from simply opening a linked record.
  */
 export const POST: RequestHandler = async (event) => {
-	if (!getOwnerSession(event)) return ownerUnauthorized();
+	if (!await getOwnerSession(event)) return ownerUnauthorized();
 
 	let body: unknown;
 	try {

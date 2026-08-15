@@ -22,7 +22,11 @@
 		| 'received_page'
 		| 'application_receipt'
 		| 'password_setup'
-		| 'account_created_contact';
+		| 'account_created_contact'
+		| 'organization_closure_started'
+		| 'organization_closure_fourteen_day_reminder'
+		| 'organization_closure_three_day_reminder'
+		| 'organization_closure_completed';
 	type Placeholder = { key: string; label: string; required: boolean };
 	type TemplateSummary = {
 		template_key: TemplateKey;
@@ -66,13 +70,21 @@
 		received_page: 'Application received page',
 		application_receipt: 'Application receipt email',
 		password_setup: 'Password setup email',
-		account_created_contact: 'Account created notice'
+		account_created_contact: 'Account created notice',
+		organization_closure_started: 'Closure started notice',
+		organization_closure_fourteen_day_reminder: 'Closure 14-day reminder',
+		organization_closure_three_day_reminder: 'Closure 3-day reminder',
+		organization_closure_completed: 'Closure completed notice'
 	};
 	const TEMPLATE_HAS_SUBJECT: Record<TemplateKey, boolean> = {
 		received_page: false,
 		application_receipt: true,
 		password_setup: true,
-		account_created_contact: true
+		account_created_contact: true,
+		organization_closure_started: true,
+		organization_closure_fourteen_day_reminder: true,
+		organization_closure_three_day_reminder: true,
+		organization_closure_completed: true
 	};
 
 	let selectedKey = $state<TemplateKey | null>(null);

@@ -31,7 +31,7 @@ function event(id: string, body: unknown = validBody) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function clientWith(options: {
@@ -84,28 +84,28 @@ describe('platform owner prospect payment confirmation API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await POST(event(prospectId));
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('validates the prospect identifier before database access', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event('not-a-uuid'));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('validates the request body before database access', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event(prospectId, { ...validBody, amount_usd_cents: -1 }));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('returns 404 when the prospect does not exist', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ applicationExists: false }) as never);
 
 		const response = await POST(event(prospectId));
@@ -113,7 +113,7 @@ describe('platform owner prospect payment confirmation API boundary', () => {
 	});
 
 	it('rejects confirmation once the application is past the unpaid stages', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				applicationExists: true,
@@ -126,7 +126,7 @@ describe('platform owner prospect payment confirmation API boundary', () => {
 	});
 
 	it('requires a mismatch reason when the amount differs from the package price', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({ applicationExists: true, priceUsdCents: 14900 }) as never
 		);
@@ -140,7 +140,7 @@ describe('platform owner prospect payment confirmation API boundary', () => {
 	});
 
 	it('confirms payment and moves the stage when the amount matches the package price', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith({ applicationExists: true, priceUsdCents: 9900 });
 		mockedClient.mockReturnValue(client as never);
 
@@ -156,7 +156,7 @@ describe('platform owner prospect payment confirmation API boundary', () => {
 	});
 
 	it('accepts a mismatched amount with a reason and records it', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith({ applicationExists: true, priceUsdCents: 14900 });
 		mockedClient.mockReturnValue(client as never);
 
@@ -171,7 +171,7 @@ describe('platform owner prospect payment confirmation API boundary', () => {
 	});
 
 	it('returns a safe server error when the confirmation cannot be saved', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				applicationExists: true,

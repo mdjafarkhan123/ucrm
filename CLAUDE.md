@@ -25,7 +25,7 @@ Load only relevant skills and read each selected `SKILL.md` completely before ac
 
 ### Grilling
 
-Load `.claude/skills/grilling/SKILL.md` only for unresolved product decisions about user-facing behavior, workflows, or the mental model. Coding choices such as table names, schemas, APIs, components, libraries, and tests are implementation work; inspect the repository and decide them directly.
+Load `.claude/skills/grilling/SKILL.md` only for unresolved product decisions about user-facing behavior, workflows, or the mental model. Think Jafar/User is 15 years old boy, so ask question with easy explanation, if senario needs then attach; inspect the repository and decide them directly.
 
 When grilling is triggered, research facts yourself, interview Jafar in dependency order, and obtain confirmation before implementation planning.
 

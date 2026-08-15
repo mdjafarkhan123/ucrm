@@ -46,7 +46,7 @@ function patchEvent(templateKey: string, body: unknown) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 describe('platform owner single message template API boundary', () => {
@@ -54,21 +54,21 @@ describe('platform owner single message template API boundary', () => {
 
 	describe('GET', () => {
 		it('rejects callers without the separate owner session', async () => {
-			mockedOwnerSession.mockReturnValue(null);
+			mockedOwnerSession.mockResolvedValue(null);
 			const response = await GET(readEvent());
 			expect(response.status).toBe(401);
 			expect(mockedClient).not.toHaveBeenCalled();
 		});
 
 		it('rejects an unknown template key', async () => {
-			mockedOwnerSession.mockReturnValue(session());
+			mockedOwnerSession.mockResolvedValue(session());
 			const response = await GET(readEvent('not_a_real_key'));
 			expect(response.status).toBe(404);
 			expect(mockedClient).not.toHaveBeenCalled();
 		});
 
 		it('returns 404 when the template row does not exist', async () => {
-			mockedOwnerSession.mockReturnValue(session());
+			mockedOwnerSession.mockResolvedValue(session());
 			mockedClient.mockReturnValue({
 				from: (table: string) =>
 					table === 'platform_message_templates'
@@ -81,7 +81,7 @@ describe('platform owner single message template API boundary', () => {
 		});
 
 		it('returns the template, its version history, and its placeholder catalog', async () => {
-			mockedOwnerSession.mockReturnValue(session());
+			mockedOwnerSession.mockResolvedValue(session());
 			mockedClient.mockReturnValue({
 				from: (table: string) =>
 					table === 'platform_message_templates'
@@ -118,7 +118,7 @@ describe('platform owner single message template API boundary', () => {
 		});
 
 		it('returns a safe server error when the template read fails', async () => {
-			mockedOwnerSession.mockReturnValue(session());
+			mockedOwnerSession.mockResolvedValue(session());
 			mockedClient.mockReturnValue({
 				from: (table: string) =>
 					table === 'platform_message_templates'
@@ -134,27 +134,27 @@ describe('platform owner single message template API boundary', () => {
 
 	describe('PATCH', () => {
 		it('rejects callers without the separate owner session', async () => {
-			mockedOwnerSession.mockReturnValue(null);
+			mockedOwnerSession.mockResolvedValue(null);
 			const response = await PATCH(patchEvent('password_setup', { body_draft: 'x' }));
 			expect(response.status).toBe(401);
 			expect(mockedClient).not.toHaveBeenCalled();
 		});
 
 		it('rejects an unknown template key', async () => {
-			mockedOwnerSession.mockReturnValue(session());
+			mockedOwnerSession.mockResolvedValue(session());
 			const response = await PATCH(patchEvent('not_a_real_key', { body_draft: 'x' }));
 			expect(response.status).toBe(404);
 			expect(mockedClient).not.toHaveBeenCalled();
 		});
 
 		it('rejects invalid JSON bodies', async () => {
-			mockedOwnerSession.mockReturnValue(session());
+			mockedOwnerSession.mockResolvedValue(session());
 			const response = await PATCH(patchEvent('password_setup', 'not json'));
 			expect(response.status).toBe(400);
 		});
 
 		it('rejects a draft body that is too long', async () => {
-			mockedOwnerSession.mockReturnValue(session());
+			mockedOwnerSession.mockResolvedValue(session());
 			const response = await PATCH(
 				patchEvent('password_setup', { body_draft: 'x'.repeat(20001) })
 			);
@@ -165,7 +165,7 @@ describe('platform owner single message template API boundary', () => {
 		});
 
 		it('saves the draft and returns the updated row', async () => {
-			mockedOwnerSession.mockReturnValue(session());
+			mockedOwnerSession.mockResolvedValue(session());
 			mockedClient.mockReturnValue({
 				from: () => ({
 					update: (values: unknown) => ({
@@ -185,7 +185,7 @@ describe('platform owner single message template API boundary', () => {
 		});
 
 		it('returns a safe server error when the update fails', async () => {
-			mockedOwnerSession.mockReturnValue(session());
+			mockedOwnerSession.mockResolvedValue(session());
 			mockedClient.mockReturnValue({
 				from: () => ({
 					update: () => ({

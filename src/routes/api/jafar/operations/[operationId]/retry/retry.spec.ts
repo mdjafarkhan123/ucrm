@@ -27,7 +27,7 @@ function event(id: string) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function single(data: unknown, error: null | { message: string } = null) {
@@ -46,21 +46,21 @@ describe('platform owner operation retry API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await POST(event(operationId));
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('rejects an invalid operation identifier', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event('not-a-uuid'));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('returns 404 when the operation does not exist', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({ platform_operation_attempts: attemptTable(null) }) as never
 		);
@@ -70,7 +70,7 @@ describe('platform owner operation retry API boundary', () => {
 	});
 
 	it('rejects retrying an operation that is not open for retry', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				platform_operation_attempts: attemptTable({
@@ -88,7 +88,7 @@ describe('platform owner operation retry API boundary', () => {
 	});
 
 	it('retries a queued outbox email delivery directly', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				platform_operation_attempts: attemptTable({
@@ -103,11 +103,15 @@ describe('platform owner operation retry API boundary', () => {
 
 		const response = await POST(event(operationId));
 		expect(response.status).toBe(200);
-		expect(mockedDispatchOutboxDelivery).toHaveBeenCalledWith(expect.anything(), 'delivery-1');
+		expect(mockedDispatchOutboxDelivery).toHaveBeenCalledWith(
+			expect.anything(),
+			'delivery-1',
+			'owner@example.com'
+		);
 	});
 
 	it('rejects a setup email retry with no linked application', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				platform_operation_attempts: attemptTable({
@@ -125,7 +129,7 @@ describe('platform owner operation retry API boundary', () => {
 	});
 
 	it('returns 404 when the linked application no longer exists', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				platform_operation_attempts: attemptTable({
@@ -143,7 +147,7 @@ describe('platform owner operation retry API boundary', () => {
 	});
 
 	it('rejects a setup email retry with no provisioned administrator', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				platform_operation_attempts: attemptTable({
@@ -167,7 +171,7 @@ describe('platform owner operation retry API boundary', () => {
 	});
 
 	it('re-sends the setup email for a provisioned application', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				platform_operation_attempts: attemptTable({
@@ -202,7 +206,7 @@ describe('platform owner operation retry API boundary', () => {
 	});
 
 	it('returns 502 when the setup email retry still fails to send', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				platform_operation_attempts: attemptTable({
@@ -228,7 +232,7 @@ describe('platform owner operation retry API boundary', () => {
 	});
 
 	it('rejects retrying an operation type that has its own screen', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				platform_operation_attempts: attemptTable({
@@ -245,7 +249,7 @@ describe('platform owner operation retry API boundary', () => {
 	});
 
 	it('returns a safe server error when the lookup fails', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				platform_operation_attempts: attemptTable(null, { message: 'internal database details' })

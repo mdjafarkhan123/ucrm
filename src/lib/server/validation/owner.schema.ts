@@ -153,6 +153,49 @@ export const organizationCommercialCommandSchema = z.union([
 	reversalCommercialCommandSchema
 ]);
 
+export const teamProfileCorrectionSchema = z
+	.object({
+		full_name: z.string().trim().min(1, 'Enter a name.').max(160).nullish(),
+		email: z.string().trim().toLowerCase().email('Enter a valid email address.').max(254).nullish(),
+		reason: z.string().trim().min(1, 'Enter a correction reason.').max(1000),
+		idempotency_key: z.string().uuid('Start a new correction and try again.')
+	})
+	.refine((value) => value.full_name != null || value.email != null, {
+		message: 'Correct the name, the email, or both.',
+		path: ['full_name']
+	});
+
+export const organizationClosureStartSchema = z.object({
+	reason: z.string().trim().min(1, 'Enter a private reason.').max(1000),
+	typed_organization_name: z.string().trim().min(1, 'Type the organization name to confirm.').max(200),
+	idempotency_key: z.string().uuid('Start a new closure and try again.')
+});
+
+export const organizationClosureRestoreSchema = z.object({
+	restoration_evidence_note: z
+		.string()
+		.trim()
+		.min(1, 'Describe how you verified this restoration.')
+		.max(1000),
+	idempotency_key: z.string().uuid('Start a new restoration and try again.')
+});
+
+export const organizationEarlyPurgeSchema = z.object({
+	organization_id: z.string().uuid('Choose a valid organization.'),
+	typed_organization_name: z.string().trim().min(1, 'Type the organization name to confirm.').max(200)
+});
+
+export const administratorEmailRecoverySchema = z.object({
+	new_email: z.string().trim().toLowerCase().email('Enter a valid email address.').max(254),
+	evidence_summary: z
+		.string()
+		.trim()
+		.min(1, 'Describe how you verified this person.')
+		.max(1000),
+	reason: z.string().trim().min(1, 'Enter a recovery reason.').max(1000),
+	idempotency_key: z.string().uuid('Start a new recovery and try again.')
+});
+
 export function zodOwnerFieldErrors(error: z.ZodError) {
 	return Object.fromEntries(
 		error.issues.map((issue) => [String(issue.path[0] ?? 'form'), issue.message] as const)

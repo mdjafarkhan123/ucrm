@@ -23,14 +23,14 @@ function event(body: unknown = { package_key: packageKey }) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 describe('platform owner package retire API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 
 		const response = await POST(event());
 
@@ -39,7 +39,7 @@ describe('platform owner package retire API boundary', () => {
 	});
 
 	it('validates the package selection before calling the database', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 
 		const response = await POST(event({ package_key: 'ultra' }));
 
@@ -48,7 +48,7 @@ describe('platform owner package retire API boundary', () => {
 	});
 
 	it('surfaces the guard message when retirement is rejected', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue({
 			rpc: vi.fn().mockResolvedValue({
 				data: null,
@@ -65,7 +65,7 @@ describe('platform owner package retire API boundary', () => {
 	});
 
 	it('retires the package through the atomic owner database operation', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const rpc = vi.fn().mockResolvedValue({ data: 'package-id', error: null });
 		mockedClient.mockReturnValue({ rpc } as never);
 

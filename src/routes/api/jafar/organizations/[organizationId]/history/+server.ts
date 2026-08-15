@@ -17,13 +17,24 @@ type HistoryEvent = {
 	after_state: Json | null;
 };
 
+type OwnerAuditRow = {
+	id: string;
+	event_type: string;
+	target_type: string;
+	target_key: string | null;
+	actor_owner_email: string;
+	before_state: Json | null;
+	after_state: Json | null;
+	created_at: string;
+};
+
 function jsonObject(value: Json | null): Record<string, Json> {
 	if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
 	return value as Record<string, Json>;
 }
 
 export const GET: RequestHandler = async (event) => {
-	if (!getOwnerSession(event)) return ownerUnauthorized();
+	if (!await getOwnerSession(event)) return ownerUnauthorized();
 	const parsedId = organizationIdSchema.safeParse(event.params.organizationId);
 	if (!parsedId.success)
 		return json({ error: 'The organization identifier is invalid.' }, { status: 422 });
@@ -39,10 +50,20 @@ export const GET: RequestHandler = async (event) => {
 		if (organizationError) throw organizationError;
 		if (!organization) return json({ error: 'Organization was not found.' }, { status: 404 });
 
+		const { data: provisionRow, error: provisionError } = await client
+			.from('platform_onboarding_application_provisions')
+			.select('application_id')
+			.eq('organization_id', parsedId.data)
+			.maybeSingle();
+		if (provisionError) throw provisionError;
+		const applicationId = provisionRow?.application_id ?? null;
+
 		const [
 			{ data: auditRows, error: auditError },
 			{ data: freeAccessRows, error: freeAccessError },
-			{ data: commercialRows, error: commercialError }
+			{ data: commercialRows, error: commercialError },
+			{ data: provisionedRows, error: provisionedError },
+			{ data: applicationRows, error: applicationError }
 		] = await Promise.all([
 			client
 				.from('access_audit_events')
@@ -67,11 +88,29 @@ export const GET: RequestHandler = async (event) => {
 				)
 				.eq('organization_id', parsedId.data)
 				.order('occurred_at', { ascending: false })
-				.limit(100)
+				.limit(100),
+			client
+				.from('platform_owner_audit_events')
+				.select('id, event_type, target_type, target_key, actor_owner_email, before_state, after_state, created_at')
+				.eq('target_type', 'organization')
+				.eq('target_key', parsedId.data)
+				.order('created_at', { ascending: false })
+				.limit(100),
+			applicationId
+				? client
+						.from('platform_owner_audit_events')
+						.select('id, event_type, target_type, target_key, actor_owner_email, before_state, after_state, created_at')
+						.eq('target_type', 'onboarding_application')
+						.eq('target_key', applicationId)
+						.order('created_at', { ascending: false })
+						.limit(100)
+				: Promise.resolve({ data: [] as OwnerAuditRow[], error: null })
 		]);
 		if (auditError) throw auditError;
 		if (freeAccessError) throw freeAccessError;
 		if (commercialError) throw commercialError;
+		if (provisionedError) throw provisionedError;
+		if (applicationError) throw applicationError;
 
 		const auditEvents: HistoryEvent[] = (auditRows ?? []).map((row) => ({
 			id: `audit:${row.id}`,
@@ -129,11 +168,28 @@ export const GET: RequestHandler = async (event) => {
 				};
 			});
 
-		const events = [...auditEvents, ...freeAccessEvents, ...commercialEvents].sort((a, b) =>
-			a.occurred_at < b.occurred_at ? 1 : a.occurred_at > b.occurred_at ? -1 : 0
-		);
+		const ownerAuditEvents: HistoryEvent[] = [
+			...(provisionedRows ?? []),
+			...(applicationRows ?? [])
+		].map((row) => ({
+			id: `owner_audit:${row.id}`,
+			event_type: row.event_type,
+			target_type: row.target_type,
+			target_key: row.target_key,
+			actor_email: row.actor_owner_email,
+			occurred_at: row.created_at,
+			before_state: row.before_state,
+			after_state: row.after_state
+		}));
 
-		return json({ organization, events });
+		const events = [
+			...auditEvents,
+			...freeAccessEvents,
+			...commercialEvents,
+			...ownerAuditEvents
+		].sort((a, b) => (a.occurred_at < b.occurred_at ? 1 : a.occurred_at > b.occurred_at ? -1 : 0));
+
+		return json({ organization, events, applicationId });
 	} catch (error) {
 		console.error('Could not load organization history.', error);
 		return json({ error: 'History could not be loaded.' }, { status: 500 });

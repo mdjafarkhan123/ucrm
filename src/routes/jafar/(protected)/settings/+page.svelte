@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
@@ -284,6 +286,17 @@
 			</footer>
 		</form>
 	{/if}
+
+	<section class="owner-settings__section">
+		<h2>Organization cleanup</h2>
+		<p class="owner-settings__hint">
+			Organizations currently in their 30-day recovery window after closure, with an option to
+			delete one early.
+		</p>
+		<a class="owner-settings__cleanup-link" href={resolve('/jafar/settings/cleanup')}
+			>View cleanup queue <span aria-hidden="true">{@html arrowRightIcon}</span></a
+		>
+	</section>
 </main>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
@@ -390,6 +403,22 @@
 		outline: none;
 		border-color: var(--color-interactive);
 		box-shadow: var(--shadow-focus);
+	}
+	.owner-settings__cleanup-link {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-smallest);
+		width: fit-content;
+		color: var(--color-interactive);
+		font-weight: 600;
+		text-decoration: none;
+	}
+	.owner-settings__cleanup-link:hover {
+		text-decoration: underline;
+	}
+	.owner-settings__cleanup-link :global(svg) {
+		width: 16px;
+		height: 16px;
 	}
 	.owner-settings__field-error {
 		color: var(--color-critical);

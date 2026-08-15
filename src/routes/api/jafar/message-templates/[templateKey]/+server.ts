@@ -8,7 +8,7 @@ import { templateDraftSchema, templateKeySchema } from '$lib/server/validation/m
 import { zodOwnerFieldErrors } from '$lib/server/validation/owner.schema';
 
 export const GET: RequestHandler = async (event) => {
-	if (!getOwnerSession(event)) return ownerUnauthorized();
+	if (!await getOwnerSession(event)) return ownerUnauthorized();
 
 	const parsedKey = templateKeySchema.safeParse(event.params.templateKey);
 	if (!parsedKey.success) return json({ error: 'Unknown message template.' }, { status: 404 });
@@ -43,7 +43,7 @@ export const GET: RequestHandler = async (event) => {
 };
 
 export const PATCH: RequestHandler = async (event) => {
-	if (!getOwnerSession(event)) return ownerUnauthorized();
+	if (!await getOwnerSession(event)) return ownerUnauthorized();
 
 	const parsedKey = templateKeySchema.safeParse(event.params.templateKey);
 	if (!parsedKey.success) return json({ error: 'Unknown message template.' }, { status: 404 });

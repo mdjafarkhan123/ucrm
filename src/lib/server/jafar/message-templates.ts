@@ -2,7 +2,11 @@ export const TEMPLATE_KEYS = [
 	'received_page',
 	'application_receipt',
 	'password_setup',
-	'account_created_contact'
+	'account_created_contact',
+	'organization_closure_started',
+	'organization_closure_fourteen_day_reminder',
+	'organization_closure_three_day_reminder',
+	'organization_closure_completed'
 ] as const;
 
 export type TemplateKey = (typeof TEMPLATE_KEYS)[number];
@@ -33,7 +37,17 @@ export const TEMPLATE_PLACEHOLDERS: Record<TemplateKey, PlaceholderDefinition[]>
 		{ key: 'business_name', label: 'Business name', required: false },
 		{ key: 'setup_link', label: 'Password setup link', required: true }
 	],
-	account_created_contact: [{ key: 'business_name', label: 'Business name', required: false }]
+	account_created_contact: [{ key: 'business_name', label: 'Business name', required: false }],
+	organization_closure_started: [{ key: 'business_name', label: 'Business name', required: false }],
+	organization_closure_fourteen_day_reminder: [
+		{ key: 'business_name', label: 'Business name', required: false },
+		{ key: 'closure_deadline_at', label: 'Closure deadline', required: true }
+	],
+	organization_closure_three_day_reminder: [
+		{ key: 'business_name', label: 'Business name', required: false },
+		{ key: 'closure_deadline_at', label: 'Closure deadline', required: true }
+	],
+	organization_closure_completed: [{ key: 'business_name', label: 'Business name', required: false }]
 };
 
 /** Returns the required tag keys missing from the given draft subject/body, e.g. `['price']`. */

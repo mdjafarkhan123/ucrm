@@ -17,7 +17,7 @@ const organizationId = '123e4567-e89b-12d3-a456-426614174000';
 const idempotencyKey = '223e4567-e89b-12d3-a456-426614174000';
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function getEvent(id = organizationId) {
@@ -60,11 +60,11 @@ function organizationRow() {
 describe('platform owner legacy-review GET boundary', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 	});
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 
 		const response = await GET(getEvent());
 
@@ -123,12 +123,12 @@ describe('platform owner legacy-review GET boundary', () => {
 describe('platform owner legacy-review PATCH boundary', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedConsumeStepUp.mockReturnValue(true);
 	});
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 
 		const response = await PATCH(patchEvent(organizationId, suspendBody()));
 

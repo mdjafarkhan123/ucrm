@@ -24,14 +24,14 @@ function event(body: unknown = { package_key: packageKey, version_id: versionId 
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 describe('platform owner package publish API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 
 		const response = await POST(event());
 
@@ -40,7 +40,7 @@ describe('platform owner package publish API boundary', () => {
 	});
 
 	it('validates the draft selection before calling the database', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 
 		const response = await POST(event({ package_key: packageKey }));
 
@@ -49,7 +49,7 @@ describe('platform owner package publish API boundary', () => {
 	});
 
 	it('does not expose raw database errors when publication is rejected', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue({
 			rpc: vi
 				.fn()
@@ -65,7 +65,7 @@ describe('platform owner package publish API boundary', () => {
 	});
 
 	it('publishes the draft version through the atomic owner database operation', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const rpc = vi.fn().mockResolvedValue({ data: versionId, error: null });
 		mockedClient.mockReturnValue({ rpc } as never);
 

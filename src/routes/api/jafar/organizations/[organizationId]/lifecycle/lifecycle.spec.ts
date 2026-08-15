@@ -25,7 +25,7 @@ const organizationId = '123e4567-e89b-12d3-a456-426614174000';
 const idempotencyKey = '223e4567-e89b-12d3-a456-426614174000';
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function event(id = organizationId, body: unknown = {}) {
@@ -60,13 +60,13 @@ function reactivateBody() {
 describe('platform owner lifecycle API boundary', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedConsumeStepUp.mockReturnValue(true);
 		mockedResolveAccess.mockResolvedValue({} as never);
 	});
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 
 		const response = await PATCH(event(organizationId, suspendBody()));
 

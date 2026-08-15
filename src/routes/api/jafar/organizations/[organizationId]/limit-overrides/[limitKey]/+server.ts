@@ -15,7 +15,7 @@ import {
 } from '$lib/server/validation/access.schema';
 
 export const PUT: RequestHandler = async (event) => {
-	const session = getOwnerSession(event);
+	const session = await getOwnerSession(event);
 	if (!session) return ownerUnauthorized();
 
 	const parsedOrganizationId = organizationIdSchema.safeParse(event.params.organizationId);
@@ -78,7 +78,7 @@ export const PUT: RequestHandler = async (event) => {
 };
 
 export const DELETE: RequestHandler = async (event) => {
-	if (!getOwnerSession(event)) return ownerUnauthorized();
+	if (!await getOwnerSession(event)) return ownerUnauthorized();
 	const parsedOrganizationId = organizationIdSchema.safeParse(event.params.organizationId);
 	const parsedLimitKey = limitKeySchema.safeParse(event.params.limitKey);
 	if (!parsedOrganizationId.success || !parsedLimitKey.success) {

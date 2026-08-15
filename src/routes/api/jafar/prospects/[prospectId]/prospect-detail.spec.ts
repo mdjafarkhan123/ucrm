@@ -26,7 +26,7 @@ function query(data: unknown, error: null | { message: string } = null) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function detailEvent() {
@@ -41,7 +41,7 @@ describe('platform owner prospect detail duplicate matches', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('does not query for matches when the application is not flagged as a possible duplicate', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const fromCalls: string[] = [];
 		mockedClient.mockReturnValue({
 			from: (table: string) => {
@@ -74,7 +74,7 @@ describe('platform owner prospect detail duplicate matches', () => {
 	});
 
 	it('returns matching records and reasons for a possible duplicate', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const matchRow = {
 			id: 'other-application',
 			business_name: 'Bright Co',
@@ -120,7 +120,7 @@ describe('platform owner prospect detail duplicate matches', () => {
 	});
 
 	it('returns payment confirmations, reversals, and provisioning status for visibility into needs_attention', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const confirmation = {
 			id: 'confirmation-1',
 			actor_owner_email: 'owner@example.com',
@@ -174,7 +174,7 @@ describe('platform owner prospect detail duplicate matches', () => {
 	});
 
 	it('returns empty history and a null provision when none exist yet', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue({
 			from: (table: string) =>
 				({

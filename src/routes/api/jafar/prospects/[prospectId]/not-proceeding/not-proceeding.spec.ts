@@ -25,7 +25,7 @@ function event(id: string, body: unknown = {}) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function clientWith(rpcError: { message: string } | null = null) {
@@ -37,21 +37,21 @@ describe('platform owner prospect not-proceeding API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await POST(event(prospectId));
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('validates the prospect identifier before database access', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event('not-a-uuid'));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('returns 404 when the prospect does not exist', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({ message: 'The onboarding application does not exist.' }) as never
 		);
@@ -61,7 +61,7 @@ describe('platform owner prospect not-proceeding API boundary', () => {
 	});
 
 	it('rejects marking an already-paid application not proceeding', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({ message: 'Only an unpaid application can be marked not proceeding.' }) as never
 		);
@@ -71,7 +71,7 @@ describe('platform owner prospect not-proceeding API boundary', () => {
 	});
 
 	it('marks an unpaid application not proceeding with no reason', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith();
 		mockedClient.mockReturnValue(client as never);
 
@@ -85,7 +85,7 @@ describe('platform owner prospect not-proceeding API boundary', () => {
 	});
 
 	it('passes a supplied reason through to close a possible duplicate', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith();
 		mockedClient.mockReturnValue(client as never);
 
@@ -99,7 +99,7 @@ describe('platform owner prospect not-proceeding API boundary', () => {
 	});
 
 	it('returns 422 with a field error when closing an unacknowledged duplicate without a reason', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({ message: 'A private reason is required to close a possible duplicate.' }) as never
 		);
@@ -111,7 +111,7 @@ describe('platform owner prospect not-proceeding API boundary', () => {
 	});
 
 	it('returns a safe server error when the update fails', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ message: 'internal database details' }) as never);
 
 		const response = await POST(event(prospectId));

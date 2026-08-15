@@ -23,7 +23,7 @@ const organizationId = '123e4567-e89b-12d3-a456-426614174000';
 const packageVersionId = '223e4567-e89b-12d3-a456-426614174000';
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function event(
@@ -48,12 +48,12 @@ function event(
 describe('platform owner package change API boundary', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedResolveAccess.mockResolvedValue({} as never);
 	});
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await PATCH(event());
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();

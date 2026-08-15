@@ -10,7 +10,7 @@ import {
 } from '$lib/server/validation/access.schema';
 
 export const POST: RequestHandler = async (event) => {
-	const session = getOwnerSession(event);
+	const session = await getOwnerSession(event);
 	if (!session) return ownerUnauthorized();
 
 	const parsedOrganizationId = organizationIdSchema.safeParse(event.params.organizationId);

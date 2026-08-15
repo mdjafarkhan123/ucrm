@@ -39,16 +39,16 @@ describe('platform owner prospect read API boundary', () => {
 	});
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await list(event());
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('returns filtered prospect summaries', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		mockedClient.mockReturnValue({
 			from: () => query([{ id: 'prospect-1', stage: 'new', business_name: 'Bright Co' }])
@@ -62,9 +62,9 @@ describe('platform owner prospect read API boundary', () => {
 	});
 
 	it('escapes search syntax before building the database filter', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		mockedClient.mockReturnValue({ from: () => query([]) } as never);
 
@@ -79,9 +79,9 @@ describe('platform owner prospect read API boundary', () => {
 	});
 
 	it('returns a safe server error when the prospect list query fails', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		mockedClient.mockReturnValue({
 			from: () => query([], { message: 'internal database details' })
@@ -94,9 +94,9 @@ describe('platform owner prospect read API boundary', () => {
 	});
 
 	it('returns the application and immutable history', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		mockedClient.mockReturnValue({
 			from: (table: string) =>
@@ -124,9 +124,9 @@ describe('platform owner prospect read API boundary', () => {
 	});
 
 	it('rejects an invalid prospect identifier', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		const response = await detail({
 			...event(),

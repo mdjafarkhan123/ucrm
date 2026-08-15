@@ -27,7 +27,7 @@ describe('platform owner access API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 
 		const response = await GET(event('00000000-0000-0000-0000-000000000001'));
 
@@ -35,9 +35,9 @@ describe('platform owner access API boundary', () => {
 	});
 
 	it('validates organization identifiers after owner authentication', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 
 		const response = await GET(event('not-a-uuid'));

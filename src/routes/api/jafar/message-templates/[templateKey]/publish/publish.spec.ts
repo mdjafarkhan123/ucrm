@@ -22,7 +22,7 @@ function event(templateKey = 'password_setup') {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function clientWith(readResult: { data: unknown; error: null | { message: string } }, rpc?: ReturnType<typeof vi.fn>) {
@@ -36,21 +36,21 @@ describe('platform owner message template publish API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await POST(event());
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('rejects an unknown template key', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event('not_a_real_key'));
 		expect(response.status).toBe(404);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('returns 404 when the template row does not exist', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ data: null, error: null }) as never);
 
 		const response = await POST(event());
@@ -58,7 +58,7 @@ describe('platform owner message template publish API boundary', () => {
 	});
 
 	it('rejects publishing empty content', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({ data: { subject_draft: null, body_draft: '   ' }, error: null }) as never
 		);
@@ -70,7 +70,7 @@ describe('platform owner message template publish API boundary', () => {
 	});
 
 	it('rejects publishing when a required tag was removed from the draft', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				data: { subject_draft: 'Hello {{business_name}}', body_draft: 'No link here.' },
@@ -85,7 +85,7 @@ describe('platform owner message template publish API boundary', () => {
 	});
 
 	it('publishes when every required tag is present', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const rpc = vi.fn().mockResolvedValue({ data: { template_key: 'password_setup' }, error: null });
 		mockedClient.mockReturnValue(
 			clientWith(
@@ -106,7 +106,7 @@ describe('platform owner message template publish API boundary', () => {
 	});
 
 	it('returns a safe server error when the publish RPC fails', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const rpc = vi.fn().mockResolvedValue({ data: null, error: { message: 'internal database details' } });
 		mockedClient.mockReturnValue(
 			clientWith(

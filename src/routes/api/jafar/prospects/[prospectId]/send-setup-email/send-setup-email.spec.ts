@@ -26,7 +26,7 @@ function event(id: string) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 type ClientOptions = {
@@ -88,21 +88,21 @@ describe('platform owner prospect setup-email send API boundary', () => {
 	});
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await POST(event(prospectId));
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('validates the prospect identifier before database access', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event('not-a-uuid'));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('returns 404 when the prospect does not exist', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ applicationStage: null }) as never);
 
 		const response = await POST(event(prospectId));
@@ -110,7 +110,7 @@ describe('platform owner prospect setup-email send API boundary', () => {
 	});
 
 	it('rejects when the application has not been provisioned', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ applicationStage: 'payment_confirmed' }) as never);
 
 		const response = await POST(event(prospectId));
@@ -119,7 +119,7 @@ describe('platform owner prospect setup-email send API boundary', () => {
 	});
 
 	it('rejects when no successful provision record exists', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				applicationStage: 'account_created',
@@ -133,7 +133,7 @@ describe('platform owner prospect setup-email send API boundary', () => {
 	});
 
 	it('rejects resending once the administrator has already completed setup', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				applicationStage: 'account_created',
@@ -148,7 +148,7 @@ describe('platform owner prospect setup-email send API boundary', () => {
 	});
 
 	it('returns 502 when delivery fails', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				applicationStage: 'account_created',
@@ -163,7 +163,7 @@ describe('platform owner prospect setup-email send API boundary', () => {
 	});
 
 	it('sends the setup email on the happy path', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith({
 			applicationStage: 'account_created',
 			provision: { status: 'succeeded', administrator_user_id: 'admin-user-id' },

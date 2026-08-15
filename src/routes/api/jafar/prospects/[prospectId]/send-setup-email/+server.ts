@@ -7,7 +7,7 @@ import { issueSetupLink } from '$lib/server/jafar/setup-link';
 import { prospectIdSchema } from '$lib/server/validation/prospect.schema';
 
 export const POST: RequestHandler = async (event) => {
-	const session = getOwnerSession(event);
+	const session = await getOwnerSession(event);
 	if (!session) return ownerUnauthorized();
 
 	const parsedId = prospectIdSchema.safeParse(event.params.prospectId);

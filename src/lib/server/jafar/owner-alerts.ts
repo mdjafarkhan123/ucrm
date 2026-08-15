@@ -16,7 +16,8 @@ export const EMAIL_ALERT_KINDS = new Set([
 	'onboarding_application_submission_failed',
 	'setup_email_failed',
 	'onboarding_application_provisioning_failed',
-	'onboarding_application_payment_reversed'
+	'onboarding_application_payment_reversed',
+	'organization_purge_failed'
 ]);
 
 const SEVERITY_PREFIX = {

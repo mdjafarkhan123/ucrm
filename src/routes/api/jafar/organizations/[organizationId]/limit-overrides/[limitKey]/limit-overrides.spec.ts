@@ -23,7 +23,7 @@ const organizationId = '123e4567-e89b-12d3-a456-426614174000';
 const limitKey = 'employee_seats';
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function event(
@@ -50,15 +50,15 @@ function event(
 describe('platform owner limit exception API boundary', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedResolveAccess.mockResolvedValue({} as never);
 	});
 
 	it('requires owner authentication and validates the limit state', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		expect((await PUT(event(PUT))).status).toBe(401);
 		expect((await DELETE(event(DELETE))).status).toBe(401);
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		expect(
 			(
 				await PUT(

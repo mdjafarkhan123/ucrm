@@ -6,7 +6,7 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { TEMPLATE_PLACEHOLDERS, type TemplateKey } from '$lib/server/jafar/message-templates';
 
 export const GET: RequestHandler = async (event) => {
-	if (!getOwnerSession(event)) return ownerUnauthorized();
+	if (!await getOwnerSession(event)) return ownerUnauthorized();
 
 	try {
 		const client = getOwnerSupabaseClient();

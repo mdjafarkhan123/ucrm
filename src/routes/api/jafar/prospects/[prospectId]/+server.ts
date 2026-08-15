@@ -43,7 +43,7 @@ function duplicateMatchReasons(
 }
 
 export const GET: RequestHandler = async (event) => {
-	if (!getOwnerSession(event)) return ownerUnauthorized();
+	if (!await getOwnerSession(event)) return ownerUnauthorized();
 
 	const parsedId = prospectIdSchema.safeParse(event.params.prospectId);
 	if (!parsedId.success)

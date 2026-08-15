@@ -18,7 +18,7 @@ const originalEventId = '223e4567-e89b-12d3-a456-426614174000';
 const idempotencyKey = '323e4567-e89b-42d3-a456-426614174000';
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function getEvent(id = organizationId) {
@@ -89,6 +89,7 @@ function commercialClient(
 						private_reference: 'bank-1'
 					}
 				]);
+			if (table === 'organization_closure_records') return query(null);
 			throw new Error(`Unexpected table: ${table}`);
 		},
 		rpc: vi.fn().mockResolvedValue(rpcResult)
@@ -99,7 +100,7 @@ describe('platform owner commercial API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 
 		const response = await GET(getEvent());
 
@@ -108,7 +109,7 @@ describe('platform owner commercial API boundary', () => {
 	});
 
 	it('validates each commercial action before database access', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 
 		const response = await POST(
 			postEvent({
@@ -127,7 +128,7 @@ describe('platform owner commercial API boundary', () => {
 	});
 
 	it('requires password reconfirmation only when renewal also reactivates', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedConsumeStepUp.mockReturnValue(false);
 
 		const response = await POST(
@@ -147,7 +148,7 @@ describe('platform owner commercial API boundary', () => {
 	});
 
 	it('records a plain renewal without changing lifecycle or requiring step-up', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = commercialClient('active');
 		mockedClient.mockReturnValue(client as never);
 
@@ -177,7 +178,7 @@ describe('platform owner commercial API boundary', () => {
 	});
 
 	it('returns a conflict when an adjustment references an invalid original event', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			commercialClient('active', {
 				data: null,
@@ -199,5 +200,26 @@ describe('platform owner commercial API boundary', () => {
 
 		expect(response.status).toBe(409);
 		expect((await response.json()).error).toBe('The original event is not valid.');
+	});
+
+	it('includes the open closure record when the organization is pending closure', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		const client = commercialClient('active');
+		const closingRecord = {
+			id: 'closure-1',
+			reason: 'Contractor requested closure',
+			started_at: '2026-08-01T00:00:00Z',
+			deadline_at: '2026-08-31T00:00:00Z'
+		};
+		const baseFrom = client.from;
+		client.from = ((table: string) =>
+			table === 'organization_closure_records' ? query(closingRecord) : baseFrom(table)) as never;
+		mockedClient.mockReturnValue(client as never);
+
+		const response = await GET(getEvent());
+		const result = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(result.closure).toEqual(closingRecord);
 	});
 });

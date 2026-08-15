@@ -23,7 +23,7 @@ function event(id: string) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function clientWith(rpcError: { message: string } | null = null) {
@@ -35,21 +35,21 @@ describe('platform owner prospect acknowledge-duplicate API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await POST(event(prospectId));
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('validates the prospect identifier before database access', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event('not-a-uuid'));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('returns 404 when the prospect does not exist', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({ message: 'The onboarding application does not exist.' }) as never
 		);
@@ -59,7 +59,7 @@ describe('platform owner prospect acknowledge-duplicate API boundary', () => {
 	});
 
 	it('rejects acknowledging an application that was never flagged as a duplicate', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				message: 'This application was not flagged as a possible duplicate.'
@@ -71,7 +71,7 @@ describe('platform owner prospect acknowledge-duplicate API boundary', () => {
 	});
 
 	it('rejects acknowledging an already-acknowledged duplicate', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({ message: 'This possible duplicate was already acknowledged.' }) as never
 		);
@@ -81,7 +81,7 @@ describe('platform owner prospect acknowledge-duplicate API boundary', () => {
 	});
 
 	it('rejects acknowledging once the application is past the unpaid stages', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				message: 'Only an unpaid application can have its duplicate flag acknowledged.'
@@ -93,7 +93,7 @@ describe('platform owner prospect acknowledge-duplicate API boundary', () => {
 	});
 
 	it('acknowledges a possible duplicate', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith();
 		mockedClient.mockReturnValue(client as never);
 
@@ -106,7 +106,7 @@ describe('platform owner prospect acknowledge-duplicate API boundary', () => {
 	});
 
 	it('returns a safe server error when the update fails', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ message: 'internal database details' }) as never);
 
 		const response = await POST(event(prospectId));

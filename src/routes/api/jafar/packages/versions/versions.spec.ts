@@ -26,7 +26,7 @@ describe('platform owner package version write API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 
 		const response = await POST(event({}));
 
@@ -35,9 +35,9 @@ describe('platform owner package version write API boundary', () => {
 	});
 
 	it('validates the package version before calling the database', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 
 		const response = await POST(event({ package_key: 'growth' }));
@@ -47,9 +47,9 @@ describe('platform owner package version write API boundary', () => {
 	});
 
 	it('creates a draft through the atomic owner database operation', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		const rpc = vi.fn().mockResolvedValue({ data: 'version-id', error: null });
 		mockedClient.mockReturnValue({ rpc } as never);
@@ -75,9 +75,9 @@ describe('platform owner package version write API boundary', () => {
 	});
 
 	it('does not expose raw database errors when saving a draft is rejected', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		mockedClient.mockReturnValue({
 			rpc: vi.fn().mockResolvedValue({
@@ -103,9 +103,9 @@ describe('platform owner package version write API boundary', () => {
 	});
 
 	it('does not expose raw database errors when publishing is rejected', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		mockedClient.mockReturnValue({
 			rpc: vi.fn().mockResolvedValue({

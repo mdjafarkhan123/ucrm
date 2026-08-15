@@ -175,6 +175,32 @@ describe('durable email outbox', () => {
 		);
 	});
 
+	it('attributes a failed retry to the owner who triggered it', async () => {
+		const client = clientWith([deliveryRow()]);
+		mockedSend.mockRejectedValue(new Error('Brevo returned 503'));
+
+		await expect(
+			dispatchOutboxDelivery(client as never, 'delivery-1', 'owner@example.com')
+		).rejects.toThrow();
+
+		expect(mockedRecordOutcome).toHaveBeenCalledWith(
+			client,
+			expect.objectContaining({ actorEmail: 'owner@example.com', success: false })
+		);
+	});
+
+	it('leaves the original automated send unattributed to any human actor', async () => {
+		const client = clientWith([deliveryRow()]);
+		mockedSend.mockRejectedValue(new Error('Brevo returned 503'));
+
+		await expect(dispatchOutboxDelivery(client as never, 'delivery-1')).rejects.toThrow();
+
+		expect(mockedRecordOutcome).toHaveBeenCalledWith(
+			client,
+			expect.objectContaining({ actorEmail: undefined })
+		);
+	});
+
 	it('counts every failed attempt so a repeatedly failing send is visible in Operations', async () => {
 		const client = clientWith([deliveryRow({ status: 'failed', attempt_count: 2 })]);
 		mockedSend.mockRejectedValue(new Error('Brevo returned 503'));

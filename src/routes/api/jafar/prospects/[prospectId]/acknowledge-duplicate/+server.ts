@@ -6,7 +6,7 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { prospectIdSchema } from '$lib/server/validation/prospect.schema';
 
 export const POST: RequestHandler = async (event) => {
-	const session = getOwnerSession(event);
+	const session = await getOwnerSession(event);
 	if (!session) return ownerUnauthorized();
 
 	const parsedId = prospectIdSchema.safeParse(event.params.prospectId);

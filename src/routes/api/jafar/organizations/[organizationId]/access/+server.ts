@@ -10,7 +10,7 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { organizationIdSchema, zodAccessFieldErrors } from '$lib/server/validation/access.schema';
 
 export const GET: RequestHandler = async (event) => {
-	if (!getOwnerSession(event)) return ownerUnauthorized();
+	if (!await getOwnerSession(event)) return ownerUnauthorized();
 
 	const parsedOrganizationId = organizationIdSchema.safeParse(event.params.organizationId);
 	if (!parsedOrganizationId.success) {

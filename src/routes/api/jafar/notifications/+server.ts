@@ -21,7 +21,7 @@ function sanitizeSearch(term: string) {
 }
 
 export const GET: RequestHandler = async (event) => {
-	if (!getOwnerSession(event)) return ownerUnauthorized();
+	if (!await getOwnerSession(event)) return ownerUnauthorized();
 
 	const parsed = notificationListQuerySchema.safeParse({
 		status: event.url.searchParams.get('status') ?? undefined,

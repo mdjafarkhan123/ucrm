@@ -30,7 +30,7 @@ function event(id: string, body: unknown = validBody) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function clientWith(
@@ -58,28 +58,28 @@ describe('platform owner prospect payment reversal API boundary', () => {
 	});
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await POST(event(prospectId));
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('validates the prospect identifier before database access', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event('not-a-uuid'));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('requires a reason', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event(prospectId, { reason: '  ' }));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('returns 404 when the prospect does not exist', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ data: null, error: null }) as never);
 
 		const response = await POST(event(prospectId));
@@ -87,7 +87,7 @@ describe('platform owner prospect payment reversal API boundary', () => {
 	});
 
 	it('rejects when the application is not in a reversible stage', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith(undefined, {
 				message: 'Only a confirmed payment can be reversed.'
@@ -99,7 +99,7 @@ describe('platform owner prospect payment reversal API boundary', () => {
 	});
 
 	it('rejects when the payment was already reversed', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith(undefined, { message: 'This payment was already reversed.' }) as never
 		);
@@ -109,7 +109,7 @@ describe('platform owner prospect payment reversal API boundary', () => {
 	});
 
 	it('rejects when there is no payment confirmation on file', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith(undefined, {
 				message: 'No payment confirmation exists for this application.'
@@ -121,7 +121,7 @@ describe('platform owner prospect payment reversal API boundary', () => {
 	});
 
 	it('reverses the payment, raises an urgent alert, and returns ok', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith();
 		mockedClient.mockReturnValue(client as never);
 
@@ -146,7 +146,7 @@ describe('platform owner prospect payment reversal API boundary', () => {
 	});
 
 	it('still succeeds when raising the alert fails', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith();
 		mockedClient.mockReturnValue(client as never);
 		mockedRaiseAlert.mockRejectedValueOnce(new Error('Brevo is down'));
@@ -156,7 +156,7 @@ describe('platform owner prospect payment reversal API boundary', () => {
 	});
 
 	it('returns a safe server error when the reversal cannot be saved', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith(undefined, { message: 'internal database details' }) as never
 		);

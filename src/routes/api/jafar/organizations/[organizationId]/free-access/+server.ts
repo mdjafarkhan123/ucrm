@@ -46,7 +46,7 @@ async function getFreeAccessState(client: ReturnType<typeof getOwnerSupabaseClie
 }
 
 export const GET: RequestHandler = async (event) => {
-	if (!getOwnerSession(event)) return ownerUnauthorized();
+	if (!await getOwnerSession(event)) return ownerUnauthorized();
 	const parsedId = organizationIdSchema.safeParse(event.params.organizationId);
 	if (!parsedId.success)
 		return json({ error: 'The organization identifier is invalid.' }, { status: 422 });
@@ -69,7 +69,7 @@ export const GET: RequestHandler = async (event) => {
 };
 
 export const POST: RequestHandler = async (event) => {
-	const session = getOwnerSession(event);
+	const session = await getOwnerSession(event);
 	if (!session) return ownerUnauthorized();
 	const parsedId = organizationIdSchema.safeParse(event.params.organizationId);
 	if (!parsedId.success)

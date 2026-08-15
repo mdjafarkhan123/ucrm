@@ -19,7 +19,7 @@ function escapeProspectSearch(value: string) {
 }
 
 export const GET: RequestHandler = async (event) => {
-	if (!getOwnerSession(event)) return ownerUnauthorized();
+	if (!await getOwnerSession(event)) return ownerUnauthorized();
 
 	const parsed = prospectListQuerySchema.safeParse({
 		stage: event.url.searchParams.get('stage') ?? undefined,

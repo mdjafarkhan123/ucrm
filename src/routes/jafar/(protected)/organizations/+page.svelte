@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { createQuery } from '@tanstack/svelte-query';
+	import { createInfiniteQuery } from '@tanstack/svelte-query';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import buildingIcon from '@tabler/icons/outline/building.svg?raw';
@@ -15,7 +15,14 @@
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 
-	type LifecycleStatus = 'active' | 'suspended' | 'pending_setup';
+	type LifecycleStatus = 'active' | 'suspended' | 'pending_setup' | 'pending_closure' | 'closed';
+	type AttentionReason =
+		| 'access_overdue'
+		| 'expiring_soon'
+		| 'administrator_missing'
+		| 'administrator_ownership_unclear'
+		| 'setup_or_recovery_failed'
+		| 'legacy_review';
 	type Organization = {
 		id: string;
 		name: string;
@@ -23,61 +30,104 @@
 		lifecycle_status: LifecycleStatus;
 		created_at: string;
 		updated_at: string;
-		organization_members: { user_id: string; role: string }[];
+		member_count: number;
+		attention_reasons: AttentionReason[];
 	};
-	type OrganizationListResponse = { organizations: Organization[]; error?: string };
+	type DirectoryTotals = {
+		all: number;
+		active: number;
+		suspended: number;
+		pending_setup: number;
+		matching: number;
+		attention: Record<AttentionReason, number>;
+	};
+	type DirectoryPage = {
+		organizations: Organization[];
+		next_cursor: string | null;
+		totals: DirectoryTotals;
+		error?: string;
+	};
 
-	const lifecycleOptions = [
-		{ value: '', label: 'All lifecycle states' },
-		{ value: 'active', label: 'Active' },
-		{ value: 'suspended', label: 'Suspended' },
-		{ value: 'pending_setup', label: 'Needs review' }
-	];
+	// Urgency order matches the database function's own ordering, so a badge list here reads the
+	// same way the attention-reason filter counts do.
+	const attentionMeta: Record<AttentionReason, { label: string; tone: 'critical' | 'warning' }> = {
+		access_overdue: { label: 'Access overdue', tone: 'critical' },
+		administrator_missing: { label: 'No administrator', tone: 'critical' },
+		administrator_ownership_unclear: { label: 'Multiple owners', tone: 'warning' },
+		setup_or_recovery_failed: { label: 'Setup or recovery issue', tone: 'critical' },
+		expiring_soon: { label: 'Expiring soon', tone: 'warning' },
+		legacy_review: { label: 'Needs review', tone: 'warning' }
+	};
+	const attentionReasonOrder = Object.keys(attentionMeta) as AttentionReason[];
 
-	let search = $state('');
-	let lifecycleFilter = $state('');
+	const emptyTotals: DirectoryTotals = {
+		all: 0,
+		active: 0,
+		suspended: 0,
+		pending_setup: 0,
+		matching: 0,
+		attention: {
+			access_overdue: 0,
+			expiring_soon: 0,
+			administrator_missing: 0,
+			administrator_ownership_unclear: 0,
+			setup_or_recovery_failed: 0,
+			legacy_review: 0
+		}
+	};
 
-	const organizations = createQuery<OrganizationListResponse>(() => ({
-		queryKey: ['jafar', 'organizations'],
-		queryFn: async () => {
-			const response = await fetch('/api/jafar/organizations');
-			const result = (await response.json()) as OrganizationListResponse;
+	let searchInput = $state('');
+	let debouncedSearch = $state('');
+	let attentionFilter = $state<'' | AttentionReason>('');
+
+	$effect(() => {
+		const value = searchInput;
+		const timeout = setTimeout(() => {
+			debouncedSearch = value;
+		}, 300);
+		return () => clearTimeout(timeout);
+	});
+
+	const organizations = createInfiniteQuery<DirectoryPage>(() => ({
+		queryKey: ['jafar', 'organizations', debouncedSearch.trim(), attentionFilter],
+		queryFn: async ({ pageParam }) => {
+			const params = new URLSearchParams();
+			if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+			if (attentionFilter) params.set('attention_reason', attentionFilter);
+			if (typeof pageParam === 'string') params.set('cursor', pageParam);
+			const response = await fetch(`/api/jafar/organizations?${params.toString()}`);
+			const result = (await response.json()) as DirectoryPage;
 			if (!response.ok) throw new Error(result.error ?? 'Organizations could not be loaded.');
 			return result;
-		}
+		},
+		initialPageParam: null as string | null,
+		getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined
 	}));
 
-	const organizationList = $derived(organizations.data?.organizations ?? []);
-	const visibleOrganizations = $derived(
-		organizationList.filter((organization) => {
-			const matchesSearch = `${organization.name} ${organization.slug}`
-				.toLowerCase()
-				.includes(search.trim().toLowerCase());
-			const matchesLifecycle =
-				!lifecycleFilter || organization.lifecycle_status === lifecycleFilter;
-			return matchesSearch && matchesLifecycle;
-		})
-	);
-	const activeCount = $derived(
-		organizationList.filter((organization) => organization.lifecycle_status === 'active').length
-	);
-	const suspendedCount = $derived(
-		organizationList.filter((organization) => organization.lifecycle_status === 'suspended').length
-	);
-	const needsReviewCount = $derived(
-		organizationList.filter((organization) => organization.lifecycle_status === 'pending_setup')
-			.length
-	);
-	const filtersApplied = $derived(Boolean(search || lifecycleFilter));
+	const pages = $derived(organizations.data?.pages ?? []);
+	const organizationList = $derived(pages.flatMap((page) => page.organizations));
+	const totals = $derived(pages[0]?.totals ?? emptyTotals);
+
+	const attentionOptions = $derived([
+		{ value: '', label: 'All organizations' },
+		...attentionReasonOrder.map((reason) => ({
+			value: reason,
+			label: `${attentionMeta[reason].label} (${totals.attention[reason]})`
+		}))
+	]);
+
+	const filtersApplied = $derived(Boolean(searchInput || attentionFilter));
 
 	function clearFilters() {
-		search = '';
-		lifecycleFilter = '';
+		searchInput = '';
+		attentionFilter = '';
 	}
 
 	function lifecycleLabel(lifecycle: LifecycleStatus) {
 		if (lifecycle === 'active') return 'Active';
 		if (lifecycle === 'pending_setup') return 'Needs review';
+		if (lifecycle === 'pending_closure') return 'Closing';
+		if (lifecycle === 'closed') return 'Closed';
 		return 'Suspended';
 	}
 
@@ -109,14 +159,14 @@
 	<section class="organization-directory__summary" aria-label="Organization summary">
 		<KpiCard
 			label="Organizations"
-			value={String(organizationList.length)}
+			value={String(totals.all)}
 			note="All organizations"
 			icon={buildingIcon}
 			variant="compact"
 		/>
 		<KpiCard
 			label="Active"
-			value={String(activeCount)}
+			value={String(totals.active)}
 			note="Contractor access allowed"
 			icon={checkIcon}
 			tone="success"
@@ -124,7 +174,7 @@
 		/>
 		<KpiCard
 			label="Suspended"
-			value={String(suspendedCount)}
+			value={String(totals.suspended)}
 			note="Contractor access blocked"
 			icon={pauseIcon}
 			tone="critical"
@@ -132,7 +182,7 @@
 		/>
 		<KpiCard
 			label="Needs review"
-			value={String(needsReviewCount)}
+			value={String(totals.pending_setup)}
 			note="Legacy organizations pending one-time review"
 			icon={alertIcon}
 			tone="warning"
@@ -145,18 +195,18 @@
 			<label for="organization-search">Search organizations</label>
 			<SearchInput
 				id="organization-search"
-				bind:value={search}
-				placeholder="Search by organization name"
+				bind:value={searchInput}
+				placeholder="Search by name, slug, or administrator email"
 				ariaLabel="Search organizations"
 			/>
 		</div>
 		<div class="organization-directory__filter-field">
-			<label for="organization-lifecycle">Lifecycle</label>
+			<label for="organization-attention">Needs attention</label>
 			<Select
-				id="organization-lifecycle"
-				bind:value={lifecycleFilter}
-				options={lifecycleOptions}
-				ariaLabel="Filter organizations by lifecycle"
+				id="organization-attention"
+				bind:value={attentionFilter}
+				options={attentionOptions}
+				ariaLabel="Filter organizations by attention reason"
 			/>
 		</div>
 		<Button
@@ -169,7 +219,7 @@
 	</section>
 
 	<div class="organization-directory__list-meta" aria-live="polite">
-		<span><strong>{visibleOrganizations.length}</strong> organizations shown</span>
+		<span><strong>{organizationList.length}</strong> of {totals.matching} organizations shown</span>
 	</div>
 
 	<section class="organization-directory__table-panel" aria-labelledby="organization-list-title">
@@ -188,15 +238,13 @@
 					retry={() => organizations.refetch()}
 				/>
 			</div>
-		{:else if visibleOrganizations.length === 0}
+		{:else if organizationList.length === 0}
 			<div class="organization-directory__state">
 				<EmptyState
-					title={organizationList.length === 0
-						? 'No organizations yet'
-						: 'No matching organizations'}
-					description={organizationList.length === 0
+					title={totals.all === 0 ? 'No organizations yet' : 'No matching organizations'}
+					description={totals.all === 0
 						? 'Organizations will appear here once they are provisioned.'
-						: 'Try another organization name or lifecycle state.'}
+						: 'Try another search term or attention filter.'}
 				/>
 			</div>
 		{:else}
@@ -206,13 +254,14 @@
 						<tr>
 							<th scope="col">Organization</th>
 							<th scope="col">Lifecycle</th>
+							<th scope="col">Attention</th>
 							<th scope="col">Team members</th>
 							<th scope="col">Created</th>
 							<th scope="col"><span class="organization-directory__sr-only">Open details</span></th>
 						</tr>
 					</thead>
 					<tbody>
-						{#each visibleOrganizations as organization (organization.id)}
+						{#each organizationList as organization (organization.id)}
 							<tr>
 								<th scope="row">
 									<strong>{organization.name}</strong>
@@ -223,7 +272,20 @@
 										>{lifecycleLabel(organization.lifecycle_status)}</Badge
 									></td
 								>
-								<td>{organization.organization_members.length}</td>
+								<td>
+									{#if organization.attention_reasons.length === 0}
+										<span class="organization-directory__no-attention">&mdash;</span>
+									{:else}
+										<div class="organization-directory__attention-badges">
+											{#each organization.attention_reasons as reason (reason)}
+												<Badge status={attentionMeta[reason].tone} size="small"
+													>{attentionMeta[reason].label}</Badge
+												>
+											{/each}
+										</div>
+									{/if}
+								</td>
+								<td>{organization.member_count}</td>
 								<td>{formatDate(organization.created_at)}</td>
 								<td>
 									<a
@@ -241,7 +303,18 @@
 			</div>
 		{/if}
 		<footer class="organization-directory__table-footer">
-			<span>Open an organization to review its details.</span>
+			{#if organizations.hasNextPage}
+				<Button
+					type="button"
+					variant="secondary"
+					disabled={organizations.isFetchingNextPage}
+					onclick={() => organizations.fetchNextPage()}
+				>
+					{organizations.isFetchingNextPage ? 'Loading more…' : 'Load more'}
+				</Button>
+			{:else}
+				<span>Open an organization to review its details.</span>
+			{/if}
 		</footer>
 	</section>
 </main>
@@ -320,7 +393,7 @@
 
 	.organization-directory__filter-field {
 		display: grid;
-		width: min(240px, 100%);
+		width: min(260px, 100%);
 		gap: var(--space-small);
 
 		label {
@@ -368,7 +441,7 @@
 
 	.organization-directory table {
 		width: 100%;
-		min-width: 840px;
+		min-width: 960px;
 		border-collapse: collapse;
 		color: var(--color-text);
 		font-size: var(--typography--fontSize-base);
@@ -420,6 +493,17 @@
 		&:last-child td {
 			border-bottom: 0;
 		}
+	}
+
+	.organization-directory__attention-badges {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-smaller);
+		max-width: 260px;
+	}
+
+	.organization-directory__no-attention {
+		color: var(--color-text--secondary);
 	}
 
 	.organization-directory__row-action {

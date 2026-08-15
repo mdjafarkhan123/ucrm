@@ -44,7 +44,7 @@ function event(url = 'http://localhost/api/jafar/operations') {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 describe('platform owner operations list API boundary', () => {
@@ -54,21 +54,21 @@ describe('platform owner operations list API boundary', () => {
 	});
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await GET(event());
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('rejects an invalid status filter', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await GET(event('http://localhost/api/jafar/operations?status=bogus'));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('rejects an invalid target id filter', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await GET(
 			event('http://localhost/api/jafar/operations?target_id=not-a-uuid')
 		);
@@ -77,7 +77,7 @@ describe('platform owner operations list API boundary', () => {
 	});
 
 	it('defaults to every open operation when no status is given', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue({ from: () => query([{ id: 'op-1', status: 'retrying' }]) } as never);
 
 		const response = await GET(event());
@@ -88,7 +88,7 @@ describe('platform owner operations list API boundary', () => {
 	});
 
 	it('filters by the requested status instead of the open-only default', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue({ from: () => query([{ id: 'op-2', status: 'acknowledged' }]) } as never);
 
 		const response = await GET(
@@ -102,7 +102,7 @@ describe('platform owner operations list API boundary', () => {
 	// A notification can link to an attempt that has since succeeded, so the panel needs a way
 	// to ask for every status without naming one.
 	it('applies no status filter at all when every status is asked for', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue({ from: () => query([{ id: 'op-3', status: 'succeeded' }]) } as never);
 
 		const response = await GET(event('http://localhost/api/jafar/operations?status=all'));
@@ -112,7 +112,7 @@ describe('platform owner operations list API boundary', () => {
 	});
 
 	it('filters by target id when provided', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue({ from: () => query([]) } as never);
 
 		const targetId = '123e4567-e89b-12d3-a456-426614174000';
@@ -122,7 +122,7 @@ describe('platform owner operations list API boundary', () => {
 	});
 
 	it('returns a safe server error when the operations query fails', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue({
 			from: () => query(null, { message: 'internal database details' })
 		} as never);

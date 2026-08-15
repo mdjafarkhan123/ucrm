@@ -19,7 +19,7 @@ describe('platform owner team API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 
 		const response = await GET(event());
 
@@ -28,9 +28,9 @@ describe('platform owner team API boundary', () => {
 	});
 
 	it('rejects an invalid organization identifier', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 
 		const response = await GET(event('not-a-uuid'));
@@ -40,9 +40,9 @@ describe('platform owner team API boundary', () => {
 	});
 
 	it('returns 404 when the organization does not exist', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		mockedClient.mockReturnValue({
 			from: () => ({
@@ -57,12 +57,11 @@ describe('platform owner team API boundary', () => {
 		expect(response.status).toBe(404);
 	});
 
-	it('returns members joined with profile name and auth email, and flags administrator readiness', async () => {
-		mockedOwnerSession.mockReturnValue({
-			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
-		});
-		mockedClient.mockReturnValue({
+	function mockTeamClient(options: {
+		overrides?: Array<{ user_id: string; permission_key: string; override_state: string }>;
+		getUserById?: (userId: string) => Promise<{ data: { user: { email: string } | null }; error: unknown }>;
+	}) {
+		return {
 			from: (table: string) => {
 				if (table === 'organizations') {
 					return {
@@ -104,17 +103,34 @@ describe('platform owner team API boundary', () => {
 						})
 					};
 				}
+				if (table === 'organization_member_permission_overrides') {
+					return {
+						select: () => ({
+							eq: async () => ({ data: options.overrides ?? [], error: null })
+						})
+					};
+				}
 				throw new Error(`unexpected table ${table}`);
 			},
 			auth: {
 				admin: {
-					getUserById: async (userId: string) => ({
-						data: { user: { email: `${userId}@example.com` } },
-						error: null
-					})
+					getUserById:
+						options.getUserById ??
+						(async (userId: string) => ({
+							data: { user: { email: `${userId}@example.com` } },
+							error: null
+						}))
 				}
 			}
-		} as never);
+		} as never;
+	}
+
+	it('returns members joined with profile name and auth email, and flags administrator readiness', async () => {
+		mockedOwnerSession.mockResolvedValue({
+			email: 'owner@example.com',
+			sessionId: 'session-id'
+		});
+		mockedClient.mockReturnValue(mockTeamClient({}));
 
 		const response = await GET(event());
 		const body = await response.json();
@@ -127,15 +143,62 @@ describe('platform owner team API boundary', () => {
 				role: 'owner',
 				created_at: '2026-01-01T00:00:00Z',
 				full_name: 'Rae Owner',
-				email: 'user-1@example.com'
+				email: 'user-1@example.com',
+				permission_overrides: []
 			},
 			{
 				user_id: 'user-2',
 				role: 'field',
 				created_at: '2026-02-01T00:00:00Z',
 				full_name: 'Fin Tech',
-				email: 'user-2@example.com'
+				email: 'user-2@example.com',
+				permission_overrides: []
 			}
 		]);
+	});
+
+	it('groups permission overrides per member', async () => {
+		mockedOwnerSession.mockResolvedValue({
+			email: 'owner@example.com',
+			sessionId: 'session-id'
+		});
+		mockedClient.mockReturnValue(
+			mockTeamClient({
+				overrides: [
+					{ user_id: 'user-2', permission_key: 'invoices.manage', override_state: 'grant' }
+				]
+			})
+		);
+
+		const response = await GET(event());
+		const body = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(body.members[0].permission_overrides).toEqual([]);
+		expect(body.members[1].permission_overrides).toEqual([
+			{ permission_key: 'invoices.manage', override_state: 'grant' }
+		]);
+	});
+
+	it('degrades a single member to a null email instead of failing the whole list', async () => {
+		mockedOwnerSession.mockResolvedValue({
+			email: 'owner@example.com',
+			sessionId: 'session-id'
+		});
+		mockedClient.mockReturnValue(
+			mockTeamClient({
+				getUserById: async (userId: string) => {
+					if (userId === 'user-1') throw new Error('Auth admin API unavailable.');
+					return { data: { user: { email: `${userId}@example.com` } }, error: null };
+				}
+			})
+		);
+
+		const response = await GET(event());
+		const body = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(body.members[0].email).toBeNull();
+		expect(body.members[1].email).toBe('user-2@example.com');
 	});
 });

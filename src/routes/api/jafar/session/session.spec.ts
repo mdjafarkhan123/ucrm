@@ -1,16 +1,35 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DELETE, POST } from './+server';
-import { clearOwnerSession, setOwnerSession, verifyOwnerCredentials } from '$lib/server/auth/owner';
+import {
+	clearOwnerSession,
+	ownerLoginRateLimitBucketKey,
+	recordOwnerLoginAttempt,
+	setOwnerSession,
+	verifyOwnerCredentials
+} from '$lib/server/auth/owner';
+import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { checkRateLimit } from '$lib/server/security/rate-limit';
 
 vi.mock('$lib/server/auth/owner', () => ({
 	clearOwnerSession: vi.fn(),
+	ownerLoginRateLimitBucketKey: vi.fn(() => 'owner_login:hashed-ip'),
+	recordOwnerLoginAttempt: vi.fn(),
 	setOwnerSession: vi.fn(),
 	verifyOwnerCredentials: vi.fn()
+}));
+vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
+vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/server/security/rate-limit')>()),
+	checkRateLimit: vi.fn()
 }));
 
 const mockedVerify = vi.mocked(verifyOwnerCredentials);
 const mockedSetSession = vi.mocked(setOwnerSession);
 const mockedClearSession = vi.mocked(clearOwnerSession);
+const mockedRecordAttempt = vi.mocked(recordOwnerLoginAttempt);
+const mockedBucketKey = vi.mocked(ownerLoginRateLimitBucketKey);
+const mockedClient = vi.mocked(getOwnerSupabaseClient);
+const mockedCheckRateLimit = vi.mocked(checkRateLimit);
 
 function postEvent(body: unknown) {
 	return {
@@ -19,12 +38,17 @@ function postEvent(body: unknown) {
 			body: JSON.stringify(body),
 			headers: { 'content-type': 'application/json' }
 		}),
-		cookies: {}
+		cookies: {},
+		getClientAddress: () => '203.0.113.10'
 	} as Parameters<typeof POST>[0];
 }
 
 describe('platform owner session API boundary', () => {
-	beforeEach(() => vi.clearAllMocks());
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockedClient.mockReturnValue({} as never);
+		mockedCheckRateLimit.mockResolvedValue({ allowed: true, retryAfterSeconds: 0 });
+	});
 
 	it('rejects a request body that is not valid JSON', async () => {
 		const response = await POST({
@@ -33,17 +57,36 @@ describe('platform owner session API boundary', () => {
 				body: 'not json',
 				headers: { 'content-type': 'application/json' }
 			}),
-			cookies: {}
+			cookies: {},
+			getClientAddress: () => '203.0.113.10'
 		} as Parameters<typeof POST>[0]);
 
 		expect(response.status).toBe(400);
+		expect(mockedCheckRateLimit).not.toHaveBeenCalled();
 		expect(mockedVerify).not.toHaveBeenCalled();
 	});
 
-	it('validates the email and password before checking credentials', async () => {
+	it('validates the email and password before checking anything', async () => {
 		const response = await POST(postEvent({ email: 'not-an-email', password: '' }));
 
 		expect(response.status).toBe(422);
+		expect(mockedCheckRateLimit).not.toHaveBeenCalled();
+		expect(mockedVerify).not.toHaveBeenCalled();
+	});
+
+	it('rate-limits repeated attempts by a keyed hash of the caller IP, not the raw IP', async () => {
+		mockedCheckRateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 42 });
+
+		const response = await POST(postEvent({ email: 'owner@example.com', password: 'wrong' }));
+
+		expect(response.status).toBe(429);
+		expect(response.headers.get('Retry-After')).toBe('42');
+		expect(mockedBucketKey).toHaveBeenCalledWith('203.0.113.10');
+		expect(mockedCheckRateLimit).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ bucketKey: 'owner_login:hashed-ip' })
+		);
+		expect(mockedRecordAttempt).toHaveBeenCalledWith('rate_limited');
 		expect(mockedVerify).not.toHaveBeenCalled();
 	});
 
@@ -53,10 +96,11 @@ describe('platform owner session API boundary', () => {
 		const response = await POST(postEvent({ email: 'owner@example.com', password: 'wrong' }));
 
 		expect(response.status).toBe(401);
+		expect(mockedRecordAttempt).toHaveBeenCalledWith('failed');
 		expect(mockedSetSession).not.toHaveBeenCalled();
 	});
 
-	it('starts a session on correct credentials', async () => {
+	it('starts a session and records a sanitized success outcome on correct credentials', async () => {
 		mockedVerify.mockReturnValue(true);
 
 		const response = await POST(
@@ -66,6 +110,7 @@ describe('platform owner session API boundary', () => {
 		expect(response.status).toBe(200);
 		expect(await response.json()).toEqual({ ok: true });
 		expect(mockedSetSession).toHaveBeenCalledWith(expect.anything(), 'owner@example.com');
+		expect(mockedRecordAttempt).toHaveBeenCalledWith('succeeded');
 	});
 
 	it('returns a safe error when owner login is not configured', async () => {
@@ -80,7 +125,7 @@ describe('platform owner session API boundary', () => {
 		expect(response.status).toBe(503);
 	});
 
-	it('clears the session on logout', async () => {
+	it('revokes the presented session on logout', async () => {
 		const response = await DELETE({ cookies: {} } as Parameters<typeof DELETE>[0]);
 
 		expect(response.status).toBe(200);

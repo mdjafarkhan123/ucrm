@@ -30,7 +30,7 @@ function event(templateKey: string, body?: unknown) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 const originalVersion = { subject: 'Original subject', body: 'Original body {{setup_link}}' };
@@ -57,21 +57,21 @@ describe('platform owner message template restore-version API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await POST(event('password_setup'));
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('rejects an unknown template key', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event('not_a_real_key'));
 		expect(response.status).toBe(404);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('rejects invalid JSON bodies', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = {
 			params: { templateKey: 'password_setup' },
 			request: new Request('http://localhost/x', { method: 'POST', body: 'not json' }),
@@ -83,14 +83,14 @@ describe('platform owner message template restore-version API boundary', () => {
 	});
 
 	it('rejects an invalid version number', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event('password_setup', { version: 0 }));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('returns 404 when the requested version does not exist', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ data: null, error: null }) as never);
 
 		const response = await POST(event('password_setup', { version: 5 }));
@@ -98,7 +98,7 @@ describe('platform owner message template restore-version API boundary', () => {
 	});
 
 	it('defaults to version 1 (the original default wording) when no version is given', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith(
 				{ data: originalVersion, error: null },
@@ -120,7 +120,7 @@ describe('platform owner message template restore-version API boundary', () => {
 	});
 
 	it('restores an explicit historical version into the draft', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const olderVersion = { subject: 'Older subject', body: 'Older body {{setup_link}}' };
 		mockedClient.mockReturnValue(
 			clientWith(
@@ -143,7 +143,7 @@ describe('platform owner message template restore-version API boundary', () => {
 	});
 
 	it('returns a safe server error when the update fails', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith(
 				{ data: originalVersion, error: null },

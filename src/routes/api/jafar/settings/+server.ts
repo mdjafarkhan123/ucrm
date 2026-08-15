@@ -8,7 +8,7 @@ import { ownerSettingsSchema } from '$lib/server/validation/owner-settings.schem
 import { zodOwnerFieldErrors } from '$lib/server/validation/owner.schema';
 
 export const GET: RequestHandler = async (event) => {
-	if (!getOwnerSession(event)) return ownerUnauthorized();
+	if (!await getOwnerSession(event)) return ownerUnauthorized();
 
 	try {
 		const client = getOwnerSupabaseClient();
@@ -21,7 +21,7 @@ export const GET: RequestHandler = async (event) => {
 };
 
 export const PATCH: RequestHandler = async (event) => {
-	const session = getOwnerSession(event);
+	const session = await getOwnerSession(event);
 	if (!session) return ownerUnauthorized();
 
 	let body: unknown;

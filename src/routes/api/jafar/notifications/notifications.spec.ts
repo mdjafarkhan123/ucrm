@@ -79,7 +79,7 @@ function event(url = 'http://localhost/api/jafar/notifications') {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 describe('platform owner notifications list API boundary', () => {
@@ -89,27 +89,27 @@ describe('platform owner notifications list API boundary', () => {
 	});
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await GET(event());
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('rejects an unknown status filter', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await GET(event('http://localhost/api/jafar/notifications?status=bogus'));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('rejects a limit above the allowed page size', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await GET(event('http://localhost/api/jafar/notifications?limit=5000'));
 		expect(response.status).toBe(422);
 	});
 
 	it('returns unread notifications and the true unread total by default', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({ rows: [{ id: 'note-1', read_at: null }], count: 7 }) as never
 		);
@@ -124,7 +124,7 @@ describe('platform owner notifications list API boundary', () => {
 	});
 
 	it('drops the unread-only filter when the full history is requested', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ rows: [], count: 0 }) as never);
 
 		const response = await GET(event('http://localhost/api/jafar/notifications?status=all'));
@@ -133,7 +133,7 @@ describe('platform owner notifications list API boundary', () => {
 	});
 
 	it('searches the title and body of a notification', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ rows: [], count: 0 }) as never);
 
 		await GET(event('http://localhost/api/jafar/notifications?status=all&search=Ridgeway'));
@@ -144,7 +144,7 @@ describe('platform owner notifications list API boundary', () => {
 	});
 
 	it('strips filter and wildcard characters so a search term cannot change the query', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ rows: [], count: 0 }) as never);
 
 		await GET(
@@ -158,7 +158,7 @@ describe('platform owner notifications list API boundary', () => {
 	});
 
 	it('returns a safe server error when the query fails', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({ listError: { message: 'internal database details' } }) as never
 		);

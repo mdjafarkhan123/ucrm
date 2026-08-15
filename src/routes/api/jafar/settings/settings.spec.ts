@@ -48,7 +48,7 @@ describe('platform owner settings API boundary', () => {
 
 	describe('GET', () => {
 		it('rejects callers without the separate owner session', async () => {
-			mockedOwnerSession.mockReturnValue(null);
+			mockedOwnerSession.mockResolvedValue(null);
 
 			const response = await GET(getEvent());
 
@@ -57,9 +57,9 @@ describe('platform owner settings API boundary', () => {
 		});
 
 		it('creates the singleton row on first read and returns it', async () => {
-			mockedOwnerSession.mockReturnValue({
+			mockedOwnerSession.mockResolvedValue({
 				email: 'owner@example.com',
-				expiresAt: Date.now() + 1000
+				sessionId: 'session-id'
 			});
 			const upsert = vi.fn().mockResolvedValue({ error: null });
 			const single = vi.fn().mockResolvedValue({
@@ -82,9 +82,9 @@ describe('platform owner settings API boundary', () => {
 		});
 
 		it('returns a safe error when the read fails', async () => {
-			mockedOwnerSession.mockReturnValue({
+			mockedOwnerSession.mockResolvedValue({
 				email: 'owner@example.com',
-				expiresAt: Date.now() + 1000
+				sessionId: 'session-id'
 			});
 			mockedClient.mockReturnValue({
 				from: () => ({
@@ -106,7 +106,7 @@ describe('platform owner settings API boundary', () => {
 
 	describe('PATCH', () => {
 		it('rejects callers without the separate owner session', async () => {
-			mockedOwnerSession.mockReturnValue(null);
+			mockedOwnerSession.mockResolvedValue(null);
 
 			const response = await PATCH(patchEvent(validSettings));
 
@@ -115,9 +115,9 @@ describe('platform owner settings API boundary', () => {
 		});
 
 		it('rejects invalid JSON bodies', async () => {
-			mockedOwnerSession.mockReturnValue({
+			mockedOwnerSession.mockResolvedValue({
 				email: 'owner@example.com',
-				expiresAt: Date.now() + 1000
+				sessionId: 'session-id'
 			});
 			const event = {
 				params: {},
@@ -136,9 +136,9 @@ describe('platform owner settings API boundary', () => {
 		});
 
 		it('returns field errors for an invalid payload', async () => {
-			mockedOwnerSession.mockReturnValue({
+			mockedOwnerSession.mockResolvedValue({
 				email: 'owner@example.com',
-				expiresAt: Date.now() + 1000
+				sessionId: 'session-id'
 			});
 
 			const response = await PATCH(patchEvent({ ...validSettings, reply_to_address: 'not-an-email' }));
@@ -150,9 +150,9 @@ describe('platform owner settings API boundary', () => {
 		});
 
 		it('requires at least one alert recipient', async () => {
-			mockedOwnerSession.mockReturnValue({
+			mockedOwnerSession.mockResolvedValue({
 				email: 'owner@example.com',
-				expiresAt: Date.now() + 1000
+				sessionId: 'session-id'
 			});
 
 			const response = await PATCH(patchEvent({ ...validSettings, alert_recipient_emails: [] }));
@@ -163,9 +163,9 @@ describe('platform owner settings API boundary', () => {
 		});
 
 		it('returns a safe error when the update fails', async () => {
-			mockedOwnerSession.mockReturnValue({
+			mockedOwnerSession.mockResolvedValue({
 				email: 'owner@example.com',
-				expiresAt: Date.now() + 1000
+				sessionId: 'session-id'
 			});
 			mockedClient.mockReturnValue({
 				rpc: vi.fn().mockResolvedValue({ data: null, error: { message: 'db down' } })
@@ -178,9 +178,9 @@ describe('platform owner settings API boundary', () => {
 		});
 
 		it('saves valid settings through the atomic update RPC', async () => {
-			mockedOwnerSession.mockReturnValue({
+			mockedOwnerSession.mockResolvedValue({
 				email: 'owner@example.com',
-				expiresAt: Date.now() + 1000
+				sessionId: 'session-id'
 			});
 			const rpc = vi.fn().mockResolvedValue({
 				data: { ...validSettings, updated_at: '2026-08-12T01:00:00Z' },

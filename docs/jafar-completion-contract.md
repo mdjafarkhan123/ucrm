@@ -40,7 +40,10 @@ lives in code, migrations, and tests.
   stages are `needs_attention` and `not_proceeding`.
 - Duplicate candidates remain separate and are never merged automatically. Jafar acknowledges `not
   a duplicate` or marks an unpaid application `not_proceeding` with a required private reason.
-- A `not_proceeding` application retains personal data for 12 months, then purges automatically.
+- A `not_proceeding` application retains personal data for 12 months, then purges automatically. It
+  appears in Settings > Cleanup from the beginning of that retention period. The Platform Owner may
+  permanently delete it early only from that queue, after an explicit irreversible confirmation,
+  typing the prospect name, and password reconfirmation.
 - Server validation, rate limiting, Cloudflare Turnstile, accessible errors, and a server-only
   privileged credential boundary protect the public form.
 
@@ -131,6 +134,22 @@ lives in code, migrations, and tests.
 - Free access permits at most one active grant and one non-overlapping future grant.
 - Protected directory search covers organization name, slug, and primary administrator email.
   Pagination uses `created_at, id` with a default page size of 50.
+- Organization attention means a concrete owner action is waiting; suspension alone is available
+  through lifecycle filtering and does not count as attention.
+- The primary administrator is the organization member with the `owner` role. No owner is
+  `administrator_missing`; multiple owners are `administrator_ownership_unclear`, and search matches
+  every owner email rather than silently choosing one.
+- Organization attention reasons are `access_overdue`, `expiring_soon`, `administrator_missing`,
+  `administrator_ownership_unclear`, `setup_or_recovery_failed`, and `legacy_review`.
+- `expiring_soon` begins seven calendar days before temporary free access or a package exception
+  expires, using the commercial timezone. It clears when the underlying temporary access changes or
+  expires and has no separate dismissal action.
+- Expired free access with no paid coverage becomes `access_overdue` until access is granted, paid
+  coverage is recorded, or the organization is suspended.
+- Setup or recovery failure attention includes only unresolved failures blocking administrator setup,
+  access, or recovery. Other provider and delivery failures remain in Operations and Notifications.
+- Attention totals count unique organizations. Directory rows show every current reason in urgency
+  order, and the attention queue can be narrowed to one reason at a time.
 
 ## Team support and owner security
 
@@ -154,6 +173,10 @@ lives in code, migrations, and tests.
   completion. Protected deadlines and safety wording cannot be removed.
 - During the window, only Jafar may restore after trusted outside verification, a safe evidence note,
   password reconfirmation, and provider-impact review.
+- Settings > Cleanup lists every organization from the start of its closure window, including the
+  remaining recovery time. The Platform Owner may permanently delete an organization early only
+  from that queue, after an explicit irreversible confirmation, typing the organization name, and
+  password reconfirmation. This bypasses the remaining recovery period and cannot be restored.
 - At day 30, permanently delete all live organization CRM data, Auth users, files, queued work, and
   connected provider resources. No anonymized organization or CRM record remains.
 - Retain only a non-personal technical deletion receipt with a random operation ID, timestamps, and

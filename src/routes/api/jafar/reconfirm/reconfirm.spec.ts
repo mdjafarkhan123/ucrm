@@ -27,7 +27,7 @@ describe('platform owner reconfirm API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 
 		const response = await POST(event());
 
@@ -36,9 +36,9 @@ describe('platform owner reconfirm API boundary', () => {
 	});
 
 	it('validates the request body before checking the password', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 
 		const response = await POST(event({ password: '' }));
@@ -48,9 +48,9 @@ describe('platform owner reconfirm API boundary', () => {
 	});
 
 	it('rejects an incorrect password without issuing a step-up', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		mockedVerifyCredentials.mockReturnValue(false);
 
@@ -61,9 +61,9 @@ describe('platform owner reconfirm API boundary', () => {
 	});
 
 	it('issues a step-up token for the session email once the password is confirmed', async () => {
-		mockedOwnerSession.mockReturnValue({
+		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			expiresAt: Date.now() + 1000
+			sessionId: 'session-id'
 		});
 		mockedVerifyCredentials.mockReturnValue(true);
 

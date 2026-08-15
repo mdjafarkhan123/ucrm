@@ -10,7 +10,7 @@ import { operationIdSchema } from '$lib/server/validation/operation.schema';
 const retryableStatuses = ['pending', 'retrying', 'acknowledged'];
 
 export const POST: RequestHandler = async (event) => {
-	const session = getOwnerSession(event);
+	const session = await getOwnerSession(event);
 	if (!session) return ownerUnauthorized();
 
 	const parsedId = operationIdSchema.safeParse(event.params.operationId);
@@ -31,7 +31,7 @@ export const POST: RequestHandler = async (event) => {
 			return json({ error: 'This operation is not open for retry.' }, { status: 409 });
 
 		if (attempt.operation_type === 'outbox_email_delivery') {
-			await dispatchOutboxDelivery(client, attempt.idempotency_key);
+			await dispatchOutboxDelivery(client, attempt.idempotency_key, session.email);
 			return json({ ok: true });
 		}
 

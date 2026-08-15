@@ -7,60 +7,52 @@ control, support recovery, closure, and dependency-linked provider controls.
 
 ## Active part
 
-6E closed 2026-08-14 (legacy `pending_setup` organization reconciliation) — browser-verified live:
-suspended the real admin-less `xdasd` organization end to end, and confirmed the full activation
-readiness checklist and step-up gate on a seeded fully-eligible legacy organization (`Riverside
-Legacy Demo`, stopped at the password prompt per credential-entry policy — Jafar can complete that
-single click himself later if he wants the full round trip witnessed). All acceptance checks pass;
-see the closed packet for durable gotchas (a real 6A check-constraint bug found and fixed via pgTAP
-before it reached the API layer).
-
-6F (searchable organization directory and attention queues) is next, dependencies 6A/6E both
-complete, but its packet does not exist yet. The current directory
-(`src/routes/jafar/(protected)/organizations/+page.svelte`) loads every organization client-side
-with client-side search/filter — no server pagination yet.
-`docs/jafar-completion-contract.md` heading `Commercial control decisions` already gives the approved
-shape: "Protected directory search covers organization name, slug, and primary administrator email.
-Pagination uses `created_at, id` with a default page size of 50." Attention-queue specifics (which
-summaries/filters count as "needs attention" beyond lifecycle status) are not yet pinned down.
+None. Part 9 (recoverable closure and strict purge) closed after Jafar browser-verified closure
+start -> restore and closure start -> early delete on a disposable test organization. Parts 0
+through 9 are all complete.
 
 ## Exact next action
 
-Start 6F: read `docs/jafar-completion-contract.md` heading `Organization and commercial control` and
-`docs/jafar-organization-management-mission.md` heading `Organization-detail structure`, check how
-many real organizations exist in the remote project (client-side loading is currently fine at this
-scale but the acceptance gate requires server pagination regardless), grill Jafar on attention-queue
-specifics, then propose the plan and wait for approval before creating
-`Memory/campaigns/jafar-panel/parts/6f-*.md`.
+No dependency-ready part exists yet. Part 10 (dependency-linked provider and CRM controls) is
+blocked until a contractor-facing subsystem it depends on ships (phone/SMS via Twilio, tenant email
+domains via Brevo, Stripe payment readiness, webchat, or review links -- see ROADMAP's "Dependency-
+linked Part 10 slices"). Part 11 (final A-Z audit) depends on Part 10. When Jafar brings a
+contractor subsystem to build against, create that slice's packet under
+`Memory/campaigns/jafar-panel/parts/` and resume here.
 
 ## Current truth
 
-- Parts 0 through 6E are complete.
-- `xdasd` is now permanently `suspended` (real action on real data, not a test rollback).
-  `Riverside Legacy Demo` (`7e37a58f-60e4-40ee-bb4a-cf13966a7a3d`) is a seeded demo org, still
-  `pending_setup` and fully activation-eligible, safe to leave as is.
-- `database.types.ts` was regenerated against the remote project as part of 6E.
+- Parts 0 through 9 are complete and closed.
+- Part 9 delivered: recoverable 30-day organization closure with contractor notices, a real daily
+  `pg_cron` purge job, strict cascading purge with a non-personal deletion receipt, Overview
+  Close/Restore UI, a Settings > Cleanup early-delete page, four closure email templates, and two
+  pgTAP suites (27/27, 30/30). Full details: `Memory/campaigns/jafar-panel/parts/9-recoverable-closure-and-strict-purge.md`.
+- One item deferred from Part 7, still not blocking: the non-admin email-correction branch of "Fix
+  profile" has never been browser-verified, because no organization on the platform currently has a
+  non-owner/non-admin member. See `Memory/deferred/INDEX.md`.
+- Remote Supabase MCP tools and `npx supabase gen types` against the remote project both work in
+  this environment; no local Docker/CLI. `mcp__supabase__execute_sql` only surfaces the result of
+  the last statement in a script, so multi-assertion pgTAP verification needs the checks aggregated
+  into one `string_agg(...)` query rather than run as separate `select` statements. Also: any table
+  that is deliberately not scoped to one organization (e.g. `organization_deletion_receipts`) can
+  carry real rows from earlier live verification -- scope test assertions to a captured id, never to
+  `limit 1` or a bare `count(*)`.
 
 ## Blockers
 
-- None for 6E. Docker and the Supabase/psql CLIs remain unavailable locally; database work continues
-  to go through the linked remote project via Supabase MCP tools, not `db push`.
+Part 10 is blocked on a contractor-facing subsystem existing to build eligibility/health/history/
+recovery controls against. Not actionable until Jafar starts that contractor module.
 
 ## Protected work
 
-- Preserve all unrelated dirty work in the repository.
-- In particular, do not absorb or commit the existing `LocationPicker`, `TimezonePicker`,
-  `country-state-city` dependency, design-skill, or unrelated application changes as campaign work.
+- Preserve all unrelated dirty work, including the existing `CLAUDE.md`, `.claude/settings.local.json`,
+  `LocationPicker`, `TimezonePicker`, `country-state-city`, design-skill, and application changes.
 
 ## Required pointers
 
 - `Memory/campaigns/jafar-panel/ROADMAP.md`.
-- `Memory/campaigns/jafar-panel/parts/6e-legacy-organization-reconciliation.md` (closed — reference
-  only, do not resume).
-- `docs/jafar-completion-contract.md`, heading `Organization and commercial control`.
-- `docs/jafar-organization-management-mission.md`, heading `Organization-detail structure`.
+- `Memory/deferred/INDEX.md` (non-admin email-correction verification gap).
 
 ## Active-part completion gate
 
-All 6F acceptance checks in the part packet pass, including pgTAP/route tests where relevant, remote
-advisors, and browser verification on real organizations.
+Not applicable -- no part is active.

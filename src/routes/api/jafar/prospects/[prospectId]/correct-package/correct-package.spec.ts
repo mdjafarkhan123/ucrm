@@ -31,7 +31,7 @@ function event(id: string, body: unknown = validBody) {
 }
 
 function session() {
-	return { email: 'owner@example.com', expiresAt: Date.now() + 1000 };
+	return { email: 'owner@example.com', sessionId: 'session-id' };
 }
 
 function clientWith(rpcError: { message: string } | null = null) {
@@ -43,35 +43,35 @@ describe('platform owner prospect package correction API boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
 
 	it('rejects callers without the separate owner session', async () => {
-		mockedOwnerSession.mockReturnValue(null);
+		mockedOwnerSession.mockResolvedValue(null);
 		const response = await POST(event(prospectId));
 		expect(response.status).toBe(401);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('validates the prospect identifier before database access', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event('not-a-uuid'));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('validates the request body before database access', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event(prospectId, { ...validBody, package_version_id: 'nope' }));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('requires a reason', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const response = await POST(event(prospectId, { ...validBody, reason: '  ' }));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('returns 404 when the prospect does not exist', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({ message: 'The onboarding application does not exist.' }) as never
 		);
@@ -81,7 +81,7 @@ describe('platform owner prospect package correction API boundary', () => {
 	});
 
 	it('rejects a change once the application is past review', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({ message: 'This application can no longer be corrected.' }) as never
 		);
@@ -91,7 +91,7 @@ describe('platform owner prospect package correction API boundary', () => {
 	});
 
 	it('rejects a change once payment is already confirmed', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
 				message: 'The package can no longer be changed after payment is confirmed.'
@@ -103,7 +103,7 @@ describe('platform owner prospect package correction API boundary', () => {
 	});
 
 	it('returns a field error when the selected package is not available', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({ message: 'The selected package is not available.' }) as never
 		);
@@ -115,7 +115,7 @@ describe('platform owner prospect package correction API boundary', () => {
 	});
 
 	it('saves the package change on success', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		const client = clientWith();
 		mockedClient.mockReturnValue(client as never);
 
@@ -130,7 +130,7 @@ describe('platform owner prospect package correction API boundary', () => {
 	});
 
 	it('returns a safe server error when the change cannot be saved', async () => {
-		mockedOwnerSession.mockReturnValue(session());
+		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(clientWith({ message: 'internal database details' }) as never);
 
 		const response = await POST(event(prospectId));
