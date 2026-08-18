@@ -138,6 +138,36 @@ prevents repeated activation and communicates that work is in progress.
   horizontal padding is 0.
 - Icon-only buttons require an accessible label such as `aria-label`.
 
+`Button` itself takes no icon yet. The one icon-only button that exists as a
+component is the pencil below; build any other icon-only control from these
+rules until `Button` grows icon support.
+
+## Pencil button
+
+The square edit affordance beside a heading or at the end of a row. Component:
+`src/lib/components/ui/PencilButton.svelte`. Preview:
+`(app)/dev-preview/pencil-button`.
+
+Reach for it wherever a pencil means "edit this". Never hand-roll another one.
+
+- **Shape:** square per the icon-only rule — `small` is 32×32 with a 16px glyph,
+  `base` is 40×40 with a 24px glyph. `small` is the default.
+- **Idle:** transparent background, transparent border,
+  `var(--color-interactive--subtle)` glyph.
+- **Hover and focus:** `var(--color-interactive--subtle--hover)` glyph on
+  `var(--color-surface--hover)`; active deepens to
+  `var(--color-surface--active)`.
+- **Focus ring:** the shared `var(--shadow-focus)` with `outline: transparent`.
+- **Variations:** `subtle` (default) for a calm in-context pencil; `work` for the
+  green pencil when editing is the block's main action.
+- **Variants:** `tertiary` (default, no border); `secondary` keeps
+  `var(--color-border--interactive)` for a pencil on a busy surface.
+- **Disabled:** follows the shared disabled treatment.
+- **Label:** `label` is required. It becomes both the accessible name and the
+  hover title, so name the thing being edited: `Edit Riverbend Family Diner`.
+- **Navigation:** pass `href` for an edit page so hover preloading applies; pass
+  `onclick` only when editing happens in place.
+
 ## Width
 
 Use `width: 100%` for a full-width button when the layout requires the action to

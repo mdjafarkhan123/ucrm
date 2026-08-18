@@ -264,9 +264,13 @@ before stale work resumes.
   reconfirmation.
 - Historical conversations and messages retain the phone-number identity used at the time.
 
-### SMS credits
+### Communication credits
 
-- Package versions may include monthly SMS allowance.
+- Package versions may include a dollar-valued monthly Communication Allowance, and organizations may receive reasoned, effective-dated overrides.
+- The allowance posts as Promotional Credit once per confirmed subscription period, does not roll over, and never expires Purchased Credit.
+- Package changes affect the next confirmed period; immediate promised value uses a separate reasoned Promotional Credit adjustment.
+- No allowance posts before renewal confirmation, including during grace, and spending consumes the soonest-expiring Promotional Credit before Purchased Credit.
+- Suspension preserves balances while blocking normal outbound use and new grants. Closure preserves Purchased Credit through recovery and requires its refund or an explicitly approved non-refundable resolution before purge.
 - Balances derive from an immutable ledger and are never directly overwritten.
 - Allowance, top-up, correction, reservation, release, charge, and provider adjustment are distinct
   entries.
@@ -277,8 +281,19 @@ before stale work resumes.
 - Sending reserves estimated credit, releases it when no provider cost occurred, and finalizes the
   charge when the provider accepts the request.
 - Later delivery failure is not automatically refunded when the provider charged the platform.
+- Provider-billed inbound usage continues at zero balance as Outstanding Communication Usage, and later Purchased Credit settles it before becoming spendable.
+- Underfunded number and registration renewals receive warnings and a 30-day protection window before any explicit impact-reviewed release.
+- Platform and organization outbound pauses, daily spend caps, pumping alerts, and a protected provider-balance floor limit platform exposure without disabling mandatory inbound consent handling.
 - Balance, allowance, usage, and reserved credit are displayed separately.
 - Zero allowance means no included messages.
+
+### Organization SMS mode
+
+- Package versions define the normal maximum mode: Disabled, Notifications Only, or Two-way SMS.
+- The Platform Owner may apply a reasoned organization override; contractors may choose a lower mode but cannot exceed it.
+- Disabled preserves history and mandatory inbound consent handling while blocking normal outbound work.
+- Notifications Only permits approved transactional messages and surfaces ordinary replies read-only without enabling conversation.
+- Two-way SMS enables permitted unified-inbox conversations; every mode remains gated by consent, registration, balance, rate limits, and emergency controls.
 
 ### Email
 

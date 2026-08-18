@@ -29,6 +29,25 @@
 - Row header: bold weight, text color, no-wrap
 - Cell padding: 24px horizontal, 16px vertical
 
+## Row activation
+
+A list table whose rows stand for a record opens that record when the row is clicked. Pass `onRowActivate`
+to `DataTable` and the row takes `cursor: pointer` and the existing hover tint.
+
+- The first cell also carries a real `<a>` to the same record. That link is the keyboard path and the
+  middle-click / open-in-new-tab path; the row click is mouse convenience on top of it.
+- Row activation deliberately ignores clicks on controls inside the row — checkbox, actions menu, any link
+  or button — and ignores a click that was really a drag to select text.
+- The row itself never becomes a tab stop, so keyboard users get one stop per row, not two.
+- Wire `onRowActivate` only when its destination exists. A row that looks clickable and goes nowhere is
+  worse than a row that does not invite the click.
+
+## Row selection
+
+A `selectable` table puts a checkbox on every row. Always pass `rowLabel` alongside it, returning the name of
+the record that row stands for — `rowLabel={(client) => `Select ${client.display_name}`}`. Without it every
+checkbox on the page is called "Select row" and a screen reader user cannot tell which one they are ticking.
+
 ## Rules
 
 - Wrapper must have horizontal scroll overflow for responsive scrolling

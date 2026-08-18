@@ -8,7 +8,8 @@
 		placeholder = 'Search',
 		ariaLabel = 'Search',
 		disabled = false,
-		class: className = ''
+		class: className = '',
+		onkeydown
 	}: {
 		value?: string;
 		id: string;
@@ -16,6 +17,7 @@
 		ariaLabel?: string;
 		disabled?: boolean;
 		class?: string;
+		onkeydown?: (event: KeyboardEvent) => void;
 	} = $props();
 
 	function clear() {
@@ -32,6 +34,7 @@
 		bind:value
 		{placeholder}
 		{disabled}
+		{onkeydown}
 		aria-label={ariaLabel}
 		autocomplete="off"
 	/>
@@ -89,6 +92,12 @@
 			&::placeholder {
 				color: var(--color-text--secondary);
 				opacity: 1;
+			}
+
+			/* Chrome renders its own native clear icon for type="search" on top of the custom
+			   .search-input__clear button below; suppress it so there's only one. */
+			&::-webkit-search-cancel-button {
+				display: none;
 			}
 		}
 

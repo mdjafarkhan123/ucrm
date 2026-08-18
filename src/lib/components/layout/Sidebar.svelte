@@ -14,21 +14,31 @@
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import settingsIcon from '@tabler/icons/outline/settings.svg?raw';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import routeIcon from '@tabler/icons/outline/route.svg?raw';
+	import starIcon from '@tabler/icons/outline/star.svg?raw';
+	import trendingUpIcon from '@tabler/icons/outline/trending-up.svg?raw';
+	import usersGroupIcon from '@tabler/icons/outline/users-group.svg?raw';
+	import chartBarIcon from '@tabler/icons/outline/chart-bar.svg?raw';
+	import collapseIcon from '@tabler/icons/outline/layout-sidebar-left-collapse.svg?raw';
+	import expandIcon from '@tabler/icons/outline/layout-sidebar-left-expand.svg?raw';
 
-	export type NavItem = { label: string; href: string; icon: string };
+	export type NavItem = { label: string; href: string; icon: string; unavailable?: boolean };
+	export type NavGroup = { label?: string; items: NavItem[] };
 
 	let {
-		items,
+		groups,
 		brand = 'Contractor CRM',
 		eyebrow = 'Workspace',
 		onnavigate,
-		instantNavigation = false
+		collapsible = true,
+		collapsed = $bindable(false)
 	}: {
-		items: NavItem[];
+		groups: NavGroup[];
 		brand?: string;
 		eyebrow?: string;
 		onnavigate?: () => void;
-		instantNavigation?: boolean;
+		collapsible?: boolean;
+		collapsed?: boolean;
 	} = $props();
 
 	const iconMap: Record<string, string> = {
@@ -45,54 +55,103 @@
 		building: buildingIcon,
 		alertTriangle: alertTriangleIcon,
 		settings: settingsIcon,
-		mail: mailIcon
+		mail: mailIcon,
+		route: routeIcon,
+		star: starIcon,
+		trendingUp: trendingUpIcon,
+		usersGroup: usersGroupIcon,
+		chartBar: chartBarIcon
 	};
 
+	const allItems = $derived(groups.flatMap((group) => group.items));
 	const currentPath = $derived(navigating.to?.url.pathname ?? page.url.pathname);
 	const activeHref = $derived.by(() => {
 		const pathname = currentPath;
-		return items
+		return allItems
 			.filter(
 				(item) =>
-					pathname === item.href || (item.href !== '/' && pathname.startsWith(`${item.href}/`))
+					!item.unavailable &&
+					(pathname === item.href || (item.href !== '/' && pathname.startsWith(`${item.href}/`)))
 			)
 			.sort((left, right) => right.href.length - left.href.length)[0]?.href;
 	});
 	const isActive = (href: string) => activeHref === href;
-	const toPath = (href: string) => href;
+	const brandHref = $derived(allItems.find((item) => !item.unavailable)?.href ?? '/');
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <aside
 	class="sidebar"
+	class:sidebar--collapsed={collapsed}
 	aria-label={`${eyebrow} navigation`}
-	data-sveltekit-preload-data={instantNavigation ? 'false' : undefined}
-	data-sveltekit-preload-code={instantNavigation ? 'eager' : undefined}
+	data-sveltekit-preload-data="false"
+	data-sveltekit-preload-code="eager"
 >
-	<a class="sidebar__brand" href={toPath(items[0]?.href ?? '/')}>
-		<span class="sidebar__mark" aria-hidden="true"
-			><span class="sidebar__mark-icon">{@html iconMap.hammer}</span></span
-		>
-		<span><span class="sidebar__eyebrow">{eyebrow}</span><strong>{brand}</strong></span>
-	</a>
+	<div class="sidebar__brand-row">
+		<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- brandHref is one of this variant's own static nav destinations, resolved at render time from approved config, not a literal route id. -->
+		<a class="sidebar__brand" href={brandHref}>
+			<span class="sidebar__mark" aria-hidden="true"
+				><span class="sidebar__mark-icon">{@html hammerIcon}</span></span
+			>
+			<span class="sidebar__brand-text"
+				><span class="sidebar__eyebrow">{eyebrow}</span><strong>{brand}</strong></span
+			>
+		</a>
+		{#if collapsible}
+			<button
+				class="sidebar__collapse"
+				type="button"
+				aria-pressed={collapsed}
+				aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
+				title={collapsed ? 'Expand navigation' : 'Collapse navigation'}
+				onclick={() => (collapsed = !collapsed)}
+			>
+				<span aria-hidden="true">{@html collapsed ? expandIcon : collapseIcon}</span>
+			</button>
+		{/if}
+	</div>
 	<nav>
-		<ul class="sidebar__list">
-			{#each items as item (item.href)}
-				<li>
-					<a
-						class:sidebar__item--active={isActive(item.href)}
-						class="sidebar__item"
-						href={toPath(item.href)}
-						onclick={onnavigate}
-						aria-current={isActive(item.href) ? 'page' : undefined}
-					>
-						<span class="sidebar__item-icon" aria-hidden="true"
-							>{@html iconMap[item.icon] ?? iconMap.dashboard}</span
-						><span>{item.label}</span>
-					</a>
-				</li>
-			{/each}
-		</ul>
+		{#each groups as group, index (group.label ?? index)}
+			<div class="sidebar__group">
+				{#if group.label}<p class="sidebar__group-label">{group.label}</p>{/if}
+				<ul class="sidebar__list">
+					{#each group.items as item (item.href)}
+						<li>
+							{#if item.unavailable}
+								<span
+									class="sidebar__item sidebar__item--unavailable"
+									aria-disabled="true"
+									aria-label={`${item.label}, coming soon`}
+									title={`${item.label} — coming soon`}
+								>
+									<span class="sidebar__item-icon" aria-hidden="true"
+										>{@html iconMap[item.icon] ?? iconMap.dashboard}</span
+									>
+									<span class="sidebar__item-label">{item.label}</span>
+									<span class="sidebar__soon" aria-hidden="true">Soon</span>
+								</span>
+							{:else}
+								<!-- eslint-disable svelte/no-navigation-without-resolve -- item.href comes from this variant's static approved nav config, not a literal route id. -->
+								<a
+									class="sidebar__item"
+									class:sidebar__item--active={isActive(item.href)}
+									href={item.href}
+									onclick={onnavigate}
+									aria-current={isActive(item.href) ? 'page' : undefined}
+									aria-label={item.label}
+									title={collapsed ? item.label : undefined}
+								>
+									<span class="sidebar__item-icon" aria-hidden="true"
+										>{@html iconMap[item.icon] ?? iconMap.dashboard}</span
+									><span class="sidebar__item-label">{item.label}</span>
+								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/each}
 	</nav>
 </aside>
 
@@ -112,19 +171,33 @@
 		border-radius: var(--radius-large);
 		background: var(--color-surface);
 		overflow: hidden;
+		transition:
+			width var(--timing-base) ease-out,
+			flex-basis var(--timing-base) ease-out;
 
-		&__brand {
+		&__brand-row {
 			display: flex;
 			align-items: center;
 			gap: var(--space-small);
-			min-height: 48px;
 			margin-bottom: var(--space-large);
+		}
+		&__brand {
+			display: flex;
+			flex: 1;
+			min-width: 0;
+			align-items: center;
+			gap: var(--space-small);
+			min-height: 48px;
 			padding: var(--space-small);
 			color: var(--color-heading);
 			text-decoration: none;
 		}
 		&__brand:hover {
 			color: var(--color-heading);
+		}
+		&__brand-text {
+			min-width: 0;
+			overflow: hidden;
 		}
 		&__mark {
 			display: grid;
@@ -148,14 +221,64 @@
 		}
 		&__brand strong {
 			display: block;
+			overflow: hidden;
 			font-weight: 700;
+			text-overflow: ellipsis;
+			white-space: nowrap;
 		}
 		&__eyebrow {
 			display: block;
 			margin-bottom: var(--space-smaller);
+			overflow: hidden;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 			line-height: 1;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+		&__collapse {
+			display: inline-grid;
+			flex: 0 0 auto;
+			width: 28px;
+			height: 28px;
+			place-items: center;
+			padding: 0;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-small);
+			color: var(--color-icon);
+			background: var(--color-surface);
+			transition: all var(--timing-base) ease-out;
+		}
+		&__collapse:hover {
+			color: var(--color-heading);
+			background: var(--color-surface--hover);
+		}
+		&__collapse:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+		&__collapse span,
+		&__collapse span :global(svg) {
+			display: inline-flex;
+			width: 16px;
+			height: 16px;
+		}
+		nav {
+			overflow-y: auto;
+		}
+		&__group + &__group {
+			margin-top: var(--space-base);
+			padding-top: var(--space-base);
+			border-top: var(--border-base) solid var(--color-border);
+		}
+		&__group-label {
+			margin-bottom: var(--space-small);
+			padding: 0 var(--space-small);
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			letter-spacing: var(--typography--letterSpacing-loose);
+			text-transform: uppercase;
 		}
 		&__list {
 			display: grid;
@@ -179,12 +302,18 @@
 		}
 		&__item-icon {
 			display: inline-flex;
+			flex: 0 0 20px;
 			width: 20px;
 			color: var(--color-icon);
 		}
 		&__item-icon :global(svg) {
 			width: 20px;
 			height: 20px;
+		}
+		&__item-label {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
 		}
 		&__item:hover {
 			color: var(--color-heading);
@@ -205,6 +334,47 @@
 		}
 		&__item--active .sidebar__item-icon {
 			color: var(--color-interactive);
+		}
+		&__item--unavailable {
+			color: var(--color-disabled);
+			cursor: not-allowed;
+		}
+		&__item--unavailable .sidebar__item-icon {
+			color: var(--color-disabled);
+		}
+		&__soon {
+			flex: 0 0 auto;
+			margin-left: auto;
+			padding: var(--space-smallest) var(--space-small);
+			border-radius: var(--radius-large);
+			color: var(--color-text--secondary);
+			background: var(--color-inactive--surface);
+			font-size: var(--typography--fontSize-smaller);
+			font-weight: 600;
+			white-space: nowrap;
+		}
+	}
+
+	.sidebar--collapsed {
+		width: 76px;
+		flex: 0 0 76px;
+
+		.sidebar__brand-text,
+		.sidebar__group-label,
+		.sidebar__item-label,
+		.sidebar__soon {
+			display: none;
+		}
+		.sidebar__brand {
+			flex: 0 0 auto;
+			padding: var(--space-small) 0;
+		}
+		.sidebar__brand-row {
+			justify-content: center;
+		}
+		.sidebar__item {
+			justify-content: center;
+			padding-inline: 0;
 		}
 	}
 

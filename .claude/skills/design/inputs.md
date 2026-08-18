@@ -94,10 +94,31 @@ A floating mini-label: the placeholder text is rendered as a `<label>` whose `ht
 - Default `rows: 3`; `min-height: var(--field--height)`
 - Textarea is `flex`-grow and its padding comes from the field vars
 
+## Required marker
+
+A required field's label ends with an asterisk: `.field-required` in `app.scss` —
+`margin-left: var(--space-smaller)`, `color: var(--color-critical)`, `font-weight: 700`.
+
+- Pass `required` to `Input`, `Textarea`, or `FormField` and the marker appears; never hand-write an asterisk.
+- `required` also sets `aria-required` on the control. It deliberately does **not** set the native `required`
+  attribute, so the browser's own validation bubble never competes with the field's error style.
+- Mark only the fields that genuinely block a save. A field required only in some states takes a condition
+  (`required={hasAnyAddress}`), so the marker appears exactly when the rule applies.
+
+## Form actions
+
+Save stays disabled until the form is dirty, on create and on edit alike, so a press always means something
+changed. Compare the whole form against a baseline — the empty form on a create, the loaded record on an
+edit — and count everything the form owns, including queued files and anything held in a dialog. Move the
+baseline forward after each save that lands. Cancel is always live. `ClientForm.svelte` is the worked example.
+
 ## Rules
 
 - Every input must have a unique `id`
 - Every label must have a matching `htmlFor` (generated automatically in the floating label)
+- **A placeholder floats the label, exactly like a typed value does.** The label rests over an empty field, so
+  the two sit on top of each other otherwise. `ui/Input.svelte` counts `placeholder` alongside `value` when it
+  decides; do not "simplify" that condition back to `value` alone.
 - Use tokens — never hardcoded hex or arbitrary colors
 - Focus is expressed only with `--shadow-focus` (no outline, no border swap)
 - The only field "error" color is `--color-critical` for `invalid`/error

@@ -8,6 +8,7 @@
 		label,
 		type = 'text',
 		size = 'base',
+		required = false,
 		invalid = false,
 		errorMessage = '',
 		disabled = false,
@@ -20,6 +21,7 @@
 		label?: string;
 		type?: string;
 		size?: 'small' | 'base' | 'large';
+		required?: boolean;
 		invalid?: boolean;
 		errorMessage?: string;
 		disabled?: boolean;
@@ -31,7 +33,11 @@
 	const ALWAYS_FLOATED_LABEL_TYPES = new Set(['date', 'time', 'datetime-local', 'month', 'week']);
 
 	let describedBy = $derived(errorMessage ? `${id}-error` : undefined);
-	let hasValue = $derived(Boolean(value) || ALWAYS_FLOATED_LABEL_TYPES.has(type));
+	// The label rests over the field until there is something to lift it clear. A placeholder counts: it
+	// shows while the field is still empty, so without this the two sit on top of each other.
+	let hasValue = $derived(
+		Boolean(value) || ALWAYS_FLOATED_LABEL_TYPES.has(type) || Boolean(rest.placeholder)
+	);
 </script>
 
 <div
@@ -40,7 +46,9 @@
 	class:input--invalid={invalid}
 	class:input--disabled={disabled}
 >
-	{#if label}<label class="input__label" for={id}>{label}</label>{/if}
+	{#if label}<label class="input__label" for={id}
+			>{label}{#if required}<span class="field-required" aria-hidden="true">*</span>{/if}</label
+		>{/if}
 	<div class="input__control">
 		{#if children}{@render children()}{/if}
 		<input
@@ -50,6 +58,7 @@
 			bind:value
 			{disabled}
 			aria-invalid={invalid}
+			aria-required={required || undefined}
 			aria-describedby={describedBy}
 		/>
 	</div>

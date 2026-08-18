@@ -242,7 +242,103 @@ convert mutation exists under a different name)**.
 
 ---
 
-## 4. How WE compare (build notes)
+## 4. Live tour (observed live 2026-08-18)
+
+Toured the live Jobber account (Requests list, a scheduled/overdue request, a new/unscheduled request, the
+new-request form, and Settings → Requests and Bookings) via `claude-in-chrome`. Read and cancelled only —
+nothing was saved, sent, converted, or deleted.
+
+### 4.1 Requests list page
+
+- Three metric cards above the table: **Overview** (counts by status: Needs approval, New, Assessment
+  complete, Overdue, Unscheduled), **New requests** (past 30 days, with a trend %), **Conversion rate** (past
+  30 days, with a trend %).
+- Table columns: Client, Title, Property, Contact, Requested (date), Status (colored badge). Sortable columns
+  show up/down carets; default sort is `STATUS_AND_REQUESTED_AT`.
+- `Status` and `Date` are separate filter chips above the table, each opening a searchable checklist dropdown
+  (statuses: All, Archived, Assessment complete, Converted, New, plus more on scroll — matches the schema
+  enum). A live search box filters the request list itself.
+- Header actions: **New Request** (primary button) and **More Actions → Customize Form / Share or Embed**
+  (jumps into the booking-form settings covered in §4.4).
+
+### 4.2 Request detail page — scheduled (assessment set) vs. new (unscheduled)
+
+Both states share one layout: status badge + title top-left, an edit pencil beside the title, a **History**
+icon (clock-with-arrow) and **More** menu top-right, plus one primary CTA that changes with state. A
+client/property summary card sits below the title (name, property address, phone, email, and a `...` menu
+with **View client profile / Edit client details / Change property**). A **Requested** / **Assessment** date
+pair sits beside that card once an assessment exists. A standalone **Notes** card occupies the whole right
+rail — empty state invites "Leave an internal note for yourself or a team member"; once notes exist it shows
+author, timestamp, a pin/star, and thumbnails for any files attached to a note.
+
+- **New / unscheduled** (no assessment yet): primary CTA is **Schedule Assessment** (calendar icon). No
+  Product/Service section appeared on this one (it had none priced yet — the other request did, see below).
+- **Scheduled / Overdue** (assessment booked, date passed): primary CTA becomes **Email Booking
+  Confirmation**. Below the summary card: an **Overview** section (service-details Q&A merged into one
+  freeform block, plus any submitted photos — edited inline via its own pencil, no separate dialog), an
+  **Assessment** section (Instructions, Schedule date/time, assigned Team member(s), Checklists, a
+  "Complete assessment" checkbox, and the configured client/team reminder offsets), a **Product / Service**
+  section (line items with thumbnail, qty, unit price, total, then Subtotal/Total), and a **Labor** section
+  at the very bottom ("Time tracked to this request will show here" — empty until a timesheet entry lands).
+- **More menu** on a request: **Convert to Quote**, **Convert to Job**, **Archive**, **Print**, **Delete**.
+  No separate "leave as Action Required" menu item was visible — that appears to just be *not acting* on a
+  request whose assessment is complete.
+- **History** icon opens a right-side **Request History** panel replacing the Notes rail: a chronological,
+  field-level audit log ("Jafar Khan edited the request — Status: pending → scheduled", "... updated the
+  assessment — Assigned to: empty → Jafar Khan", "... filled out a form — Share images...: → [file ids]",
+  etc.), each entry showing actor, what changed, old → new value, and a timestamp. Filterable by Team, Type,
+  and Date, sortable Newest/Oldest. This is a strong reference for our own activity-feed pattern.
+
+### 4.3 Scheduling an assessment / creating a request
+
+- **Schedule Assessment** opens an inline **"On-site assessment"** panel (not a modal) directly on the
+  request page: Instructions textarea; Schedule with Start/End date + a **"Schedule later"** checkbox (checked
+  by default — unchecking it reveals the date pickers) and Start/End time + an **"Anytime"** checkbox — the
+  same three-state (Scheduled / Anytime / Unscheduled) model documented in §2.1; a Team section (assign
+  members, "Email team when assigned" checkbox, a team-reminder-offset dropdown); a Checklists callout
+  ("Attach custom-built checklists so nothing gets missed" → **Create a Checklist**); Cancel/Save. The
+  request's existing Product/Service line items are shown read-only underneath, carried forward automatically.
+- **New Request** (staff-created) is a single full-page form, not a wizard: Title, client picker, a read-only
+  "Requested on" date (defaults to today), an **Overview** section (service-details textarea + a
+  drag-and-drop photo uploader, 10 max), an **On-site assessment** empty-state card (truck icon, "Visit the
+  property to assess the job before you do the work" — click to expand the same panel as §4.3 above), a
+  **Product / Service** section (**Add Line Item** button, Subtotal/Total), and a **Notes** empty-state card.
+  One Cancel/Save Request pair at the bottom for the whole page — no per-section save.
+
+### 4.4 Settings → Requests and Bookings
+
+- **Forms** card lists every form (e.g. "Assessment Booking Form", "Default Form") with a `Booking default` /
+  `Request default` toggle per form (only one of each can be active) and a `...` menu: **Edit / Preview /
+  Share links / Add tracking**.
+- **Edit** opens a full drag-and-drop form builder: a live form preview on the left (starts with a locked
+  "Contact information" section — name, company, email + marketing-email consent checkbox, phone +
+  marketing-SMS consent checkbox, address), and a **Manage form** rail on the right with two tabs:
+  - **Add Questions** — "Add section" (splits the form into another page) plus custom question types: Short
+    answer, Long answer, Dropdown (single/multi), Checkbox, Radio, Numerical, Upload images, Yes/No toggle.
+  - **Settings** — Form title, Form description, a **Form Pages** toggle (sections = separate pages), the
+    **Request default** toggle, a **Require assessment booking approval** toggle ("Review and confirm
+    assessment bookings before they're scheduled"), a **Service areas** toggle with an "Edit service area"
+    link, and a **Booking Availability** collapsible section. This is a materially bigger builder than the
+    schema table implied — full custom-field authoring, not just the three `bookingType`s.
+- **Checklists**, **Customization** (branding, reuses Business Profile), and **Availability** (Business Hours
+  pulled from Company Settings, Service areas) round out the settings page.
+
+### 4.5 Confirmed / corrected against schema
+
+- The three-state schedule model (Scheduled/Anytime/Unscheduled) and the `assessment_completed`/`overdue` etc.
+  status labels from §1.2–§2.1 match what's on screen exactly.
+- The "complete → convert / leave Action Required / archive" branch from §2.2 was **not directly observed**
+  as an explicit prompt in this trial account (no assessment was actually marked complete during the tour,
+  per the read-and-cancel rule) — worth a follow-up look before Part 1 sign-off if the exact prompt wording
+  matters for our build.
+- The booking-form builder is a full custom-form authoring tool (drag-drop questions, multi-page sections,
+  branding), well beyond the `RequestSettings` field table in §3.1. Treat that table as the data model and
+  this section as the actual authoring UX — the gap between them is a scope decision for Part 1 (see open
+  questions in the campaign proposal).
+
+---
+
+## 5. How WE compare (build notes)
 
 - **Requests are a distinct lead-intake object, not just a "new contact."** Jobber separates _the ask_
   (Request, with its own line items + status lifecycle) from _the priced estimate_ (Quote). Our contacts +

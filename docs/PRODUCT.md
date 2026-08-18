@@ -64,6 +64,9 @@ Dashboard shows summary of important entity
 
 ## 8. Customers and properties
 
+The approved detailed behavior is in `docs/client-property-behavior-contract.md`. Read it before changing
+Client or Property lifecycle, relationships, deletion, duplicate handling, or user-facing fields.
+
 The customer profile is the complete relationship record.
 
 Include person or company details, multiple contacts, phone numbers, emails, tags, lead source, marketing attribution, owner, lead temperature, next follow-up, notes, files, referrals, balance, and communication preferences.
@@ -116,6 +119,11 @@ Marking Lost requires a reason. Marking Won can deliberately create the operatio
 
 Bring SMS, email, web chat, Facebook Messenger, missed calls, logged calls, attachments, and internal notes into one shared inbox.
 
+Approved contractor operational-email behavior, tenant-domain rules, Brevo allowances, reply routing,
+reputation controls, and campaign ownership live in `docs/contractor-email-contract.md`. Read that contract
+whenever work touches contractor email, Conversations email replies, sender domains, or Platform Owner
+email controls.
+
 Support assignment, unread state, open/snoozed/closed status, tags, filters, search, quick replies, typing signals, delivery status, failures, bounce details, open tracking, and retry.
 
 Show customer and work context beside the conversation.
@@ -123,6 +131,36 @@ Show customer and work context beside the conversation.
 Allow one connected thread across channels when appropriate and separate threads for different projects or issues.
 
 A missed call creates visible activity, identifies or creates the customer, alerts staff, and may trigger immediate compliant text-back.
+
+### Communications service and balance
+
+UCRM initially provides phone and messaging service to organizations in the United States and Canada through one isolated Twilio subaccount per organization under the platform-owned master account. Contractors search available inventory, select and purchase numbers inside UCRM, complete the required business and messaging registration, and may port their number away when leaving after valid charges are settled.
+
+The Platform Owner privately funds the provider balance. Each organization separately holds a prepaid Communication Balance where one communication credit represents one US dollar and the contractor interface presents the value in dollars. Contractors see their balance, published retail prices, usage, top-ups, adjustments, and refunds; only the Platform Owner sees provider cost and margin.
+
+A contractor may submit an offsite Top-up Request with its payment details, and the Platform Owner may also create one for a payment arranged outside UCRM. A request creates no spendable value until the Platform Owner verifies receipt and confirms it. Confirmation appends Purchased Credit to an immutable ledger and sends a safe receipt; neither the Platform Owner nor a contractor directly edits a balance.
+
+A Top-up Request remains in immutable history as Awaiting Confirmation, Confirmed, Rejected, or Cancelled. Confirmation records both the claimed amount and the amount actually received; a mismatch requires a private reason and never rewrites the claim. Database locking and idempotency allow only one confirmation and one Purchased Credit entry for the same payment.
+
+Purchased Credit and Promotional Credit remain distinguishable. Promotional Credit is spent first, may expire under its grant terms, and is never refundable as cash. Purchased Credit does not silently expire. Normal outbound communication stops when spendable credit is insufficient, while inbound communication and mandatory consent handling continue. UCRM reserves estimated credit before queuing outbound work, settles the final versioned retail charge from provider results, and releases or corrects the reservation when appropriate.
+
+Each published package version may define a dollar-valued Monthly Communication Allowance. The Platform Owner may apply a reasoned, effective-dated organization override without redefining the package. UCRM grants the allowance as Promotional Credit once for each confirmed subscription period, never once per calendar month, and retries cannot grant it twice. Unused monthly allowance expires at the end of that subscription period and does not consume or expire Purchased Credit.
+
+A package change during an active subscription period does not recalculate or supplement the allowance already granted; the new package allowance begins with the next confirmed period. A separately promised immediate benefit is a reasoned Promotional Credit adjustment. No new allowance posts before renewal is confirmed, including during commercial grace. Allowance spending uses the soonest-expiring Promotional Credit first, then later-expiring Promotional Credit, then Purchased Credit.
+
+Suspension preserves every balance and ledger entry but blocks normal outbound activity and new allowance grants while required inbound, consent, provider-callback, and reconciliation work continues. Organization closure preserves Purchased Credit during the recoverable window but blocks spending. Before permanent purge, the Platform Owner resolves unused Purchased Credit through an offsite refund or an explicitly approved non-refundable outcome; unresolved Purchased Credit blocks purge and creates an owner recovery task. Promotional Credit expires at permanent closure.
+
+Retail rates are versioned by destination, channel, sender type, message segments, provider and carrier fees, and recurring registration or number charges. Historical usage retains the rate that applied when it occurred. Provider cost and contractor retail charge remain separate so pricing changes never rewrite history.
+
+When the provider accepts and bills communication, later delivery failure does not automatically refund the contractor. UCRM releases a reservation when no provider cost occurred and otherwise requires a reasoned exceptional adjustment. Unavoidable provider-billed inbound usage continues at zero balance and becomes visible Outstanding Communication Usage; later Purchased Credit settles that amount before becoming spendable, while Promotional Credit never pays old debt.
+
+UCRM warns when balance falls below the global low-balance threshold, is estimated to cover fewer than seven days of recent use, or cannot cover an upcoming number or registration renewal. An underfunded number is protected for 30 days with normal outbound activity paused and an urgent owner task; release or porting always requires impact preview and explicit confirmation.
+
+Platform safety controls include a global outbound pause, per-organization outbound pause, per-organization daily spend caps, unusual-usage and SMS-pumping alerts, a protected provider-balance floor, and immutable owner history. Exhausting the protected provider reserve stops normal outbound work but never disables inbound callbacks or mandatory STOP and HELP processing.
+
+Each package version defines the normal maximum Organization SMS Mode, and the Platform Owner may apply a reasoned organization override. Modes are Disabled, Notifications Only, and Two-way SMS. Contractors may choose a lower mode but cannot exceed the platform maximum. Disabled blocks normal outbound SMS and automations while preserving history and required inbound processing. Notifications Only permits approved transactional notices; ordinary replies are received, billed, stored, and surfaced read-only without enabling an SMS conversation. Two-way SMS enables permitted manual and automated conversations in the unified inbox. Every mode remains subject to consent, registration, balance, rate limits, and emergency controls.
+
+Unused Purchased Credit may be refunded offsite only for a duplicate payment, mistake, organization closure, or another approved exception. The Platform Owner records the offsite refund and confirms a matching immutable credit debit with a reason; Promotional Credit is never refunded as cash.
 
 ## 12. Quotes and proposals
 

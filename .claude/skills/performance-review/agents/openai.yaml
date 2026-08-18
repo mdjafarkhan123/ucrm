@@ -1,0 +1,4 @@
+interface:
+  display_name: "Performance Review"
+  short_description: "Measure and review feature performance"
+  default_prompt: "Use $performance-review to check this implementation for evidence-based performance issues."

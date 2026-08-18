@@ -21,7 +21,7 @@
 
 <div class="form-field">
 	<label class="form-field__label" for={forId}
-		>{label}{#if required}<span aria-hidden="true"> *</span>{/if}</label
+		>{label}{#if required}<span class="field-required" aria-hidden="true">*</span>{/if}</label
 	>
 	{@render children()}
 	{#if hint && !error}<p class="form-field__hint" id={`${forId}-hint`}>{hint}</p>{/if}

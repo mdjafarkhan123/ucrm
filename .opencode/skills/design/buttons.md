@@ -43,11 +43,11 @@ login form.
 
 Each variation supports `primary`, `secondary`, and `tertiary` types.
 
-| Type      | Background                       | Border                             | Label and icon                   | Hover/focus background                  |
-| --------- | -------------------------------- | ---------------------------------- | -------------------------------- | --------------------------------------- |
-| Primary   | `var(--button--color-variation)` | `var(--button--color-variation)`   | `var(--color-surface)`           | `var(--button--color-variation--hover)` |
-| Secondary | `var(--color-surface)`           | `var(--color-border--interactive)` | `var(--button--color-variation)` | `var(--color-surface--hover)`           |
-| Tertiary  | `var(--color-surface)`           | transparent                        | `var(--button--color-variation)` | `var(--color-surface--hover)`           |
+| Type      | Background                       | Border                                        | Label and icon                   | Hover/focus background                  |
+| --------- | -------------------------------- | --------------------------------------------- | -------------------------------- | --------------------------------------- |
+| Primary   | `var(--button--color-variation)` | `var(--button--color-variation)`              | `var(--color-surface)`           | `var(--button--color-variation--hover)` |
+| Secondary | `var(--color-surface)`           | `var(--color-border--interactive)`            | `var(--button--color-variation)` | `var(--color-surface--hover)`           |
+| Tertiary  | `var(--color-surface)`           | dashed `var(--button--color-variation)`       | `var(--button--color-variation)` | `var(--color-surface--hover)`           |
 
 For secondary and tertiary buttons, the label and icon use
 `var(--button--color-variation--hover)` on hover and focus. Secondary buttons

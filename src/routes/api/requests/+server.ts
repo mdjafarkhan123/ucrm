@@ -1,16 +1,25 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { requireOrganization } from '$lib/server/auth/organization';
-import { databaseError, validationError } from '$lib/server/api/errors';
+import {
+	NO_STORE_HEADERS,
+	PRIVATE_READ_HEADERS,
+	databaseError,
+	unauthorized,
+	validationError
+} from '$lib/server/api/errors';
 import { requestSchema, zodFieldErrors } from '$lib/server/validation/foundation.schema';
+import {
+	STORED_REQUEST_STATUSES,
+	deriveRequestStatus,
+	type StoredRequestStatus
+} from '$lib/server/requests/status';
+import { organizationTimezone } from '$lib/server/requests/timezone';
+import { embeddedOne } from '$lib/server/api/embedded';
 
 export const POST: RequestHandler = async (event) => {
 	const auth = await requireOrganization(event);
-	if (!auth)
-		return new Response(
-			JSON.stringify({ error: 'Authentication or organization membership required' }),
-			{ status: 401, headers: { 'content-type': 'application/json' } }
-		);
+	if (!auth) return unauthorized();
 
 	let body: unknown;
 	try {
@@ -23,25 +32,27 @@ export const POST: RequestHandler = async (event) => {
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
 	const organizationId = auth.organization.id;
-	const [{ data: contact }, { data: property }] = await Promise.all([
+	const [{ data: client }, { data: property }] = await Promise.all([
 		event.locals.supabase
-			.from('contacts')
+			.from('clients')
 			.select('id')
-			.eq('id', parsed.data.contact_id)
+			.eq('id', parsed.data.client_id)
 			.eq('organization_id', organizationId)
+			.is('deleted_at', null)
 			.maybeSingle(),
 		event.locals.supabase
 			.from('properties')
 			.select('id')
 			.eq('id', parsed.data.property_id)
-			.eq('contact_id', parsed.data.contact_id)
+			.eq('client_id', parsed.data.client_id)
 			.eq('organization_id', organizationId)
+			.is('deleted_at', null)
 			.maybeSingle()
 	]);
 
-	if (!contact) return validationError({ contact_id: 'Choose a customer in your organization.' });
+	if (!client) return validationError({ client_id: 'Choose a client in your organization.' });
 	if (!property)
-		return validationError({ property_id: 'Choose a property belonging to this customer.' });
+		return validationError({ property_id: 'Choose a property belonging to this client.' });
 
 	const { data, error } = await event.locals.supabase
 		.from('requests')
@@ -50,5 +61,136 @@ export const POST: RequestHandler = async (event) => {
 		.single();
 
 	if (error) return databaseError();
-	return json({ request: data }, { status: 201 });
+	return json({ request: data }, { status: 201, headers: NO_STORE_HEADERS });
+};
+
+const PAGE_SIZE_DEFAULT = 25;
+const PAGE_SIZE_MAX = 50;
+
+// Keyset pagination, never offset. "Requested" is the column Jobber sorts by, and id breaks ties so a
+// request created in the same millisecond as another cannot be skipped or shown twice.
+// Cursor format: "<created_at ISO>|<id>".
+function readCursor(raw: string | null) {
+	if (!raw) return null;
+	const separator = raw.lastIndexOf('|');
+	if (separator < 1) return null;
+	const createdAt = raw.slice(0, separator);
+	const id = raw.slice(separator + 1);
+	if (Number.isNaN(Date.parse(createdAt)) || id.length === 0) return null;
+	return { createdAt, id };
+}
+
+export const GET: RequestHandler = async (event) => {
+	const auth = await requireOrganization(event);
+	if (!auth) return unauthorized();
+
+	const organizationId = auth.organization.id;
+	const supabase = event.locals.supabase;
+	const params = event.url.searchParams;
+
+	const search = params.get('search')?.trim() ?? '';
+	const statuses = params
+		.getAll('status')
+		.flatMap((value) => value.split(','))
+		.map((value) => value.trim())
+		.filter((value): value is StoredRequestStatus =>
+			(STORED_REQUEST_STATUSES as readonly string[]).includes(value)
+		);
+	const limit = Math.min(
+		PAGE_SIZE_MAX,
+		Math.max(
+			1,
+			Number.parseInt(params.get('limit') ?? String(PAGE_SIZE_DEFAULT), 10) || PAGE_SIZE_DEFAULT
+		)
+	);
+	const cursor = readCursor(params.get('cursor'));
+
+	let query = supabase
+		.from('requests')
+		.select(
+			`id, title, status, service_type, created_at, client_id,
+			 client:clients!requests_client_organization_fk(id, display_name, company_name),
+			 property:properties!requests_property_organization_fk(id, label, address_line1, city, state_region, postal_code),
+			 assessment:assessments(id, starts_at, ends_at, all_day, completed_at)`
+		)
+		.eq('organization_id', organizationId);
+
+	if (statuses.length > 0) query = query.in('status', statuses);
+	if (search) {
+		// PostgREST parses commas and parentheses inside or= as syntax, so the term is quoted and its
+		// backslashes, quotes, and ilike wildcards escaped before it goes in.
+		const escaped = search.replace(/[\%_]/g, (match) => `\${match}`);
+		const quoted = `"%${escaped.replace(/"/g, '\\"')}%"`;
+		query = query.or(`title.ilike.${quoted},service_type.ilike.${quoted}`);
+	}
+	if (cursor) {
+		// Two halves, and both are needed. `lte` is what the index actually seeks on, so the scan starts at
+		// the cursor row instead of walking the whole list from the newest; the `or` then drops the cursor
+		// row itself and anything tied with it on a higher id. Verified with EXPLAIN — the index condition
+		// covers organization_id and created_at, and the ordering comes free from the index.
+		query = query
+			.lte('created_at', cursor.createdAt)
+			.or(
+				`created_at.lt.${cursor.createdAt},and(created_at.eq.${cursor.createdAt},id.lt.${cursor.id})`
+			);
+	}
+
+	// One extra row tells us whether another page exists without a second count query.
+	const { data: rows, error } = await query
+		.order('created_at', { ascending: false })
+		.order('id', { ascending: false })
+		.limit(limit + 1);
+	if (error) return databaseError();
+
+	const page = (rows ?? []).slice(0, limit);
+	const hasMore = (rows ?? []).length > limit;
+
+	// The one lookup that cannot be embedded: contact methods hang off the client, not the request.
+	// Fetched once for the whole page, so the list stays two round trips whatever the page size.
+	const clientIds = [...new Set(page.map((row) => row.client_id))];
+	const [{ data: contactMethods, error: contactMethodsError }, timezone] = await Promise.all([
+		clientIds.length > 0
+			? supabase
+					.from('client_contact_methods')
+					.select('client_id, kind, value')
+					.eq('organization_id', organizationId)
+					.eq('is_primary', true)
+					.in('client_id', clientIds)
+			: Promise.resolve({ data: [], error: null }),
+		organizationTimezone(supabase, organizationId)
+	]);
+	if (contactMethodsError) return databaseError();
+
+	const contactByClient = new Map<string, { email: string | null; phone: string | null }>();
+	for (const method of contactMethods ?? []) {
+		const entry = contactByClient.get(method.client_id) ?? { email: null, phone: null };
+		if (method.kind === 'email') entry.email = method.value;
+		if (method.kind === 'phone') entry.phone = method.value;
+		contactByClient.set(method.client_id, entry);
+	}
+
+	const now = new Date();
+	const requests = page.map((row) => {
+		const assessment = embeddedOne(row.assessment);
+		const contact = contactByClient.get(row.client_id);
+		return {
+			id: row.id,
+			title: row.title,
+			service_type: row.service_type,
+			requested_at: row.created_at,
+			stored_status: row.status,
+			status: deriveRequestStatus(row.status, assessment, timezone, now),
+			client: embeddedOne(row.client),
+			property: embeddedOne(row.property),
+			assessment,
+			email: contact?.email ?? null,
+			phone: contact?.phone ?? null
+		};
+	});
+
+	const last = page.at(-1);
+	return json(
+		{ requests, next_cursor: hasMore && last ? `${last.created_at}|${last.id}` : null },
+		{ headers: PRIVATE_READ_HEADERS }
+	);
 };

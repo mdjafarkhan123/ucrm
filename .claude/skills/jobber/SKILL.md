@@ -60,8 +60,26 @@ Each domain file has three layers:
 | `jobber-05-invoices-payments.md`      | Invoice object, line items, billing schedule, `PaymentRecord`, Jobber Payments (card/ACH), deposits, dunning, bad debt write-off                          | Invoices, payments, billing, auto-charge, deposits, overdue flow, write-offs                        |
 | `jobber-06-automations-clienthub.md`  | Built-in automations (toggle presets), Custom Automation Builder (trigger → condition → action), Client Hub self-serve portal                             | Automations, follow-ups, visit reminders, dunning rules, client portal, online approval/payment     |
 | `jobber-07-api-mutations.md`          | Full GraphQL mutation catalog, pagination (Relay cursor), webhooks, rate limits, `userErrors` pattern                                                     | API design, mutation naming conventions, error handling, webhook event catalog, pagination          |
+| `jobber-08-screen-patterns.md`        | Shared detail-page skeleton, the three edit patterns and which to use, section and empty-section behavior, notes, the shared list-page shape              | Any detail page, list page, edit interaction, section, or empty state — read before designing one   |
 
 ---
+
+## Tour Jobber Before Building a Campaign
+
+Jafar is signed into Jobber and Claude Code can drive his Chrome through the `claude-in-chrome` tools, so
+**every new campaign starts with a live tour of the Jobber screens for that domain** before any plan is
+presented. Reading these files is not a substitute: they hold the model, the tour holds the interaction.
+
+1. Call `tabs_context_mcp`. If it reports the extension is not connected, ask Jafar to fully reopen Chrome
+   and try once more; only then fall back to asking him for screenshots in `Design/`.
+2. Open the list page and one real record for the domain, then click the affordances that matter — every
+   pencil, the `...` menus, an empty state — and note what opens, where the save controls sit, and what
+   appears only in edit mode.
+3. **Read and cancel. Never save, send, convert, delete, or accept anything in his live account**, and close
+   the tabs you opened when you are done.
+4. Write what you learned into the matching `jobber-0X` file **in the same session**, with the date and
+   "observed live". Campaign memory is temporary and gets deleted when the campaign closes; this skill is
+   where behavior lives permanently.
 
 ## Locked Architecture Decisions
 
@@ -90,6 +108,15 @@ These are confirmed decisions from the **"How WE compare"** sections across all 
 - **Client Hub is the conversion surface.** Priority parity items: approve + sign + pay deposit on quotes; pay + tip on invoices; request more work (self-serve upsell); view upcoming/past appointments.
 - **Branding once, applied everywhere:** Logo and colors set in Business Profile flow into the client portal and booking forms. Single source of truth.
 - **Self-serve booking creates a job OR an assessment** — not hardcoded. Match Jobber's `WORK_ORDER` vs `WORK_REQUEST` config choice; some trades want instant booking, others want an estimate visit first.
+
+**Screens and editing** — full detail in `jobber-08-screen-patterns.md`
+
+- **Behavior copies Jobber, placement copies our blueprint, looks come from our design system.** When the
+  blueprint in `Design/` puts a block somewhere else than Jobber does, the blueprint wins for placement and
+  Jobber still wins for how that block behaves.
+- **A detail page never sends the user back to a create page to edit.** Our chosen interaction is Jobber's
+  block dialog plus a sticky action bar that commits one staged draft.
+- **One green primary action per detail page**, named for the next step in the lifecycle.
 
 **API / error handling**
 

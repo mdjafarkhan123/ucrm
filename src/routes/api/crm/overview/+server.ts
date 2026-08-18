@@ -12,16 +12,23 @@ export const GET: RequestHandler = async (event) => {
 		);
 
 	const { organization } = auth;
-	const [contacts, properties, requests] = await Promise.all([
+	const [clients, contactMethods, properties, requests] = await Promise.all([
 		event.locals.supabase
-			.from('contacts')
+			.from('clients')
 			.select('*')
 			.eq('organization_id', organization.id)
+			.is('deleted_at', null)
 			.order('updated_at', { ascending: false }),
+		event.locals.supabase
+			.from('client_contact_methods')
+			.select('client_id, kind, value')
+			.eq('organization_id', organization.id)
+			.eq('is_primary', true),
 		event.locals.supabase
 			.from('properties')
 			.select('*')
 			.eq('organization_id', organization.id)
+			.is('deleted_at', null)
 			.order('updated_at', { ascending: false }),
 		event.locals.supabase
 			.from('requests')
@@ -30,11 +37,25 @@ export const GET: RequestHandler = async (event) => {
 			.order('updated_at', { ascending: false })
 	]);
 
-	if (contacts.error || properties.error || requests.error) return databaseError();
+	if (clients.error || contactMethods.error || properties.error || requests.error)
+		return databaseError();
+
+	// Email and phone live in client_contact_methods, so the primary values are folded back in here.
+	const primaryByClient = new Map<string, { email: string | null; phone: string | null }>();
+	for (const method of contactMethods.data ?? []) {
+		const entry = primaryByClient.get(method.client_id) ?? { email: null, phone: null };
+		if (method.kind === 'email') entry.email = method.value;
+		else entry.phone = method.value;
+		primaryByClient.set(method.client_id, entry);
+	}
 
 	return json({
 		organization,
-		contacts: contacts.data ?? [],
+		clients: (clients.data ?? []).map((client) => ({
+			...client,
+			email: primaryByClient.get(client.id)?.email ?? null,
+			phone: primaryByClient.get(client.id)?.phone ?? null
+		})),
 		properties: properties.data ?? [],
 		requests: requests.data ?? []
 	});

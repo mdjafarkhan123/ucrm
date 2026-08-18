@@ -58,55 +58,449 @@ export type Database = {
 					}
 				];
 			};
-			contacts: {
+			activity_events: {
 				Row: {
-					company_name: string | null;
+					actor_user_id: string | null;
 					created_at: string;
-					display_name: string;
-					email: string | null;
-					first_name: string | null;
+					entity_id: string;
+					entity_type: string;
+					event_type: string;
 					id: string;
-					last_name: string | null;
-					lifecycle_status: string;
-					notes: string | null;
+					metadata: Json;
 					organization_id: string;
-					phone: string | null;
-					source: string | null;
+					summary: string;
+				};
+				Insert: {
+					actor_user_id?: string | null;
+					created_at?: string;
+					entity_id: string;
+					entity_type: string;
+					event_type: string;
+					id?: string;
+					metadata?: Json;
+					organization_id: string;
+					summary: string;
+				};
+				Update: {
+					actor_user_id?: string | null;
+					created_at?: string;
+					entity_id?: string;
+					entity_type?: string;
+					event_type?: string;
+					id?: string;
+					metadata?: Json;
+					organization_id?: string;
+					summary?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'activity_events_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			assessment_assignees: {
+				Row: {
+					assessment_id: string;
+					created_at: string;
+					organization_id: string;
+					user_id: string;
+				};
+				Insert: {
+					assessment_id: string;
+					created_at?: string;
+					organization_id: string;
+					user_id: string;
+				};
+				Update: {
+					assessment_id?: string;
+					created_at?: string;
+					organization_id?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'assessment_assignees_assessment_id_fkey';
+						columns: ['assessment_id'];
+						isOneToOne: false;
+						referencedRelation: 'assessments';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'assessment_assignees_member_fk';
+						columns: ['organization_id', 'user_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_members';
+						referencedColumns: ['organization_id', 'user_id'];
+					},
+					{
+						foreignKeyName: 'assessment_assignees_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			assessments: {
+				Row: {
+					all_day: boolean;
+					completed_at: string | null;
+					created_at: string;
+					ends_at: string | null;
+					id: string;
+					instructions: string | null;
+					organization_id: string;
+					request_id: string;
+					starts_at: string | null;
 					updated_at: string;
 				};
 				Insert: {
-					company_name?: string | null;
+					all_day?: boolean;
+					completed_at?: string | null;
 					created_at?: string;
-					display_name: string;
-					email?: string | null;
-					first_name?: string | null;
+					ends_at?: string | null;
 					id?: string;
-					last_name?: string | null;
-					lifecycle_status?: string;
-					notes?: string | null;
+					instructions?: string | null;
 					organization_id: string;
-					phone?: string | null;
-					source?: string | null;
+					request_id: string;
+					starts_at?: string | null;
 					updated_at?: string;
 				};
 				Update: {
-					company_name?: string | null;
+					all_day?: boolean;
+					completed_at?: string | null;
 					created_at?: string;
-					display_name?: string;
-					email?: string | null;
-					first_name?: string | null;
+					ends_at?: string | null;
 					id?: string;
-					last_name?: string | null;
-					lifecycle_status?: string;
-					notes?: string | null;
+					instructions?: string | null;
 					organization_id?: string;
-					phone?: string | null;
-					source?: string | null;
+					request_id?: string;
+					starts_at?: string | null;
 					updated_at?: string;
 				};
 				Relationships: [
 					{
-						foreignKeyName: 'contacts_organization_id_fkey';
+						foreignKeyName: 'assessments_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'assessments_request_organization_fk';
+						columns: ['organization_id', 'request_id'];
+						isOneToOne: false;
+						referencedRelation: 'requests';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			attachments: {
+				Row: {
+					created_at: string;
+					entity_id: string;
+					entity_type: string;
+					file_name: string;
+					id: string;
+					mime_type: string;
+					note_id: string | null;
+					object_key: string;
+					organization_id: string;
+					size_bytes: number;
+					thumbnail_object_key: string | null;
+					uploaded_by: string | null;
+				};
+				Insert: {
+					created_at?: string;
+					entity_id: string;
+					entity_type: string;
+					file_name: string;
+					id?: string;
+					mime_type: string;
+					note_id?: string | null;
+					object_key: string;
+					organization_id: string;
+					size_bytes: number;
+					thumbnail_object_key?: string | null;
+					uploaded_by?: string | null;
+				};
+				Update: {
+					created_at?: string;
+					entity_id?: string;
+					entity_type?: string;
+					file_name?: string;
+					id?: string;
+					mime_type?: string;
+					note_id?: string | null;
+					object_key?: string;
+					organization_id?: string;
+					size_bytes?: number;
+					thumbnail_object_key?: string | null;
+					uploaded_by?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'attachments_note_id_fkey';
+						columns: ['note_id'];
+						isOneToOne: false;
+						referencedRelation: 'notes';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'attachments_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			client_communication_preferences: {
+				Row: {
+					appointment_reminders: boolean;
+					client_id: string;
+					contact_policy: string;
+					created_at: string;
+					invoice_reminders: boolean;
+					job_follow_ups: boolean;
+					marketing: boolean;
+					opt_out_source: string | null;
+					organization_id: string;
+					quote_follow_ups: boolean;
+					review_requests: boolean;
+					sms_opt_in_at: string | null;
+					sms_opt_out_at: string | null;
+					updated_at: string;
+				};
+				Insert: {
+					appointment_reminders?: boolean;
+					client_id: string;
+					contact_policy?: string;
+					created_at?: string;
+					invoice_reminders?: boolean;
+					job_follow_ups?: boolean;
+					marketing?: boolean;
+					opt_out_source?: string | null;
+					organization_id: string;
+					quote_follow_ups?: boolean;
+					review_requests?: boolean;
+					sms_opt_in_at?: string | null;
+					sms_opt_out_at?: string | null;
+					updated_at?: string;
+				};
+				Update: {
+					appointment_reminders?: boolean;
+					client_id?: string;
+					contact_policy?: string;
+					created_at?: string;
+					invoice_reminders?: boolean;
+					job_follow_ups?: boolean;
+					marketing?: boolean;
+					opt_out_source?: string | null;
+					organization_id?: string;
+					quote_follow_ups?: boolean;
+					review_requests?: boolean;
+					sms_opt_in_at?: string | null;
+					sms_opt_out_at?: string | null;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'client_communication_preferences_client_organization_fk';
+						columns: ['organization_id', 'client_id'];
+						isOneToOne: true;
+						referencedRelation: 'clients';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'client_communication_preferences_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			client_contact_methods: {
+				Row: {
+					client_contact_id: string | null;
+					client_id: string;
+					created_at: string;
+					id: string;
+					is_primary: boolean;
+					kind: string;
+					label: string | null;
+					normalized_value: string;
+					organization_id: string;
+					updated_at: string;
+					value: string;
+				};
+				Insert: {
+					client_contact_id?: string | null;
+					client_id: string;
+					created_at?: string;
+					id?: string;
+					is_primary?: boolean;
+					kind: string;
+					label?: string | null;
+					normalized_value?: string;
+					organization_id: string;
+					updated_at?: string;
+					value: string;
+				};
+				Update: {
+					client_contact_id?: string | null;
+					client_id?: string;
+					created_at?: string;
+					id?: string;
+					is_primary?: boolean;
+					kind?: string;
+					label?: string | null;
+					normalized_value?: string;
+					organization_id?: string;
+					updated_at?: string;
+					value?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'client_contact_methods_client_organization_fk';
+						columns: ['organization_id', 'client_id'];
+						isOneToOne: false;
+						referencedRelation: 'clients';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'client_contact_methods_contact_organization_fk';
+						columns: ['organization_id', 'client_contact_id'];
+						isOneToOne: false;
+						referencedRelation: 'client_contacts';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'client_contact_methods_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			client_contacts: {
+				Row: {
+					client_id: string;
+					created_at: string;
+					first_name: string | null;
+					id: string;
+					is_primary: boolean;
+					last_name: string | null;
+					organization_id: string;
+					role_label: string | null;
+					updated_at: string;
+				};
+				Insert: {
+					client_id: string;
+					created_at?: string;
+					first_name?: string | null;
+					id?: string;
+					is_primary?: boolean;
+					last_name?: string | null;
+					organization_id: string;
+					role_label?: string | null;
+					updated_at?: string;
+				};
+				Update: {
+					client_id?: string;
+					created_at?: string;
+					first_name?: string | null;
+					id?: string;
+					is_primary?: boolean;
+					last_name?: string | null;
+					organization_id?: string;
+					role_label?: string | null;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'client_contacts_client_organization_fk';
+						columns: ['organization_id', 'client_id'];
+						isOneToOne: false;
+						referencedRelation: 'clients';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'client_contacts_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			clients: {
+				Row: {
+					archived_at: string | null;
+					client_type: string;
+					company_name: string | null;
+					converted_to_customer_at: string | null;
+					created_at: string;
+					deleted_at: string | null;
+					display_name: string;
+					first_name: string | null;
+					id: string;
+					last_name: string | null;
+					lead_source: string | null;
+					lead_temperature: string | null;
+					lifecycle_status: string;
+					next_follow_up_at: string | null;
+					organization_id: string;
+					owner_user_id: string | null;
+					updated_at: string;
+				};
+				Insert: {
+					archived_at?: string | null;
+					client_type?: string;
+					company_name?: string | null;
+					converted_to_customer_at?: string | null;
+					created_at?: string;
+					deleted_at?: string | null;
+					display_name: string;
+					first_name?: string | null;
+					id?: string;
+					last_name?: string | null;
+					lead_source?: string | null;
+					lead_temperature?: string | null;
+					lifecycle_status?: string;
+					next_follow_up_at?: string | null;
+					organization_id: string;
+					owner_user_id?: string | null;
+					updated_at?: string;
+				};
+				Update: {
+					archived_at?: string | null;
+					client_type?: string;
+					company_name?: string | null;
+					converted_to_customer_at?: string | null;
+					created_at?: string;
+					deleted_at?: string | null;
+					display_name?: string;
+					first_name?: string | null;
+					id?: string;
+					last_name?: string | null;
+					lead_source?: string | null;
+					lead_temperature?: string | null;
+					lifecycle_status?: string;
+					next_follow_up_at?: string | null;
+					organization_id?: string;
+					owner_user_id?: string | null;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'clients_organization_id_fkey';
 						columns: ['organization_id'];
 						isOneToOne: false;
 						referencedRelation: 'organizations';
@@ -131,6 +525,92 @@ export type Database = {
 					feature_key?: string;
 				};
 				Relationships: [];
+			};
+			note_links: {
+				Row: {
+					created_at: string;
+					entity_id: string;
+					entity_type: string;
+					id: string;
+					note_id: string;
+					organization_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					entity_id: string;
+					entity_type: string;
+					id?: string;
+					note_id: string;
+					organization_id: string;
+				};
+				Update: {
+					created_at?: string;
+					entity_id?: string;
+					entity_type?: string;
+					id?: string;
+					note_id?: string;
+					organization_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'note_links_note_organization_fk';
+						columns: ['organization_id', 'note_id'];
+						isOneToOne: false;
+						referencedRelation: 'notes';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'note_links_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			notes: {
+				Row: {
+					body: string;
+					created_at: string;
+					created_by: string | null;
+					edited_at: string | null;
+					edited_by: string | null;
+					id: string;
+					organization_id: string;
+					pinned: boolean;
+					updated_at: string;
+				};
+				Insert: {
+					body: string;
+					created_at?: string;
+					created_by?: string | null;
+					edited_at?: string | null;
+					edited_by?: string | null;
+					id?: string;
+					organization_id: string;
+					pinned?: boolean;
+					updated_at?: string;
+				};
+				Update: {
+					body?: string;
+					created_at?: string;
+					created_by?: string | null;
+					edited_at?: string | null;
+					edited_by?: string | null;
+					id?: string;
+					organization_id?: string;
+					pinned?: boolean;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'notes_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
 			};
 			organization_billing_accounts: {
 				Row: {
@@ -1979,12 +2459,18 @@ export type Database = {
 					access_notes: string | null;
 					address_line1: string;
 					address_line2: string | null;
+					archived_at: string | null;
 					city: string;
-					contact_id: string;
+					client_id: string;
 					country: string;
 					created_at: string;
+					deleted_at: string | null;
 					id: string;
+					is_billing_address: boolean;
+					is_primary: boolean;
 					label: string;
+					latitude: number | null;
+					longitude: number | null;
 					organization_id: string;
 					postal_code: string | null;
 					state_region: string | null;
@@ -1994,12 +2480,18 @@ export type Database = {
 					access_notes?: string | null;
 					address_line1: string;
 					address_line2?: string | null;
+					archived_at?: string | null;
 					city: string;
-					contact_id: string;
+					client_id: string;
 					country?: string;
 					created_at?: string;
+					deleted_at?: string | null;
 					id?: string;
+					is_billing_address?: boolean;
+					is_primary?: boolean;
 					label?: string;
+					latitude?: number | null;
+					longitude?: number | null;
 					organization_id: string;
 					postal_code?: string | null;
 					state_region?: string | null;
@@ -2009,12 +2501,18 @@ export type Database = {
 					access_notes?: string | null;
 					address_line1?: string;
 					address_line2?: string | null;
+					archived_at?: string | null;
 					city?: string;
-					contact_id?: string;
+					client_id?: string;
 					country?: string;
 					created_at?: string;
+					deleted_at?: string | null;
 					id?: string;
+					is_billing_address?: boolean;
+					is_primary?: boolean;
 					label?: string;
+					latitude?: number | null;
+					longitude?: number | null;
 					organization_id?: string;
 					postal_code?: string | null;
 					state_region?: string | null;
@@ -2022,17 +2520,17 @@ export type Database = {
 				};
 				Relationships: [
 					{
-						foreignKeyName: 'properties_contact_id_fkey';
-						columns: ['contact_id'];
+						foreignKeyName: 'properties_client_id_fkey';
+						columns: ['client_id'];
 						isOneToOne: false;
-						referencedRelation: 'contacts';
+						referencedRelation: 'clients';
 						referencedColumns: ['id'];
 					},
 					{
-						foreignKeyName: 'properties_contact_organization_fk';
-						columns: ['organization_id', 'contact_id'];
+						foreignKeyName: 'properties_client_organization_fk';
+						columns: ['organization_id', 'client_id'];
 						isOneToOne: false;
-						referencedRelation: 'contacts';
+						referencedRelation: 'clients';
 						referencedColumns: ['organization_id', 'id'];
 					},
 					{
@@ -2044,9 +2542,124 @@ export type Database = {
 					}
 				];
 			};
+			property_contact_methods: {
+				Row: {
+					created_at: string;
+					id: string;
+					is_primary: boolean;
+					kind: string;
+					label: string | null;
+					normalized_value: string;
+					organization_id: string;
+					property_contact_id: string | null;
+					property_id: string;
+					updated_at: string;
+					value: string;
+				};
+				Insert: {
+					created_at?: string;
+					id?: string;
+					is_primary?: boolean;
+					kind: string;
+					label?: string | null;
+					normalized_value?: string;
+					organization_id: string;
+					property_contact_id?: string | null;
+					property_id: string;
+					updated_at?: string;
+					value: string;
+				};
+				Update: {
+					created_at?: string;
+					id?: string;
+					is_primary?: boolean;
+					kind?: string;
+					label?: string | null;
+					normalized_value?: string;
+					organization_id?: string;
+					property_contact_id?: string | null;
+					property_id?: string;
+					updated_at?: string;
+					value?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'property_contact_methods_contact_organization_fk';
+						columns: ['organization_id', 'property_contact_id'];
+						isOneToOne: false;
+						referencedRelation: 'property_contacts';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'property_contact_methods_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'property_contact_methods_property_organization_fk';
+						columns: ['organization_id', 'property_id'];
+						isOneToOne: false;
+						referencedRelation: 'properties';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			property_contacts: {
+				Row: {
+					created_at: string;
+					first_name: string | null;
+					id: string;
+					is_primary: boolean;
+					last_name: string | null;
+					organization_id: string;
+					property_id: string;
+					role_label: string | null;
+					updated_at: string;
+				};
+				Insert: {
+					created_at?: string;
+					first_name?: string | null;
+					id?: string;
+					is_primary?: boolean;
+					last_name?: string | null;
+					organization_id: string;
+					property_id: string;
+					role_label?: string | null;
+					updated_at?: string;
+				};
+				Update: {
+					created_at?: string;
+					first_name?: string | null;
+					id?: string;
+					is_primary?: boolean;
+					last_name?: string | null;
+					organization_id?: string;
+					property_id?: string;
+					role_label?: string | null;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'property_contacts_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'property_contacts_property_organization_fk';
+						columns: ['organization_id', 'property_id'];
+						isOneToOne: false;
+						referencedRelation: 'properties';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
 			requests: {
 				Row: {
-					contact_id: string;
+					client_id: string;
 					created_at: string;
 					description: string | null;
 					id: string;
@@ -2060,7 +2673,7 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
-					contact_id: string;
+					client_id: string;
 					created_at?: string;
 					description?: string | null;
 					id?: string;
@@ -2074,7 +2687,7 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
-					contact_id?: string;
+					client_id?: string;
 					created_at?: string;
 					description?: string | null;
 					id?: string;
@@ -2089,10 +2702,10 @@ export type Database = {
 				};
 				Relationships: [
 					{
-						foreignKeyName: 'requests_contact_organization_fk';
-						columns: ['organization_id', 'contact_id'];
+						foreignKeyName: 'requests_client_organization_fk';
+						columns: ['organization_id', 'client_id'];
 						isOneToOne: false;
-						referencedRelation: 'contacts';
+						referencedRelation: 'clients';
 						referencedColumns: ['organization_id', 'id'];
 					},
 					{
@@ -2134,6 +2747,86 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'permissions';
 						referencedColumns: ['key'];
+					}
+				];
+			};
+			tag_assignments: {
+				Row: {
+					created_at: string;
+					created_by: string | null;
+					entity_id: string;
+					entity_type: string;
+					id: string;
+					organization_id: string;
+					tag_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					created_by?: string | null;
+					entity_id: string;
+					entity_type: string;
+					id?: string;
+					organization_id: string;
+					tag_id: string;
+				};
+				Update: {
+					created_at?: string;
+					created_by?: string | null;
+					entity_id?: string;
+					entity_type?: string;
+					id?: string;
+					organization_id?: string;
+					tag_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'tag_assignments_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'tag_assignments_tag_organization_fk';
+						columns: ['organization_id', 'tag_id'];
+						isOneToOne: false;
+						referencedRelation: 'tags';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			tags: {
+				Row: {
+					color: string | null;
+					created_at: string;
+					id: string;
+					name: string;
+					normalized_name: string;
+					organization_id: string;
+				};
+				Insert: {
+					color?: string | null;
+					created_at?: string;
+					id?: string;
+					name: string;
+					normalized_name?: string;
+					organization_id: string;
+				};
+				Update: {
+					color?: string | null;
+					created_at?: string;
+					id?: string;
+					name?: string;
+					normalized_name?: string;
+					organization_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'tags_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
 					}
 				];
 			};
@@ -2387,6 +3080,35 @@ export type Database = {
 				};
 				Returns: undefined;
 			};
+			create_client: {
+				Args: { payload: Json };
+				Returns: {
+					archived_at: string | null;
+					client_type: string;
+					company_name: string | null;
+					converted_to_customer_at: string | null;
+					created_at: string;
+					deleted_at: string | null;
+					display_name: string;
+					first_name: string | null;
+					id: string;
+					last_name: string | null;
+					lead_source: string | null;
+					lead_temperature: string | null;
+					lifecycle_status: string;
+					next_follow_up_at: string | null;
+					organization_id: string;
+					owner_user_id: string | null;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'clients';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			delete_property: { Args: { p_property_id: string }; Returns: undefined };
 			manage_platform_package_version: {
 				Args: {
 					actor_email?: string;
@@ -2475,6 +3197,17 @@ export type Database = {
 				};
 				Returns: undefined;
 			};
+			request_status_counts: {
+				Args: {
+					day_end: string;
+					day_start: string;
+					target_organization_id: string;
+				};
+				Returns: {
+					display_status: string;
+					total: number;
+				}[];
+			};
 			reverse_onboarding_application_payment: {
 				Args: {
 					actor_email: string;
@@ -2500,6 +3233,34 @@ export type Database = {
 					target_trade: string;
 				};
 				Returns: string;
+			};
+			update_client: {
+				Args: { payload: Json };
+				Returns: {
+					archived_at: string | null;
+					client_type: string;
+					company_name: string | null;
+					converted_to_customer_at: string | null;
+					created_at: string;
+					deleted_at: string | null;
+					display_name: string;
+					first_name: string | null;
+					id: string;
+					last_name: string | null;
+					lead_source: string | null;
+					lead_temperature: string | null;
+					lifecycle_status: string;
+					next_follow_up_at: string | null;
+					organization_id: string;
+					owner_user_id: string | null;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'clients';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
 			};
 			update_owner_settings: {
 				Args: {

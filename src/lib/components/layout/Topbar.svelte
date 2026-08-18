@@ -1,17 +1,29 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { Snippet } from 'svelte';
+	import { DropdownMenu } from 'bits-ui';
 	import moonIcon from '@tabler/icons/outline/moon.svg?raw';
 	import sunIcon from '@tabler/icons/outline/sun.svg?raw';
 	import menuIcon from '@tabler/icons/outline/menu-2.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import userIcon from '@tabler/icons/outline/user.svg?raw';
+	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 
 	let {
-		eyebrow = 'Workspace',
-		title = 'Dashboard',
 		onmenutoggle,
-		children
-	}: { eyebrow?: string; title?: string; onmenutoggle?: () => void; children?: Snippet } = $props();
+		searchPlaceholder = 'Search',
+		accountLabel,
+		notifications,
+		account
+	}: {
+		onmenutoggle?: () => void;
+		searchPlaceholder?: string;
+		accountLabel: string;
+		notifications?: Snippet;
+		account?: Snippet;
+	} = $props();
 
+	let searchValue = $state('');
 	let isDark = $state(false);
 
 	onMount(() => {
@@ -34,16 +46,37 @@
 	}
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
 <header class="topbar">
 	<button class="topbar__menu" type="button" aria-label="Open navigation" onclick={onmenutoggle}>
 		<span aria-hidden="true">{@html menuIcon}</span>
 	</button>
-	<div>
-		<p class="topbar__eyebrow">{eyebrow}</p>
-		<h1>{title}</h1>
+
+	<div class="topbar__search">
+		<SearchInput
+			id="topbar-search"
+			placeholder={searchPlaceholder}
+			ariaLabel="Search"
+			bind:value={searchValue}
+			disabled
+		/>
 	</div>
+
+	<DropdownMenu.Root>
+		<DropdownMenu.Trigger class="topbar__add">
+			<span aria-hidden="true">{@html plusIcon}</span><span class="topbar__add-label">Add New</span>
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Portal>
+			<DropdownMenu.Content class="topbar__menu-panel" align="start" sideOffset={8}>
+				<p class="topbar__menu-empty">Nothing to create yet</p>
+			</DropdownMenu.Content>
+		</DropdownMenu.Portal>
+	</DropdownMenu.Root>
+
+	<div class="topbar__spacer"></div>
+
 	<button
-		class="topbar__theme"
+		class="topbar__icon-btn"
 		type="button"
 		aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
 		aria-pressed={isDark}
@@ -52,66 +85,173 @@
 	>
 		<span aria-hidden="true">{@html isDark ? sunIcon : moonIcon}</span>
 	</button>
-	{#if children}<div class="topbar__actions">{@render children()}</div>{/if}
+
+	{#if notifications}{@render notifications()}{/if}
+
+	<DropdownMenu.Root>
+		<DropdownMenu.Trigger class="topbar__account" aria-label={`Account menu for ${accountLabel}`}>
+			<span class="topbar__avatar" aria-hidden="true">{@html userIcon}</span>
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Portal>
+			<DropdownMenu.Content class="topbar__menu-panel" align="end" sideOffset={8}>
+				<p class="topbar__menu-heading">{accountLabel}</p>
+				{#if account}{@render account()}{/if}
+			</DropdownMenu.Content>
+		</DropdownMenu.Portal>
+	</DropdownMenu.Root>
 </header>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.topbar {
 		display: flex;
 		align-items: center;
-		gap: var(--space-base);
+		gap: var(--space-small);
 		min-height: 72px;
-		padding: var(--space-base) var(--space-largest);
+		padding: var(--space-base) var(--space-large);
 		border-bottom: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
 	}
-	.topbar h1 {
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-larger);
-		line-height: var(--typography--lineHeight-tight);
+	.topbar__search {
+		flex: 1 1 320px;
+		min-width: 0;
+		max-width: 420px;
 	}
-	.topbar__eyebrow {
-		margin-bottom: var(--space-smaller);
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+	.topbar__spacer {
+		flex: 1;
 	}
-	.topbar__actions {
-		display: flex;
-		align-items: center;
-		gap: var(--space-small);
-	}
-	.topbar__theme {
+	:global(.topbar__add) {
 		display: inline-flex;
+		flex: 0 0 auto;
 		align-items: center;
-		justify-content: center;
+		gap: var(--space-smaller);
+		min-height: 40px;
+		padding: 0 var(--space-base);
+		border: var(--border-base) solid var(--color-interactive);
+		border-radius: var(--radius-base);
+		color: var(--color-surface);
+		background: var(--color-interactive);
+		font-weight: 600;
+		white-space: nowrap;
+		transition: all var(--timing-base) ease-out;
+	}
+	:global(.topbar__add:hover) {
+		background: var(--color-interactive--hover);
+	}
+	:global(.topbar__add:focus-visible) {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+	:global(.topbar__add span:first-child),
+	:global(.topbar__add span:first-child svg) {
+		display: inline-flex;
+		width: 18px;
+		height: 18px;
+	}
+	:global(.topbar__icon-btn),
+	:global(.topbar__account) {
+		display: inline-grid;
+		flex: 0 0 auto;
 		width: 40px;
 		height: 40px;
+		place-items: center;
 		padding: 0;
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		color: var(--color-icon);
 		background: var(--color-surface);
-		margin-left: auto;
 		transition: all var(--timing-base) ease-out;
 	}
-	.topbar__theme:hover {
+	:global(.topbar__icon-btn:hover),
+	:global(.topbar__account:hover) {
 		border-color: var(--color-border--interactive);
 		color: var(--color-interactive--subtle--hover);
 		background: var(--color-surface--hover);
 	}
-	.topbar__theme:focus-visible {
+	:global(.topbar__icon-btn:focus-visible),
+	:global(.topbar__account:focus-visible) {
 		outline: none;
 		box-shadow: var(--shadow-focus);
 	}
-	.topbar__theme span,
-	.topbar__theme span :global(svg) {
+	:global(.topbar__icon-btn:disabled),
+	:global(.topbar__icon-btn[aria-disabled='true']) {
+		color: var(--color-disabled);
+		cursor: not-allowed;
+	}
+	:global(.topbar__icon-btn span),
+	:global(.topbar__icon-btn span svg) {
 		display: inline-flex;
 		width: 20px;
 		height: 20px;
 	}
+	:global(.topbar__account) {
+		border-radius: var(--radius-circle);
+		overflow: hidden;
+	}
+	:global(.topbar__avatar) {
+		display: grid;
+		width: 100%;
+		height: 100%;
+		place-items: center;
+		color: var(--color-brand);
+		background: var(--color-surface--active);
+	}
+	:global(.topbar__avatar svg) {
+		width: 20px;
+		height: 20px;
+	}
+	:global(.topbar__menu-panel) {
+		z-index: var(--elevation-menu);
+		min-width: 176px;
+		padding: var(--space-small);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-base);
+	}
+	:global(.topbar__menu-empty) {
+		padding: var(--space-small);
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+	}
+	:global(.topbar__menu-heading) {
+		padding: var(--space-small) var(--space-small) var(--space-slim);
+		margin-bottom: var(--space-small);
+		border-bottom: var(--border-base) solid var(--color-border);
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	:global(.topbar__menu-item) {
+		display: flex;
+		width: 100%;
+		align-items: center;
+		gap: var(--space-small);
+		padding: var(--space-small);
+		border: 0;
+		border-radius: var(--radius-base);
+		color: var(--color-heading);
+		background: transparent;
+		font-size: var(--typography--fontSize-small);
+		text-align: left;
+		text-decoration: none;
+		cursor: pointer;
+	}
+	:global(.topbar__menu-item:hover) {
+		background: var(--color-surface--hover);
+	}
+	:global(.topbar__menu-item:focus-visible) {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
 	.topbar__menu {
 		display: none;
+		flex: 0 0 auto;
 		padding: var(--space-small);
 		border: 0;
 		border-radius: var(--radius-small);
@@ -141,9 +281,18 @@
 			display: inline-grid;
 			place-items: center;
 		}
-		.topbar__actions {
-			flex: 0 0 100%;
-			justify-content: flex-end;
+	}
+	@media (max-width: 639px) {
+		:global(.topbar__add-label) {
+			display: none;
+		}
+		:global(.topbar__add) {
+			padding: 0 var(--space-small);
+		}
+	}
+	@media (max-width: 489px) {
+		.topbar__search {
+			display: none;
 		}
 	}
 </style>

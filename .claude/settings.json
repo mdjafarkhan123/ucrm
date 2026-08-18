@@ -1,0 +1,16 @@
+{
+	"hooks": {
+		"PostToolUse": [
+			{
+				"matcher": "Write|Edit",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "jq -r '(.tool_input.file_path // .tool_response.filePath // empty)' | grep -qE 'supabase[\\\\/]+migrations[\\\\/]|src[\\\\/]+routes[\\\\/]+api[\\\\/]' && printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"GATE (CLAUDE.md rule 13): a database or API layer file just changed. This layer is NOT closed until the performance-review skill has run. Run it before the next layer and before any handoff, pause, or calling work done. Loading supabase-postgres-best-practices and a clean get_advisors do not satisfy it.\"}}' || true",
+						"timeout": 10
+					}
+				]
+			}
+		]
+	}
+}

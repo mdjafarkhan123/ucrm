@@ -10,6 +10,7 @@
 		disabled = false,
 		loading = false,
 		fullWidth = false,
+		href,
 		class: className = '',
 		onclick
 	}: {
@@ -21,22 +22,48 @@
 		disabled?: boolean;
 		loading?: boolean;
 		fullWidth?: boolean;
+		/** Renders a link instead of a button. Use it for anything that goes to another page, so the
+		 *  browser can open it in a new tab and SvelteKit can preload the page on hover. */
+		href?: string;
 		class?: string;
 		onclick?: (event: MouseEvent) => void;
 	} = $props();
+
+	const classes = $derived(
+		`button button--${variant} button--${variation} button--${size} ${className}`
+	);
+	const inactive = $derived(disabled || loading);
 </script>
 
-<button
-	{type}
-	class={`button button--${variant} button--${variation} button--${size} ${className}`}
-	class:button--full-width={fullWidth}
-	disabled={disabled || loading}
-	aria-busy={loading}
-	{onclick}
->
-	{#if loading}<span class="button__spinner" aria-hidden="true"></span>{/if}
-	{@render children()}
-</button>
+{#if href}
+	<!-- The caller resolves the path; this component only renders whatever it is handed. -->
+	<!-- eslint-disable svelte/no-navigation-without-resolve -->
+	<a
+		href={inactive ? undefined : href}
+		class={classes}
+		class:button--full-width={fullWidth}
+		class:button--inactive={inactive}
+		aria-disabled={inactive ? 'true' : undefined}
+		aria-busy={loading}
+		{onclick}
+	>
+		{#if loading}<span class="button__spinner" aria-hidden="true"></span>{/if}
+		{@render children()}
+	</a>
+	<!-- eslint-enable svelte/no-navigation-without-resolve -->
+{:else}
+	<button
+		{type}
+		class={classes}
+		class:button--full-width={fullWidth}
+		disabled={inactive}
+		aria-busy={loading}
+		{onclick}
+	>
+		{#if loading}<span class="button__spinner" aria-hidden="true"></span>{/if}
+		{@render children()}
+	</button>
+{/if}
 
 <style lang="scss">
 	.button {
@@ -90,7 +117,7 @@
 		}
 		&--tertiary {
 			color: var(--button--color-variation);
-			border-color: transparent;
+			border-style: dashed;
 			background: var(--color-surface);
 		}
 
@@ -108,7 +135,8 @@
 			outline: none;
 			box-shadow: var(--shadow-focus);
 		}
-		&:disabled {
+		&:disabled,
+		&--inactive {
 			pointer-events: none;
 			color: var(--color-disabled);
 			border-color: var(--color-disabled--secondary);

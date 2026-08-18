@@ -1,19 +1,20 @@
 <script lang="ts">
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 
 	const queryClient = useQueryClient();
 
-	type Contact = {
+	type Client = {
 		id: string;
 		display_name: string;
 		email: string | null;
 		phone: string | null;
 		lifecycle_status: string;
-		source: string | null;
+		lead_source: string | null;
 	};
 	type Property = {
 		id: string;
-		contact_id: string;
+		client_id: string;
 		label: string;
 		address_line1: string;
 		city: string;
@@ -21,7 +22,7 @@
 	};
 	type WorkRequest = {
 		id: string;
-		contact_id: string;
+		client_id: string;
 		property_id: string;
 		title: string;
 		description: string | null;
@@ -31,7 +32,7 @@
 	};
 	type Overview = {
 		organization: { id: string; name: string; role: string };
-		contacts: Contact[];
+		clients: Client[];
 		properties: Property[];
 		requests: WorkRequest[];
 	};
@@ -40,7 +41,7 @@
 
 	const emptyOverview: Overview = {
 		organization: { id: '', name: 'Contractor CRM', role: '' },
-		contacts: [],
+		clients: [],
 		properties: [],
 		requests: []
 	};
@@ -60,14 +61,14 @@
 		display_name: '',
 		email: '',
 		phone: '',
-		source: 'staff',
+		lead_source: 'staff',
 		first_name: '',
 		last_name: '',
 		company_name: '',
-		notes: ''
+		initial_note: ''
 	});
 	let propertyForm = $state({
-		contact_id: '',
+		client_id: '',
 		label: 'Primary property',
 		address_line1: '',
 		address_line2: '',
@@ -78,7 +79,7 @@
 		access_notes: ''
 	});
 	let requestForm = $state({
-		contact_id: '',
+		client_id: '',
 		property_id: '',
 		title: '',
 		description: '',
@@ -89,7 +90,7 @@
 
 	const data = $derived(overview.data ?? emptyOverview);
 	const requestProperties = $derived(
-		data.properties.filter((property) => property.contact_id === requestForm.contact_id)
+		data.properties.filter((property) => property.client_id === requestForm.client_id)
 	);
 
 	async function fetchOverview(): Promise<Overview> {
@@ -130,7 +131,7 @@
 		fieldErrors = {};
 		try {
 			await mutation.mutateAsync({
-				endpoint: `/api/${mode === 'customer' ? 'contacts' : mode === 'property' ? 'properties' : 'requests'}`,
+				endpoint: `/api/${mode === 'customer' ? 'clients' : mode === 'property' ? 'properties' : 'requests'}`,
 				payload
 			});
 			closeForm();
@@ -139,15 +140,15 @@
 					display_name: '',
 					email: '',
 					phone: '',
-					source: 'staff',
+					lead_source: 'staff',
 					first_name: '',
 					last_name: '',
 					company_name: '',
-					notes: ''
+					initial_note: ''
 				};
 			if (mode === 'property')
 				propertyForm = {
-					contact_id: '',
+					client_id: '',
 					label: 'Primary property',
 					address_line1: '',
 					address_line2: '',
@@ -159,7 +160,7 @@
 				};
 			if (mode === 'request')
 				requestForm = {
-					contact_id: '',
+					client_id: '',
 					property_id: '',
 					title: '',
 					description: '',
@@ -177,8 +178,8 @@
 	function errorFor(field: string) {
 		return fieldErrors[field];
 	}
-	function contactName(id: string) {
-		return data.contacts.find((contact) => contact.id === id)?.display_name ?? 'Unknown customer';
+	function clientName(id: string) {
+		return data.clients.find((client) => client.id === id)?.display_name ?? 'Unknown customer';
 	}
 	function propertyName(id: string) {
 		return data.properties.find((property) => property.id === id)?.label ?? 'Unknown property';
@@ -194,6 +195,7 @@
 
 <div class="workspace">
 	<main class="content">
+		<PageHeader title="Dashboard" description="Your workspace at a glance." />
 		{#if !data.organization.id}
 			<section class="notice">
 				<strong>Your account is signed in, but it is not connected to an organization yet.</strong
@@ -205,7 +207,7 @@
 
 		<section class="stats" aria-label="Workspace summary">
 			<div class="stat-card">
-				<span>Customers</span><strong>{data.contacts.length}</strong><small
+				<span>Customers</span><strong>{data.clients.length}</strong><small
 					>Leads and active customers</small
 				>
 			</div>
@@ -246,7 +248,7 @@
 							>Add customer</button
 						>
 					</div>
-					{#if data.contacts.length === 0}<div class="empty">
+					{#if data.clients.length === 0}<div class="empty">
 							<strong>No customers yet</strong><span
 								>Create the first lead and start a complete work history.</span
 							><button
@@ -256,28 +258,25 @@
 							>
 						</div>{/if}
 					<div class="record-list">
-						{#each data.contacts as contact (contact.id)}
+						{#each data.clients as client (client.id)}
 							<article class="record">
-								<div class="record__avatar">{contact.display_name.slice(0, 1).toUpperCase()}</div>
+								<div class="record__avatar">{client.display_name.slice(0, 1).toUpperCase()}</div>
 								<div class="record__body">
 									<div class="record__title">
-										<strong>{contact.display_name}</strong><span
-											class="badge badge--{contact.lifecycle_status}"
-											>{contact.lifecycle_status}</span
+										<strong>{client.display_name}</strong><span
+											class="badge badge--{client.lifecycle_status}">{client.lifecycle_status}</span
 										>
 									</div>
-									<span>{contact.email || contact.phone || 'No contact details yet'}</span><small
-										>{data.properties.filter((property) => property.contact_id === contact.id)
-											.length} properties · {data.requests.filter(
-											(request) => request.contact_id === contact.id
-										).length} requests</small
+									<span>{client.email || client.phone || 'No contact details yet'}</span><small
+										>{data.properties.filter((property) => property.client_id === client.id).length} properties
+										· {data.requests.filter((request) => request.client_id === client.id).length} requests</small
 									>
 								</div>
 								<button
 									class="text-button"
 									type="button"
 									onclick={() => {
-										propertyForm.contact_id = contact.id;
+										propertyForm.client_id = client.id;
 										openForm('property');
 									}}>Add property</button
 								>
@@ -311,9 +310,7 @@
 									<span class="request-dot"></span>
 									<div>
 										<strong>{request.title}</strong><small
-											>{contactName(request.contact_id)} · {propertyName(
-												request.property_id
-											)}</small
+											>{clientName(request.client_id)} · {propertyName(request.property_id)}</small
 										>
 									</div>
 									<span class="badge badge--request">{request.status.replace('_', ' ')}</span>
@@ -389,8 +386,8 @@
 							>Last name<input bind:value={customerForm.last_name} /></label
 						>
 					</div>
-					<label>How did they find you?<input bind:value={customerForm.source} /></label><label
-						>Notes<textarea rows="3" bind:value={customerForm.notes}></textarea></label
+					<label>How did they find you?<input bind:value={customerForm.lead_source} /></label><label
+						>Notes<textarea rows="3" bind:value={customerForm.initial_note}></textarea></label
 					>
 					<div class="modal__actions">
 						<button class="button button--quiet" type="button" onclick={closeForm}>Cancel</button
@@ -407,12 +404,12 @@
 					}}
 				>
 					<label
-						>Customer<select bind:value={propertyForm.contact_id}
+						>Customer<select bind:value={propertyForm.client_id}
 							><option value="">Choose customer</option
-							>{#each data.contacts as contact (contact.id)}<option value={contact.id}
-									>{contact.display_name}</option
+							>{#each data.clients as client (client.id)}<option value={client.id}
+									>{client.display_name}</option
 								>{/each}</select
-						>{#if errorFor('contact_id')}<small class="field-error">{errorFor('contact_id')}</small
+						>{#if errorFor('client_id')}<small class="field-error">{errorFor('client_id')}</small
 							>{/if}</label
 					>
 					<label
@@ -454,17 +451,17 @@
 					<div class="form-grid">
 						<label
 							>Customer<select
-								bind:value={requestForm.contact_id}
+								bind:value={requestForm.client_id}
 								onchange={() => (requestForm.property_id = '')}
 								><option value="">Choose customer</option
-								>{#each data.contacts as contact (contact.id)}<option value={contact.id}
-										>{contact.display_name}</option
+								>{#each data.clients as client (client.id)}<option value={client.id}
+										>{client.display_name}</option
 									>{/each}</select
 							></label
 						><label
 							>Property<select
 								bind:value={requestForm.property_id}
-								disabled={!requestForm.contact_id}
+								disabled={!requestForm.client_id}
 								><option value="">Choose property</option
 								>{#each requestProperties as property (property.id)}<option value={property.id}
 										>{property.label} · {property.city}</option

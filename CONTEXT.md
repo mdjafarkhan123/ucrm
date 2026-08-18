@@ -1,5 +1,14 @@
 # UpliftContractor glossary
 
+## Client relationships
+
+- **Client** — The contractor's complete relationship with a person or company, whether prospective or paying. _Avoid_: Contact or account when referring to the relationship record.
+- **Lead** — A lifecycle state for a Client who has not yet crossed an approved customer-conversion trigger. It is not a separate record type.
+- **Customer** — A lifecycle state for a Client who has crossed an approved conversion trigger such as an approved quote, created job, or sent invoice. It is not a separate record type.
+- **Property** — A physical service location belonging to a Client. Location-specific work, contacts, tax behavior, pricing memory, and routing attach to the Property. _Avoid_: Client address when referring to a service location.
+- **Archive** — A reversible inactive state that preserves the Client and relationship history indefinitely.
+- **Recently Deleted** — A 30-day recoverable state before eligible Client data is permanently purged or required financial history is anonymized and retained. _Avoid_: Archive.
+
 ## Platform onboarding
 
 - **Prospect** — A contractor business that has submitted the platform onboarding form but does not yet have an UpliftContractor organization, a contractor login, or tenant data.
@@ -27,3 +36,16 @@
 - **Commercial timezone** — The owner-controlled timezone used for paid-through and grace-period deadlines. It is separate from the contractor-controlled operational timezone.
 - **Suspension** — A temporary platform lifecycle action that blocks contractor access and pauses new outbound activity while preserving tenant data and required inbound or reconciliation processing.
 - **Closure** — A controlled later-phase organization state with an impact preview and recovery period before policy-driven retention, anonymization, or removal. _Avoid_: Immediate deletion.
+
+## Communications billing
+
+- **Provider balance** — The Platform Owner's private prepaid balance with the communications provider. It funds all organization subaccounts and is never an organization asset or contractor-visible balance. _Avoid_: Contractor wallet.
+- **Communication balance** — One organization's prepaid USD-equivalent value available for communication usage. One communication credit represents one US dollar, but the contractor interface presents the balance in dollars. _Avoid_: SMS balance, when the value may fund more than SMS.
+- **Top-up request** — A contractor- or owner-created claim that an offsite payment was made to fund an organization's communication balance. It creates no spendable value until the Platform Owner confirms receipt.
+- **Purchased credit** — Communication value created only after the Platform Owner confirms receipt of an offsite top-up payment. It is distinct from promotional credit.
+- **Promotional credit** — Communication value granted by UpliftContractor rather than purchased by the organization. It is spent before purchased credit, may expire, and is never refundable as cash.
+- **Monthly communication allowance** — Promotional Credit granted once for an organization's confirmed subscription period. Its default comes from the activated package version, may have a reasoned organization override, and does not roll into a later period.
+- **Usage charge** — An immutable deduction from an organization's communication balance for provider-backed usage such as a message, call, or phone number.
+- **Credit adjustment** — A reasoned immutable correction or refund entry in the communication ledger. _Avoid_: Balance edit.
+- **Outstanding communication usage** — Provider-billed communication cost that could not be paid from an organization's available balance. It is not spendable credit; later Purchased Credit settles it before increasing the spendable balance.
+- **Organization SMS mode** — The Platform Owner-controlled maximum SMS capability for an organization: Disabled, Notifications Only, or Two-way SMS. Contractor preference may use a lower mode but never exceed it. _Avoid_: One-way SMS.

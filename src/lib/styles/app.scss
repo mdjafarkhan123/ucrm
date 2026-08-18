@@ -126,6 +126,17 @@ a:hover {
 }
 
 // =============================================================================
+// REQUIRED MARKER — the asterisk after a required field's label. Lives here so
+// every label renders it identically; field components add it from `required`.
+// =============================================================================
+
+.field-required {
+	margin-left: var(--space-smaller);
+	color: var(--color-critical);
+	font-weight: 700;
+}
+
+// =============================================================================
 // SKELETON — reusable loading placeholders for page and component loading
 // states. Apply .skeleton to a block, then use the modifiers for common shapes.
 // =============================================================================

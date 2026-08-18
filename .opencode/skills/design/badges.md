@@ -15,7 +15,7 @@
 
 - **Border:** none — badges have no border in Jobber.
 - **Radius:** NOT pill. `StatusLabel` → 12px (`0.75rem`); `InlineLabel` small/base → `var(--radius-large)` (16px); `InlineLabel` large/larger → `var(--radius-larger)` (24px); `Chip` → 20px.
-- **Font weight:** regular (400) — Atlantis `Text` default. Never semibold.
+- **Font weight:** 600 (semibold).
 - **StatusLabel text:** `--typography--fontSize-small` (12px), `line-height: 1` — this keeps the pill exactly **24px tall** (6px padding + 12px text + 6px padding).
 - **No `$radius-full` pills.** Pill shape is reserved for avatars and toggle thumbs, not badges.
 

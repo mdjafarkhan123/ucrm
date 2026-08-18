@@ -1,7 +1,6 @@
 # CLAUDE.md
 
 - This file governs how CLAUDE should work.
-- Think through edge cases before implementing anything, choose what is best for the user, research when needed, follow proven industry practices, prioritize security and performance (including efficient DB queries and proper indexing), and avoid overengineering, focus on simpler and cleaner build as much as possible.
 
 ## Project
 
@@ -12,13 +11,9 @@
 - **Styling & Icons:** Desktop design first, then mobile version, with SCSS + BEM naming convention + Tabler icon set
 - **UI Primitives:** Native Svelte/HTML for simple controls; Bits UI for complex interactive primitives
 - **Backend & File storage:** Supabase (Remote), Cloudflare r2
-- **Auth & Security:** Row-Level Security (RLS) with tenant isolation + Zod request validation
-- **Package Manager:** `npm`
-- **Other Technical Details:** Twilio for SMS, Brevo for Email.
-- **Login details**: '/jafar' route = Email `dev.jafarkhan@gmail.com`; Password `.Asdedjk12.` Contractor login = Email `profile.mdjafarkhan@gmail.com`; Password: `1122334455`
 - **Deployment:** Currently on local development mode and Cloudflare tunnel with subdomain. Later on a VPS server with local Supabase, Redis etc. All in Docker containers
 
-> Read `docs/PRODUCT.md` for more product context, user journeys, and business rules whenever you need why. Read `docs/Owner.md` for owner/operator `/jafar` route context whenever you need.
+> Read `docs/PRODUCT.md` when work needs CRM behavior, terminology, journeys, or ownership boundaries. Read `docs/Owner.md` for Platform Owner or `/jafar` behavior. Read task-linked contracts and ADRs narrowly. Newer, more specific approved documents win conflicts. Memory only routes and resumes work.
 
 ---
 
@@ -42,41 +37,44 @@ npm run test          # unit + Playwright
 
 Skills live under `.claude/skills/`. **Load only what is relevant to the current task.** Never load the full library by default.
 
-| Domain / Concern           | Entry Point / Skill Path                                   | When to Load                                                                            |
-| :------------------------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
-| **Design & UI Tokens**     | `.claude/skills/design/SKILL.md`                           | Building or styling layouts, components, cards, tables etc.                             |
-| **Bits UI Primitives**     | `.claude/skills/bits-ui/SKILL.md`                          | Creating/refactoring dialogs, date pickers, dropdowns, comboboxes, tooltips etc.        |
-| **Jobber Workflow Domain** | `.claude/skills/jobber/SKILL.md`                           | Implementing CRM business logic, client lifecycle, job scheduling, quotes, or invoices. |
-| **Supabase & Auth**        | `.claude/skills/supabase/SKILL.md`                         | Modifying Supabase client calls, authentication, storage, or edge functions.            |
-| **Postgres & SQL**         | `.claude/skills/supabase-postgres-best-practices/SKILL.md` | Writing database migrations, tables, indexes, constraints, RLS policies, or triggers.   |
-| **Svelte 5 & SvelteKit**   | `.claude/skills/svelte/SKILL.md`                           | Writing `.svelte`, `.svelte.ts`, or `.svelte.js` code. Always use Svelte 5 runes.       |
+| Work                                                  | Skill                                                      |
+| ----------------------------------------------------- | ---------------------------------------------------------- |
+| UI layout or styling                                  | `.claude/skills/design/SKILL.md`                           |
+| Complex interactive controls                          | `.claude/skills/bits-ui/SKILL.md`                          |
+| Contractor CRM behavior                               | `.claude/skills/jobber/SKILL.md`                           |
+| Supabase, Auth, Storage, Edge Functions, or Realtime  | `.claude/skills/supabase/SKILL.md`                         |
+| Postgres, migrations, RLS, SQL, functions, or indexes | `.claude/skills/supabase-postgres-best-practices/SKILL.md` |
+| Any Svelte component or module                        | `.claude/skills/svelte/SKILL.md`                           |
+| Agent-facing instructions or skills                   | `.claude/skills/writing-for-agents/SKILL.md`               |
+| Campaign start, resume, handoff, deferral, or cleanup | `.claude/skills/campaign-memory/SKILL.md`                  |
+| Feature implementation, performance review, or tuning | `.claude/skills/performance-review/SKILL.md`               |
 
-There are more skills in `.claude/skills` like: `wayfinder`, `grill-me`, `grilling`, `grill-with-docs` etc. You can use any to get more info from user to sharpen a plan before build, to handle edge cases, to avoid any guessing, to avoid any build gaps, to avoid any ambiguity, to avoid scope creep.
-
-Each entry point routes to its own sub-documents. Read the narrowest one that covers the task.
+Load `.claude/skills/grilling/SKILL.md` only for unresolved product decisions about user-facing behavior, workflows, or the mental model.
 
 **MCP:** SvelteKit, Supabase and Brevo MCP servers are installed and configured.
 
 ---
 
+## Campaign
+
+A campaign is any work that spans more than 3 implementation steps, touches more than 5 files across multiple layers, has dependent or independently resumable stages, needs staged approval or browser verification, or cannot safely finish in one session. Load `.claude/skills/campaign-memory/SKILL.md`
+completely before starting, resuming, handing off, deferring, completing, or cleaning up a campaign — including when Jafar says `read memory and continue`.
+
+If single-session work grows into several parts, stop before expanding scope and propose campaign promotion.
+
 ## Non-Negotiable Rules
 
-1.  **Plain English with Jafar.** Explain everything in simple, everyday words. No technical jargon.
-2.  **UI Copy & Content.** Write natural, conversational, human-sounding text for all UI elements, headings, prompts, and guidance. Never use em-dashes, robotic tones, or AI buzzwords. This applies to chat replies and to this file too, not only to app screens.
-3.  **Product Strategy.** Default to proven Jobber/GHL workflows and mental models. Suggest strategic differentiators to help us stand out, but always present proposals to Jafar for approval before planning or implementation.
-4.  **Svelte 5 only.** No Svelte 4 syntax anywhere.
-5.  **SCSS + BEM for all styling. Tabler icons for all icons.** Component styles live inside the component's own `<style lang="scss">` block. Never import component styles through `app.scss`.
-    `app.scss` contains only the global baseline: reset, `:root` tokens, dark-theme overrides, and base element typography.
-    SCSS variables and mixins are available in every component automatically via Vite `additionalData`, so no per-component import is needed. Use Tabler icons wherever an icon is required.
-6.  **UI primitives.** Use native HTML/Svelte for simple controls. Use Bits UI only for complex interactive primitives: dialogs, dropdowns, selects/comboboxes, popovers, tooltips, tabs, accordions, date/calendar controls. Prefer shared wrapper components when they exist.
-7.  **No duplicated UI.** Before designing, check `src/lib/components` and reuse or extend an existing component when structure and behavior are the same.
-8.  **TanStack Query owns server state.** The `src/routes/(app)/+layout.svelte` shell is SSR. All page content under `src/routes/(app)/` is CSR only. Never block navigation on data. Render the shell immediately, show cached data or skeletons, and revalidate in the background. After any mutation or external event, invalidate all affected caches. No ad-hoc caching systems.
-9.  **Server secrets stay server-side.** `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_JWT_SECRET` only in `$lib/server/*`, `hooks.server.ts`, and `+server.ts`. Never import `$lib/server/*` from `.svelte` files or `+page.ts`.
-10. **All writes go through `/api/*` routes.** Every `POST` and `PATCH` validates with Zod before database access. Ask before installing Zod if not present.
-11. **Minimal scope.** No extra fields, tables, packages, or refactors unless the task explicitly requires them. Explicit code over generic builders.
-12. **Memory files.** One `Memory/<task-name>.md` per multi-session task: context, `[ ]` checklist, next step. Nothing else. No diagnosis stories, rejected approaches, root-cause write-ups, test/lint counts, or per-file change summaries. If it will not change what the next session does, leave it out. Deferred work goes in `Deferred.md` or something closer name to this. Delete the file once every item is `[x]`.
-13. **Large tasks.** Over ~100k tokens, split into numbered parts, one part per session.
-14. **Session execution.** Do one part, tick `[x]`, update what is next, give the resume command (`read memory and continue`). If it is browser-verifiable, say how, then **STOP**. On `read memory and continue`: read the file, do the next `[ ]`, stop.
+1. **Writing style.** Talk to Jafar in plain everyday English, no technical jargon. UI copy must sound natural and human — not AI-generated or corporate.
+2. **Product Strategy.** Default to proven Jobber/GHL workflows and mental models. Suggest strategic differentiators to help us stand out, but always present proposals to Jafar for approval before planning or implementation.
+3. **Svelte 5 only.** No Svelte 4 syntax anywhere.
+4. **SCSS + BEM for all styling. Tabler icons for all icons.** Component styles live inside the component's own `<style lang="scss">` block. Never import component styles through `app.scss`. `app.scss` contains only the global baseline, no per-component import is needed. SCSS variables and mixins are available in every component automatically via Vite `additionalData` — no import needed.
+5. **UI primitives.** Use native HTML/Svelte for simple controls. Use Bits UI only for complex interactive primitives: dialogs, dropdowns, selects/comboboxes, popovers, tooltips, tabs, accordions, date/calendar controls etc. Prefer shared wrapper components when they exist.
+6. **No duplicated UI.** Before designing, check `src/lib/components` and reuse or extend an existing component when structure and behavior are the same.
+7. **TanStack Query owns server state.** The `src/routes/(app)/+layout.svelte` shell is SSR. All page content under `src/routes/(app)/` is CSR only. Never block navigation on data. Render the shell immediately, show cached data or skeletons, and revalidate in the background. After any mutation or external event, invalidate all affected caches. No ad-hoc caching systems.
+8. **Server secrets stay server-side.** Keep service keys, JWT secrets, provider secrets, and `$lib/server/*` out of browser code and payloads.
+9. **All writes go through `/api/*` routes.** Every `POST` and `PATCH` validates with Zod before database access.
+10. **Minimal scope.** No extra fields, tables, packages, or refactors unless the task explicitly requires them. Explicit code over generic builders.
+11. **Performance — measure, then optimize:** After completing any implementation — a component, API route, SQL query, or schema change — run the `performance-review` skill before closing the task.
 
 ---
 

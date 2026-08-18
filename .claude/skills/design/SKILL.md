@@ -35,6 +35,39 @@ A professional dashboard interface with clean grid layouts, data-dense card pane
 
 - **Cross-reference modules.** A card containing buttons must satisfy both `cards.md` AND `buttons.md`.
 
+- **This skill owns looks, not layout or behavior.** Which block sits where on a screen comes from Jafar's
+  blueprint for it in `Design/*.jpg` — look for a matching one before building any screen. How the screen
+  behaves comes from `.claude/skills/jobber/jobber-08-screen-patterns.md`.
+
+- **Nothing writes without the user pressing a button that saves.** On a detail page that button is normally
+  `layout/DetailEditBar.svelte` — tags, notes, attachments and every other widget in the page body stage
+  their change and wait for it. Editing a block makes the bar appear at the bottom to save or discard
+  everything staged; it is invisible until then. The exception is a modal that manages a child record of its
+  own, like a client's property: it carries its own save button, writes when that is pressed, and stays out
+  of the page draft. Never build a second save footer, and never leave one on screen permanently.
+  `layout/RecordDetailLayout.svelte` is the page shell that carries it. Full-page create and edit forms keep
+  their always-visible bar from `RecordFormLayout`; both use `layout/StickyActionBar.svelte` underneath.
+
+  That bar is **pinned, not sticky.** `AppShell` publishes `--shell-content-left`, `--shell-content-right`
+  and `--shell-edge` so it lines up with the content column and follows the sidebar when it collapses, and it
+  measures itself to reserve room at the end of the page. Do not "fix" it back to `position: sticky` — the
+  bar is always the last child of its container, so sticky has no room to float through and strands it at the
+  very bottom of a long page where nobody scrolls.
+
+  A widget that stages rather than writes reports what is waiting to its page and exposes a save and a
+  discard, the way `collaboration/AttachmentsCard.svelte` does with `onPendingChange`, `saveAll(id)` and
+  `discardChanges()`. Anything a page's `$effect` calls that way must be wrapped in `untrack`, or the
+  widget's own writes come back as dependencies and the page locks up with `effect_update_depth_exceeded`.
+
+- **Photos show as photos.** Image attachments render as a thumbnail grid and open `ui/Lightbox.svelte`
+  (arrows, arrow keys, filmstrip, counter, download, Escape); files with nothing to preview keep a list row.
+  Never draw a photo as a grey file-type icon, and never point an `<img>` at a presigned storage link — those
+  expire in minutes. Images stream from `GET /api/attachments/[id]/view`, with `?size=thumb` for the small
+  copy the browser made at upload.
+
+- **Every titled block, section, or part uses `SectionBlock`.** Read `section-block.md` before building one —
+  its title sits on the container's border line, and the component picks `fieldset` or `section` for you.
+
 - **Tokens are NOT Tailwind classes.** Colors are semantic CSS custom properties: `var(--color-bg-surface)`, `var(--color-border)`, `var(--color-text-primary)`, `var(--color-brand)`, `var(--success-solid)`, etc. See `colors.md` for the full contract.
 
 - Dark mode is **automatic** via `_theme.scss` (mirrors the app's `dark-theme-tokens` mixin). Never manually swap color values.
@@ -62,6 +95,7 @@ A professional dashboard interface with clean grid layouts, data-dense card pane
 - [buttons.md](buttons.md) — Button
 - [button-group.md](button-group.md) — Button Group
 - [cards.md](cards.md) — Card
+- [section-block.md](section-block.md) — Section Block
 - [inputs.md](inputs.md) — Input
 - [alerts.md](alerts.md) — Alert
 - [badges.md](badges.md) — Badge
