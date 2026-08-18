@@ -1,6 +1,9 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireLinkedEntityAccess } from '$lib/server/access/collaboration';
+import {
+	requireLinkedEntityAccess,
+	type LinkedEntityType
+} from '$lib/server/access/collaboration';
 import { databaseError } from '$lib/server/api/errors';
 import { createPresignedDownloadUrl } from '$lib/server/storage/r2';
 
@@ -13,7 +16,7 @@ export const GET: RequestHandler = async (event) => {
 	if (lookupError) return databaseError();
 	if (!attachment) return json({ error: 'That file was not found.' }, { status: 404 });
 
-	const entityType = attachment.entity_type as 'client' | 'property';
+	const entityType = attachment.entity_type as LinkedEntityType;
 	const access = await requireLinkedEntityAccess(event, entityType, 'view');
 	if ('response' in access) return access.response;
 

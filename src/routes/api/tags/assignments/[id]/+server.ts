@@ -1,6 +1,9 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireLinkedEntityAccess } from '$lib/server/access/collaboration';
+import {
+	requireLinkedEntityAccess,
+	type LinkedEntityType
+} from '$lib/server/access/collaboration';
 import { databaseError } from '$lib/server/api/errors';
 
 export const DELETE: RequestHandler = async (event) => {
@@ -12,7 +15,7 @@ export const DELETE: RequestHandler = async (event) => {
 	if (lookupError) return databaseError();
 	if (!assignment) return json({ error: 'That tag assignment was not found.' }, { status: 404 });
 
-	const entityType = assignment.entity_type as 'client' | 'property';
+	const entityType = assignment.entity_type as LinkedEntityType;
 	const access = await requireLinkedEntityAccess(event, entityType, 'manage');
 	if ('response' in access) return access.response;
 

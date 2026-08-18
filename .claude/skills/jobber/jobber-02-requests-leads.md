@@ -362,6 +362,43 @@ author, timestamp, a pin/star, and thumbnails for any files attached to a note.
 
 ---
 
+## 6. What we built (Part 1, shipped and browser-verified 2026-08-18)
+
+Staff-side request intake and on-site assessment scheduling/completion. Public booking forms and real
+Quote/Job conversion are explicitly out of scope — see the deferred items in `Memory/deferred/INDEX.md`
+for what that leaves undone.
+
+- **`requests.status` stores six values**, not the schema's nine — `upcoming`/`today`/`overdue` are never
+  written. They're derived at read time from the assessment's start time against the org's timezone
+  (`src/lib/server/requests/status.ts`), the same rule planned for job visits later. The derived value
+  travels as `status` on every API response; `stored_status` is the persisted column. Never write the
+  derived one.
+- **Zero or one assessment per request.** Both `starts_at`/`ends_at` null means booked but undated
+  (Jobber's "Unscheduled"); assignees are a join table, not an array column.
+- **List page:** Overview card rows are New, Unscheduled, Overdue, Assessment complete — counts are
+  read-only and counted on demand, clicking one does not filter. Pagination is load-more, not numbered
+  pages; a date filter is deferred, Status ships. The header renders as a filled grey card rather than
+  Jobber's status-tinted stripe, because the blueprint (`Design/Requests.jpg`) wins on that call per
+  CLAUDE.md rule 5.
+- **New Request page:** title, a client-search combobox, and a service-overview textarea are the only
+  required-feeling fields, matching `Design/Request new.jpg`. `property_id` is required server-side even
+  though the blueprint shows no property field — resolved by auto-selecting the client's primary property
+  on pick, surfacing a "Change property" control only when that client has more than one. The On-site
+  assessment and Products & services blocks render as static empty states on this page (not the inline
+  editable panel Jobber itself offers pre-save) because both need the request to already exist — assessment
+  scheduling opens correctly once you land on the saved request's own detail page.
+- **List pages stay separate pages per work-object type and share components** (`FilterBar`, `DataTable`,
+  `KpiCard`, `StatusOverviewCard`) — never one page switched by type. The header/summary-card and Primary
+  Info card (`src/lib/components/work/`) are built as reusable components for this same reason: Quote, Job,
+  and Invoice will need the identical shape.
+- **Known gaps, not yet decided:** request-list search doesn't match client name (only `title` and
+  `service_type`); filtering by Status filters the *stored* status, so "Unscheduled" also returns rows
+  currently badged Overdue/Today; the third KPI card ("Assessments booked") has no real data source yet;
+  no `requests.*` permission keys are seeded, so every request route only checks organization membership.
+  See `Memory/deferred/INDEX.md` for each one's reactivation trigger.
+
+---
+
 ### Help-center sources
 
 - Request Basics — https://help.getjobber.com/hc/en-us/articles/115009737048-Request-Basics

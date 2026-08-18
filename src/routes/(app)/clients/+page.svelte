@@ -11,6 +11,8 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import DataTable, { type DataTableColumn } from '$lib/components/data-display/DataTable.svelte';
+	import FilterBar from '$lib/components/data-display/FilterBar.svelte';
+	import FilterField from '$lib/components/data-display/FilterField.svelte';
 	import Pagination from '$lib/components/data-display/Pagination.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
@@ -145,9 +147,8 @@
 	</div>
 
 	{#if filtersOpen}
-		<div class="clients-filters">
-			<div class="clients-filters__field">
-				<label for="clients-status-filter">Status</label>
+		<FilterBar onClear={hasActiveFilters ? clearFilters : undefined}>
+			<FilterField id="clients-status-filter" label="Status">
 				<Select
 					id="clients-status-filter"
 					value={status}
@@ -158,15 +159,11 @@
 						{ value: 'customer', label: 'Customer' }
 					]}
 				/>
-			</div>
-			<div class="clients-filters__field">
-				<label for="clients-tag-filter">Tag</label>
+			</FilterField>
+			<FilterField id="clients-tag-filter" label="Tag">
 				<Select id="clients-tag-filter" value={tagId} onchange={setTag} options={tagOptions} />
-			</div>
-			{#if hasActiveFilters}
-				<Button variant="tertiary" size="small" onclick={clearFilters}>Clear filters</Button>
-			{/if}
-		</div>
+			</FilterField>
+		</FilterBar>
 	{/if}
 
 	{#if selectedIds.size > 0}
@@ -291,30 +288,6 @@
 		}
 	}
 
-	.clients-filters {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: end;
-		gap: var(--space-base);
-		margin-bottom: var(--space-large);
-		padding: var(--space-base);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
-
-		&__field {
-			display: grid;
-			gap: var(--space-smaller);
-			width: 200px;
-
-			label {
-				color: var(--color-text--secondary);
-				font-size: var(--typography--fontSize-small);
-				font-weight: 600;
-			}
-		}
-	}
-
 	.clients-bulk-bar__action {
 		display: inline-flex;
 		align-items: center;
@@ -372,9 +345,6 @@
 	@media (max-width: 767px) {
 		.clients-toolbar {
 			flex-wrap: wrap;
-		}
-		.clients-filters__field {
-			width: 100%;
 		}
 	}
 </style>

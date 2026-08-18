@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-// Shared by notes, tags, tag assignments, and attachments. Requests/Quotes/Jobs/Invoices extend this list
-// later when they become linkable, matching the migration's entity_type check constraints.
-export const linkedEntityTypeSchema = z.enum(['client', 'property']);
+// Shared by notes, tags, tag assignments, and attachments. Quotes/Jobs/Invoices extend this list later
+// when they become linkable, matching the migration's entity_type check constraints.
+export const linkedEntityTypeSchema = z.enum(['client', 'property', 'request']);
 
 export const MAX_ATTACHMENT_SIZE_BYTES = 26_214_400; // 25 MB, matches the attachments table check constraint
 export const ALLOWED_ATTACHMENT_MIME_TYPES = [

@@ -12,7 +12,8 @@
 		fullWidth = false,
 		href,
 		class: className = '',
-		onclick
+		onclick,
+		onhover
 	}: {
 		children: Snippet;
 		variant?: 'primary' | 'secondary' | 'tertiary';
@@ -27,6 +28,9 @@
 		href?: string;
 		class?: string;
 		onclick?: (event: MouseEvent) => void;
+		/** Fires when the pointer or keyboard reaches the button, before it is pressed. Use it to start
+		 *  loading whatever pressing it will reveal, so the panel is already there on the click. */
+		onhover?: () => void;
 	} = $props();
 
 	const classes = $derived(
@@ -46,6 +50,8 @@
 		aria-disabled={inactive ? 'true' : undefined}
 		aria-busy={loading}
 		{onclick}
+		onmouseenter={onhover}
+		onfocus={onhover}
 	>
 		{#if loading}<span class="button__spinner" aria-hidden="true"></span>{/if}
 		{@render children()}
@@ -59,6 +65,8 @@
 		disabled={inactive}
 		aria-busy={loading}
 		{onclick}
+		onmouseenter={onhover}
+		onfocus={onhover}
 	>
 		{#if loading}<span class="button__spinner" aria-hidden="true"></span>{/if}
 		{@render children()}

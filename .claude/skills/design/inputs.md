@@ -27,7 +27,7 @@ The field is a flex column wrapper (`border` + `border-radius` + `background` li
 
 ## Label
 
-A floating mini-label: the placeholder text is rendered as a `<label>` whose `htmlFor` matches the input `id`. It starts centered inside the field and shrinks/floats to the top on focus or once a value exists.
+**1.**A floating mini-label: the placeholder text is rendered as a `<label>` whose `htmlFor` matches the input `id`. It starts centered inside the field and shrinks/floats to the top on focus or once a value exists.
 
 - **Position:** `position: absolute`, vertically centered (`offset: 50%`, `transform: translateY(-50%)`), inherits the field's left/right padding
 - **Idle:** 14px, color `--color-base-blue--600`, `pointer-events: none`, `white-space: nowrap` + `text-overflow: ellipsis`

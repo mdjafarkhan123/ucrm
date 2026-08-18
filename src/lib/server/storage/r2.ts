@@ -6,6 +6,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getR2Env, type R2Env } from './r2-env';
+import type { LinkedEntityType } from '$lib/server/access/collaboration';
 
 const UPLOAD_URL_TTL_SECONDS = 300;
 const DOWNLOAD_URL_TTL_SECONDS = 300;
@@ -36,7 +37,7 @@ function sanitizeFileName(fileName: string): string {
 // with another organization's presigned request, since every operation re-derives the key server-side.
 export function buildAttachmentObjectKey(
 	organizationId: string,
-	entityType: 'client' | 'property',
+	entityType: LinkedEntityType,
 	entityId: string,
 	fileName: string
 ): string {

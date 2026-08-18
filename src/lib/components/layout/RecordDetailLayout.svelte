@@ -3,18 +3,24 @@
 	import DetailEditBar from './DetailEditBar.svelte';
 
 	// The shape every record's detail page shares: a main column of blocks, a right rail of cards, and the
-	// save bar that appears only once a block has been edited. A detail page is read-first, so nothing here
-	// is a form — blocks stage their edits and this bar commits them.
+	// save bar that appears as soon as a block is opened for editing. A detail page is read-first, so
+	// nothing here is a form — blocks stage their edits and this bar commits them.
+	//
+	// A page reports two facts about its own blocks — which are open, and which have really changed — and
+	// `DetailEditBar` decides what to do with them, so no page has to work out when the bar shows or when
+	// Save is allowed.
 	//
 	// Its sibling is `RecordFormLayout`, the shell for full-page create forms, whose action bar is always
 	// visible because that whole page is one form.
 	let {
 		main,
 		rail,
+		editing = false,
 		dirty = false,
 		saving = false,
 		error = '',
 		barMessage,
+		editingMessage,
 		saveLabel,
 		onSave,
 		onCancel,
@@ -22,11 +28,14 @@
 	}: {
 		main: Snippet;
 		rail?: Snippet;
-		/** True once a block has staged a change. Omit on a page that cannot be edited yet. */
+		/** True while a block is open for editing, changed or not, so Cancel is always within reach. */
+		editing?: boolean;
+		/** True once a block has staged a real change. Omit on a page that cannot be edited yet. */
 		dirty?: boolean;
 		saving?: boolean;
 		error?: string;
 		barMessage?: string;
+		editingMessage?: string;
 		saveLabel?: string;
 		onSave?: () => void;
 		onCancel?: () => void;
@@ -43,7 +52,17 @@
 	</div>
 
 	{#if onSave && onCancel}
-		<DetailEditBar {dirty} {saving} {error} message={barMessage} {saveLabel} {onSave} {onCancel} />
+		<DetailEditBar
+			{editing}
+			{dirty}
+			{saving}
+			{error}
+			message={barMessage}
+			{editingMessage}
+			{saveLabel}
+			{onSave}
+			{onCancel}
+		/>
 	{/if}
 </div>
 
@@ -76,9 +95,13 @@
 		}
 
 		&__rail {
+			position: sticky;
+			top: var(--space-large);
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-base);
+			max-height: 92vh;
+			overflow-y: auto;
 		}
 	}
 

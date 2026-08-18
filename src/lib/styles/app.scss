@@ -217,3 +217,7 @@ a:hover {
 		background: var(--color-surface--hover);
 	}
 }
+
+*::placeholder {
+	padding-top: 24px;
+}

@@ -10,7 +10,8 @@
 		disabled = false,
 		invalid = false,
 		name,
-		value = 'on'
+		value = 'on',
+		onchange
 	}: {
 		checked?: boolean;
 		indeterminate?: boolean;
@@ -21,6 +22,8 @@
 		invalid?: boolean;
 		name?: string;
 		value?: string;
+		/** For a list of checkboxes whose state lives in one array rather than a variable each. */
+		onchange?: (checked: boolean) => void;
 	} = $props();
 
 	let inputElement = $state<HTMLInputElement>();
@@ -45,6 +48,7 @@
 		{value}
 		type="checkbox"
 		bind:checked
+		onchange={(event) => onchange?.(event.currentTarget.checked)}
 		{disabled}
 		aria-invalid={invalid}
 		aria-describedby={describedBy}

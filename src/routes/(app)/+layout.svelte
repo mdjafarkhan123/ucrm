@@ -16,7 +16,9 @@
 		resolve('/(app)/clients'),
 		resolve('/(app)/clients/new'),
 		resolve('/(app)/clients/[id]', { id: 'warm' }),
-		resolve('/(app)/requests')
+		resolve('/(app)/requests'),
+		resolve('/(app)/requests/new'),
+		resolve('/(app)/requests/[id]', { id: 'warm' })
 	];
 
 	onMount(() => {

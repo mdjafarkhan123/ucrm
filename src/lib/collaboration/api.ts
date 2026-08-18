@@ -1,7 +1,7 @@
 import type { Tables } from '$lib/database.types';
 
-// Client/Property today; Requests/Quotes/Jobs/Invoices become linkable later without changing this type.
-export type EntityType = 'client' | 'property';
+// Quotes/Jobs/Invoices become linkable later without changing anything else here.
+export type EntityType = 'client' | 'property' | 'request';
 
 export type ApiError = Error & { fieldErrors?: Record<string, string> };
 

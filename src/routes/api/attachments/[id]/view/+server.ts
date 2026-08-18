@@ -1,6 +1,9 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireLinkedEntityAccess } from '$lib/server/access/collaboration';
+import {
+	requireLinkedEntityAccess,
+	type LinkedEntityType
+} from '$lib/server/access/collaboration';
 import { databaseError } from '$lib/server/api/errors';
 import { getObjectStream } from '$lib/server/storage/r2';
 
@@ -24,7 +27,7 @@ export const GET: RequestHandler = async (event) => {
 	if (!attachment.mime_type.startsWith(VIEWABLE_MIME_PREFIX))
 		return json({ error: 'That file cannot be shown on the page.' }, { status: 415 });
 
-	const entityType = attachment.entity_type as 'client' | 'property';
+	const entityType = attachment.entity_type as LinkedEntityType;
 	const access = await requireLinkedEntityAccess(event, entityType, 'view');
 	if ('response' in access) return access.response;
 

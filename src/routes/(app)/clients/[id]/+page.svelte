@@ -144,16 +144,6 @@
 	// Set by a save made on this page, so the same confirmation strip serves both routes into it.
 	let justSavedHere = $state(false);
 
-	// Properties are not in this list on purpose: `PropertyDialog` owns them and saves itself, so they never
-	// enter the page draft or light up the action bar.
-	const isDirty = $derived(
-		identityDraft !== null ||
-			leadSourceDraft !== null ||
-			tagIdsDraft !== null ||
-			notePending.length > 0 ||
-			pendingFileCount > 0
-	);
-
 	function discardDraft() {
 		identityDraft = null;
 		leadSourceDraft = null;
@@ -201,6 +191,61 @@
 	const savedTagIds = $derived((tagsQuery.data ?? []).map((assignment) => assignment.tag_id));
 	const tagIds = $derived(tagIdsDraft ?? savedTagIds);
 
+	// --- What is open, and what really changed ----------------------------------------------------------
+	// Two different questions, and the action bar needs both. A staged value means a block is open for
+	// editing, so the bar appears with a way out of it. It only counts as a change when it differs from what
+	// is saved — pressing Done in a dialog without touching anything must not offer to save.
+	//
+	// Properties are in neither list on purpose: `PropertyDialog` owns them and saves itself, so they never
+	// enter the page draft or light up the action bar.
+
+	function samePreferences(a: ClientPreferences, b: ClientPreferences) {
+		return (Object.keys(DEFAULT_PREFERENCES) as (keyof ClientPreferences)[]).every(
+			(key) => a[key] === b[key]
+		);
+	}
+
+	function sameIdentity(a: ClientIdentityDraft, b: ClientIdentityDraft) {
+		return (
+			a.client_type === b.client_type &&
+			a.lifecycle_status === b.lifecycle_status &&
+			a.first_name.trim() === b.first_name.trim() &&
+			a.last_name.trim() === b.last_name.trim() &&
+			a.company_name.trim() === b.company_name.trim() &&
+			a.email.trim() === b.email.trim() &&
+			a.phone.trim() === b.phone.trim() &&
+			samePreferences(a.preferences, b.preferences)
+		);
+	}
+
+	// The order tags were picked in means nothing, so only the set counts.
+	function sameTags(a: string[], b: string[]) {
+		return a.length === b.length && [...a].sort().join('|') === [...b].sort().join('|');
+	}
+
+	const identityChanged = $derived(
+		Boolean(saved && identityDraft && !sameIdentity(identityDraft, identityOf(saved)))
+	);
+	const leadSourceChanged = $derived(
+		leadSourceDraft !== null && leadSourceDraft.trim() !== (saved?.lead_source ?? '').trim()
+	);
+	const tagsChanged = $derived(tagIdsDraft !== null && !sameTags(tagIdsDraft, savedTagIds));
+
+	const isEditing = $derived(
+		identityDraft !== null ||
+			leadSourceDraft !== null ||
+			tagIdsDraft !== null ||
+			notePending.length > 0 ||
+			pendingFileCount > 0
+	);
+	const isDirty = $derived(
+		identityChanged ||
+			leadSourceChanged ||
+			tagsChanged ||
+			notePending.length > 0 ||
+			pendingFileCount > 0
+	);
+
 	// --- Saving ---------------------------------------------------------------------------------------
 
 	async function saveDraft() {
@@ -217,7 +262,7 @@
 				staleTime: 0
 			});
 
-			if (identityDraft || leadSourceDraft !== null || tagIdsDraft !== null) {
+			if (identityChanged || leadSourceChanged || tagsChanged) {
 				const identity = identityDraft ?? identityOf(fresh);
 				await saveClient(
 					{
@@ -349,7 +394,7 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <PageContainer variant="fill">
-	{#if (justSaved || justSavedHere) && client && !isDirty}
+	{#if (justSaved || justSavedHere) && client && !isEditing}
 		<p class="client-detail__saved" role="status">
 			<span aria-hidden="true">{@html checkIcon}</span>{client.display_name} was saved.
 		</p>
@@ -362,6 +407,7 @@
 	{:else if client}
 		<RecordDetailLayout
 			class="client-detail"
+			editing={isEditing}
 			dirty={isDirty}
 			{saving}
 			error={saveError}
@@ -370,7 +416,7 @@
 		>
 			{#snippet main()}
 				<ClientDetailHeader {client} onEdit={() => (detailsOpen = true)} />
-				{#if identityDraft}
+				{#if identityChanged}
 					<p class="client-detail__pending">
 						Client details changed. Save at the bottom of the page to keep them.
 					</p>
@@ -458,7 +504,7 @@
 					{#if client.lead_source}
 						<p class="client-detail__lead-source">
 							{client.lead_source}
-							{#if leadSourceDraft !== null}
+							{#if leadSourceChanged}
 								<Badge size="small" status="warning">Unsaved</Badge>
 							{/if}
 						</p>
@@ -471,7 +517,7 @@
 
 				<RailCard title="Tags" count={tagIds.length}>
 					{#snippet actions()}
-						{#if tagIdsDraft !== null}<Badge size="small" status="warning">Unsaved</Badge>{/if}
+						{#if tagsChanged}<Badge size="small" status="warning">Unsaved</Badge>{/if}
 					{/snippet}
 					<ClientTagSelect {tagIds} onChange={(next) => (tagIdsDraft = next)} />
 				</RailCard>

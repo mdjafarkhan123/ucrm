@@ -19,7 +19,12 @@ Every work record — request, quote, job, invoice — is built the same way:
 - On the right of the same row: a history icon, a `More` menu, and exactly **one green primary action**,
   named for the next step in the lifecycle (`Email Booking Confirmation`, `Convert to Job`,
   `Show Late Visit`, `Send Email`).
-- The record title as the page heading, with an edit pencil at the far right.
+- The record title as the page heading, with an edit pencil at the far right. **Observed live 2026-08-18:**
+  the pencil swaps the heading in place for a full-width text field labelled `Request title`, sitting exactly
+  where the heading was — no block opens underneath it — and the pencil disappears while the field is open.
+  Cancel and Save then appear at the bottom of the header card. Our `work/WorkRecordHeader.svelte` does the
+  same swap for every work record; only the save pair differs, because this app puts it in the page's one
+  pinned bar instead.
 - Below the heading, two columns: a **client card** on the left (name, addresses, phone, email, and a `...`
   menu) and a **facts column** on the right — plain label/value rows of the few dates and numbers that
   identify the record.
@@ -108,21 +113,21 @@ Quotes, jobs, and invoices share one shape, top to bottom:
 
 Which screens actually use each part:
 
-| Part | Request | Quote | Job | Invoice | Client |
-| --- | --- | --- | --- | --- | --- |
-| Status-tinted top bar | yes | yes | yes | yes | yes |
-| Record-type icon + status pill | yes | yes | yes | yes | yes |
-| History icon in header | yes | yes | yes | yes | **no** |
-| `More` menu | yes | yes | yes | yes | yes |
-| One green primary action | yes | yes | yes | yes | **`+ Create` menu, not a lifecycle step** |
-| Title heading + edit pencil | yes | yes | yes | yes | yes |
-| Client + property summary card with `...` | yes | yes | yes | yes | **no — it is the client** |
-| Facts column (label/value rows) | yes | yes | yes | yes | yes, but full width in two columns |
-| Body section cards with a pencil | yes | yes | yes | yes | yes |
-| `+ Add section` chips | no | yes | no | yes | no |
-| Line-item table with totals footer | no | yes | yes | yes | no |
-| Notes rail card | yes | yes | yes | yes | yes |
-| Tabs below the header | no | no | no | no | yes |
+| Part                                      | Request | Quote | Job | Invoice | Client                                    |
+| ----------------------------------------- | ------- | ----- | --- | ------- | ----------------------------------------- |
+| Status-tinted top bar                     | yes     | yes   | yes | yes     | yes                                       |
+| Record-type icon + status pill            | yes     | yes   | yes | yes     | yes                                       |
+| History icon in header                    | yes     | yes   | yes | yes     | **no**                                    |
+| `More` menu                               | yes     | yes   | yes | yes     | yes                                       |
+| One green primary action                  | yes     | yes   | yes | yes     | **`+ Create` menu, not a lifecycle step** |
+| Title heading + edit pencil               | yes     | yes   | yes | yes     | yes                                       |
+| Client + property summary card with `...` | yes     | yes   | yes | yes     | **no — it is the client**                 |
+| Facts column (label/value rows)           | yes     | yes   | yes | yes     | yes, but full width in two columns        |
+| Body section cards with a pencil          | yes     | yes   | yes | yes     | yes                                       |
+| `+ Add section` chips                     | no      | yes   | no  | yes     | no                                        |
+| Line-item table with totals footer        | no      | yes   | yes | yes     | no                                        |
+| Notes rail card                           | yes     | yes   | yes | yes     | yes                                       |
+| Tabs below the header                     | no      | no    | no  | no      | yes                                       |
 
 ### What varies inside a shared part
 
@@ -202,6 +207,7 @@ right-aligned. It is the list-page row shape reused inside a section.
 
   The one write allowed with no save button at all is creating something shared and independent of this
   record, such as adding a brand-new tag name to the organization's catalog — the assignment still waits.
+
 - **Editing reveals controls that reading hides**, as in the Jobber section above. Do not show
   `Add Line Item`, `Add Discount`, `Client view / Change` and their kind on a read-only block.
 - **Client detail is currently the odd one out.** It was built to the superseded 2026-08-17 rule — block

@@ -1,9 +1,14 @@
 <script lang="ts">
 	import { createInfiniteQuery, createQuery } from '@tanstack/svelte-query';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import FilterBar from '$lib/components/data-display/FilterBar.svelte';
+	import FilterField from '$lib/components/data-display/FilterField.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
@@ -42,7 +47,6 @@
 
 	// Nothing behind these yet. Each says why rather than sitting there dead, the way the Clients page does.
 	const bulkReason = 'Not ready yet — this arrives with the request actions.';
-	const newRequestReason = 'The New Request page is next up.';
 	const moreActionsReason = 'Booking form settings arrive with the public request form.';
 
 	$effect(() => {
@@ -105,6 +109,10 @@
 		return request.client?.display_name ?? 'Client removed';
 	}
 
+	function requestHref(request: RequestListItem) {
+		return resolve('/(app)/requests/[id]', { id: request.id });
+	}
+
 	const columns: DataTableColumn[] = [
 		{ key: 'client', label: 'Client' },
 		{ key: 'title', label: 'Title' },
@@ -120,10 +128,7 @@
 <PageContainer variant="fill">
 	<PageHeader title="Requests" description="Every job someone has asked you to look at.">
 		{#snippet actions()}
-			<span class="requests-header__action" title={newRequestReason}>
-				<Button variant="primary" disabled>New Request</Button>
-				<span class="requests-header__reason">{newRequestReason}</span>
-			</span>
+			<Button variant="primary" href={resolve('/(app)/requests/new')}>New Request</Button>
 			<span class="requests-header__action" title={moreActionsReason}>
 				<Button variant="secondary" disabled>More Actions</Button>
 				<span class="requests-header__reason">{moreActionsReason}</span>
@@ -175,20 +180,16 @@
 	</div>
 
 	{#if filtersOpen}
-		<div class="requests-filters">
-			<div class="requests-filters__field">
-				<label for="requests-status-filter">Status</label>
+		<FilterBar onClear={hasActiveFilters ? () => (status = '') : undefined}>
+			<FilterField id="requests-status-filter" label="Status">
 				<Select
 					id="requests-status-filter"
 					value={status}
 					onchange={(value) => (status = value as StoredRequestStatus | '')}
 					options={statusOptions}
 				/>
-			</div>
-			{#if hasActiveFilters}
-				<Button variant="tertiary" size="small" onclick={() => (status = '')}>Clear filters</Button>
-			{/if}
-		</div>
+			</FilterField>
+		</FilterBar>
 	{/if}
 
 	{#if selectedIds.size > 0}
@@ -222,10 +223,18 @@
 			selectable
 			bind:selectedIds
 			rowLabel={(request) => `Select ${request.title}`}
+			onRowActivate={(request) => goto(requestHref(request))}
 		>
 			{#snippet row(request: RequestListItem)}
-				<th scope="row">{clientName(request)}</th>
-				<td>{request.title}</td>
+				<th scope="row">
+					<div class="requests-table__client">
+						<Avatar id={request.client?.id ?? request.id} name={clientName(request)} size="small" />
+						<span>{clientName(request)}</span>
+					</div>
+				</th>
+				<td>
+					<a class="requests-table__title" href={requestHref(request)}>{request.title}</a>
+				</td>
 				<td>{propertyAddress(request.property)}</td>
 				<td>{request.email ?? request.phone ?? '—'}</td>
 				<td>{dateFormat.format(new Date(request.requested_at))}</td>
@@ -238,7 +247,7 @@
 			{#snippet rowActions(request: RequestListItem)}
 				<DropdownMenu
 					items={[
-						{ label: 'View request', onSelect: () => {}, disabled: true },
+						{ label: 'View request', onSelect: () => void goto(requestHref(request)) },
 						{ label: 'Archive', onSelect: () => {}, disabled: true }
 					]}
 					triggerLabel={`Actions for ${request.title}`}
@@ -264,6 +273,22 @@
 </PageContainer>
 
 <style lang="scss">
+	.requests-table__client {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+	}
+
+	.requests-table__title {
+		color: var(--color-heading);
+		font-weight: 700;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
 	.requests-header__action,
 	.requests-bulk-bar__action {
 		position: relative;
@@ -319,24 +344,6 @@
 			&--active {
 				border-color: var(--color-interactive);
 				color: var(--color-interactive);
-			}
-		}
-	}
-
-	.requests-filters {
-		display: flex;
-		align-items: flex-end;
-		gap: var(--space-base);
-		margin-bottom: var(--space-base);
-
-		&__field {
-			display: grid;
-			gap: var(--space-smaller);
-
-			label {
-				color: var(--color-text--secondary);
-				font-size: var(--typography--fontSize-small);
-				font-weight: 600;
 			}
 		}
 	}

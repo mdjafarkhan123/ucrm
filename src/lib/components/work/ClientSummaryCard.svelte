@@ -137,6 +137,9 @@
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-small);
+			margin: 0;
+			padding: 0;
+			font-size: var(--typography--fontSize-base);
 		}
 
 		&__line {

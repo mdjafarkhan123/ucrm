@@ -152,7 +152,7 @@ Only unresolved work explicitly postponed by the user belongs here.
 
 ## `Product & Services` and `Labor` blocks on the Request detail page
 
-- **Campaign:** `requests-and-assessments` Part 1, deferred by Jafar on 2026-08-18.
+- **Campaign:** `requests-and-assessments` (closed 2026-08-18), deferred by Jafar on 2026-08-18.
 - **Reason:** Both blocks are drawn on `Design/Request Details.jpg` and Jafar confirmed they stay — they are
   **not** dropped. Jobber's request carries no line items, so there is no toured behavior to copy, and the
   pricing tables they need do not exist yet. Build them when pricing lands, not before.
@@ -162,6 +162,56 @@ Only unresolved work explicitly postponed by the user belongs here.
   forward on conversion, or a separate estimate that the quote copies. Jobber cannot answer this one, so it
   is his call under CLAUDE.md rule 4.
 - **Checkpoint:** `Design/Request Details.jpg`, `Design/Request new.jpg` (the same blocks appear on both).
+
+## Request list search doesn't match client name
+
+- **Campaign:** `requests-and-assessments` (closed 2026-08-18).
+- **Reason:** Jafar didn't decide during the browser pass whether to add it; not blocking real use.
+- **What is wrong:** The list search only queries `title` and `service_type`
+  (`src/routes/api/requests/+server.ts`). Searching "Priya" finds nothing even though she has requests;
+  searching her request's title does. Jobber's request search matches client name too.
+- **Reactivation trigger:** Jafar reports the search missing a client he expected to find, or asks for it.
+- **Prerequisites:** Join to `clients.display_name` (and `company_name`) in the existing `.or()` filter;
+  check the query plan once request volume is non-trivial.
+- **Checkpoint:** `src/routes/api/requests/+server.ts`.
+
+## Request Status filter matches the stored status, not the displayed one
+
+- **Campaign:** `requests-and-assessments` (closed 2026-08-18).
+- **Reason:** Confirmed in the browser pass — honest but confusing, not decided whether worth fixing yet.
+- **What is wrong:** Picking "Unscheduled" in the Status filter also returns rows badged "Overdue"/"Today"
+  in the table, because the filter runs against `requests.status` (six stored values) while the badge shown
+  is the derived nine-value status. Filtering by the derived status is possible with the same day-boundary
+  logic `GET /api/requests/counts` already computes.
+- **Reactivation trigger:** Jafar reports the filter behaving unexpectedly, or asks for it to match the
+  badge.
+- **Prerequisites:** Decide whether to filter by computed status server-side (extra per-row date math) or
+  keep the stored-status filter and relabel it so it reads honestly.
+- **Checkpoint:** `src/routes/api/requests/+server.ts`, `src/lib/server/requests/status.ts`.
+
+## Third KPI card on the Requests list has no real data source
+
+- **Campaign:** `requests-and-assessments` (closed 2026-08-18).
+- **Reason:** Never Jafar's word — a placeholder proposal added while building the list page, now stale.
+- **What is wrong:** The card is named "Assessments booked" with a note that no longer matches anything
+  real. Jobber's own Requests list only has two KPI cards (New requests, Conversion rate).
+- **Reactivation trigger:** Jafar decides what the third card should say, or asks to drop it to match
+  Jobber's two.
+- **Prerequisites:** None — a naming/scope call only.
+- **Checkpoint:** `src/routes/(app)/requests/+page.svelte`.
+
+## No `requests.*` permission keys seeded
+
+- **Campaign:** `requests-and-assessments` (closed 2026-08-18).
+- **Reason:** Every request route and every request note currently only checks organization membership.
+  Seeding a real role matrix is a separate, cross-cutting call, not specific to Requests.
+- **What is missing:** `requests.view` / `requests.create` / etc. equivalent to the `customers.*` keys
+  clients already use (`requireClientPermission`).
+- **Reactivation trigger:** Jafar asks for role-gated request access, or a second campaign needs the same
+  pattern and it's worth doing once for both.
+- **Prerequisites:** Decide the role matrix shape with Jafar first — this affects every future work object,
+  not just requests.
+- **Checkpoint:** `src/lib/server/access/`, `src/routes/api/requests/`.
 
 ## Client detail page still uses the superseded staging-dialog edit shape
 
