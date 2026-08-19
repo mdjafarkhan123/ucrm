@@ -33,6 +33,7 @@
 		type AssessmentDraft
 	} from '$lib/requests/api';
 	import { REQUEST_STATUS_LABELS, REQUEST_STATUS_TONES } from '$lib/requests/statuses';
+	import { invalidatePipeline } from '$lib/pipeline/api';
 	import {
 		activityKey,
 		createNote,
@@ -181,13 +182,16 @@
 	}
 
 	// The list and its Overview card both read a request's status, so a change here has to reach them too.
+	// So does the pipeline: a status or assessment change is exactly what moves a card between columns,
+	// and the database works out which one, so the board has to re-read rather than guess.
 	async function refresh() {
 		await Promise.all([
 			queryClient.invalidateQueries({ queryKey: requestDetailKey(requestId) }),
 			queryClient.invalidateQueries({ queryKey: ['requests', 'list'] }),
 			queryClient.invalidateQueries({ queryKey: requestCountsKey }),
 			queryClient.invalidateQueries({ queryKey: notesKey('request', requestId) }),
-			queryClient.invalidateQueries({ queryKey: activityKey('request', requestId) })
+			queryClient.invalidateQueries({ queryKey: activityKey('request', requestId) }),
+			invalidatePipeline(queryClient)
 		]);
 	}
 

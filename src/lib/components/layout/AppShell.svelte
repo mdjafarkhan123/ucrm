@@ -32,7 +32,7 @@
 				{ label: 'Inbox', href: '/inbox', icon: 'inbox', unavailable: true },
 				{ label: 'Clients', href: '/clients', icon: 'users' },
 				{ label: 'Requests', href: '/requests', icon: 'route' },
-				{ label: 'Pipeline', href: '/pipeline', icon: 'chartBar', unavailable: true }
+				{ label: 'Pipeline', href: '/pipeline', icon: 'chartBar' }
 			]
 		},
 		{

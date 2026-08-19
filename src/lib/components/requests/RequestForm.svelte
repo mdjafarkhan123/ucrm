@@ -19,6 +19,7 @@
 		type RequestCreateInput,
 		type RequestWriteError
 	} from '$lib/requests/api';
+	import { invalidatePipeline } from '$lib/pipeline/api';
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import clipboardIcon from '@tabler/icons/outline/clipboard-text.svg?raw';
 	import truckIcon from '@tabler/icons/outline/truck.svg?raw';
@@ -126,6 +127,8 @@
 
 			await queryClient.invalidateQueries({ queryKey: ['requests', 'list'] });
 			await queryClient.invalidateQueries({ queryKey: requestCountsKey });
+			// A new request is a new card on the pipeline, created by the database along with it.
+			await invalidatePipeline(queryClient);
 
 			const failedUploads = (await attachmentsCard?.saveAll(request.id)) ?? 0;
 			if (failedUploads > 0) {

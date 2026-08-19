@@ -8,16 +8,16 @@ email and balance-funded phone/SMS.
 
 ## Active part
 
-None. The operational-email contract and Communications roadmap are approved, but implementation is
-paused until Clients and Properties establishes real contact, ownership, preference, and authorization
-behavior.
+None. The operational-email contract and Communications roadmap are approved. Clients and Properties,
+its former prerequisite, is complete; implementation remains deliberately paused while Sales Pipeline is
+the default campaign.
 
 ## Exact next action
 
-Prepare the Clients and Properties campaign proposal described by `docs/build-sequence.md`. Inspect its
-approved behavior, Jobber comparison, existing schema/RLS/API/UI/tests, and Git state. Present its goal,
-ordered parts, dependencies, risks, meaningful edge cases, and completion gates. Wait for Jafar's
-approval before registering that campaign or changing implementation.
+Only when Jafar resumes Communications, verify the approved contract and roadmap against the completed
+Clients and Properties implementation and current provider/server infrastructure. Present the first
+dependency-ready Communications part's exact implementation plan before changing code, schema, RLS,
+provider state, or secrets.
 
 ## Current truth
 
@@ -35,8 +35,7 @@ approval before registering that campaign or changing implementation.
 
 ## Blockers
 
-Communications implementation intentionally waits for Clients and Properties. Campaign planning for
-Clients and Properties is not blocked.
+No product dependency blocks Communications foundation work. It is paused by campaign priority.
 
 ## Protected work
 
@@ -53,5 +52,5 @@ create future feature campaign folders until that feature's goal and ordered roa
 
 ## Active-part completion gate
 
-A Clients and Properties campaign proposal is evidence-backed and presented for approval. No campaign is
-registered and no implementation, schema, RLS, authentication, or permission change has started.
+Not applicable while paused. A resumed part must define its own evidence-backed completion gate before
+implementation.

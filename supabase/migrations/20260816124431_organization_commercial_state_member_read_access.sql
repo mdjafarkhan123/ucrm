@@ -21,13 +21,3 @@ using (private.is_organization_member(organization_id));
 grant select on public.organization_commercial_state to authenticated;
 grant select on public.organization_commercial_settings to authenticated;
 grant select on public.organization_free_access_events to authenticated;
-
--- Same gap, one step earlier in the same function: resolveOrganizationAccess reads
--- organization_package_assignments first, via the request-scoped client, to find the org's active package
--- version. No grant and no policy existed, so this failed before commercial state was even reached.
-
-create policy "members can view their organization package assignments"
-on public.organization_package_assignments for select to authenticated
-using (private.is_organization_member(organization_id));
-
-grant select on public.organization_package_assignments to authenticated;

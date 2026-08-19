@@ -43,7 +43,13 @@
 	const clientsQuery = createQuery(() => ({
 		queryKey: ['clients', 'picker', debouncedQuery],
 		queryFn: () =>
-			fetchClients({ search: debouncedQuery, status: '', tagId: '', page: 1, pageSize: 8 }),
+			fetchClients({
+				search: debouncedQuery,
+				status: '',
+				tagId: '',
+				sort: 'updated_at',
+				dir: 'desc'
+			}),
 		enabled: open,
 		// A search result goes stale slowly enough that reopening the same query moments later, or a
 		// keystroke that lands back on an earlier term, can reuse it instead of asking again.

@@ -200,7 +200,7 @@ Part 11 performs the final Platform Owner A-to-Z audit after the required Part 1
 
 ## Immediate next action
 
-Open Requests and Assessments. Clients and Properties closed at its delivered foundation on 2026-08-17.
-Tour the live Jobber request and assessment journeys first, write the tour up in the matching `jobber-0X`
-file, then propose the behavior contract, omissions, reusable seams, unresolved decisions, and Part 1
-acceptance checks for Jafar's approval before any implementation or schema, permission, and RLS change.
+Open Sales Pipeline Part 1 from `Memory/campaigns/sales-pipeline/NOW.md`. The campaign, fixed seven-stage first
+release, and Part 1 schema/permissions/RLS scope were approved on 2026-08-18. Reinspect current implementation
+truth, present the exact Part 1 implementation plan named by the packet, and wait for approval before editing
+code or migrations.

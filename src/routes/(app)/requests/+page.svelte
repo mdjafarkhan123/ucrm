@@ -12,7 +12,11 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
-	import DataTable, { type DataTableColumn } from '$lib/components/data-display/DataTable.svelte';
+	import DataTable, {
+		type DataTableColumn,
+		type DataTableSort
+	} from '$lib/components/data-display/DataTable.svelte';
+	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import KpiCard from '$lib/components/data-display/KpiCard.svelte';
@@ -25,7 +29,8 @@
 		requestCountsKey,
 		requestsListKey,
 		type RequestListItem,
-		type RequestListPage
+		type RequestListPage,
+		type RequestSortKey
 	} from '$lib/requests/api';
 	import {
 		REQUEST_STATUS_LABELS,
@@ -44,6 +49,19 @@
 	let status = $state<StoredRequestStatus | ''>('');
 	let filtersOpen = $state(false);
 	let selectedIds = $state<Set<string>>(new Set());
+	let sortKey = $state<RequestSortKey>('requested');
+	let sortDir = $state<'asc' | 'desc'>('desc');
+
+	// Click a header to sort by it ascending; click it again for descending. Clicking a different
+	// sortable header switches to that column, starting ascending again — one sort column at a time.
+	function handleSortChange(key: string) {
+		if (key === sortKey) {
+			sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+		} else {
+			sortKey = key as RequestSortKey;
+			sortDir = 'asc';
+		}
+	}
 
 	// Nothing behind these yet. Each says why rather than sitting there dead, the way the Clients page does.
 	const bulkReason = 'Not ready yet — this arrives with the request actions.';
@@ -57,8 +75,11 @@
 
 	const filters = $derived({
 		search: debouncedSearch,
-		statuses: status ? [status] : []
+		statuses: status ? [status] : [],
+		sort: sortKey,
+		dir: sortDir
 	});
+	const sort = $derived<DataTableSort>({ key: sortKey, direction: sortDir });
 
 	// Keyset pagination, so there is no page to jump to — each page hands back the cursor for the next one
 	// and Load more asks for it. That is what keeps the query fast however many requests an office has.
@@ -115,10 +136,10 @@
 
 	const columns: DataTableColumn[] = [
 		{ key: 'client', label: 'Client' },
-		{ key: 'title', label: 'Title' },
+		{ key: 'title', label: 'Title', sortable: true },
 		{ key: 'property', label: 'Property' },
 		{ key: 'contact', label: 'Contact' },
-		{ key: 'requested', label: 'Requested' },
+		{ key: 'requested', label: 'Requested', sortable: true },
 		{ key: 'status', label: 'Status' }
 	];
 </script>
@@ -224,6 +245,8 @@
 			bind:selectedIds
 			rowLabel={(request) => `Select ${request.title}`}
 			onRowActivate={(request) => goto(requestHref(request))}
+			{sort}
+			onSortChange={handleSortChange}
 		>
 			{#snippet row(request: RequestListItem)}
 				<th scope="row">
@@ -254,19 +277,11 @@
 				/>
 			{/snippet}
 			{#snippet footer()}
-				<div class="requests-more">
-					{#if requestsQuery.hasNextPage}
-						<Button
-							variant="secondary"
-							onclick={() => requestsQuery.fetchNextPage()}
-							disabled={requestsQuery.isFetchingNextPage}
-						>
-							{requestsQuery.isFetchingNextPage ? 'Loading…' : 'Load more'}
-						</Button>
-					{:else}
-						<span class="requests-more__end">That is all of them.</span>
-					{/if}
-				</div>
+				<ListLoadMore
+					hasNextPage={requestsQuery.hasNextPage}
+					isFetchingNextPage={requestsQuery.isFetchingNextPage}
+					onLoadMore={() => requestsQuery.fetchNextPage()}
+				/>
 			{/snippet}
 		</DataTable>
 	{/if}
@@ -358,17 +373,6 @@
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
 		font-weight: 600;
-	}
-
-	.requests-more {
-		display: flex;
-		justify-content: center;
-		padding: var(--space-base);
-
-		&__end {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-		}
 	}
 
 	@media (max-width: 1023px) {

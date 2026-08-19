@@ -18,7 +18,8 @@
 		resolve('/(app)/clients/[id]', { id: 'warm' }),
 		resolve('/(app)/requests'),
 		resolve('/(app)/requests/new'),
-		resolve('/(app)/requests/[id]', { id: 'warm' })
+		resolve('/(app)/requests/[id]', { id: 'warm' }),
+		resolve('/(app)/pipeline')
 	];
 
 	onMount(() => {

@@ -222,21 +222,13 @@
 				border: var(--border-base) solid var(--color-border--interactive);
 				border-radius: var(--radius-base);
 				background: var(--color-surface);
-				box-shadow: var(--shadow-low);
 				cursor: text;
 				transition:
 					border-color var(--timing-quick),
 					background-color var(--timing-quick),
 					box-shadow var(--timing-quick);
 
-				&:hover {
-					border-color: var(--color-interactive--subtle);
-					background: var(--color-surface--hover);
-				}
-
 				&:focus-within {
-					border-color: var(--color-interactive);
-					background: var(--color-surface);
 					box-shadow: var(--shadow-focus);
 				}
 			}
@@ -324,7 +316,7 @@
 				border: var(--border-base) solid var(--color-border);
 				border-radius: var(--radius-base);
 				background: var(--color-surface);
-				box-shadow: var(--shadow-high);
+				box-shadow: var(--shadow-base);
 			}
 
 			&__header {

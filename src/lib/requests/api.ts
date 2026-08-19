@@ -1,8 +1,12 @@
 import type { DisplayRequestStatus, StoredRequestStatus } from './statuses';
 
+export type RequestSortKey = 'requested' | 'title';
+
 export type RequestListFilters = {
 	search: string;
 	statuses: StoredRequestStatus[];
+	sort: RequestSortKey;
+	dir: 'asc' | 'desc';
 };
 
 export type RequestListItem = {
@@ -52,6 +56,8 @@ export async function fetchRequests(
 	const params = new URLSearchParams();
 	if (filters.search) params.set('search', filters.search);
 	for (const status of filters.statuses) params.append('status', status);
+	if (filters.sort !== 'requested') params.set('sort', filters.sort);
+	if (filters.dir !== 'desc') params.set('dir', filters.dir);
 	if (cursor) params.set('cursor', cursor);
 
 	const response = await fetch(`/api/requests?${params.toString()}`);

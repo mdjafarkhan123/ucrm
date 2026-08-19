@@ -67,17 +67,39 @@ export const POST: RequestHandler = async (event) => {
 const PAGE_SIZE_DEFAULT = 25;
 const PAGE_SIZE_MAX = 50;
 
-// Keyset pagination, never offset. "Requested" is the column Jobber sorts by, and id breaks ties so a
-// request created in the same millisecond as another cannot be skipped or shown twice.
-// Cursor format: "<created_at ISO>|<id>".
+// The click-to-sort columns on the list header. Each maps to the raw column its own index is built on
+// (`requests_organization_created_idx`, `requests_organization_title_idx`) — never interpolate the `sort`
+// param straight into a query.
+const REQUEST_SORT_COLUMNS = {
+	requested: 'created_at',
+	title: 'title'
+} as const;
+type RequestSortKey = keyof typeof REQUEST_SORT_COLUMNS;
+
+function readSort(params: URLSearchParams) {
+	const key = params.get('sort');
+	const sort: RequestSortKey = key === 'title' ? key : 'requested';
+	const ascending = params.get('dir') === 'asc';
+	return { sort, column: REQUEST_SORT_COLUMNS[sort], ascending };
+}
+
+// Keyset pagination, never offset, and id breaks ties so a row tied with another on the sort column
+// cannot be skipped or shown twice. Cursor format: "<sort column's value>|<id>".
 function readCursor(raw: string | null) {
 	if (!raw) return null;
 	const separator = raw.lastIndexOf('|');
 	if (separator < 1) return null;
-	const createdAt = raw.slice(0, separator);
+	const value = raw.slice(0, separator);
 	const id = raw.slice(separator + 1);
-	if (Number.isNaN(Date.parse(createdAt)) || id.length === 0) return null;
-	return { createdAt, id };
+	if (id.length === 0) return null;
+	return { value, id };
+}
+
+// PostgREST's or= filter string treats comma/parenthesis as syntax, and a request's title can contain
+// either — quoting (and escaping backslash/quote inside it) keeps a cursor value from being parsed as
+// extra filter clauses.
+function quoteFilterValue(value: string) {
+	return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 }
 
 export const GET: RequestHandler = async (event) => {
@@ -104,6 +126,7 @@ export const GET: RequestHandler = async (event) => {
 		)
 	);
 	const cursor = readCursor(params.get('cursor'));
+	const { column: sortColumn, ascending } = readSort(params);
 
 	let query = supabase
 		.from('requests')
@@ -124,21 +147,28 @@ export const GET: RequestHandler = async (event) => {
 		query = query.or(`title.ilike.${quoted},service_type.ilike.${quoted}`);
 	}
 	if (cursor) {
-		// Two halves, and both are needed. `lte` is what the index actually seeks on, so the scan starts at
-		// the cursor row instead of walking the whole list from the newest; the `or` then drops the cursor
-		// row itself and anything tied with it on a higher id. Verified with EXPLAIN — the index condition
-		// covers organization_id and created_at, and the ordering comes free from the index.
-		query = query
-			.lte('created_at', cursor.createdAt)
-			.or(
-				`created_at.lt.${cursor.createdAt},and(created_at.eq.${cursor.createdAt},id.lt.${cursor.id})`
-			);
+		// The seek (gte/lte) is what the index actually scans on, so the query starts at the cursor row
+		// instead of walking the whole list from the top; the `or` then drops the cursor row itself and
+		// anything tied with it on the wrong side of id. Verified with EXPLAIN for the default (created_at)
+		// sort — the index condition covers organization_id and the sort column, ordering comes free.
+		const quotedValue = quoteFilterValue(cursor.value);
+		query = ascending
+			? query
+					.gte(sortColumn, cursor.value)
+					.or(
+						`${sortColumn}.gt.${quotedValue},and(${sortColumn}.eq.${quotedValue},id.gt.${cursor.id})`
+					)
+			: query
+					.lte(sortColumn, cursor.value)
+					.or(
+						`${sortColumn}.lt.${quotedValue},and(${sortColumn}.eq.${quotedValue},id.lt.${cursor.id})`
+					);
 	}
 
 	// One extra row tells us whether another page exists without a second count query.
 	const { data: rows, error } = await query
-		.order('created_at', { ascending: false })
-		.order('id', { ascending: false })
+		.order(sortColumn, { ascending })
+		.order('id', { ascending })
 		.limit(limit + 1);
 	if (error) return databaseError();
 
@@ -188,9 +218,7 @@ export const GET: RequestHandler = async (event) => {
 		};
 	});
 
-	const last = page.at(-1);
-	return json(
-		{ requests, next_cursor: hasMore && last ? `${last.created_at}|${last.id}` : null },
-		{ headers: PRIVATE_READ_HEADERS }
-	);
+	const last = page.at(-1) as Record<string, unknown> | undefined;
+	const nextCursor = hasMore && last ? `${last[sortColumn]}|${last.id}` : null;
+	return json({ requests, next_cursor: nextCursor }, { headers: PRIVATE_READ_HEADERS });
 };

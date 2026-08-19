@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { requireClientPermission } from '$lib/server/access/clients';
-import { databaseError, validationError } from '$lib/server/api/errors';
+import { PRIVATE_READ_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import {
 	clientWriteSchema,
 	deriveClientDisplayName,
@@ -60,6 +60,40 @@ export const POST: RequestHandler = async (event) => {
 const PAGE_SIZE_MAX = 50;
 const PAGE_SIZE_DEFAULT = 25;
 
+// The click-to-sort columns on the list header. Each maps to the raw column its own index is built on
+// (`20260818200000_list_sort_indexes.sql`) — never interpolate the `sort` param straight into a query.
+const CLIENT_SORT_COLUMNS = {
+	updated_at: 'updated_at',
+	name: 'display_name',
+	status: 'lifecycle_status'
+} as const;
+type ClientSortKey = keyof typeof CLIENT_SORT_COLUMNS;
+
+function readSort(params: URLSearchParams) {
+	const key = params.get('sort');
+	const sort: ClientSortKey = key === 'name' || key === 'status' ? key : 'updated_at';
+	const ascending = params.get('dir') === 'asc';
+	return { sort, column: CLIENT_SORT_COLUMNS[sort], ascending };
+}
+
+// Keyset pagination, never offset. Cursor format: "<sort column's value>|<id>".
+function readCursor(raw: string | null) {
+	if (!raw) return null;
+	const separator = raw.lastIndexOf('|');
+	if (separator < 1) return null;
+	const value = raw.slice(0, separator);
+	const id = raw.slice(separator + 1);
+	if (id.length === 0) return null;
+	return { value, id };
+}
+
+// PostgREST's or= filter string treats comma/parenthesis as syntax, and a client's name or status can
+// contain either — quoting (and escaping backslash/quote inside it) keeps a cursor value from being
+// parsed as extra filter clauses.
+function quoteFilterValue(value: string) {
+	return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+}
+
 export const GET: RequestHandler = async (event) => {
 	const access = await requireClientPermission(event, 'customers.view');
 	if ('response' in access) return access.response;
@@ -71,14 +105,15 @@ export const GET: RequestHandler = async (event) => {
 	const search = params.get('search')?.trim() ?? '';
 	const status = params.get('status');
 	const tagId = params.get('tag_id');
-	const page = Math.max(1, Number.parseInt(params.get('page') ?? '1', 10) || 1);
-	const pageSize = Math.min(
+	const limit = Math.min(
 		PAGE_SIZE_MAX,
 		Math.max(
 			1,
-			Number.parseInt(params.get('page_size') ?? String(PAGE_SIZE_DEFAULT), 10) || PAGE_SIZE_DEFAULT
+			Number.parseInt(params.get('limit') ?? String(PAGE_SIZE_DEFAULT), 10) || PAGE_SIZE_DEFAULT
 		)
 	);
+	const cursor = readCursor(params.get('cursor'));
+	const { column: sortColumn, ascending } = readSort(params);
 
 	// A tag filter narrows to a set of client ids before the main paged query, since Postgres can't express
 	// "has this tag" as a plain column filter once tags live in their own assignment table.
@@ -93,15 +128,14 @@ export const GET: RequestHandler = async (event) => {
 		if (error) return databaseError();
 		tagFilteredClientIds = (data ?? []).map((row) => row.entity_id);
 		if (tagFilteredClientIds.length === 0) {
-			return json({ clients: [], total_count: 0, page, page_size: pageSize });
+			return json({ clients: [], next_cursor: null }, { headers: PRIVATE_READ_HEADERS });
 		}
 	}
 
 	let query = supabase
 		.from('clients')
 		.select(
-			'id, display_name, company_name, client_type, lifecycle_status, lead_source, archived_at, updated_at',
-			{ count: 'exact' }
+			'id, display_name, company_name, client_type, lifecycle_status, lead_source, archived_at, updated_at'
 		)
 		.eq('organization_id', organizationId)
 		.is('deleted_at', null)
@@ -117,18 +151,37 @@ export const GET: RequestHandler = async (event) => {
 	}
 	if (status === 'lead' || status === 'customer') query = query.eq('lifecycle_status', status);
 	if (tagFilteredClientIds) query = query.in('id', tagFilteredClientIds);
+	if (cursor) {
+		// The seek (gte/lte) is what the index actually scans on, so the query starts at the cursor row
+		// instead of walking the whole list from the top; the `or` then drops the cursor row itself and
+		// anything tied with it on the wrong side of id.
+		const quotedValue = quoteFilterValue(cursor.value);
+		query = ascending
+			? query
+					.gte(sortColumn, cursor.value)
+					.or(
+						`${sortColumn}.gt.${quotedValue},and(${sortColumn}.eq.${quotedValue},id.gt.${cursor.id})`
+					)
+			: query
+					.lte(sortColumn, cursor.value)
+					.or(
+						`${sortColumn}.lt.${quotedValue},and(${sortColumn}.eq.${quotedValue},id.lt.${cursor.id})`
+					);
+	}
 
-	const from = (page - 1) * pageSize;
-	const {
-		data: clients,
-		error,
-		count
-	} = await query.order('updated_at', { ascending: false }).range(from, from + pageSize - 1);
+	// One extra row tells us whether another page exists without a second count query.
+	const { data: rows, error } = await query
+		.order(sortColumn, { ascending })
+		.order('id', { ascending })
+		.limit(limit + 1);
 	if (error) return databaseError();
 
-	const clientIds = (clients ?? []).map((client) => client.id);
+	const clients = (rows ?? []).slice(0, limit);
+	const hasMore = (rows ?? []).length > limit;
+
+	const clientIds = clients.map((client) => client.id);
 	if (clientIds.length === 0) {
-		return json({ clients: [], total_count: count ?? 0, page, page_size: pageSize });
+		return json({ clients: [], next_cursor: null });
 	}
 
 	const [
@@ -189,7 +242,7 @@ export const GET: RequestHandler = async (event) => {
 		tagsById = new Map((tags ?? []).map((tag) => [tag.id, tag]));
 	}
 
-	const result = (clients ?? []).map((client) => {
+	const result = clients.map((client) => {
 		const clientProperties = propertiesByClient.get(client.id) ?? [];
 		const primaryProperty =
 			clientProperties.find((property) => property.is_primary) ?? clientProperties[0] ?? null;
@@ -208,5 +261,7 @@ export const GET: RequestHandler = async (event) => {
 		};
 	});
 
-	return json({ clients: result, total_count: count ?? 0, page, page_size: pageSize });
+	const last = clients.at(-1) as Record<string, unknown> | undefined;
+	const nextCursor = hasMore && last ? `${last[sortColumn]}|${last.id}` : null;
+	return json({ clients: result, next_cursor: nextCursor }, { headers: PRIVATE_READ_HEADERS });
 };

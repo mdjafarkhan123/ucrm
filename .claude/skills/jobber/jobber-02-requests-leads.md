@@ -338,6 +338,133 @@ author, timestamp, a pin/star, and thumbnails for any files attached to a note.
 
 ---
 
+## 4.6 Sales Pipeline board (from Jafar's screenshot, `Design/Pipeline.webp`, 2026-08-18)
+
+Jafar's Jobber plan does not include Sales (it is a paid "Lab" add-on), so this board was never toured live.
+Everything below is read off one full-page screenshot he supplied. It is the whole board scrolled, not one
+screen: the seven columns do not fit across a normal window, and the columns themselves run past the fold.
+
+- Page title `Sales Pipeline`, with a `Give Feedback` button on the right. Sales sits in the main left nav
+  with a `Lab` badge beside it.
+- Two small outcome tiles under the title, side by side, each with a chevron opening a list:
+  `Won (4) / Past 30 days` and `Lost (0) / Past 30 days`. Outcomes are never board columns.
+- The columns sit inside one bordered board, split into two labelled groups by a vertical divider:
+  - **Requests** (icon + total badge `13`): New requests `4`, Assessment unscheduled `2`,
+    Assessment scheduled `1`, Assessment completed `6`.
+  - **Quotes** (icon + total badge `11`): Draft `4` `$60,000`, Awaiting response `5` `$75,000`,
+    Changes requested `2` `$30,000`.
+  - The group total is the sum of its columns. Only Quote columns carry money — a Request column has a
+    count and nothing else, because a request has no price yet.
+- Column header: name on the left, count on the right, value underneath on the Quote side.
+- Card, in order: title (wraps to as many lines as it needs — one card in the shot runs four lines), client
+  name in muted grey, then the amount in bold on Quote cards only, then a footer row of a calendar icon with
+  a date on the left and a small age chip (`1d`) on the right.
+- Cards are white with a hairline border and rounded corners on a very light column background. Columns are
+  separated by thin vertical rules, and every column is the same width.
+- An empty column keeps its header and count and shows nothing underneath — no empty-state art. In the shot,
+  Assessment scheduled has one card and acres of empty column below it.
+- Nothing on the board creates work: there is no add button on a column, no card menu, and no visible drag
+  handle. Cards are the only interactive thing.
+
+### 4.6.1 The current board, from the help article and Jafar's 16 screenshots
+
+Sources: https://help.getjobber.com/en/articles/sales-pipeline/ and `Design/pipeline/1.webp` .. `16.webp`,
+captured 2026-08-18. These show a **newer build than `Design/Pipeline.webp`** — the nav item is now
+`Pipeline` with a briefcase icon rather than `Sales` with a `Lab` badge, and the board gained a control bar,
+money on Request columns, lead source, salespeople, tasks, notes, and editable stages. Where the two
+disagree, these win.
+
+**Page layout, top to bottom**
+
+1. Org name, then `Won (n) / Past 30 days` and `Lost (n) / Past 30 days` tiles, each a chevron opening the
+   Sales outcomes report. On the right, a green `+ Add new` button and a `... More actions` button.
+2. A control bar of pill controls: `Sort by | Time in stage` with a separate up/down arrow button beside it,
+   `Salesperson | All`, `Lead source | All`, a calendar `Date | All`, then a plain `(16 results)` count.
+   Sort choices are time in stage, created date, and value.
+3. One bordered board split by a vertical divider into `Requests` and `Quotes` groups, each with an icon and
+   a total-count badge.
+
+**Column header** — name on the left with a small lightning-bolt icon on the right (it marks the stage's
+automatic entry rule), then a second row carrying a count pill and a money total. **Both groups show money**;
+a Request column reads `1  $0` when nothing is priced. Empty columns keep the header and show nothing.
+
+**Card**, top to bottom: title, client name in grey, the amount in bold (present on Request cards too, as
+`$0.00`), an optional lead-source chip (tag icon + `Referral`, `Instagram`), then a footer row of calendar +
+date on the left and, on the right, the salesperson's avatar and an age chip (`0h`, `5d`, `181d`). A card may
+carry one open task line beneath the footer, in red when overdue (`Call Colin on Thursday @ 12`).
+
+**Freshness** shows as a coloured left edge stripe plus the age chip's tint: nothing at `0h`, red stripe and
+red chip once stale. The article's rule is green under an hour, red over 24 hours.
+
+**Card `...` menu** (`5.webp`): `Salesperson` and `Mark as lost`. `Mark as lost` is greyed out for a Draft
+quote. `Salesperson` opens a small dialog with a searchable list of staff and a `Clear Option` link at the
+bottom, so a card can be unassigned.
+
+**Opportunity Brief** — clicking a card opens a right-side drawer, never a page (`7.webp`, `8.webp`,
+`11.webp`):
+
+- Header: `Request for Sandra Morris` / `Quote for Robin Schneider`, the amount underneath, then a stage chip
+  and an age chip side by side, and a close X.
+- A client card: name with a status dot, the property address, phone and email as links, and a `...` menu.
+- `Quick actions` as outline buttons — `View Request` on a request; `Email`, `View Request`, `View Quote` on
+  a quote that came from one.
+- `Opportunity summary`: an AI paragraph in a gradient-bordered box with a sparkle icon and a
+  `Was this helpful?` thumbs pair.
+- `Tasks`: a count pill and `+ Add task`, `No tasks yet` when empty, and a `COMPLETED · 1` sub-header with the
+  finished ones struck through. Max 5 open and 5 completed.
+- `Notes`: a `+` button; each note carries author avatar and name, a `Client` chip, a timestamp, the text,
+  image thumbnails with a `+1` overflow link, and a `Linked note` label showing it lives on the underlying
+  record. `@Nathaniel` mentions render inline.
+- `New Task` dialog (`9.webp`): the client card with a `Select a property` picker, `Title`, `Instructions`,
+  a `Schedule` block (start/end date, start/end time, `Schedule later`, `Anytime`), a `Team` assign select,
+  and `Repeats`.
+
+**Edit stages** (`13.webp`, `14.webp`): the two groups side by side, each with `+ Add a stage`. Every
+built-in stage shows a padlock and a read-only `Rule` card. Verbatim rules:
+
+| Stage | Opportunities enter when |
+| --- | --- |
+| New requests | A new request is created |
+| Assessment unscheduled | An assessment is required for the request but not scheduled yet |
+| Assessment scheduled | An assessment for the request has been scheduled |
+| Assessment completed | The assessment for the request has been completed but hasn't been converted to a quote or a job yet |
+| Draft | A new quote has been created but has not been sent to you client yet |
+| Awaiting response | A quote that has been sent to your client and is awaiting approval or a change request |
+| Changes requested | A quote that has been sent to your client and a client is requesting changes on |
+
+A custom stage instead gets a drag handle, a delete icon, an editable name (`New stage 1`), and no rule. It
+appears as a normal column on the board and accepts drags without restriction.
+
+**Sales outcomes report** (`16.webp`), reached from the Won/Lost tiles: a `Type | Won` filter and a date
+range, then a table of `Title`, `Name`, `Created At`, `Won At`, `Total`, every column sortable, with
+`Showing 1-4 of 4 items`, a per-page select, and prev/next arrows.
+
+**Movement:** cards advance automatically when the underlying record changes, and staff may drag forward.
+Dropping into a protected stage first demands the action that stage represents. Backward movement is
+refused. Won is automatic on quote approval or job creation; Lost is always by hand, with an optional reason.
+
+**Nothing is created on the board.** Opportunities only ever come from Requests and Quotes.
+
+**Mobile:** the Jobber app has no pipeline at all. Tasks and notes are web-only.
+
+**Access:** Plus plan or paid add-on, plus the request and quote view/create/edit permissions.
+
+### 4.6.2 What we take from it (approved 2026-08-18)
+
+Jobber's current pipeline is our reference and overrides the earlier UCRM opportunity model. Full text in
+`docs/sales-pipeline-behavior-contract.md`.
+
+- Same seven protected stages, same two groups, same entry rules.
+- Opportunities come only from Requests and Quotes. No standalone creation, and `+ Add new` in the screenshots
+  is Jobber's global create button, not a way to author an opportunity.
+- One card per record, not one identity across both: a converted Request leaves the Request stages and its
+  Quote appears in Draft as a new card.
+- Same freshness rule — green under an hour, neutral to 24 hours, red after — measured from stage entry.
+- Forward-only drag with the required action, copied exactly, but not until both groups exist.
+- Deliberate differences: desktop only, because our mobile app is separate work; one page-level scroll with an
+  accessible `Load more` per column instead of Jobber's per-column scroll; no lead source, because Jobber's own
+  screens and docs disagree about it.
+
 ## 5. How WE compare (build notes)
 
 - **Requests are a distinct lead-intake object, not just a "new contact."** Jobber separates _the ask_

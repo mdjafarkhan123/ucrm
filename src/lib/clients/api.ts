@@ -1,9 +1,11 @@
+export type ClientSortKey = 'updated_at' | 'name' | 'status';
+
 export type ClientListFilters = {
 	search: string;
 	status: 'lead' | 'customer' | '';
 	tagId: string;
-	page: number;
-	pageSize: number;
+	sort: ClientSortKey;
+	dir: 'asc' | 'desc';
 };
 
 export type ClientListItem = {
@@ -29,11 +31,11 @@ export type ClientListItem = {
 	tags: { id: string; name: string; color: string | null }[];
 };
 
-export type ClientListResult = {
+export type ClientListPage = {
 	clients: ClientListItem[];
-	total_count: number;
-	page: number;
-	page_size: number;
+	// Null means this was the last page. The list is keyset paginated, so there is no page number to
+	// jump to — the cursor is the only way to ask for what comes next.
+	next_cursor: string | null;
 };
 
 export type ClientPreferences = {
@@ -235,13 +237,17 @@ export async function deleteProperty(propertyId: string) {
 	);
 }
 
-export async function fetchClients(filters: ClientListFilters): Promise<ClientListResult> {
+export async function fetchClients(
+	filters: ClientListFilters,
+	cursor?: string
+): Promise<ClientListPage> {
 	const params = new URLSearchParams();
 	if (filters.search) params.set('search', filters.search);
 	if (filters.status) params.set('status', filters.status);
 	if (filters.tagId) params.set('tag_id', filters.tagId);
-	params.set('page', String(filters.page));
-	params.set('page_size', String(filters.pageSize));
+	if (filters.sort !== 'updated_at') params.set('sort', filters.sort);
+	if (filters.dir !== 'desc') params.set('dir', filters.dir);
+	if (cursor) params.set('cursor', cursor);
 
 	const response = await fetch(`/api/clients?${params.toString()}`);
 	if (!response.ok) {

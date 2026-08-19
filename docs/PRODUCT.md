@@ -103,11 +103,21 @@ Converted requests remain historical and cannot create duplicate work.
 
 The pipeline manages open commercial opportunities, not operational jobs.
 
-Businesses customize open stages such as New Lead, Contacted, Estimate Scheduled, Quoted, and Follow-Up.
+The approved first-release behavior is in `docs/sales-pipeline-behavior-contract.md`. Read it before changing
+Opportunity identity, protected stages, movement, outcomes, Request and Quote cards, or reopen rules.
+
+Opportunities are generated from Requests and Quotes. Staff never create one by hand. A Request and the Quote
+it converts into are separate cards: the Request card leaves the board on conversion and the Quote appears in
+Draft.
+
+The first release uses seven protected stages in two groups, Requests and Quotes. Custom stages come later,
+only once real contractor evidence asks for them.
 
 Won and Lost are explicit outcomes, not pipeline columns.
 
 Each opportunity contains customer, property, title, value, owner, stage age, expected close date, next follow-up, related request, assessment, quotes, conversations, and activity.
+
+The Pipeline is desktop web only. The mobile app is separate work, later.
 
 Stages can carry a color, description, win probability, and aging limit.
 

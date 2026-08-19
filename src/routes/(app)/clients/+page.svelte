@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createQuery } from '@tanstack/svelte-query';
+	import { createInfiniteQuery, createQuery } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
@@ -10,10 +10,13 @@
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
-	import DataTable, { type DataTableColumn } from '$lib/components/data-display/DataTable.svelte';
+	import DataTable, {
+		type DataTableColumn,
+		type DataTableSort
+	} from '$lib/components/data-display/DataTable.svelte';
 	import FilterBar from '$lib/components/data-display/FilterBar.svelte';
 	import FilterField from '$lib/components/data-display/FilterField.svelte';
-	import Pagination from '$lib/components/data-display/Pagination.svelte';
+	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
@@ -21,7 +24,8 @@
 		fetchClients,
 		clientsListKey,
 		type ClientListItem,
-		type ClientListResult
+		type ClientListPage,
+		type ClientSortKey
 	} from '$lib/clients/api';
 	import { fetchTags, tagsKey } from '$lib/collaboration/api';
 	import filterIcon from '@tabler/icons/outline/filter.svg?raw';
@@ -31,54 +35,62 @@
 	let debouncedSearch = $state('');
 	let status = $state<'lead' | 'customer' | ''>('');
 	let tagId = $state('');
-	let page = $state(1);
-	let pageSize = $state(10);
 	let filtersOpen = $state(false);
+	let sortKey = $state<ClientSortKey>('updated_at');
+	let sortDir = $state<'asc' | 'desc'>('desc');
+
+	// Click a header to sort by it ascending; click it again for descending. Clicking a different
+	// sortable header switches to that column, starting ascending again — one sort column at a time.
+	function handleSortChange(key: string) {
+		if (key === sortKey) {
+			sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+		} else {
+			sortKey = key as ClientSortKey;
+			sortDir = 'asc';
+		}
+	}
 
 	// Both bulk actions are switched off until clients carry real work to archive or delete alongside.
 	// The reason is spelled out for screen readers too, because a disabled button never takes focus.
 	const bulkReason = 'Not ready yet — this arrives once clients carry work.';
 
-	// Debounces typing before it drives a fetch. Filter/status/page-size changes below reset the page
-	// directly since those are discrete choices, not keystrokes.
 	$effect(() => {
 		const value = search;
-		const handle = setTimeout(() => {
-			debouncedSearch = value;
-			page = 1;
-		}, 300);
+		const handle = setTimeout(() => (debouncedSearch = value), 300);
 		return () => clearTimeout(handle);
 	});
 
 	function setStatus(value: string) {
 		status = value as 'lead' | 'customer' | '';
-		page = 1;
 	}
 	function setTag(value: string) {
 		tagId = value;
-		page = 1;
 	}
 	function clearFilters() {
 		status = '';
 		tagId = '';
-		page = 1;
-	}
-	function setPageSize(size: number) {
-		pageSize = size;
-		page = 1;
 	}
 
-	const filters = $derived({ search: debouncedSearch, status, tagId, page, pageSize });
+	const filters = $derived({
+		search: debouncedSearch,
+		status,
+		tagId,
+		sort: sortKey,
+		dir: sortDir
+	});
+	const sort = $derived<DataTableSort>({ key: sortKey, direction: sortDir });
 
-	const clientsQuery = createQuery(() => ({
+	// Keyset pagination, so there is no page to jump to — each page hands back the cursor for the next one
+	// and Load more asks for it. That is what keeps the query fast however many clients an office has.
+	const clientsQuery = createInfiniteQuery(() => ({
 		queryKey: clientsListKey(filters),
-		queryFn: () => fetchClients(filters),
-		placeholderData: (previous: ClientListResult | undefined) => previous
+		queryFn: ({ pageParam }: { pageParam: string | undefined }) => fetchClients(filters, pageParam),
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage: ClientListPage) => lastPage.next_cursor ?? undefined
 	}));
 	const tagsQuery = createQuery(() => ({ queryKey: tagsKey, queryFn: fetchTags }));
 
-	const clients = $derived(clientsQuery.data?.clients ?? []);
-	const totalCount = $derived(clientsQuery.data?.total_count ?? 0);
+	const clients = $derived(clientsQuery.data?.pages.flatMap((page) => page.clients) ?? []);
 	const tagOptions = $derived([
 		{ value: '', label: 'All tags' },
 		...(tagsQuery.data ?? []).map((tag) => ({ value: tag.id, label: tag.name }))
@@ -98,11 +110,11 @@
 	}
 
 	const columns: DataTableColumn[] = [
-		{ key: 'name', label: 'Name' },
+		{ key: 'name', label: 'Name', sortable: true },
 		{ key: 'address', label: 'Address' },
 		{ key: 'contact', label: 'Email & Phone' },
 		{ key: 'tags', label: 'Tags' },
-		{ key: 'status', label: 'Status' }
+		{ key: 'status', label: 'Status', sortable: true }
 	];
 	function clientHref(client: ClientListItem) {
 		return resolve('/(app)/clients/[id]', { id: client.id });
@@ -202,6 +214,8 @@
 			bind:selectedIds
 			rowLabel={(client) => `Select ${client.display_name}`}
 			onRowActivate={(client) => goto(clientHref(client))}
+			{sort}
+			onSortChange={handleSortChange}
 		>
 			{#snippet row(client: ClientListItem)}
 				<th scope="row">
@@ -239,12 +253,10 @@
 				/>
 			{/snippet}
 			{#snippet footer()}
-				<Pagination
-					{page}
-					{pageSize}
-					{totalCount}
-					onPageChange={(next) => (page = next)}
-					onPageSizeChange={setPageSize}
+				<ListLoadMore
+					hasNextPage={clientsQuery.hasNextPage}
+					isFetchingNextPage={clientsQuery.isFetchingNextPage}
+					onLoadMore={() => clientsQuery.fetchNextPage()}
 				/>
 			{/snippet}
 		</DataTable>

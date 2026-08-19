@@ -226,3 +226,87 @@ Only unresolved work explicitly postponed by the user belongs here.
   card's `...` menu in a new tab. See `.claude/skills/jobber/jobber-08-screen-patterns.md` § How WE compare.
 - **Checkpoint:** `src/routes/(app)/clients/[id]/+page.svelte`,
   `src/lib/components/clients/ClientDetailsDialog.svelte`.
+
+## App-wide RLS helpers run once per returned row
+
+- **Campaign:** found during `sales-pipeline` Part 1 on 2026-08-18; the fix belongs to whichever campaign
+  next touches those tables.
+- **Reason:** Fixing it properly means rewriting the policies on clients, properties, client contacts,
+  contact methods, communication preferences, requests, assessments, and assessment assignees — all outside
+  Part 1's scope. Pipeline was fixed in place because it was the layer being built.
+- **What is wrong:** Policies written as `private.is_organization_member(organization_id)` and
+  `private.has_permission(organization_id, '...')` reference a column, so Postgres calls them once for every
+  row the query returns instead of once for the query. Measured on 50,000 rows: a 50-row page cost 11 ms and
+  766 buffers with the per-row helpers, against 2.8 ms and 392 buffers for a 200-row page after the fix —
+  and the old cost keeps climbing with page size while the new one stays flat.
+- **The fix that worked:** `private.permitted_organizations(permission)` returns a set of organization ids
+  and reads no column, so `organization_id in (select private.permitted_organizations('x'))` becomes one
+  hashed subplan per query. It already exists and is granted to `authenticated`, so adopting it elsewhere is
+  policy rewrites only, no new helper.
+- **Reactivation trigger:** Any list page over a table using the per-row helpers gets slow, a tenant passes
+  a few thousand rows in `clients` or `requests`, or a campaign is already rewriting those policies.
+- **Prerequisites:** `private.can_view_client` mixes membership, permission, and the assigned-work seam, so
+  clients and properties need that seam preserved rather than replaced — check it before converting them.
+  Re-verify cross-tenant and permission-denied reads on every table converted.
+- **Checkpoint:** `supabase/migrations/20260818133726_pipeline_rls_permission_lookup_once_per_query.sql`,
+  `supabase/migrations/20260816110139_client_property_permissions.sql`.
+
+## Every entitlement-gated route re-reads the whole access model
+
+- **Campaign:** found during `sales-pipeline` Part 1 on 2026-08-18; the fix belongs to the access layer, so
+  whichever campaign next touches `src/lib/server/access/effective.ts` should own it.
+- **Reason:** The pipeline routes need entitlement checked server-side, and the only resolver available is
+  the same one clients, properties and tags already use. Rewriting it is cross-cutting work that would
+  touch every gated route and the Jafar panel's write paths, so Part 1 uses it as is.
+- **What is wrong:** `resolveOrganizationAccess` runs roughly twelve queries in four sequential waves on
+  **every** gated request — packages, features, package features, package limits, feature overrides, limit
+  overrides, commercial state, settings, free access, membership, role permissions, member overrides. The
+  first four are global reference tables identical for every user in the product.
+- **Measured 2026-08-18** against remote Supabase from local dev, median of five: `/api/pipeline/summary`
+  623 ms and `/api/clients` 783 ms, both gated, against `/api/requests` 304 ms and `/api/requests/counts`
+  219 ms, which only check membership. The gap is the resolver, not the queries the routes actually make —
+  the pipeline board's own database work measures 2.7 ms.
+- **Reactivation trigger:** A gated page feels slow, or the app moves to the VPS phase where connection
+  count matters, or any campaign is already editing the access resolver.
+- **Prerequisites:** Decide with Jafar how stale entitlement may be. Likely shape: cache the global
+  reference tables in process with a TTL, keep the per-organization and per-member parts live, and flush on
+  the Jafar-panel writes that change packages, overrides, or roles. Never cache per-user data across users.
+- **Checkpoint:** `src/lib/server/access/effective.ts`, `src/lib/server/access/permission.ts`.
+
+## The Pipeline nav item is not gated on entitlement or permission
+
+- **Campaign:** `sales-pipeline` Part 1, 2026-08-18. Belongs to whichever campaign next gives the app shell
+  a real access context.
+- **Reason:** Part 1's checklist asked for the nav item to appear only for members with the
+  `sales.pipeline` entitlement and `pipeline.view`. The shell has no access context to decide that with:
+  `src/routes/(app)/+layout.server.ts` loads membership only, and the nav in `AppShell.svelte` is a static
+  array. The one available answer is `resolveOrganizationAccess`, which costs ~400 ms — and putting it in
+  the layout load would charge that to **every** page in the app, not just the gated ones.
+- **What ships instead:** the nav item is a normal link, and `/pipeline` itself renders the honest
+  unavailable state. A refused member sees "Pipeline is not part of your plan" or "You do not have access
+  to the pipeline" — different words for the two 403 reasons — and no counts or records leak either way.
+  The refusal is real; only the nav item is unconditioned.
+- **Reactivation trigger:** the access resolver gets its cache (see the entry above), or any campaign adds
+  a per-feature access context to the app shell. Do it once, for every gated area, not for Pipeline alone.
+- **Prerequisites:** the resolver caching decision has to land first, or this trades a correct nav item for
+  400 ms on every page load.
+- **Checkpoint:** `src/lib/components/layout/AppShell.svelte`, `src/routes/(app)/+layout.server.ts`,
+  `src/routes/(app)/pipeline/+page.svelte`.
+
+## Authenticated list reads are not rate limited
+
+- **Campaign:** found during `sales-pipeline` Part 2 item 3 on 2026-08-19. The fix belongs to whichever
+  campaign next touches the API layer as a whole.
+- **Reason:** `checkRateLimit` exists (`src/lib/server/security/rate-limit.ts`) but is only used on
+  unauthenticated or sensitive routes — get-started, setup-password, the Jafar session. No authenticated
+  list read in the app is limited: not Clients, not Requests, and not the Pipeline board. Adding it to the
+  board alone would be inconsistent and would put an extra database round trip on every column page.
+- **What is at risk:** one logged-in client looping a column page can hold pooled connections across every
+  tenant. The board is capped at 50 rows a page and is keyset-paged, so a single request is cheap; the
+  exposure is request volume, not request cost.
+- **Reactivation trigger:** the app moves to the VPS phase, connection saturation is seen in the Supabase
+  dashboard, or any campaign is already reworking the shared API guards.
+- **Prerequisites:** decide with Jafar what a limited read says to the user, and pick a bucket key —
+  organization plus route reads right for a shared board, per user for personal lists. Do it once for every
+  list read, not per route.
+- **Checkpoint:** `src/lib/server/security/rate-limit.ts`, `src/lib/server/access/permission.ts`.

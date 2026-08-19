@@ -612,6 +612,134 @@ export type Database = {
 					}
 				];
 			};
+			opportunities: {
+				Row: {
+					client_id: string;
+					created_at: string;
+					estimated_value: number | null;
+					expected_close_on: string | null;
+					id: string;
+					next_follow_up_on: string | null;
+					organization_id: string;
+					outcome: string;
+					owner_user_id: string | null;
+					property_id: string | null;
+					request_id: string | null;
+					stage: string;
+					stage_entered_at: string;
+					title: string;
+					updated_at: string;
+				};
+				Insert: {
+					client_id: string;
+					created_at?: string;
+					estimated_value?: number | null;
+					expected_close_on?: string | null;
+					id?: string;
+					next_follow_up_on?: string | null;
+					organization_id: string;
+					outcome?: string;
+					owner_user_id?: string | null;
+					property_id?: string | null;
+					request_id?: string | null;
+					stage?: string;
+					stage_entered_at?: string;
+					title: string;
+					updated_at?: string;
+				};
+				Update: {
+					client_id?: string;
+					created_at?: string;
+					estimated_value?: number | null;
+					expected_close_on?: string | null;
+					id?: string;
+					next_follow_up_on?: string | null;
+					organization_id?: string;
+					outcome?: string;
+					owner_user_id?: string | null;
+					property_id?: string | null;
+					request_id?: string | null;
+					stage?: string;
+					stage_entered_at?: string;
+					title?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'opportunities_client_organization_fk';
+						columns: ['organization_id', 'client_id'];
+						isOneToOne: false;
+						referencedRelation: 'clients';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'opportunities_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'opportunities_property_organization_fk';
+						columns: ['organization_id', 'property_id'];
+						isOneToOne: false;
+						referencedRelation: 'properties';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'opportunities_request_organization_fk';
+						columns: ['organization_id', 'request_id'];
+						isOneToOne: true;
+						referencedRelation: 'requests';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			opportunity_stage_events: {
+				Row: {
+					actor_user_id: string | null;
+					from_stage: string | null;
+					id: string;
+					occurred_at: string;
+					opportunity_id: string;
+					organization_id: string;
+					to_stage: string;
+				};
+				Insert: {
+					actor_user_id?: string | null;
+					from_stage?: string | null;
+					id?: string;
+					occurred_at?: string;
+					opportunity_id: string;
+					organization_id: string;
+					to_stage: string;
+				};
+				Update: {
+					actor_user_id?: string | null;
+					from_stage?: string | null;
+					id?: string;
+					occurred_at?: string;
+					opportunity_id?: string;
+					organization_id?: string;
+					to_stage?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'opportunity_stage_events_opportunity_fk';
+						columns: ['organization_id', 'opportunity_id'];
+						isOneToOne: false;
+						referencedRelation: 'opportunities';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'opportunity_stage_events_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_billing_accounts: {
 				Row: {
 					created_at: string;
@@ -3154,6 +3282,84 @@ export type Database = {
 					search_term?: string;
 				};
 				Returns: Json;
+			};
+			pipeline_board_page: {
+				Args: {
+					created_from?: string;
+					created_to?: string;
+					cursor_id?: string;
+					cursor_phase?: number;
+					cursor_sort_key?: string;
+					cursor_timestamp?: string;
+					cursor_value?: number;
+					filter_owner_user_id?: string;
+					owner_filter?: string;
+					page_limit?: number;
+					sort_direction?: string;
+					sort_key?: string;
+					target_organization_id: string;
+					target_stage: string;
+				};
+				Returns: {
+					client_company_name: string;
+					client_display_name: string;
+					client_id: string;
+					created_at: string;
+					estimated_value: number;
+					expected_close_on: string;
+					id: string;
+					next_follow_up_on: string;
+					outcome: string;
+					owner_avatar_url: string;
+					owner_full_name: string;
+					owner_user_id: string;
+					property_address_line1: string;
+					property_city: string;
+					property_id: string;
+					property_label: string;
+					property_postal_code: string;
+					property_state_region: string;
+					request_id: string;
+					request_status: string;
+					stage: string;
+					stage_entered_at: string;
+					title: string;
+				}[];
+			};
+			pipeline_stage_counts: {
+				Args: {
+					created_from?: string;
+					created_to?: string;
+					filter_owner_user_id?: string;
+					owner_filter?: string;
+					target_organization_id: string;
+				};
+				Returns: {
+					open_count: number;
+					stage_key: string;
+					value_total: number;
+				}[];
+			};
+			pipeline_update_opportunity_details: {
+				Args: {
+					new_estimated_value?: number;
+					new_expected_close_on?: string;
+					new_next_follow_up_on?: string;
+					new_owner_user_id?: string;
+					set_expected_close?: boolean;
+					set_next_follow_up?: boolean;
+					set_owner?: boolean;
+					set_value?: boolean;
+					target_opportunity_id: string;
+				};
+				Returns: {
+					estimated_value: number;
+					expected_close_on: string;
+					id: string;
+					next_follow_up_on: string;
+					owner_user_id: string;
+					updated_at: string;
+				}[];
 			};
 			provision_organization_from_application: {
 				Args: {

@@ -1,10 +1,21 @@
 <script module lang="ts">
-	export type DataTableColumn = { key: string; label: string; align?: 'start' | 'end' };
+	export type DataTableColumn = {
+		key: string;
+		label: string;
+		align?: 'start' | 'end';
+		/** This column's header becomes a button that calls `onSortChange` with its key. Needs `sort` and
+		 * `onSortChange` on the table to do anything. */
+		sortable?: boolean;
+	};
+	export type DataTableSort = { key: string; direction: 'asc' | 'desc' };
 </script>
 
 <script lang="ts" generics="T">
 	import type { Snippet } from 'svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
+	import selectorIcon from '@tabler/icons/outline/selector.svg?raw';
+	import chevronUpIcon from '@tabler/icons/outline/chevron-up.svg?raw';
+	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 
 	let {
 		columns,
@@ -15,6 +26,8 @@
 		selectedIds = $bindable(new Set<string>()),
 		rowLabel,
 		onRowActivate,
+		sort,
+		onSortChange,
 		row,
 		rowActions,
 		footer
@@ -29,10 +42,26 @@
 		 * called the same thing and a screen reader cannot tell them apart. */
 		rowLabel?: (item: T) => string;
 		onRowActivate?: (item: T) => void;
+		/** The column currently sorted, if any. Null/undefined means the table's default order. */
+		sort?: DataTableSort | null;
+		/** Called with a sortable column's key when its header is activated. The caller owns the toggle
+		 * logic (same key flips direction, a different key starts ascending) and hands the result back
+		 * through `sort` — this component never decides direction on its own. */
+		onSortChange?: (key: string) => void;
 		row: Snippet<[T]>;
 		rowActions?: Snippet<[T]>;
 		footer?: Snippet;
 	} = $props();
+
+	function ariaSort(column: DataTableColumn) {
+		if (!column.sortable) return undefined;
+		if (sort?.key !== column.key) return 'none';
+		return sort.direction === 'asc' ? 'ascending' : 'descending';
+	}
+	function sortIcon(column: DataTableColumn) {
+		if (sort?.key !== column.key) return selectorIcon;
+		return sort.direction === 'asc' ? chevronUpIcon : chevronDownIcon;
+	}
 
 	const allSelected = $derived(
 		items.length > 0 && items.every((item) => selectedIds.has(rowId(item)))
@@ -82,7 +111,25 @@
 					</th>
 				{/if}
 				{#each columns as column (column.key)}
-					<th scope="col" class:align-end={column.align === 'end'}>{column.label}</th>
+					<th scope="col" class:align-end={column.align === 'end'} aria-sort={ariaSort(column)}>
+						{#if column.sortable && onSortChange}
+							<!-- eslint-disable svelte/no-at-html-tags -->
+							<button
+								type="button"
+								class="data-table__sort"
+								class:data-table__sort--active={sort?.key === column.key}
+								onclick={() => onSortChange?.(column.key)}
+							>
+								{column.label}
+								<span class="data-table__sort-icon" aria-hidden="true"
+									>{@html sortIcon(column)}</span
+								>
+							</button>
+							<!-- eslint-enable svelte/no-at-html-tags -->
+						{:else}
+							{column.label}
+						{/if}
+					</th>
 				{/each}
 				{#if rowActions}
 					<th scope="col" class="data-table__actions-cell">Actions</th>
@@ -183,6 +230,43 @@
 	}
 	.data-table :global(.align-end) {
 		text-align: end;
+	}
+	.data-table__sort {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-smaller);
+		margin: calc(var(--space-slim) * -1) calc(var(--space-large) * -1);
+		padding: var(--space-slim) var(--space-large);
+		border: 0;
+		background: none;
+		color: inherit;
+		font: inherit;
+		font-weight: inherit;
+		cursor: pointer;
+
+		&:hover {
+			color: var(--color-heading);
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+	}
+	.data-table__sort--active {
+		color: var(--color-interactive);
+	}
+	.data-table__sort-icon {
+		display: inline-flex;
+		flex: 0 0 auto;
+		color: var(--color-text--secondary);
+
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+	}
+	.data-table__sort--active .data-table__sort-icon {
+		color: var(--color-interactive);
 	}
 	.data-table__select-cell {
 		width: 40px;
