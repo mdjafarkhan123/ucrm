@@ -122,7 +122,11 @@ export const requestPatchSchema = z
 		status: requestStatusSchema
 	})
 	.partial()
-	.refine((value) => Object.keys(value).length > 0, { message: 'Nothing to save.' });
+	.refine((value) => Object.keys(value).length > 0, { message: 'Nothing to save.' })
+	.refine((value) => value.status !== 'archived', {
+		path: ['status'],
+		message: 'Archiving now happens from the sales pipeline (Mark as lost).'
+	});
 
 // Booking, rescheduling, and unscheduling all go through this one shape. Both times null is Jobber's
 // "unscheduled" state, which is a legitimate save, not a missing field.

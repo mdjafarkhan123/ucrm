@@ -616,12 +616,14 @@ export type Database = {
 				Row: {
 					client_id: string;
 					created_at: string;
+					current_outcome_event_id: string | null;
 					estimated_value: number | null;
 					expected_close_on: string | null;
 					id: string;
 					next_follow_up_on: string | null;
 					organization_id: string;
 					outcome: string;
+					outcome_at: string | null;
 					owner_user_id: string | null;
 					property_id: string | null;
 					request_id: string | null;
@@ -633,12 +635,14 @@ export type Database = {
 				Insert: {
 					client_id: string;
 					created_at?: string;
+					current_outcome_event_id?: string | null;
 					estimated_value?: number | null;
 					expected_close_on?: string | null;
 					id?: string;
 					next_follow_up_on?: string | null;
 					organization_id: string;
 					outcome?: string;
+					outcome_at?: string | null;
 					owner_user_id?: string | null;
 					property_id?: string | null;
 					request_id?: string | null;
@@ -650,12 +654,14 @@ export type Database = {
 				Update: {
 					client_id?: string;
 					created_at?: string;
+					current_outcome_event_id?: string | null;
 					estimated_value?: number | null;
 					expected_close_on?: string | null;
 					id?: string;
 					next_follow_up_on?: string | null;
 					organization_id?: string;
 					outcome?: string;
+					outcome_at?: string | null;
 					owner_user_id?: string | null;
 					property_id?: string | null;
 					request_id?: string | null;
@@ -670,6 +676,13 @@ export type Database = {
 						columns: ['organization_id', 'client_id'];
 						isOneToOne: false;
 						referencedRelation: 'clients';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'opportunities_current_outcome_event_fk';
+						columns: ['organization_id', 'current_outcome_event_id'];
+						isOneToOne: false;
+						referencedRelation: 'opportunity_outcome_events';
 						referencedColumns: ['organization_id', 'id'];
 					},
 					{
@@ -691,6 +704,76 @@ export type Database = {
 						columns: ['organization_id', 'request_id'];
 						isOneToOne: true;
 						referencedRelation: 'requests';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			opportunity_outcome_events: {
+				Row: {
+					actor_user_id: string | null;
+					created_at: string;
+					event_type: string;
+					id: string;
+					idempotency_key: string;
+					note: string | null;
+					occurred_at: string;
+					opportunity_id: string;
+					organization_id: string;
+					prior_request_status: string | null;
+					reason: string | null;
+					reopen_explanation: string | null;
+					restores_event_id: string | null;
+				};
+				Insert: {
+					actor_user_id?: string | null;
+					created_at?: string;
+					event_type: string;
+					id?: string;
+					idempotency_key: string;
+					note?: string | null;
+					occurred_at?: string;
+					opportunity_id: string;
+					organization_id: string;
+					prior_request_status?: string | null;
+					reason?: string | null;
+					reopen_explanation?: string | null;
+					restores_event_id?: string | null;
+				};
+				Update: {
+					actor_user_id?: string | null;
+					created_at?: string;
+					event_type?: string;
+					id?: string;
+					idempotency_key?: string;
+					note?: string | null;
+					occurred_at?: string;
+					opportunity_id?: string;
+					organization_id?: string;
+					prior_request_status?: string | null;
+					reason?: string | null;
+					reopen_explanation?: string | null;
+					restores_event_id?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'opportunity_outcome_events_opportunity_fk';
+						columns: ['organization_id', 'opportunity_id'];
+						isOneToOne: false;
+						referencedRelation: 'opportunities';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'opportunity_outcome_events_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'opportunity_outcome_events_restores_fk';
+						columns: ['organization_id', 'restores_event_id'];
+						isOneToOne: false;
+						referencedRelation: 'opportunity_outcome_events';
 						referencedColumns: ['organization_id', 'id'];
 					}
 				];
@@ -2958,6 +3041,79 @@ export type Database = {
 					}
 				];
 			};
+			tasks: {
+				Row: {
+					assignee_user_id: string | null;
+					completed_at: string | null;
+					completed_by: string | null;
+					completed_by_outcome_event_id: string | null;
+					created_at: string;
+					created_by: string | null;
+					due_on: string | null;
+					id: string;
+					instructions: string | null;
+					opportunity_id: string;
+					organization_id: string;
+					status: string;
+					title: string;
+					updated_at: string;
+				};
+				Insert: {
+					assignee_user_id?: string | null;
+					completed_at?: string | null;
+					completed_by?: string | null;
+					completed_by_outcome_event_id?: string | null;
+					created_at?: string;
+					created_by?: string | null;
+					due_on?: string | null;
+					id?: string;
+					instructions?: string | null;
+					opportunity_id: string;
+					organization_id: string;
+					status?: string;
+					title: string;
+					updated_at?: string;
+				};
+				Update: {
+					assignee_user_id?: string | null;
+					completed_at?: string | null;
+					completed_by?: string | null;
+					completed_by_outcome_event_id?: string | null;
+					created_at?: string;
+					created_by?: string | null;
+					due_on?: string | null;
+					id?: string;
+					instructions?: string | null;
+					opportunity_id?: string;
+					organization_id?: string;
+					status?: string;
+					title?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'tasks_opportunity_organization_fk';
+						columns: ['organization_id', 'opportunity_id'];
+						isOneToOne: false;
+						referencedRelation: 'opportunities';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'tasks_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'tasks_outcome_event_organization_fk';
+						columns: ['organization_id', 'completed_by_outcome_event_id'];
+						isOneToOne: false;
+						referencedRelation: 'opportunity_outcome_events';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
 		};
 		Views: {
 			[_ in never]: never;
@@ -3236,6 +3392,30 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			create_note: {
+				Args: {
+					new_body: string;
+					new_pinned?: boolean;
+					target_entity_id: string;
+					target_entity_type: string;
+					target_organization_id: string;
+				};
+				Returns: {
+					body: string;
+					created_at: string;
+					created_by: string;
+					edited_at: string;
+					edited_by: string;
+					entity_id: string;
+					entity_type: string;
+					id: string;
+					link_created_at: string;
+					link_id: string;
+					organization_id: string;
+					pinned: boolean;
+					updated_at: string;
+				}[];
+			};
 			delete_property: { Args: { p_property_id: string }; Returns: undefined };
 			manage_platform_package_version: {
 				Args: {
@@ -3323,7 +3503,121 @@ export type Database = {
 					request_status: string;
 					stage: string;
 					stage_entered_at: string;
+					task_due_on: string;
+					task_id: string;
+					task_title: string;
 					title: string;
+				}[];
+			};
+			pipeline_create_opportunity_note: {
+				Args: {
+					new_body: string;
+					target_entity_type: string;
+					target_opportunity_id: string;
+				};
+				Returns: {
+					body: string;
+					created_at: string;
+					created_by: string;
+					edited_at: string;
+					edited_by: string;
+					entity_id: string;
+					entity_type: string;
+					id: string;
+					pinned: boolean;
+					updated_at: string;
+				}[];
+			};
+			pipeline_create_opportunity_task: {
+				Args: {
+					new_assignee_user_id?: string;
+					new_due_on?: string;
+					new_instructions?: string;
+					new_title: string;
+					target_opportunity_id: string;
+				};
+				Returns: {
+					assignee_user_id: string;
+					completed_at: string;
+					completed_by: string;
+					created_at: string;
+					created_by: string;
+					due_on: string;
+					id: string;
+					instructions: string;
+					opportunity_id: string;
+					status: string;
+					title: string;
+					updated_at: string;
+				}[];
+			};
+			pipeline_delete_opportunity_note: {
+				Args: {
+					target_entity_type: string;
+					target_note_id: string;
+					target_opportunity_id: string;
+				};
+				Returns: {
+					note_deleted: boolean;
+					unlinked: boolean;
+				}[];
+			};
+			pipeline_delete_task: {
+				Args: { target_task_id: string };
+				Returns: {
+					id: string;
+					opportunity_id: string;
+				}[];
+			};
+			pipeline_mark_opportunity_lost: {
+				Args: {
+					idempotency_key: string;
+					note?: string;
+					occurred_at?: string;
+					reason?: string;
+					target_opportunity_id: string;
+				};
+				Returns: Json;
+			};
+			pipeline_opportunity_notes: {
+				Args: { target_opportunity_id: string };
+				Returns: {
+					body: string;
+					created_at: string;
+					created_by: string;
+					edited_at: string;
+					edited_by: string;
+					entity_id: string;
+					entity_type: string;
+					id: string;
+					pinned: boolean;
+					updated_at: string;
+				}[];
+			};
+			pipeline_reopen_opportunity: {
+				Args: {
+					idempotency_key: string;
+					occurred_at?: string;
+					reopen_explanation: string;
+					target_opportunity_id: string;
+				};
+				Returns: Json;
+			};
+			pipeline_set_task_completed: {
+				Args: { is_completed: boolean; target_task_id: string };
+				Returns: {
+					assignee_user_id: string;
+					completed_at: string;
+					completed_by: string;
+					created_at: string;
+					created_by: string;
+					due_on: string;
+					id: string;
+					instructions: string;
+					opportunity_id: string;
+					status: string;
+					title: string;
+					updated_at: string;
 				}[];
 			};
 			pipeline_stage_counts: {
@@ -3358,6 +3652,48 @@ export type Database = {
 					id: string;
 					next_follow_up_on: string;
 					owner_user_id: string;
+					updated_at: string;
+				}[];
+			};
+			pipeline_update_opportunity_note: {
+				Args: {
+					new_body: string;
+					target_note_id: string;
+					target_opportunity_id: string;
+				};
+				Returns: {
+					body: string;
+					created_at: string;
+					created_by: string;
+					edited_at: string;
+					edited_by: string;
+					entity_id: string;
+					entity_type: string;
+					id: string;
+					pinned: boolean;
+					updated_at: string;
+				}[];
+			};
+			pipeline_update_opportunity_task: {
+				Args: {
+					new_assignee_user_id?: string;
+					new_due_on?: string;
+					new_instructions?: string;
+					new_title: string;
+					target_task_id: string;
+				};
+				Returns: {
+					assignee_user_id: string;
+					completed_at: string;
+					completed_by: string;
+					created_at: string;
+					created_by: string;
+					due_on: string;
+					id: string;
+					instructions: string;
+					opportunity_id: string;
+					status: string;
+					title: string;
 					updated_at: string;
 				}[];
 			};

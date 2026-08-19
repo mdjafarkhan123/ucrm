@@ -1,6 +1,6 @@
 # Part 2: Ownership, Value, Dates, and Board Controls
 
-Status: Approved by Jafar 2026-08-19. Active.
+Status: Approved by Jafar 2026-08-19. Closed 2026-08-19.
 
 ## Outcome
 
@@ -113,12 +113,52 @@ planning dates, and narrow or order the whole board without changing Request or 
       pill bar; both query keys now carry the filters. Browser-verified: owner, all three sorts, both
       directions, presets, custom range, deep links, back and forward. **The URL is the only state** —
       see the derived-not-effect note below.
-- [ ] Add the card ownership action without nested interactive controls or lost keyboard behavior. The
-      owner/value/follow-up presentation this line used to also cover already shipped with item 2 —
-      `OpportunityCard.svelte` draws the owner avatar, the real value and the overdue follow-up line.
-- [ ] Extend the Opportunity Brief with editable Opportunity details and clear validation/failure feedback.
-- [ ] Invalidate affected Pipeline caches after writes while keeping unrelated cached work stable.
-- [ ] Regenerate database types and add proportional database, API, component, and browser checks.
+- [x] Add the card ownership action without nested interactive controls or lost keyboard behavior. Done
+      2026-08-19: `PATCH /api/pipeline/opportunities/[id]/owner`, `pipeline.edit`-gated, is the first caller
+      of `pipeline_update_opportunity_details`. `can_edit` was added to `/api/pipeline/summary` alongside
+      `can_view_value` and threaded through `+page.svelte` → `PipelineColumn` → `OpportunityCard`.
+      `OpportunityCard.svelte` is now a `<div>`: a stretched, transparent `<button>` (`z-index: 1`) covers
+      it for the open action, and the owner control sits in its normal flow position with
+      `position: relative; z-index: 2` so it is its own click/keyboard target instead of being swallowed by
+      the button beneath it — never a button nested in a button. `DropdownMenu.svelte` gained an optional
+      `trigger` snippet and `triggerClass` prop so the owner control could render the member's `Avatar` (or
+      an unassigned placeholder) as the trigger, reusing its Root/Content/Item rather than a second dropdown
+      implementation. The menu lists Unassigned plus `fetchAssignableTeam`'s list (already warmed by
+      `BoardControls`'s Salesperson filter, same key, `staleTime: 300_000`); selecting one calls the new
+      route and, on success, `invalidatePipeline(queryClient)`. Browser-verified: assign, reassign, clear,
+      the drawer's Salesperson field agreeing with the card, the card's own open action still working from
+      a precise click, and no console errors.
+- [x] Extend the Opportunity Brief with editable Opportunity details and clear validation/failure feedback.
+      Done 2026-08-19: three sibling routes beside `owner` (`.../value`, `.../expected-close`,
+      `.../next-follow-up`), all calling `pipeline_update_opportunity_details`. `OpportunityCard`'s
+      owner-assign dropdown moved into shared `OpportunityOwnerField.svelte` so the Brief could reuse it.
+      New `OpportunityDetailsSection.svelte` gives each row a pencil that opens it in place — dropdown/date
+      pickers commit on select, value commits on blur/Enter, Escape reverts — and a failed write shows
+      inline on its own row rather than a toast, so the retryable value stays visible next to the error.
+- [x] Invalidate affected Pipeline caches after writes while keeping unrelated cached work stable. Done
+      2026-08-19 via the existing `invalidatePipeline(queryClient)`, same as the owner route. **Found and
+      fixed same day:** the Brief holds `selected`, a click-time snapshot invalidation never reaches, so an
+      edit updated the card underneath but not the open Brief until it was reopened. Fixed with a new
+      `onUpdate(patch)` callback from `OpportunityDetailsSection` up to `+page.svelte`, merging each
+      mutation's own response onto `selected`; `OpportunityOwnerField` gained `onAssigned` for the same
+      reason, resolving the full owner record from its own loaded team list (the PATCH only returns an id).
+      Browser-verified: editing any field updates the Brief, the card, and the column total together.
+- [x] Regenerate database types and add proportional database, API, component, and browser checks. Done
+      2026-08-19: no migration landed in items 7-8, and `src/lib/database.types.ts` already carried every
+      Part 2 column and the RPC's signature from item 1, so type regeneration was confirmed unnecessary
+      rather than skipped. Added `src/lib/server/validation/pipeline.schema.spec.ts` (the three new field
+      schemas — value, expected-close, next-follow-up — including the negative/ceiling/non-finite/bad-shape
+      refusals); a colocated `.spec.ts` beside each of the three sibling routes covering the permission
+      short-circuit, validation-before-database-call, the null-clears path, both named database error codes
+      (`23514`, `42501`), an unnamed error, and the empty-row not-found case; and
+      `OpportunityDetailsSection.svelte.spec.ts` (`*.svelte.spec.ts`, the browser project) driving the
+      estimated-value row's real pencil-click → type → blur/Escape flow against a mocked `fetch`, proving
+      the commit-on-blur save, the Escape revert, and the inline (not toast) failure message with the
+      retryable value still in the field. One thing worth keeping in mind for the next component test in
+      this app: a shared mocked `Response` across two in-flight fetches (here, the Brief's own value PATCH
+      racing the Salesperson field's team-list load) breaks the second reader, because a body stream can
+      only be read once — build a fresh `Response` per call instead. 37 new tests, 517 total, all passing;
+      `npm run check` is 0 errors.
 
 ## Acceptance checks
 

@@ -1,6 +1,6 @@
 # Sales Pipeline behavior contract
 
-Status: Approved 2026-08-18. Revised 2026-08-18 to follow Jobber's current Sales Pipeline.  
+Status: Approved 2026-08-18. Revised 2026-08-19 for the actionable Opportunity Brief.
 Owner: Sales Pipeline campaign
 
 ## Purpose
@@ -70,13 +70,20 @@ requirement.
 
 - Outcome is separate from stage: `open`, `won`, or `lost`.
 - Won and Lost are not active-board columns.
-- Approving a Quote automatically marks that Quote's Opportunity Won.
+- Won is automatic when a Quote is approved or a Job is created. Staff do not manually mark a Request Won.
 - Declining one Quote does not mark other Quotes in the same commercial thread Lost.
-- Marking Lost is deliberate and requires a structured reason; an optional note may add context.
-- Reopening Lost requires a reason and restores the prior valid open position.
+- Marking Lost is deliberate and archives the backing Request or Quote. A reason is optional, matching
+  Jobber. When supplied, it is one of: Price too high, Chose another contractor, No response, Project
+  postponed, Work was not a fit, Duplicate or test request, or Other. A note is optional except that Other
+  requires one.
+- Reopening Lost is a deliberate UCRM addition because Jobber does not document that path. It requires a
+  short explanation, restores the backing record and its prior valid open position, and records a new
+  immutable outcome event.
 - Won may be reopened only before a Job exists.
 - Once a Job exists, Won is permanent.
-- Closed Opportunities leave the active board but remain in outcome history and reporting.
+- Closed Opportunities leave the active board and appear in the Won/Lost tiles and Sales Outcomes report.
+  Reopening removes an Opportunity from the current Lost totals and results while preserving its Lost and
+  Reopened events in immutable history.
 
 ## Movement and automation
 
@@ -95,6 +102,33 @@ requirement.
 - `sales.pipeline` package entitlement and Pipeline permissions are enforced on the server and through RLS-backed
   tenant isolation. Navigation visibility is only presentation.
 
+## Opportunity Brief actions
+
+- Selecting a card opens its Opportunity Brief without moving the user away from the board or losing the
+  board's scroll, filters, or selected position.
+- A Task is an internal follow-up item, not a Job, Visit, or Event. The first Brief form has a required title
+  and optional instructions, one owner, and one due date. Repeating tasks, timed scheduling, reminders, and
+  the Schedule UI arrive with the Schedule domain, but the Task foundation must remain reusable there.
+- Each Opportunity may have at most five open and five completed Tasks. The card shows one open Task: the
+  earliest due one, breaking equal due dates by creation order; when none are due, it shows the oldest open
+  Task. An overdue Task is visibly overdue. Completion and reopening happen from the Brief, not the card.
+- Task lifecycle follows Jobber: converting a Request to a Quote transfers its Tasks to the Quote; marking a
+  Request Lost completes its Tasks; marking a Quote Lost or archiving its source removes its Tasks; Won does
+  not carry Tasks into the Job. Reopening a Lost Request reopens only the Tasks that its matching Lost event
+  completed automatically; Tasks a person completed remain completed. Parts 4 and 5 implement these
+  transitions when those domain actions exist.
+- Notes save immediately from the Brief and belong to either its backing Request or the Client, never to a
+  second Pipeline-only copy. Staff may create, view, edit, and delete them in the first release.
+- `pipeline.view` permits reading Brief Tasks and Notes. `pipeline.edit` is required to create, edit,
+  complete, reopen, move, or delete them. Opportunity ownership does not grant extra mutation authority.
+- Brief Notes are authorized by `pipeline.edit` through a Pipeline-scoped path, separate from the generic
+  Notes surface's `customers.edit`/`property.manage` gate used by the Request and Client detail pages. Both
+  paths write the same underlying `notes`/`note_links` rows, so a Client-targeted Brief Note also appears on
+  that Client's own Notes card; a Request-targeted one appears only on that Request's. A staff member with
+  `pipeline.edit` but not `customers.edit` can still manage Notes from the Brief.
+- The first-release Brief has no embedded activity timeline. Request history remains available on the Request
+  record; a trustworthy merged Opportunity timeline is separately deferred.
+
 ## Platform
 
 The Pipeline is a desktop web experience. A separate mobile app will be built later and carries its own
@@ -110,6 +144,8 @@ automatic loading may enhance that later.
 - A Job relationship only makes Won terminal; the Jobs campaign owns Job creation and behavior.
 - Quote pricing, approval, versioning, signature, and conversion belong to Quotes.
 - Conversations belong to Communications; Pipeline may show linked context after that domain exists.
-- Custom stages, AI summaries, automations, tasks, notes, and forecasting are outside the first release.
+- Custom stages, AI summaries, automations, forecasting, the embedded activity timeline, note attachments,
+  note mentions, note pinning, repeating Tasks, Task notifications, and Task Schedule UI are outside the
+  first release.
 - The board never creates work. Any global create control on the page belongs to Requests or Quotes, not to
   the Pipeline.

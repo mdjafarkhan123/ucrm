@@ -24,3 +24,9 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 # Playwright
 test-results
+
+# Local agent settings
+/.claude/settings.local.json
+
+# Supabase CLI temporary state
+/supabase/.temp/

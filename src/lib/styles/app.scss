@@ -126,6 +126,38 @@ a:hover {
 }
 
 // =============================================================================
+// CUSTOM SCROLLBAR — slim, appwide. Widths and radius are fixed so the thumb
+// reads as the same control everywhere; colors follow the theme tokens.
+// =============================================================================
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-border) transparent;
+}
+
+::-webkit-scrollbar {
+	width: var(--space-small);
+	height: var(--space-small);
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	border-radius: var(--radius-small);
+	background: var(--color-border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--color-interactive);
+}
+
+::-webkit-scrollbar-corner {
+	background: transparent;
+}
+
+// =============================================================================
 // REQUIRED MARKER — the asterisk after a required field's label. Lives here so
 // every label renders it identically; field components add it from `required`.
 // =============================================================================

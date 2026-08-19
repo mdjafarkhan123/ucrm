@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
+	import type { Snippet } from 'svelte';
 	import dotsIcon from '@tabler/icons/outline/dots-vertical.svg?raw';
 
 	type MenuItem = {
@@ -14,6 +15,8 @@
 		items,
 		triggerLabel = 'Open menu',
 		triggerIcon = dotsIcon,
+		triggerClass = 'dropdown-menu__trigger',
+		trigger,
 		align = 'end',
 		disabled = false,
 		open = $bindable(false)
@@ -21,6 +24,10 @@
 		items: MenuItem[];
 		triggerLabel?: string;
 		triggerIcon?: string;
+		// Overrides the default 32px icon button — the trigger content and its class travel together, so a
+		// custom trigger (an avatar, say) never inherits the icon button's box.
+		triggerClass?: string;
+		trigger?: Snippet;
 		align?: 'start' | 'center' | 'end';
 		disabled?: boolean;
 		open?: boolean;
@@ -29,12 +36,12 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <DropdownMenuPrimitive.Root bind:open>
-	<DropdownMenuPrimitive.Trigger
-		class="dropdown-menu__trigger"
-		aria-label={triggerLabel}
-		{disabled}
-	>
-		{@html triggerIcon}
+	<DropdownMenuPrimitive.Trigger class={triggerClass} aria-label={triggerLabel} {disabled}>
+		{#if trigger}
+			{@render trigger()}
+		{:else}
+			{@html triggerIcon}
+		{/if}
 	</DropdownMenuPrimitive.Trigger>
 	<DropdownMenuPrimitive.Portal>
 		<DropdownMenuPrimitive.Content

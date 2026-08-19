@@ -177,7 +177,7 @@
 	}
 	.app-shell__main {
 		flex: 1;
-		padding: var(--space-large) var(--space-large) var(--space-large) 0;
+		padding-block: var(--space-large);
 	}
 	.app-shell__sign-out-error {
 		display: block;

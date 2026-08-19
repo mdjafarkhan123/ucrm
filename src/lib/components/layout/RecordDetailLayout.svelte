@@ -87,8 +87,7 @@
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-large);
-			padding: var(--space-large);
-			border: var(--border-base) solid var(--color-border);
+			padding: var(--space-slim);
 			border-radius: var(--radius-base);
 			background: var(--color-surface);
 			box-shadow: var(--shadow-low);

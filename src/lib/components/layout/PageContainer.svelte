@@ -19,6 +19,9 @@
 <style lang="scss">
 	.page-container {
 		width: 100%;
+		background-color: var(--color-surface);
+		padding: var(--space-large);
+		border-radius: var(--radius-base);
 
 		&--standard {
 			max-width: 1280px;

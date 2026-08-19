@@ -75,7 +75,7 @@
 		// Room for the title and any actions that sit on the top border line.
 		margin-top: var(--space-slim);
 		gap: var(--space-base);
-		padding: var(--space-large);
+		padding: var(--space-large) var(--space-slim);
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 

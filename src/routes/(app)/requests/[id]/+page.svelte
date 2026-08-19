@@ -49,7 +49,6 @@
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import listIcon from '@tabler/icons/outline/list-details.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
-	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
 	import quoteIcon from '@tabler/icons/outline/file-invoice.svg?raw';
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
 
@@ -280,6 +279,8 @@
 		return { label: 'Convert to quote', disabled: true };
 	});
 
+	// Archiving and restoring a request move to the sales pipeline's Mark as lost / Reopen (Part 4B), which
+	// also handles the reason, the Tasks, and the outcome history this plain toggle never touched.
 	const menuItems = $derived([
 		{
 			label: 'Convert to quote',
@@ -292,16 +293,6 @@
 			icon: briefcaseIcon,
 			disabled: true,
 			onSelect: () => {}
-		},
-		{
-			label: saved?.stored_status === 'archived' ? 'Bring back' : 'Archive',
-			icon: archiveIcon,
-			onSelect: () =>
-				void runAssessmentWrite(() =>
-					patchRequest(requestId, {
-						status: saved?.stored_status === 'archived' ? 'new' : 'archived'
-					})
-				)
 		}
 	]);
 

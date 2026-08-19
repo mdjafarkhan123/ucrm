@@ -138,7 +138,7 @@
 
 		th,
 		td {
-			padding: var(--space-slim) var(--space-large);
+			padding: var(--space-slim);
 			vertical-align: middle;
 		}
 

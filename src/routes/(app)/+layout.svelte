@@ -19,7 +19,8 @@
 		resolve('/(app)/requests'),
 		resolve('/(app)/requests/new'),
 		resolve('/(app)/requests/[id]', { id: 'warm' }),
-		resolve('/(app)/pipeline')
+		resolve('/(app)/pipeline'),
+		resolve('/(app)/pipeline/outcomes')
 	];
 
 	onMount(() => {

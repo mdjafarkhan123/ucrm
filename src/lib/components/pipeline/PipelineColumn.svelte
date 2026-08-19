@@ -22,7 +22,9 @@
 		valueTotal,
 		filters,
 		formatting,
-		onOpen
+		canEdit,
+		onOpen,
+		onLost
 	}: {
 		stage: BoardStage;
 		count: number | undefined;
@@ -31,7 +33,9 @@
 		valueTotal: number | null | undefined;
 		filters: BoardFilters;
 		formatting: BoardFormatting | null;
+		canEdit: boolean;
 		onOpen: (card: Card) => void;
+		onLost?: (opportunityId: string) => void;
 	} = $props();
 
 	const query = createInfiniteQuery(() => ({
@@ -85,7 +89,13 @@
 			<p class="pipeline-column__message">Nothing here.</p>
 		{:else}
 			{#each cards as card (card.id)}
-				<OpportunityCard opportunity={card} {formatting} onOpen={() => onOpen(card)} />
+				<OpportunityCard
+					opportunity={card}
+					{formatting}
+					{canEdit}
+					onOpen={() => onOpen(card)}
+					{onLost}
+				/>
 			{/each}
 			{#if query.hasNextPage}
 				<ListLoadMore

@@ -195,7 +195,7 @@
 	}
 	.data-table :global(th),
 	.data-table :global(td) {
-		padding: var(--space-slim) var(--space-large);
+		padding: var(--space-slim);
 		border-bottom: var(--border-base) solid var(--color-border);
 		vertical-align: middle;
 		text-align: start;
@@ -235,8 +235,8 @@
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-smaller);
-		margin: calc(var(--space-slim) * -1) calc(var(--space-large) * -1);
-		padding: var(--space-slim) var(--space-large);
+		margin: calc(var(--space-slim) * -1);
+		padding: var(--space-slim);
 		border: 0;
 		background: none;
 		color: inherit;

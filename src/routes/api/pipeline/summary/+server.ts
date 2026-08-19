@@ -41,6 +41,7 @@ export const GET: RequestHandler = async (event) => {
 
 	const { owner, date } = parsed.data;
 	const canViewValue = hasPermission(check.access, 'pipeline.view_value');
+	const canEdit = hasPermission(check.access, 'pipeline.edit');
 
 	// The organization's own way of writing money and dates is needed either way — for the currency the
 	// totals are shown in, and for the calendar a date filter is measured against. The settings row is
@@ -65,7 +66,7 @@ export const GET: RequestHandler = async (event) => {
 			countBetween({ from: null, to: null })
 		]);
 		if (!formattingLookup.ok || counted.error) return databaseError();
-		return summary(formattingLookup.formatting, counted.data, canViewValue);
+		return summary(formattingLookup.formatting, counted.data, canViewValue, canEdit);
 	}
 
 	const formattingLookup = await formattingRead;
@@ -80,13 +81,14 @@ export const GET: RequestHandler = async (event) => {
 		})
 	);
 	if (counted.error) return databaseError();
-	return summary(formattingLookup.formatting, counted.data, canViewValue);
+	return summary(formattingLookup.formatting, counted.data, canViewValue, canEdit);
 };
 
 function summary(
 	formatting: OrganizationFormatting,
 	rows: unknown,
-	canViewValue: boolean
+	canViewValue: boolean,
+	canEdit: boolean
 ): Response {
 	const counts = Object.fromEntries(BOARD_STAGES.map((stage) => [stage, 0])) as Record<
 		BoardStage,
@@ -118,6 +120,9 @@ function summary(
 			// from whether a card happened to carry a value — a column of blank estimates is not the same
 			// answer as no permission to see them.
 			can_view_value: canViewValue,
+			// Whether this member may assign, reassign, or clear a card's owner. The board asks once, here,
+			// rather than every card guessing from whether it happens to have an owner already.
+			can_edit: canEdit,
 			// Money and dates are written the organization's way, not the browser's.
 			currency_code: formatting.currency_code,
 			locale: formatting.locale,

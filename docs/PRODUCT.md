@@ -123,7 +123,9 @@ Stages can carry a color, description, win probability, and aging limit.
 
 Real activity may move a deal forward, but automation never moves it backward or overrides later human progress.
 
-Marking Lost requires a reason. Marking Won can deliberately create the operational job and convert the lead into a customer.
+Marking Lost may include a structured reason. Won follows an approved Quote or Job creation; a Request is
+never manually marked Won. A deliberate Mark Won and Create Job action performs the real Job creation rather
+than changing Pipeline outcome by itself.
 
 ## 11. Unified inbox
 

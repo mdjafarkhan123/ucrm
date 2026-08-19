@@ -39,6 +39,9 @@ type BoardPageRow = {
 	estimated_value: number | null;
 	expected_close_on: string | null;
 	next_follow_up_on: string | null;
+	task_id: string | null;
+	task_title: string | null;
+	task_due_on: string | null;
 };
 
 // One board column at a time. Each column asks for its own page, so a busy stage can keep loading
@@ -171,6 +174,11 @@ export const GET: RequestHandler = async (event) => {
 					full_name: row.owner_full_name,
 					avatar_url: row.owner_avatar_url
 				}
+			: null,
+		// The card's one open Task, in the same priority order the Brief's own list uses. Null when the
+		// Opportunity has none open.
+		task: row.task_id
+			? { id: row.task_id, title: row.task_title as string, due_on: row.task_due_on }
 			: null
 	}));
 

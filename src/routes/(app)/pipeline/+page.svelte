@@ -2,6 +2,7 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -10,9 +11,12 @@
 	import PipelineColumn from '$lib/components/pipeline/PipelineColumn.svelte';
 	import OpportunityBriefDrawer from '$lib/components/pipeline/OpportunityBriefDrawer.svelte';
 	import BoardControls from '$lib/components/pipeline/BoardControls.svelte';
+	import OutcomeTile from '$lib/components/pipeline/OutcomeTile.svelte';
 	import {
 		boardCountsKey,
 		fetchBoardSummary,
+		outcomeTilesKey,
+		fetchOutcomeTiles,
 		type OpportunityCard as Card
 	} from '$lib/pipeline/api';
 	import {
@@ -32,6 +36,20 @@
 	// Nothing here creates work. A card appears because a Request exists, and it moves because that
 	// Request moved.
 	let selected = $state<Card | null>(null);
+
+	// The Brief edits an opportunity in place. The board behind it refetches itself on every write, but
+	// `selected` is a snapshot from the moment the card was clicked — nothing else brings it back into
+	// view, so a successful edit patches it here directly.
+	function updateSelected(patch: Partial<Card>) {
+		if (selected) selected = { ...selected, ...patch };
+	}
+
+	// Mark as lost can be fired from a card in the column while that same card's Brief sits open behind
+	// it. The board refetches and drops the card on its own; the Brief holds a separate snapshot that
+	// nothing else would think to close.
+	function closeSelectedIfLost(opportunityId: string) {
+		if (selected?.id === opportunityId) selected = null;
+	}
 
 	// The URL is the board's memory. Everything the controls set lives there and nowhere else, which is what
 	// makes a refresh and the back button work without a line of code for either.
@@ -69,6 +87,19 @@
 		staleTime: 30_000
 	}));
 
+	// The Won/Lost tiles: a fixed rolling 30 days, never the board's own salesperson or date controls, so
+	// this is its own query rather than riding along with the filtered summary above.
+	const tilesQuery = createQuery(() => ({
+		queryKey: outcomeTilesKey,
+		queryFn: fetchOutcomeTiles,
+		staleTime: 30_000
+	}));
+
+	function outcomeHref(type: 'won' | 'lost') {
+		const params = new URLSearchParams({ type, date: 'last_30_days' });
+		return `${resolve('/(app)/pipeline/outcomes')}?${params.toString()}`;
+	}
+
 	// A refused board is refused for one of two reasons, and they need different words: the plan does
 	// not include the pipeline, or this person is not allowed to see it. Anything else is a failure.
 	const refusal = $derived.by(() => {
@@ -93,6 +124,7 @@
 		counts ? BOARD_STAGES.reduce((total, stage) => total + counts[stage], 0) : null
 	);
 	const canViewValue = $derived(summaryQuery.data?.can_view_value ?? false);
+	const canEdit = $derived(summaryQuery.data?.can_edit ?? false);
 	// Absent from the payload entirely for a member without money, so there is nothing to guard against here.
 	const valueTotals = $derived(summaryQuery.data?.value_totals ?? null);
 	const isFiltered = $derived(!filtersAreDefault(applied));
@@ -143,6 +175,23 @@
 				description="Requests land here the moment they come in, and move along as you book and finish assessments."
 			/>
 		{:else}
+			<div class="pipeline__tiles">
+				<OutcomeTile
+					label="Won"
+					count={tilesQuery.data?.won.count ?? 0}
+					valueTotal={tilesQuery.data?.won.value_total}
+					formatting={tilesQuery.data ?? null}
+					href={outcomeHref('won')}
+				/>
+				<OutcomeTile
+					label="Lost"
+					count={tilesQuery.data?.lost.count ?? 0}
+					valueTotal={tilesQuery.data?.lost.value_total}
+					formatting={tilesQuery.data ?? null}
+					href={outcomeHref('lost')}
+				/>
+			</div>
+
 			<BoardControls
 				filters={urlFilters}
 				resultCount={summaryQuery.data?.result_count ?? null}
@@ -166,7 +215,9 @@
 							valueTotal={valueTotals?.[stage]}
 							filters={applied}
 							{formatting}
+							{canEdit}
 							onOpen={(card) => (selected = card)}
+							onLost={closeSelectedIfLost}
 						/>
 					{/each}
 				</div>
@@ -175,7 +226,13 @@
 	</div>
 </PageContainer>
 
-<OpportunityBriefDrawer opportunity={selected} {formatting} onClose={() => (selected = null)} />
+<OpportunityBriefDrawer
+	opportunity={selected}
+	{formatting}
+	{canEdit}
+	onClose={() => (selected = null)}
+	onUpdate={updateSelected}
+/>
 
 <style lang="scss">
 	.pipeline {
@@ -183,6 +240,18 @@
 		flex-direction: column;
 		gap: var(--space-large);
 	}
+
+	.pipeline__tiles {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 240px));
+		gap: var(--space-base);
+	}
+	@media (max-width: 639px) {
+		.pipeline__tiles {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
 	// The columns grow with their cards and the page does the scrolling, so a long column never hides
 	// its own bottom behind a second scrollbar.
 	.pipeline__columns {

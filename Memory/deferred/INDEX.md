@@ -2,6 +2,31 @@
 
 Only unresolved work explicitly postponed by the user belongs here.
 
+## Opportunity Brief activity timeline
+
+- **Campaign:** `sales-pipeline` Part 3, deferred by Jafar 2026-08-19.
+- **Reason:** Jobber's current Opportunity Brief has Tasks and Notes but no embedded activity timeline. UCRM's
+  existing `activity_events` omit important Request, Assessment, Opportunity-detail, Task, and Note mutations,
+  so rendering them as full Opportunity history would be misleading.
+- **Reactivation trigger:** Jafar asks for history inside the Brief, or the shared activity domain gains a
+  complete event vocabulary for Request/Quote commercial work.
+- **Prerequisites:** Define the event catalog, retention, pagination, permission/value-redaction rules, and
+  whether the view merges Client history or only the backing Request/Quote.
+- **Checkpoint:** `docs/sales-pipeline-behavior-contract.md`, `src/lib/components/collaboration/ActivityFeed.svelte`,
+  `public.activity_events`, and `public.opportunity_stage_events`.
+
+## Task Schedule integration and advanced Tasks
+
+- **Campaign:** `sales-pipeline` Part 3; implementation belongs to the future Schedule domain.
+- **Reason:** Part 3 needs lightweight follow-up Tasks, but no Schedule route or unified scheduled-items feed
+  exists. Building repeating/timed scheduling, reminders, notifications, or a placeholder calendar now would
+  create the wrong ownership boundary.
+- **Reactivation trigger:** The Schedule campaign begins or Jafar explicitly asks to schedule Tasks.
+- **Prerequisites:** Part 3A's reusable Task foundation exists; Schedule defines how Tasks, Visits,
+  Assessments, Events, and reminders share one feed without pretending they are the same object.
+- **Checkpoint:** `Memory/campaigns/sales-pipeline/parts/03-opportunity-brief-tasks-notes.md` and
+  `docs/PRODUCT.md` §14.
+
 ## Database test files under `supabase test db`
 
 - **Campaign:** `clients-properties` (applies to every campaign that adds database tests)
@@ -115,6 +140,9 @@ Only unresolved work explicitly postponed by the user belongs here.
 - **Reactivation trigger:** Any collaboration table passes a few thousand rows, or note deletion gets slow.
 - **Prerequisites:** Confirm the missing indexes against `get_advisors` before writing the migration.
 - **Checkpoint:** `20260816090000_client_property_data_model.sql`.
+- `tasks.created_by` and `tasks.completed_by` (added 2026-08-19) take the same accepted trade-off: both point
+  at `auth.users` and only matter when an account is deleted. `tasks.assignee_user_id`, which the product
+  actually queries by, is indexed.
 
 ## Client photos are one request each
 
@@ -293,7 +321,7 @@ Only unresolved work explicitly postponed by the user belongs here.
 - **Checkpoint:** `src/lib/components/layout/AppShell.svelte`, `src/routes/(app)/+layout.server.ts`,
   `src/routes/(app)/pipeline/+page.svelte`.
 
-## Authenticated list reads are not rate limited
+## Authenticated reads and Pipeline writes are not rate limited
 
 - **Campaign:** found during `sales-pipeline` Part 2 item 3 on 2026-08-19. The fix belongs to whichever
   campaign next touches the API layer as a whole.
@@ -304,6 +332,9 @@ Only unresolved work explicitly postponed by the user belongs here.
 - **What is at risk:** one logged-in client looping a column page can hold pooled connections across every
   tenant. The board is capped at 50 rows a page and is keyset-paged, so a single request is cheap; the
   exposure is request volume, not request cost.
+- **Also uncovered (2026-08-19):** the Pipeline write routes — owner, value, the two dates, and the Part 3A
+  Task routes — carry no limit either. Each is one function call, and the Task limits cap what can be
+  created, but a loop still spends connections. Same decision, same place to make it.
 - **Reactivation trigger:** the app moves to the VPS phase, connection saturation is seen in the Supabase
   dashboard, or any campaign is already reworking the shared API guards.
 - **Prerequisites:** decide with Jafar what a limited read says to the user, and pick a bucket key —

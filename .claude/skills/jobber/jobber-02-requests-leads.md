@@ -419,6 +419,19 @@ bottom, so a card can be unassigned.
   a `Schedule` block (start/end date, start/end time, `Schedule later`, `Anytime`), a `Team` assign select,
   and `Repeats`.
 
+The official Sales Pipeline article was updated 2026-07-15 and is more precise than those screenshots for
+Pipeline-specific Tasks and Notes. It documents the smaller Brief Task form: required title, optional
+instructions, one owner, and one due date. Every Pipeline user may create, edit, complete, reopen, or delete;
+the actions are internal and send no client communication. Each Opportunity has at most five open and five
+completed Tasks. The card shows the earliest-due open Task, breaking ties by creation order; with no due dates,
+it shows the oldest open Task. Dated Tasks also appear on the assignee's Schedule.
+
+The same article documents Task lifecycle: Request-to-Quote transfers Tasks; Lost Request completes them;
+Lost Quote or archive permanently deletes them; Won does not carry them into the Job. Brief Notes default to
+the backing Request/Quote, may instead link to the Client, save immediately, and appear beside existing Notes.
+The official Brief has no embedded activity/history section; record history remains on the full Request or
+Quote page. These current documented rules win over inference from the screenshots.
+
 **Edit stages** (`13.webp`, `14.webp`): the two groups side by side, each with `+ Add a stage`. Every
 built-in stage shows a padlock and a read-only `Rule` card. Verbatim rules:
 
@@ -443,6 +456,10 @@ range, then a table of `Title`, `Name`, `Created At`, `Won At`, `Total`, every c
 Dropping into a protected stage first demands the action that stage represents. Backward movement is
 refused. Won is automatic on quote approval or job creation; Lost is always by hand, with an optional reason.
 
+The current official article does not document reopening a Lost Pipeline Opportunity, restoring its archived
+Request/Quote, or how a reopened Opportunity affects the Won/Lost tiles and Sales Outcomes report. Treat all
+Pipeline reopen behavior as an UCRM product decision rather than Jobber parity.
+
 **Nothing is created on the board.** Opportunities only ever come from Requests and Quotes.
 
 **Mobile:** the Jobber app has no pipeline at all. Tasks and notes are web-only.
@@ -464,6 +481,16 @@ Jobber's current pipeline is our reference and overrides the earlier UCRM opport
 - Deliberate differences: desktop only, because our mobile app is separate work; one page-level scroll with an
   accessible `Load more` per column instead of Jobber's per-column scroll; no lead source, because Jobber's own
   screens and docs disagree about it.
+- Part 3 copies the five-open/five-completed Task limits, card priority, and lifecycle above. UCRM preserves a
+  real read-only role: `pipeline.view` reads Brief Tasks/Notes and `pipeline.edit` gates mutations.
+- Part 3 Notes support Request/Client linking and core create/view/edit/delete. Attachments, mentions, pinning,
+  advanced Task scheduling, notifications, and Schedule UI wait for their owning domains.
+- An embedded Opportunity activity timeline is deferred rather than presented as Jobber parity; Jobber does
+  not put one in this drawer, and UCRM's current generic activity is not complete enough to be honest history.
+- Part 4 follows Jobber's automatic Won, manual Lost, source archive, optional lost reason, Task lifecycle,
+  active-board removal, tiles, and Sales Outcomes report. UCRM adds reasoned Lost reopen: it restores the
+  Request and only the Tasks auto-completed by that loss, removes the record from current Lost reporting, and
+  retains both transitions in immutable history.
 
 ## 5. How WE compare (build notes)
 

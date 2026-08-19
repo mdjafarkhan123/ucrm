@@ -1,5 +1,10 @@
 # UpliftContractor glossary
 
+## Work coordination
+
+- **Task** — An internal follow-up or coordination item assigned to a team member, optionally due on a date.
+  It is not customer work, a service appointment, or a calendar-blocking Event. _Avoid_: Job, Visit, or Event.
+
 ## Client relationships
 
 - **Client** — The contractor's complete relationship with a person or company, whether prospective or paying. _Avoid_: Contact or account when referring to the relationship record.
