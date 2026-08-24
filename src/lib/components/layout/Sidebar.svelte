@@ -29,6 +29,7 @@
 		groups,
 		brand = 'Contractor CRM',
 		eyebrow = 'Workspace',
+		logoUrl = null,
 		onnavigate,
 		collapsible = true,
 		collapsed = $bindable(false)
@@ -36,6 +37,7 @@
 		groups: NavGroup[];
 		brand?: string;
 		eyebrow?: string;
+		logoUrl?: string | null;
 		onnavigate?: () => void;
 		collapsible?: boolean;
 		collapsed?: boolean;
@@ -91,7 +93,9 @@
 		<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- brandHref is one of this variant's own static nav destinations, resolved at render time from approved config, not a literal route id. -->
 		<a class="sidebar__brand" href={brandHref}>
 			<span class="sidebar__mark" aria-hidden="true"
-				><span class="sidebar__mark-icon">{@html hammerIcon}</span></span
+				>{#if logoUrl}<img class="sidebar__mark-image" src={logoUrl} alt="" />{:else}<span
+						class="sidebar__mark-icon">{@html hammerIcon}</span
+					>{/if}</span
 			>
 			<span class="sidebar__brand-text"
 				><span class="sidebar__eyebrow">{eyebrow}</span><strong>{brand}</strong></span
@@ -205,10 +209,16 @@
 			place-items: center;
 			width: 32px;
 			height: 32px;
+			overflow: hidden;
 			border-radius: var(--radius-base);
 			color: var(--color-surface);
 			background: var(--color-brand);
 			font-size: var(--typography--fontSize-large);
+		}
+		&__mark-image {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
 		}
 		&__mark-icon {
 			display: block;

@@ -19,6 +19,7 @@
 	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import AssessmentBlock from '$lib/components/requests/AssessmentBlock.svelte';
+	import RequestPricingBlock from '$lib/components/quotes/RequestPricingBlock.svelte';
 	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
 	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
 	import ActivityFeed from '$lib/components/collaboration/ActivityFeed.svelte';
@@ -44,10 +45,10 @@
 		updateNote,
 		type NoteChange
 	} from '$lib/collaboration/api';
+	import { convertRequestToQuote, requestPricingKey, type QuoteWriteError } from '$lib/quotes/api';
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import clipboardIcon from '@tabler/icons/outline/clipboard-text.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
-	import listIcon from '@tabler/icons/outline/list-details.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import quoteIcon from '@tabler/icons/outline/file-invoice.svg?raw';
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
@@ -215,6 +216,41 @@
 		}
 	}
 
+	// --- Converting to a quote -------------------------------------------------------------------------
+	// A record of its own, like the assessment and the pricing block: its own button, its own error, no
+	// ride on the page's shared dirty bar. There is nowhere to send anyone afterward yet — no Quote page
+	// exists — so success is a plain confirmation on the request itself, not a redirect.
+
+	let convertSaving = $state(false);
+	let convertError = $state('');
+	let convertedNotice = $state('');
+
+	async function convertToQuote() {
+		if (!saved || convertSaving) return;
+		if (saved.stored_status === 'converted' || saved.stored_status === 'archived') return;
+		convertSaving = true;
+		convertError = '';
+		try {
+			const pricing = queryClient.getQueryData<{ revision: number; lines: unknown[] }>(
+				requestPricingKey(requestId)
+			);
+			const hash = `rev-${pricing?.revision ?? 0}:lines-${pricing?.lines.length ?? 0}`;
+			const result = await convertRequestToQuote(requestId, crypto.randomUUID(), hash);
+			convertedNotice = `Converted to Quote #${result.quote_number}.`;
+			await refresh();
+		} catch (caught) {
+			const writeError = caught as QuoteWriteError;
+			if (writeError.reason === 'already_converted') {
+				convertedNotice = 'This request has already become a quote.';
+				await refresh();
+			} else {
+				convertError = writeError.message || 'This request could not become a quote.';
+			}
+		} finally {
+			convertSaving = false;
+		}
+	}
+
 	// --- The header -----------------------------------------------------------------------------------
 
 	const status = $derived(saved?.status ?? 'new');
@@ -263,7 +299,7 @@
 	// offered honestly rather than hidden — the office can see where the request is heading.
 	const primaryAction = $derived.by(() => {
 		if (!saved) return undefined;
-		if (saved.stored_status === 'archived') return undefined;
+		if (saved.stored_status === 'archived' || saved.stored_status === 'converted') return undefined;
 		if (!saved.assessment)
 			return {
 				label: 'Schedule assessment',
@@ -276,8 +312,18 @@
 				loading: assessmentSaving,
 				onclick: () => void runAssessmentWrite(() => completeAssessment(requestId, true))
 			};
-		return { label: 'Convert to quote', disabled: true };
+		return {
+			label: 'Convert to quote',
+			loading: convertSaving,
+			onclick: () => void convertToQuote()
+		};
 	});
+
+	// The suggested next step above walks a request through its assessment first, the way Jobber does. The
+	// menu does not: a request that has not been visited yet can still be priced and quoted, so this
+	// follows the same live-work allowlist the database enforces.
+	const CONVERTIBLE_STATUSES = ['new', 'unscheduled', 'assessment_completed'];
+	const canConvert = $derived(Boolean(saved && CONVERTIBLE_STATUSES.includes(saved.stored_status)));
 
 	// Archiving and restoring a request move to the sales pipeline's Mark as lost / Reopen (Part 4B), which
 	// also handles the reason, the Tasks, and the outcome history this plain toggle never touched.
@@ -285,8 +331,8 @@
 		{
 			label: 'Convert to quote',
 			icon: quoteIcon,
-			disabled: true,
-			onSelect: () => {}
+			disabled: !canConvert || convertSaving,
+			onSelect: () => void convertToQuote()
 		},
 		{
 			label: 'Convert to job',
@@ -373,6 +419,13 @@
 					{/snippet}
 				</WorkRecordHeader>
 
+				{#if convertedNotice}
+					<p class="request-detail__convert-notice" role="status">{convertedNotice}</p>
+				{/if}
+				{#if convertError}
+					<p class="request-detail__convert-error" role="alert">{convertError}</p>
+				{/if}
+
 				<SectionBlock
 					title="Service overview"
 					icon={clipboardIcon}
@@ -423,21 +476,7 @@
 						runAssessmentWrite(() => completeAssessment(requestId, complete))}
 				/>
 
-				<SectionBlock title="Products and services" icon={listIcon} level={2}>
-					<EmptyState
-						icon={listIcon}
-						title="Nothing priced yet"
-						description="Line items land here once quoting is built. For now, price the work on the quote itself."
-					/>
-				</SectionBlock>
-
-				<SectionBlock title="Labour" icon={clockIcon} level={2}>
-					<EmptyState
-						icon={clockIcon}
-						title="No time tracked"
-						description="Time your team logs against this request will show up here once timesheets are built."
-					/>
-				</SectionBlock>
+				<RequestPricingBlock {requestId} />
 			{/snippet}
 
 			{#snippet rail()}
@@ -481,6 +520,22 @@
 			margin: 0;
 			color: var(--color-text);
 			white-space: pre-wrap;
+		}
+		&__convert-notice,
+		&__convert-error {
+			margin: 0;
+			padding: var(--space-small) var(--space-base);
+			border-radius: var(--radius-base);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+		}
+		&__convert-notice {
+			color: var(--color-success--onSurface);
+			background: var(--color-success--surface);
+		}
+		&__convert-error {
+			color: var(--color-critical--onSurface);
+			background: var(--color-critical--surface);
 		}
 	}
 </style>

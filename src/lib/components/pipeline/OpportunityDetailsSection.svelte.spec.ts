@@ -19,13 +19,15 @@ const opportunity: OpportunityCard = {
 	outcome: 'open',
 	created_at: '2026-08-10T00:00:00.000Z',
 	request: { id: 'req-1', status: 'new' },
+	quote: null,
 	client: { id: 'client-1', display_name: 'Ada Lovelace', company_name: null },
 	property: null,
 	owner: null,
 	estimated_value: null,
 	expected_close_on: null,
 	next_follow_up_on: null,
-	task: null
+	task: null,
+	assessment: null
 };
 
 const formatting: BoardFormatting = {

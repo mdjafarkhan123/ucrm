@@ -8,32 +8,42 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import FormNotesCard from '$lib/components/forms/FormNotesCard.svelte';
 	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
+	import AssessmentBlock from '$lib/components/requests/AssessmentBlock.svelte';
+	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
 	import { fetchClient, clientDetailKey, type ClientListItem } from '$lib/clients/api';
 	import { createNote, notesKey } from '$lib/collaboration/api';
 	import {
 		createRequest,
+		saveAssessment,
 		requestCountsKey,
 		type RequestCreateInput,
 		type RequestWriteError
 	} from '$lib/requests/api';
+	import {
+		saveRequestPricing,
+		requestPricingKey,
+		type RequestPricingLineInput
+	} from '$lib/quotes/api';
+	import { firstLineProblem } from '$lib/quotes/lines';
 	import { invalidatePipeline } from '$lib/pipeline/api';
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import clipboardIcon from '@tabler/icons/outline/clipboard-text.svg?raw';
-	import truckIcon from '@tabler/icons/outline/truck.svg?raw';
-	import listIcon from '@tabler/icons/outline/list-details.svg?raw';
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
-	// Creating a request only. Scheduling the on-site assessment and pricing line items both need a saved
-	// request to hang off, so this page stops at the same three things Jobber's own New Request form asks
-	// for up front — title, client, and what the client is asking for — and hands off to the request's own
-	// detail page for the rest.
+	// The whole New Request page, the way Jobber writes one: title, client, what they are asking for, the
+	// on-site visit and the line items all on one page, with a single Save at the bottom. The visit and the
+	// pricing are records of their own, so they are held in memory here and written straight after the
+	// request itself exists — nobody has to save a half-finished request to get at them.
 	let {
+		currencyCode = 'USD',
+		locale = 'en-US',
 		onSaved,
 		onCancel
 	}: {
+		currencyCode?: string;
+		locale?: string;
 		onSaved: (request: { id: string; title: string }, andAnother: boolean) => void;
 		onCancel: () => void;
 	} = $props();
@@ -61,14 +71,33 @@
 	let attachmentsCard = $state<AttachmentsCard>();
 	let pendingFileCount = $state(0);
 
+	// The visit and the line items live outside `form` because each one is its own record with its own
+	// write. They still count towards the page being dirty, so Save turns on for them like any other field.
+	let assessmentBlock = $state<AssessmentBlock>();
+	let productsAndServices = $state<ProductsAndServicesBlock>();
+	let visitBooked = $state(false);
+	let lines = $state<RequestPricingLineInput[]>([]);
+
 	function snapshot(values: FormState) {
 		return JSON.stringify(values);
 	}
 	let baseline = $state(untrack(() => snapshot(form)));
-	const isDirty = $derived(snapshot(form) !== baseline || pendingFileCount > 0);
+	const isDirty = $derived(
+		snapshot(form) !== baseline || pendingFileCount > 0 || visitBooked || lines.length > 0
+	);
 
 	// Set once a create succeeds, so a stuck file upload can be retried without creating a second request.
+	// The visit and the pricing carry their own flags for the same reason: a retry after a half-failed save
+	// must not book the visit twice.
 	let savedRequestId = $state('');
+	let visitSaved = $state(false);
+	let pricingSaved = $state(false);
+	let noteSaved = $state(false);
+
+	// The block draws its own running total, so only the rows themselves matter up here.
+	function readDraftLines(nextLines: RequestPricingLineInput[]) {
+		lines = nextLines;
+	}
 
 	// A client with more than one property needs a way to say which this request is for. Most clients only
 	// have the one, so this stays hidden until there is an actual choice to make.
@@ -109,20 +138,60 @@
 			return;
 		}
 
+		// Both extra records get checked before anything is written, so a bad date or a nameless line stops
+		// the save rather than leaving a request behind with half of what was typed into it.
+		const visit = assessmentBlock?.collectDraft() ?? { ok: true as const, draft: null };
+		if (!visit.ok) {
+			formError = visit.message;
+			return;
+		}
+		const lineProblem = firstLineProblem(lines);
+		if (lineProblem) {
+			formError = lineProblem;
+			return;
+		}
+
 		saving = true;
 		fieldErrors = {};
 		formError = '';
 
 		try {
-			const request = await createRequest(buildValues());
+			const request = savedRequestId
+				? { id: savedRequestId, title: form.title.trim() }
+				: await createRequest(buildValues());
+			savedRequestId = request.id;
 
-			if (form.initial_note.trim()) {
+			if (!visitSaved && visit.draft) {
+				await saveAssessment(request.id, visit.draft);
+				visitSaved = true;
+			}
+
+			if (!pricingSaved && lines.length > 0) {
+				const photos = await productsAndServices?.savePendingPhotos('request', request.id);
+				if (photos && photos.failures > 0) {
+					formError =
+						photos.failures === 1
+							? 'The request was created, but one line-item photo did not upload. Press Save again to retry.'
+							: `The request was created, but ${photos.failures} line-item photos did not upload. Press Save again to retry.`;
+					return;
+				}
+				const linesToSave = photos?.lines ?? lines;
+				lines = linesToSave;
+				// A brand new request has never been priced, so revision 0 is the version being edited.
+				await saveRequestPricing(request.id, 0, linesToSave);
+				productsAndServices?.commitPendingPhotos();
+				await queryClient.invalidateQueries({ queryKey: requestPricingKey(request.id) });
+				pricingSaved = true;
+			}
+
+			if (!noteSaved && form.initial_note.trim()) {
 				await createNote({
 					entityType: 'request',
 					entityId: request.id,
 					body: form.initial_note.trim()
 				});
 				await queryClient.invalidateQueries({ queryKey: notesKey('request', request.id) });
+				noteSaved = true;
 			}
 
 			await queryClient.invalidateQueries({ queryKey: ['requests', 'list'] });
@@ -132,7 +201,6 @@
 
 			const failedUploads = (await attachmentsCard?.saveAll(request.id)) ?? 0;
 			if (failedUploads > 0) {
-				savedRequestId = request.id;
 				baseline = snapshot(form);
 				formError =
 					failedUploads === 1
@@ -145,6 +213,12 @@
 				form = blankForm();
 				selectedClient = null;
 				choosingProperty = false;
+				savedRequestId = '';
+				visitBooked = false;
+				visitSaved = false;
+				lines = [];
+				pricingSaved = false;
+				noteSaved = false;
 			}
 			baseline = snapshot(form);
 			onSaved(request, andAnother);
@@ -152,7 +226,12 @@
 			if (error instanceof Error && 'fieldErrors' in error) {
 				fieldErrors = (error as RequestWriteError).fieldErrors ?? {};
 			}
-			formError = error instanceof Error ? error.message : 'That request could not be saved.';
+			const message = error instanceof Error ? error.message : 'That request could not be saved.';
+			// The request itself is already in. Say so, otherwise the only sensible-looking move is to fill
+			// the form in again and end up with two of them.
+			formError = savedRequestId
+				? `The request was created, but something else on the page did not save: ${message} Press Save again to finish it.`
+				: message;
 		} finally {
 			saving = false;
 		}
@@ -235,21 +314,22 @@
 				/>
 			</SectionBlock>
 
-			<SectionBlock title="On-site assessment" icon={truckIcon} level={2}>
-				<EmptyState
-					icon={truckIcon}
-					title="No visit booked"
-					description="Save the request, then book the visit from its page."
-				/>
-			</SectionBlock>
+			<AssessmentBlock
+				bind:this={assessmentBlock}
+				draft
+				assessment={null}
+				onDraftChange={(booked) => (visitBooked = booked)}
+			/>
 
-			<SectionBlock title="Products and services" icon={listIcon} level={2}>
-				<EmptyState
-					icon={listIcon}
-					title="Nothing priced yet"
-					description="Line items land here once quoting is built. For now, price the work on the quote itself."
-				/>
-			</SectionBlock>
+			<ProductsAndServicesBlock
+				bind:this={productsAndServices}
+				alwaysEditing
+				editable
+				{currencyCode}
+				{locale}
+				editorTotalLabel="Request subtotal"
+				onDraftChange={readDraftLines}
+			/>
 		{/snippet}
 
 		{#snippet rail()}

@@ -95,7 +95,7 @@ export const PATCH: RequestHandler = async (event) => {
 			}
 		);
 		if (error) {
-			if (['23503', '23505', '23514', '40001'].includes(error.code ?? '')) {
+			if (['23503', '23505', '23514', 'P0409'].includes(error.code ?? '')) {
 				return json({ error: error.message }, { status: 409 });
 			}
 			throw error;

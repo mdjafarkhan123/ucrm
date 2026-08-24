@@ -3,6 +3,7 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
+	import ManualEmailDialog from '$lib/components/clients/ManualEmailDialog.svelte';
 	import type { ClientDetail } from '$lib/clients/api';
 	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
 	import messageIcon from '@tabler/icons/outline/message.svg?raw';
@@ -31,6 +32,7 @@
 	// focus and its reason would otherwise reach mouse users only.
 	const callReason = 'Calling arrives with the communications work';
 	const messageReason = 'Messaging arrives with the communications work';
+	let manualEmailOpen = $state(false);
 
 	const stats = [
 		{ icon: coinIcon, label: 'Lifetime', waiting: 'Once you start invoicing' },
@@ -50,10 +52,9 @@
 				<Button variant="secondary" size="small" disabled>Call</Button>
 				<span class="client-header__reason">{callReason}</span>
 			</span>
-			<span class="client-header__waiting" title={messageReason}>
-				<Button variant="secondary" size="small" disabled>Message</Button>
-				<span class="client-header__reason">{messageReason}</span>
-			</span>
+			<Button variant="secondary" size="small" onclick={() => (manualEmailOpen = true)}
+				>Message</Button
+			>
 			<Button variant="secondary" size="small" onclick={onEdit}>Edit</Button>
 		</div>
 	</div>
@@ -104,6 +105,10 @@
 		</ul>
 	</div>
 </section>
+
+{#if manualEmailOpen}
+	<ManualEmailDialog open={manualEmailOpen} {client} onClose={() => (manualEmailOpen = false)} />
+{/if}
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 

@@ -10,6 +10,7 @@
 		variant = 'info',
 		title,
 		message,
+		loading = false,
 		dismissible = true,
 		onDismiss
 	}: {
@@ -17,6 +18,7 @@
 		variant?: 'success' | 'error' | 'warning' | 'info';
 		title: string;
 		message?: string;
+		loading?: boolean;
 		dismissible?: boolean;
 		onDismiss?: () => void;
 	} = $props();
@@ -33,8 +35,16 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#if open}
-	<div class={`toast toast--${variant}`} role={variant === 'error' ? 'alert' : 'status'}>
-		<span class="toast__icon" aria-hidden="true">{@html variantIcon}</span>
+	<div
+		class={`toast toast--${variant}`}
+		role={variant === 'error' ? 'alert' : 'status'}
+		aria-busy={loading}
+	>
+		{#if loading}
+			<span class="toast__spinner" aria-hidden="true"></span>
+		{:else}
+			<span class="toast__icon" aria-hidden="true">{@html variantIcon}</span>
+		{/if}
 		<div class="toast__content">
 			<strong>{title}</strong>
 			{#if message}<p>{message}</p>{/if}
@@ -93,6 +103,17 @@
 			width: 22px;
 			height: 22px;
 		}
+		&__spinner {
+			flex: 0 0 auto;
+			width: 20px;
+			height: 20px;
+			margin: 1px;
+			border: 2px solid currentColor;
+			border-right-color: transparent;
+			border-radius: var(--radius-circle);
+			color: var(--toast-color);
+			animation: spinning var(--timing-loading) linear infinite;
+		}
 		&__content {
 			flex: 1;
 			min-width: 0;
@@ -146,6 +167,10 @@
 	@media (prefers-reduced-motion: reduce) {
 		.toast {
 			animation: none;
+
+			&__spinner {
+				animation: none;
+			}
 		}
 	}
 </style>

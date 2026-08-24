@@ -1,8 +1,9 @@
 import type { QueryClient } from '@tanstack/svelte-query';
-import type { BoardStage, OpportunityOutcome, OpportunityStage } from './stages';
+import type { BoardColumnKey, OpportunityOutcome, OpportunityStage } from './stages';
 import type { BoardFormatting } from './money';
 import { boardFilterKey, boardFilterParams, type BoardFilters } from './filters';
 import { outcomeFilterKey, outcomeFilterParams, type OutcomeFilters } from './outcomes';
+import type { DragActionKind } from './transitions';
 
 export type OpportunityCard = {
 	id: string;
@@ -12,8 +13,10 @@ export type OpportunityCard = {
 	stage_entered_at: string;
 	outcome: OpportunityOutcome;
 	created_at: string;
-	// Always present today. Null is reserved for the Quote-backed cards Part 5 adds.
+	// Exactly one of `request`/`quote` is set -- the same single-source rule the database enforces on
+	// opportunities.request_id/quote_id.
 	request: { id: string; status: string } | null;
+	quote: { id: string; status: string } | null;
 	client: { id: string; display_name: string; company_name: string | null } | null;
 	property: {
 		id: string;
@@ -34,29 +37,37 @@ export type OpportunityCard = {
 	// The one open Task the card shows, in Jobber's priority order (earliest due, undated last, ties by
 	// creation). Null when the Opportunity has no open Task.
 	task: { id: string; title: string; due_on: string | null } | null;
+	// The booked assessment, present only once one has been scheduled. The collapsed Assessment column
+	// shows all three sub-states together, so a card that says "scheduled" has to say when.
+	assessment: { starts_at: string; ends_at: string | null } | null;
 };
 
 export type BoardColumnPage = {
-	stage: BoardStage;
+	stage: BoardColumnKey;
 	opportunities: OpportunityCard[];
 	// Null means this was the last page of the column.
 	next_cursor: string | null;
 };
 
-export type BoardCounts = Record<BoardStage, number>;
+export type BoardCounts = Record<BoardColumnKey, number>;
 
 export type BoardSummary = BoardFormatting & {
 	counts: BoardCounts;
-	// Every card the board is showing, added up across the four columns.
+	// Every card the board is showing, added up across both groups' columns.
 	result_count: number;
 	// Absent when this member may not see money. A column's total is null when nobody has estimated
 	// anything in it, which is not the same as zero and is never shown as $0.00.
-	value_totals?: Record<BoardStage, number | null>;
+	value_totals?: Record<BoardColumnKey, number | null>;
 	// Whether this member may see estimated values at all. The board hides every money control when
 	// false, rather than showing empty ones.
 	can_view_value: boolean;
 	// Whether this member may assign, reassign, or clear a card's owner.
 	can_edit: boolean;
+	// Which board this organization shows: false is the five-column default with one Assessment column,
+	// true expands it into the three protected stages. Presentation only — the counts are the same either
+	// way. It rides on the summary because that is the query the board already holds and already refreshes,
+	// so saving the setting changes the board without a reload.
+	detailed_assessment_stages: boolean;
 };
 
 // One family, so anything that changes commercial work can clear the whole board with `['pipeline']`
@@ -67,7 +78,7 @@ export type BoardSummary = BoardFormatting & {
 // about the same set of cards, and a key that ignored the filters would hand a filtered board the cached
 // answer to an unfiltered question — cards for one salesperson under a count of everybody's.
 export const pipelineKey = ['pipeline'] as const;
-export const boardColumnKey = (stage: BoardStage, filters: BoardFilters) =>
+export const boardColumnKey = (stage: BoardColumnKey, filters: BoardFilters) =>
 	['pipeline', 'board', stage, boardFilterKey(filters)] as const;
 export const boardCountsKey = (filters: BoardFilters) =>
 	['pipeline', 'summary', boardFilterKey(filters)] as const;
@@ -98,7 +109,7 @@ async function readError(response: Response, fallback: string) {
 }
 
 export async function fetchBoardColumn(
-	stage: BoardStage,
+	stage: BoardColumnKey,
 	filters: BoardFilters,
 	cursor?: string
 ): Promise<BoardColumnPage> {
@@ -495,6 +506,64 @@ export function reopenOpportunity(
 		})
 	}).then((response) => outcomeWriteResult(response, 'That opportunity could not be reopened.'));
 }
+
+// --- Drag ----------------------------------------------------------------------------------------------
+
+export type DragResult = {
+	id: string;
+	from_stage: OpportunityStage;
+	to_stage: OpportunityStage;
+	// Only the conversion drop answers with one, so the toast can name the quote it just created.
+	quote?: { quote_id: string; quote_number: number; applied: boolean };
+};
+
+export class DragWriteError extends Error {
+	fieldErrors: Record<string, string>;
+
+	constructor(message: string, fieldErrors: Record<string, string>) {
+		super(message);
+		this.name = 'DragWriteError';
+		this.fieldErrors = fieldErrors;
+	}
+}
+
+// Dropping a card onto a column. The server decides what that column requires and performs it first --
+// this only carries the inputs a drop can need: the times a schedule drop asks for, and the key that
+// makes a conversion safe to retry. `invalidatePipeline` still has to follow a success, the same as any
+// other write that can move a card.
+export async function dragOpportunity(
+	opportunityId: string,
+	input: {
+		toStage: OpportunityStage;
+		startsAt?: string;
+		endsAt?: string;
+		/** Required for the Draft conversion drop. Keep it stable across a retry of the same drag. */
+		idempotencyKey?: string;
+	}
+): Promise<DragResult> {
+	const response = await fetch(`/api/pipeline/opportunities/${opportunityId}/move`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			to_stage: input.toStage,
+			starts_at: input.startsAt ?? null,
+			ends_at: input.endsAt ?? null,
+			...(input.idempotencyKey ? { idempotency_key: input.idempotencyKey } : {})
+		})
+	});
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) {
+		throw new DragWriteError(
+			result.error ?? 'That card could not be moved.',
+			result.field_errors ?? {}
+		);
+	}
+	return result as DragResult;
+}
+
+// What kind of dialog a drop needs before it can run, if any -- re-exported here so a component importing
+// the Pipeline API does not also need to reach into `./transitions` directly.
+export type { DragActionKind };
 
 export function deleteOpportunityNote(
 	opportunityId: string,

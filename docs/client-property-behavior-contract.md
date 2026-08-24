@@ -13,7 +13,7 @@ permissions, search, and create-time duplicate warnings.
 
 Approved but not built, each waiting on work objects or invoicing: property deletion guarded by real work,
 historical address snapshots, property transfer between clients, the billing address, and client merge,
-archive, restore and audit history. Their reactivation triggers live in `Memory/deferred/INDEX.md`.
+archive, restore and audit history. Their deferred records are listed in `Memory/deferred/INDEX.md`.
 
 ## Language and relationships
 
@@ -28,8 +28,10 @@ archive, restore and audit history. Their reactivation triggers live in `Memory/
 ## Client identity
 
 A Client supports a person or company name, multiple named contacts, phones, and emails, with one primary
-phone and email. It also supports lead source, marketing attribution, owner, lead temperature, next
-follow-up, tags, notes, files, referrals, balance, and communication preferences.
+phone and email. It also supports lead source, marketing attribution, lead temperature, next follow-up,
+tags, notes, files, referrals, balance, and communication preferences. Unlike an Opportunity, a Client has
+no persistent owner: Jobber never fixes one rep to a customer relationship, only to each work object
+(Request/Quote `salesperson`, matched by our `opportunities.owner_user_id`), reassignable at every stage.
 
 Phone and email values are normalized for search and duplicate detection. A company still needs a useful
 named contact or communication method before a communication-dependent action can proceed.

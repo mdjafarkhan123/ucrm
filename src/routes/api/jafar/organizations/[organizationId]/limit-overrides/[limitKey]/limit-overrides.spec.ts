@@ -104,6 +104,20 @@ describe('platform owner limit exception API boundary', () => {
 		);
 	});
 
+	it('accepts the two email allowance keys through the same audited command', async () => {
+		const rpc = vi.fn().mockResolvedValue({ data: { applied: true }, error: null });
+		mockedClient.mockReturnValue({ rpc } as never);
+		const response = await PUT({
+			...event(PUT),
+			params: { organizationId, limitKey: 'operational_email_recipients' }
+		});
+		expect(response.status).toBe(200);
+		expect(rpc).toHaveBeenCalledWith(
+			'apply_organization_limit_exception',
+			expect.objectContaining({ target_limit_key: 'operational_email_recipients' })
+		);
+	});
+
 	it('returns not found and prevents history-destructive delete', async () => {
 		mockedResolveAccess.mockRejectedValue(new OrganizationAccessNotFoundError());
 		const rpc = vi.fn().mockResolvedValue({ data: { applied: true }, error: null });

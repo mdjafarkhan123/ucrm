@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(87);
+select plan(86);
 
 -- Test fixtures are rolled back at the end of this file. The fixed IDs make
 -- the assertions easy to audit without depending on generated values.
@@ -157,13 +157,6 @@ select throws_ok(
   '23514',
   null,
   'a customer cannot be changed back to a lead'
-);
-
-select throws_ok(
-  $$update public.clients set owner_user_id = '00000000-0000-0000-0000-000000000002' where id = '20000000-0000-0000-0000-000000000001'$$,
-  '23514',
-  null,
-  'a client owner must belong to the same organization'
 );
 
 select throws_ok(

@@ -77,7 +77,7 @@ Establish the relationship and work-location model used by every downstream feat
 with addresses, property contacts and access notes, plus add, edit and remove; ownership, tags, notes, files
 and timeline; tenant isolation, permissions, search, and create-time duplicate warnings.
 
-**Deliberately left for later**, each with its own reactivation trigger in `Memory/deferred/INDEX.md`:
+**Deliberately left for later**, each listed in `Memory/deferred/INDEX.md`:
 property deletion guarded by real work, historical address safety, property transfer between clients, the
 billing-address shape, and client merge, archive, restore and audit history. Every one of them blocks on work
 objects that do not exist yet, or on invoicing.

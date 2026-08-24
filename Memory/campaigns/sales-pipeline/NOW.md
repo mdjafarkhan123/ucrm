@@ -2,55 +2,46 @@
 
 ## Goal
 
-Build one contractor-friendly commercial board from Request through Quote, copying Jobber's current Sales
-Pipeline. Request, Assessment, and Quote remain operational truth; the Pipeline projects them and adds
-accountable commercial follow-up.
+Build one contractor-friendly commercial board from Request through Quote. Request, Assessment, and Quote
+remain operational truth; Pipeline projects them and adds accountable commercial follow-up.
 
-## Status: paused
+## Status
 
-Parts 1–4 are closed. Part 4C (Sales Outcomes tiles/report) shipped and closed 2026-08-19 — see
-`parts/04-won-lost-reopen-outcomes.md` for what it verified. Part 5 (Quote stages, drag, automatic Won) has
-no placeholder dependency and cannot start until the Quotes campaign establishes real Quote truth. There is
-no exact next action in this campaign right now.
+Parts 1–4, 5A, 5B, 5C-i, 5C-ii, and 5C-iii are all closed. Jafar verified 5C-iii's full acceptance checklist
+live in the browser on 2026-08-24 and confirmed every check passes.
 
-## Resume trigger
+**Part 5D (accidental-drag recovery / Undo) is cut** — Jafar decided 2026-08-24 it isn't needed. Only
+Part 6 (final A–Z audit and contractor manual) remains, and it hasn't been scoped yet.
 
-Resume Part 5 once the Quotes campaign is far enough along that Quote creation, approval, and change-request
-states are real. At that point: read `ROADMAP.md` for Part 5's dependencies, create its packet from the
-approved behavior contract's Quote-stage sections, and follow the same tour-Jobber-first, propose-then-build
-flow every other part used.
+## Exact next action
 
-## Current truth
-
-- Parts 1–4 are closed. The approved behavior is authoritative in `docs/sales-pipeline-behavior-contract.md`.
-- Part 4 shipped the full outcome engine: `pipeline_mark_opportunity_lost` / `pipeline_reopen_opportunity`
-  (4A), the card's `Mark as lost` action and both write routes (4B), and the Won/Lost tiles plus the
-  `/pipeline/outcomes` Sales Outcomes report with Reopen as its only UI entry point (4C).
-- The Request detail page's Archive/Bring back toggle is gone; Lost and Reopen (via the Sales Outcomes
-  report) are the only ways a Request is archived or restored — a DB trigger enforces this.
-- `SidePanel` (the Opportunity Brief) is a true modal; the board is not interactive behind an open Brief.
-- Board state remains URL-derived throughout. `src/lib/pipeline/filters.ts` (board) and
-  `src/lib/pipeline/outcomes.ts` (Sales Outcomes report) hold the two URL vocabularies.
-- The embedded activity timeline and all Schedule work stay deferred.
+None pending. Part 6 is the only part left on this campaign but has no approved scope — propose it only
+when Jafar wants to start the final audit.
 
 ## Blockers
 
-Part 5 blocked on the Quotes campaign (not yet started).
+None.
 
 ## Protected work
 
-Keep Requests, Assessments, and the closed Pipeline Parts 1–4 stable. Never author Pipeline stage fields from
-application code. No placeholder Quote or Schedule domain.
+Keep Parts 1–4, 5A, 5B, 5C-i, 5C-ii, 5C-iii stable. Keep the `div[role="button"]` card open target; changing
+it back to `button` blocks dragging in `svelte-dnd-action`. Pipeline stage/outcome and quote-backed value
+remain system-owned through their existing database definers. `pipeline_drag_opportunity` stays read-only.
+Request-to-Draft conversion is confirm-before-commit and terminal, with no Undo — this is now permanent
+behavior, not a placeholder pending 5D.
+
+Do not re-run the type regeneration casually: `src/lib/database.types.ts` was regenerated on 2026-08-24 and
+is correct against the live schema.
+
+`npm run test:unit` has **8 pre-existing failures** in the quotes and team specs, none from this campaign —
+see `Memory/deferred/eight-vitest-failures-in-the-quotes-and-team-specs.md`. Do not chase them here.
 
 ## Required pointers
 
-- `docs/sales-pipeline-behavior-contract.md` and `CONTEXT.md`
-- `.claude/skills/jobber/jobber-02-requests-leads.md` §4.6.1–4.6.2
-- `Memory/campaigns/sales-pipeline/ROADMAP.md` for full part history and standing decisions
-- `Memory/campaigns/sales-pipeline/parts/04-won-lost-reopen-outcomes.md` for everything Part 4 shipped
-- `Memory/deferred/INDEX.md` for the activity/Schedule deferrals and the rate-limit debt
+- `ROADMAP.md` — full campaign history and standing decisions, including the 5D cut.
+- `docs/sales-pipeline-behavior-contract.md` — approved unified presentation and server-confirmed behavior.
 
 ## Active-part completion gate
 
-Not applicable while paused. Part 4's gate (outcome transitions atomic, reasoned, permission-safe, idempotent,
-preserved in history/reporting) is met — see ROADMAP.md.
+No part is active. Part 6 starts only after Jafar approves its scope; the completion gate is written into
+its packet once created.

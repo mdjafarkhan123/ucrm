@@ -145,7 +145,7 @@ export const POST: RequestHandler = async (event) => {
 			}
 		);
 		if (rpcError) {
-			if (['23503', '23505', '23514', '40001'].includes(rpcError.code ?? '')) {
+			if (['23503', '23505', '23514', 'P0409'].includes(rpcError.code ?? '')) {
 				return json({ error: rpcError.message }, { status: 409 });
 			}
 			throw rpcError;

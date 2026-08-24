@@ -11,6 +11,7 @@
 		id,
 		name,
 		label = 'Date',
+		hideLabel = false,
 		placeholder,
 		locale = 'en-US',
 		weekStartsOn = 0,
@@ -32,6 +33,8 @@
 		id: string;
 		name?: string;
 		label?: string;
+		/** Keeps the label for screen readers only, for places like a filter row that already show it. */
+		hideLabel?: boolean;
 		placeholder?: CalendarDate;
 		locale?: string;
 		weekStartsOn?: WeekStartsOn;
@@ -52,14 +55,13 @@
 
 	type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 	let open = $state(false);
+	const labelClass = $derived(
+		hideLabel ? 'calendar-picker__label calendar-picker__label--hidden' : 'calendar-picker__label'
+	);
 
 	function handleValueChange(nextValue: DateValue | undefined) {
 		value = nextValue as CalendarDate | undefined;
 		onchange?.(value);
-	}
-
-	function openCalendar() {
-		open = true;
 	}
 
 	function focusCalendarWithoutScrolling(event: Event) {
@@ -93,7 +95,7 @@
 		calendarLabel={label}
 		onValueChange={handleValueChange}
 	>
-		<DatePicker.Label class="calendar-picker__label">{label}</DatePicker.Label>
+		<DatePicker.Label class={labelClass}>{label}</DatePicker.Label>
 
 		<div class="calendar-picker__control">
 			<DatePicker.Input
@@ -102,7 +104,6 @@
 				class="calendar-picker__input"
 				aria-invalid={invalid}
 				aria-describedby={errorMessage ? `${id}-error` : undefined}
-				onclick={openCalendar}
 			>
 				{#snippet children({ segments })}
 					{#each segments as segment, segmentIndex (segment.part + '-' + segment.value + '-' + segmentIndex)}
@@ -213,6 +214,16 @@
 				margin-bottom: var(--space-smaller);
 				color: var(--color-text--secondary);
 				font-size: var(--typography--fontSize-base);
+			}
+
+			&__label--hidden {
+				position: absolute;
+				width: 1px;
+				height: 1px;
+				margin: 0;
+				overflow: hidden;
+				clip: rect(0 0 0 0);
+				white-space: nowrap;
 			}
 
 			&__control {

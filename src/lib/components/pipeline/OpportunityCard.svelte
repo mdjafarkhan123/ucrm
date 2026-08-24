@@ -2,11 +2,12 @@
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import StageAgeChip from './StageAgeChip.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import OpportunityOwnerField from './OpportunityOwnerField.svelte';
 	import MarkOpportunityLostDialog from './MarkOpportunityLostDialog.svelte';
 	import { stageAge } from '$lib/pipeline/freshness';
-	import { followUp, formatMoney, type BoardFormatting } from '$lib/pipeline/money';
+	import { appointment, followUp, formatMoney, type BoardFormatting } from '$lib/pipeline/money';
 	import { invalidatePipeline, type OpportunityCard } from '$lib/pipeline/api';
 	import { clientDetailKey, fetchClient } from '$lib/clients/api';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
@@ -18,13 +19,14 @@
 	// One card on the board. Opening it is a full-size button stretched behind everything else, so the
 	// keyboard and a screen reader still reach the whole card as one target — the owner control and the
 	// `...` menu are the only other interactive pieces, both raised above that button rather than nested
-	// inside it, since a button cannot contain another button. Neither carries a drag affordance —
-	// dragging arrives with the Quote stages, and a card that looks draggable before then is a promise we
-	// cannot keep.
+	// inside it, since a button cannot contain another button. The card itself is the drag target (Jobber
+	// has no visible handle) — `PipelineColumn` is what actually turns it into one; a `pointerdown` on the
+	// owner control or the menu stops there so neither ever starts a drag by itself.
 	let {
 		opportunity,
 		formatting,
 		canEdit,
+		showStageBadge = false,
 		onOpen,
 		onLost
 	}: {
@@ -35,6 +37,9 @@
 		// Whether this member may assign, reassign, or clear the owner, and mark the card lost. Read-only
 		// otherwise.
 		canEdit: boolean;
+		// True only inside the collapsed Assessment column: its heading just says "Assessment", so the
+		// card is what has to say which of the three real sub-states it is really in.
+		showStageBadge?: boolean;
 		onOpen: () => void;
 		// Told after a successful Mark as lost, so the page can close this card's Brief if it happens to
 		// be open behind it — the card leaves the board on its own via the query invalidation below, but
@@ -44,6 +49,10 @@
 
 	const queryClient = useQueryClient();
 	let lostDialogOpen = $state(false);
+	// Quote-backed Lost is automatic off the Quote's own Decline/archive (5A) and never goes through this
+	// dialog's RPC, which refuses a quote-backed opportunity outright -- so the menu that would only ever
+	// fail is not offered at all, rather than shown greyed out the way Jobber does it for a Draft quote.
+	const canMarkLost = $derived(opportunity.quote === null);
 	const menuItems = [
 		{
 			label: 'Mark as lost',
@@ -52,6 +61,24 @@
 		}
 	];
 	const age = $derived(stageAge(opportunity.stage_entered_at));
+	// The collapsed Assessment column's own state, read off the card's real stage -- never a second stored
+	// value. "Unscheduled" is worded as a plain state name rather than an instruction, the same register
+	// the other two use.
+	const stageBadge = $derived.by(() => {
+		if (!showStageBadge) return null;
+		if (opportunity.stage === 'assessment_unscheduled')
+			return { label: 'Unscheduled', status: 'warning' as const };
+		if (opportunity.stage === 'assessment_scheduled')
+			return { label: 'Scheduled', status: 'informative' as const };
+		if (opportunity.stage === 'assessment_completed')
+			return { label: 'Completed', status: 'success' as const };
+		return null;
+	});
+	const appointmentLabel = $derived(
+		formatting && opportunity.assessment
+			? appointment(opportunity.assessment.starts_at, formatting)
+			: null
+	);
 	const clientName = $derived(
 		opportunity.client?.company_name?.trim() || opportunity.client?.display_name || 'No client'
 	);
@@ -86,24 +113,54 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class={`opportunity-card opportunity-card--${age.freshness}`}>
-	<button
-		type="button"
+<div
+	class={`opportunity-card opportunity-card--${age.freshness}`}
+	class:opportunity-card--draggable={canEdit}
+>
+	<!-- A real `<button>` would work for click and keyboard alike, but svelte-dnd-action's drag-start
+	     guard treats any pointerdown target with a defined `.value` as a nested form control and refuses
+	     to start the drag -- every `<button>` element has that property (an empty string, never
+	     `undefined`), and this one is stretched over the entire card. `role="button"` plus the keydown
+	     handler below reproduce native button behaviour without tripping that guard. -->
+	<div
 		class="opportunity-card__open"
+		role="button"
+		tabindex="0"
 		aria-label={`Open ${opportunity.title} for ${clientName}`}
 		onclick={onOpen}
+		onkeydown={(event) => {
+			if (event.key === 'Enter' || event.key === ' ') {
+				event.preventDefault();
+				onOpen();
+			}
+		}}
 		onmouseenter={warmClient}
 		onfocus={warmClient}
-	></button>
+	></div>
 
 	<span class="opportunity-card__header">
 		<span class="opportunity-card__title">{opportunity.title}</span>
-		{#if canEdit}
-			<span class="opportunity-card__menu">
+		{#if canEdit && canMarkLost}
+			<span
+				class="opportunity-card__menu"
+				role="presentation"
+				onpointerdown={(event) => event.stopPropagation()}
+			>
 				<DropdownMenu items={menuItems} triggerLabel={`More actions for ${opportunity.title}`} />
 			</span>
 		{/if}
 	</span>
+	{#if stageBadge}
+		<span class="opportunity-card__stage-row">
+			<Badge status={stageBadge.status} size="small">{stageBadge.label}</Badge>
+			{#if appointmentLabel}
+				<span class="opportunity-card__appointment">
+					<span class="opportunity-card__icon" aria-hidden="true">{@html calendarIcon}</span>
+					{appointmentLabel}
+				</span>
+			{/if}
+		</span>
+	{/if}
 	<span class="opportunity-card__client">{clientName}</span>
 	{#if amount}
 		<span class="opportunity-card__amount">{amount}</span>
@@ -115,7 +172,11 @@
 		</span>
 		<span class="opportunity-card__owner-and-age">
 			{#if canEdit}
-				<div class="opportunity-card__owner-control">
+				<div
+					class="opportunity-card__owner-control"
+					role="presentation"
+					onpointerdown={(event) => event.stopPropagation()}
+				>
 					<OpportunityOwnerField
 						opportunityId={opportunity.id}
 						{ownerName}
@@ -207,7 +268,7 @@
 		width: 100%;
 		padding: var(--space-slim);
 		border: var(--border-base) solid var(--color-border);
-		border-left: var(--space-smallest) solid var(--card-edge, var(--color-border));
+		border-left: var(--space-smaller) solid var(--card-edge, var(--color-border));
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
 		text-align: left;
@@ -223,6 +284,15 @@
 			background: var(--color-surface--hover);
 		}
 	}
+	// Jobber gives a draggable card no visible handle at all -- the cursor is the only affordance, and only
+	// once there is somewhere for the drag to go.
+	.opportunity-card--draggable {
+		cursor: grab;
+
+		&:active {
+			cursor: grabbing;
+		}
+	}
 	// The open action is a button stretched behind the rest of the card's content, so the whole card
 	// stays one click/keyboard target without being a `<button>` that could not then contain the owner
 	// control's own button. It is transparent, so the text painted after it in the flow still shows
@@ -236,6 +306,13 @@
 		background: transparent;
 		cursor: pointer;
 		appearance: none;
+
+		// It sits on top of the whole card, so it is what the cursor actually reads while hovering a
+		// draggable card -- inherit the grab affordance from the card underneath it rather than showing a
+		// plain pointer everywhere a drag can start.
+		.opportunity-card--draggable & {
+			cursor: inherit;
+		}
 
 		&:focus-visible {
 			outline: none;
@@ -275,6 +352,19 @@
 		z-index: 2;
 		flex: 0 0 auto;
 		margin: -6px -6px 0 0;
+	}
+	.opportunity-card__stage-row {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: var(--space-small);
+	}
+	.opportunity-card__appointment {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
 	}
 	.opportunity-card__client {
 		color: var(--color-text--secondary);

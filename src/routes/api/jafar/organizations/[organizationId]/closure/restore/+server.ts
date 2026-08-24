@@ -56,7 +56,7 @@ export const POST: RequestHandler = async (event) => {
 			actor_owner_email: session.email
 		});
 		if (error) {
-			if (['23503', '23505', '23514', '40001'].includes(error.code ?? '')) {
+			if (['23503', '23505', '23514', 'P0409'].includes(error.code ?? '')) {
 				return json({ error: error.message }, { status: 409 });
 			}
 			throw error;

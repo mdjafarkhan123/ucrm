@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { City, Country, type ICity } from 'country-state-city';
 	import { Combobox } from 'bits-ui';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
@@ -85,6 +86,7 @@
 	}
 
 	function chooseCountry(code: string) {
+		lastCommittedCountry = code;
 		countryCode = code;
 		const country = countries.find((item) => item.isoCode === code);
 		countryQuery = country?.name ?? '';
@@ -98,6 +100,7 @@
 	function chooseCity(nextValue: string) {
 		const city = cities.find((item) => cityValue(item) === nextValue);
 		if (!city || !selectedCountry) return;
+		lastCommittedCity = nextValue;
 		selectedCityValue = nextValue;
 		cityQuery = city.name;
 		value = `${city.name}, ${selectedCountry.name}`;
@@ -124,6 +127,28 @@
 	}
 
 	hydrateInitialValue();
+
+	// bits-ui's Combobox keeps its own internal copy of the displayed text once the user picks an
+	// option; it never re-reads our `inputValue` prop afterwards. A caller that reverts `value`
+	// externally (a form Cancel) would then leave the stale label on screen. Only remount the
+	// affected combobox for that external case — remounting on every selection would drop focus and
+	// break keyboard tabbing to the next field.
+	let lastCommittedCountry = untrack(() => countryCode);
+	let countryResetKey = $state(0);
+	$effect(() => {
+		if (countryCode !== lastCommittedCountry) {
+			lastCommittedCountry = countryCode;
+			countryResetKey++;
+		}
+	});
+	let lastCommittedCity = untrack(() => selectedCityValue);
+	let cityResetKey = $state(0);
+	$effect(() => {
+		if (selectedCityValue !== lastCommittedCity) {
+			lastCommittedCity = selectedCityValue;
+			cityResetKey++;
+		}
+	});
 </script>
 
 <!-- The inline SVG strings are trusted build-time Tabler icon imports. -->
@@ -135,64 +160,67 @@
 				>Country{#if required}
 					<span aria-hidden="true">*</span>{/if}</label
 			>
-			<Combobox.Root
-				type="single"
-				bind:value={countryCode}
-				bind:open={countryOpen}
-				inputValue={countryInputValue}
-				items={countryItems}
-				onValueChange={chooseCountry}
-			>
-				<div class="location-picker__control">
-					<span class="location-picker__search" aria-hidden="true">{@html searchIcon}</span>
-					<Combobox.Input
-						id={`${id}-country`}
-						placeholder="Search by country or code"
-						autocomplete="country-name"
-						aria-describedby={describedBy}
-						aria-invalid={invalid}
-						onfocus={(event) => focusCountry(event.currentTarget)}
-						onclick={() => (countryOpen = true)}
-						oninput={(event) => {
-							countryQuery = event.currentTarget.value;
-							countryOpen = true;
-						}}
-					/>
-					<Combobox.Trigger class="location-picker__trigger" aria-label="Show countries">
-						<span aria-hidden="true">{@html chevronDownIcon}</span>
-					</Combobox.Trigger>
-				</div>
-				<Combobox.Portal>
-					<Combobox.Content
-						class="location-picker__menu"
-						data-elevation="elevated"
-						align="start"
-						sideOffset={4}
-						collisionPadding={8}
-					>
-						<Combobox.Viewport class="location-picker__viewport">
-							{#each countryResults as country (country.isoCode)}
-								<Combobox.Item
-									value={country.isoCode}
-									label={country.name}
-									class="location-picker__option"
-								>
-									<span class="location-picker__country-code" aria-hidden="true"
-										>{country.isoCode}</span
+			{#key countryResetKey}
+				<Combobox.Root
+					type="single"
+					bind:value={countryCode}
+					bind:open={countryOpen}
+					inputValue={countryInputValue}
+					items={countryItems}
+					onValueChange={chooseCountry}
+				>
+					<div class="location-picker__control">
+						<span class="location-picker__search" aria-hidden="true">{@html searchIcon}</span>
+						<Combobox.Input
+							id={`${id}-country`}
+							placeholder="Search by country or code"
+							autocomplete="country-name"
+							aria-describedby={describedBy}
+							aria-invalid={invalid}
+							onfocus={(event) => focusCountry(event.currentTarget)}
+							onclick={() => (countryOpen = true)}
+							oninput={(event) => {
+								countryQuery = event.currentTarget.value;
+								countryOpen = true;
+							}}
+						/>
+						<Combobox.Trigger class="location-picker__trigger" aria-label="Show countries">
+							<span aria-hidden="true">{@html chevronDownIcon}</span>
+						</Combobox.Trigger>
+					</div>
+					<Combobox.Portal>
+						<Combobox.Content
+							class="location-picker__menu"
+							data-elevation="elevated"
+							align="start"
+							sideOffset={4}
+							collisionPadding={8}
+						>
+							<Combobox.Viewport class="location-picker__viewport">
+								{#each countryResults as country (country.isoCode)}
+									<Combobox.Item
+										value={country.isoCode}
+										label={country.name}
+										class="location-picker__option"
 									>
-									<span class="location-picker__option-copy"><strong>{country.name}</strong></span>
-									{#if countryCode === country.isoCode}<span
-											class="location-picker__check"
-											aria-hidden="true">{@html checkIcon}</span
-										>{/if}
-								</Combobox.Item>
-							{:else}<div class="location-picker__empty">
-									No countries match “{countryQuery}”.
-								</div>{/each}
-						</Combobox.Viewport>
-					</Combobox.Content>
-				</Combobox.Portal>
-			</Combobox.Root>
+										<span class="location-picker__country-code" aria-hidden="true"
+											>{country.isoCode}</span
+										>
+										<span class="location-picker__option-copy"><strong>{country.name}</strong></span
+										>
+										{#if countryCode === country.isoCode}<span
+												class="location-picker__check"
+												aria-hidden="true">{@html checkIcon}</span
+											>{/if}
+									</Combobox.Item>
+								{:else}<div class="location-picker__empty">
+										No countries match “{countryQuery}”.
+									</div>{/each}
+							</Combobox.Viewport>
+						</Combobox.Content>
+					</Combobox.Portal>
+				</Combobox.Root>
+			{/key}
 		</div>
 
 		<div class="location-picker__field">
@@ -200,67 +228,72 @@
 				>City{#if required}
 					<span aria-hidden="true">*</span>{/if}</label
 			>
-			<Combobox.Root
-				type="single"
-				bind:value={selectedCityValue}
-				bind:open={cityOpen}
-				inputValue={cityInputValue}
-				items={cityItems}
-				disabled={!selectedCountry}
-				onValueChange={chooseCity}
-			>
-				<div class="location-picker__control">
-					<span class="location-picker__search" aria-hidden="true">{@html searchIcon}</span>
-					<Combobox.Input
-						id={`${id}-city`}
-						placeholder={selectedCountry ? 'Search cities' : 'Select a country first'}
-						autocomplete="address-level2"
-						aria-describedby={describedBy}
-						aria-invalid={invalid}
-						onfocus={(event) => focusCity(event.currentTarget)}
-						onclick={() => (cityOpen = true)}
-						oninput={(event) => {
-							cityQuery = event.currentTarget.value;
-							cityOpen = true;
-						}}
-					/>
-					<Combobox.Trigger
-						class="location-picker__trigger"
-						aria-label="Show cities"
-						disabled={!selectedCountry}
-					>
-						<span aria-hidden="true">{@html chevronDownIcon}</span>
-					</Combobox.Trigger>
-				</div>
-				<Combobox.Portal>
-					<Combobox.Content
-						class="location-picker__menu"
-						data-elevation="elevated"
-						align="start"
-						sideOffset={4}
-						collisionPadding={8}
-					>
-						<Combobox.Viewport class="location-picker__viewport">
-							{#each cityResults as city (cityValue(city))}
-								<Combobox.Item
-									value={cityValue(city)}
-									label={city.name}
-									class="location-picker__option"
-								>
-									<span class="location-picker__option-copy"
-										><strong>{city.name}</strong>{#if city.stateCode}<small>{city.stateCode}</small
-											>{/if}</span
+			{#key cityResetKey}
+				<Combobox.Root
+					type="single"
+					bind:value={selectedCityValue}
+					bind:open={cityOpen}
+					inputValue={cityInputValue}
+					items={cityItems}
+					disabled={!selectedCountry}
+					onValueChange={chooseCity}
+				>
+					<div class="location-picker__control">
+						<span class="location-picker__search" aria-hidden="true">{@html searchIcon}</span>
+						<Combobox.Input
+							id={`${id}-city`}
+							placeholder={selectedCountry ? 'Search cities' : 'Select a country first'}
+							autocomplete="address-level2"
+							aria-describedby={describedBy}
+							aria-invalid={invalid}
+							onfocus={(event) => focusCity(event.currentTarget)}
+							onclick={() => (cityOpen = true)}
+							oninput={(event) => {
+								cityQuery = event.currentTarget.value;
+								cityOpen = true;
+							}}
+						/>
+						<Combobox.Trigger
+							class="location-picker__trigger"
+							aria-label="Show cities"
+							disabled={!selectedCountry}
+						>
+							<span aria-hidden="true">{@html chevronDownIcon}</span>
+						</Combobox.Trigger>
+					</div>
+					<Combobox.Portal>
+						<Combobox.Content
+							class="location-picker__menu"
+							data-elevation="elevated"
+							align="start"
+							sideOffset={4}
+							collisionPadding={8}
+						>
+							<Combobox.Viewport class="location-picker__viewport">
+								{#each cityResults as city (cityValue(city))}
+									<Combobox.Item
+										value={cityValue(city)}
+										label={city.name}
+										class="location-picker__option"
 									>
-									{#if selectedCityValue === cityValue(city)}<span
-											class="location-picker__check"
-											aria-hidden="true">{@html checkIcon}</span
-										>{/if}
-								</Combobox.Item>
-							{:else}<div class="location-picker__empty">No cities match “{cityQuery}”.</div>{/each}
-						</Combobox.Viewport>
-					</Combobox.Content>
-				</Combobox.Portal>
-			</Combobox.Root>
+										<span class="location-picker__option-copy"
+											><strong>{city.name}</strong>{#if city.stateCode}<small
+													>{city.stateCode}</small
+												>{/if}</span
+										>
+										{#if selectedCityValue === cityValue(city)}<span
+												class="location-picker__check"
+												aria-hidden="true">{@html checkIcon}</span
+											>{/if}
+									</Combobox.Item>
+								{:else}<div class="location-picker__empty">
+										No cities match “{cityQuery}”.
+									</div>{/each}
+							</Combobox.Viewport>
+						</Combobox.Content>
+					</Combobox.Portal>
+				</Combobox.Root>
+			{/key}
 		</div>
 	</div>
 	{#if errorMessage}<p class="location-picker__error" id={`${id}-error`} role="alert">

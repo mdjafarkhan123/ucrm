@@ -256,6 +256,17 @@ organization-resolved, idempotent, and safe under out-of-order delivery.
 Recheck recipients, permissions, status, amounts, schedules, secure links, suppression, allowance, and
 sender eligibility immediately before sending. Rebuild from current data or cancel with a clear reason.
 
+The worker claims work only through one atomic database command. That command rechecks the current
+organization state and email pause, confirms that the recorded recipient is still an active email method for
+the same customer, resolves the applicable normal or protected-essential allowance, and resolves an enabled
+sender on a verified healthy domain. The sender and eligibility decision come from stored UCRM authority,
+never from caller-supplied claims. A passing row is claimed and returned with its resolved sender in the same
+transaction. A temporary failure remains unclaimed and deferred; a permanently stale recipient or an
+automated send whose configured sender is permanently invalid is cancelled with a safe reason. Manual email
+whose original sender is no longer eligible is held for review and is never silently reassigned. Every retry
+repeats the same checks. Provider submission and usage counting
+remain outside the claim transaction; usage is recorded once only after provider acceptance.
+
 Transient failures retry with increasing delays:
 
 - direct replies, requested quotes, and invoices retry for up to 24 hours;

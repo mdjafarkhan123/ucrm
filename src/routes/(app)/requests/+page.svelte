@@ -146,146 +146,152 @@
 
 <svelte:head><title>Requests · Contractor CRM</title></svelte:head>
 
-<PageContainer variant="fill">
-	<PageHeader title="Requests" description="Every job someone has asked you to look at.">
-		{#snippet actions()}
-			<Button variant="primary" href={resolve('/(app)/requests/new')}>New Request</Button>
-			<span class="requests-header__action" title={moreActionsReason}>
-				<Button variant="secondary" disabled>More Actions</Button>
-				<span class="requests-header__reason">{moreActionsReason}</span>
-			</span>
-		{/snippet}
-	</PageHeader>
+<div class="page-scroller">
+	<PageContainer variant="fill">
+		<PageHeader title="Requests" description="Every job someone has asked you to look at.">
+			{#snippet actions()}
+				<Button variant="primary" href={resolve('/(app)/requests/new')}>New Request</Button>
+				<span class="requests-header__action" title={moreActionsReason}>
+					<Button variant="secondary" disabled>More Actions</Button>
+					<span class="requests-header__reason">{moreActionsReason}</span>
+				</span>
+			{/snippet}
+		</PageHeader>
 
-	<div class="requests-stats">
-		<StatusOverviewCard rows={overviewRows} loading={countsQuery.isPending} />
-		<KpiCard
-			label="New requests"
-			value="—"
-			note="Once there are 30 days of requests to compare"
-			icon={trendingIcon}
-			variant="compact"
-		/>
-		<KpiCard
-			label="Conversion rate"
-			value="—"
-			note="Once requests turn into quotes and jobs"
-			icon={chartIcon}
-			variant="compact"
-		/>
-		<KpiCard
-			label="Assessments booked"
-			value="—"
-			note="Once assessments are being scheduled"
-			icon={calendarIcon}
-			variant="compact"
-		/>
-	</div>
-
-	<div class="requests-toolbar">
-		<div class="requests-toolbar__search">
-			<SearchInput id="requests-search" bind:value={search} placeholder="Search requests" />
+		<div class="requests-stats">
+			<StatusOverviewCard rows={overviewRows} loading={countsQuery.isPending} />
+			<KpiCard
+				label="New requests"
+				value="—"
+				note="Once there are 30 days of requests to compare"
+				icon={trendingIcon}
+				variant="compact"
+			/>
+			<KpiCard
+				label="Conversion rate"
+				value="—"
+				note="Once requests turn into quotes and jobs"
+				icon={chartIcon}
+				variant="compact"
+			/>
+			<KpiCard
+				label="Assessments booked"
+				value="—"
+				note="Once assessments are being scheduled"
+				icon={calendarIcon}
+				variant="compact"
+			/>
 		</div>
-		<!-- eslint-disable svelte/no-at-html-tags -->
-		<button
-			type="button"
-			class="requests-toolbar__filters-toggle"
-			class:requests-toolbar__filters-toggle--active={hasActiveFilters}
-			aria-pressed={filtersOpen}
-			onclick={() => (filtersOpen = !filtersOpen)}
-		>
-			<span aria-hidden="true">{@html filterIcon}</span>
-			Filters{hasActiveFilters ? ' •' : ''}
-		</button>
-		<!-- eslint-enable svelte/no-at-html-tags -->
-	</div>
 
-	{#if filtersOpen}
-		<FilterBar onClear={hasActiveFilters ? () => (status = '') : undefined}>
-			<FilterField id="requests-status-filter" label="Status">
-				<Select
-					id="requests-status-filter"
-					value={status}
-					onchange={(value) => (status = value as StoredRequestStatus | '')}
-					options={statusOptions}
-				/>
-			</FilterField>
-		</FilterBar>
-	{/if}
-
-	{#if selectedIds.size > 0}
-		<div class="requests-bulk-bar">
-			<span>{selectedIds.size} selected</span>
-			<span class="requests-bulk-bar__action" title={bulkReason}>
-				<Button variant="secondary" size="small" disabled>Archive</Button>
-				<span class="requests-bulk-bar__reason">{bulkReason}</span>
-			</span>
+		<div class="requests-toolbar">
+			<div class="requests-toolbar__search">
+				<SearchInput id="requests-search" bind:value={search} placeholder="Search requests" />
+			</div>
+			<!-- eslint-disable svelte/no-at-html-tags -->
+			<button
+				type="button"
+				class="requests-toolbar__filters-toggle"
+				class:requests-toolbar__filters-toggle--active={hasActiveFilters}
+				aria-pressed={filtersOpen}
+				onclick={() => (filtersOpen = !filtersOpen)}
+			>
+				<span aria-hidden="true">{@html filterIcon}</span>
+				Filters{hasActiveFilters ? ' •' : ''}
+			</button>
+			<!-- eslint-enable svelte/no-at-html-tags -->
 		</div>
-	{/if}
 
-	{#if requestsQuery.isPending}
-		<LoadingSkeleton variant="table" label="Loading requests" rows={5} />
-	{:else if requestsQuery.isError}
-		<ErrorState description="Requests could not be loaded. Refresh and try again." />
-	{:else if requests.length === 0}
-		<EmptyState
-			icon={clipboardIcon}
-			title={hasActiveFilters || debouncedSearch ? 'No matching requests' : 'No requests yet'}
-			description={hasActiveFilters || debouncedSearch
-				? 'Try a different search term or clear your filters.'
-				: 'Work people ask you to look at will show up here.'}
-		/>
-	{:else}
-		<DataTable
-			{columns}
-			items={requests}
-			rowId={(request) => request.id}
-			caption="Requests"
-			selectable
-			bind:selectedIds
-			rowLabel={(request) => `Select ${request.title}`}
-			onRowActivate={(request) => goto(requestHref(request))}
-			{sort}
-			onSortChange={handleSortChange}
-		>
-			{#snippet row(request: RequestListItem)}
-				<th scope="row">
-					<div class="requests-table__client">
-						<Avatar id={request.client?.id ?? request.id} name={clientName(request)} size="small" />
-						<span>{clientName(request)}</span>
-					</div>
-				</th>
-				<td>
-					<a class="requests-table__title" href={requestHref(request)}>{request.title}</a>
-				</td>
-				<td>{propertyAddress(request.property)}</td>
-				<td>{request.email ?? request.phone ?? '—'}</td>
-				<td>{dateFormat.format(new Date(request.requested_at))}</td>
-				<td>
-					<StatusBadge status={REQUEST_STATUS_TONES[request.status]}>
-						{REQUEST_STATUS_LABELS[request.status]}
-					</StatusBadge>
-				</td>
-			{/snippet}
-			{#snippet rowActions(request: RequestListItem)}
-				<DropdownMenu
-					items={[
-						{ label: 'View request', onSelect: () => void goto(requestHref(request)) },
-						{ label: 'Archive', onSelect: () => {}, disabled: true }
-					]}
-					triggerLabel={`Actions for ${request.title}`}
-				/>
-			{/snippet}
-			{#snippet footer()}
-				<ListLoadMore
-					hasNextPage={requestsQuery.hasNextPage}
-					isFetchingNextPage={requestsQuery.isFetchingNextPage}
-					onLoadMore={() => requestsQuery.fetchNextPage()}
-				/>
-			{/snippet}
-		</DataTable>
-	{/if}
-</PageContainer>
+		{#if filtersOpen}
+			<FilterBar onClear={hasActiveFilters ? () => (status = '') : undefined}>
+				<FilterField id="requests-status-filter" label="Status">
+					<Select
+						id="requests-status-filter"
+						value={status}
+						onchange={(value) => (status = value as StoredRequestStatus | '')}
+						options={statusOptions}
+					/>
+				</FilterField>
+			</FilterBar>
+		{/if}
+
+		{#if selectedIds.size > 0}
+			<div class="requests-bulk-bar">
+				<span>{selectedIds.size} selected</span>
+				<span class="requests-bulk-bar__action" title={bulkReason}>
+					<Button variant="secondary" size="small" disabled>Archive</Button>
+					<span class="requests-bulk-bar__reason">{bulkReason}</span>
+				</span>
+			</div>
+		{/if}
+
+		{#if requestsQuery.isPending}
+			<LoadingSkeleton variant="table" label="Loading requests" rows={5} />
+		{:else if requestsQuery.isError}
+			<ErrorState description="Requests could not be loaded. Refresh and try again." />
+		{:else if requests.length === 0}
+			<EmptyState
+				icon={clipboardIcon}
+				title={hasActiveFilters || debouncedSearch ? 'No matching requests' : 'No requests yet'}
+				description={hasActiveFilters || debouncedSearch
+					? 'Try a different search term or clear your filters.'
+					: 'Work people ask you to look at will show up here.'}
+			/>
+		{:else}
+			<DataTable
+				{columns}
+				items={requests}
+				rowId={(request) => request.id}
+				caption="Requests"
+				selectable
+				bind:selectedIds
+				rowLabel={(request) => `Select ${request.title}`}
+				onRowActivate={(request) => goto(requestHref(request))}
+				{sort}
+				onSortChange={handleSortChange}
+			>
+				{#snippet row(request: RequestListItem)}
+					<th scope="row">
+						<div class="requests-table__client">
+							<Avatar
+								id={request.client?.id ?? request.id}
+								name={clientName(request)}
+								size="small"
+							/>
+							<span>{clientName(request)}</span>
+						</div>
+					</th>
+					<td>
+						<a class="requests-table__title" href={requestHref(request)}>{request.title}</a>
+					</td>
+					<td>{propertyAddress(request.property)}</td>
+					<td>{request.email ?? request.phone ?? '—'}</td>
+					<td>{dateFormat.format(new Date(request.requested_at))}</td>
+					<td>
+						<StatusBadge status={REQUEST_STATUS_TONES[request.status]}>
+							{REQUEST_STATUS_LABELS[request.status]}
+						</StatusBadge>
+					</td>
+				{/snippet}
+				{#snippet rowActions(request: RequestListItem)}
+					<DropdownMenu
+						items={[
+							{ label: 'View request', onSelect: () => void goto(requestHref(request)) },
+							{ label: 'Archive', onSelect: () => {}, disabled: true }
+						]}
+						triggerLabel={`Actions for ${request.title}`}
+					/>
+				{/snippet}
+				{#snippet footer()}
+					<ListLoadMore
+						hasNextPage={requestsQuery.hasNextPage}
+						isFetchingNextPage={requestsQuery.isFetchingNextPage}
+						onLoadMore={() => requestsQuery.fetchNextPage()}
+					/>
+				{/snippet}
+			</DataTable>
+		{/if}
+	</PageContainer>
+</div>
 
 <style lang="scss">
 	.requests-table__client {

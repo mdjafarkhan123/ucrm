@@ -8,6 +8,7 @@ export type ToastItem = {
 	title: string;
 	message?: string;
 	duration: number;
+	loading?: boolean;
 };
 
 export type ToastManager = {
@@ -18,6 +19,7 @@ export type ToastManager = {
 	error: (title: string, message?: string) => number;
 	warning: (title: string, message?: string) => number;
 	info: (title: string, message?: string) => number;
+	loading: (title: string, message?: string) => number;
 };
 
 const TOAST_CONTEXT = Symbol('toast-manager');
@@ -54,7 +56,9 @@ export function createToastManager(): ToastManager {
 		success: (title, message) => show({ variant: 'success', title, message }),
 		error: (title, message) => show({ variant: 'error', title, message }),
 		warning: (title, message) => show({ variant: 'warning', title, message }),
-		info: (title, message) => show({ variant: 'info', title, message })
+		info: (title, message) => show({ variant: 'info', title, message }),
+		loading: (title, message) =>
+			show({ variant: 'info', title, message, loading: true, duration: 0 })
 	};
 }
 

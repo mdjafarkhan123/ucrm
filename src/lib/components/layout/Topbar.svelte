@@ -7,6 +7,9 @@
 	import menuIcon from '@tabler/icons/outline/menu-2.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import userIcon from '@tabler/icons/outline/user.svg?raw';
+	import logoutIcon from '@tabler/icons/outline/logout.svg?raw';
+	import { resolve } from '$app/paths';
+	import Badge from '$lib/components/ui/Badge.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 
 	let {
@@ -14,13 +17,21 @@
 		searchPlaceholder = 'Search',
 		accountLabel,
 		notifications,
-		account
+		account = null,
+		showSecurityLink = false,
+		isSigningOut = false,
+		signOutError = '',
+		onSignOut
 	}: {
 		onmenutoggle?: () => void;
 		searchPlaceholder?: string;
 		accountLabel: string;
 		notifications?: Snippet;
-		account?: Snippet;
+		account?: { name: string | null; email: string | null; role: string } | null;
+		showSecurityLink?: boolean;
+		isSigningOut?: boolean;
+		signOutError?: string;
+		onSignOut?: () => void;
 	} = $props();
 
 	let searchValue = $state('');
@@ -44,6 +55,10 @@
 		localStorage.setItem('ucrm-theme', isDark ? 'dark' : 'light');
 		applyTheme(isDark);
 	}
+
+	function accountRoleLabel(role: string) {
+		return role === 'admin' ? 'Administrator' : `${role[0].toUpperCase()}${role.slice(1)}`;
+	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -66,7 +81,7 @@
 		<DropdownMenu.Trigger class="topbar__add">
 			<span aria-hidden="true">{@html plusIcon}</span><span class="topbar__add-label">Add New</span>
 		</DropdownMenu.Trigger>
-		<DropdownMenu.Portal>
+		<DropdownMenu.Portal disabled>
 			<DropdownMenu.Content class="topbar__menu-panel" align="start" sideOffset={8}>
 				<p class="topbar__menu-empty">Nothing to create yet</p>
 			</DropdownMenu.Content>
@@ -92,10 +107,35 @@
 		<DropdownMenu.Trigger class="topbar__account" aria-label={`Account menu for ${accountLabel}`}>
 			<span class="topbar__avatar" aria-hidden="true">{@html userIcon}</span>
 		</DropdownMenu.Trigger>
-		<DropdownMenu.Portal>
+		<DropdownMenu.Portal disabled>
 			<DropdownMenu.Content class="topbar__menu-panel" align="end" sideOffset={8}>
 				<p class="topbar__menu-heading">{accountLabel}</p>
-				{#if account}{@render account()}{/if}
+				{#if account}
+					<div class="topbar__account-summary">
+						<div class="topbar__account-identity">
+							<strong>{account.name ?? 'Name not set'}</strong>
+							<Badge size="base">{accountRoleLabel(account.role)}</Badge>
+						</div>
+						{#if account.email}<span>{account.email}</span>{/if}
+					</div>
+				{/if}
+				{#if showSecurityLink}
+					<a class="topbar__menu-item" href={resolve('/settings/security')}>Password and security</a
+					>
+				{/if}
+				{#if onSignOut}
+					<button
+						class="topbar__menu-item"
+						type="button"
+						onclick={onSignOut}
+						disabled={isSigningOut}
+					>
+						<span aria-hidden="true">{@html logoutIcon}</span>
+						{isSigningOut ? 'Signing out…' : 'Sign out'}
+					</button>
+				{/if}
+				{#if signOutError}<span class="topbar__sign-out-error" role="alert">{signOutError}</span
+					>{/if}
 			</DropdownMenu.Content>
 		</DropdownMenu.Portal>
 	</DropdownMenu.Root>
@@ -227,6 +267,36 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
+	:global(.topbar__account-summary) {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smallest);
+		padding: var(--space-small) var(--space-small) var(--space-slim);
+		margin-bottom: var(--space-small);
+		border-bottom: var(--border-base) solid var(--color-border);
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		overflow: hidden;
+	}
+	:global(.topbar__account-summary strong) {
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+	:global(.topbar__account-identity) {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		min-width: 0;
+	}
+	:global(.topbar__account-identity .badge) {
+		flex: 0 0 auto;
+	}
+	:global(.topbar__account-summary strong),
+	:global(.topbar__account-summary span) {
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+	}
 	:global(.topbar__menu-item) {
 		display: flex;
 		width: 100%;
@@ -248,6 +318,12 @@
 	:global(.topbar__menu-item:focus-visible) {
 		outline: none;
 		box-shadow: var(--shadow-focus);
+	}
+	:global(.topbar__sign-out-error) {
+		display: block;
+		padding: 0 var(--space-small) var(--space-small);
+		color: var(--color-critical);
+		font-size: var(--typography--fontSize-small);
 	}
 	.topbar__menu {
 		display: none;

@@ -59,6 +59,10 @@
 	let featureKeys = $state<string[]>([]);
 	let employeeSeatState = $state<LimitState>('not_included');
 	let employeeSeatCount = $state('');
+	let operationalEmailState = $state<LimitState>('not_included');
+	let operationalEmailCount = $state('');
+	let essentialEmailState = $state<LimitState>('not_included');
+	let essentialEmailCount = $state('');
 	let actionError = $state('');
 	let actionMessage = $state('');
 	let publishConfirmed = $state(false);
@@ -100,6 +104,16 @@
 						key: 'employee_seats',
 						state: employeeSeatState,
 						value: employeeSeatState === 'numeric' ? Number(employeeSeatCount) : null
+					},
+					email_allowances: {
+						operational: {
+							state: operationalEmailState,
+							value: operationalEmailState === 'numeric' ? Number(operationalEmailCount) : null
+						},
+						essential: {
+							state: essentialEmailState,
+							value: essentialEmailState === 'numeric' ? Number(essentialEmailCount) : null
+						}
 					}
 				})
 			});
@@ -184,7 +198,19 @@
 		featureKeys = source?.features ?? [];
 		const seats = source?.limits.find((limit) => limit.limit_key === 'employee_seats');
 		employeeSeatState = seats?.limit_state ?? 'not_included';
-		employeeSeatCount = seats?.limit_value ? String(seats.limit_value) : '';
+		employeeSeatCount = seats?.limit_value !== null ? String(seats.limit_value) : '';
+		const operationalEmail = source?.limits.find(
+			(limit) => limit.limit_key === 'operational_email_recipients'
+		);
+		operationalEmailState = operationalEmail?.limit_state ?? 'not_included';
+		operationalEmailCount =
+			operationalEmail?.limit_value !== null ? String(operationalEmail.limit_value) : '';
+		const essentialEmail = source?.limits.find(
+			(limit) => limit.limit_key === 'essential_email_recipients'
+		);
+		essentialEmailState = essentialEmail?.limit_state ?? 'not_included';
+		essentialEmailCount =
+			essentialEmail?.limit_value !== null ? String(essentialEmail.limit_value) : '';
 		publishConfirmed = false;
 	}
 
@@ -425,6 +451,63 @@
 										required
 									/></label
 								>{/if}
+						</div>
+					</fieldset>
+					<fieldset>
+						<legend>Email allowances</legend>
+						<p class="packages__field-hint">
+							Allowances reset at the organization’s subscription-period boundary. Essential mail
+							uses its own protected reserve; ordinary mail cannot consume it.
+						</p>
+						<div class="packages__allowance-controls">
+							<div class="packages__allowance-group">
+								<h3>Normal recipients</h3>
+								<div class="packages__seat-controls">
+									<div class="packages__seat-field">
+										<label for="operational-email-state">Allowance type</label>
+										<Select
+											id="operational-email-state"
+											value={operationalEmailState}
+											options={employeeSeatOptions}
+											onchange={(nextValue) => (operationalEmailState = nextValue as LimitState)}
+										/>
+									</div>
+									{#if operationalEmailState === 'numeric'}
+										<label
+											><span>Recipients per period</span><input
+												bind:value={operationalEmailCount}
+												type="number"
+												min="1"
+												required
+											/></label
+										>
+									{/if}
+								</div>
+							</div>
+							<div class="packages__allowance-group">
+								<h3>Protected essential reserve</h3>
+								<div class="packages__seat-controls">
+									<div class="packages__seat-field">
+										<label for="essential-email-state">Reserve type</label>
+										<Select
+											id="essential-email-state"
+											value={essentialEmailState}
+											options={employeeSeatOptions}
+											onchange={(nextValue) => (essentialEmailState = nextValue as LimitState)}
+										/>
+									</div>
+									{#if essentialEmailState === 'numeric'}
+										<label
+											><span>Recipients per period</span><input
+												bind:value={essentialEmailCount}
+												type="number"
+												min="1"
+												required
+											/></label
+										>
+									{/if}
+								</div>
+							</div>
 						</div>
 					</fieldset>
 					<div class="packages__actions">
@@ -743,6 +826,7 @@
 		padding: 0;
 	}
 	.packages__seat-controls,
+	.packages__allowance-controls,
 	.packages__actions {
 		display: flex;
 		flex-wrap: wrap;
@@ -752,6 +836,31 @@
 	.packages__seat-controls > label,
 	.packages__seat-controls > .packages__seat-field {
 		min-width: 220px;
+	}
+	.packages__field-hint {
+		max-width: 65ch;
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-weight: 400;
+		line-height: var(--typography--lineHeight-base);
+	}
+	.packages__allowance-controls {
+		align-items: stretch;
+	}
+	.packages__allowance-group {
+		display: grid;
+		flex: 1 1 320px;
+		gap: var(--space-base);
+		padding: var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
+	}
+	.packages__allowance-group h3 {
+		margin: 0;
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-large);
+		line-height: var(--typography--lineHeight-large);
 	}
 	.packages__actions {
 		justify-content: flex-end;

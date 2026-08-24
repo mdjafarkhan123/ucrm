@@ -5,6 +5,15 @@
 - **Task** — An internal follow-up or coordination item assigned to a team member, optionally due on a date.
   It is not customer work, a service appointment, or a calendar-blocking Event. _Avoid_: Job, Visit, or Event.
 
+## Commercial documents
+
+- **Price book** — The organization's reusable Product and Service line-item templates. Adding an item copies
+  its current values into a work document; the Price book is never the authoritative source for that document's
+  pricing and its items may be added, changed, or deleted independently. _Avoid_: Product database or live price
+  source.
+- **Labor** — A Service classification for work performed by people. It is not a third Price book item type
+  beside Product and Service.
+
 ## Client relationships
 
 - **Client** — The contractor's complete relationship with a person or company, whether prospective or paying. _Avoid_: Contact or account when referring to the relationship record.
@@ -36,6 +45,10 @@
 - **Organization entitlement** — Platform-controlled access that determines which product capabilities and limits are available to a contractor organization. It is separate from team-member permissions.
 - **Team member** — A person with access to a contractor organization, including its owner, office staff, sales staff, field workers, finance staff, or subcontractors. _Avoid_: Employee, when referring to every organization user.
 - **Team-member permission** — A contractor-controlled rule describing what one team member may do inside the organization. The contractor owner or administrator normally manages it.
+- **Organization Owner** — The single team member with ultimate control of a contractor organization. Ownership is transferred through a protected process, not changed through ordinary role editing.
+- **Team-member role** — One of the standard access starting points: Administrator, Office, Sales, Field, or Finance. A team member may have explicit permission adjustments without creating a new named role.
+- **Pending team member** — A person invited to an organization who consumes a seat but has no application access until accepting the invitation.
+- **Deactivated team member** — A former active member whose access and sessions are revoked while historical attribution is preserved and restoration remains possible.
 - **Integration eligibility** — Platform-controlled permission and provider readiness that determine whether an organization may use an integration. It overrides but preserves the contractor's integration preferences.
 - **Integration preference** — Contractor-controlled configuration describing how an eligible integration behaves for that organization.
 - **Commercial timezone** — The owner-controlled timezone used for paid-through and grace-period deadlines. It is separate from the contractor-controlled operational timezone.

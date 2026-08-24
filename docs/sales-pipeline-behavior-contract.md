@@ -1,6 +1,6 @@
 # Sales Pipeline behavior contract
 
-Status: Approved 2026-08-18. Revised 2026-08-19 for the actionable Opportunity Brief.
+Status: Approved 2026-08-18. Revised 2026-08-24 for the unified board and stage customization model.
 Owner: Sales Pipeline campaign
 
 ## Purpose
@@ -29,7 +29,22 @@ wins.
 
 ## First-release board
 
-The board copies Jobber's seven protected stages, in two groups:
+The board is one left-to-right commercial journey with five visible columns by default:
+
+**New requests → Assessment → Draft → Awaiting response → Changes requested.**
+
+Requests and Quotes remain visibly identified and remain separate source records underneath. A subtle boundary
+between Assessment and Draft marks the Request-to-Quote conversion without splitting the journey into stacked
+boards. Columns keep a useful fixed width and the board scrolls horizontally instead of compressing all five
+to fit the viewport.
+
+The default Assessment column is a presentation group over three protected Request states: Assessment
+unscheduled, Assessment scheduled, and Assessment completed. Cards show the real state and, when scheduled,
+the appointment date/time. **Settings → Pipeline → Show detailed assessment stages** expands Assessment into
+those three columns, producing the seven-column detailed view. This setting changes presentation only; it
+does not rewrite Request state, transitions, history, or reporting.
+
+The seven underlying protected stages and their two record groups are:
 
 **Requests** — New requests, Assessment unscheduled, Assessment scheduled, Assessment completed.  
 **Quotes** — Draft, Awaiting response, Changes requested.
@@ -51,14 +66,25 @@ three are connected in Pipeline Part 5.
 
 Dragging copies Jobber exactly when it arrives: forward only, and dropping into a protected stage opens or
 performs the real required action, with the card moving only after that action succeeds. Backward dragging
-cannot undo a business fact. Part 1 ships without dragging, because only one group exists, and cards must not
-look draggable until the behavior is real.
+cannot undo a business fact. Dragging and refused drops remain browser-only; they never ask the server to
+write. A valid drop shows persistent saving feedback, keeps the card in its confirmed stage, and moves it only
+after the server action and board refresh succeed. Part 1 ships without dragging, because only one group
+exists, and cards must not look draggable until the behavior is real.
 
 Stage age is measured from `stage_entered_at`, and follows Jobber's freshness rule: green under one hour,
 neutral from one to 24 hours, red after 24 hours.
 
-Custom stage creation, renaming, deletion, and reordering are later enhancements. Add them only after real user
-evidence justifies the complexity.
+Arbitrary custom stages are not part of this release. A later release may add section-bound custom follow-up
+stages under these rules:
+
+- A custom stage belongs to either Requests or Quotes and cannot cross the conversion boundary.
+- Protected stages cannot be renamed, reordered, hidden, disabled, or deleted.
+- Custom stages organize follow-up only; they never replace or rewrite Request, Assessment, or Quote status.
+- A real system action always moves the card to the protected stage that action establishes.
+- Only owners and administrators configure stages through Settings; the board may link there.
+- Disabling or removing a populated custom stage requires a destination in the same section and explicit bulk
+  reassignment. Automation dependencies must be resolved first, and historical stage events retain their
+  original identity and label.
 
 Money on cards and columns, ownership, and the filter and sort bar arrive with their own parts. Nothing shows a
 placeholder value: a board without money shows no money rather than `$0.00`.
@@ -89,6 +115,10 @@ requirement.
 
 - Human movement into a protected stage must satisfy that stage's domain action.
 - Backward dragging cannot undo completed business facts.
+- Accidental forward movement needs a recovery path, but not a universal backward move. A safely reversible
+  domain action may offer a short-lived Undo only while it remains the latest action and no later change has
+  made reversal unsafe. An irreversible action requires confirmation before the drag commits. The card menu
+  does not offer a permanent generic "Go back" action.
 - Real Request, Assessment, and Quote activity may advance the card automatically.
 - Automation never moves a card backward or overwrites later human progress.
 - Repeated writes and provider/browser retries cannot duplicate transitions or history.
@@ -135,8 +165,8 @@ The Pipeline is a desktop web experience. A separate mobile app will be built la
 requirements, so this campaign has no mobile UI and no mobile acceptance checks. Jobber's own app has no
 pipeline either.
 
-The board scrolls once, at page level. Each column offers an accessible `Load more` control for its next page;
-automatic loading may enhance that later.
+The page owns vertical scrolling and the board owns one horizontal scroll for its fixed-width columns. Each
+column offers an accessible `Load more` control for its next page; automatic loading may enhance that later.
 
 ## Boundaries
 

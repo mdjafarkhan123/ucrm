@@ -40,6 +40,24 @@ export const POST: RequestHandler = async (event) => {
 			console.error('Owner package version operation was rejected.', error);
 			return json({ error: 'The package version could not be saved.' }, { status: 409 });
 		}
+		const emailAllowances = input.email_allowances;
+		if (emailAllowances) {
+			const { error: allowanceError } = await getOwnerSupabaseClient().rpc(
+				'manage_platform_package_email_allowances',
+				{
+					target_version_id: data,
+					target_operational_state: emailAllowances.operational.state,
+					target_operational_value: emailAllowances.operational.value as number,
+					target_essential_state: emailAllowances.essential.state,
+					target_essential_value: emailAllowances.essential.value as number,
+					actor_email: session.email
+				}
+			);
+			if (allowanceError) {
+				console.error('Owner package email allowance operation was rejected.', allowanceError);
+				return json({ error: 'The package version could not be saved.' }, { status: 409 });
+			}
+		}
 		return json({ version_id: data, saved: true });
 	} catch (error) {
 		console.error('Could not save owner package version.', error);

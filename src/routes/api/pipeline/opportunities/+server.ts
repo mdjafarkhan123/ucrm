@@ -42,6 +42,10 @@ type BoardPageRow = {
 	task_id: string | null;
 	task_title: string | null;
 	task_due_on: string | null;
+	quote_id: string | null;
+	quote_status: string | null;
+	assessment_starts_at: string | null;
+	assessment_ends_at: string | null;
 };
 
 // One board column at a time. Each column asks for its own page, so a busy stage can keep loading
@@ -84,12 +88,18 @@ export const GET: RequestHandler = async (event) => {
 		return json({ error: 'You cannot sort this board by value.' }, { status: 403 });
 	}
 
-	// A marker cut from a different order cannot be paged with. The board sends a fresh request without
-	// one whenever the controls change, so this only ever catches a hand-edited URL.
+	// A marker cut from a different list cannot be paged with — not from a different order, and not from
+	// a different column. Replaying one column's cursor against another would page cards that column never
+	// showed, and the collapsed Assessment column makes that a real reach rather than a theoretical one.
+	// The board sends a fresh request without a cursor whenever the controls change, so this only ever
+	// catches a hand-edited URL.
 	const cursor = readBoardCursor(parsed.data.cursor);
 	const cursorValueIsBroken =
 		cursor?.sort === 'value' && cursor.phase === 1 && !Number.isFinite(Number(cursor.value));
-	if (parsed.data.cursor && (!cursor || cursor.sort !== sort || cursorValueIsBroken)) {
+	if (
+		parsed.data.cursor &&
+		(!cursor || cursor.column !== stage || cursor.sort !== sort || cursorValueIsBroken)
+	) {
 		return validationError({ cursor: 'Start this column again.' });
 	}
 
@@ -146,6 +156,7 @@ export const GET: RequestHandler = async (event) => {
 		// Present only for a member who may see money. Absent, not null, for everyone else.
 		...(canViewValue ? { estimated_value: row.estimated_value } : {}),
 		request: row.request_id ? { id: row.request_id, status: row.request_status } : null,
+		quote: row.quote_id ? { id: row.quote_id, status: row.quote_status as string } : null,
 		// A member who may not see this client gets the card without the client's details, exactly as
 		// the clients table would have answered.
 		client:
@@ -179,6 +190,12 @@ export const GET: RequestHandler = async (event) => {
 		// Opportunity has none open.
 		task: row.task_id
 			? { id: row.task_id, title: row.task_title as string, due_on: row.task_due_on }
+			: null,
+		// The booked visit, present only once somebody has scheduled one. The collapsed Assessment column
+		// shows three sub-states in one place, and "scheduled" is only a useful thing to read on a card if
+		// it also says when — the Request status alone cannot answer that.
+		assessment: row.assessment_starts_at
+			? { starts_at: row.assessment_starts_at, ends_at: row.assessment_ends_at }
 			: null
 	}));
 
@@ -188,6 +205,7 @@ export const GET: RequestHandler = async (event) => {
 	const nextCursor =
 		hasMore && last
 			? encodeBoardCursor({
+					column: stage,
 					sort,
 					phase: sort === 'value' && last.estimated_value === null ? 2 : 1,
 					value:

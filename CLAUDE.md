@@ -8,7 +8,6 @@
 - **Product:** Multi Tenant Contractor CRM for small field-service businesses.
 - **Core Workflow:** Lead → Request → Quote → Job → Invoice → Payment. Following Jobber CRM
 - **Frontend:** SvelteKit + Svelte 5 Runes + TanStack Query (Client state)
-- **Styling & Icons:** Desktop design first, then mobile version, with SCSS + BEM naming convention + Tabler icon set
 - **UI Primitives:** Native Svelte/HTML for simple controls; Bits UI for complex interactive primitives
 - **Backend & File storage:** Supabase (Remote), Cloudflare r2
 - **Deployment:** Currently on local development mode and Cloudflare tunnel with subdomain and with remote Supabase. Later on a VPS server with local Supabase, Redis etc. All in Docker containers
@@ -82,15 +81,15 @@ session is wrapping up is a gate, not an exemption.
 A campaign is any work that spans more than 3 implementation steps, touches more than 5 files across multiple layers, has dependent or independently resumable stages, needs staged approval or browser verification, or cannot safely finish in one session. Load `.claude/skills/campaign-memory/SKILL.md`
 completely before starting, resuming, handing off, deferring, completing, or cleaning up a campaign — including when Jafar says `read memory and continue`.
 
-If single-session work grows into several parts, stop before expanding scope and propose campaign promotion.
+If a sessions context getting bigger, if there is more tasks and if you think it wont affect the performance of you and wont do any token waste then keep going on, otherwise stop at a point and let user start a new session
 
 ## Non-Negotiable Rules
 
-1. **Writing style.** Talk to Jafar in plain everyday English, no technical jargon. UI copy must sound natural and human — not AI-generated or corporate.
-2. **Live browser tour/verification**: You can delete, add, save any data while using browser to check jobber or this app.
+1. **Communication style:** Start with where we are and what the current task means in everyday language. Explain why it matters before mentioning technical details. Avoid jargon.
+2. **Simplicity Over Complexity:** Always prefer simple, proven industry solutions over complex or overengineered implementations.
 3. **Product Strategy.** Default to proven Jobber/GHL workflows and mental models. Suggest strategic differentiators to help us stand out, but always present proposals to Jafar for approval before planning or implementation.
 4. **Minimal scope.** No extra fields, tables, packages, or refactors unless the task explicitly requires them. Explicit code over generic builders.
-5. **Three layers, three owners.** _Behavior, patterns, and workflow_ follow Jobber for the whole app — load `.claude/skills/jobber/` and tour the live product before designing an interaction. The tour also decides **component boundaries**: work out from Jobber which pieces are shared across screens before building any of them, so we do not build four pages and then rebuild them as one component. _Page structure_ follows Jafar's blueprint for that screen in `Design/*.jpg` — the blueprint decides **both which blocks exist and where they sit** — check for a matching one before building any screen. _Visual design_ follows `.claude/skills/design/` only. Where a blueprint and Jobber disagree, the blueprint wins on the blocks and their placement, and Jobber wins on behavior. When the blueprint shows a block Jobber has no equivalent for, **ask Jafar** — never drop it and never invent its behavior.
+5. **Frontend designing.** Ui blueprint is the source of truth of what exist where as a summary. to build that part you visit jobber and if need then take screenshot `Design/foldername/`, then you design that part like jobber using our apps design skills/variables.
 6. **Svelte 5 only.** No Svelte 4 syntax anywhere.
 7. **SCSS + BEM for all styling. Tabler icons for all icons.** Component styles live inside the component's own `<style lang="scss">` block. Never import component styles through `app.scss`. `app.scss` contains only the global baseline, no per-component import is needed. SCSS variables and mixins are available in every component automatically via Vite `additionalData` — no import needed.
 8. **UI primitives.** Use native HTML/Svelte for simple controls. Use Bits UI only for complex interactive primitives: dialogs, dropdowns, selects/comboboxes, popovers, tooltips, tabs, accordions, date/calendar controls etc. Prefer shared wrapper components when they exist.

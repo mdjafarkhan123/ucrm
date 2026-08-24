@@ -7,6 +7,7 @@ import {
 	type BoardDirection,
 	type BoardDatePreset
 } from '$lib/pipeline/filters';
+import { isBoardColumnKey, type BoardColumnKey } from '$lib/pipeline/stages';
 
 // The board's controls, translated from what a URL can carry into what the database read expects.
 //
@@ -37,10 +38,13 @@ export function sortColumn(sort: BoardSort) {
 	return SORT_COLUMNS[sort];
 }
 
-// A cursor is "<sort>:<phase>:<the sort column's value>|<id>". The sort is in it so a marker cut from one
-// order is refused rather than quietly paging the wrong list. The phase only matters when sorting by
-// value: 1 is the estimated cards, 2 is the unestimated ones that always come after them.
+// A cursor is "<column>:<sort>:<phase>:<the sort column's value>|<id>". Both the column and the sort are
+// in it, because a marker means nothing outside the list it was cut from: replayed against another order
+// it would skip and repeat cards, and replayed against another column it would page a set of cards that
+// column never showed. The phase only matters when sorting by value: 1 is the estimated cards, 2 is the
+// unestimated ones that always come after them.
 export type BoardCursor = {
+	column: BoardColumnKey;
 	sort: BoardSort;
 	phase: 1 | 2;
 	value: string;
@@ -48,7 +52,7 @@ export type BoardCursor = {
 };
 
 export function encodeBoardCursor(cursor: BoardCursor) {
-	return `${cursor.sort}:${cursor.phase}:${cursor.value}|${cursor.id}`;
+	return `${cursor.column}:${cursor.sort}:${cursor.phase}:${cursor.value}|${cursor.id}`;
 }
 
 export function readBoardCursor(raw: string | null | undefined): BoardCursor | null {
@@ -58,17 +62,22 @@ export function readBoardCursor(raw: string | null | undefined): BoardCursor | n
 	const id = raw.slice(separator + 1);
 	if (id.length === 0) return null;
 
+	// Only the three head fields are split off. The value keeps every remaining colon, because an ISO
+	// instant is full of them.
 	const head = raw.slice(0, separator);
 	const firstColon = head.indexOf(':');
 	const secondColon = head.indexOf(':', firstColon + 1);
-	if (firstColon < 1 || secondColon < 0) return null;
+	const thirdColon = head.indexOf(':', secondColon + 1);
+	if (firstColon < 1 || secondColon < 0 || thirdColon < 0) return null;
 
-	const sort = head.slice(0, firstColon) as BoardSort;
+	const column = head.slice(0, firstColon);
+	if (!isBoardColumnKey(column)) return null;
+	const sort = head.slice(firstColon + 1, secondColon) as BoardSort;
 	if (!(BOARD_SORTS as readonly string[]).includes(sort)) return null;
-	const phase = Number(head.slice(firstColon + 1, secondColon));
+	const phase = Number(head.slice(secondColon + 1, thirdColon));
 	if (phase !== 1 && phase !== 2) return null;
 
-	return { sort, phase, value: head.slice(secondColon + 1), id };
+	return { column, sort, phase, value: head.slice(thirdColon + 1), id };
 }
 
 // Every preset ends up as a half-open range: from the first moment of its first day, up to but not

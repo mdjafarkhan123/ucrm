@@ -4,9 +4,20 @@ import { hasPermission, requireOrganizationPermission } from '$lib/server/access
 import { PRIVATE_READ_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { boardSummaryQuerySchema } from '$lib/server/validation/pipeline.schema';
-import { BOARD_STAGES, type BoardStage } from '$lib/pipeline/stages';
+import {
+	ASSESSMENT_GROUP,
+	ASSESSMENT_GROUP_STAGES,
+	BOARD_STAGES,
+	QUOTE_BOARD_STAGES,
+	type AnyBoardStage
+} from '$lib/pipeline/stages';
 import { resolveDateRange, type BoardDateRange } from '$lib/server/pipeline/board';
 import { organizationFormatting, type OrganizationFormatting } from '$lib/server/requests/timezone';
+import { pipelinePresentation } from '$lib/server/pipeline/presentation';
+
+// Both groups' columns, in the fixed order their headings need to add up in. Request stages first, matching
+// the board's own left-to-right group order.
+const ALL_BOARD_STAGES: readonly AnyBoardStage[] = [...BOARD_STAGES, ...QUOTE_BOARD_STAGES];
 
 // Everything the board shows above its cards: the number on every column heading, the money in every
 // column heading, and how many cards the whole board is showing. One grouped query for all of it, never
@@ -48,6 +59,11 @@ export const GET: RequestHandler = async (event) => {
 	// held in process for a few minutes, so this is usually free.
 	const formattingRead = organizationFormatting(event.locals.supabase, check.auth.organization.id);
 
+	// Which board this organization is showing. It rides along with the headings because this is the query
+	// the board already holds and already invalidates — saving the toggle refreshes the numbers and the
+	// shape together, so the board never has to be told twice or reloaded by hand.
+	const presentationRead = pipelinePresentation(event.locals.supabase, check.auth.organization.id);
+
 	const countBetween = (range: BoardDateRange) =>
 		event.locals.supabase.rpc('pipeline_stage_counts', {
 			target_organization_id: check.auth.organization.id,
@@ -61,18 +77,28 @@ export const GET: RequestHandler = async (event) => {
 	// run one after the other. Without one — which is how the board opens — they are independent, so they
 	// go together and the board never waits for a calendar it is not using.
 	if (date === 'all') {
-		const [formattingLookup, counted] = await Promise.all([
+		const [formattingLookup, presentationLookup, counted] = await Promise.all([
 			formattingRead,
+			presentationRead,
 			countBetween({ from: null, to: null })
 		]);
-		if (!formattingLookup.ok || counted.error) return databaseError();
-		return summary(formattingLookup.formatting, counted.data, canViewValue, canEdit);
+		if (!formattingLookup.ok || !presentationLookup.ok || counted.error) return databaseError();
+		return summary(
+			formattingLookup.formatting,
+			presentationLookup.presentation.detailed_assessment_stages,
+			counted.data,
+			canViewValue,
+			canEdit
+		);
 	}
 
-	const formattingLookup = await formattingRead;
-	// A settings row that could not be read is a failure, not a reason to quietly show the wrong currency
-	// or the wrong calendar day.
-	if (!formattingLookup.ok) return databaseError();
+	const [formattingLookup, presentationLookup] = await Promise.all([
+		formattingRead,
+		presentationRead
+	]);
+	// A settings row that could not be read is a failure, not a reason to quietly show the wrong currency,
+	// the wrong calendar day, or the wrong board.
+	if (!formattingLookup.ok || !presentationLookup.ok) return databaseError();
 
 	const counted = await countBetween(
 		resolveDateRange(date, formattingLookup.formatting.timezone, {
@@ -81,41 +107,70 @@ export const GET: RequestHandler = async (event) => {
 		})
 	);
 	if (counted.error) return databaseError();
-	return summary(formattingLookup.formatting, counted.data, canViewValue, canEdit);
+	return summary(
+		formattingLookup.formatting,
+		presentationLookup.presentation.detailed_assessment_stages,
+		counted.data,
+		canViewValue,
+		canEdit
+	);
 };
 
 function summary(
 	formatting: OrganizationFormatting,
+	detailedAssessmentStages: boolean,
 	rows: unknown,
 	canViewValue: boolean,
 	canEdit: boolean
 ): Response {
-	const counts = Object.fromEntries(BOARD_STAGES.map((stage) => [stage, 0])) as Record<
-		BoardStage,
+	const counts = Object.fromEntries(ALL_BOARD_STAGES.map((stage) => [stage, 0])) as Record<
+		AnyBoardStage,
 		number
 	>;
 	// Null stays null: it means nobody has estimated anything in that column, which is not the same
 	// answer as zero, and must never be shown as $0.00.
-	const valueTotals = Object.fromEntries(BOARD_STAGES.map((stage) => [stage, null])) as Record<
-		BoardStage,
+	const valueTotals = Object.fromEntries(ALL_BOARD_STAGES.map((stage) => [stage, null])) as Record<
+		AnyBoardStage,
 		number | null
 	>;
 
 	for (const row of (rows ?? []) as StageCountRow[]) {
 		if (!(row.stage_key in counts)) continue;
-		counts[row.stage_key as BoardStage] = Number(row.open_count);
-		valueTotals[row.stage_key as BoardStage] =
+		counts[row.stage_key as AnyBoardStage] = Number(row.open_count);
+		valueTotals[row.stage_key as AnyBoardStage] =
 			row.value_total === null ? null : Number(row.value_total);
 	}
 
+	// The collapsed column's own heading, added up here rather than in the browser so the number under
+	// "Assessment" can never disagree with the three it is made of. Null stays null on the same rule the
+	// individual columns follow: three columns nobody has estimated total to "nothing estimated", not $0.
+	const groupedCount = ASSESSMENT_GROUP_STAGES.reduce((total, stage) => total + counts[stage], 0);
+	const groupedTotals = ASSESSMENT_GROUP_STAGES.map((stage) => valueTotals[stage]).filter(
+		(total): total is number => total !== null
+	);
+
 	return json(
 		{
-			counts,
-			// The control bar's "showing N" line. Added up from the same four numbers rather than counted
-			// again, so it can never disagree with the headings above the columns.
-			result_count: BOARD_STAGES.reduce((total, stage) => total + counts[stage], 0),
+			counts: {
+				...counts,
+				[ASSESSMENT_GROUP]: groupedCount
+			},
+			// The control bar's "showing N" line, both groups combined -- Jobber's own board shows one
+			// number for the whole board, not one per group. Added up from the same numbers the headings
+			// show rather than counted again, so it can never disagree with them.
+			result_count: ALL_BOARD_STAGES.reduce((total, stage) => total + counts[stage], 0),
 			// Present only for a member who may see money. Absent, not null, for everyone else.
-			...(canViewValue ? { value_totals: valueTotals } : {}),
+			...(canViewValue
+				? {
+						value_totals: {
+							...valueTotals,
+							[ASSESSMENT_GROUP]:
+								groupedTotals.length === 0
+									? null
+									: groupedTotals.reduce((total, value) => total + value, 0)
+						}
+					}
+				: {}),
 			// Whether money exists for this member at all. The board asks once, here, instead of guessing
 			// from whether a card happened to carry a value — a column of blank estimates is not the same
 			// answer as no permission to see them.
@@ -123,6 +178,9 @@ function summary(
 			// Whether this member may assign, reassign, or clear a card's owner. The board asks once, here,
 			// rather than every card guessing from whether it happens to have an owner already.
 			can_edit: canEdit,
+			// Which board to draw: false is the five-column default with one Assessment column, true is the
+			// seven-column detailed view. Presentation only — the counts above are the same either way.
+			detailed_assessment_stages: detailedAssessmentStages,
 			// Money and dates are written the organization's way, not the browser's.
 			currency_code: formatting.currency_code,
 			locale: formatting.locale,

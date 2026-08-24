@@ -53,6 +53,7 @@
 		titleMaxLength = 160,
 		summary,
 		facts,
+		badges,
 		class: className = ''
 	}: {
 		/** Tabler icon for this kind of record, imported with `?raw`. */
@@ -82,6 +83,9 @@
 		summary?: Snippet;
 		/** The label/value rows beside it. Normally `RecordFactsList`. */
 		facts?: Snippet;
+		/** Extra status context beside the main status badge, e.g. a quote's deposit readiness. Omit and
+		 * nothing extra is drawn — the shared header stays ignorant of what any one record type means. */
+		badges?: Snippet;
 		class?: string;
 	} = $props();
 
@@ -99,6 +103,7 @@
 	<div class="work-header__top">
 		<span class="work-header__type" aria-hidden="true">{@html icon}</span>
 		<StatusBadge status={statusTone}>{statusLabel}</StatusBadge>
+		{#if badges}{@render badges()}{/if}
 
 		<div class="work-header__actions">
 			{#if onHistory}

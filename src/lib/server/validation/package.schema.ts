@@ -2,6 +2,27 @@ import { z } from 'zod';
 import { limitKeySchema, packageKeySchema } from './access.schema';
 
 const packageText = z.string().trim().min(1).max(500);
+const allowanceSchema = z
+	.object({
+		state: z.enum(['unlimited', 'not_included', 'numeric']),
+		value: z.number().int().positive().nullable()
+	})
+	.superRefine((allowance, context) => {
+		if (allowance.state === 'numeric' && allowance.value === null) {
+			context.addIssue({
+				code: 'custom',
+				path: ['value'],
+				message: 'Enter at least one recipient for a numeric allowance.'
+			});
+		}
+		if (allowance.state !== 'numeric' && allowance.value !== null) {
+			context.addIssue({
+				code: 'custom',
+				path: ['value'],
+				message: 'Only numeric allowances can include a recipient count.'
+			});
+		}
+	});
 
 export const packageVersionWriteSchema = z.object({
 	package_key: packageKeySchema,
@@ -18,7 +39,11 @@ export const packageVersionWriteSchema = z.object({
 			value: z.number().int().positive().nullable().optional()
 		})
 		.nullable()
-		.optional()
+		.optional(),
+	email_allowances: z.object({
+		operational: allowanceSchema,
+		essential: allowanceSchema
+	})
 });
 
 export const packageVersionPublishSchema = z.object({

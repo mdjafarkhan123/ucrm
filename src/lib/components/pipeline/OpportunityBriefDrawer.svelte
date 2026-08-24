@@ -7,15 +7,17 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import StageAgeChip from './StageAgeChip.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import OpportunityNextActionSection from './OpportunityNextActionSection.svelte';
 	import OpportunityDetailsSection from './OpportunityDetailsSection.svelte';
 	import OpportunityTasksSection from './OpportunityTasksSection.svelte';
 	import OpportunityNotesSection from './OpportunityNotesSection.svelte';
 	import { stageAge } from '$lib/pipeline/freshness';
 	import type { BoardFormatting } from '$lib/pipeline/money';
 	import type { OpportunityCard } from '$lib/pipeline/api';
-	import { BOARD_STAGE_LABELS, isBoardStage } from '$lib/pipeline/stages';
+	import { ALL_STAGE_LABELS, isAnyBoardStage } from '$lib/pipeline/stages';
 	import { clientDetailKey, fetchClient } from '$lib/clients/api';
 	import requestIcon from '@tabler/icons/outline/file-description.svg?raw';
+	import quoteIcon from '@tabler/icons/outline/file-invoice.svg?raw';
 
 	// The thin brief: enough to recognise the card and get to the record behind it, without leaving the
 	// board. Tasks, notes, the summary, and the quote actions arrive in their own parts — none of them
@@ -40,7 +42,7 @@
 
 	const age = $derived(opportunity ? stageAge(opportunity.stage_entered_at) : null);
 	const stageLabel = $derived(
-		opportunity && isBoardStage(opportunity.stage) ? BOARD_STAGE_LABELS[opportunity.stage] : null
+		opportunity && isAnyBoardStage(opportunity.stage) ? ALL_STAGE_LABELS[opportunity.stage] : null
 	);
 	const clientName = $derived(
 		opportunity?.client?.company_name?.trim() || opportunity?.client?.display_name || 'No client'
@@ -99,6 +101,7 @@
 		<!-- Keyed by id so switching cards remounts this section — a mid-edit row resets by starting fresh
 		     rather than by an effect syncing local edit state to a changed prop. -->
 		{#key opportunity.id}
+			<OpportunityNextActionSection {opportunity} {canEdit} {onUpdate} onConverted={onClose} />
 			<OpportunityDetailsSection {opportunity} {formatting} {canEdit} {onUpdate} />
 			<OpportunityTasksSection opportunityId={opportunity.id} {formatting} {canEdit} />
 			<OpportunityNotesSection
@@ -117,6 +120,15 @@
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				<span class="brief__button-icon" aria-hidden="true">{@html requestIcon}</span>
 				View request
+			</Button>
+		{:else if opportunity.quote}
+			<Button
+				variant="secondary"
+				href={resolve('/(app)/quotes/[id]', { id: opportunity.quote.id })}
+			>
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				<span class="brief__button-icon" aria-hidden="true">{@html quoteIcon}</span>
+				View quote
 			</Button>
 		{/if}
 	{/if}

@@ -91,12 +91,27 @@
 	}
 
 	function chooseTimezone(timezone: string) {
+		lastCommitted = timezone;
 		value = timezone;
 		query =
 			timezoneOptions.find((option) => option.value === timezone)?.label ??
 			friendlyTimezone(timezone);
 		open = false;
 	}
+
+	// bits-ui's Combobox keeps its own internal copy of the displayed text once the user picks an
+	// option; it never re-reads our `inputValue` prop afterwards. An external revert (e.g. the
+	// settings page's Cancel button restoring `value`) would then leave the stale label on screen.
+	// Only remount the combobox for that external case — remounting on every selection would drop
+	// focus and break keyboard tabbing to the next field.
+	let lastCommitted = value;
+	let resetKey = $state(0);
+	$effect(() => {
+		if (value !== lastCommitted) {
+			lastCommitted = value;
+			resetKey++;
+		}
+	});
 </script>
 
 <!-- The inline SVG strings are trusted build-time Tabler icon imports. -->
@@ -106,60 +121,63 @@
 		>Time zone{#if required}
 			<span aria-hidden="true">*</span>{/if}</label
 	>
-	<Combobox.Root
-		type="single"
-		bind:value
-		bind:open
-		{inputValue}
-		items={comboboxItems}
-		onValueChange={chooseTimezone}
-	>
-		<div class="timezone-picker__control">
-			<span class="timezone-picker__search" aria-hidden="true">{@html searchIcon}</span>
-			<Combobox.Input
-				{id}
-				placeholder="Search by city or UTC offset"
-				autocomplete="off"
-				aria-describedby={describedBy}
-				aria-invalid={invalid}
-				onfocus={(event) => focusTimezone(event.currentTarget)}
-				onclick={() => (open = true)}
-				oninput={(event) => {
-					query = event.currentTarget.value;
-					open = true;
-				}}
-			/>
-			<Combobox.Trigger class="timezone-picker__trigger" aria-label="Show time zones">
-				<span aria-hidden="true">{@html chevronDownIcon}</span>
-			</Combobox.Trigger>
-		</div>
-		<Combobox.Portal>
-			<Combobox.Content
-				class="timezone-picker__menu"
-				data-elevation="elevated"
-				align="start"
-				sideOffset={4}
-				collisionPadding={8}
-			>
-				<Combobox.Viewport class="timezone-picker__viewport">
-					{#each results as timezone (timezone.value)}
-						<Combobox.Item
-							value={timezone.value}
-							label={timezone.label}
-							class="timezone-picker__option"
-						>
-							<span class="timezone-picker__option-copy"
-								><strong>{timezone.city}</strong><small>{timezone.meta}</small></span
+	{#key resetKey}
+		<Combobox.Root
+			type="single"
+			bind:value
+			bind:open
+			{inputValue}
+			items={comboboxItems}
+			onValueChange={chooseTimezone}
+		>
+			<div class="timezone-picker__control">
+				<span class="timezone-picker__search" aria-hidden="true">{@html searchIcon}</span>
+				<Combobox.Input
+					{id}
+					placeholder="Search by city or UTC offset"
+					autocomplete="off"
+					aria-describedby={describedBy}
+					aria-invalid={invalid}
+					onfocus={(event) => focusTimezone(event.currentTarget)}
+					onclick={() => (open = true)}
+					oninput={(event) => {
+						query = event.currentTarget.value;
+						open = true;
+					}}
+				/>
+				<Combobox.Trigger class="timezone-picker__trigger" aria-label="Show time zones">
+					<span aria-hidden="true">{@html chevronDownIcon}</span>
+				</Combobox.Trigger>
+			</div>
+			<Combobox.Portal>
+				<Combobox.Content
+					class="timezone-picker__menu"
+					data-elevation="elevated"
+					align="start"
+					sideOffset={4}
+					collisionPadding={8}
+				>
+					<Combobox.Viewport class="timezone-picker__viewport">
+						{#each results as timezone (timezone.value)}
+							<Combobox.Item
+								value={timezone.value}
+								label={timezone.label}
+								class="timezone-picker__option"
 							>
-							{#if value === timezone.value}<span class="timezone-picker__check" aria-hidden="true"
-									>{@html checkIcon}</span
-								>{/if}
-						</Combobox.Item>
-					{:else}<div class="timezone-picker__empty">No time zones match “{query}”.</div>{/each}
-				</Combobox.Viewport>
-			</Combobox.Content>
-		</Combobox.Portal>
-	</Combobox.Root>
+								<span class="timezone-picker__option-copy"
+									><strong>{timezone.city}</strong><small>{timezone.meta}</small></span
+								>
+								{#if value === timezone.value}<span
+										class="timezone-picker__check"
+										aria-hidden="true">{@html checkIcon}</span
+									>{/if}
+							</Combobox.Item>
+						{:else}<div class="timezone-picker__empty">No time zones match “{query}”.</div>{/each}
+					</Combobox.Viewport>
+				</Combobox.Content>
+			</Combobox.Portal>
+		</Combobox.Root>
+	{/key}
 	{#if errorMessage}<p class="timezone-picker__error" id={`${id}-error`} role="alert">
 			<span aria-hidden="true">{@html exclamationCircleIcon}</span>{errorMessage}
 		</p>{/if}

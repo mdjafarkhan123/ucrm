@@ -67,3 +67,21 @@ export function followUp(
 		description: overdue ? `Follow-up overdue since ${label}` : `Follow up on ${label}`
 	};
 }
+
+// A booked assessment's day and time, in the organization's own calendar — this is an instant, not a
+// plain date like a follow-up, so it always carries a time and is read through the organization's
+// timezone rather than the browser's.
+export function appointment(startsAt: string, formatting: BoardFormatting) {
+	const parsed = new Date(startsAt);
+	const day = parsed.toLocaleDateString(formatting.locale, {
+		timeZone: formatting.timezone,
+		month: 'short',
+		day: 'numeric'
+	});
+	const time = parsed.toLocaleTimeString(formatting.locale, {
+		timeZone: formatting.timezone,
+		hour: 'numeric',
+		minute: '2-digit'
+	});
+	return `${day}, ${time}`;
+}

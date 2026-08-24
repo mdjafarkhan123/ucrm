@@ -1,9 +1,19 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { createQuery } from '@tanstack/svelte-query';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import RequestForm from '$lib/components/requests/RequestForm.svelte';
+	import { fetchQuoteOverview, quoteCountsKey } from '$lib/quotes/api';
 	import checkIcon from '@tabler/icons/outline/circle-check.svg?raw';
+
+	// The organization's money format, so the line items on this page write figures the same way the quote
+	// they turn into will. It is one row for the whole tenant and it is cached, so nothing waits on it.
+	const overviewQuery = createQuery(() => ({
+		queryKey: quoteCountsKey,
+		queryFn: fetchQuoteOverview,
+		staleTime: 60_000
+	}));
 
 	let savedMessage = $state('');
 	// Remounts the form for "Save & create another" so every field and attachment starts clean.
@@ -33,7 +43,12 @@
 	{/if}
 
 	{#key formKey}
-		<RequestForm onSaved={handleSaved} onCancel={() => goto(resolve('/(app)/requests'))} />
+		<RequestForm
+			currencyCode={overviewQuery.data?.currency_code ?? 'USD'}
+			locale={overviewQuery.data?.locale ?? 'en-US'}
+			onSaved={handleSaved}
+			onCancel={() => goto(resolve('/(app)/requests'))}
+		/>
 	{/key}
 </PageContainer>
 

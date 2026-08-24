@@ -24,20 +24,31 @@
 	// The on-site assessment, the way Jobber does it: an empty card inviting you to book the visit, which
 	// opens into a panel on the page itself rather than a dialog. The panel owns its own Save, because an
 	// assessment is a record of its own hanging off the request — the same rule a client's property follows.
+	//
+	// On the New Request form there is no request to hang it off yet, so `draft` turns that around: the
+	// same panel, but it keeps the visit in memory and the page's own action bar writes it once the request
+	// exists. In that mode the panel has no Save of its own — a second save footer is exactly what the
+	// design rules forbid — only a way to drop the visit again.
 	let {
 		assessment,
 		saving = false,
 		error = '',
+		draft = false,
 		onSave,
 		onRemove,
-		onComplete
+		onComplete,
+		onDraftChange
 	}: {
 		assessment: RequestAssessment | null;
 		saving?: boolean;
 		error?: string;
-		onSave: (draft: AssessmentDraft) => void | Promise<void>;
-		onRemove: () => void | Promise<void>;
-		onComplete: (complete: boolean) => void | Promise<void>;
+		/** Hold the visit in memory for a page that has not created its request yet. */
+		draft?: boolean;
+		onSave?: (draft: AssessmentDraft) => void | Promise<void>;
+		onRemove?: () => void | Promise<void>;
+		onComplete?: (complete: boolean) => void | Promise<void>;
+		/** Draft mode only: tells the page whether a visit is waiting to be saved with it. */
+		onDraftChange?: (booked: boolean) => void;
 	} = $props();
 
 	let editing = $state(false);
@@ -84,6 +95,7 @@
 				}
 			: emptyDateTimePickerValue();
 		editing = true;
+		if (draft) onDraftChange?.(true);
 	}
 
 	function closePanel() {
@@ -114,52 +126,89 @@
 		assigneeIds = checked ? [...assigneeIds, id] : assigneeIds.filter((entry) => entry !== id);
 	}
 
-	function submit() {
-		fieldError = '';
-
+	// Reads the panel's fields into the shape the API wants, or returns the one thing that stops it. Both
+	// the panel's own Save and the New Request page's action bar go through here, so a visit is checked the
+	// same way whichever button ends up writing it.
+	function buildDraft(): { draft: AssessmentDraft } | { message: string } {
 		if (scheduleLater) {
-			void onSave({
-				starts_at: null,
-				ends_at: null,
-				all_day: false,
-				instructions: instructions.trim() || null,
-				assignee_ids: assigneeIds
-			});
-			return;
+			return {
+				draft: {
+					starts_at: null,
+					ends_at: null,
+					all_day: false,
+					instructions: instructions.trim() || null,
+					assignee_ids: assigneeIds
+				}
+			};
 		}
 
 		const day = calendarDateToString(when.date);
 		if (!day) {
-			fieldError = 'Pick the day of the visit, or tick "Schedule later".';
-			return;
+			return { message: 'Pick the day of the visit, or tick "Schedule later".' };
 		}
 
 		// "Anytime" is Jobber's arrival-window state: the day is booked, the hour is not promised.
 		const startTime = anytime ? '00:00' : timeToString(when.startTime);
 		const endTime = anytime ? '23:59' : timeToString(when.endTime);
 		if (!startTime || !endTime) {
-			fieldError = 'Set a start and an end time, or tick "Anytime".';
-			return;
+			return { message: 'Set a start and an end time, or tick "Anytime".' };
 		}
 
 		const startsAt = isoFrom(day, startTime);
 		const endsAt = isoFrom(day, endTime);
 		if (!startsAt || !endsAt) {
-			fieldError = 'That date and time could not be read. Try picking them again.';
-			return;
+			return { message: 'That date and time could not be read. Try picking them again.' };
 		}
 		if (Date.parse(endsAt) <= Date.parse(startsAt)) {
-			fieldError = 'The end time has to come after the start time.';
-			return;
+			return { message: 'The end time has to come after the start time.' };
 		}
 
-		void onSave({
-			starts_at: startsAt,
-			ends_at: endsAt,
-			all_day: anytime,
-			instructions: instructions.trim() || null,
-			assignee_ids: assigneeIds
-		});
+		return {
+			draft: {
+				starts_at: startsAt,
+				ends_at: endsAt,
+				all_day: anytime,
+				instructions: instructions.trim() || null,
+				assignee_ids: assigneeIds
+			}
+		};
+	}
+
+	function submit() {
+		fieldError = '';
+		const built = buildDraft();
+		if ('message' in built) {
+			fieldError = built.message;
+			return;
+		}
+		void onSave?.(built.draft);
+	}
+
+	// --- Draft mode -----------------------------------------------------------------------------------
+
+	// The page asks for the visit at the moment it saves. A panel nobody opened means no visit at all, not
+	// an empty one, so this hands back null rather than a blank draft.
+	export function collectDraft():
+		{ ok: true; draft: AssessmentDraft | null } | { ok: false; message: string } {
+		if (!editing) return { ok: true, draft: null };
+		const built = buildDraft();
+		if ('message' in built) {
+			fieldError = built.message;
+			return { ok: false, message: built.message };
+		}
+		fieldError = '';
+		return { ok: true, draft: built.draft };
+	}
+
+	// Jobber's ✕ on the panel throws the visit away and puts the empty card back. Ours says so in words.
+	function discardDraft() {
+		closePanel();
+		instructions = '';
+		scheduleLater = true;
+		anytime = false;
+		when = emptyDateTimePickerValue();
+		assigneeIds = [];
+		onDraftChange?.(false);
 	}
 
 	// --- What the booked card reads out ---------------------------------------------------------------
@@ -272,19 +321,27 @@
 			{/if}
 
 			<div class="assessment__panel-actions">
-				{#if assessment}
-					<Button
-						variant="tertiary"
-						variation="destructive"
-						onclick={() => void onRemove()}
-						disabled={saving}
-					>
+				{#if draft}
+					<!-- The New Request page's own bar saves this panel, so it gets no Save of its own —
+					     only Jobber's ✕, spelled out. -->
+					<Button variant="tertiary" variation="destructive" onclick={discardDraft}>
 						Remove visit
 					</Button>
+				{:else}
+					{#if assessment}
+						<Button
+							variant="tertiary"
+							variation="destructive"
+							onclick={() => void onRemove?.()}
+							disabled={saving}
+						>
+							Remove visit
+						</Button>
+					{/if}
+					<span class="assessment__spacer"></span>
+					<Button variant="tertiary" onclick={closePanel} disabled={saving}>Cancel</Button>
+					<Button variant="primary" onclick={submit} loading={saving}>Save visit</Button>
 				{/if}
-				<span class="assessment__spacer"></span>
-				<Button variant="tertiary" onclick={closePanel} disabled={saving}>Cancel</Button>
-				<Button variant="primary" onclick={submit} loading={saving}>Save visit</Button>
 			</div>
 		</div>
 	{:else if !assessment}
@@ -325,7 +382,7 @@
 				description="Tick this once the visit has happened and you know what the work involves."
 				checked={isComplete}
 				disabled={saving}
-				onchange={(checked) => void onComplete(checked)}
+				onchange={(checked) => void onComplete?.(checked)}
 			/>
 
 			{#if error}

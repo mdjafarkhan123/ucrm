@@ -2,7 +2,8 @@ import {
 	S3Client,
 	PutObjectCommand,
 	GetObjectCommand,
-	DeleteObjectCommand
+	DeleteObjectCommand,
+	HeadObjectCommand
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getR2Env, type R2Env } from './r2-env';
@@ -53,6 +54,29 @@ export function buildThumbnailObjectKey(objectKey: string): string {
 
 export const THUMBNAIL_MIME_TYPE = 'image/jpeg';
 
+// A signature is not an attachment: it is never listed, never downloaded by name, and never shown beside
+// a quote's files. Its own prefix keeps it out of every path that walks attachment keys.
+export function buildSignatureObjectKey(organizationId: string, quoteId: string): string {
+	return `${organizationId}/quote-signatures/${quoteId}/${crypto.randomUUID()}.png`;
+}
+
+// A logo is not an attachment either: one per organization, replaced rather than listed, and served
+// inline from our own origin forever. Its own `<org>/logo/` prefix is what `set_organization_logo`
+// checks, so a key issued for one organization can never be committed against another.
+export function buildOrganizationLogoObjectKey(organizationId: string, fileName: string): string {
+	return `${organizationId}/logo/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
+}
+
+// The representative's signature image, uploaded as a file rather than drawn. Its own `<org>/
+// quote-representative-signature/` prefix is what `set_organization_quote_representative` checks, matching
+// the logo's trust boundary.
+export function buildOrganizationQuoteRepresentativeSignatureObjectKey(
+	organizationId: string,
+	fileName: string
+): string {
+	return `${organizationId}/quote-representative-signature/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
+}
+
 export async function createPresignedUploadUrl(
 	objectKey: string,
 	mimeType: string
@@ -64,6 +88,26 @@ export async function createPresignedUploadUrl(
 		ContentType: mimeType
 	});
 	return getSignedUrl(client, command, { expiresIn: UPLOAD_URL_TTL_SECONDS });
+}
+
+// A signature is the one upload the browser never gets a presigned URL for. Presigning hands the caller
+// a window to put whatever bytes they like at a key we then trust; a signature has to be the bytes we
+// checked. So it arrives inside the request, is verified here, and is written by us.
+export async function putObject(
+	objectKey: string,
+	body: Uint8Array,
+	mimeType: string
+): Promise<void> {
+	const { client, env } = getR2();
+	await client.send(
+		new PutObjectCommand({
+			Bucket: env.R2_BUCKET,
+			Key: objectKey,
+			Body: body,
+			ContentType: mimeType,
+			ContentLength: body.byteLength
+		})
+	);
 }
 
 export async function createPresignedDownloadUrl(
@@ -96,6 +140,19 @@ export async function getObjectStream(objectKey: string): Promise<{
 		contentType: result.ContentType,
 		contentLength: result.ContentLength
 	};
+}
+
+// A presigned upload URL is a window to put whatever bytes the caller likes at a key we then trust. For
+// a file we later serve inline from our own origin that is not good enough, so before the key is saved
+// we ask storage what actually landed there.
+export async function headObject(
+	objectKey: string
+): Promise<{ contentType?: string; contentLength?: number }> {
+	const { client, env } = getR2();
+	const result = await client.send(
+		new HeadObjectCommand({ Bucket: env.R2_BUCKET, Key: objectKey })
+	);
+	return { contentType: result.ContentType, contentLength: result.ContentLength };
 }
 
 export async function deleteObject(objectKey: string): Promise<void> {

@@ -184,7 +184,7 @@ export const POST: RequestHandler = async (event) => {
 					});
 
 		if (result.error) {
-			if (result.error.code === '40001') {
+			if (result.error.code === 'P0409') {
 				return json(
 					{ error: 'Commercial access changed. Review it and try again.' },
 					{ status: 409 }

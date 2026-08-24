@@ -3,8 +3,9 @@
 	import { preloadCode } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import AppShell from '$lib/components/layout/AppShell.svelte';
+	import type { LayoutData } from './$types';
 
-	let { children } = $props();
+	let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props();
 
 	// Every page is its own JavaScript file, so the first visit to one waits for that file to arrive and
 	// the click feels stuck. This fetches the files for the pages the office moves between all day once
@@ -19,8 +20,21 @@
 		resolve('/(app)/requests'),
 		resolve('/(app)/requests/new'),
 		resolve('/(app)/requests/[id]', { id: 'warm' }),
+		resolve('/(app)/quotes'),
+		resolve('/(app)/quotes/new'),
 		resolve('/(app)/pipeline'),
-		resolve('/(app)/pipeline/outcomes')
+		resolve('/(app)/pipeline/outcomes'),
+		resolve('/(app)/communications'),
+		resolve('/(app)/settings'),
+		resolve('/(app)/settings/business-profile'),
+		resolve('/(app)/settings/branding'),
+		resolve('/(app)/settings/business-hours'),
+		resolve('/(app)/settings/taxes'),
+		resolve('/(app)/settings/price-book'),
+		resolve('/(app)/settings/quotes'),
+		resolve('/(app)/settings/communications/email'),
+		resolve('/(app)/settings/team'),
+		resolve('/(app)/settings/team/[userId]', { userId: 'warm' })
 	];
 
 	onMount(() => {
@@ -38,4 +52,6 @@
 	});
 </script>
 
-<AppShell>{@render children()}</AppShell>
+<AppShell organizationName={data.organization?.name} logoUrl={data.logoUrl} account={data.account}
+	>{@render children()}</AppShell
+>

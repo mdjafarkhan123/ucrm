@@ -52,7 +52,7 @@ export const GET: RequestHandler = async (event) => {
 		supabase
 			.from('properties')
 			.select(
-				'id, label, address_line1, address_line2, city, state_region, postal_code, country, access_notes, is_primary, is_billing_address'
+				'id, label, address_line1, address_line2, city, state_region, postal_code, country, access_notes, is_primary, is_billing_address, tax_rate_id'
 			)
 			.eq('organization_id', organizationId)
 			.eq('client_id', clientId)
@@ -82,6 +82,7 @@ export const GET: RequestHandler = async (event) => {
 	return json({
 		client: {
 			...client,
+			contact_methods: contactMethods ?? [],
 			email: primaryOf('email'),
 			phone: primaryOf('phone'),
 			primary_property:

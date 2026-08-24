@@ -16,6 +16,9 @@
 	import tagIcon from '@tabler/icons/outline/tag.svg?raw';
 	import paperclipIcon from '@tabler/icons/outline/paperclip.svg?raw';
 	import userPlusIcon from '@tabler/icons/outline/user-plus.svg?raw';
+	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import messageIcon from '@tabler/icons/outline/message.svg?raw';
 
 	let {
 		entityType,
@@ -62,12 +65,24 @@
 		note_added: notesIcon,
 		tag_assigned: tagIcon,
 		attachment_added: paperclipIcon,
-		property_contact_added: userPlusIcon
+		property_contact_added: userPlusIcon,
+		'quote.viewed_by_client': eyeIcon,
+		'quote.approved': checkIcon,
+		'quote.changes_requested': messageIcon
 	};
 
 	function iconFor(eventType: string) {
 		return eventIcons[eventType] ?? historyIcon;
 	}
+
+	// Some things on this feed nobody on the team did. A customer opening their quote or answering it has
+	// no user behind it, and "Unknown" — the right word for a teammate who has since left — would read as
+	// something going wrong. These events say who it actually was.
+	const CUSTOMER_EVENTS = new Set([
+		'quote.viewed_by_client',
+		'quote.approved',
+		'quote.changes_requested'
+	]);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -103,6 +118,7 @@
 									profile={event.actor_user_id ? profileById.get(event.actor_user_id) : undefined}
 									{currentUserId}
 									timestamp={event.created_at}
+									fallbackName={CUSTOMER_EVENTS.has(event.event_type) ? 'The client' : 'Unknown'}
 									size="small"
 								/>
 							</div>

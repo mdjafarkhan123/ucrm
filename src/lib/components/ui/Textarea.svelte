@@ -5,6 +5,7 @@
 		label,
 		rows = 3,
 		maxlength,
+		showCount = true,
 		required = false,
 		invalid = false,
 		errorMessage = '',
@@ -17,6 +18,7 @@
 		label?: string;
 		rows?: number;
 		maxlength?: number;
+		showCount?: boolean;
 		required?: boolean;
 		invalid?: boolean;
 		errorMessage?: string;
@@ -27,7 +29,7 @@
 
 	let describedBy = $derived(errorMessage ? `${id}-error` : undefined);
 	let hasValue = $derived(Boolean(value));
-	let remaining = $derived(maxlength ? maxlength - value.length : null);
+	let remaining = $derived(maxlength && showCount ? maxlength - value.length : null);
 </script>
 
 <div

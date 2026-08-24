@@ -133,135 +133,138 @@
 
 <svelte:head><title>Clients · Contractor CRM</title></svelte:head>
 
-<PageContainer variant="fill">
-	<PageHeader title="Clients" description="Every lead and customer relationship in one place.">
-		{#snippet actions()}
-			<Button variant="primary" href={resolve('/clients/new')}>New Client</Button>
-		{/snippet}
-	</PageHeader>
+<div class="page-scroller">
+	<PageContainer variant="fill">
+		<PageHeader title="Clients" description="Every lead and customer relationship in one place.">
+			{#snippet actions()}
+				<Button variant="primary" href={resolve('/clients/new')}>New Client</Button>
+			{/snippet}
+		</PageHeader>
 
-	<div class="clients-toolbar">
-		<div class="clients-toolbar__search">
-			<SearchInput id="clients-search" bind:value={search} placeholder="Search clients" />
+		<div class="clients-toolbar">
+			<div class="clients-toolbar__search">
+				<SearchInput id="clients-search" bind:value={search} placeholder="Search clients" />
+			</div>
+			<!-- eslint-disable svelte/no-at-html-tags -->
+			<button
+				type="button"
+				class="clients-toolbar__filters-toggle"
+				class:clients-toolbar__filters-toggle--active={hasActiveFilters}
+				aria-pressed={filtersOpen}
+				onclick={() => (filtersOpen = !filtersOpen)}
+			>
+				<span aria-hidden="true">{@html filterIcon}</span>
+				Filters{hasActiveFilters ? ' •' : ''}
+			</button>
+			<!-- eslint-enable svelte/no-at-html-tags -->
 		</div>
-		<!-- eslint-disable svelte/no-at-html-tags -->
-		<button
-			type="button"
-			class="clients-toolbar__filters-toggle"
-			class:clients-toolbar__filters-toggle--active={hasActiveFilters}
-			aria-pressed={filtersOpen}
-			onclick={() => (filtersOpen = !filtersOpen)}
-		>
-			<span aria-hidden="true">{@html filterIcon}</span>
-			Filters{hasActiveFilters ? ' •' : ''}
-		</button>
-		<!-- eslint-enable svelte/no-at-html-tags -->
-	</div>
 
-	{#if filtersOpen}
-		<FilterBar onClear={hasActiveFilters ? clearFilters : undefined}>
-			<FilterField id="clients-status-filter" label="Status">
-				<Select
-					id="clients-status-filter"
-					value={status}
-					onchange={setStatus}
-					options={[
-						{ value: '', label: 'All statuses' },
-						{ value: 'lead', label: 'Lead' },
-						{ value: 'customer', label: 'Customer' }
-					]}
-				/>
-			</FilterField>
-			<FilterField id="clients-tag-filter" label="Tag">
-				<Select id="clients-tag-filter" value={tagId} onchange={setTag} options={tagOptions} />
-			</FilterField>
-		</FilterBar>
-	{/if}
+		{#if filtersOpen}
+			<FilterBar onClear={hasActiveFilters ? clearFilters : undefined}>
+				<FilterField id="clients-status-filter" label="Status">
+					<Select
+						id="clients-status-filter"
+						value={status}
+						onchange={setStatus}
+						options={[
+							{ value: '', label: 'All statuses' },
+							{ value: 'lead', label: 'Lead' },
+							{ value: 'customer', label: 'Customer' }
+						]}
+					/>
+				</FilterField>
+				<FilterField id="clients-tag-filter" label="Tag">
+					<Select id="clients-tag-filter" value={tagId} onchange={setTag} options={tagOptions} />
+				</FilterField>
+			</FilterBar>
+		{/if}
 
-	{#if selectedIds.size > 0}
-		<div class="clients-bulk-bar">
-			<span>{selectedIds.size} selected</span>
-			<span class="clients-bulk-bar__action" title={bulkReason}>
-				<Button variant="secondary" size="small" disabled>Archive</Button>
-				<span class="clients-bulk-bar__reason">{bulkReason}</span>
-			</span>
-			<span class="clients-bulk-bar__action" title={bulkReason}>
-				<Button variant="secondary" variation="destructive" size="small" disabled>Delete</Button>
-				<span class="clients-bulk-bar__reason">{bulkReason}</span>
-			</span>
-		</div>
-	{/if}
+		{#if selectedIds.size > 0}
+			<div class="clients-bulk-bar">
+				<span>{selectedIds.size} selected</span>
+				<span class="clients-bulk-bar__action" title={bulkReason}>
+					<Button variant="secondary" size="small" disabled>Archive</Button>
+					<span class="clients-bulk-bar__reason">{bulkReason}</span>
+				</span>
+				<span class="clients-bulk-bar__action" title={bulkReason}>
+					<Button variant="secondary" variation="destructive" size="small" disabled>Delete</Button>
+					<span class="clients-bulk-bar__reason">{bulkReason}</span>
+				</span>
+			</div>
+		{/if}
 
-	{#if clientsQuery.isPending}
-		<LoadingSkeleton variant="table" label="Loading clients" rows={5} />
-	{:else if clientsQuery.isError}
-		<ErrorState description="Clients could not be loaded. Refresh and try again." />
-	{:else if clients.length === 0}
-		<EmptyState
-			icon={usersIcon}
-			title={hasActiveFilters || debouncedSearch ? 'No matching clients' : 'No clients yet'}
-			description={hasActiveFilters || debouncedSearch
-				? 'Try a different search term or clear your filters.'
-				: 'Clients you add will show up here.'}
-		/>
-	{:else}
-		<DataTable
-			{columns}
-			items={clients}
-			rowId={(client) => client.id}
-			caption="Clients"
-			selectable
-			bind:selectedIds
-			rowLabel={(client) => `Select ${client.display_name}`}
-			onRowActivate={(client) => goto(clientHref(client))}
-			{sort}
-			onSortChange={handleSortChange}
-		>
-			{#snippet row(client: ClientListItem)}
-				<th scope="row">
-					<div class="clients-table__name">
-						<Avatar id={client.id} name={client.display_name} size="small" />
-						<a class="clients-table__name-text" href={clientHref(client)}>{client.display_name}</a>
-					</div>
-				</th>
-				<td
-					>{formatAddress(client.primary_property)}{#if client.additional_property_count > 0}
-						<span class="clients-table__more-properties"
-							>+{client.additional_property_count} more</span
-						>{/if}</td
-				>
-				<td>{client.email ?? client.phone ?? '—'}</td>
-				<td>
-					{#if client.tags.length > 0}
-						<div class="clients-table__tags">
-							{#each client.tags as tag (tag.id)}<Badge>{tag.name}</Badge>{/each}
+		{#if clientsQuery.isPending}
+			<LoadingSkeleton variant="table" label="Loading clients" rows={5} />
+		{:else if clientsQuery.isError}
+			<ErrorState description="Clients could not be loaded. Refresh and try again." />
+		{:else if clients.length === 0}
+			<EmptyState
+				icon={usersIcon}
+				title={hasActiveFilters || debouncedSearch ? 'No matching clients' : 'No clients yet'}
+				description={hasActiveFilters || debouncedSearch
+					? 'Try a different search term or clear your filters.'
+					: 'Clients you add will show up here.'}
+			/>
+		{:else}
+			<DataTable
+				{columns}
+				items={clients}
+				rowId={(client) => client.id}
+				caption="Clients"
+				selectable
+				bind:selectedIds
+				rowLabel={(client) => `Select ${client.display_name}`}
+				onRowActivate={(client) => goto(clientHref(client))}
+				{sort}
+				onSortChange={handleSortChange}
+			>
+				{#snippet row(client: ClientListItem)}
+					<th scope="row">
+						<div class="clients-table__name">
+							<Avatar id={client.id} name={client.display_name} size="small" />
+							<a class="clients-table__name-text" href={clientHref(client)}>{client.display_name}</a
+							>
 						</div>
-					{:else}
-						—
-					{/if}
-				</td>
-				<td
-					><Badge status={client.lifecycle_status === 'customer' ? 'success' : 'informative'}
-						>{statusLabel(client.lifecycle_status)}</Badge
-					></td
-				>
-			{/snippet}
-			{#snippet rowActions(client: ClientListItem)}
-				<DropdownMenu
-					items={clientMenuItems(client)}
-					triggerLabel={`Actions for ${client.display_name}`}
-				/>
-			{/snippet}
-			{#snippet footer()}
-				<ListLoadMore
-					hasNextPage={clientsQuery.hasNextPage}
-					isFetchingNextPage={clientsQuery.isFetchingNextPage}
-					onLoadMore={() => clientsQuery.fetchNextPage()}
-				/>
-			{/snippet}
-		</DataTable>
-	{/if}
-</PageContainer>
+					</th>
+					<td
+						>{formatAddress(client.primary_property)}{#if client.additional_property_count > 0}
+							<span class="clients-table__more-properties"
+								>+{client.additional_property_count} more</span
+							>{/if}</td
+					>
+					<td>{client.email ?? client.phone ?? '—'}</td>
+					<td>
+						{#if client.tags.length > 0}
+							<div class="clients-table__tags">
+								{#each client.tags as tag (tag.id)}<Badge>{tag.name}</Badge>{/each}
+							</div>
+						{:else}
+							—
+						{/if}
+					</td>
+					<td
+						><Badge status={client.lifecycle_status === 'customer' ? 'success' : 'informative'}
+							>{statusLabel(client.lifecycle_status)}</Badge
+						></td
+					>
+				{/snippet}
+				{#snippet rowActions(client: ClientListItem)}
+					<DropdownMenu
+						items={clientMenuItems(client)}
+						triggerLabel={`Actions for ${client.display_name}`}
+					/>
+				{/snippet}
+				{#snippet footer()}
+					<ListLoadMore
+						hasNextPage={clientsQuery.hasNextPage}
+						isFetchingNextPage={clientsQuery.isFetchingNextPage}
+						onLoadMore={() => clientsQuery.fetchNextPage()}
+					/>
+				{/snippet}
+			</DataTable>
+		{/if}
+	</PageContainer>
+</div>
 
 <style lang="scss">
 	.clients-toolbar {

@@ -79,6 +79,7 @@ used for the assessment's schedule state):
 | **Archived**                               | `archived`                           | Request archived/closed.                                                                                                                      |
 
 > Sources: [Request Basics], [Converting a Request to a Quote or Job], [Using Assessments to Schedule and
+>
 > > Convert Work Requests], [List Pages and Key Metrics].
 
 ### 1.3 Behavior (help center)
@@ -242,7 +243,257 @@ convert mutation exists under a different name)**.
 
 ---
 
-## 4. How WE compare (build notes)
+## 4. Live tour (observed live 2026-08-18)
+
+Toured the live Jobber account (Requests list, a scheduled/overdue request, a new/unscheduled request, the
+new-request form, and Settings → Requests and Bookings) via `claude-in-chrome`. Read and cancelled only —
+nothing was saved, sent, converted, or deleted.
+
+### 4.1 Requests list page
+
+- Three metric cards above the table: **Overview** (counts by status: Needs approval, New, Assessment
+  complete, Overdue, Unscheduled), **New requests** (past 30 days, with a trend %), **Conversion rate** (past
+  30 days, with a trend %).
+- Table columns: Client, Title, Property, Contact, Requested (date), Status (colored badge). Sortable columns
+  show up/down carets; default sort is `STATUS_AND_REQUESTED_AT`.
+- `Status` and `Date` are separate filter chips above the table, each opening a searchable checklist dropdown
+  (statuses: All, Archived, Assessment complete, Converted, New, plus more on scroll — matches the schema
+  enum). A live search box filters the request list itself.
+- Header actions: **New Request** (primary button) and **More Actions → Customize Form / Share or Embed**
+  (jumps into the booking-form settings covered in §4.4).
+
+### 4.2 Request detail page — scheduled (assessment set) vs. new (unscheduled)
+
+Both states share one layout: status badge + title top-left, an edit pencil beside the title, a **History**
+icon (clock-with-arrow) and **More** menu top-right, plus one primary CTA that changes with state. A
+client/property summary card sits below the title (name, property address, phone, email, and a `...` menu
+with **View client profile / Edit client details / Change property**). A **Requested** / **Assessment** date
+pair sits beside that card once an assessment exists. A standalone **Notes** card occupies the whole right
+rail — empty state invites "Leave an internal note for yourself or a team member"; once notes exist it shows
+author, timestamp, a pin/star, and thumbnails for any files attached to a note.
+
+- **New / unscheduled** (no assessment yet): primary CTA is **Schedule Assessment** (calendar icon). No
+  Product/Service section appeared on this one (it had none priced yet — the other request did, see below).
+- **Scheduled / Overdue** (assessment booked, date passed): primary CTA becomes **Email Booking
+  Confirmation**. Below the summary card: an **Overview** section (service-details Q&A merged into one
+  freeform block, plus any submitted photos — edited inline via its own pencil, no separate dialog), an
+  **Assessment** section (Instructions, Schedule date/time, assigned Team member(s), Checklists, a
+  "Complete assessment" checkbox, and the configured client/team reminder offsets), a **Product / Service**
+  section (line items with thumbnail, qty, unit price, total, then Subtotal/Total), and a **Labor** section
+  at the very bottom ("Time tracked to this request will show here" — empty until a timesheet entry lands).
+- **More menu** on a request: **Convert to Quote**, **Convert to Job**, **Archive**, **Print**, **Delete**.
+  No separate "leave as Action Required" menu item was visible — that appears to just be _not acting_ on a
+  request whose assessment is complete.
+- **History** icon opens a right-side **Request History** panel replacing the Notes rail: a chronological,
+  field-level audit log ("Jafar Khan edited the request — Status: pending → scheduled", "... updated the
+  assessment — Assigned to: empty → Jafar Khan", "... filled out a form — Share images...: → [file ids]",
+  etc.), each entry showing actor, what changed, old → new value, and a timestamp. Filterable by Team, Type,
+  and Date, sortable Newest/Oldest. This is a strong reference for our own activity-feed pattern.
+
+### 4.3 Scheduling an assessment / creating a request
+
+- **Schedule Assessment** opens an inline **"On-site assessment"** panel (not a modal) directly on the
+  request page: Instructions textarea; Schedule with Start/End date + a **"Schedule later"** checkbox (checked
+  by default — unchecking it reveals the date pickers) and Start/End time + an **"Anytime"** checkbox — the
+  same three-state (Scheduled / Anytime / Unscheduled) model documented in §2.1; a Team section (assign
+  members, "Email team when assigned" checkbox, a team-reminder-offset dropdown); a Checklists callout
+  ("Attach custom-built checklists so nothing gets missed" → **Create a Checklist**); Cancel/Save. The
+  request's existing Product/Service line items are shown read-only underneath, carried forward automatically.
+- **New Request** (staff-created) is a single full-page form, not a wizard: Title, client picker, a read-only
+  "Requested on" date (defaults to today), an **Overview** section (service-details textarea + a
+  drag-and-drop photo uploader, 10 max), an **On-site assessment** empty-state card (truck icon, "Visit the
+  property to assess the job before you do the work" — click to expand the same panel as §4.3 above), a
+  **Product / Service** section (**Add Line Item** button, Subtotal/Total), and a **Notes** empty-state card.
+  One Cancel/Save Request pair at the bottom for the whole page — no per-section save.
+
+### 4.4 Settings → Requests and Bookings
+
+- **Forms** card lists every form (e.g. "Assessment Booking Form", "Default Form") with a `Booking default` /
+  `Request default` toggle per form (only one of each can be active) and a `...` menu: **Edit / Preview /
+  Share links / Add tracking**.
+- **Edit** opens a full drag-and-drop form builder: a live form preview on the left (starts with a locked
+  "Contact information" section — name, company, email + marketing-email consent checkbox, phone +
+  marketing-SMS consent checkbox, address), and a **Manage form** rail on the right with two tabs:
+  - **Add Questions** — "Add section" (splits the form into another page) plus custom question types: Short
+    answer, Long answer, Dropdown (single/multi), Checkbox, Radio, Numerical, Upload images, Yes/No toggle.
+  - **Settings** — Form title, Form description, a **Form Pages** toggle (sections = separate pages), the
+    **Request default** toggle, a **Require assessment booking approval** toggle ("Review and confirm
+    assessment bookings before they're scheduled"), a **Service areas** toggle with an "Edit service area"
+    link, and a **Booking Availability** collapsible section. This is a materially bigger builder than the
+    schema table implied — full custom-field authoring, not just the three `bookingType`s.
+- **Checklists**, **Customization** (branding, reuses Business Profile), and **Availability** (Business Hours
+  pulled from Company Settings, Service areas) round out the settings page.
+
+### 4.5 Confirmed / corrected against schema
+
+- The three-state schedule model (Scheduled/Anytime/Unscheduled) and the `assessment_completed`/`overdue` etc.
+  status labels from §1.2–§2.1 match what's on screen exactly.
+- The "complete → convert / leave Action Required / archive" branch from §2.2 was **not directly observed**
+  as an explicit prompt in this trial account (no assessment was actually marked complete during the tour,
+  per the read-and-cancel rule) — worth a follow-up look before Part 1 sign-off if the exact prompt wording
+  matters for our build.
+- The booking-form builder is a full custom-form authoring tool (drag-drop questions, multi-page sections,
+  branding), well beyond the `RequestSettings` field table in §3.1. Treat that table as the data model and
+  this section as the actual authoring UX — the gap between them is a scope decision for Part 1 (see open
+  questions in the campaign proposal).
+
+---
+
+## 4.6 Sales Pipeline board (from Jafar's screenshot, `Design/Pipeline.webp`, 2026-08-18)
+
+Jafar's Jobber plan does not include Sales (it is a paid "Lab" add-on), so this board was never toured live.
+Everything below is read off one full-page screenshot he supplied. It is the whole board scrolled, not one
+screen: the seven columns do not fit across a normal window, and the columns themselves run past the fold.
+
+- Page title `Sales Pipeline`, with a `Give Feedback` button on the right. Sales sits in the main left nav
+  with a `Lab` badge beside it.
+- Two small outcome tiles under the title, side by side, each with a chevron opening a list:
+  `Won (4) / Past 30 days` and `Lost (0) / Past 30 days`. Outcomes are never board columns.
+- The columns sit inside one bordered board, split into two labelled groups by a vertical divider:
+  - **Requests** (icon + total badge `13`): New requests `4`, Assessment unscheduled `2`,
+    Assessment scheduled `1`, Assessment completed `6`.
+  - **Quotes** (icon + total badge `11`): Draft `4` `$60,000`, Awaiting response `5` `$75,000`,
+    Changes requested `2` `$30,000`.
+  - The group total is the sum of its columns. Only Quote columns carry money — a Request column has a
+    count and nothing else, because a request has no price yet.
+- Column header: name on the left, count on the right, value underneath on the Quote side.
+- Card, in order: title (wraps to as many lines as it needs — one card in the shot runs four lines), client
+  name in muted grey, then the amount in bold on Quote cards only, then a footer row of a calendar icon with
+  a date on the left and a small age chip (`1d`) on the right.
+- Cards are white with a hairline border and rounded corners on a very light column background. Columns are
+  separated by thin vertical rules, and every column is the same width.
+- An empty column keeps its header and count and shows nothing underneath — no empty-state art. In the shot,
+  Assessment scheduled has one card and acres of empty column below it.
+- Nothing on the board creates work: there is no add button on a column, no card menu, and no visible drag
+  handle. Cards are the only interactive thing.
+
+### 4.6.1 The current board, from the help article and Jafar's 16 screenshots
+
+Sources: https://help.getjobber.com/en/articles/sales-pipeline/ and `Design/pipeline/1.webp` .. `16.webp`,
+captured 2026-08-18. These show a **newer build than `Design/Pipeline.webp`** — the nav item is now
+`Pipeline` with a briefcase icon rather than `Sales` with a `Lab` badge, and the board gained a control bar,
+money on Request columns, lead source, salespeople, tasks, notes, and editable stages. Where the two
+disagree, these win.
+
+**Page layout, top to bottom**
+
+1. Org name, then `Won (n) / Past 30 days` and `Lost (n) / Past 30 days` tiles, each a chevron opening the
+   Sales outcomes report. On the right, a green `+ Add new` button and a `... More actions` button.
+2. A control bar of pill controls: `Sort by | Time in stage` with a separate up/down arrow button beside it,
+   `Salesperson | All`, `Lead source | All`, a calendar `Date | All`, then a plain `(16 results)` count.
+   Sort choices are time in stage, created date, and value.
+3. One bordered board split by a vertical divider into `Requests` and `Quotes` groups, each with an icon and
+   a total-count badge.
+
+**Column header** — name on the left with a small lightning-bolt icon on the right (it marks the stage's
+automatic entry rule), then a second row carrying a count pill and a money total. **Both groups show money**;
+a Request column reads `1  $0` when nothing is priced. Empty columns keep the header and show nothing.
+
+**Card**, top to bottom: title, client name in grey, the amount in bold (present on Request cards too, as
+`$0.00`), an optional lead-source chip (tag icon + `Referral`, `Instagram`), then a footer row of calendar +
+date on the left and, on the right, the salesperson's avatar and an age chip (`0h`, `5d`, `181d`). A card may
+carry one open task line beneath the footer, in red when overdue (`Call Colin on Thursday @ 12`).
+
+**Freshness** shows as a coloured left edge stripe plus the age chip's tint: nothing at `0h`, red stripe and
+red chip once stale. The article's rule is green under an hour, red over 24 hours.
+
+**Card `...` menu** (`5.webp`): `Salesperson` and `Mark as lost`. `Mark as lost` is greyed out for a Draft
+quote. `Salesperson` opens a small dialog with a searchable list of staff and a `Clear Option` link at the
+bottom, so a card can be unassigned.
+
+**Opportunity Brief** — clicking a card opens a right-side drawer, never a page (`7.webp`, `8.webp`,
+`11.webp`):
+
+- Header: `Request for Sandra Morris` / `Quote for Robin Schneider`, the amount underneath, then a stage chip
+  and an age chip side by side, and a close X.
+- A client card: name with a status dot, the property address, phone and email as links, and a `...` menu.
+- `Quick actions` as outline buttons — `View Request` on a request; `Email`, `View Request`, `View Quote` on
+  a quote that came from one.
+- `Opportunity summary`: an AI paragraph in a gradient-bordered box with a sparkle icon and a
+  `Was this helpful?` thumbs pair.
+- `Tasks`: a count pill and `+ Add task`, `No tasks yet` when empty, and a `COMPLETED · 1` sub-header with the
+  finished ones struck through. Max 5 open and 5 completed.
+- `Notes`: a `+` button; each note carries author avatar and name, a `Client` chip, a timestamp, the text,
+  image thumbnails with a `+1` overflow link, and a `Linked note` label showing it lives on the underlying
+  record. `@Nathaniel` mentions render inline.
+- `New Task` dialog (`9.webp`): the client card with a `Select a property` picker, `Title`, `Instructions`,
+  a `Schedule` block (start/end date, start/end time, `Schedule later`, `Anytime`), a `Team` assign select,
+  and `Repeats`.
+
+The official Sales Pipeline article was updated 2026-07-15 and is more precise than those screenshots for
+Pipeline-specific Tasks and Notes. It documents the smaller Brief Task form: required title, optional
+instructions, one owner, and one due date. Every Pipeline user may create, edit, complete, reopen, or delete;
+the actions are internal and send no client communication. Each Opportunity has at most five open and five
+completed Tasks. The card shows the earliest-due open Task, breaking ties by creation order; with no due dates,
+it shows the oldest open Task. Dated Tasks also appear on the assignee's Schedule.
+
+The same article documents Task lifecycle: Request-to-Quote transfers Tasks; Lost Request completes them;
+Lost Quote or archive permanently deletes them; Won does not carry them into the Job. Brief Notes default to
+the backing Request/Quote, may instead link to the Client, save immediately, and appear beside existing Notes.
+The official Brief has no embedded activity/history section; record history remains on the full Request or
+Quote page. These current documented rules win over inference from the screenshots.
+
+**Edit stages** (`13.webp`, `14.webp`): the two groups side by side, each with `+ Add a stage`. Every
+built-in stage shows a padlock and a read-only `Rule` card. Verbatim rules:
+
+| Stage                  | Opportunities enter when                                                                            |
+| ---------------------- | --------------------------------------------------------------------------------------------------- |
+| New requests           | A new request is created                                                                            |
+| Assessment unscheduled | An assessment is required for the request but not scheduled yet                                     |
+| Assessment scheduled   | An assessment for the request has been scheduled                                                    |
+| Assessment completed   | The assessment for the request has been completed but hasn't been converted to a quote or a job yet |
+| Draft                  | A new quote has been created but has not been sent to you client yet                                |
+| Awaiting response      | A quote that has been sent to your client and is awaiting approval or a change request              |
+| Changes requested      | A quote that has been sent to your client and a client is requesting changes on                     |
+
+A custom stage instead gets a drag handle, a delete icon, an editable name (`New stage 1`), and no rule. It
+appears as a normal column on the board and accepts drags without restriction.
+
+**Sales outcomes report** (`16.webp`), reached from the Won/Lost tiles: a `Type | Won` filter and a date
+range, then a table of `Title`, `Name`, `Created At`, `Won At`, `Total`, every column sortable, with
+`Showing 1-4 of 4 items`, a per-page select, and prev/next arrows.
+
+**Movement:** cards advance automatically when the underlying record changes, and staff may drag forward.
+Dropping into a protected stage first demands the action that stage represents. Backward movement is
+refused. Won is automatic on quote approval or job creation; Lost is always by hand, with an optional reason.
+
+The current official article does not document reopening a Lost Pipeline Opportunity, restoring its archived
+Request/Quote, or how a reopened Opportunity affects the Won/Lost tiles and Sales Outcomes report. Treat all
+Pipeline reopen behavior as an UCRM product decision rather than Jobber parity.
+
+**Nothing is created on the board.** Opportunities only ever come from Requests and Quotes.
+
+**Mobile:** the Jobber app has no pipeline at all. Tasks and notes are web-only.
+
+**Access:** Plus plan or paid add-on, plus the request and quote view/create/edit permissions.
+
+### 4.6.2 What we take from it (approved 2026-08-18)
+
+Jobber's current pipeline is our reference and overrides the earlier UCRM opportunity model. Full text in
+`docs/sales-pipeline-behavior-contract.md`.
+
+- Same seven protected stages, same two groups, same entry rules.
+- Opportunities come only from Requests and Quotes. No standalone creation, and `+ Add new` in the screenshots
+  is Jobber's global create button, not a way to author an opportunity.
+- One card per record, not one identity across both: a converted Request leaves the Request stages and its
+  Quote appears in Draft as a new card.
+- Same freshness rule — green under an hour, neutral to 24 hours, red after — measured from stage entry.
+- Forward-only drag with the required action, copied exactly, but not until both groups exist.
+- Deliberate differences: desktop only, because our mobile app is separate work; one page-level scroll with an
+  accessible `Load more` per column instead of Jobber's per-column scroll; no lead source, because Jobber's own
+  screens and docs disagree about it.
+- Part 3 copies the five-open/five-completed Task limits, card priority, and lifecycle above. UCRM preserves a
+  real read-only role: `pipeline.view` reads Brief Tasks/Notes and `pipeline.edit` gates mutations.
+- Part 3 Notes support Request/Client linking and core create/view/edit/delete. Attachments, mentions, pinning,
+  advanced Task scheduling, notifications, and Schedule UI wait for their owning domains.
+- An embedded Opportunity activity timeline is deferred rather than presented as Jobber parity; Jobber does
+  not put one in this drawer, and UCRM's current generic activity is not complete enough to be honest history.
+- Part 4 follows Jobber's automatic Won, manual Lost, source archive, optional lost reason, Task lifecycle,
+  active-board removal, tiles, and Sales Outcomes report. UCRM adds reasoned Lost reopen: it restores the
+  Request and only the Tasks auto-completed by that loss, removes the record from current Lost reporting, and
+  retains both transitions in immutable history.
+
+## 5. How WE compare (build notes)
 
 - **Requests are a distinct lead-intake object, not just a "new contact."** Jobber separates _the ask_
   (Request, with its own line items + status lifecycle) from _the priced estimate_ (Quote). Our contacts +
@@ -263,6 +514,49 @@ convert mutation exists under a different name)**.
   standout feature.
 - **Arrival windows** ("we'll arrive 1–3pm") are expected by home-service clients — build them as a
   first-class field on both assessments and visits, not free text.
+
+---
+
+## 6. What we built (Part 1, shipped and browser-verified 2026-08-18)
+
+Staff-side request intake and on-site assessment scheduling/completion. Public booking forms and real
+Quote/Job conversion are explicitly out of scope — see the deferred items in `Memory/deferred/INDEX.md`
+for what that leaves undone.
+
+- **`requests.status` stores six values**, not the schema's nine — `upcoming`/`today`/`overdue` are never
+  written. They're derived at read time from the assessment's start time against the org's timezone
+  (`src/lib/server/requests/status.ts`), the same rule planned for job visits later. The derived value
+  travels as `status` on every API response; `stored_status` is the persisted column. Never write the
+  derived one.
+- **Zero or one assessment per request.** Both `starts_at`/`ends_at` null means booked but undated
+  (Jobber's "Unscheduled"); assignees are a join table, not an array column.
+- **List page:** Overview card rows are New, Unscheduled, Overdue, Assessment complete — counts are
+  read-only and counted on demand, clicking one does not filter. Pagination is load-more, not numbered
+  pages; a date filter is deferred, Status ships. The header renders as a filled grey card rather than
+  Jobber's status-tinted stripe, because the blueprint (`Design/Requests.jpg`) wins on that call per
+  CLAUDE.md rule 5.
+- **New Request page:** title, a client-search combobox, and a service-overview textarea are the only
+  required-feeling fields, matching `Design/Request new.jpg`. `property_id` is required server-side even
+  though the blueprint shows no property field — resolved by auto-selecting the client's primary property
+  on pick, surfacing a "Change property" control only when that client has more than one. The On-site
+  assessment and Products & services blocks are **live on this page**, the way Jobber's are: the empty
+  assessment card opens the same inline panel, line items are typed straight into the block, and the page's
+  own action bar saves all three together. They are held in memory and written straight after the request
+  row exists — `PUT /api/requests/[id]/assessment` and `PUT /api/requests/[id]/pricing` at revision 0. Both
+  drafts are validated _before_ anything is written, so a bad date never leaves a half-filled request
+  behind, and each write carries a "already done" flag so pressing Save again after a partial failure
+  finishes the job instead of duplicating it.
+  > These two blocks were static empty states until 2026-08-20, on a note that claimed they needed a saved
+  > request. A live tour proved otherwise; do not reintroduce the empty-state version.
+- **List pages stay separate pages per work-object type and share components** (`FilterBar`, `DataTable`,
+  `KpiCard`, `StatusOverviewCard`) — never one page switched by type. The header/summary-card and Primary
+  Info card (`src/lib/components/work/`) are built as reusable components for this same reason: Quote, Job,
+  and Invoice will need the identical shape.
+- **Known gaps, not yet decided:** request-list search doesn't match client name (only `title` and
+  `service_type`); filtering by Status filters the _stored_ status, so "Unscheduled" also returns rows
+  currently badged Overdue/Today; the third KPI card ("Assessments booked") has no real data source yet;
+  no `requests.*` permission keys are seeded, so every request route only checks organization membership.
+  See `Memory/deferred/INDEX.md` for each one's reactivation trigger.
 
 ---
 

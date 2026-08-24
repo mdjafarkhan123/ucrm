@@ -76,7 +76,8 @@ html {
 
 body {
 	min-width: 320px;
-	min-height: 100vh;
+	// height: 100vh;
+	// overflow: hidden;
 	background: var(--color-surface--background);
 }
 
@@ -157,6 +158,15 @@ a:hover {
 	background: transparent;
 }
 
+// =============================================================================
+// Page scrolling behavior
+// =============================================================================
+.page-scroller {
+	height: 90vh;
+	padding-bottom: var(--space-base);
+	border-radius: var(--radius-base);
+	overflow-y: scroll;
+}
 // =============================================================================
 // REQUIRED MARKER — the asterisk after a required field's label. Lives here so
 // every label renders it identically; field components add it from `required`.

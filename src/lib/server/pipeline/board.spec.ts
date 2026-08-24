@@ -8,6 +8,7 @@ const TORONTO = 'America/Toronto';
 describe('board cursor', () => {
 	it('survives a round trip', () => {
 		const cursor = {
+			column: 'new_request' as const,
 			sort: 'created' as const,
 			phase: 1 as const,
 			value: '2026-08-19T04:00:00.000Z',
@@ -18,6 +19,7 @@ describe('board cursor', () => {
 
 	it('keeps a money value exactly as it was written', () => {
 		const cursor = {
+			column: 'assessment' as const,
 			sort: 'value' as const,
 			phase: 1 as const,
 			value: '15250.50',
@@ -28,6 +30,7 @@ describe('board cursor', () => {
 
 	it('remembers which half of a value sort it came from', () => {
 		const unestimated = {
+			column: 'quote_draft' as const,
 			sort: 'value' as const,
 			phase: 2 as const,
 			value: '',
@@ -36,13 +39,28 @@ describe('board cursor', () => {
 		expect(readBoardCursor(encodeBoardCursor(unestimated))?.phase).toBe(2);
 	});
 
+	it('remembers which column it was cut from', () => {
+		const cursor = {
+			column: 'assessment' as const,
+			sort: 'stage' as const,
+			phase: 1 as const,
+			value: '2026-08-19T04:00:00.000Z',
+			id: '9c3f5a0e-1111-4222-8333-444455556666'
+		};
+		expect(readBoardCursor(encodeBoardCursor(cursor))?.column).toBe('assessment');
+	});
+
 	it('refuses anything it did not write', () => {
 		expect(readBoardCursor(null)).toBeNull();
 		expect(readBoardCursor('')).toBeNull();
 		expect(readBoardCursor('nonsense')).toBeNull();
-		expect(readBoardCursor('title:1:abc|id')).toBeNull();
-		expect(readBoardCursor('created:9:abc|id')).toBeNull();
-		expect(readBoardCursor('created:1:abc|')).toBeNull();
+		expect(readBoardCursor('new_request:title:1:abc|id')).toBeNull();
+		expect(readBoardCursor('new_request:created:9:abc|id')).toBeNull();
+		expect(readBoardCursor('new_request:created:1:abc|')).toBeNull();
+		// A column name that is not a column, and the old three-field shape from before columns were
+		// bound in. Both are markers this build never wrote.
+		expect(readBoardCursor('request_closed:created:1:abc|id')).toBeNull();
+		expect(readBoardCursor('created:1:abc|id')).toBeNull();
 	});
 });
 

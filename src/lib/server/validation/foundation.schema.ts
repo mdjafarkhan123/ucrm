@@ -13,7 +13,10 @@ export const propertyAddressSchema = z.object({
 	access_notes: optionalText,
 	// No default. A missing flag means "leave it alone", so editing an address cannot silently clear which
 	// property the bills go to.
-	is_billing_address: z.boolean().optional()
+	is_billing_address: z.boolean().optional(),
+	// Null means inherit the Business default; a saved rate's id pins this property to it. Omitted means
+	// "leave it alone"; the composite FK is what actually stops a rate from another org.
+	tax_rate_id: z.string().uuid().nullable().optional()
 });
 
 // The simple contact policy the office sees first. It sits on top of the detailed choices below and

@@ -28,6 +28,8 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ClosureActions from '$lib/components/jafar/ClosureActions.svelte';
 	import CommercialActions from '$lib/components/jafar/CommercialActions.svelte';
+	import EmailDomainActions from '$lib/components/jafar/EmailDomainActions.svelte';
+	import EmailAllowanceActions from '$lib/components/jafar/EmailAllowanceActions.svelte';
 	import FreeAccessActions from '$lib/components/jafar/FreeAccessActions.svelte';
 	import LegacyReconcileActions from '$lib/components/jafar/LegacyReconcileActions.svelte';
 	import LifecycleActions from '$lib/components/jafar/LifecycleActions.svelte';
@@ -197,7 +199,6 @@
 		'automation.workflows': 'Workflow automations',
 		'reporting.advanced': 'Advanced reporting'
 	};
-
 
 	const HISTORY_EVENT_LABELS: Record<string, string> = {
 		'organization.lifecycle_changed': 'Status changed',
@@ -1345,14 +1346,10 @@
 				<h2 id="integrations-title">Effective provider readiness</h2>
 			</div>
 			<Card class="organization-detail__commercial-explainer">
-				<div>
-					<h3>Not connected yet</h3>
-					<p>
-						Phone, SMS, email, webchat, and payment readiness are not wired to live provider data
-						yet. This section becomes real in a later part of this build.
-					</p>
-				</div>
-				<Badge status="inactive">Not connected</Badge>
+				<EmailDomainActions organizationId={access.organization.id} />
+			</Card>
+			<Card class="organization-detail__commercial-explainer">
+				<EmailAllowanceActions organizationId={access.organization.id} />
 			</Card>
 		</section>
 
@@ -1446,7 +1443,10 @@
 							<tbody>
 								{#each attentionOperations as operation (operation.id)}
 									<tr>
-										<td>{OPERATION_TYPE_LABELS[operation.operation_type] ?? operation.operation_type}</td>
+										<td
+											>{OPERATION_TYPE_LABELS[operation.operation_type] ??
+												operation.operation_type}</td
+										>
 										<td
 											><Badge status="warning"
 												>{OPERATION_STATUS_LABELS[operation.status] ?? operation.status}</Badge

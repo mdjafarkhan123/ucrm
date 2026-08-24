@@ -91,16 +91,17 @@
 			border-radius: var(--radius-base);
 			background: var(--color-surface);
 			box-shadow: var(--shadow-low);
+			height: var(--detail-viewport-height);
+			overflow-y: auto;
 		}
 
 		&__rail {
-			position: sticky;
-			top: var(--space-large);
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-base);
-			max-height: 92vh;
+			height: var(--detail-viewport-height);
 			overflow-y: auto;
+			padding-bottom: var(--space-base);
 		}
 	}
 

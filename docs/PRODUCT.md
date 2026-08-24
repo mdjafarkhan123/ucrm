@@ -46,8 +46,9 @@ Permissions decide whether people see all or assigned work and separately protec
 - Contractor users authenticate through Supabase Auth.
 - A contractor user belongs to exactly one contractor organization. Multiple organization membership
   is not supported.
-- Contractor users are provisioned by the Platform Owner during organization setup; there is no
-  contractor invitation workflow.
+- The Platform Owner provisions the initial contractor administrator during organization setup. After setup,
+  the contractor Owner and Administrators invite and manage their own team within platform-controlled access
+  and seat limits.
 - The Platform Owner currently signs in through the separate `/jafar` area using the
   environment-configured owner credentials. Stronger owner identity, MFA, revocation, and audit
   controls are future hardening work.
@@ -110,8 +111,10 @@ Opportunities are generated from Requests and Quotes. Staff never create one by 
 it converts into are separate cards: the Request card leaves the board on conversion and the Quote appears in
 Draft.
 
-The first release uses seven protected stages in two groups, Requests and Quotes. Custom stages come later,
-only once real contractor evidence asks for them.
+The first release presents one horizontal five-column journey: New requests, Assessment, Draft, Awaiting
+response, and Changes requested. Assessment preserves three protected system states underneath—unscheduled,
+scheduled, and completed—and an administrator may expand them into the detailed seven-column view. Custom
+follow-up stages come later and remain subordinate to protected Request, Assessment, and Quote truth.
 
 Won and Lost are explicit outcomes, not pipeline columns.
 
@@ -119,7 +122,8 @@ Each opportunity contains customer, property, title, value, owner, stage age, ex
 
 The Pipeline is desktop web only. The mobile app is separate work, later.
 
-Stages can carry a color, description, win probability, and aging limit.
+Custom follow-up stages may later carry presentation and follow-up guidance, but cannot redefine protected
+lifecycle stages or outcomes.
 
 Real activity may move a deal forward, but automation never moves it backward or overrides later human progress.
 
@@ -129,7 +133,13 @@ than changing Pipeline outcome by itself.
 
 ## 11. Unified inbox
 
-Bring SMS, email, web chat, Facebook Messenger, missed calls, logged calls, attachments, and internal notes into one shared inbox.
+Bring SMS, email, web chat, Facebook Messenger, Instagram, missed calls, logged calls, attachments, and internal notes into one shared inbox.
+
+Approved cross-channel behavior, threading, collaboration, permissions, package flexibility, channel
+connections, reliability, and the required pre-UI planning gate live in
+`docs/unified-inbox-behavior-contract.md`. Read that contract whenever work touches Conversations, Messenger,
+Instagram, web chat, email or SMS inside the inbox, internal comments, conversation permissions, or channel
+connections.
 
 Approved contractor operational-email behavior, tenant-domain rules, Brevo allowances, reply routing,
 reputation controls, and campaign ownership live in `docs/contractor-email-contract.md`. Read that contract

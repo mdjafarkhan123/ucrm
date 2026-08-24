@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { onDestroy, untrack } from 'svelte';
-	import RailCard from '$lib/components/layout/RailCard.svelte';
+	import AttachmentSurface from '$lib/components/collaboration/AttachmentSurface.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import Lightbox, { type LightboxItem } from '$lib/components/ui/Lightbox.svelte';
@@ -34,6 +34,7 @@
 	import downloadIcon from '@tabler/icons/outline/download.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
+	import photoIcon from '@tabler/icons/outline/photo.svg?raw';
 
 	// Files for one record. Nothing here reaches the server on its own: picking a file queues it, deleting
 	// one marks it to go, and the page's Save does the lot through `saveAll()`. The house rule is that no
@@ -48,6 +49,9 @@
 		canManage = true,
 		currentUserId,
 		title = 'Attachments',
+		surface = 'rail',
+		kind = 'all',
+		includeIds,
 		onPendingChange
 	}: {
 		entityType: EntityType;
@@ -55,6 +59,10 @@
 		canManage?: boolean;
 		currentUserId?: string;
 		title?: string;
+		surface?: 'rail' | 'section';
+		kind?: 'all' | 'documents' | 'images';
+		/** When supplied, only these already-saved files belong to this surface. Queued files still show. */
+		includeIds?: string[];
 		/** Reports how many changes are waiting, so the page can count them as unsaved and light its bar. */
 		onPendingChange?: (count: number) => void;
 	} = $props();
@@ -73,7 +81,18 @@
 		queryFn: () => fetchAttachments(entityType, targetId),
 		enabled: Boolean(targetId)
 	}));
-	const saved = $derived(targetId ? (attachmentsQuery.data ?? []) : []);
+	const saved = $derived.by(() => {
+		if (!targetId) return [];
+		const included = includeIds ? new Set(includeIds) : null;
+		return (attachmentsQuery.data ?? []).filter((file) => {
+			if (included && !included.has(file.id)) return false;
+			if (kind === 'images') return isImageAttachment(file);
+			if (kind === 'documents') return !isImageAttachment(file);
+			return true;
+		});
+	});
+	const accept = $derived(kind === 'images' ? 'image/*' : undefined);
+	const surfaceIcon = $derived(kind === 'images' ? photoIcon : paperclipIcon);
 
 	const uploaderIds = $derived([
 		...new Set(saved.map((file) => file.uploaded_by).filter((id): id is string => Boolean(id)))
@@ -133,6 +152,8 @@
 	function addFiles(fileList: FileList | null) {
 		if (!fileList) return;
 		for (const file of Array.from(fileList)) {
+			if (kind === 'images' && !file.type.startsWith('image/')) continue;
+			if (kind === 'documents' && file.type.startsWith('image/')) continue;
 			const tooBig = file.size > MAX_ATTACHMENT_SIZE_BYTES;
 			const wrongType = !(ALLOWED_ATTACHMENT_MIME_TYPES as readonly string[]).includes(file.type);
 			const key = `${file.name}-${file.size}-${Date.now()}-${Math.random()}`;
@@ -389,13 +410,14 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<RailCard {title} icon={paperclipIcon} count={total}>
+<AttachmentSurface {surface} {title} icon={surfaceIcon} count={total}>
 	{#snippet actions()}
 		{#if canManage}
 			<input
 				bind:this={fileInputEl}
 				type="file"
 				multiple
+				{accept}
 				class="attachments-card__file-input"
 				id={pickerId}
 				onchange={(event) => addFiles((event.currentTarget as HTMLInputElement).files)}
@@ -572,7 +594,7 @@
 			</ul>
 		{/if}
 	{/if}
-</RailCard>
+</AttachmentSurface>
 
 <Lightbox
 	open={lightboxOpen}

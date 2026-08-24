@@ -37,6 +37,10 @@
 
 	// Absent, not null, for a member who may not see money — one row fewer for them, not a blank one.
 	const canViewValue = $derived('estimated_value' in opportunity);
+	// A quote-backed card's value comes from the quote itself (see pipeline_update_opportunity_details),
+	// so the manual editor no longer applies to it — same "quote owns this" carve-out OpportunityCard
+	// already makes for the "Mark as lost" menu.
+	const canEditValue = $derived(canEdit && opportunity.quote === null);
 	const amount = $derived(formatting ? formatMoney(opportunity.estimated_value, formatting) : null);
 	const chase = $derived(formatting ? followUp(opportunity.next_follow_up_on, formatting) : null);
 	const closeOn = $derived(formatting ? followUp(opportunity.expected_close_on, formatting) : null);
@@ -223,7 +227,7 @@
 							{:else}
 								<span class="brief__blank">Not estimated yet</span>
 							{/if}
-							{#if canEdit}
+							{#if canEditValue}
 								<PencilButton label="Edit estimated value" onclick={startEditingValue} />
 							{/if}
 						</span>

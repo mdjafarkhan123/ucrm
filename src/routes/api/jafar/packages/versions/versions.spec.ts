@@ -62,7 +62,11 @@ describe('platform owner package version write API boundary', () => {
 				value_explanation: 'Includes pipeline tools.',
 				price_usd_cents: 14900,
 				feature_keys: ['sales.pipeline'],
-				limit: { key: 'employee_seats', state: 'numeric', value: 10 }
+				limit: { key: 'employee_seats', state: 'numeric', value: 10 },
+				email_allowances: {
+					operational: { state: 'numeric', value: 10000 },
+					essential: { state: 'numeric', value: 1000 }
+				}
 			})
 		);
 
@@ -72,6 +76,63 @@ describe('platform owner package version write API boundary', () => {
 			'manage_platform_package_version',
 			expect.objectContaining({ operation: 'create_draft', actor_email: 'owner@example.com' })
 		);
+		expect(rpc).toHaveBeenCalledWith('manage_platform_package_email_allowances', {
+			target_version_id: 'version-id',
+			target_operational_state: 'numeric',
+			target_operational_value: 10000,
+			target_essential_state: 'numeric',
+			target_essential_value: 1000,
+			actor_email: 'owner@example.com'
+		});
+	});
+
+	it('rejects a numeric allowance without a recipient count', async () => {
+		mockedOwnerSession.mockResolvedValue({
+			email: 'owner@example.com',
+			sessionId: 'session-id'
+		});
+
+		const response = await POST(
+			event({
+				package_key: 'growth',
+				display_name: 'Growth',
+				public_description: 'For growing teams.',
+				price_usd_cents: 14900,
+				feature_keys: [],
+				email_allowances: {
+					operational: { state: 'numeric', value: null },
+					essential: { state: 'not_included', value: null }
+				}
+			})
+		);
+
+		expect(response.status).toBe(422);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it('does not expose allowance command errors', async () => {
+		const rpc = vi
+			.fn()
+			.mockResolvedValueOnce({ data: 'version-id', error: null })
+			.mockResolvedValueOnce({ data: null, error: { message: 'draft-only details' } });
+		mockedClient.mockReturnValue({ rpc } as never);
+
+		const response = await POST(
+			event({
+				package_key: 'growth',
+				display_name: 'Growth',
+				public_description: 'For growing teams.',
+				price_usd_cents: 14900,
+				feature_keys: [],
+				email_allowances: {
+					operational: { state: 'unlimited', value: null },
+					essential: { state: 'numeric', value: 500 }
+				}
+			})
+		);
+
+		expect(response.status).toBe(409);
+		expect(await response.json()).toEqual({ error: 'The package version could not be saved.' });
 	});
 
 	it('does not expose raw database errors when saving a draft is rejected', async () => {
@@ -81,9 +142,9 @@ describe('platform owner package version write API boundary', () => {
 		});
 		mockedClient.mockReturnValue({
 			rpc: vi.fn().mockResolvedValue({
-			data: null,
-			error: { message: 'internal constraint details' }
-		})
+				data: null,
+				error: { message: 'internal constraint details' }
+			})
 		} as never);
 
 		const response = await POST(
@@ -92,7 +153,11 @@ describe('platform owner package version write API boundary', () => {
 				display_name: 'Growth',
 				public_description: 'For growing teams.',
 				price_usd_cents: 14900,
-				feature_keys: []
+				feature_keys: [],
+				email_allowances: {
+					operational: { state: 'not_included', value: null },
+					essential: { state: 'not_included', value: null }
+				}
 			})
 		);
 
@@ -109,9 +174,9 @@ describe('platform owner package version write API boundary', () => {
 		});
 		mockedClient.mockReturnValue({
 			rpc: vi.fn().mockResolvedValue({
-			data: null,
-			error: { message: 'internal publication details' }
-		})
+				data: null,
+				error: { message: 'internal publication details' }
+			})
 		} as never);
 
 		const response = await publish(

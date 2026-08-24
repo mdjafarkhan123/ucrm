@@ -4,20 +4,23 @@
 		children,
 		status,
 		size = 'base',
+		dot = true,
 		class: className = ''
 	}: {
 		children: Snippet;
 		status?: 'success' | 'warning' | 'critical' | 'inactive' | 'informative';
 		size?: 'small' | 'base' | 'large' | 'larger';
+		/** Colored badges show a leading dot by default; set false for a plain tinted pill. */
+		dot?: boolean;
 		class?: string;
 	} = $props();
 </script>
 
 <span
-	class={`badge badge--${size} ${className} ${status ? `badge--status badge--${status}` : ''}`}
+	class={`badge badge--${size} ${className} ${status ? `badge--status badge--${status}` : ''} ${status && !dot ? 'badge--no-dot' : ''}`}
 	role={status ? 'status' : undefined}
 >
-	{#if status}<span class="badge__dot" aria-hidden="true"></span>{/if}
+	{#if status && dot}<span class="badge__dot" aria-hidden="true"></span>{/if}
 	<span>{@render children()}</span>
 </span>
 
@@ -57,6 +60,10 @@
 		border-radius: 12px;
 		color: var(--badge-text);
 		background: var(--badge-background);
+	}
+	/* Without the dot the asymmetric status padding reads off-center. */
+	.badge--no-dot {
+		padding: 6px 10px;
 	}
 	.badge__dot {
 		width: var(--space-small);

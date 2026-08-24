@@ -9,6 +9,71 @@ export const ownerReconfirmSchema = z.object({
 	password: z.string().min(1, 'Enter your password.').max(256)
 });
 
+export const communicationDomainProvisionSchema = z
+	.object({
+		domain_name: z
+			.string()
+			.trim()
+			.toLowerCase()
+			.min(4)
+			.max(253)
+			.regex(
+				/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/,
+				'Enter a valid domain name.'
+			),
+		dns_zone: z
+			.string()
+			.trim()
+			.toLowerCase()
+			.min(4)
+			.max(253)
+			.regex(
+				/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/,
+				'Enter a valid parent DNS zone.'
+			),
+		purpose: z.literal('sending'),
+		idempotency_key: z.string().uuid('Start a new provisioning attempt and try again.')
+	})
+	.superRefine((value, context) => {
+		if (value.domain_name !== value.dns_zone && !value.domain_name.endsWith(`.${value.dns_zone}`)) {
+			context.addIssue({
+				code: 'custom',
+				path: ['dns_zone'],
+				message: 'The sending domain must be inside this DNS zone.'
+			});
+		}
+	});
+
+export const communicationDomainRecheckSchema = z.object({
+	idempotency_key: z.string().uuid('Start a new domain check and try again.')
+});
+
+export const communicationDomainReplacementSchema = z
+	.object({
+		domain_name: communicationDomainProvisionSchema.shape.domain_name,
+		dns_zone: communicationDomainProvisionSchema.shape.dns_zone,
+		idempotency_key: z.string().uuid('Start a new replacement attempt and try again.')
+	})
+	.superRefine((value, context) => {
+		if (value.domain_name !== value.dns_zone && !value.domain_name.endsWith(`.${value.dns_zone}`)) {
+			context.addIssue({
+				code: 'custom',
+				path: ['dns_zone'],
+				message: 'The sending domain must be inside this DNS zone.'
+			});
+		}
+	});
+
+export const communicationDomainRemovalSchema = z.object({
+	confirm_domain_name: communicationDomainProvisionSchema.shape.domain_name,
+	reason: z.string().trim().min(1, 'Enter a private removal reason.').max(500),
+	expected_impact: z.object({
+		live_sender_count: z.number().int().min(0),
+		live_replacement_count: z.number().int().min(0)
+	}),
+	idempotency_key: z.string().uuid('Start a new removal attempt and try again.')
+});
+
 const calendarDate = z
 	.string()
 	.regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a valid calendar date.')
@@ -167,7 +232,11 @@ export const teamProfileCorrectionSchema = z
 
 export const organizationClosureStartSchema = z.object({
 	reason: z.string().trim().min(1, 'Enter a private reason.').max(1000),
-	typed_organization_name: z.string().trim().min(1, 'Type the organization name to confirm.').max(200),
+	typed_organization_name: z
+		.string()
+		.trim()
+		.min(1, 'Type the organization name to confirm.')
+		.max(200),
 	idempotency_key: z.string().uuid('Start a new closure and try again.')
 });
 
@@ -182,16 +251,16 @@ export const organizationClosureRestoreSchema = z.object({
 
 export const organizationEarlyPurgeSchema = z.object({
 	organization_id: z.string().uuid('Choose a valid organization.'),
-	typed_organization_name: z.string().trim().min(1, 'Type the organization name to confirm.').max(200)
+	typed_organization_name: z
+		.string()
+		.trim()
+		.min(1, 'Type the organization name to confirm.')
+		.max(200)
 });
 
 export const administratorEmailRecoverySchema = z.object({
 	new_email: z.string().trim().toLowerCase().email('Enter a valid email address.').max(254),
-	evidence_summary: z
-		.string()
-		.trim()
-		.min(1, 'Describe how you verified this person.')
-		.max(1000),
+	evidence_summary: z.string().trim().min(1, 'Describe how you verified this person.').max(1000),
 	reason: z.string().trim().min(1, 'Enter a recovery reason.').max(1000),
 	idempotency_key: z.string().uuid('Start a new recovery and try again.')
 });

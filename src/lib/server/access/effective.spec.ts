@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	OrganizationAccessNotFoundError,
+	permissionIsEnabled,
 	resolveOrganizationAccess,
 	type AccessClient
 } from './effective';
@@ -27,7 +28,12 @@ function query(result: QueryResult) {
 
 function clientFor(rows: Record<string, QueryResult>) {
 	return {
-		from: (table: string) => query(rows[table] ?? { data: [], error: null })
+		from: (table: string) => query(rows[table] ?? { data: [], error: null }),
+		rpc: (fn: string) => {
+			const result = rows[fn] ?? { data: [], error: null };
+			const data = Array.isArray(result.data) ? result.data : result.data ? [result.data] : [];
+			return Promise.resolve({ ...result, data });
+		}
 	} as unknown as AccessClient;
 }
 
@@ -73,11 +79,8 @@ const baseRows = {
 		],
 		error: null
 	},
-	package_limits: {
-		data: [
-			{ package_key: 'growth', limit_key: 'employee_seats', limit_value: 10, is_unlimited: false },
-			{ package_key: 'elite', limit_key: 'employee_seats', limit_value: 50, is_unlimited: false }
-		],
+	effective_employee_seat_limit: {
+		data: { state: 'numeric', value: 4, is_unlimited: false, source: 'override' },
 		error: null
 	},
 	organization_feature_overrides: {
@@ -422,18 +425,11 @@ describe('resolveOrganizationAccess', () => {
 			data: [{ package_version_id: 'version-growth-1', feature_key: 'sales.pipeline' }],
 			error: null
 		};
-		rows.platform_package_version_limits = {
-			data: [
-				{
-					package_version_id: 'version-growth-1',
-					limit_key: 'employee_seats',
-					limit_state: 'numeric',
-					limit_value: 10
-				}
-			],
+		rows.organization_limit_overrides = { data: [], error: null };
+		rows.effective_employee_seat_limit = {
+			data: { state: 'numeric', value: 10, is_unlimited: false, source: 'package' },
 			error: null
 		};
-		rows.organization_limit_overrides = { data: [], error: null };
 
 		const access = await resolveOrganizationAccess(
 			clientFor(rows),
@@ -452,5 +448,17 @@ describe('resolveOrganizationAccess', () => {
 			state: 'numeric',
 			source: 'package'
 		});
+	});
+});
+
+describe('permission entitlements', () => {
+	it('turns the price list off with the quotes feature', () => {
+		expect(permissionIsEnabled('catalog.edit', { 'core.quotes': true })).toBe(true);
+		expect(permissionIsEnabled('catalog.edit', { 'core.quotes': false })).toBe(false);
+		expect(permissionIsEnabled('catalog.view', {})).toBe(false);
+	});
+
+	it('leaves a permission with no feature of its own always on', () => {
+		expect(permissionIsEnabled('organization.view', {})).toBe(true);
 	});
 });

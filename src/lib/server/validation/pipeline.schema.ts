@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BOARD_STAGES } from '$lib/pipeline/stages';
+import { BOARD_COLUMN_KEYS, OPPORTUNITY_STAGES } from '$lib/pipeline/stages';
 import { BOARD_DATE_PRESETS, BOARD_DIRECTIONS, BOARD_SORTS } from '$lib/server/pipeline/board';
 import { OUTCOME_SORTS, OUTCOME_TYPES } from '$lib/pipeline/outcomes';
 
@@ -42,11 +42,15 @@ function withDateRules<Schema extends z.ZodType<DateRangeInput>>(schema: Schema)
 		});
 }
 
-// One column's page. The board asks for each stage separately so a long column can keep loading without
-// the other three re-fetching, and every control below narrows or reorders that one column.
+// One column's page. The board asks for each column separately so a long column can keep loading without
+// the others re-fetching, and every control below narrows or reorders that one column.
+//
+// `stage` carries a column name, which is a real stage for six of the seven and the named logical column
+// `assessment` for the collapsed one. A closed list, never a caller-supplied set of stages: the only
+// grouping that exists is the one the product approved.
 export const boardQuerySchema = withDateRules(
 	z.object({
-		stage: z.enum(BOARD_STAGES),
+		stage: z.enum(BOARD_COLUMN_KEYS),
 		cursor: z.string().min(3).max(200).optional(),
 		limit: z.coerce.number().int().min(1).max(BOARD_PAGE_SIZE_MAX).default(BOARD_PAGE_SIZE_DEFAULT),
 		sort: z.enum(BOARD_SORTS).default('stage'),
@@ -59,6 +63,30 @@ export const boardQuerySchema = withDateRules(
 // cursor and no sort: a total does not care what order the cards are in, and asking for one is not a way
 // to read money the caller may not see.
 export const boardSummaryQuerySchema = withDateRules(z.object({ ...boardFilterShape }));
+
+// Dragging a card. `to_stage` only needs to be a real stage name here -- a garbled value fails as a field
+// error instead of a raw database exception. Whether this particular move is allowed from the card's
+// current stage is decided by `dragActionFor` in the route and, underneath it, by the database gate;
+// neither trusts this schema for that. `starts_at`/`ends_at` matter only for the one action that needs
+// them (scheduling an assessment) -- the route ignores them for every other target stage.
+export const dragOpportunitySchema = z
+	.object({
+		to_stage: z.enum(OPPORTUNITY_STAGES),
+		starts_at: z.iso.datetime({ offset: true }).nullish(),
+		ends_at: z.iso.datetime({ offset: true }).nullish(),
+		// Only the conversion drop needs one, and the route insists on it there. A retry of the same drag
+		// carries the same key, so a doubled request gets the first quote back instead of a second one.
+		idempotency_key: z.string().uuid('Start a new action and try again.').optional()
+	})
+	.refine((value) => (value.starts_at == null) === (value.ends_at == null), {
+		message: 'Set both a start and an end time, or leave them both out.',
+		path: ['starts_at']
+	})
+	.refine(
+		(value) =>
+			!value.starts_at || !value.ends_at || Date.parse(value.ends_at) > Date.parse(value.starts_at),
+		{ message: 'End time must be after the start time.', path: ['ends_at'] }
+	);
 
 // The card's ownership action. `null` clears ownership; eligibility for a real id is checked by the
 // database trigger, not here, so this only shapes the request.

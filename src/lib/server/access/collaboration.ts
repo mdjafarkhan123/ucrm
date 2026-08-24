@@ -3,9 +3,10 @@ import type { RequestEvent } from '@sveltejs/kit';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import { requireClientPermission } from '$lib/server/access/clients';
+import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { getOrganizationContext, type OrganizationContext } from '$lib/server/auth/organization';
 
-export type LinkedEntityType = 'client' | 'property' | 'request';
+export type LinkedEntityType = 'client' | 'property' | 'request' | 'quote';
 
 // View follows the single customers.view gate for clients and properties (a Property's visibility already
 // follows its owning Client). Manage differs: client-scoped writes ride customers.edit, property-scoped
@@ -26,6 +27,16 @@ export async function requireLinkedEntityAccess(
 	// Requests carry no permission keys of their own yet, so reaching a request's notes and files means
 	// the same thing as reaching the request: membership. This mirrors private.can_manage_linked_entity,
 	// and when request permissions land both sides change together.
+	// A quote's notes and files follow the quote itself: reading one needs quotes.view, writing to one
+	// needs quotes.edit. Same pair the quote's own routes use, and the same pair the database checks.
+	if (entityType === 'quote') {
+		const check = await requireOrganizationPermission(
+			event,
+			mode === 'view' ? 'quotes.view' : 'quotes.edit'
+		);
+		return 'response' in check ? { response: check.response } : { auth: check.auth };
+	}
+
 	if (entityType === 'request') {
 		const auth = await getOrganizationContext(event);
 		if (!auth) {
@@ -47,7 +58,10 @@ export function parseLinkedEntityQuery(
 	const entityType = url.searchParams.get('entity_type');
 	const entityId = url.searchParams.get('entity_id');
 	if (
-		(entityType !== 'client' && entityType !== 'property' && entityType !== 'request') ||
+		(entityType !== 'client' &&
+			entityType !== 'property' &&
+			entityType !== 'request' &&
+			entityType !== 'quote') ||
 		!entityId
 	) {
 		return null;
@@ -63,11 +77,11 @@ export async function linkedEntityBelongsToOrganization(
 	entityType: LinkedEntityType,
 	entityId: string
 ): Promise<boolean> {
-	// Requests are not soft-deleted — an unwanted one is archived — so only the two customer tables carry
-	// the deleted_at filter.
-	if (entityType === 'request') {
+	// Requests and quotes are not soft-deleted — an unwanted one is archived — so only the two customer
+	// tables carry the deleted_at filter.
+	if (entityType === 'request' || entityType === 'quote') {
 		const { data } = await supabase
-			.from('requests')
+			.from(entityType === 'request' ? 'requests' : 'quotes')
 			.select('id')
 			.eq('id', entityId)
 			.eq('organization_id', organizationId)

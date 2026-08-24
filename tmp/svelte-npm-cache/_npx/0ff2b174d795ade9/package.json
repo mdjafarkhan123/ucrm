@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@sveltejs/mcp": "^0.1.26"
+  },
+  "_npx": {
+    "packages": [
+      "@sveltejs/mcp"
+    ]
+  }
+}

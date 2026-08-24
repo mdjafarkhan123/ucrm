@@ -12,6 +12,8 @@
 			variant={toast.variant}
 			title={toast.title}
 			message={toast.message}
+			loading={toast.loading}
+			dismissible={!toast.loading}
 			onDismiss={() => manager.dismiss(toast.id)}
 		/>
 	{/each}

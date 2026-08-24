@@ -8,6 +8,7 @@
 		label,
 		href,
 		onclick,
+		onhover,
 		size = 'small',
 		variation = 'subtle',
 		variant = 'tertiary',
@@ -18,6 +19,9 @@
 		label: string;
 		href?: string;
 		onclick?: (event: MouseEvent) => void;
+		/** Fires when the pointer or keyboard reaches the button, before it is pressed. Use it to start
+		 *  loading whatever pressing it will reveal, so the editor is already there on the click. */
+		onhover?: () => void;
 		size?: 'small' | 'base';
 		/** `subtle` for a calm in-context pencil; `work` when editing is the main action on the block. */
 		variation?: 'subtle' | 'work';
@@ -40,9 +44,26 @@
 {#if href && !disabled}
 	<!-- The caller resolves the path; this component renders whatever it is handed. -->
 	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-	<a {href} class={classes} aria-label={label} title={label} {onclick}>{@render glyph()}</a>
+	<a
+		{href}
+		class={classes}
+		aria-label={label}
+		title={label}
+		{onclick}
+		onmouseenter={onhover}
+		onfocus={onhover}>{@render glyph()}</a
+	>
 {:else}
-	<button type="button" class={classes} aria-label={label} title={label} {disabled} {onclick}>
+	<button
+		type="button"
+		class={classes}
+		aria-label={label}
+		title={label}
+		{disabled}
+		{onclick}
+		onmouseenter={onhover}
+		onfocus={onhover}
+	>
 		{@render glyph()}
 	</button>
 {/if}

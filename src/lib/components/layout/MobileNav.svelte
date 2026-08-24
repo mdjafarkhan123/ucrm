@@ -6,12 +6,14 @@
 		groups,
 		brand,
 		eyebrow,
+		logoUrl = null,
 		onnavigate
 	}: {
 		open?: boolean;
 		groups: NavGroup[];
 		brand?: string;
 		eyebrow?: string;
+		logoUrl?: string | null;
 		onnavigate?: () => void;
 	} = $props();
 
@@ -79,6 +81,7 @@
 				{groups}
 				{brand}
 				{eyebrow}
+				{logoUrl}
 				collapsible={false}
 				onnavigate={() => {
 					open = false;

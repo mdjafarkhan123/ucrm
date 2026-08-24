@@ -12,8 +12,17 @@
 
 	let {
 		children,
-		variant = 'contractor'
-	}: { children: import('svelte').Snippet; variant?: 'contractor' | 'owner' } = $props();
+		variant = 'contractor',
+		organizationName,
+		logoUrl = null,
+		account = null
+	}: {
+		children: import('svelte').Snippet;
+		variant?: 'contractor' | 'owner';
+		organizationName?: string | null;
+		logoUrl?: string | null;
+		account?: { name: string | null; email: string | null; role: string } | null;
+	} = $props();
 	let mobileOpen = $state(false);
 	let sidebarCollapsed = $state(false);
 	let signOutError = $state('');
@@ -29,7 +38,7 @@
 		{
 			label: 'Customers',
 			items: [
-				{ label: 'Inbox', href: '/inbox', icon: 'inbox', unavailable: true },
+				{ label: 'Inbox', href: '/communications', icon: 'inbox' },
 				{ label: 'Clients', href: '/clients', icon: 'users' },
 				{ label: 'Requests', href: '/requests', icon: 'route' },
 				{ label: 'Pipeline', href: '/pipeline', icon: 'chartBar' }
@@ -39,7 +48,7 @@
 			label: 'Work & Money',
 			items: [
 				{ label: 'Jobs', href: '/jobs', icon: 'tools', unavailable: true },
-				{ label: 'Quotes', href: '/quotes', icon: 'fileInvoice', unavailable: true },
+				{ label: 'Quotes', href: '/quotes', icon: 'fileInvoice' },
 				{ label: 'Invoices', href: '/invoices', icon: 'receipt', unavailable: true }
 			]
 		},
@@ -53,7 +62,7 @@
 		{
 			label: 'System',
 			items: [
-				{ label: 'Settings', href: '/settings', icon: 'settings', unavailable: true },
+				{ label: 'Settings', href: '/settings', icon: 'settings' },
 				{ label: 'Team', href: '/team', icon: 'usersGroup', unavailable: true },
 				{ label: 'Notifications', href: '/notifications', icon: 'mail', unavailable: true },
 				{ label: 'Usage', href: '/usage', icon: 'chartBar', unavailable: true }
@@ -74,8 +83,13 @@
 		}
 	];
 	const groups = $derived(variant === 'owner' ? ownerGroups : contractorGroups);
-	const brand = $derived(variant === 'owner' ? 'Control Room' : 'Contractor CRM');
+	// The sidebar identifies the signed-in business by its own saved name and logo once one exists, rather
+	// than the product's generic mark — but never for the owner's Control Room, which is never a business.
+	const brand = $derived(
+		variant === 'owner' ? 'Control Room' : (organizationName ?? 'Contractor CRM')
+	);
 	const eyebrow = $derived(variant === 'owner' ? 'Platform owner' : 'Workspace');
+	const sidebarLogoUrl = $derived(variant === 'contractor' ? logoUrl : null);
 	const accountLabel = $derived(variant === 'owner' ? 'Platform owner' : 'Your account');
 	let isSigningOut = $state(false);
 
@@ -108,9 +122,17 @@
 	class={`app-shell app-shell--${variant}`}
 	style={`--shell-nav-width: ${sidebarCollapsed ? '76px' : '256px'}`}
 >
-	<Sidebar {groups} {brand} {eyebrow} bind:collapsed={sidebarCollapsed} />
+	<Sidebar {groups} {brand} {eyebrow} logoUrl={sidebarLogoUrl} bind:collapsed={sidebarCollapsed} />
 	<div class="app-shell__body">
-		<Topbar {accountLabel} onmenutoggle={() => (mobileOpen = true)}>
+		<Topbar
+			{accountLabel}
+			{account}
+			showSecurityLink={variant === 'contractor'}
+			{isSigningOut}
+			{signOutError}
+			onSignOut={() => void signOut()}
+			onmenutoggle={() => (mobileOpen = true)}
+		>
 			{#snippet notifications()}
 				{#if variant === 'owner'}
 					<NotificationBell />
@@ -126,35 +148,18 @@
 					</button>
 				{/if}
 			{/snippet}
-			{#snippet account()}
-				{#if variant === 'contractor'}
-					<a class="topbar__menu-item" href={resolve('/settings/security')}>Password and security</a
-					>
-				{/if}
-				<button
-					class="topbar__menu-item"
-					type="button"
-					onclick={() => void signOut()}
-					disabled={isSigningOut}
-				>
-					<span aria-hidden="true">{@html logoutIcon}</span>
-					{isSigningOut ? 'Signing out…' : 'Sign out'}
-				</button>
-				{#if signOutError}<span class="app-shell__sign-out-error" role="alert">{signOutError}</span
-					>{/if}
-			{/snippet}
 		</Topbar>
 		<div class="app-shell__main">{@render children()}</div>
 	</div>
-	<MobileNav bind:open={mobileOpen} {groups} {brand} {eyebrow} />
+	<MobileNav bind:open={mobileOpen} {groups} {brand} {eyebrow} logoUrl={sidebarLogoUrl} />
 </div>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
-	// Where the content column starts and ends, so anything pinned over the page — the action bar at the
-	// bottom of a form or detail page — can line up with the page underneath it. `--shell-nav-width` is set
-	// on the element itself, because only this component knows whether the sidebar is collapsed.
+	/* Where the content column starts and ends, so anything pinned over the page — the action bar at the
+	 * bottom of a form or detail page — can line up with the page underneath it. `--shell-nav-width` is set
+	 * on the element itself, because only this component knows whether the sidebar is collapsed. */
 	.app-shell {
 		--shell-edge: var(--space-large);
 		--shell-content-left: calc(
@@ -179,13 +184,7 @@
 		flex: 1;
 		padding-block: var(--space-large);
 	}
-	.app-shell__sign-out-error {
-		display: block;
-		padding: 0 var(--space-small) var(--space-small);
-		color: var(--color-critical);
-		font-size: var(--typography--fontSize-small);
-	}
-	// The sidebar is hidden here, so the content column runs the full width inside the shell padding.
+	/* The sidebar is hidden here, so the content column runs the full width inside the shell padding. */
 	@media (max-width: 767px) {
 		.app-shell {
 			--shell-edge: var(--space-base);

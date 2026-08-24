@@ -193,314 +193,325 @@
 
 <svelte:head><title>Workspace · Contractor CRM</title></svelte:head>
 
-<div class="workspace">
-	<main class="content">
-		<PageHeader title="Dashboard" description="Your workspace at a glance." />
-		{#if !data.organization.id}
-			<section class="notice">
-				<strong>Your account is signed in, but it is not connected to an organization yet.</strong
-				><span
-					>Ask the platform owner to add you to a contractor organization before creating records.</span
-				>
-			</section>
-		{/if}
-
-		<section class="stats" aria-label="Workspace summary">
-			<div class="stat-card">
-				<span>Customers</span><strong>{data.clients.length}</strong><small
-					>Leads and active customers</small
-				>
-			</div>
-			<div class="stat-card">
-				<span>Properties</span><strong>{data.properties.length}</strong><small
-					>Service locations</small
-				>
-			</div>
-			<div class="stat-card stat-card--request">
-				<span>Open requests</span><strong
-					>{data.requests.filter((request) => !['converted', 'archived'].includes(request.status))
-						.length}</strong
-				><small>Ready for the next action</small>
-			</div>
-		</section>
-
-		{#if overview.isPending}
-			<div class="loading-grid">
-				<div class="skeleton skeleton--card"></div>
-				<div class="skeleton skeleton--card"></div>
-				<div class="skeleton skeleton--card"></div>
-			</div>
-		{:else if overview.isError}
-			<section class="notice notice--error">
-				<strong>Workspace data could not be loaded.</strong><span
-					>Refresh the page and try again.</span
-				>
-			</section>
-		{:else}
-			<div class="workspace-grid">
-				<section class="panel panel--customers" aria-labelledby="customers-heading">
-					<div class="panel__header">
-						<div>
-							<span class="panel__eyebrow">Relationship record</span>
-							<h2 id="customers-heading">Customers</h2>
-						</div>
-						<button class="button button--small" type="button" onclick={() => openForm('customer')}
-							>Add customer</button
-						>
-					</div>
-					{#if data.clients.length === 0}<div class="empty">
-							<strong>No customers yet</strong><span
-								>Create the first lead and start a complete work history.</span
-							><button
-								class="button button--secondary"
-								type="button"
-								onclick={() => openForm('customer')}>Create first customer</button
-							>
-						</div>{/if}
-					<div class="record-list">
-						{#each data.clients as client (client.id)}
-							<article class="record">
-								<div class="record__avatar">{client.display_name.slice(0, 1).toUpperCase()}</div>
-								<div class="record__body">
-									<div class="record__title">
-										<strong>{client.display_name}</strong><span
-											class="badge badge--{client.lifecycle_status}">{client.lifecycle_status}</span
-										>
-									</div>
-									<span>{client.email || client.phone || 'No contact details yet'}</span><small
-										>{data.properties.filter((property) => property.client_id === client.id).length} properties
-										· {data.requests.filter((request) => request.client_id === client.id).length} requests</small
-									>
-								</div>
-								<button
-									class="text-button"
-									type="button"
-									onclick={() => {
-										propertyForm.client_id = client.id;
-										openForm('property');
-									}}>Add property</button
-								>
-							</article>
-						{/each}
-					</div>
-				</section>
-
-				<section class="panel" aria-labelledby="requests-heading">
-					<div class="panel__header">
-						<div>
-							<span class="panel__eyebrow">Incoming work</span>
-							<h2 id="requests-heading">Requests</h2>
-						</div>
-						<button
-							class="button button--small"
-							type="button"
-							onclick={() => openForm('request')}
-							disabled={data.properties.length === 0}>New request</button
-						>
-					</div>
-					{#if data.requests.length === 0}<div class="empty">
-							<strong>No requests yet</strong><span
-								>Add a property first, then record what the customer needs.</span
-							>
-						</div>{/if}
-					<div class="record-list">
-						{#each data.requests as request (request.id)}
-							<article class="request-record">
-								<div class="request-record__top">
-									<span class="request-dot"></span>
-									<div>
-										<strong>{request.title}</strong><small
-											>{clientName(request.client_id)} · {propertyName(request.property_id)}</small
-										>
-									</div>
-									<span class="badge badge--request">{request.status.replace('_', ' ')}</span>
-								</div>
-								<p>{request.description || 'No description added.'}</p>
-								<footer>
-									<span>{request.service_type || 'General service'}</span><span
-										>{formatDate(request.created_at)}</span
-									>
-								</footer>
-							</article>
-						{/each}
-					</div>
-				</section>
-			</div>
-		{/if}
-	</main>
-</div>
-
-{#if formMode}
-	<div
-		class="modal-backdrop"
-		role="presentation"
-		onclick={(event) => {
-			if (event.target === event.currentTarget) closeForm();
-		}}
-	>
-		<div class="modal" role="dialog" aria-modal="true" aria-labelledby="form-title">
-			<div class="modal__header">
-				<div>
-					<span class="panel__eyebrow"
-						>{formMode === 'customer'
-							? 'Relationship record'
-							: formMode === 'property'
-								? 'Service location'
-								: 'Incoming work'}</span
+<div class="page-scroller">
+	<div class="workspace">
+		<main class="content">
+			<PageHeader title="Dashboard" description="Your workspace at a glance." />
+			{#if !data.organization.id}
+				<section class="notice">
+					<strong>Your account is signed in, but it is not connected to an organization yet.</strong
+					><span
+						>Ask the platform owner to add you to a contractor organization before creating records.</span
 					>
-					<h2 id="form-title">
-						{formMode === 'customer'
-							? 'Add customer'
-							: formMode === 'property'
-								? 'Add property'
-								: 'New request'}
-					</h2>
+				</section>
+			{/if}
+
+			<section class="stats" aria-label="Workspace summary">
+				<div class="stat-card">
+					<span>Customers</span><strong>{data.clients.length}</strong><small
+						>Leads and active customers</small
+					>
 				</div>
-				<button class="close-button" type="button" aria-label="Close form" onclick={closeForm}
-					>×</button
-				>
-			</div>
-			{#if formError}<div class="form-alert" role="alert">{formError}</div>{/if}
-			{#if formMode === 'customer'}
-				<form
-					onsubmit={(event) => {
-						event.preventDefault();
-						void save('customer', customerForm);
-					}}
-				>
-					<label
-						>Customer name<input
-							bind:value={customerForm.display_name}
-							aria-invalid={!!errorFor('display_name')}
-						/>{#if errorFor('display_name')}<small class="field-error"
-								>{errorFor('display_name')}</small
-							>{/if}</label
+				<div class="stat-card">
+					<span>Properties</span><strong>{data.properties.length}</strong><small
+						>Service locations</small
 					>
-					<div class="form-grid">
-						<label>Email<input type="email" bind:value={customerForm.email} /></label><label
-							>Phone<input type="tel" bind:value={customerForm.phone} /></label
-						>
-					</div>
-					<div class="form-grid">
-						<label>First name<input bind:value={customerForm.first_name} /></label><label
-							>Last name<input bind:value={customerForm.last_name} /></label
-						>
-					</div>
-					<label>How did they find you?<input bind:value={customerForm.lead_source} /></label><label
-						>Notes<textarea rows="3" bind:value={customerForm.initial_note}></textarea></label
+				</div>
+				<div class="stat-card stat-card--request">
+					<span>Open requests</span><strong
+						>{data.requests.filter((request) => !['converted', 'archived'].includes(request.status))
+							.length}</strong
+					><small>Ready for the next action</small>
+				</div>
+			</section>
+
+			{#if overview.isPending}
+				<div class="loading-grid">
+					<div class="skeleton skeleton--card"></div>
+					<div class="skeleton skeleton--card"></div>
+					<div class="skeleton skeleton--card"></div>
+				</div>
+			{:else if overview.isError}
+				<section class="notice notice--error">
+					<strong>Workspace data could not be loaded.</strong><span
+						>Refresh the page and try again.</span
 					>
-					<div class="modal__actions">
-						<button class="button button--quiet" type="button" onclick={closeForm}>Cancel</button
-						><button class="button" type="submit" disabled={mutation.isPending}
-							>Save customer</button
-						>
-					</div>
-				</form>
-			{:else if formMode === 'property'}
-				<form
-					onsubmit={(event) => {
-						event.preventDefault();
-						void save('property', propertyForm);
-					}}
-				>
-					<label
-						>Customer<select bind:value={propertyForm.client_id}
-							><option value="">Choose customer</option
-							>{#each data.clients as client (client.id)}<option value={client.id}
-									>{client.display_name}</option
-								>{/each}</select
-						>{#if errorFor('client_id')}<small class="field-error">{errorFor('client_id')}</small
-							>{/if}</label
-					>
-					<label
-						>Property label<input
-							bind:value={propertyForm.label}
-							placeholder="Main home, office, rental…"
-						/></label
-					><label>Address<input bind:value={propertyForm.address_line1} /></label><label
-						>Address line 2<input bind:value={propertyForm.address_line2} /></label
-					>
-					<div class="form-grid">
-						<label>City<input bind:value={propertyForm.city} /></label><label
-							>State/region<input bind:value={propertyForm.state_region} /></label
-						>
-					</div>
-					<div class="form-grid">
-						<label>Postal code<input bind:value={propertyForm.postal_code} /></label><label
-							>Country<input bind:value={propertyForm.country} maxlength="2" /></label
-						>
-					</div>
-					<label
-						>Access notes<textarea rows="3" bind:value={propertyForm.access_notes}
-						></textarea></label
-					>
-					<div class="modal__actions">
-						<button class="button button--quiet" type="button" onclick={closeForm}>Cancel</button
-						><button class="button" type="submit" disabled={mutation.isPending}
-							>Save property</button
-						>
-					</div>
-				</form>
+				</section>
 			{:else}
-				<form
-					onsubmit={(event) => {
-						event.preventDefault();
-						void save('request', requestForm);
-					}}
-				>
-					<div class="form-grid">
+				<div class="workspace-grid">
+					<section class="panel panel--customers" aria-labelledby="customers-heading">
+						<div class="panel__header">
+							<div>
+								<span class="panel__eyebrow">Relationship record</span>
+								<h2 id="customers-heading">Customers</h2>
+							</div>
+							<button
+								class="button button--small"
+								type="button"
+								onclick={() => openForm('customer')}>Add customer</button
+							>
+						</div>
+						{#if data.clients.length === 0}<div class="empty">
+								<strong>No customers yet</strong><span
+									>Create the first lead and start a complete work history.</span
+								><button
+									class="button button--secondary"
+									type="button"
+									onclick={() => openForm('customer')}>Create first customer</button
+								>
+							</div>{/if}
+						<div class="record-list">
+							{#each data.clients as client (client.id)}
+								<article class="record">
+									<div class="record__avatar">{client.display_name.slice(0, 1).toUpperCase()}</div>
+									<div class="record__body">
+										<div class="record__title">
+											<strong>{client.display_name}</strong><span
+												class="badge badge--{client.lifecycle_status}"
+												>{client.lifecycle_status}</span
+											>
+										</div>
+										<span>{client.email || client.phone || 'No contact details yet'}</span><small
+											>{data.properties.filter((property) => property.client_id === client.id)
+												.length} properties · {data.requests.filter(
+												(request) => request.client_id === client.id
+											).length} requests</small
+										>
+									</div>
+									<button
+										class="text-button"
+										type="button"
+										onclick={() => {
+											propertyForm.client_id = client.id;
+											openForm('property');
+										}}>Add property</button
+									>
+								</article>
+							{/each}
+						</div>
+					</section>
+
+					<section class="panel" aria-labelledby="requests-heading">
+						<div class="panel__header">
+							<div>
+								<span class="panel__eyebrow">Incoming work</span>
+								<h2 id="requests-heading">Requests</h2>
+							</div>
+							<button
+								class="button button--small"
+								type="button"
+								onclick={() => openForm('request')}
+								disabled={data.properties.length === 0}>New request</button
+							>
+						</div>
+						{#if data.requests.length === 0}<div class="empty">
+								<strong>No requests yet</strong><span
+									>Add a property first, then record what the customer needs.</span
+								>
+							</div>{/if}
+						<div class="record-list">
+							{#each data.requests as request (request.id)}
+								<article class="request-record">
+									<div class="request-record__top">
+										<span class="request-dot"></span>
+										<div>
+											<strong>{request.title}</strong><small
+												>{clientName(request.client_id)} · {propertyName(
+													request.property_id
+												)}</small
+											>
+										</div>
+										<span class="badge badge--request">{request.status.replace('_', ' ')}</span>
+									</div>
+									<p>{request.description || 'No description added.'}</p>
+									<footer>
+										<span>{request.service_type || 'General service'}</span><span
+											>{formatDate(request.created_at)}</span
+										>
+									</footer>
+								</article>
+							{/each}
+						</div>
+					</section>
+				</div>
+			{/if}
+		</main>
+	</div>
+
+	{#if formMode}
+		<div
+			class="modal-backdrop"
+			role="presentation"
+			onclick={(event) => {
+				if (event.target === event.currentTarget) closeForm();
+			}}
+		>
+			<div class="modal" role="dialog" aria-modal="true" aria-labelledby="form-title">
+				<div class="modal__header">
+					<div>
+						<span class="panel__eyebrow"
+							>{formMode === 'customer'
+								? 'Relationship record'
+								: formMode === 'property'
+									? 'Service location'
+									: 'Incoming work'}</span
+						>
+						<h2 id="form-title">
+							{formMode === 'customer'
+								? 'Add customer'
+								: formMode === 'property'
+									? 'Add property'
+									: 'New request'}
+						</h2>
+					</div>
+					<button class="close-button" type="button" aria-label="Close form" onclick={closeForm}
+						>×</button
+					>
+				</div>
+				{#if formError}<div class="form-alert" role="alert">{formError}</div>{/if}
+				{#if formMode === 'customer'}
+					<form
+						onsubmit={(event) => {
+							event.preventDefault();
+							void save('customer', customerForm);
+						}}
+					>
 						<label
-							>Customer<select
-								bind:value={requestForm.client_id}
-								onchange={() => (requestForm.property_id = '')}
+							>Customer name<input
+								bind:value={customerForm.display_name}
+								aria-invalid={!!errorFor('display_name')}
+							/>{#if errorFor('display_name')}<small class="field-error"
+									>{errorFor('display_name')}</small
+								>{/if}</label
+						>
+						<div class="form-grid">
+							<label>Email<input type="email" bind:value={customerForm.email} /></label><label
+								>Phone<input type="tel" bind:value={customerForm.phone} /></label
+							>
+						</div>
+						<div class="form-grid">
+							<label>First name<input bind:value={customerForm.first_name} /></label><label
+								>Last name<input bind:value={customerForm.last_name} /></label
+							>
+						</div>
+						<label>How did they find you?<input bind:value={customerForm.lead_source} /></label
+						><label
+							>Notes<textarea rows="3" bind:value={customerForm.initial_note}></textarea></label
+						>
+						<div class="modal__actions">
+							<button class="button button--quiet" type="button" onclick={closeForm}>Cancel</button
+							><button class="button" type="submit" disabled={mutation.isPending}
+								>Save customer</button
+							>
+						</div>
+					</form>
+				{:else if formMode === 'property'}
+					<form
+						onsubmit={(event) => {
+							event.preventDefault();
+							void save('property', propertyForm);
+						}}
+					>
+						<label
+							>Customer<select bind:value={propertyForm.client_id}
 								><option value="">Choose customer</option
 								>{#each data.clients as client (client.id)}<option value={client.id}
 										>{client.display_name}</option
 									>{/each}</select
-							></label
-						><label
-							>Property<select
-								bind:value={requestForm.property_id}
-								disabled={!requestForm.client_id}
-								><option value="">Choose property</option
-								>{#each requestProperties as property (property.id)}<option value={property.id}
-										>{property.label} · {property.city}</option
-									>{/each}</select
-							></label
+							>{#if errorFor('client_id')}<small class="field-error">{errorFor('client_id')}</small
+								>{/if}</label
 						>
-					</div>
-					<label
-						>What do they need?<input
-							bind:value={requestForm.title}
-							placeholder="Repair leaking kitchen faucet"
-						/></label
-					>
-					<div class="form-grid">
 						<label
-							>Service type<input
-								bind:value={requestForm.service_type}
-								placeholder="Plumbing"
+							>Property label<input
+								bind:value={propertyForm.label}
+								placeholder="Main home, office, rental…"
 							/></label
-						><label
-							>Preferred timing<input
-								bind:value={requestForm.preferred_time}
-								placeholder="This week, mornings"
-							/></label
+						><label>Address<input bind:value={propertyForm.address_line1} /></label><label
+							>Address line 2<input bind:value={propertyForm.address_line2} /></label
 						>
-					</div>
-					<label
-						>Description<textarea rows="4" bind:value={requestForm.description}></textarea></label
+						<div class="form-grid">
+							<label>City<input bind:value={propertyForm.city} /></label><label
+								>State/region<input bind:value={propertyForm.state_region} /></label
+							>
+						</div>
+						<div class="form-grid">
+							<label>Postal code<input bind:value={propertyForm.postal_code} /></label><label
+								>Country<input bind:value={propertyForm.country} maxlength="2" /></label
+							>
+						</div>
+						<label
+							>Access notes<textarea rows="3" bind:value={propertyForm.access_notes}
+							></textarea></label
+						>
+						<div class="modal__actions">
+							<button class="button button--quiet" type="button" onclick={closeForm}>Cancel</button
+							><button class="button" type="submit" disabled={mutation.isPending}
+								>Save property</button
+							>
+						</div>
+					</form>
+				{:else}
+					<form
+						onsubmit={(event) => {
+							event.preventDefault();
+							void save('request', requestForm);
+						}}
 					>
-					<div class="modal__actions">
-						<button class="button button--quiet" type="button" onclick={closeForm}>Cancel</button
-						><button class="button" type="submit" disabled={mutation.isPending}>Save request</button
+						<div class="form-grid">
+							<label
+								>Customer<select
+									bind:value={requestForm.client_id}
+									onchange={() => (requestForm.property_id = '')}
+									><option value="">Choose customer</option
+									>{#each data.clients as client (client.id)}<option value={client.id}
+											>{client.display_name}</option
+										>{/each}</select
+								></label
+							><label
+								>Property<select
+									bind:value={requestForm.property_id}
+									disabled={!requestForm.client_id}
+									><option value="">Choose property</option
+									>{#each requestProperties as property (property.id)}<option value={property.id}
+											>{property.label} · {property.city}</option
+										>{/each}</select
+								></label
+							>
+						</div>
+						<label
+							>What do they need?<input
+								bind:value={requestForm.title}
+								placeholder="Repair leaking kitchen faucet"
+							/></label
 						>
-					</div>
-				</form>
-			{/if}
+						<div class="form-grid">
+							<label
+								>Service type<input
+									bind:value={requestForm.service_type}
+									placeholder="Plumbing"
+								/></label
+							><label
+								>Preferred timing<input
+									bind:value={requestForm.preferred_time}
+									placeholder="This week, mornings"
+								/></label
+							>
+						</div>
+						<label
+							>Description<textarea rows="4" bind:value={requestForm.description}></textarea></label
+						>
+						<div class="modal__actions">
+							<button class="button button--quiet" type="button" onclick={closeForm}>Cancel</button
+							><button class="button" type="submit" disabled={mutation.isPending}
+								>Save request</button
+							>
+						</div>
+					</form>
+				{/if}
+			</div>
 		</div>
-	</div>
-{/if}
+	{/if}
+</div>
 
 <style lang="scss">
 	.workspace {

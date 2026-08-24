@@ -9,6 +9,7 @@
 		currentUserId,
 		timestamp,
 		suffix,
+		fallbackName = 'Unknown',
 		size = 'small'
 	}: {
 		userId: string | null;
@@ -16,11 +17,20 @@
 		currentUserId?: string;
 		timestamp: string;
 		suffix?: string;
+		/**
+		 * Who to name when there is no user behind this at all. `Unknown` fits a teammate who has left,
+		 * but not something the customer did, so the caller says which one it is.
+		 */
+		fallbackName?: string;
 		size?: 'small' | 'base';
 	} = $props();
 
 	let displayName = $derived(
-		!userId ? 'Unknown' : userId === currentUserId ? 'You' : (profile?.full_name ?? 'Team member')
+		!userId
+			? fallbackName
+			: userId === currentUserId
+				? 'You'
+				: (profile?.full_name ?? 'Team member')
 	);
 </script>
 

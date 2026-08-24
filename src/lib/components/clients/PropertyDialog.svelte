@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -12,6 +13,7 @@
 		type ClientProperty,
 		type ClientPropertyInput
 	} from '$lib/clients/api';
+	import { fetchTaxPicker, taxPickerKey } from '$lib/settings/api';
 
 	// Adds, edits, or removes one property. Unlike the blocks in the page body, this dialog owns a record of
 	// its own, so its buttons are the save: it writes straight away and tells the page to refresh. Nothing
@@ -44,7 +46,8 @@
 			postal_code: source?.postal_code ?? '',
 			country: source?.country ?? 'US',
 			// Not shown here, but carried through so saving an address does not wipe notes set elsewhere.
-			access_notes: source?.access_notes ?? ''
+			access_notes: source?.access_notes ?? '',
+			tax_rate_id: source?.tax_rate_id ?? null
 		};
 	}
 
@@ -64,6 +67,33 @@
 		{ value: 'GB', label: 'United Kingdom' },
 		{ value: 'AU', label: 'Australia' }
 	];
+
+	// Business default only — a property has nothing of its own to fall back to besides that, and it can
+	// never inherit from itself. `enabled: open` keeps this off until the dialog is actually showing, in
+	// case a session ever mounts it without the trigger's hover having warmed the cache first.
+	const taxPickerQuery = createQuery(() => ({
+		queryKey: taxPickerKey(),
+		queryFn: () => fetchTaxPicker(),
+		enabled: open,
+		staleTime: 30_000,
+		gcTime: 60_000
+	}));
+
+	const businessDefaultLabel = $derived.by(() => {
+		const resolved = taxPickerQuery.data?.business_default;
+		if (!resolved) return '…';
+		if (resolved.rate_basis_points > 0)
+			return `${resolved.name} — ${(resolved.rate_basis_points / 100).toFixed(2).replace(/\.?0+$/, '')}%`;
+		return resolved.source === 'not_configured' ? 'not set yet' : 'No tax';
+	});
+
+	const taxOptions = $derived([
+		{ value: '', label: `Inherit business default (${businessDefaultLabel})` },
+		...(taxPickerQuery.data?.rates ?? []).map((rate) => ({
+			value: rate.id,
+			label: `${rate.name} — ${(rate.rate_basis_points / 100).toFixed(2).replace(/\.?0+$/, '')}%`
+		}))
+	]);
 
 	// The server needs a street and a city; everything else on a property is optional, including its name.
 	const canSubmit = $derived(Boolean(draft.address_line1.trim() && draft.city.trim()));
@@ -162,6 +192,15 @@
 			<div class="property-dialog__field">
 				<label class="property-dialog__label" for="property-dialog-country">Country</label>
 				<Select id="property-dialog-country" bind:value={draft.country} options={COUNTRIES} />
+			</div>
+			<div class="property-dialog__field property-dialog__grid-full">
+				<label class="property-dialog__label" for="property-dialog-tax">Tax</label>
+				<Select
+					id="property-dialog-tax"
+					value={draft.tax_rate_id ?? ''}
+					options={taxOptions}
+					onchange={(next) => (draft.tax_rate_id = next || null)}
+				/>
 			</div>
 		</div>
 

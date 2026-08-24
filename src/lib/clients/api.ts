@@ -58,6 +58,8 @@ export type ClientPropertyInput = {
 	country?: string;
 	access_notes?: string;
 	is_billing_address?: boolean;
+	/** Null inherits the Business default tax; a saved rate's id pins this property to it. */
+	tax_rate_id?: string | null;
 };
 
 export type ClientWriteValues = {
@@ -106,6 +108,7 @@ export type ClientDetail = ClientWriteValues & {
 	/** Every property this client has, primary first. The form uses primary_property; the detail page uses this. */
 	properties: ClientProperty[];
 	property_count: number;
+	contact_methods: { id: string; kind: 'email' | 'phone'; value: string; is_primary: boolean }[];
 	preferences:
 		(ClientPreferences & { sms_opt_out_at: string | null; sms_opt_in_at: string | null }) | null;
 };

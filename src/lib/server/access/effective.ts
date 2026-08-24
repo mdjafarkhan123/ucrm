@@ -104,6 +104,8 @@ const permissionFeaturePrefixes: Array<[string, string]> = [
 	['pipeline.', 'sales.pipeline'],
 	['quote.', 'core.quotes'],
 	['quotes.', 'core.quotes'],
+	// The price list only exists to be quoted from, so it rides on the same entitlement as quotes.
+	['catalog.', 'core.quotes'],
 	['job.', 'core.jobs'],
 	['jobs.', 'core.jobs'],
 	['schedule.', 'core.schedule'],
@@ -116,8 +118,7 @@ const permissionFeaturePrefixes: Array<[string, string]> = [
 	['automation.', 'automation.workflows'],
 	['report.', 'reporting.advanced'],
 	['reports.', 'reporting.advanced'],
-	['team.', 'core.team'],
-	['settings.', 'core.team']
+	['team.', 'core.team']
 ];
 
 function todayInTimeZone(timezone: string, now: Date) {
@@ -320,12 +321,12 @@ async function resolveLegacyOrganizationAccess(
 		packagesResult,
 		featuresResult,
 		packageFeaturesResult,
-		packageLimitsResult,
 		featureOverridesResult,
 		limitOverridesResult,
 		commercialStateResult,
 		commercialSettingsResult,
-		freeAccessEventsResult
+		freeAccessEventsResult,
+		seatLimitResult
 	] = await Promise.all([
 		client
 			.from('platform_packages')
@@ -334,7 +335,6 @@ async function resolveLegacyOrganizationAccess(
 			),
 		client.from('features').select('feature_key, description'),
 		client.from('package_features').select('package_key, feature_key'),
-		client.from('package_limits').select('package_key, limit_key, limit_value, is_unlimited'),
 		client
 			.from('organization_feature_overrides')
 			.select('feature_key, override_state, starts_at, expires_at, reason, is_legacy_import')
@@ -356,22 +356,28 @@ async function resolveLegacyOrganizationAccess(
 		client
 			.from('organization_free_access_events')
 			.select('id, target_grant_id, action, starts_at, access_until_date, occurred_at')
-			.eq('organization_id', organizationId)
+			.eq('organization_id', organizationId),
+		client.rpc('effective_employee_seat_limit', {
+			target_organization_id: organizationId,
+			at: now.toISOString()
+		})
 	]);
 
 	const queryResults = [
 		packagesResult,
 		featuresResult,
 		packageFeaturesResult,
-		packageLimitsResult,
 		featureOverridesResult,
 		limitOverridesResult,
 		commercialStateResult,
 		commercialSettingsResult,
-		freeAccessEventsResult
+		freeAccessEventsResult,
+		seatLimitResult
 	];
 	const failedQuery = queryResults.find((result) => result.error);
 	if (failedQuery?.error) throw failedQuery.error;
+	const seatLimit = seatLimitResult.data?.[0];
+	if (!seatLimit) throw new Error('The employee seat limit could not be resolved.');
 
 	const commercialTimezone = commercialSettingsResult.data?.commercial_timezone ?? null;
 	const freeAccessState = computeFreeAccessState(
@@ -417,38 +423,15 @@ async function resolveLegacyOrganizationAccess(
 		})
 	);
 
-	const packageLimitByKey = new Map(
-		(packageLimitsResult.data ?? [])
-			.filter((item) => item.package_key === effectivePackageKey)
-			.map((item) => [item.limit_key, item])
-	);
 	const limitOverrides = (limitOverridesResult.data ?? []).filter((item) =>
 		isActiveWindow(item, nowMs)
 	);
-	const limitOverrideByKey = new Map(limitOverrides.map((item) => [item.limit_key, item]));
-	const employeeSeatLimit =
-		limitOverrideByKey.get('employee_seats') ?? packageLimitByKey.get('employee_seats');
-	const employeeSeatState: LimitState = limitOverrideByKey.has('employee_seats')
-		? ((employeeSeatLimit as { limit_state?: LimitState }).limit_state ??
-			(employeeSeatLimit?.is_unlimited
-				? 'unlimited'
-				: employeeSeatLimit?.limit_value === null
-					? 'not_included'
-					: 'numeric'))
-		: ((employeeSeatLimit as { limit_state?: LimitState })?.limit_state ??
-			(employeeSeatLimit?.is_unlimited
-				? 'unlimited'
-				: employeeSeatLimit?.limit_value === null
-					? 'not_included'
-					: 'numeric'));
 	const limits = {
 		employee_seats: {
-			value: employeeSeatLimit?.limit_value ?? null,
-			is_unlimited: employeeSeatLimit?.is_unlimited ?? false,
-			state: employeeSeatState,
-			source: limitOverrideByKey.has('employee_seats')
-				? ('override' as const)
-				: ('package' as const)
+			value: seatLimit.value,
+			is_unlimited: seatLimit.is_unlimited,
+			state: seatLimit.state as LimitState,
+			source: seatLimit.source as 'package' | 'override'
 		}
 	};
 
@@ -551,12 +534,12 @@ async function resolveVersionedOrganizationAccess(
 		versionResult,
 		featuresResult,
 		packageFeaturesResult,
-		packageLimitsResult,
 		featureOverridesResult,
 		limitOverridesResult,
 		commercialStateResult,
 		commercialSettingsResult,
-		freeAccessEventsResult
+		freeAccessEventsResult,
+		seatLimitResult
 	] = await Promise.all([
 		client
 			.from('platform_package_versions')
@@ -569,10 +552,6 @@ async function resolveVersionedOrganizationAccess(
 		client
 			.from('platform_package_version_features')
 			.select('package_version_id, feature_key')
-			.eq('package_version_id', assignment.package_version_id),
-		client
-			.from('platform_package_version_limits')
-			.select('package_version_id, limit_key, limit_state, limit_value')
 			.eq('package_version_id', assignment.package_version_id),
 		client
 			.from('organization_feature_overrides')
@@ -595,23 +574,29 @@ async function resolveVersionedOrganizationAccess(
 		client
 			.from('organization_free_access_events')
 			.select('id, target_grant_id, action, starts_at, access_until_date, occurred_at')
-			.eq('organization_id', organization.id)
+			.eq('organization_id', organization.id),
+		client.rpc('effective_employee_seat_limit', {
+			target_organization_id: organization.id,
+			at: now.toISOString()
+		})
 	]);
 
 	const queryResults = [
 		versionResult,
 		featuresResult,
 		packageFeaturesResult,
-		packageLimitsResult,
 		featureOverridesResult,
 		limitOverridesResult,
 		commercialStateResult,
 		commercialSettingsResult,
-		freeAccessEventsResult
+		freeAccessEventsResult,
+		seatLimitResult
 	];
 	const failedQuery = queryResults.find((result) => result.error);
 	if (failedQuery?.error) throw failedQuery.error;
 	if (!versionResult.data) throw new Error('The organization package version is missing.');
+	const seatLimit = seatLimitResult.data?.[0];
+	if (!seatLimit) throw new Error('The employee seat limit could not be resolved.');
 
 	const commercialTimezone = commercialSettingsResult.data?.commercial_timezone ?? null;
 	const freeAccessState = computeFreeAccessState(
@@ -654,32 +639,12 @@ async function resolveVersionedOrganizationAccess(
 	const limitOverrides = (limitOverridesResult.data ?? []).filter((item) =>
 		isActiveWindow(item, nowMs)
 	);
-	const limitOverride = limitOverrides.find((item) => item.limit_key === 'employee_seats');
-	const packageLimit = (packageLimitsResult.data ?? []).find(
-		(item) => item.limit_key === 'employee_seats'
-	);
-	const overrideState: LimitState | null = limitOverride
-		? ((limitOverride.limit_state as LimitState | undefined) ??
-			(limitOverride.is_unlimited
-				? 'unlimited'
-				: limitOverride.limit_value === null
-					? 'not_included'
-					: 'numeric'))
-		: null;
-	const packageState: LimitState =
-		(packageLimit?.limit_state as LimitState | undefined) ?? 'not_included';
 	const limits = {
 		employee_seats: {
-			value: limitOverride
-				? limitOverride.limit_value
-				: packageLimit?.limit_state === 'numeric'
-					? packageLimit.limit_value
-					: null,
-			is_unlimited: limitOverride
-				? limitOverride.is_unlimited
-				: packageLimit?.limit_state === 'unlimited',
-			state: overrideState ?? packageState,
-			source: limitOverride ? ('override' as const) : ('package' as const)
+			value: seatLimit.value,
+			is_unlimited: seatLimit.is_unlimited,
+			state: seatLimit.state as LimitState,
+			source: seatLimit.source as 'package' | 'override'
 		}
 	};
 

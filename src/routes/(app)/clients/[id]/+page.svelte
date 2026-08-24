@@ -33,6 +33,7 @@
 		type ClientPreferences,
 		type ClientProperty
 	} from '$lib/clients/api';
+	import { fetchTaxPicker, taxPickerKey } from '$lib/settings/api';
 	import {
 		activityKey,
 		createNote,
@@ -359,6 +360,13 @@
 	// Null while closed. Adding opens the same dialog with no property behind it.
 	let propertyDialog = $state<{ property: ClientProperty | null } | null>(null);
 
+	function warmPropertyTaxPicker() {
+		void queryClient.prefetchQuery({
+			queryKey: taxPickerKey(),
+			queryFn: () => fetchTaxPicker()
+		});
+	}
+
 	// The dialog writes for itself, so all the page owes it afterwards is a refresh of anything that shows an
 	// address. The list carries each client's primary property and a count of the rest.
 	async function refreshProperties() {
@@ -430,6 +438,7 @@
 									size="small"
 									variant="tertiary"
 									onclick={() => (propertyDialog = { property: null })}
+									onhover={warmPropertyTaxPicker}
 								>
 									Add property
 								</Button>
@@ -462,6 +471,7 @@
 									{#snippet rowActions(property: ClientProperty)}
 										<PencilButton
 											onclick={() => (propertyDialog = { property })}
+											onhover={warmPropertyTaxPicker}
 											label={`Edit ${streetOf(property)}`}
 										/>
 									{/snippet}
