@@ -4,8 +4,14 @@ import { enqueueEmailDelivery } from '$lib/server/events/dispatcher';
 import { recordOperationOutcome } from '$lib/server/events/outbox';
 import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
 import { renderTemplate, htmlToPlainText } from '$lib/server/jafar/message-templates';
+import {
+	BrevoManagementError,
+	deleteBrevoDomainById,
+	deleteBrevoSender
+} from '$lib/server/communications/brevo';
 
-type NoticeKind = 'closure_started' | 'fourteen_day_reminder' | 'three_day_reminder' | 'closure_completed';
+type NoticeKind =
+	'closure_started' | 'fourteen_day_reminder' | 'three_day_reminder' | 'closure_completed';
 
 /**
  * The "closure_started" notice is sent synchronously from the closure-start route the moment
@@ -23,6 +29,11 @@ const NOTICE_TEMPLATE_KEYS: Record<NoticeKind, string> = {
 
 type ClosureRecordRow = { id: string; organization_id: string; deadline_at: string };
 type PendingAuthCleanupRow = { operation_id: string; pending_auth_user_ids: string[] };
+type ProviderResource = { kind: 'domain' | 'sender'; provider_id: string };
+type PendingProviderCleanupRow = {
+	operation_id: string;
+	pending_provider_resources: ProviderResource[];
+};
 
 export type NoticeOutcome =
 	| { sent: true }
@@ -35,9 +46,31 @@ export type ClosureCronResult = {
 	purgesFailed: number;
 	authCleanupsCompleted: number;
 	authCleanupsFailed: number;
+	providerCleanupsCompleted: number;
+	providerCleanupsFailed: number;
 };
 
-async function resolveOrganizationContext(client: SupabaseClient<Database>, organizationId: string) {
+/**
+ * The receipt's top-level status reflects the WHOLE purge, including its two external cleanup legs
+ * (Auth users and Brevo provider resources). It is complete only once every applicable component has
+ * succeeded; a single failed leg makes it failed_partial, and anything still pending keeps it
+ * in_progress. Components neither leg touched are absent from the map, which counts as done. Only the
+ * completed state carries a completed_at, matching the receipt table's own check constraint.
+ */
+function nextReceiptState(components: Record<string, string>): {
+	status: 'in_progress' | 'failed_partial' | 'completed';
+	completed_at: string | null;
+} {
+	const externalLegs = [components.auth_users, components.provider_resources];
+	if (externalLegs.includes('failed')) return { status: 'failed_partial', completed_at: null };
+	if (externalLegs.includes('pending')) return { status: 'in_progress', completed_at: null };
+	return { status: 'completed', completed_at: new Date().toISOString() };
+}
+
+async function resolveOrganizationContext(
+	client: SupabaseClient<Database>,
+	organizationId: string
+) {
 	const [{ data: organization }, { data: ownerMember }] = await Promise.all([
 		client.from('organizations').select('name').eq('id', organizationId).maybeSingle(),
 		client
@@ -148,12 +181,15 @@ async function finishAuthCleanup(
 		...((receipt?.component_results as Record<string, string> | null) ?? {}),
 		auth_users: failures.length === 0 ? 'succeeded' : 'failed'
 	};
+	const receiptState = nextReceiptState(mergedComponents);
 
 	const { error: updateError } = await client
 		.from('organization_deletion_receipts')
 		.update({
 			component_results: mergedComponents,
-			pending_auth_user_ids: failures.length === 0 ? null : params.pendingUserIds
+			pending_auth_user_ids: failures.length === 0 ? null : params.pendingUserIds,
+			status: receiptState.status,
+			completed_at: receiptState.completed_at
 		})
 		.eq('operation_id', params.operationId);
 	if (updateError) console.error('Could not update the deletion receipt.', updateError);
@@ -186,9 +222,91 @@ async function finishAuthCleanup(
 }
 
 /**
- * Runs the SQL-side purge and, on success, the Auth-deletion leg. The completion notice is sent
- * first: organization_closure_records and organization_closure_notices both cascade away the
- * moment the purge RPC commits, so that is the last point either can be read or claimed.
+ * Deletes the given Brevo provider resources and reconciles the receipt's "provider_resources"
+ * component. Twin of finishAuthCleanup: shared by the happy path (right after a successful purge) and
+ * the resume path (a later sweep finding a receipt whose pending_provider_resources was never
+ * cleared). A resource Brevo no longer knows -- a 404, or an id absent from its domain list -- is
+ * treated as success, since the goal is that the resource be gone. Every other error keeps the anchor
+ * so the next sweep retries, and never lets the receipt reach completed.
+ */
+async function finishProviderCleanup(
+	client: SupabaseClient<Database>,
+	params: { operationId: string; resources: ProviderResource[] }
+) {
+	const idempotencyKey = `organization_purge_provider_cleanup:${params.operationId}`;
+	const target = { targetKind: 'platform' as const, targetId: null };
+
+	const failures: string[] = [];
+	for (const resource of params.resources) {
+		try {
+			if (resource.kind === 'domain') {
+				await deleteBrevoDomainById(resource.provider_id);
+			} else {
+				await deleteBrevoSender(Number(resource.provider_id));
+			}
+		} catch (error) {
+			if (error instanceof BrevoManagementError && error.status === 404) continue;
+			const reason = error instanceof Error ? error.message : 'unknown error';
+			failures.push(`${resource.kind} ${resource.provider_id}: ${reason}`);
+		}
+	}
+
+	const { data: receipt } = await client
+		.from('organization_deletion_receipts')
+		.select('component_results')
+		.eq('operation_id', params.operationId)
+		.maybeSingle();
+	const mergedComponents = {
+		...((receipt?.component_results as Record<string, string> | null) ?? {}),
+		provider_resources: failures.length === 0 ? 'succeeded' : 'failed'
+	};
+	const receiptState = nextReceiptState(mergedComponents);
+
+	const { error: updateError } = await client
+		.from('organization_deletion_receipts')
+		.update({
+			component_results: mergedComponents,
+			pending_provider_resources: failures.length === 0 ? null : params.resources,
+			status: receiptState.status,
+			completed_at: receiptState.completed_at
+		})
+		.eq('operation_id', params.operationId);
+	if (updateError) console.error('Could not update the deletion receipt.', updateError);
+
+	if (failures.length > 0) {
+		await recordOperationOutcome(client, {
+			operationType: 'organization_purge',
+			idempotencyKey,
+			target,
+			success: false,
+			error: failures.join('; ')
+		});
+		await raiseOwnerAlert(client, {
+			kind: 'organization_purge_failed',
+			severity: 'urgent',
+			title: 'A purged organization still has provider resources that could not be removed',
+			body: failures.join('; ').slice(0, 500),
+			target
+		}).catch((alertError) =>
+			console.error('Could not raise the provider-cleanup alert.', alertError)
+		);
+		return false;
+	}
+
+	await recordOperationOutcome(client, {
+		operationType: 'organization_purge',
+		idempotencyKey,
+		target,
+		success: true
+	});
+	return true;
+}
+
+/**
+ * Runs the SQL-side purge and, on success, its two external cleanup legs (Auth users and Brevo
+ * provider resources). The completion notice is sent first: organization_closure_records and
+ * organization_closure_notices both cascade away the moment the purge RPC commits, so that is the
+ * last point either can be read or claimed.
  */
 async function runScheduledPurge(client: SupabaseClient<Database>, record: ClosureRecordRow) {
 	const sqlIdempotencyKey = `organization_purge:${record.organization_id}`;
@@ -236,24 +354,76 @@ async function runScheduledPurge(client: SupabaseClient<Database>, record: Closu
 		applied: boolean;
 		operation_id?: string;
 		member_user_ids?: string[];
+		provider_resources?: ProviderResource[];
 	} | null;
 	if (!applied?.applied || !applied.operation_id) return true;
+	const operationId = applied.operation_id;
 
+	// Both external legs are independent; each reads the freshest receipt and cannot mark it complete
+	// while the other is still pending. A "purge" only counts as completed when both finish.
 	const pendingUserIds = applied.member_user_ids ?? [];
-	if (pendingUserIds.length === 0) return true;
+	const providerResources = applied.provider_resources ?? [];
 
-	return finishAuthCleanup(client, { operationId: applied.operation_id, pendingUserIds });
+	const authOk =
+		pendingUserIds.length === 0 ||
+		(await finishAuthCleanup(client, { operationId, pendingUserIds }));
+	const providerOk =
+		providerResources.length === 0 ||
+		(await finishProviderCleanup(client, { operationId, resources: providerResources }));
+
+	return authOk && providerOk;
+}
+
+/**
+ * Retries the external cleanup for one deletion receipt on demand -- the manual counterpart to the two
+ * receipt passes in the daily sweep below, scoped to a single operation_id so the Jafar cleanup surface
+ * can push a stuck (failed_partial) receipt without waiting for the next nightly run. It re-reads the
+ * receipt's own anchors and runs only the legs still parked, so it is safe to press repeatedly and on a
+ * receipt that another run already finished: cleared anchors mean skipped legs, and both finish helpers
+ * treat an already-gone resource as success. retry_count is bumped once per manual press for the audit
+ * trail; the finish helpers own every other receipt column.
+ */
+export async function retryReceiptCleanup(
+	client: SupabaseClient<Database>,
+	operationId: string
+): Promise<{ found: boolean; authOk: boolean; providerOk: boolean }> {
+	const { data: receipt, error } = await client
+		.from('organization_deletion_receipts')
+		.select('operation_id, retry_count, pending_auth_user_ids, pending_provider_resources')
+		.eq('operation_id', operationId)
+		.maybeSingle();
+	if (error) throw error;
+	if (!receipt) return { found: false, authOk: true, providerOk: true };
+
+	await client
+		.from('organization_deletion_receipts')
+		.update({ retry_count: receipt.retry_count + 1 })
+		.eq('operation_id', operationId);
+
+	const pendingUserIds = receipt.pending_auth_user_ids ?? [];
+	const providerResources = (receipt.pending_provider_resources ?? []) as ProviderResource[];
+
+	const authOk =
+		pendingUserIds.length === 0 ||
+		(await finishAuthCleanup(client, { operationId, pendingUserIds }));
+	const providerOk =
+		providerResources.length === 0 ||
+		(await finishProviderCleanup(client, { operationId, resources: providerResources }));
+
+	return { found: true, authOk, providerOk };
 }
 
 /**
  * The daily sweep pg_cron triggers via the internal /api/jafar/internal/closure-cron route.
- * Two independent passes:
+ * Three independent passes:
  *  1. Open closure windows -- send due reminders, and purge anything past its deadline.
- *  2. Deletion receipts whose Auth cleanup never finished last time -- the only remaining anchor
- *     once the organization (and its closure record) is already gone.
- * Both passes are safe to run again from scratch: every notice is claimed exactly once via a
- * unique index, every purge call is a harmless no-op once the organization no longer exists, and
- * every Auth deletion tolerates "already gone" as success.
+ *  2. Deletion receipts whose Auth cleanup never finished last time.
+ *  3. Deletion receipts whose provider (Brevo) cleanup never finished last time.
+ * The receipt anchors (pending_auth_user_ids, pending_provider_resources) are the only remaining
+ * handles once the organization -- and its closure record -- is already gone. Every pass is safe to
+ * run again from scratch: every notice is claimed exactly once via a unique index, every purge call
+ * is a harmless no-op once the organization no longer exists, and both external cleanups tolerate an
+ * "already gone" resource as success.
  */
 export async function runOrganizationClosureCron(
 	client: SupabaseClient<Database>
@@ -264,7 +434,9 @@ export async function runOrganizationClosureCron(
 		purgesCompleted: 0,
 		purgesFailed: 0,
 		authCleanupsCompleted: 0,
-		authCleanupsFailed: 0
+		authCleanupsFailed: 0,
+		providerCleanupsCompleted: 0,
+		providerCleanupsFailed: 0
 	};
 
 	const { data: closureRecords, error: closureRecordsError } = await client
@@ -325,6 +497,23 @@ export async function runOrganizationClosureCron(
 		});
 		if (ok) result.authCleanupsCompleted += 1;
 		else result.authCleanupsFailed += 1;
+	}
+
+	const { data: unfinishedProviderReceipts, error: unfinishedProviderReceiptsError } = await client
+		.from('organization_deletion_receipts')
+		.select('operation_id, pending_provider_resources')
+		.not('pending_provider_resources', 'is', null);
+	if (unfinishedProviderReceiptsError) throw unfinishedProviderReceiptsError;
+
+	for (const receipt of (unfinishedProviderReceipts ?? []) as PendingProviderCleanupRow[]) {
+		const resources = receipt.pending_provider_resources ?? [];
+		if (resources.length === 0) continue;
+		const ok = await finishProviderCleanup(client, {
+			operationId: receipt.operation_id,
+			resources
+		});
+		if (ok) result.providerCleanupsCompleted += 1;
+		else result.providerCleanupsFailed += 1;
 	}
 
 	return result;

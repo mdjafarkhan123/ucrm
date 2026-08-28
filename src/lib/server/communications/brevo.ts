@@ -127,6 +127,19 @@ export async function deleteBrevoDomain(domainName: string) {
 	});
 }
 
+/**
+ * Deletes a Brevo sender-domain by its opaque provider id rather than its name. Used by the purge
+ * cleanup path, which deliberately keeps no domain name -- only the opaque id -- so it lists Brevo's
+ * domains, matches the id, and deletes by the name Brevo reports. A domain Brevo no longer knows is
+ * already gone, so an unmatched id is a success, not an error.
+ */
+export async function deleteBrevoDomainById(providerDomainId: string) {
+	const domains = await listBrevoDomains();
+	const match = domains.find((domain) => String(domain.id) === providerDomainId);
+	if (!match) return;
+	await deleteBrevoDomain(match.domain_name);
+}
+
 export async function createBrevoSender(input: { email: string; name: string }) {
 	return (await brevoManagementRequest('/senders', {
 		method: 'POST',

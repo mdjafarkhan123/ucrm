@@ -15,6 +15,7 @@
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import WebsiteChatPreview from '$lib/components/communications/WebsiteChatPreview.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		addWebsiteChatWidgetOrigin,
@@ -98,6 +99,20 @@
 		limit && isEntitled ? !limit.is_unlimited && widgetsUsed >= (limit.value ?? 0) : false
 	);
 	const canCreate = $derived(isEntitled && !atCap);
+	const conversationUsage = $derived(widgetsQuery.data?.conversation_usage);
+	const conversationAtCap = $derived(
+		conversationUsage?.state === 'numeric' &&
+			conversationUsage.value !== null &&
+			conversationUsage.accepted_count >= conversationUsage.value
+	);
+	const conversationUsagePercent = $derived(
+		conversationUsage?.state === 'numeric' && conversationUsage.value
+			? Math.min(
+					100,
+					Math.round((conversationUsage.accepted_count / conversationUsage.value) * 100)
+				)
+			: 0
+	);
 	const isEditing = $derived(dialogMode === 'edit');
 	const editingWidgetLive = $derived(
 		editingWidget
@@ -105,6 +120,30 @@
 					editingWidget)
 			: null
 	);
+	const previewChannelOptions = $derived(toChannelOptions(draft));
+
+	function formatPeriodEnd(value: string | null | undefined) {
+		if (!value) return '';
+		try {
+			return new Intl.DateTimeFormat(undefined, {
+				year: 'numeric',
+				month: 'short',
+				day: 'numeric',
+				hour: 'numeric',
+				minute: '2-digit',
+				timeZone: widgetsQuery.data?.organization.timezone ?? 'UTC',
+				timeZoneName: 'short'
+			}).format(new Date(value));
+		} catch {
+			return new Intl.DateTimeFormat(undefined, {
+				year: 'numeric',
+				month: 'short',
+				day: 'numeric',
+				hour: 'numeric',
+				minute: '2-digit'
+			}).format(new Date(value));
+		}
+	}
 
 	function emptyDraft(): Draft {
 		return {
@@ -156,6 +195,7 @@
 	}
 
 	function status(widget: WebsiteChatWidget) {
+		if (widget.suspended_at) return { label: 'Suspended', tone: 'critical' as const };
 		if (widget.disabled_at) return { label: 'Disabled', tone: 'inactive' as const };
 		if (widget.published) return { label: 'Published', tone: 'success' as const };
 		return { label: 'Draft', tone: 'warning' as const };
@@ -321,6 +361,55 @@
 				description="Ask your platform owner to add Website Chat to your plan."
 			/>
 		{:else}
+			<SectionBlock title="Usage and availability" icon={messageCircleIcon} level={2}>
+				<div class="website-chat__usage">
+					<div class="website-chat__usage-copy">
+						<span>Accepted conversations</span>
+						<strong>
+							{conversationUsage?.accepted_count ?? 0}
+							{#if conversationUsage?.state === 'numeric'}
+								of {conversationUsage.value ?? 0}
+							{:else if conversationUsage?.state === 'unlimited'}
+								· unlimited
+							{/if}
+						</strong>
+						{#if conversationUsage?.period_ends_at}
+							<small>Resets {formatPeriodEnd(conversationUsage.period_ends_at)}</small>
+						{/if}
+					</div>
+					{#if conversationUsage?.state === 'numeric'}
+						<progress
+							max="100"
+							value={conversationUsagePercent}
+							aria-label={`${conversationUsagePercent}% of Website Chat conversations used`}
+						></progress>
+					{/if}
+				</div>
+
+				{#if widgetsQuery.data?.suspension.active}
+					<p class="website-chat__notice website-chat__notice--critical" role="alert">
+						Website Chat is suspended by the platform owner
+						{widgetsQuery.data.suspension.reason ? `: ${widgetsQuery.data.suspension.reason}` : '.'}
+						Your settings and conversation history are preserved.
+					</p>
+				{:else if conversationUsage?.state === 'not_included'}
+					<p class="website-chat__notice website-chat__notice--warning" role="status">
+						Your plan does not include new Website Chat conversations. Existing history remains
+						available.
+					</p>
+				{:else if !conversationUsage?.period_ends_at}
+					<p class="website-chat__notice website-chat__notice--warning" role="status">
+						Website Chat is waiting for an active billing period. New conversations cannot start
+						yet.
+					</p>
+				{:else if conversationAtCap}
+					<p class="website-chat__notice website-chat__notice--warning" role="status">
+						This period's conversation limit has been reached. Existing conversations stay open; new
+						visitors can still use your configured external contact options.
+					</p>
+				{/if}
+			</SectionBlock>
+
 			<SectionBlock
 				title="Widgets"
 				hint={limit?.is_unlimited
@@ -388,127 +477,140 @@
 </PageContainer>
 
 {#if dialogMode}
-	<Dialog open title={isEditing ? 'Edit widget' : 'New widget'} onClose={closeDialog}>
-		<form
-			class="website-chat__form"
-			onsubmit={(event) => {
-				event.preventDefault();
-				void submit();
-			}}
-		>
-			{#if formError}<p class="website-chat__error" role="alert">{formError}</p>{/if}
-			<Input
-				id="widget-name"
-				label="Widget name"
-				required
-				bind:value={draft.name}
-				invalid={Boolean(fieldErrors.name)}
-				errorMessage={fieldErrors.name}
-			/>
-			<Select
-				id="widget-launcher-position"
-				label="Launcher position"
-				options={launcherPositionOptions}
-				bind:value={draft.launcher_position}
-			/>
-			<Textarea
-				id="widget-teaser"
-				label="Teaser text"
-				rows={2}
-				maxlength={300}
-				bind:value={draft.teaser_text}
-			/>
-			<Textarea
-				id="widget-greeting"
-				label="Greeting text"
-				rows={2}
-				maxlength={300}
-				bind:value={draft.greeting_text}
-			/>
-			<Select
-				id="widget-contact-requirement"
-				label="Required identity"
-				options={contactRequirementOptions}
-				bind:value={draft.contact_requirement}
-			/>
-			<Select
-				id="widget-availability-visibility"
-				label="Availability visibility"
-				options={availabilityVisibilityOptions}
-				bind:value={draft.availability_visibility_mode}
-			/>
-			<Input id="widget-source-label" label="Source label" bind:value={draft.source_label} />
-			<Input
-				id="widget-privacy-policy-url"
-				label="Privacy policy link"
-				type="url"
-				placeholder="https://example.com/privacy"
-				invalid={Boolean(fieldErrors.privacy_policy_url)}
-				errorMessage={fieldErrors.privacy_policy_url}
-				bind:value={draft.privacy_policy_url}
-			/>
-
-			<div class="website-chat__channels">
-				<span class="website-chat__group-label">Other channels</span>
-				<Checkbox
-					id="widget-whatsapp-enabled"
-					label="WhatsApp"
-					checked={draft.whatsapp_enabled}
-					onchange={(checked) => (draft.whatsapp_enabled = checked)}
+	<Dialog open title={isEditing ? 'Edit widget' : 'New widget'} size="large" onClose={closeDialog}>
+		<div class="website-chat__dialog-grid">
+			<form
+				class="website-chat__form"
+				onsubmit={(event) => {
+					event.preventDefault();
+					void submit();
+				}}
+			>
+				{#if formError}<p class="website-chat__error" role="alert">{formError}</p>{/if}
+				<Input
+					id="widget-name"
+					label="Widget name"
+					required
+					bind:value={draft.name}
+					invalid={Boolean(fieldErrors.name)}
+					errorMessage={fieldErrors.name}
 				/>
-				{#if draft.whatsapp_enabled}
-					<Input
-						id="widget-whatsapp-destination"
-						label="WhatsApp number or link"
-						bind:value={draft.whatsapp_destination}
-					/>
-				{/if}
-				<Checkbox
-					id="widget-messenger-enabled"
-					label="Messenger"
-					checked={draft.messenger_enabled}
-					onchange={(checked) => (draft.messenger_enabled = checked)}
+				<Select
+					id="widget-launcher-position"
+					label="Launcher position"
+					options={launcherPositionOptions}
+					bind:value={draft.launcher_position}
 				/>
-				{#if draft.messenger_enabled}
-					<Input
-						id="widget-messenger-destination"
-						label="Messenger link"
-						bind:value={draft.messenger_destination}
-					/>
-				{/if}
-			</div>
+				<Textarea
+					id="widget-teaser"
+					label="Teaser text"
+					rows={2}
+					maxlength={300}
+					bind:value={draft.teaser_text}
+				/>
+				<Textarea
+					id="widget-greeting"
+					label="Greeting text"
+					rows={2}
+					maxlength={300}
+					bind:value={draft.greeting_text}
+				/>
+				<Select
+					id="widget-contact-requirement"
+					label="Required identity"
+					options={contactRequirementOptions}
+					bind:value={draft.contact_requirement}
+				/>
+				<Select
+					id="widget-availability-visibility"
+					label="Availability visibility"
+					options={availabilityVisibilityOptions}
+					bind:value={draft.availability_visibility_mode}
+				/>
+				<Input id="widget-source-label" label="Source label" bind:value={draft.source_label} />
+				<Input
+					id="widget-privacy-policy-url"
+					label="Privacy policy link"
+					type="url"
+					placeholder="https://example.com/privacy"
+					invalid={Boolean(fieldErrors.privacy_policy_url)}
+					errorMessage={fieldErrors.privacy_policy_url}
+					bind:value={draft.privacy_policy_url}
+				/>
 
-			{#if isEditing}
-				<div class="website-chat__toggles">
-					<Toggle
-						id="widget-published"
-						label="Published"
-						description="Visible to customers when it has at least one allowed domain."
-						checked={draft.published}
-						onchange={(checked) => (draft.published = checked)}
+				<div class="website-chat__channels">
+					<span class="website-chat__group-label">Other channels</span>
+					<Checkbox
+						id="widget-whatsapp-enabled"
+						label="WhatsApp"
+						checked={draft.whatsapp_enabled}
+						onchange={(checked) => (draft.whatsapp_enabled = checked)}
 					/>
-					<Toggle
-						id="widget-disabled"
-						label="Paused"
-						description="Temporarily hide this widget without losing its settings."
-						checked={draft.disabled}
-						onchange={(checked) => (draft.disabled = checked)}
+					{#if draft.whatsapp_enabled}
+						<Input
+							id="widget-whatsapp-destination"
+							label="WhatsApp number or link"
+							bind:value={draft.whatsapp_destination}
+						/>
+					{/if}
+					<Checkbox
+						id="widget-messenger-enabled"
+						label="Messenger"
+						checked={draft.messenger_enabled}
+						onchange={(checked) => (draft.messenger_enabled = checked)}
 					/>
+					{#if draft.messenger_enabled}
+						<Input
+							id="widget-messenger-destination"
+							label="Messenger link"
+							bind:value={draft.messenger_destination}
+						/>
+					{/if}
 				</div>
-			{/if}
 
-			<div class="website-chat__actions">
-				<Button type="submit" loading={saving}
-					>{isEditing ? 'Save changes' : 'Create widget'}</Button
-				><Button
-					type="button"
-					variant="secondary"
-					variation="subtle"
-					disabled={saving}
-					onclick={closeDialog}>Cancel</Button
-				>
-			</div>
-		</form>
+				{#if isEditing}
+					<div class="website-chat__toggles">
+						<Toggle
+							id="widget-published"
+							label="Published"
+							description="Visible to customers when it has at least one allowed domain."
+							checked={draft.published}
+							onchange={(checked) => (draft.published = checked)}
+						/>
+						<Toggle
+							id="widget-disabled"
+							label="Paused"
+							description="Temporarily hide this widget without losing its settings."
+							checked={draft.disabled}
+							onchange={(checked) => (draft.disabled = checked)}
+						/>
+					</div>
+				{/if}
+
+				<div class="website-chat__actions">
+					<Button type="submit" loading={saving}
+						>{isEditing ? 'Save changes' : 'Create widget'}</Button
+					><Button
+						type="button"
+						variant="secondary"
+						variation="subtle"
+						disabled={saving}
+						onclick={closeDialog}>Cancel</Button
+					>
+				</div>
+			</form>
+
+			<WebsiteChatPreview
+				businessName={widgetsQuery.data?.organization.name ?? 'Your business'}
+				brandColor={widgetsQuery.data?.organization.brand_color}
+				launcherPosition={draft.launcher_position}
+				teaserText={draft.teaser_text}
+				greetingText={draft.greeting_text}
+				contactRequirement={draft.contact_requirement}
+				privacyPolicyUrl={draft.privacy_policy_url}
+				channelOptions={previewChannelOptions}
+			/>
+		</div>
 
 		{#if isEditing && editingWidgetLive}
 			<div class="website-chat__section">
@@ -597,6 +699,44 @@
 		color: var(--color-informative--onSurface);
 		background: var(--color-informative--surface);
 	}
+	.website-chat__notice--warning {
+		color: var(--color-warning--onSurface);
+		background: var(--color-warning--surface);
+	}
+	.website-chat__notice--critical {
+		color: var(--color-critical--onSurface);
+		background: var(--color-critical--surface);
+	}
+	.website-chat__usage {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(200px, 40%);
+		align-items: center;
+		gap: var(--space-large);
+
+		progress {
+			width: 100%;
+			height: var(--space-small);
+			accent-color: var(--color-interactive);
+		}
+	}
+	.website-chat__usage-copy {
+		display: grid;
+		gap: var(--space-smaller);
+
+		span,
+		small {
+			color: var(--color-text--secondary);
+		}
+
+		strong {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-larger);
+		}
+
+		small {
+			font-size: var(--typography--fontSize-small);
+		}
+	}
 	.website-chat__table-wrap {
 		overflow-x: auto;
 		border: var(--border-base) solid var(--color-border);
@@ -629,6 +769,12 @@
 	.website-chat__toggles {
 		display: grid;
 		gap: var(--space-base);
+	}
+	.website-chat__dialog-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
+		align-items: start;
+		gap: var(--space-large);
 	}
 	.website-chat__group-label {
 		color: var(--color-text--secondary);
@@ -687,8 +833,17 @@
 		clip: rect(0 0 0 0);
 		white-space: nowrap;
 	}
+	@media (max-width: 1079px) {
+		.website-chat__dialog-grid {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
 	@media (max-width: 639px) {
 		.website-chat {
+			gap: var(--space-base);
+		}
+		.website-chat__usage {
+			grid-template-columns: minmax(0, 1fr);
 			gap: var(--space-base);
 		}
 		.website-chat__actions {

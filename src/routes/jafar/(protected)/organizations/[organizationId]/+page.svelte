@@ -33,6 +33,7 @@
 	import EmailReputationActions from '$lib/components/jafar/EmailReputationActions.svelte';
 	import EmailSendingPauseActions from '$lib/components/jafar/EmailSendingPauseActions.svelte';
 	import WebsiteChatAllowanceActions from '$lib/components/jafar/WebsiteChatAllowanceActions.svelte';
+	import WebsiteChatAuthorityActions from '$lib/components/jafar/WebsiteChatAuthorityActions.svelte';
 	import FreeAccessActions from '$lib/components/jafar/FreeAccessActions.svelte';
 	import LegacyReconcileActions from '$lib/components/jafar/LegacyReconcileActions.svelte';
 	import LifecycleActions from '$lib/components/jafar/LifecycleActions.svelte';
@@ -1529,6 +1530,9 @@
 			</Card>
 			<Card class="organization-detail__commercial-explainer">
 				<WebsiteChatAllowanceActions organizationId={access.organization.id} />
+			</Card>
+			<Card class="organization-detail__commercial-explainer">
+				<WebsiteChatAuthorityActions organizationId={access.organization.id} />
 			</Card>
 		</section>
 

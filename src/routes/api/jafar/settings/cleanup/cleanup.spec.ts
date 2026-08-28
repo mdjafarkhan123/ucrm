@@ -57,20 +57,36 @@ describe('platform owner cleanup GET boundary', () => {
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
-	it('lists open closure windows ordered by nearest deadline', async () => {
-		const rows = [{ id: 'closure-1', organization_id: organizationId, deadline_at: '2026-09-01' }];
-		const order = vi.fn().mockResolvedValue({ data: rows, error: null });
-		const eq = vi.fn(() => ({ order }));
-		const select = vi.fn(() => ({ eq }));
-		mockedClient.mockReturnValue({ from: () => ({ select }) } as never);
+	it('lists open closure windows and unfinished deletion receipts', async () => {
+		const closingRows = [
+			{ id: 'closure-1', organization_id: organizationId, deadline_at: '2026-09-01' }
+		];
+		const unfinishedRows = [{ operation_id: 'op-1', status: 'failed_partial' }];
+		const closureEq = vi.fn(() => ({
+			order: vi.fn().mockResolvedValue({ data: closingRows, error: null })
+		}));
+		const receiptEq = vi.fn(() => ({
+			order: vi.fn().mockResolvedValue({ data: unfinishedRows, error: null })
+		}));
+		mockedClient.mockReturnValue({
+			from: (table: string) => {
+				if (table === 'organization_closure_records') return { select: () => ({ eq: closureEq }) };
+				if (table === 'organization_deletion_receipts')
+					return { select: () => ({ eq: receiptEq }) };
+				throw new Error(`unexpected table ${table}`);
+			}
+		} as never);
 
 		const response = await GET(getEvent());
 		const body = await response.json();
 
 		expect(response.status).toBe(200);
-		expect(eq).toHaveBeenCalledWith('status', 'pending_closure');
-		expect(order).toHaveBeenCalledWith('deadline_at', { ascending: true });
-		expect(body).toEqual({ closing_organizations: rows });
+		expect(closureEq).toHaveBeenCalledWith('status', 'pending_closure');
+		expect(receiptEq).toHaveBeenCalledWith('status', 'failed_partial');
+		expect(body).toEqual({
+			closing_organizations: closingRows,
+			unfinished_deletions: unfinishedRows
+		});
 	});
 });
 
@@ -140,7 +156,9 @@ describe('platform owner cleanup POST boundary', () => {
 	});
 
 	it('calls the purge RPC as an early manual trigger with the acting owner email', async () => {
-		const rpc = vi.fn().mockResolvedValue({ data: { applied: true, operation_id: 'op-1' }, error: null });
+		const rpc = vi
+			.fn()
+			.mockResolvedValue({ data: { applied: true, operation_id: 'op-1' }, error: null });
 		mockedClient.mockReturnValue({
 			rpc,
 			from: () => ({

@@ -296,6 +296,13 @@ suppression records, provider identifiers, Brevo domains, and webhooks. Provider
 retryable operation and cannot be reported as complete. The existing non-personal deletion receipt may
 contain aggregate cleanup results but no recipients, content, domains, or message identifiers.
 
+Provider cleanup covers the organization-owned Brevo resources UCRM actually provisions and tracks: its
+sending/receiving domains and sender addresses. Brevo's inbound webhook is a single shared,
+account-level registration — UCRM does not provision or persist a per-organization webhook today, so
+purge reports webhook cleanup as not applicable and leaves the shared registration untouched. If a
+domain-scoped inbound webhook lifecycle is introduced later, persist its opaque Brevo webhook id at
+provisioning and include it in this same retryable cleanup.
+
 ## Platform Owner controls
 
 Jafar can inspect and control:

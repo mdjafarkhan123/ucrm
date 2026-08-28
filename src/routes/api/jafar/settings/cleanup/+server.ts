@@ -23,14 +23,30 @@ export const GET: RequestHandler = async (event) => {
 
 	try {
 		const client = getOwnerSupabaseClient();
-		const { data, error } = await client
-			.from('organization_closure_records')
-			.select('id, organization_id, reason, started_at, deadline_at, organizations(name, slug)')
-			.eq('status', 'pending_closure')
-			.order('deadline_at', { ascending: true });
-		if (error) throw error;
+		const [closing, unfinished] = await Promise.all([
+			client
+				.from('organization_closure_records')
+				.select('id, organization_id, reason, started_at, deadline_at, organizations(name, slug)')
+				.eq('status', 'pending_closure')
+				.order('deadline_at', { ascending: true }),
+			// Receipts whose external cleanup (Auth users and/or Brevo resources) failed and is waiting
+			// to be pushed again. The organization is already gone by now, so the receipt is the only
+			// handle -- it carries aggregate results only, never a recipient, domain, or message id.
+			client
+				.from('organization_deletion_receipts')
+				.select(
+					'operation_id, trigger_kind, status, component_results, retry_count, initiated_at, created_at'
+				)
+				.eq('status', 'failed_partial')
+				.order('created_at', { ascending: true })
+		]);
+		if (closing.error) throw closing.error;
+		if (unfinished.error) throw unfinished.error;
 
-		return json({ closing_organizations: data ?? [] });
+		return json({
+			closing_organizations: closing.data ?? [],
+			unfinished_deletions: unfinished.data ?? []
+		});
 	} catch (error) {
 		console.error('Could not load the cleanup queue.', error);
 		return json({ error: 'The cleanup queue could not be loaded.' }, { status: 500 });
@@ -51,7 +67,10 @@ export const POST: RequestHandler = async (event) => {
 	const parsed = organizationEarlyPurgeSchema.safeParse(body);
 	if (!parsed.success) {
 		return json(
-			{ error: 'Please review the delete confirmation.', field_errors: zodOwnerFieldErrors(parsed.error) },
+			{
+				error: 'Please review the delete confirmation.',
+				field_errors: zodOwnerFieldErrors(parsed.error)
+			},
 			{ status: 422 }
 		);
 	}
@@ -74,7 +93,9 @@ export const POST: RequestHandler = async (event) => {
 			return json(
 				{
 					error: 'The typed organization name does not match.',
-					field_errors: { typed_organization_name: 'Type the organization name exactly to confirm.' }
+					field_errors: {
+						typed_organization_name: 'Type the organization name exactly to confirm.'
+					}
 				},
 				{ status: 422 }
 			);

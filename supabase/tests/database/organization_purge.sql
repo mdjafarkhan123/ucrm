@@ -3,7 +3,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(30);
+select plan(41);
 
 -- Privileges -----------------------------------------------------------------
 
@@ -32,7 +32,24 @@ insert into public.organizations (id, name, slug, lifecycle_status)
 values
   ('90000000-0000-0000-0000-000000000910', '9 Purge P1 Test', '9-purge-p1-test', 'active'),
   ('90000000-0000-0000-0000-000000000911', '9 Purge P2 Test', '9-purge-p2-test', 'active'),
-  ('90000000-0000-0000-0000-000000000912', '9 Purge P3 Never Closed Test', '9-purge-p3-test', 'active');
+  ('90000000-0000-0000-0000-000000000912', '9 Purge P3 Never Closed Test', '9-purge-p3-test', 'active'),
+  ('90000000-0000-0000-0000-000000000913', '9 Purge P4 Provider Test', '9-purge-p4-test', 'active');
+
+-- P4 carries live Brevo resources: one sending domain and one sender, each with an opaque provider
+-- id. It deliberately has no members, so its purge isolates the provider-cleanup leg.
+insert into public.communication_email_domains (id, organization_id, purpose, domain_name, provider_domain_id)
+values (
+  '90000000-3333-0000-0000-000000000913', '90000000-0000-0000-0000-000000000913',
+  'sending', 'mail.p4example.test', 'brevo-dom-p4'
+);
+
+insert into public.communication_email_senders (
+  organization_id, domain_id, email_address, display_name, provider_sender_id
+)
+values (
+  '90000000-0000-0000-0000-000000000913', '90000000-3333-0000-0000-000000000913',
+  'p4-sender@mail.p4example.test', 'P4 Sender', 7788
+);
 
 insert into public.organization_members (organization_id, user_id, role)
 values ('90000000-0000-0000-0000-000000000910', '90000000-1111-0000-0000-000000000910', 'owner');
@@ -76,6 +93,10 @@ select public.apply_organization_closure_start(
 );
 select public.apply_organization_closure_start(
   '90000000-0000-0000-0000-000000000911', '9-purge-p2-close-1',
+  'Closing before purge test.', 'owner@example.test'
+);
+select public.apply_organization_closure_start(
+  '90000000-0000-0000-0000-000000000913', '9-purge-p4-close-1',
   'Closing before purge test.', 'owner@example.test'
 );
 
@@ -181,7 +202,19 @@ select ok(
     and component_results ->> 'provider_resources' = 'not_applicable'
    from public.organization_deletion_receipts
    where operation_id = (current_setting('test.p1_purge_result', true)::jsonb ->> 'operation_id')::uuid),
-  'the receipt honestly records every component outcome, including the not-yet-built provider purge as not_applicable'
+  'the receipt honestly records every component outcome; P1 has no Brevo resources so provider_resources is not_applicable'
+);
+-- With the Auth leg still pending, the whole receipt is not complete yet: the unified state model
+-- keeps it in_progress with no completion timestamp until every external leg finishes.
+select is(
+  (select status from public.organization_deletion_receipts
+   where operation_id = (current_setting('test.p1_purge_result', true)::jsonb ->> 'operation_id')::uuid),
+  'in_progress', 'a receipt with a pending Auth leg stays in_progress, not completed'
+);
+select ok(
+  (select completed_at is null from public.organization_deletion_receipts
+   where operation_id = (current_setting('test.p1_purge_result', true)::jsonb ->> 'operation_id')::uuid),
+  'an in_progress receipt carries no completion timestamp'
 );
 select ok(
   (select component_results ?& array['organization_data', 'package_assignments', 'free_access_history', 'onboarding_provision_unlinked', 'provider_resources', 'auth_users']
@@ -226,6 +259,71 @@ select is(
   (select component_results ->> 'onboarding_provision_unlinked' from public.organization_deletion_receipts
    where operation_id = (current_setting('test.p2_purge_result', true)::jsonb ->> 'operation_id')::uuid),
   'not_applicable', 'an organization with no onboarding provision records that component as not_applicable, not a fake success'
+);
+
+-- Purging P4: provider (Brevo) cleanup is parked as a retryable leg -------------
+-- P4 has no members, so the Auth leg is not applicable and the receipt's only outstanding leg is the
+-- provider cleanup: exactly the state that must stay retryable, never reported complete.
+
+select set_config(
+  'test.p4_purge_result',
+  public.apply_organization_purge('90000000-0000-0000-0000-000000000913', 'scheduled', null)::text,
+  true
+);
+select is(
+  (current_setting('test.p4_purge_result', true)::jsonb ->> 'applied'),
+  'true', 'purge applies for the provider-bearing organization'
+);
+select is(
+  (select component_results ->> 'provider_resources' from public.organization_deletion_receipts
+   where operation_id = (current_setting('test.p4_purge_result', true)::jsonb ->> 'operation_id')::uuid),
+  'pending', 'the receipt records provider cleanup as pending, not a premature success'
+);
+select is(
+  (select component_results ->> 'auth_users' from public.organization_deletion_receipts
+   where operation_id = (current_setting('test.p4_purge_result', true)::jsonb ->> 'operation_id')::uuid),
+  'not_applicable', 'an organization with no members records the Auth leg as not_applicable'
+);
+select is(
+  (select status from public.organization_deletion_receipts
+   where operation_id = (current_setting('test.p4_purge_result', true)::jsonb ->> 'operation_id')::uuid),
+  'in_progress', 'a receipt awaiting provider cleanup stays in_progress rather than complete'
+);
+select ok(
+  (select completed_at is null from public.organization_deletion_receipts
+   where operation_id = (current_setting('test.p4_purge_result', true)::jsonb ->> 'operation_id')::uuid),
+  'the provider-pending receipt carries no completion timestamp'
+);
+select is(
+  (select jsonb_array_length(pending_provider_resources) from public.organization_deletion_receipts
+   where operation_id = (current_setting('test.p4_purge_result', true)::jsonb ->> 'operation_id')::uuid),
+  2, 'the retry anchor holds both provider resources read out before the cascade'
+);
+select ok(
+  (select
+     pending_provider_resources @> '[{"kind":"domain","provider_id":"brevo-dom-p4"}]'::jsonb
+     and pending_provider_resources @> '[{"kind":"sender","provider_id":"7788"}]'::jsonb
+   from public.organization_deletion_receipts
+   where operation_id = (current_setting('test.p4_purge_result', true)::jsonb ->> 'operation_id')::uuid),
+  'the anchor carries the opaque domain and sender provider ids Brevo needs to delete them'
+);
+select ok(
+  (select bool_and(
+     element ?& array['kind', 'provider_id']
+     and (select count(*)::int from jsonb_object_keys(element)) = 2
+   )
+   from public.organization_deletion_receipts,
+        jsonb_array_elements(pending_provider_resources) as element
+   where operation_id = (current_setting('test.p4_purge_result', true)::jsonb ->> 'operation_id')::uuid),
+  'every anchor element carries only the opaque kind and provider id, nothing more'
+);
+select ok(
+  (select
+     position('mail.p4example.test' in pending_provider_resources::text) = 0
+     and position('p4-sender' in pending_provider_resources::text) = 0
+   from public.organization_deletion_receipts
+   where operation_id = (current_setting('test.p4_purge_result', true)::jsonb ->> 'operation_id')::uuid),
+  'the receipt holds no domain name or sender address -- only opaque provider identifiers'
 );
 
 select * from finish();

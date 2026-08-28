@@ -723,6 +723,7 @@ export type Database = {
           delivery_outcome_at: string | null
           delivery_outcome_detail: string | null
           direction: string
+          expires_at: string
           failure_code: string | null
           failure_message: string | null
           html_content: string
@@ -734,6 +735,8 @@ export type Database = {
           recipient_email: string
           reply_alias_id: string | null
           resent_from_intent_id: string | null
+          retry_class: string
+          retry_window_ends_at: string | null
           send_kind: string
           sender_id: string | null
           status: string
@@ -753,6 +756,7 @@ export type Database = {
           delivery_outcome_at?: string | null
           delivery_outcome_detail?: string | null
           direction?: string
+          expires_at?: string
           failure_code?: string | null
           failure_message?: string | null
           html_content: string
@@ -764,6 +768,8 @@ export type Database = {
           recipient_email: string
           reply_alias_id?: string | null
           resent_from_intent_id?: string | null
+          retry_class?: string
+          retry_window_ends_at?: string | null
           send_kind?: string
           sender_id?: string | null
           status?: string
@@ -783,6 +789,7 @@ export type Database = {
           delivery_outcome_at?: string | null
           delivery_outcome_detail?: string | null
           direction?: string
+          expires_at?: string
           failure_code?: string | null
           failure_message?: string | null
           html_content?: string
@@ -794,6 +801,8 @@ export type Database = {
           recipient_email?: string
           reply_alias_id?: string | null
           resent_from_intent_id?: string | null
+          retry_class?: string
+          retry_window_ends_at?: string | null
           send_kind?: string
           sender_id?: string | null
           status?: string
@@ -3286,6 +3295,7 @@ export type Database = {
           initiated_at: string
           operation_id: string
           pending_auth_user_ids: string[] | null
+          pending_provider_resources: Json | null
           retry_count: number
           status: string
           trigger_kind: string
@@ -3297,6 +3307,7 @@ export type Database = {
           initiated_at?: string
           operation_id?: string
           pending_auth_user_ids?: string[] | null
+          pending_provider_resources?: Json | null
           retry_count?: number
           status?: string
           trigger_kind: string
@@ -3308,6 +3319,7 @@ export type Database = {
           initiated_at?: string
           operation_id?: string
           pending_auth_user_ids?: string[] | null
+          pending_provider_resources?: Json | null
           retry_count?: number
           status?: string
           trigger_kind?: string
@@ -8156,6 +8168,7 @@ export type Database = {
           delivery_outcome_at: string | null
           delivery_outcome_detail: string | null
           direction: string
+          expires_at: string
           failure_code: string | null
           failure_message: string | null
           html_content: string
@@ -8167,6 +8180,8 @@ export type Database = {
           recipient_email: string
           reply_alias_id: string | null
           resent_from_intent_id: string | null
+          retry_class: string
+          retry_window_ends_at: string | null
           send_kind: string
           sender_id: string | null
           status: string
@@ -8204,6 +8219,7 @@ export type Database = {
           delivery_outcome_at: string | null
           delivery_outcome_detail: string | null
           direction: string
+          expires_at: string
           failure_code: string | null
           failure_message: string | null
           html_content: string
@@ -8215,6 +8231,8 @@ export type Database = {
           recipient_email: string
           reply_alias_id: string | null
           resent_from_intent_id: string | null
+          retry_class: string
+          retry_window_ends_at: string | null
           send_kind: string
           sender_id: string | null
           status: string
@@ -8298,6 +8316,7 @@ export type Database = {
           delivery_outcome_at: string | null
           delivery_outcome_detail: string | null
           direction: string
+          expires_at: string
           failure_code: string | null
           failure_message: string | null
           html_content: string
@@ -8309,6 +8328,8 @@ export type Database = {
           recipient_email: string
           reply_alias_id: string | null
           resent_from_intent_id: string | null
+          retry_class: string
+          retry_window_ends_at: string | null
           send_kind: string
           sender_id: string | null
           status: string
@@ -8344,6 +8365,7 @@ export type Database = {
           delivery_outcome_at: string | null
           delivery_outcome_detail: string | null
           direction: string
+          expires_at: string
           failure_code: string | null
           failure_message: string | null
           html_content: string
@@ -8355,6 +8377,8 @@ export type Database = {
           recipient_email: string
           reply_alias_id: string | null
           resent_from_intent_id: string | null
+          retry_class: string
+          retry_window_ends_at: string | null
           send_kind: string
           sender_id: string | null
           status: string
@@ -8805,6 +8829,10 @@ export type Database = {
           period_id: string
           period_starts_at: string
         }[]
+      }
+      get_organization_website_chat_authority: {
+        Args: { p_organization_id: string }
+        Returns: Json
       }
       get_team_member_detail: {
         Args: { target_organization_id: string; target_user_id: string }
@@ -9364,6 +9392,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      preview_organization_closure_impact: {
+        Args: { target_organization_id: string }
+        Returns: Json
+      }
       preview_quote_version_totals: {
         Args: { selected_addon_ids?: string[]; target_quote_id: string }
         Returns: Json
@@ -9702,6 +9734,17 @@ export type Database = {
         }
         Returns: Json
       }
+      rotate_website_chat_widget_public_token: {
+        Args: {
+          p_actor_email: string
+          p_expected_revision: number
+          p_idempotency_key: string
+          p_organization_id: string
+          p_reason: string
+          p_widget_id: string
+        }
+        Returns: Json
+      }
       replace_quote_version_attachments: {
         Args: {
           expected_revision: number
@@ -9761,6 +9804,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      set_organization_website_chat_suspension: {
+        Args: {
+          p_actor_email: string
+          p_engage: boolean
+          p_idempotency_key: string
+          p_organization_id: string
+          p_reason: string
+        }
+        Returns: Json
+      }
       request_status_counts: {
         Args: {
           day_end: string
@@ -9793,6 +9846,7 @@ export type Database = {
           delivery_outcome_at: string | null
           delivery_outcome_detail: string | null
           direction: string
+          expires_at: string
           failure_code: string | null
           failure_message: string | null
           html_content: string
@@ -9804,6 +9858,8 @@ export type Database = {
           recipient_email: string
           reply_alias_id: string | null
           resent_from_intent_id: string | null
+          retry_class: string
+          retry_window_ends_at: string | null
           send_kind: string
           sender_id: string | null
           status: string

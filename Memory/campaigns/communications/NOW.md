@@ -6,30 +6,41 @@ Build one secure Conversations experience across independently gated email, Webs
 
 ## Current part
 
-Part 7 (Allowances, reputation, Jafar controls) is **closed at code level** — 7.6b shipped
-2026-08-28 (migration `20260907090200`, pgTAP 16 green, usage card on `/settings/communications/email`).
-Both Part 7 screens sit on ROADMAP.md's pending browser list for the Part 9 pass.
-
-Part 8 (Suspension, closure, and cleanup) is the next dependency-ready part and is **unscoped**.
+Part 9 cross-domain completion. All gates now met (2026-08-28). Campaign is complete pending Jafar's
+sign-off to close and delete this folder.
 
 ## Exact next action
 
-Scope Part 8 with Jafar before writing code: read ROADMAP.md's Part 8 row and
-docs/contractor-email-contract.md §§ Platform Owner controls and Queueing/retries/history, then
-propose the slice list, dependencies, and completion gates. Jafar's 2026-08-27 "no per-slice plan
-approval" applied to Part 7 only — the Part 8 scope itself still needs his approval.
+Ask Jafar to confirm closing the campaign. On confirmation: remove the `communications` row from
+`Memory/INDEX.md` and delete `Memory/campaigns/communications/`. If he wants it kept open, the only
+remaining track is the HTTP email-worker/Brevo transport (still a stub) — scope that as a new part.
 
 ## Blockers
 
-None. The HTTP email-worker transport is still a stub — expected; the DB layer runs ahead of it.
+None. The HTTP email-worker/Brevo transport is still a stub; the DB layer runs ahead of it. This has
+been out of scope for every part so far. Linked CLI migration history remains divergent; do not repair
+it here.
 
 ## Essential pointers
 
-- parts/7.md — the few non-discoverable Part 7 risks that still change future work (which migration
-  holds the live claim body, the effective-dated one-call-per-txn edge, no `authenticated` grants)
-- ROADMAP.md — Part 8 row and the pending browser-verification list
+- ROADMAP.md — pending browser-verification list is now empty (all three Platform Owner screens drained
+  this session).
+- Part 9 integration gate: 42 Communications Vitest files / 252 tests green (unchanged).
+- Browser pass 2026-08-28, all via localhost:5173 with a Platform Owner session, seeded through the
+  Supabase MCP then cleaned up:
+  - `/jafar/communications` MessageRecoveryQueue — queue lists stuck mail, history reveals with a
+    skeleton, retry re-queues + refreshes, cancel toasts "allowance is back" + refreshes. PASS.
+  - `/jafar/settings/cleanup` — closing-org row renders, delete-impact preview prefetches on hover (no
+    skeleton), failed_partial receipt lists + Retry cleanup toasts "fully complete" + removes the row.
+    PASS.
+  - `/jafar/organizations/[id]` Website Chat authority — suspend seed showed Reason/Suspended by/Since
+    panel + every widget flipped to Suspended badge + Restore button; release reverted to Available.
+    Rotate-token dialog warns the installation code stops working. PASS.
+- Residual immutable audit rows on `platform_owner_audit_events` from the verification actions
+  (message_retried/cancelled, website_chat_suspension_engaged/released) — by design, cannot be deleted,
+  harmless.
 
 ## Completion gate
 
-Part 8 is ready when Jafar has approved its slice list and ROADMAP.md and this checkpoint name the
-same first slice.
+Met. Part 9 security/integration gates pass and the pending browser-verification list was drained in
+one pass.

@@ -20,7 +20,26 @@
 		deadline_at: string;
 		organizations: { name: string; slug: string } | null;
 	};
-	type CleanupResponse = { closing_organizations: ClosingOrganization[]; error?: string };
+	type UnfinishedDeletion = {
+		operation_id: string;
+		trigger_kind: string;
+		status: string;
+		component_results: Record<string, string> | null;
+		retry_count: number;
+		initiated_at: string;
+		created_at: string;
+	};
+	type CleanupResponse = {
+		closing_organizations: ClosingOrganization[];
+		unfinished_deletions: UnfinishedDeletion[];
+		error?: string;
+	};
+	type ClosureImpact = {
+		active_reply_aliases: number;
+		queued_messages: number;
+		recent_replies: number;
+	};
+	type ImpactResponse = { impact: ClosureImpact | null; error?: string };
 	type MutationResponse = {
 		error?: string;
 		field_errors?: Record<string, string>;
@@ -56,15 +75,59 @@
 	let fieldErrors = $state<Record<string, string>>({});
 	let feedbackError = $state('');
 	let reconfirmOpen = $state(false);
-	let pendingStepUpInput = $state<{ organization_id: string; typed_organization_name: string } | null>(
-		null
-	);
+	let pendingStepUpInput = $state<{
+		organization_id: string;
+		typed_organization_name: string;
+	} | null>(null);
+	let retryingId = $state<string | null>(null);
+
+	async function loadImpact(organizationId: string) {
+		const response = await fetch(
+			`/api/jafar/settings/cleanup/preview?organization_id=${organizationId}`
+		);
+		const result = (await response.json()) as ImpactResponse;
+		if (!response.ok) throw new Error(result.error ?? 'The deletion impact could not be loaded.');
+		return result;
+	}
+
+	// The impact preview is revealed content — it never loads with the page. Hovering "Delete now"
+	// prefetches it, and a click that beats the fetch shows a skeleton inside the dialog.
+	const impactQuery = createQuery<ImpactResponse>(() => ({
+		queryKey: ['jafar', 'settings', 'cleanup', 'impact', deleteTarget?.organization_id ?? 'none'],
+		queryFn: () => loadImpact(deleteTarget!.organization_id),
+		enabled: deleteTarget !== null,
+		staleTime: 30_000
+	}));
+
+	function prefetchImpact(organizationId: string) {
+		void queryClient.prefetchQuery({
+			queryKey: ['jafar', 'settings', 'cleanup', 'impact', organizationId],
+			queryFn: () => loadImpact(organizationId),
+			staleTime: 30_000
+		});
+	}
 
 	function openDelete(target: ClosingOrganization) {
 		deleteTarget = target;
 		typedName = '';
 		fieldErrors = {};
 		feedbackError = '';
+	}
+
+	const componentLabels: Record<string, string> = {
+		auth_users: 'Login accounts',
+		provider_resources: 'Email provider resources'
+	};
+
+	function failedComponents(results: Record<string, string> | null) {
+		if (!results) return [];
+		return Object.entries(results)
+			.filter(([, state]) => state === 'failed')
+			.map(([key]) => componentLabels[key] ?? key.replace(/_/g, ' '));
+	}
+
+	function triggerLabel(kind: string) {
+		return kind === 'early_manual' ? 'Early manual delete' : 'Scheduled deletion';
 	}
 
 	function closeDelete() {
@@ -135,6 +198,36 @@
 	function confirmStepUp() {
 		if (pendingStepUpInput) deleteMutation.mutate(pendingStepUpInput);
 	}
+
+	const retryMutation = createMutation<{ resolved: boolean }, Error, string>(() => ({
+		mutationFn: async (operationId) => {
+			const response = await fetch('/api/jafar/settings/cleanup/retry', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ operation_id: operationId })
+			});
+			const result = (await response.json()) as { resolved?: boolean; error?: string };
+			if (!response.ok) throw new Error(result.error ?? 'The cleanup could not be retried.');
+			return { resolved: result.resolved === true };
+		},
+		onSettled: () => {
+			retryingId = null;
+		},
+		onSuccess: (result) => {
+			if (result.resolved) toast.success('Cleanup finished. This deletion is fully complete.');
+			else
+				toast.error(
+					'Some cleanup steps still failed. They will keep retrying automatically each night.'
+				);
+			void queryClient.invalidateQueries({ queryKey: ['jafar', 'settings', 'cleanup'] });
+		},
+		onError: (error) => toast.error(error.message)
+	}));
+
+	function retryCleanup(operationId: string) {
+		retryingId = operationId;
+		retryMutation.mutate(operationId);
+	}
 </script>
 
 <svelte:head><title>Cleanup · Settings · Control Room</title></svelte:head>
@@ -153,9 +246,9 @@
 		<p class="cleanup-queue__eyebrow">Organization cleanup</p>
 		<h1>Closing organizations</h1>
 		<p class="cleanup-queue__description">
-			Every organization currently in its 30-day recovery window. Each one restores automatically
-			if nobody acts, or deletes for good at its deadline. Deleting one early here skips the rest
-			of that wait and cannot be undone.
+			Every organization currently in its 30-day recovery window. Each one restores automatically if
+			nobody acts, or deletes for good at its deadline. Deleting one early here skips the rest of
+			that wait and cannot be undone.
 		</p>
 	</header>
 
@@ -191,8 +284,10 @@
 						{#each cleanupQuery.data?.closing_organizations ?? [] as record (record.id)}
 							<tr>
 								<td>
-									<a href={`${resolve('/jafar/organizations')}/${record.organization_id}`}
-										>{record.organizations?.name ?? 'Unknown organization'}</a
+									<a
+										href={resolve('/jafar/(protected)/organizations/[organizationId]', {
+											organizationId: record.organization_id
+										})}>{record.organizations?.name ?? 'Unknown organization'}</a
 									>
 								</td>
 								<td>{record.reason}</td>
@@ -209,6 +304,7 @@
 										size="small"
 										variant="secondary"
 										variation="destructive"
+										onhover={() => prefetchImpact(record.organization_id)}
 										onclick={() => openDelete(record)}>Delete now</Button
 									>
 								</td>
@@ -219,21 +315,81 @@
 			</div>
 		{/if}
 	</Card>
+
+	{#if (cleanupQuery.data?.unfinished_deletions.length ?? 0) > 0}
+		<section class="cleanup-queue__section" aria-labelledby="unfinished-heading">
+			<div class="cleanup-queue__section-head">
+				<h2 id="unfinished-heading">Unfinished deletions</h2>
+				<p>
+					These organizations were deleted, but a step outside our database — removing login
+					accounts or email-provider resources — did not finish. Each retries automatically every
+					night; retry here to push it again now.
+				</p>
+			</div>
+			<Card class="cleanup-queue__card">
+				<ul class="cleanup-queue__deletions">
+					{#each cleanupQuery.data?.unfinished_deletions ?? [] as receipt (receipt.operation_id)}
+						<li class="cleanup-queue__deletion">
+							<div class="cleanup-queue__deletion-body">
+								<div class="cleanup-queue__deletion-head">
+									<strong>{triggerLabel(receipt.trigger_kind)}</strong>
+									<Badge status="critical">Cleanup failed</Badge>
+								</div>
+								<p class="cleanup-queue__deletion-meta">
+									Deleted {formatDateTime(receipt.created_at)}
+									{#if receipt.retry_count > 0}· retried {receipt.retry_count}
+										time{receipt.retry_count === 1 ? '' : 's'}{/if}
+								</p>
+								{#if failedComponents(receipt.component_results).length > 0}
+									<p class="cleanup-queue__deletion-meta">
+										Still to remove: {failedComponents(receipt.component_results).join(', ')}
+									</p>
+								{/if}
+							</div>
+							<Button
+								size="small"
+								variation="work"
+								loading={retryMutation.isPending && retryingId === receipt.operation_id}
+								disabled={retryMutation.isPending}
+								onclick={() => retryCleanup(receipt.operation_id)}>Retry cleanup</Button
+							>
+						</li>
+					{/each}
+				</ul>
+			</Card>
+		</section>
+	{/if}
 </main>
 <!-- eslint-enable svelte/no-at-html-tags -->
 
-<Dialog
-	open={deleteTarget !== null}
-	title="Permanently delete organization"
-	onClose={closeDelete}
->
+<Dialog open={deleteTarget !== null} title="Permanently delete organization" onClose={closeDelete}>
 	<form class="cleanup-queue__form" onsubmit={submitDelete}>
 		<p>
 			<strong>This skips the remaining recovery time and deletes everything right now.</strong> All
 			customers, jobs, invoices, files, and login access for
-			{deleteTarget?.organizations?.name ?? 'this organization'} are removed for good. There is no
-			undo.
+			{deleteTarget?.organizations?.name ?? 'this organization'} are removed for good. There is no undo.
 		</p>
+
+		<div class="cleanup-queue__impact" aria-live="polite">
+			<p class="cleanup-queue__impact-title">Live communications this ends immediately</p>
+			{#if impactQuery.isPending}
+				<LoadingSkeleton variant="text" label="Loading deletion impact" />
+			{:else if impactQuery.isError}
+				<p class="cleanup-queue__impact-error">
+					The impact could not be loaded. You can still delete, but review carefully.
+				</p>
+			{:else if impactQuery.data?.impact}
+				{@const impact = impactQuery.data.impact}
+				<ul class="cleanup-queue__impact-list">
+					<li><strong>{impact.active_reply_aliases}</strong> active reply aliases stop routing</li>
+					<li><strong>{impact.queued_messages}</strong> queued messages are dropped unsent</li>
+					<li>
+						<strong>{impact.recent_replies}</strong> replies received since closing are erased
+					</li>
+				</ul>
+			{/if}
+		</div>
+
 		<Input
 			id="cleanup-typed-name"
 			label={`Type "${deleteTarget?.organizations?.name ?? ''}" to confirm`}
@@ -371,5 +527,91 @@
 		flex-wrap: wrap;
 		justify-content: flex-end;
 		gap: var(--space-small);
+	}
+	.cleanup-queue__section {
+		display: grid;
+		gap: var(--space-base);
+	}
+	.cleanup-queue__section-head h2 {
+		margin: 0;
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-largest);
+		line-height: var(--typography--lineHeight-tightest);
+	}
+	.cleanup-queue__section-head p {
+		max-width: 65ch;
+		margin: var(--space-small) 0 0;
+		color: var(--color-text--secondary);
+		line-height: var(--typography--lineHeight-large);
+	}
+	.cleanup-queue__deletions {
+		display: grid;
+		gap: var(--space-base);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.cleanup-queue__deletion {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: var(--space-base);
+		padding: var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+	}
+	.cleanup-queue__deletion-body {
+		display: grid;
+		gap: var(--space-smallest);
+		min-width: 0;
+	}
+	.cleanup-queue__deletion-head {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+	}
+	.cleanup-queue__deletion-head strong {
+		color: var(--color-heading);
+	}
+	.cleanup-queue__deletion-meta {
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+	}
+	.cleanup-queue__impact {
+		display: grid;
+		gap: var(--space-small);
+		padding: var(--space-base);
+		border-radius: var(--radius-base);
+		background: var(--color-critical--surface);
+	}
+	.cleanup-queue__impact-title {
+		margin: 0;
+		color: var(--color-critical--onSurface);
+		font-size: var(--typography--fontSize-smaller);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: var(--typography--letterSpacing-loose);
+	}
+	.cleanup-queue__impact-list {
+		display: grid;
+		gap: var(--space-smallest);
+		margin: 0;
+		padding-left: var(--space-base);
+		color: var(--color-critical--onSurface);
+		font-size: var(--typography--fontSize-small);
+	}
+	.cleanup-queue__impact-list strong {
+		font-variant-numeric: tabular-nums;
+	}
+	.cleanup-queue__impact-error {
+		margin: 0;
+		color: var(--color-critical--onSurface);
+		font-size: var(--typography--fontSize-small);
+	}
+	@media (max-width: 639px) {
+		.cleanup-queue__deletion {
+			flex-direction: column;
+		}
 	}
 </style>

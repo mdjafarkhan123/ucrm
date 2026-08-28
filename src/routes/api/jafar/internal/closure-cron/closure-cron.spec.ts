@@ -56,7 +56,9 @@ describe('closure-cron internal route', () => {
 			purgesCompleted: 1,
 			purgesFailed: 0,
 			authCleanupsCompleted: 0,
-			authCleanupsFailed: 0
+			authCleanupsFailed: 0,
+			providerCleanupsCompleted: 0,
+			providerCleanupsFailed: 0
 		});
 
 		const response = await POST(requestWith(`Bearer ${SECRET}`));
@@ -68,7 +70,9 @@ describe('closure-cron internal route', () => {
 			purgesCompleted: 1,
 			purgesFailed: 0,
 			authCleanupsCompleted: 0,
-			authCleanupsFailed: 0
+			authCleanupsFailed: 0,
+			providerCleanupsCompleted: 0,
+			providerCleanupsFailed: 0
 		});
 	});
 

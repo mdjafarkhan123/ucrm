@@ -258,9 +258,35 @@ export const organizationEarlyPurgeSchema = z.object({
 		.max(200)
 });
 
+// Communications 8.5: Jafar retrying the external (Auth + Brevo) cleanup for one stuck deletion
+// receipt. The receipt is the only handle left once the organization is already purged, so the retry
+// is keyed by its operation_id alone.
+export const organizationCleanupRetrySchema = z.object({
+	operation_id: z.string().uuid('Choose a valid deletion to retry.')
+});
+
 export const communicationEmailSendingPauseSchema = z.object({
 	engage: z.boolean(),
 	reason: z.string().trim().min(3, 'Enter a reason of at least 3 characters.').max(500)
+});
+
+const websiteChatAuthorityReasonSchema = z
+	.string()
+	.trim()
+	.min(3, 'Enter a reason of at least 3 characters.')
+	.max(500, 'Keep the reason under 500 characters.');
+
+export const websiteChatSuspensionSchema = z.object({
+	engage: z.boolean(),
+	reason: websiteChatAuthorityReasonSchema,
+	idempotency_key: z.string().uuid('Start a new suspension change and try again.')
+});
+
+export const websiteChatTokenRotationSchema = z.object({
+	widget_id: z.string().uuid('Choose a valid Website Chat widget.'),
+	expected_revision: z.number().int().min(1),
+	reason: websiteChatAuthorityReasonSchema,
+	idempotency_key: z.string().uuid('Start a new token rotation and try again.')
 });
 
 const reputationSignalSchema = z.enum(['complaint', 'hard_bounce', 'unsubscribe'], {

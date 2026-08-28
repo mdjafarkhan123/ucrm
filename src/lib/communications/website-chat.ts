@@ -23,6 +23,7 @@ export type WebsiteChatWidget = {
 	channel_options: WebsiteChatChannelOption[];
 	published: boolean;
 	disabled_at: string | null;
+	suspended_at: string | null;
 	revision: number;
 	created_at: string;
 	updated_at: string;
@@ -40,6 +41,24 @@ export type WebsiteChatWidgets = {
 	widgets: WebsiteChatWidget[];
 	limit: WebsiteChatWidgetLimit;
 	widgets_used: number;
+	organization: {
+		name: string;
+		brand_color: string | null;
+		timezone: string;
+	};
+	conversation_usage: {
+		state: 'unlimited' | 'not_included' | 'numeric';
+		value: number | null;
+		source: 'package' | 'override';
+		accepted_count: number;
+		period_starts_at: string | null;
+		period_ends_at: string | null;
+	};
+	suspension: {
+		active: boolean;
+		reason: string | null;
+		engaged_at: string | null;
+	};
 };
 
 export type WebsiteChatWidgetDraft = {
