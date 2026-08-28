@@ -41,6 +41,12 @@ export function dayLabel(value: string, now = new Date()) {
 	}).format(date);
 }
 
+// Collapses a message body to one line for a list-row preview, shared by every place that shows a
+// snippet of a longer message rather than its full text.
+export function previewText(value: string) {
+	return value.replace(/\s+/g, ' ').trim();
+}
+
 export function formatFileSize(bytes: number) {
 	if (bytes < 1024) return `${bytes} B`;
 	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;

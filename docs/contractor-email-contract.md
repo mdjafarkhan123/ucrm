@@ -195,8 +195,8 @@ Replies from a To or CC recipient, or an address already connected to the custom
 thread. Unknown senders require review.
 
 Administrators may externally forward one inbound message. Other staff require explicit permission.
-Forwarding previews recipients and attachments, requires confirmation for sensitive financial content,
-and creates an audit event. It neither shares the whole conversation nor grants portal access.
+Forwarding previews recipients and attachments and creates an audit event, matching HighLevel's forward
+action. It neither shares the whole conversation nor grants portal access.
 
 CC grants access only to the message and included attachments. Quote and invoice links are narrowly scoped,
 expiring document links. CC never grants broad portal, appointment, history, or financial access. Broader

@@ -57,6 +57,30 @@ describe('Brevo operational email adapter', () => {
 		});
 	});
 
+	it('includes Brevo attachment field only when attachments are present', async () => {
+		vi.mocked(fetch).mockResolvedValueOnce(
+			new Response(JSON.stringify({ messageId: 'provider-message-42' }), { status: 201 })
+		);
+
+		await sendOperationalEmail({
+			...message,
+			attachments: [{ name: 'quote.pdf', content: 'YWJjZA==' }]
+		});
+
+		const [, init] = vi.mocked(fetch).mock.calls[0];
+		expect(JSON.parse(init!.body as string)).toMatchObject({
+			attachment: [{ name: 'quote.pdf', content: 'YWJjZA==' }]
+		});
+
+		vi.mocked(fetch).mockClear();
+		vi.mocked(fetch).mockResolvedValueOnce(
+			new Response(JSON.stringify({ messageId: 'provider-message-43' }), { status: 201 })
+		);
+		await sendOperationalEmail({ ...message, attachments: [] });
+		const [, initEmpty] = vi.mocked(fetch).mock.calls[0];
+		expect(JSON.parse(initEmpty!.body as string)).not.toHaveProperty('attachment');
+	});
+
 	it('classifies a provider rejection that is safe to retry', async () => {
 		vi.mocked(fetch).mockResolvedValueOnce(new Response('provider unavailable', { status: 503 }));
 

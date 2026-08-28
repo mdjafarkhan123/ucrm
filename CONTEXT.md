@@ -67,3 +67,13 @@
 - **Credit adjustment** — A reasoned immutable correction or refund entry in the communication ledger. _Avoid_: Balance edit.
 - **Outstanding communication usage** — Provider-billed communication cost that could not be paid from an organization's available balance. It is not spendable credit; later Purchased Credit settles it before increasing the spendable balance.
 - **Organization SMS mode** — The Platform Owner-controlled maximum SMS capability for an organization: Disabled, Notifications Only, or Two-way SMS. Contractor preference may use a lower mode but never exceed it. _Avoid_: One-way SMS.
+
+## Customer messaging
+
+- **Contact Widget** — The organization-branded website launcher that may offer Website Chat and configured external contact options. It is the installed customer-facing container, not a conversation channel. _Avoid_: Website Chat when referring to the whole launcher or channel picker.
+- **Website Chat** — UpliftContractor's owned persistent website-messaging channel whose conversations enter the organization's Conversations workspace. _Avoid_: Live Chat when immediate human availability is not guaranteed.
+- **External contact option** — A contractor-configured destination such as WhatsApp or Messenger that opens outside UpliftContractor and does not bring the resulting messages into Conversations. _Avoid_: Connected channel.
+- **Connected channel** — A provider-backed messaging channel whose inbound and outbound activity is integrated into UpliftContractor Conversations. A link that merely opens another application is not connected.
+- **Website Chat session** — One visitor-initiated Website Chat exchange associated with its source widget and, after the first accepted message, a Client. Separate visits may become separate sessions without splitting the Client's overall Conversations history.
+- **Accepted Website Chat conversation** — A new Website Chat session whose identified visitor has successfully sent the first message. It is the unit counted by the organization's Website Chat conversation allowance; forms, blocked spam, retries, and later messages in that session are not additional accepted conversations.
+- **Website Chat availability** — A team member's explicit readiness to receive live Website Chat assignments. It is distinct from business hours, application presence, and whether a widget publicly displays availability.

@@ -63,6 +63,10 @@
 	let operationalEmailCount = $state('');
 	let essentialEmailState = $state<LimitState>('not_included');
 	let essentialEmailCount = $state('');
+	let websiteChatWidgetsState = $state<LimitState>('not_included');
+	let websiteChatWidgetsCount = $state('');
+	let websiteChatAcceptedConversationsState = $state<LimitState>('not_included');
+	let websiteChatAcceptedConversationsCount = $state('');
 	let actionError = $state('');
 	let actionMessage = $state('');
 	let publishConfirmed = $state(false);
@@ -113,6 +117,19 @@
 						essential: {
 							state: essentialEmailState,
 							value: essentialEmailState === 'numeric' ? Number(essentialEmailCount) : null
+						}
+					},
+					website_chat_limits: {
+						widgets: {
+							state: websiteChatWidgetsState,
+							value: websiteChatWidgetsState === 'numeric' ? Number(websiteChatWidgetsCount) : null
+						},
+						accepted_conversations: {
+							state: websiteChatAcceptedConversationsState,
+							value:
+								websiteChatAcceptedConversationsState === 'numeric'
+									? Number(websiteChatAcceptedConversationsCount)
+									: null
 						}
 					}
 				})
@@ -211,6 +228,23 @@
 		essentialEmailState = essentialEmail?.limit_state ?? 'not_included';
 		essentialEmailCount =
 			essentialEmail?.limit_value !== null ? String(essentialEmail.limit_value) : '';
+		const websiteChatWidgets = source?.limits.find(
+			(limit) => limit.limit_key === 'website_chat_widgets'
+		);
+		websiteChatWidgetsState = websiteChatWidgets?.limit_state ?? 'not_included';
+		websiteChatWidgetsCount =
+			websiteChatWidgets && websiteChatWidgets.limit_value !== null
+				? String(websiteChatWidgets.limit_value)
+				: '';
+		const websiteChatAcceptedConversations = source?.limits.find(
+			(limit) => limit.limit_key === 'website_chat_accepted_conversations'
+		);
+		websiteChatAcceptedConversationsState =
+			websiteChatAcceptedConversations?.limit_state ?? 'not_included';
+		websiteChatAcceptedConversationsCount =
+			websiteChatAcceptedConversations && websiteChatAcceptedConversations.limit_value !== null
+				? String(websiteChatAcceptedConversations.limit_value)
+				: '';
 		publishConfirmed = false;
 	}
 
@@ -500,6 +534,60 @@
 										<label
 											><span>Recipients per period</span><input
 												bind:value={essentialEmailCount}
+												type="number"
+												min="1"
+												required
+											/></label
+										>
+									{/if}
+								</div>
+							</div>
+						</div>
+					</fieldset>
+					<fieldset>
+						<legend>Website Chat</legend>
+						<div class="packages__allowance-controls">
+							<div class="packages__allowance-group">
+								<h3>Widgets</h3>
+								<div class="packages__seat-controls">
+									<div class="packages__seat-field">
+										<label for="website-chat-widgets-state">Availability</label>
+										<Select
+											id="website-chat-widgets-state"
+											value={websiteChatWidgetsState}
+											options={employeeSeatOptions}
+											onchange={(nextValue) => (websiteChatWidgetsState = nextValue as LimitState)}
+										/>
+									</div>
+									{#if websiteChatWidgetsState === 'numeric'}
+										<label
+											><span>Maximum widgets</span><input
+												bind:value={websiteChatWidgetsCount}
+												type="number"
+												min="1"
+												required
+											/></label
+										>
+									{/if}
+								</div>
+							</div>
+							<div class="packages__allowance-group">
+								<h3>Accepted conversations</h3>
+								<div class="packages__seat-controls">
+									<div class="packages__seat-field">
+										<label for="website-chat-accepted-conversations-state">Allowance type</label>
+										<Select
+											id="website-chat-accepted-conversations-state"
+											value={websiteChatAcceptedConversationsState}
+											options={employeeSeatOptions}
+											onchange={(nextValue) =>
+												(websiteChatAcceptedConversationsState = nextValue as LimitState)}
+										/>
+									</div>
+									{#if websiteChatAcceptedConversationsState === 'numeric'}
+										<label
+											><span>Conversations per period</span><input
+												bind:value={websiteChatAcceptedConversationsCount}
 												type="number"
 												min="1"
 												required

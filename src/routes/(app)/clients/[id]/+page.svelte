@@ -23,6 +23,12 @@
 	import ClientTagSelect from '$lib/components/clients/ClientTagSelect.svelte';
 	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
 	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
+	import ClientCommunicationHistory from '$lib/components/communications/ClientCommunicationHistory.svelte';
+	import {
+		clientCommunicationHistoryKey,
+		fetchClientCommunicationHistory,
+		type InboxMessagePage
+	} from '$lib/communications/inbox';
 	import {
 		ClientWriteError,
 		clientDetailKey,
@@ -51,7 +57,6 @@
 	import targetIcon from '@tabler/icons/outline/target-arrow.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import checkIcon from '@tabler/icons/outline/circle-check.svg?raw';
-	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
 
 	const queryClient = useQueryClient();
 	const clientId = $derived(page.params.id ?? '');
@@ -331,11 +336,22 @@
 
 	// --- Tabs -----------------------------------------------------------------------------------------
 
-	// Communication is a placeholder until there are messages to put in it. The tab exists now so the page
-	// keeps its shape and the Communications work only has to fill the panel.
+	// Warms the tab's query before it opens (CLAUDE.md rule 9): fires on hover and keyboard focus via
+	// `Tab.onhover`, using the exact key/queryFn/getNextPageParam shape `ClientCommunicationHistory` itself
+	// queries with, so the click that follows finds the cache already warm.
+	function prefetchCommunicationHistory() {
+		void queryClient.prefetchInfiniteQuery({
+			queryKey: clientCommunicationHistoryKey(clientId),
+			queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
+				fetchClientCommunicationHistory(clientId, pageParam),
+			initialPageParam: undefined as string | undefined,
+			getNextPageParam: (lastPage: InboxMessagePage) => lastPage.next_cursor ?? undefined
+		});
+	}
+
 	const clientTabs: Tab[] = [
 		{ value: 'details', label: 'Details' },
-		{ value: 'communication', label: 'Communication' }
+		{ value: 'communication', label: 'Communication', onhover: prefetchCommunicationHistory }
 	];
 
 	// The open tab lives in the URL the way Jobber's does, so it survives a reload and can be linked to.
@@ -497,11 +513,7 @@
 					</TabPanel>
 
 					<TabPanel value="communication">
-						<EmptyState
-							icon={messageIcon}
-							title="Nothing sent yet"
-							description="Emails and texts with this client will be collected here once sending is switched on."
-						/>
+						<ClientCommunicationHistory {clientId} active={activeTab === 'communication'} />
 					</TabPanel>
 				</Tabs>
 			{/snippet}

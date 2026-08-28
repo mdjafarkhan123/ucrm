@@ -43,6 +43,10 @@ export const packageVersionWriteSchema = z.object({
 	email_allowances: z.object({
 		operational: allowanceSchema,
 		essential: allowanceSchema
+	}),
+	website_chat_limits: z.object({
+		widgets: allowanceSchema,
+		accepted_conversations: allowanceSchema
 	})
 });
 

@@ -4,7 +4,9 @@ export const packageKeySchema = z.enum(['starter', 'growth', 'elite']);
 export const limitKeySchema = z.enum([
 	'employee_seats',
 	'operational_email_recipients',
-	'essential_email_recipients'
+	'essential_email_recipients',
+	'website_chat_widgets',
+	'website_chat_accepted_conversations'
 ]);
 export const organizationIdSchema = z.string().uuid();
 export const userIdSchema = z.string().uuid();

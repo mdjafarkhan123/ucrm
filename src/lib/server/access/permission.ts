@@ -73,3 +73,23 @@ export async function requireOrganizationPermission(
 		return { response: json({ error: 'Access could not be verified.' }, { status: 500 }) };
 	}
 }
+
+// Same feature/permission gate as above, plus an owner/admin role check for content that is shared across
+// the whole team (a bad edit changes what every teammate sends) rather than personal to the caller. Mirrors
+// `private.is_organization_admin` at the RLS layer, so a member who fails this never reaches a database
+// error -- they get the same clear 403 either way.
+export async function requireOrganizationAdmin(
+	event: RequestEvent,
+	permissionKey: string
+): Promise<PermissionCheck> {
+	const check = await requireOrganizationPermission(event, permissionKey);
+	if ('response' in check) return check;
+
+	if (check.auth.organization.role !== 'owner' && check.auth.organization.role !== 'admin') {
+		return {
+			response: json({ error: 'Organization administrator access required.' }, { status: 403 })
+		};
+	}
+
+	return check;
+}

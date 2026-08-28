@@ -7,7 +7,7 @@ import PriceBookDrawer from './PriceBookDrawer.svelte';
 import type { CatalogItem } from '$lib/quotes/api';
 
 // The shared price book: browse, add several without reopening, and never see a cost you may not see.
-// See `Memory/campaigns/quotes/parts/02b-price-book-drawer.md`.
+// See `docs/quote-behavior-contract.md`.
 
 function itemFixture(overrides: Partial<CatalogItem> = {}): CatalogItem {
 	return {

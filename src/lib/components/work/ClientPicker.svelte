@@ -78,6 +78,15 @@
 	}
 
 	function chooseClient(clientId: string) {
+		// Clicking the already-picked client is a deselect as far as the combobox is concerned, but the input
+		// keeps showing their name -- the form would read as filled in while reporting no client. Treat it as
+		// "no change" instead; clearing is done by typing.
+		if (!clientId) {
+			value = selected?.id ?? '';
+			query = selected?.display_name ?? '';
+			open = false;
+			return;
+		}
 		const client = results.find((entry) => entry.id === clientId) ?? null;
 		value = clientId;
 		selected = client;

@@ -83,6 +83,10 @@ const baseRows = {
 		data: { state: 'numeric', value: 4, is_unlimited: false, source: 'override' },
 		error: null
 	},
+	effective_website_chat_widgets_limit: {
+		data: { state: 'not_included', value: null, is_unlimited: false, source: 'package' },
+		error: null
+	},
 	organization_feature_overrides: {
 		data: [
 			{

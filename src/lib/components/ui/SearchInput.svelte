@@ -5,6 +5,7 @@
 	let {
 		value = $bindable(''),
 		id,
+		label,
 		placeholder = 'Search',
 		ariaLabel = 'Search',
 		disabled = false,
@@ -13,6 +14,7 @@
 	}: {
 		value?: string;
 		id: string;
+		label?: string;
 		placeholder?: string;
 		ariaLabel?: string;
 		disabled?: boolean;
@@ -26,7 +28,14 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class={`search-input ${className}`} class:search-input--disabled={disabled}>
+<div
+	class={`search-input ${className}`}
+	class:search-input--disabled={disabled}
+	class:search-input--labelled={Boolean(label)}
+>
+	{#if label}
+		<label class="search-input__label" for={id}>{label}</label>
+	{/if}
 	<span class="search-input__icon" aria-hidden="true">{@html searchIcon}</span>
 	<input
 		{id}
@@ -35,7 +44,7 @@
 		{placeholder}
 		{disabled}
 		{onkeydown}
-		aria-label={ariaLabel}
+		aria-label={label ? undefined : ariaLabel}
 		autocomplete="off"
 	/>
 	{#if value}
@@ -44,10 +53,12 @@
 		</button>
 	{/if}
 </div>
+
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.search-input {
+		position: relative;
 		display: flex;
 		width: 100%;
 		min-height: 40px;
@@ -58,7 +69,30 @@
 		border-radius: var(--radius-base);
 		color: var(--color-text--secondary);
 		background: var(--color-surface);
-		transition: box-shadow var(--timing-quick), border-color var(--timing-quick);
+		transition:
+			box-shadow var(--timing-quick),
+			border-color var(--timing-quick);
+
+		&.search-input--labelled {
+			margin-top: var(--space-small);
+		}
+
+		.search-input__label {
+			position: absolute;
+			z-index: var(--elevation-base);
+			top: calc(var(--space-small) * -1);
+			left: var(--space-slim);
+			max-width: calc(100% - var(--space-large));
+			padding: 0 var(--space-smaller);
+			overflow: hidden;
+			color: var(--color-text--secondary);
+			background: var(--color-surface);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			line-height: var(--space-base);
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
 
 		&:focus-within {
 			border-color: var(--color-interactive);

@@ -5,8 +5,7 @@ import { QueryClientProvider } from '@tanstack/svelte-query';
 import { createQueryClient } from '$lib/query-client';
 import OpportunityNotesSection from './OpportunityNotesSection.svelte';
 
-// The Brief's Notes block: immediate-save, both Request and Client targets, gated by pipeline.edit --
-// see checklist item 3C in `Memory/campaigns/sales-pipeline/parts/03-opportunity-brief-tasks-notes.md`.
+// The Brief's Notes block: immediate-save, both Request and Client targets, gated by pipeline.edit.
 
 function noteFixture(overrides: Record<string, unknown> = {}) {
 	return {

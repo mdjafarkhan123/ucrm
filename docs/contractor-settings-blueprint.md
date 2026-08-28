@@ -716,8 +716,40 @@ Each item in Part 5 is delivered with the real feature it controls, not as an em
 
 ### Part 6 — Automation
 
-- Proven built-in presets first
-- Custom automation builder after the shared automation engine and guardrails are ready
+- One shared recipe model powers both presets and build-from-scratch:
+  **When → optional If → ordered Then/Wait actions → Stop when**.
+- Presets are editable starting points, not a separate or locked system. The UI reveals Basic, Customize, and
+  Advanced controls progressively rather than using a free-form node canvas.
+- Recipes move through Draft, Active, Paused, and Archived. Saving never activates; activation has a separate
+  plain-English impact review. Existing enrollments retain their recipe version while live consent, opt-out,
+  payment, reply, terminal-state, entitlement, and abuse checks always use current truth.
+- Initial actions are customer email/SMS when their channels are genuinely ready, internal notification, and
+  Task creation. Record creation and status-changing actions are added only through individually approved
+  lifecycle-safe contracts; Automation never invents approval, payment, or completed work.
+- Contractors receive recommended limits and risk warnings without arbitrary product ceilings. Existing
+  package defaults and reasoned organization exceptions in `/jafar` control active recipes, steps, customer
+  messages, timing, duration, channel allowance, and action availability. Legal/provider/opt-out/idempotency
+  protections remain hard platform rules.
+- Automation starts with future events. Manual enrollment for one eligible existing record is explicit and
+  previews recipient and timeline. Silent retroactive enrollment is unavailable.
+- One record may enter relevant recipes concurrently, but activation warns about overlap and runtime prevents
+  duplicate or near-simultaneous customer messages. A customer reply pauses customer-facing steps and alerts
+  the owner; authorized staff can Pause, Resume, Skip next step, or Stop one enrollment from the record.
+- The complete desktop UI includes the Settings destination, Automation home, preset library, full-page
+  builder/detail, activation review, Needs attention, cursor-paginated history, record-level controls, and
+  centralized package/organization controls in existing `/jafar` surfaces. Loading, empty, error, forbidden,
+  disabled, suspended, over-limit, stale-edit, unsaved, failure, keyboard, focus, and desktop browser states
+  are part of each owning slice. Part 6 has no mobile or responsive-layout completion gate.
+- Retention is platform-controlled through one extensible `/jafar` Data Retention & Cleanup area. Plain-
+  English Balanced, Save more storage, Extended, and Custom presets explain Safe, Caution, Important, and
+  Protected categories. Shortening retention shows impact and waits seven days; indexed batched cleanup never
+  treats customer messages, consent, approvals, payments, or security evidence as disposable Automation logs.
+- Quote follow-up is the first execution slice and starts only after actual successful customer delivery,
+  never publication alone. Invoice, Job/review, Scheduling, lead, missed-call, receipt, and other presets ship
+  with their dependency-ready owning domains rather than appearing as dead Settings controls.
+- Website Chat emits the durable session/message/consent context owned by Communications WC8. Its editable
+  preset acknowledges in Website Chat, assigns/notifies staff, waits for a response, and may send one consent-
+  aware SMS text-back per session; human or AI response cancels it and SMS failure never blocks Website Chat.
 
 ## Approved decisions
 

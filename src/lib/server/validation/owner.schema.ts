@@ -258,6 +258,157 @@ export const organizationEarlyPurgeSchema = z.object({
 		.max(200)
 });
 
+export const communicationEmailSendingPauseSchema = z.object({
+	engage: z.boolean(),
+	reason: z.string().trim().min(3, 'Enter a reason of at least 3 characters.').max(500)
+});
+
+const reputationSignalSchema = z.enum(['complaint', 'hard_bounce', 'unsubscribe'], {
+	error: 'Choose complaint, hard bounce, or unsubscribe.'
+});
+
+const reputationWindowSchema = z.enum(['rolling_24h', 'rolling_7d'], {
+	error: 'Choose the rolling 24-hour or rolling 7-day window.'
+});
+
+// Rates are percentages stored as numeric(7,4) -- 0.1000 means 0.10% of accepted recipients.
+const reputationRateSchema = z
+	.number()
+	.min(0, 'A rate cannot be negative.')
+	.max(100, 'A rate cannot exceed 100%.')
+	.nullable();
+
+const reputationReasonSchema = z
+	.string()
+	.trim()
+	.min(3, 'Enter a reason of at least 3 characters.')
+	.max(500);
+
+export const communicationEmailReputationPlatformThresholdSchema = z.object({
+	signal: reputationSignalSchema,
+	window_key: reputationWindowSchema,
+	window_hours: z
+		.number()
+		.int()
+		.min(1, 'A window is at least one hour.')
+		.max(2160, 'A window cannot exceed 90 days.')
+		.nullable()
+		.default(null),
+	warn_rate: reputationRateSchema.default(null),
+	pause_rate: reputationRateSchema.default(null),
+	min_sample_recipients: z.number().int().min(1).max(10_000_000).nullable().default(null),
+	min_event_count: z.number().int().min(1).max(1_000_000).nullable().default(null),
+	reason: reputationReasonSchema,
+	confirm_platform_change: z.boolean().default(false)
+});
+
+// An organization override may only tighten the platform ceiling. Leaving every value null clears it.
+export const communicationEmailReputationOverrideSchema = z.object({
+	signal: reputationSignalSchema,
+	window_key: reputationWindowSchema,
+	warn_rate: reputationRateSchema.default(null),
+	pause_rate: reputationRateSchema.default(null),
+	min_sample_recipients: z.number().int().min(1).max(10_000_000).nullable().default(null),
+	min_event_count: z.number().int().min(1).max(1_000_000).nullable().default(null),
+	reason: reputationReasonSchema
+});
+
+export const communicationEmailReputationResumeSchema = z.object({
+	reason: reputationReasonSchema,
+	confirm_remediation: z.boolean().default(false)
+});
+
+// Jafar approving or denying a pending complaint-suppression removal request (Communications 7.2).
+// A denial must carry a note the requester will read; an approval may add one.
+export const communicationEmailSuppressionRemovalDecisionSchema = z
+	.object({
+		decision: z.enum(['approve', 'deny'], { error: 'Choose approve or deny.' }),
+		note: z
+			.string()
+			.trim()
+			.max(1000, 'Keep the note under 1,000 characters.')
+			.optional()
+			.transform((value) => value || undefined)
+	})
+	.refine((value) => value.decision === 'approve' || Boolean(value.note), {
+		error: 'Add a note explaining why the request is denied.',
+		path: ['note']
+	});
+
+// Communications 7.5a: platform sending-capacity controls. Both changes are platform safety
+// settings, so both carry an explicit confirmation and a reason kept in the owner audit log.
+const sendingCapacityReasonSchema = z
+	.string()
+	.trim()
+	.min(3, 'Enter a reason of at least 3 characters.')
+	.max(500);
+
+export const communicationEmailWarmupStageSchema = z.object({
+	kind: z.literal('warmup'),
+	stage_key: z.enum(['days_1_3', 'days_4_7', 'days_8_14'], {
+		error: 'Choose a warm-up stage.'
+	}),
+	daily_ceiling: z
+		.number()
+		.int()
+		.min(0, 'A ceiling cannot be negative.')
+		.max(10_000_000, 'A ceiling cannot exceed 10,000,000.'),
+	reason: sendingCapacityReasonSchema,
+	confirm_platform_change: z.boolean().default(false)
+});
+
+export const communicationEmailShortTermRateSchema = z.object({
+	kind: z.literal('short_term'),
+	window_minutes: z
+		.number()
+		.int()
+		.min(1, 'A window is at least one minute.')
+		.max(1440, 'A window cannot exceed 24 hours.'),
+	max_recipients: z
+		.number()
+		.int()
+		.min(1, 'The ceiling is at least one recipient.')
+		.max(10_000_000, 'The ceiling cannot exceed 10,000,000.'),
+	reason: sendingCapacityReasonSchema,
+	confirm_platform_change: z.boolean().default(false)
+});
+
+// Communications 7.5b: the platform provider-period capacity and the essential reserve. `capacity`
+// is nullable -- clearing it turns the ceiling off.
+export const communicationEmailProviderCapacitySchema = z.object({
+	kind: z.literal('provider_capacity'),
+	capacity: z
+		.number()
+		.int()
+		.min(1, 'A capacity is at least one recipient.')
+		.max(1_000_000_000, 'A capacity cannot exceed 1,000,000,000.')
+		.nullable(),
+	reserve_percent: z
+		.number()
+		.int()
+		.min(0, 'A reserve cannot be negative.')
+		.max(100, 'A reserve cannot exceed 100 percent.'),
+	reason: sendingCapacityReasonSchema,
+	confirm_platform_change: z.boolean().default(false)
+});
+
+export const communicationEmailSendingCapacitySchema = z.discriminatedUnion('kind', [
+	communicationEmailWarmupStageSchema,
+	communicationEmailShortTermRateSchema,
+	communicationEmailProviderCapacitySchema
+]);
+
+// Jafar retrying or cancelling one stuck message (Communications 7.6a). The database command enforces
+// the same 3-1000 character reason; keeping it here turns a would-be 409 into a field error.
+export const communicationMessageRecoveryActionSchema = z.object({
+	action: z.enum(['retry', 'cancel'], { error: 'Choose retry or cancel.' }),
+	reason: z
+		.string()
+		.trim()
+		.min(3, 'Enter a reason of at least 3 characters.')
+		.max(1000, 'Keep the reason under 1,000 characters.')
+});
+
 export const administratorEmailRecoverySchema = z.object({
 	new_email: z.string().trim().toLowerCase().email('Enter a valid email address.').max(254),
 	evidence_summary: z.string().trim().min(1, 'Describe how you verified this person.').max(1000),

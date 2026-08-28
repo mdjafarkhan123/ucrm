@@ -2,6 +2,10 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
 import { renderManualEmailHtml } from '$lib/server/communications/manual-email';
+import {
+	OutboundAttachmentError,
+	resolveOutboundAttachments
+} from '$lib/server/communications/outbound-attachments';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import {
@@ -53,6 +57,23 @@ export const POST: RequestHandler = async (event) => {
 		}
 
 		const input = parsed.data;
+
+		let attachments;
+		try {
+			attachments = await resolveOutboundAttachments(organizationId, input.attachments);
+		} catch (error) {
+			if (error instanceof OutboundAttachmentError) {
+				return json(
+					{
+						error: 'Please review the email details.',
+						field_errors: { attachments: error.message }
+					},
+					{ status: 422, headers: noStore }
+				);
+			}
+			throw error;
+		}
+
 		const { data, error } = await ownerClient.rpc('enqueue_manual_communication_email', {
 			target_organization_id: organizationId,
 			target_actor_user_id: check.auth.user.id,
@@ -61,10 +82,11 @@ export const POST: RequestHandler = async (event) => {
 			target_logical_send_key: input.idempotency_key,
 			target_subject: input.subject,
 			target_html_content: renderManualEmailHtml(input.body),
-			target_text_content: input.body
+			target_text_content: input.body,
+			target_attachments: attachments
 		});
 		if (error) {
-			if (['42501', '23503', '55000'].includes(error.code ?? '')) {
+			if (['42501', '23503', '55000', '23514'].includes(error.code ?? '')) {
 				return json({ error: error.message }, { status: 422, headers: noStore });
 			}
 			console.error('Could not queue manual communication email.', error);

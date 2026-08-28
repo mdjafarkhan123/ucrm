@@ -13,6 +13,7 @@
 		value = $bindable(''),
 		options,
 		id,
+		label,
 		ariaLabel,
 		placeholder = 'Select an option',
 		disabled = false,
@@ -24,6 +25,7 @@
 		value?: string;
 		options: SelectOption[];
 		id: string;
+		label?: string;
 		ariaLabel?: string;
 		placeholder?: string;
 		disabled?: boolean;
@@ -36,6 +38,7 @@
 	let selectedLabel = $derived(
 		options.find((option) => option.value === value)?.label ?? placeholder
 	);
+	let labelId = $derived(label ? `${id}-label` : undefined);
 
 	function handleValueChange(nextValue: string) {
 		value = nextValue;
@@ -44,7 +47,15 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class={['select', className]} data-disabled={disabled || undefined}>
+<div
+	class={['select', label && 'select--labelled', className]}
+	data-disabled={disabled || undefined}
+>
+	{#if label}
+		<span class="select__label" id={labelId}
+			>{label}{#if required}<span class="field-required" aria-hidden="true">*</span>{/if}</span
+		>
+	{/if}
 	<SelectPrimitive.Root
 		type="single"
 		{value}
@@ -54,7 +65,12 @@
 		{name}
 		onValueChange={handleValueChange}
 	>
-		<SelectPrimitive.Trigger {id} class="select__trigger" aria-label={ariaLabel}>
+		<SelectPrimitive.Trigger
+			{id}
+			class="select__trigger"
+			aria-label={label ? undefined : ariaLabel}
+			aria-labelledby={labelId}
+		>
 			<span class="select__value">{selectedLabel}</span>
 			<span class="select__chevron" aria-hidden="true">{@html chevronDownIcon}</span>
 		</SelectPrimitive.Trigger>
@@ -92,8 +108,30 @@
 
 <style lang="scss">
 	.select {
+		position: relative;
 		width: 100%;
 		color: var(--color-heading);
+
+		&.select--labelled {
+			padding-top: var(--space-small);
+		}
+
+		.select__label {
+			position: absolute;
+			z-index: var(--elevation-base);
+			top: 0;
+			left: var(--space-slim);
+			max-width: calc(100% - var(--space-large));
+			padding: 0 var(--space-smaller);
+			overflow: hidden;
+			color: var(--color-text--secondary);
+			background: var(--color-surface);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			line-height: var(--space-base);
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
 
 		:global(.select__trigger) {
 			display: flex;

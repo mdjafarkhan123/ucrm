@@ -14,7 +14,14 @@
 	//
 	// The row sits flush with its container by default, because the shells it lives in (RecordDetailLayout,
 	// Card) are already padded. Set `--tabs-inset` on the wrapper if a caller ever needs it pulled in.
-	export type Tab = { value: string; label: string };
+	export type Tab = {
+		value: string;
+		label: string;
+		/** Warms a tab's query before it is opened, matching Button's own `onhover` convention. Fires on
+		 * mouse hover and keyboard focus so revealed content (CLAUDE.md rule 9) is ready by the time the
+		 * tab is actually selected. */
+		onhover?: () => void;
+	};
 
 	let {
 		tabs,
@@ -48,7 +55,12 @@
 >
 	<TabsPrimitive.List class="tabs__list" aria-label={label}>
 		{#each tabs as tab (tab.value)}
-			<TabsPrimitive.Trigger value={tab.value} class="tabs__tab">
+			<TabsPrimitive.Trigger
+				value={tab.value}
+				class="tabs__tab"
+				onmouseenter={tab.onhover}
+				onfocus={tab.onhover}
+			>
 				{tab.label}
 			</TabsPrimitive.Trigger>
 		{/each}

@@ -20,6 +20,9 @@
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import shieldLockIcon from '@tabler/icons/outline/shield-lock.svg?raw';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import mailOffIcon from '@tabler/icons/outline/mail-off.svg?raw';
+	import messageCircleIcon from '@tabler/icons/outline/message-circle.svg?raw';
+	import templateIcon from '@tabler/icons/outline/template.svg?raw';
 
 	const query = createQuery(() => ({
 		queryKey: settingsHomeKey,
@@ -43,6 +46,9 @@
 			<ErrorState description="Settings could not be loaded." retry={() => query.refetch()} />
 		{:else}
 			{@const home = query.data}
+			{@const isTemplatesManager =
+				home.permissions.snippets_manage &&
+				(home.member.role === 'owner' || home.member.role === 'admin')}
 			<div class="settings-page__member">
 				<Avatar
 					id={home.member.email ?? 'me'}
@@ -131,7 +137,7 @@
 					</div>
 				</SectionBlock>
 
-				{#if home.permissions.communications_manage}
+				{#if home.permissions.communications_manage || home.permissions.snippets_manage}
 					<SectionBlock
 						title="Communications"
 						hint="The verified email identities your team can use with customers."
@@ -140,12 +146,42 @@
 						level={2}
 					>
 						<div class="settings-page__grid">
-							<SettingsDestinationCard
-								href={resolve('/settings/communications/email')}
-								icon={mailIcon}
-								title="Email identity"
-								description="Choose the email addresses staff and automations can use."
-							/>
+							{#if home.permissions.communications_manage}
+								<SettingsDestinationCard
+									href={resolve('/settings/communications/email')}
+									icon={mailIcon}
+									title="Email identity"
+									description="Choose the email addresses staff and automations can use."
+								/>
+								<SettingsDestinationCard
+									href={resolve('/settings/communications/blocked-addresses')}
+									icon={mailOffIcon}
+									title="Blocked addresses"
+									description="Customer email addresses that bounced or reported spam, and how to unblock them."
+								/>
+								<SettingsDestinationCard
+									href={resolve('/settings/communications/website-chat')}
+									icon={messageCircleIcon}
+									title="Website Chat"
+									description="The chat widgets your website can show customers."
+								/>
+							{/if}
+							{#if home.permissions.snippets_manage}
+								<SettingsDestinationCard
+									href={resolve('/settings/communications/snippets')}
+									icon={fileTextIcon}
+									title="Snippets"
+									description="Reusable text your team can drop into any conversation reply."
+								/>
+							{/if}
+							{#if isTemplatesManager}
+								<SettingsDestinationCard
+									href={resolve('/settings/communications/templates')}
+									icon={templateIcon}
+									title="Templates"
+									description="Reusable emails your team can send from any conversation."
+								/>
+							{/if}
 						</div>
 					</SectionBlock>
 				{/if}

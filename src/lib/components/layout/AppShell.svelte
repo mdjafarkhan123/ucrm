@@ -77,7 +77,9 @@
 				{ label: 'Packages', href: '/jafar/packages', icon: 'package' },
 				{ label: 'Organizations', href: '/jafar/organizations', icon: 'building' },
 				{ label: 'Operations', href: '/jafar/operations', icon: 'alertTriangle' },
-				{ label: 'Templates', href: '/jafar/message-templates', icon: 'mail' },
+				{ label: 'System emails', href: '/jafar/message-templates', icon: 'mail' },
+				{ label: 'Email templates', href: '/jafar/email-templates', icon: 'fileText' },
+				{ label: 'Email safety', href: '/jafar/communications', icon: 'shieldCheck' },
 				{ label: 'Settings', href: '/jafar/settings', icon: 'settings' }
 			]
 		}

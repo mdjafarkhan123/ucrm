@@ -8,8 +8,7 @@ import type { OpportunityCard } from '$lib/pipeline/api';
 import type { BoardFormatting } from '$lib/pipeline/money';
 
 // The Brief's edit flow: a pencil opens a row in place, the estimated value commits on blur or Enter and
-// reverts on Escape, and a failed write shows inline on its own row rather than a toast — see item 7 in
-// `Memory/campaigns/sales-pipeline/parts/02-ownership-value-dates-sort-filter.md`.
+// reverts on Escape, and a failed write shows inline on its own row rather than a toast.
 
 const opportunity: OpportunityCard = {
 	id: 'opp-1',

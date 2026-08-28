@@ -11,8 +11,10 @@ Research evidence lives in:
 - `docs/research/unified-inbox-gap-review.md`
 
 This contract owns unified-inbox behavior. Channel-specific consent, billing, reputation, sender identity,
-delivery, and provider rules remain in their approved channel contracts. UCRM's approved UI blueprint owns
-visual layout and styling.
+delivery, and provider rules remain in their approved channel contracts. For Communications, HighLevel is
+the approved source of truth for screen structure, interaction behavior, and responsive composition. UCRM's
+design system owns visual tokens, component styling, and accessibility. Any departure from HighLevel requires
+an explicit provider, security, tenant-isolation, or contractor-workflow reason and Jafar's approval.
 
 ## Product model
 
@@ -65,12 +67,20 @@ Custom roles control these capabilities independently:
 - permanently delete conversations;
 - manage channel connections and settings.
 
+Owner and admin may send customer messages by default; every other role needs the capability granted
+explicitly (`20260825160000_conversations_send_default_owner_admin.sql`, decided 2026-08-25). Being able to
+message customers follows administrative standing, not a per-organization opt-in.
+
 Organization administrators and roles with full Conversations access may use Team Inbox. Restricted staff use
 My Inbox for assigned and followed conversations plus relevant mentions. Existing client, work, pricing, and
 financial permissions still govern the data exposed inside the workspace.
 
-The contact's eligible assigned user is the default conversation owner. Missing or inactive owners fall back
-to Unassigned. Ownership, following, and mentions never substitute for one another.
+A conversation has no default owner — it starts Unassigned until a permitted member
+(`conversations.manage_assignment`) assigns it. (Corrects this contract's original assumption that the
+contact's own assigned user would be the default: Jafar's 2026-08-24 decision to remove
+`clients.owner_user_id` — Jobber has no client-level owner, only per-work-object ownership — left no such
+user to default from. Confirmed 2026-08-25.) Missing or inactive owners fall back to Unassigned. Ownership,
+following, and mentions never substitute for one another.
 
 ## Composer and message behavior
 
@@ -114,10 +124,11 @@ not silent delivery failures.
 
 ### Web chat
 
-Web chat begins as an organization-scoped anonymous visitor session. Identity capture may create or link a
-lead/contact. Merge preserves the full transcript, old and new identifiers, attribution, and an idempotent audit
-event. Session restoration, inactivity closure, origin allowlisting, abuse controls, and safe file handling are
-part of the channel boundary.
+Approved channel behavior lives in `docs/website-chat-behavior-contract.md`. Website Chat begins as an
+organization-scoped visitor session, becomes an accepted conversation only with the first successfully stored
+message, and creates or safely links a Client in the Lead state. Session restoration, guarded identity,
+attribution, inactivity closure, origin allowlisting, abuse controls, allowance, human availability, and safe
+file handling remain channel boundaries rather than generic Conversations assumptions.
 
 ## Connections, packages, and administration
 
@@ -165,4 +176,3 @@ design system.
 - standalone employee chat;
 - WhatsApp and other customer channels not named in this contract;
 - desktop/mobile parity beyond the separately approved UI scope.
-

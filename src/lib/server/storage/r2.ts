@@ -77,6 +77,26 @@ export function buildOrganizationQuoteRepresentativeSignatureObjectKey(
 	return `${organizationId}/quote-representative-signature/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
 }
 
+// A downloaded inbound attachment is never re-derivable from a presigned upload -- it already left the
+// provider once. Its own `<org>/inbound-email-attachments/<message>/` prefix keeps it out of every path
+// that walks contractor-uploaded attachments, matching the signature/logo prefixes' isolation.
+export function buildInboundEmailAttachmentObjectKey(
+	organizationId: string,
+	inboundMessageId: string,
+	fileName: string
+): string {
+	return `${organizationId}/inbound-email-attachments/${inboundMessageId}/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
+}
+
+// The composer's paperclip. Its own `<org>/outbound-email-attachments/` prefix is what
+// attach_communication_outbound_files checks server-side, matching every other upload's isolation.
+export function buildOutboundEmailAttachmentObjectKey(
+	organizationId: string,
+	fileName: string
+): string {
+	return `${organizationId}/outbound-email-attachments/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
+}
+
 export async function createPresignedUploadUrl(
 	objectKey: string,
 	mimeType: string
@@ -145,6 +165,15 @@ export async function getObjectStream(objectKey: string): Promise<{
 // A presigned upload URL is a window to put whatever bytes the caller likes at a key we then trust. For
 // a file we later serve inline from our own origin that is not good enough, so before the key is saved
 // we ask storage what actually landed there.
+// The outbound email worker needs the full bytes to hand Brevo as base64 -- a bounded fan-out over at
+// most 10 attachments, unlike getObjectStream's browser-facing response which must not buffer.
+export async function getObjectBytes(objectKey: string): Promise<Uint8Array> {
+	const { client, env } = getR2();
+	const result = await client.send(new GetObjectCommand({ Bucket: env.R2_BUCKET, Key: objectKey }));
+	if (!result.Body) throw new Error('That file is empty.');
+	return result.Body.transformToByteArray();
+}
+
 export async function headObject(
 	objectKey: string
 ): Promise<{ contentType?: string; contentLength?: number }> {

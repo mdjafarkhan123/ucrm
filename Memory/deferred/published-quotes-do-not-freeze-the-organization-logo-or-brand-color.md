@@ -13,6 +13,6 @@
   token-scoped rather than publicly readable.
 - **Acceptance test:** a published document keeps its original branding after the organization replaces its
   logo and brand color. Contractor Settings Part 1 is not complete until this passes.
-- **Checkpoint:** `Memory/campaigns/contractor-settings/parts/01-settings-foundation-and-business-profile.md`,
+- **Pointers:** `docs/quote-behavior-contract.md` and
   `src/routes/(public)/q/[token]/files/[attachmentId]/+server.ts`.
 

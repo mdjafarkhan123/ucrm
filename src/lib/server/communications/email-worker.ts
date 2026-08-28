@@ -1,4 +1,5 @@
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { getObjectBytes } from '$lib/server/storage/r2';
 import {
 	OperationalEmailSubmissionError,
 	sendOperationalEmail,
@@ -17,6 +18,15 @@ type ClaimedEmail = {
 	sender_id: string;
 	sender_email: string;
 	sender_name: string;
+	reply_to_email: string | null;
+	reply_to_name: string | null;
+};
+
+type OutboundAttachmentRow = {
+	file_name: string;
+	mime_type: string;
+	byte_size: number;
+	object_key: string;
 };
 
 type RpcResult<T> = Promise<{ data: T | null; error: { message: string } | null }>;
@@ -28,6 +38,7 @@ export type CommunicationWorkerClient = {
 type WorkerDependencies = {
 	client?: CommunicationWorkerClient;
 	send?: (message: OperationalEmail) => Promise<{ messageId: string }>;
+	readAttachment?: (objectKey: string) => Promise<Uint8Array>;
 };
 
 export type CommunicationWorkerResult =
@@ -48,6 +59,7 @@ export async function runCommunicationEmailWorker(
 	const injectedClient = dependencies.client;
 	const ownerClient = injectedClient ? null : getOwnerSupabaseClient();
 	const send = dependencies.send ?? sendOperationalEmail;
+	const readAttachment = dependencies.readAttachment ?? getObjectBytes;
 
 	const quarantineArgs = { batch_size: 50, stale_after: '15 minutes' };
 	const quarantine = injectedClient
@@ -66,19 +78,43 @@ export async function runCommunicationEmailWorker(
 		: undefined;
 	if (!email) return { status: 'idle', staleClaimsQuarantined };
 
+	const attachmentsListed = injectedClient
+		? await injectedClient.rpc('list_communication_outbound_attachments', {
+				target_delivery_intent_id: email.delivery_intent_id
+			})
+		: await ownerClient!.rpc('list_communication_outbound_attachments', {
+				target_delivery_intent_id: email.delivery_intent_id
+			});
+	if (attachmentsListed.error)
+		throw rpcError('Could not list outbound attachments', attachmentsListed.error);
+	const attachmentRows = Array.isArray(attachmentsListed.data)
+		? (attachmentsListed.data as OutboundAttachmentRow[])
+		: [];
+
 	let outcome: 'submitted' | 'retry' | 'cancelled' | 'submission_unknown';
 	let providerMessageId: string | undefined;
 	let failureCode: string | undefined;
 	let failureMessage: string | undefined;
 
 	try {
+		const attachments = await Promise.all(
+			attachmentRows.map(async (row) => ({
+				name: row.file_name,
+				content: Buffer.from(await readAttachment(row.object_key)).toString('base64')
+			}))
+		);
+
 		const submitted = await send({
 			from: { email: email.sender_email, name: email.sender_name },
 			to: { email: email.recipient_email },
+			replyTo: email.reply_to_email
+				? { email: email.reply_to_email, name: email.reply_to_name ?? undefined }
+				: undefined,
 			subject: email.subject,
 			htmlContent: email.html_content,
 			textContent: email.text_content,
-			intentId: email.delivery_intent_id
+			intentId: email.delivery_intent_id,
+			attachments
 		});
 		outcome = 'submitted';
 		providerMessageId = submitted.messageId;

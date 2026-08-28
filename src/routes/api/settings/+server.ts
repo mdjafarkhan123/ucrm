@@ -44,6 +44,9 @@ export const GET: RequestHandler = async (event) => {
 				business_edit: hasPermission(check.access, 'settings.business.edit'),
 				team_manage: hasPermission(check.access, 'team.manage'),
 				communications_manage: hasPermission(check.access, 'conversations.manage_connections'),
+				// Snippets are gated on the same permission as sending a message, not channel management --
+				// a granted staff member who can send but not manage connections still needs this card.
+				snippets_manage: hasPermission(check.access, 'conversations.send'),
 				taxes_manage: hasPermission(check.access, 'settings.taxes.manage'),
 				price_book_manage: hasPermission(check.access, 'settings.price_book.manage'),
 				quotes_manage: hasPermission(check.access, 'settings.quotes.manage')

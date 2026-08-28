@@ -368,6 +368,19 @@ server {
     listen 80;
     server_name yourdomain.com www.yourdomain.com;
 
+    # The Website Chat widget runs inside contractors' own websites and is loaded as an ES module,
+    # which the browser always fetches with CORS. Without this header the widget silently never
+    # appears on any customer site. These two files are public by design, so `*` is correct.
+    location /widget/ {
+        add_header Access-Control-Allow-Origin *;
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     location / {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;

@@ -16,11 +16,22 @@ const claim = {
 	sender_name: 'Ridgeway'
 };
 
-function clientWithClaim(value: typeof claim | undefined, stale = 0) {
+function clientWithClaim(
+	value: typeof claim | undefined,
+	stale = 0,
+	attachments: {
+		file_name: string;
+		mime_type: string;
+		byte_size: number;
+		object_key: string;
+	}[] = []
+) {
 	const rpc = vi.fn(async (name: string) => {
 		if (name === 'quarantine_stale_communication_claims') return { data: stale, error: null };
 		if (name === 'claim_communication_outbox_event')
 			return { data: value ? [value] : [], error: null };
+		if (name === 'list_communication_outbound_attachments')
+			return { data: attachments, error: null };
 		if (name === 'finalize_communication_outbox_event')
 			return { data: [{ outbox_status: 'submitted' }], error: null };
 		return { data: null, error: { message: 'Unexpected RPC.' } };
@@ -64,6 +75,38 @@ describe('communication email worker service', () => {
 				target_provider_message_id: 'provider-message-1'
 			})
 		);
+	});
+
+	it('reads each listed attachment and hands Brevo base64 content', async () => {
+		const attachmentRow = {
+			file_name: 'quote.pdf',
+			mime_type: 'application/pdf',
+			byte_size: 4,
+			object_key: 'org-1/outbound-email-attachments/i/quote.pdf'
+		};
+		const { client } = clientWithClaim(claim, 0, [attachmentRow]);
+		const send = vi.fn().mockResolvedValue({ messageId: 'provider-message-1' });
+		const readAttachment = vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3, 4]));
+
+		await expect(
+			runCommunicationEmailWorker({ client, send, readAttachment })
+		).resolves.toMatchObject({ status: 'submitted' });
+
+		expect(readAttachment).toHaveBeenCalledWith(attachmentRow.object_key);
+		expect(send).toHaveBeenCalledWith(
+			expect.objectContaining({
+				attachments: [{ name: 'quote.pdf', content: Buffer.from([1, 2, 3, 4]).toString('base64') }]
+			})
+		);
+	});
+
+	it('sends with an empty attachment list when the intent has no attachments', async () => {
+		const { client } = clientWithClaim(claim);
+		const send = vi.fn().mockResolvedValue({ messageId: 'provider-message-1' });
+
+		await runCommunicationEmailWorker({ client, send });
+
+		expect(send).toHaveBeenCalledWith(expect.objectContaining({ attachments: [] }));
 	});
 
 	it.each([

@@ -3,7 +3,7 @@ import type { Database, Tables } from '$lib/database.types';
 
 export type AccessClient = SupabaseClient<Database>;
 export type PackageKey = 'starter' | 'growth' | 'elite';
-export type LimitKey = 'employee_seats';
+export type LimitKey = 'employee_seats' | 'website_chat_widgets';
 export type LimitState = 'unlimited' | 'not_included' | 'numeric';
 
 export const PACKAGE_ORDER: Record<PackageKey, number> = {
@@ -326,7 +326,8 @@ async function resolveLegacyOrganizationAccess(
 		commercialStateResult,
 		commercialSettingsResult,
 		freeAccessEventsResult,
-		seatLimitResult
+		seatLimitResult,
+		websiteChatWidgetsLimitResult
 	] = await Promise.all([
 		client
 			.from('platform_packages')
@@ -360,6 +361,10 @@ async function resolveLegacyOrganizationAccess(
 		client.rpc('effective_employee_seat_limit', {
 			target_organization_id: organizationId,
 			at: now.toISOString()
+		}),
+		client.rpc('effective_website_chat_widgets_limit', {
+			target_organization_id: organizationId,
+			at: now.toISOString()
 		})
 	]);
 
@@ -372,12 +377,16 @@ async function resolveLegacyOrganizationAccess(
 		commercialStateResult,
 		commercialSettingsResult,
 		freeAccessEventsResult,
-		seatLimitResult
+		seatLimitResult,
+		websiteChatWidgetsLimitResult
 	];
 	const failedQuery = queryResults.find((result) => result.error);
 	if (failedQuery?.error) throw failedQuery.error;
 	const seatLimit = seatLimitResult.data?.[0];
 	if (!seatLimit) throw new Error('The employee seat limit could not be resolved.');
+	const websiteChatWidgetsLimit = websiteChatWidgetsLimitResult.data?.[0];
+	if (!websiteChatWidgetsLimit)
+		throw new Error('The website chat widgets limit could not be resolved.');
 
 	const commercialTimezone = commercialSettingsResult.data?.commercial_timezone ?? null;
 	const freeAccessState = computeFreeAccessState(
@@ -432,6 +441,12 @@ async function resolveLegacyOrganizationAccess(
 			is_unlimited: seatLimit.is_unlimited,
 			state: seatLimit.state as LimitState,
 			source: seatLimit.source as 'package' | 'override'
+		},
+		website_chat_widgets: {
+			value: websiteChatWidgetsLimit.value,
+			is_unlimited: websiteChatWidgetsLimit.is_unlimited,
+			state: websiteChatWidgetsLimit.state as LimitState,
+			source: websiteChatWidgetsLimit.source as 'package' | 'override'
 		}
 	};
 
@@ -539,7 +554,8 @@ async function resolveVersionedOrganizationAccess(
 		commercialStateResult,
 		commercialSettingsResult,
 		freeAccessEventsResult,
-		seatLimitResult
+		seatLimitResult,
+		websiteChatWidgetsLimitResult
 	] = await Promise.all([
 		client
 			.from('platform_package_versions')
@@ -578,6 +594,10 @@ async function resolveVersionedOrganizationAccess(
 		client.rpc('effective_employee_seat_limit', {
 			target_organization_id: organization.id,
 			at: now.toISOString()
+		}),
+		client.rpc('effective_website_chat_widgets_limit', {
+			target_organization_id: organization.id,
+			at: now.toISOString()
 		})
 	]);
 
@@ -590,13 +610,17 @@ async function resolveVersionedOrganizationAccess(
 		commercialStateResult,
 		commercialSettingsResult,
 		freeAccessEventsResult,
-		seatLimitResult
+		seatLimitResult,
+		websiteChatWidgetsLimitResult
 	];
 	const failedQuery = queryResults.find((result) => result.error);
 	if (failedQuery?.error) throw failedQuery.error;
 	if (!versionResult.data) throw new Error('The organization package version is missing.');
 	const seatLimit = seatLimitResult.data?.[0];
 	if (!seatLimit) throw new Error('The employee seat limit could not be resolved.');
+	const websiteChatWidgetsLimit = websiteChatWidgetsLimitResult.data?.[0];
+	if (!websiteChatWidgetsLimit)
+		throw new Error('The website chat widgets limit could not be resolved.');
 
 	const commercialTimezone = commercialSettingsResult.data?.commercial_timezone ?? null;
 	const freeAccessState = computeFreeAccessState(
@@ -645,6 +669,12 @@ async function resolveVersionedOrganizationAccess(
 			is_unlimited: seatLimit.is_unlimited,
 			state: seatLimit.state as LimitState,
 			source: seatLimit.source as 'package' | 'override'
+		},
+		website_chat_widgets: {
+			value: websiteChatWidgetsLimit.value,
+			is_unlimited: websiteChatWidgetsLimit.is_unlimited,
+			state: websiteChatWidgetsLimit.state as LimitState,
+			source: websiteChatWidgetsLimit.source as 'package' | 'override'
 		}
 	};
 

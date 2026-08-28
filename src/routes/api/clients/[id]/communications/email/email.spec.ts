@@ -1,12 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from './+server';
 import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
+import {
+	OutboundAttachmentError,
+	resolveOutboundAttachments
+} from '$lib/server/communications/outbound-attachments';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 
 vi.mock('$lib/server/access/permission', () => ({
 	hasPermission: vi.fn(),
 	requireOrganizationPermission: vi.fn()
+}));
+vi.mock('$lib/server/communications/outbound-attachments', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/server/communications/outbound-attachments')>()),
+	resolveOutboundAttachments: vi.fn()
 }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
 vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
@@ -50,6 +58,7 @@ describe('manual communication email API', () => {
 		vi.mocked(hasPermission).mockReturnValue(true);
 		vi.mocked(checkRateLimit).mockResolvedValue({ allowed: true, retryAfterSeconds: 0 });
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue({ rpc } as never);
+		vi.mocked(resolveOutboundAttachments).mockResolvedValue([]);
 		rpc.mockResolvedValue({
 			data: { id: 'intent-1', status: 'queued', created_at: '2026-08-24T00:00:00.000Z' },
 			error: null
@@ -93,5 +102,58 @@ describe('manual communication email API', () => {
 		const response = await POST(event({ ...validBody, body: '' }));
 		expect(response.status).toBe(422);
 		expect(getOwnerSupabaseClient).not.toHaveBeenCalled();
+	});
+
+	it('resolves attachments before enqueuing and forwards the resolved list to the command', async () => {
+		const resolved = [
+			{
+				file_name: 'quote.pdf',
+				mime_type: 'application/pdf',
+				byte_size: 1024,
+				object_key: `${organizationId}/outbound-email-attachments/i/quote.pdf`
+			}
+		];
+		vi.mocked(resolveOutboundAttachments).mockResolvedValue(resolved);
+
+		const response = await POST(
+			event({
+				...validBody,
+				attachments: [
+					{
+						object_key: resolved[0].object_key,
+						file_name: resolved[0].file_name,
+						mime_type: resolved[0].mime_type
+					}
+				]
+			})
+		);
+
+		expect(response.status).toBe(201);
+		expect(rpc).toHaveBeenCalledWith(
+			'enqueue_manual_communication_email',
+			expect.objectContaining({ target_attachments: resolved })
+		);
+	});
+
+	it('rejects the send, without calling the send command, when an attachment cannot be resolved', async () => {
+		vi.mocked(resolveOutboundAttachments).mockRejectedValue(
+			new OutboundAttachmentError('That file does not belong to this business.')
+		);
+
+		const response = await POST(
+			event({
+				...validBody,
+				attachments: [
+					{
+						object_key: 'other-org/outbound-email-attachments/i/x.pdf',
+						file_name: 'x.pdf',
+						mime_type: 'application/pdf'
+					}
+				]
+			})
+		);
+
+		expect(response.status).toBe(422);
+		expect(rpc).not.toHaveBeenCalled();
 	});
 });

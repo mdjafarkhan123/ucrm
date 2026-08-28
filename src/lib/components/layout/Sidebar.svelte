@@ -4,6 +4,7 @@
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
 	import fileInvoiceIcon from '@tabler/icons/outline/file-invoice.svg?raw';
+	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import toolsIcon from '@tabler/icons/outline/tools.svg?raw';
 	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
@@ -12,6 +13,7 @@
 	import packageIcon from '@tabler/icons/outline/package.svg?raw';
 	import buildingIcon from '@tabler/icons/outline/building.svg?raw';
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import shieldCheckIcon from '@tabler/icons/outline/shield-check.svg?raw';
 	import settingsIcon from '@tabler/icons/outline/settings.svg?raw';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 	import routeIcon from '@tabler/icons/outline/route.svg?raw';
@@ -48,6 +50,7 @@
 		users: usersIcon,
 		inbox: inboxIcon,
 		fileInvoice: fileInvoiceIcon,
+		fileText: fileTextIcon,
 		tools: toolsIcon,
 		calendar: calendarIcon,
 		receipt: receiptIcon,
@@ -56,6 +59,7 @@
 		package: packageIcon,
 		building: buildingIcon,
 		alertTriangle: alertTriangleIcon,
+		shieldCheck: shieldCheckIcon,
 		settings: settingsIcon,
 		mail: mailIcon,
 		route: routeIcon,

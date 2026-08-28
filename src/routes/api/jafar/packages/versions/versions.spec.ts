@@ -66,6 +66,10 @@ describe('platform owner package version write API boundary', () => {
 				email_allowances: {
 					operational: { state: 'numeric', value: 10000 },
 					essential: { state: 'numeric', value: 1000 }
+				},
+				website_chat_limits: {
+					widgets: { state: 'numeric', value: 3 },
+					accepted_conversations: { state: 'numeric', value: 200 }
 				}
 			})
 		);
@@ -82,6 +86,14 @@ describe('platform owner package version write API boundary', () => {
 			target_operational_value: 10000,
 			target_essential_state: 'numeric',
 			target_essential_value: 1000,
+			actor_email: 'owner@example.com'
+		});
+		expect(rpc).toHaveBeenCalledWith('manage_platform_package_website_chat_limits', {
+			target_version_id: 'version-id',
+			target_widgets_state: 'numeric',
+			target_widgets_value: 3,
+			target_accepted_conversations_state: 'numeric',
+			target_accepted_conversations_value: 200,
 			actor_email: 'owner@example.com'
 		});
 	});
@@ -127,6 +139,10 @@ describe('platform owner package version write API boundary', () => {
 				email_allowances: {
 					operational: { state: 'unlimited', value: null },
 					essential: { state: 'numeric', value: 500 }
+				},
+				website_chat_limits: {
+					widgets: { state: 'not_included', value: null },
+					accepted_conversations: { state: 'not_included', value: null }
 				}
 			})
 		);
@@ -157,6 +173,10 @@ describe('platform owner package version write API boundary', () => {
 				email_allowances: {
 					operational: { state: 'not_included', value: null },
 					essential: { state: 'not_included', value: null }
+				},
+				website_chat_limits: {
+					widgets: { state: 'not_included', value: null },
+					accepted_conversations: { state: 'not_included', value: null }
 				}
 			})
 		);

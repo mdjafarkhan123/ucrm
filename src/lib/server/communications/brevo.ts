@@ -163,6 +163,37 @@ export async function deleteBrevoSender(senderId: number) {
 	await brevoManagementRequest(`/senders/${senderId}`, { method: 'DELETE' });
 }
 
+export class BrevoInboundAttachmentError extends Error {
+	constructor(
+		message: string,
+		public readonly status: number | null
+	) {
+		super(message);
+		this.name = 'BrevoInboundAttachmentError';
+	}
+}
+
+export async function downloadBrevoInboundAttachment(downloadToken: string): Promise<Uint8Array> {
+	const { BREVO_API_KEY } = getEmailEnv();
+	let response: Response;
+	try {
+		response = await fetch(
+			`${BREVO_API_BASE}/inbound/attachments/${encodeURIComponent(downloadToken)}`,
+			{ headers: { 'api-key': BREVO_API_KEY } }
+		);
+	} catch {
+		throw new BrevoInboundAttachmentError('Brevo did not return the attachment download.', null);
+	}
+
+	if (!response.ok)
+		throw new BrevoInboundAttachmentError(
+			`Brevo rejected the attachment download with status ${response.status}.`,
+			response.status
+		);
+
+	return new Uint8Array(await response.arrayBuffer());
+}
+
 export class OperationalEmailSubmissionError extends Error {
 	constructor(
 		message: string,
@@ -176,11 +207,15 @@ export class OperationalEmailSubmissionError extends Error {
 
 export type OperationalEmail = {
 	from: { email: string; name?: string };
-	to: { email: string; name?: string };
+	// A forward can address up to 10 external recipients at once (docs/contractor-email-contract.md §
+	// Recipients, forwarding, and portal access); every other send path keeps passing a single recipient.
+	to: { email: string; name?: string } | { email: string; name?: string }[];
+	replyTo?: { email: string; name?: string };
 	subject: string;
 	htmlContent: string;
 	textContent: string;
 	intentId: string;
+	attachments?: { name: string; content: string }[];
 };
 
 export async function sendOperationalEmail(
@@ -198,10 +233,14 @@ export async function sendOperationalEmail(
 			},
 			body: JSON.stringify({
 				sender: message.from,
-				to: [message.to],
+				to: Array.isArray(message.to) ? message.to : [message.to],
+				...(message.replyTo ? { replyTo: message.replyTo } : {}),
 				subject: message.subject,
 				htmlContent: message.htmlContent,
 				textContent: message.textContent,
+				...(message.attachments && message.attachments.length > 0
+					? { attachment: message.attachments }
+					: {}),
 				tags: [`ucrm:email:${message.intentId}`]
 			})
 		});

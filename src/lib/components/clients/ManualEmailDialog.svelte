@@ -1,10 +1,13 @@
 <script lang="ts">
+	import { useQueryClient } from '@tanstack/svelte-query';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import ConversationAttachments from '$lib/components/communications/ConversationAttachments.svelte';
+	import { clientCommunicationHistoryKey } from '$lib/communications/inbox';
 	import type { ClientDetail } from '$lib/clients/api';
 
 	type FieldErrors = Record<string, string>;
@@ -13,6 +16,7 @@
 		$props();
 
 	const toast = getToastManager();
+	const queryClient = useQueryClient();
 	const emailMethods = $derived(client.contact_methods.filter((method) => method.kind === 'email'));
 	const emailOptions = $derived(
 		emailMethods.map((method) => ({ value: method.id, label: method.value }))
@@ -22,9 +26,11 @@
 	let body = $state('');
 	let previewing = $state(false);
 	let sending = $state(false);
+	let uploading = $state(false);
 	let previewOpen = $state(false);
 	let formError = $state('');
 	let fieldErrors = $state<FieldErrors>({});
+	let attachmentsField = $state<ConversationAttachments>();
 
 	const selectedRecipient = $derived(
 		emailMethods.find((method) => method.id === contactMethodId)?.value ?? ''
@@ -47,6 +53,7 @@
 		previewOpen = false;
 		formError = '';
 		fieldErrors = {};
+		attachmentsField?.reset();
 	}
 
 	function close() {
@@ -55,7 +62,7 @@
 	}
 
 	async function showPreview() {
-		if (!validate()) return;
+		if (!validate() || uploading) return;
 		previewing = true;
 		formError = '';
 		try {
@@ -80,7 +87,8 @@
 					contact_method_id: contactMethodId,
 					subject,
 					body,
-					idempotency_key: crypto.randomUUID()
+					idempotency_key: crypto.randomUUID(),
+					attachments: attachmentsField?.getAttachments() ?? []
 				})
 			});
 			const result = (await response.json().catch(() => ({}))) as {
@@ -93,6 +101,12 @@
 				formError = result.error ?? 'The email could not be queued.';
 				return;
 			}
+			// A queued email is a new message in that client's conversation, so the inbox is stale wherever
+			// this dialog was opened from -- the client page as much as Conversations itself.
+			queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] });
+			// The client Communication tab (Part 5D) caches under its own key, which the inbox invalidation
+			// above does not prefix-match.
+			queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(client.id) });
 			toast.info('Email queued', 'Delivery is not enabled yet, so this email has not been sent.');
 			close();
 		} catch {
@@ -109,8 +123,17 @@
 	size="default"
 	onClose={close}
 >
-	{#if previewOpen}
-		<div class="manual-email__preview">
+	{#if emailMethods.length === 0}
+		<p class="manual-email__notice">
+			This customer has no saved email address. Add one to send an operational email.
+		</p>
+		<footer class="manual-email__footer">
+			<Button variant="secondary" onclick={close}>Close</Button>
+		</footer>
+	{:else}
+		<!-- Both views stay mounted and toggle with `hidden` rather than `{#if}/{:else}`, so the attached
+		     files inside ConversationAttachments survive switching to preview and back. -->
+		<div class="manual-email__preview" hidden={!previewOpen}>
 			<dl class="manual-email__details">
 				<div>
 					<dt>To</dt>
@@ -138,16 +161,9 @@
 				<Button variant="primary" onclick={() => void send()} loading={sending}>Queue email</Button>
 			</footer>
 		</div>
-	{:else if emailMethods.length === 0}
-		<p class="manual-email__notice">
-			This customer has no saved email address. Add one to send an operational email.
-		</p>
-		<footer class="manual-email__footer">
-			<Button variant="secondary" onclick={close}>Close</Button>
-		</footer>
-	{:else}
 		<form
 			class="manual-email__form"
+			hidden={previewOpen}
 			onsubmit={(event) => {
 				event.preventDefault();
 				void showPreview();
@@ -156,6 +172,7 @@
 			<Select
 				id="manual-email-recipient"
 				ariaLabel="Recipient"
+				placeholder="Select recipient email"
 				options={emailOptions}
 				bind:value={contactMethodId}
 				onchange={() => (fieldErrors = { ...fieldErrors, contact_method_id: '' })}
@@ -184,8 +201,17 @@
 			/>
 			{#if formError}<p class="manual-email__error" role="alert">{formError}</p>{/if}
 			<footer class="manual-email__footer">
-				<Button variant="secondary" onclick={close}>Cancel</Button>
-				<Button variant="primary" type="submit" loading={previewing}>Preview email</Button>
+				<ConversationAttachments
+					bind:this={attachmentsField}
+					disabled={sending}
+					onUploadingChange={(value) => (uploading = value)}
+				/>
+				<div class="manual-email__actions">
+					<Button variant="secondary" onclick={close}>Cancel</Button>
+					<Button variant="primary" type="submit" loading={previewing} disabled={uploading}
+						>Preview email</Button
+					>
+				</div>
 			</footer>
 		</form>
 	{/if}
@@ -197,6 +223,12 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-base);
+	}
+	/* The class-level `display: flex` above beats the `[hidden]` UA rule's specificity tie, so the
+	   toggle needs its own override to actually hide the inactive view. */
+	:global(.manual-email__form[hidden]),
+	:global(.manual-email__preview[hidden]) {
+		display: none;
 	}
 	:global(.manual-email__details) {
 		display: flex;
@@ -240,8 +272,17 @@
 	}
 	:global(.manual-email__footer) {
 		display: flex;
-		justify-content: flex-end;
+		flex-wrap: wrap;
+		align-items: center;
 		gap: var(--space-small);
 		margin-top: var(--space-small);
+	}
+	/* The paperclip and its chips sit left, matching GHL's toolbar row; Cancel/Preview stay together at
+	   the end of the row regardless of how many chips wrap in before them. */
+	:global(.manual-email__actions) {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		margin-inline-start: auto;
 	}
 </style>

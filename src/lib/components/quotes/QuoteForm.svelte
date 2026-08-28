@@ -333,7 +333,7 @@
 									bind:value={form.property_id}
 									options={propertyOptions}
 									placeholder="Loading properties…"
-									ariaLabel="Property"
+									label="Property"
 								/>
 							</div>
 						{:else}

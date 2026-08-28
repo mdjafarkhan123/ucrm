@@ -13,6 +13,5 @@
   product use, or a deliberate throwaway test member), and Jafar or the agent wants to confirm the
   email field renders and the email-change PATCH round-trips live.
 - **Prerequisites:** None beyond a qualifying member existing.
-- **Checkpoint:** `Memory/campaigns/jafar-panel/parts/7-team-access-and-administrator-recovery.md`
-  (closed packet, kept for this deferral's context).
+- **Pointer:** `docs/jafar-completion-contract.md` and the current profile-correction implementation.
 

@@ -7,8 +7,7 @@ import OpportunityTasksSection from './OpportunityTasksSection.svelte';
 import type { BoardFormatting } from '$lib/pipeline/money';
 
 // The Brief's Tasks block: the open list in card-priority order, a struck-through completed section, and
-// the complete/reopen checkbox — see checklist item 3 in
-// `Memory/campaigns/sales-pipeline/parts/03-opportunity-brief-tasks-notes.md`.
+// the complete/reopen checkbox — see `docs/sales-pipeline-behavior-contract.md`.
 
 const formatting: BoardFormatting = {
 	currency_code: 'USD',

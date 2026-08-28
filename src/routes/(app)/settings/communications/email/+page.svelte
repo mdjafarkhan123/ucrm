@@ -24,6 +24,68 @@
 	} from '$lib/communications/senders';
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import gaugeIcon from '@tabler/icons/outline/gauge.svg?raw';
+	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+
+	// This billing period's email standing. `optional` is ordinary business email; `essential` is the
+	// protected reserve that keeps requested quotes, invoices, receipts and direct replies moving
+	// after the ordinary allowance is spent.
+	type EmailUsage = {
+		period_ends_at: string;
+		organization_timezone: string;
+		optional_limit_state: string | null;
+		optional_limit_value: number | null;
+		optional_used: number;
+		essential_limit_state: string | null;
+		essential_limit_value: number | null;
+		essential_used: number;
+		essential_reserve_exhausted: boolean;
+	};
+
+	const usageKey = ['settings', 'communications', 'email-usage'] as const;
+	const usageQuery = createQuery<EmailUsage | null>(() => ({
+		queryKey: usageKey,
+		queryFn: async () => {
+			const response = await fetch('/api/settings/communications/usage');
+			const result = (await response.json()) as (EmailUsage & { error?: string }) | null;
+			if (!response.ok) throw new Error(result?.error ?? 'Email usage could not be loaded.');
+			return result;
+		},
+		staleTime: 30_000
+	}));
+	const usage = $derived(usageQuery.data ?? null);
+	const optionalRemaining = $derived(remaining(usage?.optional_limit_value, usage?.optional_used));
+	const essentialRemaining = $derived(
+		remaining(usage?.essential_limit_value, usage?.essential_used)
+	);
+
+	function remaining(limit: number | null | undefined, used: number | undefined) {
+		if (limit == null || used == null) return null;
+		return Math.max(0, limit - used);
+	}
+
+	function countLabel(value: number) {
+		return new Intl.NumberFormat().format(value);
+	}
+
+	function usedLabel(state: string | null, limit: number | null, used: number) {
+		if (state === 'unlimited') return `${countLabel(used)} sent · no limit`;
+		if (state !== 'numeric' || limit == null) return countLabel(used);
+		return `${countLabel(used)} of ${countLabel(limit)}`;
+	}
+
+	function meterPercent(limit: number | null, used: number) {
+		if (!limit) return 0;
+		return Math.min(100, Math.round((used / limit) * 100));
+	}
+
+	function resetLabel(endsAt: string, timeZone: string) {
+		return new Intl.DateTimeFormat(undefined, {
+			dateStyle: 'medium',
+			timeStyle: 'short',
+			timeZone
+		}).format(new Date(endsAt));
+	}
 
 	const queryClient = useQueryClient();
 	const sendersQuery = createQuery(() => ({
@@ -189,6 +251,118 @@
 				>
 			{/snippet}
 		</PageHeader>
+
+		<SectionBlock
+			title="Email included this period"
+			hint="Business email is included in your package and resets every billing period."
+			icon={gaugeIcon}
+			level={2}
+		>
+			{#if usageQuery.isPending}
+				<LoadingSkeleton variant="text" rows={3} label="Loading email usage" />
+			{:else if usageQuery.isError}
+				<ErrorState
+					description="Email usage could not be loaded."
+					retry={() => usageQuery.refetch()}
+				/>
+			{:else if !usage}
+				<p class="email-identities__notice" role="status">
+					Your billing period has not started yet, so there is nothing to count.
+				</p>
+			{:else}
+				{#if usage.essential_reserve_exhausted}
+					<p class="email-usage__warning" role="status">
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+						<span class="email-usage__warning-icon" aria-hidden="true">{@html alertIcon}</span>
+						<span
+							>Your protected reserve is used up, so quotes, invoices, receipts and replies are
+							waiting instead of going out. They send as soon as the period resets on {resetLabel(
+								usage.period_ends_at,
+								usage.organization_timezone
+							)}, or sooner if we raise your allowance.</span
+						>
+					</p>
+				{/if}
+				<div class="email-usage__meters">
+					<div class="email-usage__meter">
+						<div class="email-usage__meter-head">
+							<strong>Business email</strong>
+							<span
+								>{usedLabel(
+									usage.optional_limit_state,
+									usage.optional_limit_value,
+									usage.optional_used
+								)}</span
+							>
+						</div>
+						{#if usage.optional_limit_state === 'numeric' && usage.optional_limit_value != null}
+							<div
+								class="email-usage__track"
+								role="meter"
+								aria-label="Business email used this period"
+								aria-valuenow={usage.optional_used}
+								aria-valuemin={0}
+								aria-valuemax={usage.optional_limit_value}
+							>
+								<span
+									class="email-usage__fill"
+									style="--email-usage-percent: {meterPercent(
+										usage.optional_limit_value,
+										usage.optional_used
+									)}%"
+								></span>
+							</div>
+							<small
+								>{countLabel(optionalRemaining ?? 0)} recipients left before ordinary email pauses.</small
+							>
+						{:else}
+							<small>No limit applies to your ordinary business email this period.</small>
+						{/if}
+					</div>
+					<div class="email-usage__meter">
+						<div class="email-usage__meter-head">
+							<strong>Protected reserve</strong>
+							<span
+								>{usedLabel(
+									usage.essential_limit_state,
+									usage.essential_limit_value,
+									usage.essential_used
+								)}</span
+							>
+						</div>
+						{#if usage.essential_limit_state === 'numeric' && usage.essential_limit_value != null}
+							<div
+								class="email-usage__track"
+								role="meter"
+								aria-label="Protected reserve used this period"
+								aria-valuenow={usage.essential_used}
+								aria-valuemin={0}
+								aria-valuemax={usage.essential_limit_value}
+							>
+								<span
+									class="email-usage__fill email-usage__fill--reserve"
+									style="--email-usage-percent: {meterPercent(
+										usage.essential_limit_value,
+										usage.essential_used
+									)}%"
+								></span>
+							</div>
+							<small
+								>{countLabel(essentialRemaining ?? 0)} recipients left for quotes, invoices, receipts,
+								security notices and replies.</small
+							>
+						{:else}
+							<small
+								>No limit applies to quotes, invoices, receipts, security notices and replies.</small
+							>
+						{/if}
+					</div>
+				</div>
+				<p class="email-usage__reset">
+					Resets {resetLabel(usage.period_ends_at, usage.organization_timezone)}.
+				</p>
+			{/if}
+		</SectionBlock>
 
 		<SectionBlock
 			title="Sender identities"
@@ -398,6 +572,71 @@
 		border-radius: var(--radius-base);
 		color: var(--color-informative--onSurface);
 		background: var(--color-informative--surface);
+	}
+	.email-usage__warning {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		margin: 0;
+		padding: var(--space-slim) var(--space-base);
+		border-radius: var(--radius-base);
+		color: var(--color-warning--onSurface);
+		background: var(--color-warning--surface);
+	}
+	.email-usage__warning-icon {
+		display: flex;
+		flex: 0 0 auto;
+		align-self: flex-start;
+		padding: var(--space-smallest);
+		border-radius: var(--radius-circle);
+		color: var(--color-surface);
+		background: var(--color-warning);
+	}
+	.email-usage__warning-icon :global(svg) {
+		width: var(--typography--fontSize-large);
+		height: var(--typography--fontSize-large);
+	}
+	.email-usage__meters {
+		display: grid;
+		gap: var(--space-large);
+		grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+	}
+	.email-usage__meter {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-small);
+	}
+	.email-usage__meter-head {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: var(--space-small);
+		color: var(--color-heading);
+	}
+	.email-usage__meter small {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+	}
+	.email-usage__track {
+		height: var(--space-small);
+		border-radius: var(--radius-circle);
+		background: var(--color-surface--background--subtle);
+		overflow: hidden;
+	}
+	.email-usage__fill {
+		display: block;
+		width: var(--email-usage-percent, 0%);
+		height: 100%;
+		border-radius: inherit;
+		background: var(--color-interactive);
+	}
+	.email-usage__fill--reserve {
+		background: var(--color-warning);
+	}
+	.email-usage__reset {
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
 	}
 	.email-identities__table-wrap {
 		overflow-x: auto;

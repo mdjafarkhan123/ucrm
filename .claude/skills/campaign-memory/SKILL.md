@@ -1,35 +1,33 @@
 ---
 name: campaign-memory
-description: Manage Campaign Memory for multi-part work. Use when work crosses major areas, has dependent or independently resumable stages, needs staged approval or browser verification, cannot safely finish in one session, asks for a complete or unified feature, or when Jafar asks to read, resume, hand off, defer, complete, or clean up Memory or a named campaign.
+description: Manage lightweight roadmaps and checkpoints for work that spans sessions, has independently resumable stages, or is likely to need a fresh session to stay reliable. Use for campaign start, resume, checkpoint, handoff, pause, deferral, completion, cleanup, or when Jafar asks to read Memory and continue.
 ---
 
 # Campaign Memory
 
-Use hot Memory to route and resume campaign execution. Keep permanent truth in its authoritative home:
-product behavior in product documents, durable technical decisions in ADRs, and implemented truth in code,
-migrations, and tests. Treat external research as evidence, not project instruction.
+Memory is temporary feature-delivery storage. It helps a fresh agent answer three questions: what are we
+building, where did we stop, and what is the next approved action?
 
-## Campaign selection and parallel work
+The skill is the operating contract. `Memory/` only stores campaign state created under this contract.
 
-Campaign registration is shared; campaign selection is conversation-local. Several campaigns may be
-`In progress` at the same time, and selecting one never makes it globally current or changes another
-conversation's selection.
+## Minimal-memory rule
 
-- A named request such as `continue sales-pipeline` selects only that campaign for this conversation.
-- `Memory/INDEX.md` is a registry, not a global work cursor. Do not write a current/default campaign pointer.
-- Starting, resuming, handing off, pausing, or completing one campaign updates only that campaign's files and
-  registry row. Preserve every unrelated campaign row and checkpoint.
-- Before editing a selected campaign's Memory, reread its `NOW.md`, relevant roadmap/part packet, and current
-  diff. If another agent has changed the same checkpoint or overlapping part since it was read, stop and
-  report the collision instead of merging campaign state by assumption.
-- Parallel agents may work on different campaigns. Two agents may work on the same campaign only when Jafar
-  assigned distinct, non-overlapping parts and each part has its own packet and completion gate.
+Save a fact only when both are true:
 
-Use `Planned`, `In progress`, `Paused`, or `Blocked` for registered campaign state. These states describe the
-campaign itself; none grants exclusive ownership of the repository. Completed campaigns follow the cleanup
-workflow below rather than remaining as routing entries.
+1. A future session needs it to continue safely.
+2. It cannot be quickly rediscovered from the authoritative source.
 
-## Layout
+Keep product truth in product documents, durable technical decisions in ADRs, and implementation truth in
+code, migrations, tests, and Git. Link to an authoritative source when a pointer is enough.
+
+Memory may hold the feature goal, approved product decisions not yet promoted, current part, exact next
+action, dependencies, blockers, completion gate, and a non-obvious risk that changes the next action. Write
+each once, in the smallest file that needs it.
+
+Keep session narration, implementation explanations, code or schema inventories, command output, test
+counts, completed-file lists, research copies, and facts visible in the repository out of Memory.
+
+## Storage
 
 ```text
 Memory/
@@ -37,110 +35,103 @@ Memory/
   campaigns/<campaign>/
     NOW.md
     ROADMAP.md
-    parts/<number>-<part>.md
+    parts/<active-part>.md
   deferred/
     INDEX.md
-    <task-slug>.md
+    <task>.md
 ```
 
-Create files lazily after plan approval. Manage routing, splitting, compaction, and cleanup for Jafar.
+- `INDEX.md` is a small campaign registry: name, state, purpose, checkpoint, and read trigger. It has no
+  global current campaign. Target 50 lines.
+- `NOW.md` is the only normal resume checkpoint: goal, active part, exact next action, blockers, and only the
+  pointers required for that action. Target 20 lines; maximum 30.
+- `ROADMAP.md` is the approved feature sequence: one concise entry per part with outcome, state,
+  dependencies, and completion gate. Target 60 lines; maximum 100.
+- An active part packet holds only approved behavior, acceptance checks, unresolved decisions, and
+  non-discoverable risks for the current part. Target 40 lines; maximum 80. Create it only when the roadmap
+  entry is insufficient to execute the part.
+- A deferred task holds only why it is postponed, what reactivates it, and any already-known constraint that
+  changes the future decision. Target 10 lines; maximum 20.
 
-## Start a campaign
+Closed parts need only their roadmap entry. Delete their packets and archives after recording the outcome and
+completion state. Git is the history.
 
-1. Read `Memory/INDEX.md` when it exists. Check for overlap, paused work, and relevant deferrals.
-2. Inspect authoritative documents, implementation, tests, migrations, and Git state.
-3. Tour the live Jobber screens for the campaign's domain before proposing anything, following
-   "Tour Jobber Before Building a Campaign" in `.claude/skills/jobber/SKILL.md`. Promote what you learn into
-   the matching `jobber-0X` file in the same session — hot Memory is not its home.
-4. Resolve remaining product decisions through the repository's approved decision workflow.
-5. Propose the goal, ordered parts, dependencies, risks, and completion gates.
-6. Wait for approval.
-7. Register the campaign. Create `NOW.md`, `ROADMAP.md`, and only the first needed part packet.
-8. Add or update only that campaign's registry row; leave other campaign routing unchanged.
-9. Implement one independently verifiable part per session. Split a large part into independently verifiable
-   subparts when completing it in one session would materially reduce performance; complete one subpart per
-   session and preserve the parent part's completion gate.
+## Session sizing
 
-The campaign is registered only when the index, checkpoint, roadmap, and first needed packet agree on the
-approved next action.
+Before registration, decide whether the task should remain one session. Use a campaign when it has multiple
+independently verifiable outcomes, cannot finish safely in one session, or carrying the whole working context
+would materially reduce reliable implementation or verification. File count, step count, and guessed token
+count are signals, not thresholds.
 
-## Storage contract
+Make each part one coherent, independently verifiable outcome likely to fit a focused session. If a part grows
+beyond reliable context, split it at the nearest safe, verified boundary without changing approved behavior.
+Stabilize any atomic change before stopping, update `ROADMAP.md` and `NOW.md`, and hand off. Continue in the
+same session when restarting would cost more rediscovery than it saves.
 
-| File | Contents | Limit |
-| --- | --- | --- |
-| `Memory/INDEX.md` | Campaign registry: name, status, purpose, checkpoint path, and `read when` triggers; no global current/default pointer | 100 lines |
-| `NOW.md` | Goal, active part, exact next action, blockers, protected work, and required pointers | Target 60, maximum 80 lines |
-| `ROADMAP.md` | Every part's outcome, status, dependencies, packet, and completion gate | 150 lines |
-| Part packet | One slice's approved behavior, dependencies, checklist, acceptance checks, source pointers, and non-discoverable risks | Target 100 to 200; split before 250 lines |
-| Deferred index | One row per unresolved task: priority, name, and detail-file link | Target 100 to 150 lines; split or group by active area before it grows beyond 150 |
-| Deferred task file | Reason and reactivation trigger; only the already-known context that changes a future decision | No minimum length; keep it brief unless prior research, an approved decision, a concrete approach, or a non-obvious risk is worth preserving |
+## Start
 
-Keep one authoritative home per fact and link instead of copying. Keep hot Memory free of session narration,
-command output, test counts, completed file lists, copied permanent documents, and resolved deferrals. Keep
-archives outside the normal read path.
+1. Read `Memory/INDEX.md` if it exists to check overlap.
+2. If `Memory/deferred/INDEX.md` exists, search it for terms that overlap the proposed campaign; open only
+   matching tasks.
+3. Inspect only the authoritative product and implementation sources needed to establish the starting state.
+4. Follow the project's applicable research and approval rules; promote durable findings to their
+   authoritative home.
+5. Propose the campaign goal, ordered parts, dependencies, risks, and completion gates; wait for approval.
+6. Register the campaign, create its concise roadmap and `NOW.md`, and create only the first needed packet.
 
-## Deferrals
-
-`Memory/deferred/INDEX.md` is a directory, not a backlog narrative. Give every unresolved item one stable
-task file and one index row, ordered by priority (`P0` highest through `P3` lowest). Priority ranks the work
-once its trigger is met; it does not authorize starting deferred work early.
-
-A deferral file starts with only what is certain: why it is postponed and the event that should reactivate it.
-Add prerequisites, source pointers, acceptance checks, and a likely approach only when they are already known
-from the work that found it. Do not research a deferred task merely to make its note look complete, and do not
-invent a fix. A short file is the correct record for unresearched work.
+The campaign is ready when the registry, roadmap, checkpoint, and optional active packet name the same next
+action.
 
 ## Resume
 
-When Jafar names a campaign:
-
-1. Read only `Memory/INDEX.md`, then follow that campaign's indexed checkpoint.
-2. Select it for this conversation without changing shared routing.
-
-When Jafar says only `read memory and continue`:
-
-1. Read only `Memory/INDEX.md`.
-2. If exactly one campaign is `In progress` with a dependency-ready next action, select it for this
-   conversation.
-3. If several campaigns qualify, list their names and checkpoints and ask Jafar which one to select. Do not
-   infer selection from file recency, row order, another conversation, or a legacy default/current label.
-4. If none qualifies, report that no campaign has a dependency-ready next action.
+When Jafar names a campaign, read only `Memory/INDEX.md` and that campaign's `NOW.md`. When Jafar says only
+`read memory and continue`, use the index to identify the single dependency-ready campaign; if several
+qualify, ask which one to select.
 
 After selection:
 
-1. Read the selected campaign's `NOW.md`, active part packet, and only the permanent sections named there.
-2. Verify Memory against current code, tests, migrations, and Git state.
-3. Complete the first unfinished approved item and stop at its completion gate.
+1. Follow the pointers in `NOW.md`. Read the active part packet only when `NOW.md` points to it.
+2. Read only the authoritative sections named by the checkpoint.
+3. Verify the checkpoint against current code and Git state. If they disagree, repair Memory from the
+   authoritative state before acting; ask Jafar only when the correction changes approved scope or behavior.
+4. Perform the exact next approved action and stop at its completion gate.
 
-Read `Memory/deferred/INDEX.md` only when a checkpoint points there or Jafar asks about deferred work. Open
-only the selected task file, or a file explicitly named by the checkpoint.
+Do not read `ROADMAP.md` during an ordinary resume. Read it only to plan a campaign, change scope, close or
+select a part, resolve a dependency, or repair inconsistent Memory. Read deferred Memory only when the
+checkpoint or Jafar names it.
 
-If Memory conflicts with an authoritative source, stop, report the conflict, establish current truth, and
-correct Memory before continuing.
+Campaign selection is conversation-local. Several campaigns may be in progress. Never infer a global current
+campaign from file order, recency, or another conversation.
 
-## Handoff
+## Checkpoint and handoff
 
-1. Update the selected campaign's active checklist.
-2. Replace its `NOW.md` with the exact current state, next action, blockers, protected work, and pointers.
-3. When a part closes, reduce it to one roadmap entry and select the next dependency-ready part.
-4. Promote approved durable knowledge to its authoritative document.
-5. Record a deferral in its own task file with a clear reason, reactivation trigger, priority, and index row.
-   Add prerequisites only when known; preserve researched detail when it will save the next owner from
-   rediscovering it.
-6. Remove details that no longer change the next session's actions.
-7. Give an exact resume command that names the campaign and any browser-verification steps, then stop.
+After any turn that changes a campaign's state, refresh its checkpoint before the final response. Discussion
+and review turns with no campaign-state change do not write Memory.
 
-The handoff is complete only when a fresh agent can identify one exact next action without reading session
-history or unrelated Memory files.
+1. Promote durable knowledge to its authoritative home.
+2. If a part closed, reduce it to its roadmap entry, delete its packet after promotion, and select the next
+   dependency-ready part. Read the roadmap for this transition only.
+3. Replace `NOW.md` with the current goal, active part, exact next action, blockers, and essential pointers.
+4. Keep only unresolved context that changes the next session's action.
+5. When handing off or pausing, give Jafar an exact resume command naming the campaign.
 
-## Complete a campaign
+A checkpoint is complete when a fresh agent can identify one exact next action from the index and `NOW.md`,
+then load no more than the explicitly required active packet and source sections.
 
-When every part passes its completion gate:
+## Pause, defer, and complete
 
-1. Promote remaining durable knowledge to its authoritative home.
-2. Remove only the completed campaign from the registry; leave every other campaign unchanged.
-3. Delete the completed campaign's temporary hot Memory. Git preserves its history.
-4. Remove a resolved deferral's index row and task file, then remove stale pointers.
+Use `Planned`, `In progress`, `Paused`, or `Blocked` in the registry. Update only the selected campaign.
 
-Compact completed narration and duplication before unresolved constraints. Use stable paths, headings, and
-`rg` before considering semantic search.
+Before creating a deferral, search the deferred index and task names for the same underlying work. Update an
+existing record instead of creating a duplicate. If the work remains owned by an active campaign, keep it in
+that campaign's roadmap; use global deferred Memory when it must remain discoverable independently.
+
+For a global deferral, add one short index row and one short task file containing the reason, reactivation
+trigger, and only already-known constraints that change future work. Leave unresearched detail absent rather
+than investigating merely to fill the note. Remove the row and file when the task is resolved.
+
+When every part passes its completion gate, promote remaining durable knowledge, remove that campaign's
+registry row, and delete its temporary campaign folder. Preserve unrelated campaigns and deferrals.
+
+Before every checkpoint, deferral, pause, or completion, prune Memory against the minimal-memory rule and
+verify that all remaining pointers resolve.

@@ -30,6 +30,9 @@
 	import CommercialActions from '$lib/components/jafar/CommercialActions.svelte';
 	import EmailDomainActions from '$lib/components/jafar/EmailDomainActions.svelte';
 	import EmailAllowanceActions from '$lib/components/jafar/EmailAllowanceActions.svelte';
+	import EmailReputationActions from '$lib/components/jafar/EmailReputationActions.svelte';
+	import EmailSendingPauseActions from '$lib/components/jafar/EmailSendingPauseActions.svelte';
+	import WebsiteChatAllowanceActions from '$lib/components/jafar/WebsiteChatAllowanceActions.svelte';
 	import FreeAccessActions from '$lib/components/jafar/FreeAccessActions.svelte';
 	import LegacyReconcileActions from '$lib/components/jafar/LegacyReconcileActions.svelte';
 	import LifecycleActions from '$lib/components/jafar/LifecycleActions.svelte';
@@ -88,7 +91,7 @@
 			}
 		>;
 		limits: Record<
-			'employee_seats',
+			'employee_seats' | 'website_chat_widgets',
 			{
 				state: 'unlimited' | 'not_included' | 'numeric';
 				value: number | null;
@@ -656,6 +659,89 @@
 		limitOverrideStartsAt = localDateTimeValue(new Date());
 		limitOverrideExpiry = '';
 		limitOverrideReason = '';
+	}
+
+	// Limit override (website_chat_widgets) ----------------------------------
+	let editingWidgetsLimit = $state(false);
+	let widgetsLimitOverrideState = $state<'inherit' | 'unlimited' | 'not_included' | 'numeric'>(
+		'numeric'
+	);
+	let widgetsLimitOverrideValue = $state('');
+	let widgetsLimitOverrideStartsAt = $state('');
+	let widgetsLimitOverrideExpiry = $state('');
+	let widgetsLimitOverrideReason = $state('');
+
+	function handleWidgetsLimitOverrideStartsAtChange(value: DateTimePickerValue) {
+		widgetsLimitOverrideStartsAt = dateTimePickerValueToLocalString(value);
+	}
+
+	function handleWidgetsLimitOverrideExpiryChange(value: CalendarDate | undefined) {
+		widgetsLimitOverrideExpiry = calendarDateToString(value);
+	}
+
+	const widgetsLimitOverrideMutation = createMutation<
+		MutationResponse,
+		Error,
+		{
+			override_state: 'inherit' | 'unlimited' | 'not_included' | 'numeric';
+			limit_value?: number | null;
+			starts_at: string;
+			expires_at: string | null;
+			reason: string;
+			idempotency_key: string;
+		}
+	>(() => ({
+		mutationFn: async (input) => {
+			const response = await fetch(
+				`/api/jafar/organizations/${organizationId}/limit-overrides/website_chat_widgets`,
+				{
+					method: 'PUT',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify(input)
+				}
+			);
+			const result = (await response.json()) as MutationResponse;
+			if (!response.ok) throw new Error(result.error ?? 'The limit override could not be changed.');
+			return result;
+		},
+		onMutate: clearFeedback,
+		onError: (error) => (actionError = error.message),
+		onSuccess: () => {
+			editingWidgetsLimit = false;
+			actionMessage = 'Website Chat widget limit exception updated.';
+			invalidateOrganization();
+		}
+	}));
+
+	function startEditingWidgetsLimit() {
+		editingWidgetsLimit = true;
+		widgetsLimitOverrideState = access?.limits.website_chat_widgets.state ?? 'numeric';
+		widgetsLimitOverrideValue = access?.limits.website_chat_widgets.value?.toString() ?? '';
+		widgetsLimitOverrideStartsAt = localDateTimeValue(new Date());
+		widgetsLimitOverrideExpiry = '';
+		widgetsLimitOverrideReason = '';
+	}
+	function submitWidgetsLimitOverride(event: SubmitEvent) {
+		event.preventDefault();
+		if (!widgetsLimitOverrideReason.trim() || !widgetsLimitOverrideStartsAt) return;
+		widgetsLimitOverrideMutation.mutate({
+			override_state: widgetsLimitOverrideState,
+			limit_value:
+				widgetsLimitOverrideState === 'numeric' ? Number(widgetsLimitOverrideValue) : null,
+			starts_at: localDateTimeToIso(widgetsLimitOverrideStartsAt),
+			expires_at: widgetsLimitOverrideExpiry
+				? new Date(widgetsLimitOverrideExpiry).toISOString()
+				: null,
+			reason: widgetsLimitOverrideReason.trim(),
+			idempotency_key: crypto.randomUUID()
+		});
+	}
+	function clearWidgetsLimitOverride() {
+		editingWidgetsLimit = true;
+		widgetsLimitOverrideState = 'inherit';
+		widgetsLimitOverrideStartsAt = localDateTimeValue(new Date());
+		widgetsLimitOverrideExpiry = '';
+		widgetsLimitOverrideReason = '';
 	}
 
 	// Free access is managed by FreeAccessActions.svelte.
@@ -1338,6 +1424,90 @@
 					{/if}
 				</div>
 			</Card>
+
+			<Card class="organization-detail__commercial-explainer">
+				<div>
+					<h3>Website Chat widgets limit</h3>
+					<p>
+						{access.limits.website_chat_widgets.state === 'unlimited'
+							? 'Unlimited widgets'
+							: access.limits.website_chat_widgets.state === 'numeric'
+								? `${access.limits.website_chat_widgets.value} widgets`
+								: 'Not included'}
+						<Badge
+							status={access.limits.website_chat_widgets.source === 'override'
+								? 'informative'
+								: 'inactive'}
+							>{access.limits.website_chat_widgets.source === 'override'
+								? 'Exception'
+								: 'Package default'}</Badge
+						>
+					</p>
+					{#if editingWidgetsLimit}
+						<form onsubmit={submitWidgetsLimitOverride} class="organization-detail__inline-form">
+							<Select
+								id="widgets-limit-override-state"
+								ariaLabel="Website Chat widgets limit exception state"
+								options={LIMIT_OVERRIDE_STATE_OPTIONS}
+								bind:value={widgetsLimitOverrideState}
+							/>
+							{#if widgetsLimitOverrideState === 'numeric'}
+								<Input
+									id="widgets-limit-override-value"
+									label="Widget count"
+									type="number"
+									min="0"
+									bind:value={widgetsLimitOverrideValue}
+								/>
+							{/if}
+							<CalendarPicker
+								id="widgets-limit-override-expiry"
+								label="Expires (leave blank for permanent)"
+								value={calendarDateFromString(widgetsLimitOverrideExpiry)}
+								onchange={handleWidgetsLimitOverrideExpiryChange}
+							/>
+							<DateTimePicker
+								id="widgets-limit-override-starts-at"
+								dateLabel="Starts at date"
+								timeLabel="Starts at time"
+								value={dateTimePickerValueFromLocalString(widgetsLimitOverrideStartsAt)}
+								required
+								onchange={handleWidgetsLimitOverrideStartsAtChange}
+							/>
+							<Input
+								id="widgets-limit-override-reason"
+								label="Private reason"
+								bind:value={widgetsLimitOverrideReason}
+							/>
+							<div class="organization-detail__inline-form-actions">
+								<Button type="submit" loading={widgetsLimitOverrideMutation.isPending}
+									>Save exception</Button
+								>
+								<Button
+									type="button"
+									variant="secondary"
+									variation="subtle"
+									onclick={() => (editingWidgetsLimit = false)}>Cancel</Button
+								>
+							</div>
+						</form>
+					{:else}
+						<div class="organization-detail__inline-form-actions">
+							<Button variant="secondary" variation="subtle" onclick={startEditingWidgetsLimit}
+								>Change widgets exception</Button
+							>
+							{#if access.limits.website_chat_widgets.source === 'override'}
+								<Button
+									variant="secondary"
+									variation="subtle"
+									loading={widgetsLimitOverrideMutation.isPending}
+									onclick={clearWidgetsLimitOverride}>Clear exception</Button
+								>
+							{/if}
+						</div>
+					{/if}
+				</div>
+			</Card>
 		</section>
 
 		<section class="organization-detail__section" aria-labelledby="integrations-title">
@@ -1349,7 +1519,16 @@
 				<EmailDomainActions organizationId={access.organization.id} />
 			</Card>
 			<Card class="organization-detail__commercial-explainer">
+				<EmailSendingPauseActions organizationId={access.organization.id} />
+			</Card>
+			<Card class="organization-detail__commercial-explainer">
+				<EmailReputationActions organizationId={access.organization.id} />
+			</Card>
+			<Card class="organization-detail__commercial-explainer">
 				<EmailAllowanceActions organizationId={access.organization.id} />
+			</Card>
+			<Card class="organization-detail__commercial-explainer">
+				<WebsiteChatAllowanceActions organizationId={access.organization.id} />
 			</Card>
 		</section>
 

@@ -5,14 +5,12 @@
 ## Project
 
 - **Owner:** Jafar is the CRM/App owner
-- **Product:** Multi Tenant Contractor CRM for small field-service businesses.
+- **Product:** CRM for Contractor.
 - **Core Workflow:** Lead → Request → Quote → Job → Invoice → Payment. Following Jobber CRM
 - **Frontend:** SvelteKit + Svelte 5 Runes + TanStack Query (Client state)
 - **UI Primitives:** Native Svelte/HTML for simple controls; Bits UI for complex interactive primitives
 - **Backend & File storage:** Supabase (Remote), Cloudflare r2
 - **Deployment:** Currently on local development mode and Cloudflare tunnel with subdomain and with remote Supabase. Later on a VPS server with local Supabase, Redis etc. All in Docker containers
-
-> Read `docs/PRODUCT.md` when work needs CRM behavior, terminology, journeys, or ownership boundaries. Read `docs/Owner.md` for Platform Owner or `/jafar` behavior. Read task-linked contracts and ADRs narrowly. Newer, more specific approved documents win conflicts. Memory only routes and resumes work.
 
 ---
 
@@ -42,17 +40,17 @@ Skills live under `.claude/skills/`. **Must Load skill what is relevant to the c
 
 ### Skills by subject
 
-| Work                                                  | Skill                                                      |
-| ----------------------------------------------------- | ---------------------------------------------------------- |
-| Any design, styling, ui or frontend task              | `.claude/skills/design/SKILL.md`                           |
-| Complex interactive controls                          | `.claude/skills/bits-ui/SKILL.md`                          |
-| Contractor CRM behavior, workflow, model              | `.claude/skills/jobber/SKILL.md`                           |
-| Supabase, Auth, Storage, Edge Functions, or Realtime  | `.claude/skills/supabase/SKILL.md`                         |
-| Postgres, migrations, RLS, SQL, functions, or indexes | `.claude/skills/supabase-postgres-best-practices/SKILL.md` |
-| Any Svelte component or module                        | `.claude/skills/svelte/SKILL.md`                           |
-| Agent-facing instructions or skills                   | `.claude/skills/writing-for-agents/SKILL.md`               |
-| Campaign start, resume, handoff, deferral, or cleanup | `.claude/skills/campaign-memory/SKILL.md`                  |
-| Feature implementation, performance review, or tuning | `.claude/skills/performance-review/SKILL.md`               |
+| Work                                                                   | Skill                                                      |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Any design, styling, ui or frontend task                               | `.claude/skills/design/SKILL.md`                           |
+| Complex interactive controls                                           | `.claude/skills/bits-ui/SKILL.md`                          |
+| Contractor CRM behavior, workflow, model, jobber research              | `.claude/skills/jobber/SKILL.md`                           |
+| Supabase, Auth, Storage, Edge Functions, or Realtime                   | `.claude/skills/supabase/SKILL.md`                         |
+| Postgres, migrations, RLS, SQL, functions, or indexes                  | `.claude/skills/supabase-postgres-best-practices/SKILL.md` |
+| Any Svelte component or module                                         | `.claude/skills/svelte/SKILL.md`                           |
+| Agent-facing instructions or skills                                    | `.claude/skills/writing-for-agents/SKILL.md`               |
+| Campaign start, resume, checkpoint, deferral, completion, or cleanup   | `.claude/skills/campaign-memory/SKILL.md`                  |
+| Scale-sensitive design, performance verification, or reported slowness | `.claude/skills/performance-review/SKILL.md`               |
 
 Load `.claude/skills/grilling/SKILL.md` only for unresolved product decisions about user-facing behavior, workflows, or the mental model.
 **MCP:** SvelteKit, Supabase and Brevo MCP servers are installed and configured.
@@ -62,31 +60,34 @@ Load `.claude/skills/grilling/SKILL.md` only for unresolved product decisions ab
 These gates fire based on where the work has reached, even when the task's subject did not originally
 trigger the skill. Check them by asking "where am I?", not "what is this task about?".
 
-| Moment                                          | Load before continuing                                    |
-| ----------------------------------------------- | --------------------------------------------------------- |
-| About to write a migration or any SQL           | `supabase-postgres-best-practices`                        |
-| A migration has been applied                    | `performance-review`                                      |
-| An API route is written                         | `performance-review`                                      |
-| A component or page is written                  | `performance-review`, and `svelte` for any `.svelte` file |
-| About to touch any UI, styling, or frontend     | `design`                                                  |
-| About to hand off, pause, or call anything done | `performance-review` for every layer touched              |
+| Moment                                                 | Load before continuing                   |
+| ------------------------------------------------------ | ---------------------------------------- |
+| About to write a migration or any SQL                  | `supabase-postgres-best-practices`       |
+| A Svelte component or page is written                  | `svelte`                                 |
+| About to touch any UI, styling, or frontend            | `design`                                 |
+| Before planning or implementing a scale-sensitive path | `performance-review` design branch       |
+| After implementing that coherent scale-sensitive path  | `performance-review` verification branch |
 
-A layer is not finished until its gate has run. Stopping early because Jafar paused the work or the
-session is wrapping up is a gate, not an exemption.
+A filename or technical layer does not trigger a performance review by itself. Apply the invocation gate in
+`performance-review`; skip the full skill when the path is bounded or mechanically unchanged.
 
 ---
 
 ## Campaign
 
-A campaign is any work that spans more than 3 implementation steps, touches more than 5 files across multiple layers, has dependent or independently resumable stages, needs staged approval or browser verification, or cannot safely finish in one session. Load `.claude/skills/campaign-memory/SKILL.md`
-completely before starting, resuming, handing off, deferring, completing, or cleaning up a campaign — including when Jafar says `read memory and continue`.
+A campaign is work that is expected to span sessions, has dependent or independently resumable stages, cannot
+safely finish in one session, or is likely to need a fresh session to preserve reliable implementation and verification.
+File count, step count, staged approval, browser verification, and guessed token count are supporting signals,
+not campaign triggers or split thresholds by themselves. Load `.claude/skills/campaign-memory/SKILL.md`
+completely before starting, resuming, checkpointing, handing off, deferring, completing, or cleaning up a
+campaign — including when Jafar says `read memory and continue`.
 
-If a sessions context getting bigger, if there is more tasks and if you think it wont affect the performance of you and wont do any token waste then keep going on, otherwise stop at a point and let user start a new session
+---
 
 ## Non-Negotiable Rules
 
 1. **Communication style:** Start with where we are and what the current task means in everyday language. Explain why it matters before mentioning technical details. Avoid jargon.
-2. **Simplicity Over Complexity:** Always prefer simple, proven industry solutions over complex or overengineered implementations.
+2. **Follow proven industry patterns before inventing.** Before choosing how to implement any task — from architecture, database/schema, APIs, realtime, state, background processing, and security to individual UI/UX components — first establish how this type of problem is commonly and successfully solved in production by mature products and engineering teams. Use the proven pattern, primitive, protocol, library, or platform convention that best fits our requirements, stack, and scale, and implement the smallest correct version of it. Do not create a custom approach when an established solution already exists; if multiple valid approaches exist, compare their trade-offs before proceeding.
 3. **Product Strategy.** Default to proven Jobber/GHL workflows and mental models. Suggest strategic differentiators to help us stand out, but always present proposals to Jafar for approval before planning or implementation.
 4. **Minimal scope.** No extra fields, tables, packages, or refactors unless the task explicitly requires them. Explicit code over generic builders.
 5. **Frontend designing.** Ui blueprint is the source of truth of what exist where as a summary. to build that part you visit jobber and if need then take screenshot `Design/foldername/`, then you design that part like jobber using our apps design skills/variables.
@@ -97,8 +98,7 @@ If a sessions context getting bigger, if there is more tasks and if you think it
 10. **TanStack Query owns server state.** The `src/routes/(app)/+layout.svelte` shell is SSR. All page content under `src/routes/(app)/` is CSR only. Never block navigation on data loading. Render the shell immediately, show cached data or skeletons, and revalidate in the background. Move between pages with links — `href` on `Button`, or an `<a>` — so SvelteKit fetches the page on hover, and add every routinely used route to the warm list in `src/routes/(app)/+layout.svelte`, dropping entries whose routes go away. `resolve()` wants the full route id including the group, e.g. `'/(app)/clients/[id]'`. **Content the user has to reveal — a tab panel, an accordion, a dialog's contents — does not load with the page. Its query stays off until the control is hovered, prefetches then, and shows a skeleton if the click still beats it.** Cache the result so reopening is instant. After any mutation or external event, invalidate all affected caches. No ad-hoc caching systems.
 11. **Server secrets stay server-side.** Keep service keys, JWT secrets, provider secrets, and `$lib/server/*` out of browser code and payloads.
 12. **All writes go through `/api/*` routes.** Every `POST` and `PATCH` validates with Zod before database access.
-13. **Performance — decide first:** Before writing any migration or API route, decide: which columns need indexes, cursor-only pagination (never offset), and whether aggregates need a materialized view. The performance-review skill cannot fix a wrong architectural decision — at 20,000 concurrent users, a bad schema means a full rewrite.
-14. **Performance — review each layer:** After each implementation layer (migration → API route → Svelte component), run the `performance-review` skill before moving to the next. Don't wait until the feature is closed — a schema problem found after 8 API routes means rewriting all of them. **`supabase-postgres-best-practices` does not satisfy this rule.** One tells you how to write the schema, the other tells you whether what you built survives 20,000 users. Having loaded the first is not evidence for the second, and neither is a clean `get_advisors` — advisors cannot see a redundant index or an N+1.
+13. **Performance — proportional evidence:** Follow `performance-review`'s invocation gate and two-stage completion contract. Never claim user or traffic capacity beyond the workload its evidence actually supports.
 
 ---
 
@@ -108,7 +108,7 @@ If a sessions context getting bigger, if there is more tasks and if you think it
 
 1. State your understanding of the request.
 2. Inspect only the relevant files and skills.
-3. Present the plan, risks, and edge cases.
+3. Present the plan, risks, and edge cases — naming the standard mechanism from rule 2 and who builds it that way.
 4. Wait for approval before writing code.
 5. Make the smallest scoped change that satisfies the request.
 6. Run checks and report anything that could not be verified.
@@ -116,4 +116,5 @@ If a sessions context getting bigger, if there is more tasks and if you think it
 Follow every applicable gate in **Skills by work stage**.
 
 **Trivial / low-risk / single-file changes:** Act directly and report the result.
+
 **When in doubt:** Stop and ask. Never silently resolve conflicts in requirements. Always confirm before touching auth, schema, permissions, or RLS.

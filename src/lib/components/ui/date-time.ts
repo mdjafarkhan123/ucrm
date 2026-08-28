@@ -42,6 +42,50 @@ export function timeToString(value: Time | undefined) {
 	return `${String(value.hour).padStart(2, '0')}:${String(value.minute).padStart(2, '0')}`;
 }
 
+export function formatTimeText(value: Time | undefined, hourCycle: 12 | 24 = 12) {
+	if (!value) return '';
+	if (hourCycle === 24) return timeToString(value);
+
+	const period = value.hour >= 12 ? 'PM' : 'AM';
+	const hour = value.hour % 12 || 12;
+	return `${hour}:${String(value.minute).padStart(2, '0')} ${period}`;
+}
+
+/** Parses the forgiving shorthand used by scheduling teams without accepting impossible times. */
+export function parseTimeText(input: string): Time | undefined {
+	const normalized = input.trim().toLowerCase().replace(/\./g, '').replace(/\s+/g, '');
+	if (!normalized) return undefined;
+
+	const periodMatch = normalized.match(/^(\d{1,2})(?::?(\d{2}))?(am|pm|a|p)$/);
+	if (periodMatch) {
+		const hour = Number(periodMatch[1]);
+		const minute = Number(periodMatch[2] ?? 0);
+		if (hour < 1 || hour > 12 || minute > 59) return undefined;
+		const isPm = periodMatch[3].startsWith('p');
+		return new Time((hour % 12) + (isPm ? 12 : 0), minute);
+	}
+
+	const colonMatch = normalized.match(/^(\d{1,2}):(\d{1,2})$/);
+	if (colonMatch) {
+		const hour = Number(colonMatch[1]);
+		const minute = Number(colonMatch[2]);
+		if (hour > 23 || minute > 59) return undefined;
+		return new Time(hour, minute);
+	}
+
+	if (!/^\d{1,4}$/.test(normalized)) return undefined;
+	if (normalized.length <= 2) {
+		const hour = Number(normalized);
+		if (hour > 23) return undefined;
+		return new Time(hour, 0);
+	}
+
+	const hour = Number(normalized.slice(0, -2));
+	const minute = Number(normalized.slice(-2));
+	if (hour > 23 || minute > 59) return undefined;
+	return new Time(hour, minute);
+}
+
 export function dateTimePickerValueFromLocalString(value: string | null | undefined) {
 	if (!value) return emptyDateTimePickerValue();
 
@@ -98,24 +142,14 @@ export function addMinutesToTime(time: Time, minutes: number) {
 	return new Time(Math.floor(total / 60), total % 60);
 }
 
-// Keeps a start/end pair readable the way scheduling apps do: whichever boundary the person just set
-// stays put, and the other one carries the visit's length over, so the end never lands at or before
-// the start. A range nobody broke comes back untouched.
+// A fresh start suggests a useful duration, but an end the user already chose is never overwritten.
 export function reconcileTimeRange(previous: TimeRangeValue, next: TimeRangeValue): TimeRangeValue {
-	if (!next.start || !next.end || isTimeRangeValid(next)) return next;
+	if (!next.start || next.end || previous.end) return next;
 
-	const carried =
+	const previousDuration =
 		previous.start && previous.end
 			? (timeToMinutes(previous.end) ?? 0) - (timeToMinutes(previous.start) ?? 0)
 			: DEFAULT_RANGE_MINUTES;
-	const duration = carried > 0 ? carried : DEFAULT_RANGE_MINUTES;
-
-	// The end stayed where it was, so the start crossed it: push the end out instead.
-	if (!previous.end || timeToMinutes(previous.end) === timeToMinutes(next.end)) {
-		return { start: next.start, end: addMinutesToTime(next.start, duration) };
-	}
-
-	// The end was pulled before the start: move the start back to keep the length.
-	const startTotal = Math.max((timeToMinutes(next.end) ?? 0) - duration, 0);
-	return { start: new Time(Math.floor(startTotal / 60), startTotal % 60), end: next.end };
+	const duration = previousDuration > 0 ? previousDuration : DEFAULT_RANGE_MINUTES;
+	return { start: next.start, end: addMinutesToTime(next.start, duration) };
 }

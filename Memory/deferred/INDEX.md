@@ -15,11 +15,16 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Seven public functions still answer a signed-out request](seven-public-functions-still-answer-a-signed-out-request.md) |
 | P1 | [The Pipeline nav item is not gated on entitlement or permission](the-pipeline-nav-item-is-not-gated-on-entitlement-or-permission.md) |
 | P1 | [Six vitest failures in quote.spec.ts (rpc mock)](eight-vitest-failures-in-the-quotes-and-team-specs.md) |
+| P1 | [`settings-business.spec.ts` asserts a stale permissions object](settings-business-spec-missing-two-permission-keys.md) |
+| P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
+| P2 | [Resolving a chat identity does not stop the next conflict](resolving-a-chat-identity-does-not-stop-the-next-conflict.md) |
 | P2 | [`EntityType` covers only clients and properties](entitytype-covers-only-clients-and-properties.md) |
 | P2 | [Active member's sign-in email not visible, recovery path unclear](active-member-email-not-visible-and-recovery-path-unclear.md) |
 | P2 | [Team member profile save may have the same stale-revision race](team-member-profile-save-may-have-the-same-stale-revision-race.md) |
 | P2 | [`tenant_isolation.sql` still expects direct UPDATE on `organization_settings`](tenant-isolation-organization-settings-update-tests-are-stale.md) |
 | P2 | [`Last communication` rail card on the client page](last-communication-rail-card-on-the-client-page.md) |
+| P2 | [No admin-alert delivery for loop-detected inbound threads](no-admin-alert-delivery-mechanism-for-loop-detected-inbound-threads.md) |
+| P2 | [Composer day-two scope: CC, attachments, formatting, channel tabs](composer-day-two-scope.md) |
 | P2 | [A customer file re-resolves the whole quote document](a-customer-file-re-resolves-the-whole-quote-document.md) |
 | P2 | [App-wide RLS helpers run once per returned row](app-wide-rls-helpers-run-once-per-returned-row.md) |
 | P2 | [Board presentation and formatting are read behind a settings permission](board-presentation-and-formatting-are-read-behind-a-settings-permission.md) |
@@ -40,6 +45,8 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Request Status filter matches the stored status, not the displayed one](request-status-filter-matches-the-stored-status-not-the-displayed-one.md) |
 | P2 | [Six unindexed foreign keys from the collaboration tables](six-unindexed-foreign-keys-from-the-collaboration-tables.md) |
 | P2 | [Task Schedule integration and advanced Tasks](task-schedule-integration-and-advanced-tasks.md) |
+| P2 | [Website Chat's Realtime connection ceiling is measured but unconfirmed](website-chat-realtime-connection-quota-unconfirmed.md) |
+| P2 | [Automation-owned Email Template copies (sync + impact preview)](automation-owned-email-template-copies.md) |
 | P3 | [`/get-started` page weight](get-started-page-weight.md) |
 | P3 | [Billing address shape on the client](billing-address-shape-on-the-client.md) |
 | P3 | [Client photos are one request each](client-photos-are-one-request-each.md) |
@@ -56,3 +63,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [The get-started page ships a 7.9 MB client chunk](the-get-started-page-ships-a-7-9-mb-client-chunk.md) |
 | P3 | [Third KPI card on the Requests list has no real data source](third-kpi-card-on-the-requests-list-has-no-real-data-source.md) |
 | P3 | [Two unindexed foreign keys on the invitations table](two-unindexed-foreign-keys-on-the-invitations-table.md) |
+| P3 | [Packages editor seat/email allowance fields have an unsound null check](packages-editor-seat-and-email-allowance-fields-have-an-unsound-null-check.md) |
+| P3 | [Two typecheck failures unrelated to Website Chat WC1](typecheck-failures-unrelated-to-website-chat-wc1.md) |
+| P3 | [Staff own actions lag behind their own realtime echo](staff-own-actions-lag-behind-realtime-echo.md) |

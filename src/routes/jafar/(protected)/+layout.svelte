@@ -36,6 +36,12 @@
 		if (pathname === '/jafar/message-templates') {
 			return hasCachedData(['jafar', 'message-templates']);
 		}
+		if (pathname === '/jafar/email-templates') {
+			return hasCachedData(['jafar', 'email-templates']);
+		}
+		if (pathname === '/jafar/communications') {
+			return hasCachedData(['jafar', 'communications', 'email-health']);
+		}
 		if (pathname === '/jafar/settings') {
 			return hasCachedData(['jafar', 'settings']);
 		}

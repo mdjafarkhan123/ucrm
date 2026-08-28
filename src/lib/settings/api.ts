@@ -13,6 +13,7 @@ export type SettingsHome = {
 		business_edit: boolean;
 		team_manage: boolean;
 		communications_manage: boolean;
+		snippets_manage: boolean;
 		taxes_manage: boolean;
 		price_book_manage: boolean;
 		quotes_manage: boolean;

@@ -33,6 +33,10 @@
 		resolve('/(app)/settings/price-book'),
 		resolve('/(app)/settings/quotes'),
 		resolve('/(app)/settings/communications/email'),
+		resolve('/(app)/settings/communications/blocked-addresses'),
+		resolve('/(app)/settings/communications/website-chat'),
+		resolve('/(app)/settings/communications/snippets'),
+		resolve('/(app)/settings/communications/templates'),
 		resolve('/(app)/settings/team'),
 		resolve('/(app)/settings/team/[userId]', { userId: 'warm' })
 	];

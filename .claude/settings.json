@@ -6,7 +6,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "jq -r '(.tool_input.file_path // .tool_response.filePath // empty)' | grep -qE 'supabase[\\\\/]+migrations[\\\\/]|src[\\\\/]+routes[\\\\/]+api[\\\\/]' && printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"GATE (CLAUDE.md rule 13): a database or API layer file just changed. This layer is NOT closed until the performance-review skill has run. Run it before the next layer and before any handoff, pause, or calling work done. Loading supabase-postgres-best-practices and a clean get_advisors do not satisfy it.\"}}' || true",
+						"command": "jq -r '(.tool_input.file_path // .tool_response.filePath // empty)' | grep -qE 'supabase[\\\\/]+migrations[\\\\/]|src[\\\\/]+routes[\\\\/]+api[\\\\/]' && printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"PERFORMANCE GATE REMINDER: a database or API file changed, but its path alone does not require performance-review. Apply the skill invocation gate. If this creates or materially changes work that grows with tenants, rows, requests, recipients, subscriptions, queued work, or payload, complete the relevant design/verification branch before handoff. Otherwise continue without loading the full skill.\"}}' || true",
 						"timeout": 10
 					}
 				]

@@ -1,48 +1,63 @@
-import { describe, it, expect } from 'vitest';
-import { parseTime } from '@internationalized/date';
-import { addMinutesToTime, reconcileTimeRange } from './date-time';
+import { describe, expect, it } from 'vitest';
+import { Time } from '@internationalized/date';
+import {
+	addMinutesToTime,
+	formatTimeText,
+	isTimeRangeValid,
+	parseTimeText,
+	reconcileTimeRange,
+	timeToString
+} from './date-time';
 
-describe('addMinutesToTime', () => {
-	it('moves a time later', () => {
-		expect(addMinutesToTime(parseTime('09:30'), 60).toString()).toBe('10:30:00');
+describe('time text', () => {
+	it.each([
+		['9', '09:00'],
+		['9am', '09:00'],
+		['9:30', '09:30'],
+		['2:05 pm', '14:05'],
+		['14:00', '14:00'],
+		['930am', '09:30'],
+		['1437', '14:37']
+	])('parses %s', (input, expected) => {
+		expect(timeToString(parseTimeText(input))).toBe(expected);
 	});
 
-	it('never rolls past the last minute of the day', () => {
-		expect(addMinutesToTime(parseTime('23:30'), 60).toString()).toBe('23:59:00');
+	it('treats an empty field as unset', () => {
+		expect(parseTimeText('')).toBeUndefined();
+	});
+
+	it.each(['25:00', '12:70', '13pm', 'hello'])('rejects %s', (input) => {
+		expect(parseTimeText(input)).toBeUndefined();
+	});
+
+	it('formats both supported hour cycles', () => {
+		const value = new Time(14, 5);
+		expect(formatTimeText(value, 12)).toBe('2:05 PM');
+		expect(formatTimeText(value, 24)).toBe('14:05');
 	});
 });
 
-describe('reconcileTimeRange', () => {
-	const range = (start: string | undefined, end: string | undefined) => ({
-		start: start ? parseTime(start) : undefined,
-		end: end ? parseTime(end) : undefined
+describe('time range suggestion', () => {
+	it('adds minutes without rolling into another day', () => {
+		expect(timeToString(addMinutesToTime(new Time(9, 30), 60))).toBe('10:30');
+		expect(timeToString(addMinutesToTime(new Time(23, 30), 60))).toBe('23:59');
 	});
 
-	it('leaves a healthy range alone', () => {
-		const next = range('09:00', '11:00:00');
-		expect(reconcileTimeRange(range('09:00', '10:00'), next)).toBe(next);
+	it('suggests one hour when a fresh range receives a start', () => {
+		const result = reconcileTimeRange(
+			{ start: undefined, end: undefined },
+			{ start: new Time(9, 0), end: undefined }
+		);
+		expect(timeToString(result.end)).toBe('10:00');
 	});
 
-	it('leaves a half-empty range alone', () => {
-		const onlyStart = range('09:00', undefined);
-		expect(reconcileTimeRange(range(undefined, undefined), onlyStart)).toBe(onlyStart);
-	});
-
-	it('carries the visit length when a later start crosses the end', () => {
-		const moved = reconcileTimeRange(range('09:00', '10:00'), range('11:00:00', '10:00'));
-		expect(moved.start?.toString()).toBe('11:00:00');
-		expect(moved.end?.toString()).toBe('12:00:00');
-	});
-
-	it('assumes an hour when there was no earlier length to carry', () => {
-		const picked = reconcileTimeRange(range(undefined, '10:00'), range('14:00:00', '10:00'));
-		expect(picked.start?.toString()).toBe('14:00:00');
-		expect(picked.end?.toString()).toBe('15:00:00');
-	});
-
-	it('pulls the start back when the end is dragged before it', () => {
-		const pulled = reconcileTimeRange(range('09:00', '12:00:00'), range('09:00', '08:00:00'));
-		expect(pulled.start?.toString()).toBe('05:00:00');
-		expect(pulled.end?.toString()).toBe('08:00:00');
+	it('does not overwrite an existing end', () => {
+		const end = new Time(10, 0);
+		const result = reconcileTimeRange(
+			{ start: new Time(9, 0), end },
+			{ start: new Time(11, 0), end }
+		);
+		expect(result.end).toBe(end);
+		expect(isTimeRangeValid(result)).toBe(false);
 	});
 });

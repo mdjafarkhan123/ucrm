@@ -58,6 +58,25 @@ export const POST: RequestHandler = async (event) => {
 				return json({ error: 'The package version could not be saved.' }, { status: 409 });
 			}
 		}
+		const websiteChatLimits = input.website_chat_limits;
+		if (websiteChatLimits) {
+			const { error: websiteChatError } = await getOwnerSupabaseClient().rpc(
+				'manage_platform_package_website_chat_limits',
+				{
+					target_version_id: data,
+					target_widgets_state: websiteChatLimits.widgets.state,
+					target_widgets_value: websiteChatLimits.widgets.value as number,
+					target_accepted_conversations_state: websiteChatLimits.accepted_conversations.state,
+					target_accepted_conversations_value: websiteChatLimits.accepted_conversations
+						.value as number,
+					actor_email: session.email
+				}
+			);
+			if (websiteChatError) {
+				console.error('Owner package Website Chat limit operation was rejected.', websiteChatError);
+				return json({ error: 'The package version could not be saved.' }, { status: 409 });
+			}
+		}
 		return json({ version_id: data, saved: true });
 	} catch (error) {
 		console.error('Could not save owner package version.', error);

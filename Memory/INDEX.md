@@ -1,22 +1,16 @@
 # Campaign Memory Index
 
-This file is a shared campaign registry, not a global work cursor. Several campaigns may be `In progress` at
-once. A named campaign selects work only for that agent's conversation. If `read memory and continue` names
-no campaign and several rows are `In progress`, ask which campaign to select.
+Read this registry only to select a campaign. After selection, open its NOW.md; do not open its roadmap unless the Memory skill says the current action requires it.
 
-## Campaigns
-
-| Campaign | Status | Purpose | Checkpoint | Read when |
+| Campaign | State | Purpose | Checkpoint | Read when |
 | --- | --- | --- | --- | --- |
-| `contractor-settings` | In progress — Parts 1 and 2 (2A/2B/2C) closed 2026-08-24; Part 1's only remaining item is a Quotes-owned frozen-branding test, gated on the Quotes campaign; no Part 3/4/5/6 work is dependency-ready without a scoping decision from Jafar | Give contractors one understandable, permission-aware control room for business identity and feature-owned settings. | `Memory/campaigns/contractor-settings/NOW.md` | Work touches contractor Business Profile, branding, settings navigation, settings permissions, defaults, or a contractor-facing feature configuration page. |
-| `quotes` | In progress — Parts 1–6 closed; Part 7 continues through `sales-pipeline` | Build trustworthy proposals from direct creation or Requests through customer decision, deposits, Pipeline outcome, and terminal Job handoff. | `Memory/campaigns/quotes/NOW.md` | Work touches pricing, products/services, Quotes, proposals, approval/signature, deposits, or Request-to-Quote conversion. |
-| `sales-pipeline` | In progress — Parts 1–4 and 5A–5C-iii closed (Jafar browser-verified 5C-iii 2026-08-24); Part 5D (Undo) cut, not needed; only unscoped Part 6 remains | Build one protected Request-to-Quote commercial lifecycle board with automatic Opportunity identity and separate outcomes. | `Memory/campaigns/sales-pipeline/NOW.md` | Work touches Opportunities, Pipeline stages, sales outcomes, or Request/Quote commercial continuity. |
-| `communications` | In progress — Parts 0–2 closed; Part 2B needs dependency scoping | Build contractor Communications through a GHL-style shared Conversations model with independently gated channel tracks. | `Memory/campaigns/communications/NOW.md` | Work touches email, SMS, web chat, Messenger, Instagram, conversations, or the client Communication tab. |
-| `jafar-panel` | Paused — pending contractor subsystem | Finish the Platform Owner journey from application through organization closure and provider controls. | `Memory/campaigns/jafar-panel/NOW.md` | Work resumes a dependency-linked Platform Owner control or the user names the Jafar panel campaign. |
-| `data-cache-architecture` | Paused | Establish safe TanStack Query ownership, shared keys, hydration, and targeted invalidation. | `Memory/campaigns/data-cache-architecture/NOW.md` | Work touches query ownership, SSR hydration, cached navigation, invalidation conventions, or Realtime cache updates. |
-| `operations-prospects-ux` | Paused — explicitly deferred | Finish the dedicated Prospect detail experience after the completed Operations dialog work. | `Memory/campaigns/operations-prospects-ux/NOW.md` | The user explicitly resumes the Prospect detail-page work. |
-| `toast-coverage` | Paused — explicitly deferred; not started | App-wide sweep so every save/delete/archive shows a toast. | `Memory/campaigns/toast-coverage/NOW.md` | The user resumes the toast sweep, or any save/delete/archive is touched (wire its toast in, per the standing rule, even outside this campaign). |
+| contractor-settings | In progress — 6A active | Contractor business identity, settings, access, and Automation | Memory/campaigns/contractor-settings/NOW.md | Settings, permissions, branding, defaults, or Automation |
+| communications | In progress — Part 7 closed (code-level); Part 8 unscoped | Shared Conversations across communication channels | Memory/campaigns/communications/NOW.md | Email, SMS, Website Chat, Meta, or client communications |
+| quotes | In progress — Parts 1–6 closed | Proposal lifecycle through deposit readiness and Job handoff | Memory/campaigns/quotes/NOW.md | Quotes, pricing, proposals, decisions, signatures, or deposits |
+| sales-pipeline | In progress — Part 6 unscoped | Request-to-Quote commercial lifecycle board | Memory/campaigns/sales-pipeline/NOW.md | Opportunities, Pipeline stages, or sales outcomes |
+| jafar-panel | Paused — waiting for contractor subsystem | Platform Owner controls and recovery | Memory/campaigns/jafar-panel/NOW.md | Jafar controls or a dependency-linked provider slice |
+| data-cache-architecture | Paused | TanStack Query ownership and invalidation | Memory/campaigns/data-cache-architecture/NOW.md | Shared query keys, hydration, caching, or Realtime updates |
+| operations-prospects-ux | Paused by Jafar | Dedicated Prospect detail experience | Memory/campaigns/operations-prospects-ux/NOW.md | Jafar explicitly resumes Prospect detail work |
+| toast-coverage | Paused | App-wide mutation feedback | Memory/campaigns/toast-coverage/NOW.md | Toast sweep resumes or a save/delete/archive action is touched |
 
-## Deferred work
-
-Read `Memory/deferred/INDEX.md` only when a campaign checkpoint points there or the user asks about deferred work.
+Deferred work is indexed separately at Memory/deferred/INDEX.md; read it only when explicitly required.

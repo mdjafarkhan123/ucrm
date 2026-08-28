@@ -387,7 +387,10 @@ describe('the settings home', () => {
 			business_edit: false,
 			team_manage: false,
 			communications_manage: false,
-			taxes_manage: false
+			snippets_manage: false,
+			taxes_manage: false,
+			price_book_manage: false,
+			quotes_manage: false
 		});
 	});
 
