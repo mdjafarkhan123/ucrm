@@ -120,7 +120,7 @@
 			// the message and told us what it did with it, which is the fact the user is waiting on -- making
 			// them watch a full inbox re-read first added seconds of "Sending…" to a message already sent.
 			publish('sent', attempt, { status: result.intent.status });
-			toast.info('Email queued', 'Delivery is not enabled yet, so this reply has not been sent.');
+			toast.success('Email sent');
 
 			// The re-read still has to happen, but it now runs behind an already-confirmed bubble. Awaiting it
 			// before dropping the bubble is what keeps the swap seamless: the real row is in the cache before

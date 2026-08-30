@@ -24,7 +24,8 @@ function eventWith(body: unknown, authorization?: string) {
 
 function clientWith(result: { error: { code?: string } | null }) {
 	const insert = vi.fn().mockResolvedValue(result);
-	return { from: vi.fn(() => ({ insert })), insert };
+	const rpc = vi.fn().mockResolvedValue({ error: null });
+	return { from: vi.fn(() => ({ insert })), insert, rpc };
 }
 
 describe('Brevo transactional callback route', () => {
@@ -66,6 +67,25 @@ describe('Brevo transactional callback route', () => {
 			})
 		);
 		expect(await response.json()).toEqual({ accepted: true });
+		// R1: the intent's status is flipped on arrival via a small bounded drain, so an open inbox shows
+		// delivered/bounced without waiting for the cron.
+		expect(client.rpc).toHaveBeenCalledWith('process_communication_provider_callbacks', {
+			batch_size: 25
+		});
+	});
+
+	it('still accepts the event when on-arrival processing fails', async () => {
+		const client = clientWith({ error: null });
+		client.rpc.mockResolvedValue({ error: { code: '57014' } });
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
+
+		const response = await POST(
+			eventWith({ event: 'delivered', id: 9 }, 'Bearer transactional-webhook-token')
+		);
+
+		// The durable insert already succeeded; a drain failure is swallowed and the cron catches up.
+		expect(response.status).toBe(200);
+		expect(await response.json()).toEqual({ accepted: true });
 	});
 
 	it('treats a duplicate provider event as accepted without creating a retry loop', async () => {
@@ -78,5 +98,20 @@ describe('Brevo transactional callback route', () => {
 
 		expect(response.status).toBe(200);
 		expect(await response.json()).toEqual({ accepted: true, duplicate: true });
+		// A duplicate returns before the drain: nothing new to process.
+		expect(client.rpc).not.toHaveBeenCalled();
+	});
+
+	it('asks the provider to retry when the event could not be durably stored', async () => {
+		const client = clientWith({ error: { code: '08006' } });
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
+
+		const response = await POST(
+			eventWith({ event: 'hard_bounce', id: 9 }, 'Bearer transactional-webhook-token')
+		);
+
+		expect(response.status).toBe(429);
+		expect(response.headers.get('retry-after')).toBe('60');
+		expect(response.headers.get('cache-control')).toBe('no-store');
 	});
 });

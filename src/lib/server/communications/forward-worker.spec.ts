@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { OperationalEmailSubmissionError } from './brevo';
 import {
-	runCommunicationForwardWorker,
+	drainCommunicationForwardQueue,
+	processClaimedForward,
 	type CommunicationForwardWorkerClient
 } from './forward-worker';
 
@@ -19,7 +20,6 @@ const forward = {
 
 function clientWithClaim(
 	value: typeof forward | undefined,
-	stale = 0,
 	forwardAttachmentRows: { inbound_attachment_id: string }[] = [],
 	inboundAttachmentRows: {
 		id: string;
@@ -30,8 +30,6 @@ function clientWithClaim(
 	}[] = []
 ) {
 	const rpc = vi.fn(async (name: string) => {
-		if (name === 'quarantine_stale_communication_forward_claims')
-			return { data: stale, error: null };
 		if (name === 'claim_communication_forward_event')
 			return { data: value ? [value] : [], error: null };
 		if (name === 'finalize_communication_forward_event')
@@ -55,15 +53,12 @@ function clientWithClaim(
 	return { client: { rpc, from } as CommunicationForwardWorkerClient, rpc, from };
 }
 
-describe('communication forward worker service', () => {
-	it('quarantines stale claims and exits without sending when the queue is empty', async () => {
-		const { client } = clientWithClaim(undefined, 3);
+describe('processClaimedForward', () => {
+	it('returns idle without sending when no forward is claimable', async () => {
+		const { client } = clientWithClaim(undefined);
 		const send = vi.fn();
 
-		await expect(runCommunicationForwardWorker({ client, send })).resolves.toEqual({
-			status: 'idle',
-			staleClaimsQuarantined: 3
-		});
+		await expect(processClaimedForward({ client, send })).resolves.toEqual({ status: 'idle' });
 		expect(send).not.toHaveBeenCalled();
 	});
 
@@ -71,10 +66,9 @@ describe('communication forward worker service', () => {
 		const { client, rpc } = clientWithClaim(forward);
 		const send = vi.fn().mockResolvedValue({ messageId: 'provider-message-1' });
 
-		await expect(runCommunicationForwardWorker({ client, send })).resolves.toEqual({
+		await expect(processClaimedForward({ client, send })).resolves.toEqual({
 			status: 'submitted',
-			forwardEventId: 'forward-1',
-			staleClaimsQuarantined: 0
+			forwardEventId: 'forward-1'
 		});
 		expect(send).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -104,16 +98,15 @@ describe('communication forward worker service', () => {
 		};
 		const { client } = clientWithClaim(
 			forward,
-			0,
 			[{ inbound_attachment_id: 'attachment-1' }],
 			[attachmentRow]
 		);
 		const send = vi.fn().mockResolvedValue({ messageId: 'provider-message-1' });
 		const readAttachment = vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3, 4]));
 
-		await expect(
-			runCommunicationForwardWorker({ client, send, readAttachment })
-		).resolves.toMatchObject({ status: 'submitted' });
+		await expect(processClaimedForward({ client, send, readAttachment })).resolves.toMatchObject({
+			status: 'submitted'
+		});
 
 		expect(readAttachment).toHaveBeenCalledWith(attachmentRow.object_key);
 		expect(send).toHaveBeenCalledWith(
@@ -127,7 +120,7 @@ describe('communication forward worker service', () => {
 		const { client } = clientWithClaim(forward);
 		const send = vi.fn().mockResolvedValue({ messageId: 'provider-message-1' });
 
-		await runCommunicationForwardWorker({ client, send });
+		await processClaimedForward({ client, send });
 
 		expect(send).toHaveBeenCalledWith(expect.objectContaining({ attachments: [] }));
 	});
@@ -142,7 +135,7 @@ describe('communication forward worker service', () => {
 			.fn()
 			.mockRejectedValue(new OperationalEmailSubmissionError('Provider outcome.', outcome, code));
 
-		await expect(runCommunicationForwardWorker({ client, send })).resolves.toMatchObject({
+		await expect(processClaimedForward({ client, send })).resolves.toMatchObject({
 			status: outcome,
 			forwardEventId: 'forward-1'
 		});
@@ -151,5 +144,48 @@ describe('communication forward worker service', () => {
 			'finalize_communication_forward_event',
 			expect.objectContaining({ target_outcome: outcome, target_failure_code: code })
 		);
+	});
+});
+
+describe('drainCommunicationForwardQueue', () => {
+	function drainingClient(claimCount: number, stale: number) {
+		let remaining = claimCount;
+		const rpc = vi.fn(async (name: string) => {
+			if (name === 'quarantine_stale_communication_forward_claims')
+				return { data: stale, error: null };
+			if (name === 'claim_communication_forward_event') {
+				if (remaining <= 0) return { data: [], error: null };
+				remaining -= 1;
+				return { data: [{ ...forward, forward_event_id: `forward-${remaining}` }], error: null };
+			}
+			if (name === 'finalize_communication_forward_event')
+				return { data: [{ status: 'submitted' }], error: null };
+			return { data: null, error: { message: 'Unexpected RPC.' } };
+		});
+		const from = vi.fn(() => ({
+			select: () => ({
+				eq: async () => ({ data: [], error: null }),
+				in: async () => ({ data: [], error: null })
+			})
+		}));
+		return { client: { rpc, from } as CommunicationForwardWorkerClient, rpc };
+	}
+
+	it('quarantines once, then drains every queued forward', async () => {
+		const { client, rpc } = drainingClient(2, 3);
+		const send = vi.fn().mockResolvedValue({ messageId: 'provider-message-1' });
+
+		const result = await drainCommunicationForwardQueue({ client, send, concurrency: 1 });
+
+		expect(result).toMatchObject({
+			staleClaimsQuarantined: 3,
+			claimed: 2,
+			submitted: 2,
+			stoppedBy: 'idle'
+		});
+		expect(
+			rpc.mock.calls.filter(([name]) => name === 'quarantine_stale_communication_forward_claims')
+		).toHaveLength(1);
+		expect(send).toHaveBeenCalledTimes(2);
 	});
 });

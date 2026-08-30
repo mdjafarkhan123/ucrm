@@ -46,6 +46,27 @@
 		impact: { live_sender_count: number; live_replacement_count: number };
 		error?: string;
 	};
+	type ActivationDomainSummary = {
+		domain_id: string;
+		domain_name: string;
+		purpose: 'sending' | 'receiving';
+		lifecycle_state: string;
+		provider_verified: boolean;
+		provider_authenticated: boolean;
+		ownership_status: string;
+		dkim_status: string;
+		inbound_mx_status: string;
+		records_written: number;
+	};
+	type ActivationResult = {
+		root_domain: string;
+		zone_id: string;
+		sending: ActivationDomainSummary;
+		receiving: ActivationDomainSummary & { provider_inbound_webhook_id: string };
+		replayed?: boolean;
+		error?: string;
+		field_errors?: Record<string, string>;
+	};
 
 	let { organizationId }: { organizationId: string } = $props();
 
@@ -77,6 +98,9 @@
 	let removalConfirmation = $state('');
 	let dnsDomain = $state<Domain | null>(null);
 	let copiedRecord = $state('');
+	let activateOpen = $state(false);
+	let rootDomain = $state('');
+	let activationResult = $state<ActivationResult | null>(null);
 
 	const removalPreviewQuery = createQuery<RemovalPreview>(() => ({
 		queryKey: ['jafar', 'organizations', organizationId, 'email-domain-removal', removalTarget?.id],
@@ -266,6 +290,75 @@
 		}
 	}));
 
+	const activateMutation = createMutation<ActivationResult, Error, void>(() => ({
+		mutationFn: async () => {
+			const response = await fetch(
+				`/api/jafar/organizations/${organizationId}/communications/domains/activate`,
+				{
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify({
+						root_domain: rootDomain.trim().toLowerCase(),
+						idempotency_key: crypto.randomUUID()
+					})
+				}
+			);
+			const result = (await response.json()) as ActivationResult;
+			if (!response.ok) {
+				fieldErrors = result.field_errors ?? {};
+				throw new Error(result.error ?? 'Email activation could not be completed.');
+			}
+			return result;
+		},
+		onMutate: () => {
+			fieldErrors = {};
+			feedbackError = '';
+			activationResult = null;
+		},
+		onError: (error) => (feedbackError = error.message),
+		onSuccess: async (result) => {
+			activationResult = result;
+			await refreshDomains();
+		}
+	}));
+
+	function openActivate() {
+		feedbackError = '';
+		feedbackMessage = '';
+		fieldErrors = {};
+		rootDomain = '';
+		activationResult = null;
+		activateOpen = true;
+	}
+
+	function closeActivate() {
+		if (!activateMutation.isPending) {
+			activateOpen = false;
+			rootDomain = '';
+			activationResult = null;
+			fieldErrors = {};
+		}
+	}
+
+	function submitActivation(event: SubmitEvent) {
+		event.preventDefault();
+		if (!rootDomain.trim()) {
+			fieldErrors = { root_domain: 'Enter the root domain, such as yourbusiness.com.' };
+			return;
+		}
+		activateMutation.mutate();
+	}
+
+	function readinessTone(state: string): 'success' | 'warning' | 'informative' {
+		if (state === 'verified') return 'success';
+		if (state === 'pending_dns') return 'warning';
+		return 'informative';
+	}
+
+	function statusText(value: string) {
+		return value.replaceAll('_', ' ');
+	}
+
 	function submitDomain(event: SubmitEvent) {
 		event.preventDefault();
 		if (!domainName.trim()) {
@@ -321,7 +414,13 @@
 				is verified.
 			</p>
 		</div>
-		<Button onclick={openProvision}>Provision domain</Button>
+		<div class="email-domain-actions__heading-actions">
+			<Button onclick={openActivate}>Activate email</Button><Button
+				variant="secondary"
+				variation="subtle"
+				onclick={() => openProvision()}>Provision manually</Button
+			>
+		</div>
 	</div>
 
 	{#if feedbackMessage}<p class="email-domain-actions__success" role="status">
@@ -560,6 +659,129 @@
 	</form>
 </Dialog>
 
+<Dialog open={activateOpen} title="Activate email" onClose={closeActivate}>
+	{#if activationResult}
+		{@const result = activationResult}
+		{@const canaryReady =
+			result.sending.lifecycle_state === 'verified' &&
+			result.receiving.lifecycle_state === 'verified'}
+		<div class="email-domain-actions__activation">
+			<p class="email-domain-actions__activation-lead">
+				{result.replayed
+					? `Email for ${result.root_domain} was already activated. Here is its current state.`
+					: `Email is set up for ${result.root_domain}. UCRM created mail.${result.root_domain} for sending and reply.${result.root_domain} for replies.`}
+			</p>
+
+			<ul class="email-domain-actions__readiness">
+				<li>
+					<div class="email-domain-actions__readiness-label">
+						<strong>Mailbox protection</strong>
+						<small>Existing mail on {result.root_domain} was left untouched.</small>
+					</div>
+					<Badge status="success">Protected</Badge>
+				</li>
+				<li>
+					<div class="email-domain-actions__readiness-label">
+						<strong>Sending — {result.sending.domain_name}</strong>
+						<small
+							>Brevo {result.sending.provider_authenticated ? 'authenticated' : 'pending'} · DKIM {statusText(
+								result.sending.dkim_status
+							)} · ownership {statusText(result.sending.ownership_status)}</small
+						>
+					</div>
+					<Badge status={readinessTone(result.sending.lifecycle_state)}
+						>{statusText(result.sending.lifecycle_state)}</Badge
+					>
+				</li>
+				<li>
+					<div class="email-domain-actions__readiness-label">
+						<strong>Receiving — {result.receiving.domain_name}</strong>
+						<small
+							>Ownership {statusText(result.receiving.ownership_status)} · inbound mail {statusText(
+								result.receiving.inbound_mx_status
+							)}</small
+						>
+					</div>
+					<Badge status={readinessTone(result.receiving.lifecycle_state)}
+						>{statusText(result.receiving.lifecycle_state)}</Badge
+					>
+				</li>
+				<li>
+					<div class="email-domain-actions__readiness-label">
+						<strong>Reply webhook</strong>
+						<small>Replies route back into UCRM.</small>
+					</div>
+					<Badge status="success">Registered</Badge>
+				</li>
+				<li>
+					<div class="email-domain-actions__readiness-label">
+						<strong>Test reply</strong>
+						<small
+							>{canaryReady
+								? 'Both domains are verified — a test reply can be sent.'
+								: 'Waiting for both domains to finish verifying.'}</small
+						>
+					</div>
+					<Badge status={canaryReady ? 'success' : 'informative'}
+						>{canaryReady ? 'Ready' : 'Waiting'}</Badge
+					>
+				</li>
+			</ul>
+
+			<details class="email-domain-actions__tech">
+				<summary>Technical details</summary>
+				<dl>
+					<div><dt>Cloudflare zone</dt><dd><code>{result.zone_id}</code></dd></div>
+					<div>
+						<dt>Sending domain id</dt>
+						<dd><code>{result.sending.domain_id}</code> · {result.sending.records_written} records written</dd>
+					</div>
+					<div>
+						<dt>Receiving domain id</dt>
+						<dd
+							><code>{result.receiving.domain_id}</code> · {result.receiving.records_written} records written</dd
+						>
+					</div>
+					<div>
+						<dt>Inbound webhook id</dt>
+						<dd><code>{result.receiving.provider_inbound_webhook_id}</code></dd>
+					</div>
+				</dl>
+				<p>Full DNS record values are under each domain's <strong>DNS setup</strong> in the table.</p>
+			</details>
+
+			<div class="email-domain-actions__dialog-actions">
+				<Button type="button" onclick={closeActivate}>Done</Button>
+			</div>
+		</div>
+	{:else}
+		<form class="email-domain-actions__form" onsubmit={submitActivation}>
+			<p>
+				Enter the contractor's root domain, such as <strong>yourbusiness.com</strong>. UCRM sets up
+				<strong>mail.</strong> for sending and <strong>reply.</strong> for replies, writes the DNS
+				through Cloudflare, and verifies Brevo. The existing root mailbox is never touched.
+			</p>
+			<Input
+				id="activate-root-domain"
+				label="Root domain"
+				placeholder="yourbusiness.com"
+				bind:value={rootDomain}
+				invalid={Boolean(fieldErrors.root_domain)}
+				errorMessage={fieldErrors.root_domain}
+			/>
+			{#if feedbackError}<p class="email-domain-actions__error" role="alert">{feedbackError}</p>{/if}
+			<div class="email-domain-actions__dialog-actions">
+				<Button type="submit" loading={activateMutation.isPending}>Activate email</Button><Button
+					type="button"
+					variant="secondary"
+					variation="subtle"
+					onclick={closeActivate}>Cancel</Button
+				>
+			</div>
+		</form>
+	{/if}
+</Dialog>
+
 <Dialog open={activeDialog === 'replace'} title="Replace sending domain" onClose={closeDialog}>
 	<form class="email-domain-actions__form" onsubmit={submitDomain}>
 		<p>
@@ -666,6 +888,89 @@
 	}
 	.email-domain-actions__heading h3 {
 		font-size: var(--typography--fontSize-large);
+	}
+	.email-domain-actions__heading-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-small);
+	}
+	.email-domain-actions__activation {
+		display: grid;
+		gap: var(--space-base);
+	}
+	.email-domain-actions__activation-lead {
+		color: var(--color-text--secondary);
+		line-height: var(--typography--lineHeight-base);
+	}
+	.email-domain-actions__readiness {
+		display: grid;
+		gap: var(--space-small);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.email-domain-actions__readiness li {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: var(--space-base);
+		padding: var(--space-small) var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background);
+	}
+	.email-domain-actions__readiness-label {
+		display: grid;
+		gap: var(--space-smallest);
+	}
+	.email-domain-actions__readiness-label strong {
+		color: var(--color-text);
+		font-size: var(--typography--fontSize-small);
+	}
+	.email-domain-actions__readiness-label small {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+	}
+	.email-domain-actions__tech {
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		padding: var(--space-small) var(--space-base);
+		background: var(--color-surface--background);
+	}
+	.email-domain-actions__tech summary {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		cursor: pointer;
+	}
+	.email-domain-actions__tech dl {
+		display: grid;
+		gap: var(--space-small);
+		margin: var(--space-base) 0 var(--space-small);
+	}
+	.email-domain-actions__tech dl > div {
+		display: grid;
+		gap: var(--space-smallest);
+	}
+	.email-domain-actions__tech dt {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+	}
+	.email-domain-actions__tech dd {
+		margin: 0;
+		color: var(--color-text);
+		font-size: var(--typography--fontSize-small);
+		overflow-wrap: anywhere;
+	}
+	.email-domain-actions__tech code {
+		font-family: var(--typography--fontFamily-monospace, monospace);
+		font-size: var(--typography--fontSize-small);
+	}
+	.email-domain-actions__tech p {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		line-height: var(--typography--lineHeight-base);
 	}
 	.email-domain-actions__heading p,
 	.email-domain-actions__form > p {

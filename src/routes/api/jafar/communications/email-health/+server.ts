@@ -9,17 +9,25 @@ import {
 } from '$lib/server/validation/owner.schema';
 
 async function loadHealth() {
-	const { data, error } = await getOwnerSupabaseClient().rpc(
-		'get_communication_email_sending_health'
-	);
-	if (error) throw error;
-	return data;
+	const client = getOwnerSupabaseClient();
+	// Three independent reads: the sending side (pauses, queue depth), the return-path processor (whether
+	// Brevo callbacks are being turned into outcomes and suppressions), and the outbound drain worker
+	// (whether the once-a-minute wake is actually running and clearing the queue). Run them together.
+	const [sending, callbacks, worker] = await Promise.all([
+		client.rpc('get_communication_email_sending_health'),
+		client.rpc('get_communication_provider_callback_health'),
+		client.rpc('get_communication_email_worker_health')
+	]);
+	if (sending.error) throw sending.error;
+	if (callbacks.error) throw callbacks.error;
+	if (worker.error) throw worker.error;
+	return { health: sending.data, callback_health: callbacks.data, worker_health: worker.data };
 }
 
 export const GET: RequestHandler = async (event) => {
 	if (!(await getOwnerSession(event))) return ownerUnauthorized();
 	try {
-		return json({ health: await loadHealth() }, { headers: { 'cache-control': 'no-store' } });
+		return json(await loadHealth(), { headers: { 'cache-control': 'no-store' } });
 	} catch (error) {
 		console.error('Could not load email sending health.', error);
 		return json({ error: 'Email sending health could not be loaded.' }, { status: 500 });
@@ -61,7 +69,7 @@ export const POST: RequestHandler = async (event) => {
 			}
 			throw error;
 		}
-		return json({ health: await loadHealth() }, { headers: { 'cache-control': 'no-store' } });
+		return json(await loadHealth(), { headers: { 'cache-control': 'no-store' } });
 	} catch (error) {
 		console.error('Could not change the platform email pause.', error);
 		return json({ error: 'The platform email pause could not be changed.' }, { status: 500 });

@@ -2,6 +2,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getServerEnv } from '$lib/server/env';
+import { drainCommunicationForwardQueue } from '$lib/server/communications/forward-worker';
 
 function authorized(request: Request) {
 	const token = request.headers.get('authorization')?.match(/^Bearer (.+)$/i)?.[1];
@@ -12,6 +13,7 @@ function authorized(request: Request) {
 	return provided.length === wanted.length && timingSafeEqual(provided, wanted);
 }
 
+// Runs the bounded forward drain. Same budget/timeout/interval ordering as the email-worker route.
 export const POST: RequestHandler = async ({ request }) => {
 	if (!authorized(request))
 		return json(
@@ -19,11 +21,6 @@ export const POST: RequestHandler = async ({ request }) => {
 			{ status: 401, headers: { 'cache-control': 'no-store' } }
 		);
 
-	// Same fail-closed posture as the email-worker route: sender identities are a Part 2 dependency, and no
-	// cron/Vault schedule is wired for this worker yet (Part 5C-ii scope). Claiming a row without submission
-	// would strand a forward in processing and make a later retry ambiguous.
-	return json(
-		{ ready: false, reason: 'sender_identity_not_available' },
-		{ status: 503, headers: { 'cache-control': 'no-store' } }
-	);
+	const result = await drainCommunicationForwardQueue();
+	return json(result, { headers: { 'cache-control': 'no-store' } });
 };

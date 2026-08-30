@@ -93,6 +93,8 @@ export const POST: RequestHandler = async (event) => {
 			return databaseError();
 		}
 
+		// R2: an AFTER INSERT trigger on the outbox fires the immediate drain automatically, so this route no
+		// longer nudges by hand. See migration communications_email_outbox_wake_on_insert_trigger.
 		return json(
 			{ intent: { id: data.id, status: data.status, created_at: data.created_at } },
 			{ status: 201, headers: NO_STORE_HEADERS }

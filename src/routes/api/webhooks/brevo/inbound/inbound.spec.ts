@@ -76,6 +76,108 @@ describe('Brevo inbound callback route', () => {
 		expect(response.status).toBe(422);
 	});
 
+	it.each([
+		{
+			format: 'plain-text',
+			rawHtml: null,
+			rawText: 'A plain-text reply.',
+			expectedHtml: undefined,
+			expectedText: 'A plain-text reply.'
+		},
+		{
+			format: 'HTML-only',
+			rawHtml: '<p>An HTML reply.</p>',
+			rawText: null,
+			expectedHtml: '<p>An HTML reply.</p>',
+			expectedText: ''
+		},
+		{
+			format: 'bodyless',
+			rawHtml: null,
+			rawText: null,
+			expectedHtml: undefined,
+			expectedText: ''
+		}
+	])('accepts a $format email with Brevo nullable fields', async (body) => {
+		const client = clientWith({
+			rpc: { data: { id: 'message-1', organization_id: 'org-1' }, error: null }
+		});
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
+
+		const response = await POST(
+			eventWith(
+				{
+					items: [
+						itemWith({
+							InReplyTo: null,
+							From: { Address: 'customer@example.com', Name: null },
+							To: [{ Address: 'reply-alias@mail.ucrm.example', Name: null }],
+							Cc: [{ Address: 'office@example.com', Name: null }],
+							RawHtmlBody: body.rawHtml,
+							RawTextBody: body.rawText
+						})
+					]
+				},
+				'Bearer inbound-webhook-token'
+			)
+		);
+
+		expect(response.status).toBe(200);
+		expect(await response.json()).toEqual({ accepted: true });
+		expect(client.rpc).toHaveBeenCalledWith(
+			'record_communication_inbound_message',
+			expect.objectContaining({
+				target_in_reply_to_provider_message_id: undefined,
+				target_sender_name: undefined,
+				target_to_recipients: [{ Address: 'reply-alias@mail.ucrm.example', Name: undefined }],
+				target_cc_recipients: [{ Address: 'office@example.com', Name: undefined }],
+				target_html_content: body.expectedHtml,
+				target_text_content: body.expectedText
+			})
+		);
+	});
+
+	it.each([
+		{ label: 'empty string', inReplyTo: '' },
+		{ label: 'whitespace only', inReplyTo: '   ' }
+	])('accepts a non-reply email whose InReplyTo is $label', async ({ inReplyTo }) => {
+		const client = clientWith({
+			rpc: { data: { id: 'message-1', organization_id: 'org-1' }, error: null }
+		});
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
+
+		const response = await POST(
+			eventWith({ items: [itemWith({ InReplyTo: inReplyTo })] }, 'Bearer inbound-webhook-token')
+		);
+
+		expect(response.status).toBe(200);
+		expect(client.rpc).toHaveBeenCalledWith(
+			'record_communication_inbound_message',
+			expect.objectContaining({ target_in_reply_to_provider_message_id: undefined })
+		);
+	});
+
+	it.each([
+		{ invalidField: 'numeric reply reference', overrides: { InReplyTo: 12 } },
+		{ invalidField: 'oversized reply reference', overrides: { InReplyTo: 'x'.repeat(301) } },
+		{
+			invalidField: 'oversized mailbox name',
+			overrides: { From: { Address: 'customer@example.com', Name: 'x'.repeat(161) } }
+		},
+		{ invalidField: 'null sender address', overrides: { From: { Address: null, Name: null } } },
+		{ invalidField: 'object HTML body', overrides: { RawHtmlBody: { text: 'invalid' } } },
+		{ invalidField: 'array text body', overrides: { RawTextBody: ['invalid'] } },
+		{ invalidField: 'null recipient list', overrides: { To: null } },
+		{ invalidField: 'null attachment list', overrides: { Attachments: null } }
+	])('still rejects $invalidField before a privileged write', async ({ overrides }) => {
+		const response = await POST(
+			eventWith({ items: [itemWith(overrides)] }, 'Bearer inbound-webhook-token')
+		);
+
+		expect(response.status).toBe(422);
+		expect(getOwnerSupabaseClient).not.toHaveBeenCalled();
+	});
+
 	it('resolves a message and imports its attachments', async () => {
 		const client = clientWith({
 			rpc: {

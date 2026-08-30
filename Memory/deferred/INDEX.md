@@ -24,6 +24,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [`tenant_isolation.sql` still expects direct UPDATE on `organization_settings`](tenant-isolation-organization-settings-update-tests-are-stale.md) |
 | P2 | [`Last communication` rail card on the client page](last-communication-rail-card-on-the-client-page.md) |
 | P2 | [No admin-alert delivery for loop-detected inbound threads](no-admin-alert-delivery-mechanism-for-loop-detected-inbound-threads.md) |
+| P2 | [Brevo transactional webhook retries forever on an unknown delivery_intent_id](brevo-transactional-webhook-unknown-intent-retry-storm.md) |
 | P2 | [Composer day-two scope: CC, attachments, formatting, channel tabs](composer-day-two-scope.md) |
 | P2 | [A customer file re-resolves the whole quote document](a-customer-file-re-resolves-the-whole-quote-document.md) |
 | P2 | [App-wide RLS helpers run once per returned row](app-wide-rls-helpers-run-once-per-returned-row.md) |

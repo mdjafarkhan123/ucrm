@@ -93,11 +93,12 @@ async function ingestItem(
 }
 
 export const POST: RequestHandler = async ({ request }) => {
-	if (!bearerMatches(request.headers.get('authorization'), env.BREVO_INBOUND_WEBHOOK_TOKEN))
+	if (!bearerMatches(request.headers.get('authorization'), env.BREVO_INBOUND_WEBHOOK_TOKEN)) {
 		return json(
 			{ error: 'Unauthorized.' },
 			{ status: 401, headers: { 'cache-control': 'no-store' } }
 		);
+	}
 
 	let raw: unknown;
 	try {
@@ -110,11 +111,12 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	const items = parseBrevoInboundWebhook(raw);
-	if (!items)
+	if (!items) {
 		return json(
 			{ error: 'Webhook payload was invalid.' },
 			{ status: 422, headers: { 'cache-control': 'no-store' } }
 		);
+	}
 
 	const client = getOwnerSupabaseClient();
 	// Every item is ingested independently through its own idempotent callback-event insert, so one

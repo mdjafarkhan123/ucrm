@@ -161,6 +161,15 @@
 			if (untrack(() => pendingSend) !== null) return;
 			queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] });
 		});
+		// R1 live inbox: the email side broadcasts ids-only on this same org topic when an inbound email
+		// arrives or an outbound delivery intent changes status/outcome. The inbox query carries both the
+		// list and the open thread's messages, so one invalidation refreshes both -- queued -> delivered,
+		// bounces, and inbound replies land without a reload. Same stand-down while our own send is in
+		// flight, for the same reason as above.
+		channel.on('broadcast', { event: 'communication_inbox_activity' }, () => {
+			if (untrack(() => pendingSend) !== null) return;
+			queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] });
+		});
 		channel.subscribe();
 		return () => {
 			supabase.removeChannel(channel);
@@ -234,10 +243,7 @@
 			queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] });
 			// A resend is a new message on that client's history, cached under its own key (Part 5D).
 			queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(email.client_id) });
-			toast.info(
-				'Email queued for resend',
-				'Delivery is not enabled yet, so this email has not been sent.'
-			);
+			toast.success('Email sent');
 			resendTarget = null;
 		},
 		onError: (error: Error) => toast.error('Could not resend the email', error.message)

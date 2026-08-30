@@ -2,14 +2,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
 	OperationalEmailSubmissionError,
 	createBrevoDomain,
+	createBrevoInboundWebhook,
 	deleteBrevoDomain,
+	deleteBrevoWebhook,
 	getBrevoDomain,
+	listBrevoInboundWebhooks,
 	listBrevoSenders,
 	sendOperationalEmail
 } from './brevo';
-import { getEmailEnv } from '$lib/server/email/env';
+import { getBrevoInboundWebhookToken, getEmailEnv } from '$lib/server/email/env';
 
-vi.mock('$lib/server/email/env', () => ({ getEmailEnv: vi.fn() }));
+vi.mock('$lib/server/email/env', () => ({
+	getEmailEnv: vi.fn(),
+	getBrevoInboundWebhookToken: vi.fn()
+}));
 
 const message = {
 	from: { email: 'service@ridgeway.example', name: 'Ridgeway' },
@@ -52,8 +58,10 @@ describe('Brevo operational email adapter', () => {
 				subject: message.subject,
 				htmlContent: message.htmlContent,
 				textContent: message.textContent,
+				headers: { idempotencyKey: 'intent-42' },
 				tags: ['ucrm:email:intent-42']
-			})
+			}),
+			signal: expect.any(AbortSignal)
 		});
 	});
 
@@ -223,5 +231,86 @@ describe('Brevo operational email adapter', () => {
 			'https://api.brevo.com/v3/senders/domains/mail.ridgeway.example',
 			expect.objectContaining({ method: 'DELETE' })
 		);
+	});
+});
+
+describe('Brevo inbound-webhook management adapter', () => {
+	beforeEach(() => {
+		vi.stubGlobal('fetch', vi.fn());
+		vi.mocked(getEmailEnv).mockReturnValue({
+			BREVO_API_KEY: 'server-only-api-key',
+			SYSTEM_FROM_EMAIL: 'system@ridgeway.example'
+		});
+		vi.mocked(getBrevoInboundWebhookToken).mockReturnValue('inbound-bearer-secret');
+	});
+
+	afterEach(() => vi.unstubAllGlobals());
+
+	it('creates the inbound webhook with bearer auth, not a token in the URL', async () => {
+		vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify({ id: 2148900 }), { status: 201 }));
+
+		await expect(
+			createBrevoInboundWebhook({
+				url: 'https://app.upliftcontractor.com/api/webhooks/brevo/inbound',
+				domain: 'reply.test.upliftcontractor.com',
+				description: 'UCRM inbound replies for reply.test.upliftcontractor.com'
+			})
+		).resolves.toMatchObject({ id: 2148900, type: 'inbound' });
+
+		const [url, init] = vi.mocked(fetch).mock.calls[0];
+		expect(url).toBe('https://api.brevo.com/v3/webhooks');
+		const body = JSON.parse(init!.body as string);
+		expect(body).toMatchObject({
+			type: 'inbound',
+			url: 'https://app.upliftcontractor.com/api/webhooks/brevo/inbound',
+			domain: 'reply.test.upliftcontractor.com',
+			events: ['inboundEmailProcessed'],
+			auth: { type: 'bearer', token: 'inbound-bearer-secret' }
+		});
+		// The secret must never be smuggled into the callback URL, only into the bearer auth field.
+		expect(body.url).not.toContain('inbound-bearer-secret');
+	});
+
+	it('lists inbound webhooks whether Brevo wraps them or returns a bare array', async () => {
+		vi.mocked(fetch).mockResolvedValueOnce(
+			new Response(
+				JSON.stringify({
+					webhooks: [
+						{ id: 2148900, url: 'https://app.example/api/webhooks/brevo/inbound', type: 'inbound', domain: 'reply.test.upliftcontractor.com', events: ['inboundEmailProcessed'] }
+					]
+				}),
+				{ status: 200 }
+			)
+		);
+
+		await expect(listBrevoInboundWebhooks()).resolves.toEqual([
+			{
+				id: 2148900,
+				url: 'https://app.example/api/webhooks/brevo/inbound',
+				type: 'inbound',
+				domain: 'reply.test.upliftcontractor.com',
+				events: ['inboundEmailProcessed']
+			}
+		]);
+		expect(fetch).toHaveBeenCalledWith(
+			'https://api.brevo.com/v3/webhooks?type=inbound',
+			expect.objectContaining({ headers: expect.objectContaining({ 'api-key': 'server-only-api-key' }) })
+		);
+	});
+
+	it('treats a missing webhook as already deleted so cleanup is retryable', async () => {
+		vi.mocked(fetch).mockResolvedValueOnce(new Response('not found', { status: 404 }));
+
+		await expect(deleteBrevoWebhook('2148900')).resolves.toBeUndefined();
+		expect(fetch).toHaveBeenCalledWith(
+			'https://api.brevo.com/v3/webhooks/2148900',
+			expect.objectContaining({ method: 'DELETE' })
+		);
+	});
+
+	it('propagates a non-404 delete failure so it can be retried, not swallowed', async () => {
+		vi.mocked(fetch).mockResolvedValueOnce(new Response('server error', { status: 500 }));
+
+		await expect(deleteBrevoWebhook('2148900')).rejects.toMatchObject({ code: 'brevo_http_500' });
 	});
 });

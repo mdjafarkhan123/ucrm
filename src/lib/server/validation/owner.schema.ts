@@ -48,6 +48,22 @@ export const communicationDomainRecheckSchema = z.object({
 	idempotency_key: z.string().uuid('Start a new domain check and try again.')
 });
 
+// A1-D managed activation: the owner supplies only the root domain. UCRM derives mail.<root> for sending
+// and reply.<root> for receiving, resolves the Cloudflare zone by that exact apex, and reconciles both.
+export const communicationDomainActivationSchema = z.object({
+	root_domain: z
+		.string()
+		.trim()
+		.toLowerCase()
+		.min(4)
+		.max(253)
+		.regex(
+			/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/,
+			'Enter a valid root domain.'
+		),
+	idempotency_key: z.string().uuid('Start a new activation attempt and try again.')
+});
+
 export const communicationDomainReplacementSchema = z
 	.object({
 		domain_name: communicationDomainProvisionSchema.shape.domain_name,

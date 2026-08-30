@@ -5,6 +5,7 @@ import {
 	sendOperationalEmail,
 	type OperationalEmail
 } from './brevo';
+import { runBoundedDrain, type BoundedDrainOptions, type BoundedDrainResult } from './drain';
 
 type ClaimedForward = {
 	forward_event_id: string;
@@ -49,52 +50,56 @@ type WorkerDependencies = {
 	readAttachment?: (objectKey: string) => Promise<Uint8Array>;
 };
 
-export type CommunicationForwardWorkerResult =
-	| { status: 'idle'; staleClaimsQuarantined: number }
+// One claim/send/finalize attempt. 'idle' means no claimable forward; otherwise the finalized provider
+// outcome for the single forward this call processed.
+export type ProcessedForwardResult =
+	| { status: 'idle' }
 	| {
 			status: 'submitted' | 'retry' | 'cancelled' | 'submission_unknown';
 			forwardEventId: string;
-			staleClaimsQuarantined: number;
 	  };
 
 function rpcError(action: string, error: { message: string } | null) {
 	return new Error(`${action}: ${error?.message ?? 'The database returned no result.'}`);
 }
 
-export async function runCommunicationForwardWorker(
+function resolveClient(
+	client?: CommunicationForwardWorkerClient
+): CommunicationForwardWorkerClient {
+	return client ?? (getOwnerSupabaseClient() as unknown as CommunicationForwardWorkerClient);
+}
+
+// Releases abandoned forward claims from a prior wake back to the queue. Runs once per drain.
+export async function quarantineStaleForwardClaims(
+	client: CommunicationForwardWorkerClient
+): Promise<number> {
+	const quarantine = await client.rpc('quarantine_stale_communication_forward_claims', {
+		batch_size: 50,
+		stale_after: '15 minutes'
+	});
+	if (quarantine.error)
+		throw rpcError('Could not quarantine stale forward claims', quarantine.error);
+	return typeof quarantine.data === 'number' ? quarantine.data : 0;
+}
+
+export async function processClaimedForward(
 	dependencies: WorkerDependencies = {}
-): Promise<CommunicationForwardWorkerResult> {
-	const injectedClient = dependencies.client;
-	const ownerClient = injectedClient ? null : getOwnerSupabaseClient();
+): Promise<ProcessedForwardResult> {
+	const client = resolveClient(dependencies.client);
 	const send = dependencies.send ?? sendOperationalEmail;
 	const readAttachment = dependencies.readAttachment ?? getObjectBytes;
 
-	const quarantineArgs = { batch_size: 50, stale_after: '15 minutes' };
-	const quarantine = injectedClient
-		? await injectedClient.rpc('quarantine_stale_communication_forward_claims', quarantineArgs)
-		: await ownerClient!.rpc('quarantine_stale_communication_forward_claims', quarantineArgs);
-	if (quarantine.error)
-		throw rpcError('Could not quarantine stale forward claims', quarantine.error);
-	const staleClaimsQuarantined = typeof quarantine.data === 'number' ? quarantine.data : 0;
-
-	const claimed = injectedClient
-		? await injectedClient.rpc('claim_communication_forward_event')
-		: await ownerClient!.rpc('claim_communication_forward_event');
+	const claimed = await client.rpc('claim_communication_forward_event');
 	if (claimed.error) throw rpcError('Could not claim a message forward', claimed.error);
 	const forward = Array.isArray(claimed.data)
 		? (claimed.data[0] as ClaimedForward | undefined)
 		: undefined;
-	if (!forward) return { status: 'idle', staleClaimsQuarantined };
+	if (!forward) return { status: 'idle' };
 
-	const forwardAttachmentsResult = injectedClient
-		? await injectedClient
-				.from('communication_forward_attachments')
-				.select('inbound_attachment_id')
-				.eq('forward_event_id', forward.forward_event_id)
-		: await ownerClient!
-				.from('communication_forward_attachments')
-				.select('inbound_attachment_id')
-				.eq('forward_event_id', forward.forward_event_id);
+	const forwardAttachmentsResult = await client
+		.from('communication_forward_attachments')
+		.select('inbound_attachment_id')
+		.eq('forward_event_id', forward.forward_event_id);
 	if (forwardAttachmentsResult.error)
 		throw rpcError('Could not list forward attachment links', forwardAttachmentsResult.error);
 	const inboundAttachmentIds = (
@@ -103,15 +108,10 @@ export async function runCommunicationForwardWorker(
 
 	let attachmentRows: InboundAttachmentRow[] = [];
 	if (inboundAttachmentIds.length > 0) {
-		const inboundAttachmentsResult = injectedClient
-			? await injectedClient
-					.from('communication_inbound_attachments')
-					.select('id, file_name, mime_type, byte_size, object_key')
-					.in('id', inboundAttachmentIds)
-			: await ownerClient!
-					.from('communication_inbound_attachments')
-					.select('id, file_name, mime_type, byte_size, object_key')
-					.in('id', inboundAttachmentIds);
+		const inboundAttachmentsResult = await client
+			.from('communication_inbound_attachments')
+			.select('id, file_name, mime_type, byte_size, object_key')
+			.in('id', inboundAttachmentIds);
 		if (inboundAttachmentsResult.error)
 			throw rpcError('Could not load forward attachments', inboundAttachmentsResult.error);
 		attachmentRows = (inboundAttachmentsResult.data ?? []) as InboundAttachmentRow[];
@@ -165,10 +165,24 @@ export async function runCommunicationForwardWorker(
 		target_failure_code: failureCode,
 		target_failure_message: failureMessage
 	};
-	const finalized = injectedClient
-		? await injectedClient.rpc('finalize_communication_forward_event', finalizeArgs)
-		: await ownerClient!.rpc('finalize_communication_forward_event', finalizeArgs);
+	const finalized = await client.rpc('finalize_communication_forward_event', finalizeArgs);
 	if (finalized.error) throw rpcError('Could not finalize a message forward', finalized.error);
 
-	return { status: outcome, forwardEventId: forward.forward_event_id, staleClaimsQuarantined };
+	return { status: outcome, forwardEventId: forward.forward_event_id };
+}
+
+// Wakes the forward queue: quarantine once, then bounded concurrent claim/send/finalize until idle, the claim
+// cap, or the time budget. Entry point for the internal route and (later) a supervised worker.
+export async function drainCommunicationForwardQueue(
+	dependencies: WorkerDependencies & BoundedDrainOptions = {}
+): Promise<BoundedDrainResult> {
+	const client = resolveClient(dependencies.client);
+	const send = dependencies.send ?? sendOperationalEmail;
+	const readAttachment = dependencies.readAttachment ?? getObjectBytes;
+
+	return runBoundedDrain(
+		() => quarantineStaleForwardClaims(client),
+		() => processClaimedForward({ client, send, readAttachment }),
+		dependencies
+	);
 }

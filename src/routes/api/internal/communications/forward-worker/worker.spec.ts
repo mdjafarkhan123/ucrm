@@ -1,8 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from './+server';
 import { getServerEnv } from '$lib/server/env';
+import { drainCommunicationForwardQueue } from '$lib/server/communications/forward-worker';
 
 vi.mock('$lib/server/env', () => ({ getServerEnv: vi.fn() }));
+vi.mock('$lib/server/communications/forward-worker', () => ({
+	drainCommunicationForwardQueue: vi.fn()
+}));
 
 const secret = 'a-communications-worker-secret-at-least-32-characters';
 
@@ -21,18 +25,27 @@ describe('communications forward worker route', () => {
 		vi.mocked(getServerEnv).mockReturnValue({ COMMUNICATIONS_WORKER_SECRET: secret } as never);
 	});
 
-	it('fails closed before sender identity support exists', async () => {
+	it('runs the bounded drain and returns its result to an authorized wake', async () => {
+		const drainResult = {
+			staleClaimsQuarantined: 0,
+			claimed: 1,
+			submitted: 1,
+			retried: 0,
+			cancelled: 0,
+			submissionUnknown: 0,
+			stoppedBy: 'idle'
+		};
+		vi.mocked(drainCommunicationForwardQueue).mockResolvedValue(drainResult as never);
+
 		const response = await POST(eventWith(`Bearer ${secret}`));
 
-		expect(response.status).toBe(503);
+		expect(response.status).toBe(200);
 		expect(response.headers.get('cache-control')).toBe('no-store');
-		expect(await response.json()).toEqual({
-			ready: false,
-			reason: 'sender_identity_not_available'
-		});
+		expect(await response.json()).toEqual(drainResult);
+		expect(drainCommunicationForwardQueue).toHaveBeenCalledTimes(1);
 	});
 
-	it('rejects a missing, malformed, or incorrect worker credential', async () => {
+	it('rejects a missing, malformed, or incorrect worker credential without draining', async () => {
 		const missing = await POST(eventWith());
 		const basic = await POST(eventWith(`Basic ${secret}`));
 		const wrong = await POST(eventWith('Bearer another-secret'));
@@ -41,6 +54,7 @@ describe('communications forward worker route', () => {
 			expect(response.status).toBe(401);
 			expect(response.headers.get('cache-control')).toBe('no-store');
 		}
+		expect(drainCommunicationForwardQueue).not.toHaveBeenCalled();
 	});
 
 	it('fails closed when no worker credential is configured', async () => {

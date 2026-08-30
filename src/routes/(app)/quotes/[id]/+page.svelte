@@ -1261,10 +1261,7 @@
 				onClose={() => (quoteEmailOpen = false)}
 				onQueued={async () => {
 					await refreshQuote();
-					toast.info(
-						'Quote email queued',
-						'Delivery is disabled, so this email has not been sent.'
-					);
+					toast.success('Email sent');
 				}}
 			/>
 		{/if}

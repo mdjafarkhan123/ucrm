@@ -1,7 +1,12 @@
-import { getEmailEnv } from '$lib/server/email/env';
+import { getBrevoInboundWebhookToken, getEmailEnv } from '$lib/server/email/env';
 
 const BREVO_SEND_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
 const BREVO_API_BASE = 'https://api.brevo.com/v3';
+
+// A hung provider call must not hold a worker slot until it becomes a stale claim. Bound every send with an
+// explicit abort; the timeout stays well under the worker's own claim/HTTP budget so an aborted attempt is
+// finalized as an ambiguous (submission_unknown) outcome rather than silently stranding the row.
+const PROVIDER_SEND_TIMEOUT_MS = 10_000;
 
 export type BrevoDnsRecord = {
 	type: string;
@@ -32,7 +37,12 @@ export class BrevoManagementError extends Error {
 	constructor(
 		message: string,
 		public readonly status: number | null,
-		public readonly code: string
+		public readonly code: string,
+		// Brevo's own error envelope ({ code, message }) when it sent one. Callers that must react to a SPECIFIC
+		// provider condition (e.g. an inbound webhook refused because the domain is not yet active) match on
+		// these rather than the bare HTTP status, so an unrelated 400 is never mistaken for the same case.
+		public readonly providerCode: string | null = null,
+		public readonly providerMessage: string | null = null
 	) {
 		super(message);
 		this.name = 'BrevoManagementError';
@@ -61,10 +71,27 @@ async function brevoManagementRequest(path: string, init?: RequestInit): Promise
 	}
 
 	if (!response.ok) {
+		// Read Brevo's error envelope so callers can distinguish specific provider conditions from a bare status.
+		let providerCode: string | null = null;
+		let providerMessage: string | null = null;
+		try {
+			const errorBody = await response.text();
+			const parsed = errorBody
+				? (JSON.parse(errorBody) as { code?: unknown; message?: unknown })
+				: null;
+			if (parsed && typeof parsed === 'object') {
+				providerCode = typeof parsed.code === 'string' ? parsed.code : null;
+				providerMessage = typeof parsed.message === 'string' ? parsed.message : null;
+			}
+		} catch {
+			// Non-JSON or empty error body; fall back to the status alone.
+		}
 		throw new BrevoManagementError(
-			`Brevo rejected the domain-management request with status ${response.status}.`,
+			`Brevo rejected the domain-management request with status ${response.status}${providerMessage ? `: ${providerMessage}` : ''}.`,
 			response.status,
-			`brevo_http_${response.status}`
+			`brevo_http_${response.status}`,
+			providerCode,
+			providerMessage
 		);
 	}
 
@@ -138,6 +165,88 @@ export async function deleteBrevoDomainById(providerDomainId: string) {
 	const match = domains.find((domain) => String(domain.id) === providerDomainId);
 	if (!match) return;
 	await deleteBrevoDomain(match.domain_name);
+}
+
+// ---------------------------------------------------------------------------------------------------
+// Inbound-parse webhook management (A1-D). A receiving domain (reply.<root>) needs exactly one Brevo
+// inbound webhook pointing at the fixed, secured `/api/webhooks/brevo/inbound` route. Brevo authenticates
+// its callback with the bearer token stored on the webhook, which our route reads from the Authorization
+// header -- so the create call MUST use `auth:{type:'bearer',token}`, never a token embedded in the URL.
+// docs/research/brevo-return-path-production-patterns.md
+// ---------------------------------------------------------------------------------------------------
+
+export type BrevoInboundWebhook = {
+	id: number;
+	url: string;
+	type: string;
+	domain: string | null;
+	events: string[];
+};
+
+function normalizeBrevoWebhook(value: unknown): BrevoInboundWebhook | null {
+	if (!value || typeof value !== 'object') return null;
+	const webhook = value as Record<string, unknown>;
+	if (typeof webhook.id !== 'number' && typeof webhook.id !== 'string') return null;
+	return {
+		id: Number(webhook.id),
+		url: typeof webhook.url === 'string' ? webhook.url : '',
+		type: typeof webhook.type === 'string' ? webhook.type : '',
+		domain: typeof webhook.domain === 'string' ? webhook.domain : null,
+		events: Array.isArray(webhook.events)
+			? webhook.events.filter((event): event is string => typeof event === 'string')
+			: []
+	};
+}
+
+export async function listBrevoInboundWebhooks(): Promise<BrevoInboundWebhook[]> {
+	const result = (await brevoManagementRequest('/webhooks?type=inbound')) as unknown;
+	const raw = Array.isArray(result)
+		? result
+		: ((result as { webhooks?: unknown[] })?.webhooks ?? []);
+	return raw
+		.map(normalizeBrevoWebhook)
+		.filter((webhook): webhook is BrevoInboundWebhook => webhook !== null);
+}
+
+export async function createBrevoInboundWebhook(input: {
+	url: string;
+	domain: string;
+	description: string;
+}): Promise<BrevoInboundWebhook> {
+	const token = getBrevoInboundWebhookToken();
+	const created = (await brevoManagementRequest('/webhooks', {
+		method: 'POST',
+		body: JSON.stringify({
+			type: 'inbound',
+			url: input.url,
+			domain: input.domain,
+			description: input.description,
+			events: ['inboundEmailProcessed'],
+			auth: { type: 'bearer', token }
+		})
+	})) as { id: number | string };
+	return {
+		id: Number(created.id),
+		url: input.url,
+		type: 'inbound',
+		domain: input.domain,
+		events: ['inboundEmailProcessed']
+	};
+}
+
+/**
+ * Deletes an inbound webhook by its opaque id. A webhook Brevo no longer knows is already gone, so a 404 is a
+ * success -- this makes suspension/closure cleanup safe to retry with only the stored id.
+ */
+export async function deleteBrevoWebhook(webhookId: string): Promise<void> {
+	try {
+		await brevoManagementRequest(`/webhooks/${encodeURIComponent(webhookId)}`, {
+			method: 'DELETE'
+		});
+	} catch (error) {
+		if (error instanceof BrevoManagementError && error.status === 404) return;
+		throw error;
+	}
 }
 
 export async function createBrevoSender(input: { email: string; name: string }) {
@@ -244,6 +353,7 @@ export async function sendOperationalEmail(
 				'content-type': 'application/json',
 				'api-key': BREVO_API_KEY
 			},
+			signal: AbortSignal.timeout(PROVIDER_SEND_TIMEOUT_MS),
 			body: JSON.stringify({
 				sender: message.from,
 				to: Array.isArray(message.to) ? message.to : [message.to],
@@ -254,6 +364,10 @@ export async function sendOperationalEmail(
 				...(message.attachments && message.attachments.length > 0
 					? { attachment: message.attachments }
 					: {}),
+				// Brevo deduplicates an identical retry against this key for 30 minutes. Using the stable
+				// delivery-intent UUID makes a database-driven retry safe from double-processing; the tag stays
+				// for webhook correlation. This is defense in depth, not an exactly-once guarantee.
+				headers: { idempotencyKey: message.intentId },
 				tags: [`ucrm:email:${message.intentId}`]
 			})
 		});

@@ -6,6 +6,9 @@
 	import buildingIcon from '@tabler/icons/outline/building.svg?raw';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 	import playerPauseIcon from '@tabler/icons/outline/player-pause.svg?raw';
+	import EmailOutboxWorkerHealth, {
+		type WorkerHealth
+	} from '$lib/components/jafar/EmailOutboxWorkerHealth.svelte';
 	import EmailReputationPlatformControls from '$lib/components/jafar/EmailReputationPlatformControls.svelte';
 	import EmailSendingCapacityControls from '$lib/components/jafar/EmailSendingCapacityControls.svelte';
 	import EmailSuppressionRemovalQueue from '$lib/components/jafar/EmailSuppressionRemovalQueue.svelte';
@@ -40,7 +43,7 @@
 		held_email_count: number;
 		queued_email_count: number;
 	};
-	type HealthResponse = { health: Health; error?: string };
+	type HealthResponse = { health: Health; worker_health?: WorkerHealth | null; error?: string };
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -235,6 +238,8 @@
 				variant="compact"
 			/>
 		</section>
+
+		<EmailOutboxWorkerHealth workerHealth={healthQuery.data?.worker_health ?? null} />
 
 		<Card class="email-safety__panel">
 			<div class="email-safety__panel-head">

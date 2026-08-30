@@ -1,7 +1,8 @@
-import { timingSafeEqual } from 'node:crypto';
+import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getServerEnv } from '$lib/server/env';
+import { runMonitoredEmailWake } from '$lib/server/communications/email-worker';
 
 function authorized(request: Request) {
 	const token = request.headers.get('authorization')?.match(/^Bearer (.+)$/i)?.[1];
@@ -12,6 +13,11 @@ function authorized(request: Request) {
 	return provided.length === wanted.length && timingSafeEqual(provided, wanted);
 }
 
+// This handler runs one monitored email drain. The Cron dispatch carries a wake correlation id so the run is
+// attributable in the ledger; a direct (manual) invocation without one gets a fresh id. A single-flight lease
+// keeps two wakes from draining at once (already_running is a 2xx no-op), and a whole-route deadline bounds
+// wall time under the pg_net HTTP timeout. pg_net treats a returned request id as success, so health monitors
+// the HTTP status this returns rather than assuming the drain finished.
 export const POST: RequestHandler = async ({ request }) => {
 	if (!authorized(request))
 		return json(
@@ -19,10 +25,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			{ status: 401, headers: { 'cache-control': 'no-store' } }
 		);
 
-	// Sender identities are a Part 2 dependency. Do not claim a row until one can be rechecked: a claim
-	// without submission would strand a message in processing and make a later retry ambiguous.
-	return json(
-		{ ready: false, reason: 'sender_identity_not_available' },
-		{ status: 503, headers: { 'cache-control': 'no-store' } }
-	);
+	const wakeCorrelationId = request.headers.get('x-wake-correlation-id') ?? randomUUID();
+	const result = await runMonitoredEmailWake({ wakeCorrelationId });
+	return json(result, { headers: { 'cache-control': 'no-store' } });
 };

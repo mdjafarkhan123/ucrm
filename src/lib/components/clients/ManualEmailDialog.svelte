@@ -107,7 +107,7 @@
 			// The client Communication tab (Part 5D) caches under its own key, which the inbox invalidation
 			// above does not prefix-match.
 			queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(client.id) });
-			toast.info('Email queued', 'Delivery is not enabled yet, so this email has not been sent.');
+			toast.success('Email sent');
 			close();
 		} catch {
 			formError = 'The email could not be queued. Check your connection and try again.';

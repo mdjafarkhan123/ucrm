@@ -2,6 +2,9 @@
 
 Status: Approved product behavior, not yet implemented  
 Approved: 2026-08-15  
+Amended: 2026-08-29 — platform-managed Cloudflare activation and per-domain Brevo inbound-webhook behavior
+(the "Domain provisioning and sender identity" activation paragraph) was approved and added on this date;
+it was not part of the original 2026-08-15 approval.  
 Scope: Contractor operational email, inbound replies, tenant controls, and Platform Owner controls
 
 Research evidence lives in:
@@ -49,6 +52,21 @@ falls back to that identity.
 Jafar claims, verifies, replaces, restricts, and removes contractor domains. The default structure is
 `mail.contractor.com` for sending and `reply.contractor.com` for receiving. Jafar may choose different
 prefixes, but sending and receiving domains must differ.
+
+Activation is platform-managed. After the contractor's Cloudflare zone has passed a mailbox-safe import,
+Jafar starts one resumable activation from the organization page. UCRM retrieves the current provider-issued
+records, writes only the approved sending and receiving subdomain records through a server-held, zone-scoped
+Cloudflare credential, verifies both domains, and registers the receiving domain for inbound parsing.
+Contractors never copy DNS records. DNS propagation and partial provider failure remain visible, retryable
+states; activation never overwrites root MX, mailbox authentication, or an unexpected occupied subdomain.
+Provider record counts are discovered at activation time rather than fixed in product behavior.
+
+**Pre-first-paying-contractor launch gate (added 2026-08-29).** The internal activation fixture
+(`reply.test.upliftcontractor.com`) proves Cloudflare DNS writing, Brevo reconciliation, webhook registration,
+database state, reply-alias creation, and inbound routing — but it does NOT prove preservation of a live
+external root mailbox. Before onboarding the first paying contractor, rehearse the full activation on a domain
+that has an ACTIVE external mailbox (Hostinger/GoDaddy/Google/Microsoft) and verify normal inbound and outbound
+mailbox operation both before and after the nameserver/DNS management changes.
 
 Brevo verification plus passing SPF and DKIM is required before sending. DMARC with at least `p=none`
 is required before higher-volume optional email. Domain health is checked at least daily and on
@@ -297,11 +315,10 @@ retryable operation and cannot be reported as complete. The existing non-persona
 contain aggregate cleanup results but no recipients, content, domains, or message identifiers.
 
 Provider cleanup covers the organization-owned Brevo resources UCRM actually provisions and tracks: its
-sending/receiving domains and sender addresses. Brevo's inbound webhook is a single shared,
-account-level registration — UCRM does not provision or persist a per-organization webhook today, so
-purge reports webhook cleanup as not applicable and leaves the shared registration untouched. If a
-domain-scoped inbound webhook lifecycle is introduced later, persist its opaque Brevo webhook id at
-provisioning and include it in this same retryable cleanup.
+sending/receiving domains, sender addresses, and receiving-domain webhook registration. Every receiving
+domain registers with Brevo against the same secured UCRM inbound endpoint. Persist each opaque Brevo webhook
+id at provisioning and include it in retryable replacement and permanent cleanup; deleting one organization
+must not alter another organization's registration or the shared endpoint secret.
 
 ## Platform Owner controls
 

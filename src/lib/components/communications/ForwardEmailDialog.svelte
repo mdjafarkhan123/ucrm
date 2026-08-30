@@ -97,10 +97,7 @@
 			);
 			queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] });
 			queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(clientId) });
-			toast.info(
-				'Forward queued',
-				'Delivery is not enabled yet, so this forward has not been sent.'
-			);
+			toast.success('Email sent');
 			close();
 		} catch (error) {
 			const withFields = error as Error & { fieldErrors?: FieldErrors };

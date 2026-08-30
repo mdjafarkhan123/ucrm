@@ -1,8 +1,15 @@
 import { z } from 'zod';
 
+// Brevo sends null for absent names, reply references, and body variants. Normalize only those
+// documented nullable fields to our existing optional values at the provider boundary.
 const addressSchema = z.object({
 	Address: z.string().trim().min(3).max(320),
-	Name: z.string().trim().max(160).optional()
+	Name: z
+		.string()
+		.trim()
+		.max(160)
+		.nullish()
+		.transform((value) => value ?? undefined)
 });
 
 const attachmentSchema = z
@@ -19,14 +26,27 @@ const inboundItemSchema = z
 	.object({
 		MessageId: z.string().trim().min(1).max(300).optional(),
 		Uuid: z.array(z.string().trim().min(1)).optional(),
-		InReplyTo: z.string().trim().min(1).max(300).optional(),
+		// Brevo sends InReplyTo as "" (not null) for a message that is not a reply. Treat empty and
+		// whitespace-only the same as absent, alongside the documented null case.
+		InReplyTo: z
+			.string()
+			.trim()
+			.max(300)
+			.nullish()
+			.transform((value) => value || undefined),
 		From: addressSchema,
 		To: z.array(addressSchema).default([]),
 		Cc: z.array(addressSchema).default([]),
 		SentAtDate: z.string().optional(),
 		Subject: z.string().trim().max(998).default(''),
-		RawHtmlBody: z.string().optional(),
-		RawTextBody: z.string().optional(),
+		RawHtmlBody: z
+			.string()
+			.nullish()
+			.transform((value) => value ?? undefined),
+		RawTextBody: z
+			.string()
+			.nullish()
+			.transform((value) => value ?? undefined),
 		Attachments: z.array(attachmentSchema).default([]),
 		Headers: z.record(z.string(), z.union([z.string(), z.array(z.string())])).default({})
 	})
