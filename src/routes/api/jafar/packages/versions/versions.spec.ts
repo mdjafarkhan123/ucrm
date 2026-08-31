@@ -70,6 +70,15 @@ describe('platform owner package version write API boundary', () => {
 				website_chat_limits: {
 					widgets: { state: 'numeric', value: 3 },
 					accepted_conversations: { state: 'numeric', value: 200 }
+				},
+				automation_limits: {
+					active_recipes: { state: 'numeric', value: 20 },
+					conditions_per_recipe: { state: 'numeric', value: 6 },
+					steps_per_recipe: { state: 'numeric', value: 15 },
+					customer_messages_per_enrollment: { state: 'numeric', value: 5 },
+					message_spacing_minutes: { state: 'numeric', value: 60 },
+					max_delay_days: { state: 'numeric', value: 90 },
+					max_enrollment_duration_days: { state: 'unlimited', value: null }
 				}
 			})
 		);
@@ -94,6 +103,24 @@ describe('platform owner package version write API boundary', () => {
 			target_widgets_value: 3,
 			target_accepted_conversations_state: 'numeric',
 			target_accepted_conversations_value: 200,
+			actor_email: 'owner@example.com'
+		});
+		expect(rpc).toHaveBeenCalledWith('manage_platform_package_automation_limits', {
+			target_version_id: 'version-id',
+			target_active_recipes_state: 'numeric',
+			target_active_recipes_value: 20,
+			target_conditions_state: 'numeric',
+			target_conditions_value: 6,
+			target_steps_state: 'numeric',
+			target_steps_value: 15,
+			target_customer_messages_state: 'numeric',
+			target_customer_messages_value: 5,
+			target_message_spacing_state: 'numeric',
+			target_message_spacing_value: 60,
+			target_max_delay_state: 'numeric',
+			target_max_delay_value: 90,
+			target_max_duration_state: 'unlimited',
+			target_max_duration_value: null,
 			actor_email: 'owner@example.com'
 		});
 	});

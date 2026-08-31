@@ -6,7 +6,15 @@ export const limitKeySchema = z.enum([
 	'operational_email_recipients',
 	'essential_email_recipients',
 	'website_chat_widgets',
-	'website_chat_accepted_conversations'
+	'website_chat_accepted_conversations',
+	// Automation (Part 6B): the seven versioned limits admitted by apply_organization_limit_exception.
+	'automation_active_recipes',
+	'automation_max_conditions_per_recipe',
+	'automation_max_steps_per_recipe',
+	'automation_max_customer_messages_per_enrollment',
+	'automation_min_customer_message_spacing_minutes',
+	'automation_max_delay_days',
+	'automation_max_enrollment_duration_days'
 ]);
 export const organizationIdSchema = z.string().uuid();
 export const userIdSchema = z.string().uuid();

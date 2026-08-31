@@ -47,7 +47,21 @@ export const packageVersionWriteSchema = z.object({
 	website_chat_limits: z.object({
 		widgets: allowanceSchema,
 		accepted_conversations: allowanceSchema
-	})
+	}),
+	// The seven Automation ceilings written together as a full rewrite of the draft's Automation rows.
+	// Optional so an older draft save without them leaves the resolver at not_included; the editor always
+	// sends all seven.
+	automation_limits: z
+		.object({
+			active_recipes: allowanceSchema,
+			conditions_per_recipe: allowanceSchema,
+			steps_per_recipe: allowanceSchema,
+			customer_messages_per_enrollment: allowanceSchema,
+			message_spacing_minutes: allowanceSchema,
+			max_delay_days: allowanceSchema,
+			max_enrollment_duration_days: allowanceSchema
+		})
+		.optional()
 });
 
 export const packageVersionPublishSchema = z.object({

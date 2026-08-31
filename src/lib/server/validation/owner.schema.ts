@@ -305,6 +305,21 @@ export const websiteChatTokenRotationSchema = z.object({
 	idempotency_key: z.string().uuid('Start a new token rotation and try again.')
 });
 
+// Automation authority (Part 6B, slice 3b). Two independent axes -- operational and security -- each
+// toggled with a safe reason and an idempotency key, mirroring the Website Chat suspension shape.
+export const automationAuthoritySchema = z.object({
+	axis: z.enum(['operational', 'security'], {
+		error: 'Choose the operational or security authority axis.'
+	}),
+	engage: z.boolean(),
+	reason: z
+		.string()
+		.trim()
+		.min(3, 'Enter a reason of at least 3 characters.')
+		.max(500, 'Keep the reason under 500 characters.'),
+	idempotency_key: z.string().uuid('Start a new authority change and try again.')
+});
+
 const reputationSignalSchema = z.enum(['complaint', 'hard_bounce', 'unsubscribe'], {
 	error: 'Choose complaint, hard bounce, or unsubscribe.'
 });

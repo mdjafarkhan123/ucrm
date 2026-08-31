@@ -24,6 +24,8 @@
 	import QuoteDepositCard from '$lib/components/quotes/QuoteDepositCard.svelte';
 	import QuoteClientViewBlock from '$lib/components/quotes/QuoteClientViewBlock.svelte';
 	import QuoteEmailDialog from '$lib/components/quotes/QuoteEmailDialog.svelte';
+	import QuoteAutomationCard from '$lib/components/quotes/QuoteAutomationCard.svelte';
+	import { AUTOMATION_JOURNEY_READY } from '$lib/automation/journey';
 	import AddSectionControl from '$lib/components/work/AddSectionControl.svelte';
 	import ActivityFeed from '$lib/components/collaboration/ActivityFeed.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -1229,6 +1231,10 @@
 					hasPublishedVersion={Boolean(saved.quote.current_published_version_id)}
 					onSaved={refreshQuote}
 				/>
+
+				{#if AUTOMATION_JOURNEY_READY}
+					<QuoteAutomationCard {quoteId} />
+				{/if}
 
 				<RailCard title="Notes" icon={notesIcon} count={notesQuery.data?.length}>
 					<NotesPanel

@@ -1,0 +1,3 @@
+create index if not exists communication_email_allowance_periods_commercial_event_idx
+  on public.communication_email_allowance_periods (opened_by_commercial_event_id)
+  where opened_by_commercial_event_id is not null;

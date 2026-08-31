@@ -77,6 +77,35 @@ export const POST: RequestHandler = async (event) => {
 				return json({ error: 'The package version could not be saved.' }, { status: 409 });
 			}
 		}
+		const automationLimits = input.automation_limits;
+		if (automationLimits) {
+			const { error: automationError } = await getOwnerSupabaseClient().rpc(
+				'manage_platform_package_automation_limits',
+				{
+					target_version_id: data,
+					target_active_recipes_state: automationLimits.active_recipes.state,
+					target_active_recipes_value: automationLimits.active_recipes.value as number,
+					target_conditions_state: automationLimits.conditions_per_recipe.state,
+					target_conditions_value: automationLimits.conditions_per_recipe.value as number,
+					target_steps_state: automationLimits.steps_per_recipe.state,
+					target_steps_value: automationLimits.steps_per_recipe.value as number,
+					target_customer_messages_state: automationLimits.customer_messages_per_enrollment.state,
+					target_customer_messages_value: automationLimits.customer_messages_per_enrollment
+						.value as number,
+					target_message_spacing_state: automationLimits.message_spacing_minutes.state,
+					target_message_spacing_value: automationLimits.message_spacing_minutes.value as number,
+					target_max_delay_state: automationLimits.max_delay_days.state,
+					target_max_delay_value: automationLimits.max_delay_days.value as number,
+					target_max_duration_state: automationLimits.max_enrollment_duration_days.state,
+					target_max_duration_value: automationLimits.max_enrollment_duration_days.value as number,
+					actor_email: session.email
+				}
+			);
+			if (automationError) {
+				console.error('Owner package Automation limit operation was rejected.', automationError);
+				return json({ error: 'The package version could not be saved.' }, { status: 409 });
+			}
+		}
 		return json({ version_id: data, saved: true });
 	} catch (error) {
 		console.error('Could not save owner package version.', error);

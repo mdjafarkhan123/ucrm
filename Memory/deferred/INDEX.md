@@ -5,7 +5,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | Priority | Deferred task |
 | --- | --- |
 | P0 | [`preview_quote_version_totals` has no `quotes.view_price` gate](preview-quote-version-totals-has-no-quotes-view-price-gate.md) |
-| P0 | [Two applied migrations have no file in the repo](two-applied-migrations-have-no-file-in-the-repo.md) |
 | P1 | [Authenticated reads and Pipeline writes are not rate limited](authenticated-reads-and-pipeline-writes-are-not-rate-limited.md) |
 | P1 | [Four older composite foreign keys still null the organization on delete](four-older-composite-foreign-keys-still-null-the-organization-on-delete.md) |
 | P1 | [Internal cost still rides along on the request pricing read](internal-cost-still-rides-along-on-the-request-pricing-read.md) |

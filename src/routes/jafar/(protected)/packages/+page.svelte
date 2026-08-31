@@ -67,6 +67,64 @@
 	let websiteChatWidgetsCount = $state('');
 	let websiteChatAcceptedConversationsState = $state<LimitState>('not_included');
 	let websiteChatAcceptedConversationsCount = $state('');
+
+	// The seven Automation ceilings, driven by one descriptor list so the editor and payload stay in
+	// lockstep with the database limit keys. Order matches the resolver and owner write command.
+	const AUTOMATION_LIMIT_FIELDS = [
+		{
+			key: 'active_recipes',
+			dbKey: 'automation_active_recipes',
+			label: 'Active recipes',
+			valueLabel: 'Maximum active recipes'
+		},
+		{
+			key: 'conditions_per_recipe',
+			dbKey: 'automation_max_conditions_per_recipe',
+			label: 'Conditions per recipe',
+			valueLabel: 'Maximum conditions'
+		},
+		{
+			key: 'steps_per_recipe',
+			dbKey: 'automation_max_steps_per_recipe',
+			label: 'Steps per recipe',
+			valueLabel: 'Maximum steps'
+		},
+		{
+			key: 'customer_messages_per_enrollment',
+			dbKey: 'automation_max_customer_messages_per_enrollment',
+			label: 'Customer messages per enrollment',
+			valueLabel: 'Maximum messages'
+		},
+		{
+			key: 'message_spacing_minutes',
+			dbKey: 'automation_min_customer_message_spacing_minutes',
+			label: 'Minimum message spacing',
+			valueLabel: 'Minutes between messages'
+		},
+		{
+			key: 'max_delay_days',
+			dbKey: 'automation_max_delay_days',
+			label: 'Maximum single delay',
+			valueLabel: 'Days'
+		},
+		{
+			key: 'max_enrollment_duration_days',
+			dbKey: 'automation_max_enrollment_duration_days',
+			label: 'Maximum enrollment duration',
+			valueLabel: 'Days'
+		}
+	] as const;
+	type AutomationLimitFieldKey = (typeof AUTOMATION_LIMIT_FIELDS)[number]['key'];
+	function emptyAutomationLimits(): Record<
+		AutomationLimitFieldKey,
+		{ state: LimitState; count: string }
+	> {
+		return Object.fromEntries(
+			AUTOMATION_LIMIT_FIELDS.map((field) => [field.key, { state: 'not_included', count: '' }])
+		) as Record<AutomationLimitFieldKey, { state: LimitState; count: string }>;
+	}
+	let automationLimits = $state(emptyAutomationLimits());
+
 	let actionError = $state('');
 	let actionMessage = $state('');
 	let publishConfirmed = $state(false);
@@ -131,7 +189,19 @@
 									? Number(websiteChatAcceptedConversationsCount)
 									: null
 						}
-					}
+					},
+					automation_limits: Object.fromEntries(
+						AUTOMATION_LIMIT_FIELDS.map((field) => {
+							const entry = automationLimits[field.key];
+							return [
+								field.key,
+								{
+									state: entry.state,
+									value: entry.state === 'numeric' ? Number(entry.count) : null
+								}
+							];
+						})
+					)
 				})
 			});
 			const result = (await response.json()) as MutationResponse;
@@ -215,19 +285,23 @@
 		featureKeys = source?.features ?? [];
 		const seats = source?.limits.find((limit) => limit.limit_key === 'employee_seats');
 		employeeSeatState = seats?.limit_state ?? 'not_included';
-		employeeSeatCount = seats?.limit_value !== null ? String(seats.limit_value) : '';
+		employeeSeatCount = seats && seats.limit_value !== null ? String(seats.limit_value) : '';
 		const operationalEmail = source?.limits.find(
 			(limit) => limit.limit_key === 'operational_email_recipients'
 		);
 		operationalEmailState = operationalEmail?.limit_state ?? 'not_included';
 		operationalEmailCount =
-			operationalEmail?.limit_value !== null ? String(operationalEmail.limit_value) : '';
+			operationalEmail && operationalEmail.limit_value !== null
+				? String(operationalEmail.limit_value)
+				: '';
 		const essentialEmail = source?.limits.find(
 			(limit) => limit.limit_key === 'essential_email_recipients'
 		);
 		essentialEmailState = essentialEmail?.limit_state ?? 'not_included';
 		essentialEmailCount =
-			essentialEmail?.limit_value !== null ? String(essentialEmail.limit_value) : '';
+			essentialEmail && essentialEmail.limit_value !== null
+				? String(essentialEmail.limit_value)
+				: '';
 		const websiteChatWidgets = source?.limits.find(
 			(limit) => limit.limit_key === 'website_chat_widgets'
 		);
@@ -245,6 +319,15 @@
 			websiteChatAcceptedConversations && websiteChatAcceptedConversations.limit_value !== null
 				? String(websiteChatAcceptedConversations.limit_value)
 				: '';
+		const nextAutomationLimits = emptyAutomationLimits();
+		for (const field of AUTOMATION_LIMIT_FIELDS) {
+			const row = source?.limits.find((limit) => limit.limit_key === field.dbKey);
+			nextAutomationLimits[field.key] = {
+				state: row?.limit_state ?? 'not_included',
+				count: row && row.limit_value !== null ? String(row.limit_value) : ''
+			};
+		}
+		automationLimits = nextAutomationLimits;
 		publishConfirmed = false;
 	}
 
@@ -598,6 +681,42 @@
 							</div>
 						</div>
 					</fieldset>
+					<fieldset>
+						<legend>Automation</legend>
+						<p class="packages__field-hint">
+							Ceilings for automation recipes on this plan. Safety rules such as minimum message
+							spacing protect customers and are not sold as larger allowances.
+						</p>
+						<div class="packages__automation-grid">
+							{#each AUTOMATION_LIMIT_FIELDS as field (field.key)}
+								<div class="packages__allowance-group">
+									<h3>{field.label}</h3>
+									<div class="packages__seat-controls">
+										<div class="packages__seat-field">
+											<label for={`automation-${field.key}-state`}>Availability</label>
+											<Select
+												id={`automation-${field.key}-state`}
+												value={automationLimits[field.key].state}
+												options={employeeSeatOptions}
+												onchange={(nextValue) =>
+													(automationLimits[field.key].state = nextValue as LimitState)}
+											/>
+										</div>
+										{#if automationLimits[field.key].state === 'numeric'}
+											<label
+												><span>{field.valueLabel}</span><input
+													bind:value={automationLimits[field.key].count}
+													type="number"
+													min="1"
+													required
+												/></label
+											>
+										{/if}
+									</div>
+								</div>
+							{/each}
+						</div>
+					</fieldset>
 					<div class="packages__actions">
 						<Button type="submit" loading={saveDraft.isPending}>Save draft</Button
 						>{#if selectedDraft || editingVersionId}<label class="packages__confirm"
@@ -935,6 +1054,14 @@
 	.packages__allowance-controls {
 		align-items: stretch;
 	}
+	.packages__automation-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-base);
+	}
+	.packages__automation-grid .packages__allowance-group {
+		flex: initial;
+	}
 	.packages__allowance-group {
 		display: grid;
 		flex: 1 1 320px;
@@ -1001,7 +1128,8 @@
 	}
 	@media (max-width: 767px) {
 		.packages__form-grid,
-		.packages__features {
+		.packages__features,
+		.packages__automation-grid {
 			grid-template-columns: 1fr;
 		}
 		.packages__editor header,

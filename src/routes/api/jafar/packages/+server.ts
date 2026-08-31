@@ -5,7 +5,7 @@ import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
 export const GET: RequestHandler = async (event) => {
-	if (!await getOwnerSession(event)) return ownerUnauthorized();
+	if (!(await getOwnerSession(event))) return ownerUnauthorized();
 
 	try {
 		const client = getOwnerSupabaseClient();
@@ -66,7 +66,11 @@ export const GET: RequestHandler = async (event) => {
 				...packageDefinition,
 				versions: versions.filter((version) => version.package_id === packageDefinition.package_id)
 			})),
-			feature_catalog: featuresResult.data ?? [],
+			// `automation.workflows` is legacy: retired historical versions keep it, but new drafts must not be
+			// able to assign it. `automations` is the live Automation feature.
+			feature_catalog: (featuresResult.data ?? []).filter(
+				(feature) => feature.feature_key !== 'automation.workflows'
+			),
 			limit_catalog: [{ limit_key: 'employee_seats', label: 'Employee seats' }]
 		});
 	} catch (error) {

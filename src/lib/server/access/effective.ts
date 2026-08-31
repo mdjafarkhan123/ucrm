@@ -115,6 +115,9 @@ const permissionFeaturePrefixes: Array<[string, string]> = [
 	['payments.', 'core.invoices_payments'],
 	['inbox.', 'communications.inbox'],
 	['portal.', 'portal.client'],
+	// Automation (Part 6) rides on the `automations` feature. The legacy `automation.` prefix below
+	// stays mapped to the retired `automation.workflows` key for immutable package history only.
+	['automations.', 'automations'],
 	['automation.', 'automation.workflows'],
 	['report.', 'reporting.advanced'],
 	['reports.', 'reporting.advanced'],

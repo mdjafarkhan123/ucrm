@@ -259,6 +259,260 @@ export type Database = {
 					}
 				];
 			};
+			automation_authority_events: {
+				Row: {
+					actor_owner_email: string;
+					after_state: Json;
+					axis: string;
+					before_state: Json;
+					created_at: string;
+					event_kind: string;
+					id: string;
+					idempotency_key: string;
+					organization_id: string;
+					reason: string;
+				};
+				Insert: {
+					actor_owner_email: string;
+					after_state?: Json;
+					axis: string;
+					before_state?: Json;
+					created_at?: string;
+					event_kind: string;
+					id?: string;
+					idempotency_key: string;
+					organization_id: string;
+					reason: string;
+				};
+				Update: {
+					actor_owner_email?: string;
+					after_state?: Json;
+					axis?: string;
+					before_state?: Json;
+					created_at?: string;
+					event_kind?: string;
+					id?: string;
+					idempotency_key?: string;
+					organization_id?: string;
+					reason?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'automation_authority_events_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			automation_draft_command_receipts: {
+				Row: {
+					command: string;
+					created_at: string;
+					id: string;
+					idempotency_key: string;
+					organization_id: string;
+					recipe_id: string | null;
+					result: Json;
+				};
+				Insert: {
+					command: string;
+					created_at?: string;
+					id?: string;
+					idempotency_key: string;
+					organization_id: string;
+					recipe_id?: string | null;
+					result: Json;
+				};
+				Update: {
+					command?: string;
+					created_at?: string;
+					id?: string;
+					idempotency_key?: string;
+					organization_id?: string;
+					recipe_id?: string | null;
+					result?: Json;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'automation_draft_command_receipts_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			automation_enrollment_command_receipts: {
+				Row: {
+					command: string;
+					created_at: string;
+					enrollment_id: string | null;
+					id: string;
+					idempotency_key: string;
+					organization_id: string;
+					result: Json;
+					subject_id: string | null;
+					subject_type: string | null;
+				};
+				Insert: {
+					command: string;
+					created_at?: string;
+					enrollment_id?: string | null;
+					id?: string;
+					idempotency_key: string;
+					organization_id: string;
+					result: Json;
+					subject_id?: string | null;
+					subject_type?: string | null;
+				};
+				Update: {
+					command?: string;
+					created_at?: string;
+					enrollment_id?: string | null;
+					id?: string;
+					idempotency_key?: string;
+					organization_id?: string;
+					result?: Json;
+					subject_id?: string | null;
+					subject_type?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'automation_enrollment_command_receipts_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			automation_recipe_versions: {
+				Row: {
+					activated_at: string;
+					activated_by: string | null;
+					activation_cutoff_sequence: number | null;
+					activation_cutoff_snapshot: unknown;
+					definition: Json;
+					definition_hash: string;
+					id: string;
+					organization_id: string;
+					recipe_id: string;
+					schema_version: number;
+					trigger_key: string;
+					version_number: number;
+				};
+				Insert: {
+					activated_at?: string;
+					activated_by?: string | null;
+					activation_cutoff_sequence?: number | null;
+					activation_cutoff_snapshot?: unknown;
+					definition: Json;
+					definition_hash: string;
+					id?: string;
+					organization_id: string;
+					recipe_id: string;
+					schema_version: number;
+					trigger_key: string;
+					version_number: number;
+				};
+				Update: {
+					activated_at?: string;
+					activated_by?: string | null;
+					activation_cutoff_sequence?: number | null;
+					activation_cutoff_snapshot?: unknown;
+					definition?: Json;
+					definition_hash?: string;
+					id?: string;
+					organization_id?: string;
+					recipe_id?: string;
+					schema_version?: number;
+					trigger_key?: string;
+					version_number?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'automation_recipe_versions_recipe_org_fkey';
+						columns: ['recipe_id', 'organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'automation_recipes';
+						referencedColumns: ['id', 'organization_id'];
+					}
+				];
+			};
+			automation_recipes: {
+				Row: {
+					active_trigger_key: string | null;
+					created_at: string;
+					created_by: string | null;
+					current_version_id: string | null;
+					draft_definition: Json | null;
+					draft_revision: number;
+					draft_updated_at: string | null;
+					draft_updated_by: string | null;
+					id: string;
+					name: string;
+					organization_id: string;
+					preset_key: string | null;
+					preset_version: number | null;
+					source: string;
+					status: string;
+					updated_at: string;
+				};
+				Insert: {
+					active_trigger_key?: string | null;
+					created_at?: string;
+					created_by?: string | null;
+					current_version_id?: string | null;
+					draft_definition?: Json | null;
+					draft_revision?: number;
+					draft_updated_at?: string | null;
+					draft_updated_by?: string | null;
+					id?: string;
+					name: string;
+					organization_id: string;
+					preset_key?: string | null;
+					preset_version?: number | null;
+					source: string;
+					status?: string;
+					updated_at?: string;
+				};
+				Update: {
+					active_trigger_key?: string | null;
+					created_at?: string;
+					created_by?: string | null;
+					current_version_id?: string | null;
+					draft_definition?: Json | null;
+					draft_revision?: number;
+					draft_updated_at?: string | null;
+					draft_updated_by?: string | null;
+					id?: string;
+					name?: string;
+					organization_id?: string;
+					preset_key?: string | null;
+					preset_version?: number | null;
+					source?: string;
+					status?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'automation_recipes_current_version_fkey';
+						columns: ['current_version_id', 'id', 'organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'automation_recipe_versions';
+						referencedColumns: ['id', 'recipe_id', 'organization_id'];
+					},
+					{
+						foreignKeyName: 'automation_recipes_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			catalog_items: {
 				Row: {
 					archived_at: string | null;
@@ -725,7 +979,10 @@ export type Database = {
 					logical_send_key: string;
 					organization_id: string;
 					provider_message_id: string | null;
+					quote_access_link_id: string | null;
 					quote_id: string | null;
+					quote_recipient_id: string | null;
+					quote_version_id: string | null;
 					recipient_email: string;
 					reply_alias_id: string | null;
 					resent_from_intent_id: string | null;
@@ -758,7 +1015,10 @@ export type Database = {
 					logical_send_key: string;
 					organization_id: string;
 					provider_message_id?: string | null;
+					quote_access_link_id?: string | null;
 					quote_id?: string | null;
+					quote_recipient_id?: string | null;
+					quote_version_id?: string | null;
 					recipient_email: string;
 					reply_alias_id?: string | null;
 					resent_from_intent_id?: string | null;
@@ -791,7 +1051,10 @@ export type Database = {
 					logical_send_key?: string;
 					organization_id?: string;
 					provider_message_id?: string | null;
+					quote_access_link_id?: string | null;
 					quote_id?: string | null;
+					quote_recipient_id?: string | null;
+					quote_version_id?: string | null;
 					recipient_email?: string;
 					reply_alias_id?: string | null;
 					resent_from_intent_id?: string | null;
@@ -827,11 +1090,32 @@ export type Database = {
 						referencedColumns: ['id'];
 					},
 					{
+						foreignKeyName: 'communication_delivery_intents_quote_access_link_fk';
+						columns: ['organization_id', 'quote_access_link_id'];
+						isOneToOne: false;
+						referencedRelation: 'quote_access_links';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
 						foreignKeyName: 'communication_delivery_intents_quote_fk';
 						columns: ['organization_id', 'quote_id'];
 						isOneToOne: false;
 						referencedRelation: 'quotes';
 						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'communication_delivery_intents_quote_recipient_fk';
+						columns: ['organization_id', 'quote_id', 'quote_recipient_id'];
+						isOneToOne: false;
+						referencedRelation: 'quote_recipients';
+						referencedColumns: ['organization_id', 'quote_id', 'id'];
+					},
+					{
+						foreignKeyName: 'communication_delivery_intents_quote_version_fk';
+						columns: ['organization_id', 'quote_id', 'quote_version_id'];
+						isOneToOne: false;
+						referencedRelation: 'quote_versions';
+						referencedColumns: ['organization_id', 'quote_id', 'id'];
 					},
 					{
 						foreignKeyName: 'communication_delivery_intents_reply_alias_id_fkey';
@@ -2960,6 +3244,47 @@ export type Database = {
 						foreignKeyName: 'opportunity_stage_events_organization_id_fkey';
 						columns: ['organization_id'];
 						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_automation_authority: {
+				Row: {
+					operational_changed_at: string | null;
+					operational_reason: string | null;
+					operational_state: string;
+					organization_id: string;
+					security_changed_at: string | null;
+					security_reason: string | null;
+					security_state: string;
+					updated_at: string;
+				};
+				Insert: {
+					operational_changed_at?: string | null;
+					operational_reason?: string | null;
+					operational_state?: string;
+					organization_id: string;
+					security_changed_at?: string | null;
+					security_reason?: string | null;
+					security_state?: string;
+					updated_at?: string;
+				};
+				Update: {
+					operational_changed_at?: string | null;
+					operational_reason?: string | null;
+					operational_state?: string;
+					organization_id?: string;
+					security_changed_at?: string | null;
+					security_reason?: string | null;
+					security_state?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_automation_authority_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: true;
 						referencedRelation: 'organizations';
 						referencedColumns: ['id'];
 					}
@@ -7380,6 +7705,21 @@ export type Database = {
 				Args: { p_ttl_seconds: number; p_worker_name: string };
 				Returns: string;
 			};
+			activate_automation_recipe_version: {
+				Args: {
+					p_active_limit: number;
+					p_actor_user_id: string;
+					p_definition: Json;
+					p_definition_hash: string;
+					p_expected_revision: number;
+					p_idempotency_key: string;
+					p_organization_id: string;
+					p_recipe_id: string;
+					p_schema_version: number;
+					p_trigger_key: string;
+				};
+				Returns: Json;
+			};
 			add_website_chat_widget_origin: {
 				Args: {
 					new_origin: string;
@@ -7387,6 +7727,10 @@ export type Database = {
 					target_widget_id: string;
 				};
 				Returns: Json;
+			};
+			advance_automation_work_item: {
+				Args: { p_claim_token: string; p_work_item_id: string };
+				Returns: string;
 			};
 			apply_organization_administrator_email_recovery: {
 				Args: {
@@ -7610,6 +7954,54 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			automation_active_enrollment_counts: {
+				Args: { p_organization_id: string; p_recipe_ids: string[] };
+				Returns: {
+					active_count: number;
+					recipe_id: string;
+				}[];
+			};
+			automation_recipe_history: {
+				Args: {
+					p_before_happened_at?: string;
+					p_before_id?: string;
+					p_limit?: number;
+					p_organization_id: string;
+					p_recipe_id: string;
+				};
+				Returns: {
+					customer_messages_sent: number;
+					detail: string;
+					enrollment_state: string;
+					happened_at: string;
+					id: string;
+					outcome: string;
+					subject_id: string;
+					subject_type: string;
+				}[];
+			};
+			automation_record_enrollments: {
+				Args: {
+					p_limit?: number;
+					p_organization_id: string;
+					p_subject_id: string;
+					p_subject_type: string;
+				};
+				Returns: {
+					created_at: string;
+					current_step_index: number;
+					customer_messages_sent: number;
+					enrollment_id: string;
+					next_due_at: string;
+					recipe_id: string;
+					recipe_name: string;
+					source: string;
+					state: string;
+					stop_reason: string;
+					updated_at: string;
+					version_number: number;
+				}[];
+			};
 			begin_communication_email_domain_removal: {
 				Args: {
 					expected_live_replacement_count: number;
@@ -7779,6 +8171,23 @@ export type Database = {
 				Returns: {
 					allowed: boolean;
 					retry_after_seconds: number;
+				}[];
+			};
+			claim_automation_work_items: {
+				Args: {
+					p_batch_size?: number;
+					p_lease_seconds?: number;
+					p_max_attempts?: number;
+					p_per_organization_cap?: number;
+					p_worker?: string;
+				};
+				Returns: {
+					attempts: number;
+					claim_token: string;
+					enrollment_id: string;
+					organization_id: string;
+					step_index: number;
+					work_item_id: string;
 				}[];
 			};
 			claim_cancelled_team_invitation_cleanup: {
@@ -8023,6 +8432,19 @@ export type Database = {
 				};
 				Returns: undefined;
 			};
+			create_automation_recipe_draft: {
+				Args: {
+					p_actor_user_id: string;
+					p_definition: Json;
+					p_idempotency_key: string;
+					p_name: string;
+					p_organization_id: string;
+					p_preset_key: string;
+					p_preset_version: number;
+					p_source: string;
+				};
+				Returns: Json;
+			};
 			create_catalog_item: {
 				Args: {
 					new_category: string;
@@ -8180,9 +8602,31 @@ export type Database = {
 			};
 			delete_property: { Args: { p_property_id: string }; Returns: undefined };
 			delete_quote: { Args: { target_quote_id: string }; Returns: Json };
+			dispatch_automation_worker_wake: { Args: never; Returns: undefined };
 			dispatch_communication_email_outbox_wake: {
 				Args: never;
 				Returns: undefined;
+			};
+			duplicate_automation_recipe: {
+				Args: {
+					p_actor_user_id: string;
+					p_expected_revision: number;
+					p_idempotency_key: string;
+					p_name: string;
+					p_organization_id: string;
+					p_recipe_id: string;
+				};
+				Returns: Json;
+			};
+			effective_automation_limits: {
+				Args: { at?: string; target_organization_id: string };
+				Returns: {
+					is_unlimited: boolean;
+					limit_key: string;
+					source: string;
+					state: string;
+					value: number;
+				}[];
 			};
 			effective_employee_seat_limit: {
 				Args: { at?: string; target_organization_id: string };
@@ -8207,6 +8651,18 @@ export type Database = {
 					target_actor_user_id: string;
 					target_organization_id: string;
 					target_session_id: string;
+				};
+				Returns: Json;
+			};
+			enqueue_automation_quote_email: {
+				Args: {
+					p_body: string;
+					p_logical_send_key: string;
+					p_organization_id: string;
+					p_quote_id: string;
+					p_quote_token_hash: string;
+					p_quote_url: string;
+					p_subject: string;
 				};
 				Returns: Json;
 			};
@@ -8241,7 +8697,10 @@ export type Database = {
 					logical_send_key: string;
 					organization_id: string;
 					provider_message_id: string | null;
+					quote_access_link_id: string | null;
 					quote_id: string | null;
+					quote_recipient_id: string | null;
+					quote_version_id: string | null;
 					recipient_email: string;
 					reply_alias_id: string | null;
 					resent_from_intent_id: string | null;
@@ -8292,7 +8751,10 @@ export type Database = {
 					logical_send_key: string;
 					organization_id: string;
 					provider_message_id: string | null;
+					quote_access_link_id: string | null;
 					quote_id: string | null;
+					quote_recipient_id: string | null;
+					quote_version_id: string | null;
 					recipient_email: string;
 					reply_alias_id: string | null;
 					resent_from_intent_id: string | null;
@@ -8389,7 +8851,10 @@ export type Database = {
 					logical_send_key: string;
 					organization_id: string;
 					provider_message_id: string | null;
+					quote_access_link_id: string | null;
 					quote_id: string | null;
+					quote_recipient_id: string | null;
+					quote_version_id: string | null;
 					recipient_email: string;
 					reply_alias_id: string | null;
 					resent_from_intent_id: string | null;
@@ -8438,7 +8903,10 @@ export type Database = {
 					logical_send_key: string;
 					organization_id: string;
 					provider_message_id: string | null;
+					quote_access_link_id: string | null;
 					quote_id: string | null;
+					quote_recipient_id: string | null;
+					quote_version_id: string | null;
 					recipient_email: string;
 					reply_alias_id: string | null;
 					resent_from_intent_id: string | null;
@@ -8840,6 +9308,14 @@ export type Database = {
 			};
 			get_communication_message_recovery_queue: { Args: never; Returns: Json };
 			get_communication_provider_callback_health: { Args: never; Returns: Json };
+			get_organization_automation_authority: {
+				Args: { p_organization_id: string };
+				Returns: Json;
+			};
+			get_organization_automation_limits: {
+				Args: { at?: string; p_organization_id: string };
+				Returns: Json;
+			};
 			get_organization_communication_email_allowances: {
 				Args: { at?: string; target_organization_id: string };
 				Returns: {
@@ -8930,6 +9406,10 @@ export type Database = {
 					widget_id: string;
 				}[];
 			};
+			intake_automation_events: {
+				Args: { p_batch_size?: number };
+				Returns: number;
+			};
 			issue_quote_access_link: {
 				Args: { supplied_token_hash: string; target_quote_id: string };
 				Returns: Json;
@@ -8954,6 +9434,27 @@ export type Database = {
 					target_organization_id: string;
 				};
 				Returns: Json;
+			};
+			manage_platform_package_automation_limits: {
+				Args: {
+					actor_email: string;
+					target_active_recipes_state: string;
+					target_active_recipes_value: number;
+					target_conditions_state: string;
+					target_conditions_value: number;
+					target_customer_messages_state: string;
+					target_customer_messages_value: number;
+					target_max_delay_state: string;
+					target_max_delay_value: number;
+					target_max_duration_state: string;
+					target_max_duration_value: number;
+					target_message_spacing_state: string;
+					target_message_spacing_value: number;
+					target_steps_state: string;
+					target_steps_value: number;
+					target_version_id: string;
+				};
+				Returns: string;
 			};
 			manage_platform_package_email_allowances: {
 				Args: {
@@ -8992,6 +9493,18 @@ export type Database = {
 					target_widgets_value: number;
 				};
 				Returns: string;
+			};
+			manual_enroll_automation: {
+				Args: {
+					p_actor_user_id: string;
+					p_idempotency_key: string;
+					p_max_enrollment_duration_days: number;
+					p_organization_id: string;
+					p_recipe_id: string;
+					p_subject_id: string;
+					p_subject_type: string;
+				};
+				Returns: Json;
 			};
 			mark_member_identity_revoked: {
 				Args: {
@@ -9121,6 +9634,24 @@ export type Database = {
 					search_term?: string;
 				};
 				Returns: Json;
+			};
+			pause_automation_enrollment: {
+				Args: {
+					p_actor_user_id: string;
+					p_enrollment_id: string;
+					p_idempotency_key: string;
+					p_organization_id: string;
+				};
+				Returns: Json;
+			};
+			perform_automation_email_effect: {
+				Args: {
+					p_claim_token: string;
+					p_quote_token_hash: string;
+					p_quote_url: string;
+					p_work_item_id: string;
+				};
+				Returns: string;
 			};
 			pipeline_board_page: {
 				Args: {
@@ -9459,6 +9990,15 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			preview_automation_manual_enrollment: {
+				Args: {
+					p_organization_id: string;
+					p_recipe_id: string;
+					p_subject_id: string;
+					p_subject_type: string;
+				};
+				Returns: Json;
+			};
 			preview_organization_closure_impact: {
 				Args: { target_organization_id: string };
 				Returns: Json;
@@ -9542,6 +10082,32 @@ export type Database = {
 					status: string;
 					total: number;
 				}[];
+			};
+			record_automation_worker_wake_dispatch: {
+				Args: {
+					p_job_name: string;
+					p_net_request_id: number;
+					p_wake_correlation_id: string;
+					p_worker_name: string;
+				};
+				Returns: undefined;
+			};
+			record_automation_worker_wake_result: {
+				Args: {
+					p_cancelled?: number;
+					p_claimed?: number;
+					p_completed?: number;
+					p_events_processed?: number;
+					p_finished_at: string;
+					p_parked?: number;
+					p_retried?: number;
+					p_route_outcome: string;
+					p_started_at: string;
+					p_waited?: number;
+					p_wake_correlation_id: string;
+					p_worker_name: string;
+				};
+				Returns: undefined;
 			};
 			record_communication_inbound_message: {
 				Args: {
@@ -9854,6 +10420,11 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			request_automation_worker_wake: { Args: never; Returns: undefined };
+			request_communication_email_outbox_wake: {
+				Args: never;
+				Returns: undefined;
+			};
 			request_communication_email_suppression_removal: {
 				Args: {
 					p_actor_email: string;
@@ -9900,10 +10471,6 @@ export type Database = {
 					total: number;
 				}[];
 			};
-			request_communication_email_outbox_wake: {
-				Args: never;
-				Returns: undefined;
-			};
 			resend_communication_email: {
 				Args: {
 					target_actor_user_id: string;
@@ -9933,7 +10500,10 @@ export type Database = {
 					logical_send_key: string;
 					organization_id: string;
 					provider_message_id: string | null;
+					quote_access_link_id: string | null;
 					quote_id: string | null;
+					quote_recipient_id: string | null;
+					quote_version_id: string | null;
 					recipient_email: string;
 					reply_alias_id: string | null;
 					resent_from_intent_id: string | null;
@@ -10049,6 +10619,23 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			resume_automation_enrollment: {
+				Args: {
+					p_actor_user_id: string;
+					p_enrollment_id: string;
+					p_idempotency_key: string;
+					p_organization_id: string;
+				};
+				Returns: Json;
+			};
+			resume_automation_work_items: {
+				Args: {
+					p_attention_reason?: string;
+					p_batch_size?: number;
+					p_organization_id?: string;
+				};
+				Returns: number;
+			};
 			resume_communication_email_reputation_pause: {
 				Args: {
 					p_actor_email: string;
@@ -10057,6 +10644,16 @@ export type Database = {
 					p_reason: string;
 				};
 				Returns: Json;
+			};
+			retry_automation_work_item: {
+				Args: {
+					p_claim_token: string;
+					p_error_code: string;
+					p_error_message: string;
+					p_permanent?: boolean;
+					p_work_item_id: string;
+				};
+				Returns: string;
 			};
 			retry_communication_message: {
 				Args: {
@@ -10096,6 +10693,18 @@ export type Database = {
 					p_organization_id: string;
 					p_reason: string;
 					p_widget_id: string;
+				};
+				Returns: Json;
+			};
+			save_automation_recipe_draft: {
+				Args: {
+					p_actor_user_id: string;
+					p_definition: Json;
+					p_expected_revision: number;
+					p_idempotency_key: string;
+					p_name: string;
+					p_organization_id: string;
+					p_recipe_id: string;
 				};
 				Returns: Json;
 			};
@@ -10181,6 +10790,17 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			set_automation_recipe_lifecycle_state: {
+				Args: {
+					p_action: string;
+					p_actor_user_id: string;
+					p_expected_revision: number;
+					p_idempotency_key: string;
+					p_organization_id: string;
+					p_recipe_id: string;
+				};
+				Returns: Json;
+			};
 			set_communication_email_organization_pause: {
 				Args: {
 					p_actor_email: string;
@@ -10238,6 +10858,17 @@ export type Database = {
 					p_daily_ceiling: number;
 					p_reason: string;
 					p_stage_key: string;
+				};
+				Returns: Json;
+			};
+			set_organization_automation_authority: {
+				Args: {
+					p_actor_email: string;
+					p_axis: string;
+					p_engage: boolean;
+					p_idempotency_key: string;
+					p_organization_id: string;
+					p_reason: string;
 				};
 				Returns: Json;
 			};
@@ -10394,6 +11025,25 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			skip_automation_enrollment_step: {
+				Args: {
+					p_actor_user_id: string;
+					p_enrollment_id: string;
+					p_idempotency_key: string;
+					p_organization_id: string;
+				};
+				Returns: Json;
+			};
+			stop_automation_enrollment: {
+				Args: {
+					p_actor_user_id: string;
+					p_enrollment_id: string;
+					p_idempotency_key: string;
+					p_organization_id: string;
+					p_reason: string;
+				};
+				Returns: Json;
 			};
 			submit_onboarding_application: {
 				Args: {

@@ -8,7 +8,8 @@ const serverEnvSchema = z.object({
 	SESSION_SECRET: z.string().trim().min(1),
 	CLOSURE_CRON_SECRET: z.string().trim().min(1),
 	TEAM_INVITATION_WORKER_SECRET: z.string().trim().min(32).optional(),
-	COMMUNICATIONS_WORKER_SECRET: z.string().trim().min(32).optional()
+	COMMUNICATIONS_WORKER_SECRET: z.string().trim().min(32).optional(),
+	AUTOMATION_WORKER_SECRET: z.string().trim().min(32).optional()
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
@@ -21,7 +22,8 @@ export function getServerEnv(): ServerEnv {
 		SESSION_SECRET: env.SESSION_SECRET,
 		CLOSURE_CRON_SECRET: env.CLOSURE_CRON_SECRET,
 		TEAM_INVITATION_WORKER_SECRET: env.TEAM_INVITATION_WORKER_SECRET,
-		COMMUNICATIONS_WORKER_SECRET: env.COMMUNICATIONS_WORKER_SECRET
+		COMMUNICATIONS_WORKER_SECRET: env.COMMUNICATIONS_WORKER_SECRET,
+		AUTOMATION_WORKER_SECRET: env.AUTOMATION_WORKER_SECRET
 	});
 
 	if (!result.success) {

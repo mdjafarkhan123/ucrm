@@ -49,7 +49,11 @@ export const GET: RequestHandler = async (event) => {
 				snippets_manage: hasPermission(check.access, 'conversations.send'),
 				taxes_manage: hasPermission(check.access, 'settings.taxes.manage'),
 				price_book_manage: hasPermission(check.access, 'settings.price_book.manage'),
-				quotes_manage: hasPermission(check.access, 'settings.quotes.manage')
+				quotes_manage: hasPermission(check.access, 'settings.quotes.manage'),
+				// Whether Automation would show for this member — plan includes it and they may view it. In 6B
+				// the card is still held back by a journey-ready flag on the client, so this alone never
+				// reveals it; it wires the gate so publishing the feature in 6D turns the card on.
+				automations_view: hasPermission(check.access, 'automations.view')
 			},
 			readiness: {
 				business_profile: businessProfileReadiness({

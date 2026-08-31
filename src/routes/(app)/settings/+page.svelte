@@ -9,6 +9,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import { fetchSettingsHome, settingsHomeKey } from '$lib/settings/api';
+	import { AUTOMATION_JOURNEY_READY } from '$lib/automation/journey';
 	import userIcon from '@tabler/icons/outline/user.svg?raw';
 	import buildingIcon from '@tabler/icons/outline/building-store.svg?raw';
 	import paletteIcon from '@tabler/icons/outline/palette.svg?raw';
@@ -23,11 +24,16 @@
 	import mailOffIcon from '@tabler/icons/outline/mail-off.svg?raw';
 	import messageCircleIcon from '@tabler/icons/outline/message-circle.svg?raw';
 	import templateIcon from '@tabler/icons/outline/template.svg?raw';
+	import robotIcon from '@tabler/icons/outline/robot.svg?raw';
 
 	const query = createQuery(() => ({
 		queryKey: settingsHomeKey,
 		queryFn: fetchSettingsHome
 	}));
+
+	// Automation has a working access decision and shell (Part 6B) but the contractor journey is a limited
+	// pilot, so its card stays hidden from ordinary packages until the shared journey flag flips. The
+	// permission gate below already handles who may see it once it is on.
 </script>
 
 <svelte:head><title>Settings · Contractor CRM</title></svelte:head>
@@ -49,6 +55,7 @@
 			{@const isTemplatesManager =
 				home.permissions.snippets_manage &&
 				(home.member.role === 'owner' || home.member.role === 'admin')}
+			{@const showAutomation = home.permissions.automations_view && AUTOMATION_JOURNEY_READY}
 			<div class="settings-page__member">
 				<Avatar
 					id={home.member.email ?? 'me'}
@@ -68,6 +75,7 @@
 				<a href="#business">Business</a>
 				{#if home.permissions.communications_manage}<a href="#communications">Communications</a
 					>{/if}
+				{#if showAutomation}<a href="#automations">Automations</a>{/if}
 				{#if home.permissions.team_manage}<a href="#team-access">Team & access</a>{/if}
 			</nav>
 
@@ -182,6 +190,25 @@
 									description="Reusable emails your team can send from any conversation."
 								/>
 							{/if}
+						</div>
+					</SectionBlock>
+				{/if}
+
+				{#if showAutomation}
+					<SectionBlock
+						title="Automations, notifications & connections"
+						hint="Work that happens on its own, so your team doesn’t have to remember it."
+						id="automations"
+						icon={robotIcon}
+						level={2}
+					>
+						<div class="settings-page__grid">
+							<SettingsDestinationCard
+								href={resolve('/settings/automation')}
+								icon={robotIcon}
+								title="Automation"
+								description="Automatic follow-ups that reach out to customers for you, on your rules."
+							/>
 						</div>
 					</SectionBlock>
 				{/if}
