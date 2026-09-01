@@ -173,6 +173,13 @@ distribute workers, but losing Redis cannot lose or duplicate logical work.
 
 - Completing one step transactionally writes its history, advances the enrollment, and creates at most one next
   due work item. The engine does not pre-expand an entire long sequence.
+- A wait is measured from the enrollment's anchor -- the original send the trigger event carries -- and is
+  cumulative over every earlier wait, not from the moment a worker reached the step. Day arithmetic runs in the
+  organization's timezone so a reminder keeps the local time of day of the original send across a daylight-saving
+  change. A due time that has already passed stays in the past and is claimed immediately; worker lateness never
+  shifts the rest of a sequence.
+- Domain stop conditions are rechecked at every transition, not only immediately before a customer effect, so an
+  enrollment whose subject stopped qualifying ends during its wait rather than at the end of it.
 - Workers claim a bounded batch with one atomic database command using deterministic due-time/id ordering and
   `FOR UPDATE SKIP LOCKED`. A short lease records worker and expiry. Network/provider calls happen after commit.
 - Organization-aware ordering prevents one hot tenant from taking the entire batch. The claim command first caps
@@ -401,6 +408,80 @@ time seven days later. Cancellation during the window preserves data. Cleanup cl
 small id-ordered batches, records progress/failure, yields between batches, and is restartable. It first compacts
 Important rows to non-personal tombstones where idempotency/replay protection must outlive detail. Organization
 destruction remains the existing separate, stricter workflow.
+
+### 6E split (Jafar, 2026-08-31)
+
+The owner-facing retention product this section describes (presets, seven-day shortening preview, batch-progress
+UI) does not exist yet: `/jafar/settings/cleanup` today is only the organization-closure queue. 6E is split:
+
+- **6E-1** (built 2026-08-31): the engine half. Fixed platform durations as migration constants, one nightly
+  `pg_cron` pure-SQL sweep in id-ordered batches, terminal enrollments compacted to no-restart tombstones.
+- **6E-2** (deferred with 6D-6): the owner surface. Exact per-organization durations, presets, and the
+  shortening preview wait on the storage/recovery evidence 6D-6's isolated environment produces.
+
+The no-restart tombstone is **not** deleted on a timer (revises the 730-day line above for this row only):
+matching GHL/HubSpot/Jobber, the re-enrollment guard lives with the subject record and goes only when the
+quote's organization is purged.
+
+### 6E-1 evidence (2026-08-31)
+
+Migration `20260831093839_automation_retention_sweep`. `private.automation_retention_sweep(p_batch, p_max_batches)`
+run nightly by cron job `automation-retention-nightly` (03:17 UTC).
+
+Retention clocks: processed events + `automation_event_matches` (cascade) at 180d on `processed_at`; settled
+(`done`/`cancelled`) work items at 90d on `updated_at`; terminal enrollments compacted (context, `enrolled_by`,
+`trigger_event_id` cleared; `compacted_at` set; leftover work items deleted) at 180d on `updated_at`; draft and
+enrollment command receipts at 30d on `created_at`. Wake ledger self-prunes (7d); `automation_authority_events`
+and `automation_recipe_versions` are never disposable. `automation_enrollments_source_evidence_ck` relaxed so a
+compacted event-sourced enrollment may carry a null `trigger_event_id`; event deletion is additionally guarded
+by `not exists (enrollment referencing)`.
+
+`supabase/tests/database/automation_6e1_retention_sweep.sql` — 34 pgTAP assertions green (correct clocks,
+live/active rows and audit untouched, no-restart guard survives compaction, batch cap + `hit_cap`, restartable,
+clean-slate no-op).
+
+`EXPLAIN (ANALYZE, BUFFERS)` on the managed remote, rolled-back, seeded 40–60k rows/table, 2000-row batch:
+
+| Selection query | Plan | Execution |
+| --- | --- | --- |
+| Settled work items (`automation_work_items_retention_idx`) | Index Scan → LockRows → Limit | 3.9 ms, 4013 shared hits |
+| Terminal enrollments (`automation_enrollments_retention_idx`) | Index Scan → LockRows → Limit | 8.4 ms, 6002 shared hits |
+| Deletable events (`automation_events_retention_idx` ⋈ anti-join `automation_enrollments_trigger_event_idx`) | Nested Loop Anti Join → LockRows → Limit | 8.0 ms, 8018 shared hits |
+
+No sequential scans. The sweep is a single nightly job with no contention, so plan-level evidence is the
+proportional bar; burst/backlog/concurrency evidence is not owed here (it belongs to the paused 6D-6). New
+security advisory: `rls_enabled_no_policy` on `automation_enrollment_command_receipts` — intentional deny-all,
+consistent with the other command-receipt and engine tables.
+
+### 6F-1 Quote follow-up parity (2026-08-31)
+
+Migration `20260831103248_automation_6f1_quote_follow_up_parity`. Closes three gaps against Jobber's built-in
+quote follow-ups (`.claude/skills/jobber/jobber-06-automations-clienthub.md` § 1.2):
+
+- **Preference.** `client_communication_preferences.quote_follow_ups` is now a hard gate. Intake records
+  `follow_ups_declined` and does not enroll; the transition and the send both stop a running enrollment with the
+  same reason. New `automation_event_matches.outcome` value, surfaced in recipe history.
+- **Stop.** `private.automation_quote_stop_outcome(organization, quote)` is the single quote-owned stop check,
+  used by `advance_automation_work_item` at every transition and by `enqueue_automation_quote_email` before every
+  send. `awaiting_response` is the only sendable status: the previous list also accepted `changes_requested` and
+  `approved`, so an approved quote could still receive a reminder. Reasons: `quote_not_sendable` (gone or
+  archived), `quote_not_awaiting_response`, `follow_ups_declined`. Advance reports `stop_condition_met`, which the
+  worker counts as cancelled.
+- **Timing.** New `private.automation_enrollments.anchor_at` (the trigger event's `occurred_at`; creation time for
+  a manual enrollment, backfilled for existing rows). Wait steps schedule at anchor + the running total of every
+  wait up to that step, computed in `organization_settings.timezone`, so the shipped 3-then-4-day preset lands on
+  day 3 and day 7 after the send at the send's local time of day regardless of worker lateness.
+
+Unchanged: the two-reminder preset, the per-step 90-day ceiling, email-only delivery, the logical send key's
+exactly-once guarantee, and tenant isolation.
+
+`supabase/tests/database/automation_6f1_quote_follow_up_parity.sql` — 26 pgTAP assertions green. The 6D-3 suite's
+stop-reason expectation was updated to `quote_not_awaiting_response`, and 6D-2's fixtures now point at real
+`awaiting_response` quotes because the transition rechecks them.
+
+Cost per transition is three added primary-key lookups (quote, client preference, organization settings) plus a
+scan of the recipe's own step list, and one added primary-key lookup per intake event — bounded, indexed work
+inside an already-bounded batch, so no separate load evidence is owed.
 
 ## Complete desktop UI blueprint
 

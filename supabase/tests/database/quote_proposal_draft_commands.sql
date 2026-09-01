@@ -3,7 +3,19 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(57);
+select plan(58);
+
+-- Money left the `authenticated` grant when the quote money columns were locked down, so these
+-- assertions read stored money the same way they read fixture ids: through a definer helper, rather
+-- than through the privileges of whichever member the test is currently pretending to be.
+create function pg_temp.money(query text) returns bigint
+language plpgsql stable security definer as $money$
+declare result bigint;
+begin
+  execute query into result;
+  return result;
+end;
+$money$;
 
 -- 1. Shape and privileges ---------------------------------------------------------------------------------
 
@@ -104,15 +116,15 @@ select is((select count(*)::integer from public.quote_version_lines where quote_
   6, 'every line is stored');
 select is((select quantity from public.quote_version_lines where quote_version_id = pg_temp.vid() and line_kind = 'text'),
   null, 'a note carries no quantity');
-select is((select unit_price_minor from public.quote_version_lines where quote_version_id = pg_temp.vid() and line_kind = 'text'),
+select is(pg_temp.money($m$select unit_price_minor from public.quote_version_lines where quote_version_id = pg_temp.vid() and line_kind = 'text'$m$),
   null, 'a note carries no money');
 
 -- The default selection is the one freezing would use: the required work and the recommended add-on.
-select is((select subtotal_minor from public.quote_versions where id = pg_temp.vid()), 9000::bigint,
+select is(pg_temp.money($m$select subtotal_minor from public.quote_versions where id = pg_temp.vid()$m$), 9000::bigint,
   'the subtotal is the recommended selection, not every line added up');
-select is((select cost_minor from public.quote_versions where id = pg_temp.vid()), 3200::bigint,
+select is(pg_temp.money($m$select cost_minor from public.quote_versions where id = pg_temp.vid()$m$), 3200::bigint,
   'cost follows the same selection');
-select is((select total_minor from public.quote_versions where id = pg_temp.vid()), 9000::bigint,
+select is(pg_temp.money($m$select total_minor from public.quote_versions where id = pg_temp.vid()$m$), 9000::bigint,
   'with no discount and no tax the total is the subtotal');
 
 select is(
@@ -128,40 +140,40 @@ select lives_ok(
   $$select public.set_quote_draft_tax(pg_temp.qid(), pg_temp.rev(), 'Sales tax', 1000)$$,
   'one named rate is set'
 );
-select is((select tax_minor from public.quote_versions where id = pg_temp.vid()), 800::bigint,
+select is(pg_temp.money($m$select tax_minor from public.quote_versions where id = pg_temp.vid()$m$), 800::bigint,
   'tax is charged on the taxable lines only');
-select is((select total_minor from public.quote_versions where id = pg_temp.vid()), 9800::bigint,
+select is(pg_temp.money($m$select total_minor from public.quote_versions where id = pg_temp.vid()$m$), 9800::bigint,
   'the total picks the tax up');
 
 select lives_ok(
   $$select public.set_quote_draft_discount(pg_temp.qid(), pg_temp.rev(), 'Spring deal', 'fixed', 900)$$,
   'a fixed discount is named and set'
 );
-select is((select discount_minor from public.quote_versions where id = pg_temp.vid()), 900::bigint,
+select is(pg_temp.money($m$select discount_minor from public.quote_versions where id = pg_temp.vid()$m$), 900::bigint,
   'the discount is what was asked for');
-select is((select tax_minor from public.quote_versions where id = pg_temp.vid()), 800::bigint,
+select is(pg_temp.money($m$select tax_minor from public.quote_versions where id = pg_temp.vid()$m$), 800::bigint,
   'a discount that fits inside the non-taxable work leaves the tax alone');
-select is((select total_minor from public.quote_versions where id = pg_temp.vid()), 8900::bigint,
+select is(pg_temp.money($m$select total_minor from public.quote_versions where id = pg_temp.vid()$m$), 8900::bigint,
   'the total comes down by the discount');
 
 select lives_ok(
   $$select public.set_quote_draft_discount(pg_temp.qid(), pg_temp.rev(), 'Spring deal', 'percentage', 2000)$$,
   'the same discount becomes a percentage'
 );
-select is((select discount_minor from public.quote_versions where id = pg_temp.vid()), 1800::bigint,
+select is(pg_temp.money($m$select discount_minor from public.quote_versions where id = pg_temp.vid()$m$), 1800::bigint,
   'twenty percent of the selected work');
-select is((select tax_minor from public.quote_versions where id = pg_temp.vid()), 720::bigint,
+select is(pg_temp.money($m$select tax_minor from public.quote_versions where id = pg_temp.vid()$m$), 720::bigint,
   'what spills past the non-taxable work reduces the tax with it');
-select is((select total_minor from public.quote_versions where id = pg_temp.vid()), 7920::bigint,
+select is(pg_temp.money($m$select total_minor from public.quote_versions where id = pg_temp.vid()$m$), 7920::bigint,
   'discount first, tax after');
 
 select lives_ok(
   $$select public.set_quote_draft_discount(pg_temp.qid(), pg_temp.rev(), 'Everything off', 'fixed', 100000)$$,
   'a discount larger than the work is accepted'
 );
-select is((select discount_minor from public.quote_versions where id = pg_temp.vid()), 9000::bigint,
+select is(pg_temp.money($m$select discount_minor from public.quote_versions where id = pg_temp.vid()$m$), 9000::bigint,
   'and capped at what the work costs');
-select is((select total_minor from public.quote_versions where id = pg_temp.vid()), 0::bigint,
+select is(pg_temp.money($m$select total_minor from public.quote_versions where id = pg_temp.vid()$m$), 0::bigint,
   'nothing left to pay and nothing left to tax');
 
 select lives_ok(
@@ -170,7 +182,7 @@ select lives_ok(
 );
 select is((select discount_name from public.quote_versions where id = pg_temp.vid()), null,
   'its name goes with it');
-select is((select total_minor from public.quote_versions where id = pg_temp.vid()), 9800::bigint,
+select is(pg_temp.money($m$select total_minor from public.quote_versions where id = pg_temp.vid()$m$), 9800::bigint,
   'the total goes back to work plus tax');
 
 select lives_ok(
@@ -179,7 +191,7 @@ select lives_ok(
 );
 select is((select tax_name from public.quote_versions where id = pg_temp.vid()), null,
   'No tax has no name to show');
-select is((select total_minor from public.quote_versions where id = pg_temp.vid()), 9000::bigint,
+select is(pg_temp.money($m$select total_minor from public.quote_versions where id = pg_temp.vid()$m$), 9000::bigint,
   'and the total is the work again');
 
 -- 6. The words on the page ----------------------------------------------------------------------------------
@@ -201,7 +213,7 @@ select is(
 select is(
   public.preview_quote_version_totals(pg_temp.qid(), '{}'::uuid[]) ? 'cost_minor',
   true, 'someone allowed to see cost sees it');
-select is((select total_minor from public.quote_versions where id = pg_temp.vid()), 9000::bigint,
+select is(pg_temp.money($m$select total_minor from public.quote_versions where id = pg_temp.vid()$m$), 9000::bigint,
   'a preview records nothing');
 
 set local role authenticated;
@@ -209,6 +221,28 @@ select set_config('request.jwt.claim.sub', 'b0000000-0000-0000-0000-000000000003
 select is(
   public.preview_quote_version_totals(pg_temp.qid(), '{}'::uuid[]) ? 'cost_minor',
   false, 'someone without the cost permission never receives it');
+
+-- Seeing the quote and seeing what the client pays are two different grants. The whole answer here is
+-- money, so with the price permission taken away the preview refuses instead of returning a blank one.
+set local role postgres;
+insert into public.organization_member_permission_overrides
+  (organization_id, user_id, permission_key, override_state)
+values
+  ('b1000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000003',
+   'quotes.view_price', 'deny');
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'b0000000-0000-0000-0000-000000000003', true);
+select throws_ok(
+  $$select public.preview_quote_version_totals(pg_temp.qid(), '{}'::uuid[])$$,
+  '42501', null, 'someone without the price permission cannot price a scenario'
+);
+
+set local role postgres;
+delete from public.organization_member_permission_overrides
+where organization_id = 'b1000000-0000-0000-0000-000000000001'
+  and user_id = 'b0000000-0000-0000-0000-000000000003'
+  and permission_key = 'quotes.view_price';
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'b0000000-0000-0000-0000-000000000001', true);

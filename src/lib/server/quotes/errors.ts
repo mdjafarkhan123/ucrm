@@ -106,3 +106,17 @@ export function catalogManageWriteError(error: DatabaseError) {
 
 	return databaseError();
 }
+
+// Conversion to a job refuses in three ways. A quote that already has one is a conflict to show — the
+// browser sends the person to the job that exists rather than asking them to reload and press again.
+export function convertQuoteToJobError(error: DatabaseError) {
+	if (error.code === '42501') return notFound(QUOTE_NOT_FOUND);
+	if (error.code === 'P0409')
+		return json(
+			{ error: error.message ?? 'This quote already has a job.', reason: 'already_converted' },
+			{ status: 409, headers: NO_STORE_HEADERS }
+		);
+	if (error.code === '23514')
+		return validationError({ form: error.message ?? 'This quote cannot become a job yet.' });
+	return databaseError();
+}

@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import type { Database } from '$lib/database.types';
 import { requireAutomationAccess } from '$lib/server/access/automation';
 import { PRIVATE_READ_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
@@ -183,17 +184,23 @@ export const POST: RequestHandler = async (event) => {
 	const service = getOwnerSupabaseClient();
 
 	try {
-		const { data, error } = await service.rpc('create_automation_recipe_draft', {
+		// `p_preset_key` / `p_preset_version` are nullable in the SQL function (it branches on `is null` for
+		// custom recipes), but Supabase's type generator marks every arg without a DEFAULT as non-nullable.
+		const draftArgs: Database['public']['Functions']['create_automation_recipe_draft']['Args'] = {
 			p_organization_id: organizationId,
 			p_actor_user_id: check.auth.user.id,
 			p_name: parsed.data.name,
 			p_source: parsed.data.source,
-			p_preset_key: parsed.data.source === 'preset' ? (parsed.data.preset_key ?? null) : null,
-			p_preset_version:
-				parsed.data.source === 'preset' ? (parsed.data.preset_version ?? null) : null,
+			p_preset_key: (parsed.data.source === 'preset'
+				? (parsed.data.preset_key ?? null)
+				: null) as string,
+			p_preset_version: (parsed.data.source === 'preset'
+				? (parsed.data.preset_version ?? null)
+				: null) as number,
 			p_definition: JSON.parse(validated.definitionJson),
 			p_idempotency_key: parsed.data.idempotency_key
-		});
+		};
+		const { data, error } = await service.rpc('create_automation_recipe_draft', draftArgs);
 		if (error) throw error;
 		const result = data as unknown as DraftCommandResult;
 		return json(

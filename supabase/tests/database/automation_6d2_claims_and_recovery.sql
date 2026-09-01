@@ -55,6 +55,29 @@ set status = 'active',
   active_trigger_key = 'quote.delivery_succeeded'
 where id::text like '6d200000-0000-0000-0000-00000000001%';
 
+-- One client and property per tenant, and one real quote per enrollment. Since 6F-1 the transition rechecks
+-- the quote at every step, so an enrollment must point at a quote that still awaits a response.
+insert into public.clients (id, organization_id, display_name)
+select ('6d200000-0000-0000-0000-00000000008' || g)::uuid,
+  ('6d200000-0000-0000-0000-00000000000' || g)::uuid, 'Client ' || g
+from generate_series(1, 3) as g;
+
+insert into public.properties (id, organization_id, client_id, address_line1, city)
+select ('6d200000-0000-0000-0000-00000000009' || g)::uuid,
+  ('6d200000-0000-0000-0000-00000000000' || g)::uuid,
+  ('6d200000-0000-0000-0000-00000000008' || g)::uuid, g || ' Automation Way', 'Testville'
+from generate_series(1, 3) as g;
+
+insert into public.quotes (
+  id, organization_id, client_id, property_id, quote_number, title, status, currency_code
+)
+select ('6d200000-0000-0000-0000-0000000007' || g || k)::uuid,
+  ('6d200000-0000-0000-0000-00000000000' || g)::uuid,
+  ('6d200000-0000-0000-0000-00000000008' || g)::uuid,
+  ('6d200000-0000-0000-0000-00000000009' || g)::uuid,
+  (g * 10) + k, 'Quote ' || g || '-' || k, 'awaiting_response', 'USD'
+from generate_series(1, 3) as g cross join generate_series(1, 5) as k;
+
 -- Five enrollments per tenant, each with one work item due five minutes ago.
 insert into private.automation_events (
   id, organization_id, event_type, subject_type, subject_id, payload, occurred_at,
@@ -62,7 +85,8 @@ insert into private.automation_events (
 )
 select ('6d200000-0000-0000-0000-0000000003' || g || k)::uuid,
   ('6d200000-0000-0000-0000-00000000000' || g)::uuid,
-  'quote.delivery_succeeded', 'quote', gen_random_uuid(), '{}'::jsonb, now(),
+  'quote.delivery_succeeded', 'quote', ('6d200000-0000-0000-0000-0000000007' || g || k)::uuid,
+  '{}'::jsonb, now(),
   'communications', ('6d200000-0000-0000-0000-0000000004' || g || k)::uuid, now()
 from generate_series(1, 3) as g cross join generate_series(1, 5) as k;
 
@@ -74,7 +98,7 @@ select ('6d200000-0000-0000-0000-0000000005' || g || k)::uuid,
   ('6d200000-0000-0000-0000-00000000000' || g)::uuid,
   ('6d200000-0000-0000-0000-00000000001' || g)::uuid,
   ('6d200000-0000-0000-0000-00000000002' || g)::uuid,
-  'quote', gen_random_uuid(),
+  'quote', ('6d200000-0000-0000-0000-0000000007' || g || k)::uuid,
   ('6d200000-0000-0000-0000-0000000003' || g || k)::uuid,
   'event', 'entry-' || g || '-' || k, '{}'::jsonb
 from generate_series(1, 3) as g cross join generate_series(1, 5) as k;

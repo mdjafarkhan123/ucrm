@@ -7,10 +7,11 @@ import { quotePreviewSchema } from '$lib/server/validation/quotes.schema';
 import { quoteWriteError } from '$lib/server/quotes/errors';
 
 // What the customer would pay if they took these add-ons. It is a question, not a decision: nothing is
-// written, no revision moves, and a person who may only look can ask it. The answer carries cost and
-// profit only for someone holding `quotes.view_cost`, which the database decides — not this route.
+// written and no revision moves. The whole answer is money, so asking it needs `quotes.view_price`, not
+// just `quotes.view`. The answer carries cost and profit only for someone holding `quotes.view_cost`,
+// which the database decides — not this route.
 export const POST: RequestHandler = async (event) => {
-	const check = await requireOrganizationPermission(event, 'quotes.view');
+	const check = await requireOrganizationPermission(event, 'quotes.view_price');
 	if ('response' in check) return check.response;
 
 	let body: unknown;

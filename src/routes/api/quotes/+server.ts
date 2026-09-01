@@ -17,6 +17,7 @@ import {
 import { quoteWriteError } from '$lib/server/quotes/errors';
 import { embeddedOne } from '$lib/server/api/embedded';
 import { organizationFormatting } from '$lib/server/requests/timezone';
+import { asMoneyMap } from '$lib/server/quotes/money';
 
 // Starting a quote from nothing. Everything that makes it a quote — the number, the draft version, the
 // address snapshot, the pipeline card — happens inside one database command, so a half-made quote with a
@@ -103,8 +104,8 @@ export const GET: RequestHandler = async (event) => {
 			`id, quote_number, title, status, currency_code, created_at, client_id, request_id,
 			 client:clients!quotes_client_organization_fk(id, display_name, company_name),
 			 property:properties!quotes_property_organization_fk(id, label, address_line1, city, state_region, postal_code),
-			 draft:quote_versions!quotes_draft_version_organization_fk(id${canSeePrice ? ', total_minor' : ''}),
-			 published:quote_versions!quotes_current_published_version_fk(id${canSeePrice ? ', total_minor' : ''})`
+			 draft:quote_versions!quotes_draft_version_organization_fk(id),
+			 published:quote_versions!quotes_current_published_version_fk(id)`
 		)
 		.eq('organization_id', organizationId)
 		.in('status', statuses);
@@ -156,10 +157,28 @@ export const GET: RequestHandler = async (event) => {
 	const page = (rows ?? []).slice(0, limit);
 	const hasMore = (rows ?? []).length > limit;
 
+	// The totals are no longer readable on the version rows themselves, so the page's versions are looked
+	// up in one gated call rather than embedded. It is one keyed read for the whole page, and a reader
+	// without `quotes.view_price` is not asked at all.
+	const pageVersionIds = canSeePrice
+		? page
+				.map(
+					(row) => (embeddedOne(row.draft) ?? embeddedOne(row.published)) as { id: string } | null
+				)
+				.filter((version): version is { id: string } => Boolean(version))
+				.map((version) => version.id)
+		: [];
+	const { data: versionMoney, error: moneyError } = pageVersionIds.length
+		? await supabase.rpc('quote_version_money', { target_version_ids: pageVersionIds })
+		: { data: {}, error: null };
+	if (moneyError) return databaseError();
+	const money = asMoneyMap(versionMoney);
+
 	const quotes = page.map((row) => {
 		const version = (embeddedOne(row.draft) ?? embeddedOne(row.published)) as {
-			total_minor?: number;
+			id: string;
 		} | null;
+		const total = version ? money[version.id]?.total_minor : undefined;
 		return {
 			id: row.id,
 			quote_number: row.quote_number,
@@ -174,7 +193,7 @@ export const GET: RequestHandler = async (event) => {
 			// table shows a dash instead of a wrong total.
 			// The column says Total, so it is the total: what the client would pay after any discount and
 			// tax, not the subtotal the lines add up to.
-			total_minor: canSeePrice ? (version?.total_minor ?? 0) : null
+			total_minor: canSeePrice ? (typeof total === 'number' ? total : 0) : null
 		};
 	});
 

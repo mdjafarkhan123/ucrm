@@ -1,0 +1,249 @@
+- button "Skip to Search":
+  - generic: Skip to Search
+- button "Skip to Content":
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link "Choose Plan":
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link "Home":
+  - /url: /home
+  - generic "jobber logo"
+- paragraph: JKA LTD
+- searchbox "Press / to search"
+- button:
+- button "Open activity feed, 0 unread":
+- button "Open Help Menu":
+- button "Open Settings Menu":
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button:
+    - link "Home":
+      - /url: /home
+    - link "Schedule":
+      - /url: /schedule
+  - separator
+  - list:
+    - link "Clients":
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+    - link "Requests":
+      - /url: /requests
+    - link "Quotes":
+      - /url: /quotes
+    - link "Jobs":
+      - /url: /jobs
+    - link "Invoices":
+      - /url: /invoices
+  - separator
+  - list:
+    - link "Marketing":
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+    - link "Pipeline":
+      - /url: /sales
+    - link "Insights":
+      - /url: /insights
+    - link "Expenses":
+      - /url: /expenses
+    - link "Timesheets":
+      - /url: /timesheets
+    - link "Community":
+      - /url: /community
+    - link "Apps":
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+  - separator
+  - list:
+    - link "Get Set Up":
+      - /url: /get_setup
+      - progressbar
+  - link "View pricing plans":
+    - /url: /accounts/billing_info/pricing
+- switch "Expand Sidebar" [checked]:
+  - generic: Expand Sidebar
+- main:
+  - generic: New Job
+  - generic: Title
+  - textbox "Title": CODEX RESEARCH 20260831 - One-off
+  - article:
+    - heading "Jk Jafar" [level=2]:
+      - link "Jk Jafar":
+        - /url: /clients/150994075
+    - button "More options":
+    - paragraph:
+      - link "2426 E Riverside Dr Austin, TX 78741":
+        - /url: https://www.google.com/maps/search/?api=1&query=2426+E+Riverside+Dr%2CAustin%2CTX%2C78741%2CUnited+States
+    - paragraph:
+      - link "206-555-0122":
+        - /url: tel:+12065550122
+    - paragraph:
+      - link "info.socialmediauser2@gmail.com":
+        - /url: mailto:info.socialmediauser2@gmail.com
+  - term: "Job #"
+  - 'textbox "Job #"':
+    - /placeholder: " "
+    - text: "2"
+  - 'button "Increase Job #"':
+  - 'button "Decrease Job #"':
+  - spinbutton: "2"
+  - term: Customize
+  - button "Add Field":
+    - generic: Add Field
+  - heading "Visits" [level=3]
+  - heading "Schedule" [level=6]
+  - radiogroup:
+    - radio "One-off" [checked]
+    - generic: One-off
+    - radio "Recurring"
+    - generic: Recurring
+  - generic: "2"
+  - generic: visits
+  - button "Create Visits":
+    - generic: Create Visits
+  - generic: Unscheduled
+  - button "Collapse visit":
+  - generic: Title
+  - textbox "Title"
+  - text: Leave title blank to use default title from
+  - link "Settings":
+    - /url: /work_configuration/edit/work_settings
+    - generic: Settings
+  - generic: Date
+  - textbox "Date" [disabled]: Aug 31, 2026
+  - checkbox "Schedule later" [checked]
+  - paragraph: Schedule later
+  - toolbar:
+    - button "Select team members":
+      - generic: Select team members
+    - generic: Assigned
+    - generic "Jk Jafar":
+      - button "Jk Jafar":
+        - generic: JJ
+        - paragraph: Jk Jafar
+        - button "Remove Jk Jafar":
+    - combobox "Assigned"
+    - button "Clear all selections":
+  - textbox
+  - generic: Visit instructions
+  - textbox "Visit instructions"
+  - button "More actions for visit":
+  - button "Sep 2 Expand visit Client name - Job title Jk Jafar Jk Jafar":
+    - generic: Sep 2
+    - button "Expand visit":
+    - paragraph: Client name - Job title
+    - generic "Jk Jafar":
+      - generic: JJ
+    - paragraph: Jk Jafar
+  - heading "CAPTURE ON-SITE DETAILS" [level=5]
+  - paragraph: Attach custom-built checklists so that nothing gets missed
+  - link "Create a Checklist":
+    - /url: /job_forms/new
+    - generic: Create a Checklist
+  - checkbox "Email team about assignment"
+  - paragraph: Email team about assignment
+  - button "Add a Visit":
+    - generic: Add a Visit
+  - button "Reset":
+    - generic: Reset
+  - heading "Billing" [level=3]
+  - checkbox "Remind me to invoice when I close the job" [checked]
+  - paragraph: Remind me to invoice when I close the job
+  - checkbox "Split into multiple invoices with a payment schedule" [checked]
+  - paragraph: Split into multiple invoices with a payment schedule
+  - generic: Split payments by
+  - radiogroup:
+    - radio "percent" [checked]
+    - generic: "%"
+    - radio "amount"
+    - generic: $
+  - paragraph: "Total:"
+  - paragraph: ৳0.00
+  - paragraph: ৳0.00 subtotal - ৳0.00 discount + ৳0.00 taxes
+  - progressbar
+  - generic: "Paid: 0.00% (৳0.00)"
+  - generic: "Awaiting Payment: 0.00% (৳0.00)"
+  - generic: "Draft: 0.00% (৳0.00)"
+  - generic: "Remaining: 100.00% (৳0.00)"
+  - paragraph: Invoice
+  - textbox "Description": Payment 1
+  - textbox "Percentage":
+    - /placeholder: " "
+    - text: 0%
+  - button "Increase Percentage":
+  - button "Decrease Percentage":
+  - spinbutton: "0"
+  - paragraph: "Total:"
+  - generic: ৳0.00
+  - paragraph: Invoice
+  - button "Delete":
+  - textbox "Description": Payment 2
+  - textbox "Percentage":
+    - /placeholder: " "
+    - text: 0%
+  - button "Increase Percentage":
+  - button "Decrease Percentage":
+  - spinbutton: "0"
+  - paragraph: "Total:"
+  - generic: ৳0.00
+  - button "Add Invoice to Payment Schedule":
+    - generic: Add Invoice to Payment Schedule
+  - paragraph: Total
+  - paragraph:
+    - generic: ৳0.00
+  - paragraph: Subtotal
+  - paragraph:
+    - generic: ৳0.00
+  - paragraph: Balance
+  - paragraph:
+    - generic: ৳0.00
+  - heading "Product / Service" [level=3]
+  - generic: Name
+  - combobox "Name"
+  - textbox "Quantity":
+    - /placeholder: " "
+    - text: "1"
+  - generic: Quantity
+  - button "Increase Quantity":
+  - button "Decrease Quantity":
+  - spinbutton: "1"
+  - textbox "Unit cost":
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Unit cost
+  - spinbutton: "0"
+  - textbox "Unit price":
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Unit price
+  - spinbutton: "0"
+  - textbox "Total":
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Total
+  - spinbutton: "0"
+  - generic: Description
+  - textbox "Description"
+  - button "Line Item Action Menu":
+  - status
+  - button "Add Line Item":
+    - generic: Add Line Item
+  - paragraph: Total cost
+  - paragraph: ৳0.00
+  - heading "Total price" [level=4]
+  - heading "৳0.00" [level=4]
+  - heading "Notes" [level=2]
+  - button "Leave an internal note for yourself or a team member": Leave an internal note for yourself or a team member
+  - button "Cancel":
+    - generic: Cancel
+  - button "Save Job":
+    - generic: Save Job
+  - button "Save and...":
+- iframe [id="stripeXDM_default469266_provider"] [name="stripeXDM_default469266_provider"]
+- iframe [id="intercom-frame"]
+- dialog "Remove Payment Schedule From This Job?" [active]:
+  - heading "Remove Payment Schedule From This Job?" [level=2]
+  - generic: Removing the payment schedule will also remove invoices that haven't been created for this job.
+  - button "Remove Payment Schedule":
+    - generic: Remove Payment Schedule
+  - button "Cancel":
+    - generic: Cancel

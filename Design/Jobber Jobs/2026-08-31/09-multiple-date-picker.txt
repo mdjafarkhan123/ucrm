@@ -1,0 +1,372 @@
+- button:
+  - generic: Skip to Search
+- button:
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link "Choose Plan":
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link:
+  - /url: /home
+- paragraph: JKA LTD
+- searchbox
+- button:
+- button:
+- button:
+- button:
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button:
+      - generic: Create
+    - link:
+      - /url: /home
+      - generic: Home
+    - link:
+      - /url: /schedule
+      - generic: Schedule
+  - separator
+  - list:
+    - link:
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+      - generic: Clients
+    - link:
+      - /url: /requests
+      - generic: Requests
+    - link:
+      - /url: /quotes
+      - generic: Quotes
+    - link:
+      - /url: /jobs
+      - generic: Jobs
+    - link:
+      - /url: /invoices
+      - generic: Invoices
+  - separator
+  - list:
+    - link:
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+      - generic: Marketing
+    - link:
+      - /url: /sales
+      - generic: Pipeline
+    - link:
+      - /url: /insights
+      - generic: Insights
+    - button:
+    - link:
+      - /url: /expenses
+      - generic: Expenses
+    - link:
+      - /url: /timesheets
+      - generic: Timesheets
+    - link:
+      - /url: /community
+      - generic: Community
+    - link:
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+      - generic: Apps
+  - separator
+  - list:
+    - link:
+      - /url: /get_setup
+      - progressbar
+      - generic: Get Set Up
+  - paragraph:
+    - strong: Trial started 🎉
+  - paragraph: "Limited time offer: Save up to 40%"
+  - progressbar: 7.142857142857142%
+  - generic: Day 1 / 14
+  - link:
+    - /url: /accounts/billing_info/pricing
+    - generic: Compare Plans
+- switch:
+  - generic: Collapse Sidebar
+- main:
+  - generic: New Job
+  - generic: Title
+  - textbox: CODEX RESEARCH 20260831 - One-off
+  - article:
+    - heading [level=2]:
+      - link:
+        - /url: /clients/150994075
+        - text: Jk Jafar
+    - button:
+    - paragraph:
+      - link:
+        - /url: https://www.google.com/maps/search/?api=1&query=2426+E+Riverside+Dr%2CAustin%2CTX%2C78741%2CUnited+States
+        - text: 2426 E Riverside Dr Austin, TX 78741
+    - paragraph:
+      - link:
+        - /url: tel:+12065550122
+        - text: 206-555-0122
+    - paragraph:
+      - link:
+        - /url: mailto:info.socialmediauser2@gmail.com
+        - text: info.socialmediauser2@gmail.com
+  - term: "Job #"
+  - textbox:
+    - /placeholder: " "
+    - text: "2"
+  - button:
+  - button:
+  - spinbutton: "2"
+  - term: Customize
+  - button:
+    - generic: Add Field
+  - heading [level=3]: Visits
+  - heading [level=6]: Schedule
+  - radiogroup:
+    - radio [checked]
+    - generic: One-off
+    - radio
+    - generic: Recurring
+  - generic: "1"
+  - generic: visit
+  - button:
+    - generic: Create Visits
+  - paragraph: Aug
+  - heading [level=2]: "31"
+  - generic: Title
+  - textbox
+  - text: Leave title blank to use default title from
+  - link:
+    - /url: /work_configuration/edit/work_settings
+    - generic: Settings
+  - generic: Date
+  - textbox: Aug 31, 2026
+  - button:
+  - checkbox
+  - paragraph: Schedule later
+  - generic: Start time
+  - textbox
+  - generic: End time
+  - textbox
+  - checkbox
+  - paragraph: Anytime
+  - toolbar:
+    - button:
+      - generic: Select team members
+    - generic: Assigned
+    - button:
+      - generic: JJ
+      - paragraph: Jk Jafar
+      - button:
+    - combobox
+    - button:
+  - textbox
+  - generic: Visit instructions
+  - textbox
+  - button:
+  - button:
+  - heading [level=5]: CAPTURE ON-SITE DETAILS
+  - paragraph: Attach custom-built checklists so that nothing gets missed
+  - link:
+    - /url: /job_forms/new
+    - generic: Create a Checklist
+  - checkbox
+  - paragraph: Email team about assignment
+  - button:
+    - generic: Add a Visit
+  - button:
+    - generic: Reset
+  - heading [level=3]: Billing
+  - checkbox [checked]
+  - paragraph: Remind me to invoice when I close the job
+  - checkbox
+  - paragraph: Split into multiple invoices with a payment schedule
+  - heading [level=3]: Product / Service
+  - button:
+  - generic: Name
+  - combobox
+  - textbox:
+    - /placeholder: " "
+    - text: "1"
+  - generic: Quantity
+  - button:
+  - button:
+  - spinbutton: "1"
+  - textbox:
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Unit cost
+  - spinbutton: "0"
+  - textbox:
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Unit price
+  - spinbutton: "0"
+  - textbox:
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Total
+  - spinbutton: "0"
+  - generic: Description
+  - textbox
+  - button:
+  - status
+  - button:
+    - generic: Add Line Item
+  - paragraph: Total cost
+  - paragraph: ৳0.00
+  - heading [level=4]: Total price
+  - heading [level=4]: ৳0.00
+  - heading [level=2]: Notes
+  - button: Leave an internal note for yourself or a team member
+  - button:
+    - generic: Cancel
+  - button:
+    - generic: Save Job
+  - button:
+- iframe [id="stripeXDM_default469266_provider"] [name="stripeXDM_default469266_provider"]
+- iframe [id="intercom-frame"]
+- dialog "Create Visits":
+  - heading "Create Visits" [level=2]
+  - button "Close modal":
+  - button "Select dates":
+    - generic: Select dates
+    - textbox "Select dates"
+  - button "Select range" [active]:
+    - generic: Select range
+  - button "Custom select":
+    - generic: Custom select
+  - generic: 0/20 selected
+  - generic "Choose Date":
+    - alert
+    - button "Previous Month":
+    - generic: August 2026
+    - table:
+      - rowgroup:
+        - row "Sunday Monday Tuesday Wednesday Thursday Friday Saturday":
+          - columnheader "Sunday":
+            - generic: Sunday
+            - generic: Sun
+          - columnheader "Monday":
+            - generic: Monday
+            - generic: Mon
+          - columnheader "Tuesday":
+            - generic: Tuesday
+            - generic: Tue
+          - columnheader "Wednesday":
+            - generic: Wednesday
+            - generic: Wed
+          - columnheader "Thursday":
+            - generic: Thursday
+            - generic: Thu
+          - columnheader "Friday":
+            - generic: Friday
+            - generic: Fri
+          - columnheader "Saturday":
+            - generic: Saturday
+            - generic: Sat
+      - rowgroup "Month August, 2026":
+        - row "Choose Saturday, August 1st, 2026":
+          - gridcell "Choose Saturday, August 1st, 2026": "1"
+        - row "Choose Sunday, August 2nd, 2026 Choose Monday, August 3rd, 2026 Choose Tuesday, August 4th, 2026 Choose Wednesday, August 5th, 2026 Choose Thursday, August 6th, 2026 Choose Friday, August 7th, 2026 Choose Saturday, August 8th, 2026":
+          - gridcell "Choose Sunday, August 2nd, 2026": "2"
+          - gridcell "Choose Monday, August 3rd, 2026": "3"
+          - gridcell "Choose Tuesday, August 4th, 2026": "4"
+          - gridcell "Choose Wednesday, August 5th, 2026": "5"
+          - gridcell "Choose Thursday, August 6th, 2026": "6"
+          - gridcell "Choose Friday, August 7th, 2026": "7"
+          - gridcell "Choose Saturday, August 8th, 2026": "8"
+        - row "Choose Sunday, August 9th, 2026 Choose Monday, August 10th, 2026 Choose Tuesday, August 11th, 2026 Choose Wednesday, August 12th, 2026 Choose Thursday, August 13th, 2026 Choose Friday, August 14th, 2026 Choose Saturday, August 15th, 2026":
+          - gridcell "Choose Sunday, August 9th, 2026": "9"
+          - gridcell "Choose Monday, August 10th, 2026": "10"
+          - gridcell "Choose Tuesday, August 11th, 2026": "11"
+          - gridcell "Choose Wednesday, August 12th, 2026": "12"
+          - gridcell "Choose Thursday, August 13th, 2026": "13"
+          - gridcell "Choose Friday, August 14th, 2026": "14"
+          - gridcell "Choose Saturday, August 15th, 2026": "15"
+        - row "Choose Sunday, August 16th, 2026 Choose Monday, August 17th, 2026 Choose Tuesday, August 18th, 2026 Choose Wednesday, August 19th, 2026 Choose Thursday, August 20th, 2026 Choose Friday, August 21st, 2026 Choose Saturday, August 22nd, 2026":
+          - gridcell "Choose Sunday, August 16th, 2026": "16"
+          - gridcell "Choose Monday, August 17th, 2026": "17"
+          - gridcell "Choose Tuesday, August 18th, 2026": "18"
+          - gridcell "Choose Wednesday, August 19th, 2026": "19"
+          - gridcell "Choose Thursday, August 20th, 2026": "20"
+          - gridcell "Choose Friday, August 21st, 2026": "21"
+          - gridcell "Choose Saturday, August 22nd, 2026": "22"
+        - row "Choose Sunday, August 23rd, 2026 Choose Monday, August 24th, 2026 Choose Tuesday, August 25th, 2026 Choose Wednesday, August 26th, 2026 Choose Thursday, August 27th, 2026 Choose Friday, August 28th, 2026 Choose Saturday, August 29th, 2026":
+          - gridcell "Choose Sunday, August 23rd, 2026": "23"
+          - gridcell "Choose Monday, August 24th, 2026": "24"
+          - gridcell "Choose Tuesday, August 25th, 2026": "25"
+          - gridcell "Choose Wednesday, August 26th, 2026": "26"
+          - gridcell "Choose Thursday, August 27th, 2026": "27"
+          - gridcell "Choose Friday, August 28th, 2026": "28"
+          - gridcell "Choose Saturday, August 29th, 2026": "29"
+        - row "Choose Sunday, August 30th, 2026 Choose Monday, August 31st, 2026":
+          - gridcell "Choose Sunday, August 30th, 2026": "30"
+          - gridcell "Choose Monday, August 31st, 2026": "31"
+    - generic: September 2026
+    - button "Next Month":
+    - table:
+      - rowgroup:
+        - row "Sunday Monday Tuesday Wednesday Thursday Friday Saturday":
+          - columnheader "Sunday":
+            - generic: Sunday
+            - generic: Sun
+          - columnheader "Monday":
+            - generic: Monday
+            - generic: Mon
+          - columnheader "Tuesday":
+            - generic: Tuesday
+            - generic: Tue
+          - columnheader "Wednesday":
+            - generic: Wednesday
+            - generic: Wed
+          - columnheader "Thursday":
+            - generic: Thursday
+            - generic: Thu
+          - columnheader "Friday":
+            - generic: Friday
+            - generic: Fri
+          - columnheader "Saturday":
+            - generic: Saturday
+            - generic: Sat
+      - rowgroup "Month September, 2026":
+        - row "Choose Tuesday, September 1st, 2026 Choose Wednesday, September 2nd, 2026 Choose Thursday, September 3rd, 2026 Choose Friday, September 4th, 2026 Choose Saturday, September 5th, 2026":
+          - gridcell "Choose Tuesday, September 1st, 2026": "1"
+          - gridcell "Choose Wednesday, September 2nd, 2026": "2"
+          - gridcell "Choose Thursday, September 3rd, 2026": "3"
+          - gridcell "Choose Friday, September 4th, 2026": "4"
+          - gridcell "Choose Saturday, September 5th, 2026": "5"
+        - row "Choose Sunday, September 6th, 2026 Choose Monday, September 7th, 2026 Choose Tuesday, September 8th, 2026 Choose Wednesday, September 9th, 2026 Choose Thursday, September 10th, 2026 Choose Friday, September 11th, 2026 Choose Saturday, September 12th, 2026":
+          - gridcell "Choose Sunday, September 6th, 2026": "6"
+          - gridcell "Choose Monday, September 7th, 2026": "7"
+          - gridcell "Choose Tuesday, September 8th, 2026": "8"
+          - gridcell "Choose Wednesday, September 9th, 2026": "9"
+          - gridcell "Choose Thursday, September 10th, 2026": "10"
+          - gridcell "Choose Friday, September 11th, 2026": "11"
+          - gridcell "Choose Saturday, September 12th, 2026": "12"
+        - row "Choose Sunday, September 13th, 2026 Choose Monday, September 14th, 2026 Choose Tuesday, September 15th, 2026 Choose Wednesday, September 16th, 2026 Choose Thursday, September 17th, 2026 Choose Friday, September 18th, 2026 Choose Saturday, September 19th, 2026":
+          - gridcell "Choose Sunday, September 13th, 2026": "13"
+          - gridcell "Choose Monday, September 14th, 2026": "14"
+          - gridcell "Choose Tuesday, September 15th, 2026": "15"
+          - gridcell "Choose Wednesday, September 16th, 2026": "16"
+          - gridcell "Choose Thursday, September 17th, 2026": "17"
+          - gridcell "Choose Friday, September 18th, 2026": "18"
+          - gridcell "Choose Saturday, September 19th, 2026": "19"
+        - row "Choose Sunday, September 20th, 2026 Choose Monday, September 21st, 2026 Choose Tuesday, September 22nd, 2026 Choose Wednesday, September 23rd, 2026 Choose Thursday, September 24th, 2026 Choose Friday, September 25th, 2026 Choose Saturday, September 26th, 2026":
+          - gridcell "Choose Sunday, September 20th, 2026": "20"
+          - gridcell "Choose Monday, September 21st, 2026": "21"
+          - gridcell "Choose Tuesday, September 22nd, 2026": "22"
+          - gridcell "Choose Wednesday, September 23rd, 2026": "23"
+          - gridcell "Choose Thursday, September 24th, 2026": "24"
+          - gridcell "Choose Friday, September 25th, 2026": "25"
+          - gridcell "Choose Saturday, September 26th, 2026": "26"
+        - row "Choose Sunday, September 27th, 2026 Choose Monday, September 28th, 2026 Choose Tuesday, September 29th, 2026 Choose Wednesday, September 30th, 2026":
+          - gridcell "Choose Sunday, September 27th, 2026": "27"
+          - gridcell "Choose Monday, September 28th, 2026": "28"
+          - gridcell "Choose Tuesday, September 29th, 2026": "29"
+          - gridcell "Choose Wednesday, September 30th, 2026": "30"
+  - button "Reset":
+    - generic: Reset
+  - button "Select":
+    - generic: Select
+  - checkbox "Schedule later"
+  - paragraph: Schedule later
+  - button "Create" [disabled]:
+    - generic: Create
+  - button "Cancel":
+    - generic: Cancel

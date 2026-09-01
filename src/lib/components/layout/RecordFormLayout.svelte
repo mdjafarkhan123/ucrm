@@ -1,16 +1,24 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import StickyActionBar from './StickyActionBar.svelte';
+	import FormErrorSummary from '$lib/components/forms/FormErrorSummary.svelte';
 
 	// The shape every create and edit page shares: a titled main card, a right rail of cards, and the
 	// action bar underneath. Each page decides what goes in the rail, so a request page can show Notes and
 	// Attachments while a client page also shows Lead source.
+	//
+	// It also owns the form-level error banner. A page passes its `error` text here instead of drawing its
+	// own banner, and calls `revealError()` after a failed save so the message scrolls into view and takes
+	// focus — the person is almost always down by the Save button when a save fails, and an off-screen
+	// banner is why Save "looks broken".
 	let {
 		title,
 		icon,
 		main,
 		rail,
 		actions,
+		error = '',
+		errorFields = [],
 		class: className = ''
 	}: {
 		title: string;
@@ -18,11 +26,19 @@
 		main: Snippet;
 		rail?: Snippet;
 		actions?: Snippet;
+		error?: string;
+		errorFields?: { anchor: string; label: string }[];
 		class?: string;
 	} = $props();
 
 	const uid = $props.id();
 	const titleId = `${uid}-title`;
+
+	let errorSummary = $state<FormErrorSummary>();
+
+	export function revealError() {
+		void errorSummary?.reveal();
+	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -33,6 +49,7 @@
 				{#if icon}<span class="record-form__icon" aria-hidden="true">{@html icon}</span>{/if}
 				<h1 id={titleId}>{title}</h1>
 			</header>
+			<FormErrorSummary bind:this={errorSummary} message={error} fields={errorFields} />
 			{@render main()}
 		</section>
 

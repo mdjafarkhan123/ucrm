@@ -174,7 +174,7 @@ describe('quote detail API', () => {
 		expect(body.can_send_email).toBe(false);
 	});
 
-	it('never asks the database for cost when the member may not see it', async () => {
+	it('leaves money off the rows and asks the gated reader for it instead', async () => {
 		mockedRequire.mockResolvedValue(
 			context({ 'quotes.view': true, 'quotes.view_price': true, 'quotes.view_cost': false })
 		);
@@ -183,13 +183,18 @@ describe('quote detail API', () => {
 		const body = await (await GET(target)).json();
 		const lineSelect = target.__built.quote_version_lines.__selects[0];
 
-		expect(lineSelect).toContain('unit_price_minor');
+		expect(lineSelect).not.toContain('unit_price_minor');
 		expect(lineSelect).not.toContain('unit_cost_minor');
 		expect(lineSelect).not.toContain('line_cost_total_minor');
+		expect(target.__built.quote_versions.__selects[0]).not.toContain('subtotal_minor');
+		// Cost is withheld by the reader itself, so the route asks the same question either way.
+		expect(target.locals.supabase.rpc).toHaveBeenCalledWith('quote_line_money', {
+			target_version_id: versionId
+		});
 		expect(body.can_see_cost).toBe(false);
 	});
 
-	it('never asks for price or subtotal either when the member may not see money at all', async () => {
+	it('does not even ask the money readers when the member may not see money at all', async () => {
 		mockedRequire.mockResolvedValue(
 			context({ 'quotes.view': true, 'quotes.view_price': false, 'quotes.view_cost': false })
 		);
@@ -197,11 +202,13 @@ describe('quote detail API', () => {
 
 		await GET(target);
 		const lineSelect = target.__built.quote_version_lines.__selects[0];
+		const asked = (target.locals.supabase.rpc as ReturnType<typeof vi.fn>).mock.calls.map(
+			(call) => call[0]
+		);
 
-		expect(lineSelect).not.toContain('unit_price_minor');
-		expect(lineSelect).not.toContain('line_total_minor');
 		expect(lineSelect).toContain('name');
-		expect(target.__built.quote_versions.__selects[0]).not.toContain('subtotal_minor');
+		expect(asked).not.toContain('quote_version_money');
+		expect(asked).not.toContain('quote_line_money');
 	});
 
 	it('answers not-found for a quote in another organization', async () => {

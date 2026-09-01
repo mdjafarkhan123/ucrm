@@ -1,0 +1,268 @@
+- button:
+  - generic: Skip to Search
+- button:
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link:
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link:
+  - /url: /home
+- paragraph: JKA LTD
+- searchbox
+- button:
+- button:
+- button:
+- button:
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button:
+      - generic: Create
+    - link:
+      - /url: /home
+      - generic: Home
+    - link:
+      - /url: /schedule
+      - generic: Schedule
+  - separator
+  - list:
+    - link:
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+      - generic: Clients
+    - link:
+      - /url: /requests
+      - generic: Requests
+    - link:
+      - /url: /quotes
+      - generic: Quotes
+    - link:
+      - /url: /jobs
+      - generic: Jobs
+    - link:
+      - /url: /invoices
+      - generic: Invoices
+  - separator
+  - list:
+    - link:
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+      - generic: Marketing
+    - link:
+      - /url: /sales
+      - generic: Pipeline
+    - link:
+      - /url: /insights
+      - generic: Insights
+    - button:
+    - link:
+      - /url: /expenses
+      - generic: Expenses
+    - link:
+      - /url: /timesheets
+      - generic: Timesheets
+    - link:
+      - /url: /community
+      - generic: Community
+    - link:
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+      - generic: Apps
+  - separator
+  - list:
+    - link:
+      - /url: /get_setup
+      - progressbar
+      - generic: Get Set Up
+  - paragraph:
+    - strong: Trial started 🎉
+  - paragraph: "Limited time offer: Save up to 40%"
+  - progressbar: 7.142857142857142%
+  - generic: Day 1 / 14
+  - link:
+    - /url: /accounts/billing_info/pricing
+    - generic: Compare Plans
+- switch:
+  - generic: Collapse Sidebar
+- main:
+  - status:
+    - paragraph: Action Required
+  - button:
+  - button:
+    - generic: More
+  - button:
+    - generic: Schedule Visit
+  - heading [level=1]: CODEX RESEARCH 20260831 - One-off
+  - button:
+  - article:
+    - heading [level=2]:
+      - link:
+        - /url: /clients/150994075
+        - text: Jk Jafar
+    - button:
+    - paragraph: Property Address
+    - paragraph:
+      - link:
+        - /url: https://www.google.com/maps/search/?api=1&query=2426+E+Riverside+Dr%2CAustin%2CTX%2C78741%2CUnited+States
+        - text: 2426 E Riverside Dr Austin, TX 78741
+    - paragraph:
+      - link:
+        - /url: tel:+12065550122
+        - text: 206-555-0122
+    - paragraph:
+      - link:
+        - /url: mailto:info.socialmediauser2@gmail.com
+        - text: info.socialmediauser2@gmail.com
+  - term: "Job #"
+  - definition: "2"
+  - term: Job type
+  - definition: One-off job
+  - term: Starts on
+  - definition: Sep 02, 2026
+  - term: Ends on
+  - definition: Sep 02, 2026
+  - term: Billing frequency
+  - definition: Upon job completion
+  - heading [level=3]: Product / Service
+  - button:
+  - article:
+    - paragraph: Line Item
+    - paragraph: Quantity
+    - paragraph: Unit Cost
+    - paragraph: Unit Price
+    - paragraph: Total
+    - definition:
+      - heading [level=5]: Electrical Panel Upgrade
+      - paragraph: Upgrade existing electrical panel, including new breakers, grounding, and labeling.
+    - term: Image
+    - definition
+    - definition: "1"
+    - definition: ৳25.00
+    - definition: ৳100.00
+    - definition: ৳100.00
+  - paragraph: Total cost
+  - paragraph: ৳25.00
+  - heading [level=5]: Total price
+  - heading [level=5]: ৳100.00
+  - heading [level=3]: Labor
+  - paragraph: Time tracked to this job will show here
+  - button:
+    - generic: Add Time Entry
+  - heading [level=3]: Expenses
+  - paragraph: Track all expenses for this job in one place
+  - button:
+    - generic: Add Expense
+  - heading [level=3]: Scheduled visits
+  - paragraph: First visit
+  - paragraph: Sep 02, 2026
+  - paragraph: Checklists
+  - button:
+    - generic: Edit
+  - paragraph: —
+  - paragraph: Arrival window
+  - button:
+    - generic: Edit
+  - paragraph: Arrive at start time
+  - combobox:
+    - paragraph: Status
+    - paragraph: All
+  - button:
+  - table:
+    - rowgroup:
+      - row:
+        - columnheader:
+          - checkbox
+        - columnheader:
+          - button:
+            - text: Date and time
+        - columnheader: Title and instructions
+        - columnheader:
+          - button:
+            - text: Status
+        - columnheader: Assigned
+        - columnheader
+    - rowgroup:
+      - row:
+        - cell:
+          - checkbox
+        - cell:
+          - paragraph: Unscheduled
+        - cell:
+          - paragraph: CODEX - inspection visit
+          - paragraph: Disposable research visit; no customer communicati...
+        - cell:
+          - status:
+            - paragraph: Completed
+        - cell:
+          - generic: JJ
+          - paragraph: Jk Jafar
+        - cell:
+          - button:
+      - row:
+        - cell:
+          - checkbox
+        - cell:
+          - paragraph:
+            - generic: Sep 02, 2026
+          - paragraph: Anytime
+        - cell:
+          - paragraph: Jk Jafar - CODEX RESEARCH 20260831 - One-off
+        - cell:
+          - status:
+            - paragraph: Completed
+        - cell:
+          - generic: JJ
+          - paragraph: Jk Jafar
+        - cell:
+          - button:
+  - heading [level=3]: Billing
+  - button:
+    - generic: Edit Invoice Settings
+  - term: Reminders
+  - definition: When the job is marked closed
+  - tablist:
+    - tab: Invoicing
+    - tab: Reminders
+  - tabpanel:
+    - table:
+      - rowgroup:
+        - row:
+          - columnheader: Scheduled
+          - columnheader: Description
+          - columnheader: Status
+          - columnheader: Assigned
+      - rowgroup:
+        - row:
+          - cell:
+            - paragraph: You'll be reminded to invoice based on your invoicing frequency
+        - row:
+          - cell:
+            - button:
+              - generic: Add Reminder
+  - button:
+  - heading [level=3]: Total cost to date
+  - generic: ৳25.00
+  - generic: Revenue
+  - paragraph: ৳100.00
+  - paragraph: Cost
+  - paragraph: ৳25.00
+  - button:
+  - generic: Line items
+  - paragraph: ৳25.00
+  - paragraph: Profit
+  - paragraph: 75%
+  - paragraph: ৳75.00
+  - heading [level=3]: Notes
+  - button: Leave an internal note for yourself or a team member
+- iframe [id="stripeXDM_default469266_provider"] [name="stripeXDM_default469266_provider"]
+- iframe [id="intercom-frame"]
+- generic: Visit completed
+- button:
+- dialog "Final visit completed":
+  - heading "Final visit completed" [level=2]
+  - button "Close dialog" [active]:
+  - button "Close Job":
+    - generic: Close Job
+  - button "Schedule new visit":
+    - generic: Schedule new visit
+  - button "Leave as Action Required":
+    - generic: Leave as Action Required

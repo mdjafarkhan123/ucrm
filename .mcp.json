@@ -1,12 +1,5 @@
 {
   "mcpServers": {
-    "brevo": {
-      "type": "http",
-      "url": "https://mcp.brevo.com/v1/brevo/mcp",
-      "headers": {
-        "Authorization": "Bearer ${BREVO_MCP_TOKEN}"
-      }
-    },
     "supabase": {
       "type": "http",
       "url": "https://mcp.supabase.com/mcp?project_ref=lgerqoeyusspmgzecwjs&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching"

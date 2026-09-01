@@ -11,4 +11,5 @@ Permanent behavior lives in docs/quote-behavior-contract.md.
 | 5 | Secure access, decisions, signatures, and utilities | Closed | 3–4 | Sharing and customer/staff actions are secure and version-bound |
 | 6 | Deposits and payment schedules | Closed | 2, 4–5 | Deposits calculate correctly and gate Job readiness without fake processing |
 | 7 | Quote-backed Sales Pipeline | Closed in sales-pipeline | 5–6 | Quote transitions and Pipeline outcome stay atomic |
+| M | Money-permission lockdown | Closed | 2–6 | Price and cost leave the database only through the gated money readers, and every quote route spec proves it |
 | 8 | Terminal Job handoff and final audit/manual | Blocked | Jobs foundation | Idempotent conversion preserves Quote history and passes final gates |

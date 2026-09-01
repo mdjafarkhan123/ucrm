@@ -9,6 +9,18 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(105);
 
+-- Money left the `authenticated` grant when the quote money columns were locked down, so these
+-- assertions read stored money the same way they read fixture ids: through a definer helper, rather
+-- than through the privileges of whichever member the test is currently pretending to be.
+create function pg_temp.money(query text) returns bigint
+language plpgsql stable security definer as $money$
+declare result bigint;
+begin
+  execute query into result;
+  return result;
+end;
+$money$;
+
 -- 1. Shape --------------------------------------------------------------------------------------------
 
 select has_table('public', 'organization_quote_counters', 'the quote number counter table exists');
@@ -353,7 +365,7 @@ select is(
   'draft', 'the copied version is a mutable draft'
 );
 select is(
-  (select subtotal_minor from public.quote_versions where quote_id = (select id from public.quotes where request_id = '84000000-0000-0000-0000-000000000001')),
+  pg_temp.money($m$select subtotal_minor from public.quote_versions where quote_id = (select id from public.quotes where request_id = '84000000-0000-0000-0000-000000000001')$m$),
   110938::bigint, 'the draft version carries the same exact subtotal as the request'
 );
 select is(
@@ -373,7 +385,7 @@ select is(
   array['Cedar board', 'Install crew', 'Site cleanup'], 'copied lines keep their order'
 );
 select is(
-  (select sum(line_total_minor)::bigint from public.quote_version_lines where quote_id = (select id from public.quotes where request_id = '84000000-0000-0000-0000-000000000001')),
+  pg_temp.money($m$select sum(line_total_minor)::bigint from public.quote_version_lines where quote_id = (select id from public.quotes where request_id = '84000000-0000-0000-0000-000000000001')$m$),
   110938::bigint, 'the copied line totals add up to the same money'
 );
 select is(
@@ -469,7 +481,7 @@ select is(
   'Cedar board', 'editing the catalog never rewrites a copied quote line'
 );
 select is(
-  (select unit_price_minor from public.quote_version_lines where quote_id = (select id from public.quotes where request_id = '84000000-0000-0000-0000-000000000001') and position = 0),
+  pg_temp.money($m$select unit_price_minor from public.quote_version_lines where quote_id = (select id from public.quotes where request_id = '84000000-0000-0000-0000-000000000001') and position = 0$m$),
   4599::bigint, 'the copied price is the price at conversion time'
 );
 select is(
@@ -513,8 +525,8 @@ select is(
   0, 'an empty request does not invent line items'
 );
 select is(
-  (select subtotal_minor from public.quote_versions
-    where quote_id = (select id from public.quotes where request_id = '84000000-0000-0000-0000-000000000004')),
+  pg_temp.money($m$select subtotal_minor from public.quote_versions
+    where quote_id = (select id from public.quotes where request_id = '84000000-0000-0000-0000-000000000004')$m$),
   0::bigint, 'an empty request converts to an explicit zero subtotal'
 );
 

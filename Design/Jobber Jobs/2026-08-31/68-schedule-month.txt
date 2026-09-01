@@ -1,0 +1,279 @@
+- button "Skip to Search":
+  - generic: Skip to Search
+- button "Skip to Content":
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link "Choose Plan":
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link "Home":
+  - /url: /home
+  - generic "jobber logo"
+- paragraph: JKA LTD
+- searchbox "Press / to search"
+- button:
+- button "Open activity feed, 0 unread":
+- button "Open Help Menu":
+- button "Open Settings Menu":
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button "Create":
+      - generic: Create
+    - link "Home":
+      - /url: /home
+      - generic: Home
+    - link "Schedule":
+      - /url: /schedule
+      - generic: Schedule
+  - separator
+  - list:
+    - link "Clients":
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+      - generic: Clients
+    - link "Requests":
+      - /url: /requests
+      - generic: Requests
+    - link "Quotes":
+      - /url: /quotes
+      - generic: Quotes
+    - link "Jobs":
+      - /url: /jobs
+      - generic: Jobs
+    - link "Invoices":
+      - /url: /invoices
+      - generic: Invoices
+  - separator
+  - list:
+    - link "Marketing":
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+      - generic: Marketing
+    - link "Pipeline":
+      - /url: /sales
+      - generic: Pipeline
+    - link "Insights":
+      - /url: /insights
+      - generic: Insights
+    - 'button "Toggle submenu: Insights"':
+    - link "Expenses":
+      - /url: /expenses
+      - generic: Expenses
+    - link "Timesheets":
+      - /url: /timesheets
+      - generic: Timesheets
+    - link "Community":
+      - /url: /community
+      - generic: Community
+    - link "Apps":
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+      - generic: Apps
+  - separator
+  - list:
+    - link "Get Set Up":
+      - /url: /get_setup
+      - progressbar
+      - generic: Get Set Up
+  - paragraph:
+    - strong: Trial started 🎉
+  - paragraph: "Limited time offer: Save up to 40%"
+  - progressbar: 7.142857142857142%
+  - generic: Day 1 / 14
+  - link "Compare Plans":
+    - /url: /accounts/billing_info/pricing
+    - generic: Compare Plans
+- switch "Collapse Sidebar":
+  - generic: Collapse Sidebar
+- main:
+  - paragraph: August 2026
+  - button "Choose date":
+  - button "Previous period":
+  - button "Next period":
+  - button "Today":
+    - generic: Today
+  - button "Find an appointment time":
+    - generic: Find a Time
+  - combobox "Filter by appointment type":
+    - paragraph: Type
+    - paragraph: All
+  - combobox "Filter by team member assignments":
+    - paragraph: Team
+    - paragraph: All
+  - textbox
+  - combobox "Filter by appointment status":
+    - paragraph: Status
+    - paragraph: All
+  - radiogroup:
+    - radio "Month" [checked] [active]
+    - generic: Month
+    - radio "Week"
+    - generic: Week
+    - radio "Day"
+    - generic: Day
+  - button "Unscheduled appointments":
+    - generic: "0"
+  - button "Toggle Map":
+  - button "More":
+    - generic: More
+  - grid:
+    - rowgroup:
+      - row "Sunday Monday Tuesday Wednesday Thursday Friday Saturday":
+        - columnheader "Sunday":
+          - generic "Sunday":
+            - generic: Sun
+        - columnheader "Monday":
+          - generic "Monday":
+            - generic: Mon
+        - columnheader "Tuesday":
+          - generic "Tuesday":
+            - generic: Tue
+        - columnheader "Wednesday":
+          - generic "Wednesday":
+            - generic: Wed
+        - columnheader "Thursday":
+          - generic "Thursday":
+            - generic: Thu
+        - columnheader "Friday":
+          - generic "Friday":
+            - generic: Fri
+        - columnheader "Saturday":
+          - generic "Saturday":
+            - generic: Sat
+    - rowgroup:
+      - row "26 27 28 29 30 31 1":
+        - gridcell "26":
+          - generic "Go to July 26, 2026":
+            - generic: "26"
+        - gridcell "27":
+          - generic "Go to July 27, 2026":
+            - generic: "27"
+        - gridcell "28":
+          - generic "Go to July 28, 2026":
+            - generic: "28"
+        - gridcell "29":
+          - generic "Go to July 29, 2026":
+            - generic: "29"
+        - gridcell "30":
+          - generic "Go to July 30, 2026":
+            - generic: "30"
+        - gridcell "31":
+          - generic "Go to July 31, 2026":
+            - generic: "31"
+        - gridcell "1":
+          - generic "Go to August 1, 2026":
+            - generic: "1"
+      - row "2 3 4 5 6 7 8":
+        - gridcell "2":
+          - generic "Go to August 2, 2026":
+            - generic: "2"
+        - gridcell "3":
+          - generic "Go to August 3, 2026":
+            - generic: "3"
+        - gridcell "4":
+          - generic "Go to August 4, 2026":
+            - generic: "4"
+        - gridcell "5":
+          - generic "Go to August 5, 2026":
+            - generic: "5"
+        - gridcell "6":
+          - generic "Go to August 6, 2026":
+            - generic: "6"
+        - gridcell "7":
+          - generic "Go to August 7, 2026":
+            - generic: "7"
+        - gridcell "8":
+          - generic "Go to August 8, 2026":
+            - generic: "8"
+      - row "9 10 11 12 13 14 15":
+        - gridcell "9":
+          - generic "Go to August 9, 2026":
+            - generic: "9"
+        - gridcell "10":
+          - generic "Go to August 10, 2026":
+            - generic: "10"
+        - gridcell "11":
+          - generic "Go to August 11, 2026":
+            - generic: "11"
+        - gridcell "12":
+          - generic "Go to August 12, 2026":
+            - generic: "12"
+        - gridcell "13":
+          - generic "Go to August 13, 2026":
+            - generic: "13"
+        - gridcell "14":
+          - generic "Go to August 14, 2026":
+            - generic: "14"
+        - gridcell "15":
+          - generic "Go to August 15, 2026":
+            - generic: "15"
+      - row "16 17 18 19 20 21 22":
+        - gridcell "16":
+          - generic "Go to August 16, 2026":
+            - generic: "16"
+        - gridcell "17":
+          - generic "Go to August 17, 2026":
+            - generic: "17"
+        - gridcell "18":
+          - generic "Go to August 18, 2026":
+            - generic: "18"
+        - gridcell "19":
+          - generic "Go to August 19, 2026":
+            - generic: "19"
+        - gridcell "20":
+          - generic "Go to August 20, 2026":
+            - generic: "20"
+        - gridcell "21":
+          - generic "Go to August 21, 2026":
+            - generic: "21"
+        - gridcell "22":
+          - generic "Go to August 22, 2026":
+            - generic: "22"
+      - row "23 24 25 26 27 28 29":
+        - gridcell "23":
+          - generic "Go to August 23, 2026":
+            - generic: "23"
+        - gridcell "24":
+          - generic "Go to August 24, 2026":
+            - generic: "24"
+        - gridcell "25":
+          - generic "Go to August 25, 2026":
+            - generic: "25"
+        - gridcell "26":
+          - generic "Go to August 26, 2026":
+            - generic: "26"
+        - gridcell "27":
+          - generic "Go to August 27, 2026":
+            - generic: "27"
+        - gridcell "28":
+          - generic "Go to August 28, 2026":
+            - generic: "28"
+        - gridcell "29":
+          - generic "Go to August 29, 2026":
+            - generic: "29"
+      - row "30 31 1 visit 1 2 3 4 5":
+        - gridcell "30":
+          - generic "Go to August 30, 2026":
+            - generic: "30"
+        - gridcell "31 1 visit":
+          - generic "Go to August 31, 2026":
+            - generic: "31"
+            - status "1 visit"
+          - text: Jk Jafar - Panel upgrade & inspection
+        - gridcell "1":
+          - generic "Go to September 1, 2026":
+            - generic: "1"
+        - gridcell "2":
+          - generic "Go to September 2, 2026":
+            - generic: "2"
+        - gridcell "3":
+          - generic "Go to September 3, 2026":
+            - generic: "3"
+        - gridcell "4":
+          - generic "Go to September 4, 2026":
+            - generic: "4"
+        - gridcell "5":
+          - generic "Go to September 5, 2026":
+            - generic: "5"
+  - status
+- iframe [id="stripeXDM_default203351_provider"] [name="stripeXDM_default203351_provider"]
+- iframe [id="intercom-frame"]

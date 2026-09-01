@@ -1,0 +1,234 @@
+- button:
+  - generic: Skip to Search
+- button:
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link "Choose Plan":
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link:
+  - /url: /home
+- paragraph: JKA LTD
+- searchbox
+- button:
+- button:
+- button:
+- button:
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button:
+      - generic: Create
+    - link:
+      - /url: /home
+      - generic: Home
+    - link:
+      - /url: /schedule
+      - generic: Schedule
+  - separator
+  - list:
+    - link:
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+      - generic: Clients
+    - link:
+      - /url: /requests
+      - generic: Requests
+    - link:
+      - /url: /quotes
+      - generic: Quotes
+    - link:
+      - /url: /jobs
+      - generic: Jobs
+    - link:
+      - /url: /invoices
+      - generic: Invoices
+  - separator
+  - list:
+    - link:
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+      - generic: Marketing
+    - link:
+      - /url: /sales
+      - generic: Pipeline
+    - link:
+      - /url: /insights
+      - generic: Insights
+    - button:
+    - link:
+      - /url: /expenses
+      - generic: Expenses
+    - link:
+      - /url: /timesheets
+      - generic: Timesheets
+    - link:
+      - /url: /community
+      - generic: Community
+    - link:
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+      - generic: Apps
+  - separator
+  - list:
+    - link:
+      - /url: /get_setup
+      - progressbar
+      - generic: Get Set Up
+  - paragraph:
+    - strong: Trial started 🎉
+  - paragraph: "Limited time offer: Save up to 40%"
+  - progressbar: 7.142857142857142%
+  - generic: Day 1 / 14
+  - link:
+    - /url: /accounts/billing_info/pricing
+    - generic: Compare Plans
+- switch:
+  - generic: Collapse Sidebar
+- main:
+  - generic: New Job
+  - generic: Title
+  - textbox
+  - generic: Select a client
+  - combobox "Select a client" [expanded] [active]
+  - listbox:
+    - option "Jk Jafar 2426 E Riverside Dr, Austin, TX 78741 info.socialmediauser2@gmail.com · 206-555-0122":
+      - paragraph: Jk Jafar
+      - paragraph: 2426 E Riverside Dr, Austin, TX 78741
+      - paragraph: info.socialmediauser2@gmail.com · 206-555-0122
+      - status:
+        - paragraph: Sample Data
+    - option "User three Professor Tower, Pallibidyut, Savar, Dhaka, Savar, Dhaka Division 1344 profile.mdjafarkhan@gmail.com · 01834969565":
+      - paragraph: User three
+      - paragraph: Professor Tower, Pallibidyut, Savar, Dhaka, Savar, Dhaka Division 1344
+      - paragraph: profile.mdjafarkhan@gmail.com · 01834969565
+      - status:
+        - paragraph: Lead
+    - option "User Two Savar, 1344 info.hiddenknowledge@gmail.com · 01834969563":
+      - paragraph: User Two
+      - paragraph: Savar, 1344
+      - paragraph: info.hiddenknowledge@gmail.com · 01834969563
+      - status:
+        - paragraph: Lead
+    - option "User One Savar, 1344 dev.jafarkhan@gmail.com · 0183496956":
+      - paragraph: User One
+      - paragraph: Savar, 1344
+      - paragraph: dev.jafarkhan@gmail.com · 0183496956
+      - status:
+        - paragraph: Lead
+    - button "Create new client":
+      - paragraph: Create new client
+  - term: "Job #"
+  - textbox:
+    - /placeholder: " "
+    - text: "2"
+  - button:
+  - button:
+  - spinbutton: "2"
+  - term: Customize
+  - button:
+    - generic: Add Field
+  - heading [level=3]: Visits
+  - heading [level=6]: Schedule
+  - radiogroup:
+    - radio [checked]
+    - generic: One-off
+    - radio
+    - generic: Recurring
+  - generic: "1"
+  - generic: visit
+  - button:
+    - generic: Create Visits
+  - paragraph: Aug
+  - heading [level=2]: "31"
+  - generic: Title
+  - textbox
+  - text: Leave title blank to use default title from
+  - link:
+    - /url: /work_configuration/edit/work_settings
+    - generic: Settings
+  - generic: Date
+  - textbox: Aug 31, 2026
+  - button:
+  - checkbox
+  - paragraph: Schedule later
+  - generic: Start time
+  - textbox
+  - generic: End time
+  - textbox
+  - checkbox
+  - paragraph: Anytime
+  - toolbar:
+    - button:
+      - generic: Select team members
+    - generic: Assigned
+    - button:
+      - generic: JJ
+      - paragraph: Jk Jafar
+      - button:
+    - combobox
+    - button:
+  - textbox
+  - generic: Visit instructions
+  - textbox
+  - button:
+  - button:
+  - heading [level=5]: CAPTURE ON-SITE DETAILS
+  - paragraph: Attach custom-built checklists so that nothing gets missed
+  - link:
+    - /url: /job_forms/new
+    - generic: Create a Checklist
+  - checkbox
+  - paragraph: Email team about assignment
+  - button:
+    - generic: Add a Visit
+  - button:
+    - generic: Reset
+  - heading [level=3]: Billing
+  - checkbox [checked]
+  - paragraph: Remind me to invoice when I close the job
+  - checkbox
+  - paragraph: Split into multiple invoices with a payment schedule
+  - heading [level=3]: Product / Service
+  - button:
+  - generic: Name
+  - combobox
+  - textbox:
+    - /placeholder: " "
+    - text: "1"
+  - generic: Quantity
+  - button:
+  - button:
+  - spinbutton: "1"
+  - textbox:
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Unit cost
+  - spinbutton: "0"
+  - textbox:
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Unit price
+  - spinbutton: "0"
+  - textbox:
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Total
+  - spinbutton: "0"
+  - generic: Description
+  - textbox
+  - button:
+  - status
+  - button:
+    - generic: Add Line Item
+  - paragraph: Total cost
+  - paragraph: ৳0.00
+  - heading [level=4]: Total price
+  - heading [level=4]: ৳0.00
+  - heading [level=2]: Notes
+  - button: Leave an internal note for yourself or a team member
+  - button:
+    - generic: Cancel
+  - button:
+    - generic: Save Job
+  - button:
+- iframe [id="stripeXDM_default469266_provider"] [name="stripeXDM_default469266_provider"]
+- iframe [id="intercom-frame"]

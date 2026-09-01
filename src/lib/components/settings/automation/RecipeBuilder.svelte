@@ -304,7 +304,11 @@
 			const firstStep = Object.keys(errors.steps)[0];
 			if (firstStep !== undefined) id = `builder-step-${firstStep}-subject`;
 		}
-		if (id) document.getElementById(id)?.focus();
+		if (!id) return;
+		const target = document.getElementById(id);
+		if (!target) return;
+		target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		target.focus({ preventScroll: true });
 	}
 
 	async function invalidateLists() {

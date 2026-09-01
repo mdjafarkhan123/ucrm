@@ -1,0 +1,194 @@
+- button "Skip to Search":
+  - generic: Skip to Search
+- button "Skip to Content":
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link "Choose Plan":
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link "Home":
+  - /url: /home
+  - generic "jobber logo"
+- paragraph: JKA LTD
+- searchbox "Press / to search"
+- button:
+- button "Open activity feed, 0 unread":
+- button "Open Help Menu":
+- button "Open Settings Menu":
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button "Create":
+      - generic: Create
+    - link "Home":
+      - /url: /home
+      - generic: Home
+    - link "Schedule":
+      - /url: /schedule
+      - generic: Schedule
+  - separator
+  - list:
+    - link "Clients":
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+      - generic: Clients
+    - link "Requests":
+      - /url: /requests
+      - generic: Requests
+    - link "Quotes":
+      - /url: /quotes
+      - generic: Quotes
+    - link "Jobs":
+      - /url: /jobs
+      - generic: Jobs
+    - link "Invoices":
+      - /url: /invoices
+      - generic: Invoices
+  - separator
+  - list:
+    - link "Marketing":
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+      - generic: Marketing
+    - link "Pipeline":
+      - /url: /sales
+      - generic: Pipeline
+    - link "Insights":
+      - /url: /insights
+      - generic: Insights
+    - 'button "Toggle submenu: Insights"':
+    - link "Expenses":
+      - /url: /expenses
+      - generic: Expenses
+    - link "Timesheets":
+      - /url: /timesheets
+      - generic: Timesheets
+    - link "Community":
+      - /url: /community
+      - generic: Community
+    - link "Apps":
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+      - generic: Apps
+  - separator
+  - list:
+    - link "Get Set Up":
+      - /url: /get_setup
+      - progressbar
+      - generic: Get Set Up
+  - paragraph:
+    - strong: Trial started 🎉
+  - paragraph: "Limited time offer: Save up to 40%"
+  - progressbar: 7.142857142857142%
+  - generic: Day 1 / 14
+  - link "Compare Plans":
+    - /url: /accounts/billing_info/pricing
+    - generic: Compare Plans
+- switch "Collapse Sidebar":
+  - generic: Collapse Sidebar
+- main:
+  - heading "Jobs" [level=1]
+  - button "New Job":
+    - generic: New Job
+  - button "More Actions":
+    - generic: More Actions
+  - generic: Overview
+  - list:
+    - link "Ending within 30 days (0)":
+      - /url: /jobs?status=expiring_within_30_days
+      - paragraph: Ending within 30 days (0)
+      - paragraph
+    - link "Late (0)":
+      - /url: /jobs?status=late
+      - paragraph: Late (0)
+      - paragraph
+    - link "Requires Invoicing (0)":
+      - /url: /jobs?status=requires_invoicing
+      - paragraph: Requires Invoicing (0)
+      - paragraph
+    - link "Action Required (0)":
+      - /url: /jobs?status=action_required
+      - paragraph: Action Required (0)
+      - paragraph
+    - link "Unscheduled (0)":
+      - /url: /jobs?status=unscheduled
+      - paragraph: Unscheduled (0)
+      - paragraph
+  - generic: Recent visits
+  - generic: Number of visits and the revenue of jobs scheduled for the past 30 days.
+  - paragraph: Past 30 days
+  - generic: "1"
+  - generic: ↑ 100%
+  - paragraph: ৳600
+  - generic: Visits scheduled
+  - paragraph: Next 30 days
+  - generic: "0"
+  - generic: ↓ 100%
+  - paragraph: ৳0
+  - button "How can I get paid faster? Jobber can help you take payments instantly in person or set up automatic payments. Learn more with Jobber AI":
+    - generic: How can I get paid faster?
+    - paragraph:
+      - generic: Jobber can help you take payments instantly in person or set up automatic payments.
+    - paragraph:
+      - text: Learn more with
+      - text: Jobber AI
+  - heading "All jobs" [level=3]
+  - paragraph: (1 result)
+  - combobox "Status":
+    - paragraph: Status
+    - paragraph: All
+  - combobox "Job Type":
+    - paragraph: Job Type
+    - paragraph: All
+  - generic: Search jobs...
+  - textbox "Search jobs..."
+  - button "Client clientName sort icon":
+    - paragraph: Client
+    - generic "clientName sort icon":
+  - button "Job number jobNumber sort icon":
+    - paragraph: Job number
+    - generic "jobNumber sort icon":
+  - paragraph: Property
+  - button "Schedule schedule sort icon":
+    - paragraph: Schedule
+    - generic "schedule sort icon":
+  - button "Status status sort icon":
+    - paragraph: Status
+    - generic "status sort icon":
+  - button "Total total sort icon":
+    - paragraph: Total
+    - generic "total sort icon":
+  - 'link "Jk Jafar #1 Panel upgrade & inspection 2426 E Riverside Dr, Austin, TX 78741 August 31, 2026 ৳600.00"':
+    - /url: /jobs/155568983
+    - paragraph: Jk Jafar
+    - paragraph: "#1"
+    - paragraph: Panel upgrade & inspection
+    - paragraph: 2426 E Riverside Dr, Austin, TX 78741
+    - paragraph: August 31, 2026
+    - status:
+      - paragraph: Today
+    - paragraph: ৳600.00
+- iframe [id="stripeXDM_default469266_provider"] [name="stripeXDM_default469266_provider"]
+- iframe [id="intercom-frame"]
+- searchbox "Search statuses" [active]
+- listbox:
+  - option "All" [selected]:
+    - generic: All
+  - option "Ending within 30 days (0)":
+    - generic: Ending within 30 days (0)
+  - option "Late (0)":
+    - generic: Late (0)
+  - option "Requires Invoicing (0)":
+    - generic: Requires Invoicing (0)
+  - option "Action Required (0)":
+    - generic: Action Required (0)
+  - option "Unscheduled (0)":
+    - generic: Unscheduled (0)
+  - option "Active (1)":
+    - generic: Active (1)
+  - option "Today (1)":
+    - generic: Today (1)
+  - option "Upcoming (0)":
+    - generic: Upcoming (0)
+  - option "On Hold (0)":
+    - generic: On Hold (0)
+  - option "Archived (0)":
+    - generic: Archived (0)

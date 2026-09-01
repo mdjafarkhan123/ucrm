@@ -30,7 +30,6 @@
 	import { invalidatePipeline } from '$lib/pipeline/api';
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import clipboardIcon from '@tabler/icons/outline/clipboard-text.svg?raw';
-	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
 	// The whole New Request page, the way Jobber writes one: title, client, what they are asking for, the
 	// on-site visit and the line items all on one page, with a single Save at the bottom. The visit and the
@@ -68,6 +67,7 @@
 	let fieldErrors = $state<Record<string, string>>({});
 	let formError = $state('');
 	let saving = $state(false);
+	let layout = $state<RecordFormLayout>();
 	let attachmentsCard = $state<AttachmentsCard>();
 	let pendingFileCount = $state(0);
 
@@ -247,22 +247,15 @@
 	const title = 'New Request';
 </script>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
 <form
 	class="request-form"
 	onsubmit={(event) => {
 		event.preventDefault();
-		void submit(false);
+		void submit(false).finally(() => layout?.revealError());
 	}}
 >
-	<RecordFormLayout {title} icon={fileTextIcon}>
+	<RecordFormLayout {title} icon={fileTextIcon} bind:this={layout} error={formError}>
 		{#snippet main()}
-			{#if formError}
-				<p class="request-form__alert" role="alert">
-					<span aria-hidden="true">{@html alertTriangleIcon}</span>{formError}
-				</p>
-			{/if}
-
 			<PrimaryInfoCard
 				bind:title={form.title}
 				titleRequired
@@ -353,7 +346,7 @@
 				{#if !savedRequestId}
 					<Button
 						variant="secondary"
-						onclick={() => void submit(true)}
+						onclick={() => void submit(true).finally(() => layout?.revealError())}
 						disabled={saving || !isDirty}
 					>
 						Save & Create Another
@@ -367,31 +360,11 @@
 	</RecordFormLayout>
 </form>
 
-<!-- eslint-enable svelte/no-at-html-tags -->
-
 <style lang="scss">
 	.request-form {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-large);
-
-		&__alert {
-			display: flex;
-			align-items: center;
-			gap: var(--space-small);
-			padding: var(--space-slim) var(--space-base);
-			border-radius: var(--radius-base);
-			color: var(--color-critical--onSurface);
-			background: var(--color-critical--surface);
-			font-size: var(--typography--fontSize-small);
-
-			:global(svg) {
-				display: block;
-				width: 18px;
-				height: 18px;
-				flex: 0 0 auto;
-			}
-		}
 
 		&__requested-on {
 			margin: 0;

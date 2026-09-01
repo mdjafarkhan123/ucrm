@@ -390,7 +390,8 @@ describe('the settings home', () => {
 			snippets_manage: false,
 			taxes_manage: false,
 			price_book_manage: false,
-			quotes_manage: false
+			quotes_manage: false,
+			automations_view: false
 		});
 	});
 

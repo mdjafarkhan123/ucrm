@@ -566,3 +566,53 @@ export const quoteCustomerChangeRequestSchema = z.strictObject({
 		.min(3, 'Tell them what you would like changed.')
 		.max(1000, 'That message is too long.')
 });
+
+// Turning an approved quote into a job. The key and fingerprint are the same shape every other conversion
+// uses: the same pair gets the first job back, a changed one is a conflict rather than a second job. The
+// rest is what the quote cannot know — how the work will be priced and billed once it is scheduled.
+export const JOB_TYPES = ['one_off', 'recurring'] as const;
+export const JOB_PRICE_BASES = ['job_total', 'per_visit', 'fixed_per_period'] as const;
+export const JOB_BILLING_TIMINGS = [
+	'on_closure',
+	'per_completed_visit',
+	'month_end',
+	'custom_dates',
+	'manual'
+] as const;
+
+export const convertQuoteToJobSchema = z
+	.strictObject({
+		idempotency_key: z.string().uuid('Start a new action and try again.'),
+		quote_hash: z
+			.string()
+			.trim()
+			.min(1, 'Reload the quote and try again.')
+			.max(200, 'Reload the quote and try again.'),
+		job_type: z.enum(JOB_TYPES).default('one_off'),
+		price_basis: z.enum(JOB_PRICE_BASES).optional(),
+		title: z
+			.string()
+			.trim()
+			.min(2, 'Give the job a name.')
+			.max(160, 'That name is too long.')
+			.optional(),
+		billing_timing: z.enum(JOB_BILLING_TIMINGS).default('on_closure'),
+		is_as_needed: z.boolean().default(false),
+		instructions: z.string().trim().max(4000, 'That is too long for instructions.').optional()
+	})
+	// The database refuses these pairings too; catching them here points at the field instead of the form.
+	.refine(
+		(body) => body.job_type !== 'one_off' || (body.price_basis ?? 'job_total') === 'job_total',
+		{
+			message: 'A one-off job is priced for the whole job.',
+			path: ['price_basis']
+		}
+	)
+	.refine(
+		(body) => body.job_type !== 'recurring' || (body.price_basis ?? 'per_visit') !== 'job_total',
+		{ message: 'Repeating work is priced per visit or per billing period.', path: ['price_basis'] }
+	)
+	.refine((body) => !body.is_as_needed || body.job_type === 'recurring', {
+		message: 'An as-needed job is a repeating arrangement.',
+		path: ['is_as_needed']
+	});

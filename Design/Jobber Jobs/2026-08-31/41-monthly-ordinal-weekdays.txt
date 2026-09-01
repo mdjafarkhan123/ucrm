@@ -1,0 +1,344 @@
+- button "Skip to Search":
+  - generic: Skip to Search
+- button "Skip to Content":
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link "Choose Plan":
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link "Home":
+  - /url: /home
+  - generic "jobber logo"
+- paragraph: JKA LTD
+- searchbox "Press / to search"
+- button:
+- button "Open activity feed, 0 unread":
+- button "Open Help Menu":
+- button "Open Settings Menu":
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button "Create":
+      - generic: Create
+    - link "Home":
+      - /url: /home
+      - generic: Home
+    - link "Schedule":
+      - /url: /schedule
+      - generic: Schedule
+  - separator
+  - list:
+    - link "Clients":
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+      - generic: Clients
+    - link "Requests":
+      - /url: /requests
+      - generic: Requests
+    - link "Quotes":
+      - /url: /quotes
+      - generic: Quotes
+    - link "Jobs":
+      - /url: /jobs
+      - generic: Jobs
+    - link "Invoices":
+      - /url: /invoices
+      - generic: Invoices
+  - separator
+  - list:
+    - link "Marketing":
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+      - generic: Marketing
+    - link "Pipeline":
+      - /url: /sales
+      - generic: Pipeline
+    - link "Insights":
+      - /url: /insights
+      - generic: Insights
+    - 'button "Toggle submenu: Insights"':
+    - link "Expenses":
+      - /url: /expenses
+      - generic: Expenses
+    - link "Timesheets":
+      - /url: /timesheets
+      - generic: Timesheets
+    - link "Community":
+      - /url: /community
+      - generic: Community
+    - link "Apps":
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+      - generic: Apps
+  - separator
+  - list:
+    - link "Get Set Up":
+      - /url: /get_setup
+      - progressbar
+      - generic: Get Set Up
+  - paragraph:
+    - strong: Trial started 🎉
+  - paragraph: "Limited time offer: Save up to 40%"
+  - progressbar: 7.142857142857142%
+  - generic: Day 1 / 14
+  - link "Compare Plans":
+    - /url: /accounts/billing_info/pricing
+    - generic: Compare Plans
+- switch "Collapse Sidebar":
+  - generic: Collapse Sidebar
+- main:
+  - generic: New Job
+  - generic: Title
+  - textbox "Title"
+  - generic: Select a client
+  - combobox "Select a client"
+  - term: "Job #"
+  - 'textbox "Job #"':
+    - /placeholder: " "
+    - text: "3"
+  - 'button "Increase Job #"':
+  - 'button "Decrease Job #"':
+  - spinbutton: "3"
+  - term: Customize
+  - button "Add Field":
+    - generic: Add Field
+  - heading "Visits" [level=3]
+  - heading "Schedule" [level=6]
+  - radiogroup:
+    - radio "One-off"
+    - generic: One-off
+    - radio "Recurring" [checked]
+    - generic: Recurring
+  - generic: Aug 31, 2026
+  - generic: –
+  - generic: Feb 22, 2027
+  - generic: "26"
+  - generic: visits
+  - generic: Repeats
+  - paragraph: Weekly on
+  - generic: Mon
+  - generic: Start date
+  - textbox "Start date": Aug 31, 2026
+  - generic: Start time
+  - textbox "Start time"
+  - generic: End time
+  - textbox "End time"
+  - checkbox "Anytime"
+  - paragraph: Anytime
+  - generic: Repeats
+  - combobox "Repeats":
+    - option "Daily"
+    - option "Weekly on Mondays" [selected]
+    - option "Every 2 weeks on Mondays"
+    - option "Monthly on the 31st"
+    - option "As needed - we won't prompt you"
+    - option "Or" [disabled]
+    - option "Custom schedule..."
+  - radiogroup "End type":
+    - radio "Ends after" [checked]
+    - generic: Ends after
+    - radio "Ends on"
+    - generic: Ends on
+  - textbox "Ends after":
+    - /placeholder: " "
+    - text: "6"
+  - generic: Ends after
+  - button "Increase Ends after":
+  - button "Decrease Ends after":
+  - spinbutton: "6"
+  - combobox:
+    - option "Days"
+    - option "Weeks"
+    - option "Months" [selected]
+    - option "Years"
+  - generic: Ends on
+  - textbox "Ends on" [disabled]: Aug 31, 2026
+  - toolbar:
+    - button "Select team members":
+      - generic: Select team members
+    - generic: Assigned
+    - generic "Jk Jafar":
+      - button "Jk Jafar":
+        - generic: JJ
+        - paragraph: Jk Jafar
+        - button "Remove Jk Jafar":
+    - combobox "Assigned"
+    - button "Clear all selections":
+  - textbox
+  - checkbox "Email team about assignment"
+  - paragraph: Email team about assignment
+  - generic: Visit instructions
+  - textbox "Visit instructions"
+  - heading "CAPTURE ON-SITE DETAILS" [level=5]
+  - paragraph: Attach custom-built checklists so that nothing gets missed
+  - link "Create a Checklist":
+    - /url: /job_forms/new
+    - generic: Create a Checklist
+  - button "Reset" [disabled]:
+    - generic: Reset
+  - heading "Billing & automatic payments" [level=3]
+  - generic "Total invoices":
+    - paragraph: Total invoices
+    - paragraph: "7"
+  - generic "Invoice dates":
+    - paragraph: First
+    - paragraph: Aug 31, 2026
+    - paragraph: Last
+    - paragraph: Feb 28, 2027
+  - heading "Billing type" [level=4]
+  - radiogroup "Billing type":
+    - radio "Visit based" [checked]
+    - generic: Visit based
+    - paragraph: Visits will be listed as a billable item and grouped on one invoice.
+    - radio "Fixed price"
+    - generic: Fixed price
+    - paragraph: Each invoice is for a set amount.
+  - heading "Invoice frequency" [level=4]
+  - generic: Repeats
+  - combobox "Repeats":
+    - option "Monthly on the last day of the month" [selected]
+    - option "After each visit is completed"
+    - option "As needed–no reminders"
+    - option "Once when job is closed"
+    - option "Or" [disabled]
+    - option "Custom schedule..."
+  - heading "Get paid automatically" [level=4]
+  - paragraph:
+    - text: Clients are automatically invoiced and charged based on their billing frequency once they save a payment method on file. Learn more in
+    - link "Help Center":
+      - /url: https://help.getjobber.com/hc/en-us/articles/360036931633-Automatic-Payments
+    - text: .
+  - link "Set Up Jobber Payments":
+    - /url: /jobber_payments/setup
+    - generic: Set Up Jobber Payments
+  - heading "Product / Service" [level=3]
+  - button "Drag to reorder":
+  - generic: Name
+  - combobox "Name"
+  - textbox "Quantity":
+    - /placeholder: " "
+    - text: "1"
+  - generic: Quantity
+  - button "Increase Quantity":
+  - button "Decrease Quantity":
+  - spinbutton: "1"
+  - textbox "Unit cost":
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Unit cost
+  - spinbutton: "0"
+  - textbox "Unit price":
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Unit price
+  - spinbutton: "0"
+  - textbox "Total":
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Total
+  - spinbutton: "0"
+  - generic: Description
+  - textbox "Description"
+  - button "Line Item Action Menu":
+  - status
+  - button "Add Line Item":
+    - generic: Add Line Item
+  - paragraph: Total cost
+  - paragraph: ৳0.00
+  - heading "Total price" [level=4]
+  - heading "৳0.00" [level=4]
+  - heading "Notes" [level=2]
+  - button "Leave an internal note for yourself or a team member": Leave an internal note for yourself or a team member
+  - button "Cancel":
+    - generic: Cancel
+  - button "Save Job":
+    - generic: Save Job
+  - button "Save and...":
+- iframe [id="stripeXDM_default469266_provider"] [name="stripeXDM_default469266_provider"]
+- iframe [id="intercom-frame"]
+- dialog "Set up recurring schedule":
+  - heading "Set up recurring schedule" [level=2]
+  - button "Close modal":
+  - paragraph: Every
+  - textbox "Interval":
+    - /placeholder: " "
+    - text: "1"
+  - button "Increase Interval":
+  - button "Decrease Interval" [disabled]:
+  - spinbutton: "1"
+  - generic: Interval type
+  - combobox "Interval type":
+    - option "Day"
+    - option "Week"
+    - option "Month" [selected]
+    - option "Year"
+  - paragraph: "on"
+  - radiogroup "Monthly Frequency Selector":
+    - radio "Day of month"
+    - generic: Day of month
+    - radio "Day of week" [checked] [active]
+    - generic: Day of week
+  - paragraph: 1st
+  - checkbox "S"
+  - generic: S
+  - checkbox "M"
+  - generic: M
+  - checkbox "T"
+  - generic: T
+  - checkbox "W"
+  - generic: W
+  - checkbox "T"
+  - generic: T
+  - checkbox "F"
+  - generic: F
+  - checkbox "S"
+  - generic: S
+  - paragraph: 2nd
+  - checkbox "S"
+  - generic: S
+  - checkbox "M"
+  - generic: M
+  - checkbox "T"
+  - generic: T
+  - checkbox "W"
+  - generic: W
+  - checkbox "T"
+  - generic: T
+  - checkbox "F"
+  - generic: F
+  - checkbox "S"
+  - generic: S
+  - paragraph: 3rd
+  - checkbox "S"
+  - generic: S
+  - checkbox "M"
+  - generic: M
+  - checkbox "T"
+  - generic: T
+  - checkbox "W"
+  - generic: W
+  - checkbox "T"
+  - generic: T
+  - checkbox "F"
+  - generic: F
+  - checkbox "S"
+  - generic: S
+  - paragraph: 4th
+  - checkbox "S"
+  - generic: S
+  - checkbox "M"
+  - generic: M
+  - checkbox "T"
+  - generic: T
+  - checkbox "W"
+  - generic: W
+  - checkbox "T"
+  - generic: T
+  - checkbox "F"
+  - generic: F
+  - checkbox "S"
+  - generic: S
+  - button "Save":
+    - generic: Save
+  - button "Cancel":
+    - generic: Cancel
+  - button "Clear":
+    - generic: Clear

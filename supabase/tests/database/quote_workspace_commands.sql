@@ -9,6 +9,18 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(54);
 
+-- Money left the `authenticated` grant when the quote money columns were locked down, so these
+-- assertions read stored money the same way they read fixture ids: through a definer helper, rather
+-- than through the privileges of whichever member the test is currently pretending to be.
+create function pg_temp.money(query text) returns bigint
+language plpgsql stable security definer as $money$
+declare result bigint;
+begin
+  execute query into result;
+  return result;
+end;
+$money$;
+
 -- 1. Shape --------------------------------------------------------------------------------------------
 
 select has_column('public', 'quote_versions', 'revision', 'a draft version carries a revision');
@@ -216,9 +228,9 @@ select is(
 
 -- The database owns the money. 2 x 45000 + 3 x 8000 = 114000.
 select is(
-  (select version.subtotal_minor from public.quote_versions version
+  pg_temp.money($m$select version.subtotal_minor from public.quote_versions version
     join public.quotes quote on quote.draft_version_id = version.id
-    where quote.title = 'Workspace Quote One Renamed'),
+    where quote.title = 'Workspace Quote One Renamed'$m$),
   114000::bigint, 'the subtotal was recounted from the rows that were actually written'
 );
 

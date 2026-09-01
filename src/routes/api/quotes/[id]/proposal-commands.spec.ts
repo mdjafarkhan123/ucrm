@@ -307,7 +307,7 @@ describe('lines with choices', () => {
 });
 
 describe('scenario preview', () => {
-	it('asks only for permission to look, because it records nothing', async () => {
+	it('asks for permission to see money, because the whole answer is money', async () => {
 		const target = commandEvent(
 			{ addon_ids: [] },
 			{
@@ -318,7 +318,7 @@ describe('scenario preview', () => {
 
 		await preview(target);
 
-		expect(mockedRequire.mock.calls[0][1]).toBe('quotes.view');
+		expect(mockedRequire.mock.calls[0][1]).toBe('quotes.view_price');
 		expect(target.__rpc).toHaveBeenCalledWith('preview_quote_version_totals', {
 			target_quote_id: quoteId,
 			selected_addon_ids: []

@@ -16,7 +16,9 @@
 		children,
 		...rest
 	}: {
-		value?: string;
+		// A number field binds back a number, and an empty one binds back null, so the type covers what
+		// the DOM actually hands over rather than only the text case.
+		value?: string | number | null;
 		id: string;
 		label?: string;
 		type?: string;

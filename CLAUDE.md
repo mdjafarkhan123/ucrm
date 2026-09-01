@@ -55,7 +55,7 @@ Skills live under `.claude/skills/`. **Must Load skill what is relevant to the c
 | Scale-sensitive design, performance verification, or reported slowness | `.claude/skills/performance-review/SKILL.md`               |
 
 Load `.claude/skills/grilling/SKILL.md` only for unresolved product decisions about user-facing behavior, workflows, or the mental model.
-**MCP:** SvelteKit, Supabase and Brevo MCP servers are installed and configured.
+**MCP:** SvelteKit and Supabase MCP servers are installed and configured.
 
 ### Skills by work stage
 
@@ -90,7 +90,7 @@ campaign — including when Jafar says `read memory and continue`.
 
 1. **Communication style:** Think Jafar is a non technical 15 years guy. So while you are presenting anything to him do it in everyday english
 2. **Follow proven industry patterns before inventing.** Before choosing how to implement any task or how to solve — from architecture, database/schema, APIs, realtime, state, background processing, and security to individual UI/UX components — first establish how this type of problem is commonly and successfully solved in production by mature products and engineering teams. Use the proven pattern, primitive, protocol, library, or platform convention that best fits our requirements, stack, and scale, and implement the smallest correct version of it. Do not create a custom approach when an established solution already exists; if multiple valid approaches exist, compare their trade-offs before proceeding.
-3. **Product Strategy.** Default to proven Jobber/GHL workflows and mental models. Suggest strategic differentiators to help us stand out, but always present proposals to Jafar for approval before planning or implementation.
+3. **Product Strategy.** Whenever you have any questions research how top industries solve that and present briefly to Jafar. Default to proven Jobber/GHL workflows and mental models. Suggest strategic differentiators to help us stand out, but always present proposals to Jafar for approval before planning or implementation.
 4. **Minimal scope.** No extra fields, tables, packages, or refactors unless the task explicitly requires them. Explicit code over generic builders.
 5. **Frontend designing.** Ui blueprint is the source of truth of what exist where as a summary. to build that part you visit jobber and if need then take screenshot `Design/foldername/`, then you design that part like jobber using our apps design skills/variables.
 6. **Svelte 5 only.** No Svelte 4 syntax anywhere.

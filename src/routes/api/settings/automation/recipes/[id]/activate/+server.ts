@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { z } from 'zod';
 import type { RequestHandler } from './$types';
+import type { Database } from '$lib/database.types';
 import { requireAutomationAccess } from '$lib/server/access/automation';
 import { validationError } from '$lib/server/api/errors';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
@@ -95,18 +96,22 @@ export const POST: RequestHandler = async (event) => {
 	const service = getOwnerSupabaseClient();
 
 	try {
-		const { data, error } = await service.rpc('activate_automation_recipe_version', {
-			p_organization_id: organizationId,
-			p_actor_user_id: check.auth.user.id,
-			p_recipe_id: recipeId.data,
-			p_expected_revision: parsed.data.expected_revision,
-			p_schema_version: validated.definition.schema_version,
-			p_definition: JSON.parse(validated.definitionJson),
-			p_definition_hash: validated.hash,
-			p_trigger_key: validated.triggerKey,
-			p_active_limit: activeRecipesLimit(check.automation),
-			p_idempotency_key: parsed.data.idempotency_key
-		});
+		// `p_active_limit` is nullable in the SQL function (null = unlimited; it guards with `is not null`),
+		// but Supabase's type generator marks every arg without a DEFAULT as non-nullable.
+		const activateArgs: Database['public']['Functions']['activate_automation_recipe_version']['Args'] =
+			{
+				p_organization_id: organizationId,
+				p_actor_user_id: check.auth.user.id,
+				p_recipe_id: recipeId.data,
+				p_expected_revision: parsed.data.expected_revision,
+				p_schema_version: validated.definition.schema_version,
+				p_definition: JSON.parse(validated.definitionJson),
+				p_definition_hash: validated.hash,
+				p_trigger_key: validated.triggerKey,
+				p_active_limit: activeRecipesLimit(check.automation) as number,
+				p_idempotency_key: parsed.data.idempotency_key
+			};
+		const { data, error } = await service.rpc('activate_automation_recipe_version', activateArgs);
 		if (error) throw error;
 		const result = data as unknown as RecipeCommandResult;
 

@@ -13,6 +13,7 @@ import { replaceQuoteLinesSchema } from '$lib/server/validation/quotes.schema';
 import { quoteWriteError } from '$lib/server/quotes/errors';
 import { withCatalogCost } from '$lib/server/quotes/catalog-cost';
 import { organizationFormatting } from '$lib/server/requests/timezone';
+import { asMoneyMap, withMoney } from '$lib/server/quotes/money';
 
 const NOT_FOUND = 'That quote could not be found.';
 
@@ -20,14 +21,9 @@ const LINE_SELECT = `id, position, source_catalog_item_id, category, is_labor, n
 	 unit_label, quantity, is_taxable, image_attachment_id, line_kind, selection_kind,
 	 is_recommended`;
 
-const PRICE_COLUMNS = 'unit_price_minor, line_total_minor';
-const COST_COLUMNS = 'unit_cost_minor, line_cost_total_minor';
-
-// Money a person may not see is never selected in the first place. Dropping it after the fact would still
-// have carried it over the wire, and a payload that never held it cannot leak it.
-function columns(base: string, ...extra: Array<string | null>) {
-	return [base, ...extra.filter(Boolean)].join(', ');
-}
+// Money is not on these rows to select. `authenticated` lost the grant on the money columns, so the
+// subtotal and the per-line money come back from `quote_version_money` and `quote_line_money`, which
+// apply `quotes.view_price` and `quotes.view_cost` in the database.
 
 // The quote's twin of the request pricing route, so one Products & Services block can read and write
 // either document. The revision comes back with the lines: it is what the next save sends to prove it is
@@ -51,47 +47,55 @@ export const GET: RequestHandler = async (event) => {
 	if (!quote) return notFound(NOT_FOUND);
 
 	const versionId = quote.draft_version_id;
-	const [{ data: version, error: versionError }, { data: lines, error: linesError }, formatting] =
-		await Promise.all([
-			versionId
-				? supabase
-						.from('quote_versions')
-						.select(columns('id, revision', canSeePrice ? 'subtotal_minor' : null))
-						.eq('organization_id', organizationId)
-						.eq('id', versionId)
-						.maybeSingle()
-				: Promise.resolve({ data: null, error: null }),
-			versionId
-				? supabase
-						.from('quote_version_lines')
-						.select(
-							columns(
-								LINE_SELECT,
-								canSeePrice ? PRICE_COLUMNS : null,
-								canSeeCost ? COST_COLUMNS : null
-							)
-						)
-						.eq('organization_id', organizationId)
-						.eq('quote_id', quote.id)
-						.eq('quote_version_id', versionId)
-						.order('position', { ascending: true })
-						.order('id', { ascending: true })
-				: Promise.resolve({ data: [], error: null }),
-			// The block shows money in the organization's own currency, and this is the one row for the
-			// whole tenant, cached in process rather than fetched again per request.
-			organizationFormatting(supabase, organizationId)
-		]);
-	if (versionError || linesError) return databaseError();
+	const wantsMoney = canSeePrice || canSeeCost;
+	const [
+		{ data: version, error: versionError },
+		{ data: lines, error: linesError },
+		formatting,
+		{ data: versionMoney, error: versionMoneyError },
+		{ data: lineMoney, error: lineMoneyError }
+	] = await Promise.all([
+		versionId
+			? supabase
+					.from('quote_versions')
+					.select('id, revision')
+					.eq('organization_id', organizationId)
+					.eq('id', versionId)
+					.maybeSingle()
+			: Promise.resolve({ data: null, error: null }),
+		versionId
+			? supabase
+					.from('quote_version_lines')
+					.select(LINE_SELECT)
+					.eq('organization_id', organizationId)
+					.eq('quote_id', quote.id)
+					.eq('quote_version_id', versionId)
+					.order('position', { ascending: true })
+					.order('id', { ascending: true })
+			: Promise.resolve({ data: [], error: null }),
+		// The block shows money in the organization's own currency, and this is the one row for the
+		// whole tenant, cached in process rather than fetched again per request.
+		organizationFormatting(supabase, organizationId),
+		wantsMoney && versionId
+			? supabase.rpc('quote_version_money', { target_version_ids: [versionId] })
+			: Promise.resolve({ data: {}, error: null }),
+		wantsMoney && versionId
+			? supabase.rpc('quote_line_money', { target_version_id: versionId })
+			: Promise.resolve({ data: {}, error: null })
+	]);
+	if (versionError || linesError || versionMoneyError || lineMoneyError) return databaseError();
 
-	const draft = version as { revision?: number; subtotal_minor?: number } | null;
+	const draft = version as { revision?: number } | null;
+	const draftMoney = versionId ? (asMoneyMap(versionMoney)[versionId] ?? {}) : {};
+	const subtotal = draftMoney.subtotal_minor;
 	return json(
 		{
 			revision: draft?.revision ?? null,
-			subtotal_minor: canSeePrice ? (draft?.subtotal_minor ?? 0) : null,
+			subtotal_minor: canSeePrice ? (typeof subtotal === 'number' ? subtotal : 0) : null,
 			// Only a draft can be typed into. Everything else is a document somebody has already been
 			// shown, and the write function refuses it too.
 			editable: quote.status === 'draft',
-			lines: lines ?? [],
+			lines: withMoney((lines ?? []) as unknown as Array<{ id: string }>, asMoneyMap(lineMoney)),
 			currency_code: formatting.ok ? formatting.formatting.currency_code : 'USD',
 			locale: formatting.ok ? formatting.formatting.locale : 'en-US'
 		},

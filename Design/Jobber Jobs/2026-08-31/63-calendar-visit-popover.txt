@@ -1,0 +1,358 @@
+- button "Skip to Search":
+  - generic: Skip to Search
+- button "Skip to Content":
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link "Choose Plan":
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link "Home":
+  - /url: /home
+  - generic "jobber logo"
+- paragraph: JKA LTD
+- searchbox "Press / to search"
+- button:
+- button "Open activity feed, 0 unread":
+- button "Open Help Menu":
+- button "Open Settings Menu":
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button "Create":
+      - generic: Create
+    - link "Home":
+      - /url: /home
+      - generic: Home
+    - link "Schedule":
+      - /url: /schedule
+      - generic: Schedule
+  - separator
+  - list:
+    - link "Clients":
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+      - generic: Clients
+    - link "Requests":
+      - /url: /requests
+      - generic: Requests
+    - link "Quotes":
+      - /url: /quotes
+      - generic: Quotes
+    - link "Jobs":
+      - /url: /jobs
+      - generic: Jobs
+    - link "Invoices":
+      - /url: /invoices
+      - generic: Invoices
+  - separator
+  - list:
+    - link "Marketing":
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+      - generic: Marketing
+    - link "Pipeline":
+      - /url: /sales
+      - generic: Pipeline
+    - link "Insights":
+      - /url: /insights
+      - generic: Insights
+    - 'button "Toggle submenu: Insights"':
+    - link "Expenses":
+      - /url: /expenses
+      - generic: Expenses
+    - link "Timesheets":
+      - /url: /timesheets
+      - generic: Timesheets
+    - link "Community":
+      - /url: /community
+      - generic: Community
+    - link "Apps":
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+      - generic: Apps
+  - separator
+  - list:
+    - link "Get Set Up":
+      - /url: /get_setup
+      - progressbar
+      - generic: Get Set Up
+  - paragraph:
+    - strong: Trial started 🎉
+  - paragraph: "Limited time offer: Save up to 40%"
+  - progressbar: 7.142857142857142%
+  - generic: Day 1 / 14
+  - link "Compare Plans":
+    - /url: /accounts/billing_info/pricing
+    - generic: Compare Plans
+- switch "Collapse Sidebar":
+  - generic: Collapse Sidebar
+- main:
+  - paragraph: August 2026
+  - button "Choose date":
+  - button "Previous period":
+  - button "Next period":
+  - button "Today":
+    - generic: Today
+  - button "Find an appointment time":
+    - generic: Find a Time
+  - combobox "Filter by appointment type":
+    - paragraph: Type
+    - paragraph: All
+  - combobox "Filter by team member assignments":
+    - paragraph: Team
+    - paragraph: All
+  - textbox
+  - combobox "Filter by appointment status":
+    - paragraph: Status
+    - paragraph: All
+  - radiogroup:
+    - radio "Month"
+    - generic: Month
+    - radio "Week" [checked]
+    - generic: Week
+    - radio "Day"
+    - generic: Day
+  - button "Unscheduled appointments":
+    - generic: "0"
+  - button "Toggle Map":
+  - button "More":
+    - generic: More
+  - button "Sunday August 30 2026":
+    - generic: Sun 30
+  - button "Monday August 31 2026":
+    - generic: Mon 31
+  - status "1 visit"
+  - button "Tuesday September 1 2026":
+    - generic: Tue 1
+  - button "Wednesday September 2 2026":
+    - generic: Wed 2
+  - button "Thursday September 3 2026":
+    - generic: Thu 3
+  - button "Friday September 4 2026":
+    - generic: Fri 4
+  - button "Saturday September 5 2026":
+    - generic: Sat 5
+  - button "Anytime":
+    - paragraph: Anytime
+  - button "Jk Jafar - Panel upgrade & inspection":
+    - text: Jk Jafar - Panel upgrade & inspection
+  - grid:
+    - rowgroup:
+      - table:
+        - rowgroup:
+          - row:
+            - cell:
+              - generic: 00:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 01:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 02:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 03:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 04:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 05:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 06:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 07:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 08:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 09:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 10:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 11:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 12:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 13:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 14:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 15:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 16:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 17:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 18:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 19:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 20:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 21:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 22:00
+            - cell
+          - row:
+            - cell
+            - cell
+          - row:
+            - cell:
+              - generic: 23:00
+            - cell
+          - row:
+            - cell
+            - cell
+      - row:
+        - gridcell
+        - gridcell
+        - gridcell
+        - gridcell
+        - gridcell
+        - gridcell
+        - gridcell
+  - button "Route Optimization":
+  - status
+- iframe [id="stripeXDM_default203351_provider"] [name="stripeXDM_default203351_provider"]
+- iframe [id="intercom-frame"]
+- generic "popover dismiss":
+  - heading [level=6]
+  - button "Dismiss" [active]:
+- heading "Jk Jafar - Panel upgrade & inspection Visit" [level=4]:
+  - text: Jk Jafar - Panel upgrade & inspection
+  - paragraph: Visit
+- checkbox "Completed"
+- paragraph: Completed
+- heading "Details" [level=5]
+- link "Jk Jafar":
+  - /url: /clients/150994075
+- paragraph: "-"
+- 'link "Job #1"':
+  - /url: /jobs/155568983
+- generic: Upgrade main electrical panel to 200A service. Install new breakers and label all circuits. Arrange inspection with authority having jurisdiction.
+- heading "Team" [level=5]
+- combobox "Assign team members":
+- textbox
+- heading "Location" [level=5]
+- paragraph: 2426 E Riverside Dr / Austin, TX 78741
+- heading "Start" [level=5]
+- paragraph: Aug 31, 2026
+- paragraph: Anytime
+- heading "Line items" [level=5]
+- generic: 1×
+- generic: Electrical Panel Upgrade
+- generic: ৳350.00
+- generic: 1×
+- generic: Panel & Breakers
+- generic: ৳250.00
+- generic: Total ৳600.00
+- button "More actions":
+- button "Find a time":
+  - generic: Find a time
+- button "Edit":
+  - generic: Edit
+- button "Details":
+  - generic: Details

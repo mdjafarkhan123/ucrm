@@ -232,7 +232,9 @@ insert into private.automation_enrollments (id, organization_id, recipe_id, reci
   subject_id, trigger_event_id, source, re_entry_key, context)
 values ('6d3d0000-0000-0000-0000-000000000002', '6d310000-0000-0000-0000-000000000001',
   '6d3a0000-0000-0000-0000-000000000001', '6d3b0000-0000-0000-0000-000000000001', 'quote',
-  pg_temp.qid(), '6d3c0000-0000-0000-0000-000000000002', 'manual', 'entry-2', '{}'::jsonb);
+  -- 'event', not 'manual': 6D-5's source-evidence check requires a manual enrollment to carry no
+  -- trigger event, and this fixture has one.
+  pg_temp.qid(), '6d3c0000-0000-0000-0000-000000000002', 'event', 'entry-2', '{}'::jsonb);
 insert into private.automation_work_items (id, organization_id, enrollment_id, step_index, due_at,
   available_at, claim_token, claimed_at)
 values ('6d3e0000-0000-0000-0000-000000000002', '6d310000-0000-0000-0000-000000000001',
@@ -249,7 +251,8 @@ select is(
 select is(
   (select state || ':' || stop_reason from private.automation_enrollments
    where id = '6d3d0000-0000-0000-0000-000000000002'),
-  'stopped:quote_not_sendable', 'the whole enrollment stops with a plain reason, so later steps never run');
+  'stopped:quote_not_awaiting_response',
+  'the whole enrollment stops with a plain reason, so later steps never run');
 
 select is(
   (select count(*)::integer from public.communication_delivery_intents

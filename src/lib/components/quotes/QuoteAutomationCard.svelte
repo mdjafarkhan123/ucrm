@@ -80,6 +80,26 @@
 		return state.charAt(0).toUpperCase() + state.slice(1);
 	}
 
+	// The engine writes its own stop reasons as internal codes; a staff member's typed reason is free text.
+	// Translate the codes and show anything else as written, so nobody reads `quote_not_awaiting_response`.
+	const ENGINE_STOP_REASON: Record<string, string> = {
+		quote_not_awaiting_response: 'Stopped because the quote is no longer awaiting a response',
+		quote_not_sendable: 'Stopped because the quote is no longer available',
+		follow_ups_declined: 'Stopped because this client turned quote follow-ups off',
+		recipient_unavailable: 'Stopped because there is no email address to send to',
+		recipe_not_active: 'Stopped because the automation was turned off',
+		enrollment_expired: 'Stopped because it reached the maximum follow-up length',
+		automations_not_entitled: 'Stopped because automations are not included in the current plan',
+		automation_suspended: 'Stopped because automations are paused for this account',
+		invalid_email_content: 'Stopped because the follow-up email has no message',
+		invalid_link: 'Stopped because the customer link could not be created',
+		idempotency_conflict: 'Stopped because a conflicting send was already recorded'
+	};
+
+	function stopReasonLine(reason: string): string {
+		return ENGINE_STOP_REASON[reason] ?? reason;
+	}
+
 	function nextLine(enrollment: RecordEnrollment): string {
 		if (enrollment.state === 'active' && enrollment.next_due_at)
 			return `Next step ${dateTimeFormat.format(new Date(enrollment.next_due_at))}`;
@@ -203,7 +223,7 @@
 								</StatusBadge>
 								<p class="quote-automation__meta">{nextLine(enrollment)}</p>
 								{#if enrollment.state === 'stopped' && enrollment.stop_reason}
-									<p class="quote-automation__reason">{enrollment.stop_reason}</p>
+									<p class="quote-automation__reason">{stopReasonLine(enrollment.stop_reason)}</p>
 								{/if}
 							</div>
 							{#if canControl && isRunning(enrollment)}

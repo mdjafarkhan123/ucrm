@@ -289,7 +289,12 @@ gate on `quotes.edit`. Decided with Jafar 2026-08-21, `parts/05d-quote-utilities
 
 Owner/admin receive all by default. Proposed defaults give Office and Sales view/price/create/edit/send/decision/
 convert, Finance view/price/cost/deposit, and Field only `quotes.view` unless Jafar chooses broader access.
-`quotes.view_price` and `quotes.view_cost` are enforced in read models and API payloads, not by hiding columns.
+`quotes.view_price` and `quotes.view_cost` are enforced in the database, not only in read models and API
+payloads. `authenticated` holds no SELECT grant on the money columns of `quote_versions` and
+`quote_version_lines`, so those numbers reach a route only through `quote_version_money` and
+`quote_line_money`, which apply both permissions themselves. `quote_version_schedule_items` and
+`quote_deposit_events` are money in every column, so their row filter asks for `quotes.view_price`
+outright. A money column added to either table stays unreadable until it is named in a grant on purpose.
 Permission keys/defaults and their RLS use require Jafar's separate schema/RLS approval.
 
 ## Proposed database architecture

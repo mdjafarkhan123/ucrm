@@ -49,7 +49,7 @@ const rows = [
 		request_id: null,
 		client: { id: clientId, display_name: 'Abbas Uddin', company_name: null },
 		property: { id: propertyId, label: 'Home', address_line1: '12 Mill Road', city: 'Savar' },
-		draft: { id: 'version-1', total_minor: 45000 },
+		draft: { id: 'version-1' },
 		published: null
 	}
 ];
@@ -61,14 +61,25 @@ function context(permissions: Record<string, boolean>) {
 	} as never;
 }
 
-function listEvent(url: string, result: unknown = { data: rows, error: null }) {
+// Totals no longer ride on the embedded version rows: the route asks `quote_version_money` for the
+// page's versions once the page is known, so the stub answers that call the way the database would.
+const DEFAULT_MONEY = { 'version-1': { total_minor: 45000 } };
+
+function listEvent(
+	url: string,
+	result: unknown = { data: rows, error: null },
+	money: unknown = DEFAULT_MONEY
+) {
 	const chain = builder(result);
+	const rpc = vi.fn(() => Promise.resolve({ data: money, error: null }));
 	return {
 		url: new URL(`http://localhost/api/quotes${url}`),
-		locals: { supabase: { from: vi.fn(() => chain) } },
-		__chain: chain as unknown as { __calls: Array<{ method: string; args: unknown[] }> }
+		locals: { supabase: { from: vi.fn(() => chain), rpc } },
+		__chain: chain as unknown as { __calls: Array<{ method: string; args: unknown[] }> },
+		__rpc: rpc
 	} as unknown as Parameters<typeof GET>[0] & {
 		__chain: { __calls: Array<{ method: string; args: unknown[] }> };
+		__rpc: ReturnType<typeof vi.fn>;
 	};
 }
 
@@ -134,24 +145,36 @@ describe('quote list API', () => {
 		const select = calls(target).find((call) => call.method === 'select');
 
 		expect(String(select?.args[0])).not.toContain('total_minor');
+		expect(target.__rpc).not.toHaveBeenCalled();
 		expect(body.quotes[0].total_minor).toBeNull();
 	});
 
-	it('shows the published total for a quote with no draft left', async () => {
-		const target = listEvent('', {
-			data: [
-				{
-					...rows[0],
-					status: 'sent',
-					draft: null,
-					published: { id: 'version-2', total_minor: 39000 }
-				}
-			],
-			error: null
-		});
+	it('asks for the page’s totals in one gated call rather than off the version rows', async () => {
+		const target = listEvent('');
 
 		const body = await (await GET(target)).json();
 
+		expect(target.__rpc).toHaveBeenCalledWith('quote_version_money', {
+			target_version_ids: ['version-1']
+		});
+		expect(body.quotes[0].total_minor).toBe(45000);
+	});
+
+	it('shows the published total for a quote with no draft left', async () => {
+		const target = listEvent(
+			'',
+			{
+				data: [{ ...rows[0], status: 'sent', draft: null, published: { id: 'version-2' } }],
+				error: null
+			},
+			{ 'version-2': { total_minor: 39000 } }
+		);
+
+		const body = await (await GET(target)).json();
+
+		expect(target.__rpc).toHaveBeenCalledWith('quote_version_money', {
+			target_version_ids: ['version-2']
+		});
 		expect(body.quotes[0].total_minor).toBe(39000);
 	});
 

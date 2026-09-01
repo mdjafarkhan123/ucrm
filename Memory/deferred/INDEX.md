@@ -4,7 +4,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 
 | Priority | Deferred task |
 | --- | --- |
-| P0 | [`preview_quote_version_totals` has no `quotes.view_price` gate](preview-quote-version-totals-has-no-quotes-view-price-gate.md) |
 | P1 | [Authenticated reads and Pipeline writes are not rate limited](authenticated-reads-and-pipeline-writes-are-not-rate-limited.md) |
 | P1 | [Four older composite foreign keys still null the organization on delete](four-older-composite-foreign-keys-still-null-the-organization-on-delete.md) |
 | P1 | [Internal cost still rides along on the request pricing read](internal-cost-still-rides-along-on-the-request-pricing-read.md) |
@@ -13,9 +12,10 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Removing a saved line photo leaves the file in R2](removing-a-saved-line-photo-leaves-the-file-in-r2.md) |
 | P1 | [Seven public functions still answer a signed-out request](seven-public-functions-still-answer-a-signed-out-request.md) |
 | P1 | [The Pipeline nav item is not gated on entitlement or permission](the-pipeline-nav-item-is-not-gated-on-entitlement-or-permission.md) |
-| P1 | [Six vitest failures in quote.spec.ts (rpc mock)](eight-vitest-failures-in-the-quotes-and-team-specs.md) |
-| P1 | [`settings-business.spec.ts` asserts a stale permissions object](settings-business-spec-missing-two-permission-keys.md) |
 | P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
+| P2 | [`automation_6d2` still asserts the pre-6D-3 action park](automation-6d2-action-park-assertions-are-stale.md) |
+| P2 | [Two migration ledger rows do not match the repo](two-migration-ledger-rows-do-not-match-the-repo.md) |
+| P2 | [`quote_proposal_draft_commands` still calls the 4-argument `set_quote_draft_tax`](quote-draft-commands-tax-assertions-are-stale.md) |
 | P2 | [Resolving a chat identity does not stop the next conflict](resolving-a-chat-identity-does-not-stop-the-next-conflict.md) |
 | P2 | [`EntityType` covers only clients and properties](entitytype-covers-only-clients-and-properties.md) |
 | P2 | [Active member's sign-in email not visible, recovery path unclear](active-member-email-not-visible-and-recovery-path-unclear.md) |

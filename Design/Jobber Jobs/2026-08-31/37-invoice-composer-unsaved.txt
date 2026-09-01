@@ -1,0 +1,186 @@
+- button "Skip to Search":
+  - generic: Skip to Search
+- button "Skip to Content":
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link "Choose Plan":
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link "Home":
+  - /url: /home
+  - generic "jobber logo"
+- paragraph: JKA LTD
+- searchbox "Press / to search"
+- button:
+- button "Open activity feed, 0 unread":
+- button "Open Help Menu":
+- button "Open Settings Menu":
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button "Create":
+      - generic: Create
+    - link "Home":
+      - /url: /home
+      - generic: Home
+    - link "Schedule":
+      - /url: /schedule
+      - generic: Schedule
+  - separator
+  - list:
+    - link "Clients":
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+      - generic: Clients
+    - link "Requests":
+      - /url: /requests
+      - generic: Requests
+    - link "Quotes":
+      - /url: /quotes
+      - generic: Quotes
+    - link "Jobs":
+      - /url: /jobs
+      - generic: Jobs
+    - link "Invoices":
+      - /url: /invoices
+      - generic: Invoices
+  - separator
+  - list:
+    - link "Marketing":
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+      - generic: Marketing
+    - link "Pipeline":
+      - /url: /sales
+      - generic: Pipeline
+    - link "Insights":
+      - /url: /insights
+      - generic: Insights
+    - 'button "Toggle submenu: Insights"':
+    - link "Expenses":
+      - /url: /expenses
+      - generic: Expenses
+    - link "Timesheets":
+      - /url: /timesheets
+      - generic: Timesheets
+    - link "Community":
+      - /url: /community
+      - generic: Community
+    - link "Apps":
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+      - generic: Apps
+  - separator
+  - list:
+    - link "Get Set Up":
+      - /url: /get_setup
+      - progressbar
+      - generic: Get Set Up
+  - paragraph:
+    - strong: Trial started 🎉
+  - paragraph: "Limited time offer: Save up to 40%"
+  - progressbar: 7.142857142857142%
+  - generic: Day 1 / 14
+  - link "Compare Plans":
+    - /url: /accounts/billing_info/pricing
+    - generic: Compare Plans
+- switch "Collapse Sidebar":
+  - generic: Collapse Sidebar
+- main:
+  - generic: New Invoice
+  - generic: Subject
+  - textbox "Subject": CODEX RESEARCH 20260831 - One-off
+  - article:
+    - heading "Jk Jafar" [level=2]:
+      - link "Jk Jafar":
+        - /url: /clients/150994075
+    - button "More options":
+    - paragraph: Billing Address
+    - paragraph: 2426 E Riverside Dr Austin, TX 78741
+    - paragraph: Property Address
+    - paragraph: (Same as billing address)
+    - paragraph:
+      - link "206-555-0122":
+        - /url: tel:+12065550122
+    - paragraph:
+      - link "info.socialmediauser2@gmail.com":
+        - /url: mailto:info.socialmediauser2@gmail.com
+  - term: "Invoice #"
+  - 'textbox "Invoice #"':
+    - /placeholder: " "
+    - text: "1"
+  - 'button "Increase Invoice #"':
+  - 'button "Decrease Invoice #"':
+  - spinbutton: "1"
+  - term: Issued date
+  - button "Date Sent"
+  - term: Payment terms
+  - combobox: Due upon receipt
+  - term: Customize
+  - button "Add Field":
+    - generic: Add Field
+  - heading "Product / Service" [level=2]
+  - button "Drag to reorder":
+  - generic: Name
+  - combobox "Name": Electrical Panel Upgrade
+  - textbox "Quantity":
+    - /placeholder: " "
+    - text: "1"
+  - generic: Quantity
+  - button "Increase Quantity":
+  - button "Decrease Quantity":
+  - spinbutton: "1"
+  - textbox "Unit price":
+    - /placeholder: " "
+    - text: ৳100.00
+  - generic: Unit price
+  - spinbutton: "100"
+  - textbox "Total":
+    - /placeholder: " "
+    - text: ৳100.00
+  - generic: Total
+  - spinbutton: "100"
+  - generic: Description
+  - textbox "Description": Upgrade existing electrical panel, including new breakers, grounding, and labeling.
+  - button "Add Service Date":
+    - generic: Add Service Date
+  - status
+  - button "Add Line Item":
+    - generic: Add Line Item
+  - heading "Invoice Totals" [level=2]
+  - paragraph: Client view
+  - button "Change":
+    - generic: Change
+  - paragraph: Subtotal
+  - paragraph: ৳100.00
+  - paragraph: Discount
+  - button "Add Discount":
+    - generic: Add Discount
+  - paragraph: Tax
+  - button "Add Tax":
+    - generic: Add Tax
+  - heading "Total" [level=4]
+  - heading "৳100.00" [level=4]
+  - paragraph: Deposits
+  - button "Add Deposit":
+    - generic: Add Deposit
+  - paragraph: Invoice balance
+  - paragraph: ৳100.00
+  - paragraph: Add section
+  - button "Client Message":
+    - generic: Client Message
+  - button "Images":
+    - generic: Images
+  - button "Attachments":
+    - generic: Attachments
+  - heading "Contract / Disclaimer" [level=3]
+  - button "Delete contract / disclaimer":
+  - generic: Description
+  - textbox "Description": Thank you for your business. Please contact us with any questions regarding this invoice.
+  - heading "Notes" [level=3]
+  - button "Leave an internal note for yourself or a team member": Leave an internal note for yourself or a team member
+  - button "Cancel":
+    - generic: Cancel
+  - button "Save Invoice":
+    - generic: Save Invoice
+  - button "Save and...":
+- iframe [id="stripeXDM_default469266_provider"] [name="stripeXDM_default469266_provider"]
+- iframe [id="intercom-frame"]

@@ -69,8 +69,10 @@
 	}));
 
 	// The Versions tab query stays off until the tab is hovered/opened (CLAUDE.md rule 9). Once requested it
-	// stays on, so re-opening the tab is instant.
-	let versionsRequested = $state(false);
+	// stays on, so re-opening the tab is instant. A page load that lands directly on this tab (a refresh or a
+	// shared link — see activeTab below) counts as already requested, so it fetches instead of skeleton-ing
+	// forever with no hover ever coming.
+	let versionsRequested = $state(page.url.searchParams.get('tab') === 'versions');
 	const versionsQuery = createQuery(() => ({
 		queryKey: automationRecipeVersionsKey(recipeId),
 		queryFn: () => fetchRecipeVersions(recipeId),
@@ -79,7 +81,7 @@
 
 	// The History tab is the same reveal-on-hover story as Versions, but paginated: a recipe accumulates one
 	// row per (event, decision) over its life, so it is a cursor-paginated infinite query, not a bounded read.
-	let historyRequested = $state(false);
+	let historyRequested = $state(page.url.searchParams.get('tab') === 'history');
 	const historyQuery = createInfiniteQuery(() => ({
 		queryKey: automationRecipeHistoryKey(recipeId),
 		queryFn: ({ pageParam }) => fetchRecipeHistory(recipeId, pageParam),
@@ -118,7 +120,8 @@
 		authority_blocked: 'Skipped — automation was off',
 		subject_gone: 'Skipped — the quote was gone',
 		condition_failed: 'Skipped — conditions weren’t met',
-		condition_unavailable: 'Couldn’t check the conditions'
+		condition_unavailable: 'Couldn’t check the conditions',
+		follow_ups_declined: 'Skipped — this client turned quote follow-ups off'
 	};
 	const enrollmentStateLabel: Record<
 		NonNullable<RecipeHistoryEntry['enrollment_state']>,

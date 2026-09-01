@@ -5,6 +5,18 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(50);
 
+-- Money left the `authenticated` grant when the quote money columns were locked down, so these
+-- assertions read stored money the same way they read fixture ids: through a definer helper, rather
+-- than through the privileges of whichever member the test is currently pretending to be.
+create function pg_temp.money(query text) returns bigint
+language plpgsql stable security definer as $money$
+declare result bigint;
+begin
+  execute query into result;
+  return result;
+end;
+$money$;
+
 -- 1. Shape and privileges ---------------------------------------------------------------------------------
 
 select has_column('public', 'quotes', 'sent_at', 'a quote remembers when it went out');
@@ -118,7 +130,7 @@ select is(pg_temp.qstatus(), 'awaiting_response', 'the quote is now waiting on t
 select is(pg_temp.published_number(), 1, 'the first publication is version one');
 select is(pg_temp.version_count(), 1, 'the draft became the version rather than adding a row');
 select isnt((select sent_at from public.quotes where id = pg_temp.qid()), null, 'sending is dated');
-select is((select total_minor from public.quote_versions where id = (select current_published_version_id from public.quotes where id = pg_temp.qid())),
+select is(pg_temp.money($m$select total_minor from public.quote_versions where id = (select current_published_version_id from public.quotes where id = pg_temp.qid())$m$),
   100000::bigint, 'the published version carries its calculated total');
 select is(pg_temp.events('quote.published'), 1, 'publishing is recorded in the quote history');
 

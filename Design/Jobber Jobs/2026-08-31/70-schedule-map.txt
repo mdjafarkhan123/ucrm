@@ -1,0 +1,162 @@
+- button "Skip to Search":
+  - generic: Skip to Search
+- button "Skip to Content":
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link "Choose Plan":
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link "Home":
+  - /url: /home
+  - generic "jobber logo"
+- paragraph: JKA LTD
+- searchbox "Press / to search"
+- button:
+- button "Open activity feed, 0 unread":
+- button "Open Help Menu":
+- button "Open Settings Menu":
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button "Create":
+      - generic: Create
+    - link "Home":
+      - /url: /home
+      - generic: Home
+    - link "Schedule":
+      - /url: /schedule
+      - generic: Schedule
+  - separator
+  - list:
+    - link "Clients":
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+      - generic: Clients
+    - link "Requests":
+      - /url: /requests
+      - generic: Requests
+    - link "Quotes":
+      - /url: /quotes
+      - generic: Quotes
+    - link "Jobs":
+      - /url: /jobs
+      - generic: Jobs
+    - link "Invoices":
+      - /url: /invoices
+      - generic: Invoices
+  - separator
+  - list:
+    - link "Marketing":
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+      - generic: Marketing
+    - link "Pipeline":
+      - /url: /sales
+      - generic: Pipeline
+    - link "Insights":
+      - /url: /insights
+      - generic: Insights
+    - 'button "Toggle submenu: Insights"':
+    - link "Expenses":
+      - /url: /expenses
+      - generic: Expenses
+    - link "Timesheets":
+      - /url: /timesheets
+      - generic: Timesheets
+    - link "Community":
+      - /url: /community
+      - generic: Community
+    - link "Apps":
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+      - generic: Apps
+  - separator
+  - list:
+    - link "Get Set Up":
+      - /url: /get_setup
+      - progressbar
+      - generic: Get Set Up
+  - paragraph:
+    - strong: Trial started 🎉
+  - paragraph: "Limited time offer: Save up to 40%"
+  - progressbar: 7.142857142857142%
+  - generic: Day 1 / 14
+  - link "Compare Plans":
+    - /url: /accounts/billing_info/pricing
+    - generic: Compare Plans
+- switch "Collapse Sidebar":
+  - generic: Collapse Sidebar
+- main:
+  - paragraph: August 2026
+  - button "Choose date":
+  - button "Previous period":
+  - button "Next period":
+  - button "Today":
+    - generic: Today
+  - button "Find an appointment time":
+    - generic: Find a Time
+  - combobox "Filter by appointment type":
+    - paragraph: Type
+    - paragraph: All
+  - combobox "Filter by team member assignments":
+    - paragraph: Team
+    - paragraph: All
+  - textbox
+  - combobox "Filter by appointment status":
+    - paragraph: Status
+    - paragraph: All
+  - radiogroup:
+    - radio "Month"
+    - generic: Month
+    - radio "Week"
+    - generic: Week
+    - radio "Day" [checked]
+    - generic: Day
+  - button "Unscheduled appointments":
+    - generic: "0"
+  - button "Toggle Map" [expanded] [active]:
+  - button "More":
+    - generic: More
+  - generic: Mon 31
+  - generic: Anytime
+  - generic: 0:00
+  - generic: 1:00
+  - generic: 2:00
+  - generic: 3:00
+  - generic: 4:00
+  - generic: 5:00
+  - generic: 6:00
+  - generic: 7:00
+  - generic: 8:00
+  - generic: 9:00
+  - generic: 10:00
+  - generic: 11:00
+  - generic: 12:00
+  - generic: 13:00
+  - generic: 14:00
+  - generic: 15:00
+  - generic: 16:00
+  - generic: 17:00
+  - generic: 18:00
+  - generic: 19:00
+  - generic: 20:00
+  - generic: 21:00
+  - generic: 22:00
+  - generic: 23:00
+  - generic "Unassigned":
+    - generic: Unassigned
+    - status "1 visit"
+  - button "Toggle Unassigned Row Freeze":
+  - button "Unassigned 1 anytime appointment": "1"
+  - generic "Jk Jafar":
+    - generic "Jk Jafar":
+      - generic: JJ
+    - generic: Jk Jafar
+  - button "Jk Jafar 0 anytime appointments": "0"
+  - button "Make map larger":
+  - button "Close map view":
+  - region "Map"
+  - iframe
+  - status
+- iframe [id="stripeXDM_default203351_provider"] [name="stripeXDM_default203351_provider"]
+- iframe [id="intercom-frame"]
+- tooltip "Map":
+  - paragraph: Map

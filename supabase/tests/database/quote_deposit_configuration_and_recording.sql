@@ -5,6 +5,18 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(58);
 
+-- Money left the `authenticated` grant when the quote money columns were locked down, so these
+-- assertions read stored money the same way they read fixture ids: through a definer helper, rather
+-- than through the privileges of whichever member the test is currently pretending to be.
+create function pg_temp.money(query text) returns bigint
+language plpgsql stable security definer as $money$
+declare result bigint;
+begin
+  execute query into result;
+  return result;
+end;
+$money$;
+
 -- 1. Shape and privileges -----------------------------------------------------------------------------------
 
 select has_function('public', 'set_quote_draft_deposit',
@@ -220,8 +232,8 @@ select is(
   1, 'the config quote publishes its first version'
 );
 select is(
-  (select deposit_required_minor from public.quote_versions where id =
-    (select current_published_version_id from public.quotes where title = 'Deposit config quote')),
+  pg_temp.money($m$select deposit_required_minor from public.quote_versions where id =
+    (select current_published_version_id from public.quotes where title = 'Deposit config quote')$m$),
   2500::bigint, 'the frozen version carries the $25 deposit'
 );
 

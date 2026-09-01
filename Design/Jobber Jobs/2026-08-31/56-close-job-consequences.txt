@@ -1,0 +1,289 @@
+- button:
+  - generic: Skip to Search
+- button:
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link "Choose Plan":
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link:
+  - /url: /home
+- paragraph: JKA LTD
+- searchbox
+- button:
+- button:
+- button:
+- button:
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button:
+      - generic: Create
+    - link:
+      - /url: /home
+      - generic: Home
+    - link:
+      - /url: /schedule
+      - generic: Schedule
+  - separator
+  - list:
+    - link:
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+      - generic: Clients
+    - link:
+      - /url: /requests
+      - generic: Requests
+    - link:
+      - /url: /quotes
+      - generic: Quotes
+    - link:
+      - /url: /jobs
+      - generic: Jobs
+    - link:
+      - /url: /invoices
+      - generic: Invoices
+  - separator
+  - list:
+    - link:
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+      - generic: Marketing
+    - link:
+      - /url: /sales
+      - generic: Pipeline
+    - link:
+      - /url: /insights
+      - generic: Insights
+    - button:
+    - link:
+      - /url: /expenses
+      - generic: Expenses
+    - link:
+      - /url: /timesheets
+      - generic: Timesheets
+    - link:
+      - /url: /community
+      - generic: Community
+    - link:
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+      - generic: Apps
+  - separator
+  - list:
+    - link:
+      - /url: /get_setup
+      - progressbar
+      - generic: Get Set Up
+  - paragraph:
+    - strong: Trial started 🎉
+  - paragraph: "Limited time offer: Save up to 40%"
+  - progressbar: 7.142857142857142%
+  - generic: Day 1 / 14
+  - link:
+    - /url: /accounts/billing_info/pricing
+    - generic: Compare Plans
+- switch:
+  - generic: Collapse Sidebar
+- main:
+  - status:
+    - paragraph: Upcoming
+  - button:
+  - button:
+    - generic: More
+  - button:
+    - generic: Email Booking Confirmation
+  - heading [level=1]: CODEX RESEARCH 20260831 - Recurring
+  - button:
+  - article:
+    - heading [level=2]:
+      - link:
+        - /url: /clients/150994075
+        - text: Jk Jafar
+    - button:
+    - paragraph: Property Address
+    - paragraph:
+      - link:
+        - /url: https://www.google.com/maps/search/?api=1&query=2426+E+Riverside+Dr%2CAustin%2CTX%2C78741%2CUnited+States
+        - text: 2426 E Riverside Dr Austin, TX 78741
+    - paragraph:
+      - link:
+        - /url: tel:+12065550122
+        - text: 206-555-0122
+    - paragraph:
+      - link:
+        - /url: mailto:info.socialmediauser2@gmail.com
+        - text: info.socialmediauser2@gmail.com
+  - term: "Job #"
+  - definition: "3"
+  - term: Job type
+  - definition: Recurring job
+  - term: Starts on
+  - definition: Sep 07, 2026
+  - term: Lasts for
+  - definition: 2 weeks
+  - term: Billing frequency
+  - definition: As needed
+  - term: Schedule
+  - definition: Weekly on Mondays
+  - heading [level=3]: Product / Service
+  - button:
+  - article:
+    - paragraph: Line Item
+    - paragraph: Quantity
+    - paragraph: Unit Cost
+    - paragraph: Unit Price
+    - paragraph: Total
+    - definition:
+      - heading [level=5]: Electrical Panel Labeling
+      - paragraph: Label all circuits in an existing electrical panel for easy identification.
+    - term: Image
+    - definition
+    - definition: "1"
+    - definition: ৳0.00
+    - definition: ৳50.00
+    - definition: ৳50.00
+  - paragraph: Total cost
+  - paragraph: ৳0.00
+  - heading [level=5]: Total price
+  - heading [level=5]: ৳50.00
+  - heading [level=3]: Labor
+  - paragraph: Time tracked to this job will show here
+  - button:
+    - generic: Add Time Entry
+  - heading [level=3]: Expenses
+  - paragraph: Track all expenses for this job in one place
+  - button:
+    - generic: Add Expense
+  - heading [level=3]: Scheduled visits
+  - button:
+    - generic: Edit All Visits
+  - paragraph: First visit
+  - paragraph: Sep 07, 2026
+  - paragraph: Last visit
+  - paragraph: Sep 21, 2026
+  - paragraph: Repeats
+  - paragraph: Weekly on
+  - paragraph: Mon
+  - paragraph: Checklists
+  - paragraph: —
+  - combobox:
+    - paragraph: Status
+    - paragraph: All
+  - button:
+  - table:
+    - rowgroup:
+      - row:
+        - columnheader:
+          - button:
+            - text: Date and time
+        - columnheader: Title and instructions
+        - columnheader:
+          - button:
+            - text: Status
+        - columnheader: Assigned
+        - columnheader
+    - rowgroup:
+      - row:
+        - cell:
+          - paragraph:
+            - generic: Sep 14, 2026
+          - paragraph: Anytime
+        - cell:
+          - paragraph: Jk Jafar - CODEX RESEARCH 20260831 - Recurring
+          - paragraph: CODEX regenerated incomplete visits only
+        - cell:
+          - status:
+            - paragraph: Upcoming
+        - cell:
+          - paragraph: Unassigned
+        - cell:
+          - button:
+          - button:
+      - row:
+        - cell:
+          - paragraph:
+            - generic: Sep 21, 2026
+          - paragraph: Anytime
+        - cell:
+          - paragraph: Jk Jafar - CODEX RESEARCH 20260831 - Recurring
+          - paragraph: CODEX regenerated incomplete visits only
+        - cell:
+          - status:
+            - paragraph: Upcoming
+        - cell:
+          - paragraph: Unassigned
+        - cell:
+          - button:
+          - button:
+      - row:
+        - cell:
+          - paragraph:
+            - generic: Sep 07, 2026
+          - paragraph: Anytime
+        - cell:
+          - paragraph: Jk Jafar - CODEX RESEARCH 20260831 - Recurring
+        - cell:
+          - status:
+            - paragraph: Completed
+        - cell:
+          - paragraph: Unassigned
+        - cell:
+          - button:
+  - heading [level=3]: Billing
+  - button:
+    - generic: Edit Invoice Settings
+  - term: Frequency
+  - definition: Don't remind me to invoice
+  - term: Billing type
+  - definition: Fixed price
+  - tablist:
+    - tab: Invoicing
+    - tab: Reminders
+  - tabpanel "Invoicing":
+    - table:
+      - rowgroup:
+        - row:
+          - columnheader: Invoice
+          - columnheader: Due date
+          - columnheader: Status
+          - columnheader: Subject
+          - columnheader: Total
+          - columnheader: Balance
+      - rowgroup:
+        - row:
+          - cell:
+            - button:
+              - generic: Create
+          - cell:
+            - paragraph: —
+          - cell:
+            - status:
+              - paragraph: Upcoming
+          - cell:
+            - paragraph: For Services Rendered
+          - cell:
+            - generic: ৳50.00
+          - cell:
+            - generic: ৳50.00
+  - button:
+  - heading [level=3]: 30 day average profit margin
+  - paragraph: Aug 2 - Aug 31
+  - generic: —%
+  - paragraph: ৳0.00
+  - generic: Revenue
+  - paragraph: ৳0.00
+  - paragraph: Cost
+  - paragraph: ৳0.00
+  - heading [level=3]: Notes
+  - button: Leave an internal note for yourself or a team member
+- iframe [id="stripeXDM_default469266_provider"] [name="stripeXDM_default469266_provider"]
+- iframe [id="intercom-frame"]
+- dialog "Close job with incomplete visits?" [active]:
+  - heading "Close job with incomplete visits?" [level=2]
+  - button "Close modal":
+  - radiogroup "Choose how to handle incomplete visits":
+    - radio "Remove 2 future visits" [checked]
+    - generic: Remove 2 future visits
+  - button "Close Job":
+    - generic: Close Job
+  - button "Cancel":
+    - generic: Cancel

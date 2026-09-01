@@ -19,7 +19,6 @@
 	} from '$lib/settings/api';
 	import { invalidatePipeline } from '$lib/pipeline/api';
 	import layoutKanbanIcon from '@tabler/icons/outline/layout-kanban.svg?raw';
-	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -33,6 +32,14 @@
 	let saving = $state(false);
 	let errorMessage = $state('');
 	let conflict = $state<{ editor_name: string | null; edited_at: string | null } | null>(null);
+	let layout = $state<RecordFormLayout>();
+
+	// One place the form shows why a save did not land — a plain error, or someone else getting there first.
+	const saveError = $derived(
+		conflict
+			? `${conflict.editor_name ?? 'Someone else'} just changed this. Refresh the page to see their version before saving yours.`
+			: errorMessage
+	);
 
 	$effect(() => {
 		const pipeline = query.data?.pipeline;
@@ -110,24 +117,13 @@
 		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Pipeline' }]}
 	/>
 
-	<RecordFormLayout title="Pipeline" icon={layoutKanbanIcon}>
+	<RecordFormLayout title="Pipeline" icon={layoutKanbanIcon} bind:this={layout} error={saveError}>
 		{#snippet main()}
 			{#if !canEdit}
 				<p class="pipeline-settings__readonly">
 					Only owners and administrators can change this. {#if editor}Last changed by {editor.name ??
 							'a teammate'}.{/if}
 				</p>
-			{/if}
-			{#if conflict}
-				<p class="pipeline-settings__conflict" role="alert">
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					<span aria-hidden="true">{@html alertTriangleIcon}</span>
-					{conflict.editor_name ?? 'Someone else'} just changed this. Refresh to see their version before
-					saving yours.
-				</p>
-			{/if}
-			{#if errorMessage}
-				<p class="pipeline-settings__error" role="alert">{errorMessage}</p>
 			{/if}
 
 			{#if detailed !== null}
@@ -156,7 +152,11 @@
 		{#snippet actions()}
 			{#if canEdit}
 				<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
-				<Button onclick={save} disabled={!dirty || saving} loading={saving}>Save</Button>
+				<Button
+					onclick={() => void save().finally(() => layout?.revealError())}
+					disabled={!dirty || saving}
+					loading={saving}>Save</Button
+				>
 			{/if}
 		{/snippet}
 	</RecordFormLayout>
@@ -170,29 +170,6 @@
 			border-radius: var(--radius-base);
 			color: var(--color-text--secondary);
 			background: var(--color-surface--background);
-			font-size: var(--typography--fontSize-small);
-		}
-		&__conflict {
-			display: flex;
-			align-items: center;
-			gap: var(--space-small);
-			padding: var(--space-base);
-			border-radius: var(--radius-base);
-			color: var(--color-warning--onSurface);
-			background: var(--color-warning--surface);
-			font-size: var(--typography--fontSize-small);
-		}
-		&__conflict :global(svg) {
-			width: 18px;
-			height: 18px;
-			flex: 0 0 auto;
-		}
-		&__error {
-			margin: 0;
-			padding: var(--space-base);
-			border-radius: var(--radius-base);
-			color: var(--color-critical--onSurface);
-			background: var(--color-critical--surface);
 			font-size: var(--typography--fontSize-small);
 		}
 	}

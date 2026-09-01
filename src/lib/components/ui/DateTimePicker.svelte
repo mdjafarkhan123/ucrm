@@ -11,6 +11,7 @@
 			endTime: undefined
 		}),
 		range = false,
+		showTime = true,
 		timeRole = 'start',
 		dateLabel = 'Date',
 		timeLabel = 'Time',
@@ -27,6 +28,7 @@
 	}: {
 		value?: DateTimePickerValue;
 		range?: boolean;
+		showTime?: boolean;
 		timeRole?: 'start' | 'end';
 		dateLabel?: string;
 		timeLabel?: string;
@@ -62,7 +64,14 @@
 	}
 </script>
 
-<div class={['date-time-picker', range && 'date-time-picker--range', className]}>
+<div
+	class={[
+		'date-time-picker',
+		range && showTime && 'date-time-picker--range',
+		!showTime && 'date-time-picker--date-only',
+		className
+	]}
+>
 	<CalendarPicker
 		value={value.date}
 		id={`${id}-date`}
@@ -75,31 +84,33 @@
 		onchange={handleDateChange}
 	/>
 
-	{#if range}
-		<TimePicker
-			id={`${id}-time`}
-			value={{ start: value.startTime, end: value.endTime }}
-			range
-			label={timeLabel}
-			{hourCycle}
-			{disabled}
-			{readonly}
-			{required}
-			{invalid}
-			onchange={handleRangeTimeChange}
-		/>
-	{:else}
-		<TimePicker
-			id={`${id}-time`}
-			value={timeRole === 'start' ? value.startTime : value.endTime}
-			label={timeLabel}
-			{hourCycle}
-			{disabled}
-			{readonly}
-			{required}
-			{invalid}
-			onchange={handleSingleTimeChange}
-		/>
+	{#if showTime}
+		{#if range}
+			<TimePicker
+				id={`${id}-time`}
+				value={{ start: value.startTime, end: value.endTime }}
+				range
+				label={timeLabel}
+				{hourCycle}
+				{disabled}
+				{readonly}
+				{required}
+				{invalid}
+				onchange={handleRangeTimeChange}
+			/>
+		{:else}
+			<TimePicker
+				id={`${id}-time`}
+				value={timeRole === 'start' ? value.startTime : value.endTime}
+				label={timeLabel}
+				{hourCycle}
+				{disabled}
+				{readonly}
+				{required}
+				{invalid}
+				onchange={handleSingleTimeChange}
+			/>
+		{/if}
 	{/if}
 
 	{#if errorMessage}
@@ -117,6 +128,10 @@
 
 		&--range {
 			grid-template-columns: minmax(180px, 0.8fr) minmax(360px, 1.2fr);
+		}
+
+		&--date-only {
+			grid-template-columns: minmax(0, 1fr);
 		}
 
 		&__error {

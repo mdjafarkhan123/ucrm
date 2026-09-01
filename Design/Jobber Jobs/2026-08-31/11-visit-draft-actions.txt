@@ -1,0 +1,232 @@
+- button "Skip to Search":
+  - generic: Skip to Search
+- button "Skip to Content":
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link "Choose Plan":
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link "Home":
+  - /url: /home
+  - generic "jobber logo"
+- paragraph: JKA LTD
+- searchbox "Press / to search"
+- button:
+- button "Open activity feed, 0 unread":
+- button "Open Help Menu":
+- button "Open Settings Menu":
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button "Create":
+      - generic: Create
+    - link "Home":
+      - /url: /home
+      - generic: Home
+    - link "Schedule":
+      - /url: /schedule
+      - generic: Schedule
+  - separator
+  - list:
+    - link "Clients":
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+      - generic: Clients
+    - link "Requests":
+      - /url: /requests
+      - generic: Requests
+    - link "Quotes":
+      - /url: /quotes
+      - generic: Quotes
+    - link "Jobs":
+      - /url: /jobs
+      - generic: Jobs
+    - link "Invoices":
+      - /url: /invoices
+      - generic: Invoices
+  - separator
+  - list:
+    - link "Marketing":
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+      - generic: Marketing
+    - link "Pipeline":
+      - /url: /sales
+      - generic: Pipeline
+    - link "Insights":
+      - /url: /insights
+      - generic: Insights
+    - 'button "Toggle submenu: Insights"':
+    - link "Expenses":
+      - /url: /expenses
+      - generic: Expenses
+    - link "Timesheets":
+      - /url: /timesheets
+      - generic: Timesheets
+    - link "Community":
+      - /url: /community
+      - generic: Community
+    - link "Apps":
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+      - generic: Apps
+  - separator
+  - list:
+    - link "Get Set Up":
+      - /url: /get_setup
+      - progressbar
+      - generic: Get Set Up
+  - paragraph:
+    - strong: Trial started 🎉
+  - paragraph: "Limited time offer: Save up to 40%"
+  - progressbar: 7.142857142857142%
+  - generic: Day 1 / 14
+  - link "Compare Plans":
+    - /url: /accounts/billing_info/pricing
+    - generic: Compare Plans
+- switch "Collapse Sidebar":
+  - generic: Collapse Sidebar
+- main:
+  - generic: New Job
+  - generic: Title
+  - textbox "Title": CODEX RESEARCH 20260831 - One-off
+  - article:
+    - heading "Jk Jafar" [level=2]:
+      - link "Jk Jafar":
+        - /url: /clients/150994075
+    - button "More options":
+    - paragraph:
+      - link "2426 E Riverside Dr Austin, TX 78741":
+        - /url: https://www.google.com/maps/search/?api=1&query=2426+E+Riverside+Dr%2CAustin%2CTX%2C78741%2CUnited+States
+    - paragraph:
+      - link "206-555-0122":
+        - /url: tel:+12065550122
+    - paragraph:
+      - link "info.socialmediauser2@gmail.com":
+        - /url: mailto:info.socialmediauser2@gmail.com
+  - term: "Job #"
+  - 'textbox "Job #"':
+    - /placeholder: " "
+    - text: "2"
+  - 'button "Increase Job #"':
+  - 'button "Decrease Job #"':
+  - spinbutton: "2"
+  - term: Customize
+  - button "Add Field":
+    - generic: Add Field
+  - heading "Visits" [level=3]
+  - heading "Schedule" [level=6]
+  - radiogroup:
+    - radio "One-off" [checked]
+    - generic: One-off
+    - radio "Recurring"
+    - generic: Recurring
+  - generic: Sep 1
+  - generic: –
+  - generic: 2, 2026
+  - generic: "2"
+  - generic: visits
+  - button "Create Visits":
+    - generic: Create Visits
+  - paragraph: Sep
+  - heading "1" [level=2]
+  - generic: Title
+  - textbox "Title"
+  - text: Leave title blank to use default title from
+  - link "Settings":
+    - /url: /work_configuration/edit/work_settings
+    - generic: Settings
+  - generic: Date
+  - textbox "Date": Sep 01, 2026
+  - button "Show calendar":
+  - checkbox "Schedule later"
+  - paragraph: Schedule later
+  - generic: Start time
+  - textbox "Start time"
+  - generic: End time
+  - textbox "End time"
+  - checkbox "Anytime"
+  - paragraph: Anytime
+  - toolbar:
+    - button "Select team members":
+      - generic: Select team members
+    - generic: Assigned
+    - generic "Jk Jafar":
+      - button "Jk Jafar":
+        - generic: JJ
+        - paragraph: Jk Jafar
+        - button "Remove Jk Jafar":
+    - combobox "Assigned"
+    - button "Clear all selections":
+  - textbox
+  - generic: Visit instructions
+  - textbox "Visit instructions"
+  - button "Collapse visit":
+  - button "More actions for visit":
+  - button "Sep 2 Client name - Job title Jk Jafar Jk Jafar Expand visit":
+    - paragraph: Sep
+    - heading "2" [level=2]
+    - paragraph: Client name - Job title
+    - generic "Jk Jafar":
+      - generic: JJ
+    - paragraph: Jk Jafar
+    - button "Expand visit":
+  - heading "CAPTURE ON-SITE DETAILS" [level=5]
+  - paragraph: Attach custom-built checklists so that nothing gets missed
+  - link "Create a Checklist":
+    - /url: /job_forms/new
+    - generic: Create a Checklist
+  - checkbox "Email team about assignment"
+  - paragraph: Email team about assignment
+  - button "Add a Visit":
+    - generic: Add a Visit
+  - button "Reset":
+    - generic: Reset
+  - heading "Billing" [level=3]
+  - checkbox "Remind me to invoice when I close the job" [checked]
+  - paragraph: Remind me to invoice when I close the job
+  - checkbox "Split into multiple invoices with a payment schedule"
+  - paragraph: Split into multiple invoices with a payment schedule
+  - heading "Product / Service" [level=3]
+  - button "Drag to reorder":
+  - generic: Name
+  - combobox "Name"
+  - textbox "Quantity":
+    - /placeholder: " "
+    - text: "1"
+  - generic: Quantity
+  - button "Increase Quantity":
+  - button "Decrease Quantity":
+  - spinbutton: "1"
+  - textbox "Unit cost":
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Unit cost
+  - spinbutton: "0"
+  - textbox "Unit price":
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Unit price
+  - spinbutton: "0"
+  - textbox "Total":
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Total
+  - spinbutton: "0"
+  - generic: Description
+  - textbox "Description"
+  - button "Line Item Action Menu":
+  - status
+  - button "Add Line Item":
+    - generic: Add Line Item
+  - paragraph: Total cost
+  - paragraph: ৳0.00
+  - heading "Total price" [level=4]
+  - heading "৳0.00" [level=4]
+  - heading "Notes" [level=2]
+  - button "Leave an internal note for yourself or a team member": Leave an internal note for yourself or a team member
+  - button "Cancel":
+    - generic: Cancel
+  - button "Save Job":
+    - generic: Save Job
+  - button "Save and...":
+- iframe [id="stripeXDM_default469266_provider"] [name="stripeXDM_default469266_provider"]
+- iframe [id="intercom-frame"]

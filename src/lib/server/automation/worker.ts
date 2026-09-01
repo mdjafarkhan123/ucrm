@@ -35,6 +35,9 @@ type AdvanceOutcome =
 	| 'enrollment_inactive'
 	| 'enrollment_expired'
 	| 'recipe_not_active'
+	// 6F-1: a domain stop condition ended the enrollment before this step ran (the quote is no longer
+	// awaiting a response, or the client turned quote follow-ups off).
+	| 'stop_condition_met'
 	| 'completed'
 	| 'waiting'
 	| 'action_due'
@@ -180,7 +183,8 @@ async function advanceOne(
 		else if (
 			outcome === 'enrollment_inactive' ||
 			outcome === 'enrollment_expired' ||
-			outcome === 'recipe_not_active'
+			outcome === 'recipe_not_active' ||
+			outcome === 'stop_condition_met'
 		)
 			counts.cancelled += 1;
 		// 'claim_lost' is another worker's row; it counts as nothing.

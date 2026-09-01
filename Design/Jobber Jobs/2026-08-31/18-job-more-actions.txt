@@ -1,0 +1,272 @@
+- button "Skip to Search":
+  - generic: Skip to Search
+- button "Skip to Content":
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link "Choose Plan":
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link "Home":
+  - /url: /home
+  - generic "jobber logo"
+- paragraph: JKA LTD
+- searchbox "Press / to search"
+- button:
+- button "Open activity feed, 0 unread":
+- button "Open Help Menu":
+- button "Open Settings Menu":
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button "Create":
+      - generic: Create
+    - link "Home":
+      - /url: /home
+      - generic: Home
+    - link "Schedule":
+      - /url: /schedule
+      - generic: Schedule
+  - separator
+  - list:
+    - link "Clients":
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+      - generic: Clients
+    - link "Requests":
+      - /url: /requests
+      - generic: Requests
+    - link "Quotes":
+      - /url: /quotes
+      - generic: Quotes
+    - link "Jobs":
+      - /url: /jobs
+      - generic: Jobs
+    - link "Invoices":
+      - /url: /invoices
+      - generic: Invoices
+  - separator
+  - list:
+    - link "Marketing":
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+      - generic: Marketing
+    - link "Pipeline":
+      - /url: /sales
+      - generic: Pipeline
+    - link "Insights":
+      - /url: /insights
+      - generic: Insights
+    - 'button "Toggle submenu: Insights"':
+    - link "Expenses":
+      - /url: /expenses
+      - generic: Expenses
+    - link "Timesheets":
+      - /url: /timesheets
+      - generic: Timesheets
+    - link "Community":
+      - /url: /community
+      - generic: Community
+    - link "Apps":
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+      - generic: Apps
+  - separator
+  - list:
+    - link "Get Set Up":
+      - /url: /get_setup
+      - progressbar
+      - generic: Get Set Up
+  - paragraph:
+    - strong: Trial started 🎉
+  - paragraph: "Limited time offer: Save up to 40%"
+  - progressbar: 7.142857142857142%
+  - generic: Day 1 / 14
+  - link "Compare Plans":
+    - /url: /accounts/billing_info/pricing
+    - generic: Compare Plans
+- switch "Collapse Sidebar":
+  - generic: Collapse Sidebar
+- main:
+  - status:
+    - paragraph: Upcoming
+  - button "View activity":
+  - button "More" [expanded]:
+    - generic: More
+  - menu "More" [active]:
+    - menuitem "Close Job":
+      - generic: Close Job
+    - menuitem "Create Similar Job":
+      - generic: Create Similar Job
+    - menuitem "Send Job Follow-up Email":
+      - generic: Send Job Follow-up Email
+    - separator
+    - menuitem "Create Invoice":
+      - generic: Create Invoice
+    - separator
+    - menuitem "Collect Signature":
+      - generic: Collect Signature
+    - menuitem "Email Job Costs CSV":
+      - generic: Email Job Costs CSV
+    - menuitem "Print or Save PDF":
+      - generic: Print or Save PDF
+    - menuitem "Delete":
+      - generic: Delete
+  - button "Email Booking Confirmation":
+    - generic: Email Booking Confirmation
+  - heading "CODEX RESEARCH 20260831 - One-off" [level=1]
+  - button "Edit job details":
+  - article:
+    - heading "Jk Jafar" [level=2]:
+      - link "Jk Jafar":
+        - /url: /clients/150994075
+    - button "More options":
+    - paragraph: Property Address
+    - paragraph:
+      - link "2426 E Riverside Dr Austin, TX 78741":
+        - /url: https://www.google.com/maps/search/?api=1&query=2426+E+Riverside+Dr%2CAustin%2CTX%2C78741%2CUnited+States
+    - paragraph:
+      - link "206-555-0122":
+        - /url: tel:+12065550122
+    - paragraph:
+      - link "info.socialmediauser2@gmail.com":
+        - /url: mailto:info.socialmediauser2@gmail.com
+  - term: "Job #"
+  - definition: "2"
+  - term: Job type
+  - definition: One-off job
+  - term: Starts on
+  - definition: Sep 02, 2026
+  - term: Ends on
+  - definition: Sep 02, 2026
+  - term: Billing frequency
+  - definition: Upon job completion
+  - heading "Product / Service" [level=3]
+  - button "Edit product / service":
+  - article:
+    - paragraph: Line Item
+    - paragraph: Quantity
+    - paragraph: Unit Cost
+    - paragraph: Unit Price
+    - paragraph: Total
+    - definition:
+      - heading "Electrical Panel Upgrade" [level=5]
+      - paragraph: Upgrade existing electrical panel, including new breakers, grounding, and labeling.
+    - term: Image
+    - definition
+    - definition: "1"
+    - definition: ৳25.00
+    - definition: ৳100.00
+    - definition: ৳100.00
+  - paragraph: Total cost
+  - paragraph: ৳25.00
+  - heading "Total price" [level=5]
+  - heading "৳100.00" [level=5]
+  - heading "Labor" [level=3]
+  - paragraph: Time tracked to this job will show here
+  - button "Add time entry":
+    - generic: Add Time Entry
+  - heading "Expenses" [level=3]
+  - paragraph: Track all expenses for this job in one place
+  - button "Add expense":
+    - generic: Add Expense
+  - heading "Scheduled visits" [level=3]
+  - paragraph: First visit
+  - paragraph: Sep 02, 2026
+  - paragraph: Checklists
+  - button "Edit":
+    - generic: Edit
+  - paragraph: —
+  - paragraph: Arrival window
+  - button "Edit":
+    - generic: Edit
+  - paragraph: Arrive at start time
+  - combobox:
+    - paragraph: Status
+    - paragraph: All
+  - button "New Visit":
+  - table:
+    - rowgroup:
+      - row "Select all visits Date and time Title and instructions Status Assigned":
+        - columnheader "Select all visits":
+          - checkbox "Select all visits"
+        - columnheader "Date and time":
+          - button "Date and time":
+            - text: Date and time
+        - columnheader "Title and instructions"
+        - columnheader "Status":
+          - button "Status":
+            - text: Status
+        - columnheader "Assigned"
+        - columnheader
+    - rowgroup:
+      - row "Select visit Unscheduled Jk Jafar - CODEX RESEARCH 20260831 - One-off Jk Jafar Jk Jafar Complete Jk Jafar - CODEX RESEARCH 20260831 - One-off Edit Jk Jafar - CODEX RESEARCH 20260831 - One-off":
+        - cell "Select visit":
+          - checkbox "Select visit"
+        - cell "Unscheduled":
+          - paragraph: Unscheduled
+        - cell "Jk Jafar - CODEX RESEARCH 20260831 - One-off":
+          - paragraph: Jk Jafar - CODEX RESEARCH 20260831 - One-off
+        - cell:
+          - status:
+            - paragraph: Unscheduled
+        - cell "Jk Jafar Jk Jafar":
+          - generic "Jk Jafar":
+            - generic: JJ
+          - paragraph: Jk Jafar
+        - cell "Complete Jk Jafar - CODEX RESEARCH 20260831 - One-off Edit Jk Jafar - CODEX RESEARCH 20260831 - One-off":
+          - button "Complete Jk Jafar - CODEX RESEARCH 20260831 - One-off":
+          - button "Edit Jk Jafar - CODEX RESEARCH 20260831 - One-off":
+      - row "Select visit Sep 02, 2026 Anytime Jk Jafar - CODEX RESEARCH 20260831 - One-off Jk Jafar Jk Jafar Complete Jk Jafar - CODEX RESEARCH 20260831 - One-off Edit Jk Jafar - CODEX RESEARCH 20260831 - One-off":
+        - cell "Select visit":
+          - checkbox "Select visit"
+        - cell "Sep 02, 2026 Anytime":
+          - paragraph:
+            - generic: Sep 02, 2026
+          - paragraph: Anytime
+        - cell "Jk Jafar - CODEX RESEARCH 20260831 - One-off":
+          - paragraph: Jk Jafar - CODEX RESEARCH 20260831 - One-off
+        - cell:
+          - status:
+            - paragraph: Upcoming
+        - cell "Jk Jafar Jk Jafar":
+          - generic "Jk Jafar":
+            - generic: JJ
+          - paragraph: Jk Jafar
+        - cell "Complete Jk Jafar - CODEX RESEARCH 20260831 - One-off Edit Jk Jafar - CODEX RESEARCH 20260831 - One-off":
+          - button "Complete Jk Jafar - CODEX RESEARCH 20260831 - One-off":
+          - button "Edit Jk Jafar - CODEX RESEARCH 20260831 - One-off":
+  - heading "Billing" [level=3]
+  - button "Edit Invoice Settings":
+    - generic: Edit Invoice Settings
+  - term: Reminders
+  - definition: When the job is marked closed
+  - tablist:
+    - tab "Invoicing"
+    - tab "Reminders"
+  - tabpanel "Invoicing":
+    - table:
+      - rowgroup:
+        - row "Invoice Due date Status Subject Total Balance":
+          - columnheader "Invoice"
+          - columnheader "Due date"
+          - columnheader "Status"
+          - columnheader "Subject"
+          - columnheader "Total"
+          - columnheader "Balance"
+      - rowgroup:
+        - row "Create — For Services Rendered ৳100.00 ৳100.00":
+          - cell "Create":
+            - button "Create":
+              - generic: Create
+          - cell "—":
+            - paragraph: —
+          - cell:
+            - status:
+              - paragraph: Upcoming
+          - cell "For Services Rendered":
+            - paragraph: For Services Rendered
+          - cell "৳100.00":
+            - generic: ৳100.00
+          - cell "৳100.00":
+            - generic: ৳100.00
+  - button "Show panel":
+- iframe [id="stripeXDM_default469266_provider"] [name="stripeXDM_default469266_provider"]
+- iframe [id="intercom-frame"]

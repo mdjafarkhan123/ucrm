@@ -1,0 +1,237 @@
+- button:
+  - generic: Skip to Search
+- button:
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link "Choose Plan":
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link:
+  - /url: /home
+- paragraph: JKA LTD
+- searchbox
+- button:
+- button:
+- button:
+- button:
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button:
+      - generic: Create
+    - link:
+      - /url: /home
+      - generic: Home
+    - link:
+      - /url: /schedule
+      - generic: Schedule
+  - separator
+  - list:
+    - link:
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+      - generic: Clients
+    - link:
+      - /url: /requests
+      - generic: Requests
+    - link:
+      - /url: /quotes
+      - generic: Quotes
+    - link:
+      - /url: /jobs
+      - generic: Jobs
+    - link:
+      - /url: /invoices
+      - generic: Invoices
+  - separator
+  - list:
+    - link:
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+      - generic: Marketing
+    - link:
+      - /url: /sales
+      - generic: Pipeline
+    - link:
+      - /url: /insights
+      - generic: Insights
+    - button:
+    - link:
+      - /url: /expenses
+      - generic: Expenses
+    - link:
+      - /url: /timesheets
+      - generic: Timesheets
+    - link:
+      - /url: /community
+      - generic: Community
+    - link:
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+      - generic: Apps
+  - separator
+  - list:
+    - link:
+      - /url: /get_setup
+      - progressbar
+      - generic: Get Set Up
+  - paragraph:
+    - strong: Trial started 🎉
+  - paragraph: "Limited time offer: Save up to 40%"
+  - progressbar: 7.142857142857142%
+  - generic: Day 1 / 14
+  - link:
+    - /url: /accounts/billing_info/pricing
+    - generic: Compare Plans
+- switch:
+  - generic: Collapse Sidebar
+- main:
+  - generic: New Invoice
+  - generic: Subject
+  - textbox: For Services Rendered
+  - article:
+    - heading "Jk Jafar" [level=2]:
+      - link "Jk Jafar":
+        - /url: /clients/150994075
+    - button "More options":
+    - generic: Select a property
+    - combobox "Select a property"
+    - paragraph:
+      - link "206-555-0122":
+        - /url: tel:+12065550122
+    - paragraph:
+      - link "info.socialmediauser2@gmail.com":
+        - /url: mailto:info.socialmediauser2@gmail.com
+  - term: "Invoice #"
+  - textbox:
+    - /placeholder: " "
+    - text: "1"
+  - button:
+  - button:
+  - spinbutton: "1"
+  - term: Issued date
+  - button: Date Sent
+  - term: Payment terms
+  - combobox: Due upon receipt
+  - term: Customize
+  - button:
+    - generic: Add Field
+  - heading [level=2]: Product / Service
+  - button:
+  - generic: Name
+  - combobox
+  - textbox:
+    - /placeholder: " "
+    - text: "1"
+  - generic: Quantity
+  - button:
+  - button:
+  - spinbutton: "1"
+  - textbox:
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Unit price
+  - spinbutton: "0"
+  - textbox:
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Total
+  - spinbutton: "0"
+  - generic: Description
+  - textbox
+  - button:
+    - generic: Add Service Date
+  - status
+  - button:
+    - generic: Add Line Item
+  - heading [level=2]: Invoice Totals
+  - paragraph: Client view
+  - button:
+    - generic: Change
+  - paragraph: Subtotal
+  - paragraph: ৳0.00
+  - paragraph: Discount
+  - button:
+    - generic: Add Discount
+  - paragraph: Tax
+  - button:
+    - generic: Add Tax
+  - heading [level=4]: Total
+  - heading [level=4]: ৳0.00
+  - paragraph: Deposits
+  - button:
+    - generic: Add Deposit
+  - paragraph: Invoice balance
+  - paragraph: ৳0.00
+  - paragraph: Add section
+  - button:
+    - generic: Client Message
+  - button:
+    - generic: Images
+  - button:
+    - generic: Attachments
+  - heading [level=3]: Contract / Disclaimer
+  - button:
+  - generic: Description
+  - textbox: Thank you for your business. Please contact us with any questions regarding this invoice.
+  - heading [level=3]: Notes
+  - button: Leave an internal note for yourself or a team member
+  - button:
+    - generic: Cancel
+  - button:
+    - generic: Save Invoice
+  - button:
+- iframe [id="stripeXDM_default469266_provider"] [name="stripeXDM_default469266_provider"]
+- iframe [id="intercom-frame"]
+- dialog "Select jobs to invoice for Jk Jafar" [active]:
+  - heading "Select jobs to invoice for Jk Jafar" [level=2]
+  - table:
+    - rowgroup:
+      - row "Status Title Address Uninvoiced Subtotal":
+        - columnheader
+        - columnheader "Status"
+        - columnheader "Title"
+        - columnheader "Address"
+        - columnheader "Uninvoiced":
+          - paragraph: Uninvoiced
+        - columnheader "Subtotal":
+          - paragraph: Subtotal
+    - rowgroup:
+      - 'row "#2 CODEX RESEARCH 20260831 - One-off Visit: Sep 02, 2026 2426 E Riverside Dr Austin, TX, 78741 ৳100.00 ৳100.00"':
+        - cell:
+          - checkbox [checked]
+        - cell:
+          - status:
+            - paragraph: Action Required
+        - 'cell "#2 CODEX RESEARCH 20260831 - One-off Visit: Sep 02, 2026"':
+          - link "#2 CODEX RESEARCH 20260831 - One-off":
+            - /url: /jobs/155570662
+            - generic: "#2 CODEX RESEARCH 20260831 - One-off"
+          - paragraph: "Visit: Sep 02, 2026"
+        - cell "2426 E Riverside Dr Austin, TX, 78741":
+          - paragraph: 2426 E Riverside Dr
+          - paragraph: Austin, TX, 78741
+        - cell "৳100.00":
+          - paragraph: ৳100.00
+        - cell "৳100.00":
+          - generic: ৳100.00
+      - 'row "#1 Panel upgrade & inspection Visit: Aug 31, 2026 2426 E Riverside Dr Austin, TX, 78741 ৳600.00 ৳600.00"':
+        - cell:
+          - checkbox
+        - cell:
+          - status:
+            - paragraph: Today
+        - 'cell "#1 Panel upgrade & inspection Visit: Aug 31, 2026"':
+          - link "#1 Panel upgrade & inspection":
+            - /url: /jobs/155568983
+            - generic: "#1 Panel upgrade & inspection"
+          - paragraph: "Visit: Aug 31, 2026"
+        - cell "2426 E Riverside Dr Austin, TX, 78741":
+          - paragraph: 2426 E Riverside Dr
+          - paragraph: Austin, TX, 78741
+        - cell "৳600.00":
+          - paragraph: ৳600.00
+        - cell "৳600.00":
+          - generic: ৳600.00
+  - button "Continue":
+    - generic: Continue
+  - button "Cancel":
+    - generic: Cancel

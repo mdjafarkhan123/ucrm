@@ -524,7 +524,8 @@
 
 	// One action, named for the next step this quote is waiting on. An approved quote's next step is a Job,
 	// which is not built, so it says nothing rather than offering a button that cannot work.
-	const primaryAction = $derived.by(() => {
+	type PrimaryAction = { label: string; loading?: boolean; onclick: () => void };
+	const primaryAction = $derived.by<PrimaryAction | undefined>(() => {
 		if (!saved) return undefined;
 		if (emailable)
 			return {

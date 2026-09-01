@@ -32,7 +32,6 @@
 	import { invalidatePipeline } from '$lib/pipeline/api';
 	import fileDollarIcon from '@tabler/icons/outline/file-dollar.svg?raw';
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
-	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import speakerphoneIcon from '@tabler/icons/outline/speakerphone.svg?raw';
 	import messageIcon from '@tabler/icons/outline/message.svg?raw';
 	import paperclipIcon from '@tabler/icons/outline/paperclip.svg?raw';
@@ -91,6 +90,7 @@
 	let fieldErrors = $state<Record<string, string>>({});
 	let formError = $state('');
 	let saving = $state(false);
+	let layout = $state<RecordFormLayout>();
 	let documentAttachments = $state<AttachmentsCard>();
 	let imageAttachments = $state<AttachmentsCard>();
 	let productsAndServices = $state<ProductsAndServicesBlock>();
@@ -292,22 +292,15 @@
 	}
 </script>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
 <form
 	class="quote-form"
 	onsubmit={(event) => {
 		event.preventDefault();
-		void submit();
+		void submit().finally(() => layout?.revealError());
 	}}
 >
-	<RecordFormLayout title="New Quote" icon={fileDollarIcon}>
+	<RecordFormLayout title="New Quote" icon={fileDollarIcon} bind:this={layout} error={formError}>
 		{#snippet main()}
-			{#if formError}
-				<p class="quote-form__alert" role="alert">
-					<span aria-hidden="true">{@html alertTriangleIcon}</span>{formError}
-				</p>
-			{/if}
-
 			<PrimaryInfoCard
 				id="quote-primary"
 				icon={fileDollarIcon}
@@ -476,31 +469,11 @@
 	</RecordFormLayout>
 </form>
 
-<!-- eslint-enable svelte/no-at-html-tags -->
-
 <style lang="scss">
 	.quote-form {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-large);
-
-		&__alert {
-			display: flex;
-			align-items: center;
-			gap: var(--space-small);
-			padding: var(--space-slim) var(--space-base);
-			border-radius: var(--radius-base);
-			color: var(--color-critical--onSurface);
-			background: var(--color-critical--surface);
-			font-size: var(--typography--fontSize-small);
-
-			:global(svg) {
-				display: block;
-				width: 18px;
-				height: 18px;
-				flex: 0 0 auto;
-			}
-		}
 
 		&__property {
 			margin-top: var(--space-small);

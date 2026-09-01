@@ -22,7 +22,6 @@
 	import paletteIcon from '@tabler/icons/outline/palette.svg?raw';
 	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
-	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -45,6 +44,14 @@
 	let errorMessage = $state('');
 	let conflict = $state<{ editor_name: string | null; edited_at: string | null } | null>(null);
 	let fileInput = $state<HTMLInputElement | null>(null);
+	let layout = $state<RecordFormLayout>();
+
+	// One place the form shows why a save did not land — a plain error, or someone else getting there first.
+	const saveError = $derived(
+		conflict
+			? `${conflict.editor_name ?? 'Someone else'} just changed this. Refresh the page to see their version before saving yours.`
+			: errorMessage
+	);
 
 	// What is waiting to be saved, the same house rule as `collaboration/AttachmentsCard.svelte`: picking
 	// or removing a logo only stages the change, and this page's own Save/Cancel bar commits or discards it.
@@ -223,24 +230,13 @@
 		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Branding' }]}
 	/>
 
-	<RecordFormLayout title="Branding" icon={paletteIcon}>
+	<RecordFormLayout title="Branding" icon={paletteIcon} bind:this={layout} error={saveError}>
 		{#snippet main()}
 			{#if !canEdit}
 				<p class="branding__readonly">
 					Only owners and administrators can change this. {#if editor}Last changed by {editor.name ??
 							'a teammate'}.{/if}
 				</p>
-			{/if}
-			{#if conflict}
-				<p class="branding__conflict" role="alert">
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					<span aria-hidden="true">{@html alertTriangleIcon}</span>
-					{conflict.editor_name ?? 'Someone else'} just changed this. Refresh to see their version before
-					saving yours.
-				</p>
-			{/if}
-			{#if errorMessage}
-				<p class="branding__error" role="alert">{errorMessage}</p>
 			{/if}
 
 			<div class="branding__columns">
@@ -333,7 +329,11 @@
 		{#snippet actions()}
 			{#if canEdit}
 				<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
-				<Button onclick={save} disabled={!dirty || saving} loading={saving}>Save</Button>
+				<Button
+					onclick={() => void save().finally(() => layout?.revealError())}
+					disabled={!dirty || saving}
+					loading={saving}>Save</Button
+				>
 			{/if}
 		{/snippet}
 	</RecordFormLayout>
@@ -347,28 +347,6 @@
 			border-radius: var(--radius-base);
 			color: var(--color-text--secondary);
 			background: var(--color-surface--background);
-			font-size: var(--typography--fontSize-small);
-		}
-		&__conflict {
-			display: flex;
-			align-items: center;
-			gap: var(--space-small);
-			padding: var(--space-base);
-			border-radius: var(--radius-base);
-			color: var(--color-warning--onSurface);
-			background: var(--color-warning--surface);
-			font-size: var(--typography--fontSize-small);
-		}
-		&__conflict :global(svg) {
-			width: 18px;
-			height: 18px;
-			flex: 0 0 auto;
-		}
-		&__error {
-			padding: var(--space-base);
-			border-radius: var(--radius-base);
-			color: var(--color-critical--onSurface);
-			background: var(--color-critical--surface);
 			font-size: var(--typography--fontSize-small);
 		}
 		&__columns {

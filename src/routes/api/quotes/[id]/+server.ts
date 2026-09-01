@@ -8,6 +8,7 @@ import {
 	notFound
 } from '$lib/server/api/errors';
 import { quoteWriteError } from '$lib/server/quotes/errors';
+import { asMoneyMap, withMoney } from '$lib/server/quotes/money';
 
 const NOT_FOUND = 'That quote could not be found.';
 
@@ -21,14 +22,11 @@ const VERSION_SELECT = `id, version_number, status, revision, contract_disclaime
 	 client_display_name, organization_name, service_address_line1, service_address_line2, service_city,
 	 service_state_region, service_postal_code, service_country, created_at, introduction, client_message,
 	 show_quantities, show_unit_prices, show_line_totals, show_totals, discount_name, discount_type,
-	 discount_value, tax_source, tax_name, tax_rate_basis_points, tax_rate_id, published_at, deposit_type`;
+	 tax_source, tax_name, tax_rate_basis_points, tax_rate_id, published_at, deposit_type`;
 
-// Money the reader may not see is never selected. The version's own totals are customer money, so they
-// follow `quotes.view_price`; cost, profit, margin, and the itemized calculation are the business's own
-// numbers and follow `quotes.view_cost`, which is a separate permission.
-const VERSION_PRICE_COLUMNS =
-	'subtotal_minor, discount_minor, tax_minor, total_minor, deposit_required_minor';
-const VERSION_COST_COLUMNS = 'cost_minor, profit_minor, margin_basis_points, calculation';
+// Money is no longer on these rows to select. `authenticated` lost the grant on the money columns, so a
+// version's totals arrive from `quote_version_money` and its line money from `quote_line_money`, each
+// applying `quotes.view_price` and `quotes.view_cost` in the database rather than out here.
 
 const LINE_SELECT = `id, position, source_catalog_item_id, category, is_labor, name, description,
 	 unit_label, quantity, is_taxable, image_attachment_id, line_kind, selection_kind,
@@ -41,15 +39,6 @@ const VERSION_ATTACHMENT_SELECT = 'id, attachment_id, position, customer_visible
 const SCHEDULE_ITEM_SELECT = 'id, position, description, value_type, value, is_deposit';
 const DEPOSIT_EVENT_SELECT = `id, quote_version_id, event_type, amount_minor, method, reference, note,
 	 reversed_event_id, created_at`;
-
-const PRICE_COLUMNS = 'unit_price_minor, line_total_minor';
-const COST_COLUMNS = 'unit_cost_minor, line_cost_total_minor';
-
-// Money a person may not see is never selected in the first place. Dropping it after the fact would still
-// have carried it over the wire, and a payload that never held it cannot leak it.
-function columns(base: string, ...extra: Array<string | null>) {
-	return [base, ...extra.filter(Boolean)].join(', ');
-}
 
 // A quote and the version a person is allowed to see, with everything the proposal is made of: its
 // choice-aware lines and the files staged for the customer's copy.
@@ -67,6 +56,7 @@ export const GET: RequestHandler = async (event) => {
 	const supabase = event.locals.supabase;
 	const canSeePrice = hasPermission(check.access, 'quotes.view_price');
 	const canSeeCost = hasPermission(check.access, 'quotes.view_cost');
+	const wantsMoney = canSeePrice || canSeeCost;
 	const canEdit = hasPermission(check.access, 'quotes.edit');
 	// The header only offers what this person could actually carry out. Sending and answering are separate
 	// permissions from editing, so the page is told about each one rather than guessing from can_edit.
@@ -100,31 +90,21 @@ export const GET: RequestHandler = async (event) => {
 		{ data: signature },
 		{ data: scheduleItems, error: scheduleItemsError },
 		{ data: depositEvents, error: depositEventsError },
-		{ data: readyForJob }
+		{ data: readyForJob },
+		{ data: versionMoney, error: versionMoneyError },
+		{ data: lineMoney, error: lineMoneyError }
 	] = await Promise.all([
 		versionIds.length
 			? supabase
 					.from('quote_versions')
-					.select(
-						columns(
-							VERSION_SELECT,
-							canSeePrice ? VERSION_PRICE_COLUMNS : null,
-							canSeeCost ? VERSION_COST_COLUMNS : null
-						)
-					)
+					.select(VERSION_SELECT)
 					.eq('organization_id', organizationId)
 					.in('id', versionIds)
 			: Promise.resolve({ data: [], error: null }),
 		versionId
 			? supabase
 					.from('quote_version_lines')
-					.select(
-						columns(
-							LINE_SELECT,
-							canSeePrice ? PRICE_COLUMNS : null,
-							canSeeCost ? COST_COLUMNS : null
-						)
-					)
+					.select(LINE_SELECT)
 					.eq('organization_id', organizationId)
 					.eq('quote_id', quote.id)
 					.eq('quote_version_id', versionId)
@@ -181,7 +161,15 @@ export const GET: RequestHandler = async (event) => {
 			: Promise.resolve({ data: [], error: null }),
 		// A status fact, not money -- computed authoritatively in the database so a viewer without
 		// `quotes.view_price` (the deposit rows above are withheld from) still gets the right answer.
-		supabase.rpc('quote_ready_for_job', { target_quote_id: quote.id })
+		supabase.rpc('quote_ready_for_job', { target_quote_id: quote.id }),
+		// The money the rows above no longer carry. Both readers decide for themselves what this person
+		// is owed, so a reader with neither money permission is not asked at all and gets nothing back.
+		wantsMoney && versionIds.length
+			? supabase.rpc('quote_version_money', { target_version_ids: versionIds })
+			: Promise.resolve({ data: {}, error: null }),
+		wantsMoney && versionId
+			? supabase.rpc('quote_line_money', { target_version_id: versionId })
+			: Promise.resolve({ data: {}, error: null })
 	]);
 	if (
 		versionError ||
@@ -189,13 +177,18 @@ export const GET: RequestHandler = async (event) => {
 		versionAttachmentsError ||
 		contactMethodsError ||
 		scheduleItemsError ||
-		depositEventsError
+		depositEventsError ||
+		versionMoneyError ||
+		lineMoneyError
 	)
 		return databaseError();
 
-	// The version columns are chosen at request time, so PostgREST cannot type the rows. Only the two
-	// identity columns are read here; everything else is passed straight through.
-	const versionRows = (versions ?? []) as unknown as Array<{ id: string; version_number: number }>;
+	// PostgREST cannot type these rows once the money is stitched back on. Only the two identity columns
+	// are read here; everything else is passed straight through.
+	const versionRows = withMoney(
+		(versions ?? []) as unknown as Array<{ id: string; version_number: number }>,
+		asMoneyMap(versionMoney)
+	);
 	const version = versionRows.find((row) => row.id === versionId) ?? null;
 	const publishedVersion = versionRows.find((row) => row.id === publishedVersionId) ?? null;
 
@@ -216,7 +209,7 @@ export const GET: RequestHandler = async (event) => {
 			},
 			version,
 			published_version_number: publishedVersion?.version_number ?? null,
-			lines: lines ?? [],
+			lines: withMoney((lines ?? []) as unknown as Array<{ id: string }>, asMoneyMap(lineMoney)),
 			version_attachments: versionAttachments ?? [],
 			signature: signature ?? null,
 			deposit_schedule_items: scheduleItems ?? [],

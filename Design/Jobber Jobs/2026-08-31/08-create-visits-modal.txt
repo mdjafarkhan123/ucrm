@@ -1,0 +1,210 @@
+- button:
+  - generic: Skip to Search
+- button:
+  - generic: Skip to Content
+- status:
+  - paragraph: 14 days left in trial
+  - link "Choose Plan":
+    - /url: https://secure.getjobber.com/accounts/billing_info/pricing
+    - generic: Choose Plan
+- link:
+  - /url: /home
+- paragraph: JKA LTD
+- searchbox
+- button:
+- button:
+- button:
+- button:
+  - generic: Open Settings Menu
+- navigation:
+  - list:
+    - button:
+    - link:
+      - /url: /home
+    - link:
+      - /url: /schedule
+  - separator
+  - list:
+    - link:
+      - /url: /clients?nav_label=Clients&nav_source=sidebar
+    - link:
+      - /url: /requests
+    - link:
+      - /url: /quotes
+    - link:
+      - /url: /jobs
+    - link:
+      - /url: /invoices
+  - separator
+  - list:
+    - link:
+      - /url: https://secure.getjobber.com/marketing?nav_label=Marketing&nav_source=sidebar
+    - link:
+      - /url: /sales
+    - link:
+      - /url: /insights
+    - link:
+      - /url: /expenses
+    - link:
+      - /url: /timesheets
+    - link:
+      - /url: /community
+    - link:
+      - /url: https://secure.getjobber.com/marketplace?nav_label=Apps&nav_source=sidebar
+  - separator
+  - list:
+    - link:
+      - /url: /get_setup
+      - progressbar
+  - link:
+    - /url: /accounts/billing_info/pricing
+- switch [checked]:
+  - generic: Expand Sidebar
+- main:
+  - generic: New Job
+  - generic: Title
+  - textbox: CODEX RESEARCH 20260831 - One-off
+  - article:
+    - heading [level=2]:
+      - link:
+        - /url: /clients/150994075
+        - text: Jk Jafar
+    - button:
+    - paragraph:
+      - link:
+        - /url: https://www.google.com/maps/search/?api=1&query=2426+E+Riverside+Dr%2CAustin%2CTX%2C78741%2CUnited+States
+        - text: 2426 E Riverside Dr Austin, TX 78741
+    - paragraph:
+      - link:
+        - /url: tel:+12065550122
+        - text: 206-555-0122
+    - paragraph:
+      - link:
+        - /url: mailto:info.socialmediauser2@gmail.com
+        - text: info.socialmediauser2@gmail.com
+  - term: "Job #"
+  - textbox:
+    - /placeholder: " "
+    - text: "2"
+  - button:
+  - button:
+  - spinbutton: "2"
+  - term: Customize
+  - button:
+    - generic: Add Field
+  - heading [level=3]: Visits
+  - heading [level=6]: Schedule
+  - radiogroup:
+    - radio [checked]
+    - generic: One-off
+    - radio
+    - generic: Recurring
+  - generic: "1"
+  - generic: visit
+  - button:
+    - generic: Create Visits
+  - generic: Aug 31
+  - button:
+  - generic: Title
+  - textbox
+  - text: Leave title blank to use default title from
+  - link:
+    - /url: /work_configuration/edit/work_settings
+    - generic: Settings
+  - generic: Date
+  - textbox: Aug 31, 2026
+  - button:
+  - checkbox
+  - paragraph: Schedule later
+  - generic: Start time
+  - textbox
+  - generic: End time
+  - textbox
+  - checkbox
+  - paragraph: Anytime
+  - toolbar:
+    - button:
+      - generic: Select team members
+    - generic: Assigned
+    - button:
+      - generic: JJ
+      - paragraph: Jk Jafar
+      - button:
+    - combobox
+    - button:
+  - textbox
+  - generic: Visit instructions
+  - textbox
+  - button:
+  - heading [level=5]: CAPTURE ON-SITE DETAILS
+  - paragraph: Attach custom-built checklists so that nothing gets missed
+  - link:
+    - /url: /job_forms/new
+    - generic: Create a Checklist
+  - checkbox
+  - paragraph: Email team about assignment
+  - button:
+    - generic: Add a Visit
+  - button:
+    - generic: Reset
+  - heading [level=3]: Billing
+  - checkbox [checked]
+  - paragraph: Remind me to invoice when I close the job
+  - checkbox
+  - paragraph: Split into multiple invoices with a payment schedule
+  - heading [level=3]: Product / Service
+  - generic: Name
+  - combobox
+  - textbox:
+    - /placeholder: " "
+    - text: "1"
+  - generic: Quantity
+  - button:
+  - button:
+  - spinbutton: "1"
+  - textbox:
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Unit cost
+  - spinbutton: "0"
+  - textbox:
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Unit price
+  - spinbutton: "0"
+  - textbox:
+    - /placeholder: " "
+    - text: ৳0.00
+  - generic: Total
+  - spinbutton: "0"
+  - generic: Description
+  - textbox
+  - button:
+  - status
+  - button:
+    - generic: Add Line Item
+  - paragraph: Total cost
+  - paragraph: ৳0.00
+  - heading [level=4]: Total price
+  - heading [level=4]: ৳0.00
+  - heading [level=2]: Notes
+  - button: Leave an internal note for yourself or a team member
+  - button:
+    - generic: Cancel
+  - button:
+    - generic: Save Job
+  - button:
+- iframe [id="stripeXDM_default469266_provider"] [name="stripeXDM_default469266_provider"]
+- iframe [id="intercom-frame"]
+- dialog "Create Visits" [active]:
+  - heading "Create Visits" [level=2]
+  - button "Close modal":
+  - button "Select dates":
+    - generic: Select dates
+    - textbox "Select dates"
+  - checkbox "Schedule later"
+  - paragraph: Schedule later
+  - button "Create" [disabled]:
+    - generic: Create
+  - button "Cancel":
+    - generic: Cancel

@@ -91,7 +91,9 @@ export type RecipeHistoryOutcome =
 	| 'authority_blocked'
 	| 'subject_gone'
 	| 'condition_failed'
-	| 'condition_unavailable';
+	| 'condition_unavailable'
+	// 6F-1: the client turned quote follow-ups off in their communication preferences.
+	| 'follow_ups_declined';
 
 export type RecipeHistoryEntry = {
 	id: string;

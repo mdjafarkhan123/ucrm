@@ -46,14 +46,16 @@ original document was sent on where applicable.
 A rules engine on **select plans** (Gear → **Settings → Automations → New Automation**). Three parts:
 
 1. **Trigger — "When this happens."** The event that starts it. Day-offset triggers (e.g. _X days after a
-   quote is sent_) allow a **maximum of 90 days**. Time-of-day: **"in the morning" = 8 AM local**, **"in the
-   evening" = 7 PM local**.
+   quote is sent or approved_) allow a **maximum of 90 days**. The documented catalog is date-passed/date-
+   arrives around quotes being sent/approved and invoices being paid/due. Time-of-day: **"in the morning" =
+   8 AM local**, **"in the evening" = 7 PM local**.
 2. **Condition(s) — "And only if."** Criteria that must be true for it to run. **Max 6 conditions** per
-   automation.
+   automation. Documented conditions are quote/invoice status, client tag, and line item.
 3. **Action — "Then do this."** What happens. Documented actions:
    - **Notify** the client via **email or text** (sent in the **same method** the original quote/invoice was
      sent).
-   - **Update status** — **only available on quotes.**
+   - **Add tag** to the client.
+   - **Update status** — archive a quote; **only available on quotes.**
 
 **Lifecycle rules:**
 
@@ -61,9 +63,46 @@ A rules engine on **select plans** (Gear → **Settings → Automations → New 
 - **Not retroactive** — an automation only fires on items that meet the trigger **after** it's created; it
   never back-applies to past items.
 
-> The help center did **not** enumerate the full trigger/action catalog (which objects — job, invoice, visit —
-> can trigger, and every action type). Confirmed: quote/invoice/request-based triggers exist; actions include
-> **Notify** and **Update status (quotes only)**. A complete matrix is **(unverified)**.
+#### Current official verification — 2026-08-31
+
+Jobber's current official
+[Custom Automation Builder](https://help.getjobber.com/en/articles/custom-automation-builder/) article
+(updated 2025-08-01) explicitly lists this builder catalog:
+
+- **Confirmed triggers:** date-passed (`X days after` a quote is **sent or approved**, or an invoice is
+  **paid or due**) and date-arrives (the **morning or evening when** those same milestones occur). These
+  are scheduled milestone triggers, not a documented catalog of arbitrary lifecycle events. Day offsets
+  have a **90-day maximum**; morning is **8 AM local** and evening is **7 PM local**.
+- **Confirmed conditions:** quote status (`Awaiting response`, `Changes requested`, `Approved`,
+  `Converted`, `Archived`), invoice status (`Due`, `Paid`), client tag inclusion/exclusion, and line-item
+  inclusion/exclusion. An automation has at most **six conditions**.
+- **Confirmed actions:** notify the client, add a client tag, or change a quote's status to **Archived**.
+  Status update is quote-only. A notification uses the same method as the original quote/invoice: email
+  stays email and text stays text.
+- **Activation/lifecycle:** Save sets the automation live; More → Deactivate stops it. Rules are **not
+  retroactive**: Jobber describes an `X days` rule as acting when an item reaches that exact age, not on
+  already-older items when the rule is created.
+
+Quote-event parity must be stated carefully:
+
+| Proposed event             | Current official evidence                                                                                                                                                                                                                  | Builder-trigger verdict                                                                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Customer viewed quote      | Jobber records the **first client view** in its [Activity Feed](https://help.getjobber.com/en/articles/activity-feed/).                                                                                                                    | **Unverified as a Custom Automation Builder trigger**; it is absent from the official trigger list.                                                  |
+| Customer approved quote    | Approval changes the quote to Approved and produces admin activity/push notifications; `sent or approved` is also a supported scheduled trigger milestone. See [Quote Approvals](https://help.getjobber.com/en/articles/quote-approvals/). | **Confirmed only as the approved milestone for the documented date-based triggers**; an immediate `Customer approved` builder trigger is unverified. |
+| Customer requested changes | Jobber changes the status to Changes Requested, emails the designated quote-reply team member, and creates an admin activity-feed notification. See [Quote Approvals](https://help.getjobber.com/en/articles/quote-approvals/).            | **Confirmed as a condition/status, not as a trigger**; it is absent from the official trigger list.                                                  |
+
+Built-in quote follow-ups are separately confirmed in Jobber's current
+[Automations](https://help.getjobber.com/en/articles/automations/) documentation (updated 2026-08-06):
+
+- Connect Plan and above receive **two** built-in follow-up automations, allowing up to **two reminders**
+  while a quote remains in **Awaiting Response**.
+- Each follow-up configures a title, editable message, and delay after the original send (maximum
+  **90 days**). It sends at the same local time of day and by the same method as the original quote.
+- Original recipients receive follow-ups only when `outstanding quote follow-ups` is enabled in that
+  client/contact's communication settings.
+- Built-in cards can be deactivated and later activated. This article does not document quote-view,
+  approval, or changes-requested as built-in follow-up triggers; the built-in schedule is based on days
+  since the quote was sent and the Awaiting Response state.
 
 ### 1.3 Related, but _not_ the Custom Automation Builder
 
