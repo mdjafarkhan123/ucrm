@@ -2,14 +2,15 @@
 
 - Goal: Research Jobber Jobs deeply, then build simpler contractor workflows without losing useful features.
 - Contract: `docs/jobs-behavior-contract.md`, approved 2026-09-01.
-- Parts 1-10 CLOSED and COMMITTED 2026-09-01 (commit `5737804`).
+- Parts 1-10 committed 2026-09-01 (`5737804`). Part 11a checked by Jafar and committed (`85df29d`).
 - Jafar approved splitting Part 11 into 11a / 11b / 11c on 2026-09-01, and approved keeping New Job simple
   (one "invoice on close" checkbox) with the real billing setup on the Job detail page.
 
 ## Exact next action (resume here)
-11a is code-complete and unverified in a browser. Ask Jafar to look at a Job detail page — editable scope
-block, and the Billing / Discount / Tax cards in the right rail — then close 11a and start 11b
-(invoice reminders + Requires invoicing). 11a is not committed yet.
+Start Part 11b: invoice reminders and the Requires invoicing derived status. Nothing is designed yet —
+propose the reminder rules (after each visit, once on completion, monthly on the last day, custom date,
+following Jobber) and the table/command shape to Jafar before building. See ROADMAP.md for 11b's gate; the
+contract's "Billing timing and collection, kept separate" section is the authority on what a reminder means.
 
 ## Known deferred items (Jafar said "later", not oversights)
 - Map duplicate job_number (Postgres 23505) to a field error instead of a 500.
