@@ -19,8 +19,8 @@
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
 	import QuoteSummaryCard from '$lib/components/quotes/QuoteSummaryCard.svelte';
-	import QuoteDiscountCard from '$lib/components/quotes/QuoteDiscountCard.svelte';
-	import QuoteTaxCard from '$lib/components/quotes/QuoteTaxCard.svelte';
+	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
+	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
 	import QuoteDepositCard from '$lib/components/quotes/QuoteDepositCard.svelte';
 	import QuoteClientViewBlock from '$lib/components/quotes/QuoteClientViewBlock.svelte';
 	import QuoteEmailDialog from '$lib/components/quotes/QuoteEmailDialog.svelte';
@@ -55,8 +55,10 @@
 		quoteDetailKey,
 		quoteLinesKey,
 		saveQuoteCopy,
+		saveQuoteDiscount,
 		saveQuoteDraft,
 		saveQuoteLines,
+		saveQuoteTax,
 		saveQuoteVersionAttachments,
 		collectQuoteSignature,
 		quoteSignatureImageHref,
@@ -1186,8 +1188,7 @@
 					currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
 				/>
 
-				<QuoteDiscountCard
-					{quoteId}
+				<RecordDiscountCard
 					revision={saved.version?.revision ?? 0}
 					name={saved.version?.discount_name ?? null}
 					type={saved.version?.discount_type ?? null}
@@ -1196,11 +1197,11 @@
 					currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
 					{editable}
 					canSeePrice={saved.can_see_price}
+					onSave={(revision, payload) => saveQuoteDiscount(quoteId, revision, payload)}
 					onSaved={refreshQuote}
 				/>
 
-				<QuoteTaxCard
-					{quoteId}
+				<RecordTaxCard
 					revision={saved.version?.revision ?? 0}
 					propertyId={saved.quote.property_id}
 					taxSource={saved.version?.tax_source ?? 'not_configured'}
@@ -1212,6 +1213,7 @@
 					{editable}
 					canSeePrice={saved.can_see_price}
 					canManageTaxes={saved.can_manage_taxes}
+					onSave={(revision, payload) => saveQuoteTax(quoteId, revision, payload)}
 					onSaved={refreshQuote}
 				/>
 

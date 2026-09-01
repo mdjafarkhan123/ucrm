@@ -6,22 +6,19 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import MoneyInput from '$lib/components/forms/MoneyInput.svelte';
-	import {
-		saveQuoteDiscount,
-		type QuoteCommandResult,
-		type QuoteDiscountType,
-		type QuoteWriteError
-	} from '$lib/quotes/api';
+	import type { QuoteDiscountType, QuoteWriteError } from '$lib/quotes/api';
 	import discountIcon from '@tabler/icons/outline/discount.svg?raw';
 
-	// The one discount a quote carries, named the way the customer reads it. The card shows what is set and
-	// how much came off; the dialog is where it is changed. Like any dialog that owns a piece of the record
-	// on its own, it writes the moment its button is pressed and never waits on the page's save bar.
+	// The one discount a priced record carries, named the way the customer reads it. The card shows what is
+	// set and how much came off; the dialog is where it is changed. Like any dialog that owns a piece of the
+	// record on its own, it writes the moment its button is pressed and never waits on the page's save bar.
 	//
 	// The amount taken off is the database's figure, not one worked out here — a percentage discount is
 	// applied to non-taxable value first, and only the calculation knows how that landed.
+	//
+	// A quote and a job discount the same way, so this card belongs to neither: the page hands it the one
+	// function that writes, and the card knows nothing about which record it is pricing.
 	let {
-		quoteId,
 		revision,
 		name,
 		type,
@@ -31,10 +28,11 @@
 		locale = 'en-US',
 		editable = false,
 		canSeePrice = true,
+		recordNoun = 'quote',
+		onSave,
 		onSaved
 	}: {
-		quoteId: string;
-		/** The draft revision the page last read. A stale one comes back as a conflict, not a silent write. */
+		/** The revision the page last read. A stale one comes back as a conflict, not a silent write. */
 		revision: number;
 		name: string | null;
 		type: QuoteDiscountType | null;
@@ -46,7 +44,14 @@
 		locale?: string;
 		editable?: boolean;
 		canSeePrice?: boolean;
-		onSaved: (result: QuoteCommandResult) => Promise<void> | void;
+		/** What the record is called in the sentence a stale save produces. */
+		recordNoun?: string;
+		/** Writes the discount against the revision it is handed. */
+		onSave: (
+			revision: number,
+			payload: { name: string | null; type: QuoteDiscountType | null; value: number | null }
+		) => Promise<unknown>;
+		onSaved: (result: unknown) => Promise<void> | void;
 	} = $props();
 
 	const money = $derived(
@@ -95,8 +100,7 @@
 		error = '';
 		fieldErrors = {};
 		try {
-			const result = await saveQuoteDiscount(
-				quoteId,
+			const result = await onSave(
 				untrack(() => revision),
 				payload
 			);
@@ -108,7 +112,7 @@
 			error = Object.keys(fieldErrors).length
 				? ''
 				: failure.reason === 'stale'
-					? 'Someone else changed this quote. Close this, check the latest figures, and try again.'
+					? `Someone else changed this ${recordNoun}. Close this, check the latest figures, and try again.`
 					: failure.message;
 		} finally {
 			saving = false;
@@ -145,14 +149,14 @@
 	{/snippet}
 
 	{#if !canSeePrice}
-		<p class="quote-discount__muted">You do not have access to quote prices.</p>
+		<p class="record-discount__muted">You do not have access to these prices.</p>
 	{:else if configured}
-		<div class="quote-discount__set">
-			<p class="quote-discount__name">{name || 'Discount'}</p>
-			<p class="quote-discount__value">
+		<div class="record-discount__set">
+			<p class="record-discount__name">{name || 'Discount'}</p>
+			<p class="record-discount__value">
 				{valueText} off
 				{#if discountMinor !== null}
-					<span class="quote-discount__amount">−{money.format(discountMinor / 100)}</span>
+					<span class="record-discount__amount">−{money.format(discountMinor / 100)}</span>
 				{/if}
 			</p>
 		</div>
@@ -161,17 +165,17 @@
 			Add discount
 		</Button>
 	{:else}
-		<p class="quote-discount__muted">No discount on this quote.</p>
+		<p class="record-discount__muted">No discount on this {recordNoun}.</p>
 	{/if}
 </RailCard>
 
 {#if open}
 	<Dialog {open} title={configured ? 'Edit discount' : 'Add discount'} size="small" onClose={close}>
-		<div class="quote-discount-dialog">
-			{#if error}<p class="quote-discount-dialog__error" role="alert">{error}</p>{/if}
+		<div class="record-discount-dialog">
+			{#if error}<p class="record-discount-dialog__error" role="alert">{error}</p>{/if}
 
 			<Input
-				id="quote-discount-name"
+				id="record-discount-name"
 				label="What the client sees this called"
 				disabled={saving}
 				bind:value={draftName}
@@ -195,7 +199,7 @@
 
 			{#if draftType === 'percentage'}
 				<Input
-					id="quote-discount-percent"
+					id="record-discount-percent"
 					label="Percentage off"
 					inputmode="decimal"
 					disabled={saving}
@@ -205,7 +209,7 @@
 				/>
 			{:else}
 				<MoneyInput
-					id="quote-discount-amount"
+					id="record-discount-amount"
 					label="Amount off"
 					disabled={saving}
 					bind:value={draftFixed}
@@ -214,7 +218,7 @@
 				/>
 			{/if}
 
-			<div class="quote-discount-dialog__actions">
+			<div class="record-discount-dialog__actions">
 				{#if configured}
 					<Button
 						variant="tertiary"
@@ -225,7 +229,7 @@
 						Remove discount
 					</Button>
 				{/if}
-				<div class="quote-discount-dialog__confirm">
+				<div class="record-discount-dialog__confirm">
 					<Button variant="secondary" variation="subtle" disabled={saving} onclick={close}>
 						Cancel
 					</Button>
@@ -237,24 +241,24 @@
 {/if}
 
 <style lang="scss">
-	.quote-discount__muted {
+	.record-discount__muted {
 		margin: 0;
 		color: var(--color-text--secondary);
 	}
 
-	.quote-discount__set {
+	.record-discount__set {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-smallest);
 	}
 
-	.quote-discount__name {
+	.record-discount__name {
 		margin: 0;
 		color: var(--color-heading);
 		font-weight: 600;
 	}
 
-	.quote-discount__value {
+	.record-discount__value {
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
@@ -263,12 +267,12 @@
 		color: var(--color-text--secondary);
 	}
 
-	.quote-discount__amount {
+	.record-discount__amount {
 		color: var(--color-heading);
 		font-weight: 600;
 	}
 
-	.quote-discount-dialog {
+	.record-discount-dialog {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-base);

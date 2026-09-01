@@ -8,21 +8,18 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
-	import {
-		saveQuoteTax,
-		type QuoteCommandResult,
-		type QuoteTaxSource,
-		type QuoteWriteError
-	} from '$lib/quotes/api';
+	import type { QuoteTaxSource, QuoteWriteError } from '$lib/quotes/api';
 	import { fetchTaxPicker, taxPickerKey } from '$lib/settings/api';
 	import taxIcon from '@tabler/icons/outline/receipt-tax.svg?raw';
 
-	// Five ways a quote's tax can be set: follow the Business default, follow this property's own pin,
-	// freeze one saved rate, freeze a one-off custom rate, or say explicitly there is no tax. Whichever one
-	// is chosen, the database resolves and freezes the real name/percentage at save time — this card only
+	// Five ways a priced record's tax can be set: follow the Business default, follow this property's own
+	// pin, freeze one saved rate, freeze a one-off custom rate, or say explicitly there is no tax. Whichever
+	// one is chosen, the database resolves and freezes the real name/percentage at save time — this card only
 	// ever shows what the last save actually froze.
+	//
+	// A quote and a job are taxed from the same five options, so this card belongs to neither: the page hands
+	// it the one function that writes, and the card knows nothing about which record it is pricing.
 	let {
-		quoteId,
 		revision,
 		propertyId,
 		taxSource,
@@ -35,9 +32,11 @@
 		editable = false,
 		canSeePrice = true,
 		canManageTaxes = false,
+		recordNoun = 'quote',
+		unsetHint = 'Required before sending this quote.',
+		onSave,
 		onSaved
 	}: {
-		quoteId: string;
 		revision: number;
 		propertyId: string;
 		taxSource: QuoteTaxSource;
@@ -52,8 +51,22 @@
 		canSeePrice?: boolean;
 		/** Only an owner/admin may save a custom rate to the shared list — the database enforces this too. */
 		canManageTaxes?: boolean;
-		onSaved: (result: QuoteCommandResult) => Promise<void> | void;
+		/** What the record is called in the sentence a stale save produces. */
+		recordNoun?: string;
+		/** Why an unset tax matters here. A quote cannot be sent without one; a job simply is not taxed yet. */
+		unsetHint?: string;
+		/** Writes the tax choice against the revision it is handed. */
+		onSave: (revision: number, payload: TaxPayload) => Promise<unknown>;
+		onSaved: (result: unknown) => Promise<void> | void;
 	} = $props();
+
+	type TaxPayload = {
+		source: Exclude<QuoteTaxSource, 'not_configured'>;
+		rate_id: string | null;
+		custom_name: string | null;
+		custom_rate_basis_points: number | null;
+		save_as_reusable: boolean;
+	};
 
 	const money = $derived(
 		new Intl.NumberFormat(locale, { style: 'currency', currency: currencyCode })
@@ -144,20 +157,13 @@
 		open = false;
 	}
 
-	async function write(payload: {
-		source: Exclude<QuoteTaxSource, 'not_configured'>;
-		rate_id: string | null;
-		custom_name: string | null;
-		custom_rate_basis_points: number | null;
-		save_as_reusable: boolean;
-	}) {
+	async function write(payload: TaxPayload) {
 		if (saving) return;
 		saving = true;
 		error = '';
 		fieldErrors = {};
 		try {
-			const result = await saveQuoteTax(
-				quoteId,
+			const result = await onSave(
 				untrack(() => revision),
 				payload
 			);
@@ -169,7 +175,7 @@
 			error = Object.keys(fieldErrors).length
 				? ''
 				: failure.reason === 'stale'
-					? 'Someone else changed this quote. Close this, check the latest figures, and try again.'
+					? `Someone else changed this ${recordNoun}. Close this, check the latest figures, and try again.`
 					: failure.message;
 		} finally {
 			saving = false;
@@ -228,12 +234,12 @@
 	{/snippet}
 
 	{#if !canSeePrice}
-		<p class="quote-tax__muted">You do not have access to quote prices.</p>
+		<p class="record-tax__muted">You do not have access to these prices.</p>
 	{:else if taxSource === 'not_configured'}
-		<div class="quote-tax__unset">
+		<div class="record-tax__unset">
 			<Badge status="warning" dot={false}>Not configured</Badge>
 			{#if editable}
-				<p class="quote-tax__hint">Required before sending this quote.</p>
+				<p class="record-tax__hint">{unsetHint}</p>
 			{/if}
 		</div>
 		{#if editable}
@@ -242,30 +248,30 @@
 			</Button>
 		{/if}
 	{:else if taxSource === 'no_tax'}
-		<p class="quote-tax__name">No tax</p>
+		<p class="record-tax__name">No tax</p>
 	{:else}
-		<div class="quote-tax__set">
-			<p class="quote-tax__name">{name || 'Tax'}</p>
-			<p class="quote-tax__value">
+		<div class="record-tax__set">
+			<p class="record-tax__name">{name || 'Tax'}</p>
+			<p class="record-tax__value">
 				{rateText}
 				{#if taxMinor !== null}
-					<span class="quote-tax__amount">{money.format(taxMinor / 100)}</span>
+					<span class="record-tax__amount">{money.format(taxMinor / 100)}</span>
 				{/if}
 			</p>
-			<p class="quote-tax__source">{SOURCE_LABEL[taxSource]}</p>
+			<p class="record-tax__source">{SOURCE_LABEL[taxSource]}</p>
 		</div>
 	{/if}
 </RailCard>
 
 {#if open}
 	<Dialog {open} title={configured ? 'Edit tax' : 'Set tax'} size="small" onClose={close}>
-		<div class="quote-tax-dialog">
-			{#if error}<p class="quote-tax-dialog__error" role="alert">{error}</p>{/if}
+		<div class="record-tax-dialog">
+			{#if error}<p class="record-tax-dialog__error" role="alert">{error}</p>{/if}
 
-			<div class="quote-tax-dialog__field">
-				<label class="quote-tax-dialog__label" for="quote-tax-source">Tax</label>
+			<div class="record-tax-dialog__field">
+				<label class="record-tax-dialog__label" for="record-tax-source">Tax</label>
 				<Select
-					id="quote-tax-source"
+					id="record-tax-source"
 					bind:value={draftValue}
 					options={sourceOptions}
 					disabled={saving}
@@ -274,7 +280,7 @@
 
 			{#if draftValue === 'custom'}
 				<Input
-					id="quote-tax-custom-name"
+					id="record-tax-custom-name"
 					label="What the client sees this called"
 					disabled={saving}
 					bind:value={draftCustomName}
@@ -282,7 +288,7 @@
 					errorMessage={fieldErrors.custom_name ?? ''}
 				/>
 				<Input
-					id="quote-tax-custom-rate"
+					id="record-tax-custom-rate"
 					label="Rate %"
 					inputmode="decimal"
 					disabled={saving}
@@ -292,20 +298,20 @@
 				/>
 				{#if canManageTaxes}
 					<Checkbox
-						id="quote-tax-save-reusable"
+						id="record-tax-save-reusable"
 						label="Save as a reusable rate"
-						description="Adds it to your organization's saved tax rates for future quotes."
+						description="Adds it to your organization's saved tax rates for future work."
 						bind:checked={draftSaveReusable}
 						disabled={saving}
 					/>
 				{/if}
 			{/if}
 
-			<p class="quote-tax-dialog__note">
+			<p class="record-tax-dialog__note">
 				Tax is added on top of the price and skips any line marked exempt.
 			</p>
 
-			<div class="quote-tax-dialog__actions">
+			<div class="record-tax-dialog__actions">
 				<Button variant="secondary" variation="subtle" disabled={saving} onclick={close}>
 					Cancel
 				</Button>
@@ -316,37 +322,37 @@
 {/if}
 
 <style lang="scss">
-	.quote-tax__muted {
+	.record-tax__muted {
 		margin: 0;
 		color: var(--color-text--secondary);
 	}
 
-	.quote-tax__unset {
+	.record-tax__unset {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-smallest);
 		margin-bottom: var(--space-small);
 	}
 
-	.quote-tax__hint {
+	.record-tax__hint {
 		margin: 0;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 	}
 
-	.quote-tax__set {
+	.record-tax__set {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-smallest);
 	}
 
-	.quote-tax__name {
+	.record-tax__name {
 		margin: 0;
 		color: var(--color-heading);
 		font-weight: 600;
 	}
 
-	.quote-tax__value {
+	.record-tax__value {
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
@@ -355,18 +361,18 @@
 		color: var(--color-text--secondary);
 	}
 
-	.quote-tax__amount {
+	.record-tax__amount {
 		color: var(--color-heading);
 		font-weight: 600;
 	}
 
-	.quote-tax__source {
+	.record-tax__source {
 		margin: 0;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 	}
 
-	.quote-tax-dialog {
+	.record-tax-dialog {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-base);

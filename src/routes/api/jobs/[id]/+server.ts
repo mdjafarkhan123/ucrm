@@ -32,6 +32,9 @@ export const GET: RequestHandler = async (event) => {
 	const canSchedule = hasPermission(check.access, 'jobs.schedule');
 	const canSeePrice = hasPermission(check.access, 'jobs.view_price');
 	const canSeeCost = hasPermission(check.access, 'jobs.view_cost');
+	// Saving a one-off tax rate into the organization's shared list is a settings right, not a jobs one. The
+	// card only offers the checkbox when it is held; the command checks it again for itself.
+	const canManageTaxes = hasPermission(check.access, 'settings.taxes.manage');
 
 	const [listRow, jobRow, lineRows, visitRows, ruleRow, jobMoney, lineMoney, formatting] =
 		await Promise.all([
@@ -143,8 +146,15 @@ export const GET: RequestHandler = async (event) => {
 			subtotal_minor: toNumber(entry.subtotal_minor),
 			discount_minor: toNumber(entry.discount_minor),
 			discount_name: (entry.discount_name as string | null) ?? null,
+			// The discount and tax as they were configured, not just what they came to. The rail's two cards
+			// open on the choice already made, and both ride the same jobs.view_price gate as the amounts.
+			discount_type: (entry.discount_type as 'fixed' | 'percentage' | null) ?? null,
+			discount_value: entry.discount_value != null ? toNumber(entry.discount_value) : null,
 			tax_minor: toNumber(entry.tax_minor),
 			tax_name: (entry.tax_name as string | null) ?? null,
+			tax_source: (entry.tax_source as string | null) ?? 'not_configured',
+			tax_rate_id: (entry.tax_rate_id as string | null) ?? null,
+			tax_rate_basis_points: toNumber(entry.tax_rate_basis_points),
 			total_minor: toNumber(entry.total_minor),
 			cost_minor: canSeeCost && entry.cost_minor != null ? toNumber(entry.cost_minor) : null,
 			profit_minor: canSeeCost && entry.profit_minor != null ? toNumber(entry.profit_minor) : null
@@ -238,7 +248,8 @@ export const GET: RequestHandler = async (event) => {
 			can_edit: canEdit,
 			can_schedule: canSchedule,
 			can_see_price: canSeePrice,
-			can_see_cost: canSeeCost
+			can_see_cost: canSeeCost,
+			can_manage_taxes: canManageTaxes
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

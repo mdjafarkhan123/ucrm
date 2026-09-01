@@ -113,6 +113,9 @@ export type JobScopeLineInput = {
 	unit_price_minor: number;
 	unit_cost_minor: number;
 	is_taxable: boolean;
+	// Only ever carried forward, never chosen here: a line converted from a quote keeps its photo through a
+	// rewrite of the scope. Attaching a photo to a job line is Part 15's job.
+	image_attachment_id?: string | null;
 };
 
 // One appointment. `visit_date` is null for a "schedule later" visit; times are null for an anytime or an
@@ -260,8 +263,15 @@ export type JobMoney = {
 	subtotal_minor: number;
 	discount_minor: number;
 	discount_name: string | null;
+	discount_type: 'fixed' | 'percentage' | null;
+	discount_value: number | null;
 	tax_minor: number;
 	tax_name: string | null;
+	// Which of the five tax options the job is on. 'no_tax' and 'not_configured' both come to nothing, but
+	// only one of them is a decision somebody made, so the card has to be able to tell them apart.
+	tax_source: string;
+	tax_rate_id: string | null;
+	tax_rate_basis_points: number;
 	total_minor: number;
 	cost_minor: number | null;
 	profit_minor: number | null;
@@ -312,6 +322,7 @@ export type JobDetail = {
 	can_schedule: boolean;
 	can_see_price: boolean;
 	can_see_cost: boolean;
+	can_manage_taxes: boolean;
 };
 
 export const jobDetailKey = (id: string) => ['jobs', 'detail', id] as const;
@@ -357,6 +368,82 @@ export async function saveJobDetails(
 		body: JSON.stringify({ expected_revision: expectedRevision, ...details })
 	});
 	return readOrThrow<SaveJobDetailsResult>(response, 'Those changes could not be saved.');
+}
+
+// --- Pricing and billing a job (Part 11a) -----------------------------------------------------------------
+
+// Every one of these four saves guards on the revision the browser last read and hands back the next one.
+// None of them returns money: the page reloads the job for that, so the amounts stay behind the database's
+// own jobs.view_price gate rather than being echoed back by a write.
+export type JobRevisionResult = { revision: number };
+
+export async function saveJobLines(
+	id: string,
+	expectedRevision: number,
+	lines: JobScopeLineInput[]
+): Promise<JobRevisionResult & { line_count: number }> {
+	const response = await fetch(`/api/jobs/${id}/lines`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ expected_revision: expectedRevision, lines })
+	});
+	return readOrThrow(response, 'That scope could not be saved.');
+}
+
+export type JobBillingInput = { price_basis: string; billing_timing: string };
+
+export async function saveJobBilling(
+	id: string,
+	expectedRevision: number,
+	billing: JobBillingInput
+): Promise<JobRevisionResult> {
+	const response = await fetch(`/api/jobs/${id}/billing`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ expected_revision: expectedRevision, ...billing })
+	});
+	return readOrThrow(response, 'That billing setup could not be saved.');
+}
+
+// A null type removes the discount, which is why every field but the revision is optional.
+export type JobDiscountInput = {
+	type: 'fixed' | 'percentage' | null;
+	name: string | null;
+	value: number | null;
+};
+
+export async function saveJobDiscount(
+	id: string,
+	expectedRevision: number,
+	discount: JobDiscountInput
+): Promise<JobRevisionResult> {
+	const response = await fetch(`/api/jobs/${id}/discount`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ expected_revision: expectedRevision, ...discount })
+	});
+	return readOrThrow(response, 'That discount could not be saved.');
+}
+
+export type JobTaxInput = {
+	source: string;
+	rate_id?: string | null;
+	custom_name?: string | null;
+	custom_rate_basis_points?: number | null;
+	save_as_reusable?: boolean;
+};
+
+export async function saveJobTax(
+	id: string,
+	expectedRevision: number,
+	tax: JobTaxInput
+): Promise<JobRevisionResult> {
+	const response = await fetch(`/api/jobs/${id}/tax`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ expected_revision: expectedRevision, ...tax })
+	});
+	return readOrThrow(response, 'That tax could not be saved.');
 }
 
 // --- Scheduling a job's visits (Part 9) -------------------------------------------------------------------

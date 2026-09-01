@@ -11152,6 +11152,15 @@ export type Database = {
         }
         Returns: Json
       }
+      replace_job_line_items: {
+        Args: {
+          expected_revision: number
+          new_lines: Json
+          target_job_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       replace_quote_version_attachments: {
         Args: {
           expected_revision: number
@@ -11625,6 +11634,40 @@ export type Database = {
           p_daily_ceiling: number
           p_reason: string
           p_stage_key: string
+        }
+        Returns: Json
+      }
+      set_job_billing: {
+        Args: {
+          expected_revision: number
+          new_billing_timing: string
+          new_price_basis: string
+          target_job_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
+      set_job_discount: {
+        Args: {
+          expected_revision: number
+          new_name: string
+          new_type: string
+          new_value: number
+          target_job_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
+      set_job_tax: {
+        Args: {
+          expected_revision: number
+          new_custom_name?: string
+          new_custom_rate_basis_points?: number
+          new_rate_id?: string
+          new_source: string
+          save_as_reusable?: boolean
+          target_job_id: string
+          target_organization_id: string
         }
         Returns: Json
       }

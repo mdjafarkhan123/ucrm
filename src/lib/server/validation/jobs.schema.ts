@@ -1,5 +1,14 @@
 import { z } from 'zod';
-import { PRICING_CATEGORIES } from '$lib/server/validation/quotes.schema';
+import {
+	PRICING_CATEGORIES,
+	QUOTE_TAX_SOURCES,
+	JOB_PRICE_BASES,
+	JOB_BILLING_TIMINGS
+} from '$lib/server/validation/quotes.schema';
+
+// A job's price basis and invoicing timing were first named by the quote-to-job conversion schema. They are
+// job facts, so every job route reads them from here rather than reaching into the quote schema for them.
+export { JOB_PRICE_BASES, JOB_BILLING_TIMINGS };
 
 // The status and type vocabularies live in `$lib/jobs/statuses.ts` so the browser reads the same list the
 // server validates against. Re-exported here because every job route already asks this schema.
@@ -119,7 +128,14 @@ const jobScopeLineSchema = z
 		quantity: jobQuantity,
 		unit_price_minor: jobMinorAmount('a price'),
 		unit_cost_minor: jobMinorAmount('a cost'),
-		is_taxable: z.boolean().default(true)
+		is_taxable: z.boolean().default(true),
+		// Carried, not created here: a converted job inherits its quote line's photo, and a rewrite of the
+		// scope must not silently drop it. Attaching a new photo to a job line belongs to Part 15.
+		image_attachment_id: z
+			.string()
+			.uuid()
+			.nullish()
+			.transform((value) => value ?? null)
 	})
 	.refine((value) => !value.is_labor || value.category === 'service', {
 		message: 'Labor is always a service.',
@@ -493,6 +509,88 @@ export const updateJobDetailsSchema = z.object({
 });
 
 export type UpdateJobDetailsInput = z.infer<typeof updateJobDetailsSchema>;
+
+// --- Pricing and billing a job that already exists (Part 11a) ---------------------------------------------
+
+// The whole scope in one save, the same all-or-nothing replacement a quote's lines use. Positions come from
+// the browser's order; the command renumbers them from zero so a gap or a duplicate cannot survive a save.
+export const replaceJobLinesSchema = z.object({
+	expected_revision: z.number().int().min(0),
+	lines: z
+		.array(jobScopeLineSchema)
+		.max(JOB_LINE_MAX, `A job can hold up to ${JOB_LINE_MAX} lines.`)
+});
+
+// The three billing decisions stay separate on purpose (contract, "Billing timing and collection, kept
+// separate"). These are the first two — how the work is priced, and when we remind ourselves to invoice.
+// How the money is collected is Payments' decision and is not settable from here at all. Both lists come
+// from the quote conversion schema that already had to name them; one list, so the two screens cannot drift.
+export const setJobBillingSchema = z.object({
+	expected_revision: z.number().int().min(0),
+	price_basis: z.enum(JOB_PRICE_BASES),
+	billing_timing: z.enum(JOB_BILLING_TIMINGS)
+});
+
+// One discount on the job. A null type removes it, which is why the name and value are optional here and the
+// pairing is checked instead of each field on its own.
+export const setJobDiscountSchema = z
+	.object({
+		expected_revision: z.number().int().min(0),
+		type: z.enum(['fixed', 'percentage']).nullish(),
+		name: z
+			.string()
+			.trim()
+			.max(80, 'That discount name is too long.')
+			.nullish()
+			.transform((value) => value || null),
+		value: z.number().int().min(0).max(MINOR_UNIT_MAX).nullish()
+	})
+	.refine((body) => !body.type || Boolean(body.name), {
+		message: 'Give this discount a name the customer will recognize.',
+		path: ['name']
+	})
+	.refine((body) => !body.type || typeof body.value === 'number', {
+		message: 'Enter how much comes off.',
+		path: ['value']
+	})
+	.refine((body) => body.type !== 'percentage' || (body.value ?? 0) <= 10_000, {
+		message: 'A percentage discount is between 0 and 100 percent.',
+		path: ['value']
+	});
+
+// Tax resolved the same five ways a quote resolves it — literally the same list, so a job and the quote it
+// came from can never offer different options. A saved rate needs its id; a one-off custom rate needs a name
+// and a rate, and saving it to the shared list is a separate settings permission the command checks.
+export const setJobTaxSchema = z
+	.object({
+		expected_revision: z.number().int().min(0),
+		source: z.enum(QUOTE_TAX_SOURCES, { message: 'Choose a tax option.' }),
+		rate_id: z
+			.string()
+			.uuid()
+			.nullish()
+			.transform((value) => value ?? null),
+		custom_name: z
+			.string()
+			.trim()
+			.max(80, 'That tax name is too long.')
+			.nullish()
+			.transform((value) => value || null),
+		custom_rate_basis_points: z.number().int().min(1).max(10_000).nullish(),
+		save_as_reusable: z.boolean().default(false)
+	})
+	.refine((body) => body.source !== 'saved_rate' || Boolean(body.rate_id), {
+		message: 'Choose a saved tax rate.',
+		path: ['rate_id']
+	})
+	.refine((body) => body.source !== 'custom' || Boolean(body.custom_name), {
+		message: 'Give this tax a name the customer will recognize.',
+		path: ['custom_name']
+	})
+	.refine((body) => body.source !== 'custom' || typeof body.custom_rate_basis_points === 'number', {
+		message: 'Enter a tax rate.',
+		path: ['custom_rate_basis_points']
+	});
 
 // --- Scheduling a job's visits (Part 9) -------------------------------------------------------------------
 

@@ -19,18 +19,29 @@
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
 	import QuoteSummaryCard from '$lib/components/quotes/QuoteSummaryCard.svelte';
+	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
+	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
+	import JobBillingCard from '$lib/components/jobs/JobBillingCard.svelte';
 	import JobVisitsSection from '$lib/components/jobs/JobVisitsSection.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		fetchJob,
 		jobDetailKey,
 		saveJobDetails,
+		saveJobLines,
+		saveJobDiscount,
+		saveJobTax,
 		fetchJobEvents,
 		jobEventsKey,
 		jobCountsKey,
-		type JobWriteError
+		type JobWriteError,
+		type JobScopeLineInput
 	} from '$lib/jobs/api';
-	import type { RequestPricingLine } from '$lib/quotes/api';
+	import type {
+		RequestPricingLine,
+		RequestPricingLineInput,
+		QuoteTaxSource
+	} from '$lib/quotes/api';
 	import { JOB_STATUS_LABELS, JOB_STATUS_TONES, JOB_TYPE_LABELS } from '$lib/jobs/statuses';
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
@@ -211,6 +222,37 @@
 		return null;
 	}
 
+	// --- Pricing ----------------------------------------------------------------------------------------
+	// The scope block, the discount card and the tax card each own a piece of the job's money and each write
+	// on their own button, the way they already do on a quote. They are not part of the page's staged title
+	// and instructions draft, so the bottom save bar never appears for them.
+	//
+	// The block speaks the quote's dialect — `catalog_item_id`, optional add-on fields — so the job's own
+	// column name is put back here. A job carries no headings or notes, so anything that is not a priced
+	// line is dropped rather than sent to a command that would refuse it.
+	async function saveScope(expectedRevision: number, lines: RequestPricingLineInput[]) {
+		const scope: JobScopeLineInput[] = lines
+			.filter((line) => (line.line_kind ?? 'priced') === 'priced')
+			.map((line, index) => ({
+				position: index,
+				category: line.category,
+				is_labor: line.is_labor,
+				source_catalog_item_id: line.catalog_item_id,
+				name: line.name,
+				description: line.description ?? null,
+				unit_label: line.unit_label ?? null,
+				quantity: line.quantity,
+				unit_price_minor: line.unit_price_minor,
+				unit_cost_minor: line.unit_cost_minor,
+				is_taxable: line.is_taxable ?? true,
+				image_attachment_id: line.image_attachment_id ?? null
+			}));
+
+		await saveJobLines(jobId, expectedRevision, scope);
+		await refreshJob();
+		toast.success('Scope saved');
+	}
+
 	// --- Saving -----------------------------------------------------------------------------------------
 	function discard() {
 		editingTitle = false;
@@ -312,12 +354,16 @@
 
 				<ProductsAndServicesBlock
 					lines={jobLines}
-					editable={false}
+					revision={saved.job.revision}
+					editable={editable && saved.can_see_price}
 					showPrices={saved.can_see_price}
 					subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? 0) : null}
 					currencyCode={saved.job.currency_code}
 					locale={saved.locale}
-					emptyDescription="This job has no priced lines."
+					editorTotalLabel="Job subtotal"
+					saveLabel="Save scope"
+					emptyDescription="Add the products and services this job covers."
+					onSave={saveScope}
 				/>
 
 				<JobVisitsSection
@@ -415,6 +461,56 @@
 					currencyCode={saved.job.currency_code}
 					locale={saved.locale}
 				/>
+
+				<JobBillingCard
+					jobId={saved.job.id}
+					revision={saved.job.revision}
+					jobType={saved.job.job_type}
+					priceBasis={saved.job.price_basis}
+					billingTiming={saved.job.billing_timing}
+					totalMinor={saved.can_see_price ? (saved.money?.total_minor ?? null) : null}
+					currencyCode={saved.job.currency_code}
+					locale={saved.locale}
+					{editable}
+					canSeePrice={saved.can_see_price}
+					onSaved={refreshJob}
+				/>
+
+				<RecordDiscountCard
+					revision={saved.job.revision}
+					name={saved.money?.discount_name ?? null}
+					type={saved.money?.discount_type ?? null}
+					value={saved.money?.discount_value ?? null}
+					discountMinor={saved.can_see_price ? (saved.money?.discount_minor ?? 0) : null}
+					currencyCode={saved.job.currency_code}
+					locale={saved.locale}
+					{editable}
+					canSeePrice={saved.can_see_price}
+					recordNoun="job"
+					onSave={(revision, payload) => saveJobDiscount(jobId, revision, payload)}
+					onSaved={refreshJob}
+				/>
+
+				{#if saved.job.property}
+					<RecordTaxCard
+						revision={saved.job.revision}
+						propertyId={saved.job.property.id}
+						taxSource={(saved.money?.tax_source ?? 'not_configured') as QuoteTaxSource}
+						rateId={saved.money?.tax_rate_id ?? null}
+						name={saved.money?.tax_name ?? null}
+						rateBasisPoints={saved.money?.tax_rate_basis_points ?? 0}
+						taxMinor={saved.can_see_price ? (saved.money?.tax_minor ?? 0) : null}
+						currencyCode={saved.job.currency_code}
+						locale={saved.locale}
+						{editable}
+						canSeePrice={saved.can_see_price}
+						canManageTaxes={saved.can_manage_taxes}
+						recordNoun="job"
+						unsetHint="This job is not taxed yet."
+						onSave={(revision, payload) => saveJobTax(jobId, revision, payload)}
+						onSaved={refreshJob}
+					/>
+				{/if}
 			{/snippet}
 		</RecordDetailLayout>
 	{/if}

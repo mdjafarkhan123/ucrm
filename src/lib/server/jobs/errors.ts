@@ -27,10 +27,12 @@ export function createJobError(error: DatabaseError) {
 	return databaseError();
 }
 
-// `update_job_details` refuses in three ways. A member without jobs.edit, or a job in another organization,
-// comes back as insufficient_privilege — a stranger cannot tell which. A revision that no longer matches is
-// a stale write: the browser is told to reload rather than overwrite someone else's change. The title
-// length check on the table surfaces as a form error rather than a raw constraint violation.
+// `update_job_details` and the four Part 11a pricing commands (`replace_job_line_items`, `set_job_billing`,
+// `set_job_discount`, `set_job_tax`) refuse in the same shapes. A member without the permission, or a job in
+// another organization, comes back as insufficient_privilege — a stranger cannot tell which. A revision that
+// no longer matches is a stale write: the browser is told to reload rather than overwrite someone else's
+// change. The table's own checks — a title's length, a line's shape, the 100-line cap (54000) — surface as a
+// form error carrying the sentence the database already wrote, rather than a raw constraint violation.
 export function updateJobError(error: DatabaseError) {
 	if (error.code === '42501') return notFound(JOB_NOT_FOUND);
 	if (error.code === 'P0404') return notFound('That job could not be found.');
@@ -42,7 +44,7 @@ export function updateJobError(error: DatabaseError) {
 			},
 			{ status: 409, headers: NO_STORE_HEADERS }
 		);
-	if (error.code === '23514')
+	if (error.code === '23514' || error.code === '23503' || error.code === '54000')
 		return validationError({ form: error.message ?? 'Those details cannot be saved as entered.' });
 	return databaseError();
 }
