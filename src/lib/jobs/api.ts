@@ -277,6 +277,17 @@ export type JobMoney = {
 	profit_minor: number | null;
 };
 
+// One open invoice reminder — an internal to-do for our own team, never a message to the client. The kind
+// says where it came from: a month-end reminder seeds itself from the billing choice and can only be
+// dismissed, while a custom-date one a person typed can also be deleted outright. per_visit and
+// on_completion exist in the database but are not raised until Part 13 wires the visit and close events.
+export type JobInvoiceReminder = {
+	id: string;
+	reminder_kind: 'on_completion' | 'per_visit' | 'monthly_last_day' | 'custom_date';
+	due_on: string;
+	note: string | null;
+};
+
 export type JobDetail = {
 	// The job's repeat rule, present only for a recurring job that has one. "Edit all visits" opens on this.
 	recurrence: JobRecurrenceInput | null;
@@ -316,6 +327,11 @@ export type JobDetail = {
 	};
 	lines: JobLineItem[];
 	visits: JobVisit[];
+	// The job's open invoice reminders, oldest due date first. Resolved ones are history, not here.
+	reminders: JobInvoiceReminder[];
+	// The organisation's own calendar day (YYYY-MM-DD in its timezone), so the reminders card can tell a
+	// reminder that is already due from one still to come using the same clock the derived status does.
+	organization_today: string;
 	money: JobMoney | null;
 	locale: string;
 	can_edit: boolean;
@@ -444,6 +460,49 @@ export async function saveJobTax(
 		body: JSON.stringify({ expected_revision: expectedRevision, ...tax })
 	});
 	return readOrThrow(response, 'That tax could not be saved.');
+}
+
+// --- Invoice reminders (Part 11b) -------------------------------------------------------------------------
+
+// Add a custom-date reminder. Re-adding the same open date is a no-op that returns the reminder already
+// there, so the caller reloads the job either way and never has to reason about the duplicate.
+export async function addJobReminder(
+	jobId: string,
+	dueOn: string,
+	note: string | null
+): Promise<{ id: string }> {
+	const response = await fetch(`/api/jobs/${jobId}/reminders`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ due_on: dueOn, note })
+	});
+	return readOrThrow<{ id: string }>(response, 'That reminder could not be added.');
+}
+
+// Mark a reminder handled, keeping the row as history. A month-end reminder rolls forward to next month;
+// the database does that inside the command.
+export async function dismissJobReminder(
+	jobId: string,
+	reminderId: string
+): Promise<{ id: string; status: string }> {
+	const response = await fetch(`/api/jobs/${jobId}/reminders/${reminderId}`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' }
+	});
+	return readOrThrow(response, 'That reminder could not be dismissed.');
+}
+
+// Delete a mistaken custom-date reminder outright. Only custom dates can be deleted; the command refuses
+// any other kind, which the browser never offers anyway.
+export async function deleteJobReminder(
+	jobId: string,
+	reminderId: string
+): Promise<{ id: string; deleted: boolean }> {
+	const response = await fetch(`/api/jobs/${jobId}/reminders/${reminderId}`, {
+		method: 'DELETE',
+		headers: { 'content-type': 'application/json' }
+	});
+	return readOrThrow(response, 'That reminder could not be deleted.');
 }
 
 // --- Scheduling a job's visits (Part 9) -------------------------------------------------------------------

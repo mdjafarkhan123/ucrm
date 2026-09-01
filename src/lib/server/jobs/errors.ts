@@ -79,3 +79,17 @@ export function scheduleVisitError(error: DatabaseError) {
 		return validationError({ form: error.message ?? 'That visit cannot be saved as entered.' });
 	return databaseError();
 }
+
+// The three invoice-reminder commands (`add_job_invoice_reminder`, `dismiss_job_invoice_reminder`,
+// `delete_job_invoice_reminder`) refuse in the same shapes. A member without jobs.edit, or a job in another
+// organization, comes back as insufficient_privilege — a stranger cannot tell which. A missing job or a
+// reminder already handled is a not-found. The rule checks — a date left blank, or trying to delete a
+// reminder that is not a custom one — surface as a form error carrying the sentence the database wrote,
+// rather than a raw constraint violation.
+export function reminderError(error: DatabaseError) {
+	if (error.code === '42501') return notFound('That job could not be found.');
+	if (error.code === 'P0404') return notFound(error.message ?? 'That reminder could not be found.');
+	if (error.code === '23514' || error.code === '23503')
+		return validationError({ form: error.message ?? 'That reminder cannot be saved as entered.' });
+	return databaseError();
+}

@@ -36,75 +36,95 @@ export const GET: RequestHandler = async (event) => {
 	// card only offers the checkbox when it is held; the command checks it again for itself.
 	const canManageTaxes = hasPermission(check.access, 'settings.taxes.manage');
 
-	const [listRow, jobRow, lineRows, visitRows, ruleRow, jobMoney, lineMoney, formatting] =
-		await Promise.all([
-			supabase
-				.from('job_list_rows')
-				.select(
-					`id, job_number, title, job_type, is_as_needed, status, derived_status, price_basis,
+	const [
+		listRow,
+		jobRow,
+		lineRows,
+		visitRows,
+		ruleRow,
+		reminderRows,
+		jobMoney,
+		lineMoney,
+		formatting
+	] = await Promise.all([
+		supabase
+			.from('job_list_rows')
+			.select(
+				`id, job_number, title, job_type, is_as_needed, status, derived_status, price_basis,
 				 billing_timing, currency_code, contract_start_date, contract_end_date, quote_id, created_at,
 				 client_id, client_display_name, client_company_name,
 				 property_id, property_label, property_address_line1, property_city, property_state_region,
 				 property_postal_code`
-				)
-				.eq('organization_id', organizationId)
-				.eq('id', jobId)
-				.maybeSingle(),
-			// Instructions and the revision the editor guards on live on the job row; the client's contact methods
-			// and the property's second address line ride along through the job's own foreign keys, each subject
-			// to the reader's RLS — a member without customers.view gets a null client here just as the list view
-			// gives them an empty client name.
-			supabase
-				.from('jobs')
-				.select(
-					`instructions, revision,
+			)
+			.eq('organization_id', organizationId)
+			.eq('id', jobId)
+			.maybeSingle(),
+		// Instructions and the revision the editor guards on live on the job row; the client's contact methods
+		// and the property's second address line ride along through the job's own foreign keys, each subject
+		// to the reader's RLS — a member without customers.view gets a null client here just as the list view
+		// gives them an empty client name.
+		supabase
+			.from('jobs')
+			.select(
+				`instructions, revision,
 				 client:clients(contact_methods:client_contact_methods(kind, value, is_primary)),
 				 property:properties(address_line2)`
-				)
-				.eq('organization_id', organizationId)
-				.eq('id', jobId)
-				.maybeSingle(),
-			// `authenticated` holds no grant on the money columns of `job_line_items` — price and cost reach a
-			// reader only through `job_line_money` below, which checks the grants for itself — so the direct select
-			// stays on the columns a crew member is allowed to read straight off the row.
-			supabase
-				.from('job_line_items')
-				.select(
-					`id, position, source_catalog_item_id, line_kind, category, is_labor, name, description,
+			)
+			.eq('organization_id', organizationId)
+			.eq('id', jobId)
+			.maybeSingle(),
+		// `authenticated` holds no grant on the money columns of `job_line_items` — price and cost reach a
+		// reader only through `job_line_money` below, which checks the grants for itself — so the direct select
+		// stays on the columns a crew member is allowed to read straight off the row.
+		supabase
+			.from('job_line_items')
+			.select(
+				`id, position, source_catalog_item_id, line_kind, category, is_labor, name, description,
 				 unit_label, quantity, is_taxable, image_attachment_id`
-				)
-				.eq('organization_id', organizationId)
-				.eq('job_id', jobId)
-				.order('position', { ascending: true }),
-			supabase
-				.from('job_visits')
-				.select(
-					`id, position, visit_date, start_time, end_time, all_day, title, instructions, completed_at,
+			)
+			.eq('organization_id', organizationId)
+			.eq('job_id', jobId)
+			.order('position', { ascending: true }),
+		supabase
+			.from('job_visits')
+			.select(
+				`id, position, visit_date, start_time, end_time, all_day, title, instructions, completed_at,
 				 revision, assignments:job_visit_assignments(user_id)`
-				)
-				.eq('organization_id', organizationId)
-				.eq('job_id', jobId)
-				.order('position', { ascending: true }),
-			// A recurring job's repeat rule, so "Edit all visits" opens on the schedule the job actually has
-			// rather than an empty form. Members hold a select grant on this table; only the commands write it.
-			// A one-off job has no row here, and `maybeSingle` returns null rather than an error for that.
-			supabase
-				.from('job_recurrence_rules')
-				.select(
-					`frequency, interval_count, weekdays, monthly_mode, month_day, ordinal_week, ordinal_weekday,
+			)
+			.eq('organization_id', organizationId)
+			.eq('job_id', jobId)
+			.order('position', { ascending: true }),
+		// A recurring job's repeat rule, so "Edit all visits" opens on the schedule the job actually has
+		// rather than an empty form. Members hold a select grant on this table; only the commands write it.
+		// A one-off job has no row here, and `maybeSingle` returns null rather than an error for that.
+		supabase
+			.from('job_recurrence_rules')
+			.select(
+				`frequency, interval_count, weekdays, monthly_mode, month_day, ordinal_week, ordinal_weekday,
 				 start_date, end_mode, duration_count, duration_unit, end_date, start_time, end_time, all_day`
-				)
-				.eq('organization_id', organizationId)
-				.eq('job_id', jobId)
-				.maybeSingle(),
-			canSeePrice
-				? supabase.rpc('job_money', { target_job_ids: [jobId] })
-				: Promise.resolve({ data: {}, error: null }),
-			canSeePrice
-				? supabase.rpc('job_line_money', { target_job_id: jobId })
-				: Promise.resolve({ data: {}, error: null }),
-			organizationFormatting(supabase, organizationId)
-		]);
+			)
+			.eq('organization_id', organizationId)
+			.eq('job_id', jobId)
+			.maybeSingle(),
+		// The job's open invoice reminders, oldest due date first. These are internal to-dos, carry no
+		// money, and any member who may see the job may see them (their RLS asks only for jobs.view), so
+		// they ride along on the detail read rather than behind a second gated call. Resolved ones are
+		// history and live in the job's events rail, not here.
+		supabase
+			.from('job_invoice_reminders')
+			.select('id, reminder_kind, due_on, note')
+			.eq('organization_id', organizationId)
+			.eq('job_id', jobId)
+			.eq('status', 'pending')
+			.order('due_on', { ascending: true }),
+		canSeePrice
+			? supabase.rpc('job_money', { target_job_ids: [jobId] })
+			: Promise.resolve({ data: {}, error: null }),
+		canSeePrice
+			? supabase.rpc('job_line_money', { target_job_id: jobId })
+			: Promise.resolve({ data: {}, error: null }),
+		organizationFormatting(supabase, organizationId)
+	]);
 
 	if (
 		listRow.error ||
@@ -112,6 +132,7 @@ export const GET: RequestHandler = async (event) => {
 		lineRows.error ||
 		visitRows.error ||
 		ruleRow.error ||
+		reminderRows.error ||
 		jobMoney.error ||
 		lineMoney.error
 	) {
@@ -173,6 +194,22 @@ export const GET: RequestHandler = async (event) => {
 		completed_at: visit.completed_at,
 		revision: visit.revision,
 		assignee_ids: ((visit.assignments ?? []) as { user_id: string }[]).map((a) => a.user_id)
+	}));
+
+	// The organisation's own calendar day, worked out in its timezone — the same clock the database uses to
+	// decide Requires invoicing — so the card can tell a reminder that is already due from one still to come
+	// without the browser's local timezone ever disagreeing with the status on the page. en-CA formats a date
+	// as YYYY-MM-DD, matching the due_on strings the reminders carry.
+	const timezone = formatting.ok ? formatting.formatting.timezone : 'UTC';
+	const organizationToday = new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).format(
+		new Date()
+	);
+
+	const reminders = (reminderRows.data ?? []).map((reminder) => ({
+		id: reminder.id,
+		reminder_kind: reminder.reminder_kind,
+		due_on: reminder.due_on,
+		note: reminder.note
 	}));
 
 	// The rule as the recurrence form holds it. Nulls stay nulls so the form's own defaults apply, and the
@@ -243,6 +280,8 @@ export const GET: RequestHandler = async (event) => {
 				canSeePrice ? asMoneyMap(lineMoney.data) : {}
 			),
 			visits,
+			reminders,
+			organization_today: organizationToday,
 			money,
 			locale: formatting.ok ? formatting.formatting.locale : 'en-US',
 			can_edit: canEdit,

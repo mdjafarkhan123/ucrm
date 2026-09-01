@@ -47,10 +47,15 @@ export const JOB_OVERVIEW_STATUSES = [
 	'unscheduled'
 ] as const;
 
-// Visits, invoice reminders and billing arrive in Parts 9 and 11. Until they do, the database can only
-// ever answer with these three, so these are the only ones the Status filter offers: a filter that can
-// never match anything is worse than one that is honestly short.
-export const JOB_FILTERABLE_STATUSES = ['unscheduled', 'ending_soon', 'archived'] as const;
+// The visit-driven statuses (Upcoming, Today, Late, Action required) still need Part 12's schedule to
+// exist before the database can ever answer with them, so the Status filter stays honestly short and does
+// not offer a filter that can never match. Requires invoicing is real now that reminders drive it (11b).
+export const JOB_FILTERABLE_STATUSES = [
+	'unscheduled',
+	'requires_invoicing',
+	'ending_soon',
+	'archived'
+] as const;
 
 export const JOB_TYPES = ['one_off', 'recurring'] as const;
 

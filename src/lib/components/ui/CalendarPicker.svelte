@@ -106,7 +106,7 @@
 				aria-describedby={errorMessage ? `${id}-error` : undefined}
 			>
 				{#snippet children({ segments })}
-					{#each segments as segment, segmentIndex (segment.part + '-' + segment.value + '-' + segmentIndex)}
+					{#each segments as segment, segmentIndex (segment.part + '-' + segmentIndex)}
 						{#if segment.part === 'literal'}
 							<span class="calendar-picker__literal" aria-hidden="true">{segment.value}</span>
 						{:else}

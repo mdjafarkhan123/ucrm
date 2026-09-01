@@ -22,6 +22,7 @@
 	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
 	import JobBillingCard from '$lib/components/jobs/JobBillingCard.svelte';
+	import JobRemindersCard from '$lib/components/jobs/JobRemindersCard.svelte';
 	import JobVisitsSection from '$lib/components/jobs/JobVisitsSection.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
@@ -474,6 +475,15 @@
 					{editable}
 					canSeePrice={saved.can_see_price}
 					onSaved={refreshJob}
+				/>
+
+				<JobRemindersCard
+					jobId={saved.job.id}
+					reminders={saved.reminders}
+					today={saved.organization_today}
+					locale={saved.locale}
+					{editable}
+					onChanged={refreshJob}
 				/>
 
 				<RecordDiscountCard

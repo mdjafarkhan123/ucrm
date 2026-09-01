@@ -558,6 +558,23 @@ export const setJobDiscountSchema = z
 		path: ['value']
 	});
 
+// --- Invoice reminders (Part 11b) -------------------------------------------------------------------------
+
+// One custom-date invoice reminder as the detail page adds it. The date is the only required field; the
+// note is an optional line for the office ("bill with the March statement"). The database's own 200-char
+// check is mirrored here so an over-long note is a field error rather than a raw constraint violation.
+export const addJobInvoiceReminderSchema = z.object({
+	due_on: z.string().regex(ISO_DATE, 'Pick a date for this reminder.'),
+	note: z
+		.string()
+		.trim()
+		.max(200, 'Keep the note under 200 characters.')
+		.nullish()
+		.transform((value) => value || null)
+});
+
+export type AddJobInvoiceReminderInput = z.infer<typeof addJobInvoiceReminderSchema>;
+
 // Tax resolved the same five ways a quote resolves it — literally the same list, so a job and the quote it
 // came from can never offer different options. A saved rate needs its id; a one-off custom rate needs a name
 // and a rate, and saving it to the shared list is a separate settings permission the command checks.

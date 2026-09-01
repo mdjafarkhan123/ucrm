@@ -3029,6 +3029,86 @@ export type Database = {
           },
         ]
       }
+      job_invoice_reminders: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          due_on: string
+          id: string
+          job_id: string
+          note: string | null
+          organization_id: string
+          reminder_kind: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          updated_at: string
+          visit_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          due_on: string
+          id?: string
+          job_id: string
+          note?: string | null
+          organization_id: string
+          reminder_kind: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string
+          visit_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          due_on?: string
+          id?: string
+          job_id?: string
+          note?: string | null
+          organization_id?: string
+          reminder_kind?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string
+          visit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_invoice_reminders_job_fk"
+            columns: ["organization_id", "job_id"]
+            isOneToOne: false
+            referencedRelation: "job_list_rows"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "job_invoice_reminders_job_fk"
+            columns: ["organization_id", "job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "job_invoice_reminders_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_invoice_reminders_visit_fk"
+            columns: ["organization_id", "visit_id"]
+            isOneToOne: false
+            referencedRelation: "job_visits"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       job_line_items: {
         Row: {
           category: string | null
@@ -8327,6 +8407,21 @@ export type Database = {
           },
         ]
       }
+      job_status_count_rows: {
+        Row: {
+          derived_status: string | null
+          organization_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_ownership_transfer: {
@@ -8384,6 +8479,15 @@ export type Database = {
           p_recipe_id: string
           p_schema_version: number
           p_trigger_key: string
+        }
+        Returns: Json
+      }
+      add_job_invoice_reminder: {
+        Args: {
+          new_due_on: string
+          new_note?: string
+          target_job_id: string
+          target_organization_id: string
         }
         Returns: Json
       }
@@ -9313,6 +9417,10 @@ export type Database = {
         }
         Returns: Json
       }
+      delete_job_invoice_reminder: {
+        Args: { target_organization_id: string; target_reminder_id: string }
+        Returns: Json
+      }
       delete_job_visit: {
         Args: {
           expected_revision: number
@@ -9332,6 +9440,10 @@ export type Database = {
       }
       delete_property: { Args: { p_property_id: string }; Returns: undefined }
       delete_quote: { Args: { target_quote_id: string }; Returns: Json }
+      dismiss_job_invoice_reminder: {
+        Args: { target_organization_id: string; target_reminder_id: string }
+        Returns: Json
+      }
       dispatch_automation_worker_wake: { Args: never; Returns: undefined }
       dispatch_communication_email_outbox_wake: {
         Args: never
