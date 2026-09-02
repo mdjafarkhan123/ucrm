@@ -1,20 +1,19 @@
 # Jobs: Current Checkpoint
 
-- Goal: Research Jobber Jobs deeply, then build simpler contractor workflows without losing useful features.
-- Contract: `docs/jobs-behavior-contract.md`. Parts 1-10 committed (`5737804`); 11a committed (`85df29d`);
-  11b committed (`1ae6042`).
+- Goal: Build simpler contractor Jobs and Visits without losing proven Jobber behavior.
+- State: Paused by Jafar after Part 11b on 2026-09-02.
+- Contract: `docs/jobs-behavior-contract.md`.
+- Completed: Parts 1–10, 11a and 11b.
 
-## 11b closed
-Invoice reminders + Requires invoicing shipped and browser-verified: add reminder, mark invoiced, delete,
-status flip to "Requires invoicing", list filter chip. Fixed a shared `CalendarPicker.svelte` bug along the
-way (each date segment was keyed on its own value, so typing destroyed/recreated the focused DOM node after
-one digit) — this affects every screen using the component, not just this dialog.
+## Ownership handoff
 
-## Next: pick between 11c and Part 12
-- **11c** (payment installments + per-visit amounts) is blocked — its roadmap dependency "Invoice boundary"
-  has no approved contract yet (no `docs/invoice-behavior-contract.md`).
-- **Part 12** (integrate Jobs/Visits into the unified Schedule) has its dependencies met (Parts 9-10 done)
-  but needs the Schedule foundation, which hasn't been scoped in this campaign.
-- Ask Jafar which to pursue, or whether to scope the Invoice boundary first.
+- Unified calendar, backlog, dispatch and Map moved from Jobs Part 12 to the Schedule campaign.
+- Jobs continues to own Job and Visit truth, recurrence, assignments, permissions and commands.
+- Schedule Part 5 depends on bounded Jobs Part 13a for complete/uncomplete and final-Visit consequences.
 
-Resume command: `read memory and continue` (Jobs campaign).
+## Blockers
+
+- Part 11c and Part 13b wait for an approved Invoice behavior contract.
+- Part 13a resumes when Schedule reaches its completion dependency or Jafar explicitly selects it.
+
+Resume command: `read memory and continue the Jobs campaign`.

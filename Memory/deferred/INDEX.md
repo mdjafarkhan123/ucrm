@@ -44,7 +44,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Request list search doesn't match client name](request-list-search-doesn-t-match-client-name.md) |
 | P2 | [Request Status filter matches the stored status, not the displayed one](request-status-filter-matches-the-stored-status-not-the-displayed-one.md) |
 | P2 | [Six unindexed foreign keys from the collaboration tables](six-unindexed-foreign-keys-from-the-collaboration-tables.md) |
-| P2 | [Task Schedule integration and advanced Tasks](task-schedule-integration-and-advanced-tasks.md) |
 | P2 | [Website Chat's Realtime connection ceiling is measured but unconfirmed](website-chat-realtime-connection-quota-unconfirmed.md) |
 | P2 | [Automation-owned Email Template copies (sync + impact preview)](automation-owned-email-template-copies.md) |
 | P3 | [`/get-started` page weight](get-started-page-weight.md) |

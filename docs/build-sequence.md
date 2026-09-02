@@ -1,7 +1,7 @@
 # CRM Build Sequence
 
 Status: Approved sequencing guide
-Updated: 2026-08-15
+Updated: 2026-09-02
 
 This document owns the dependency order of major product campaigns. Product documents own behavior,
 campaign roadmaps own execution, and code, migrations, and tests own implemented truth.
@@ -200,7 +200,7 @@ Part 11 performs the final Platform Owner A-to-Z audit after the required Part 1
 
 ## Immediate next action
 
-Open Sales Pipeline Part 1 from `Memory/campaigns/sales-pipeline/NOW.md`. The campaign, fixed seven-stage first
-release, and Part 1 schema/permissions/RLS scope were approved on 2026-08-18. Reinspect current implementation
-truth, present the exact Part 1 implementation plan named by the packet, and wait for approval before editing
-code or migrations.
+Resume Schedule Part 1a from `Memory/campaigns/schedule/NOW.md`. This is factual research only: verify the
+remaining live Jobber branches without mutation, save the evidence, and complete the coverage audit. Do not
+choose UCRM simplifications, card variants, release grouping or deferrals until Part 1a closes; those decisions
+belong to Part 1b. Do not begin implementation.

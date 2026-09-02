@@ -1,6 +1,6 @@
 # Job behavior and architecture contract
 
-Status: **Proposed for approval** — prepared for Jafar on 2026-09-01, Jobs campaign Part 3
+Status: **Approved by Jafar on 2026-09-01** — Jobs campaign Part 3
 Owner: Jobs campaign
 
 ## Purpose and authority

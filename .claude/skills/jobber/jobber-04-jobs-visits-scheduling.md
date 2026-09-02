@@ -477,6 +477,40 @@ sort by `ScheduledItemsSortKey`). Visit sort: `VisitsSortableFields` = `CREATED_
 
 ---
 
+## 9.5 Observed live — Schedule and visit surfaces (2026-09-01)
+
+The following was verified in a signed-in Jobber account. The screenshot set is preserved under
+`Design/schedule-visits-research/jobber/`.
+
+- The desktop Schedule has **Month, Week, and Day** views. Week is a seven-column calendar with a dedicated
+  **Anytime** lane above the timed grid. Day can use a horizontal time axis with rows for Unassigned and each
+  team member; its first column is also a dedicated Anytime lane.
+- The shared toolbar provides previous/next, Today, date navigation, Find a Time, Type/Team/Status filters,
+  an unscheduled-item count, and Map. The overflow menu exposes bulk reschedule/reassign, new visits, Day
+  Sheets, and Schedule Settings.
+- Clicking a visit opens a compact operational popover rather than navigating away. It supports completion,
+  quick crew assignment, location, date/time or Anytime, duplicate, Find time, edit, and full details.
+- **Find a Time** is a side editor that combines date, duration, Anytime, assignment, and visible team
+  availability. It lets the dispatcher compare openings without losing the calendar context.
+- Map is integrated into Schedule as an on-demand split panel in the inspected Day view, with expand, close,
+  and recenter controls. It is contextual to the schedule rather than a separate primary navigation area.
+- Schedule Settings control week layout (nested or stacked), completed-item treatment (grayed or struck
+  through), day orientation, weekends, reschedule-notification confirmation, business/working hours,
+  calendar colors, calendar sync, and Day Sheet content.
+- The job detail's **Scheduled visits** section has a concise summary, status filter, add-visit menu, and a
+  scannable table for date/time, title/instructions, status, assignment, selection, completion, and editing.
+- Adding a single visit supports scheduled time, Anytime, Schedule later, team, title, and instructions.
+  Adding multiple visits uses a date range or individually selected dates and caps one operation at 20
+  visits in the inspected account.
+- Editing the only visit of a one-visit job warns that the change updates the original job. This keeps the
+  Job/Visit relationship visible at the moment a potentially surprising edit is made.
+
+Primary captures: `01-week-schedule.png`, `02-visit-popover.png`, `04-find-a-time.png`,
+`05-month-schedule.png`, `06-day-schedule.png`, `07-day-map.png`, `09-schedule-settings.png`,
+`12-job-visits-table.png`, `13-add-single-visit.png`, and `14-add-multiple-visits.png`.
+
+---
+
 ## 10. How WE compare / what to match or beat
 
 - **Job = contract + money, Visit = calendar slice.** This is the core split and we already adopted it
