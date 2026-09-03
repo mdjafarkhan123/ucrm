@@ -9093,6 +9093,16 @@ export type Database = {
           organization_id: string
         }[]
       }
+      claim_pending_property_for_geocoding: {
+        Args: never
+        Returns: {
+          address_line1: string
+          city: string
+          id: string
+          postal_code: string
+          state_region: string
+        }[]
+      }
       claim_team_invitation: {
         Args: {
           target_email: string
@@ -10056,6 +10066,19 @@ export type Database = {
           outbox_status: string
           usage_recorded: boolean
         }[]
+      }
+      finalize_property_geocode: {
+        Args: {
+          p_address_line1: string
+          p_city: string
+          p_id: string
+          p_latitude: number
+          p_longitude: number
+          p_postal_code: string
+          p_state_region: string
+          p_status: string
+        }
+        Returns: boolean
       }
       finalize_reconciled_team_invitation: {
         Args: { target_invitation_id: string; target_lease_nonce: string }
