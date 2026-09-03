@@ -3,8 +3,14 @@
 	import type { Attachment } from 'svelte/attachments';
 	import VisitCard from '$lib/components/schedule/VisitCard.svelte';
 	import AssessmentCard from '$lib/components/schedule/AssessmentCard.svelte';
+	import EventCard from '$lib/components/schedule/EventCard.svelte';
 	import { bucketVisitsByDay } from '$lib/schedule/grouping';
-	import type { AssessmentItem, ScheduleItem } from '$lib/schedule/items';
+	import {
+		itemCountLabel,
+		type AssessmentItem,
+		type EventItem,
+		type ScheduleItem
+	} from '$lib/schedule/items';
 	import { earliestWorkingMinute, weekdayOf, type WorkingWeek } from '$lib/schedule/hours';
 	import { formatCalendarDay } from '$lib/schedule/labels';
 	import {
@@ -56,6 +62,7 @@
 		unscheduleZone = null,
 		onselect,
 		onselectassessment,
+		onselectevent,
 		onpropose,
 		oncreate,
 		onunschedule
@@ -83,6 +90,8 @@
 		onselect: (visit: ScheduleVisit, element: HTMLElement) => void;
 		/** An assessment card was selected. The page opens its Request-owned preview; nothing drags. */
 		onselectassessment: (assessment: AssessmentItem, element: HTMLElement) => void;
+		/** An event card was selected. The page opens its Schedule-owned preview; nothing drags. */
+		onselectevent: (event: EventItem, element: HTMLElement) => void;
 		/** A drag finished. Nothing is written until the page's confirmation is saved. */
 		onpropose: (visit: ScheduleVisit, proposal: ScheduleProposal, anchor: HTMLElement) => void;
 		/** A card was dropped over the Unscheduled drawer. The page confirms before it clears the date. */
@@ -358,7 +367,8 @@
 		if (
 			target.closest('.week__pickup') ||
 			target.closest('.week__resize') ||
-			target.closest('.assessment-card')
+			target.closest('.assessment-card') ||
+			target.closest('.event-card')
 		)
 			return;
 		const element = columnEls[index];
@@ -400,7 +410,12 @@
 	function createAnytime(event: MouseEvent, day: string) {
 		if (!canCreate) return;
 		const target = event.target as HTMLElement;
-		if (target.closest('.week__pickup') || target.closest('.assessment-card')) return;
+		if (
+			target.closest('.week__pickup') ||
+			target.closest('.assessment-card') ||
+			target.closest('.event-card')
+		)
+			return;
 		oncreate?.(draftAnytime(day));
 	}
 
@@ -454,7 +469,7 @@
 				<span class="week__weekday">{formatCalendarDay(column.day, { weekday: 'short' })}</span>
 				<span class="week__date">{formatCalendarDay(column.day, { day: 'numeric' })}</span>
 				{#if column.count > 0}
-					<span class="week__count">{column.count} {column.count === 1 ? 'visit' : 'visits'}</span>
+					<span class="week__count">{itemCountLabel(column.count)}</span>
 				{/if}
 			</div>
 		{/each}
@@ -493,7 +508,7 @@
 									onpickup={(event) => beginMove(event, item, null)}
 								/>
 							</div>
-						{:else}
+						{:else if item.kind === 'assessment'}
 							<AssessmentCard
 								assessment={item}
 								density="compact"
@@ -501,6 +516,13 @@
 								{employeesById}
 								selected={item.id === selectedItemId}
 								onselect={onselectassessment}
+							/>
+						{:else}
+							<EventCard
+								event={item}
+								density="compact"
+								selected={item.id === selectedItemId}
+								onselect={onselectevent}
 							/>
 						{/if}
 					{/each}
@@ -570,7 +592,7 @@
 								></span>
 							{/if}
 						</div>
-					{:else}
+					{:else if block.item.kind === 'assessment'}
 						<!-- An assessment sits on the same time axis but is Request-owned: no pickup, no resize,
 						     and its click opens the Request rather than a visit editor. -->
 						<div
@@ -587,6 +609,23 @@
 								{employeesById}
 								selected={block.item.id === selectedItemId}
 								onselect={onselectassessment}
+							/>
+						</div>
+					{:else}
+						<!-- A Schedule-owned event on the time axis: no pickup, no resize; its click opens the
+						     event's own popover. -->
+						<div
+							class="week__block"
+							style:top={percent(block.start)}
+							style:height={percent(block.end - block.start)}
+							style:left="{(block.column / block.columns) * 100}%"
+							style:width="{(1 / block.columns) * 100}%"
+						>
+							<EventCard
+								event={block.item}
+								density={cardDensity(((block.end - block.start) / 60) * HOUR_HEIGHT, block.columns)}
+								selected={block.item.id === selectedItemId}
+								onselect={onselectevent}
 							/>
 						</div>
 					{/if}

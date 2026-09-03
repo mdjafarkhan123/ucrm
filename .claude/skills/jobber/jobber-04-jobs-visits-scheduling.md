@@ -509,8 +509,25 @@ The following was verified in a signed-in Jobber account. The screenshot set is 
   Dragging across an empty range did not open a draft in the inspected Week view.
 - Event remains lightweight and Schedule-only. Its compact and expanded drafts contain title/details,
   start/end, Anytime, recurrence, and Save; the inspected forms exposed no client, address, individual
-  assignment, privacy, or audience controls. No Event was saved, so existing-item edit/delete semantics were
-  not tested.
+  assignment, privacy, or audience controls. (Create/edit/delete were later tested live — see the two
+  2026-09-03 bullets below.)
+- **Re-observed live 2026-09-03 (Event create forms):** The compact empty-slot Event popover has Title, a
+  collapsible "Add Details" (description), a single **Start Date** plus **Start/End** times, an **Anytime**
+  checkbox, and a **"Show availability"** toggle with a color swatch (whether the block consumes team
+  availability). Its **More Options** opens a full **New Event** modal with Title, Description, and a Schedule
+  block that carries **separate Start date AND End date fields** (a Jobber Event can therefore span multiple
+  days), Start/End time, Anytime, and a **"Repeats: Never"** recurrence dropdown. Still no client, property,
+  assignment, or privacy control anywhere.
+- **CRUD tested live 2026-09-03 (created + edited + deleted a real Event, then cleaned up):** A saved Event
+  renders on the timed grid as a colored block with a check icon, showing **title + start time only** (no
+  client line). Clicking it opens a compact popover with **Edit** and **Details**. **Edit** reopens the full
+  New/Edit Event modal (no delete inside it). **Details** opens an "Event Details" dialog with a **More
+  Actions** menu holding **Edit** and **Delete**; Delete raises a confirm ("Event will be permanently
+  deleted", Cancel / Delete) — a **hard delete behind one confirm**. The account has a single user, so
+  cross-user edit/delete could not be observed and is NOT Jobber-confirmed here; UCRM's own policy is
+  role-based (any holder of the calendar-change authority may edit/delete). A **multi-day** timed
+  Event (Sep 2 10:00 → Sep 4 11:00) rendered as a **full-height block spanning every day in the range** with
+  the title drawn only on the first day — noticeably more layout work than a single-day block.
 - Choosing Request from a timed slot opens New Request with an On-site assessment already present, the clicked
   one-hour range prefilled, and the only team member assigned. The Anytime path begins as a date-only inline
   Assessment but its More Options handoff unexpectedly opened the full form with Schedule later and Anytime

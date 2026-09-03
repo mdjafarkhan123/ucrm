@@ -2,11 +2,12 @@
 	import Popover from '$lib/components/ui/Popover.svelte';
 	import VisitCard from '$lib/components/schedule/VisitCard.svelte';
 	import AssessmentCard from '$lib/components/schedule/AssessmentCard.svelte';
+	import EventCard from '$lib/components/schedule/EventCard.svelte';
 	import { bucketVisitsByDay, orderDayVisits } from '$lib/schedule/grouping';
 	import { formatCalendarDay } from '$lib/schedule/labels';
 	import { eachDayInWindow, type ScheduleWindow } from '$lib/schedule/filters';
 	import { draftAnytime, type NewVisitDraft } from '$lib/schedule/drag';
-	import type { AssessmentItem, ScheduleItem } from '$lib/schedule/items';
+	import type { AssessmentItem, EventItem, ScheduleItem } from '$lib/schedule/items';
 	import type { ScheduleVisit } from '$lib/schedule/api';
 	import type { TeamMember } from '$lib/team/api';
 
@@ -28,6 +29,7 @@
 		canCreate = false,
 		onselect,
 		onselectassessment,
+		onselectevent,
 		oncreate
 	}: {
 		window: ScheduleWindow;
@@ -44,6 +46,8 @@
 		onselect: (visit: ScheduleVisit, element: HTMLElement) => void;
 		/** An assessment card was selected. The page opens its Request-owned preview. */
 		onselectassessment: (assessment: AssessmentItem, element: HTMLElement) => void;
+		/** An event card was selected. The page opens its Schedule-owned preview. */
+		onselectevent: (event: EventItem, element: HTMLElement) => void;
 		/** A click on empty cell space books a date-only visit for that date -- the same date-only visit the
 		 *  Anytime lane creates. The page opens the create form; nothing is written until it is saved. */
 		oncreate?: (draft: NewVisitDraft) => void;
@@ -117,6 +121,12 @@
 		if (anchor) onselectassessment(assessment, anchor);
 	}
 
+	function selectEventFromList(event: EventItem) {
+		const anchor = listAnchor;
+		closeList();
+		if (anchor) onselectevent(event, anchor);
+	}
+
 	// A click on a cell's empty space books a date-only visit for that date. A click that landed on a card
 	// or the "+ N more" button belongs to that control, so this bows out.
 	function createOnDate(event: MouseEvent, day: string) {
@@ -154,8 +164,7 @@
 						{#if cell.ordered.length > 0}
 							<span class="month__count">
 								{cell.ordered.length}
-								<span class="month__count-word"
-									>{cell.ordered.length === 1 ? 'visit' : 'visits'}</span
+								<span class="month__count-word">{cell.ordered.length === 1 ? 'item' : 'items'}</span
 								>
 							</span>
 						{/if}
@@ -174,7 +183,7 @@
 											selected={item.id === selectedItemId}
 											{onselect}
 										/>
-									{:else}
+									{:else if item.kind === 'assessment'}
 										<AssessmentCard
 											assessment={item}
 											density="micro"
@@ -182,6 +191,13 @@
 											{employeesById}
 											selected={item.id === selectedItemId}
 											onselect={onselectassessment}
+										/>
+									{:else}
+										<EventCard
+											event={item}
+											density="micro"
+											selected={item.id === selectedItemId}
+											onselect={onselectevent}
 										/>
 									{/if}
 								</li>
@@ -224,7 +240,7 @@
 							selected={item.id === selectedItemId}
 							onselect={selectVisitFromList}
 						/>
-					{:else}
+					{:else if item.kind === 'assessment'}
 						<AssessmentCard
 							assessment={item}
 							density="compact"
@@ -232,6 +248,13 @@
 							{employeesById}
 							selected={item.id === selectedItemId}
 							onselect={selectAssessmentFromList}
+						/>
+					{:else}
+						<EventCard
+							event={item}
+							density="compact"
+							selected={item.id === selectedItemId}
+							onselect={selectEventFromList}
 						/>
 					{/if}
 				</li>

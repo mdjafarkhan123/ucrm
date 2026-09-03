@@ -49,6 +49,7 @@ function renderForm(
 	onCreate = vi.fn(),
 	onMoreOptions = vi.fn(),
 	onCreateRequest = vi.fn(),
+	onCreateEvent = vi.fn(),
 	onClose = vi.fn()
 ) {
 	const queryClient = createQueryClient();
@@ -61,12 +62,13 @@ function renderForm(
 				onCreate,
 				onMoreOptions,
 				onCreateRequest,
+				onCreateEvent,
 				onClose
 			}
 		},
 		{ wrapper: QueryClientProvider, wrapperProps: { client: queryClient } }
 	);
-	return { onCreate, onMoreOptions, onCreateRequest, onClose };
+	return { onCreate, onMoreOptions, onCreateRequest, onCreateEvent, onClose };
 }
 
 const originalFetch = globalThis.fetch;

@@ -16,6 +16,8 @@
 	import ScheduleWeek from '$lib/components/schedule/ScheduleWeek.svelte';
 	import VisitPreview from '$lib/components/schedule/VisitPreview.svelte';
 	import AssessmentPreview from '$lib/components/schedule/AssessmentPreview.svelte';
+	import EventPreview from '$lib/components/schedule/EventPreview.svelte';
+	import ScheduleEventDialog from '$lib/components/schedule/ScheduleEventDialog.svelte';
 	import MoveConfirm from '$lib/components/schedule/MoveConfirm.svelte';
 	import ScheduleUnscheduledDrawer from '$lib/components/schedule/ScheduleUnscheduledDrawer.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
@@ -58,12 +60,16 @@
 	import { stageAssessmentSeed, type AssessmentCreateSeed } from '$lib/requests/assessmentSeed';
 	import ScheduleJobCreate from '$lib/components/schedule/ScheduleJobCreate.svelte';
 	import {
+		createScheduleEvent,
+		deleteScheduleEvent,
 		fetchScheduleContext,
 		fetchScheduleUnscheduled,
 		fetchScheduleWindow,
 		scheduleContextKey,
 		scheduleUnscheduledKey,
-		scheduleWindowKey
+		scheduleWindowKey,
+		updateScheduleEvent,
+		type ScheduleEventWrite
 	} from '$lib/schedule/api';
 	import {
 		reanchorScheduleDate,
@@ -77,8 +83,10 @@
 	import { filterVisits, indexEmployees } from '$lib/schedule/grouping';
 	import {
 		assessmentToItem,
+		eventToItem,
 		visitToItem,
 		type AssessmentItem,
+		type EventItem,
 		type VisitItem
 	} from '$lib/schedule/items';
 	import { readScheduleZoom, writeScheduleZoom, type ScheduleZoom } from '$lib/schedule/density';
@@ -211,7 +219,10 @@
 		const zone = timezone;
 		const win = activeWindow;
 		const visits = (windowQuery.data?.visits ?? []).map(visitToItem);
-		if (!zone || !win) return visits;
+		// Events are Schedule's own plain org-day rows -- no instant, no timezone conversion -- so they merge
+		// straight in and need none of the assessment placement below.
+		const events = (windowQuery.data?.events ?? []).map(eventToItem);
+		if (!zone || !win) return [...visits, ...events];
 		// The window read over-fetches assessments a day past each edge, because their instants are bounded in
 		// UTC while the window is a range of org-timezone days. Now that each one has been placed on its real
 		// day, the ones that fell outside the window are trimmed -- otherwise the Day board, which buckets by
@@ -222,7 +233,7 @@
 				(item) =>
 					item.visit_date !== null && item.visit_date >= win.from && item.visit_date <= win.to
 			);
-		return [...visits, ...assessments];
+		return [...visits, ...assessments, ...events];
 	});
 
 	const visibleItems = $derived(
@@ -245,6 +256,7 @@
 	// only one is ever set, and the grids highlight whichever id is selected.
 	let selectedVisitId = $state<string | null>(null);
 	let selectedAssessmentId = $state<string | null>(null);
+	let selectedEventId = $state<string | null>(null);
 	let previewAnchor = $state<HTMLElement | null>(null);
 	// The visit preview can be opened from a calendar card or from a backlog card, so it looks in both places.
 	const selectedVisit = $derived(
@@ -260,23 +272,38 @@
 				item.kind === 'assessment' && item.id === selectedAssessmentId
 		) ?? null
 	);
-	const selectedItemId = $derived(selectedVisitId ?? selectedAssessmentId);
+	const selectedEvent = $derived(
+		visibleItems.find(
+			(item): item is EventItem => item.kind === 'event' && item.id === selectedEventId
+		) ?? null
+	);
+	const selectedItemId = $derived(selectedVisitId ?? selectedAssessmentId ?? selectedEventId);
 
 	function openPreview(visit: ScheduleVisit, element: HTMLElement) {
 		selectedAssessmentId = null;
+		selectedEventId = null;
 		selectedVisitId = visit.id;
 		previewAnchor = element;
 	}
 
 	function openAssessmentPreview(assessment: AssessmentItem, element: HTMLElement) {
 		selectedVisitId = null;
+		selectedEventId = null;
 		selectedAssessmentId = assessment.id;
+		previewAnchor = element;
+	}
+
+	function openEventPreview(event: EventItem, element: HTMLElement) {
+		selectedVisitId = null;
+		selectedAssessmentId = null;
+		selectedEventId = event.id;
 		previewAnchor = element;
 	}
 
 	function closePreview() {
 		selectedVisitId = null;
 		selectedAssessmentId = null;
+		selectedEventId = null;
 		previewAnchor = null;
 	}
 
@@ -844,6 +871,116 @@
 		void goto(resolve('/(app)/requests/new'));
 	}
 
+	// Event: the chooser's third type. It writes nothing itself -- it closes the chooser and hands the slot to
+	// Schedule's own event dialog, which this page owns just like the Job create form.
+	function openEventFromChooser(
+		seed: {
+			event_date: string;
+			start_time: string | null;
+			end_time: string | null;
+			all_day: boolean;
+		} | null
+	) {
+		closeCreate();
+		editingEvent = null;
+		eventSeed = seed;
+		eventError = '';
+		eventDialogOpen = true;
+	}
+
+	// --- Schedule-owned events ---------------------------------------------------------------------------
+
+	// An event is Schedule's only native write. It belongs to no client and no job, so it never touches the Jobs
+	// caches -- creating, editing or deleting one only refreshes the calendar window it lives in. Create/edit/
+	// delete all sit behind the schedule authority, the same authority that governs moving a visit, and a delete
+	// is confirmed first because it is a hard delete.
+
+	/** The event being edited, or null when the dialog is creating a new one. */
+	let editingEvent = $state<EventItem | null>(null);
+	/** The slot a calendar gesture proposed for a new event; null for the header create. */
+	let eventSeed = $state<{
+		event_date: string;
+		start_time: string | null;
+		end_time: string | null;
+		all_day: boolean;
+	} | null>(null);
+	let eventDialogOpen = $state(false);
+	let eventSaving = $state(false);
+	let eventError = $state('');
+
+	/** The event waiting on the explicit delete confirmation. */
+	let deleteEventTarget = $state<EventItem | null>(null);
+	let eventDeleting = $state(false);
+	let eventDeleteError = $state('');
+
+	function openEventEdit(event: EventItem) {
+		closePreview();
+		eventSeed = null;
+		editingEvent = event;
+		eventError = '';
+		eventDialogOpen = true;
+	}
+
+	function closeEventDialog() {
+		eventDialogOpen = false;
+		editingEvent = null;
+		eventSeed = null;
+		eventError = '';
+	}
+
+	// An event lives only on the calendar, so a write refreshes the window and nothing else.
+	async function refreshEvents() {
+		await queryClient.invalidateQueries({ queryKey: ['schedule', 'window'] });
+	}
+
+	async function saveEvent(payload: ScheduleEventWrite) {
+		const editing = editingEvent;
+		eventSaving = true;
+		eventError = '';
+		try {
+			if (editing) {
+				await updateScheduleEvent(editing.id, payload);
+			} else {
+				await createScheduleEvent(payload);
+			}
+			closeEventDialog();
+			await refreshEvents();
+			toast.success(editing ? 'Event saved' : 'Event created');
+		} catch (caught) {
+			eventError = (caught as Error).message ?? 'That event could not be saved.';
+		} finally {
+			eventSaving = false;
+		}
+	}
+
+	function askDeleteEvent(event: EventItem) {
+		closePreview();
+		eventDeleteError = '';
+		deleteEventTarget = event;
+	}
+
+	function cancelDeleteEvent() {
+		deleteEventTarget = null;
+		eventDeleteError = '';
+	}
+
+	async function confirmDeleteEvent() {
+		const target = deleteEventTarget;
+		if (!target) return;
+		eventDeleting = true;
+		eventDeleteError = '';
+		try {
+			await deleteScheduleEvent(target.id);
+			deleteEventTarget = null;
+			await refreshEvents();
+			toast.success('Event deleted');
+		} catch (caught) {
+			eventDeleteError = (caught as Error).message ?? 'That event could not be deleted.';
+		} finally {
+			eventDeleting = false;
+		}
+	}
+
 	let applyTarget = $state<{
 		jobId: string;
 		visitId: string;
@@ -1027,6 +1164,7 @@
 								unscheduleZone={unscheduleDropZone}
 								onselect={openPreview}
 								onselectassessment={openAssessmentPreview}
+								onselectevent={openEventPreview}
 								onpropose={proposeChange}
 								oncreate={openCreate}
 								onunschedule={(visit) => askUnschedule(visit)}
@@ -1050,6 +1188,7 @@
 								unscheduleZone={unscheduleDropZone}
 								onselect={openPreview}
 								onselectassessment={openAssessmentPreview}
+								onselectevent={openEventPreview}
 								onpropose={proposeChange}
 								oneditassignment={(visit) => openReschedule(visit)}
 								oncreate={openCreate}
@@ -1066,6 +1205,7 @@
 								{canCreate}
 								onselect={openPreview}
 								onselectassessment={openAssessmentPreview}
+								onselectevent={openEventPreview}
 								oncreate={openCreate}
 							/>
 						{/if}
@@ -1149,6 +1289,22 @@
 	</Popover>
 {/if}
 
+<!-- An event's own preview. Schedule owns it outright, so this offers Edit and Delete in place -- both behind
+     the schedule authority, and Delete confirmed because it is permanent. -->
+{#if selectedEvent}
+	<Popover open anchor={previewAnchor} title="Event" onClose={closePreview}>
+		<EventPreview
+			event={selectedEvent}
+			dayLabel={selectedEvent.visit_date
+				? formatCalendarDay(selectedEvent.visit_date, dayHeadingFormat)
+				: 'No date'}
+			{canSchedule}
+			onedit={() => openEventEdit(selectedEvent)}
+			ondelete={() => askDeleteEvent(selectedEvent)}
+		/>
+	</Popover>
+{/if}
+
 <!-- A drag has landed. Nothing is written until this is saved, so the proposal, its consequences and its
      scope all sit in front of the person first. -->
 {#if pending && pendingChange}
@@ -1194,8 +1350,42 @@
 	onCreate={(seed) => void saveJobCreate(seed)}
 	onMoreOptions={openMoreOptions}
 	onCreateRequest={openRequestCreate}
+	onCreateEvent={openEventFromChooser}
 	onClose={closeCreate}
 />
+
+<!-- The one form for a Schedule-owned event, opened either to create (seeded with a clicked slot, or empty
+     from the chooser's Event tab) or to edit an existing one. It shapes and validates the draft; this page
+     owns the write. -->
+<ScheduleEventDialog
+	open={eventDialogOpen}
+	event={editingEvent}
+	seed={eventSeed}
+	locale={jobQuery.data?.locale ?? 'en-US'}
+	saving={eventSaving}
+	error={eventError}
+	onSave={(payload) => void saveEvent(payload)}
+	onClose={closeEventDialog}
+/>
+
+<!-- Deleting an event is permanent, so it is always confirmed first. -->
+<ConfirmDialog
+	open={deleteEventTarget !== null}
+	title="Delete this event?"
+	confirmLabel="Delete event"
+	cancelLabel="Keep event"
+	loading={eventDeleting}
+	onConfirm={() => void confirmDeleteEvent()}
+	onClose={cancelDeleteEvent}
+>
+	<p>
+		This permanently removes <strong>{deleteEventTarget?.title.trim() || 'this event'}</strong> from the
+		calendar. This cannot be undone.
+	</p>
+	{#if eventDeleteError}
+		<p class="schedule-page__dialog-error" role="alert">{eventDeleteError}</p>
+	{/if}
+</ConfirmDialog>
 
 <!-- The one-off "final visit completed" decision: Finish job, Add a return visit, or Keep open. "Finish job"
      is hidden for a reader without the close authority; the other two need none. -->

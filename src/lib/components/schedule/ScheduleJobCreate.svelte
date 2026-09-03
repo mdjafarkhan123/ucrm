@@ -41,6 +41,7 @@
 		onCreate,
 		onMoreOptions,
 		onCreateRequest,
+		onCreateEvent,
 		onClose
 	}: {
 		open: boolean;
@@ -56,16 +57,27 @@
 		onMoreOptions: (seed: JobCreateSeed) => void;
 		/** Request: the same slot is carried to the Request-owned New Request page. */
 		onCreateRequest: (seed: AssessmentCreateSeed) => void;
+		/** Event: the same slot opens the Schedule-owned event dialog. Null slot means no date yet. */
+		onCreateEvent: (
+			seed: {
+				event_date: string;
+				start_time: string | null;
+				end_time: string | null;
+				all_day: boolean;
+			} | null
+		) => void;
 		onClose: () => void;
 	} = $props();
 
-	// Which kind of work this slot becomes. Job is the default, exactly as Jobber's chooser opens; Request
-	// hands off to its own page rather than writing anything here.
-	type CreateType = 'job' | 'request';
+	// Which kind of work this slot becomes. Job is the default, exactly as Jobber's chooser opens; Request and
+	// Event both hand off rather than writing anything here -- Request to its own page, Event to Schedule's own
+	// dialog.
+	type CreateType = 'job' | 'request' | 'event';
 	let createType = $state<CreateType>('job');
 	const typeOptions = [
 		{ value: 'job', label: 'Job' },
-		{ value: 'request', label: 'Request' }
+		{ value: 'request', label: 'Request' },
+		{ value: 'event', label: 'Event' }
 	];
 
 	let title = $state('');
@@ -229,12 +241,39 @@
 		onCreateRequest(buildAssessmentSeed());
 	}
 
+	// The slot to hand to the event dialog, in its own day/clock shape. An event always needs a real day, so a
+	// dateless slot (Schedule later, or no day yet) carries nothing and the dialog opens for the person to
+	// pick a day. The title and details belong in the dialog, so only the schedule is carried.
+	function buildEventSeed(): {
+		event_date: string;
+		start_time: string | null;
+		end_time: string | null;
+		all_day: boolean;
+	} | null {
+		if (scheduleLater) return null;
+		const day = calendarDateToString(when.date);
+		if (!day) return null;
+		if (anytime) {
+			return { event_date: day, start_time: null, end_time: null, all_day: true };
+		}
+		return {
+			event_date: day,
+			start_time: timeToString(when.startTime) || null,
+			end_time: timeToString(when.endTime) || null,
+			all_day: false
+		};
+	}
+
+	function continueToEvent() {
+		onCreateEvent(buildEventSeed());
+	}
+
 	// A short, human summary of the slot the Request will open onto, so the person can see what is carried
 	// across before they leave the calendar.
 	const slotSummary = $derived.by(() => {
-		if (scheduleLater) return 'No date yet — you can book the visit on the request.';
+		if (scheduleLater) return 'No date yet — you can pick the day next.';
 		const day = calendarDateToString(when.date);
-		if (!day) return 'No date yet — you can book the visit on the request.';
+		if (!day) return 'No date yet — you can pick the day next.';
 		const dayLabel = new Intl.DateTimeFormat(locale, {
 			weekday: 'short',
 			day: 'numeric',
@@ -253,7 +292,15 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<Dialog {open} title={createType === 'request' ? 'New request' : 'New job'} {onClose}>
+<Dialog
+	{open}
+	title={createType === 'request'
+		? 'New request'
+		: createType === 'event'
+			? 'New event'
+			: 'New job'}
+	{onClose}
+>
 	<div class="job-create">
 		<SegmentedControl
 			value={createType}
@@ -277,6 +324,21 @@
 			</div>
 			<div class="job-create__actions">
 				<Button onclick={continueToRequest}>Continue to new request</Button>
+			</div>
+		{:else if createType === 'event'}
+			<!-- An event is Schedule's own, so this tab only carries the slot into the event dialog. It belongs
+			     to no client and no job -- just a title, an optional note and this day. -->
+			<div class="job-create__handoff">
+				<p class="job-create__handoff-lead">
+					An event blocks this slot for the whole team — a meeting, training or holiday:
+				</p>
+				<p class="job-create__handoff-slot">{slotSummary}</p>
+				<p class="job-create__handoff-note">
+					You will give it a title and any details next. It has no client or crew.
+				</p>
+			</div>
+			<div class="job-create__actions">
+				<Button onclick={continueToEvent}>Continue to new event</Button>
 			</div>
 		{:else}
 			{#if error}<p class="job-create__alert" role="alert">{error}</p>{/if}

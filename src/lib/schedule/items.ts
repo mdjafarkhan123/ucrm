@@ -1,12 +1,13 @@
-import type { ScheduleAssessment, ScheduleVisit } from '$lib/schedule/api';
+import type { ScheduleAssessment, ScheduleEvent, ScheduleVisit } from '$lib/schedule/api';
 import { calendarDay, clockMinutesInZone } from '$lib/time/calendar-day';
 
-// The calendar draws more than visits from Version 1.1 on: it also shows Request-owned assessments, and later
+// The calendar draws more than visits from Version 1.1 on: it also shows Request-owned assessments and
 // Schedule-owned events. They are different business objects with different owners, so the calendar unifies
 // their *presentation*, not their identity -- a `kind` tag says which one a card is, and everything that only
 // cares about geometry (which day, which hour, how long, who is on it, whether it is done) reads the same
-// fields off either. That shared shape is what the layout, row and grouping maths operate on, so one column
-// packer places a visit and an assessment side by side instead of drawing them on top of each other.
+// fields off any of them. That shared shape is what the layout, row and grouping maths operate on, so one
+// column packer places a visit, an assessment and an event side by side instead of drawing them on top of
+// each other.
 
 /** A job visit on the calendar. */
 export type VisitItem = ScheduleVisit & { kind: 'visit' };
@@ -39,10 +40,56 @@ export type AssessmentItem = {
 	property_postal_code: string | null;
 };
 
-export type ScheduleItem = VisitItem | AssessmentItem;
+/** A Schedule-owned event on the calendar (Version 1.1) -- a whole-team block with no client and no owner
+ * outside Schedule. It exposes the same geometry fields as the other items so the shared layout, grouping and
+ * row maths read it without a special case: it never has a crew (`assignee_ids` is always empty) and never
+ * completes (`completed_at` is always null), so it groups as unassigned and is never drawn "done". Its day is
+ * already the organization's own -- a plain stored date, no conversion. */
+export type EventItem = {
+	kind: 'event';
+	id: string;
+	title: string;
+	description: string | null;
+	/** The grid's geometry field; this is the event's own `event_date`, always present. */
+	visit_date: string | null;
+	start_time: string | null;
+	end_time: string | null;
+	all_day: boolean;
+	/** Events have no completion. Always null, so the shared status/grouping code reads it uniformly. */
+	completed_at: null;
+	/** Events have no individual assignment. Always empty, so the employee filter treats them as whole-team. */
+	assignee_ids: string[];
+};
+
+export type ScheduleItem = VisitItem | AssessmentItem | EventItem;
+
+// The per-day and per-row totals count every calendar item -- visits, assessments and events alike -- so the
+// label stays kind-neutral. Calling a whole-team event or an assessment a "visit" is a small lie, and on the
+// Day board's Unassigned pile it reads as unstaffed work that isn't there.
+export function itemCountLabel(count: number): string {
+	return `${count} ${count === 1 ? 'item' : 'items'}`;
+}
 
 export function visitToItem(visit: ScheduleVisit): VisitItem {
 	return { ...visit, kind: 'visit' };
+}
+
+// Turn a Schedule-owned event row into a calendar item. Its date and clock are already the organization's own
+// plain values, so unlike an assessment there is nothing to convert -- it is only tagged and given the empty
+// crew and null completion the shared maths expect.
+export function eventToItem(event: ScheduleEvent): EventItem {
+	return {
+		kind: 'event',
+		id: event.id,
+		title: event.title,
+		description: event.description,
+		visit_date: event.event_date,
+		start_time: event.start_time,
+		end_time: event.end_time,
+		all_day: event.all_day,
+		completed_at: null,
+		assignee_ids: []
+	};
 }
 
 /** An instant, as the wall-clock time of the organization's day it falls in: `14:30`. The calendar reads every

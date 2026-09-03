@@ -103,16 +103,82 @@ export type ScheduleAssessment = {
 	property_postal_code: string | null;
 };
 
+// A Schedule-owned Event (Version 1.1): a single-day whole-team block -- a meeting, a training, a holiday.
+// Unlike a visit or assessment it belongs to no client and no job; Schedule owns it outright. Its day and
+// clock are already the organization's own -- a plain date and time, stored the way a visit is, not an
+// instant -- so the calendar places it without any timezone conversion.
+export type ScheduleEvent = {
+	id: string;
+	title: string;
+	description: string | null;
+	/** Org-timezone day. An Event always has one -- it never sits in the Unscheduled backlog. */
+	event_date: string;
+	/** HH:MM:SS, or null for an Anytime whole-team block. */
+	start_time: string | null;
+	end_time: string | null;
+	all_day: boolean;
+};
+
 export type ScheduleWindowPage = {
 	from: string;
 	to: string;
 	visits: ScheduleVisit[];
 	/** The window's on-site assessments, raw instants for the browser to place in the org timezone. */
 	assessments: ScheduleAssessment[];
+	/** The window's Schedule-owned events, plain org-day rows. */
+	events: ScheduleEvent[];
 	/** The window holds more work than one read returns. */
 	truncated: boolean;
 	limit: number;
 };
+
+// The create/edit form's payload. An Event is timed (day + start time, end optional) or anytime (day, no
+// clock); it always has a day and a title. The server validates this shape again before it writes.
+export type ScheduleEventWrite = {
+	title: string;
+	description: string | null;
+	event_date: string;
+	start_time: string | null;
+	end_time: string | null;
+	all_day: boolean;
+};
+
+export async function createScheduleEvent(input: ScheduleEventWrite): Promise<ScheduleEvent> {
+	const response = await fetch('/api/schedule/events', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	const result = await readOrThrow<{ event: ScheduleEvent }>(
+		response,
+		'The event could not be created.'
+	);
+	return result.event;
+}
+
+export async function updateScheduleEvent(
+	id: string,
+	input: ScheduleEventWrite
+): Promise<ScheduleEvent> {
+	const response = await fetch(`/api/schedule/events/${id}`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	const result = await readOrThrow<{ event: ScheduleEvent }>(
+		response,
+		'The event could not be saved.'
+	);
+	return result.event;
+}
+
+export async function deleteScheduleEvent(id: string): Promise<void> {
+	const response = await fetch(`/api/schedule/events/${id}`, { method: 'DELETE' });
+	if (!response.ok) {
+		const result = await response.json().catch(() => ({}) as { error?: string });
+		throw new Error(result.error ?? 'The event could not be deleted.');
+	}
+}
 
 // The backlog: visits with no date, waiting to be placed. It carries everything a window visit does, plus
 // the day it was created, so the drawer can say how long a piece of work has been waiting.

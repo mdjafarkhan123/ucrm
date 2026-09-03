@@ -88,10 +88,27 @@ export const GET: RequestHandler = async (event) => {
 
 	if (assessmentError) return databaseError();
 
+	// Schedule-owned events (Version 1.1). Unlike an assessment, an event stores a plain org-timezone day, so
+	// it walks the same (organization_id, event_date) index the visit read uses and needs no instant padding.
+	const { data: eventData, error: eventError } = await event.locals.supabase
+		.from('schedule_events')
+		.select('id, title, description, event_date, start_time, end_time, all_day')
+		.eq('organization_id', organizationId)
+		.gte('event_date', from)
+		.lte('event_date', to)
+		.order('event_date', { ascending: true })
+		.order('start_time', { ascending: true, nullsFirst: true })
+		.limit(SCHEDULE_VISIT_LIMIT + 1);
+
+	if (eventError) return databaseError();
+
 	const rows = data ?? [];
 	const assessmentRows = assessmentData ?? [];
+	const eventRows = eventData ?? [];
 	const truncated =
-		rows.length > SCHEDULE_VISIT_LIMIT || assessmentRows.length > SCHEDULE_VISIT_LIMIT;
+		rows.length > SCHEDULE_VISIT_LIMIT ||
+		assessmentRows.length > SCHEDULE_VISIT_LIMIT ||
+		eventRows.length > SCHEDULE_VISIT_LIMIT;
 
 	// A visit belongs to one job, a job to one client and one property, so PostgREST answers each embed with
 	// an object. The generated types cannot see that through the composite (organization_id, job_id) key and
@@ -156,12 +173,17 @@ export const GET: RequestHandler = async (event) => {
 		};
 	});
 
+	// Events are already plain org-day rows -- no client, no embed, no conversion -- so they pass straight
+	// through, capped by the same window limit as visits and assessments.
+	const events = eventRows.slice(0, SCHEDULE_VISIT_LIMIT);
+
 	return json(
 		{
 			from,
 			to,
 			visits,
 			assessments,
+			events,
 			// True means this window holds more work than one read returns, so the calendar says so instead
 			// of drawing a quietly incomplete day.
 			truncated,

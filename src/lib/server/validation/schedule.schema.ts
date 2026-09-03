@@ -24,6 +24,74 @@ function daysBetween(from: string, to: string) {
 	return Math.round((end - start) / 86_400_000) + 1;
 }
 
+const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+// A Schedule-owned Event as the create/edit form sends it. An Event is a single-day whole-team block that is
+// either timed (a day plus a start time, end optional) or anytime (a day, no clock). It always has a day --
+// Events never sit in the Unscheduled backlog -- and always a title. No client, assignment or recurrence
+// reaches here because the contract gives an Event none of those.
+export const scheduleEventWriteSchema = z
+	.object({
+		title: z.string().trim().min(1, 'Give the event a title.').max(160, 'That title is too long.'),
+		description: z
+			.string()
+			.trim()
+			.max(2000, 'That description is too long.')
+			.nullish()
+			.transform((value) => value || null),
+		event_date: day,
+		start_time: z
+			.string()
+			.regex(HHMM, 'Enter a time as HH:MM.')
+			.nullish()
+			.transform((value) => value || null),
+		end_time: z
+			.string()
+			.regex(HHMM, 'Enter a time as HH:MM.')
+			.nullish()
+			.transform((value) => value || null),
+		all_day: z.boolean().default(false)
+	})
+	// An Event has exactly two clean shapes -- timed or anytime -- so a real calendar date is required and the
+	// clock rules mirror the database's own constraints, checked here so a bad combination is a field message
+	// rather than a raw constraint error bounced back from the write.
+	.refine((value) => !Number.isNaN(Date.parse(`${value.event_date}T00:00:00Z`)), {
+		message: 'Use a real calendar date.',
+		path: ['event_date']
+	})
+	.superRefine((value, context) => {
+		if (value.all_day && (value.start_time || value.end_time)) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: 'An anytime event carries no start or end time.',
+				path: ['all_day']
+			});
+		}
+		if (!value.all_day && !value.start_time) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: 'Give the event a start time, or tick “Anytime”.',
+				path: ['start_time']
+			});
+		}
+		if (value.end_time && !value.start_time) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: 'Set a start time before an end time.',
+				path: ['start_time']
+			});
+		}
+		if (value.start_time && value.end_time && value.end_time <= value.start_time) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: 'The end time has to come after the start time.',
+				path: ['end_time']
+			});
+		}
+	});
+
+export type ScheduleEventWriteInput = z.infer<typeof scheduleEventWriteSchema>;
+
 export const scheduleWindowQuerySchema = z
 	.object({
 		from: day,

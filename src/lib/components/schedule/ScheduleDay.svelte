@@ -4,7 +4,13 @@
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import VisitCard from '$lib/components/schedule/VisitCard.svelte';
 	import AssessmentCard from '$lib/components/schedule/AssessmentCard.svelte';
-	import type { AssessmentItem, ScheduleItem } from '$lib/schedule/items';
+	import EventCard from '$lib/components/schedule/EventCard.svelte';
+	import {
+		itemCountLabel,
+		type AssessmentItem,
+		type EventItem,
+		type ScheduleItem
+	} from '$lib/schedule/items';
 	import { earliestWorkingMinute, weekdayOf, type WorkingWeek } from '$lib/schedule/hours';
 	import { cardDensityForWidth, MINUTES_IN_DAY } from '$lib/schedule/layout';
 	import { buildDayRows, UNASSIGNED_ROW_KEY } from '$lib/schedule/rows';
@@ -55,6 +61,7 @@
 		unscheduleZone = null,
 		onselect,
 		onselectassessment,
+		onselectevent,
 		onpropose,
 		oneditassignment,
 		oncreate,
@@ -86,6 +93,8 @@
 		onselect: (visit: ScheduleVisit, element: HTMLElement) => void;
 		/** An assessment card was selected. The page opens its Request-owned preview; nothing drags. */
 		onselectassessment: (assessment: AssessmentItem, element: HTMLElement) => void;
+		/** An event card was selected. The page opens its Schedule-owned preview; nothing drags. */
+		onselectevent: (event: EventItem, element: HTMLElement) => void;
 		/** A drag finished. Nothing is written until the page's confirmation is saved. */
 		onpropose: (visit: ScheduleVisit, proposal: ScheduleProposal, anchor: HTMLElement) => void;
 		/** A shared visit was dropped in somebody else's row; the crew is edited, never swapped. */
@@ -113,10 +122,6 @@
 	function hourLabel(hour: number) {
 		if (hour === 0 || hour === 12) return hour === 0 ? '12am' : '12pm';
 		return hour < 12 ? `${hour}am` : `${hour - 12}pm`;
-	}
-
-	function visitCountLabel(count: number) {
-		return `${count} ${count === 1 ? 'visit' : 'visits'}`;
 	}
 
 	// Midnight is almost never where the work is. The board opens just before the earliest thing it could
@@ -424,7 +429,8 @@
 		if (
 			target.closest('.day__pickup') ||
 			target.closest('.day__resize') ||
-			target.closest('.assessment-card')
+			target.closest('.assessment-card') ||
+			target.closest('.event-card')
 		)
 			return;
 
@@ -463,7 +469,12 @@
 	function createAnytime(event: MouseEvent) {
 		if (!canCreate) return;
 		const target = event.target as HTMLElement;
-		if (target.closest('.day__pickup') || target.closest('.assessment-card')) return;
+		if (
+			target.closest('.day__pickup') ||
+			target.closest('.assessment-card') ||
+			target.closest('.event-card')
+		)
+			return;
 		oncreate?.(draftAnytime(day));
 	}
 
@@ -514,7 +525,7 @@
 					{/if}
 					<span class="day__who-text">
 						<span class="day__name">{row.name}</span>
-						<span class="day__count">{visitCountLabel(row.count)}</span>
+						<span class="day__count">{itemCountLabel(row.count)}</span>
 					</span>
 				</div>
 
@@ -549,7 +560,7 @@
 									onpickup={(event) => beginMove(event, item, rowIndex, null)}
 								/>
 							</div>
-						{:else}
+						{:else if item.kind === 'assessment'}
 							<AssessmentCard
 								assessment={item}
 								density="compact"
@@ -558,6 +569,13 @@
 								showAssignment={false}
 								selected={item.id === selectedItemId}
 								onselect={onselectassessment}
+							/>
+						{:else}
+							<EventCard
+								event={item}
+								density="compact"
+								selected={item.id === selectedItemId}
+								onselect={onselectevent}
 							/>
 						{/if}
 					{/each}
@@ -616,7 +634,7 @@
 									></span>
 								{/if}
 							</div>
-						{:else}
+						{:else if block.item.kind === 'assessment'}
 							<!-- An assessment shares the time axis but is Request-owned: no pickup, no resize, and
 							     its click opens the Request. -->
 							<div
@@ -634,6 +652,23 @@
 									showAssignment={false}
 									selected={block.item.id === selectedItemId}
 									onselect={onselectassessment}
+								/>
+							</div>
+						{:else}
+							<!-- A Schedule-owned event on the time axis: no pickup, no resize; its click opens the
+							     event's own popover. -->
+							<div
+								class="day__block"
+								style:left={percent(block.start)}
+								style:width={percent(block.end - block.start)}
+								style:top="{block.column * LANE_HEIGHT}px"
+								style:height="{LANE_HEIGHT}px"
+							>
+								<EventCard
+									event={block.item}
+									density={cardDensityForWidth(((block.end - block.start) / 60) * HOUR_WIDTH)}
+									selected={block.item.id === selectedItemId}
+									onselect={onselectevent}
 								/>
 							</div>
 						{/if}
