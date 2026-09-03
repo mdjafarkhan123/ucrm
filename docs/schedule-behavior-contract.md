@@ -449,6 +449,22 @@ An Unscheduled Visit has no date. It is therefore not silently inserted into a s
 Showing geographically nearby Unscheduled work is a later optional map layer using property location,
 not a fabricated schedule date.
 
+### Map/directions provider boundary (approved 2026-09-03)
+
+Jafar approved a **managed Mapbox** provider following the mature-product pattern, kept behind a narrow
+internal provider boundary so it can later be swapped or self-hosted:
+
+- **Geocoding:** Mapbox **Permanent** geocoding; property coordinates are geocoded once and **stored** (the
+  Permanent tier grants storage rights). Ungeocodable addresses are recorded as such and kept in the stop
+  list with an explanation — never silently dropped.
+- **Map + route rendering:** Mapbox managed tiles and route-line rendering (MapLibre/Mapbox GL in the
+  browser). Numbered and grouped/stacked markers as specified above.
+- **Navigation:** external only — deep-link out to Google/Apple Maps. No in-product turn-by-turn.
+- **No self-hosting** of tiles, geocoding or routing until measured production usage and cost justify that
+  operational complexity.
+- Re-verify Mapbox pricing and storage terms before any paid commitment; none of the researched numbers are
+  contractual.
+
 ## Job detail Visits card
 
 The current ContractorOs structure is retained and refined:
