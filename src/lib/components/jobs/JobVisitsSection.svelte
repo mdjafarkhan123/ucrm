@@ -23,7 +23,6 @@
 		jobCountsKey,
 		jobDetailKey,
 		jobEventsKey,
-		moveJobVisits,
 		rescheduleJobVisits,
 		uncompleteJobVisit,
 		updateJobVisit,
@@ -40,10 +39,15 @@
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import circleXIcon from '@tabler/icons/outline/circle-x.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import calendarPlusIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
+	import repeatIcon from '@tabler/icons/outline/repeat.svg?raw';
+	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 
 	// The persisted visits manager for a job's detail page — the same "child record with its own save" shape
 	// as a client's property: every action here writes for itself and reports its own toast, so the page's
-	// title/instructions draft never has to know visits exist.
+	// title/instructions draft never has to know visits exist. The card mirrors Jobber's grouped Visits card:
+	// To be scheduled / Upcoming / Past, with only the next three Upcoming shown until "Show all".
 	let {
 		jobId,
 		visits,
@@ -68,7 +72,7 @@
 		jobStatus: 'active' | 'closed';
 		jobType: JobType;
 		isAsNeeded: boolean;
-		// The job's repeat rule, present only for a recurring scheduled job. "Edit all visits" opens on it.
+		// The job's repeat rule, present only for a recurring scheduled job. "Edit Schedule" opens on it.
 		recurrence: JobRecurrenceInput | null;
 		// The job's own lock token — the reschedule command guards on it, exactly like saving the details does.
 		jobRevision: number;
@@ -120,6 +124,114 @@
 		]);
 	}
 
+	// --- Grouping -----------------------------------------------------------------------------------------
+
+	// Local calendar day as YYYY-MM-DD, so "past" is a plain string compare against a visit's date-only value.
+	const todayStr = $derived.by(() => {
+		const now = new Date();
+		const y = now.getFullYear();
+		const m = String(now.getMonth() + 1).padStart(2, '0');
+		const d = String(now.getDate()).padStart(2, '0');
+		return `${y}-${m}-${d}`;
+	});
+
+	// A visit is either done (Past), or not yet done with a day (Upcoming, soonest first — an overdue one
+	// sorts to the top and shows an Overdue flag), or not yet done with no day at all (To be scheduled).
+	const toBeScheduled = $derived(visits.filter((v) => v.visit_date === null && !v.completed_at));
+	const upcoming = $derived(
+		visits
+			.filter((v) => v.visit_date !== null && !v.completed_at)
+			.sort((a, b) => (a.visit_date! < b.visit_date! ? -1 : a.visit_date! > b.visit_date! ? 1 : 0))
+	);
+	const past = $derived(
+		visits
+			.filter((v) => v.completed_at !== null)
+			.sort((a, b) => ((b.visit_date ?? '') < (a.visit_date ?? '') ? 1 : -1))
+	);
+
+	// Only the next three Upcoming show until the user asks for the rest; Past is collapsed until opened.
+	let showAllUpcoming = $state(false);
+	let showPast = $state(false);
+	const upcomingVisible = $derived(showAllUpcoming ? upcoming : upcoming.slice(0, 3));
+	const upcomingHidden = $derived(upcoming.length - upcomingVisible.length);
+
+	function isOverdue(visit: JobVisit) {
+		return !visit.completed_at && visit.visit_date !== null && visit.visit_date < todayStr;
+	}
+
+	// --- Recurrence summary -------------------------------------------------------------------------------
+
+	const WEEKDAY_NAMES = [
+		'Sunday',
+		'Monday',
+		'Tuesday',
+		'Wednesday',
+		'Thursday',
+		'Friday',
+		'Saturday'
+	];
+	const ORDINAL_NAMES: Record<number, string> = {
+		1: 'first',
+		2: 'second',
+		3: 'third',
+		4: 'fourth',
+		5: 'last'
+	};
+
+	// A plain-English summary of the repeat rule, the way Jobber shows one ("Weekly on Mondays"). Read off the
+	// stored rule; the concrete visits carry the real count and range below it.
+	function describeRecurrence(rule: JobRecurrenceInput | null): string {
+		if (!rule) return '';
+		const n = rule.interval_count ?? 1;
+		switch (rule.frequency) {
+			case 'daily':
+				return n === 1 ? 'Daily' : `Every ${n} days`;
+			case 'weekly': {
+				const source = rule.weekdays?.length
+					? rule.weekdays
+					: [new Date(`${rule.start_date}T00:00`).getDay()];
+				const list = source
+					.slice()
+					.sort((a, b) => a - b)
+					.map((d) => WEEKDAY_NAMES[d])
+					.join(', ');
+				return n === 1 ? `Weekly on ${list}` : `Every ${n} weeks on ${list}`;
+			}
+			case 'monthly': {
+				const prefix = n === 1 ? 'Monthly' : `Every ${n} months`;
+				if (rule.monthly_mode === 'last_day') return `${prefix} on the last day`;
+				if (
+					rule.monthly_mode === 'day_of_week' &&
+					rule.ordinal_week != null &&
+					rule.ordinal_weekday != null
+				) {
+					return `${prefix} on the ${ORDINAL_NAMES[rule.ordinal_week] ?? ''} ${WEEKDAY_NAMES[rule.ordinal_weekday]}`;
+				}
+				if (rule.monthly_mode === 'day_of_month' && rule.month_day != null) {
+					return `${prefix} on day ${rule.month_day}`;
+				}
+				return prefix;
+			}
+			case 'yearly':
+				return n === 1 ? 'Yearly' : `Every ${n} years`;
+			default:
+				return '';
+		}
+	}
+
+	const recurrenceSummary = $derived(
+		isRecurringScheduled ? describeRecurrence(recurrence) : ''
+	);
+	// Count and range come from the real visit rows, not the rule, so they match what is on screen exactly.
+	const seriesDates = $derived(
+		visits
+			.filter((v) => v.visit_date !== null)
+			.map((v) => v.visit_date!)
+			.sort()
+	);
+	const seriesFirst = $derived(seriesDates[0] ?? null);
+	const seriesLast = $derived(seriesDates[seriesDates.length - 1] ?? null);
+
 	// --- Formatting ---------------------------------------------------------------------------------------
 
 	const dateFormat = $derived(
@@ -129,24 +241,48 @@
 		new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' })
 	);
 
+	function formatDay(value: string) {
+		return dateFormat.format(new Date(`${value}T00:00`));
+	}
 	function formatTime(value: string) {
 		return timeFormat.format(new Date(`2000-01-01T${value}`));
 	}
 
 	function visitWhen(visit: JobVisit) {
-		if (!visit.visit_date) return 'Unscheduled';
-		const day = dateFormat.format(new Date(`${visit.visit_date}T00:00`));
+		if (!visit.visit_date) return 'No date yet';
+		const day = formatDay(visit.visit_date);
 		if (!visit.start_time) return `${day} · Anytime`;
 		const start = formatTime(visit.start_time);
 		if (visit.end_time) return `${day} · ${start}–${formatTime(visit.end_time)}`;
 		return `${day} · ${start}`;
 	}
 
+	function completedWhen(visit: JobVisit) {
+		if (!visit.completed_at) return '';
+		return `Completed ${dateFormat.format(new Date(visit.completed_at))}`;
+	}
+
+	const seriesRange = $derived(
+		seriesFirst
+			? seriesFirst === seriesLast
+				? formatDay(seriesFirst)
+				: `${formatDay(seriesFirst)} – ${formatDay(seriesLast!)}`
+			: ''
+	);
+
 	// --- Add visits ----------------------------------------------------------------------------------------
 
 	let creating = $state(false);
 	let addSaving = $state(false);
 	let addError = $state('');
+	// "Add one visit" opens the day-picker in single mode; "Add multiple visits" keeps the many-days mode.
+	let createMode = $state<'single' | 'multiple'>('multiple');
+
+	function openAdd(mode: 'single' | 'multiple') {
+		createSource = 'manual';
+		createMode = mode;
+		creating = true;
+	}
 
 	async function runAdd(items: AddVisitInput[], successLabel: string) {
 		addSaving = true;
@@ -321,7 +457,7 @@
 		}
 	}
 
-	// --- Edit all visits (recurring schedule) ----------------------------------------------------------------
+	// --- Edit the schedule (recurring) -----------------------------------------------------------------------
 
 	let editingAll = $state(false);
 	let rescheduleSaving = $state(false);
@@ -385,50 +521,6 @@
 			deleteTarget = null;
 		} finally {
 			deleting = false;
-		}
-	}
-
-	// --- Bulk move ---------------------------------------------------------------------------------------
-
-	let selectedIds = $state<Set<string>>(new Set());
-	let moveDays = $state(1);
-	let moving = $state(false);
-
-	// Only an incomplete, dated visit can move by a number of days — a backlog visit has no day to shift.
-	function canSelect(visit: JobVisit) {
-		return !visit.completed_at && visit.visit_date !== null;
-	}
-
-	function toggleSelect(id: string, checked: boolean) {
-		const next = new Set(selectedIds);
-		if (checked) next.add(id);
-		else next.delete(id);
-		selectedIds = next;
-	}
-
-	function clearSelection() {
-		selectedIds = new Set();
-	}
-
-	async function moveSelected() {
-		if (selectedIds.size === 0 || !moveDays) return;
-		moving = true;
-		try {
-			const ids = [...selectedIds];
-			await moveJobVisits(
-				jobId,
-				ids,
-				moveDays,
-				crypto.randomUUID(),
-				fingerprint({ ids, moveDays })
-			);
-			clearSelection();
-			await refreshAll();
-			toast.success(ids.length === 1 ? '1 visit moved' : `${ids.length} visits moved`);
-		} catch (caught) {
-			toast.error((caught as JobWriteError).message ?? 'Those visits could not be moved.');
-		} finally {
-			moving = false;
 		}
 	}
 
@@ -517,111 +609,186 @@
 	function openReturnVisitFromFinal() {
 		finalVisitOpen = false;
 		createSource = 'return';
+		createMode = 'single';
 		creating = true;
 	}
+
+	const addMenuItems = $derived([
+		{ label: 'Add one visit', icon: plusIcon, onSelect: () => openAdd('single') },
+		{ label: 'Add multiple visits', icon: calendarPlusIcon, onSelect: () => openAdd('multiple') }
+	]);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<SectionBlock title="Scheduled visits" icon={calendarIcon} level={2}>
+{#snippet visitRow(visit: JobVisit)}
+	<li class="job-visits-section__item" onpointerenter={warmTeam} onfocusin={warmTeam}>
+		<span class="job-visits-section__icon" aria-hidden="true">{@html calendarIcon}</span>
+
+		<div class="job-visits-section__body">
+			<p class="job-visits-section__when">
+				{visit.title ? `${visit.title} · ` : ''}{visitWhen(visit)}
+			</p>
+			{#if visit.completed_at}
+				<p class="job-visits-section__sub">{completedWhen(visit)}</p>
+			{/if}
+			{#if visit.instructions}
+				<p class="job-visits-section__note">{visit.instructions}</p>
+			{/if}
+		</div>
+
+		<div class="job-visits-section__meta">
+			{#if visit.completed_at}
+				<Badge size="small" status="success">Completed</Badge>
+			{:else if isOverdue(visit)}
+				<Badge size="small" status="warning">Overdue</Badge>
+			{/if}
+			{#if visit.assignee_ids.length > 0}
+				<span class="job-visits-section__assignees">
+					<span aria-hidden="true">{@html usersIcon}</span>
+					{visit.assignee_ids.length}
+				</span>
+			{/if}
+		</div>
+
+		{#if scheduleAllowed || completeAllowed}
+			<DropdownMenu items={rowMenuItems(visit)} triggerLabel="Actions for this visit" />
+		{/if}
+	</li>
+{/snippet}
+
+<SectionBlock title="Visits" icon={calendarIcon} level={2}>
 	{#snippet actions()}
 		{#if scheduleAllowed}
 			{#if isRecurringScheduled}
 				<Button size="small" variant="tertiary" onclick={() => (editingAll = true)}>
-					Edit all visits
+					Edit Schedule
 				</Button>
 			{/if}
-			<Button size="small" variant="tertiary" onclick={() => (creating = true)} loading={addSaving}>
-				Add visits
-			</Button>
+			<DropdownMenu
+				items={addMenuItems}
+				triggerLabel="Add visits"
+				triggerClass="job-visits-section__add-trigger"
+			>
+				{#snippet trigger()}
+					<span class="job-visits-section__add-icon" aria-hidden="true">{@html plusIcon}</span>
+					Add visits
+					<span class="job-visits-section__add-caret" aria-hidden="true">{@html chevronDownIcon}</span>
+				{/snippet}
+			</DropdownMenu>
 		{/if}
 	{/snippet}
 
 	{#if addError}<p class="job-visits-section__error" role="alert">{addError}</p>{/if}
 
+	{#if isRecurringScheduled && recurrenceSummary}
+		<div class="job-visits-section__recurrence">
+			<span class="job-visits-section__recurrence-icon" aria-hidden="true">{@html repeatIcon}</span>
+			<span class="job-visits-section__recurrence-text">
+				<span class="job-visits-section__recurrence-summary">{recurrenceSummary}</span>
+				<span class="job-visits-section__recurrence-detail">
+					{visits.length}
+					{visits.length === 1 ? 'visit' : 'visits'}{seriesRange ? ` · ${seriesRange}` : ''}
+				</span>
+			</span>
+		</div>
+	{/if}
+
 	{#if visits.length === 0}
 		<EmptyState
 			icon={calendarIcon}
-			title="No visits yet"
-			description={scheduleAllowed
-				? 'Add the days your team will be on site. You can pick several at once.'
-				: 'This job has no visits scheduled.'}
+			title={isAsNeeded ? 'Dispatched as needed' : 'No visits yet'}
+			description={isAsNeeded
+				? 'This job has no set schedule. Add a visit whenever work comes up.'
+				: scheduleAllowed
+					? 'Add the days your team will be on site. You can pick several at once.'
+					: 'This job has no visits scheduled.'}
 		>
 			{#snippet action()}
 				{#if scheduleAllowed}
-					<Button variant="secondary" onclick={() => (creating = true)}>Add visits</Button>
+					<Button variant="secondary" onclick={() => openAdd(isAsNeeded ? 'single' : 'multiple')}>
+						{isAsNeeded ? 'Add a visit' : 'Add visits'}
+					</Button>
 				{/if}
 			{/snippet}
 		</EmptyState>
 	{:else}
-		{#if scheduleAllowed && selectedIds.size > 0}
-			<div class="job-visits-section__bulk">
-				<span class="job-visits-section__bulk-count">
-					{selectedIds.size}
-					{selectedIds.size === 1 ? 'visit' : 'visits'} selected
-				</span>
-				<label class="job-visits-section__bulk-field" for="job-visits-move-days">
-					Move by (days)
-					<input
-						id="job-visits-move-days"
-						class="job-visits-section__bulk-input"
-						type="number"
-						bind:value={moveDays}
-					/>
-				</label>
-				<Button size="small" onclick={() => void moveSelected()} loading={moving}>Move</Button>
-				<Button size="small" variant="tertiary" onclick={clearSelection}>Clear</Button>
-			</div>
-		{/if}
+		<div class="job-visits-section__groups">
+			{#if toBeScheduled.length > 0}
+				<div class="job-visits-section__group">
+					<p class="job-visits-section__group-title">
+						To be scheduled <span class="job-visits-section__group-count"
+							>{toBeScheduled.length}</span
+						>
+					</p>
+					<ul class="job-visits-section__list">
+						{#each toBeScheduled as visit (visit.id)}
+							{@render visitRow(visit)}
+						{/each}
+					</ul>
+				</div>
+			{/if}
 
-		<ul class="job-visits-section__list">
-			{#each visits as visit (visit.id)}
-				<li class="job-visits-section__item" onpointerenter={warmTeam} onfocusin={warmTeam}>
-					{#if scheduleAllowed && canSelect(visit)}
-						<input
-							type="checkbox"
-							class="job-visits-section__checkbox"
-							aria-label={`Select ${visit.title?.trim() || jobTitle.trim() || 'this visit'} for a bulk move`}
-							checked={selectedIds.has(visit.id)}
-							onchange={(event) => toggleSelect(visit.id, event.currentTarget.checked)}
-						/>
-					{:else}
-						<span class="job-visits-section__checkbox-spacer" aria-hidden="true"></span>
+			{#if upcoming.length > 0}
+				<div class="job-visits-section__group">
+					<p class="job-visits-section__group-title">
+						Upcoming <span class="job-visits-section__group-count">{upcoming.length}</span>
+					</p>
+					<ul class="job-visits-section__list">
+						{#each upcomingVisible as visit (visit.id)}
+							{@render visitRow(visit)}
+						{/each}
+					</ul>
+					{#if upcomingHidden > 0}
+						<button
+							type="button"
+							class="job-visits-section__more"
+							onclick={() => (showAllUpcoming = true)}
+						>
+							Show all {upcoming.length} upcoming visits
+						</button>
+					{:else if showAllUpcoming && upcoming.length > 3}
+						<button
+							type="button"
+							class="job-visits-section__more"
+							onclick={() => (showAllUpcoming = false)}
+						>
+							Show fewer
+						</button>
 					{/if}
+				</div>
+			{/if}
 
-					<span class="job-visits-section__icon" aria-hidden="true">{@html calendarIcon}</span>
-
-					<div class="job-visits-section__body">
-						<p class="job-visits-section__when">
-							{visit.title ? `${visit.title} · ` : ''}{visitWhen(visit)}
-						</p>
-						{#if visit.instructions}
-							<p class="job-visits-section__note">{visit.instructions}</p>
-						{/if}
-					</div>
-
-					<div class="job-visits-section__meta">
-						{#if visit.completed_at}
-							<Badge size="small" status="success">Completed</Badge>
-						{/if}
-						{#if visit.assignee_ids.length > 0}
-							<span class="job-visits-section__assignees">
-								<span aria-hidden="true">{@html usersIcon}</span>
-								{visit.assignee_ids.length}
-							</span>
-						{/if}
-					</div>
-
-					{#if scheduleAllowed || completeAllowed}
-						<DropdownMenu items={rowMenuItems(visit)} triggerLabel="Actions for this visit" />
+			{#if past.length > 0}
+				<div class="job-visits-section__group">
+					<button
+						type="button"
+						class="job-visits-section__group-toggle"
+						aria-expanded={showPast}
+						onclick={() => (showPast = !showPast)}
+					>
+						<span
+							class="job-visits-section__group-caret"
+							class:job-visits-section__group-caret--open={showPast}
+							aria-hidden="true">{@html chevronDownIcon}</span
+						>
+						Past <span class="job-visits-section__group-count">{past.length}</span>
+					</button>
+					{#if showPast}
+						<ul class="job-visits-section__list">
+							{#each past as visit (visit.id)}
+								{@render visitRow(visit)}
+							{/each}
+						</ul>
 					{/if}
-				</li>
-			{/each}
-		</ul>
+				</div>
+			{/if}
+		</div>
 	{/if}
 </SectionBlock>
 
 <CreateVisitsDialog
 	open={creating}
+	mode={createMode}
 	onClose={() => {
 		creating = false;
 		createSource = 'manual';
@@ -696,10 +863,9 @@
 			font-weight: 600;
 		}
 
-		&__bulk {
+		&__recurrence {
 			display: flex;
-			flex-wrap: wrap;
-			align-items: flex-end;
+			align-items: center;
 			gap: var(--space-small);
 			margin-bottom: var(--space-base);
 			padding: var(--space-small) var(--space-base);
@@ -708,35 +874,132 @@
 			background: var(--color-surface--background--subtle);
 		}
 
-		&__bulk-count {
-			flex: 1 1 auto;
-			align-self: center;
+		&__recurrence-icon {
+			display: inline-flex;
+			flex: 0 0 auto;
+			color: var(--color-icon--secondary);
+
+			:global(svg) {
+				display: block;
+				width: 18px;
+				height: 18px;
+			}
+		}
+
+		&__recurrence-text {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: baseline;
+			gap: var(--space-smaller) var(--space-small);
+		}
+
+		&__recurrence-summary {
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-small);
 			font-weight: 600;
 		}
 
-		&__bulk-field {
+		&__recurrence-detail {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__groups {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-smallest);
+			gap: var(--space-large);
+		}
+
+		&__group {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-small);
+		}
+
+		&__group-title {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.03em;
 		}
 
-		&__bulk-input {
-			width: 96px;
-			padding: var(--space-smaller) var(--space-small);
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-small);
-			background: var(--color-surface);
-			color: var(--color-text);
-			font-size: var(--typography--fontSize-base);
+		&__group-count {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 20px;
+			height: 20px;
+			padding: 0 var(--space-smaller);
+			border-radius: var(--radius-large);
+			color: var(--color-heading);
+			background: var(--color-inactive--surface);
+			font-size: var(--typography--fontSize-smaller);
+			font-weight: 600;
+			letter-spacing: 0;
+		}
 
+		&__group-toggle {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			width: fit-content;
+			padding: 0;
+			border: 0;
+			background: transparent;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.03em;
+			cursor: pointer;
+
+			&:hover {
+				color: var(--color-heading);
+			}
 			&:focus-visible {
 				outline: none;
 				box-shadow: var(--shadow-focus);
+				border-radius: var(--radius-small);
+			}
+		}
+
+		&__group-caret {
+			display: inline-flex;
+			color: var(--color-icon--secondary);
+			transition: transform var(--timing-quick);
+
+			&--open {
+				transform: rotate(180deg);
+			}
+
+			:global(svg) {
+				display: block;
+				width: 16px;
+				height: 16px;
+			}
+		}
+
+		&__more {
+			align-self: flex-start;
+			padding: var(--space-smaller) 0;
+			border: 0;
+			background: transparent;
+			color: var(--color-interactive);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			cursor: pointer;
+
+			&:hover {
+				text-decoration: underline;
+			}
+			&:focus-visible {
+				outline: none;
+				box-shadow: var(--shadow-focus);
+				border-radius: var(--radius-small);
 			}
 		}
 
@@ -756,17 +1019,6 @@
 			padding: var(--space-base);
 			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-base);
-		}
-
-		&__checkbox {
-			flex: 0 0 auto;
-			margin-top: 2px;
-			width: 16px;
-			height: 16px;
-		}
-
-		&__checkbox-spacer {
-			flex: 0 0 16px;
 		}
 
 		&__icon {
@@ -790,6 +1042,12 @@
 			margin: 0;
 			color: var(--color-heading);
 			font-weight: 600;
+		}
+
+		&__sub {
+			margin: var(--space-smallest) 0 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
 		}
 
 		&__note {
@@ -819,5 +1077,40 @@
 				height: 16px;
 			}
 		}
+	}
+
+	:global(.job-visits-section__add-trigger) {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-smaller);
+		padding: var(--space-smaller) var(--space-small);
+		border: 0;
+		border-radius: var(--radius-base);
+		color: var(--color-interactive);
+		background: transparent;
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		cursor: pointer;
+		transition: background-color var(--timing-base) ease-out;
+
+		&:hover:not(:disabled) {
+			background: var(--color-surface--hover);
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+	}
+
+	:global(.job-visits-section__add-icon svg) {
+		display: block;
+		width: 16px;
+		height: 16px;
+	}
+
+	:global(.job-visits-section__add-caret svg) {
+		display: block;
+		width: 14px;
+		height: 14px;
 	}
 </style>

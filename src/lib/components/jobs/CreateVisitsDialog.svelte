@@ -20,12 +20,15 @@
 	let {
 		open,
 		onClose,
-		onCreate
+		onCreate,
+		mode = 'multiple'
 	}: {
 		open: boolean;
 		onClose: () => void;
 		/** `dates` is empty when "Schedule later" is chosen — that means one dateless visit. */
 		onCreate: (result: { dates: string[]; scheduleLater: boolean }) => void;
+		/** `single` picks exactly one day (Add one visit); `multiple` picks many (Add multiple visits). */
+		mode?: 'single' | 'multiple';
 	} = $props();
 
 	let picked = $state<DateValue[]>([]);
@@ -34,6 +37,14 @@
 	const minValue = today(getLocalTimeZone());
 
 	const canCreate = $derived(scheduleLater || picked.length > 0);
+
+	// In single mode the calendar still lives on the multi-select primitive, so keep only the newest pick —
+	// tapping a second day replaces the first rather than adding a second visit.
+	$effect(() => {
+		if (mode === 'single' && picked.length > 1) picked = [picked[picked.length - 1]];
+	});
+
+	const heading = $derived(mode === 'single' ? 'Add a visit' : 'Create visits');
 
 	function reset() {
 		picked = [];
@@ -62,11 +73,15 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#if open}
-	<Dialog {open} title="Create visits" size="small" onClose={cancel}>
+	<Dialog {open} title={heading} size="small" onClose={cancel}>
 		<div class="create-visits">
 			<p class="create-visits__hint">
-				Pick every day this job needs a visit. You can set the time and who is going on each one
-				next.
+				{#if mode === 'single'}
+					Pick the day this visit happens. You can set the time and who is going next.
+				{:else}
+					Pick every day this job needs a visit. You can set the time and who is going on each one
+					next.
+				{/if}
 			</p>
 
 			<Calendar.Root
