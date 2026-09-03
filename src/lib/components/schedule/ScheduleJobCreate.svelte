@@ -8,6 +8,7 @@
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
 	import ClientPicker from '$lib/components/work/ClientPicker.svelte';
+	import TeamPicker from '$lib/components/team/TeamPicker.svelte';
 	import {
 		calendarDateFromString,
 		calendarDateToString,
@@ -17,10 +18,8 @@
 		type DateTimePickerValue
 	} from '$lib/components/ui/date-time';
 	import { fetchClient, clientDetailKey, type ClientListItem } from '$lib/clients/api';
-	import { assignableTeamKey, fetchAssignableTeam, type TeamMember } from '$lib/team/api';
 	import type { JobCreateSeed, JobFirstVisitSeed } from '$lib/jobs/createDraft';
 	import type { NewVisitDraft } from '$lib/schedule/drag';
-	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 
 	// Booking a job from empty calendar space, the way Jobber starts one in place: a light form seeded with
 	// the day, time and any team the gesture proposed, so the common "client + one visit" job is a quick
@@ -107,18 +106,6 @@
 			label: property.label || [property.address_line1, property.city].filter(Boolean).join(', ')
 		}))
 	);
-
-	const teamQuery = createQuery(() => ({
-		queryKey: assignableTeamKey,
-		queryFn: fetchAssignableTeam,
-		enabled: open,
-		staleTime: 5 * 60 * 1000
-	}));
-	const team = $derived<TeamMember[]>(teamQuery.data ?? []);
-
-	function toggleAssignee(id: string, checked: boolean) {
-		assigneeIds = checked ? [...assigneeIds, id] : assigneeIds.filter((entry) => entry !== id);
-	}
 
 	// The first visit's schedule as the form currently holds it. This never rejects a half-filled schedule --
 	// More Options carries whatever is there to the full form, where it can be finished -- so validation for
@@ -276,27 +263,7 @@
 			bind:value={workNotes}
 		/>
 
-		<fieldset class="job-create__team">
-			<legend class="job-create__team-legend">
-				<span aria-hidden="true">{@html usersIcon}</span> Assigned team
-			</legend>
-			{#if teamQuery.isPending}
-				<p class="job-create__hint">Loading your team…</p>
-			{:else if team.length === 0}
-				<p class="job-create__hint">No team members to assign yet.</p>
-			{:else}
-				<div class="job-create__team-list">
-					{#each team as member (member.id)}
-						<Checkbox
-							id={`job-create-assignee-${member.id}`}
-							label={member.full_name ?? 'A team member'}
-							checked={assigneeIds.includes(member.id)}
-							onchange={(checked) => toggleAssignee(member.id, checked)}
-						/>
-					{/each}
-				</div>
-			{/if}
-		</fieldset>
+		<TeamPicker id="job-create-team" bind:value={assigneeIds} {open} />
 
 		<div class="job-create__actions">
 			<Button variant="tertiary" onclick={moreOptions} disabled={saving}>More options</Button>
@@ -347,41 +314,6 @@
 				outline: none;
 				box-shadow: var(--shadow-focus);
 			}
-		}
-
-		&__team {
-			margin: 0;
-			padding: var(--space-base);
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-base);
-		}
-
-		&__team-legend {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-smallest);
-			padding: 0 var(--space-small);
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-
-			:global(svg) {
-				display: block;
-				width: 16px;
-				height: 16px;
-			}
-		}
-
-		&__team-list {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-small);
-		}
-
-		&__hint {
-			margin: 0;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
 		}
 
 		&__actions {

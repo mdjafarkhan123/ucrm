@@ -29,18 +29,21 @@ Additional Visit creation remains owned by the Job Visits section. Schedule may 
 the Jobber-style bulk Create New Visits tool for eligible as-needed recurring Jobs is outside V1 and requires
 its own measured need. A generic empty-slot "Visit to existing Job" path is rejected.
 
-## Team assignee picker — Approved 2026-09-03, planned (not built)
+## Team assignee picker — Built + verified 2026-09-03
 
-Jafar approved replacing the flat assignee checkbox list. Problem: the "Assigned team" block is one checkbox
-per member with no search and no height cap (`src/lib/components/jobs/JobVisitDialog.svelte:267`), so a large
-crew (100+) makes the dialog grow without bound. Decision: a shared searchable **multi-select** combobox —
-Bits UI `Combobox` with `type="multiple"`, reusing the proven `ClientPicker.svelte` pattern — showing selected
-members as removable avatar chips over a scrollable, height-capped list. Multi-select is mandatory: Visits and
-Jobs carry several assignees (`assignee_ids`), so a single-select dropdown is wrong here. Build one shared
-`TeamPicker` and use it in the compact Job draft team field and retrofit the JobVisitDialog assignee block. No
-DB/RLS/permission impact; re-verify assignment behavior after the swap. NOT a Part 4b blocker — 4b shipped
-2026-09-03 with the current checkbox list in `ScheduleJobCreate.svelte`'s "Assigned team" fieldset, matching
-JobVisitDialog. TeamPicker lands as a focused follow-up retrofitting both.
+Replaced the flat assignee checkbox list with a shared searchable multi-select: `src/lib/components/team/TeamPicker.svelte`,
+a Bits UI `Combobox` with `type="multiple"` showing selected members as removable avatar chips over a
+scrollable, height-capped list. Owns its own `fetchAssignableTeam` query (gated by the caller's `open`), same
+pattern as `ClientPicker`. Wired into `ScheduleJobCreate.svelte` and `JobVisitDialog.svelte`, both now just
+`bind:value={assigneeIds}`. No DB/RLS/permission impact.
+
+Correctness note for future changes to this component: do not bind Bits UI's `Combobox.Root` `inputValue` to
+this component's own search-filter text (one-way or two-way). Bits UI's multi-select internally writes the
+picked item's label into that same box as part of committing a toggle, and binding it two-way let that
+internal write and this component's own reset fight over the same channel — verified live to occasionally
+drop a real assignee from `value` on save. The shipped version keeps `query` (the filter text) entirely
+local, never passed to `Combobox.Root`; the only user-visible cost is that the search box can show the
+last-picked name until the user types again, which is cosmetic only.
 
 ## Grid zoom / density control — Built + verified 2026-09-03
 

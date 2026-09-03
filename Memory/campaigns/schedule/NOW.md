@@ -10,18 +10,16 @@
 
 Part 5 (Jobs-owned completion integration + Job Visits parity) is the next V1 part but is BLOCKED on Jobs
 Part 13a, which has not landed (see INDEX: "13a resumes as a Schedule dependency"). Do not start Part 5 until
-Jobs 13a exists. When resuming, confirm with Jafar whether to (a) drive Jobs 13a first, or (b) pick up an
-approved follow-up below.
+Jobs 13a exists. When resuming, confirm with Jafar whether to (a) drive Jobs 13a first, or (b) pick up another
+approved follow-up.
 
-## Approved follow-ups (not blockers, can be done any time)
-
-- TeamPicker retrofit — shared searchable multi-select combobox replacing the flat assignee checkbox list in
-  ScheduleJobCreate + JobVisitDialog. Approved 2026-09-03, not built. Details in ROADMAP "Team assignee picker".
+TeamPicker retrofit is now built and verified (2026-09-03) — see ROADMAP "Team assignee picker" for the
+correctness note on Bits UI's `Combobox` `inputValue` before touching that component again.
 
 ## Dependencies and boundary
 
 - Jobs owns Visit/Job truth; every Schedule write is a Jobs command (`update_job_visit`, `create_job`, etc.).
 - Per-row RLS cost is app-wide: Memory/deferred/app-wide-rls-helpers-run-once-per-returned-row.md.
-- Uncommitted: Part 4c wiring is on `main` working tree, not yet committed.
+- All Parts 1–4 work plus the TeamPicker follow-up are on `main` working tree, not yet committed.
 
 Resume command: read memory and continue the Schedule campaign.

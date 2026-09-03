@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { createQuery } from '@tanstack/svelte-query';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
+	import TeamPicker from '$lib/components/team/TeamPicker.svelte';
 	import {
 		calendarDateFromString,
 		calendarDateToString,
@@ -14,9 +14,7 @@
 		emptyDateTimePickerValue,
 		type DateTimePickerValue
 	} from '$lib/components/ui/date-time';
-	import { assignableTeamKey, fetchAssignableTeam, type TeamMember } from '$lib/team/api';
 	import type { JobVisit, UpdateVisitInput } from '$lib/jobs/api';
-	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 
 	// Editing one existing visit, the way a client's property is edited: its own modal with its own Save, kept
 	// out of the page's title/instructions draft. The dialog only shapes the visit and hands the result back;
@@ -75,18 +73,6 @@
 		}
 		wasOpen = open;
 	});
-
-	const teamQuery = createQuery(() => ({
-		queryKey: assignableTeamKey,
-		queryFn: fetchAssignableTeam,
-		enabled: open,
-		staleTime: 5 * 60 * 1000
-	}));
-	const team = $derived<TeamMember[]>(teamQuery.data ?? []);
-
-	function toggleAssignee(id: string, checked: boolean) {
-		assigneeIds = checked ? [...assigneeIds, id] : assigneeIds.filter((entry) => entry !== id);
-	}
 
 	// The same shape rules the create form and the database enforce, checked here so a bad combination is a
 	// message in the dialog rather than a raw constraint bounced back from the write.
@@ -200,27 +186,7 @@
 			bind:value={instructions}
 		/>
 
-		<fieldset class="visit-dialog__team">
-			<legend class="visit-dialog__team-legend">
-				<span aria-hidden="true">{@html usersIcon}</span> Assigned team
-			</legend>
-			{#if teamQuery.isPending}
-				<p class="visit-dialog__hint">Loading your team…</p>
-			{:else if team.length === 0}
-				<p class="visit-dialog__hint">No team members to assign yet.</p>
-			{:else}
-				<div class="visit-dialog__team-list">
-					{#each team as member (member.id)}
-						<Checkbox
-							id={`visit-dialog-assignee-${member.id}`}
-							label={member.full_name ?? 'A team member'}
-							checked={assigneeIds.includes(member.id)}
-							onchange={(checked) => toggleAssignee(member.id, checked)}
-						/>
-					{/each}
-				</div>
-			{/if}
-		</fieldset>
+		<TeamPicker id="visit-dialog-team" bind:value={assigneeIds} {open} />
 
 		<div class="visit-dialog__actions">
 			<Button variant="tertiary" onclick={onClose} disabled={saving}>Cancel</Button>
@@ -250,41 +216,6 @@
 		}
 
 		&__note {
-			margin: 0;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-		}
-
-		&__team {
-			margin: 0;
-			padding: var(--space-base);
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-base);
-		}
-
-		&__team-legend {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-smallest);
-			padding: 0 var(--space-small);
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-
-			:global(svg) {
-				display: block;
-				width: 16px;
-				height: 16px;
-			}
-		}
-
-		&__team-list {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-small);
-		}
-
-		&__hint {
 			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
