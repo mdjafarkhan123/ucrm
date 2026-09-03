@@ -1,4 +1,4 @@
-import type { ScheduleVisit } from '$lib/schedule/api';
+import type { ScheduleItem } from '$lib/schedule/items';
 import { visitShape } from '$lib/schedule/status';
 
 // Where a day's visits sit on a timed grid, and how much of each card fits there.
@@ -24,7 +24,7 @@ export function clockMinutes(value: string | null): number | null {
 }
 
 export type TimedVisitSpan = {
-	visit: ScheduleVisit;
+	item: ScheduleItem;
 	/** Minutes from midnight. */
 	start: number;
 	end: number;
@@ -38,25 +38,25 @@ export type TimedVisitBlock = TimedVisitSpan & {
 
 export type DayVisitSplit = {
 	/** Dated, no clock time. These never get invented a time; they sit in the Anytime lane. */
-	anytime: ScheduleVisit[];
+	anytime: ScheduleItem[];
 	timed: TimedVisitSpan[];
 };
 
-// A visit whose end is missing, or is not after its start, is drawn at the default length rather than being
+// An item whose end is missing, or is not after its start, is drawn at the default length rather than being
 // hidden or stretched. The stored times are never rewritten -- this only decides what the grid draws.
-export function splitDayVisits(visits: ScheduleVisit[]): DayVisitSplit {
-	const anytime: ScheduleVisit[] = [];
+export function splitDayVisits(items: ScheduleItem[]): DayVisitSplit {
+	const anytime: ScheduleItem[] = [];
 	const timed: TimedVisitSpan[] = [];
 
-	for (const visit of visits) {
-		const start = visitShape(visit) === 'scheduled' ? clockMinutes(visit.start_time) : null;
+	for (const item of items) {
+		const start = visitShape(item) === 'scheduled' ? clockMinutes(item.start_time) : null;
 		if (start === null) {
-			anytime.push(visit);
+			anytime.push(item);
 			continue;
 		}
-		const rawEnd = clockMinutes(visit.end_time);
+		const rawEnd = clockMinutes(item.end_time);
 		const end = rawEnd !== null && rawEnd > start ? rawEnd : start + DEFAULT_VISIT_MINUTES;
-		timed.push({ visit, start, end: Math.min(MINUTES_IN_DAY, end) });
+		timed.push({ item, start, end: Math.min(MINUTES_IN_DAY, end) });
 	}
 
 	return { anytime, timed };
@@ -68,7 +68,7 @@ export function splitDayVisits(visits: ScheduleVisit[]): DayVisitSplit {
 // day being split into as many lanes as the day has visits.
 export function layoutTimedVisits(spans: TimedVisitSpan[]): TimedVisitBlock[] {
 	const sorted = [...spans].sort(
-		(a, b) => a.start - b.start || b.end - a.end || a.visit.id.localeCompare(b.visit.id)
+		(a, b) => a.start - b.start || b.end - a.end || a.item.id.localeCompare(b.item.id)
 	);
 
 	const blocks: TimedVisitBlock[] = [];

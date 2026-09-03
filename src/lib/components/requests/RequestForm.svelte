@@ -27,6 +27,7 @@
 		type RequestPricingLineInput
 	} from '$lib/quotes/api';
 	import { firstLineProblem } from '$lib/quotes/lines';
+	import type { AssessmentCreateSeed } from '$lib/requests/assessmentSeed';
 	import { invalidatePipeline } from '$lib/pipeline/api';
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import clipboardIcon from '@tabler/icons/outline/clipboard-text.svg?raw';
@@ -38,11 +39,15 @@
 	let {
 		currencyCode = 'USD',
 		locale = 'en-US',
+		seed = null,
 		onSaved,
 		onCancel
 	}: {
 		currencyCode?: string;
 		locale?: string;
+		/** A slot staged by Schedule's empty-slot chooser, read once by the page and passed straight to the
+		 *  on-site assessment so it opens pre-booked onto the clicked day/time. */
+		seed?: AssessmentCreateSeed | null;
 		onSaved: (request: { id: string; title: string }, andAnother: boolean) => void;
 		onCancel: () => void;
 	} = $props();
@@ -310,6 +315,7 @@
 			<AssessmentBlock
 				bind:this={assessmentBlock}
 				draft
+				{seed}
 				assessment={null}
 				onDraftChange={(booked) => (visitBooked = booked)}
 			/>

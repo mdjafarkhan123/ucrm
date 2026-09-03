@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { buildDayRows } from '$lib/schedule/rows';
 import type { ScheduleVisit } from '$lib/schedule/api';
+import type { VisitItem } from '$lib/schedule/items';
 import type { TeamMember } from '$lib/team/api';
 
-function visit(overrides: Partial<ScheduleVisit> & { id: string }): ScheduleVisit {
+function visit(overrides: Partial<ScheduleVisit> & { id: string }): VisitItem {
 	return {
+		kind: 'visit',
 		job_id: 'job-1',
 		visit_date: '2026-09-02',
 		start_time: '09:00:00',
@@ -49,8 +51,8 @@ describe('buildDayRows', () => {
 		const rows = buildDayRows([visit({ id: 'a', assignee_ids: ['sam', 'mia'] })], team, 'all');
 		const sam = rows.find((row) => row.key === 'sam');
 		const mia = rows.find((row) => row.key === 'mia');
-		expect(sam?.blocks[0].visit.id).toBe('a');
-		expect(mia?.blocks[0].visit.id).toBe('a');
+		expect(sam?.blocks[0].item.id).toBe('a');
+		expect(mia?.blocks[0].item.id).toBe('a');
 		expect(rows.find((row) => row.key === 'unassigned')?.count).toBe(0);
 	});
 

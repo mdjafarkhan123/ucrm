@@ -97,7 +97,7 @@ operates those records; it never creates a second Visit model.
 | --- | --- | --- |
 | Job identity, scope, billing setup and lifecycle | Jobs | Open the Job and show permitted context |
 | Visit identity, recurrence, assignment, timing and completion | Jobs | Present and invoke Jobs-owned Visit actions |
-| Assessment identity and outcome | Requests | Present and invoke Request-owned Assessment actions |
+| Assessment identity and outcome | Requests | Start the Request-owned New Request + assessment flow from a slot; present and invoke Request-owned Assessment actions |
 | Event identity and scheduling | Schedule | Create and manage lightweight Events inside Schedule |
 | General Task identity and completion | Future Tasks owner | Deferred until UCRM has a calendar-capable Task contract |
 | Quote reminder | Quotes/Automation | Deferred until its owner exposes a schedulable read model |
@@ -306,13 +306,21 @@ or Visit truth.
 
 Version 1.1 adds Request and Event to that same chooser and keeps ownership explicit:
 
-- choosing Assessment selects an existing Request and invokes its Request-owned Assessment form; Schedule
-  never creates a Request;
-- an existing unscheduled Assessment may be placed through that same owning workflow;
+- choosing Request/Assessment opens the Request-owned New Request creation flow with the clicked date, time
+  and Anytime prefilled onto its on-site assessment, matching Jobber's verified empty-slot behavior; the
+  Request and its assessment are still created and owned by Requests, never by a Schedule-local record;
+- an existing Request continues to schedule, move or place its assessment from its own Request surface, not
+  from Schedule;
 - an Assessment preview opens its owning Request/Assessment context;
 - an Event opens a compact Event popover and its Schedule-owned create/edit modal;
 - Events have no sidebar destination, separate list page or full detail page; and
 - Events have no client/property link in this campaign.
+
+Jafar re-approved the Request/Assessment empty-slot behavior on 2026-09-03. An earlier Part 1b draft had
+Schedule pick an existing Request; the verified Jobber workflow instead opens New Request with the slot's
+date/time prefilled, so Schedule follows Jobber and adds no Request picker. Existing-Request assessment
+scheduling stays on the Request surface. This does not rewrite the Jobber evidence, which already records the
+slot-to-New-Request behavior.
 
 Version 1.1 Events are deliberately one-time, timed or Anytime whole-team blocks. They require a title and
 may include a description. They have no individual assignment/audience, privacy, client/property link,

@@ -1,54 +1,55 @@
 import type { ScheduleFilters } from '$lib/schedule/filters';
 import { splitDayVisits } from '$lib/schedule/layout';
 import { visitDerivedStatus } from '$lib/schedule/status';
-import type { ScheduleVisit } from '$lib/schedule/api';
+import type { ScheduleItem } from '$lib/schedule/items';
 import type { TeamMember } from '$lib/team/api';
 
-// Turning a window's visits into what the workspace draws. It is here rather than in the page because it is
-// ordinary logic with no markup in it: it can be tested directly, and Part 3's grids can reuse the same
-// grouping when they replace the list.
+// Turning a window's items into what the workspace draws. It is here rather than in the page because it is
+// ordinary logic with no markup in it: it can be tested directly, and the grids reuse the same grouping.
+// A "visit" here is any calendar item -- a job visit or an assessment -- because employee and status narrow
+// the same way for both, and a day cell buckets them together.
 
-/** Employee and status, applied to the rows already in hand. The window read is bounded, so this is cheap. */
+/** Employee and status, applied to the items already in hand. The window read is bounded, so this is cheap. */
 export function filterVisits(
-	visits: ScheduleVisit[],
+	items: ScheduleItem[],
 	filters: Pick<ScheduleFilters, 'employee' | 'status'>,
 	today: string
-): ScheduleVisit[] {
-	return visits.filter((visit) => {
+): ScheduleItem[] {
+	return items.filter((item) => {
 		if (filters.employee === 'unassigned') {
-			if (visit.assignee_ids.length > 0) return false;
-		} else if (filters.employee !== 'all' && !visit.assignee_ids.includes(filters.employee)) {
+			if (item.assignee_ids.length > 0) return false;
+		} else if (filters.employee !== 'all' && !item.assignee_ids.includes(filters.employee)) {
 			return false;
 		}
-		if (filters.status !== 'all' && visitDerivedStatus(visit, today) !== filters.status) {
+		if (filters.status !== 'all' && visitDerivedStatus(item, today) !== filters.status) {
 			return false;
 		}
 		return true;
 	});
 }
 
-// Every day's visits, looked up by the day. A grid draws a cell for every day in its window, the quiet ones
+// Every day's items, looked up by the day. A grid draws a cell for every day in its window, the quiet ones
 // included, so it asks by day rather than walking a list that would leave those days out.
-export function bucketVisitsByDay(visits: ScheduleVisit[]): Map<string, ScheduleVisit[]> {
-	const byDay = new Map<string, ScheduleVisit[]>();
-	for (const visit of visits) {
-		if (!visit.visit_date) continue;
-		const bucket = byDay.get(visit.visit_date);
-		if (bucket) bucket.push(visit);
-		else byDay.set(visit.visit_date, [visit]);
+export function bucketVisitsByDay(items: ScheduleItem[]): Map<string, ScheduleItem[]> {
+	const byDay = new Map<string, ScheduleItem[]>();
+	for (const item of items) {
+		if (!item.visit_date) continue;
+		const bucket = byDay.get(item.visit_date);
+		if (bucket) bucket.push(item);
+		else byDay.set(item.visit_date, [item]);
 	}
 	return byDay;
 }
 
 // The order one date's work reads in when there is no time axis to place it on, as the Month cell and its
 // full-day list have. Anytime first, because a day-long commitment frames the day, then the timed work in
-// start order. Two visits starting at the same minute keep a stable order rather than swapping places on
+// start order. Two items starting at the same minute keep a stable order rather than swapping places on
 // every refetch.
-export function orderDayVisits(visits: ScheduleVisit[]): ScheduleVisit[] {
-	const split = splitDayVisits(visits);
+export function orderDayVisits(items: ScheduleItem[]): ScheduleItem[] {
+	const split = splitDayVisits(items);
 	const timed = [...split.timed]
-		.sort((a, b) => a.start - b.start || a.visit.id.localeCompare(b.visit.id))
-		.map((span) => span.visit);
+		.sort((a, b) => a.start - b.start || a.item.id.localeCompare(b.item.id))
+		.map((span) => span.item);
 	return [...split.anytime, ...timed];
 }
 

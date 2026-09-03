@@ -1,32 +1,42 @@
 # Schedule: Current Checkpoint
 
 - Goal: Deliver a desktop contractor dispatch desk without duplicating Job, Visit or other domain truth.
-- State: Part 5 CLOSED (5a + 5b live-verified 2026-09-03, committed on branch `schedule-5b-visits-card`).
-  - 5b redesigned `JobVisitsSection.svelte` to the contract's "Job detail Visits card": section renamed
-    "Visits"; To be scheduled / Upcoming / Past groups; next-three Upcoming + "Show all"; collapsed Past;
-    recurrence summary + real visit count + date range; "Edit Schedule"; Add one vs Add multiple (new `mode`
-    prop on `CreateVisitsDialog`, other callers default to multiple); as-needed vs empty; Overdue flag;
-    completed-date history. New browser spec `JobVisitsSection.svelte.spec.ts` (5 tests). `npm run check` 0
-    errors; jobs + schedule specs green. Live-verified on Job #2 (recurring, 26 visits) and Job #1 (one-off,
-    completed visit).
-  - Two contract items deferred to Jobs backend (no data source): completed-by name and the off-series
-    marker — Memory/deferred/job-visit-card-backend-fields.md.
-- Approved contract: docs/schedule-behavior-contract.md is the release boundary. ROADMAP holds the part gates.
+- State: Part 5 CLOSED. **Part 6a-1 CLOSED 2026-09-03** (tested + browser-verified). Part 6a-2 (Events) is
+  the next dependency-ready part and is NOT yet started.
+- Grounding: docs/schedule-behavior-contract.md is the approved product/UI boundary; ROADMAP 6a-2 is the gate.
 
-## Exact next action
+## Next action — plan Part 6a-2 (Schedule-owned Events)
 
-Await Jafar's pick of the next Schedule part. Dependency-ready options (all gated on Part 5, now closed):
-- Part 6a (V1.1) — Request-owned Assessments + Schedule-owned lightweight Events. Also needs Request/
-  Assessment readiness; scope against the contract before building.
-- Part 7 (V1.2) — contextual Map + manual Anytime routing. Needs dated geocoded Visits and the approved
-  map/directions provider boundary; 6a is a soft prerequisite (Assessments on the map).
-Read ROADMAP.md only when a part is selected. Do not start a part without presenting scope + approval.
+6a-2 introduces a NEW domain (Schedule owns Events; nothing else does), so it is a plan-first part, not a
+straight build. Before writing code, present a plan to Jafar and get approval:
+
+- One-time timed **or** Anytime whole-team Event. Required title, optional description. NO assignment,
+  privacy, client/property, address or recurrence fields (contract "Opening, creating and editing").
+- Lives only through a Schedule popover + create/edit modal. No Event sidebar item, list page or detail page.
+- create/edit/delete gated on the existing `jobs.schedule` authority (the calendar-change permission) — no
+  new permission invented.
+- Events contribute to overlap/working-hours warnings (contract "Conflict boundary") but are NOT routeable
+  and never enter the Unscheduled backlog.
+- Needs a new `schedule_events` table + RLS + API (load supabase-postgres-best-practices BEFORE any SQL) and
+  calendar wiring: Events flow through the same `ScheduleItem` union (`src/lib/schedule/items.ts`) the way
+  Assessments now do, with their own card/preview (type = 'event', see the card matrix's Event row).
+- The empty-slot chooser (`ScheduleJobCreate.svelte`) is the natural third tab once Events can be created
+  from a slot — Job / Request / Event.
+
+## How 6a-1 shipped (for reference; truth is in code/tests/git)
+
+- Assessments render on Week/Day/Month + preview (Stages 1-2, done earlier).
+- Stage 3 (empty-slot chooser): `ScheduleJobCreate` now has a Job/Request SegmentedControl (Job default).
+  Request stages the slot via `src/lib/requests/assessmentSeed.ts` and opens `/requests/new`, whose
+  `RequestForm` → `AssessmentBlock` reads the seed once and opens the on-site assessment pre-booked. The
+  Schedule header button relabelled "New job" → "New" (it opens the same chooser). Existing Requests still
+  schedule their assessment from the Request surface.
 
 ## Dependencies and boundary
 
-- Jobs owns Visit/Job truth; every Schedule write is a Jobs command (`update_job_visit`, `create_job`, etc.).
+- Jobs owns Visit/Job truth; Requests owns Assessment truth; Schedule owns Events. Every Schedule write to a
+  non-owned domain stays an owner command.
 - Per-row RLS cost is app-wide: Memory/deferred/app-wide-rls-helpers-run-once-per-returned-row.md.
-- TeamPicker `inputValue` correctness note: ROADMAP "Team assignee picker" before touching that component.
-- 5b work is on branch `schedule-5b-visits-card` (commit 0f92d51), not yet merged to `main`.
+- Work continues on branch `schedule-5b-visits-card` (Part 5 not yet merged to main).
 
 Resume command: read memory and continue the Schedule campaign.

@@ -8,9 +8,11 @@ import {
 	splitDayVisits
 } from '$lib/schedule/layout';
 import type { ScheduleVisit } from '$lib/schedule/api';
+import type { VisitItem } from '$lib/schedule/items';
 
-function visit(overrides: Partial<ScheduleVisit> & { id: string }): ScheduleVisit {
+function visit(overrides: Partial<ScheduleVisit> & { id: string }): VisitItem {
 	return {
+		kind: 'visit',
 		job_id: 'job-1',
 		visit_date: '2026-09-02',
 		start_time: '09:00:00',
@@ -38,7 +40,7 @@ function visit(overrides: Partial<ScheduleVisit> & { id: string }): ScheduleVisi
 
 /** The lane each visit landed in, keyed by id, plus how wide its group ended up. */
 function lanes(blocks: ReturnType<typeof layoutTimedVisits>) {
-	return Object.fromEntries(blocks.map((b) => [b.visit.id, `${b.column}/${b.columns}`]));
+	return Object.fromEntries(blocks.map((b) => [b.item.id, `${b.column}/${b.columns}`]));
 }
 
 describe('clockMinutes', () => {

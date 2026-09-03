@@ -3,6 +3,8 @@
 	import type { Attachment } from 'svelte/attachments';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import VisitCard from '$lib/components/schedule/VisitCard.svelte';
+	import AssessmentCard from '$lib/components/schedule/AssessmentCard.svelte';
+	import type { AssessmentItem, ScheduleItem } from '$lib/schedule/items';
 	import { earliestWorkingMinute, weekdayOf, type WorkingWeek } from '$lib/schedule/hours';
 	import { cardDensityForWidth, MINUTES_IN_DAY } from '$lib/schedule/layout';
 	import { buildDayRows, UNASSIGNED_ROW_KEY } from '$lib/schedule/rows';
@@ -38,28 +40,30 @@
 
 	let {
 		day,
-		visits,
+		items,
 		team,
 		today,
 		nowMinutes,
 		workingWeek,
 		employeeFilter,
 		employeesById,
-		selectedVisitId,
+		selectedItemId,
 		canSchedule = false,
 		canCreate = false,
 		movingVisitId = null,
 		zoom = 'compact',
 		unscheduleZone = null,
 		onselect,
+		onselectassessment,
 		onpropose,
 		oneditassignment,
 		oncreate,
 		onunschedule
 	}: {
 		day: string;
-		/** Already filtered by the page. Every one of these is drawn, once per person on it. */
-		visits: ScheduleVisit[];
+		/** Already filtered by the page. Every one of these is drawn, once per person on it -- visits and
+		 *  assessments alike. */
+		items: ScheduleItem[];
 		team: TeamMember[];
 		today: string;
 		/** Minutes past midnight in the contractor's own timezone, or null when this is not today. */
@@ -68,7 +72,7 @@
 		workingWeek: WorkingWeek | null;
 		employeeFilter: ScheduleEmployeeFilter;
 		employeesById: Map<string, TeamMember>;
-		selectedVisitId: string | null;
+		selectedItemId: string | null;
 		/** Whether this reader may change the schedule at all. Nothing drags without it. */
 		canSchedule?: boolean;
 		/** Whether this reader may start a Job from empty space. The create affordance is absent without it. */
@@ -80,6 +84,8 @@
 		/** The Unscheduled drawer's drop zone, if it is open. A card dropped over it goes back to the backlog. */
 		unscheduleZone?: HTMLElement | null;
 		onselect: (visit: ScheduleVisit, element: HTMLElement) => void;
+		/** An assessment card was selected. The page opens its Request-owned preview; nothing drags. */
+		onselectassessment: (assessment: AssessmentItem, element: HTMLElement) => void;
 		/** A drag finished. Nothing is written until the page's confirmation is saved. */
 		onpropose: (visit: ScheduleVisit, proposal: ScheduleProposal, anchor: HTMLElement) => void;
 		/** A shared visit was dropped in somebody else's row; the crew is edited, never swapped. */
@@ -97,7 +103,7 @@
 	const LANE_HEIGHT = 92;
 	const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
-	const rows = $derived(buildDayRows(visits, team, employeeFilter));
+	const rows = $derived(buildDayRows(items, team, employeeFilter));
 	const workingBands = $derived(workingWeek?.get(weekdayOf(day)) ?? []);
 
 	function percent(minutes: number) {
@@ -413,7 +419,14 @@
 	function beginCreate(event: PointerEvent, rowIndex: number) {
 		if (!canCreate || event.button !== 0) return;
 		const target = event.target as HTMLElement;
-		if (target.closest('.day__pickup') || target.closest('.day__resize')) return;
+		// A press on a card belongs to that card, not to empty space. Visit cards carry the pickup handle;
+		// an assessment card has no handle but must still bow out, or its click would also start a new job.
+		if (
+			target.closest('.day__pickup') ||
+			target.closest('.day__resize') ||
+			target.closest('.assessment-card')
+		)
+			return;
 
 		const startMinutes = endMinutesAt(event, rowIndex);
 		if (startMinutes === null) return;
@@ -450,7 +463,7 @@
 	function createAnytime(event: MouseEvent) {
 		if (!canCreate) return;
 		const target = event.target as HTMLElement;
-		if (target.closest('.day__pickup')) return;
+		if (target.closest('.day__pickup') || target.closest('.assessment-card')) return;
 		oncreate?.(draftAnytime(day));
 	}
 
@@ -517,24 +530,36 @@
 					bind:this={anytimeEls[rowIndex]}
 					onclick={createAnytime}
 				>
-					{#each row.anytime as visit (visit.id)}
-						<div
-							class="day__pickup"
-							class:day__pickup--dragging={drag?.visit.id === visit.id}
-							class:day__pickup--pending={movingVisitId === visit.id}
-							onclickcapture={afterDrag}
-						>
-							<VisitCard
-								{visit}
+					{#each row.anytime as item (item.id)}
+						{#if item.kind === 'visit'}
+							<div
+								class="day__pickup"
+								class:day__pickup--dragging={drag?.visit.id === item.id}
+								class:day__pickup--pending={movingVisitId === item.id}
+								onclickcapture={afterDrag}
+							>
+								<VisitCard
+									visit={item}
+									density="compact"
+									{today}
+									{employeesById}
+									showAssignment={false}
+									selected={item.id === selectedItemId}
+									{onselect}
+									onpickup={(event) => beginMove(event, item, rowIndex, null)}
+								/>
+							</div>
+						{:else}
+							<AssessmentCard
+								assessment={item}
 								density="compact"
 								{today}
 								{employeesById}
 								showAssignment={false}
-								selected={visit.id === selectedVisitId}
-								{onselect}
-								onpickup={(event) => beginMove(event, visit, rowIndex, null)}
+								selected={item.id === selectedItemId}
+								onselect={onselectassessment}
 							/>
-						</div>
+						{/if}
 					{/each}
 				</div>
 
@@ -558,37 +583,60 @@
 
 					<div class="day__lines" aria-hidden="true"></div>
 
-					{#each row.blocks as block (block.visit.id)}
-						<div
-							class="day__block day__pickup"
-							class:day__pickup--dragging={drag?.visit.id === block.visit.id}
-							class:day__pickup--pending={movingVisitId === block.visit.id}
-							style:left={percent(block.start)}
-							style:width={percent(block.end - block.start)}
-							style:top="{block.column * LANE_HEIGHT}px"
-							style:height="{LANE_HEIGHT}px"
-							onclickcapture={afterDrag}
-						>
-							<VisitCard
-								visit={block.visit}
-								density={cardDensityForWidth(((block.end - block.start) / 60) * HOUR_WIDTH)}
-								{today}
-								{employeesById}
-								showAssignment={false}
-								selected={block.visit.id === selectedVisitId}
-								{onselect}
-								onpickup={(event) => beginMove(event, block.visit, rowIndex, block)}
-							/>
-							{#if canDragVisit(block.visit, canSchedule)}
-								<!-- The trailing edge, for changing how long the work should take. Reschedule is
-								     the keyboard path to the same change, so this is decoration to a reader. -->
-								<span
-									class="day__resize"
-									aria-hidden="true"
-									onpointerdown={(event) => beginResize(event, block.visit, rowIndex, block)}
-								></span>
-							{/if}
-						</div>
+					{#each row.blocks as block (block.item.id)}
+						{#if block.item.kind === 'visit'}
+							{@const visit = block.item}
+							<div
+								class="day__block day__pickup"
+								class:day__pickup--dragging={drag?.visit.id === visit.id}
+								class:day__pickup--pending={movingVisitId === visit.id}
+								style:left={percent(block.start)}
+								style:width={percent(block.end - block.start)}
+								style:top="{block.column * LANE_HEIGHT}px"
+								style:height="{LANE_HEIGHT}px"
+								onclickcapture={afterDrag}
+							>
+								<VisitCard
+									{visit}
+									density={cardDensityForWidth(((block.end - block.start) / 60) * HOUR_WIDTH)}
+									{today}
+									{employeesById}
+									showAssignment={false}
+									selected={visit.id === selectedItemId}
+									{onselect}
+									onpickup={(event) => beginMove(event, visit, rowIndex, block)}
+								/>
+								{#if canDragVisit(visit, canSchedule)}
+									<!-- The trailing edge, for changing how long the work should take. Reschedule is
+									     the keyboard path to the same change, so this is decoration to a reader. -->
+									<span
+										class="day__resize"
+										aria-hidden="true"
+										onpointerdown={(event) => beginResize(event, visit, rowIndex, block)}
+									></span>
+								{/if}
+							</div>
+						{:else}
+							<!-- An assessment shares the time axis but is Request-owned: no pickup, no resize, and
+							     its click opens the Request. -->
+							<div
+								class="day__block"
+								style:left={percent(block.start)}
+								style:width={percent(block.end - block.start)}
+								style:top="{block.column * LANE_HEIGHT}px"
+								style:height="{LANE_HEIGHT}px"
+							>
+								<AssessmentCard
+									assessment={block.item}
+									density={cardDensityForWidth(((block.end - block.start) / 60) * HOUR_WIDTH)}
+									{today}
+									{employeesById}
+									showAssignment={false}
+									selected={block.item.id === selectedItemId}
+									onselect={onselectassessment}
+								/>
+							</div>
+						{/if}
 					{/each}
 
 					{#if ghost && ghost.rowIndex === rowIndex}

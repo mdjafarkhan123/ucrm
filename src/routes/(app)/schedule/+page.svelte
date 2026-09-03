@@ -15,6 +15,7 @@
 	import ScheduleMonth from '$lib/components/schedule/ScheduleMonth.svelte';
 	import ScheduleWeek from '$lib/components/schedule/ScheduleWeek.svelte';
 	import VisitPreview from '$lib/components/schedule/VisitPreview.svelte';
+	import AssessmentPreview from '$lib/components/schedule/AssessmentPreview.svelte';
 	import MoveConfirm from '$lib/components/schedule/MoveConfirm.svelte';
 	import ScheduleUnscheduledDrawer from '$lib/components/schedule/ScheduleUnscheduledDrawer.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
@@ -54,6 +55,7 @@
 		type UpdateVisitInput
 	} from '$lib/jobs/api';
 	import { stageJobCreateSeed, type JobCreateSeed } from '$lib/jobs/createDraft';
+	import { stageAssessmentSeed, type AssessmentCreateSeed } from '$lib/requests/assessmentSeed';
 	import ScheduleJobCreate from '$lib/components/schedule/ScheduleJobCreate.svelte';
 	import {
 		fetchScheduleContext,
@@ -73,6 +75,12 @@
 		type ScheduleFilters
 	} from '$lib/schedule/filters';
 	import { filterVisits, indexEmployees } from '$lib/schedule/grouping';
+	import {
+		assessmentToItem,
+		visitToItem,
+		type AssessmentItem,
+		type VisitItem
+	} from '$lib/schedule/items';
 	import { readScheduleZoom, writeScheduleZoom, type ScheduleZoom } from '$lib/schedule/density';
 	import { calendarDay, clockMinutesInZone } from '$lib/time/calendar-day';
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
@@ -195,8 +203,30 @@
 
 	const employeesById = $derived(indexEmployees(teamQuery.data ?? []));
 
-	const visibleVisits = $derived(
-		filters && today ? filterVisits(windowQuery.data?.visits ?? [], filters, today) : []
+	// The calendar draws visits and Request-owned assessments together (Version 1.1). Assessments arrive as raw
+	// instants, so they are converted to the organization's own day and clock here, where the timezone is known,
+	// then flow through the same filter, grouping and layout the visits do. Nothing merges until the timezone
+	// has arrived, because an assessment placed with the browser's clock would land on the wrong day.
+	const scheduleItems = $derived.by(() => {
+		const zone = timezone;
+		const win = activeWindow;
+		const visits = (windowQuery.data?.visits ?? []).map(visitToItem);
+		if (!zone || !win) return visits;
+		// The window read over-fetches assessments a day past each edge, because their instants are bounded in
+		// UTC while the window is a range of org-timezone days. Now that each one has been placed on its real
+		// day, the ones that fell outside the window are trimmed -- otherwise the Day board, which buckets by
+		// employee rather than by day, would draw a neighbouring day's assessment in today's rows.
+		const assessments = (windowQuery.data?.assessments ?? [])
+			.map((assessment) => assessmentToItem(assessment, zone))
+			.filter(
+				(item) =>
+					item.visit_date !== null && item.visit_date >= win.from && item.visit_date <= win.to
+			);
+		return [...visits, ...assessments];
+	});
+
+	const visibleItems = $derived(
+		filters && today ? filterVisits(scheduleItems, filters, today) : []
 	);
 
 	const hasFilter = $derived(
@@ -206,27 +236,47 @@
 	// Everything in this window matched a filter away. The calendar itself stays on screen -- an empty week
 	// with a note beats replacing the whole workspace with an empty state.
 	const filteredEmpty = $derived(
-		hasFilter && visibleVisits.length === 0 && (windowQuery.data?.visits.length ?? 0) > 0
+		hasFilter && visibleItems.length === 0 && scheduleItems.length > 0
 	);
 
 	// One preview for the whole calendar, pointed at whichever card is selected. The card is remembered by
 	// id rather than by value, so a background refetch updates what the preview says instead of freezing it.
+	// A visit and an assessment are different objects with different previews, so each has its own selection;
+	// only one is ever set, and the grids highlight whichever id is selected.
 	let selectedVisitId = $state<string | null>(null);
+	let selectedAssessmentId = $state<string | null>(null);
 	let previewAnchor = $state<HTMLElement | null>(null);
-	// The preview can be opened from a calendar card or from a backlog card, so it looks in both places.
+	// The visit preview can be opened from a calendar card or from a backlog card, so it looks in both places.
 	const selectedVisit = $derived(
-		visibleVisits.find((visit) => visit.id === selectedVisitId) ??
+		visibleItems.find(
+			(item): item is VisitItem => item.kind === 'visit' && item.id === selectedVisitId
+		) ??
 			unscheduledQuery.data?.visits.find((visit) => visit.id === selectedVisitId) ??
 			null
 	);
+	const selectedAssessment = $derived(
+		visibleItems.find(
+			(item): item is AssessmentItem =>
+				item.kind === 'assessment' && item.id === selectedAssessmentId
+		) ?? null
+	);
+	const selectedItemId = $derived(selectedVisitId ?? selectedAssessmentId);
 
 	function openPreview(visit: ScheduleVisit, element: HTMLElement) {
+		selectedAssessmentId = null;
 		selectedVisitId = visit.id;
+		previewAnchor = element;
+	}
+
+	function openAssessmentPreview(assessment: AssessmentItem, element: HTMLElement) {
+		selectedVisitId = null;
+		selectedAssessmentId = assessment.id;
 		previewAnchor = element;
 	}
 
 	function closePreview() {
 		selectedVisitId = null;
+		selectedAssessmentId = null;
 		previewAnchor = null;
 	}
 
@@ -784,6 +834,16 @@
 		void goto(resolve('/(app)/jobs/new'));
 	}
 
+	// Request: the empty-slot chooser's other type. Schedule owns no Request or Assessment truth, so it only
+	// stages the clicked slot and opens the Request-owned New Request page, where its on-site assessment reads
+	// the slot once and opens pre-booked. An existing Request still schedules its assessment from its own
+	// surface, never from here.
+	function openRequestCreate(seed: AssessmentCreateSeed) {
+		stageAssessmentSeed(seed);
+		closeCreate();
+		void goto(resolve('/(app)/requests/new'));
+	}
+
 	let applyTarget = $state<{
 		jobId: string;
 		visitId: string;
@@ -884,10 +944,11 @@
 	<div class="schedule-page">
 		<PageHeader title="Schedule" description="The work your team is committed to.">
 			{#snippet actions()}
-				<!-- The one primary create action for Version 1: it starts a Job, seeded with no date, so the
-				     first visit is scheduled from inside the form. Empty calendar space seeds a date instead. -->
+				<!-- The primary create action. In Version 1.1 it opens the same Job/Request chooser an empty
+				     slot does, seeded with no date, so the work is scheduled from inside the form. Empty
+				     calendar space seeds a date instead. -->
 				<Button variant="primary" disabled={!canCreate} onclick={() => openCreate(null)}>
-					New job
+					New
 				</Button>
 			{/snippet}
 		</PageHeader>
@@ -951,20 +1012,21 @@
 							<ScheduleWeek
 								bind:this={weekGrid}
 								window={activeWindow!}
-								visits={visibleVisits}
+								items={visibleItems}
 								today={today!}
 								nowMinutes={activeWindow!.from <= today! && today! <= activeWindow!.to
 									? nowMinutes
 									: null}
 								workingWeek={workingHours}
 								{employeesById}
-								{selectedVisitId}
+								{selectedItemId}
 								{canSchedule}
 								{canCreate}
 								{zoom}
 								movingVisitId={pending?.visit.id ?? null}
 								unscheduleZone={unscheduleDropZone}
 								onselect={openPreview}
+								onselectassessment={openAssessmentPreview}
 								onpropose={proposeChange}
 								oncreate={openCreate}
 								onunschedule={(visit) => askUnschedule(visit)}
@@ -973,20 +1035,21 @@
 							<ScheduleDay
 								bind:this={dayGrid}
 								day={activeWindow!.from}
-								visits={visibleVisits}
+								items={visibleItems}
 								team={teamQuery.data ?? []}
 								today={today!}
 								nowMinutes={activeWindow!.from === today ? nowMinutes : null}
 								workingWeek={workingHours}
 								employeeFilter={filters.employee}
 								{employeesById}
-								{selectedVisitId}
+								{selectedItemId}
 								{canSchedule}
 								{canCreate}
 								{zoom}
 								movingVisitId={pending?.visit.id ?? null}
 								unscheduleZone={unscheduleDropZone}
 								onselect={openPreview}
+								onselectassessment={openAssessmentPreview}
 								onpropose={proposeChange}
 								oneditassignment={(visit) => openReschedule(visit)}
 								oncreate={openCreate}
@@ -996,12 +1059,13 @@
 							<ScheduleMonth
 								window={activeWindow!}
 								anchorDate={filters.date}
-								visits={visibleVisits}
+								items={visibleItems}
 								today={today!}
 								{employeesById}
-								{selectedVisitId}
+								{selectedItemId}
 								{canCreate}
 								onselect={openPreview}
+								onselectassessment={openAssessmentPreview}
 								oncreate={openCreate}
 							/>
 						{/if}
@@ -1063,6 +1127,28 @@
 	</Popover>
 {/if}
 
+<!-- An assessment's own preview. It is Request-owned, so this only reads it and opens the Request; there is no
+     reschedule, complete or unschedule here. -->
+{#if selectedAssessment && today}
+	<Popover
+		open
+		anchor={previewAnchor}
+		title={selectedAssessment.client_name ??
+			selectedAssessment.client_company_name ??
+			'Client hidden'}
+		onClose={closePreview}
+	>
+		<AssessmentPreview
+			assessment={selectedAssessment}
+			{today}
+			dayLabel={selectedAssessment.visit_date
+				? formatCalendarDay(selectedAssessment.visit_date, dayHeadingFormat)
+				: 'Not scheduled'}
+			{employeesById}
+		/>
+	</Popover>
+{/if}
+
 <!-- A drag has landed. Nothing is written until this is saved, so the proposal, its consequences and its
      scope all sit in front of the person first. -->
 {#if pending && pendingChange}
@@ -1107,6 +1193,7 @@
 	error={createError}
 	onCreate={(seed) => void saveJobCreate(seed)}
 	onMoreOptions={openMoreOptions}
+	onCreateRequest={openRequestCreate}
 	onClose={closeCreate}
 />
 

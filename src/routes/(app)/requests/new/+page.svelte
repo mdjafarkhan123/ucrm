@@ -5,6 +5,7 @@
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import RequestForm from '$lib/components/requests/RequestForm.svelte';
 	import { fetchQuoteOverview, quoteCountsKey } from '$lib/quotes/api';
+	import { takeAssessmentSeed } from '$lib/requests/assessmentSeed';
 	import checkIcon from '@tabler/icons/outline/circle-check.svg?raw';
 
 	// The organization's money format, so the line items on this page write figures the same way the quote
@@ -14,6 +15,11 @@
 		queryFn: fetchQuoteOverview,
 		staleTime: 60_000
 	}));
+
+	// A slot may have been staged by Schedule's empty-slot chooser when the person picked Request. It is read
+	// once, here on the way in, so the on-site assessment opens booked onto that slot; a plain New Request
+	// reads nothing and opens with the empty visit card.
+	const seed = takeAssessmentSeed();
 
 	let savedMessage = $state('');
 	// Remounts the form for "Save & create another" so every field and attachment starts clean.
@@ -46,6 +52,7 @@
 		<RequestForm
 			currencyCode={overviewQuery.data?.currency_code ?? 'USD'}
 			locale={overviewQuery.data?.locale ?? 'en-US'}
+			seed={formKey === 0 ? seed : null}
 			onSaved={handleSaved}
 			onCancel={() => goto(resolve('/(app)/requests'))}
 		/>

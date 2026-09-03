@@ -1,5 +1,5 @@
 import { layoutTimedVisits, splitDayVisits, type TimedVisitBlock } from '$lib/schedule/layout';
-import type { ScheduleVisit } from '$lib/schedule/api';
+import type { ScheduleItem } from '$lib/schedule/items';
 import type { ScheduleEmployeeFilter } from '$lib/schedule/filters';
 import type { TeamMember } from '$lib/team/api';
 
@@ -21,7 +21,7 @@ export type DayRow = {
 	employee: TeamMember | null;
 	name: string;
 	/** Dated, no clock time. These sit in the row's own Anytime column, never on the time axis. */
-	anytime: ScheduleVisit[];
+	anytime: ScheduleItem[];
 	blocks: TimedVisitBlock[];
 	/** How many visits deep this row ever stacks. At least one, so an empty row still has a height. */
 	lanes: number;
@@ -36,20 +36,20 @@ export const UNASSIGNED_ROW_KEY = 'unassigned';
 const UNLISTED_NAME = 'Unlisted team member';
 
 export function buildDayRows(
-	visits: ScheduleVisit[],
+	items: ScheduleItem[],
 	team: TeamMember[],
 	employeeFilter: ScheduleEmployeeFilter
 ): DayRow[] {
-	const byRow = new Map<string, ScheduleVisit[]>();
-	const push = (key: string, visit: ScheduleVisit) => {
+	const byRow = new Map<string, ScheduleItem[]>();
+	const push = (key: string, item: ScheduleItem) => {
 		const bucket = byRow.get(key);
-		if (bucket) bucket.push(visit);
-		else byRow.set(key, [visit]);
+		if (bucket) bucket.push(item);
+		else byRow.set(key, [item]);
 	};
 
-	for (const visit of visits) {
-		if (visit.assignee_ids.length === 0) push(UNASSIGNED_ROW_KEY, visit);
-		else for (const id of visit.assignee_ids) push(id, visit);
+	for (const item of items) {
+		if (item.assignee_ids.length === 0) push(UNASSIGNED_ROW_KEY, item);
+		else for (const id of item.assignee_ids) push(id, item);
 	}
 
 	const teamById = new Map(team.map((member) => [member.id, member]));

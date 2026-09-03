@@ -18,6 +18,7 @@
 	} from '$lib/components/ui/date-time';
 	import { assignableTeamKey, fetchAssignableTeam, type TeamMember } from '$lib/team/api';
 	import type { AssessmentDraft, RequestAssessment } from '$lib/requests/api';
+	import type { AssessmentCreateSeed } from '$lib/requests/assessmentSeed';
 	import truckIcon from '@tabler/icons/outline/truck.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 
@@ -34,6 +35,7 @@
 		saving = false,
 		error = '',
 		draft = false,
+		seed = null,
 		onSave,
 		onRemove,
 		onComplete,
@@ -44,6 +46,9 @@
 		error?: string;
 		/** Hold the visit in memory for a page that has not created its request yet. */
 		draft?: boolean;
+		/** Draft mode only: a slot handed over from Schedule's empty-slot chooser. When it carries a date, the
+		 *  panel opens once already booked onto it, so the request is created with the visit the person clicked. */
+		seed?: AssessmentCreateSeed | null;
 		onSave?: (draft: AssessmentDraft) => void | Promise<void>;
 		onRemove?: () => void | Promise<void>;
 		onComplete?: (complete: boolean) => void | Promise<void>;
@@ -79,6 +84,29 @@
 	export function warm() {
 		panelOpened = true;
 	}
+
+	// A slot handed over from Schedule's empty-slot chooser. When it names a day, the panel opens once already
+	// booked onto that slot -- the same fields openPanel fills, but from the clicked day/clock rather than a
+	// stored assessment. A dateless slot (the calendar's header action) leaves the empty card in place so the
+	// person books the visit themselves. This runs a single time; after that the panel is theirs to edit.
+	let seededFromSlot = false;
+	$effect(() => {
+		if (!draft || seededFromSlot || !seed || seed.visit_date === null) return;
+		seededFromSlot = true;
+		panelOpened = true;
+		instructions = '';
+		assigneeIds = [];
+		scheduleLater = false;
+		anytime = seed.all_day;
+		when = {
+			date: calendarDateFromString(seed.visit_date),
+			startTime: timeFromString(seed.start_time),
+			endTime: timeFromString(seed.end_time)
+		};
+		editing = true;
+		fieldError = '';
+		onDraftChange?.(true);
+	});
 
 	function openPanel() {
 		panelOpened = true;

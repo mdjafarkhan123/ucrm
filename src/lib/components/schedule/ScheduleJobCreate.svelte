@@ -7,6 +7,7 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
+	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import ClientPicker from '$lib/components/work/ClientPicker.svelte';
 	import TeamPicker from '$lib/components/team/TeamPicker.svelte';
 	import {
@@ -19,13 +20,17 @@
 	} from '$lib/components/ui/date-time';
 	import { fetchClient, clientDetailKey, type ClientListItem } from '$lib/clients/api';
 	import type { JobCreateSeed, JobFirstVisitSeed } from '$lib/jobs/createDraft';
+	import type { AssessmentCreateSeed } from '$lib/requests/assessmentSeed';
 	import type { NewVisitDraft } from '$lib/schedule/drag';
 
-	// Booking a job from empty calendar space, the way Jobber starts one in place: a light form seeded with
-	// the day, time and any team the gesture proposed, so the common "client + one visit" job is a quick
-	// fill-in without leaving the calendar. Full job creation still lives in Jobs -- More Options hands this
-	// exact draft to the New Job page for line items and the rest. Save writes through the Jobs-owned create
-	// command; this form only shapes the draft and hands it back, so the page owns the write and its feedback.
+	// Booking work from empty calendar space, the way Jobber starts one in place. A Job/Request switch at the
+	// top follows Jobber's empty-slot work-type chooser: Job is the default and its light form -- seeded with
+	// the day, time and any team the gesture proposed -- makes the common "client + one visit" job a quick
+	// fill-in without leaving the calendar. Picking Request instead carries the same slot to the full New
+	// Request page, where its on-site assessment opens pre-booked; the Request and its assessment stay owned
+	// by Requests. Full job creation still lives in Jobs -- More Options hands this exact draft to the New Job
+	// page for line items and the rest. Save writes through the Jobs-owned create command; this form only
+	// shapes the draft and hands it back, so the page owns the write and its feedback.
 
 	let {
 		open,
@@ -35,10 +40,12 @@
 		error = '',
 		onCreate,
 		onMoreOptions,
+		onCreateRequest,
 		onClose
 	}: {
 		open: boolean;
-		/** The day and time the calendar gesture proposed. Null would mean no seed; every gesture supplies one. */
+		/** The day and time the calendar gesture proposed. Null means no slot -- the header action -- and the
+		 *  form opens on Schedule later. */
 		draft?: NewVisitDraft | null;
 		locale?: string;
 		saving?: boolean;
@@ -47,8 +54,19 @@
 		onCreate: (seed: JobCreateSeed) => void;
 		/** More Options: the same draft is carried to the full New Job page. */
 		onMoreOptions: (seed: JobCreateSeed) => void;
+		/** Request: the same slot is carried to the Request-owned New Request page. */
+		onCreateRequest: (seed: AssessmentCreateSeed) => void;
 		onClose: () => void;
 	} = $props();
+
+	// Which kind of work this slot becomes. Job is the default, exactly as Jobber's chooser opens; Request
+	// hands off to its own page rather than writing anything here.
+	type CreateType = 'job' | 'request';
+	let createType = $state<CreateType>('job');
+	const typeOptions = [
+		{ value: 'job', label: 'Job' },
+		{ value: 'request', label: 'Request' }
+	];
 
 	let title = $state('');
 	let clientId = $state('');
@@ -67,6 +85,7 @@
 	let wasOpen = false;
 	$effect(() => {
 		if (open && !wasOpen) {
+			createType = 'job';
 			title = '';
 			clientId = '';
 			selectedClient = null;
@@ -186,89 +205,164 @@
 		// No validation gate: the full form is exactly where a half-filled draft gets finished.
 		onMoreOptions(buildSeed());
 	}
+
+	// The slot to hand to the New Request page, in the calendar's own day/clock shape. It carries only the
+	// schedule the gesture proposed -- an Anytime or dateless slot drops the clock, matching Jobber's Anytime
+	// entry -- because the client, title and instructions all belong on the New Request page.
+	function buildAssessmentSeed(): AssessmentCreateSeed {
+		if (scheduleLater) {
+			return { visit_date: null, start_time: null, end_time: null, all_day: false };
+		}
+		const day = calendarDateToString(when.date) || null;
+		if (anytime) {
+			return { visit_date: day, start_time: null, end_time: null, all_day: true };
+		}
+		return {
+			visit_date: day,
+			start_time: timeToString(when.startTime) || null,
+			end_time: timeToString(when.endTime) || null,
+			all_day: false
+		};
+	}
+
+	function continueToRequest() {
+		onCreateRequest(buildAssessmentSeed());
+	}
+
+	// A short, human summary of the slot the Request will open onto, so the person can see what is carried
+	// across before they leave the calendar.
+	const slotSummary = $derived.by(() => {
+		if (scheduleLater) return 'No date yet — you can book the visit on the request.';
+		const day = calendarDateToString(when.date);
+		if (!day) return 'No date yet — you can book the visit on the request.';
+		const dayLabel = new Intl.DateTimeFormat(locale, {
+			weekday: 'short',
+			day: 'numeric',
+			month: 'short'
+		}).format(new Date(`${day}T00:00`));
+		if (anytime) return `${dayLabel}, anytime`;
+		const start = timeToString(when.startTime);
+		if (!start) return dayLabel;
+		const end = timeToString(when.endTime);
+		const clock = (time: string) =>
+			new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(
+				new Date(`${day}T${time}`)
+			);
+		return end ? `${dayLabel}, ${clock(start)} – ${clock(end)}` : `${dayLabel}, ${clock(start)}`;
+	});
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<Dialog {open} title="New job" {onClose}>
+<Dialog {open} title={createType === 'request' ? 'New request' : 'New job'} {onClose}>
 	<div class="job-create">
-		{#if error}<p class="job-create__alert" role="alert">{error}</p>{/if}
-		{#if fieldError}<p class="job-create__alert" role="alert">{fieldError}</p>{/if}
-
-		<Input
-			id="job-create-title"
-			label="Job title"
-			placeholder="What is this job?"
-			required
-			bind:value={title}
-			maxlength={160}
+		<SegmentedControl
+			value={createType}
+			options={typeOptions}
+			label="What are you booking?"
+			fullWidth
+			onchange={(value) => (createType = value as CreateType)}
 		/>
 
-		<div class="job-create__client">
-			<ClientPicker id="job-create-client" required bind:value={clientId} onSelect={chooseClient} />
-			{#if selectedClient && (selectedClient.additional_property_count > 0 || choosingProperty)}
-				{#if choosingProperty}
-					<Select
-						id="job-create-property"
-						bind:value={propertyId}
-						options={propertyOptions}
-						placeholder="Loading properties…"
-						label="Property"
-					/>
-				{:else}
-					<button
-						type="button"
-						class="job-create__change-property"
-						onclick={() => (choosingProperty = true)}
-					>
-						Change property
-					</button>
+		{#if createType === 'request'}
+			<!-- Request creation is a page of its own, so this tab only stages the slot and hands off. The
+			     Request and its on-site assessment are created and owned by Requests. -->
+			<div class="job-create__handoff">
+				<p class="job-create__handoff-lead">
+					A request opens the full New Request form, with the on-site visit booked onto this slot:
+				</p>
+				<p class="job-create__handoff-slot">{slotSummary}</p>
+				<p class="job-create__handoff-note">
+					You will add the client and what they are asking for there.
+				</p>
+			</div>
+			<div class="job-create__actions">
+				<Button onclick={continueToRequest}>Continue to new request</Button>
+			</div>
+		{:else}
+			{#if error}<p class="job-create__alert" role="alert">{error}</p>{/if}
+			{#if fieldError}<p class="job-create__alert" role="alert">{fieldError}</p>{/if}
+
+			<Input
+				id="job-create-title"
+				label="Job title"
+				placeholder="What is this job?"
+				required
+				bind:value={title}
+				maxlength={160}
+			/>
+
+			<div class="job-create__client">
+				<ClientPicker
+					id="job-create-client"
+					required
+					bind:value={clientId}
+					onSelect={chooseClient}
+				/>
+				{#if selectedClient && (selectedClient.additional_property_count > 0 || choosingProperty)}
+					{#if choosingProperty}
+						<Select
+							id="job-create-property"
+							bind:value={propertyId}
+							options={propertyOptions}
+							placeholder="Loading properties…"
+							label="Property"
+						/>
+					{:else}
+						<button
+							type="button"
+							class="job-create__change-property"
+							onclick={() => (choosingProperty = true)}
+						>
+							Change property
+						</button>
+					{/if}
 				{/if}
-			{/if}
-		</div>
+			</div>
 
-		<Checkbox
-			id="job-create-later"
-			label="Schedule later"
-			description="Book the job now and give its first visit a date when you know it."
-			bind:checked={scheduleLater}
-		/>
-
-		{#if !scheduleLater}
-			<DateTimePicker
-				id="job-create-when"
-				range
-				showTime={!anytime}
-				dateLabel="Day of the first visit"
-				timeLabel="Time"
-				{locale}
-				bind:value={when}
-			/>
 			<Checkbox
-				id="job-create-anytime"
-				label="Anytime"
-				description="Promise the day without promising an hour."
-				checked={anytime}
-				onchange={(checked) => {
-					anytime = checked;
-					if (checked) when = { ...when, startTime: undefined, endTime: undefined };
-				}}
+				id="job-create-later"
+				label="Schedule later"
+				description="Book the job now and give its first visit a date when you know it."
+				bind:checked={scheduleLater}
 			/>
+
+			{#if !scheduleLater}
+				<DateTimePicker
+					id="job-create-when"
+					range
+					showTime={!anytime}
+					dateLabel="Day of the first visit"
+					timeLabel="Time"
+					{locale}
+					bind:value={when}
+				/>
+				<Checkbox
+					id="job-create-anytime"
+					label="Anytime"
+					description="Promise the day without promising an hour."
+					checked={anytime}
+					onchange={(checked) => {
+						anytime = checked;
+						if (checked) when = { ...when, startTime: undefined, endTime: undefined };
+					}}
+				/>
+			{/if}
+
+			<Textarea
+				id="job-create-notes"
+				label="Notes for the first visit"
+				rows={3}
+				maxlength={2000}
+				bind:value={workNotes}
+			/>
+
+			<TeamPicker id="job-create-team" bind:value={assigneeIds} {open} />
+
+			<div class="job-create__actions">
+				<Button variant="tertiary" onclick={moreOptions} disabled={saving}>More options</Button>
+				<Button onclick={save} loading={saving}>Save job</Button>
+			</div>
 		{/if}
-
-		<Textarea
-			id="job-create-notes"
-			label="Notes for the first visit"
-			rows={3}
-			maxlength={2000}
-			bind:value={workNotes}
-		/>
-
-		<TeamPicker id="job-create-team" bind:value={assigneeIds} {open} />
-
-		<div class="job-create__actions">
-			<Button variant="tertiary" onclick={moreOptions} disabled={saving}>More options</Button>
-			<Button onclick={save} loading={saving}>Save job</Button>
-		</div>
 	</div>
 </Dialog>
 
@@ -321,6 +415,35 @@
 			justify-content: flex-end;
 			gap: var(--space-small);
 			margin-top: var(--space-small);
+		}
+
+		&__handoff {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-small);
+			padding: var(--space-base);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background--subtle);
+		}
+
+		&__handoff-lead {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__handoff-slot {
+			margin: 0;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-large);
+			font-weight: 600;
+		}
+
+		&__handoff-note {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
 		}
 	}
 </style>

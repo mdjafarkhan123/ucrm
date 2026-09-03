@@ -74,11 +74,42 @@ export type ScheduleVisit = {
 	property_postal_code: string | null;
 };
 
+// An on-site assessment placed on the calendar (Version 1.1). It is Request-owned: the calendar shows it and
+// opens its Request, but never edits its truth. Times arrive as raw UTC instants -- the calendar converts them
+// to the org-timezone day and clock the same way it works out Today -- because an assessment stores an instant,
+// not a plain date the way a visit does.
+export type ScheduleAssessment = {
+	id: string;
+	request_id: string;
+	/** UTC instant. Null never appears in a window read: an undated assessment is the Request's own backlog. */
+	starts_at: string | null;
+	ends_at: string | null;
+	/** Anytime: the day is promised, the hour is not. */
+	all_day: boolean;
+	completed_at: string | null;
+	instructions: string | null;
+	assignee_ids: string[];
+	/** The Request's title names the assessment. Null for a reader without requests access. */
+	request_title: string | null;
+	request_status: string | null;
+	client_id: string | null;
+	client_name: string | null;
+	client_company_name: string | null;
+	property_id: string | null;
+	property_label: string | null;
+	property_address_line1: string | null;
+	property_city: string | null;
+	property_state_region: string | null;
+	property_postal_code: string | null;
+};
+
 export type ScheduleWindowPage = {
 	from: string;
 	to: string;
 	visits: ScheduleVisit[];
-	/** The window holds more visits than one read returns. */
+	/** The window's on-site assessments, raw instants for the browser to place in the org timezone. */
+	assessments: ScheduleAssessment[];
+	/** The window holds more work than one read returns. */
 	truncated: boolean;
 	limit: number;
 };

@@ -1,10 +1,12 @@
 <script lang="ts">
 	import Popover from '$lib/components/ui/Popover.svelte';
 	import VisitCard from '$lib/components/schedule/VisitCard.svelte';
+	import AssessmentCard from '$lib/components/schedule/AssessmentCard.svelte';
 	import { bucketVisitsByDay, orderDayVisits } from '$lib/schedule/grouping';
 	import { formatCalendarDay } from '$lib/schedule/labels';
 	import { eachDayInWindow, type ScheduleWindow } from '$lib/schedule/filters';
 	import { draftAnytime, type NewVisitDraft } from '$lib/schedule/drag';
+	import type { AssessmentItem, ScheduleItem } from '$lib/schedule/items';
 	import type { ScheduleVisit } from '$lib/schedule/api';
 	import type { TeamMember } from '$lib/team/api';
 
@@ -19,26 +21,29 @@
 	let {
 		window: activeWindow,
 		anchorDate,
-		visits,
+		items,
 		today,
 		employeesById,
-		selectedVisitId,
+		selectedItemId,
 		canCreate = false,
 		onselect,
+		onselectassessment,
 		oncreate
 	}: {
 		window: ScheduleWindow;
 		/** The date the calendar is anchored to. It decides which month owns the grid, so the padding days
 		 * either side can be dimmed without being hidden. */
 		anchorDate: string;
-		/** Already filtered by the page. Every one of these is drawn or counted. */
-		visits: ScheduleVisit[];
+		/** Already filtered by the page. Every one of these is drawn or counted -- visits and assessments. */
+		items: ScheduleItem[];
 		today: string;
 		employeesById: Map<string, TeamMember>;
-		selectedVisitId: string | null;
+		selectedItemId: string | null;
 		/** Whether this reader may start a Job from empty space. A month cell only becomes clickable with it. */
 		canCreate?: boolean;
 		onselect: (visit: ScheduleVisit, element: HTMLElement) => void;
+		/** An assessment card was selected. The page opens its Request-owned preview. */
+		onselectassessment: (assessment: AssessmentItem, element: HTMLElement) => void;
 		/** A click on empty cell space books a date-only visit for that date -- the same date-only visit the
 		 *  Anytime lane creates. The page opens the create form; nothing is written until it is saved. */
 		oncreate?: (draft: NewVisitDraft) => void;
@@ -47,7 +52,7 @@
 	/** How many cards a date shows before it starts counting. */
 	const VISIBLE_PER_DATE = 3;
 
-	const byDay = $derived(bucketVisitsByDay(visits));
+	const byDay = $derived(bucketVisitsByDay(items));
 	const anchorMonth = $derived(anchorDate.slice(0, 7));
 
 	const cells = $derived(
@@ -85,7 +90,7 @@
 	// the way a month calendar normally moves from "everything on this date" to "this one visit".
 	let listDay = $state<string | null>(null);
 	let listAnchor = $state<HTMLElement | null>(null);
-	const listVisits = $derived(
+	const listItems = $derived(
 		listDay ? (cells.find((cell) => cell.day === listDay)?.ordered ?? []) : []
 	);
 
@@ -99,10 +104,17 @@
 		listAnchor = null;
 	}
 
-	function selectFromList(visit: ScheduleVisit) {
+	// Picking from the day's list closes it and hands the same anchor to whichever preview the item owns.
+	function selectVisitFromList(visit: ScheduleVisit) {
 		const anchor = listAnchor;
 		closeList();
 		if (anchor) onselect(visit, anchor);
+	}
+
+	function selectAssessmentFromList(assessment: AssessmentItem) {
+		const anchor = listAnchor;
+		closeList();
+		if (anchor) onselectassessment(assessment, anchor);
 	}
 
 	// A click on a cell's empty space books a date-only visit for that date. A click that landed on a card
@@ -151,16 +163,27 @@
 
 					{#if cell.shown.length > 0}
 						<ul class="month__items">
-							{#each cell.shown as visit (visit.id)}
+							{#each cell.shown as item (item.id)}
 								<li class="month__item">
-									<VisitCard
-										{visit}
-										density="micro"
-										{today}
-										{employeesById}
-										selected={visit.id === selectedVisitId}
-										{onselect}
-									/>
+									{#if item.kind === 'visit'}
+										<VisitCard
+											visit={item}
+											density="micro"
+											{today}
+											{employeesById}
+											selected={item.id === selectedItemId}
+											{onselect}
+										/>
+									{:else}
+										<AssessmentCard
+											assessment={item}
+											density="micro"
+											{today}
+											{employeesById}
+											selected={item.id === selectedItemId}
+											onselect={onselectassessment}
+										/>
+									{/if}
 								</li>
 							{/each}
 						</ul>
@@ -190,16 +213,27 @@
 		onClose={closeList}
 	>
 		<ul class="month-list">
-			{#each listVisits as visit (visit.id)}
+			{#each listItems as item (item.id)}
 				<li class="month-list__item">
-					<VisitCard
-						{visit}
-						density="compact"
-						{today}
-						{employeesById}
-						selected={visit.id === selectedVisitId}
-						onselect={selectFromList}
-					/>
+					{#if item.kind === 'visit'}
+						<VisitCard
+							visit={item}
+							density="compact"
+							{today}
+							{employeesById}
+							selected={item.id === selectedItemId}
+							onselect={selectVisitFromList}
+						/>
+					{:else}
+						<AssessmentCard
+							assessment={item}
+							density="compact"
+							{today}
+							{employeesById}
+							selected={item.id === selectedItemId}
+							onselect={selectAssessmentFromList}
+						/>
+					{/if}
 				</li>
 			{/each}
 		</ul>

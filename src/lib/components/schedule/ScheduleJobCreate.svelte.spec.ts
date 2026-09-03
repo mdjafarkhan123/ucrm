@@ -6,6 +6,7 @@ import { createQueryClient } from '$lib/query-client';
 import ScheduleJobCreate from './ScheduleJobCreate.svelte';
 import type { ClientListItem } from '$lib/clients/api';
 import type { JobCreateSeed } from '$lib/jobs/createDraft';
+import type { AssessmentCreateSeed } from '$lib/requests/assessmentSeed';
 import type { NewVisitDraft } from '$lib/schedule/drag';
 
 // The compact "new job" form Schedule opens from empty calendar space. It seeds the day and time from the
@@ -47,6 +48,7 @@ function renderForm(
 	props: { draft?: NewVisitDraft | null } = {},
 	onCreate = vi.fn(),
 	onMoreOptions = vi.fn(),
+	onCreateRequest = vi.fn(),
 	onClose = vi.fn()
 ) {
 	const queryClient = createQueryClient();
@@ -58,12 +60,13 @@ function renderForm(
 				draft: props.draft ?? timedDraft,
 				onCreate,
 				onMoreOptions,
+				onCreateRequest,
 				onClose
 			}
 		},
 		{ wrapper: QueryClientProvider, wrapperProps: { client: queryClient } }
 	);
-	return { onCreate, onMoreOptions, onClose };
+	return { onCreate, onMoreOptions, onCreateRequest, onClose };
 }
 
 const originalFetch = globalThis.fetch;
@@ -161,5 +164,46 @@ describe('ScheduleJobCreate', () => {
 		expect(seed.title).toBe('Fence repair');
 		expect(seed.first_visit?.visit_date).toBe('2026-09-10');
 		expect(onCreate).not.toHaveBeenCalled();
+	});
+
+	it('switches to the Request tab and hands the slot to the New Request page', async () => {
+		mockFetch();
+		const { onCreateRequest, onCreate } = renderForm();
+
+		await page.getByText('Request', { exact: true }).click();
+		// The Request tab is a hand-off, not a form: the job fields and its Save are gone.
+		await expect.element(page.getByRole('heading', { name: 'New request' })).toBeVisible();
+		await expect.element(page.getByRole('button', { name: 'Save job' })).not.toBeInTheDocument();
+
+		await page.getByRole('button', { name: 'Continue to new request' }).click();
+
+		await vi.waitFor(() => expect(onCreateRequest).toHaveBeenCalledTimes(1));
+		const seed = onCreateRequest.mock.calls[0][0] as AssessmentCreateSeed;
+		expect(seed).toEqual({
+			visit_date: '2026-09-10',
+			start_time: '09:00',
+			end_time: '10:00',
+			all_day: false
+		});
+		expect(onCreate).not.toHaveBeenCalled();
+	});
+
+	it('carries an Anytime slot to the Request page without a clock time', async () => {
+		mockFetch();
+		const { onCreateRequest } = renderForm({
+			draft: { visit_date: '2026-09-12', start_time: null, end_time: null, all_day: true }
+		});
+
+		await page.getByText('Request', { exact: true }).click();
+		await page.getByRole('button', { name: 'Continue to new request' }).click();
+
+		await vi.waitFor(() => expect(onCreateRequest).toHaveBeenCalledTimes(1));
+		const seed = onCreateRequest.mock.calls[0][0] as AssessmentCreateSeed;
+		expect(seed).toEqual({
+			visit_date: '2026-09-12',
+			start_time: null,
+			end_time: null,
+			all_day: true
+		});
 	});
 });

@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { filterVisits, orderDayVisits } from '$lib/schedule/grouping';
 import type { ScheduleVisit } from '$lib/schedule/api';
+import type { VisitItem } from '$lib/schedule/items';
 
 const TODAY = '2026-09-02';
 const ANA = '11111111-1111-1111-1111-111111111111';
 const BEN = '22222222-2222-2222-2222-222222222222';
 
-function visit(overrides: Partial<ScheduleVisit> & { id: string }): ScheduleVisit {
+function visit(overrides: Partial<ScheduleVisit> & { id: string }): VisitItem {
 	return {
+		kind: 'visit',
 		job_id: 'job-1',
 		visit_date: TODAY,
 		start_time: '09:00:00',
