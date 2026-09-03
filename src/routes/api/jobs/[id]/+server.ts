@@ -30,6 +30,8 @@ export const GET: RequestHandler = async (event) => {
 	const jobId = event.params.id;
 	const canEdit = hasPermission(check.access, 'jobs.edit');
 	const canSchedule = hasPermission(check.access, 'jobs.schedule');
+	const canComplete = hasPermission(check.access, 'jobs.complete');
+	const canClose = hasPermission(check.access, 'jobs.close');
 	const canSeePrice = hasPermission(check.access, 'jobs.view_price');
 	const canSeeCost = hasPermission(check.access, 'jobs.view_cost');
 	// Saving a one-off tax rate into the organization's shared list is a settings right, not a jobs one. The
@@ -286,6 +288,8 @@ export const GET: RequestHandler = async (event) => {
 			locale: formatting.ok ? formatting.formatting.locale : 'en-US',
 			can_edit: canEdit,
 			can_schedule: canSchedule,
+			can_complete: canComplete,
+			can_close: canClose,
 			can_see_price: canSeePrice,
 			can_see_cost: canSeeCost,
 			can_manage_taxes: canManageTaxes

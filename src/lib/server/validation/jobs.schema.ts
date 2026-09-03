@@ -510,6 +510,16 @@ export const updateJobDetailsSchema = z.object({
 
 export type UpdateJobDetailsInput = z.infer<typeof updateJobDetailsSchema>;
 
+// --- Closing and reopening a job (Part 13a) ---------------------------------------------------------------
+
+// Both close_job and reopen_job need only the revision the browser last read, the same shape delete_job_visit
+// already uses for a single-row transition.
+export const jobLifecycleSchema = z.object({
+	expected_revision: z.number().int().min(0)
+});
+
+export type JobLifecycleInput = z.infer<typeof jobLifecycleSchema>;
+
 // --- Pricing and billing a job that already exists (Part 11a) ---------------------------------------------
 
 // The whole scope in one save, the same all-or-nothing replacement a quote's lines use. Positions come from

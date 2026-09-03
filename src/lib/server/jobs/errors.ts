@@ -93,3 +93,23 @@ export function reminderError(error: DatabaseError) {
 		return validationError({ form: error.message ?? 'That reminder cannot be saved as entered.' });
 	return databaseError();
 }
+
+// `close_job` and `reopen_job` refuse in the same shapes. A member without jobs.close, or a job in another
+// organization, comes back as insufficient_privilege — a stranger cannot tell which. A missing job is a
+// not-found. A stale revision is a conflict the browser resolves by reloading. Incomplete visits still open
+// on a close attempt is a rule, surfaced as a form error carrying the sentence the database already wrote.
+export function jobLifecycleError(error: DatabaseError) {
+	if (error.code === '42501') return notFound('That job could not be found.');
+	if (error.code === 'P0404') return notFound(error.message ?? 'That job could not be found.');
+	if (error.code === 'P0409')
+		return json(
+			{
+				error: error.message ?? 'Someone else changed this job. Reload to see the latest.',
+				reason: 'stale'
+			},
+			{ status: 409, headers: NO_STORE_HEADERS }
+		);
+	if (error.code === '23514')
+		return validationError({ form: error.message ?? 'That job cannot be closed as requested.' });
+	return databaseError();
+}

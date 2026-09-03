@@ -336,6 +336,8 @@ export type JobDetail = {
 	locale: string;
 	can_edit: boolean;
 	can_schedule: boolean;
+	can_complete: boolean;
+	can_close: boolean;
 	can_see_price: boolean;
 	can_see_cost: boolean;
 	can_manage_taxes: boolean;
@@ -662,4 +664,66 @@ export async function applyVisitToFuture(
 		response,
 		'Those settings could not be applied to the later visits.'
 	);
+}
+
+// --- Completing visits and the job lifecycle (Part 13a) -----------------------------------------------------
+
+export type CompleteJobVisitResult = {
+	applied: boolean;
+	already_completed: boolean;
+	revision: number;
+	// True only when this call just completed the last incomplete visit of a one-off job — the signal to open
+	// the Finish job / Add a return visit / Keep open dialog. Never true on an idempotent replay.
+	final_visit: boolean;
+};
+
+export async function completeJobVisit(
+	jobId: string,
+	visitId: string
+): Promise<CompleteJobVisitResult> {
+	const response = await fetch(`/api/jobs/${jobId}/visits/${visitId}/complete`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' }
+	});
+	return readOrThrow<CompleteJobVisitResult>(response, 'That visit could not be marked complete.');
+}
+
+export type UncompleteJobVisitResult = {
+	applied: boolean;
+	already_incomplete: boolean;
+	revision: number;
+};
+
+export async function uncompleteJobVisit(
+	jobId: string,
+	visitId: string
+): Promise<UncompleteJobVisitResult> {
+	const response = await fetch(`/api/jobs/${jobId}/visits/${visitId}/uncomplete`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' }
+	});
+	return readOrThrow<UncompleteJobVisitResult>(response, 'That visit could not be reopened.');
+}
+
+export type CloseJobResult = { applied: boolean; already_closed: boolean; revision: number };
+
+// "Finish job", from the final-visit dialog. Refuses if the job somehow still has an incomplete visit.
+export async function closeJob(jobId: string, expectedRevision: number): Promise<CloseJobResult> {
+	const response = await fetch(`/api/jobs/${jobId}/close`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ expected_revision: expectedRevision })
+	});
+	return readOrThrow<CloseJobResult>(response, 'That job could not be closed.');
+}
+
+export type ReopenJobResult = { applied: boolean; already_active: boolean; revision: number };
+
+export async function reopenJob(jobId: string, expectedRevision: number): Promise<ReopenJobResult> {
+	const response = await fetch(`/api/jobs/${jobId}/reopen`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ expected_revision: expectedRevision })
+	});
+	return readOrThrow<ReopenJobResult>(response, 'That job could not be reopened.');
 }

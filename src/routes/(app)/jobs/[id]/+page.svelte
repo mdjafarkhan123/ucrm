@@ -35,6 +35,7 @@
 		fetchJobEvents,
 		jobEventsKey,
 		jobCountsKey,
+		reopenJob,
 		type JobWriteError,
 		type JobScopeLineInput
 	} from '$lib/jobs/api';
@@ -272,6 +273,24 @@
 		]);
 	}
 
+	// The other direction of "Finish job" (Part 13a): a closed job is not a dead end. Removed visits do not
+	// regenerate — scheduling more is its own explicit action, once the job is active again.
+	let reopening = $state(false);
+
+	async function reopen() {
+		if (!saved || reopening) return;
+		reopening = true;
+		try {
+			await reopenJob(jobId, saved.job.revision);
+			await refreshJob();
+			toast.success('Job reopened');
+		} catch (caught) {
+			toast.error((caught as JobWriteError).message ?? 'That job could not be reopened.');
+		} finally {
+			reopening = false;
+		}
+	}
+
 	async function save() {
 		if (!saved || saving || !isDirty) return;
 		saving = true;
@@ -351,6 +370,13 @@
 						/>
 					{/snippet}
 					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
+					{#snippet badges()}
+						{#if saved.job.status === 'closed' && saved.can_close}
+							<Button size="small" variant="tertiary" onclick={() => void reopen()} loading={reopening}>
+								Reopen job
+							</Button>
+						{/if}
+					{/snippet}
 				</WorkRecordHeader>
 
 				<ProductsAndServicesBlock
@@ -373,6 +399,9 @@
 					jobTitle={title}
 					locale={saved.locale}
 					canSchedule={saved.can_schedule}
+					canComplete={saved.can_complete}
+					canClose={saved.can_close}
+					jobStatus={saved.job.status}
 					jobType={saved.job.job_type}
 					isAsNeeded={saved.job.is_as_needed}
 					recurrence={saved.recurrence}

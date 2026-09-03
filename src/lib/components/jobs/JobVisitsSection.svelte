@@ -10,18 +10,22 @@
 	import JobVisitDialog from '$lib/components/jobs/JobVisitDialog.svelte';
 	import EditAllVisitsDialog from '$lib/components/jobs/EditAllVisitsDialog.svelte';
 	import ApplyToFutureDialog from '$lib/components/jobs/ApplyToFutureDialog.svelte';
+	import FinalVisitDialog from '$lib/components/jobs/FinalVisitDialog.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 	import type { JobType } from '$lib/jobs/statuses';
 	import {
 		addJobVisits,
 		applyVisitToFuture,
+		closeJob,
+		completeJobVisit,
 		deleteJobVisit,
 		jobCountsKey,
 		jobDetailKey,
 		jobEventsKey,
 		moveJobVisits,
 		rescheduleJobVisits,
+		uncompleteJobVisit,
 		updateJobVisit,
 		type AddVisitInput,
 		type JobRecurrenceInput,
@@ -34,6 +38,8 @@
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import copyIcon from '@tabler/icons/outline/copy.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
+	import circleXIcon from '@tabler/icons/outline/circle-x.svg?raw';
 
 	// The persisted visits manager for a job's detail page — the same "child record with its own save" shape
 	// as a client's property: every action here writes for itself and reports its own toast, so the page's
@@ -44,6 +50,9 @@
 		jobTitle = '',
 		locale = 'en-US',
 		canSchedule,
+		canComplete,
+		canClose,
+		jobStatus,
 		jobType,
 		isAsNeeded,
 		recurrence,
@@ -54,6 +63,9 @@
 		jobTitle?: string;
 		locale?: string;
 		canSchedule: boolean;
+		canComplete: boolean;
+		canClose: boolean;
+		jobStatus: 'active' | 'closed';
 		jobType: JobType;
 		isAsNeeded: boolean;
 		// The job's repeat rule, present only for a recurring scheduled job. "Edit all visits" opens on it.
@@ -64,6 +76,12 @@
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
+
+	// A closed job's visits are frozen (complete_job_visit and update_job_visit both refuse on the database
+	// side); scheduling and completing only ever show as available on an active job, so a click never has to
+	// discover that the hard way.
+	const scheduleAllowed = $derived(canSchedule && jobStatus === 'active');
+	const completeAllowed = $derived(canComplete && jobStatus === 'active');
 
 	// Only a recurring job that is not as-needed has a repeating schedule to edit or to carry forward. A
 	// one-off's visits are each their own, and an as-needed job is dispatched when work comes up.
@@ -146,6 +164,8 @@
 
 	function handleCreate(result: { dates: string[]; scheduleLater: boolean }) {
 		creating = false;
+		const source = createSource;
+		createSource = 'manual';
 		const items: AddVisitInput[] = result.scheduleLater
 			? [
 					{
@@ -156,7 +176,7 @@
 						title: null,
 						instructions: null,
 						assignee_ids: [],
-						source: 'manual'
+						source
 					}
 				]
 			: result.dates.map((date) => ({
@@ -167,7 +187,7 @@
 					title: null,
 					instructions: null,
 					assignee_ids: [],
-					source: 'manual'
+					source
 				}));
 		void runAdd(items, items.length === 1 ? 'Visit added' : `${items.length} visits added`);
 	}
@@ -419,11 +439,28 @@
 			onSelect: () => void;
 			destructive?: boolean;
 		}[] = [];
-		if (!visit.completed_at) {
+		if (completeAllowed) {
+			items.push(
+				visit.completed_at
+					? {
+							label: 'Mark Incomplete',
+							icon: circleXIcon,
+							onSelect: () => void handleUncomplete(visit)
+						}
+					: {
+							label: 'Mark Complete',
+							icon: circleCheckIcon,
+							onSelect: () => void handleComplete(visit)
+						}
+			);
+		}
+		if (!visit.completed_at && scheduleAllowed) {
 			items.push({ label: 'Edit', icon: pencilIcon, onSelect: () => (editVisit = visit) });
 		}
-		items.push({ label: 'Duplicate', icon: copyIcon, onSelect: () => duplicateVisit(visit) });
-		if (!visit.completed_at) {
+		if (scheduleAllowed) {
+			items.push({ label: 'Duplicate', icon: copyIcon, onSelect: () => duplicateVisit(visit) });
+		}
+		if (!visit.completed_at && scheduleAllowed) {
 			items.push({
 				label: 'Delete',
 				icon: trashIcon,
@@ -433,12 +470,61 @@
 		}
 		return items;
 	}
+
+	// --- Complete / uncomplete a visit ------------------------------------------------------------------------
+
+	let finalVisitOpen = $state(false);
+	let closingFinal = $state(false);
+	// "Add a return visit" from the final-visit dialog opens the same create-visits flow, tagged as a return
+	// trip rather than an ordinary manual add so the history reads truthfully.
+	let createSource = $state<'manual' | 'return'>('manual');
+
+	async function handleComplete(visit: JobVisit) {
+		try {
+			const result = await completeJobVisit(jobId, visit.id);
+			await refreshAll();
+			toast.success('Visit marked complete');
+			if (result.final_visit) finalVisitOpen = true;
+		} catch (caught) {
+			toast.error((caught as JobWriteError).message ?? 'That visit could not be marked complete.');
+		}
+	}
+
+	async function handleUncomplete(visit: JobVisit) {
+		try {
+			await uncompleteJobVisit(jobId, visit.id);
+			await refreshAll();
+			toast.success('Visit marked incomplete');
+		} catch (caught) {
+			toast.error((caught as JobWriteError).message ?? 'That visit could not be reopened.');
+		}
+	}
+
+	async function finishJob() {
+		closingFinal = true;
+		try {
+			await closeJob(jobId, jobRevision);
+			finalVisitOpen = false;
+			await refreshAll();
+			toast.success('Job finished');
+		} catch (caught) {
+			toast.error((caught as JobWriteError).message ?? 'That job could not be closed.');
+		} finally {
+			closingFinal = false;
+		}
+	}
+
+	function openReturnVisitFromFinal() {
+		finalVisitOpen = false;
+		createSource = 'return';
+		creating = true;
+	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <SectionBlock title="Scheduled visits" icon={calendarIcon} level={2}>
 	{#snippet actions()}
-		{#if canSchedule}
+		{#if scheduleAllowed}
 			{#if isRecurringScheduled}
 				<Button size="small" variant="tertiary" onclick={() => (editingAll = true)}>
 					Edit all visits
@@ -456,18 +542,18 @@
 		<EmptyState
 			icon={calendarIcon}
 			title="No visits yet"
-			description={canSchedule
+			description={scheduleAllowed
 				? 'Add the days your team will be on site. You can pick several at once.'
 				: 'This job has no visits scheduled.'}
 		>
 			{#snippet action()}
-				{#if canSchedule}
+				{#if scheduleAllowed}
 					<Button variant="secondary" onclick={() => (creating = true)}>Add visits</Button>
 				{/if}
 			{/snippet}
 		</EmptyState>
 	{:else}
-		{#if canSchedule && selectedIds.size > 0}
+		{#if scheduleAllowed && selectedIds.size > 0}
 			<div class="job-visits-section__bulk">
 				<span class="job-visits-section__bulk-count">
 					{selectedIds.size}
@@ -490,7 +576,7 @@
 		<ul class="job-visits-section__list">
 			{#each visits as visit (visit.id)}
 				<li class="job-visits-section__item" onpointerenter={warmTeam} onfocusin={warmTeam}>
-					{#if canSchedule && canSelect(visit)}
+					{#if scheduleAllowed && canSelect(visit)}
 						<input
 							type="checkbox"
 							class="job-visits-section__checkbox"
@@ -525,7 +611,7 @@
 						{/if}
 					</div>
 
-					{#if canSchedule}
+					{#if scheduleAllowed || completeAllowed}
 						<DropdownMenu items={rowMenuItems(visit)} triggerLabel="Actions for this visit" />
 					{/if}
 				</li>
@@ -534,7 +620,23 @@
 	{/if}
 </SectionBlock>
 
-<CreateVisitsDialog open={creating} onClose={() => (creating = false)} onCreate={handleCreate} />
+<CreateVisitsDialog
+	open={creating}
+	onClose={() => {
+		creating = false;
+		createSource = 'manual';
+	}}
+	onCreate={handleCreate}
+/>
+
+<FinalVisitDialog
+	open={finalVisitOpen}
+	{canClose}
+	closing={closingFinal}
+	onFinish={() => void finishJob()}
+	onAddReturnVisit={openReturnVisitFromFinal}
+	onKeepOpen={() => (finalVisitOpen = false)}
+/>
 
 <JobVisitDialog
 	open={editVisit !== null}

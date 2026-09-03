@@ -9149,6 +9149,14 @@ export type Database = {
         Args: { target_quote_id: string }
         Returns: Json
       }
+      close_job: {
+        Args: {
+          expected_revision: number
+          target_job_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       close_ownership_transfer: {
         Args: { actor_user_id: string; target_transfer_id: string }
         Returns: {
@@ -9170,6 +9178,14 @@ export type Database = {
       }
       communication_email_suppression_removal_request_json: {
         Args: { p_request_id: string }
+        Returns: Json
+      }
+      complete_job_visit: {
+        Args: {
+          target_job_id: string
+          target_organization_id: string
+          target_visit_id: string
+        }
         Returns: Json
       }
       confirm_onboarding_application_payment: {
@@ -11264,6 +11280,14 @@ export type Database = {
         }
         Returns: Json
       }
+      reopen_job: {
+        Args: {
+          expected_revision: number
+          target_job_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       replace_job_line_items: {
         Args: {
           expected_revision: number
@@ -12077,6 +12101,14 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      uncomplete_job_visit: {
+        Args: {
+          target_job_id: string
+          target_organization_id: string
+          target_visit_id: string
+        }
+        Returns: Json
       }
       update_catalog_item: {
         Args: {
