@@ -6479,6 +6479,7 @@ export type Database = {
           country: string
           created_at: string
           deleted_at: string | null
+          geocode_status: string
           id: string
           is_billing_address: boolean
           is_primary: boolean
@@ -6501,6 +6502,7 @@ export type Database = {
           country?: string
           created_at?: string
           deleted_at?: string | null
+          geocode_status?: string
           id?: string
           is_billing_address?: boolean
           is_primary?: boolean
@@ -6523,6 +6525,7 @@ export type Database = {
           country?: string
           created_at?: string
           deleted_at?: string | null
+          geocode_status?: string
           id?: string
           is_billing_address?: boolean
           is_primary?: boolean
