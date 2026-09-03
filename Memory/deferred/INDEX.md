@@ -28,6 +28,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [A customer file re-resolves the whole quote document](a-customer-file-re-resolves-the-whole-quote-document.md) |
 | P2 | [App-wide RLS helpers run once per returned row](app-wide-rls-helpers-run-once-per-returned-row.md) |
 | P2 | [Board presentation and formatting are read behind a settings permission](board-presentation-and-formatting-are-read-behind-a-settings-permission.md) |
+| P2 | [Job Visits card — completed-by name and off-series marker need Jobs backend](job-visit-card-backend-fields.md) |
 | P2 | [Client detail page still uses the superseded staging-dialog edit shape](client-detail-page-still-uses-the-superseded-staging-dialog-edit-shape.md) |
 | P2 | [Client duplicate detection, merge, archive, restore, and audit history](client-duplicate-detection-merge-archive-restore-and-audit-history.md) |
 | P2 | [Every entitlement-gated route re-reads the whole access model](every-entitlement-gated-route-re-reads-the-whole-access-model.md) |
