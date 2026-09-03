@@ -6,6 +6,8 @@
 - Branch `schedule-5b-visits-card`. Working tree clean at checkpoint time.
 - Now on **Part 7 — contextual Map + manual Anytime routing** (V1.2). Behavior fully specified in
   docs/schedule-behavior-contract.md ("Contextual Map and route behavior" ~418-467, V1.2 ~147-162).
+  7a-1 route-order+directions (`bef17be`), 7a-2 geocoding boundary+mock (`19ced68`), 7a-3 geocode-status
+  schema+trigger (`09645f8`) shipped.
 - **Provider decided 2026-09-03: managed Mapbox** behind a narrow provider boundary — Permanent geocoding
   with STORED property coordinates, managed tiles + route-line rendering, external Google/Apple navigation.
   No self-hosting until cost justifies it; re-verify pricing/terms before purchase. Recorded in the contract
@@ -19,28 +21,31 @@
 
 ## Data facts (verified in code)
 
-- `properties` ALREADY has `latitude`/`longitude` numeric(9,6) + a pair-consistency check (migration
-  20260816103906). No geocode STATUS column yet, no populate path. Window read (api.ts ScheduleVisit/
-  ScheduleAssessment) carries address fields but NOT coords.
+- `properties`: `latitude`/`longitude` numeric(9,6) + pair check (20260816103906); now `geocode_status`
+  text `pending|succeeded|failed` NOT NULL default `pending`, maintained by trigger
+  `properties_mark_for_geocoding` (07a-3). All 8 existing rows are `pending` = the backfill queue. Window read
+  (api.ts ScheduleVisit/ScheduleAssessment) carries address fields but NOT coords yet.
 - Route stops = Visits + Assessments only; Events are whole-team, not routeable. Only **Anytime Visits**
-  are draggable; fixed-time items + ALL Assessments are locked chronological anchors (assessment order is
-  Request-owned/read-only). Contract "Contextual Map and route behavior" ~418-450.
-- Server domain code: `src/lib/server/<domain>/`; pure schedule logic + co-located `.spec.ts`:
-  `src/lib/schedule/`; env access `src/lib/server/env.ts`. Provider boundary → `src/lib/server/geocoding/`.
+  are draggable; fixed-time items + ALL Assessments are locked chronological anchors (Request-owned order).
+- Server domain code `src/lib/server/<domain>/`; pure schedule logic + `.spec.ts` `src/lib/schedule/`; env
+  `src/lib/server/env.ts`. Geocoding boundary `src/lib/server/geocoding/` (`geocoder.ts` interface +
+  `GeocodingProviderError(retryable)` + `geocodeQuery`; `mock-geocoder.ts` `createMockGeocoder(fixtures)`).
 
 ## Next action
 
-Build 7a incrementally (mock-first). (1) pure `src/lib/schedule/route-order.ts` + `directions.ts` with specs
-**DONE** — 29 specs green, types clean, not yet committed. Next: (2) provider boundary interface + mock geocoder
-in `src/lib/server/geocoding/`; (3) provisional geocode-status schema + on-save path; (4) stop-list UI + Map
-workspace shell + failure states. Load `svelte`+`design` before any .svelte; `supabase-postgres-best-practices`
-before the migration; `performance-review` design branch before the backfill path. Part 8 (closure) needs 2-7.
-
-7a-1 built (pure logic, no provider): `route-order.ts` (routeStops/isAnchor/defaultRouteOrder/enforceAnchorOrder/
-applySavedOrder/moveAnytimeStop/serializeRouteOrder — invariant: anchor subsequence always chronological;
-only Anytime Visits movable; Events excluded) and `directions.ts` (single + whole-route Google/Apple deep-links,
-coords-over-address, no-destination + too-many-stops states; caps `MAX_ROUTE_STOPS` google 10 / apple 4, not
-contractual). Anytime Assessments sink below timed anchors, stable by id.
+**7a-4 — background geocoding worker.** Jafar chose Jobber-style async (save returns instantly at `pending`;
+a background job fills coords). Build a worker that claims `pending` properties, calls the **injected**
+`Geocoder` (mock now, Mapbox in 7b), and writes coords + `succeeded`/`failed`; on `GeocodingProviderError`
+leave the row `pending` to retry (never mark `failed`). Reuse the existing worker pattern (secret-gated
+endpoint + claim/drain, cf. communications email-outbox worker; add a `*_WORKER_SECRET` to
+`src/lib/server/env.ts`). Add a **partial index** on `properties … where geocode_status='pending'` for the claim.
+- **Constraint (verified):** `properties_set_updated_at` fires on ANY update, and
+  `properties_organization_contact_idx` orders by `updated_at desc` — so a naive worker coords-write churns
+  every client's property-list order during backfill. The worker's write must NOT bump `updated_at`.
+- **Gates:** `performance-review` design branch BEFORE building (backfill of all properties + per-property
+  provider calls is scale-sensitive); `supabase-postgres-best-practices` for the index/claim SQL.
+Then **7a-5** (was step 4): stop-list UI + Map workspace shell + failure states — load `svelte`+`design`.
+Part 8 (closure) needs 7a-1..7a-5 + 7b.
 
 ## Boundary
 
