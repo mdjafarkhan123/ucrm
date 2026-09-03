@@ -14,6 +14,7 @@
 	// The id in the client path is a placeholder — only the page's code is fetched, never its data.
 	const warmRoutes = [
 		resolve('/(app)/dashboard'),
+		resolve('/(app)/schedule'),
 		resolve('/(app)/clients'),
 		resolve('/(app)/clients/new'),
 		resolve('/(app)/clients/[id]', { id: 'warm' }),

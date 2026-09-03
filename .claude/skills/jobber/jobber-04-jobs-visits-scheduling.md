@@ -477,7 +477,7 @@ sort by `ScheduledItemsSortKey`). Visit sort: `VisitsSortableFields` = `CREATED_
 
 ---
 
-## 9.5 Observed live — Schedule and visit surfaces (2026-09-01)
+## 9.5 Observed live — Schedule and visit surfaces (2026-09-01 and 2026-09-02)
 
 The following was verified in a signed-in Jobber account. The screenshot set is preserved under
 `Design/schedule-visits-research/jobber/`.
@@ -504,10 +504,35 @@ The following was verified in a signed-in Jobber account. The screenshot set is 
   visits in the inspected account.
 - Editing the only visit of a one-visit job warns that the change updates the original job. This keeps the
   Job/Visit relationship visible at the moment a potentially surprising edit is made.
+- Selecting an empty timed slot opens one inline creation surface with Job, Request, Task, and Event; Job is
+  selected by default. Selecting an empty Anytime cell opens the same chooser with Anytime already selected.
+  Dragging across an empty range did not open a draft in the inspected Week view.
+- Event remains lightweight and Schedule-only. Its compact and expanded drafts contain title/details,
+  start/end, Anytime, recurrence, and Save; the inspected forms exposed no client, address, individual
+  assignment, privacy, or audience controls. No Event was saved, so existing-item edit/delete semantics were
+  not tested.
+- Choosing Request from a timed slot opens New Request with an On-site assessment already present, the clicked
+  one-hour range prefilled, and the only team member assigned. The Anytime path begins as a date-only inline
+  Assessment but its More Options handoff unexpectedly opened the full form with Schedule later and Anytime
+  both checked and date/time disabled; treat that as an observed Jobber inconsistency, not a model rule.
+- The inspected account has one employee and one unassigned Anytime Visit. Day view placed it under
+  Unassigned and Map showed the property pin, so real multi-assignee placement and mixed-route behavior could
+  not be observed without creating or changing records.
+- Current official New Schedule guidance documents the desktop backlog specifically as **Unscheduled visits**;
+  mobile separately documents Unscheduled Assessments on Map. Do not infer that the desktop Visit drawer
+  contains Assessments without further evidence.
+- Manual ordering inside the Unscheduled Visit drawer persists automatically across sessions. This is a
+  backlog-order behavior, distinct from New Schedule's Anytime-Visit route optimization, which commits through
+  the explicit **Optimize** action.
+- Jobber's empty-space creation is click-based in both live and official evidence. Empty-range drag-create is
+  not Jobber behavior; UCRM's use of it is an explicitly approved Autopilot adaptation.
 
 Primary captures: `01-week-schedule.png`, `02-visit-popover.png`, `04-find-a-time.png`,
 `05-month-schedule.png`, `06-day-schedule.png`, `07-day-map.png`, `09-schedule-settings.png`,
-`12-job-visits-table.png`, `13-add-single-visit.png`, and `14-add-multiple-visits.png`.
+`12-job-visits-table.png`, `13-add-single-visit.png`, `14-add-multiple-visits.png`,
+`16-empty-slot-event-inline.png`, `17-event-full-form-recurrence.png`,
+`18-request-assessment-timed-form.png`, `20-anytime-request-full-form.png`,
+`21-day-map-unassigned-anytime.png`, and `22-empty-range-drag-create.png`.
 
 ---
 

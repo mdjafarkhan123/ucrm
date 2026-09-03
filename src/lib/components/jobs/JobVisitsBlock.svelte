@@ -14,10 +14,12 @@
 		calendarDateFromString,
 		calendarDateToString,
 		emptyDateTimePickerValue,
+		timeFromString,
 		timeToString,
 		type DateTimePickerValue
 	} from '$lib/components/ui/date-time';
 	import { assignableTeamKey, fetchAssignableTeam, type TeamMember } from '$lib/team/api';
+	import type { JobFirstVisitSeed } from '$lib/jobs/createDraft';
 	import type { JobVisitInput, JobRecurrenceInput } from '$lib/jobs/api';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
@@ -31,11 +33,15 @@
 	let {
 		jobTitle = '',
 		locale = 'en-US',
+		seed = null,
 		onCountChange,
 		onKindChange
 	}: {
 		jobTitle?: string;
 		locale?: string;
+		/** The first visit's schedule and team, when a Schedule calendar gesture opened this form. Null means
+		 * the plain New Job page, which starts one visit dated today. */
+		seed?: JobFirstVisitSeed | null;
 		onCountChange?: (count: number) => void;
 		/** The page hides the one-off billing reminder when the job repeats; billing for repeating work is
 		 * its own decision and belongs to the billing part, not to this checkbox. */
@@ -59,8 +65,26 @@
 	}
 
 	// Jobber opens a New Job with one visit already there, dated today and open for editing, so the common
-	// one-visit job is a straight fill-in rather than a "create a visit first" step.
-	let drafts = $state<VisitDraft[]>([{ ...newDraft(todayString()), expanded: true }]);
+	// one-visit job is a straight fill-in rather than a "create a visit first" step. When Schedule handed a
+	// draft over, that first visit starts from the calendar gesture -- its day, time and team -- instead.
+	function seededDraft(): VisitDraft {
+		if (!seed) return { ...newDraft(todayString()), expanded: true };
+		return {
+			key: crypto.randomUUID(),
+			when: {
+				date: calendarDateFromString(seed.visit_date),
+				startTime: timeFromString(seed.start_time),
+				endTime: timeFromString(seed.end_time)
+			},
+			scheduleLater: seed.visit_date === null,
+			anytime: seed.visit_date !== null && seed.all_day,
+			title: '',
+			instructions: seed.instructions ?? '',
+			assigneeIds: [...seed.assignee_ids],
+			expanded: true
+		};
+	}
+	let drafts = $state<VisitDraft[]>([seededDraft()]);
 	let creating = $state(false);
 	let fieldError = $state('');
 

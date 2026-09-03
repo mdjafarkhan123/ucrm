@@ -13,6 +13,7 @@
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { fetchClient, clientDetailKey, type ClientListItem } from '$lib/clients/api';
+	import type { JobCreateSeed } from '$lib/jobs/createDraft';
 	import {
 		createJob,
 		jobCountsKey,
@@ -31,12 +32,16 @@
 		onSaved,
 		onCancel,
 		currencyCode = 'USD',
-		locale = 'en-US'
+		locale = 'en-US',
+		seed = null
 	}: {
 		onSaved: (job: { id: string; number: number }) => void;
 		onCancel: () => void;
 		currencyCode?: string;
 		locale?: string;
+		/** A draft handed over from Schedule's compact create form via More Options: the client, property,
+		 * title and first visit the person already chose, so the full form opens filled instead of blank. */
+		seed?: JobCreateSeed | null;
 	} = $props();
 
 	const queryClient = useQueryClient();
@@ -57,8 +62,20 @@
 		};
 	}
 
-	let form = $state<FormState>(untrack(() => blankForm()));
-	let selectedClient = $state<ClientListItem | null>(null);
+	// When Schedule hands a draft over, the form opens with the client, property and title already chosen; the
+	// baseline below stays blank so that seeded work reads as dirty and Save is live from the first paint.
+	function initialForm(): FormState {
+		if (!seed) return blankForm();
+		return {
+			title: seed.title,
+			client_id: seed.client?.id ?? '',
+			property_id: seed.property_id,
+			invoice_on_close: true
+		};
+	}
+
+	let form = $state<FormState>(untrack(() => initialForm()));
+	let selectedClient = $state<ClientListItem | null>(untrack(() => seed?.client ?? null));
 	let choosingProperty = $state(false);
 	let lines = $state<RequestPricingLineInput[]>([]);
 	let subtotalMinor = $state(0);
@@ -79,7 +96,7 @@
 	function snapshot(values: FormState) {
 		return JSON.stringify(values);
 	}
-	let baseline = $state(untrack(() => snapshot(form)));
+	let baseline = $state(untrack(() => snapshot(blankForm())));
 	const isDirty = $derived(snapshot(form) !== baseline || lines.length > 0 || visitCount > 0);
 
 	// Most clients have one property, so this only asks which when there is a real choice to make.
@@ -234,6 +251,7 @@
 						id="job-client"
 						bind:value={form.client_id}
 						required
+						initialClient={seed?.client ?? null}
 						invalid={Boolean(fieldErrors.client_id)}
 						errorMessage={fieldErrors.client_id ?? ''}
 						onSelect={chooseClient}
@@ -286,6 +304,7 @@
 				bind:this={visitsBlock}
 				jobTitle={form.title}
 				{locale}
+				seed={seed?.first_visit ?? null}
 				onCountChange={(count) => (visitCount = count)}
 				onKindChange={(kind) => (scheduleKind = kind)}
 			/>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { Combobox } from 'bits-ui';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { fetchClients, type ClientListItem } from '$lib/clients/api';
@@ -18,6 +19,7 @@
 		errorMessage = '',
 		required = false,
 		placeholder = 'Search by name or company',
+		initialClient = null,
 		onSelect
 	}: {
 		value?: string;
@@ -26,13 +28,16 @@
 		errorMessage?: string;
 		required?: boolean;
 		placeholder?: string;
+		/** A client already chosen elsewhere -- a draft handed in from another form -- so the field shows their
+		 * name at rest instead of looking empty while `value` carries the id. */
+		initialClient?: ClientListItem | null;
 		onSelect?: (client: ClientListItem | null) => void;
 	} = $props();
 
-	let query = $state('');
+	let query = $state(untrack(() => initialClient?.display_name ?? ''));
 	let open = $state(false);
 	let debouncedQuery = $state('');
-	let selected = $state<ClientListItem | null>(null);
+	let selected = $state<ClientListItem | null>(untrack(() => initialClient));
 
 	$effect(() => {
 		const term = query.trim();

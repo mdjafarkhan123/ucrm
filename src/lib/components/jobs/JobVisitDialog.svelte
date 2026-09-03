@@ -20,7 +20,9 @@
 
 	// Editing one existing visit, the way a client's property is edited: its own modal with its own Save, kept
 	// out of the page's title/instructions draft. The dialog only shapes the visit and hands the result back;
-	// the section that owns the list does the write, so saving state and server errors come in as props.
+	// the section that owns the list does the write, so saving state and server errors come in as props. It is
+	// used from the Job page and from Schedule's move/reschedule path; creating a job and its first visit is a
+	// separate flow that lives in ScheduleJobCreate and the New Job page.
 	let {
 		open,
 		visit,
@@ -55,7 +57,7 @@
 	let fieldError = $state('');
 
 	// Re-read the visit into the form each time the dialog opens, never while it is open, so typing is never
-	// overwritten by a background refetch of the same visit.
+	// overwritten by a background refetch or a re-render.
 	let wasOpen = false;
 	$effect(() => {
 		if (open && !wasOpen && visit) {

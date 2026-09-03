@@ -11678,6 +11678,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      schedule_calendar_context: {
+        Args: { target_organization_id: string }
+        Returns: Json
+      }
       set_automation_recipe_lifecycle_state: {
         Args: {
           p_action: string

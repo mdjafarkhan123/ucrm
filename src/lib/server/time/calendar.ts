@@ -4,15 +4,11 @@
 // where today starts and ends, and the Pipeline's created-date filters ask where a week, a month or a
 // year starts and ends. The rule lives here once, and the database is only ever handed instants.
 
-// en-CA gives YYYY-MM-DD, so two calendar days can be compared as plain strings.
-export function calendarDay(value: Date, timezone: string) {
-	return new Intl.DateTimeFormat('en-CA', {
-		timeZone: timezone,
-		year: 'numeric',
-		month: '2-digit',
-		day: '2-digit'
-	}).format(value);
-}
+// The day rule itself is shared with the browser, because the Schedule needs the same answer. This
+// module keeps the instant arithmetic that only the server does.
+import { calendarDay } from '$lib/time/calendar-day';
+
+export { calendarDay };
 
 const OFFSET_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
 	year: 'numeric',

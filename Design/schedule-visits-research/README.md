@@ -1,6 +1,6 @@
 # Schedule / Visits research evidence
 
-Research captured from 2026-09-01 for the Schedule / Visits campaign. Competitor and local evidence is
+Research captured from 2026-09-01 through 2026-09-02 for the Schedule / Visits campaign. Competitor and local evidence is
 indexed below. Jafar approved Schedule as a separate campaign, then required the no-guesswork research and
 coverage audit to finish before any UCRM simplification. The behavior, UI/UX, release matrix and deferrals in
 [`docs/schedule-behavior-contract.md`](../../docs/schedule-behavior-contract.md) are provisional hypotheses;
@@ -8,7 +8,7 @@ they will be evaluated only after the evidence register is complete.
 
 ## Jobber — verified live
 
-The complete signed-in walkthrough is in [`jobber/`](./jobber/):
+The signed-in walkthrough to date is in [`jobber/`](./jobber/):
 
 1. `01-week-schedule.png` — week grid, Anytime lane, filters, unscheduled count, map entry point
 2. `02-visit-popover.png` — compact visit actions and assignment
@@ -25,6 +25,61 @@ The complete signed-in walkthrough is in [`jobber/`](./jobber/):
 13. `13-add-single-visit.png` — single visit creation
 14. `14-add-multiple-visits.png` — multi-visit creation
 15. `15-add-multiple-date-picker.png` — range/custom-date selection
+16. `16-empty-slot-event-inline.png` — empty timed-slot chooser with the lightweight Event draft
+17. `17-event-full-form-recurrence.png` — expanded Event form and recurrence selector
+18. `18-request-assessment-timed-form.png` — Request creation with an embedded timed on-site Assessment
+19. `19-anytime-request-inline.png` — Request selected from an Anytime cell before opening the full form
+20. `20-anytime-request-full-form.png` — full Request form after the Anytime handoff inconsistency
+21. `21-day-map-unassigned-anytime.png` — one unassigned Anytime Visit beside the contextual Day Map
+22. `22-empty-range-drag-create.png` — unchanged Week view after a safe empty-range drag attempt
+23. `23-month-cell-eight-items.png` — one month date holding eight items after a temporary write test
+
+Month cell density, observed live on 2026-09-02 through a temporary write test that Jafar authorized. Eight
+Events were created on one date and all eight were deleted afterwards; the account returned to its prior
+state:
+
+- **Jobber's month cell has no `+ N more`.** The week row grows taller to fit its busiest date and the month
+  grid scrolls. Eight items on one date were all drawn, with no cap, truncation, or overflow control.
+- Items inside a cell follow the documented order: Anytime first, then timed by start time.
+- An Anytime item draws its title alone. A timed item draws its start time before the title. A Visit's title
+  is `Client - Job title`.
+- The count chip beside the date counts Visits only; Events are not counted.
+- Selecting empty space inside a month cell opens the same Job/Request/Task/Event chooser with the date
+  prefilled and **Anytime already checked**, so a month click creates an Anytime item by default.
+- Selecting an item opens a compact popover carrying title, type, start and `Edit` / `Details`. Delete lives
+  behind Details → More Actions and confirms before it removes the record.
+
+Observed live on 2026-09-02 without saving or mutating records:
+
+- Selecting an empty timed slot opens one inline chooser with **Job, Request, Task, and Event**; Job is the
+  default. Selecting a blank Anytime cell opens the same chooser with **Anytime** already checked.
+- Event is a lightweight Schedule item. Its compact draft contains title, details, date/time, Anytime,
+  availability, More Options, and Save. The expanded **New Event** modal contains only title, description,
+  start/end dates and times, Anytime, and recurrence. No client, address, individual assignment, privacy, or
+  audience control appeared in either inspected Event draft.
+- The Event recurrence selector offered Never, Daily, Weekly on the selected weekday, Monthly on the selected
+  day number, and Custom schedule. No Event was saved, so existing-Event popover actions and series edit/delete
+  consequences remain unavailable in this account under the no-mutation boundary.
+- Selecting **Request** from a timed slot opens a full New Request page with **On-site assessment** already
+  included. The clicked one-hour time range is prefilled, the account's only team member is preassigned, and
+  Schedule later and Anytime are initially off.
+- Selecting **Request** from an Anytime cell shows an inline date-only Assessment draft. Its **More Options**
+  handoff then opened the full Request form with both Schedule later and Anytime checked and all date/time
+  fields disabled. This is a directly observed inconsistency in the inspected Jobber flow, not a recommended
+  behavior.
+- A deliberate drag across an empty two-hour range completed without opening a chooser or draft. In this
+  inspected Week view, empty-space creation was click-based; drag is used for existing scheduled items rather
+  than for creating a new range.
+- The demo contains one team member and one unassigned Anytime Visit. Day view placed the Visit in the
+  Unassigned row and showed zero appointments for the only employee; Map showed its property pin. A real
+  multi-assignee card or mixed fixed-time/Anytime route cannot be observed here without writing test data.
+
+## Jobber — official primary-source follow-up
+
+- [`official/jobber-events-assessments-followup.md`](./official/jobber-events-assessments-followup.md) —
+  lightweight Event behavior, Request-owned Assessments, scheduling states, and empty-slot creation
+- [`official/jobber-dispatch-permissions-followup.md`](./official/jobber-dispatch-permissions-followup.md) —
+  multi-assignment, New/Legacy routing behavior, save boundaries, and Schedule permissions
 
 ## Autopilot CRM — verified live after fresh login
 
@@ -96,7 +151,35 @@ separate from genuinely completed work.
 
 ## Evidence boundary
 
-The Jobber and Autopilot findings above are direct live observations. The ContractorOs findings are direct
-local source review. Autopilot's existing-item drag result and multi-stop route behavior remain unknown because
-testing them would either mutate live data or require route-populated demo data that the inspected map did not
-return.
+The Jobber and Autopilot findings above are direct live observations; the two official follow-ups are
+first-party Jobber research. The ContractorOs findings are direct local source review. No Jobber records were
+created or changed. Existing-Event lifecycle actions, true multi-assignee placement/reassignment, Assessment
+placement in the Unscheduled drawer or New Schedule optimizer, and mixed fixed-time/Anytime route write
+behavior remain unavailable in the inspected account because establishing those states would require a live
+write. Autopilot's existing-item drag result and multi-stop route behavior remain unknown for the same reason.
+
+## Part 1a coverage audit — closed 2026-09-02
+
+The audit reconciled all five checkpoint clusters against the saved live captures and current first-party
+Jobber sources. Every requested branch is now either verified or explicitly unavailable:
+
+1. **Event:** create fields, whole-team assignment, absence of an observed privacy control, recurrence entry,
+   and passed/completed visual lifecycle are verified. Exact edit form, manual-complete action, More Actions,
+   delete behavior, private/audience controls, and recurring-series mutation semantics remain unavailable.
+2. **Assessment:** Request ownership, timed/Anytime/Unscheduled states, assignment, completion and mobile Map
+   inclusion are verified. Jobber documents the desktop Unscheduled drawer as Visits; Assessment appearance
+   in any other desktop backlog surface and eligibility in the New Schedule optimizer remain unavailable.
+3. **Creation gesture:** Jobber is verified as click-to-create with Job, Request, Task and Event choices.
+   Empty-range drag did nothing in the safe live test and is not documented officially. UCRM's empty-range
+   drag-create is an explicitly approved adaptation from Autopilot, not a Jobber behavior claim.
+4. **Multi-assignee Visit:** the assignee set, avatars, route lines, edit/bulk controls and future-Visit scope
+   are verified. Exact duplicate/spanning lane placement and the set mutation caused by dragging a shared
+   Visit remain unavailable without live writes.
+5. **Map/order/save:** New Schedule Map scope, Anytime-Visit-only optimization, endpoint controls and the
+   explicit Optimize action are verified. Unscheduled Visit manual ordering auto-persists. Mixed fixed-time/
+   Anytime route-line ordering, shared-Visit per-assignee positions and arbitrary post-optimization ordering
+   remain unavailable. Legacy-only save behavior is not projected onto New Schedule.
+
+Permissions are covered by official evidence. No required screen, state, branch, or workflow remains
+unlabeled, so Part 1a is complete. This audit makes no UCRM simplification, release, card, or deferral choice;
+Part 1b has not begun.

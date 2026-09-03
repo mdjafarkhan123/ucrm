@@ -141,9 +141,10 @@ This note records facts and explicit evidence gaps only.
 - Legacy Help Center text says drag ordering immediately updates the route line, but does not name a Save or
   Confirm action for that reorder or say exactly when it is persisted server-side. Therefore immediate visual
   update is verified; the persistence/write boundary is unavailable.
-- The Legacy master-route article documents manual insertion/reordering and an Optimize control, but the
-  reviewed text does not identify a separate Save action or persistence timing for manual edits.
-  [How to Route](https://help.getjobber.com/en/articles/how-to-route/)
+- **Superseded by the 2026-09-02 follow-up:** a second official article verifies that Legacy master-route
+  insertions/removals remain pending until an explicit **Save** finalizes the overwrite. Legacy *daily* Map
+  reordering still lacks a documented persistence boundary.
+  [Route Optimization Through the Settings Menu](https://help.getjobber.com/en/articles/route-optimization-through-the-settings-menu/)
 
 ## Schedule permissions: assigned-only versus full-team access
 

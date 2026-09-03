@@ -5,7 +5,13 @@
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import JobForm from '$lib/components/jobs/JobForm.svelte';
 	import { fetchJobOverview, jobCountsKey } from '$lib/jobs/api';
+	import { takeJobCreateSeed } from '$lib/jobs/createDraft';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+
+	// A draft may have been staged by Schedule's compact create form when the person pressed More Options.
+	// It is read once, here on the way in, so this page opens filled; a later plain visit reads nothing and
+	// opens blank.
+	const seed = takeJobCreateSeed();
 
 	// The organization's money format, so the line editor and the Job total card write figures the same way
 	// the Jobs list does. Coming from that list it is already cached, so nothing waits on it.
@@ -29,6 +35,7 @@
 
 <PageContainer variant="fill">
 	<JobForm
+		{seed}
 		currencyCode={overviewQuery.data?.currency_code ?? 'USD'}
 		locale={overviewQuery.data?.locale ?? 'en-US'}
 		onSaved={handleSaved}

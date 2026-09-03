@@ -32,7 +32,7 @@
 			label: 'Overview',
 			items: [
 				{ label: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
-				{ label: 'Schedule', href: '/schedule', icon: 'calendar', unavailable: true }
+				{ label: 'Schedule', href: '/schedule', icon: 'calendar' }
 			]
 		},
 		{

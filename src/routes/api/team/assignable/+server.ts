@@ -18,12 +18,16 @@ export const GET: RequestHandler = async (event) => {
 	const supabase = event.locals.supabase;
 	const { data: members, error } = await supabase
 		.from('organization_members')
-		.select('user_id')
+		.select('user_id, schedule_color')
 		.eq('organization_id', auth.organization.id)
 		.limit(MAX_MEMBERS);
 	if (error) return databaseError();
 
 	const ids = (members ?? []).map((member) => member.user_id);
+	// The calendar colour is the member's own, not the profile's, so it comes off the membership row.
+	const colorById = new Map(
+		(members ?? []).map((member) => [member.user_id, member.schedule_color])
+	);
 	if (ids.length === 0) return json({ members: [] }, { headers: PRIVATE_READ_HEADERS });
 
 	// RLS on profiles only returns people who share an organization with the caller, so this cannot reach
@@ -39,7 +43,8 @@ export const GET: RequestHandler = async (event) => {
 		.map((id) => ({
 			id,
 			full_name: byId.get(id)?.full_name ?? null,
-			avatar_url: byId.get(id)?.avatar_url ?? null
+			avatar_url: byId.get(id)?.avatar_url ?? null,
+			schedule_color: colorById.get(id) ?? null
 		}))
 		.sort((a, b) => (a.full_name ?? '').localeCompare(b.full_name ?? ''));
 

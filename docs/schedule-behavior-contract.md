@@ -1,8 +1,8 @@
 # Schedule, Visits, and Dispatch behavior contract
 
-Status: **Research in progress. Jafar approved a separate Schedule campaign on 2026-09-02, but every UCRM
-behavior, UI, release and simplification proposal remains provisional until the verified-research pass is
-complete.**
+Status: **Final behavior contract approved by Jafar on 2026-09-02 after Part 1a research and Part 1b
+synthesis. This approval authorizes Part 2 planning; it does not by itself authorize application, schema,
+permission, provider or infrastructure changes.**
 
 Owner: Schedule campaign
 
@@ -11,16 +11,9 @@ Owner: Schedule campaign
 Schedule is the contractor's desktop dispatch desk: see operational commitments, place unscheduled work,
 assign the right people, recognize conflicts, and understand the day's route without leaving the calendar.
 
-This is a working hypothesis document, not the final behavior contract. Remaining Jobber branches listed in
-the Schedule checkpoint must be verified without mutation first. Approval of the separate campaign
-authorizes research and planning only. It does not approve the proposed UCRM behavior or authorize
-application code, schema, permission, API, provider, or infrastructure changes.
-
-Use proven Jobber and mature field-service behavior by default. During evidence collection, record what the
-reference product does without adapting it to UCRM or deciding whether it is too complex. Only after the
-research coverage audit closes may the evidence be compared with UCRM's ownership model and smallest useful
-contractor workflow. At that later stage, do not ask Jafar to re-decide proven interactions unless there is a
-real conflict or simplification choice; preserve the user outcome and make every removed capability explicit.
+This contract is the approved product boundary for Schedule planning. Proven Jobber and mature field-service
+behavior supplies the default interaction model; the explicit adaptations, omissions and deferrals below are
+UCRM decisions rather than claims about Jobber.
 
 Authoritative evidence is indexed in
 [Design/schedule-visits-research/README.md](../Design/schedule-visits-research/README.md). Jobber supplies
@@ -43,11 +36,11 @@ The campaign must pass these stages in order:
 
 ## Evidence and open-verification register
 
-Do not treat every sentence in this working contract as a claim about Jobber. The plan has three kinds of
+Do not treat every sentence in this contract as a claim about Jobber. It has three kinds of
 statements:
 
 - **Verified precedent:** observed directly in Jobber/Autopilot or confirmed by an official primary source.
-- **Provisional UCRM proposal:** a hypothesis awaiting the completed research and simplification stages.
+- **Approved UCRM decision:** behavior selected after comparing the evidence with UCRM's ownership model.
 - **Open verification:** a Jobber branch that has not yet been safely observed and cannot guide
   implementation until it is verified or explicitly labeled unavailable.
 
@@ -61,20 +54,39 @@ Verified so far:
 - Jobber has no separate Event navigation/workflow in the inspected account; Event lives inside Schedule.
 - Assessment remains Request-owned rather than becoming a generic Event.
 
-Open verification before the Part 1a coverage audit can close:
+Part 1a coverage audit closed after the 2026-09-02 live and official reconciliation:
 
-1. Jobber Event popover/create/edit fields, assignment, privacy masking, recurrence and lifecycle behavior.
-2. Assessment creation or scheduling from Schedule, its Unscheduled/Anytime behavior, and Map position.
-3. Empty-slot click/drag behavior when multiple writable scheduled-item types are available.
-4. Multi-assignee Visit rendering and reassignment from employee-oriented Day.
-5. Mixed fixed-time/Anytime Map ordering, manual route controls and when a route-order change writes.
-6. Any permission differences between seeing the full team Schedule and only assigned work.
+1. **Event — verified where observable; remaining branches explicitly unavailable.** Live and official evidence now
+   covers its Schedule-only boundary, compact/expanded create fields, whole-team visibility, recurrence
+   selector and time-passed lifecycle. The inspected drafts exposed no privacy or individual-audience control.
+   Existing-Event popover actions and recurring edit/delete consequences require an Event record and were not
+   exercised under the no-mutation boundary.
+2. **Assessment — verified where observable; remaining branches explicitly unavailable.** Live evidence confirms
+   Schedule's Request choice opens a Request-owned Assessment, including timed and Anytime entry paths and
+   team preassignment. Official evidence covers Scheduled, Anytime, Unscheduled and completion states.
+   Unscheduled-drawer and New Schedule Map/optimizer placement cannot be observed in this account without
+   creating an Assessment. The inspected Anytime-to-full-form inconsistency is recorded in the evidence index.
+3. **Empty slot — verified.** Click exposes Job, Request, Task and Event and defaults to Job. Anytime click
+   exposes the same chooser with Anytime selected. A safe empty-range drag produced no draft or chooser in the
+   inspected Week view; creation here is click-based.
+4. **Multi-assignee Visit — model and controls verified; live placement explicitly unavailable.** Official
+   evidence confirms a set of assignees, multiple avatars, multiple route lines and edit/bulk reassignment.
+   The demo has one employee and no shared Visit, so exact Day-lane duplication and shared-Visit drag semantics
+   cannot be observed without writing test data.
+5. **Map and routing — documented boundary verified; mixed live route explicitly unavailable.** Current
+   optimization is for Anytime Visits, exposes first/last endpoint controls, writes through Optimize, and is
+   admin-only. Legacy master-route changes have an explicit Save boundary; Legacy daily reordering does not
+   document its persistence boundary. The demo has only one unassigned Anytime Visit, so mixed fixed/Anytime
+   route presentation and New Schedule endpoint-drag persistence cannot be observed safely.
+6. **Permissions — verified officially.** Jobber separates view-own, view/complete-own, edit-own,
+   edit-everyone and edit/delete-everyone Schedule authority; team Schedule visibility and route optimization
+   have additional gates.
 
-The Version 1 release split, adaptive card system, explicit Save Move, Visit-first delivery, bounded conflict
-warnings and deferred advanced Map scope are provisional UCRM proposals. They are not represented as Jobber
-observations and must not be finalized or simplified while factual research remains open. If competitor
-evidence is genuinely unavailable, that fact must be recorded before the coverage audit can close. No
-implementation begins until the later synthesis is approved by Jafar.
+The evidence wording and source contradictions are reconciled, and every remaining unavailable branch is
+named rather than converted into a Jobber claim. Part 1a closed on 2026-09-02. Part 1b then approved the
+release split, adaptive cards, explicit-save moves, Visit-first delivery, advisory conflict warnings,
+lightweight non-recurring Events and bounded Map scope. Unknown competitor branches remain unknown; they do
+not silently become UCRM requirements.
 
 ## Product ownership
 
@@ -87,9 +99,9 @@ operates those records; it never creates a second Visit model.
 | Visit identity, recurrence, assignment, timing and completion | Jobs | Present and invoke Jobs-owned Visit actions |
 | Assessment identity and outcome | Requests | Present and invoke Request-owned Assessment actions |
 | Event identity and scheduling | Schedule | Create and manage lightweight Events inside Schedule |
-| Task identity and completion | Tasks | Present and invoke Task-owned actions |
-| Quote reminder | Quotes/Automation | Display and open its owner; never copy it |
-| Invoice reminder | Jobs/Invoices | Display and open its owner; never copy it |
+| General Task identity and completion | Future Tasks owner | Deferred until UCRM has a calendar-capable Task contract |
+| Quote reminder | Quotes/Automation | Deferred until its owner exposes a schedulable read model |
+| Invoice reminder | Jobs/Invoices | Deferred until its owner exposes a schedulable read model |
 | Calendar views, backlog, drag interactions and conflict presentation | Schedule | Own |
 | Map and manual route presentation | Schedule | Own without copying Visit truth |
 | Customer/staff message delivery | Communications/Automation | Surface known consequences; do not send independently |
@@ -97,10 +109,7 @@ operates those records; it never creates a second Visit model.
 There is one Schedule destination and one interpretation of its selected date, team, type, status and view.
 Calendar and Map must never maintain independent copies of this state.
 
-## Provisional release ladder
-
-This section is retained as a hypothesis so the completed evidence can later confirm, revise or reject it.
-It is not an approved release commitment during factual research.
+## Approved release ladder
 
 ### Version 1 — Visit scheduling and dispatch
 
@@ -108,7 +117,7 @@ Version 1 is independently useful for a contractor operating Jobs and Visits:
 
 - desktop Week, Day and Month views;
 - Scheduled, Anytime and Unscheduled Visits;
-- the provisional adaptive Visit card system;
+- the adaptive Visit card system;
 - date navigation and Team, Visit status and assignment filters;
 - compact Visit preview and existing Job/Visit detail paths;
 - an Unscheduled drawer;
@@ -129,12 +138,11 @@ Version 1.1 adds source types only when their owning workflow is real and permis
 - Assessments owned by Requests, with navigation back to their Request;
 - one-time lightweight Events owned entirely inside Schedule, with a popover and create/edit modal rather
   than a separate Event module;
-- timed, date-only and unscheduled Tasks owned by Tasks, with repeating Tasks and Task notifications later;
-- display-only Quote reminders; and
-- display-only Invoice reminders.
+- lightweight non-recurring Events owned by Schedule.
 
 Each type keeps its own form, actions, status and meaning. The calendar unifies presentation, not business
-objects.
+objects. General Tasks and Quote/Invoice reminders remain deferred until their owning domains expose
+calendar-capable contracts; Schedule does not reinterpret the current opportunity-scoped pipeline tasks.
 
 ### Version 1.2 — Contextual Map and manual routing
 
@@ -173,7 +181,7 @@ Filter meanings stay distinct:
 - Employee contains All employees, Unassigned and each active employee; it is the assignment filter.
 - Status contains the source type's derived outcomes, such as Upcoming, Today, Late and Completed for
   Visits.
-- Type means Visit, Assessment, Event, Task or reminder after Version 1.1; it never means Scheduled,
+- Type means Visit, Assessment or Event after Version 1.1; it never means Scheduled,
   Anytime or Unscheduled.
 - Schedule shape is expressed by the timed grid, Anytime lane and Unscheduled drawer rather than being
   mixed into Status.
@@ -208,20 +216,26 @@ Day is the dispatch view for gaps, overlaps, assignments and responsibility.
 
 - Dense high-level coverage view, not precise time placement.
 - Each date shows a small fixed number of compact rows followed by + N more.
-- Selecting + N more opens that date's agenda/overflow.
+- Anytime items sit at the top of a date, then timed items in start order.
+- Selecting + N more opens a panel anchored to that date listing every item on it; selecting one there opens
+  the shared compact preview.
 - Selecting an item opens the shared compact preview.
 - Selecting empty space starts date-prefilled Visit creation.
 - Multi-day drag creation is not part of the campaign.
 
-### Anytime, all-day and reminders
+Jobber caps nothing here: its week row grows taller to fit its busiest date and the month scrolls, verified
+live on 2026-09-02 with eight items on one date. UCRM keeps the fixed row count and + N more, approved by
+Jafar on 2026-09-02, because five crews on one date would make a single week row taller than the screen and
+the month would stop reading as a month. The ordering, the time-before-title row and the per-date Visit count
+follow Jobber.
+
+### Anytime and upper date region
 
 These concepts share an upper date region but never share meaning:
 
 - an Anytime Visit or Assessment is dated, has no clock time and consumes operational capacity; saved
-  manual route ordering is initially Visit-only;
-- an all-day Event occupies the date but is not a routeable Visit;
-- a date-only Task is work due that day and follows Task behavior; and
-- a reminder is a display-only date marker and does not consume field capacity or create a conflict.
+  manual route ordering is initially Visit-only; and
+- an Anytime Event occupies the date for the whole team but is not a routeable Visit.
 
 ## Card and density system
 
@@ -229,7 +243,7 @@ Cards adapt to available space rather than relying on one fixed layout:
 
 | Density | Required content |
 | --- | --- |
-| Micro | type/status cue plus abbreviated time and title |
+| Micro | type/status cue, abbreviated time, then client and title on one truncating line |
 | Compact | time, short client/title and employee accent |
 | Standard | time, client/title, locality cue, status and additional-assignee count |
 | Expanded | adds permitted instructions or secondary context only when space genuinely allows |
@@ -240,12 +254,12 @@ accent plus an assignee count; no unowned lead-employee concept is invented. Typ
 status uses text/icon treatment. Full saturated card fills are avoided, and color is never the only carrier
 of meaning.
 
-| Surface | Provisional card behavior |
+| Surface | Approved card behavior |
 | --- | --- |
 | Week timed | Adaptive block; time, client, short Visit/Job title, accent and status |
 | Week Anytime | Compact routeable card with Anytime label and optional route-order number |
 | Day employee | Start/end, client, short title/locality and shared-assignment cue |
-| Month | One compact time · client row, accent/status cue, then + N more |
+| Month | One compact row: time, then client and title on one truncating line, with accent/status cue, then + N more |
 | Unscheduled drawer | Client, Visit/Job title, property, age, assignment and Schedule action |
 | Map stop | Stop number, time/Anytime, client, full address, assignment, status and Directions |
 | Compact preview | Operational summary and fast actions; never a miniature Job detail page |
@@ -258,14 +272,11 @@ Type-specific labels prevent the unified calendar from assuming every item has a
 | --- | --- |
 | Visit | time/Anytime, client, Job or Visit title, property |
 | Assessment | time/Anytime, client, Request or Assessment title, property |
-| Event | time/All day, Event title, optional location |
-| Task | time/date-only, Task title, optional owning record |
-| Quote reminder | reminder purpose, client and Quote reference |
-| Invoice reminder | reminder purpose, client and Invoice or Job reference |
+| Event | time/Anytime and Event title |
 
 Every surface covers normal, hover, focus, selected, completed, late, unassigned, multiple-assignee,
 recurring-exception, conflict, dragging, saving, failed-save, missing-address and read-only states as
-applicable. Private Event content is masked outside permitted detail views.
+applicable.
 
 An Anytime route-order number appears only after Version 1.2 has a saved route order.
 
@@ -285,7 +296,15 @@ Version 1 uses a deliberately small interaction stack:
 
 A new Schedule-specific rich detail panel is not part of Version 1.
 
-Version 1.1 keeps the distinction explicit:
+Empty-space creation follows Jobber's work-type model rather than treating a Visit as an independent
+calendar object. The chooser contains Job, Request, Task and Event as those owning domains become ready;
+it never contains Visit. Version 1 enables Job only and does not render a redundant one-option selector.
+When later types join, Job is selected by default. Its compact Schedule form creates the Job through the
+Jobs-owned command with the clicked date, time and team as the first Visit's schedule. More Options hands
+the same draft to the canonical full Job form. There is one Job create contract and no Schedule-owned Job
+or Visit truth.
+
+Version 1.1 adds Request and Event to that same chooser and keeps ownership explicit:
 
 - choosing Assessment selects an existing Request and invokes its Request-owned Assessment form; Schedule
   never creates a Request;
@@ -293,24 +312,27 @@ Version 1.1 keeps the distinction explicit:
 - an Assessment preview opens its owning Request/Assessment context;
 - an Event opens a compact Event popover and its Schedule-owned create/edit modal;
 - Events have no sidebar destination, separate list page or full detail page; and
-- an Event linked optionally to a client/property may open that related record, but the Event itself still
-  lives only in Schedule.
+- Events have no client/property link in this campaign.
 
-Version 1.1 Events are deliberately one-time, timed or all-day blocks. They require a title and one or more
-assigned employees; description, location, client/property link and privacy are optional. Assigned Events
-block those employees' availability by default. People permitted to see the Schedule but not the private
-details see only Busy and the occupied time. The creator and users with Event-management authority may edit
-or delete the Event; assigned users may see its permitted details. Event recurrence, completion and
-cancellation workflows are later scope.
+Version 1.1 Events are deliberately one-time, timed or Anytime whole-team blocks. They require a title and
+may include a description. They have no individual assignment/audience, privacy, client/property link,
+address or location fields in this campaign. They block whole-team availability by default. Permitted Event
+managers may edit or delete them. Event recurrence, completion and cancellation workflows are later scope;
+the observed Jobber recurrence selector is not copied without established series edit/delete consequences.
 
-The primary New Visit action selects an existing Job and uses the Jobs-owned Visit form. Full Job creation
-remains in Jobs.
+Task remains absent until a calendar-capable Task owner exists. Additional Visits are created from the
+owning Job's Visits section, by duplicating an existing Visit from its Schedule actions, or by a later
+Jobber-style Create New Visits tool for eligible as-needed recurring Jobs. Schedule does not offer a generic
+"Visit to existing Job" empty-slot option.
 
-Empty timed-space interaction follows the proven calendar pattern:
+Jafar approved the empty-range drag-create behavior on 2026-09-02 as a UCRM adaptation from the verified
+Autopilot interaction. Jobber remains click-to-create; this decision does not rewrite the Jobber evidence.
+Empty timed-space interaction therefore follows this approved calendar pattern:
 
-- click starts a Visit at that time with a fixed one-hour Version 1 default, editable before Save;
-- click-drag draws a temporary block and prefills start/end;
-- click in Anytime starts a date-only Visit; and
+- click starts a Job draft whose first Visit begins at that time with a fixed one-hour Version 1 default,
+  editable before Save;
+- click-drag draws a temporary block and prefills the first Visit's start/end;
+- click in Anytime starts a Job draft with a date-only first Visit; and
 - dragging an existing Unscheduled Visit onto the calendar schedules that Visit rather than creating one.
 
 No gesture writes immediately. The user reviews the proposal and presses Save. Escape or Cancel removes the
@@ -349,7 +371,7 @@ Version 1 warns about:
 - placement outside organization working hours.
 
 Warnings are visible before Save but do not prohibit an intentional overlap. Beginning in Version 1.1,
-assigned timed and all-day Events contribute to overlap/availability warnings. Travel time, skills,
+timed and Anytime whole-team Events contribute to overlap/availability warnings. Travel time, skills,
 territory, equipment, crew capacity and traffic are outside Version 1.
 
 ## Unscheduled work
@@ -364,9 +386,9 @@ session. Version 1 contains Visits only and provides:
 - explicit Schedule action; and
 - honest empty, filtered-empty and failed states.
 
-In Version 1.1, an existing Assessment without a date may join the backlog and Schedule opens its
-Request-owned form to place it. An unassigned or unscheduled Task may join after Task scheduling is approved.
-Events and reminders never enter this backlog.
+Assessments do not join the desktop backlog in this campaign because that Jobber placement was unavailable
+and UCRM has no need to invent it. Events never enter the backlog. General Tasks and reminders remain
+deferred with their owning domains.
 
 ## Completion and Visit outcomes
 
@@ -452,19 +474,14 @@ truth and actions. Invoice or billable indicators wait for the Invoice boundary.
 - Visit create, assignment and rescheduling require the existing jobs.schedule authority. Visit completion
   requires the Jobs-owned completion authority when Part 13a introduces it.
 - Assessment context and actions follow Request permissions. Event details/actions follow the Event rules
-  above. Tasks and reminders follow their owning permissions.
+  above.
 - Unavailable actions are absent or honestly disabled; drag is unavailable without the owning scheduling
   permission.
-- Private Event details are masked for users without permission.
 - First load uses calendar-shaped skeletons without blocking the app shell.
 - Empty, filtered-empty and failed states preserve the selected date and controls.
 - Saving locks only the affected proposal/item.
 - A failed move restores the original item and offers Retry.
 - Successful writes update Schedule and the owning record consistently and use the shared toast pattern.
-
-Version 1.1 Task behavior is bounded: a timed Task with an expected duration occupies that employee's grid
-and participates in overlap warnings; a date-only Task does not consume timed capacity; an unscheduled Task
-may enter the backlog; and Tasks do not appear on Map in this campaign.
 
 ## Campaign completion journeys
 
@@ -478,8 +495,8 @@ Version 1 is complete when a permitted dispatcher can:
 6. complete it through Jobs-owned behavior when that prerequisite is available; and
 7. see identical timing, assignment and status on the Job detail Visits card.
 
-Version 1.1 is complete when each enabled Assessment, Event, Task and reminder appears with its own meaning,
-actions and permissions while sharing the finally approved calendar language.
+Version 1.1 is complete when Assessments and Events appear with their own meaning, actions and permissions
+while sharing the approved calendar language.
 
 Version 1.2 is complete when a dispatcher can open the contextual Map for one employee, understand the
 selected day's stops, manually order Anytime stops, save that order, handle an unmappable address and open
@@ -503,7 +520,8 @@ permission, recurrence, failure-recovery and bounded-date evidence.
 - Multi-day Month drag creation
 - Customer-notification automation
 - Recurring Events and Event completion/cancellation workflows
-- Repeating Tasks and Task reminders/notifications
+- General calendar Tasks until a calendar-capable Task owner exists
+- Quote and Invoice reminders until their owners expose schedulable read models
 - Advanced arrival-window settings
 - Custom per-user calendar layouts/settings
 - Canceled and No-show Visit outcomes
