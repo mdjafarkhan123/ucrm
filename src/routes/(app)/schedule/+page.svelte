@@ -20,6 +20,8 @@
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import JobVisitDialog from '$lib/components/jobs/JobVisitDialog.svelte';
 	import ApplyToFutureDialog from '$lib/components/jobs/ApplyToFutureDialog.svelte';
+	import FinalVisitDialog from '$lib/components/jobs/FinalVisitDialog.svelte';
+	import CreateVisitsDialog from '$lib/components/jobs/CreateVisitsDialog.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { workingWeek } from '$lib/schedule/hours';
 	import { formatCalendarDay, visitClientLabel, visitWorkLabel } from '$lib/schedule/labels';
@@ -34,13 +36,18 @@
 	import { startPointerDrag } from '$lib/schedule/pointer-drag';
 	import { scheduleWarnings } from '$lib/schedule/conflicts';
 	import {
+		addJobVisits,
 		applyVisitToFuture,
+		closeJob,
+		completeJobVisit,
 		createJob,
 		fetchJob,
 		jobCountsKey,
 		jobDetailKey,
 		jobEventsKey,
+		uncompleteJobVisit,
 		updateJobVisit,
+		type AddVisitInput,
 		type CreateJobPayload,
 		type JobVisitInput,
 		type JobWriteError,
@@ -236,6 +243,10 @@
 	// Empty-space creation starts a Job, so it follows Job-create authority, not the schedule authority that
 	// governs moving existing visits.
 	const canCreate = $derived(contextQuery.data?.can_create_job ?? false);
+	// Completion is its own Jobs-owned authority. `canComplete` shows the complete/uncomplete control at all;
+	// `canClose` decides whether the final-visit dialog offers "Finish job".
+	const canComplete = $derived(contextQuery.data?.can_complete ?? false);
+	const canClose = $derived(contextQuery.data?.can_close ?? false);
 
 	/** A drag that has landed and is waiting for the person to press Save. */
 	let pending = $state<{
@@ -550,6 +561,137 @@
 			}
 		} finally {
 			rescheduleSaving = false;
+		}
+	}
+
+	// --- Completing visits and the one-off job's final-visit decision ------------------------------------
+
+	// Completion belongs to Jobs; the calendar only invokes the command and presents the result, exactly as the
+	// Job page's Visits section does. It never invents a Schedule-only completion state. The same
+	// `complete_job_visit`/`uncomplete_job_visit` commands run, so both screens report the same truth, and the
+	// caches for both refresh after each write.
+
+	/** The visit whose complete/uncomplete write is in flight, so its popover button shows the spinner. */
+	let completingVisitId = $state<string | null>(null);
+
+	// The one-off "final visit completed" question, opened only when the command reports final_visit true --
+	// never on an idempotent replay. The job id is held so "Finish job" and "Add a return visit" know which job
+	// they act on after the completed visit's popover has closed.
+	let finalVisitOpen = $state(false);
+	let finalVisitJobId = $state<string | null>(null);
+	let closingFinal = $state(false);
+
+	async function handleComplete(visit: ScheduleVisit) {
+		completingVisitId = visit.id;
+		try {
+			const result = await completeJobVisit(visit.job_id, visit.id);
+			await refreshAfterWrite(visit.job_id);
+			toast.success('Visit marked complete');
+			// Completing the last incomplete visit of a one-off job asks the finishing question. The popover for
+			// the now-completed visit steps aside so the dialog stands on its own.
+			if (result.final_visit) {
+				closePreview();
+				finalVisitJobId = visit.job_id;
+				finalVisitOpen = true;
+			}
+		} catch (caught) {
+			toast.error((caught as JobWriteError).message ?? 'That visit could not be marked complete.');
+		} finally {
+			completingVisitId = null;
+		}
+	}
+
+	async function handleUncomplete(visit: ScheduleVisit) {
+		completingVisitId = visit.id;
+		try {
+			await uncompleteJobVisit(visit.job_id, visit.id);
+			await refreshAfterWrite(visit.job_id);
+			toast.success('Visit marked incomplete');
+		} catch (caught) {
+			// A completed visit on an already-closed one-off job is refused here (reopen the job first); the
+			// command's own message says so.
+			toast.error((caught as JobWriteError).message ?? 'That visit could not be reopened.');
+		} finally {
+			completingVisitId = null;
+		}
+	}
+
+	// "Finish job". close_job guards on the job's own revision, so the current one is read fresh right before the
+	// write rather than carried from the completion -- completing a visit can bump the job in between.
+	async function finishJob() {
+		const jobId = finalVisitJobId;
+		if (!jobId) return;
+		closingFinal = true;
+		try {
+			const detail = await queryClient.fetchQuery({
+				queryKey: jobDetailKey(jobId),
+				queryFn: () => fetchJob(jobId)
+			});
+			await closeJob(jobId, detail.job.revision);
+			finalVisitOpen = false;
+			finalVisitJobId = null;
+			await refreshAfterWrite(jobId);
+			toast.success('Job finished');
+		} catch (caught) {
+			toast.error((caught as JobWriteError).message ?? 'That job could not be closed.');
+		} finally {
+			closingFinal = false;
+		}
+	}
+
+	// "Add a return visit". The same day-picking dialog the Job page uses; the chosen days are appended to the
+	// job through the Jobs-owned add command, tagged as a return trip so the history reads truthfully.
+	let returnVisitJobId = $state<string | null>(null);
+	let returnVisitOpen = $state(false);
+
+	function openReturnVisit() {
+		if (!finalVisitJobId) return;
+		returnVisitJobId = finalVisitJobId;
+		finalVisitOpen = false;
+		finalVisitJobId = null;
+		returnVisitOpen = true;
+	}
+
+	function closeReturnVisit() {
+		returnVisitOpen = false;
+		returnVisitJobId = null;
+	}
+
+	async function handleReturnCreate(result: { dates: string[]; scheduleLater: boolean }) {
+		// The dialog closes at once and the add runs behind it, the same way the Job page's Add-visits does, so
+		// the picker never lingers over a network call. The job id is captured first because closing clears it.
+		const jobId = returnVisitJobId;
+		if (!jobId) return;
+		closeReturnVisit();
+		try {
+			const items: AddVisitInput[] = result.scheduleLater
+				? [
+						{
+							visit_date: null,
+							start_time: null,
+							end_time: null,
+							all_day: false,
+							title: null,
+							instructions: null,
+							assignee_ids: [],
+							source: 'return'
+						}
+					]
+				: result.dates.map((date) => ({
+						visit_date: date,
+						start_time: null,
+						end_time: null,
+						all_day: true,
+						title: null,
+						instructions: null,
+						assignee_ids: [],
+						source: 'return' as const
+					}));
+			await addJobVisits(jobId, items, crypto.randomUUID(), fingerprint(items));
+			await refreshAfterWrite(jobId);
+			toast.success(items.length === 1 ? 'Return visit added' : `${items.length} visits added`);
+		} catch (caught) {
+			toast.error((caught as JobWriteError).message ?? 'Those visits could not be added.');
 		}
 	}
 
@@ -911,8 +1053,12 @@
 				: 'Not scheduled'}
 			{employeesById}
 			{canSchedule}
+			{canComplete}
+			completing={completingVisitId === selectedVisit.id}
 			onreschedule={() => openReschedule(selectedVisit)}
 			onunschedule={() => askUnschedule(selectedVisit)}
+			oncomplete={() => void handleComplete(selectedVisit)}
+			onuncomplete={() => void handleUncomplete(selectedVisit)}
 		/>
 	</Popover>
 {/if}
@@ -962,6 +1108,28 @@
 	onCreate={(seed) => void saveJobCreate(seed)}
 	onMoreOptions={openMoreOptions}
 	onClose={closeCreate}
+/>
+
+<!-- The one-off "final visit completed" decision: Finish job, Add a return visit, or Keep open. "Finish job"
+     is hidden for a reader without the close authority; the other two need none. -->
+<FinalVisitDialog
+	open={finalVisitOpen}
+	{canClose}
+	closing={closingFinal}
+	onFinish={() => void finishJob()}
+	onAddReturnVisit={openReturnVisit}
+	onKeepOpen={() => {
+		finalVisitOpen = false;
+		finalVisitJobId = null;
+	}}
+/>
+
+<!-- "Add a return visit" from the final-visit dialog: the same day-picker the Job page uses, appending the
+     chosen days to this job through the Jobs-owned add command. -->
+<CreateVisitsDialog
+	open={returnVisitOpen}
+	onClose={closeReturnVisit}
+	onCreate={handleReturnCreate}
 />
 
 <ApplyToFutureDialog

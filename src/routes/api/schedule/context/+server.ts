@@ -33,7 +33,14 @@ export const GET: RequestHandler = async (event) => {
 			// Empty calendar space starts a Job, not a loose visit, so its affordance follows the Job-create
 			// authority the /api/jobs command enforces -- a scheduler without it never sees a create surface
 			// that Save would only reject.
-			can_create_job: hasPermission(check.access, 'jobs.create')
+			can_create_job: hasPermission(check.access, 'jobs.create'),
+			// Completion is the Jobs-owned authority Part 13a introduced. Schedule presents complete/uncomplete
+			// only to a reader who holds it, so an unavailable action stays honestly absent rather than failing
+			// on click; the complete_job_visit command checks it again for itself.
+			can_complete: hasPermission(check.access, 'jobs.complete'),
+			// Finishing (closing) or reopening a job is a separate authority. It gates the "Finish job" option in
+			// the final-visit dialog; the other two options need no close right.
+			can_close: hasPermission(check.access, 'jobs.close')
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

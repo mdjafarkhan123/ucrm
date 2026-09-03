@@ -23,8 +23,12 @@
 		dayLabel,
 		employeesById,
 		canSchedule = false,
+		canComplete = false,
+		completing = false,
 		onreschedule,
-		onunschedule
+		onunschedule,
+		oncomplete,
+		onuncomplete
 	}: {
 		visit: ScheduleVisit;
 		today: string;
@@ -33,9 +37,17 @@
 		employeesById: Map<string, TeamMember>;
 		/** Whether this reader may change the schedule. A completed visit is never rescheduled. */
 		canSchedule?: boolean;
+		/** Whether this reader holds the Jobs completion authority. Without it the control is absent. */
+		canComplete?: boolean;
+		/** True while this visit's own complete/uncomplete write is in flight. */
+		completing?: boolean;
 		onreschedule: () => void;
 		/** Send a dated visit back to the Unscheduled backlog. The page confirms before it clears the date. */
 		onunschedule?: () => void;
+		/** Mark the visit complete through the Jobs-owned command. Absent for a reader without the authority. */
+		oncomplete?: () => void;
+		/** Clear the visit's completion through the Jobs-owned command. */
+		onuncomplete?: () => void;
 	} = $props();
 
 	const status = $derived(visitDerivedStatus(visit, today));
@@ -63,10 +75,20 @@
 	</dl>
 
 	<div class="visit-preview__actions">
+		<!-- Completion is the Jobs-owned command, presented here and written through /api/jobs. Marking done is
+		     the headline dispatch action, so it leads; reopening is an undo, so it is quiet. -->
+		{#if canComplete && !visit.completed_at && oncomplete}
+			<Button size="small" onclick={oncomplete} loading={completing}>Mark complete</Button>
+		{/if}
+		{#if canComplete && visit.completed_at && onuncomplete}
+			<Button variant="tertiary" size="small" onclick={onuncomplete} loading={completing}>
+				Mark incomplete
+			</Button>
+		{/if}
 		<!-- Every change a drag can make is reachable here too, with the keyboard, through the same Jobs
 		     form the Job page uses. -->
 		{#if canSchedule && !visit.completed_at}
-			<Button size="small" onclick={onreschedule}>Reschedule</Button>
+			<Button variant="secondary" size="small" onclick={onreschedule}>Reschedule</Button>
 		{/if}
 		<!-- Take a placed visit off the calendar and back into the backlog. Absent for an already-unscheduled
 		     visit, which has no date to clear. -->

@@ -33,6 +33,10 @@ export type ScheduleContext = {
 	can_schedule: boolean;
 	/** Whether this person may start a Job from empty calendar space -- the Job-create authority. */
 	can_create_job: boolean;
+	/** Whether this person may mark visits complete or incomplete -- the Jobs-owned completion authority. */
+	can_complete: boolean;
+	/** Whether this person may finish (close) or reopen a job -- gates the "Finish job" final-visit option. */
+	can_close: boolean;
 };
 
 export const scheduleContextKey = ['schedule', 'context'] as const;
