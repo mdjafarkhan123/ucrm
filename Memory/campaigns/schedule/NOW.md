@@ -5,7 +5,8 @@
   7a (provider-independent, mock) / 7b (live Mapbox). **7a COMPLETE + BROWSER-VERIFIED. 7b-A2 COMPLETE +
   BROWSER-VERIFIED (`91d8bbc`, 2026-09-04) — two bugs found + fixed during verify (see below).** Only 7b-B
   (stored geocoding) remains for Part 8, blocked on a secret (sk.) Mapbox token.
-- Branch `schedule-5b-visits-card`. Working tree clean (latest `91d8bbc`).
+- Branch `schedule-5b-visits-card`. Working tree clean (latest `5b86ea7` — Filters popover
+  z-index + trigger-styling follow-up fixes, committed + browser-verified).
 - Behavior in docs/schedule-behavior-contract.md ("Contextual Map and route behavior" ~418-467, V1.2 ~147-162).
 
 ## Browser verification (2026-09-04, app on localhost:5173, workspace "Raad LTD")
