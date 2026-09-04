@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Popover } from 'bits-ui';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
@@ -14,6 +15,7 @@
 	import chevronLeftIcon from '@tabler/icons/outline/chevron-left.svg?raw';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 	import mapIcon from '@tabler/icons/outline/map-2.svg?raw';
+	import filterIcon from '@tabler/icons/outline/filter.svg?raw';
 
 	let {
 		filters,
@@ -88,6 +90,20 @@
 			label: member.full_name ?? 'Unnamed employee'
 		}))
 	]);
+
+	// The row was getting long, so the data filters live behind a single "Filters" button (the pattern Jobber
+	// uses). The badge counts only filters that are actually narrowing the list -- Employee and Status. Density
+	// rides along in the panel because it belongs with the other view options, but it is a viewing preference,
+	// not a filter, so it never lights the badge.
+	let filtersOpen = $state(false);
+
+	const activeFilterCount = $derived(
+		(filters.employee !== 'all' ? 1 : 0) + (filters.status !== 'all' ? 1 : 0)
+	);
+
+	function clearFilters() {
+		onchange({ employee: 'all', status: 'all' });
+	}
 </script>
 
 <!-- The icons are Tabler SVG files imported at build time, not user content. -->
@@ -127,37 +143,6 @@
 			onchange={(view) => onchange({ view: view as ScheduleFilters['view'] })}
 		/>
 
-		{#if showZoom}
-			<SegmentedControl
-				value={zoom}
-				options={zoomOptions}
-				size="small"
-				label="Density"
-				onchange={(value) => onzoom(value as ScheduleZoom)}
-			/>
-		{/if}
-
-		<div class="schedule-controls__field">
-			<Select
-				id="schedule-employee"
-				label="Employee"
-				value={filters.employee}
-				options={employeeOptions}
-				disabled={employeesFailed}
-				onchange={(employee) => onchange({ employee })}
-			/>
-		</div>
-
-		<div class="schedule-controls__field">
-			<Select
-				id="schedule-status"
-				label="Status"
-				value={filters.status}
-				options={statusOptions}
-				onchange={(status) => onchange({ status: status as ScheduleFilters['status'] })}
-			/>
-		</div>
-
 		{#if onunscheduled}
 			<button
 				type="button"
@@ -187,6 +172,68 @@
 				Map
 			</button>
 		{/if}
+
+		<Popover.Root bind:open={filtersOpen}>
+			<Popover.Trigger
+				class="schedule-controls__unscheduled schedule-controls__filters-trigger {activeFilterCount >
+				0
+					? 'schedule-controls__unscheduled--active'
+					: ''}"
+				aria-label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : 'Filters'}
+			>
+				{@html filterIcon}
+				Filters
+				{#if activeFilterCount > 0}
+					<span class="schedule-controls__badge">{activeFilterCount}</span>
+				{/if}
+			</Popover.Trigger>
+			<Popover.Portal>
+				<Popover.Content
+					class="schedule-controls__filters-panel"
+					align="end"
+					sideOffset={8}
+					collisionPadding={12}
+				>
+					<header class="schedule-controls__filters-header">
+						<h2>Filters</h2>
+						{#if activeFilterCount > 0}
+							<button type="button" class="schedule-controls__filters-clear" onclick={clearFilters}>
+								Clear
+							</button>
+						{/if}
+					</header>
+
+					<div class="schedule-controls__filters-body">
+						<Select
+							id="schedule-employee"
+							label="Employee"
+							value={filters.employee}
+							options={employeeOptions}
+							disabled={employeesFailed}
+							onchange={(employee) => onchange({ employee })}
+						/>
+
+						<Select
+							id="schedule-status"
+							label="Status"
+							value={filters.status}
+							options={statusOptions}
+							onchange={(status) => onchange({ status: status as ScheduleFilters['status'] })}
+						/>
+
+						{#if showZoom}
+							<SegmentedControl
+								value={zoom}
+								options={zoomOptions}
+								size="small"
+								label="Density"
+								onchange={(value) => onzoom(value as ScheduleZoom)}
+							/>
+						{/if}
+					</div>
+				</Popover.Content>
+			</Popover.Portal>
+		</Popover.Root>
 	</div>
 </div>
 
@@ -248,6 +295,23 @@
 		}
 	}
 
+	/* The Filters trigger reuses the same pill as Map/Unscheduled. Its class rides on a Bits UI component, so
+	   the selectors are global (as the notification trigger's are). Bits UI stamps data-state="open" on it
+	   while the panel is open, so it reads as pressed then too, not only when filters are active. */
+	:global(.schedule-controls__filters-trigger) {
+		gap: var(--space-smaller);
+	}
+
+	:global(.schedule-controls__filters-trigger svg) {
+		width: 16px;
+		height: 16px;
+	}
+
+	:global(.schedule-controls__filters-trigger[data-state='open']) {
+		border-color: var(--color-interactive);
+		background-color: var(--color-surface--active);
+	}
+
 	.schedule-controls__badge {
 		display: inline-flex;
 		align-items: center;
@@ -304,16 +368,53 @@
 		gap: var(--space-slim);
 	}
 
-	// A Select is `width: 100%`, so without a width of its own each one takes whatever the row will give it
-	// and the three controls wrap onto three lines on an ordinary desktop. 200px is the width every other
-	// filter in the app uses, in `FilterField`.
-	.schedule-controls__field {
-		width: 200px;
+	/* The floating Filters panel. Same surface/border/shadow language as the notification panel; a Select
+	   inside is width:100%, so it fills the column on its own. */
+	:global(.schedule-controls__filters-panel) {
+		z-index: var(--elevation-menu);
+		display: flex;
+		flex-direction: column;
+		width: min(300px, calc(100vw - var(--space-large) * 2));
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background-color: var(--color-surface);
+		box-shadow: var(--shadow-high);
 	}
 
-	@media (max-width: 767px) {
-		.schedule-controls__field {
-			width: 100%;
+	.schedule-controls__filters-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-base);
+		padding: var(--space-base) var(--space-base) 0;
+
+		h2 {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
 		}
+	}
+
+	.schedule-controls__filters-clear {
+		border: 0;
+		background: transparent;
+		color: var(--color-interactive);
+		font-size: var(--typography--fontSize-small);
+		cursor: pointer;
+
+		&:hover {
+			text-decoration: underline;
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+	}
+
+	.schedule-controls__filters-body {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-base);
+		padding: var(--space-base);
 	}
 </style>
