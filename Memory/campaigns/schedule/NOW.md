@@ -67,12 +67,19 @@ Aside (NOT fixed, app-wide, needs Jafar): `Topbar.applyTheme` uses `toggleAttrib
 which REMOVES data-theme in light mode (so absent = light). The map fix accounts for this; the app renders
 fine. A cleaner whole-app fix would always set data-theme='light'|'dark', but that is outside Schedule scope.
 
-## Next action — pick one
+## Filters popover DONE + BROWSER-VERIFIED 2026-09-04 (`4e9d6c1`)
 
-- **Parked "More…" filter overflow (NOW UNBLOCKED — Jafar asked 2026-09-04, map is confirmed):** the Schedule
-  filter row (date nav, View, Density, Employee, Status, Unscheduled, Map) is long. Keep primary controls
-  visible, collapse secondary behind a "More…" button (standard overflow pattern). Plan presented to Jafar;
-  awaiting go-ahead. Not started.
+Jafar chose the Jobber-style layout. `ScheduleControls.svelte` now keeps date-nav + View + Unscheduled + Map
+on the row and moves Employee + Status + Density behind a single **Filters** button — repo-standard bits-ui
+`Popover.Root/Trigger/Portal/Content` (as NotificationBell). Count badge = active data filters only (Employee,
+Status; Density is a view option, never counts). "Clear" link in the panel header resets Employee+Status when
+count>0. No `+page` wiring changed. Verified live: row collapses; panel opens with all three; picking Employee
+narrows the grid + lights badge "1" + shows Clear; Clear resets; no console errors. Checks: svelte-check 0
+errors; 172 schedule tests; prettier clean. (Autofixer flagged SCSS `//` + `&--active` — false positives from
+no SCSS preprocessing; svelte-check is authoritative and clean.)
+
+## Next action — 7b-B (the only thing left for Part 8)
+
 - **7b-B (BLOCKED on sk. token):** turn the 7a-4 worker route on (503 until a real provider), geocode the 8
   pending properties permanently, store lat/lng. Then stored coords win in `stopGeocodeState` and the A2
   display lookup stops running. Re-verify pricing/terms before purchase.
