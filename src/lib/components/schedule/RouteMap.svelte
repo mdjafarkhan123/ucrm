@@ -110,10 +110,11 @@
 	} as const;
 
 	function currentTheme(): 'light' | 'dark' {
-		const attr = document.documentElement.getAttribute('data-theme');
-		if (attr === 'dark') return 'dark';
-		if (attr === 'light') return 'light';
-		return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+		// Mirror the app's own theme contract exactly. The app paints dark only when <html data-theme="dark">
+		// is set (its palette is keyed solely on that attribute) and light in every other case -- it never
+		// consults the OS preference. So the map must not either: reading prefers-color-scheme here left a dark
+		// map under a light app whenever the OS was dark and the user had chosen light.
+		return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
 	}
 
 	onMount(() => {
@@ -162,20 +163,16 @@
 		};
 	});
 
-	// Watch both the explicit in-app theme choice (data-theme on <html>) and the OS preference, and call back
-	// when either changes. Returns a disposer.
+	// Watch the in-app theme choice (data-theme on <html>) and call back when it changes. That attribute is the
+	// app's single source of truth for theme, so it is all the map follows -- matching currentTheme() above.
+	// Returns a disposer.
 	function watchTheme(onChange: () => void): () => void {
 		const observer = new MutationObserver(onChange);
 		observer.observe(document.documentElement, {
 			attributes: true,
 			attributeFilter: ['data-theme']
 		});
-		const media = window.matchMedia('(prefers-color-scheme: dark)');
-		media.addEventListener('change', onChange);
-		return () => {
-			observer.disconnect();
-			media.removeEventListener('change', onChange);
-		};
+		return () => observer.disconnect();
 	}
 
 	// Rebuild the pins whenever the placed stops change. Cheap at route scale (one employee, one day), and it
@@ -190,9 +187,14 @@
 	// re-fits the map, which would yank the view on every click. It also re-runs after a rebuild (it reads
 	// `placed`) so a freshly created marker gets its highlight without waiting for the next selection change.
 	$effect(() => {
+		// Read selectedItemId unconditionally so this effect always subscribes to it -- even on the early runs
+		// before any stop has geocoded, when `markers` is still empty and the loop body never executes. Reading
+		// it only inside the loop left the effect unsubscribed, so the first selection after pins appeared never
+		// re-ran it and the clicked pin never highlighted. `void placed` re-runs it whenever markers rebuild.
+		const selected = selectedItemId;
 		void placed;
 		for (const [id, { el }] of markers) {
-			el.classList.toggle('route-map__pin--selected', id === selectedItemId);
+			el.classList.toggle('route-map__pin--selected', id === selected);
 		}
 	});
 
