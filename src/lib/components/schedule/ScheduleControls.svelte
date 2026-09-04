@@ -191,8 +191,8 @@
 				<Popover.Content
 					class="schedule-controls__filters-panel"
 					align="end"
-					sideOffset={8}
-					collisionPadding={12}
+					sideOffset={10}
+					collisionPadding={16}
 				>
 					<header class="schedule-controls__filters-header">
 						<h2>Filters</h2>
@@ -368,17 +368,17 @@
 		gap: var(--space-slim);
 	}
 
-	/* The floating Filters panel. Same surface/border/shadow language as the notification panel; a Select
-	   inside is width:100%, so it fills the column on its own. */
+	/* The floating Filters panel, on the design skill's popover tokens (surface, base border, --shadow-base,
+	   --elevation-tooltip). A Select inside is width:100%, so it fills the column on its own. */
 	:global(.schedule-controls__filters-panel) {
-		z-index: var(--elevation-menu);
+		z-index: var(--elevation-tooltip);
 		display: flex;
 		flex-direction: column;
 		width: min(300px, calc(100vw - var(--space-large) * 2));
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		background-color: var(--color-surface);
-		box-shadow: var(--shadow-high);
+		box-shadow: var(--shadow-base);
 	}
 
 	.schedule-controls__filters-header {
