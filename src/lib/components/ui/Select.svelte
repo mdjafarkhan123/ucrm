@@ -20,6 +20,7 @@
 		required = false,
 		name,
 		class: className = '',
+		contentClass = '',
 		onchange
 	}: {
 		value?: string;
@@ -32,6 +33,8 @@
 		required?: boolean;
 		name?: string;
 		class?: string;
+		/** Extra class for the floating options list, e.g. to out-rank a popover this Select is nested in. */
+		contentClass?: string;
 		onchange?: (value: string) => void;
 	} = $props();
 
@@ -77,7 +80,7 @@
 
 		<SelectPrimitive.Portal>
 			<SelectPrimitive.Content
-				class="select__content"
+				class={['select__content', contentClass]}
 				data-elevation="elevated"
 				sideOffset={4}
 				collisionPadding={8}

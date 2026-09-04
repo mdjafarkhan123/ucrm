@@ -78,6 +78,21 @@ narrows the grid + lights badge "1" + shows Clear; Clear resets; no console erro
 errors; 172 schedule tests; prettier clean. (Autofixer flagged SCSS `//` + `&--active` — false positives from
 no SCSS preprocessing; svelte-check is authoritative and clean.)
 
+## Filters popover follow-up fixes DONE + BROWSER-VERIFIED 2026-09-04
+
+Two bugs found after the popover shipped, both fixed same day:
+1. The Employee/Status `Select` dropdowns opened *behind* the Filters panel (Select content sits at
+   `--elevation-modal` 1001, the panel at `--elevation-tooltip` 1002 — fine when a Select is on the page, not
+   when nested in a popover). Fixed via a new `Select.svelte` `contentClass` prop; the two Selects here pass
+   `schedule-controls__filters-select`, styled one z-index above the panel.
+2. The Filters trigger itself had zero real styling (raw browser button border) — it is a Bits UI
+   `Popover.Trigger`, which renders its own `<button>` outside Svelte's scoped-CSS reach, so the scoped
+   `.schedule-controls__unscheduled` pill rule silently never matched it. Made that rule `:global()`
+   (no visual change for the plain Unscheduled/Map buttons, which still carry the class).
+
+Both re-verified live: dropdowns render fully above the panel; trigger now matches Map/Unscheduled exactly in
+all states (rest, hover, open/active, focus).
+
 ## Next action — 7b-B (the only thing left for Part 8)
 
 - **7b-B (BLOCKED on sk. token):** turn the 7a-4 worker route on (503 until a real provider), geocode the 8

@@ -210,6 +210,7 @@
 							value={filters.employee}
 							options={employeeOptions}
 							disabled={employeesFailed}
+							contentClass="schedule-controls__filters-select"
 							onchange={(employee) => onchange({ employee })}
 						/>
 
@@ -218,6 +219,7 @@
 							label="Status"
 							value={filters.status}
 							options={statusOptions}
+							contentClass="schedule-controls__filters-select"
 							onchange={(status) => onchange({ status: status as ScheduleFilters['status'] })}
 						/>
 
@@ -257,7 +259,12 @@
 		gap: var(--space-smaller);
 	}
 
-	.schedule-controls__unscheduled {
+	/* Global, not scoped: the Filters trigger is a Bits UI Popover.Trigger, which renders its own <button>
+	   outside the reach of Svelte's per-component style scoping. A scoped .schedule-controls__unscheduled
+	   rule silently never matches it, so it fell back to the browser's raw default button border. Making the
+	   whole pill global fixes the trigger and is a no-op for the plain Unscheduled/Map buttons, which still
+	   carry the class either way. */
+	:global(.schedule-controls__unscheduled) {
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-smaller);
@@ -272,18 +279,18 @@
 		font-weight: 600;
 		cursor: pointer;
 		transition: background-color var(--timing-quick) ease;
+	}
 
-		&:hover {
-			background-color: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-		&--active {
-			border-color: var(--color-interactive);
-			background-color: var(--color-surface--active);
-		}
+	:global(.schedule-controls__unscheduled:hover) {
+		background-color: var(--color-surface--hover);
+	}
+	:global(.schedule-controls__unscheduled:focus-visible) {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+	:global(.schedule-controls__unscheduled--active) {
+		border-color: var(--color-interactive);
+		background-color: var(--color-surface--active);
 	}
 
 	.schedule-controls__map {
@@ -379,6 +386,13 @@
 		border-radius: var(--radius-base);
 		background-color: var(--color-surface);
 		box-shadow: var(--shadow-base);
+	}
+
+	/* The Employee/Status Selects float their options at --elevation-modal, one layer below this popover's
+	   --elevation-tooltip -- fine when a Select sits directly on the page, but here it is nested inside the
+	   panel, so its options must outrank the panel that hosts them or they render underneath it. */
+	:global(.schedule-controls__filters-select) {
+		z-index: calc(var(--elevation-tooltip) + 1);
 	}
 
 	.schedule-controls__filters-header {
