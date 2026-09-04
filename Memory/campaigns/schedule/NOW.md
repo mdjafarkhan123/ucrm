@@ -53,8 +53,12 @@ stops get display-only browser geocoding via `geocode-client.ts` (Mapbox v6 forw
 cache, never stored) — retires itself once B stores coords. Checks: svelte-check 0 errors; 172 schedule tests
 (4 new geocode); prettier + autofixer clean. Property addresses are real (Springfield/Vancouver/Savar) so
 pins will resolve.
-Browser-verify: Schedule → Day view → pick one employee → open Map → confirm tiles, pins, line, pin-click
-preview, selection highlight, dark/light.
+Follow-up fixes (`6c0ac89`): Map button now shows in every view (Jobber parity) and opening from Week/Month
+switches to Day first; construct Mapbox after a rAF + resize() on load to fix a black (0-size) canvas. Token
+verified valid via curl (geocoding + both styles 200), so black was init timing, not the token. Contract
+updated ("Contextual Map and route behavior": button in every view).
+Browser-verify (PENDING JAFAR, needs hard refresh): Schedule → Map button (any view) → pick employee →
+confirm tiles render (not black), pins, line, pin-click preview, selection highlight, dark/light.
 
 **7b-B (BLOCKED on sk. token):** turn the 7a-4 worker route on (503 until a real provider), geocode the 8
 pending properties permanently, store lat/lng. Then stored coords win in `stopGeocodeState` and the A2

@@ -421,6 +421,11 @@ Map is an on-demand split workspace within Schedule, following Jobber's contextu
 for route work, but it is not a separate sidebar destination and never resets the selected date, employee or
 filters.
 
+The Map button is present in every calendar view (Day, Week, Month), matching Jobber. Because a route is one
+employee's single day, opening the Map switches to the Day view for the currently focused date while keeping
+that date and the selected employee; it never changes the date or the chosen employee. Leaving the Day view
+while the Map is open closes it.
+
 Saved manual order is scoped to the selected employee and date. It is a dispatch preference, not a change
 to the Visit's appointment time or ownership. A shared Visit may therefore appear once in each assigned
 employee's route at the position saved for that employee while remaining one Visit everywhere else.
