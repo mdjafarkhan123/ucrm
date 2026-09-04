@@ -103,6 +103,8 @@ export type RequestDetail = {
 	updated_at: string;
 	stored_status: StoredRequestStatus;
 	status: DisplayRequestStatus;
+	/** The organization's own timezone, so the on-site assessment books in the office's clock, not the browser's. */
+	timezone: string;
 	client: {
 		id: string;
 		display_name: string;

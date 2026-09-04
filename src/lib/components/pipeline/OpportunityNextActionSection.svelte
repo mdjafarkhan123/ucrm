@@ -5,6 +5,7 @@
 	import ConvertToQuoteDialog from './ConvertToQuoteDialog.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { dragOpportunity, invalidatePipeline, type OpportunityCard } from '$lib/pipeline/api';
+	import type { BoardFormatting } from '$lib/pipeline/money';
 
 	// The Brief's own next-action affordance for the collapsed Assessment column's three sub-states -- the
 	// same real command the board's own drag already performs (`dragOpportunity`), offered here because the
@@ -12,11 +13,13 @@
 	// `opportunity.id`, so switching cards resets any open dialog.
 	let {
 		opportunity,
+		formatting,
 		canEdit,
 		onUpdate,
 		onConverted
 	}: {
 		opportunity: OpportunityCard;
+		formatting: BoardFormatting | null;
 		canEdit: boolean;
 		onUpdate: (patch: Partial<OpportunityCard>) => void;
 		// Told after a successful conversion -- the Request becomes `converted` and a Quote now exists, so
@@ -126,6 +129,7 @@
 	<ScheduleAssessmentDialog
 		open={true}
 		title={`Schedule the assessment - ${opportunity.title}`}
+		timezone={formatting?.timezone}
 		onConfirm={confirmSchedule}
 		onClose={() => (scheduleOpen = false)}
 	/>

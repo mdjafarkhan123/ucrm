@@ -34,7 +34,8 @@ export const GET: RequestHandler = async (event) => {
 		{
 			counts,
 			currency_code: formatting.ok ? formatting.formatting.currency_code : 'USD',
-			locale: formatting.ok ? formatting.formatting.locale : 'en-US'
+			locale: formatting.ok ? formatting.formatting.locale : 'en-US',
+			timezone: formatting.ok ? formatting.formatting.timezone : 'UTC'
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

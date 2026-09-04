@@ -73,6 +73,7 @@ export const GET: RequestHandler = async (event) => {
 					: null,
 				stored_status: row.status,
 				status: deriveRequestStatus(row.status, assessment, timezone),
+				timezone,
 				email: (contactMethods ?? []).find((method) => method.kind === 'email')?.value ?? null,
 				phone: (contactMethods ?? []).find((method) => method.kind === 'phone')?.value ?? null
 			}

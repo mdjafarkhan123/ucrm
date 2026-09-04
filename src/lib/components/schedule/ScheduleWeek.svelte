@@ -34,6 +34,7 @@
 		type ScheduleProposal
 	} from '$lib/schedule/drag';
 	import { startPointerDrag } from '$lib/schedule/pointer-drag';
+	import { anchorAtPoint, type PopoverAnchor } from '$lib/components/ui/popover-anchor';
 	import { clockLabel } from '$lib/schedule/labels';
 	import type { ScheduleVisit } from '$lib/schedule/api';
 	import type { TeamMember } from '$lib/team/api';
@@ -223,7 +224,7 @@
 	export function probeExternal(
 		_visit: ScheduleVisit,
 		event: PointerEvent
-	): { target: DropTarget; anchor: HTMLElement } | null {
+	): { target: DropTarget; anchor: PopoverAnchor } | null {
 		for (const [index, element] of anytimeEls.entries()) {
 			if (contains(element, event)) {
 				externalDay = days[index];
@@ -239,7 +240,13 @@
 			const startMinutes = snapMinutes((event.clientY - box.top) / PX_PER_MINUTE);
 			externalDay = days[index];
 			externalStart = startMinutes;
-			return { target: { day: days[index], startMinutes }, anchor: element! };
+			// A day column is a full 24 hours tall and mostly scrolled out of sight, so it is useless to point
+			// a popover at. An internal drag anchors to the card it moved; a card arriving from the backlog has
+			// no card on the grid yet, so the confirmation points at the spot it was dropped on instead.
+			return {
+				target: { day: days[index], startMinutes },
+				anchor: anchorAtPoint(event.clientX, event.clientY)
+			};
 		}
 		externalDay = null;
 		externalStart = null;

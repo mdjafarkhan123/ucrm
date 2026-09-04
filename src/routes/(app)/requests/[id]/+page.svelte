@@ -467,6 +467,7 @@
 				<AssessmentBlock
 					bind:this={assessmentBlock}
 					assessment={saved.assessment}
+					timezone={saved.timezone}
 					saving={assessmentSaving}
 					error={assessmentError}
 					onSave={(draft: AssessmentDraft) =>

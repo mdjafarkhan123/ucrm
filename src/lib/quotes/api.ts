@@ -304,6 +304,8 @@ export type QuoteOverview = {
 	/** The organization's money format, which the new-quote form needs before a quote exists. */
 	currency_code: string;
 	locale: string;
+	/** The organization's own timezone, so the New Request page's on-site assessment books in it. */
+	timezone: string;
 };
 
 export async function fetchQuoteOverview(): Promise<QuoteOverview> {

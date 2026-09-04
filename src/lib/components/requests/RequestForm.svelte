@@ -39,12 +39,15 @@
 	let {
 		currencyCode = 'USD',
 		locale = 'en-US',
+		timezone = 'UTC',
 		seed = null,
 		onSaved,
 		onCancel
 	}: {
 		currencyCode?: string;
 		locale?: string;
+		/** The organization's own timezone, so the on-site assessment books in it, not the browser's. */
+		timezone?: string;
 		/** A slot staged by Schedule's empty-slot chooser, read once by the page and passed straight to the
 		 *  on-site assessment so it opens pre-booked onto the clicked day/time. */
 		seed?: AssessmentCreateSeed | null;
@@ -316,6 +319,7 @@
 				bind:this={assessmentBlock}
 				draft
 				{seed}
+				{timezone}
 				assessment={null}
 				onDraftChange={(booked) => (visitBooked = booked)}
 			/>

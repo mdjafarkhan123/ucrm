@@ -101,7 +101,13 @@
 		<!-- Keyed by id so switching cards remounts this section — a mid-edit row resets by starting fresh
 		     rather than by an effect syncing local edit state to a changed prop. -->
 		{#key opportunity.id}
-			<OpportunityNextActionSection {opportunity} {canEdit} {onUpdate} onConverted={onClose} />
+			<OpportunityNextActionSection
+				{opportunity}
+				{formatting}
+				{canEdit}
+				{onUpdate}
+				onConverted={onClose}
+			/>
 			<OpportunityDetailsSection {opportunity} {formatting} {canEdit} {onUpdate} />
 			<OpportunityTasksSection opportunityId={opportunity.id} {formatting} {canEdit} />
 			<OpportunityNotesSection

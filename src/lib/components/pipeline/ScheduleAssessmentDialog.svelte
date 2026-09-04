@@ -9,6 +9,7 @@
 		type DateTimePickerValue
 	} from '$lib/components/ui/date-time';
 	import { DragWriteError } from '$lib/pipeline/api';
+	import { zonedTimeToUtc } from '$lib/time/calendar-day';
 
 	// The one drag target that needs input before the move can run: dropping a card onto "Assessment
 	// scheduled" has to say when. Mirrors `AssessmentBlock`'s own scheduled fields, minus instructions and
@@ -18,11 +19,14 @@
 	let {
 		open,
 		title,
+		timezone = 'UTC',
 		onConfirm,
 		onClose
 	}: {
 		open: boolean;
 		title: string;
+		/** The organization's own timezone, so the typed day/time books in it, not the browser's. */
+		timezone?: string;
 		onConfirm: (startsAt: string, endsAt: string) => Promise<void>;
 		onClose: () => void;
 	} = $props();
@@ -33,8 +37,8 @@
 	let fieldErrors = $state<Record<string, string>>({});
 
 	function isoFrom(day: string, time: string) {
-		const parsed = new Date(`${day}T${time}`);
-		return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+		const parsed = zonedTimeToUtc(day, time, timezone);
+		return parsed ? parsed.toISOString() : null;
 	}
 
 	async function save() {

@@ -2,6 +2,7 @@
 	import { Popover as PopoverPrimitive } from 'bits-ui';
 	import type { Snippet } from 'svelte';
 	import closeIcon from '@tabler/icons/outline/x.svg?raw';
+	import type { PopoverAnchor } from './popover-anchor';
 
 	// A popover that floats beside something the page has selected, rather than beside its own trigger.
 	//
@@ -18,8 +19,8 @@
 		children
 	}: {
 		open: boolean;
-		/** The element the popover points at. Nothing is drawn until there is one. */
-		anchor: HTMLElement | null;
+		/** What the popover points at -- an element, or a bare point. Nothing is drawn until there is one. */
+		anchor: PopoverAnchor | null;
 		title: string;
 		onClose: () => void;
 		children: Snippet;
@@ -41,9 +42,10 @@
 			collisionPadding={16}
 			onCloseAutoFocus={(event) => {
 				// There is no trigger to hand focus back to, so the page's own anchor takes it. Without this
-				// the focus ring would land back at the top of the document.
+				// the focus ring would land back at the top of the document. A point anchor is not an element
+				// and has nothing to focus, so the ring simply stays where the browser left it.
 				event.preventDefault();
-				anchor?.focus();
+				if (anchor instanceof HTMLElement) anchor.focus();
 			}}
 		>
 			<header class="popover__header">

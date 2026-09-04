@@ -395,6 +395,7 @@
 		<ScheduleAssessmentDialog
 			open={true}
 			title={`Schedule the assessment - ${pendingCard.title}`}
+			timezone={formatting?.timezone}
 			onConfirm={confirmScheduledMove}
 			onClose={cancelScheduledMove}
 		/>

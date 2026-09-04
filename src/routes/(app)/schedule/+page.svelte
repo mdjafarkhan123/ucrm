@@ -10,6 +10,7 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Popover from '$lib/components/ui/Popover.svelte';
+	import type { PopoverAnchor } from '$lib/components/ui/popover-anchor';
 	import ScheduleControls from '$lib/components/schedule/ScheduleControls.svelte';
 	import ScheduleDay from '$lib/components/schedule/ScheduleDay.svelte';
 	import ScheduleMonth from '$lib/components/schedule/ScheduleMonth.svelte';
@@ -470,7 +471,7 @@
 	let pending = $state<{
 		visit: ScheduleVisit;
 		proposal: ScheduleProposal;
-		anchor: HTMLElement;
+		anchor: PopoverAnchor;
 	} | null>(null);
 	let moveSaving = $state(false);
 	let moveError = $state('');
@@ -533,7 +534,7 @@
 			: []
 	);
 
-	function proposeChange(visit: ScheduleVisit, proposal: ScheduleProposal, anchor: HTMLElement) {
+	function proposeChange(visit: ScheduleVisit, proposal: ScheduleProposal, anchor: PopoverAnchor) {
 		closePreview();
 		moveError = '';
 		pending = { visit, proposal, anchor };

@@ -27,6 +27,7 @@
 		type ScheduleProposal
 	} from '$lib/schedule/drag';
 	import { startPointerDrag } from '$lib/schedule/pointer-drag';
+	import { anchorAtPoint, type PopoverAnchor } from '$lib/components/ui/popover-anchor';
 	import { clockLabel } from '$lib/schedule/labels';
 	import type { ScheduleEmployeeFilter } from '$lib/schedule/filters';
 	import { DAY_HOUR_PX, type ScheduleZoom } from '$lib/schedule/density';
@@ -343,7 +344,7 @@
 	export function probeExternal(
 		visit: ScheduleVisit,
 		event: PointerEvent
-	): { target: DropTarget; anchor: HTMLElement } | null {
+	): { target: DropTarget; anchor: PopoverAnchor } | null {
 		for (const [index, element] of anytimeEls.entries()) {
 			if (contains(element, event)) {
 				externalRow = index;
@@ -360,7 +361,12 @@
 			const startMinutes = snapMinutes((event.clientX - box.left) / PX_PER_MINUTE);
 			externalRow = index;
 			externalStart = startMinutes;
-			return { target: dropTargetFor(visit, { rowIndex: index, startMinutes }), anchor: element! };
+			// An employee track is a full 24 hours wide and mostly scrolled out of sight, so it is useless to
+			// point a popover at -- the same reason the Week grid anchors an external drop to the drop point.
+			return {
+				target: dropTargetFor(visit, { rowIndex: index, startMinutes }),
+				anchor: anchorAtPoint(event.clientX, event.clientY)
+			};
 		}
 		externalRow = null;
 		externalStart = null;

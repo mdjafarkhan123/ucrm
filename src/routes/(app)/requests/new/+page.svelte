@@ -52,6 +52,7 @@
 		<RequestForm
 			currencyCode={overviewQuery.data?.currency_code ?? 'USD'}
 			locale={overviewQuery.data?.locale ?? 'en-US'}
+			timezone={overviewQuery.data?.timezone ?? 'UTC'}
 			seed={formKey === 0 ? seed : null}
 			onSaved={handleSaved}
 			onCancel={() => goto(resolve('/(app)/requests'))}

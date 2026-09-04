@@ -16,6 +16,7 @@
 		calendarDateToString,
 		type DateTimePickerValue
 	} from '$lib/components/ui/date-time';
+	import { calendarDay, clockMinutesInZone, zonedTimeToUtc } from '$lib/time/calendar-day';
 	import { assignableTeamKey, fetchAssignableTeam, type TeamMember } from '$lib/team/api';
 	import type { AssessmentDraft, RequestAssessment } from '$lib/requests/api';
 	import type { AssessmentCreateSeed } from '$lib/requests/assessmentSeed';
@@ -32,6 +33,7 @@
 	// design rules forbid — only a way to drop the visit again.
 	let {
 		assessment,
+		timezone = 'UTC',
 		saving = false,
 		error = '',
 		draft = false,
@@ -42,6 +44,8 @@
 		onDraftChange
 	}: {
 		assessment: RequestAssessment | null;
+		/** The organization's own timezone. A day/time typed here is booked in it, not the browser's. */
+		timezone?: string;
 		saving?: boolean;
 		error?: string;
 		/** Hold the visit in memory for a page that has not created its request yet. */
@@ -132,22 +136,22 @@
 	}
 
 	// The stored instants are UTC; the office books in its own clock, so both directions go through the
-	// browser's local time rather than slicing the ISO string.
+	// organization's own timezone rather than the browser's, or a dispatcher whose device disagrees with
+	// the business would silently book the wrong day or hour.
 	function localPart(iso: string | null) {
 		if (!iso) return undefined;
-		const date = new Date(iso);
-		return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+		return calendarDay(new Date(iso), timezone);
 	}
 
 	function localTime(iso: string | null) {
 		if (!iso) return undefined;
-		const date = new Date(iso);
-		return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+		const minutes = clockMinutesInZone(new Date(iso), timezone);
+		return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 	}
 
 	function isoFrom(day: string, time: string) {
-		const parsed = new Date(`${day}T${time}`);
-		return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+		const parsed = zonedTimeToUtc(day, time, timezone);
+		return parsed ? parsed.toISOString() : null;
 	}
 
 	function toggleAssignee(id: string, checked: boolean) {
@@ -241,13 +245,18 @@
 
 	// --- What the booked card reads out ---------------------------------------------------------------
 
-	const dayFormat = new Intl.DateTimeFormat('en-GB', {
-		weekday: 'short',
-		day: 'numeric',
-		month: 'short',
-		year: 'numeric'
-	});
-	const timeFormat = new Intl.DateTimeFormat('en-GB', { hour: 'numeric', minute: '2-digit' });
+	const dayFormat = $derived(
+		new Intl.DateTimeFormat('en-GB', {
+			timeZone: timezone,
+			weekday: 'short',
+			day: 'numeric',
+			month: 'short',
+			year: 'numeric'
+		})
+	);
+	const timeFormat = $derived(
+		new Intl.DateTimeFormat('en-GB', { timeZone: timezone, hour: 'numeric', minute: '2-digit' })
+	);
 
 	const scheduleLine = $derived.by(() => {
 		if (!assessment?.starts_at) return 'No date set yet';
