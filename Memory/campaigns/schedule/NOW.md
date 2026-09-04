@@ -2,11 +2,10 @@
 
 - Goal: Deliver a desktop contractor dispatch desk without duplicating Job, Visit or other domain truth.
 - State: V1.1 COMPLETE (`93c2e03`). On **Part 7 — contextual Map + manual routing** (V1.2), split
-  7a (provider-independent, mock) / 7b (live Mapbox). **7a is COMPLETE and BROWSER-VERIFIED.**
-  Latest: drag-ghost suppression in pointer-drag (`66b9dbf`), 7a-5 gating fix (`cc346d0`), 7a-6 persist Save Route Order (`300d3ce`). Earlier: 7a-1
-  route-order+directions (`bef17be`), 7a-2 geocoding boundary+mock (`19ced68`), 7a-3 geocode-status
-  schema+trigger (`09645f8`), 7a-4 async geocoding worker (`5a126fe`), 7a-5 contextual Map workspace (`7aaa2c8`).
-- Branch `schedule-5b-visits-card`. Working tree clean (drag-ghost fix committed `66b9dbf`).
+  7a (provider-independent, mock) / 7b (live Mapbox). **7a COMPLETE + BROWSER-VERIFIED. 7b-A2 COMPLETE +
+  BROWSER-VERIFIED (`91d8bbc`, 2026-09-04) — two bugs found + fixed during verify (see below).** Only 7b-B
+  (stored geocoding) remains for Part 8, blocked on a secret (sk.) Mapbox token.
+- Branch `schedule-5b-visits-card`. Working tree clean (latest `91d8bbc`).
 - Behavior in docs/schedule-behavior-contract.md ("Contextual Map and route behavior" ~418-467, V1.2 ~147-162).
 
 ## Browser verification (2026-09-04, app on localhost:5173, workspace "Raad LTD")
@@ -43,35 +42,45 @@ Jafar gave a **public** Mapbox token (pk.), formatted into `.env` as `PUBLIC_MAP
 `MAPBOX_ACCESS_TOKEN=` placeholder for the future secret token). Chose path **A2**: live map now, geocoding
 next. Permanent/stored geocoding needs a secret (sk.) token + plan tier, so it waits for B.
 
-## Next action — BROWSER-VERIFY 7b-A2, then B
+## 7b-A2 COMPLETE + BROWSER-VERIFIED 2026-09-04
 
-**7b-A2 SHIPPED (checks-verified, browser-verify pending).** Added `mapbox-gl@3.30` (its own types; removed
-redundant @types/mapbox-gl). New `RouteMap.svelte` replaces the map shell in `ScheduleRoute.svelte`: live
-Mapbox tiles (theme-aware streets-v12/dark-v11), numbered circular pins in route order, a GeoJSON route line,
-fit-to-bounds, pin click → same preview popover (onselect(stop, el)), selected-pin highlight. Un-geocoded
-stops get display-only browser geocoding via `geocode-client.ts` (Mapbox v6 forward, TanStack query, session
-cache, never stored) — retires itself once B stores coords. Checks: svelte-check 0 errors; 172 schedule tests
-(4 new geocode); prettier + autofixer clean. Property addresses are real (Springfield/Vancouver/Savar) so
-pins will resolve.
-Follow-up fixes (`6c0ac89`): Map button now shows in every view (Jobber parity) and opening from Week/Month
-switches to Day first; construct Mapbox after a rAF + resize() on load to fix a black (0-size) canvas. Token
-verified valid via curl (geocoding + both styles 200), so black was init timing, not the token. Contract
-updated ("Contextual Map and route behavior": button in every view).
-Browser-verify (PENDING JAFAR, needs hard refresh): Schedule → Map button (any view) → pick employee →
-confirm tiles render (not black), pins, line, pin-click preview, selection highlight, dark/light.
+`RouteMap.svelte` (in `ScheduleRoute.svelte`): live Mapbox tiles (theme-aware streets-v12/dark-v11),
+numbered circular pins in route order, GeoJSON route line, fit-to-bounds, pin click → preview popover
+(onselect(stop, el)), selected-pin highlight. Un-geocoded stops get display-only browser geocoding via
+`geocode-client.ts` (Mapbox v6 forward, TanStack query, session cache, never stored) — retires once B stores
+coords. `mapbox-gl@3.30`. Black-canvas fixed with rAF + resize() on load; Map button in every view (`6c0ac89`).
 
-Parked (do right after map is confirmed OK, Jafar 2026-09-04): the Schedule filter row is getting long —
-show a few filters and collapse the rest behind a "More…" button (standard overflow pattern). Not started.
+Browser-verified live (Sep 1, Jafar Khan's route, one stop at Savar): Map opens; tiles render; numbered green
+pin placed via display geocoding; pin-click preview + list-card selection; **light app→light map, dark toggle
+→ dark map live**; selected pin turns **blue** and survives a theme re-style. The stop-list "Locating…" is
+EXPECTED (stored geocode_status still pending until 7b-B; map pins come from session display geocoding).
 
-**7b-B (BLOCKED on sk. token):** turn the 7a-4 worker route on (503 until a real provider), geocode the 8
-pending properties permanently, store lat/lng. Then stored coords win in `stopGeocodeState` and the A2
-display lookup stops running. Re-verify pricing/terms before purchase.
+**Two bugs found + fixed during verify (`91d8bbc`):**
+1. Map theme ignored the app: `currentTheme()` fell back to prefers-color-scheme, but the app keys its
+   palette only on `[data-theme='dark']` and never reads the OS → light app on a dark-OS machine got a dark
+   map. Now the map mirrors the app (dark iff data-theme='dark'); watchTheme dropped its OS-pref listener.
+2. Pin selection never highlighted: the selection `$effect` read `selectedItemId` only inside a loop that is
+   empty before any stop geocodes, so it never subscribed. Now read unconditionally at the top.
+Checks after fixes: svelte-check 0 errors; 172 schedule tests pass; prettier + autofixer clean.
 
-Part 8 (closure) needs 7a (done) + 7b-A2 (done, pending browser-verify) + 7b-B.
+Aside (NOT fixed, app-wide, needs Jafar): `Topbar.applyTheme` uses `toggleAttribute('data-theme', dark)`,
+which REMOVES data-theme in light mode (so absent = light). The map fix accounts for this; the app renders
+fine. A cleaner whole-app fix would always set data-theme='light'|'dark', but that is outside Schedule scope.
 
-Not-yet-tested corner (no data during verification): keyboard reordering (Arrow keys on a focused Anytime
-stop) and per-stop / whole-route Directions were present in code but not exercised live — worth a quick check
-when 7b brings real geocoded stops.
+## Next action — pick one
+
+- **Parked "More…" filter overflow (NOW UNBLOCKED — Jafar asked 2026-09-04, map is confirmed):** the Schedule
+  filter row (date nav, View, Density, Employee, Status, Unscheduled, Map) is long. Keep primary controls
+  visible, collapse secondary behind a "More…" button (standard overflow pattern). Plan presented to Jafar;
+  awaiting go-ahead. Not started.
+- **7b-B (BLOCKED on sk. token):** turn the 7a-4 worker route on (503 until a real provider), geocode the 8
+  pending properties permanently, store lat/lng. Then stored coords win in `stopGeocodeState` and the A2
+  display lookup stops running. Re-verify pricing/terms before purchase.
+
+Part 8 (closure) needs 7a (done) + 7b-A2 (done ✅) + 7b-B (blocked on sk. token).
+
+Not-yet-tested corner (only one stop in verify data): keyboard reordering (Arrow keys on a focused Anytime
+stop), multi-pin route line, and per-stop / whole-route Directions — exercise when 7b brings more stops.
 
 ## Data facts (verified in code)
 
