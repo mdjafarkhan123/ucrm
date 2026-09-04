@@ -2,41 +2,46 @@
 
 - Goal: Deliver a desktop contractor dispatch desk without duplicating Job, Visit or other domain truth.
 - State: V1.1 COMPLETE (`93c2e03`). On **Part 7 — contextual Map + manual routing** (V1.2), split
-  7a (provider-independent, mock) / 7b (live Mapbox). Shipped: 7a-1 route-order+directions (`bef17be`),
+  7a (provider-independent, mock) / 7b (live Mapbox). **7a is now COMPLETE: 7a-1..7a-6 all shipped.**
+  Latest: 7a-6 persist Save Route Order (`300d3ce`). Earlier: 7a-1 route-order+directions (`bef17be`),
   7a-2 geocoding boundary+mock (`19ced68`), 7a-3 geocode-status schema+trigger (`09645f8`),
-  7a-4 async geocoding worker (`5a126fe`), **7a-5 contextual Map workspace (`7aaa2c8`)**.
+  7a-4 async geocoding worker (`5a126fe`), 7a-5 contextual Map workspace (`7aaa2c8`).
 - Branch `schedule-5b-visits-card`. Working tree clean at checkpoint time.
 - Behavior in docs/schedule-behavior-contract.md ("Contextual Map and route behavior" ~418-467, V1.2 ~147-162).
 
-## What 7a-5 shipped (checks-verified; browser verification still pending)
+## What 7a-6 shipped (checks-verified; browser verification still pending)
 
-- Map toggle in the **Day view only**, one-employee gating (opening from All/Unassigned prompts a chooser
-  that also sets the employee filter). Split workspace replaces the grid while open; closing returns to it.
-- Ordered stop list (`ScheduleRoute.svelte` + `RouteStopCard.svelte`) reusing tested `route-order.ts`:
-  fixed-time Visits + ALL Assessments locked anchors; only Anytime Visits reorder by pointer drag or
-  Arrow keys. Manual order held **in-session only** (feeds whole-route Directions); NOT persisted yet.
-- Honest per-stop geocode states via new pure `src/lib/schedule/stops.ts` (+ `stops.spec.ts`):
-  located / pending("Locating…") / failed("Address didn't map") / no-address — unmappable stops stay in the
-  list, never dropped. Map pane is a shell (no live tiles) summarising how many stops are placeable.
-- Google/Apple Directions per stop and whole-route (waypoint-limit spelled out on the over-cap provider).
-- Window read (`api/schedule/visits/+server.ts`, `ScheduleVisit`/`ScheduleAssessment`/`AssessmentItem`) now
-  carries `property_latitude`/`property_longitude`/`property_geocode_status`. All 8 properties still `pending`
-  (no geocode run yet) → in the app every stop shows "Locating…" until 7b geocodes.
-- Checks: svelte-check 0 errors; 179 schedule unit/component tests pass (incl. 12 new stops.spec cases);
-  svelte MCP autofixer clean bar the standard trusted-icon {@html} caution; prettier clean.
+- Migration `schedule_route_orders` (`20260904100000`): PK (organization_id, employee_id, route_date);
+  composite FK to `organization_members(organization_id, user_id)` ON DELETE CASCADE; `stop_order uuid[]`
+  capped at 500; RLS by org membership (wrapped in `(select …)`); `set_updated_at` trigger. Applied to remote;
+  no new security advisors.
+- Zod `scheduleRouteOrderWriteSchema` / `scheduleRouteOrderQuerySchema` in schedule.schema.ts.
+- Route `/api/schedule/route-order/+server.ts`: GET (jobs.view, lazy per employee+day, missing row → `[]`)
+  and PUT upsert (jobs.schedule). Unknown stop ids are ignored on apply — a soft preference list, never FK'd.
+- Client `fetchScheduleRouteOrder` / `saveScheduleRouteOrder` + `scheduleRouteOrderKey` in schedule/api.ts.
+- `ScheduleRoute.svelte`: new props `savedOrder`/`saving`/`onsave`. `effectiveOrder = manualOrder ?? savedOrder`
+  so a saved route rehydrates on open and a drag overrides it. "Save Route Order" button appears only when a
+  drag left the order dirty, reads "Saving…", and clears once saved (server returns canonical order).
+- Page wires a lazy route-order query (enabled only while Map is open on one employee) + a save mutation that
+  `setQueryData`s the server's order and toasts. Contract: saved order is per employee+date; a shared Visit
+  sits once per employee route at that employee's position (falls out of the (employee,date) PK).
+- Checks: svelte-check 0 errors; 168 schedule unit tests pass; prettier clean; svelte autofixer clean.
 
 ## Next action
 
-**7a-6 — persist Save Route Order.** Purely additive to the drag that already works: a per-(employee, date)
-route-order store + save command + `/api/*` route + Zod + RLS + TanStack invalidation, and a "Save Route
-Order" button in `ScheduleRoute.svelte` wired to it (button intentionally absent in 7a-5). Contract: saved
-order is a dispatch preference scoped to employee+date, not an appointment-time change; a shared Visit sits
-once per employee route at that employee's saved position (~424-426). Load **supabase-postgres-best-practices**
-before the migration, then **svelte**/**design** for the button. Serialize via `serializeRouteOrder`; rehydrate
-via `applySavedOrder` (both already in `route-order.ts`).
-Also recommended before/with 7a-6: **browser-verify the 7a-5 Map UI** (toggle, gating, stop list, drag,
-failure states, Directions) on the running app.
-Part 8 (closure) needs 7a-1..7a-6 + 7b.
+Two independent threads, neither dependency-locked on the other:
+
+1. **Browser-verify the Map UI (7a-5 + 7a-6)** on the running app — toggle + one-employee gating, ordered stop
+   list, pointer/keyboard drag of Anytime stops, per-stop geocode failure states (all 8 properties are still
+   `pending`, so every stop shows "Locating…"), per-stop + whole-route Directions, and the new Save Route
+   Order button (appears on drag, persists, rehydrates on reopen, clears when saved). Needs the dev server up
+   and a logged-in session. Recommended before declaring 7a done-done.
+2. **7b — live Mapbox** (BLOCKED on Jafar's Mapbox tokens). Provider decided 2026-09-03: managed Mapbox
+   (Permanent geocoding, STORED coords; managed tiles + route line; external Google/Apple navigation). Turns
+   the 7a-4 worker route on (503 until a real provider), swaps the map shell for live tiles/pins, geocodes the
+   8 pending properties. Re-verify pricing/terms before purchase.
+
+Part 8 (closure) needs all of 7a (done) + 7b.
 
 ## Data facts (verified in code)
 
@@ -46,11 +51,12 @@ Part 8 (closure) needs 7a-1..7a-6 + 7b.
   secret `GEOCODING_WORKER_SECRET`): claim RPC `claim_pending_property_for_geocoding` (skip-locked, partial
   index `properties_pending_geocoding_idx`) + `finalize_property_geocode`. Route is 503 until 7b provides a
   real provider — DO NOT run a mock against real rows.
-- **Provider decided 2026-09-03: managed Mapbox** (Permanent geocoding, STORED coords; managed tiles + route
-  line; external Google/Apple navigation). Re-verify pricing/terms before purchase. Contract "Map/directions
-  provider boundary". 7b is BLOCKED on Jafar's Mapbox tokens.
+- `schedule_route_orders`: one row per (org, employee, day); `stop_order` is a list of Visit/Assessment ids;
+  save gated on jobs.schedule, read on jobs.view. Generated `database.types.ts` is stale (predates even
+  schedule_events); the supabase client is not strictly bound to it, so it was intentionally not regenerated.
 - Route stops = Visits + Assessments only; Events are whole-team, not routeable. Server domain code
   `src/lib/server/<domain>/`; pure schedule logic + `.spec.ts` `src/lib/schedule/`.
+- Route-order serialize/rehydrate helpers live in `route-order.ts`: `serializeRouteOrder`, `applySavedOrder`.
 
 ## Boundary
 
