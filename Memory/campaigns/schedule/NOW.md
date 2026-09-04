@@ -3,10 +3,10 @@
 - Goal: Deliver a desktop contractor dispatch desk without duplicating Job, Visit or other domain truth.
 - State: V1.1 COMPLETE (`93c2e03`). On **Part 7 — contextual Map + manual routing** (V1.2), split
   7a (provider-independent, mock) / 7b (live Mapbox). **7a is COMPLETE and BROWSER-VERIFIED.**
-  Latest: 7a-5 gating fix (`cc346d0`), 7a-6 persist Save Route Order (`300d3ce`). Earlier: 7a-1
+  Latest: drag-ghost suppression in pointer-drag (`66b9dbf`), 7a-5 gating fix (`cc346d0`), 7a-6 persist Save Route Order (`300d3ce`). Earlier: 7a-1
   route-order+directions (`bef17be`), 7a-2 geocoding boundary+mock (`19ced68`), 7a-3 geocode-status
   schema+trigger (`09645f8`), 7a-4 async geocoding worker (`5a126fe`), 7a-5 contextual Map workspace (`7aaa2c8`).
-- Branch `schedule-5b-visits-card`. Working tree clean at checkpoint time.
+- Branch `schedule-5b-visits-card`. Working tree clean (drag-ghost fix committed `66b9dbf`).
 - Behavior in docs/schedule-behavior-contract.md ("Contextual Map and route behavior" ~418-467, V1.2 ~147-162).
 
 ## Browser verification (2026-09-04, app on localhost:5173, workspace "Raad LTD")
@@ -37,15 +37,30 @@ the filter but left the Map closed (async-goto race vs the auto-close effect); r
   sits once per employee route at that employee's position (falls out of the (employee,date) PK).
 - Checks: svelte-check 0 errors; 168 schedule unit tests pass; prettier clean; svelte autofixer clean.
 
-## Next action
+## 7b split into A2 (public token, live map) + B (sk. token, stored geocoding)
 
-**7b — live Mapbox** (BLOCKED on Jafar's Mapbox tokens). This is the only remaining Part 7 thread; 7a is done
-and browser-verified. Provider decided 2026-09-03: managed Mapbox (Permanent geocoding, STORED coords; managed
-tiles + route line; external Google/Apple navigation). 7b turns the 7a-4 worker route on (503 until a real
-provider), swaps the map shell for live tiles/pins, and geocodes the pending properties. Re-verify
-pricing/terms before purchase. Resume once Jafar hands over the Mapbox tokens.
+Jafar gave a **public** Mapbox token (pk.), formatted into `.env` as `PUBLIC_MAPBOX_TOKEN` (+ empty
+`MAPBOX_ACCESS_TOKEN=` placeholder for the future secret token). Chose path **A2**: live map now, geocoding
+next. Permanent/stored geocoding needs a secret (sk.) token + plan tier, so it waits for B.
 
-Part 8 (closure) needs all of 7a (done) + 7b.
+## Next action — BROWSER-VERIFY 7b-A2, then B
+
+**7b-A2 SHIPPED (checks-verified, browser-verify pending).** Added `mapbox-gl@3.30` (its own types; removed
+redundant @types/mapbox-gl). New `RouteMap.svelte` replaces the map shell in `ScheduleRoute.svelte`: live
+Mapbox tiles (theme-aware streets-v12/dark-v11), numbered circular pins in route order, a GeoJSON route line,
+fit-to-bounds, pin click → same preview popover (onselect(stop, el)), selected-pin highlight. Un-geocoded
+stops get display-only browser geocoding via `geocode-client.ts` (Mapbox v6 forward, TanStack query, session
+cache, never stored) — retires itself once B stores coords. Checks: svelte-check 0 errors; 172 schedule tests
+(4 new geocode); prettier + autofixer clean. Property addresses are real (Springfield/Vancouver/Savar) so
+pins will resolve.
+Browser-verify: Schedule → Day view → pick one employee → open Map → confirm tiles, pins, line, pin-click
+preview, selection highlight, dark/light.
+
+**7b-B (BLOCKED on sk. token):** turn the 7a-4 worker route on (503 until a real provider), geocode the 8
+pending properties permanently, store lat/lng. Then stored coords win in `stopGeocodeState` and the A2
+display lookup stops running. Re-verify pricing/terms before purchase.
+
+Part 8 (closure) needs 7a (done) + 7b-A2 (done, pending browser-verify) + 7b-B.
 
 Not-yet-tested corner (no data during verification): keyboard reordering (Arrow keys on a focused Anytime
 stop) and per-stop / whole-route Directions were present in code but not exercised live — worth a quick check

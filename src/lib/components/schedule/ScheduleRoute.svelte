@@ -1,6 +1,7 @@
 <script lang="ts">
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import RouteStopCard from '$lib/components/schedule/RouteStopCard.svelte';
+	import RouteMap from '$lib/components/schedule/RouteMap.svelte';
 	import type { RouteStop } from '$lib/schedule/route-order';
 	import {
 		applySavedOrder,
@@ -9,18 +10,17 @@
 		moveAnytimeStop,
 		serializeRouteOrder
 	} from '$lib/schedule/route-order';
-	import { stopGeocodeState, stopNavPlace } from '$lib/schedule/stops';
+	import { stopNavPlace } from '$lib/schedule/stops';
 	import { routeDirections } from '$lib/schedule/directions';
 	import { startPointerDrag } from '$lib/schedule/pointer-drag';
-	import mapIcon from '@tabler/icons/outline/map-2.svg?raw';
 	import directionIcon from '@tabler/icons/outline/directions.svg?raw';
 	import saveIcon from '@tabler/icons/outline/device-floppy.svg?raw';
 	import closeIcon from '@tabler/icons/outline/x.svg?raw';
 
 	// The contextual Map workspace: one selected employee's stops for the chosen day, laid out as an ordered
-	// list beside the map pane. Provider-independent -- it draws no live tiles yet (that arrives with real
-	// Mapbox), so the map pane is an honest shell that says where the route stands. The ordered list is fully
-	// usable on its own: reorder the Anytime stops, and open Directions for one stop or the whole route.
+	// list beside a live Mapbox map (Schedule 7b). The list is fully usable on its own -- reorder the Anytime
+	// stops, and open Directions for one stop or the whole route -- and the map pins the same stops in the same
+	// order, with a line through them.
 
 	let {
 		stops,
@@ -152,13 +152,6 @@
 		routeItemLabel('Apple Maps', appleRoute)
 	]);
 	const canRouteDirect = $derived(googleRoute.ok || appleRoute.ok);
-
-	// How ready the route is to draw, for the map shell's summary. Located stops can be pinned; the rest stay in
-	// the list and are counted so the dispatcher knows what is missing rather than wondering where a pin went.
-	const locatedCount = $derived(
-		ordered.filter((stop) => stopGeocodeState(stop) === 'located').length
-	);
-	const unplacedCount = $derived(ordered.length - locatedCount);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -222,27 +215,10 @@
 			{/if}
 		</div>
 
-		<!-- The map pane is a shell until live Mapbox tiles arrive. It never pretends to draw a route; it says
-		     plainly where the map stands and how many stops can be pinned once it does. -->
+		<!-- The live map pins the same stops in the same order, with a line through them. Un-geocoded stops
+		     simply get no pin; the map says so and they stay in the list. -->
 		<div class="route__map" role="region" aria-label="Map">
-			<div class="route__map-shell">
-				<span class="route__map-icon" aria-hidden="true">{@html mapIcon}</span>
-				<p class="route__map-title">Map arrives with live maps</p>
-				{#if ordered.length === 0}
-					<p class="route__map-note">There are no stops to place on this day.</p>
-				{:else if locatedCount === 0}
-					<p class="route__map-note">
-						None of these {ordered.length} stops can be placed on the map yet. They stay in the list,
-						and each still offers Directions.
-					</p>
-				{:else}
-					<p class="route__map-note">
-						{locatedCount} of {ordered.length} stops ready to map{unplacedCount > 0
-							? ` · ${unplacedCount} still to place`
-							: ''}.
-					</p>
-				{/if}
-			</div>
+			<RouteMap stops={ordered} {selectedItemId} {onselect} />
 		</div>
 	</div>
 </section>
@@ -416,46 +392,11 @@
 	}
 
 	.route__map {
-		display: grid;
-		flex: 1 1 auto;
-		place-items: center;
-		min-width: 0;
-		padding: var(--space-large);
-		background-color: var(--color-surface--background--subtle);
-	}
-
-	.route__map-shell {
+		position: relative;
 		display: flex;
-		max-width: 320px;
-		flex-direction: column;
-		align-items: center;
-		gap: var(--space-small);
-		text-align: center;
-	}
-
-	.route__map-icon {
-		display: inline-grid;
-		place-items: center;
-		color: var(--color-icon--secondary);
-
-		:global(svg) {
-			width: 40px;
-			height: 40px;
-		}
-	}
-
-	.route__map-title {
-		margin: 0;
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 700;
-	}
-
-	.route__map-note {
-		margin: 0;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		line-height: var(--typography--lineHeight-base);
+		flex: 1 1 auto;
+		min-width: 0;
+		background-color: var(--color-surface--background--subtle);
 	}
 
 	@media (max-width: 900px) {
