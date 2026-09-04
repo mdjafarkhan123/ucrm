@@ -60,6 +60,9 @@ updated ("Contextual Map and route behavior": button in every view).
 Browser-verify (PENDING JAFAR, needs hard refresh): Schedule → Map button (any view) → pick employee →
 confirm tiles render (not black), pins, line, pin-click preview, selection highlight, dark/light.
 
+Parked (do right after map is confirmed OK, Jafar 2026-09-04): the Schedule filter row is getting long —
+show a few filters and collapse the rest behind a "More…" button (standard overflow pattern). Not started.
+
 **7b-B (BLOCKED on sk. token):** turn the 7a-4 worker route on (503 until a real provider), geocode the 8
 pending properties permanently, store lat/lng. Then stored coords win in `stopGeocodeState` and the A2
 display lookup stops running. Re-verify pricing/terms before purchase.
