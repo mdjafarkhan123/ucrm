@@ -30,11 +30,29 @@ export function startPointerDrag(event: PointerEvent, handlers: PointerDragHandl
 	const originY = event.clientY;
 	let dragging = false;
 
+	// The browser starts selecting text and dragging images the instant a press moves, before our own
+	// threshold has decided this is a drag. Once that native gesture begins it cannot be called back, so a
+	// card's text or avatar ends up stuck to the cursor as a ghost. This is the same guard FullCalendar,
+	// interact.js and dnd-kit put around a pointer drag, and for the same reason: no single mechanism covers
+	// every browser. `user-select: none` on the body is the primary one and the only one Firefox honours;
+	// preventing `selectstart` covers older WebKit where the property alone leaks; preventing `dragstart`
+	// kills the native image drag that `user-select` never touches. Held for the life of the gesture -- from
+	// the press, not from the threshold -- and restored on the way out. A plain click never selects anything,
+	// so this costs nothing when the press turns out not to be a drag.
+	const previousUserSelect = document.body.style.userSelect;
+
+	function suppressNative(next: Event) {
+		next.preventDefault();
+	}
+
 	function finish() {
 		window.removeEventListener('pointermove', move);
 		window.removeEventListener('pointerup', up);
 		window.removeEventListener('pointercancel', cancel);
 		window.removeEventListener('keydown', key);
+		window.removeEventListener('selectstart', suppressNative);
+		window.removeEventListener('dragstart', suppressNative);
+		document.body.style.userSelect = previousUserSelect;
 	}
 
 	function move(next: PointerEvent) {
@@ -70,6 +88,9 @@ export function startPointerDrag(event: PointerEvent, handlers: PointerDragHandl
 	window.addEventListener('pointerup', up);
 	window.addEventListener('pointercancel', cancel);
 	window.addEventListener('keydown', key);
+	window.addEventListener('selectstart', suppressNative);
+	window.addEventListener('dragstart', suppressNative);
+	document.body.style.userSelect = 'none';
 }
 
 /** Where a pointer sits inside an element, in pixels from its top-left, including whatever it has scrolled. */
