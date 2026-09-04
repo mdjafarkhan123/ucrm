@@ -5,11 +5,11 @@
   **8a CLOSED — all seven contract journey steps walked live and passed; one defect found and fixed
   (off-screen move confirmation).** **8b is active — the timezone booking defect it surfaced is now fixed
   and browser-verified; resume the paused Map walkthrough next.**
-- Branch `schedule-5b-visits-card`. The 8a fix, the timezone fix, and Memory are **uncommitted** — Jafar has
-  not yet approved a commit. Checks green: svelte-check 0 errors, 1720 unit tests passing, prettier clean on
-  changed files. `git status` also lists ~200 other modified files that were **already dirty before this
-  work** (repo-wide formatting drift, untouched here). Files changed this campaign, beyond this file,
-  `ROADMAP.md` and `Memory/INDEX.md`:
+- Branch `schedule-5b-visits-card`. The 8a fix and the timezone fix are **committed** (`354b7b4`). `git
+  status` still lists ~200 other modified files that are **pre-existing repo-wide formatting drift**,
+  untouched by this campaign — do not stage them. Checks green: svelte-check 0 errors, 1720 unit tests
+  passing, prettier clean on changed files. Files this commit changed, beyond this file, `ROADMAP.md` and
+  `Memory/INDEX.md`:
   - 8a: `src/lib/components/ui/popover-anchor.ts` (new), `src/lib/components/ui/Popover.svelte`,
     `src/lib/components/schedule/ScheduleWeek.svelte`, `src/lib/components/schedule/ScheduleDay.svelte`,
     `src/routes/(app)/schedule/+page.svelte`.
@@ -69,8 +69,12 @@ instead of the org's `organization_settings.timezone`. Fixed:
   `2026-09-04 06:00:00+00`; reverted that opportunity's assessment back to unscheduled afterwards since it
   is pre-existing seed data, not a throwaway fixture.
 - svelte-check 0 errors (2950 files), 1720 unit tests passing, prettier clean — reconfirmed after this
-  second fix.
-- Ready to commit (both fixes) — Jafar approved committing in this session.
+  second fix, then committed together with 8a's fix as `354b7b4`.
+
+**Next action**: resume the paused 8b Map walkthrough — open the Map for the owner on Fri Sep 4 and walk
+stops-readable, drag-reorder the two Anytime stops (Job #7, Job #8), keyboard-reorder, save-and-reload,
+per-stop and whole-route Directions, and the unmappable-address case (see Data facts below for what still
+needs creating).
 
 Test data left behind from the 8b investigation (Job #7, Job #8, and the "Route test - assessment" Request)
 is fine to keep — it is exactly the fixture 8b's Map walkthrough needs next.
