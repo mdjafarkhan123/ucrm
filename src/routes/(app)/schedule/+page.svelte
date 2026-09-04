@@ -265,6 +265,10 @@
 	let mapOpen = $state(false);
 	let mapPickOpen = $state(false);
 	let pendingMapEmployee = $state('');
+	// When the Map is opened from All/Unassigned, the chosen employee is applied as a filter first -- a real URL
+	// navigation -- and the Map opens only once that single-employee state has actually arrived. Holds the id we
+	// are waiting to land on; null when nothing is pending.
+	let pendingMapOpenFor = $state<string | null>(null);
 
 	const mapAvailable = $derived(filters?.view === 'day');
 
@@ -309,11 +313,20 @@
 		if (!pendingMapEmployee || !filters) return;
 		mapPickOpen = false;
 		closePreview();
-		mapOpen = true;
-		// Picking the employee is a real filter change, so it flows through the URL like every other one; the
-		// route then reads off the now-single-employee visible items.
+		// Applying the employee is an async URL navigation, so the single-employee state arrives a tick later.
+		// Opening the Map now would race the auto-close effect below -- which still sees the old All/Unassigned
+		// state and would slam it shut -- so record the intent and let the effect open it once the filter lands.
+		pendingMapOpenFor = pendingMapEmployee;
 		applyFilters({ ...filters, employee: pendingMapEmployee });
 	}
+
+	// Open the Map once the employee chosen in the chooser has actually become the calendar's single employee.
+	$effect(() => {
+		if (pendingMapOpenFor && mapAvailable && selectedEmployeeId === pendingMapOpenFor) {
+			mapOpen = true;
+			pendingMapOpenFor = null;
+		}
+	});
 
 	// The Map cannot survive a move to a multi-day view or off a single employee, so it closes itself the moment
 	// either stops being true rather than showing a route that no longer matches the calendar.
