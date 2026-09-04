@@ -8,6 +8,12 @@ describe('buildForwardGeocodeUrl', () => {
 		expect(url).toContain('q=123+Main+St%2C+Springfield');
 		expect(url).toContain('access_token=pk.test');
 		expect(url).toContain('limit=1');
+		expect(url).not.toContain('permanent');
+	});
+
+	it('adds permanent=true when the storable tier is requested', () => {
+		const url = buildForwardGeocodeUrl('123 Main St, Springfield', 'sk.test', { permanent: true });
+		expect(url).toContain('permanent=true');
 	});
 });
 

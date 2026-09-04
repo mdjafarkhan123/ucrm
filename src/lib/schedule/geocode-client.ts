@@ -17,13 +17,20 @@ const FORWARD_ENDPOINT = 'https://api.mapbox.com/search/geocode/v6/forward';
 /** A resolved point, longitude first to match GeoJSON and Mapbox's own order. */
 export type GeoPoint = { lng: number; lat: number };
 
-/** Build the Mapbox v6 forward-geocoding URL for one address. `limit=1` -- the Map only needs the best hit. */
-export function buildForwardGeocodeUrl(address: string, token: string): string {
+/** Build the Mapbox v6 forward-geocoding URL for one address. `limit=1` -- the Map only needs the best hit.
+ *  `permanent` requests the storable tier (Schedule 7b-B's server-side worker); omitted/false stays on the
+ *  free temporary tier this module's own display-only lookups use. */
+export function buildForwardGeocodeUrl(
+	address: string,
+	token: string,
+	options?: { permanent?: boolean }
+): string {
 	const params = new URLSearchParams({
 		q: address,
 		access_token: token,
 		limit: '1'
 	});
+	if (options?.permanent) params.set('permanent', 'true');
 	return `${FORWARD_ENDPOINT}?${params.toString()}`;
 }
 
