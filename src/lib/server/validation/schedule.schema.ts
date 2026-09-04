@@ -92,6 +92,34 @@ export const scheduleEventWriteSchema = z
 
 export type ScheduleEventWriteInput = z.infer<typeof scheduleEventWriteSchema>;
 
+// A real calendar day: the shape regex above catches `2026-13-40`, this catches `2026-02-31`.
+const realDay = day.refine((value) => !Number.isNaN(Date.parse(`${value}T00:00:00Z`)), {
+	message: 'Use a real calendar date.'
+});
+
+// The ceiling on stop ids one saved route may hold. A day's route can hold no more stops than a day's window
+// read returns, so this mirrors SCHEDULE_VISIT_LIMIT and matches the database's own array-length constraint.
+const ROUTE_ORDER_MAX_STOPS = SCHEDULE_VISIT_LIMIT;
+
+// A saved route order as the Map sends it: which employee, which day, and the stop ids (Visits and
+// Assessments) in the dispatcher's chosen sequence. The ids are a preference list, not references -- a stop
+// that has since gone is dropped when the order is applied -- so nothing here checks that they still exist.
+export const scheduleRouteOrderWriteSchema = z.object({
+	employee_id: z.string().uuid('Choose a real employee.'),
+	route_date: realDay,
+	order: z
+		.array(z.string().uuid('That is not a real stop.'))
+		.max(ROUTE_ORDER_MAX_STOPS, 'That route has too many stops to save.')
+});
+
+export type ScheduleRouteOrderWriteInput = z.infer<typeof scheduleRouteOrderWriteSchema>;
+
+// The GET reads one employee's saved order for one day, both off the query string.
+export const scheduleRouteOrderQuerySchema = z.object({
+	employee: z.string().uuid('Choose a real employee.'),
+	date: realDay
+});
+
 export const scheduleWindowQuerySchema = z
 	.object({
 		from: day,

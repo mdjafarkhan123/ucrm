@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -65,9 +65,12 @@
 		createScheduleEvent,
 		deleteScheduleEvent,
 		fetchScheduleContext,
+		fetchScheduleRouteOrder,
 		fetchScheduleUnscheduled,
 		fetchScheduleWindow,
+		saveScheduleRouteOrder,
 		scheduleContextKey,
+		scheduleRouteOrderKey,
 		scheduleUnscheduledKey,
 		scheduleWindowKey,
 		updateScheduleEvent,
@@ -390,6 +393,47 @@
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
+
+	// The saved route order for the employee whose route the Map is showing, on the day it is showing. It is
+	// asked for only while the Map is open on one employee -- the day view's revealed workspace -- so it is a
+	// lazy read, not part of the window every calendar view pays for. The day is the single day the Map covers.
+	const routeOrderDate = $derived(activeWindow?.from ?? null);
+	const routeOrderEnabled = $derived(
+		mapOpen && selectedEmployeeId !== null && routeOrderDate !== null
+	);
+	const routeOrderQuery = createQuery(() => ({
+		queryKey:
+			selectedEmployeeId && routeOrderDate
+				? scheduleRouteOrderKey(selectedEmployeeId, routeOrderDate)
+				: ['schedule', 'route-order', 'idle'],
+		queryFn: () => fetchScheduleRouteOrder(selectedEmployeeId!, routeOrderDate!),
+		enabled: routeOrderEnabled,
+		staleTime: 60_000
+	}));
+
+	// While the order is still loading the Map shows the default arrangement and cannot save yet; once it
+	// arrives the Map rehydrates to it. `undefined` (pending) becomes null so ScheduleRoute knows to wait.
+	const savedRouteOrder = $derived<string[] | null>(routeOrderQuery.data ?? null);
+
+	const saveRouteOrderMutation = createMutation(() => ({
+		mutationFn: (order: string[]) =>
+			saveScheduleRouteOrder({
+				employee_id: selectedEmployeeId!,
+				route_date: routeOrderDate!,
+				order
+			}),
+		onSuccess: (order) => {
+			// The server returns the canonical stored order, so seed the cache with it directly: the Map's
+			// "unsaved" state clears at once without a redundant refetch of what we just wrote.
+			if (selectedEmployeeId && routeOrderDate) {
+				queryClient.setQueryData(scheduleRouteOrderKey(selectedEmployeeId, routeOrderDate), order);
+			}
+			toast.success('Route order saved');
+		},
+		onError: (error) => {
+			toast.error(error instanceof Error ? error.message : 'The route order could not be saved.');
+		}
+	}));
 
 	const canSchedule = $derived(contextQuery.data?.can_schedule ?? false);
 	// Empty-space creation starts a Job, so it follows Job-create authority, not the schedule authority that
@@ -1212,8 +1256,11 @@
 						<ScheduleRoute
 							stops={routeStopItems}
 							employeeName={selectedEmployeeName}
+							savedOrder={savedRouteOrder}
+							saving={saveRouteOrderMutation.isPending}
 							{selectedItemId}
 							onselect={openStopPreview}
+							onsave={(order) => saveRouteOrderMutation.mutate(order)}
 							onclose={() => (mapOpen = false)}
 						/>
 					{:else}

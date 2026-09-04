@@ -228,3 +228,36 @@ export async function fetchScheduleWindow(window: ScheduleWindow): Promise<Sched
 	const response = await fetch(`/api/schedule/visits?${params.toString()}`);
 	return readOrThrow<ScheduleWindowPage>(response, 'The schedule could not be loaded.');
 }
+
+// One employee's saved stop order for one day on the contextual Map. It is only asked for while the Map is
+// open on a single employee, so it is keyed by that pair and read lazily -- not part of the window read every
+// calendar view pays for.
+export const scheduleRouteOrderKey = (employeeId: string, date: string) =>
+	['schedule', 'route-order', employeeId, date] as const;
+
+export async function fetchScheduleRouteOrder(employeeId: string, date: string): Promise<string[]> {
+	const params = new URLSearchParams({ employee: employeeId, date });
+	const response = await fetch(`/api/schedule/route-order?${params.toString()}`);
+	const result = await readOrThrow<{ order: string[] }>(
+		response,
+		'The saved route order could not be loaded.'
+	);
+	return result.order;
+}
+
+export async function saveScheduleRouteOrder(input: {
+	employee_id: string;
+	route_date: string;
+	order: string[];
+}): Promise<string[]> {
+	const response = await fetch('/api/schedule/route-order', {
+		method: 'PUT',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	const result = await readOrThrow<{ order: string[] }>(
+		response,
+		'The route order could not be saved.'
+	);
+	return result.order;
+}

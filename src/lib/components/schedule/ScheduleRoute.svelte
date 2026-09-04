@@ -14,6 +14,7 @@
 	import { startPointerDrag } from '$lib/schedule/pointer-drag';
 	import mapIcon from '@tabler/icons/outline/map-2.svg?raw';
 	import directionIcon from '@tabler/icons/outline/directions.svg?raw';
+	import saveIcon from '@tabler/icons/outline/device-floppy.svg?raw';
 	import closeIcon from '@tabler/icons/outline/x.svg?raw';
 
 	// The contextual Map workspace: one selected employee's stops for the chosen day, laid out as an ordered
@@ -24,29 +25,57 @@
 	let {
 		stops,
 		employeeName,
+		savedOrder = null,
+		saving = false,
 		selectedItemId = null,
 		onselect,
+		onsave,
 		onclose
 	}: {
 		stops: RouteStop[];
 		employeeName: string;
+		/** The order saved for this employee and day, or null while it is still being loaded. */
+		savedOrder?: string[] | null;
+		/** True while a save is in flight, so the button reads "Saving…" and cannot be pressed again. */
+		saving?: boolean;
 		selectedItemId?: string | null;
 		onselect: (stop: RouteStop, element: HTMLElement) => void;
+		onsave: (order: string[]) => void;
 		onclose: () => void;
 	} = $props();
 
-	// The dispatcher's manual arrangement, as a list of stop ids, kept for this session. Null means "no manual
-	// order yet", so the list reads in its default order (anchors in clock order, Anytime work after them).
-	// Saving this arrangement to the database is a later step; for now a reorder holds while the Map is open and
-	// feeds straight into whole-route Directions.
+	// The dispatcher's manual arrangement this session, as a list of stop ids. Null means "no drag yet", so the
+	// list falls back to whatever is saved, and to the default order when nothing is saved. A drag sets this and
+	// takes over; a save persists it and the parent feeds the result back in through `savedOrder`.
 	let manualOrder = $state<string[] | null>(null);
 
-	// The order the list draws in. A manual arrangement is merged against the stops actually in hand -- ids that
+	// The order that actually drives the list: this session's drag if there is one, otherwise the saved order,
+	// otherwise the default. So a saved route rehydrates on open, and a drag overrides it.
+	const effectiveOrder = $derived(manualOrder ?? savedOrder);
+
+	// The order the list draws in. The chosen order is merged against the stops actually in hand -- ids that
 	// have gone are dropped, stops added since are slotted in at their default -- and the anchors are always
 	// re-settled into clock order, so a refetch never scrambles the route.
 	const ordered = $derived(
-		manualOrder ? applySavedOrder(stops, manualOrder) : defaultRouteOrder(stops)
+		effectiveOrder ? applySavedOrder(stops, effectiveOrder) : defaultRouteOrder(stops)
 	);
+
+	// The ids the list currently reads in, and the ids last saved, compared to know whether there is anything
+	// worth saving. Save is offered only after a real drag (manualOrder set) that leaves the order different
+	// from what is stored, and never while the saved order is still loading or a save is already running.
+	const currentOrder = $derived(serializeRouteOrder(ordered));
+	const dirty = $derived(
+		manualOrder !== null &&
+			savedOrder !== null &&
+			(currentOrder.length !== savedOrder.length ||
+				currentOrder.some((id, index) => id !== savedOrder![index]))
+	);
+	const canSave = $derived(dirty && !saving);
+
+	function save() {
+		if (!canSave) return;
+		onsave(currentOrder);
+	}
 
 	// The stop being dragged, so its row reads lifted while it travels.
 	let draggingId = $state<string | null>(null);
@@ -143,6 +172,19 @@
 			</p>
 		</div>
 		<div class="route__actions">
+			<!-- Save appears only once the dispatcher has rearranged the route, so there is never a permanently
+			     disabled button here; it saves this employee's order for this day and then steps aside. -->
+			{#if dirty || saving}
+				<button
+					type="button"
+					class="route__save"
+					onclick={save}
+					disabled={!canSave}
+					aria-busy={saving}
+				>
+					{@html saveIcon}<span>{saving ? 'Saving…' : 'Save Route Order'}</span>
+				</button>
+			{/if}
 			{#if canRouteDirect}
 				<DropdownMenu items={routeItems} triggerLabel="Directions for the whole route">
 					{#snippet trigger()}
@@ -269,6 +311,44 @@
 		color: var(--color-text);
 		font-size: var(--typography--fontSize-small);
 		font-weight: 600;
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	/* A compact work action sitting next to the Directions pill: green so a pending save reads as the thing to
+	   do, matching the header's 34px control height rather than the taller base Button. */
+	.route__save {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-smaller);
+		height: 34px;
+		padding: 0 var(--space-small);
+		border: var(--border-base) solid var(--color-interactive);
+		border-radius: var(--radius-base);
+		background-color: var(--color-interactive);
+		color: var(--color-surface);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		cursor: pointer;
+		transition: background-color var(--timing-quick) ease;
+
+		&:hover {
+			background-color: var(--color-interactive--hover);
+			border-color: var(--color-interactive--hover);
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+		&:disabled {
+			background-color: var(--color-disabled--secondary);
+			border-color: var(--color-disabled--secondary);
+			color: var(--color-disabled);
+			cursor: not-allowed;
+		}
 
 		:global(svg) {
 			width: 16px;
