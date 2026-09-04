@@ -2,14 +2,24 @@
 
 - Goal: Deliver a desktop contractor dispatch desk without duplicating Job, Visit or other domain truth.
 - State: V1.1 COMPLETE (`93c2e03`). On **Part 7 — contextual Map + manual routing** (V1.2), split
-  7a (provider-independent, mock) / 7b (live Mapbox). **7a is now COMPLETE: 7a-1..7a-6 all shipped.**
-  Latest: 7a-6 persist Save Route Order (`300d3ce`). Earlier: 7a-1 route-order+directions (`bef17be`),
-  7a-2 geocoding boundary+mock (`19ced68`), 7a-3 geocode-status schema+trigger (`09645f8`),
-  7a-4 async geocoding worker (`5a126fe`), 7a-5 contextual Map workspace (`7aaa2c8`).
+  7a (provider-independent, mock) / 7b (live Mapbox). **7a is COMPLETE and BROWSER-VERIFIED.**
+  Latest: 7a-5 gating fix (`cc346d0`), 7a-6 persist Save Route Order (`300d3ce`). Earlier: 7a-1
+  route-order+directions (`bef17be`), 7a-2 geocoding boundary+mock (`19ced68`), 7a-3 geocode-status
+  schema+trigger (`09645f8`), 7a-4 async geocoding worker (`5a126fe`), 7a-5 contextual Map workspace (`7aaa2c8`).
 - Branch `schedule-5b-visits-card`. Working tree clean at checkpoint time.
 - Behavior in docs/schedule-behavior-contract.md ("Contextual Map and route behavior" ~418-467, V1.2 ~147-162).
 
-## What 7a-6 shipped (checks-verified; browser verification still pending)
+## Browser verification (2026-09-04, app on localhost:5173, workspace "Raad LTD")
+
+Verified live end-to-end: Map toggle in Day view; one-employee gating chooser ("Whose route?"); stop list with
+per-stop "Locating…" (all properties still pending); honest map shell; pointer drag reorder of Anytime stops;
+Save Route Order button appears on drag, shows "Saving…", persists (DB row `stop_order` matched the dragged
+sequence), toasts "Route order saved", clears; and the saved order **rehydrates on reload** (overriding the
+default position order). No console errors. Test data (one temp visit + its route-order row) was created and
+then deleted. **Found + fixed a 7a-5 gating bug** (`cc346d0`): confirming an employee in the chooser applied
+the filter but left the Map closed (async-goto race vs the auto-close effect); re-verified fixed.
+
+## What 7a-6 shipped (checks-verified AND browser-verified)
 
 - Migration `schedule_route_orders` (`20260904100000`): PK (organization_id, employee_id, route_date);
   composite FK to `organization_members(organization_id, user_id)` ON DELETE CASCADE; `stop_order uuid[]`
@@ -29,19 +39,17 @@
 
 ## Next action
 
-Two independent threads, neither dependency-locked on the other:
-
-1. **Browser-verify the Map UI (7a-5 + 7a-6)** on the running app — toggle + one-employee gating, ordered stop
-   list, pointer/keyboard drag of Anytime stops, per-stop geocode failure states (all 8 properties are still
-   `pending`, so every stop shows "Locating…"), per-stop + whole-route Directions, and the new Save Route
-   Order button (appears on drag, persists, rehydrates on reopen, clears when saved). Needs the dev server up
-   and a logged-in session. Recommended before declaring 7a done-done.
-2. **7b — live Mapbox** (BLOCKED on Jafar's Mapbox tokens). Provider decided 2026-09-03: managed Mapbox
-   (Permanent geocoding, STORED coords; managed tiles + route line; external Google/Apple navigation). Turns
-   the 7a-4 worker route on (503 until a real provider), swaps the map shell for live tiles/pins, geocodes the
-   8 pending properties. Re-verify pricing/terms before purchase.
+**7b — live Mapbox** (BLOCKED on Jafar's Mapbox tokens). This is the only remaining Part 7 thread; 7a is done
+and browser-verified. Provider decided 2026-09-03: managed Mapbox (Permanent geocoding, STORED coords; managed
+tiles + route line; external Google/Apple navigation). 7b turns the 7a-4 worker route on (503 until a real
+provider), swaps the map shell for live tiles/pins, and geocodes the pending properties. Re-verify
+pricing/terms before purchase. Resume once Jafar hands over the Mapbox tokens.
 
 Part 8 (closure) needs all of 7a (done) + 7b.
+
+Not-yet-tested corner (no data during verification): keyboard reordering (Arrow keys on a focused Anytime
+stop) and per-stop / whole-route Directions were present in code but not exercised live — worth a quick check
+when 7b brings real geocoded stops.
 
 ## Data facts (verified in code)
 
