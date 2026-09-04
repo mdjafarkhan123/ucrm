@@ -27,6 +27,9 @@ function visit(overrides: Partial<UnscheduledVisit> = {}): UnscheduledVisit {
 		property_city: 'Springfield',
 		property_state_region: 'IL',
 		property_postal_code: '62701',
+		property_latitude: null,
+		property_longitude: null,
+		property_geocode_status: 'pending',
 		...overrides
 	};
 }

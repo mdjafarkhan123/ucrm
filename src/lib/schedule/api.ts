@@ -72,6 +72,13 @@ export type ScheduleVisit = {
 	property_city: string | null;
 	property_state_region: string | null;
 	property_postal_code: string | null;
+	/** The property's stored coordinates, present once geocoding has succeeded (7a-4 worker). Null until then,
+	 * so the Map draws no pin and the stop list says the location is not ready rather than guessing one. */
+	property_latitude: number | null;
+	property_longitude: number | null;
+	/** Where geocoding stands for this property: pending | succeeded | failed. Lets the stop list tell "not
+	 * ready yet" apart from "this address does not resolve" instead of dropping an unmappable stop. */
+	property_geocode_status: string | null;
 };
 
 // An on-site assessment placed on the calendar (Version 1.1). It is Request-owned: the calendar shows it and
@@ -101,6 +108,11 @@ export type ScheduleAssessment = {
 	property_city: string | null;
 	property_state_region: string | null;
 	property_postal_code: string | null;
+	/** The property's stored coordinates and geocode status, the same fields a visit carries, so the Map treats
+	 * an assessment stop exactly as it treats a visit stop. */
+	property_latitude: number | null;
+	property_longitude: number | null;
+	property_geocode_status: string | null;
 };
 
 // A Schedule-owned Event (Version 1.1): a single-day whole-team block -- a meeting, a training, a holiday.

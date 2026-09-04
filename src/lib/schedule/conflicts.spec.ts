@@ -27,6 +27,9 @@ function visit(overrides: Partial<ScheduleVisit> & { id: string }): ScheduleVisi
 		property_city: null,
 		property_state_region: null,
 		property_postal_code: null,
+		property_latitude: null,
+		property_longitude: null,
+		property_geocode_status: 'pending',
 		...overrides
 	};
 }

@@ -38,6 +38,9 @@ export type AssessmentItem = {
 	property_city: string | null;
 	property_state_region: string | null;
 	property_postal_code: string | null;
+	property_latitude: number | null;
+	property_longitude: number | null;
+	property_geocode_status: string | null;
 };
 
 /** A Schedule-owned event on the calendar (Version 1.1) -- a whole-team block with no client and no owner
@@ -127,6 +130,9 @@ export function assessmentToItem(assessment: ScheduleAssessment, timezone: strin
 		property_address_line1: assessment.property_address_line1,
 		property_city: assessment.property_city,
 		property_state_region: assessment.property_state_region,
-		property_postal_code: assessment.property_postal_code
+		property_postal_code: assessment.property_postal_code,
+		property_latitude: assessment.property_latitude,
+		property_longitude: assessment.property_longitude,
+		property_geocode_status: assessment.property_geocode_status
 	};
 }

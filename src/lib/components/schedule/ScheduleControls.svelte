@@ -13,6 +13,7 @@
 	import type { TeamMember } from '$lib/team/api';
 	import chevronLeftIcon from '@tabler/icons/outline/chevron-left.svg?raw';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
+	import mapIcon from '@tabler/icons/outline/map-2.svg?raw';
 
 	let {
 		filters,
@@ -23,12 +24,15 @@
 		showZoom = false,
 		unscheduledCount = null,
 		unscheduledOpen = false,
+		mapAvailable = false,
+		mapOpen = false,
 		onstep,
 		ontoday,
 		onchange,
 		onzoom,
 		onunscheduled,
-		onunscheduledhover
+		onunscheduledhover,
+		onmap
 	}: {
 		filters: ScheduleFilters;
 		/** The window in words, e.g. "Aug 30 – Sep 5, 2026". The page owns the wording. */
@@ -44,6 +48,10 @@
 		unscheduledCount?: number | null;
 		/** Whether the Unscheduled drawer is open, so the toggle reads pressed. */
 		unscheduledOpen?: boolean;
+		/** The Map is only offered where a single-employee day route makes sense: the Day view. */
+		mapAvailable?: boolean;
+		/** Whether the Map workspace is open, so the toggle reads pressed. */
+		mapOpen?: boolean;
 		/** Move one whole window back or forward. */
 		onstep: (direction: -1 | 1) => void;
 		ontoday: () => void;
@@ -53,6 +61,8 @@
 		onunscheduled?: () => void;
 		/** The toggle was hovered or focused, a cue to warm the backlog read before it is opened. */
 		onunscheduledhover?: () => void;
+		/** Open or close the Map workspace. */
+		onmap?: () => void;
 	} = $props();
 
 	const viewOptions = SCHEDULE_VIEWS.map((view) => ({
@@ -167,6 +177,19 @@
 				{/if}
 			</button>
 		{/if}
+
+		{#if mapAvailable && onmap}
+			<button
+				type="button"
+				class="schedule-controls__unscheduled schedule-controls__map"
+				class:schedule-controls__unscheduled--active={mapOpen}
+				aria-pressed={mapOpen}
+				onclick={onmap}
+			>
+				{@html mapIcon}
+				Map
+			</button>
+		{/if}
 	</div>
 </div>
 
@@ -216,6 +239,15 @@
 		&--active {
 			border-color: var(--color-interactive);
 			background-color: var(--color-surface--active);
+		}
+	}
+
+	.schedule-controls__map {
+		gap: var(--space-smaller);
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
 		}
 	}
 

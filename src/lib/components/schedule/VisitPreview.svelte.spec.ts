@@ -36,6 +36,9 @@ function makeVisit(overrides: Partial<ScheduleVisit> = {}): ScheduleVisit {
 		property_city: 'Austin',
 		property_state_region: 'TX',
 		property_postal_code: '73301',
+		property_latitude: null,
+		property_longitude: null,
+		property_geocode_status: 'pending',
 		...overrides
 	};
 }

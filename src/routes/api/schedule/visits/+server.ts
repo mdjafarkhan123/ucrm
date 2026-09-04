@@ -54,7 +54,8 @@ export const GET: RequestHandler = async (event) => {
 			 assignments:job_visit_assignments(user_id),
 			 job:jobs(job_number, title, client_id, property_id,
 			   client:clients(display_name, company_name),
-			   property:properties(label, address_line1, city, state_region, postal_code))`
+			   property:properties(label, address_line1, city, state_region, postal_code,
+			     latitude, longitude, geocode_status))`
 		)
 		.eq('organization_id', organizationId)
 		.gte('visit_date', from)
@@ -78,7 +79,8 @@ export const GET: RequestHandler = async (event) => {
 			 assignments:assessment_assignees(user_id),
 			 request:requests(title, status, client_id, property_id,
 			   client:clients(display_name, company_name),
-			   property:properties(label, address_line1, city, state_region, postal_code))`
+			   property:properties(label, address_line1, city, state_region, postal_code,
+			     latitude, longitude, geocode_status))`
 		)
 		.eq('organization_id', organizationId)
 		.gte('starts_at', lowerInstant)
@@ -139,7 +141,10 @@ export const GET: RequestHandler = async (event) => {
 			property_address_line1: property?.address_line1 ?? null,
 			property_city: property?.city ?? null,
 			property_state_region: property?.state_region ?? null,
-			property_postal_code: property?.postal_code ?? null
+			property_postal_code: property?.postal_code ?? null,
+			property_latitude: property?.latitude ?? null,
+			property_longitude: property?.longitude ?? null,
+			property_geocode_status: property?.geocode_status ?? null
 		};
 	});
 
@@ -169,7 +174,10 @@ export const GET: RequestHandler = async (event) => {
 			property_address_line1: property?.address_line1 ?? null,
 			property_city: property?.city ?? null,
 			property_state_region: property?.state_region ?? null,
-			property_postal_code: property?.postal_code ?? null
+			property_postal_code: property?.postal_code ?? null,
+			property_latitude: property?.latitude ?? null,
+			property_longitude: property?.longitude ?? null,
+			property_geocode_status: property?.geocode_status ?? null
 		};
 	});
 

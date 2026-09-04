@@ -20,7 +20,9 @@
 	import ScheduleEventDialog from '$lib/components/schedule/ScheduleEventDialog.svelte';
 	import MoveConfirm from '$lib/components/schedule/MoveConfirm.svelte';
 	import ScheduleUnscheduledDrawer from '$lib/components/schedule/ScheduleUnscheduledDrawer.svelte';
+	import ScheduleRoute from '$lib/components/schedule/ScheduleRoute.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
 	import JobVisitDialog from '$lib/components/jobs/JobVisitDialog.svelte';
 	import ApplyToFutureDialog from '$lib/components/jobs/ApplyToFutureDialog.svelte';
 	import FinalVisitDialog from '$lib/components/jobs/FinalVisitDialog.svelte';
@@ -81,6 +83,7 @@
 		type ScheduleFilters
 	} from '$lib/schedule/filters';
 	import { filterVisits, indexEmployees } from '$lib/schedule/grouping';
+	import { routeStops, type RouteStop } from '$lib/schedule/route-order';
 	import {
 		assessmentToItem,
 		eventToItem,
@@ -249,6 +252,78 @@
 	const filteredEmpty = $derived(
 		hasFilter && visibleItems.length === 0 && scheduleItems.length > 0
 	);
+
+	// --- The contextual Map workspace ---------------------------------------------------------------------
+
+	// Map is an on-demand split workspace, not a separate page: one selected employee's stops for the chosen
+	// day, as an ordered list beside the map pane. It only makes sense on a single day, so it is offered in the
+	// Day view and nowhere else, and it needs exactly one employee, so opening it from All or Unassigned asks
+	// the dispatcher to pick one rather than silently choosing.
+	let mapOpen = $state(false);
+	let mapPickOpen = $state(false);
+	let pendingMapEmployee = $state('');
+
+	const mapAvailable = $derived(filters?.view === 'day');
+
+	// The one employee whose route the Map shows, or null when the calendar is on All or Unassigned.
+	const selectedEmployeeId = $derived(
+		filters && filters.employee !== 'all' && filters.employee !== 'unassigned'
+			? filters.employee
+			: null
+	);
+	const selectedEmployeeName = $derived(
+		selectedEmployeeId ? (employeesById.get(selectedEmployeeId)?.full_name ?? 'This employee') : ''
+	);
+
+	// The stops the Map lays out: the visible day's Visits and on-site Assessments, in view already filtered to
+	// the selected employee. Events are whole-team blocks with no location, so routeStops drops them.
+	const routeStopItems = $derived<RouteStop[]>(routeStops(visibleItems));
+
+	// Only real employees can own a route, so the chooser lists people, not the All/Unassigned buckets.
+	const mapEmployeeOptions = $derived([
+		{ value: '', label: 'Choose an employee…' },
+		...(teamQuery.data ?? []).map((member) => ({
+			value: member.id,
+			label: member.full_name ?? 'Unnamed employee'
+		}))
+	]);
+
+	function toggleMap() {
+		if (mapOpen) {
+			mapOpen = false;
+			return;
+		}
+		if (!selectedEmployeeId) {
+			pendingMapEmployee = '';
+			mapPickOpen = true;
+			return;
+		}
+		closePreview();
+		mapOpen = true;
+	}
+
+	function confirmMapEmployee() {
+		if (!pendingMapEmployee || !filters) return;
+		mapPickOpen = false;
+		closePreview();
+		mapOpen = true;
+		// Picking the employee is a real filter change, so it flows through the URL like every other one; the
+		// route then reads off the now-single-employee visible items.
+		applyFilters({ ...filters, employee: pendingMapEmployee });
+	}
+
+	// The Map cannot survive a move to a multi-day view or off a single employee, so it closes itself the moment
+	// either stops being true rather than showing a route that no longer matches the calendar.
+	$effect(() => {
+		if (mapOpen && (!mapAvailable || !selectedEmployeeId)) mapOpen = false;
+	});
+
+	// A stop opens the same preview the calendar cards do, so the two surfaces describe a Visit or Assessment
+	// the one way. A Visit stop is a ScheduleVisit; an Assessment stop has its own preview.
+	function openStopPreview(stop: RouteStop, element: HTMLElement) {
+		if (stop.kind === 'assessment') openAssessmentPreview(stop, element);
+		else openPreview(stop, element);
+	}
 
 	// One preview for the whole calendar, pointed at whichever card is selected. The card is remembered by
 	// id rather than by value, so a background refetch updates what the preview says instead of freezing it.
@@ -1108,12 +1183,15 @@
 				showZoom={filters.view !== 'month'}
 				{unscheduledCount}
 				{unscheduledOpen}
+				{mapAvailable}
+				{mapOpen}
 				onstep={step}
 				ontoday={goToToday}
 				onchange={changeFilters}
 				onzoom={changeZoom}
 				onunscheduled={() => (unscheduledOpen = !unscheduledOpen)}
 				onunscheduledhover={() => (unscheduledWarm = true)}
+				onmap={toggleMap}
 			/>
 
 			<!-- The calendar and the docked backlog sit side by side, so a card can be dragged straight out of
@@ -1127,6 +1205,16 @@
 							title="This part of the calendar could not load"
 							description="The dates and filters you chose are still here. Try again."
 							retry={() => void windowQuery.refetch()}
+						/>
+					{:else if mapOpen}
+						<!-- The contextual Map workspace replaces the grid while it is open, keeping the same date,
+						     employee and filters; closing it returns to the calendar untouched. -->
+						<ScheduleRoute
+							stops={routeStopItems}
+							employeeName={selectedEmployeeName}
+							{selectedItemId}
+							onselect={openStopPreview}
+							onclose={() => (mapOpen = false)}
 						/>
 					{:else}
 						{#if windowQuery.data?.truncated}
@@ -1440,6 +1528,29 @@
 	{/if}
 </ConfirmDialog>
 
+<!-- Opening the Map needs exactly one employee, so from All or Unassigned it asks which one rather than
+     silently picking. Choosing here also sets the calendar's employee filter, keeping the two in step. -->
+<ConfirmDialog
+	open={mapPickOpen}
+	title="Whose route?"
+	confirmLabel="Show route"
+	cancelLabel="Cancel"
+	confirmDisabled={!pendingMapEmployee}
+	onConfirm={confirmMapEmployee}
+	onClose={() => (mapPickOpen = false)}
+>
+	<p>The map shows one employee's route at a time. Choose whose stops to plan.</p>
+	<div class="schedule-page__map-pick">
+		<Select
+			id="schedule-map-employee"
+			label="Employee"
+			value={pendingMapEmployee}
+			options={mapEmployeeOptions}
+			onchange={(value) => (pendingMapEmployee = value)}
+		/>
+	</div>
+</ConfirmDialog>
+
 <!-- The chip the person is carrying: it follows the pointer while a backlog card is dragged onto the grid,
      so the drag reads as moving that piece of work, not just a cursor. -->
 {#if dragGhost}
@@ -1480,6 +1591,10 @@
 		margin: var(--space-small) 0 0;
 		color: var(--color-critical);
 		font-size: var(--typography--fontSize-small);
+	}
+
+	.schedule-page__map-pick {
+		margin-top: var(--space-base);
 	}
 
 	// A light chip that trails the pointer during an external drag. It must never eat the pointer events the
