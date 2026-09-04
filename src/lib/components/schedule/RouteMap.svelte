@@ -124,6 +124,11 @@
 		(async () => {
 			mapboxgl = (await import('mapbox-gl')).default;
 			if (disposed || !container) return;
+			// Wait one frame so the just-opened split panel has been laid out before the map reads its size.
+			// Constructing on a container that has not been measured yet leaves Mapbox with a 0-sized (black)
+			// canvas that never repaints, so give it real dimensions first.
+			await new Promise((resolve) => requestAnimationFrame(resolve));
+			if (disposed || !container) return;
 			mapboxgl.accessToken = PUBLIC_MAPBOX_TOKEN;
 			map = new mapboxgl.Map({
 				container,
@@ -135,6 +140,9 @@
 			map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
 			map.on('load', () => {
 				ready = true;
+				// A belt-and-braces resize: if anything about the panel settled after construction, this makes the
+				// framebuffer match the container so the map is never stuck black at the wrong size.
+				map?.resize();
 				drawRoute();
 			});
 			// A theme swap re-styles the map; markers are DOM overlays and survive, but the route source/layer is

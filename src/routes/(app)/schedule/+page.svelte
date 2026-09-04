@@ -306,6 +306,14 @@
 			return;
 		}
 		closePreview();
+		// A route is one person's single day, so the Map lives in the Day view. The button is offered in every
+		// view (matching Jobber), and opening it from Week/Month switches to Day first -- the same deferred-open
+		// path the employee chooser uses, so the Map opens once Day view has actually landed.
+		if (!mapAvailable) {
+			pendingMapOpenFor = selectedEmployeeId;
+			applyFilters({ ...filters!, view: 'day' });
+			return;
+		}
 		mapOpen = true;
 	}
 
@@ -316,8 +324,9 @@
 		// Applying the employee is an async URL navigation, so the single-employee state arrives a tick later.
 		// Opening the Map now would race the auto-close effect below -- which still sees the old All/Unassigned
 		// state and would slam it shut -- so record the intent and let the effect open it once the filter lands.
+		// The Map needs the Day view too, so switch to it in the same navigation.
 		pendingMapOpenFor = pendingMapEmployee;
-		applyFilters({ ...filters, employee: pendingMapEmployee });
+		applyFilters({ ...filters, employee: pendingMapEmployee, view: 'day' });
 	}
 
 	// Open the Map once the employee chosen in the chooser has actually become the calendar's single employee.
@@ -1240,7 +1249,6 @@
 				showZoom={filters.view !== 'month'}
 				{unscheduledCount}
 				{unscheduledOpen}
-				{mapAvailable}
 				{mapOpen}
 				onstep={step}
 				ontoday={goToToday}

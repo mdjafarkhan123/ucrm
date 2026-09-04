@@ -24,7 +24,6 @@
 		showZoom = false,
 		unscheduledCount = null,
 		unscheduledOpen = false,
-		mapAvailable = false,
 		mapOpen = false,
 		onstep,
 		ontoday,
@@ -48,8 +47,6 @@
 		unscheduledCount?: number | null;
 		/** Whether the Unscheduled drawer is open, so the toggle reads pressed. */
 		unscheduledOpen?: boolean;
-		/** The Map is only offered where a single-employee day route makes sense: the Day view. */
-		mapAvailable?: boolean;
 		/** Whether the Map workspace is open, so the toggle reads pressed. */
 		mapOpen?: boolean;
 		/** Move one whole window back or forward. */
@@ -178,7 +175,7 @@
 			</button>
 		{/if}
 
-		{#if mapAvailable && onmap}
+		{#if onmap}
 			<button
 				type="button"
 				class="schedule-controls__unscheduled schedule-controls__map"
