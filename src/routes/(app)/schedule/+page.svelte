@@ -1288,8 +1288,9 @@
 					{:else}
 						{#if windowQuery.data?.truncated}
 							<p class="schedule-page__notice" role="status">
-								This window holds more than {windowQuery.data.limit} visits, so only the first {windowQuery
-									.data.limit} are shown. Pick a shorter range to see all of them.
+								This window holds more than {windowQuery.data.limit} visits, assessments, or events, so
+								only the first {windowQuery.data.limit} of each are shown. Pick a shorter range to see
+								all of them.
 							</p>
 						{/if}
 

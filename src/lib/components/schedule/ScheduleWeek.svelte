@@ -28,7 +28,9 @@
 		draftFromRange,
 		proposeMove,
 		proposeResize,
+		shiftDay,
 		snapMinutes,
+		SNAP_MINUTES,
 		type DropTarget,
 		type NewVisitDraft,
 		type ScheduleProposal
@@ -359,6 +361,65 @@
 		});
 	}
 
+	// The keyboard equivalent of dragging: arrow keys build the same proposal a mouse drag would, shown with
+	// the same ghost, and only Enter turns it into the confirmation dialog a pointer drop already opens.
+	// Left/right shift the day, up/down nudge the clock a quarter hour, matching the axes this grid draws.
+	function handleVisitKey(
+		event: KeyboardEvent,
+		visit: ScheduleVisit,
+		block: { start: number } | null
+	) {
+		if (!canDragVisit(visit, canSchedule)) return;
+		const anchor = event.currentTarget as HTMLElement;
+		const active = drag?.visit.id === visit.id ? drag : null;
+
+		if (active && (event.key === 'Escape' || event.key === ' ' || event.key === 'Enter')) {
+			event.preventDefault();
+			if (event.key !== 'Escape') {
+				onpropose(
+					visit,
+					proposeMove(visit, { day: active.day, startMinutes: active.start }),
+					anchor
+				);
+			}
+			drag = null;
+			return;
+		}
+
+		const isHorizontal = event.key === 'ArrowLeft' || event.key === 'ArrowRight';
+		const isVertical = event.key === 'ArrowUp' || event.key === 'ArrowDown';
+		if (!isHorizontal && !isVertical) return;
+
+		const base: WeekDrag = active ?? {
+			visit,
+			mode: 'move',
+			anchor,
+			day: visit.visit_date ?? today,
+			start: block?.start ?? null,
+			end: null
+		};
+		if (isVertical && base.start === null) return; // Anytime has no clock time to nudge.
+		event.preventDefault();
+
+		const day = isHorizontal ? shiftDay(base.day, event.key === 'ArrowLeft' ? -1 : 1) : base.day;
+		const start = isVertical
+			? Math.max(
+					0,
+					Math.min(
+						MINUTES_IN_DAY,
+						(base.start ?? 0) + (event.key === 'ArrowUp' ? -1 : 1) * SNAP_MINUTES
+					)
+				)
+			: base.start;
+
+		const proposal = proposeMove(visit, { day, startMinutes: start });
+		drag = { ...base, day, start, end: start === null ? null : minutesOf(proposal.end_time) };
+	}
+
+	function handleVisitBlur(event: FocusEvent, visit: ScheduleVisit) {
+		if (drag?.visit.id === visit.id) drag = null;
+	}
+
 	// --- Creating from empty space -----------------------------------------------------------------
 
 	// A press on the empty part of a day column starts a new visit. A plain click opens a one-hour visit at
@@ -511,8 +572,11 @@
 									{today}
 									{employeesById}
 									selected={item.id === selectedItemId}
+									keyboardMovable={canDragVisit(item, canSchedule)}
 									{onselect}
 									onpickup={(event) => beginMove(event, item, null)}
+									onkeydown={(event) => handleVisitKey(event, item, null)}
+									onblur={(event) => handleVisitBlur(event, item)}
 								/>
 							</div>
 						{:else if item.kind === 'assessment'}
@@ -585,8 +649,11 @@
 								{today}
 								{employeesById}
 								selected={visit.id === selectedItemId}
+								keyboardMovable={canDragVisit(visit, canSchedule)}
 								{onselect}
 								onpickup={(event) => beginMove(event, visit, block)}
+								onkeydown={(event) => handleVisitKey(event, visit, block)}
+								onblur={(event) => handleVisitBlur(event, visit)}
 							/>
 							{#if canDragVisit(visit, canSchedule)}
 								<!-- The bottom edge, for changing how long the work should take. It is a handle on a

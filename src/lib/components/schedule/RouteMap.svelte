@@ -4,7 +4,12 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { PUBLIC_MAPBOX_TOKEN } from '$env/static/public';
 	import type { RouteStop } from '$lib/schedule/route-order';
-	import { stopAddressLabel, stopClientLabel, stopPropertyId } from '$lib/schedule/stops';
+	import {
+		stopAddressLabel,
+		stopAddressQuery,
+		stopClientLabel,
+		stopPropertyId
+	} from '$lib/schedule/stops';
 	import { geocodeAddress, type GeoPoint } from '$lib/schedule/geocode-client';
 	import type { Map as MapboxMap, Marker } from 'mapbox-gl';
 
@@ -36,7 +41,7 @@
 		const lookups: { key: string; address: string }[] = [];
 		for (const stop of stops) {
 			if (stop.property_latitude !== null && stop.property_longitude !== null) continue;
-			const address = stopAddressLabel(stop);
+			const address = stopAddressQuery(stop);
 			if (!address) continue;
 			const key = stopPropertyId(stop) ?? stop.id;
 			if (seen.has(key)) continue;
@@ -208,22 +213,21 @@
 			}
 		}
 		for (const p of placed) {
+			const label = `Stop ${p.position}: ${stopClientLabel(p.stop)}${
+				stopAddressLabel(p.stop) ? `, ${stopAddressLabel(p.stop)}` : ''
+			}`;
 			const existing = markers.get(p.stop.id);
 			if (existing) {
 				existing.marker.setLngLat([p.point.lng, p.point.lat]);
 				existing.el.textContent = String(p.position);
+				existing.el.setAttribute('aria-label', label);
 				continue;
 			}
 			const el = document.createElement('button');
 			el.type = 'button';
 			el.className = 'route-map__pin';
 			el.textContent = String(p.position);
-			el.setAttribute(
-				'aria-label',
-				`Stop ${p.position}: ${stopClientLabel(p.stop)}${
-					stopAddressLabel(p.stop) ? `, ${stopAddressLabel(p.stop)}` : ''
-				}`
-			);
+			el.setAttribute('aria-label', label);
 			el.addEventListener('click', (event) => {
 				event.stopPropagation();
 				onselect(p.stop, el);

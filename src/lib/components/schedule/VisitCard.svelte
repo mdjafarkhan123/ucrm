@@ -29,8 +29,11 @@
 		employeesById,
 		selected = false,
 		showAssignment = true,
+		keyboardMovable = false,
 		onselect,
-		onpickup
+		onpickup,
+		onkeydown,
+		onblur
 	}: {
 		visit: ScheduleVisit;
 		density: CardDensity;
@@ -42,8 +45,16 @@
 		/** False where the surface itself already says who is going, as the Day board's employee row does.
 		 * The card never repeats identity the row has already given. */
 		showAssignment?: boolean;
+		/** Whether the arrow keys can reschedule this card from the keyboard. Only true for a permitted,
+		 *  uncompleted visit -- the same gate a pointer drag uses. Adds the hint to the card's own label. */
+		keyboardMovable?: boolean;
 		/** The element is handed back so the page can anchor the preview to this exact card. */
 		onselect: (visit: ScheduleVisit, element: HTMLElement) => void;
+		/** Arrow keys nudge a pending reschedule; Enter or Space confirms it, Escape cancels it. */
+		onkeydown?: (event: KeyboardEvent) => void;
+		/** Focus left the card while a keyboard reschedule was pending, so the calendar can drop it rather
+		 *  than leave a stranded preview behind. */
+		onblur?: (event: FocusEvent) => void;
 	} = $props();
 
 	const status = $derived(visitDerivedStatus(visit, today));
@@ -59,7 +70,8 @@
 			visitClientLabel(visit),
 			visitWorkLabel(visit),
 			visitAssignmentLabel(visit, employeesById),
-			status ? VISIT_STATUS_LABELS[status] : null
+			status ? VISIT_STATUS_LABELS[status] : null,
+			keyboardMovable ? 'Arrow keys reschedule, Enter confirms, Escape cancels' : null
 		]
 			.filter(Boolean)
 			.join(', ')
@@ -80,6 +92,8 @@
 	title={summary}
 	onclick={(event) => onselect(visit, event.currentTarget)}
 	onpointerdown={onpickup}
+	{onkeydown}
+	{onblur}
 >
 	<span class="visit-card__accent" aria-hidden="true"></span>
 

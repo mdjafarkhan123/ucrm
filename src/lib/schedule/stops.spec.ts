@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	stopAddressLabel,
+	stopAddressQuery,
 	stopClientLabel,
 	stopGeocodeState,
 	stopNavPlace,
@@ -126,6 +127,11 @@ describe('stopNavPlace', () => {
 		expect(place.lng).toBeNull();
 		expect(place.address).toBe('4 Elm Street Austin, TX 78701');
 	});
+
+	it('never sends the property label to the maps app, only the real address', () => {
+		const stop = visit({ id: 'a', property_label: 'Primary property' });
+		expect(stopNavPlace(stop).address).toBe('4 Elm Street Austin, TX 78701');
+	});
 });
 
 describe('stop labels', () => {
@@ -179,5 +185,24 @@ describe('stopAddressLabel', () => {
 			property_postal_code: null
 		});
 		expect(stopAddressLabel(stop)).toBeNull();
+	});
+});
+
+describe('stopAddressQuery', () => {
+	it('joins street, city/region and postal, dropping the property label a real geocoder could mismatch on', () => {
+		const stop = visit({ id: 'a', property_label: 'Primary property' });
+		expect(stopAddressQuery(stop)).toBe('4 Elm Street Austin, TX 78701');
+	});
+
+	it('is null when there is no address to geocode', () => {
+		const stop = visit({
+			id: 'a',
+			property_label: 'Primary property',
+			property_address_line1: null,
+			property_city: null,
+			property_state_region: null,
+			property_postal_code: null
+		});
+		expect(stopAddressQuery(stop)).toBeNull();
 	});
 });

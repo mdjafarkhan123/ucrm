@@ -41,7 +41,7 @@ export function stopNavPlace(stop: RouteStop): NavPlace {
 	return {
 		lat: stop.property_latitude,
 		lng: stop.property_longitude,
-		address: stopAddressLabel(stop)
+		address: stopAddressQuery(stop)
 	};
 }
 
@@ -64,6 +64,19 @@ export function stopAddressLabel(stop: RouteStop): string | null {
 	const street = [stop.property_label, stop.property_address_line1].filter(Boolean).join(' · ');
 	const region = [stop.property_city, stop.property_state_region].filter(Boolean).join(', ');
 	const line = [street, region, stop.property_postal_code].filter(Boolean).join(' ');
+	return line.length > 0 ? line : null;
+}
+
+/** The address text handed to an external geocoder or maps app -- street, city/region, postal, never the
+ *  property's own free-text nickname (`property_label`, e.g. "Primary property" or "Main office"). That label
+ *  reads fine next to a real street address, but alone in a geocoding or navigation query it is just another
+ *  word for the provider to match a real place against -- Mapbox has resolved "Primary property" to an
+ *  unrelated town named "Primary" this way. */
+export function stopAddressQuery(stop: RouteStop): string | null {
+	const region = [stop.property_city, stop.property_state_region].filter(Boolean).join(', ');
+	const line = [stop.property_address_line1, region, stop.property_postal_code]
+		.filter(Boolean)
+		.join(' ');
 	return line.length > 0 ? line : null;
 }
 

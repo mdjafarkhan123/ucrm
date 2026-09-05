@@ -22,6 +22,7 @@
 		proposeMove,
 		proposeResize,
 		snapMinutes,
+		SNAP_MINUTES,
 		type DropTarget,
 		type NewVisitDraft,
 		type ScheduleProposal
@@ -332,6 +333,72 @@
 		return snapMinutes((event.clientX - box.left) / PX_PER_MINUTE);
 	}
 
+	// The row a visit is already in, for a keyboard nudge that never changes who it is assigned to -- only
+	// the clock time this board's horizontal axis represents.
+	function currentRowIndex(visit: ScheduleVisit): number {
+		const index = rows.findIndex((row) =>
+			row.kind === 'unassigned'
+				? visit.assignee_ids.length === 0
+				: visit.assignee_ids.includes(row.key)
+		);
+		return index === -1 ? 0 : index;
+	}
+
+	// The keyboard equivalent of dragging sideways: left/right build the same proposal a pointer drag would,
+	// shown with the same ghost, and only Enter turns it into the confirmation dialog a drop already opens.
+	// This board's vertical axis (who) already has a keyboard path through the assignment editor, so only
+	// the clock time -- this axis -- is nudged here.
+	function handleVisitKey(
+		event: KeyboardEvent,
+		visit: ScheduleVisit,
+		rowIndex: number,
+		block: { start: number } | null
+	) {
+		if (!canDragVisit(visit, canSchedule)) return;
+		const anchor = event.currentTarget as HTMLElement;
+		const active = drag?.visit.id === visit.id ? drag : null;
+
+		if (active && (event.key === 'Escape' || event.key === ' ' || event.key === 'Enter')) {
+			event.preventDefault();
+			if (event.key !== 'Escape') {
+				const target = dropTargetFor(visit, {
+					rowIndex: active.rowIndex,
+					startMinutes: active.start
+				});
+				onpropose(visit, proposeMove(visit, target), anchor);
+			}
+			drag = null;
+			return;
+		}
+
+		if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+		const base: DayDrag = active ?? {
+			visit,
+			mode: 'move',
+			anchor,
+			rowIndex: currentRowIndex(visit),
+			start: block?.start ?? null,
+			end: null
+		};
+		if (base.start === null) return; // Anytime has no clock time to nudge.
+		event.preventDefault();
+
+		const start = Math.max(
+			0,
+			Math.min(MINUTES_IN_DAY, base.start + (event.key === 'ArrowLeft' ? -1 : 1) * SNAP_MINUTES)
+		);
+		const proposal = proposeMove(
+			visit,
+			dropTargetFor(visit, { rowIndex: base.rowIndex, startMinutes: start })
+		);
+		drag = { ...base, start, end: minutesOf(proposal.end_time) };
+	}
+
+	function handleVisitBlur(event: FocusEvent, visit: ScheduleVisit) {
+		if (drag?.visit.id === visit.id) drag = null;
+	}
+
 	// --- Placing a visit dragged in from the Unscheduled drawer -------------------------------------
 
 	// The page owns that drag: the card lives in the drawer, so the board does not start it. The board only
@@ -562,8 +629,11 @@
 									{employeesById}
 									showAssignment={false}
 									selected={item.id === selectedItemId}
+									keyboardMovable={canDragVisit(item, canSchedule)}
 									{onselect}
 									onpickup={(event) => beginMove(event, item, rowIndex, null)}
+									onkeydown={(event) => handleVisitKey(event, item, rowIndex, null)}
+									onblur={(event) => handleVisitBlur(event, item)}
 								/>
 							</div>
 						{:else if item.kind === 'assessment'}
@@ -627,8 +697,11 @@
 									{employeesById}
 									showAssignment={false}
 									selected={visit.id === selectedItemId}
+									keyboardMovable={canDragVisit(visit, canSchedule)}
 									{onselect}
 									onpickup={(event) => beginMove(event, visit, rowIndex, block)}
+									onkeydown={(event) => handleVisitKey(event, visit, rowIndex, block)}
+									onblur={(event) => handleVisitBlur(event, visit)}
 								/>
 								{#if canDragVisit(visit, canSchedule)}
 									<!-- The trailing edge, for changing how long the work should take. Reschedule is
