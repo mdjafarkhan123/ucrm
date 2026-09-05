@@ -765,9 +765,96 @@ export type Database = {
           },
         ]
       }
+      client_payment_events: {
+        Row: {
+          actor_user_id: string | null
+          amount_minor: number
+          client_id: string
+          created_at: string
+          currency_code: string
+          event_type: string
+          id: string
+          method: string | null
+          note: string | null
+          organization_id: string
+          original_deposit_event_id: string | null
+          original_event_id: string | null
+          payment_date: string
+          reference: string | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          amount_minor: number
+          client_id: string
+          created_at?: string
+          currency_code: string
+          event_type: string
+          id?: string
+          method?: string | null
+          note?: string | null
+          organization_id: string
+          original_deposit_event_id?: string | null
+          original_event_id?: string | null
+          payment_date: string
+          reference?: string | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          amount_minor?: number
+          client_id?: string
+          created_at?: string
+          currency_code?: string
+          event_type?: string
+          id?: string
+          method?: string | null
+          note?: string | null
+          organization_id?: string
+          original_deposit_event_id?: string | null
+          original_event_id?: string | null
+          payment_date?: string
+          reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_payment_events_client_fk"
+            columns: ["organization_id", "client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "client_payment_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_payment_events_original_deposit_fk"
+            columns: ["organization_id", "original_deposit_event_id"]
+            isOneToOne: false
+            referencedRelation: "quote_deposit_events"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "client_payment_events_original_fk"
+            columns: ["organization_id", "original_event_id"]
+            isOneToOne: false
+            referencedRelation: "client_payment_events"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           archived_at: string | null
+          billing_address_line1: string | null
+          billing_address_line2: string | null
+          billing_city: string | null
+          billing_country: string | null
+          billing_payment_term_id: string | null
+          billing_postal_code: string | null
+          billing_state_region: string | null
           client_type: string
           company_name: string | null
           converted_to_customer_at: string | null
@@ -786,6 +873,13 @@ export type Database = {
         }
         Insert: {
           archived_at?: string | null
+          billing_address_line1?: string | null
+          billing_address_line2?: string | null
+          billing_city?: string | null
+          billing_country?: string | null
+          billing_payment_term_id?: string | null
+          billing_postal_code?: string | null
+          billing_state_region?: string | null
           client_type?: string
           company_name?: string | null
           converted_to_customer_at?: string | null
@@ -804,6 +898,13 @@ export type Database = {
         }
         Update: {
           archived_at?: string | null
+          billing_address_line1?: string | null
+          billing_address_line2?: string | null
+          billing_city?: string | null
+          billing_country?: string | null
+          billing_payment_term_id?: string | null
+          billing_postal_code?: string | null
+          billing_state_region?: string | null
           client_type?: string
           company_name?: string | null
           converted_to_customer_at?: string | null
@@ -821,6 +922,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "clients_billing_term_fk"
+            columns: ["organization_id", "billing_payment_term_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_payment_terms"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "clients_organization_id_fkey"
             columns: ["organization_id"]
@@ -2924,6 +3032,587 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_events: {
+        Row: {
+          actor_id: string | null
+          client_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          invoice_id: string
+          invoice_number: number
+          invoice_revision: number | null
+          metadata: Json
+          organization_id: string
+          price_sensitive: boolean
+          prior_document_snapshot: Json | null
+          reason: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          invoice_id: string
+          invoice_number: number
+          invoice_revision?: number | null
+          metadata?: Json
+          organization_id: string
+          price_sensitive?: boolean
+          prior_document_snapshot?: Json | null
+          reason?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          invoice_id?: string
+          invoice_number?: number
+          invoice_revision?: number | null
+          metadata?: Json
+          organization_id?: string
+          price_sensitive?: boolean
+          prior_document_snapshot?: Json | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_lines: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          invoice_id: string
+          is_taxable: boolean
+          line_kind: string
+          line_total_minor: number | null
+          name: string
+          organization_id: string
+          position: number
+          progress_original_amount_minor: number | null
+          quantity: number | null
+          service_date: string | null
+          source_catalog_item_id: string | null
+          source_job_id: string | null
+          source_job_line_id: string | null
+          unit_label: string | null
+          unit_price_minor: number | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          invoice_id: string
+          is_taxable?: boolean
+          line_kind?: string
+          line_total_minor?: number | null
+          name: string
+          organization_id: string
+          position: number
+          progress_original_amount_minor?: number | null
+          quantity?: number | null
+          service_date?: string | null
+          source_catalog_item_id?: string | null
+          source_job_id?: string | null
+          source_job_line_id?: string | null
+          unit_label?: string | null
+          unit_price_minor?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          invoice_id?: string
+          is_taxable?: boolean
+          line_kind?: string
+          line_total_minor?: number | null
+          name?: string
+          organization_id?: string
+          position?: number
+          progress_original_amount_minor?: number | null
+          quantity?: number | null
+          service_date?: string | null
+          source_catalog_item_id?: string | null
+          source_job_id?: string | null
+          source_job_line_id?: string | null
+          unit_label?: string | null
+          unit_price_minor?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_lines_invoice_organization_fk"
+            columns: ["organization_id", "invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "invoice_lines_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_payment_allocations: {
+        Row: {
+          actor_user_id: string | null
+          amount_minor: number
+          client_id: string
+          created_at: string
+          currency_code: string
+          deposit_event_id: string | null
+          entry_type: string
+          id: string
+          invoice_id: string
+          invoice_number: number
+          organization_id: string
+          payment_event_id: string | null
+          reason: string | null
+          reversed_allocation_id: string | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          amount_minor: number
+          client_id: string
+          created_at?: string
+          currency_code: string
+          deposit_event_id?: string | null
+          entry_type: string
+          id?: string
+          invoice_id: string
+          invoice_number: number
+          organization_id: string
+          payment_event_id?: string | null
+          reason?: string | null
+          reversed_allocation_id?: string | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          amount_minor?: number
+          client_id?: string
+          created_at?: string
+          currency_code?: string
+          deposit_event_id?: string | null
+          entry_type?: string
+          id?: string
+          invoice_id?: string
+          invoice_number?: number
+          organization_id?: string
+          payment_event_id?: string | null
+          reason?: string | null
+          reversed_allocation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_payment_allocations_client_fk"
+            columns: ["organization_id", "client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "invoice_payment_allocations_deposit_fk"
+            columns: ["organization_id", "deposit_event_id"]
+            isOneToOne: false
+            referencedRelation: "quote_deposit_events"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "invoice_payment_allocations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_payment_allocations_payment_fk"
+            columns: ["organization_id", "payment_event_id", "client_id"]
+            isOneToOne: false
+            referencedRelation: "client_payment_events"
+            referencedColumns: ["organization_id", "id", "client_id"]
+          },
+          {
+            foreignKeyName: "invoice_payment_allocations_reversed_fk"
+            columns: ["organization_id", "reversed_allocation_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_payment_allocations"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      invoice_payment_terms: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_protected: boolean
+          name: string
+          net_days: number | null
+          organization_id: string
+          position: number
+          rule: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_protected?: boolean
+          name: string
+          net_days?: number | null
+          organization_id: string
+          position?: number
+          rule: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_protected?: boolean
+          name?: string
+          net_days?: number | null
+          organization_id?: string
+          position?: number
+          rule?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_payment_terms_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_sources: {
+        Row: {
+          claimed_by: string | null
+          client_id: string
+          created_at: string
+          id: string
+          installment_number: number | null
+          job_id: string
+          organization_id: string
+          reminder_id: string | null
+          root_invoice_id: string
+          service_property_index: number | null
+          source_kind: string
+          visit_id: string | null
+        }
+        Insert: {
+          claimed_by?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          installment_number?: number | null
+          job_id: string
+          organization_id: string
+          reminder_id?: string | null
+          root_invoice_id: string
+          service_property_index?: number | null
+          source_kind: string
+          visit_id?: string | null
+        }
+        Update: {
+          claimed_by?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          installment_number?: number | null
+          job_id?: string
+          organization_id?: string
+          reminder_id?: string | null
+          root_invoice_id?: string
+          service_property_index?: number | null
+          source_kind?: string
+          visit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_sources_client_fk"
+            columns: ["organization_id", "client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "invoice_sources_job_fk"
+            columns: ["organization_id", "job_id"]
+            isOneToOne: false
+            referencedRelation: "job_list_rows"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "invoice_sources_job_fk"
+            columns: ["organization_id", "job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "invoice_sources_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_sources_reminder_fk"
+            columns: ["organization_id", "reminder_id"]
+            isOneToOne: false
+            referencedRelation: "job_invoice_reminders"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "invoice_sources_root_fk"
+            columns: ["organization_id", "root_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "invoice_sources_visit_fk"
+            columns: ["organization_id", "visit_id"]
+            isOneToOne: false
+            referencedRelation: "job_visits"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          billing_address_snapshot: Json
+          client_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          customer_snapshot: Json
+          discount_minor: number
+          discount_name: string | null
+          discount_type: string | null
+          discount_value: number | null
+          document_frozen_at: string | null
+          due_date: string
+          due_date_source: string
+          frozen_status_label: string | null
+          id: string
+          invoice_number: number
+          is_effective_receivable: boolean | null
+          issue_date: string
+          issue_method: string | null
+          issued_at: string | null
+          issued_by: string | null
+          marked_received_at: string | null
+          marked_received_by: string | null
+          organization_id: string
+          payment_term_id: string | null
+          payment_term_snapshot: Json
+          predecessor_invoice_id: string | null
+          recognized_at: string | null
+          replaced_at: string | null
+          replaced_by_invoice_id: string | null
+          replacement_kind: string | null
+          revision: number
+          root_invoice_id: string
+          service_properties: Json
+          subject: string
+          subtotal_minor: number
+          tax_minor: number
+          tax_name: string | null
+          tax_rate_basis_points: number
+          tax_rate_id: string | null
+          tax_source: string
+          total_minor: number
+          updated_at: string
+          void_note: string | null
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
+          write_off_note: string | null
+          written_off_at: string | null
+          written_off_by: string | null
+        }
+        Insert: {
+          billing_address_snapshot?: Json
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          customer_snapshot?: Json
+          discount_minor?: number
+          discount_name?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
+          document_frozen_at?: string | null
+          due_date: string
+          due_date_source?: string
+          frozen_status_label?: string | null
+          id?: string
+          invoice_number: number
+          is_effective_receivable?: boolean | null
+          issue_date: string
+          issue_method?: string | null
+          issued_at?: string | null
+          issued_by?: string | null
+          marked_received_at?: string | null
+          marked_received_by?: string | null
+          organization_id: string
+          payment_term_id?: string | null
+          payment_term_snapshot?: Json
+          predecessor_invoice_id?: string | null
+          recognized_at?: string | null
+          replaced_at?: string | null
+          replaced_by_invoice_id?: string | null
+          replacement_kind?: string | null
+          revision?: number
+          root_invoice_id: string
+          service_properties?: Json
+          subject: string
+          subtotal_minor?: number
+          tax_minor?: number
+          tax_name?: string | null
+          tax_rate_basis_points?: number
+          tax_rate_id?: string | null
+          tax_source?: string
+          total_minor?: number
+          updated_at?: string
+          void_note?: string | null
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+          write_off_note?: string | null
+          written_off_at?: string | null
+          written_off_by?: string | null
+        }
+        Update: {
+          billing_address_snapshot?: Json
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          customer_snapshot?: Json
+          discount_minor?: number
+          discount_name?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
+          document_frozen_at?: string | null
+          due_date?: string
+          due_date_source?: string
+          frozen_status_label?: string | null
+          id?: string
+          invoice_number?: number
+          is_effective_receivable?: boolean | null
+          issue_date?: string
+          issue_method?: string | null
+          issued_at?: string | null
+          issued_by?: string | null
+          marked_received_at?: string | null
+          marked_received_by?: string | null
+          organization_id?: string
+          payment_term_id?: string | null
+          payment_term_snapshot?: Json
+          predecessor_invoice_id?: string | null
+          recognized_at?: string | null
+          replaced_at?: string | null
+          replaced_by_invoice_id?: string | null
+          replacement_kind?: string | null
+          revision?: number
+          root_invoice_id?: string
+          service_properties?: Json
+          subject?: string
+          subtotal_minor?: number
+          tax_minor?: number
+          tax_name?: string | null
+          tax_rate_basis_points?: number
+          tax_rate_id?: string | null
+          tax_source?: string
+          total_minor?: number
+          updated_at?: string
+          void_note?: string | null
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+          write_off_note?: string | null
+          written_off_at?: string | null
+          written_off_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_client_organization_fk"
+            columns: ["organization_id", "client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_payment_term_fk"
+            columns: ["organization_id", "payment_term_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_payment_terms"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "invoices_predecessor_fk"
+            columns: ["organization_id", "predecessor_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "invoices_replaced_by_fk"
+            columns: ["organization_id", "replaced_by_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "invoices_root_fk"
+            columns: ["organization_id", "root_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "invoices_tax_rate_organization_fk"
+            columns: ["organization_id", "tax_rate_id"]
+            isOneToOne: false
+            referencedRelation: "organization_tax_rates"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       job_command_receipts: {
         Row: {
           action: string
@@ -4493,6 +5182,32 @@ export type Database = {
           },
         ]
       }
+      organization_invoice_counters: {
+        Row: {
+          next_invoice_number: number
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          next_invoice_number?: number
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          next_invoice_number?: number
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_invoice_counters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_job_counters: {
         Row: {
           next_job_number: number
@@ -5093,6 +5808,11 @@ export type Database = {
           hours_revision: number
           hours_updated_at: string | null
           hours_updated_by: string | null
+          invoice_default_term_commercial_id: string | null
+          invoice_default_term_residential_id: string | null
+          invoice_settings_revision: number
+          invoice_settings_updated_at: string | null
+          invoice_settings_updated_by: string | null
           locale: string
           logo_object_key: string | null
           organization_id: string
@@ -5150,6 +5870,11 @@ export type Database = {
           hours_revision?: number
           hours_updated_at?: string | null
           hours_updated_by?: string | null
+          invoice_default_term_commercial_id?: string | null
+          invoice_default_term_residential_id?: string | null
+          invoice_settings_revision?: number
+          invoice_settings_updated_at?: string | null
+          invoice_settings_updated_by?: string | null
           locale?: string
           logo_object_key?: string | null
           organization_id: string
@@ -5207,6 +5932,11 @@ export type Database = {
           hours_revision?: number
           hours_updated_at?: string | null
           hours_updated_by?: string | null
+          invoice_default_term_commercial_id?: string | null
+          invoice_default_term_residential_id?: string | null
+          invoice_settings_revision?: number
+          invoice_settings_updated_at?: string | null
+          invoice_settings_updated_by?: string | null
           locale?: string
           logo_object_key?: string | null
           organization_id?: string
@@ -5247,6 +5977,20 @@ export type Database = {
           website?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_settings_invoice_commercial_term_fk"
+            columns: ["organization_id", "invoice_default_term_commercial_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_payment_terms"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "organization_settings_invoice_residential_term_fk"
+            columns: ["organization_id", "invoice_default_term_residential_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_payment_terms"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "organization_settings_organization_id_fkey"
             columns: ["organization_id"]
@@ -7750,6 +8494,85 @@ export type Database = {
           },
         ]
       }
+      schedule_events: {
+        Row: {
+          all_day: boolean
+          created_at: string
+          description: string | null
+          end_time: string | null
+          event_date: string
+          id: string
+          organization_id: string
+          start_time: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          all_day?: boolean
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_date: string
+          id?: string
+          organization_id: string
+          start_time?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          all_day?: boolean
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_date?: string
+          id?: string
+          organization_id?: string
+          start_time?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedule_route_orders: {
+        Row: {
+          employee_id: string
+          organization_id: string
+          route_date: string
+          stop_order: string[]
+          updated_at: string
+        }
+        Insert: {
+          employee_id: string
+          organization_id: string
+          route_date: string
+          stop_order?: string[]
+          updated_at?: string
+        }
+        Update: {
+          employee_id?: string
+          organization_id?: string
+          route_date?: string
+          stop_order?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_route_orders_member_fk"
+            columns: ["organization_id", "employee_id"]
+            isOneToOne: false
+            referencedRelation: "organization_members"
+            referencedColumns: ["organization_id", "user_id"]
+          },
+        ]
+      }
       tag_assignments: {
         Row: {
           created_at: string
@@ -8485,6 +9308,18 @@ export type Database = {
         }
         Returns: Json
       }
+      activate_invoice_replacement: {
+        Args: {
+          expected_revision: number
+          new_idempotency_key: string
+          new_issue_method: string
+          new_request_hash: string
+          previewed_difference_minor: number
+          target_invoice_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       add_job_invoice_reminder: {
         Args: {
           new_due_on: string
@@ -8515,6 +9350,19 @@ export type Database = {
       advance_automation_work_item: {
         Args: { p_claim_token: string; p_work_item_id: string }
         Returns: string
+      }
+      apply_client_payment: {
+        Args: {
+          new_amount_minor: number
+          new_idempotency_key: string
+          new_reason: string
+          new_request_hash: string
+          target_deposit_event_id: string
+          target_invoice_id: string
+          target_organization_id: string
+          target_payment_event_id: string
+        }
+        Returns: Json
       }
       apply_organization_administrator_email_recovery: {
         Args: {
@@ -9084,6 +9932,17 @@ export type Database = {
           text_content: string
         }[]
       }
+      claim_invoice_sources: {
+        Args: {
+          expected_revision: number
+          new_idempotency_key: string
+          new_request_hash: string
+          new_sources: Json
+          target_invoice_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       claim_onboarding_application_provision: {
         Args: { stale_after?: string; target_application_id: string }
         Returns: {
@@ -9157,6 +10016,10 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      client_account_balance: {
+        Args: { target_client_ids: string[] }
+        Returns: Json
       }
       clone_quote_version_to_draft: {
         Args: { target_quote_id: string }
@@ -9299,6 +10162,13 @@ export type Database = {
         Args: { payload: Json }
         Returns: {
           archived_at: string | null
+          billing_address_line1: string | null
+          billing_address_line2: string | null
+          billing_city: string | null
+          billing_country: string | null
+          billing_payment_term_id: string | null
+          billing_postal_code: string | null
+          billing_state_region: string | null
           client_type: string
           company_name: string | null
           converted_to_customer_at: string | null
@@ -9321,6 +10191,21 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      create_invoice_draft: {
+        Args: {
+          new_custom_due_date: string
+          new_idempotency_key: string
+          new_issue_date: string
+          new_lines: Json
+          new_payment_term_id: string
+          new_request_hash: string
+          new_service_property_ids: string[]
+          new_subject: string
+          target_client_id: string
+          target_organization_id: string
+        }
+        Returns: Json
       }
       create_job_with_visits: {
         Args: {
@@ -9442,6 +10327,16 @@ export type Database = {
         Args: {
           expected_revision: number
           target_item_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
+      delete_invoice_draft: {
+        Args: {
+          expected_revision: number
+          new_idempotency_key: string
+          new_request_hash: string
+          target_invoice_id: string
           target_organization_id: string
         }
         Returns: Json
@@ -10294,6 +11189,56 @@ export type Database = {
         Args: { p_batch_size?: number }
         Returns: number
       }
+      invoice_list_page: {
+        Args: {
+          created_from?: string
+          created_to?: string
+          cursor_created?: string
+          cursor_id?: string
+          cursor_number?: number
+          page_limit?: number
+          search_like?: string
+          search_number?: number
+          sort_dir?: string
+          sort_key?: string
+          status_filter?: string[]
+          target_organization_id: string
+        }
+        Returns: {
+          client_company_name: string
+          client_display_name: string
+          client_id: string
+          created_at: string
+          currency_code: string
+          derived_status: string
+          due_date: string
+          id: string
+          invoice_number: number
+          is_replaced: boolean
+          issue_date: string
+          issued_at: string
+          subject: string
+        }[]
+      }
+      invoice_money: { Args: { target_invoice_ids: string[] }; Returns: Json }
+      invoice_status_counts: {
+        Args: { target_organization_id: string }
+        Returns: {
+          derived_status: string
+          total: number
+        }[]
+      }
+      issue_invoice: {
+        Args: {
+          expected_revision: number
+          new_idempotency_key: string
+          new_issue_method: string
+          new_request_hash: string
+          target_invoice_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       issue_quote_access_link: {
         Args: { supplied_token_hash: string; target_quote_id: string }
         Returns: Json
@@ -10399,6 +11344,16 @@ export type Database = {
         }
         Returns: Json
       }
+      mark_invoice_received: {
+        Args: {
+          new_idempotency_key: string
+          new_reason: string
+          new_request_hash: string
+          target_invoice_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       mark_member_identity_revoked: {
         Args: {
           cleanup_error?: string
@@ -10486,6 +11441,18 @@ export type Database = {
           requesting_origin: string
           session_token_hash: string
           ttl_seconds?: number
+        }
+        Returns: Json
+      }
+      move_client_payment: {
+        Args: {
+          new_amount_minor: number
+          new_idempotency_key: string
+          new_reason: string
+          new_request_hash: string
+          target_allocation_id: string
+          target_invoice_id: string
+          target_organization_id: string
         }
         Returns: Json
       }
@@ -10858,6 +11825,16 @@ export type Database = {
         }
         Returns: Json
       }
+      prepare_invoice_correction: {
+        Args: {
+          expected_revision: number
+          new_idempotency_key: string
+          new_request_hash: string
+          target_invoice_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       prepare_team_invitation_identity_cleanup: {
         Args: { target_invitation_id: string; target_lease_nonce: string }
         Returns: {
@@ -10993,6 +11970,15 @@ export type Database = {
         Args: { target_version_ids: string[] }
         Returns: Json
       }
+      rebill_voided_invoice: {
+        Args: {
+          new_idempotency_key: string
+          new_request_hash: string
+          target_invoice_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       record_automation_worker_wake_dispatch: {
         Args: {
           p_job_name: string
@@ -11018,6 +12004,21 @@ export type Database = {
           p_worker_name: string
         }
         Returns: undefined
+      }
+      record_client_payment: {
+        Args: {
+          new_allocations: Json
+          new_amount_minor: number
+          new_idempotency_key: string
+          new_method: string
+          new_note: string
+          new_payment_date: string
+          new_reference: string
+          new_request_hash: string
+          target_client_id: string
+          target_organization_id: string
+        }
+        Returns: Json
       }
       record_communication_inbound_message: {
         Args: {
@@ -11218,6 +12219,30 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      refresh_invoice_snapshots: {
+        Args: {
+          expected_revision: number
+          new_service_property_ids: string[]
+          target_invoice_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
+      refund_client_payment: {
+        Args: {
+          new_amount_minor: number
+          new_idempotency_key: string
+          new_method: string
+          new_note: string
+          new_reference: string
+          new_refund_date: string
+          new_request_hash: string
+          target_deposit_event_id: string
+          target_organization_id: string
+          target_payment_event_id: string
+        }
+        Returns: Json
+      }
       release_communication_worker_lease: {
         Args: { p_lease_token: string; p_worker_name: string }
         Returns: boolean
@@ -11261,6 +12286,14 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      remove_invoice_payment_term: {
+        Args: {
+          expected_revision: number
+          target_organization_id: string
+          target_term_id: string
+        }
+        Returns: Json
       }
       remove_organization_logo: {
         Args: { target_organization_id: string }
@@ -11306,10 +12339,29 @@ export type Database = {
         }
         Returns: Json
       }
+      reopen_invoice: {
+        Args: {
+          new_idempotency_key: string
+          new_reason: string
+          new_request_hash: string
+          target_invoice_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       reopen_job: {
         Args: {
           expected_revision: number
           target_job_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
+      replace_invoice_lines: {
+        Args: {
+          expected_revision: number
+          new_lines: Json
+          target_invoice_id: string
           target_organization_id: string
         }
         Returns: Json
@@ -11524,6 +12576,16 @@ export type Database = {
         }
         Returns: Json
       }
+      restore_invoice_from_write_off: {
+        Args: {
+          new_idempotency_key: string
+          new_reason: string
+          new_request_hash: string
+          target_invoice_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       restore_quote: { Args: { target_quote_id: string }; Returns: Json }
       restore_team_member: {
         Args: {
@@ -11601,6 +12663,16 @@ export type Database = {
         }
         Returns: Json
       }
+      reverse_client_payment: {
+        Args: {
+          new_idempotency_key: string
+          new_note: string
+          new_request_hash: string
+          target_organization_id: string
+          target_payment_event_id: string
+        }
+        Returns: Json
+      }
       reverse_onboarding_application_payment: {
         Args: {
           actor_email: string
@@ -11643,6 +12715,17 @@ export type Database = {
           p_name: string
           p_organization_id: string
           p_recipe_id: string
+        }
+        Returns: Json
+      }
+      save_invoice_payment_term: {
+        Args: {
+          expected_revision: number
+          new_name: string
+          new_net_days: number
+          new_rule: string
+          target_organization_id: string
+          target_term_id: string
         }
         Returns: Json
       }
@@ -11743,6 +12826,22 @@ export type Database = {
         }
         Returns: Json
       }
+      set_client_billing: {
+        Args: {
+          address_mode: string
+          billing_property_id?: string
+          new_address_line1?: string
+          new_address_line2?: string
+          new_city?: string
+          new_country?: string
+          new_payment_term_id?: string
+          new_postal_code?: string
+          new_state_region?: string
+          target_client_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       set_communication_email_organization_pause: {
         Args: {
           p_actor_email: string
@@ -11803,6 +12902,29 @@ export type Database = {
         }
         Returns: Json
       }
+      set_invoice_discount: {
+        Args: {
+          expected_revision: number
+          new_name: string
+          new_type: string
+          new_value: number
+          target_invoice_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
+      set_invoice_tax: {
+        Args: {
+          expected_revision: number
+          new_custom_name?: string
+          new_custom_rate_basis_points?: number
+          new_rate_id?: string
+          new_source: string
+          target_invoice_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       set_job_billing: {
         Args: {
           expected_revision: number
@@ -11845,6 +12967,15 @@ export type Database = {
           p_idempotency_key: string
           p_organization_id: string
           p_reason: string
+        }
+        Returns: Json
+      }
+      set_organization_invoice_defaults: {
+        Args: {
+          expected_revision: number
+          new_commercial_term_id: string
+          new_residential_term_id: string
+          target_organization_id: string
         }
         Returns: Json
       }
@@ -12128,6 +13259,16 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      unapply_client_payment: {
+        Args: {
+          new_idempotency_key: string
+          new_reason: string
+          new_request_hash: string
+          target_allocation_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       uncomplete_job_visit: {
         Args: {
           target_job_id: string
@@ -12156,6 +13297,13 @@ export type Database = {
         Args: { payload: Json }
         Returns: {
           archived_at: string | null
+          billing_address_line1: string | null
+          billing_address_line2: string | null
+          billing_city: string | null
+          billing_country: string | null
+          billing_payment_term_id: string | null
+          billing_postal_code: string | null
+          billing_state_region: string | null
           client_type: string
           company_name: string | null
           converted_to_customer_at: string | null
@@ -12178,6 +13326,18 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      update_invoice_details: {
+        Args: {
+          expected_revision: number
+          new_custom_due_date: string
+          new_issue_date: string
+          new_payment_term_id: string
+          new_subject: string
+          target_invoice_id: string
+          target_organization_id: string
+        }
+        Returns: Json
       }
       update_job_details: {
         Args: {
@@ -12308,12 +13468,33 @@ export type Database = {
         }
         Returns: Json
       }
+      void_invoice: {
+        Args: {
+          new_idempotency_key: string
+          new_note: string
+          new_reason: string
+          new_request_hash: string
+          target_invoice_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       withdraw_communication_email_suppression_removal: {
         Args: {
           p_actor_email: string
           p_actor_user_id: string
           p_organization_id: string
           p_suppression_id: string
+        }
+        Returns: Json
+      }
+      write_off_invoice: {
+        Args: {
+          new_idempotency_key: string
+          new_note: string
+          new_request_hash: string
+          target_invoice_id: string
+          target_organization_id: string
         }
         Returns: Json
       }
@@ -12335,12 +13516,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -12364,11 +13545,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -12389,11 +13570,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -12414,11 +13595,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -12431,11 +13612,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

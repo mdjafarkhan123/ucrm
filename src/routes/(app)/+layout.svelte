@@ -26,6 +26,7 @@
 		resolve('/(app)/jobs'),
 		resolve('/(app)/jobs/new'),
 		resolve('/(app)/jobs/[id]', { id: 'warm' }),
+		resolve('/(app)/invoices'),
 		resolve('/(app)/pipeline'),
 		resolve('/(app)/pipeline/outcomes'),
 		resolve('/(app)/communications'),

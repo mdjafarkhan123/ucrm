@@ -49,7 +49,7 @@
 			items: [
 				{ label: 'Jobs', href: '/jobs', icon: 'tools' },
 				{ label: 'Quotes', href: '/quotes', icon: 'fileInvoice' },
-				{ label: 'Invoices', href: '/invoices', icon: 'receipt', unavailable: true }
+				{ label: 'Invoices', href: '/invoices', icon: 'receipt' }
 			]
 		},
 		{
