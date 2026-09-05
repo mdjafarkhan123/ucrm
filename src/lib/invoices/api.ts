@@ -1,5 +1,6 @@
 import type { InvoiceDerivedStatus } from './statuses';
 import type { InvoicePaymentMethod } from './payment-methods';
+import type { InvoiceVoidReason } from './lifecycle';
 import type { QuoteDiscountType, QuoteTaxSource } from '$lib/quotes/api';
 
 export type InvoiceWriteError = Error & {
@@ -272,6 +273,7 @@ export type InvoiceDetail = {
 		void_reason: string | null;
 		void_note: string | null;
 		written_off_at: string | null;
+		write_off_note: string | null;
 		marked_received_at: string | null;
 		recognized_at: string | null;
 		replaced_at: string | null;
@@ -299,6 +301,8 @@ export type InvoiceDetail = {
 	can_send: boolean;
 	can_delete: boolean;
 	can_record_payment: boolean;
+	can_void: boolean;
+	can_bad_debt: boolean;
 	can_see_price: boolean;
 	can_manage_taxes: boolean;
 };
@@ -539,4 +543,34 @@ export async function deleteInvoice(
 		})
 	});
 	return readOrThrow<DeleteInvoiceResult>(response, 'That invoice could not be deleted.');
+}
+
+// --- Lifecycle: void / bad debt / mark received (Part 7b) ------------------------------------------------
+
+// One of the five close/reopen transitions on an issued bill. Each maps to a command re-checked and
+// re-guarded in the database; the browser only says which one and carries the reason. `void` picks one of
+// four internal reasons plus an optional note, `write_off` an optional note, the rest a required short reason.
+export type InvoiceLifecycleAction =
+	| { action: 'void'; reason: InvoiceVoidReason; note: string | null }
+	| { action: 'write_off'; note: string | null }
+	| { action: 'restore_write_off'; reason: string }
+	| { action: 'mark_received'; reason: string }
+	| { action: 'reopen'; reason: string };
+
+export async function runInvoiceLifecycleAction(
+	id: string,
+	action: InvoiceLifecycleAction,
+	idempotencyKey: string,
+	requestHash: string
+): Promise<void> {
+	const response = await fetch(`/api/invoices/${id}/lifecycle`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			...action,
+			idempotency_key: idempotencyKey,
+			request_hash: requestHash
+		})
+	});
+	await readOrThrow<unknown>(response, 'That change could not be saved.');
 }

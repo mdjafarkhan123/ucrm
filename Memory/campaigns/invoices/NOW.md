@@ -1,30 +1,44 @@
 # Invoices: Current Checkpoint
 
 - Goal: Jobber-grounded invoicing and manual collection.
-- **6b-1b CLOSED and committed 2026-09-06.** The enqueue bug fix is applied to remote DB and confirmed live
-  (real send to Raad LTD invoice #1 returned a clean 201/queued with the correct org-default sender — no
-  crash). No browser tool was available this session, so verification was done at the API/DB level instead of
-  clicking through the UI; the page wiring itself was already browser-verified in an earlier session.
+- **7b (Void / Bad debt+restore / Mark received+reopen) CLOSED — browser-verified end to end, not yet
+  committed.** Wired the five already-built lifecycle commands to the invoice detail "More" menu via one
+  `/api/invoices/[id]/lifecycle` route (discriminated `action`), one `InvoiceLifecycleDialog` (built on
+  `ConfirmDialog`), and a status closure banner on the detail screen. One migration
+  (`20260906150000_invoice_detail_write_off_note.sql`) applied to remote DB — adds `write_off_note` to the
+  `invoice_detail` read model so the bad-debt banner shows its note (void already exposed reason+note).
+  `npm run check` 0 errors, ESLint clean, Prettier clean, svelte-autofixer clean.
+- Verified live on Raad LTD: draft menu has no lifecycle items; issued menu offers Mark received / Write off
+  / Void; mark-received → Paid + green banner; reopen → back; write-off + note → Bad debt + amber banner +
+  note + client account balance drops; undo → back; void with reason+note → Voided + red banner, menu loses
+  every lifecycle + Resend/Copy-link; **D2 refusal surfaces in the dialog** ("This bill still has payments on
+  it, so it cannot be voided yet.") on a partially-paid invoice. Dark mode banner correct.
 
-## Residual (not blocking)
+## Next action
 
-The "no sender ready" 422 refusal path (`src/lib/server/communications/email-send-errors.ts`) is only
-type-checked, not exercised live — every org with an issued invoice in the current DB now has a working
-sender. Same shape as the already-shipped quote 55000 mapping, so risk is low. Revisit only if a real
-no-sender send is reported broken.
+**7b is done. Commit it, then ask Jafar which thread is next.** Dependency-ready now that Part 7 is
+finished: **6b-2 (receipt document + receipt email from accepted payment facts)** and **Part 5 (Job / Visit /
+reminder / installment handoff — also needs Jobs 11c)**. Part 8 (batch) still waits on Part 5. Part 9
+(integrated journeys) waits on 2–8.
 
-## Next thread: 6c (Jafar flagged 2026-09-06) — awaiting his go-ahead
-
-Invoice **contract/disclaimer** gap — it is in the behavior contract but not implemented. Mirror the shipped
-quote disclaimer: enter / save / edit on the draft, display on the customer invoice document, keep it
-SEPARATE from payment terms, and FREEZE its content when the invoice is issued. Reference quote pattern:
-`src/routes/(app)/quotes/[id]/+page.svelte` "Contract disclaimer" SectionBlock + `contract_disclaimer` on
-quote versions + `CustomerQuoteDocument`. See ROADMAP row 6c.
+Commit: only the 7b files (migration, `src/lib/invoices/lifecycle.ts`, `src/lib/invoices/api.ts`,
+`src/lib/server/validation/invoices.schema.ts`, `src/routes/api/invoices/[id]/lifecycle/+server.ts`,
+`src/routes/api/invoices/[id]/+server.ts`,
+`src/lib/components/invoices/InvoiceLifecycleDialog.svelte`, `src/routes/(app)/invoices/[id]/+page.svelte`)
+plus Memory. The tree also carries a large pre-existing `.claude/skills/` + `.agents/skills/` diff from
+before this session — never stage that.
 
 ## Notes
 
-- 6a committed 2026-09-05 (`3959681`). Deferred follow-up logged:
-  `Memory/deferred/email-sender-setup-flow.md` (guide contractors to set up a sending email when missing).
-- Mirrors: quote detail send/copy wiring, `QuoteEmailDialog`, `enqueue_quote_communication_email`.
+- Test data left on Raad LTD: invoice #4 "7b lifecycle test" (Voided — cannot be deleted by design) and
+  invoice #5 "D2 refusal test" (has a $10k partial payment). Named clearly; offer Jafar a cleanup.
+- Void cancellation email (contract says voiding "notifies the client through email") is NOT built — deferred
+  as a small follow-up, Jafar's earlier steer. Needs a new email template/type.
+- Observation for Jafar: `canCollect` still shows the "Collect payment" primary button on a bad-debt or
+  marked-received invoice (its remaining balance is genuinely non-zero, so the command allows it). Pre-7b
+  logic, defensible, not changed.
+- Invoices list "Collected this month / Outstanding / Overdue" stat cards still render empty dashes (unwired
+  read, noted since 7a) — not chased.
+- 6b-1b's "no sender ready" 422 path still untested live (unchanged).
 
-Resume command: `read memory and continue the Invoices campaign` (will pick up 6c once Jafar approves it).
+Resume command: `read memory and continue the Invoices campaign`.

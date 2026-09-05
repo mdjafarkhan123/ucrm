@@ -24,6 +24,7 @@
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
 	import InvoiceEmailDialog from '$lib/components/invoices/InvoiceEmailDialog.svelte';
 	import CollectPaymentDialog from '$lib/components/invoices/CollectPaymentDialog.svelte';
+	import InvoiceLifecycleDialog from '$lib/components/invoices/InvoiceLifecycleDialog.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -41,12 +42,15 @@
 		queueInvoiceEmail,
 		issueInvoiceAccessLink,
 		recordInvoicePayment,
+		runInvoiceLifecycleAction,
 		deleteInvoice,
 		invoiceCountsKey,
 		type InvoiceWriteError,
+		type InvoiceLifecycleAction,
 		type InvoiceLineInput
 	} from '$lib/invoices/api';
 	import { INVOICE_STATUS_LABELS, INVOICE_STATUS_TONES } from '$lib/invoices/statuses';
+	import { INVOICE_VOID_REASON_LABELS, type InvoiceVoidReason } from '$lib/invoices/lifecycle';
 	import {
 		INVOICE_PAYMENT_METHOD_LABELS,
 		type InvoicePaymentMethod
@@ -65,6 +69,10 @@
 	import linkIcon from '@tabler/icons/outline/link.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
+	import banIcon from '@tabler/icons/outline/ban.svg?raw';
+	import cashOffIcon from '@tabler/icons/outline/cash-off.svg?raw';
+	import clipboardCheckIcon from '@tabler/icons/outline/clipboard-check.svg?raw';
+	import undoIcon from '@tabler/icons/outline/arrow-back-up.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -281,9 +289,29 @@
 		return undefined;
 	});
 
+	// Part 7b — the close/reopen transitions, each gated on the bill's live status plus its own permission. An
+	// open issued bill (awaiting payment or past due) can be voided, written off as bad debt, or closed by
+	// hand; the two undo moves show only from the state they undo. Every command re-checks all of this and
+	// void additionally refuses while ordinary payments are still on the bill (D2) — that refusal comes back
+	// into the dialog.
+	const isOpenIssued = $derived(
+		saved?.invoice.derived_status === 'awaiting_payment' ||
+			saved?.invoice.derived_status === 'past_due'
+	);
+	const canVoid = $derived(Boolean(saved?.can_void) && isOpenIssued);
+	const canWriteOff = $derived(Boolean(saved?.can_bad_debt) && isOpenIssued);
+	const canRestoreWriteOff = $derived(
+		Boolean(saved?.can_bad_debt) && saved?.invoice.derived_status === 'bad_debt'
+	);
+	const canMarkReceived = $derived(Boolean(saved?.can_record_payment) && isOpenIssued);
+	const canReopen = $derived(
+		Boolean(saved?.can_record_payment) && Boolean(saved?.invoice.marked_received_at)
+	);
+
 	// Following Jobber, the menu never offers a move the bill cannot make from where it is. Resend and the
 	// customer link show only for an issued, live bill; Mark as Sent only for a draft. Preview and Print are
-	// offered in every status — checking a bill before sending it is the whole point of a preview.
+	// offered in every status — checking a bill before sending it is the whole point of a preview. The
+	// close/reopen moves sit at the bottom of the list.
 	const invoiceMenuItems = $derived.by(() => {
 		if (!saved) return [];
 		const items = [];
@@ -309,6 +337,40 @@
 			icon: printIcon,
 			onSelect: () => openCustomerView(true)
 		});
+
+		if (canMarkReceived)
+			items.push({
+				label: 'Mark as received',
+				icon: clipboardCheckIcon,
+				onSelect: () => (lifecycleMode = 'mark_received')
+			});
+		if (canReopen)
+			items.push({
+				label: 'Reopen invoice',
+				icon: undoIcon,
+				onSelect: () => (lifecycleMode = 'reopen')
+			});
+		if (canWriteOff)
+			items.push({
+				label: 'Write off balance',
+				icon: cashOffIcon,
+				destructive: true,
+				onSelect: () => (lifecycleMode = 'write_off')
+			});
+		if (canRestoreWriteOff)
+			items.push({
+				label: 'Undo write-off',
+				icon: undoIcon,
+				onSelect: () => (lifecycleMode = 'restore_write_off')
+			});
+		if (canVoid)
+			items.push({
+				label: 'Void invoice',
+				icon: banIcon,
+				destructive: true,
+				onSelect: () => (lifecycleMode = 'void')
+			});
+
 		return items;
 	});
 
@@ -509,6 +571,69 @@
 		toast.success('Payment recorded');
 	}
 
+	// --- Lifecycle: void / bad debt / mark received (Part 7b) -------------------------------------------
+	// The dialog owns the fields and the retry fingerprint; the page owns the write and what follows. Which
+	// menu item was pressed decides the mode and, after it lands, the toast.
+	let lifecycleMode = $state<InvoiceLifecycleAction['action'] | null>(null);
+
+	const LIFECYCLE_DONE: Record<InvoiceLifecycleAction['action'], string> = {
+		void: 'Invoice voided',
+		write_off: 'Balance written off',
+		restore_write_off: 'Write-off undone',
+		mark_received: 'Invoice marked as received',
+		reopen: 'Invoice reopened'
+	};
+
+	function saveLifecycle(
+		action: InvoiceLifecycleAction,
+		idempotencyKey: string,
+		requestHash: string
+	) {
+		return runInvoiceLifecycleAction(invoiceId, action, idempotencyKey, requestHash);
+	}
+
+	async function onLifecycleSaved() {
+		const done = lifecycleMode ? LIFECYCLE_DONE[lifecycleMode] : 'Invoice updated';
+		await refreshInvoice();
+		toast.success(done);
+	}
+
+	// The void reason / bad-debt note shown as a line under the header once the bill is in that state.
+	const closureBanner = $derived.by(() => {
+		if (!saved) return null;
+		if (saved.invoice.voided_at) {
+			const reason = saved.invoice.void_reason
+				? INVOICE_VOID_REASON_LABELS[saved.invoice.void_reason as InvoiceVoidReason]
+				: null;
+			return {
+				tone: 'voided' as const,
+				title: `Voided on ${dateTimeFormat.format(new Date(saved.invoice.voided_at))}${
+					reason ? ` · ${reason}` : ''
+				}`,
+				note: saved.invoice.void_note
+			};
+		}
+		if (saved.invoice.written_off_at) {
+			return {
+				tone: 'bad-debt' as const,
+				title: `Written off as bad debt on ${dateTimeFormat.format(
+					new Date(saved.invoice.written_off_at)
+				)}`,
+				note: saved.invoice.write_off_note
+			};
+		}
+		if (saved.invoice.marked_received_at) {
+			return {
+				tone: 'received' as const,
+				title: `Closed as received on ${dateTimeFormat.format(
+					new Date(saved.invoice.marked_received_at)
+				)}`,
+				note: null
+			};
+		}
+		return null;
+	});
+
 	// The customer's own link. Nothing is created by looking at a bill, so this press makes the recipient and
 	// the door together; pressing it again rotates the old link off, which is what staff mean by "send the
 	// link again". The raw URL comes back exactly once, so it goes straight to the clipboard.
@@ -616,6 +741,21 @@
 						{/if}
 					{/snippet}
 				</WorkRecordHeader>
+
+				{#if closureBanner}
+					<div
+						class="invoice-detail__closure"
+						class:invoice-detail__closure--voided={closureBanner.tone === 'voided'}
+						class:invoice-detail__closure--bad-debt={closureBanner.tone === 'bad-debt'}
+						class:invoice-detail__closure--received={closureBanner.tone === 'received'}
+						role="note"
+					>
+						<p class="invoice-detail__closure-title">{closureBanner.title}</p>
+						{#if closureBanner.note}
+							<p class="invoice-detail__closure-note">{closureBanner.note}</p>
+						{/if}
+					</div>
+				{/if}
 
 				<ProductsAndServicesBlock
 					lines={invoiceLines}
@@ -870,6 +1010,17 @@
 				onSaved={onPaymentSaved}
 			/>
 		{/if}
+
+		{#if lifecycleMode}
+			<InvoiceLifecycleDialog
+				open
+				mode={lifecycleMode}
+				invoiceNumber={saved.invoice.invoice_number}
+				onClose={() => (lifecycleMode = null)}
+				onSave={saveLifecycle}
+				onSaved={onLifecycleSaved}
+			/>
+		{/if}
 	{/if}
 </PageContainer>
 
@@ -912,6 +1063,42 @@
 	.invoice-detail__disclaimer {
 		margin: 0;
 		color: var(--color-text);
+		line-height: var(--typography--lineHeight-large);
+		white-space: pre-wrap;
+	}
+
+	.invoice-detail__closure {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smaller);
+		padding: var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-left-width: 3px;
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
+	}
+
+	.invoice-detail__closure--voided {
+		border-left-color: var(--color-critical);
+	}
+
+	.invoice-detail__closure--bad-debt {
+		border-left-color: var(--color-warning);
+	}
+
+	.invoice-detail__closure--received {
+		border-left-color: var(--color-success);
+	}
+
+	.invoice-detail__closure-title {
+		margin: 0;
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+
+	.invoice-detail__closure-note {
+		margin: 0;
+		color: var(--color-text--secondary);
 		line-height: var(--typography--lineHeight-large);
 		white-space: pre-wrap;
 	}

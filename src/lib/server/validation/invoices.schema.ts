@@ -352,3 +352,50 @@ export type RecordInvoicePaymentInput = z.infer<typeof recordInvoicePaymentSchem
 // Copying the customer link takes no body: which invoice is in the URL, and the recipient is the client's own
 // email. Strict so an unexpected field is refused rather than dropped.
 export const issueInvoiceAccessLinkSchema = z.strictObject({});
+
+// Invoices Part 7b: the five close/reopen transitions for an issued bill, each mapping 1:1 to a command built
+// and pgTAP-tested in Part 3b (void_invoice, write_off_invoice, restore_invoice_from_write_off,
+// mark_invoice_received, reopen_invoice). One discriminated shape because a single `/lifecycle` route runs all
+// five — from the office's point of view this is one operation. None takes a revision; each command re-locks
+// the row and leans on the idempotency key, so a double-press replays rather than erroring. The commands
+// re-check every guard themselves (D2 among them — void refuses while ordinary payments are still applied), so
+// this schema only shapes the request.
+export { INVOICE_VOID_REASONS } from '$lib/invoices/lifecycle';
+export type { InvoiceVoidReason } from '$lib/invoices/lifecycle';
+
+import { INVOICE_VOID_REASONS } from '$lib/invoices/lifecycle';
+
+const lifecycleRetry = {
+	idempotency_key: z.string().uuid('Start a new action and try again.'),
+	request_hash: z.string().trim().min(1, 'Reload and try again.').max(200, 'Reload and try again.')
+};
+
+// Void keeps an optional free-text note alongside its picked reason; write-off keeps only a note.
+const lifecycleNote = z
+	.string()
+	.trim()
+	.max(2000, 'Keep the note under 2000 characters.')
+	.nullish()
+	.transform((value) => value || null);
+
+// Restore, mark-received and reopen each record why in a few words — required, so the history reads.
+const lifecycleReason = z
+	.string()
+	.trim()
+	.min(1, 'Say why in a few words.')
+	.max(2000, 'Keep the reason under 2000 characters.');
+
+export const invoiceLifecycleSchema = z.discriminatedUnion('action', [
+	z.object({
+		action: z.literal('void'),
+		reason: z.enum(INVOICE_VOID_REASONS, { message: 'Pick a reason for voiding this invoice.' }),
+		note: lifecycleNote,
+		...lifecycleRetry
+	}),
+	z.object({ action: z.literal('write_off'), note: lifecycleNote, ...lifecycleRetry }),
+	z.object({ action: z.literal('restore_write_off'), reason: lifecycleReason, ...lifecycleRetry }),
+	z.object({ action: z.literal('mark_received'), reason: lifecycleReason, ...lifecycleRetry }),
+	z.object({ action: z.literal('reopen'), reason: lifecycleReason, ...lifecycleRetry })
+]);
+
+export type InvoiceLifecycleInput = z.infer<typeof invoiceLifecycleSchema>;

@@ -70,6 +70,8 @@ export const GET: RequestHandler = async (event) => {
 			can_send: hasPermission(check.access, 'invoices.send'),
 			can_delete: hasPermission(check.access, 'invoices.delete'),
 			can_record_payment: hasPermission(check.access, 'invoices.record_payment'),
+			can_void: hasPermission(check.access, 'invoices.void'),
+			can_bad_debt: hasPermission(check.access, 'invoices.bad_debt'),
 			can_see_price: canSeePrice,
 			can_manage_taxes: hasPermission(check.access, 'settings.taxes.manage')
 		},
