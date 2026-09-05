@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { createInfiniteQuery, createQuery } from '@tanstack/svelte-query';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
@@ -63,10 +65,6 @@
 			sortDir = 'asc';
 		}
 	}
-
-	// Creating and opening a bill arrive with the form and detail screens (Part 4b). Until then the button
-	// says why rather than sitting there dead, the way Jobs does with More Actions.
-	const newInvoiceReason = 'Creating invoices arrives with the invoice form.';
 
 	$effect(() => {
 		const value = search;
@@ -178,10 +176,7 @@
 	<PageContainer variant="fill">
 		<PageHeader title="Invoices" description="The bills you have sent your customers.">
 			{#snippet actions()}
-				<span class="invoices-header__action" title={newInvoiceReason}>
-					<Button variant="primary" disabled>New Invoice</Button>
-					<span class="invoices-header__reason">{newInvoiceReason}</span>
-				</span>
+				<Button variant="primary" href={resolve('/(app)/invoices/new')}>New Invoice</Button>
 			{/snippet}
 		</PageHeader>
 
@@ -281,6 +276,7 @@
 				caption="Invoices"
 				{sort}
 				onSortChange={handleSortChange}
+				onRowActivate={(invoice) => goto(resolve('/(app)/invoices/[id]', { id: invoice.id }))}
 			>
 				{#snippet row(invoice: InvoiceListItem)}
 					<th scope="row">
@@ -290,7 +286,13 @@
 								name={clientName(invoice)}
 								size="small"
 							/>
-							<span class="invoices-table__client-name">{clientName(invoice)}</span>
+							<a
+								class="invoices-table__client-link"
+								href={resolve('/(app)/invoices/[id]', { id: invoice.id })}
+								onclick={(event) => event.stopPropagation()}
+							>
+								{clientName(invoice)}
+							</a>
 						</div>
 					</th>
 					<td>
@@ -329,9 +331,20 @@
 		gap: var(--space-small);
 	}
 
-	.invoices-table__client-name {
+	.invoices-table__client-link {
 		color: var(--color-heading);
 		font-weight: 700;
+		text-decoration: none;
+
+		&:hover {
+			color: var(--color-interactive);
+			text-decoration: underline;
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+			border-radius: var(--radius-small);
+		}
 	}
 
 	.invoices-table__number {
@@ -354,20 +367,6 @@
 
 	.invoices-table__subject {
 		color: var(--color-text--secondary);
-	}
-
-	.invoices-header__action {
-		position: relative;
-		display: inline-flex;
-	}
-
-	.invoices-header__reason {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-		white-space: nowrap;
 	}
 
 	/* Overview card plus three metric tiles, the same top row as Jobs and Quotes. The tiles read "—" until

@@ -1,12 +1,21 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
-import { PRIVATE_READ_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
+import {
+	NO_STORE_HEADERS,
+	PRIVATE_READ_HEADERS,
+	databaseError,
+	unauthorized,
+	validationError
+} from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import {
+	createInvoiceSchema,
 	invoiceListQuerySchema,
 	readInvoiceStatusFilter
 } from '$lib/server/validation/invoices.schema';
+import { requireOrganization } from '$lib/server/auth/organization';
+import { createInvoiceError } from '$lib/server/invoices/errors';
 import { organizationFormatting } from '$lib/server/requests/timezone';
 import { asMoneyMap } from '$lib/server/quotes/money';
 
@@ -149,4 +158,44 @@ export const GET: RequestHandler = async (event) => {
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);
+};
+
+// Creating a draft invoice directly, without a Job behind it. The whole thing — the invoice, its snapshots
+// and its lines — is written in one transaction by `create_invoice_draft`, so a failure anywhere leaves
+// nothing half-made. The command checks `invoices.create` and `invoices.view_price` itself (and answers the
+// same way for a client in another organization), so the route only proves membership. A doubled click sends
+// the same idempotency key and gets the first invoice back with `applied: false`.
+export const POST: RequestHandler = async (event) => {
+	const auth = await requireOrganization(event);
+	if (!auth) return unauthorized();
+
+	let body: unknown;
+	try {
+		body = await event.request.json();
+	} catch {
+		return validationError({ form: 'Request body must be valid JSON.' });
+	}
+
+	const parsed = createInvoiceSchema.safeParse(body);
+	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
+
+	const input = parsed.data;
+	const { data, error } = await event.locals.supabase.rpc('create_invoice_draft', {
+		target_organization_id: auth.organization.id,
+		target_client_id: input.client_id,
+		new_subject: input.subject,
+		// The command reads each line straight off the jsonb, and the keys the schema produces are exactly the
+		// ones it reads, so the validated data goes through untouched.
+		new_lines: input.lines,
+		new_service_property_ids: input.service_property_ids,
+		new_payment_term_id: input.payment_term_id,
+		new_custom_due_date: input.custom_due_date,
+		new_issue_date: input.issue_date,
+		new_idempotency_key: input.idempotency_key,
+		new_request_hash: input.request_hash
+	});
+
+	if (error) return createInvoiceError(error);
+
+	return json(data, { status: 201, headers: NO_STORE_HEADERS });
 };
