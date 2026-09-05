@@ -1,8 +1,9 @@
 # Invoices: Current Checkpoint
 
 - Goal: Jobber-grounded invoicing and manual collection.
-- **7b (Void / Bad debt+restore / Mark received+reopen) CLOSED — browser-verified end to end, not yet
-  committed.** Wired the five already-built lifecycle commands to the invoice detail "More" menu via one
+- **7b (Void / Bad debt+restore / Mark received+reopen) CLOSED + committed 2026-09-06 (d324946) —
+  browser-verified end to end.** Wired the five already-built lifecycle commands to the invoice detail "More"
+  menu via one
   `/api/invoices/[id]/lifecycle` route (discriminated `action`), one `InvoiceLifecycleDialog` (built on
   `ConfirmDialog`), and a status closure banner on the detail screen. One migration
   (`20260906150000_invoice_detail_write_off_note.sql`) applied to remote DB — adds `write_off_note` to the
@@ -16,17 +17,12 @@
 
 ## Next action
 
-**7b is done. Commit it, then ask Jafar which thread is next.** Dependency-ready now that Part 7 is
-finished: **6b-2 (receipt document + receipt email from accepted payment facts)** and **Part 5 (Job / Visit /
-reminder / installment handoff — also needs Jobs 11c)**. Part 8 (batch) still waits on Part 5. Part 9
-(integrated journeys) waits on 2–8.
+**Ask Jafar which thread is next.** Dependency-ready now that Part 7 is finished: **6b-2 (receipt document +
+receipt email from accepted payment facts)** and **Part 5 (Job / Visit / reminder / installment handoff —
+also needs Jobs 11c)**. Part 8 (batch) still waits on Part 5. Part 9 (integrated journeys) waits on 2–8.
 
-Commit: only the 7b files (migration, `src/lib/invoices/lifecycle.ts`, `src/lib/invoices/api.ts`,
-`src/lib/server/validation/invoices.schema.ts`, `src/routes/api/invoices/[id]/lifecycle/+server.ts`,
-`src/routes/api/invoices/[id]/+server.ts`,
-`src/lib/components/invoices/InvoiceLifecycleDialog.svelte`, `src/routes/(app)/invoices/[id]/+page.svelte`)
-plus Memory. The tree also carries a large pre-existing `.claude/skills/` + `.agents/skills/` diff from
-before this session — never stage that.
+Note when committing future parts: the tree carries a large pre-existing `.claude/skills/` +
+`.agents/skills/` diff from before this session — never stage that; add invoice files by path.
 
 ## Notes
 
