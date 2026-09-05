@@ -41,3 +41,15 @@ export function getInvoiceAccessResolverClient() {
 	serviceClient ??= getOwnerSupabaseClient();
 	return serviceClient;
 }
+
+// Rate-limit buckets for the public path. The token hash is already a one-way value and the caller's address
+// is hashed the same way, so the bucket table holds neither a working link nor an identifiable visitor. Both
+// keys are checked: an address alone would punish a whole office sharing one connection, and a token alone
+// would let a spread-out caller walk the URL space unhindered.
+export function invoiceAccessIpBucketKey(action: string, ipAddress: string) {
+	return `invoice_public_${action}_ip:${createHash('sha256').update(ipAddress, 'utf8').digest('hex')}`;
+}
+
+export function invoiceAccessTokenBucketKey(action: string, tokenHashLiteral: string) {
+	return `invoice_public_${action}_token:${tokenHashLiteral.slice(2)}`;
+}

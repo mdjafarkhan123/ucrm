@@ -1084,6 +1084,7 @@ export type Database = {
 					failure_message: string | null;
 					html_content: string;
 					id: string;
+					invoice_id: string | null;
 					logical_send_key: string;
 					organization_id: string;
 					provider_message_id: string | null;
@@ -1120,6 +1121,7 @@ export type Database = {
 					failure_message?: string | null;
 					html_content: string;
 					id?: string;
+					invoice_id?: string | null;
 					logical_send_key: string;
 					organization_id: string;
 					provider_message_id?: string | null;
@@ -1156,6 +1158,7 @@ export type Database = {
 					failure_message?: string | null;
 					html_content?: string;
 					id?: string;
+					invoice_id?: string | null;
 					logical_send_key?: string;
 					organization_id?: string;
 					provider_message_id?: string | null;
@@ -1188,6 +1191,13 @@ export type Database = {
 						columns: ['organization_id', 'client_contact_method_id'];
 						isOneToOne: false;
 						referencedRelation: 'client_contact_methods';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'communication_delivery_intents_invoice_fk';
+						columns: ['organization_id', 'invoice_id'];
+						isOneToOne: false;
+						referencedRelation: 'invoices';
 						referencedColumns: ['organization_id', 'id'];
 					},
 					{
@@ -3029,42 +3039,51 @@ export type Database = {
 			invoice_access_links: {
 				Row: {
 					expires_at: string | null;
+					first_viewed_at: string | null;
 					id: string;
 					invoice_id: string;
 					issued_at: string;
 					issued_by: string | null;
+					last_viewed_at: string | null;
 					organization_id: string;
 					recipient_email: string | null;
 					recipient_name: string | null;
 					revoked_at: string | null;
 					revoked_reason: string | null;
 					token_hash: string;
+					view_count: number;
 				};
 				Insert: {
 					expires_at?: string | null;
+					first_viewed_at?: string | null;
 					id?: string;
 					invoice_id: string;
 					issued_at?: string;
 					issued_by?: string | null;
+					last_viewed_at?: string | null;
 					organization_id: string;
 					recipient_email?: string | null;
 					recipient_name?: string | null;
 					revoked_at?: string | null;
 					revoked_reason?: string | null;
 					token_hash: string;
+					view_count?: number;
 				};
 				Update: {
 					expires_at?: string | null;
+					first_viewed_at?: string | null;
 					id?: string;
 					invoice_id?: string;
 					issued_at?: string;
 					issued_by?: string | null;
+					last_viewed_at?: string | null;
 					organization_id?: string;
 					recipient_email?: string | null;
 					recipient_name?: string | null;
 					revoked_at?: string | null;
 					revoked_reason?: string | null;
 					token_hash?: string;
+					view_count?: number;
 				};
 				Relationships: [
 					{
@@ -10511,6 +10530,7 @@ export type Database = {
 					failure_message: string | null;
 					html_content: string;
 					id: string;
+					invoice_id: string | null;
 					logical_send_key: string;
 					organization_id: string;
 					provider_message_id: string | null;
@@ -10565,6 +10585,7 @@ export type Database = {
 					failure_message: string | null;
 					html_content: string;
 					id: string;
+					invoice_id: string | null;
 					logical_send_key: string;
 					organization_id: string;
 					provider_message_id: string | null;
@@ -10636,6 +10657,59 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			enqueue_invoice_communication_email: {
+				Args: {
+					target_actor_user_id: string;
+					target_invoice_id: string;
+					target_invoice_token_hash: string;
+					target_invoice_url: string;
+					target_logical_send_key: string;
+					target_organization_id: string;
+				};
+				Returns: {
+					accepted_at: string | null;
+					allowance_class: string;
+					channel: string;
+					client_contact_method_id: string;
+					client_id: string;
+					created_at: string;
+					created_by: string | null;
+					delivery_outcome: string | null;
+					delivery_outcome_at: string | null;
+					delivery_outcome_detail: string | null;
+					direction: string;
+					expires_at: string;
+					failure_code: string | null;
+					failure_message: string | null;
+					html_content: string;
+					id: string;
+					invoice_id: string | null;
+					logical_send_key: string;
+					organization_id: string;
+					provider_message_id: string | null;
+					quote_access_link_id: string | null;
+					quote_id: string | null;
+					quote_recipient_id: string | null;
+					quote_version_id: string | null;
+					recipient_email: string;
+					reply_alias_id: string | null;
+					resent_from_intent_id: string | null;
+					retry_class: string;
+					retry_window_ends_at: string | null;
+					send_kind: string;
+					sender_id: string | null;
+					status: string;
+					subject: string;
+					text_content: string;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_delivery_intents';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			enqueue_manual_communication_email: {
 				Args: {
 					target_actor_user_id: string;
@@ -10665,6 +10739,7 @@ export type Database = {
 					failure_message: string | null;
 					html_content: string;
 					id: string;
+					invoice_id: string | null;
 					logical_send_key: string;
 					organization_id: string;
 					provider_message_id: string | null;
@@ -10717,6 +10792,7 @@ export type Database = {
 					failure_message: string | null;
 					html_content: string;
 					id: string;
+					invoice_id: string | null;
 					logical_send_key: string;
 					organization_id: string;
 					provider_message_id: string | null;
@@ -11296,6 +11372,10 @@ export type Database = {
 					target_invoice_id: string;
 					target_organization_id: string;
 				};
+				Returns: Json;
+			};
+			issue_invoice_access_link: {
+				Args: { supplied_token_hash: string; target_invoice_id: string };
 				Returns: Json;
 			};
 			issue_quote_access_link: {
@@ -12194,6 +12274,10 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			record_invoice_link_view: {
+				Args: { supplied_token_hash: string };
+				Returns: Json;
+			};
 			record_legacy_organization_package: {
 				Args: {
 					target_organization_id: string;
@@ -12546,6 +12630,7 @@ export type Database = {
 					failure_message: string | null;
 					html_content: string;
 					id: string;
+					invoice_id: string | null;
 					logical_send_key: string;
 					organization_id: string;
 					provider_message_id: string | null;

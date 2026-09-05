@@ -1,10 +1,29 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import CustomerInvoiceDocument from '$lib/components/invoices/CustomerInvoiceDocument.svelte';
 
 	// The customer's page. Everything it draws came from the token in the URL, resolved on the server, and it
 	// draws it with the same component staff see in Preview as client — there is no second, friendlier
 	// version of this document anywhere.
 	let { data } = $props();
+
+	const token = $derived(page.params.token ?? '');
+
+	// The view is recorded from here, once, after the document has actually been drawn on this screen. That is
+	// what makes "the client opened your invoice" mean what the office thinks it means: a mail scanner fetching
+	// the URL never runs this. It is fire and forget — the customer's invoice is already in front of them and a
+	// failed ping is not their problem.
+	let viewedToken = '';
+
+	$effect(() => {
+		if (!data.document || viewedToken === token) return;
+		viewedToken = token;
+		void fetch(`/api/public/invoices/${token}/view`, {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: '{}'
+		}).catch(() => {});
+	});
 </script>
 
 <svelte:head>

@@ -218,6 +218,22 @@ export type InvoiceClientBalance = {
 // from the database's own jsonb, never edited in the browser.
 export type InvoiceServiceProperty = Record<string, unknown>;
 
+// What the office knows about getting the bill to the client: the last email queued for it, and whether the
+// customer has opened the link. Worked out in the database, aggregated across links so a rotated link never
+// loses the fact that an earlier one was already seen.
+export type InvoiceDelivery = {
+	last_sent: {
+		sent_at: string;
+		status: string;
+		recipient_email: string;
+	} | null;
+	views: {
+		first_viewed_at: string | null;
+		last_viewed_at: string | null;
+		view_count: number;
+	};
+};
+
 export type InvoiceDetail = {
 	invoice: {
 		id: string;
@@ -253,9 +269,11 @@ export type InvoiceDetail = {
 		id: string;
 		display_name: string | null;
 		company_name: string | null;
+		email: string | null;
 	} | null;
 	money: InvoiceMoney | null;
 	lines: InvoiceLineItem[];
+	delivery: InvoiceDelivery;
 	client_balance: InvoiceClientBalance | null;
 	locale: string;
 	can_edit: boolean;
@@ -381,6 +399,47 @@ export async function issueInvoice(
 		})
 	});
 	return readOrThrow<IssueInvoiceResult>(response, 'That invoice could not be issued.');
+}
+
+// --- Sending & the customer link --------------------------------------------------------------------------
+
+export type QueueInvoiceEmailResult = {
+	intent: { id: string; status: string; created_at: string };
+};
+
+// Emailing the invoice. The caller issues a draft first (issueInvoice, method 'sent'); this only delivers. The
+// idempotency key makes a double click queue one email, not two.
+export async function queueInvoiceEmail(
+	id: string,
+	idempotencyKey: string
+): Promise<QueueInvoiceEmailResult> {
+	const response = await fetch(`/api/invoices/${id}/email`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ idempotency_key: idempotencyKey })
+	});
+	return readOrThrow<QueueInvoiceEmailResult>(response, 'The invoice email could not be queued.');
+}
+
+export type InvoiceAccessLink = {
+	invoice_id: string;
+	invoice_access_link_id: string;
+	recipient_name: string | null;
+	recipient_email: string;
+	issued_at: string;
+	expires_at: string | null;
+	url: string;
+};
+
+// The customer's own link, for "Copy customer link". The raw link comes back exactly once, in this response;
+// asking again rotates the old one off, which is what staff mean by "send them the link again".
+export async function issueInvoiceAccessLink(id: string): Promise<InvoiceAccessLink> {
+	const response = await fetch(`/api/invoices/${id}/access-links`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: '{}'
+	});
+	return readOrThrow<InvoiceAccessLink>(response, 'That customer link could not be created.');
 }
 
 export type DeleteInvoiceResult = { applied?: boolean; invoice_id: string; invoice_number: number };

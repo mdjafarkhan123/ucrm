@@ -1,34 +1,30 @@
 # Invoices: Current Checkpoint
 
 - Goal: Jobber-grounded invoicing and manual collection.
-- Active part: **6b — send + delivery/view facts + receipt document/email.** 6a CLOSED 2026-09-05
-  (browser-verified light + dark, no console errors, money math correct, print CSS clean).
+- **6b-1b CLOSED and committed 2026-09-06.** The enqueue bug fix is applied to remote DB and confirmed live
+  (real send to Raad LTD invoice #1 returned a clean 201/queued with the correct org-default sender — no
+  crash). No browser tool was available this session, so verification was done at the API/DB level instead of
+  clicking through the UI; the page wiring itself was already browser-verified in an earlier session.
 
-## Exact next action
+## Residual (not blocking)
 
-Present the 6b plan to Jafar for approval before building (non-trivial). 6b scope:
-- `issue_invoice_access_link` command — fills recipient_name/email on `public.invoice_access_links` + rotates.
-- Staff "links" read function (definer, hides token_hash) + a "Copy customer link" / "Send" entry point on
-  the invoice detail header (mirrors quotes).
-- Issue-on-send + Communications email enqueue, **idempotent**; record issue/delivery/view facts (public
-  view-recorded ping on `/i/[token]`).
-- Receipt document generated from accepted payment facts + emailed.
-- Depends on: Communications email worker. Retrofit `CustomerQuoteDocument` onto the shared foundation stays
-  a deferred follow-up (out of campaign — touches shipped quote code).
+The "no sender ready" 422 refusal path (`src/lib/server/communications/email-send-errors.ts`) is only
+type-checked, not exercised live — every org with an issued invoice in the current DB now has a working
+sender. Same shape as the already-shipped quote 55000 mapping, so risk is low. Revisit only if a real
+no-sender send is reported broken.
 
-## Open item for Jafar
+## Next thread: 6c (Jafar flagged 2026-09-06) — awaiting his go-ahead
 
-- **6a work is NOT committed to Git** (all files listed below are untracked/modified). Awaiting Jafar's go to
-  commit as "Invoices 6a: customer invoice document, secure view, and Print/Save PDF". Two migrations already
-  applied to the remote DB: `20260904170000_invoice_terms_billing_seam_and_permissions.sql`,
-  `20260905160000_invoice_customer_document.sql`.
-- Business identity = org name only (organizations has just `name`); mockup tagline + billing email/phone
-  footer dropped, same as the shipped quote doc. A real business profile is a future schema addition.
+Invoice **contract/disclaimer** gap — it is in the behavior contract but not implemented. Mirror the shipped
+quote disclaimer: enter / save / edit on the draft, display on the customer invoice document, keep it
+SEPARATE from payment terms, and FREEZE its content when the invoice is issued. Reference quote pattern:
+`src/routes/(app)/quotes/[id]/+page.svelte` "Contract disclaimer" SectionBlock + `contract_disclaimer` on
+quote versions + `CustomerQuoteDocument`. See ROADMAP row 6c.
 
-## Essential pointers
+## Notes
 
-- `docs/invoice-behavior-contract.md` — "Terms, delivery, and reminders"; Screens; D1–D5
-- `Memory/campaigns/invoices/ROADMAP.md` — Part 6 decisions block + 6a (done) / 6b rows
-- Patterns to mirror: `src/lib/server/quotes/access-links.ts`, quote preview route `(app)/quotes/[id]/preview/+page@.svelte`
+- 6a committed 2026-09-05 (`3959681`). Deferred follow-up logged:
+  `Memory/deferred/email-sender-setup-flow.md` (guide contractors to set up a sending email when missing).
+- Mirrors: quote detail send/copy wiring, `QuoteEmailDialog`, `enqueue_quote_communication_email`.
 
-Resume command: `read memory and continue the Invoices campaign`.
+Resume command: `read memory and continue the Invoices campaign` (will pick up 6c once Jafar approves it).

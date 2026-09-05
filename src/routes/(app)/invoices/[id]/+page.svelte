@@ -22,6 +22,7 @@
 	import QuoteSummaryCard from '$lib/components/quotes/QuoteSummaryCard.svelte';
 	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
+	import InvoiceEmailDialog from '$lib/components/invoices/InvoiceEmailDialog.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		fetchInvoice,
@@ -33,6 +34,8 @@
 		saveInvoiceDiscount,
 		saveInvoiceTax,
 		issueInvoice,
+		queueInvoiceEmail,
+		issueInvoiceAccessLink,
 		deleteInvoice,
 		invoiceCountsKey,
 		type InvoiceWriteError,
@@ -49,6 +52,9 @@
 	import cashIcon from '@tabler/icons/outline/cash.svg?raw';
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 	import printIcon from '@tabler/icons/outline/printer.svg?raw';
+	import sendIcon from '@tabler/icons/outline/send.svg?raw';
+	import linkIcon from '@tabler/icons/outline/link.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -68,6 +74,17 @@
 	const isDraft = $derived(saved?.invoice.derived_status === 'draft');
 	const editable = $derived(Boolean(saved?.can_edit) && isDraft && !saved?.invoice.is_replaced);
 	const canSeePrice = $derived(Boolean(saved?.can_see_price));
+
+	// An issued bill still worth emailing or linking to: it has left draft, has not been voided, and is not a
+	// superseded document whose correction or rebill is the one to send instead. Sending a draft is the
+	// primary action; resending and the customer link live in the menu for these.
+	const issuedAndLive = $derived(
+		Boolean(
+			saved?.invoice.issued_at &&
+			saved.invoice.derived_status !== 'voided' &&
+			!saved.invoice.is_replaced
+		)
+	);
 
 	const subject = $derived(
 		saved?.invoice.subject?.trim() || `Invoice #${saved?.invoice.invoice_number ?? ''}`
@@ -167,6 +184,22 @@
 		{ label: 'Due', value: saved ? dateFormat.format(new Date(saved.invoice.due_date)) : null },
 		...(saved?.invoice.issued_at
 			? [{ label: 'Issued', value: dateTimeFormat.format(new Date(saved.invoice.issued_at)) }]
+			: []),
+		...(saved?.delivery.last_sent
+			? [
+					{
+						label: 'Sent',
+						value: dateTimeFormat.format(new Date(saved.delivery.last_sent.sent_at))
+					}
+				]
+			: []),
+		...(saved?.delivery.views.first_viewed_at
+			? [
+					{
+						label: 'Viewed',
+						value: dateTimeFormat.format(new Date(saved.delivery.views.first_viewed_at))
+					}
+				]
 			: [])
 	]);
 
@@ -205,16 +238,47 @@
 		window.open(print ? `${path}?print=1` : path, '_blank', 'noopener');
 	}
 
-	// Both open the client's own view, and both are offered in every status including draft — checking a bill
-	// before sending it is the whole point of a preview. Sending a link and view facts are Part 6b.
-	const invoiceMenuItems = $derived(
-		saved
-			? [
-					{ label: 'Preview as client', icon: eyeIcon, onSelect: () => openCustomerView() },
-					{ label: 'Print or save PDF', icon: printIcon, onSelect: () => openCustomerView(true) }
-				]
-			: []
-	);
+	// Sending a draft is the header's one primary action, the next step the bill is waiting on. Once issued,
+	// the bill is no longer waiting on anything by itself — collecting payment is a later part — so it drops
+	// the primary action and offers Resend from the menu instead, the same shape the quote screen uses.
+	type PrimaryAction = { label: string; loading?: boolean; onclick: () => void };
+	const primaryAction = $derived.by<PrimaryAction | undefined>(() => {
+		if (!saved) return undefined;
+		if (editable && saved.can_send)
+			return { label: 'Send invoice', onclick: () => (emailOpen = true) };
+		return undefined;
+	});
+
+	// Following Jobber, the menu never offers a move the bill cannot make from where it is. Resend and the
+	// customer link show only for an issued, live bill; Mark as Sent only for a draft. Preview and Print are
+	// offered in every status — checking a bill before sending it is the whole point of a preview.
+	const invoiceMenuItems = $derived.by(() => {
+		if (!saved) return [];
+		const items = [];
+		if (issuedAndLive && saved.can_send)
+			items.push({ label: 'Resend invoice', icon: sendIcon, onSelect: () => (emailOpen = true) });
+		if (issuedAndLive && saved.can_send)
+			items.push({
+				label: 'Copy customer link',
+				icon: linkIcon,
+				disabled: linkSaving,
+				onSelect: () => void copyClientLink()
+			});
+		if (editable && saved.can_send)
+			items.push({
+				label: 'Mark as Sent',
+				icon: checkIcon,
+				disabled: marking,
+				onSelect: () => void markAsSent()
+			});
+		items.push({ label: 'Preview as client', icon: eyeIcon, onSelect: () => openCustomerView() });
+		items.push({
+			label: 'Print or save PDF',
+			icon: printIcon,
+			onSelect: () => openCustomerView(true)
+		});
+		return items;
+	});
 
 	// The read-only lines, mapped into the shape the shared pricing block draws.
 	const invoiceLines = $derived<RequestPricingLine[]>(
@@ -338,6 +402,60 @@
 		}
 	}
 
+	// --- Sending & the customer link ---------------------------------------------------------------------
+	// The dialog is presentational; the page owns the send because a draft is issued first (issue_invoice,
+	// method 'sent') and only then delivered, the same lifecycle Mark as Sent already runs here. An issued
+	// bill skips the issue step and only re-queues the email, so one confirm handler covers Send and Resend.
+	let emailOpen = $state(false);
+	let sending = $state(false);
+	let sendError = $state('');
+
+	async function confirmSend() {
+		if (!saved || sending) return;
+		sending = true;
+		sendError = '';
+		try {
+			if (isDraft) {
+				await issueInvoice(
+					invoiceId,
+					saved.invoice.revision,
+					'sent',
+					crypto.randomUUID(),
+					fingerprint({ id: invoiceId, action: 'sent', revision: saved.invoice.revision })
+				);
+			}
+			await queueInvoiceEmail(invoiceId, crypto.randomUUID());
+			emailOpen = false;
+			toast.success('Invoice sent');
+		} catch (caught) {
+			sendError = (caught as InvoiceWriteError).message ?? 'That invoice could not be sent.';
+		} finally {
+			// Always re-read: if issuing a draft succeeded but the email failed, the bill is now issued (same
+			// as Mark as Sent) and the dialog turns into a plain Resend, so a retry no longer re-issues.
+			await refreshInvoice();
+			sending = false;
+		}
+	}
+
+	// The customer's own link. Nothing is created by looking at a bill, so this press makes the recipient and
+	// the door together; pressing it again rotates the old link off, which is what staff mean by "send the
+	// link again". The raw URL comes back exactly once, so it goes straight to the clipboard.
+	let linkSaving = $state(false);
+
+	async function copyClientLink() {
+		if (linkSaving || !invoiceId) return;
+		linkSaving = true;
+		try {
+			const link = await issueInvoiceAccessLink(invoiceId);
+			await navigator.clipboard.writeText(link.url);
+			toast.success(`Link copied. Send it to ${link.recipient_email}.`);
+		} catch (caught) {
+			toast.error((caught as InvoiceWriteError).message ?? 'That link could not be created.');
+		} finally {
+			linkSaving = false;
+		}
+	}
+
 	let deleting = $state(false);
 	async function removeDraft() {
 		if (!saved || deleting) return;
@@ -399,9 +517,7 @@
 						: undefined}
 					{editingTitle}
 					bind:titleDraft
-					primaryAction={editable && saved.can_send
-						? { label: 'Mark as Sent', onclick: () => void markAsSent(), loading: marking }
-						: undefined}
+					{primaryAction}
 				>
 					{#snippet summary()}
 						<ClientSummaryCard
@@ -571,6 +687,19 @@
 				/>
 			{/snippet}
 		</RecordDetailLayout>
+
+		{#if emailOpen}
+			<InvoiceEmailDialog
+				open
+				recipient={saved.client?.email ?? null}
+				invoiceNumber={saved.invoice.invoice_number}
+				{isDraft}
+				{sending}
+				error={sendError}
+				onClose={() => (emailOpen = false)}
+				onConfirm={() => void confirmSend()}
+			/>
+		{/if}
 	{/if}
 </PageContainer>
 
