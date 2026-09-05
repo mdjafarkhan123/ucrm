@@ -10,8 +10,8 @@ implementation is under way, split into 3a/3b/3c on Jafar's 2026-09-04 approval.
 | 2    | Design Invoice foundation and billing-address seam                        | Complete — corrected design redline approved | Part 1; corrected design approval           | Smallest tenant-safe model, commands, permissions and test matrix approved                      |
 | 3a   | Build Invoice identity, terms, numbering, snapshots, arithmetic, draft and issued-document commands, plus private command receipts and retry protection | Complete 2026-09-05 — three migrations applied to the remote database, 72/72 pgTAP | Part 2                    | Met: isolation, numbering, calculation, snapshot freezing, issued edits retaining prior snapshots and replay safety are verified. Void/Bad debt/Mark received moved to 3b with the ledger their rules depend on; their seams are wired here |
 | 3b-1 | Build the money ledger, the three balances, and the commands that record, apply, unapply and move money | Complete 2026-09-05 — two migrations applied to the remote database, 80/80 pgTAP, balance plans measured | Part 3a | Met: receipts, allocation, unapplication, movement, the three balances, D1 draft rules, deposit reuse, append-only privilege, isolation and replay verified |
-| 3b-2 | Build refunds, receipt reversal, and the payment-dependent lifecycle commands (Void, Bad debt, Mark received) | Next                                        | Part 3b-1                                      | D2's Void refusal with deposit release, refund caps against the original receipt, bad debt/unmark, mark received/reopen, all with retry protection |
-| 3c   | Build source claims and correction/rebill replacement chains              | Planned                                        | Parts 3a–3b; Jobs 11c for installment references only | One work unit billed once, claims retained after Void, rebill succeeds once, chain has no branching, and Part 2's measured performance evidence is produced |
+| 3b-2 | Build refunds, receipt reversal, and the payment-dependent lifecycle commands (Void, Bad debt, Mark received) | Complete 2026-09-05 — one migration applied to the remote database, 89/89 pgTAP, plans measured | Part 3b-1 | Met: refund caps against the original receipt, reversal of a receipt or an erroneous refund, D2's Void refusal with its deposit release, bad debt/unmark, mark received/reopen, permissions, isolation and replay verified |
+| 3c   | Build source claims and correction/rebill replacement chains              | Next                                           | Parts 3a–3b; Jobs 11c for installment references only | One work unit billed once, claims retained after Void, rebill succeeds once, chain has no branching, the contract's progress-invoice exclusion from ordinary Void is enforced, and Part 2's measured performance evidence is produced |
 | 4    | Deliver direct Invoice list, new form and detail                          | Planned                                        | Parts 3a–3c                                    | Shared Quote patterns plus Invoice-only fields/actions work without duplicate UI                |
 | 5    | Deliver Job, Visit, reminder and installment handoff                      | Planned                                        | Parts 3a–3c, 4; Jobs 11c                       | Eligible work copies once, reminders resolve, deposits allocate, retries do not duplicate       |
 | 6    | Deliver email, mark-sent, secure view, PDF and receipt flow               | Planned                                        | Part 4; Communications email                   | Issue/delivery/view facts and frozen customer document are verified                             |
@@ -36,9 +36,13 @@ rules read, not in 3a. Jafar also approved splitting 3b into 3b-1 (ledger, balan
 (refunds, reversal, payment-dependent lifecycle), and approved storing the effective-receivable predicate once
 as a calculated column on `invoices` rather than restating it in each caller. Approved behavior is unchanged.
 
-Two facts 3b-1 established that later parts must not contradict:
+Three facts the ledger parts established that later parts must not contradict:
 
 - Unapplying the money that settled a never-issued draft is refused, because 3a made recognition
   irreversible. 3b-2's refund path must reach that money through a refund of the receipt, not an unapply.
 - Money can still be unapplied or moved off a *replaced* invoice, per D3; only a voided one is closed to
   both directions.
+- 3b-2 refuses Void on a draft, a replaced bill, a written-off or by-hand-closed bill, and a fully paid one,
+  and it cannot yet exclude progress invoices because no installment link exists until Jobs 11c. 3c owns that
+  exclusion. Mark received deliberately leaves `is_effective_receivable` true and is gated on
+  `invoices.record_payment`.

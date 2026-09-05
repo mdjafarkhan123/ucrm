@@ -1,34 +1,36 @@
 # Invoices: Current Checkpoint
 
 - Goal: Jobber-grounded invoicing and manual collection.
-- Active part: 3b-2 — refunds, receipt reversal, and the payment-dependent lifecycle commands.
-- Part 3b-1 is **closed 2026-09-05**: `20260905100000` and `20260905110000` are applied to the remote
-  database and `supabase/tests/database/invoices_payments_ledger.sql` passes 80/80.
+- Active part: 3c — source claims and the correction/rebill replacement chains.
+- Part 3b-2 is **closed 2026-09-05**: `20260905120000` is applied to the remote database (remote version
+  `20260905051805`) and `supabase/tests/database/invoices_refunds_and_closure.sql` passes 89/89.
 
 ## Exact next action
 
-Build 3b-2 on top of the 3b-1 ledger: record an actual external refund against exactly one original receipt
-(manual or reused quote deposit), reverse/replace an erroneous receipt, then Void with D2's refusal and its
-deposit release, Bad debt/unmark, and Mark received/reopen. All under `private.begin_invoice_command`.
-pgTAP goes in `supabase/tests/database/`.
+Build 3c on the 3a/3b ledger: claim each source work unit once, retain the claim after Void, let an explicit
+rebill or correction create exactly one successor in the same chain without branching, and enforce the
+contract's progress-invoice exclusion from ordinary Void. Installment foreign keys wait for Jobs 11c.
+Produce Part 2's measured performance evidence. pgTAP goes in `supabase/tests/database/`.
 
 ## Blockers and non-obvious risks
 
-- `client_payment_events` already carries the `refunded` and `reversed` shapes and their foreign keys; 3b-2
-  writes the commands, it does not reshape the table.
-- Refund caps read `private.payment_event_available_minor` / `private.deposit_event_available_minor`, which
-  already subtract refunds and net allocations. Lock the receipt row; lock order is settings → invoice → receipt.
-- Void must refuse while ordinary allocations remain (D2) and release deposits in the same transaction.
-  `private.lock_invoice_for_payment` already refuses a voided invoice in both directions.
-- Bad debt sets `written_off_at`, which flips `invoices.is_effective_receivable` to false automatically. Do
-  not also subtract write-offs by hand anywhere.
-- Recognition is irreversible (3a), so a settled draft's money is reachable only through a refund.
-- Repo/remote drift: the two 3b-1 migration files carry explanatory comments inside seven function bodies
-  that the applied versions do not. Logic is identical, verified by hashing the comment-stripped bodies.
+- `invoices` already carries `predecessor_invoice_id`, `root_invoice_id`, `replacement_kind`, `replaced_at`,
+  `replaced_by_invoice_id` and `frozen_status_label`, and the identity trigger already refuses rewriting a
+  replaced bill's history. 3c writes the commands, it does not reshape the table.
+- A voided bill accepts exactly one further change: being marked as replaced by an explicit rebill. Every
+  other column is frozen by `private.invoices_guard_identity`.
+- 3b-2 refuses Void on a progress invoice only by omission — there is no installment link to test yet. 3c
+  must add that refusal when the link exists, not leave it implied.
+- Measured 2026-09-05 on the dev project with 20,000 seeded payment events in one organization (1,000 for
+  the client read): the per-receipt availability check is a nested-loop anti-join on
+  `client_payment_events_original_idx`, 11 buffers, 0.13 ms. `client_account_balance` is 7.4 ms, and its
+  anti-join side scans that index for the whole organization rather than one client, so it grows with the
+  organization's lifetime refund and reversal count. Left as measured rather than indexed around: refunds
+  are rare in this product. Revisit if an organization's correction history reaches tens of thousands.
 
 ## Essential pointers
 
-- `docs/invoice-behavior-contract.md` — approved D1–D5 product truth
+- `docs/invoice-behavior-contract.md` — approved D1–D5 product truth, D3 and D4 for this part
 - `docs/invoice-part-2-design.md` — approved foundation and implementation handoff
 - `Memory/campaigns/invoices/ROADMAP.md` — the 3a/3b-1/3b-2/3c split and its completion gates
 
