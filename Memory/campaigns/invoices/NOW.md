@@ -1,37 +1,36 @@
 # Invoices: Current Checkpoint
 
 - Goal: Jobber-grounded invoicing and manual collection.
-- Active part: 3c — source claims and the correction/rebill replacement chains.
-- Part 3b-2 is **closed 2026-09-05**: `20260905120000` is applied to the remote database (remote version
-  `20260905051805`) and `supabase/tests/database/invoices_refunds_and_closure.sql` passes 89/89.
+- Active part: none. **3c CLOSED 2026-09-05** (60/60 pgTAP, index plans measured). Awaiting Jafar's pick of
+  the next part.
 
 ## Exact next action
 
-Build 3c on the 3a/3b ledger: claim each source work unit once, retain the claim after Void, let an explicit
-rebill or correction create exactly one successor in the same chain without branching, and enforce the
-contract's progress-invoice exclusion from ordinary Void. Installment foreign keys wait for Jobs 11c.
-Produce Part 2's measured performance evidence. pgTAP goes in `supabase/tests/database/`.
+Two things wait on Jafar:
+
+1. **Commit 3c.** The migration `supabase/migrations/20260905130000_invoice_source_claims_and_chains.sql` and
+   the test `supabase/tests/database/invoices_source_claims_and_chains.sql` are verified but still untracked in
+   Git. Commit only when Jafar says so. (The test needed four fixes this session: `bill` view no longer selects
+   `total_minor`; the rebill-total assertion reads through `public.invoice_money`; a new `original` chain-root
+   view disambiguates `subject` lookups once a successor copies the subject; `replace_invoice_lines` called with
+   its real 4-arg signature. The migration itself was correct as applied.)
+2. **Pick the next part.** Dependency-ready now that 3a–3c are done: Part 4 (direct Invoice list/new form/detail),
+   then Part 5 (Job/Visit/reminder/installment handoff, also needs Jobs 11c). Part 4 has no outside dependency.
 
 ## Blockers and non-obvious risks
 
-- `invoices` already carries `predecessor_invoice_id`, `root_invoice_id`, `replacement_kind`, `replaced_at`,
-  `replaced_by_invoice_id` and `frozen_status_label`, and the identity trigger already refuses rewriting a
-  replaced bill's history. 3c writes the commands, it does not reshape the table.
-- A voided bill accepts exactly one further change: being marked as replaced by an explicit rebill. Every
-  other column is frozen by `private.invoices_guard_identity`.
-- 3b-2 refuses Void on a progress invoice only by omission — there is no installment link to test yet. 3c
-  must add that refusal when the link exists, not leave it implied.
-- Measured 2026-09-05 on the dev project with 20,000 seeded payment events in one organization (1,000 for
-  the client read): the per-receipt availability check is a nested-loop anti-join on
-  `client_payment_events_original_idx`, 11 buffers, 0.13 ms. `client_account_balance` is 7.4 ms, and its
-  anti-join side scans that index for the whole organization rather than one client, so it grows with the
-  organization's lifetime refund and reversal count. Left as measured rather than indexed around: refunds
-  are rare in this product. Revisit if an organization's correction history reaches tens of thousands.
+- Remote migration versions are assigned by the MCP tool and do not match local filenames, so `supabase db push`
+  would replay everything. Always apply through `mcp__supabase__apply_migration`.
+- No local Postgres / no `pg`: run pgTAP by pasting the whole test file into `mcp__supabase__execute_sql` in one
+  call (it begins/ends with its own begin/rollback). `execute_sql` shows only the last statement's rows.
+- `authenticated` has column-level SELECT on `invoices`, and money columns (`total_minor`, `subtotal_minor`,
+  `tax_minor`, `discount_minor`) are deliberately excluded — amounts come back through `public.invoice_money`,
+  gated on `invoices.view_price`. Tests and UI must read totals that way, never off the table.
 
 ## Essential pointers
 
-- `docs/invoice-behavior-contract.md` — approved D1–D5 product truth, D3 and D4 for this part
-- `docs/invoice-part-2-design.md` — approved foundation and implementation handoff
-- `Memory/campaigns/invoices/ROADMAP.md` — the 3a/3b-1/3b-2/3c split and its completion gates
+- `docs/invoice-behavior-contract.md` — D1–D5 approved behavior
+- `docs/invoice-part-2-design.md` — Part 2 design (source claims and D1–D5 commands)
+- `Memory/campaigns/invoices/ROADMAP.md` — read only to select/plan the next part
 
 Resume command: `read memory and continue the Invoices campaign`.
