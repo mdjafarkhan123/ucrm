@@ -1,0 +1,719 @@
+<title>Customer Invoice Document</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+	rel="stylesheet"
+	href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap"
+/>
+
+<style>
+	/* ============================================================
+	   Faithful UpliftContractor tokens (from src/lib/styles/_variables.scss).
+	   Light palette on bare :root; dark redefined per artifact theme rules.
+	   ============================================================ */
+	:root {
+		--ink-heading: #032b3a; /* blue-900 */
+		--ink-body: #233d48; /* blue-800 */
+		--ink-muted: #49646f; /* blue-700 */
+		--ink-faint: #5d757e; /* blue-600 */
+
+		--paper: #ffffff; /* surface */
+		--ground: #f9f8f6; /* taupe-100 */
+		--ground-2: #eeece7; /* taupe-200 */
+		--panel: #f1f8fe; /* lightBlue-100 */
+
+		--line: #dadfe2; /* border blue-300 */
+		--line-strong: #a9b7bc; /* blue-400 */
+
+		--accent: #225c8c; /* invoice lightBlue-700 */
+		--accent-bright: #3b9ae8; /* lightBlue-500 */
+		--accent-soft: #e2f1fd; /* lightBlue-200 */
+
+		--brand: #84cc16; /* lime-500 */
+		--go: #049a54; /* green-600 interactive */
+
+		--warn: #645916; /* yellow-700 onSurface */
+		--warn-surface: #f5f0d1; /* yellow-200 */
+		--warn-dot: #cdb52d; /* yellow-400 */
+
+		--crit: #7a0c00; /* red-800 */
+		--crit-surface: #faecea; /* red-200 */
+
+		--shadow-paper: 0 1px 2px rgba(3, 43, 58, 0.06), 0 24px 48px -24px rgba(3, 43, 58, 0.22);
+		--radius: 16px;
+		--radius-sm: 8px;
+
+		--display: 'Poppins', 'Jobber Pro', 'Helvetica Neue', Arial, sans-serif;
+		--body: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+
+		color-scheme: light;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:root:not([data-theme='light']) {
+			--ink-heading: #eef1f2;
+			--ink-body: #dadfe2;
+			--ink-muted: #a9b7bc;
+			--ink-faint: #84979f;
+
+			--paper: #032b3a; /* blue-900 */
+			--ground: #01202d; /* blue-1000 */
+			--ground-2: #023;
+			--panel: #0f293e; /* lightBlue-900 */
+
+			--line: #49646f; /* blue-700 */
+			--line-strong: #5d757e;
+
+			--accent: #73bcf7; /* lightBlue-400 */
+			--accent-bright: #3b9ae8;
+			--accent-soft: #173f5e;
+
+			--brand: #a3e635;
+			--go: #05be68;
+
+			--warn: #eadf9f;
+			--warn-surface: #433b0f;
+			--warn-dot: #cdb52d;
+
+			--crit: #e9a29b;
+			--crit-surface: #520800;
+
+			--shadow-paper: 0 1px 2px rgba(0, 0, 0, 0.4), 0 24px 48px -24px rgba(0, 0, 0, 0.6);
+			color-scheme: dark;
+		}
+	}
+
+	:root[data-theme='dark'] {
+		--ink-heading: #eef1f2;
+		--ink-body: #dadfe2;
+		--ink-muted: #a9b7bc;
+		--ink-faint: #84979f;
+		--paper: #032b3a;
+		--ground: #01202d;
+		--ground-2: #023;
+		--panel: #0f293e;
+		--line: #49646f;
+		--line-strong: #5d757e;
+		--accent: #73bcf7;
+		--accent-bright: #3b9ae8;
+		--accent-soft: #173f5e;
+		--brand: #a3e635;
+		--go: #05be68;
+		--warn: #eadf9f;
+		--warn-surface: #433b0f;
+		--warn-dot: #cdb52d;
+		--crit: #e9a29b;
+		--crit-surface: #520800;
+		--shadow-paper: 0 1px 2px rgba(0, 0, 0, 0.4), 0 24px 48px -24px rgba(0, 0, 0, 0.6);
+		color-scheme: dark;
+	}
+
+	* {
+		box-sizing: border-box;
+	}
+
+	body {
+		margin: 0;
+		background: var(--ground);
+		color: var(--ink-body);
+		font-family: var(--body);
+		font-size: 15px;
+		line-height: 1.5;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	/* -- Design-mockup notice (never prints, not part of the real component) -- */
+	.mock-note {
+		max-width: 820px;
+		margin: 20px auto 0;
+		padding: 10px 16px;
+		display: flex;
+		gap: 10px;
+		align-items: center;
+		font-size: 12.5px;
+		color: var(--ink-muted);
+		background: var(--panel);
+		border: 1px solid var(--line);
+		border-radius: var(--radius-sm);
+	}
+	.mock-note strong {
+		color: var(--accent);
+		font-weight: 600;
+	}
+	.mock-note button {
+		margin-left: auto;
+		font: inherit;
+		font-weight: 600;
+		color: var(--ink-heading);
+		background: var(--paper);
+		border: 1px solid var(--line-strong);
+		border-radius: 999px;
+		padding: 5px 14px;
+		cursor: pointer;
+	}
+	.mock-note button:hover {
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+
+	/* ============================== The document ============================== */
+	.doc {
+		max-width: 820px;
+		margin: 20px auto 64px;
+		background: var(--paper);
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		box-shadow: var(--shadow-paper);
+		overflow: hidden;
+	}
+
+	/* Branded header band */
+	.doc__brandbar {
+		height: 5px;
+		background: linear-gradient(90deg, var(--accent) 0%, var(--accent-bright) 55%, var(--brand) 100%);
+	}
+	.doc__head {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 24px;
+		padding: 32px 44px 24px;
+	}
+	.brand {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+	.brand__mark {
+		width: 46px;
+		height: 46px;
+		border-radius: 12px;
+		display: grid;
+		place-items: center;
+		background: var(--ink-heading);
+		color: var(--paper);
+		font-family: var(--display);
+		font-weight: 800;
+		font-size: 20px;
+		letter-spacing: 0.02em;
+	}
+	.brand__name {
+		font-family: var(--display);
+		font-weight: 700;
+		font-size: 20px;
+		color: var(--ink-heading);
+		line-height: 1.1;
+	}
+	.brand__tag {
+		font-size: 12.5px;
+		color: var(--ink-faint);
+	}
+	.doc__eyebrow {
+		text-align: right;
+	}
+	.doc__eyebrow .kicker {
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--ink-faint);
+	}
+	.doc__number {
+		font-family: var(--display);
+		font-weight: 700;
+		font-size: 26px;
+		color: var(--ink-heading);
+		line-height: 1.1;
+		font-variant-numeric: tabular-nums;
+	}
+	.status {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin-top: 8px;
+		padding: 4px 11px 4px 9px;
+		border-radius: 999px;
+		font-size: 12px;
+		font-weight: 600;
+		background: var(--warn-surface);
+		color: var(--warn);
+	}
+	.status__dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--warn-dot);
+	}
+
+	/* Title + balance hero */
+	.hero {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: 28px;
+		align-items: end;
+		padding: 4px 44px 28px;
+	}
+	.hero__title {
+		margin: 0;
+		font-family: var(--display);
+		font-weight: 600;
+		font-size: 27px;
+		line-height: 1.18;
+		color: var(--ink-heading);
+		text-wrap: balance;
+		max-width: 26ch;
+	}
+	.hero__for {
+		margin: 10px 0 0;
+		font-size: 13.5px;
+		color: var(--ink-muted);
+	}
+	.balance {
+		text-align: right;
+		padding: 16px 22px;
+		border-radius: 14px;
+		background: var(--panel);
+		border: 1px solid var(--accent-soft);
+		min-width: 210px;
+	}
+	.balance__label {
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--accent);
+	}
+	.balance__amount {
+		font-family: var(--display);
+		font-weight: 800;
+		font-size: 34px;
+		line-height: 1.05;
+		color: var(--ink-heading);
+		font-variant-numeric: tabular-nums;
+		margin-top: 4px;
+	}
+	.balance__due {
+		font-size: 12.5px;
+		color: var(--ink-muted);
+		margin-top: 4px;
+	}
+	.balance__due b {
+		color: var(--ink-body);
+		font-weight: 600;
+	}
+
+	/* Meta strip */
+	.meta {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 24px;
+		margin: 0 44px;
+		padding: 20px 0;
+		border-top: 1px solid var(--line);
+		border-bottom: 1px solid var(--line);
+	}
+	.meta__block h3 {
+		margin: 0 0 6px;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--ink-faint);
+	}
+	.meta__strong {
+		font-weight: 600;
+		color: var(--ink-heading);
+	}
+	.meta__block p {
+		margin: 0;
+		font-size: 13.5px;
+		color: var(--ink-muted);
+		line-height: 1.45;
+	}
+	.meta__dates {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+	.meta__date {
+		display: flex;
+		justify-content: space-between;
+		gap: 12px;
+		font-size: 13.5px;
+	}
+	.meta__date dt {
+		color: var(--ink-faint);
+	}
+	.meta__date dd {
+		margin: 0;
+		font-weight: 600;
+		color: var(--ink-heading);
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Line table */
+	.lines {
+		padding: 8px 44px 0;
+	}
+	table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	thead th {
+		text-align: left;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--ink-faint);
+		padding: 14px 0 10px;
+		border-bottom: 2px solid var(--ink-heading);
+	}
+	th.num,
+	td.num {
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+	tbody td {
+		padding: 15px 0;
+		border-bottom: 1px solid var(--line);
+		vertical-align: top;
+	}
+	.item__name {
+		font-weight: 600;
+		color: var(--ink-heading);
+		font-size: 15px;
+	}
+	.item__desc {
+		margin: 3px 0 0;
+		font-size: 13px;
+		color: var(--ink-muted);
+		max-width: 52ch;
+	}
+	.item__date {
+		display: inline-block;
+		margin-top: 6px;
+		font-size: 11.5px;
+		color: var(--accent);
+		background: var(--accent-soft);
+		padding: 2px 8px;
+		border-radius: 6px;
+	}
+	td.num.total {
+		font-weight: 600;
+		color: var(--ink-heading);
+	}
+	.col-qty {
+		width: 66px;
+	}
+	.col-unit {
+		width: 120px;
+	}
+	.col-total {
+		width: 120px;
+	}
+
+	/* Totals ladder */
+	.foot {
+		display: grid;
+		grid-template-columns: 1fr minmax(300px, 340px);
+		gap: 32px;
+		padding: 24px 44px 8px;
+	}
+	.note {
+		align-self: start;
+	}
+	.note h3 {
+		margin: 0 0 6px;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--ink-faint);
+	}
+	.note p {
+		margin: 0;
+		font-size: 13.5px;
+		color: var(--ink-muted);
+		line-height: 1.55;
+		max-width: 42ch;
+	}
+	.totals {
+		margin: 0;
+	}
+	.totals .row {
+		display: flex;
+		justify-content: space-between;
+		gap: 16px;
+		padding: 7px 0;
+		font-size: 14px;
+	}
+	.totals .row dt {
+		color: var(--ink-muted);
+	}
+	.totals .row dd {
+		margin: 0;
+		font-variant-numeric: tabular-nums;
+		font-weight: 600;
+		color: var(--ink-body);
+	}
+	.totals .row--credit dd {
+		color: var(--go);
+	}
+	.totals .rule {
+		height: 1px;
+		background: var(--line);
+		margin: 6px 0;
+	}
+	.totals .row--total {
+		padding-top: 10px;
+		border-top: 2px solid var(--ink-heading);
+		font-size: 15px;
+	}
+	.totals .row--total dt {
+		color: var(--ink-heading);
+		font-weight: 600;
+	}
+	.totals .row--total dd {
+		color: var(--ink-heading);
+		font-weight: 700;
+	}
+	.totals .row--balance {
+		margin-top: 10px;
+		padding: 14px 16px;
+		border-radius: 12px;
+		background: var(--ink-heading);
+		align-items: center;
+	}
+	.totals .row--balance dt {
+		color: var(--paper);
+		font-weight: 600;
+		font-size: 13px;
+		letter-spacing: 0.02em;
+	}
+	.totals .row--balance dd {
+		color: var(--paper);
+		font-family: var(--display);
+		font-weight: 800;
+		font-size: 22px;
+	}
+
+	/* Terms footer */
+	.terms {
+		margin: 8px 44px 0;
+		padding: 20px 0 36px;
+		border-top: 1px solid var(--line);
+		display: flex;
+		gap: 24px;
+		align-items: flex-start;
+		justify-content: space-between;
+		flex-wrap: wrap;
+	}
+	.terms__text {
+		font-size: 12.5px;
+		color: var(--ink-faint);
+		max-width: 62ch;
+		line-height: 1.55;
+	}
+	.terms__pay {
+		font-size: 12.5px;
+		color: var(--ink-muted);
+	}
+	.terms__pay b {
+		color: var(--ink-heading);
+	}
+
+	@media (max-width: 720px) {
+		.doc__head,
+		.hero,
+		.meta,
+		.lines,
+		.foot,
+		.terms {
+			padding-left: 22px;
+			padding-right: 22px;
+		}
+		.meta {
+			margin: 0 22px;
+			grid-template-columns: 1fr;
+			gap: 16px;
+		}
+		.hero {
+			grid-template-columns: 1fr;
+			align-items: stretch;
+		}
+		.balance {
+			text-align: left;
+		}
+		.foot {
+			grid-template-columns: 1fr;
+		}
+		.col-unit {
+			display: none;
+		}
+		th.hide-sm,
+		td.hide-sm {
+			display: none;
+		}
+	}
+
+	/* The Save-as-PDF path: clean A4, ink on white, no app chrome. */
+	@media print {
+		.mock-note {
+			display: none;
+		}
+		body {
+			background: #fff;
+		}
+		.doc {
+			max-width: none;
+			margin: 0;
+			border: 0;
+			border-radius: 0;
+			box-shadow: none;
+		}
+		.item__date {
+			background: none;
+			padding: 0;
+		}
+		tbody tr,
+		.totals .row--balance {
+			break-inside: avoid;
+		}
+	}
+</style>
+
+<div class="mock-note">
+	<span
+		><strong>Design mockup</strong> — the customer's invoice, proposed. This grey bar isn't part of it. Try
+		your browser's Print (⌘/Ctrl-P) to see the Save-as-PDF version.</span
+	>
+	<button type="button" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')">
+		Toggle theme
+	</button>
+</div>
+
+<article class="doc">
+	<div class="doc__brandbar"></div>
+
+	<header class="doc__head">
+		<div class="brand">
+			<div class="brand__mark">JK</div>
+			<div>
+				<div class="brand__name">JKA LTD</div>
+				<div class="brand__tag">Licensed electrical contractor</div>
+			</div>
+		</div>
+		<div class="doc__eyebrow">
+			<div class="kicker">Invoice</div>
+			<div class="doc__number">#1042</div>
+			<span class="status"><span class="status__dot"></span> Awaiting payment</span>
+		</div>
+	</header>
+
+	<section class="hero">
+		<div>
+			<h1 class="hero__title">Panel inspection &amp; GFCI outlet replacement</h1>
+			<p class="hero__for">Billed to Jordan Keller · 2426 E Riverside Dr, Austin, TX 78741</p>
+		</div>
+		<div class="balance">
+			<div class="balance__label">Balance due</div>
+			<div class="balance__amount">$161.76</div>
+			<div class="balance__due">Due <b>Sep 18, 2026</b></div>
+		</div>
+	</section>
+
+	<section class="meta">
+		<div class="meta__block">
+			<h3>Billed to</h3>
+			<p class="meta__strong">Jordan Keller</p>
+			<p>2426 E Riverside Dr<br />Austin, TX 78741</p>
+			<p>(206) 555-0122</p>
+		</div>
+		<div class="meta__block">
+			<h3>Service address</h3>
+			<p class="meta__strong">Same as billing</p>
+			<p>2426 E Riverside Dr<br />Austin, TX 78741</p>
+		</div>
+		<div class="meta__block">
+			<h3>Details</h3>
+			<dl class="meta__dates">
+				<div class="meta__date"><dt>Issued</dt><dd>Sep 4, 2026</dd></div>
+				<div class="meta__date"><dt>Terms</dt><dd>Net 14</dd></div>
+				<div class="meta__date"><dt>Due date</dt><dd>Sep 18, 2026</dd></div>
+			</dl>
+		</div>
+	</section>
+
+	<section class="lines">
+		<table>
+			<thead>
+				<tr>
+					<th scope="col">Product / service</th>
+					<th scope="col" class="num col-qty hide-sm">Qty</th>
+					<th scope="col" class="num col-unit">Unit price</th>
+					<th scope="col" class="num col-total">Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>
+						<div class="item__name">Electrical Panel Inspection</div>
+						<p class="item__desc">
+							Visual inspection of main service panel and subpanel. Check for double-tapped breakers,
+							proper wire gauge, and grounding. Provide written report.
+						</p>
+						<span class="item__date">Serviced Sep 3, 2026</span>
+					</td>
+					<td class="num col-qty hide-sm">1</td>
+					<td class="num col-unit">$150.00</td>
+					<td class="num col-total total">$150.00</td>
+				</tr>
+				<tr>
+					<td>
+						<div class="item__name">GFCI Outlet Installation (4 locations)</div>
+						<p class="item__desc">
+							Replace standard outlets with tamper-resistant GFCI outlets in kitchen and bathrooms per
+							code.
+						</p>
+						<span class="item__date">Serviced Sep 3, 2026</span>
+					</td>
+					<td class="num col-qty hide-sm">1</td>
+					<td class="num col-unit">$170.00</td>
+					<td class="num col-total total">$170.00</td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+
+	<section class="foot">
+		<div class="note">
+			<h3>A note from us</h3>
+			<p>
+				Thanks, Jordan — it was a pleasure working on your home. Your written panel report is attached
+				to this invoice. Any questions, just reply and we'll sort it out.
+			</p>
+		</div>
+		<dl class="totals">
+			<div class="row"><dt>Subtotal</dt><dd>$320.00</dd></div>
+			<div class="row row--credit"><dt>Repeat-client discount (10%)</dt><dd>−$32.00</dd></div>
+			<div class="row"><dt>Sales tax (8.25%)</dt><dd>$23.76</dd></div>
+			<div class="row row--total"><dt>Total</dt><dd>$311.76</dd></div>
+			<div class="rule"></div>
+			<div class="row row--credit"><dt>Deposit applied</dt><dd>−$100.00</dd></div>
+			<div class="row row--credit"><dt>Payment received Sep 6</dt><dd>−$50.00</dd></div>
+			<div class="row row--balance"><dt>Balance due</dt><dd>$161.76</dd></div>
+		</dl>
+	</section>
+
+	<footer class="terms">
+		<div class="terms__text">
+			Checks preferred, payable to JKA LTD. 1.5% interest per month applies to balances unpaid after 30
+			days. Please include the invoice number with your payment.
+		</div>
+		<div class="terms__pay">
+			Questions? <b>billing@jkaltd.com</b><br />(206) 555-0100
+		</div>
+	</footer>
+</article>

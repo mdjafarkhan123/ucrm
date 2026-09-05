@@ -13,9 +13,11 @@ implementation is under way, split into 3a/3b/3c on Jafar's 2026-09-04 approval.
 | 3b-2 | Build refunds, receipt reversal, and the payment-dependent lifecycle commands (Void, Bad debt, Mark received) | Complete 2026-09-05 — one migration applied to the remote database, 89/89 pgTAP, plans measured | Part 3b-1 | Met: refund caps against the original receipt, reversal of a receipt or an erroneous refund, D2's Void refusal with its deposit release, bad debt/unmark, mark received/reopen, permissions, isolation and replay verified |
 | 3c   | Build source claims and correction/rebill replacement chains              | Complete 2026-09-05 — one migration applied to the remote database, 60/60 pgTAP, index plans measured; not yet committed to Git | Parts 3a–3b; Jobs 11c for installment references only | Met: one work unit billed once, claims retained after Void, rebill succeeds once (no chain branching), progress-invoice exclusion from ordinary Void enforced; uniqueness probe, chain-claims and successor lookups each verified index-only/index scan at ~150k rows |
 | 4a   | Deliver the Invoice list (read model + list screen)                        | Complete + committed 2026-09-05 (d947a3a) — migration applied, plans measured at 40k, 3c pgTAP re-verified 60/60 | Parts 3a–3c | Met: keyset list, live status overview, search/filter/sort, no money leak; list & overview derive status one way |
-| 4b   | Deliver the new-invoice form and the detail page                           | Planned — split from 4 on Jafar's 2026-09-05 approval | Part 4a                                 | Shared Quote/Job form shell plus Invoice-only fields; draft actions Mark as Sent + Delete; no duplicate UI      |
+| 4b   | Deliver the new-invoice form and the detail page                           | Complete + committed 2026-09-05 (a7bdb1d) — type-clean, all flows browser-verified; delete-hang bug fixed | Part 4a | Met: new form + detail screen, draft-only edits (lines/discount/tax/subject/terms), Mark as Sent, Delete draft; read model gates money; no duplicate UI |
 | 5    | Deliver Job, Visit, reminder and installment handoff                      | Planned                                        | Parts 3a–3c, 4; Jobs 11c                       | Eligible work copies once, reminders resolve, deposits allocate, retries do not duplicate       |
-| 6    | Deliver email, mark-sent, secure view, PDF and receipt flow               | Planned                                        | Part 4; Communications email                   | Issue/delivery/view facts and frozen customer document are verified                             |
+| 6    | Deliver email, mark-sent, secure view, PDF and receipt flow               | In progress — 6a complete 2026-09-05; 6b next | Part 4; Communications email                   | Issue/delivery/view facts and frozen customer document are verified                             |
+| 6a   | Customer invoice document + secure token view + Preview-as-client + Print/Save PDF | Complete 2026-09-05 — browser-verified (light + dark, no console errors, money math correct, print CSS clean); NOT yet committed to Git | Part 4; Quote customer-document/token/preview pattern | Met: frozen customer document renders premium; staff preview renders via `invoice_customer_preview`; print CSS strips chrome. Public `/i/[token]` resolver built; live token test defers to 6b (issuer). Money-withheld path code-verified (owner has view_price) |
+| 6b   | Send (issue-on-send + secure link + Communications enqueue, idempotent), issue/delivery/view facts, receipt document + email | Planned | 6a; Communications email worker | Send issues + delivers, view/delivery facts recorded, receipt generated from accepted payment facts and emailed |
 | 7    | Deliver manual collection, overdue, bad debt, void and reopening          | Planned                                        | Parts 3a–3c, 4–6                               | Partial/full payments, balances, reversals and every Jobber state transition reconcile          |
 | 8    | Deliver batch create and batch deliver                                    | Planned                                        | Parts 5–7                                      | Reviewed drafts group compatible Client work; completion atomic with creation; sending separate |
 | 9    | Verify integrated billing journeys and measured performance               | Planned                                        | Parts 2–8                                      | Direct, Job, recurring, progress, delivery, payment, exception and batch journeys pass          |
@@ -29,8 +31,16 @@ replacement chains stay in 3c with Jobs 11c dependencies explicit. The split cha
 approved behavior. Batch groups compatible tax rates, and incomplete Visit completion follows the approved
 atomic, previewed permission boundary.
 
+Part 6 decisions (approved 2026-09-05): PDF = browser print/save (matches Jobber's "Print or Save PDF"
+affordance and the shipped Quote pattern); no server PDF engine. Build a REUSABLE customer-document visual
+foundation (paper shell, brand header, party/address blocks, line-table styling, totals block, print CSS) so
+Quote can later adopt it — quote/invoice stay as two purpose-built components, never one mode-flagged
+component. Customer sees their own invoice amounts (no view_price gating on the customer's own bill).
+
 Deferred outside this campaign: SMS until Communications activation; online processors, saved methods, automatic
 charging, settlements, disputes and payouts until their provider topology receives separate approval.
+Retrofit `CustomerQuoteDocument` onto 6a's shared document foundation — small follow-up AFTER Jafar approves
+the invoice look; kept out of this campaign because it touches shipped, tested quote code.
 
 Build order (confirmed by Jafar 2026-09-05): Void, Bad debt and Mark received are built with the ledger their
 rules read, not in 3a. Jafar also approved splitting 3b into 3b-1 (ledger, balances, money movement) and 3b-2

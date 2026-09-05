@@ -10,10 +10,21 @@ An **Invoice** is _"a request for payment which Service Providers send to their 
 done"_ (schema). A **PaymentRecord** is _"payment records applied to a quote or invoice"_ (schema) — money
 in, whether a card charge through **Jobber Payments** or a manually-recorded cash/check. This file documents
 the invoice object, its line items and amounts, the full status set, how invoices get created (one-off,
-per-job, and **batch**), reminders/dunning, deposits & progress invoicing, and the Jobber Payments money layer
-(tips, ACH, tap-to-pay, capital loans).
+per-job, and **batch**), reminders, deposits, and progress invoicing. Provider API fields below are historical
+reference, outside the current manual-payment campaign.
 
 ---
+
+## Research authority and current scope
+
+Current behavior reconciliation: [Invoice evidence matrix](../../../docs/invoice-jobber-evidence.md).
+Consult it before using this reference for Invoice planning. API fields below are a historical public-schema
+inventory, not newly verified API compatibility, screen labels, storage design, or an implementation mandate.
+UI controls and GraphQL connections do not establish Jobber's internal tables or financial storage.
+
+Initial UCRM manual methods, restricted by Jafar: **Other, Bank transfer, Cash, Check, Credit/debit card
+(external), PayPal**. No processor, ACH failure, dispute, payout, saved-card, auto-pay, financing, or
+all-15-method infrastructure belongs in this campaign. Provider fields remain reference material only.
 
 ## 1. Invoice (`Invoice`)
 
@@ -79,32 +90,20 @@ per-job, and **batch**), reminders/dunning, deposits & progress invoicing, and t
 
 ---
 
-## 2. Invoice statuses (`InvoiceStatusTypeEnum`) — from schema + [[invoice basics]]
+## 2. Invoice status vocabulary (reconciled 2026-09-04)
 
-Raw enum (schema): `draft`, `awaiting_payment`, `paid`, `past_due`, `bad_debt`, `sent_not_due`.
+The current [Invoice list documentation](https://help.getjobber.com/en/articles/invoices-list-page-and-key-metrics/)
+lists **Draft, Awaiting Payment, Past Due, Paid, Bad Debt, Voided**. Awaiting Payment includes issued,
+unpaid invoices whose due date has not passed; it is not restricted to invoices due today.
 
-| Enum value         | Plain English (help center)                                                                                                                                                                                                   |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `draft`            | Created but **not sent** and not marked-sent — contractor-only. Leaves draft when sent (email/text) or marked sent.                                                                                                           |
-| `sent_not_due`     | _"Awaiting payment but not yet due."_ Sent to the client; **due date hasn't passed.** (This is the schema's split of "Awaiting Payment" into a not-yet-due state.)                                                            |
-| `awaiting_payment` | Sent, unpaid, due date logic in play. The help center's **"Awaiting Payment"** label = sent + unpaid + not past due.                                                                                                          |
-| `past_due`         | **Past its due date** and not paid / not marked paid. Feeds the Past Due list + invoice follow-ups.                                                                                                                           |
-| `paid`             | Full balance paid, **or** manually marked Paid.                                                                                                                                                                               |
-| `bad_debt`         | Deemed partly/fully **uncollectible**; the remaining (or full) balance is written off to close the invoice and pull it out of Awaiting Payment / Past Due lists. **The invoice stays in Jobber for the record.** [[bad debt]] |
+The live **overview** used `Past due`, `Sent but not due`, and `Draft`. Its **filters** grouped
+`Awaiting payment: past due`, `Awaiting payment: not yet due`, and `Awaiting payment: all`, alongside
+Draft, Paid, Bad Debt, and Voided. The future-due invoice's **detail badge** said `Awaiting payment`.
 
-> **Reconciliation:** the overview file (`jobber-00`) summarized the flow as _Draft → Awaiting Payment → Paid
-> (Past Due if overdue)_. The real enum adds **`sent_not_due`** (sent-but-not-yet-due, split out from
-> "awaiting payment") and **`bad_debt`** (write-off). There is **no** separate "sent" or "viewed" status —
-> viewing is tracked by `dateViewedInClientHub`, not a status.
-
-**Closing an invoice** (`InvoiceCloseOptionsType`, from schema) has exactly two modes:
-| Option | Meaning |
-| --- | --- |
-| `MARK_RECEIVED` | Mark the invoice **received without recording a payment** (close it, no money logged). |
-| `BAD_DEBT` | Mark the invoice (or its remaining balance) as **bad debt** (uncollectible write-off). |
-
-Closing is reversible: `invoiceReopen` re-opens a closed invoice and `invoiceUnmarkBadDebt` reverses a
-bad-debt write-off (both are schema mutations — see §6).
+Historical API enum: `draft`, `awaiting_payment`, `paid`, `past_due`, `bad_debt`, `sent_not_due`.
+`sent_not_due` is not evidence for a separate detail badge. That old sample's missing `voided` does not
+invalidate current documented Voided behavior. Invoice Basics' introductory count of five statuses is
+stale relative to its own Void section and the list article. Partial payment is not a separate listed status.
 
 ---
 
@@ -224,46 +223,29 @@ payment from a deposit, a refund, a write-off, or a failed-ACH reversal on the s
 - **Concrete subtypes** (interface implementers): `JobberPaymentsCreditCardPaymentRecord`,
   `JobberPaymentsACHPaymentRecord`, `JobberPaymentsRefundPaymentRecord`.
 
-### 5.5 Recording & collecting payments (help center)
+### 5.5 Recording and correcting manual payments
 
-- **Collect on an invoice:** open the invoice → **Collect Payment** (top right) → pick a method.
-  Choose **Credit/Debit Card** to charge through Jobber Payments, or **"Create a payment record"** for an
-  **offline** method (cash, check, etc.) you already received. [[how to collect payment]]
-- **Record a deposit:** the **"Record deposit"** option logs a deposit received (method = cash, check,
-  credit card, bank transfer, money order, or other, + amount, transaction date, details).
-- When the full balance is covered, status flips to **Paid** automatically.
+See [verified financial evidence](../../../docs/invoice-payment-research.md) for draft collection,
+Close Invoice, Bad Debt, Void, payment editing/deletion/refunds, and Client balance. The live six-method
+list defines initial UCRM scope. `Credit/debit card` under `Create a payment record` records an external
+payment; it does not charge a card. Full payment and status-only closure must remain distinguishable.
 
-### 5.6 Jobber Payments money layer (help center) — [[jobber payments basics]]
+### 5.6 Provider features — outside this research boundary
 
-- **Card fees** are a percentage per transaction, **set by your Jobber subscription plan**; accepts Visa /
-  Mastercard / Amex, debit, **Apple Pay & Google Pay**. [[manage jobber payments settings]]
-- **ACH bank payments:** all plans, **1% fee, US only** (runs on the ACH network). [[bank payments ach]]
-- **Tips:** Jobber Payments can collect **tips** — default options **10% / 15% / 20%** of the invoice total,
-  or a **custom** dollar amount; surfaced in Client Hub and the field app. [[tip collection]]
-- **In the field:** collect card payments in the Jobber app via **tap-to-pay / card reader / terminal**.
-  [[collecting card payments in the field]]
-- **Automatic payments:** with a client's **saved payment method**, invoices can be **auto-created and
-  auto-charged** — and when on, **invoice reminders are _not_ created** (nothing to chase). [[automatic payments]]
-- **Payouts & capital:** `PayoutRecord` / `Payout` / `PayoutStatus` model deposits to the SP's bank;
-  **`JobberPaymentsCapitalLoan`** models Jobber Capital lending offers (`offeredAdvanceAmount`,
-  `acceptedAdvanceAmount`, `loanFeeAmount`, `status`, `expiresAfter`, Stripe-Capital-backed). Financing to the
-  _contractor_, distinct from Wisetack financing to the _client_.
-- **Surcharge / convenience fee (pass processing cost to the client):** the schema exposes surcharge plumbing
-  (`hasRefundableSurchargePayments`, refundable-surcharge flags), but whether Jobber lets you **add a client
-  surcharge** in settings was **not confirmed** in the help center results — **(unverified)**.
+Online processing, saved methods, automatic charging, ACH failures, disputes, payouts, fees, and financing
+require separate current provider research and approval. Historical schema fields in §5.1–5.4 are not
+requirements for the initial manual-payment campaign. Do not build placeholders from them.
 
 ---
 
-## 6. Reminders & dunning (help center)
+## 6. Invoice reminders and payment follow-ups
 
-- **Invoice follow-ups (dunning):** up to **two** automatic reminders for invoices in **past-due** status,
-  sent by **email or text** asking the client to pay. You set **how many days after the due date** each fires
-  — **max 90 days.** [[invoice reminders]]
-- **Requires Invoicing:** an invoice reminder coming due flips the **job** to _Requires Invoicing_ so it
-  surfaces for **batch** billing (see §4.1). [[invoice reminders]]
-- **Review requests:** after payment, an SMS **Google-review** request can be sent (`allowReviewRequest`,
-  `nextDateToSendReviewSms` gate the cadence). (Reputation domain — later file.)
-- **Automatic payments override reminders:** if auto-pay is on, reminders aren't generated (§5.6).
+[Invoice Reminders](https://help.getjobber.com/en/articles/invoice-reminders/) are internal creation prompts;
+a due reminder puts a Job in Requires Invoicing. Creating the Invoice completes its reminder.
+[Emails and Text Messages Settings](https://help.getjobber.com/en/articles/emails-and-text-messages-settings/)
+places Invoice follow-up configuration in Automations. These chase overdue bills, not uncreated invoices.
+The previous two-reminder/90-day claim was not reverified here; consult current Automation documentation
+before relying on fixed limits. Auto-pay and review-request integrations remain outside initial scope.
 
 ---
 
@@ -294,36 +276,93 @@ getters (capital loans, payouts, saved payment methods via `JobberPaymentsPaymen
 
 ---
 
-## 8. How WE compare (build notes)
+## 8. How WE compare — decisions, not inferred Jobber internals
 
-- **Status parity:** we need Jobber's split of "sent but not due" (`sent_not_due`) vs "awaiting payment" vs
-  **`past_due`**, plus a real **`bad_debt`** write-off state that keeps the record but removes it from the
-  chase lists. Confirm our invoice status enum covers _sent-not-due_, _past-due_, _bad-debt_, and that
-  bad-debt only writes off the **remaining** balance when partially paid.
-- **Close modes:** copy the two-mode close — **Mark Received** (close, no money) vs **Bad Debt** (write-off) —
-  and make both **reversible** (`reopen` / `unmark bad debt`). Cheap, and matches accountant expectations.
-- **`invoiceBalance` + `tipsTotal` split:** keep balance = total − payments as a live field, and keep **tips
-  on top** of (not inside) the taxable total. Our tips work (M7, [[invoice-quote-parity-tracker]]) should
-  already do this — verify.
-- **Adjustment-type ledger:** Jobber records payments, deposits, refunds, corrections, failed-ACH reversals,
-  bad-debt, and voids on **one** connection distinguished by `IncomeAdjustmentType`. A single money-movement
-  ledger with a type discriminator beats separate tables — worth matching for clean billing history.
-- **`CREDIT_CARD` (outside) vs `JOBBER_PAYMENTS` (processed) distinction:** our payment model should record
-  _how_ money came in (offline card vs processed card vs ACH vs Zelle/Venmo/etc.) — Jobber's 15-value
-  `PaymentType` is a good target list, plus `PaymentOrigin` for terminal/tap-to-pay/online provenance.
-- **Batch billing loop:** the **Requires Invoicing → Batch Create → Batch Deliver** pipeline is the biggest
-  operational win for high-volume trades (lawn/clean/HVAC). Our job "Requires Invoicing" status already exists
-  (`jobber-04`); build the batch-create + batch-deliver on top of it. See [[jobs-operations-gaps-deferred]].
-- **Progress invoicing (Item Total / Due This Invoice):** for big-ticket trades, the two-column client view
-  (full price vs installment now) + deposits-applied-at-billing is the pattern to match. We deferred
-  quote-side milestone presentation ([[quote-phase2-gaps]] #5) — the invoice side is where it pays off.
-- **Automatic payments suppress reminders:** wire the same rule — if auto-charge is on for a client, don't
-  generate dunning reminders. Aligns with our outbox/automation model ([[recurring-billing-autocharge-deferred]]).
-- **Capital vs consumer financing:** two different products — **Jobber Capital** (loan to the _contractor_)
-  and **Wisetack** (financing for the _client_). Don't conflate; both are partner integrations, both deferred
-  for us until real volume.
+- Use the [evidence matrix](../../../docs/invoice-jobber-evidence.md) for current behavior and open limits.
+- Match the six verified manual methods and distinguish recording an external card payment from processing it.
+- **Approved by Jafar in the research-redline approval:** retain issued invoices through Void rather than Delete, and record
+  financial corrections through reversal/replacement rather than erasing original history. These improve
+  traceability over Jobber's deletion and manual-edit workflows. UCRM D1–D5 are now explicitly approved in the Invoice contract. See the [proposed redline](../../../docs/invoice-contract-proposed-redline.md).
+- Historical API connections describe returned records only. They do not prove a single ledger table,
+  append-only history, integer arithmetic, locks, idempotency, or an internal storage architecture.
+- Batch creates drafts before separate delivery; different property tax rates split invoices for one Client.
+  Selecting incomplete visits can complete them. See the evidence matrix before defining batch parity.
+- Preserve the difference between Paid without payment and a settled Client account; see financial research.
+
+## Live screen confirmation — 2026-09-04 (observed live)
+
+- The New Invoice form reuses the Quote composer shape. Its Invoice-only primary fields are Subject,
+  Invoice #, Issued date, and Payment terms. Terms offered were Custom date, Due upon receipt, Net 7/15/30/45/60,
+  End of the month, and End of next month.
+- Invoice lines use the shared product/service editor and add an optional Service Date. The totals editor adds
+  Deposit, Invoice balance, and Account balance (including this draft).
+- Draft detail uses the shared work-record skeleton. Header editing is in place with Cancel/Save; product/service
+  editing is also in place with its own Cancel/Save.
+- The Client view block exposes five toggles: Quantities, Unit prices, Line item totals, Account balance, and
+  Late stamp (if overdue).
+- Draft actions observed were Send Email; Mark as Sent; Create Similar Invoice; Collect Payment; Preview as
+  Client; Collect Signature; Print or Save PDF; and Delete.
 
 ---
+
+## Client-facing invoice view — 2026-09-05 (observed live)
+
+Opened **More → Preview as Client** on issued invoice #1 (Client Hub `clienthub.getjobber.com/.../invoices/<id>?preview=true`).
+This is the document the customer sees. Screenshot: `Design/invoices/jobber-client-invoice-view.jpg`. Structure,
+top to bottom:
+
+- **Branded top bar:** business name only ("JKA LTD"), left-aligned, on a thin brand-color gradient rule. No app chrome.
+- **Paper card** centered on a pale background, ~1060px max, generous padding, subtle border/shadow.
+- **Head row:** small "Invoice #1" label top-left; status pill top-right ("Awaiting Payment", amber dot). Below, the
+  **subject** as the bold document title. Left column = client name (bold) + billing address + phone. Right column =
+  a two-row facts panel (Issued / Due) separated from the left by a vertical divider, each row underlined.
+- **Line table:** header `Product / Service | Qty. | Unit Price | Total` (right-aligned numerics). Each row = bold
+  item name + muted description; qty/unit/total on the right. Rows separated by hairlines.
+- **Totals block:** bottom-right only, its own left divider — Subtotal, then bold **Total**. (Discount/tax/deposit/
+  balance rows would appear here when present; this invoice had none.)
+- **Footer:** terms/disclaimer text, muted, full width.
+- **Preview mode shows no Pay/Download controls.** The live client view adds payment affordances (Jobber Payments) —
+  out of our campaign scope; we ship the document + secure view + browser Print/Save PDF only.
+
+Confirmed the staff **More** menu order: Email, Create Similar Invoice, Preview as Client, Collect Signature,
+**Print or Save PDF**, Close Invoice, Delete, Void Invoice — "Print or Save PDF" is Jobber's own PDF affordance
+(browser print), confirming no separate PDF engine.
+
+---
+
+## Read-only research continuation — 2026-09-04 (observed live)
+
+Inspected the signed-in account's invoice list and existing issued, unpaid invoice in the app browser.
+Canceled payment creation, Close Invoice, Void Invoice, and header editing without changing any values
+or saving. The observations below describe visible controls; no financial transition was executed.
+
+- **Status presentation:** the overview says `Sent but not due`; the same invoice detail says `Awaiting
+payment`. List filters offer Awaiting payment: past due / not yet due / all, Draft, Paid, Bad Debt,
+  and Voided. Preserve the distinction between lifecycle facts and screen labels when implementing parity.
+- **Manual collection:** Collect Payment opens a separate New Payment page. It shows Payment method,
+  Transaction Date, Reference #, Details, account balance, and selectable outstanding invoices with an
+  editable allocation amount per row. The originating invoice is preselected. Actions are Cancel, Save,
+  and Save and Email Receipt. This account offers Other, Bank transfer, Cash, Check, Credit/debit card,
+  and PayPal under `Create a payment record`; the schema's broader method enum is not evidence that
+  every method is offered in every account.
+- **Close Invoice:** the dialog offers With a payment, As bad debt, and Without recording a payment.
+  The last choice explicitly says it changes status to paid without updating the client's account balance.
+  Only the choices and explanation were inspected; their subsequent steps remain unverified live.
+- **Void Invoice:** a confirmation modal warns that payment becomes unavailable and voiding cannot be
+  undone. Reasons are Duplicate invoice, Created in error, Client request, and Other. The reason is for
+  internal use and is not shown to the client. Cancel and Void are separate actions. Deposit release and
+  notification behavior were not established by this modal.
+- **Issued editing:** header editing remains available with subject, number, issued date, payment terms,
+  due date, and Add Field, with local Cancel/Save controls. No changes were entered.
+- **Issued More menu:** Email, Create Similar Invoice, Preview as Client, Collect Signature, Print or
+  Save PDF, Close Invoice, Delete, and Void Invoice were visible. The presence of Delete does not establish
+  eligibility or deletion consequences; it was not invoked. Customer preview was not opened, so no
+  customer-view event was deliberately triggered.
+
+**Official follow-through:** the [payment research](../../../docs/invoice-payment-research.md) and
+[evidence matrix](../../../docs/invoice-jobber-evidence.md) now resolve the documented draft-payment,
+closure, bad-debt, void, deletion, correction, and account-balance questions. Live-only limits above describe
+what was actually tested; documented behavior is separately attributed. The redline is approved and applied; additional transitions remain proposals.
 
 ### Help-center sources
 
@@ -343,3 +382,18 @@ getters (capital loans, payouts, saved payment methods via `JobberPaymentsPaymen
 - Bank Payments (ACH) — https://help.getjobber.com/hc/en-us/articles/1500004781762-Bank-Payments-ACH
 - Tip Collection with Jobber Payments — https://help.getjobber.com/hc/en-us/articles/4410192275479-Tip-Collection-with-Jobber-Payments
 - Billing History Box — https://help.getjobber.com/hc/en-us/articles/115009451467-Billing-History-Box
+
+## Targeted transition follow-through
+
+See [transition decisions](../../../docs/invoice-transition-decisions.md) before Part 2. Current official
+Help confirms batch selection can complete incomplete Visits; it does not resolve partial-Draft effects,
+partially paid Void, exact issued-progress monetary correction, or source rebilling after Void. Deposit
+release proves no source-work release. The two approved traceability departures do not settle those gaps.
+
+## UCRM transition approval
+
+Jafar approved concrete D1–D5 in [the Invoice contract](../../../docs/invoice-behavior-contract.md).
+Historical “unverified” labels above continue to describe Jobber evidence only. They no longer mean UCRM
+behavior is undecided: partial Draft prepayment, explicit ordinary-payment disposition before Void,
+progress correction chains, linked rebilling, and atomic batch Visit completion are approved UCRM behavior.
+Part 2 design is for review; no implementation approval is implied.

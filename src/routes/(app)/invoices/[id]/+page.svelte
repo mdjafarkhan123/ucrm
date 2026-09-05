@@ -47,6 +47,8 @@
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
 	import cashIcon from '@tabler/icons/outline/cash.svg?raw';
+	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
+	import printIcon from '@tabler/icons/outline/printer.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -190,6 +192,26 @@
 						label: 'View client profile',
 						onSelect: () => void goto(resolve('/(app)/clients/[id]', { id: saved.client!.id }))
 					}
+				]
+			: []
+	);
+
+	// The client's view of this invoice, in its own tab, with our sidebar left behind. `print` asks that tab
+	// to open the print dialog as soon as it has drawn, so `Print or save PDF` is one press rather than a
+	// page and then an instruction — the same as quotes.
+	function openCustomerView(print = false) {
+		if (!invoiceId) return;
+		const path = resolve('/(app)/invoices/[id]/preview', { id: invoiceId });
+		window.open(print ? `${path}?print=1` : path, '_blank', 'noopener');
+	}
+
+	// Both open the client's own view, and both are offered in every status including draft — checking a bill
+	// before sending it is the whole point of a preview. Sending a link and view facts are Part 6b.
+	const invoiceMenuItems = $derived(
+		saved
+			? [
+					{ label: 'Preview as client', icon: eyeIcon, onSelect: () => openCustomerView() },
+					{ label: 'Print or save PDF', icon: printIcon, onSelect: () => openCustomerView(true) }
 				]
 			: []
 	);
@@ -364,6 +386,7 @@
 				<WorkRecordHeader
 					icon={receiptIcon}
 					recordType="Invoice"
+					menuItems={invoiceMenuItems}
 					title={subject}
 					titleLabel="Invoice subject"
 					statusLabel={INVOICE_STATUS_LABELS[saved.invoice.derived_status]}
