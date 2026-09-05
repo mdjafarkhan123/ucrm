@@ -27,7 +27,9 @@
 	const longDate = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
 
 	function formatDate(value: string | null) {
-		return value ? longDate.format(new Date(value)) : null;
+		// A `date` column arrives as `YYYY-MM-DD`; `new Date` on that reads it as UTC midnight and shifts the
+		// day back one in negative-offset timezones. `T00:00` parses it as local midnight so the date is kept.
+		return value ? longDate.format(new Date(`${value}T00:00`)) : null;
 	}
 
 	function formatMoney(minor: number) {

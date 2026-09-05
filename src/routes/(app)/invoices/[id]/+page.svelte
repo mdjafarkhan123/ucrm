@@ -23,6 +23,7 @@
 	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
 	import InvoiceEmailDialog from '$lib/components/invoices/InvoiceEmailDialog.svelte';
+	import CollectPaymentDialog from '$lib/components/invoices/CollectPaymentDialog.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -39,12 +40,17 @@
 		issueInvoice,
 		queueInvoiceEmail,
 		issueInvoiceAccessLink,
+		recordInvoicePayment,
 		deleteInvoice,
 		invoiceCountsKey,
 		type InvoiceWriteError,
 		type InvoiceLineInput
 	} from '$lib/invoices/api';
 	import { INVOICE_STATUS_LABELS, INVOICE_STATUS_TONES } from '$lib/invoices/statuses';
+	import {
+		INVOICE_PAYMENT_METHOD_LABELS,
+		type InvoicePaymentMethod
+	} from '$lib/invoices/payment-methods';
 	import type {
 		RequestPricingLine,
 		RequestPricingLineInput,
@@ -167,6 +173,12 @@
 		hour: 'numeric',
 		minute: '2-digit'
 	});
+	// A `date` column arrives as `YYYY-MM-DD`; `new Date` on that reads it as UTC midnight and shifts the day
+	// back one in negative-offset timezones. Appending `T00:00` parses it as local midnight so the calendar
+	// date is kept — the same convention JobVisitsSection uses.
+	function formatDay(value: string) {
+		return dateFormat.format(new Date(`${value}T00:00`));
+	}
 	const money = $derived(
 		new Intl.NumberFormat(saved?.locale ?? 'en-US', {
 			style: 'currency',
@@ -189,9 +201,9 @@
 		{ label: 'Invoice #', value: saved ? String(saved.invoice.invoice_number) : null },
 		{
 			label: 'Invoice date',
-			value: saved ? dateFormat.format(new Date(saved.invoice.issue_date)) : null
+			value: saved ? formatDay(saved.invoice.issue_date) : null
 		},
-		{ label: 'Due', value: saved ? dateFormat.format(new Date(saved.invoice.due_date)) : null },
+		{ label: 'Due', value: saved ? formatDay(saved.invoice.due_date) : null },
 		...(saved?.invoice.issued_at
 			? [{ label: 'Issued', value: dateTimeFormat.format(new Date(saved.invoice.issued_at)) }]
 			: []),
@@ -248,14 +260,24 @@
 		window.open(print ? `${path}?print=1` : path, '_blank', 'noopener');
 	}
 
-	// Sending a draft is the header's one primary action, the next step the bill is waiting on. Once issued,
-	// the bill is no longer waiting on anything by itself — collecting payment is a later part — so it drops
-	// the primary action and offers Resend from the menu instead, the same shape the quote screen uses.
+	// One primary action follows state, per the behavior contract: Send for a draft still waiting to go out;
+	// Collect Payment once it is issued and still owes money; nothing forced once it is closed. A draft can
+	// still take money (D1 — Save-and-Collect), but that path is Jobber's create-flow shortcut, not this
+	// screen's ongoing primary action, so Send wins here whenever the draft can still be sent.
 	type PrimaryAction = { label: string; loading?: boolean; onclick: () => void };
+	const canCollect = $derived(
+		Boolean(
+			saved?.can_record_payment &&
+			canSeePrice &&
+			issuedAndLive &&
+			(saved?.money?.remaining_minor ?? 0) > 0
+		)
+	);
 	const primaryAction = $derived.by<PrimaryAction | undefined>(() => {
 		if (!saved) return undefined;
 		if (editable && saved.can_send)
 			return { label: 'Send invoice', onclick: () => (emailOpen = true) };
+		if (canCollect) return { label: 'Collect payment', onclick: () => (collectPaymentOpen = true) };
 		return undefined;
 	});
 
@@ -466,6 +488,27 @@
 		}
 	}
 
+	// --- Collect Payment (single invoice) ----------------------------------------------------------------
+	let collectPaymentOpen = $state(false);
+
+	function saveInvoicePayment(payload: {
+		amount_minor: number;
+		method: InvoicePaymentMethod;
+		payment_date: string;
+		reference: string | null;
+		note: string | null;
+		idempotency_key: string;
+		request_hash: string;
+	}) {
+		if (!saved?.client) throw new Error('This invoice has no client to record payment against.');
+		return recordInvoicePayment(invoiceId, { client_id: saved.client.id, ...payload });
+	}
+
+	async function onPaymentSaved() {
+		await refreshInvoice();
+		toast.success('Payment recorded');
+	}
+
 	// The customer's own link. Nothing is created by looking at a bill, so this press makes the recipient and
 	// the door together; pressing it again rotates the old link off, which is what staff mean by "send the
 	// link again". The raw URL comes back exactly once, so it goes straight to the clipboard.
@@ -634,11 +677,11 @@
 						<dl class="invoice-detail__terms">
 							<div class="invoice-detail__term">
 								<dt>Invoice date</dt>
-								<dd>{dateFormat.format(new Date(saved.invoice.issue_date))}</dd>
+								<dd>{formatDay(saved.invoice.issue_date)}</dd>
 							</div>
 							<div class="invoice-detail__term">
 								<dt>Due</dt>
-								<dd>{dateFormat.format(new Date(saved.invoice.due_date))}</dd>
+								<dd>{formatDay(saved.invoice.due_date)}</dd>
 							</div>
 							<div class="invoice-detail__term">
 								<dt>Terms</dt>
@@ -686,6 +729,52 @@
 						/>
 					{/if}
 				</SectionBlock>
+
+				{#if canSeePrice}
+					<SectionBlock title="Financial history" icon={cashIcon} level={2}>
+						{#if saved.payment_history?.length}
+							<ul class="invoice-detail__history">
+								{#each saved.payment_history as entry (entry.id)}
+									<li class="invoice-detail__history-row">
+										<div class="invoice-detail__history-main">
+											<span class="invoice-detail__history-label">
+												{entry.entry_type === 'unapplied'
+													? 'Payment removed'
+													: entry.source === 'deposit'
+														? 'Deposit applied'
+														: 'Payment received'}
+												{#if entry.method}
+													&middot; {INVOICE_PAYMENT_METHOD_LABELS[entry.method]}
+												{/if}
+											</span>
+											<span class="invoice-detail__history-meta">
+												{entry.payment_date
+													? formatDay(entry.payment_date)
+													: dateFormat.format(new Date(entry.created_at))}
+												{#if entry.reference}
+													&middot; Ref {entry.reference}
+												{/if}
+											</span>
+										</div>
+										<span
+											class="invoice-detail__history-amount"
+											class:invoice-detail__history-amount--negative={entry.entry_type ===
+												'unapplied'}
+										>
+											{entry.entry_type === 'unapplied' ? '−' : ''}{formatMoney(entry.amount_minor)}
+										</span>
+									</li>
+								{/each}
+							</ul>
+						{:else}
+							<EmptyState
+								icon={cashIcon}
+								title="No payments yet"
+								description="Payments recorded against this invoice will show up here."
+							/>
+						{/if}
+					</SectionBlock>
+				{/if}
 			{/snippet}
 
 			{#snippet rail()}
@@ -768,6 +857,19 @@
 				onConfirm={() => void confirmSend()}
 			/>
 		{/if}
+
+		{#if collectPaymentOpen && saved.money}
+			<CollectPaymentDialog
+				open
+				invoiceNumber={saved.invoice.invoice_number}
+				remainingMinor={saved.money.remaining_minor}
+				currencyCode={saved.invoice.currency_code}
+				locale={saved.locale}
+				onClose={() => (collectPaymentOpen = false)}
+				onSave={saveInvoicePayment}
+				onSaved={onPaymentSaved}
+			/>
+		{/if}
 	{/if}
 </PageContainer>
 
@@ -812,5 +914,48 @@
 		color: var(--color-text);
 		line-height: var(--typography--lineHeight-large);
 		white-space: pre-wrap;
+	}
+
+	.invoice-detail__history {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-base);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.invoice-detail__history-row {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-base);
+	}
+
+	.invoice-detail__history-main {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smaller);
+		min-width: 0;
+	}
+
+	.invoice-detail__history-label {
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+
+	.invoice-detail__history-meta {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+	}
+
+	.invoice-detail__history-amount {
+		flex-shrink: 0;
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+
+	.invoice-detail__history-amount--negative {
+		color: var(--color-critical);
 	}
 </style>

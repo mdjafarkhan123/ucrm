@@ -1,4 +1,5 @@
 import type { InvoiceDerivedStatus } from './statuses';
+import type { InvoicePaymentMethod } from './payment-methods';
 import type { QuoteDiscountType, QuoteTaxSource } from '$lib/quotes/api';
 
 export type InvoiceWriteError = Error & {
@@ -234,6 +235,22 @@ export type InvoiceDelivery = {
 	};
 };
 
+// One entry in the bill's money history: an application or an unapplication, from a manual receipt or a
+// reused quote deposit. Null on the same invoices.view_price gate as `money` — a reader without price access
+// never sees an amount, not even inside a history line.
+export type InvoicePaymentHistoryEntry = {
+	id: string;
+	entry_type: 'applied' | 'unapplied';
+	amount_minor: number;
+	created_at: string;
+	source: 'payment' | 'deposit';
+	method: InvoicePaymentMethod | null;
+	payment_date: string | null;
+	reference: string | null;
+	note: string | null;
+	reason: string | null;
+};
+
 export type InvoiceDetail = {
 	invoice: {
 		id: string;
@@ -273,6 +290,7 @@ export type InvoiceDetail = {
 		email: string | null;
 	} | null;
 	money: InvoiceMoney | null;
+	payment_history: InvoicePaymentHistoryEntry[] | null;
 	lines: InvoiceLineItem[];
 	delivery: InvoiceDelivery;
 	client_balance: InvoiceClientBalance | null;
@@ -280,6 +298,7 @@ export type InvoiceDetail = {
 	can_edit: boolean;
 	can_send: boolean;
 	can_delete: boolean;
+	can_record_payment: boolean;
 	can_see_price: boolean;
 	can_manage_taxes: boolean;
 };
@@ -457,6 +476,49 @@ export async function issueInvoiceAccessLink(id: string): Promise<InvoiceAccessL
 		body: '{}'
 	});
 	return readOrThrow<InvoiceAccessLink>(response, 'That customer link could not be created.');
+}
+
+// --- Collecting payment (single invoice) ------------------------------------------------------------------
+
+export type RecordInvoicePaymentInput = {
+	client_id: string;
+	amount_minor: number;
+	method: InvoicePaymentMethod;
+	payment_date: string;
+	reference: string | null;
+	note: string | null;
+	idempotency_key: string;
+	request_hash: string;
+};
+
+export type RecordInvoicePaymentResult = {
+	payment_event_id: string;
+	client_id: string;
+	amount_minor: number;
+	currency_code: string;
+	payment_date: string;
+	allocated_minor: number;
+	credit_minor: number;
+	allocations: {
+		allocation_id: string;
+		invoice_id: string;
+		invoice_number: number;
+		amount_minor: number;
+	}[];
+};
+
+// Records money against this invoice's client and applies it to this one bill, in one call. Spreading a
+// payment across several of a client's open invoices is a later, deferred screen — see the invoices roadmap.
+export async function recordInvoicePayment(
+	id: string,
+	input: RecordInvoicePaymentInput
+): Promise<RecordInvoicePaymentResult> {
+	const response = await fetch(`/api/invoices/${id}/payments`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	return readOrThrow<RecordInvoicePaymentResult>(response, 'That payment could not be recorded.');
 }
 
 export type DeleteInvoiceResult = { applied?: boolean; invoice_id: string; invoice_number: number };

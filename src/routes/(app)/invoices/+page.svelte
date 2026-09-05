@@ -140,6 +140,12 @@
 		month: 'short',
 		year: 'numeric'
 	});
+	// A `date` column arrives as `YYYY-MM-DD`; `new Date` on that reads it as UTC midnight and shifts the day
+	// back one in negative-offset timezones. Appending `T00:00` parses it as local midnight so the calendar
+	// date is kept.
+	function formatDay(value: string) {
+		return dateFormat.format(new Date(`${value}T00:00`));
+	}
 
 	// One formatter per currency rather than one per figure — a page of invoices writes a total and a balance
 	// on every row. A plain object, not a Map: nothing reads it reactively, it is only a cache.
@@ -308,7 +314,7 @@
 						</StatusBadge>
 					</td>
 					<td>{dateFormat.format(new Date(invoice.created_at))}</td>
-					<td>{dateFormat.format(new Date(invoice.due_date))}</td>
+					<td>{formatDay(invoice.due_date)}</td>
 					<td>{formatMoney(invoice.total_minor, invoice.currency_code)}</td>
 					<td>{formatMoney(invoice.remaining_minor, invoice.currency_code)}</td>
 				{/snippet}

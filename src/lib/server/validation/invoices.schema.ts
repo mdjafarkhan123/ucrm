@@ -302,6 +302,53 @@ export const invoiceEmailSchema = z.strictObject({
 	idempotency_key: z.string().uuid('Start a new email attempt and try again.')
 });
 
+// The six manual methods the contract names — none of them processes a payment; each just acknowledges money
+// received elsewhere. Same order and spelling as the database's own check constraint.
+export const INVOICE_PAYMENT_METHODS = [
+	'other',
+	'bank_transfer',
+	'cash',
+	'check',
+	'card_external',
+	'paypal'
+] as const;
+export type InvoicePaymentMethod = (typeof INVOICE_PAYMENT_METHODS)[number];
+
+// Collecting payment against the one invoice on screen. `amount_minor` is capped against what the bill still
+// owes inside record_client_payment itself (private.apply_invoice_allocation) — restating that cap here would
+// only be able to disagree with the database's own arithmetic, so it isn't repeated. Spreading one payment
+// across several of a client's open invoices is a later, explicitly deferred screen; this shape carries only
+// what a single-invoice collection needs.
+export const recordInvoicePaymentSchema = z.object({
+	// The browser already has this from the detail read it is acting on; record_client_payment re-checks the
+	// invoice actually belongs to this client before it touches any money, so a tampered value only ever
+	// fails closed as "that client could not be found," never a cross-tenant write.
+	client_id: z.string().uuid(),
+	amount_minor: z
+		.number()
+		.int()
+		.min(1, 'Enter how much was paid.')
+		.max(MINOR_UNIT_MAX, 'That amount is too large.'),
+	method: z.enum(INVOICE_PAYMENT_METHODS, { message: 'Choose how this payment was received.' }),
+	payment_date: z.string().regex(ISO_DATE, 'Pick a valid payment date.'),
+	reference: z
+		.string()
+		.trim()
+		.max(200, 'Keep the reference under 200 characters.')
+		.nullish()
+		.transform((value) => value || null),
+	note: z
+		.string()
+		.trim()
+		.max(2000, 'Keep the note under 2000 characters.')
+		.nullish()
+		.transform((value) => value || null),
+	idempotency_key: z.string().uuid('Start a new action and try again.'),
+	request_hash: z.string().trim().min(1, 'Reload and try again.').max(200, 'Reload and try again.')
+});
+
+export type RecordInvoicePaymentInput = z.infer<typeof recordInvoicePaymentSchema>;
+
 // Copying the customer link takes no body: which invoice is in the URL, and the recipient is the client's own
 // email. Strict so an unexpected field is refused rather than dropped.
 export const issueInvoiceAccessLinkSchema = z.strictObject({});
