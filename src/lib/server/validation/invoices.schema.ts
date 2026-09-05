@@ -190,6 +190,22 @@ export const updateInvoiceDetailsSchema = z
 
 export type UpdateInvoiceDetailsInput = z.infer<typeof updateInvoiceDetailsSchema>;
 
+// Entering, saving or clearing the draft's contract disclaimer. A blank string clears it, so the field is
+// optional rather than a min-length string — the same shape the quote disclaimer uses.
+export const updateInvoiceContractDisclaimerSchema = z.object({
+	expected_revision: z.number().int().min(0),
+	contract_disclaimer: z
+		.string()
+		.trim()
+		.max(5000, 'The contract disclaimer is too long. Keep it under 5000 characters.')
+		.nullish()
+		.transform((value) => value || null)
+});
+
+export type UpdateInvoiceContractDisclaimerInput = z.infer<
+	typeof updateInvoiceContractDisclaimerSchema
+>;
+
 // The whole set of lines in one save, the same all-or-nothing replacement a job's scope uses. Positions come
 // from the browser's order; the command renumbers them from zero so a gap or a duplicate cannot survive.
 export const replaceInvoiceLinesSchema = z.object({
@@ -279,3 +295,13 @@ export const deleteInvoiceSchema = z.object({
 	idempotency_key: z.string().uuid('Start a new action and try again.'),
 	request_hash: z.string().trim().min(1, 'Reload and try again.').max(200, 'Reload and try again.')
 });
+
+// Sending the invoice by email. The idempotency key makes a double click queue one email, not two; the link
+// and recipient are decided in the database, not the browser.
+export const invoiceEmailSchema = z.strictObject({
+	idempotency_key: z.string().uuid('Start a new email attempt and try again.')
+});
+
+// Copying the customer link takes no body: which invoice is in the URL, and the recipient is the client's own
+// email. Strict so an unexpected field is refused rather than dropped.
+export const issueInvoiceAccessLinkSchema = z.strictObject({});

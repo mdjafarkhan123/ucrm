@@ -96,6 +96,7 @@ export type CustomerInvoiceDocument = {
 		due_date: string;
 		due_date_source: string;
 		payment_term_snapshot: CustomerInvoicePaymentTerm | null;
+		contract_disclaimer: string | null;
 	};
 	customer: CustomerInvoiceCustomer;
 	billing_address: CustomerInvoiceAddress;

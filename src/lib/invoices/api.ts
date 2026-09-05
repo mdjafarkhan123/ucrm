@@ -245,6 +245,7 @@ export type InvoiceDetail = {
 		due_date: string;
 		due_date_source: string;
 		payment_term_snapshot: Record<string, unknown> | null;
+		contract_disclaimer: string | null;
 		customer_snapshot: Record<string, unknown> | null;
 		billing_address_snapshot: Record<string, unknown> | null;
 		service_properties: InvoiceServiceProperty[];
@@ -325,6 +326,22 @@ export async function saveInvoiceLines(
 		body: JSON.stringify({ expected_revision: expectedRevision, lines })
 	});
 	return readOrThrow(response, 'Those lines could not be saved.');
+}
+
+export async function saveInvoiceContractDisclaimer(
+	id: string,
+	expectedRevision: number,
+	contractDisclaimer: string | null
+): Promise<InvoiceRevisionResult> {
+	const response = await fetch(`/api/invoices/${id}/disclaimer`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			expected_revision: expectedRevision,
+			contract_disclaimer: contractDisclaimer
+		})
+	});
+	return readOrThrow(response, 'That contract disclaimer could not be saved.');
 }
 
 // A null type removes the discount, which is why every field but the revision is optional.

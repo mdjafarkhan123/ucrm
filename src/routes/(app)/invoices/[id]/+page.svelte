@@ -23,6 +23,8 @@
 	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
 	import InvoiceEmailDialog from '$lib/components/invoices/InvoiceEmailDialog.svelte';
+	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
+	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		fetchInvoice,
@@ -33,6 +35,7 @@
 		saveInvoiceLines,
 		saveInvoiceDiscount,
 		saveInvoiceTax,
+		saveInvoiceContractDisclaimer,
 		issueInvoice,
 		queueInvoiceEmail,
 		issueInvoiceAccessLink,
@@ -55,6 +58,7 @@
 	import sendIcon from '@tabler/icons/outline/send.svg?raw';
 	import linkIcon from '@tabler/icons/outline/link.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -90,13 +94,15 @@
 		saved?.invoice.subject?.trim() || `Invoice #${saved?.invoice.invoice_number ?? ''}`
 	);
 
-	// --- Staged edits (subject + terms), saved together by the bottom bar --------------------------------
+	// --- Staged edits (subject + terms + disclaimer), saved together by the bottom bar ---------------------
 	let editingTitle = $state(false);
 	let titleDraft = $state('');
 	let editingTerms = $state(false);
 	let termChoiceDraft = $state('');
 	let issueDateDraft = $state('');
 	let customDueDateDraft = $state('');
+	let editingDisclaimer = $state(false);
+	let disclaimerDraft = $state('');
 	let saving = $state(false);
 	let saveError = $state('');
 
@@ -122,8 +128,12 @@
 				issueDateDraft !== currentIssueDate ||
 				(termChoiceDraft === 'custom' && customDueDateDraft !== currentCustomDue))
 	);
-	const isEditing = $derived(editingTitle || editingTerms);
-	const isDirty = $derived(titleChanged || termsChanged);
+	const disclaimerChanged = $derived(
+		editingDisclaimer &&
+			disclaimerDraft.trim() !== (saved?.invoice.contract_disclaimer?.trim() ?? '')
+	);
+	const isEditing = $derived(editingTitle || editingTerms || editingDisclaimer);
+	const isDirty = $derived(titleChanged || termsChanged || disclaimerChanged);
 
 	// The named terms, loaded only once the terms block is opened; warmed on hover of its pencil.
 	const termsQuery = createQuery(() => ({
@@ -309,6 +319,8 @@
 		editingTitle = false;
 		titleDraft = '';
 		editingTerms = false;
+		editingDisclaimer = false;
+		disclaimerDraft = '';
 		saveError = '';
 	}
 
@@ -326,12 +338,29 @@
 		}
 
 		try {
-			await saveInvoiceDetails(invoiceId, saved.invoice.revision, {
-				subject: titleChanged ? titleDraft.trim() : saved.invoice.subject,
-				issue_date: (editingTerms ? issueDateDraft : currentIssueDate) || null,
-				payment_term_id: choice && choice !== 'custom' ? choice : null,
-				custom_due_date: choice === 'custom' ? customDue : null
-			});
+			// Everything below shares one draft revision, so these go one after another and each carries the
+			// revision the one before it handed back — firing them together would make the second a stale write.
+			let revision = saved.invoice.revision;
+
+			if (titleChanged || termsChanged) {
+				const result = await saveInvoiceDetails(invoiceId, revision, {
+					subject: titleChanged ? titleDraft.trim() : saved.invoice.subject,
+					issue_date: (editingTerms ? issueDateDraft : currentIssueDate) || null,
+					payment_term_id: choice && choice !== 'custom' ? choice : null,
+					custom_due_date: choice === 'custom' ? customDue : null
+				});
+				revision = result.revision;
+			}
+
+			if (disclaimerChanged) {
+				const result = await saveInvoiceContractDisclaimer(
+					invoiceId,
+					revision,
+					disclaimerDraft.trim() || null
+				);
+				revision = result.revision;
+			}
+
 			discard();
 			await refreshInvoice();
 			toast.success('Invoice saved');
@@ -618,6 +647,45 @@
 						</dl>
 					{/if}
 				</SectionBlock>
+
+				<SectionBlock
+					title="Contract disclaimer"
+					icon={fileTextIcon}
+					level={2}
+					form={editingDisclaimer}
+				>
+					{#snippet actions()}
+						{#if editable && !editingDisclaimer}
+							<PencilButton
+								onclick={() => {
+									disclaimerDraft = saved.invoice.contract_disclaimer ?? '';
+									editingDisclaimer = true;
+								}}
+								label="Edit the contract disclaimer"
+							/>
+						{:else if disclaimerChanged}
+							<Badge size="small" status="warning">Unsaved</Badge>
+						{/if}
+					{/snippet}
+
+					{#if editingDisclaimer}
+						<Textarea
+							id="invoice-disclaimer"
+							label="What the customer is agreeing to by paying this bill"
+							rows={5}
+							maxlength={5000}
+							bind:value={disclaimerDraft}
+						/>
+					{:else if saved.invoice.contract_disclaimer}
+						<p class="invoice-detail__disclaimer">{saved.invoice.contract_disclaimer}</p>
+					{:else}
+						<EmptyState
+							icon={fileTextIcon}
+							title="No contract disclaimer"
+							description="Add the terms the customer agrees to by paying this bill."
+						/>
+					{/if}
+				</SectionBlock>
 			{/snippet}
 
 			{#snippet rail()}
@@ -737,5 +805,12 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-base);
+	}
+
+	.invoice-detail__disclaimer {
+		margin: 0;
+		color: var(--color-text);
+		line-height: var(--typography--lineHeight-large);
+		white-space: pre-wrap;
 	}
 </style>

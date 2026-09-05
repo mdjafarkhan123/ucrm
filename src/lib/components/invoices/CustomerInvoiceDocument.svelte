@@ -340,6 +340,12 @@
 				</div>
 			</footer>
 		{/if}
+
+		{#if doc.invoice.contract_disclaimer}
+			<footer class="customer-invoice__disclaimer">
+				<p>{doc.invoice.contract_disclaimer}</p>
+			</footer>
+		{/if}
 	</article>
 </div>
 
@@ -759,6 +765,21 @@
 		line-height: var(--typography--lineHeight-larger);
 	}
 
+	// A distinct block from the payment-terms footer above: what the customer owes is not the same thing as
+	// what they are agreeing to, and each gets its own border rather than sharing one.
+	.customer-invoice__disclaimer {
+		margin: 0 var(--space-largest) var(--space-largest);
+		padding-top: var(--space-base);
+		border-top: 1px solid var(--color-border);
+		font-size: var(--typography--fontSize-small);
+		color: var(--color-text--secondary);
+		white-space: pre-wrap;
+
+		p {
+			margin: 0;
+		}
+	}
+
 	@media (max-width: 720px) {
 		.customer-invoice__head,
 		.customer-invoice__hero,
@@ -833,6 +854,7 @@
 		.customer-invoice__kicker,
 		.customer-invoice__total-row dt,
 		.customer-invoice__terms-text,
+		.customer-invoice__disclaimer,
 		thead th {
 			color: #333;
 		}
