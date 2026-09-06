@@ -4,22 +4,11 @@
 - Parts 1–9 CLOSED + committed (7 of 8 journeys; progress invoicing not built). Detail in `ROADMAP.md`.
 - **Part 5c is the only remaining part.** Sub-sequence 5c-1…5c-5 lives in `docs/invoice-part-5c-plan.md`.
   Jobber is the sole reference (GHL excluded).
-- **5c-1 CLOSED 2026-09-06** — records, pricing function, gated readers, Quote copy, tightened Quote rule.
-- **5c-2 code complete + committed 2026-09-06** (`89ed498`, migration
-  `20260906121529_job_payment_schedule_command_and_read.sql`): `public.set_job_payment_schedule`,
-  `public.job_schedule_stages`, `/api/jobs/[id]/payment-schedule`, `saveJobPaymentSchedule`, the job detail
-  read's `schedule` block, `JobPaymentScheduleDialog.svelte`, and the schedule section in `JobBillingCard`.
-  35 pgTAP assertions pass on the remote project; advisors clean; `npm run check` 0 errors.
-  **Not yet browser-verified** — see the next action.
+- **5c-1 and 5c-2 are CLOSED** (5c-2 browser-verified 2026-09-06; evidence in `ROADMAP.md`).
 
 ## Next action
 
-Finish the 5c-2 gate in the browser, then start 5c-3.
-
-1. Browser-check on a one-off Job (contractor login): add a fixed schedule, add a percentage schedule with a
-   residual cent, confirm a converted Quote's schedule appears unchanged, and confirm no amounts appear for a
-   member without `jobs.view_price`. Light and dark. Then close 5c-2 in `ROADMAP.md`.
-2. Implement **5c-3 — atomic installment-to-Invoice handoff** per `docs/invoice-part-5c-plan.md`.
+Implement **5c-3 — atomic installment-to-Invoice handoff** per `docs/invoice-part-5c-plan.md`.
 
 Before SQL: reload the Supabase + Postgres skills and check the Supabase changelog. Migrations go through
 `mcp__supabase__apply_migration`, NOT `supabase db push`
@@ -40,19 +29,27 @@ Before SQL: reload the Supabase + Postgres skills and check the Supabase changel
   `installment_id`, is what `private.price_job_payment_schedule` reads. The API body uses `installment_id`
   and the route maps it.
 - `set_job_payment_schedule` rewrites every unlocked stage (new row ids) and leaves locked ones untouched.
-  `is_deposit` travels only with the stage that already carries it; a schedule authored on the job invents
-  none, so 5c-3 should apply the live Quote deposit to the **first stage**, not to an `is_deposit` flag.
+  `is_deposit` travels only with the stage that already carries it (verified: survives a job-side edit); a
+  schedule authored on the job invents none, so 5c-3 applies the live Quote deposit to the **first stage**.
 - Stage status without `invoices.view` is the single word `invoiced`; with it, the live invoice status.
 
-## Verification still owed on 5c-2
+## Open UI nit found in the 5c-2 pass (not blocking)
 
-- Browser pass above.
+`JobPaymentScheduleDialog` keeps the red "stages must add up" banner on screen after the numbers are
+corrected; it only clears on save. The live "Adds up to X of Y" line below is correct. Jafar has seen it and
+has not asked for the fix yet.
+
+## Verification still owed
+
 - The stage read uses `job_payment_schedule_items_job_idx`; the two lateral lookups fall back to seq scans
   only because `invoice_sources` and `invoices` are still tiny in the dev project. Re-check with
   `EXPLAIN (ANALYZE, BUFFERS)` once there is real installment data.
 
 ## Known deferrals — outside this campaign, do not treat as bugs
 
+- The Quote screen's "Convert to job" menu item is hard-coded `disabled: true`
+  (`src/routes/(app)/quotes/[id]/+page.svelte`). The command and `/api/quotes/[id]/convert-to-job` work; the
+  entry point is the Quotes campaign's Part 8 leftover.
 - **Billing-contact fan-out**: invoice + receipt email go to the client's PRIMARY email only.
   `Memory/deferred/invoice-email-sends-to-primary-only-not-billing-contact.md`.
 - **Void → client cancellation email**: needs a new template (7b note).
@@ -64,6 +61,10 @@ Before SQL: reload the Supabase + Postgres skills and check the Supabase changel
 
 ## Live test-data state (Raad LTD, org 18f0d717-904e-48d8-bd99-9df7e3844cda)
 
+- Schedules now exist on Job #1 ($20,000/$20,000/$26,500 fixed), Job #13 (33.33/33.33/33.34 percentage) and
+  Job #14 (Deposit $500 `is_deposit` / Final $376.65) — all created for the 5c-2 pass, all unbilled.
+- **Quote #1 is now `converted` and produced Job #14** (Jafar approved this on 2026-09-06 so the
+  quote-carried schedule could be verified). Its $400 cash deposit receipt is still attached to the quote.
 - Job #2 "Recurring Lawn Care Test" on `fixed_per_period`; Sept → invoice #16, Oct-31 + Nov-30 reminders
   pending, Aug → invoices #9/#10.
 - Leftover Session-B drafts #16 ($75) and #17 ($200) — harmless; delete only with Jafar's OK.
