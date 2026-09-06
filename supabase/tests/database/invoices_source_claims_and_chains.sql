@@ -108,6 +108,21 @@ select public.create_job_with_visits(
   jsonb_build_array(jsonb_build_object('position', 0, 'visit_date', '2026-08-14')),
   'src-idem-job-progress', 'src-hash-job-progress');
 
+-- A stage, inserted directly and pre-locked, standing in for what `create_installment_invoice` does before
+-- ever calling this claim command: this file tests the claim in isolation, not the handoff that locks it.
+-- Written as postgres, the same way the per-visit reminder fixture below is: the point of both is what a
+-- claim does with a row that already exists, not the route that would normally create one.
+set local role postgres;
+insert into public.job_payment_schedule_items (
+  organization_id, job_id, position, description, value_type, value, locked_amount_minor
+) values (
+  'f2000000-0000-0000-0000-000000000001',
+  (select id from public.jobs
+   where organization_id = 'f2000000-0000-0000-0000-000000000001' and title = 'Progress job'),
+  0, 'Deposit', 'fixed', 50000, 50000);
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'f1000000-0000-0000-0000-000000000001', true);
+
 select public.create_job_with_visits(
   'f2000000-0000-0000-0000-000000000001', 'f3000000-0000-0000-0000-000000000001',
   'f4000000-0000-0000-0000-000000000001', 'Chain job', null, false, '[]'::jsonb,
@@ -577,11 +592,17 @@ select is(
 
 -- 11. A progress invoice is corrected, never voided --------------------------------------------------------------
 
+create temporary view progress_stage as
+  select id from public.job_payment_schedule_items
+  where organization_id = 'f2000000-0000-0000-0000-000000000001'
+    and job_id = (select id from job where title = 'Progress job');
+
 select public.claim_invoice_sources('f2000000-0000-0000-0000-000000000001',
   (select id from original where subject = 'Progress bill'),
   (select revision from original where subject = 'Progress bill'),
   jsonb_build_array(jsonb_build_object(
     'kind', 'installment', 'job_id', (select id from job where title = 'Progress job'),
+    'installment_id', (select id from progress_stage),
     'installment_number', 1, 'service_property_index', 0)),
   'src-idem-claim-progress', 'src-hash-claim-progress');
 
@@ -591,6 +612,7 @@ select throws_ok(
     (select revision from original where subject = 'Second visit bill'),
     jsonb_build_array(jsonb_build_object(
       'kind', 'installment', 'job_id', (select id from job where title = 'Progress job'),
+      'installment_id', (select id from progress_stage),
       'installment_number', 1)),
     'src-idem-claim-progress-2', 'src-hash-claim-progress-2') $$,
   '23505', null, 'the same installment cannot be billed twice');
@@ -602,7 +624,7 @@ select throws_ok(
     jsonb_build_array(jsonb_build_object(
       'kind', 'installment', 'job_id', (select id from job where title = 'Progress job'))),
     'src-idem-claim-progress-3', 'src-hash-claim-progress-3') $$,
-  '23514', null, 'and an installment claim without its schedule position is refused');
+  '23514', null, 'and an installment claim without its schedule position or identity is refused');
 
 select public.issue_invoice('f2000000-0000-0000-0000-000000000001',
   (select id from original where subject = 'Progress bill'),

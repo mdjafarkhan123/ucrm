@@ -10436,6 +10436,21 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			create_installment_invoice: {
+				Args: {
+					new_custom_due_date: string;
+					new_idempotency_key: string;
+					new_issue_date: string;
+					new_payment_term_id: string;
+					new_request_hash: string;
+					new_service_property_ids: string[];
+					new_subject: string;
+					target_installment_id: string;
+					target_job_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			create_job_with_visits: {
 				Args: {
 					invoice_on_close: boolean;

@@ -237,6 +237,46 @@ export async function createInvoice(payload: CreateInvoicePayload): Promise<Crea
 	return readOrThrow<CreateInvoiceResult>(response, 'That invoice could not be saved.');
 }
 
+// --- Billing one payment-schedule stage (Part 5c-3) -------------------------------------------------------
+
+// No `lines` field: the server prices and splits the stage amount across the job's own lines, the same way
+// it locks the amount before anything can claim it.
+export type CreateInstallmentInvoicePayload = {
+	job_id: string;
+	installment_id: string;
+	subject: string;
+	service_property_ids: string[];
+	issue_date: string | null;
+	payment_term_id: string | null;
+	custom_due_date: string | null;
+	idempotency_key: string;
+	request_hash: string;
+};
+
+export type CreateInstallmentInvoiceResult = {
+	applied?: boolean;
+	invoice_id: string;
+	invoice_number: number;
+	revision: number;
+	installment_id: string;
+	amount_minor: number;
+	deposit_applied_minor: number;
+};
+
+export async function createInstallmentInvoice(
+	payload: CreateInstallmentInvoicePayload
+): Promise<CreateInstallmentInvoiceResult> {
+	const response = await fetch(
+		`/api/jobs/${payload.job_id}/payment-schedule/${payload.installment_id}/invoice`,
+		{
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify(payload)
+		}
+	);
+	return readOrThrow<CreateInstallmentInvoiceResult>(response, 'That invoice could not be saved.');
+}
+
 // --- Billing a page of the queue at once (Part 8a) --------------------------------------------------------
 
 export type BatchInvoicePayload = {

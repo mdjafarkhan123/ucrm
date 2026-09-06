@@ -226,6 +226,39 @@ export const createInvoiceSchema = z
 
 export type CreateInvoiceInput = z.infer<typeof createInvoiceSchema>;
 
+// Billing one payment-schedule stage (Part 5c-3). No `lines` field: `create_installment_invoice` prices and
+// splits the stage amount across the job's lines itself, the same way it locks the amount before anything
+// claims it — a client cannot hand the server its own numbers for a stage's bill.
+export const createInstallmentInvoiceSchema = z
+	.object({
+		job_id: z.string().uuid('Choose a job to continue.'),
+		installment_id: z.string().uuid('Choose a payment stage to continue.'),
+		subject: z
+			.string()
+			.trim()
+			.min(2, 'Give this invoice a subject.')
+			.max(160, 'That subject is too long. Keep it under 160 characters.'),
+		service_property_ids: z.array(z.string().uuid()).max(50).default([]),
+		issue_date: z
+			.string()
+			.regex(ISO_DATE, 'Pick a valid invoice date.')
+			.nullish()
+			.transform((value) => value || null),
+		...termFields,
+		idempotency_key: z.string().uuid('Start a new action and try again.'),
+		request_hash: z
+			.string()
+			.trim()
+			.min(1, 'Reload the form and try again.')
+			.max(200, 'Reload the form and try again.')
+	})
+	.refine(oneTermChoice, {
+		message: 'Choose either a payment term or a custom due date, not both.',
+		path: ['custom_due_date']
+	});
+
+export type CreateInstallmentInvoiceInput = z.infer<typeof createInstallmentInvoiceSchema>;
+
 // Editing a draft's subject, invoice date and terms. `expected_revision` is the revision the browser last
 // read; a stale one is refused so two people editing the same invoice cannot silently overwrite each other.
 export const updateInvoiceDetailsSchema = z
@@ -495,7 +528,12 @@ export type BatchInvoiceInput = z.infer<typeof batchInvoiceSchema>;
 // keyset-paged the same way the Invoices list is.
 export const deliverableInvoicesQuerySchema = z.object({
 	cursor: z.string().min(3).max(400).optional(),
-	limit: z.coerce.number().int().min(1).max(INVOICE_PAGE_SIZE_MAX).default(INVOICE_PAGE_SIZE_DEFAULT)
+	limit: z.coerce
+		.number()
+		.int()
+		.min(1)
+		.max(INVOICE_PAGE_SIZE_MAX)
+		.default(INVOICE_PAGE_SIZE_DEFAULT)
 });
 
 // A batch may send at most this many invoices at once. It is a selection ceiling, deliberately equal to the

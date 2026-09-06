@@ -10,6 +10,11 @@ type DatabaseError = { code?: string; message?: string };
 // to the invoice that already started. The table's own checks (a bad subject, no lines, a due date before the
 // invoice date) surface as a form error carrying the database's sentence, rather than a raw constraint
 // violation.
+//
+// `create_installment_invoice` (Part 5c-3) shares this handler: it refuses with the same insufficient_privilege
+// and not-found shapes, and adds one of its own — a stage that is already locked comes back as unique_violation,
+// whether from a genuine race or a retry that changed its idempotency key. That is not a stale write to reload;
+// it is the stage having already been billed, so the person is told that plainly instead of hitting a 500.
 export function createInvoiceError(error: DatabaseError) {
 	if (error.code === '42501') return notFound('That client could not be found.');
 	if (error.code === 'P0404')
@@ -22,6 +27,8 @@ export function createInvoiceError(error: DatabaseError) {
 			},
 			{ status: 409, headers: NO_STORE_HEADERS }
 		);
+	if (error.code === '23505')
+		return validationError({ form: error.message ?? 'That work has already been billed.' });
 	if (error.code === '23514' || error.code === '23503')
 		return validationError({ form: error.message ?? 'That invoice cannot be created as entered.' });
 	return databaseError();

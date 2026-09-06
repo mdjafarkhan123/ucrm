@@ -26,10 +26,12 @@
 
 	const toast = getToastManager();
 
-	// Three ways in. Plain /invoices/new is the direct bill this screen has always written. Arriving with a
+	// Four ways in. Plain /invoices/new is the direct bill this screen has always written. Arriving with a
 	// client — which is how "Create invoice" on a job gets here — first asks which of that client's work the
 	// bill covers, then fills the same form with it. Arriving with specific visits (5b-2's visits-to-bill
-	// card already did the choosing on the job page) skips that picker and seeds straight from them.
+	// card already did the choosing on the job page) skips that picker and seeds straight from them. Arriving
+	// with one payment-schedule stage (5c-3) does the same, and the form it fills is read-only about money:
+	// the stage's amount is the bill's amount, and the server is the one that prices it.
 	const clientId = $derived(page.url.searchParams.get('client') ?? '');
 	const jobId = $derived(page.url.searchParams.get('job'));
 	const visitIds = $derived(
@@ -44,6 +46,7 @@
 			.map((id) => id.trim())
 			.filter(Boolean)
 	);
+	const installmentId = $derived(page.url.searchParams.get('installment'));
 
 	type Seed = {
 		clientId: string;
@@ -52,6 +55,8 @@
 		propertyId: string | null;
 		lines: RequestPricingLineInput[];
 		sources: InvoiceSourceInput[];
+		/** Set only when this bill is one payment-schedule stage. It takes a different save path entirely. */
+		installmentId: string | null;
 	};
 
 	let seed = $state<Seed | null>(null);
@@ -60,7 +65,8 @@
 	// The picker opens once per arrival; cancelling leaves rather than reopening it forever. Arriving with
 	// visits already chosen skips it — there is nothing left to pick.
 	$effect(() => {
-		if (clientId && !seed && visitIds.length === 0 && reminderIds.length === 0) picking = true;
+		if (clientId && !seed && visitIds.length === 0 && reminderIds.length === 0 && !installmentId)
+			picking = true;
 	});
 
 	// The client's name for the picker's title. It rides along on the job the contractor came from, so no
@@ -123,7 +129,8 @@
 			lines: visitIds.flatMap((visitId) =>
 				jobLines.map((line) => ({ ...line, service_date: visitDateById.get(visitId) ?? null }))
 			),
-			sources: visitIds.map((visitId) => ({ kind: 'visit', job_id: jobId, visit_id: visitId }))
+			sources: visitIds.map((visitId) => ({ kind: 'visit', job_id: jobId, visit_id: visitId })),
+			installmentId: null
 		};
 	});
 
@@ -158,7 +165,102 @@
 				kind: 'reminder_period',
 				job_id: jobId,
 				reminder_id: reminderId
-			}))
+			})),
+			installmentId: null
+		};
+	});
+
+	// One payment-schedule stage arrives pre-chosen (the job page's billing card), so the only thing left is
+	// to show what it will bill before the contractor commits. The stage's amount is spread across the job's
+	// priced lines here purely as a preview — `create_installment_invoice` prices the stage and splits it
+	// again on the server when this saves, so nothing typed in the browser can move the money. This mirrors
+	// `private.progress_invoice_lines` exactly: share by each line's total, largest remainder first, ties by
+	// position; an all-zero job splits evenly by line count instead.
+	function stageLines(
+		jobLines: RequestPricingLineInput[],
+		lineTotals: number[],
+		stageAmountMinor: number
+	): RequestPricingLineInput[] {
+		const baseTotal = lineTotals.reduce((sum, total) => sum + total, 0);
+		const weights = lineTotals.map((total) => (baseTotal > 0 ? total : 1));
+		const weightTotal = baseTotal > 0 ? baseTotal : jobLines.length;
+
+		const shares = weights.map((weight) => {
+			const exact = (stageAmountMinor * weight) / weightTotal;
+			const base = Math.floor(exact);
+			return { base, fraction: exact - base };
+		});
+		let residual = stageAmountMinor - shares.reduce((sum, share) => sum + share.base, 0);
+		const order = shares
+			.map((share, index) => ({ index, fraction: share.fraction }))
+			.sort((a, b) => b.fraction - a.fraction || a.index - b.index);
+		for (const entry of order) {
+			if (residual <= 0) break;
+			shares[entry.index].base += 1;
+			residual -= 1;
+		}
+
+		// Quantity is forced to 1 and the unit label dropped: the figure on the line is the share of the
+		// stage this line carries, not a rate times an amount of work, and "1 hour" beside it would lie.
+		return jobLines.map((line, index) => ({
+			...line,
+			unit_label: null,
+			quantity: 1,
+			unit_price_minor: shares[index].base,
+			unit_cost_minor: 0,
+			image_attachment_id: null
+		}));
+	}
+
+	let attemptedInstallmentSeed = $state(false);
+	$effect(() => {
+		if (!installmentId || seed || attemptedInstallmentSeed || !jobId) return;
+		const job = originJobQuery.data;
+		if (!job) return;
+		attemptedInstallmentSeed = true;
+
+		const backToJob = (message: string) => {
+			toast.error(message);
+			void goto(resolve('/(app)/jobs/[id]', { id: jobId }));
+		};
+
+		const stage = job.schedule?.stages.find((entry) => entry.installment_id === installmentId);
+		if (!stage) {
+			backToJob('That payment stage is no longer on this job.');
+			return;
+		}
+		if (stage.status !== 'remaining') {
+			backToJob('That payment stage has already been billed.');
+			return;
+		}
+		if (stage.amount_minor === null) {
+			backToJob('That payment stage has no amount yet, so there is nothing to bill.');
+			return;
+		}
+
+		const priced = job.lines.filter((line) => line.line_kind === 'priced');
+		const jobLines = pricedLines(job.lines);
+		if (jobLines.length === 0) {
+			backToJob('That job has no priced lines yet, so there is nothing to bill.');
+			return;
+		}
+
+		seed = {
+			clientId,
+			clientName,
+			// The stage names the bill — "Deposit", "On completion" — under the job it belongs to, which is
+			// what the contractor and the client both need to see on the invoice.
+			subject: `${job.job.title} — ${stage.description}`,
+			propertyId: job.job.property?.id ?? null,
+			lines: stageLines(
+				jobLines,
+				priced.map((line) => line.line_total_minor ?? 0),
+				stage.amount_minor
+			),
+			// The claim the server will write for this bill. It carries the job so the form knows what it is
+			// billing; the stage id travels beside it, because that is what the command takes.
+			sources: [{ kind: 'installment', job_id: jobId }],
+			installmentId
 		};
 	});
 
@@ -182,7 +284,8 @@
 				subject: jobs.length === 1 ? jobs[0].job.title : 'For services rendered',
 				propertyId: jobs[0].job.property?.id ?? null,
 				lines,
-				sources: chosen.map((item) => ({ kind: 'job_total', job_id: item.job_id }))
+				sources: chosen.map((item) => ({ kind: 'job_total', job_id: item.job_id })),
+				installmentId: null
 			};
 			picking = false;
 		} catch {

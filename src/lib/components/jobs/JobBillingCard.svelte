@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -32,6 +33,8 @@
 		locale = 'en-US',
 		editable = false,
 		canSeePrice = true,
+		canInvoice = false,
+		clientId = null,
 		onSaved
 	}: {
 		jobId: string;
@@ -49,6 +52,10 @@
 		locale?: string;
 		editable?: boolean;
 		canSeePrice?: boolean;
+		/** Whether this reader may raise an invoice at all. Without it a stage offers no billing action. */
+		canInvoice?: boolean;
+		/** The job's client, which the invoice composer needs. Null on a job that somehow has none. */
+		clientId?: string | null;
 		onSaved: () => Promise<void> | void;
 	} = $props();
 
@@ -113,6 +120,18 @@
 		if (status === 'remaining') return undefined;
 		if (status === 'invoiced') return 'inactive' as const;
 		return INVOICE_STATUS_TONES[status as InvoiceDerivedStatus] ?? 'inactive';
+	}
+
+	// Billing one stage (Invoices 5c-3). Same move as the visits and periods cards: hand the choice to the
+	// invoice composer by navigating, rather than opening a second dialog here. The composer seeds itself
+	// from the job and the stage, and the server prices the stage again when it saves.
+	const canBillStage = $derived(canInvoice && canSeePrice && Boolean(clientId));
+
+	function billStage(installmentId: string) {
+		if (!clientId) return;
+		void goto(
+			`${resolve('/(app)/invoices/new')}?client=${clientId}&job=${jobId}&installment=${installmentId}`
+		);
 	}
 
 	let scheduleOpen = $state(false);
@@ -203,17 +222,27 @@
 									{money.format(stage.amount_minor / 100)}
 								</span>
 							{/if}
-							<Badge size="small" status={stageTone(stage.status)}>
-								{STAGE_LABELS[stage.status] ?? stage.status}
-							</Badge>
-							{#if stage.invoice}
-								<a
-									class="job-billing__stage-link"
-									href={resolve('/(app)/invoices/[id]', { id: stage.invoice.id })}
-								>
-									Invoice #{stage.invoice.invoice_number}
-								</a>
-							{/if}
+							<div class="job-billing__stage-meta">
+								<Badge size="small" status={stageTone(stage.status)}>
+									{STAGE_LABELS[stage.status] ?? stage.status}
+								</Badge>
+								{#if canBillStage && stage.status === 'remaining'}
+									<Button
+										variant="tertiary"
+										size="small"
+										onclick={() => billStage(stage.installment_id)}
+									>
+										Create invoice
+									</Button>
+								{:else if stage.invoice}
+									<a
+										class="job-billing__stage-link"
+										href={resolve('/(app)/invoices/[id]', { id: stage.invoice.id })}
+									>
+										Invoice #{stage.invoice.invoice_number}
+									</a>
+								{/if}
+							</div>
 						</li>
 					{/each}
 				</ul>
@@ -385,7 +414,18 @@
 		&__stage-name {
 			flex: 1;
 			min-width: 0;
+			overflow-wrap: anywhere;
 			color: var(--color-heading);
+		}
+
+		// Status and its one action share a line of their own under the stage's name and amount: the rail is
+		// too narrow to hold all four side by side without the name running over the money.
+		&__stage-meta {
+			display: flex;
+			flex-basis: 100%;
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-small);
 		}
 
 		&__stage-amount {
@@ -395,7 +435,6 @@
 		}
 
 		&__stage-link {
-			flex-basis: 100%;
 			color: var(--color-interactive);
 			font-size: var(--typography--fontSize-small);
 		}

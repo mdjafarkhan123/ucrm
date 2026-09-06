@@ -550,6 +550,8 @@
 					locale={saved.locale}
 					{editable}
 					canSeePrice={saved.can_see_price}
+					canInvoice={saved.can_invoice}
+					clientId={saved.job.client?.id ?? null}
 					onSaved={refreshJob}
 				/>
 

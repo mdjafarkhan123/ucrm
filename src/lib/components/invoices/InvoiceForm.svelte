@@ -15,6 +15,7 @@
 	import { fetchClient, clientDetailKey, type ClientListItem } from '$lib/clients/api';
 	import {
 		createInvoice,
+		createInstallmentInvoice,
 		fetchInvoicePaymentTerms,
 		invoicePaymentTermsKey,
 		type InvoiceLineInput,
@@ -33,6 +34,9 @@
 	// Billing a job fills the same form rather than opening a second one: the contractor still edits lines,
 	// terms and subject before saving. The only thing the seed adds is `sources` — the work this bill claims,
 	// which travels with the save so the draft and its claims are written together.
+	// Billing one payment-schedule stage is the exception: the stage decides the amount, so the lines are
+	// shown but not editable, and the save goes to `create_installment_invoice`, which prices the stage,
+	// locks it and writes the draft in one transaction. Subject, terms and dates stay the contractor's.
 	let {
 		onSaved,
 		onCancel,
@@ -51,6 +55,8 @@
 			propertyId: string | null;
 			lines: RequestPricingLineInput[];
 			sources: InvoiceSourceInput[];
+			/** Set only when the bill is one payment-schedule stage; its money is fixed and read-only. */
+			installmentId?: string | null;
 		} | null;
 	} = $props();
 
@@ -101,7 +107,13 @@
 	// Lines are compared by value, not by count, so changing a price on a pre-filled bill counts as a change
 	// and re-filling the form it opened with does not.
 	let baselineLines = $state('[]');
-	const isDirty = $derived(snapshot(form) !== baseline || JSON.stringify(lines) !== baselineLines);
+	// A stage bill has nothing to edit before it is worth saving — the stage already decided the amount — so
+	// it reads as ready the moment its seed lands, the way the pre-filled line baseline does for the others.
+	const isDirty = $derived(
+		Boolean(seed?.installmentId) ||
+			snapshot(form) !== baseline ||
+			JSON.stringify(lines) !== baselineLines
+	);
 
 	// The seed lands once, a beat after mount. Its client, subject and property fill the form here; its lines
 	// go through the shared editor below (via `seededLines`), which owns and re-emits them. Keyed on the seed
@@ -110,7 +122,9 @@
 	let seededFrom = $state<string | null>(null);
 	$effect(() => {
 		if (!seed) return;
-		const key = seed.sources.map((source) => `${source.kind}:${source.job_id}`).join(',');
+		const key =
+			seed.installmentId ??
+			seed.sources.map((source) => `${source.kind}:${source.job_id}`).join(',');
 		if (seededFrom === key) return;
 		seededFrom = key;
 		untrack(() => {
@@ -149,6 +163,15 @@
 				}))
 			: []
 	);
+
+	// A stage bill shows its lines but does not let them be touched, so the shared editor never emits a draft
+	// and `lines`/`subtotalMinor` stay empty. Everything that reads them takes these instead: the seeded rows
+	// are the whole truth of what this bill contains, and the server recomputes them regardless.
+	const installmentMode = $derived(Boolean(seed?.installmentId));
+	const seededSubtotalMinor = $derived(
+		seededLines.reduce((sum, line) => sum + line.line_total_minor, 0)
+	);
+	const shownSubtotalMinor = $derived(installmentMode ? seededSubtotalMinor : subtotalMinor);
 
 	// The organization's named payment terms. Warmed from the list on the way in when possible; the form still
 	// opens instantly and the picker fills as soon as they arrive.
@@ -219,6 +242,55 @@
 		return `v1:${(hash >>> 0).toString(16)}`;
 	}
 
+	// Billing one payment-schedule stage. No lines travel: `create_installment_invoice` prices the stage,
+	// locks its amount and splits it across the job's own lines inside the same transaction that writes the
+	// draft and its claim, so the browser has nothing to send but the subject, terms and dates.
+	async function submitInstallment(installmentId: string, jobId: string) {
+		if (!jobId) {
+			formError = 'That payment stage is missing its job. Go back to the job and try again.';
+			return;
+		}
+
+		const core = {
+			job_id: jobId,
+			installment_id: installmentId,
+			subject: form.subject.trim(),
+			service_property_ids: form.property_id ? [form.property_id] : [],
+			issue_date: form.issue_date || null,
+			payment_term_id: form.term_choice && form.term_choice !== 'custom' ? form.term_choice : null,
+			custom_due_date: form.term_choice === 'custom' ? form.custom_due_date : null
+		};
+		const hash = fingerprint(core);
+		if (hash !== lastHash) {
+			idempotencyKey = crypto.randomUUID();
+			lastHash = hash;
+		}
+
+		saving = true;
+		try {
+			const result = await createInstallmentInvoice({
+				...core,
+				idempotency_key: idempotencyKey,
+				request_hash: hash
+			});
+			await queryClient.invalidateQueries({ queryKey: ['invoices', 'list'] });
+			await queryClient.invalidateQueries({ queryKey: ['invoices', 'counts'] });
+			// The stage is now billed, so the job's billing card, its schedule and everything that counts
+			// billable work are all out of date.
+			await queryClient.invalidateQueries({ queryKey: ['jobs'] });
+			await queryClient.invalidateQueries({ queryKey: ['invoices', 'billable-work'] });
+			await queryClient.invalidateQueries({ queryKey: ['invoices', 'ready-to-bill'] });
+			baseline = snapshot(form);
+			onSaved({ id: result.invoice_id, number: result.invoice_number });
+		} catch (caught) {
+			const writeError = caught as InvoiceWriteError;
+			fieldErrors = writeError.fieldErrors ?? {};
+			formError = fieldErrors.form || writeError.message || 'That invoice could not be saved.';
+		} finally {
+			saving = false;
+		}
+	}
+
 	async function submit() {
 		if (saving) return;
 
@@ -233,17 +305,24 @@
 			formError = 'Choose a client to continue.';
 			return;
 		}
-		if (lines.length === 0) {
+		if (!installmentMode && lines.length === 0) {
 			formError = 'Add at least one line before saving.';
 			return;
 		}
-		const lineProblem = firstLineProblem(lines);
-		if (lineProblem) {
-			formError = lineProblem;
-			return;
+		if (!installmentMode) {
+			const lineProblem = firstLineProblem(lines);
+			if (lineProblem) {
+				formError = lineProblem;
+				return;
+			}
 		}
 		if (form.term_choice === 'custom' && !form.custom_due_date) {
 			fieldErrors = { custom_due_date: 'Pick the date this invoice is due.' };
+			return;
+		}
+
+		if (installmentMode && seed) {
+			await submitInstallment(seed.installmentId!, seed.sources[0]?.job_id ?? '');
 			return;
 		}
 
@@ -358,17 +437,27 @@
 				{/snippet}
 			</PrimaryInfoCard>
 
-			<ProductsAndServicesBlock
-				alwaysEditing
-				editable
-				showServiceDate
-				lines={seededLines}
-				{currencyCode}
-				{locale}
-				editorTotalLabel="Invoice subtotal"
-				emptyDescription="Add the products and services this invoice bills for."
-				onDraftChange={readDraftLines}
-			/>
+			{#if installmentMode}
+				<ProductsAndServicesBlock
+					lines={seededLines}
+					subtotalMinor={seededSubtotalMinor}
+					{currencyCode}
+					{locale}
+					lockedMessage="These amounts come from the job's payment schedule and cannot be changed here."
+				/>
+			{:else}
+				<ProductsAndServicesBlock
+					alwaysEditing
+					editable
+					showServiceDate
+					lines={seededLines}
+					{currencyCode}
+					{locale}
+					editorTotalLabel="Invoice subtotal"
+					emptyDescription="Add the products and services this invoice bills for."
+					onDraftChange={readDraftLines}
+				/>
+			{/if}
 
 			<SectionBlock title="Terms & dates" icon={calendarIcon} form>
 				<div class="invoice-form__dates">
@@ -408,7 +497,12 @@
 		{/snippet}
 
 		{#snippet rail()}
-			<QuoteSummaryCard title="Invoice total" {subtotalMinor} {currencyCode} {locale} />
+			<QuoteSummaryCard
+				title="Invoice total"
+				subtotalMinor={shownSubtotalMinor}
+				{currencyCode}
+				{locale}
+			/>
 		{/snippet}
 
 		{#snippet actions()}
