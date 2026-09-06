@@ -1,27 +1,29 @@
 # Invoices: Current Checkpoint
 
 - Goal: Jobber-grounded invoicing and manual collection.
-- **Part 5a CLOSED 2026-09-05 — committed `fba33ca`, browser-verified end to end. Awaiting Jafar's pick of the
-  next thread.**
-- Parts 1–4, 5a, 6a, 6b-1, 6b-2, 6c, 7a closed. 5b/5c are the remaining Job→Invoice handoff work.
+- Parts 1–4, 5a, 5b-1, 5b-2, 5b-3, 6a, 6b-1, 6b-2, 6c, 7a closed. **5b-3 CLOSED and COMMITTED
+  2026-09-06 (`37d3992`), together with the reminder-resolution fix that also backfixes 5b-2.**
+- The partial-billing reminder bug is fixed and covered: `create_invoice_from_work` now resolves only
+  the reminders its claims answered. 17 pgTAP assertions in
+  `supabase/tests/database/invoice_reminder_resolution_scoped_to_billed_work.sql`, all passing.
 
 ## Next action
 
-Ask Jafar which thread to take next; do not auto-start one. Dependency-ready options:
+Pick the next Job→Invoice handoff part with Jafar: **5b-4, 5b-5, or 5c** (read `ROADMAP.md` to select).
+Nothing is blocked.
 
-- **5b** — per-visit / billing-period invoicing, Invoice now/later at visit completion, per-line service
-  dates, ready-to-bill queue. Needs Jobs 13a (done). This is where the 5a deferrals land (service dates,
-  mixed-property splitting stays in Part 8).
-- **5c** — Jobs 11c installments (payment schedule, per-visit amounts) + progress invoicing. Needs Jobs 11a.
-- **8** — batch create + batch deliver (needs 5–7).
+## Open items Jafar has not decided
 
-Cleanup debt to flag when picking: several closed parts are verified but **not yet committed to Git** per the
-roadmap — 3c, 6c, 7b (and 6b-1a's migration/plumbing). Worth a commit sweep before more building.
+- Job #2's Sep-30 and Oct-31 month-end reminders are still marked `resolved/invoiced` with no invoice
+  behind them — damage the old bug did before the fix, on test data only. Offered to reset; awaiting
+  Jafar's word. Nov-30 is correctly pending.
+- Direct page loads of `/jobs/<id>` blanked with a Svelte hydration error
+  (`Cannot read properties of undefined (reading 'call')` inside Vite's optimized deps) while
+  in-app navigation to the same page worked. Looks like dev-server dep-cache state, not this work —
+  no frontend file changed this session. Worth a `rm -rf node_modules/.vite` + restart if it recurs.
 
-## 5a deferrals (decided, not bugs — carry into 5b)
+## 5a deferrals (decided, not bugs — carry into later 5b/8 parts)
 
-- Per-line **service dates** not copied (shared line editor has no service-date field; index alignment breaks
-  on reorder). 5b adds visit selection + a date editor.
 - Mixed-property selections are **refused** in the picker (tax rates can differ); splitting belongs to Part 8.
 - Applying an existing quote **deposit** at creation is still UI-only to build (`apply_client_payment` exists).
 
@@ -34,8 +36,10 @@ roadmap — 3c, 6c, 7b (and 6b-1a's migration/plumbing). Worth a commit sweep be
   **communications-activation** (Paused).
 - Leftover test data on invoice #5 "D2 refusal test": a $1,000 "other" payment + two extra receipt emails to
   `info.hiddenknowledge@gmail.com`. Append-only history — remove only by reversal, with Jafar's OK.
-- New this session: invoice **#6** ("Testing job", $66,500, Raad LTD) is a verification draft from billing
-  Job #1. Delete it if the clean-data matters.
+- Verification drafts nobody needs: invoice **#6** ($66,500, Job #1), **#7** ($150, 5b-1), **#8** ($75,
+  5b-2 visit), **#9** ($75, 5b-3 period), **#10** ($75, the fix's live check). Delete any if clean data matters.
+- Job **#2** ("Recurring Lawn Care Test", Tester Account) is the invoicing test job: billing is
+  fixed-per-period / month-end, one $75 line, its Sep 8 + Sep 22 visits complete.
 
 ## Notes
 
@@ -43,6 +47,8 @@ roadmap — 3c, 6c, 7b (and 6b-1a's migration/plumbing). Worth a commit sweep be
 - Local migration filenames and remote migration versions do not match — existing convention.
 - Repo-wide CRLF drift on ~300 `src/` files — unrelated, never stage it. `.env` is CRLF too.
 - Skill-dir edits (`.claude/`, `.agents/`, `.codex/`, `.opencode/`) are never staged with feature commits.
+- The MCP SQL client returns only the last statement's rows; to read a whole pgTAP run against the dev
+  project, collect each `is()` into a temp table (granting `authenticated` on it) and select at the end.
 - Deferred: payment edit/delete, void→client cancellation email, bulk payment across invoices, Invoices list
   stat cards unwired.
 
