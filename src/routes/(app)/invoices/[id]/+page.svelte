@@ -213,7 +213,8 @@
 			? [
 					{
 						label: 'Payment stage',
-						value: `Payment ${saved.progress.installment_number} \u00b7 ${saved.progress.description}`
+						value: `Payment ${saved.progress.installment_number} \u00b7 ${saved.progress.description}`,
+						wrap: true
 					}
 				]
 			: []),

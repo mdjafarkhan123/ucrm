@@ -9,6 +9,10 @@ export type RecordFact = {
 	value?: string | null;
 	/** What to say when there is no value yet, e.g. "Not booked yet". */
 	empty?: string;
+	/** Let a long value wrap instead of being clipped. Facts are dates and numbers that fit on one line, so
+	 *  the row clips by default; set this for the few that carry a phrase somebody typed, like a payment
+	 *  stage's name, where the clipped half is the half that identifies it. */
+	wrap?: boolean;
 };
 
 /** One address slot on the client summary card. A quote shows only the property; an invoice shows the

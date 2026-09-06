@@ -817,10 +817,16 @@
 
 	const anyLinePhoto = $derived(savedLines.some((line) => line.image_attachment_id));
 
+	// A priced progress bill drops quantity and unit price. Its lines are a stage's share spread across the
+	// job's items, stored as a single lump priced at that share, so a per-unit reading of them is false: the
+	// row would claim 1 x the share equals the whole item. Jobber shows the two money columns alone. Quantity
+	// survives when money is withheld, because then it is all the table has left to say.
+	const progressMoney = $derived(showPrices && progressColumn);
+
 	// How wide the saved table is, so a heading row's single cell spans all of it: line item, optional photo,
-	// quantity, and — with prices — unit price plus either one Total or the progress pair.
+	// quantity unless the progress pair replaced it, and — with prices — two money columns either way.
 	const savedColumnCount = $derived(
-		2 + (anyLinePhoto ? 1 : 0) + (showPrices ? (progressColumn ? 3 : 2) : 0)
+		1 + (anyLinePhoto ? 1 : 0) + (progressMoney ? 0 : 1) + (showPrices ? 2 : 0)
 	);
 
 	function savedSubtotal(lines: RequestPricingLine[]) {
@@ -1218,13 +1224,15 @@
 						{#if anyLinePhoto}
 							<th scope="col" class="pricing-table__photo" aria-label="Photo"></th>
 						{/if}
-						<th scope="col" class="pricing-table__number">Quantity</th>
+						{#if !progressMoney}
+							<th scope="col" class="pricing-table__number">Quantity</th>
+						{/if}
 						{#if showPrices}
-							<th scope="col" class="pricing-table__number">Unit price</th>
-							{#if progressColumn}
+							{#if progressMoney}
 								<th scope="col" class="pricing-table__number">Item total</th>
 								<th scope="col" class="pricing-table__number">Due this invoice</th>
 							{:else}
+								<th scope="col" class="pricing-table__number">Unit price</th>
 								<th scope="col" class="pricing-table__number">Total</th>
 							{/if}
 						{/if}
@@ -1265,15 +1273,18 @@
 										{/if}
 									</td>
 								{/if}
-								<td class="pricing-table__number">
-									{line.quantity}{#if line.unit_label}&nbsp;{line.unit_label}{/if}
-								</td>
+								{#if !progressMoney}
+									<td class="pricing-table__number">
+										{line.quantity}{#if line.unit_label}&nbsp;{line.unit_label}{/if}
+									</td>
+								{/if}
 								{#if showPrices}
-									<td class="pricing-table__number">{formatMoney(line.unit_price_minor)}</td>
-									{#if progressColumn}
+									{#if progressMoney}
 										<td class="pricing-table__number">
 											{formatMoney(line.progress_original_amount_minor ?? line.line_total_minor)}
 										</td>
+									{:else}
+										<td class="pricing-table__number">{formatMoney(line.unit_price_minor)}</td>
 									{/if}
 									<td class="pricing-table__number">{formatMoney(line.line_total_minor)}</td>
 								{/if}

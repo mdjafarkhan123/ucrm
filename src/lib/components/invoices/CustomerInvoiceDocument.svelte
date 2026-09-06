@@ -113,11 +113,13 @@
 		progress ? `Payment ${progress.installment_number} \u00b7 ${progress.description}` : null
 	);
 
-	// Which numeric columns exist. Money-withheld staff preview keeps only Qty. A progress bill splits the
-	// money column in two: the whole item, and the share this bill asks for.
+	// Which numeric columns exist. Money-withheld staff preview keeps only Qty. A progress bill replaces qty
+	// and unit price with the two money columns Jobber shows — the whole item, and the share this bill asks
+	// for. Its lines are a stage's share stored as one lump priced at that share, so a per-unit reading of
+	// them is false: the row would claim 1 x the share equals the whole item.
 	const showMoney = $derived(doc.money !== null);
 	const showProgressMoney = $derived(showMoney && progress !== null);
-	const columnCount = $derived(2 + (showMoney ? 2 : 0) + (showProgressMoney ? 1 : 0));
+	const columnCount = $derived(1 + (showProgressMoney ? 0 : 1) + (showMoney ? 2 : 0));
 
 	function lineNumbers(line: CustomerInvoiceLine) {
 		return line.line_kind === 'priced';
@@ -143,20 +145,23 @@
 						</span>
 					{/if}
 				</td>
-				<td class="customer-invoice__num customer-invoice__col-qty">
-					{lineNumbers(line) ? (line.quantity ?? '') : ''}
-					{line.unit_label ?? ''}
-				</td>
-				{#if showMoney}
-					<td class="customer-invoice__num customer-invoice__col-unit">
-						{lineNumbers(line) && line.unit_price_minor !== undefined
-							? formatMoney(line.unit_price_minor)
-							: ''}
+				{#if !showProgressMoney}
+					<td class="customer-invoice__num customer-invoice__col-qty">
+						{lineNumbers(line) ? (line.quantity ?? '') : ''}
+						{line.unit_label ?? ''}
 					</td>
+				{/if}
+				{#if showMoney}
 					{#if showProgressMoney}
 						<td class="customer-invoice__num customer-invoice__col-unit">
 							{lineNumbers(line) && line.progress_original_amount_minor != null
 								? formatMoney(line.progress_original_amount_minor)
+								: ''}
+						</td>
+					{:else}
+						<td class="customer-invoice__num customer-invoice__col-unit">
+							{lineNumbers(line) && line.unit_price_minor !== undefined
+								? formatMoney(line.unit_price_minor)
 								: ''}
 						</td>
 					{/if}
@@ -270,16 +275,13 @@
 				<thead>
 					<tr>
 						<th scope="col">Product / service</th>
-						<th scope="col" class="customer-invoice__num customer-invoice__col-qty">Qty</th>
+						{#if !showProgressMoney}
+							<th scope="col" class="customer-invoice__num customer-invoice__col-qty">Qty</th>
+						{/if}
 						{#if showMoney}
-							<th scope="col" class="customer-invoice__num customer-invoice__col-unit"
-								>Unit price</th
-							>
-							{#if showProgressMoney}
-								<th scope="col" class="customer-invoice__num customer-invoice__col-unit"
-									>Item total</th
-								>
-							{/if}
+							<th scope="col" class="customer-invoice__num customer-invoice__col-unit">
+								{showProgressMoney ? 'Item total' : 'Unit price'}
+							</th>
 							<th scope="col" class="customer-invoice__num customer-invoice__col-total">
 								{showProgressMoney ? 'Due this invoice' : 'Total'}
 							</th>

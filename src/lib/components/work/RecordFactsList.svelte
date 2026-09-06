@@ -14,7 +14,7 @@
 		<div class="record-facts__row">
 			<dt>{fact.label}</dt>
 			{#if fact.value}
-				<dd>{fact.value}</dd>
+				<dd class:record-facts__wrap={fact.wrap}>{fact.value}</dd>
 			{:else}
 				<dd class="record-facts__empty">{fact.empty ?? '—'}</dd>
 			{/if}
@@ -55,6 +55,12 @@
 		&__empty {
 			color: var(--color-text--secondary);
 			font-weight: 400;
+		}
+
+		&__wrap {
+			overflow: visible;
+			white-space: normal;
+			overflow-wrap: anywhere;
 		}
 	}
 </style>

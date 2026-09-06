@@ -9,20 +9,42 @@
 
 ## Next action
 
-Browser-verify 5c-4 on Raad LTD, then start **5c-5 — Per-visit quantities** (`docs/invoice-part-5c-plan.md`
-is the approved scope; do not re-derive it).
+Re-run the 5c-4 browser pass on Raad LTD (Chrome disconnected mid-pass on 2026-09-07), then start **5c-5 —
+Per-visit quantities** (`docs/invoice-part-5c-plan.md` is the approved scope; do not re-derive it).
 
-The 5c-4 browser pass, in light and dark, no console errors:
+The pass, in light and dark, no console errors:
 
-1. Job #14 → invoice **#18** (Deposit stage). Header shows a "Payment stage · Payment 1 · Deposit" fact; the
-   line table shows Unit price / **Item total** / **Due this invoice** and a "Due this invoice" total; the
-   lines, discount and tax blocks offer no pencil; the "..." menu has **no Void invoice**.
-2. Same invoice → "Preview as client": kicker reads **Progress invoice**, the stage line sits under
-   "Billed to", and the table carries the same two money columns. Print view too.
-3. Invoice **#19** (Final payment stage) reads "Payment 2 · Final payment".
-4. Any ordinary invoice (e.g. **#16**) is completely unchanged — one Total column, Void still offered.
+1. Job #14 -> invoice **#18** (Deposit stage), `/invoices/16658693-bb5a-4830-a88f-51c6e527df71`. Header shows
+   a "Payment stage . Payment 1 . Deposit" fact; the line table shows **Item total / Due this invoice only**
+   -- no Quantity, no Unit price -- and a "Due this invoice" total; the lines, discount and tax blocks offer
+   no pencil; the "..." menu has **no Void invoice**.
+2. Same invoice -> "Preview as client": kicker reads **Progress invoice**, the stage line sits under
+   "Billed to", and the table carries the same two money columns and no Qty.
+3. Invoice **#19** (`/invoices/e2171d67-d2d3-4a30-b26b-3899cbff0db8`) reads "Payment 2 . Final payment"
+   **in full** -- it used to clip to "Final pay...".
+4. Any ordinary invoice (e.g. **#16**, `/invoices/3db4ea41-933f-4822-b794-209ce2058430`) is completely
+   unchanged -- Quantity, Unit price and one Total column, Void still offered.
+
+Still unverified: the **print view**. "Print or save PDF" opens the browser print dialog, which freezes
+browser control -- Jafar eyeballs it, or read the print stylesheet instead.
 
 Load `.claude/skills/design/SKILL.md` before any Svelte, and `supabase-postgres-best-practices` before SQL.
+
+## The progress line table, corrected 2026-09-07 (no migration -- display only)
+
+A progress bill's lines are a stage's share spread across the job's items and stored as **one lump priced at
+that share** (`private.progress_invoice_lines` writes `quantity 1`, `unit_price_minor` = the share). The
+totals were right, but the table printed that lump under "Unit price" beside the real "Item total", so every
+row read as a falsehood: 1 x $142.59 = $250.00. Both the staff table
+(`quotes/ProductsAndServicesBlock.svelte`) and the client document (`invoices/CustomerInvoiceDocument.svelte`)
+now drop **Quantity and Unit price** on a priced progress bill and show only **Item total / Due this
+invoice** -- what `jobber-05-invoices-payments.md` sec 4.2 says Jobber shows, and what the 5c-4 plan already
+asked for. Quantity survives when money is withheld, since it is then all the table has left. Do not
+re-derive a per-unit figure for these lines; the storage shape cannot support one.
+
+`RecordFact` gained an opt-in `wrap` flag for the same pass: facts clip by default because they are dates and
+numbers, but the Payment stage row carries a phrase somebody typed and the clipped half is the identifying
+half.
 
 ## Decisions from 5c-1…5c-3 that later parts must not contradict
 
