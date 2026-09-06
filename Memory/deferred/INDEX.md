@@ -13,6 +13,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Seven public functions still answer a signed-out request](seven-public-functions-still-answer-a-signed-out-request.md) |
 | P1 | [The Pipeline nav item is not gated on entitlement or permission](the-pipeline-nav-item-is-not-gated-on-entitlement-or-permission.md) |
 | P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
+| P2 | [Issued invoices cannot be corrected from the browser](issued-invoices-cannot-be-corrected-from-the-browser.md) |
 | P2 | [`automation_6d2` still asserts the pre-6D-3 action park](automation-6d2-action-park-assertions-are-stale.md) |
 | P2 | [Two migration ledger rows do not match the repo](two-migration-ledger-rows-do-not-match-the-repo.md) |
 | P2 | [`quote_proposal_draft_commands` still calls the 4-argument `set_quote_draft_tax`](quote-draft-commands-tax-assertions-are-stale.md) |

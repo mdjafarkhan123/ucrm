@@ -1,6 +1,6 @@
 # Invoices Part 5c — implementation plan
 
-Status: **Planning complete 2026-09-06. 5c-1 and 5c-2 built and committed; 5c-2 awaits its browser pass. 5c-3 is next.**
+Status: **Planning complete 2026-09-06. 5c-1, 5c-2 and 5c-3 built, committed and browser-verified. 5c-4 built and committed, browser pass owed. 5c-5 is next.**
 
 This closes the last unplanned Invoice campaign part: one-off Job payment schedules, progress Invoices created from one installment, and recurring per-visit quantities. Jobber is the sole product reference. Existing Quote, Job, Invoice, ledger, correction-chain, and source-claim rules remain authoritative.
 

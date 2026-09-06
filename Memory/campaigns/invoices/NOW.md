@@ -4,17 +4,25 @@
 - Parts 1–9 CLOSED + committed (7 of 8 journeys; progress invoicing is Part 5c's job). Detail in `ROADMAP.md`.
 - **Part 5c is the only remaining part.** Sub-sequence 5c-1…5c-5 lives in `docs/invoice-part-5c-plan.md`.
   Jobber is the sole reference (GHL excluded).
-- **5c-1, 5c-2 and 5c-3 are CLOSED and committed** (5c-3 in `337a5dc`, browser-verified 2026-09-06;
-  evidence in `ROADMAP.md`). No part packet is open.
+- **5c-1, 5c-2 and 5c-3 are CLOSED and browser-verified.** **5c-4 is built, committed and green on 14 pgTAP
+  assertions; only its browser pass is owed.** Evidence in `ROADMAP.md`. No part packet is open.
 
 ## Next action
 
-Start **5c-4 — Progress documents and correction integration**. Read its section in
-`docs/invoice-part-5c-plan.md` (that plan is the approved scope; do not re-derive it) and the shipped
-`20260906133725_invoice_installment_handoff.sql` for what a progress bill already carries:
-`invoice_lines.progress_original_amount_minor` and `invoice_sources.installment_id` are the two hooks the
-staff and customer projections need. Load `.claude/skills/design/SKILL.md` before any Svelte, and
-`supabase-postgres-best-practices` before any SQL.
+Browser-verify 5c-4 on Raad LTD, then start **5c-5 — Per-visit quantities** (`docs/invoice-part-5c-plan.md`
+is the approved scope; do not re-derive it).
+
+The 5c-4 browser pass, in light and dark, no console errors:
+
+1. Job #14 → invoice **#18** (Deposit stage). Header shows a "Payment stage · Payment 1 · Deposit" fact; the
+   line table shows Unit price / **Item total** / **Due this invoice** and a "Due this invoice" total; the
+   lines, discount and tax blocks offer no pencil; the "..." menu has **no Void invoice**.
+2. Same invoice → "Preview as client": kicker reads **Progress invoice**, the stage line sits under
+   "Billed to", and the table carries the same two money columns. Print view too.
+3. Invoice **#19** (Final payment stage) reads "Payment 2 · Final payment".
+4. Any ordinary invoice (e.g. **#16**) is completely unchanged — one Total column, Void still offered.
+
+Load `.claude/skills/design/SKILL.md` before any Svelte, and `supabase-postgres-best-practices` before SQL.
 
 ## Decisions from 5c-1…5c-3 that later parts must not contradict
 
@@ -49,8 +57,9 @@ answers where the *bill* stands, and 'remaining' is honest when no bill exists. 
 ## Verification still owed
 
 - The stage read uses `job_payment_schedule_items_job_idx`; the two lateral lookups fall back to seq scans
-  only because `invoice_sources` and `invoices` are still tiny. Re-check with `EXPLAIN (ANALYZE, BUFFERS)`
-  once there is real installment data.
+  only because `invoice_sources` and `invoices` are still tiny. `invoice_progress_context` does the same
+  (`invoice_sources_root_idx` and the stage's own unique constraint both exist; the planner picks seq scans
+  on 12 rows). Re-check all of them with `EXPLAIN (ANALYZE, BUFFERS)` once there is real installment data.
 
 ## Known deferrals — outside this campaign, do not treat as bugs
 
@@ -59,6 +68,9 @@ answers where the *bill* stands, and 'remaining' is honest when no bill exists. 
 - **Billing-contact fan-out**: invoice + receipt email go to the client's PRIMARY email only.
   `Memory/deferred/invoice-email-sends-to-primary-only-not-billing-contact.md`.
 - **Void → client cancellation email**: needs a new template (7b note).
+- **No correction UI anywhere**: `prepare_invoice_correction` / `activate_invoice_replacement` /
+  `rebill_voided_invoice` work and are tested, but nothing in `src/` calls them, so an issued bill cannot be
+  corrected from the browser. `Memory/deferred/issued-invoices-cannot-be-corrected-from-the-browser.md`.
 - Payment edit/delete, one-payment-across-several-invoices, Invoices-list stat cards ("—" by design), SMS.
 - Two **Jobs** reminder gaps (not ours): "On dates we pick ourselves" and "Once, when the job is finished"
   raise no reminder until a date/closure exists.
@@ -70,7 +82,7 @@ answers where the *bill* stands, and 'remaining' is honest when no bill exists. 
 ## Live test-data state (Raad LTD, org 18f0d717-904e-48d8-bd99-9df7e3844cda)
 
 - **Job #14 is now fully billed**: Deposit → Draft invoice #18 ($500, $400 deposit applied, $100 balance),
-  Final → Draft invoice #19 ($376.65). Both still Draft, so 5c-4 can issue/pay/correct them.
+  Final → Draft invoice #19 ($376.65). Both still Draft — the two bills the 5c-4 browser pass reads.
 - Unbilled schedules still available for testing: Job #1 ($20,000/$20,000/$26,500 fixed) and Job #13
   (33.33/33.33/33.34 percentage).
 - Job #2 "Recurring Lawn Care Test" on `fixed_per_period`; Sept → invoice #16, Oct-31 + Nov-30 reminders
