@@ -1,26 +1,35 @@
 # Invoices: Current Checkpoint
 
 - Goal: Jobber-grounded invoicing and manual collection.
-- Parts 1–4, 5a, 5b-1, 5b-2, 5b-3, 6a, 6b-1, 6b-2, 6c, 7a closed. **5b-3 CLOSED and COMMITTED
-  2026-09-06 (`37d3992`), together with the reminder-resolution fix that also backfixes 5b-2.**
-- The partial-billing reminder bug is fixed and covered: `create_invoice_from_work` now resolves only
-  the reminders its claims answered. 17 pgTAP assertions in
-  `supabase/tests/database/invoice_reminder_resolution_scoped_to_billed_work.sql`, all passing.
+- Parts 1–4, 5a, 5b-1, 5b-2, 5b-3, **5b-4**, 6a, 6b-1, 6b-2, 6c, 7a, 7b closed and committed.
+- **5b-4 CLOSED 2026-09-06** — browser-verified, committed `9fdc7ca`. Roadmap entry has the detail.
 
 ## Next action
 
-Pick the next Job→Invoice handoff part with Jafar: **5b-4, 5b-5, or 5c** (read `ROADMAP.md` to select).
-Nothing is blocked.
+No part is in progress. Await Jafar's pick of the next thread. Dependency-ready options:
 
-## Open items Jafar has not decided
+- **5b-5** — Ready-to-bill queue: one cross-client list of work requiring invoicing. Scale-sensitive,
+  so it needs the `performance-review` design branch before implementation.
+- **5c** — Jobs 11c payment-schedule installments + progress invoicing from an installment
+  (depends on 5a + Jobs 11a).
+- **Part 8** — batch create + batch deliver (depends on Parts 5–7, all now closed).
 
+Read `ROADMAP.md` for the transition once Jafar picks.
+
+## Test data left on the dev app (Raad LTD) from 5b-4 verification
+
+- Job **#10** "5b-4 Per-Visit Verify" (Tester Account): recurring, per-visit / after-each-completed-visit,
+  two completed visits (Aug 9 + Aug 16, 2026), one $50 "Lawn mowing" line. One open per-visit reminder
+  (Aug 9, "later"). Keep or delete — no other part reads it.
+- Invoice **#11** ($50 draft, Job #10, Aug 16 visit) — the "Invoice now" check. Delete if clean data matters.
+
+## Open items Jafar has not decided (carried from 5b-4)
+
+- Whether the prompt should also fire for a one-off job right after "Finish job" (Jobber's mobile app does;
+  our contract calls it "a separate answer"). Today that path auto-creates the on_completion reminder and
+  "Create invoice" is one click away. Flagged, not built.
 - Job #2's Sep-30 and Oct-31 month-end reminders are still marked `resolved/invoiced` with no invoice
-  behind them — damage the old bug did before the fix, on test data only. Offered to reset; awaiting
-  Jafar's word. Nov-30 is correctly pending.
-- Direct page loads of `/jobs/<id>` blanked with a Svelte hydration error
-  (`Cannot read properties of undefined (reading 'call')` inside Vite's optimized deps) while
-  in-app navigation to the same page worked. Looks like dev-server dep-cache state, not this work —
-  no frontend file changed this session. Worth a `rm -rf node_modules/.vite` + restart if it recurs.
+  behind them — old 5b-2 bug on test data only. Offered to reset; awaiting Jafar's word. Nov-30 is fine.
 
 ## 5a deferrals (decided, not bugs — carry into later 5b/8 parts)
 
@@ -38,8 +47,8 @@ Nothing is blocked.
   `info.hiddenknowledge@gmail.com`. Append-only history — remove only by reversal, with Jafar's OK.
 - Verification drafts nobody needs: invoice **#6** ($66,500, Job #1), **#7** ($150, 5b-1), **#8** ($75,
   5b-2 visit), **#9** ($75, 5b-3 period), **#10** ($75, the fix's live check). Delete any if clean data matters.
-- Job **#2** ("Recurring Lawn Care Test", Tester Account) is the invoicing test job: billing is
-  fixed-per-period / month-end, one $75 line, its Sep 8 + Sep 22 visits complete.
+- Job **#2** ("Recurring Lawn Care Test", Tester Account): fixed-per-period / month-end. Keep it on
+  `fixed_per_period` — 5b-3's period tests read it.
 
 ## Notes
 
@@ -47,8 +56,8 @@ Nothing is blocked.
 - Local migration filenames and remote migration versions do not match — existing convention.
 - Repo-wide CRLF drift on ~300 `src/` files — unrelated, never stage it. `.env` is CRLF too.
 - Skill-dir edits (`.claude/`, `.agents/`, `.codex/`, `.opencode/`) are never staged with feature commits.
-- The MCP SQL client returns only the last statement's rows; to read a whole pgTAP run against the dev
-  project, collect each `is()` into a temp table (granting `authenticated` on it) and select at the end.
+- Component `.svelte.spec.ts` tests need a Playwright browser this environment lacks (15 test files skip);
+  `npm run test:unit` still runs 1723 node tests. Browser-verify UI in the real app instead.
 - Deferred: payment edit/delete, void→client cancellation email, bulk payment across invoices, Invoices list
   stat cards unwired.
 
