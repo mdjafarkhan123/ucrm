@@ -64,6 +64,8 @@ function renderSection(props: Partial<Props> = {}) {
 				isAsNeeded: false,
 				recurrence: null,
 				jobRevision: 1,
+				priceBasis: 'job_total',
+				billingTiming: 'on_closure',
 				...props
 			} as Props
 		},
@@ -79,8 +81,16 @@ function mixedVisits(): JobVisit[] {
 		makeVisit({ title: 'Up C', visit_date: '2026-09-12' }),
 		makeVisit({ title: 'Up D', visit_date: '2026-09-13' }),
 		makeVisit({ title: 'Up E', visit_date: '2026-09-14' }),
-		makeVisit({ title: 'Done One', visit_date: '2026-08-01', completed_at: '2026-08-01T12:00:00Z' }),
-		makeVisit({ title: 'Done Two', visit_date: '2026-08-02', completed_at: '2026-08-02T12:00:00Z' }),
+		makeVisit({
+			title: 'Done One',
+			visit_date: '2026-08-01',
+			completed_at: '2026-08-01T12:00:00Z'
+		}),
+		makeVisit({
+			title: 'Done Two',
+			visit_date: '2026-08-02',
+			completed_at: '2026-08-02T12:00:00Z'
+		}),
 		makeVisit({ title: 'Later One', visit_date: null })
 	];
 }

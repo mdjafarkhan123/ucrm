@@ -432,6 +432,15 @@
 					isAsNeeded={saved.job.is_as_needed}
 					recurrence={saved.recurrence}
 					jobRevision={saved.job.revision}
+					clientId={saved.job.client?.id ?? null}
+					clientName={saved.job.client?.display_name ??
+						saved.job.client?.company_name ??
+						'this client'}
+					priceBasis={saved.job.price_basis}
+					billingTiming={saved.job.billing_timing}
+					canInvoiceVisits={saved.can_invoice_visits}
+					visitAmountMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? null) : null}
+					currencyCode={saved.job.currency_code}
 				/>
 
 				{#if showInstructions}

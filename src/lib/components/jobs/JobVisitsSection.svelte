@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { useQueryClient } from '@tanstack/svelte-query';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
@@ -11,6 +13,7 @@
 	import EditAllVisitsDialog from '$lib/components/jobs/EditAllVisitsDialog.svelte';
 	import ApplyToFutureDialog from '$lib/components/jobs/ApplyToFutureDialog.svelte';
 	import FinalVisitDialog from '$lib/components/jobs/FinalVisitDialog.svelte';
+	import VisitInvoicePromptDialog from '$lib/components/jobs/VisitInvoicePromptDialog.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 	import type { JobType } from '$lib/jobs/statuses';
@@ -60,7 +63,14 @@
 		jobType,
 		isAsNeeded,
 		recurrence,
-		jobRevision
+		jobRevision,
+		clientId = null,
+		clientName = 'this client',
+		priceBasis,
+		billingTiming,
+		canInvoiceVisits = false,
+		visitAmountMinor = null,
+		currencyCode = 'USD'
 	}: {
 		jobId: string;
 		visits: JobVisit[];
@@ -76,6 +86,15 @@
 		recurrence: JobRecurrenceInput | null;
 		// The job's own lock token — the reschedule command guards on it, exactly like saving the details does.
 		jobRevision: number;
+		// Billing context for the 5b-4 "Invoice now / later" prompt shown after a visit is marked complete.
+		clientId?: string | null;
+		clientName?: string;
+		priceBasis: string;
+		billingTiming: string;
+		canInvoiceVisits?: boolean;
+		/** One visit's worth of the job's lines. Null without price access — the prompt omits the figure. */
+		visitAmountMinor?: number | null;
+		currencyCode?: string;
 	} = $props();
 
 	const queryClient = useQueryClient();
@@ -219,9 +238,7 @@
 		}
 	}
 
-	const recurrenceSummary = $derived(
-		isRecurringScheduled ? describeRecurrence(recurrence) : ''
-	);
+	const recurrenceSummary = $derived(isRecurringScheduled ? describeRecurrence(recurrence) : '');
 	// Count and range come from the real visit rows, not the rule, so they match what is on screen exactly.
 	const seriesDates = $derived(
 		visits
@@ -571,15 +588,45 @@
 	// trip rather than an ordinary manual add so the history reads truthfully.
 	let createSource = $state<'manual' | 'return'>('manual');
 
+	// Invoices 5b-4: Jobber shows an "Invoice now / Invoice later" prompt when a visit is completed on a job
+	// priced per visit and set to remind after each completed visit. The completion command has already raised
+	// the reminder (the "later" outcome); this prompt just offers the "now" shortcut. Never for a one-off job —
+	// that path already asks the Finish job / return / keep-open question instead.
+	let invoicePromptVisit = $state<JobVisit | null>(null);
+	const invoicePromptEligible = $derived(
+		canInvoiceVisits &&
+			priceBasis === 'per_visit' &&
+			billingTiming === 'per_completed_visit' &&
+			Boolean(clientId)
+	);
+
 	async function handleComplete(visit: JobVisit) {
 		try {
 			const result = await completeJobVisit(jobId, visit.id);
 			await refreshAll();
 			toast.success('Visit marked complete');
-			if (result.final_visit) finalVisitOpen = true;
+			if (result.final_visit) {
+				finalVisitOpen = true;
+			} else if (!result.already_completed && invoicePromptEligible) {
+				invoicePromptVisit = visit;
+			}
 		} catch (caught) {
 			toast.error((caught as JobWriteError).message ?? 'That visit could not be marked complete.');
 		}
+	}
+
+	function invoiceNowForPromptedVisit() {
+		const visit = invoicePromptVisit;
+		invoicePromptVisit = null;
+		if (!visit || !clientId) return;
+		void goto(
+			`${resolve('/(app)/invoices/new')}?client=${clientId}&job=${jobId}&visits=${visit.id}`
+		);
+	}
+
+	function invoiceLaterForPromptedVisit() {
+		invoicePromptVisit = null;
+		toast.info('We’ll remind you to bill this visit', 'It’s on the job’s ready-to-bill list.');
 	}
 
 	async function handleUncomplete(visit: JobVisit) {
@@ -672,7 +719,9 @@
 				{#snippet trigger()}
 					<span class="job-visits-section__add-icon" aria-hidden="true">{@html plusIcon}</span>
 					Add visits
-					<span class="job-visits-section__add-caret" aria-hidden="true">{@html chevronDownIcon}</span>
+					<span class="job-visits-section__add-caret" aria-hidden="true"
+						>{@html chevronDownIcon}</span
+					>
 				{/snippet}
 			</DropdownMenu>
 		{/if}
@@ -803,6 +852,17 @@
 	onFinish={() => void finishJob()}
 	onAddReturnVisit={openReturnVisitFromFinal}
 	onKeepOpen={() => (finalVisitOpen = false)}
+/>
+
+<VisitInvoicePromptDialog
+	open={invoicePromptVisit !== null}
+	{clientName}
+	visitDate={invoicePromptVisit?.visit_date ?? null}
+	amountMinor={visitAmountMinor}
+	{currencyCode}
+	{locale}
+	onInvoiceNow={invoiceNowForPromptedVisit}
+	onInvoiceLater={invoiceLaterForPromptedVisit}
 />
 
 <JobVisitDialog
