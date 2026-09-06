@@ -11602,6 +11602,7 @@ export type Database = {
 			};
 			job_line_money: { Args: { target_job_id: string }; Returns: Json };
 			job_money: { Args: { target_job_ids: string[] }; Returns: Json };
+			job_schedule_stages: { Args: { target_job_id: string }; Returns: Json };
 			job_status_counts: {
 				Args: { target_organization_id: string };
 				Returns: {
@@ -13303,6 +13304,15 @@ export type Database = {
 					new_rate_id?: string;
 					new_source: string;
 					target_invoice_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			set_job_payment_schedule: {
+				Args: {
+					expected_revision: number;
+					new_items: Json;
+					target_job_id: string;
 					target_organization_id: string;
 				};
 				Returns: Json;

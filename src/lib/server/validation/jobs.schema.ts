@@ -724,3 +724,33 @@ export const applyVisitToFutureSchema = z
 	});
 
 export type ApplyVisitToFutureInput = z.infer<typeof applyVisitToFutureSchema>;
+
+// One stage of a one-off job's payment schedule. `value` is whole cents for a fixed stage and basis points
+// for a percentage one, exactly as a quote's installments are sent. `installment_id` names a stage the job
+// already has: the command keeps a stage an invoice has claimed and rewrites the rest, so a stage that is
+// still only a plan can be renamed, re-priced, reordered or dropped without disturbing what has been billed.
+const jobPaymentStageSchema = z.object({
+	installment_id: z.string().uuid('That payment stage could not be found.').nullish(),
+	description: z
+		.string()
+		.trim()
+		.min(2, 'Give this stage a description.')
+		.max(160, 'Keep the description under 160 characters.'),
+	type: z.enum(['fixed', 'percentage']),
+	value: z
+		.number()
+		.int('Enter a whole amount.')
+		.min(1, 'Enter an amount above zero.')
+		.max(1_000_000_000_000, 'That amount is too large.')
+});
+
+// The whole schedule at once, the way the job's scope lines are already sent. An empty list is the Remove
+// button — the job goes back to being billed as a whole, which the command allows only while none of the
+// stages has produced an invoice. The 2-stage floor and the reconciliation rule belong to the database,
+// which prices the stages and refuses anything that does not add up to the job total.
+export const setJobPaymentScheduleSchema = z.object({
+	expected_revision: z.number().int().min(0),
+	stages: z.array(jobPaymentStageSchema).max(12, 'A payment schedule can hold up to 12 stages.')
+});
+
+export type SetJobPaymentScheduleInput = z.infer<typeof setJobPaymentScheduleSchema>;

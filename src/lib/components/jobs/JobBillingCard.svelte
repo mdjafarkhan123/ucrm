@@ -1,10 +1,15 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { resolve } from '$app/paths';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
-	import { saveJobBilling, type JobWriteError } from '$lib/jobs/api';
+	import JobPaymentScheduleDialog from '$lib/components/jobs/JobPaymentScheduleDialog.svelte';
+	import { saveJobBilling, type JobPaymentSchedule, type JobWriteError } from '$lib/jobs/api';
+	import { INVOICE_STATUS_LABELS, INVOICE_STATUS_TONES } from '$lib/invoices/statuses';
+	import type { InvoiceDerivedStatus } from '$lib/invoices/statuses';
 	import type { JobType } from '$lib/jobs/statuses';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 
@@ -22,6 +27,7 @@
 		priceBasis,
 		billingTiming,
 		totalMinor = null,
+		schedule = null,
 		currencyCode = 'USD',
 		locale = 'en-US',
 		editable = false,
@@ -37,6 +43,8 @@
 		billingTiming: string;
 		/** The job total, used only to say the choice back in money the contractor recognises. */
 		totalMinor?: number | null;
+		/** A one-off job's payment stages, or null when it bills as a whole. */
+		schedule?: JobPaymentSchedule | null;
 		currencyCode?: string;
 		locale?: string;
 		editable?: boolean;
@@ -86,6 +94,28 @@
 	}
 
 	const summary = $derived(summaryFor(priceBasis));
+
+	// --- The payment schedule -----------------------------------------------------------------------------
+	// Only a one-off job can carry one, and only a reader who may see the job's money can see what the stages
+	// are worth. A stage says where it has got to: still to bill, or the live status of the bill it produced.
+	const stages = $derived(schedule?.stages ?? []);
+	const canScheduleStages = $derived(jobType === 'one_off' && canSeePrice);
+	const scheduleTotalMinor = $derived(schedule?.job_total_minor ?? totalMinor ?? 0);
+
+	const STAGE_LABELS: Record<string, string> = {
+		remaining: 'Still to bill',
+		// A reader without invoices.view learns only that a bill exists, never which one or where it stands.
+		invoiced: 'Invoiced',
+		...INVOICE_STATUS_LABELS
+	};
+
+	function stageTone(status: string) {
+		if (status === 'remaining') return undefined;
+		if (status === 'invoiced') return 'inactive' as const;
+		return INVOICE_STATUS_TONES[status as InvoiceDerivedStatus] ?? 'inactive';
+	}
+
+	let scheduleOpen = $state(false);
 
 	let open = $state(false);
 	let draftBasis = $state('');
@@ -153,11 +183,87 @@
 		</div>
 	</dl>
 
+	{#if canScheduleStages}
+		<div class="job-billing__schedule">
+			<p class="job-billing__label">Payment schedule</p>
+
+			{#if stages.length > 0}
+				{#if schedule?.reconciles === false}
+					<p class="job-billing__warning" role="status">
+						These stages no longer add up to the job total. Edit the stages that have not been
+						invoiced yet so they match.
+					</p>
+				{/if}
+				<ul class="job-billing__stages">
+					{#each stages as stage (stage.installment_id)}
+						<li class="job-billing__stage">
+							<span class="job-billing__stage-name">{stage.description}</span>
+							{#if stage.amount_minor !== null}
+								<span class="job-billing__stage-amount">
+									{money.format(stage.amount_minor / 100)}
+								</span>
+							{/if}
+							<Badge size="small" status={stageTone(stage.status)}>
+								{STAGE_LABELS[stage.status] ?? stage.status}
+							</Badge>
+							{#if stage.invoice}
+								<a
+									class="job-billing__stage-link"
+									href={resolve('/(app)/invoices/[id]', { id: stage.invoice.id })}
+								>
+									Invoice #{stage.invoice.invoice_number}
+								</a>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+				{#if editable}
+					<Button
+						variant="secondary"
+						variation="subtle"
+						fullWidth
+						onclick={() => (scheduleOpen = true)}
+					>
+						Edit payment schedule
+					</Button>
+				{/if}
+			{:else if editable}
+				<p class="job-billing__note">
+					This job is invoiced in one go. Split it into stages to invoice it as the work goes.
+				</p>
+				<Button
+					variant="secondary"
+					variation="subtle"
+					fullWidth
+					onclick={() => (scheduleOpen = true)}
+				>
+					Add a payment schedule
+				</Button>
+			{:else}
+				<p class="job-billing__note">This job is invoiced in one go.</p>
+			{/if}
+		</div>
+	{/if}
+
 	<p class="job-billing__note">
 		Reminders are prompts for your own team, not messages to the client. Payment is collected by
 		hand for now.
 	</p>
 </RailCard>
+
+{#if scheduleOpen}
+	<JobPaymentScheduleDialog
+		open={scheduleOpen}
+		{jobId}
+		{revision}
+		{stages}
+		totalMinor={scheduleTotalMinor}
+		{currencyCode}
+		{locale}
+		onClose={() => (scheduleOpen = false)}
+		{onSaved}
+	/>
+{/if}
 
 {#if open}
 	<Dialog {open} title="Billing setup" size="small" onClose={close}>
@@ -235,6 +341,62 @@
 		&__note {
 			margin: 0;
 			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__schedule {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-small);
+			padding-top: var(--space-base);
+			border-top: var(--border-base) solid var(--color-border);
+		}
+
+		&__warning {
+			margin: 0;
+			color: var(--color-warning--onSurface);
+			background: var(--color-warning--surface);
+			border-radius: var(--radius-base);
+			padding: var(--space-small);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__stages {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-small);
+			margin: 0;
+			padding: 0;
+			list-style: none;
+		}
+
+		&__stage {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--space-small);
+
+			& + & {
+				border-top: var(--border-base) solid var(--color-border);
+				padding-top: var(--space-small);
+			}
+		}
+
+		&__stage-name {
+			flex: 1;
+			min-width: 0;
+			color: var(--color-heading);
+		}
+
+		&__stage-amount {
+			color: var(--color-text--secondary);
+			font-variant-numeric: tabular-nums;
+			white-space: nowrap;
+		}
+
+		&__stage-link {
+			flex-basis: 100%;
+			color: var(--color-interactive);
 			font-size: var(--typography--fontSize-small);
 		}
 	}

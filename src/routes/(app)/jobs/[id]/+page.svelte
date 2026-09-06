@@ -196,6 +196,8 @@
 		visits_moved: 'Visits moved',
 		visit_deleted: 'Visit deleted',
 		schedule_replaced: 'Schedule changed',
+		billing_updated: 'Billing setup changed',
+		payment_schedule_updated: 'Payment schedule changed',
 		visits_updated_forward: 'Later visits updated'
 	};
 
@@ -234,6 +236,11 @@
 			if (typeof created === 'number' && typeof removed === 'number') {
 				return `${created} ${created === 1 ? 'visit' : 'visits'} created, ${removed} removed`;
 			}
+		}
+		if (event.event_type === 'payment_schedule_updated') {
+			const count = event.metadata.stage_count;
+			if (count === 0) return 'Payment schedule removed';
+			if (typeof count === 'number') return `${count} stages`;
 		}
 		if (event.event_type === 'visits_updated_forward') {
 			const count = event.metadata.count;
@@ -289,7 +296,11 @@
 			queryClient.invalidateQueries({ queryKey: jobDetailKey(jobId) }),
 			queryClient.invalidateQueries({ queryKey: jobEventsKey(jobId) }),
 			queryClient.invalidateQueries({ queryKey: ['jobs', 'list'] }),
-			queryClient.invalidateQueries({ queryKey: jobCountsKey })
+			queryClient.invalidateQueries({ queryKey: jobCountsKey }),
+			// What this job has left to bill can change with its scope, its billing setup and its payment
+			// stages, so the two screens that offer this job's work are cleared with the job itself.
+			queryClient.invalidateQueries({ queryKey: ['invoices', 'billable-work'] }),
+			queryClient.invalidateQueries({ queryKey: ['invoices', 'ready-to-bill'] })
 		]);
 	}
 
@@ -534,6 +545,7 @@
 					priceBasis={saved.job.price_basis}
 					billingTiming={saved.job.billing_timing}
 					totalMinor={saved.can_see_price ? (saved.money?.total_minor ?? null) : null}
+					schedule={saved.schedule}
 					currencyCode={saved.job.currency_code}
 					locale={saved.locale}
 					{editable}

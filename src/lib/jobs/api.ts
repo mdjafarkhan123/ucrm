@@ -291,9 +291,49 @@ export type JobInvoiceReminder = {
 	note: string | null;
 };
 
+// One stage of a one-off job's payment schedule, as the billing card draws it. Everything that is money —
+// `value`, `amount_minor`, and the invoice's own figures — is null for a reader without jobs.view_price, and
+// the invoice block is null for a reader without invoices.view, whose stages read `invoiced` instead of a
+// live status. `locked` means an invoice already claims this stage: it is history now, not a plan.
+export type JobPaymentStage = {
+	installment_id: string;
+	position: number;
+	description: string;
+	is_deposit: boolean;
+	locked: boolean;
+	value_type: 'fixed' | 'percentage';
+	value: number | null;
+	amount_minor: number | null;
+	status:
+		| 'remaining'
+		| 'invoiced'
+		| 'draft'
+		| 'awaiting_payment'
+		| 'past_due'
+		| 'paid'
+		| 'voided'
+		| 'bad_debt';
+	invoice: {
+		id: string;
+		invoice_number: number;
+		total_minor: number | null;
+		balance_minor: number | null;
+	} | null;
+};
+
+// A one-off job's payment schedule. Null when the job carries none, and `reconciles` is false when the job
+// total moved after a stage was billed — a real state the card explains rather than an error.
+export type JobPaymentSchedule = {
+	reconciles: boolean | null;
+	job_total_minor: number | null;
+	stages: JobPaymentStage[];
+};
+
 export type JobDetail = {
 	// The job's repeat rule, present only for a recurring job that has one. "Edit all visits" opens on this.
 	recurrence: JobRecurrenceInput | null;
+	// A one-off job's payment stages, or null when it bills as a whole. Recurring jobs never carry one.
+	schedule: JobPaymentSchedule | null;
 	job: {
 		id: string;
 		job_number: number;
@@ -428,6 +468,30 @@ export async function saveJobBilling(
 		body: JSON.stringify({ expected_revision: expectedRevision, ...billing })
 	});
 	return readOrThrow(response, 'That billing setup could not be saved.');
+}
+
+// One stage as the editor sends it. `installment_id` names a stage the job already has — the command keeps
+// the ones an invoice claims and rewrites the rest — and is absent for a stage being added.
+export type JobPaymentStageInput = {
+	installment_id?: string | null;
+	description: string;
+	type: 'fixed' | 'percentage';
+	value: number;
+};
+
+// The whole schedule in one save. An empty list removes it and puts the job back on whole-job billing, which
+// the command allows only while none of the stages has produced an invoice.
+export async function saveJobPaymentSchedule(
+	id: string,
+	expectedRevision: number,
+	stages: JobPaymentStageInput[]
+): Promise<JobRevisionResult & { stage_count: number; mode: string | null }> {
+	const response = await fetch(`/api/jobs/${id}/payment-schedule`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ expected_revision: expectedRevision, stages })
+	});
+	return readOrThrow(response, 'That payment schedule could not be saved.');
 }
 
 // A null type removes the discount, which is why every field but the revision is optional.

@@ -54,7 +54,8 @@ export const GET: RequestHandler = async (event) => {
 		jobMoney,
 		lineMoney,
 		formatting,
-		billedVisitRows
+		billedVisitRows,
+		scheduleStages
 	] = await Promise.all([
 		supabase
 			.from('job_list_rows')
@@ -142,7 +143,11 @@ export const GET: RequestHandler = async (event) => {
 					.eq('organization_id', organizationId)
 					.eq('job_id', jobId)
 					.eq('source_kind', 'visit')
-			: Promise.resolve({ data: [], error: null })
+			: Promise.resolve({ data: [], error: null }),
+		// A one-off job's payment stages with their money and the bill each one produced. Definer, and it
+		// applies jobs.view_price and invoices.view for itself, so a reader who may see less simply gets
+		// less rather than a second round trip. Recurring work never carries a schedule.
+		supabase.rpc('job_schedule_stages', { target_job_id: jobId })
 	]);
 
 	if (
@@ -154,7 +159,8 @@ export const GET: RequestHandler = async (event) => {
 		reminderRows.error ||
 		jobMoney.error ||
 		lineMoney.error ||
-		billedVisitRows.error
+		billedVisitRows.error ||
+		scheduleStages.error
 	) {
 		return databaseError();
 	}
@@ -261,9 +267,26 @@ export const GET: RequestHandler = async (event) => {
 			}
 		: null;
 
+	// The payment schedule, present only when the job actually has one. The reader has already applied every
+	// gate, so this passes its answer straight through rather than second-guessing which fields survived.
+	const scheduleAnswer = (scheduleStages.data ?? {}) as {
+		reconciles?: boolean | null;
+		job_total_minor?: number | null;
+		stages?: unknown[];
+	};
+	const schedule =
+		(scheduleAnswer.stages ?? []).length > 0
+			? {
+					reconciles: scheduleAnswer.reconciles ?? null,
+					job_total_minor: scheduleAnswer.job_total_minor ?? null,
+					stages: scheduleAnswer.stages
+				}
+			: null;
+
 	return json(
 		{
 			recurrence,
+			schedule,
 			job: {
 				id: row.id,
 				job_number: row.job_number,
