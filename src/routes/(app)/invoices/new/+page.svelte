@@ -38,6 +38,12 @@
 			.map((id) => id.trim())
 			.filter(Boolean)
 	);
+	const reminderIds = $derived(
+		(page.url.searchParams.get('reminders') ?? '')
+			.split(',')
+			.map((id) => id.trim())
+			.filter(Boolean)
+	);
 
 	type Seed = {
 		clientId: string;
@@ -54,7 +60,7 @@
 	// The picker opens once per arrival; cancelling leaves rather than reopening it forever. Arriving with
 	// visits already chosen skips it — there is nothing left to pick.
 	$effect(() => {
-		if (clientId && !seed && visitIds.length === 0) picking = true;
+		if (clientId && !seed && visitIds.length === 0 && reminderIds.length === 0) picking = true;
 	});
 
 	// The client's name for the picker's title. It rides along on the job the contractor came from, so no
@@ -118,6 +124,41 @@
 				jobLines.map((line) => ({ ...line, service_date: visitDateById.get(visitId) ?? null }))
 			),
 			sources: visitIds.map((visitId) => ({ kind: 'visit', job_id: jobId, visit_id: visitId }))
+		};
+	});
+
+	// Periods arrive pre-chosen (the job page's periods-to-bill card), same shape as visits: one copy of the
+	// job's priced lines per selected period, each stamped with that period's own end date (5b-3).
+	let attemptedReminderSeed = $state(false);
+	$effect(() => {
+		if (reminderIds.length === 0 || seed || attemptedReminderSeed || !jobId) return;
+		const job = originJobQuery.data;
+		if (!job) return;
+		attemptedReminderSeed = true;
+
+		const jobLines = pricedLines(job.lines);
+		if (jobLines.length === 0) {
+			toast.error('That job has no priced lines yet, so there is nothing to bill.');
+			void goto(resolve('/(app)/jobs/[id]', { id: jobId }));
+			return;
+		}
+
+		const reminderDueById = new Map(
+			job.reminders.map((reminder) => [reminder.id, reminder.due_on])
+		);
+		seed = {
+			clientId,
+			clientName,
+			subject: job.job.title,
+			propertyId: job.job.property?.id ?? null,
+			lines: reminderIds.flatMap((reminderId) =>
+				jobLines.map((line) => ({ ...line, service_date: reminderDueById.get(reminderId) ?? null }))
+			),
+			sources: reminderIds.map((reminderId) => ({
+				kind: 'reminder_period',
+				job_id: jobId,
+				reminder_id: reminderId
+			}))
 		};
 	});
 

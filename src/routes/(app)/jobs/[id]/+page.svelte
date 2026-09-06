@@ -24,6 +24,7 @@
 	import JobBillingCard from '$lib/components/jobs/JobBillingCard.svelte';
 	import JobRemindersCard from '$lib/components/jobs/JobRemindersCard.svelte';
 	import JobVisitsToBillCard from '$lib/components/jobs/JobVisitsToBillCard.svelte';
+	import JobPeriodsToBillCard from '$lib/components/jobs/JobPeriodsToBillCard.svelte';
 	import JobVisitsSection from '$lib/components/jobs/JobVisitsSection.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
@@ -545,6 +546,18 @@
 						jobId={saved.job.id}
 						clientId={saved.job.client.id}
 						visits={saved.visits}
+						subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? null) : null}
+						currencyCode={saved.job.currency_code}
+						locale={saved.locale}
+					/>
+				{/if}
+
+				{#if saved.can_invoice && saved.job.price_basis === 'fixed_per_period' && saved.job.client}
+					<JobPeriodsToBillCard
+						jobId={saved.job.id}
+						clientId={saved.job.client.id}
+						reminders={saved.reminders}
+						today={saved.organization_today}
 						subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? null) : null}
 						currencyCode={saved.job.currency_code}
 						locale={saved.locale}
