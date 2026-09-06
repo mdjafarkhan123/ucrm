@@ -478,7 +478,8 @@
 				unit_label: line.unit_label ?? null,
 				quantity: line.quantity,
 				unit_price_minor: line.unit_price_minor,
-				is_taxable: line.is_taxable ?? true
+				is_taxable: line.is_taxable ?? true,
+				service_date: line.service_date ?? null
 			}));
 		await saveInvoiceLines(invoiceId, expectedRevision, payload);
 		await refreshInvoice();
@@ -777,6 +778,7 @@
 					revision={saved.invoice.revision}
 					editable={editable && canSeePrice}
 					showPrices={canSeePrice}
+					showServiceDate
 					subtotalMinor={canSeePrice ? (saved.money?.subtotal_minor ?? 0) : null}
 					currencyCode={saved.invoice.currency_code}
 					locale={saved.locale}

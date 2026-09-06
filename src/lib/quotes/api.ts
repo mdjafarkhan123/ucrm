@@ -21,6 +21,8 @@ export type RequestPricingLine = {
 	line_kind?: QuoteLineKind;
 	selection_kind?: QuoteSelectionKind;
 	is_recommended?: boolean;
+	/** Invoice-only: the date this line's work was done, shown as a per-line chip. Quotes never set it. */
+	service_date?: string | null;
 };
 
 export type QuoteLineKind = 'priced' | 'text' | 'heading';
@@ -52,6 +54,8 @@ export type RequestPricingLineInput = {
 	line_kind?: QuoteLineKind;
 	selection_kind?: QuoteSelectionKind;
 	is_recommended?: boolean;
+	/** Invoice-only: the date this line's work was done. Only emitted when the editor enables service dates. */
+	service_date?: string | null;
 };
 
 export type RequestPricingWriteResult = {

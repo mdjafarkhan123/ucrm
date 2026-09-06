@@ -14,6 +14,8 @@
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import MoneyInput from '$lib/components/forms/MoneyInput.svelte';
 	import QuantityInput from '$lib/components/forms/QuantityInput.svelte';
+	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
+	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
 	import CatalogItemPicker from './CatalogItemPicker.svelte';
 	import CatalogItemDialog from './CatalogItemDialog.svelte';
 	import PriceBookDrawer from './PriceBookDrawer.svelte';
@@ -72,6 +74,7 @@
 		loading = false,
 		loadFailed = false,
 		showPrices = true,
+		showServiceDate = false,
 		subtotalMinor,
 		attachTo = null,
 		alwaysEditing = false,
@@ -94,6 +97,8 @@
 		loadFailed?: boolean;
 		/** False when the API withheld prices. Names and quantities remain useful without inventing zeroes. */
 		showPrices?: boolean;
+		/** Invoice-only: shows a per-line "Service date" field. Off for quotes/requests/jobs, which have none. */
+		showServiceDate?: boolean;
 		/** Exact selected subtotal returned by the database; Quote screens must provide it. */
 		subtotalMinor?: number | null;
 		/** Where a line photo is stored. Null means there is nothing to attach it to yet, so no photos. */
@@ -136,6 +141,8 @@
 		line_kind: QuoteLineKind;
 		selection_kind: QuoteSelectionKind;
 		is_recommended: boolean;
+		/** Invoice-only: the date this line's work was done. Null until set; ignored unless showServiceDate. */
+		service_date?: string | null;
 	};
 
 	let editing = $state(false);
@@ -183,7 +190,8 @@
 			costHidden: false,
 			line_kind: line.line_kind ?? 'priced',
 			selection_kind: line.selection_kind ?? 'required',
-			is_recommended: line.is_recommended ?? false
+			is_recommended: line.is_recommended ?? false,
+			service_date: line.service_date ?? null
 		};
 	}
 
@@ -269,6 +277,7 @@
 			line_kind?: QuoteLineKind;
 			selection_kind?: QuoteSelectionKind;
 			is_recommended?: boolean;
+			service_date?: string | null;
 		}[]
 	) {
 		return JSON.stringify(
@@ -284,6 +293,7 @@
 				line.line_kind ?? 'priced',
 				line.selection_kind ?? 'required',
 				line.is_recommended ?? false,
+				line.service_date ?? '',
 				line.imageFile
 					? `${line.imageFile.name}:${line.imageFile.size}:${line.imageFile.lastModified}`
 					: ''
@@ -837,6 +847,7 @@
 				unit_cost_minor: line.unit_cost_minor,
 				is_taxable: line.is_taxable,
 				image_attachment_id: line.image_attachment_id,
+				...(showServiceDate ? { service_date: line.service_date ?? null } : {}),
 				...(quoteChoices
 					? {
 							line_kind: 'priced' as const,
@@ -1089,6 +1100,30 @@
 									{/if}
 								</div>
 							</div>
+							{#if showServiceDate}
+								<div class="pricing-card__service-date">
+									<CalendarPicker
+										id={`pricing-service-date-${line.id}`}
+										label="Service date"
+										{locale}
+										disabled={saving}
+										bind:value={
+											() => calendarDateFromString(line.service_date),
+											(value) => updateLine(line.id, { service_date: calendarDateToString(value) })
+										}
+									/>
+									{#if line.service_date}
+										<Button
+											size="small"
+											variant="tertiary"
+											disabled={saving}
+											onclick={() => updateLine(line.id, { service_date: null })}
+										>
+											Clear
+										</Button>
+									{/if}
+								</div>
+							{/if}
 						{/if}
 					</div>
 					<div class="pricing-card__actions">
@@ -1466,6 +1501,14 @@
 		}
 		&__row2 {
 			align-items: stretch;
+		}
+		// The service date is a narrow field, not a full row — it sits under the line with its Clear button
+		// and never stretches to the width of the description above it.
+		&__service-date {
+			display: flex;
+			align-items: flex-end;
+			gap: var(--space-small);
+			max-width: 16rem;
 		}
 		&__name {
 			min-width: 0;

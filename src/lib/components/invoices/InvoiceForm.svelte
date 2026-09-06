@@ -144,7 +144,8 @@
 					image_attachment_id: line.image_attachment_id ?? null,
 					line_kind: line.line_kind ?? 'priced',
 					selection_kind: line.selection_kind ?? 'required',
-					is_recommended: line.is_recommended ?? false
+					is_recommended: line.is_recommended ?? false,
+					service_date: line.service_date ?? null
 				}))
 			: []
 	);
@@ -200,7 +201,8 @@
 			unit_label: line.unit_label ?? null,
 			quantity: line.quantity,
 			unit_price_minor: line.unit_price_minor,
-			is_taxable: line.is_taxable ?? true
+			is_taxable: line.is_taxable ?? true,
+			service_date: line.service_date ?? null
 		}));
 	}
 
@@ -356,6 +358,7 @@
 			<ProductsAndServicesBlock
 				alwaysEditing
 				editable
+				showServiceDate
 				lines={seededLines}
 				{currencyCode}
 				{locale}
