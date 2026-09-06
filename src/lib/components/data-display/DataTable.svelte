@@ -30,6 +30,8 @@
 		onSortChange,
 		row,
 		rowActions,
+		rowDetail,
+		isExpanded,
 		footer
 	}: {
 		columns: DataTableColumn[];
@@ -50,6 +52,10 @@
 		onSortChange?: (key: string) => void;
 		row: Snippet<[T]>;
 		rowActions?: Snippet<[T]>;
+		/** Extra detail shown in a full-width row under its own row, for the rows `isExpanded` says are
+		 * open. The caller owns what "open" means and what the detail contains. */
+		rowDetail?: Snippet<[T]>;
+		isExpanded?: (item: T) => boolean;
 		footer?: Snippet;
 	} = $props();
 
@@ -86,6 +92,10 @@
 		if ((window.getSelection()?.toString() ?? '').length > 0) return;
 		onRowActivate(item);
 	}
+
+	// One cell has to span the whole table for a detail row, and the table's width is the caller's columns
+	// plus the two the table adds for itself.
+	const spanAll = $derived(columns.length + (selectable ? 1 : 0) + (rowActions ? 1 : 0));
 
 	function toggleRow(id: string, checked: boolean) {
 		const next = new Set(selectedIds);
@@ -158,6 +168,11 @@
 						<td class="data-table__actions-cell">{@render rowActions(item)}</td>
 					{/if}
 				</tr>
+				{#if rowDetail && isExpanded?.(item)}
+					<tr class="data-table__detail-row">
+						<td colspan={spanAll}>{@render rowDetail(item)}</td>
+					</tr>
+				{/if}
 			{/each}
 		</tbody>
 	</table>
@@ -221,6 +236,14 @@
 	.data-table :global(tbody tr:last-child th),
 	.data-table :global(tbody tr:last-child td) {
 		border-bottom: 0;
+	}
+	/* A detail row belongs to the row above it, so it takes the subtle ground and drops the hover tint that
+	   would otherwise make it read as a second record. */
+	.data-table :global(tbody tr.data-table__detail-row) {
+		background: var(--color-surface--background--subtle);
+	}
+	.data-table :global(tbody tr.data-table__detail-row:hover) {
+		background: var(--color-surface--background--subtle);
 	}
 	.data-table :global(tbody tr:hover) {
 		background: var(--color-surface--hover);

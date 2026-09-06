@@ -237,6 +237,41 @@ export async function createInvoice(payload: CreateInvoicePayload): Promise<Crea
 	return readOrThrow<CreateInvoiceResult>(response, 'That invoice could not be saved.');
 }
 
+// --- Billing a page of the queue at once (Part 8a) --------------------------------------------------------
+
+export type BatchInvoicePayload = {
+	job_ids: string[];
+	/** Unfinished visits the contractor ticked. Each one is completed by the same save that bills it. */
+	complete_visit_ids: string[];
+	idempotency_key: string;
+	request_hash: string;
+};
+
+export type BatchInvoiceResult = {
+	applied?: boolean;
+	invoice_count: number;
+	job_count: number;
+	visits_completed: number;
+	invoices: {
+		invoice_id: string;
+		invoice_number: number;
+		client_id: string;
+		job_count: number;
+		claimed_count: number;
+	}[];
+};
+
+export async function createInvoicesInBatch(
+	payload: BatchInvoicePayload
+): Promise<BatchInvoiceResult> {
+	const response = await fetch('/api/invoices/batch', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(payload)
+	});
+	return readOrThrow<BatchInvoiceResult>(response, 'Those invoices could not be created.');
+}
+
 // --- What work is waiting to be billed --------------------------------------------------------------------
 
 // One row of the "select work to invoice" picker: a job of this client that no invoice has claimed yet.

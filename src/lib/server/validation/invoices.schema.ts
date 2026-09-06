@@ -466,3 +466,25 @@ export const invoiceLifecycleSchema = z.discriminatedUnion('action', [
 ]);
 
 export type InvoiceLifecycleInput = z.infer<typeof invoiceLifecycleSchema>;
+
+// The batch Jafar capped at one page of the ready-to-bill queue: 25 jobs. The visits list is separate and
+// explicit on purpose — it is the only way an unfinished visit can be completed by a batch, so it can never
+// be inferred from the job selection (Part 8a).
+export const INVOICE_BATCH_JOB_MAX = 25;
+
+export const batchInvoiceSchema = z.object({
+	job_ids: z
+		.array(z.string().uuid())
+		.min(1, 'Choose at least one job to bill.')
+		.max(INVOICE_BATCH_JOB_MAX, `A batch can cover up to ${INVOICE_BATCH_JOB_MAX} jobs at once.`),
+	/** Unfinished visits the contractor ticked. Each one is completed in the same save that bills it. */
+	complete_visit_ids: z.array(z.string().uuid()).max(200).default([]),
+	idempotency_key: z.string().uuid('Start a new action and try again.'),
+	request_hash: z
+		.string()
+		.trim()
+		.min(1, 'Reload the page and try again.')
+		.max(200, 'Reload the page and try again.')
+});
+
+export type BatchInvoiceInput = z.infer<typeof batchInvoiceSchema>;
