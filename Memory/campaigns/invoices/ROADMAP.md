@@ -33,7 +33,9 @@ implementation is under way, split into 3a/3b/3c on Jafar's 2026-09-04 approval.
 | 7a   | Collect Payment (single invoice) + financial history read model/display; backend commands already built/tested in 3b-1/3b-2 | Complete + committed 2026-09-06 (d5a0250) — browser-verified end to end on invoice #1 (partial then full payment, balance + status + toast + method labels + history list all correct); date-display off-by-one fix folded in (see below); 6c delivery/email regression fix verified live | Parts 3a–3c, 4–6 | Met |
 | 7b   | Void (with reason + D2 refusal), Bad debt/restore, Mark received/reopen   | Complete 2026-09-06 — browser-verified end to end on Raad LTD (all five transitions, both undos, D2 refusal in dialog, dark mode); NOT yet committed. One `/api/invoices/[id]/lifecycle` route (discriminated `action`), one `InvoiceLifecycleDialog` on `ConfirmDialog`, status closure banner on the detail screen; `can_void`+`can_bad_debt` on the GET route; migration `20260906150000` adds `write_off_note` to `invoice_detail`. `npm run check`/eslint/prettier/autofixer clean. | 7a | Met: every Jobber close/reopen transition reconciles through the pgTAP-tested 3b-2 commands; void reason enum `duplicate`/`created_in_error`/`client_request`/`other`; D2 refusal ("still has payments on it") surfaced in the dialog. Deferred follow-up: the void→client cancellation email (needs a new template). |
 | 7    | Deliver manual collection, overdue, bad debt, void and reopening          | 7a complete + committed (d5a0250); 7b complete + browser-verified, commit pending. Spreading one payment across a client's several open invoices (Jobber's real behavior) is explicitly deferred — build as a follow-up once single-invoice collection is used. Void→client cancellation email also deferred. | Parts 3a–3c, 4–6 | Partial/full payments, balances, reversals and every Jobber state transition reconcile          |
-| 8    | Deliver batch create and batch deliver                                    | Planned                                        | Parts 5–7                                      | Reviewed drafts group compatible Client work; completion atomic with creation; sending separate |
+| 8    | Deliver batch create and batch deliver                                    | Split 8a/8b on Jafar's approval 2026-09-06     | Parts 5–7                                      | Reviewed drafts group compatible Client work; completion atomic with creation; sending separate |
+| 8a   | Batch create: selection on the ready-to-bill queue → many drafts at once  | **Closed 2026-09-06** (committed 9f0ae89)      | 5b-5 (the queue), 5a (create_invoice_from_work) | One invoice per client per tax group; explicitly-ticked unfinished visits complete atomically with creation; a group over 100 sources refuses by name; 25-job cap; heavy batch measured |
+| 8b   | Batch deliver: select draft/awaiting/past-due invoices → issue + queue emails | Planned                                    | 8a; 6b-1 (issue + enqueue)                     | Drafts issue on send; each email queued once; paid invoices ineligible; per-user email rate limit and org allowance reconciled with batch size |
 | 9    | Verify integrated billing journeys and measured performance               | Planned                                        | Parts 2–8                                      | Direct, Job, recurring, progress, delivery, payment, exception and batch journeys pass          |
 
 Approved behavior: `docs/invoice-behavior-contract.md`, including D1–D5. Part 2 corrected design:
@@ -91,3 +93,20 @@ Two reminder gaps found while scoping 5b-5, flagged and NOT fixed here (they bel
 billing set to "On dates we pick ourselves" raises no reminder until somebody adds a date, and "Once, when
 the job is finished" raises none until the job is actually closed — in both cases finished work can sit with
 nothing flagging it. "Never remind us" is a deliberate opt-out and is correctly absent from the queue.
+
+Part 8 decisions (Jafar, 2026-09-06, after a live read-only tour of Jobber's two batch screens — findings
+written permanently into `.claude/skills/jobber/jobber-05-invoices-payments.md` §"Batch invoicing"):
+
+- **Grouping = Jobber's.** One invoice per client; a client's several jobs merge onto one bill; differing
+  property tax rates split it. Each line keeps its own job's service date.
+- **Unfinished visits follow the already-approved contract:** explicitly selectable, invoiced and marked
+  complete in the same save. Selecting a client/job must NEVER auto-select them; they are labelled, and a
+  short notice appears before saving ("…will also mark 3 selected visits complete"). Creation and completion
+  succeed or fail together, and that must be tested. No extra configuration or approval workflow.
+- **Cap 25 selected jobs per batch.** "Select all" = current page only, with the count shown. Existing
+  loading state, no duplicate submission. No background queue, no new progress system.
+- **The per-invoice 100-source claim limit is a separate limit and does not follow from the 25-job cap** —
+  25 jobs can hold more than 100 billable items. Validate it explicitly and verify a representative heavy
+  batch before claiming any timing.
+- **Out of scope, permanently:** Jobber's "Standard Mail" (combined printable PDF + Avery address labels).
+  We do not do postal mail and the approved no-server-PDF-engine decision rules out the combined file.
