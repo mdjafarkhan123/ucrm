@@ -443,6 +443,22 @@ export type InvoiceLineItem = {
 	service_date: string | null;
 	unit_price_minor: number | null;
 	line_total_minor: number | null;
+	/**
+	 * Progress bills only: the job line's whole customer value, beside `line_total_minor`, which holds the
+	 * share this stage bills. Null on an ordinary invoice and for a reader without `invoices.view_price`.
+	 */
+	progress_original_amount_minor: number | null;
+};
+
+// Which stage of a job's payment schedule a bill belongs to. Null on an ordinary invoice — the one thing
+// that tells the screen whether this is a progress invoice at all. Identity only, never an amount: the
+// schedule's other stages are the job's business, not this bill's.
+export type InvoiceProgressContext = {
+	job_id: string;
+	installment_id: string;
+	installment_number: number;
+	description: string;
+	is_deposit: boolean;
 };
 
 // The invoice's money, gated. Null for a reader without invoices.view_price.
@@ -551,6 +567,7 @@ export type InvoiceDetail = {
 	} | null;
 	money: InvoiceMoney | null;
 	payment_history: InvoicePaymentHistoryEntry[] | null;
+	progress: InvoiceProgressContext | null;
 	lines: InvoiceLineItem[];
 	delivery: InvoiceDelivery;
 	client_balance: InvoiceClientBalance | null;

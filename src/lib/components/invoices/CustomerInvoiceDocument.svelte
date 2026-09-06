@@ -105,9 +105,19 @@
 	});
 	const dueText = $derived(formatDate(doc.invoice.due_date));
 
-	// Which numeric columns exist. Money-withheld staff preview keeps only Qty.
+	// A progress invoice bills one named stage of a payment schedule the customer already agreed to. It says
+	// which stage, and it never says what the stages after it are worth — that is the contract's rule, and
+	// the database does not send those numbers here in the first place.
+	const progress = $derived(doc.progress);
+	const stageLine = $derived(
+		progress ? `Payment ${progress.installment_number} \u00b7 ${progress.description}` : null
+	);
+
+	// Which numeric columns exist. Money-withheld staff preview keeps only Qty. A progress bill splits the
+	// money column in two: the whole item, and the share this bill asks for.
 	const showMoney = $derived(doc.money !== null);
-	const columnCount = $derived(showMoney ? 4 : 2);
+	const showProgressMoney = $derived(showMoney && progress !== null);
+	const columnCount = $derived(2 + (showMoney ? 2 : 0) + (showProgressMoney ? 1 : 0));
 
 	function lineNumbers(line: CustomerInvoiceLine) {
 		return line.line_kind === 'priced';
@@ -143,6 +153,13 @@
 							? formatMoney(line.unit_price_minor)
 							: ''}
 					</td>
+					{#if showProgressMoney}
+						<td class="customer-invoice__num customer-invoice__col-unit">
+							{lineNumbers(line) && line.progress_original_amount_minor != null
+								? formatMoney(line.progress_original_amount_minor)
+								: ''}
+						</td>
+					{/if}
 					<td
 						class="customer-invoice__num customer-invoice__col-total customer-invoice__num--total"
 					>
@@ -174,7 +191,7 @@
 				</div>
 			</div>
 			<div class="customer-invoice__eyebrow">
-				<div class="customer-invoice__kicker">Invoice</div>
+				<div class="customer-invoice__kicker">{progress ? 'Progress invoice' : 'Invoice'}</div>
 				<div class="customer-invoice__number">#{doc.invoice.invoice_number}</div>
 				<span class="customer-invoice__status customer-invoice__status--{tone}">
 					<span class="customer-invoice__status-dot"></span>
@@ -190,6 +207,9 @@
 					Billed to {customerName}{#if billingLines.length}
 						· {billingLines.join(', ')}{/if}
 				</p>
+				{#if stageLine}
+					<p class="customer-invoice__stage">{stageLine} of your agreed payment schedule</p>
+				{/if}
 			</div>
 			{#if showMoney}
 				<div class="customer-invoice__balance">
@@ -255,7 +275,14 @@
 							<th scope="col" class="customer-invoice__num customer-invoice__col-unit"
 								>Unit price</th
 							>
-							<th scope="col" class="customer-invoice__num customer-invoice__col-total">Total</th>
+							{#if showProgressMoney}
+								<th scope="col" class="customer-invoice__num customer-invoice__col-unit"
+									>Item total</th
+								>
+							{/if}
+							<th scope="col" class="customer-invoice__num customer-invoice__col-total">
+								{showProgressMoney ? 'Due this invoice' : 'Total'}
+							</th>
 						{/if}
 					</tr>
 				</thead>
@@ -503,6 +530,15 @@
 		margin: var(--space-small) 0 0;
 		font-size: var(--typography--fontSize-base);
 		color: var(--color-text--secondary);
+	}
+
+	// The stage this bill covers, sitting under "Billed to" so it reads as part of the same sentence about
+	// what this document is.
+	.customer-invoice__stage {
+		margin: var(--space-smaller) 0 0;
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
+		color: var(--color-heading);
 	}
 
 	.customer-invoice__balance {
@@ -852,6 +888,7 @@
 		}
 
 		.customer-invoice__for,
+		.customer-invoice__stage,
 		.customer-invoice__meta-block p,
 		.customer-invoice__kicker,
 		.customer-invoice__total-row dt,

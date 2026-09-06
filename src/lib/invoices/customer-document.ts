@@ -19,6 +19,19 @@ export type CustomerInvoiceLine = {
 	// Present only when money is included.
 	unit_price_minor?: number;
 	line_total_minor?: number;
+	/**
+	 * Progress bills only, and only with money: the whole item, beside `line_total_minor`, which is the share
+	 * this bill asks for. Shown as "Item total" next to "Due this invoice".
+	 */
+	progress_original_amount_minor?: number | null;
+};
+
+// Which stage of the agreed payment schedule this bill is. Null on an ordinary invoice. Numbered and named,
+// with nothing about the stages that come after it — future installment values never reach the customer.
+export type CustomerInvoiceProgress = {
+	installment_number: number;
+	description: string;
+	is_deposit: boolean;
 };
 
 export type CustomerInvoiceDiscount = {
@@ -101,6 +114,7 @@ export type CustomerInvoiceDocument = {
 	customer: CustomerInvoiceCustomer;
 	billing_address: CustomerInvoiceAddress;
 	service_properties: CustomerInvoiceServiceProperty[];
+	progress: CustomerInvoiceProgress | null;
 	lines: CustomerInvoiceLine[];
 	money: CustomerInvoiceMoney | null;
 };

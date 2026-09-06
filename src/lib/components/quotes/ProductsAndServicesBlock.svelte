@@ -75,6 +75,7 @@
 		loadFailed = false,
 		showPrices = true,
 		showServiceDate = false,
+		progressColumn = false,
 		subtotalMinor,
 		attachTo = null,
 		alwaysEditing = false,
@@ -99,6 +100,13 @@
 		showPrices?: boolean;
 		/** Invoice-only: shows a per-line "Service date" field. Off for quotes/requests/jobs, which have none. */
 		showServiceDate?: boolean;
+		/**
+		 * Progress-invoice-only: splits the saved table's money into "Item total" — the whole item, from
+		 * `progress_original_amount_minor` — and "Due this invoice", the share this payment stage bills. The
+		 * editor is never shown for these lines, because a progress bill's amounts belong to the job's
+		 * payment schedule rather than to the invoice.
+		 */
+		progressColumn?: boolean;
 		/** Exact selected subtotal returned by the database; Quote screens must provide it. */
 		subtotalMinor?: number | null;
 		/** Where a line photo is stored. Null means there is nothing to attach it to yet, so no photos. */
@@ -809,6 +817,12 @@
 
 	const anyLinePhoto = $derived(savedLines.some((line) => line.image_attachment_id));
 
+	// How wide the saved table is, so a heading row's single cell spans all of it: line item, optional photo,
+	// quantity, and — with prices — unit price plus either one Total or the progress pair.
+	const savedColumnCount = $derived(
+		2 + (anyLinePhoto ? 1 : 0) + (showPrices ? (progressColumn ? 3 : 2) : 0)
+	);
+
 	function savedSubtotal(lines: RequestPricingLine[]) {
 		if (subtotalMinor !== undefined && subtotalMinor !== null) return subtotalMinor;
 		return lines.reduce((sum, line) => sum + line.line_total_minor, 0);
@@ -1207,7 +1221,12 @@
 						<th scope="col" class="pricing-table__number">Quantity</th>
 						{#if showPrices}
 							<th scope="col" class="pricing-table__number">Unit price</th>
-							<th scope="col" class="pricing-table__number">Total</th>
+							{#if progressColumn}
+								<th scope="col" class="pricing-table__number">Item total</th>
+								<th scope="col" class="pricing-table__number">Due this invoice</th>
+							{:else}
+								<th scope="col" class="pricing-table__number">Total</th>
+							{/if}
 						{/if}
 					</tr>
 				</thead>
@@ -1215,10 +1234,7 @@
 					{#each savedLines as line (line.id)}
 						{#if quoteChoices && line.line_kind !== 'priced'}
 							<tr class:pricing-table__heading={line.line_kind === 'heading'}>
-								<th
-									scope="row"
-									colspan={showPrices ? (anyLinePhoto ? 5 : 4) : anyLinePhoto ? 3 : 2}
-								>
+								<th scope="row" colspan={savedColumnCount}>
 									<span class="pricing-table__name">{line.name}</span>
 									{#if line.description}<span class="pricing-table__description"
 											>{line.description}</span
@@ -1254,6 +1270,11 @@
 								</td>
 								{#if showPrices}
 									<td class="pricing-table__number">{formatMoney(line.unit_price_minor)}</td>
+									{#if progressColumn}
+										<td class="pricing-table__number">
+											{formatMoney(line.progress_original_amount_minor ?? line.line_total_minor)}
+										</td>
+									{/if}
 									<td class="pricing-table__number">{formatMoney(line.line_total_minor)}</td>
 								{/if}
 							</tr>
@@ -1265,7 +1286,7 @@
 		{#if showPrices}
 			<div class="pricing-block__totals">
 				<div class="pricing-block__totals-row">
-					<span>Subtotal</span>
+					<span>{progressColumn ? 'Due this invoice' : 'Subtotal'}</span>
 					<span>{formatMoney(savedSubtotal(savedLines))}</span>
 				</div>
 			</div>

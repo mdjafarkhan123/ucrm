@@ -23,6 +23,11 @@ export type RequestPricingLine = {
 	is_recommended?: boolean;
 	/** Invoice-only: the date this line's work was done, shown as a per-line chip. Quotes never set it. */
 	service_date?: string | null;
+	/**
+	 * Progress-invoice-only: the whole item's value, while `line_total_minor` holds the share this payment
+	 * stage bills. Quotes, requests and jobs never set it.
+	 */
+	progress_original_amount_minor?: number | null;
 };
 
 export type QuoteLineKind = 'priced' | 'text' | 'heading';

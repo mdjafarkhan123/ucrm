@@ -209,6 +209,14 @@
 
 	const headerFacts = $derived([
 		{ label: 'Invoice #', value: saved ? String(saved.invoice.invoice_number) : null },
+		...(saved?.progress
+			? [
+					{
+						label: 'Payment stage',
+						value: `Payment ${saved.progress.installment_number} \u00b7 ${saved.progress.description}`
+					}
+				]
+			: []),
 		{
 			label: 'Invoice date',
 			value: saved ? formatDay(saved.invoice.issue_date) : null
@@ -300,7 +308,19 @@
 		saved?.invoice.derived_status === 'awaiting_payment' ||
 			saved?.invoice.derived_status === 'past_due'
 	);
-	const canVoid = $derived(Boolean(saved?.can_void) && isOpenIssued);
+	// A progress bill is one stage of a job's payment schedule. The job owns every amount on it — the stage
+	// value, and the split of that value across the job's lines — so this screen shows them and edits none
+	// of them. Correcting one goes through the correction chain, the same route the void refusal points at.
+	const progress = $derived(saved?.progress ?? null);
+	const isProgress = $derived(progress !== null);
+	const progressLockedMessage =
+		'This invoice bills one stage of the job\u2019s payment schedule, so the job owns its amounts. ' +
+		'Change the schedule on the job, or correct this invoice.';
+
+	// Void is never offered on a progress bill. `void_invoice` refuses one outright — cancelling a single
+	// stage of a payment schedule would leave the schedule describing money nobody is being asked for — so
+	// the menu leaves the move out rather than offering a button that can only fail.
+	const canVoid = $derived(Boolean(saved?.can_void) && isOpenIssued && !isProgress);
 	const canWriteOff = $derived(Boolean(saved?.can_bad_debt) && isOpenIssued);
 	const canRestoreWriteOff = $derived(
 		Boolean(saved?.can_bad_debt) && saved?.invoice.derived_status === 'bad_debt'
@@ -776,9 +796,11 @@
 				<ProductsAndServicesBlock
 					lines={invoiceLines}
 					revision={saved.invoice.revision}
-					editable={editable && canSeePrice}
+					editable={editable && canSeePrice && !isProgress}
 					showPrices={canSeePrice}
 					showServiceDate
+					progressColumn={isProgress}
+					lockedMessage={isProgress ? progressLockedMessage : ''}
 					subtotalMinor={canSeePrice ? (saved.money?.subtotal_minor ?? 0) : null}
 					currencyCode={saved.invoice.currency_code}
 					locale={saved.locale}
@@ -990,7 +1012,7 @@
 					discountMinor={canSeePrice ? (saved.money?.discount_minor ?? 0) : null}
 					currencyCode={saved.invoice.currency_code}
 					locale={saved.locale}
-					{editable}
+					editable={editable && !isProgress}
 					{canSeePrice}
 					recordNoun="invoice"
 					onSave={(revision, payload) => saveInvoiceDiscount(invoiceId, revision, payload)}
@@ -1007,7 +1029,7 @@
 					taxMinor={canSeePrice ? (saved.money?.tax_minor ?? 0) : null}
 					currencyCode={saved.invoice.currency_code}
 					locale={saved.locale}
-					{editable}
+					editable={editable && !isProgress}
 					{canSeePrice}
 					canManageTaxes={false}
 					recordNoun="invoice"
