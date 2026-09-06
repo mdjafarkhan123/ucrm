@@ -3,7 +3,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(58);
+select plan(61);
 
 -- Money left the `authenticated` grant when the quote money columns were locked down, so these
 -- assertions read stored money the same way they read fixture ids: through a definer helper, rather
@@ -153,11 +153,36 @@ select throws_ok(
   '23514', null, 'a schedule that does not add up to the total is refused, not silently accepted'
 );
 
+-- 5c-1 tightened this: a payment schedule means several invoices, and one mode across all of them, so the
+-- three shapes below are refused where the first two used to save.
+select throws_ok(
+  $$select public.set_quote_draft_deposit(
+      (select id from public.quotes where title = 'Deposit config quote'), 2, 'schedule',
+      '[{"description": "Everything", "type": "fixed", "value": 10000}]'::jsonb)$$,
+  '23514', null, 'a one-installment schedule is refused -- that is a deposit, not a schedule'
+);
+
+select throws_ok(
+  $$select public.set_quote_draft_deposit(
+      (select id from public.quotes where title = 'Deposit config quote'), 2, 'schedule',
+      '[{"description": "Deposit", "type": "fixed", "value": 4000},
+        {"description": "Final milestone", "type": "percentage", "value": 6000}]'::jsonb)$$,
+  '23514', null, 'a schedule mixing a fixed installment with a percentage one is refused'
+);
+
+select throws_ok(
+  $$select public.set_quote_draft_deposit(
+      (select id from public.quotes where title = 'Deposit config quote'), 2, 'schedule',
+      '[{"description": "Deposit", "type": "percentage", "value": 4000},
+        {"description": "Final milestone", "type": "percentage", "value": 5000}]'::jsonb)$$,
+  '23514', null, 'percentage installments that do not add up to 100% are refused'
+);
+
 select is(
   (public.set_quote_draft_deposit(
     (select id from public.quotes where title = 'Deposit config quote'), 2, 'schedule',
     '[{"description": "Deposit", "type": "fixed", "value": 4000},
-      {"description": "Final milestone", "type": "percentage", "value": 6000}]'::jsonb
+      {"description": "Final milestone", "type": "fixed", "value": 6000}]'::jsonb
   ) -> 'totals' ->> 'deposit_required_minor')::bigint,
   4000::bigint, 'a balanced schedule saves, priced from its first (deposit) installment'
 );
@@ -180,7 +205,8 @@ select is(
 select throws_ok(
   $$select public.set_quote_draft_deposit(
       (select id from public.quotes where title = 'Deposit empty quote'), 1, 'schedule',
-      '[{"description": "Deposit", "type": "fixed", "value": 100}]'::jsonb)$$,
+      '[{"description": "Deposit", "type": "fixed", "value": 100},
+        {"description": "Balance", "type": "fixed", "value": 100}]'::jsonb)$$,
   '23514', null, 'a schedule cannot be saved before the quote has anything priced'
 );
 
