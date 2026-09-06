@@ -302,6 +302,13 @@ export const invoiceEmailSchema = z.strictObject({
 	idempotency_key: z.string().uuid('Start a new email attempt and try again.')
 });
 
+// Sending a payment receipt by email. Same shape as the invoice email: one key per send attempt, so a double
+// click queues one receipt and a deliberate resend (a fresh key) sends again. The recipient, link and
+// receipt contents are all decided in the database.
+export const paymentReceiptEmailSchema = z.strictObject({
+	idempotency_key: z.string().uuid('Start a new receipt attempt and try again.')
+});
+
 // The six manual methods the contract names — none of them processes a payment; each just acknowledges money
 // received elsewhere. Same order and spelling as the database's own check constraint.
 export const INVOICE_PAYMENT_METHODS = [

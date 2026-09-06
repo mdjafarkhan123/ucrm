@@ -44,7 +44,10 @@
 			idempotency_key: string;
 			request_hash: string;
 		}) => Promise<RecordInvoicePaymentResult>;
-		onSaved: () => void | Promise<void>;
+		/** Handed the recorded payment and whether staff asked for the customer's receipt to go out with it.
+		 *  Emailing is the page's job, not this form's: the money is already recorded by the time this runs,
+		 *  so a receipt that fails to send must never read as a payment that failed. */
+		onSaved: (result: RecordInvoicePaymentResult, emailReceipt: boolean) => void | Promise<void>;
 	} = $props();
 
 	const money = $derived(
@@ -78,7 +81,10 @@
 	let paymentDate = $state(todayIso());
 	let reference = $state('');
 	let note = $state('');
-	let saving = $state(false);
+	// Which button is in flight, so only the pressed one spins. Both write the same payment; they differ only
+	// in whether the customer is emailed afterwards.
+	let savingMode = $state<'save' | 'receipt' | null>(null);
+	const saving = $derived(savingMode !== null);
 	let error = $state('');
 	let fieldErrors = $state<Record<string, string>>({});
 	let idempotencyKey = crypto.randomUUID();
@@ -89,7 +95,7 @@
 		onClose();
 	}
 
-	async function submit() {
+	async function submit(emailReceipt: boolean) {
 		if (saving) return;
 		fieldErrors = {};
 		error = '';
@@ -116,17 +122,21 @@
 			lastHash = hash;
 		}
 
-		saving = true;
+		savingMode = emailReceipt ? 'receipt' : 'save';
 		try {
-			await onSave({ ...core, idempotency_key: idempotencyKey, request_hash: hash });
-			await onSaved();
+			const result = await onSave({
+				...core,
+				idempotency_key: idempotencyKey,
+				request_hash: hash
+			});
+			await onSaved(result, emailReceipt);
 			onClose();
 		} catch (cause) {
 			const failure = cause as InvoiceWriteError;
 			fieldErrors = failure.fieldErrors ?? {};
 			error = Object.keys(fieldErrors).length ? '' : failure.message;
 		} finally {
-			saving = false;
+			savingMode = null;
 		}
 	}
 </script>
@@ -182,7 +192,20 @@
 
 		<footer class="collect-payment__footer">
 			<Button variant="secondary" onclick={close} disabled={saving}>Cancel</Button>
-			<Button variant="primary" onclick={() => void submit()} loading={saving}>
+			<Button
+				variant="secondary"
+				onclick={() => void submit(true)}
+				disabled={savingMode === 'save'}
+				loading={savingMode === 'receipt'}
+			>
+				Save and email receipt
+			</Button>
+			<Button
+				variant="primary"
+				onclick={() => void submit(false)}
+				disabled={savingMode === 'receipt'}
+				loading={savingMode === 'save'}
+			>
 				Collect payment
 			</Button>
 		</footer>
@@ -212,6 +235,7 @@
 
 	:global(.collect-payment__footer) {
 		display: flex;
+		flex-wrap: wrap;
 		justify-content: flex-end;
 		gap: var(--space-small);
 		margin-top: var(--space-small);

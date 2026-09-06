@@ -42,12 +42,14 @@
 		queueInvoiceEmail,
 		issueInvoiceAccessLink,
 		recordInvoicePayment,
+		sendPaymentReceipt,
 		runInvoiceLifecycleAction,
 		deleteInvoice,
 		invoiceCountsKey,
 		type InvoiceWriteError,
 		type InvoiceLifecycleAction,
-		type InvoiceLineInput
+		type InvoiceLineInput,
+		type RecordInvoicePaymentResult
 	} from '$lib/invoices/api';
 	import { INVOICE_STATUS_LABELS, INVOICE_STATUS_TONES } from '$lib/invoices/statuses';
 	import { INVOICE_VOID_REASON_LABELS, type InvoiceVoidReason } from '$lib/invoices/lifecycle';
@@ -566,9 +568,22 @@
 		return recordInvoicePayment(invoiceId, { client_id: saved.client.id, ...payload });
 	}
 
-	async function onPaymentSaved() {
+	// The money is already recorded by the time this runs, so the receipt is reported separately from it: a
+	// receipt that could not be queued is a delivery problem, never a reason to make a recorded payment look
+	// like it failed. Same two-entry-point shape as Jobber, whose New Payment screen offers exactly this.
+	async function onPaymentSaved(result: RecordInvoicePaymentResult, emailReceipt: boolean) {
 		await refreshInvoice();
-		toast.success('Payment recorded');
+		if (!emailReceipt) {
+			toast.success('Payment recorded');
+			return;
+		}
+		try {
+			await sendPaymentReceipt(result.payment_event_id, crypto.randomUUID());
+			toast.success('Payment recorded — receipt emailed');
+		} catch (cause) {
+			toast.success('Payment recorded');
+			toast.error((cause as InvoiceWriteError).message);
+		}
 	}
 
 	// --- Lifecycle: void / bad debt / mark received (Part 7b) -------------------------------------------

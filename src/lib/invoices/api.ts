@@ -525,6 +525,25 @@ export async function recordInvoicePayment(
 	return readOrThrow<RecordInvoicePaymentResult>(response, 'That payment could not be recorded.');
 }
 
+export type QueuePaymentReceiptResult = {
+	intent: { id: string; status: string; created_at: string };
+};
+
+// Emailing the customer their receipt for a payment already recorded. The email carries a link to the hosted
+// receipt, not an attachment — we run no server PDF engine, and it is how we already send invoices. Keyed the
+// same way as the invoice email, so a double click queues one receipt and a deliberate resend sends again.
+export async function sendPaymentReceipt(
+	paymentEventId: string,
+	idempotencyKey: string
+): Promise<QueuePaymentReceiptResult> {
+	const response = await fetch(`/api/payments/${paymentEventId}/receipt`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ idempotency_key: idempotencyKey })
+	});
+	return readOrThrow<QueuePaymentReceiptResult>(response, 'The receipt email could not be queued.');
+}
+
 export type DeleteInvoiceResult = { applied?: boolean; invoice_id: string; invoice_number: number };
 
 export async function deleteInvoice(

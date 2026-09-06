@@ -1073,6 +1073,7 @@ export type Database = {
 					channel: string;
 					client_contact_method_id: string;
 					client_id: string;
+					client_payment_event_id: string | null;
 					created_at: string;
 					created_by: string | null;
 					delivery_outcome: string | null;
@@ -1110,6 +1111,7 @@ export type Database = {
 					channel?: string;
 					client_contact_method_id: string;
 					client_id: string;
+					client_payment_event_id?: string | null;
 					created_at?: string;
 					created_by?: string | null;
 					delivery_outcome?: string | null;
@@ -1147,6 +1149,7 @@ export type Database = {
 					channel?: string;
 					client_contact_method_id?: string;
 					client_id?: string;
+					client_payment_event_id?: string | null;
 					created_at?: string;
 					created_by?: string | null;
 					delivery_outcome?: string | null;
@@ -1206,6 +1209,13 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'organizations';
 						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_delivery_intents_payment_fk';
+						columns: ['organization_id', 'client_payment_event_id'];
+						isOneToOne: false;
+						referencedRelation: 'client_payment_events';
+						referencedColumns: ['organization_id', 'id'];
 					},
 					{
 						foreignKeyName: 'communication_delivery_intents_quote_access_link_fk';
@@ -3478,6 +3488,7 @@ export type Database = {
 				Row: {
 					billing_address_snapshot: Json;
 					client_id: string;
+					contract_disclaimer: string | null;
 					created_at: string;
 					created_by: string | null;
 					currency_code: string;
@@ -3530,6 +3541,7 @@ export type Database = {
 				Insert: {
 					billing_address_snapshot?: Json;
 					client_id: string;
+					contract_disclaimer?: string | null;
 					created_at?: string;
 					created_by?: string | null;
 					currency_code: string;
@@ -3582,6 +3594,7 @@ export type Database = {
 				Update: {
 					billing_address_snapshot?: Json;
 					client_id?: string;
+					contract_disclaimer?: string | null;
 					created_at?: string;
 					created_by?: string | null;
 					currency_code?: string;
@@ -6272,6 +6285,63 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'platform_packages';
 						referencedColumns: ['package_key'];
+					}
+				];
+			};
+			payment_receipt_access_links: {
+				Row: {
+					client_payment_event_id: string;
+					expires_at: string | null;
+					id: string;
+					issued_at: string;
+					issued_by: string | null;
+					organization_id: string;
+					recipient_email: string | null;
+					recipient_name: string | null;
+					revoked_at: string | null;
+					revoked_reason: string | null;
+					token_hash: string;
+				};
+				Insert: {
+					client_payment_event_id: string;
+					expires_at?: string | null;
+					id?: string;
+					issued_at?: string;
+					issued_by?: string | null;
+					organization_id: string;
+					recipient_email?: string | null;
+					recipient_name?: string | null;
+					revoked_at?: string | null;
+					revoked_reason?: string | null;
+					token_hash: string;
+				};
+				Update: {
+					client_payment_event_id?: string;
+					expires_at?: string | null;
+					id?: string;
+					issued_at?: string;
+					issued_by?: string | null;
+					organization_id?: string;
+					recipient_email?: string | null;
+					recipient_name?: string | null;
+					revoked_at?: string | null;
+					revoked_reason?: string | null;
+					token_hash?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'payment_receipt_access_links_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'payment_receipt_access_links_payment_fk';
+						columns: ['organization_id', 'client_payment_event_id'];
+						isOneToOne: false;
+						referencedRelation: 'client_payment_events';
+						referencedColumns: ['organization_id', 'id'];
 					}
 				];
 			};
@@ -10519,6 +10589,7 @@ export type Database = {
 					channel: string;
 					client_contact_method_id: string;
 					client_id: string;
+					client_payment_event_id: string | null;
 					created_at: string;
 					created_by: string | null;
 					delivery_outcome: string | null;
@@ -10574,6 +10645,7 @@ export type Database = {
 					channel: string;
 					client_contact_method_id: string;
 					client_id: string;
+					client_payment_event_id: string | null;
 					created_at: string;
 					created_by: string | null;
 					delivery_outcome: string | null;
@@ -10672,6 +10744,7 @@ export type Database = {
 					channel: string;
 					client_contact_method_id: string;
 					client_id: string;
+					client_payment_event_id: string | null;
 					created_at: string;
 					created_by: string | null;
 					delivery_outcome: string | null;
@@ -10728,6 +10801,61 @@ export type Database = {
 					channel: string;
 					client_contact_method_id: string;
 					client_id: string;
+					client_payment_event_id: string | null;
+					created_at: string;
+					created_by: string | null;
+					delivery_outcome: string | null;
+					delivery_outcome_at: string | null;
+					delivery_outcome_detail: string | null;
+					direction: string;
+					expires_at: string;
+					failure_code: string | null;
+					failure_message: string | null;
+					html_content: string;
+					id: string;
+					invoice_id: string | null;
+					logical_send_key: string;
+					organization_id: string;
+					provider_message_id: string | null;
+					quote_access_link_id: string | null;
+					quote_id: string | null;
+					quote_recipient_id: string | null;
+					quote_version_id: string | null;
+					recipient_email: string;
+					reply_alias_id: string | null;
+					resent_from_intent_id: string | null;
+					retry_class: string;
+					retry_window_ends_at: string | null;
+					send_kind: string;
+					sender_id: string | null;
+					status: string;
+					subject: string;
+					text_content: string;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_delivery_intents';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			enqueue_payment_receipt_email: {
+				Args: {
+					target_actor_user_id: string;
+					target_logical_send_key: string;
+					target_organization_id: string;
+					target_payment_event_id: string;
+					target_receipt_token_hash: string;
+					target_receipt_url: string;
+				};
+				Returns: {
+					accepted_at: string | null;
+					allowance_class: string;
+					channel: string;
+					client_contact_method_id: string;
+					client_id: string;
+					client_payment_event_id: string | null;
 					created_at: string;
 					created_by: string | null;
 					delivery_outcome: string | null;
@@ -10781,6 +10909,7 @@ export type Database = {
 					channel: string;
 					client_contact_method_id: string;
 					client_id: string;
+					client_payment_event_id: string | null;
 					created_at: string;
 					created_by: string | null;
 					delivery_outcome: string | null;
@@ -12619,6 +12748,7 @@ export type Database = {
 					channel: string;
 					client_contact_method_id: string;
 					client_id: string;
+					client_payment_event_id: string | null;
 					created_at: string;
 					created_by: string | null;
 					delivery_outcome: string | null;
@@ -12708,6 +12838,10 @@ export type Database = {
 				Returns: number;
 			};
 			resolve_invoice_access_link: {
+				Args: { supplied_token_hash: string };
+				Returns: Json;
+			};
+			resolve_payment_receipt_access_link: {
 				Args: { supplied_token_hash: string };
 				Returns: Json;
 			};
@@ -13474,6 +13608,15 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			update_invoice_contract_disclaimer: {
+				Args: {
+					expected_revision: number;
+					new_disclaimer: string;
+					target_invoice_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
 			};
 			update_invoice_details: {
 				Args: {
