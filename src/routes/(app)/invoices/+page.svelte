@@ -27,8 +27,10 @@
 	import {
 		fetchInvoiceOverview,
 		fetchInvoices,
+		fetchReadyToBillCount,
 		invoiceCountsKey,
 		invoicesListKey,
+		readyToBillCountKey,
 		type InvoiceListItem,
 		type InvoiceListPage,
 		type InvoiceSortKey
@@ -110,6 +112,15 @@
 		queryFn: fetchInvoiceOverview
 	}));
 
+	// How many jobs owe an invoice today, counted over exactly the predicate the queue lists, so the number on
+	// the button and the rows behind it can never disagree. A member who may not bill is answered 0, and the
+	// button simply carries no number.
+	const readyQuery = createQuery(() => ({
+		queryKey: readyToBillCountKey,
+		queryFn: fetchReadyToBillCount
+	}));
+	const readyCount = $derived(readyQuery.data ?? 0);
+
 	const invoices = $derived(invoicesQuery.data?.pages.flatMap((page) => page.invoices) ?? []);
 	const locale = $derived(invoicesQuery.data?.pages[0]?.locale ?? 'en-US');
 	const hasActiveFilters = $derived(status !== '' || createdFrom !== '' || createdTo !== '');
@@ -182,6 +193,9 @@
 	<PageContainer variant="fill">
 		<PageHeader title="Invoices" description="The bills you have sent your customers.">
 			{#snippet actions()}
+				<Button href={resolve('/(app)/invoices/ready-to-bill')}>
+					Ready to bill{readyCount > 0 ? ` (${readyCount})` : ''}
+				</Button>
 				<Button variant="primary" href={resolve('/(app)/invoices/new')}>New Invoice</Button>
 			{/snippet}
 		</PageHeader>

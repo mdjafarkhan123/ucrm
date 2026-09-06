@@ -16,6 +16,26 @@ export const INVOICE_PAGE_SIZE_MAX = 50;
 // tenant's invoices in memory.
 export const INVOICE_SORT_KEYS = ['created', 'number'] as const;
 
+// The ready-to-bill queue is deliberately narrower than the Invoices list: it is ordered one way — oldest
+// unpaid-for work first — because "what has been waiting longest" is the only question a billing queue is
+// asked. No sort keys, no status filter, no client filter.
+export const readyToBillQuerySchema = z.object({
+	search: z
+		.string()
+		.trim()
+		.max(160)
+		.optional()
+		.transform((value) => value || ''),
+	/** `<oldest due date>|<reminder id>`, the pair the queue's keyset seek reads. */
+	cursor: z.string().min(3).max(120).optional(),
+	limit: z.coerce
+		.number()
+		.int()
+		.min(1)
+		.max(INVOICE_PAGE_SIZE_MAX)
+		.default(INVOICE_PAGE_SIZE_DEFAULT)
+});
+
 export const invoiceListQuerySchema = z.object({
 	search: z
 		.string()

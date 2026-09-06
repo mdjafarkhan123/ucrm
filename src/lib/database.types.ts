@@ -10087,6 +10087,41 @@ export type Database = {
 				Args: { target_client_id: string; target_organization_id: string };
 				Returns: Json;
 			};
+			ready_to_bill_page: {
+				Args: {
+					cursor_due_on?: string | null;
+					cursor_reminder_id?: string | null;
+					page_limit?: number;
+					search_like?: string | null;
+					search_number?: number | null;
+					target_organization_id: string;
+				};
+				Returns: {
+					billing_timing: string;
+					client_company_name: string | null;
+					client_display_name: string | null;
+					client_id: string | null;
+					currency_code: string;
+					cursor_reminder: string;
+					due_reminder_count: number;
+					job_id: string;
+					job_number: number;
+					job_type: string;
+					oldest_due_on: string;
+					price_basis: string;
+					property_address_line1: string | null;
+					property_city: string | null;
+					property_label: string | null;
+					title: string;
+					uninvoiced_minor: number;
+					unit_count: number;
+					unit_kind: string;
+				}[];
+			};
+			ready_to_bill_count: {
+				Args: { target_organization_id: string };
+				Returns: number;
+			};
 			create_invoice_from_work: {
 				Args: {
 					new_custom_due_date: string;

@@ -97,6 +97,58 @@ export async function fetchInvoiceOverview(): Promise<InvoiceOverview> {
 	return readOrThrow<InvoiceOverview>(response, 'The overview could not be loaded.');
 }
 
+// --- The ready-to-bill queue ------------------------------------------------------------------------------
+
+// One job that owes an invoice today. `unit_kind` says what shape the waiting work is — the whole job, a
+// number of completed visits, or a number of billing periods — and `uninvoiced_minor` is what those units
+// come to. Both are worked out by the database from the same three rules the job's own billing cards use.
+export type ReadyToBillJob = {
+	job_id: string;
+	job_number: number;
+	title: string;
+	job_type: string;
+	price_basis: string;
+	billing_timing: string;
+	currency_code: string;
+	oldest_due_on: string;
+	due_reminder_count: number;
+	unit_kind: string;
+	unit_count: number;
+	uninvoiced_minor: number;
+	client: { id: string; display_name: string | null; company_name: string | null } | null;
+	property: { label: string | null; address_line1: string | null; city: string | null };
+};
+
+export type ReadyToBillPage = {
+	jobs: ReadyToBillJob[];
+	next_cursor: string | null;
+	timezone: string;
+	locale: string;
+};
+
+// Both sit under the same `['invoices', 'ready-to-bill']` prefix so one invalidation after billing clears
+// them together. The search term is fenced behind its own `list` segment: without it, searching for the word
+// "count" would land on the count query's key and hand the table a number instead of a page.
+export const readyToBillKey = (search: string) =>
+	['invoices', 'ready-to-bill', 'list', search] as const;
+export const readyToBillCountKey = ['invoices', 'ready-to-bill', 'count'] as const;
+
+export async function fetchReadyToBill(search: string, cursor?: string): Promise<ReadyToBillPage> {
+	const params = new URLSearchParams();
+	if (search) params.set('search', search);
+	if (cursor) params.set('cursor', cursor);
+
+	const response = await fetch(`/api/invoices/ready-to-bill?${params.toString()}`);
+	return readOrThrow<ReadyToBillPage>(response, 'The ready-to-bill list could not be loaded.');
+}
+
+export async function fetchReadyToBillCount(): Promise<number> {
+	const response = await fetch('/api/invoices/ready-to-bill/count');
+	return readOrThrow<{ count: number }>(response, 'That count could not be loaded.').then(
+		(body) => body.count
+	);
+}
+
 // --- Payment terms (for the form) -------------------------------------------------------------------------
 
 // One of the organization's named payment terms, oldest position first. The form offers these plus "Client's
@@ -212,7 +264,8 @@ export type BillableWorkItem = {
 	due_reminder_id: string | null;
 };
 
-export const billableWorkKey = (clientId: string) => ['invoices', 'billable-work', clientId] as const;
+export const billableWorkKey = (clientId: string) =>
+	['invoices', 'billable-work', clientId] as const;
 
 export async function fetchBillableWork(clientId: string): Promise<BillableWorkItem[]> {
 	const response = await fetch(

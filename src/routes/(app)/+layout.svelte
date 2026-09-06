@@ -28,6 +28,7 @@
 		resolve('/(app)/jobs/[id]', { id: 'warm' }),
 		resolve('/(app)/invoices'),
 		resolve('/(app)/invoices/new'),
+		resolve('/(app)/invoices/ready-to-bill'),
 		resolve('/(app)/invoices/[id]', { id: 'warm' }),
 		resolve('/(app)/pipeline'),
 		resolve('/(app)/pipeline/outcomes'),

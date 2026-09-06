@@ -279,6 +279,9 @@
 			if (seed && seed.sources.length > 0) {
 				await queryClient.invalidateQueries({ queryKey: ['jobs'] });
 				await queryClient.invalidateQueries({ queryKey: ['invoices', 'billable-work'] });
+				// The ready-to-bill queue and the count on its button read the same reminders this bill just
+				// answered, so both go stale the moment it saves.
+				await queryClient.invalidateQueries({ queryKey: ['invoices', 'ready-to-bill'] });
 			}
 			baseline = snapshot(form);
 			baselineLines = JSON.stringify(lines);
