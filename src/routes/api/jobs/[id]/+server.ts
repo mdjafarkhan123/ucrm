@@ -37,6 +37,9 @@ export const GET: RequestHandler = async (event) => {
 	// The header's "Create invoice" entry point. Billing checks `invoices.create` for itself, so the menu
 	// only offers what the member could actually do; the same right gates the billable-work lookup.
 	const canInvoice = hasPermission(check.access, 'invoices.create');
+	// The per-visit billing card additionally needs to know which visits are already billed, which is a fact
+	// about invoices rather than about jobs — gated on invoices.view the same way the invoice screens gate it.
+	const canSeeInvoiceStatus = canInvoice && hasPermission(check.access, 'invoices.view');
 	// Saving a one-off tax rate into the organization's shared list is a settings right, not a jobs one. The
 	// card only offers the checkbox when it is held; the command checks it again for itself.
 	const canManageTaxes = hasPermission(check.access, 'settings.taxes.manage');
@@ -50,7 +53,8 @@ export const GET: RequestHandler = async (event) => {
 		reminderRows,
 		jobMoney,
 		lineMoney,
-		formatting
+		formatting,
+		billedVisitRows
 	] = await Promise.all([
 		supabase
 			.from('job_list_rows')
@@ -128,7 +132,17 @@ export const GET: RequestHandler = async (event) => {
 		canSeePrice
 			? supabase.rpc('job_line_money', { target_job_id: jobId })
 			: Promise.resolve({ data: {}, error: null }),
-		organizationFormatting(supabase, organizationId)
+		organizationFormatting(supabase, organizationId),
+		// Which of this job's visits an invoice already claims. Scoped to one job and served by
+		// invoice_sources_job_idx, the same index the claim command itself relies on.
+		canSeeInvoiceStatus
+			? supabase
+					.from('invoice_sources')
+					.select('visit_id')
+					.eq('organization_id', organizationId)
+					.eq('job_id', jobId)
+					.eq('source_kind', 'visit')
+			: Promise.resolve({ data: [], error: null })
 	]);
 
 	if (
@@ -139,7 +153,8 @@ export const GET: RequestHandler = async (event) => {
 		ruleRow.error ||
 		reminderRows.error ||
 		jobMoney.error ||
-		lineMoney.error
+		lineMoney.error ||
+		billedVisitRows.error
 	) {
 		return databaseError();
 	}
@@ -187,6 +202,10 @@ export const GET: RequestHandler = async (event) => {
 		};
 	})();
 
+	const billedVisitIds = new Set(
+		(billedVisitRows.data ?? []).map((claim) => claim.visit_id as string)
+	);
+
 	const visits = (visitRows.data ?? []).map((visit) => ({
 		id: visit.id,
 		position: visit.position,
@@ -198,7 +217,10 @@ export const GET: RequestHandler = async (event) => {
 		instructions: visit.instructions,
 		completed_at: visit.completed_at,
 		revision: visit.revision,
-		assignee_ids: ((visit.assignments ?? []) as { user_id: string }[]).map((a) => a.user_id)
+		assignee_ids: ((visit.assignments ?? []) as { user_id: string }[]).map((a) => a.user_id),
+		// Only meaningful when canSeeInvoiceStatus computed it; false for a reader who cannot see invoices,
+		// which the visits-to-bill card never renders for anyway (it is gated on the same right).
+		invoiced: billedVisitIds.has(visit.id)
 	}));
 
 	// The organisation's own calendar day, worked out in its timezone — the same clock the database uses to
@@ -296,7 +318,10 @@ export const GET: RequestHandler = async (event) => {
 			can_see_price: canSeePrice,
 			can_see_cost: canSeeCost,
 			can_manage_taxes: canManageTaxes,
-			can_invoice: canInvoice
+			can_invoice: canInvoice,
+			// Whether `invoiced` on each visit is trustworthy. False collapses to "nothing billed yet" above,
+			// which the visits-to-bill card must not show as fact without this — so it gates on this flag too.
+			can_invoice_visits: canSeeInvoiceStatus
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

@@ -23,6 +23,7 @@ function makeVisit(overrides: Partial<JobVisit> = {}): JobVisit {
 		completed_at: null,
 		revision: 1,
 		assignee_ids: [],
+		invoiced: false,
 		...overrides
 	};
 }

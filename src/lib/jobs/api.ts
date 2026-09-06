@@ -255,6 +255,9 @@ export type JobVisit = {
 	// between is refused so two dispatchers cannot silently overwrite each other.
 	revision: number;
 	assignee_ids: string[];
+	// Whether an invoice already claims this visit. Only trustworthy when `JobDetail.can_invoice_visits` is
+	// true — see that field's comment.
+	invoiced: boolean;
 };
 
 // The job's money, gated. Null for a reader without jobs.view_price at all; cost and profit are null on top
@@ -342,6 +345,9 @@ export type JobDetail = {
 	can_see_cost: boolean;
 	can_manage_taxes: boolean;
 	can_invoice: boolean;
+	// Whether each visit's `invoiced` flag was actually computed (needs invoices.view on top of
+	// invoices.create). False means every visit reads `invoiced: false` regardless of the truth.
+	can_invoice_visits: boolean;
 };
 
 export const jobDetailKey = (id: string) => ['jobs', 'detail', id] as const;

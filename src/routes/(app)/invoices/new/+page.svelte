@@ -26,11 +26,18 @@
 
 	const toast = getToastManager();
 
-	// Two ways in. Plain /invoices/new is the direct bill this screen has always written. Arriving with a
+	// Three ways in. Plain /invoices/new is the direct bill this screen has always written. Arriving with a
 	// client — which is how "Create invoice" on a job gets here — first asks which of that client's work the
-	// bill covers, then fills the same form with it.
+	// bill covers, then fills the same form with it. Arriving with specific visits (5b-2's visits-to-bill
+	// card already did the choosing on the job page) skips that picker and seeds straight from them.
 	const clientId = $derived(page.url.searchParams.get('client') ?? '');
 	const jobId = $derived(page.url.searchParams.get('job'));
+	const visitIds = $derived(
+		(page.url.searchParams.get('visits') ?? '')
+			.split(',')
+			.map((id) => id.trim())
+			.filter(Boolean)
+	);
 
 	type Seed = {
 		clientId: string;
@@ -44,9 +51,10 @@
 	let seed = $state<Seed | null>(null);
 	let picking = $state(false);
 	let loadingSeed = $state(false);
-	// The picker opens once per arrival; cancelling leaves rather than reopening it forever.
+	// The picker opens once per arrival; cancelling leaves rather than reopening it forever. Arriving with
+	// visits already chosen skips it — there is nothing left to pick.
 	$effect(() => {
-		if (clientId && !seed) picking = true;
+		if (clientId && !seed && visitIds.length === 0) picking = true;
 	});
 
 	// The client's name for the picker's title. It rides along on the job the contractor came from, so no
@@ -82,6 +90,36 @@
 				image_attachment_id: line.image_attachment_id
 			})) satisfies RequestPricingLineInput[];
 	}
+
+	// Visits arrive pre-chosen (the job page's visits-to-bill card), so this seeds directly off the one job
+	// once it loads rather than reopening a picker that has nothing left to ask. One copy of the job's priced
+	// lines per visit, each stamped with that visit's own date — the 5b-2 shape approved on the roadmap.
+	let attemptedVisitSeed = $state(false);
+	$effect(() => {
+		if (visitIds.length === 0 || seed || attemptedVisitSeed || !jobId) return;
+		const job = originJobQuery.data;
+		if (!job) return;
+		attemptedVisitSeed = true;
+
+		const jobLines = pricedLines(job.lines);
+		if (jobLines.length === 0) {
+			toast.error('That job has no priced lines yet, so there is nothing to bill.');
+			void goto(resolve('/(app)/jobs/[id]', { id: jobId }));
+			return;
+		}
+
+		const visitDateById = new Map(job.visits.map((visit) => [visit.id, visit.visit_date]));
+		seed = {
+			clientId,
+			clientName,
+			subject: job.job.title,
+			propertyId: job.job.property?.id ?? null,
+			lines: visitIds.flatMap((visitId) =>
+				jobLines.map((line) => ({ ...line, service_date: visitDateById.get(visitId) ?? null }))
+			),
+			sources: visitIds.map((visitId) => ({ kind: 'visit', job_id: jobId, visit_id: visitId }))
+		};
+	});
 
 	async function continueWith(chosen: BillableWorkItem[]) {
 		if (chosen.length === 0 || loadingSeed) return;

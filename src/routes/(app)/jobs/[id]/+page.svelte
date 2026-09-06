@@ -23,6 +23,7 @@
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
 	import JobBillingCard from '$lib/components/jobs/JobBillingCard.svelte';
 	import JobRemindersCard from '$lib/components/jobs/JobRemindersCard.svelte';
+	import JobVisitsToBillCard from '$lib/components/jobs/JobVisitsToBillCard.svelte';
 	import JobVisitsSection from '$lib/components/jobs/JobVisitsSection.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
@@ -538,6 +539,17 @@
 					{editable}
 					onChanged={refreshJob}
 				/>
+
+				{#if saved.can_invoice_visits && saved.job.price_basis === 'per_visit' && saved.job.client}
+					<JobVisitsToBillCard
+						jobId={saved.job.id}
+						clientId={saved.job.client.id}
+						visits={saved.visits}
+						subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? null) : null}
+						currencyCode={saved.job.currency_code}
+						locale={saved.locale}
+					/>
+				{/if}
 
 				<RecordDiscountCard
 					revision={saved.job.revision}
