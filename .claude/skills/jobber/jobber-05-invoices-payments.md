@@ -152,6 +152,29 @@ Jobber creates invoices from several entry points:
      instead of one-by-one.
   2. **Batch Deliver** — send the freshly-created invoices to clients in bulk.
 
+### 4.1b Create-invoice-from-a-job, observed live 2026-09-05
+
+Walked on a one-off job with two priced lines and one late visit. Read-only; nothing was saved.
+
+- **Entry point is the job's `··· More` menu → "Create Invoice"** — *not* the green primary action, which
+  stays on the lifecycle step (here "Show Late Visit"). Creating an invoice does not close the job.
+- It navigates to the ordinary new-invoice route, seeded by query string:
+  `/invoices/new?client_id=<client>&initial_work_order_id=<job>`. **No draft is written on the way in** — the
+  originating job is only a pre-selection.
+- The form opens behind a modal: **"Select jobs to invoice for <Client>"**, a table of *every* invoiceable
+  job for that client, not just the one you came from. Columns: **Status** (job status pill), **Title**
+  (`#N Title` as a link, with `Visit: <date>` underneath), **Address**, **Uninvoiced**, **Subtotal**. The
+  originating job is checked; the rest are unchecked and multi-selectable. Actions: **Cancel** / **Continue**.
+  This is the interaction behind "several jobs may share one invoice, same client only".
+- After **Continue**, the form fills: **Subject** becomes the job's title (it was the "For Services Rendered"
+  default beforehand), the job's line items copy in as fully editable rows, and **each line carries its own
+  `Service date:` chip** (the visit date) with an `✕` to remove it. Billing address and property address show
+  in the client card.
+- Totals block on the create form reads: Subtotal, **Discount** (Add Discount), **Tax** (Add Tax), **Total**,
+  **Deposits** (Add Deposit), then a shaded **Invoice balance** row.
+- Bottom bar: **Cancel** and a split **Save Invoice** whose caret opens "Save and… → **Send as Email** /
+  **Collect Payment**".
+
 ### 4.2 Progress invoicing / payment schedules (help center) — [[progress invoicing]]
 
 For larger jobs, Jobber bills a job in stages instead of all at once:
@@ -397,3 +420,73 @@ Historical “unverified” labels above continue to describe Jobber evidence on
 behavior is undecided: partial Draft prepayment, explicit ordinary-payment disposition before Void,
 progress correction chains, linked rebilling, and atomic batch Visit completion are approved UCRM behavior.
 Part 2 design is for review; no implementation approval is implied.
+
+## Payment receipts — 2026-09-05 (full flow recorded live on the trial account, then deleted)
+
+**New Payment screen** (`/payments/new`): buttons bottom-right are **"Save and Email Receipt"** (secondary)
+and **"Save"** (primary). "Save" for a recorded/offline payment, "Charge" for a Jobber Payments card charge.
+Method dropdown under "Create a payment record": Other, Bank transfer, Cash, Check, Credit/debit card, PayPal
+— exactly our six. Fields: Payment method, Reference #, Transaction Date, Details, then an "Outstanding
+invoices" table (Invoice # / Due Date / Property Address / Total / Balance / Enter Payment), originating
+invoice preselected. Recording a full payment flips the invoice to **Paid** and its primary action to
+**Re-open Invoice**; a green banner "A payment of X from <client> has been recorded" with a **View payment
+details** button.
+
+**Payment Details screen** (`/payments/:id`) — observed live:
+- Status pill "Succeeded". Top-right: **… More** (menu: **Download PDF**, **Delete**) and **Send Receipt**
+  (primary green).
+- Big amount, then a pencil (edits the amount). A client card (name, address, phone, email) with its own "…".
+- **Details** section with a pencil: Transaction date, Method, Reference number, Details (free text),
+  **Applied to: Invoice #N** (a link). The pencil edits date / method / details / applied-to.
+- **Delete** → confirm modal "Deleting this Payment will permanently remove it from the billing history for
+  <client>." Deleting returns to `/home`; the invoice goes back to Awaiting payment.
+
+**The receipt document** (`… More → Download PDF`, served from `heavy.getjobber.com/balance_adjustments/:id.pdf`)
+— observed live, this is the whole thing:
+- Business name, bold, top-left.
+- A dark filled badge top-right: **"Transaction date <Mon DD, YYYY>"** (same slot as the invoice's date badge).
+- **"RECIPIENT:"** label, then client **name** (bold) and **billing address**. No client email or phone.
+- Divider.
+- Heading **"Receipt for Payment"**.
+- **"Paid: $320.00"** (the amount).
+- A small block: **Transaction date:** / **Method of payment:** / **Reference Number:**.
+- Divider.
+- The **Details** free-text note, verbatim.
+- **That is all.** No receipt number. No invoice number. No line items. No balance / amount-still-owed. No
+  logo (this account had none set). Currency printed as `$` regardless of the account's display currency.
+
+**The "Send Receipt" dialog** — observed live:
+- Editable **To** (recipient chips, prefilled with the client's email), **Subject**
+  ("Receipt for payment from <Business> - <date>"), editable **Message** body
+  ("Hi <name>, This email has a receipt attached to it for your payment of $320.00. Please keep this email
+  for your reference. If you have any questions… Sincerely, <Business>").
+- **Attachments:** `receipt.pdf` attached and checked — **Jobber attaches the PDF**, it does not send a
+  client-hub link for receipts (unlike invoices/quotes).
+- A **"Send me a copy"** checkbox. Cancel / **Send Email**.
+- Also offered at creation time as **Save and Email Receipt** on the New Payment screen. No "copy link".
+
+- Jobber Payments only: a settings toggle "Automatically email receipts to clients" fires a receipt after
+  every successful **card** payment/refund. Irrelevant to us (we record only offline payments).
+- A **Statement** (client account balance over a date range) is a separate document, not a receipt.
+
+### How WE compare
+
+- **Behavior/content follows Jobber; visual execution is ours** (Jafar 2026-09-05: "follow jobber, no
+  guesswork" + "OURS should look Beautiful, Modern, Professional"). Our receipt is a **premium hosted page**
+  at `/r/[token]` reusing the invoice customer-document paper shell, with browser Print/Save PDF — not a
+  plain generated PDF.
+- **Field set = exactly Jobber's:** business/brand header, "Transaction date" badge, RECIPIENT (name +
+  billing address, no contact info), "Payment receipt" heading, **Paid: <amount>**, then transaction date /
+  method / reference, then the details note. **No** receipt number, invoice number, line items, or balance.
+  Money always shown (a receipt with the number removed is pointless); currency from the paying invoice's
+  snapshot, not a literal `$`.
+- **Email carries a link, not a PDF attachment** — forced by our approved "no server PDF engine" decision,
+  and consistent with how we email invoices (6b-1). Modern-tool convention (Stripe-style).
+- **Two entry points, mirroring Jobber:** a **"Save and email receipt"** secondary button on our
+  CollectPaymentDialog, and **Send receipt** on the payment detail page.
+- **Payment detail page** (`/(app)/payments/[id]`): Jobber has one and Send Receipt lives on it, so we build
+  a read-only one — amount, method, transaction date, reference, details, Applied to: Invoice #N — with
+  **Send receipt** + **Print / Save PDF**. Editing and deleting a payment (Jobber's pencil + … More → Delete)
+  is ledger-correction work → deferred to a later part. Split: **6b-2a** = receipt document + hosted page +
+  email + "Save and email receipt"; **6b-2b** = the payment detail page + "Send receipt" + wiring the
+  invoice financial-history rows to link there.

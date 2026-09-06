@@ -137,11 +137,24 @@ export type InvoiceLineInput = {
 	service_date?: string | null;
 };
 
+// One piece of billable work a new invoice claims. Sending any of these turns the save into a Job handoff:
+// the draft and its claims are written together, so the bill can never exist without owning its work.
+export type InvoiceSourceInput = {
+	kind: 'job_total' | 'visit' | 'reminder_period' | 'installment';
+	job_id: string;
+	visit_id?: string | null;
+	reminder_id?: string | null;
+	installment_number?: number | null;
+	service_property_index?: number | null;
+};
+
 export type CreateInvoicePayload = {
 	client_id: string;
 	subject: string;
 	lines: InvoiceLineInput[];
 	service_property_ids: string[];
+	// Absent on a direct invoice, which has no job behind it.
+	sources?: InvoiceSourceInput[];
 	issue_date: string | null;
 	// One of these two, never both. Null term means "let the command resolve the client/account default".
 	payment_term_id: string | null;
@@ -170,6 +183,46 @@ export async function createInvoice(payload: CreateInvoicePayload): Promise<Crea
 		body: JSON.stringify(payload)
 	});
 	return readOrThrow<CreateInvoiceResult>(response, 'That invoice could not be saved.');
+}
+
+// --- What work is waiting to be billed --------------------------------------------------------------------
+
+// One row of the "select work to invoice" picker: a job of this client that no invoice has claimed yet.
+export type BillableWorkItem = {
+	job_id: string;
+	job_number: number;
+	title: string;
+	job_type: 'one_off' | 'recurring';
+	created_at: string;
+	currency_code: string;
+	derived_status: string;
+	property_id: string | null;
+	property_label: string | null;
+	property_address_line1: string | null;
+	property_city: string | null;
+	property_state_region: string | null;
+	property_postal_code: string | null;
+	subtotal_minor: number;
+	uninvoiced_minor: number;
+	total_minor: number;
+	line_count: number;
+	last_visit_date: string | null;
+	visit_count: number;
+	completed_visit_count: number;
+	due_reminder_id: string | null;
+};
+
+export const billableWorkKey = (clientId: string) => ['invoices', 'billable-work', clientId] as const;
+
+export async function fetchBillableWork(clientId: string): Promise<BillableWorkItem[]> {
+	const response = await fetch(
+		`/api/invoices/billable-work?client_id=${encodeURIComponent(clientId)}`
+	);
+	const body = await readOrThrow<{ work: BillableWorkItem[] }>(
+		response,
+		'That work could not be loaded.'
+	);
+	return body.work;
 }
 
 // --- Reading one invoice ----------------------------------------------------------------------------------

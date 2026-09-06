@@ -14,6 +14,7 @@
 	// picker beside this one needs the primary property, not just an id.
 	let {
 		value = $bindable(''),
+		initialLabel = '',
 		id,
 		invalid = false,
 		errorMessage = '',
@@ -31,10 +32,13 @@
 		/** A client already chosen elsewhere -- a draft handed in from another form -- so the field shows their
 		 * name at rest instead of looking empty while `value` carries the id. */
 		initialClient?: ClientListItem | null;
+		/** Just the name of a client chosen upstream -- billing a job hands over an id and a name, not a whole
+		 * client record. Shows at rest exactly like `initialClient` without inventing the rest of the row. */
+		initialLabel?: string;
 		onSelect?: (client: ClientListItem | null) => void;
 	} = $props();
 
-	let query = $state(untrack(() => initialClient?.display_name ?? ''));
+	let query = $state(untrack(() => initialClient?.display_name ?? initialLabel ?? ''));
 	let open = $state(false);
 	let debouncedQuery = $state('');
 	let selected = $state<ClientListItem | null>(untrack(() => initialClient));
@@ -73,7 +77,12 @@
 		return 'No property yet';
 	}
 
-	let inputValue = $derived(open ? query : (selected?.display_name ?? ''));
+	// At rest the field shows the picked client, or — before anyone has picked — the name handed in from
+	// upstream (billing a job passes just an id and a name). `initialLabel` is read live here, not only at
+	// mount, so a name that arrives a beat later still shows instead of leaving the field looking empty.
+	let inputValue = $derived(
+		open ? query : (selected?.display_name ?? initialClient?.display_name ?? initialLabel ?? '')
+	);
 	let describedBy = $derived(errorMessage ? `${id}-error` : undefined);
 
 	function focusPicker(input: HTMLInputElement) {

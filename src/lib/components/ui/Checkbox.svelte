@@ -11,7 +11,8 @@
 		invalid = false,
 		name,
 		value = 'on',
-		onchange
+		onchange,
+		hideLabel = false
 	}: {
 		checked?: boolean;
 		indeterminate?: boolean;
@@ -24,6 +25,10 @@
 		value?: string;
 		/** For a list of checkboxes whose state lives in one array rather than a variable each. */
 		onchange?: (checked: boolean) => void;
+		/** Keeps the label for screen readers but takes it off screen — a row selector in a table, where the
+		 *  row itself is the visible label. The label stays required, because a checkbox nobody can name is
+		 *  unusable without sight. */
+		hideLabel?: boolean;
 	} = $props();
 
 	let inputElement = $state<HTMLInputElement>();
@@ -56,7 +61,7 @@
 	<span class="checkbox__box" aria-hidden="true">{@html indeterminate ? minusIcon : checkIcon}</span
 	>
 	<span class="checkbox__content">
-		<span class="checkbox__label">{label}</span>
+		<span class="checkbox__label" class:checkbox__label--hidden={hideLabel}>{label}</span>
 		{#if description}<span class="checkbox__description" id={`${id}-description`}
 				>{description}</span
 			>{/if}
@@ -66,6 +71,15 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	.checkbox__label--hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
 	.checkbox {
 		display: inline-flex;
 		align-items: flex-start;

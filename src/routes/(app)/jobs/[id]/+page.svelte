@@ -48,6 +48,7 @@
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
+	import fileInvoiceIcon from '@tabler/icons/outline/file-invoice.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -142,6 +143,23 @@
 					{
 						label: 'View client profile',
 						onSelect: () => void goto(resolve('/(app)/clients/[id]', { id: saved.job.client!.id }))
+					}
+				]
+			: []
+	);
+
+	// The header's own ··· menu. Billing needs a client to invoice and the `invoices.create` right; the
+	// composer at /invoices/new reads the client and job off the query and offers this job's billable work.
+	const jobMenuItems = $derived(
+		saved?.can_invoice && saved.job.client
+			? [
+					{
+						label: 'Create invoice',
+						icon: fileInvoiceIcon,
+						onSelect: () =>
+							void goto(
+								`${resolve('/(app)/invoices/new')}?client=${saved.job.client!.id}&job=${saved.job.id}`
+							)
 					}
 				]
 			: []
@@ -348,6 +366,7 @@
 					statusTone={JOB_STATUS_TONES[saved.job.derived_status]}
 					onHistory={() => (showHistory = !showHistory)}
 					onHistoryHover={warmHistory}
+					menuItems={jobMenuItems}
 					onEditTitle={editable
 						? () => {
 								titleDraft = saved.job.title;
@@ -372,7 +391,12 @@
 					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
 					{#snippet badges()}
 						{#if saved.job.status === 'closed' && saved.can_close}
-							<Button size="small" variant="tertiary" onclick={() => void reopen()} loading={reopening}>
+							<Button
+								size="small"
+								variant="tertiary"
+								onclick={() => void reopen()}
+								loading={reopening}
+							>
 								Reopen job
 							</Button>
 						{/if}

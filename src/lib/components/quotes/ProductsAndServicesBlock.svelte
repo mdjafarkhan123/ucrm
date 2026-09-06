@@ -197,6 +197,21 @@
 		editing = true;
 	}
 
+	// A form that types straight into the rows opens empty and stays that way — except when it opens pre-filled,
+	// the way "bill a whole job" hands this the job's priced lines. Those arrive a beat after mount, so this
+	// adopts them the moment they land, keyed on their identity so a later re-render never overwrites edits the
+	// person has since made. Every other always-editing caller passes no lines, so this stays a no-op for them.
+	let adoptedFrom = $state<string | null>(null);
+	$effect(() => {
+		if (!alwaysEditing || savedLines.length === 0) return;
+		const key = savedLines.map((line) => line.id).join(',');
+		if (adoptedFrom === key) return;
+		adoptedFrom = key;
+		untrack(() => {
+			draftLines = savedLines.map(toDraft);
+		});
+	});
+
 	// What the page's own footer saves, and what the rail's Overview adds up while somebody types.
 	$effect(() => {
 		if (!alwaysEditing || !onDraftChange) return;

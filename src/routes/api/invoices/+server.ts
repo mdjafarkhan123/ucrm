@@ -180,12 +180,12 @@ export const POST: RequestHandler = async (event) => {
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
 	const input = parsed.data;
-	const { data, error } = await event.locals.supabase.rpc('create_invoice_draft', {
+	// The command reads each line straight off the jsonb, and the keys the schema produces are exactly the
+	// ones it reads, so the validated data goes through untouched.
+	const shared = {
 		target_organization_id: auth.organization.id,
 		target_client_id: input.client_id,
 		new_subject: input.subject,
-		// The command reads each line straight off the jsonb, and the keys the schema produces are exactly the
-		// ones it reads, so the validated data goes through untouched.
 		new_lines: input.lines,
 		new_service_property_ids: input.service_property_ids,
 		new_payment_term_id: input.payment_term_id,
@@ -193,7 +193,17 @@ export const POST: RequestHandler = async (event) => {
 		new_issue_date: input.issue_date,
 		new_idempotency_key: input.idempotency_key,
 		new_request_hash: input.request_hash
-	});
+	};
+
+	// Billing a job goes through the composed command so the draft and its claims land in one transaction; a
+	// direct invoice has no work to claim and keeps the plain one. Both check their own permissions.
+	const { data, error } =
+		input.sources && input.sources.length > 0
+			? await event.locals.supabase.rpc('create_invoice_from_work', {
+					...shared,
+					new_sources: input.sources
+				})
+			: await event.locals.supabase.rpc('create_invoice_draft', shared);
 
 	if (error) return createInvoiceError(error);
 

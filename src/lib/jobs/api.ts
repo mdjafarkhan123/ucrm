@@ -341,6 +341,7 @@ export type JobDetail = {
 	can_see_price: boolean;
 	can_see_cost: boolean;
 	can_manage_taxes: boolean;
+	can_invoice: boolean;
 };
 
 export const jobDetailKey = (id: string) => ['jobs', 'detail', id] as const;

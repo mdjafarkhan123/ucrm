@@ -10083,6 +10083,26 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			client_billable_work: {
+				Args: { target_client_id: string; target_organization_id: string };
+				Returns: Json;
+			};
+			create_invoice_from_work: {
+				Args: {
+					new_custom_due_date: string;
+					new_idempotency_key: string;
+					new_issue_date: string;
+					new_lines: Json;
+					new_payment_term_id: string;
+					new_request_hash: string;
+					new_service_property_ids: string[];
+					new_sources: Json;
+					new_subject: string;
+					target_client_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			claim_onboarding_application_provision: {
 				Args: { stale_after?: string; target_application_id: string };
 				Returns: {

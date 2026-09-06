@@ -18,9 +18,10 @@
 		fetchInvoicePaymentTerms,
 		invoicePaymentTermsKey,
 		type InvoiceLineInput,
+		type InvoiceSourceInput,
 		type InvoiceWriteError
 	} from '$lib/invoices/api';
-	import type { RequestPricingLineInput } from '$lib/quotes/api';
+	import type { RequestPricingLine, RequestPricingLineInput } from '$lib/quotes/api';
 	import { firstLineProblem } from '$lib/quotes/lines';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
@@ -29,16 +30,28 @@
 	// come from the database the moment it saves, so nothing here guesses at them. The whole thing — the bill,
 	// its lines and its frozen snapshots — is written in one command, so there is nothing half-made to clean up
 	// if it fails.
+	// Billing a job fills the same form rather than opening a second one: the contractor still edits lines,
+	// terms and subject before saving. The only thing the seed adds is `sources` — the work this bill claims,
+	// which travels with the save so the draft and its claims are written together.
 	let {
 		onSaved,
 		onCancel,
 		currencyCode = 'USD',
-		locale = 'en-US'
+		locale = 'en-US',
+		seed = null
 	}: {
 		onSaved: (invoice: { id: string; number: number }) => void;
 		onCancel: () => void;
 		currencyCode?: string;
 		locale?: string;
+		seed?: {
+			clientId: string;
+			clientName: string;
+			subject: string;
+			propertyId: string | null;
+			lines: RequestPricingLineInput[];
+			sources: InvoiceSourceInput[];
+		} | null;
 	} = $props();
 
 	const queryClient = useQueryClient();
@@ -85,7 +98,56 @@
 		return JSON.stringify(values);
 	}
 	let baseline = $state(untrack(() => snapshot(blankForm())));
-	const isDirty = $derived(snapshot(form) !== baseline || lines.length > 0);
+	// Lines are compared by value, not by count, so changing a price on a pre-filled bill counts as a change
+	// and re-filling the form it opened with does not.
+	let baselineLines = $state('[]');
+	const isDirty = $derived(snapshot(form) !== baseline || JSON.stringify(lines) !== baselineLines);
+
+	// The seed lands once, a beat after mount. Its client, subject and property fill the form here; its lines
+	// go through the shared editor below (via `seededLines`), which owns and re-emits them. Keyed on the seed
+	// identity rather than run bare, so a re-render never re-fills over their edits. The line baseline stays
+	// blank on purpose, so a bill that opened pre-filled reads as ready to save from the first paint.
+	let seededFrom = $state<string | null>(null);
+	$effect(() => {
+		if (!seed) return;
+		const key = seed.sources.map((source) => `${source.kind}:${source.job_id}`).join(',');
+		if (seededFrom === key) return;
+		seededFrom = key;
+		untrack(() => {
+			form.client_id = seed.clientId;
+			form.subject = seed.subject;
+			form.property_id = seed.propertyId ?? '';
+			baseline = snapshot(form);
+		});
+	});
+
+	// The seed carries the job's priced lines in the send shape; the editor renders the saved shape, so this
+	// fills in the position and totals it needs. Ids are only browser-side keys here — the whole set is
+	// replaced on save — so a stable synthetic id per row is all the editor and its drag handles want.
+	const seededLines = $derived<RequestPricingLine[]>(
+		seed
+			? seed.lines.map((line, index) => ({
+					id: `seed-${index}`,
+					position: index,
+					catalog_item_id: line.catalog_item_id,
+					category: line.category,
+					is_labor: line.is_labor,
+					name: line.name,
+					description: line.description ?? null,
+					unit_label: line.unit_label ?? null,
+					quantity: line.quantity,
+					unit_price_minor: line.unit_price_minor,
+					unit_cost_minor: line.unit_cost_minor,
+					is_taxable: line.is_taxable ?? true,
+					line_total_minor: line.quantity * line.unit_price_minor,
+					line_cost_total_minor: line.quantity * line.unit_cost_minor,
+					image_attachment_id: line.image_attachment_id ?? null,
+					line_kind: line.line_kind ?? 'priced',
+					selection_kind: line.selection_kind ?? 'required',
+					is_recommended: line.is_recommended ?? false
+				}))
+			: []
+	);
 
 	// The organization's named payment terms. Warmed from the list on the way in when possible; the form still
 	// opens instantly and the picker fills as soon as they arrive.
@@ -190,7 +252,10 @@
 			service_property_ids: form.property_id ? [form.property_id] : [],
 			issue_date: form.issue_date || null,
 			payment_term_id: form.term_choice && form.term_choice !== 'custom' ? form.term_choice : null,
-			custom_due_date: form.term_choice === 'custom' ? form.custom_due_date : null
+			custom_due_date: form.term_choice === 'custom' ? form.custom_due_date : null,
+			// Part of the fingerprint on purpose: the same lines billed against different work are two
+			// different bills, and a replay must not return the wrong one.
+			...(seed && seed.sources.length > 0 ? { sources: seed.sources } : {})
 		};
 		const hash = fingerprint(core);
 		if (hash !== lastHash) {
@@ -207,7 +272,14 @@
 			});
 			await queryClient.invalidateQueries({ queryKey: ['invoices', 'list'] });
 			await queryClient.invalidateQueries({ queryKey: ['invoices', 'counts'] });
+			// Billing a job changes the job too — its reminders are answered and it leaves "Requires
+			// invoicing" — so everything that draws jobs is refetched, along with what is still billable.
+			if (seed && seed.sources.length > 0) {
+				await queryClient.invalidateQueries({ queryKey: ['jobs'] });
+				await queryClient.invalidateQueries({ queryKey: ['invoices', 'billable-work'] });
+			}
 			baseline = snapshot(form);
+			baselineLines = JSON.stringify(lines);
 			onSaved({ id: result.invoice_id, number: result.invoice_number });
 		} catch (caught) {
 			const writeError = caught as InvoiceWriteError;
@@ -241,6 +313,7 @@
 					<ClientPicker
 						id="invoice-client"
 						bind:value={form.client_id}
+						initialLabel={seed?.clientName ?? ''}
 						required
 						invalid={Boolean(fieldErrors.client_id)}
 						errorMessage={fieldErrors.client_id ?? ''}
@@ -283,6 +356,7 @@
 			<ProductsAndServicesBlock
 				alwaysEditing
 				editable
+				lines={seededLines}
 				{currencyCode}
 				{locale}
 				editorTotalLabel="Invoice subtotal"

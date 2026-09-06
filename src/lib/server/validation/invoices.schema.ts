@@ -130,12 +130,52 @@ const termFields = {
 const oneTermChoice = (body: { payment_term_id: string | null; custom_due_date: string | null }) =>
 	!(body.payment_term_id && body.custom_due_date);
 
+// One piece of billable work the new invoice claims. The four kinds are the ones `invoice_sources` stores,
+// and the command re-checks every relationship itself; this only proves the shape is one the command can read.
+// A whole job carries nothing but its job, which is why the extra references are optional here rather than
+// branched per kind — `claim_invoice_sources` owns that rule and states it in the contractor's words.
+const invoiceSourceSchema = z.object({
+	kind: z.enum(['job_total', 'visit', 'reminder_period', 'installment']),
+	job_id: z.string().uuid('Every piece of work belongs to a job.'),
+	visit_id: z
+		.string()
+		.uuid()
+		.nullish()
+		.transform((value) => value ?? null),
+	reminder_id: z
+		.string()
+		.uuid()
+		.nullish()
+		.transform((value) => value ?? null),
+	installment_number: z
+		.number()
+		.int()
+		.min(1)
+		.nullish()
+		.transform((value) => value ?? null),
+	service_property_index: z
+		.number()
+		.int()
+		.min(0)
+		.nullish()
+		.transform((value) => value ?? null)
+});
+
 // Creating a draft invoice directly. The invoice number, snapshots, due date and money all come from the
 // command; nothing here guesses at them. The idempotency key and fingerprint let a double click or a retried
 // request return the first invoice rather than a second one.
+//
+// `sources` is what turns the same call into a Job handoff: present, the route runs the command that creates
+// the draft and claims that work together; absent, it stays the direct invoice it has always been. The cap
+// matches the 100 sources one invoice can claim, so an oversized selection is refused before it reaches the
+// database.
 export const createInvoiceSchema = z
 	.object({
 		client_id: z.string().uuid('Choose a client to continue.'),
+		sources: z
+			.array(invoiceSourceSchema)
+			.max(100, 'An invoice can cover up to 100 pieces of work at once.')
+			.optional(),
 		subject: z
 			.string()
 			.trim()

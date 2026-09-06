@@ -34,6 +34,9 @@ export const GET: RequestHandler = async (event) => {
 	const canClose = hasPermission(check.access, 'jobs.close');
 	const canSeePrice = hasPermission(check.access, 'jobs.view_price');
 	const canSeeCost = hasPermission(check.access, 'jobs.view_cost');
+	// The header's "Create invoice" entry point. Billing checks `invoices.create` for itself, so the menu
+	// only offers what the member could actually do; the same right gates the billable-work lookup.
+	const canInvoice = hasPermission(check.access, 'invoices.create');
 	// Saving a one-off tax rate into the organization's shared list is a settings right, not a jobs one. The
 	// card only offers the checkbox when it is held; the command checks it again for itself.
 	const canManageTaxes = hasPermission(check.access, 'settings.taxes.manage');
@@ -292,7 +295,8 @@ export const GET: RequestHandler = async (event) => {
 			can_close: canClose,
 			can_see_price: canSeePrice,
 			can_see_cost: canSeeCost,
-			can_manage_taxes: canManageTaxes
+			can_manage_taxes: canManageTaxes,
+			can_invoice: canInvoice
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);
