@@ -241,6 +241,9 @@ export type InvoiceDelivery = {
 // never sees an amount, not even inside a history line.
 export type InvoicePaymentHistoryEntry = {
 	id: string;
+	/** The recorded payment this row came from, so the row can link to its screen. Null on a deposit row —
+	 *  a quote deposit is not a payment record and has no screen of its own. */
+	payment_event_id: string | null;
 	entry_type: 'applied' | 'unapplied';
 	amount_minor: number;
 	created_at: string;
@@ -542,6 +545,52 @@ export async function sendPaymentReceipt(
 		body: JSON.stringify({ idempotency_key: idempotencyKey })
 	});
 	return readOrThrow<QueuePaymentReceiptResult>(response, 'The receipt email could not be queued.');
+}
+
+// --- One recorded payment (the detail screen) --------------------------------------------------------------
+
+/** One bill this money was put against, or taken back off. `invoice_id` is null once that bill is gone —
+ *  the allocation keeps its own copy of the number, so the row still reads right without a link to follow. */
+export type PaymentAllocationEntry = {
+	allocation_id: string;
+	invoice_id: string | null;
+	invoice_number: number;
+	subject: string | null;
+	entry_type: 'applied' | 'unapplied';
+	amount_minor: number;
+	created_at: string;
+};
+
+export type PaymentDetail = {
+	payment: {
+		id: string;
+		amount_minor: number;
+		currency_code: string;
+		method: InvoicePaymentMethod;
+		// A `date` column, so `YYYY-MM-DD` — never a timestamp.
+		payment_date: string;
+		reference: string | null;
+		note: string | null;
+		created_at: string;
+	};
+	client: {
+		id: string;
+		display_name: string | null;
+		company_name: string | null;
+		email: string | null;
+	} | null;
+	applied_to: PaymentAllocationEntry[];
+	locale: string;
+	can_send_receipt: boolean;
+};
+
+export const paymentDetailKey = (id: string) => ['payments', 'detail', id] as const;
+
+// The read model refuses outright without money access, so there is no price-withheld shape to handle here:
+// somebody who may not see amounts cannot open a payment at all.
+export async function fetchPayment(id: string): Promise<PaymentDetail> {
+	const response = await fetch(`/api/payments/${id}`);
+	return readOrThrow<PaymentDetail>(response, 'That payment could not be loaded.');
 }
 
 export type DeleteInvoiceResult = { applied?: boolean; invoice_id: string; invoice_number: number };

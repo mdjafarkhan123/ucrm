@@ -11783,6 +11783,17 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			payment_detail: {
+				Args: {
+					target_organization_id: string;
+					target_payment_event_id: string;
+				};
+				Returns: Json;
+			};
+			payment_receipt_preview: {
+				Args: { target_payment_event_id: string };
+				Returns: Json;
+			};
 			perform_automation_email_effect: {
 				Args: {
 					p_claim_token: string;

@@ -892,7 +892,7 @@
 								{#each saved.payment_history as entry (entry.id)}
 									<li class="invoice-detail__history-row">
 										<div class="invoice-detail__history-main">
-											<span class="invoice-detail__history-label">
+											{#snippet historyLabel()}
 												{entry.entry_type === 'unapplied'
 													? 'Payment removed'
 													: entry.source === 'deposit'
@@ -901,7 +901,23 @@
 												{#if entry.method}
 													&middot; {INVOICE_PAYMENT_METHOD_LABELS[entry.method]}
 												{/if}
-											</span>
+											{/snippet}
+											<!-- A recorded payment has a screen of its own; a reused quote deposit does
+											     not, so only the payment rows are links. -->
+											{#if entry.payment_event_id}
+												<a
+													class="invoice-detail__history-label invoice-detail__history-link"
+													href={resolve('/(app)/payments/[id]', {
+														id: entry.payment_event_id
+													})}
+												>
+													{@render historyLabel()}
+												</a>
+											{:else}
+												<span class="invoice-detail__history-label">
+													{@render historyLabel()}
+												</span>
+											{/if}
 											<span class="invoice-detail__history-meta">
 												{entry.payment_date
 													? formatDay(entry.payment_date)
@@ -1144,6 +1160,14 @@
 	.invoice-detail__history-label {
 		color: var(--color-heading);
 		font-weight: 600;
+	}
+
+	a.invoice-detail__history-link {
+		color: var(--color-interactive);
+
+		&:hover {
+			text-decoration: underline;
+		}
 	}
 
 	.invoice-detail__history-meta {
