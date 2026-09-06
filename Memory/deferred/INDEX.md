@@ -66,3 +66,4 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [Packages editor seat/email allowance fields have an unsound null check](packages-editor-seat-and-email-allowance-fields-have-an-unsound-null-check.md) |
 | P3 | [Two typecheck failures unrelated to Website Chat WC1](typecheck-failures-unrelated-to-website-chat-wc1.md) |
 | P3 | [Staff own actions lag behind their own realtime echo](staff-own-actions-lag-behind-realtime-echo.md) |
+| P3 | [Invoice email sends to the primary email only, not "+ billing contact"](invoice-email-sends-to-primary-only-not-billing-contact.md) |

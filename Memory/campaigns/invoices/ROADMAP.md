@@ -36,7 +36,7 @@ implementation is under way, split into 3a/3b/3c on Jafar's 2026-09-04 approval.
 | 8    | Deliver batch create and batch deliver                                    | Split 8a/8b on Jafar's approval 2026-09-06     | Parts 5–7                                      | Reviewed drafts group compatible Client work; completion atomic with creation; sending separate |
 | 8a   | Batch create: selection on the ready-to-bill queue → many drafts at once  | **Closed 2026-09-06** (committed 9f0ae89)      | 5b-5 (the queue), 5a (create_invoice_from_work) | One invoice per client per tax group; explicitly-ticked unfinished visits complete atomically with creation; a group over 100 sources refuses by name; 25-job cap; heavy batch measured |
 | 8b   | Batch deliver: select draft/awaiting/past-due invoices → issue + queue emails | **CLOSED 2026-09-06** (committed a4d057b). Backend: migration `20260908110000` (`invoice_batch_deliverable_page`), `GET /api/invoices/deliverable`, `POST /api/invoices/batch/deliver` (shared 20/5min bucket, issue-if-draft, enqueue, stop-at-first-denial). Frontend: `/(app)/invoices/send` picker (nothing selected by default, missing-email flag+block, previously-sent marker, cap 20) + result view retrying only not-queued items under the same keys; "Send invoices" button on the list + warm route. Verified by `deliver.spec.ts` (6 tests): real batch logic over isolated made-up invoices, limiter seeded near threshold, outbox enqueue stubbed (no real email, live bucket untouched) — proves queue-once, denial-skips-rest-untouched, same-key-retry-no-duplicate, one-failure-doesn't-block. `npm run check` 0 errors, prettier clean, full suite 1789 passing. | 8a; 6b-1 (issue + enqueue) | Met. DEFERRED (known Jobber diff): billing-contact fan-out (sends to primary email only) — `Memory/deferred/invoice-email-sends-to-primary-only-not-billing-contact.md`. |
-| 9    | Verify integrated billing journeys and measured performance               | Planned                                        | Parts 2–8                                      | Direct, Job, recurring, progress, delivery, payment, exception and batch journeys pass          |
+| 9    | Verify integrated billing journeys and measured performance               | **CLOSED 2026-09-06** — Session A (batch/delivery/exception) + Session B (direct/job/recurring/payment) both browser-verified live on Raad LTD. **7 of 8 journeys verified; progress invoicing NOT implemented — deferred to 5c.** | Parts 2–8                                      | Met for 7 journeys — see Session A/B notes below                                                |
 
 Approved behavior: `docs/invoice-behavior-contract.md`, including D1–D5. Part 2 corrected design:
 `docs/invoice-part-2-design.md`. Part 2 is complete, including all seven corrections. Jafar approved the
@@ -110,3 +110,38 @@ written permanently into `.claude/skills/jobber/jobber-05-invoices-payments.md` 
   batch before claiming any timing.
 - **Out of scope, permanently:** Jobber's "Standard Mail" (combined printable PDF + Avery address labels).
   We do not do postal mail and the approved no-server-PDF-engine decision rules out the combined file.
+
+Part 9 Session B verification (2026-09-06, browser-verified live on Raad LTD, org
+`18f0d717-904e-48d8-bd99-9df7e3844cda`):
+
+- **Direct journey** — invoice #15: new-invoice form (hand-typed line + per-line service date 5b-1) → Send
+  (issued + document frozen, real Brevo `provider_message_id`, delivered) → partial $100 payment (balance
+  $250→$150, status stayed Awaiting payment) → final $150 via "Save and email receipt" (balance $0, status
+  Paid, receipt access link issued + receipt email delivered with real pmid) → opened the client `/i/<token>`
+  link (premium document, "Serviced Sep 3 2026" line badge, `view_count` 0→1, `first_viewed_at` set). No
+  console errors.
+- **Recurring/period journey** — invoice #16: Job #2's "Periods ready to bill" rail card (5b-3) → ticked the
+  period → seeded form (one copy of the job's $75 line stamped with the period-end service date) → saved →
+  `invoice_sources` row `source_kind='reminder_period'` linked to the reminder, reminder now
+  `resolved`/`invoiced`. (The general "Select work to invoice" dialog does NOT list per-period work — periods
+  have their own dedicated card; that is the design, not a bug.)
+- **Job whole-bill journey** — invoice #17: job ⋮ → Create invoice → "Select work to invoice" picker → job
+  auto-ticked → Continue → seeded form ($200 job line) → saved → `invoice_sources` row
+  `source_kind='job_total'`. Re-opening the picker then showed "Every job for this client has already been
+  billed" — the one-job-billed-once guard (3c) holds at the UI.
+- **Payment journey** — covered by the direct journey above (partial→full, balances, status transitions,
+  financial-history row linking to the payment detail page, receipt email).
+- **Progress invoicing** — NOT verified because NOT built. No installment/progress UI exists. Deferred to
+  Part 5c (blocked on Jobs 11a). Never report Part 9 as "all invoice journeys verified."
+- **Performance** — no new growth path was created; Session B exercised existing paths. The one
+  scale-touching path it uses, `public.client_billable_work` (the "select work to invoice" picker), is a
+  bounded per-client lookup: scoped to one org+client, `order by created_at desc` + `limit 100`, and every
+  predicate/join/order is served by an existing index (`jobs_client_idx`, `job_visits_job_idx`,
+  `job_line_items_job_idx`, `job_invoice_reminders_pending_due_idx`, `invoice_sources_job_idx`). Worst case is
+  bounded by jobs-per-client (a per-client dimension, not the platform user count). Reasoned bound, not
+  material — no EXPLAIN required (bounded indexed lookup). The queue and batch paths that DO scale
+  (`ready_to_bill_page`, batch create/deliver) carry measured evidence from 5b-5 / 8a / 8b.
+- **Test-data changes made this session** (Raad LTD): Job #2's two phantom-invoiced reminders (Sep-30,
+  Oct-31) reset to `pending` per Jafar; the Sep-30 period was then billed as invoice #16 (reminder now
+  legitimately resolved/invoiced, `due_on` restored to 2026-09-30). Leftover drafts #16 ($75) and #17 ($200)
+  on Tester Account — harmless, same pattern as earlier test drafts; delete only on Jafar's word.
