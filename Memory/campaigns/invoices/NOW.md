@@ -5,16 +5,20 @@
   Session A: batch create → batch deliver → client view → void. Session B: direct, recurring/period, and
   whole-job journeys + the payment/receipt journey, all verified with real (non-stubbed) side effects.
   Full evidence: `ROADMAP.md` "Part 9 Session B verification".
-- **Only Part 5c remains** — progress/installment invoicing (Jobs 11c work, transferred here 2026-09-05).
-  **Blocked on Jobs 11a** (payment-schedule setup). No UI exists. Gate: installments total the job, issued
+- **Only Part 5c remains** — payment-schedule installments + per-visit amounts (Jobs 11c work, transferred
+  here 2026-09-05) and progress invoicing from an installment. **Dependency-ready**: both its blockers
+  (Invoices 5a ✅, Jobs 11a ✅ — "edit a saved job's billing setup", complete 2026-09-01) are met. Not
+  started, not scoped. No installment/progress UI exists anywhere. Gate: installments total the job, issued
   installments lock, each bills once.
 
 ## Next action
 
-Campaign is parked. Do not start 5c until **Jobs 11a** ships. When it does, resume with
-`read memory and continue the Invoices campaign` and scope 5c against `ROADMAP.md` Part 5c + the three
-"facts the ledger parts established" notes in ROADMAP (esp. 3c owns the progress-invoice Void exclusion,
-which needs the installment link 5c creates).
+5c is unscoped and is a real feature build (installment schedules from scratch + progress billing), not a
+small task. Before any code: research how Jobber/GHL do payment schedules and progress invoicing, present
+the proposal to Jafar, get approval, then plan. Resume with
+`read memory and continue the Invoices campaign`. Scope against `ROADMAP.md` Part 5c + the three "facts the
+ledger parts established" notes in ROADMAP — especially: 3c owns the progress-invoice Void exclusion and it
+needs the installment link that 5c creates.
 
 ## Known deferrals — outside this campaign, do not treat as bugs
 
@@ -42,4 +46,4 @@ which needs the installment link 5c creates).
 - Local migration filenames vs remote migration versions do not match — existing convention.
 - Repo-wide CRLF drift on ~300 `src/` files — never stage it. Skill-dir edits never staged with feature commits.
 
-Resume command: `read memory and continue the Invoices campaign` (only after Jobs 11a).
+Resume command: `read memory and continue the Invoices campaign`.
