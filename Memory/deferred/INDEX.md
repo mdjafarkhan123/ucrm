@@ -48,12 +48,12 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Website Chat's Realtime connection ceiling is measured but unconfirmed](website-chat-realtime-connection-quota-unconfirmed.md) |
 | P2 | [Automation-owned Email Template copies (sync + impact preview)](automation-owned-email-template-copies.md) |
 | P3 | [`/get-started` page weight](get-started-page-weight.md) |
-| P3 | [Billing address shape on the client](billing-address-shape-on-the-client.md) |
 | P3 | [Client photos are one request each](client-photos-are-one-request-each.md) |
 | P3 | [ClientPicker and CatalogItemPicker can show a stale label after an external value revert](clientpicker-and-catalogitempicker-can-show-a-stale-label-after-an-external-value-revert.md) |
 | P3 | [Database test files under `supabase test db`](database-test-files-under-supabase-test-db.md) |
 | P3 | [Eleven older trigger functions in `private` are executable by everyone](eleven-older-trigger-functions-in-private-are-executable-by-everyone.md) |
 | P3 | [Missing business setup does not yet block the action that needs it](missing-business-setup-does-not-yet-block-the-action-that-needs-it.md) |
+| P3 | [Guide contractors to set up a sending email when it is missing](email-sender-setup-flow.md) |
 | P3 | [No image on a price list item](no-image-on-a-price-list-item.md) |
 | P3 | [Non-admin email-correction browser verification (Part 7)](non-admin-email-correction-browser-verification-part-7.md) |
 | P3 | [Quotes list page never resolves a 403 into an error state](quotes-list-page-never-resolves-a-403-into-an-error-state.md) |

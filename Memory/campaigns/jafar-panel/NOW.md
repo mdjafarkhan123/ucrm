@@ -6,7 +6,7 @@ Finish the Platform Owner journey from contractor application through commercial
 
 ## Current state
 
-Parts 0–9 are closed. Part 10 waits for contractor-facing subsystems; Part 11 waits for Part 10.
+Parts 0–9A are closed. Part 10 waits for contractor-facing subsystems; Part 11 waits for Part 10.
 
 ## Exact next action
 

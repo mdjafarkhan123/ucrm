@@ -9,6 +9,7 @@ Permanent behavior lives in docs/jafar-completion-contract.md.
 | 7 | Team access and administrator recovery | Closed | 6 | Recovery avoids passwords and impersonation |
 | 8 | Operations and owner security | Closed | 6–7 | High-impact actions are attributable and recoverable |
 | 9 | Recoverable closure and strict purge | Closed | 8 | Closure is reversible for 30 days, then resources are removed safely |
+| 9A | Organization control room UX rebuild | Closed | 6–9 | URL-backed workspaces preserve every control, surface urgent state on Overview, and pass responsive/browser verification |
 | 10 | Provider and CRM controls by subsystem | Blocked | Contractor subsystem | Eligibility, health, history, and recovery exist for each shipped capability |
 | 11 | Final audit and cleanup | Pending | 0–10 | All approved gates pass and temporary campaign Memory is removed |
 

@@ -11,8 +11,8 @@
 
 Awaiting Jafar's pick of the next thread. Candidates, none started:
 
-- Part 11c (Payment installments and per-visit amounts) — blocked on the Invoice boundary.
-- Part 13b (Invoice handoff) — blocked on 11c and the Invoice boundary.
+- Part 11c — transferred to the Invoices campaign as its Part 5c (Jafar, 2026-09-05). Do not build here.
+- Part 13b — transferred to the Invoices campaign as its Parts 5a/5b (Jafar, 2026-09-05). Do not build here.
 - Part 14 (labor, expenses, Job costing) — dependency-ready (Part 8 done); Team/expense ownership scope
   unconfirmed.
 - Part 15 (notes, attachments/photos, checklists, signatures) — dependency-ready (Parts 8–10 done); needs
