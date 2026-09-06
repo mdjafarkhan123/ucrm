@@ -10122,6 +10122,40 @@ export type Database = {
 				Args: { target_organization_id: string };
 				Returns: number;
 			};
+			invoice_batch_deliverable_page: {
+				Args: {
+					cursor_created?: string | null;
+					cursor_id?: string | null;
+					page_limit?: number;
+					target_organization_id: string;
+				};
+				Returns: {
+					client_company_name: string | null;
+					client_display_name: string | null;
+					client_id: string | null;
+					created_at: string;
+					currency_code: string;
+					derived_status: string;
+					due_date: string;
+					has_email: boolean;
+					id: string;
+					invoice_number: number;
+					issued_at: string | null;
+					last_sent_at: string | null;
+					revision: number;
+					subject: string;
+				}[];
+			};
+			create_invoices_in_batch: {
+				Args: {
+					new_complete_visit_ids: string[];
+					new_idempotency_key: string;
+					new_job_ids: string[];
+					new_request_hash: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			create_invoice_from_work: {
 				Args: {
 					new_custom_due_date: string;

@@ -488,3 +488,44 @@ export const batchInvoiceSchema = z.object({
 });
 
 export type BatchInvoiceInput = z.infer<typeof batchInvoiceSchema>;
+
+// --- Batch deliver (Part 8b) --------------------------------------------------------------------------------
+
+// One page of the deliverable picker: the sendable invoices (draft, awaiting payment, past due), newest first,
+// keyset-paged the same way the Invoices list is.
+export const deliverableInvoicesQuerySchema = z.object({
+	cursor: z.string().min(3).max(400).optional(),
+	limit: z.coerce.number().int().min(1).max(INVOICE_PAGE_SIZE_MAX).default(INVOICE_PAGE_SIZE_DEFAULT)
+});
+
+// A batch may send at most this many invoices at once. It is a selection ceiling, deliberately equal to the
+// shared 20-per-5-minute invoice-email rate limit so a fresh window can queue a whole batch -- but it is not a
+// promise all twenty will queue: earlier sends may have already used the window (handled by the sender, which
+// stops the batch at the first rate-limit denial).
+export const INVOICE_BATCH_DELIVER_MAX = 20;
+
+// Sending a batch. Each item names an invoice, the revision the browser last read (used only to issue a draft
+// on send), and a stable per-invoice key. The SAME key is resent when retrying this batch -- including after an
+// uncertain response -- so a retry returns the first result rather than sending twice; a deliberate fresh send
+// uses new keys.
+export const batchDeliverInvoicesSchema = z.object({
+	invoices: z
+		.array(
+			z.object({
+				invoice_id: z.string().uuid(),
+				expected_revision: z.number().int().min(0),
+				idempotency_key: z.string().uuid('Start a new send and try again.')
+			})
+		)
+		.min(1, 'Choose at least one invoice to send.')
+		.max(
+			INVOICE_BATCH_DELIVER_MAX,
+			`You can send up to ${INVOICE_BATCH_DELIVER_MAX} invoices at a time.`
+		)
+		.refine(
+			(items) => new Set(items.map((item) => item.invoice_id)).size === items.length,
+			'The same invoice cannot appear twice in one batch.'
+		)
+});
+
+export type BatchDeliverInvoicesInput = z.infer<typeof batchDeliverInvoicesSchema>;

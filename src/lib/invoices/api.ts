@@ -272,6 +272,80 @@ export async function createInvoicesInBatch(
 	return readOrThrow<BatchInvoiceResult>(response, 'Those invoices could not be created.');
 }
 
+// --- Batch deliver (Part 8b) ------------------------------------------------------------------------------
+
+// One invoice a person may send in a batch: sendable (draft, awaiting payment, or past due), with the three
+// facts the picker needs — the draft's `revision` (passed back to issue it on send), whether the client has an
+// email at all (`has_email`, so "no email" is flagged before submit), and when it last went out
+// (`last_sent_at`, so a previously-sent bill only ever re-sends on purpose). Carries no money.
+export type DeliverableInvoice = {
+	id: string;
+	invoice_number: number;
+	subject: string;
+	currency_code: string;
+	due_date: string;
+	issued_at: string | null;
+	derived_status: InvoiceDerivedStatus;
+	revision: number;
+	has_email: boolean;
+	last_sent_at: string | null;
+	client: { id: string; display_name: string | null; company_name: string | null } | null;
+};
+
+export type DeliverableInvoicesPage = {
+	invoices: DeliverableInvoice[];
+	next_cursor: string | null;
+	timezone: string;
+	locale: string;
+};
+
+export const deliverableInvoicesKey = ['invoices', 'deliverable', 'list'] as const;
+
+export async function fetchDeliverableInvoices(cursor?: string): Promise<DeliverableInvoicesPage> {
+	const params = new URLSearchParams();
+	if (cursor) params.set('cursor', cursor);
+	const query = params.toString();
+	const response = await fetch(`/api/invoices/deliverable${query ? `?${query}` : ''}`);
+	return readOrThrow<DeliverableInvoicesPage>(
+		response,
+		'The invoices you can send could not be loaded.'
+	);
+}
+
+// One invoice in a send batch: which invoice, the revision the browser last read (used only to issue a draft),
+// and a stable per-invoice key. The SAME key is resent when retrying — including after an uncertain response —
+// so a retry returns the first result rather than sending twice; a deliberate fresh send uses new keys.
+export type BatchDeliverItem = {
+	invoice_id: string;
+	expected_revision: number;
+	idempotency_key: string;
+};
+
+// What became of each invoice. "queued" means accepted into the outbox (the sent/failed delivery fact is the
+// worker's, shown on the invoice afterward); "rate_limited" carries the limiter's real retry delay and stops
+// the batch; "skipped" is an invoice left untouched after that stop; "failed" carries a reason to show.
+export type BatchDeliverOutcome =
+	| { invoice_id: string; outcome: 'queued'; intent_id: string; status: string }
+	| { invoice_id: string; outcome: 'rate_limited'; retry_after_seconds: number }
+	| { invoice_id: string; outcome: 'skipped' }
+	| { invoice_id: string; outcome: 'failed'; reason: string };
+
+export type BatchDeliverResult = {
+	results: BatchDeliverOutcome[];
+	summary: { total: number; queued: number; failed: number; rate_limited: number; skipped: number };
+};
+
+export async function deliverInvoicesInBatch(
+	invoices: BatchDeliverItem[]
+): Promise<BatchDeliverResult> {
+	const response = await fetch('/api/invoices/batch/deliver', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ invoices })
+	});
+	return readOrThrow<BatchDeliverResult>(response, 'Those invoices could not be sent.');
+}
+
 // --- What work is waiting to be billed --------------------------------------------------------------------
 
 // One row of the "select work to invoice" picker: a job of this client that no invoice has claimed yet.

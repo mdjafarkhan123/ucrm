@@ -196,6 +196,7 @@
 				<Button href={resolve('/(app)/invoices/ready-to-bill')}>
 					Ready to bill{readyCount > 0 ? ` (${readyCount})` : ''}
 				</Button>
+				<Button href={resolve('/(app)/invoices/send')}>Send invoices</Button>
 				<Button variant="primary" href={resolve('/(app)/invoices/new')}>New Invoice</Button>
 			{/snippet}
 		</PageHeader>
