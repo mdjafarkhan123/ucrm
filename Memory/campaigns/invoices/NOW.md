@@ -9,26 +9,22 @@
 
 ## Next action
 
-Re-run the 5c-4 browser pass on Raad LTD (Chrome disconnected mid-pass on 2026-09-07), then start **5c-5 —
-Per-visit quantities** (`docs/invoice-part-5c-plan.md` is the approved scope; do not re-derive it).
+Start **5c-5 - Per-visit quantities and integrated verification** - the last part of this campaign.
+`docs/invoice-part-5c-plan.md` sec 5c-5 is the approved scope and its performance verdict; do not re-derive
+either. Load `.claude/skills/design/SKILL.md` before any Svelte, and `supabase-postgres-best-practices`
+before SQL.
 
-The pass, in light and dark, no console errors:
+**5c-4 is CLOSED, browser-verified 2026-09-07** on Raad LTD in light and dark, no console errors: #18 and
+#19 show Item total / Due this invoice alone with the stage fact in the header and no Void; the client
+preview shows the Progress invoice kicker and the same pair; #16 is unchanged. Two defects the pass found
+were fixed and committed (below).
 
-1. Job #14 -> invoice **#18** (Deposit stage), `/invoices/16658693-bb5a-4830-a88f-51c6e527df71`. Header shows
-   a "Payment stage . Payment 1 . Deposit" fact; the line table shows **Item total / Due this invoice only**
-   -- no Quantity, no Unit price -- and a "Due this invoice" total; the lines, discount and tax blocks offer
-   no pencil; the "..." menu has **no Void invoice**.
-2. Same invoice -> "Preview as client": kicker reads **Progress invoice**, the stage line sits under
-   "Billed to", and the table carries the same two money columns and no Qty.
-3. Invoice **#19** (`/invoices/e2171d67-d2d3-4a30-b26b-3899cbff0db8`) reads "Payment 2 . Final payment"
-   **in full** -- it used to clip to "Final pay...".
-4. Any ordinary invoice (e.g. **#16**, `/invoices/3db4ea41-933f-4822-b794-209ce2058430`) is completely
-   unchanged -- Quantity, Unit price and one Total column, Void still offered.
+Only the **print view** is unverified: "Print or save PDF" opens the browser print dialog, which freezes
+browser control. Jafar eyeballs it, or read the print stylesheet. Low risk - the columns are conditional in
+markup, so print CSS cannot re-add one.
 
-Still unverified: the **print view**. "Print or save PDF" opens the browser print dialog, which freezes
-browser control -- Jafar eyeballs it, or read the print stylesheet instead.
-
-Load `.claude/skills/design/SKILL.md` before any Svelte, and `supabase-postgres-best-practices` before SQL.
+**The Cloudflare tunnel was down** on 2026-09-07; `http://localhost:5173` works and keeps the session
+cookie. Restart the tunnel or use localhost.
 
 ## The progress line table, corrected 2026-09-07 (no migration -- display only)
 
