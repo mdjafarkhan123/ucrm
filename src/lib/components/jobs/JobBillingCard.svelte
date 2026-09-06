@@ -111,6 +111,10 @@
 
 	const STAGE_LABELS: Record<string, string> = {
 		remaining: 'Still to bill',
+		// A stage that was billed and then had that draft deleted. The stage is spent either way -- the amount
+		// it was billed at is permanent -- so it never offers to be billed again, and says so rather than
+		// pretending it is still to come.
+		spent: 'Already billed',
 		// A reader without invoices.view learns only that a bill exists, never which one or where it stands.
 		invoiced: 'Invoiced',
 		...INVOICE_STATUS_LABELS
@@ -118,6 +122,7 @@
 
 	function stageTone(status: string) {
 		if (status === 'remaining') return undefined;
+		if (status === 'spent') return 'inactive' as const;
 		if (status === 'invoiced') return 'inactive' as const;
 		return INVOICE_STATUS_TONES[status as InvoiceDerivedStatus] ?? 'inactive';
 	}
@@ -126,6 +131,14 @@
 	// invoice composer by navigating, rather than opening a second dialog here. The composer seeds itself
 	// from the job and the stage, and the server prices the stage again when it saves.
 	const canBillStage = $derived(canInvoice && canSeePrice && Boolean(clientId));
+
+	// `locked` is the write command's own test -- the stage has been priced into a bill -- and it outlives the
+	// bill. `status` only knows where a live bill stands, so the two disagree in exactly one case: a progress
+	// draft that was created and then deleted. The stage is still spent, and only this reading offers no
+	// button for it.
+	function displayStatus(stage: (typeof stages)[number]) {
+		return stage.status === 'remaining' && stage.locked ? 'spent' : stage.status;
+	}
 
 	function billStage(installmentId: string) {
 		if (!clientId) return;
@@ -223,10 +236,10 @@
 								</span>
 							{/if}
 							<div class="job-billing__stage-meta">
-								<Badge size="small" status={stageTone(stage.status)}>
-									{STAGE_LABELS[stage.status] ?? stage.status}
+								<Badge size="small" status={stageTone(displayStatus(stage))}>
+									{STAGE_LABELS[displayStatus(stage)] ?? stage.status}
 								</Badge>
-								{#if canBillStage && stage.status === 'remaining'}
+								{#if canBillStage && displayStatus(stage) === 'remaining'}
 									<Button
 										variant="tertiary"
 										size="small"

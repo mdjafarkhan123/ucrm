@@ -7,7 +7,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(15);
+select plan(16);
 
 -- 1. Who may call it -------------------------------------------------------------------------------------------
 
@@ -239,6 +239,19 @@ select throws_ok(
     'After deletion', array[]::uuid[], null, null, null,
     'stage5c3-idem-after-delete', 'stage5c3-hash-after-delete') $$,
   '23505', null, 'and once a stage''s amount is locked, deleting its draft cannot make it billable again'
+);
+
+-- And the Billing card's own reader says so, rather than drawing a still-to-bill stage with a button that
+-- could only fail: `locked` is the write command's test (`locked_amount_minor is not null`), so it outlives
+-- the bill, while `status` stays 'remaining' because no live bill is left to have a status.
+select is(
+  (select jsonb_build_array(entry -> 'locked', entry -> 'status')
+   from jsonb_array_elements(
+     public.job_schedule_stages('c5400000-0000-0000-0000-000000000001') -> 'stages'
+   ) as entry
+   where (entry ->> 'position')::integer = 0),
+  jsonb_build_array(to_jsonb(true), to_jsonb('remaining'::text)),
+  'a stage whose draft was deleted still reads locked, so the card offers no second Create invoice'
 );
 
 -- 6. A stage with no Quote behind it applies no deposit ----------------------------------------------------------

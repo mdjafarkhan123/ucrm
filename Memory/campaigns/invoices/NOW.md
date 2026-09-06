@@ -32,12 +32,19 @@ staff and customer projections need. Load `.claude/skills/design/SKILL.md` befor
   in 5c-3, not separately re-confirmed with Jafar.
 - The composer's installment mode sends no lines: `create_installment_invoice` prices and splits the stage
   server-side, so the browser's line preview is display-only.
+- `locked` means "priced into a bill, permanently"; `status` means "where that bill stands". Do not collapse
+  them or re-derive `locked` from the claim.
 
-## Known gap to mention if it comes up — not a bug
+## The stage lock, corrected 2026-09-06 (migration `20260906190000_stage_lock_matches_the_write_command`)
 
-Deleting a still-Draft progress invoice cascades its claim away but leaves `locked_amount_minor` set, so the
-stage reads `remaining` again and offers a "Create invoice" button that will refuse with "already been
-billed". Narrow (only by deleting a progress Draft before issuing it) and left alone on purpose.
+`job_schedule_stages.locked` now answers `stage.locked_amount_minor is not null` — the same test
+`set_job_payment_schedule` uses to decide what it may rewrite. It used to answer from the invoice claim, which
+disagreed after a still-Draft progress invoice was deleted: the claim cascades, the locked amount is permanent
+by design, and the reader was then reporting an editable, still-to-bill stage that the write command would
+silently refuse and the card would offer a doomed "Create invoice" button for. `status` is unchanged — it
+answers where the *bill* stands, and 'remaining' is honest when no bill exists. The card combines them: locked
++ remaining renders as "Already billed" with no action. Covered by assertion 16 of
+`invoice_installment_to_invoice_handoff.sql`.
 
 ## Verification still owed
 
