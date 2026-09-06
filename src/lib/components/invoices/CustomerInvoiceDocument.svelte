@@ -153,7 +153,7 @@
 				{/if}
 				{#if showMoney}
 					{#if showProgressMoney}
-						<td class="customer-invoice__num customer-invoice__col-unit">
+						<td class="customer-invoice__num customer-invoice__col-item">
 							{lineNumbers(line) && line.progress_original_amount_minor != null
 								? formatMoney(line.progress_original_amount_minor)
 								: ''}
@@ -279,7 +279,12 @@
 							<th scope="col" class="customer-invoice__num customer-invoice__col-qty">Qty</th>
 						{/if}
 						{#if showMoney}
-							<th scope="col" class="customer-invoice__num customer-invoice__col-unit">
+							<th
+								scope="col"
+								class="customer-invoice__num {showProgressMoney
+									? 'customer-invoice__col-item'
+									: 'customer-invoice__col-unit'}"
+							>
 								{showProgressMoney ? 'Item total' : 'Unit price'}
 							</th>
 							<th scope="col" class="customer-invoice__num customer-invoice__col-total">
@@ -713,6 +718,11 @@
 		width: 66px;
 	}
 	.customer-invoice__col-unit {
+		width: 120px;
+	}
+	// A progress bill's Item total is half of what the document is for, so unlike Unit price it keeps its
+	// place on a phone. There is room: quantity and unit price are gone from these lines.
+	.customer-invoice__col-item {
 		width: 120px;
 	}
 	.customer-invoice__col-total {
