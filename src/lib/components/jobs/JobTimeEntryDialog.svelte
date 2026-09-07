@@ -6,10 +6,13 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
+	import TimePickerField from '$lib/components/ui/TimePickerField.svelte';
+	import { Time } from '@internationalized/date';
 	import {
 		dateTimePickerValueFromDate,
 		dateTimePickerValueToLocalString,
 		emptyDateTimePickerValue,
+		timeToMinutes,
 		type DateTimePickerValue
 	} from '$lib/components/ui/date-time';
 	import { assignableTeamKey, fetchAssignableTeam, type TeamMember } from '$lib/team/api';
@@ -113,6 +116,28 @@
 
 	const totalMinutes = $derived(toWholeNumber(hours) * 60 + toWholeNumber(minutes));
 
+	// The duration is the one truth; the end time is a view of it that can be typed into. Holding it the
+	// other way round -- two boxes that each own a fact -- is how a start/end pair and an hours/minutes pair
+	// end up disagreeing, which is exactly what the stored column avoids by keeping only minutes.
+	//
+	// Both directions wrap past midnight rather than clamping at 23:59: an evening call-out that finishes at
+	// 1 AM is a real shift, and the 24-hour ceiling still refuses anything absurd.
+	const endTime = $derived.by(() => {
+		const start = timeToMinutes(when.startTime);
+		if (start === undefined || totalMinutes < 1) return undefined;
+		const total = (start + totalMinutes) % 1440;
+		return new Time(Math.floor(total / 60), total % 60);
+	});
+
+	function setEndTime(next: Time | undefined) {
+		const start = timeToMinutes(when.startTime);
+		const end = timeToMinutes(next);
+		if (start === undefined || end === undefined) return;
+		const spanned = (end - start + 1440) % 1440;
+		hours = Math.floor(spanned / 60);
+		minutes = spanned % 60;
+	}
+
 	function submit() {
 		fieldError = '';
 		if (!userId) {
@@ -175,6 +200,21 @@
 			{locale}
 			bind:value={when}
 		/>
+
+		<!--
+			Jobber offers the end time and the duration together, because a contractor says "nine to five" far
+			more naturally than "eight hours". Both are here, and both stay in step: the end time is drawn from
+			the duration, and typing an end time sets the duration.
+		-->
+		<div class="time-entry__ended">
+			<TimePickerField
+				id="time-entry-end"
+				label="Ended at"
+				value={endTime}
+				disabled={!when.startTime}
+				onchange={setEndTime}
+			/>
+		</div>
 
 		<!-- A placeholder on both, so the label still lifts clear when the box holds a plain 0. -->
 		<div class="time-entry__duration">
@@ -245,6 +285,14 @@
 			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
+		}
+
+		&__ended {
+			// Half width, so it lines up with the Hours box directly under it rather than stretching across
+			// a row of its own.
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: var(--space-small);
 		}
 
 		&__duration {

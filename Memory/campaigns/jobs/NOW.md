@@ -48,5 +48,9 @@ Copy the shape from 14b rather than inventing one: `supabase/migrations/20260908
 - Wiring Upcoming/Today/Late/Action required into `private.job_derived_status` / `job_list_rows` /
   `job_status_count_rows` — a larger read-model change the Jobs list still needs.
 - Changing whose hours a time entry belongs to. It carries their rate, so the fix is record-again-and-remove.
+- **A per-entry rate override (overtime, weekend rates).** Jobber puts an editable rate on every entry; ours
+  reads the person's profile, because that dialog is a screen a crew member may be looking at. Revisit when
+  timesheets or payroll arrive, not before — GPT reviewed this with Jafar 2026-09-07 and both agreed.
+- A start/stop timer and a company-wide Timesheets page. Jobber has both; neither is in this roadmap.
 
 Resume command: `read memory and continue the Jobs campaign` (next part is 14c).
