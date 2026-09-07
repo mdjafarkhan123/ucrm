@@ -5,6 +5,9 @@ export type AccessClient = SupabaseClient<Database>;
 export type PackageKey = 'starter' | 'growth' | 'elite';
 export type LimitKey = 'employee_seats' | 'website_chat_widgets';
 export type LimitState = 'unlimited' | 'not_included' | 'numeric';
+// The stored scope vocabulary. 'assigned' is the only narrowing any permission declares today; the type stays
+// open so a later scope does not have to be threaded through every reader at once.
+export type PermissionScope = 'all' | 'assigned' | (string & {});
 
 export const PACKAGE_ORDER: Record<PackageKey, number> = {
 	starter: 1,
@@ -84,6 +87,10 @@ export type EffectiveOrganizationAccess = {
 	>;
 	member: { user_id: string; role: string } | null;
 	permissions: Record<string, boolean>;
+	// How much of each held permission the member may reach. 'all' is the answer for every permission that
+	// never opted into narrowing, so a caller that ignores this map behaves exactly as it did before scopes
+	// existed. Only a key the member actually holds appears here.
+	permission_scopes: Record<string, PermissionScope>;
 	free_access: FreeAccessState;
 };
 
@@ -299,6 +306,53 @@ function featureForPermission(permissionKey: string) {
 	);
 }
 
+// The TypeScript twin of private.member_permission_scope: an override wins over the role, a denied override
+// is no permission at all rather than a scope, and anything unstated is 'all'. The two access resolvers below
+// both call this so the rule cannot drift between them -- or away from the SQL, which is the real boundary.
+async function resolveMemberPermissions(
+	client: AccessClient,
+	organizationId: string,
+	userId: string,
+	role: string,
+	features: Record<string, boolean>
+): Promise<{
+	permissions: Record<string, boolean>;
+	permission_scopes: Record<string, PermissionScope>;
+}> {
+	const [rolePermissionsResult, memberOverridesResult] = await Promise.all([
+		client.from('role_permissions').select('permission_key, access_scope').eq('role', role),
+		client
+			.from('organization_member_permission_overrides')
+			.select('permission_key, override_state, access_scope')
+			.eq('organization_id', organizationId)
+			.eq('user_id', userId)
+	]);
+	if (rolePermissionsResult.error) throw rolePermissionsResult.error;
+	if (memberOverridesResult.error) throw memberOverridesResult.error;
+
+	const resolved = new Map<string, { enabled: boolean; scope: PermissionScope }>(
+		(rolePermissionsResult.data ?? []).map((item) => [
+			item.permission_key,
+			{ enabled: true, scope: (item.access_scope ?? 'all') as PermissionScope }
+		])
+	);
+	for (const override of memberOverridesResult.data ?? []) {
+		resolved.set(override.permission_key, {
+			enabled: override.override_state === 'grant',
+			scope: (override.access_scope ?? 'all') as PermissionScope
+		});
+	}
+
+	const permissions: Record<string, boolean> = {};
+	const permission_scopes: Record<string, PermissionScope> = {};
+	for (const [permissionKey, { enabled, scope }] of resolved) {
+		const granted = enabled && permissionIsEnabled(permissionKey, features);
+		permissions[permissionKey] = granted;
+		if (granted) permission_scopes[permissionKey] = scope;
+	}
+	return { permissions, permission_scopes };
+}
+
 export function permissionIsEnabled(permissionKey: string, features: Record<string, boolean>) {
 	const featureKey = featureForPermission(permissionKey);
 	return featureKey ? features[featureKey] === true : true;
@@ -455,6 +509,7 @@ async function resolveLegacyOrganizationAccess(
 
 	let member: EffectiveOrganizationAccess['member'] = null;
 	let permissions: Record<string, boolean> = {};
+	let permissionScopes: Record<string, PermissionScope> = {};
 	if (userId) {
 		const { data: membership, error: membershipError } = await client
 			.from('organization_members')
@@ -467,29 +522,15 @@ async function resolveLegacyOrganizationAccess(
 			throw new OrganizationAccessNotFoundError('Organization membership was not found.');
 		member = membership;
 
-		const [rolePermissionsResult, memberOverridesResult] = await Promise.all([
-			client.from('role_permissions').select('permission_key').eq('role', membership.role),
-			client
-				.from('organization_member_permission_overrides')
-				.select('permission_key, override_state')
-				.eq('organization_id', organizationId)
-				.eq('user_id', userId)
-		]);
-		if (rolePermissionsResult.error) throw rolePermissionsResult.error;
-		if (memberOverridesResult.error) throw memberOverridesResult.error;
-
-		const resolvedPermissions = new Map(
-			(rolePermissionsResult.data ?? []).map((item) => [item.permission_key, true])
+		const resolved = await resolveMemberPermissions(
+			client,
+			organizationId,
+			userId,
+			membership.role,
+			featureFlags
 		);
-		for (const override of memberOverridesResult.data ?? []) {
-			resolvedPermissions.set(override.permission_key, override.override_state === 'grant');
-		}
-		permissions = Object.fromEntries(
-			[...resolvedPermissions.entries()].map(([permissionKey, enabled]) => [
-				permissionKey,
-				enabled && permissionIsEnabled(permissionKey, featureFlags)
-			])
-		);
+		permissions = resolved.permissions;
+		permissionScopes = resolved.permission_scopes;
 	}
 
 	return {
@@ -527,6 +568,7 @@ async function resolveLegacyOrganizationAccess(
 		limit_overrides: buildLimitOverridesMap(limitOverrides),
 		member,
 		permissions,
+		permission_scopes: permissionScopes,
 		free_access: freeAccessState
 	};
 }
@@ -683,6 +725,7 @@ async function resolveVersionedOrganizationAccess(
 
 	let member: EffectiveOrganizationAccess['member'] = null;
 	let permissions: Record<string, boolean> = {};
+	let permissionScopes: Record<string, PermissionScope> = {};
 	if (userId) {
 		const { data: membership, error: membershipError } = await client
 			.from('organization_members')
@@ -695,29 +738,15 @@ async function resolveVersionedOrganizationAccess(
 			throw new OrganizationAccessNotFoundError('Organization membership was not found.');
 		member = membership;
 
-		const [rolePermissionsResult, memberOverridesResult] = await Promise.all([
-			client.from('role_permissions').select('permission_key').eq('role', membership.role),
-			client
-				.from('organization_member_permission_overrides')
-				.select('permission_key, override_state')
-				.eq('organization_id', organization.id)
-				.eq('user_id', userId)
-		]);
-		if (rolePermissionsResult.error) throw rolePermissionsResult.error;
-		if (memberOverridesResult.error) throw memberOverridesResult.error;
-
-		const resolvedPermissions = new Map(
-			(rolePermissionsResult.data ?? []).map((item) => [item.permission_key, true])
+		const resolved = await resolveMemberPermissions(
+			client,
+			organization.id,
+			userId,
+			membership.role,
+			features
 		);
-		for (const override of memberOverridesResult.data ?? []) {
-			resolvedPermissions.set(override.permission_key, override.override_state === 'grant');
-		}
-		permissions = Object.fromEntries(
-			[...resolvedPermissions.entries()].map(([permissionKey, enabled]) => [
-				permissionKey,
-				enabled && permissionIsEnabled(permissionKey, features)
-			])
-		);
+		permissions = resolved.permissions;
+		permissionScopes = resolved.permission_scopes;
 	}
 
 	return {
@@ -755,6 +784,7 @@ async function resolveVersionedOrganizationAccess(
 		limit_overrides: buildLimitOverridesMap(limitOverrides),
 		member,
 		permissions,
+		permission_scopes: permissionScopes,
 		free_access: freeAccessState
 	};
 }

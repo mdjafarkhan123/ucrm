@@ -22,6 +22,7 @@
 		rangeLabel,
 		employees,
 		employeesFailed = false,
+		ownScheduleOnly = false,
 		zoom,
 		showZoom = false,
 		unscheduledCount = null,
@@ -41,6 +42,12 @@
 		employees: TeamMember[];
 		/** The team could not be loaded, so the Employee filter cannot honestly offer names. */
 		employeesFailed?: boolean;
+		/**
+		 * This reader only ever sees their own work, so there is no Employee filter to offer: every choice in
+		 * it but their own name returns nothing. Jobber does the same -- field crew get their own schedule and
+		 * no team picker at all.
+		 */
+		ownScheduleOnly?: boolean;
 		/** The reader's grid zoom. A viewing preference, kept apart from the data filters. */
 		zoom: ScheduleZoom;
 		/** Only the time-based views (Week, Day) have an hour axis to zoom; Month hides the control. */
@@ -98,7 +105,7 @@
 	let filtersOpen = $state(false);
 
 	const activeFilterCount = $derived(
-		(filters.employee !== 'all' ? 1 : 0) + (filters.status !== 'all' ? 1 : 0)
+		(!ownScheduleOnly && filters.employee !== 'all' ? 1 : 0) + (filters.status !== 'all' ? 1 : 0)
 	);
 
 	function clearFilters() {
@@ -203,15 +210,17 @@
 					</header>
 
 					<div class="schedule-controls__filters-body">
-						<Select
-							id="schedule-employee"
-							label="Employee"
-							value={filters.employee}
-							options={employeeOptions}
-							disabled={employeesFailed}
-							contentClass="schedule-controls__filters-select"
-							onchange={(employee) => onchange({ employee })}
-						/>
+						{#if !ownScheduleOnly}
+							<Select
+								id="schedule-employee"
+								label="Employee"
+								value={filters.employee}
+								options={employeeOptions}
+								disabled={employeesFailed}
+								contentClass="schedule-controls__filters-select"
+								onchange={(employee) => onchange({ employee })}
+							/>
+						{/if}
 
 						<Select
 							id="schedule-status"

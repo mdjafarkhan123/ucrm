@@ -4,7 +4,8 @@ import { getOrganizationContext, type OrganizationContext } from '$lib/server/au
 import {
 	permissionIsEnabled,
 	resolveOrganizationAccess,
-	type EffectiveOrganizationAccess
+	type EffectiveOrganizationAccess,
+	type PermissionScope
 } from '$lib/server/access/effective';
 
 export type PermissionCheck =
@@ -18,6 +19,17 @@ export function hasPermission(access: EffectiveOrganizationAccess, permissionKey
 		permissionIsEnabled(permissionKey, access.features) &&
 		access.permissions[permissionKey] === true
 	);
+}
+
+// How much of a held permission this member may reach. A permission they do not hold has no scope, and a
+// permission that never opted into narrowing answers 'all', so a caller may compare against 'assigned'
+// without first asking whether scopes apply to that key.
+export function permissionScope(
+	access: EffectiveOrganizationAccess,
+	permissionKey: string
+): PermissionScope | 'none' {
+	if (!hasPermission(access, permissionKey)) return 'none';
+	return access.permission_scopes[permissionKey] ?? 'all';
 }
 
 // Row level security is the boundary that actually stops the read or write. This check runs first so a

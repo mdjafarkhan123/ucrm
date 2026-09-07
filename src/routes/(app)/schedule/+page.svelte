@@ -214,6 +214,28 @@
 		writeScheduleZoom(next);
 	}
 
+	// Whose calendar this is. The window read answers it, because the answer is the reader's own permission
+	// scope and the server is the only place that knows it. A member narrowed to their assigned work gets
+	// Jobber's field-crew Schedule: their own lane and nothing else. Every control that could only come back
+	// empty for them -- the Employee filter, the Unassigned pile, everybody else's lanes, the Map's employee
+	// chooser -- is dropped rather than left on screen returning nothing.
+	const ownScheduleOnly = $derived(windowQuery.data?.scope === 'assigned');
+	const viewerId = $derived(page.data.user?.id ?? null);
+
+	// The roster the board draws lanes from. Narrowing it to the reader is all it takes: buildDayRows draws a
+	// row per team member, and asking it for one person's lane by name also drops the Unassigned pile, which
+	// can hold nothing this reader is allowed to see.
+	const boardTeam = $derived(
+		ownScheduleOnly && viewerId
+			? (teamQuery.data ?? []).filter((member) => member.id === viewerId)
+			: (teamQuery.data ?? [])
+	);
+	// Deliberately not `filters.employee`: the URL filter stays untouched, so the empty states and the filter
+	// badge still speak about choices the reader actually made.
+	const boardEmployeeFilter = $derived<ScheduleEmployeeFilter>(
+		ownScheduleOnly && viewerId ? viewerId : (filters?.employee ?? 'all')
+	);
+
 	const employeesById = $derived(indexEmployees(teamQuery.data ?? []));
 
 	// The calendar draws visits and Request-owned assessments together (Version 1.1). Assessments arrive as raw
@@ -273,9 +295,11 @@
 
 	// The one employee whose route the Map shows, or null when the calendar is on All or Unassigned.
 	const selectedEmployeeId = $derived(
-		filters && filters.employee !== 'all' && filters.employee !== 'unassigned'
-			? filters.employee
-			: null
+		ownScheduleOnly
+			? viewerId
+			: filters && filters.employee !== 'all' && filters.employee !== 'unassigned'
+				? filters.employee
+				: null
 	);
 	const selectedEmployeeName = $derived(
 		selectedEmployeeId ? (employeesById.get(selectedEmployeeId)?.full_name ?? 'This employee') : ''
@@ -1215,7 +1239,11 @@
 	});
 </script>
 
-<svelte:head><title>Schedule · UpliftContractor</title></svelte:head>
+<!-- The tab says whose calendar it is. It follows the window read, so it reads "Schedule" until the scope
+     has arrived and then settles -- the same one-beat settle every other value on this page has. -->
+<svelte:head
+	><title>{ownScheduleOnly ? 'My Schedule' : 'Schedule'} · UpliftContractor</title></svelte:head
+>
 
 <PageContainer variant="fill">
 	<div class="schedule-page">
@@ -1233,6 +1261,7 @@
 				{rangeLabel}
 				employees={teamQuery.data ?? []}
 				employeesFailed={teamQuery.isError}
+				{ownScheduleOnly}
 				{zoom}
 				showZoom={filters.view !== 'month'}
 				{unscheduledCount}
@@ -1319,11 +1348,11 @@
 								bind:this={dayGrid}
 								day={activeWindow!.from}
 								items={visibleItems}
-								team={teamQuery.data ?? []}
+								team={boardTeam}
 								today={today!}
 								nowMinutes={activeWindow!.from === today ? nowMinutes : null}
 								workingWeek={workingHours}
-								employeeFilter={filters.employee}
+								employeeFilter={boardEmployeeFilter}
 								{employeesById}
 								{selectedItemId}
 								{canSchedule}
@@ -1370,6 +1399,7 @@
 						today={today!}
 						employees={teamQuery.data ?? []}
 						{employeesById}
+						{ownScheduleOnly}
 						{canSchedule}
 						bind:query={backlogQuery}
 						bind:employee={backlogEmployee}

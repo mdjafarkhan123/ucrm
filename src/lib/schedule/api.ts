@@ -142,6 +142,12 @@ export type ScheduleWindowPage = {
 	/** The window holds more work than one read returns. */
 	truncated: boolean;
 	limit: number;
+	/**
+	 * Whose calendar this is. `'assigned'` means the reader only ever sees work they are on, so the page drops
+	 * the controls that could only come back empty for them -- the Employee filter, the Unassigned lane, and
+	 * everyone else's lanes -- and calls itself My Schedule.
+	 */
+	scope: 'all' | 'assigned';
 };
 
 // The create/edit form's payload. An Event is timed (day + start time, end optional) or anytime (day, no

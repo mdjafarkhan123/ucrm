@@ -31,6 +31,7 @@
 		today,
 		employees,
 		employeesById,
+		ownScheduleOnly = false,
 		canSchedule = false,
 		query = $bindable(''),
 		employee = $bindable('all'),
@@ -50,6 +51,8 @@
 		today: string;
 		employees: TeamMember[];
 		employeesById: Map<string, TeamMember>;
+		/** This reader only sees their own work, so an employee filter here has nobody else to offer. */
+		ownScheduleOnly?: boolean;
 		/** Whether this reader may place work. Without it the drawer is read-only: no handle, no Schedule. */
 		canSchedule?: boolean;
 		/** The search box, kept by the page so it survives the drawer being closed and reopened. */
@@ -110,12 +113,14 @@
 			ariaLabel="Search unscheduled work"
 			placeholder="Search client, work or place"
 		/>
-		<Select
-			id="backlog-employee"
-			bind:value={employee}
-			ariaLabel="Filter unscheduled work by employee"
-			options={employeeOptions}
-		/>
+		{#if !ownScheduleOnly}
+			<Select
+				id="backlog-employee"
+				bind:value={employee}
+				ariaLabel="Filter unscheduled work by employee"
+				options={employeeOptions}
+			/>
+		{/if}
 	</div>
 
 	<!-- The drop target for sending a calendar card back to the backlog. It is the scrollable list itself,
