@@ -1,3 +1,4 @@
+import type { PricingCategory, RequestPricingLine, RequestPricingLineInput } from '$lib/quotes/api';
 import type { JobDerivedStatus, JobType } from './statuses';
 
 export type JobWriteError = Error & {
@@ -797,4 +798,126 @@ export async function reopenJob(jobId: string, expectedRevision: number): Promis
 		body: JSON.stringify({ expected_revision: expectedRevision })
 	});
 	return readOrThrow<ReopenJobResult>(response, 'That job could not be reopened.');
+}
+
+// --- One visit's own pricing (Invoices 5c-5) ----------------------------------------------------------------
+
+// What a single visit actually bills. A recurring job billed per visit starts every visit on the job's own
+// lines; a visit that has been customised carries its own complete set instead, snapshotted when it was
+// saved. `has_override` is the difference between those two states, and the only way back to the first is to
+// save an empty set.
+export type JobVisitLines = {
+	visit_id: string;
+	visit_date: string | null;
+	completed: boolean;
+	// The visit's own lock token — the pricing save sends the revision it read, exactly like the schedule save.
+	revision: number;
+	has_override: boolean;
+	// Pricing is frozen once the work is recorded or billed. `lock_reason` says which, so the editor can say so.
+	locked: boolean;
+	lock_reason: 'completed' | 'invoiced' | null;
+	/** Null for a reader without jobs.view_price, the same rule the job's own money follows. */
+	subtotal_minor: number | null;
+	lines: RequestPricingLine[];
+};
+
+export const jobVisitLinesKey = (jobId: string, visitIds: string[]) =>
+	['jobs', 'visit-lines', jobId, [...visitIds].sort().join(',')] as const;
+
+// Prices are withheld rather than zeroed by the database, so a reader without jobs.view_price gets lines with
+// no money keys at all. The shared pricing block wants numbers, so they become zeroes here and the caller
+// passes `showPrices={false}` — the same arrangement the job's own lines use.
+export async function fetchJobVisitLines(
+	jobId: string,
+	visitIds: string[]
+): Promise<JobVisitLines[]> {
+	const response = await fetch(
+		`/api/jobs/${jobId}/visit-lines?visits=${encodeURIComponent(visitIds.join(','))}`
+	);
+	const body = await readOrThrow<{ visits: RawVisitLines[] }>(
+		response,
+		'That visit’s pricing could not be loaded.'
+	);
+	return (body.visits ?? []).map((visit) => ({
+		visit_id: visit.visit_id,
+		visit_date: visit.visit_date,
+		completed: visit.completed,
+		revision: visit.revision,
+		has_override: visit.has_override,
+		locked: visit.locked,
+		lock_reason: visit.lock_reason,
+		subtotal_minor: visit.subtotal_minor,
+		lines: (visit.lines ?? []).map((line, index) => ({
+			id: line.id,
+			position: index,
+			catalog_item_id: line.catalog_item_id,
+			category: line.category,
+			is_labor: line.is_labor,
+			name: line.name,
+			description: line.description,
+			unit_label: line.unit_label,
+			quantity: Number(line.quantity ?? 0),
+			unit_price_minor: line.unit_price_minor ?? 0,
+			unit_cost_minor: line.unit_cost_minor ?? 0,
+			is_taxable: line.is_taxable,
+			line_total_minor: line.line_total_minor ?? 0,
+			line_cost_total_minor: 0,
+			image_attachment_id: line.image_attachment_id,
+			line_kind: line.line_kind,
+			source_job_line_item_id: line.source_job_line_item_id
+		}))
+	}));
+}
+
+type RawVisitLines = {
+	visit_id: string;
+	visit_date: string | null;
+	completed: boolean;
+	revision: number;
+	has_override: boolean;
+	locked: boolean;
+	lock_reason: 'completed' | 'invoiced' | null;
+	subtotal_minor: number | null;
+	lines: {
+		id: string;
+		source_job_line_item_id: string | null;
+		catalog_item_id: string | null;
+		line_kind: 'priced' | 'text' | 'heading';
+		category: PricingCategory;
+		is_labor: boolean;
+		name: string;
+		description: string | null;
+		unit_label: string | null;
+		quantity: number | string | null;
+		is_taxable: boolean;
+		image_attachment_id: string | null;
+		unit_price_minor?: number;
+		unit_cost_minor?: number;
+		line_total_minor?: number;
+	}[];
+};
+
+export type SaveVisitLinesResult = {
+	revision: number;
+	line_count: number;
+	has_override: boolean;
+};
+
+// The whole set for one visit, saved at once. An empty list is not an empty save: it clears the visit's own
+// pricing and puts it back on the job's lines.
+export async function saveJobVisitLines(
+	jobId: string,
+	visitId: string,
+	expectedRevision: number,
+	lines: RequestPricingLineInput[]
+): Promise<SaveVisitLinesResult> {
+	const response = await fetch(`/api/jobs/${jobId}/visits/${visitId}/lines`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			expected_revision: expectedRevision,
+			lines: lines.map((line, index) => ({ ...line, position: index }))
+		})
+	});
+	return readOrThrow<SaveVisitLinesResult>(response, 'That visit’s pricing could not be saved.');
 }

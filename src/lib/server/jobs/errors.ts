@@ -75,7 +75,9 @@ export function scheduleVisitError(error: DatabaseError) {
 			},
 			{ status: 409, headers: NO_STORE_HEADERS }
 		);
-	if (error.code === '23514' || error.code === '23503')
+	// 54000 is the hundred-line ceiling a visit's own pricing can hit (Invoices 5c-5). It is a rule the
+	// person can act on — take a line off — not a server fault, so it reads as a form error like the rest.
+	if (error.code === '23514' || error.code === '23503' || error.code === '54000')
 		return validationError({ form: error.message ?? 'That visit cannot be saved as entered.' });
 	return databaseError();
 }

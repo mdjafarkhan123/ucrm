@@ -14,7 +14,10 @@
 		emptyDateTimePickerValue,
 		type DateTimePickerValue
 	} from '$lib/components/ui/date-time';
-	import type { JobVisit, UpdateVisitInput } from '$lib/jobs/api';
+	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
+	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import type { RequestPricingLineInput } from '$lib/quotes/api';
+	import type { JobVisit, JobVisitLines, UpdateVisitInput } from '$lib/jobs/api';
 
 	// Editing one existing visit, the way a client's property is edited: its own modal with its own Save, kept
 	// out of the page's title/instructions draft. The dialog only shapes the visit and hands the result back;
@@ -29,6 +32,13 @@
 		isRecurring = false,
 		saving = false,
 		error = '',
+		perVisitPricing = false,
+		pricing = null,
+		pricingLoading = false,
+		pricingFailed = false,
+		canEditPricing = false,
+		canSeePrice = true,
+		currencyCode = 'USD',
 		onSave,
 		onSaveFuture,
 		onClose
@@ -41,8 +51,19 @@
 		isRecurring?: boolean;
 		saving?: boolean;
 		error?: string;
-		onSave: (payload: UpdateVisitInput) => void;
-		onSaveFuture?: (payload: UpdateVisitInput) => void;
+		/** Invoices 5c-5: only a recurring job billed per visit prices its visits one at a time. */
+		perVisitPricing?: boolean;
+		/** This visit's effective lines, loaded when the dialog is opened. Null while it has not arrived. */
+		pricing?: JobVisitLines | null;
+		pricingLoading?: boolean;
+		pricingFailed?: boolean;
+		canEditPricing?: boolean;
+		canSeePrice?: boolean;
+		currencyCode?: string;
+		// The pricing argument is what to write for this visit's own lines: an array replaces them, an empty
+		// array puts the visit back on the job's lines, and null means nobody touched them.
+		onSave: (payload: UpdateVisitInput, pricing: RequestPricingLineInput[] | null) => void;
+		onSaveFuture?: (payload: UpdateVisitInput, pricing: RequestPricingLineInput[] | null) => void;
 		onClose: () => void;
 	} = $props();
 
@@ -53,6 +74,12 @@
 	let instructions = $state('');
 	let assigneeIds = $state<string[]>([]);
 	let fieldError = $state('');
+	// The pricing editor types into its own draft and this dialog's Save writes it, so one press saves the
+	// visit rather than leaving a half-saved appointment behind two buttons.
+	let pricingDraft = $state<RequestPricingLineInput[] | null>(null);
+	// "Use the job's lines again" is staged like everything else here: it takes effect on Save, as an empty
+	// set, which is what clears a visit's own pricing.
+	let resettingPricing = $state(false);
 
 	// Re-read the visit into the form each time the dialog opens, never while it is open, so typing is never
 	// overwritten by a background refetch or a re-render.
@@ -70,9 +97,61 @@
 			instructions = visit.instructions ?? '';
 			assigneeIds = [...visit.assignee_ids];
 			fieldError = '';
+			pricingDraft = null;
+			resettingPricing = false;
 		}
 		wasOpen = open;
 	});
+
+	// The editor is only offered where it means something: a job billed per visit, a visit whose work is not
+	// already recorded or billed, and a member who may edit the job's money.
+	const pricingEditable = $derived(
+		canEditPricing && canSeePrice && pricing !== null && !pricing.locked
+	);
+	const savedPricingLines = $derived(pricing?.lines ?? []);
+
+	// What the pricing editor holds, reduced to the fields that actually bill, so reopening a dialog and
+	// changing nothing does not rewrite the visit's lines and bump its revision.
+	function pricingFingerprint(lines: RequestPricingLineInput[]) {
+		return JSON.stringify(
+			lines.map((line) => [
+				line.name.trim(),
+				line.category,
+				line.quantity,
+				line.unit_price_minor,
+				line.is_taxable ?? true,
+				line.description ?? '',
+				line.unit_label ?? '',
+				line.source_job_line_item_id ?? null
+			])
+		);
+	}
+
+	const savedFingerprint = $derived(
+		pricingFingerprint(
+			savedPricingLines.map((line) => ({
+				name: line.name,
+				category: line.category,
+				is_labor: line.is_labor,
+				catalog_item_id: line.catalog_item_id,
+				description: line.description,
+				unit_label: line.unit_label,
+				quantity: line.quantity,
+				unit_price_minor: line.unit_price_minor,
+				unit_cost_minor: line.unit_cost_minor,
+				is_taxable: line.is_taxable,
+				source_job_line_item_id: line.source_job_line_item_id ?? null
+			}))
+		)
+	);
+
+	// Null unless there is really something to write: an empty set to clear the override, or a changed set.
+	function pricingToSave(): RequestPricingLineInput[] | null {
+		if (!pricingEditable) return null;
+		if (resettingPricing) return pricing?.has_override ? [] : null;
+		if (pricingDraft === null) return null;
+		return pricingFingerprint(pricingDraft) === savedFingerprint ? null : pricingDraft;
+	}
 
 	// The same shape rules the create form and the database enforce, checked here so a bad combination is a
 	// message in the dialog rather than a raw constraint bounced back from the write.
@@ -115,7 +194,7 @@
 	function submit() {
 		fieldError = '';
 		const payload = collect();
-		if (payload) onSave(payload);
+		if (payload) onSave(payload, pricingToSave());
 	}
 
 	// Same shape, but the section saves this visit and then opens "Apply to later visits". Undated visits have
@@ -123,12 +202,12 @@
 	function submitFuture() {
 		fieldError = '';
 		const payload = collect();
-		if (payload) onSaveFuture?.(payload);
+		if (payload) onSaveFuture?.(payload, pricingToSave());
 	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<Dialog {open} title="Edit visit" {onClose}>
+<Dialog {open} title="Edit visit" size={perVisitPricing ? 'large' : 'default'} {onClose}>
 	<div class="visit-dialog">
 		{#if error}<p class="visit-dialog__alert" role="alert">{error}</p>{/if}
 		{#if fieldError}<p class="visit-dialog__alert" role="alert">{fieldError}</p>{/if}
@@ -188,6 +267,53 @@
 
 		<TeamPicker id="visit-dialog-team" bind:value={assigneeIds} {open} />
 
+		{#if perVisitPricing}
+			<!--
+				Invoices 5c-5: a recurring job billed per visit charges for what that visit actually did. The
+				visit starts on the job's lines and only carries its own once somebody changes them here.
+			-->
+			<div class="visit-dialog__pricing">
+				{#if pricingLoading}
+					<LoadingSkeleton variant="text" label="Loading this visit’s pricing" rows={3} />
+				{:else if pricingFailed}
+					<p class="visit-dialog__note">
+						This visit’s pricing could not be loaded. Close this dialog and try again.
+					</p>
+				{:else if resettingPricing}
+					<p class="visit-dialog__note">
+						This visit will go back to the job’s own lines when you save.
+					</p>
+					<Button variant="tertiary" onclick={() => (resettingPricing = false)} disabled={saving}>
+						Keep this visit’s own lines
+					</Button>
+				{:else}
+					<ProductsAndServicesBlock
+						lines={savedPricingLines}
+						editable={pricingEditable}
+						alwaysEditing={pricingEditable}
+						carrySourceLine
+						showPrices={canSeePrice}
+						subtotalMinor={pricing?.subtotal_minor ?? null}
+						{currencyCode}
+						{locale}
+						editorTotalLabel="This visit"
+						lockedMessage={pricing?.lock_reason === 'invoiced'
+							? 'This visit is already on an invoice, so its pricing is fixed.'
+							: pricing?.lock_reason === 'completed'
+								? 'This visit is marked complete, so its pricing is fixed. Reopen it to change what it bills.'
+								: ''}
+						emptyDescription="This visit bills the job’s lines. Change a quantity to make it bill its own."
+						onDraftChange={(lines) => (pricingDraft = lines)}
+					/>
+					{#if pricingEditable && pricing?.has_override}
+						<Button variant="tertiary" onclick={() => (resettingPricing = true)} disabled={saving}>
+							Use the job’s lines again
+						</Button>
+					{/if}
+				{/if}
+			</div>
+		{/if}
+
 		<div class="visit-dialog__actions">
 			<Button variant="tertiary" onclick={onClose} disabled={saving}>Cancel</Button>
 			{#if isRecurring && onSaveFuture && !scheduleLater}
@@ -219,6 +345,13 @@
 			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
+		}
+
+		&__pricing {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-small);
+			align-items: flex-start;
 		}
 
 		&__actions {

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useQueryClient } from '@tanstack/svelte-query';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -29,12 +29,16 @@
 		rescheduleJobVisits,
 		uncompleteJobVisit,
 		updateJobVisit,
+		fetchJobVisitLines,
+		jobVisitLinesKey,
+		saveJobVisitLines,
 		type AddVisitInput,
 		type JobRecurrenceInput,
 		type JobVisit,
 		type JobWriteError,
 		type UpdateVisitInput
 	} from '$lib/jobs/api';
+	import type { RequestPricingLineInput } from '$lib/quotes/api';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
@@ -69,7 +73,8 @@
 		priceBasis,
 		billingTiming,
 		canInvoiceVisits = false,
-		visitAmountMinor = null,
+		canEditPricing = false,
+		canSeePrice = true,
 		currencyCode = 'USD'
 	}: {
 		jobId: string;
@@ -92,8 +97,9 @@
 		priceBasis: string;
 		billingTiming: string;
 		canInvoiceVisits?: boolean;
-		/** One visit's worth of the job's lines. Null without price access — the prompt omits the figure. */
-		visitAmountMinor?: number | null;
+		/** Invoices 5c-5: whether this member may change what a single visit bills. Needs jobs.edit. */
+		canEditPricing?: boolean;
+		canSeePrice?: boolean;
 		currencyCode?: string;
 	} = $props();
 
@@ -122,6 +128,22 @@
 		});
 	}
 
+	// Invoices 5c-5: only a recurring job billed per visit charges each visit for what that visit did. Every
+	// other job bills its own lines, so its visits have no pricing of their own to edit.
+	const perVisitPricing = $derived(jobType === 'recurring' && priceBasis === 'per_visit');
+
+	// The dialog's pricing section is revealed content too, so it warms on the same hover as the team list
+	// and shows a skeleton if the click still beats the fetch.
+	function warmVisit(visit: JobVisit) {
+		warmTeam();
+		if (!perVisitPricing) return;
+		void queryClient.prefetchQuery({
+			queryKey: jobVisitLinesKey(jobId, [visit.id]),
+			queryFn: () => fetchJobVisitLines(jobId, [visit.id]),
+			staleTime: 60 * 1000
+		});
+	}
+
 	// FNV-1a over the ordered payload, the same fingerprint JobForm uses, so a retried request is recognised
 	// as a replay of the same intent rather than a second write.
 	function fingerprint(value: unknown): string {
@@ -139,7 +161,10 @@
 			queryClient.invalidateQueries({ queryKey: jobDetailKey(jobId) }),
 			queryClient.invalidateQueries({ queryKey: jobEventsKey(jobId) }),
 			queryClient.invalidateQueries({ queryKey: ['jobs', 'list'] }),
-			queryClient.invalidateQueries({ queryKey: jobCountsKey })
+			queryClient.invalidateQueries({ queryKey: jobCountsKey }),
+			// A visit's own lines and their lock state move with completion and billing, so they refresh with
+			// everything else rather than going stale behind a dialog that is still open.
+			queryClient.invalidateQueries({ queryKey: ['jobs', 'visit-lines', jobId] })
 		]);
 	}
 
@@ -362,15 +387,39 @@
 	// --- Edit one visit --------------------------------------------------------------------------------------
 
 	let editVisit = $state<JobVisit | null>(null);
+
+	// One visit's effective lines, fetched only while its dialog is open. Cached under the same key the hover
+	// warms, so reopening the same visit is instant.
+	const editPricingQuery = createQuery(() => ({
+		queryKey: jobVisitLinesKey(jobId, editVisit ? [editVisit.id] : []),
+		queryFn: () => fetchJobVisitLines(jobId, [editVisit!.id]),
+		enabled: perVisitPricing && editVisit !== null,
+		staleTime: 60 * 1000
+	}));
+	const editPricing = $derived(editPricingQuery.data?.[0] ?? null);
 	let editSaving = $state(false);
 	let editError = $state('');
 
-	async function saveEdit(payload: UpdateVisitInput) {
+	// Pricing first, then the schedule. Saving a visit's lines bumps its revision, so the schedule save has
+	// to guard on the revision that write handed back or it would refuse itself as somebody else's edit.
+	// Null means the pricing editor was never touched, and nothing is written for it at all.
+	async function savePricingFirst(
+		visit: JobVisit,
+		pricing: RequestPricingLineInput[] | null
+	): Promise<number> {
+		if (pricing === null) return visit.revision;
+		const saved = await saveJobVisitLines(jobId, visit.id, visit.revision, pricing);
+		return saved.revision;
+	}
+
+	async function saveEdit(payload: UpdateVisitInput, pricing: RequestPricingLineInput[] | null) {
 		if (!editVisit) return;
+		const target = editVisit;
 		editSaving = true;
 		editError = '';
 		try {
-			await updateJobVisit(jobId, editVisit.id, editVisit.revision, payload);
+			const revision = await savePricingFirst(target, pricing);
+			await updateJobVisit(jobId, target.id, revision, payload);
 			editVisit = null;
 			await refreshAll();
 			toast.success('Visit saved');
@@ -413,18 +462,22 @@
 			: 0
 	);
 
-	async function saveEditThenFuture(payload: UpdateVisitInput) {
+	async function saveEditThenFuture(
+		payload: UpdateVisitInput,
+		pricing: RequestPricingLineInput[] | null
+	) {
 		if (!editVisit) return;
 		// No day to measure "later" from, so there is nothing to carry forward — save it like any other edit.
 		if (payload.visit_date === null) {
-			await saveEdit(payload);
+			await saveEdit(payload, pricing);
 			return;
 		}
 		const target = editVisit;
 		editSaving = true;
 		editError = '';
 		try {
-			await updateJobVisit(jobId, target.id, target.revision, payload);
+			const revision = await savePricingFirst(target, pricing);
+			await updateJobVisit(jobId, target.id, revision, payload);
 			editVisit = null;
 			await refreshAll();
 			toast.success('Visit saved');
@@ -615,6 +668,18 @@
 		}
 	}
 
+	// What this one visit bills. Since 5c-5a a visit can carry its own quantities, so the job's subtotal is
+	// the wrong figure for a customised visit — the visit's own read is the only thing that knows. Until it
+	// answers, the prompt shows no figure at all rather than a number it would have to take back. The row's
+	// hover already warmed this exact key, so in practice it is there before the prompt opens.
+	const promptPricingQuery = createQuery(() => ({
+		queryKey: jobVisitLinesKey(jobId, invoicePromptVisit ? [invoicePromptVisit.id] : []),
+		queryFn: () => fetchJobVisitLines(jobId, [invoicePromptVisit!.id]),
+		enabled: invoicePromptVisit !== null && canSeePrice,
+		staleTime: 60 * 1000
+	}));
+	const promptAmountMinor = $derived(promptPricingQuery.data?.[0]?.subtotal_minor ?? null);
+
 	function invoiceNowForPromptedVisit() {
 		const visit = invoicePromptVisit;
 		invoicePromptVisit = null;
@@ -668,7 +733,11 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#snippet visitRow(visit: JobVisit)}
-	<li class="job-visits-section__item" onpointerenter={warmTeam} onfocusin={warmTeam}>
+	<li
+		class="job-visits-section__item"
+		onpointerenter={() => warmVisit(visit)}
+		onfocusin={() => warmVisit(visit)}
+	>
 		<span class="job-visits-section__icon" aria-hidden="true">{@html calendarIcon}</span>
 
 		<div class="job-visits-section__body">
@@ -858,7 +927,7 @@
 	open={invoicePromptVisit !== null}
 	{clientName}
 	visitDate={invoicePromptVisit?.visit_date ?? null}
-	amountMinor={visitAmountMinor}
+	amountMinor={promptAmountMinor}
 	{currencyCode}
 	{locale}
 	onInvoiceNow={invoiceNowForPromptedVisit}
@@ -873,6 +942,13 @@
 	isRecurring={isRecurringScheduled}
 	saving={editSaving}
 	error={editError}
+	{perVisitPricing}
+	pricing={editPricing}
+	pricingLoading={editPricingQuery.isPending}
+	pricingFailed={editPricingQuery.isError}
+	canEditPricing={canEditPricing && jobStatus === 'active'}
+	{canSeePrice}
+	{currencyCode}
 	onSave={saveEdit}
 	onSaveFuture={saveEditThenFuture}
 	onClose={() => (editVisit = null)}

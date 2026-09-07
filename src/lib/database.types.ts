@@ -11618,6 +11618,14 @@ export type Database = {
 			job_line_money: { Args: { target_job_id: string }; Returns: Json };
 			job_money: { Args: { target_job_ids: string[] }; Returns: Json };
 			job_schedule_stages: { Args: { target_job_id: string }; Returns: Json };
+			job_visit_lines: {
+				Args: {
+					target_job_id: string;
+					target_organization_id: string;
+					target_visit_ids: string[];
+				};
+				Returns: Json;
+			};
 			job_status_counts: {
 				Args: { target_organization_id: string };
 				Returns: {
@@ -12760,6 +12768,16 @@ export type Database = {
 					new_lines: Json;
 					target_job_id: string;
 					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			replace_job_visit_line_items: {
+				Args: {
+					expected_revision: number;
+					new_lines: Json;
+					target_job_id: string;
+					target_organization_id: string;
+					target_visit_id: string;
 				};
 				Returns: Json;
 			};

@@ -28,6 +28,11 @@ export type RequestPricingLine = {
 	 * stage bills. Quotes, requests and jobs never set it.
 	 */
 	progress_original_amount_minor?: number | null;
+	/**
+	 * Visit-pricing-only: which of the job's lines this row started as. Provenance, never a price source —
+	 * the row's own numbers are the ones that bill. Null on a line only that visit has.
+	 */
+	source_job_line_item_id?: string | null;
 };
 
 export type QuoteLineKind = 'priced' | 'text' | 'heading';
@@ -61,6 +66,8 @@ export type RequestPricingLineInput = {
 	is_recommended?: boolean;
 	/** Invoice-only: the date this line's work was done. Only emitted when the editor enables service dates. */
 	service_date?: string | null;
+	/** Visit-pricing-only: carried back out so a changed job line stays that job line. See the read type. */
+	source_job_line_item_id?: string | null;
 };
 
 export type RequestPricingWriteResult = {

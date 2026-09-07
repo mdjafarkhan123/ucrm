@@ -450,7 +450,8 @@
 					priceBasis={saved.job.price_basis}
 					billingTiming={saved.job.billing_timing}
 					canInvoiceVisits={saved.can_invoice_visits}
-					visitAmountMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? null) : null}
+					canEditPricing={saved.can_edit}
+					canSeePrice={saved.can_see_price}
 					currencyCode={saved.job.currency_code}
 				/>
 
@@ -569,7 +570,7 @@
 						jobId={saved.job.id}
 						clientId={saved.job.client.id}
 						visits={saved.visits}
-						subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? null) : null}
+						canSeePrice={saved.can_see_price}
 						currencyCode={saved.job.currency_code}
 						locale={saved.locale}
 					/>

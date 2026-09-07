@@ -1,121 +1,121 @@
 # Invoices: Current Checkpoint
 
 - Goal: Jobber-grounded invoicing and manual collection.
-- Parts 1–9 CLOSED + committed (7 of 8 journeys; progress invoicing is Part 5c's job). Detail in `ROADMAP.md`.
-- **Part 5c is the only remaining part.** Sub-sequence 5c-1…5c-5 lives in `docs/invoice-part-5c-plan.md`.
-  Jobber is the sole reference (GHL excluded).
-- **5c-1, 5c-2 and 5c-3 are CLOSED and browser-verified.** **5c-4 is built, committed and green on 14 pgTAP
-  assertions; only its browser pass is owed.** Evidence in `ROADMAP.md`. No part packet is open.
+- Parts 1–9 CLOSED + committed. **Part 5c is the only remaining part**; 5c-1…5c-4 are CLOSED and
+  browser-verified. Approved scope and performance verdict: `docs/invoice-part-5c-plan.md` — do not re-derive.
+- **5c-5 is split across sessions on Jafar's instruction (2026-09-07):**
+  - **5c-5a — visit-line editing. BUILT.**
+  - **5c-5b — invoice seeding from visit lines. BUILT 2026-09-07.**
+  - **5c-5c — the integrated browser pass for the whole 5c journey set. NOT STARTED — next action.**
+- **Nothing from 5c-5a or 5c-5b is committed yet.** Jafar has not been asked. Stage named files only; never
+  stage the repo-wide CRLF drift.
 
 ## Next action
 
-Start **5c-5 - Per-visit quantities and integrated verification** - the last part of this campaign.
-`docs/invoice-part-5c-plan.md` sec 5c-5 is the approved scope and its performance verdict; do not re-derive
-either. Load `.claude/skills/design/SKILL.md` before any Svelte, and `supabase-postgres-best-practices`
-before SQL.
+Run **5c-5c**: the browser pass listed in the plan's 5c-5 section, light and dark, no console errors.
+Needs a recurring job on `per_visit` — Job #2 is `fixed_per_period` and will NOT show the pricing section, so
+check for another or set one up. Verify the campaign's completion gate: a per-visit override reaches exactly
+its Visit Invoice, and the visits-to-bill card, the "Invoice now" prompt and the created invoice all agree.
 
-**5c-4 is CLOSED, browser-verified 2026-09-07** on Raad LTD in light and dark, no console errors: #18 and
-#19 show Item total / Due this invoice alone with the stage fact in the header and no Void; the client
-preview shows the Progress invoice kicker and the same pair; #16 is unchanged. Two defects the pass found
-were fixed and committed (below).
+### 5c-5c is a FIND-ONLY session — Jafar's instruction, 2026-09-07
 
-Only the **print view** is unverified: "Print or save PDF" opens the browser print dialog, which freezes
-browser control. Jafar eyeballs it, or read the print stylesheet. Low risk - the columns are conditional in
-markup, so print CSS cannot re-add one.
+This pass observes and records. **Do not fix anything you find.** Append each finding to the bug log below
+with the exact steps, what you expected, and what happened, then carry on with the rest of the checklist so
+one bug does not cost the whole pass. A separate session fixes them.
 
-**The Cloudflare tunnel was down** on 2026-09-07; `http://localhost:5173` works and keeps the session
-cookie. Restart the tunnel or use localhost.
+The only writes this session may make are the ones the test itself requires (creating the per-visit test job,
+its visits, the invoices under test) plus this checkpoint file. No source changes, no migrations.
 
-## The progress line table, corrected 2026-09-07 (no migration -- display only)
+Report at the end: which journeys passed, which failed, and what is in the bug log.
 
-A progress bill's lines are a stage's share spread across the job's items and stored as **one lump priced at
-that share** (`private.progress_invoice_lines` writes `quantity 1`, `unit_price_minor` = the share). The
-totals were right, but the table printed that lump under "Unit price" beside the real "Item total", so every
-row read as a falsehood: 1 x $142.59 = $250.00. Both the staff table
-(`quotes/ProductsAndServicesBlock.svelte`) and the client document (`invoices/CustomerInvoiceDocument.svelte`)
-now drop **Quantity and Unit price** on a priced progress bill and show only **Item total / Due this
-invoice** -- what `jobber-05-invoices-payments.md` sec 4.2 says Jobber shows, and what the 5c-4 plan already
-asked for. Quantity survives when money is withheld, since it is then all the table has left. Do not
-re-derive a per-unit figure for these lines; the storage shape cannot support one.
+## 5c-5c bug log
 
-`RecordFact` gained an opt-in `wrap` flag for the same pass: facts clip by default because they are dates and
-numbers, but the Payment stage row carries a phrase somebody typed and the clipped half is the identifying
-half.
+Empty — the pass has not run yet. Findings go here, newest last.
 
-## Decisions from 5c-1…5c-3 that later parts must not contradict
+## What 5c-5b changed
 
-- A stage is locked the moment an invoice claims it. `locked_amount_minor` holds the billed amount and is
-  written **before** `invoice_sources` — the guard trigger refuses the other order. It is permanent: deleting
-  the Draft does not release the stage.
-- Percentage schedules validate on basis points summing to 10000 and price by largest remainder (ties by
-  position); fixed schedules must sum exactly to the job total. Same rule on the Quote command.
-- A schedule that no longer reconciles is a real state, not an error: readers answer `reconciles: false`.
-- Visit lines are a full snapshot, not a delta: no rows means the visit bills the job's lines.
-- The live Quote deposit is applied to the **first** stage only (position 0, job has a `quote_id`).
-- Stage status without `invoices.view` is the single word `invoiced`; with it, the live invoice status.
-- Ready-to-Bill deliberately does **not** list individual stages — a job carrying any schedule is excluded
-  from whole-job Ready-to-Bill, and the Job Billing card is the only place a stage is billed. Scope call made
-  in 5c-3, not separately re-confirmed with Jafar.
-- The composer's installment mode sends no lines: `create_installment_invoice` prices and splits the stage
-  server-side, so the browser's line preview is display-only.
-- `locked` means "priced into a bill, permanently"; `status` means "where that bill stands". Do not collapse
-  them or re-derive `locked` from the claim.
+Three places used to show or bill one copy of the JOB's lines per visit. All three now ask the visit:
 
-## The stage lock, corrected 2026-09-06 (migration `20260906190000_stage_lock_matches_the_write_command`)
+- `src/routes/(app)/invoices/new/+page.svelte` — the visit seed fetches `fetchJobVisitLines(jobId, visitIds)`
+  and seeds each visit's own effective priced lines, dated from the read itself. A failed read toasts and
+  returns to the job rather than leaving a blank invoice looking finished.
+- `JobVisitsSection.svelte` — the "Invoice now / later" prompt takes its figure from the prompted visit's own
+  `subtotal_minor`; the `visitAmountMinor` prop is gone. The row hover already warmed that exact key.
+- `JobVisitsToBillCard.svelte` — each row and the selected total use per-visit subtotals (one gated read for
+  up to 100 billable visits). Prop `subtotalMinor` replaced by `canSeePrice`. **This third path was not in the
+  previous checkpoint's next action; it is the same lie in the same journey and would have failed the gate.**
 
-`job_schedule_stages.locked` now answers `stage.locked_amount_minor is not null` — the same test
-`set_job_payment_schedule` uses to decide what it may rewrite. It used to answer from the invoice claim, which
-disagreed after a still-Draft progress invoice was deleted: the claim cascades, the locked amount is permanent
-by design, and the reader was then reporting an editable, still-to-bill stage that the write command would
-silently refuse and the card would offer a doomed "Create invoice" button for. `status` is unchanged — it
-answers where the *bill* stands, and 'remaining' is honest when no bill exists. The card combines them: locked
-+ remaining renders as "Already billed" with no action. Covered by assertion 16 of
-`invoice_installment_to_invoice_handoff.sql`.
+Green: `npm run check` 0 errors, Prettier clean, `JobVisitsSection.svelte.spec.ts` 5/5. The Svelte autofixer
+pass owed on the 5c-5a files is DONE — every remaining complaint is a false positive (it cannot parse SCSS
+nesting or `//` comments) or the page's established seed-effect pattern. ESLint reports only pre-existing
+errors in those files.
 
-## Verification still owed
+## What 5c-5a built (all applied and green)
 
-- The stage read uses `job_payment_schedule_items_job_idx`; the two lateral lookups fall back to seq scans
-  only because `invoice_sources` and `invoices` are still tiny. `invoice_progress_context` does the same
-  (`invoice_sources_root_idx` and the stage's own unique constraint both exist; the planner picks seq scans
-  on 12 rows). Re-check all of them with `EXPLAIN (ANALYZE, BUFFERS)` once there is real installment data.
+- Migrations `20260908130000_job_visit_line_commands.sql` and
+  `20260908140000_job_batch_billing_uses_visit_lines.sql` — both **applied to the remote project**.
+  - `private.job_visit_effective_lines` is the single answer to "what does this visit bill": its own rows if
+    it has any, otherwise the job's. Editor, composer, card and batch planner all ask it, so they cannot disagree.
+  - `public.job_visit_lines(org, job, visit_ids[])` — gated read for up to 100 visits, with each visit's
+    `subtotal_minor`, `has_override`, `locked` and `lock_reason`. Prices need jobs.view_price.
+  - `public.replace_job_visit_line_items` — jobs.edit, refuses a non-`per_visit` job, a closed job, a
+    completed or invoiced visit (P0410) and a stale visit revision (P0409). **An empty list is not "bill
+    nothing" — it clears the override and puts the visit back on the job's lines.**
+- `supabase/tests/database/invoice_visit_line_commands.sql` — **31 pgTAP assertions, all passing** remotely.
+- Routes: `PATCH /api/jobs/[id]/visits/[visitId]/lines`, `GET /api/jobs/[id]/visit-lines?visits=`.
+  Zod: `replaceVisitLinesSchema`. Client API: `fetchJobVisitLines`, `saveJobVisitLines`, `jobVisitLinesKey`.
+- UI: a pricing section inside `JobVisitDialog` (recurring + per_visit only), using the shared
+  `ProductsAndServicesBlock` with a new `carrySourceLine` prop; the dialog goes `size="large"` when it shows.
+
+## Non-obvious decisions 5c-5c must not contradict
+
+- **The visit dialog saves pricing FIRST, then the schedule** (`savePricingFirst`), threading the revision the
+  pricing write hands back. Saving lines bumps `job_visits.revision`. If pricing succeeds and the schedule
+  save then fails, the lines are saved and the dialog stays open with the error — deliberate.
+- Pricing is only written when it really changed (`pricingFingerprint`), so reopening a dialog and changing
+  nothing does not turn a plain visit into a customised one.
+- `source_job_line_item_id` is provenance, never a price source.
+- Editing a visit's lines is `jobs.edit` (it is money), not `jobs.schedule`.
+- A figure is never shown before its visit's own subtotal arrives — the alternative was showing the job's
+  number and taking it back.
+
+## Owed
+
+- `EXPLAIN (ANALYZE, BUFFERS)` on the stage reads and the visit-line reads once there is real data — the
+  planner picks seq scans on a dozen rows today.
 
 ## Known deferrals — outside this campaign, do not treat as bugs
 
-- The Quote screen's "Convert to job" menu item is hard-coded `disabled: true`
-  (`src/routes/(app)/quotes/[id]/+page.svelte`) — the Quotes campaign's Part 8 leftover.
-- **Billing-contact fan-out**: invoice + receipt email go to the client's PRIMARY email only.
+- Quote screen's "Convert to job" menu item is hard-coded `disabled: true` (Quotes Part 8 leftover).
+- Invoice + receipt email go to the client's PRIMARY email only —
   `Memory/deferred/invoice-email-sends-to-primary-only-not-billing-contact.md`.
-- **Void → client cancellation email**: needs a new template (7b note).
-- **No correction UI anywhere**: `prepare_invoice_correction` / `activate_invoice_replacement` /
-  `rebill_voided_invoice` work and are tested, but nothing in `src/` calls them, so an issued bill cannot be
-  corrected from the browser. `Memory/deferred/issued-invoices-cannot-be-corrected-from-the-browser.md`.
+- Void → client cancellation email needs a new template.
+- No correction UI: `prepare_invoice_correction` / `activate_invoice_replacement` / `rebill_voided_invoice`
+  work and are tested, but nothing in `src/` calls them —
+  `Memory/deferred/issued-invoices-cannot-be-corrected-from-the-browser.md`.
 - Payment edit/delete, one-payment-across-several-invoices, Invoices-list stat cards ("—" by design), SMS.
-- Two **Jobs** reminder gaps (not ours): "On dates we pick ourselves" and "Once, when the job is finished"
-  raise no reminder until a date/closure exists.
+- Two Jobs reminder gaps: "On dates we pick ourselves" and "Once, when the job is finished" raise no reminder
+  until a date or closure exists.
 - `JobPaymentScheduleDialog` keeps its red "stages must add up" banner until save even after the numbers are
   corrected; the live "Adds up to X of Y" line is right. Jafar has seen it and has not asked for the fix.
-- `npx supabase gen types` cannot run here (no access token), so new RPCs are hand-added to
-  `database.types.ts`; they reorder on a real regeneration, which is fine.
+- The progress-invoice **print view** was never verified: the print dialog freezes browser control.
+- `npx supabase gen types` cannot run here, so new RPCs are hand-added to `database.types.ts`.
 
-## Live test-data state (Raad LTD, org 18f0d717-904e-48d8-bd99-9df7e3844cda)
+## Live test data (Raad LTD, org 18f0d717-904e-48d8-bd99-9df7e3844cda)
 
-- **Job #14 is now fully billed**: Deposit → Draft invoice #18 ($500, $400 deposit applied, $100 balance),
-  Final → Draft invoice #19 ($376.65). Both still Draft — the two bills the 5c-4 browser pass reads.
-- Unbilled schedules still available for testing: Job #1 ($20,000/$20,000/$26,500 fixed) and Job #13
-  (33.33/33.33/33.34 percentage).
-- Job #2 "Recurring Lawn Care Test" on `fixed_per_period`; Sept → invoice #16, Oct-31 + Nov-30 reminders
-  pending, Aug → invoices #9/#10.
+- Job #14 fully billed: Deposit → Draft #18 ($500, $400 deposit applied, $100 balance), Final → Draft #19
+  ($376.65). Both still Draft.
+- Unbilled schedules for testing: Job #1 ($20,000/$20,000/$26,500 fixed), Job #13 (33.33/33.33/33.34 %).
+- **Job #2 "Recurring Lawn Care Test" is `fixed_per_period`**, so it will NOT show the per-visit pricing section.
 - Leftover Session-B drafts #16 ($75) and #17 ($200) — harmless; delete only with Jafar's OK.
-- Invoice #5 "D2 refusal test" carries append-only test state ($1,000 "other" payment + extra receipts);
-  remove only by reversal, with Jafar's OK.
+- Invoice #5 "D2 refusal test" carries append-only test state; remove only by reversal, with Jafar's OK.
 
 ## Notes
 
 - Local migration filenames vs remote versions do not match — existing convention.
 - Repo-wide CRLF drift on ~300 `src/` files — never stage it. Skill-dir edits never staged with features.
-- pgTAP runs against the remote project in one rolled-back transaction; `finish()` is the pass/fail signal
-  and emits rows only on failure. Only the last statement's output returns through MCP, so collect each
-  assertion into a temp table when you need to see which one failed.
-- Two pre-existing ESLint errors in `src/routes/(app)/jobs/[id]/+page.svelte` are not ours.
+- pgTAP runs against the remote project as one rolled-back transaction. `finish()` emits rows only on
+  failure, and MCP returns the last statement that produced rows — so a run that comes back with the last
+  `is` row instead of a `finish` row passed.
 
 Resume command: `read memory and continue the Invoices campaign`.

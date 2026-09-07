@@ -12,7 +12,13 @@
 		type BillableWorkItem,
 		type InvoiceSourceInput
 	} from '$lib/invoices/api';
-	import { fetchJob, jobDetailKey } from '$lib/jobs/api';
+	import {
+		fetchJob,
+		fetchJobVisitLines,
+		jobDetailKey,
+		jobVisitLinesKey,
+		type JobVisitLines
+	} from '$lib/jobs/api';
 	import type { RequestPricingLineInput } from '$lib/quotes/api';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 
@@ -103,32 +109,76 @@
 			})) satisfies RequestPricingLineInput[];
 	}
 
+	// A visit's own priced lines, in the same shape the line editor writes. A customised visit answers with
+	// its own rows; a plain one answers with the job's, because the database decides that, not this screen.
+	function pricedVisitLines(lines: JobVisitLines['lines']) {
+		return lines
+			.filter((line) => line.line_kind === 'priced')
+			.map((line) => ({
+				name: line.name,
+				category: line.category as RequestPricingLineInput['category'],
+				is_labor: line.is_labor,
+				catalog_item_id: line.catalog_item_id,
+				description: line.description,
+				unit_label: line.unit_label,
+				quantity: line.quantity ?? 1,
+				unit_price_minor: line.unit_price_minor ?? 0,
+				unit_cost_minor: line.unit_cost_minor ?? 0,
+				is_taxable: line.is_taxable,
+				image_attachment_id: line.image_attachment_id
+			})) satisfies RequestPricingLineInput[];
+	}
+
+	// What each chosen visit actually bills. Since 5c-5a a visit may carry its own quantities, so the bill
+	// asks the visit rather than copying the job — `job_visit_lines` hands back the job's lines for a visit
+	// that was never customised, so both cases come down this one road.
+	const visitLinesQuery = createQuery(() => ({
+		queryKey: jobVisitLinesKey(jobId ?? '', visitIds),
+		queryFn: () => fetchJobVisitLines(jobId!, visitIds),
+		enabled: Boolean(jobId) && visitIds.length > 0,
+		staleTime: 30_000
+	}));
+
 	// Visits arrive pre-chosen (the job page's visits-to-bill card), so this seeds directly off the one job
-	// once it loads rather than reopening a picker that has nothing left to ask. One copy of the job's priced
-	// lines per visit, each stamped with that visit's own date — the 5b-2 shape approved on the roadmap.
+	// once it loads rather than reopening a picker that has nothing left to ask. One copy of each visit's
+	// effective priced lines, stamped with that visit's own date — the 5b-2 shape with 5c-5's per-visit truth.
 	let attemptedVisitSeed = $state(false);
 	$effect(() => {
 		if (visitIds.length === 0 || seed || attemptedVisitSeed || !jobId) return;
+		// A failed pricing read must not leave a blank invoice sitting there looking finished.
+		if (visitLinesQuery.isError) {
+			attemptedVisitSeed = true;
+			toast.error('Those visits’ pricing could not be loaded. Try again.');
+			void goto(resolve('/(app)/jobs/[id]', { id: jobId }));
+			return;
+		}
 		const job = originJobQuery.data;
-		if (!job) return;
+		const visitLines = visitLinesQuery.data;
+		if (!job || !visitLines) return;
 		attemptedVisitSeed = true;
 
-		const jobLines = pricedLines(job.lines);
-		if (jobLines.length === 0) {
-			toast.error('That job has no priced lines yet, so there is nothing to bill.');
+		const byVisitId = new Map(visitLines.map((visit) => [visit.visit_id, visit]));
+		const lines = visitIds.flatMap((visitId) => {
+			const visit = byVisitId.get(visitId);
+			if (!visit) return [];
+			return pricedVisitLines(visit.lines).map((line) => ({
+				...line,
+				service_date: visit.visit_date
+			}));
+		});
+
+		if (lines.length === 0) {
+			toast.error('Those visits have no priced lines yet, so there is nothing to bill.');
 			void goto(resolve('/(app)/jobs/[id]', { id: jobId }));
 			return;
 		}
 
-		const visitDateById = new Map(job.visits.map((visit) => [visit.id, visit.visit_date]));
 		seed = {
 			clientId,
 			clientName,
 			subject: job.job.title,
 			propertyId: job.job.property?.id ?? null,
-			lines: visitIds.flatMap((visitId) =>
-				jobLines.map((line) => ({ ...line, service_date: visitDateById.get(visitId) ?? null }))
-			),
+			lines,
 			sources: visitIds.map((visitId) => ({ kind: 'visit', job_id: jobId, visit_id: visitId })),
 			installmentId: null
 		};

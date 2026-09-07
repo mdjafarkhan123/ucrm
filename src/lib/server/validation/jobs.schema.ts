@@ -97,50 +97,69 @@ const jobQuantity = z
 	});
 
 // A job's scope rows are always priced product or service work: unlike a quote, a job has no headings,
-// notes, or optional add-ons — by the time work is agreed every line is simply part of it.
-const jobScopeLineSchema = z
-	.object({
-		position: z.number().int().min(0),
-		category: z.enum(PRICING_CATEGORIES),
-		is_labor: z.boolean().default(false),
-		source_catalog_item_id: z
-			.string()
-			.uuid()
-			.nullish()
-			.transform((value) => value ?? null),
-		name: z
-			.string()
-			.trim()
-			.min(2, 'Give this line a name.')
-			.max(160, 'That name is too long. Keep it under 160 characters.'),
-		description: z
-			.string()
-			.trim()
-			.max(2000, 'That description is too long.')
-			.nullish()
-			.transform((value) => value || null),
-		unit_label: z
-			.string()
-			.trim()
-			.max(24, 'Keep the unit under 24 characters.')
-			.nullish()
-			.transform((value) => value || null),
-		quantity: jobQuantity,
-		unit_price_minor: jobMinorAmount('a price'),
-		unit_cost_minor: jobMinorAmount('a cost'),
-		is_taxable: z.boolean().default(true),
-		// Carried, not created here: a converted job inherits its quote line's photo, and a rewrite of the
-		// scope must not silently drop it. Attaching a new photo to a job line belongs to Part 15.
-		image_attachment_id: z
+// notes, or optional add-ons — by the time work is agreed every line is simply part of it. One visit's own
+// lines are the same shape plus where each row came from, so the fields live here once.
+const jobScopeLineFields = z.object({
+	position: z.number().int().min(0),
+	category: z.enum(PRICING_CATEGORIES),
+	is_labor: z.boolean().default(false),
+	source_catalog_item_id: z
+		.string()
+		.uuid()
+		.nullish()
+		.transform((value) => value ?? null),
+	name: z
+		.string()
+		.trim()
+		.min(2, 'Give this line a name.')
+		.max(160, 'That name is too long. Keep it under 160 characters.'),
+	description: z
+		.string()
+		.trim()
+		.max(2000, 'That description is too long.')
+		.nullish()
+		.transform((value) => value || null),
+	unit_label: z
+		.string()
+		.trim()
+		.max(24, 'Keep the unit under 24 characters.')
+		.nullish()
+		.transform((value) => value || null),
+	quantity: jobQuantity,
+	unit_price_minor: jobMinorAmount('a price'),
+	unit_cost_minor: jobMinorAmount('a cost'),
+	is_taxable: z.boolean().default(true),
+	// Carried, not created here: a converted job inherits its quote line's photo, and a rewrite of the
+	// scope must not silently drop it. Attaching a new photo to a job line belongs to Part 15.
+	image_attachment_id: z
+		.string()
+		.uuid()
+		.nullish()
+		.transform((value) => value ?? null)
+});
+
+const laborIsAService = (value: { is_labor: boolean; category: string }) =>
+	!value.is_labor || value.category === 'service';
+
+const laborRefinement = {
+	message: 'Labor is always a service.',
+	path: ['category']
+};
+
+const jobScopeLineSchema = jobScopeLineFields.refine(laborIsAService, laborRefinement);
+
+// One line of a visit's own set (Invoices 5c-5). `source_job_line_item_id` is provenance, never a price
+// source: it says "this row started as that job line", which is how the editor tells a changed job line from
+// a line only this visit has. The command nulls it on any duplicate, so the browser never has to.
+const jobVisitLineSchema = jobScopeLineFields
+	.extend({
+		source_job_line_item_id: z
 			.string()
 			.uuid()
 			.nullish()
 			.transform((value) => value ?? null)
 	})
-	.refine((value) => !value.is_labor || value.category === 'service', {
-		message: 'Labor is always a service.',
-		path: ['category']
-	});
+	.refine(laborIsAService, laborRefinement);
 
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -529,6 +548,15 @@ export const replaceJobLinesSchema = z.object({
 	lines: z
 		.array(jobScopeLineSchema)
 		.max(JOB_LINE_MAX, `A job can hold up to ${JOB_LINE_MAX} lines.`)
+});
+
+// One visit's own set, replaced whole (Invoices 5c-5). An empty list is meaningful and deliberately allowed:
+// it clears the override and puts the visit back on the job's lines.
+export const replaceVisitLinesSchema = z.object({
+	expected_revision: z.number().int().min(0),
+	lines: z
+		.array(jobVisitLineSchema)
+		.max(JOB_LINE_MAX, `A visit can hold up to ${JOB_LINE_MAX} lines.`)
 });
 
 // The three billing decisions stay separate on purpose (contract, "Billing timing and collection, kept

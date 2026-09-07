@@ -1,35 +1,50 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { createQuery } from '@tanstack/svelte-query';
 	import { SvelteSet } from 'svelte/reactivity';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
-	import type { JobVisit } from '$lib/jobs/api';
+	import { fetchJobVisitLines, jobVisitLinesKey, type JobVisit } from '$lib/jobs/api';
 
 	// Manual per-visit billing (Invoices 5b-2): for a job priced per visit, this is the picker itself, not a
 	// dialog reached from a menu — the job's page already knows which of its own visits are completed and
-	// unbilled, so there is nothing to fetch. Ticking visits and pressing Create invoice hands the choice
-	// straight to /invoices/new, which seeds one copy of the job's priced lines per visit, each dated to it.
+	// unbilled. Ticking visits and pressing Create invoice hands the choice straight to /invoices/new, which
+	// seeds each visit's own effective lines, dated to it.
 	let {
 		jobId,
 		clientId,
 		visits,
-		subtotalMinor,
+		canSeePrice = true,
 		currencyCode = 'USD',
 		locale = 'en-US'
 	}: {
 		jobId: string;
 		clientId: string;
 		visits: JobVisit[];
-		/** The job's own subtotal — what one visit's copy of the lines comes to. Null without price access. */
-		subtotalMinor: number | null;
+		/** Money is withheld from a member without jobs.view_price, so the card shows dates only. */
+		canSeePrice?: boolean;
 		currencyCode?: string;
 		locale?: string;
 	} = $props();
 
 	const billable = $derived(
 		visits.filter((visit) => visit.completed_at !== null && !visit.invoiced)
+	);
+
+	// Since 5c-5a a visit can carry its own quantities, so each row is worth what THAT visit bills, not one
+	// copy of the job's lines. `job_visit_lines` answers for all of them in one gated read — it hands back the
+	// job's lines for any visit that was never customised — and caps at 100 visits, which the slice respects.
+	const pricedIds = $derived(billable.slice(0, 100).map((visit) => visit.id));
+	const subtotalsQuery = createQuery(() => ({
+		queryKey: jobVisitLinesKey(jobId, pricedIds),
+		queryFn: () => fetchJobVisitLines(jobId, pricedIds),
+		enabled: canSeePrice && pricedIds.length > 0,
+		staleTime: 60 * 1000
+	}));
+	const subtotalByVisitId = $derived(
+		new Map((subtotalsQuery.data ?? []).map((visit) => [visit.visit_id, visit.subtotal_minor]))
 	);
 
 	const selected = new SvelteSet<string>();
@@ -49,7 +64,16 @@
 		return money.format(minor / 100);
 	}
 
-	const selectedTotal = $derived(subtotalMinor !== null ? subtotalMinor * selected.size : null);
+	// Only a total we can stand behind: if any ticked visit's own subtotal has not arrived, no figure shows.
+	const selectedTotal = $derived.by(() => {
+		let total = 0;
+		for (const visitId of selected) {
+			const subtotal = subtotalByVisitId.get(visitId);
+			if (subtotal === undefined || subtotal === null) return null;
+			total += subtotal;
+		}
+		return total;
+	});
 
 	function createInvoice() {
 		if (selected.size === 0) return;
@@ -79,8 +103,8 @@
 							? dateFormat.format(new Date(`${visit.visit_date}T12:00:00`))
 							: 'No visit date'}
 					</span>
-					{#if subtotalMinor !== null}
-						<span class="visits-to-bill__amount">{amount(subtotalMinor)}</span>
+					{#if subtotalByVisitId.get(visit.id) != null}
+						<span class="visits-to-bill__amount">{amount(subtotalByVisitId.get(visit.id)!)}</span>
 					{/if}
 				</li>
 			{/each}

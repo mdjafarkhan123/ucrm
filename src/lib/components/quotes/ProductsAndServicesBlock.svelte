@@ -75,6 +75,7 @@
 		loadFailed = false,
 		showPrices = true,
 		showServiceDate = false,
+		carrySourceLine = false,
 		progressColumn = false,
 		subtotalMinor,
 		attachTo = null,
@@ -100,6 +101,12 @@
 		showPrices?: boolean;
 		/** Invoice-only: shows a per-line "Service date" field. Off for quotes/requests/jobs, which have none. */
 		showServiceDate?: boolean;
+		/**
+		 * Visit-pricing-only: carries each row's `source_job_line_item_id` from the saved lines back out
+		 * through the draft, so a job line the visit changed stays that job line instead of turning into a
+		 * new visit-only line on every save.
+		 */
+		carrySourceLine?: boolean;
 		/**
 		 * Progress-invoice-only: splits the saved table's money into "Item total" — the whole item, from
 		 * `progress_original_amount_minor` — and "Due this invoice", the share this payment stage bills. The
@@ -151,6 +158,8 @@
 		is_recommended: boolean;
 		/** Invoice-only: the date this line's work was done. Null until set; ignored unless showServiceDate. */
 		service_date?: string | null;
+		/** Visit-pricing-only: where this row came from. Absent on a row the person added here. */
+		source_job_line_item_id?: string | null;
 	};
 
 	let editing = $state(false);
@@ -199,7 +208,8 @@
 			line_kind: line.line_kind ?? 'priced',
 			selection_kind: line.selection_kind ?? 'required',
 			is_recommended: line.is_recommended ?? false,
-			service_date: line.service_date ?? null
+			service_date: line.service_date ?? null,
+			source_job_line_item_id: line.source_job_line_item_id ?? null
 		};
 	}
 
@@ -868,6 +878,9 @@
 				is_taxable: line.is_taxable,
 				image_attachment_id: line.image_attachment_id,
 				...(showServiceDate ? { service_date: line.service_date ?? null } : {}),
+				...(carrySourceLine
+					? { source_job_line_item_id: line.source_job_line_item_id ?? null }
+					: {}),
 				...(quoteChoices
 					? {
 							line_kind: 'priced' as const,
