@@ -162,9 +162,13 @@
 			queryClient.invalidateQueries({ queryKey: jobEventsKey(jobId) }),
 			queryClient.invalidateQueries({ queryKey: ['jobs', 'list'] }),
 			queryClient.invalidateQueries({ queryKey: jobCountsKey }),
-			// A visit's own lines and their lock state move with completion and billing, so they refresh with
-			// everything else rather than going stale behind a dialog that is still open.
-			queryClient.invalidateQueries({ queryKey: ['jobs', 'visit-lines', jobId] })
+			// A visit's own lines and their lock state move with completion and billing. By the time an edit
+			// or a completion lands the visit dialog is closed, so no observer holds these keys — invalidate
+			// alone would only flag them stale, and the next reader (the "Invoice now" prompt, the "Visits
+			// ready to bill" card, the composer reached by goto) would still serve the warmed pre-edit figure
+			// because it is inside its own staleTime. Drop the entries instead: every reader then cold-fetches
+			// the visit's real subtotal on mount, which is the one path that is always correct.
+			queryClient.removeQueries({ queryKey: ['jobs', 'visit-lines', jobId] })
 		]);
 	}
 
