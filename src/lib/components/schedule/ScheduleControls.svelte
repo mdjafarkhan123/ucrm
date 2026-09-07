@@ -139,7 +139,6 @@
 			value={filters.view}
 			options={viewOptions}
 			size="small"
-			label="View"
 			onchange={(view) => onchange({ view: view as ScheduleFilters['view'] })}
 		/>
 

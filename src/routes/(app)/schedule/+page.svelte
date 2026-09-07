@@ -5,8 +5,6 @@
 	import { page } from '$app/state';
 	import type { ResolvedPathname } from '$app/types';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Popover from '$lib/components/ui/Popover.svelte';
@@ -1221,17 +1219,6 @@
 
 <PageContainer variant="fill">
 	<div class="schedule-page">
-		<PageHeader title="Schedule" description="The work your team is committed to.">
-			{#snippet actions()}
-				<!-- The primary create action. In Version 1.1 it opens the same Job/Request chooser an empty
-				     slot does, seeded with no date, so the work is scheduled from inside the form. Empty
-				     calendar space seeds a date instead. -->
-				<Button variant="primary" disabled={!canCreate} onclick={() => openCreate(null)}>
-					New
-				</Button>
-			{/snippet}
-		</PageHeader>
-
 		{#if contextQuery.isPending}
 			<LoadingSkeleton variant="card" rows={2} label="Loading the calendar" />
 		{:else if contextQuery.isError || !filters}
