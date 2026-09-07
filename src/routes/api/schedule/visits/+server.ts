@@ -37,13 +37,14 @@ const DAY_MS = 86_400_000;
 
 // Each select is spelled out whole rather than assembled from an interpolated string: supabase-js parses the
 // select at the type level, and a `${...}` in the middle of one collapses the parse to an error type, taking
-// every field's type with it. The narrowed pair adds one embed and changes nothing else.
+// every field's type with it.
 //
-// `mine` is a second, aliased embed of the same assignment table, and its only job is to make the join inner
-// so the index selects the caller's rows. `assignments` beside it stays unfiltered and still carries the
-// visit's whole crew, which a field worker may see and which draws the avatars on the card. Filtering
-// `assignments` itself would have been one character shorter and would have quietly reduced every card to a
-// crew of one.
+// There is one select, not one per scope. Part 15a-3 added a second, aliased `!inner` embed of the assignment
+// table to drive an assigned-scope member's read from their own rows; Part 15a-4 measured it and removed it.
+// It never changed the driving side of the plan -- the read still walked the organization's whole week and
+// still discarded the same 787 rows -- so it only added a join: 28 ms became 44 ms. The narrowing that does
+// work is in the policies, where the permission rule is now evaluated once per statement instead of once per
+// scanned row.
 const VISIT_FIELDS =
 	`id, job_id, visit_date, start_time, end_time, all_day, title, completed_at, revision, position,
 	 assignments:job_visit_assignments(user_id)` as const;
@@ -52,8 +53,6 @@ const VISIT_EMBEDS = `job:jobs(job_number, title, client_id, property_id,
 	   property:properties(label, address_line1, city, state_region, postal_code,
 	     latitude, longitude, geocode_status))` as const;
 const VISIT_SELECT = `${VISIT_FIELDS}, ${VISIT_EMBEDS}` as const;
-const VISIT_SELECT_ASSIGNED =
-	`${VISIT_FIELDS}, mine:job_visit_assignments!inner(user_id), ${VISIT_EMBEDS}` as const;
 
 const ASSESSMENT_FIELDS = `id, request_id, starts_at, ends_at, all_day, completed_at, instructions,
 	 assignments:assessment_assignees(user_id)` as const;
@@ -62,8 +61,6 @@ const ASSESSMENT_EMBEDS = `request:requests(title, status, client_id, property_i
 	   property:properties(label, address_line1, city, state_region, postal_code,
 	     latitude, longitude, geocode_status))` as const;
 const ASSESSMENT_SELECT = `${ASSESSMENT_FIELDS}, ${ASSESSMENT_EMBEDS}` as const;
-const ASSESSMENT_SELECT_ASSIGNED =
-	`${ASSESSMENT_FIELDS}, mine:assessment_assignees!inner(user_id), ${ASSESSMENT_EMBEDS}` as const;
 
 export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'jobs.view');
@@ -78,40 +75,27 @@ export const GET: RequestHandler = async (event) => {
 	const organizationId = check.auth.organization.id;
 
 	// Whose week is this? A member narrowed to their assigned work sees only their own visits and assessments
-	// either way -- RLS decides that, not this route. What the scope changes here is the question asked: with
-	// 'all' the read walks the organization's window, and with 'assigned' it is driven by the caller's own
-	// assignment rows instead, so the work grows with what this person is on rather than with how busy the
-	// business is. Asking the org's whole week and letting RLS discard the rest gave the same answer and cost
-	// 132ms against a 27ms baseline on a 5,000-job tenant; the discarded rows were 786 of 876.
+	// either way -- RLS decides that, not this route. The scope is read here for presentation alone: the page
+	// uses it to drop the controls that can only come back empty. It deliberately no longer changes the
+	// question asked, because Part 15a-4 measured that asking a different question did not help; what did
+	// help was the policies evaluating the permission rule once per statement rather than once per row.
 	const scope = permissionScope(check.access, 'jobs.view');
 	const assignedOnly = scope === 'assigned';
-	const callerId = check.auth.user.id;
 
 	// One more row than the ceiling, so a full page can tell "exactly at the limit" from "there is more".
-	// The window, its order and its ceiling are identical either way; only the select differs, and it is passed
-	// in whole because supabase-js resolves a select's row type from a single string literal and gives up on a
-	// union of two.
-	const visitWindow = <Select extends string>(select: Select) =>
-		event.locals.supabase
-			.from('job_visits')
-			.select(select)
-			.eq('organization_id', organizationId)
-			.gte('visit_date', from)
-			.lte('visit_date', to)
-			.order('visit_date', { ascending: true })
-			.order('start_time', { ascending: true, nullsFirst: true })
-			.order('position', { ascending: true })
-			.limit(SCHEDULE_VISIT_LIMIT + 1);
+	const visitQuery = event.locals.supabase
+		.from('job_visits')
+		.select(VISIT_SELECT)
+		.eq('organization_id', organizationId)
+		.gte('visit_date', from)
+		.lte('visit_date', to)
+		.order('visit_date', { ascending: true })
+		.order('start_time', { ascending: true, nullsFirst: true })
+		.order('position', { ascending: true })
+		.limit(SCHEDULE_VISIT_LIMIT + 1);
+	type VisitRow = QueryData<typeof visitQuery>[number];
 
-	// Never awaited, and it exists for its type alone: passing the select through a generic defers the parse,
-	// which keeps the field names honest but leaves every value `any`. Reading the shape back off an unexecuted
-	// query of the plain select restores the real column types without a second copy of the window.
-	const visitShape = () => event.locals.supabase.from('job_visits').select(VISIT_SELECT);
-	type VisitRow = QueryData<ReturnType<typeof visitShape>>[number];
-
-	const { data, error } = assignedOnly
-		? await visitWindow(VISIT_SELECT_ASSIGNED).eq('mine.user_id', callerId)
-		: await visitWindow(VISIT_SELECT);
+	const { data, error } = await visitQuery;
 	if (error) return databaseError();
 
 	// The window is a range of org-timezone days; `starts_at` is a UTC instant. A day of padding on each end
@@ -119,22 +103,17 @@ export const GET: RequestHandler = async (event) => {
 	const lowerInstant = new Date(Date.parse(`${from}T00:00:00Z`) - DAY_MS).toISOString();
 	const upperInstant = new Date(Date.parse(`${to}T00:00:00Z`) + 2 * DAY_MS).toISOString();
 
-	const assessmentWindow = <Select extends string>(select: Select) =>
-		event.locals.supabase
-			.from('assessments')
-			.select(select)
-			.eq('organization_id', organizationId)
-			.gte('starts_at', lowerInstant)
-			.lt('starts_at', upperInstant)
-			.order('starts_at', { ascending: true })
-			.limit(SCHEDULE_VISIT_LIMIT + 1);
+	const assessmentQuery = event.locals.supabase
+		.from('assessments')
+		.select(ASSESSMENT_SELECT)
+		.eq('organization_id', organizationId)
+		.gte('starts_at', lowerInstant)
+		.lt('starts_at', upperInstant)
+		.order('starts_at', { ascending: true })
+		.limit(SCHEDULE_VISIT_LIMIT + 1);
+	type AssessmentRow = QueryData<typeof assessmentQuery>[number];
 
-	const assessmentShape = () => event.locals.supabase.from('assessments').select(ASSESSMENT_SELECT);
-	type AssessmentRow = QueryData<ReturnType<typeof assessmentShape>>[number];
-
-	const { data: assessmentData, error: assessmentError } = assignedOnly
-		? await assessmentWindow(ASSESSMENT_SELECT_ASSIGNED).eq('mine.user_id', callerId)
-		: await assessmentWindow(ASSESSMENT_SELECT);
+	const { data: assessmentData, error: assessmentError } = await assessmentQuery;
 	if (assessmentError) return databaseError();
 
 	// Schedule-owned events (Version 1.1). Unlike an assessment, an event stores a plain org-timezone day, so
