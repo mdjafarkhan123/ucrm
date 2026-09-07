@@ -605,7 +605,12 @@
 			onSelect: () => void;
 			destructive?: boolean;
 		}[] = [];
-		if (completeAllowed) {
+		// Invoices 5c-5c: a visit an invoice already claims stays finished -- reopening it would raise a second
+		// "ready to bill" reminder and re-offer an invoice the composer would refuse anyway. The command
+		// refuses it too (P0410); this just stops offering the door. `invoiced` is only truthful when
+		// canInvoiceVisits, so without that permission the item stays and the backend does the refusing.
+		const billed = canInvoiceVisits && visit.invoiced;
+		if (completeAllowed && !(visit.completed_at && billed)) {
 			items.push(
 				visit.completed_at
 					? {
@@ -704,7 +709,11 @@
 			await refreshAll();
 			toast.success('Visit marked incomplete');
 		} catch (caught) {
-			toast.error((caught as JobWriteError).message ?? 'That visit could not be reopened.');
+			const failure = caught as JobWriteError;
+			toast.error(failure.message ?? 'That visit could not be reopened.');
+			// A refusal means what we are showing is out of date -- the visit was billed, or closed, since
+			// this list was drawn. Re-read so the menu stops offering an action the server will not take.
+			if (failure.reason === 'locked') await refreshAll();
 		}
 	}
 

@@ -7,7 +7,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(31);
+select plan(33);
 
 -- throws_ok's three-argument form takes (query, errcode, errmsg) in this pgTAP build, so an error code is
 -- checked with the four-argument form and a null message.
@@ -391,6 +391,32 @@ select is(
     ) -> 'sources'
   ),
   2, 'and each finished visit is claimed exactly once'
+);
+
+-- 10. A billed visit cannot be reopened ---------------------------------------------------------------------------
+
+-- V3 is the visit an invoice already claims. Finishing it here rather than in the fixture keeps section 6's
+-- repricing refusal testing the claim rather than the completion.
+set local role postgres;
+update public.job_visits
+set completed_at = now(), completed_by = 'd5000000-0000-0000-0000-000000000001'
+where id = 'd5600000-0000-0000-0000-000000000003';
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'd5000000-0000-0000-0000-000000000001', true);
+
+select throws_ok(
+  $$select public.uncomplete_job_visit(
+      'd5100000-0000-0000-0000-000000000001', 'd5400000-0000-0000-0000-000000000001',
+      'd5600000-0000-0000-0000-000000000003')$$,
+  'P0410', null, 'a visit an invoice was written from cannot be walked back to unfinished'
+);
+select is(
+  public.uncomplete_job_visit(
+    'd5100000-0000-0000-0000-000000000001', 'd5400000-0000-0000-0000-000000000001',
+    'd5600000-0000-0000-0000-000000000002'
+  ) ->> 'already_incomplete',
+  'false', 'a finished visit nobody has billed still reopens'
 );
 
 select * from finish();
