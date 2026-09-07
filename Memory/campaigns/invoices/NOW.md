@@ -7,19 +7,17 @@
   found 3 bugs. **All three are fixed and committed: BUG 1 `863a96c`, BUG 2 `7aaa5f3`, BUG 3 `83fd891`.**
 - Branch `schedule-5b-visits-card`. Stage named files only; never stage the repo-wide CRLF drift.
 
-## Next action — finish 5c-5's remaining journeys (fresh session)
+## Next action — run the 5c-5 browser pass (find-only, Sonnet)
 
-BUG 3 is closed: `add_job_visits` takes an optional `copy_lines_from_visit_id`, copies the source visit's
-lines in the same transaction, and refuses a source outside the job with P0404. pgTAP `plan(37)` passes,
-`npm run check` is clean, and duplicating the $165 Sep 22 visit was browser-verified to produce a $165 copy.
+Phase A is done. The money math is verified by query, the rigs exist, and the tick sheet is written:
+**`Memory/campaigns/invoices/parts/5c-5-browser-pass.md`** — read that and work it top to bottom.
 
-What is left of the plan's 5c-5 checklist, none of it started:
+The session runs the browser journeys, records every failure in that file's `## Findings`, and **fixes
+nothing**. When it is done, a later session triages the findings and fixes them grouped by the code they
+touch — the same shape that closed BUG 1/2/3.
 
-- The full progress/installment journeys re-run: direct fixed schedule create→open→pay each stage,
-  % schedule with residual cents, Quote-carried funded deposit, edit remaining stages after one is linked,
-  correction refusal/preview. Only invoice #18's deposit-stage render was re-checked.
-- The **customer-facing** frozen progress-invoice output (needs a public share link).
-- Progress-invoice **print view** — still blocked; the print dialog freezes browser control.
+BUG 3 closed `83fd891`: `add_job_visits` takes an optional `copy_lines_from_visit_id`, copies the source
+visit's lines in the same transaction, refuses a source outside the job with P0404. pgTAP `plan(37)` passes.
 
 ## Owed
 
@@ -50,7 +48,12 @@ What is left of the plan's 5c-5 checklist, none of it started:
   with Jafar's OK. Several orphan "Sep 7 · Due today · Per visit" reminders are BUG 2 residue, likewise.
 - Job #14 fully billed: Deposit → Draft #18 ($500, $400 deposit applied, $100 balance), Final → Draft #19
   ($376.65). Both still Draft.
-- Unbilled schedules for testing: Job #1 ($20,000/$20,000/$26,500 fixed), Job #13 (33.33/33.33/33.34 %).
+- Unbilled schedules for testing: Job #1 ($200/$200/$265 fixed, nothing linked — the create/open/pay and
+  edit-after-link rig). Job #13 (33.33/33.33/33.34 % on $200) **divides evenly and does NOT exercise
+  residual cents** — it is not the percentage rig.
+- Seeded 2026-09-07 for the browser pass, no schedules yet: **Job #15 "5c-5 Residual Cents Rig"**
+  (`64b313b8-…`, $100.01), **Job #16 "5c-5 Tie-Break Rig"** (`45437d90-…`, $100.01), **Job #17 "5c-5 Fixed
+  Schedule Rig"** (`ed14da3e-…`, $600.00). Expected stage amounts are in the tick sheet.
 - **Job #2 "Recurring Lawn Care Test" is `fixed_per_period`** — it shows no per-visit pricing section.
 - Leftover drafts #16 ($75), #17 ($200), #20 ($100) — harmless; delete only with Jafar's OK.
 - Invoice #5 "D2 refusal test" carries append-only test state; remove only by reversal, with Jafar's OK.
