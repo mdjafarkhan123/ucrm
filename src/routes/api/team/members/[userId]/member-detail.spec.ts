@@ -29,6 +29,9 @@ const detail = {
 	schedule_color: '#4F7C1D',
 	created_at: '2026-08-23T00:00:00+00:00',
 	deactivated_at: null,
+	// Part 14a put the labour rate in the approved shape. Null means nobody has set one, which is not zero.
+	cost_per_hour_minor: null,
+	cost_rate_updated_at: null,
 	invitation: null
 };
 
