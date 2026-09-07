@@ -4369,18 +4369,21 @@ export type Database = {
 			job_visit_assignments: {
 				Row: {
 					created_at: string;
+					job_id: string;
 					organization_id: string;
 					user_id: string;
 					visit_id: string;
 				};
 				Insert: {
 					created_at?: string;
+					job_id?: string;
 					organization_id: string;
 					user_id: string;
 					visit_id: string;
 				};
 				Update: {
 					created_at?: string;
+					job_id?: string;
 					organization_id?: string;
 					user_id?: string;
 					visit_id?: string;
@@ -4402,10 +4405,10 @@ export type Database = {
 					},
 					{
 						foreignKeyName: 'job_visit_assignments_visit_organization_fk';
-						columns: ['organization_id', 'visit_id'];
+						columns: ['organization_id', 'job_id', 'visit_id'];
 						isOneToOne: false;
 						referencedRelation: 'job_visits';
-						referencedColumns: ['organization_id', 'id'];
+						referencedColumns: ['organization_id', 'job_id', 'id'];
 					}
 				];
 			};
