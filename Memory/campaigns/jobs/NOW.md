@@ -3,9 +3,9 @@
 - Goal: Build simpler contractor Jobs and Visits without losing proven Jobber behavior.
 - State: Parts 1–11b, 13a, 14a–14e and **15a-1** complete. 11c/12/13b belong to Invoices and Schedule.
   Part 15a was split at a verified boundary: 15a-1 (field-record permissions + record seam) shipped
-  2026-09-07 and is live on the remote database; **15a-2 (narrow Field to assigned work only) is next.**
-- 15a-1 is applied to the remote database but **not committed** — the working tree carries it. Commit it
-  before starting 15a-2 so the two parts stay separable. Unit suite is green (1789 passing).
+  2026-09-07, is live on the remote database and is committed as `51a91fc`; **15a-2 (narrow Field to
+  assigned work only) is next.**
+- Tree is clean. `npm run check` is 0 errors and the unit suite is green (1789 passing).
 - Contract: `docs/jobs-behavior-contract.md` (§ Field records, § Staff permissions, § RLS and command boundary).
 
 ## Next action
