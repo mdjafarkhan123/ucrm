@@ -306,6 +306,12 @@ Two schema enums drive this: **`BillingStrategy`** (what an invoice contains) an
 | `FIXED_PRICE` | "Each invoice is for a set amount"                           | Same amount each invoice; the **job's** line items are pulled onto the invoice (not the visit's). Good for flat-rate clients regardless of visit count. [Invoice search] |
 | `VISIT_BASED` | "Invoices include all the billable work on completed visits" | Invoice bills whatever billable work sits on the **completed visits.**                                                                                                   |
 
+- **Observed live 2026-09-07 (recurring Job creation):** Selecting `Recurring` shows the two billing-type
+  choices together. `Visit based` says visits are billable items grouped onto an invoice; `Fixed price` says
+  each invoice is for a set amount. The account had no saved recurring Jobs, so no recurring costing result
+  was available to inspect. The Jobs overview separately labels recent-visit revenue as `Past 30 days`; this
+  observation does not establish that Jobber's recurring costing uses the same window.
+
 ### 5.2 `InvoiceSchedule`
 
 | Field                | Type                    | Meaning                                     |
@@ -553,6 +559,73 @@ Primary captures: `01-week-schedule.png`, `02-visit-popover.png`, `04-find-a-tim
 
 ---
 
+## 9.6 Field-record permissions and checklist rules (help center, checked 2026-09-07)
+
+Sourced from [[user-permissions]], [[fieldworkers-roles]], [[checklists]] and [[app-notes-attachments]]. This
+is the permission boundary Part 15 is built against; do not re-derive it from the GraphQL schema, which does
+not expose the permission model.
+
+**Field records are not gated behind job editing.** Jobber's base **Field crew** preset "can see their own
+schedule, mark work complete, add notes and photos on their jobs, and start and stop timers" — with no Jobs
+create/edit right at all. **Notes** and **Files and Media** are their own permissions sitting beside the Jobs
+ladder, never inside it. Any model that folds notes and attachments into a `jobs.edit`-equivalent contradicts
+Jobber and locks a field worker out of recording their own evidence.
+
+Preset ladder, verbatim: **Field crew** → **Senior field crew** (adds client files and attachments, seeing
+prices, creating/editing clients, quotes, jobs, invoices, collecting payments) → **Crew lead** (adds viewing
+and changing everyone's schedule, everyone's timesheets, client communications) → **Manager** (adds reports,
+marketing tools, sales pipeline).
+
+Custom permission options, verbatim:
+
+| Section                    | Options                                                                                                                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Schedule**               | "View their own schedule" / "View and complete their own schedule" / "Edit their schedule" / "Edit everyone's schedule" / "Edit and delete from everyone's schedule"                          |
+| **Time Tracking and Timesheets** | "Start and stop their own timers" / "Track, manually enter, and edit their own time" / "Track, manually enter, and edit everyone's time"                                               |
+| **Notes**                  | "View notes on jobs and visits only" / "View all notes" / "View and edit all" / "View, edit, and delete all"                                                                                  |
+| **Files and Media**        | on/off                                                                                                                                                                                       |
+| **Show Pricing**           | on/off                                                                                                                                                                                       |
+| **Job Costing**            | on/off — requires Show pricing, all timesheets, all expenses, all jobs                                                                                                                       |
+| **Clients and Properties** | "View client name and address only" / "View full client and property info" / "View and edit full client and property info" / "View, edit and delete full client and property info"; plus a separate "Show clients on their Jobber menu" |
+| **Jobs**                   | "View only" / "View, create, and edit" / "View, create, edit, and delete"; plus a separate "Show on Jobber menu"                                                                              |
+| **Quotes, Invoices, Requests** | same three-rung ladder as Jobs, plus "Show on Jobber menu"                                                                                                                               |
+| **Payments**               | on/off — requires Show pricing, full client info, edit quotes/invoices                                                                                                                       |
+| **Client Communications**, **Reports**, **Marketing Suite** | on/off                                                                                                                                     |
+| **Pipeline**               | on/off — requires edit everyone's schedule, edit requests/quotes, Show pricing, Reports                                                                                                       |
+
+Three consequences worth copying:
+
+- **Note visibility is derived, not granted.** The lowest Notes rung shows notes "only in the areas they have
+  permission to view" — so a note follows its parent record's visibility rather than carrying its own grant.
+  Only viewing *beyond* your areas, and editing or deleting *someone else's*, needs a real permission.
+- **Menu visibility is a separate switch from data access.** "Show on Jobber menu" is its own toggle per
+  section; a member can hold a permission without the nav entry.
+- **Show pricing and Job costing are two switches**, matching the split already recorded in
+  `jobber-03-quotes.md` §3.1.
+
+**Checklists** ([[checklists]]): attach to assessments, specific jobs, or automatically to newly created jobs;
+a job-attached checklist is "available on visits" and each visit carries its own answers. **"When a checklist
+is added to an existing job, past visits aren't updated."** Completion warns and never blocks — verbatim: "If
+a visit is marked complete while a checklist still has required fields left blank, the team member will get a
+prompt to go back and finish it. Tap the Checklist to navigate back to the form, or tap Complete visit to
+complete the visit and leave the checklist unfinished." The checklists *report* needs "Schedule: View and
+complete their own; Jobs: View all jobs; Reports: View reports". Template authoring permissions are **not
+documented**, and neither is what happens to already-filled checklists when a template is edited — treat
+checklist template versioning as unverified, not as settled Jobber behavior.
+
+**Photos are unlabelled in Jobber.** Notes take file attachments, and the app's markup tool only lets a person
+"Add text labels to the photo" by hand. There is no before/during/after category field. **Notes are internal
+by default**, and become customer-visible only by deliberately attaching them to a quote or invoice email —
+there is no per-note client-visible toggle. So a deliberately-selected customer report is Jobber-backed;
+structured photo labels are ours to justify, not a pattern to copy.
+
+Sources: https://help.getjobber.com/hc/en-us/articles/115009568687-User-Permissions ·
+https://help.getjobber.com/hc/en-us/articles/7453632138391-Fieldworkers-How-Jobber-Works-for-Different-Roles-in-a-Company ·
+https://help.getjobber.com/hc/en-us/articles/115009740048-Checklists ·
+https://help.getjobber.com/hc/en-us/articles/7447835963159-Notes-and-Attachments-in-the-Jobber-App
+
+---
+
 ## 10. How WE compare / what to match or beat
 
 - **Job = contract + money, Visit = calendar slice.** This is the core split and we already adopted it
@@ -605,3 +678,13 @@ Primary captures: `01-week-schedule.png`, `02-visit-popover.png`, `04-find-a-tim
 - Automated Job Costing — https://help.getjobber.com/hc/en-us/articles/41272823874967-Automated-Job-Costing
 - Expenses — https://help.getjobber.com/hc/en-us/articles/115009615927-Expenses
 - Jobs List Page and Key Metrics — https://help.getjobber.com/hc/en-us/articles/39133110680343-Jobs-List-Page-and-Key-Metrics
+
+## Invoice campaign research dependency
+
+[Batch Create Invoices](https://help.getjobber.com/en/articles/batch-create-invoices/) explicitly allows
+selecting incomplete past/future Visits, marking selected ones complete; default selection excludes them.
+This is a billing action with an operational consequence, not evidence of Job closure. UCRM completion
+permissions and final-Visit handling require the decision in
+[Invoice transition decisions](../../../docs/invoice-transition-decisions.md) D5. Post-Void source eligibility
+and issued-progress correction remain unverified in official Help; see D3–D4. Do not infer those rules
+from deposit release or GraphQL relationships.

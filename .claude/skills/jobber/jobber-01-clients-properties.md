@@ -162,11 +162,14 @@ the UI does offer Delete — see below.
 
 ### 2.3 How the client screen handles properties (live tour, 2026-08-17)
 
-Toured on a real client record, so this supersedes guesses from the help centre.
+Observed controls below are dated 2026-08-17; billing interpretation corrected 2026-09-04.
 
-- **A client has no address of its own.** Jobber's Edit Client form carries title, name, company, role, a
-  billing-contact checkbox, phones, emails, payment terms, lead source and additional details — and no
-  address field anywhere. Every address in the product belongs to a property. Do not model a client address.
+- **One effective Client billing address:** it may match a designated Property or be a custom Client
+  billing address. The mobile form explicitly asks for the client's billing address when matching is off;
+  importing multiple properties repeats the same Client billing details across those service addresses.
+  [Client app](https://help.getjobber.com/en/articles/client-information-in-the-jobber-app/),
+  [Import Clients](https://help.getjobber.com/en/articles/import-clients/).
+  A missing field in one Edit Client screen does not mean Clients have no billing address.
 - **Properties is the first block** on the Client information tab, above Contacts and Work overview, with a
   `+` in its top-right corner. Each property is one row: the full address in bold, then a map-pin
   ("View on map") and a pencil ("Edit property").
@@ -174,15 +177,23 @@ Toured on a real client record, so this supersedes guesses from the help centre.
   Street 2, City, Province, Postal code, Country, a tax-rate select, and two collapsed sections —
   Property details (custom fields) and Property contacts, described as "for contacts with access limited to
   this property, e.g., tenants". Buttons Cancel / Add Property.
-- **Edit property dialog** is the same form prefilled, plus a red **Delete** bottom-left and a ticked
-  checkbox **"Billing address is the same as property address"**. Unticking it reveals a second complete
-  address form, so **Jobber stores an optional billing address on each property** rather than nominating one
-  property as the billing one. Our `properties.is_billing_address` boolean is a weaker model that cannot
-  express "this rental bills to that management office"; settle the shape when invoicing lands.
+- **Edit property dialog** was observed with Delete and a "Billing address is the same as property
+  address" checkbox; clearing it revealed billing-address inputs. This is a billing-address interaction,
+  not evidence of separate billing-address storage per Property. The previous storage claim was incorrect.
 - **Both dialogs write on their own button** rather than staging into a page-level save. We keep that for
   child records — see the save rule in `jobber-08-screen-patterns.md`.
 
-What we deliberately left out of our build: tax rate, custom fields, property contacts, and billing address.
+Invoice billing-address behavior is documented in [Properties](https://help.getjobber.com/en/articles/properties/):
+Invoices bill the Client; Job-derived invoices additionally show service-property addresses. This establishes
+product behavior, not Jobber's database layout. Existing UCRM implementation must be inspected separately.
+
+### 2.3a Invoice payment terms (verified official documentation, 2026-09-04)
+
+Client override takes precedence over residential/commercial account defaults; an Invoice can override either.
+Commercial defaults apply when the Client uses a company name rather than a person's name; unspecified type
+uses residential defaults. This does not establish a separate residential/commercial selector in the live UI.
+See [Set Invoice Payment Terms](https://help.getjobber.com/en/articles/set-invoice-payment-terms/) and the
+[campaign evidence matrix](../../../docs/invoice-jobber-evidence.md).
 
 ### 2.4 The client's Communication tab (live tour, 2026-08-17)
 

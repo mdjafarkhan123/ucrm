@@ -240,11 +240,14 @@ Creating an invoice does not automatically close the job. Open work with no futu
 
 ## 15. Invoices and payments
 
-Create invoices from quotes, jobs, selected visits, payment milestones, batches, or directly for a customer.
+Create invoices from jobs, selected visits, payment milestones, batches, or directly for a customer. Quote deposits
+and payment schedules reach invoicing through the Job created from the approved Quote; there is no direct
+Quote-to-Invoice shortcut.
 
 Include service dates, line items, discounts, taxes, deposits applied, issue and due dates, payment terms, customer message, terms, signature, PDF, secure link, text/email delivery, view history, tips, late fees, and reminder schedule.
 
-Invoice outcomes include Draft, Sent Not Due, Awaiting Payment, Partially Paid, Past Due, Paid, Cancelled, and Bad Debt.
+Invoice outcomes follow Jobber: Draft, Sent Not Due, Awaiting Payment, Past Due, Paid, Bad Debt, and Voided.
+Partial payment is a balance fact, not a competing status. Voided preserves an invalid or cancelled invoice for audit.
 
 Ready work enters a Requires Invoicing queue for review, batch creation, exception handling, and batch delivery.
 

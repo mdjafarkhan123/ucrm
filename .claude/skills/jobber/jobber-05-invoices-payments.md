@@ -490,3 +490,55 @@ details** button.
   is ledger-correction work → deferred to a later part. Split: **6b-2a** = receipt document + hosted page +
   email + "Save and email receipt"; **6b-2b** = the payment detail page + "Send receipt" + wiring the
   invoice financial-history rows to link there.
+
+---
+
+## Batch invoicing — 2026-09-06 (observed live + help center)
+
+Both batch screens were opened read-only on the trial account (JKA LTD). **Neither had data**, so the
+populated tables were NOT seen live; the entry points, routes and empty states below are observed, the
+behavior underneath is from the two help articles cited in §Help-center sources.
+
+**Entry point (observed live):** Invoices list → **`··· More Actions`**, a three-item menu:
+**Batch Create Invoices**, **Batch Deliver Invoices**, **Import Invoice Data**. There is no batch affordance
+on the list rows themselves — no per-row checkboxes anywhere on the Invoices list.
+
+**Batch Create (observed live):** own full page at `/mass_invoice_generators/new`, titled
+"Batch Invoice Creation", rendered as a single card with an icon + title header. Empty state is an
+information banner: *"Looks like you're up to date! You have no jobs pending invoicing."*
+
+Documented behavior (help center, not seen live):
+
+- Lists jobs pending invoicing **grouped by client**, each client row expanding to its visits; checkbox per
+  client, toggle per visit, and an **"All"** filter to take everything.
+- A **right-side summary panel** counts invoices to be created, clients, jobs and completed visits.
+- **One invoice per client selected** — several jobs of the same client merge into one bill — **except** when
+  those jobs sit at property addresses with **different tax rates**, which splits into one invoice per rate.
+- **Incomplete visits (past or future) are excluded by default.** They can be ticked in, and
+  *"If you select uncompleted visits, they will be marked complete."*
+- Prerequisite: *"Invoices can only be generated through Batch Creation if you have Invoice Reminders created
+  for your jobs."* — the same reminder predicate our ready-to-bill queue pages over.
+- Output is **drafts**, always. Delivery is the separate second step.
+
+**Batch Deliver (observed live):** route `/accounts/batch_invoicers/method_picker`, titled **"Batch Mailer"**.
+Empty state: *"There's nothing to mail — You don't have any invoices waiting to be sent (no draft or active
+invoices)."* The route name confirms the documented first step is **choosing the delivery method before
+seeing the list**.
+
+Documented behavior (help center, not seen live):
+
+- Method first: **Email** or **Standard Mail**. Then a list of eligible invoices in three statuses —
+  **draft, awaiting payment, past due** — selectable individually or by whole status via "All". **Paid
+  invoices are not eligible.**
+- Email goes to the client's **primary starred email + billing contact**; **PDF is not attached by default**
+  (opt-in), the recipient clicks through to Client Hub. The template is **editable in a preview screen**
+  before "Send Now".
+- Standard Mail is Jobber emailing *you* a printable PDF of all selected invoices plus **address labels**
+  (Avery 5160/7160, #10 envelopes), *"can take up to 15 minutes"*.
+- **After email delivery, every draft in the batch shows as awaiting payment** — delivery issues the draft.
+- No quantity limit is stated anywhere in either article.
+
+**§ How WE compare:** the entry point is ours to place — our ready-to-bill queue (5b-5) is already the
+cross-client list of work pending invoicing, built deliberately without checkboxes so batch selection lands
+there rather than on a second screen. Standard Mail / address labels are out of scope: we do not do postal
+mail, and our approved "no server PDF engine" decision rules out generating a combined PDF.
