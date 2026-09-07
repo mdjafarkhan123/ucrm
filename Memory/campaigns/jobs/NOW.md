@@ -1,24 +1,27 @@
 # Jobs: Current Checkpoint
 
 - Goal: Build simpler contractor Jobs and Visits without losing proven Jobber behavior.
-- State: Parts 1–11b, 13a, 14a–14e, 15a-1 and 15a-2 complete. 11c/12/13b belong to Invoices and Schedule.
-  **15a-3 is applied and correct but failed its performance gate.** Tree clean at `aca06f1` plus this
-  checkpoint; `06b8685` is the code; the assessment RLS migration is applied to the remote database.
-- Contract: `docs/jobs-behavior-contract.md` — still not updated for 15a-2 or 15a-3. Update it once, after
-  the 15a-3 fix verifies, not before.
+- State: Parts 1–11b, 13a, 14a–14e, 15a-1, 15a-2 complete. 15a-3 and 15a-4 are behaviourally complete,
+  applied, measured and committed (`c6b2474`); both still owe one browser check. 11c/12/13b belong to
+  Invoices and Schedule.
+- Contract: `docs/jobs-behavior-contract.md` — still not updated for 15a-2, 15a-3 or 15a-4. Update it once,
+  for all three together, right after the browser check.
 
 ## Next action
 
-**Blocked on Jafar.** Read `parts/15a-3.md` — it carries the measured table and the finding. The Schedule's
-whole cost is `private.can_view_job` running once per scanned row (2.7 ms with RLS off vs 161 ms for the
-owner), so the `mine` embed 15a-3 shipped roughly doubles the field worker's read (118 ms → 216 ms) and buys
-nothing. Jafar has to pick the direction because every option changes RLS. Then run `performance-review`
-**design** on the chosen fix, implement, re-verify, and update the contract.
+Read `parts/15a-4.md` § "The exact next action". In short: run the app, sign in as the Field member
+(`dev.jafarkhan@gmail.com`) and confirm the Schedule shows only their own week with no team controls and
+reads "My Schedule"; sign in as the contractor owner (`info.socialmediauser1@gmail.com`) and confirm the
+Schedule, Jobs list and job detail are unchanged. Then update the behaviour contract for 15a-2, 15a-3 and
+15a-4 together, and 15a closes.
 
-Do not re-measure first: the fixture is torn down and the evidence is in the packet.
+Nothing here needs Jafar first. After 15a, the next roadmap part is 15b (internal Job/Visit notes, files and
+photos).
 
 ## Deliberately deferred, not silently dropped
 
+- The clients family still evaluates `can_view_client` once per row — the same defect 15a-4 fixed for jobs,
+  same fix, left alone to keep that change to one family. Details in `parts/15a-4.md`.
 - Photo category labels: cut by "follow Jobber" — Jobber has no such field. May return as our own
   differentiator; nothing in 15a blocks it.
 - Jobber's profit alerts; the item-cost/expense double-count case; standalone non-Job expenses; the standalone
