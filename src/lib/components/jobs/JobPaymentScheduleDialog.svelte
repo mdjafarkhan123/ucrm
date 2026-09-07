@@ -61,7 +61,6 @@
 		fixedValue: number;
 		percentDraft: string;
 		locked: boolean;
-		lockedAmountMinor: number | null;
 	};
 
 	let saving = $state(false);
@@ -74,8 +73,7 @@
 			description: stage.description,
 			fixedValue: stage.value_type === 'fixed' ? (stage.value ?? 0) : 0,
 			percentDraft: stage.value_type === 'percentage' ? ((stage.value ?? 0) / 100).toString() : '',
-			locked: stage.locked,
-			lockedAmountMinor: stage.amount_minor
+			locked: stage.locked
 		};
 	}
 
@@ -86,8 +84,7 @@
 			description: '',
 			fixedValue: 0,
 			percentDraft: '',
-			locked: false,
-			lockedAmountMinor: null
+			locked: false
 		};
 	}
 
@@ -111,12 +108,33 @@
 		return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed * 100) : 0;
 	}
 
-	function rowAmount(row: DraftRow): number {
-		if (row.locked && row.lockedAmountMinor !== null) return row.lockedAmountMinor;
-		return mode === 'fixed' ? row.fixedValue : Math.round((totalMinor * rawValue(row)) / 10000);
-	}
+	// Percentage stages are priced as a set, never one row at a time. This mirrors
+	// `private.price_job_payment_schedule` exactly: floor every share, then hand the leftover cents out one
+	// apiece by largest fractional part, ties going to the earlier stage. Rounding each row on its own left
+	// the running total a cent off the job's, so a schedule that reconciles perfectly on save looked broken
+	// while it was being typed. A locked stage is priced by that same pass on the server, which refuses the
+	// save if the result no longer matches what it was billed at, so it is not held out of the spread here.
+	const rowAmounts = $derived.by(() => {
+		if (mode === 'fixed') return rows.map((row) => row.fixedValue);
 
-	const plannedTotal = $derived(rows.reduce((sum, row) => sum + rowAmount(row), 0));
+		const shares = rows.map((row) => {
+			const exact = (totalMinor * rawValue(row)) / 10000;
+			const base = Math.floor(exact);
+			return { base, fraction: exact - base };
+		});
+		let residual = totalMinor - shares.reduce((sum, share) => sum + share.base, 0);
+		const order = shares
+			.map((share, index) => ({ index, fraction: share.fraction }))
+			.sort((a, b) => b.fraction - a.fraction || a.index - b.index);
+		for (const entry of order) {
+			if (residual <= 0) break;
+			shares[entry.index].base += 1;
+			residual -= 1;
+		}
+		return shares.map((share) => share.base);
+	});
+
+	const plannedTotal = $derived(rowAmounts.reduce((sum, amount) => sum + amount, 0));
 
 	// A row that sits before a billed one cannot be removed: dropping it would move the billed stage's
 	// position, and a billed stage keeps everything about it, position included.
@@ -263,7 +281,7 @@
 							bind:value={row.fixedValue}
 						/>
 					{/if}
-					<span class="schedule-dialog__amount">{money.format(rowAmount(row) / 100)}</span>
+					<span class="schedule-dialog__amount">{money.format(rowAmounts[index] / 100)}</span>
 					{#if row.locked}
 						<Badge size="small" status="informative">Invoiced</Badge>
 					{:else}

@@ -3,21 +3,40 @@
 - Goal: Jobber-grounded invoicing and manual collection.
 - Parts 1–9 CLOSED + committed. **Part 5c is the only remaining part**; 5c-1…5c-4 CLOSED and
   browser-verified. Approved scope and performance verdict: `docs/invoice-part-5c-plan.md` — do not re-derive.
-- 5c-5a (visit-line editing), 5c-5b (invoice seeding), 5c-5c (find-only browser pass) all done. The pass
-  found 3 bugs. **All three are fixed and committed: BUG 1 `863a96c`, BUG 2 `7aaa5f3`, BUG 3 `83fd891`.**
+- 5c-5a (visit-line editing), 5c-5b (invoice seeding), 5c-5c (find-only browser pass) all done. The 5c-5c
+  pass found 3 bugs, all fixed and committed: BUG 1 `863a96c`, BUG 2 `7aaa5f3`, BUG 3 `83fd891`.
+- **5c-5's second find-only pass (J1,J2,J2b,J3,J6,J8) is done and triaged.** Findings and their verdicts
+  are in `Memory/campaigns/invoices/parts/5c-5-browser-pass.md`:
+  - BUG 1 **FIXED + browser-verified** — the schedule dialog rounded each percentage stage on its own, so
+    the live preview total sat a cent off the job's. It now prices the stages as a set, mirroring
+    `private.price_job_payment_schedule`. Dead `lockedAmountMinor` draft field removed with it.
+  - BUG 2 **NOT A BUG** — the "red square" on Job #14 is a real line photo (`line-photo-test.png`, 178
+    bytes), rendered decorative (`<img alt="">`), which is why it had no a11y or text node.
+  - J6 confirmed as expected (no correction UI exists).
+  - **J4/J5 still unrun and blocked on test data:** Job #1 no longer matches the tick sheet — real total
+    is $66,500.00 (not $665.00), it already carries a linked 3-stage schedule, and Invoice #6 already
+    bills the whole job. The app correctly refused a stage invoice as already-billed. Needs a fresh rig
+    job (or a Job #1 reset) before J4/J5 can run.
 - Branch `schedule-5b-visits-card`. Stage named files only; never stage the repo-wide CRLF drift.
 
-## Next action — run the 5c-5 browser pass (find-only, Sonnet)
+## Next action — seed a clean rig, then run J4 and J5
 
-Phase A is done. The money math is verified by query, the rigs exist, and the tick sheet is written:
-**`Memory/campaigns/invoices/parts/5c-5-browser-pass.md`** — read that and work it top to bottom.
+Everything the second pass found is closed. **J4 and J5 are the only unrun journeys left in
+`5c-5-browser-pass.md`, and they are the last thing standing between 5c-5 and Part 5c closing.**
 
-The session runs the browser journeys, records every failure in that file's `## Findings`, and **fixes
-nothing**. When it is done, a later session triages the findings and fixes them grouped by the code they
-touch — the same shape that closed BUG 1/2/3.
+Ask Jafar whether to reset Job #1 or seed a new job, then run:
+- **J4** — create / open / pay each fixed stage in order; expect Remaining -> Draft -> Awaiting payment ->
+  Paid, the invoice number and total on the Job Billing card, and a created stage locked even while Draft.
+- **J5** — after J4's first stage only: the linked stage is not editable, the two unlinked ones may be
+  edited or reordered only if the whole schedule still reconciles with the locked amount preserved, and a
+  set that does not reconcile is refused whole.
 
-BUG 3 closed `83fd891`: `add_job_visits` takes an optional `copy_lines_from_visit_id`, copies the source
-visit's lines in the same transaction, refuses a source outside the job with P0404. pgTAP `plan(37)` passes.
+The rig needs a job with priced lines, a fixed multi-stage schedule, nothing linked, and **no whole-job
+invoice** — that last one is what disqualified Job #1.
+
+BUG 3 (first pass) closed `83fd891`: `add_job_visits` takes an optional `copy_lines_from_visit_id`, copies
+the source visit's lines in the same transaction, refuses a source outside the job with P0404. pgTAP
+`plan(37)` passes.
 
 ## Owed
 
@@ -48,12 +67,14 @@ visit's lines in the same transaction, refuses a source outside the job with P04
   with Jafar's OK. Several orphan "Sep 7 · Due today · Per visit" reminders are BUG 2 residue, likewise.
 - Job #14 fully billed: Deposit → Draft #18 ($500, $400 deposit applied, $100 balance), Final → Draft #19
   ($376.65). Both still Draft.
-- Unbilled schedules for testing: Job #1 ($200/$200/$265 fixed, nothing linked — the create/open/pay and
-  edit-after-link rig). Job #13 (33.33/33.33/33.34 % on $200) **divides evenly and does NOT exercise
-  residual cents** — it is not the percentage rig.
-- Seeded 2026-09-07 for the browser pass, no schedules yet: **Job #15 "5c-5 Residual Cents Rig"**
-  (`64b313b8-…`, $100.01), **Job #16 "5c-5 Tie-Break Rig"** (`45437d90-…`, $100.01), **Job #17 "5c-5 Fixed
-  Schedule Rig"** (`ed14da3e-…`, $600.00). Expected stage amounts are in the tick sheet.
+- Job #1 is **no longer the J4/J5 rig** — see the J4/J5 blocked note above; it's now a $66,500.00 job with
+  a linked schedule and a whole-job invoice (#6). Job #13 (33.33/33.33/33.34 % on $200) **divides evenly
+  and does NOT exercise residual cents** — it is not the percentage rig.
+- Percentage/fixed preview rigs, schedules now SAVED and confirmed by query: **Job #15 "5c-5 Residual
+  Cents Rig"** (`64b313b8-…`, $100.01, 3333/3333/3334 bp -> $33.33/$33.33/$33.35), **Job #16 "5c-5
+  Tie-Break Rig"** (`45437d90-…`, $100.01, 5000/5000 -> $50.01/$50.00), **Job #17 "5c-5 Fixed Schedule
+  Rig"** (`ed14da3e-…`, $600.00, 20000/20000/20000). None has a linked invoice, so #17 is the closest
+  thing to a ready J4 rig — but confirm it carries no whole-job invoice before using it.
 - **Job #2 "Recurring Lawn Care Test" is `fixed_per_period`** — it shows no per-visit pricing section.
 - Leftover drafts #16 ($75), #17 ($200), #20 ($100) — harmless; delete only with Jafar's OK.
 - Invoice #5 "D2 refusal test" carries append-only test state; remove only by reversal, with Jafar's OK.

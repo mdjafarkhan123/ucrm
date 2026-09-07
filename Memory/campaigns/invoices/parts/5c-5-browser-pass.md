@@ -81,4 +81,50 @@ Append to `## Findings` below. One block each, nothing else:
 
 ## Findings
 
-_(none yet — the pass has not run)_
+### BUG 1 — FIXED + BROWSER-VERIFIED — Payment-schedule dialog's live percentage preview misrounds and understates the total before save
+- Where: Job #15 "5c-5 Residual Cents Rig" (`64b313b8-77ae-476b-94be-2f84ce76a150`), Add a payment schedule dialog, Percentages mode
+- Steps: Add a payment schedule → Percentages → enter 33.33 / 33.33 / 33.34 into the three stages
+- Saw: Row amounts shown live as $33.33 / $33.33 / $33.34, with the footer reading "Adds up to $100.00 of $100.01" — one cent short, looking unreconciled
+- Expected: The live preview should show the same largest-remainder rounding the backend actually applies ($33.33 / $33.33 / $33.35, adding to $100.01) so the on-screen total matches the job total before the user commits
+- **Verified 2026-09-07 in the browser, both themes, no console errors:** Job #15 previews
+  $33.33 / $33.33 / $33.35 with "Adds up to $100.01 of $100.01"; Job #16 previews $50.01 / $50.00 with
+  the spare cent on the FIRST stage; retyping 60/40 live-updates to $60.01 / $40.00. Fixed mode
+  non-regression on Job #17: $200 x3 reconciles, and 200/200/150 is still refused whole with "The stages
+  must add up to the job total..." — nothing silently adjusted. Esc closes and restores focus to the
+  trigger; Tab/Shift-Tab wrap inside the dialog. No stage data was saved by the verification pass.
+- **Fix:** `JobPaymentScheduleDialog.svelte` now prices percentage stages as a set in a `rowAmounts`
+  `$derived.by`, mirroring `private.price_job_payment_schedule`: floor every share, then hand the leftover
+  cents out one apiece by largest fractional part, ties to the earlier stage. `plannedTotal` sums that
+  array and each row renders `rowAmounts[index]`. A locked stage is no longer held out of the spread,
+  because the server prices it through the same pass and refuses the save if the result stops matching
+  what it was billed at — so the dead `lockedAmountMinor` draft field is gone.
+- Blocked: no — clicking Save schedule anyway persisted the correct $33.33 / $33.33 / $33.35 split (confirmed on the saved Job Billing card), so this is a display-only miscalculation in the dialog, not a data bug. A user watching the dialog would reasonably believe the split is invalid and not attempt to save.
+- Also reproduces in the other direction: Job #16 "5c-5 Tie-Break Rig" (`45437d90-f6dc-4c06-8828-c8b7cc1a311c`), same dialog, 50/50 percentage split on $100.01 previewed as $50.01 + $50.01 = "Adds up to $100.02 of $100.01" (over, this time), but saved correctly as $50.01 / $50.00. Each row is independently rounded in the live preview instead of using the same largest-remainder/tie-break allocation the backend applies across the whole set.
+
+### BUG 2 — NOT A BUG — the "red square" is a real line photo, rendering correctly
+- Where: Job #14 "Panel upgrade quote" (`1ef8947f-55e2-44ae-8397-3de4e53e1e50`), Products and services card, "Custom haul-away fee" row
+- Steps: Open Job #14 and look at the Products and services table
+- Saw: A solid red square (~40x40px) sits in the blank space of the "Custom haul-away fee" row, between the line-item name and the Quantity column. It has no accessible-tree representation and no text (get_page_text shows a blank line there) — it's a pure CSS/paint artifact. It scrolls with the page content (confirmed by scrolling and re-screenshotting), so it's part of the row, not a cursor or screenshot-tool overlay. Confirmed in both light and dark mode.
+- Expected: No red block — this line item should render like the other three rows
+- **Verdict: not a defect, no fix made.** That line genuinely carries a photo. `job_line_items` →
+  `attachments` for this job returns `line-photo-test.png`, `image/png`, **178 bytes**, uploaded
+  2026-08-20 — a deliberately tiny solid-colour test PNG. The read-only table renders it at
+  `ProductsAndServicesBlock.svelte:1279` in the `pricing-table__photo` column, which sits exactly
+  between the name and Quantity, as `<img alt="">` — decorative by design, which is precisely why it has
+  no accessible-tree entry and no text. The pass read that absence as a paint artifact; it is the photo
+  feature working. The other three lines have `image_attachment_id` null, so only this row shows one.
+- Blocked: no
+
+### J4/J5 BLOCKED — Job #1's live state does not match the tick sheet; not a UI bug
+- Where: Job #1 "Testing job" (`fd9e7a6d-393f-46a5-bc11-1c6d6cb20e99`)
+- Steps: Opened Job #1 to run J4 (create/open/pay each fixed stage)
+- Saw: Job #1's real total is **$66,500.00** (1900 x Solar Panel @ $35.00), not the $665.00 ($200/$200/$265) the tick sheet and NOW.md describe. It already carries a 3-stage schedule (Deposit $20,000 / Mid build $20,000 / Final $26,500, all "Still To Bill", none linked) — and separately, **Invoice #6 "Testing job"** already bills the whole job for $66,500.00 (status Past due, balance $66,500.00, created Sep 6 2026, predates the schedule). Clicking "Create invoice" on the Deposit stage and saving correctly surfaced "This whole job has already been billed on another invoice" and refused the save — that refusal itself looks like correct behavior (can't double-bill a job that already has a whole-job invoice), it just means this job can't run the J4 rig as written.
+- Expected: Per the tick sheet, Job #1 should have been a clean $665.00 fixed schedule with nothing linked, ready for the create/open/pay walkthrough.
+- Blocked: yes, for both J4 and J5 (J5 continues from J4's first linked stage). This is a test-data/Memory drift issue, not a screen defect — Memory needs correcting or a fresh rig job needs seeding before J4/J5 can be run for real.
+
+### J6 — confirmed known limit, not a bug
+- Where: Invoice #5 "D2 refusal test" (`ba443ebb-93b2-488e-b945-5300fc702dd4`), Past due, balance $39,000.00 of $50,000.00
+- Steps: Opened the invoice, checked its "..." action menu (Resend invoice, Copy customer link, Preview as client, Print or save PDF, Mark as received, Write off balance, Void invoice) and the Products and services card (no pencil/edit icon, unlike a Job's card)
+- Saw: No Edit/Correct entry point anywhere on the page. "Write off balance" opens a real, working dialog (bad-debt write-off, unrelated to correction) — cancelled without submitting.
+- Expected per NOW.md's known limit: there is no correction UI, so the entry point's absence itself is the expected finding, not a bug to chase further.
+- Blocked: no further action needed — journey complete as a confirmation.
