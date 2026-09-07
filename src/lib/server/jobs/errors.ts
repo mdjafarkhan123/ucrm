@@ -138,3 +138,25 @@ export function timeEntryError(error: DatabaseError) {
 		return validationError({ form: error.message ?? 'Those hours cannot be saved as entered.' });
 	return databaseError();
 }
+
+// The three expense commands (`add_job_expense`, `update_job_expense`, `delete_job_expense`) refuse in the
+// same shapes as labor. A member without expenses.record or expenses.manage_team, or a job in another
+// organization, comes back as insufficient_privilege — a stranger cannot tell which. A missing job, expense
+// or teammate is a not-found. A closed job reached by someone who may only touch their own expenses is P0410:
+// a rule, not a reload — the books stay open to a manager and closed to the crew. The table's own checks — a
+// name too short, a total out of range — surface as a form error carrying the sentence the database wrote.
+export function expenseError(error: DatabaseError) {
+	if (error.code === '42501') return notFound('That expense could not be found.');
+	if (error.code === 'P0404') return notFound(error.message ?? 'That could not be found.');
+	if (error.code === 'P0410')
+		return json(
+			{
+				error: error.message ?? 'This job is closed, so its expenses can no longer be changed.',
+				reason: 'locked'
+			},
+			{ status: 409, headers: NO_STORE_HEADERS }
+		);
+	if (error.code === '23514' || error.code === '23503')
+		return validationError({ form: error.message ?? 'That expense cannot be saved as entered.' });
+	return databaseError();
+}

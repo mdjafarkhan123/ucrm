@@ -169,8 +169,8 @@ const capabilityDefinitions: CapabilityDefinition[] = [
 	},
 	{
 		id: 'time-tracking',
-		name: 'Time tracking',
-		description: 'Record the hours worked on a job.',
+		name: 'Time and expenses',
+		description: 'Record the hours worked and the costs run up on a job.',
 		controls: [
 			{
 				id: 'track-own-time',
@@ -183,6 +183,18 @@ const capabilityDefinitions: CapabilityDefinition[] = [
 				permissionKey: 'time.track_team',
 				label: 'Record anyone’s hours',
 				example: 'Log or correct time for the whole crew, including on a closed job.'
+			},
+			{
+				id: 'record-own-expenses',
+				permissionKey: 'expenses.record',
+				label: 'Record their own expenses',
+				example: 'Log the materials they bought for a job and attach the receipt.'
+			},
+			{
+				id: 'manage-team-expenses',
+				permissionKey: 'expenses.manage_team',
+				label: 'Manage anyone’s expenses',
+				example: 'Change or remove expenses for the whole crew, including on a closed job.'
 			}
 		]
 	},

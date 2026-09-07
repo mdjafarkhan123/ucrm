@@ -6,13 +6,13 @@ import { requireClientPermission } from '$lib/server/access/clients';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { getOrganizationContext, type OrganizationContext } from '$lib/server/auth/organization';
 
-export type LinkedEntityType = 'client' | 'property' | 'request' | 'quote';
+export type LinkedEntityType = 'client' | 'property' | 'request' | 'quote' | 'job_expense';
 
 // View follows the single customers.view gate for clients and properties (a Property's visibility already
 // follows its owning Client). Manage differs: client-scoped writes ride customers.edit, property-scoped
 // writes ride property.manage, matching private.can_manage_linked_entity in the migration.
 function linkedEntityPermissionKey(
-	entityType: Exclude<LinkedEntityType, 'request'>,
+	entityType: Exclude<LinkedEntityType, 'request' | 'quote' | 'job_expense'>,
 	mode: 'view' | 'manage'
 ): string {
 	if (mode === 'view') return 'customers.view';
@@ -34,6 +34,16 @@ export async function requireLinkedEntityAccess(
 			event,
 			mode === 'view' ? 'quotes.view' : 'quotes.edit'
 		);
+		return 'response' in check ? { response: check.response } : { auth: check.auth };
+	}
+
+	// A job expense's receipt follows the expense. The coarse gate here is jobs.view — the same one that
+	// lets a person open the job — because the fine own/team rule (my own expense with expenses.record, or
+	// anyone's with expenses.manage_team) is a row-level fact the attachments table's own RLS already
+	// enforces through can_view_linked_entity / can_manage_linked_entity. A flat permission cannot express
+	// it, and a second copy here would be a second place to get it wrong.
+	if (entityType === 'job_expense') {
+		const check = await requireOrganizationPermission(event, 'jobs.view');
 		return 'response' in check ? { response: check.response } : { auth: check.auth };
 	}
 
@@ -61,7 +71,8 @@ export function parseLinkedEntityQuery(
 		(entityType !== 'client' &&
 			entityType !== 'property' &&
 			entityType !== 'request' &&
-			entityType !== 'quote') ||
+			entityType !== 'quote' &&
+			entityType !== 'job_expense') ||
 		!entityId
 	) {
 		return null;
@@ -77,11 +88,13 @@ export async function linkedEntityBelongsToOrganization(
 	entityType: LinkedEntityType,
 	entityId: string
 ): Promise<boolean> {
-	// Requests and quotes are not soft-deleted — an unwanted one is archived — so only the two customer
-	// tables carry the deleted_at filter.
-	if (entityType === 'request' || entityType === 'quote') {
+	// Requests, quotes and job expenses are not soft-deleted — an unwanted one is archived or removed — so
+	// only the two customer tables carry the deleted_at filter.
+	if (entityType === 'request' || entityType === 'quote' || entityType === 'job_expense') {
+		const table =
+			entityType === 'request' ? 'requests' : entityType === 'quote' ? 'quotes' : 'job_expenses';
 		const { data } = await supabase
-			.from(entityType === 'request' ? 'requests' : 'quotes')
+			.from(table)
 			.select('id')
 			.eq('id', entityId)
 			.eq('organization_id', organizationId)

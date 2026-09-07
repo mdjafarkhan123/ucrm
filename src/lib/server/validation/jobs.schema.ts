@@ -825,3 +825,50 @@ export const deleteJobTimeEntrySchema = z.object({
 });
 
 export type DeleteJobTimeEntryInput = z.infer<typeof deleteJobTimeEntrySchema>;
+
+// --- Recorded expenses (Part 14c) --------------------------------------------------------------------------
+
+// One cost incurred on a job — materials, dump fees, a subcontractor. The fields match Jobber's expense form
+// and the table's own checks restated, so a mistyped total or a name too short is a field error on the box
+// the person was filling in. The receipt is not here: it attaches separately as an attachment. `total_minor`
+// is in minor units, the way every other amount in the app is sent. Who recorded it is only known server-side
+// (the caller); an existing expense never changes hands, because that is what the own-level gate reads.
+const jobExpenseFieldsSchema = {
+	name: z
+		.string()
+		.trim()
+		.min(2, 'Give this expense a name.')
+		.max(160, 'Keep the name under 160 characters.'),
+	accounting_code: z
+		.string()
+		.trim()
+		.max(64, 'Keep the accounting code under 64 characters.')
+		.nullish(),
+	description: z.string().trim().max(2000, 'Keep the description under 2000 characters.').nullish(),
+	expense_date: z.iso.date('Choose the date of this expense.'),
+	total_minor: z
+		.number()
+		.int('Enter a whole amount.')
+		.min(0, 'A total cannot be negative.')
+		.max(1_000_000_000_000, 'That total is too large.'),
+	reimburse_to_user_id: z.string().uuid('That person could not be found.').nullish()
+};
+
+export const addJobExpenseSchema = z.object({ ...jobExpenseFieldsSchema });
+
+export type AddJobExpenseInput = z.infer<typeof addJobExpenseSchema>;
+
+// A correction. `reason` is optional and lands in the append-only trail beside the before and after, which is
+// what makes a change made after the job closed readable later as the correction it was.
+export const updateJobExpenseSchema = z.object({
+	...jobExpenseFieldsSchema,
+	reason: z.string().trim().max(2000, 'Keep the reason under 2000 characters.').nullish()
+});
+
+export type UpdateJobExpenseInput = z.infer<typeof updateJobExpenseSchema>;
+
+export const deleteJobExpenseSchema = z.object({
+	reason: z.string().trim().max(2000, 'Keep the reason under 2000 characters.').nullish()
+});
+
+export type DeleteJobExpenseInput = z.infer<typeof deleteJobExpenseSchema>;

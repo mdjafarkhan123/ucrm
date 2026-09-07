@@ -4,6 +4,17 @@ import { z } from 'zod';
 // become linkable, matching the migration's entity_type check constraints.
 export const linkedEntityTypeSchema = z.enum(['client', 'property', 'request', 'quote']);
 
+// Attachments reach one entity the others do not: a job expense's receipt. 14a widened only the attachments
+// table's entity_type check for it, not note_links or tag_assignments, so only the attachment schemas widen
+// here — a note or tag targeting a job expense would fail the database's own constraint.
+export const attachmentEntityTypeSchema = z.enum([
+	'client',
+	'property',
+	'request',
+	'quote',
+	'job_expense'
+]);
+
 export const MAX_ATTACHMENT_SIZE_BYTES = 26_214_400; // 25 MB, matches the attachments table check constraint
 export const ALLOWED_ATTACHMENT_MIME_TYPES = [
 	'image/jpeg',
@@ -71,7 +82,7 @@ export const tagAssignmentCreateSchema = z
 	});
 
 export const attachmentPresignSchema = z.object({
-	entity_type: linkedEntityTypeSchema,
+	entity_type: attachmentEntityTypeSchema,
 	entity_id: z.string().uuid('Choose a record to attach a file to.'),
 	file_name: z.string().trim().min(1, 'Choose a file.').max(255),
 	mime_type: z.enum(ALLOWED_ATTACHMENT_MIME_TYPES, {

@@ -27,6 +27,7 @@
 	import JobPeriodsToBillCard from '$lib/components/jobs/JobPeriodsToBillCard.svelte';
 	import JobVisitsSection from '$lib/components/jobs/JobVisitsSection.svelte';
 	import JobLaborSection from '$lib/components/jobs/JobLaborSection.svelte';
+	import JobExpensesSection from '$lib/components/jobs/JobExpensesSection.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		fetchJob,
@@ -439,6 +440,16 @@
 				<JobLaborSection
 					jobId={saved.job.id}
 					visits={saved.visits}
+					locale={saved.locale}
+					currencyCode={saved.job.currency_code}
+				/>
+
+				<!--
+					Expenses sit beside labor: both are what the job actually cost, recorded the same own/team way
+					and hidden the same way behind jobs.view_cost. The section loads its own rows.
+				-->
+				<JobExpensesSection
+					jobId={saved.job.id}
 					locale={saved.locale}
 					currencyCode={saved.job.currency_code}
 				/>

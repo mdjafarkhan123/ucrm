@@ -9905,6 +9905,19 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			add_job_expense: {
+				Args: {
+					accounting_code?: string;
+					description?: string;
+					expense_date: string;
+					name: string;
+					reimburse_to_user_id?: string;
+					target_job_id: string;
+					target_organization_id: string;
+					total_minor: number;
+				};
+				Returns: Json;
+			};
 			add_job_invoice_reminder: {
 				Args: {
 					new_due_on: string;
@@ -10987,6 +11000,15 @@ export type Database = {
 				Args: { target_organization_id: string; target_reminder_id: string };
 				Returns: Json;
 			};
+			delete_job_expense: {
+				Args: {
+					reason?: string;
+					target_expense_id: string;
+					target_job_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			delete_job_time_entry: {
 				Args: {
 					reason?: string;
@@ -12044,6 +12066,10 @@ export type Database = {
 			};
 			issue_quote_access_link: {
 				Args: { supplied_token_hash: string; target_quote_id: string };
+				Returns: Json;
+			};
+			job_expenses_list: {
+				Args: { target_job_id: string; target_organization_id: string };
 				Returns: Json;
 			};
 			job_labor: {
@@ -14263,6 +14289,21 @@ export type Database = {
 					new_title: string;
 					target_job_id: string;
 					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			update_job_expense: {
+				Args: {
+					accounting_code?: string;
+					description?: string;
+					expense_date: string;
+					name: string;
+					reason?: string;
+					reimburse_to_user_id?: string;
+					target_expense_id: string;
+					target_job_id: string;
+					target_organization_id: string;
+					total_minor: number;
 				};
 				Returns: Json;
 			};

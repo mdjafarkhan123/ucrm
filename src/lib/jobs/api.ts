@@ -1015,3 +1015,91 @@ export async function deleteJobTimeEntry(
 	});
 	return readOrThrow(response, 'Those hours could not be removed.');
 }
+
+// --- Recorded expenses ------------------------------------------------------------------------------------
+
+// One expense on a job. Money is absent, not zero, for a reader without jobs.view_cost: the database leaves
+// `total_minor` out of the row entirely rather than sending a number nobody may see. `receipt_count` is how
+// many receipt files hang off it, so the list can show a paperclip without loading the files themselves.
+export type JobExpense = {
+	id: string;
+	name: string;
+	accounting_code: string | null;
+	description: string | null;
+	expense_date: string;
+	reimburse_to_user_id: string | null;
+	reimburse_to_name: string | null;
+	created_by: string | null;
+	receipt_count: number;
+	can_edit: boolean;
+	total_minor?: number;
+};
+
+export type JobExpenses = {
+	expenses: JobExpense[];
+	totals: {
+		expense_count: number;
+		total_minor: number | null;
+	};
+	// More expenses exist than the list carries. The total still counts all of them.
+	has_more: boolean;
+	job_closed: boolean;
+	can_add: boolean;
+	// Whether this reader manages the whole crew's expenses. Decides whose expenses the list shows.
+	can_manage_team: boolean;
+	can_see_cost: boolean;
+};
+
+export const jobExpensesKey = (id: string) => ['jobs', 'expenses', id] as const;
+
+export async function fetchJobExpenses(id: string): Promise<JobExpenses> {
+	const response = await fetch(`/api/jobs/${id}/expenses`);
+	return readOrThrow<JobExpenses>(response, 'The expenses on this job could not be loaded.');
+}
+
+export type JobExpenseInput = {
+	name: string;
+	accounting_code: string | null;
+	description: string | null;
+	expense_date: string;
+	total_minor: number;
+	reimburse_to_user_id: string | null;
+};
+
+export async function addJobExpense(
+	jobId: string,
+	input: JobExpenseInput
+): Promise<{ id: string; after_close: boolean }> {
+	const response = await fetch(`/api/jobs/${jobId}/expenses`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	return readOrThrow(response, 'That expense could not be recorded.');
+}
+
+export async function updateJobExpense(
+	jobId: string,
+	expenseId: string,
+	input: JobExpenseInput & { reason?: string | null }
+): Promise<{ id: string; after_close: boolean }> {
+	const response = await fetch(`/api/jobs/${jobId}/expenses/${expenseId}`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	return readOrThrow(response, 'That expense could not be saved.');
+}
+
+export async function deleteJobExpense(
+	jobId: string,
+	expenseId: string,
+	reason?: string | null
+): Promise<{ id: string; after_close: boolean }> {
+	const response = await fetch(`/api/jobs/${jobId}/expenses/${expenseId}`, {
+		method: 'DELETE',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ reason: reason ?? null })
+	});
+	return readOrThrow(response, 'That expense could not be removed.');
+}

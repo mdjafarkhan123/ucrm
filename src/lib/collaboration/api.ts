@@ -1,7 +1,8 @@
 import type { Tables } from '$lib/database.types';
 
-// Quotes/Jobs/Invoices become linkable later without changing anything else here.
-export type EntityType = 'client' | 'property' | 'request' | 'quote';
+// Quotes/Jobs/Invoices become linkable later without changing anything else here. Attachments reach one
+// more than notes and tags do — a job expense's receipt — because 14a widened only the attachments table.
+export type EntityType = 'client' | 'property' | 'request' | 'quote' | 'job_expense';
 
 export type ApiError = Error & { fieldErrors?: Record<string, string> };
 
