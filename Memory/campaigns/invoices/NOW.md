@@ -21,22 +21,25 @@
     amount to its own invoice (#21/#22/#23), walked Still To Bill -> Draft -> Awaiting payment -> Paid,
     and locked as soon as its draft saved — before issue or payment. A linked stage refused edits, a
     non-reconciling set was refused whole, and a reconciling one saved with the locked $200 preserved.
-  - BUG 3 **FIXED, browser check owed** — "Add stage" stayed enabled on a fully-invoiced schedule where
-    every outcome is a refusal. Now disabled via an `allStagesBilled` derived. Partly-billed schedules
-    are deliberately untouched.
+  - BUG 3 **FIXED + browser-verified** (`fa07c5a`) — "Add stage" stayed enabled on a fully-invoiced
+    schedule where every outcome is a refusal. Now disabled via an `allStagesBilled` derived. The
+    over-reach risk was checked head-on: a partly-billed schedule still offers it and still saves a
+    rebalanced set, and the 12-stage cap still trips independently.
 - Branch `schedule-5b-visits-card`. Stage named files only; never stage the repo-wide CRLF drift.
 
-## Next action — browser-check BUG 3's fix, then put 5c-5 closure to Jafar
+## Next action — Jafar's call on closing the campaign
 
-**Every journey in `5c-5-browser-pass.md` has now run and passed.** One thing is owed before 5c-5 closes:
-reopen Job #18's schedule editor with all three stages billed and confirm "Add stage" is disabled
-alongside the rows, the mode toggle and Remove — and that a partly-billed schedule (bill one stage of a
-fresh schedule) still offers it. Use an agent for that check; Jafar's standing instruction is that the
-browser is driven by an agent, not by the main session.
+**5c-5 is done. Every journey in `5c-5-browser-pass.md` has run and passed, and all three bugs it found
+are fixed, browser-verified and committed** (`cdd12bf`, `fa07c5a`). That closes 5c-5, which closes Part
+5c, and **Part 5c was the last open part of this campaign.**
 
-Then 5c-5 closes, which closes Part 5c — **and Part 5c is the last open part of this campaign.** Do not
-close the campaign unilaterally: put it to Jafar with the one item still owed below, so he decides whether
-it ships as done or the EXPLAIN evidence is a blocker.
+Nothing is left to implement. The only item still owed is the `EXPLAIN (ANALYZE, BUFFERS)` evidence under
+`## Owed` — it needs realistic data volume, which this org does not have. **Put the choice to Jafar:**
+either the campaign completes now and the EXPLAIN moves to `Memory/deferred/` with "reactivates when the
+stage/visit-line reads run against production-like data" as its trigger, or it stays open until that
+evidence exists. Do not close the campaign without his answer — completion deletes this folder.
+
+Standing instruction from Jafar 2026-09-07: the browser is driven by an agent, never by the main session.
 
 BUG 3 (first pass) closed `83fd891`: `add_job_visits` takes an optional `copy_lines_from_visit_id`, copies
 the source visit's lines in the same transaction, refuses a source outside the job with P0404. pgTAP
@@ -74,11 +77,14 @@ the source visit's lines in the same transaction, refuses a source outside the j
 - Job #1 is **no longer the J4/J5 rig** — see the J4/J5 blocked note above; it's now a $66,500.00 job with
   a linked schedule and a whole-job invoice (#6). Job #13 (33.33/33.33/33.34 % on $200) **divides evenly
   and does NOT exercise residual cents** — it is not the percentage rig.
-- Percentage/fixed preview rigs, schedules now SAVED and confirmed by query: **Job #15 "5c-5 Residual
-  Cents Rig"** (`64b313b8-…`, $100.01, 3333/3333/3334 bp -> $33.33/$33.33/$33.35), **Job #16 "5c-5
-  Tie-Break Rig"** (`45437d90-…`, $100.01, 5000/5000 -> $50.01/$50.00), **Job #17 "5c-5 Fixed Schedule
-  Rig"** (`ed14da3e-…`, $600.00, 20000/20000/20000). None has a linked invoice, so #17 is the closest
-  thing to a ready J4 rig — but confirm it carries no whole-job invoice before using it.
+- Schedule rigs, all schedules saved and confirmed by query. Preview rounding: **Job #15 "5c-5 Residual
+  Cents Rig"** (`64b313b8-…`, $100.01 -> $33.33/$33.33/$33.35) and **Job #16 "5c-5 Tie-Break Rig"**
+  (`45437d90-…`, $100.01 -> $50.01/$50.00). Fixed mode: **Job #17 "5c-5 Fixed Schedule Rig"**
+  (`ed14da3e-…`, $600.00, three $200 stages, unbilled). Stage billing: **Job #18 "5c-5 Stage Billing
+  Rig"** (`02780a53-…`, $665.00, $200/$200/$265, all three billed and Paid via invoices #21/#22/#23).
+  **Job #19 "5c-5 Partial Lock Check"** (`69759daa-…`, $300.00, stage one billed to draft Invoice #24)
+  is the ONLY partly-billed schedule in the org and the only fixture that can catch a lock guard
+  over-reaching — keep it.
 - **Job #2 "Recurring Lawn Care Test" is `fixed_per_period`** — it shows no per-visit pricing section.
 - Leftover drafts #16 ($75), #17 ($200), #20 ($100) — harmless; delete only with Jafar's OK.
 - Invoice #5 "D2 refusal test" carries append-only test state; remove only by reversal, with Jafar's OK.

@@ -191,7 +191,7 @@ which is that journey's own outcome, not drift.
   (errors or otherwise) with tracking active across a full reload. Collect payment and Edit payment
   schedule dialogs both keep Tab focus inside and close on Esc, returning focus to their trigger.
 
-### BUG 3 — FIXED (browser check owed) — "Add stage" stays enabled on a fully-invoiced schedule where it can never save
+### BUG 3 — FIXED + BROWSER-VERIFIED — "Add stage" stays enabled on a fully-invoiced schedule where it can never save
 
 - Where: Job #18 (`02780a53-…`), Billing card → "Edit payment schedule", after all three stages are billed
 - Steps: bill every stage, reopen the schedule editor
@@ -201,6 +201,13 @@ which is that journey's own outcome, not drift.
   stage above $0.00 breaks reconciliation and $0.00 is refused by "Every stage needs an amount above zero."
 - Expected: disabled alongside the other controls once no reconciling edit is possible, so the dialog does
   not offer a route whose every outcome is a refusal.
+- **Verified 2026-09-07, both themes, console clean:** on fully-billed Job #18 the button carries the
+  `disabled` property AND attribute, `pointer-events: none`, and is out of the tab order; neither a real
+  click nor a programmatic `.click()` (which bypasses `pointer-events`) adds a row, so the `addRow`
+  early-return holds on its own. Job #14's 2 locked stages behave the same, so it is not tied to a
+  3-stage shape. **Non-regression proved on a partly-billed schedule** — see the Job #19 rig below —
+  where the button stays enabled AND still saves a rebalanced set. The 12-stage cap still trips exactly
+  at 12 and is independent of `allStagesBilled`.
 - **Fix:** `JobPaymentScheduleDialog.svelte` gains an `allStagesBilled` derived (`rows.every(row =>
   row.locked)`); `addRow` returns early on it and the "Add stage" button disables on it alongside the
   existing saving / 12-stage guards. A partly-billed schedule is untouched — a new stage there is still
@@ -214,3 +221,16 @@ it refilled after the layout settled and moved on. Not filed: this is coordinate
 into a moving layout, which a person clicking a field before typing would not hit, and each row is keyed
 by a minted `crypto.randomUUID()` precisely so an added row never re-owns another row's input node. Worth
 a look only if a human reports it.
+
+### RIG — Job #19 "5c-5 Partial Lock Check", the partly-billed boundary case
+
+`69759daa-9d6b-46a4-9dd6-db9572a4b47a`, Tester Account, one $300.00 line, fixed stages, stage one billed
+to **draft Invoice #24** and the rest free. Built 2026-09-07 because no partly-billed schedule existed
+anywhere in the org, and that is the only state that can catch an `allStagesBilled` guard over-reaching.
+**Keep it** — it is the standing rig for "one stage locked, others editable". Deleting it removes the
+only fixture for that boundary.
+
+### NOTE — `MoneyInput` commits on blur
+
+A stage amount typed without blurring leaves the row at $0.00 and the footer short. Expected, but easy to
+screenshot mid-edit and misread as a preview bug. Blur before reading the total.
