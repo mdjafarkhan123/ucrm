@@ -922,3 +922,96 @@ export async function saveJobVisitLines(
 	});
 	return readOrThrow<SaveVisitLinesResult>(response, 'That visit’s pricing could not be saved.');
 }
+
+// --- Recorded hours ---------------------------------------------------------------------------------------
+
+// One entry of work on a job. Money is absent, not zero, for a reader without jobs.view_cost: the database
+// leaves the two cost keys out of the row entirely rather than sending a number nobody may see. `is_unrated`
+// is readable by everyone — it says nobody has set this person's rate yet, which is a gap to fix, not a cost.
+export type JobTimeEntry = {
+	id: string;
+	user_id: string;
+	user_name: string | null;
+	visit_id: string | null;
+	visit_date: string | null;
+	started_at: string;
+	minutes: number;
+	notes: string | null;
+	can_edit: boolean;
+	is_unrated: boolean;
+	cost_per_hour_minor?: number;
+	cost_total_minor?: number;
+};
+
+export type JobLabor = {
+	entries: JobTimeEntry[];
+	totals: {
+		entry_count: number;
+		minutes: number;
+		unrated_count: number;
+		cost_total_minor: number | null;
+	};
+	// More hours exist than the list carries. The totals still count all of them.
+	has_more: boolean;
+	job_closed: boolean;
+	can_add: boolean;
+	// Whether this reader records for the whole crew. Decides whose hours the list shows and whether the
+	// person picker appears at all.
+	can_track_team: boolean;
+	can_see_cost: boolean;
+};
+
+export const jobLaborKey = (id: string) => ['jobs', 'labor', id] as const;
+
+export async function fetchJobLabor(id: string): Promise<JobLabor> {
+	const response = await fetch(`/api/jobs/${id}/time-entries`);
+	return readOrThrow<JobLabor>(response, 'Those hours could not be loaded.');
+}
+
+export type JobTimeEntryInput = {
+	user_id: string;
+	started_at: string;
+	minutes: number;
+	visit_id: string | null;
+	notes: string | null;
+};
+
+export async function addJobTimeEntry(
+	jobId: string,
+	input: JobTimeEntryInput
+): Promise<{ id: string; after_close: boolean }> {
+	const response = await fetch(`/api/jobs/${jobId}/time-entries`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	return readOrThrow(response, 'Those hours could not be recorded.');
+}
+
+// Whose hours these are is not sent: an entry keeps the person it was recorded for, because it carries their
+// rate. Correcting the wrong person means removing the entry and recording it again.
+export async function updateJobTimeEntry(
+	jobId: string,
+	entryId: string,
+	input: Omit<JobTimeEntryInput, 'user_id'> & { reason?: string | null }
+): Promise<{ id: string; after_close: boolean }> {
+	const response = await fetch(`/api/jobs/${jobId}/time-entries/${entryId}`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	return readOrThrow(response, 'Those hours could not be saved.');
+}
+
+export async function deleteJobTimeEntry(
+	jobId: string,
+	entryId: string,
+	reason?: string | null
+): Promise<{ id: string; after_close: boolean }> {
+	const response = await fetch(`/api/jobs/${jobId}/time-entries/${entryId}`, {
+		method: 'DELETE',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ reason: reason ?? null })
+	});
+	return readOrThrow(response, 'Those hours could not be removed.');
+}

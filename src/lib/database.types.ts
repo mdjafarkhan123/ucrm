@@ -9914,6 +9914,18 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			add_job_time_entry: {
+				Args: {
+					minutes: number;
+					notes?: string;
+					started_at: string;
+					target_job_id: string;
+					target_organization_id: string;
+					target_user_id: string;
+					target_visit_id?: string;
+				};
+				Returns: Json;
+			};
 			add_job_visits: {
 				Args: {
 					new_idempotency_key: string;
@@ -10975,6 +10987,15 @@ export type Database = {
 				Args: { target_organization_id: string; target_reminder_id: string };
 				Returns: Json;
 			};
+			delete_job_time_entry: {
+				Args: {
+					reason?: string;
+					target_entry_id: string;
+					target_job_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			delete_job_visit: {
 				Args: {
 					expected_revision: number;
@@ -12023,6 +12044,10 @@ export type Database = {
 			};
 			issue_quote_access_link: {
 				Args: { supplied_token_hash: string; target_quote_id: string };
+				Returns: Json;
+			};
+			job_labor: {
+				Args: { target_job_id: string; target_organization_id: string };
 				Returns: Json;
 			};
 			job_line_money: { Args: { target_job_id: string }; Returns: Json };
@@ -13834,6 +13859,14 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			set_member_cost_rate: {
+				Args: {
+					new_cost_per_hour_minor: number;
+					target_organization_id: string;
+					target_user_id: string;
+				};
+				Returns: Json;
+			};
 			set_organization_automation_authority: {
 				Args: {
 					p_actor_email: string;
@@ -14230,6 +14263,19 @@ export type Database = {
 					new_title: string;
 					target_job_id: string;
 					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			update_job_time_entry: {
+				Args: {
+					minutes: number;
+					notes?: string;
+					reason?: string;
+					started_at: string;
+					target_entry_id: string;
+					target_job_id: string;
+					target_organization_id: string;
+					target_visit_id?: string;
 				};
 				Returns: Json;
 			};

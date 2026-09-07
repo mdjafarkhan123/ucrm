@@ -785,3 +785,43 @@ export const setJobPaymentScheduleSchema = z.object({
 });
 
 export type SetJobPaymentScheduleInput = z.infer<typeof setJobPaymentScheduleSchema>;
+
+// --- Recorded hours (Part 14b) -----------------------------------------------------------------------------
+
+// One entry of work on a job. Duration is minutes against a start, matching the column: a start/end pair
+// would give two ways to say the same thing and a timezone argument at every edit. The 1–1440 range is the
+// table's own check restated, so a mistyped shift is a field error on the box the person was filling in.
+// Whose hours these are is only sent when recording — an existing entry's person never changes, because the
+// rate it carries belongs to them.
+const timeEntryFieldsSchema = {
+	started_at: z.iso.datetime({ offset: true, message: 'Choose when this work started.' }),
+	minutes: z
+		.number()
+		.int('Enter whole minutes.')
+		.min(1, 'Enter how long this took.')
+		.max(1440, 'A single entry cannot be longer than 24 hours.'),
+	visit_id: z.string().uuid('That visit could not be found.').nullish(),
+	notes: z.string().trim().max(2000, 'Keep the note under 2000 characters.').nullish()
+};
+
+export const addJobTimeEntrySchema = z.object({
+	user_id: z.string().uuid('Choose whose hours these are.'),
+	...timeEntryFieldsSchema
+});
+
+export type AddJobTimeEntryInput = z.infer<typeof addJobTimeEntrySchema>;
+
+// A correction. `reason` is optional and lands in the append-only trail beside the before and after, which is
+// what makes a change made after the job closed readable later as the correction it was.
+export const updateJobTimeEntrySchema = z.object({
+	...timeEntryFieldsSchema,
+	reason: z.string().trim().max(2000, 'Keep the reason under 2000 characters.').nullish()
+});
+
+export type UpdateJobTimeEntryInput = z.infer<typeof updateJobTimeEntrySchema>;
+
+export const deleteJobTimeEntrySchema = z.object({
+	reason: z.string().trim().max(2000, 'Keep the reason under 2000 characters.').nullish()
+});
+
+export type DeleteJobTimeEntryInput = z.infer<typeof deleteJobTimeEntrySchema>;

@@ -1,0 +1,71 @@
+import { json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+import { requireOrganizationPermission } from '$lib/server/access/permission';
+import { NO_STORE_HEADERS, validationError } from '$lib/server/api/errors';
+import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
+import {
+	deleteJobTimeEntrySchema,
+	updateJobTimeEntrySchema
+} from '$lib/server/validation/jobs.schema';
+import { timeEntryError } from '$lib/server/jobs/errors';
+
+// Correcting recorded hours. Whose hours they are is not in the payload and cannot change: the entry carries
+// the rate of the person it was recorded for, so moving it to someone else would either keep the wrong
+// person's rate or quietly re-price it at today's. The command keeps the recorded rate and writes the before
+// and after to the job's costing trail.
+export const PATCH: RequestHandler = async (event) => {
+	const check = await requireOrganizationPermission(event, 'jobs.view');
+	if ('response' in check) return check.response;
+
+	let body: unknown;
+	try {
+		body = await event.request.json();
+	} catch {
+		return validationError({ form: 'Request body must be valid JSON.' });
+	}
+
+	const parsed = updateJobTimeEntrySchema.safeParse(body);
+	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
+
+	const { data, error } = await event.locals.supabase.rpc('update_job_time_entry', {
+		target_organization_id: check.auth.organization.id,
+		target_job_id: event.params.id,
+		target_entry_id: event.params.entryId,
+		started_at: parsed.data.started_at,
+		minutes: parsed.data.minutes,
+		target_visit_id: parsed.data.visit_id ?? undefined,
+		notes: parsed.data.notes ?? undefined,
+		reason: parsed.data.reason ?? undefined
+	});
+	if (error) return timeEntryError(error);
+
+	return json(data, { headers: NO_STORE_HEADERS });
+};
+
+// Removing hours recorded in error. The whole entry is written to the costing trail before the row goes, so
+// deleting an entry never deletes the evidence that it existed.
+export const DELETE: RequestHandler = async (event) => {
+	const check = await requireOrganizationPermission(event, 'jobs.view');
+	if ('response' in check) return check.response;
+
+	let body: unknown = {};
+	try {
+		const text = await event.request.text();
+		if (text) body = JSON.parse(text);
+	} catch {
+		return validationError({ form: 'Request body must be valid JSON.' });
+	}
+
+	const parsed = deleteJobTimeEntrySchema.safeParse(body);
+	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
+
+	const { data, error } = await event.locals.supabase.rpc('delete_job_time_entry', {
+		target_organization_id: check.auth.organization.id,
+		target_job_id: event.params.id,
+		target_entry_id: event.params.entryId,
+		reason: parsed.data.reason ?? undefined
+	});
+	if (error) return timeEntryError(error);
+
+	return json(data, { headers: NO_STORE_HEADERS });
+};

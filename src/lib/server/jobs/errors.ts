@@ -115,3 +115,26 @@ export function jobLifecycleError(error: DatabaseError) {
 		return validationError({ form: error.message ?? 'That job cannot be closed as requested.' });
 	return databaseError();
 }
+
+// The three labor commands (`add_job_time_entry`, `update_job_time_entry`, `delete_job_time_entry`) refuse in
+// the same shapes. A member without time.track_own or time.track_team, or a job in another organization,
+// comes back as insufficient_privilege — a stranger cannot tell which. A missing job, visit, entry or
+// teammate is a not-found. A closed job reached by someone who may only touch their own hours is P0410: a
+// rule, not a reload — the books stay open to a manager and closed to the crew. The table's own checks — a
+// shift longer than a day, a note past its length — surface as a form error carrying the sentence the
+// database already wrote.
+export function timeEntryError(error: DatabaseError) {
+	if (error.code === '42501') return notFound('Those hours could not be found.');
+	if (error.code === 'P0404') return notFound(error.message ?? 'That could not be found.');
+	if (error.code === 'P0410')
+		return json(
+			{
+				error: error.message ?? 'This job is closed, so its hours can no longer be changed.',
+				reason: 'locked'
+			},
+			{ status: 409, headers: NO_STORE_HEADERS }
+		);
+	if (error.code === '23514' || error.code === '23503')
+		return validationError({ form: error.message ?? 'Those hours cannot be saved as entered.' });
+	return databaseError();
+}

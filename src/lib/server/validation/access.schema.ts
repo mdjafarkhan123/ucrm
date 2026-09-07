@@ -206,6 +206,18 @@ export const memberProfileSaveSchema = z.object({
 	expected_profile_revision: expectedProfileRevisionSchema
 });
 
+// What an employee costs the business per hour, in whole cents. Null is a real answer and not the same as
+// zero: nobody has said yet what this person costs, and job costing reports their hours as unrated rather
+// than valuing them at nothing. The ceiling is the column's own check restated.
+export const memberCostRateSchema = z.object({
+	cost_per_hour_minor: z
+		.number()
+		.int('Enter a whole amount.')
+		.min(0, 'An hourly cost cannot be negative.')
+		.max(100_000_000, 'That hourly cost is too large.')
+		.nullable()
+});
+
 export function zodAccessFieldErrors(error: z.ZodError) {
 	return Object.fromEntries(
 		error.issues.map((issue) => [String(issue.path[0] ?? 'form'), issue.message] as const)

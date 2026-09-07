@@ -20,19 +20,19 @@ Evidence: [live tour and coverage](../Design/Jobber%20Jobs/2026-08-31/README.md)
 
 ## Language and ownership
 
-| Fact or side effect | Authoritative owner |
-| --- | --- |
-| Job identity, number, type, lifecycle state, scope lines, price basis, billing configuration, and Quote lineage | Jobs |
-| A visit: its schedule shape, assignment, per-visit items, instructions, and completion | Jobs, through Job-owned Visit rows |
-| Recurrence rule, generation of visits, and edit scopes | Jobs |
-| Calendar presentation, drag-to-reschedule, routes, conflicts, and the anytime/backlog lanes | Schedule, reading Visit truth without copying it |
-| Approved proposal content, published versions, customer decision, signature, and deposit requirement | Quotes; immutable after conversion |
-| Invoice documents, issue/due dates, delivery, balances, and payment allocation | Invoices and Payments |
-| Provider charge, callback, settlement, refund, dispute, and saved methods | Payments |
-| Email/SMS transport, client reminders, on-my-way messages, and follow-ups | Communications |
-| Triggered follow-ups from Job facts | Automation, consuming Job events from the existing event spine |
-| Notes, tags, and attachments | The existing shared notes/tags/attachments subsystem, extended to Job and Visit targets |
-| Labor time, expenses, and job costing inputs | Jobs Part 14, inside this contract's permission rules |
+| Fact or side effect                                                                                             | Authoritative owner                                                                     |
+| --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Job identity, number, type, lifecycle state, scope lines, price basis, billing configuration, and Quote lineage | Jobs                                                                                    |
+| A visit: its schedule shape, assignment, per-visit items, instructions, and completion                          | Jobs, through Job-owned Visit rows                                                      |
+| Recurrence rule, generation of visits, and edit scopes                                                          | Jobs                                                                                    |
+| Calendar presentation, drag-to-reschedule, routes, conflicts, and the anytime/backlog lanes                     | Schedule, reading Visit truth without copying it                                        |
+| Approved proposal content, published versions, customer decision, signature, and deposit requirement            | Quotes; immutable after conversion                                                      |
+| Invoice documents, issue/due dates, delivery, balances, and payment allocation                                  | Invoices and Payments                                                                   |
+| Provider charge, callback, settlement, refund, dispute, and saved methods                                       | Payments                                                                                |
+| Email/SMS transport, client reminders, on-my-way messages, and follow-ups                                       | Communications                                                                          |
+| Triggered follow-ups from Job facts                                                                             | Automation, consuming Job events from the existing event spine                          |
+| Notes, tags, and attachments                                                                                    | The existing shared notes/tags/attachments subsystem, extended to Job and Visit targets |
+| Labor time, expenses, and job costing inputs                                                                    | Jobs Part 14, inside this contract's permission rules                                   |
 
 A Job is one agreed piece of work for exactly one organization, Client, and Property. A Visit is one calendar
 occurrence of doing that work. **The Job is the agreement; the Visit is the appointment.** Money, scheduling, and
@@ -59,10 +59,10 @@ field records never collapse into one state machine.
 
 Three shapes, matching Jobber and PRODUCT §13:
 
-| Type | Meaning | Visits at creation |
-| --- | --- | --- |
-| One-off | A single job with one or more dates, no repetition | One by default, up to 20 in the create flow |
-| Recurring | Repeating service or ongoing billing on a rule | Generated from the rule, previewed before save |
+| Type                 | Meaning                                             | Visits at creation                             |
+| -------------------- | --------------------------------------------------- | ---------------------------------------------- |
+| One-off              | A single job with one or more dates, no repetition  | One by default, up to 20 in the create flow    |
+| Recurring            | Repeating service or ongoing billing on a rule      | Generated from the rule, previewed before save |
 | Recurring, as-needed | An ongoing agreement dispatched when work is needed | **Zero.** No placeholder visit is manufactured |
 
 Following Jobber, **job type is chosen at creation and cannot be switched afterwards.** The create form states this
@@ -71,11 +71,11 @@ without times, team, billing, and items forward.
 
 A Visit has one of three schedule shapes, and editing converts freely between them:
 
-| Shape | Stored | Reads as |
-| --- | --- | --- |
-| Scheduled | date and start time, optional end | A timed appointment |
-| Anytime | date, no time | Work owed that day, shown in the anytime lane |
-| Unscheduled | no date | Backlog work that still needs a date |
+| Shape       | Stored                            | Reads as                                      |
+| ----------- | --------------------------------- | --------------------------------------------- |
+| Scheduled   | date and start time, optional end | A timed appointment                           |
+| Anytime     | date, no time                     | Work owed that day, shown in the anytime lane |
+| Unscheduled | no date                           | Backlog work that still needs a date          |
 
 Derived operational labels, never stored: Upcoming, Today, Late, Completed. A Visit stores only its schedule fields
 plus `completed_at`; the clock passing never writes a row.
@@ -85,23 +85,23 @@ plus `completed_at`; the clock passing never writes a row.
 Stored Job states are `active` and `closed`. Deletion is not a state — it removes the record. Everything Jobber
 shows as a status that we can compute, we compute:
 
-| Label | Derived from |
-| --- | --- |
-| Upcoming / Today / Late | The Job's next incomplete Visit against today in the organization's timezone |
-| Unscheduled | Active Job whose incomplete Visits have no dates |
-| Action required | Active Job with no incomplete Visit remaining |
-| Requires invoicing | Job with an outstanding invoice reminder or uninvoiced completed billable work |
-| Archived | `closed` with nothing left to invoice |
-| Ending soon | Recurring contract end date approaching, from the rule, not the last Visit |
+| Label                   | Derived from                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------ |
+| Upcoming / Today / Late | The Job's next incomplete Visit against today in the organization's timezone   |
+| Unscheduled             | Active Job whose incomplete Visits have no dates                               |
+| Action required         | Active Job with no incomplete Visit remaining                                  |
+| Requires invoicing      | Job with an outstanding invoice reminder or uninvoiced completed billable work |
+| Archived                | `closed` with nothing left to invoice                                          |
+| Ending soon             | Recurring contract end date approaching, from the rule, not the last Visit     |
 
-| From | Command and actor | Guard and stored result | Downstream effect |
-| --- | --- | --- | --- |
-| New | Create job, `jobs.create` | Valid Client/Property, valid type and schedule; allocates the number and creates the Job and its Visits in one transaction | Emits `job_created`; a booking confirmation is a separate explicit choice |
-| Approved Quote | Convert to job, `quotes.convert` | Current approval, deposit satisfied, no existing Job; copies scope | Quote becomes terminal `converted`; the deposit stays owned by Quotes and applies to the first Invoice |
-| Active | Complete visit, `jobs.complete` | Visit belongs to the Job and is not already complete | Stamps `completed_at`; may make the Job Action required or Requires invoicing; emits `visit_completed` |
-| Active | Close job, `jobs.close` | Explicit consequences preview acknowledged | Becomes `closed`; incomplete Visits are removed or completed per the preview's choice; emits `job_closed` |
-| Closed | Reopen, `jobs.close` | Client and Property still valid | Returns to `active`. Removed Visits do **not** regenerate; scheduling is an explicit action |
-| Active or closed | Delete, `jobs.delete` | Typed confirmation naming the visit count; refused when Invoices exist | Permanently removes the Job and its Visits |
+| From             | Command and actor                | Guard and stored result                                                                                                    | Downstream effect                                                                                         |
+| ---------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| New              | Create job, `jobs.create`        | Valid Client/Property, valid type and schedule; allocates the number and creates the Job and its Visits in one transaction | Emits `job_created`; a booking confirmation is a separate explicit choice                                 |
+| Approved Quote   | Convert to job, `quotes.convert` | Current approval, deposit satisfied, no existing Job; copies scope                                                         | Quote becomes terminal `converted`; the deposit stays owned by Quotes and applies to the first Invoice    |
+| Active           | Complete visit, `jobs.complete`  | Visit belongs to the Job and is not already complete                                                                       | Stamps `completed_at`; may make the Job Action required or Requires invoicing; emits `visit_completed`    |
+| Active           | Close job, `jobs.close`          | Explicit consequences preview acknowledged                                                                                 | Becomes `closed`; incomplete Visits are removed or completed per the preview's choice; emits `job_closed` |
+| Closed           | Reopen, `jobs.close`             | Client and Property still valid                                                                                            | Returns to `active`. Removed Visits do **not** regenerate; scheduling is an explicit action               |
+| Active or closed | Delete, `jobs.delete`            | Typed confirmation naming the visit count; refused when Invoices exist                                                     | Permanently removes the Job and its Visits                                                                |
 
 Creating an Invoice never closes a Job. Closing a Job never sends anything and never charges anyone. Cancelling is
 not a separate state: it is Close with the incomplete work removed, presented honestly (below).
@@ -121,11 +121,11 @@ these in separate places.
   calculation function owns Job arithmetic and shares the Quote fixture set**; no route, screen, or PDF recomputes it.
 - Price basis is explicit and stored on the Job:
 
-| Basis | Available for | Plain summary shown before save |
-| --- | --- | --- |
-| Job total | One-off | "$2,400 for the whole job" |
-| Per visit | Recurring | "$120 per completed visit" |
-| Fixed per billing period | Recurring | "$500 each month regardless of visit count" |
+| Basis                    | Available for | Plain summary shown before save             |
+| ------------------------ | ------------- | ------------------------------------------- |
+| Job total                | One-off       | "$2,400 for the whole job"                  |
+| Per visit                | Recurring     | "$120 per completed visit"                  |
+| Fixed per billing period | Recurring     | "$500 each month regardless of visit count" |
 
 - Under per-visit pricing, a Visit may carry its own item quantities and those flow to the invoice for those dates.
   Under fixed-period pricing they do not, following Jobber. Switching basis on an existing Job is allowed, shows what
@@ -159,11 +159,11 @@ Invoice or deleting the reminder. Chasing the customer for payment belongs to In
   after a duration, plus as-needed. The contract start date is separate from the first matching appointment.
 - Edit scopes are distinct and named where the change is made:
 
-| Scope | Does |
-| --- | --- |
-| This visit | Changes one occurrence only |
+| Scope                    | Does                                                                              |
+| ------------------------ | --------------------------------------------------------------------------------- |
+| This visit               | Changes one occurrence only                                                       |
 | Future unfinished visits | Copies **time of day** and **assigned team** forward onto later incomplete Visits |
-| All unfinished visits | Replaces the recurrence rule; removes and regenerates incomplete Visits |
+| All unfinished visits    | Replaces the recurrence rule; removes and regenerates incomplete Visits           |
 
 - **Completed Visits are never regenerated, moved, or deleted by a schedule change, and that protection lives in the
   database, not only in the screen.** Direct writes to `job_visits` are revoked from `authenticated`; the commands
@@ -177,10 +177,10 @@ Invoice or deleting the reminder. Chasing the customer for payment belongs to In
   Visits is a deliberate non-goal for now; see the deferred decisions below.
 - Regeneration replaces **every incomplete Visit of the Job, past-dated ones included**, not only upcoming ones.
   Verified 2026-09-01 against four sources that agree and carry no past/future qualifier: Jobber's own in-product
-  warning, captured at `Design/Jobber Jobs/2026-08-31/47-regenerate-warning-three-visits.png` — *"I understand that
+  warning, captured at `Design/Jobber Jobs/2026-08-31/47-regenerate-warning-three-visits.png` — _"I understand that
   rescheduling will delete all incomplete visits and recreate them using the visit details above. This action cannot
-  be undone."*; the Jobber Visits help article — *"all incomplete visits will be cleared and new visits will be
-  created"*; the Jobber Job Basics help article — *"Updates made here apply to all incomplete visits in the job."*;
+  be undone."_; the Jobber Visits help article — _"all incomplete visits will be cleared and new visits will be
+  created"_; the Jobber Job Basics help article — _"Updates made here apply to all incomplete visits in the job."_;
   and our own tour notes in `.claude/skills/jobber/jobber-04-jobs-visits-scheduling.md`. Where Jobber does want a
   past/upcoming distinction it says so explicitly — it draws that line when **closing** a Job, not when
   rescheduling one.
@@ -211,22 +211,47 @@ Job; recurring costing covers a labelled trailing period. Screens always name th
 date as cash received. Changed labor rates apply forward only. The same material recorded as both an item cost and
 an expense is double counting; the UI warns rather than silently reconciling.
 
+"Forward only" is enforced by copying the rate onto the time entry when the hours are recorded, not by remembering
+rate history: a past entry has no link to the current rate, and correcting an entry keeps the rate it was recorded
+with. A person with no rate on file is **unrated, not free** — those hours are reported as unrated and stay out of
+the cost total rather than being valued at zero.
+
+**Closing a Job locks the crew, not the books.** After close, an own-level holder can no longer touch its hours; a
+team-level holder can still correct them, and every labor or expense change on a Job — before or after close — is
+appended to a permanent trail carrying the before and after and a flag for corrections made after close. Invoicing
+never locks costs.
+
 ## Staff permissions
 
 Entitlement and membership are necessary, never sufficient. Proposed keys, following the Quotes precedent that only
 money is split finely:
 
-| Permission | Allows |
-| --- | --- |
-| `jobs.view` | Job identity, type, lifecycle, client and property context, scope names, and schedule |
+| Permission        | Allows                                                                                 |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| `jobs.view`       | Job identity, type, lifecycle, client and property context, scope names, and schedule  |
 | `jobs.view_price` | Customer prices, discounts, taxes, totals, payment schedule, and billing configuration |
-| `jobs.view_cost` | Internal cost, labor cost, expenses, profit, and margin |
-| `jobs.create` | Direct creation and Quote conversion (with `quotes.convert`) |
-| `jobs.edit` | Scope, billing configuration, details, notes and attachments, create similar |
-| `jobs.schedule` | Create, move, assign, and delete Visits, and change recurrence |
-| `jobs.complete` | Complete and un-complete Visits |
-| `jobs.close` | Close, cancel, and reopen a Job |
-| `jobs.delete` | Permanent deletion |
+| `jobs.view_cost`  | Internal cost, labor cost, expenses, profit, and margin                                |
+| `jobs.create`     | Direct creation and Quote conversion (with `quotes.convert`)                           |
+| `jobs.edit`       | Scope, billing configuration, details, notes and attachments, create similar           |
+| `jobs.schedule`   | Create, move, assign, and delete Visits, and change recurrence                         |
+| `jobs.complete`   | Complete and un-complete Visits                                                        |
+| `jobs.close`      | Close, cancel, and reopen a Job                                                        |
+| `jobs.delete`     | Permanent deletion                                                                     |
+
+Recording work and seeing what it cost are different questions, so recording has its own keys. None of them reveals
+a rate, a cost, or a margin — that stays behind `jobs.view_cost`.
+
+| Permission             | Allows                                                          |
+| ---------------------- | --------------------------------------------------------------- |
+| `time.track_own`       | Record and correct their own hours on an open Job               |
+| `time.track_team`      | Record and correct anyone's hours, including on a closed Job    |
+| `expenses.record`      | Record an expense on a Job and change their own                 |
+| `expenses.manage_team` | Change or remove anyone's Job expenses                          |
+
+Field holds `time.track_own` and `expenses.record`: logging your own hours and the materials you bought is the whole
+point of the own/team split. Owner, admin, office and finance hold all four. What an employee costs per hour is set
+on their Team profile behind `team.manage`, and lives in its own table because the member row is readable by anyone
+who can see a teammate and a loaded labor rate is not.
 
 Owner and admin receive all. Proposed defaults: Office and Sales get view, price, create, edit, schedule, complete,
 and close; Finance gets view, price, and cost; Field gets `jobs.view` and `jobs.complete` only. `jobs.view_price` and
@@ -239,19 +264,19 @@ unreadable until it is named in a grant on purpose.
 
 Minimum proposed shape, not an applied schema:
 
-| Object | Purpose and important invariants |
-| --- | --- |
-| `organization_job_counters` | One row per organization; locked atomic allocation; never decreases |
-| `jobs` | Identity, tenant/client/property/quote FKs, number, title, type, stored state, price basis, billing timing, arrival window, instructions, contract start and end, closed and reopened timestamps; unique `(organization_id, job_number)`; partial unique `quote_id` |
-| `job_line_items` | Ordered Job-owned scope rows; quantity, minor-unit price and cost, taxability, image reference, line totals; max 100 per Job |
-| `job_recurrence_rules` | One optional rule per recurring Job: frequency, interval, weekdays, ordinal pattern, start, end date or duration, as-needed flag |
-| `job_visits` | Job-owned occurrence: nullable date, start and end, title, instructions, `completed_at`, completed_by, source (generated, manual, return, duplicated); tenant-safe composite FK to the Job |
-| `job_visit_assignments` | Visit-to-member assignment; unique per member and visit |
-| `job_visit_line_items` | Optional per-visit item quantities under per-visit pricing only |
-| `job_payment_schedule_items` | Ordered fixed or percentage installments totalling the Job total; issued installments are locked |
-| `job_invoice_reminders` | Internal prompts: due date, rule origin, owner, completed state; drives Requires invoicing |
-| `job_events` | Safe lifecycle and activity history: actor, event type, prior and new state, related visit/invoice/quote ids; redacted metadata; feeds the existing Automation event spine |
-| `job_command_receipts` | Unique organization, action, and idempotency key; an identical retry returns the first result and a changed payload conflicts |
+| Object                       | Purpose and important invariants                                                                                                                                                                                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `organization_job_counters`  | One row per organization; locked atomic allocation; never decreases                                                                                                                                                                                                 |
+| `jobs`                       | Identity, tenant/client/property/quote FKs, number, title, type, stored state, price basis, billing timing, arrival window, instructions, contract start and end, closed and reopened timestamps; unique `(organization_id, job_number)`; partial unique `quote_id` |
+| `job_line_items`             | Ordered Job-owned scope rows; quantity, minor-unit price and cost, taxability, image reference, line totals; max 100 per Job                                                                                                                                        |
+| `job_recurrence_rules`       | One optional rule per recurring Job: frequency, interval, weekdays, ordinal pattern, start, end date or duration, as-needed flag                                                                                                                                    |
+| `job_visits`                 | Job-owned occurrence: nullable date, start and end, title, instructions, `completed_at`, completed_by, source (generated, manual, return, duplicated); tenant-safe composite FK to the Job                                                                          |
+| `job_visit_assignments`      | Visit-to-member assignment; unique per member and visit                                                                                                                                                                                                             |
+| `job_visit_line_items`       | Optional per-visit item quantities under per-visit pricing only                                                                                                                                                                                                     |
+| `job_payment_schedule_items` | Ordered fixed or percentage installments totalling the Job total; issued installments are locked                                                                                                                                                                    |
+| `job_invoice_reminders`      | Internal prompts: due date, rule origin, owner, completed state; drives Requires invoicing                                                                                                                                                                          |
+| `job_events`                 | Safe lifecycle and activity history: actor, event type, prior and new state, related visit/invoice/quote ids; redacted metadata; feeds the existing Automation event spine                                                                                          |
+| `job_command_receipts`       | Unique organization, action, and idempotency key; an identical retry returns the first result and a changed payload conflicts                                                                                                                                       |
 
 UUID ids, `organization_id` duplicated on every child row, composite `(organization_id, parent_id)` foreign keys so a
 cross-tenant link is impossible, and a supporting index behind every foreign key and RLS predicate. Primary read
@@ -351,3 +376,20 @@ Approving this contract confirms these together:
    custom details of the incomplete Visits it replaces, matching Jobber, Housecall Pro, and ServiceTitan.
 8. The proposed table, function, RLS, API, and permission boundaries — including `jobs.view_price` and
    `jobs.view_cost` enforced in the database — are suitable for a later, separately approved migration.
+
+## Approved Invoice transition consequences
+
+Jafar approved Invoice D1–D5; the [Invoice contract](invoice-behavior-contract.md) owns their financial rules.
+
+- Batch may complete explicitly selected incomplete Visits only after a completion preview and with
+  `jobs.complete`. Completion and creation of the Draft invoices are atomic. No automatic Job closure;
+  final-Visit completion leaves finishing the Job as a separate explicit action.
+- Void does not uncomplete Visits, reopen Jobs, recreate reminders, or automatically return source work
+  to Requires invoicing. The existing uninvoiced-work rule excludes source work claimed by a retained
+  canceled/replaced billing chain; an explicit linked rebill handles replacement without duplicate billing.
+- Issued installments remain locked from Job editing. Invoice-owned correction/replacement preserves the
+  original and presents schedule differences; later installments never change implicitly. Existing payments
+  remain on their original Invoice until explicitly moved.
+- Retained Voided Invoices still count as existing Invoices for the current Job-deletion restriction.
+
+These are product approvals. The Part 2 design is for review only; no implementation is authorized.

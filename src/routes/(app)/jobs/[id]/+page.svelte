@@ -26,6 +26,7 @@
 	import JobVisitsToBillCard from '$lib/components/jobs/JobVisitsToBillCard.svelte';
 	import JobPeriodsToBillCard from '$lib/components/jobs/JobPeriodsToBillCard.svelte';
 	import JobVisitsSection from '$lib/components/jobs/JobVisitsSection.svelte';
+	import JobLaborSection from '$lib/components/jobs/JobLaborSection.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		fetchJob,
@@ -428,6 +429,18 @@
 					saveLabel="Save scope"
 					emptyDescription="Add the products and services this job covers."
 					onSave={saveScope}
+				/>
+
+				<!--
+					Labor sits under the job's scope and above its visits, the order Jobber uses: what the job
+					covers, what it took, then when it happens. The section loads its own hours, because who may
+					see them is a narrower question than who may open the job.
+				-->
+				<JobLaborSection
+					jobId={saved.job.id}
+					visits={saved.visits}
+					locale={saved.locale}
+					currencyCode={saved.job.currency_code}
 				/>
 
 				<JobVisitsSection

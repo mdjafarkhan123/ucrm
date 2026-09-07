@@ -27,6 +27,10 @@ const teamMemberDetailSchema = z.object({
 	schedule_color: z.string().nullable(),
 	created_at: z.string(),
 	deactivated_at: z.string().nullable(),
+	// What this person costs the business per hour, in whole cents. Null means nobody has said yet, which is
+	// not zero: their recorded hours are reported as unrated rather than valued at nothing.
+	cost_per_hour_minor: z.number().int().nullable(),
+	cost_rate_updated_at: z.string().nullable(),
 	invitation: z
 		.object({
 			id: z.uuid(),

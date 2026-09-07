@@ -25,6 +25,7 @@
 		fetchTeamMember,
 		replaceTeamInvitationEmail,
 		resendTeamInvitation,
+		saveTeamMemberCostRate,
 		saveTeamMemberProfile,
 		teamDirectoryKey,
 		teamMemberKey,
@@ -78,7 +79,29 @@
 		} satisfies TeamMemberDetail;
 	});
 	const isEditing = $derived(draft !== null);
-	const isDirty = $derived(Boolean(saved && draft && !sameDraft(draft, draftOf(saved))));
+
+	// The hourly cost is edited beside the profile and saved by the same bar, but it is written on its own
+	// route: a name and a wage are not the same kind of fact, and only the wage lives behind a separate,
+	// permission-checked table. Held as the text in the box so a half-typed "12." is not read as a number.
+	let costRate = $state('');
+
+	function costRateOf(source: TeamMemberDetail) {
+		return source.cost_per_hour_minor === null ? '' : (source.cost_per_hour_minor / 100).toFixed(2);
+	}
+
+	// Empty means "not told yet", which the command stores as null. Anything else has to be a real amount:
+	// a typo saved as zero would quietly report this person's hours as free.
+	function costRateToMinor(): number | null | 'invalid' {
+		const text = costRate.trim();
+		if (!text) return null;
+		const value = Number(text);
+		if (!Number.isFinite(value) || value < 0) return 'invalid';
+		return Math.round(value * 100);
+	}
+
+	const isDirty = $derived(
+		Boolean(saved && draft && (!sameDraft(draft, draftOf(saved)) || costRate !== costRateOf(saved)))
+	);
 
 	function draftOf(source: TeamMemberDetail): TeamMemberProfileDraft {
 		return {
@@ -123,12 +146,14 @@
 	function openEdit() {
 		if (!saved) return;
 		draft = draftOf(saved);
+		costRate = costRateOf(saved);
 		saveError = '';
 		stale = false;
 	}
 
 	function cancelEdit() {
 		draft = null;
+		costRate = '';
 		saveError = '';
 		stale = false;
 	}
@@ -148,9 +173,19 @@
 		saving = true;
 		saveError = '';
 		stale = false;
+		const rate = costRateToMinor();
+		if (rate === 'invalid') {
+			saveError = 'Enter the hourly cost as an amount, like 24.50, or leave it blank.';
+			saving = false;
+			return;
+		}
 		try {
-			await saveTeamMemberProfile(userId, draft);
+			if (!sameDraft(draft, draftOf(saved!))) await saveTeamMemberProfile(userId, draft);
+			if (rate !== (saved?.cost_per_hour_minor ?? null)) {
+				await saveTeamMemberCostRate(userId, rate);
+			}
 			draft = null;
+			costRate = '';
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: teamMemberKey(actorUserId, userId) }),
 				queryClient.invalidateQueries({ queryKey: ['team', 'directory'] })
@@ -337,6 +372,13 @@
 										bind:value={draft.work_phone}
 									/>
 									<Input id="team-member-title" label="Job title" bind:value={draft.job_title} />
+									<Input
+										id="team-member-cost-rate"
+										label="Hourly cost"
+										inputmode="decimal"
+										placeholder="e.g. 24.50 — leave blank if not set"
+										bind:value={costRate}
+									/>
 									<div class="team-member-detail__color-field">
 										<label for="team-member-color">Scheduling color</label>
 										<input
@@ -348,6 +390,11 @@
 										<span>{draft.schedule_color || 'Not set'}</span>
 									</div>
 								</div>
+								<p class="team-member-detail__hint">
+									Hourly cost is what this person costs the business — wage, benefits and taxes —
+									and is only used for job costing. Changing it applies to hours recorded from now
+									on; hours already recorded keep the rate they were recorded with.
+								</p>
 							{:else}
 								<div class="team-member-detail__identity">
 									<Avatar
@@ -369,6 +416,14 @@
 									<div>
 										<dt>Scheduling color</dt>
 										<dd>{member.schedule_color ?? 'Not set'}</dd>
+									</div>
+									<div>
+										<dt>Hourly cost</dt>
+										<dd>
+											{member.cost_per_hour_minor === null
+												? 'Not set'
+												: `${(member.cost_per_hour_minor / 100).toFixed(2)} per hour`}
+										</dd>
 									</div>
 									<div>
 										<dt>Joined</dt>
@@ -554,6 +609,11 @@
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: var(--space-base);
+	}
+	.team-member-detail :global(.team-member-detail__hint) {
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
 	}
 	.team-member-detail :global(.team-member-detail__color-field) {
 		display: flex;

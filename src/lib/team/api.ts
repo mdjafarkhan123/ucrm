@@ -56,7 +56,13 @@ export type TeamDirectoryPage = {
 	seats: { used: number; limit: number; is_unlimited: boolean };
 };
 
-export type TeamMemberDetail = TeamDirectoryMember;
+// The detail read carries two facts the directory does not: what this person costs the business per hour,
+// and when that was last set. Both come from their own table, behind team.manage, because a loaded labor
+// rate is private pay data and the directory row is read by anyone who can see a teammate.
+export type TeamMemberDetail = TeamDirectoryMember & {
+	cost_per_hour_minor: number | null;
+	cost_rate_updated_at: string | null;
+};
 
 export type TeamMemberProfileDraft = {
 	full_name: string;
@@ -251,6 +257,23 @@ export async function saveTeamMemberProfile(
 			result.error ?? 'Those member details could not be saved.',
 			result.stale === true
 		);
+	}
+}
+
+// The hourly cost, saved on its own. A change applies forward only: hours already recorded keep the rate
+// they were recorded with, so nothing here re-prices finished work.
+export async function saveTeamMemberCostRate(
+	userId: string,
+	costPerHourMinor: number | null
+): Promise<void> {
+	const response = await fetch(`/api/team/members/${userId}/cost-rate`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ cost_per_hour_minor: costPerHourMinor })
+	});
+	if (!response.ok) {
+		const result = await response.json().catch(() => ({}) as { error?: string });
+		throw new TeamWriteError(result.error ?? 'That hourly cost could not be saved.', false);
 	}
 }
 

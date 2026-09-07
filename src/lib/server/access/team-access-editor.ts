@@ -168,6 +168,25 @@ const capabilityDefinitions: CapabilityDefinition[] = [
 		]
 	},
 	{
+		id: 'time-tracking',
+		name: 'Time tracking',
+		description: 'Record the hours worked on a job.',
+		controls: [
+			{
+				id: 'track-own-time',
+				permissionKey: 'time.track_own',
+				label: 'Record their own hours',
+				example: 'Log the time they spent on a job.'
+			},
+			{
+				id: 'track-team-time',
+				permissionKey: 'time.track_team',
+				label: 'Record anyone’s hours',
+				example: 'Log or correct time for the whole crew, including on a closed job.'
+			}
+		]
+	},
+	{
 		id: 'business-settings',
 		name: 'Business settings',
 		description: 'Control shared business identity and hours.',
