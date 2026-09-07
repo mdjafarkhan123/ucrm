@@ -13,26 +13,30 @@
   - BUG 2 **NOT A BUG** — the "red square" on Job #14 is a real line photo (`line-photo-test.png`, 178
     bytes), rendered decorative (`<img alt="">`), which is why it had no a11y or text node.
   - J6 confirmed as expected (no correction UI exists).
-  - **J4/J5 still unrun and blocked on test data:** Job #1 no longer matches the tick sheet — real total
-    is $66,500.00 (not $665.00), it already carries a linked 3-stage schedule, and Invoice #6 already
-    bills the whole job. The app correctly refused a stage invoice as already-billed. Needs a fresh rig
-    job (or a Job #1 reset) before J4/J5 can run.
+  - **J4 and J5 both PASS** on a purpose-built rig, **Job #18 "5c-5 Stage Billing Rig"**
+    (`02780a53-1668-44f0-8e59-73ba67b28c0c`, Tester Account, $665.00, fixed Deposit $200 / Mid build $200
+    / Final $265) created through the UI on 2026-09-07. Job #1 was retired from this role rather than
+    reset, because resetting it meant voiding its real $66,500 Invoice #6; Job #17 was rejected because
+    three identical $200 stages cannot reveal a stage billed out of order. Each stage carried its own
+    amount to its own invoice (#21/#22/#23), walked Still To Bill -> Draft -> Awaiting payment -> Paid,
+    and locked as soon as its draft saved — before issue or payment. A linked stage refused edits, a
+    non-reconciling set was refused whole, and a reconciling one saved with the locked $200 preserved.
+  - BUG 3 **FIXED, browser check owed** — "Add stage" stayed enabled on a fully-invoiced schedule where
+    every outcome is a refusal. Now disabled via an `allStagesBilled` derived. Partly-billed schedules
+    are deliberately untouched.
 - Branch `schedule-5b-visits-card`. Stage named files only; never stage the repo-wide CRLF drift.
 
-## Next action — seed a clean rig, then run J4 and J5
+## Next action — browser-check BUG 3's fix, then put 5c-5 closure to Jafar
 
-Everything the second pass found is closed. **J4 and J5 are the only unrun journeys left in
-`5c-5-browser-pass.md`, and they are the last thing standing between 5c-5 and Part 5c closing.**
+**Every journey in `5c-5-browser-pass.md` has now run and passed.** One thing is owed before 5c-5 closes:
+reopen Job #18's schedule editor with all three stages billed and confirm "Add stage" is disabled
+alongside the rows, the mode toggle and Remove — and that a partly-billed schedule (bill one stage of a
+fresh schedule) still offers it. Use an agent for that check; Jafar's standing instruction is that the
+browser is driven by an agent, not by the main session.
 
-Ask Jafar whether to reset Job #1 or seed a new job, then run:
-- **J4** — create / open / pay each fixed stage in order; expect Remaining -> Draft -> Awaiting payment ->
-  Paid, the invoice number and total on the Job Billing card, and a created stage locked even while Draft.
-- **J5** — after J4's first stage only: the linked stage is not editable, the two unlinked ones may be
-  edited or reordered only if the whole schedule still reconciles with the locked amount preserved, and a
-  set that does not reconcile is refused whole.
-
-The rig needs a job with priced lines, a fixed multi-stage schedule, nothing linked, and **no whole-job
-invoice** — that last one is what disqualified Job #1.
+Then 5c-5 closes, which closes Part 5c — **and Part 5c is the last open part of this campaign.** Do not
+close the campaign unilaterally: put it to Jafar with the one item still owed below, so he decides whether
+it ships as done or the EXPLAIN evidence is a blocker.
 
 BUG 3 (first pass) closed `83fd891`: `add_job_visits` takes an optional `copy_lines_from_visit_id`, copies
 the source visit's lines in the same transaction, refuses a source outside the job with P0404. pgTAP

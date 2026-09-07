@@ -128,3 +128,89 @@ Append to `## Findings` below. One block each, nothing else:
 - Saw: No Edit/Correct entry point anywhere on the page. "Write off balance" opens a real, working dialog (bad-debt write-off, unrelated to correction) — cancelled without submitting.
 - Expected per NOW.md's known limit: there is no correction UI, so the entry point's absence itself is the expected finding, not a bug to chase further.
 - Blocked: no further action needed — journey complete as a confirmation.
+
+### RIG — J4/J5 rig rebuilt through the UI as Job #18 (Job #1 retired from this role)
+
+Job #1 could not serve (see the J4/J5 blocked note above). A replacement was created **through the UI**,
+not by SQL, so every invariant is the app's own: **Job #18 "5c-5 Stage Billing Rig"**
+(`02780a53-1668-44f0-8e59-73ba67b28c0c`), client Tester Account, one line "Stage billing work" qty 1 at
+**$665.00**, whole-job pricing, one-off. Fixed 3-stage schedule added via Billing setup:
+**Deposit $200.00 / Mid build $200.00 / Final $265.00**, footer reconciled "Adds up to $665.00 of $665.00".
+Job #17 was deliberately NOT reused: its three stages are all $200, so a stage billed out of order would
+be invisible. J5 later re-pointed the unlocked stages to **Mid build $300.00 / Final $165.00** (below),
+which is that journey's own outcome, not drift.
+
+### J5 — PASS
+
+- Where: Job #18 (`02780a53-…`), Billing card → "Edit payment schedule", with only the first stage linked
+- Saw, with Deposit already claimed by Draft Invoice #21:
+  - The dialog explains itself: "One of these stages has already been invoiced, so the schedule stays as it
+    is set and that stage cannot be changed."
+  - The **Deposit row is disabled** — greyed description and amount, an "Invoiced" badge, and **no Remove
+    button**. The Amounts/Percentages mode toggle is disabled too, so the billed stage's mode is stuck.
+  - Mid build and Final stayed editable with Remove buttons.
+  - **Non-reconciling set refused whole:** Final 265.00 -> 100.00 and Save produced "The stages must add up
+    to the job total. They currently add up to $500.00 but the total is $665.00." Nothing saved — the
+    Billing card behind still read Final $265.00. No silent adjustment.
+  - **Reconciling set accepted:** Mid build -> $300.00 and Final -> $165.00 (200 + 300 + 165 = $665.00)
+    saved, and the card now reads Deposit $200.00 (Draft, Invoice #21) / Mid build $300.00 / Final $165.00.
+    The locked $200.00 was preserved throughout.
+- Expected: exactly the above, per the sheet.
+- Blocked: no
+- Note, already a known deferral not a new bug: after correcting the numbers the red "stages must add up"
+  banner kept quoting the stale $500.00 until save, while the live footer correctly tracked to
+  "Adds up to $665.00 of $665.00."
+
+### J4 — PASS
+
+- Where: Job #18 "5c-5 Stage Billing Rig" (`02780a53-1668-44f0-8e59-73ba67b28c0c`), Billing card and the
+  three invoices it produced
+- Steps: for each stage in order — Create invoice -> Save -> "..." -> Mark as Sent -> Collect payment
+  ("Mark as Sent" is the issue path here because Tester Account has no email address; Send invoice would
+  have needed one)
+- Saw, each stage carrying its OWN amount to its OWN invoice, correctly tagged Payment 1/2/3:
+  | Stage | Amount | Invoice | Stage header | End state |
+  | --- | --- | --- | --- | --- |
+  | Deposit | $200.00 | **#21** | "Payment 1 · Deposit" | Paid, balance $0.00 |
+  | Mid build | $300.00 | **#22** | "Payment 2 · Mid build" | Paid, balance $0.00 |
+  | Final | $165.00 | **#23** | "Payment 3 · Final" | Paid, balance $0.00 |
+  - Each stage walked **Still To Bill -> Draft -> Awaiting payment -> Paid**, and the Billing card showed
+    the stage's badge plus a live "Invoice #N" link at every step.
+  - **A created stage locks immediately, while still Draft:** the moment Invoice #21 was saved (before it
+    was issued or paid) the Deposit row lost its "Create invoice" button and showed Draft + Invoice #21.
+    Re-opening the schedule editor then showed that row disabled with an "Invoiced" badge.
+  - The composer is read-only on amounts throughout: "These amounts come from the job's payment schedule
+    and cannot be changed here", and each invoice keeps the Item total $665.00 / Due this invoice column.
+  - With all three billed, the editor disables every row, the mode toggle, and every Remove.
+- Expected: exactly the above, per the sheet.
+- Blocked: no
+- Verified by query afterwards: stages persist 20000 / 30000 / 16500 minor, each with
+  `locked_amount_minor` equal to its value, summing to the $665.00 job total.
+- Themes and console: J4 stages 1-2 and the rig build ran in **light**, stage 3 and the final card in
+  **dark**, plus the fully-paid card re-checked in light — all clean. **No console messages at all**
+  (errors or otherwise) with tracking active across a full reload. Collect payment and Edit payment
+  schedule dialogs both keep Tab focus inside and close on Esc, returning focus to their trigger.
+
+### BUG 3 — FIXED (browser check owed) — "Add stage" stays enabled on a fully-invoiced schedule where it can never save
+
+- Where: Job #18 (`02780a53-…`), Billing card → "Edit payment schedule", after all three stages are billed
+- Steps: bill every stage, reopen the schedule editor
+- Saw: every stage row, the Amounts/Percentages toggle and every Remove button are correctly disabled, but
+  the full-width **"Add stage" button remains enabled**. The schedule already reconciles at $665.00 of
+  $665.00 and every existing stage is frozen, so any stage added here is unsaveable by construction — a
+  stage above $0.00 breaks reconciliation and $0.00 is refused by "Every stage needs an amount above zero."
+- Expected: disabled alongside the other controls once no reconciling edit is possible, so the dialog does
+  not offer a route whose every outcome is a refusal.
+- **Fix:** `JobPaymentScheduleDialog.svelte` gains an `allStagesBilled` derived (`rows.every(row =>
+  row.locked)`); `addRow` returns early on it and the "Add stage" button disables on it alongside the
+  existing saving / 12-stage guards. A partly-billed schedule is untouched — a new stage there is still
+  legitimate, because the unlocked rows can be rebalanced around it.
+- Blocked: no — cosmetic dead-end affordance, not a data risk.
+
+### NOTE — not filed as a bug: dialog reflow while typing into a freshly added stage
+
+The pass observed that adding a third stage reflows the dialog, so text aimed at row 1 landed in row 2;
+it refilled after the layout settled and moved on. Not filed: this is coordinate-blind automation typing
+into a moving layout, which a person clicking a field before typing would not hit, and each row is keyed
+by a minted `crypto.randomUUID()` precisely so an added row never re-owns another row's input node. Worth
+a look only if a human reports it.

@@ -99,6 +99,9 @@
 	);
 
 	const hasBilledStage = $derived(rows.some((row) => row.locked));
+	// Once every stage is billed the schedule already reconciles and not one row can move, so another stage
+	// could only ever be refused — priced, it breaks the total; at zero, it is rejected outright.
+	const allStagesBilled = $derived(rows.length > 0 && rows.every((row) => row.locked));
 	const configured = $derived(stages.length > 0);
 
 	/** Whole cents for a fixed row, basis points for a percentage one; zero while the field is unusable. */
@@ -147,7 +150,7 @@
 	}
 
 	function addRow() {
-		if (rows.length >= 12) return;
+		if (rows.length >= 12 || allStagesBilled) return;
 		rows = [...rows, emptyRow()];
 	}
 
@@ -302,7 +305,7 @@
 		<Button
 			variant="secondary"
 			variation="subtle"
-			disabled={saving || rows.length >= 12}
+			disabled={saving || rows.length >= 12 || allStagesBilled}
 			onclick={addRow}
 		>
 			Add stage
