@@ -3395,6 +3395,7 @@ export type Database = {
 					client_id: string;
 					created_at: string;
 					id: string;
+					installment_id: string | null;
 					installment_number: number | null;
 					job_id: string;
 					organization_id: string;
@@ -3409,6 +3410,7 @@ export type Database = {
 					client_id: string;
 					created_at?: string;
 					id?: string;
+					installment_id?: string | null;
 					installment_number?: number | null;
 					job_id: string;
 					organization_id: string;
@@ -3423,6 +3425,7 @@ export type Database = {
 					client_id?: string;
 					created_at?: string;
 					id?: string;
+					installment_id?: string | null;
 					installment_number?: number | null;
 					job_id?: string;
 					organization_id?: string;
@@ -3438,6 +3441,13 @@ export type Database = {
 						columns: ['organization_id', 'client_id'];
 						isOneToOne: false;
 						referencedRelation: 'clients';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'invoice_sources_installment_fk';
+						columns: ['organization_id', 'installment_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_payment_schedule_items';
 						referencedColumns: ['organization_id', 'id'];
 					},
 					{
@@ -3734,6 +3744,73 @@ export type Database = {
 					}
 				];
 			};
+			job_costing_events: {
+				Row: {
+					actor_id: string | null;
+					after_close: boolean;
+					created_at: string;
+					event_type: string;
+					id: string;
+					job_id: string;
+					new_values: Json | null;
+					organization_id: string;
+					prior_values: Json | null;
+					reason: string | null;
+					subject_id: string;
+					subject_kind: string;
+				};
+				Insert: {
+					actor_id?: string | null;
+					after_close?: boolean;
+					created_at?: string;
+					event_type: string;
+					id?: string;
+					job_id: string;
+					new_values?: Json | null;
+					organization_id: string;
+					prior_values?: Json | null;
+					reason?: string | null;
+					subject_id: string;
+					subject_kind: string;
+				};
+				Update: {
+					actor_id?: string | null;
+					after_close?: boolean;
+					created_at?: string;
+					event_type?: string;
+					id?: string;
+					job_id?: string;
+					new_values?: Json | null;
+					organization_id?: string;
+					prior_values?: Json | null;
+					reason?: string | null;
+					subject_id?: string;
+					subject_kind?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'job_costing_events_job_organization_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_costing_events_job_organization_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'jobs';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_costing_events_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			job_events: {
 				Row: {
 					actor_id: string | null;
@@ -3798,6 +3875,80 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'organizations';
 						referencedColumns: ['id'];
+					}
+				];
+			};
+			job_expenses: {
+				Row: {
+					accounting_code: string | null;
+					created_at: string;
+					created_by: string | null;
+					description: string | null;
+					expense_date: string;
+					id: string;
+					job_id: string;
+					name: string;
+					organization_id: string;
+					reimburse_to_user_id: string | null;
+					total_minor: number;
+					updated_at: string;
+				};
+				Insert: {
+					accounting_code?: string | null;
+					created_at?: string;
+					created_by?: string | null;
+					description?: string | null;
+					expense_date: string;
+					id?: string;
+					job_id: string;
+					name: string;
+					organization_id: string;
+					reimburse_to_user_id?: string | null;
+					total_minor: number;
+					updated_at?: string;
+				};
+				Update: {
+					accounting_code?: string | null;
+					created_at?: string;
+					created_by?: string | null;
+					description?: string | null;
+					expense_date?: string;
+					id?: string;
+					job_id?: string;
+					name?: string;
+					organization_id?: string;
+					reimburse_to_user_id?: string | null;
+					total_minor?: number;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'job_expenses_job_organization_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_expenses_job_organization_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'jobs';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_expenses_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'job_expenses_reimburse_member_fk';
+						columns: ['organization_id', 'reimburse_to_user_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_members';
+						referencedColumns: ['organization_id', 'user_id'];
 					}
 				];
 			};
@@ -3979,6 +4130,70 @@ export type Database = {
 					}
 				];
 			};
+			job_payment_schedule_items: {
+				Row: {
+					created_at: string;
+					description: string;
+					id: string;
+					is_deposit: boolean;
+					job_id: string;
+					locked_amount_minor: number | null;
+					organization_id: string;
+					position: number;
+					updated_at: string;
+					value: number;
+					value_type: string;
+				};
+				Insert: {
+					created_at?: string;
+					description: string;
+					id?: string;
+					is_deposit?: boolean;
+					job_id: string;
+					locked_amount_minor?: number | null;
+					organization_id: string;
+					position: number;
+					updated_at?: string;
+					value: number;
+					value_type: string;
+				};
+				Update: {
+					created_at?: string;
+					description?: string;
+					id?: string;
+					is_deposit?: boolean;
+					job_id?: string;
+					locked_amount_minor?: number | null;
+					organization_id?: string;
+					position?: number;
+					updated_at?: string;
+					value?: number;
+					value_type?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'job_payment_schedule_items_job_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_payment_schedule_items_job_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'jobs';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_payment_schedule_items_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			job_recurrence_rules: {
 				Row: {
 					all_day: boolean;
@@ -4067,6 +4282,90 @@ export type Database = {
 					}
 				];
 			};
+			job_time_entries: {
+				Row: {
+					cost_per_hour_minor: number | null;
+					cost_total_minor: number | null;
+					created_at: string;
+					created_by: string | null;
+					id: string;
+					job_id: string;
+					minutes: number;
+					notes: string | null;
+					organization_id: string;
+					started_at: string;
+					updated_at: string;
+					user_id: string;
+					visit_id: string | null;
+				};
+				Insert: {
+					cost_per_hour_minor?: number | null;
+					cost_total_minor?: number | null;
+					created_at?: string;
+					created_by?: string | null;
+					id?: string;
+					job_id: string;
+					minutes: number;
+					notes?: string | null;
+					organization_id: string;
+					started_at: string;
+					updated_at?: string;
+					user_id: string;
+					visit_id?: string | null;
+				};
+				Update: {
+					cost_per_hour_minor?: number | null;
+					cost_total_minor?: number | null;
+					created_at?: string;
+					created_by?: string | null;
+					id?: string;
+					job_id?: string;
+					minutes?: number;
+					notes?: string | null;
+					organization_id?: string;
+					started_at?: string;
+					updated_at?: string;
+					user_id?: string;
+					visit_id?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'job_time_entries_job_organization_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_time_entries_job_organization_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'jobs';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_time_entries_member_fk';
+						columns: ['organization_id', 'user_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_members';
+						referencedColumns: ['organization_id', 'user_id'];
+					},
+					{
+						foreignKeyName: 'job_time_entries_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'job_time_entries_visit_organization_fk';
+						columns: ['organization_id', 'visit_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_visits';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
 			job_visit_assignments: {
 				Row: {
 					created_at: string;
@@ -4107,6 +4406,110 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'job_visits';
 						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			job_visit_line_items: {
+				Row: {
+					category: string | null;
+					created_at: string;
+					description: string | null;
+					id: string;
+					image_attachment_id: string | null;
+					is_labor: boolean;
+					is_taxable: boolean;
+					job_id: string;
+					line_cost_total_minor: number | null;
+					line_kind: string;
+					line_total_minor: number | null;
+					name: string;
+					organization_id: string;
+					position: number;
+					quantity: number | null;
+					source_catalog_item_id: string | null;
+					source_job_line_item_id: string | null;
+					unit_cost_minor: number | null;
+					unit_label: string | null;
+					unit_price_minor: number | null;
+					updated_at: string;
+					visit_id: string;
+				};
+				Insert: {
+					category?: string | null;
+					created_at?: string;
+					description?: string | null;
+					id?: string;
+					image_attachment_id?: string | null;
+					is_labor?: boolean;
+					is_taxable?: boolean;
+					job_id: string;
+					line_cost_total_minor?: number | null;
+					line_kind?: string;
+					line_total_minor?: number | null;
+					name: string;
+					organization_id: string;
+					position: number;
+					quantity?: number | null;
+					source_catalog_item_id?: string | null;
+					source_job_line_item_id?: string | null;
+					unit_cost_minor?: number | null;
+					unit_label?: string | null;
+					unit_price_minor?: number | null;
+					updated_at?: string;
+					visit_id: string;
+				};
+				Update: {
+					category?: string | null;
+					created_at?: string;
+					description?: string | null;
+					id?: string;
+					image_attachment_id?: string | null;
+					is_labor?: boolean;
+					is_taxable?: boolean;
+					job_id?: string;
+					line_cost_total_minor?: number | null;
+					line_kind?: string;
+					line_total_minor?: number | null;
+					name?: string;
+					organization_id?: string;
+					position?: number;
+					quantity?: number | null;
+					source_catalog_item_id?: string | null;
+					source_job_line_item_id?: string | null;
+					unit_cost_minor?: number | null;
+					unit_label?: string | null;
+					unit_price_minor?: number | null;
+					updated_at?: string;
+					visit_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'job_visit_line_items_image_fk';
+						columns: ['organization_id', 'image_attachment_id'];
+						isOneToOne: false;
+						referencedRelation: 'attachments';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_visit_line_items_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'job_visit_line_items_source_line_fk';
+						columns: ['organization_id', 'source_job_line_item_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_line_items';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_visit_line_items_visit_fk';
+						columns: ['organization_id', 'job_id', 'visit_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_visits';
+						referencedColumns: ['organization_id', 'job_id', 'id'];
 					}
 				];
 			};
@@ -5424,6 +5827,48 @@ export type Database = {
 						columns: ['subject_invitation_id'];
 						isOneToOne: false;
 						referencedRelation: 'organization_member_invitations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_member_cost_profiles: {
+				Row: {
+					cost_per_hour_minor: number | null;
+					created_at: string;
+					organization_id: string;
+					updated_at: string;
+					updated_by: string | null;
+					user_id: string;
+				};
+				Insert: {
+					cost_per_hour_minor?: number | null;
+					created_at?: string;
+					organization_id: string;
+					updated_at?: string;
+					updated_by?: string | null;
+					user_id: string;
+				};
+				Update: {
+					cost_per_hour_minor?: number | null;
+					created_at?: string;
+					organization_id?: string;
+					updated_at?: string;
+					updated_by?: string | null;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_member_cost_profiles_member_fk';
+						columns: ['organization_id', 'user_id'];
+						isOneToOne: true;
+						referencedRelation: 'organization_members';
+						referencedColumns: ['organization_id', 'user_id'];
+					},
+					{
+						foreignKeyName: 'organization_member_cost_profiles_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
 						referencedColumns: ['id'];
 					}
 				];
@@ -10083,95 +10528,6 @@ export type Database = {
 				};
 				Returns: Json;
 			};
-			client_billable_work: {
-				Args: { target_client_id: string; target_organization_id: string };
-				Returns: Json;
-			};
-			ready_to_bill_page: {
-				Args: {
-					cursor_due_on?: string | null;
-					cursor_reminder_id?: string | null;
-					page_limit?: number;
-					search_like?: string | null;
-					search_number?: number | null;
-					target_organization_id: string;
-				};
-				Returns: {
-					billing_timing: string;
-					client_company_name: string | null;
-					client_display_name: string | null;
-					client_id: string | null;
-					currency_code: string;
-					cursor_reminder: string;
-					due_reminder_count: number;
-					job_id: string;
-					job_number: number;
-					job_type: string;
-					oldest_due_on: string;
-					price_basis: string;
-					property_address_line1: string | null;
-					property_city: string | null;
-					property_label: string | null;
-					title: string;
-					uninvoiced_minor: number;
-					unit_count: number;
-					unit_kind: string;
-				}[];
-			};
-			ready_to_bill_count: {
-				Args: { target_organization_id: string };
-				Returns: number;
-			};
-			invoice_batch_deliverable_page: {
-				Args: {
-					cursor_created?: string | null;
-					cursor_id?: string | null;
-					page_limit?: number;
-					target_organization_id: string;
-				};
-				Returns: {
-					client_company_name: string | null;
-					client_display_name: string | null;
-					client_id: string | null;
-					created_at: string;
-					currency_code: string;
-					derived_status: string;
-					due_date: string;
-					has_email: boolean;
-					id: string;
-					invoice_number: number;
-					issued_at: string | null;
-					last_sent_at: string | null;
-					revision: number;
-					subject: string;
-				}[];
-			};
-			create_invoices_in_batch: {
-				Args: {
-					new_complete_visit_ids: string[];
-					new_idempotency_key: string;
-					new_job_ids: string[];
-					new_request_hash: string;
-					target_organization_id: string;
-				};
-				Returns: Json;
-			};
-			create_invoice_from_work: {
-				Args: {
-					new_custom_due_date: string;
-					new_idempotency_key: string;
-					new_issue_date: string;
-					new_lines: Json;
-					new_payment_term_id: string;
-					new_request_hash: string;
-					new_service_property_ids: string[];
-					new_sources: Json;
-					new_subject: string;
-					target_client_id: string;
-					target_organization_id: string;
-				};
-				Returns: Json;
-			};
 			claim_onboarding_application_provision: {
 				Args: { stale_after?: string; target_application_id: string };
 				Returns: {
@@ -10248,6 +10604,10 @@ export type Database = {
 			};
 			client_account_balance: {
 				Args: { target_client_ids: string[] };
+				Returns: Json;
+			};
+			client_billable_work: {
+				Args: { target_client_id: string; target_organization_id: string };
 				Returns: Json;
 			};
 			clone_quote_version_to_draft: {
@@ -10421,6 +10781,21 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			create_installment_invoice: {
+				Args: {
+					new_custom_due_date: string;
+					new_idempotency_key: string;
+					new_issue_date: string;
+					new_payment_term_id: string;
+					new_request_hash: string;
+					new_service_property_ids: string[];
+					new_subject: string;
+					target_installment_id: string;
+					target_job_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			create_invoice_draft: {
 				Args: {
 					new_custom_due_date: string;
@@ -10436,17 +10811,28 @@ export type Database = {
 				};
 				Returns: Json;
 			};
-			create_installment_invoice: {
+			create_invoice_from_work: {
 				Args: {
 					new_custom_due_date: string;
 					new_idempotency_key: string;
 					new_issue_date: string;
+					new_lines: Json;
 					new_payment_term_id: string;
 					new_request_hash: string;
 					new_service_property_ids: string[];
+					new_sources: Json;
 					new_subject: string;
-					target_installment_id: string;
-					target_job_id: string;
+					target_client_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			create_invoices_in_batch: {
+				Args: {
+					new_complete_visit_ids: string[];
+					new_idempotency_key: string;
+					new_job_ids: string[];
+					new_request_hash: string;
 					target_organization_id: string;
 				};
 				Returns: Json;
@@ -11549,6 +11935,30 @@ export type Database = {
 				Args: { p_batch_size?: number };
 				Returns: number;
 			};
+			invoice_batch_deliverable_page: {
+				Args: {
+					cursor_created?: string;
+					cursor_id?: string;
+					page_limit?: number;
+					target_organization_id: string;
+				};
+				Returns: {
+					client_company_name: string;
+					client_display_name: string;
+					client_id: string;
+					created_at: string;
+					currency_code: string;
+					derived_status: string;
+					due_date: string;
+					has_email: boolean;
+					id: string;
+					invoice_number: number;
+					issued_at: string;
+					last_sent_at: string;
+					revision: number;
+					subject: string;
+				}[];
+			};
 			invoice_customer_preview: {
 				Args: { target_invoice_id: string };
 				Returns: Json;
@@ -11617,7 +12027,15 @@ export type Database = {
 			};
 			job_line_money: { Args: { target_job_id: string }; Returns: Json };
 			job_money: { Args: { target_job_ids: string[] }; Returns: Json };
+			job_schedule_money: { Args: { target_job_id: string }; Returns: Json };
 			job_schedule_stages: { Args: { target_job_id: string }; Returns: Json };
+			job_status_counts: {
+				Args: { target_organization_id: string };
+				Returns: {
+					derived_status: string;
+					total: number;
+				}[];
+			};
 			job_visit_lines: {
 				Args: {
 					target_job_id: string;
@@ -11626,12 +12044,9 @@ export type Database = {
 				};
 				Returns: Json;
 			};
-			job_status_counts: {
-				Args: { target_organization_id: string };
-				Returns: {
-					derived_status: string;
-					total: number;
-				}[];
+			labor_cost_total_minor: {
+				Args: { cost_per_hour_minor: number; minutes: number };
+				Returns: number;
 			};
 			list_communication_outbound_attachments: {
 				Args: { target_delivery_intent_id: string };
@@ -12361,6 +12776,41 @@ export type Database = {
 			quote_version_money: {
 				Args: { target_version_ids: string[] };
 				Returns: Json;
+			};
+			ready_to_bill_count: {
+				Args: { target_organization_id: string };
+				Returns: number;
+			};
+			ready_to_bill_page: {
+				Args: {
+					cursor_due_on?: string;
+					cursor_reminder_id?: string;
+					page_limit?: number;
+					search_like?: string;
+					search_number?: number;
+					target_organization_id: string;
+				};
+				Returns: {
+					billing_timing: string;
+					client_company_name: string;
+					client_display_name: string;
+					client_id: string;
+					currency_code: string;
+					cursor_reminder: string;
+					due_reminder_count: number;
+					job_id: string;
+					job_number: number;
+					job_type: string;
+					oldest_due_on: string;
+					price_basis: string;
+					property_address_line1: string;
+					property_city: string;
+					property_label: string;
+					title: string;
+					uninvoiced_minor: number;
+					unit_count: number;
+					unit_kind: string;
+				}[];
 			};
 			rebill_voided_invoice: {
 				Args: {
@@ -13341,15 +13791,6 @@ export type Database = {
 				};
 				Returns: Json;
 			};
-			set_job_payment_schedule: {
-				Args: {
-					expected_revision: number;
-					new_items: Json;
-					target_job_id: string;
-					target_organization_id: string;
-				};
-				Returns: Json;
-			};
 			set_job_billing: {
 				Args: {
 					expected_revision: number;
@@ -13366,6 +13807,15 @@ export type Database = {
 					new_name: string;
 					new_type: string;
 					new_value: number;
+					target_job_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			set_job_payment_schedule: {
+				Args: {
+					expected_revision: number;
+					new_items: Json;
 					target_job_id: string;
 					target_organization_id: string;
 				};
@@ -13902,6 +14352,7 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			visit_line_money: { Args: { target_visit_id: string }; Returns: Json };
 			void_invoice: {
 				Args: {
 					new_idempotency_key: string;
