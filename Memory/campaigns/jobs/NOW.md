@@ -1,40 +1,38 @@
 # Jobs: Current Checkpoint
 
 - Goal: Build simpler contractor Jobs and Visits without losing proven Jobber behavior.
-- State: Part 14 (labor, expenses, job costing) split into 14a–14e. **14a, 14b, 14c and 14d CLOSED.**
-  Parts 1–11b, 13a, 14a–14d complete. 14d verified in the browser (costing card, open-state wording, no
-  margin while open, live update on record/remove; Job total card is selling-only again).
-- Contract: `docs/jobs-behavior-contract.md` — Costing carries forward-only rates, unrated-not-free,
-  closing-locks-the-crew, "screens always name the period and never present costs to date as cash received".
+- State: Parts 1–11b, 13a, and 14a–14e all complete. Part 14 (costing) is done and committed
+  (`b042539`, `1fe8b75`). 11c/12/13b were transferred to the Invoices and Schedule campaigns.
+- Contract: `docs/jobs-behavior-contract.md` — now carries the recurring costing window rule.
 
 ## Next action
 
-Plan **14e — recurring Job costing over the rolling 30-day window**, then get Jafar's approval before code.
-Today `job_costing` returns `{costing_basis:'recurring'}` with no figures for any recurring job, and
-`JobCostingCard` shows a "coming in a later part" note. 14e replaces that with a real panel.
+Nothing is in flight. The next roadmap parts both need Jafar to choose and approve before planning:
 
-Roadmap gate: `per_visit` and `fixed_per_period` each pair costs with the revenue their pricing basis
-defines, and the trailing window is named on screen. Open questions for the plan: which window (Jobber uses
-costs-so-far over a labelled trailing period — confirm 30 days vs billing-period against the `jobber` skill);
-how revenue for the window is derived per basis (`per_visit` = visits in-window × their price; `fixed_per_period`
-= the period amount); and whether labor/expense sums filter by `started_at` / `expense_date` in the window
-(the shipped `job_time_entries_member_started_idx` and `job_expenses_job_date_idx` already support a date range).
+- **Part 15** — notes, attachments/photos, checklists, signatures, proof of work. Depends on attachment
+  storage (shipped).
+- **Part 16** — verify integrated contractor journeys, recovery, and measured performance. Depends on
+  Schedule Part 5 parity and the Invoices handoff parts, so it is not startable yet.
 
-Mirror the shipped one-off reader: `supabase/migrations/20260908200000_job_costing_panel.sql`
-(`public.job_costing`, gated on `jobs.view_cost`, definer, per-job aggregate). The card is
-`src/lib/components/jobs/JobCostingCard.svelte`; it already branches on `costing_basis`.
+Present the choice to Jafar; do not start Part 15 without approval.
+
+## Verified this session (14e)
+
+Browser-checked in Raad LTD on the two seeded jobs (#10 `per_visit`, #2 `fixed_per_period`): revenue from
+completed visits / billing periods, labor and expense costs landing inside the 30-day window with live
+update on record and remove, the named date range holding steady, and — via a throwaway job, since removed
+— the manual-billing case showing a dash for revenue/profit/margin over real costs. Seed test data was
+cleaned up; job #2 has 5 reminders again (one future pending row was re-seeded by hand).
 
 ## Blockers and owed work
 
-- No blockers. `src/lib/database.types.ts` is 400KB; regenerating through the conversation is not affordable —
-  14d added `job_costing` to the `Functions` block by hand, alphabetically. Do the same for any 14e reader.
+- `src/lib/database.types.ts` is 400KB and cannot be regenerated through the conversation. `job_costing`'s
+  signature did not change in 14e, so it owes the types file nothing.
 
 ## Deliberately deferred, not silently dropped
 
 - Jobber's "profit alerts" (flag a job below a target margin) — account-wide settings plus Insights work.
-- The material double-count case (same thing entered as an item cost AND an expense) — not machine-detectable,
-  and Jobber does not detect it either. 14d ships the detectable case only: a labor line item AND tracked time
-  raise a heads-up in the costing card.
+- The material double-count case (same thing entered as an item cost AND an expense) — not machine-detectable.
 - Standalone expenses not attached to a job — `job_expenses.job_id` is NOT NULL by design.
 - The standalone "Close Job" button with the incomplete-visits-removal preview.
 - Wiring Upcoming/Today/Late/Action required into `private.job_derived_status` / `job_list_rows` /
@@ -42,4 +40,4 @@ Mirror the shipped one-off reader: `supabase/migrations/20260908200000_job_costi
 - A per-entry labor rate override (overtime, weekend rates). Revisit when timesheets or payroll arrive.
 - A start/stop timer and a company-wide Timesheets page. Jobber has both; neither is in this roadmap.
 
-Resume command: `read memory and continue the Jobs campaign` (next part is 14e).
+Resume command: `read memory and continue the Jobs campaign` (Jafar picks Part 15, or pauses the campaign).
