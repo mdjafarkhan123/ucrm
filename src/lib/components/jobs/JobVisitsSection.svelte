@@ -383,7 +383,9 @@
 			title: visit.title,
 			instructions: visit.instructions,
 			assignee_ids: [...visit.assignee_ids],
-			source: 'duplicated'
+			source: 'duplicated',
+			// A duplicate is a faithful copy: if this visit priced itself, the copy carries the same lines.
+			copy_lines_from_visit_id: visit.id
 		};
 		void runAdd([item], 'Visit duplicated');
 	}

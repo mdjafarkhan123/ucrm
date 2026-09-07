@@ -593,6 +593,7 @@ export type AddVisitInput = {
 	instructions: string | null;
 	assignee_ids: string[];
 	source?: 'manual' | 'return' | 'duplicated';
+	copy_lines_from_visit_id?: string;
 };
 
 export type AddJobVisitsResult = { applied: boolean; added_count: number; visit_ids: string[] };

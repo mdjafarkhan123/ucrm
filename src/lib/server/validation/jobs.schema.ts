@@ -659,7 +659,10 @@ const addVisitSchema = z
 	.object({
 		...visitScheduleFields,
 		assignee_ids: z.array(z.string().uuid()).max(50).default([]),
-		source: z.enum(VISIT_SOURCES).default('manual')
+		source: z.enum(VISIT_SOURCES).default('manual'),
+		// Duplicating a visit copies that visit's own lines, so the copy bills the same money as the original
+		// rather than falling back to the job's default prices.
+		copy_lines_from_visit_id: z.string().uuid().optional()
 	})
 	.superRefine(refineVisitShape);
 

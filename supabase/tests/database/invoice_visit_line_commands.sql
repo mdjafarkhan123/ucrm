@@ -7,7 +7,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(33);
+select plan(37);
 
 -- throws_ok's three-argument form takes (query, errcode, errmsg) in this pgTAP build, so an error code is
 -- checked with the four-argument form and a null message.
@@ -417,6 +417,53 @@ select is(
     'd5600000-0000-0000-0000-000000000002'
   ) ->> 'already_incomplete',
   'false', 'a finished visit nobody has billed still reopens'
+);
+
+-- 11. Duplicating a visit keeps its own prices ---------------------------------------------------------------------
+
+-- V4 carries its own two lines (three mows plus one more, 20000 in all). Duplicating it must reproduce those
+-- numbers; before this the copy fell back to the job's default lines and would have billed the wrong money.
+select set_config('request.jwt.claim.sub', 'd5000000-0000-0000-0000-000000000001', true);
+
+select is(
+  (public.add_job_visits(
+    'd5100000-0000-0000-0000-000000000001', 'd5400000-0000-0000-0000-000000000001',
+    '[{"visit_date": null, "start_time": null, "end_time": null, "all_day": false, "title": null,
+       "instructions": null, "assignee_ids": [], "source": "duplicated",
+       "copy_lines_from_visit_id": "d5600000-0000-0000-0000-000000000004"}]'::jsonb,
+    'copy-lines-key-0001', 'copy-lines-hash-0001'
+  ) ->> 'added_count')::integer,
+  1, 'duplicating a visit adds the copy'
+);
+select is(
+  ((public.job_visit_lines(
+    'd5100000-0000-0000-0000-000000000001', 'd5400000-0000-0000-0000-000000000001',
+    array[(select visit.id from public.job_visits as visit
+           where visit.job_id = 'd5400000-0000-0000-0000-000000000001'
+           order by visit.position desc limit 1)]::uuid[]
+  ) -> 'visits' -> 0) ->> 'subtotal_minor')::bigint,
+  20000::bigint, 'the copy is worth what the visit it was copied from was worth'
+);
+select is(
+  ((public.job_visit_lines(
+    'd5100000-0000-0000-0000-000000000001', 'd5400000-0000-0000-0000-000000000001',
+    array[(select visit.id from public.job_visits as visit
+           where visit.job_id = 'd5400000-0000-0000-0000-000000000001'
+           order by visit.position desc limit 1)]::uuid[]
+  ) -> 'visits' -> 0) ->> 'has_override')::boolean,
+  true, 'and it carries its own set rather than falling back to the job''s lines'
+);
+
+-- A source that is not this job's visit is refused outright; the whole add rolls back rather than quietly
+-- producing a copy at the job's default prices.
+select throws_ok(
+  $$select public.add_job_visits(
+      'd5100000-0000-0000-0000-000000000001', 'd5400000-0000-0000-0000-000000000001',
+      '[{"visit_date": null, "start_time": null, "end_time": null, "all_day": false, "title": null,
+         "instructions": null, "assignee_ids": [], "source": "duplicated",
+         "copy_lines_from_visit_id": "d5600000-0000-0000-0000-000000000005"}]'::jsonb,
+      'copy-lines-key-0002', 'copy-lines-hash-0002')$$,
+  'P0404', null, 'a visit belonging to another job cannot be the source of a copy'
 );
 
 select * from finish();
