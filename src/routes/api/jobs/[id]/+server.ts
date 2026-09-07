@@ -13,6 +13,7 @@ import { updateJobDetailsSchema } from '$lib/server/validation/jobs.schema';
 import { updateJobError } from '$lib/server/jobs/errors';
 import { organizationFormatting } from '$lib/server/requests/timezone';
 import { asMoneyMap, withMoney } from '$lib/server/quotes/money';
+import type { JobCosting } from '$lib/jobs/api';
 
 const toNumber = (value: unknown): number =>
 	typeof value === 'number' ? value : Number(value ?? 0);
@@ -219,20 +220,36 @@ export const GET: RequestHandler = async (event) => {
 		};
 	})();
 
-	// The job's costing: item, labor and expense cost against revenue before tax, for a one-off job. The
-	// reader already applied jobs.view_cost, so a null here means the member may not see it; a recurring job
-	// comes back as `costing_basis: 'recurring'` with no figures, which its card renders as a "coming in a
-	// later part" note rather than a misleading all-time total.
-	const costing = (() => {
+	// The job's costing: item, labor and expense cost against revenue before tax. The reader already applied
+	// jobs.view_cost, so a null here means the member may not see it. A one-off job is measured over its whole
+	// life; a recurring job (`per_visit` or `fixed_per_period`) is measured over the last 30 days, and its
+	// revenue, profit and margin are null when nothing in that window defines a price to state.
+	const costing = ((): JobCosting | null => {
 		if (!canSeeCost) return null;
 		const answer = jobCosting.data as Record<string, unknown> | null;
 		if (!answer || typeof answer !== 'object') return null;
-		const basis = answer.costing_basis === 'recurring' ? 'recurring' : 'one_off';
-		if (basis === 'recurring') {
-			return { costing_basis: 'recurring' as const, job_closed: Boolean(answer.job_closed) };
+		const nullableMinor = (value: unknown) => (value == null ? null : toNumber(value));
+		if (answer.costing_basis === 'per_visit' || answer.costing_basis === 'fixed_per_period') {
+			return {
+				costing_basis: answer.costing_basis,
+				job_closed: Boolean(answer.job_closed),
+				window_start: String(answer.window_start),
+				window_end: String(answer.window_end),
+				unit_kind: answer.unit_kind === 'visits' ? 'visits' : 'periods',
+				unit_count: toNumber(answer.unit_count),
+				revenue_minor: nullableMinor(answer.revenue_minor),
+				item_cost_minor: toNumber(answer.item_cost_minor),
+				labor_cost_minor: toNumber(answer.labor_cost_minor),
+				expense_cost_minor: toNumber(answer.expense_cost_minor),
+				total_cost_minor: toNumber(answer.total_cost_minor),
+				profit_minor: nullableMinor(answer.profit_minor),
+				margin_basis_points: nullableMinor(answer.margin_basis_points),
+				unrated_labor_count: toNumber(answer.unrated_labor_count),
+				labor_line_and_time: Boolean(answer.labor_line_and_time)
+			};
 		}
 		return {
-			costing_basis: 'one_off' as const,
+			costing_basis: 'one_off',
 			job_closed: Boolean(answer.job_closed),
 			revenue_minor: toNumber(answer.revenue_minor),
 			item_cost_minor: toNumber(answer.item_cost_minor),
@@ -240,8 +257,7 @@ export const GET: RequestHandler = async (event) => {
 			expense_cost_minor: toNumber(answer.expense_cost_minor),
 			total_cost_minor: toNumber(answer.total_cost_minor),
 			profit_minor: toNumber(answer.profit_minor),
-			margin_basis_points:
-				answer.margin_basis_points != null ? toNumber(answer.margin_basis_points) : null,
+			margin_basis_points: nullableMinor(answer.margin_basis_points),
 			unrated_labor_count: toNumber(answer.unrated_labor_count),
 			labor_line_and_time: Boolean(answer.labor_line_and_time)
 		};

@@ -279,12 +279,34 @@ export type JobMoney = {
 	total_minor: number;
 };
 
-// A one-off job's costing, the honest version: item cost off the scope lines, plus every recorded hour and
-// every expense, set against what the job sells for before tax. Null for a reader without jobs.view_cost.
-// A recurring job comes back as `costing_basis: 'recurring'` with no figures — its per-period profitability
-// is Part 14e — and the card shows a short note instead of a misleading all-time total.
+// A job's costing, the honest version: item cost off the scope lines, plus every recorded hour and every
+// expense, set against what the work sells for before tax. Null for a reader without jobs.view_cost.
+// A one-off job is measured over its whole life. A recurring job has no end to total up against, so it is
+// measured over the last 30 days, pairing costs with the revenue its pricing basis defines — per completed
+// visit, or per billing period.
 export type JobCosting =
-	| { costing_basis: 'recurring'; job_closed: boolean }
+	| {
+			// A recurring agreement never ends, so it is measured over the last 30 days instead of over its
+			// life. The window is inclusive at both ends and stated in the organization's own timezone.
+			costing_basis: 'per_visit' | 'fixed_per_period';
+			job_closed: boolean;
+			window_start: string;
+			window_end: string;
+			// What the revenue was earned per: completed visits, or billing periods.
+			unit_kind: 'visits' | 'periods';
+			unit_count: number;
+			// Null when nothing in the window defines revenue — manual billing sets no periods, so there is no
+			// price to state. Profit and margin go null with it rather than reading the costs as a pure loss.
+			revenue_minor: number | null;
+			item_cost_minor: number;
+			labor_cost_minor: number;
+			expense_cost_minor: number;
+			total_cost_minor: number;
+			profit_minor: number | null;
+			margin_basis_points: number | null;
+			unrated_labor_count: number;
+			labor_line_and_time: boolean;
+	  }
 	| {
 			costing_basis: 'one_off';
 			job_closed: boolean;
