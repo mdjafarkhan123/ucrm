@@ -102,7 +102,9 @@ lives in code, migrations, and tests.
 
 - The directory and detail route are searchable and paginated when needed. Independent panels do not
   block the shell.
-- Detail sections are Overview, Commercial access, Integrations, Team access, and History and recovery.
+- Organization detail uses URL-backed workspaces: Overview, Access & limits, Communications, Team,
+  and Activity. Overview always surfaces urgent state and the next safe action; detailed controls and
+  tables live only in the workspace that owns them.
 - Package changes are immediate, separately confirmed, and retain old/new version, reason, and time.
   Exceptions require a reason, start date, and optional expiry.
 - Support immutable confirmations and corrections for initial payment, renewal, refund, reversal,
