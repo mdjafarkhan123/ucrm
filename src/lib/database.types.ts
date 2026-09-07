@@ -12068,6 +12068,10 @@ export type Database = {
 				Args: { supplied_token_hash: string; target_quote_id: string };
 				Returns: Json;
 			};
+			job_costing: {
+				Args: { target_job_id: string; target_organization_id: string };
+				Returns: Json;
+			};
 			job_expenses_list: {
 				Args: { target_job_id: string; target_organization_id: string };
 				Returns: Json;

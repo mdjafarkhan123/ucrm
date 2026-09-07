@@ -34,13 +34,16 @@
 		jobId,
 		visits = [],
 		locale = 'en-US',
-		currencyCode = 'USD'
+		currencyCode = 'USD',
+		onChange
 	}: {
 		jobId: string;
 		/** This job's visits, so an entry can be pinned to the one it was worked on. */
 		visits?: JobVisit[];
 		locale?: string;
 		currencyCode?: string;
+		/** Called after hours are recorded, corrected or removed, so the page can refresh the costing card. */
+		onChange?: () => void;
 	} = $props();
 
 	const toast = getToastManager();
@@ -120,6 +123,7 @@
 			dialogOpen = false;
 			editing = null;
 			await laborQuery.refetch();
+			onChange?.();
 			toast.success(correcting ? 'Hours updated' : 'Hours recorded');
 		} catch (cause) {
 			const failure = cause as JobWriteError;
@@ -141,6 +145,7 @@
 			await deleteJobTimeEntry(jobId, entry.id);
 			confirmRemove = null;
 			await laborQuery.refetch();
+			onChange?.();
 			toast.success('Hours removed');
 		} catch (cause) {
 			toast.error((cause as JobWriteError).message ?? 'Those hours could not be removed.');

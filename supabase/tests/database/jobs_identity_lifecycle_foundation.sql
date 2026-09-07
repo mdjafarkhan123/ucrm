@@ -386,11 +386,12 @@ select is(
   '220000', 'an admin reads the job total through the gated reader'
 );
 
+-- Internal cost left job_money in Part 14d; the honest figure comes from job_costing now, which folds in
+-- recorded labor and expenses on top of this item cost.
 select is(
-  (public.job_money(array[(select id from job_ref)])
-    -> (select id::text from job_ref)
-    ->> 'cost_minor'),
-  '80000', 'an admin reads internal cost through the gated reader'
+  (public.job_costing('91000000-0000-0000-0000-000000000001', (select id from job_ref))
+    ->> 'item_cost_minor'),
+  '80000', 'an admin reads internal cost through job_costing'
 );
 
 select set_config('request.jwt.claim.sub', '90000000-0000-0000-0000-000000000003', true);
@@ -402,11 +403,10 @@ select is(
   '220000', 'an office member reads prices'
 );
 
-select is(
-  (public.job_money(array[(select id from job_ref)])
-    -> (select id::text from job_ref)
-    ->> 'cost_minor'),
-  null, 'an office member is not given internal cost'
+select throws_ok(
+  $q$select public.job_costing('91000000-0000-0000-0000-000000000001', (select id from job_ref))$q$,
+  'You do not have access to this job''s costs.',
+  'an office member holding no jobs.view_cost is refused costing rather than given a partial one'
 );
 
 select set_config('request.jwt.claim.sub', '90000000-0000-0000-0000-000000000004', true);

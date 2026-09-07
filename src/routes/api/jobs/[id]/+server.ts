@@ -18,9 +18,10 @@ const toNumber = (value: unknown): number =>
 	typeof value === 'number' ? value : Number(value ?? 0);
 
 // One job in full: identity and derived status from the same `job_list_rows` view the list draws, its own
-// scope lines and visits, and its money in one gated call. Nothing here re-derives a status, and money never
-// rides off the job or line rows directly — `job_money` and `job_line_money` check jobs.view_price and
-// jobs.view_cost for themselves, so a reader without the grant simply gets no numbers rather than a wrong one.
+// scope lines and visits, its selling money and its costing in gated calls. Nothing here re-derives a status,
+// and money never rides off the job or line rows directly — `job_money` and `job_line_money` check
+// jobs.view_price and `job_costing` checks jobs.view_cost for themselves, so a reader without the grant
+// simply gets no numbers rather than a wrong one.
 export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'jobs.view');
 	if ('response' in check) return check.response;
@@ -53,6 +54,7 @@ export const GET: RequestHandler = async (event) => {
 		reminderRows,
 		jobMoney,
 		lineMoney,
+		jobCosting,
 		formatting,
 		billedVisitRows,
 		scheduleStages
@@ -133,6 +135,16 @@ export const GET: RequestHandler = async (event) => {
 		canSeePrice
 			? supabase.rpc('job_line_money', { target_job_id: jobId })
 			: Promise.resolve({ data: {}, error: null }),
+		// The Job costing card: item, labor and expense cost folded into one profit for a one-off job.
+		// `job_costing` is definer and checks jobs.view_cost for itself, so a reader without it is simply not
+		// asked. It is its own call rather than a branch of `job_money` because the job list reads `job_money`
+		// once per page and has no use for a per-job labor and expense aggregate.
+		canSeeCost
+			? supabase.rpc('job_costing', {
+					target_organization_id: organizationId,
+					target_job_id: jobId
+				})
+			: Promise.resolve({ data: null, error: null }),
 		organizationFormatting(supabase, organizationId),
 		// Which of this job's visits an invoice already claims. Scoped to one job and served by
 		// invoice_sources_job_idx, the same index the claim command itself relies on.
@@ -159,6 +171,7 @@ export const GET: RequestHandler = async (event) => {
 		reminderRows.error ||
 		jobMoney.error ||
 		lineMoney.error ||
+		jobCosting.error ||
 		billedVisitRows.error ||
 		scheduleStages.error
 	) {
@@ -202,9 +215,35 @@ export const GET: RequestHandler = async (event) => {
 			tax_source: (entry.tax_source as string | null) ?? 'not_configured',
 			tax_rate_id: (entry.tax_rate_id as string | null) ?? null,
 			tax_rate_basis_points: toNumber(entry.tax_rate_basis_points),
-			total_minor: toNumber(entry.total_minor),
-			cost_minor: canSeeCost && entry.cost_minor != null ? toNumber(entry.cost_minor) : null,
-			profit_minor: canSeeCost && entry.profit_minor != null ? toNumber(entry.profit_minor) : null
+			total_minor: toNumber(entry.total_minor)
+		};
+	})();
+
+	// The job's costing: item, labor and expense cost against revenue before tax, for a one-off job. The
+	// reader already applied jobs.view_cost, so a null here means the member may not see it; a recurring job
+	// comes back as `costing_basis: 'recurring'` with no figures, which its card renders as a "coming in a
+	// later part" note rather than a misleading all-time total.
+	const costing = (() => {
+		if (!canSeeCost) return null;
+		const answer = jobCosting.data as Record<string, unknown> | null;
+		if (!answer || typeof answer !== 'object') return null;
+		const basis = answer.costing_basis === 'recurring' ? 'recurring' : 'one_off';
+		if (basis === 'recurring') {
+			return { costing_basis: 'recurring' as const, job_closed: Boolean(answer.job_closed) };
+		}
+		return {
+			costing_basis: 'one_off' as const,
+			job_closed: Boolean(answer.job_closed),
+			revenue_minor: toNumber(answer.revenue_minor),
+			item_cost_minor: toNumber(answer.item_cost_minor),
+			labor_cost_minor: toNumber(answer.labor_cost_minor),
+			expense_cost_minor: toNumber(answer.expense_cost_minor),
+			total_cost_minor: toNumber(answer.total_cost_minor),
+			profit_minor: toNumber(answer.profit_minor),
+			margin_basis_points:
+				answer.margin_basis_points != null ? toNumber(answer.margin_basis_points) : null,
+			unrated_labor_count: toNumber(answer.unrated_labor_count),
+			labor_line_and_time: Boolean(answer.labor_line_and_time)
 		};
 	})();
 
@@ -333,6 +372,7 @@ export const GET: RequestHandler = async (event) => {
 			reminders,
 			organization_today: organizationToday,
 			money,
+			costing,
 			locale: formatting.ok ? formatting.formatting.locale : 'en-US',
 			can_edit: canEdit,
 			can_schedule: canSchedule,

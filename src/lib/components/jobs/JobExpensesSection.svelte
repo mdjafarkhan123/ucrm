@@ -33,11 +33,14 @@
 	let {
 		jobId,
 		locale = 'en-US',
-		currencyCode = 'USD'
+		currencyCode = 'USD',
+		onChange
 	}: {
 		jobId: string;
 		locale?: string;
 		currencyCode?: string;
+		/** Called after an expense is recorded, corrected or removed, so the page can refresh the costing card. */
+		onChange?: () => void;
 	} = $props();
 
 	const toast = getToastManager();
@@ -94,6 +97,7 @@
 		dialogOpen = false;
 		editing = null;
 		await expensesQuery.refetch();
+		onChange?.();
 		toast.success(message);
 	}
 
@@ -138,6 +142,7 @@
 			await deleteJobExpense(jobId, expense.id);
 			confirmRemove = null;
 			await expensesQuery.refetch();
+			onChange?.();
 			toast.success('Expense removed');
 		} catch (cause) {
 			toast.error((cause as JobWriteError).message ?? 'That expense could not be removed.');

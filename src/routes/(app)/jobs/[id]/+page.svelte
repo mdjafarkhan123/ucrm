@@ -28,6 +28,7 @@
 	import JobVisitsSection from '$lib/components/jobs/JobVisitsSection.svelte';
 	import JobLaborSection from '$lib/components/jobs/JobLaborSection.svelte';
 	import JobExpensesSection from '$lib/components/jobs/JobExpensesSection.svelte';
+	import JobCostingCard from '$lib/components/jobs/JobCostingCard.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		fetchJob,
@@ -293,6 +294,13 @@
 		saveError = '';
 	}
 
+	// Recording, correcting or removing labor or an expense changes the job's cost, profit and margin. The
+	// Labor and Expenses sections refetch their own rows; this reloads the detail payload so the costing card
+	// beside them keeps up. Just the job detail — the list and the invoice queues do not carry a cost figure.
+	async function refreshCosting() {
+		await queryClient.invalidateQueries({ queryKey: jobDetailKey(jobId) });
+	}
+
 	async function refreshJob() {
 		await Promise.all([
 			queryClient.invalidateQueries({ queryKey: jobDetailKey(jobId) }),
@@ -442,6 +450,7 @@
 					visits={saved.visits}
 					locale={saved.locale}
 					currencyCode={saved.job.currency_code}
+					onChange={refreshCosting}
 				/>
 
 				<!--
@@ -452,6 +461,7 @@
 					jobId={saved.job.id}
 					locale={saved.locale}
 					currencyCode={saved.job.currency_code}
+					onChange={refreshCosting}
 				/>
 
 				<JobVisitsSection
@@ -557,8 +567,17 @@
 					totalMinor={saved.money?.total_minor ?? null}
 					discountLabel={saved.money?.discount_name ?? null}
 					taxLabel={saved.money?.tax_name ?? null}
-					costMinor={saved.can_see_cost ? (saved.money?.cost_minor ?? null) : null}
-					profitMinor={saved.can_see_cost ? (saved.money?.profit_minor ?? null) : null}
+					currencyCode={saved.job.currency_code}
+					locale={saved.locale}
+				/>
+
+				<!--
+					What the job actually cost us against what it sells for. Its own card, below the selling
+					total: the breakdown, the open-vs-closed wording and the double-count heads-up do not fit
+					the shared quote summary. Renders only when the payload carried costing (jobs.view_cost).
+				-->
+				<JobCostingCard
+					costing={saved.costing}
 					currencyCode={saved.job.currency_code}
 					locale={saved.locale}
 				/>

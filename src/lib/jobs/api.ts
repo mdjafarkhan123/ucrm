@@ -277,9 +277,31 @@ export type JobMoney = {
 	tax_rate_id: string | null;
 	tax_rate_basis_points: number;
 	total_minor: number;
-	cost_minor: number | null;
-	profit_minor: number | null;
 };
+
+// A one-off job's costing, the honest version: item cost off the scope lines, plus every recorded hour and
+// every expense, set against what the job sells for before tax. Null for a reader without jobs.view_cost.
+// A recurring job comes back as `costing_basis: 'recurring'` with no figures — its per-period profitability
+// is Part 14e — and the card shows a short note instead of a misleading all-time total.
+export type JobCosting =
+	| { costing_basis: 'recurring'; job_closed: boolean }
+	| {
+			costing_basis: 'one_off';
+			job_closed: boolean;
+			// What the job sells for, minus tax. Tax is collected for the government, never earned.
+			revenue_minor: number;
+			item_cost_minor: number;
+			labor_cost_minor: number;
+			expense_cost_minor: number;
+			total_cost_minor: number;
+			profit_minor: number;
+			// Profit ÷ revenue, in basis points. Null when revenue is zero — the card shows a dash.
+			margin_basis_points: number | null;
+			// Recorded hours with no rate on file: they sit outside the labor cost rather than counting as free.
+			unrated_labor_count: number;
+			// The job carries a labor line item and tracked time both — the user may be counting labor twice.
+			labor_line_and_time: boolean;
+	  };
 
 // One open invoice reminder — an internal to-do for our own team, never a message to the client. The kind
 // says where it came from: a month-end reminder seeds itself from the billing choice and can only be
@@ -377,6 +399,8 @@ export type JobDetail = {
 	// reminder that is already due from one still to come using the same clock the derived status does.
 	organization_today: string;
 	money: JobMoney | null;
+	// The job's costing card. Null for a reader without jobs.view_cost.
+	costing: JobCosting | null;
 	locale: string;
 	can_edit: boolean;
 	can_schedule: boolean;
