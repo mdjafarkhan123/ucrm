@@ -32,9 +32,9 @@ gated by `team.manage`.
 
 ## Blockers and owed work
 
-- **`src/lib/database.types.ts` is stale.** `npm run db:types` needs an interactive `supabase login` (or
-  `SUPABASE_ACCESS_TOKEN`) that only Jafar can run. Nothing references the new tables yet, so this blocks
-  14b's TypeScript, not 14a.
+- No blockers. Types are regenerated and committed (de31078). `npm run db:types` needs an interactive
+  `supabase login`, but the Supabase MCP reaches the same remote project and needs no login — regenerate
+  through the MCP and write the payload straight to the file, never through the conversation.
 - **One decision owed before 14d**, not before 14b: the targeted labor double-count warning. `job_line_items`
   already carries `is_labor`, so it is detectable exactly — confirm with Jafar that a labor line's cost plus
   time entries on the same job is what should trigger it.
