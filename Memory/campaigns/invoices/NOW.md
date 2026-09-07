@@ -4,44 +4,16 @@
 - Parts 1–9 CLOSED + committed. **Part 5c is the only remaining part**; 5c-1…5c-4 CLOSED and
   browser-verified. Approved scope and performance verdict: `docs/invoice-part-5c-plan.md` — do not re-derive.
 - 5c-5a (visit-line editing), 5c-5b (invoice seeding), 5c-5c (find-only browser pass) all done. The pass
-  found 3 bugs. **BUG 1 fixed `863a96c`. BUG 2 fixed `7aaa5f3`. BUG 3 is the only one left.**
+  found 3 bugs. **All three are fixed and committed: BUG 1 `863a96c`, BUG 2 `7aaa5f3`, BUG 3 `83fd891`.**
 - Branch `schedule-5b-visits-card`. Stage named files only; never stage the repo-wide CRLF drift.
 
-## Next action — BUG 3 (fresh session, Jafar 2026-09-07)
+## Next action — finish 5c-5's remaining journeys (fresh session)
 
-**BUG 3 — "Duplicate" on a visit drops that visit's line override**, so the copy silently falls back to the
-job's default prices and would bill the wrong money.
+BUG 3 is closed: `add_job_visits` takes an optional `copy_lines_from_visit_id`, copies the source visit's
+lines in the same transaction, and refuses a source outside the job with P0404. pgTAP `plan(37)` passes,
+`npm run check` is clean, and duplicating the $165 Sep 22 visit was browser-verified to produce a $165 copy.
 
-**Jafar's decision, given 2026-09-07 — APPROVED, implement it, do not re-ask:** anyone allowed to duplicate
-a visit gets a faithful copy, custom quantities and prices included. Do the copy **server-side and
-atomically**. Do not return hidden prices to a caller without price permission. Price-edit permission is
-still required to view or change those prices. **Never silently fall back to the job's defaults** — that is
-the wrongly-priced-invoice failure itself.
-
-Approved shape (designed and reviewed this session; the migration was drafted then discarded unapplied, so
-nothing is half-built in the repo):
-
-- New migration, `create or replace public.add_job_visits` (current body: `20260901051350`, §add). A visit
-  element may carry a new optional `copy_lines_from_visit_id`. Inside the existing per-visit insert loop,
-  after the visit row and its assignees, insert-select the source visit's `job_visit_line_items` onto the
-  new visit — every column except the two generated totals, `source_job_line_item_id` included, since its
-  uniqueness is scoped per visit and cannot collide with the original.
-- Guard: the source visit must belong to the same job and organization, else raise `P0404`. No fallback —
-  a failure rolls the whole add back. A source with no lines of its own copies nothing, which is faithful.
-- **No new permission branch**, per Jafar: `jobs.schedule` (what duplicating already costs) is enough,
-  because the caller chooses no numbers and `add_job_visits` returns visit ids only, so no price leaks.
-- `addVisitSchema` in `src/lib/server/validation/jobs.schema.ts`: add optional `copy_lines_from_visit_id`
-  as a uuid. `AddVisitInput` in `src/lib/jobs/api.ts` gains the same optional field. `duplicateVisit` in
-  `JobVisitsSection.svelte` always passes the source visit's id.
-- pgTAP: extend `supabase/tests/database/invoice_visit_line_commands.sql` (now `plan(33)`) — duplicating a
-  customised visit reproduces its subtotal and `has_override`, and a `copy_lines_from_visit_id` naming a
-  visit of another job raises `P0404`.
-- Run `get_advisors` + that suite after applying, then `npm run check`, then browser-verify on the job
-  below by duplicating the Sep 22 visit and checking the copy shows $65, not $50.
-
-## Then, to close 5c-5 → 5c → the campaign
-
-The parts of the plan's 5c-5 checklist the find-only pass did not cover:
+What is left of the plan's 5c-5 checklist, none of it started:
 
 - The full progress/installment journeys re-run: direct fixed schedule create→open→pay each stage,
   % schedule with residual cents, Quote-carried funded deposit, edit remaining stages after one is linked,
@@ -74,8 +46,8 @@ The parts of the plan's 5c-5 checklist the find-only pass did not cover:
 - **"5b-4 Per-Visit Verify"** `138844e5-a1cf-41e6-8f35-b09e3bd2bf86` — the per-visit rig. All 6 visits
   completed. Sep 15 (`28e5f732-…`) billed to Draft #20 at its $100 override; Sep 22 (`3b319a7b-…`, a
   2-line override incl. a visit-only "Edging") and Sep 29 (`67bfca37-…`, qty 2 = $100) completed and
-  unbilled. Sep 22 is the ready-made source visit for testing BUG 3. Several orphan "Sep 7 · Due today ·
-  Per visit" reminders on the job are BUG 2 residue — expected, left as evidence.
+  unbilled. One extra upcoming Sep 22 visit is the BUG 3 duplicate ($165 copy) — evidence, delete only
+  with Jafar's OK. Several orphan "Sep 7 · Due today · Per visit" reminders are BUG 2 residue, likewise.
 - Job #14 fully billed: Deposit → Draft #18 ($500, $400 deposit applied, $100 balance), Final → Draft #19
   ($376.65). Both still Draft.
 - Unbilled schedules for testing: Job #1 ($20,000/$20,000/$26,500 fixed), Job #13 (33.33/33.33/33.34 %).
