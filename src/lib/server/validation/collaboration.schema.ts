@@ -2,7 +2,16 @@ import { z } from 'zod';
 
 // Shared by notes, tags, tag assignments, and attachments. Jobs and Invoices extend this list when they
 // become linkable, matching the migration's entity_type check constraints.
-export const linkedEntityTypeSchema = z.enum(['client', 'property', 'request', 'quote']);
+// Jobs and Visits carry notes and tags as well as files, so they widen every list here. 15a-1 widened
+// note_links, tag_assignments, attachments and activity_events together for exactly that reason.
+export const linkedEntityTypeSchema = z.enum([
+	'client',
+	'property',
+	'request',
+	'quote',
+	'job',
+	'visit'
+]);
 
 // Attachments reach one entity the others do not: a job expense's receipt. 14a widened only the attachments
 // table's entity_type check for it, not note_links or tag_assignments, so only the attachment schemas widen
@@ -12,7 +21,9 @@ export const attachmentEntityTypeSchema = z.enum([
 	'property',
 	'request',
 	'quote',
-	'job_expense'
+	'job_expense',
+	'job',
+	'visit'
 ]);
 
 export const MAX_ATTACHMENT_SIZE_BYTES = 26_214_400; // 25 MB, matches the attachments table check constraint

@@ -237,7 +237,7 @@ money is split finely:
 | `jobs.view_price` | Customer prices, discounts, taxes, totals, payment schedule, and billing configuration |
 | `jobs.view_cost`  | Internal cost, labor cost, expenses, profit, and margin                                |
 | `jobs.create`     | Direct creation and Quote conversion (with `quotes.convert`)                           |
-| `jobs.edit`       | Scope, billing configuration, details, notes and attachments, create similar           |
+| `jobs.edit`       | Scope, billing configuration, details, create similar                                  |
 | `jobs.schedule`   | Create, move, assign, and delete Visits, and change recurrence                         |
 | `jobs.complete`   | Complete and un-complete Visits                                                        |
 | `jobs.close`      | Close, cancel, and reopen a Job                                                        |
@@ -252,6 +252,15 @@ a rate, a cost, or a margin — that stays behind `jobs.view_cost`.
 | `time.track_team`      | Record and correct anyone's hours, including on a closed Job    |
 | `expenses.record`      | Record an expense on a Job and change their own                 |
 | `expenses.manage_team` | Change or remove anyone's Job expenses                          |
+| `field_records.record` | Add notes, photos and files to a Job or Visit, and change their own |
+| `field_records.manage_team` | Change or remove anyone's Job and Visit records            |
+
+Field records sit **beside** the Jobs ladder, never inside it, because Jobber puts them there: the base Field crew
+preset adds notes and photos while holding no Jobs create or edit right at all (verified 2026-09-07,
+`.claude/skills/jobber/jobber-04-jobs-visits-scheduling.md` § 9.6). An earlier draft of this contract folded notes
+and attachments into `jobs.edit`, which locked a crew member out of photographing their own work; that is corrected
+above. **Seeing a record is derived, never granted** — a note or file inherits its parent Job or Visit's visibility,
+so only editing or deleting *somebody else's* needs a permission, which is Jobber's rule exactly.
 
 Field holds `time.track_own` and `expenses.record`: logging your own hours and the materials you bought is the whole
 point of the own/team split. Owner, admin, office and finance hold all four. What an employee costs per hour is set
@@ -259,7 +268,8 @@ on their Team profile behind `team.manage`, and lives in its own table because t
 who can see a teammate and a loaded labor rate is not.
 
 Owner and admin receive all. Proposed defaults: Office and Sales get view, price, create, edit, schedule, complete,
-and close; Finance gets view, price, and cost; Field gets `jobs.view` and `jobs.complete` only. `jobs.view_price` and
+and close; Finance gets view, price, and cost; Field gets `jobs.view`, `jobs.complete` and
+`field_records.record`. Everyone except Field also holds `field_records.manage_team`. `jobs.view_price` and
 `jobs.view_cost` are enforced **in the database**, not only in read models: `authenticated` holds no SELECT grant on
 money columns of `jobs`, `job_line_items`, `job_visit_line_items`, or `job_payment_schedule_items`, which reach a
 route only through protected read models that apply the permissions themselves. A money column added later stays
@@ -361,8 +371,11 @@ Invoice keys. Job events are durable facts consumed by Automation and by Invoice
   `is_as_needed` immutable, so this is not a free by-product of the editor); collision handling when a regenerated
   date already carries a Visit; and seasonal pause and resume of a recurring Job.
 - Still unverified live and therefore not settled as implementation requirements: completed-visit pricing after Job
-  item edits, deletion impact on invoices, deposits and expenses, reopen regeneration, progress-invoice customer
-  presentation, and checklist completion blocking. Resolve each inside the part that codes it.
+  item edits, deletion impact on invoices, deposits and expenses, reopen regeneration, and progress-invoice customer
+  presentation. Resolve each inside the part that codes it.
+- **Checklist completion blocking is now verified and settled**, so it has left the list above: a required answer
+  left blank prompts the person to go back and finish it, and completing the Visit anyway is offered in the same
+  prompt. It warns, it never blocks (Jobber help centre, checked 2026-09-07; § 9.6 of the jobber skill).
 
 ## Approval decisions requested
 

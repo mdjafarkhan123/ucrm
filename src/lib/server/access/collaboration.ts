@@ -6,13 +6,14 @@ import { requireClientPermission } from '$lib/server/access/clients';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { getOrganizationContext, type OrganizationContext } from '$lib/server/auth/organization';
 
-export type LinkedEntityType = 'client' | 'property' | 'request' | 'quote' | 'job_expense';
+export type LinkedEntityType =
+	'client' | 'property' | 'request' | 'quote' | 'job_expense' | 'job' | 'visit';
 
 // View follows the single customers.view gate for clients and properties (a Property's visibility already
 // follows its owning Client). Manage differs: client-scoped writes ride customers.edit, property-scoped
 // writes ride property.manage, matching private.can_manage_linked_entity in the migration.
 function linkedEntityPermissionKey(
-	entityType: Exclude<LinkedEntityType, 'request' | 'quote' | 'job_expense'>,
+	entityType: Exclude<LinkedEntityType, 'request' | 'quote' | 'job_expense' | 'job' | 'visit'>,
 	mode: 'view' | 'manage'
 ): string {
 	if (mode === 'view') return 'customers.view';
@@ -47,6 +48,15 @@ export async function requireLinkedEntityAccess(
 		return 'response' in check ? { response: check.response } : { auth: check.auth };
 	}
 
+	// Job and visit records take the same shape for the same reason. Jobber puts notes and files beside the
+	// Jobs ladder rather than inside it, so the coarse gate here is jobs.view — being able to open the job —
+	// and never jobs.edit. Whether this person may write, and whether the row is theirs, is the row-level
+	// field_records.record / field_records.manage_team rule that private.can_manage_linked_record enforces.
+	if (entityType === 'job' || entityType === 'visit') {
+		const check = await requireOrganizationPermission(event, 'jobs.view');
+		return 'response' in check ? { response: check.response } : { auth: check.auth };
+	}
+
 	if (entityType === 'request') {
 		const auth = await getOrganizationContext(event);
 		if (!auth) {
@@ -72,7 +82,9 @@ export function parseLinkedEntityQuery(
 			entityType !== 'property' &&
 			entityType !== 'request' &&
 			entityType !== 'quote' &&
-			entityType !== 'job_expense') ||
+			entityType !== 'job_expense' &&
+			entityType !== 'job' &&
+			entityType !== 'visit') ||
 		!entityId
 	) {
 		return null;
@@ -88,11 +100,25 @@ export async function linkedEntityBelongsToOrganization(
 	entityType: LinkedEntityType,
 	entityId: string
 ): Promise<boolean> {
-	// Requests, quotes and job expenses are not soft-deleted — an unwanted one is archived or removed — so
-	// only the two customer tables carry the deleted_at filter.
-	if (entityType === 'request' || entityType === 'quote' || entityType === 'job_expense') {
+	// Requests, quotes, job expenses, jobs and visits are not soft-deleted — an unwanted one is archived or
+	// removed — so only the two customer tables carry the deleted_at filter.
+	if (
+		entityType === 'request' ||
+		entityType === 'quote' ||
+		entityType === 'job_expense' ||
+		entityType === 'job' ||
+		entityType === 'visit'
+	) {
 		const table =
-			entityType === 'request' ? 'requests' : entityType === 'quote' ? 'quotes' : 'job_expenses';
+			entityType === 'request'
+				? 'requests'
+				: entityType === 'quote'
+					? 'quotes'
+					: entityType === 'job_expense'
+						? 'job_expenses'
+						: entityType === 'job'
+							? 'jobs'
+							: 'job_visits';
 		const { data } = await supabase
 			.from(table)
 			.select('id')
