@@ -2,19 +2,20 @@
 
 - Goal: Build simpler contractor Jobs and Visits without losing proven Jobber behavior.
 - State: Parts 1–11b, 13a, 14a–14e, 15a-1 and 15a-2 complete. 11c/12/13b belong to Invoices and Schedule.
-  **15a-3 is written and committed as `06b8685` but not applied and not verified.** Tree is clean;
-  `npm run check` 0 errors; 1789 unit tests pass.
-- Contract: `docs/jobs-behavior-contract.md` (§ Field records, § Staff permissions, § RLS and command
-  boundary) — still not updated for 15a-2 or 15a-3; update it once, after 15a-3 verifies.
+  **15a-3 is applied and correct but failed its performance gate.** Tree clean at `aca06f1` plus this
+  checkpoint; `06b8685` is the code; the assessment RLS migration is applied to the remote database.
+- Contract: `docs/jobs-behavior-contract.md` — still not updated for 15a-2 or 15a-3. Update it once, after
+  the 15a-3 fix verifies, not before.
 
 ## Next action
 
-Finish 15a-3's verification stage, in the order written in `parts/15a-3.md` § "The exact next action":
-apply the assessment migration, collect the EXPLAIN ANALYZE evidence the performance gate is owed, check it
-live as a real Field member, then update the behavior contract for 15a-2 and 15a-3 together.
+**Blocked on Jafar.** Read `parts/15a-3.md` — it carries the measured table and the finding. The Schedule's
+whole cost is `private.can_view_job` running once per scanned row (2.7 ms with RLS off vs 161 ms for the
+owner), so the `mine` embed 15a-3 shipped roughly doubles the field worker's read (118 ms → 216 ms) and buys
+nothing. Jafar has to pick the direction because every option changes RLS. Then run `performance-review`
+**design** on the chosen fix, implement, re-verify, and update the contract.
 
-Nothing here needs Jafar first. When 15a-3 closes, the next roadmap part is 15b (internal Job/Visit notes,
-files and photos).
+Do not re-measure first: the fixture is torn down and the evidence is in the packet.
 
 ## Deliberately deferred, not silently dropped
 
