@@ -7,8 +7,8 @@
   - **5c-5a — visit-line editing. BUILT.**
   - **5c-5b — invoice seeding from visit lines. BUILT 2026-09-07.**
   - **5c-5c — the integrated browser pass for the whole 5c journey set. NOT STARTED — next action.**
-- **Nothing from 5c-5a or 5c-5b is committed yet.** Jafar has not been asked. Stage named files only; never
-  stage the repo-wide CRLF drift.
+- 5c-5a and 5c-5b are **committed** (`Invoices 5c-5: a visit bills what that visit did`) on branch
+  `schedule-5b-visits-card`. Stage named files only; never stage the repo-wide CRLF drift.
 
 ## Next action
 
