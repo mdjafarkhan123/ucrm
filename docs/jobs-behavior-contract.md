@@ -207,9 +207,14 @@ to the Job's notes rather than inventing a new record type.
 ## Costing
 
 Costing compares revenue against item cost, labor, and expenses, and is internal. One-off costing spans the whole
-Job; recurring costing covers a labelled trailing period. Screens always name the period and never present costs to
-date as cash received. Changed labor rates apply forward only. The same material recorded as both an item cost and
-an expense is double counting; the UI warns rather than silently reconciling.
+Job. Recurring costing covers the last 30 days, inclusive, in the organization's own timezone, with the exact
+dates named on screen; each pricing basis pairs cost with the revenue its own basis defines — `per_visit` values
+every completed in-window Visit at its effective priced lines, `fixed_per_period` values every in-window billing
+period (of any status, since an already-invoiced period still earned its money) at the Job's priced lines. A
+manually billed recurring Job defines no period, so it states the window's real costs and leaves revenue, profit,
+and margin blank rather than reading the costs as a pure loss. Screens always name the period and never present
+costs to date as cash received. Changed labor rates apply forward only. The same material recorded as both an item
+cost and an expense is double counting; the UI warns rather than silently reconciling.
 
 "Forward only" is enforced by copying the rate onto the time entry when the hours are recorded, not by remembering
 rate history: a past entry has no link to the current rate, and correcting an entry keeps the rate it was recorded
