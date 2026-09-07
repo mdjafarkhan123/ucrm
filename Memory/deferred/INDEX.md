@@ -49,6 +49,10 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Six unindexed foreign keys from the collaboration tables](six-unindexed-foreign-keys-from-the-collaboration-tables.md) |
 | P2 | [Website Chat's Realtime connection ceiling is measured but unconfirmed](website-chat-realtime-connection-quota-unconfirmed.md) |
 | P2 | [Automation-owned Email Template copies (sync + impact preview)](automation-owned-email-template-copies.md) |
+| P2 | [Payment-stage and visit-line reads have no EXPLAIN evidence](invoice-payment-stage-reads-lack-explain-evidence.md) |
+| P2 | [Voiding an invoice tells the client nothing](void-invoice-has-no-client-cancellation-email.md) |
+| P2 | [A recorded payment cannot be edited, deleted, or split across invoices](payments-cannot-be-edited-deleted-or-split-across-invoices.md) |
+| P2 | [Two job billing-reminder modes never raise a reminder](two-job-billing-reminder-modes-raise-no-reminder.md) |
 | P3 | [`/get-started` page weight](get-started-page-weight.md) |
 | P3 | [Client photos are one request each](client-photos-are-one-request-each.md) |
 | P3 | [ClientPicker and CatalogItemPicker can show a stale label after an external value revert](clientpicker-and-catalogitempicker-can-show-a-stale-label-after-an-external-value-revert.md) |
@@ -69,3 +73,4 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [Two typecheck failures unrelated to Website Chat WC1](typecheck-failures-unrelated-to-website-chat-wc1.md) |
 | P3 | [Staff own actions lag behind their own realtime echo](staff-own-actions-lag-behind-realtime-echo.md) |
 | P3 | [Invoice email sends to the primary email only, not "+ billing contact"](invoice-email-sends-to-primary-only-not-billing-contact.md) |
+| P3 | [The payment-schedule dialog keeps its refusal banner after the numbers are fixed](job-payment-schedule-dialog-keeps-a-stale-reconciliation-banner.md) |
