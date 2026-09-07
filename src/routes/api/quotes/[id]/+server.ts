@@ -67,6 +67,10 @@ export const GET: RequestHandler = async (event) => {
 	// Gates the Tax dialog's "save as a reusable rate" checkbox only — pricing a quote is not managing
 	// Settings → Taxes, so this stays separate from `canEdit`.
 	const canManageTaxes = hasPermission(check.access, 'settings.taxes.manage');
+	// The handoff needs both authorities the write function itself checks — permission to convert the
+	// quote and permission to start a job — so the button never offers a click the database would refuse.
+	const canConvert =
+		hasPermission(check.access, 'quotes.convert') && hasPermission(check.access, 'jobs.create');
 
 	const { data: quote, error } = await supabase
 		.from('quotes')
@@ -222,7 +226,8 @@ export const GET: RequestHandler = async (event) => {
 			can_send_email: canSendEmail,
 			can_record_decision: canRecordDecision,
 			can_record_deposit: canRecordDeposit,
-			can_manage_taxes: canManageTaxes
+			can_manage_taxes: canManageTaxes,
+			can_convert: canConvert
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

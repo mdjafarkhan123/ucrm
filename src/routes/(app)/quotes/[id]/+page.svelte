@@ -67,11 +67,13 @@
 		archiveQuote,
 		restoreQuote,
 		deleteQuote,
+		convertQuoteToJob,
 		type QuoteVisibility,
 		type QuoteWriteError,
 		type RequestPricingLine,
 		type RequestPricingLineInput
 	} from '$lib/quotes/api';
+	import { jobCountsKey } from '$lib/jobs/api';
 	import { QUOTE_STATUS_LABELS, QUOTE_STATUS_TONES } from '$lib/quotes/statuses';
 	import CollectSignatureDialog from '$lib/components/quotes/CollectSignatureDialog.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
@@ -407,6 +409,21 @@
 			!saved.quote.current_published_version_id
 		)
 	);
+	// Only an approved quote is ever a candidate — the `ready_for_job` half (an outstanding required
+	// deposit) is what disables rather than hides it, matching the "Deposit due" badge already on screen.
+	// `can_see_price` guards the fingerprint the confirm step needs, not a real-world gap for the seeded
+	// roles that also carry `quotes.convert`.
+	const convertible = $derived(
+		Boolean(saved?.can_convert && saved.can_see_price && saved.quote.status === 'approved')
+	);
+	const convertTotalLabel = $derived.by(() => {
+		const totalMinor = saved?.version?.total_minor;
+		if (totalMinor === undefined) return null;
+		return new Intl.NumberFormat('en-US', {
+			style: 'currency',
+			currency: saved?.version?.currency_code ?? saved?.quote.currency_code ?? 'USD'
+		}).format(totalMinor / 100);
+	});
 
 	function send() {
 		if (!saved?.version) return;
@@ -505,6 +522,44 @@
 	}
 
 	let deletingQuote = $state(false);
+	// A fresh key each time the dialog opens, so a re-open after a failed attempt is a new command while
+	// retries within the same open dialog carry the one the database already saw.
+	let convertKey = $state(crypto.randomUUID());
+	let convertingToJob = $state(false);
+
+	function openConvertToJob() {
+		convertKey = crypto.randomUUID();
+		convertingToJob = true;
+	}
+
+	async function confirmConvertToJob() {
+		const totalMinor = saved?.version?.total_minor;
+		if (!saved?.version || totalMinor === undefined || lifecycleSaving) return;
+		lifecycleSaving = true;
+		try {
+			const result = await convertQuoteToJob(quoteId, {
+				idempotencyKey: convertKey,
+				quoteHash: `v${saved.version.version_number}:total-${totalMinor}`
+			});
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: ['quotes', 'list'] }),
+				queryClient.invalidateQueries({ queryKey: quoteCountsKey }),
+				queryClient.invalidateQueries({ queryKey: ['jobs', 'list'] }),
+				queryClient.invalidateQueries({ queryKey: jobCountsKey }),
+				invalidatePipeline(queryClient)
+			]);
+			toast.success(`Job #${result.job_number} created.`);
+			await goto(resolve('/(app)/jobs/[id]', { id: result.job_id }));
+		} catch (error) {
+			const failure = error as QuoteWriteError;
+			toast.error(
+				failure.fieldErrors?.form ?? failure.message ?? 'That could not be done. Try again.'
+			);
+		} finally {
+			lifecycleSaving = false;
+			convertingToJob = false;
+		}
+	}
 
 	async function confirmDelete() {
 		if (lifecycleSaving) return;
@@ -640,12 +695,13 @@
 			icon: printIcon,
 			onSelect: () => openCustomerView(true)
 		});
-		items.push({
-			label: 'Convert to job',
-			icon: briefcaseIcon,
-			disabled: true,
-			onSelect: () => {}
-		});
+		if (convertible)
+			items.push({
+				label: 'Convert to job',
+				icon: briefcaseIcon,
+				disabled: !saved.ready_for_job || lifecycleSaving,
+				onSelect: () => openConvertToJob()
+			});
 		// Available from any status, including archived - a fresh start never depends on where this one
 		// ended up.
 		items.push({
@@ -1310,6 +1366,25 @@
 				<p>
 					“{saved.quote.title}” will be removed for good, along with its number. This cannot be
 					undone.
+				</p>
+			</ConfirmDialog>
+		{/if}
+
+		{#if convertingToJob}
+			<ConfirmDialog
+				open
+				title="Convert this quote to a job?"
+				icon={briefcaseIcon}
+				confirmLabel="Convert to job"
+				loading={lifecycleSaving}
+				onConfirm={confirmConvertToJob}
+				onClose={() => (convertingToJob = false)}
+			>
+				<p>
+					A new job opens on the approved total{convertTotalLabel
+						? ` of ${convertTotalLabel}`
+						: ''}, with the client, property, and scope copied over. The quote itself becomes
+					read-only — this cannot be undone.
 				</p>
 			</ConfirmDialog>
 		{/if}

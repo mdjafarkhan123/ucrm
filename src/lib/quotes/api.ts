@@ -479,6 +479,7 @@ export type QuoteDetail = {
 	can_record_decision: boolean;
 	can_record_deposit: boolean;
 	can_manage_taxes: boolean;
+	can_convert: boolean;
 };
 
 export const quoteDetailKey = (quoteId: string) => ['quotes', 'detail', quoteId] as const;
@@ -602,6 +603,28 @@ export async function createSimilarQuote(
 	quoteId: string
 ): Promise<{ quote_id: string; quote_number: number }> {
 	return postQuote(quoteId, 'similar', {}, 'This quote could not be copied.');
+}
+
+export type QuoteConvertToJobResult = {
+	applied: boolean;
+	job_id: string;
+	job_number: number;
+	quote_id: string;
+	quote_status: string;
+};
+
+/** The one-way handoff. Every job field beyond the two identity/idempotency values takes the database's
+ *  own default, which is the approved version's own scope, type, and title. */
+export async function convertQuoteToJob(
+	quoteId: string,
+	input: { idempotencyKey: string; quoteHash: string }
+): Promise<QuoteConvertToJobResult> {
+	return postQuote(
+		quoteId,
+		'convert-to-job',
+		{ idempotency_key: input.idempotencyKey, quote_hash: input.quoteHash },
+		'This quote could not be turned into a job.'
+	);
 }
 
 export type QuoteArchiveResult = { applied: boolean; status: StoredQuoteStatus };

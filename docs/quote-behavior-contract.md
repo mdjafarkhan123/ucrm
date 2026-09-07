@@ -407,8 +407,9 @@ later consumes the frozen deposit requirement and writes payment/deposit events 
   and invoice allocation. Quotes ships no fake processor UI.
 - Pipeline Part 5 resumes only after real Quote state/decision commands exist. Approval and decline must update the
   backing Quote Opportunity atomically.
-- Jobs must define Job-owned snapshots before terminal conversion ships. Until then, the Quote may become Approved
-  and ready, but Convert to Job remains unavailable with an honest dependency message.
+- Jobs now defines Job-owned snapshots, and terminal conversion has shipped: an approved, ready Quote offers
+  Convert to Job (Part 8), gated on `quotes.convert` + `jobs.create` and the same `ready_for_job` readiness this
+  contract already defines, landing on the new Job.
 - Client Portal may later unify authenticated customer access. Quote secure links remain Quote-owned and narrowly
   scoped.
 - Reusable Quote templates, multiple taxes, tax-inclusive pricing, multiple currencies per
