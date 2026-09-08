@@ -578,6 +578,92 @@ export type Database = {
 					}
 				];
 			};
+			checklist_template_items: {
+				Row: {
+					id: string;
+					item_type: string;
+					label: string;
+					options: string[] | null;
+					organization_id: string;
+					position: number;
+					required: boolean;
+					template_id: string;
+				};
+				Insert: {
+					id?: string;
+					item_type: string;
+					label: string;
+					options?: string[] | null;
+					organization_id: string;
+					position: number;
+					required?: boolean;
+					template_id: string;
+				};
+				Update: {
+					id?: string;
+					item_type?: string;
+					label?: string;
+					options?: string[] | null;
+					organization_id?: string;
+					position?: number;
+					required?: boolean;
+					template_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'checklist_template_items_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'checklist_template_items_template_fk';
+						columns: ['organization_id', 'template_id'];
+						isOneToOne: false;
+						referencedRelation: 'checklist_templates';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			checklist_templates: {
+				Row: {
+					archived_at: string | null;
+					created_at: string;
+					created_by: string | null;
+					id: string;
+					name: string;
+					organization_id: string;
+					updated_at: string;
+				};
+				Insert: {
+					archived_at?: string | null;
+					created_at?: string;
+					created_by?: string | null;
+					id?: string;
+					name: string;
+					organization_id: string;
+					updated_at?: string;
+				};
+				Update: {
+					archived_at?: string | null;
+					created_at?: string;
+					created_by?: string | null;
+					id?: string;
+					name?: string;
+					organization_id?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'checklist_templates_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			client_communication_preferences: {
 				Row: {
 					appointment_reminders: boolean;
@@ -3706,6 +3792,130 @@ export type Database = {
 					}
 				];
 			};
+			job_checklist_items: {
+				Row: {
+					id: string;
+					item_type: string;
+					job_checklist_id: string;
+					job_id: string;
+					label: string;
+					options: string[] | null;
+					organization_id: string;
+					position: number;
+					required: boolean;
+				};
+				Insert: {
+					id?: string;
+					item_type: string;
+					job_checklist_id: string;
+					job_id: string;
+					label: string;
+					options?: string[] | null;
+					organization_id: string;
+					position: number;
+					required?: boolean;
+				};
+				Update: {
+					id?: string;
+					item_type?: string;
+					job_checklist_id?: string;
+					job_id?: string;
+					label?: string;
+					options?: string[] | null;
+					organization_id?: string;
+					position?: number;
+					required?: boolean;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'job_checklist_items_checklist_fk';
+						columns: ['organization_id', 'job_checklist_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_checklists';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_checklist_items_job_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_checklist_items_job_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'jobs';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_checklist_items_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			job_checklists: {
+				Row: {
+					attached_at: string;
+					attached_by: string | null;
+					id: string;
+					job_id: string;
+					name: string;
+					organization_id: string;
+					source_template_id: string | null;
+				};
+				Insert: {
+					attached_at?: string;
+					attached_by?: string | null;
+					id?: string;
+					job_id: string;
+					name: string;
+					organization_id: string;
+					source_template_id?: string | null;
+				};
+				Update: {
+					attached_at?: string;
+					attached_by?: string | null;
+					id?: string;
+					job_id?: string;
+					name?: string;
+					organization_id?: string;
+					source_template_id?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'job_checklists_job_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_checklists_job_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'jobs';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_checklists_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'job_checklists_source_template_id_fkey';
+						columns: ['source_template_id'];
+						isOneToOne: false;
+						referencedRelation: 'checklist_templates';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			job_command_receipts: {
 				Row: {
 					action: string;
@@ -4376,7 +4586,7 @@ export type Database = {
 				};
 				Insert: {
 					created_at?: string;
-					job_id?: string;
+					job_id: string;
 					organization_id: string;
 					user_id: string;
 					visit_id: string;
@@ -9314,6 +9524,72 @@ export type Database = {
 					}
 				];
 			};
+			visit_checklist_answers: {
+				Row: {
+					answered_at: string;
+					answered_by: string | null;
+					item_id: string;
+					job_id: string;
+					organization_id: string;
+					value: Json;
+					visit_id: string;
+				};
+				Insert: {
+					answered_at?: string;
+					answered_by?: string | null;
+					item_id: string;
+					job_id: string;
+					organization_id: string;
+					value: Json;
+					visit_id: string;
+				};
+				Update: {
+					answered_at?: string;
+					answered_by?: string | null;
+					item_id?: string;
+					job_id?: string;
+					organization_id?: string;
+					value?: Json;
+					visit_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'visit_checklist_answers_item_fk';
+						columns: ['organization_id', 'item_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_checklist_items';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'visit_checklist_answers_job_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'visit_checklist_answers_job_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'jobs';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'visit_checklist_answers_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'visit_checklist_answers_visit_fk';
+						columns: ['organization_id', 'visit_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_visits';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
 			website_chat_allowance_periods: {
 				Row: {
 					created_at: string;
@@ -10169,6 +10445,14 @@ export type Database = {
 				Args: { reason?: string; target_quote_id: string };
 				Returns: Json;
 			};
+			attach_job_checklist: {
+				Args: {
+					target_job_id: string;
+					target_organization_id: string;
+					target_template_id: string;
+				};
+				Returns: Json;
+			};
 			attach_team_invitation_identity: {
 				Args: {
 					target_attempt_nonce: string;
@@ -10429,6 +10713,10 @@ export type Database = {
 					allowed: boolean;
 					retry_after_seconds: number;
 				}[];
+			};
+			checklist_templates_list: {
+				Args: { include_archived?: boolean; target_organization_id: string };
+				Returns: Json;
 			};
 			claim_automation_work_items: {
 				Args: {
@@ -10775,6 +11063,10 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			create_checklist_template: {
+				Args: { items: Json; name: string; target_organization_id: string };
+				Returns: Json;
+			};
 			create_client: {
 				Args: { payload: Json };
 				Returns: {
@@ -10999,10 +11291,6 @@ export type Database = {
 				};
 				Returns: Json;
 			};
-			delete_job_invoice_reminder: {
-				Args: { target_organization_id: string; target_reminder_id: string };
-				Returns: Json;
-			};
 			delete_job_expense: {
 				Args: {
 					reason?: string;
@@ -11010,6 +11298,10 @@ export type Database = {
 					target_job_id: string;
 					target_organization_id: string;
 				};
+				Returns: Json;
+			};
+			delete_job_invoice_reminder: {
+				Args: { target_organization_id: string; target_reminder_id: string };
 				Returns: Json;
 			};
 			delete_job_time_entry: {
@@ -12070,6 +12362,24 @@ export type Database = {
 			issue_quote_access_link: {
 				Args: { supplied_token_hash: string; target_quote_id: string };
 				Returns: Json;
+			};
+			job_checklists_list: {
+				Args: { target_job_id: string; target_organization_id: string };
+				Returns: Json;
+			};
+			job_combined_history: {
+				Args: { result_limit?: number; target_job_id: string };
+				Returns: {
+					actor_id: string;
+					created_at: string;
+					event_type: string;
+					id: string;
+					metadata: Json;
+					source: string;
+					summary: string;
+					visit_id: string;
+					visit_label: string;
+				}[];
 			};
 			job_costing: {
 				Args: { target_job_id: string; target_organization_id: string };
@@ -13199,6 +13509,14 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			remove_job_checklist: {
+				Args: {
+					target_checklist_id: string;
+					target_job_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			remove_organization_logo: {
 				Args: { target_organization_id: string };
 				Returns: Json;
@@ -13735,6 +14053,14 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			save_visit_checklist_answers: {
+				Args: {
+					answers: Json;
+					target_organization_id: string;
+					target_visit_id: string;
+				};
+				Returns: Json;
+			};
 			schedule_calendar_context: {
 				Args: { target_organization_id: string };
 				Returns: Json;
@@ -13747,6 +14073,14 @@ export type Database = {
 					p_idempotency_key: string;
 					p_organization_id: string;
 					p_recipe_id: string;
+				};
+				Returns: Json;
+			};
+			set_checklist_template_archived: {
+				Args: {
+					archived: boolean;
+					target_organization_id: string;
+					target_template_id: string;
 				};
 				Returns: Json;
 			};
@@ -14234,6 +14568,15 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			update_checklist_template: {
+				Args: {
+					items: Json;
+					name: string;
+					target_organization_id: string;
+					target_template_id: string;
+				};
+				Returns: Json;
+			};
 			update_client: {
 				Args: { payload: Json };
 				Returns: {
@@ -14444,6 +14787,10 @@ export type Database = {
 					target_organization_id: string;
 					target_widget_id: string;
 				};
+				Returns: Json;
+			};
+			visit_checklist_rows: {
+				Args: { target_organization_id: string; target_visit_id: string };
 				Returns: Json;
 			};
 			visit_line_money: { Args: { target_visit_id: string }; Returns: Json };

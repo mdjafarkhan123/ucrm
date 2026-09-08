@@ -49,6 +49,7 @@ export const GET: RequestHandler = async (event) => {
 				snippets_manage: hasPermission(check.access, 'conversations.send'),
 				taxes_manage: hasPermission(check.access, 'settings.taxes.manage'),
 				price_book_manage: hasPermission(check.access, 'settings.price_book.manage'),
+				checklists_manage: hasPermission(check.access, 'settings.checklists.manage'),
 				quotes_manage: hasPermission(check.access, 'settings.quotes.manage'),
 				// Whether Automation would show for this member — plan includes it and they may view it. In 6B
 				// the card is still held back by a journey-ready flag on the client, so this alone never

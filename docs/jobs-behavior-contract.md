@@ -2,6 +2,9 @@
 
 Status: **Approved by Jafar on 2026-09-01** — Jobs campaign Part 3
 Owner: Jobs campaign
+Amended 2026-09-07 for Parts 15a-2 / 15a-3 / 15a-4: `jobs.view` carries an `assigned`-or-`all` scope, Field
+holds it narrowed, and the job-family read policies were reshaped so the rule runs once per query, not once
+per row.
 
 ## Purpose and authority
 
@@ -200,9 +203,45 @@ Notes, tags, and attachments reuse the shipped shared subsystem by extending its
 `visit`; no parallel tables. Checklists, signatures, time entries, and expenses arrive in Parts 14–15 and inherit
 this contract's permission and tenant rules.
 
+Job notes, photos and files live in the Job rail and stage behind the Job page's one Save bar. Visit records use
+the same shared controls inside their own records dialog and save as one child-record action. Photos use the stored
+thumbnail in the grid and the protected original in the lightbox; ordinary files remain download rows. The Job
+history combines its lifecycle events with Job and Visit field-record activity, newest first and capped at 100
+entries. These records are internal-only: no customer document or customer endpoint receives them.
+
+A field record's visibility derives from its parent Job or Visit and is never granted on its own (15a-1). Once
+15a-2 gave `jobs.view` an `assigned` scope, that made a real boundary for Field: a member at `assigned` scope
+sees a Job's notes, photos and files only for Jobs they are on, with no extra rule on the record itself. See
+**Staff permissions → Assigned scope**.
+
 Following Jobber's documented behavior, a required checklist answer produces a **warning and visible outstanding
 work, not a hard block** on completing a Visit. Partial checklist answers save. Signature capture attaches a Job PDF
 to the Job's notes rather than inventing a new record type.
+
+### Checklists
+
+A checklist is built once in **Settings → Checklists**, attached to a Job, and **answered separately on every
+Visit** — filling Tuesday's copy never touches Friday's (applied 15c-1).
+
+Supported question types are Jobber's list minus two: short answer, long answer, choose-one, tick box, number
+and date. **Image upload and signature are deliberately absent** — signature is Part 15d's own subject, and a
+photo question would be a second way to do what Visit photos already do.
+
+**Attaching takes a snapshot.** The Job keeps its own frozen copy of the questions, so editing a template later
+changes the next Job it is attached to and nothing a crew has already answered. This is what "versioned" means
+here; the alternative — a version table answers point at — is a second mechanism for one guarantee. The same
+rule from Jobber's page drives the other edge: **a Visit completed before a checklist was attached never shows
+it**, decided by the Visit's completion stamp against the checklist's attach stamp, so no past work grows
+outstanding items. Removing a checklist from a Job removes every Visit's answers to it, and the screen says how
+many before it asks.
+
+Three permissions, no new scope model: **`settings.checklists.manage`** builds and archives templates (owner and
+administrator, matching every other Settings library); **`jobs.edit`** attaches one to a Job or takes it off,
+because it changes what the Job's crew is asked to record; and **`field_records.record`** — the crew key from
+15a-1 — fills one in. A checklist belongs to the Visit rather than to a person, so two crew on one Visit share
+one form and there is no own/team split on an answer. Seeing a checklist is derived from its Job or Visit, never
+granted. Closing a Job locks the crew out of its answers, and leaves `field_records.manage_team` able to correct
+them — the Part 14 rule, unchanged. Templates are **archived, never deleted**.
 
 ## Costing
 
@@ -233,7 +272,7 @@ money is split finely:
 
 | Permission        | Allows                                                                                 |
 | ----------------- | -------------------------------------------------------------------------------------- |
-| `jobs.view`       | Job identity, type, lifecycle, client and property context, scope names, and schedule  |
+| `jobs.view`       | Job identity, type, lifecycle, client and property context, scope names, and schedule — every Job at `all` scope, only assigned Jobs at `assigned` scope (see **Assigned scope** below) |
 | `jobs.view_price` | Customer prices, discounts, taxes, totals, payment schedule, and billing configuration |
 | `jobs.view_cost`  | Internal cost, labor cost, expenses, profit, and margin                                |
 | `jobs.create`     | Direct creation and Quote conversion (with `quotes.convert`)                           |
@@ -275,6 +314,30 @@ money columns of `jobs`, `job_line_items`, `job_visit_line_items`, or `job_payme
 route only through protected read models that apply the permissions themselves. A money column added later stays
 unreadable until it is named in a grant on purpose.
 
+### Assigned scope
+
+**`jobs.view` carries a scope and Field holds it narrowed** (applied 15a-2, extended to assessments in 15a-3,
+reshaped for cost in 15a-4). It is the only permission with a `scope_model` — `assigned_or_all`; every other
+key is unscoped. Owner, admin, office, sales and finance hold `jobs.view` at `all` and see every Job in the
+organization. Field holds it at `assigned` and sees only Jobs it is **on** — a Job with at least one
+`job_visit_assignments` row naming the member. The assignment row carries a denormalized `job_id`, so "is this
+person on this Job" is one index probe, never a walk of the Job's visits.
+
+The narrowing is the whole Job and everything that hangs off it: line items, visits, events, invoice
+reminders, labor, expenses, costing, the field records from 15a-1, and the on-site assessments the Schedule
+draws beside visits. An assessment is not itself gated on holding `jobs.view` — it stays visible to every
+member who is not scope-narrowed — but a member at `assigned` scope sees only the assessments they are on, so
+the two halves of the Schedule can never disagree. Jafar was told plainly, and approved, that existing Field
+users lose the company-wide Job list (2026-09-07).
+
+It is enforced in the database in three places that must agree: the table SELECT policies, the SECURITY
+DEFINER read models, and a visibility precondition on every write command a Field member can still call
+(`jobs.complete`, `time.track_own`, `expenses.record`) — `private.member_job_is_visible`, checked immediately
+after the signed-in test and before the write-permission test, so a narrowed reader cannot complete or bill a
+Job it can no longer open. The Schedule reads the scope back and gives such a member a personal calendar —
+"My Schedule", with no Employee filter, no unassigned lane and no coworkers' rows; that presentation is owned
+by the Schedule campaign.
+
 ## Proposed database architecture
 
 Minimum proposed shape, not an applied schema:
@@ -306,13 +369,23 @@ them and cannot bypass them. No external email or payment call happens while row
 
 ## RLS and command boundary
 
-- RLS on every new table. Authenticated SELECT policies call the repository's cached `private.has_permission` helper
-  once per query and filter by permitted organization.
+- RLS on every new table. A job-family SELECT policy asks two questions and keeps them apart (15a-4). The
+  caller half — their organization, whether they hold `jobs.view`, and at what scope — is
+  `private.current_organization()` and `private.current_permission_scope('jobs.view')`, which take no row
+  argument, so the policy calls them as `(select …)` and Postgres evaluates each once per statement as an
+  InitPlan. The row half — `private.is_assigned_to_job` / `private.is_assigned_to_assessment`, one probe on
+  `job_visit_assignments_member_job_idx` — runs only for an `assigned`-scope caller; an `all`-scope caller
+  short-circuits before it. The SECURITY DEFINER read models reach the same rule once per request through
+  `private.has_permission` / `private.member_job_is_visible`, where clarity beats nanoseconds; the scope rule
+  is deliberately written on both paths and each side's comment says so.
 - Ordinary authenticated clients get no broad INSERT, UPDATE, or DELETE grants on Job tables. `/api/*` routes call
   narrowly granted atomic functions.
 - Any `security definer` command has an explicit empty search path, validates `auth.uid()`, membership, entitlement,
   exact permission, and target ownership inside the function, revokes PUBLIC and `anon`, and grants only its exact
   signature to `authenticated`.
+- Every write command a narrowed reader can still call checks `private.member_job_is_visible` immediately after
+  `auth.uid()` and before the write-permission test, so narrowing a Field member's reads cannot leave them able
+  to complete, or log time or expenses against, a Job they can no longer see (15a-2).
 - UPDATE paths carry both visibility and write checks. No policy trusts `user_metadata`, UI visibility,
   request-supplied organization ids, or stale JWT claims.
 
@@ -349,7 +422,8 @@ Invoice keys. Job events are durable facts consumed by Automation and by Invoice
   allowed transitions, completed-Visit protection under every edit scope, and idempotent replay and conflict behavior.
 - Calculation tests reusing the Quote fixtures, plus per-visit and fixed-period revenue and installment totals.
 - RLS tests over every role and permission combination, cross-tenant ids, withheld price and cost, revoked
-  membership, archived Client or Property, and direct table writes.
+  membership, archived Client or Property, direct table writes, and assigned-scope narrowing — a Field member
+  reads only assigned Jobs, visits and assessments and cannot complete or bill an unassigned one.
 - Transaction tests racing two conversions, two completions, two closes, and two bulk moves. Exactly one business
   result and one history event may win.
 - Integration tests proving conversion copies rather than references, that closing sends nothing, and that reopening

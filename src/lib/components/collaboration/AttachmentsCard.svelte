@@ -47,6 +47,7 @@
 		entityType,
 		entityId,
 		canManage = true,
+		canManageTeam = canManage,
 		currentUserId,
 		title = 'Attachments',
 		surface = 'rail',
@@ -57,6 +58,8 @@
 		entityType: EntityType;
 		entityId?: string;
 		canManage?: boolean;
+		/** May remove another teammate's file. Uploading only needs canManage. */
+		canManageTeam?: boolean;
 		currentUserId?: string;
 		title?: string;
 		surface?: 'rail' | 'section';
@@ -393,9 +396,12 @@
 	);
 
 	function menuFor(attachment: Attachment) {
+		const canRemove =
+			canManage &&
+			(canManageTeam || Boolean(currentUserId && attachment.uploaded_by === currentUserId));
 		return [
 			{ label: 'Download', icon: downloadIcon, onSelect: () => download(attachment) },
-			...(canManage
+			...(canRemove
 				? [
 						{
 							label: 'Delete',

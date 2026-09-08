@@ -432,6 +432,9 @@ export type JobDetail = {
 	can_see_cost: boolean;
 	can_manage_taxes: boolean;
 	can_invoice: boolean;
+	current_user_id: string;
+	can_record_field_records: boolean;
+	can_manage_team_field_records: boolean;
 	// Whether each visit's `invoiced` flag was actually computed (needs invoices.view on top of
 	// invoices.create). False means every visit reads `invoiced: false` regardless of the truth.
 	can_invoice_visits: boolean;
@@ -450,10 +453,14 @@ export async function fetchJob(id: string): Promise<JobDetail> {
 // database — counts, reasons and ids only, never customer content or money a reader may not see.
 export type JobEvent = {
 	id: string;
+	source: string;
 	event_type: string;
+	summary: string | null;
 	actor_name: string | null;
 	created_at: string;
 	metadata: Record<string, unknown>;
+	visit_id: string | null;
+	visit_label: string | null;
 };
 
 export const jobEventsKey = (id: string) => ['jobs', 'events', id] as const;

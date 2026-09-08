@@ -31,6 +31,7 @@
 		entityType,
 		entityId,
 		canManage = false,
+		canManageTeam = canManage,
 		currentUserId,
 		pending = [],
 		onChange
@@ -38,6 +39,8 @@
 		entityType: EntityType;
 		entityId: string;
 		canManage?: boolean;
+		/** May change another teammate's note. Own notes still follow canManage. */
+		canManageTeam?: boolean;
 		currentUserId?: string;
 		/** Staged changes, held by the page so its action bar can save them. */
 		pending?: NoteChange[];
@@ -49,6 +52,8 @@
 		queryFn: () => fetchNotes(entityType, entityId)
 	}));
 	const notes = $derived(notesQuery.data ?? []);
+	const canManageNote = (note: Note) =>
+		canManage && (canManageTeam || Boolean(currentUserId && note.created_by === currentUserId));
 
 	const authorIds = $derived([
 		...new Set(
@@ -234,7 +239,7 @@
 								>
 									<span aria-hidden="true">{@html undoIcon}</span>Undo
 								</button>
-							{:else if canManage}
+							{:else if canManageNote(note)}
 								<DropdownMenu
 									triggerLabel="Note actions"
 									items={[

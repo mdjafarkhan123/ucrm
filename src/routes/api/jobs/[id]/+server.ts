@@ -45,6 +45,8 @@ export const GET: RequestHandler = async (event) => {
 	// Saving a one-off tax rate into the organization's shared list is a settings right, not a jobs one. The
 	// card only offers the checkbox when it is held; the command checks it again for itself.
 	const canManageTaxes = hasPermission(check.access, 'settings.taxes.manage');
+	const canRecordFieldRecords = hasPermission(check.access, 'field_records.record');
+	const canManageTeamFieldRecords = hasPermission(check.access, 'field_records.manage_team');
 
 	const [
 		listRow,
@@ -398,6 +400,9 @@ export const GET: RequestHandler = async (event) => {
 			can_see_cost: canSeeCost,
 			can_manage_taxes: canManageTaxes,
 			can_invoice: canInvoice,
+			current_user_id: check.auth.user.id,
+			can_record_field_records: canRecordFieldRecords,
+			can_manage_team_field_records: canManageTeamFieldRecords,
 			// Whether `invoiced` on each visit is trustworthy. False collapses to "nothing billed yet" above,
 			// which the visits-to-bill card must not show as fact without this — so it gates on this flag too.
 			can_invoice_visits: canSeeInvoiceStatus

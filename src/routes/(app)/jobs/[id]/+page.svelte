@@ -25,10 +25,13 @@
 	import JobRemindersCard from '$lib/components/jobs/JobRemindersCard.svelte';
 	import JobVisitsToBillCard from '$lib/components/jobs/JobVisitsToBillCard.svelte';
 	import JobPeriodsToBillCard from '$lib/components/jobs/JobPeriodsToBillCard.svelte';
+	import JobChecklistsCard from '$lib/components/jobs/JobChecklistsCard.svelte';
 	import JobVisitsSection from '$lib/components/jobs/JobVisitsSection.svelte';
 	import JobLaborSection from '$lib/components/jobs/JobLaborSection.svelte';
 	import JobExpensesSection from '$lib/components/jobs/JobExpensesSection.svelte';
 	import JobCostingCard from '$lib/components/jobs/JobCostingCard.svelte';
+	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
+	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		fetchJob,
@@ -50,6 +53,7 @@
 		QuoteTaxSource
 	} from '$lib/quotes/api';
 	import { JOB_STATUS_LABELS, JOB_STATUS_TONES, JOB_TYPE_LABELS } from '$lib/jobs/statuses';
+	import { createNote, deleteNote, updateNote, type NoteChange } from '$lib/collaboration/api';
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
@@ -76,6 +80,9 @@
 	let instructionsDraft = $state('');
 	let saving = $state(false);
 	let saveError = $state('');
+	let notePending = $state<NoteChange[]>([]);
+	let attachmentsCard = $state<AttachmentsCard>();
+	let pendingFileCount = $state(0);
 
 	const editable = $derived(Boolean(saved?.can_edit));
 	const title = $derived(saved?.job.title?.trim() || `Job #${saved?.job.job_number ?? ''}`);
@@ -87,8 +94,12 @@
 	);
 	const showInstructions = $derived(editingInstructions || Boolean(saved?.job.instructions));
 
-	const isEditing = $derived(editingTitle || editingInstructions);
-	const isDirty = $derived(titleChanged || instructionsChanged);
+	const isEditing = $derived(
+		editingTitle || editingInstructions || notePending.length > 0 || pendingFileCount > 0
+	);
+	const isDirty = $derived(
+		titleChanged || instructionsChanged || notePending.length > 0 || pendingFileCount > 0
+	);
 
 	// The read-only scope lines, mapped into the same shape the shared pricing block draws for a quote.
 	const jobLines = $derived<RequestPricingLine[]>(
@@ -204,11 +215,16 @@
 		visits_updated_forward: 'Later visits updated'
 	};
 
-	function eventLabel(type: string) {
-		return EVENT_LABELS[type] ?? type.replace(/_/g, ' ');
+	function eventLabel(event: { event_type: string; summary: string | null }) {
+		return event.summary ?? EVENT_LABELS[event.event_type] ?? event.event_type.replace(/_/g, ' ');
 	}
 
-	function eventDetail(event: { event_type: string; metadata: Record<string, unknown> }) {
+	function eventDetail(event: {
+		event_type: string;
+		metadata: Record<string, unknown>;
+		visit_label: string | null;
+	}) {
+		if (event.visit_label) return event.visit_label;
 		if (event.event_type === 'details_updated') {
 			const changed = event.metadata.changed;
 			if (Array.isArray(changed) && changed.length > 0) {
@@ -291,6 +307,8 @@
 		titleDraft = '';
 		editingInstructions = false;
 		instructionsDraft = '';
+		notePending = [];
+		attachmentsCard?.discardChanges();
 		saveError = '';
 	}
 
@@ -337,21 +355,61 @@
 		saving = true;
 		saveError = '';
 		try {
-			await saveJobDetails(jobId, saved.job.revision, {
-				title: titleChanged ? titleDraft.trim() : saved.job.title,
-				instructions: editingInstructions
-					? instructionsDraft.trim() || null
-					: saved.job.instructions
-			});
-			discard();
+			if (titleChanged || instructionsChanged) {
+				await saveJobDetails(jobId, saved.job.revision, {
+					title: titleChanged ? titleDraft.trim() : saved.job.title,
+					instructions: editingInstructions
+						? instructionsDraft.trim() || null
+						: saved.job.instructions
+				});
+				editingTitle = false;
+				titleDraft = '';
+				editingInstructions = false;
+				instructionsDraft = '';
+			}
+
+			for (const change of [...notePending]) {
+				if (change.kind === 'create')
+					await createNote({ entityType: 'job', entityId: jobId, body: change.body });
+				else if (change.kind === 'update')
+					await updateNote({
+						id: change.id,
+						entityType: 'job',
+						entityId: jobId,
+						body: change.body
+					});
+				else if (change.kind === 'pin')
+					await updateNote({
+						id: change.id,
+						entityType: 'job',
+						entityId: jobId,
+						pinned: change.pinned
+					});
+				else await deleteNote({ id: change.id, entityType: 'job', entityId: jobId });
+				notePending = notePending.filter((entry) => entry !== change);
+			}
+
+			const failedFiles = (await attachmentsCard?.saveAll(jobId)) ?? 0;
+			if (failedFiles > 0) {
+				saveError =
+					failedFiles === 1
+						? 'Everything else was saved, but one file still needs attention.'
+						: `Everything else was saved, but ${failedFiles} files still need attention.`;
+			}
 			await refreshJob();
-			toast.success('Job saved');
+			if (failedFiles === 0) toast.success('Job saved');
 		} catch (caught) {
 			const writeError = caught as JobWriteError;
 			if (writeError.reason === 'stale') {
-				discard();
+				// Refresh the stale Job fields without throwing away independent notes or files the person
+				// already staged. Those records have their own ownership checks and no Job revision token.
+				editingTitle = false;
+				titleDraft = '';
+				editingInstructions = false;
+				instructionsDraft = '';
 				await refreshJob();
-				saveError = 'Someone else changed this job. The latest version is now on screen.';
+				saveError =
+					'Someone else changed this job. The latest version is now on screen; your notes and files are still waiting.';
 			} else {
 				saveError =
 					writeError.fieldErrors?.form ?? writeError.message ?? 'Those changes could not be saved.';
@@ -464,6 +522,8 @@
 					onChange={refreshCosting}
 				/>
 
+				<JobChecklistsCard jobId={saved.job.id} active={saved.job.status === 'active'} />
+
 				<JobVisitsSection
 					jobId={saved.job.id}
 					visits={saved.visits}
@@ -486,6 +546,9 @@
 					canInvoiceVisits={saved.can_invoice_visits}
 					canEditPricing={saved.can_edit}
 					canSeePrice={saved.can_see_price}
+					currentUserId={saved.current_user_id}
+					canRecord={saved.can_record_field_records}
+					canManageTeam={saved.can_manage_team_field_records}
 					currencyCode={saved.job.currency_code}
 				/>
 
@@ -544,7 +607,7 @@
 							<ol class="job-history">
 								{#each eventsQuery.data ?? [] as event (event.id)}
 									<li class="job-history__item">
-										<p class="job-history__title">{eventLabel(event.event_type)}</p>
+										<p class="job-history__title">{eventLabel(event)}</p>
 										{#if eventDetail(event)}
 											<p class="job-history__detail">{eventDetail(event)}</p>
 										{/if}
@@ -557,6 +620,29 @@
 							</ol>
 						{/if}
 					</RailCard>
+				{:else}
+					<RailCard title="Notes" icon={notesIcon}>
+						<NotesPanel
+							entityType="job"
+							entityId={jobId}
+							canManage={saved.can_record_field_records}
+							canManageTeam={saved.can_manage_team_field_records}
+							currentUserId={saved.current_user_id}
+							pending={notePending}
+							onChange={(next) => (notePending = next)}
+						/>
+					</RailCard>
+
+					<AttachmentsCard
+						bind:this={attachmentsCard}
+						entityType="job"
+						entityId={jobId}
+						title="Photos and files"
+						canManage={saved.can_record_field_records}
+						canManageTeam={saved.can_manage_team_field_records}
+						currentUserId={saved.current_user_id}
+						onPendingChange={(count) => (pendingFileCount = count)}
+					/>
 				{/if}
 
 				<QuoteSummaryCard

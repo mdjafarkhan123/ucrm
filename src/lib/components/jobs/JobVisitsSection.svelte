@@ -14,6 +14,12 @@
 	import ApplyToFutureDialog from '$lib/components/jobs/ApplyToFutureDialog.svelte';
 	import FinalVisitDialog from '$lib/components/jobs/FinalVisitDialog.svelte';
 	import VisitInvoicePromptDialog from '$lib/components/jobs/VisitInvoicePromptDialog.svelte';
+	import VisitRecordsDialog from '$lib/components/jobs/VisitRecordsDialog.svelte';
+	import {
+		fetchVisitChecklists,
+		visitChecklistsKey,
+		type VisitChecklistRows
+	} from '$lib/checklists/api';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 	import type { JobType } from '$lib/jobs/statuses';
@@ -50,6 +56,7 @@
 	import calendarPlusIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
 	import repeatIcon from '@tabler/icons/outline/repeat.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
+	import folderIcon from '@tabler/icons/outline/folder.svg?raw';
 
 	// The persisted visits manager for a job's detail page — the same "child record with its own save" shape
 	// as a client's property: every action here writes for itself and reports its own toast, so the page's
@@ -75,6 +82,9 @@
 		canInvoiceVisits = false,
 		canEditPricing = false,
 		canSeePrice = true,
+		currentUserId,
+		canRecord,
+		canManageTeam,
 		currencyCode = 'USD'
 	}: {
 		jobId: string;
@@ -100,6 +110,9 @@
 		/** Invoices 5c-5: whether this member may change what a single visit bills. Needs jobs.edit. */
 		canEditPricing?: boolean;
 		canSeePrice?: boolean;
+		currentUserId: string;
+		canRecord: boolean;
+		canManageTeam: boolean;
 		currencyCode?: string;
 	} = $props();
 
@@ -136,6 +149,11 @@
 	// and shows a skeleton if the click still beats the fetch.
 	function warmVisit(visit: JobVisit) {
 		warmTeam();
+		void queryClient.prefetchQuery({
+			queryKey: visitChecklistsKey(visit.id),
+			queryFn: () => fetchVisitChecklists(jobId, visit.id),
+			staleTime: 15_000
+		});
 		if (!perVisitPricing) return;
 		void queryClient.prefetchQuery({
 			queryKey: jobVisitLinesKey(jobId, [visit.id]),
@@ -393,6 +411,7 @@
 	// --- Edit one visit --------------------------------------------------------------------------------------
 
 	let editVisit = $state<JobVisit | null>(null);
+	let recordsVisit = $state<JobVisit | null>(null);
 
 	// One visit's effective lines, fetched only while its dialog is open. Cached under the same key the hover
 	// warms, so reopening the same visit is instant.
@@ -612,6 +631,11 @@
 		// refuses it too (P0410); this just stops offering the door. `invoiced` is only truthful when
 		// canInvoiceVisits, so without that permission the item stays and the backend does the refusing.
 		const billed = canInvoiceVisits && visit.invoiced;
+		items.push({
+			label: 'Notes, photos and files',
+			icon: folderIcon,
+			onSelect: () => (recordsVisit = visit)
+		});
 		if (completeAllowed && !(visit.completed_at && billed)) {
 			items.push(
 				visit.completed_at
@@ -657,6 +681,7 @@
 	// the reminder (the "later" outcome); this prompt just offers the "now" shortcut. Never for a one-off job —
 	// that path already asks the Finish job / return / keep-open question instead.
 	let invoicePromptVisit = $state<JobVisit | null>(null);
+	let completionWarning = $state<{ visit: JobVisit; outstanding: number } | null>(null);
 	const invoicePromptEligible = $derived(
 		canInvoiceVisits &&
 			priceBasis === 'per_visit' &&
@@ -664,7 +689,7 @@
 			Boolean(clientId)
 	);
 
-	async function handleComplete(visit: JobVisit) {
+	async function completeVisit(visit: JobVisit) {
 		try {
 			const result = await completeJobVisit(jobId, visit.id);
 			await refreshAll();
@@ -677,6 +702,38 @@
 		} catch (caught) {
 			toast.error((caught as JobWriteError).message ?? 'That visit could not be marked complete.');
 		}
+	}
+
+	async function handleComplete(visit: JobVisit) {
+		try {
+			const checklist = await queryClient.fetchQuery<VisitChecklistRows>({
+				queryKey: visitChecklistsKey(visit.id),
+				queryFn: () => fetchVisitChecklists(jobId, visit.id),
+				staleTime: 0
+			});
+			if (checklist.outstanding_required > 0) {
+				completionWarning = { visit, outstanding: checklist.outstanding_required };
+				return;
+			}
+			await completeVisit(visit);
+		} catch (caught) {
+			toast.error(
+				caught instanceof Error
+					? caught.message
+					: 'The visit checklist could not be checked before completion.'
+			);
+		}
+	}
+
+	function returnToChecklist() {
+		if (completionWarning) recordsVisit = completionWarning.visit;
+		completionWarning = null;
+	}
+
+	function completeAnyway() {
+		const visit = completionWarning?.visit;
+		completionWarning = null;
+		if (visit) void completeVisit(visit);
 	}
 
 	// What this one visit bills. Since 5c-5a a visit can carry its own quantities, so the job's subtotal is
@@ -781,9 +838,7 @@
 			{/if}
 		</div>
 
-		{#if scheduleAllowed || completeAllowed}
-			<DropdownMenu items={rowMenuItems(visit)} triggerLabel="Actions for this visit" />
-		{/if}
+		<DropdownMenu items={rowMenuItems(visit)} triggerLabel="Actions for this visit" />
 	</li>
 {/snippet}
 
@@ -968,6 +1023,34 @@
 	onSaveFuture={saveEditThenFuture}
 	onClose={() => (editVisit = null)}
 />
+
+<VisitRecordsDialog
+	open={recordsVisit !== null}
+	{jobId}
+	visitId={recordsVisit?.id ?? null}
+	visitLabel={recordsVisit
+		? `${recordsVisit.title || jobTitle || 'Visit'} · ${visitWhen(recordsVisit)}`
+		: ''}
+	{currentUserId}
+	{canRecord}
+	{canManageTeam}
+	onSaved={() => void queryClient.invalidateQueries({ queryKey: jobEventsKey(jobId) })}
+	onClose={() => (recordsVisit = null)}
+/>
+
+<ConfirmDialog
+	open={completionWarning !== null}
+	title="Required checklist answers are blank"
+	tone="critical"
+	confirmLabel="Complete anyway"
+	cancelLabel="Go back"
+	onConfirm={completeAnyway}
+	onClose={returnToChecklist}
+>
+	This visit still has <strong>{completionWarning?.outstanding}</strong> required
+	{completionWarning?.outstanding === 1 ? 'answer' : 'answers'} blank. You can go back and fill them in,
+	or complete the visit anyway.
+</ConfirmDialog>
 
 <EditAllVisitsDialog
 	open={editingAll}

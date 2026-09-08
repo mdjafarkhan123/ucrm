@@ -16,6 +16,7 @@ export type SettingsHome = {
 		snippets_manage: boolean;
 		taxes_manage: boolean;
 		price_book_manage: boolean;
+		checklists_manage: boolean;
 		quotes_manage: boolean;
 		automations_view: boolean;
 	};

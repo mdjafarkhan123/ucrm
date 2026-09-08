@@ -17,6 +17,7 @@
 	import layoutKanbanIcon from '@tabler/icons/outline/layout-kanban.svg?raw';
 	import receiptTaxIcon from '@tabler/icons/outline/receipt-tax.svg?raw';
 	import listIcon from '@tabler/icons/outline/list-details.svg?raw';
+	import checklistIcon from '@tabler/icons/outline/checklist.svg?raw';
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import shieldLockIcon from '@tabler/icons/outline/shield-lock.svg?raw';
@@ -132,6 +133,14 @@
 								icon={listIcon}
 								title="Price Book"
 								description="The products and services you sell, ready to add to any quote."
+							/>
+						{/if}
+						{#if home.permissions.checklists_manage}
+							<SettingsDestinationCard
+								href={resolve('/(app)/settings/checklists')}
+								icon={checklistIcon}
+								title="Checklists"
+								description="The lists your crew ticks off on site, ready to attach to any job."
 							/>
 						{/if}
 						{#if home.permissions.quotes_manage}
