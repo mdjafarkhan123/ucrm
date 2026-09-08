@@ -1,25 +1,30 @@
 # Jobs: Current Checkpoint
 
 - Goal: Build simpler contractor Jobs and Visits without losing proven Jobber behavior.
-- State: 15e (Work Report) complete and committed 2026-09-08 (commit `1b442f3`). Full click-through
-  browser-verified as Contractor Owner on a real job: empty state, edit dialog (toggles, signature select,
-  summary, photo grid, checklist checkboxes, empty states), toggle dependency, save → "Ready to share", `···`
-  menu gains Preview/Print/Copy link once `has_content`, internal preview (no chrome), public `/w/<token>`
-  link (no console errors). Drawn signature image intentionally text-only on the public page.
+- State: Parts 1–15e complete. 15f is deferred by Jafar as optional
+  (`Memory/deferred/offline-field-records-on-site.md`). **15g complete 2026-09-08**: permissions and
+  one-off/recurring journeys passed; the measured Job-history blocker was fixed and verified live. Jafar
+  cancelled phone verification, so no phone-readiness claim exists.
 
 ## Exact next action
 
-**Scope 15f** — "Deliver offline field-record queue, sync and recovery" (notes/checklist answers save
-locally, photos queue, device-only vs synced state explicit, retries don't duplicate, conflicts/interrupted
-uploads/reconnect verified). This is a new architectural surface (offline storage, sync, conflict handling)
-with no prior design in this campaign — per CLAUDE.md rule 2/3, research how this is proven to work
-(e.g. IndexedDB + background sync patterns) and present the plan to Jafar before writing any code.
+**Scope Part 16 with Jafar and confirm its transferred Schedule/Invoice dependencies are ready before planning
+or implementation.** Part 16 is the integrated contractor-journey, recovery, and measured-performance gate.
+
+## Open decisions for Jafar (asked, not yet answered)
+
+- Filling in a checklist writes no history event at all — confirmed, checklists never touch `activity_events`.
+  Add the event, or defer?
+- Assignee picker searches names only, not email; three near-identical "Jafar" accounts made it error-prone.
+- Assignment is job-level by design: one visit on a 26-visit contract exposes the whole job and the customer.
+  Jobber behaves the same; Jafar was told and has not objected.
+- `CLAUDE.md` Admin password is wrong — the account uses `11223344`, not `111223344`.
 
 ## Pointers
 
-- Roadmap: `Memory/campaigns/jobs/ROADMAP.md` — 15f depends on 15b–15e (all complete); 15g (permissions/
-  journeys/mobile/performance verification) follows.
-- Work Report precedents worth reusing for 15f's UI: `JobWorkReportCard.svelte`, `EditJobReportDialog.svelte`,
-  `report-api.ts` (TanStack Query patterns for Job sub-resources).
+- Roadmap: `Memory/campaigns/jobs/ROADMAP.md`. Part 16 is next and still unscoped.
+- Round 3 (phone layout) was never run, so **no phone-readiness claim may be made** for the field screens.
+- Two findings went to global deferred Memory this session: a Field member reads every request in the
+  business (raised to P1), and a full-page-load hydration crash showing the wrong page's content.
 
 Resume command: `read memory and continue the Jobs campaign`.

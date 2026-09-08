@@ -13,6 +13,8 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Seven public functions still answer a signed-out request](seven-public-functions-still-answer-a-signed-out-request.md) |
 | P1 | [The Pipeline nav item is not gated on entitlement or permission](the-pipeline-nav-item-is-not-gated-on-entitlement-or-permission.md) |
 | P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
+| P1 | [No `requests.*` permission keys seeded — a Field member reads every request](no-requests-permission-keys-seeded.md) |
+| P2 | [A full page load can crash hydration and leave the previous page on screen](full-page-load-hydration-crash-leaves-the-previous-page-on-screen.md) |
 | P2 | [Issued invoices cannot be corrected from the browser](issued-invoices-cannot-be-corrected-from-the-browser.md) |
 | P2 | [`automation_6d2` still asserts the pre-6D-3 action park](automation-6d2-action-park-assertions-are-stale.md) |
 | P2 | [Two migration ledger rows do not match the repo](two-migration-ledger-rows-do-not-match-the-repo.md) |
@@ -37,7 +39,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Historical address safety and property transfer between clients](historical-address-safety-and-property-transfer-between-clients.md) |
 | P2 | [Line photos wrongly appear in the request's Attachments card](line-photos-wrongly-appear-in-the-request-s-attachments-card.md) |
 | P2 | [Name search across list APIs falls back to a sequential scan](name-search-across-list-apis-falls-back-to-a-sequential-scan.md) |
-| P2 | [No `requests.*` permission keys seeded](no-requests-permission-keys-seeded.md) |
 | P2 | [Opportunity Brief activity timeline](opportunity-brief-activity-timeline.md) |
 | P2 | [Property deletion guarded once work references a property](property-deletion-guarded-once-work-references-a-property.md) |
 | P2 | [Prospect detail page](prospect-detail-page.md) |
@@ -53,6 +54,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Voiding an invoice tells the client nothing](void-invoice-has-no-client-cancellation-email.md) |
 | P2 | [A recorded payment cannot be edited, deleted, or split across invoices](payments-cannot-be-edited-deleted-or-split-across-invoices.md) |
 | P2 | [Two job billing-reminder modes never raise a reminder](two-job-billing-reminder-modes-raise-no-reminder.md) |
+| P3 | [Offline field records on site (Jobs 15f)](offline-field-records-on-site.md) |
 | P3 | [`/get-started` page weight](get-started-page-weight.md) |
 | P3 | [Client photos are one request each](client-photos-are-one-request-each.md) |
 | P3 | [ClientPicker and CatalogItemPicker can show a stale label after an external value revert](clientpicker-and-catalogitempicker-can-show-a-stale-label-after-an-external-value-revert.md) |

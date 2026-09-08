@@ -73,8 +73,22 @@
 		queryKey: jobDetailKey(jobId),
 		queryFn: () => fetchJob(jobId),
 		enabled: Boolean(jobId),
-		staleTime: 15_000
+		staleTime: 15_000,
+		// A refusal is an answer, not a hiccup. A job outside the reader's assigned scope answers 404 every
+		// time, so retrying only holds the skeleton on screen; keep the retries for genuine network trouble.
+		retry: (failureCount: number, error: Error) => {
+			const status = (error as JobWriteError).status;
+			if (status && status >= 400 && status < 500) return false;
+			return failureCount < 3;
+		}
 	}));
+
+	// The server already says whether the job is missing, refused, or simply broke. Show its wording rather
+	// than a generic failure, so a field worker who opens a job they are not assigned to learns why.
+	const jobErrorMessage = $derived.by(() => {
+		const error = jobQuery.error as JobWriteError | null;
+		return error?.message || 'That job could not be loaded. Refresh and try again.';
+	});
 	const saved = $derived(jobQuery.data);
 
 	// The title's pencil and the instructions block each stage their own draft; the bottom bar saves both in
@@ -459,7 +473,7 @@
 	{#if jobQuery.isPending}
 		<LoadingSkeleton variant="card" label="Loading job" />
 	{:else if jobQuery.isError}
-		<ErrorState description="That job could not be loaded. Refresh and try again." />
+		<ErrorState description={jobErrorMessage} />
 	{:else if saved}
 		<RecordDetailLayout
 			class="job-detail"

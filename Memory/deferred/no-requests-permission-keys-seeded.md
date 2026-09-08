@@ -1,6 +1,11 @@
 # No `requests.*` permission keys seeded
 
-- **Priority:** P2
+- **Priority:** P1 — raised from P2 on 2026-09-08. Jobs 15g Round 1 observed the consequence live: a **Field
+  member sees every request in the business** on the Dashboard, with only the customer and property names
+  redacted (they read "Unknown customer / Unknown property" because the clients read is scoped while the
+  request rows are not). The request title and description are fully visible. The `requests` RLS policies
+  confirm it — SELECT *and* UPDATE both allow any `private.is_organization_member(organization_id)`. Jobs
+  15a-2/15a-3 narrowed jobs, visits and assessments to assigned work; requests were never in that boundary.
 
 
 - **Campaign:** `requests-and-assessments` (closed 2026-08-18).

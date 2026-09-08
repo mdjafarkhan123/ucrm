@@ -4,6 +4,10 @@ import type { JobDerivedStatus, JobType } from './statuses';
 export type JobWriteError = Error & {
 	fieldErrors?: Record<string, string>;
 	reason?: string;
+	// The HTTP status the server refused with. A reader who is not allowed to see a job gets the same answer
+	// however many times they ask, so callers use this to stop retrying and to say what actually happened
+	// instead of a generic failure.
+	status?: number;
 };
 
 async function readOrThrow<T>(response: Response, fallback: string): Promise<T> {
@@ -16,6 +20,7 @@ async function readOrThrow<T>(response: Response, fallback: string): Promise<T> 
 		const error = new Error(result.error ?? fallback) as JobWriteError;
 		error.fieldErrors = result.field_errors ?? {};
 		error.reason = result.reason;
+		error.status = response.status;
 		throw error;
 	}
 	return response.json();
