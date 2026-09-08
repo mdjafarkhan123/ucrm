@@ -28,6 +28,7 @@
 	import JobChecklistsCard from '$lib/components/jobs/JobChecklistsCard.svelte';
 	import JobSignaturesCard from '$lib/components/jobs/JobSignaturesCard.svelte';
 	import { jobSignaturesKey } from '$lib/signatures/api';
+	import JobWorkReportCard from '$lib/components/jobs/JobWorkReportCard.svelte';
 	import JobVisitsSection from '$lib/components/jobs/JobVisitsSection.svelte';
 	import JobLaborSection from '$lib/components/jobs/JobLaborSection.svelte';
 	import JobExpensesSection from '$lib/components/jobs/JobExpensesSection.svelte';
@@ -60,6 +61,9 @@
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import fileInvoiceIcon from '@tabler/icons/outline/file-invoice.svg?raw';
+	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
+	import printIcon from '@tabler/icons/outline/printer.svg?raw';
+	import linkIcon from '@tabler/icons/outline/link.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -85,6 +89,8 @@
 	let notePending = $state<NoteChange[]>([]);
 	let attachmentsCard = $state<AttachmentsCard>();
 	let pendingFileCount = $state(0);
+	let workReportCard = $state<JobWorkReportCard>();
+	let reportHasContent = $state(false);
 
 	const editable = $derived(Boolean(saved?.can_edit));
 	const title = $derived(saved?.job.title?.trim() || `Job #${saved?.job.job_number ?? ''}`);
@@ -168,20 +174,40 @@
 
 	// The header's own ··· menu. Billing needs a client to invoice and the `invoices.create` right; the
 	// composer at /invoices/new reads the client and job off the query and offers this job's billable work.
-	const jobMenuItems = $derived(
-		saved?.can_invoice && saved.job.client
-			? [
-					{
-						label: 'Create invoice',
-						icon: fileInvoiceIcon,
-						onSelect: () =>
-							void goto(
-								`${resolve('/(app)/invoices/new')}?client=${saved.job.client!.id}&job=${saved.job.id}`
-							)
-					}
-				]
-			: []
-	);
+	const jobMenuItems = $derived.by(() => {
+		const items = [];
+		if (saved?.can_invoice && saved.job.client) {
+			items.push({
+				label: 'Create invoice',
+				icon: fileInvoiceIcon,
+				onSelect: () =>
+					void goto(
+						`${resolve('/(app)/invoices/new')}?client=${saved.job.client!.id}&job=${saved.job.id}`
+					)
+			});
+		}
+		// The work report's own door, offered only once there is something on it to see — the "Copy work
+		// report link" command itself refuses an empty report, so the menu never offers a press that can
+		// only fail.
+		if (editable && reportHasContent) {
+			items.push({
+				label: 'Preview work report',
+				icon: eyeIcon,
+				onSelect: () => workReportCard?.openPreview()
+			});
+			items.push({
+				label: 'Print work report',
+				icon: printIcon,
+				onSelect: () => workReportCard?.openPreview(true)
+			});
+			items.push({
+				label: 'Copy work report link',
+				icon: linkIcon,
+				onSelect: () => void workReportCard?.copyLink()
+			});
+		}
+		return items;
+	});
 
 	// --- History ----------------------------------------------------------------------------------------
 	// Jobber swaps the rail for the history panel rather than opening it beside everything else. Nothing
@@ -667,6 +693,19 @@
 					canRecord={saved.can_record_field_records}
 					active={saved.job.status === 'active'}
 				/>
+
+				<!--
+					The customer's own copy of what was done. jobs.edit-gated, the same right `job_report_state`
+					and `save_job_report` both require, so the card is never mounted for a reader who could
+					only ever see it error.
+				-->
+				{#if editable}
+					<JobWorkReportCard
+						bind:this={workReportCard}
+						jobId={saved.job.id}
+						onStateChange={(next) => (reportHasContent = next)}
+					/>
+				{/if}
 
 				<QuoteSummaryCard
 					title="Job total"
