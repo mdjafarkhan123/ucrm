@@ -1,32 +1,30 @@
 # Jobs: Current Checkpoint
 
 - Goal: Build simpler contractor Jobs and Visits without losing proven Jobber behavior.
-- State: Parts 1–11b, 13a, 14a–14e, 15a-1, 15a-2 complete. 15a-3 and 15a-4 are behaviourally complete,
-  applied, measured and committed (`c6b2474`); both still owe one browser check. 11c/12/13b belong to
-  Invoices and Schedule.
-- Contract: `docs/jobs-behavior-contract.md` — still not updated for 15a-2, 15a-3 or 15a-4. Update it once,
-  for all three together, right after the browser check.
+- State: Through 15c complete. 15c-1 and 15c-2 are written and fully browser-verified (owner + Field),
+  console clean, production build passing.
+- Uncommitted on `schedule-5b-visits-card`: 15b plus 15c-1/15c-2. Jafar has not asked for a commit.
 
-## Next action
+## Exact next action
 
-Read `parts/15a-4.md` § "The exact next action". In short: run the app, sign in as the Field member
-(`dev.jafarkhan@gmail.com`) and confirm the Schedule shows only their own week with no team controls and
-reads "My Schedule"; sign in as the contractor owner (`info.socialmediauser1@gmail.com`) and confirm the
-Schedule, Jobs list and job detail are unchanged. Then update the behaviour contract for 15a-2, 15a-3 and
-15a-4 together, and 15a closes.
+Start Part 15d (collected Job signatures and immutable signed evidence). It is `Planned`, not yet scoped
+for implementation.
 
-Nothing here needs Jafar first. After 15a, the next roadmap part is 15b (internal Job/Visit notes, files and
-photos).
+1. Load `.claude/skills/jobber/SKILL.md` and re-read `docs/jobs-behavior-contract.md` for any signature
+   language. Check `Design/Jobber Jobs/` for captured signature screens; visit Jobber if missing.
+2. Load `supabase-postgres-best-practices` before drafting any table/RLS — 15d adds a signed-evidence store
+   that later Job edits must not be able to rewrite.
+3. Present the 15d plan (topology, tables, RLS, the immutability mechanism, the standard pattern and who
+   builds it that way, risks, completion gate) to Jafar. Wait for approval before writing code.
 
-## Deliberately deferred, not silently dropped
+- Checklists work fired no performance gate: reads bounded by one Job/Visit; no visits-list badge exists.
+  If 15d introduces any list-level signature indicator, run the `performance-review` design branch first.
 
-- The clients family still evaluates `can_view_client` once per row — the same defect 15a-4 fixed for jobs,
-  same fix, left alone to keep that change to one family. Details in `parts/15a-4.md`.
-- Photo category labels: cut by "follow Jobber" — Jobber has no such field. May return as our own
-  differentiator; nothing in 15a blocks it.
-- Jobber's profit alerts; the item-cost/expense double-count case; standalone non-Job expenses; the standalone
-  "Close Job" button with its incomplete-visit preview; wiring Upcoming/Today/Late/Action required into
-  `private.job_derived_status` / `job_list_rows` / `job_status_count_rows`; per-entry labor rate overrides;
-  a start/stop timer and a company-wide Timesheets page.
+## Pointers
+
+- Roadmap/contract: `Memory/campaigns/jobs/ROADMAP.md`, `docs/jobs-behavior-contract.md`.
+- 15c shipped code (reference for the record seam): `src/lib/checklists/`, `src/lib/server/checklists/`,
+  `src/lib/components/jobs/{JobChecklistsCard,VisitRecordsDialog}.svelte`,
+  `supabase/migrations/20260911100000_job_checklists_foundation.sql`.
 
 Resume command: `read memory and continue the Jobs campaign`.

@@ -12,3 +12,11 @@
   grow linearly with rows returned. Schedule is the first screen to read 500 rows at once, so it shows the cost
   first; the policy shape is shared, not Schedule-specific.
 - **Pointer:** supabase/migrations/20260818133726_pipeline_rls_permission_lookup_once_per_query.sql.
+- **Proven fix, 2026-09-07 (Jobs 15a-4):** the whole job family was fixed with
+  `supabase/migrations/20260910120000_permission_checks_run_once_per_query.sql`. Split each policy into a
+  caller half with no row argument (`private.current_organization()`,
+  `private.current_permission_scope(key)`, called as `(select …)` → one InitPlan per statement) and a per-row
+  half (`private.is_assigned_to_job`, one index probe, skipped for `all` scope). Schedule one-week window
+  161 → 13.7 ms. The clients family is the same defect and the same fix — `private.can_view_client(organization_id, id)`
+  still runs per row, and the jobs list plan shows it as a Seq Scan on `clients` and `properties`. Left alone
+  in 15a to keep that change to one family.
