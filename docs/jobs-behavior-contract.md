@@ -104,7 +104,7 @@ shows as a status that we can compute, we compute:
 | Active           | Complete visit, `jobs.complete`  | Visit belongs to the Job and is not already complete                                                                       | Stamps `completed_at`; may make the Job Action required or Requires invoicing; emits `visit_completed`    |
 | Active           | Close job, `jobs.close`          | Explicit consequences preview acknowledged                                                                                 | Becomes `closed`; incomplete Visits are removed or completed per the preview's choice; emits `job_closed` |
 | Closed           | Reopen, `jobs.close`             | Client and Property still valid                                                                                            | Returns to `active`. Removed Visits do **not** regenerate; scheduling is an explicit action               |
-| Active or closed | Delete, `jobs.delete`            | Typed confirmation naming the visit count; refused when Invoices exist                                                     | Permanently removes the Job and its Visits                                                                |
+| Active or closed | Delete, `jobs.delete`            | Typed confirmation naming the visit count; refused when Invoices exist, and refused when collected signatures exist       | Permanently removes the Job and its Visits                                                                |
 
 Creating an Invoice never closes a Job. Closing a Job never sends anything and never charges anyone. Cancelling is
 not a separate state: it is Close with the incomplete work removed, presented honestly (below).
@@ -215,8 +215,18 @@ sees a Job's notes, photos and files only for Jobs they are on, with no extra ru
 **Staff permissions → Assigned scope**.
 
 Following Jobber's documented behavior, a required checklist answer produces a **warning and visible outstanding
-work, not a hard block** on completing a Visit. Partial checklist answers save. Signature capture attaches a Job PDF
-to the Job's notes rather than inventing a new record type.
+work, not a hard block** on completing a Visit. Partial checklist answers save.
+
+**Signatures are their own record, not a note (15d, superseding the earlier "attach a Job PDF" line).** A
+signature is collected against a Job — optionally noting which Visit the crew was on — and is bound to a frozen
+copy of the Job document as it stood at that moment plus a SHA-256 hash of it, so later edits to scope, price or
+schedule can never make signed evidence lie. The record is **append-only**: the database refuses every update and
+delete, and there is no void, matching Jobber and Housecall Pro, neither of which offers one. Three fixed kinds —
+work authorization, work completion, other — each carry the exact sentence the signer read. When the Job's
+document no longer hashes to what was signed, the signature is shown as **stale** and the crew collects a new one
+beside it; the old one stays as history. No PDF file is produced: this app runs no server PDF engine, and the
+customer's copy is Part 15e's subject. The frozen snapshot carries the priced work list and total, read back only
+behind `jobs.view_price`.
 
 ### Checklists
 

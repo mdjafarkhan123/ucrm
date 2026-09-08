@@ -2,7 +2,7 @@
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import { emptySignature, type SignatureValue } from '$lib/quotes/signature';
+	import { emptySignature, type SignatureValue } from '$lib/signatures/signature';
 
 	// One pad, both sides of the quote: the customer signs it on their own page, and staff hold the same
 	// thing out on a tablet at the customer's door. The only difference is the word the drawn signature is

@@ -165,8 +165,15 @@ export const GET: RequestHandler = async (event) => {
 		supabase.rpc('job_schedule_stages', { target_job_id: jobId })
 	]);
 
+	if (listRow.error) return databaseError();
+	// The list view is the source of truth that the job exists and is visible to this reader. No row means
+	// no job here, whether it never existed, belongs to another tenant, or sits outside this reader's own
+	// assigned scope — a stranger cannot tell which. This has to be checked before the other errors below:
+	// a reader who cannot see the job at all still fires the gated RPCs in the same batch, and those raise
+	// their own "no access" exception rather than returning quietly, which would otherwise read as a server
+	// error instead of the plain "not found" this really is.
+	if (!listRow.data) return notFound('That job could not be found.');
 	if (
-		listRow.error ||
 		jobRow.error ||
 		lineRows.error ||
 		visitRows.error ||
@@ -180,9 +187,6 @@ export const GET: RequestHandler = async (event) => {
 	) {
 		return databaseError();
 	}
-	// The list view is the source of truth that the job exists and is visible to this reader. No row means
-	// no job here, whether it never existed or belongs to another tenant — a stranger cannot tell which.
-	if (!listRow.data) return notFound('That job could not be found.');
 
 	const row = listRow.data;
 	const extra = jobRow.data as {

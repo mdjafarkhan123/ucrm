@@ -60,6 +60,13 @@ export function buildSignatureObjectKey(organizationId: string, quoteId: string)
 	return `${organizationId}/quote-signatures/${quoteId}/${crypto.randomUUID()}.png`;
 }
 
+// A job signature has the same isolation as a quote's, under its own prefix. The prefix is derived here
+// from the organization and the job, so a key issued while collecting on one job can never be committed
+// against another.
+export function buildJobSignatureObjectKey(organizationId: string, jobId: string): string {
+	return `${organizationId}/job-signatures/${jobId}/${crypto.randomUUID()}.png`;
+}
+
 // A logo is not an attachment either: one per organization, replaced rather than listed, and served
 // inline from our own origin forever. Its own `<org>/logo/` prefix is what `set_organization_logo`
 // checks, so a key issued for one organization can never be committed against another.

@@ -4492,6 +4492,92 @@ export type Database = {
 					}
 				];
 			};
+			job_signatures: {
+				Row: {
+					collected_at: string;
+					collected_by: string | null;
+					document_hash: string;
+					document_snapshot: Json;
+					evidence: Json;
+					id: string;
+					image_byte_size: number | null;
+					image_object_key: string | null;
+					job_id: string;
+					method: string;
+					organization_id: string;
+					signature_type: string;
+					signer_name: string;
+					signer_role: string | null;
+					statement: string;
+					visit_id: string | null;
+				};
+				Insert: {
+					collected_at?: string;
+					collected_by?: string | null;
+					document_hash: string;
+					document_snapshot: Json;
+					evidence?: Json;
+					id?: string;
+					image_byte_size?: number | null;
+					image_object_key?: string | null;
+					job_id: string;
+					method: string;
+					organization_id: string;
+					signature_type: string;
+					signer_name: string;
+					signer_role?: string | null;
+					statement: string;
+					visit_id?: string | null;
+				};
+				Update: {
+					collected_at?: string;
+					collected_by?: string | null;
+					document_hash?: string;
+					document_snapshot?: Json;
+					evidence?: Json;
+					id?: string;
+					image_byte_size?: number | null;
+					image_object_key?: string | null;
+					job_id?: string;
+					method?: string;
+					organization_id?: string;
+					signature_type?: string;
+					signer_name?: string;
+					signer_role?: string | null;
+					statement?: string;
+					visit_id?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'job_signatures_job_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_signatures_job_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'jobs';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'job_signatures_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'job_signatures_visit_fk';
+						columns: ['organization_id', 'visit_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_visits';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
 			job_time_entries: {
 				Row: {
 					cost_per_hour_minor: number | null;
@@ -10957,6 +11043,22 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			collect_job_signature: {
+				Args: {
+					new_image_byte_size?: number;
+					new_image_object_key?: string;
+					new_method: string;
+					new_signature_type: string;
+					new_signer_name: string;
+					new_signer_role?: string;
+					new_statement: string;
+					supplied_evidence?: Json;
+					target_job_id: string;
+					target_organization_id: string;
+					target_visit_id?: string;
+				};
+				Returns: Json;
+			};
 			communication_email_suppression_removal_request_json: {
 				Args: { p_request_id: string };
 				Returns: Json;
@@ -12397,6 +12499,8 @@ export type Database = {
 			job_money: { Args: { target_job_ids: string[] }; Returns: Json };
 			job_schedule_money: { Args: { target_job_id: string }; Returns: Json };
 			job_schedule_stages: { Args: { target_job_id: string }; Returns: Json };
+			job_signature_document: { Args: { target_signature_id: string }; Returns: Json };
+			job_signatures_for_job: { Args: { target_job_id: string }; Returns: Json };
 			job_status_counts: {
 				Args: { target_organization_id: string };
 				Returns: {

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Badge from '$lib/components/ui/Badge.svelte';
-	import SignaturePad from '$lib/components/quotes/SignaturePad.svelte';
-	import { emptySignature, signatureIsGiven, type SignatureValue } from '$lib/quotes/signature';
+	import SignaturePad from '$lib/components/ui/SignaturePad.svelte';
+	import { emptySignature, signatureIsGiven, type SignatureValue } from '$lib/signatures/signature';
 	import type { CustomerQuoteDocument, CustomerQuoteLine } from '$lib/quotes/customer-document';
 	import type { Snippet } from 'svelte';
 	import buildingIcon from '@tabler/icons/outline/building-store.svg?raw';

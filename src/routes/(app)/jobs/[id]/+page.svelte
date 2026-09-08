@@ -26,6 +26,8 @@
 	import JobVisitsToBillCard from '$lib/components/jobs/JobVisitsToBillCard.svelte';
 	import JobPeriodsToBillCard from '$lib/components/jobs/JobPeriodsToBillCard.svelte';
 	import JobChecklistsCard from '$lib/components/jobs/JobChecklistsCard.svelte';
+	import JobSignaturesCard from '$lib/components/jobs/JobSignaturesCard.svelte';
+	import { jobSignaturesKey } from '$lib/signatures/api';
 	import JobVisitsSection from '$lib/components/jobs/JobVisitsSection.svelte';
 	import JobLaborSection from '$lib/components/jobs/JobLaborSection.svelte';
 	import JobExpensesSection from '$lib/components/jobs/JobExpensesSection.svelte';
@@ -328,7 +330,11 @@
 			// What this job has left to bill can change with its scope, its billing setup and its payment
 			// stages, so the two screens that offer this job's work are cleared with the job itself.
 			queryClient.invalidateQueries({ queryKey: ['invoices', 'billable-work'] }),
-			queryClient.invalidateQueries({ queryKey: ['invoices', 'ready-to-bill'] })
+			queryClient.invalidateQueries({ queryKey: ['invoices', 'ready-to-bill'] }),
+			// Whether a collected signature still matches the job is worked out on the server against the
+			// job as it stands, so any change to the job can flip it. The card has to re-ask rather than
+			// keep showing an answer that was true before this save.
+			queryClient.invalidateQueries({ queryKey: jobSignaturesKey(jobId) })
 		]);
 	}
 
@@ -644,6 +650,23 @@
 						onPendingChange={(count) => (pendingFileCount = count)}
 					/>
 				{/if}
+
+				<!--
+					The customer's own sign-off on this job, kept beside the notes and files it sits with in
+					the crew's head. Its own append-only record, not a note: what was signed is frozen and
+					later edits to the job cannot rewrite it.
+				-->
+				<JobSignaturesCard
+					jobId={saved.job.id}
+					lines={saved.lines}
+					visits={saved.visits}
+					totalMinor={saved.can_see_price ? (saved.money?.total_minor ?? null) : null}
+					currencyCode={saved.job.currency_code}
+					locale={saved.locale}
+					clientName={saved.job.client?.display_name ?? null}
+					canRecord={saved.can_record_field_records}
+					active={saved.job.status === 'active'}
+				/>
 
 				<QuoteSummaryCard
 					title="Job total"

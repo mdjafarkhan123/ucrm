@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
 	import CustomerQuoteDocument from '$lib/components/quotes/CustomerQuoteDocument.svelte';
-	import type { SignatureValue } from '$lib/quotes/signature';
+	import type { SignatureValue } from '$lib/signatures/signature';
 
 	// The customer's page. Everything it draws came from the token in the URL, resolved on the server,
 	// and it draws it with the same component staff see in Preview as client - there is no second,

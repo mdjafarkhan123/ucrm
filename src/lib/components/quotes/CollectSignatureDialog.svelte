@@ -2,8 +2,8 @@
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
-	import SignaturePad from '$lib/components/quotes/SignaturePad.svelte';
-	import { emptySignature } from '$lib/quotes/signature';
+	import SignaturePad from '$lib/components/ui/SignaturePad.svelte';
+	import { emptySignature } from '$lib/signatures/signature';
 	import { untrack } from 'svelte';
 
 	// The in-person close: the customer signs the tablet at their own door and the quote is approved.
