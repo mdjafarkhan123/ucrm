@@ -1,3 +1,4 @@
+import { httpError } from '$lib/http-error';
 // Email templates: the organization's own copy-on-write library, sourced from Jafar's platform templates
 // or written from scratch (Communications Part 6c). See
 // docs/contractor-email-contract.md § Templates, snippets, and branding.
@@ -74,14 +75,16 @@ export async function fetchCommunicationEmailTemplates(
 	if (cursor) params.set('cursor', cursor);
 	const response = await fetch(`/api/communications/email-templates?${params.toString()}`);
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'Email templates could not be loaded.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'Email templates could not be loaded.');
 	return result as CommunicationEmailTemplatePage;
 }
 
 export async function fetchCommunicationEmailTemplateLibrary(): Promise<PlatformEmailTemplate[]> {
 	const response = await fetch('/api/communications/email-templates/library');
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'The template library could not be loaded.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'The template library could not be loaded.');
 	return (result as { templates: PlatformEmailTemplate[] }).templates;
 }
 

@@ -1,3 +1,4 @@
+import { httpError } from '$lib/http-error';
 // The team, as anyone in it sees it: just names and calendar colours, for putting someone on a visit.
 export type TeamMember = {
 	id: string;
@@ -13,7 +14,7 @@ export async function fetchAssignableTeam(): Promise<TeamMember[]> {
 	const response = await fetch('/api/team/assignable');
 	if (!response.ok) {
 		const result = await response.json().catch(() => ({}) as { error?: string });
-		throw new Error(result.error ?? 'Your team could not be loaded.');
+		throw httpError(response, result.error ?? 'Your team could not be loaded.');
 	}
 	const result = (await response.json()) as { members: TeamMember[] };
 	return result.members;
@@ -227,7 +228,7 @@ export async function fetchTeamDirectory(
 	const response = await fetch(`/api/team/members?${params.toString()}`);
 	if (!response.ok) {
 		const result = await response.json().catch(() => ({}) as { error?: string });
-		throw new Error(result.error ?? 'Team members could not be loaded.');
+		throw httpError(response, result.error ?? 'Team members could not be loaded.');
 	}
 	return response.json();
 }
@@ -236,7 +237,7 @@ export async function fetchTeamMember(userId: string): Promise<TeamMemberDetail>
 	const response = await fetch(`/api/team/members/${userId}`);
 	if (!response.ok) {
 		const result = await response.json().catch(() => ({}) as { error?: string });
-		throw new Error(result.error ?? 'That team member could not be loaded.');
+		throw httpError(response, result.error ?? 'That team member could not be loaded.');
 	}
 	const result = (await response.json()) as { member: TeamMemberDetail };
 	return result.member;
@@ -281,7 +282,7 @@ export async function fetchTeamMemberAccess(userId: string): Promise<TeamAccessE
 	const response = await fetch(`/api/team/members/${userId}/access`);
 	if (!response.ok) {
 		const result = await response.json().catch(() => ({}) as { error?: string });
-		throw new Error(result.error ?? 'That person’s access could not be loaded.');
+		throw httpError(response, result.error ?? 'That person’s access could not be loaded.');
 	}
 	const result = (await response.json()) as { access: TeamAccessEditor };
 	return result.access;

@@ -1,3 +1,4 @@
+import { httpError } from '$lib/http-error';
 // Settings → Automation detail: the client state for reading one recipe and running its lifecycle actions
 // (Part 6C-3b). TanStack Query owns the cache reads (detail, versions, activation preview); this module only
 // shapes the request/response and the write calls the detail page makes. Every write carries a FRESH
@@ -143,7 +144,8 @@ async function throwIfStale(response: Response): Promise<void> {
 		error?: string;
 	};
 	// A 409 that is not the stale-editor shape (e.g. over-limit, invalid transition) carries its own message.
-	if (body.stale !== true) throw new Error(body.error ?? 'That automation could not be updated.');
+	if (body.stale !== true)
+		throw httpError(response, body.error ?? 'That automation could not be updated.');
 	throw new StaleDraftError(
 		body.current_revision ?? null,
 		body.editor_name ?? null,
@@ -154,14 +156,17 @@ async function throwIfStale(response: Response): Promise<void> {
 export async function fetchRecipeDetail(recipeId: string): Promise<RecipeDetail> {
 	const response = await fetch(`/api/settings/automation/recipes/${recipeId}`);
 	if (!response.ok)
-		throw new Error(await readError(response, 'That automation could not be loaded.'));
+		throw httpError(response, await readError(response, 'That automation could not be loaded.'));
 	return (await response.json()) as RecipeDetail;
 }
 
 export async function fetchRecipeVersions(recipeId: string): Promise<RecipeVersion[]> {
 	const response = await fetch(`/api/settings/automation/recipes/${recipeId}/versions`);
 	if (!response.ok)
-		throw new Error(await readError(response, 'This automation’s history could not be loaded.'));
+		throw httpError(
+			response,
+			await readError(response, 'This automation’s history could not be loaded.')
+		);
 	const body = (await response.json()) as { versions: RecipeVersion[] };
 	return body.versions;
 }
@@ -173,14 +178,18 @@ export async function fetchRecipeHistory(
 	const qs = pageParam ? `?cursor=${encodeURIComponent(pageParam)}` : '';
 	const response = await fetch(`/api/settings/automation/recipes/${recipeId}/history${qs}`);
 	if (!response.ok)
-		throw new Error(await readError(response, 'This automation’s history could not be loaded.'));
+		throw httpError(
+			response,
+			await readError(response, 'This automation’s history could not be loaded.')
+		);
 	return (await response.json()) as RecipeHistoryPage;
 }
 
 export async function fetchActivationPreview(recipeId: string): Promise<ActivationPreview> {
 	const response = await fetch(`/api/settings/automation/recipes/${recipeId}/activation-preview`);
 	if (!response.ok)
-		throw new Error(
+		throw httpError(
+			response,
 			await readError(response, 'We could not check this automation for activation.')
 		);
 	return (await response.json()) as ActivationPreview;
@@ -200,7 +209,7 @@ export async function activateRecipe(
 	});
 	await throwIfStale(response);
 	if (!response.ok)
-		throw new Error(await readError(response, 'We could not activate that automation.'));
+		throw httpError(response, await readError(response, 'We could not activate that automation.'));
 	return (await response.json()) as ActivateResult;
 }
 
@@ -220,7 +229,7 @@ export async function setRecipeLifecycle(
 	});
 	await throwIfStale(response);
 	if (!response.ok)
-		throw new Error(await readError(response, 'We could not update that automation.'));
+		throw httpError(response, await readError(response, 'We could not update that automation.'));
 	return (await response.json()) as LifecycleResult;
 }
 
@@ -240,6 +249,6 @@ export async function duplicateRecipe(
 	});
 	await throwIfStale(response);
 	if (!response.ok)
-		throw new Error(await readError(response, 'We could not duplicate that automation.'));
+		throw httpError(response, await readError(response, 'We could not duplicate that automation.'));
 	return (await response.json()) as DuplicateResult;
 }

@@ -1,6 +1,10 @@
 import type { JobReportState } from './report-types';
 
-export type JobReportApiError = Error & { fieldErrors?: Record<string, string>; reason?: string };
+export type JobReportApiError = Error & {
+	fieldErrors?: Record<string, string>;
+	reason?: string;
+	status?: number;
+};
 
 async function throwApiError(response: Response): Promise<never> {
 	const result = await response
@@ -13,6 +17,7 @@ async function throwApiError(response: Response): Promise<never> {
 	) as JobReportApiError;
 	error.fieldErrors = result.field_errors ?? {};
 	error.reason = result.reason;
+	error.status = response.status;
 	throw error;
 }
 

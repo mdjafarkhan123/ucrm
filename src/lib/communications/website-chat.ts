@@ -1,3 +1,4 @@
+import { httpError } from '$lib/http-error';
 export type WebsiteChatWidgetOrigin = {
 	id: string;
 	widget_id: string;
@@ -89,7 +90,8 @@ export const websiteChatWidgetsKey = ['settings', 'communications', 'website-cha
 export async function fetchWebsiteChatWidgets(): Promise<WebsiteChatWidgets> {
 	const response = await fetch('/api/settings/communications/website-chat');
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'Website Chat widgets could not be loaded.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'Website Chat widgets could not be loaded.');
 	return result as WebsiteChatWidgets;
 }
 

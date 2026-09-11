@@ -1,3 +1,4 @@
+import { httpError } from '$lib/http-error';
 // Snippets: short, folder-organized reusable text for the Conversations composer (Communications Part 6,
 // first slice). See docs/contractor-email-contract.md § Templates, snippets, and branding.
 
@@ -42,7 +43,7 @@ export async function fetchCommunicationSnippets(
 	if (cursor) params.set('cursor', cursor);
 	const response = await fetch(`/api/communications/snippets?${params.toString()}`);
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'Snippets could not be loaded.');
+	if (!response.ok) throw httpError(response, result.error ?? 'Snippets could not be loaded.');
 	return result as CommunicationSnippetPage;
 }
 

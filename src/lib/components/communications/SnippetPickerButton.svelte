@@ -78,6 +78,8 @@
 			<div class="snippet-picker__options">
 				{#if snippetsQuery.isPending}
 					<p class="snippet-picker__empty">Loading…</p>
+				{:else if snippetsQuery.isError}
+					<p class="snippet-picker__empty" role="alert">Snippets could not be loaded.</p>
 				{:else if filtered.length === 0}
 					<p class="snippet-picker__empty">
 						{normalizedSearch ? 'No matching snippets.' : 'No snippets yet.'}

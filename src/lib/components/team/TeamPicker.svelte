@@ -79,6 +79,10 @@
 	</legend>
 	{#if teamQuery.isPending}
 		<p class="team-picker__hint">Loading your team…</p>
+	{:else if teamQuery.isError}
+		<p class="team-picker__hint" role="alert">
+			Your team could not be loaded. Close and try again.
+		</p>
 	{:else if team.length === 0}
 		<p class="team-picker__hint">No team members to assign yet.</p>
 	{:else}

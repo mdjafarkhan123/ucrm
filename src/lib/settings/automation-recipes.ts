@@ -1,3 +1,4 @@
+import { httpError } from '$lib/http-error';
 // Settings → Automation home: the recipe list client state (Part 6C-1). TanStack Query owns it; this module
 // only shapes the request/response. The list is read-only here — authoring/lifecycle mutations arrive in
 // 6C-2/6C-3 and invalidate this key.
@@ -44,6 +45,6 @@ export async function fetchAutomationRecipes(
 	if (pageParam) params.set('cursor', pageParam);
 	const qs = params.toString();
 	const response = await fetch(`/api/settings/automation/recipes${qs ? `?${qs}` : ''}`);
-	if (!response.ok) throw new Error('Automations could not be loaded.');
+	if (!response.ok) throw httpError(response, 'Automations could not be loaded.');
 	return (await response.json()) as RecipeListPage;
 }

@@ -83,6 +83,8 @@
 			<div class="email-template-picker__options">
 				{#if templatesQuery.isPending}
 					<p class="email-template-picker__empty">Loading…</p>
+				{:else if templatesQuery.isError}
+					<p class="email-template-picker__empty" role="alert">Templates could not be loaded.</p>
 				{:else if filtered.length === 0}
 					<p class="email-template-picker__empty">
 						{normalizedSearch ? 'No matching templates.' : 'No templates yet.'}

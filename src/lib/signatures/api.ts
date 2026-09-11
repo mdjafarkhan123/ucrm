@@ -1,6 +1,10 @@
 import type { JobSignature, JobSignatureDocument, JobSignatureType } from './types';
 
-export type SignatureApiError = Error & { fieldErrors?: Record<string, string>; reason?: string };
+export type SignatureApiError = Error & {
+	fieldErrors?: Record<string, string>;
+	reason?: string;
+	status?: number;
+};
 
 async function throwApiError(response: Response): Promise<never> {
 	const result = await response
@@ -13,6 +17,7 @@ async function throwApiError(response: Response): Promise<never> {
 	) as SignatureApiError;
 	error.fieldErrors = result.field_errors ?? {};
 	error.reason = result.reason;
+	error.status = response.status;
 	throw error;
 }
 

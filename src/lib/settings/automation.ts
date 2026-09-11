@@ -1,3 +1,4 @@
+import { httpError } from '$lib/http-error';
 // Settings → Automation (Part 6B shell). The contractor-facing read of the one server access decision in
 // $lib/server/access/automation.ts. The page renders whatever this returns and never reconstructs
 // entitlement, permission, authority, or limits on its own. In 6B there is no recipe data — only the
@@ -60,5 +61,5 @@ export async function fetchAutomationSettings(): Promise<AutomationAccessResult>
 			reason: body.reason === 'not_included' ? 'not_included' : 'permission_denied'
 		};
 	}
-	throw new Error('Automation could not be loaded.');
+	throw httpError(response, 'Automation could not be loaded.');
 }

@@ -1,3 +1,4 @@
+import { httpError } from '$lib/http-error';
 export type CommunicationEmailDomain = {
 	id: string;
 	domain_name: string;
@@ -53,7 +54,8 @@ export const communicationSendersKey = ['settings', 'communications', 'senders']
 export async function fetchCommunicationSenders(): Promise<CommunicationSenders> {
 	const response = await fetch('/api/settings/communications/senders');
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'Email identities could not be loaded.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'Email identities could not be loaded.');
 	return result as CommunicationSenders;
 }
 

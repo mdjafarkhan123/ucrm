@@ -1,3 +1,4 @@
+import { httpError } from '$lib/http-error';
 // Settings → Automation builder: the client state for authoring one recipe draft (Part 6C-2b). TanStack
 // Query owns cache reads (the editor load); this module only shapes the request/response
 // and the write calls the builder makes. Every write carries a fresh idempotency key so a retried submit is
@@ -53,7 +54,7 @@ async function readError(response: Response, fallback: string): Promise<string> 
 export async function fetchRecipeEditor(recipeId: string): Promise<EditorRecipe> {
 	const response = await fetch(`/api/settings/automation/recipes/${recipeId}/editor`);
 	if (!response.ok)
-		throw new Error(await readError(response, 'That automation could not be loaded.'));
+		throw httpError(response, await readError(response, 'That automation could not be loaded.'));
 	return (await response.json()) as EditorRecipe;
 }
 
@@ -80,7 +81,7 @@ export async function createRecipeDraft(input: CreateDraftInput): Promise<DraftC
 		})
 	});
 	if (!response.ok)
-		throw new Error(await readError(response, 'We could not create that automation.'));
+		throw httpError(response, await readError(response, 'We could not create that automation.'));
 	return (await response.json()) as DraftCommandResult;
 }
 
@@ -117,6 +118,6 @@ export async function saveRecipeDraft(input: SaveDraftInput): Promise<DraftComma
 		);
 	}
 	if (!response.ok)
-		throw new Error(await readError(response, 'We could not save that automation.'));
+		throw httpError(response, await readError(response, 'We could not save that automation.'));
 	return (await response.json()) as DraftCommandResult;
 }

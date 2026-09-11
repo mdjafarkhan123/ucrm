@@ -1,3 +1,4 @@
+import { httpError } from '$lib/http-error';
 export type OutboundAttachment = {
 	id: string;
 	file_name: string;
@@ -377,7 +378,7 @@ export async function fetchInboxEmail(search = ''): Promise<InboxEmailPage> {
 	if (search.trim()) params.set('search', search.trim());
 	const response = await fetch(`/api/communications/email-history?${params.toString()}`);
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'Email history could not be loaded.');
+	if (!response.ok) throw httpError(response, result.error ?? 'Email history could not be loaded.');
 	return result as InboxEmailPage;
 }
 
@@ -390,7 +391,8 @@ export async function fetchInboxMessages(
 	if (view === 'mine') params.set('view', 'mine');
 	const response = await fetch(`/api/communications/email-history?${params.toString()}`);
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'Conversation history could not be loaded.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'Conversation history could not be loaded.');
 	return result as InboxMessagePage;
 }
 
@@ -401,7 +403,8 @@ export async function assignConversation(clientId: string, assignedTo: string | 
 		body: JSON.stringify({ assigned_to: assignedTo })
 	});
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'This conversation could not be assigned.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'This conversation could not be assigned.');
 	return result as { assigned_to: string | null };
 }
 
@@ -410,7 +413,8 @@ export async function followConversation(clientId: string) {
 		method: 'POST'
 	});
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'This conversation could not be followed.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'This conversation could not be followed.');
 	return result as { following: boolean };
 }
 
@@ -419,7 +423,8 @@ export async function unfollowConversation(clientId: string) {
 		method: 'DELETE'
 	});
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'This conversation could not be unfollowed.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'This conversation could not be unfollowed.');
 	return result as { following: boolean };
 }
 
@@ -444,7 +449,8 @@ export async function presignOutboundAttachment(input: {
 		})
 	});
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'That file could not be prepared for upload.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'That file could not be prepared for upload.');
 	return result as { upload_url: string; object_key: string };
 }
 
@@ -531,7 +537,8 @@ export async function resolveInboundReview(
 		})
 	});
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'This conversation could not be resolved.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'This conversation could not be resolved.');
 	return result as {
 		resolution: 'link' | 'dismiss';
 		resolved_count: number;
@@ -546,7 +553,7 @@ export async function resendInboxEmail(id: string, idempotencyKey: string) {
 		body: JSON.stringify({ idempotency_key: idempotencyKey })
 	});
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'This message could not be resent.');
+	if (!response.ok) throw httpError(response, result.error ?? 'This message could not be resent.');
 	return result as { intent: { id: string; status: string; created_at: string } };
 }
 
@@ -557,21 +564,22 @@ export async function markConversationRead(clientId: string) {
 		body: JSON.stringify({ client_id: clientId })
 	});
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'This conversation could not be marked read.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'This conversation could not be marked read.');
 	return result as { last_read_at: string };
 }
 
 export async function fetchInboundAttachmentDownloadUrl(attachmentId: string) {
 	const response = await fetch(`/api/communications/inbound-attachments/${attachmentId}/download`);
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'That file could not be downloaded.');
+	if (!response.ok) throw httpError(response, result.error ?? 'That file could not be downloaded.');
 	return result as { download_url: string };
 }
 
 export async function fetchOutboundAttachmentDownloadUrl(attachmentId: string) {
 	const response = await fetch(`/api/communications/attachments/${attachmentId}/download`);
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'That file could not be downloaded.');
+	if (!response.ok) throw httpError(response, result.error ?? 'That file could not be downloaded.');
 	return result as { download_url: string };
 }
 
@@ -629,7 +637,8 @@ export const conversationContextKey = (clientId: string) =>
 export async function fetchConversationContext(clientId: string): Promise<ConversationContext> {
 	const response = await fetch(`/api/communications/conversations/${clientId}/context`);
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'Customer context could not be loaded.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'Customer context could not be loaded.');
 	return result as ConversationContext;
 }
 
@@ -646,7 +655,8 @@ export async function fetchClientCommunicationHistory(
 	if (cursor) params.set('cursor', cursor);
 	const response = await fetch(`/api/communications/email-history?${params.toString()}`);
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'Communication history could not be loaded.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'Communication history could not be loaded.');
 	return result as InboxMessagePage;
 }
 
@@ -683,7 +693,8 @@ export async function endWebsiteChatSession(sessionId: string) {
 		method: 'POST'
 	});
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'This conversation could not be ended.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'This conversation could not be ended.');
 	return result;
 }
 
@@ -696,6 +707,7 @@ export async function resolveWebsiteChatIdentity(sessionId: string, clientId: st
 		body: JSON.stringify({ client_id: clientId })
 	});
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'This identity could not be resolved.');
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'This identity could not be resolved.');
 	return result;
 }

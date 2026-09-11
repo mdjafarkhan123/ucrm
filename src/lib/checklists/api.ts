@@ -6,7 +6,11 @@ import type {
 	VisitChecklist
 } from './types';
 
-export type ChecklistApiError = Error & { fieldErrors?: Record<string, string>; reason?: string };
+export type ChecklistApiError = Error & {
+	fieldErrors?: Record<string, string>;
+	reason?: string;
+	status?: number;
+};
 
 async function throwApiError(response: Response): Promise<never> {
 	const result = await response
@@ -19,6 +23,7 @@ async function throwApiError(response: Response): Promise<never> {
 	) as ChecklistApiError;
 	error.fieldErrors = result.field_errors ?? {};
 	error.reason = result.reason;
+	error.status = response.status;
 	throw error;
 }
 

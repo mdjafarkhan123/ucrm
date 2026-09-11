@@ -145,12 +145,21 @@ export const clientsListKey = (filters: ClientListFilters) => ['clients', 'list'
 
 export const clientDetailKey = (clientId: string) => ['clients', 'detail', clientId] as const;
 
+// Carries the HTTP status the server refused with, so the query client stops retrying a 403/404 (the
+// answer never changes) and the page can say "no access" or "not found" instead of spinning or blaming
+// the connection.
+export type ClientReadError = Error & { status: number };
+
+async function readError(response: Response, fallback: string): Promise<ClientReadError> {
+	const result = await response.json().catch(() => ({}) as { error?: string });
+	const error = new Error(result.error ?? fallback) as ClientReadError;
+	error.status = response.status;
+	return error;
+}
+
 export async function fetchClient(clientId: string): Promise<ClientDetail> {
 	const response = await fetch(`/api/clients/${clientId}`);
-	if (!response.ok) {
-		const result = await response.json().catch(() => ({}) as { error?: string });
-		throw new Error(result.error ?? 'That client could not be loaded.');
-	}
+	if (!response.ok) throw await readError(response, 'That client could not be loaded.');
 	const result = await response.json();
 	return result.client;
 }
@@ -253,9 +262,6 @@ export async function fetchClients(
 	if (cursor) params.set('cursor', cursor);
 
 	const response = await fetch(`/api/clients?${params.toString()}`);
-	if (!response.ok) {
-		const result = await response.json().catch(() => ({}) as { error?: string });
-		throw new Error(result.error ?? 'Clients could not be loaded.');
-	}
+	if (!response.ok) throw await readError(response, 'Clients could not be loaded.');
 	return response.json();
 }

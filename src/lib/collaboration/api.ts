@@ -5,7 +5,7 @@ import type { Tables } from '$lib/database.types';
 export type EntityType =
 	'client' | 'property' | 'request' | 'quote' | 'job_expense' | 'job' | 'visit';
 
-export type ApiError = Error & { fieldErrors?: Record<string, string> };
+export type ApiError = Error & { fieldErrors?: Record<string, string>; status?: number };
 
 async function throwApiError(response: Response): Promise<never> {
 	const result = await response
@@ -13,6 +13,7 @@ async function throwApiError(response: Response): Promise<never> {
 		.catch(() => ({}) as { error?: string; field_errors?: Record<string, string> });
 	const error = new Error(result.error ?? 'That request could not be completed.') as ApiError;
 	error.fieldErrors = result.field_errors ?? {};
+	error.status = response.status;
 	throw error;
 }
 

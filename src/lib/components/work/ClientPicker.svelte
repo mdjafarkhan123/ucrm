@@ -2,7 +2,7 @@
 	import { untrack } from 'svelte';
 	import { Combobox } from 'bits-ui';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { fetchClients, type ClientListItem } from '$lib/clients/api';
+	import { fetchClients, type ClientListItem, type ClientReadError } from '$lib/clients/api';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import exclamationCircleIcon from '@tabler/icons/outline/exclamation-circle.svg?raw';
@@ -154,6 +154,12 @@
 				<Combobox.Viewport class="client-picker__viewport">
 					{#if clientsQuery.isPending}
 						<div class="client-picker__empty">Searching…</div>
+					{:else if clientsQuery.isError}
+						<div class="client-picker__empty" role="alert">
+							{(clientsQuery.error as ClientReadError).status === 403
+								? 'You do not have access to the client list.'
+								: 'Clients could not be loaded. Try again.'}
+						</div>
 					{:else}
 						{#each results as client (client.id)}
 							<Combobox.Item

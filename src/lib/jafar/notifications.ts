@@ -1,3 +1,4 @@
+import { httpError } from '$lib/http-error';
 import { resolve } from '$app/paths';
 import type { NotificationTarget } from '$lib/jafar/notification-links';
 
@@ -39,7 +40,7 @@ export async function fetchNotifications(params: {
 
 	const response = await fetch(`/api/jafar/notifications?${query.toString()}`);
 	const result = (await response.json()) as NotificationListResponse;
-	if (!response.ok) throw new Error(result.error ?? 'Notifications could not be loaded.');
+	if (!response.ok) throw httpError(response, result.error ?? 'Notifications could not be loaded.');
 	return result;
 }
 
@@ -56,7 +57,7 @@ export async function updateNotificationRead(request: ReadRequest) {
 	});
 	if (!response.ok) {
 		const result = (await response.json().catch(() => ({}))) as { error?: string };
-		throw new Error(result.error ?? 'The notifications could not be updated.');
+		throw httpError(response, result.error ?? 'The notifications could not be updated.');
 	}
 }
 

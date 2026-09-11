@@ -33,6 +33,7 @@
 		ClientWriteError,
 		clientDetailKey,
 		fetchClient,
+		type ClientReadError,
 		saveClient,
 		type ClientDetail,
 		type ClientIdentityDraft,
@@ -57,6 +58,7 @@
 	import targetIcon from '@tabler/icons/outline/target-arrow.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import checkIcon from '@tabler/icons/outline/circle-check.svg?raw';
+	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 
 	const queryClient = useQueryClient();
 	const clientId = $derived(page.params.id ?? '');
@@ -426,8 +428,22 @@
 
 	{#if clientQuery.isPending}
 		<LoadingSkeleton variant="card" label="Loading client" />
+	{:else if (clientQuery.error as ClientReadError | null)?.status === 403}
+		<EmptyState
+			icon={lockIcon}
+			title="You do not have access to this client"
+			description="You can open a client once one of their visits is assigned to you. Ask an owner or admin if you need it sooner."
+		/>
+	{:else if (clientQuery.error as ClientReadError | null)?.status === 404}
+		<EmptyState
+			title="This client could not be found"
+			description="It may have been deleted, or the link is out of date."
+		/>
 	{:else if clientQuery.isError}
-		<ErrorState description="That client could not be loaded. Refresh and try again." />
+		<ErrorState
+			description="That client could not be loaded. Try again."
+			retry={() => clientQuery.refetch()}
+		/>
 	{:else if client}
 		<RecordDetailLayout
 			class="client-detail"
