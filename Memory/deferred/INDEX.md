@@ -5,6 +5,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | Priority | Deferred task |
 | --- | --- |
 | P1 | [Authenticated reads and non-quote/invoice/payment writes lack a shared rate-limit policy](authenticated-reads-and-pipeline-writes-are-not-rate-limited.md) |
+| P1 | [Background jobs have no production scheduler decision](background-jobs-have-no-production-scheduler-decision.md) |
 | P1 | [Four older composite foreign keys still null the organization on delete](four-older-composite-foreign-keys-still-null-the-organization-on-delete.md) |
 | P1 | [Published Quotes do not freeze the organization logo or brand color](published-quotes-do-not-freeze-the-organization-logo-or-brand-color.md) |
 | P1 | [Removing a saved line photo leaves the file in R2](removing-a-saved-line-photo-leaves-the-file-in-r2.md) |
@@ -73,3 +74,4 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [Invoice email sends to the primary email only, not "+ billing contact"](invoice-email-sends-to-primary-only-not-billing-contact.md) |
 | P3 | [The payment-schedule dialog keeps its refusal banner after the numbers are fixed](job-payment-schedule-dialog-keeps-a-stale-reconciliation-banner.md) |
 | P3 | [One-time flash of full nav + "not connected to an organization" after account menu](one-time-flash-of-full-nav-and-no-organization-banner-after-account-menu.md) |
+| P3 | [Team seat count overshoots right after an invitation is sent](team-seat-count-overshoots-right-after-an-invitation.md) |

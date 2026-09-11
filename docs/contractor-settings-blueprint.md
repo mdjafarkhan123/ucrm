@@ -231,9 +231,11 @@ Business owners cannot edit another person's password.
   flexible access, but never exposes database permission keys or permits invalid combinations. An information
   control available by hover, keyboard focus, and click explains each capability, its practical effect,
   examples, and dependencies in plain language. Members whose access differs from their role show Adjusted.
-- Deactivation shows every affected unfinished assignment and requires the administrator either to reassign
-  all eligible work to another active member or deliberately leave it unassigned. Completed work retains its
-  original attribution, and reactivation never restores old assignments.
+- Deactivation unassigns the member from every incomplete assignment and names that work in the confirmation
+  beforehand, so the administrator may reassign it first. Reassignment is offered, never required. Completed
+  work retains its original attribution, and reactivation never restores old assignments. (Jobber parity,
+  checked 2026-09-11: Jobber unassigns "all incomplete items assigned to them on the calendar" and only
+  *recommends* reassigning first. Earlier UCRM decision required the choice; Jafar chose Jobber's behavior.)
 - Invitations use email only in the first release. A delivery failure leaves the invitation pending with a
   visible Delivery failed state and allows resend or cancellation; it never silently creates an unreachable
   account. SMS invitation delivery waits for working messaging setup and consent behavior.
@@ -248,9 +250,14 @@ Business owners cannot edit another person's password.
   change requires verification by that member.
 - Permanent removal is available only after deactivation and requires the Owner to type the member's name.
   An Administrator must first be demoted by the Owner. The Owner cannot remove themselves through this flow.
-- Each member has recent access activity visible to the Owner and Administrators. It records the actor, action,
-  date, and meaningful before/after change for invitations, role and permission changes, deactivation,
-  restoration, and permanent removal. Passwords and invitation tokens are never recorded.
+- Every team command records the actor, action, date, and meaningful before/after change for invitations, role
+  and permission changes, deactivation, restoration, and permanent removal. Passwords and invitation tokens are
+  never recorded. Surfacing this history to the Owner and Administrators is **deferred pending Jafar's
+  re-decision**: he dropped the reader from Part 3E on 2026-09-11 on the understanding that Jobber had no
+  equivalent, but a live tour the same day found Jobber's **Account Activity** page — "A record of permission,
+  admin access, and team changes made in your account" — an account-level (not per-member) reverse-chronological
+  feed of headline · category · timestamp. See `.claude/skills/jobber/jobber-09-team-users-permissions.md` § 6.
+  The record keeps being written either way, so the surface can be built later without losing history.
 - Team membership has three clear states: Pending, Active, and Deactivated. An invitee becomes Active only
   after accepting the invitation and establishing sign-in access. Pending members consume seats but have no
   application access.
@@ -259,9 +266,12 @@ Business owners cannot edit another person's password.
 - Restoration is blocked when no seat is available and shows the current seat count and upgrade path.
 - Role and permission changes, deactivation, and restoration take effect immediately at the server boundary.
   Deactivation ends active sessions; stale pages or cached data never preserve revoked authority.
-- Invitations, role changes, deactivation, restoration, and ownership transfer produce in-app and email
-  notifications. One Save containing detailed permission adjustments produces one understandable summary,
-  not one message per control.
+- Invitations and ownership-transfer requests are emailed to the person who must act on them. Role changes,
+  deactivation, restoration, and permanent removal notify nobody. (Jobber parity, checked 2026-09-11: Jobber
+  emails the invitee and the ownership-transfer recipient, documents no notification for role or status
+  changes, and carries no team events in its activity feed. Earlier UCRM decision promised in-app and email
+  notifications for all of these; Jafar chose Jobber's behavior. In-app notifications additionally wait on the
+  contractor notification store, which is unbuilt.)
 - A capability unavailable under the organization's platform entitlement appears disabled as Not included in
   your plan with an explanation. Saved adjustments are preserved while unavailable but grant no access unless
   the entitlement returns.

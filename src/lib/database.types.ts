@@ -4496,6 +4496,7 @@ export type Database = {
 				Row: {
 					expires_at: string | null;
 					first_viewed_at: string | null;
+					frozen_document: Json;
 					id: string;
 					issued_at: string;
 					issued_by: string | null;
@@ -4512,6 +4513,7 @@ export type Database = {
 				Insert: {
 					expires_at?: string | null;
 					first_viewed_at?: string | null;
+					frozen_document: Json;
 					id?: string;
 					issued_at?: string;
 					issued_by?: string | null;
@@ -4528,6 +4530,7 @@ export type Database = {
 				Update: {
 					expires_at?: string | null;
 					first_viewed_at?: string | null;
+					frozen_document?: Json;
 					id?: string;
 					issued_at?: string;
 					issued_by?: string | null;
@@ -6384,6 +6387,94 @@ export type Database = {
 					}
 				];
 			};
+			organization_member_availability: {
+				Row: {
+					created_at: string;
+					ends_at: string | null;
+					is_working: boolean;
+					organization_id: string;
+					starts_at: string | null;
+					updated_at: string;
+					user_id: string;
+					weekday: number;
+				};
+				Insert: {
+					created_at?: string;
+					ends_at?: string | null;
+					is_working?: boolean;
+					organization_id: string;
+					starts_at?: string | null;
+					updated_at?: string;
+					user_id: string;
+					weekday: number;
+				};
+				Update: {
+					created_at?: string;
+					ends_at?: string | null;
+					is_working?: boolean;
+					organization_id?: string;
+					starts_at?: string | null;
+					updated_at?: string;
+					user_id?: string;
+					weekday?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_member_availability_organization_id_user_id_fkey';
+						columns: ['organization_id', 'user_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_members';
+						referencedColumns: ['organization_id', 'user_id'];
+					}
+				];
+			};
+			organization_member_availability_exceptions: {
+				Row: {
+					created_at: string;
+					ends_at: string | null;
+					exception_date: string;
+					id: string;
+					is_working: boolean;
+					organization_id: string;
+					reason: string | null;
+					starts_at: string | null;
+					updated_at: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					ends_at?: string | null;
+					exception_date: string;
+					id?: string;
+					is_working?: boolean;
+					organization_id: string;
+					reason?: string | null;
+					starts_at?: string | null;
+					updated_at?: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					ends_at?: string | null;
+					exception_date?: string;
+					id?: string;
+					is_working?: boolean;
+					organization_id?: string;
+					reason?: string | null;
+					starts_at?: string | null;
+					updated_at?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_member_availability_e_organization_id_user_id_fkey';
+						columns: ['organization_id', 'user_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_members';
+						referencedColumns: ['organization_id', 'user_id'];
+					}
+				];
+			};
 			organization_member_cost_profiles: {
 				Row: {
 					cost_per_hour_minor: number | null;
@@ -6566,10 +6657,13 @@ export type Database = {
 			organization_members: {
 				Row: {
 					access_revision: number;
+					availability_revision: number;
 					created_at: string;
 					deactivated_at: string | null;
 					display_name_at_removal: string | null;
 					identity_cleanup_error: string | null;
+					identity_cleanup_lease_expires_at: string | null;
+					identity_cleanup_nonce: string | null;
 					identity_cleanup_state: string;
 					job_title: string | null;
 					organization_id: string;
@@ -6585,10 +6679,13 @@ export type Database = {
 				};
 				Insert: {
 					access_revision?: number;
+					availability_revision?: number;
 					created_at?: string;
 					deactivated_at?: string | null;
 					display_name_at_removal?: string | null;
 					identity_cleanup_error?: string | null;
+					identity_cleanup_lease_expires_at?: string | null;
+					identity_cleanup_nonce?: string | null;
 					identity_cleanup_state?: string;
 					job_title?: string | null;
 					organization_id: string;
@@ -6604,10 +6701,13 @@ export type Database = {
 				};
 				Update: {
 					access_revision?: number;
+					availability_revision?: number;
 					created_at?: string;
 					deactivated_at?: string | null;
 					display_name_at_removal?: string | null;
 					identity_cleanup_error?: string | null;
+					identity_cleanup_lease_expires_at?: string | null;
+					identity_cleanup_nonce?: string | null;
 					identity_cleanup_state?: string;
 					job_title?: string | null;
 					organization_id?: string;
@@ -11020,10 +11120,13 @@ export type Database = {
 				};
 				Returns: {
 					access_revision: number;
+					availability_revision: number;
 					created_at: string;
 					deactivated_at: string | null;
 					display_name_at_removal: string | null;
 					identity_cleanup_error: string | null;
+					identity_cleanup_lease_expires_at: string | null;
+					identity_cleanup_nonce: string | null;
 					identity_cleanup_state: string;
 					job_title: string | null;
 					organization_id: string;
@@ -11184,6 +11287,41 @@ export type Database = {
 					target_organization_id: string;
 				};
 				Returns: Json;
+			};
+			claim_member_identity_cleanup: {
+				Args: {
+					target_batch_size?: number;
+					target_lease_nonce: string;
+					target_lease_seconds?: number;
+				};
+				Returns: {
+					access_revision: number;
+					availability_revision: number;
+					created_at: string;
+					deactivated_at: string | null;
+					display_name_at_removal: string | null;
+					identity_cleanup_error: string | null;
+					identity_cleanup_lease_expires_at: string | null;
+					identity_cleanup_nonce: string | null;
+					identity_cleanup_state: string;
+					job_title: string | null;
+					organization_id: string;
+					profile_revision: number;
+					removed_at: string | null;
+					role: string;
+					schedule_color: string | null;
+					status: string;
+					status_changed_at: string | null;
+					status_changed_by: string | null;
+					user_id: string;
+					work_phone: string | null;
+				}[];
+				SetofOptions: {
+					from: '*';
+					to: 'organization_members';
+					isOneToOne: false;
+					isSetofReturn: true;
+				};
 			};
 			claim_onboarding_application_provision: {
 				Args: { stale_after?: string; target_application_id: string };
@@ -11597,10 +11735,13 @@ export type Database = {
 				};
 				Returns: {
 					access_revision: number;
+					availability_revision: number;
 					created_at: string;
 					deactivated_at: string | null;
 					display_name_at_removal: string | null;
 					identity_cleanup_error: string | null;
+					identity_cleanup_lease_expires_at: string | null;
+					identity_cleanup_nonce: string | null;
 					identity_cleanup_state: string;
 					job_title: string | null;
 					organization_id: string;
@@ -11678,6 +11819,43 @@ export type Database = {
 					target_visit_id: string;
 				};
 				Returns: Json;
+			};
+			delete_member_availability_exception: {
+				Args: {
+					actor_user_id: string;
+					expected_availability_revision: number;
+					target_exception_id: string;
+					target_organization_id: string;
+					target_user_id: string;
+				};
+				Returns: {
+					access_revision: number;
+					availability_revision: number;
+					created_at: string;
+					deactivated_at: string | null;
+					display_name_at_removal: string | null;
+					identity_cleanup_error: string | null;
+					identity_cleanup_lease_expires_at: string | null;
+					identity_cleanup_nonce: string | null;
+					identity_cleanup_state: string;
+					job_title: string | null;
+					organization_id: string;
+					profile_revision: number;
+					removed_at: string | null;
+					role: string;
+					schedule_color: string | null;
+					status: string;
+					status_changed_at: string | null;
+					status_changed_by: string | null;
+					user_id: string;
+					work_phone: string | null;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'organization_members';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
 			};
 			delete_organization_tax_rate: {
 				Args: {
@@ -12528,6 +12706,10 @@ export type Database = {
 			};
 			get_communication_message_recovery_queue: { Args: never; Returns: Json };
 			get_communication_provider_callback_health: { Args: never; Returns: Json };
+			get_incomplete_assignments_for_member: {
+				Args: { target_organization_id: string; target_user_id: string };
+				Returns: Json;
+			};
 			get_organization_automation_authority: {
 				Args: { p_organization_id: string };
 				Returns: Json;
@@ -12664,6 +12846,7 @@ export type Database = {
 			};
 			invoice_list_page: {
 				Args: {
+					client_id_filter?: string;
 					created_from?: string;
 					created_to?: string;
 					cursor_created?: string;
@@ -12898,10 +13081,13 @@ export type Database = {
 				};
 				Returns: {
 					access_revision: number;
+					availability_revision: number;
 					created_at: string;
 					deactivated_at: string | null;
 					display_name_at_removal: string | null;
 					identity_cleanup_error: string | null;
+					identity_cleanup_lease_expires_at: string | null;
+					identity_cleanup_nonce: string | null;
 					identity_cleanup_state: string;
 					job_title: string | null;
 					organization_id: string;
@@ -13733,6 +13919,43 @@ export type Database = {
 				};
 				Returns: undefined;
 			};
+			record_member_identity_cleanup_step: {
+				Args: {
+					cleanup_error?: string;
+					new_cleanup_state: string;
+					target_lease_nonce: string;
+					target_organization_id: string;
+					target_user_id: string;
+				};
+				Returns: {
+					access_revision: number;
+					availability_revision: number;
+					created_at: string;
+					deactivated_at: string | null;
+					display_name_at_removal: string | null;
+					identity_cleanup_error: string | null;
+					identity_cleanup_lease_expires_at: string | null;
+					identity_cleanup_nonce: string | null;
+					identity_cleanup_state: string;
+					job_title: string | null;
+					organization_id: string;
+					profile_revision: number;
+					removed_at: string | null;
+					role: string;
+					schedule_color: string | null;
+					status: string;
+					status_changed_at: string | null;
+					status_changed_by: string | null;
+					user_id: string;
+					work_phone: string | null;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'organization_members';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			record_quote_decision: {
 				Args: {
 					decision_note?: string;
@@ -13836,6 +14059,42 @@ export type Database = {
 				Args: { p_lease_token: string; p_worker_name: string };
 				Returns: boolean;
 			};
+			release_member_identity_cleanup: {
+				Args: {
+					target_lease_nonce: string;
+					target_organization_id: string;
+					target_safe_error: string;
+					target_user_id: string;
+				};
+				Returns: {
+					access_revision: number;
+					availability_revision: number;
+					created_at: string;
+					deactivated_at: string | null;
+					display_name_at_removal: string | null;
+					identity_cleanup_error: string | null;
+					identity_cleanup_lease_expires_at: string | null;
+					identity_cleanup_nonce: string | null;
+					identity_cleanup_state: string;
+					job_title: string | null;
+					organization_id: string;
+					profile_revision: number;
+					removed_at: string | null;
+					role: string;
+					schedule_color: string | null;
+					status: string;
+					status_changed_at: string | null;
+					status_changed_by: string | null;
+					user_id: string;
+					work_phone: string | null;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'organization_members';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			release_team_invitation_reconciliation: {
 				Args: {
 					target_invitation_id: string;
@@ -13904,10 +14163,13 @@ export type Database = {
 				};
 				Returns: {
 					access_revision: number;
+					availability_revision: number;
 					created_at: string;
 					deactivated_at: string | null;
 					display_name_at_removal: string | null;
 					identity_cleanup_error: string | null;
+					identity_cleanup_lease_expires_at: string | null;
+					identity_cleanup_nonce: string | null;
 					identity_cleanup_state: string;
 					job_title: string | null;
 					organization_id: string;
@@ -14220,10 +14482,13 @@ export type Database = {
 				};
 				Returns: {
 					access_revision: number;
+					availability_revision: number;
 					created_at: string;
 					deactivated_at: string | null;
 					display_name_at_removal: string | null;
 					identity_cleanup_error: string | null;
+					identity_cleanup_lease_expires_at: string | null;
+					identity_cleanup_nonce: string | null;
 					identity_cleanup_state: string;
 					job_title: string | null;
 					organization_id: string;
@@ -14370,6 +14635,84 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			save_member_availability_exception: {
+				Args: {
+					actor_user_id: string;
+					expected_availability_revision: number;
+					new_ends_at: string;
+					new_is_working: boolean;
+					new_reason: string;
+					new_starts_at: string;
+					target_date: string;
+					target_organization_id: string;
+					target_user_id: string;
+				};
+				Returns: {
+					access_revision: number;
+					availability_revision: number;
+					created_at: string;
+					deactivated_at: string | null;
+					display_name_at_removal: string | null;
+					identity_cleanup_error: string | null;
+					identity_cleanup_lease_expires_at: string | null;
+					identity_cleanup_nonce: string | null;
+					identity_cleanup_state: string;
+					job_title: string | null;
+					organization_id: string;
+					profile_revision: number;
+					removed_at: string | null;
+					role: string;
+					schedule_color: string | null;
+					status: string;
+					status_changed_at: string | null;
+					status_changed_by: string | null;
+					user_id: string;
+					work_phone: string | null;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'organization_members';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			save_member_weekly_availability: {
+				Args: {
+					actor_user_id: string;
+					expected_availability_revision: number;
+					new_pattern: Json;
+					target_organization_id: string;
+					target_user_id: string;
+				};
+				Returns: {
+					access_revision: number;
+					availability_revision: number;
+					created_at: string;
+					deactivated_at: string | null;
+					display_name_at_removal: string | null;
+					identity_cleanup_error: string | null;
+					identity_cleanup_lease_expires_at: string | null;
+					identity_cleanup_nonce: string | null;
+					identity_cleanup_state: string;
+					job_title: string | null;
+					organization_id: string;
+					profile_revision: number;
+					removed_at: string | null;
+					role: string;
+					schedule_color: string | null;
+					status: string;
+					status_changed_at: string | null;
+					status_changed_by: string | null;
+					user_id: string;
+					work_phone: string | null;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'organization_members';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			save_organization_branding: {
 				Args: {
 					expected_revision: number;
@@ -14428,10 +14771,13 @@ export type Database = {
 				};
 				Returns: {
 					access_revision: number;
+					availability_revision: number;
 					created_at: string;
 					deactivated_at: string | null;
 					display_name_at_removal: string | null;
 					identity_cleanup_error: string | null;
+					identity_cleanup_lease_expires_at: string | null;
+					identity_cleanup_nonce: string | null;
 					identity_cleanup_state: string;
 					job_title: string | null;
 					organization_id: string;
@@ -15145,10 +15491,13 @@ export type Database = {
 				};
 				Returns: {
 					access_revision: number;
+					availability_revision: number;
 					created_at: string;
 					deactivated_at: string | null;
 					display_name_at_removal: string | null;
 					identity_cleanup_error: string | null;
+					identity_cleanup_lease_expires_at: string | null;
+					identity_cleanup_nonce: string | null;
 					identity_cleanup_state: string;
 					job_title: string | null;
 					organization_id: string;

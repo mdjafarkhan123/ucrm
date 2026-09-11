@@ -43,6 +43,21 @@ const teamMemberDetailSchema = z.object({
 		.nullable()
 });
 
+// A pending member's email lives on their invitation row -- get_team_member_detail already returns it. An
+// active or deactivated member has no invitation row left, and profiles carries no email column, so the
+// only place it lives is auth.users. Same lookup, same one-member-at-a-time cost, and the same
+// degrade-to-null-on-failure as the Platform Owner's team list already uses for this exact problem.
+async function resolveSignInEmail(targetUserId: string) {
+	try {
+		const { data, error } = await getTeamCommandClient().auth.admin.getUserById(targetUserId);
+		if (error) throw error;
+		return data.user?.email ?? null;
+	} catch (error) {
+		console.error(`Could not resolve the sign-in email for team member ${targetUserId}.`, error);
+		return null;
+	}
+}
+
 function invalidMemberResponse() {
 	return json(
 		{ error: 'The employee identifier is invalid.' },
@@ -76,7 +91,11 @@ export const GET: RequestHandler = async (event) => {
 		);
 	}
 
-	return json({ member: member.data }, { headers: PRIVATE_READ_HEADERS });
+	const email = member.data.invitation
+		? member.data.invitation.email
+		: await resolveSignInEmail(member.data.user_id);
+
+	return json({ member: { ...member.data, email } }, { headers: PRIVATE_READ_HEADERS });
 };
 
 // Who may change whose role, whether the organization keeps an owner, and which individual adjustments

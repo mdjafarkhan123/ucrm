@@ -32,7 +32,8 @@ const detail = {
 	// Part 14a put the labour rate in the approved shape. Null means nobody has set one, which is not zero.
 	cost_per_hour_minor: null,
 	cost_rate_updated_at: null,
-	invitation: null
+	invitation: null,
+	email: null
 };
 
 describe('team member detail API', () => {

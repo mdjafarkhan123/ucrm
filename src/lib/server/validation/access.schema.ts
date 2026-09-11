@@ -218,6 +218,76 @@ export const memberCostRateSchema = z.object({
 		.nullable()
 });
 
+// When one person can work. Both halves of the section share a revision, so both schemas carry it.
+const expectedAvailabilityRevisionSchema = z
+	.number()
+	.int('Reload this person before saving.')
+	.nonnegative('Reload this person before saving.');
+
+// HH:MM, the same shape the Business Hours form sends. Seconds are not a thing anyone schedules by.
+const clockTimeSchema = z
+	.string()
+	.trim()
+	.regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Enter a time like 08:00.');
+
+// A day is either off, or worked between two times. The database restates this as a CHECK, so a payload that
+// slips past a future edit here still cannot be stored.
+const availabilityDaySchema = z
+	.object({
+		weekday: z.number().int().min(0, 'Pick a day.').max(6, 'Pick a day.'),
+		is_working: z.boolean(),
+		starts_at: clockTimeSchema.nullable().default(null),
+		ends_at: clockTimeSchema.nullable().default(null)
+	})
+	.refine((day) => !day.is_working || (day.starts_at !== null && day.ends_at !== null), {
+		message: 'A working day needs a start and an end.',
+		path: ['starts_at']
+	})
+	.refine((day) => !day.is_working || (day.ends_at ?? '') > (day.starts_at ?? ''), {
+		message: 'The finish has to be after the start.',
+		path: ['ends_at']
+	});
+
+// Seven days or none. An empty list is how the screen says "nobody has set a pattern" again, which is a real
+// answer and not the same as a week of days off.
+export const memberWeeklyAvailabilitySchema = z.object({
+	pattern: z
+		.array(availabilityDaySchema)
+		.refine((days) => days.length === 0 || days.length === 7, {
+			message: 'A working week has to cover every day.'
+		})
+		.refine((days) => new Set(days.map((day) => day.weekday)).size === days.length, {
+			message: 'Each day can only appear once.'
+		}),
+	expected_availability_revision: expectedAvailabilityRevisionSchema
+});
+
+export const memberAvailabilityExceptionSchema = z
+	.object({
+		exception_date: z
+			.string()
+			.trim()
+			.regex(/^\d{4}-\d{2}-\d{2}$/, 'Pick a date.'),
+		is_working: z.boolean(),
+		starts_at: clockTimeSchema.nullable().default(null),
+		ends_at: clockTimeSchema.nullable().default(null),
+		reason: z.string().trim().max(120, 'Use no more than 120 characters.').default(''),
+		expected_availability_revision: expectedAvailabilityRevisionSchema
+	})
+	.refine((entry) => !entry.is_working || (entry.starts_at !== null && entry.ends_at !== null), {
+		message: 'Say which hours are worked that day.',
+		path: ['starts_at']
+	})
+	.refine((entry) => !entry.is_working || (entry.ends_at ?? '') > (entry.starts_at ?? ''), {
+		message: 'The finish has to be after the start.',
+		path: ['ends_at']
+	});
+
+export const memberAvailabilityExceptionDeleteSchema = z.object({
+	exception_id: z.string().uuid(),
+	expected_availability_revision: expectedAvailabilityRevisionSchema
+});
+
 export function zodAccessFieldErrors(error: z.ZodError) {
 	return Object.fromEntries(
 		error.issues.map((issue) => [String(issue.path[0] ?? 'form'), issue.message] as const)

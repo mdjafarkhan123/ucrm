@@ -28,6 +28,7 @@
 	import CreateVisitsDialog from '$lib/components/jobs/CreateVisitsDialog.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { workingWeek } from '$lib/schedule/hours';
+	import { teamAvailability } from '$lib/schedule/member-availability';
 	import { formatCalendarDay, visitClientLabel, visitWorkLabel } from '$lib/schedule/labels';
 	import {
 		describeChange,
@@ -67,11 +68,13 @@
 		fetchScheduleRouteOrder,
 		fetchScheduleUnscheduled,
 		fetchScheduleWindow,
+		fetchTeamAvailability,
 		saveScheduleRouteOrder,
 		scheduleContextKey,
 		scheduleRouteOrderKey,
 		scheduleUnscheduledKey,
 		scheduleWindowKey,
+		teamAvailabilityKey,
 		updateScheduleEvent,
 		type ScheduleEventWrite
 	} from '$lib/schedule/api';
@@ -148,6 +151,24 @@
 		enabled: activeWindow !== null,
 		staleTime: 30_000
 	}));
+
+	// When each teammate works, for the warning shown before a move is saved. Kept off the visit read: the
+	// weekly pattern does not change when the window does, and a member nobody has set is simply absent,
+	// which the warning treats as "nothing to say" rather than as a day off.
+	const availabilityQuery = createQuery(() => ({
+		queryKey: activeWindow
+			? teamAvailabilityKey(activeWindow)
+			: (['schedule', 'team-availability', 'pending'] as const),
+		queryFn: () => fetchTeamAvailability(activeWindow!),
+		enabled: activeWindow !== null,
+		staleTime: 60_000
+	}));
+
+	const teamHours = $derived(
+		availabilityQuery.data
+			? teamAvailability(availabilityQuery.data.pattern, availabilityQuery.data.exceptions)
+			: undefined
+	);
 
 	// --- The Unscheduled backlog drawer ------------------------------------------------------------------
 
@@ -551,7 +572,8 @@
 					visitId: pending.visit.id,
 					proposal: pending.proposal,
 					visits: windowQuery.data?.visits ?? [],
-					workingWeek: workingHours
+					workingWeek: workingHours,
+					teamAvailability: teamHours
 				})
 			: []
 	);

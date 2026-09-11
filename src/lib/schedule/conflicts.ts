@@ -1,16 +1,17 @@
 import { clockMinutes } from '$lib/schedule/layout';
 import { weekdayOf, type WorkingWeek } from '$lib/schedule/hours';
+import { availabilityOn, type TeamAvailability } from '$lib/schedule/member-availability';
 import type { ScheduleProposal } from '$lib/schedule/drag';
 import type { ScheduleVisit } from '$lib/schedule/api';
 
-// The two warnings Version 1 gives before a move is saved.
+// The warnings the Schedule gives before a move is saved.
 //
 // They advise; they never refuse. A contractor double-books on purpose often enough -- two people on one
 // street, a quick drop-in between jobs -- that a calendar which blocks it is a calendar people work around.
 // So this answers "is there anything you should know before you press Save" and stops there.
 //
-// Both answers come from what the page already holds: the visits of the window on screen and the confirmed
-// weekly hours. Nothing here asks the server, and nothing here is stored.
+// Every answer comes from what the page already holds: the visits of the window on screen, the confirmed
+// weekly hours, and the team's availability. Nothing here asks the server, and nothing here is stored.
 
 export type ScheduleWarning =
 	/** This employee already has timed work that overlaps the proposed slot. */
@@ -18,7 +19,16 @@ export type ScheduleWarning =
 	/** The proposed slot falls outside the business's confirmed hours for that weekday. */
 	| { kind: 'outside_hours' }
 	/** The business is closed that whole weekday. */
-	| { kind: 'closed_day' };
+	| { kind: 'closed_day' }
+	/**
+	 * This employee is not working then, by their own availability. `off_that_day` is a day they do not work
+	 * at all -- a weekend, or booked leave; `outside_their_hours` is a day they work, but not at that time.
+	 */
+	| {
+			kind: 'member_unavailable';
+			employee_id: string;
+			reason: 'off_that_day' | 'outside_their_hours';
+	  };
 
 export type WarningInput = {
 	/** The visit being moved, so it never conflicts with itself. */
@@ -28,13 +38,22 @@ export type WarningInput = {
 	visits: ScheduleVisit[];
 	/** Null when the business has no confirmed weekly pattern, and then no hours warning is honest. */
 	workingWeek: WorkingWeek | null;
+	/**
+	 * When each teammate works. Absent, or missing this person, means nobody has said -- and an unknown is
+	 * never warned about, the same way an unconfigured business week is not.
+	 */
+	teamAvailability?: TeamAvailability;
 };
 
 export function scheduleWarnings(input: WarningInput): ScheduleWarning[] {
 	const { proposal } = input;
 	if (proposal.visit_date === null) return [];
 
-	return [...overlapWarnings(input), ...hoursWarnings(proposal, input.workingWeek)];
+	return [
+		...overlapWarnings(input),
+		...hoursWarnings(proposal, input.workingWeek),
+		...availabilityWarnings(proposal, input.teamAvailability)
+	];
 }
 
 // One warning per double-booked employee, not one per clash, because the sentence a dispatcher needs is
@@ -93,4 +112,46 @@ function hoursWarnings(
 
 	const inside = bands.some((band) => start >= band.start && end <= band.end);
 	return inside ? [] : [{ kind: 'outside_hours' }];
+}
+
+// One warning per person who is not working then, in the order they were assigned, because the sentence a
+// dispatcher needs is "Sam is off that day" -- one per name, not one per reason.
+//
+// An Anytime visit is checked against the day only: it claims no particular hour, so "outside their hours"
+// could not be said honestly about it.
+function availabilityWarnings(
+	proposal: ScheduleProposal,
+	team: TeamAvailability | undefined
+): ScheduleWarning[] {
+	if (!team || proposal.visit_date === null) return [];
+
+	const start = clockMinutes(proposal.start_time);
+	const end = clockMinutes(proposal.end_time);
+	const warnings: ScheduleWarning[] = [];
+
+	for (const employeeId of proposal.assignee_ids) {
+		const day = availabilityOn(team.get(employeeId), proposal.visit_date);
+		// Undefined is "nobody has said", which is not a warning. Null is "not working that day", which is.
+		if (day === undefined) continue;
+
+		if (day === null) {
+			warnings.push({
+				kind: 'member_unavailable',
+				employee_id: employeeId,
+				reason: 'off_that_day'
+			});
+			continue;
+		}
+
+		if (start === null || end === null) continue;
+		if (start < day.start || end > day.end) {
+			warnings.push({
+				kind: 'member_unavailable',
+				employee_id: employeeId,
+				reason: 'outside_their_hours'
+			});
+		}
+	}
+
+	return warnings;
 }

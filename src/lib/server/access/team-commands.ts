@@ -75,3 +75,18 @@ export function teamMemberProfileSummary(member: {
 		profile_revision: member.profile_revision
 	};
 }
+
+export type TeamMemberAvailabilitySummary = {
+	user_id: string;
+	availability_revision: number;
+};
+
+export function teamMemberAvailabilitySummary(member: {
+	user_id: string;
+	availability_revision: number;
+}): TeamMemberAvailabilitySummary {
+	return {
+		user_id: member.user_id,
+		availability_revision: member.availability_revision
+	};
+}

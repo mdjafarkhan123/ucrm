@@ -10,6 +10,7 @@
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import TeamAccessEditor from '$lib/components/settings/TeamAccessEditor.svelte';
+	import MemberAvailabilityEditor from '$lib/components/settings/MemberAvailabilityEditor.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
@@ -20,15 +21,24 @@
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import type { HttpError } from '$lib/http-error';
 	import {
 		cancelTeamInvitation,
+		deactivateTeamMember,
+		fetchIncompleteWork,
+		fetchTeamDirectory,
 		fetchTeamMember,
+		removeTeamMember,
 		replaceTeamInvitationEmail,
 		resendTeamInvitation,
+		restoreTeamMember,
 		saveTeamMemberCostRate,
 		saveTeamMemberProfile,
 		teamDirectoryKey,
+		teamMemberIncompleteWorkKey,
 		teamMemberKey,
+		teamSeatsKey,
+		type IncompleteWork,
 		type TeamMemberDetail,
 		type TeamMemberProfileDraft,
 		TeamInvitationWriteError,
@@ -41,6 +51,7 @@
 	const toast = getToastManager();
 	const userId = $derived(page.params.userId ?? '');
 	const actorUserId = $derived(page.data.user?.id ?? '');
+	const viewerRole = $derived(page.data.organization?.role ?? null);
 	const memberQuery = createQuery(() => ({
 		queryKey: teamMemberKey(actorUserId, userId),
 		queryFn: () => fetchTeamMember(userId),
@@ -67,6 +78,71 @@
 	let changeEmailError = $state('');
 	let changeEmailFieldErrors = $state<Record<string, string>>({});
 
+	let deactivateOpen = $state(false);
+	let deactivateSaving = $state(false);
+	let deactivateError = $state('');
+
+	let restoreOpen = $state(false);
+	let restoreSaving = $state(false);
+	let restoreError = $state('');
+
+	let removeOpen = $state(false);
+	let removeSaving = $state(false);
+	let removeError = $state('');
+	let removeTypedName = $state('');
+
+	const incompleteWorkQuery = createQuery(() => ({
+		queryKey: teamMemberIncompleteWorkKey(actorUserId, userId),
+		queryFn: () => fetchIncompleteWork(userId),
+		enabled: deactivateOpen && Boolean(actorUserId && userId),
+		staleTime: 30_000
+	}));
+	const incompleteWork = $derived<IncompleteWork | undefined>(incompleteWorkQuery.data);
+	const hasIncompleteWork = $derived(
+		Boolean(
+			incompleteWork &&
+			(incompleteWork.assessments_total ||
+				incompleteWork.visits_total ||
+				incompleteWork.tasks_total)
+		)
+	);
+
+	const seatsQuery = createQuery(() => ({
+		queryKey: teamSeatsKey(actorUserId),
+		queryFn: () => fetchTeamDirectory({ search: '', status: '' }),
+		enabled: restoreOpen && Boolean(actorUserId),
+		staleTime: 30_000
+	}));
+	const seats = $derived(seatsQuery.data?.seats);
+
+	function prefetchIncompleteWork() {
+		if (!actorUserId || !userId) return;
+		void queryClient.prefetchQuery({
+			queryKey: teamMemberIncompleteWorkKey(actorUserId, userId),
+			queryFn: () => fetchIncompleteWork(userId),
+			staleTime: 30_000
+		});
+	}
+
+	function prefetchSeats() {
+		if (!actorUserId) return;
+		void queryClient.prefetchQuery({
+			queryKey: teamSeatsKey(actorUserId),
+			queryFn: () => fetchTeamDirectory({ search: '', status: '' }),
+			staleTime: 30_000
+		});
+	}
+
+	// Member details and Role & access are an admin's view of someone else's record; Availability is the one
+	// section a member owns for themselves, and its own route already enforces that (self, or an owner or
+	// administrator). So a member refused the admin-only member fetch for their own id still gets that one
+	// section, instead of the whole page reading as broken.
+	const viewingOwnRecordWithoutAdminAccess = $derived(
+		Boolean(actorUserId) &&
+			userId === actorUserId &&
+			(memberQuery.error as HttpError | null)?.status === 403
+	);
+
 	const saved = $derived(memberQuery.data);
 	const member = $derived.by(() => {
 		if (!saved) return undefined;
@@ -79,6 +155,19 @@
 		} satisfies TeamMemberDetail;
 	});
 	const isEditing = $derived(draft !== null);
+
+	// Owner-only, and only once the role editor's own "demote an administrator first" rule is already
+	// satisfied -- remove_team_member enforces both server-side; this just avoids surfacing a button that
+	// would only ever answer with a refusal.
+	const canRemove = $derived(
+		Boolean(
+			member &&
+			viewerRole === 'owner' &&
+			member.status === 'deactivated' &&
+			member.role !== 'admin' &&
+			userId !== actorUserId
+		)
+	);
 
 	// The hourly cost is edited beside the profile and saved by the same bar, but it is written on its own
 	// route: a name and a wage are not the same kind of fact, and only the wage lives behind a separate,
@@ -307,6 +396,98 @@
 			changeEmailSaving = false;
 		}
 	}
+
+	function openDeactivate() {
+		deactivateError = '';
+		deactivateOpen = true;
+	}
+
+	function closeDeactivate() {
+		if (deactivateSaving) return;
+		deactivateOpen = false;
+		deactivateError = '';
+	}
+
+	async function confirmDeactivate() {
+		if (!member || deactivateSaving) return;
+		deactivateSaving = true;
+		deactivateError = '';
+		try {
+			await deactivateTeamMember(userId);
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: teamMemberKey(actorUserId, userId) }),
+				queryClient.invalidateQueries({ queryKey: ['team', 'directory'] })
+			]);
+			deactivateOpen = false;
+			toast.success(`${displayName(member)} was deactivated.`);
+		} catch (error) {
+			deactivateError =
+				error instanceof Error ? error.message : 'That person could not be deactivated.';
+		} finally {
+			deactivateSaving = false;
+		}
+	}
+
+	function openRestore() {
+		restoreError = '';
+		restoreOpen = true;
+	}
+
+	function closeRestore() {
+		if (restoreSaving) return;
+		restoreOpen = false;
+		restoreError = '';
+	}
+
+	async function confirmRestore() {
+		if (!member || restoreSaving) return;
+		restoreSaving = true;
+		restoreError = '';
+		try {
+			await restoreTeamMember(userId);
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: teamMemberKey(actorUserId, userId) }),
+				queryClient.invalidateQueries({ queryKey: ['team', 'directory'] })
+			]);
+			restoreOpen = false;
+			toast.success(`${displayName(member)} was restored.`);
+		} catch (error) {
+			restoreError = error instanceof Error ? error.message : 'That person could not be restored.';
+		} finally {
+			restoreSaving = false;
+		}
+	}
+
+	function openRemove() {
+		removeError = '';
+		removeTypedName = '';
+		removeOpen = true;
+	}
+
+	function closeRemove() {
+		if (removeSaving) return;
+		removeOpen = false;
+		removeError = '';
+		removeTypedName = '';
+	}
+
+	async function confirmRemove() {
+		if (!member || removeSaving || removeTypedName.trim() !== displayName(member)) return;
+		removeSaving = true;
+		removeError = '';
+		try {
+			await removeTeamMember(userId);
+			queryClient.removeQueries({ queryKey: teamMemberKey(actorUserId, userId) });
+			await queryClient.invalidateQueries({ queryKey: ['team', 'directory'] });
+			toast.success(`${displayName(member)} was permanently removed.`);
+			await goto(resolve('/(app)/settings/team'));
+		} catch (error) {
+			removeError =
+				error instanceof Error ? error.message : 'That person could not be permanently removed.';
+		} finally {
+			removeSaving = false;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -324,6 +505,13 @@
 
 		{#if memberQuery.isPending}
 			<LoadingSkeleton variant="card" label="Loading team member" />
+		{:else if viewingOwnRecordWithoutAdminAccess}
+			<PageHeader
+				eyebrow="Team & access"
+				title="Your availability"
+				description="When you work, and time off you've booked."
+			/>
+			<MemberAvailabilityEditor {userId} />
 		{:else if memberQuery.isError}
 			<ErrorState
 				description="That team member could not be loaded. Refresh and try again."
@@ -434,6 +622,8 @@
 						</SectionBlock>
 
 						<TeamAccessEditor {userId} />
+
+						<MemberAvailabilityEditor {userId} />
 					{/snippet}
 
 					{#snippet rail()}
@@ -478,10 +668,39 @@
 								<p class="team-member-detail__rail-copy">
 									Deactivated {formatDate(member.deactivated_at)}.
 								</p>
+								<div class="team-member-detail__invitation-actions">
+									<Button
+										type="button"
+										variant="secondary"
+										variation="work"
+										size="small"
+										onhover={prefetchSeats}
+										onclick={openRestore}>Restore</Button
+									>
+									{#if canRemove}
+										<Button
+											type="button"
+											variant="secondary"
+											variation="destructive"
+											size="small"
+											onclick={openRemove}>Permanently remove</Button
+										>
+									{/if}
+								</div>
 							{:else}
 								<p class="team-member-detail__rail-copy">
 									This person can sign in and use their current access.
 								</p>
+								<div class="team-member-detail__invitation-actions">
+									<Button
+										type="button"
+										variant="secondary"
+										variation="destructive"
+										size="small"
+										onhover={prefetchIncompleteWork}
+										onclick={openDeactivate}>Deactivate</Button
+									>
+								</div>
 							{/if}
 						</RailCard>
 					{/snippet}
@@ -560,6 +779,120 @@
 					>
 					<Button type="submit" loading={changeEmailSaving} disabled={!changeEmailValue.trim()}
 						>Send new invitation</Button
+					>
+				</div>
+			</form>
+		</Dialog>
+	{/if}
+{/if}
+
+{#if member}
+	<ConfirmDialog
+		open={deactivateOpen}
+		title={`Deactivate ${displayName(member)}?`}
+		tone="critical"
+		destructive
+		confirmLabel="Deactivate"
+		loading={deactivateSaving}
+		onConfirm={() => void confirmDeactivate()}
+		onClose={closeDeactivate}
+	>
+		<p>
+			<strong>{displayName(member)}</strong> won’t be able to sign in. Any work assigned to them below
+			will be unassigned so someone else can pick it up.
+		</p>
+		{#if incompleteWorkQuery.isPending}
+			<LoadingSkeleton variant="text" label="Loading assigned work" />
+		{:else if hasIncompleteWork && incompleteWork}
+			<ul class="team-member-detail__incomplete-work">
+				{#if incompleteWork.assessments_total}
+					<li>
+						{incompleteWork.assessments_total}
+						{incompleteWork.assessments_total === 1 ? 'assessment' : 'assessments'}
+					</li>
+				{/if}
+				{#if incompleteWork.visits_total}
+					<li>
+						{incompleteWork.visits_total}
+						{incompleteWork.visits_total === 1 ? 'visit' : 'visits'}
+					</li>
+				{/if}
+				{#if incompleteWork.tasks_total}
+					<li>
+						{incompleteWork.tasks_total}
+						{incompleteWork.tasks_total === 1 ? 'task' : 'tasks'}
+					</li>
+				{/if}
+			</ul>
+		{/if}
+		{#if deactivateError}<p class="team-member-detail__dialog-error" role="alert">
+				{deactivateError}
+			</p>{/if}
+	</ConfirmDialog>
+
+	<ConfirmDialog
+		open={restoreOpen}
+		title={`Restore ${displayName(member)}?`}
+		confirmLabel="Restore"
+		loading={restoreSaving}
+		onConfirm={() => void confirmRestore()}
+		onClose={closeRestore}
+	>
+		<p>
+			<strong>{displayName(member)}</strong> will be able to sign in and use their access again.
+		</p>
+		{#if seatsQuery.isPending}
+			<LoadingSkeleton variant="text" label="Loading seat usage" />
+		{:else if seats}
+			<p class="team-member-detail__rail-copy">
+				{seats.used} of {seats.is_unlimited ? 'unlimited' : seats.limit} seats used.
+			</p>
+		{/if}
+		{#if restoreError}<p class="team-member-detail__dialog-error" role="alert">
+				{restoreError}
+			</p>{/if}
+	</ConfirmDialog>
+
+	{#if removeOpen}
+		<Dialog
+			open
+			title={`Permanently remove ${displayName(member)}?`}
+			size="small"
+			onClose={closeRemove}
+		>
+			<form
+				class="team-member-detail__change-email"
+				onsubmit={(event) => {
+					event.preventDefault();
+					void confirmRemove();
+				}}
+			>
+				<p class="team-member-detail__change-email-copy">
+					This deletes their sign-in and personal contact details for good and cannot be undone.
+					Their name stays on the work, invoices and messages they already touched.
+				</p>
+				<Input
+					id="team-member-remove-confirm"
+					label={`Type "${displayName(member)}" to confirm`}
+					bind:value={removeTypedName}
+					disabled={removeSaving}
+				/>
+				{#if removeError}<p class="team-member-detail__dialog-error" role="alert">
+						{removeError}
+					</p>{/if}
+				<div class="team-member-detail__change-email-actions">
+					<Button
+						type="button"
+						variant="secondary"
+						variation="subtle"
+						disabled={removeSaving}
+						onclick={closeRemove}>Cancel</Button
+					>
+					<Button
+						type="submit"
+						variation="destructive"
+						loading={removeSaving}
+						disabled={removeTypedName.trim() !== displayName(member)}>Permanently remove</Button
 					>
 				</div>
 			</form>
@@ -686,6 +1019,13 @@
 		margin: 0;
 		color: var(--color-critical);
 		font-size: var(--typography--fontSize-small);
+	}
+
+	.team-member-detail__incomplete-work {
+		margin: var(--space-small) 0 0;
+		padding-left: var(--space-base);
+		color: var(--color-heading);
+		font-weight: 600;
 	}
 
 	@media (max-width: 767px) {

@@ -57,7 +57,17 @@
 	function warningText(warning: ScheduleWarning): string {
 		if (warning.kind === 'closed_day') return 'Your business is closed that day.';
 		if (warning.kind === 'outside_hours') return 'That time is outside your working hours.';
+
 		const name = employeesById.get(warning.employee_id)?.full_name ?? 'This employee';
+
+		// A person's own availability, which is a different fact from the business being closed: the company
+		// can be open on a day one employee does not work.
+		if (warning.kind === 'member_unavailable') {
+			return warning.reason === 'off_that_day'
+				? `${name} is not working that day.`
+				: `That time is outside ${name}’s working hours.`;
+		}
+
 		const count = warning.visit_ids.length;
 		return `${name} is already booked then${count > 1 ? ` on ${count} other visits` : ''}.`;
 	}

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { scheduleWarnings } from '$lib/schedule/conflicts';
 import type { ScheduleProposal } from '$lib/schedule/drag';
 import { workingWeek } from '$lib/schedule/hours';
+import { teamAvailability } from '$lib/schedule/member-availability';
 import type { ScheduleVisit } from '$lib/schedule/api';
 
 function visit(overrides: Partial<ScheduleVisit> & { id: string }): ScheduleVisit {
@@ -199,5 +200,154 @@ describe('scheduleWarnings — unscheduled', () => {
 				workingWeek: weekdayHours
 			})
 		).toEqual([]);
+	});
+});
+
+describe('scheduleWarnings — member availability', () => {
+	// 2026-09-02 is a Wednesday, weekday 3. Sam works 08:00-16:30 that day and not at all on Saturday.
+	const samsWeek = teamAvailability(
+		[
+			{ user_id: 'sam', weekday: 3, is_working: true, starts_at: '08:00:00', ends_at: '16:30:00' },
+			{ user_id: 'sam', weekday: 6, is_working: false, starts_at: null, ends_at: null }
+		],
+		[]
+	);
+
+	it('says nothing when the slot sits inside the person’s own hours', () => {
+		expect(
+			scheduleWarnings({
+				visitId: 'moving',
+				proposal: proposal({ start_time: '10:00', end_time: '12:00' }),
+				visits: [],
+				workingWeek: null,
+				teamAvailability: samsWeek
+			})
+		).toEqual([]);
+	});
+
+	it('warns when the slot runs past the end of their day', () => {
+		expect(
+			scheduleWarnings({
+				visitId: 'moving',
+				proposal: proposal({ start_time: '15:00', end_time: '18:00' }),
+				visits: [],
+				workingWeek: null,
+				teamAvailability: samsWeek
+			})
+		).toEqual([{ kind: 'member_unavailable', employee_id: 'sam', reason: 'outside_their_hours' }]);
+	});
+
+	it('warns about a day they do not work at all', () => {
+		expect(
+			scheduleWarnings({
+				visitId: 'moving',
+				proposal: proposal({ visit_date: '2026-09-05' }),
+				visits: [],
+				workingWeek: null,
+				teamAvailability: samsWeek
+			})
+		).toEqual([{ kind: 'member_unavailable', employee_id: 'sam', reason: 'off_that_day' }]);
+	});
+
+	it('warns about booked leave, which beats the ordinary week', () => {
+		const onLeave = teamAvailability(
+			[
+				{ user_id: 'sam', weekday: 3, is_working: true, starts_at: '08:00:00', ends_at: '16:30:00' }
+			],
+			[
+				{
+					user_id: 'sam',
+					exception_date: '2026-09-02',
+					is_working: false,
+					starts_at: null,
+					ends_at: null
+				}
+			]
+		);
+
+		expect(
+			scheduleWarnings({
+				visitId: 'moving',
+				proposal: proposal({ start_time: '10:00', end_time: '12:00' }),
+				visits: [],
+				workingWeek: null,
+				teamAvailability: onLeave
+			})
+		).toEqual([{ kind: 'member_unavailable', employee_id: 'sam', reason: 'off_that_day' }]);
+	});
+
+	// The whole point of leaving availability unset: an unknown is never warned about.
+	it('stays quiet about somebody whose availability nobody has set', () => {
+		expect(
+			scheduleWarnings({
+				visitId: 'moving',
+				proposal: proposal({ assignee_ids: ['nobody-set-this-one'] }),
+				visits: [],
+				workingWeek: null,
+				teamAvailability: samsWeek
+			})
+		).toEqual([]);
+	});
+
+	it('stays quiet when the page has no availability loaded at all', () => {
+		expect(
+			scheduleWarnings({
+				visitId: 'moving',
+				proposal: proposal({ visit_date: '2026-09-05' }),
+				visits: [],
+				workingWeek: null
+			})
+		).toEqual([]);
+	});
+
+	// An Anytime visit claims no hour, so only the day can be judged.
+	it('warns that an Anytime visit lands on their day off, but never about hours', () => {
+		expect(
+			scheduleWarnings({
+				visitId: 'moving',
+				proposal: proposal({ start_time: null, end_time: null, all_day: true }),
+				visits: [],
+				workingWeek: null,
+				teamAvailability: samsWeek
+			})
+		).toEqual([]);
+
+		expect(
+			scheduleWarnings({
+				visitId: 'moving',
+				proposal: proposal({
+					visit_date: '2026-09-05',
+					start_time: null,
+					end_time: null,
+					all_day: true
+				}),
+				visits: [],
+				workingWeek: null,
+				teamAvailability: samsWeek
+			})
+		).toEqual([{ kind: 'member_unavailable', employee_id: 'sam', reason: 'off_that_day' }]);
+	});
+
+	it('names each unavailable person once, even on a crew', () => {
+		const crew = teamAvailability(
+			[
+				{ user_id: 'sam', weekday: 6, is_working: false, starts_at: null, ends_at: null },
+				{ user_id: 'ali', weekday: 6, is_working: false, starts_at: null, ends_at: null }
+			],
+			[]
+		);
+
+		expect(
+			scheduleWarnings({
+				visitId: 'moving',
+				proposal: proposal({ visit_date: '2026-09-05', assignee_ids: ['sam', 'ali'] }),
+				visits: [],
+				workingWeek: null,
+				teamAvailability: crew
+			})
+		).toEqual([
+			{ kind: 'member_unavailable', employee_id: 'sam', reason: 'off_that_day' },
+			{ kind: 'member_unavailable', employee_id: 'ali', reason: 'off_that_day' }
+		]);
 	});
 });

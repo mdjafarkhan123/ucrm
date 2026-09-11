@@ -63,6 +63,23 @@ export type TeamDirectoryPage = {
 export type TeamMemberDetail = TeamDirectoryMember & {
 	cost_per_hour_minor: number | null;
 	cost_rate_updated_at: string | null;
+	// A pending member's email is their invitation's; an active or deactivated member's is their sign-in
+	// email. Null only when the lookup itself failed, never as a stand-in for "none".
+	email: string | null;
+};
+
+export type IncompleteWork = {
+	assessments: Array<{ id: string; starts_at: string | null }>;
+	assessments_total: number;
+	visits: Array<{
+		id: string;
+		visit_date: string | null;
+		start_time: string | null;
+		title: string | null;
+	}>;
+	visits_total: number;
+	tasks: Array<{ id: string; title: string; due_on: string | null }>;
+	tasks_total: number;
 };
 
 export type TeamMemberProfileDraft = {
@@ -142,6 +159,12 @@ export const teamMemberKey = (actorUserId: string, userId: string) =>
 	['team', 'member', actorUserId, userId] as const;
 export const teamMemberAccessKey = (actorUserId: string, userId: string) =>
 	['team', 'member', actorUserId, userId, 'access'] as const;
+export const teamMemberIncompleteWorkKey = (actorUserId: string, userId: string) =>
+	['team', 'member', actorUserId, userId, 'incomplete-work'] as const;
+// A standalone seat-usage read for the Restore dialog. Kept off teamDirectoryKey, which the Team list page
+// stores as createInfiniteQuery pages -- a plain createQuery on that key would corrupt that cache shape.
+export const teamSeatsKey = (actorUserId: string) =>
+	['team', 'directory', 'seats', actorUserId] as const;
 
 export async function createTeamInvitation(input: {
 	email: string;
@@ -310,6 +333,42 @@ export async function saveTeamMemberRole(
 	}
 }
 
+// What the Deactivate confirmation names before a manager confirms. Only fetched when that dialog is about
+// to open, per the query prefetched-on-hover rule -- never as part of the member page's own load.
+export async function fetchIncompleteWork(userId: string): Promise<IncompleteWork> {
+	const response = await fetch(`/api/team/members/${userId}/incomplete-work`);
+	if (!response.ok) {
+		const result = await response.json().catch(() => ({}) as { error?: string });
+		throw httpError(response, result.error ?? 'Their open work could not be loaded.');
+	}
+	const result = (await response.json()) as { assignments: IncompleteWork };
+	return result.assignments;
+}
+
+export async function deactivateTeamMember(userId: string): Promise<void> {
+	const response = await fetch(`/api/team/members/${userId}/deactivate`, { method: 'POST' });
+	if (!response.ok) {
+		const result = await response.json().catch(() => ({}) as { error?: string });
+		throw new TeamWriteError(result.error ?? 'That person could not be deactivated.');
+	}
+}
+
+export async function restoreTeamMember(userId: string): Promise<void> {
+	const response = await fetch(`/api/team/members/${userId}/restore`, { method: 'POST' });
+	if (!response.ok) {
+		const result = await response.json().catch(() => ({}) as { error?: string });
+		throw new TeamWriteError(result.error ?? 'That person could not be restored.');
+	}
+}
+
+export async function removeTeamMember(userId: string): Promise<void> {
+	const response = await fetch(`/api/team/members/${userId}/remove`, { method: 'POST' });
+	if (!response.ok) {
+		const result = await response.json().catch(() => ({}) as { error?: string });
+		throw new TeamWriteError(result.error ?? 'That person could not be permanently removed.');
+	}
+}
+
 export async function saveTeamMemberAccess(
 	userId: string,
 	draft: { adjustments: TeamAccessAdjustment[]; expected_access_revision: number }
@@ -326,4 +385,123 @@ export async function saveTeamMemberAccess(
 			result.stale === true
 		);
 	}
+}
+
+// ---------------------------------------------------------------------------
+// Availability
+// ---------------------------------------------------------------------------
+
+/** One weekday of the ordinary week. A day off carries no times. */
+export type AvailabilityDay = {
+	weekday: number;
+	is_working: boolean;
+	starts_at: string | null;
+	ends_at: string | null;
+};
+
+/** A dated override: a day off, or a day worked to different hours. */
+export type AvailabilityException = {
+	id: string;
+	exception_date: string;
+	is_working: boolean;
+	starts_at: string | null;
+	ends_at: string | null;
+	reason: string | null;
+};
+
+export type MemberAvailabilityEditor = {
+	availability_revision: number;
+	/** Yourself, or anybody when you are an owner or administrator. */
+	can_edit: boolean;
+	/** Seven days, or none at all when nobody has set a pattern. */
+	pattern: AvailabilityDay[];
+	/** Upcoming only; a day off that has passed is history. */
+	exceptions: AvailabilityException[];
+};
+
+export const teamMemberAvailabilityKey = (actorUserId: string, userId: string) =>
+	['team', 'member', actorUserId, userId, 'availability'] as const;
+
+export async function fetchMemberAvailability(userId: string): Promise<MemberAvailabilityEditor> {
+	const response = await fetch(`/api/team/members/${userId}/availability`);
+	if (!response.ok) throw new Error('That person’s availability could not be loaded.');
+	return response.json();
+}
+
+// The week travels whole, because seven days only mean anything together. An empty list clears the pattern,
+// which says "nobody has set when this person works" -- not "they never work".
+export async function saveMemberWeeklyAvailability(
+	userId: string,
+	draft: { pattern: AvailabilityDay[]; expected_availability_revision: number }
+): Promise<number> {
+	const response = await fetch(`/api/team/members/${userId}/availability`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(draft)
+	});
+	const result = await response
+		.json()
+		.catch(
+			() => ({}) as { error?: string; stale?: boolean; member?: { availability_revision: number } }
+		);
+	if (!response.ok) {
+		throw new TeamWriteError(
+			result.error ?? 'That working week could not be saved.',
+			result.stale === true
+		);
+	}
+	return result.member?.availability_revision ?? draft.expected_availability_revision + 1;
+}
+
+export async function saveMemberAvailabilityException(
+	userId: string,
+	draft: {
+		exception_date: string;
+		is_working: boolean;
+		starts_at: string | null;
+		ends_at: string | null;
+		reason: string;
+		expected_availability_revision: number;
+	}
+): Promise<number> {
+	const response = await fetch(`/api/team/members/${userId}/availability/exceptions`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(draft)
+	});
+	const result = await response
+		.json()
+		.catch(
+			() => ({}) as { error?: string; stale?: boolean; member?: { availability_revision: number } }
+		);
+	if (!response.ok) {
+		throw new TeamWriteError(
+			result.error ?? 'That date could not be saved.',
+			result.stale === true
+		);
+	}
+	return result.member?.availability_revision ?? draft.expected_availability_revision + 1;
+}
+
+export async function deleteMemberAvailabilityException(
+	userId: string,
+	draft: { exception_id: string; expected_availability_revision: number }
+): Promise<number> {
+	const response = await fetch(`/api/team/members/${userId}/availability/exceptions`, {
+		method: 'DELETE',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(draft)
+	});
+	const result = await response
+		.json()
+		.catch(
+			() => ({}) as { error?: string; stale?: boolean; member?: { availability_revision: number } }
+		);
+	if (!response.ok) {
+		throw new TeamWriteError(
+			result.error ?? 'That date could not be removed.',
+			result.stale === true
+		);
+	}
+	return result.member?.availability_revision ?? draft.expected_availability_revision + 1;
 }

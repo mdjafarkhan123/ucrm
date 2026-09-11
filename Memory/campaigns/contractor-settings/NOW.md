@@ -6,26 +6,47 @@ Give contractors one permission-aware control room for business identity and fea
 
 ## Where things stand
 
-- **6F-1 closed 2026-08-31** — Jobber Quote-follow-up parity shipped (migration `20260831103248`, 26 pgTAP
-  green, evidence in the contract's § 6F-1 section). Client follow-up preference is enforced at intake and
-  send, live work stops as soon as a Quote leaves Awaiting response, and waits are anchored to the original
-  send in the organization's timezone.
-- **6E-1 closed 2026-08-31** — automation retention sweep; nightly `pg_cron` job is live.
-- Jafar decided 2026-08-31 that the VPS must not block further Automation work. **6D-6** load evidence and
-  **6E-2** retention UI stay deferred until he buys it; no capacity claim or broad rollout before 6D-6 passes.
-- Nothing in Part 6 is dependency-ready and unstarted: **6F-2–6H** need a confirmed Jobber behavior plus a
-  real owning-domain command, and need Jafar's approval before planning.
-- Earlier Part-6-adjacent gaps still open: **3E** (Team and access), **3F** (Scheduling-gated), **4**
-  (Request/booking forms — needs Requests + Scheduling), **5** (feature-owned settings, per domain).
+Part 3F (member availability) is closed. All 5 browser-verification steps pass on Raad LTD. Two real bugs
+were found and fixed this session (uncommitted):
+
+1. `src/routes/(app)/settings/team/[userId]/+page.svelte` — a non-admin member 403'd loading their OWN
+   team-member page, hiding the Availability box. Fixed by rendering just the Availability section when
+   `viewingOwnRecordWithoutAdminAccess` is true.
+2. Not a code bug: the step-4 "not working that day" warning looked broken, but the wrong visit had been
+   fixture-assigned (Job #18 had no assignee; Job #19 "5c-5 Partial Lock Check" was the one really assigned
+   to Field Tester). Retested against Job #19 — the warning fires correctly, and clearing the day-off
+   (step 5) correctly removes it. No product code changed for this one.
+
+`member-detail.spec.ts` was also fixed this session (added `email: null` to its fixture after uncommitted 3E
+work added an `email` field to `/api/team/members/[userId]`). All schedule/availability unit tests pass;
+`npx prettier --check` is clean on the touched files.
+
+Part 3 overall stays partially closed: "Activity-log reader" is still unscoped.
+
+## Blockers
+
+None for 3F. Commit 3E + 3F together once Jafar approves (not yet asked/committed).
 
 ## Exact next action
 
-Ask Jafar which thread to open: **3E Team and access** (the only one with no external dependency), or a
-6F-2–6H pack once he names the behavior. Do not start either without his pick.
+Ask Jafar: (a) OK to commit the uncommitted 3E + 3F work now, and (b) what's next for Part 3 — scope the
+Activity-log reader, or move to a different part.
+
+## Test fixtures left on Raad LTD
+
+- Team member `7d450c50-b3e5-4f97-8ee9-50e08c1f70bb`, display name **"Field Tester"**. Working week:
+  every day 08:00-17:00. One remaining exception: `2026-09-10` (past, harmless). The `2026-09-12` day-off
+  exception was deliberately deleted during step-5 verification — safe to leave cleared.
+- Job #19 "5c-5 Partial Lock Check" is assigned to Field Tester. Job #18 "5c-5 Stage Billing Rig" is
+  unassigned (contrary to an earlier, incorrect note that said #18 was the assigned one).
+- Logins: Owner `info.socialmediauser1@gmail.com` / `11223344`; Field `dev.jafarkhan@gmail.com` /
+  `11223344` (role: field, this IS Field Tester); Office `dev.jafarkhan+office@gmail.com` / `PaidLaunch16!`.
 
 ## Essential pointers
 
-- docs/automation-behavior-contract.md § 6F-1 Quote follow-up parity / Scheduling / Deferred scope
-- Memory/campaigns/contractor-settings/ROADMAP.md — full part status, read when a thread is chosen
-- Memory/deferred/automation-6d2-action-park-assertions-are-stale.md — 6D-2's suite still asserts pre-6D-3
-  behavior; not a product defect
+- `docs/contractor-settings-blueprint.md` § Confirmed Part 3 behavior (the two availability bullets)
+- `supabase/tests/database/team_member_availability.sql` — rerun via the linked-remote fallback in
+  `docs/testing/database.md`; local Supabase CLI is not installed on this machine
+- `Memory/deferred/background-jobs-have-no-production-scheduler-decision.md`
+
+Resume command: `continue contractor settings`.

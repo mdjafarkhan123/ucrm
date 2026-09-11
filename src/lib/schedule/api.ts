@@ -274,3 +274,33 @@ export async function saveScheduleRouteOrder(input: {
 	);
 	return result.order;
 }
+
+// The team's availability for a window, for the warning the calendar shows before a save. It is a separate
+// read from the visits: the weekly pattern does not change when the window does, and the rows are tiny.
+export type TeamAvailabilityResponse = {
+	pattern: Array<{
+		user_id: string;
+		weekday: number;
+		is_working: boolean;
+		starts_at: string | null;
+		ends_at: string | null;
+	}>;
+	exceptions: Array<{
+		user_id: string;
+		exception_date: string;
+		is_working: boolean;
+		starts_at: string | null;
+		ends_at: string | null;
+	}>;
+};
+
+export const teamAvailabilityKey = (window: ScheduleWindow) =>
+	['schedule', 'team-availability', window.from, window.to] as const;
+
+export async function fetchTeamAvailability(
+	window: ScheduleWindow
+): Promise<TeamAvailabilityResponse> {
+	const response = await fetch(`/api/team/availability?from=${window.from}&to=${window.to}`);
+	if (!response.ok) throw new Error('The team’s availability could not be loaded.');
+	return response.json();
+}
