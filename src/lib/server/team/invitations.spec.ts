@@ -469,6 +469,7 @@ describe('resendTeamInvitation', () => {
 		const result = await resendTeamInvitation(client as never, {
 			organizationId: 'organization-1',
 			invitationId: 'invitation-1',
+			resentBy: 'owner-1',
 			businessName: 'Ridgeway',
 			origin: 'https://app.example.com'
 		});
@@ -494,6 +495,7 @@ describe('resendTeamInvitation', () => {
 			resendTeamInvitation(client as never, {
 				organizationId: 'another-organization',
 				invitationId: 'invitation-1',
+				resentBy: 'owner-1',
 				businessName: 'Ridgeway',
 				origin: 'https://app.example.com'
 			})
@@ -509,6 +511,7 @@ describe('resendTeamInvitation', () => {
 		const result = await resendTeamInvitation(client as never, {
 			organizationId: 'organization-1',
 			invitationId: 'invitation-1',
+			resentBy: 'owner-1',
 			businessName: 'Ridgeway',
 			origin: 'https://app.example.com'
 		});

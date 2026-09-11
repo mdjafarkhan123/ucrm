@@ -57,6 +57,7 @@ type ManagedInvitationRow = InvitationRow & {
 type ResendInvitationParams = {
 	organizationId: string;
 	invitationId: string;
+	resentBy: string;
 	businessName: string;
 	origin: string;
 };
@@ -458,7 +459,8 @@ export async function resendTeamInvitation(
 	const rotated = await runRpc<InvitationRow>(rpc, 'resend_team_invitation', {
 		target_invitation_id: params.invitationId,
 		target_token_hash: hashInvitationToken(token),
-		target_expires_at: expiresAt
+		target_expires_at: expiresAt,
+		target_resent_by: params.resentBy
 	});
 
 	const message = invitationEmail({

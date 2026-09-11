@@ -505,3 +505,35 @@ export async function deleteMemberAvailabilityException(
 	}
 	return result.member?.availability_revision ?? draft.expected_availability_revision + 1;
 }
+
+// The company-wide "who changed what" feed off Team. One line per event: the actor and subject are already
+// resolved to display names server-side (a removed member's profile is unreadable, so the fallback text --
+// "A former team member" and similar -- comes pre-resolved too); `summary` still carries the event's own
+// closed-vocabulary fields (roles, statuses, profile field names) for the page to turn into a sentence.
+export type TeamActivityEntry = {
+	id: string;
+	event_type: string;
+	created_at: string;
+	actor_name: string;
+	subject_name: string | null;
+	invited_email: string | null;
+	summary: Record<string, unknown>;
+};
+
+export type TeamActivityPage = {
+	entries: TeamActivityEntry[];
+	next_cursor: string | null;
+};
+
+export const teamActivityKey = (actorUserId: string) => ['team', 'activity', actorUserId] as const;
+
+export async function fetchTeamActivity(cursor?: string): Promise<TeamActivityPage> {
+	const params = new URLSearchParams();
+	if (cursor) params.set('cursor', cursor);
+	const response = await fetch(`/api/team/activity${params.toString() ? `?${params}` : ''}`);
+	if (!response.ok) {
+		const result = await response.json().catch(() => ({}) as { error?: string });
+		throw httpError(response, result.error ?? 'The activity log could not be loaded.');
+	}
+	return response.json();
+}

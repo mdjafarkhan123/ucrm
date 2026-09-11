@@ -36,6 +36,7 @@ export const POST: RequestHandler = async (event) => {
 		const result = await resendTeamInvitation(client, {
 			organizationId: required.context.auth.organization.id,
 			invitationId: invitationId.data,
+			resentBy: required.context.auth.user.id,
 			businessName: required.context.auth.organization.name,
 			origin: event.url.origin
 		});

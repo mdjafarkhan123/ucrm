@@ -252,12 +252,12 @@ Business owners cannot edit another person's password.
   An Administrator must first be demoted by the Owner. The Owner cannot remove themselves through this flow.
 - Every team command records the actor, action, date, and meaningful before/after change for invitations, role
   and permission changes, deactivation, restoration, and permanent removal. Passwords and invitation tokens are
-  never recorded. Surfacing this history to the Owner and Administrators is **deferred pending Jafar's
-  re-decision**: he dropped the reader from Part 3E on 2026-09-11 on the understanding that Jobber had no
-  equivalent, but a live tour the same day found Jobber's **Account Activity** page — "A record of permission,
-  admin access, and team changes made in your account" — an account-level (not per-member) reverse-chronological
-  feed of headline · category · timestamp. See `.claude/skills/jobber/jobber-09-team-users-permissions.md` § 6.
-  The record keeps being written either way, so the surface can be built later without losing history.
+  never recorded. This history is surfaced to the Owner and Administrators at **Team → Activity log**
+  (`/settings/team/activity`): an account-level (not per-member) reverse-chronological feed of plain-English
+  sentence · category · timestamp, matching Jobber's **Account Activity** page — "A record of permission,
+  admin access, and team changes made in your account." See
+  `.claude/skills/jobber/jobber-09-team-users-permissions.md` § 6. A former team member's name still resolves
+  correctly after removal, falling back to a generic phrase only once no trace of them is left to name.
 - Team membership has three clear states: Pending, Active, and Deactivated. An invitee becomes Active only
   after accepting the invitation and establishing sign-in access. Pending members consume seats but have no
   application access.

@@ -174,6 +174,9 @@
 			description="The people who work in your business and their current access."
 		>
 			{#snippet actions()}
+				<Button href={resolve('/(app)/settings/team/activity')} variant="secondary"
+					>Activity log</Button
+				>
 				<Button onclick={() => (inviteOpen = true)}>Invite member</Button>
 			{/snippet}
 		</PageHeader>
