@@ -11008,6 +11008,7 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			catalog_item_cost: { Args: { target_item_ids: string[] }; Returns: Json };
 			change_team_member_role: {
 				Args: {
 					actor_user_id: string;
@@ -14044,6 +14045,10 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			request_pricing_line_money: {
+				Args: { target_request_id: string };
+				Returns: Json;
 			};
 			request_status_counts: {
 				Args: {
