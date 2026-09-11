@@ -49,6 +49,8 @@ export const invoiceListQuerySchema = z.object({
 	dir: z.enum(['asc', 'desc']).default('desc'),
 	created_from: z.string().datetime({ offset: true }).optional(),
 	created_to: z.string().datetime({ offset: true }).optional(),
+	/** Narrows to one client's bills, e.g. the "Move to another invoice" picker. Unset on the ordinary list. */
+	client_id: z.string().uuid().optional(),
 	cursor: z.string().min(3).max(400).optional(),
 	limit: z.coerce
 		.number()
@@ -567,3 +569,78 @@ export const batchDeliverInvoicesSchema = z.object({
 });
 
 export type BatchDeliverInvoicesInput = z.infer<typeof batchDeliverInvoicesSchema>;
+
+// --- Payment correction (Part 11) ---------------------------------------------------------------------------
+//
+// Three of 3b-1/3b-2's money-correction commands finally get a route: taking an application back off and
+// moving it to another of the client's invoices (unapply_client_payment / move_client_payment) share one
+// discriminated shape at /api/payments/allocations/[id]; refunding an original receipt
+// (refund_client_payment) is its own shape at /api/payments/[id=uuid]/refund. reverse_client_payment and the
+// prepare/activate-correction chain stay unreachable -- Part 11's approved, narrower scope. None takes a
+// revision, the same as the lifecycle actions: each command re-locks the row it needs and leans on the
+// idempotency key, so a double press replays instead of double-correcting.
+
+const paymentCorrectionRetry = {
+	idempotency_key: z.string().uuid('Start a new action and try again.'),
+	request_hash: z.string().trim().min(1, 'Reload and try again.').max(200, 'Reload and try again.')
+};
+
+// Why a payment was taken off or moved. Optional on both moves -- unlike a lifecycle reason, the ledger entry
+// itself is the record; a note only adds context to it.
+const paymentCorrectionReason = z
+	.string()
+	.trim()
+	.max(2000, 'Keep the reason under 2000 characters.')
+	.nullish()
+	.transform((value) => value || null);
+
+export const paymentAllocationActionSchema = z.discriminatedUnion('action', [
+	z.object({
+		action: z.literal('unapply'),
+		reason: paymentCorrectionReason,
+		...paymentCorrectionRetry
+	}),
+	z.object({
+		action: z.literal('move'),
+		target_invoice_id: z.string().uuid('Choose an invoice to move this payment to.'),
+		// Null moves the whole allocation; move_client_payment resolves that amount itself.
+		amount_minor: z
+			.number()
+			.int()
+			.min(1, 'Enter how much to move.')
+			.nullish()
+			.transform((value) => value ?? null),
+		reason: paymentCorrectionReason,
+		...paymentCorrectionRetry
+	})
+]);
+
+export type PaymentAllocationActionInput = z.infer<typeof paymentAllocationActionSchema>;
+
+// Sending money back on an original receipt. Refunding a quote deposit is out of scope for Part 11 -- void
+// already resolves those on its own -- so the route always refunds the payment on screen, never a deposit;
+// refund_client_payment caps the amount against what that receipt still has left unspent and unrefunded.
+export const refundPaymentSchema = z.object({
+	amount_minor: z
+		.number()
+		.int()
+		.min(1, 'Enter how much was refunded.')
+		.max(MINOR_UNIT_MAX, 'That amount is too large.'),
+	method: z.enum(INVOICE_PAYMENT_METHODS, { message: 'Choose how this refund was sent.' }),
+	refund_date: z.string().regex(ISO_DATE, 'Pick a valid refund date.'),
+	reference: z
+		.string()
+		.trim()
+		.max(200, 'Keep the reference under 200 characters.')
+		.nullish()
+		.transform((value) => value || null),
+	note: z
+		.string()
+		.trim()
+		.max(2000, 'Keep the note under 2000 characters.')
+		.nullish()
+		.transform((value) => value || null),
+	...paymentCorrectionRetry
+});
+
+export type RefundPaymentInput = z.infer<typeof refundPaymentSchema>;

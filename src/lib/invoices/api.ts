@@ -6,6 +6,10 @@ import type { QuoteDiscountType, QuoteTaxSource } from '$lib/quotes/api';
 export type InvoiceWriteError = Error & {
 	fieldErrors?: Record<string, string>;
 	reason?: string;
+	// The HTTP status the server refused with. A reader who is not allowed to see an invoice gets the same
+	// answer however many times they ask, so callers use this to stop retrying and to say what actually
+	// happened instead of a generic failure.
+	status?: number;
 };
 
 export type InvoiceSortKey = 'created' | 'number';
@@ -63,6 +67,7 @@ async function readOrThrow<T>(response: Response, fallback: string): Promise<T> 
 		const error = new Error(result.error ?? fallback) as InvoiceWriteError;
 		error.fieldErrors = result.field_errors ?? {};
 		error.reason = result.reason;
+		error.status = response.status;
 		throw error;
 	}
 	return response.json();
@@ -526,6 +531,38 @@ export type InvoicePaymentHistoryEntry = {
 	reason: string | null;
 };
 
+// The complete document as it stood at one moment. Kept loose like `InvoiceServiceProperty`: it is
+// display-only and comes straight from `private.invoice_document_snapshot`'s jsonb, diffed in the browser
+// rather than the database because the labels that name a change belong there, not in a SQL function.
+export type InvoiceDocumentSnapshot = {
+	subject: string;
+	issue_date: string;
+	due_date: string;
+	due_date_source: string;
+	payment_term_snapshot: { name?: string } | null;
+	discount: { name: string | null; type: QuoteDiscountType | null; value: number | null };
+	tax: { name: string | null; rate_basis_points: number };
+	totals: {
+		subtotal_minor: number;
+		discount_minor: number;
+		tax_minor: number;
+		total_minor: number;
+	};
+	lines: Array<{ line_id: string; name: string; quantity: number; unit_price_minor: number }>;
+};
+
+// One edit to an already-issued invoice's document: who changed it, when, and the complete document on
+// either side of the change. Gated on `invoices.view_price` the same way `payment_history` is, since a
+// snapshot always carries amounts.
+export type InvoiceDocumentHistoryEntry = {
+	id: string;
+	created_at: string;
+	actor_name: string | null;
+	reason: string | null;
+	before: InvoiceDocumentSnapshot;
+	after: InvoiceDocumentSnapshot;
+};
+
 export type InvoiceDetail = {
 	invoice: {
 		id: string;
@@ -567,6 +604,7 @@ export type InvoiceDetail = {
 	} | null;
 	money: InvoiceMoney | null;
 	payment_history: InvoicePaymentHistoryEntry[] | null;
+	document_history: InvoiceDocumentHistoryEntry[] | null;
 	progress: InvoiceProgressContext | null;
 	lines: InvoiceLineItem[];
 	delivery: InvoiceDelivery;
@@ -831,6 +869,9 @@ export type PaymentAllocationEntry = {
 	entry_type: 'applied' | 'unapplied';
 	amount_minor: number;
 	created_at: string;
+	/** True on an 'applied' row once it has been taken back off (by unapply or the first half of a move) —
+	 *  unapply/move both refuse a second reversal of the same allocation, so the screen stops offering one. */
+	is_reversed: boolean;
 };
 
 export type PaymentDetail = {
@@ -854,6 +895,7 @@ export type PaymentDetail = {
 	applied_to: PaymentAllocationEntry[];
 	locale: string;
 	can_send_receipt: boolean;
+	can_correct_payment: boolean;
 };
 
 export const paymentDetailKey = (id: string) => ['payments', 'detail', id] as const;
@@ -863,6 +905,115 @@ export const paymentDetailKey = (id: string) => ['payments', 'detail', id] as co
 export async function fetchPayment(id: string): Promise<PaymentDetail> {
 	const response = await fetch(`/api/payments/${id}`);
 	return readOrThrow<PaymentDetail>(response, 'That payment could not be loaded.');
+}
+
+// --- Correcting a payment already on the ledger (Part 11) ---------------------------------------------------
+
+export type PaymentAllocationActionResult = Record<string, unknown>;
+
+// Taking an application back off (returns it to client credit) or moving it to another of the same client's
+// invoices — the two allocation-level corrections, both at the allocation's own id since it isn't addressable
+// anywhere else. `amount_minor` on a move is optional: omitted, the whole allocation moves.
+export type PaymentAllocationAction =
+	| { action: 'unapply'; reason: string | null }
+	| {
+			action: 'move';
+			target_invoice_id: string;
+			amount_minor: number | null;
+			reason: string | null;
+	  };
+
+export async function runPaymentAllocationAction(
+	allocationId: string,
+	action: PaymentAllocationAction,
+	idempotencyKey: string,
+	requestHash: string
+): Promise<PaymentAllocationActionResult> {
+	const response = await fetch(`/api/payments/allocations/${allocationId}`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			...action,
+			idempotency_key: idempotencyKey,
+			request_hash: requestHash
+		})
+	});
+	return readOrThrow<PaymentAllocationActionResult>(response, 'That change could not be saved.');
+}
+
+export type RefundPaymentInput = {
+	amount_minor: number;
+	method: InvoicePaymentMethod;
+	refund_date: string;
+	reference: string | null;
+	note: string | null;
+	idempotency_key: string;
+	request_hash: string;
+};
+
+export type RefundPaymentResult = {
+	refund_event_id: string;
+	client_id: string;
+	amount_minor: number;
+	currency_code: string;
+	refund_date: string;
+};
+
+// Sends money back on this receipt. Always refunds the payment on screen, never a quote deposit — refunding a
+// deposit is out of Part 11's scope, since void already resolves those on its own.
+export async function refundPayment(
+	paymentEventId: string,
+	input: RefundPaymentInput
+): Promise<RefundPaymentResult> {
+	const response = await fetch(`/api/payments/${paymentEventId}/refund`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	return readOrThrow<RefundPaymentResult>(response, 'That refund could not be saved.');
+}
+
+// One of a client's other bills, for the "Move to another invoice" picker. A thin slice of InvoiceListItem —
+// only what a picker row needs to show and choose from.
+export type ClientOpenInvoice = {
+	id: string;
+	invoice_number: number;
+	subject: string;
+	derived_status: InvoiceDerivedStatus;
+};
+
+// The statuses a payment can still usefully move onto: still unpaid, or a draft (which D1 lets take money and
+// settle on the spot). Paid, bad debt and voided bills have nothing left to apply money to.
+const OPEN_INVOICE_STATUSES: InvoiceDerivedStatus[] = ['draft', 'awaiting_payment', 'past_due'];
+
+// The route's own page-size ceiling (INVOICE_PAGE_SIZE_MAX in the server validation schema) — repeated here
+// only as a number, so this client module never imports server code.
+const OPEN_INVOICES_PAGE_LIMIT = 50;
+
+export const clientOpenInvoicesKey = (clientId: string) =>
+	['invoices', 'client-open', clientId] as const;
+
+export async function fetchClientOpenInvoices(
+	clientId: string,
+	excludeInvoiceId: string
+): Promise<ClientOpenInvoice[]> {
+	const params = new URLSearchParams({
+		client_id: clientId,
+		status: OPEN_INVOICE_STATUSES.join(','),
+		sort: 'created',
+		dir: 'desc',
+		limit: String(OPEN_INVOICES_PAGE_LIMIT)
+	});
+	const response = await fetch(`/api/invoices?${params.toString()}`);
+	const page = await readOrThrow<InvoiceListPage>(response, 'Those invoices could not be loaded.');
+	return page.invoices
+		.filter((invoice) => invoice.id !== excludeInvoiceId)
+		.map((invoice) => ({
+			id: invoice.id,
+			invoice_number: invoice.invoice_number,
+			subject: invoice.subject,
+			derived_status: invoice.derived_status
+		}));
 }
 
 export type DeleteInvoiceResult = { applied?: boolean; invoice_id: string; invoice_number: number };

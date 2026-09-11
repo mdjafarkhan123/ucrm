@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { requireOrganization } from '$lib/server/auth/organization';
 import { NO_STORE_HEADERS, unauthorized, validationError } from '$lib/server/api/errors';
+import { enforceOrganizationWriteRateLimit } from '$lib/server/security/rate-limit';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { batchInvoiceSchema } from '$lib/server/validation/invoices.schema';
 import { createInvoiceError } from '$lib/server/invoices/errors';
@@ -18,6 +19,13 @@ import { createInvoiceError } from '$lib/server/invoices/errors';
 export const POST: RequestHandler = async (event) => {
 	const auth = await requireOrganization(event);
 	if (!auth) return unauthorized();
+
+	const limited = await enforceOrganizationWriteRateLimit(
+		event.locals.supabase,
+		auth.organization.id,
+		'invoices'
+	);
+	if (limited) return limited;
 
 	let body: unknown;
 	try {

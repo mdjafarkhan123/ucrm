@@ -8,6 +8,7 @@ import {
 	unauthorized,
 	validationError
 } from '$lib/server/api/errors';
+import { enforceOrganizationWriteRateLimit } from '$lib/server/security/rate-limit';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import {
 	createInvoiceSchema,
@@ -64,7 +65,7 @@ export const GET: RequestHandler = async (event) => {
 	);
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
-	const { search, sort, dir, created_from, created_to, limit } = parsed.data;
+	const { search, sort, dir, created_from, created_to, client_id, limit } = parsed.data;
 	const cursor = readCursor(parsed.data.cursor);
 	const statuses = readInvoiceStatusFilter(parsed.data.status);
 
@@ -96,7 +97,8 @@ export const GET: RequestHandler = async (event) => {
 			cursor_created: cursorCreated,
 			cursor_number: cursorNumber,
 			cursor_id: cursor?.id ?? null,
-			page_limit: limit + 1
+			page_limit: limit + 1,
+			client_id_filter: client_id ?? null
 		}),
 		organizationFormatting(supabase, organizationId)
 	]);
@@ -168,6 +170,13 @@ export const GET: RequestHandler = async (event) => {
 export const POST: RequestHandler = async (event) => {
 	const auth = await requireOrganization(event);
 	if (!auth) return unauthorized();
+
+	const limited = await enforceOrganizationWriteRateLimit(
+		event.locals.supabase,
+		auth.organization.id,
+		'invoices'
+	);
+	if (limited) return limited;
 
 	let body: unknown;
 	try {

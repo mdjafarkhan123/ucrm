@@ -7,22 +7,38 @@
 		open,
 		title,
 		size = 'default',
+		initialFocusId,
 		onClose,
 		children
 	}: {
 		open: boolean;
 		title: string;
 		size?: 'default' | 'small' | 'large';
+		initialFocusId?: string;
 		onClose: () => void;
 		children: Snippet;
 	} = $props();
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<DialogPrimitive.Root {open} onOpenChange={(next) => { if (!next) onClose(); }}>
+<DialogPrimitive.Root
+	{open}
+	onOpenChange={(next) => {
+		if (!next) onClose();
+	}}
+>
 	<DialogPrimitive.Portal>
 		<DialogPrimitive.Overlay class="dialog__overlay" />
-		<DialogPrimitive.Content class="dialog__content dialog__content--{size}">
+		<DialogPrimitive.Content
+			class="dialog__content dialog__content--{size}"
+			onOpenAutoFocus={(event) => {
+				if (!initialFocusId) return;
+				const target = document.getElementById(initialFocusId);
+				if (!(target instanceof HTMLElement)) return;
+				event.preventDefault();
+				target.focus();
+			}}
+		>
 			<header class="dialog__header">
 				<DialogPrimitive.Title level={2}>{title}</DialogPrimitive.Title>
 				<DialogPrimitive.Close class="dialog__close" aria-label="Close">
@@ -35,6 +51,7 @@
 		</DialogPrimitive.Content>
 	</DialogPrimitive.Portal>
 </DialogPrimitive.Root>
+
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
