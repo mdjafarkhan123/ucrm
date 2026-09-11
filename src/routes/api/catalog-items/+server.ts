@@ -14,7 +14,8 @@ import {
 	catalogListQuerySchema
 } from '$lib/server/validation/quotes.schema';
 import { catalogWriteError } from '$lib/server/quotes/errors';
-import { catalogSelect } from '$lib/server/quotes/selects';
+import { CATALOG_SELECT } from '$lib/server/quotes/selects';
+import { attachCatalogCost } from '$lib/server/quotes/catalog-cost';
 
 // The column each sort key actually walks. `name` reuses the picker's own
 // `catalog_items_organization_name_idx`; `price` and `updated` each have a dedicated partial index added
@@ -45,7 +46,7 @@ export const GET: RequestHandler = async (event) => {
 
 	let items = event.locals.supabase
 		.from('catalog_items')
-		.select(catalogSelect(canSeeCost))
+		.select(CATALOG_SELECT)
 		.eq('organization_id', check.auth.organization.id);
 
 	if (!query.include_archived) items = items.is('archived_at', null);
@@ -84,9 +85,10 @@ export const GET: RequestHandler = async (event) => {
 
 	const page = (rows ?? []).slice(0, query.limit);
 	const last = page.at(-1) as Record<string, unknown> | undefined;
+	const itemsWithCost = await attachCatalogCost(event.locals.supabase, canSeeCost, page);
 	return json(
 		{
-			items: page,
+			items: itemsWithCost,
 			next_cursor:
 				(rows ?? []).length > query.limit && last
 					? encodeCursor(last[sortColumn], last.id as string)
@@ -127,9 +129,14 @@ export const POST: RequestHandler = async (event) => {
 			created_by: check.auth.user.id,
 			...parsed.data
 		})
-		.select(catalogSelect(hasPermission(check.access, 'quotes.view_cost')))
+		.select(CATALOG_SELECT)
 		.single();
 
 	if (error) return catalogWriteError(error);
-	return json({ item: data }, { status: 201, headers: NO_STORE_HEADERS });
+	const [item] = await attachCatalogCost(
+		event.locals.supabase,
+		hasPermission(check.access, 'quotes.view_cost'),
+		[data]
+	);
+	return json({ item }, { status: 201, headers: NO_STORE_HEADERS });
 };

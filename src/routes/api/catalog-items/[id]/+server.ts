@@ -11,7 +11,8 @@ import {
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { catalogItemUpdateSchema } from '$lib/server/validation/quotes.schema';
 import { catalogWriteError } from '$lib/server/quotes/errors';
-import { catalogSelect } from '$lib/server/quotes/selects';
+import { CATALOG_SELECT } from '$lib/server/quotes/selects';
+import { attachCatalogCost } from '$lib/server/quotes/catalog-cost';
 
 const NOT_FOUND = 'That price list item could not be found.';
 
@@ -24,7 +25,7 @@ export const GET: RequestHandler = async (event) => {
 
 	const { data, error } = await event.locals.supabase
 		.from('catalog_items')
-		.select(catalogSelect(hasPermission(check.access, 'quotes.view_cost')))
+		.select(CATALOG_SELECT)
 		.eq('organization_id', check.auth.organization.id)
 		.eq('id', event.params.id)
 		.maybeSingle();
@@ -42,10 +43,16 @@ export const GET: RequestHandler = async (event) => {
 		editorName = editor?.full_name ?? null;
 	}
 
+	const [item] = await attachCatalogCost(
+		event.locals.supabase,
+		hasPermission(check.access, 'quotes.view_cost'),
+		[data]
+	);
+
 	return json(
 		{
 			item: {
-				...data,
+				...item,
 				last_editor: data.updated_by ? { name: editorName, at: data.updated_at } : null
 			}
 		},
@@ -82,10 +89,15 @@ export const PATCH: RequestHandler = async (event) => {
 		.update(changes)
 		.eq('organization_id', check.auth.organization.id)
 		.eq('id', event.params.id)
-		.select(catalogSelect(hasPermission(check.access, 'quotes.view_cost')))
+		.select(CATALOG_SELECT)
 		.maybeSingle();
 
 	if (error) return catalogWriteError(error);
 	if (!data) return notFound(NOT_FOUND);
-	return json({ item: data }, { headers: NO_STORE_HEADERS });
+	const [item] = await attachCatalogCost(
+		event.locals.supabase,
+		hasPermission(check.access, 'quotes.view_cost'),
+		[data]
+	);
+	return json({ item }, { headers: NO_STORE_HEADERS });
 };

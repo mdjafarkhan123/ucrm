@@ -3,6 +3,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import type { z } from 'zod';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { NO_STORE_HEADERS, validationError } from '$lib/server/api/errors';
+import { enforceOrganizationWriteRateLimit } from '$lib/server/security/rate-limit';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { quoteWriteError } from '$lib/server/quotes/errors';
 
@@ -20,6 +21,13 @@ export async function runQuoteCommand<Schema extends z.ZodTypeAny>(
 ) {
 	const check = await requireOrganizationPermission(event, 'quotes.edit');
 	if ('response' in check) return check.response;
+
+	const limited = await enforceOrganizationWriteRateLimit(
+		event.locals.supabase,
+		check.auth.organization.id,
+		'quotes'
+	);
+	if (limited) return limited;
 
 	let body: unknown;
 	try {

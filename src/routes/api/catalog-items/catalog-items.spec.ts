@@ -55,16 +55,26 @@ function item(overrides: Record<string, unknown> = {}) {
 	};
 }
 
-function listEvent(query: string, result: unknown) {
+// unit_cost_minor never comes back from a select any more (it left the authenticated grant); a permitted
+// reader gets it through public.catalog_item_cost instead. Rows here still carry it so a test can check the
+// route merges the RPC answer back onto them, exactly as a live database round trip would.
+function costRpc(rows: Array<{ id: string; unit_cost_minor: number }>) {
+	return vi.fn().mockResolvedValue({
+		data: Object.fromEntries(rows.map((row) => [row.id, row.unit_cost_minor])),
+		error: null
+	});
+}
+
+function listEvent(query: string, result: unknown, rpc = costRpc([item()])) {
 	const table = builder(result);
 	return {
 		url: new URL(`http://localhost/api/catalog-items${query}`),
-		locals: { supabase: { from: vi.fn(() => table) } },
+		locals: { supabase: { from: vi.fn(() => table), rpc } },
 		__table: table
 	} as unknown as Parameters<typeof GET>[0] & { __table: { __calls: Array<[string, unknown[]]> } };
 }
 
-function createEvent(body: unknown, result: unknown) {
+function createEvent(body: unknown, result: unknown, rpc = costRpc([item()])) {
 	const table = builder(result);
 	return {
 		request: new Request('http://localhost/api/catalog-items', {
@@ -72,7 +82,7 @@ function createEvent(body: unknown, result: unknown) {
 			headers: { 'content-type': 'application/json' },
 			body: typeof body === 'string' ? body : JSON.stringify(body)
 		}),
-		locals: { supabase: { from: vi.fn(() => table) } },
+		locals: { supabase: { from: vi.fn(() => table), rpc } },
 		__table: table
 	} as unknown as Parameters<typeof POST>[0] & { __table: { __calls: Array<[string, unknown[]]> } };
 }
@@ -180,7 +190,7 @@ describe('catalog items API', () => {
 		expect(body.can_view_cost).toBe(false);
 	});
 
-	it('selects internal cost for someone who may see it', async () => {
+	it('merges internal cost back in for someone who may see it', async () => {
 		mockedRequire.mockResolvedValue({
 			auth: { organization: { id: 'org-1' }, user: { id: 'user-1' } },
 			access: { permissions: { 'quotes.view_cost': true }, features: { 'core.quotes': true } }
@@ -190,8 +200,17 @@ describe('catalog items API', () => {
 		const body = await (await GET(target)).json();
 
 		const select = target.__table.__calls.find(([name]) => name === 'select');
-		expect(String(select?.[1][0])).toContain('unit_cost_minor');
+		expect(String(select?.[1][0])).not.toContain('unit_cost_minor');
 		expect(body.can_view_cost).toBe(true);
+		expect(body.items[0].unit_cost_minor).toBe(4000);
+	});
+
+	it('never asks for cost when nobody in the response could see it', async () => {
+		const target = listEvent('', { data: [item()], error: null });
+
+		await GET(target);
+
+		expect(target.locals.supabase.rpc).not.toHaveBeenCalled();
 	});
 
 	it('narrows the price book to one category when the drawer asks', async () => {
