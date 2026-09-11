@@ -7,6 +7,7 @@ import {
 	databaseError,
 	validationError
 } from '$lib/server/api/errors';
+import { enforceOrganizationWriteRateLimit } from '$lib/server/security/rate-limit';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import {
 	createQuoteSchema,
@@ -25,6 +26,13 @@ import { asMoneyMap } from '$lib/server/quotes/money';
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'quotes.create');
 	if ('response' in check) return check.response;
+
+	const limited = await enforceOrganizationWriteRateLimit(
+		event.locals.supabase,
+		check.auth.organization.id,
+		'quotes'
+	);
+	if (limited) return limited;
 
 	let body: unknown;
 	try {
@@ -104,8 +112,8 @@ export const GET: RequestHandler = async (event) => {
 			`id, quote_number, title, status, currency_code, created_at, client_id, request_id,
 			 client:clients!quotes_client_organization_fk(id, display_name, company_name),
 			 property:properties!quotes_property_organization_fk(id, label, address_line1, city, state_region, postal_code),
-			 draft:quote_versions!quotes_draft_version_organization_fk(id),
-			 published:quote_versions!quotes_current_published_version_fk(id)`
+			 draft:quote_versions!quotes_draft_version_organization_fk(id, client_display_name, service_address_line1, service_city, service_state_region, service_postal_code),
+			 published:quote_versions!quotes_current_published_version_fk(id, client_display_name, service_address_line1, service_city, service_state_region, service_postal_code)`
 		)
 		.eq('organization_id', organizationId)
 		.in('status', statuses);
@@ -177,8 +185,26 @@ export const GET: RequestHandler = async (event) => {
 	const quotes = page.map((row) => {
 		const version = (embeddedOne(row.draft) ?? embeddedOne(row.published)) as {
 			id: string;
+			client_display_name: string | null;
+			service_address_line1: string | null;
+			service_city: string | null;
+			service_state_region: string | null;
+			service_postal_code: string | null;
 		} | null;
 		const total = version ? money[version.id]?.total_minor : undefined;
+		// The version's own columns are what was actually shown when the quote was sent — a later client
+		// rename or property address edit must not rewrite what this row displays, same as the customer's
+		// own copy already stays frozen.
+		const frozenAddress = version
+			? [
+					version.service_address_line1,
+					version.service_city,
+					version.service_state_region,
+					version.service_postal_code
+				]
+					.filter(Boolean)
+					.join(', ')
+			: '';
 		return {
 			id: row.id,
 			quote_number: row.quote_number,
@@ -189,6 +215,8 @@ export const GET: RequestHandler = async (event) => {
 			from_request: row.request_id !== null,
 			client: embeddedOne(row.client),
 			property: embeddedOne(row.property),
+			client_display_name: version?.client_display_name ?? null,
+			property_address: frozenAddress || null,
 			// Withheld rather than zeroed: a person who may not see money gets no number at all, and the
 			// table shows a dash instead of a wrong total.
 			// The column says Total, so it is the total: what the client would pay after any discount and

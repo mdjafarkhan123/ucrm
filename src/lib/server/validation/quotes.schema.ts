@@ -66,9 +66,14 @@ const laborIsService = {
 };
 
 // One priced row on a request. `catalog_item_id` is provenance only: null means somebody typed a one-off
-// line, and a filled id is checked against the live catalog by the write function, not here.
+// line, and a filled id is checked against the live catalog by the write function, not here. `id` is the
+// row's own identity when it already exists — the browser already carries it through every edit — and is
+// what lets the server tell "this line, changed" from "a brand new line" when it decides whether a
+// cost-blind save is allowed to touch what a line costs. A new line the browser has not saved yet sends its
+// own client-generated id, which matches nothing on the server and is treated exactly like no id at all.
 const requestPricingLineSchema = z
 	.object({
+		id: z.string().uuid().nullish(),
 		name: lineName,
 		category: z.enum(PRICING_CATEGORIES),
 		is_labor: z.boolean().default(false),

@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { NO_STORE_HEADERS, validationError } from '$lib/server/api/errors';
+import { enforceOrganizationWriteRateLimit } from '$lib/server/security/rate-limit';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { bulkArchiveQuotesSchema } from '$lib/server/validation/quotes.schema';
 
@@ -11,6 +12,13 @@ import { bulkArchiveQuotesSchema } from '$lib/server/validation/quotes.schema';
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'quotes.edit');
 	if ('response' in check) return check.response;
+
+	const limited = await enforceOrganizationWriteRateLimit(
+		event.locals.supabase,
+		check.auth.organization.id,
+		'quotes'
+	);
+	if (limited) return limited;
 
 	let body: unknown;
 	try {
