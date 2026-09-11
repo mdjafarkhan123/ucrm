@@ -103,6 +103,16 @@ Quotes, jobs, and invoices share one shape, top to bottom:
 5. The table: client first, then the record number stacked over its title, then property, dates, a status
    badge, and money right-aligned. Sortable columns carry a sort caret.
 
+## Global search
+
+**Observed live 2026-09-11** from an invoice detail page. Jobber keeps a search field in the top bar on
+every page. Typing opens a compact typeahead panel directly below the field after a short debounce. Results
+link straight to the matching record and identify it with a record-specific icon, its type and number (for
+example, `Job #1` or `Invoice #1`), and the client name as secondary context. A term may return records of
+different types in one flat list. When nothing matches, the same panel states `No results for <term>` instead
+of disappearing or leaving a spinner. Clearing the field or pressing Escape closes the panel. Read-only tour;
+no record was changed.
+
 ---
 
 ## Reusable parts inventory
@@ -173,6 +183,14 @@ right-aligned. It is the list-page row shape reused inside a section.
 ---
 
 ## § How WE compare
+
+### Global search — observed live 2026-09-11
+
+Jobber keeps global search in the shell header. Typing opens a compact result panel directly below the
+field; each result is a direct record link with a record-type icon and a short identifying summary. The
+interaction is intentionally lean: no filter builder or separate search page appears before opening a
+record. Our dialog adapts that same small result model so it also works as a keyboard-first and mobile
+surface.
 
 - **We take all three of Jobber's edit patterns. Jafar, 2026-08-18. This supersedes the 2026-08-17 rule
   that made a staging dialog the only way to edit.** Pattern 1 for the record's own fields: the block's

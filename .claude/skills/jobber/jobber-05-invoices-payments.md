@@ -382,6 +382,27 @@ payment`. List filters offer Awaiting payment: past due / not yet due / all, Dra
   eligibility or deletion consequences; it was not invoked. Customer preview was not opened, so no
   customer-view event was deliberately triggered.
 
+## Issued-invoice editing and Invoice History — 2026-09-10 (observed live)
+
+Read-only inspection of the one issued invoice in the account (#1, `Paid`, issued Sep 04, paid Sep 05).
+The Product / Service edit was opened and cancelled without changing any value; nothing was saved.
+
+- **Line items stay editable after issue *and* after full payment.** The Product / Service block keeps its
+  pencil on a Paid invoice. It opens the same inline editor as a draft — Name, Quantity, Unit price, Total,
+  Description, Add Service Date, per-line `...` — with local Cancel/Save. No warning, no confirmation step,
+  and no re-send prompt. This extends the 2026-09-04 note above, which had only established *header* editing.
+- **The safety is history, not a lock.** A clock icon beside `More` opens an **Invoice History** side panel:
+  newest-first entries of "<Person> edited the invoice", each with a timestamp, a change count, and a
+  **field-level before → after diff** (observed: `Received date empty → Sep 5, 2026 9:17 AM`;
+  `Draft true → false`), plus a `<Person> created the invoice` origin entry. Filters: Team, Type, Date.
+- **The history is staff-facing only.** Nothing on the invoice itself marks it as revised, and the Client
+  view panel exposes only display toggles (Quantities, Unit prices, Line item totals, Account balance, Late
+  stamp) — no revision or "updated on" fact reaches the client.
+
+So Jobber's model is: **edit freely, record everything, show staff the diff, tell the client nothing.**
+Our approved redline departs on the money half (corrections via reversal/replacement rather than silent
+in-place edits) but the visible field-level history is the half worth copying as-is.
+
 **Official follow-through:** the [payment research](../../../docs/invoice-payment-research.md) and
 [evidence matrix](../../../docs/invoice-jobber-evidence.md) now resolve the documented draft-payment,
 closure, bad-debt, void, deletion, correction, and account-balance questions. Live-only limits above describe
