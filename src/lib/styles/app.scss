@@ -161,12 +161,17 @@ a:hover {
 // =============================================================================
 // Page scrolling behavior
 // =============================================================================
-.page-scroller {
-	height: 90vh;
-	padding-bottom: var(--space-base);
+
+.scroll-y-auto {
+	height: 100%;
+	overflow-y: auto;
 	border-radius: var(--radius-base);
-	overflow-y: scroll;
 }
+
+*::placeholder {
+	padding-top: 24px;
+}
+
 // =============================================================================
 // REQUIRED MARKER — the asterisk after a required field's label. Lives here so
 // every label renders it identically; field components add it from `required`.
@@ -258,8 +263,4 @@ a:hover {
 	.skeleton {
 		background: var(--color-surface--hover);
 	}
-}
-
-*::placeholder {
-	padding-top: 24px;
 }

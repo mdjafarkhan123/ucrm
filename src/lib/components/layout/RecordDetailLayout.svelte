@@ -43,11 +43,11 @@
 	} = $props();
 </script>
 
-<div class={`record-detail ${className}`}>
-	<div class="record-detail__grid" class:record-detail__grid--no-rail={!rail}>
-		<div class="record-detail__main">{@render main()}</div>
+<div class={`record-detail ${className} scroll-y-auto`}>
+	<div class="record-detail__grid scroll-y-auto" class:record-detail__grid--no-rail={!rail}>
+		<div class="record-detail__main scroll-y-auto">{@render main()}</div>
 		{#if rail}
-			<aside class="record-detail__rail">{@render rail()}</aside>
+			<aside class="record-detail__rail scroll-y-auto">{@render rail()}</aside>
 		{/if}
 	</div>
 
@@ -91,16 +91,12 @@
 			border-radius: var(--radius-base);
 			background: var(--color-surface);
 			box-shadow: var(--shadow-low);
-			height: var(--detail-viewport-height);
-			overflow-y: auto;
 		}
 
 		&__rail {
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-base);
-			height: var(--detail-viewport-height);
-			overflow-y: auto;
 			padding-bottom: var(--space-base);
 		}
 	}

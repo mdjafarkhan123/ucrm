@@ -167,18 +167,17 @@
 
 <style lang="scss">
 	.sidebar {
-		position: sticky;
 		top: var(--space-large);
 		display: flex;
 		flex-direction: column;
 		width: 256px;
 		flex: 0 0 256px;
-		height: 95vh;
+		height: 100%;
 		padding: var(--space-base) var(--space-slim);
 		border-right: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-large);
 		background: var(--color-surface);
-		overflow: hidden;
+		overflow-y: auto;
 		transition:
 			width var(--timing-base) ease-out,
 			flex-basis var(--timing-base) ease-out;

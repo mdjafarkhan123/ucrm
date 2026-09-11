@@ -12,7 +12,7 @@
 	} = $props();
 </script>
 
-<div class={`page-container page-container--${variant} ${className}`}>
+<div class={`page-container page-container--${variant} ${className} scroll-y-auto`}>
 	{@render children()}
 </div>
 

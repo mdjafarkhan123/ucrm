@@ -30,7 +30,8 @@
 		align-items: flex-start;
 		justify-content: space-between;
 		gap: var(--space-large);
-		padding-bottom: var(--space-large);
+		padding-bottom: var(--space-slim);
+		margin-bottom: var(--space-large);
 		border-bottom: var(--border-base) solid var(--color-border);
 	}
 	.page-header__eyebrow {
