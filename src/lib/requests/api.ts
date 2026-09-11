@@ -158,7 +158,10 @@ export type AssessmentDraft = {
 	assignee_ids: string[];
 };
 
-export type RequestWriteError = Error & { fieldErrors?: Record<string, string> };
+// The HTTP status the server refused with. A reader who is not allowed to see a request gets the same
+// answer however many times they ask, so callers use this to stop retrying and to say what actually
+// happened instead of a generic failure.
+export type RequestWriteError = Error & { fieldErrors?: Record<string, string>; status?: number };
 
 async function readOrThrow<T>(response: Response, fallback: string): Promise<T> {
 	if (!response.ok) {
@@ -167,6 +170,7 @@ async function readOrThrow<T>(response: Response, fallback: string): Promise<T> 
 			.catch(() => ({}) as { error?: string; field_errors?: Record<string, string> });
 		const error = new Error(result.error ?? fallback) as RequestWriteError;
 		error.fieldErrors = result.field_errors ?? {};
+		error.status = response.status;
 		throw error;
 	}
 	return response.json();
