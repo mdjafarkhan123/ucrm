@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { POST as COMPLETE } from './[id]/visits/[visitId]/complete/+server';
-import { POST as UNCOMPLETE } from './[id]/visits/[visitId]/uncomplete/+server';
-import { POST as CLOSE } from './[id]/close/+server';
-import { POST as REOPEN } from './[id]/reopen/+server';
+import { POST as COMPLETE } from './[id=uuid]/visits/[visitId]/complete/+server';
+import { POST as UNCOMPLETE } from './[id=uuid]/visits/[visitId]/uncomplete/+server';
+import { POST as CLOSE } from './[id=uuid]/close/+server';
+import { POST as REOPEN } from './[id=uuid]/reopen/+server';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 
 vi.mock('$lib/server/access/permission', async () => {

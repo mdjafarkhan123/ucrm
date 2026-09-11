@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { GET, POST } from './[id]/signatures/+server';
-import { GET as DOCUMENT } from './[id]/signatures/[signatureId]/document/+server';
+import { GET, POST } from './[id=uuid]/signatures/+server';
+import { GET as DOCUMENT } from './[id=uuid]/signatures/[signatureId]/document/+server';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { putObject, deleteObject } from '$lib/server/storage/r2';
 

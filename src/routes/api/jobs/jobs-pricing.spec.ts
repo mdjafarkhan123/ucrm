@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PATCH as LINES } from './[id]/lines/+server';
-import { PATCH as BILLING } from './[id]/billing/+server';
-import { PATCH as DISCOUNT } from './[id]/discount/+server';
-import { PATCH as TAX } from './[id]/tax/+server';
+import { PATCH as LINES } from './[id=uuid]/lines/+server';
+import { PATCH as BILLING } from './[id=uuid]/billing/+server';
+import { PATCH as DISCOUNT } from './[id=uuid]/discount/+server';
+import { PATCH as TAX } from './[id=uuid]/tax/+server';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 
 vi.mock('$lib/server/access/permission', async () => {

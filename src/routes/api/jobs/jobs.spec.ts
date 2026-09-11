@@ -1,12 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET, POST } from './+server';
 import { GET as COUNTS } from './counts/+server';
-import { GET as DETAIL, PATCH } from './[id]/+server';
-import { POST as ADD_VISITS } from './[id]/visits/+server';
-import { PATCH as UPDATE_VISIT, DELETE as DELETE_VISIT } from './[id]/visits/[visitId]/+server';
-import { POST as MOVE_VISITS } from './[id]/visits/bulk-move/+server';
-import { POST as RESCHEDULE } from './[id]/schedule/+server';
-import { POST as APPLY_FUTURE } from './[id]/visits/[visitId]/apply-to-future/+server';
+import { GET as DETAIL, PATCH } from './[id=uuid]/+server';
+import { POST as ADD_VISITS } from './[id=uuid]/visits/+server';
+import {
+	PATCH as UPDATE_VISIT,
+	DELETE as DELETE_VISIT
+} from './[id=uuid]/visits/[visitId]/+server';
+import { POST as MOVE_VISITS } from './[id=uuid]/visits/bulk-move/+server';
+import { POST as RESCHEDULE } from './[id=uuid]/schedule/+server';
+import { POST as APPLY_FUTURE } from './[id=uuid]/visits/[visitId]/apply-to-future/+server';
 import { POST as PREVIEW_RECURRENCE } from './recurrence-preview/+server';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { requireOrganization } from '$lib/server/auth/organization';

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { POST as ADD } from './[id]/reminders/+server';
-import { PATCH as DISMISS, DELETE as REMOVE } from './[id]/reminders/[reminderId]/+server';
+import { POST as ADD } from './[id=uuid]/reminders/+server';
+import { PATCH as DISMISS, DELETE as REMOVE } from './[id=uuid]/reminders/[reminderId]/+server';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 
 vi.mock('$lib/server/access/permission', async () => {
