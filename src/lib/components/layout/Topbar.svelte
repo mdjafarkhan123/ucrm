@@ -10,10 +10,11 @@
 	import logoutIcon from '@tabler/icons/outline/logout.svg?raw';
 	import { resolve } from '$app/paths';
 	import Badge from '$lib/components/ui/Badge.svelte';
-	import SearchInput from '$lib/components/ui/SearchInput.svelte';
+	import searchIcon from '@tabler/icons/outline/search.svg?raw';
 
 	let {
 		onmenutoggle,
+		onSearchOpen,
 		searchPlaceholder = 'Search',
 		accountLabel,
 		notifications,
@@ -24,6 +25,7 @@
 		onSignOut
 	}: {
 		onmenutoggle?: () => void;
+		onSearchOpen?: () => void;
 		searchPlaceholder?: string;
 		accountLabel: string;
 		notifications?: Snippet;
@@ -34,7 +36,6 @@
 		onSignOut?: () => void;
 	} = $props();
 
-	let searchValue = $state('');
 	let isDark = $state(false);
 
 	onMount(() => {
@@ -68,13 +69,18 @@
 	</button>
 
 	<div class="topbar__search">
-		<SearchInput
-			id="topbar-search"
-			placeholder={searchPlaceholder}
-			ariaLabel="Search"
-			bind:value={searchValue}
-			disabled
-		/>
+		{#if onSearchOpen}
+			<button class="topbar__search-trigger" type="button" onclick={onSearchOpen}>
+				<span class="topbar__search-icon" aria-hidden="true">{@html searchIcon}</span>
+				<span class="topbar__search-label">{searchPlaceholder}</span>
+				<kbd aria-hidden="true">Ctrl K</kbd>
+			</button>
+		{:else}
+			<div class="topbar__search-placeholder" aria-hidden="true">
+				<span class="topbar__search-icon">{@html searchIcon}</span>
+				<span>{searchPlaceholder}</span>
+			</div>
+		{/if}
 	</div>
 
 	<DropdownMenu.Root>
@@ -148,8 +154,8 @@
 		display: flex;
 		align-items: center;
 		gap: var(--space-small);
-		min-height: 72px;
-		padding: var(--space-base) var(--space-large);
+		min-height: 62px;
+		padding: var(--space-slim) var(--space-base);
 		border-bottom: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
@@ -158,6 +164,58 @@
 		flex: 1 1 320px;
 		min-width: 0;
 		max-width: 420px;
+	}
+	.topbar__search-trigger,
+	.topbar__search-placeholder {
+		display: flex;
+		width: 100%;
+		min-height: 40px;
+		align-items: center;
+		gap: var(--space-small);
+		padding: 0 var(--space-small);
+		border: var(--border-base) solid var(--color-border--interactive);
+		border-radius: var(--radius-base);
+		color: var(--color-text--secondary);
+		background: var(--color-surface);
+		font: inherit;
+		text-align: left;
+	}
+	.topbar__search-trigger {
+		cursor: pointer;
+		transition:
+			background var(--timing-quick),
+			box-shadow var(--timing-quick);
+	}
+	.topbar__search-trigger:hover {
+		background: var(--color-surface--hover);
+	}
+	.topbar__search-trigger:focus-visible {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+	.topbar__search-placeholder {
+		border-color: var(--color-border);
+		background: var(--color-disabled--secondary);
+	}
+	.topbar__search-icon,
+	.topbar__search-icon :global(svg) {
+		display: block;
+		flex: 0 0 auto;
+		width: 18px;
+		height: 18px;
+	}
+	.topbar__search-label {
+		flex: 1;
+	}
+	.topbar__search-trigger kbd {
+		padding: var(--space-smallest) var(--space-smaller);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-small);
+		color: var(--color-text--secondary);
+		background: var(--color-surface--background);
+		font: inherit;
+		font-size: var(--typography--fontSize-small);
+		line-height: 1;
 	}
 	.topbar__spacer {
 		flex: 1;

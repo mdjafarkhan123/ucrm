@@ -2,6 +2,7 @@
 	import Sidebar, { type NavGroup } from './Sidebar.svelte';
 	import Topbar from './Topbar.svelte';
 	import MobileNav from './MobileNav.svelte';
+	import GlobalSearchDialog from '$lib/components/search/GlobalSearchDialog.svelte';
 	import NotificationBell from '$lib/components/jafar/NotificationBell.svelte';
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
@@ -15,19 +16,38 @@
 		variant = 'contractor',
 		organizationName,
 		logoUrl = null,
-		account = null
+		account = null,
+		userId,
+		pipelineVisible = true,
+		clientsVisible = true,
+		quotesVisible = true,
+		invoicesVisible = true
 	}: {
 		children: import('svelte').Snippet;
 		variant?: 'contractor' | 'owner';
 		organizationName?: string | null;
 		logoUrl?: string | null;
 		account?: { name: string | null; email: string | null; role: string } | null;
+		userId?: string;
+		pipelineVisible?: boolean;
+		clientsVisible?: boolean;
+		quotesVisible?: boolean;
+		invoicesVisible?: boolean;
 	} = $props();
 	let mobileOpen = $state(false);
 	let sidebarCollapsed = $state(false);
 	let signOutError = $state('');
+	let searchOpen = $state(false);
 
-	const contractorGroups: NavGroup[] = [
+	function handleGlobalShortcut(event: KeyboardEvent) {
+		if (variant !== 'contractor' || !userId || event.altKey || event.shiftKey) return;
+		if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'k') return;
+
+		event.preventDefault();
+		searchOpen = true;
+	}
+
+	const contractorGroups: NavGroup[] = $derived.by(() => [
 		{
 			label: 'Overview',
 			items: [
@@ -39,17 +59,17 @@
 			label: 'Customers',
 			items: [
 				{ label: 'Inbox', href: '/communications', icon: 'inbox' },
-				{ label: 'Clients', href: '/clients', icon: 'users' },
+				...(clientsVisible ? [{ label: 'Clients', href: '/clients', icon: 'users' }] : []),
 				{ label: 'Requests', href: '/requests', icon: 'route' },
-				{ label: 'Pipeline', href: '/pipeline', icon: 'chartBar' }
+				...(pipelineVisible ? [{ label: 'Pipeline', href: '/pipeline', icon: 'chartBar' }] : [])
 			]
 		},
 		{
 			label: 'Work & Money',
 			items: [
 				{ label: 'Jobs', href: '/jobs', icon: 'tools' },
-				{ label: 'Quotes', href: '/quotes', icon: 'fileInvoice' },
-				{ label: 'Invoices', href: '/invoices', icon: 'receipt' }
+				...(quotesVisible ? [{ label: 'Quotes', href: '/quotes', icon: 'fileInvoice' }] : []),
+				...(invoicesVisible ? [{ label: 'Invoices', href: '/invoices', icon: 'receipt' }] : [])
 			]
 		},
 		{
@@ -68,7 +88,7 @@
 				{ label: 'Usage', href: '/usage', icon: 'chartBar', unavailable: true }
 			]
 		}
-	];
+	]);
 	const ownerGroups: NavGroup[] = [
 		{
 			items: [
@@ -119,6 +139,8 @@
 	}
 </script>
 
+<svelte:window onkeydown={handleGlobalShortcut} />
+
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div
 	class={`app-shell app-shell--${variant}`}
@@ -134,6 +156,7 @@
 			{signOutError}
 			onSignOut={() => void signOut()}
 			onmenutoggle={() => (mobileOpen = true)}
+			onSearchOpen={variant === 'contractor' && userId ? () => (searchOpen = true) : undefined}
 		>
 			{#snippet notifications()}
 				{#if variant === 'owner'}
@@ -151,9 +174,12 @@
 				{/if}
 			{/snippet}
 		</Topbar>
-		<div class="app-shell__main">{@render children()}</div>
+		<div class="app-shell__main scroll-y-auto">{@render children()}</div>
 	</div>
 	<MobileNav bind:open={mobileOpen} {groups} {brand} {eyebrow} logoUrl={sidebarLogoUrl} />
+	{#if variant === 'contractor' && userId}
+		<GlobalSearchDialog open={searchOpen} {userId} onClose={() => (searchOpen = false)} />
+	{/if}
 </div>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
@@ -163,7 +189,7 @@
 	 * bottom of a form or detail page — can line up with the page underneath it. `--shell-nav-width` is set
 	 * on the element itself, because only this component knows whether the sidebar is collapsed. */
 	.app-shell {
-		--shell-edge: var(--space-large);
+		--shell-edge: var(--space-slim);
 		--shell-content-left: calc(
 			var(--shell-edge) + var(--shell-nav-width, 256px) + var(--space-large)
 		);
@@ -171,20 +197,24 @@
 
 		position: relative;
 		display: flex;
-		min-height: 100vh;
+		height: 100dvh;
+		overflow: hidden;
 		background: var(--color-surface--background);
 		padding: var(--shell-edge);
-		gap: var(--space-large);
+		gap: var(--space-base);
 	}
 	.app-shell__body {
 		display: flex;
 		flex: 1;
 		min-width: 0;
+		min-height: 0;
 		flex-direction: column;
+		overflow: hidden;
 	}
 	.app-shell__main {
 		flex: 1;
-		padding-block: var(--space-large);
+		min-height: 0;
+		padding-block: var(--space-base) 0;
 	}
 	/* The sidebar is hidden here, so the content column runs the full width inside the shell padding. */
 	@media (max-width: 767px) {
