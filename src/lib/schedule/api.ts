@@ -4,10 +4,17 @@ import type { ScheduleWindow } from '$lib/schedule/filters';
 // they change at completely different rates: the calendar's operating facts almost never change, and the
 // window changes every time somebody clicks Next.
 
+// The HTTP status the server refused with. A reader who is not allowed to see the schedule gets the same
+// answer however many times they ask, so callers use this to stop retrying and to say what actually
+// happened instead of a generic failure.
+export type ScheduleReadError = Error & { status?: number };
+
 async function readOrThrow<T>(response: Response, fallback: string): Promise<T> {
 	if (!response.ok) {
 		const result = await response.json().catch(() => ({}) as { error?: string });
-		throw new Error(result.error ?? fallback);
+		const error = new Error(result.error ?? fallback) as ScheduleReadError;
+		error.status = response.status;
+		throw error;
 	}
 	return response.json();
 }

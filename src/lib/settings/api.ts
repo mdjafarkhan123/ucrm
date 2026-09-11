@@ -1,3 +1,4 @@
+import { httpError } from '$lib/http-error';
 // Settings reads and writes. Business Profile, Branding, and Business Hours are three independently
 // saved sections of one organization record — each carries its own revision so a stale save only ever
 // names the section that actually collided.
@@ -30,7 +31,7 @@ export const settingsHomeKey = ['settings', 'home'] as const;
 
 export async function fetchSettingsHome(): Promise<SettingsHome> {
 	const response = await fetch('/api/settings');
-	if (!response.ok) throw new Error('Settings could not be loaded.');
+	if (!response.ok) throw httpError(response, 'Settings could not be loaded.');
 	return response.json();
 }
 
@@ -98,7 +99,7 @@ export const settingsBusinessKey = ['settings', 'business'] as const;
 
 export async function fetchSettingsBusiness(): Promise<SettingsBusiness> {
 	const response = await fetch('/api/settings/business');
-	if (!response.ok) throw new Error('Business settings could not be loaded.');
+	if (!response.ok) throw httpError(response, 'Business settings could not be loaded.');
 	return response.json();
 }
 
@@ -126,7 +127,7 @@ async function saveSection<T>(url: string, body: unknown): Promise<T | SettingsS
 		};
 	}
 	if (!response.ok) {
-		throw new Error(result.error ?? 'That could not be saved.');
+		throw httpError(response, result.error ?? 'That could not be saved.');
 	}
 	return result as T;
 }
@@ -170,7 +171,7 @@ export const settingsPipelineKey = ['settings', 'pipeline'] as const;
 
 export async function fetchSettingsPipeline(): Promise<SettingsPipeline> {
 	const response = await fetch('/api/settings/pipeline');
-	if (!response.ok) throw new Error('Pipeline settings could not be loaded.');
+	if (!response.ok) throw httpError(response, 'Pipeline settings could not be loaded.');
 	return response.json();
 }
 
@@ -203,14 +204,15 @@ export async function uploadOrganizationLogo(
 		body: JSON.stringify({ file_name: file.name, mime_type: file.type, size_bytes: file.size })
 	});
 	const presign = await presignResponse.json().catch(() => ({}));
-	if (!presignResponse.ok) throw new Error(presign.error ?? 'That logo could not be uploaded.');
+	if (!presignResponse.ok)
+		throw httpError(presignResponse, presign.error ?? 'That logo could not be uploaded.');
 
 	const putResponse = await fetch(presign.upload_url, {
 		method: 'PUT',
 		headers: { 'content-type': file.type },
 		body: file
 	});
-	if (!putResponse.ok) throw new Error('That logo could not be uploaded.');
+	if (!putResponse.ok) throw httpError(putResponse, 'That logo could not be uploaded.');
 
 	const commitResponse = await fetch('/api/settings/branding/logo', {
 		method: 'PUT',
@@ -218,7 +220,8 @@ export async function uploadOrganizationLogo(
 		body: JSON.stringify({ object_key: presign.object_key })
 	});
 	const commit = await commitResponse.json().catch(() => ({}));
-	if (!commitResponse.ok) throw new Error(commit.error ?? 'That logo could not be uploaded.');
+	if (!commitResponse.ok)
+		throw httpError(commitResponse, commit.error ?? 'That logo could not be uploaded.');
 	return commit;
 }
 
@@ -228,7 +231,7 @@ export async function removeOrganizationLogo(): Promise<{
 }> {
 	const response = await fetch('/api/settings/branding/logo', { method: 'DELETE' });
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok) throw new Error(result.error ?? 'That logo could not be removed.');
+	if (!response.ok) throw httpError(response, result.error ?? 'That logo could not be removed.');
 	return result;
 }
 
@@ -267,9 +270,17 @@ export type SettingsTaxes = {
 
 export const settingsTaxesKey = ['settings', 'taxes'] as const;
 
+// The HTTP status a read was refused with, so the shared query-client retry can give up immediately on a
+// 403/404 instead of retrying a denial that will never succeed — see query-client.ts's shouldRetry.
+export type SettingsReadError = Error & { status?: number };
+
 export async function fetchSettingsTaxes(): Promise<SettingsTaxes> {
 	const response = await fetch('/api/settings/taxes');
-	if (!response.ok) throw new Error('Taxes could not be loaded.');
+	if (!response.ok) {
+		const error = new Error('Taxes could not be loaded.') as SettingsReadError;
+		error.status = response.status;
+		throw error;
+	}
 	return response.json();
 }
 
@@ -303,7 +314,7 @@ export async function fetchTaxPicker(propertyId?: string): Promise<TaxPicker> {
 		? `/api/settings/taxes/picker?property_id=${encodeURIComponent(propertyId)}`
 		: '/api/settings/taxes/picker';
 	const response = await fetch(url);
-	if (!response.ok) throw new Error('Tax options could not be loaded.');
+	if (!response.ok) throw httpError(response, 'Tax options could not be loaded.');
 	return response.json();
 }
 
@@ -379,14 +390,14 @@ export function deleteTaxRate(
 
 export async function fetchTaxRatePropertyCount(id: string): Promise<number> {
 	const response = await fetch(`/api/settings/taxes/${id}/property-count`);
-	if (!response.ok) throw new Error('That could not be checked.');
+	if (!response.ok) throw httpError(response, 'That could not be checked.');
 	const result = await response.json();
 	return result.count as number;
 }
 
 export async function fetchTaxDefaultPropertyCount(): Promise<number> {
 	const response = await fetch('/api/settings/taxes/default/property-count');
-	if (!response.ok) throw new Error('That could not be checked.');
+	if (!response.ok) throw httpError(response, 'That could not be checked.');
 	const result = await response.json();
 	return result.count as number;
 }
@@ -429,7 +440,7 @@ export type PriceBookItem = CatalogItem & { last_editor: SettingsEditor };
 
 export async function fetchPriceBookItem(id: string): Promise<PriceBookItem> {
 	const response = await fetch(`/api/catalog-items/${id}`);
-	if (!response.ok) throw new Error('That item could not be loaded.');
+	if (!response.ok) throw httpError(response, 'That item could not be loaded.');
 	const result = await response.json();
 	return result.item;
 }
@@ -545,7 +556,11 @@ export const settingsQuotesKey = ['settings', 'quotes'] as const;
 
 export async function fetchSettingsQuotes(): Promise<SettingsQuotes> {
 	const response = await fetch('/api/settings/quotes');
-	if (!response.ok) throw new Error('Quote settings could not be loaded.');
+	if (!response.ok) {
+		const error = new Error('Quote settings could not be loaded.') as SettingsReadError;
+		error.status = response.status;
+		throw error;
+	}
 	return response.json();
 }
 
@@ -597,14 +612,14 @@ export async function uploadQuoteRepresentativeSignature(
 	});
 	const presign = await presignResponse.json().catch(() => ({}));
 	if (!presignResponse.ok)
-		throw new Error(presign.error ?? 'That signature could not be uploaded.');
+		throw httpError(presignResponse, presign.error ?? 'That signature could not be uploaded.');
 
 	const putResponse = await fetch(presign.upload_url, {
 		method: 'PUT',
 		headers: { 'content-type': file.type },
 		body: file
 	});
-	if (!putResponse.ok) throw new Error('That signature could not be uploaded.');
+	if (!putResponse.ok) throw httpError(putResponse, 'That signature could not be uploaded.');
 
 	return { object_key: presign.object_key as string };
 }

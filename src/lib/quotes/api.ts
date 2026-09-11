@@ -116,6 +116,10 @@ export type ConvertRequestResult = {
 export type QuoteWriteError = Error & {
 	fieldErrors?: Record<string, string>;
 	reason?: string;
+	// The HTTP status the server refused with. A reader who is not allowed to see a quote gets the same answer
+	// however many times they ask, so callers use this to stop retrying and to say what actually happened
+	// instead of a generic failure.
+	status?: number;
 };
 
 async function readOrThrow<T>(response: Response, fallback: string): Promise<T> {
@@ -128,6 +132,7 @@ async function readOrThrow<T>(response: Response, fallback: string): Promise<T> 
 		const error = new Error(result.error ?? fallback) as QuoteWriteError;
 		error.fieldErrors = result.field_errors ?? {};
 		error.reason = result.reason;
+		error.status = response.status;
 		throw error;
 	}
 	return response.json();
@@ -281,6 +286,10 @@ export type QuoteListItem = {
 		state_region: string | null;
 		postal_code: string | null;
 	} | null;
+	/** The name/address the quote's own version froze at send. Preferred over the live client/property so a
+	 *  later rename or address edit never rewrites what this row shows for an already-sent quote. */
+	client_display_name: string | null;
+	property_address: string | null;
 	/** Null when this person may not see money at all — the table shows a dash, never a wrong number. */
 	total_minor: number | null;
 };
