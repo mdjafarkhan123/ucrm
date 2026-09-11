@@ -18,7 +18,7 @@
 		// The path is resolved; the rule just cannot see through the appended query string that carries
 		// the confirmation across to the client's page.
 		// eslint-disable-next-line svelte/no-navigation-without-resolve
-		void goto(`${resolve('/(app)/clients/[id]', { id: client.id })}?saved=1`);
+		void goto(`${resolve('/(app)/clients/[id=uuid]', { id: client.id })}?saved=1`);
 	}
 </script>
 

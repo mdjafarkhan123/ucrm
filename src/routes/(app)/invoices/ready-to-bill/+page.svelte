@@ -236,7 +236,7 @@
 		if (job.unit_kind === 'job' && job.client) {
 			return `${resolve('/(app)/invoices/new')}?client=${job.client.id}&job=${job.job_id}`;
 		}
-		return resolve('/(app)/jobs/[id]', { id: job.job_id });
+		return resolve('/(app)/jobs/[id=uuid]', { id: job.job_id });
 	}
 
 	// How long a job has been waiting, which is the queue's whole reason for existing. Same-day work reads
@@ -305,7 +305,7 @@
 				bind:selectedIds
 				rowLabel={(job) => `Select job #${job.job_number} for ${clientName(job)}`}
 				isExpanded={(job) => expandedIds.has(job.job_id)}
-				onRowActivate={(job) => goto(resolve('/(app)/jobs/[id]', { id: job.job_id }))}
+				onRowActivate={(job) => goto(resolve('/(app)/jobs/[id=uuid]', { id: job.job_id }))}
 			>
 				{#snippet row(job: ReadyToBillJob)}
 					<th scope="row">
@@ -317,7 +317,7 @@
 					<td>
 						<a
 							class="ready-table__job-link"
-							href={resolve('/(app)/jobs/[id]', { id: job.job_id })}
+							href={resolve('/(app)/jobs/[id=uuid]', { id: job.job_id })}
 							onclick={(event) => event.stopPropagation()}
 						>
 							#{job.job_number}

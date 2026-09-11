@@ -343,7 +343,7 @@
 					bind:selectedIds
 					rowLabel={(invoice) =>
 						`Select invoice #${invoice.invoice_number} for ${clientName(invoice)}`}
-					onRowActivate={(invoice) => goto(resolve('/(app)/invoices/[id]', { id: invoice.id }))}
+					onRowActivate={(invoice) => goto(resolve('/(app)/invoices/[id=uuid]', { id: invoice.id }))}
 				>
 					{#snippet row(invoice: DeliverableInvoice)}
 						<th scope="row">
@@ -359,7 +359,7 @@
 						<td>
 							<a
 								class="send-table__invoice-link"
-								href={resolve('/(app)/invoices/[id]', { id: invoice.id })}
+								href={resolve('/(app)/invoices/[id=uuid]', { id: invoice.id })}
 								onclick={(event) => event.stopPropagation()}
 							>
 								#{invoice.invoice_number}

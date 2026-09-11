@@ -146,7 +146,7 @@
 			minute: '2-digit'
 		});
 	}
-	const quoteHref = (subjectId: string) => resolve('/(app)/quotes/[id]', { id: subjectId });
+	const quoteHref = (subjectId: string) => resolve('/(app)/quotes/[id=uuid]', { id: subjectId });
 
 	const statusBadge: Record<
 		RecipeStatus,

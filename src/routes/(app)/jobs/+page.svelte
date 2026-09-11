@@ -318,13 +318,13 @@
 				caption="Jobs"
 				{sort}
 				onSortChange={handleSortChange}
-				onRowActivate={(job) => goto(resolve('/(app)/jobs/[id]', { id: job.id }))}
+				onRowActivate={(job) => goto(resolve('/(app)/jobs/[id=uuid]', { id: job.id }))}
 			>
 				{#snippet row(job: JobListItem)}
 					<th scope="row">
 						<div class="jobs-table__client">
 							<Avatar id={job.client?.id ?? job.id} name={clientName(job)} size="small" />
-							<a class="jobs-table__client-link" href={resolve('/(app)/jobs/[id]', { id: job.id })}
+							<a class="jobs-table__client-link" href={resolve('/(app)/jobs/[id=uuid]', { id: job.id })}
 								>{clientName(job)}</a
 							>
 						</div>

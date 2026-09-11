@@ -693,7 +693,7 @@
 							<div>
 								<h2>{group.name}</h2>
 								{#if group.clientId}
-									<a href={resolve('/(app)/clients/[id]', { id: group.clientId })}>View client</a>
+									<a href={resolve('/(app)/clients/[id=uuid]', { id: group.clientId })}>View client</a>
 								{:else}
 									<span class="communications__unresolved-sender"
 										>Needs review — not yet linked</span
@@ -824,7 +824,7 @@
 										{#if message.quote_id}
 											<p class="communications__notice communications__notice--quiet">
 												Related work: <a
-													href={resolve('/(app)/quotes/[id]', { id: message.quote_id })}
+													href={resolve('/(app)/quotes/[id=uuid]', { id: message.quote_id })}
 													>View quote</a
 												>
 											</p>
@@ -996,7 +996,7 @@
 		{@const clientId = group.clientId}
 		<Avatar id={clientId} name={group.name} size="large" />
 		<h2>{group.name}</h2>
-		<a href={resolve('/(app)/clients/[id]', { id: clientId })}>View client</a>
+		<a href={resolve('/(app)/clients/[id=uuid]', { id: clientId })}>View client</a>
 
 		<div class="communications__context-actions">
 			<ConversationAssignField
@@ -1067,7 +1067,7 @@
 							<ul>
 								{#each context.requests as request (request.id)}
 									<li>
-										<a href={resolve('/(app)/requests/[id]', { id: request.id })}>{request.title}</a
+										<a href={resolve('/(app)/requests/[id=uuid]', { id: request.id })}>{request.title}</a
 										>
 									</li>
 								{/each}
@@ -1080,7 +1080,7 @@
 							<ul>
 								{#each context.quotes as quote (quote.id)}
 									<li>
-										<a href={resolve('/(app)/quotes/[id]', { id: quote.id })}
+										<a href={resolve('/(app)/quotes/[id=uuid]', { id: quote.id })}
 											>#{quote.quote_number} · {quote.title}</a
 										>
 									</li>
@@ -1339,7 +1339,6 @@
 		   since a grid item defaults to min-height: auto.
 		   217px is everything around it, measured on this page: 145px above (top bar plus the app shell,
 		   main, and page-container top padding) and 72px of bottom padding from those same three. */
-		height: calc(100dvh - 217px);
 		min-height: 420px;
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-large);
@@ -1503,7 +1502,7 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-base);
-		padding: var(--space-large);
+		padding: var(--space-slim);
 		border-bottom: var(--border-base) solid var(--color-border);
 	}
 	.communications__recipient {

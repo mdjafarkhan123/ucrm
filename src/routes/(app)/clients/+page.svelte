@@ -25,11 +25,13 @@
 		clientsListKey,
 		type ClientListItem,
 		type ClientListPage,
+		type ClientReadError,
 		type ClientSortKey
 	} from '$lib/clients/api';
 	import { fetchTags, tagsKey } from '$lib/collaboration/api';
 	import filterIcon from '@tabler/icons/outline/filter.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
+	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 
 	let search = $state('');
 	let debouncedSearch = $state('');
@@ -96,6 +98,9 @@
 		...(tagsQuery.data ?? []).map((tag) => ({ value: tag.id, label: tag.name }))
 	]);
 	const hasActiveFilters = $derived(status !== '' || tagId !== '');
+	// A 403 never changes on retry, so the page swaps its whole toolbar for one clear answer — search,
+	// filters, and New Client are meaningless to someone who cannot see the list.
+	const refused = $derived((clientsQuery.error as ClientReadError | null)?.status === 403);
 
 	let selectedIds = $state<Set<string>>(new Set());
 
@@ -117,14 +122,14 @@
 		{ key: 'status', label: 'Status', sortable: true }
 	];
 	function clientHref(client: ClientListItem) {
-		return resolve('/(app)/clients/[id]', { id: client.id });
+		return resolve('/(app)/clients/[id=uuid]', { id: client.id });
 	}
 	function clientMenuItems(client: ClientListItem) {
 		return [
 			{ label: 'View client', onSelect: () => goto(clientHref(client)) },
 			{
 				label: 'Edit',
-				onSelect: () => goto(resolve('/(app)/clients/[id]/edit', { id: client.id }))
+				onSelect: () => goto(resolve('/(app)/clients/[id=uuid]/edit', { id: client.id }))
 			},
 			{ label: 'Archive', onSelect: () => {}, disabled: true }
 		];
@@ -133,14 +138,22 @@
 
 <svelte:head><title>Clients · Contractor CRM</title></svelte:head>
 
-<div class="page-scroller">
-	<PageContainer variant="fill">
-		<PageHeader title="Clients" description="Every lead and customer relationship in one place.">
-			{#snippet actions()}
+<PageContainer variant="fill">
+	<PageHeader title="Clients" description="Every lead and customer relationship in one place.">
+		{#snippet actions()}
+			{#if !refused}
 				<Button variant="primary" href={resolve('/clients/new')}>New Client</Button>
-			{/snippet}
-		</PageHeader>
+			{/if}
+		{/snippet}
+	</PageHeader>
 
+	{#if refused}
+		<EmptyState
+			icon={lockIcon}
+			title="You do not have access to clients"
+			description="Clients on your assigned visits open from the Schedule and your Jobs. Ask an owner or admin if you need the full client list."
+		/>
+	{:else}
 		<div class="clients-toolbar">
 			<div class="clients-toolbar__search">
 				<SearchInput id="clients-search" bind:value={search} placeholder="Search clients" />
@@ -196,7 +209,10 @@
 		{#if clientsQuery.isPending}
 			<LoadingSkeleton variant="table" label="Loading clients" rows={5} />
 		{:else if clientsQuery.isError}
-			<ErrorState description="Clients could not be loaded. Refresh and try again." />
+			<ErrorState
+				description="Clients could not be loaded. Try again."
+				retry={() => clientsQuery.refetch()}
+			/>
 		{:else if clients.length === 0}
 			<EmptyState
 				icon={usersIcon}
@@ -263,8 +279,8 @@
 				{/snippet}
 			</DataTable>
 		{/if}
-	</PageContainer>
-</div>
+	{/if}
+</PageContainer>
 
 <style lang="scss">
 	.clients-toolbar {

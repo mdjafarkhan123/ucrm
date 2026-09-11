@@ -79,7 +79,7 @@
 		<Button
 			variant="secondary"
 			size="small"
-			href={resolve('/(app)/requests/[id]', { id: assessment.request_id })}
+			href={resolve('/(app)/requests/[id=uuid]', { id: assessment.request_id })}
 		>
 			Open request
 		</Button>

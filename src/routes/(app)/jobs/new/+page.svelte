@@ -27,7 +27,7 @@
 		// A new job lands on its own detail page, the way a saved quote does. The toast rides along through the
 		// navigation to confirm it.
 		toast.success(`Job #${job.number} created`);
-		void goto(resolve('/(app)/jobs/[id]', { id: job.id }));
+		void goto(resolve('/(app)/jobs/[id=uuid]', { id: job.id }));
 	}
 </script>
 

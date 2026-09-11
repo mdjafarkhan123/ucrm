@@ -4,16 +4,11 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 
 | Priority | Deferred task |
 | --- | --- |
-| P1 | [Authenticated reads and Pipeline writes are not rate limited](authenticated-reads-and-pipeline-writes-are-not-rate-limited.md) |
+| P1 | [Authenticated reads and non-quote/invoice/payment writes lack a shared rate-limit policy](authenticated-reads-and-pipeline-writes-are-not-rate-limited.md) |
 | P1 | [Four older composite foreign keys still null the organization on delete](four-older-composite-foreign-keys-still-null-the-organization-on-delete.md) |
-| P1 | [Internal cost still rides along on the request pricing read](internal-cost-still-rides-along-on-the-request-pricing-read.md) |
 | P1 | [Published Quotes do not freeze the organization logo or brand color](published-quotes-do-not-freeze-the-organization-logo-or-brand-color.md) |
-| P1 | [Quote write routes have no rate limit](quote-write-routes-have-no-rate-limit.md) |
 | P1 | [Removing a saved line photo leaves the file in R2](removing-a-saved-line-photo-leaves-the-file-in-r2.md) |
-| P1 | [Seven public functions still answer a signed-out request](seven-public-functions-still-answer-a-signed-out-request.md) |
-| P1 | [The Pipeline nav item is not gated on entitlement or permission](the-pipeline-nav-item-is-not-gated-on-entitlement-or-permission.md) |
 | P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
-| P1 | [No `requests.*` permission keys seeded — a Field member reads every request](no-requests-permission-keys-seeded.md) |
 | P2 | [A full page load can crash hydration and leave the previous page on screen](full-page-load-hydration-crash-leaves-the-previous-page-on-screen.md) |
 | P2 | [Issued invoices cannot be corrected from the browser](issued-invoices-cannot-be-corrected-from-the-browser.md) |
 | P2 | [`automation_6d2` still asserts the pre-6D-3 action park](automation-6d2-action-park-assertions-are-stale.md) |
@@ -56,6 +51,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Voiding an invoice tells the client nothing](void-invoice-has-no-client-cancellation-email.md) |
 | P2 | [A recorded payment cannot be edited, deleted, or split across invoices](payments-cannot-be-edited-deleted-or-split-across-invoices.md) |
 | P2 | [Two job billing-reminder modes never raise a reminder](two-job-billing-reminder-modes-raise-no-reminder.md) |
+| P2 | [Client detail's financial summary widget is empty for everyone, not just some roles](client-financial-summary-widget-shows-empty-placeholders-for-everyone.md) |
 | P3 | [Offline field records on site (Jobs 15f)](offline-field-records-on-site.md) |
 | P3 | [`/get-started` page weight](get-started-page-weight.md) |
 | P3 | [Client photos are one request each](client-photos-are-one-request-each.md) |
@@ -66,8 +62,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [Guide contractors to set up a sending email when it is missing](email-sender-setup-flow.md) |
 | P3 | [No image on a price list item](no-image-on-a-price-list-item.md) |
 | P3 | [Non-admin email-correction browser verification (Part 7)](non-admin-email-correction-browser-verification-part-7.md) |
-| P3 | [Quotes list page never resolves a 403 into an error state](quotes-list-page-never-resolves-a-403-into-an-error-state.md) |
-| P3 | [Settings Quotes and Taxes pages never resolve a 403 into an error state](settings-quotes-and-taxes-pages-never-resolve-a-403-into-an-error-state.md) |
 | P3 | [Replaced logo uploads are kept rather than cleaned up](replaced-logo-uploads-are-kept-rather-than-cleaned-up.md) |
 | P3 | [The Get started page ships an 8 MB chunk](the-get-started-page-ships-an-8-mb-chunk.md) |
 | P3 | [The get-started page ships a 7.9 MB client chunk](the-get-started-page-ships-a-7-9-mb-client-chunk.md) |
@@ -78,3 +72,4 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [Staff own actions lag behind their own realtime echo](staff-own-actions-lag-behind-realtime-echo.md) |
 | P3 | [Invoice email sends to the primary email only, not "+ billing contact"](invoice-email-sends-to-primary-only-not-billing-contact.md) |
 | P3 | [The payment-schedule dialog keeps its refusal banner after the numbers are fixed](job-payment-schedule-dialog-keeps-a-stale-reconciliation-banner.md) |
+| P3 | [One-time flash of full nav + "not connected to an organization" after account menu](one-time-flash-of-full-nav-and-no-organization-banner-after-account-menu.md) |

@@ -98,7 +98,7 @@
 		<Button
 			variant="secondary"
 			size="small"
-			href={resolve('/(app)/jobs/[id]', { id: visit.job_id })}
+			href={resolve('/(app)/jobs/[id=uuid]', { id: visit.job_id })}
 		>
 			Open job{visit.job_number ? ` #${visit.job_number}` : ''}
 		</Button>

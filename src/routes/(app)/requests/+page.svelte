@@ -131,7 +131,7 @@
 	}
 
 	function requestHref(request: RequestListItem) {
-		return resolve('/(app)/requests/[id]', { id: request.id });
+		return resolve('/(app)/requests/[id=uuid]', { id: request.id });
 	}
 
 	const columns: DataTableColumn[] = [

@@ -1,7 +1,7 @@
 import type { QuoteWriteError } from './api';
 
 // Contractor Settings Part 6D-5b: the browser client for the Quote record-level Automation controls. Every
-// call goes through the `/api/quotes/[id]/automation` routes, which own access and the atomic commands; this
+// call goes through the `/api/quotes/[id=uuid]/automation` routes, which own access and the atomic commands; this
 // module only shapes requests and surfaces the same `QuoteWriteError` the rest of the quote page already
 // understands.
 
@@ -63,6 +63,7 @@ async function readOrThrow<T>(response: Response, fallback: string): Promise<T> 
 		const error = new Error(result.error ?? fallback) as QuoteWriteError;
 		error.fieldErrors = result.field_errors ?? {};
 		error.reason = result.reason;
+		error.status = response.status;
 		throw error;
 	}
 	return response.json();

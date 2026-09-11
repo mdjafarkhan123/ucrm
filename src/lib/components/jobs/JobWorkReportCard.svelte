@@ -18,9 +18,10 @@
 	import { resolve } from '$app/paths';
 	import fileReportIcon from '@tabler/icons/outline/file-report.svg?raw';
 
-	// The living picture handed to a customer of what was done: photos, checklist answers and the work list,
-	// gathered from what already exists on the job rather than anything typed fresh here. There is no
-	// snapshot — un-checking a photo fixes every link already sent, the moment it is saved.
+	// The picture handed to a customer of what was done: photos, checklist answers and the work list, chosen
+	// from what already exists on the job rather than anything typed fresh here. Editing here only changes
+	// what a *new* link would show — "Copy work report link" freezes the current selection onto that link,
+	// so a link already sent keeps showing what it showed when it was sent.
 
 	let {
 		jobId,
@@ -81,7 +82,7 @@
 	}
 
 	export function openPreview(print = false) {
-		const path = resolve('/(app)/jobs/[id]/report/preview', { id: jobId });
+		const path = resolve('/(app)/jobs/[id=uuid]/report/preview', { id: jobId });
 		window.open(print ? `${path}?print=1` : path, '_blank', 'noopener');
 	}
 

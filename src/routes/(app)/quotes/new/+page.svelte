@@ -15,7 +15,7 @@
 	}));
 
 	function handleSaved(quote: { id: string; number: number }) {
-		void goto(resolve('/(app)/quotes/[id]', { id: quote.id }));
+		void goto(resolve('/(app)/quotes/[id=uuid]', { id: quote.id }));
 	}
 </script>
 

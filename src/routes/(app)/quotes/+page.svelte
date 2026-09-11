@@ -146,6 +146,12 @@
 		queryFn: fetchQuoteOverview
 	}));
 
+	// A Field member holds no quotes.view -- the list query is the thing that actually finds out. Default
+	// to visible so a permitted member's buttons aren't delayed behind this fetch, and hide only once a
+	// real denial comes back.
+	const quotesActionsAllowed = $derived(
+		quotesQuery.isError ? (quotesQuery.error as { status?: number })?.status !== 403 : true
+	);
 	const quotes = $derived(quotesQuery.data?.pages.flatMap((page) => page.quotes) ?? []);
 	const locale = $derived(quotesQuery.data?.pages[0]?.locale ?? 'en-US');
 	const hasActiveFilters = $derived(status !== '' || createdFrom !== '' || createdTo !== '');
@@ -196,14 +202,16 @@
 		return formatter.format(quote.total_minor / 100);
 	}
 
-	function propertyAddress(property: QuoteListItem['property']) {
+	function propertyAddress(quote: QuoteListItem) {
+		if (quote.property_address) return quote.property_address;
+		const property = quote.property;
 		if (!property) return 'No property';
 		return [property.address_line1, property.city, property.state_region]
 			.filter(Boolean)
 			.join(', ');
 	}
 	function clientName(quote: QuoteListItem) {
-		return quote.client?.display_name ?? 'Client removed';
+		return quote.client_display_name ?? quote.client?.display_name ?? 'Client removed';
 	}
 	function quoteTitle(quote: QuoteListItem) {
 		return quote.title ?? 'Untitled quote';
@@ -228,11 +236,13 @@
 		{/if}
 		<PageHeader title="Quotes" description="Every price you have put in front of a client.">
 			{#snippet actions()}
-				<Button variant="primary" href={resolve('/(app)/quotes/new')}>New Quote</Button>
-				<span class="quotes-header__action" title={moreActionsReason}>
-					<Button variant="secondary" disabled>More Actions</Button>
-					<span class="quotes-header__reason">{moreActionsReason}</span>
-				</span>
+				{#if quotesActionsAllowed}
+					<Button variant="primary" href={resolve('/(app)/quotes/new')}>New Quote</Button>
+					<span class="quotes-header__action" title={moreActionsReason}>
+						<Button variant="secondary" disabled>More Actions</Button>
+						<span class="quotes-header__reason">{moreActionsReason}</span>
+					</span>
+				{/if}
 			{/snippet}
 		</PageHeader>
 
@@ -347,7 +357,7 @@
 				selectable
 				bind:selectedIds
 				rowLabel={(quote) => `Select quote #${quote.quote_number}`}
-				onRowActivate={(quote) => void goto(resolve('/(app)/quotes/[id]', { id: quote.id }))}
+				onRowActivate={(quote) => void goto(resolve('/(app)/quotes/[id=uuid]', { id: quote.id }))}
 				{sort}
 				onSortChange={handleSortChange}
 			>
@@ -360,11 +370,13 @@
 					</th>
 					<td>
 						<div class="quotes-table__number">
-							<a href={resolve('/(app)/quotes/[id]', { id: quote.id })}>#{quote.quote_number}</a>
+							<a href={resolve('/(app)/quotes/[id=uuid]', { id: quote.id })}
+								>#{quote.quote_number}</a
+							>
 						</div>
 						<div class="quotes-table__title">{quoteTitle(quote)}</div>
 					</td>
-					<td>{propertyAddress(quote.property)}</td>
+					<td>{propertyAddress(quote)}</td>
 					<td>{dateFormat.format(new Date(quote.created_at))}</td>
 					<td>
 						<StatusBadge status={QUOTE_STATUS_TONES[quote.status]}>

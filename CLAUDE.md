@@ -14,7 +14,8 @@ This file governs how Claude should work.
 - **Production cutover gate:** Rehearse the managed-to-self-hosted migration in staging and verify rollback, off-host backup and point-in-time recovery, clean-machine restore, network and secrets security, monitoring, failure behavior, and production-like load before launch. One VPS is one failure domain and is not high availability; expand to separate failure domains when uptime requirements or measured load require it.
 - **Approval boundary:** This describes the intended destination, not authorization to alter infrastructure. Present the concrete topology and migration plan to Jafar for approval before implementation.
 
-- **Login details:** `/jafar` route details: `dev.jafarkhan@gmail.com`; pass `.Asdedjk12`. Contractor Owner account email is `info.socialmediauser1@gmail.com` and pass is `11223344`. Filed member login details: `dev.jafarkhan@gmail.com`; pass: `11223344`. Admin details: `jafarkhaninupwork@gmail.com`; pass: 111223344`
+- **Login details:** `/jafar` route details: `dev.jafarkhan@gmail.com`; pass `.Asdedjk12`. Contractor Owner account email is `info.socialmediauser1@gmail.com` and pass is `11223344`. Filed member login details: `dev.jafarkhan@gmail.com`; pass: `11223344`. Admin details: `jafarkhaninupwork@gmail.com`; pass: `11223344`
+- **Test-only role logins (Raad LTD, created 2026-09-11 for the paid-launch-trust Part 16 audit):** `office` role — `dev.jafarkhan+office@gmail.com` / `PaidLaunch16!`. `sales` role — `dev.jafarkhan+sales@gmail.com` / `PaidLaunch16!`. `finance` role — `dev.jafarkhan+finance@gmail.com` / `PaidLaunch16!`. Created by driving the real invite-and-accept flow (`$lib/server/team/invitations.ts`) directly, not raw SQL.
 
 ---
 

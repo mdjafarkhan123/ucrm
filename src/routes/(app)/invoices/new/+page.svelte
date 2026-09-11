@@ -149,7 +149,7 @@
 		if (visitLinesQuery.isError) {
 			attemptedVisitSeed = true;
 			toast.error('Those visits’ pricing could not be loaded. Try again.');
-			void goto(resolve('/(app)/jobs/[id]', { id: jobId }));
+			void goto(resolve('/(app)/jobs/[id=uuid]', { id: jobId }));
 			return;
 		}
 		const job = originJobQuery.data;
@@ -169,7 +169,7 @@
 
 		if (lines.length === 0) {
 			toast.error('Those visits have no priced lines yet, so there is nothing to bill.');
-			void goto(resolve('/(app)/jobs/[id]', { id: jobId }));
+			void goto(resolve('/(app)/jobs/[id=uuid]', { id: jobId }));
 			return;
 		}
 
@@ -196,7 +196,7 @@
 		const jobLines = pricedLines(job.lines);
 		if (jobLines.length === 0) {
 			toast.error('That job has no priced lines yet, so there is nothing to bill.');
-			void goto(resolve('/(app)/jobs/[id]', { id: jobId }));
+			void goto(resolve('/(app)/jobs/[id=uuid]', { id: jobId }));
 			return;
 		}
 
@@ -271,7 +271,7 @@
 
 		const backToJob = (message: string) => {
 			toast.error(message);
-			void goto(resolve('/(app)/jobs/[id]', { id: jobId }));
+			void goto(resolve('/(app)/jobs/[id=uuid]', { id: jobId }));
 		};
 
 		const stage = job.schedule?.stages.find((entry) => entry.installment_id === installmentId);
@@ -347,13 +347,13 @@
 
 	function leave() {
 		picking = false;
-		void goto(jobId ? resolve('/(app)/jobs/[id]', { id: jobId }) : resolve('/(app)/invoices'));
+		void goto(jobId ? resolve('/(app)/jobs/[id=uuid]', { id: jobId }) : resolve('/(app)/invoices'));
 	}
 
 	function handleSaved(invoice: { id: string; number: number }) {
 		// A new invoice lands on its own detail page. The toast rides along through the navigation to confirm it.
 		toast.success(`Invoice #${invoice.number} created`);
-		void goto(resolve('/(app)/invoices/[id]', { id: invoice.id }));
+		void goto(resolve('/(app)/invoices/[id=uuid]', { id: invoice.id }));
 	}
 </script>
 

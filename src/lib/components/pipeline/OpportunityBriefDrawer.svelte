@@ -90,7 +90,7 @@
 			<ClientSummaryCard
 				name={clientName}
 				href={opportunity.client
-					? resolve('/(app)/clients/[id]', { id: opportunity.client.id })
+					? resolve('/(app)/clients/[id=uuid]', { id: opportunity.client.id })
 					: undefined}
 				addresses={[{ value: propertyLine, empty: 'No property on this work yet' }]}
 				phone={clientQuery.data?.phone ?? null}
@@ -121,7 +121,7 @@
 		{#if opportunity.request}
 			<Button
 				variant="secondary"
-				href={resolve('/(app)/requests/[id]', { id: opportunity.request.id })}
+				href={resolve('/(app)/requests/[id=uuid]', { id: opportunity.request.id })}
 			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				<span class="brief__button-icon" aria-hidden="true">{@html requestIcon}</span>
@@ -130,7 +130,7 @@
 		{:else if opportunity.quote}
 			<Button
 				variant="secondary"
-				href={resolve('/(app)/quotes/[id]', { id: opportunity.quote.id })}
+				href={resolve('/(app)/quotes/[id=uuid]', { id: opportunity.quote.id })}
 			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				<span class="brief__button-icon" aria-hidden="true">{@html quoteIcon}</span>

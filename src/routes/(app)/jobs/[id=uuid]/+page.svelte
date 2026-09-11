@@ -1,0 +1,887 @@
+<script lang="ts">
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import PageContainer from '$lib/components/layout/PageContainer.svelte';
+	import RecordDetailLayout from '$lib/components/layout/RecordDetailLayout.svelte';
+	import RailCard from '$lib/components/layout/RailCard.svelte';
+	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
+	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
+	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
+	import PencilButton from '$lib/components/ui/PencilButton.svelte';
+	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
+	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
+	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
+	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
+	import QuoteSummaryCard from '$lib/components/quotes/QuoteSummaryCard.svelte';
+	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
+	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
+	import JobBillingCard from '$lib/components/jobs/JobBillingCard.svelte';
+	import JobRemindersCard from '$lib/components/jobs/JobRemindersCard.svelte';
+	import JobVisitsToBillCard from '$lib/components/jobs/JobVisitsToBillCard.svelte';
+	import JobPeriodsToBillCard from '$lib/components/jobs/JobPeriodsToBillCard.svelte';
+	import JobChecklistsCard from '$lib/components/jobs/JobChecklistsCard.svelte';
+	import JobSignaturesCard from '$lib/components/jobs/JobSignaturesCard.svelte';
+	import { jobSignaturesKey } from '$lib/signatures/api';
+	import JobWorkReportCard from '$lib/components/jobs/JobWorkReportCard.svelte';
+	import JobVisitsSection from '$lib/components/jobs/JobVisitsSection.svelte';
+	import JobLaborSection from '$lib/components/jobs/JobLaborSection.svelte';
+	import JobExpensesSection from '$lib/components/jobs/JobExpensesSection.svelte';
+	import JobCostingCard from '$lib/components/jobs/JobCostingCard.svelte';
+	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
+	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import {
+		fetchJob,
+		jobDetailKey,
+		saveJobDetails,
+		saveJobLines,
+		saveJobDiscount,
+		saveJobTax,
+		fetchJobEvents,
+		jobEventsKey,
+		jobCountsKey,
+		reopenJob,
+		type JobWriteError,
+		type JobScopeLineInput
+	} from '$lib/jobs/api';
+	import type {
+		RequestPricingLine,
+		RequestPricingLineInput,
+		QuoteTaxSource
+	} from '$lib/quotes/api';
+	import { JOB_STATUS_LABELS, JOB_STATUS_TONES, JOB_TYPE_LABELS } from '$lib/jobs/statuses';
+	import { createNote, deleteNote, updateNote, type NoteChange } from '$lib/collaboration/api';
+	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
+	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
+	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
+	import fileInvoiceIcon from '@tabler/icons/outline/file-invoice.svg?raw';
+	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
+	import printIcon from '@tabler/icons/outline/printer.svg?raw';
+	import linkIcon from '@tabler/icons/outline/link.svg?raw';
+
+	const queryClient = useQueryClient();
+	const toast = getToastManager();
+	const jobId = $derived(page.params.id ?? '');
+
+	const jobQuery = createQuery(() => ({
+		queryKey: jobDetailKey(jobId),
+		queryFn: () => fetchJob(jobId),
+		enabled: Boolean(jobId),
+		staleTime: 15_000,
+		// A refusal is an answer, not a hiccup. A job outside the reader's assigned scope answers 404 every
+		// time, so retrying only holds the skeleton on screen; keep the retries for genuine network trouble.
+		retry: (failureCount: number, error: Error) => {
+			const status = (error as JobWriteError).status;
+			if (status && status >= 400 && status < 500) return false;
+			return failureCount < 3;
+		}
+	}));
+
+	// The server already says whether the job is missing, refused, or simply broke. Show its wording rather
+	// than a generic failure, so a field worker who opens a job they are not assigned to learns why.
+	const jobErrorMessage = $derived.by(() => {
+		const error = jobQuery.error as JobWriteError | null;
+		return error?.message || 'That job could not be loaded. Refresh and try again.';
+	});
+	const saved = $derived(jobQuery.data);
+
+	// The title's pencil and the instructions block each stage their own draft; the bottom bar saves both in
+	// one command. Every command in this repo guards on a revision, so a stale save is refused rather than
+	// clobbering someone else's change.
+	let editingTitle = $state(false);
+	let titleDraft = $state('');
+	let editingInstructions = $state(false);
+	let instructionsDraft = $state('');
+	let saving = $state(false);
+	let saveError = $state('');
+	let notePending = $state<NoteChange[]>([]);
+	let attachmentsCard = $state<AttachmentsCard>();
+	let pendingFileCount = $state(0);
+	let workReportCard = $state<JobWorkReportCard>();
+	let reportHasContent = $state(false);
+
+	const editable = $derived(Boolean(saved?.can_edit));
+	const title = $derived(saved?.job.title?.trim() || `Job #${saved?.job.job_number ?? ''}`);
+	const titleChanged = $derived(
+		editingTitle && titleDraft.trim() !== (saved?.job.title?.trim() ?? '')
+	);
+	const instructionsChanged = $derived(
+		editingInstructions && instructionsDraft.trim() !== (saved?.job.instructions?.trim() ?? '')
+	);
+	const showInstructions = $derived(editingInstructions || Boolean(saved?.job.instructions));
+
+	const isEditing = $derived(
+		editingTitle || editingInstructions || notePending.length > 0 || pendingFileCount > 0
+	);
+	const isDirty = $derived(
+		titleChanged || instructionsChanged || notePending.length > 0 || pendingFileCount > 0
+	);
+
+	// The read-only scope lines, mapped into the same shape the shared pricing block draws for a quote.
+	const jobLines = $derived<RequestPricingLine[]>(
+		(saved?.lines ?? []).map((line) => ({
+			...line,
+			catalog_item_id: line.source_catalog_item_id,
+			// A job's scope is always priced product or service work — it carries no text or heading lines —
+			// so category and quantity are never actually null; the fallbacks only satisfy the shared type.
+			category: line.category ?? 'service',
+			quantity: line.quantity ?? 0,
+			unit_price_minor: line.unit_price_minor ?? 0,
+			unit_cost_minor: line.unit_cost_minor ?? 0,
+			line_total_minor: line.line_total_minor ?? 0,
+			line_cost_total_minor: line.line_cost_total_minor ?? 0
+		}))
+	);
+
+	const dateFormat = new Intl.DateTimeFormat(undefined, {
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric'
+	});
+	const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric',
+		hour: 'numeric',
+		minute: '2-digit'
+	});
+	const headerFacts = $derived([
+		{ label: 'Job #', value: saved ? String(saved.job.job_number) : null },
+		{ label: 'Type', value: saved ? JOB_TYPE_LABELS[saved.job.job_type] : null },
+		{
+			label: 'Created',
+			value: saved ? dateTimeFormat.format(new Date(saved.job.created_at)) : null
+		},
+		...(saved?.job.from_quote ? [{ label: 'Source', value: 'From a quote' }] : [])
+	]);
+
+	const propertyLine = $derived.by(() => {
+		const property = saved?.job.property;
+		if (!property) return null;
+		return [
+			property.address_line1,
+			property.address_line2,
+			property.city,
+			property.state_region,
+			property.postal_code
+		]
+			.filter(Boolean)
+			.join(', ');
+	});
+
+	const clientMenuItems = $derived(
+		saved?.job.client
+			? [
+					{
+						label: 'View client profile',
+						onSelect: () => void goto(resolve('/(app)/clients/[id=uuid]', { id: saved.job.client!.id }))
+					}
+				]
+			: []
+	);
+
+	// The header's own ··· menu. Billing needs a client to invoice and the `invoices.create` right; the
+	// composer at /invoices/new reads the client and job off the query and offers this job's billable work.
+	const jobMenuItems = $derived.by(() => {
+		const items = [];
+		if (saved?.can_invoice && saved.job.client) {
+			items.push({
+				label: 'Create invoice',
+				icon: fileInvoiceIcon,
+				onSelect: () =>
+					void goto(
+						`${resolve('/(app)/invoices/new')}?client=${saved.job.client!.id}&job=${saved.job.id}`
+					)
+			});
+		}
+		// The work report's own door, offered only once there is something on it to see — the "Copy work
+		// report link" command itself refuses an empty report, so the menu never offers a press that can
+		// only fail.
+		if (editable && reportHasContent) {
+			items.push({
+				label: 'Preview work report',
+				icon: eyeIcon,
+				onSelect: () => workReportCard?.openPreview()
+			});
+			items.push({
+				label: 'Print work report',
+				icon: printIcon,
+				onSelect: () => workReportCard?.openPreview(true)
+			});
+			items.push({
+				label: 'Copy work report link',
+				icon: linkIcon,
+				onSelect: () => void workReportCard?.copyLink()
+			});
+		}
+		return items;
+	});
+
+	// --- History ----------------------------------------------------------------------------------------
+	// Jobber swaps the rail for the history panel rather than opening it beside everything else. Nothing
+	// about it loads with the page: hovering the button starts the fetch, so it is usually already there by
+	// the time the click lands.
+	let showHistory = $state(false);
+
+	const eventsQuery = createQuery(() => ({
+		queryKey: jobEventsKey(jobId),
+		queryFn: () => fetchJobEvents(jobId),
+		enabled: Boolean(jobId) && showHistory,
+		staleTime: 15_000
+	}));
+
+	function warmHistory() {
+		if (!jobId) return;
+		void queryClient.prefetchQuery({
+			queryKey: jobEventsKey(jobId),
+			queryFn: () => fetchJobEvents(jobId)
+		});
+	}
+
+	const EVENT_LABELS: Record<string, string> = {
+		job_created: 'Job created',
+		details_updated: 'Details updated',
+		visits_added: 'Visits added',
+		visit_updated: 'Visit updated',
+		visits_moved: 'Visits moved',
+		visit_deleted: 'Visit deleted',
+		schedule_replaced: 'Schedule changed',
+		billing_updated: 'Billing setup changed',
+		payment_schedule_updated: 'Payment schedule changed',
+		visits_updated_forward: 'Later visits updated'
+	};
+
+	function eventLabel(event: { event_type: string; summary: string | null }) {
+		return event.summary ?? EVENT_LABELS[event.event_type] ?? event.event_type.replace(/_/g, ' ');
+	}
+
+	function eventDetail(event: {
+		event_type: string;
+		metadata: Record<string, unknown>;
+		visit_label: string | null;
+	}) {
+		if (event.visit_label) return event.visit_label;
+		if (event.event_type === 'details_updated') {
+			const changed = event.metadata.changed;
+			if (Array.isArray(changed) && changed.length > 0) {
+				return `Changed ${changed.join(' and ')}`;
+			}
+		}
+		if (event.event_type === 'visits_added') {
+			const count = event.metadata.count;
+			if (typeof count === 'number') return `${count} ${count === 1 ? 'visit' : 'visits'} added`;
+		}
+		if (event.event_type === 'visit_updated') {
+			const changed = event.metadata.changed;
+			if (Array.isArray(changed) && changed.length > 0) {
+				return `Changed ${changed.join(' and ')}`;
+			}
+		}
+		if (event.event_type === 'visits_moved') {
+			const count = event.metadata.count;
+			const dayOffset = event.metadata.day_offset;
+			if (typeof count === 'number' && typeof dayOffset === 'number') {
+				const direction = dayOffset > 0 ? 'later' : 'earlier';
+				return `${count} ${count === 1 ? 'visit' : 'visits'} moved ${Math.abs(dayOffset)} ${Math.abs(dayOffset) === 1 ? 'day' : 'days'} ${direction}`;
+			}
+		}
+		if (event.event_type === 'schedule_replaced') {
+			const created = event.metadata.created_count;
+			const removed = event.metadata.removed_count;
+			if (typeof created === 'number' && typeof removed === 'number') {
+				return `${created} ${created === 1 ? 'visit' : 'visits'} created, ${removed} removed`;
+			}
+		}
+		if (event.event_type === 'payment_schedule_updated') {
+			const count = event.metadata.stage_count;
+			if (count === 0) return 'Payment schedule removed';
+			if (typeof count === 'number') return `${count} stages`;
+		}
+		if (event.event_type === 'visits_updated_forward') {
+			const count = event.metadata.count;
+			if (typeof count === 'number') {
+				return `${count} later ${count === 1 ? 'visit' : 'visits'} updated`;
+			}
+		}
+		return null;
+	}
+
+	// --- Pricing ----------------------------------------------------------------------------------------
+	// The scope block, the discount card and the tax card each own a piece of the job's money and each write
+	// on their own button, the way they already do on a quote. They are not part of the page's staged title
+	// and instructions draft, so the bottom save bar never appears for them.
+	//
+	// The block speaks the quote's dialect — `catalog_item_id`, optional add-on fields — so the job's own
+	// column name is put back here. A job carries no headings or notes, so anything that is not a priced
+	// line is dropped rather than sent to a command that would refuse it.
+	async function saveScope(expectedRevision: number, lines: RequestPricingLineInput[]) {
+		const scope: JobScopeLineInput[] = lines
+			.filter((line) => (line.line_kind ?? 'priced') === 'priced')
+			.map((line, index) => ({
+				position: index,
+				category: line.category,
+				is_labor: line.is_labor,
+				source_catalog_item_id: line.catalog_item_id,
+				name: line.name,
+				description: line.description ?? null,
+				unit_label: line.unit_label ?? null,
+				quantity: line.quantity,
+				unit_price_minor: line.unit_price_minor,
+				unit_cost_minor: line.unit_cost_minor,
+				is_taxable: line.is_taxable ?? true,
+				image_attachment_id: line.image_attachment_id ?? null
+			}));
+
+		await saveJobLines(jobId, expectedRevision, scope);
+		await refreshJob();
+		toast.success('Scope saved');
+	}
+
+	// --- Saving -----------------------------------------------------------------------------------------
+	function discard() {
+		editingTitle = false;
+		titleDraft = '';
+		editingInstructions = false;
+		instructionsDraft = '';
+		notePending = [];
+		attachmentsCard?.discardChanges();
+		saveError = '';
+	}
+
+	// Recording, correcting or removing labor or an expense changes the job's cost, profit and margin. The
+	// Labor and Expenses sections refetch their own rows; this reloads the detail payload so the costing card
+	// beside them keeps up. Just the job detail — the list and the invoice queues do not carry a cost figure.
+	async function refreshCosting() {
+		await queryClient.invalidateQueries({ queryKey: jobDetailKey(jobId) });
+	}
+
+	async function refreshJob() {
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: jobDetailKey(jobId) }),
+			queryClient.invalidateQueries({ queryKey: jobEventsKey(jobId) }),
+			queryClient.invalidateQueries({ queryKey: ['jobs', 'list'] }),
+			queryClient.invalidateQueries({ queryKey: jobCountsKey }),
+			// What this job has left to bill can change with its scope, its billing setup and its payment
+			// stages, so the two screens that offer this job's work are cleared with the job itself.
+			queryClient.invalidateQueries({ queryKey: ['invoices', 'billable-work'] }),
+			queryClient.invalidateQueries({ queryKey: ['invoices', 'ready-to-bill'] }),
+			// Whether a collected signature still matches the job is worked out on the server against the
+			// job as it stands, so any change to the job can flip it. The card has to re-ask rather than
+			// keep showing an answer that was true before this save.
+			queryClient.invalidateQueries({ queryKey: jobSignaturesKey(jobId) })
+		]);
+	}
+
+	// The other direction of "Finish job" (Part 13a): a closed job is not a dead end. Removed visits do not
+	// regenerate — scheduling more is its own explicit action, once the job is active again.
+	let reopening = $state(false);
+
+	async function reopen() {
+		if (!saved || reopening) return;
+		reopening = true;
+		try {
+			await reopenJob(jobId, saved.job.revision);
+			await refreshJob();
+			toast.success('Job reopened');
+		} catch (caught) {
+			toast.error((caught as JobWriteError).message ?? 'That job could not be reopened.');
+		} finally {
+			reopening = false;
+		}
+	}
+
+	async function save() {
+		if (!saved || saving || !isDirty) return;
+		saving = true;
+		saveError = '';
+		try {
+			if (titleChanged || instructionsChanged) {
+				await saveJobDetails(jobId, saved.job.revision, {
+					title: titleChanged ? titleDraft.trim() : saved.job.title,
+					instructions: editingInstructions
+						? instructionsDraft.trim() || null
+						: saved.job.instructions
+				});
+				editingTitle = false;
+				titleDraft = '';
+				editingInstructions = false;
+				instructionsDraft = '';
+			}
+
+			for (const change of [...notePending]) {
+				if (change.kind === 'create')
+					await createNote({ entityType: 'job', entityId: jobId, body: change.body });
+				else if (change.kind === 'update')
+					await updateNote({
+						id: change.id,
+						entityType: 'job',
+						entityId: jobId,
+						body: change.body
+					});
+				else if (change.kind === 'pin')
+					await updateNote({
+						id: change.id,
+						entityType: 'job',
+						entityId: jobId,
+						pinned: change.pinned
+					});
+				else await deleteNote({ id: change.id, entityType: 'job', entityId: jobId });
+				notePending = notePending.filter((entry) => entry !== change);
+			}
+
+			const failedFiles = (await attachmentsCard?.saveAll(jobId)) ?? 0;
+			if (failedFiles > 0) {
+				saveError =
+					failedFiles === 1
+						? 'Everything else was saved, but one file still needs attention.'
+						: `Everything else was saved, but ${failedFiles} files still need attention.`;
+			}
+			await refreshJob();
+			if (failedFiles === 0) toast.success('Job saved');
+		} catch (caught) {
+			const writeError = caught as JobWriteError;
+			if (writeError.reason === 'stale') {
+				// Refresh the stale Job fields without throwing away independent notes or files the person
+				// already staged. Those records have their own ownership checks and no Job revision token.
+				editingTitle = false;
+				titleDraft = '';
+				editingInstructions = false;
+				instructionsDraft = '';
+				await refreshJob();
+				saveError =
+					'Someone else changed this job. The latest version is now on screen; your notes and files are still waiting.';
+			} else {
+				saveError =
+					writeError.fieldErrors?.form ?? writeError.message ?? 'Those changes could not be saved.';
+			}
+		} finally {
+			saving = false;
+		}
+	}
+</script>
+
+<svelte:head><title>{title || 'Job'} · Contractor CRM</title></svelte:head>
+
+<!-- eslint-disable svelte/no-at-html-tags -->
+<PageContainer>
+	{#if jobQuery.isPending}
+		<LoadingSkeleton variant="card" label="Loading job" />
+	{:else if jobQuery.isError}
+		<ErrorState description={jobErrorMessage} />
+	{:else if saved}
+		<RecordDetailLayout
+			class="job-detail"
+			editing={isEditing}
+			dirty={isDirty}
+			{saving}
+			error={saveError}
+			onSave={() => void save()}
+			onCancel={discard}
+		>
+			{#snippet main()}
+				<WorkRecordHeader
+					icon={briefcaseIcon}
+					recordType="Job"
+					{title}
+					statusLabel={JOB_STATUS_LABELS[saved.job.derived_status]}
+					statusTone={JOB_STATUS_TONES[saved.job.derived_status]}
+					onHistory={() => (showHistory = !showHistory)}
+					onHistoryHover={warmHistory}
+					menuItems={jobMenuItems}
+					onEditTitle={editable
+						? () => {
+								titleDraft = saved.job.title;
+								editingTitle = true;
+							}
+						: undefined}
+					{editingTitle}
+					bind:titleDraft
+				>
+					{#snippet summary()}
+						<ClientSummaryCard
+							name={saved.job.client?.display_name ?? 'No client'}
+							href={saved.job.client
+								? resolve('/(app)/clients/[id=uuid]', { id: saved.job.client.id })
+								: undefined}
+							addresses={[{ value: propertyLine, empty: 'No property on this job' }]}
+							phone={saved.job.client?.phone}
+							email={saved.job.client?.email}
+							menuItems={clientMenuItems}
+						/>
+					{/snippet}
+					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
+					{#snippet badges()}
+						{#if saved.job.status === 'closed' && saved.can_close}
+							<Button
+								size="small"
+								variant="tertiary"
+								onclick={() => void reopen()}
+								loading={reopening}
+							>
+								Reopen job
+							</Button>
+						{/if}
+					{/snippet}
+				</WorkRecordHeader>
+
+				<ProductsAndServicesBlock
+					lines={jobLines}
+					revision={saved.job.revision}
+					editable={editable && saved.can_see_price}
+					showPrices={saved.can_see_price}
+					subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? 0) : null}
+					currencyCode={saved.job.currency_code}
+					locale={saved.locale}
+					editorTotalLabel="Job subtotal"
+					saveLabel="Save scope"
+					emptyDescription="Add the products and services this job covers."
+					onSave={saveScope}
+				/>
+
+				<!--
+					Labor sits under the job's scope and above its visits, the order Jobber uses: what the job
+					covers, what it took, then when it happens. The section loads its own hours, because who may
+					see them is a narrower question than who may open the job.
+				-->
+				<JobLaborSection
+					jobId={saved.job.id}
+					visits={saved.visits}
+					locale={saved.locale}
+					currencyCode={saved.job.currency_code}
+					onChange={refreshCosting}
+				/>
+
+				<!--
+					Expenses sit beside labor: both are what the job actually cost, recorded the same own/team way
+					and hidden the same way behind jobs.view_cost. The section loads its own rows.
+				-->
+				<JobExpensesSection
+					jobId={saved.job.id}
+					locale={saved.locale}
+					currencyCode={saved.job.currency_code}
+					onChange={refreshCosting}
+				/>
+
+				<JobChecklistsCard jobId={saved.job.id} active={saved.job.status === 'active'} />
+
+				<JobVisitsSection
+					jobId={saved.job.id}
+					visits={saved.visits}
+					jobTitle={title}
+					locale={saved.locale}
+					canSchedule={saved.can_schedule}
+					canComplete={saved.can_complete}
+					canClose={saved.can_close}
+					jobStatus={saved.job.status}
+					jobType={saved.job.job_type}
+					isAsNeeded={saved.job.is_as_needed}
+					recurrence={saved.recurrence}
+					jobRevision={saved.job.revision}
+					clientId={saved.job.client?.id ?? null}
+					clientName={saved.job.client?.display_name ??
+						saved.job.client?.company_name ??
+						'this client'}
+					priceBasis={saved.job.price_basis}
+					billingTiming={saved.job.billing_timing}
+					canInvoiceVisits={saved.can_invoice_visits}
+					canEditPricing={saved.can_edit}
+					canSeePrice={saved.can_see_price}
+					currentUserId={saved.current_user_id}
+					canRecord={saved.can_record_field_records}
+					canManageTeam={saved.can_manage_team_field_records}
+					currencyCode={saved.job.currency_code}
+				/>
+
+				{#if showInstructions}
+					<SectionBlock title="Instructions" icon={notesIcon} level={2} form={editingInstructions}>
+						{#snippet actions()}
+							{#if editable && !editingInstructions}
+								<PencilButton
+									onclick={() => {
+										instructionsDraft = saved.job.instructions ?? '';
+										editingInstructions = true;
+									}}
+									label="Edit the instructions"
+								/>
+							{:else if instructionsChanged}
+								<Badge size="small" status="warning">Unsaved</Badge>
+							{/if}
+						{/snippet}
+
+						{#if editingInstructions}
+							<Textarea
+								id="job-instructions"
+								label="Notes for the crew doing this work"
+								rows={5}
+								maxlength={4000}
+								bind:value={instructionsDraft}
+							/>
+						{:else if saved.job.instructions}
+							<p class="job-detail__copy">{saved.job.instructions}</p>
+						{:else}
+							<EmptyState
+								icon={notesIcon}
+								title="No instructions"
+								description="Add notes the crew should read before this work."
+							/>
+						{/if}
+					</SectionBlock>
+				{/if}
+			{/snippet}
+
+			{#snippet rail()}
+				{#if showHistory}
+					<RailCard title="Job history" icon={clockIcon}>
+						{#snippet actions()}
+							<Button size="small" variant="tertiary" onclick={() => (showHistory = false)}>
+								Close
+							</Button>
+						{/snippet}
+						{#if eventsQuery.isPending}
+							<LoadingSkeleton variant="text" label="Loading history" />
+						{:else if eventsQuery.isError}
+							<p class="job-history__empty">That history could not be loaded.</p>
+						{:else if (eventsQuery.data ?? []).length === 0}
+							<p class="job-history__empty">Nothing has happened on this job yet.</p>
+						{:else}
+							<ol class="job-history">
+								{#each eventsQuery.data ?? [] as event (event.id)}
+									<li class="job-history__item">
+										<p class="job-history__title">{eventLabel(event)}</p>
+										{#if eventDetail(event)}
+											<p class="job-history__detail">{eventDetail(event)}</p>
+										{/if}
+										<p class="job-history__meta">
+											{event.actor_name ?? 'Someone'} ·
+											{dateTimeFormat.format(new Date(event.created_at))}
+										</p>
+									</li>
+								{/each}
+							</ol>
+						{/if}
+					</RailCard>
+				{:else}
+					<RailCard title="Notes" icon={notesIcon}>
+						<NotesPanel
+							entityType="job"
+							entityId={jobId}
+							canManage={saved.can_record_field_records}
+							canManageTeam={saved.can_manage_team_field_records}
+							currentUserId={saved.current_user_id}
+							pending={notePending}
+							onChange={(next) => (notePending = next)}
+						/>
+					</RailCard>
+
+					<AttachmentsCard
+						bind:this={attachmentsCard}
+						entityType="job"
+						entityId={jobId}
+						title="Photos and files"
+						canManage={saved.can_record_field_records}
+						canManageTeam={saved.can_manage_team_field_records}
+						currentUserId={saved.current_user_id}
+						onPendingChange={(count) => (pendingFileCount = count)}
+					/>
+				{/if}
+
+				<!--
+					The customer's own sign-off on this job, kept beside the notes and files it sits with in
+					the crew's head. Its own append-only record, not a note: what was signed is frozen and
+					later edits to the job cannot rewrite it.
+				-->
+				<JobSignaturesCard
+					jobId={saved.job.id}
+					lines={saved.lines}
+					visits={saved.visits}
+					totalMinor={saved.can_see_price ? (saved.money?.total_minor ?? null) : null}
+					currencyCode={saved.job.currency_code}
+					locale={saved.locale}
+					clientName={saved.job.client?.display_name ?? null}
+					canRecord={saved.can_record_field_records}
+					active={saved.job.status === 'active'}
+				/>
+
+				<!--
+					The customer's own copy of what was done. jobs.edit-gated, the same right `job_report_state`
+					and `save_job_report` both require, so the card is never mounted for a reader who could
+					only ever see it error.
+				-->
+				{#if editable}
+					<JobWorkReportCard
+						bind:this={workReportCard}
+						jobId={saved.job.id}
+						onStateChange={(next) => (reportHasContent = next)}
+					/>
+				{/if}
+
+				<QuoteSummaryCard
+					title="Job total"
+					subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? 0) : null}
+					discountMinor={saved.money?.discount_minor ?? 0}
+					taxMinor={saved.money?.tax_minor ?? 0}
+					totalMinor={saved.money?.total_minor ?? null}
+					discountLabel={saved.money?.discount_name ?? null}
+					taxLabel={saved.money?.tax_name ?? null}
+					currencyCode={saved.job.currency_code}
+					locale={saved.locale}
+				/>
+
+				<!--
+					What the job actually cost us against what it sells for. Its own card, below the selling
+					total: the breakdown, the open-vs-closed wording and the double-count heads-up do not fit
+					the shared quote summary. Renders only when the payload carried costing (jobs.view_cost).
+				-->
+				<JobCostingCard
+					costing={saved.costing}
+					currencyCode={saved.job.currency_code}
+					locale={saved.locale}
+				/>
+
+				<JobBillingCard
+					jobId={saved.job.id}
+					revision={saved.job.revision}
+					jobType={saved.job.job_type}
+					priceBasis={saved.job.price_basis}
+					billingTiming={saved.job.billing_timing}
+					totalMinor={saved.can_see_price ? (saved.money?.total_minor ?? null) : null}
+					schedule={saved.schedule}
+					currencyCode={saved.job.currency_code}
+					locale={saved.locale}
+					{editable}
+					canSeePrice={saved.can_see_price}
+					canInvoice={saved.can_invoice}
+					clientId={saved.job.client?.id ?? null}
+					onSaved={refreshJob}
+				/>
+
+				<JobRemindersCard
+					jobId={saved.job.id}
+					reminders={saved.reminders}
+					today={saved.organization_today}
+					locale={saved.locale}
+					{editable}
+					onChanged={refreshJob}
+				/>
+
+				{#if saved.can_invoice_visits && saved.job.price_basis === 'per_visit' && saved.job.client}
+					<JobVisitsToBillCard
+						jobId={saved.job.id}
+						clientId={saved.job.client.id}
+						visits={saved.visits}
+						canSeePrice={saved.can_see_price}
+						currencyCode={saved.job.currency_code}
+						locale={saved.locale}
+					/>
+				{/if}
+
+				{#if saved.can_invoice && saved.job.price_basis === 'fixed_per_period' && saved.job.client}
+					<JobPeriodsToBillCard
+						jobId={saved.job.id}
+						clientId={saved.job.client.id}
+						reminders={saved.reminders}
+						today={saved.organization_today}
+						subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? null) : null}
+						currencyCode={saved.job.currency_code}
+						locale={saved.locale}
+					/>
+				{/if}
+
+				<RecordDiscountCard
+					revision={saved.job.revision}
+					name={saved.money?.discount_name ?? null}
+					type={saved.money?.discount_type ?? null}
+					value={saved.money?.discount_value ?? null}
+					discountMinor={saved.can_see_price ? (saved.money?.discount_minor ?? 0) : null}
+					currencyCode={saved.job.currency_code}
+					locale={saved.locale}
+					{editable}
+					canSeePrice={saved.can_see_price}
+					recordNoun="job"
+					onSave={(revision, payload) => saveJobDiscount(jobId, revision, payload)}
+					onSaved={refreshJob}
+				/>
+
+				{#if saved.job.property}
+					<RecordTaxCard
+						revision={saved.job.revision}
+						propertyId={saved.job.property.id}
+						taxSource={(saved.money?.tax_source ?? 'not_configured') as QuoteTaxSource}
+						rateId={saved.money?.tax_rate_id ?? null}
+						name={saved.money?.tax_name ?? null}
+						rateBasisPoints={saved.money?.tax_rate_basis_points ?? 0}
+						taxMinor={saved.can_see_price ? (saved.money?.tax_minor ?? 0) : null}
+						currencyCode={saved.job.currency_code}
+						locale={saved.locale}
+						{editable}
+						canSeePrice={saved.can_see_price}
+						canManageTaxes={saved.can_manage_taxes}
+						recordNoun="job"
+						unsetHint="This job is not taxed yet."
+						onSave={(revision, payload) => saveJobTax(jobId, revision, payload)}
+						onSaved={refreshJob}
+					/>
+				{/if}
+			{/snippet}
+		</RecordDetailLayout>
+	{/if}
+</PageContainer>
+
+<style lang="scss">
+	.job-history {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-base);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+
+		&__item {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smallest);
+			padding-bottom: var(--space-base);
+
+			& + & {
+				border-top: var(--border-base) solid var(--color-border);
+				padding-top: var(--space-base);
+			}
+		}
+
+		&__title {
+			margin: 0;
+			color: var(--color-heading);
+			font-weight: 600;
+		}
+
+		&__detail {
+			margin: 0;
+			color: var(--color-text);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__meta {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__empty {
+			margin: 0;
+			color: var(--color-text--secondary);
+		}
+	}
+
+	.job-detail__copy {
+		margin: 0;
+		color: var(--color-text);
+		line-height: var(--typography--lineHeight-large);
+		white-space: pre-wrap;
+	}
+</style>

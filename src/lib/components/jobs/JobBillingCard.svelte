@@ -250,7 +250,7 @@
 								{:else if stage.invoice}
 									<a
 										class="job-billing__stage-link"
-										href={resolve('/(app)/invoices/[id]', { id: stage.invoice.id })}
+										href={resolve('/(app)/invoices/[id=uuid]', { id: stage.invoice.id })}
 									>
 										Invoice #{stage.invoice.invoice_number}
 									</a>
