@@ -12,6 +12,19 @@ This is a product-completeness audit, not authorization to build every competito
 must choose what a contractor can rely on from day one; segment-specific machinery stays out until a real target
 customer needs it.
 
+## Approved scope — 2026-09-10
+
+Jafar approved a controlled paid launch for small established contractors: assisted opening-state migration,
+recorded outside payments, email and Website Chat, secure individual customer document links, accountant-ready
+CSV, and online-only field work. The working recovery targets are no more than 15 minutes of lost data and
+restoration within four hours, subject to staging proof.
+
+The commercial expansion priority is the contractor speed-to-lead loop: website hero Quote form and Website Chat
+capture a lead; configurable Automation replies when no human does; missed calls can trigger compliant text-back;
+then one-click campaigns and a Google review/private-recovery funnel. This changes delivery priority, not the
+paid-launch trust, migration, billing, security, restore or load gates. The final sequence lives in
+`docs/crm-launch-implementation-roadmap.md`.
+
 ## Evidence boundary
 
 - Current implementation truth was checked through the contractor/public route and API inventory.
@@ -88,15 +101,16 @@ documents and attachments, run as a bounded background job, expire securely and 
 support-assisted complete offboarding package is acceptable for a controlled pilot, but it must exist before a
 contractor's paid access ends.
 
-## Decisions required before a final implementation roadmap
+## Approved decisions
 
-1. Is the first customer a new business, or an established contractor migrating years of data?
-2. Which history promise applies: assisted migration, self-serve history import, or opening-state only?
-3. Are online card/ACH payments required at launch, or are recorded offline payments acceptable for the pilot?
-4. Which communication channels may sales advertise at launch: email, website chat, SMS/phone, or all channels?
-5. Does “complete CRM” at launch include public booking, unified portal, reputation and contractor notifications?
-6. Which accounting handoff is required first: portable CSV, QuickBooks, Xero, or no direct integration?
-7. Is offline field work required for the initial trades and service areas?
+1. First customer: small established contractor.
+2. History: assisted opening-state migration, not full historical self-serve import.
+3. Payments: recorded outside payments for the pilot; online card/ACH before it is advertised.
+4. Launch channels: email and Website Chat; SMS/phone follows registration and its completion gate.
+5. Customer surface: secure individual document links in the narrow pilot; public intake, portal, reputation and
+   contractor notifications are commercial-expansion work and are advertised only after completion.
+6. Accounting: accountant-ready CSV first; choose QuickBooks or Xero later from customer demand.
+7. Field work: online-only; offline remains trade/region-specific.
 
 ## Proposed delivery order
 
