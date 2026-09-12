@@ -3132,6 +3132,132 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			form_bookable_services: {
+				Row: {
+					catalog_item_id: string;
+					created_at: string;
+					form_id: string;
+					organization_id: string;
+					position: number;
+				};
+				Insert: {
+					catalog_item_id: string;
+					created_at?: string;
+					form_id: string;
+					organization_id: string;
+					position?: number;
+				};
+				Update: {
+					catalog_item_id?: string;
+					created_at?: string;
+					form_id?: string;
+					organization_id?: string;
+					position?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'form_bookable_services_catalog_item_fk';
+						columns: ['organization_id', 'catalog_item_id'];
+						isOneToOne: false;
+						referencedRelation: 'catalog_items';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'form_bookable_services_form_fk';
+						columns: ['organization_id', 'form_id'];
+						isOneToOne: false;
+						referencedRelation: 'forms';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'form_bookable_services_form_id_fkey';
+						columns: ['form_id'];
+						isOneToOne: false;
+						referencedRelation: 'forms';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'form_bookable_services_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			form_booking_rules: {
+				Row: {
+					arrival_window_minutes: number | null;
+					buffer_minutes: number;
+					created_at: string;
+					efficient_scheduling_type: string;
+					form_id: string;
+					min_notice_minutes: number;
+					organization_id: string;
+					requires_booking_approval: boolean;
+					revision: number;
+					service_area_enabled: boolean;
+					slot_interval_minutes: number;
+					updated_at: string;
+					updated_by: string | null;
+					visit_duration_minutes: number;
+				};
+				Insert: {
+					arrival_window_minutes?: number | null;
+					buffer_minutes?: number;
+					created_at?: string;
+					efficient_scheduling_type?: string;
+					form_id: string;
+					min_notice_minutes?: number;
+					organization_id: string;
+					requires_booking_approval?: boolean;
+					revision?: number;
+					service_area_enabled?: boolean;
+					slot_interval_minutes?: number;
+					updated_at?: string;
+					updated_by?: string | null;
+					visit_duration_minutes?: number;
+				};
+				Update: {
+					arrival_window_minutes?: number | null;
+					buffer_minutes?: number;
+					created_at?: string;
+					efficient_scheduling_type?: string;
+					form_id?: string;
+					min_notice_minutes?: number;
+					organization_id?: string;
+					requires_booking_approval?: boolean;
+					revision?: number;
+					service_area_enabled?: boolean;
+					slot_interval_minutes?: number;
+					updated_at?: string;
+					updated_by?: string | null;
+					visit_duration_minutes?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'form_booking_rules_form_id_fkey';
+						columns: ['form_id'];
+						isOneToOne: true;
+						referencedRelation: 'forms';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'form_booking_rules_organization_fk';
+						columns: ['organization_id', 'form_id'];
+						isOneToOne: false;
+						referencedRelation: 'forms';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'form_booking_rules_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			form_versions: {
 				Row: {
 					content: Json;
@@ -7133,8 +7259,11 @@ export type Database = {
 					invoice_settings_revision: number;
 					invoice_settings_updated_at: string | null;
 					invoice_settings_updated_by: string | null;
+					latitude: number | null;
 					locale: string;
+					location_geocode_status: string;
 					logo_object_key: string | null;
+					longitude: number | null;
 					organization_id: string;
 					phone: string | null;
 					pipeline_detailed_assessment_stages: boolean;
@@ -7161,6 +7290,7 @@ export type Database = {
 					quote_terms_updated_at: string | null;
 					quote_terms_updated_by: string | null;
 					region: string | null;
+					service_area_radius_miles: number | null;
 					tax_default_rate_id: string | null;
 					tax_default_source: string;
 					tax_revision: number;
@@ -7195,8 +7325,11 @@ export type Database = {
 					invoice_settings_revision?: number;
 					invoice_settings_updated_at?: string | null;
 					invoice_settings_updated_by?: string | null;
+					latitude?: number | null;
 					locale?: string;
+					location_geocode_status?: string;
 					logo_object_key?: string | null;
+					longitude?: number | null;
 					organization_id: string;
 					phone?: string | null;
 					pipeline_detailed_assessment_stages?: boolean;
@@ -7223,6 +7356,7 @@ export type Database = {
 					quote_terms_updated_at?: string | null;
 					quote_terms_updated_by?: string | null;
 					region?: string | null;
+					service_area_radius_miles?: number | null;
 					tax_default_rate_id?: string | null;
 					tax_default_source?: string;
 					tax_revision?: number;
@@ -7257,8 +7391,11 @@ export type Database = {
 					invoice_settings_revision?: number;
 					invoice_settings_updated_at?: string | null;
 					invoice_settings_updated_by?: string | null;
+					latitude?: number | null;
 					locale?: string;
+					location_geocode_status?: string;
 					logo_object_key?: string | null;
+					longitude?: number | null;
 					organization_id?: string;
 					phone?: string | null;
 					pipeline_detailed_assessment_stages?: boolean;
@@ -7285,6 +7422,7 @@ export type Database = {
 					quote_terms_updated_at?: string | null;
 					quote_terms_updated_by?: string | null;
 					region?: string | null;
+					service_area_radius_miles?: number | null;
 					tax_default_rate_id?: string | null;
 					tax_default_source?: string;
 					tax_revision?: number;
@@ -11424,6 +11562,16 @@ export type Database = {
 					text_content: string;
 				}[];
 			};
+			claim_form_booking_reservation: {
+				Args: {
+					new_ends_at: string;
+					new_starts_at: string;
+					target_form_id: string;
+					target_organization_id: string;
+					target_user_id: string;
+				};
+				Returns: string;
+			};
 			claim_invoice_sources: {
 				Args: {
 					expected_revision: number;
@@ -11477,6 +11625,16 @@ export type Database = {
 					attempt_count: number;
 					claim_status: string;
 					organization_id: string;
+				}[];
+			};
+			claim_pending_organization_for_geocoding: {
+				Args: never;
+				Returns: {
+					address_line1: string;
+					city: string;
+					organization_id: string;
+					postal_code: string;
+					region: string;
 				}[];
 			};
 			claim_pending_property_for_geocoding: {
@@ -12742,6 +12900,19 @@ export type Database = {
 					usage_recorded: boolean;
 				}[];
 			};
+			finalize_organization_geocode: {
+				Args: {
+					p_address_line1: string;
+					p_city: string;
+					p_latitude: number;
+					p_longitude: number;
+					p_organization_id: string;
+					p_postal_code: string;
+					p_region: string;
+					p_status: string;
+				};
+				Returns: boolean;
+			};
 			finalize_property_geocode: {
 				Args: {
 					p_address_line1: string;
@@ -12867,6 +13038,21 @@ export type Database = {
 			};
 			get_communication_message_recovery_queue: { Args: never; Returns: Json };
 			get_communication_provider_callback_health: { Args: never; Returns: Json };
+			get_form_available_slots: {
+				Args: {
+					range_end: string;
+					range_start: string;
+					target_form_id: string;
+					target_organization_id: string;
+				};
+				Returns: {
+					end_time: string;
+					ends_at: string;
+					slot_date: string;
+					start_time: string;
+					starts_at: string;
+				}[];
+			};
 			get_incomplete_assignments_for_member: {
 				Args: { target_organization_id: string; target_user_id: string };
 				Returns: Json;
@@ -15542,6 +15728,22 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			update_form_booking_settings: {
+				Args: {
+					expected_revision: number;
+					new_arrival_window_minutes: number;
+					new_buffer_minutes: number;
+					new_min_notice_minutes: number;
+					new_requires_booking_approval: boolean;
+					new_service_area_enabled: boolean;
+					new_service_ids: string[];
+					new_slot_interval_minutes: number;
+					new_visit_duration_minutes: number;
+					target_form_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			update_form_draft: {
 				Args: {
 					expected_revision: number;
@@ -15635,6 +15837,14 @@ export type Database = {
 					target_job_id: string;
 					target_organization_id: string;
 					target_visit_id: string;
+				};
+				Returns: Json;
+			};
+			update_organization_service_area_radius: {
+				Args: {
+					expected_revision: number;
+					new_radius_miles: number;
+					target_organization_id: string;
 				};
 				Returns: Json;
 			};
