@@ -11,6 +11,12 @@
 // claim_pending_property_for_geocoding) is the exactly-once boundary, exactly like the automation worker. There
 // is no lease and no stale-claim quarantine: the row stays 'pending' through the whole cycle, so a wake that
 // dies mid-flight loses nothing — the next wake simply re-claims and retries.
+//
+// Contractor Settings 4B-2c fix: a business's own address (organization_settings) is geocoded for the Service
+// area radius the exact same way, on the same claim/finalize/queue shape (`claim_pending_organization_for_
+// geocoding` / `finalize_organization_geocode`, shipped DB-only in 4B-2a). One organization per tenant changes
+// its address rarely, so this reuses the property worker's drain loop and the property route's single cron
+// wake rather than standing up a second queue's worth of infrastructure for a trickle of rows.
 
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import {
@@ -150,6 +156,103 @@ export async function processClaimedProperty(
 export async function drainGeocodingQueue(
 	dependencies: WorkerDependencies & DrainOptions
 ): Promise<GeocodingDrainResult> {
+	return drainQueue(dependencies, processClaimedProperty);
+}
+
+// The organization address the claim returns — the same fields the geocoder query is built from and that
+// finalize guards on to detect an address edited mid-flight. `region` mirrors the property row's
+// `state_region`; the column name differs, the shape and purpose don't.
+type ClaimedOrganization = {
+	organization_id: string;
+	address_line1: string | null;
+	city: string | null;
+	region: string | null;
+	postal_code: string | null;
+};
+
+export type ProcessedOrganizationGeocodeResult =
+	| { status: 'idle' }
+	| { status: 'succeeded' | 'failed' | 'provider_error' | 'skipped'; organizationId: string };
+
+function toOrganizationGeocodeAddress(organization: ClaimedOrganization): GeocodeAddress {
+	return {
+		line1: organization.address_line1,
+		city: organization.city,
+		state_region: organization.region,
+		postal_code: organization.postal_code
+	};
+}
+
+// Mirrors processClaimedProperty exactly, against the organization queue instead — see the file header.
+export async function processClaimedOrganization(
+	dependencies: WorkerDependencies
+): Promise<ProcessedOrganizationGeocodeResult> {
+	const client = resolveClient(dependencies.client);
+	const geocoder = dependencies.geocoder;
+
+	const claimed = await client.rpc('claim_pending_organization_for_geocoding');
+	if (claimed.error) throw rpcError('Could not claim an organization for geocoding', claimed.error);
+	const organization = Array.isArray(claimed.data)
+		? (claimed.data[0] as ClaimedOrganization | undefined)
+		: undefined;
+	if (!organization) return { status: 'idle' };
+
+	let status: 'succeeded' | 'failed';
+	let latitude: number | null = null;
+	let longitude: number | null = null;
+
+	try {
+		const result = await geocoder.geocode(toOrganizationGeocodeAddress(organization));
+		if (result.status === 'found') {
+			status = 'succeeded';
+			latitude = result.latitude;
+			longitude = result.longitude;
+		} else {
+			status = 'failed';
+		}
+	} catch (error) {
+		if (error instanceof GeocodingProviderError) {
+			return { status: 'provider_error', organizationId: organization.organization_id };
+		}
+		throw error;
+	}
+
+	const finalized = await client.rpc('finalize_organization_geocode', {
+		p_organization_id: organization.organization_id,
+		p_address_line1: organization.address_line1,
+		p_city: organization.city,
+		p_region: organization.region,
+		p_postal_code: organization.postal_code,
+		p_status: status,
+		p_latitude: latitude,
+		p_longitude: longitude
+	});
+	if (finalized.error)
+		throw rpcError('Could not finalize an organization geocode', finalized.error);
+
+	if (finalized.data === false)
+		return { status: 'skipped', organizationId: organization.organization_id };
+
+	return { status, organizationId: organization.organization_id };
+}
+
+// Mirrors drainGeocodingQueue exactly, against the organization queue instead.
+export async function drainOrganizationGeocodingQueue(
+	dependencies: WorkerDependencies & DrainOptions
+): Promise<GeocodingDrainResult> {
+	return drainQueue(dependencies, processClaimedOrganization);
+}
+
+// Shared drain loop: claim/geocode/finalize sequentially until idle, the claim cap is reached, or the time
+// budget expires. Each cycle is its own claim, so a hot backlog is bounded per wake and the next wake continues.
+async function drainQueue(
+	dependencies: WorkerDependencies & DrainOptions,
+	processOne: (
+		deps: WorkerDependencies
+	) => Promise<
+		{ status: 'idle' } | { status: 'succeeded' | 'failed' | 'provider_error' | 'skipped' }
+	>
+): Promise<GeocodingDrainResult> {
 	const client = resolveClient(dependencies.client);
 	const geocoder = dependencies.geocoder;
 	const maxClaims = Math.max(1, Math.floor(dependencies.maxClaims ?? DEFAULT_MAX_CLAIMS));
@@ -176,7 +279,7 @@ export async function drainGeocodingQueue(
 			return result;
 		}
 
-		const processed = await processClaimedProperty({ client, geocoder });
+		const processed = await processOne({ client, geocoder });
 		if (processed.status === 'idle') {
 			result.stoppedBy = 'idle';
 			return result;

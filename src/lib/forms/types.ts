@@ -135,3 +135,61 @@ export interface FormDetail {
 	draft: FormVersionView | null;
 	published: FormVersionView | null;
 }
+
+// Booking rules — Part 4B-2a/4B-2c. Only assessment/job forms have a row; a request form is reviewed by
+// staff and never books a slot (20260913160000_contractor_settings_booking_rules_foundation.sql).
+export const BOOKING_OUTCOMES = ['assessment', 'job'] as const;
+export type BookingOutcome = (typeof BOOKING_OUTCOMES)[number];
+
+export function isBookingOutcome(outcome: FormOutcome): outcome is BookingOutcome {
+	return (BOOKING_OUTCOMES as readonly FormOutcome[]).includes(outcome);
+}
+
+// Same bounds as the `form_booking_rules` table's own check constraints — kept here so the builder and the
+// Zod validator enforce exactly what the database will.
+export const BOOKING_MIN_NOTICE_MAX_MINUTES = 43200; // 30 days
+export const BOOKING_SLOT_INTERVAL_MIN_MINUTES = 5;
+export const BOOKING_SLOT_INTERVAL_MAX_MINUTES = 480; // 8 hours
+export const BOOKING_VISIT_DURATION_MIN_MINUTES = 5;
+export const BOOKING_VISIT_DURATION_MAX_MINUTES = 1440; // 24 hours
+export const BOOKING_ARRIVAL_WINDOW_MAX_MINUTES = 480; // 8 hours
+export const BOOKING_BUFFER_MAX_MINUTES = 480; // 8 hours
+export const BOOKING_MAX_SERVICES = 20;
+
+export interface BookingRules {
+	requires_booking_approval: boolean;
+	service_area_enabled: boolean;
+	min_notice_minutes: number;
+	slot_interval_minutes: number;
+	visit_duration_minutes: number;
+	arrival_window_minutes: number | null;
+	buffer_minutes: number;
+	revision: number;
+}
+
+export interface BookableService {
+	catalog_item_id: string;
+	name: string;
+	unit_price_minor: number;
+	archived_at: string | null;
+}
+
+// What the Booking tab needs about the business itself, read-only here — Business Profile owns editing it.
+export interface BookingOrgReadiness {
+	hours_set: boolean;
+	service_area_ready: boolean;
+}
+
+export interface BookingDetail {
+	rules: BookingRules;
+	services: BookableService[];
+	organization: BookingOrgReadiness;
+}
+
+export interface BookingSlot {
+	slot_date: string;
+	start_time: string;
+	end_time: string;
+	starts_at: string;
+	ends_at: string;
+}

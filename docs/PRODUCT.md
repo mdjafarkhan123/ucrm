@@ -92,7 +92,7 @@ Support staff-created requests and branded public forms with custom questions an
 
 Each form uses one intake pattern: request only, customer-booked assessment, or direct booking for a standard service.
 
-Each form can control services, branding, approval, availability, blocked dates, minimum notice, buffers, service area, confirmation message, share link, and website embed.
+Each form can control services, branding, approval, availability, blocked dates, minimum notice, buffers, service area, confirmation message, share link, and website embed. Launch scope: service area is a straight-line radius from the business address rather than a hand-drawn territory, and buffers are fixed minutes rather than real drive-time — both narrower than Jobber's full versions, upgradeable later without a breaking change.
 
 Request outcomes include New, Needs Approval, Unscheduled, Upcoming, Today, Overdue, Action Required, Converted, Declined, and Archived.
 

@@ -21,12 +21,18 @@
 	import FormPreview from '$lib/components/settings/forms/FormPreview.svelte';
 	import FormContactEditor from '$lib/components/settings/forms/FormContactEditor.svelte';
 	import FormSectionEditor from '$lib/components/settings/forms/FormSectionEditor.svelte';
+	import BookingRulesEditor from '$lib/components/settings/forms/BookingRulesEditor.svelte';
+	import BookingServicesPicker from '$lib/components/settings/forms/BookingServicesPicker.svelte';
+	import BookingSlotsPreview from '$lib/components/settings/forms/BookingSlotsPreview.svelte';
 	import {
 		cloneContent,
+		fetchFormBooking,
 		fetchFormDetail,
+		formBookingKey,
 		formDetailKey,
 		publishFormDraft,
 		reviseForm,
+		saveFormBooking,
 		saveFormDraft,
 		saveFormIdentity,
 		setFormDefault,
@@ -43,7 +49,9 @@
 		FORM_NAME_MAX,
 		FORM_REDIRECT_URL_MAX,
 		FORM_TITLE_MAX,
+		isBookingOutcome,
 		isChoiceQuestion,
+		type BookableService,
 		type FormContent,
 		type FormQuestion,
 		type FormQuestionType,
@@ -67,6 +75,17 @@
 		queryKey: formDetailKey(id),
 		queryFn: () => fetchFormDetail(id),
 		enabled: id !== ''
+	}));
+
+	// Only assessment/job forms have booking rules at all (request forms are staff-reviewed and never book a
+	// slot) — the query stays off, and the Booking tab stays hidden, for a request form.
+	const outcome = $derived(query.data?.outcome ?? null);
+	const isBooking = $derived(outcome !== null && isBookingOutcome(outcome));
+
+	const bookingQuery = createQuery(() => ({
+		queryKey: formBookingKey(id),
+		queryFn: () => fetchFormBooking(id),
+		enabled: id !== '' && isBooking
 	}));
 
 	// The builder edits a deep copy so the cache is never mutated in place. We seed it once per underlying
@@ -96,6 +115,60 @@
 	let revising = $state(false);
 	let settingDefault = $state(false);
 	let savingIdentity = $state(false);
+
+	// Booking rules (assessment/job forms only). Not drafted/published like the content above — one save
+	// takes effect immediately, matching `update_form_booking_settings`'s own "one screen, one save" shape.
+	let bookingSeededRevision = $state<number | null>(null);
+	let bookingRevision = $state<number | null>(null);
+	let requiresBookingApproval = $state(true);
+	let serviceAreaEnabled = $state(false);
+	let minNoticeMinutes = $state(120);
+	let slotIntervalMinutes = $state(30);
+	let visitDurationMinutes = $state(60);
+	let arrivalWindowMinutes = $state<number | null>(null);
+	let bufferMinutes = $state(0);
+	let serviceIds = $state<string[]>([]);
+	let initialServices = $state<BookableService[]>([]);
+	let bookingBaseline = $state('');
+	let bookingBanner = $state('');
+	let savingBooking = $state(false);
+
+	function bookingSnapshot(): string {
+		return JSON.stringify({
+			requiresBookingApproval,
+			serviceAreaEnabled,
+			minNoticeMinutes,
+			slotIntervalMinutes,
+			visitDurationMinutes,
+			arrivalWindowMinutes,
+			bufferMinutes,
+			serviceIds
+		});
+	}
+
+	$effect(() => {
+		const detail = bookingQuery.data;
+		if (!detail) return;
+		if (detail.rules.revision === bookingSeededRevision) return;
+
+		untrack(() => {
+			requiresBookingApproval = detail.rules.requires_booking_approval;
+			serviceAreaEnabled = detail.rules.service_area_enabled;
+			minNoticeMinutes = detail.rules.min_notice_minutes;
+			slotIntervalMinutes = detail.rules.slot_interval_minutes;
+			visitDurationMinutes = detail.rules.visit_duration_minutes;
+			arrivalWindowMinutes = detail.rules.arrival_window_minutes;
+			bufferMinutes = detail.rules.buffer_minutes;
+			serviceIds = detail.services.map((s) => s.catalog_item_id);
+			initialServices = detail.services;
+			bookingRevision = detail.rules.revision;
+			bookingSeededRevision = detail.rules.revision;
+			bookingBaseline = bookingSnapshot();
+			bookingBanner = '';
+		});
+	});
+
+	const bookingDirty = $derived(bookingBaseline !== '' && bookingSnapshot() !== bookingBaseline);
 
 	function snapshot(): string {
 		return JSON.stringify({ title, description, content });
@@ -341,6 +414,40 @@
 		}
 	}
 
+	async function saveBooking() {
+		if (bookingRevision === null) return;
+		savingBooking = true;
+		bookingBanner = '';
+		try {
+			const res = await saveFormBooking(id, {
+				expected_revision: bookingRevision,
+				requires_booking_approval: requiresBookingApproval,
+				service_area_enabled: serviceAreaEnabled,
+				min_notice_minutes: minNoticeMinutes,
+				slot_interval_minutes: slotIntervalMinutes,
+				visit_duration_minutes: visitDurationMinutes,
+				arrival_window_minutes: arrivalWindowMinutes,
+				buffer_minutes: bufferMinutes,
+				service_ids: serviceIds
+			});
+			bookingRevision = res.revision;
+			bookingSeededRevision = res.revision;
+			bookingBaseline = bookingSnapshot();
+			// This also covers the sample-slots preview (`formBookingKey(id)` is a prefix of its own query
+			// key), which is exactly the "refresh after Save" behaviour approved for that card.
+			await queryClient.invalidateQueries({ queryKey: formBookingKey(id) });
+			toast.success('Booking rules saved.');
+		} catch (cause) {
+			bookingBanner = errorText(cause);
+			if ((cause as FormApiError)?.reason === 'stale_revision') {
+				bookingSeededRevision = null;
+				await queryClient.invalidateQueries({ queryKey: formBookingKey(id) });
+			}
+		} finally {
+			savingBooking = false;
+		}
+	}
+
 	function addSection() {
 		if (!content || !canAddSection) return;
 		content.sections = [...content.sections, { id: crypto.randomUUID(), title: '', questions: [] }];
@@ -514,6 +621,7 @@
 					<Tabs
 						tabs={[
 							{ value: 'build', label: 'Build' },
+							...(isBooking ? [{ value: 'booking', label: 'Booking' }] : []),
 							{ value: 'settings', label: 'Settings' }
 						]}
 						bind:value={activeTab}
@@ -572,6 +680,54 @@
 								{/if}
 							</Card>
 						</TabPanel>
+
+						{#if isBooking}
+							<TabPanel value="booking">
+								{#if bookingQuery.isPending}
+									<LoadingSkeleton variant="card" rows={3} />
+								{:else if bookingQuery.isError}
+									<ErrorState
+										description="Booking rules could not be loaded."
+										retry={() => bookingQuery.refetch()}
+									/>
+								{:else if bookingQuery.data}
+									{#if bookingBanner}<p class="builder__banner" role="alert">
+											{bookingBanner}
+										</p>{/if}
+									{#key bookingSeededRevision}
+										<BookingRulesEditor
+											bind:requiresBookingApproval
+											bind:serviceAreaEnabled
+											bind:minNoticeMinutes
+											bind:slotIntervalMinutes
+											bind:visitDurationMinutes
+											bind:arrivalWindowMinutes
+											bind:bufferMinutes
+											serviceAreaReady={bookingQuery.data.organization.service_area_ready}
+											disabled={archivedAt !== null}
+										/>
+										<BookingServicesPicker
+											bind:selectedIds={serviceIds}
+											{initialServices}
+											disabled={archivedAt !== null}
+										/>
+									{/key}
+									<BookingSlotsPreview
+										formId={id}
+										hoursSet={bookingQuery.data.organization.hours_set}
+									/>
+									<div class="builder__identity-actions">
+										<Button
+											onclick={() => void saveBooking()}
+											loading={savingBooking}
+											disabled={!bookingDirty || archivedAt !== null}
+										>
+											Save booking rules
+										</Button>
+									</div>
+								{/if}
+							</TabPanel>
+						{/if}
 
 						<TabPanel value="settings">
 							<Card heading="What customers see">

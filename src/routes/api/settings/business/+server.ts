@@ -20,7 +20,7 @@ export const GET: RequestHandler = async (event) => {
 		event.locals.supabase
 			.from('organization_settings')
 			.select(
-				'trade, phone, website, description, address_line1, address_line2, city, region, postal_code, country_code, address_is_public, timezone, locale, currency_code, timezone_confirmed_at, currency_confirmed_at, brand_color, logo_object_key, hours_mode, profile_revision, branding_revision, hours_revision, profile_updated_at, branding_updated_at, hours_updated_at, profile_updated_by, branding_updated_by, hours_updated_by'
+				'trade, phone, website, description, address_line1, address_line2, city, region, postal_code, country_code, address_is_public, timezone, locale, currency_code, timezone_confirmed_at, currency_confirmed_at, brand_color, logo_object_key, hours_mode, location_geocode_status, service_area_radius_miles, profile_revision, branding_revision, hours_revision, profile_updated_at, branding_updated_at, hours_updated_at, profile_updated_by, branding_updated_by, hours_updated_by'
 			)
 			.eq('organization_id', organizationId)
 			.maybeSingle(),
@@ -92,6 +92,10 @@ export const GET: RequestHandler = async (event) => {
 				currency_code: settings.currency_code,
 				timezone_confirmed: settings.timezone_confirmed_at !== null,
 				currency_confirmed: settings.currency_confirmed_at !== null,
+				// The radius toggle on a booking form only ever works once the address has actually resolved to
+				// coordinates — this tells the page when to invite the radius field rather than show a dead one.
+				location_ready: settings.location_geocode_status === 'succeeded',
+				service_area_radius_miles: settings.service_area_radius_miles,
 				revision: settings.profile_revision,
 				last_editor: editor(settings.profile_updated_by, settings.profile_updated_at)
 			},

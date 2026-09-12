@@ -3,12 +3,21 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import { createForm, type FormCreateResult } from '$lib/forms/api';
-	import { FORM_DESCRIPTION_MAX, FORM_NAME_MAX, FORM_TITLE_MAX } from '$lib/forms/types';
+	import { FORM_OUTCOME_HINTS, FORM_OUTCOME_LABELS } from '$lib/forms/labels';
+	import {
+		FORM_DESCRIPTION_MAX,
+		FORM_NAME_MAX,
+		FORM_OUTCOMES,
+		FORM_TITLE_MAX,
+		type FormOutcome
+	} from '$lib/forms/types';
 
-	// New request form. Outcome is fixed to `request` for this stage — booking forms (assessment/job) arrive
-	// with their scheduling rules in 4B-2. It creates the form (seeded with a usable default builder) and
-	// hands the new id back so the list page can open the builder straight away.
+	// A new form of any of the three outcomes — a reviewed request, a self-booked assessment, or a straight
+	// job booking (Part 4B-2c added the latter two once their booking rules and builder screens existed).
+	// It creates the form (seeded with a usable default builder, and booking rules for the two booking
+	// outcomes) and hands the new id back so the list page can open the builder straight away.
 	let {
 		open,
 		onCreated,
@@ -19,6 +28,12 @@
 		onClose: () => void;
 	} = $props();
 
+	const outcomeOptions = FORM_OUTCOMES.map((value) => ({
+		value,
+		label: FORM_OUTCOME_LABELS[value]
+	}));
+
+	let outcome = $state<FormOutcome>('request');
 	let name = $state('');
 	let title = $state('');
 	let description = $state('');
@@ -27,6 +42,7 @@
 
 	$effect(() => {
 		if (!open) return;
+		outcome = 'request';
 		name = '';
 		title = '';
 		description = '';
@@ -47,7 +63,7 @@
 		saving = true;
 		try {
 			const result = await createForm({
-				outcome: 'request',
+				outcome,
 				name: name.trim(),
 				title: title.trim(),
 				description: description.trim() || undefined
@@ -61,9 +77,23 @@
 	}
 </script>
 
-<Dialog {open} title="New request form" onClose={saving ? () => {} : onClose}>
+<Dialog
+	{open}
+	title={`New ${FORM_OUTCOME_LABELS[outcome].toLowerCase()}`}
+	onClose={saving ? () => {} : onClose}
+>
 	<div class="form-create">
 		{#if error}<p class="form-create__error" role="alert">{error}</p>{/if}
+
+		<div class="form-create__field-group">
+			<SegmentedControl
+				label="What does this form do?"
+				options={outcomeOptions}
+				bind:value={outcome}
+				fullWidth
+			/>
+			<p class="form-create__hint">{FORM_OUTCOME_HINTS[outcome]}</p>
+		</div>
 
 		<Input
 			id="new-form-name"
@@ -109,6 +139,18 @@
 			border-radius: var(--radius-base);
 			background: var(--color-critical--surface);
 			color: var(--color-critical--onSurface);
+		}
+
+		&__field-group {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-small);
+		}
+
+		&__hint {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
 		}
 
 		&__actions {

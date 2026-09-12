@@ -23,7 +23,8 @@
 		type FormApiError,
 		type FormCreateResult
 	} from '$lib/forms/api';
-	import type { FormListItem, FormOutcome } from '$lib/forms/types';
+	import { FORM_OUTCOME_LABELS } from '$lib/forms/labels';
+	import type { FormListItem } from '$lib/forms/types';
 	import fileFormIcon from '@tabler/icons/outline/forms.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import starIcon from '@tabler/icons/outline/star.svg?raw';
@@ -42,12 +43,6 @@
 
 	let creating = $state(false);
 	let busy = $state<string | null>(null);
-
-	const OUTCOME_LABELS: Record<FormOutcome, string> = {
-		request: 'Request form',
-		assessment: 'Assessment booking',
-		job: 'Job booking'
-	};
 
 	function builderHref(id: string) {
 		return resolve('/(app)/settings/forms/[id]', { id });
@@ -69,7 +64,7 @@
 			await setFormDefault(form.id, form.revision);
 			await invalidate();
 			toast.success(
-				`“${form.name}” is now the default ${OUTCOME_LABELS[form.outcome].toLowerCase()}.`
+				`“${form.name}” is now the default ${FORM_OUTCOME_LABELS[form.outcome].toLowerCase()}.`
 			);
 		} catch (cause) {
 			toast.error(errorText(cause));
@@ -158,19 +153,17 @@
 
 		<SectionBlock title="Your forms" level={2}>
 			{#snippet actions()}
-				<Button size="small" onclick={() => (creating = true)}>New request form</Button>
+				<Button size="small" onclick={() => (creating = true)}>New form</Button>
 			{/snippet}
 
 			{#if forms.length === 0}
 				<EmptyState
 					icon={fileFormIcon}
 					title="No forms yet"
-					description="A request form is the page customers use to ask you for work. Build one, add your questions, and publish it to share."
+					description="A form is the page customers use to reach you online — to ask for work, book an assessment, or book a job straight onto your calendar. Build one, add your questions, and publish it to share."
 				>
 					{#snippet action()}
-						<Button variant="secondary" onclick={() => (creating = true)}
-							>Build a request form</Button
-						>
+						<Button variant="secondary" onclick={() => (creating = true)}>Build a form</Button>
 					{/snippet}
 				</EmptyState>
 			{:else}
@@ -188,7 +181,7 @@
 								<span class="forms-page__default">Default</span>
 							{/if}
 						</th>
-						<td class="forms-page__muted">{OUTCOME_LABELS[form.outcome]}</td>
+						<td class="forms-page__muted">{FORM_OUTCOME_LABELS[form.outcome]}</td>
 						<td><StatusBadge status={badge.status}>{badge.label}</StatusBadge></td>
 					{/snippet}
 					{#snippet rowActions(form: FormListItem)}

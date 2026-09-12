@@ -20,6 +20,7 @@
 		fetchSettingsBusiness,
 		settingsBusinessKey,
 		saveBusinessProfile,
+		saveServiceAreaRadius,
 		isSaveConflict,
 		COMMON_CURRENCIES,
 		type BusinessProfile,
@@ -68,6 +69,8 @@
 		address_is_public: boolean;
 		timezone: string;
 		currency_code: string;
+		/** Miles, or '' while the field is empty. Kept as text so a person can clear it without it snapping to 0. */
+		serviceAreaRadius: string;
 	};
 
 	function toForm(profile: BusinessProfile): FormState {
@@ -92,7 +95,9 @@
 			country_code: profile.country_code ?? '',
 			address_is_public: profile.address_is_public,
 			timezone: profile.timezone,
-			currency_code: profile.currency_code
+			currency_code: profile.currency_code,
+			serviceAreaRadius:
+				profile.service_area_radius_miles !== null ? String(profile.service_area_radius_miles) : ''
 		};
 	}
 
@@ -151,6 +156,16 @@
 		if (!form || !saved) return false;
 		return form.currency_code !== saved.currency_code && !currencyConfirmed;
 	});
+	// An empty radius means "not set yet" and is fine to save as-is. Once a radius is set, though, the
+	// database command that saves it has no way to clear one back to null — so blanking a set field blocks
+	// Save rather than silently failing at the network call.
+	const radiusInvalid = $derived.by(() => {
+		if (!form || !saved) return false;
+		const raw = form.serviceAreaRadius.trim();
+		if (raw === '') return saved.serviceAreaRadius.trim() !== '';
+		const n = Number(raw);
+		return !Number.isFinite(n) || n < 0.1 || n > 500;
+	});
 
 	beforeNavigate((navigation) => {
 		if (!dirty) return;
@@ -175,7 +190,7 @@
 	}
 
 	async function save() {
-		if (!form || !query.data) return;
+		if (!form || !saved || !query.data) return;
 		saving = true;
 		errorMessage = '';
 		conflict = null;
@@ -210,14 +225,44 @@
 			conflict = { editor_name: result.editor_name, edited_at: result.edited_at };
 			return;
 		}
-		saved = { ...form };
+		let profileRevision = result.profile_revision;
+		let savedRadius = form.serviceAreaRadius;
+
+		// The radius saves through its own command (it is not part of `save_organization_business_profile`),
+		// but shares the same revision counter — so it only runs once the profile save above has landed, using
+		// the fresh revision that save just returned.
+		if (query.data.profile.location_ready && form.serviceAreaRadius !== saved.serviceAreaRadius) {
+			const radiusResult = await saveServiceAreaRadius({
+				expected_revision: profileRevision,
+				radius_miles: Number(form.serviceAreaRadius)
+			}).catch((error: Error) => {
+				errorMessage = error.message;
+				return null;
+			});
+			if (!radiusResult) return;
+			if (isSaveConflict(radiusResult)) {
+				conflict = { editor_name: radiusResult.editor_name, edited_at: radiusResult.edited_at };
+				return;
+			}
+			profileRevision = radiusResult.profile_revision;
+			savedRadius = String(radiusResult.service_area_radius_miles);
+		}
+
+		saved = { ...form, serviceAreaRadius: savedRadius };
 		toast.success('Business profile saved.');
 		// Patch the revision in place before invalidating: invalidateQueries only refetches queries with
 		// active observers, and even then the refetch is not guaranteed to land before the next click. An
 		// immediate second save must see this save's revision, not a stale one from before this request.
 		queryClient.setQueryData(settingsBusinessKey, (current: SettingsBusiness | undefined) =>
 			current
-				? { ...current, profile: { ...current.profile, revision: result.profile_revision } }
+				? {
+						...current,
+						profile: {
+							...current.profile,
+							revision: profileRevision,
+							service_area_radius_miles: savedRadius ? Number(savedRadius) : null
+						}
+					}
 				: current
 		);
 		await queryClient.invalidateQueries({ queryKey: settingsBusinessKey });
@@ -407,6 +452,33 @@
 								disabled={!canEdit}
 							/>
 						</SectionBlock>
+
+						<SectionBlock
+							title="Service area"
+							hint="How far you're willing to travel for a booking. Used by assessment and job booking forms that choose to enforce it."
+							form
+							level={3}
+						>
+							{#if query.data.profile.location_ready}
+								<Input
+									id="bp-service-radius"
+									label="Radius (miles)"
+									type="number"
+									min="0.1"
+									max="500"
+									step="0.1"
+									bind:value={f.serviceAreaRadius}
+									disabled={!canEdit}
+									invalid={radiusInvalid}
+									errorMessage={radiusInvalid ? 'Enter a radius between 0.1 and 500 miles.' : ''}
+								/>
+							{:else}
+								<p class="business-profile__suggestion">
+									Save your address above so we can pinpoint your location — then come back here to
+									set how far you travel.
+								</p>
+							{/if}
+						</SectionBlock>
 					</div>
 				</div>
 			{/if}
@@ -417,7 +489,7 @@
 				<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
 				<Button
 					onclick={() => void save().finally(() => layout?.revealError())}
-					disabled={!dirty || saving || timezoneBlocked || currencyBlocked}
+					disabled={!dirty || saving || timezoneBlocked || currencyBlocked || radiusInvalid}
 					loading={saving}>Save</Button
 				>
 			{/if}

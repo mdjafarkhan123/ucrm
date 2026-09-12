@@ -1,5 +1,13 @@
 import { z } from 'zod';
 import {
+	BOOKING_ARRIVAL_WINDOW_MAX_MINUTES,
+	BOOKING_BUFFER_MAX_MINUTES,
+	BOOKING_MAX_SERVICES,
+	BOOKING_MIN_NOTICE_MAX_MINUTES,
+	BOOKING_SLOT_INTERVAL_MAX_MINUTES,
+	BOOKING_SLOT_INTERVAL_MIN_MINUTES,
+	BOOKING_VISIT_DURATION_MAX_MINUTES,
+	BOOKING_VISIT_DURATION_MIN_MINUTES,
 	FORM_CONFIRMATION_MESSAGE_MAX,
 	FORM_CONFIRMATION_TITLE_MAX,
 	FORM_DESCRIPTION_MAX,
@@ -22,8 +30,8 @@ import {
 
 // The public shape of a request form, validated before it reaches the database (CLAUDE.md rule 12). Every
 // limit here has a twin in $lib/forms/types.ts and a gross backstop in the migration; the point of this file
-// is a sentence about the field a person typed, not a constraint name. Booking rules are Part 4B-2 and are
-// not part of this document yet.
+// is a sentence about the field a person typed, not a constraint name. Booking rules (assessment/job forms)
+// have their own schema further down.
 
 const contactName = z.object({ required: z.boolean() });
 const contactContactable = z.object({
@@ -184,3 +192,42 @@ export const formActionSchema = z.discriminatedUnion('action', [
 		is_enabled: z.boolean()
 	})
 ]);
+
+// Booking rules — Part 4B-2c. Mirrors `update_form_booking_settings`'s own checks exactly (mirrored, not
+// delegated: the database remains the real boundary per CLAUDE.md rule 12; this only spares the round-trip
+// for the ordinary case and gives a plain-English message).
+export const formBookingSettingsSchema = z.object({
+	expected_revision: z.number().int().min(1),
+	requires_booking_approval: z.boolean(),
+	service_area_enabled: z.boolean(),
+	min_notice_minutes: z.number().int().min(0).max(BOOKING_MIN_NOTICE_MAX_MINUTES),
+	slot_interval_minutes: z
+		.number()
+		.int()
+		.min(BOOKING_SLOT_INTERVAL_MIN_MINUTES)
+		.max(BOOKING_SLOT_INTERVAL_MAX_MINUTES),
+	visit_duration_minutes: z
+		.number()
+		.int()
+		.min(BOOKING_VISIT_DURATION_MIN_MINUTES)
+		.max(BOOKING_VISIT_DURATION_MAX_MINUTES),
+	arrival_window_minutes: z
+		.number()
+		.int()
+		.min(0)
+		.max(BOOKING_ARRIVAL_WINDOW_MAX_MINUTES)
+		.nullable(),
+	buffer_minutes: z.number().int().min(0).max(BOOKING_BUFFER_MAX_MINUTES),
+	service_ids: z.array(z.string().uuid()).max(BOOKING_MAX_SERVICES)
+});
+
+export type FormBookingSettingsInput = z.infer<typeof formBookingSettingsSchema>;
+
+// The sample-slots preview. Bounded the same way the database function itself is (max_range_days = 60);
+// the route also caps the window it will actually ask for so the preview stays a quick card, not a report.
+export const BOOKING_PREVIEW_MAX_DAYS = 14;
+
+export const formBookingSlotsQuerySchema = z.object({
+	range_start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Give a valid start date.'),
+	range_end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Give a valid end date.')
+});

@@ -53,6 +53,19 @@ export const businessProfileSchema = z.object({
 
 export type BusinessProfileInput = z.infer<typeof businessProfileSchema>;
 
+// The service-area radius (Contractor Settings Part 4B-2a/4B-2c). Saved by its own command
+// (`update_organization_service_area_radius`) but guarded by the same `profile_revision` as the rest of this
+// page — see 20260913160000_contractor_settings_booking_rules_foundation.sql § 5.
+export const serviceAreaRadiusSchema = z.object({
+	expected_revision: expectedRevision,
+	radius_miles: z
+		.number({ message: 'Enter a service area radius.' })
+		.min(0.1, 'Radius must be at least 0.1 miles.')
+		.max(500, 'Radius cannot be more than 500 miles.')
+});
+
+export type ServiceAreaRadiusInput = z.infer<typeof serviceAreaRadiusSchema>;
+
 // One period of one day. A closed day and an all-day day carry no times at all; a real period carries
 // both, and a closing time earlier than the opening time is how a period runs past midnight.
 export const businessHourPeriodSchema = z

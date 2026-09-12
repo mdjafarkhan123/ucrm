@@ -2,7 +2,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getServerEnv } from '$lib/server/env';
-import { drainGeocodingQueue } from '$lib/server/geocoding/worker';
+import { drainGeocodingQueue, drainOrganizationGeocodingQueue } from '$lib/server/geocoding/worker';
 import { isGeocodingConfigured, resolveGeocoder } from '$lib/server/geocoding/provider';
 
 function authorized(request: Request) {
@@ -14,12 +14,14 @@ function authorized(request: Request) {
 	return provided.length === wanted.length && timingSafeEqual(provided, wanted);
 }
 
-// One geocoding wake: drain the pending-property queue through the configured provider. Secret-gated like the
-// other internal workers. No single-flight lease — the per-row `for update skip locked` claim is the
-// exactly-once boundary, so overlapping wakes are safe.
+// One geocoding wake: drain the pending-property queue, then the pending-organization queue (Contractor
+// Settings 4B-2c's Service area radius), through the configured provider. Secret-gated like the other internal
+// workers. No single-flight lease — the per-row `for update skip locked` claim is the exactly-once boundary,
+// so overlapping wakes are safe. One wake covers both queues rather than two separate cron entries: an
+// organization address changes far less often than a property's, so it doesn't earn its own schedule.
 //
 // Until Schedule Part 7b wires managed Mapbox, no provider is configured and this returns 503 rather than
-// running a stand-in against real properties (which would fabricate coordinates). The worker module itself is
+// running a stand-in against real addresses (which would fabricate coordinates). The worker module itself is
 // exercised in tests with the mock geocoder injected directly.
 export const POST: RequestHandler = async ({ request }) => {
 	if (!authorized(request))
@@ -34,6 +36,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			{ status: 503, headers: { 'cache-control': 'no-store' } }
 		);
 
-	const result = await drainGeocodingQueue({ geocoder: resolveGeocoder() });
-	return json(result, { headers: { 'cache-control': 'no-store' } });
+	const geocoder = resolveGeocoder();
+	const properties = await drainGeocodingQueue({ geocoder });
+	const organizations = await drainOrganizationGeocodingQueue({ geocoder });
+	return json({ properties, organizations }, { headers: { 'cache-control': 'no-store' } });
 };

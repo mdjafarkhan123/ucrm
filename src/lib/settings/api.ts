@@ -56,6 +56,9 @@ export type BusinessProfile = {
 	currency_code: string;
 	timezone_confirmed: boolean;
 	currency_confirmed: boolean;
+	/** Whether the address has resolved to real coordinates yet — the service area radius stays unusable until it has. */
+	location_ready: boolean;
+	service_area_radius_miles: number | null;
 	revision: number;
 	last_editor: SettingsEditor;
 };
@@ -143,6 +146,18 @@ export function saveBusinessProfile(
 	body: Record<string, unknown>
 ): Promise<SaveResult | SettingsSaveConflict> {
 	return saveSection('/api/settings/business/profile', body);
+}
+
+export type ServiceAreaSaveResult = {
+	status: 'saved';
+	profile_revision: number;
+	service_area_radius_miles: number;
+};
+
+export function saveServiceAreaRadius(
+	body: Record<string, unknown>
+): Promise<ServiceAreaSaveResult | SettingsSaveConflict> {
+	return saveSection('/api/settings/business/service-area', body);
 }
 
 export function saveBusinessHours(

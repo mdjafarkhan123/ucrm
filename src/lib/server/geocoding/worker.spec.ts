@@ -6,7 +6,13 @@ import {
 	type Geocoder
 } from './geocoder';
 import { createMockGeocoder } from './mock-geocoder';
-import { drainGeocodingQueue, processClaimedProperty, type GeocodingWorkerClient } from './worker';
+import {
+	drainGeocodingQueue,
+	drainOrganizationGeocodingQueue,
+	processClaimedOrganization,
+	processClaimedProperty,
+	type GeocodingWorkerClient
+} from './worker';
 
 type PendingRow = {
 	id: string;
@@ -218,5 +224,170 @@ describe('drainGeocodingQueue', () => {
 
 		const result = await drainGeocodingQueue({ client, geocoder });
 		expect(result).toMatchObject({ claimed: 2, providerError: 1, succeeded: 1, stoppedBy: 'idle' });
+	});
+});
+
+// Organization geocoding (Contractor Settings 4B-2c): the same claim/finalize shape as properties, keyed by
+// organization_id and using `region` instead of `state_region` — see worker.ts's file header.
+type PendingOrgRow = {
+	organization_id: string;
+	address_line1: string | null;
+	city: string | null;
+	region: string | null;
+	postal_code: string | null;
+};
+
+type FinalizeOrgArgs = {
+	p_organization_id: string;
+	p_address_line1: string | null;
+	p_city: string | null;
+	p_region: string | null;
+	p_postal_code: string | null;
+	p_status: string;
+	p_latitude: number | null;
+	p_longitude: number | null;
+};
+
+function fakeOrgClient(
+	pending: PendingOrgRow[],
+	options: { finalizeApplied?: (args: FinalizeOrgArgs) => boolean } = {}
+) {
+	const queue = [...pending];
+	const finalizeCalls: FinalizeOrgArgs[] = [];
+	const finalizeApplied = options.finalizeApplied ?? (() => true);
+
+	const rpc = vi.fn(async (name: string, args?: Record<string, unknown>) => {
+		if (name === 'claim_pending_organization_for_geocoding') {
+			const next = queue.shift();
+			return { data: next ? [next] : [], error: null };
+		}
+		if (name === 'finalize_organization_geocode') {
+			const finalizeArgs = args as unknown as FinalizeOrgArgs;
+			finalizeCalls.push(finalizeArgs);
+			return { data: finalizeApplied(finalizeArgs), error: null };
+		}
+		return { data: null, error: { message: `Unexpected RPC: ${name}` } };
+	});
+
+	return { client: { rpc } as GeocodingWorkerClient, rpc, finalizeCalls };
+}
+
+const orgRow = (over: Partial<PendingOrgRow> = {}): PendingOrgRow => ({
+	organization_id: 'org-1',
+	address_line1: '123 Main St',
+	city: 'Austin',
+	region: 'TX',
+	postal_code: '78701',
+	...over
+});
+
+describe('processClaimedOrganization', () => {
+	it('returns idle without geocoding when the queue is empty', async () => {
+		const { client } = fakeOrgClient([]);
+		const geocode = vi.fn();
+
+		await expect(processClaimedOrganization({ client, geocoder: { geocode } })).resolves.toEqual({
+			status: 'idle'
+		});
+		expect(geocode).not.toHaveBeenCalled();
+	});
+
+	it('geocodes a claimed organization and finalizes it succeeded with coordinates', async () => {
+		const { client, finalizeCalls } = fakeOrgClient([orgRow()]);
+		const geocoder = createMockGeocoder({
+			'123 main st, austin, tx, 78701': { status: 'found', latitude: 30.26, longitude: -97.74 }
+		});
+
+		await expect(processClaimedOrganization({ client, geocoder })).resolves.toEqual({
+			status: 'succeeded',
+			organizationId: 'org-1'
+		});
+		expect(finalizeCalls[0]).toMatchObject({
+			p_organization_id: 'org-1',
+			p_status: 'succeeded',
+			p_latitude: 30.26,
+			p_longitude: -97.74
+		});
+	});
+
+	it('finalizes failed with no coordinates when the address does not resolve', async () => {
+		const { client, finalizeCalls } = fakeOrgClient([orgRow()]);
+		const geocoder = createMockGeocoder({
+			'123 main st, austin, tx, 78701': { status: 'not_found' }
+		});
+
+		await expect(processClaimedOrganization({ client, geocoder })).resolves.toEqual({
+			status: 'failed',
+			organizationId: 'org-1'
+		});
+		expect(finalizeCalls[0]).toMatchObject({
+			p_status: 'failed',
+			p_latitude: null,
+			p_longitude: null
+		});
+	});
+
+	it('leaves the row pending on a provider error', async () => {
+		const { client, finalizeCalls } = fakeOrgClient([orgRow()]);
+		const geocoder = throwingGeocoder(new GeocodingProviderError('down', true, 'network'));
+
+		await expect(processClaimedOrganization({ client, geocoder })).resolves.toEqual({
+			status: 'provider_error',
+			organizationId: 'org-1'
+		});
+		expect(finalizeCalls).toHaveLength(0);
+	});
+
+	it('rethrows a non-provider error instead of swallowing a bug', async () => {
+		const { client } = fakeOrgClient([orgRow()]);
+		const geocoder = throwingGeocoder(new TypeError('undefined is not a function'));
+
+		await expect(processClaimedOrganization({ client, geocoder })).rejects.toThrow(TypeError);
+	});
+
+	it('reports skipped when finalize is rejected by its guard (address changed mid-flight)', async () => {
+		const { client, finalizeCalls } = fakeOrgClient([orgRow()], { finalizeApplied: () => false });
+		const geocoder = createMockGeocoder();
+
+		await expect(processClaimedOrganization({ client, geocoder })).resolves.toEqual({
+			status: 'skipped',
+			organizationId: 'org-1'
+		});
+		expect(finalizeCalls).toHaveLength(1);
+	});
+
+	it('maps `region` to the geocoder query the same way properties map `state_region`', async () => {
+		const { client, finalizeCalls } = fakeOrgClient([orgRow({ postal_code: null, region: null })]);
+		const geocoder = createMockGeocoder();
+
+		await processClaimedOrganization({ client, geocoder });
+		expect(finalizeCalls[0]).toMatchObject({
+			p_address_line1: '123 Main St',
+			p_city: 'Austin',
+			p_region: null,
+			p_postal_code: null
+		});
+	});
+});
+
+describe('drainOrganizationGeocodingQueue', () => {
+	it('drains every pending organization then stops idle', async () => {
+		const { client } = fakeOrgClient([
+			orgRow({ organization_id: 'a' }),
+			orgRow({ organization_id: 'b' })
+		]);
+		const geocoder = createMockGeocoder({ 'no, where, ,': { status: 'not_found' } });
+
+		const result = await drainOrganizationGeocodingQueue({ client, geocoder });
+		expect(result).toMatchObject({ claimed: 2, succeeded: 2, stoppedBy: 'idle' });
+	});
+
+	it('stops at the claim cap without draining the whole queue', async () => {
+		const rows = Array.from({ length: 5 }, (_, i) => orgRow({ organization_id: `o-${i}` }));
+		const { client } = fakeOrgClient(rows);
+		const geocoder = createMockGeocoder();
+
+		const result = await drainOrganizationGeocodingQueue({ client, geocoder, maxClaims: 2 });
+		expect(result).toMatchObject({ claimed: 2, stoppedBy: 'max_claims' });
 	});
 });

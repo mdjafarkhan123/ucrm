@@ -2,7 +2,22 @@
 // the pure content-shape contract; this is display metadata the builder and preview share. Order here is the
 // order the "Add question" palette shows, matching Jobber's builder (jobber-02 § 4.4).
 
-import type { FormQuestionType } from './types';
+import type { FormOutcome, FormQuestionType } from './types';
+
+// What each outcome means, shared by the forms list (its Type column) and the create dialog (its picker) so
+// the wording never drifts between the two.
+export const FORM_OUTCOME_LABELS: Record<FormOutcome, string> = {
+	request: 'Request form',
+	assessment: 'Assessment booking',
+	job: 'Job booking'
+};
+
+export const FORM_OUTCOME_HINTS: Record<FormOutcome, string> = {
+	request: 'Customer tells you what they need. You review it before anything is scheduled.',
+	assessment:
+		'Customer books an on-site visit to scope the work — approve it first, or let it book straight in.',
+	job: 'Customer books a standard job straight onto your calendar.'
+};
 
 export const FORM_QUESTION_TYPE_LABELS: Record<FormQuestionType, string> = {
 	short_text: 'Short answer',

@@ -5,7 +5,15 @@
 // the database (rule 12) — nothing here trusts the browser. Response shapes mirror the RPC return objects in
 // the two forms migrations exactly.
 
-import type { FormContent, FormDetail, FormListItem, FormOutcome, FormVersionView } from './types';
+import type {
+	BookingDetail,
+	BookingSlot,
+	FormContent,
+	FormDetail,
+	FormListItem,
+	FormOutcome,
+	FormVersionView
+} from './types';
 
 export type FormApiError = Error & {
 	fieldErrors?: Record<string, string>;
@@ -41,6 +49,9 @@ async function requestJson<T>(input: string, init?: RequestInit): Promise<T> {
 export const formsKey = (includeArchived = false) =>
 	['settings', 'forms', includeArchived] as const;
 export const formDetailKey = (id: string) => ['settings', 'forms', 'detail', id] as const;
+export const formBookingKey = (id: string) => ['settings', 'forms', 'booking', id] as const;
+export const formBookingSlotsKey = (id: string, rangeStart: string, rangeEnd: string) =>
+	['settings', 'forms', 'booking', id, 'slots', rangeStart, rangeEnd] as const;
 
 // --- Reads -------------------------------------------------------------------------------------------
 
@@ -51,6 +62,51 @@ export function fetchForms(includeArchived = false) {
 
 export function fetchFormDetail(id: string) {
 	return requestJson<FormDetail>(`/api/settings/forms/${id}`);
+}
+
+// --- Booking rules (Part 4B-2c) -----------------------------------------------------------------------
+
+export function fetchFormBooking(id: string) {
+	return requestJson<BookingDetail>(`/api/settings/forms/${id}/booking`);
+}
+
+export type FormBookingSaveInput = {
+	expected_revision: number;
+	requires_booking_approval: boolean;
+	service_area_enabled: boolean;
+	min_notice_minutes: number;
+	slot_interval_minutes: number;
+	visit_duration_minutes: number;
+	arrival_window_minutes: number | null;
+	buffer_minutes: number;
+	service_ids: string[];
+};
+
+export type FormBookingSaveResult = {
+	form_id: string;
+	revision: number;
+	requires_booking_approval: boolean;
+	service_area_enabled: boolean;
+	min_notice_minutes: number;
+	slot_interval_minutes: number;
+	visit_duration_minutes: number;
+	arrival_window_minutes: number | null;
+	buffer_minutes: number;
+	service_ids: string[];
+};
+
+export function saveFormBooking(id: string, input: FormBookingSaveInput) {
+	return requestJson<FormBookingSaveResult>(`/api/settings/forms/${id}/booking`, {
+		method: 'PATCH',
+		body: JSON.stringify(input)
+	});
+}
+
+// A short forward-looking window is enough to show "here is what customers would see right now" — the
+// preview refreshes after Save (see the slots route's own comment), not on every keystroke.
+export function fetchFormBookingSlots(id: string, rangeStart: string, rangeEnd: string) {
+	const params = new URLSearchParams({ range_start: rangeStart, range_end: rangeEnd });
+	return requestJson<BookingSlot[]>(`/api/settings/forms/${id}/booking/slots?${params}`);
 }
 
 // --- Create ------------------------------------------------------------------------------------------
