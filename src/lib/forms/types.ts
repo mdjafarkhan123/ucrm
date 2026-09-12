@@ -128,6 +128,7 @@ export interface FormDetail {
 	id: string;
 	outcome: FormOutcome;
 	name: string;
+	public_slug: string;
 	is_enabled: boolean;
 	is_default: boolean;
 	archived_at: string | null;

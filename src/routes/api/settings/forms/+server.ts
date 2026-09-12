@@ -15,6 +15,19 @@ import type { FormListItem, FormOutcome } from '$lib/forms/types';
 
 const SAVE_LIMIT = { windowSeconds: 60, maxAttempts: 20 };
 
+// Same slugify + collision-suffix convention as organization provisioning (see
+// api/jafar/prospects/[prospectId]/provision) -- a readable, stable public address, generated once here
+// and never regenerated automatically even if the form is later renamed.
+function slugify(name: string) {
+	return (
+		name
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/^-+|-+$/g, '')
+			.slice(0, 80) || 'form'
+	);
+}
+
 type VersionRow = { id: string; version_number: number; status: string; title: string };
 type FormRow = {
 	id: string;
@@ -99,10 +112,23 @@ export const POST: RequestHandler = async (event) => {
 	const parsed = formCreateSchema.safeParse(body);
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
+	const baseSlug = slugify(parsed.data.title);
+	const { data: existingSlugs, error: slugError } = await event.locals.supabase
+		.from('forms')
+		.select('public_slug')
+		.eq('organization_id', organizationId)
+		.ilike('public_slug', `${baseSlug}%`);
+	if (slugError) return databaseError();
+	const takenSlugs = new Set((existingSlugs ?? []).map((row) => row.public_slug));
+	let publicSlug = baseSlug;
+	let suffix = 2;
+	while (takenSlugs.has(publicSlug)) publicSlug = `${baseSlug}-${suffix++}`;
+
 	const { data, error } = await event.locals.supabase.rpc('create_form', {
 		target_organization_id: organizationId,
 		new_outcome: parsed.data.outcome,
 		new_name: parsed.data.name,
+		new_public_slug: publicSlug,
 		new_title: parsed.data.title,
 		new_description: parsed.data.description ? parsed.data.description : null
 	});

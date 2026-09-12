@@ -68,26 +68,26 @@ select set_config('request.jwt.claim.sub', 'fb2a0000-0000-0000-0000-000000000001
 
 -- 3. create_form seeds a booking-rules row only for assessment/job -------------------------------------------
 
-select public.create_form('fb2b0000-0000-0000-0000-000000000001', 'request', 'A Request Form', 'Tell us');
-select public.create_form('fb2b0000-0000-0000-0000-000000000001', 'assessment', 'An Assessment Form', 'Book us');
+select public.create_form('fb2b0000-0000-0000-0000-000000000001', 'request', 'A Request Form', 'a-request-form', 'Tell us');
+select public.create_form('fb2b0000-0000-0000-0000-000000000001', 'assessment', 'An Assessment Form', 'an-assessment-form', 'Book us');
 
 select is(
   (select count(*) from public.form_booking_rules
-   where form_id = (select id from public.forms where name = 'A Request Form')),
+   where form_id = (select id from public.forms where name = 'A Request Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001')),
   0::bigint,
   'a request form never gets a booking-rules row'
 );
 
 select is(
   (select requires_booking_approval from public.form_booking_rules
-   where form_id = (select id from public.forms where name = 'An Assessment Form')),
+   where form_id = (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001')),
   true,
   'a new assessment form defaults to requiring booking approval, matching Jobber'
 );
 
 select is(
   (select revision from public.form_booking_rules
-   where form_id = (select id from public.forms where name = 'An Assessment Form')),
+   where form_id = (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001')),
   1,
   'a new booking-rules row starts at revision 1'
 );
@@ -97,7 +97,7 @@ select is(
 select is(
   public.update_form_booking_settings(
     'fb2b0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'An Assessment Form'),
+    (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001'),
     1, false, false, 60, 15, 45, 120, 30,
     array['fb2c0000-0000-0000-0000-000000000001'::uuid]
   ) ->> 'revision',
@@ -107,14 +107,14 @@ select is(
 
 select is(
   (select array_agg(catalog_item_id order by position) from public.form_bookable_services
-   where form_id = (select id from public.forms where name = 'An Assessment Form')),
+   where form_id = (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001')),
   array['fb2c0000-0000-0000-0000-000000000001'::uuid],
   'the chosen service is saved against the form'
 );
 
 select is(
   (select visit_duration_minutes from public.form_booking_rules
-   where form_id = (select id from public.forms where name = 'An Assessment Form')),
+   where form_id = (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001')),
   45,
   'visit duration is saved'
 );
@@ -124,7 +124,7 @@ select is(
 select throws_ok(
   $$select public.update_form_booking_settings(
     'fb2b0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'An Assessment Form'),
+    (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001'),
     1, false, false, 60, 15, 45, 120, 30, '{}'::uuid[]
   )$$,
   'P0409', null, 'a stale revision is rejected'
@@ -133,7 +133,7 @@ select throws_ok(
 select throws_ok(
   $$select public.update_form_booking_settings(
     'fb2b0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'A Request Form'),
+    (select id from public.forms where name = 'A Request Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001'),
     1, false, false, 60, 15, 45, 120, 30, '{}'::uuid[]
   )$$,
   '23514', null, 'a request form is refused before any revision check -- it has no booking rules to edit'
@@ -142,7 +142,7 @@ select throws_ok(
 select throws_ok(
   $$select public.update_form_booking_settings(
     'fb2b0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'An Assessment Form'),
+    (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001'),
     2, false, true, 60, 15, 45, 120, 30, '{}'::uuid[]
   )$$,
   '23514', null, 'turning on the service area before a business location and radius exist is refused'
@@ -151,7 +151,7 @@ select throws_ok(
 select throws_ok(
   $$select public.update_form_booking_settings(
     'fb2b0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'An Assessment Form'),
+    (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001'),
     2, false, false, 60, 15, 45, 120, 30,
     array['fb2c0000-0000-0000-0000-000000000002'::uuid]
   )$$,
@@ -161,7 +161,7 @@ select throws_ok(
 select throws_ok(
   $$select public.update_form_booking_settings(
     'fb2b0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'An Assessment Form'),
+    (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001'),
     2, false, false, 60, 15, 45, 120, 30,
     array['fb2c0000-0000-0000-0000-000000000003'::uuid]
   )$$,
@@ -171,7 +171,7 @@ select throws_ok(
 select throws_ok(
   $$select public.update_form_booking_settings(
     'fb2b0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'An Assessment Form'),
+    (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001'),
     2, false, false, 50000, 15, 45, 120, 30, '{}'::uuid[]
   )$$,
   '23514', null, 'minimum notice above 30 days is refused'
@@ -184,7 +184,7 @@ select set_config('request.jwt.claim.sub', 'fb2a0000-0000-0000-0000-000000000002
 select throws_ok(
   $$select public.update_form_booking_settings(
     'fb2b0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'An Assessment Form'),
+    (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001'),
     2, false, false, 60, 15, 45, 120, 30, '{}'::uuid[]
   )$$,
   '42501', null, 'a field member without settings.forms.manage cannot save booking settings'
@@ -192,7 +192,7 @@ select throws_ok(
 
 select is(
   (select count(*) from public.form_booking_rules
-   where form_id = (select id from public.forms where name = 'An Assessment Form')),
+   where form_id = (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001')),
   0::bigint,
   'a field member has no settings.forms.manage, so RLS hides the booking rules row from them too'
 );
@@ -203,7 +203,7 @@ select set_config('request.jwt.claim.sub', 'fb2a0000-0000-0000-0000-000000000003
 
 select is(
   (select count(*) from public.form_booking_rules
-   where form_id = (select id from public.forms where name = 'An Assessment Form')),
+   where form_id = (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001')),
   0::bigint,
   'a member of another organization cannot see the first organization''s booking rules'
 );
@@ -211,7 +211,7 @@ select is(
 select throws_ok(
   $$select public.update_form_booking_settings(
     'fb2b0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'An Assessment Form'),
+    (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001'),
     2, false, false, 60, 15, 45, 120, 30, '{}'::uuid[]
   )$$,
   '42501', null, 'an owner of another organization cannot save booking settings on this one'
@@ -341,7 +341,7 @@ select throws_ok(
 select is(
   public.update_form_booking_settings(
     'fb2b0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'An Assessment Form'),
+    (select id from public.forms where name = 'An Assessment Form' and organization_id = 'fb2b0000-0000-0000-0000-000000000001'),
     2, false, true, 60, 15, 45, 120, 30, '{}'::uuid[]
   ) ->> 'service_area_enabled',
   'true',

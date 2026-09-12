@@ -29,6 +29,7 @@ type FormRow = {
 	id: string;
 	outcome: FormOutcome;
 	name: string;
+	public_slug: string;
 	is_enabled: boolean;
 	is_default: boolean;
 	archived_at: string | null;
@@ -60,7 +61,7 @@ export const GET: RequestHandler = async (event) => {
 	const { data, error } = await event.locals.supabase
 		.from('forms')
 		.select(
-			'id,outcome,name,is_enabled,is_default,archived_at,revision,draft_version_id,current_published_version_id,form_versions!form_versions_form_organization_fk(id,version_number,revision,title,description,content,published_at)'
+			'id,outcome,name,public_slug,is_enabled,is_default,archived_at,revision,draft_version_id,current_published_version_id,form_versions!form_versions_form_organization_fk(id,version_number,revision,title,description,content,published_at)'
 		)
 		.eq('organization_id', check.auth.organization.id)
 		.eq('id', event.params.id)
@@ -77,6 +78,7 @@ export const GET: RequestHandler = async (event) => {
 		id: form.id,
 		outcome: form.outcome,
 		name: form.name,
+		public_slug: form.public_slug,
 		is_enabled: form.is_enabled,
 		is_default: form.is_default,
 		archived_at: form.archived_at,

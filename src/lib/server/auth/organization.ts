@@ -2,7 +2,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 
 export type OrganizationContext = {
 	user: NonNullable<Awaited<ReturnType<RequestEvent['locals']['getUser']>>>;
-	organization: { id: string; name: string; role: string };
+	organization: { id: string; name: string; slug: string; role: string };
 };
 
 export async function getOrganizationContext(
@@ -23,7 +23,7 @@ export async function getOrganizationContext(
 	const { data, error } = await event.locals.supabase
 		.from('organization_members')
 		.select(
-			'organization_id, role, organizations!organization_members_organization_id_fkey(id, name)'
+			'organization_id, role, organizations!organization_members_organization_id_fkey(id, name, slug)'
 		)
 		.eq('user_id', resolvedUser.id)
 		.eq('status', 'active')
@@ -38,7 +38,12 @@ export async function getOrganizationContext(
 
 	return {
 		user: resolvedUser,
-		organization: { id: organization.id, name: organization.name, role: data.role }
+		organization: {
+			id: organization.id,
+			name: organization.name,
+			slug: organization.slug,
+			role: data.role
+		}
 	};
 }
 

@@ -88,12 +88,12 @@ from generate_series(0, 6) as weekday;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '4b2b0000-0000-0000-0000-000000000001', true);
 
-select public.create_form('4b2c0000-0000-0000-0000-000000000001', 'assessment', 'Assessment Form', 'Book us');
+select public.create_form('4b2c0000-0000-0000-0000-000000000001', 'assessment', 'Assessment Form', 'assessment-form', 'Book us');
 
 select throws_ok(
   $$select * from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-01-04'
   )$$,
   '23514', null, 'an end date before the start date is refused'
@@ -102,17 +102,17 @@ select throws_ok(
 select throws_ok(
   $$select * from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-03-31'
   )$$,
   '23514', null, 'a window over 60 days is refused'
 );
 
-select public.create_form('4b2c0000-0000-0000-0000-000000000001', 'request', 'A Request Form', 'Tell us');
+select public.create_form('4b2c0000-0000-0000-0000-000000000001', 'request', 'A Request Form', 'a-request-form', 'Tell us');
 select throws_ok(
   $$select * from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'A Request Form'),
+    (select id from public.forms where name = 'A Request Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-01-05'
   )$$,
   '23514', null, 'a form with no booking rules cannot be asked for slots'
@@ -123,7 +123,7 @@ select throws_ok(
 select is(
   (select count(*) from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-01-05'
   )),
   0::bigint,
@@ -145,14 +145,14 @@ set local role authenticated;
 
 select public.update_form_booking_settings(
   '4b2c0000-0000-0000-0000-000000000001',
-  (select id from public.forms where name = 'Assessment Form'),
+  (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
   1, false, false, 0, 30, 60, null, 0, '{}'::uuid[]
 );
 
 select is(
   (select array_agg(start_time order by start_time) from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-01-05'
   )),
   array[time '09:00', time '09:30', time '10:00', time '10:30', time '11:00'],
@@ -162,7 +162,7 @@ select is(
 select is(
   (select count(*) from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-04', date '2099-01-04'
   )),
   0::bigint,
@@ -177,13 +177,13 @@ select is(
 
 set local role postgres;
 update public.form_booking_rules set min_notice_minutes = 43200
-where form_id = (select id from public.forms where name = 'Assessment Form');
+where form_id = (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001');
 set local role authenticated;
 
 select is(
   (select count(*) from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     (current_date + ((1 - extract(dow from current_date)::int + 7) % 7))::date,
     (current_date + ((1 - extract(dow from current_date)::int + 7) % 7))::date
   )),
@@ -193,7 +193,7 @@ select is(
 
 set local role postgres;
 update public.form_booking_rules set min_notice_minutes = 0
-where form_id = (select id from public.forms where name = 'Assessment Form');
+where form_id = (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001');
 set local role authenticated;
 
 -- 7. one member's own weekly availability restricts nothing while a second, unrestricted member covers -------
@@ -209,7 +209,7 @@ set local role authenticated;
 select is(
   (select array_agg(start_time order by start_time) from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-01-05'
   )),
   array[time '09:00', time '09:30', time '10:00', time '10:30', time '11:00'],
@@ -237,7 +237,7 @@ set local role authenticated;
 select is(
   (select count(*) from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-01-05'
   )),
   0::bigint,
@@ -252,7 +252,7 @@ set local role authenticated;
 select is(
   (select array_agg(start_time order by start_time) from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-01-05'
   )),
   array[time '09:00', time '09:30', time '10:00', time '10:30', time '11:00'],
@@ -268,7 +268,7 @@ set local role authenticated;
 
 set local role postgres;
 update public.form_booking_rules set buffer_minutes = 30
-where form_id = (select id from public.forms where name = 'Assessment Form');
+where form_id = (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001');
 
 insert into public.requests (id, organization_id, client_id, property_id, title, status)
 values (
@@ -290,7 +290,7 @@ set local role authenticated;
 select is(
   (select array_agg(start_time order by start_time) from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-01-05'
   )),
   array[time '09:00', time '09:30', time '10:00', time '10:30', time '11:00'],
@@ -305,7 +305,7 @@ set local role authenticated;
 select is(
   (select count(*) from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-01-05'
   )),
   0::bigint,
@@ -328,7 +328,7 @@ set local role authenticated;
 select is(
   (select array_agg(start_time order by start_time) from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-01-05'
   )),
   array[time '10:00', time '10:30', time '11:00'],
@@ -347,7 +347,7 @@ set local role authenticated;
 select is(
   (select count(*) from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-01-05'
   )),
   0::bigint,
@@ -360,7 +360,7 @@ delete from public.schedule_events where organization_id = '4b2c0000-0000-0000-0
 delete from public.assessment_assignees where organization_id = '4b2c0000-0000-0000-0000-000000000001';
 delete from public.assessments where organization_id = '4b2c0000-0000-0000-0000-000000000001';
 update public.form_booking_rules set buffer_minutes = 0
-where form_id = (select id from public.forms where name = 'Assessment Form');
+where form_id = (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001');
 
 -- 12. an anytime (no start_time) job visit does not block a specific timed slot ---------------------------------
 
@@ -386,7 +386,7 @@ set local role authenticated;
 select is(
   (select array_agg(start_time order by start_time) from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-01-05'
   )),
   array[time '09:00', time '09:30', time '10:00', time '10:30', time '11:00'],
@@ -403,7 +403,7 @@ set local role authenticated;
 select is(
   (select count(*) from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-01-05'
   )) > 5,
   true,
@@ -422,7 +422,7 @@ select set_config('request.jwt.claim.sub', '4b2b0000-0000-0000-0000-000000000004
 select throws_ok(
   $$select * from public.get_form_available_slots(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     date '2099-01-05', date '2099-01-05'
   )$$,
   '42501', null, 'an owner of another organization cannot read this organization''s slots'
@@ -435,7 +435,7 @@ set local role postgres;
 select is(
   public.claim_form_booking_reservation(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     '4b2b0000-0000-0000-0000-000000000002',
     timestamptz '2099-01-05 09:00:00+00', timestamptz '2099-01-05 10:00:00+00'
   ) is not null,
@@ -446,7 +446,7 @@ select is(
 select is(
   public.claim_form_booking_reservation(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     '4b2b0000-0000-0000-0000-000000000002',
     timestamptz '2099-01-05 09:30:00+00', timestamptz '2099-01-05 10:30:00+00'
   ),
@@ -457,7 +457,7 @@ select is(
 select is(
   public.claim_form_booking_reservation(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     '4b2b0000-0000-0000-0000-000000000002',
     timestamptz '2099-01-05 10:00:00+00', timestamptz '2099-01-05 11:00:00+00'
   ) is not null,
@@ -468,7 +468,7 @@ select is(
 select is(
   public.claim_form_booking_reservation(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     '4b2b0000-0000-0000-0000-000000000003',
     timestamptz '2099-01-05 09:00:00+00', timestamptz '2099-01-05 10:00:00+00'
   ) is not null,
@@ -479,7 +479,7 @@ select is(
 select throws_ok(
   $$select public.claim_form_booking_reservation(
     '4b2c0000-0000-0000-0000-000000000001',
-    (select id from public.forms where name = 'Assessment Form'),
+    (select id from public.forms where name = 'Assessment Form' and organization_id = '4b2c0000-0000-0000-0000-000000000001'),
     '4b2b0000-0000-0000-0000-000000000002',
     timestamptz '2099-01-06 10:00:00+00', timestamptz '2099-01-06 09:00:00+00'
   )$$,

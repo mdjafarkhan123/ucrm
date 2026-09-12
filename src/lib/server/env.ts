@@ -12,6 +12,7 @@ const serverEnvSchema = z.object({
 	COMMUNICATIONS_WORKER_SECRET: z.string().trim().min(32).optional(),
 	AUTOMATION_WORKER_SECRET: z.string().trim().min(32).optional(),
 	GEOCODING_WORKER_SECRET: z.string().trim().min(32).optional(),
+	FORM_SUBMISSION_WORKER_SECRET: z.string().trim().min(32).optional(),
 	MAPBOX_ACCESS_TOKEN: z.string().trim().min(1).optional()
 });
 
@@ -29,6 +30,7 @@ export function getServerEnv(): ServerEnv {
 		COMMUNICATIONS_WORKER_SECRET: env.COMMUNICATIONS_WORKER_SECRET,
 		AUTOMATION_WORKER_SECRET: env.AUTOMATION_WORKER_SECRET,
 		GEOCODING_WORKER_SECRET: env.GEOCODING_WORKER_SECRET,
+		FORM_SUBMISSION_WORKER_SECRET: env.FORM_SUBMISSION_WORKER_SECRET,
 		MAPBOX_ACCESS_TOKEN: env.MAPBOX_ACCESS_TOKEN
 	});
 

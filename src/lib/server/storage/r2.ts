@@ -104,6 +104,17 @@ export function buildOutboundEmailAttachmentObjectKey(
 	return `${organizationId}/outbound-email-attachments/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
 }
 
+// A stranger's photo on a public form gets its own `<org>/public-form-submissions/<form>/` prefix --
+// submit_form_response checks every photo key against exactly this prefix before it trusts one, matching
+// every other upload's isolation.
+export function buildPublicFormSubmissionAttachmentObjectKey(
+	organizationId: string,
+	formId: string,
+	fileName: string
+): string {
+	return `${organizationId}/public-form-submissions/${formId}/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
+}
+
 export async function createPresignedUploadUrl(
 	objectKey: string,
 	mimeType: string

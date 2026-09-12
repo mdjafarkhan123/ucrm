@@ -3337,6 +3337,7 @@ export type Database = {
 					name: string;
 					organization_id: string;
 					outcome: string;
+					public_slug: string;
 					revision: number;
 					updated_at: string;
 					updated_by: string | null;
@@ -3353,6 +3354,7 @@ export type Database = {
 					name: string;
 					organization_id: string;
 					outcome: string;
+					public_slug: string;
 					revision?: number;
 					updated_at?: string;
 					updated_by?: string | null;
@@ -3369,6 +3371,7 @@ export type Database = {
 					name?: string;
 					organization_id?: string;
 					outcome?: string;
+					public_slug?: string;
 					revision?: number;
 					updated_at?: string;
 					updated_by?: string | null;
@@ -11906,6 +11909,7 @@ export type Database = {
 					new_description?: string;
 					new_name: string;
 					new_outcome: string;
+					new_public_slug: string;
 					new_title: string;
 					target_organization_id: string;
 				};
@@ -13126,6 +13130,21 @@ export type Database = {
 				Args: { p_organization_id: string };
 				Returns: Json;
 			};
+			get_public_form_available_slots: {
+				Args: {
+					range_end: string;
+					range_start: string;
+					target_form_slug: string;
+					target_organization_slug: string;
+				};
+				Returns: {
+					end_time: string;
+					ends_at: string;
+					slot_date: string;
+					start_time: string;
+					starts_at: string;
+				}[];
+			};
 			get_team_member_detail: {
 				Args: { target_organization_id: string; target_user_id: string };
 				Returns: Json;
@@ -13976,6 +13995,7 @@ export type Database = {
 				Args: { batch_size?: number };
 				Returns: number;
 			};
+			process_next_form_submission: { Args: never; Returns: Json };
 			provision_organization_from_application: {
 				Args: {
 					target_actor_owner_email?: string;
@@ -15541,6 +15561,20 @@ export type Database = {
 					p_idempotency_key: string;
 					p_organization_id: string;
 					p_reason: string;
+				};
+				Returns: Json;
+			};
+			submit_form_response: {
+				Args: {
+					target_answers: Json;
+					target_contact: Json;
+					target_form_slug: string;
+					target_idempotency_key: string;
+					target_organization_slug: string;
+					target_photo_object_keys?: string[];
+					target_requested_ends_at?: string;
+					target_requested_starts_at?: string;
+					target_selected_catalog_item_id?: string;
 				};
 				Returns: Json;
 			};

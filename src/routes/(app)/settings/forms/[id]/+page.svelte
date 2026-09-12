@@ -60,6 +60,7 @@
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import deviceFloppyIcon from '@tabler/icons/outline/device-floppy.svg?raw';
 	import rocketIcon from '@tabler/icons/outline/rocket.svg?raw';
+	import copyIcon from '@tabler/icons/outline/copy.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -531,6 +532,30 @@
 		if (question.options.length === 0) question.options = [''];
 	}
 
+	const publicUrl = $derived(
+		query.data?.published && query.data.public_slug
+			? `${page.url.origin}/forms/${page.data.organization?.slug ?? ''}/${query.data.public_slug}`
+			: ''
+	);
+	const embedSnippet = $derived(
+		publicUrl
+			? `<iframe src="${publicUrl}" style="width:100%;height:820px;border:0;" title="${formName || 'Request form'}"></iframe>`
+			: ''
+	);
+	let copiedField = $state<'link' | 'embed' | null>(null);
+
+	async function copyShareValue(value: string, field: 'link' | 'embed') {
+		try {
+			await navigator.clipboard.writeText(value);
+			copiedField = field;
+			setTimeout(() => {
+				if (copiedField === field) copiedField = null;
+			}, 2000);
+		} catch {
+			toast.error('Could not copy. Select and copy it manually.');
+		}
+	}
+
 	function statusBadge(): {
 		status: 'success' | 'warning' | 'informative' | 'inactive';
 		label: string;
@@ -773,6 +798,55 @@
 								/>
 							</Card>
 
+							{#if publicUrl}
+								<Card heading="Share this form">
+									<p class="builder__hint">
+										Anyone with this link can fill it out — customers, or a link on your website.
+									</p>
+									<div class="builder__share-field">
+										<Input id="share-url" label="Public link" value={publicUrl} readonly />
+										<Button
+											variant="secondary"
+											size="small"
+											onclick={() => void copyShareValue(publicUrl, 'link')}
+										>
+											<span class="builder__btn-icon" aria-hidden="true">
+												<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+												{@html copyIcon}
+											</span>
+											{copiedField === 'link' ? 'Copied' : 'Copy link'}
+										</Button>
+									</div>
+									<div class="builder__share-field">
+										<Textarea
+											id="share-embed"
+											label="Embed on your website"
+											rows={3}
+											value={embedSnippet}
+											showCount={false}
+											readonly
+										/>
+										<Button
+											variant="secondary"
+											size="small"
+											onclick={() => void copyShareValue(embedSnippet, 'embed')}
+										>
+											<span class="builder__btn-icon" aria-hidden="true">
+												<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+												{@html copyIcon}
+											</span>
+											{copiedField === 'embed' ? 'Copied' : 'Copy code'}
+										</Button>
+									</div>
+								</Card>
+							{:else}
+								<Card heading="Share this form">
+									<p class="builder__hint">
+										Publish this form to get a shareable link and embed code.
+									</p>
+								</Card>
+							{/if}
+
 							<Card heading="Form details">
 								<Input
 									id="identity-name"
@@ -940,6 +1014,18 @@
 		&__identity-actions {
 			display: flex;
 			justify-content: flex-end;
+		}
+
+		&__share-field {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-end;
+			gap: var(--space-small);
+
+			:global(.input),
+			:global(.textarea) {
+				width: 100%;
+			}
 		}
 	}
 
