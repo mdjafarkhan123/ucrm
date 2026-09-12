@@ -98,6 +98,7 @@
 		resolve('/(app)/settings/taxes'),
 		resolve('/(app)/settings/price-book'),
 		resolve('/(app)/settings/quotes'),
+		resolve('/(app)/settings/forms'),
 		resolve('/(app)/settings/communications/email'),
 		resolve('/(app)/settings/communications/blocked-addresses'),
 		resolve('/(app)/settings/communications/website-chat'),

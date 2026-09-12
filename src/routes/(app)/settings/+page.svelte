@@ -18,6 +18,7 @@
 	import receiptTaxIcon from '@tabler/icons/outline/receipt-tax.svg?raw';
 	import listIcon from '@tabler/icons/outline/list-details.svg?raw';
 	import checklistIcon from '@tabler/icons/outline/checklist.svg?raw';
+	import formsIcon from '@tabler/icons/outline/forms.svg?raw';
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import shieldLockIcon from '@tabler/icons/outline/shield-lock.svg?raw';
@@ -149,6 +150,14 @@
 								icon={fileTextIcon}
 								title="Quote Settings"
 								description="Default terms, your representative block, target margin, and signature policy."
+							/>
+						{/if}
+						{#if home.permissions.forms_manage}
+							<SettingsDestinationCard
+								href={resolve('/(app)/settings/forms')}
+								icon={formsIcon}
+								title="Request Forms"
+								description="The online forms customers fill in to request work from you."
 							/>
 						{/if}
 					</div>

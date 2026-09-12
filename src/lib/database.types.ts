@@ -3132,6 +3132,145 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			form_versions: {
+				Row: {
+					content: Json;
+					created_at: string;
+					created_by: string | null;
+					description: string | null;
+					form_id: string;
+					id: string;
+					organization_id: string;
+					published_at: string | null;
+					revision: number;
+					status: string;
+					title: string;
+					updated_at: string;
+					updated_by: string | null;
+					version_number: number;
+				};
+				Insert: {
+					content?: Json;
+					created_at?: string;
+					created_by?: string | null;
+					description?: string | null;
+					form_id: string;
+					id?: string;
+					organization_id: string;
+					published_at?: string | null;
+					revision?: number;
+					status?: string;
+					title: string;
+					updated_at?: string;
+					updated_by?: string | null;
+					version_number: number;
+				};
+				Update: {
+					content?: Json;
+					created_at?: string;
+					created_by?: string | null;
+					description?: string | null;
+					form_id?: string;
+					id?: string;
+					organization_id?: string;
+					published_at?: string | null;
+					revision?: number;
+					status?: string;
+					title?: string;
+					updated_at?: string;
+					updated_by?: string | null;
+					version_number?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'form_versions_form_organization_fk';
+						columns: ['organization_id', 'form_id'];
+						isOneToOne: false;
+						referencedRelation: 'forms';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'form_versions_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			forms: {
+				Row: {
+					archived_at: string | null;
+					created_at: string;
+					created_by: string | null;
+					current_published_version_id: string | null;
+					draft_version_id: string | null;
+					id: string;
+					is_default: boolean;
+					is_enabled: boolean;
+					name: string;
+					organization_id: string;
+					outcome: string;
+					revision: number;
+					updated_at: string;
+					updated_by: string | null;
+				};
+				Insert: {
+					archived_at?: string | null;
+					created_at?: string;
+					created_by?: string | null;
+					current_published_version_id?: string | null;
+					draft_version_id?: string | null;
+					id?: string;
+					is_default?: boolean;
+					is_enabled?: boolean;
+					name: string;
+					organization_id: string;
+					outcome: string;
+					revision?: number;
+					updated_at?: string;
+					updated_by?: string | null;
+				};
+				Update: {
+					archived_at?: string | null;
+					created_at?: string;
+					created_by?: string | null;
+					current_published_version_id?: string | null;
+					draft_version_id?: string | null;
+					id?: string;
+					is_default?: boolean;
+					is_enabled?: boolean;
+					name?: string;
+					organization_id?: string;
+					outcome?: string;
+					revision?: number;
+					updated_at?: string;
+					updated_by?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'forms_draft_version_fk';
+						columns: ['organization_id', 'draft_version_id'];
+						isOneToOne: false;
+						referencedRelation: 'form_versions';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'forms_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'forms_published_version_fk';
+						columns: ['organization_id', 'current_published_version_id'];
+						isOneToOne: false;
+						referencedRelation: 'form_versions';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
 			invoice_access_links: {
 				Row: {
 					expires_at: string | null;
@@ -10881,6 +11020,14 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			archive_form: {
+				Args: {
+					expected_revision: number;
+					target_form_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			archive_quote: {
 				Args: { reason?: string; target_quote_id: string };
 				Returns: Json;
@@ -11595,6 +11742,20 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			create_form: {
+				Args: {
+					new_description?: string;
+					new_name: string;
+					new_outcome: string;
+					new_title: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			create_form_draft: {
+				Args: { target_form_id: string; target_organization_id: string };
+				Returns: Json;
 			};
 			create_installment_invoice: {
 				Args: {
@@ -13641,6 +13802,14 @@ export type Database = {
 				};
 				Returns: string;
 			};
+			publish_form_draft: {
+				Args: {
+					expected_revision: number;
+					target_form_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			publish_message_template: {
 				Args: { actor_email: string; target_template_key: string };
 				Returns: {
@@ -14392,6 +14561,7 @@ export type Database = {
 				Args: {
 					target_expires_at: string;
 					target_invitation_id: string;
+					target_resent_by: string;
 					target_token_hash: string;
 				};
 				Returns: {
@@ -14460,6 +14630,14 @@ export type Database = {
 					target_client_id: string;
 					target_organization_id: string;
 					target_session_id: string;
+				};
+				Returns: Json;
+			};
+			restore_form: {
+				Args: {
+					expected_revision: number;
+					target_form_id: string;
+					target_organization_id: string;
 				};
 				Returns: Json;
 			};
@@ -14902,6 +15080,14 @@ export type Database = {
 					p_daily_ceiling: number;
 					p_reason: string;
 					p_stage_key: string;
+				};
+				Returns: Json;
+			};
+			set_form_default: {
+				Args: {
+					expected_revision: number;
+					target_form_id: string;
+					target_organization_id: string;
 				};
 				Returns: Json;
 			};
@@ -15355,6 +15541,27 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			update_form_draft: {
+				Args: {
+					expected_revision: number;
+					new_content: Json;
+					new_description: string;
+					new_title: string;
+					target_form_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			update_form_identity: {
+				Args: {
+					expected_revision: number;
+					new_is_enabled: boolean;
+					new_name: string;
+					target_form_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
 			};
 			update_invoice_contract_disclaimer: {
 				Args: {

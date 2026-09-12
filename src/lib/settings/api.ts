@@ -18,6 +18,7 @@ export type SettingsHome = {
 		taxes_manage: boolean;
 		price_book_manage: boolean;
 		checklists_manage: boolean;
+		forms_manage: boolean;
 		quotes_manage: boolean;
 		automations_view: boolean;
 	};

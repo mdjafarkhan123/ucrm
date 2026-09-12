@@ -6,27 +6,26 @@ Give contractors one permission-aware control room for business identity and fea
 
 ## Where things stand
 
-Part 3 (Team and access) closed 2026-09-12. The two live-verification gaps found 2026-09-11 (invitation
-lifecycle events never recorded; `member.work_unassigned` falling to a generic sentence) are both fixed and
-re-verified live on Raad LTD — see `ROADMAP.md`'s Part 3 row for the detail. Committed this session.
+Part 4B-1 (request-form builder) is closed 2026-09-12 — see ROADMAP.md for what shipped. Live-verified end to
+end on Raad LTD this session; no known bugs.
 
-Part 4 (Request and booking forms) is next. Dependency check: Requests and Scheduling are both shipped,
-working production features (visible in nav, real data flowing) — no owning campaign blocks them. Part 4 is
-dependency-ready, but has no approved plan yet.
+## Next action
 
-## Blockers
+No dependency-ready part remains in Part 4 right now: 4B-2 (booking rules) needs Scheduling, and 4C/4D/4E need
+the rest of Part 4B. Ask Jafar what to pick up next — options are starting Scheduling (unblocks 4B-2), Part 5
+(feature-owned settings, currently unscoped), or a different campaign entirely.
 
-None.
+## Env notes
 
-## Exact next action
-
-Per the Working Procedure (non-trivial work), inspect the current Request/booking-form code and the `jobber`
-skill's relevant research, then present Jafar a plan for Part 4 (public forms + creation outcomes end to end)
-before writing any code.
-
-## Essential pointers
-
-- `docs/contractor-settings-blueprint.md` — permanent behavior reference
-- `Memory/campaigns/contractor-settings/ROADMAP.md` — read only when planning Part 4 or resolving a dependency
+- Dev server can crash blank after a restart with "Cannot read properties of undefined (reading 'call')" —
+  a mixed `?v=` dep-cache issue. Fix: `rm -rf node_modules/.vite` + hard reload (Ctrl+Shift+R).
+- Full `npm run check` OOMs — verify TS with a scratch tsconfig that `extends: "./tsconfig.json"` (not
+  `.svelte-kit/tsconfig.json` directly — that config alone is missing `moduleResolution: bundler` etc. needed
+  for `?raw` imports and `$app/*`) and explicitly includes `.svelte-kit/ambient.d.ts` + `env.d.ts` +
+  `non-ambient.d.ts` alongside the target files — a custom `include` array replaces the parent's, it does not
+  merge. Prettier can't glob `(app)` — pass full paths.
+- Raad LTD owner login has `settings.forms.manage` (owner/admin only); office/sales/finance roles do not.
+- Test form in Raad LTD: id `abcb9f54-04de-4e95-8eb6-66ee4d378d29` ("Kitchen Remodel Request"), still a Draft
+  with a saved section + question from this session's verification pass.
 
 Resume command: `continue contractor settings`.
