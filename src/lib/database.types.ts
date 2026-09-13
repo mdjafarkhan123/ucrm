@@ -12398,6 +12398,7 @@ export type Database = {
 				Returns: Json;
 			};
 			dispatch_automation_worker_wake: { Args: never; Returns: undefined };
+			dispatch_client_import_worker_wake: { Args: never; Returns: undefined };
 			dispatch_communication_email_outbox_wake: {
 				Args: never;
 				Returns: undefined;
@@ -14215,6 +14216,7 @@ export type Database = {
 				Returns: number;
 			};
 			process_next_form_submission: { Args: never; Returns: Json };
+			process_next_import_row: { Args: never; Returns: Json };
 			provision_organization_from_application: {
 				Args: {
 					target_actor_owner_email?: string;
@@ -14863,6 +14865,7 @@ export type Database = {
 				Returns: Json;
 			};
 			request_automation_worker_wake: { Args: never; Returns: undefined };
+			request_client_import_worker_wake: { Args: never; Returns: undefined };
 			request_communication_email_outbox_wake: {
 				Args: never;
 				Returns: undefined;
@@ -15545,6 +15548,10 @@ export type Database = {
 					target_organization_id: string;
 				};
 				Returns: Json;
+			};
+			set_import_batch_error_file: {
+				Args: { target_batch_id: string; object_key: string };
+				Returns: undefined;
 			};
 			set_import_batch_mapping: {
 				Args: { payload: Json };

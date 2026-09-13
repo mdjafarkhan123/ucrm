@@ -4,6 +4,7 @@ import { requireClientPermission } from '$lib/server/access/clients';
 import { NO_STORE_HEADERS, databaseError, notFound, validationError } from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { importClientsCommitSchema } from '$lib/server/validation/imports.schema';
+import { generateImportErrorFile } from '$lib/server/imports/error-file';
 
 // Step 5a of the client import: the "Commit" button. The office has reviewed the dry-run (step 4); this
 // confirms it. The RPC settles skip/hold/error rows, queues create/update rows as 'ready' for the step-5b
@@ -49,6 +50,18 @@ export const POST: RequestHandler = async (event) => {
 			return validationError({ form: 'This import can no longer be committed.' });
 		}
 		return databaseError();
+	}
+
+	// A batch with nothing to import (all rows skip/hold/error) is 'completed' the instant it commits, so the
+	// worker never runs for it -- yet its held/error rows are exactly what the office needs the error file for.
+	// Generate it here, best-effort: the client write already succeeded in its own transaction, so an R2 hiccup
+	// must never fail the commit. (When status is 'importing', the worker owns the error file instead.)
+	if (batch.status === 'completed') {
+		try {
+			await generateImportErrorFile({ organizationId: batch.organization_id, batchId: batch.id });
+		} catch (fileError) {
+			console.error('Import error file generation failed after commit', fileError);
+		}
 	}
 
 	return json(

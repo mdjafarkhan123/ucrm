@@ -115,6 +115,20 @@ export function buildPublicFormSubmissionAttachmentObjectKey(
 	return `${organizationId}/public-form-submissions/${formId}/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
 }
 
+// An import file arrives inside the request, not through a presigned URL: we parse it server-side (headers,
+// row count, preview) before we ever trust it, so we already hold the bytes and write them ourselves -- the
+// signature/logo pattern. Its own `<org>/client-imports/` prefix keeps the raw upload, kept for audit and
+// re-download after the run, out of every path that walks contractor attachments.
+export function buildClientImportObjectKey(organizationId: string, fileName: string): string {
+	return `${organizationId}/client-imports/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
+}
+
+// The per-row error file the import worker writes on completion. One deterministic key per batch: regenerating
+// it (e.g. a re-run) overwrites in place rather than orphaning objects.
+export function buildClientImportErrorObjectKey(organizationId: string, batchId: string): string {
+	return `${organizationId}/client-imports/errors/${batchId}.csv`;
+}
+
 export async function createPresignedUploadUrl(
 	objectKey: string,
 	mimeType: string
