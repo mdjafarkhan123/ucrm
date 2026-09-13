@@ -238,3 +238,33 @@ describe('runReview — update', () => {
 		expect(rows[0].resolved_payload?.email).toBe('new@example.com');
 	});
 });
+
+describe('runReview — country normalization', () => {
+	// Real HubSpot exports write the country as a full name. Before normalization this failed the schema's
+	// 2-letter country check and errored the whole row; now it creates with the ISO code.
+	const MAPPING_WITH_COUNTRY: ImportColumnMapping = {
+		'First name': { field: 'first_name' },
+		'Last name': { field: 'last_name' },
+		Street: { field: 'property.address_line1' },
+		City: { field: 'property.city' },
+		Country: { field: 'property.country' }
+	};
+
+	it('creates a row whose country is a full name, storing the ISO code', () => {
+		const { rows, summary } = review(
+			[
+				{
+					'First name': 'Ada',
+					'Last name': 'Lovelace',
+					Street: '12 Byron Rd',
+					City: 'Bath',
+					Country: 'United States'
+				}
+			],
+			{ mapping: MAPPING_WITH_COUNTRY }
+		);
+		expect(summary.error).toBe(0);
+		expect(rows[0].planned_action).toBe('create');
+		expect(rows[0].resolved_payload?.property?.country).toBe('US');
+	});
+});

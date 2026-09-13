@@ -20,6 +20,7 @@ import {
 	type ClientWriteInput
 } from '$lib/server/validation/foundation.schema';
 import { normalizeEmail, normalizePhone } from '$lib/server/clients/duplicates';
+import { normalizeCountryToIso2 } from '$lib/server/imports/country';
 import type { ImportClientTarget } from '$lib/server/validation/imports.schema';
 
 // A create row must be a whole valid client (name required); that is clientWriteSchema. An UPDATE row is
@@ -140,7 +141,10 @@ function buildCandidate(row: Record<string, string>, mapping: ImportColumnMappin
 		if (entry.field.startsWith('property.')) {
 			if (entry.dont_overwrite) propertyDontOverwrite = true;
 			if (value) {
-				property[entry.field.slice('property.'.length)] = value;
+				const subField = entry.field.slice('property.'.length);
+				// Real exports write the country as a full name ("United States"); our schema stores a 2-letter
+				// ISO code. Normalize here, before validation, or every such property row would error out.
+				property[subField] = subField === 'country' ? normalizeCountryToIso2(value) : value;
 				sawPropertyCell = true;
 			}
 			continue;

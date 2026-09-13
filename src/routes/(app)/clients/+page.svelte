@@ -10,6 +10,7 @@
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
 	import DataTable, {
 		type DataTableColumn,
 		type DataTableSort
@@ -142,7 +143,19 @@
 	<PageHeader title="Clients" description="Every lead and customer relationship in one place.">
 		{#snippet actions()}
 			{#if !refused}
-				<Button variant="primary" href={resolve('/clients/new')}>New Client</Button>
+				<div class="clients-header-actions">
+					<DropdownMenu
+						triggerLabel="More client actions"
+						items={[
+							{
+								label: 'Import clients',
+								icon: uploadIcon,
+								onSelect: () => goto(resolve('/(app)/clients/import'))
+							}
+						]}
+					/>
+					<Button variant="primary" href={resolve('/clients/new')}>New Client</Button>
+				</div>
 			{/if}
 		{/snippet}
 	</PageHeader>
@@ -283,6 +296,12 @@
 </PageContainer>
 
 <style lang="scss">
+	.clients-header-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+	}
+
 	.clients-toolbar {
 		display: flex;
 		gap: var(--space-small);

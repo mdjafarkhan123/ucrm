@@ -60,9 +60,7 @@ export type ImportClientsMappingInput = z.infer<typeof importClientsMappingSchem
 // missing or false flag fails here rather than reaching the RPC, so the office sees a clear field message.
 export const importClientsCommitSchema = z.object({
 	consent_affirmed: z.literal(true, {
-		errorMap: () => ({
-			message: 'Confirm these contacts agreed to hear from you before importing.'
-		})
+		message: 'Confirm these contacts agreed to hear from you before importing.'
 	})
 });
 
