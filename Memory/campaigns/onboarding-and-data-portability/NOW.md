@@ -7,22 +7,19 @@ Step 2, the second unstarted gate before the first paying customer.
 
 ## Where things stand
 
-**Part 1 (client import) is COMPLETE and COMMITTED.**
-
-**Part 2 (client export) is COMPLETE, BROWSER-VERIFIED, and COMMITTED** (this session). Records-only, instant
-download: clients, contacts, contact methods, properties, notes as CSVs + `manifest.json`, zipped with fflate,
-streamed straight down. Verified as the Raad LTD owner through the real UI: CSV row counts match the manifest
-exactly, no internal-only columns leak, and the 5/min/org rate limit fires correctly under repeated exports.
+**Parts 1 (client import), 2 (client export), and 3 (Price Book import/export) are all COMPLETE, COMMITTED,
+and verified** (commit `910c1e1` closes Part 3: a real browser run confirmed upload→map→review→commit→
+idempotent re-import→export all work, cost data included, after fixing a Part 7 B2 grant-lockdown bug).
 
 ## Next action
 
-Plan Part 3 (Price Book import/export for `catalog_items`) — reuses the Part 1 import pattern and the Part 2
-export pattern. Read `docs/research/onboarding-import-export-research.md` plus the Part 1/2 code
-(`src/lib/server/imports/*`, `src/lib/server/exports/*`) before proposing the plan; present it to Jafar for
-approval before writing code (Non-Negotiable Rule 3).
+Part 4 (opening balances) stays blocked on the launch financial-reconciliation audit (Step 3).
+
+Part 5 (assisted onboarding checklist + internal runbook) is now dependency-ready — Parts 1–3 it needs are
+done — but its scope is not yet defined. Next session: scope Part 5 with Jafar before building anything.
 
 ## Blockers
 
-None. Part 4 (opening balances) stays blocked on the launch financial-reconciliation audit (Step 3).
+None for Part 5's scoping conversation. Part 4 blocked as above.
 
 Resume command: `continue onboarding and data portability`.

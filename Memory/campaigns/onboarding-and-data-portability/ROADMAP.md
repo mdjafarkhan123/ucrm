@@ -10,11 +10,11 @@ dedupe rules HubSpot does not need. No import may trigger customer messages/auto
 | --- | --- | --- | --- | --- |
 | 1 | Import clients + contacts + linked properties: upload → column-map (auto + editable) → preview with dedupe/error flags → idempotent batch → per-row result/error file | **DONE 2026-09-13** — backend + 4-screen wizard shipped; gate met (5b: imported twice, zero dupes, no customer-facing events; UI run: full Upload→Map→Review→Done in-browser, country-name→ISO fix, error-file download). Detail in code/tests/git. | — | Met |
 | 2 | Export those same records: structured package (records + relationship IDs + manifest), permission-filtered, instant download | **DONE 2026-09-13** — scope narrowed to records-only, instant download (no attachments, no stored object/link — approved divergence from the original short-lived-link idea). Owner/admin-gated, rate-limited 5/min/org. Browser-verified as Raad LTD owner: CSV row counts match manifest exactly, no internal columns leak, rate limit fires correctly. Detail in code/tests/git (`src/lib/server/exports/client-export.ts`, `src/routes/api/exports/clients/+server.ts`). | Part 1 | Met |
-| 3 | Price Book import + export (`catalog_items`), reusing Part 1 pattern | Planned | Part 1 | Catalog items round-trip cleanly; no duplicate services |
+| 3 | Price Book import + export (`catalog_items`), reusing Part 1 pattern | **DONE 2026-09-13** — fixed a launch-blocking 42501 (Part 7 B2's cost-column grant lockdown) via two narrow SECURITY DEFINER RPCs; browser-verified upload→map→review→commit→idempotent re-import→export end to end with real cost data. Detail in code/tests/git (`src/lib/server/imports/catalog-review.ts`, `src/lib/server/exports/catalog-export.ts`, `src/routes/api/imports/price-book/*`, `src/routes/api/exports/price-book/*`, migrations `20260916160000`/`20260916170000`). | Part 1 | Met |
 | 4 | Opening balances (one model: unpaid invoices OR starting balance, never both) | Blocked | Launch Step 3 financial-reconciliation audit | No double-counting; no dunning triggered; reconciles from source to screen |
 | 5 | Assisted onboarding checklist + internal runbook | Planned | Parts 1–3 | The assisted move-in is guided and repeatable |
 
-Parts 1 and 2 are closed; their build decisions now live in code (`src/lib/server/imports/*`,
-`src/routes/api/imports/clients/*`, `src/lib/components/imports/*`, migrations `20260916*client_import*`,
-`src/lib/server/exports/*`, `src/routes/api/exports/*`) and the research doc. Part 3 reuses both patterns —
-re-read the research doc + Part 1/2 code when starting it.
+Parts 1–3 are closed; their build decisions now live in code (`src/lib/server/imports/*`,
+`src/routes/api/imports/*`, `src/lib/components/imports/*`, migrations `20260916*`,
+`src/lib/server/exports/*`, `src/routes/api/exports/*`) and the research doc. Part 5 reuses all three —
+re-read the research doc + Part 1/2/3 code when starting it.
