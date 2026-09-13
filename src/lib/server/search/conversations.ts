@@ -75,6 +75,7 @@ export async function searchConversations(
 		.from('communication_delivery_intents')
 		.select('id, organization_id, client_id, recipient_email, subject, created_at')
 		.eq('organization_id', organizationId)
+		.eq('channel', 'email')
 		.or(`subject.ilike.${quoted},recipient_email.ilike.${quoted}`)
 		.order('created_at', { ascending: false })
 		.limit(SOURCE_LIMIT);
@@ -129,7 +130,7 @@ export async function searchConversations(
 			conversationKey: row.client_id,
 			createdAt: row.created_at,
 			channel: 'Email' as const,
-			headline: row.subject,
+			headline: row.subject ?? '',
 			fallbackName: row.recipient_email,
 			sessionId: null
 		})),

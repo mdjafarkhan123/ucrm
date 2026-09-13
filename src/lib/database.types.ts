@@ -1169,7 +1169,7 @@ export type Database = {
 					expires_at: string;
 					failure_code: string | null;
 					failure_message: string | null;
-					html_content: string;
+					html_content: string | null;
 					id: string;
 					invoice_id: string | null;
 					logical_send_key: string;
@@ -1179,15 +1179,17 @@ export type Database = {
 					quote_id: string | null;
 					quote_recipient_id: string | null;
 					quote_version_id: string | null;
-					recipient_email: string;
+					recipient_email: string | null;
+					recipient_phone: string | null;
 					reply_alias_id: string | null;
 					resent_from_intent_id: string | null;
 					retry_class: string;
 					retry_window_ends_at: string | null;
 					send_kind: string;
 					sender_id: string | null;
+					sms_sender_identity_id: string | null;
 					status: string;
-					subject: string;
+					subject: string | null;
 					text_content: string;
 					updated_at: string;
 				};
@@ -1207,7 +1209,7 @@ export type Database = {
 					expires_at?: string;
 					failure_code?: string | null;
 					failure_message?: string | null;
-					html_content: string;
+					html_content?: string | null;
 					id?: string;
 					invoice_id?: string | null;
 					logical_send_key: string;
@@ -1217,15 +1219,17 @@ export type Database = {
 					quote_id?: string | null;
 					quote_recipient_id?: string | null;
 					quote_version_id?: string | null;
-					recipient_email: string;
+					recipient_email?: string | null;
+					recipient_phone?: string | null;
 					reply_alias_id?: string | null;
 					resent_from_intent_id?: string | null;
 					retry_class?: string;
 					retry_window_ends_at?: string | null;
 					send_kind?: string;
 					sender_id?: string | null;
+					sms_sender_identity_id?: string | null;
 					status?: string;
-					subject: string;
+					subject?: string | null;
 					text_content: string;
 					updated_at?: string;
 				};
@@ -1245,7 +1249,7 @@ export type Database = {
 					expires_at?: string;
 					failure_code?: string | null;
 					failure_message?: string | null;
-					html_content?: string;
+					html_content?: string | null;
 					id?: string;
 					invoice_id?: string | null;
 					logical_send_key?: string;
@@ -1255,15 +1259,17 @@ export type Database = {
 					quote_id?: string | null;
 					quote_recipient_id?: string | null;
 					quote_version_id?: string | null;
-					recipient_email?: string;
+					recipient_email?: string | null;
+					recipient_phone?: string | null;
 					reply_alias_id?: string | null;
 					resent_from_intent_id?: string | null;
 					retry_class?: string;
 					retry_window_ends_at?: string | null;
 					send_kind?: string;
 					sender_id?: string | null;
+					sms_sender_identity_id?: string | null;
 					status?: string;
-					subject?: string;
+					subject?: string | null;
 					text_content?: string;
 					updated_at?: string;
 				};
@@ -1350,6 +1356,13 @@ export type Database = {
 						columns: ['organization_id', 'sender_id'];
 						isOneToOne: false;
 						referencedRelation: 'communication_email_senders';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'communication_delivery_intents_sms_sender_fk';
+						columns: ['organization_id', 'sms_sender_identity_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_sender_identities';
 						referencedColumns: ['organization_id', 'id'];
 					}
 				];
@@ -2762,6 +2775,7 @@ export type Database = {
 				Row: {
 					attempt_count: number;
 					available_at: string;
+					channel: string;
 					claim_token: string | null;
 					claimed_at: string | null;
 					created_at: string;
@@ -2776,6 +2790,7 @@ export type Database = {
 				Insert: {
 					attempt_count?: number;
 					available_at?: string;
+					channel?: string;
 					claim_token?: string | null;
 					claimed_at?: string | null;
 					created_at?: string;
@@ -2790,6 +2805,7 @@ export type Database = {
 				Update: {
 					attempt_count?: number;
 					available_at?: string;
+					channel?: string;
 					claim_token?: string | null;
 					claimed_at?: string | null;
 					created_at?: string;
@@ -2810,6 +2826,13 @@ export type Database = {
 						referencedColumns: ['id'];
 					},
 					{
+						foreignKeyName: 'communication_outbox_events_intent_channel_fk';
+						columns: ['organization_id', 'delivery_intent_id', 'channel'];
+						isOneToOne: false;
+						referencedRelation: 'communication_delivery_intents';
+						referencedColumns: ['organization_id', 'id', 'channel'];
+					},
+					{
 						foreignKeyName: 'communication_outbox_events_organization_id_fkey';
 						columns: ['organization_id'];
 						isOneToOne: false;
@@ -2820,6 +2843,7 @@ export type Database = {
 			};
 			communication_provider_callback_events: {
 				Row: {
+					channel: string;
 					delivery_intent_id: string | null;
 					event_at: string | null;
 					event_kind: string;
@@ -2836,6 +2860,7 @@ export type Database = {
 					received_at: string;
 				};
 				Insert: {
+					channel?: string;
 					delivery_intent_id?: string | null;
 					event_at?: string | null;
 					event_kind: string;
@@ -2852,6 +2877,7 @@ export type Database = {
 					received_at?: string;
 				};
 				Update: {
+					channel?: string;
 					delivery_intent_id?: string | null;
 					event_at?: string | null;
 					event_kind?: string;
@@ -2874,6 +2900,13 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'communication_delivery_intents';
 						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_provider_callback_events_intent_channel_fk';
+						columns: ['organization_id', 'delivery_intent_id', 'channel'];
+						isOneToOne: false;
+						referencedRelation: 'communication_delivery_intents';
+						referencedColumns: ['organization_id', 'id', 'channel'];
 					},
 					{
 						foreignKeyName: 'communication_provider_callback_events_organization_id_fkey';
@@ -2959,6 +2992,629 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'communication_email_senders';
 						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			communication_sms_consent_events: {
+				Row: {
+					client_contact_method_id: string;
+					client_id: string;
+					created_by: string | null;
+					event_kind: string;
+					evidence: Json;
+					id: string;
+					occurred_at: string;
+					organization_id: string;
+					received_at: string;
+					source: string;
+					source_event_key: string;
+				};
+				Insert: {
+					client_contact_method_id: string;
+					client_id: string;
+					created_by?: string | null;
+					event_kind: string;
+					evidence?: Json;
+					id?: string;
+					occurred_at: string;
+					organization_id: string;
+					received_at?: string;
+					source: string;
+					source_event_key: string;
+				};
+				Update: {
+					client_contact_method_id?: string;
+					client_id?: string;
+					created_by?: string | null;
+					event_kind?: string;
+					evidence?: Json;
+					id?: string;
+					occurred_at?: string;
+					organization_id?: string;
+					received_at?: string;
+					source?: string;
+					source_event_key?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_consent_events_client_fk';
+						columns: ['organization_id', 'client_id'];
+						isOneToOne: false;
+						referencedRelation: 'clients';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_consent_events_method_fk';
+						columns: ['organization_id', 'client_id', 'client_contact_method_id'];
+						isOneToOne: false;
+						referencedRelation: 'client_contact_methods';
+						referencedColumns: ['organization_id', 'client_id', 'id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_consent_events_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_sms_consent_state: {
+				Row: {
+					client_contact_method_id: string;
+					client_id: string;
+					effective_at: string;
+					organization_id: string;
+					source_event_id: string;
+					state: string;
+					updated_at: string;
+				};
+				Insert: {
+					client_contact_method_id: string;
+					client_id: string;
+					effective_at: string;
+					organization_id: string;
+					source_event_id: string;
+					state: string;
+					updated_at?: string;
+				};
+				Update: {
+					client_contact_method_id?: string;
+					client_id?: string;
+					effective_at?: string;
+					organization_id?: string;
+					source_event_id?: string;
+					state?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_consent_state_client_fk';
+						columns: ['organization_id', 'client_id'];
+						isOneToOne: false;
+						referencedRelation: 'clients';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_consent_state_method_fk';
+						columns: ['organization_id', 'client_contact_method_id'];
+						isOneToOne: true;
+						referencedRelation: 'client_contact_methods';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_consent_state_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_consent_state_source_event_fk';
+						columns: ['organization_id', 'source_event_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_consent_events';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			communication_sms_credit_accounts: {
+				Row: {
+					currency_code: string;
+					organization_id: string;
+					reserved_balance_minor: number;
+					settled_balance_minor: number;
+					updated_at: string;
+				};
+				Insert: {
+					currency_code?: string;
+					organization_id: string;
+					reserved_balance_minor?: number;
+					settled_balance_minor?: number;
+					updated_at?: string;
+				};
+				Update: {
+					currency_code?: string;
+					organization_id?: string;
+					reserved_balance_minor?: number;
+					settled_balance_minor?: number;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_credit_accounts_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: true;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_sms_credit_ledger_entries: {
+				Row: {
+					amount_minor: number;
+					balance_after_minor: number;
+					entry_kind: string;
+					id: string;
+					occurred_at: string;
+					organization_id: string;
+					reservation_id: string | null;
+					source_key: string;
+				};
+				Insert: {
+					amount_minor: number;
+					balance_after_minor: number;
+					entry_kind: string;
+					id?: string;
+					occurred_at?: string;
+					organization_id: string;
+					reservation_id?: string | null;
+					source_key: string;
+				};
+				Update: {
+					amount_minor?: number;
+					balance_after_minor?: number;
+					entry_kind?: string;
+					id?: string;
+					occurred_at?: string;
+					organization_id?: string;
+					reservation_id?: string | null;
+					source_key?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_credit_ledger_entries_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_credit_accounts';
+						referencedColumns: ['organization_id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_credit_ledger_entries_reservation_fk';
+						columns: ['organization_id', 'reservation_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_credit_reservations';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			communication_sms_credit_reservations: {
+				Row: {
+					amount_minor: number;
+					channel: string;
+					delivery_intent_id: string;
+					id: string;
+					organization_id: string;
+					reserved_at: string;
+					segment_count: number;
+					settled_at: string | null;
+					source_key: string;
+					state: string;
+				};
+				Insert: {
+					amount_minor: number;
+					channel?: string;
+					delivery_intent_id: string;
+					id?: string;
+					organization_id: string;
+					reserved_at?: string;
+					segment_count: number;
+					settled_at?: string | null;
+					source_key: string;
+					state?: string;
+				};
+				Update: {
+					amount_minor?: number;
+					channel?: string;
+					delivery_intent_id?: string;
+					id?: string;
+					organization_id?: string;
+					reserved_at?: string;
+					segment_count?: number;
+					settled_at?: string | null;
+					source_key?: string;
+					state?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_credit_reservations_intent_fk';
+						columns: ['organization_id', 'delivery_intent_id', 'channel'];
+						isOneToOne: false;
+						referencedRelation: 'communication_delivery_intents';
+						referencedColumns: ['organization_id', 'id', 'channel'];
+					},
+					{
+						foreignKeyName: 'communication_sms_credit_reservations_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_credit_accounts';
+						referencedColumns: ['organization_id'];
+					}
+				];
+			};
+			communication_sms_message_snapshots: {
+				Row: {
+					body: string;
+					channel: string;
+					created_at: string;
+					delivery_intent_id: string;
+					encoding: string;
+					organization_id: string;
+					segment_count: number;
+				};
+				Insert: {
+					body: string;
+					channel?: string;
+					created_at?: string;
+					delivery_intent_id: string;
+					encoding: string;
+					organization_id: string;
+					segment_count: number;
+				};
+				Update: {
+					body?: string;
+					channel?: string;
+					created_at?: string;
+					delivery_intent_id?: string;
+					encoding?: string;
+					organization_id?: string;
+					segment_count?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_message_snapshots_intent_fk';
+						columns: ['organization_id', 'delivery_intent_id', 'channel'];
+						isOneToOne: false;
+						referencedRelation: 'communication_delivery_intents';
+						referencedColumns: ['organization_id', 'id', 'channel'];
+					},
+					{
+						foreignKeyName: 'communication_sms_message_snapshots_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_sms_reconciliation_items: {
+				Row: {
+					attempt_count: number;
+					available_at: string;
+					channel: string;
+					claim_token: string | null;
+					claimed_at: string | null;
+					created_at: string;
+					delivery_intent_id: string | null;
+					id: string;
+					last_error: string | null;
+					organization_id: string;
+					provider_message_id: string | null;
+					reason: string;
+					resolved_at: string | null;
+					status: string;
+				};
+				Insert: {
+					attempt_count?: number;
+					available_at?: string;
+					channel?: string;
+					claim_token?: string | null;
+					claimed_at?: string | null;
+					created_at?: string;
+					delivery_intent_id?: string | null;
+					id?: string;
+					last_error?: string | null;
+					organization_id: string;
+					provider_message_id?: string | null;
+					reason: string;
+					resolved_at?: string | null;
+					status?: string;
+				};
+				Update: {
+					attempt_count?: number;
+					available_at?: string;
+					channel?: string;
+					claim_token?: string | null;
+					claimed_at?: string | null;
+					created_at?: string;
+					delivery_intent_id?: string | null;
+					id?: string;
+					last_error?: string | null;
+					organization_id?: string;
+					provider_message_id?: string | null;
+					reason?: string;
+					resolved_at?: string | null;
+					status?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_reconciliation_items_intent_fk';
+						columns: ['organization_id', 'delivery_intent_id', 'channel'];
+						isOneToOne: false;
+						referencedRelation: 'communication_delivery_intents';
+						referencedColumns: ['organization_id', 'id', 'channel'];
+					},
+					{
+						foreignKeyName: 'communication_sms_reconciliation_items_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_sms_sender_identities: {
+				Row: {
+					allows_automated: boolean;
+					allows_manual: boolean;
+					created_at: string;
+					display_name: string | null;
+					id: string;
+					lifecycle_state: string;
+					organization_id: string;
+					phone_number: string;
+					updated_at: string;
+				};
+				Insert: {
+					allows_automated?: boolean;
+					allows_manual?: boolean;
+					created_at?: string;
+					display_name?: string | null;
+					id?: string;
+					lifecycle_state?: string;
+					organization_id: string;
+					phone_number: string;
+					updated_at?: string;
+				};
+				Update: {
+					allows_automated?: boolean;
+					allows_manual?: boolean;
+					created_at?: string;
+					display_name?: string | null;
+					id?: string;
+					lifecycle_state?: string;
+					organization_id?: string;
+					phone_number?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_sender_identities_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_sms_submission_attempts: {
+				Row: {
+					attempt_number: number;
+					channel: string;
+					claim_token: string;
+					delivery_intent_id: string;
+					error_code: string | null;
+					finished_at: string | null;
+					id: string;
+					organization_id: string;
+					outcome: string;
+					provider: string;
+					provider_message_id: string | null;
+					started_at: string;
+				};
+				Insert: {
+					attempt_number: number;
+					channel?: string;
+					claim_token: string;
+					delivery_intent_id: string;
+					error_code?: string | null;
+					finished_at?: string | null;
+					id?: string;
+					organization_id: string;
+					outcome: string;
+					provider?: string;
+					provider_message_id?: string | null;
+					started_at?: string;
+				};
+				Update: {
+					attempt_number?: number;
+					channel?: string;
+					claim_token?: string;
+					delivery_intent_id?: string;
+					error_code?: string | null;
+					finished_at?: string | null;
+					id?: string;
+					organization_id?: string;
+					outcome?: string;
+					provider?: string;
+					provider_message_id?: string | null;
+					started_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_submission_attempts_intent_fk';
+						columns: ['organization_id', 'delivery_intent_id', 'channel'];
+						isOneToOne: false;
+						referencedRelation: 'communication_delivery_intents';
+						referencedColumns: ['organization_id', 'id', 'channel'];
+					},
+					{
+						foreignKeyName: 'communication_sms_submission_attempts_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_twilio_accounts: {
+				Row: {
+					created_at: string;
+					id: string;
+					lifecycle_state: string;
+					messaging_service_sid: string | null;
+					organization_id: string;
+					provider: string;
+					subaccount_sid: string;
+					updated_at: string;
+				};
+				Insert: {
+					created_at?: string;
+					id?: string;
+					lifecycle_state?: string;
+					messaging_service_sid?: string | null;
+					organization_id: string;
+					provider?: string;
+					subaccount_sid: string;
+					updated_at?: string;
+				};
+				Update: {
+					created_at?: string;
+					id?: string;
+					lifecycle_state?: string;
+					messaging_service_sid?: string | null;
+					organization_id?: string;
+					provider?: string;
+					subaccount_sid?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_twilio_accounts_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: true;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_twilio_credentials: {
+				Row: {
+					algorithm: string;
+					authentication_tag: string;
+					ciphertext: string;
+					created_at: string;
+					credential_purpose: string;
+					credential_sid: string | null;
+					encryption_key_id: string;
+					format_version: number;
+					id: string;
+					lifecycle_state: string;
+					nonce: string;
+					organization_id: string;
+					retire_after: string | null;
+					twilio_account_id: string;
+					updated_at: string;
+				};
+				Insert: {
+					algorithm?: string;
+					authentication_tag: string;
+					ciphertext: string;
+					created_at?: string;
+					credential_purpose: string;
+					credential_sid?: string | null;
+					encryption_key_id: string;
+					format_version?: number;
+					id?: string;
+					lifecycle_state: string;
+					nonce: string;
+					organization_id: string;
+					retire_after?: string | null;
+					twilio_account_id: string;
+					updated_at?: string;
+				};
+				Update: {
+					algorithm?: string;
+					authentication_tag?: string;
+					ciphertext?: string;
+					created_at?: string;
+					credential_purpose?: string;
+					credential_sid?: string | null;
+					encryption_key_id?: string;
+					format_version?: number;
+					id?: string;
+					lifecycle_state?: string;
+					nonce?: string;
+					organization_id?: string;
+					retire_after?: string | null;
+					twilio_account_id?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_twilio_credentials_account_fk';
+						columns: ['organization_id', 'twilio_account_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_twilio_accounts';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			communication_twilio_provisioning_events: {
+				Row: {
+					created_at: string;
+					detail: Json;
+					id: string;
+					operation: string;
+					organization_id: string;
+					result: string;
+					step: string;
+					twilio_account_id: string | null;
+				};
+				Insert: {
+					created_at?: string;
+					detail?: Json;
+					id?: string;
+					operation: string;
+					organization_id: string;
+					result: string;
+					step: string;
+					twilio_account_id?: string | null;
+				};
+				Update: {
+					created_at?: string;
+					detail?: Json;
+					id?: string;
+					operation?: string;
+					organization_id?: string;
+					result?: string;
+					step?: string;
+					twilio_account_id?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_twilio_provisioning_events_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_twilio_provisioning_events_twilio_account_id_fkey';
+						columns: ['twilio_account_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_twilio_accounts';
+						referencedColumns: ['id'];
 					}
 				];
 			};
@@ -11966,6 +12622,41 @@ export type Database = {
 				Args: { p_request_id: string };
 				Returns: Json;
 			};
+			communication_twilio_complete_auth_token_rotation: {
+				Args: { p_account_id: string; p_retire_after: string };
+				Returns: undefined;
+			};
+			communication_twilio_complete_restricted_key_rotation: {
+				Args: { p_account_id: string };
+				Returns: undefined;
+			};
+			communication_twilio_store_provisioned_subaccount: {
+				Args: {
+					p_auth_token_credential_id: string;
+					p_authentication_tag: string;
+					p_ciphertext: string;
+					p_encryption_key_id: string;
+					p_nonce: string;
+					p_organization_id: string;
+					p_subaccount_sid: string;
+				};
+				Returns: {
+					created_at: string;
+					id: string;
+					lifecycle_state: string;
+					messaging_service_sid: string | null;
+					organization_id: string;
+					provider: string;
+					subaccount_sid: string;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_twilio_accounts';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			complete_job_visit: {
 				Args: {
 					target_job_id: string;
@@ -12518,7 +13209,7 @@ export type Database = {
 					expires_at: string;
 					failure_code: string | null;
 					failure_message: string | null;
-					html_content: string;
+					html_content: string | null;
 					id: string;
 					invoice_id: string | null;
 					logical_send_key: string;
@@ -12528,15 +13219,17 @@ export type Database = {
 					quote_id: string | null;
 					quote_recipient_id: string | null;
 					quote_version_id: string | null;
-					recipient_email: string;
+					recipient_email: string | null;
+					recipient_phone: string | null;
 					reply_alias_id: string | null;
 					resent_from_intent_id: string | null;
 					retry_class: string;
 					retry_window_ends_at: string | null;
 					send_kind: string;
 					sender_id: string | null;
+					sms_sender_identity_id: string | null;
 					status: string;
-					subject: string;
+					subject: string | null;
 					text_content: string;
 					updated_at: string;
 				};
@@ -12574,7 +13267,7 @@ export type Database = {
 					expires_at: string;
 					failure_code: string | null;
 					failure_message: string | null;
-					html_content: string;
+					html_content: string | null;
 					id: string;
 					invoice_id: string | null;
 					logical_send_key: string;
@@ -12584,15 +13277,17 @@ export type Database = {
 					quote_id: string | null;
 					quote_recipient_id: string | null;
 					quote_version_id: string | null;
-					recipient_email: string;
+					recipient_email: string | null;
+					recipient_phone: string | null;
 					reply_alias_id: string | null;
 					resent_from_intent_id: string | null;
 					retry_class: string;
 					retry_window_ends_at: string | null;
 					send_kind: string;
 					sender_id: string | null;
+					sms_sender_identity_id: string | null;
 					status: string;
-					subject: string;
+					subject: string | null;
 					text_content: string;
 					updated_at: string;
 				};
@@ -12673,7 +13368,7 @@ export type Database = {
 					expires_at: string;
 					failure_code: string | null;
 					failure_message: string | null;
-					html_content: string;
+					html_content: string | null;
 					id: string;
 					invoice_id: string | null;
 					logical_send_key: string;
@@ -12683,15 +13378,17 @@ export type Database = {
 					quote_id: string | null;
 					quote_recipient_id: string | null;
 					quote_version_id: string | null;
-					recipient_email: string;
+					recipient_email: string | null;
+					recipient_phone: string | null;
 					reply_alias_id: string | null;
 					resent_from_intent_id: string | null;
 					retry_class: string;
 					retry_window_ends_at: string | null;
 					send_kind: string;
 					sender_id: string | null;
+					sms_sender_identity_id: string | null;
 					status: string;
-					subject: string;
+					subject: string | null;
 					text_content: string;
 					updated_at: string;
 				};
@@ -12730,7 +13427,7 @@ export type Database = {
 					expires_at: string;
 					failure_code: string | null;
 					failure_message: string | null;
-					html_content: string;
+					html_content: string | null;
 					id: string;
 					invoice_id: string | null;
 					logical_send_key: string;
@@ -12740,15 +13437,17 @@ export type Database = {
 					quote_id: string | null;
 					quote_recipient_id: string | null;
 					quote_version_id: string | null;
-					recipient_email: string;
+					recipient_email: string | null;
+					recipient_phone: string | null;
 					reply_alias_id: string | null;
 					resent_from_intent_id: string | null;
 					retry_class: string;
 					retry_window_ends_at: string | null;
 					send_kind: string;
 					sender_id: string | null;
+					sms_sender_identity_id: string | null;
 					status: string;
-					subject: string;
+					subject: string | null;
 					text_content: string;
 					updated_at: string;
 				};
@@ -12784,7 +13483,7 @@ export type Database = {
 					expires_at: string;
 					failure_code: string | null;
 					failure_message: string | null;
-					html_content: string;
+					html_content: string | null;
 					id: string;
 					invoice_id: string | null;
 					logical_send_key: string;
@@ -12794,15 +13493,17 @@ export type Database = {
 					quote_id: string | null;
 					quote_recipient_id: string | null;
 					quote_version_id: string | null;
-					recipient_email: string;
+					recipient_email: string | null;
+					recipient_phone: string | null;
 					reply_alias_id: string | null;
 					resent_from_intent_id: string | null;
 					retry_class: string;
 					retry_window_ends_at: string | null;
 					send_kind: string;
 					sender_id: string | null;
+					sms_sender_identity_id: string | null;
 					status: string;
-					subject: string;
+					subject: string | null;
 					text_content: string;
 					updated_at: string;
 				};
@@ -12838,7 +13539,7 @@ export type Database = {
 					expires_at: string;
 					failure_code: string | null;
 					failure_message: string | null;
-					html_content: string;
+					html_content: string | null;
 					id: string;
 					invoice_id: string | null;
 					logical_send_key: string;
@@ -12848,15 +13549,17 @@ export type Database = {
 					quote_id: string | null;
 					quote_recipient_id: string | null;
 					quote_version_id: string | null;
-					recipient_email: string;
+					recipient_email: string | null;
+					recipient_phone: string | null;
 					reply_alias_id: string | null;
 					resent_from_intent_id: string | null;
 					retry_class: string;
 					retry_window_ends_at: string | null;
 					send_kind: string;
 					sender_id: string | null;
+					sms_sender_identity_id: string | null;
 					status: string;
-					subject: string;
+					subject: string | null;
 					text_content: string;
 					updated_at: string;
 				};
@@ -13658,16 +14361,6 @@ export type Database = {
 					p_recipe_id: string;
 					p_subject_id: string;
 					p_subject_type: string;
-				};
-				Returns: Json;
-			};
-			mark_invoice_received: {
-				Args: {
-					new_idempotency_key: string;
-					new_reason: string;
-					new_request_hash: string;
-					target_invoice_id: string;
-					target_organization_id: string;
 				};
 				Returns: Json;
 			};
@@ -14985,7 +15678,7 @@ export type Database = {
 					expires_at: string;
 					failure_code: string | null;
 					failure_message: string | null;
-					html_content: string;
+					html_content: string | null;
 					id: string;
 					invoice_id: string | null;
 					logical_send_key: string;
@@ -14995,15 +15688,17 @@ export type Database = {
 					quote_id: string | null;
 					quote_recipient_id: string | null;
 					quote_version_id: string | null;
-					recipient_email: string;
+					recipient_email: string | null;
+					recipient_phone: string | null;
 					reply_alias_id: string | null;
 					resent_from_intent_id: string | null;
 					retry_class: string;
 					retry_window_ends_at: string | null;
 					send_kind: string;
 					sender_id: string | null;
+					sms_sender_identity_id: string | null;
 					status: string;
-					subject: string;
+					subject: string | null;
 					text_content: string;
 					updated_at: string;
 				};
