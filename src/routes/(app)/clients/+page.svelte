@@ -10,7 +10,9 @@
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import { page } from '$app/state';
 	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
+	import downloadIcon from '@tabler/icons/outline/download.svg?raw';
 	import DataTable, {
 		type DataTableColumn,
 		type DataTableSort
@@ -103,6 +105,31 @@
 	// filters, and New Client are meaningless to someone who cannot see the list.
 	const refused = $derived((clientsQuery.error as ClientReadError | null)?.status === 403);
 
+	// Exporting the whole client book is an owner/admin action (the API enforces it too); hide it from other
+	// roles rather than let them click into a 403.
+	const canExport = $derived(
+		page.data.organization?.role === 'owner' || page.data.organization?.role === 'admin'
+	);
+	const moreClientActions = $derived([
+		{
+			label: 'Import clients',
+			icon: uploadIcon,
+			onSelect: () => goto(resolve('/(app)/clients/import'))
+		},
+		...(canExport
+			? [
+					{
+						label: 'Export clients',
+						icon: downloadIcon,
+						// A GET that streams a zip as an attachment; the browser downloads it without leaving the page.
+						onSelect: () => {
+							window.location.href = '/api/exports/clients';
+						}
+					}
+				]
+			: [])
+	]);
+
 	let selectedIds = $state<Set<string>>(new Set());
 
 	function formatAddress(property: ClientListItem['primary_property']) {
@@ -144,16 +171,7 @@
 		{#snippet actions()}
 			{#if !refused}
 				<div class="clients-header-actions">
-					<DropdownMenu
-						triggerLabel="More client actions"
-						items={[
-							{
-								label: 'Import clients',
-								icon: uploadIcon,
-								onSelect: () => goto(resolve('/(app)/clients/import'))
-							}
-						]}
-					/>
+					<DropdownMenu triggerLabel="More client actions" items={moreClientActions} />
 					<Button variant="primary" href={resolve('/clients/new')}>New Client</Button>
 				</div>
 			{/if}
