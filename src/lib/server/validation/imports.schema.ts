@@ -1,0 +1,54 @@
+import { z } from 'zod';
+
+// The fields a CSV column may be mapped to on the "Map columns" step. Flat list, dot-notation for the
+// property sub-fields, so it lines up 1:1 with the resolved_payload contract the import worker writes
+// (see the column comment on import_rows.resolved_payload). Every entry is a real client field that already
+// exists in clientWriteSchema; "Don't import this column" is expressed by leaving the column out of the map.
+export const IMPORT_CLIENT_TARGETS = [
+	'first_name',
+	'last_name',
+	'company_name',
+	'email',
+	'phone',
+	'lead_source',
+	'initial_note',
+	'property.label',
+	'property.address_line1',
+	'property.address_line2',
+	'property.city',
+	'property.state_region',
+	'property.postal_code',
+	'property.country'
+] as const;
+
+const importClientTargetSchema = z.enum(IMPORT_CLIENT_TARGETS);
+
+// One mapped column: which of our fields it feeds, and (only meaningful when match_action is 'update')
+// whether to leave an already-filled value alone rather than overwrite it.
+const columnMappingEntrySchema = z.object({
+	field: importClientTargetSchema,
+	dont_overwrite: z.boolean().default(false)
+});
+
+export const importClientsMappingSchema = z.object({
+	// Skip = leave a matched client untouched; update = write the mapped fields onto it. A match is never
+	// imported as a second client either way -- that is enforced by our dedupe rules and the hard unique index.
+	match_action: z.enum(['skip', 'update']),
+	// file column header -> mapping entry. Columns the office chose not to import are simply absent.
+	column_mapping: z
+		.record(z.string().min(1), columnMappingEntrySchema)
+		.refine((mapping) => Object.keys(mapping).length > 0, {
+			message: 'Match at least one column to one of our fields.'
+		})
+		// Two columns feeding the same field would make the last one silently win, so we reject it and let the
+		// office fix the mapping instead of guessing which column they meant.
+		.refine(
+			(mapping) => {
+				const targets = Object.values(mapping).map((entry) => entry.field);
+				return new Set(targets).size === targets.length;
+			},
+			{ message: 'Two columns are mapped to the same field. Each field can only be used once.' }
+		)
+});
+
+export type ImportClientsMappingInput = z.infer<typeof importClientsMappingSchema>;

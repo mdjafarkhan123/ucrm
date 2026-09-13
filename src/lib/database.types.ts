@@ -3400,6 +3400,149 @@ export type Database = {
 					}
 				];
 			};
+			import_batches: {
+				Row: {
+					column_mapping: Json;
+					consent_affirmed_at: string | null;
+					created_at: string;
+					created_by: string | null;
+					created_count: number;
+					entity_type: string;
+					error_count: number;
+					error_file_object_key: string | null;
+					file_row_count: number | null;
+					held_count: number;
+					id: string;
+					match_action: string;
+					organization_id: string;
+					skipped_count: number;
+					source_filename: string;
+					status: string;
+					storage_object_key: string;
+					updated_at: string;
+					updated_count: number;
+				};
+				Insert: {
+					column_mapping?: Json;
+					consent_affirmed_at?: string | null;
+					created_at?: string;
+					created_by?: string | null;
+					created_count?: number;
+					entity_type?: string;
+					error_count?: number;
+					error_file_object_key?: string | null;
+					file_row_count?: number | null;
+					held_count?: number;
+					id?: string;
+					match_action?: string;
+					organization_id: string;
+					skipped_count?: number;
+					source_filename: string;
+					status?: string;
+					storage_object_key: string;
+					updated_at?: string;
+					updated_count?: number;
+				};
+				Update: {
+					column_mapping?: Json;
+					consent_affirmed_at?: string | null;
+					created_at?: string;
+					created_by?: string | null;
+					created_count?: number;
+					entity_type?: string;
+					error_count?: number;
+					error_file_object_key?: string | null;
+					file_row_count?: number | null;
+					held_count?: number;
+					id?: string;
+					match_action?: string;
+					organization_id?: string;
+					skipped_count?: number;
+					source_filename?: string;
+					status?: string;
+					storage_object_key?: string;
+					updated_at?: string;
+					updated_count?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'import_batches_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			import_rows: {
+				Row: {
+					batch_id: string;
+					created_at: string;
+					error_message: string | null;
+					flags: string[];
+					id: string;
+					match_client_id: string | null;
+					match_reason: string | null;
+					organization_id: string;
+					planned_action: string;
+					processed_at: string | null;
+					raw: Json;
+					resolved_payload: Json | null;
+					result_client_id: string | null;
+					source_row_number: number;
+					status: string;
+				};
+				Insert: {
+					batch_id: string;
+					created_at?: string;
+					error_message?: string | null;
+					flags?: string[];
+					id?: string;
+					match_client_id?: string | null;
+					match_reason?: string | null;
+					organization_id: string;
+					planned_action?: string;
+					processed_at?: string | null;
+					raw: Json;
+					resolved_payload?: Json | null;
+					result_client_id?: string | null;
+					source_row_number: number;
+					status?: string;
+				};
+				Update: {
+					batch_id?: string;
+					created_at?: string;
+					error_message?: string | null;
+					flags?: string[];
+					id?: string;
+					match_client_id?: string | null;
+					match_reason?: string | null;
+					organization_id?: string;
+					planned_action?: string;
+					processed_at?: string | null;
+					raw?: Json;
+					resolved_payload?: Json | null;
+					result_client_id?: string | null;
+					source_row_number?: number;
+					status?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'import_rows_batch_fk';
+						columns: ['organization_id', 'batch_id'];
+						isOneToOne: false;
+						referencedRelation: 'import_batches';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'import_rows_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			invoice_access_links: {
 				Row: {
 					expires_at: string | null;
@@ -11919,6 +12062,36 @@ export type Database = {
 				Args: { target_form_id: string; target_organization_id: string };
 				Returns: Json;
 			};
+			create_import_batch: {
+				Args: { payload: Json };
+				Returns: {
+					column_mapping: Json;
+					consent_affirmed_at: string | null;
+					created_at: string;
+					created_by: string | null;
+					created_count: number;
+					entity_type: string;
+					error_count: number;
+					error_file_object_key: string | null;
+					file_row_count: number | null;
+					held_count: number;
+					id: string;
+					match_action: string;
+					organization_id: string;
+					skipped_count: number;
+					source_filename: string;
+					status: string;
+					storage_object_key: string;
+					updated_at: string;
+					updated_count: number;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'import_batches';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			create_installment_invoice: {
 				Args: {
 					new_custom_due_date: string;
@@ -15296,6 +15469,36 @@ export type Database = {
 					target_organization_id: string;
 				};
 				Returns: Json;
+			};
+			set_import_batch_mapping: {
+				Args: { payload: Json };
+				Returns: {
+					column_mapping: Json;
+					consent_affirmed_at: string | null;
+					created_at: string;
+					created_by: string | null;
+					created_count: number;
+					entity_type: string;
+					error_count: number;
+					error_file_object_key: string | null;
+					file_row_count: number | null;
+					held_count: number;
+					id: string;
+					match_action: string;
+					organization_id: string;
+					skipped_count: number;
+					source_filename: string;
+					status: string;
+					storage_object_key: string;
+					updated_at: string;
+					updated_count: number;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'import_batches';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
 			};
 			set_invoice_discount: {
 				Args: {
