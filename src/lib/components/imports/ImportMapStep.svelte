@@ -1,14 +1,16 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import {
-		IMPORT_FIELD_OPTIONS,
-		type ColumnMapping,
-		type ImportFieldTarget
-	} from '$lib/imports/api';
+	import { IMPORT_FIELD_OPTIONS } from '$lib/imports/api';
+
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import arrowLeftIcon from '@tabler/icons/outline/arrow-left.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+
+	// Generic on purpose: this step is shared by every import wizard (clients, Price Book, ...), each with its
+	// own field enum. The mapping shape (which column feeds which of our fields, and whether to protect an
+	// existing value) is the same regardless of what the fields actually are.
+	type ColumnMapping = Record<string, { field: string; dont_overwrite: boolean }>;
 
 	let {
 		headers,
@@ -16,6 +18,7 @@
 		mapping = $bindable(),
 		errorMessage = '',
 		loading = false,
+		fieldOptions = IMPORT_FIELD_OPTIONS,
 		onBack,
 		onReview
 	}: {
@@ -24,6 +27,7 @@
 		mapping: ColumnMapping;
 		errorMessage?: string;
 		loading?: boolean;
+		fieldOptions?: { value: string; label: string }[];
 		onBack: () => void;
 		onReview: () => void;
 	} = $props();
@@ -47,7 +51,7 @@
 			mapping = { ...mapping };
 			return;
 		}
-		const field = value as ImportFieldTarget;
+		const field = value;
 		const next: ColumnMapping = {};
 		for (const [key, entry] of Object.entries(mapping)) {
 			if (key !== header && entry.field !== field) next[key] = entry;
@@ -115,7 +119,7 @@
 									onchange={(event) => setField(header, event.currentTarget.value)}
 								>
 									<option value="">Don't import this column</option>
-									{#each IMPORT_FIELD_OPTIONS as option (option.value)}
+									{#each fieldOptions as option (option.value)}
 										<option value={option.value}>{option.label}</option>
 									{/each}
 								</select>

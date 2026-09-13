@@ -11,6 +11,11 @@
 		rowCount,
 		errorMessage = '',
 		loading = false,
+		newLabel = 'New clients',
+		itemLabel = 'clients',
+		attentionNote = (n: number) =>
+			`${n} ${n === 1 ? 'row needs' : 'rows need'} a decision — a shared phone, or a contact that matches two different clients. ${n === 1 ? 'It' : 'They'} won't be imported, and you'll get a file listing ${n === 1 ? 'it' : 'them'} to fix once the import finishes.`,
+		safetyNote = 'Importing never emails or texts your clients, and never starts automations, welcome messages, or review requests.',
 		onBack,
 		onCommit
 	}: {
@@ -18,6 +23,10 @@
 		rowCount: number;
 		errorMessage?: string;
 		loading?: boolean;
+		newLabel?: string;
+		itemLabel?: string;
+		attentionNote?: (attentionCount: number) => string;
+		safetyNote?: string;
 		onBack: () => void;
 		onCommit: () => void;
 	} = $props();
@@ -41,7 +50,7 @@
 		<div class="tiles">
 			<div class="tile tile--create">
 				<div class="tile__n">{summary.create}</div>
-				<div class="tile__k">New clients</div>
+				<div class="tile__k">{newLabel}</div>
 			</div>
 			<div class="tile tile--update">
 				<div class="tile__n">{summary.update}</div>
@@ -60,21 +69,13 @@
 		{#if attention > 0}
 			<p class="note">
 				<span class="note__icon" aria-hidden="true">{@html alertIcon}</span>
-				<span>
-					{attention}
-					{attention === 1 ? 'row needs' : 'rows need'} a decision — a shared phone, or a contact that
-					matches two different clients. {attention === 1 ? 'It' : 'They'} won't be imported, and you'll
-					get a file listing {attention === 1 ? 'it' : 'them'} to fix once the import finishes.
-				</span>
+				<span>{attentionNote(attention)}</span>
 			</p>
 		{/if}
 
 		<div class="callout">
 			<span class="callout__icon" aria-hidden="true">{@html shieldIcon}</span>
-			<p>
-				<b>Nothing gets sent.</b> Importing never emails or texts your clients, and never starts automations,
-				welcome messages, or review requests.
-			</p>
+			<p><b>Nothing gets sent.</b> {safetyNote}</p>
 		</div>
 	</div>
 
@@ -83,7 +84,7 @@
 			<span class="btn-icon" aria-hidden="true">{@html arrowLeftIcon}</span> Back
 		</Button>
 		<Button variant="primary" {loading} disabled={willImport === 0} onclick={onCommit}>
-			{willImport === 0 ? 'Nothing to import' : `Import ${willImport} clients`}
+			{willImport === 0 ? 'Nothing to import' : `Import ${willImport} ${itemLabel}`}
 			<span class="btn-icon" aria-hidden="true">{@html arrowRightIcon}</span>
 		</Button>
 	</footer>

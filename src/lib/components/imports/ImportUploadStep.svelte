@@ -12,6 +12,16 @@
 		matchAction = $bindable(),
 		errorMessage = '',
 		loading = false,
+		title = 'Upload your client list',
+		subtitle = 'A spreadsheet saved as CSV, with one client per row.',
+		matchActionLabel = 'How should we handle clients you already have?',
+		matchHint = 'We recognise an existing client by a matching email or phone number.',
+		matchOptions = [
+			{ value: 'update', label: 'Add new clients and update the ones I already have' },
+			{ value: 'skip', label: 'Add new clients only — leave my existing ones untouched' }
+		],
+		sampleHref = '/samples/client-import-sample.csv',
+		rowCap = 5000,
 		onFile,
 		onContinue
 	}: {
@@ -19,17 +29,19 @@
 		matchAction: MatchAction;
 		errorMessage?: string;
 		loading?: boolean;
+		title?: string;
+		subtitle?: string;
+		matchActionLabel?: string;
+		matchHint?: string;
+		matchOptions?: { value: string; label: string }[];
+		sampleHref?: string;
+		rowCap?: number;
 		onFile: (file: File | null) => void;
 		onContinue: () => void;
 	} = $props();
 
 	let dragOver = $state(false);
 	let inputEl = $state<HTMLInputElement>();
-
-	const matchOptions = [
-		{ value: 'update', label: 'Add new clients and update the ones I already have' },
-		{ value: 'skip', label: 'Add new clients only — leave my existing ones untouched' }
-	];
 
 	function pick(files: FileList | null) {
 		onFile(files && files.length > 0 ? files[0] : null);
@@ -51,20 +63,20 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <section class="panel">
 	<header class="panel__head">
-		<h2>Upload your client list</h2>
-		<p>A spreadsheet saved as CSV, with one client per row.</p>
+		<h2>{title}</h2>
+		<p>{subtitle}</p>
 	</header>
 
 	<div class="panel__body">
 		<div class="field">
 			<Select
 				id="import-match-action"
-				label="How should we handle clients you already have?"
+				label={matchActionLabel}
 				value={matchAction}
 				options={matchOptions}
 				onchange={(value) => (matchAction = value as MatchAction)}
 			/>
-			<p class="hint">We recognise an existing client by a matching email or phone number.</p>
+			<p class="hint">{matchHint}</p>
 		</div>
 
 		<div class="field">
@@ -117,10 +129,8 @@
 			{/if}
 			<p class="hint">
 				Not sure about the format?
-				<a class="link" href="/samples/client-import-sample.csv" download
-					>Download our sample file</a
-				>
-				· Up to 5,000 rows per import.
+				<a class="link" href={sampleHref} download>Download our sample file</a>
+				· Up to {rowCap.toLocaleString()} rows per import.
 			</p>
 		</div>
 	</div>

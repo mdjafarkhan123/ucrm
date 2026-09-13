@@ -1,0 +1,5 @@
+Name,Type,Description,Unit label,Price,Cost,Taxable,Labor
+Lawn Mowing,Service,"Standard mow, edge, and blow for a residential yard",visit,45.00,12.00,Yes,Yes
+Mulch Installation,Product,"Triple-ground hardwood mulch, delivered and spread",cubic yard,85.00,52.00,Yes,No
+Sprinkler Head,Product,Standard pop-up spray head,each,8.50,3.75,Yes,No
+Irrigation Repair Visit,Service,Diagnose and repair one irrigation zone,visit,95.00,20.00,Yes,Yes

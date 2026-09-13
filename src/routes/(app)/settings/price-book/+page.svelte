@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createInfiniteQuery, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
+	import { goto } from '$app/navigation';
 	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
@@ -38,6 +39,8 @@
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
+	import downloadIcon from '@tabler/icons/outline/download.svg?raw';
 
 	// Settings → Price Book: the same `catalog_items` the Quote/Request picker already reads, managed here
 	// with sort, filters, and permanent delete. `can_manage` rides on the very list fetch this page needs
@@ -90,6 +93,27 @@
 	const canViewCost = $derived(itemsQuery.data?.pages[0]?.can_view_cost ?? false);
 	const canManage = $derived(itemsQuery.data?.pages[0]?.can_manage ?? false);
 	const hasFilters = $derived(Boolean(search.trim() || category || taxable));
+
+	// Import/export live in More Actions, the same spot the Clients list uses -- both require
+	// settings.price_book.manage, which `canManage` already reflects.
+	const moreActions = $derived(
+		canManage
+			? [
+					{
+						label: 'Import Price Book',
+						icon: uploadIcon,
+						onSelect: () => goto(resolve('/(app)/settings/price-book/import'))
+					},
+					{
+						label: 'Export Price Book',
+						icon: downloadIcon,
+						onSelect: () => {
+							window.location.href = '/api/exports/price-book';
+						}
+					}
+				]
+			: []
+	);
 
 	const moneyFormatter = $derived(
 		new Intl.NumberFormat(overviewQuery.data?.locale ?? 'en-US', {
@@ -185,6 +209,7 @@
 		>
 			{#snippet actions()}
 				{#if canManage}
+					<DropdownMenu triggerLabel="More Price Book actions" items={moreActions} />
 					<Button onclick={() => (dialogState = { mode: 'create' })}>Add item</Button>
 				{/if}
 			{/snippet}

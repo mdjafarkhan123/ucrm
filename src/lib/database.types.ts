@@ -11540,6 +11540,35 @@ export type Database = {
 				};
 			};
 			catalog_item_cost: { Args: { target_item_ids: string[] }; Returns: Json };
+			catalog_items_for_price_book_export: {
+				Args: { target_organization_id: string };
+				Returns: {
+					archived_at: string;
+					category: string;
+					description: string;
+					is_labor: boolean;
+					is_taxable: boolean;
+					name: string;
+					unit_cost_minor: number;
+					unit_label: string;
+					unit_price_minor: number;
+				}[];
+			};
+			catalog_items_for_price_book_import: {
+				Args: { target_organization_id: string };
+				Returns: {
+					category: string;
+					description: string;
+					id: string;
+					is_labor: boolean;
+					is_taxable: boolean;
+					name: string;
+					revision: number;
+					unit_cost_minor: number;
+					unit_label: string;
+					unit_price_minor: number;
+				}[];
+			};
 			change_team_member_role: {
 				Args: {
 					actor_user_id: string;
@@ -15550,7 +15579,7 @@ export type Database = {
 				Returns: Json;
 			};
 			set_import_batch_error_file: {
-				Args: { target_batch_id: string; object_key: string };
+				Args: { object_key: string; target_batch_id: string };
 				Returns: undefined;
 			};
 			set_import_batch_mapping: {
