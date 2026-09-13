@@ -11903,6 +11903,36 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			commit_import_batch: {
+				Args: { payload: Json };
+				Returns: {
+					column_mapping: Json;
+					consent_affirmed_at: string | null;
+					created_at: string;
+					created_by: string | null;
+					created_count: number;
+					entity_type: string;
+					error_count: number;
+					error_file_object_key: string | null;
+					file_row_count: number | null;
+					held_count: number;
+					id: string;
+					match_action: string;
+					organization_id: string;
+					skipped_count: number;
+					source_filename: string;
+					status: string;
+					storage_object_key: string;
+					updated_at: string;
+					updated_count: number;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'import_batches';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			communication_email_suppression_removal_request_json: {
 				Args: { p_request_id: string };
 				Returns: Json;
@@ -13695,6 +13725,22 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			match_import_clients: {
+				Args: { emails: string[]; phones: string[]; target_org: string };
+				Returns: {
+					client_id: string;
+					client_type: string;
+					company_name: string;
+					first_name: string;
+					has_email: boolean;
+					has_phone: boolean;
+					has_property: boolean;
+					last_name: string;
+					lead_source: string;
+					matched_kind: string;
+					matched_value: string;
+				}[];
+			};
 			mint_website_chat_realtime_grant: {
 				Args: {
 					proposed_topic: string;
@@ -15136,6 +15182,36 @@ export type Database = {
 					target_quote_id: string;
 				};
 				Returns: Json;
+			};
+			review_import_batch: {
+				Args: { payload: Json };
+				Returns: {
+					column_mapping: Json;
+					consent_affirmed_at: string | null;
+					created_at: string;
+					created_by: string | null;
+					created_count: number;
+					entity_type: string;
+					error_count: number;
+					error_file_object_key: string | null;
+					file_row_count: number | null;
+					held_count: number;
+					id: string;
+					match_action: string;
+					organization_id: string;
+					skipped_count: number;
+					source_filename: string;
+					status: string;
+					storage_object_key: string;
+					updated_at: string;
+					updated_count: number;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'import_batches';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
 			};
 			revise_quote: { Args: { target_quote_id: string }; Returns: Json };
 			revoke_job_report_access_link: {

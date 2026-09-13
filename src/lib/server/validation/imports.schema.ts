@@ -23,6 +23,8 @@ export const IMPORT_CLIENT_TARGETS = [
 
 const importClientTargetSchema = z.enum(IMPORT_CLIENT_TARGETS);
 
+export type ImportClientTarget = (typeof IMPORT_CLIENT_TARGETS)[number];
+
 // One mapped column: which of our fields it feeds, and (only meaningful when match_action is 'update')
 // whether to leave an already-filled value alone rather than overwrite it.
 const columnMappingEntrySchema = z.object({
@@ -52,3 +54,16 @@ export const importClientsMappingSchema = z.object({
 });
 
 export type ImportClientsMappingInput = z.infer<typeof importClientsMappingSchema>;
+
+// The Commit step's one input: the office must affirm consent (HubSpot's own gate) before any client is
+// written. Nothing else is sent -- the rows and their decisions already live on the batch from Review. A
+// missing or false flag fails here rather than reaching the RPC, so the office sees a clear field message.
+export const importClientsCommitSchema = z.object({
+	consent_affirmed: z.literal(true, {
+		errorMap: () => ({
+			message: 'Confirm these contacts agreed to hear from you before importing.'
+		})
+	})
+});
+
+export type ImportClientsCommitInput = z.infer<typeof importClientsCommitSchema>;
