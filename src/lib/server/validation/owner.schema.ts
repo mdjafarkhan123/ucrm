@@ -557,6 +557,100 @@ export const communicationSmsRefundSchema = z.object({
 	idempotency_key: smsMoneyIdempotencyKeySchema
 });
 
+// Stage 2C-5c: the owner's registration, mode and sender-capability layer for one organization's SMS
+// readiness. None of these are money actions or on the step-up list (docs/jafar-organization-management-
+// mission.md "High-impact action security"), so each carries only a reason/confirmation, not step-up --
+// "carrier submission or resubmission" is explicitly a routine action there. Platform-scoped actions (a
+// global retail rate, a platform-wide hold) are deferred: access_audit_events requires an organization_id,
+// so they need a platform-audit target decided first (see ROADMAP "2C-5c").
+const smsCountryCodeSchema = z
+	.string()
+	.trim()
+	.toUpperCase()
+	.regex(/^[A-Z]{2}$/, 'Enter a 2-letter country code.');
+
+const smsSenderTypeSchema = z.enum(['long_code', 'toll_free', 'short_code', 'alphanumeric'], {
+	error: 'Choose a sender type.'
+});
+
+const smsModeSchema = z.enum(['off', 'operational'], { error: 'Choose off or operational.' });
+
+export const communicationSmsRegistrationStartSchema = z.object({
+	country_code: smsCountryCodeSchema,
+	sender_type: smsSenderTypeSchema,
+	use_case: z
+		.string()
+		.trim()
+		.min(1, 'Enter the use case.')
+		.max(200, 'Keep the use case under 200 characters.')
+});
+
+// Mirrors the database command's own rule: an approved outcome always names the provider outcome, an
+// action_needed outcome always names the fixes required.
+export const communicationSmsRegistrationOutcomeSchema = z.discriminatedUnion('status', [
+	z.object({ status: z.literal('approved'), provider_outcome: smsControlReasonSchema }),
+	z.object({ status: z.literal('action_needed'), required_fixes: smsControlReasonSchema })
+]);
+
+export const communicationSmsRegistrationCheckSchema = z.object({
+	detail: z
+		.string()
+		.trim()
+		.max(2000, 'Keep the note under 2,000 characters.')
+		.optional()
+		.transform((value) => value || undefined)
+});
+
+export const communicationSmsSenderCapabilitiesSchema = z.object({
+	country_code: smsCountryCodeSchema,
+	sender_type: smsSenderTypeSchema,
+	capable_sms: z.boolean(),
+	capable_mms: z.boolean().default(false),
+	capable_voice: z.boolean().default(false),
+	registration_id: z.string().uuid().optional()
+});
+
+export const communicationSmsOrgModeSchema = z
+	.object({
+		package_max_mode: smsModeSchema.optional(),
+		chosen_mode: smsModeSchema.optional(),
+		override_mode: smsModeSchema.optional(),
+		override_reason: z
+			.string()
+			.trim()
+			.max(2000, 'Keep the reason under 2,000 characters.')
+			.optional(),
+		clear_override: z.boolean().default(false)
+	})
+	.superRefine((value, context) => {
+		if (value.clear_override && value.override_mode) {
+			context.addIssue({
+				code: 'custom',
+				message: 'Choose either setting an override or clearing it, not both.',
+				path: ['override_mode']
+			});
+		}
+		if (value.override_mode && !value.clear_override && (value.override_reason?.length ?? 0) < 3) {
+			context.addIssue({
+				code: 'custom',
+				message: 'Enter a reason of at least 3 characters.',
+				path: ['override_reason']
+			});
+		}
+		if (
+			value.package_max_mode === undefined &&
+			value.chosen_mode === undefined &&
+			value.override_mode === undefined &&
+			!value.clear_override
+		) {
+			context.addIssue({
+				code: 'custom',
+				message: 'Choose at least one change to make.',
+				path: ['form']
+			});
+		}
+	});
+
 export function zodOwnerFieldErrors(error: z.ZodError) {
 	return Object.fromEntries(
 		error.issues.map((issue) => [String(issue.path[0] ?? 'form'), issue.message] as const)
