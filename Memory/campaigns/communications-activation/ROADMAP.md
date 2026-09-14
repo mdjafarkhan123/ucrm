@@ -61,12 +61,15 @@ then owner API and Jafar UI come as their own later parts. No live SMS needed (A
     `PLATFORM_OWNER_ACTOR_ID` sentinel to the command + real email in `access_audit_events` via
     `recordOwnerAccessAudit`. 7 vitest green; svelte-check 0. Also regenerated database.types.ts
     (dev DB source of truth; carries the already-applied financial_invoice_sales_page type forward).
-  - **2C-5b Holds + promo + adjustments/refunds API** — org-scoped money/control endpoints (place/release
-    hold, grant/revoke promo, record adjustment/refund), each copying the 2C-5a template with step-up.
-  - **2C-5c Rates + readiness/registration/mode/capabilities API** — set retail rate + registration
-    start/submit/outcome/check + set org mode + set sender capabilities. NOTE: platform-scoped actions
-    (platform hold, global rates) have no organization_id, so `access_audit_events` (org_id NOT NULL) can't
-    hold them — decide a platform-audit target for those before building them.
+  - **2C-5b Holds + promo + adjustments/refunds API — DONE 2026-09-14** (commit 9480c81; 40/40 vitest).
+    Org-scoped money/control endpoints (place/release hold, grant/revoke promo, record adjustment/refund),
+    each copying the 2C-5a template with step-up.
+  - **2C-5c Rates + readiness/registration/mode/capabilities API — org-scoped part DONE 2026-09-14**
+    (commit 0ab257f; 25/25 vitest). Registration start/outcome/check + set org mode + set sender
+    capabilities, none on the step-up list. Two parts blocked on a Jafar decision (see NOW.md): (a)
+    registration *submission* — whose identity `attested_by` should record, Jafar's or the contractor's;
+    (b) platform-scoped rate/hold actions have no organization_id, so `access_audit_events` (org_id NOT
+    NULL) can't hold them — needs a platform-audit target decided first.
 - **2C-6 Jafar owner UI** — extend Integrations / Commercial access / History & recovery + Operations health;
   no new dashboard.
 

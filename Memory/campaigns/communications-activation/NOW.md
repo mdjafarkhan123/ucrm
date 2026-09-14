@@ -6,28 +6,34 @@ SMS Stages 1/2A/2B done and live-verified for one org. Stage 2C (money + control
 multi-session parts — see ROADMAP "Stage 2C parts". No live SMS is needed for 2C (the A2P wall below only
 blocks flipping texting on later).
 
-## Done (data layer + first owner API slice, all committed)
+## Done (all committed)
 - 2C-1 top-up (36ebdd0), 2C-2 rates (09e88eb), 2C-3 readiness/registration (7da6fe3),
   2C-4 holds+promo+adjustments/refunds (3be87cb, 60/60 pgTAP).
-- **2C-5a Credit top-up decision API (13788a0)** — owner confirm/reject route + 7 vitest green;
-  svelte-check 0 across repo. Established the reusable owner-endpoint template and regenerated
-  database.types.ts from the dev DB.
+- 2C-5a Credit top-up decision API (13788a0).
+- Retry-safety prerequisite for 2C-4's money commands (50e3435, 78/78 pgTAP).
+- 2C-5b Holds + promo + adjustments/refunds owner API (9480c81, 40/40 vitest).
+- **2C-5c (org-scoped part) — registration/mode/sender-capability owner API (0ab257f)**: start
+  registration, record carrier outcome, record readiness check, set org SMS mode, set sender
+  capabilities. 25/25 vitest; svelte-check 0/3349 files.
 
-## Active part: 2C-5b Holds + promo + adjustments/refunds owner API
-Copy the 2C-5a template for the remaining ORG-scoped money/control endpoints: place/release hold (org +
-provider scope for one org), grant/revoke promotional credit, record adjustment, record refund. Each: owner
-session + Zod (add schemas to owner.schema.ts) + step-up + org-scoped guard + P0001→409 + audit via
-`recordOwnerAccessAudit`, passing `PLATFORM_OWNER_ACTOR_ID` as the command actor.
+## Blocked on Jafar — two product/architecture decisions before 2C-5c can close
+1. **Who attests a registration submission?** `communication_sms_submit_registration`'s `attested_by`
+   is documented as "the contractor attests the submitted info is truthful," but the stage6 plan also
+   says "Jafar may... submit/resubmit registration." Building this against the Jafar-only owner API
+   would record Jafar's identity as the attester of the contractor's business truthfulness — a real
+   compliance-record question, not a guessable technical detail. Need: is registration submission a
+   contractor-facing action (its own future route, contractor session), or does Jafar's UI capture a
+   real contractor user id to pass through as the attester?
+2. **Platform-audit target for platform-scoped actions.** A platform-wide hold and the global retail
+   rate command have no `organization_id`, so `access_audit_events` (NOT NULL) can't record them.
+   Options to weigh: a nullable `organization_id` + check constraint, a separate platform-audit table,
+   or reusing the sentinel differently. Needed before building `communication_sms_place_hold` (scope
+   'platform') and `communication_sms_set_retail_rate`.
 
 ## Exact next action
-Build 2C-5b. Copy `src/routes/api/jafar/organizations/[organizationId]/communications/sms/credit-topups/[requestId]/+server.ts`
-+ its spec as the template. Command signatures already gathered — see the migrations; actor params are free
-uuids (no FK). Verify each route with a co-located vitest spec + svelte-check.
-
-## Deferred inside 2C-5c (do not lose)
-Platform-scoped actions (platform-wide hold, global retail rates) have NO organization_id, so
-`access_audit_events` (organization_id NOT NULL) can't record them. Decide a platform-audit target before
-building those. Org/provider holds and per-org promo/adjustments are fine with the org audit.
+Ask Jafar both questions above (see full framing in this file — do not re-decide, just ask). Once
+answered: build whichever of (registration submission route) / (platform hold + retail-rate routes)
+the answers unblock, closing out 2C-5c. Then 2C-6: Jafar owner UI for all of Stage 2C.
 
 ## Constraint (still current)
 A2P 10DLC (US "prove you're a real business" gate) can't be completed for Jafar's own test org — needs a real
@@ -36,7 +42,8 @@ step. Does not block any 2C data/owner work.
 
 ## Essential pointers
 - Money + owner-control truth (do not re-decide): `docs/research/communications-a2-stage6-settings-owner-controls-plan.md`
+- Step-up vs routine-action rule: `docs/jafar-organization-management-mission.md` "High-impact action security"
 - Full stage spec: `docs/communications-a2-implementation-plan.md` (Stage 2C build list)
-- Route + spec + actor-sentinel template: the 2C-5a files above; `$lib/server/communications/sms-owner.ts`.
+- Route + spec + actor-sentinel template: 2C-5a/5b/5c files; `$lib/server/communications/sms-owner.ts`.
 
 Resume: `read memory and continue — communications-activation`.
