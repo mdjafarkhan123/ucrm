@@ -496,6 +496,67 @@ export const communicationSmsCreditTopupDecisionSchema = z.discriminatedUnion('a
 	})
 ]);
 
+// Stage 2C-5b: the owner's money/control layer for one organization's SMS holds, promotional credit, and
+// standalone adjustments/refunds. Every reason mirrors the database command's own non-empty check, so a bad
+// request turns into a field error instead of a 409. Grant/adjustment/refund also carry the idempotency key
+// the retry-safe commands require (see 20260917130000); hold place/release need none -- they are naturally
+// idempotent (a duplicate active hold or a second release is refused by the command itself).
+const smsControlReasonSchema = z
+	.string()
+	.trim()
+	.min(3, 'Enter a reason of at least 3 characters.')
+	.max(2000, 'Keep the reason under 2,000 characters.');
+
+const smsMoneyIdempotencyKeySchema = z.string().uuid('Start a new action and try again.');
+
+const smsMoneyAmountSchema = z
+	.number()
+	.int('Enter a whole amount in minor units.')
+	.positive('Enter an amount greater than zero.')
+	.max(100_000_000, 'That amount is too large.');
+
+export const communicationSmsHoldPlacementSchema = z.object({
+	scope: z.enum(['organization', 'provider'], {
+		error: 'Choose the organization or provider hold scope.'
+	}),
+	reason: smsControlReasonSchema
+});
+
+export const communicationSmsHoldReleaseSchema = z.object({
+	release_reason: smsControlReasonSchema
+});
+
+export const communicationSmsPromotionalCreditGrantSchema = z.object({
+	amount_minor: smsMoneyAmountSchema,
+	expires_at: z
+		.string()
+		.refine((value) => !Number.isNaN(Date.parse(value)), 'Enter a valid expiry date and time.')
+		.refine((value) => Date.parse(value) > Date.now(), 'The expiry must be in the future.'),
+	reason: smsControlReasonSchema,
+	idempotency_key: smsMoneyIdempotencyKeySchema
+});
+
+export const communicationSmsPromotionalCreditRevokeSchema = z.object({
+	reason: smsControlReasonSchema
+});
+
+export const communicationSmsAdjustmentSchema = z.object({
+	amount_minor: z
+		.number()
+		.int('Enter a whole amount in minor units.')
+		.max(100_000_000, 'That amount is too large.')
+		.min(-100_000_000, 'That amount is too large.')
+		.refine((value) => value !== 0, 'An adjustment must move a non-zero amount.'),
+	reason: smsControlReasonSchema,
+	idempotency_key: smsMoneyIdempotencyKeySchema
+});
+
+export const communicationSmsRefundSchema = z.object({
+	amount_minor: smsMoneyAmountSchema,
+	reason: smsControlReasonSchema,
+	idempotency_key: smsMoneyIdempotencyKeySchema
+});
+
 export function zodOwnerFieldErrors(error: z.ZodError) {
 	return Object.fromEntries(
 		error.issues.map((issue) => [String(issue.path[0] ?? 'form'), issue.message] as const)
