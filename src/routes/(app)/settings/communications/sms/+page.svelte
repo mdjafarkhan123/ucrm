@@ -9,8 +9,11 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
+	import Toggle from '$lib/components/ui/Toggle.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
+	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
@@ -23,13 +26,44 @@
 		SmsRegistrationWriteError,
 		type SmsRegistrationAnswers
 	} from '$lib/communications/sms-registration';
+	import {
+		fetchSmsNumbers,
+		renameSmsNumber,
+		setDefaultSmsNumber,
+		fetchSmsCompliance,
+		saveSmsCompliance,
+		fetchSmsHolds,
+		smsNumbersKey,
+		smsComplianceKey,
+		smsHoldsKey,
+		SmsSettingsWriteError,
+		type SmsCompliance
+	} from '$lib/communications/sms-settings';
 	import deviceMobileMessageIcon from '@tabler/icons/outline/device-mobile-message.svg?raw';
+	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
+	import shieldCheckIcon from '@tabler/icons/outline/shield-check.svg?raw';
+	import banIcon from '@tabler/icons/outline/ban.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 	const homeQuery = createQuery(() => ({
 		queryKey: smsRegistrationKey,
 		queryFn: fetchSmsRegistration,
+		staleTime: 15_000
+	}));
+	const numbersQuery = createQuery(() => ({
+		queryKey: smsNumbersKey,
+		queryFn: fetchSmsNumbers,
+		staleTime: 15_000
+	}));
+	const complianceQuery = createQuery(() => ({
+		queryKey: smsComplianceKey,
+		queryFn: fetchSmsCompliance,
+		staleTime: 15_000
+	}));
+	const holdsQuery = createQuery(() => ({
+		queryKey: smsHoldsKey,
+		queryFn: fetchSmsHolds,
 		staleTime: 15_000
 	}));
 
@@ -99,6 +133,38 @@
 	let formError = $state('');
 	let fieldErrors = $state<Record<string, string>>({});
 	let confirmAuthorized = $state(false);
+
+	// Phone numbers: at most one number's name is being edited at a time.
+	let renamingId = $state<string | null>(null);
+	let renameDraft = $state('');
+	let renameSaving = $state(false);
+	let defaultSavingId = $state<string | null>(null);
+
+	// Compliance & sender info: the form hydrates from the loaded settings exactly once, so typing doesn't
+	// get clobbered by a background refetch but a save from another tab still shows up.
+	function emptyCompliance(): SmsCompliance {
+		return {
+			opt_out_enabled: true,
+			opt_out_text: null,
+			sender_info_enabled: true,
+			sender_info_text: null,
+			periodic_reinsert_days: 30,
+			updated_at: null,
+			is_default: true
+		};
+	}
+	let complianceDraft = $state<SmsCompliance>(emptyCompliance());
+	let complianceHydratedAt = $state<string | null | undefined>(undefined);
+	let complianceSaving = $state(false);
+	let complianceError = $state('');
+	let complianceFieldErrors = $state<Record<string, string>>({});
+
+	$effect(() => {
+		const compliance = complianceQuery.data?.compliance;
+		if (!compliance || complianceHydratedAt === compliance.updated_at) return;
+		complianceDraft = { ...compliance };
+		complianceHydratedAt = compliance.updated_at;
+	});
 
 	const registration = $derived(homeQuery.data?.registration ?? null);
 	const readiness = $derived(
@@ -281,6 +347,93 @@
 		if ((draft.messaging.sample_messages?.length ?? 0) <= 2) return;
 		draft.messaging.sample_messages = (draft.messaging.sample_messages ?? []).filter(
 			(_, i) => i !== index
+		);
+	}
+
+	function startRename(number: { id: string; display_name: string | null; phone_number: string }) {
+		renamingId = number.id;
+		renameDraft = number.display_name ?? '';
+	}
+	function cancelRename() {
+		renamingId = null;
+		renameDraft = '';
+	}
+	async function saveRename() {
+		if (!renamingId || renameSaving) return;
+		renameSaving = true;
+		try {
+			await renameSmsNumber(renamingId, renameDraft);
+			await queryClient.invalidateQueries({ queryKey: smsNumbersKey });
+			toast.success('Number name saved.');
+			renamingId = null;
+			renameDraft = '';
+		} catch (cause) {
+			toast.error(cause instanceof Error ? cause.message : 'The number could not be renamed.');
+		} finally {
+			renameSaving = false;
+		}
+	}
+	async function makeDefault(senderId: string) {
+		if (defaultSavingId) return;
+		defaultSavingId = senderId;
+		try {
+			await setDefaultSmsNumber(senderId);
+			await queryClient.invalidateQueries({ queryKey: smsNumbersKey });
+			toast.success('Default number updated.');
+		} catch (cause) {
+			toast.error(
+				cause instanceof Error ? cause.message : 'That number could not be made the default.'
+			);
+		} finally {
+			defaultSavingId = null;
+		}
+	}
+
+	async function saveCompliance() {
+		if (complianceSaving) return;
+		complianceSaving = true;
+		complianceError = '';
+		complianceFieldErrors = {};
+		try {
+			const { compliance } = await saveSmsCompliance({
+				opt_out_enabled: complianceDraft.opt_out_enabled,
+				opt_out_text: complianceDraft.opt_out_text,
+				sender_info_enabled: complianceDraft.sender_info_enabled,
+				sender_info_text: complianceDraft.sender_info_text,
+				periodic_reinsert_days: complianceDraft.periodic_reinsert_days
+			});
+			complianceDraft = { ...compliance };
+			complianceHydratedAt = compliance.updated_at;
+			await queryClient.invalidateQueries({ queryKey: smsComplianceKey });
+			toast.success('Compliance settings saved.');
+		} catch (cause) {
+			if (cause instanceof SmsSettingsWriteError) {
+				complianceError = cause.message;
+				complianceFieldErrors = cause.fieldErrors;
+			} else
+				complianceError =
+					cause instanceof Error ? cause.message : 'The compliance settings could not be saved.';
+		} finally {
+			complianceSaving = false;
+		}
+	}
+
+	function holdBadgeTone(status: string): 'success' | 'warning' | 'critical' | 'inactive' {
+		return status === 'active' ? 'critical' : 'inactive';
+	}
+	function holdSourceLabel(source: string) {
+		return source === 'platform' ? 'Platform-wide' : 'This organization';
+	}
+
+	function setOptOutText(event: Event) {
+		complianceDraft.opt_out_text = (event.currentTarget as HTMLTextAreaElement).value;
+	}
+	function setSenderInfoText(event: Event) {
+		complianceDraft.sender_info_text = (event.currentTarget as HTMLTextAreaElement).value;
+	}
+	function setReinsertDays(event: Event) {
+		complianceDraft.periodic_reinsert_days = Number(
+			(event.currentTarget as HTMLInputElement).value
 		);
 	}
 </script>
@@ -611,6 +764,234 @@
 					</form>
 				</SectionBlock>
 			{/if}
+
+			<SectionBlock title="Phone numbers" icon={phoneIcon} level={2}>
+				{#if numbersQuery.isPending}
+					<LoadingSkeleton variant="table" rows={2} />
+				{:else if numbersQuery.isError}
+					<ErrorState
+						description="The phone numbers could not be loaded."
+						retry={() => numbersQuery.refetch()}
+					/>
+				{:else if !numbersQuery.data?.numbers.length}
+					<EmptyState
+						title="No numbers yet"
+						description="A sending number is set up by Jafar once registration is approved. Contact Jafar to request one."
+					/>
+				{:else}
+					<ul class="sms-settings__numbers">
+						{#each numbersQuery.data.numbers as number (number.id)}
+							<li class="sms-settings__number-row">
+								<div class="sms-settings__number-main">
+									{#if renamingId === number.id}
+										<Input
+											id={`sms-number-name-${number.id}`}
+											label="Number name"
+											hideLabel
+											maxlength={60}
+											placeholder={number.phone_number}
+											bind:value={renameDraft}
+										/>
+									{:else}
+										<div class="sms-settings__number-identity">
+											<strong>{number.display_name || number.phone_number}</strong>
+											{#if number.display_name}<span>{number.phone_number}</span>{/if}
+										</div>
+									{/if}
+									<div class="sms-settings__number-badges">
+										{#if number.is_default_sender}
+											<Badge status="informative" dot={false}>Default</Badge>
+										{/if}
+										<StatusBadge
+											status={number.lifecycle_state === 'ready'
+												? 'success'
+												: number.lifecycle_state === 'pending_setup'
+													? 'warning'
+													: 'critical'}
+										>
+											{number.lifecycle_state === 'ready'
+												? 'Ready'
+												: number.lifecycle_state === 'pending_setup'
+													? 'Setting up'
+													: number.lifecycle_state === 'restricted'
+														? 'Restricted'
+														: 'Suspended'}
+										</StatusBadge>
+										{#if number.capabilities.sms}<Badge dot={false}>SMS</Badge>{/if}
+										{#if number.capabilities.mms}<Badge dot={false}>MMS</Badge>{/if}
+										{#if number.capabilities.voice}<Badge dot={false}>Voice</Badge>{/if}
+									</div>
+								</div>
+								<div class="sms-settings__number-actions">
+									{#if renamingId === number.id}
+										<Button type="button" size="small" loading={renameSaving} onclick={saveRename}
+											>Save name</Button
+										>
+										<Button
+											type="button"
+											size="small"
+											variant="secondary"
+											variation="subtle"
+											disabled={renameSaving}
+											onclick={cancelRename}>Cancel</Button
+										>
+									{:else}
+										<Button
+											type="button"
+											size="small"
+											variant="secondary"
+											variation="subtle"
+											onclick={() => startRename(number)}>Rename</Button
+										>
+										{#if !number.is_default_sender}
+											<Button
+												type="button"
+												size="small"
+												variant="secondary"
+												disabled={!number.can_be_default}
+												loading={defaultSavingId === number.id}
+												onclick={() => makeDefault(number.id)}>Make default</Button
+											>
+										{/if}
+									{/if}
+								</div>
+							</li>
+						{/each}
+					</ul>
+					<p class="sms-settings__notice" role="status">
+						To release or replace a number, contact Jafar — buying and releasing numbers stay a
+						provider-owned action.
+					</p>
+				{/if}
+			</SectionBlock>
+
+			<SectionBlock title="Compliance & sender info" icon={shieldCheckIcon} level={2}>
+				{#if complianceQuery.isPending}
+					<LoadingSkeleton variant="card" rows={2} />
+				{:else if complianceQuery.isError}
+					<ErrorState
+						description="The compliance settings could not be loaded."
+						retry={() => complianceQuery.refetch()}
+					/>
+				{:else}
+					{#if complianceError}<p class="sms-settings__error" role="alert">
+							{complianceError}
+						</p>{/if}
+					<div class="sms-settings__form">
+						<div class="sms-settings__group">
+							<Toggle
+								id="sms-compliance-opt-out"
+								label="Add opt-out instructions to outbound texts"
+								description="Appends wording like “Reply STOP to unsubscribe” so customers can opt out."
+								labelSide="start"
+								bind:checked={complianceDraft.opt_out_enabled}
+							/>
+							<Textarea
+								id="sms-compliance-opt-out-text"
+								label="Custom opt-out wording (optional)"
+								rows={2}
+								maxlength={320}
+								disabled={!complianceDraft.opt_out_enabled}
+								value={complianceDraft.opt_out_text ?? ''}
+								oninput={setOptOutText}
+								invalid={Boolean(complianceFieldErrors.opt_out_text)}
+								errorMessage={complianceFieldErrors.opt_out_text}
+							/>
+						</div>
+						<div class="sms-settings__group">
+							<Toggle
+								id="sms-compliance-sender-info"
+								label="Identify the business in outbound texts"
+								description="Appends your business name so customers know who is texting them."
+								labelSide="start"
+								bind:checked={complianceDraft.sender_info_enabled}
+							/>
+							<Textarea
+								id="sms-compliance-sender-info-text"
+								label="Custom sender wording (optional)"
+								rows={2}
+								maxlength={320}
+								disabled={!complianceDraft.sender_info_enabled}
+								value={complianceDraft.sender_info_text ?? ''}
+								oninput={setSenderInfoText}
+								invalid={Boolean(complianceFieldErrors.sender_info_text)}
+								errorMessage={complianceFieldErrors.sender_info_text}
+							/>
+						</div>
+						<div class="sms-settings__group">
+							<Input
+								id="sms-compliance-reinsert-days"
+								label="Re-add opt-out/sender wording every (days)"
+								type="number"
+								min={1}
+								max={60}
+								value={complianceDraft.periodic_reinsert_days}
+								oninput={setReinsertDays}
+								invalid={Boolean(complianceFieldErrors.periodic_reinsert_days)}
+								errorMessage={complianceFieldErrors.periodic_reinsert_days}
+							/>
+						</div>
+						<div class="sms-settings__actions">
+							<Button type="button" loading={complianceSaving} onclick={saveCompliance}
+								>Save compliance settings</Button
+							>
+						</div>
+					</div>
+				{/if}
+			</SectionBlock>
+
+			<SectionBlock title="Holds & opt-outs" icon={banIcon} level={2}>
+				{#if holdsQuery.isPending}
+					<LoadingSkeleton variant="card" rows={2} />
+				{:else if holdsQuery.isError}
+					<ErrorState
+						description="Holds and opt-outs could not be loaded."
+						retry={() => holdsQuery.refetch()}
+					/>
+				{:else}
+					<div class="sms-settings__facts">
+						<div class="sms-settings__fact">
+							<span>Customers opted out</span>
+							<strong>{holdsQuery.data.opt_outs.total}</strong>
+						</div>
+						<div class="sms-settings__fact">
+							<span>Active holds</span>
+							<strong>{holdsQuery.data.holds.length}</strong>
+						</div>
+					</div>
+					{#if !holdsQuery.data.holds.length}
+						<p class="sms-settings__notice" role="status">
+							No active holds. Sending is not paused for any reason right now.
+						</p>
+					{:else}
+						<ul class="sms-settings__numbers">
+							{#each holdsQuery.data.holds as hold (hold.id)}
+								<li class="sms-settings__number-row">
+									<div class="sms-settings__number-main">
+										<div class="sms-settings__number-identity">
+											<strong>{hold.reason}</strong>
+											<span
+												>{holdSourceLabel(hold.source)} · placed {new Date(
+													hold.placed_at
+												).toLocaleDateString()}</span
+											>
+										</div>
+										<div class="sms-settings__number-badges">
+											<StatusBadge status={holdBadgeTone(hold.status)}
+												>{hold.status === 'active' ? 'Active' : hold.status}</StatusBadge
+											>
+										</div>
+									</div>
+								</li>
+							{/each}
+						</ul>
+						<p class="sms-settings__notice" role="status">
+							Holds are released by Jafar or the provider, never directly by a contractor. Contact
+							Jafar if a hold needs review.
+						</p>
+					{/if}
+				{/if}
+			</SectionBlock>
 		{/if}
 	</div>
 </PageContainer>
@@ -704,6 +1085,54 @@
 		justify-content: flex-end;
 		gap: var(--space-small);
 	}
+	.sms-settings__numbers {
+		display: grid;
+		gap: var(--space-small);
+		margin: 0 0 var(--space-base);
+		padding: 0;
+		list-style: none;
+	}
+	.sms-settings__number-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-base);
+		padding: var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+	}
+	.sms-settings__number-main {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-base);
+		min-width: 0;
+	}
+	.sms-settings__number-identity {
+		display: grid;
+		gap: 2px;
+		min-width: 0;
+
+		strong {
+			color: var(--color-heading);
+		}
+		span {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+	}
+	.sms-settings__number-badges {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-small);
+	}
+	.sms-settings__number-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-small);
+	}
 	@media (max-width: 900px) {
 		.sms-settings__facts {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -717,6 +1146,13 @@
 			grid-template-columns: minmax(0, 1fr);
 		}
 		.sms-settings__actions {
+			justify-content: flex-start;
+		}
+		.sms-settings__number-row {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.sms-settings__number-actions {
 			justify-content: flex-start;
 		}
 	}
