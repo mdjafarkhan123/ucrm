@@ -10,6 +10,42 @@ import {
 } from '$lib/server/validation/owner.schema';
 import { PLATFORM_OWNER_ACTOR_ID } from '$lib/server/communications/sms-owner';
 
+// Stage 2C-6: read one organization's SMS mode inputs and the mode actually in effect, for the Jafar
+// Integrations tab. Read-only; the mode itself is changed by POST below.
+export const GET: RequestHandler = async (event) => {
+	const session = await getOwnerSession(event);
+	if (!session) return ownerUnauthorized();
+
+	const parsedOrganizationId = organizationIdSchema.safeParse(event.params.organizationId);
+	if (!parsedOrganizationId.success) {
+		return json({ error: 'The organization identifier is invalid.' }, { status: 422 });
+	}
+
+	try {
+		const client = getOwnerSupabaseClient();
+		const [modeResult, effectiveModeResult] = await Promise.all([
+			client
+				.from('communication_sms_org_modes')
+				.select('package_max_mode, chosen_mode, override_mode, override_reason, updated_at')
+				.eq('organization_id', parsedOrganizationId.data)
+				.maybeSingle(),
+			client.rpc('communication_sms_effective_mode', {
+				p_organization_id: parsedOrganizationId.data
+			})
+		]);
+		if (modeResult.error) throw modeResult.error;
+		if (effectiveModeResult.error) throw effectiveModeResult.error;
+
+		return json(
+			{ mode: modeResult.data ?? null, effective_mode: effectiveModeResult.data as string },
+			{ headers: { 'cache-control': 'no-store' } }
+		);
+	} catch (error) {
+		console.error('Could not load the SMS mode.', error);
+		return json({ error: 'The SMS mode could not be loaded.' }, { status: 500 });
+	}
+};
+
 // Stage 2C-5c: the platform owner sets one organization's SMS mode inputs -- the package ceiling, the
 // contractor's chosen mode, or a reasoned override that takes precedence over both. A time-bound capability/
 // limit exception is explicitly a routine action (docs/jafar-organization-management-mission.md "High-impact

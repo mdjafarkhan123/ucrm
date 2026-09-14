@@ -12,6 +12,9 @@
 	import WebsiteChatAllowanceActions from '$lib/components/jafar/WebsiteChatAllowanceActions.svelte';
 	import WebsiteChatAuthorityActions from '$lib/components/jafar/WebsiteChatAuthorityActions.svelte';
 	import AutomationAuthorityActions from '$lib/components/jafar/AutomationAuthorityActions.svelte';
+	import SmsModeActions from '$lib/components/jafar/SmsModeActions.svelte';
+	import SmsRegistrationActions from '$lib/components/jafar/SmsRegistrationActions.svelte';
+	import SmsSenderCapabilitiesActions from '$lib/components/jafar/SmsSenderCapabilitiesActions.svelte';
 
 	let {
 		access,
@@ -82,6 +85,26 @@
 				</Card>
 				<Card class="organization-detail__commercial-explainer">
 					<AutomationAuthorityActions organizationId={access.organization.id} />
+				</Card>
+			</section>
+
+			<section class="organization-detail__section" aria-labelledby="sms-title">
+				<div class="organization-detail__section-heading">
+					<p class="organization-detail__eyebrow">SMS</p>
+					<h2 id="sms-title">Texting setup</h2>
+					<p>
+						The mode, carrier registration and business number capabilities behind this
+						organization's texting. No live SMS sending depends on this yet.
+					</p>
+				</div>
+				<Card class="organization-detail__commercial-explainer">
+					<SmsModeActions organizationId={access.organization.id} />
+				</Card>
+				<Card class="organization-detail__commercial-explainer">
+					<SmsRegistrationActions organizationId={access.organization.id} />
+				</Card>
+				<Card class="organization-detail__commercial-explainer">
+					<SmsSenderCapabilitiesActions organizationId={access.organization.id} />
 				</Card>
 			</section>
 		{/if}

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { POST } from './+server';
+import { GET, POST } from './+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { PLATFORM_OWNER_ACTOR_ID } from '$lib/server/communications/sms-owner';
@@ -45,6 +45,72 @@ function registrationClient(rpcResult: {
 		auditInsert
 	};
 }
+
+function getEvent(org = organizationId) {
+	return { params: { organizationId: org }, cookies: {} } as Parameters<typeof GET>[0];
+}
+
+function listClient(
+	registrations: Record<string, unknown>[],
+	readinessRow: Record<string, unknown> = { readiness_state: 'ready', live_sender_count: 1 }
+) {
+	const builder = {
+		select: () => builder,
+		eq: () => builder,
+		order: () => Promise.resolve({ data: registrations, error: null })
+	};
+	return {
+		from: (table: string) => {
+			if (table === 'communication_sms_registrations') return builder;
+			throw new Error(`Unexpected table: ${table}`);
+		},
+		rpc: vi.fn().mockResolvedValue({ data: [readinessRow], error: null })
+	};
+}
+
+describe('platform owner SMS registration list', () => {
+	beforeEach(() => vi.clearAllMocks());
+
+	it('rejects callers without the separate owner session', async () => {
+		mockedOwnerSession.mockResolvedValue(null);
+
+		const response = await GET(getEvent());
+
+		expect(response.status).toBe(401);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it('lists registrations with their computed readiness state', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		const client = listClient([
+			{
+				id: 'reg-1',
+				country_code: 'US',
+				sender_type: 'long_code',
+				use_case: 'appointment reminders',
+				status: 'approved'
+			}
+		]);
+		mockedClient.mockReturnValue(client as never);
+
+		const response = await GET(getEvent());
+		const body = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(body.registrations).toEqual([
+			expect.objectContaining({ id: 'reg-1', readiness_state: 'ready', live_sender_count: 1 })
+		]);
+		expect(client.rpc).toHaveBeenCalledWith(
+			'communication_sms_readiness',
+			expect.objectContaining({
+				p_organization_id: organizationId,
+				p_country_code: 'US',
+				p_sender_type: 'long_code',
+				p_use_case: 'appointment reminders'
+			})
+		);
+	});
+});
 
 describe('platform owner SMS registration start boundary', () => {
 	beforeEach(() => vi.clearAllMocks());

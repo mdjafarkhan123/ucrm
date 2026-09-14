@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { POST } from './+server';
+import { GET, POST } from './+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { PLATFORM_OWNER_ACTOR_ID } from '$lib/server/communications/sms-owner';
@@ -29,6 +29,10 @@ function postEvent(body: unknown, org = organizationId) {
 		),
 		cookies: {}
 	} as Parameters<typeof POST>[0];
+}
+
+function getEvent(org = organizationId) {
+	return { params: { organizationId: org }, cookies: {} } as Parameters<typeof GET>[0];
 }
 
 function modeClient(
@@ -61,6 +65,51 @@ function modeClient(
 		auditInsert
 	};
 }
+
+describe('platform owner SMS mode read', () => {
+	beforeEach(() => vi.clearAllMocks());
+
+	it('rejects callers without the separate owner session', async () => {
+		mockedOwnerSession.mockResolvedValue(null);
+
+		const response = await GET(getEvent());
+
+		expect(response.status).toBe(401);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it('returns the stored mode and the mode actually in effect', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		const client = modeClient(
+			{ package_max_mode: 'operational', chosen_mode: 'off', override_mode: null },
+			{ data: 'off', error: null }
+		);
+		mockedClient.mockReturnValue(client as never);
+
+		const response = await GET(getEvent());
+		const body = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(body.mode).toMatchObject({ chosen_mode: 'off' });
+		expect(body.effective_mode).toBe('off');
+		expect(client.rpc).toHaveBeenCalledWith('communication_sms_effective_mode', {
+			p_organization_id: organizationId
+		});
+	});
+
+	it('reports SMS as off with no stored row', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		const client = modeClient(null, { data: 'off', error: null });
+		mockedClient.mockReturnValue(client as never);
+
+		const response = await GET(getEvent());
+		const body = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(body.mode).toBeNull();
+		expect(body.effective_mode).toBe('off');
+	});
+});
 
 describe('platform owner SMS mode boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
