@@ -51,6 +51,26 @@ export type ProvisionInput = {
 	statusCallback: string;
 };
 
+export type AdoptSubaccountInput = {
+	organizationId: string;
+	subaccountSid: string;
+	inboundRequestUrl: string;
+	statusCallback: string;
+};
+
+export type AdoptPhoneNumberInput = {
+	organizationId: string;
+	phoneNumberSid: string;
+	phoneNumber: string;
+	displayName: string | null;
+};
+
+export type AdoptPhoneNumberSummary = {
+	senderIdentityId: string;
+	phoneNumber: string;
+	messagingServiceSid: string;
+};
+
 export type RotateAuthTokenInput = {
 	organizationId: string;
 	// The local grace window during which a just-retired Auth Token is still accepted for late webhook
@@ -126,9 +146,12 @@ export async function provisionTwilioForOrganization(
 	if (!account) {
 		const existing = await twilio.findSubaccount(names.subaccount);
 		if (existing) {
-			// A subaccount with our deterministic name exists but we hold no record of it: its Auth Token was
-			// returned once at creation and is unrecoverable. We refuse to guess a recovery and stop for review
-			// rather than risk creating a duplicate or stranding an inaccessible account.
+			// A subaccount with our deterministic name exists but we hold no record of it. Its Auth Token is not
+			// lost -- the parent account's own Account SID + Auth Token can still read it back from Twilio (an
+			// API key cannot; Twilio returns an empty auth_token field for that credential type) -- but that
+			// recovery is the deliberate, audited adoptTwilioSubaccount operator flow, not something this
+			// automatic path should attempt silently. Stop for review rather than risk creating a duplicate or
+			// stranding an inaccessible account.
 			await store.recordEvent({
 				organizationId,
 				operation: 'provision',
@@ -201,6 +224,26 @@ export async function provisionTwilioForOrganization(
 			result: 'skipped'
 		});
 	}
+
+	return continueProvisioning(deps, account, authToken, { inboundRequestUrl, statusCallback });
+}
+
+/**
+ * Steps 2-4 of the saga: least-privilege Restricted API key, Messaging Service, mark ready. Shared by a fresh
+ * provision (step 1 above creates the subaccount) and an adoption (step 1 equivalent below fetches an existing
+ * one) -- from here on there is no difference between the two.
+ */
+async function continueProvisioning(
+	deps: TwilioProvisioningDeps,
+	initialAccount: StoredTwilioAccount,
+	authToken: string,
+	input: { inboundRequestUrl: string; statusCallback: string }
+): Promise<TwilioProvisioningSummary> {
+	const { store, twilio, keyring } = deps;
+	const { inboundRequestUrl, statusCallback } = input;
+	const organizationId = initialAccount.organizationId;
+	const names = friendlyNames(organizationId);
+	let account = initialAccount;
 
 	// --- Step 2: least-privilege Restricted API key ---
 	let restrictedKey = await store.getCredential({
@@ -333,6 +376,148 @@ export async function provisionTwilioForOrganization(
 	return summarize(account, restrictedKey?.credentialSid ?? null);
 }
 
+/**
+ * Bring an out-of-band Twilio subaccount -- one created directly in the Twilio console, not by this saga --
+ * under UCRM's management: fetch its current Auth Token, store it, then run the same least-privilege key and
+ * Messaging Service steps a fresh provision would. Refuses if the organization already has a Twilio account
+ * on record -- adoption is only for a first-time link, never a way to reassign one.
+ *
+ * `deps.twilio.fetchSubaccountBySid` must be authenticated with the PARENT account's actual Account SID +
+ * Auth Token, not the platform API key: Twilio returns an empty auth_token field for a subaccount read made
+ * with any API key (including a Main-type key), and only accepts the literal Account SID/Auth Token pair for
+ * this one read. The normal `createTwilioProvisioningDeps()` client cannot do this; call sites must supply a
+ * `twilio` adapter with that override for this one call, used once per adoption, then discarded -- never
+ * stored as the ongoing platform credential.
+ */
+export async function adoptTwilioSubaccount(
+	deps: TwilioProvisioningDeps,
+	input: AdoptSubaccountInput
+): Promise<TwilioProvisioningSummary> {
+	const { store, twilio, keyring } = deps;
+	const { organizationId, subaccountSid, inboundRequestUrl, statusCallback } = input;
+
+	const existing = await store.getAccount(organizationId);
+	if (existing) {
+		throw new TwilioProvisioningError(
+			'This organization already has a Twilio account on record.',
+			null,
+			'twilio_already_provisioned',
+			false
+		);
+	}
+
+	const fetched = await twilio.fetchSubaccountBySid(subaccountSid);
+	if (fetched.status !== 'active') {
+		await store.recordEvent({
+			organizationId,
+			operation: 'provision',
+			step: 'subaccount_adopted',
+			result: 'needs_review',
+			detail: { reason: 'subaccount_not_active', status: fetched.status }
+		});
+		throw new TwilioProvisioningError(
+			'The Twilio subaccount is not active and cannot be adopted.',
+			null,
+			'twilio_subaccount_not_active',
+			false
+		);
+	}
+
+	const credentialId = randomUUID();
+	const encrypted = encryptTwilioCredential(
+		fetched.authToken,
+		credentialContext(
+			{ organizationId, subaccountSid } as StoredTwilioAccount,
+			credentialId,
+			'auth_token'
+		),
+		keyring
+	);
+	const account = await store.storeProvisionedSubaccount({
+		organizationId,
+		subaccountSid,
+		authTokenCredentialId: credentialId,
+		encrypted
+	});
+	await store.recordEvent({
+		organizationId,
+		accountId: account.id,
+		operation: 'provision',
+		step: 'subaccount_adopted',
+		result: 'succeeded',
+		detail: { subaccount_sid: subaccountSid }
+	});
+
+	return continueProvisioning(deps, account, fetched.authToken, {
+		inboundRequestUrl,
+		statusCallback
+	});
+}
+
+/**
+ * Attach a phone number the subaccount already owns to the organization's Messaging Service sender pool and
+ * record it as a sender identity. The organization must already have a ready Messaging Service (run
+ * provisionTwilioForOrganization or adoptTwilioSubaccount first). The sender identity starts `pending_setup`
+ * with sending disallowed -- Stage 2C readiness checks (A2P registration among them) are what later allow it.
+ */
+export async function adoptPhoneNumber(
+	deps: TwilioProvisioningDeps,
+	input: AdoptPhoneNumberInput
+): Promise<AdoptPhoneNumberSummary> {
+	const { store, twilio, keyring } = deps;
+	const { organizationId, phoneNumberSid, phoneNumber, displayName } = input;
+	const account = await requireAccount(store, organizationId);
+	if (!account.messagingServiceSid) {
+		throw new TwilioProvisioningError(
+			'The organization has no Messaging Service yet; provision or adopt the subaccount first.',
+			null,
+			'twilio_missing_messaging_service',
+			false
+		);
+	}
+
+	const authTokenCredential = await store.getCredential({
+		accountId: account.id,
+		purpose: 'auth_token',
+		lifecycleState: 'current'
+	});
+	if (!authTokenCredential) {
+		throw new TwilioProvisioningError(
+			'No Auth Token available to attach the phone number.',
+			null,
+			'twilio_missing_auth_token',
+			false
+		);
+	}
+	const authToken = decryptCredential(keyring, account, authTokenCredential);
+
+	await twilio.addPhoneNumberToMessagingService({
+		subaccountSid: account.subaccountSid,
+		subaccountAuthToken: authToken,
+		messagingServiceSid: account.messagingServiceSid,
+		phoneNumberSid
+	});
+	await store.recordEvent({
+		organizationId,
+		accountId: account.id,
+		operation: 'provision',
+		step: 'phone_number_attached',
+		result: 'succeeded',
+		detail: { phone_number_sid: phoneNumberSid, messaging_service_sid: account.messagingServiceSid }
+	});
+
+	const senderIdentity = await store.insertSenderIdentity({
+		organizationId,
+		phoneNumber,
+		displayName
+	});
+	return {
+		senderIdentityId: senderIdentity.id,
+		phoneNumber,
+		messagingServiceSid: account.messagingServiceSid
+	};
+}
+
 async function requireAccount(
 	store: TwilioProvisioningStore,
 	organizationId: string
@@ -387,7 +572,9 @@ export async function rotateAuthToken(
 	});
 	if (staged) {
 		const stagedToken = decryptCredential(keyring, account, staged);
-		if (await twilio.verifyAuthToken({ subaccountSid: account.subaccountSid, authToken: stagedToken })) {
+		if (
+			await twilio.verifyAuthToken({ subaccountSid: account.subaccountSid, authToken: stagedToken })
+		) {
 			const currentStillLive = await twilio.verifyAuthToken({
 				subaccountSid: account.subaccountSid,
 				authToken: currentToken

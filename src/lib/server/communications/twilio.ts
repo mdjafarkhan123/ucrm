@@ -12,11 +12,21 @@ import { z } from 'zod';
 //   - Auth Token lifecycle:   https://accounts.twilio.com/v1/AuthTokens/Secondary and .../Promote
 //
 // Least-privilege credential split (docs/research/communications-stage2-security.md):
-//   - the PLATFORM key (deployment secret) creates and lists subaccounts;
+//   - the platform MAIN API KEY (deployment secret) lists subaccounts and performs subaccount-scoped reads that
+//     do not return a subaccount's own Auth Token;
+//   - the platform MASTER Account SID + AUTH TOKEN (deployment secret) is used ONLY for the two operations that
+//     must read back a fresh subaccount's plaintext Auth Token -- creating a subaccount and fetching one by SID.
+//     Verified live (2026-09-14) and confirmed against Twilio docs: Twilio returns a subaccount's `auth_token`
+//     only to a request authenticated with the parent's real Account SID + Auth Token, never to any API key.
+//     This is the standard Twilio ISV pattern for a Standard-edition account; the API-key-only alternative
+//     (Public Key Client Validation) is restricted to Enterprise/Security editions and is out of scope for launch.
 //   - each subaccount's AUTH TOKEN performs privileged one-time setup (mint the first Restricted key, create the
 //     Messaging Service) and token lifecycle -- this is the only credential that can bootstrap a fresh
 //     subaccount, since a subaccount has no API key until we create one;
 //   - the subaccount RESTRICTED KEY is reserved for the ordinary runtime send path (Stage 4), never for setup.
+//
+// The master Auth Token is the most sensitive secret in the system. It lives only in deployment secrets, never
+// in Postgres, a Docker image, a log, an error, or any browser payload, and never leaves this module.
 //
 // Twilio returns each secret (subaccount Auth Token, API-key secret) exactly once, at creation. The saga
 // encrypts and stores it immediately; this adapter returns it to the saga and never logs it.
@@ -24,6 +34,7 @@ import { z } from 'zod';
 const SUBACCOUNT_SID = /^AC[0-9A-Fa-f]{32}$/;
 const API_KEY_SID = /^SK[0-9A-Fa-f]{32}$/;
 const MESSAGING_SERVICE_SID = /^MG[0-9A-Fa-f]{32}$/;
+const PHONE_NUMBER_SID = /^PN[0-9A-Fa-f]{32}$/;
 
 const TWILIO_API_BASE = 'https://api.twilio.com';
 const TWILIO_IAM_BASE = 'https://iam.twilio.com';
@@ -56,6 +67,11 @@ export type CreatedRestrictedApiKey = { keySid: string; secret: string };
 export type FoundApiKey = { keySid: string; friendlyName: string | null };
 export type CreatedMessagingService = { messagingServiceSid: string };
 
+export type AddPhoneNumberToMessagingServiceInput = SubaccountAuthInput & {
+	messagingServiceSid: string;
+	phoneNumberSid: string;
+};
+
 export type CreateRestrictedApiKeyInput = {
 	subaccountSid: string;
 	subaccountAuthToken: string;
@@ -78,6 +94,9 @@ export type CreateMessagingServiceInput = SubaccountAuthInput & {
 export type TwilioProvisioningClient = {
 	createSubaccount(friendlyName: string): Promise<CreatedSubaccount>;
 	findSubaccount(friendlyName: string): Promise<FoundSubaccount | null>;
+	/** Fetch a subaccount's current Auth Token with the platform credential, regardless of who created it. Used
+	 *  to adopt a subaccount that was set up outside the saga (e.g. directly in the Twilio console). */
+	fetchSubaccountBySid(subaccountSid: string): Promise<CreatedSubaccount>;
 	createRestrictedApiKey(input: CreateRestrictedApiKeyInput): Promise<CreatedRestrictedApiKey>;
 	listApiKeys(input: SubaccountAuthInput): Promise<FoundApiKey[]>;
 	deleteApiKey(input: SubaccountAuthInput & { keySid: string }): Promise<void>;
@@ -85,11 +104,19 @@ export type TwilioProvisioningClient = {
 	findMessagingService(
 		input: SubaccountAuthInput & { friendlyName: string }
 	): Promise<CreatedMessagingService | null>;
+	/** Add a phone number already owned by the subaccount to a Messaging Service's sender pool. Idempotent:
+	 *  Twilio's "already in this Service" rejection (error 21710) is treated as success. */
+	addPhoneNumberToMessagingService(
+		input: AddPhoneNumberToMessagingServiceInput
+	): Promise<{ phoneNumberSid: string }>;
 	createSecondaryAuthToken(input: {
 		subaccountSid: string;
 		currentAuthToken: string;
 	}): Promise<{ secondaryAuthToken: string }>;
-	deleteSecondaryAuthToken(input: { subaccountSid: string; currentAuthToken: string }): Promise<void>;
+	deleteSecondaryAuthToken(input: {
+		subaccountSid: string;
+		currentAuthToken: string;
+	}): Promise<void>;
 	promoteAuthToken(input: { subaccountSid: string; secondaryAuthToken: string }): Promise<void>;
 	verifyAuthToken(input: { subaccountSid: string; authToken: string }): Promise<boolean>;
 	verifyRestrictedApiKey(input: {
@@ -100,26 +127,29 @@ export type TwilioProvisioningClient = {
 };
 
 // The Restricted API key our runtime send path (Stage 4) authenticates with. We grant only the Messaging
-// capabilities UCRM actually calls. Twilio expresses Restricted-key permissions as "allow assertions"; the
-// exact assertion identifiers are published only in Twilio's downloadable Messaging permissions PDF and must
-// be confirmed there and proven with a live restricted-key test in staging before real provisioning (Stage 2B
-// gate). This constant records the intended least-privilege capability set so review and the staging test have
-// a single source of truth; it is not yet exercised against Twilio because provisioning runs against a mock.
+// assertions UCRM actually calls. Confirmed 2026-09-13 against Twilio's downloadable Messaging permissions
+// PDF (https://www.twilio.com/docs/iam/api-keys/restricted-api-keys) and proven with a live restricted-key
+// create during Raad LTD subaccount adoption -- these are the exact `allow` assertion strings Twilio expects,
+// not a guess.
 export const RESTRICTED_KEY_MESSAGING_CAPABILITIES = [
-	'messaging.send', // POST .../Messages -- send an SMS/MMS
-	'messaging.read', // GET .../Messages/{sid} -- read delivery status
-	'messaging.service.read' // GET messaging/v1/Services/{sid} -- confirm the sending service
+	'/twilio/messaging/messages/create', // POST .../Messages -- send an SMS/MMS
+	'/twilio/messaging/messages/read', // GET .../Messages/{sid} -- read delivery status
+	'/twilio/messaging/services/read' // GET messaging/v1/Services/{sid} -- confirm the sending service
 ] as const;
 
 export type RestrictedKeyCapability = (typeof RESTRICTED_KEY_MESSAGING_CAPABILITIES)[number];
-export type RestrictedKeyPolicy = { capabilities: readonly RestrictedKeyCapability[] };
+export type RestrictedKeyPolicy = { allow: readonly RestrictedKeyCapability[] };
 
 export function buildRestrictedKeyMessagingPolicy(): RestrictedKeyPolicy {
-	return { capabilities: RESTRICTED_KEY_MESSAGING_CAPABILITIES };
+	return { allow: RESTRICTED_KEY_MESSAGING_CAPABILITIES };
 }
 
 const platformEnvSchema = z.object({
 	TWILIO_ACCOUNT_SID: z.string().trim().regex(SUBACCOUNT_SID),
+	// The master Account Auth Token. Required, and used only for the two operations that must read back a
+	// subaccount's own Auth Token (createSubaccount, fetchSubaccountBySid); Twilio returns it to no other
+	// credential. Kept out of Postgres, images, logs, and browser payloads.
+	TWILIO_AUTH_TOKEN: z.string().trim().min(1),
 	TWILIO_PROVISIONING_KEY_SID: z.string().trim().regex(API_KEY_SID),
 	TWILIO_PROVISIONING_KEY_SECRET: z.string().trim().min(1)
 });
@@ -127,13 +157,16 @@ const platformEnvSchema = z.object({
 export type TwilioPlatformEnv = z.infer<typeof platformEnvSchema>;
 
 /**
- * The platform-level provisioning credential. A main-account Restricted/Standard API key (SID + secret) kept
- * only in deployment secrets, used to create and list subaccounts. Validated lazily so the app boots without
- * SMS configured.
+ * The platform-level provisioning credentials, kept only in deployment secrets and validated lazily so the app
+ * boots without SMS configured. Two secrets, each least-privilege for what it does:
+ *   - a main-account API key (SID + secret) for listing subaccounts and subaccount-scoped reads;
+ *   - the master Account SID + Auth Token, used only where Twilio will return a subaccount's plaintext Auth
+ *     Token (subaccount create and fetch-by-SID) and nowhere else.
  */
 export function getTwilioPlatformEnv(): TwilioPlatformEnv {
 	const result = platformEnvSchema.safeParse({
 		TWILIO_ACCOUNT_SID: env.TWILIO_ACCOUNT_SID,
+		TWILIO_AUTH_TOKEN: env.TWILIO_AUTH_TOKEN,
 		TWILIO_PROVISIONING_KEY_SID: env.TWILIO_PROVISIONING_KEY_SID,
 		TWILIO_PROVISIONING_KEY_SECRET: env.TWILIO_PROVISIONING_KEY_SECRET
 	});
@@ -180,7 +213,12 @@ async function twilioRequest(request: TwilioRequest): Promise<{ status: number; 
 		// Network failure or timeout: the provider outcome is unknown, so it is safe to re-run (reconciliation
 		// will adopt anything that was actually created). Never surface the underlying error text -- it can echo
 		// request headers, including credentials.
-		throw new TwilioProvisioningError('Twilio did not return a result.', null, 'twilio_unknown', true);
+		throw new TwilioProvisioningError(
+			'Twilio did not return a result.',
+			null,
+			'twilio_unknown',
+			true
+		);
 	} finally {
 		clearTimeout(timeout);
 	}
@@ -246,6 +284,9 @@ export function createTwilioProvisioningClient(
 		platform.TWILIO_PROVISIONING_KEY_SID,
 		platform.TWILIO_PROVISIONING_KEY_SECRET
 	);
+	// The master credential. Reserved for the two calls that must read back a subaccount's own Auth Token, which
+	// Twilio returns to no API key. Not used anywhere else in this adapter.
+	const masterAuth = basicAuthHeader(platform.TWILIO_ACCOUNT_SID, platform.TWILIO_AUTH_TOKEN);
 	const subaccountAuth = (sid: string, token: string) => basicAuthHeader(sid, token);
 
 	return {
@@ -254,11 +295,17 @@ export function createTwilioProvisioningClient(
 				base: TWILIO_API_BASE,
 				path: '/2010-04-01/Accounts.json',
 				method: 'POST',
-				auth: platformAuth,
+				// Master credential: the create response is the only time Twilio returns the new subaccount's
+				// Auth Token, and it returns it to no API key.
+				auth: masterAuth,
 				form: { FriendlyName: friendlyName }
 			});
 			return {
-				subaccountSid: requireSid(readString(body, 'sid'), SUBACCOUNT_SID, 'twilio_bad_subaccount_sid'),
+				subaccountSid: requireSid(
+					readString(body, 'sid'),
+					SUBACCOUNT_SID,
+					'twilio_bad_subaccount_sid'
+				),
 				authToken: requireSid(readString(body, 'auth_token'), /^.+$/, 'twilio_missing_auth_token'),
 				status: readString(body, 'status') ?? 'active'
 			};
@@ -273,7 +320,9 @@ export function createTwilioProvisioningClient(
 				query: { FriendlyName: friendlyName, PageSize: '2' }
 			});
 			const accounts =
-				body && typeof body === 'object' && Array.isArray((body as Record<string, unknown>).accounts)
+				body &&
+				typeof body === 'object' &&
+				Array.isArray((body as Record<string, unknown>).accounts)
 					? ((body as Record<string, unknown>).accounts as unknown[])
 					: [];
 			if (accounts.length === 0) return null;
@@ -290,6 +339,26 @@ export function createTwilioProvisioningClient(
 			return {
 				subaccountSid: requireSid(sid, SUBACCOUNT_SID, 'twilio_bad_subaccount_sid'),
 				status: readString(accounts[0], 'status') ?? 'active'
+			};
+		},
+
+		async fetchSubaccountBySid(subaccountSid) {
+			const { body } = await twilioRequest({
+				base: TWILIO_API_BASE,
+				path: `/2010-04-01/Accounts/${subaccountSid}.json`,
+				method: 'GET',
+				// Master credential: reading a subaccount by SID returns its Auth Token only to the parent's real
+				// Account SID + Auth Token, never to an API key.
+				auth: masterAuth
+			});
+			return {
+				subaccountSid: requireSid(
+					readString(body, 'sid'),
+					SUBACCOUNT_SID,
+					'twilio_bad_subaccount_sid'
+				),
+				authToken: requireSid(readString(body, 'auth_token'), /^.+$/, 'twilio_missing_auth_token'),
+				status: readString(body, 'status') ?? 'active'
 			};
 		},
 
@@ -377,10 +446,14 @@ export function createTwilioProvisioningClient(
 				query: { PageSize: '100' }
 			});
 			const services =
-				body && typeof body === 'object' && Array.isArray((body as Record<string, unknown>).services)
+				body &&
+				typeof body === 'object' &&
+				Array.isArray((body as Record<string, unknown>).services)
 					? ((body as Record<string, unknown>).services as unknown[])
 					: [];
-			const match = services.find((service) => readString(service, 'friendly_name') === friendlyName);
+			const match = services.find(
+				(service) => readString(service, 'friendly_name') === friendlyName
+			);
 			if (!match) return null;
 			return {
 				messagingServiceSid: requireSid(
@@ -389,6 +462,32 @@ export function createTwilioProvisioningClient(
 					'twilio_bad_messaging_service_sid'
 				)
 			};
+		},
+
+		async addPhoneNumberToMessagingService({
+			subaccountSid,
+			subaccountAuthToken,
+			messagingServiceSid,
+			phoneNumberSid
+		}) {
+			requireSid(phoneNumberSid, PHONE_NUMBER_SID, 'twilio_bad_phone_number_sid');
+			try {
+				await twilioRequest({
+					base: TWILIO_MESSAGING_BASE,
+					path: `/v1/Services/${messagingServiceSid}/PhoneNumbers`,
+					method: 'POST',
+					auth: subaccountAuth(subaccountSid, subaccountAuthToken),
+					form: { PhoneNumberSid: phoneNumberSid }
+				});
+			} catch (error) {
+				// 21710 "Phone Number Already Exists in Messaging Service" is not a failure -- the number is
+				// already where we want it, so treat it the same as our other find-or-create steps.
+				if (error instanceof TwilioProvisioningError && error.providerCode === '21710') {
+					return { phoneNumberSid };
+				}
+				throw error;
+			}
+			return { phoneNumberSid };
 		},
 
 		async createSecondaryAuthToken({ subaccountSid, currentAuthToken }) {

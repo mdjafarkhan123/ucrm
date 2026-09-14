@@ -1,9 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { randomUUID } from 'node:crypto';
-import {
-	encryptTwilioCredential,
-	type TwilioCredentialKeyring
-} from './twilio-credential-crypto';
+import { encryptTwilioCredential, type TwilioCredentialKeyring } from './twilio-credential-crypto';
 import type {
 	InsertCredentialInput,
 	ProvisioningEventInput,
@@ -19,6 +16,8 @@ import type {
 	TwilioProvisioningClient
 } from './twilio';
 import {
+	adoptPhoneNumber,
+	adoptTwilioSubaccount,
 	provisionTwilioForOrganization,
 	rotateAuthToken,
 	rotateRestrictedKey,
@@ -30,6 +29,7 @@ const SUBACCOUNT = 'AC00000000000000000000000000000001';
 const KEY_SID = 'SK00000000000000000000000000000001';
 const KEY_SID_2 = 'SK00000000000000000000000000000002';
 const MESSAGING_SERVICE = 'MG00000000000000000000000000000001';
+const PHONE_NUMBER_SID = 'PN00000000000000000000000000000001';
 
 const keyring: TwilioCredentialKeyring = {
 	activeKeyId: 'v1',
@@ -47,6 +47,12 @@ function createFakeStore() {
 	const accounts: StoredTwilioAccount[] = [];
 	const creds: StoredCred[] = [];
 	const events: ProvisioningEventInput[] = [];
+	const senderIdentities: {
+		id: string;
+		organizationId: string;
+		phoneNumber: string;
+		displayName: string | null;
+	}[] = [];
 
 	function assertUniqueLifecycle(accountId: string, purpose: string, lifecycle: string) {
 		const clash = creds.find(
@@ -132,10 +138,12 @@ function createFakeStore() {
 		},
 		async completeAuthTokenRotation({ accountId, retireAfter }) {
 			const staged = creds.filter(
-				(c) => c.accountId === accountId && c.purpose === 'auth_token' && c.lifecycleState === 'staged'
+				(c) =>
+					c.accountId === accountId && c.purpose === 'auth_token' && c.lifecycleState === 'staged'
 			);
 			const current = creds.filter(
-				(c) => c.accountId === accountId && c.purpose === 'auth_token' && c.lifecycleState === 'current'
+				(c) =>
+					c.accountId === accountId && c.purpose === 'auth_token' && c.lifecycleState === 'current'
 			);
 			if (staged.length !== 1 || current.length !== 1) {
 				throw new Error('invariant: rotation requires one staged and one current');
@@ -176,10 +184,15 @@ function createFakeStore() {
 		},
 		async recordEvent(input) {
 			events.push(input);
+		},
+		async insertSenderIdentity({ organizationId, phoneNumber, displayName }) {
+			const id = randomUUID();
+			senderIdentities.push({ id, organizationId, phoneNumber, displayName });
+			return { id };
 		}
 	};
 
-	return { store, accounts, creds, events };
+	return { store, accounts, creds, events, senderIdentities };
 }
 
 // --- Fake Twilio adapter with a call log and injectable behavior ---
@@ -188,6 +201,8 @@ type TwilioCall = { method: string; args: unknown };
 function createFakeTwilio(
 	behavior: Partial<{
 		findSubaccount: () => { subaccountSid: string; status: string } | null;
+		fetchSubaccountBySid: () => { subaccountSid: string; authToken: string; status: string };
+		addPhoneNumberToMessagingService: () => void;
 		listApiKeys: () => FoundApiKey[];
 		verifyAuthToken: (token: string) => boolean;
 		verifyRestrictedApiKey: (keySid: string) => boolean;
@@ -207,9 +222,23 @@ function createFakeTwilio(
 			record('findSubaccount', friendlyName);
 			return behavior.findSubaccount ? behavior.findSubaccount() : null;
 		},
+		async fetchSubaccountBySid(subaccountSid) {
+			record('fetchSubaccountBySid', subaccountSid);
+			return behavior.fetchSubaccountBySid
+				? behavior.fetchSubaccountBySid()
+				: { subaccountSid, authToken: 'authtoken-adopted', status: 'active' };
+		},
+		async addPhoneNumberToMessagingService(input) {
+			record('addPhoneNumberToMessagingService', input);
+			if (behavior.addPhoneNumberToMessagingService) behavior.addPhoneNumberToMessagingService();
+			return { phoneNumberSid: input.phoneNumberSid };
+		},
 		async createRestrictedApiKey(input: CreateRestrictedApiKeyInput) {
 			record('createRestrictedApiKey', input);
-			return { keySid: behavior.nextKeySid ? behavior.nextKeySid() : KEY_SID, secret: 'key-secret' };
+			return {
+				keySid: behavior.nextKeySid ? behavior.nextKeySid() : KEY_SID,
+				secret: 'key-secret'
+			};
 		},
 		async listApiKeys(input: SubaccountAuthInput) {
 			record('listApiKeys', input);
@@ -315,7 +344,12 @@ describe('provisionTwilioForOrganization', () => {
 			authTokenCredentialId: authId,
 			encrypted: encryptTwilioCredential(
 				'authtoken-primary',
-				{ organizationId: ORG, credentialId: authId, subaccountSid: SUBACCOUNT, purpose: 'auth_token' },
+				{
+					organizationId: ORG,
+					credentialId: authId,
+					subaccountSid: SUBACCOUNT,
+					purpose: 'auth_token'
+				},
 				keyring
 			)
 		});
@@ -333,12 +367,17 @@ describe('provisionTwilioForOrganization', () => {
 		const { twilio, calls } = createFakeTwilio({
 			findSubaccount: () => ({ subaccountSid: SUBACCOUNT, status: 'active' })
 		});
-		await expect(provisionTwilioForOrganization(deps(twilio), PROVISION_INPUT)).rejects.toMatchObject({
+		await expect(
+			provisionTwilioForOrganization(deps(twilio), PROVISION_INPUT)
+		).rejects.toMatchObject({
 			code: 'twilio_orphan_subaccount',
 			retryable: false
 		});
 		expect(countCalls(calls, 'createSubaccount')).toBe(0);
-		expect(fakeStore.events.at(-1)).toMatchObject({ step: 'subaccount_created', result: 'needs_review' });
+		expect(fakeStore.events.at(-1)).toMatchObject({
+			step: 'subaccount_created',
+			result: 'needs_review'
+		});
 	});
 
 	it('deletes an orphaned Restricted key before creating a fresh one', async () => {
@@ -350,7 +389,12 @@ describe('provisionTwilioForOrganization', () => {
 			authTokenCredentialId: authId,
 			encrypted: encryptTwilioCredential(
 				'authtoken-primary',
-				{ organizationId: ORG, credentialId: authId, subaccountSid: SUBACCOUNT, purpose: 'auth_token' },
+				{
+					organizationId: ORG,
+					credentialId: authId,
+					subaccountSid: SUBACCOUNT,
+					purpose: 'auth_token'
+				},
 				keyring
 			)
 		});
@@ -362,9 +406,9 @@ describe('provisionTwilioForOrganization', () => {
 		await provisionTwilioForOrganization(deps(twilio), PROVISION_INPUT);
 
 		expect(countCalls(calls, 'deleteApiKey')).toBe(1);
-		expect((calls.find((c) => c.method === 'deleteApiKey')?.args as { keySid: string }).keySid).toBe(
-			KEY_SID_2
-		);
+		expect(
+			(calls.find((c) => c.method === 'deleteApiKey')?.args as { keySid: string }).keySid
+		).toBe(KEY_SID_2);
 		expect(countCalls(calls, 'createRestrictedApiKey')).toBe(1);
 	});
 
@@ -376,7 +420,7 @@ describe('provisionTwilioForOrganization', () => {
 			?.args as CreateRestrictedApiKeyInput;
 		expect(keyCall.subaccountSid).toBe(SUBACCOUNT);
 		expect(keyCall.subaccountAuthToken).toBe('authtoken-primary');
-		expect(keyCall.policy.capabilities).toContain('messaging.send');
+		expect(keyCall.policy.allow).toContain('/twilio/messaging/messages/create');
 	});
 
 	it('never exposes a secret in the summary or recorded history', async () => {
@@ -456,7 +500,12 @@ describe('rotateAuthToken', () => {
 			credentialSid: null,
 			encrypted: encryptTwilioCredential(
 				'authtoken-secondary',
-				{ organizationId: ORG, credentialId: stagedId, subaccountSid: account.subaccountSid, purpose: 'auth_token' },
+				{
+					organizationId: ORG,
+					credentialId: stagedId,
+					subaccountSid: account.subaccountSid,
+					purpose: 'auth_token'
+				},
 				keyring
 			)
 		});
@@ -500,17 +549,15 @@ describe('rotateRestrictedKey', () => {
 		expect(summary.restrictedKeySid).toBe(KEY_SID_2);
 		expect(countCalls(calls, 'createRestrictedApiKey')).toBe(1);
 		expect(countCalls(calls, 'deleteApiKey')).toBe(1);
-		expect((calls.find((c) => c.method === 'deleteApiKey')?.args as { keySid: string }).keySid).toBe(
-			KEY_SID
-		);
+		expect(
+			(calls.find((c) => c.method === 'deleteApiKey')?.args as { keySid: string }).keySid
+		).toBe(KEY_SID);
 		const current = fakeStore.creds.find(
 			(c) => c.purpose === 'restricted_api_key' && c.lifecycleState === 'current'
 		);
 		expect(current?.credentialSid).toBe(KEY_SID_2);
 		// Exactly one restricted key remains (no staged, no old current).
-		expect(
-			fakeStore.creds.filter((c) => c.purpose === 'restricted_api_key')
-		).toHaveLength(1);
+		expect(fakeStore.creds.filter((c) => c.purpose === 'restricted_api_key')).toHaveLength(1);
 	});
 
 	it('rolls back and keeps the old key when the new one fails verification', async () => {
@@ -527,7 +574,137 @@ describe('rotateRestrictedKey', () => {
 		);
 		expect(current?.credentialSid).toBe(KEY_SID);
 		expect(
-			(calls.filter((c) => c.method === 'deleteApiKey').map((c) => (c.args as { keySid: string }).keySid))
+			calls
+				.filter((c) => c.method === 'deleteApiKey')
+				.map((c) => (c.args as { keySid: string }).keySid)
 		).toContain(KEY_SID_2);
+	});
+});
+
+describe('adoptTwilioSubaccount', () => {
+	let fakeStore: ReturnType<typeof createFakeStore>;
+
+	beforeEach(() => {
+		fakeStore = createFakeStore();
+	});
+
+	function deps(twilio: TwilioProvisioningClient): TwilioProvisioningDeps {
+		return { store: fakeStore.store, twilio, keyring };
+	}
+
+	const ADOPT_INPUT = {
+		organizationId: ORG,
+		subaccountSid: SUBACCOUNT,
+		inboundRequestUrl: PROVISION_INPUT.inboundRequestUrl,
+		statusCallback: PROVISION_INPUT.statusCallback
+	};
+
+	it('adopts an out-of-band subaccount to a ready state without calling createSubaccount', async () => {
+		const { twilio, calls } = createFakeTwilio();
+		const summary = await adoptTwilioSubaccount(deps(twilio), ADOPT_INPUT);
+
+		expect(summary).toEqual({
+			organizationId: ORG,
+			subaccountSid: SUBACCOUNT,
+			messagingServiceSid: MESSAGING_SERVICE,
+			restrictedKeySid: KEY_SID,
+			lifecycleState: 'ready'
+		});
+		expect(countCalls(calls, 'fetchSubaccountBySid')).toBe(1);
+		expect(countCalls(calls, 'createSubaccount')).toBe(0);
+		expect(countCalls(calls, 'createRestrictedApiKey')).toBe(1);
+		expect(countCalls(calls, 'createMessagingService')).toBe(1);
+		expect(fakeStore.events.at(-1)?.step).toBe('provisioning_completed');
+		expect(
+			fakeStore.events.some((e) => e.step === 'subaccount_adopted' && e.result === 'succeeded')
+		).toBe(true);
+	});
+
+	it('refuses when the organization already has a Twilio account on record', async () => {
+		const first = createFakeTwilio();
+		await adoptTwilioSubaccount(deps(first.twilio), ADOPT_INPUT);
+
+		const second = createFakeTwilio();
+		await expect(adoptTwilioSubaccount(deps(second.twilio), ADOPT_INPUT)).rejects.toMatchObject({
+			code: 'twilio_already_provisioned'
+		});
+		expect(countCalls(second.calls, 'fetchSubaccountBySid')).toBe(0);
+	});
+
+	it('refuses to adopt a subaccount that is not active', async () => {
+		const { twilio, calls } = createFakeTwilio({
+			fetchSubaccountBySid: () => ({
+				subaccountSid: SUBACCOUNT,
+				authToken: 'authtoken-adopted',
+				status: 'suspended'
+			})
+		});
+		await expect(adoptTwilioSubaccount(deps(twilio), ADOPT_INPUT)).rejects.toMatchObject({
+			code: 'twilio_subaccount_not_active'
+		});
+		expect(countCalls(calls, 'createRestrictedApiKey')).toBe(0);
+		expect(fakeStore.events.at(-1)).toMatchObject({
+			step: 'subaccount_adopted',
+			result: 'needs_review'
+		});
+	});
+
+	it('never exposes the fetched Auth Token in the summary or recorded history', async () => {
+		const { twilio } = createFakeTwilio();
+		const summary = await adoptTwilioSubaccount(deps(twilio), ADOPT_INPUT);
+
+		const serialized = JSON.stringify({ summary, events: fakeStore.events });
+		expect(serialized).not.toContain('authtoken-adopted');
+	});
+});
+
+describe('adoptPhoneNumber', () => {
+	let fakeStore: ReturnType<typeof createFakeStore>;
+
+	beforeEach(async () => {
+		fakeStore = createFakeStore();
+		const first = createFakeTwilio();
+		await provisionTwilioForOrganization(
+			{ store: fakeStore.store, twilio: first.twilio, keyring },
+			PROVISION_INPUT
+		);
+	});
+
+	function deps(twilio: TwilioProvisioningClient): TwilioProvisioningDeps {
+		return { store: fakeStore.store, twilio, keyring };
+	}
+
+	const ADOPT_NUMBER_INPUT = {
+		organizationId: ORG,
+		phoneNumberSid: PHONE_NUMBER_SID,
+		phoneNumber: '+13613262553',
+		displayName: 'UCRM internal test'
+	};
+
+	it('attaches the number to the Messaging Service and records a sender identity', async () => {
+		const { twilio, calls } = createFakeTwilio();
+		const summary = await adoptPhoneNumber(deps(twilio), ADOPT_NUMBER_INPUT);
+
+		expect(summary.phoneNumber).toBe('+13613262553');
+		expect(summary.messagingServiceSid).toBe(MESSAGING_SERVICE);
+		expect(countCalls(calls, 'addPhoneNumberToMessagingService')).toBe(1);
+		expect(fakeStore.senderIdentities).toHaveLength(1);
+		expect(fakeStore.senderIdentities[0]).toMatchObject({
+			organizationId: ORG,
+			phoneNumber: '+13613262553',
+			displayName: 'UCRM internal test'
+		});
+		expect(fakeStore.events.at(-1)).toMatchObject({
+			step: 'phone_number_attached',
+			result: 'succeeded'
+		});
+	});
+
+	it('refuses when the organization has no Twilio account yet', async () => {
+		const emptyStore = createFakeStore();
+		const { twilio } = createFakeTwilio();
+		await expect(
+			adoptPhoneNumber({ store: emptyStore.store, twilio, keyring }, ADOPT_NUMBER_INPUT)
+		).rejects.toMatchObject({ code: 'twilio_not_provisioned' });
 	});
 });

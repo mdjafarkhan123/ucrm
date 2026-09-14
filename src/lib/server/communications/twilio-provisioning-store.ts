@@ -74,6 +74,13 @@ export type TwilioProvisioningStore = {
 	/** Atomic cutover: drop old current and promote staged -> current (no retry window). */
 	completeRestrictedKeyRotation(input: { accountId: string }): Promise<void>;
 	recordEvent(input: ProvisioningEventInput): Promise<void>;
+	/** Record a phone number as a sender identity. Starts life as `pending_setup` with sending disallowed --
+	 *  A2P registration and other readiness checks (Stage 2C) are what later flip it to `ready`. */
+	insertSenderIdentity(input: {
+		organizationId: string;
+		phoneNumber: string;
+		displayName: string | null;
+	}): Promise<{ id: string }>;
 };
 
 type AccountRow = Database['public']['Tables']['communication_twilio_accounts']['Row'];
@@ -244,6 +251,20 @@ export function createSupabaseTwilioProvisioningStore(
 			});
 			// History is best-effort observability: a failed audit insert must never mask the operation outcome.
 			if (error) console.error('Failed to record Twilio provisioning event', { step: input.step });
+		},
+
+		async insertSenderIdentity({ organizationId, phoneNumber, displayName }) {
+			const { data, error } = await client
+				.from('communication_sms_sender_identities')
+				.insert({
+					organization_id: organizationId,
+					phone_number: phoneNumber,
+					display_name: displayName
+				})
+				.select('id')
+				.single();
+			if (error) throw new TwilioProvisioningStoreError('Could not store the sender identity.');
+			return { id: (data as { id: string }).id };
 		}
 	};
 }
