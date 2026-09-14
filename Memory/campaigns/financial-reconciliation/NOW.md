@@ -7,7 +7,8 @@ recorded Payment journey.
 
 ## Active part
 
-Part 2 — deliver the required permission-aware operational and financial views/exports.
+Part 2 — paused 2026-09-14 after the Invoice sales page and whole-range summary were remote-verified and
+committed as `81e3ebb`. No aging/client-balance work has started.
 
 ## Exact next action
 
