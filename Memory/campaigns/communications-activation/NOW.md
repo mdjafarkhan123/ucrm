@@ -16,24 +16,25 @@ blocks flipping texting on later).
   registration, record carrier outcome, record readiness check, set org SMS mode, set sender
   capabilities. 25/25 vitest; svelte-check 0/3349 files.
 
-## Blocked on Jafar — two product/architecture decisions before 2C-5c can close
-1. **Who attests a registration submission?** `communication_sms_submit_registration`'s `attested_by`
-   is documented as "the contractor attests the submitted info is truthful," but the stage6 plan also
-   says "Jafar may... submit/resubmit registration." Building this against the Jafar-only owner API
-   would record Jafar's identity as the attester of the contractor's business truthfulness — a real
-   compliance-record question, not a guessable technical detail. Need: is registration submission a
-   contractor-facing action (its own future route, contractor session), or does Jafar's UI capture a
-   real contractor user id to pass through as the attester?
-2. **Platform-audit target for platform-scoped actions.** A platform-wide hold and the global retail
-   rate command have no `organization_id`, so `access_audit_events` (NOT NULL) can't record them.
-   Options to weigh: a nullable `organization_id` + check constraint, a separate platform-audit table,
-   or reusing the sentinel differently. Needed before building `communication_sms_place_hold` (scope
-   'platform') and `communication_sms_set_retail_rate`.
+## Decided by Jafar 2026-09-14 (both verified against real industry sources, not guessed)
+1. **Registration submission is contractor-facing, not a Jafar owner action.** Twilio's own ISV rule
+   ("you must use your customer's information... do not use your own") means `attested_by` on
+   `communication_sms_submit_registration` must be the contractor's real identity. Jafar's owner API
+   must NOT call this command. The actual contractor-facing submit action has no home yet in the
+   roadmap (only "two contractor settings pages" are named, unscoped) — needs its own roadmap part
+   before it's built, likely alongside the Phone & SMS contractor settings page.
+2. **Platform-scoped actions get their own new audit table**, not a loosened `access_audit_events`.
+   Standard multi-tenant practice keeps a tenant-scoped audit log hard-scoped (no blank-tenant rows);
+   platform-wide events belong in their own small table. Not yet built.
 
-## Exact next action
-Ask Jafar both questions above (see full framing in this file — do not re-decide, just ask). Once
-answered: build whichever of (registration submission route) / (platform hold + retail-rate routes)
-the answers unblock, closing out 2C-5c. Then 2C-6: Jafar owner UI for all of Stage 2C.
+## Exact next action (new session)
+1. Design + migrate a small platform-audit-events table (who/when/what/why, no organization_id) —
+   this is a schema change, confirm the shape with Jafar first per the schema-confirmation rule, then
+   pgTAP it like every other 2C migration.
+2. Build the two platform-scoped owner routes on top of it: `communication_sms_place_hold` (scope
+   'platform') release, and `communication_sms_set_retail_rate` — same 2C-5a/5b/5c template.
+3. That closes 2C-5c. Then either scope the contractor-facing registration-submission part (decision 1
+   above), or move to 2C-6 (Jafar owner UI for all of Stage 2C) — ask Jafar which first.
 
 ## Constraint (still current)
 A2P 10DLC (US "prove you're a real business" gate) can't be completed for Jafar's own test org — needs a real
