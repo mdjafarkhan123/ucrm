@@ -7,22 +7,18 @@ multi-session parts — see ROADMAP "Stage 2C parts". No live SMS is needed for 
 blocks flipping texting on later).
 
 ## Done (all committed)
-- 2C-1 top-up (36ebdd0), 2C-2 rates (09e88eb), 2C-3 readiness/registration (7da6fe3),
-  2C-4 holds+promo+adjustments/refunds (3be87cb, 60/60 pgTAP).
-- 2C-5a Credit top-up decision API (13788a0).
-- Retry-safety prerequisite for 2C-4's money commands (50e3435, 78/78 pgTAP).
-- 2C-5b Holds + promo + adjustments/refunds owner API (9480c81, 40/40 vitest).
-- **2C-5c is now fully closed (org-scoped 0ab257f + platform-scoped 351c4b3, both 2026-09-14).**
-  Platform-scoped part: new `platform_audit_events` table (11/11 pgTAP) +
-  `/api/jafar/communications/sms/platform-holds` (place/release, step-up) +
-  `/api/jafar/communications/sms/retail-rates` (publish a rate, no step-up). 13/13 vitest;
-  svelte-check 0/3358 files.
+- 2C-1..2C-5c (top-up, rates, readiness/registration, holds+promo+adjustments/refunds, owner command API —
+  org-scoped and platform-scoped) — see ROADMAP for commit hashes.
+- **2C-6a is done (commit 68c394c).**
+  New SMS reads (mode, registrations+readiness, sender-identities) + three owner-UI components wired into
+  `CommunicationsWorkspace`. 85/85 vitest, svelte-check 0/3364, svelte-autofixer clean.
 
 ## Exact next action (new session)
-Ask Jafar which comes next: (a) scope the contractor-facing SMS registration-submission part (Twilio's
-ISV rule means `attested_by` must be the contractor's real identity, not Jafar's — needs its own roadmap
-part, likely alongside a Phone & SMS contractor settings page), or (b) start 2C-6, the Jafar owner UI for
-all of Stage 2C's data/commands built so far.
+Build **2C-6b: Commercial access tab** — SMS credit top-up decisions, holds (place/release), promotional
+credits (grant/revoke), and adjustments/refunds, as owner-UI components added to `AccessWorkspace` (the
+"Access & limits" tab), next to the existing `CommercialActions`. Same shape as 2C-6a: these commands are
+write-only today (built in 2C-5b), so add their GET reads first, then the components. Unlike 2C-6a, these
+commands ARE on the step-up list (reuse `OwnerReconfirmDialog`, the pattern already in `CommercialActions.svelte`).
 
 ## Constraint (still current)
 A2P 10DLC (US "prove you're a real business" gate) can't be completed for Jafar's own test org — needs a real
@@ -32,8 +28,10 @@ step. Does not block any 2C data/owner work.
 ## Essential pointers
 - Money + owner-control truth (do not re-decide): `docs/research/communications-a2-stage6-settings-owner-controls-plan.md`
 - Step-up vs routine-action rule: `docs/jafar-organization-management-mission.md` "High-impact action security"
-- Full stage spec: `docs/communications-a2-implementation-plan.md` (Stage 2C build list)
-- Route + spec + actor-sentinel template: 2C-5a/5b/5c files; `$lib/server/communications/sms-owner.ts`;
-  platform-scoped audit via `recordPlatformAudit` in `$lib/server/access/owner.ts`.
+- 2C-6a template: `src/lib/components/jafar/SmsModeActions.svelte` (query+edit form, no step-up),
+  `SmsRegistrationActions.svelte` (list + dialogs), `SmsSenderCapabilitiesActions.svelte` (list + inline edit).
+  For 2C-6b, `CommercialActions.svelte` is the closer template (step-up via `OwnerReconfirmDialog` on 409).
+- SMS owner routes live under `src/routes/api/jafar/organizations/[organizationId]/communications/sms/*`
+  (holds, credit-topups, promotional-credits, adjustments, refunds — all POST-only today, no GET yet).
 
 Resume: `read memory and continue — communications-activation`.

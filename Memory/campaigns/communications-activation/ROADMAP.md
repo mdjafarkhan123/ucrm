@@ -75,7 +75,20 @@ then owner API and Jafar UI come as their own later parts. No live SMS needed (A
     ISV rule means `attested_by` must be the contractor's real identity, not Jafar's, so this needs its own
     roadmap part alongside the contractor-facing Phone & SMS settings page.
 - **2C-6 Jafar owner UI** — extend Integrations / Commercial access / History & recovery + Operations health;
-  no new dashboard.
+  no new dashboard. Split at a verified boundary (Jafar approved 2026-09-14), same template as 2C-5.
+  - **2C-6a Integrations tab (mode, registration, sender capabilities) — DONE 2026-09-14** (commit 68c394c). 2C-5's owner
+    commands were write-only, so this part first added the missing reads: GET on `.../sms/mode`
+    (stored inputs + computed effective mode), GET on `.../sms/registrations` (list, each row carrying its
+    computed `communication_sms_readiness`), and a new GET `.../sms/sender-identities` (list). Three
+    components (`SmsModeActions`, `SmsRegistrationActions`, `SmsSenderCapabilitiesActions`) added to
+    `CommunicationsWorkspace`'s Integrations section — mode edit, start/check/decide a registration, edit a
+    sender's capabilities. None of these commands are on the step-up list (matches 2C-5c). 85/85 vitest
+    (7 new) in the SMS owner API suite; svelte-check 0/3364 files; svelte-autofixer clean.
+  - **2C-6b Commercial access tab** — SMS credit top-ups, holds, promotional credits, adjustments/refunds
+    owner UI in `AccessWorkspace`. Not started.
+  - **2C-6c History & recovery tab** — SMS registration/audit history view in `ActivityWorkspace`. Not started.
+  - **2C-6d Operations health** — platform-wide platform-holds + retail-rates owner UI, extending the
+    existing top-level `/jafar/communications` page. Not started.
 
 ## Build principle (Jafar, durable 2026-08-30)
 
