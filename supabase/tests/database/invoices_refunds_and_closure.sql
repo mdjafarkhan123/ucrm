@@ -1,5 +1,5 @@
 -- Invoices, Part 3b-2: refunds, reversal of a mistaken entry, Void with its deposit release, bad debt and
--- its undo, and status-only closure and reopening.
+-- its undo, and correction of historical status-only closures.
 --
 -- Written for `supabase test db`; verified against the remote dev project by running this whole file as one
 -- transaction that is rolled back at the end, the same convention invoices_payments_ledger.sql documents.
@@ -9,7 +9,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(89);
+select plan(85);
 
 -- 1. Privileges ------------------------------------------------------------------------------------------------
 
@@ -34,9 +34,8 @@ select is(has_function_privilege('anon',
 select is(has_function_privilege('anon',
   'public.restore_invoice_from_write_off(uuid, uuid, text, text, text)', 'execute'),
   false, 'signed-out callers cannot undo a write-off');
-select is(has_function_privilege('anon',
-  'public.mark_invoice_received(uuid, uuid, text, text, text)', 'execute'),
-  false, 'signed-out callers cannot close a bill by hand');
+select hasnt_function('public', 'mark_invoice_received', array['uuid', 'uuid', 'text', 'text', 'text'],
+  'the retired status-only closure command no longer exists');
 select is(has_function_privilege('anon',
   'public.reopen_invoice(uuid, uuid, text, text, text)', 'execute'),
   false, 'signed-out callers cannot reopen a bill');
@@ -516,11 +515,6 @@ select throws_ok(
     'ref-idem-void-writeoff', 'ref-hash-void-writeoff') $$,
   '23514', null, 'and a written-off bill has to be restored before it can be voided');
 select throws_ok(
-  $$ select public.mark_invoice_received('e2000000-0000-0000-0000-000000000001',
-    (select id from bill where subject = 'Deck'), null,
-    'ref-idem-mark-writeoff', 'ref-hash-mark-writeoff') $$,
-  '23514', null, 'a bill cannot say both that it was written off and that it was received');
-select throws_ok(
   $$ select public.write_off_invoice('e2000000-0000-0000-0000-000000000001',
     (select id from bill where subject = 'Shed'), null,
     'ref-idem-writeoff-draft', 'ref-hash-writeoff-draft') $$,
@@ -559,13 +553,25 @@ select is(
 select is((select is_effective_receivable from bill where subject = 'Deck'), true,
   'which means the retry left the restored bill alone');
 
--- 8. Closing a bill without recording money ----------------------------------------------------------------------
+-- 8. Correcting a historical status-only closure ----------------------------------------------------------------
 
-select is(
-  (public.mark_invoice_received('e2000000-0000-0000-0000-000000000001',
-    (select id from bill where subject = 'Path'), 'Client says it was settled in cash long ago',
-    'ref-idem-mark', 'ref-hash-mark'))->>'unsettled_minor',
-  '30000', 'closing a bill by hand records how much it never actually collected');
+-- This fixture represents a closure written before the command was retired. Production history stays
+-- immutable and readable; only the ability to create another closure has been removed.
+set local role postgres;
+update public.invoices
+set marked_received_at = '2026-09-12 12:00:00+00'::timestamptz,
+    marked_received_by = 'e1000000-0000-0000-0000-000000000001',
+    revision = revision + 1
+where id = (select id from bill where subject = 'Path');
+select private.record_invoice_event(
+  'e2000000-0000-0000-0000-000000000001', (select id from bill where subject = 'Path'),
+  (select invoice_number from bill where subject = 'Path'), 'e3000000-0000-0000-0000-000000000002',
+  'invoice.marked_received', 'e1000000-0000-0000-0000-000000000001',
+  (select revision from bill where subject = 'Path'), 'Legacy status-only closure',
+  jsonb_build_object('unsettled_minor', 30000), true, null
+);
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'e1000000-0000-0000-0000-000000000001', true);
 
 select isnt((select marked_received_at from bill where subject = 'Path'), null, 'the bill is closed');
 select is((select is_effective_receivable from bill where subject = 'Path'), true,
@@ -577,10 +583,6 @@ select is(
       and event_type = 'invoice.marked_received'),
   1, 'the closure wrote one history row');
 
-select throws_ok(
-  $$ select public.mark_invoice_received('e2000000-0000-0000-0000-000000000001',
-    (select id from bill where subject = 'Path'), null, 'ref-idem-mark-2', 'ref-hash-mark-2') $$,
-  '23514', null, 'a bill cannot be closed by hand twice');
 select throws_ok(
   $$ select public.write_off_invoice('e2000000-0000-0000-0000-000000000001',
     (select id from bill where subject = 'Path'), null,
@@ -603,12 +605,6 @@ select throws_ok(
   $$ select public.reopen_invoice('e2000000-0000-0000-0000-000000000001',
     (select id from bill where subject = 'Path'), null, 'ref-idem-reopen-2', 'ref-hash-reopen-2') $$,
   '23514', null, 'a bill that was not closed by hand has nothing to reopen');
-
-select throws_ok(
-  $$ select public.mark_invoice_received('e2000000-0000-0000-0000-000000000001',
-    (select id from bill where subject = 'Mailbox'), null,
-    'ref-idem-mark-paid', 'ref-hash-mark-paid') $$,
-  '23514', null, 'a bill that is already paid in full has nothing to close');
 
 select * from finish();
 rollback;

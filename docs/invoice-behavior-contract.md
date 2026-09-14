@@ -71,8 +71,11 @@ remainder from Client debt and hides the Invoice in Client Hub; it does not impl
 Void excludes progress invoices; ordinary payment allocations must be resolved before Void, per D2. Void notifications use email
 initially, with SMS deferred. Missing channels and failed-delivery consequences remain unverified.
 
-Close without recording payment changes status to Paid but does not settle Invoice or Client debt.
-Payment, write-off, and status-only closure have distinct financial consequences.
+**Revised for launch reconciliation on 2026-09-13:** creating a new status-only Close/Mark Received record is
+retired. Mature accounting requires a Paid label to be supported by money received; staff record a Payment when money
+arrived and use Bad Debt when valid debt will not be collected. Existing Mark Received records remain immutable and
+are reported as unsettled reconciliation exceptions rather than silently rewritten. Payment and write-off retain
+their distinct financial consequences.
 
 ## Editing and deletion
 
