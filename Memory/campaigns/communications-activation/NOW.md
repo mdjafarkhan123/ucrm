@@ -12,18 +12,17 @@ blocks flipping texting on later).
 - 2C-5a Credit top-up decision API (13788a0).
 - Retry-safety prerequisite for 2C-4's money commands (50e3435, 78/78 pgTAP).
 - 2C-5b Holds + promo + adjustments/refunds owner API (9480c81, 40/40 vitest).
-- **2C-5c is now fully closed (org-scoped 0ab257f + platform-scoped, both 2026-09-14).** Platform-scoped
-  part: new `platform_audit_events` table (11/11 pgTAP) + `/api/jafar/communications/sms/platform-holds`
-  (place/release, step-up) + `/api/jafar/communications/sms/retail-rates` (publish a rate, no step-up).
-  13/13 vitest; svelte-check 0/3358 files. Not yet committed to git.
+- **2C-5c is now fully closed (org-scoped 0ab257f + platform-scoped 351c4b3, both 2026-09-14).**
+  Platform-scoped part: new `platform_audit_events` table (11/11 pgTAP) +
+  `/api/jafar/communications/sms/platform-holds` (place/release, step-up) +
+  `/api/jafar/communications/sms/retail-rates` (publish a rate, no step-up). 13/13 vitest;
+  svelte-check 0/3358 files.
 
 ## Exact next action (new session)
-1. Commit the 2C-5c platform-scoped work (staged: migration + pgTAP + owner.ts + owner.schema.ts +
-   database.types.ts + the two new route folders under `src/routes/api/jafar/communications/sms/`).
-2. Ask Jafar which comes next: (a) scope the contractor-facing SMS registration-submission part (Twilio's
-   ISV rule means `attested_by` must be the contractor's real identity, not Jafar's — needs its own roadmap
-   part, likely alongside a Phone & SMS contractor settings page), or (b) start 2C-6, the Jafar owner UI for
-   all of Stage 2C's data/commands built so far.
+Ask Jafar which comes next: (a) scope the contractor-facing SMS registration-submission part (Twilio's
+ISV rule means `attested_by` must be the contractor's real identity, not Jafar's — needs its own roadmap
+part, likely alongside a Phone & SMS contractor settings page), or (b) start 2C-6, the Jafar owner UI for
+all of Stage 2C's data/commands built so far.
 
 ## Constraint (still current)
 A2P 10DLC (US "prove you're a real business" gate) can't be completed for Jafar's own test org — needs a real
