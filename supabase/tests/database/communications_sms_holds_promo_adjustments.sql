@@ -5,7 +5,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(60);
+select plan(78);
 
 -- ---------------------------------------------------------------------------------------------------------------
 -- Shape and access boundary.
@@ -128,44 +128,51 @@ select is(
 -- ---------------------------------------------------------------------------------------------------------------
 select throws_ok(
   $$select public.communication_sms_grant_promotional_credit(
-    'c2c40000-0000-4000-8000-000000000001', -100, now() + interval '30 days', 'promo')$$,
+    'c2c40000-0000-4000-8000-000000000001', -100, now() + interval '30 days', 'promo', 'grant-neg-amount')$$,
   'P0001', null, 'a promotional grant must be a positive amount'
 );
 select throws_ok(
   $$select public.communication_sms_grant_promotional_credit(
-    'c2c40000-0000-4000-8000-000000000001', 500, now() - interval '1 day', 'promo')$$,
+    'c2c40000-0000-4000-8000-000000000001', 500, now() - interval '1 day', 'promo', 'grant-past-expiry')$$,
   'P0001', null, 'a promotional grant must expire in the future'
 );
 select throws_ok(
   $$select public.communication_sms_grant_promotional_credit(
-    'c2c40000-0000-4000-8000-000000000001', 500, now() + interval '30 days', '   ')$$,
+    'c2c40000-0000-4000-8000-000000000001', 500, now() + interval '30 days', '   ', 'grant-empty-reason')$$,
   'P0001', null, 'a promotional grant must record a reason'
 );
+select throws_ok(
+  $$select public.communication_sms_grant_promotional_credit(
+    'c2c40000-0000-4000-8000-000000000001', 500, now() + interval '30 days', 'promo', ' ')$$,
+  'P0001', null, 'a promotional grant must record an idempotency key'
+);
 select is(
-  (public.communication_sms_grant_promotional_credit(
-    'c2c40000-0000-4000-8000-000000000001', 500, now() + interval '30 days', 'welcome credit')).status,
+  (select status from public.communication_sms_grant_promotional_credit(
+    'c2c40000-0000-4000-8000-000000000001', 500, now() + interval '30 days', 'welcome credit', 'org1-welcome')),
   'active', 'a valid promotional grant is active'
 );
 select public.communication_sms_grant_promotional_credit(
-  'c2c40000-0000-4000-8000-000000000001', 300, now() + interval '10 days', 'second grant');
+  'c2c40000-0000-4000-8000-000000000001', 300, now() + interval '10 days', 'second grant', 'org1-second-grant');
 select is(
   public.communication_sms_promotional_balance('c2c40000-0000-4000-8000-000000000001'),
   800::bigint, 'the live promotional balance sums active, unexpired grants'
 );
 
 -- An expired grant does not count toward the live balance (expiry derived on read, not swept).
-insert into public.communication_sms_promotional_credits (organization_id, amount_minor, expires_at, reason, granted_at)
+insert into public.communication_sms_promotional_credits
+  (organization_id, amount_minor, expires_at, reason, granted_at, idempotency_key)
 values ('c2c40000-0000-4000-8000-000000000001', 999, now() - interval '1 second', 'expired promo',
-        now() - interval '2 days');
+        now() - interval '2 days', 'org1-expired-promo');
 select is(
   public.communication_sms_promotional_balance('c2c40000-0000-4000-8000-000000000001'),
   800::bigint, 'an expired grant is excluded from the live promotional balance'
 );
 
 -- Revocation validation and effect.
-insert into public.communication_sms_promotional_credits (id, organization_id, amount_minor, expires_at, reason)
+insert into public.communication_sms_promotional_credits
+  (id, organization_id, amount_minor, expires_at, reason, idempotency_key)
 values ('c2c4c9ed-0000-4000-8000-000000000001', 'c2c40000-0000-4000-8000-000000000001', 200,
-        now() + interval '20 days', 'to be revoked');
+        now() + interval '20 days', 'to be revoked', 'org1-to-be-revoked');
 select throws_ok(
   $$select public.communication_sms_revoke_promotional_credit('c2c4c9ed-0000-4000-8000-000000000001',
     'c2c4ac70-0000-4000-8000-000000000009', '  ')$$,
@@ -198,16 +205,20 @@ select public.communication_sms_confirm_credit_topup(
   'c2c4700b-0000-4000-8000-000000000001', 'c2c4ac70-0000-4000-8000-000000000009', 10000, 'wire received');
 
 select throws_ok(
-  $$select public.communication_sms_record_adjustment('c2c40000-0000-4000-8000-000000000002', 0, 'noop')$$,
+  $$select public.communication_sms_record_adjustment('c2c40000-0000-4000-8000-000000000002', 0, 'noop', 'adj-noop')$$,
   'P0001', null, 'an adjustment must move a non-zero amount'
 );
 select throws_ok(
-  $$select public.communication_sms_record_adjustment('c2c40000-0000-4000-8000-000000000002', 100, '  ')$$,
+  $$select public.communication_sms_record_adjustment('c2c40000-0000-4000-8000-000000000002', 100, '  ', 'adj-empty-reason')$$,
   'P0001', null, 'an adjustment must record a reason'
 );
+select throws_ok(
+  $$select public.communication_sms_record_adjustment('c2c40000-0000-4000-8000-000000000002', 100, 'reason', ' ')$$,
+  'P0001', null, 'an adjustment must record an idempotency key'
+);
 select is(
-  (public.communication_sms_record_adjustment(
-    'c2c40000-0000-4000-8000-000000000002', 1500, 'goodwill correction')).entry_kind,
+  (select entry_kind from public.communication_sms_record_adjustment(
+    'c2c40000-0000-4000-8000-000000000002', 1500, 'goodwill correction', 'org2-adj-goodwill')),
   'adjustment', 'a positive adjustment posts an adjustment ledger entry'
 );
 select is(
@@ -216,8 +227,8 @@ select is(
   11500::bigint, 'a positive adjustment raises the settled balance'
 );
 select is(
-  (public.communication_sms_record_adjustment(
-    'c2c40000-0000-4000-8000-000000000002', -500, 'billing correction')).amount_minor,
+  (select amount_minor from public.communication_sms_record_adjustment(
+    'c2c40000-0000-4000-8000-000000000002', -500, 'billing correction', 'org2-adj-billing')),
   -500::bigint, 'a negative adjustment posts a negative ledger entry'
 );
 select is(
@@ -232,7 +243,7 @@ set reserved_balance_minor = 9000
 where organization_id = 'c2c40000-0000-4000-8000-000000000002';
 select throws_ok(
   $$select public.communication_sms_record_adjustment(
-    'c2c40000-0000-4000-8000-000000000002', -5000, 'too much')$$,
+    'c2c40000-0000-4000-8000-000000000002', -5000, 'too much', 'org2-adj-too-much')$$,
   'P0001', null, 'an adjustment below the reserved funds is refused'
 );
 select is(
@@ -246,20 +257,28 @@ where organization_id = 'c2c40000-0000-4000-8000-000000000002';
 
 -- Refund validation and effect.
 select throws_ok(
-  $$select public.communication_sms_record_refund('c2c40000-0000-4000-8000-000000000002', -100, 'bad')$$,
+  $$select public.communication_sms_record_refund('c2c40000-0000-4000-8000-000000000002', -100, 'bad', 'refund-negative')$$,
   'P0001', null, 'a refund must be a positive amount'
 );
 select throws_ok(
-  $$select public.communication_sms_record_refund('c2c40000-0000-4000-8000-000000000001', 100, 'no account')$$,
+  $$select public.communication_sms_record_refund('c2c40000-0000-4000-8000-000000000002', 100, '   ', 'refund-empty-reason')$$,
+  'P0001', null, 'a refund must record a reason'
+);
+select throws_ok(
+  $$select public.communication_sms_record_refund('c2c40000-0000-4000-8000-000000000002', 100, 'reason', ' ')$$,
+  'P0001', null, 'a refund must record an idempotency key'
+);
+select throws_ok(
+  $$select public.communication_sms_record_refund('c2c40000-0000-4000-8000-000000000001', 100, 'no account', 'refund-no-account')$$,
   'P0001', null, 'a refund needs an existing credit account'
 );
 select throws_ok(
-  $$select public.communication_sms_record_refund('c2c40000-0000-4000-8000-000000000002', 999999, 'too big')$$,
+  $$select public.communication_sms_record_refund('c2c40000-0000-4000-8000-000000000002', 999999, 'too big', 'refund-too-big')$$,
   'P0001', null, 'a refund exceeding the unreserved settled balance is refused'
 );
 select is(
-  (public.communication_sms_record_refund(
-    'c2c40000-0000-4000-8000-000000000002', 1000, 'partial refund')).entry_kind,
+  (select entry_kind from public.communication_sms_record_refund(
+    'c2c40000-0000-4000-8000-000000000002', 1000, 'partial refund', 'org2-refund-partial')),
   'refund', 'a refund posts a refund ledger entry'
 );
 select is(
@@ -282,7 +301,7 @@ select is(
 
 -- Spendable balance = unreserved settled credit + live promotional credit.
 select public.communication_sms_grant_promotional_credit(
-  'c2c40000-0000-4000-8000-000000000002', 250, now() + interval '5 days', 'spendable check');
+  'c2c40000-0000-4000-8000-000000000002', 250, now() + interval '5 days', 'spendable check', 'org2-spendable-check');
 update public.communication_sms_credit_accounts
 set reserved_balance_minor = 2000
 where organization_id = 'c2c40000-0000-4000-8000-000000000002';
@@ -369,6 +388,90 @@ select is(
   (select pause_scope from public.communication_sms_outbound_state(
     'c2c40000-0000-4000-8000-000000000002', 'US', 'toll_free', 'operational notifications')),
   null, 'a not-yet-ready capability shows no pause cause'
+);
+
+-- ---------------------------------------------------------------------------------------------------------------
+-- Retry safety: grant / adjustment / refund never double-apply when called twice with the same idempotency key.
+-- ---------------------------------------------------------------------------------------------------------------
+insert into public.organizations (id, name, slug, lifecycle_status) values
+  ('c2c40000-0000-4000-8000-000000000004', 'Holds Org R', 'holds-org-r', 'active');
+
+select is(
+  (select applied from public.communication_sms_grant_promotional_credit(
+    'c2c40000-0000-4000-8000-000000000004', 500, now() + interval '30 days', 'retry test', 'grant-key-one')),
+  true, 'a fresh promotional grant is applied'
+);
+select is(
+  (select applied from public.communication_sms_grant_promotional_credit(
+    'c2c40000-0000-4000-8000-000000000004', 500, now() + interval '30 days', 'retry test', 'grant-key-one')),
+  false, 'a repeated grant with the same idempotency key is a no-op replay'
+);
+select is(
+  (select count(*)::int from public.communication_sms_promotional_credits
+   where organization_id = 'c2c40000-0000-4000-8000-000000000004'),
+  1, 'a repeated grant call never creates a second row'
+);
+select is(
+  public.communication_sms_promotional_balance('c2c40000-0000-4000-8000-000000000004'),
+  500::bigint, 'a repeated grant never doubles the promotional balance'
+);
+select is(
+  (select applied from public.communication_sms_grant_promotional_credit(
+    'c2c40000-0000-4000-8000-000000000004', 100, now() + interval '30 days', 'second real grant', 'grant-key-two')),
+  true, 'a different idempotency key is a genuinely new grant'
+);
+select is(
+  public.communication_sms_promotional_balance('c2c40000-0000-4000-8000-000000000004'),
+  600::bigint, 'a genuinely new grant does add to the balance'
+);
+
+-- Fund Org R with a confirmed top-up so adjustment/refund retries have a real balance to move.
+insert into public.communication_sms_credit_topup_requests (id, organization_id, requested_by, requested_amount_minor)
+values ('c2c4700b-0000-4000-8000-000000000002', 'c2c40000-0000-4000-8000-000000000004',
+        'c2c4ac70-0000-4000-8000-000000000001', 5000);
+select public.communication_sms_confirm_credit_topup(
+  'c2c4700b-0000-4000-8000-000000000002', 'c2c4ac70-0000-4000-8000-000000000009', 5000, 'wire received');
+
+select is(
+  (select applied from public.communication_sms_record_adjustment(
+    'c2c40000-0000-4000-8000-000000000004', 300, 'goodwill', 'adj-key-one')),
+  true, 'a fresh adjustment is applied'
+);
+select is(
+  (select applied from public.communication_sms_record_adjustment(
+    'c2c40000-0000-4000-8000-000000000004', 300, 'goodwill', 'adj-key-one')),
+  false, 'a repeated adjustment with the same idempotency key is a no-op replay'
+);
+select is(
+  (select settled_balance_minor from public.communication_sms_credit_accounts
+   where organization_id = 'c2c40000-0000-4000-8000-000000000004'),
+  5300::bigint, 'a repeated adjustment call never doubles the settled balance'
+);
+select is(
+  (select count(*)::int from public.communication_sms_credit_ledger_entries
+   where organization_id = 'c2c40000-0000-4000-8000-000000000004' and entry_kind = 'adjustment'),
+  1, 'a repeated adjustment call never creates a second ledger entry'
+);
+
+select is(
+  (select applied from public.communication_sms_record_refund(
+    'c2c40000-0000-4000-8000-000000000004', 200, 'offsite refund', 'refund-key-one')),
+  true, 'a fresh refund is applied'
+);
+select is(
+  (select applied from public.communication_sms_record_refund(
+    'c2c40000-0000-4000-8000-000000000004', 200, 'offsite refund', 'refund-key-one')),
+  false, 'a repeated refund with the same idempotency key is a no-op replay'
+);
+select is(
+  (select settled_balance_minor from public.communication_sms_credit_accounts
+   where organization_id = 'c2c40000-0000-4000-8000-000000000004'),
+  5100::bigint, 'a repeated refund call never doubles the settled-balance reduction'
+);
+select is(
+  (select count(*)::int from public.communication_sms_credit_ledger_entries
+   where organization_id = 'c2c40000-0000-4000-8000-000000000004' and entry_kind = 'refund'),
+  1, 'a repeated refund call never creates a second ledger entry'
 );
 
 -- Tenant isolation: none of Org A's/Org B's money or holds touched Org P.
