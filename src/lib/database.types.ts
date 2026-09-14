@@ -3252,6 +3252,109 @@ export type Database = {
 					}
 				];
 			};
+			communication_sms_credit_topup_requests: {
+				Row: {
+					currency_code: string;
+					decided_at: string | null;
+					decided_by: string | null;
+					decision_reason: string | null;
+					id: string;
+					note: string | null;
+					offsite_reference: string | null;
+					organization_id: string;
+					requested_amount_minor: number;
+					requested_at: string;
+					requested_by: string;
+					settled_amount_minor: number | null;
+					status: string;
+				};
+				Insert: {
+					currency_code?: string;
+					decided_at?: string | null;
+					decided_by?: string | null;
+					decision_reason?: string | null;
+					id?: string;
+					note?: string | null;
+					offsite_reference?: string | null;
+					organization_id: string;
+					requested_amount_minor: number;
+					requested_at?: string;
+					requested_by: string;
+					settled_amount_minor?: number | null;
+					status?: string;
+				};
+				Update: {
+					currency_code?: string;
+					decided_at?: string | null;
+					decided_by?: string | null;
+					decision_reason?: string | null;
+					id?: string;
+					note?: string | null;
+					offsite_reference?: string | null;
+					organization_id?: string;
+					requested_amount_minor?: number;
+					requested_at?: string;
+					requested_by?: string;
+					settled_amount_minor?: number | null;
+					status?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_credit_topup_requests_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_sms_holds: {
+				Row: {
+					id: string;
+					organization_id: string | null;
+					placed_at: string;
+					placed_by: string | null;
+					reason: string;
+					release_reason: string | null;
+					released_at: string | null;
+					released_by: string | null;
+					scope: string;
+					status: string;
+				};
+				Insert: {
+					id?: string;
+					organization_id?: string | null;
+					placed_at?: string;
+					placed_by?: string | null;
+					reason: string;
+					release_reason?: string | null;
+					released_at?: string | null;
+					released_by?: string | null;
+					scope: string;
+					status?: string;
+				};
+				Update: {
+					id?: string;
+					organization_id?: string | null;
+					placed_at?: string;
+					placed_by?: string | null;
+					reason?: string;
+					release_reason?: string | null;
+					released_at?: string | null;
+					released_by?: string | null;
+					scope?: string;
+					status?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_holds_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			communication_sms_message_snapshots: {
 				Row: {
 					body: string;
@@ -3290,6 +3393,100 @@ export type Database = {
 					},
 					{
 						foreignKeyName: 'communication_sms_message_snapshots_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_sms_org_modes: {
+				Row: {
+					chosen_mode: string;
+					created_at: string;
+					organization_id: string;
+					override_mode: string | null;
+					override_reason: string | null;
+					package_max_mode: string;
+					set_by: string | null;
+					updated_at: string;
+				};
+				Insert: {
+					chosen_mode?: string;
+					created_at?: string;
+					organization_id: string;
+					override_mode?: string | null;
+					override_reason?: string | null;
+					package_max_mode?: string;
+					set_by?: string | null;
+					updated_at?: string;
+				};
+				Update: {
+					chosen_mode?: string;
+					created_at?: string;
+					organization_id?: string;
+					override_mode?: string | null;
+					override_reason?: string | null;
+					package_max_mode?: string;
+					set_by?: string | null;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_org_modes_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: true;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_sms_promotional_credits: {
+				Row: {
+					amount_minor: number;
+					currency_code: string;
+					expires_at: string;
+					granted_at: string;
+					granted_by: string | null;
+					id: string;
+					organization_id: string;
+					reason: string;
+					revoke_reason: string | null;
+					revoked_at: string | null;
+					revoked_by: string | null;
+					status: string;
+				};
+				Insert: {
+					amount_minor: number;
+					currency_code?: string;
+					expires_at: string;
+					granted_at?: string;
+					granted_by?: string | null;
+					id?: string;
+					organization_id: string;
+					reason: string;
+					revoke_reason?: string | null;
+					revoked_at?: string | null;
+					revoked_by?: string | null;
+					status?: string;
+				};
+				Update: {
+					amount_minor?: number;
+					currency_code?: string;
+					expires_at?: string;
+					granted_at?: string;
+					granted_by?: string | null;
+					id?: string;
+					organization_id?: string;
+					reason?: string;
+					revoke_reason?: string | null;
+					revoked_at?: string | null;
+					revoked_by?: string | null;
+					status?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_promotional_credits_organization_id_fkey';
 						columns: ['organization_id'];
 						isOneToOne: false;
 						referencedRelation: 'organizations';
@@ -3363,38 +3560,207 @@ export type Database = {
 					}
 				];
 			};
+			communication_sms_registration_events: {
+				Row: {
+					created_at: string;
+					created_by: string | null;
+					detail: string | null;
+					event_type: string;
+					from_status: string | null;
+					id: string;
+					organization_id: string;
+					provider_outcome: string | null;
+					registration_id: string;
+					to_status: string | null;
+				};
+				Insert: {
+					created_at?: string;
+					created_by?: string | null;
+					detail?: string | null;
+					event_type: string;
+					from_status?: string | null;
+					id?: string;
+					organization_id: string;
+					provider_outcome?: string | null;
+					registration_id: string;
+					to_status?: string | null;
+				};
+				Update: {
+					created_at?: string;
+					created_by?: string | null;
+					detail?: string | null;
+					event_type?: string;
+					from_status?: string | null;
+					id?: string;
+					organization_id?: string;
+					provider_outcome?: string | null;
+					registration_id?: string;
+					to_status?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_registration_events_registration_fk';
+						columns: ['organization_id', 'registration_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_registrations';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			communication_sms_registrations: {
+				Row: {
+					attested_at: string | null;
+					attested_by: string | null;
+					country_code: string;
+					created_at: string;
+					id: string;
+					last_checked_at: string | null;
+					organization_id: string;
+					provider_outcome: string | null;
+					provider_registration_sid: string | null;
+					required_fixes: string | null;
+					sender_type: string;
+					status: string;
+					submitted_at: string | null;
+					updated_at: string;
+					use_case: string;
+				};
+				Insert: {
+					attested_at?: string | null;
+					attested_by?: string | null;
+					country_code: string;
+					created_at?: string;
+					id?: string;
+					last_checked_at?: string | null;
+					organization_id: string;
+					provider_outcome?: string | null;
+					provider_registration_sid?: string | null;
+					required_fixes?: string | null;
+					sender_type: string;
+					status?: string;
+					submitted_at?: string | null;
+					updated_at?: string;
+					use_case: string;
+				};
+				Update: {
+					attested_at?: string | null;
+					attested_by?: string | null;
+					country_code?: string;
+					created_at?: string;
+					id?: string;
+					last_checked_at?: string | null;
+					organization_id?: string;
+					provider_outcome?: string | null;
+					provider_registration_sid?: string | null;
+					required_fixes?: string | null;
+					sender_type?: string;
+					status?: string;
+					submitted_at?: string | null;
+					updated_at?: string;
+					use_case?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_registrations_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_sms_retail_rates: {
+				Row: {
+					created_at: string;
+					currency_code: string;
+					destination: string;
+					effective_from: string;
+					id: string;
+					message_unit: string;
+					note: string | null;
+					provider_cost_major: number | null;
+					retail_rate_major: number;
+					sender_type: string;
+					set_by: string;
+				};
+				Insert: {
+					created_at?: string;
+					currency_code?: string;
+					destination: string;
+					effective_from?: string;
+					id?: string;
+					message_unit: string;
+					note?: string | null;
+					provider_cost_major?: number | null;
+					retail_rate_major: number;
+					sender_type: string;
+					set_by: string;
+				};
+				Update: {
+					created_at?: string;
+					currency_code?: string;
+					destination?: string;
+					effective_from?: string;
+					id?: string;
+					message_unit?: string;
+					note?: string | null;
+					provider_cost_major?: number | null;
+					retail_rate_major?: number;
+					sender_type?: string;
+					set_by?: string;
+				};
+				Relationships: [];
+			};
 			communication_sms_sender_identities: {
 				Row: {
 					allows_automated: boolean;
 					allows_manual: boolean;
+					capable_mms: boolean;
+					capable_sms: boolean;
+					capable_voice: boolean;
+					country_code: string | null;
 					created_at: string;
 					display_name: string | null;
 					id: string;
 					lifecycle_state: string;
 					organization_id: string;
 					phone_number: string;
+					registration_id: string | null;
+					sender_type: string | null;
 					updated_at: string;
 				};
 				Insert: {
 					allows_automated?: boolean;
 					allows_manual?: boolean;
+					capable_mms?: boolean;
+					capable_sms?: boolean;
+					capable_voice?: boolean;
+					country_code?: string | null;
 					created_at?: string;
 					display_name?: string | null;
 					id?: string;
 					lifecycle_state?: string;
 					organization_id: string;
 					phone_number: string;
+					registration_id?: string | null;
+					sender_type?: string | null;
 					updated_at?: string;
 				};
 				Update: {
 					allows_automated?: boolean;
 					allows_manual?: boolean;
+					capable_mms?: boolean;
+					capable_sms?: boolean;
+					capable_voice?: boolean;
+					country_code?: string | null;
 					created_at?: string;
 					display_name?: string | null;
 					id?: string;
 					lifecycle_state?: string;
 					organization_id?: string;
 					phone_number?: string;
+					registration_id?: string | null;
+					sender_type?: string | null;
 					updated_at?: string;
 				};
 				Relationships: [
@@ -3404,6 +3770,13 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'organizations';
 						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_sender_identities_registration_fk';
+						columns: ['organization_id', 'registration_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_registrations';
+						referencedColumns: ['organization_id', 'id'];
 					}
 				];
 			};
@@ -12622,6 +12995,566 @@ export type Database = {
 				Args: { p_request_id: string };
 				Returns: Json;
 			};
+			communication_sms_active_outbound_hold: {
+				Args: { p_organization_id: string };
+				Returns: {
+					placed_at: string;
+					reason: string;
+					scope: string;
+				}[];
+			};
+			communication_sms_cancel_credit_topup: {
+				Args: { p_cancelled_by: string; p_request_id: string };
+				Returns: {
+					currency_code: string;
+					decided_at: string | null;
+					decided_by: string | null;
+					decision_reason: string | null;
+					id: string;
+					note: string | null;
+					offsite_reference: string | null;
+					organization_id: string;
+					requested_amount_minor: number;
+					requested_at: string;
+					requested_by: string;
+					settled_amount_minor: number | null;
+					status: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_credit_topup_requests';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_confirm_credit_topup: {
+				Args: {
+					p_decided_by: string;
+					p_decision_reason?: string;
+					p_request_id: string;
+					p_settled_amount_minor: number;
+				};
+				Returns: {
+					currency_code: string;
+					decided_at: string | null;
+					decided_by: string | null;
+					decision_reason: string | null;
+					id: string;
+					note: string | null;
+					offsite_reference: string | null;
+					organization_id: string;
+					requested_amount_minor: number;
+					requested_at: string;
+					requested_by: string;
+					settled_amount_minor: number | null;
+					status: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_credit_topup_requests';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_effective_mode: {
+				Args: { p_organization_id: string };
+				Returns: string;
+			};
+			communication_sms_effective_retail_rate: {
+				Args: {
+					p_at?: string;
+					p_currency_code?: string;
+					p_destination: string;
+					p_message_unit: string;
+					p_sender_type: string;
+				};
+				Returns: {
+					created_at: string;
+					currency_code: string;
+					destination: string;
+					effective_from: string;
+					id: string;
+					message_unit: string;
+					note: string | null;
+					provider_cost_major: number | null;
+					retail_rate_major: number;
+					sender_type: string;
+					set_by: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_retail_rates';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_grant_promotional_credit: {
+				Args: {
+					p_amount_minor: number;
+					p_currency_code?: string;
+					p_expires_at: string;
+					p_granted_by?: string;
+					p_organization_id: string;
+					p_reason: string;
+				};
+				Returns: {
+					amount_minor: number;
+					currency_code: string;
+					expires_at: string;
+					granted_at: string;
+					granted_by: string | null;
+					id: string;
+					organization_id: string;
+					reason: string;
+					revoke_reason: string | null;
+					revoked_at: string | null;
+					revoked_by: string | null;
+					status: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_promotional_credits';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_outbound_state: {
+				Args: {
+					p_country_code: string;
+					p_organization_id: string;
+					p_sender_type: string;
+					p_use_case: string;
+				};
+				Returns: {
+					effective_mode: string;
+					live_sender_count: number;
+					pause_reason: string;
+					pause_scope: string;
+					registration_status: string;
+					state: string;
+				}[];
+			};
+			communication_sms_place_hold: {
+				Args: {
+					p_organization_id: string;
+					p_placed_by?: string;
+					p_reason: string;
+					p_scope: string;
+				};
+				Returns: {
+					id: string;
+					organization_id: string | null;
+					placed_at: string;
+					placed_by: string | null;
+					reason: string;
+					release_reason: string | null;
+					released_at: string | null;
+					released_by: string | null;
+					scope: string;
+					status: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_holds';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_promotional_balance: {
+				Args: { p_organization_id: string };
+				Returns: number;
+			};
+			communication_sms_readiness: {
+				Args: {
+					p_country_code: string;
+					p_organization_id: string;
+					p_sender_type: string;
+					p_use_case: string;
+				};
+				Returns: {
+					effective_mode: string;
+					live_sender_count: number;
+					readiness_state: string;
+					registration_status: string;
+				}[];
+			};
+			communication_sms_record_adjustment: {
+				Args: {
+					p_actor?: string;
+					p_amount_minor: number;
+					p_currency_code?: string;
+					p_organization_id: string;
+					p_reason: string;
+				};
+				Returns: {
+					amount_minor: number;
+					balance_after_minor: number;
+					entry_kind: string;
+					id: string;
+					occurred_at: string;
+					organization_id: string;
+					reservation_id: string | null;
+					source_key: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_credit_ledger_entries';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_record_refund: {
+				Args: {
+					p_actor?: string;
+					p_amount_minor: number;
+					p_organization_id: string;
+					p_reason: string;
+				};
+				Returns: {
+					amount_minor: number;
+					balance_after_minor: number;
+					entry_kind: string;
+					id: string;
+					occurred_at: string;
+					organization_id: string;
+					reservation_id: string | null;
+					source_key: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_credit_ledger_entries';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_record_registration_check: {
+				Args: {
+					p_checked_by?: string;
+					p_detail?: string;
+					p_registration_id: string;
+				};
+				Returns: {
+					attested_at: string | null;
+					attested_by: string | null;
+					country_code: string;
+					created_at: string;
+					id: string;
+					last_checked_at: string | null;
+					organization_id: string;
+					provider_outcome: string | null;
+					provider_registration_sid: string | null;
+					required_fixes: string | null;
+					sender_type: string;
+					status: string;
+					submitted_at: string | null;
+					updated_at: string;
+					use_case: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_registrations';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_record_registration_outcome: {
+				Args: {
+					p_decided_by?: string;
+					p_provider_outcome?: string;
+					p_registration_id: string;
+					p_required_fixes?: string;
+					p_status: string;
+				};
+				Returns: {
+					attested_at: string | null;
+					attested_by: string | null;
+					country_code: string;
+					created_at: string;
+					id: string;
+					last_checked_at: string | null;
+					organization_id: string;
+					provider_outcome: string | null;
+					provider_registration_sid: string | null;
+					required_fixes: string | null;
+					sender_type: string;
+					status: string;
+					submitted_at: string | null;
+					updated_at: string;
+					use_case: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_registrations';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_reject_credit_topup: {
+				Args: {
+					p_decided_by: string;
+					p_decision_reason: string;
+					p_request_id: string;
+				};
+				Returns: {
+					currency_code: string;
+					decided_at: string | null;
+					decided_by: string | null;
+					decision_reason: string | null;
+					id: string;
+					note: string | null;
+					offsite_reference: string | null;
+					organization_id: string;
+					requested_amount_minor: number;
+					requested_at: string;
+					requested_by: string;
+					settled_amount_minor: number | null;
+					status: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_credit_topup_requests';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_release_hold: {
+				Args: {
+					p_hold_id: string;
+					p_release_reason: string;
+					p_released_by: string;
+				};
+				Returns: {
+					id: string;
+					organization_id: string | null;
+					placed_at: string;
+					placed_by: string | null;
+					reason: string;
+					release_reason: string | null;
+					released_at: string | null;
+					released_by: string | null;
+					scope: string;
+					status: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_holds';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_request_credit_topup: {
+				Args: {
+					p_currency_code?: string;
+					p_note?: string;
+					p_offsite_reference?: string;
+					p_organization_id: string;
+					p_requested_amount_minor: number;
+					p_requested_by: string;
+				};
+				Returns: {
+					currency_code: string;
+					decided_at: string | null;
+					decided_by: string | null;
+					decision_reason: string | null;
+					id: string;
+					note: string | null;
+					offsite_reference: string | null;
+					organization_id: string;
+					requested_amount_minor: number;
+					requested_at: string;
+					requested_by: string;
+					settled_amount_minor: number | null;
+					status: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_credit_topup_requests';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_revoke_promotional_credit: {
+				Args: { p_credit_id: string; p_reason: string; p_revoked_by: string };
+				Returns: {
+					amount_minor: number;
+					currency_code: string;
+					expires_at: string;
+					granted_at: string;
+					granted_by: string | null;
+					id: string;
+					organization_id: string;
+					reason: string;
+					revoke_reason: string | null;
+					revoked_at: string | null;
+					revoked_by: string | null;
+					status: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_promotional_credits';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_set_org_mode: {
+				Args: {
+					p_chosen_mode?: string;
+					p_clear_override?: boolean;
+					p_organization_id: string;
+					p_override_mode?: string;
+					p_override_reason?: string;
+					p_package_max_mode?: string;
+					p_set_by?: string;
+				};
+				Returns: {
+					chosen_mode: string;
+					created_at: string;
+					organization_id: string;
+					override_mode: string | null;
+					override_reason: string | null;
+					package_max_mode: string;
+					set_by: string | null;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_org_modes';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_set_retail_rate: {
+				Args: {
+					p_currency_code?: string;
+					p_destination: string;
+					p_effective_from?: string;
+					p_message_unit: string;
+					p_note?: string;
+					p_provider_cost_major?: number;
+					p_retail_rate_major: number;
+					p_sender_type: string;
+					p_set_by: string;
+				};
+				Returns: {
+					created_at: string;
+					currency_code: string;
+					destination: string;
+					effective_from: string;
+					id: string;
+					message_unit: string;
+					note: string | null;
+					provider_cost_major: number | null;
+					retail_rate_major: number;
+					sender_type: string;
+					set_by: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_retail_rates';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_set_sender_capabilities: {
+				Args: {
+					p_capable_mms?: boolean;
+					p_capable_sms: boolean;
+					p_capable_voice?: boolean;
+					p_country_code: string;
+					p_registration_id?: string;
+					p_sender_identity_id: string;
+					p_sender_type: string;
+				};
+				Returns: {
+					allows_automated: boolean;
+					allows_manual: boolean;
+					capable_mms: boolean;
+					capable_sms: boolean;
+					capable_voice: boolean;
+					country_code: string | null;
+					created_at: string;
+					display_name: string | null;
+					id: string;
+					lifecycle_state: string;
+					organization_id: string;
+					phone_number: string;
+					registration_id: string | null;
+					sender_type: string | null;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_sender_identities';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_spendable_balance: {
+				Args: { p_organization_id: string };
+				Returns: number;
+			};
+			communication_sms_start_registration: {
+				Args: {
+					p_actor?: string;
+					p_country_code: string;
+					p_organization_id: string;
+					p_sender_type: string;
+					p_use_case: string;
+				};
+				Returns: {
+					attested_at: string | null;
+					attested_by: string | null;
+					country_code: string;
+					created_at: string;
+					id: string;
+					last_checked_at: string | null;
+					organization_id: string;
+					provider_outcome: string | null;
+					provider_registration_sid: string | null;
+					required_fixes: string | null;
+					sender_type: string;
+					status: string;
+					submitted_at: string | null;
+					updated_at: string;
+					use_case: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_registrations';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_submit_registration: {
+				Args: {
+					p_attested_by: string;
+					p_provider_registration_sid?: string;
+					p_registration_id: string;
+				};
+				Returns: {
+					attested_at: string | null;
+					attested_by: string | null;
+					country_code: string;
+					created_at: string;
+					id: string;
+					last_checked_at: string | null;
+					organization_id: string;
+					provider_outcome: string | null;
+					provider_registration_sid: string | null;
+					required_fixes: string | null;
+					sender_type: string;
+					status: string;
+					submitted_at: string | null;
+					updated_at: string;
+					use_case: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_registrations';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			communication_twilio_complete_auth_token_rotation: {
 				Args: { p_account_id: string; p_retire_after: string };
 				Returns: undefined;
@@ -13937,6 +14870,36 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			financial_invoice_sales_page: {
+				Args: {
+					cursor_invoice_id?: string;
+					cursor_sale_date?: string;
+					page_limit?: number;
+					report_from: string;
+					report_to: string;
+					sort_direction?: string;
+					target_organization_id: string;
+				};
+				Returns: {
+					client_company_name: string;
+					client_display_name: string;
+					client_id: string;
+					created_at: string;
+					currency_code: string;
+					has_unsettled_legacy_closure: boolean;
+					invoice_id: string;
+					invoice_number: number;
+					net_sales_minor: number;
+					predecessor_invoice_id: string;
+					recognition_basis: string;
+					root_invoice_id: string;
+					sale_date: string;
+					subject: string;
+					tax_minor: number;
+					total_minor: number;
+					written_off_at: string;
+				}[];
 			};
 			find_team_invitation_auth_receipt: {
 				Args: { target_invitation_id: string };

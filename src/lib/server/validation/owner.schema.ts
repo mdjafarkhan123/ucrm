@@ -473,6 +473,29 @@ export const administratorEmailRecoverySchema = z.object({
 	idempotency_key: z.string().uuid('Start a new recovery and try again.')
 });
 
+// Stage 2C-5a: the owner confirms or rejects an offsite SMS credit top-up request. Confirming settles a
+// positive minor-unit amount (the DB caps the resulting balance); rejecting requires a reason. The
+// database command enforces the same rules, so validating here turns a would-be 409 into a field error.
+export const communicationSmsCreditTopupDecisionSchema = z.discriminatedUnion('action', [
+	z.object({
+		action: z.literal('confirm'),
+		settled_amount_minor: z
+			.number()
+			.int('Enter a whole amount in minor units.')
+			.positive('Enter an amount greater than zero.')
+			.max(100_000_000, 'That amount is too large.'),
+		decision_reason: z.string().trim().max(1000, 'Keep the note under 1,000 characters.').optional()
+	}),
+	z.object({
+		action: z.literal('reject'),
+		decision_reason: z
+			.string()
+			.trim()
+			.min(3, 'Enter a reason of at least 3 characters.')
+			.max(1000, 'Keep the reason under 1,000 characters.')
+	})
+]);
+
 export function zodOwnerFieldErrors(error: z.ZodError) {
 	return Object.fromEntries(
 		error.issues.map((issue) => [String(issue.path[0] ?? 'form'), issue.message] as const)
