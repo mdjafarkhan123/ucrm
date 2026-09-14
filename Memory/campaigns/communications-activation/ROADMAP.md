@@ -22,7 +22,7 @@ research is supporting reference, not authorization to code.
 | ---- | ----------------------------- | ----------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A1-D | Managed email-domain activation | Done — accepted 2026-08-30              | A1 outbound proof      | One owner action safely reconciles separate sending/receiving domains, Cloudflare DNS, Brevo verification and the domain webhook; the test domain passes                     |
 | A1-V | Finish email live verification | Done — accepted 2026-08-30              | A1-D                   | Fresh real email reaches a real inbox and replies; attachment, bounded backlog and one-day soak pass; recovery and monitored drain remain healthy                           |
-| A2   | SMS channel via Twilio        | In progress — Stages 1/2A/2B/2C done (see 2C parts below); contractor-facing implementation (Conversations, Automation, Phone & SMS settings) not started | Country capability and tenant registration | Approved behavior and UI blueprints cover Conversations, Automation, contractor settings and Jafar controls; an eligible contractor can send and receive SMS and use SMS in an eligible automation |
+| A2   | SMS channel via Twilio        | In progress — Stages 1/2A/2B/2C and 3A done; Stage 3B active (Phone & SMS registration UI) | Country capability and tenant registration | Approved behavior and UI blueprints cover Conversations, Automation, contractor settings and Jafar controls; an eligible contractor can send and receive SMS and use SMS in an eligible automation |
 | A3   | One-click marketing campaigns | Not scoped                                | A2                     | Contractor can send a segmented bulk campaign without risking transactional deliverability                                                                                  |
 
 ## Stage 2C parts (money + control layer; split for multi-session, Jafar approved 2026-09-14)
@@ -113,6 +113,59 @@ then owner API and Jafar UI come as their own later parts. No live SMS needed (A
     password was correctly rejected before the real one succeeded).
 
 **Stage 2C is complete.** This also closes A2's Jafar-UI planning item.
+
+## Stage 3 parts (contractor Settings; Jafar approved 2026-09-14)
+
+Follow the approved HighLevel model: Phone & SMS owns setup/readiness, SMS usage owns money and lean health,
+and neither duplicates Conversations or Jafar controls. Owner or administrator may attest only after explicitly
+confirming they are an authorized representative; preserve their identity, wording, time and submitted answers.
+
+- **3A Registration submission truth + contractor API — DONE 2026-09-14.** Versioned saved answers and an
+  immutable snapshot for every submission/resubmission; contractor owner/admin save and attest through
+  Zod-validated organization-scoped `/api/*` routes while provider submission remains Jafar's action. Gate met:
+  22 pgTAP, 7 focused Vitest, and full svelte-check green.
+- **3B Phone & SMS registration UI — DONE 2026-09-14 (commit a08b8f0).** Settings card, warm route, readiness
+  summary and guided registration form with draft/submitted/fixes states. Submit-500 fix: attestation constants
+  moved out of the submit `+server.ts` into `$lib/server/communications/sms-registration.ts`. Gate met:
+  browser-verified Submit → under_review with read-only lock, svelte-check clean, SMS-registration specs pass.
+  Committed scoped (SMS-only) out of an entangled tree; invoice Part 5A edits in shared files left untouched.
+- **3C Phone & SMS numbers, rules and holds — DONE 2026-09-15; depended on 3B (done).** Complete the approved page
+  without exposing provider-owned actions as direct contractor mutations. Jafar approved the GHL-matched scope
+  (2026-09-14): numbers are view/name/set-default self-service while buy/release stay owner/provider actions;
+  "Sending rules" becomes **Compliance & sender info** (opt-out text, sender ID, 1–60 day re-add) — business
+  hours live in Automation (Stage 5), matching where HighLevel puts each control (research:
+  help.gohighlevel.com SMS Compliance Settings + Phone Number Configuration articles). Split data → API → UI
+  like 2C.
+  - **3C-1 Data layer — DONE 2026-09-14 (verified local, UNAPPLIED to dev DB).** Migration
+    `20260918100000_communications_sms_numbers_defaults_and_compliance.sql`: `is_default_sender` on
+    sender_identities (one default per org via partial unique index) + `communication_sms_rename_sender` /
+    `communication_sms_set_default_sender` (ready + SMS-capable only, clears prior default) + new
+    `communication_sms_compliance_settings` (one row/org, opt-out + sender-info enable/text, 1–60 day interval)
+    + `communication_sms_set_compliance_settings` upsert. All server-owned (RLS on, no client policies; grants
+    to service_role only; commands are security-definer). 33/33 pgTAP green via `supabase db reset --local`.
+  - **3C-2 Contractor read/write APIs — DONE 2026-09-14.** 3C-1 migration `20260918100000_...` applied to the
+    remote dev DB via Supabase MCP (`apply_migration`/`execute_sql`; no CLI login needed), history row recorded
+    under that version, and `database.types.ts` scoped-updated by hand (MCP raw gen is one 610k-char line the
+    repo Prettier-formats, so a wholesale regen churns the whole file). Four org-scoped routes under
+    `src/routes/api/settings/communications/sms/`: `numbers/` GET, `numbers/[senderId]/` PATCH (rename |
+    set_default), `compliance/` GET+PATCH, `holds/` GET. `requireOrganizationAdmin('conversations.manage_
+    connections')` + Zod + owner client reads + command RPCs, mirroring the 3A template. Departure: the holds
+    GET returns active holds + an opt-out COUNT only (per-contact opt-out list is unbounded and scale-sensitive;
+    a search endpoint is deferred to 3C-3 if the UI needs it). Gate met: 10/10 vitest, svelte-check 0/3416,
+    Prettier clean, and the 3 RPC guards verified live on dev (0 stray rows). Files uncommitted (entangled tree).
+  - **3C-3 UI — DONE 2026-09-15.** Added Phone numbers, Compliance & sender info, and Holds/opt-outs sections to
+    `settings/communications/sms/+page.svelte`, backed by the 3C-2 endpoints, plus client lib
+    `$lib/communications/sms-settings.ts`. Numbers: list, inline rename, make-default (disabled unless
+    ready+SMS-capable); release/replacement have no backend yet, so they show as a "contact Jafar" notice rather
+    than a fake action. Compliance: two toggles + custom wording + 1–60 day interval, explicit Save. Holds: opt-out
+    count + active holds list, read-only. Gate met: svelte-check 0/3421, Prettier clean, 20/20 relevant vitest
+    green, and browser-verified live on dev (rename + compliance save round-tripped, toasts, no console errors).
+    3C is now fully done.
+- **3D SMS usage — Planned; depends on 3A.** Add balance, top-up requests, lean health and ledger using the
+  existing Stage 2C money truth.
+
+Stages 4–8 continue in `docs/communications-a2-implementation-plan.md`: shared send/worker, signed webhooks,
+Conversations SMS, Automation SMS, then reconciliation and live launch proof.
 
 ## Build principle (Jafar, durable 2026-08-30)
 
