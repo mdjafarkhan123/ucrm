@@ -3,6 +3,12 @@ import type { RequestHandler } from './$types';
 import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
 import { PRIVATE_READ_HEADERS, databaseError, notFound } from '$lib/server/api/errors';
 import { businessHoursIsSet, businessProfileReadiness } from '$lib/server/settings/readiness';
+import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import {
+	SMS_REGISTRATION_COUNTRY_CODE,
+	SMS_REGISTRATION_SENDER_TYPE,
+	SMS_REGISTRATION_USE_CASE
+} from '$lib/server/communications/sms-registration';
 
 // What the Settings home needs and nothing more: who is signed in, whether they may change business
 // settings, and one honest status per destination. No decorative badges — a card says something only
@@ -11,26 +17,50 @@ export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'settings.business.view');
 	if ('response' in check) return check.response;
 
-	const [settingsResult, profileResult, currencyLockResult] = await Promise.all([
-		event.locals.supabase
-			.from('organization_settings')
-			.select('timezone_confirmed_at, currency_confirmed_at, hours_mode')
-			.eq('organization_id', check.auth.organization.id)
-			.maybeSingle(),
-		event.locals.supabase
-			.from('profiles')
-			.select('full_name')
-			.eq('id', check.auth.user.id)
-			.maybeSingle(),
-		event.locals.supabase.rpc('organization_currency_is_locked', {
-			target_organization_id: check.auth.organization.id
-		})
-	]);
+	const communicationsManage = hasPermission(check.access, 'conversations.manage_connections');
+
+	const [settingsResult, profileResult, currencyLockResult, smsReadinessResult] = await Promise.all(
+		[
+			event.locals.supabase
+				.from('organization_settings')
+				.select('timezone_confirmed_at, currency_confirmed_at, hours_mode')
+				.eq('organization_id', check.auth.organization.id)
+				.maybeSingle(),
+			event.locals.supabase
+				.from('profiles')
+				.select('full_name')
+				.eq('id', check.auth.user.id)
+				.maybeSingle(),
+			event.locals.supabase.rpc('organization_currency_is_locked', {
+				target_organization_id: check.auth.organization.id
+			}),
+			// Read-only, so a member without the Communications permission never sees the SMS RPC skipped as an
+			// error -- the card itself stays hidden by permission and the readiness call is simply not needed.
+			communicationsManage
+				? getOwnerSupabaseClient().rpc('communication_sms_readiness', {
+						p_organization_id: check.auth.organization.id,
+						p_country_code: SMS_REGISTRATION_COUNTRY_CODE,
+						p_sender_type: SMS_REGISTRATION_SENDER_TYPE,
+						p_use_case: SMS_REGISTRATION_USE_CASE
+					})
+				: Promise.resolve(null)
+		]
+	);
 
 	if (settingsResult.error || currencyLockResult.error) return databaseError();
 	if (!settingsResult.data) return notFound('These business settings could not be found.');
 
 	const settings = settingsResult.data;
+
+	if (smsReadinessResult?.error) {
+		console.error(
+			'Could not compute SMS readiness for the Settings home.',
+			smsReadinessResult.error
+		);
+	}
+	const smsReadinessRow = Array.isArray(smsReadinessResult?.data)
+		? smsReadinessResult.data[0]
+		: smsReadinessResult?.data;
 
 	return json(
 		{
@@ -43,7 +73,7 @@ export const GET: RequestHandler = async (event) => {
 			permissions: {
 				business_edit: hasPermission(check.access, 'settings.business.edit'),
 				team_manage: hasPermission(check.access, 'team.manage'),
-				communications_manage: hasPermission(check.access, 'conversations.manage_connections'),
+				communications_manage: communicationsManage,
 				// Snippets are gated on the same permission as sending a message, not channel management --
 				// a granted staff member who can send but not manage connections still needs this card.
 				snippets_manage: hasPermission(check.access, 'conversations.send'),
@@ -64,7 +94,10 @@ export const GET: RequestHandler = async (event) => {
 					currency_confirmed_at: settings.currency_confirmed_at,
 					currency_locked: currencyLockResult.data === true
 				}),
-				business_hours_set: businessHoursIsSet(settings.hours_mode)
+				business_hours_set: businessHoursIsSet(settings.hours_mode),
+				sms_registration: communicationsManage
+					? { readiness_state: smsReadinessRow?.readiness_state ?? 'needs_setup' }
+					: null
 			}
 		},
 		{ headers: PRIVATE_READ_HEADERS }

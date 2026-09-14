@@ -25,6 +25,7 @@ export type SettingsHome = {
 	readiness: {
 		business_profile: { complete: boolean; missing: Array<'name' | 'timezone' | 'currency'> };
 		business_hours_set: boolean;
+		sms_registration: { readiness_state: string } | null;
 	};
 };
 

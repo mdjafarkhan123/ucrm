@@ -9,6 +9,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import { fetchSettingsHome, settingsHomeKey } from '$lib/settings/api';
+	import { smsRegistrationBadge } from '$lib/communications/sms-registration';
 	import { AUTOMATION_JOURNEY_READY } from '$lib/automation/journey';
 	import userIcon from '@tabler/icons/outline/user.svg?raw';
 	import buildingIcon from '@tabler/icons/outline/building-store.svg?raw';
@@ -25,6 +26,7 @@
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 	import mailOffIcon from '@tabler/icons/outline/mail-off.svg?raw';
 	import messageCircleIcon from '@tabler/icons/outline/message-circle.svg?raw';
+	import deviceMobileMessageIcon from '@tabler/icons/outline/device-mobile-message.svg?raw';
 	import templateIcon from '@tabler/icons/outline/template.svg?raw';
 	import robotIcon from '@tabler/icons/outline/robot.svg?raw';
 
@@ -179,6 +181,15 @@
 									title="Email identity"
 									description="Choose the email addresses staff and automations can use."
 								/>
+								{#if home.readiness.sms_registration}
+									<SettingsDestinationCard
+										href={resolve('/settings/communications/sms')}
+										icon={deviceMobileMessageIcon}
+										title="Phone & SMS"
+										description="Registration, sending numbers and texting readiness."
+										status={smsRegistrationBadge(home.readiness.sms_registration.readiness_state)}
+									/>
+								{/if}
 								<SettingsDestinationCard
 									href={resolve('/settings/communications/blocked-addresses')}
 									icon={mailOffIcon}
