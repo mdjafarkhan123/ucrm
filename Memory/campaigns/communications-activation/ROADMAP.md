@@ -37,8 +37,12 @@ then owner API and Jafar UI come as their own later parts. No live SMS needed (A
   destination/sender/message-unit + currency; applicable rate = latest whose effective_from has arrived;
   future-dated waits, retroactive refused; sends freeze the rate. Provider cost + margin server-owned/Jafar-only.
   Table `communication_sms_retail_rates` + `set_retail_rate`/`effective_retail_rate` commands; 26 pgTAP green.
-- **2C-3 Readiness & registration** — capabilities, plain readiness states, registration submission/history,
-  effective SMS mode, country readiness.
+- **2C-3 Readiness & registration — DONE 2026-09-14** (commit 7da6fe3). `communication_sms_registrations`
+  (one per org/country/sender-type/use-case; waiting_for_info→under_review→approved|action_needed) +
+  append-only `communication_sms_registration_events`; sender capabilities (country/type/SMS/MMS/Voice/
+  registration) added to `communication_sms_sender_identities`; `communication_sms_org_modes` (effective mode =
+  chosen capped by package ceiling unless Jafar override; no row = off, modes off|operational); readiness
+  computed on read via `communication_sms_readiness()`. 53 pgTAP green.
 - **2C-4 Holds + promotional credit** — distinct platform/org/provider holds + emergency provider suspension;
   promotional credit with expiry and standalone reasoned adjustments/refunds.
 - **2C-5 Owner commands (API)** — /api/* + Zod + reconfirmation + immutable audit across the above.
