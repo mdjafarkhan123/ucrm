@@ -54,6 +54,19 @@ then owner API and Jafar UI come as their own later parts. No live SMS needed (A
   `record_adjustment`/`record_refund` posting immutable ledger entries (pre-check gives friendly P0001, the
   accounts balances-check stays the backstop).
 - **2C-5 Owner commands (API)** — /api/* + Zod + reconfirmation + immutable audit across the above.
+  Split at a verified boundary; template established.
+  - **2C-5a Credit top-up decision API — DONE 2026-09-14** (commit 13788a0). Owner confirm/reject at
+    `/api/jafar/organizations/[organizationId]/communications/sms/credit-topups/[requestId]`; owner session
+    + Zod + step-up + org-scoped 404 guard + P0001→409 mapping. Actor attribution:
+    `PLATFORM_OWNER_ACTOR_ID` sentinel to the command + real email in `access_audit_events` via
+    `recordOwnerAccessAudit`. 7 vitest green; svelte-check 0. Also regenerated database.types.ts
+    (dev DB source of truth; carries the already-applied financial_invoice_sales_page type forward).
+  - **2C-5b Holds + promo + adjustments/refunds API** — org-scoped money/control endpoints (place/release
+    hold, grant/revoke promo, record adjustment/refund), each copying the 2C-5a template with step-up.
+  - **2C-5c Rates + readiness/registration/mode/capabilities API** — set retail rate + registration
+    start/submit/outcome/check + set org mode + set sender capabilities. NOTE: platform-scoped actions
+    (platform hold, global rates) have no organization_id, so `access_audit_events` (org_id NOT NULL) can't
+    hold them — decide a platform-audit target for those before building them.
 - **2C-6 Jafar owner UI** — extend Integrations / Commercial access / History & recovery + Operations health;
   no new dashboard.
 
