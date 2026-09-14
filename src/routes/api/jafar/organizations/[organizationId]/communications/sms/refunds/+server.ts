@@ -10,6 +10,34 @@ import {
 } from '$lib/server/validation/owner.schema';
 import { PLATFORM_OWNER_ACTOR_ID } from '$lib/server/communications/sms-owner';
 
+// Stage 2C-6: list one organization's SMS ledger refunds for the Jafar Commercial access tab. Read-only;
+// refunds are posted by the POST route below.
+export const GET: RequestHandler = async (event) => {
+	const session = await getOwnerSession(event);
+	if (!session) return ownerUnauthorized();
+
+	const parsedOrganizationId = organizationIdSchema.safeParse(event.params.organizationId);
+	if (!parsedOrganizationId.success) {
+		return json({ error: 'The organization identifier is invalid.' }, { status: 422 });
+	}
+
+	try {
+		const client = getOwnerSupabaseClient();
+		const { data: entries, error } = await client
+			.from('communication_sms_credit_ledger_entries')
+			.select('id, amount_minor, balance_after_minor, reason, occurred_at')
+			.eq('organization_id', parsedOrganizationId.data)
+			.eq('entry_kind', 'refund')
+			.order('occurred_at', { ascending: false });
+		if (error) throw error;
+
+		return json({ entries: entries ?? [] }, { headers: { 'cache-control': 'no-store' } });
+	} catch (error) {
+		console.error('Could not load the SMS refunds.', error);
+		return json({ error: 'The SMS refunds could not be loaded.' }, { status: 500 });
+	}
+};
+
 // Stage 2C-5b: the platform owner records an offsite refund of settled SMS credit. The database command
 // (20260917130000) is retry-safe: the same idempotency_key returns the prior ledger entry instead of posting
 // a second refund, so we only audit a genuinely new post (result.applied).

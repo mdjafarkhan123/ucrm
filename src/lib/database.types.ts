@@ -3168,6 +3168,7 @@ export type Database = {
           id: string
           occurred_at: string
           organization_id: string
+          reason: string | null
           reservation_id: string | null
           source_key: string
         }
@@ -3178,6 +3179,7 @@ export type Database = {
           id?: string
           occurred_at?: string
           organization_id: string
+          reason?: string | null
           reservation_id?: string | null
           source_key: string
         }
@@ -3188,6 +3190,7 @@ export type Database = {
           id?: string
           occurred_at?: string
           organization_id?: string
+          reason?: string | null
           reservation_id?: string | null
           source_key?: string
         }
@@ -13238,6 +13241,7 @@ export type Database = {
           id: string
           occurred_at: string
           organization_id: string
+          reason: string
           reservation_id: string
           source_key: string
         }[]
@@ -13258,6 +13262,7 @@ export type Database = {
           id: string
           occurred_at: string
           organization_id: string
+          reason: string
           reservation_id: string
           source_key: string
         }[]

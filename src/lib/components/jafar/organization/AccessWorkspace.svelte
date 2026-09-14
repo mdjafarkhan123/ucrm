@@ -25,6 +25,10 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import CommercialActions from '$lib/components/jafar/CommercialActions.svelte';
 	import FreeAccessActions from '$lib/components/jafar/FreeAccessActions.svelte';
+	import SmsCreditTopupActions from '$lib/components/jafar/SmsCreditTopupActions.svelte';
+	import SmsHoldActions from '$lib/components/jafar/SmsHoldActions.svelte';
+	import SmsPromotionalCreditActions from '$lib/components/jafar/SmsPromotionalCreditActions.svelte';
+	import SmsAdjustmentRefundActions from '$lib/components/jafar/SmsAdjustmentRefundActions.svelte';
 	import {
 		calendarDateFromString,
 		calendarDateToString,
@@ -609,6 +613,19 @@
 							originalEvents={commercialQuery.data.original_events}
 						/>
 					{/if}
+				</Card>
+
+				<Card class="organization-detail__commercial-explainer">
+					<SmsCreditTopupActions organizationId={access.organization.id} />
+				</Card>
+				<Card class="organization-detail__commercial-explainer">
+					<SmsHoldActions organizationId={access.organization.id} />
+				</Card>
+				<Card class="organization-detail__commercial-explainer">
+					<SmsPromotionalCreditActions organizationId={access.organization.id} />
+				</Card>
+				<Card class="organization-detail__commercial-explainer">
+					<SmsAdjustmentRefundActions organizationId={access.organization.id} />
 				</Card>
 
 				{#if isLegacyUnversioned}

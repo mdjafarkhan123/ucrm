@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { POST } from './+server';
+import { GET, POST } from './+server';
 import { consumeOwnerStepUp, getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { PLATFORM_OWNER_ACTOR_ID } from '$lib/server/communications/sms-owner';
@@ -37,6 +37,26 @@ function postEvent(body: unknown, org = organizationId) {
 	} as Parameters<typeof POST>[0];
 }
 
+function getEvent(org = organizationId) {
+	return { params: { organizationId: org }, cookies: {} } as Parameters<typeof GET>[0];
+}
+
+function creditListClient(credits: Record<string, unknown>[]) {
+	return {
+		from: (table: string) => {
+			if (table === 'communication_sms_promotional_credits') {
+				const builder = {
+					select: () => builder,
+					eq: () => builder,
+					order: () => Promise.resolve({ data: credits, error: null })
+				};
+				return builder;
+			}
+			throw new Error(`Unexpected table: ${table}`);
+		}
+	};
+}
+
 function grantClient(rpcResult: {
 	data: unknown;
 	error: { code: string; message: string } | null;
@@ -60,6 +80,35 @@ function validBody() {
 		idempotency_key: idempotencyKey
 	};
 }
+
+describe('platform owner SMS promotional-credit read', () => {
+	beforeEach(() => vi.clearAllMocks());
+
+	it('rejects callers without the separate owner session', async () => {
+		mockedOwnerSession.mockResolvedValue(null);
+
+		const response = await GET(getEvent());
+
+		expect(response.status).toBe(401);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it('lists this organization credits only', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		const client = creditListClient([
+			{ id: 'credit-1', status: 'active' },
+			{ id: 'credit-2', status: 'revoked' }
+		]);
+		mockedClient.mockReturnValue(client as never);
+
+		const response = await GET(getEvent());
+		const body = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(body.credits).toHaveLength(2);
+		expect(body.credits[0]).toMatchObject({ id: 'credit-1', status: 'active' });
+	});
+});
 
 describe('platform owner SMS promotional-credit grant boundary', () => {
 	beforeEach(() => vi.clearAllMocks());
