@@ -84,9 +84,26 @@ then owner API and Jafar UI come as their own later parts. No live SMS needed (A
     `CommunicationsWorkspace`'s Integrations section — mode edit, start/check/decide a registration, edit a
     sender's capabilities. None of these commands are on the step-up list (matches 2C-5c). 85/85 vitest
     (7 new) in the SMS owner API suite; svelte-check 0/3364 files; svelte-autofixer clean.
-  - **2C-6b Commercial access tab** — SMS credit top-ups, holds, promotional credits, adjustments/refunds
-    owner UI in `AccessWorkspace`. Not started.
-  - **2C-6c History & recovery tab** — SMS registration/audit history view in `ActivityWorkspace`. Not started.
+  - **2C-6b Commercial access tab — DONE 2026-09-14** (commit 59ed7dc). Added GET reads on the 5 write-only
+    routes (holds, promotional-credits, adjustments, refunds, credit-topups — new file) + 4 components
+    (`SmsCreditTopupActions`, `SmsHoldActions`, `SmsPromotionalCreditActions`, `SmsAdjustmentRefundActions`)
+    wired into `AccessWorkspace`. Fixed a gap found while building: the ledger table validated an
+    adjustment/refund reason but never stored it — migration `20260917150000_communications_sms_ledger_
+    entry_reason.sql` adds the column. 97/97 vitest (up from 72); svelte-check/prettier clean. Browser-
+    verified: all 4 GET sections render; hold place+release and a standalone adjustment round-tripped with
+    step-up, reason on read-back, and audit recording. Promo-credit grant/revoke and refund were not
+    live-tested (Chrome autofill made the password step-up field unreliable to automate this session) but
+    share the identical pattern and are covered by passing unit tests.
+  - **2C-6c History & recovery tab — DONE 2026-09-14** (commit 636a7c3). 2C-5's registration commands
+    (start/check/outcome) insert into the append-only `communication_sms_registration_events` table but
+    nothing read it back, so this part added the missing GET `.../sms/registration-events` (joins each
+    event with its registration's country/sender type/use case) + a read-only `SmsRegistrationHistory`
+    component wired into `ActivityWorkspace`'s existing "History and recovery" section. Also added friendly
+    labels for the 13 SMS event types already flowing into `access_audit_events` (top-ups, holds, promo
+    credits, adjustments/refunds, mode, sender capabilities, registration), which previously rendered as
+    raw snake_case strings in the generic activity table. 101/101 vitest (up from 97); svelte-check 0/3375;
+    browser-verified live (started a registration + recorded a readiness check for Raad LTD, both rows
+    appeared correctly).
   - **2C-6d Operations health** — platform-wide platform-holds + retail-rates owner UI, extending the
     existing top-level `/jafar/communications` page. Not started.
 

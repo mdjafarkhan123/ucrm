@@ -9,29 +9,30 @@ blocks flipping texting on later).
 ## Done (all committed)
 - 2C-1..2C-5c (top-up, rates, readiness/registration, holds+promo+adjustments/refunds, owner command API —
   org-scoped and platform-scoped) — see ROADMAP for commit hashes.
-- **2C-6a is done (commit 68c394c).**
-  New SMS reads (mode, registrations+readiness, sender-identities) + three owner-UI components wired into
-  `CommunicationsWorkspace`. 85/85 vitest, svelte-check 0/3364, svelte-autofixer clean.
+- 2C-6a (commit 68c394c). SMS reads (mode, registrations+readiness, sender-identities) + three owner-UI
+  components wired into `CommunicationsWorkspace`.
+- 2C-6b (commit 59ed7dc). Commercial access tab: GET reads on holds/promotional-credits/adjustments/
+  refunds/credit-topups + 4 owner-UI components wired into `AccessWorkspace`. Ledger entries now store their
+  reason (migration `20260917150000`). 97/97 vitest; browser-verified for holds and adjustments (promo
+  grant/revoke and refund covered by unit tests only — not live-clicked this session).
+- 2C-6c (commit 636a7c3). History & recovery tab: GET `.../sms/registration-events` (joins each append-only
+  registration event with its country/sender type/use case) + read-only `SmsRegistrationHistory` component
+  in `ActivityWorkspace`. Added friendly labels for the 13 SMS event types already in `access_audit_events`.
+  101/101 vitest; svelte-check 0/3375; browser-verified live for Raad LTD (start + readiness check both
+  appeared correctly).
 
 ## Exact next action (new session)
-Build **2C-6b: Commercial access tab** — SMS credit top-up decisions, holds (place/release), promotional
-credits (grant/revoke), and adjustments/refunds, as owner-UI components added to `AccessWorkspace` (the
-"Access & limits" tab), next to the existing `CommercialActions`. Same shape as 2C-6a: these commands are
-write-only today (built in 2C-5b), so add their GET reads first, then the components. Unlike 2C-6a, these
-commands ARE on the step-up list (reuse `OwnerReconfirmDialog`, the pattern already in `CommercialActions.svelte`).
+Start 2C-6d: platform-wide platform-holds + retail-rates owner UI, extending the existing top-level
+`/jafar/communications` page (per ROADMAP "Stage 2C parts"). No open decisions carried over — same template
+as 2C-6a/6b/6c (add missing GET reads first, then owner-UI components). This closes Stage 2C and A2's
+Jafar-UI planning item.
 
 ## Constraint (still current)
 A2P 10DLC (US "prove you're a real business" gate) can't be completed for Jafar's own test org — needs a real
-client (any country except Asia). Adopted number stays SMS-blocked until then. Model A2P as a per-contractor-org
-step. Does not block any 2C data/owner work.
+client (any country except Asia). Adopted number stays SMS-blocked until then. Does not block any 2C work.
 
 ## Essential pointers
-- Money + owner-control truth (do not re-decide): `docs/research/communications-a2-stage6-settings-owner-controls-plan.md`
+- Money + owner-control truth: `docs/research/communications-a2-stage6-settings-owner-controls-plan.md`
 - Step-up vs routine-action rule: `docs/jafar-organization-management-mission.md` "High-impact action security"
-- 2C-6a template: `src/lib/components/jafar/SmsModeActions.svelte` (query+edit form, no step-up),
-  `SmsRegistrationActions.svelte` (list + dialogs), `SmsSenderCapabilitiesActions.svelte` (list + inline edit).
-  For 2C-6b, `CommercialActions.svelte` is the closer template (step-up via `OwnerReconfirmDialog` on 409).
-- SMS owner routes live under `src/routes/api/jafar/organizations/[organizationId]/communications/sms/*`
-  (holds, credit-topups, promotional-credits, adjustments, refunds — all POST-only today, no GET yet).
 
 Resume: `read memory and continue — communications-activation`.
