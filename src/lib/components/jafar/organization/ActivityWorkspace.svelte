@@ -22,6 +22,7 @@
 	import ClosureActions from '$lib/components/jafar/ClosureActions.svelte';
 	import LegacyReconcileActions from '$lib/components/jafar/LegacyReconcileActions.svelte';
 	import LifecycleActions from '$lib/components/jafar/LifecycleActions.svelte';
+	import SmsRegistrationHistory from '$lib/components/jafar/SmsRegistrationHistory.svelte';
 	import { formatDateTime } from './format';
 	let {
 		access,
@@ -77,7 +78,20 @@
 		'onboarding_application.duplicate_acknowledged': 'Marked not a duplicate',
 		'onboarding_application.not_proceeding': 'Application marked not proceeding',
 		'organization_member.profile_corrected': 'Team member profile corrected',
-		'organization_member.administrator_email_recovered': 'Administrator email recovered'
+		'organization_member.administrator_email_recovered': 'Administrator email recovered',
+		communication_sms_credit_topup_confirmed: 'SMS credit top-up confirmed',
+		communication_sms_credit_topup_rejected: 'SMS credit top-up rejected',
+		communication_sms_hold_placed: 'SMS sending paused',
+		communication_sms_hold_released: 'SMS sending resumed',
+		communication_sms_promotional_credit_granted: 'SMS promotional credit granted',
+		communication_sms_promotional_credit_revoked: 'SMS promotional credit revoked',
+		communication_sms_adjustment_recorded: 'SMS balance adjustment recorded',
+		communication_sms_refund_recorded: 'SMS refund recorded',
+		communication_sms_registration_started: 'SMS registration started',
+		communication_sms_registration_check_recorded: 'SMS readiness check recorded',
+		communication_sms_registration_decided: 'SMS registration decision recorded',
+		communication_sms_org_mode_set: 'SMS mode changed',
+		communication_sms_sender_capabilities_set: 'SMS sender capabilities changed'
 	};
 
 	const OPERATION_TYPE_LABELS: Record<string, string> = {
@@ -336,6 +350,9 @@
 							</table>
 						</div>
 					{/if}
+				</Card>
+				<Card class="organization-detail__history-card">
+					<SmsRegistrationHistory organizationId={access.organization.id} />
 				</Card>
 			</section>
 		{/if}
