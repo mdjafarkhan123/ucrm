@@ -33,8 +33,10 @@ then owner API and Jafar UI come as their own later parts. No live SMS needed (A
 
 - **2C-1 Credit top-up lifecycle — DONE 2026-09-14** (commit 36ebdd0). Offsite top-up request → owner
   confirm/reject, contractor cancel; confirm posts one immutable ledger credit + raises balance.
-- **2C-2 Retail rates** — Jafar-set rate versions, current + future-dated, by destination/sender/unit; new
-  rates affect new sends only, historical charges keep their rate; cost/margin visible to Jafar only.
+- **2C-2 Retail rates — DONE 2026-09-14** (commit 09e88eb). Immutable rate versions keyed by
+  destination/sender/message-unit + currency; applicable rate = latest whose effective_from has arrived;
+  future-dated waits, retroactive refused; sends freeze the rate. Provider cost + margin server-owned/Jafar-only.
+  Table `communication_sms_retail_rates` + `set_retail_rate`/`effective_retail_rate` commands; 26 pgTAP green.
 - **2C-3 Readiness & registration** — capabilities, plain readiness states, registration submission/history,
   effective SMS mode, country readiness.
 - **2C-4 Holds + promotional credit** — distinct platform/org/provider holds + emergency provider suspension;
