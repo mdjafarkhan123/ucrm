@@ -22,7 +22,7 @@ research is supporting reference, not authorization to code.
 | ---- | ----------------------------- | ----------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A1-D | Managed email-domain activation | Done — accepted 2026-08-30              | A1 outbound proof      | One owner action safely reconciles separate sending/receiving domains, Cloudflare DNS, Brevo verification and the domain webhook; the test domain passes                     |
 | A1-V | Finish email live verification | Done — accepted 2026-08-30              | A1-D                   | Fresh real email reaches a real inbox and replies; attachment, bounded backlog and one-day soak pass; recovery and monitored drain remain healthy                           |
-| A2   | SMS channel via Twilio        | In progress — Stages 1/2A/2B done; Stage 2C started (see 2C parts below) | Country capability and tenant registration | Approved behavior and UI blueprints cover Conversations, Automation, contractor settings and Jafar controls; an eligible contractor can send and receive SMS and use SMS in an eligible automation |
+| A2   | SMS channel via Twilio        | In progress — Stages 1/2A/2B/2C done (see 2C parts below); contractor-facing implementation (Conversations, Automation, Phone & SMS settings) not started | Country capability and tenant registration | Approved behavior and UI blueprints cover Conversations, Automation, contractor settings and Jafar controls; an eligible contractor can send and receive SMS and use SMS in an eligible automation |
 | A3   | One-click marketing campaigns | Not scoped                                | A2                     | Contractor can send a segmented bulk campaign without risking transactional deliverability                                                                                  |
 
 ## Stage 2C parts (money + control layer; split for multi-session, Jafar approved 2026-09-14)
@@ -104,8 +104,15 @@ then owner API and Jafar UI come as their own later parts. No live SMS needed (A
     raw snake_case strings in the generic activity table. 101/101 vitest (up from 97); svelte-check 0/3375;
     browser-verified live (started a registration + recorded a readiness check for Raad LTD, both rows
     appeared correctly).
-  - **2C-6d Operations health** — platform-wide platform-holds + retail-rates owner UI, extending the
-    existing top-level `/jafar/communications` page. Not started.
+  - **2C-6d Operations health — DONE 2026-09-14** (commit b808080). Added the missing GET reads on the two
+    platform-scoped write-only routes (platform-holds, retail-rates) + two components
+    (`SmsPlatformHoldActions`, `SmsRetailRateActions`) wired into the top-level `/jafar/communications` page.
+    Retail rates group by destination/sender/message-unit/currency, each showing its current effective
+    version plus history. 109/109 vitest (up from 101); svelte-check 0/3377. Browser-verified live: rate
+    publish round-tripped end to end; platform-wide hold place+release round-tripped with step-up (a wrong
+    password was correctly rejected before the real one succeeded).
+
+**Stage 2C is complete.** This also closes A2's Jafar-UI planning item.
 
 ## Build principle (Jafar, durable 2026-08-30)
 

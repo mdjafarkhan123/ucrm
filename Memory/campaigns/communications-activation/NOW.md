@@ -2,37 +2,34 @@
 
 ## Goal
 Make Communications deliver email, SMS, then marketing through a GHL-style unified inbox. Email is live.
-SMS Stages 1/2A/2B done and live-verified for one org. Stage 2C (money + control layer) is being built as
-multi-session parts — see ROADMAP "Stage 2C parts". No live SMS is needed for 2C (the A2P wall below only
-blocks flipping texting on later).
+SMS Stages 1/2A/2B/2C are all done and live-verified for one org. Stage 2C (money + control layer) is
+complete — see ROADMAP "Stage 2C parts" for the full history.
 
 ## Done (all committed)
 - 2C-1..2C-5c (top-up, rates, readiness/registration, holds+promo+adjustments/refunds, owner command API —
   org-scoped and platform-scoped) — see ROADMAP for commit hashes.
-- 2C-6a (commit 68c394c). SMS reads (mode, registrations+readiness, sender-identities) + three owner-UI
-  components wired into `CommunicationsWorkspace`.
-- 2C-6b (commit 59ed7dc). Commercial access tab: GET reads on holds/promotional-credits/adjustments/
-  refunds/credit-topups + 4 owner-UI components wired into `AccessWorkspace`. Ledger entries now store their
-  reason (migration `20260917150000`). 97/97 vitest; browser-verified for holds and adjustments (promo
-  grant/revoke and refund covered by unit tests only — not live-clicked this session).
-- 2C-6c (commit 636a7c3). History & recovery tab: GET `.../sms/registration-events` (joins each append-only
-  registration event with its country/sender type/use case) + read-only `SmsRegistrationHistory` component
-  in `ActivityWorkspace`. Added friendly labels for the 13 SMS event types already in `access_audit_events`.
-  101/101 vitest; svelte-check 0/3375; browser-verified live for Raad LTD (start + readiness check both
-  appeared correctly).
+- 2C-6a/6b/6c (Integrations, Commercial access, History & recovery owner-UI tabs) — see ROADMAP.
+- 2C-6d (commit b808080). Operations health: platform-wide platform-holds + retail-rates GET reads +
+  `SmsPlatformHoldActions`/`SmsRetailRateActions` wired into `/jafar/communications`. 109/109 vitest;
+  svelte-check 0/3377; browser-verified live (rate publish, hold place+release with step-up).
 
-## Exact next action (new session)
-Start 2C-6d: platform-wide platform-holds + retail-rates owner UI, extending the existing top-level
-`/jafar/communications` page (per ROADMAP "Stage 2C parts"). No open decisions carried over — same template
-as 2C-6a/6b/6c (add missing GET reads first, then owner-UI components). This closes Stage 2C and A2's
-Jafar-UI planning item.
+**Stage 2C is now fully complete.** This also closed A2's Jafar-UI planning item.
+
+## Exact next action (needs Jafar first)
+No dependency-ready next atomic action exists yet. What remains for A2 is the contractor-facing
+implementation (Conversations SMS, Automation SMS, the Phone & SMS settings page) — a separate,
+not-yet-scoped implementation stage (ROADMAP "A2 product planning is complete; implementation planning
+remains a separate, unstarted stage"). Before starting it, resolve the deferred question from 2C-5c: where
+registration *submission* lives, since Twilio's ISV rule requires `attested_by` to be the contractor's own
+identity, not Jafar's — this needs its own roadmap part alongside the Phone & SMS settings page. Bring this
+to Jafar to scope before coding.
 
 ## Constraint (still current)
 A2P 10DLC (US "prove you're a real business" gate) can't be completed for Jafar's own test org — needs a real
-client (any country except Asia). Adopted number stays SMS-blocked until then. Does not block any 2C work.
+client (any country except Asia). Adopted number stays SMS-blocked until then.
 
 ## Essential pointers
 - Money + owner-control truth: `docs/research/communications-a2-stage6-settings-owner-controls-plan.md`
-- Step-up vs routine-action rule: `docs/jafar-organization-management-mission.md` "High-impact action security"
+- Product/UI blueprint: ROADMAP "A2 product-planning sequence" (approved 2026-09-12/13)
 
 Resume: `read memory and continue — communications-activation`.
