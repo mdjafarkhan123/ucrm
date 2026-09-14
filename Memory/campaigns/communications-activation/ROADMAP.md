@@ -43,8 +43,16 @@ then owner API and Jafar UI come as their own later parts. No live SMS needed (A
   registration) added to `communication_sms_sender_identities`; `communication_sms_org_modes` (effective mode =
   chosen capped by package ceiling unless Jafar override; no row = off, modes off|operational); readiness
   computed on read via `communication_sms_readiness()`. 53 pgTAP green.
-- **2C-4 Holds + promotional credit** — distinct platform/org/provider holds + emergency provider suspension;
-  promotional credit with expiry and standalone reasoned adjustments/refunds.
+- **2C-4 Holds + promotional credit — DONE 2026-09-14** (commit 3be87cb; 60 pgTAP green, applied to dev DB).
+  Migration
+  `20260917120000_communications_sms_holds_promo_adjustments.sql`. `communication_sms_holds` (scope
+  platform|organization|provider, one active per scope+target, reasoned place/release, provider>platform>org
+  precedence, pauses OUTBOUND only) + `communication_sms_active_outbound_hold()` + `communication_sms_outbound_state()`
+  (readiness 'ready' becomes 'outbound_paused' with cause when held; setup states never masked).
+  `communication_sms_promotional_credits` (expiring bucket, expiry derived on read, revocable) +
+  `promotional_balance`/`spendable_balance`. Standalone reasoned adjustments/refunds via
+  `record_adjustment`/`record_refund` posting immutable ledger entries (pre-check gives friendly P0001, the
+  accounts balances-check stays the backstop).
 - **2C-5 Owner commands (API)** — /api/* + Zod + reconfirmation + immutable audit across the above.
 - **2C-6 Jafar owner UI** — extend Integrations / Commercial access / History & recovery + Operations health;
   no new dashboard.
