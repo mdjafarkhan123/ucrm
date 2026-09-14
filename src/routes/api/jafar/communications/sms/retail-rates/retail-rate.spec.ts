@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { POST } from './+server';
+import { GET, POST } from './+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { PLATFORM_OWNER_ACTOR_ID } from '$lib/server/communications/sms-owner';
@@ -29,6 +29,25 @@ function postEvent(body: unknown) {
 	} as Parameters<typeof POST>[0];
 }
 
+function getEvent() {
+	return { params: {}, cookies: {} } as Parameters<typeof GET>[0];
+}
+
+function rateListClient(rates: Record<string, unknown>[]) {
+	return {
+		from: (table: string) => {
+			if (table === 'communication_sms_retail_rates') {
+				const builder = {
+					select: () => builder,
+					order: () => Promise.resolve({ data: rates, error: null })
+				};
+				return builder;
+			}
+			throw new Error(`Unexpected table: ${table}`);
+		}
+	};
+}
+
 function rateClient(rpcResult: { data: unknown; error: { code: string; message: string } | null }) {
 	const auditInsert = vi.fn().mockResolvedValue({ error: null });
 	return {
@@ -47,6 +66,35 @@ const validRate = {
 	message_unit: 'segment',
 	retail_rate_major: 0.0079
 };
+
+describe('platform owner SMS retail rate read', () => {
+	beforeEach(() => vi.clearAllMocks());
+
+	it('rejects callers without the separate owner session', async () => {
+		mockedOwnerSession.mockResolvedValue(null);
+
+		const response = await GET(getEvent());
+
+		expect(response.status).toBe(401);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it('lists every published rate version, newest effective date first', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		const client = rateListClient([
+			{ id: 'rate-2', destination: 'US', retail_rate_major: 0.0089 },
+			{ id: 'rate-1', destination: 'US', retail_rate_major: 0.0079 }
+		]);
+		mockedClient.mockReturnValue(client as never);
+
+		const response = await GET(getEvent());
+		const body = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(body.rates).toHaveLength(2);
+		expect(body.rates[0]).toMatchObject({ id: 'rate-2' });
+	});
+});
 
 describe('platform owner SMS retail rate publication boundary', () => {
 	beforeEach(() => vi.clearAllMocks());

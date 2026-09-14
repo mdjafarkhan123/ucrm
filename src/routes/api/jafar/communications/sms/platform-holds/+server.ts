@@ -11,6 +11,31 @@ import { PLATFORM_OWNER_ACTOR_ID } from '$lib/server/communications/sms-owner';
 
 const noStore = { 'cache-control': 'no-store' };
 
+// Stage 2C-6d: list platform-wide outbound-SMS holds (active and released) for the Jafar Operations health
+// tab. 2C-5c's POST/release routes were write-only. Scoped to scope='platform' only -- an organization-scoped
+// hold is shown on that organization's own Commercial access tab (2C-6b), not repeated here. Read-only.
+export const GET: RequestHandler = async (event) => {
+	const session = await getOwnerSession(event);
+	if (!session) return ownerUnauthorized();
+
+	try {
+		const client = getOwnerSupabaseClient();
+		const { data: holds, error } = await client
+			.from('communication_sms_holds')
+			.select(
+				'id, scope, reason, placed_by, placed_at, status, released_by, released_at, release_reason'
+			)
+			.eq('scope', 'platform')
+			.order('placed_at', { ascending: false });
+		if (error) throw error;
+
+		return json({ holds: holds ?? [] }, { headers: noStore });
+	} catch (error) {
+		console.error('Could not load the platform-wide SMS holds.', error);
+		return json({ error: 'The platform-wide SMS holds could not be loaded.' }, { status: 500 });
+	}
+};
+
 // Stage 2C-5c (platform-scoped): the platform owner pauses outbound SMS for every organization at once, an
 // emergency control (docs/jafar-organization-management-mission.md "High-impact action security" --
 // "platform-wide emergency controls"), so it requires step-up. A platform hold names no organization, so its

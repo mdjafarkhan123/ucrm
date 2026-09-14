@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { POST } from './+server';
+import { GET, POST } from './+server';
 import { consumeOwnerStepUp, getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { PLATFORM_OWNER_ACTOR_ID } from '$lib/server/communications/sms-owner';
@@ -16,6 +16,26 @@ const mockedClient = vi.mocked(getOwnerSupabaseClient);
 
 function session() {
 	return { email: 'owner@example.com', sessionId: 'session-id' };
+}
+
+function getEvent() {
+	return { params: {}, cookies: {} } as Parameters<typeof GET>[0];
+}
+
+function holdListClient(holds: Record<string, unknown>[]) {
+	return {
+		from: (table: string) => {
+			if (table === 'communication_sms_holds') {
+				const builder = {
+					select: () => builder,
+					eq: () => builder,
+					order: () => Promise.resolve({ data: holds, error: null })
+				};
+				return builder;
+			}
+			throw new Error(`Unexpected table: ${table}`);
+		}
+	};
 }
 
 function postEvent(body: unknown) {
@@ -41,6 +61,32 @@ function holdClient(rpcResult: { data: unknown; error: { code: string; message: 
 		auditInsert
 	};
 }
+
+describe('platform owner platform-wide SMS hold read', () => {
+	beforeEach(() => vi.clearAllMocks());
+
+	it('rejects callers without the separate owner session', async () => {
+		mockedOwnerSession.mockResolvedValue(null);
+
+		const response = await GET(getEvent());
+
+		expect(response.status).toBe(401);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it('lists platform-scoped holds only', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		const client = holdListClient([{ id: 'hold-1', scope: 'platform', status: 'active' }]);
+		mockedClient.mockReturnValue(client as never);
+
+		const response = await GET(getEvent());
+		const body = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(body.holds).toHaveLength(1);
+		expect(body.holds[0]).toMatchObject({ id: 'hold-1', status: 'active' });
+	});
+});
 
 describe('platform owner platform-wide SMS hold placement boundary', () => {
 	beforeEach(() => vi.clearAllMocks());

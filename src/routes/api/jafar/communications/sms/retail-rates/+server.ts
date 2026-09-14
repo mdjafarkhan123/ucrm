@@ -11,6 +11,32 @@ import { PLATFORM_OWNER_ACTOR_ID } from '$lib/server/communications/sms-owner';
 
 const noStore = { 'cache-control': 'no-store' };
 
+// Stage 2C-6d: list every published SMS retail rate version for the Jafar Operations health tab. 2C-5c's
+// publish route was write-only. Newest published first; the UI groups by destination/sender/message unit and
+// currency to show each key's current and scheduled versions alongside its history. Rate versions are
+// immutable (no update/delete), so this is a plain list -- nothing to reconcile. Includes provider_cost_major
+// and the margin it implies, which are Jafar-only truth never sent to a contractor-facing route.
+export const GET: RequestHandler = async (event) => {
+	const session = await getOwnerSession(event);
+	if (!session) return ownerUnauthorized();
+
+	try {
+		const client = getOwnerSupabaseClient();
+		const { data: rates, error } = await client
+			.from('communication_sms_retail_rates')
+			.select(
+				'id, destination, sender_type, message_unit, currency_code, retail_rate_major, provider_cost_major, effective_from, note, created_at'
+			)
+			.order('effective_from', { ascending: false });
+		if (error) throw error;
+
+		return json({ rates: rates ?? [] }, { headers: noStore });
+	} catch (error) {
+		console.error('Could not load the SMS retail rates.', error);
+		return json({ error: 'The SMS retail rates could not be loaded.' }, { status: 500 });
+	}
+};
+
 // Stage 2C-5c (platform-scoped): the platform owner publishes a new SMS retail rate version. Rate versions
 // are immutable (no update/delete, see 20260917100000) -- a change is always a new version, never a rewrite,
 // so there is nothing to look up beforehand. Publishing a price list is routine (it moves no money immediately

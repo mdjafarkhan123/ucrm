@@ -13,6 +13,8 @@
 	import EmailSendingCapacityControls from '$lib/components/jafar/EmailSendingCapacityControls.svelte';
 	import EmailSuppressionRemovalQueue from '$lib/components/jafar/EmailSuppressionRemovalQueue.svelte';
 	import MessageRecoveryQueue from '$lib/components/jafar/MessageRecoveryQueue.svelte';
+	import SmsPlatformHoldActions from '$lib/components/jafar/SmsPlatformHoldActions.svelte';
+	import SmsRetailRateActions from '$lib/components/jafar/SmsRetailRateActions.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import KpiCard from '$lib/components/data-display/KpiCard.svelte';
@@ -343,6 +345,10 @@
 	<EmailSendingCapacityControls />
 
 	<MessageRecoveryQueue />
+
+	<SmsPlatformHoldActions />
+
+	<SmsRetailRateActions />
 </main>
 <!-- eslint-enable svelte/no-at-html-tags -->
 
