@@ -64,12 +64,16 @@ then owner API and Jafar UI come as their own later parts. No live SMS needed (A
   - **2C-5b Holds + promo + adjustments/refunds API — DONE 2026-09-14** (commit 9480c81; 40/40 vitest).
     Org-scoped money/control endpoints (place/release hold, grant/revoke promo, record adjustment/refund),
     each copying the 2C-5a template with step-up.
-  - **2C-5c Rates + readiness/registration/mode/capabilities API — org-scoped part DONE 2026-09-14**
-    (commit 0ab257f; 25/25 vitest). Registration start/outcome/check + set org mode + set sender
-    capabilities, none on the step-up list. Two parts blocked on a Jafar decision (see NOW.md): (a)
-    registration *submission* — whose identity `attested_by` should record, Jafar's or the contractor's;
-    (b) platform-scoped rate/hold actions have no organization_id, so `access_audit_events` (org_id NOT
-    NULL) can't hold them — needs a platform-audit target decided first.
+  - **2C-5c Rates + readiness/registration/mode/capabilities API — DONE 2026-09-14** (org-scoped part
+    commit 0ab257f, 25/25 vitest; platform-scoped part same day). Registration start/outcome/check + set
+    org mode + set sender capabilities, none on the step-up list. Platform-scoped part: new
+    `platform_audit_events` table (server-owned, same shape as `access_audit_events` minus the org tag --
+    that table keeps organization_id NOT NULL by design) + `/api/jafar/communications/sms/platform-holds`
+    (place/release, step-up required -- an emergency control) + `/api/jafar/communications/sms/retail-rates`
+    (publish a rate version, routine/no step-up -- prices future sends only, same treatment as a package
+    change). 11 pgTAP + 13 vitest green. Still deferred: registration *submission* has no home yet -- Twilio's
+    ISV rule means `attested_by` must be the contractor's real identity, not Jafar's, so this needs its own
+    roadmap part alongside the contractor-facing Phone & SMS settings page.
 - **2C-6 Jafar owner UI** — extend Integrations / Commercial access / History & recovery + Operations health;
   no new dashboard.
 

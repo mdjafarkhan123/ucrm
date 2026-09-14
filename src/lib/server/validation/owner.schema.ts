@@ -561,8 +561,8 @@ export const communicationSmsRefundSchema = z.object({
 // readiness. None of these are money actions or on the step-up list (docs/jafar-organization-management-
 // mission.md "High-impact action security"), so each carries only a reason/confirmation, not step-up --
 // "carrier submission or resubmission" is explicitly a routine action there. Platform-scoped actions (a
-// global retail rate, a platform-wide hold) are deferred: access_audit_events requires an organization_id,
-// so they need a platform-audit target decided first (see ROADMAP "2C-5c").
+// global retail rate, a platform-wide hold) write to platform_audit_events instead of access_audit_events,
+// which keeps organization_id NOT NULL by design.
 const smsCountryCodeSchema = z
 	.string()
 	.trim()
@@ -650,6 +650,52 @@ export const communicationSmsOrgModeSchema = z
 			});
 		}
 	});
+
+// Stage 2C-5c (platform-scoped): a platform-wide outbound-SMS hold is an emergency control (docs/jafar-
+// organization-management-mission.md "High-impact action security" -- "platform-wide emergency controls"),
+// so placing or releasing one requires the same step-up as an organization/provider hold. Publishing a new
+// retail rate is routine: it moves no money immediately and only prices sends that happen later, the same
+// treatment as a package change, so it carries a reason but no step-up.
+export const communicationSmsPlatformHoldPlacementSchema = z.object({
+	reason: smsControlReasonSchema
+});
+
+export const communicationSmsRetailRateSchema = z.object({
+	destination: smsCountryCodeSchema,
+	sender_type: smsSenderTypeSchema,
+	message_unit: z.literal('segment', {
+		error: 'Only the segment message unit is supported today.'
+	}),
+	currency_code: z
+		.string()
+		.trim()
+		.toUpperCase()
+		.regex(/^[A-Z]{3}$/, 'Enter a 3-letter currency code.')
+		.default('USD'),
+	retail_rate_major: z
+		.number()
+		.positive('Enter a rate greater than zero.')
+		.max(1000, 'That rate is too large.'),
+	provider_cost_major: z
+		.number()
+		.min(0, 'Provider cost cannot be negative.')
+		.max(1000, 'That cost is too large.')
+		.optional(),
+	effective_from: z
+		.string()
+		.refine((value) => !Number.isNaN(Date.parse(value)), 'Enter a valid effective date and time.')
+		.refine(
+			(value) => Date.parse(value) >= Date.now(),
+			'The effective date must be now or in the future.'
+		)
+		.optional(),
+	note: z
+		.string()
+		.trim()
+		.max(2000, 'Keep the note under 2,000 characters.')
+		.optional()
+		.transform((value) => value || undefined)
+});
 
 export function zodOwnerFieldErrors(error: z.ZodError) {
 	return Object.fromEntries(

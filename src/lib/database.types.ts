@@ -8929,6 +8929,39 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_audit_events: {
+        Row: {
+          actor_owner_email: string
+          after_state: Json | null
+          before_state: Json | null
+          created_at: string
+          event_type: string
+          id: string
+          target_key: string | null
+          target_type: string
+        }
+        Insert: {
+          actor_owner_email: string
+          after_state?: Json | null
+          before_state?: Json | null
+          created_at?: string
+          event_type: string
+          id?: string
+          target_key?: string | null
+          target_type: string
+        }
+        Update: {
+          actor_owner_email?: string
+          after_state?: Json | null
+          before_state?: Json | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          target_key?: string | null
+          target_type?: string
+        }
+        Relationships: []
+      }
       platform_email_template_packages: {
         Row: {
           created_at: string
