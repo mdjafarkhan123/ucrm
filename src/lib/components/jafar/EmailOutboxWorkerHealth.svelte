@@ -44,7 +44,17 @@
 		recent_capped_wakes: number;
 	};
 
-	let { workerHealth }: { workerHealth: WorkerHealth | null } = $props();
+	let {
+		workerHealth,
+		title = 'Automatic outbox drain',
+		description = 'A once-a-minute wake keeps operational email — quotes, invoices, receipts, replies — moving out of the outbox on its own. This shows whether that wake is actually reaching the worker and clearing the queue, not just whether the schedule fired.',
+		subjectLabel = 'Email'
+	}: {
+		workerHealth: WorkerHealth | null;
+		title?: string;
+		description?: string;
+		subjectLabel?: string;
+	} = $props();
 
 	const installed = $derived(Boolean(workerHealth?.job));
 	const jobActive = $derived(workerHealth?.job?.active === true);
@@ -80,14 +90,14 @@
 			return {
 				label: 'Falling behind',
 				tone: 'critical',
-				note: 'Email has been waiting longer than the critical threshold.'
+				note: `${subjectLabel} has been waiting longer than the critical threshold.`
 			};
 		}
 		if (w.due_count > 0 && age >= w.warn_oldest_due_seconds) {
 			return {
 				label: 'Slow',
 				tone: 'warning',
-				note: 'Email is waiting longer than expected but under the critical threshold.'
+				note: `${subjectLabel} is waiting longer than expected but under the critical threshold.`
 			};
 		}
 		if (!w.last_successful_drain_at && w.recent_wakes.length === 0) {
@@ -97,7 +107,7 @@
 				note: 'The job is on. No wake has been recorded yet.'
 			};
 		}
-		return { label: 'Running', tone: 'success', note: 'Email is draining on schedule.' };
+		return { label: 'Running', tone: 'success', note: `${subjectLabel} is draining on schedule.` };
 	});
 
 	const outcomeLabels: Record<string, string> = {
@@ -173,12 +183,8 @@
 	<Card class="worker-health__card">
 		<div class="worker-health__head">
 			<div>
-				<h2>Automatic outbox drain</h2>
-				<p>
-					A once-a-minute wake keeps operational email — quotes, invoices, receipts, replies —
-					moving out of the outbox on its own. This shows whether that wake is actually reaching the
-					worker and clearing the queue, not just whether the schedule fired.
-				</p>
+				<h2>{title}</h2>
+				<p>{description}</p>
 			</div>
 			<Badge status={status.tone === 'inactive' ? 'inactive' : status.tone}>{status.label}</Badge>
 		</div>

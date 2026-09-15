@@ -75,7 +75,6 @@ describe('GET /api/settings/communications/sms/usage', () => {
 			data: [{ segment_count: 1 }, { segment_count: 2 }],
 			error: null
 		});
-		const optOuts = tableBuilder({ data: [], error: null, count: 1 });
 		const messageEvents = tableBuilder({
 			data: [{ event_kind: 'sent' }, { event_kind: 'sent' }, { event_kind: 'delivered' }],
 			error: null
@@ -90,7 +89,6 @@ describe('GET /api/settings/communications/sms/usage', () => {
 					: adjustments;
 			}
 			if (table === 'communication_sms_credit_reservations') return reservations;
-			if (table === 'communication_sms_consent_state') return optOuts;
 			if (table === 'communication_message_events') return messageEvents;
 			throw new Error(`Unexpected table ${table}`);
 		});
@@ -101,6 +99,8 @@ describe('GET /api/settings/communications/sms/usage', () => {
 				return Promise.resolve({ data: 4900, error: null });
 			if (name === 'communication_sms_active_outbound_hold')
 				return Promise.resolve({ data: [], error: null });
+			if (name === 'communication_sms_opted_out_count')
+				return Promise.resolve({ data: 1, error: null });
 			throw new Error(`Unexpected rpc ${name}`);
 		});
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue({ from, rpc } as never);

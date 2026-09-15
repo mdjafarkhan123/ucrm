@@ -46,10 +46,12 @@
 		queued_email_count: number;
 	};
 	type HealthResponse = { health: Health; worker_health?: WorkerHealth | null; error?: string };
+	type SmsWorkerHealthResponse = { worker_health?: WorkerHealth | null; error?: string };
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 	const healthKey = ['jafar', 'communications', 'email-health'] as const;
+	const smsWorkerHealthKey = ['jafar', 'communications', 'sms-worker-health'] as const;
 
 	const healthQuery = createQuery<HealthResponse>(() => ({
 		queryKey: healthKey,
@@ -58,6 +60,17 @@
 			const result = (await response.json()) as HealthResponse;
 			if (!response.ok)
 				throw new Error(result.error ?? 'Email sending health could not be loaded.');
+			return result;
+		},
+		staleTime: 15_000
+	}));
+
+	const smsWorkerHealthQuery = createQuery<SmsWorkerHealthResponse>(() => ({
+		queryKey: smsWorkerHealthKey,
+		queryFn: async () => {
+			const response = await fetch('/api/jafar/communications/sms/worker-health');
+			const result = (await response.json()) as SmsWorkerHealthResponse;
+			if (!response.ok) throw new Error(result.error ?? 'SMS worker health could not be loaded.');
 			return result;
 		},
 		staleTime: 15_000
@@ -345,6 +358,13 @@
 	<EmailSendingCapacityControls />
 
 	<MessageRecoveryQueue />
+
+	<EmailOutboxWorkerHealth
+		workerHealth={smsWorkerHealthQuery.data?.worker_health ?? null}
+		title="Automatic SMS drain"
+		description="A once-a-minute wake keeps outbound texting moving out of the outbox on its own. This shows whether that wake is actually reaching the worker and clearing the queue, not just whether the schedule fired. Traffic stays off until the launch gate passes."
+		subjectLabel="SMS"
+	/>
 
 	<SmsPlatformHoldActions />
 

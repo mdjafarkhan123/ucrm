@@ -80,12 +80,10 @@ export const GET: RequestHandler = async (event) => {
 			.eq('state', 'settled')
 			.gte('settled_at', month.start)
 			.lt('settled_at', month.end),
-		client
-			.from('communication_sms_consent_state')
-			.select('organization_id', { count: 'exact', head: true })
-			.eq('organization_id', organizationId)
-			.eq('state', 'opted_out')
-			.gte('effective_at', healthSince),
+		client.rpc('communication_sms_opted_out_count', {
+			p_organization_id: organizationId,
+			p_since: healthSince
+		}),
 		client
 			.from('communication_message_events')
 			.select(
@@ -159,7 +157,7 @@ export const GET: RequestHandler = async (event) => {
 				failed: events.filter((row) => row.event_kind === 'send_failed').length,
 				// Inbound SMS has no storage yet (Conversations SMS is a later stage) -- an honest zero, not a guess.
 				received: 0,
-				opt_out_rate: sentCount > 0 ? (optOutResult.count ?? 0) / sentCount : null
+				opt_out_rate: sentCount > 0 ? (optOutResult.data ?? 0) / sentCount : null
 			}
 		},
 		{ headers: noStore }

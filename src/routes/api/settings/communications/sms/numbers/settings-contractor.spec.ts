@@ -288,9 +288,9 @@ describe('contractor SMS settings API', () => {
 			],
 			error: null
 		});
-		const optOuts = tableBuilder({ error: null, count: 7 });
-		const from = vi.fn((table: string) => (table === 'communication_sms_holds' ? holds : optOuts));
-		vi.mocked(getOwnerSupabaseClient).mockReturnValue({ from } as never);
+		const from = vi.fn(() => holds);
+		const rpc = vi.fn(() => Promise.resolve({ data: 7, error: null }));
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue({ from, rpc } as never);
 
 		const response = await getHolds(event('/api/settings/communications/sms/holds', 'GET'));
 		const payload = await response.json();

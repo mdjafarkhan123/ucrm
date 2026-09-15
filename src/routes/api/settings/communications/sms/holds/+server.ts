@@ -34,11 +34,9 @@ export const GET: RequestHandler = async (event) => {
 		return json({ error: 'The holds could not be loaded.' }, { status: 500, headers: noStore });
 	}
 
-	const optOutResult = await client
-		.from('communication_sms_consent_state')
-		.select('organization_id', { count: 'exact', head: true })
-		.eq('organization_id', organizationId)
-		.eq('state', 'opted_out');
+	const optOutResult = await client.rpc('communication_sms_opted_out_count', {
+		p_organization_id: organizationId
+	});
 
 	if (optOutResult.error) {
 		console.error('Could not count SMS opt-outs.', optOutResult.error);
@@ -48,7 +46,7 @@ export const GET: RequestHandler = async (event) => {
 	return json(
 		{
 			holds: ((holdsResult.data ?? []) as SmsHoldRow[]).map(safeSmsHold),
-			opt_outs: { total: optOutResult.count ?? 0 }
+			opt_outs: { total: optOutResult.data ?? 0 }
 		},
 		{ headers: noStore }
 	);
