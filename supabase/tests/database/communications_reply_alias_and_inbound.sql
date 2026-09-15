@@ -207,9 +207,13 @@ select is(
 select set_config('request.jwt.claim.sub', '', true);
 
 -- Both enqueue functions already insert their own outbox_events row internally; no extra insert needed.
+-- claim_communication_outbox_event() claims one event per call, and both sends share this transaction's
+-- now() as created_at, so a single call's winner is a coin flip on event id. Call it twice, like a real
+-- worker loop would, so both claims land in the table regardless of which one wins the tiebreak.
 create temporary table alias_claims on commit drop as
+select * from public.claim_communication_outbox_event()
+union all
 select * from public.claim_communication_outbox_event();
-select public.claim_communication_outbox_event();
 
 select is(
   (select reply_to_email from alias_claims where delivery_intent_id = (

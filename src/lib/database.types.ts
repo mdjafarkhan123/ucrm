@@ -2487,6 +2487,7 @@ export type Database = {
 					attachment_count: number;
 					automation_suppressed: boolean;
 					cc_recipients: Json;
+					channel: string;
 					client_contact_method_id: string | null;
 					client_id: string | null;
 					created_at: string;
@@ -2507,9 +2508,10 @@ export type Database = {
 					review_resolved_at: string | null;
 					review_resolved_by: string | null;
 					review_status: string;
-					sender_email: string;
+					sender_email: string | null;
 					sender_id: string | null;
 					sender_name: string | null;
+					sender_phone: string | null;
 					subject: string;
 					text_content: string;
 					to_recipients: Json;
@@ -2519,6 +2521,7 @@ export type Database = {
 					attachment_count?: number;
 					automation_suppressed?: boolean;
 					cc_recipients?: Json;
+					channel?: string;
 					client_contact_method_id?: string | null;
 					client_id?: string | null;
 					created_at?: string;
@@ -2539,9 +2542,10 @@ export type Database = {
 					review_resolved_at?: string | null;
 					review_resolved_by?: string | null;
 					review_status?: string;
-					sender_email: string;
+					sender_email?: string | null;
 					sender_id?: string | null;
 					sender_name?: string | null;
+					sender_phone?: string | null;
 					subject: string;
 					text_content: string;
 					to_recipients?: Json;
@@ -2551,6 +2555,7 @@ export type Database = {
 					attachment_count?: number;
 					automation_suppressed?: boolean;
 					cc_recipients?: Json;
+					channel?: string;
 					client_contact_method_id?: string | null;
 					client_id?: string | null;
 					created_at?: string;
@@ -2571,9 +2576,10 @@ export type Database = {
 					review_resolved_at?: string | null;
 					review_resolved_by?: string | null;
 					review_status?: string;
-					sender_email?: string;
+					sender_email?: string | null;
 					sender_id?: string | null;
 					sender_name?: string | null;
+					sender_phone?: string | null;
 					subject?: string;
 					text_content?: string;
 					to_recipients?: Json;
@@ -16694,6 +16700,7 @@ export type Database = {
 					attachment_count: number;
 					automation_suppressed: boolean;
 					cc_recipients: Json;
+					channel: string;
 					client_contact_method_id: string | null;
 					client_id: string | null;
 					created_at: string;
@@ -16714,9 +16721,89 @@ export type Database = {
 					review_resolved_at: string | null;
 					review_resolved_by: string | null;
 					review_status: string;
-					sender_email: string;
+					sender_email: string | null;
 					sender_id: string | null;
 					sender_name: string | null;
+					sender_phone: string | null;
+					subject: string;
+					text_content: string;
+					to_recipients: Json;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_inbound_messages';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			record_communication_sms_consent_event_from_reply: {
+				Args: {
+					target_confirmed_by_provider: boolean;
+					target_event_kind: string;
+					target_from_number: string;
+					target_organization_id: string;
+					target_provider_message_id: string;
+				};
+				Returns: {
+					client_contact_method_id: string;
+					client_id: string;
+					created_by: string | null;
+					event_kind: string;
+					evidence: Json;
+					id: string;
+					occurred_at: string;
+					organization_id: string;
+					proof_method: string | null;
+					received_at: string;
+					source: string;
+					source_event_key: string;
+					subjects: string[] | null;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_consent_events';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			record_communication_sms_inbound_message: {
+				Args: {
+					target_body: string;
+					target_from_number: string;
+					target_num_media: number;
+					target_organization_id: string;
+					target_provider_message_id: string;
+				};
+				Returns: {
+					attachment_count: number;
+					automation_suppressed: boolean;
+					cc_recipients: Json;
+					channel: string;
+					client_contact_method_id: string | null;
+					client_id: string | null;
+					created_at: string;
+					direction: string;
+					html_content: string | null;
+					id: string;
+					in_reply_to_intent_id: string | null;
+					in_reply_to_provider_message_id: string | null;
+					loop_detected_at: string | null;
+					message_kind: string;
+					organization_id: string;
+					owner_user_id: string | null;
+					provider: string;
+					provider_callback_event_id: string | null;
+					provider_message_id: string | null;
+					reply_alias_id: string | null;
+					review_reason: string | null;
+					review_resolved_at: string | null;
+					review_resolved_by: string | null;
+					review_status: string;
+					sender_email: string | null;
+					sender_id: string | null;
+					sender_name: string | null;
+					sender_phone: string | null;
 					subject: string;
 					text_content: string;
 					to_recipients: Json;

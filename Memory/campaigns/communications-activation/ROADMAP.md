@@ -216,6 +216,17 @@ no contractor send UI or live traffic until Stage 5 webhooks and a country launc
 
 Full approved behavior, exclusions and gates: `docs/communications-a2-implementation-plan.md` §4.
 
+## Stage 5 (signed webhooks) — DONE 2026-09-15
+
+- **5A Status callbacks — DONE, committed (`b41cbbd`).** Signed status webhook, token-overlap validation,
+  durable dedupe, terminal-protected delivery-outcome projection.
+- **5B Inbound messages — DONE, committed.** `record_communication_sms_inbound_message` (known-number match,
+  unmatched → new Lead, race-safe) + `record_communication_sms_consent_event_from_reply` (STOP/START/HELP).
+  Extended `communication_inbound_messages` with a `channel` column rather than forking a table.
+- §5 gate (invalid signatures, forwarded-host traps, retries, malformed events, duplicates, retired senders,
+  cross-tenant forgery, unresolved identity, Twilio's own keyword response) verified covered by existing
+  fixture/pgTAP tests across 5A+5B — no separate acceptance round needed.
+
 ## Build principle (Jafar, durable 2026-08-30)
 
 The full unified inbox is built following GHL end-to-end — root architecture/data model, real-time

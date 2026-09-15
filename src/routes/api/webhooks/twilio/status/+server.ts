@@ -1,15 +1,10 @@
 import type { RequestHandler } from './$types';
 import type { Json } from '$lib/database.types';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { createSupabaseTwilioProvisioningStore } from '$lib/server/communications/twilio-provisioning-store';
 import {
-	createSupabaseTwilioProvisioningStore,
-	type StoredTwilioCredential,
-	type TwilioProvisioningStore
-} from '$lib/server/communications/twilio-provisioning-store';
-import { decryptTwilioCredential } from '$lib/server/communications/twilio-credential-crypto';
-import {
+	collectTwilioValidationTokens,
 	getTwilioStatusWebhookUrl,
-	orderedValidationTokens,
 	parseTwilioStatusParams,
 	statusEventKey,
 	validateTwilioSignature
@@ -23,46 +18,6 @@ const accepted = () => new Response(null, { status: 204, headers: NO_STORE });
 const forbidden = () => new Response(null, { status: 403, headers: NO_STORE });
 // The event is real but not yet durably stored: fail so Twilio resends rather than dropping it silently.
 const retryLater = () => new Response(null, { status: 500, headers: NO_STORE });
-
-/** Decrypt an Auth Token credential into a rotation candidate; a decryption failure drops that one token
- *  (never the whole request) so a single broken credential can't lock out an otherwise valid signature. */
-function toTokenCandidate(
-	credential: StoredTwilioCredential | null,
-	context: { organizationId: string; subaccountSid: string }
-): { token: string; retireAfter?: string | null } | null {
-	if (!credential) return null;
-	try {
-		const token = decryptTwilioCredential(credential.encrypted, {
-			organizationId: context.organizationId,
-			credentialId: credential.id,
-			subaccountSid: context.subaccountSid,
-			purpose: 'auth_token'
-		});
-		return { token, retireAfter: credential.retireAfter };
-	} catch {
-		return null;
-	}
-}
-
-async function collectValidationTokens(
-	store: TwilioProvisioningStore,
-	accountId: string,
-	context: { organizationId: string; subaccountSid: string }
-): Promise<string[]> {
-	const [current, staged, prior] = await Promise.all([
-		store.getCredential({ accountId, purpose: 'auth_token', lifecycleState: 'current' }),
-		store.getCredential({ accountId, purpose: 'auth_token', lifecycleState: 'staged' }),
-		store.getCredential({ accountId, purpose: 'auth_token', lifecycleState: 'prior' })
-	]);
-	return orderedValidationTokens(
-		{
-			current: toTokenCandidate(current, context),
-			staged: toTokenCandidate(staged, context),
-			prior: toTokenCandidate(prior, context)
-		},
-		new Date()
-	);
-}
 
 export const POST: RequestHandler = async ({ request }) => {
 	// Twilio status callbacks are application/x-www-form-urlencoded; the signature covers ALL POST params,
@@ -90,7 +45,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	const account = await store.getAccountBySubaccountSid(identifiers.AccountSid);
 	if (!account) return forbidden();
 
-	const tokens = await collectValidationTokens(store, account.id, {
+	const tokens = await collectTwilioValidationTokens(store, account.id, {
 		organizationId: account.organizationId,
 		subaccountSid: account.subaccountSid
 	});

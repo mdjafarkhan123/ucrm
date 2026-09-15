@@ -5,11 +5,15 @@ vi.mock('$env/dynamic/private', () => ({ env: { APP_URL: 'https://app.example.co
 
 import { env } from '$env/dynamic/private';
 import {
+	classifySmsConsentEvent,
+	getTwilioInboundWebhookUrl,
 	getTwilioStatusWebhookUrl,
 	orderedValidationTokens,
+	parseTwilioInboundParams,
 	parseTwilioStatusParams,
 	statusEventKey,
-	validateTwilioSignature
+	validateTwilioSignature,
+	type TwilioInboundParams
 } from './twilio-webhook';
 
 // Twilio's own signature algorithm: HMAC-SHA1 over the URL followed by each sorted key+value, base64.
@@ -163,5 +167,113 @@ describe('statusEventKey', () => {
 				MessageStatus: 'delivered'
 			})
 		).toBe('SM00000000000000000000000000000001:delivered');
+	});
+});
+
+describe('getTwilioInboundWebhookUrl', () => {
+	it('builds the exact registered inbound path from APP_URL', () => {
+		expect(getTwilioInboundWebhookUrl()).toBe(
+			'https://app.example.com/api/webhooks/twilio/inbound'
+		);
+	});
+
+	it('refuses a non-HTTPS origin outside local development', () => {
+		env.APP_URL = 'http://app.example.com';
+		expect(() => getTwilioInboundWebhookUrl()).toThrow();
+	});
+});
+
+describe('parseTwilioInboundParams', () => {
+	const base = {
+		MessageSid: 'SM00000000000000000000000000000001',
+		AccountSid: 'AC00000000000000000000000000000001',
+		From: '+15005550006',
+		To: '+15005550001',
+		Body: 'Ahoy!',
+		NumMedia: '2'
+	};
+
+	it('extracts and coerces the identifying fields', () => {
+		expect(parseTwilioInboundParams(base)).toEqual({
+			MessageSid: base.MessageSid,
+			AccountSid: base.AccountSid,
+			From: base.From,
+			To: base.To,
+			Body: 'Ahoy!',
+			NumMedia: 2,
+			OptOutType: undefined
+		});
+	});
+
+	it('defaults an absent Body and NumMedia', () => {
+		const { Body, NumMedia, ...rest } = base;
+		expect(parseTwilioInboundParams(rest)).toMatchObject({ Body: '', NumMedia: 0 });
+	});
+
+	it('carries OptOutType when Advanced Opt-Out is configured', () => {
+		expect(parseTwilioInboundParams({ ...base, OptOutType: 'STOP' })?.OptOutType).toBe('STOP');
+	});
+
+	it('rejects a malformed MessageSid or AccountSid', () => {
+		expect(parseTwilioInboundParams({ ...base, MessageSid: 'nope' })).toBeNull();
+		expect(parseTwilioInboundParams({ ...base, AccountSid: 'nope' })).toBeNull();
+	});
+});
+
+describe('classifySmsConsentEvent', () => {
+	function params(overrides: Partial<TwilioInboundParams>): TwilioInboundParams {
+		return {
+			MessageSid: 'SM00000000000000000000000000000001',
+			AccountSid: 'AC00000000000000000000000000000001',
+			From: '+15005550006',
+			To: '+15005550001',
+			Body: '',
+			NumMedia: 0,
+			...overrides
+		};
+	}
+
+	it('prefers the provider-confirmed OptOutType over the body', () => {
+		expect(classifySmsConsentEvent(params({ Body: 'something else', OptOutType: 'STOP' }))).toEqual(
+			{
+				kind: 'opt_out',
+				confirmedByProvider: true
+			}
+		);
+		expect(classifySmsConsentEvent(params({ OptOutType: 'START' }))).toEqual({
+			kind: 'opt_in',
+			confirmedByProvider: true
+		});
+		expect(classifySmsConsentEvent(params({ OptOutType: 'HELP' }))).toEqual({
+			kind: 'help_requested',
+			confirmedByProvider: true
+		});
+	});
+
+	it('falls back to Twilio default keywords, case-insensitively, when OptOutType is absent', () => {
+		expect(classifySmsConsentEvent(params({ Body: 'STOP' }))).toEqual({
+			kind: 'opt_out',
+			confirmedByProvider: false
+		});
+		expect(classifySmsConsentEvent(params({ Body: 'unsubscribe' }))).toEqual({
+			kind: 'opt_out',
+			confirmedByProvider: false
+		});
+		expect(classifySmsConsentEvent(params({ Body: '  Start ' }))).toEqual({
+			kind: 'opt_in',
+			confirmedByProvider: false
+		});
+		expect(classifySmsConsentEvent(params({ Body: 'Help' }))).toEqual({
+			kind: 'help_requested',
+			confirmedByProvider: false
+		});
+	});
+
+	it('requires an exact keyword match, not a keyword within a longer message', () => {
+		expect(classifySmsConsentEvent(params({ Body: 'please stop calling me' }))).toBeNull();
+	});
+
+	it('returns null for an ordinary reply', () => {
+		expect(classifySmsConsentEvent(params({ Body: 'Sounds good, see you Tuesday!' }))).toBeNull();
 	});
 });
