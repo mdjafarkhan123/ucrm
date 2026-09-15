@@ -12,12 +12,18 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import {
 	communicationFieldErrors,
-	conversationReplyEmailSchema
+	conversationReplyEmailSchema,
+	conversationReplySmsSchema
 } from '$lib/server/validation/communications.schema';
 
-// Sends a reply from an already-open Conversations thread. Unlike the client-detail manual-email
-// dialog, the recipient is never browser-chosen -- enqueue_conversation_reply_email resolves it from
-// the conversation's own most recent activity, so this route only ever passes ids and plain text.
+// A database rejection surfaced as a 422 with its own message: permission, missing recipient, sender/number
+// not ready, or (SMS only) a P0001 safety refusal (consent, balance, quiet hours) or a same-key payload
+// conflict. Anything else is an unexpected failure, logged and hidden behind a generic error.
+const KNOWN_REJECTION_CODES = ['42501', '23503', '55000', '23514', 'P0001', '23505'];
+
+// Sends a reply from an already-open Conversations thread, email or SMS. Unlike the client-detail manual-
+// email dialog, the recipient is never browser-chosen -- enqueue_conversation_reply_email/_sms resolve it
+// from the conversation's own most recent activity, so this route only ever passes ids and plain text.
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'conversations.send');
 	if ('response' in check) return check.response;
@@ -37,12 +43,16 @@ export const POST: RequestHandler = async (event) => {
 	} catch {
 		return validationError({ form: 'Request body must be valid JSON.' });
 	}
-	const parsed = conversationReplyEmailSchema.safeParse(body);
-	if (!parsed.success) {
+	const channel = (body as { channel?: unknown } | null)?.channel === 'sms' ? 'sms' : 'email';
+
+	const smsParsed = channel === 'sms' ? conversationReplySmsSchema.safeParse(body) : null;
+	const emailParsed = channel === 'email' ? conversationReplyEmailSchema.safeParse(body) : null;
+	const parseFailure = smsParsed ?? emailParsed;
+	if (parseFailure && !parseFailure.success) {
 		return json(
 			{
 				error: 'Please review the reply details.',
-				field_errors: communicationFieldErrors(parsed.error)
+				field_errors: communicationFieldErrors(parseFailure.error)
 			},
 			{ status: 422, headers: NO_STORE_HEADERS }
 		);
@@ -62,7 +72,33 @@ export const POST: RequestHandler = async (event) => {
 			return response;
 		}
 
-		const input = parsed.data;
+		if (smsParsed && smsParsed.success) {
+			const { data, error } = await ownerClient.rpc('enqueue_conversation_reply_sms', {
+				target_organization_id: organizationId,
+				target_actor_user_id: check.auth.user.id,
+				target_client_id: clientId,
+				target_logical_send_key: smsParsed.data.idempotency_key,
+				target_body: smsParsed.data.body
+			});
+			if (error) {
+				const dbError = error as { code?: string; message?: string };
+				if (KNOWN_REJECTION_CODES.includes(dbError.code ?? '')) {
+					return json({ error: dbError.message }, { status: 422, headers: NO_STORE_HEADERS });
+				}
+				console.error('Could not queue an SMS conversation reply.', error);
+				return databaseError();
+			}
+
+			return json(
+				{ intent: { id: data.id, status: data.status, created_at: data.created_at } },
+				{ status: 201, headers: NO_STORE_HEADERS }
+			);
+		}
+
+		// Unreachable: channel === 'email' here (the sms branch above already returned), and a failed email
+		// parse already returned above too -- this only narrows the type for what follows.
+		if (!emailParsed?.success) return databaseError();
+		const input = emailParsed.data;
 
 		let attachments;
 		try {
@@ -86,7 +122,7 @@ export const POST: RequestHandler = async (event) => {
 		});
 		if (error) {
 			const dbError = error as { code?: string; message?: string };
-			if (['42501', '23503', '55000', '23514'].includes(dbError.code ?? '')) {
+			if (KNOWN_REJECTION_CODES.includes(dbError.code ?? '')) {
 				return json({ error: dbError.message }, { status: 422, headers: NO_STORE_HEADERS });
 			}
 			console.error('Could not queue a conversation reply.', error);

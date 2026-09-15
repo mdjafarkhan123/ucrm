@@ -26,6 +26,7 @@
 		clientCommunicationHistoryKey,
 		conversationContextKey,
 		conversationCustomerEmail,
+		conversationCustomerPhone,
 		endWebsiteChatSession,
 		fetchConversationContext,
 		fetchInboundAttachmentDownloadUrl,
@@ -79,9 +80,9 @@
 	let newConversationOpen = $state(false);
 	let newConversationClientId = $state<string | null>(null);
 	let timelineEl = $state<HTMLDivElement | null>(null);
-	// Which composer shows for the selected conversation, when both Email and Website Chat are eligible.
+	// Which composer shows for the selected conversation, when more than one channel is eligible.
 	// Reset (below) only when the selected conversation itself changes, never on every background refetch.
-	let activeChannel = $state<'email' | 'website_chat'>('email');
+	let activeChannel = $state<'email' | 'sms' | 'website_chat'>('email');
 	let endSessionTarget = $state<ConversationGroup | null>(null);
 	let resolveIdentityTarget = $state<ConversationGroup | null>(null);
 	let resolveIdentityError = $state('');
@@ -124,8 +125,18 @@
 	);
 
 	const emailAvailable = $derived(Boolean(selectedGroup?.clientId));
+	// SMS shares email's availability rule (both need only a known client) rather than a separate org
+	// readiness gate: the blueprint keeps a known SMS conversation visible even when it cannot send yet,
+	// replacing Send with a plain reason instead of hiding the channel (see docs/communications-sms-
+	// product-ui-blueprint.md "Availability and blocked sending").
+	const smsAvailable = $derived(Boolean(selectedGroup?.clientId));
 	const chatAvailable = $derived(Boolean(selectedGroup?.chatSession));
 	const canSend = $derived(inboxQuery.data?.can_send ?? false);
+
+	function latestMessageChannel(group: ConversationGroup): 'email' | 'sms' | 'website_chat' {
+		if (isWebsiteChatMessage(group.latest)) return 'website_chat';
+		return group.latest.channel === 'sms' ? 'sms' : 'email';
+	}
 
 	// Resets the composer's channel tab only when the selected conversation itself changes (by key), not
 	// on every background refetch that follows a Realtime invalidation -- otherwise a reply in progress on
@@ -138,10 +149,8 @@
 			if (!group) return;
 			if (!group.clientId) {
 				activeChannel = 'website_chat';
-			} else if (!group.chatSession) {
-				activeChannel = 'email';
 			} else {
-				activeChannel = isWebsiteChatMessage(group.latest) ? 'website_chat' : 'email';
+				activeChannel = latestMessageChannel(group);
 			}
 		});
 	});
@@ -515,6 +524,10 @@
 		return conversationCustomerEmail(group);
 	}
 
+	function replyPhone(group: ConversationGroup) {
+		return conversationCustomerPhone(group);
+	}
+
 	// A 'system' part (the session ending) is narration, not a party in the conversation -- rendered as a
 	// note rather than a bubble with a sender line, matching the visitor widget's own rendering.
 	function chatSenderLabel(message: WebsiteChatInboxMessage) {
@@ -693,7 +706,9 @@
 							<div>
 								<h2>{group.name}</h2>
 								{#if group.clientId}
-									<a href={resolve('/(app)/clients/[id=uuid]', { id: group.clientId })}>View client</a>
+									<a href={resolve('/(app)/clients/[id=uuid]', { id: group.clientId })}
+										>View client</a
+									>
 								{:else}
 									<span class="communications__unresolved-sender"
 										>Needs review — not yet linked</span
@@ -926,7 +941,7 @@
 						{/if}
 					</div>
 					{#if group.clientId || group.chatSession}
-						{#key group.key}
+						{#key `${group.key}:${activeChannel}`}
 							{#if !canSend}
 								<p class="communications__no-permission">
 									You do not have permission to reply to this conversation.
@@ -945,14 +960,15 @@
 										>
 									</div>
 								{/if}
-								{#if emailAvailable && chatAvailable}
+								{#if emailAvailable || chatAvailable}
 									<div class="communications__channel-tabs">
 										<SegmentedControl
 											bind:value={activeChannel}
 											size="small"
 											options={[
 												{ value: 'email', label: 'Email' },
-												{ value: 'website_chat', label: 'Website Chat' }
+												...(smsAvailable ? [{ value: 'sms', label: 'SMS' }] : []),
+												...(chatAvailable ? [{ value: 'website_chat', label: 'Website Chat' }] : [])
 											]}
 										/>
 									</div>
@@ -967,9 +983,18 @@
 											onPendingChange={(send) => handlePendingChange(group.key, send)}
 										/>
 									{/if}
+								{:else if activeChannel === 'sms' && group.clientId}
+									<ConversationComposer
+										clientId={group.clientId}
+										channel="sms"
+										defaultSubject=""
+										recipientLabel={replyPhone(group)}
+										onPendingChange={(send) => handlePendingChange(group.key, send)}
+									/>
 								{:else if group.clientId}
 									<ConversationComposer
 										clientId={group.clientId}
+										channel="email"
 										defaultSubject={replySubject(latestEmailSubject(group))}
 										recipientLabel={replyRecipient(group)}
 										onPendingChange={(send) => handlePendingChange(group.key, send)}
@@ -1067,7 +1092,8 @@
 							<ul>
 								{#each context.requests as request (request.id)}
 									<li>
-										<a href={resolve('/(app)/requests/[id=uuid]', { id: request.id })}>{request.title}</a
+										<a href={resolve('/(app)/requests/[id=uuid]', { id: request.id })}
+											>{request.title}</a
 										>
 									</li>
 								{/each}

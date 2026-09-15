@@ -150,7 +150,7 @@ export type InboxMessage = OutboundInboxMessage | InboundInboxMessage;
 // failed after the server had already accepted it cannot post a second copy.
 export type PendingOutboundSend = {
 	id: string;
-	channel: 'email' | 'website_chat';
+	channel: 'email' | 'sms' | 'website_chat';
 	subject: string | null;
 	body: string;
 	created_at: string;
@@ -165,13 +165,15 @@ export type PendingOutboundSend = {
 	retry: () => void;
 };
 
-// What mark the bubble shows. An accepted email borrows the exact label its stored row will use, so the
-// swap is invisible; Website Chat has no delivery status, so an accepted chat message simply stops being
-// marked and reads as an ordinary sent bubble.
+// What mark the bubble shows. An accepted email or SMS borrows the exact label its stored row will use
+// (both share the same delivery-intent status vocabulary), so the swap is invisible; Website Chat has no
+// delivery status, so an accepted chat message simply stops being marked and reads as an ordinary sent
+// bubble.
 export function pendingSendStatus(send: PendingOutboundSend): EmailStatusDisplay | null {
 	if (send.state === 'sending') return { label: 'Sending…', tone: 'informative' };
 	if (send.state === 'failed') return { label: 'Not sent', tone: 'critical' };
-	if (send.channel === 'email' && send.status) return emailStatusDisplay({ status: send.status });
+	if ((send.channel === 'email' || send.channel === 'sms') && send.status)
+		return emailStatusDisplay({ status: send.status });
 	return null;
 }
 
@@ -375,6 +377,19 @@ export function conversationCustomerEmail(group: ConversationGroup): string {
 	return '';
 }
 
+// The SMS mirror of conversationCustomerEmail: the phone number an SMS reply would target, matching the
+// reply command's own "most recent activity, phone contact methods only" resolution.
+export function conversationCustomerPhone(group: ConversationGroup): string {
+	for (let index = group.messages.length - 1; index >= 0; index -= 1) {
+		const message = group.messages[index];
+		if (isWebsiteChatMessage(message)) continue;
+		if (message.direction === 'inbound' && message.sender_phone) return message.sender_phone;
+		if (message.direction === 'outbound' && message.send_kind !== 'forward' && message.client_phone)
+			return message.client_phone;
+	}
+	return '';
+}
+
 export type InboxView = 'team' | 'mine';
 
 export const inboxEmailKey = (search: string) =>
@@ -476,7 +491,13 @@ export async function sendConversationReply(
 	const response = await fetch(`/api/communications/conversations/${clientId}/reply`, {
 		method: 'POST',
 		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify({ subject, body, idempotency_key: idempotencyKey, attachments })
+		body: JSON.stringify({
+			channel: 'email',
+			subject,
+			body,
+			idempotency_key: idempotencyKey,
+			attachments
+		})
 	});
 	const result = (await response.json().catch(() => ({}))) as {
 		error?: string;
@@ -491,6 +512,58 @@ export async function sendConversationReply(
 		throw error;
 	}
 	return result as { intent: { id: string; status: string; created_at: string } };
+}
+
+// SMS mirror of sendConversationReply: no subject, no attachments (MMS is a later stage). Same idempotency
+// contract -- `idempotencyKey` belongs to the send attempt, and the endpoint dedupes a retry on it.
+export async function sendConversationReplySms(
+	clientId: string,
+	body: string,
+	idempotencyKey: string = crypto.randomUUID()
+) {
+	const response = await fetch(`/api/communications/conversations/${clientId}/reply`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ channel: 'sms', body, idempotency_key: idempotencyKey })
+	});
+	const result = (await response.json().catch(() => ({}))) as {
+		error?: string;
+		field_errors?: Record<string, string>;
+		intent?: { id: string; status: string; created_at: string };
+	};
+	if (!response.ok) {
+		const error = new Error(result.error ?? 'This text could not be queued.') as Error & {
+			fieldErrors?: Record<string, string>;
+		};
+		error.fieldErrors = result.field_errors;
+		throw error;
+	}
+	return result as { intent: { id: string; status: string; created_at: string } };
+}
+
+export type SmsReplyEstimate =
+	| {
+			ready: true;
+			encoding: string;
+			segment_count: number;
+			cost_minor: number;
+			currency: string;
+			sender_phone: string;
+	  }
+	| { ready: false; reason: string };
+
+// The composer's live impact line. Never throws on a normal "not ready yet" outcome (no sender, no
+// published rate) -- those come back as {ready: false, reason} for the composer to show inline; only a
+// genuine request failure throws.
+export async function estimateSmsReply(clientId: string, body: string): Promise<SmsReplyEstimate> {
+	const response = await fetch(`/api/communications/conversations/${clientId}/sms-estimate`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ body })
+	});
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) throw httpError(response, result.error ?? 'This estimate could not be loaded.');
+	return result as SmsReplyEstimate;
 }
 
 export async function forwardInboundMessage(

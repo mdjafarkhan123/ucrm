@@ -163,4 +163,56 @@ describe('conversation reply API', () => {
 		expect(response.status).toBe(422);
 		expect(rpc).not.toHaveBeenCalled();
 	});
+
+	describe('sms channel', () => {
+		const validSmsBody = {
+			channel: 'sms',
+			body: 'On our way over.',
+			idempotency_key: '123e4567-e89b-12d3-a456-426614174005'
+		};
+
+		it('calls the SMS reply command with only ids and plain text, never a browser-chosen recipient', async () => {
+			const response = await POST(event(validSmsBody));
+			expect(response.status).toBe(201);
+			expect(rpc).toHaveBeenCalledWith('enqueue_conversation_reply_sms', {
+				target_organization_id: organizationId,
+				target_actor_user_id: userId,
+				target_client_id: clientId,
+				target_logical_send_key: validSmsBody.idempotency_key,
+				target_body: validSmsBody.body
+			});
+			expect(resolveOutboundAttachments).not.toHaveBeenCalled();
+		});
+
+		it('rejects an empty SMS body before accessing the service role', async () => {
+			const response = await POST(event({ ...validSmsBody, body: '' }));
+			expect(response.status).toBe(422);
+			expect(getOwnerSupabaseClient).not.toHaveBeenCalled();
+		});
+
+		it('surfaces a P0001 safety refusal (consent/balance/quiet hours) as a validation error', async () => {
+			rpc.mockResolvedValue({
+				data: null,
+				error: {
+					code: 'P0001',
+					message: 'There is no SMS consent on file for this customer and message type.'
+				}
+			});
+			const response = await POST(event(validSmsBody));
+			expect(response.status).toBe(422);
+			const result = await response.json();
+			expect(result.error).toBe(
+				'There is no SMS consent on file for this customer and message type.'
+			);
+		});
+
+		it('surfaces a same-key payload conflict as a validation error', async () => {
+			rpc.mockResolvedValue({
+				data: null,
+				error: { code: '23505', message: 'This message was already queued with different details.' }
+			});
+			const response = await POST(event(validSmsBody));
+			expect(response.status).toBe(422);
+		});
+	});
 });

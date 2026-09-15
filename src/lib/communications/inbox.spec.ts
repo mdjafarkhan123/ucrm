@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	conversationCustomerPhone,
 	groupMessagesByContact,
 	type InboundInboxMessage,
 	type OutboundInboxMessage
@@ -197,5 +198,32 @@ describe('groupMessagesByContact', () => {
 			})
 		]);
 		expect(groups[0].name).toBe('+15550000002');
+	});
+});
+
+describe('conversationCustomerPhone', () => {
+	it('returns the phone from the most recent SMS-shaped message, oldest-first order notwithstanding', () => {
+		const groups = groupMessagesByContact([
+			inbound({
+				id: 'sms-1',
+				channel: 'sms',
+				sender_email: null,
+				sender_phone: '+15551110001',
+				created_at: '2026-08-25T09:00:00.000Z'
+			}),
+			outbound({
+				id: 'sms-out-1',
+				channel: 'sms',
+				client_email: null,
+				client_phone: '+15551110002',
+				created_at: '2026-08-25T11:00:00.000Z'
+			})
+		]);
+		expect(conversationCustomerPhone(groups[0])).toBe('+15551110002');
+	});
+
+	it('returns empty when the conversation has never carried SMS activity', () => {
+		const groups = groupMessagesByContact([outbound({ channel: 'email', client_phone: null })]);
+		expect(conversationCustomerPhone(groups[0])).toBe('');
 	});
 });

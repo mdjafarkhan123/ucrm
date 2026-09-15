@@ -14719,6 +14719,61 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			enqueue_conversation_reply_sms: {
+				Args: {
+					target_actor_user_id: string;
+					target_body: string;
+					target_client_id: string;
+					target_logical_send_key: string;
+					target_organization_id: string;
+				};
+				Returns: {
+					accepted_at: string | null;
+					allowance_class: string;
+					channel: string;
+					client_contact_method_id: string;
+					client_id: string;
+					client_payment_event_id: string | null;
+					created_at: string;
+					created_by: string | null;
+					delivery_outcome: string | null;
+					delivery_outcome_at: string | null;
+					delivery_outcome_detail: string | null;
+					direction: string;
+					expires_at: string;
+					failure_code: string | null;
+					failure_message: string | null;
+					html_content: string | null;
+					id: string;
+					invoice_id: string | null;
+					logical_send_key: string;
+					organization_id: string;
+					provider_message_id: string | null;
+					quote_access_link_id: string | null;
+					quote_id: string | null;
+					quote_recipient_id: string | null;
+					quote_version_id: string | null;
+					recipient_email: string | null;
+					recipient_phone: string | null;
+					reply_alias_id: string | null;
+					resent_from_intent_id: string | null;
+					retry_class: string;
+					retry_window_ends_at: string | null;
+					send_kind: string;
+					sender_id: string | null;
+					sms_sender_identity_id: string | null;
+					status: string;
+					subject: string | null;
+					text_content: string | null;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_delivery_intents';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			enqueue_inbound_message_forward: {
 				Args: {
 					target_actor_user_id: string;

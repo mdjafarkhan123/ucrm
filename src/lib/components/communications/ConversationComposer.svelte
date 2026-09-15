@@ -11,24 +11,30 @@
 	import type { CommunicationEmailTemplateListItem } from '$lib/communications/email-templates';
 	import {
 		clientCommunicationHistoryKey,
+		estimateSmsReply,
 		sendConversationReply,
+		sendConversationReplySms,
 		type OutboundAttachmentPayload,
-		type PendingOutboundSend
+		type PendingOutboundSend,
+		type SmsReplyEstimate
 	} from '$lib/communications/inbox';
 
-	// One reply composer per open conversation -- the parent remounts this with {#key clientId} when the
-	// selected conversation changes, so subject/body reset for free instead of needing an effect.
+	// One reply composer per open conversation -- the parent remounts this with {#key `${group.key}:
+	// ${activeChannel}`} whenever the conversation OR its channel changes, so subject/body/estimate reset
+	// for free instead of needing an effect.
 	//
 	// `onPendingChange` hands the in-flight send up to the timeline, which draws it as a bubble the moment
 	// Send is pressed. The composer still owns the attempt (the payload, the retry, the idempotency key);
 	// the page only renders what it is told.
 	let {
 		clientId,
+		channel,
 		defaultSubject,
 		recipientLabel,
 		onPendingChange
 	}: {
 		clientId: string;
+		channel: 'email' | 'sms';
 		defaultSubject: string;
 		recipientLabel: string;
 		onPendingChange?: (pending: PendingOutboundSend | null) => void;
@@ -48,6 +54,46 @@
 	let fieldErrors = $state<Record<string, string>>({});
 	let attachmentsField = $state<ConversationAttachments>();
 	let pendingTemplate = $state<CommunicationEmailTemplateListItem | null>(null);
+	let estimate = $state<SmsReplyEstimate | null>(null);
+	let estimating = $state(false);
+
+	// The composer's live impact line (blueprint: "live characters, estimated segments and estimated
+	// retail cost"). Debounced so every keystroke does not fire a request; a token guards against a
+	// slower, stale response landing after a faster, newer one already applied.
+	let estimateToken = 0;
+	$effect(() => {
+		if (channel !== 'sms') {
+			estimate = null;
+			estimating = false;
+			return;
+		}
+		const text = body.trim();
+		if (!text) {
+			estimate = null;
+			estimating = false;
+			return;
+		}
+		const token = ++estimateToken;
+		estimating = true;
+		const handle = setTimeout(async () => {
+			try {
+				const result = await estimateSmsReply(clientId, text);
+				if (token === estimateToken) estimate = result;
+			} catch {
+				if (token === estimateToken) estimate = null;
+			} finally {
+				if (token === estimateToken) estimating = false;
+			}
+		}, 400);
+		return () => clearTimeout(handle);
+	});
+
+	function formatEstimateCost(ready: Extract<SmsReplyEstimate, { ready: true }>) {
+		return (ready.cost_minor / 100).toLocaleString(undefined, {
+			style: 'currency',
+			currency: ready.currency
+		});
+	}
 
 	// No ref into the wrapped Textarea's own element, so this appends rather than inserting at a caret
 	// position -- the text stays editable either way, which is the contract's actual requirement.
@@ -93,8 +139,8 @@
 	) {
 		onPendingChange?.({
 			id: attempt.id,
-			channel: 'email',
-			subject: attempt.subject,
+			channel,
+			subject: channel === 'sms' ? null : attempt.subject,
 			body: attempt.body,
 			created_at: new Date().toISOString(),
 			state,
@@ -109,18 +155,21 @@
 		sending = true;
 		publish('sending', attempt);
 		try {
-			const result = await sendConversationReply(
-				clientId,
-				attempt.subject,
-				attempt.body,
-				attempt.attachments,
-				attempt.id
-			);
+			const result =
+				channel === 'sms'
+					? await sendConversationReplySms(clientId, attempt.body, attempt.id)
+					: await sendConversationReply(
+							clientId,
+							attempt.subject,
+							attempt.body,
+							attempt.attachments,
+							attempt.id
+						);
 			// The mark flips here, on acceptance, rather than after the re-read below. The server has taken
 			// the message and told us what it did with it, which is the fact the user is waiting on -- making
 			// them watch a full inbox re-read first added seconds of "Sending…" to a message already sent.
 			publish('sent', attempt, { status: result.intent.status });
-			toast.success('Email sent');
+			toast.success(channel === 'sms' ? 'Text sent' : 'Email sent');
 
 			// The re-read still has to happen, but it now runs behind an already-confirmed bubble. Awaiting it
 			// before dropping the bubble is what keeps the swap seamless: the real row is in the cache before
@@ -159,7 +208,7 @@
 		event.preventDefault();
 		if (sending || uploading) return;
 		const nextErrors: Record<string, string> = {};
-		if (!subject.trim()) nextErrors.subject = 'Enter a subject.';
+		if (channel === 'email' && !subject.trim()) nextErrors.subject = 'Enter a subject.';
 		if (!body.trim()) nextErrors.body = 'Enter a message.';
 		fieldErrors = nextErrors;
 		if (Object.keys(nextErrors).length > 0) return;
@@ -169,12 +218,13 @@
 			id: crypto.randomUUID(),
 			subject,
 			body,
-			attachments: attachmentsField?.getAttachments() ?? []
+			attachments: channel === 'email' ? (attachmentsField?.getAttachments() ?? []) : []
 		};
 		// Cleared up front, the way a messenger does: the message is now represented by its bubble in the
 		// timeline, so leaving a copy in the box would read as if nothing had been sent.
 		body = '';
-		attachmentsField?.reset();
+		estimate = null;
+		if (channel === 'email') attachmentsField?.reset();
 		void deliver(attempt);
 	}
 </script>
@@ -187,18 +237,26 @@
 		</div>
 		<div>
 			<dt>From</dt>
-			<dd>Your eligible email identity</dd>
+			<dd>
+				{#if channel === 'sms'}
+					{estimate?.ready ? estimate.sender_phone : 'Organization default SMS number'}
+				{:else}
+					Your eligible email identity
+				{/if}
+			</dd>
 		</div>
 	</dl>
-	<Input
-		id="conversation-composer-subject"
-		label="Subject"
-		required
-		bind:value={subject}
-		invalid={Boolean(fieldErrors.subject)}
-		errorMessage={fieldErrors.subject}
-		maxlength={998}
-	/>
+	{#if channel === 'email'}
+		<Input
+			id="conversation-composer-subject"
+			label="Subject"
+			required
+			bind:value={subject}
+			invalid={Boolean(fieldErrors.subject)}
+			errorMessage={fieldErrors.subject}
+			maxlength={998}
+		/>
+	{/if}
 	<Textarea
 		id="conversation-composer-body"
 		label="Message"
@@ -206,18 +264,38 @@
 		bind:value={body}
 		invalid={Boolean(fieldErrors.body)}
 		errorMessage={fieldErrors.body}
-		maxlength={20_000}
+		maxlength={channel === 'sms' ? 1600 : 20_000}
 		rows={4}
 	/>
+	{#if channel === 'sms'}
+		<p class="conversation-composer__impact">
+			{#if estimating}
+				Estimating…
+			{:else if estimate?.ready}
+				{body.length} character{body.length === 1 ? '' : 's'} · {estimate.segment_count} segment{estimate.segment_count ===
+				1
+					? ''
+					: 's'} · {formatEstimateCost(estimate)} estimated
+			{:else if estimate && !estimate.ready}
+				{estimate.reason}
+			{:else}
+				{body.length} character{body.length === 1 ? '' : 's'}
+			{/if}
+		</p>
+	{/if}
 	{#if formError}<p class="conversation-composer__error" role="alert">{formError}</p>{/if}
 	<footer class="conversation-composer__footer">
-		<EmailTemplatePickerButton disabled={sending} onApply={requestTemplate} />
+		{#if channel === 'email'}
+			<EmailTemplatePickerButton disabled={sending} onApply={requestTemplate} />
+		{/if}
 		<SnippetPickerButton disabled={sending} onInsert={insertSnippet} />
-		<ConversationAttachments
-			bind:this={attachmentsField}
-			disabled={sending}
-			onUploadingChange={(value) => (uploading = value)}
-		/>
+		{#if channel === 'email'}
+			<ConversationAttachments
+				bind:this={attachmentsField}
+				disabled={sending}
+				onUploadingChange={(value) => (uploading = value)}
+			/>
+		{/if}
 		<Button variant="primary" type="submit" loading={sending} disabled={uploading}>Send</Button>
 	</footer>
 </form>
@@ -264,6 +342,11 @@
 		color: var(--color-text);
 		font-size: var(--typography--fontSize-small);
 		overflow-wrap: anywhere;
+	}
+	.conversation-composer__impact {
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
 	}
 	.conversation-composer__error {
 		color: var(--color-critical);

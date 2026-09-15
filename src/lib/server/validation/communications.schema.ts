@@ -231,6 +231,21 @@ export const conversationReplyEmailSchema = z.object({
 	attachments: outboundAttachmentsField
 });
 
+// SMS has no subject line and no attachments (MMS is a later stage); the 1600-char ceiling is a generous
+// client-side guide -- the enqueue command's own segment count (10-segment cap) is the authoritative limit.
+export const conversationReplySmsSchema = z.object({
+	body: z
+		.string()
+		.trim()
+		.min(1, 'Enter a message.')
+		.max(1600, 'This message is too long to send as one text.'),
+	idempotency_key: z.string().uuid('Start a new reply attempt and try again.')
+});
+
+export const conversationReplySmsEstimateSchema = z.object({
+	body: z.string().trim().min(1).max(1600)
+});
+
 export const forwardInboundMessageSchema = z.object({
 	recipients: z
 		.array(z.string().trim().toLowerCase().email('Enter a valid email address.').max(320))
