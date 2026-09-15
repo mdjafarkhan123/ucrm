@@ -357,10 +357,40 @@ restrictions; worth checking before Stage 9B/9C if Jafar wants any live send pro
   BrandRegistrations request schema: `STANDARD` | `SOLE_PROPRIETOR`). Gate met: 10/10 vitest in
   `trust-hub-submission.spec.ts` (2 new: full sole-proprietor sequence with brandType asserted, idempotent
   re-run), scoped `tsc --noEmit` clean, svelte-autofixer clean on the form, Prettier clean.
-- **9C Campaign registration + status sync — Planned; depends on 9B.** Create the Campaign once Brand is
-  approved; sync Brand/Campaign status back onto `communication_sms_registrations.status` (poll and/or a Trust
-  Hub status-callback webhook, mirroring `api/webhooks/twilio/status`). Completes what unblocks Stage 8's live
-  proof.
+- **9C Campaign registration + status sync — DONE 2026-09-15 (unit-tested against mocks; commit `3772b2a`).**
+  New `syncTrustHubRegistrationStatus(deps, { registrationId })`: re-fetches the live Brand status from Twilio,
+  and once Brand reads `APPROVED`, creates the Campaign exactly once (idempotent via the 9A ledger -- an
+  existing `campaign` resource is re-fetched by SID instead of recreated, since Brand/Campaign registration is
+  billable and per Twilio's guide a second Campaign must never be created for the same Brand). Reflects the
+  outcome onto `communication_sms_registrations.status` via the existing 2C-3 owner commands
+  (`recordRegistrationOutcome`/`recordRegistrationCheck`): Brand `APPROVED`+Campaign `VERIFIED` → `approved`;
+  either resource's terminal-failure status → `action_needed` with Twilio's own failure reason surfaced;
+  anything still pending → `under_review`.
+  Campaign content is never invented platform copy -- `buildCampaignContent` builds Twilio's required
+  `description`/`messageFlow`/`messageSamples`/`hasEmbeddedLinks`/`hasEmbeddedPhone` fields entirely from the
+  contractor's own attested Stage 3A `messaging` answers (Jafar directed "follow what GHL does" for this
+  2026-09-15); the link/phone flags are regex-derived from the actual sample messages so what Twilio sees always
+  matches what the samples show, and `usAppToPersonUsecase` is `CUSTOMER_CARE` for the Standard path or
+  `SOLE_PROPRIETOR` for the Sole Proprietor path.
+  Tightened `communications-sms-registration.schema.ts`'s messaging minimums to Twilio's real Campaign
+  requirements (`description`/`consent_description` 40+ chars, each `sample_message` 20+ chars) so a
+  too-short attested answer fails locally at Stage 3A instead of failing a real, billable Twilio submission.
+  Gate met: extended `trust-hub-submission.spec.ts` (was 10, now covers sync's brand-pending/brand-failed/
+  campaign-created/campaign-idempotent-refetch/campaign-failed/campaign-verified paths against mocked Twilio
+  responses -- no live call, per Stage 9's hard constraint). Adapter-level spec added 2026-09-15
+  (`twilio-trust-hub.spec.ts`, 22 tests, mirroring `twilio-sms-submit.spec.ts`'s pattern): every one of the 13
+  `TwilioTrustHubClient` methods asserted for exact HTTP method/path/base-host/form-params (including
+  `MessageSamples` sent as a repeated key, not JSON) and the provisioning-key Basic auth header, plus shared
+  429/5xx-retryable, 4xx-not-retryable, network-failure-safe-to-retry-without-leaking-the-raw-error, and
+  missing-SID-in-a-2xx failure classification. Full-project `svelte-check` confirmed clean (4209 files, 0
+  errors) with `NODE_OPTIONS="--max-old-space-size=6144"`. Full `vitest run` shows 71 pre-existing failures in
+  11 unrelated files (quotes bulk-archive/access-links/convert-to-job/lifecycle/proposal/quote-commands/
+  signature/similar-and-delete, settings-business, team invitation resend) -- none touch communications; not
+  investigated further as out of this campaign's scope. No poll scheduler or Trust Hub status-callback
+  webhook wraps this function yet; it is called directly today and needs an owner-facing trigger (cron poll
+  and/or a webhook mirroring `api/webhooks/twilio/status`) before it runs unattended -- tracked as open work
+  under "Exact next action" in NOW.md, not yet its own roadmap part. Completes what unblocks Stage 8's live
+  proof once a real business exists to actually submit.
 
 ## Build principle (Jafar, durable 2026-08-30)
 
