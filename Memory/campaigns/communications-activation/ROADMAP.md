@@ -251,9 +251,30 @@ the app layer. Split into 3 parts, data → send → polish, mirroring Stage 2C/
   cannot open Communications; use owner/admin for any future Communications browser check). SMS tab renders
   correctly, blocked-send reason shows plainly, failed send renders as a Not Sent/Retry bubble. No unexpected console errors (only the expected 422 from
     the blocked send itself). **Still needs:** the commit (Jafar approves each stage's commit explicitly, per 6A).
-- **6C Thread rendering + polish — Planned, depends on 6B.** SMS chat bubbles, delivery ticks
-  (sent/delivered/failed), scheduled-message indicator, MMS attachments, phone-based identity resolution when
-  a client isn't yet matched. `+page.svelte`'s `activeChannel` switch is currently binary (email/website_chat).
+- **6C Thread rendering + polish — DONE 2026-09-15 (commit 745bc8e).** Research found phone-based identity
+  resolution already fully solved server-side (an unmatched SMS number always auto-becomes a Lead; the schema's
+  unique phone index makes the ambiguous-match case Website Chat has structurally impossible for SMS) and
+  "scheduled send" doesn't exist as a feature — only a platform quiet-hours hold that leaves `status='queued'`
+  with a `failure_message`. Real scope became 3 fixes: (1) `+page.svelte`'s SMS bubble is now its own branch —
+  no subject line, no Forward (email-only), inbound sender label falls back to phone; (2) `outboundEmailStatus`/
+  `emailStatusDisplay` in `inbox.ts` now maps `sms_delivered/undelivered/failed/needs_checking` to real badges
+  (every submitted SMS previously showed a permanent "Submitted"); (3) a held `queued` send now reads "Waiting
+  to send" instead of the generic label. MMS explicitly descoped by Jafar 2026-09-15 (nothing parses Twilio
+  media on either side yet — inbound `MediaUrl0` is never read, outbound has no attachment param at all); an
+  inbound message with attachments now says so in plain language instead of silently dropping it. Gate met:
+  full-project svelte-check 0 errors, 15/15 vitest (5 new covering every delivery-status label), Prettier
+  clean, and browser-verified live via two temporary rows inserted through
+  `record_communication_sms_inbound_message` (the same function the real Twilio webhook calls) — confirmed the
+  phone-labeled bubble, the Details dialog's phone fallback, and the MMS notice — then deleted. Live
+  delivery-tick states (sms_delivered etc.) can't be produced end-to-end yet (A2P still unapproved for this
+  org); covered by unit tests instead.
+- **6D MMS (pictures in Conversations) — Deferred by Jafar 2026-09-15, not yet scoped.** Genuinely unbuilt on
+  both sides, not a UI gap: inbound Twilio webhook never parses `MediaUrl0`/`NumMedia` media (only stores the
+  count), no inbound-attachment row or storage import path exists for SMS, and the outbound SMS send command/
+  composer has no attachment parameter at all. Needs its own research + plan (webhook media fetch/storage,
+  `communication_inbound_attachments` wiring, outbound upload + Twilio media params) before coding. The plan's
+  original §6 scope ("supported MMS/secure-link behavior") is not satisfied until this lands — Stage 6 is
+  otherwise done but not 100% complete against that original text.
 
 ## Build principle (Jafar, durable 2026-08-30)
 
