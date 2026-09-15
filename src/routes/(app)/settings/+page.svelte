@@ -27,6 +27,7 @@
 	import mailOffIcon from '@tabler/icons/outline/mail-off.svg?raw';
 	import messageCircleIcon from '@tabler/icons/outline/message-circle.svg?raw';
 	import deviceMobileMessageIcon from '@tabler/icons/outline/device-mobile-message.svg?raw';
+	import walletIcon from '@tabler/icons/outline/wallet.svg?raw';
 	import templateIcon from '@tabler/icons/outline/template.svg?raw';
 	import robotIcon from '@tabler/icons/outline/robot.svg?raw';
 
@@ -188,6 +189,12 @@
 										title="Phone & SMS"
 										description="Registration, sending numbers and texting readiness."
 										status={smsRegistrationBadge(home.readiness.sms_registration.readiness_state)}
+									/>
+									<SettingsDestinationCard
+										href={resolve('/settings/communications/sms-usage')}
+										icon={walletIcon}
+										title="SMS usage"
+										description="Balance, top-ups, charges and delivery health."
 									/>
 								{/if}
 								<SettingsDestinationCard

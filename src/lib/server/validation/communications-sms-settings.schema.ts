@@ -59,3 +59,42 @@ export function smsSettingsFieldErrors(error: z.ZodError) {
 
 export type SmsNumberAction = z.infer<typeof smsNumberActionSchema>;
 export type SmsComplianceInput = z.infer<typeof smsComplianceSchema>;
+
+// Stage 3D: a contractor's own SMS credit top-up request. Money creates no spendable credit until Jafar
+// confirms it (communication_sms_confirm_credit_topup); this only validates the request itself, mirroring the
+// owner-side cap in owner.schema.ts so the same amount is refused consistently on both sides of the request.
+const offsiteReference = z
+	.union([z.string(), z.null()])
+	.optional()
+	.transform((value) => {
+		if (value === null || value === undefined) return null;
+		const trimmed = value.trim();
+		return trimmed.length === 0 ? null : trimmed;
+	})
+	.refine((value) => value === null || value.length <= 500, {
+		message: 'Keep the payment reference under 500 characters.'
+	});
+
+const topupNote = z
+	.union([z.string(), z.null()])
+	.optional()
+	.transform((value) => {
+		if (value === null || value === undefined) return null;
+		const trimmed = value.trim();
+		return trimmed.length === 0 ? null : trimmed;
+	})
+	.refine((value) => value === null || value.length <= 2000, {
+		message: 'Keep the note under 2,000 characters.'
+	});
+
+export const smsCreditTopupRequestSchema = z.object({
+	requested_amount_minor: z
+		.number()
+		.int('Enter a whole amount in cents.')
+		.positive('Enter an amount greater than zero.')
+		.max(100_000_000, 'That amount is too large.'),
+	offsite_reference: offsiteReference,
+	note: topupNote
+});
+
+export type SmsCreditTopupRequestInput = z.infer<typeof smsCreditTopupRequestSchema>;

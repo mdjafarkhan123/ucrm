@@ -101,6 +101,7 @@
 		resolve('/(app)/settings/forms'),
 		resolve('/(app)/settings/communications/email'),
 		resolve('/(app)/settings/communications/sms'),
+		resolve('/(app)/settings/communications/sms-usage'),
 		resolve('/(app)/settings/communications/blocked-addresses'),
 		resolve('/(app)/settings/communications/website-chat'),
 		resolve('/(app)/settings/communications/snippets'),

@@ -100,3 +100,88 @@ export function safeSmsHold(row: SmsHoldRow) {
 		releasable_by_contractor: false
 	};
 }
+
+// Stage 3D: the contractor-facing SMS usage page (balance, top-up requests, lean health and ledger). Reuses
+// Stage 2C's money truth read-only; only a request/cancel action is contractor-writable here, never a balance,
+// rate or hold -- those stay Jafar-only (src/lib/server/communications/sms-owner.ts).
+
+export type SmsCreditAccountRow = {
+	currency_code: string;
+	settled_balance_minor: number;
+	reserved_balance_minor: number;
+} | null;
+
+export type SmsBalance = {
+	currency_code: string;
+	settled_balance_minor: number;
+	reserved_balance_minor: number;
+	promotional_balance_minor: number;
+	spendable_balance_minor: number;
+};
+
+export function safeSmsBalance(
+	account: SmsCreditAccountRow,
+	promotionalBalanceMinor: number,
+	spendableBalanceMinor: number
+): SmsBalance {
+	return {
+		currency_code: account?.currency_code ?? 'USD',
+		settled_balance_minor: account?.settled_balance_minor ?? 0,
+		reserved_balance_minor: account?.reserved_balance_minor ?? 0,
+		promotional_balance_minor: promotionalBalanceMinor,
+		spendable_balance_minor: spendableBalanceMinor
+	};
+}
+
+export type SmsCreditTopupRequestRow = {
+	id: string;
+	requested_amount_minor: number;
+	currency_code: string;
+	offsite_reference: string | null;
+	note: string | null;
+	status: string;
+	requested_at: string;
+	decided_at: string | null;
+	decision_reason: string | null;
+	settled_amount_minor: number | null;
+};
+
+export function safeSmsCreditTopupRequest(row: SmsCreditTopupRequestRow) {
+	return {
+		id: row.id,
+		requested_amount_minor: row.requested_amount_minor,
+		currency_code: row.currency_code,
+		offsite_reference: row.offsite_reference,
+		note: row.note,
+		status: row.status,
+		requested_at: row.requested_at,
+		decided_at: row.decided_at,
+		decision_reason: row.decision_reason,
+		settled_amount_minor: row.settled_amount_minor
+	};
+}
+
+export type SmsLedgerEntryRow = {
+	id: string;
+	source_key: string;
+	entry_kind: string;
+	amount_minor: number;
+	balance_after_minor: number;
+	occurred_at: string;
+	reason: string | null;
+};
+
+// Promotional credit never posts to this ledger (it is tracked, and expires, in its own table), so every row
+// here is purchased money -- credited by a confirmed top-up, or debited by a charge, refund or adjustment.
+export function safeSmsLedgerEntry(row: SmsLedgerEntryRow) {
+	return {
+		id: row.id,
+		reference: row.source_key,
+		entry_kind: row.entry_kind,
+		bucket: 'purchased' as const,
+		amount_minor: row.amount_minor,
+		balance_after_minor: row.balance_after_minor,
+		occurred_at: row.occurred_at,
+		reason: row.reason
+	};
+}
