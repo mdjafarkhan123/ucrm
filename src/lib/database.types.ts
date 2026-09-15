@@ -16499,6 +16499,10 @@ export type Database = {
 				Args: { batch_size?: number };
 				Returns: number;
 			};
+			process_communication_sms_provider_callbacks: {
+				Args: { batch_size?: number };
+				Returns: number;
+			};
 			process_next_form_submission: { Args: never; Returns: Json };
 			process_next_import_row: { Args: never; Returns: Json };
 			provision_organization_from_application: {

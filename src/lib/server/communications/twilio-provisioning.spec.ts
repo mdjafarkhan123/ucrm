@@ -65,6 +65,9 @@ function createFakeStore() {
 		async getAccount(organizationId) {
 			return accounts.find((a) => a.organizationId === organizationId) ?? null;
 		},
+		async getAccountBySubaccountSid(subaccountSid) {
+			return accounts.find((a) => a.subaccountSid === subaccountSid) ?? null;
+		},
 		async storeProvisionedSubaccount({
 			organizationId,
 			subaccountSid,

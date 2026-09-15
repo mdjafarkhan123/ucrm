@@ -2,26 +2,26 @@
 
 ## Goal
 Make Communications deliver email and SMS through a GHL-style unified inbox and provide safe delivery channels
-to dependent products such as Marketing. Email is live; SMS Stages 1–3 are complete. Stage 4 (4A/4B/4C) is done.
+to dependent products such as Marketing. Email is live; SMS Stages 1–3 done, Stage 4 (4A/4B/4C) done.
 Everything stays dark (no send UI, no live traffic) until Stage 5 webhooks + a country launch gate pass.
 
 ## Active part
-Stage 4 (4A, 4B, 4C) is DONE, verified, and committed (`bcef0aa`, 2026-09-15). **Next dependency-ready part:
-Stage 5 (signed inbound + status webhooks).**
+**Stage 5A — signed Twilio SMS status callbacks — DONE and verified, ready to commit in this session.**
+Helper `src/lib/server/communications/twilio-webhook.ts` (URL builder, `orderedValidationTokens`,
+`validateTwilioSignature` via the official `twilio` lib, param parse), route
+`src/routes/api/webhooks/twilio/status/+server.ts`, unit + route specs (43 green), pgTAP DB test
+`supabase/tests/database/communications_sms_signed_status_webhook.sql` (21 checks; verified live via MCP
+begin/rollback, 18/18 pass). Migration `20260919160000` applied to dev; types + advisors clean.
 
-**Not verified (carried forward, still open):** no browser check of the SMS worker-health card in the Jafar
-control room (no browser tool available in that session) and no live end-to-end pg_net wake (the cron stays
-inactive and Stage 5 + the country launch gate are still pending, same constraint 4A/4B had).
-
-## Exact next action
-Start **Stage 5: signed inbound and status webhooks** (`docs/communications-a2-implementation-plan.md` §5) —
-separate form-encoded Twilio inbound and status routes, official-SDK signature validation against the exact
-public URL, token-rotation overlap, durable dedupe, and normalized-number identity resolution (STOP/START/HELP
-before identity; one match / no match → Lead+Unassigned / multiple matches → Needs identification). Load the
-`twilio-webhook-architecture` and `twilio-messaging-webhooks` skills before writing the routes.
+## Next part: Stage 5B — inbound messages
+Read the packet `parts/stage-5.md` (5B section). Route `/api/webhooks/twilio/inbound`. Reuse 5A's
+`validateTwilioSignature` + `orderedValidationTokens` + AccountSid-lookup-then-validate. STOP/START/HELP
+handled before identity; normalized-number identity resolution (one match / none → Lead+Unassigned /
+multiple → Needs identification). **Verify the SMS conversation/inbound tables exist before building 5B** —
+the schema has moved ahead of older notes (see packet).
 
 ## Constraint
-A2P 10DLC cannot be completed for Jafar's test org; nothing actually sends. Provider-owned actions stay Jafar's.
-Stage 4's wake stays inactive (cron created but not scheduled) until Stage 5 + the launch gate.
+A2P 10DLC cannot be completed for Jafar's test org; nothing actually sends. Provider-owned actions stay
+Jafar's. Stage 4's wake stays inactive (cron created, not scheduled) until Stage 5 + the launch gate.
 
 Resume: `read memory and continue — communications-activation`.

@@ -26,6 +26,8 @@ export type StoredTwilioCredential = {
 	lifecycleState: TwilioCredentialLifecycle;
 	credentialSid: string | null;
 	encrypted: EncryptedTwilioCredential;
+	/** When set, a `prior` credential is accepted for webhook-signature validation only until this instant. */
+	retireAfter: string | null;
 };
 
 export type InsertCredentialInput = {
@@ -50,6 +52,9 @@ export type ProvisioningEventInput = {
 
 export type TwilioProvisioningStore = {
 	getAccount(organizationId: string): Promise<StoredTwilioAccount | null>;
+	/** Resolve an account by its Twilio subaccount SID. Used by signed webhooks, which learn the subaccount
+	 *  from the (unvalidated) payload and must load that account's Auth Tokens before validating the signature. */
+	getAccountBySubaccountSid(subaccountSid: string): Promise<StoredTwilioAccount | null>;
 	/** Atomic: create the account record and its first (current) Auth Token together. */
 	storeProvisionedSubaccount(input: {
 		organizationId: string;
@@ -122,7 +127,8 @@ function mapCredential(row: CredentialRow): StoredTwilioCredential {
 			nonce: toBytes(row.nonce),
 			ciphertext: toBytes(row.ciphertext),
 			authenticationTag: toBytes(row.authentication_tag)
-		}
+		},
+		retireAfter: row.retire_after
 	};
 }
 
@@ -142,6 +148,16 @@ export function createSupabaseTwilioProvisioningStore(
 				.from('communication_twilio_accounts')
 				.select('*')
 				.eq('organization_id', organizationId)
+				.maybeSingle();
+			if (error) throw new TwilioProvisioningStoreError('Could not read the Twilio account.');
+			return data ? mapAccount(data) : null;
+		},
+
+		async getAccountBySubaccountSid(subaccountSid) {
+			const { data, error } = await client
+				.from('communication_twilio_accounts')
+				.select('*')
+				.eq('subaccount_sid', subaccountSid)
 				.maybeSingle();
 			if (error) throw new TwilioProvisioningStoreError('Could not read the Twilio account.');
 			return data ? mapAccount(data) : null;

@@ -302,7 +302,8 @@ async function continueProvisioning(
 			purpose: 'restricted_api_key',
 			lifecycleState: 'current',
 			credentialSid: created.keySid,
-			encrypted
+			encrypted,
+			retireAfter: null
 		};
 		await store.recordEvent({
 			organizationId,
