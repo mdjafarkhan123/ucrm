@@ -386,11 +386,34 @@ restrictions; worth checking before Stage 9B/9C if Jafar wants any live send pro
   errors) with `NODE_OPTIONS="--max-old-space-size=6144"`. Full `vitest run` shows 71 pre-existing failures in
   11 unrelated files (quotes bulk-archive/access-links/convert-to-job/lifecycle/proposal/quote-commands/
   signature/similar-and-delete, settings-business, team invitation resend) -- none touch communications; not
-  investigated further as out of this campaign's scope. No poll scheduler or Trust Hub status-callback
-  webhook wraps this function yet; it is called directly today and needs an owner-facing trigger (cron poll
-  and/or a webhook mirroring `api/webhooks/twilio/status`) before it runs unattended -- tracked as open work
-  under "Exact next action" in NOW.md, not yet its own roadmap part. Completes what unblocks Stage 8's live
-  proof once a real business exists to actually submit.
+  investigated further as out of this campaign's scope. Completes what unblocks Stage 8's live proof once a
+  real business exists to actually submit.
+- **9D Automatic trigger for status sync — DONE 2026-09-15 (unit-tested against mocks; files UNCOMMITTED).**
+  Closes 9C's gap: `syncTrustHubRegistrationStatus` had no caller. Researched Twilio's own guidance for this
+  exact ISV scenario (troubleshooting-sole-proprietor-brand-registration-failures, not memory): Twilio
+  recommends a push notification (Event Streams webhook) over repeatedly polling the Brand endpoint. Jafar
+  approved building both, webhook primary + a daily poll as a safety net (mirrors this project's own
+  "reconcile daily" pattern already used for SMS message-status). New files: `trust-hub-status-trigger-
+  store.ts` (two lookups: map an inbound Brand/Campaign SID back to a registration id; list registrations
+  still `under_review` that already have a submitted Brand -- the poll's candidate set), `trust-hub-status-
+  poll-cron.ts` (`runTrustHubStatusPollCron`, per-registration error isolation mirroring
+  `runOrganizationClosureCron`), `api/jafar/internal/trust-hub-status-cron/+server.ts` (daily pg_cron ->
+  net.http_post target, Bearer secret, mirrors `closure-cron/+server.ts` exactly), `api/webhooks/twilio/
+  trust-hub-events/+server.ts` (Event Streams webhook Sink target -- HTTP Basic auth, since Event Streams
+  Sinks authenticate via URL-embedded credentials, not the classic X-Twilio-Signature header; parses the
+  CloudEvents array, maps brand/campaign events to a registration via the new lookup, calls
+  `syncTrustHubRegistrationStatus`, and asks Twilio to redeliver only on a retryable transport failure).
+  Migration `20260920120000_communications_sms_trust_hub_status_trigger.sql` (applied to dev DB): a
+  `(resource_role, provider_sid)` partial index for the webhook's lookup, plus the poll's Vault secret
+  bridge + `cron.schedule` (06:30 daily), mirroring `organization_closure_cron_extensions_and_vault.sql` /
+  `organization-closure-daily-cron-schedule.sql` exactly. New env vars `TRUST_HUB_STATUS_CRON_SECRET` /
+  `TRUST_HUB_EVENTS_WEBHOOK_SECRET` (both optional, unset = always unauthorized, matching the `*_WORKER_
+  SECRET` convention). Because every contractor's Brand/Campaign lives under UCRM's single ISV Twilio
+  account, only one Event Streams Sink/Subscription is ever needed platform-wide -- creating that real
+  (free) Twilio Console/API resource is left to Jafar, not automated. Gate met: 19/19 new vitest (poll-cron
+  sweep tallying/isolation, cron-route auth, webhook-route auth/parsing/lookup/retry-vs-accept), full-project
+  `svelte-check` 0/4218, Prettier clean. Not live-tested (Stage 9's hard constraint: no real business
+  registered yet on either side); the Sink itself is not yet created on the live Twilio account.
 
 ## Build principle (Jafar, durable 2026-08-30)
 

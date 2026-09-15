@@ -14,6 +14,8 @@ const serverEnvSchema = z.object({
 	GEOCODING_WORKER_SECRET: z.string().trim().min(32).optional(),
 	FORM_SUBMISSION_WORKER_SECRET: z.string().trim().min(32).optional(),
 	CLIENT_IMPORT_WORKER_SECRET: z.string().trim().min(32).optional(),
+	TRUST_HUB_STATUS_CRON_SECRET: z.string().trim().min(32).optional(),
+	TRUST_HUB_EVENTS_WEBHOOK_SECRET: z.string().trim().min(32).optional(),
 	MAPBOX_ACCESS_TOKEN: z.string().trim().min(1).optional()
 });
 
@@ -33,6 +35,8 @@ export function getServerEnv(): ServerEnv {
 		GEOCODING_WORKER_SECRET: env.GEOCODING_WORKER_SECRET,
 		FORM_SUBMISSION_WORKER_SECRET: env.FORM_SUBMISSION_WORKER_SECRET,
 		CLIENT_IMPORT_WORKER_SECRET: env.CLIENT_IMPORT_WORKER_SECRET,
+		TRUST_HUB_STATUS_CRON_SECRET: env.TRUST_HUB_STATUS_CRON_SECRET,
+		TRUST_HUB_EVENTS_WEBHOOK_SECRET: env.TRUST_HUB_EVENTS_WEBHOOK_SECRET,
 		MAPBOX_ACCESS_TOKEN: env.MAPBOX_ACCESS_TOKEN
 	});
 
