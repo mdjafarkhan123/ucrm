@@ -170,7 +170,7 @@ export const GET: RequestHandler = async (event) => {
 	let outboundQuery = ownerClient
 		.from('communication_delivery_intents')
 		.select(
-			'id, client_id, recipient_email, quote_id, subject, text_content, status, failure_message, created_at, resent_from_intent_id, send_kind, created_by, delivery_outcome, delivery_outcome_at'
+			'id, client_id, channel, recipient_email, recipient_phone, quote_id, subject, text_content, status, failure_message, created_at, resent_from_intent_id, send_kind, created_by, delivery_outcome, delivery_outcome_at'
 		)
 		.eq('organization_id', organizationId)
 		.order('created_at', { ascending: false })
@@ -198,7 +198,7 @@ export const GET: RequestHandler = async (event) => {
 		? ownerClient
 				.from('communication_inbound_messages')
 				.select(
-					'id, client_id, sender_email, sender_name, subject, text_content, created_at, in_reply_to_intent_id, message_kind, review_status, review_reason, automation_suppressed, attachment_count, provider, provider_message_id'
+					'id, client_id, channel, sender_email, sender_phone, sender_name, subject, text_content, created_at, in_reply_to_intent_id, message_kind, review_status, review_reason, automation_suppressed, attachment_count, provider, provider_message_id'
 				)
 				.eq('organization_id', organizationId)
 				// A dismissed guarded message is triaged away, not deleted -- it keeps its audit row but
@@ -576,6 +576,7 @@ export const GET: RequestHandler = async (event) => {
 		...row,
 		client_name: namesById.get(row.client_id) ?? 'Client unavailable',
 		client_email: row.recipient_email,
+		client_phone: row.recipient_phone,
 		attachments: outboundAttachmentsByMessage.get(row.id) ?? [],
 		can_resend: canResend(row),
 		created_by_name:
@@ -606,8 +607,11 @@ export const GET: RequestHandler = async (event) => {
 	// forward row when deriving "who a reply goes to."
 	const forwardMessages = forwardPage.map(({ direction: _direction, ...row }) => ({
 		...row,
+		// A forward is an email-only feature (communication_forward_events has no channel column of its own).
+		channel: 'email' as const,
 		client_name: namesById.get(row.client_id) ?? 'Client unavailable',
 		client_email: '',
+		client_phone: null,
 		quote_id: null,
 		resent_from_intent_id: null,
 		resent_into_intent_id: null,

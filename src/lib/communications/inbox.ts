@@ -9,8 +9,10 @@ export type OutboundAttachment = {
 export type InboxEmail = {
 	id: string;
 	client_id: string;
+	channel: 'email' | 'sms';
 	client_name: string;
-	client_email: string;
+	client_email: string | null;
+	client_phone: string | null;
 	quote_id: string | null;
 	subject: string;
 	text_content: string;
@@ -61,8 +63,10 @@ export type InboundInboxMessage = {
 	direction: 'inbound';
 	id: string;
 	client_id: string | null;
+	channel: 'email' | 'sms';
 	client_name: string | null;
-	sender_email: string;
+	sender_email: string | null;
+	sender_phone: string | null;
 	sender_name: string | null;
 	subject: string;
 	text_content: string;
@@ -271,9 +275,12 @@ export type ConversationGroup = {
 function timelineItemKey(item: TimelineMessage): string {
 	if (item.client_id) return item.client_id;
 	if (isWebsiteChatMessage(item)) return `webchat:${item.session_id}`;
-	// Only an inbound email message can otherwise lack a client_id (an outbound send always targets a
-	// known client).
-	return `guarded:${(item as InboundInboxMessage).sender_email}`;
+	// Only an inbound message can otherwise lack a client_id (an outbound send always targets a known
+	// client). An unresolved sender is grouped by whichever address the channel actually carries.
+	const inbound = item as InboundInboxMessage;
+	return inbound.channel === 'sms'
+		? `guarded-sms:${inbound.sender_phone}`
+		: `guarded:${inbound.sender_email}`;
 }
 
 function timelineItemName(
@@ -282,13 +289,14 @@ function timelineItemName(
 ): string {
 	if (isWebsiteChatMessage(item)) return item.client_name ?? session?.visitor_name ?? 'Visitor';
 	if (item.direction === 'outbound') return item.client_name;
-	return item.client_name ?? item.sender_name ?? item.sender_email;
+	return item.client_name ?? item.sender_name ?? item.sender_email ?? item.sender_phone ?? '';
 }
 
 function timelineItemAvatarId(item: TimelineMessage): string {
 	if (item.client_id) return item.client_id;
 	if (isWebsiteChatMessage(item)) return item.session_id;
-	return (item as InboundInboxMessage).sender_email;
+	const inbound = item as InboundInboxMessage;
+	return inbound.channel === 'sms' ? (inbound.sender_phone ?? '') : (inbound.sender_email ?? '');
 }
 
 /**
@@ -358,8 +366,10 @@ export function conversationCustomerEmail(group: ConversationGroup): string {
 	for (let index = group.messages.length - 1; index >= 0; index -= 1) {
 		const message = group.messages[index];
 		if (isWebsiteChatMessage(message)) continue;
-		if (message.direction === 'inbound') return message.sender_email;
-		if (message.direction === 'outbound' && message.send_kind !== 'forward')
+		// An SMS-channel message has no email address of its own -- skip it and keep looking, the same way
+		// a forward row or a Website Chat message is skipped.
+		if (message.direction === 'inbound' && message.sender_email) return message.sender_email;
+		if (message.direction === 'outbound' && message.send_kind !== 'forward' && message.client_email)
 			return message.client_email;
 	}
 	return '';

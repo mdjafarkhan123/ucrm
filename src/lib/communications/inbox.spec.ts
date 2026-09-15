@@ -10,8 +10,10 @@ function outbound(overrides: Partial<OutboundInboxMessage> = {}): OutboundInboxM
 		direction: 'outbound',
 		id: 'out-1',
 		client_id: 'client-1',
+		channel: 'email',
 		client_name: 'Alice',
 		client_email: 'alice@example.test',
+		client_phone: null,
 		quote_id: null,
 		subject: 'Quote ready',
 		text_content: 'Here it is.',
@@ -38,8 +40,10 @@ function inbound(overrides: Partial<InboundInboxMessage> = {}): InboundInboxMess
 		direction: 'inbound',
 		id: 'in-1',
 		client_id: 'client-1',
+		channel: 'email',
 		client_name: 'Alice',
 		sender_email: 'alice@example.test',
+		sender_phone: null,
 		sender_name: 'Alice',
 		subject: 'Re: Quote ready',
 		text_content: 'Looks good.',
@@ -146,5 +150,52 @@ describe('groupMessagesByContact', () => {
 			})
 		]);
 		expect(anonymous[0].name).toBe('x@unknown.test');
+	});
+
+	it("groups a known contact's inbound SMS the same way as email, by client_id", () => {
+		const groups = groupMessagesByContact([
+			inbound({ id: 'sms-1', channel: 'sms', sender_email: null, sender_phone: '+15551234567' }),
+			outbound({ id: 'out-1' })
+		]);
+		expect(groups).toHaveLength(1);
+		expect(groups[0].key).toBe('client-1');
+	});
+
+	it('groups an unresolved SMS sender by phone number, separately from email guarded rows', () => {
+		const groups = groupMessagesByContact([
+			inbound({
+				id: 'sms-a',
+				channel: 'sms',
+				client_id: null,
+				client_name: null,
+				sender_email: null,
+				sender_phone: '+15550000001'
+			}),
+			inbound({
+				id: 'email-a',
+				client_id: null,
+				client_name: null,
+				sender_email: 'a@unknown.test'
+			})
+		]);
+		expect(groups).toHaveLength(2);
+		expect(groups.map((g) => g.key).sort()).toEqual([
+			'guarded-sms:+15550000001',
+			'guarded:a@unknown.test'
+		]);
+	});
+
+	it('falls back to sender_phone for an unresolved SMS row with no sender name', () => {
+		const groups = groupMessagesByContact([
+			inbound({
+				channel: 'sms',
+				client_id: null,
+				client_name: null,
+				sender_name: null,
+				sender_email: null,
+				sender_phone: '+15550000002'
+			})
+		]);
+		expect(groups[0].name).toBe('+15550000002');
 	});
 });
