@@ -18,7 +18,9 @@ export type InboxEmail = {
 	text_content: string;
 	status: string;
 	failure_message: string | null;
-	// Post-acceptance provider outcome (Part 7.1). Null until a Brevo callback lands for this message.
+	// Post-acceptance provider outcome. Null until a Brevo callback (email, Part 7.1) or a Twilio status
+	// callback (sms, Stage 5A) lands for this message. The two vocabularies share this one column --
+	// 'sms_'-namespaced so an email reputation window filtering on this field keeps counting only its own.
 	delivery_outcome:
 		| 'delivered'
 		| 'soft_bounce'
@@ -27,6 +29,10 @@ export type InboxEmail = {
 		| 'deferred'
 		| 'blocked'
 		| 'unsubscribed'
+		| 'sms_delivered'
+		| 'sms_undelivered'
+		| 'sms_failed'
+		| 'sms_needs_checking'
 		| null;
 	delivery_outcome_at: string | null;
 	created_at: string;
@@ -124,10 +130,23 @@ function emailStatusDisplay(email: {
 			case 'soft_bounce':
 			case 'deferred':
 				return { label: 'Delivery delayed', tone: 'warning' };
+			case 'sms_delivered':
+				return { label: 'Delivered', tone: 'success' };
+			case 'sms_undelivered':
+				return { label: 'Not delivered', tone: 'critical' };
+			case 'sms_failed':
+				return { label: 'Failed', tone: 'critical' };
+			case 'sms_needs_checking':
+				return { label: 'Needs checking', tone: 'warning' };
 		}
 	}
 	if (email.status === 'submitted') return { label: 'Submitted', tone: 'success' };
-	if (email.status === 'queued') return { label: 'Queued — not sent', tone: 'informative' };
+	if (email.status === 'queued') {
+		// A queued send the worker has already looked at and held back (quiet hours, an org not yet ready
+		// to send, ...) carries a reason in failure_message; a freshly queued one has none yet.
+		if (email.failure_message) return { label: 'Waiting to send', tone: 'informative' };
+		return { label: 'Queued — not sent', tone: 'informative' };
+	}
 	if (email.status === 'claimed') return { label: 'Preparing to send', tone: 'warning' };
 	if (email.status === 'cancelled') {
 		// A send the worker refused because the address is suppressed reads differently from a plain cancel.

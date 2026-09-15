@@ -794,7 +794,105 @@
 										message.unread}
 									data-message-id={message.id}
 								>
-									{#if message.direction === 'outbound'}
+									{#if message.channel === 'sms'}
+										<!-- SMS reads as a text message, not a mail: no subject line, no Forward (an
+										     email-only feature -- communication_forward_events has no channel of its
+										     own), and MMS media isn't fetched yet (Stage 6C descoped it), so a picture
+										     shows as a plain notice instead of silently vanishing. -->
+										{#if message.direction === 'outbound'}
+											<div class="communications__thread-message-meta">
+												<span>{sentByLabel(message)}</span>
+												<time datetime={message.created_at}>{formatWhen(message.created_at)}</time>
+											</div>
+											<div class="communications__thread-message-badges">
+												<Badge status={outboundEmailStatus(message).tone}
+													>{outboundEmailStatus(message).label}</Badge
+												>
+												{#if message.can_resend}
+													<Button
+														size="small"
+														variant="secondary"
+														onclick={() => (resendTarget = message)}>Resend</Button
+													>
+												{/if}
+											</div>
+											<p>{message.text_content}</p>
+											{#if message.resent_from_intent_id}<p
+													class="communications__notice"
+													role="status"
+												>
+													This is a resend of an earlier attempt.
+												</p>{/if}
+											{#if message.resent_into_intent_id}
+												{@const newerAttempt = outboundIn(group, message.resent_into_intent_id)}
+												{#if newerAttempt}
+													<p class="communications__notice" role="status">
+														This message was resent.
+														<button
+															type="button"
+															class="communications__notice-action"
+															onclick={() => scrollToMessage(newerAttempt.id)}
+															>View the newer attempt</button
+														>
+													</p>
+												{/if}
+											{/if}
+											{#if message.failure_message}<p class="communications__notice" role="status">
+													{message.failure_message}
+												</p>{/if}
+											{#if message.quote_id}
+												<p class="communications__notice communications__notice--quiet">
+													Related work: <a
+														href={resolve('/(app)/quotes/[id=uuid]', { id: message.quote_id })}
+														>View quote</a
+													>
+												</p>
+											{/if}
+										{:else}
+											{@const kind = kindBadge(message)}
+											{@const review = reviewBadge(message)}
+											<div class="communications__thread-message-meta">
+												<span>{message.sender_name ?? message.sender_phone}</span>
+												<time datetime={message.created_at}>{formatWhen(message.created_at)}</time>
+											</div>
+											<div class="communications__thread-message-badges">
+												{#if review}<Badge status={review.tone}>{review.label}</Badge>{/if}
+												{#if kind}<Badge status={kind.tone}>{kind.label}</Badge>{/if}
+												<Button
+													size="small"
+													variant="secondary"
+													onclick={() => (detailsMessage = message)}>Details</Button
+												>
+											</div>
+											<p>{message.text_content}</p>
+											{#if message.in_reply_to_intent_id}
+												{@const replyTarget = outboundIn(group, message.in_reply_to_intent_id)}
+												<p class="communications__notice" role="status">
+													{#if replyTarget}
+														In reply to
+														<button
+															type="button"
+															class="communications__notice-action"
+															onclick={() => scrollToMessage(replyTarget.id)}
+															>{replyTarget.subject}</button
+														>
+													{:else}
+														In reply to an earlier message on this thread.
+													{/if}
+												</p>
+											{/if}
+											{#if message.attachment_count > 0}
+												<p class="communications__notice communications__notice--quiet">
+													This text included a picture. Picture messages aren't shown yet.
+												</p>
+											{/if}
+											{#if message.automation_suppressed}
+												<p class="communications__notice communications__notice--quiet">
+													Automation is suppressed for this message.
+												</p>
+											{/if}
+										{/if}
+									{:else if message.direction === 'outbound'}
 										<div class="communications__thread-message-meta">
 											<span>{sentByLabel(message)}</span>
 											<time datetime={message.created_at}>{formatWhen(message.created_at)}</time>

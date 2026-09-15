@@ -52,7 +52,10 @@
 		</div>
 		<div>
 			<dt>From</dt>
-			<dd>{message.sender_name ? `${message.sender_name} · ` : ''}{message.sender_email}</dd>
+			<dd>
+				{message.sender_name ? `${message.sender_name} · ` : ''}{message.sender_email ??
+					message.sender_phone}
+			</dd>
 		</div>
 		<div>
 			<dt>Conversation</dt>

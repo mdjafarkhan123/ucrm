@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	conversationCustomerPhone,
 	groupMessagesByContact,
+	outboundEmailStatus,
 	type InboundInboxMessage,
 	type OutboundInboxMessage
 } from './inbox';
@@ -225,5 +226,56 @@ describe('conversationCustomerPhone', () => {
 	it('returns empty when the conversation has never carried SMS activity', () => {
 		const groups = groupMessagesByContact([outbound({ channel: 'email', client_phone: null })]);
 		expect(conversationCustomerPhone(groups[0])).toBe('');
+	});
+});
+
+describe('outboundEmailStatus', () => {
+	it('reads an SMS delivery_outcome the same way it reads an email one', () => {
+		const delivered = outbound({
+			channel: 'sms',
+			status: 'submitted',
+			delivery_outcome: 'sms_delivered'
+		});
+		expect(outboundEmailStatus(delivered)).toEqual({ label: 'Delivered', tone: 'success' });
+
+		const undelivered = outbound({
+			channel: 'sms',
+			status: 'submitted',
+			delivery_outcome: 'sms_undelivered'
+		});
+		expect(outboundEmailStatus(undelivered)).toEqual({ label: 'Not delivered', tone: 'critical' });
+
+		const failed = outbound({
+			channel: 'sms',
+			status: 'submitted',
+			delivery_outcome: 'sms_failed'
+		});
+		expect(outboundEmailStatus(failed)).toEqual({ label: 'Failed', tone: 'critical' });
+
+		const needsChecking = outbound({
+			channel: 'sms',
+			status: 'submitted',
+			delivery_outcome: 'sms_needs_checking'
+		});
+		expect(outboundEmailStatus(needsChecking)).toEqual({ label: 'Needs checking', tone: 'warning' });
+	});
+
+	it('still reads "Submitted" for an SMS accepted by Twilio with no status callback yet', () => {
+		const submitted = outbound({ channel: 'sms', status: 'submitted', delivery_outcome: null });
+		expect(outboundEmailStatus(submitted)).toEqual({ label: 'Submitted', tone: 'success' });
+	});
+
+	it('surfaces the hold reason for a queued send the worker has already looked at', () => {
+		const held = outbound({
+			channel: 'sms',
+			status: 'queued',
+			failure_message: 'This text is waiting for quiet hours to end before it goes out.'
+		});
+		expect(outboundEmailStatus(held)).toEqual({ label: 'Waiting to send', tone: 'informative' });
+	});
+
+	it('reads a freshly queued send with no hold reason as plain "Queued"', () => {
+		const queued = outbound({ channel: 'sms', status: 'queued', failure_message: null });
+		expect(outboundEmailStatus(queued)).toEqual({ label: 'Queued — not sent', tone: 'informative' });
 	});
 });
