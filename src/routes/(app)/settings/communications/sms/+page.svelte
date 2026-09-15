@@ -128,6 +128,13 @@
 	let starting = $state(false);
 	let draft = $state<SmsRegistrationAnswers>(emptyAnswers());
 	let hydratedRevision = $state<number | null>(null);
+	// Sole proprietors are the one business type Twilio lets register without an EIN/registration number, through
+	// a separate "Sole Proprietor" path -- this toggle is what picks that path. Not a saved field: whether the ID
+	// fields are filled in already tells the server which path applies (see smsRegistrationAnswersSchema's
+	// superRefine), so this is purely local UI state that shows/hides and clears those fields.
+	let hasRegistrationId = $state(true);
+	const isSoleProprietorship = $derived(draft.business_type === 'sole_proprietorship');
+	const showRegistrationIdFields = $derived(!isSoleProprietorship || hasRegistrationId);
 	let saving = $state(false);
 	let submitting = $state(false);
 	let formError = $state('');
@@ -203,8 +210,17 @@
 						: ['', '']
 			}
 		};
+		hasRegistrationId = Boolean(saved.business_registration_id?.trim());
 		hydratedRevision = registration.draft_revision;
 	});
+
+	function handleHasRegistrationIdChange(checked: boolean) {
+		hasRegistrationId = checked;
+		if (!checked) {
+			draft.business_registration_id_type = '';
+			draft.business_registration_id = '';
+		}
+	}
 
 	function registrationStatusLabel(status: string | undefined) {
 		switch (status) {
@@ -556,20 +572,34 @@
 								disabled={!isEditable}
 								bind:value={draft.business_type}
 							/>
-							<Input
-								id="sms-registration-id-type"
-								label="Registration ID type (e.g. EIN)"
-								disabled={!isEditable}
-								bind:value={draft.business_registration_id_type}
-							/>
-							<Input
-								id="sms-registration-id"
-								label="Business registration ID"
-								disabled={!isEditable}
-								bind:value={draft.business_registration_id}
-								invalid={Boolean(fieldErrors.business_registration_id)}
-								errorMessage={fieldErrors.business_registration_id}
-							/>
+							{#if isSoleProprietorship}
+								<Toggle
+									id="sms-has-registration-id"
+									label="I have a business registration number (EIN)"
+									description="Turn this off if you run the business under your own name with no registered
+										company and no EIN. You'll register as a sole proprietor instead, which Twilio
+										verifies with a text to your own phone rather than a registration number."
+									checked={hasRegistrationId}
+									disabled={!isEditable}
+									onchange={handleHasRegistrationIdChange}
+								/>
+							{/if}
+							{#if showRegistrationIdFields}
+								<Input
+									id="sms-registration-id-type"
+									label="Registration ID type (e.g. EIN)"
+									disabled={!isEditable}
+									bind:value={draft.business_registration_id_type}
+								/>
+								<Input
+									id="sms-registration-id"
+									label="Business registration ID"
+									disabled={!isEditable}
+									bind:value={draft.business_registration_id}
+									invalid={Boolean(fieldErrors.business_registration_id)}
+									errorMessage={fieldErrors.business_registration_id}
+								/>
+							{/if}
 							<Input
 								id="sms-website-url"
 								label="Website"
@@ -621,6 +651,12 @@
 								disabled={!isEditable}
 								bind:value={draft.business_address.country_code}
 							/>
+							{#if isSoleProprietorship && !hasRegistrationId}
+								<p class="sms-settings__hint">
+									Sole proprietors with no registration number must use a US or Canada address --
+									enter "US" or "CA" here.
+								</p>
+							{/if}
 						</div>
 
 						<div class="sms-settings__group">
@@ -1065,6 +1101,11 @@
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 		font-weight: 600;
+	}
+	.sms-settings__hint {
+		margin: calc(var(--space-small) * -1) 0 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
 	}
 	.sms-settings__samples {
 		display: grid;

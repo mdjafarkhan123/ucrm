@@ -3950,6 +3950,111 @@ export type Database = {
 					}
 				];
 			};
+			communication_sms_trust_hub_events: {
+				Row: {
+					created_at: string;
+					detail: Json;
+					id: string;
+					operation: string;
+					organization_id: string;
+					registration_id: string;
+					resource_role: string | null;
+					result: string;
+					step: string;
+				};
+				Insert: {
+					created_at?: string;
+					detail?: Json;
+					id?: string;
+					operation: string;
+					organization_id: string;
+					registration_id: string;
+					resource_role?: string | null;
+					result: string;
+					step: string;
+				};
+				Update: {
+					created_at?: string;
+					detail?: Json;
+					id?: string;
+					operation?: string;
+					organization_id?: string;
+					registration_id?: string;
+					resource_role?: string | null;
+					result?: string;
+					step?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_trust_hub_events_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_trust_hub_events_registration_id_fkey';
+						columns: ['registration_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_registrations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_sms_trust_hub_resources: {
+				Row: {
+					created_at: string;
+					failure_reason: string | null;
+					id: string;
+					organization_id: string;
+					provider_sid: string | null;
+					provider_status: string | null;
+					registration_id: string;
+					resource_role: string;
+					status: string;
+					updated_at: string;
+				};
+				Insert: {
+					created_at?: string;
+					failure_reason?: string | null;
+					id?: string;
+					organization_id: string;
+					provider_sid?: string | null;
+					provider_status?: string | null;
+					registration_id: string;
+					resource_role: string;
+					status?: string;
+					updated_at?: string;
+				};
+				Update: {
+					created_at?: string;
+					failure_reason?: string | null;
+					id?: string;
+					organization_id?: string;
+					provider_sid?: string | null;
+					provider_status?: string | null;
+					registration_id?: string;
+					resource_role?: string;
+					status?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_trust_hub_resources_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_trust_hub_resources_registration_id_fkey';
+						columns: ['registration_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_registrations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			communication_twilio_accounts: {
 				Row: {
 					created_at: string;

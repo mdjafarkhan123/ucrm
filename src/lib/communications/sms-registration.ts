@@ -47,6 +47,8 @@ export type SmsRegistrationBusinessType =
 export type SmsRegistrationAnswers = {
 	legal_business_name: string;
 	business_type: SmsRegistrationBusinessType | '';
+	// Only optional for a sole proprietor with no EIN/registration number -- Twilio's separate Sole Proprietor
+	// path is for exactly that case. Every other business type still requires both (server-enforced).
 	business_registration_id_type: string;
 	business_registration_id: string;
 	website_url: string;

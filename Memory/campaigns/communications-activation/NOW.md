@@ -3,58 +3,43 @@
 ## Goal
 
 Make Communications deliver email and SMS through a GHL-style unified inbox and provide safe delivery channels
-to dependent products such as Marketing. Email is live; SMS Stages 1–6 done. Everything stays dark (no live
+to dependent products such as Marketing. Email is live; SMS Stages 1–7 done. Everything stays dark (no live
 traffic) until a country launch gate passes.
 
 ## Active part
 
-**Stage 7 — SMS in Automation.** Core build done and applied to the remote database this session (uncommitted
-in git — see below). "Send SMS" is a real, enabled action: catalog entry, recipe builder editor (body +
-variable picker + live segment/cost estimate + optional sender pin), the shared SQL send engine
-(`communication_sms_enqueue_operational` split into a private core + human/system wrappers,
-`enqueue_automation_quote_sms`, `perform_automation_sms_effect`), and the worker (`advance_automation_work_item`
-now returns `action_due_email` / `action_due_sms` instead of one `action_due`). Migration:
-`supabase/migrations/20260919190000_automation_sms_effect.sql`, applied. Sender continuity (prefer the number
-this customer's SMS has been using, else org default) mirrors Stage 6B's recipient-continuity pattern. Fixed a
-pre-existing `max_messages` email-only counting bug in the activation-preview route while touching it.
+Stage 9 (Twilio Trust Hub ISV registration): 9A (ledger), 9B (Standard-path saga), and the Sole Proprietor path
+are all DONE 2026-09-15 (unit-tested against mocks; UNCOMMITTED). Full detail: ROADMAP.md's "Stage 9" section.
 
-**Known, deliberate gaps in this slice** (documented in the migration's header):
-- SMS body variables are `customer_name` / `business_name` / `quote_number` only — **no `{{quote_link}}`**.
-  The SMS send path mints no customer access link yet; that needs its own design pass because
-  `quote_recipients`/`quote_access_links` are an email-shaped table (NOT NULL, email-format-checked email
-  column) that would need to learn to represent a phone recipient.
-- "Send a test to my verified team phone" — Jafar deferred this 2026-09-15; there is no phone-verification
-  mechanism anywhere in the app yet (would likely mean a new Twilio product, e.g. Verify).
-- Compliance/opt-out wording: the org's configured opt-out text (`communication_sms_compliance_settings`) is
-  **not actually appended to any outbound SMS today** — Automation or Manual. Pre-existing gap, not introduced
-  by Stage 7; flagged to Jafar, not fixed here since it would change already-shipped Conversations behavior.
+**Hard constraint, confirmed live in Twilio Console:** neither the platform (UCRM's own Twilio account) nor any
+contractor has a real registered business yet. This blocks live proof for both the Standard and Sole Proprietor
+paths, Stage 9C, and Stage 8 — build and unit-test with mocked responses only, never spend real money firing
+placeholder data at Twilio's live API.
 
-**Not yet done for full Gate closure:**
-- No browser/Playwright coverage added this session (unit tests + `npm run check` + a clean migration apply
-  + advisor check all pass).
-- Whether `stop.customer_reply` and other existing generic stop conditions behave correctly for an SMS
-  enrollment was not independently re-verified (they're channel-agnostic by construction, inherited from Stage
-  6F-1, but not re-tested here).
-- **Nothing is committed to git yet** — all Stage 7 file changes are working-tree only. Review and commit before
-  moving on.
-
-Deferred, not blocking: **6D MMS** (pictures in Conversations) — genuinely unbuilt on both sides. See
-ROADMAP.md's 6D entry before scoping it.
-
-Correction for future sessions: the `office` test role has no `conversations.*` permission (only owner/admin
-do, by design) and cannot open Communications at all — use an owner/admin login for any Communications
-browser check, not `office`. Raad LTD admin: jafarkhaninupwork@gmail.com / 11223344.
+**Business-registration thread blocked 2026-09-15 (confirmed via Twilio docs, not guessed):** Jafar is in
+Bangladesh with only a website and his personal National ID. Twilio's Sole Proprietor brand tier is US/Canada-
+resident only, so it does not help him — he still needs a real registered legal entity + business
+registration/tax number before either path can go live. Did not touch the Twilio Console wizard this session.
+Live-send testing (Virtual Phone simulator, or a real text to Jafar's own phone) was offered and declined by
+Jafar 2026-09-15 — don't re-offer unless he raises it.
 
 ## Exact next action
 
-Review the uncommitted Stage 7 working tree with Jafar, commit it, then decide: browser-test this stage now,
-or move to Stage 8 (billing reconciliation, recovery, launch proof) and fold Stage 7 browser coverage into
-that stage's live-proof pass.
+Independent threads; Jafar picks which to resume:
+
+1. Adapter-level spec for `twilio-trust-hub.ts` (exact HTTP method/path/param checks, mirroring
+   `twilio-sms-submit.spec.ts`) + a clean full-project `svelte-check` run (last one OOM'd on this machine).
+2. Stage 9C (Campaign registration + status sync onto `communication_sms_registrations.status`) — depends on
+   9B/Sole Proprietor (both done), dependency-ready.
+3. Business registration (blocked on Jafar's paperwork, see above).
+
+Stage 8 (billing reconciliation, recovery and launch proof) stays deferred behind Stage 9's live-proof
+prerequisite; its non-blocked pieces (price reconciliation logic, 200-tenant load test) can start in parallel.
 
 ## Constraint
 
-A2P 10DLC cannot be completed for Jafar's test org; nothing actually sends. Provider-owned actions stay
-Jafar's. Live delivery-tick states (delivered/failed) can't be produced end-to-end for the same reason — this
-also means Stage 7's "real charged test send" behavior cannot be proven live yet either.
+A2P 10DLC cannot be completed for Jafar's test org, or for the platform's own ISV profile, until a real
+registered business exists for either. Provider-owned actions and any real registration fee stay Jafar's
+explicit call.
 
 Resume: `read memory and continue — communications-activation`.

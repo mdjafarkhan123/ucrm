@@ -58,24 +58,66 @@ const messagingSchema = z.object({
 	estimated_monthly_messages: z.enum(['under_500', '500_2000', '2001_10000', 'over_10000'])
 });
 
-export const smsRegistrationAnswersSchema = z.object({
-	legal_business_name: shortText('the legal business name', 200),
-	business_type: z.enum([
-		'sole_proprietorship',
-		'partnership',
-		'limited_liability_company',
-		'cooperative',
-		'nonprofit_corporation',
-		'corporation',
-		'other'
-	]),
-	business_registration_id_type: shortText('the registration ID type', 40),
-	business_registration_id: shortText('the business registration ID', 100),
-	website_url: webUrl,
-	business_address: addressSchema,
-	authorized_representative: representativeSchema,
-	messaging: messagingSchema
-});
+export const smsRegistrationAnswersSchema = z
+	.object({
+		legal_business_name: shortText('the legal business name', 200),
+		business_type: z.enum([
+			'sole_proprietorship',
+			'partnership',
+			'limited_liability_company',
+			'cooperative',
+			'nonprofit_corporation',
+			'corporation',
+			'other'
+		]),
+		// Optional at the base schema level: a sole proprietor with no EIN/tax ID legitimately has neither. The
+		// refinement below makes both required for every other case, matching Twilio's own eligibility rule (A2P
+		// 10DLC Sole Proprietor registration is only for US/Canada customers with no business Tax ID -- confirmed
+		// against Twilio's docs 2026-09-15, not guessed).
+		business_registration_id_type: optionalText(40),
+		business_registration_id: optionalText(100),
+		website_url: webUrl,
+		business_address: addressSchema,
+		authorized_representative: representativeSchema,
+		messaging: messagingSchema
+	})
+	.superRefine((data, ctx) => {
+		const hasRegistrationId = Boolean(data.business_registration_id);
+		// A sole proprietor who has no registration ID goes through Twilio's separate Sole Proprietor Brand path
+		// instead of the Standard path -- Twilio requires no business_registration_id_type/id for that path, but
+		// does require a US or Canada business address (its Sole Proprietor program does not exist elsewhere).
+		const isUnregisteredSoleProprietor =
+			data.business_type === 'sole_proprietorship' && !hasRegistrationId;
+
+		if (!isUnregisteredSoleProprietor) {
+			if (!data.business_registration_id_type) {
+				ctx.addIssue({
+					code: 'custom',
+					path: ['business_registration_id_type'],
+					message: 'Enter the registration ID type.'
+				});
+			}
+			if (!data.business_registration_id) {
+				ctx.addIssue({
+					code: 'custom',
+					path: ['business_registration_id'],
+					message: 'Enter the business registration ID.'
+				});
+			}
+		}
+
+		if (isUnregisteredSoleProprietor) {
+			const country = data.business_address.country_code;
+			if (country !== 'US' && country !== 'CA') {
+				ctx.addIssue({
+					code: 'custom',
+					path: ['business_address', 'country_code'],
+					message:
+						'A sole proprietor with no registration number must have a US or Canada business address.'
+				});
+			}
+		}
+	});
 
 const draftAnswersSchema = z.object({
 	legal_business_name: optionalText(200),

@@ -208,11 +208,10 @@ no contractor send UI or live traffic until Stage 5 webhooks and a country launc
   proof (finalize money math A–C, email/SMS quarantine channel isolation D–E, idempotent replay F, foreign lease G).
   Files: `supabase/migrations/20260919120000_communications_sms_bounded_worker.sql`, `src/lib/server/communications/
   twilio.ts` (added `submitTwilioSms`), `sms-worker.ts` + `sms-worker.spec.ts` + `twilio-sms-submit.spec.ts`.
-- **4C Wake and basic owner health — Planned; depends on 4B (done) → dependency-ready.** Separately authenticated SMS
-  wake route + cron dispatch + wake-on-insert trigger for `channel='sms'`, and a lean SMS worker health read in the
-  Jafar Communications control room; no new dashboard. NOTE for 4C: `get_communication_email_worker_health()` counts
-  `communication_outbox_events` with NO channel filter (due/processing/submission_unknown) — 4C must scope email
-  health to `channel='email'` and add the SMS equivalent, or the two channels cross-count.
+- **4C Wake and basic owner health — DONE (commit `bcef0aa`); this roadmap entry was stale (said "Planned"
+  until corrected 2026-09-15 while scoping Stage 9).** Separately authenticated SMS wake route + cron dispatch +
+  wake-on-insert trigger for `channel='sms'`, and a lean SMS worker health read in the Jafar Communications
+  control room.
 
 Full approved behavior, exclusions and gates: `docs/communications-a2-implementation-plan.md` §4.
 
@@ -275,6 +274,93 @@ the app layer. Split into 3 parts, data → send → polish, mirroring Stage 2C/
   `communication_inbound_attachments` wiring, outbound upload + Twilio media params) before coding. The plan's
   original §6 scope ("supported MMS/secure-link behavior") is not satisfied until this lands — Stage 6 is
   otherwise done but not 100% complete against that original text.
+
+## Stage 9 (new, added 2026-09-15): actually submit registrations to Twilio (ISV Trust Hub)
+
+Found while scoping Stage 8: `communication_sms_registrations` captures a contractor's attested answers
+(Stage 3A) but nothing ever forwards them to Twilio -- `provider_registration_sid` stays null forever (2C-5c
+flagged this gap but gave it no home). As an ISV, submitting one contractor is itself a multi-step Twilio Trust
+Hub saga (Secondary Customer Profile -> business/authorized-rep End Users -> Address -> entity assignments ->
+evaluate -> submit -> A2P Trust Product -> Brand Registration -> Campaign), each step billable and
+independently retryable. Split data -> saga -> status sync, mirroring Stage 2B/3/4's template.
+
+**Hard constraint, confirmed live in Jafar's own Twilio Console 2026-09-15:** the platform's own Twilio account
+has no real Primary Customer Profile yet either (legal_business_name still literally reads "My first Twilio
+account", Business Identity is pre-set to "ISV, Reseller, or Partner" but nothing else is filled in, zero
+Brands registered). Jafar confirmed he owns no real registered business at all right now (not Raad LTD, not
+the platform itself) -- no EIN, no live website. **No code can get a live A2P submission approved until a real
+business exists**, for the platform's own ISV profile as well as any contractor's. Jafar confirmed: build and
+unit-test the real integration now; do not spend real money firing Raad LTD's placeholder data at Twilio's live
+API. Twilio's Console does offer a "Virtual Phone" trial US 10DLC number (Messaging > Virtual Phone) described
+as supporting real two-way SMS for prototyping without the full A2P flow -- not yet investigated for exact
+restrictions; worth checking before Stage 9B/9C if Jafar wants any live send proof sooner.
+
+- **9A Trust Hub submission ledger (data layer) — DONE 2026-09-15, applied to dev DB.** Two server-only tables,
+  no contractor-facing command (pure system state, same shape as Stage 2B's account/credential split):
+  `communication_sms_trust_hub_resources` (current-state, one row per (registration_id, resource_role) across
+  the 7 Trust Hub/Brand/Campaign object roles, upserted by the future saga -- no delete, since Brand
+  registration carries a real fee and must never be silently recreated) and
+  `communication_sms_trust_hub_events` (append-only sanitized step history, mirrors
+  `communication_twilio_provisioning_events`). Neither table stores a raw provider response body or secret --
+  SIDs, short status strings, sanitized reasons only, to avoid spreading the contractor's attested business PII
+  (already in `communication_sms_registration_submissions`) across more tables than needed. Both grant only
+  service_role select/insert(/update for resources); RLS enabled, no policies (matches every sibling
+  server-owned table). Gate met: 19/19 pgTAP green (`supabase test db` local), clean `supabase db reset
+  --local`, applied to dev DB via Supabase MCP, advisors show only the expected "RLS enabled, no policies" note
+  shared by every sibling server-owned table. Files:
+  `supabase/migrations/20260920100000_communications_sms_trust_hub_submission_ledger.sql` +
+  `supabase/tests/database/communications_sms_trust_hub_submission_ledger.sql`.
+- **9B Submission saga (Customer Profile → Brand) — DONE 2026-09-15 (unit-tested against mocks; UNCOMMITTED).**
+  Research (not memory) against Twilio's actual ISV guide found last session's 9A ledger was one resource role
+  short: the A2P Trust Product bundle needs a mandatory `us_a2p_messaging_profile_information` EndUser Standard
+  onboarding never has a slot for. Fixed via migration `20260920110000_communications_sms_trust_hub_a2p_profile_
+  resource_role.sql` (widens both check constraints to 8 roles; applied to dev DB; local pgTAP 20/20 green;
+  Jafar approved this schema change explicitly before it was written). Also confirmed: CustomerProfile and
+  TrustProduct are genuinely separate bundles requiring two parallel sets of calls (not one bundle reused); the
+  TrustProduct inherits business info by attaching the CustomerProfile itself via EntityAssignment, not by
+  duplicating End Users.
+  New files: `twilio-trust-hub.ts` (live adapter -- CustomerProfiles/EndUsers/SupportingDocuments/
+  EntityAssignments/Evaluations/submit-for-review on trusthub.twilio.com, Address on the legacy 2010 API,
+  BrandRegistrations on messaging.twilio.com; authenticated with the platform's main-account Restricted API key,
+  matching Stage 2B's least-privilege split), `trust-hub-submission-store.ts` (port + Supabase impl over the 9A
+  ledger + a read of the contractor's latest attested submission), `trust-hub-submission.ts` (the saga --
+  `submitRegistrationToTrustHub`, idempotent against the ledger like `twilio-provisioning.ts`, refuses to ever
+  create a second Brand Registration once one exists). `database.types.ts` hand-updated for both 9A tables (no
+  types existed for them yet).
+  Two fields Twilio requires that the Stage 3A contractor form never asked for turned out to be safely derivable
+  without new UI: `business_industry` is a fixed `CONSTRUCTION` constant (every UCRM org is a contractor by
+  product definition) and `company_type` derives from the already-collected `business_type` (nonprofit →
+  non-profit, else private) -- confirmed via research, no new contractor-facing field needed.
+  `business_regions_of_operation` only maps US/CA (`USA_AND_CANADA`) today; any other `country_code` throws
+  rather than guessing. `job_position`/`business_registration_id_type` free-text answers map to Twilio's fixed
+  enums with a safe `Other` fallback when they don't match a known value.
+  No owner-facing API route or Jafar UI wraps this saga yet (deliberately out of scope, same as how 2B preceded
+  2C); `isvPrimaryCustomerProfileSid`/`monitoringEmail` have no real values yet (Stage 9's hard constraint: no
+  real business registered for the platform itself). Files UNCOMMITTED (Jafar commits explicitly).
+- **9B-follow-up Sole Proprietor path — DONE 2026-09-15 (unit-tested against mocks; UNCOMMITTED).** Closes the
+  gap 9B deliberately left open: a `sole_proprietorship` with no EIN/registration ID now goes through Twilio's
+  separate "New Sole Proprietor A2P 10DLC Registration for ISVs" guide (researched fresh, not memory) instead of
+  being refused. Confirmed US/Canada-only (no Tax ID program exists elsewhere) and that the ISV's own Primary
+  Customer Profile prerequisite applies to this path too -- same hard-blocker as Standard, not a way around it.
+  Product decision Jafar approved: the Stage 3A form's `business_registration_id_type`/`business_registration_id`
+  become optional only for a sole proprietor with no ID (Zod `superRefine`, not two schemas); a new local-only
+  toggle ("I have a business registration number (EIN)") shows/hides and clears those fields, and requires a
+  US/CA address when off. The OTP mobile number and Starter Profile contact both reuse the already-collected
+  `authorized_representative` (Twilio's own docs: "for sole proprietorships, the authorized representative is
+  the sole proprietor" -- no new contractor-facing field). `mapBusinessType`'s error message corrected: a
+  sole-proprietor-with-EIN is a real, rare Twilio gap needing manual review, not a "use the other guide" case.
+  New saga path (`submitSoleProprietorSections` in `trust-hub-submission.ts`) reuses the same 6 ledger resource
+  roles as Standard (no migration needed -- `customer_profile`/`a2p_trust_product`/`end_user_authorized_
+  representative`/`end_user_a2p_messaging_profile` are reused as the equivalent Twilio graph slots, just with a
+  different policy_sid/End User type per path) and the same `twilio-trust-hub.ts` adapter (added `policySid` to
+  the Customer Profile/Trust Product calls and `brandType` to Brand Registration -- verified against Twilio's
+  BrandRegistrations request schema: `STANDARD` | `SOLE_PROPRIETOR`). Gate met: 10/10 vitest in
+  `trust-hub-submission.spec.ts` (2 new: full sole-proprietor sequence with brandType asserted, idempotent
+  re-run), scoped `tsc --noEmit` clean, svelte-autofixer clean on the form, Prettier clean.
+- **9C Campaign registration + status sync — Planned; depends on 9B.** Create the Campaign once Brand is
+  approved; sync Brand/Campaign status back onto `communication_sms_registrations.status` (poll and/or a Trust
+  Hub status-callback webhook, mirroring `api/webhooks/twilio/status`). Completes what unblocks Stage 8's live
+  proof.
 
 ## Build principle (Jafar, durable 2026-08-30)
 
