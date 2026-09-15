@@ -3205,6 +3205,12 @@ export type Database = {
 					delivery_intent_id: string;
 					id: string;
 					organization_id: string;
+					price_check_attempts: number;
+					price_check_available_at: string;
+					price_checked_at: string | null;
+					reported_provider_price_currency: string | null;
+					reported_provider_price_minor: number | null;
+					reported_segment_count: number | null;
 					reserved_at: string;
 					reserved_promotional_minor: number;
 					reserved_purchased_minor: number;
@@ -3219,6 +3225,12 @@ export type Database = {
 					delivery_intent_id: string;
 					id?: string;
 					organization_id: string;
+					price_check_attempts?: number;
+					price_check_available_at?: string;
+					price_checked_at?: string | null;
+					reported_provider_price_currency?: string | null;
+					reported_provider_price_minor?: number | null;
+					reported_segment_count?: number | null;
 					reserved_at?: string;
 					reserved_promotional_minor?: number;
 					reserved_purchased_minor?: number;
@@ -3233,6 +3245,12 @@ export type Database = {
 					delivery_intent_id?: string;
 					id?: string;
 					organization_id?: string;
+					price_check_attempts?: number;
+					price_check_available_at?: string;
+					price_checked_at?: string | null;
+					reported_provider_price_currency?: string | null;
+					reported_provider_price_minor?: number | null;
+					reported_segment_count?: number | null;
 					reserved_at?: string;
 					reserved_promotional_minor?: number;
 					reserved_purchased_minor?: number;
@@ -4055,6 +4073,53 @@ export type Database = {
 					}
 				];
 			};
+			communication_sms_usage_reconciliation_findings: {
+				Row: {
+					checked_at: string;
+					id: string;
+					organization_id: string;
+					our_message_count: number;
+					our_price_minor: number;
+					price_currency: string;
+					provider_message_count: number;
+					provider_price_minor: number;
+					status: string;
+					usage_date: string;
+				};
+				Insert: {
+					checked_at?: string;
+					id?: string;
+					organization_id: string;
+					our_message_count: number;
+					our_price_minor: number;
+					price_currency: string;
+					provider_message_count: number;
+					provider_price_minor: number;
+					status: string;
+					usage_date: string;
+				};
+				Update: {
+					checked_at?: string;
+					id?: string;
+					organization_id?: string;
+					our_message_count?: number;
+					our_price_minor?: number;
+					price_currency?: string;
+					provider_message_count?: number;
+					provider_price_minor?: number;
+					status?: string;
+					usage_date?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_usage_reconciliation_findings_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			communication_twilio_accounts: {
 				Row: {
 					created_at: string;
@@ -4065,6 +4130,8 @@ export type Database = {
 					provider: string;
 					subaccount_sid: string;
 					updated_at: string;
+					usage_reconciled_through: string | null;
+					usage_reconciliation_checked_at: string | null;
 				};
 				Insert: {
 					created_at?: string;
@@ -4075,6 +4142,8 @@ export type Database = {
 					provider?: string;
 					subaccount_sid: string;
 					updated_at?: string;
+					usage_reconciled_through?: string | null;
+					usage_reconciliation_checked_at?: string | null;
 				};
 				Update: {
 					created_at?: string;
@@ -4085,6 +4154,8 @@ export type Database = {
 					provider?: string;
 					subaccount_sid?: string;
 					updated_at?: string;
+					usage_reconciled_through?: string | null;
+					usage_reconciliation_checked_at?: string | null;
 				};
 				Relationships: [
 					{
@@ -13269,6 +13340,10 @@ export type Database = {
 					scope: string;
 				}[];
 			};
+			communication_sms_advance_usage_reconciliation_cursor: {
+				Args: { p_organization_id: string; p_reconciled_through: string };
+				Returns: undefined;
+			};
 			communication_sms_cancel_credit_topup: {
 				Args: { p_cancelled_by: string; p_request_id: string };
 				Returns: {
@@ -13329,6 +13404,29 @@ export type Database = {
 					p_subject: string;
 				};
 				Returns: string;
+			};
+			communication_sms_defer_price_reconciliation: {
+				Args: { p_delivery_intent_id: string; p_last_error?: string };
+				Returns: {
+					amount_minor: number;
+					channel: string;
+					delivery_intent_id: string;
+					id: string;
+					organization_id: string;
+					price_check_attempts: number;
+					price_check_available_at: string;
+					price_checked_at: string | null;
+					reported_provider_price_currency: string | null;
+					reported_provider_price_minor: number | null;
+					reported_segment_count: number | null;
+					reserved_at: string;
+					reserved_promotional_minor: number;
+					reserved_purchased_minor: number;
+					segment_count: number;
+					settled_at: string | null;
+					source_key: string;
+					state: string;
+				};
 			};
 			communication_sms_effective_mode: {
 				Args: { p_organization_id: string };
@@ -13453,6 +13551,32 @@ export type Database = {
 					revoked_at: string;
 					revoked_by: string;
 					status: string;
+				}[];
+			};
+			communication_sms_list_price_reconciliation_candidates: {
+				Args: { p_limit?: number };
+				Returns: {
+					delivery_intent_id: string;
+					organization_id: string;
+					provider_message_id: string;
+					twilio_account_id: string;
+					subaccount_sid: string;
+					price_check_attempts: number;
+				}[];
+			};
+			communication_sms_list_usage_reconciliation_candidates: {
+				Args: {
+					p_lag_days?: number;
+					p_limit?: number;
+					p_max_window_days?: number;
+					p_overlap_days?: number;
+				};
+				Returns: {
+					organization_id: string;
+					subaccount_sid: string;
+					twilio_account_id: string;
+					window_end: string;
+					window_start: string;
 				}[];
 			};
 			communication_sms_opted_out_count: {
@@ -13668,6 +13792,35 @@ export type Database = {
 				SetofOptions: {
 					from: '*';
 					to: 'communication_sms_registrations';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_record_usage_reconciliation_finding: {
+				Args: {
+					p_organization_id: string;
+					p_our_message_count: number;
+					p_our_price_minor: number;
+					p_price_currency: string;
+					p_provider_message_count: number;
+					p_provider_price_minor: number;
+					p_usage_date: string;
+				};
+				Returns: {
+					checked_at: string;
+					id: string;
+					organization_id: string;
+					our_message_count: number;
+					our_price_minor: number;
+					price_currency: string;
+					provider_message_count: number;
+					provider_price_minor: number;
+					status: string;
+					usage_date: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_usage_reconciliation_findings';
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
@@ -14027,6 +14180,35 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			communication_sms_settle_reservation_price: {
+				Args: {
+					p_actor?: string;
+					p_delivery_intent_id: string;
+					p_reported_provider_price_currency: string;
+					p_reported_provider_price_minor: number;
+					p_reported_segment_count: number;
+				};
+				Returns: {
+					amount_minor: number;
+					channel: string;
+					delivery_intent_id: string;
+					id: string;
+					organization_id: string;
+					price_check_attempts: number;
+					price_check_available_at: string;
+					price_checked_at: string | null;
+					reported_provider_price_currency: string | null;
+					reported_provider_price_minor: number | null;
+					reported_segment_count: number | null;
+					reserved_at: string;
+					reserved_promotional_minor: number;
+					reserved_purchased_minor: number;
+					segment_count: number;
+					settled_at: string | null;
+					source_key: string;
+					state: string;
+				};
+			};
 			communication_sms_spendable_balance: {
 				Args: { p_organization_id: string };
 				Returns: number;
@@ -14143,6 +14325,15 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			communication_sms_usage_reconciliation_our_totals: {
+				Args: { p_organization_id: string; p_window_end: string; p_window_start: string };
+				Returns: {
+					message_count: number;
+					price_currency: string | null;
+					price_minor: number;
+					usage_date: string;
+				}[];
 			};
 			communication_twilio_complete_auth_token_rotation: {
 				Args: { p_account_id: string; p_retire_after: string };

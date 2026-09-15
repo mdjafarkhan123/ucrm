@@ -66,8 +66,9 @@ function resolveClient(client?: CommunicationWorkerClient): CommunicationWorkerC
 
 // The default credential resolver: read the subaccount's CURRENT Restricted key and decrypt it with the
 // server-only keyring, binding the exact organization/credential/subaccount/purpose as authenticated context.
-// Never logs or returns the plaintext beyond the immediate send caller.
-async function defaultResolveSmsCredentials(input: {
+// Never logs or returns the plaintext beyond the immediate send caller. Exported so other SMS workers
+// (e.g. the Stage 8 price-reconciliation cron) resolve the same credentials the same way.
+export async function defaultResolveSmsCredentials(input: {
 	organizationId: string;
 	twilioAccountId: string;
 	subaccountSid: string;
@@ -98,8 +99,7 @@ export async function quarantineStaleSmsClaims(client: CommunicationWorkerClient
 		batch_size: 50,
 		stale_after: '15 minutes'
 	});
-	if (quarantine.error)
-		throw rpcError('Could not quarantine stale SMS claims', quarantine.error);
+	if (quarantine.error) throw rpcError('Could not quarantine stale SMS claims', quarantine.error);
 	return typeof quarantine.data === 'number' ? quarantine.data : 0;
 }
 
@@ -202,10 +202,7 @@ const LEASE_TTL_SECONDS = 55;
 const ROUTE_DEADLINE_MS = 40_000;
 
 export type SmsWakeOutcome =
-	| BoundedDrainResult['stoppedBy']
-	| 'already_running'
-	| 'route_deadline'
-	| 'error';
+	BoundedDrainResult['stoppedBy'] | 'already_running' | 'route_deadline' | 'error';
 
 export type MonitoredSmsWakeResult = { outcome: SmsWakeOutcome } & Partial<BoundedDrainResult>;
 

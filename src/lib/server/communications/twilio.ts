@@ -134,7 +134,10 @@ export type TwilioProvisioningClient = {
 export const RESTRICTED_KEY_MESSAGING_CAPABILITIES = [
 	'/twilio/messaging/messages/create', // POST .../Messages -- send an SMS/MMS
 	'/twilio/messaging/messages/read', // GET .../Messages/{sid} -- read delivery status
-	'/twilio/messaging/services/read' // GET messaging/v1/Services/{sid} -- confirm the sending service
+	'/twilio/messaging/services/read', // GET messaging/v1/Services/{sid} -- confirm the sending service
+	// GET .../Usage/Records (and its Daily/Monthly subresources) -- Stage 8-2's usage-window reconciliation.
+	// Confirmed against Twilio's own Restricted API Keys Permissions PDF (Usage Records table, 2026-09-15).
+	'/twilio/billing/usage/read'
 ] as const;
 
 export type RestrictedKeyCapability = (typeof RESTRICTED_KEY_MESSAGING_CAPABILITIES)[number];
@@ -197,11 +200,10 @@ export type SubmitTwilioSmsInput = {
  * Submit one SMS to Twilio. Resolves with the accepted Message SID, or throws a TwilioSmsSubmissionError whose
  * `outcome` tells the worker exactly how to finalize the claim. Makes exactly one request; never retries.
  */
-export async function submitTwilioSms(input: SubmitTwilioSmsInput): Promise<{ providerMessageId: string }> {
-	const url = new URL(
-		`/2010-04-01/Accounts/${input.subaccountSid}/Messages.json`,
-		TWILIO_API_BASE
-	);
+export async function submitTwilioSms(
+	input: SubmitTwilioSmsInput
+): Promise<{ providerMessageId: string }> {
+	const url = new URL(`/2010-04-01/Accounts/${input.subaccountSid}/Messages.json`, TWILIO_API_BASE);
 	// API-key auth is Basic with the key SID as username and its secret as password, scoped to the subaccount by
 	// the Account SID in the path.
 	const auth = basicAuthHeader(input.apiKeySid, input.apiKeySecret);
@@ -250,7 +252,10 @@ export async function submitTwilioSms(input: SubmitTwilioSmsInput): Promise<{ pr
 
 	if (!response.ok) {
 		const providerCode =
-			body && typeof body === 'object' && 'code' in body && typeof (body as { code: unknown }).code === 'number'
+			body &&
+			typeof body === 'object' &&
+			'code' in body &&
+			typeof (body as { code: unknown }).code === 'number'
 				? String((body as { code: number }).code)
 				: null;
 		// 429 (rate limit) and 5xx are proven pre-submission transients; every other 4xx is a definite rejection.
@@ -274,6 +279,137 @@ export async function submitTwilioSms(input: SubmitTwilioSmsInput): Promise<{ pr
 		);
 	}
 	return { providerMessageId };
+}
+
+export type TwilioMessagePriceLookup = {
+	subaccountSid: string;
+	messageSid: string;
+	apiKeySid: string;
+	apiKeySecret: string;
+};
+
+export type TwilioMessagePriceResult =
+	| { available: true; priceMinor: number; priceCurrency: string; segmentCount: number }
+	| { available: false };
+
+/**
+ * Fetch a sent message's actual billed price and segment count from Twilio, for Stage 8 price reconciliation.
+ * Twilio's status callback never carries Price/PriceUnit -- it is only ever available by fetching the Message
+ * resource, and only once Twilio has finished billing it (an undocumented delay). `available: false` on a
+ * clean 2xx with no price yet is expected; the caller should retry later. Throws TwilioProvisioningError on a
+ * genuine transport/HTTP failure (its `retryable` flag tells the caller whether to back off or give up).
+ */
+export async function fetchTwilioMessagePrice(
+	input: TwilioMessagePriceLookup
+): Promise<TwilioMessagePriceResult> {
+	const { body } = await twilioRequest({
+		base: TWILIO_API_BASE,
+		path: `/2010-04-01/Accounts/${input.subaccountSid}/Messages/${input.messageSid}.json`,
+		method: 'GET',
+		auth: basicAuthHeader(input.apiKeySid, input.apiKeySecret)
+	});
+
+	const priceRaw = readString(body, 'price');
+	const priceUnit = readString(body, 'price_unit');
+	const segmentsRaw = readString(body, 'num_segments');
+	if (!priceRaw || !priceUnit || !segmentsRaw) return { available: false };
+
+	const priceMajor = Number(priceRaw);
+	const segmentCount = Number(segmentsRaw);
+	if (!Number.isFinite(priceMajor) || !Number.isInteger(segmentCount) || segmentCount < 1) {
+		return { available: false };
+	}
+
+	// Twilio reports price as a negative decimal (its own cost, not ours); store the magnitude in minor units.
+	return {
+		available: true,
+		priceMinor: Math.round(Math.abs(priceMajor) * 100),
+		priceCurrency: priceUnit.toUpperCase(),
+		segmentCount
+	};
+}
+
+export type TwilioUsageRecordsLookup = {
+	subaccountSid: string;
+	category: string;
+	startDate: string;
+	endDate: string;
+	apiKeySid: string;
+	apiKeySecret: string;
+};
+
+export type TwilioUsageRecord = {
+	usageDate: string;
+	messageCount: number;
+	priceMinor: number;
+	priceCurrency: string;
+};
+
+// A single window is already bounded by the caller (Stage 8-2's max-window-days cap); this is a hard safety
+// valve against an unbounded page-follow loop, not the primary bound.
+const MAX_USAGE_RECORD_PAGES = 10;
+
+/**
+ * Fetch one account's daily SMS usage totals for Stage 8-2's usage-window reconciliation. Follows
+ * `next_page_uri` for a wide window; a row missing any of the fields this needs is skipped rather than thrown,
+ * since a malformed usage row should not abort the whole day's comparison.
+ */
+export async function fetchTwilioUsageRecords(
+	input: TwilioUsageRecordsLookup
+): Promise<TwilioUsageRecord[]> {
+	const auth = basicAuthHeader(input.apiKeySid, input.apiKeySecret);
+	const records: TwilioUsageRecord[] = [];
+
+	let path = `/2010-04-01/Accounts/${input.subaccountSid}/Usage/Records/Daily.json`;
+	let query: Record<string, string> | undefined = {
+		Category: input.category,
+		StartDate: input.startDate,
+		EndDate: input.endDate,
+		PageSize: '1000'
+	};
+
+	for (let page = 0; page < MAX_USAGE_RECORD_PAGES; page++) {
+		const { body } = await twilioRequest({
+			base: TWILIO_API_BASE,
+			path,
+			method: 'GET',
+			auth,
+			query
+		});
+
+		const rows =
+			body &&
+			typeof body === 'object' &&
+			Array.isArray((body as { usage_records?: unknown }).usage_records)
+				? (body as { usage_records: unknown[] }).usage_records
+				: [];
+
+		for (const row of rows) {
+			const usageDate = readString(row, 'start_date');
+			const priceRaw = readString(row, 'price');
+			const priceUnit = readString(row, 'price_unit');
+			const countRaw = readString(row, 'count');
+			if (!usageDate || !priceRaw || !priceUnit || !countRaw) continue;
+
+			const priceMajor = Number(priceRaw);
+			const count = Number(countRaw);
+			if (!Number.isFinite(priceMajor) || !Number.isFinite(count)) continue;
+
+			records.push({
+				usageDate,
+				messageCount: Math.round(count),
+				priceMinor: Math.round(Math.abs(priceMajor) * 100),
+				priceCurrency: priceUnit.toUpperCase()
+			});
+		}
+
+		const nextPageUri = body && typeof body === 'object' ? readString(body, 'next_page_uri') : null;
+		if (!nextPageUri) break;
+		path = nextPageUri;
+		query = undefined; // next_page_uri already carries its own query string
+	}
+
+	return records;
 }
 
 const platformEnvSchema = z.object({
