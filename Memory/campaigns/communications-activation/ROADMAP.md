@@ -415,6 +415,80 @@ restrictions; worth checking before Stage 9B/9C if Jafar wants any live send pro
   `svelte-check` 0/4218, Prettier clean. Not live-tested (Stage 9's hard constraint: no real business
   registered yet on either side); the Sink itself is not yet created on the live Twilio account.
 
+## Stage 8 parts (billing reconciliation; started 2026-09-15, non-blocked pieces run in parallel with Stage 9)
+
+Full approved scope: `docs/communications-a2-implementation-plan.md` §8. Live proof and the 200-tenant scale
+evidence need real Twilio traffic/registration and stay blocked behind Stage 9's hard constraint; the
+reconciliation *logic* itself does not, so it started here.
+
+- **8-1 Price reconciliation by known Message SID — DONE 2026-09-15 (unit-tested + typechecked; committed
+  `494424e`).** Closes a real gap: nothing had ever turned a 'reserved' SMS credit hold into a real,
+  final charge (Stage 4B's own code comment said so explicitly). Twilio's status callback never carries
+  Price/PriceUnit (confirmed via Twilio docs research, not memory) -- only `GET /Messages/{Sid}.json` has it,
+  on an undocumented delay -- so this is a bounded poll (every 30 min, created **INACTIVE** like the send
+  worker, since it makes real Twilio API calls), not a webhook.
+  New Postgres commands (migration `20260921100000_communications_sms_price_reconciliation.sql`, **applied to
+  dev DB**): `communication_sms_list_price_reconciliation_candidates`, `communication_sms_settle_reservation_price`
+  (converts the hold into the account's first-ever real charge; if Twilio billed a different segment count
+  than estimated, posts a separate visible adjustment at the same frozen per-segment rate -- Twilio's own raw
+  price is recorded for margin visibility only and never drives the retail charge), `communication_sms_defer_
+  price_reconciliation` (1h->24h backoff, then opens a `billing_mismatch` reconciliation item after 8 attempts
+  so an unresolved price surfaces in Jafar Operations instead of retrying forever).
+  **Found and fixed while building this:** no promotional credit had ever been spent for good either --
+  `private.communication_sms_enqueue_operational_core` (the enqueue command actually live today; the public
+  wrapper is now a thin permission check that delegates to it -- a refactor this session found live on the dev
+  DB, not yet reflected in any prior migration file) computed "promo already spoken for" by summing reservations
+  in state `('reserved', 'submission_unknown')` only. Once a reservation can reach `'settled'` for the first
+  time, that filter had to widen to include `'settled'` too, or a settled promo-funded send would silently free
+  its promo dollars back up for reuse. Patched via `pg_get_functiondef` + guarded `replace()`, confirmed live
+  (`prosrc` now contains the 3-state list).
+  New files: `sms-price-reconciliation-store.ts`, `sms-price-reconciliation-cron.ts` (+ spec),
+  `api/jafar/internal/sms-price-reconciliation-cron/+server.ts` (+ spec). `env.ts` gained
+  `SMS_PRICE_RECONCILIATION_CRON_SECRET`. `database.types.ts` hand-updated (6 new reservation columns + 3 new
+  RPC signatures). Gate met: 12/12 new vitest, full-project `svelte-check` 0/4224, Prettier clean, Supabase
+  security/performance advisors show no new findings (checked by name -- only the pre-existing baseline lints).
+  **Not live-tested** (Stage 9's hard constraint still applies: no real business registered yet).
+- **8-2 Account usage-window reconciliation — DONE 2026-09-15 (unit-tested + typechecked; applied to dev DB;
+  committed `494424e`).** Bounded, cursor-based cross-check against Twilio's Usage Records API (confirmed via
+  Twilio's own docs, `Usage/Records/Daily.json`, `Category=sms-outbound` -- deliberately not the combined `sms`
+  category, since inbound is never billed to a contractor and would manufacture false drift) that 8-1 cannot do,
+  since 8-1 can only ever verify a message our own system already knows about; this catches a message Twilio
+  billed with no delivery-intent/reservation row at all. Confirmed (Twilio's Restricted API Keys Permissions
+  PDF, fetched and read directly) the capability string is `/twilio/billing/usage/read` -- added to
+  `RESTRICTED_KEY_MESSAGING_CAPABILITIES` in twilio.ts; affects newly created/rotated keys only, moot today
+  under Stage 9's hard constraint.
+  Migration `20260922100000_communications_sms_usage_window_reconciliation.sql` (**applied to dev DB**): cursor
+  columns (`usage_reconciled_through`, `usage_reconciliation_checked_at`) added directly to
+  `communication_twilio_accounts` (a strict 1:1 with organization_id, same reasoning 8-1 used for its own
+  cursor columns rather than a side table) + new append-only-per-day
+  `communication_sms_usage_reconciliation_findings` table (upserted by org+date so an overlap re-check corrects
+  itself) + a purpose-built partial index (`communication_delivery_intents_sms_submitted_accepted_idx`) for the
+  new per-day totals query + three RPCs: `communication_sms_list_usage_reconciliation_candidates` (lag=2 days,
+  overlap=3 days, max-window=14 days, oldest-checked-first), `communication_sms_usage_reconciliation_our_totals`
+  (settled reservations grouped by the delivery intent's `accepted_at` date -- not price-settlement date, which
+  can lag), and `communication_sms_record_usage_reconciliation_finding` (zero-tolerance match on both count and
+  price; a drift opens a `usage_window_drift` reconciliation item via a synthetic `provider_message_id`
+  ('usage-window:{org}:{date}'), reusing the existing `communication_sms_reconciliation_items` queue rather than
+  a second parallel surface -- widened that table's reason check constraint + added a new partial unique index
+  scoped to org+date items; a later match auto-resolves the item, since the only cause this system can
+  distinguish is settlement lag clearing within the overlap window). New app files:
+  `sms-usage-reconciliation-store.ts`, `sms-usage-reconciliation-cron.ts` (+ spec, 6 tests),
+  `api/jafar/internal/sms-usage-reconciliation-cron/+server.ts` (+ spec, 6 tests) mirroring 8-1's route exactly.
+  `twilio.ts` gained `fetchTwilioUsageRecords` (follows `next_page_uri`, capped at 10 pages as a safety valve --
+  no dedicated adapter-level spec, matching `fetchTwilioMessagePrice`'s own precedent of being exercised only
+  through the cron-level tests via dependency injection). `env.ts` gained
+  `SMS_USAGE_RECONCILIATION_CRON_SECRET`. `database.types.ts` hand-updated (2 new account columns, 1 new table,
+  4 new RPC signatures). Poll schedule: daily at 07:30, created **INACTIVE** like every other cron making a
+  real Twilio call. Gate met: 12/12 new vitest, full-project `svelte-check` 0/4230, Prettier clean, Supabase
+  security/performance advisors show only the expected baseline noise (new table's own "RLS enabled, no
+  policies" note + a fresh unused-index notice). **Not live-tested** (Stage 9's hard constraint: no real
+  business registered yet).
+- **8-3 200-tenant scale evidence** — not started, per the approved plan's "Scale evidence" section (hot
+  tenant + concurrent email; p95/p99 claim/projection latency, rows scanned, lock waits, drain recovery).
+  Independent of live Twilio proof; could run once 8-1/8-2 give it something real to measure.
+- **Live proof** (real test org, registered sender, controlled recipients) — blocked behind Stage 9's business
+  registration constraint, unchanged.
+
 ## Build principle (Jafar, durable 2026-08-30)
 
 The full unified inbox is built following GHL end-to-end — root architecture/data model, real-time
