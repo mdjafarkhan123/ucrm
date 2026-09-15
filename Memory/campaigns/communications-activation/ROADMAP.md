@@ -227,6 +227,34 @@ Full approved behavior, exclusions and gates: `docs/communications-a2-implementa
   cross-tenant forgery, unresolved identity, Twilio's own keyword response) verified covered by existing
   fixture/pgTAP tests across 5A+5B — no separate acceptance round needed.
 
+## Stage 6 parts (SMS in Conversations; Jafar approved split 2026-09-15)
+
+Research 2026-09-15 found the DB spine already channel-agnostic: `communication_delivery_intents`,
+`communication_inbound_messages`, `communication_outbox_events`, assignment/followers/read-marks, and the
+realtime broadcast triggers all already accept/carry `channel='sms'` rows from Stages 1–5B. The gap is entirely
+the app layer. Split into 3 parts, data → send → polish, mirroring Stage 2C/3/4:
+
+- **6A Data/API layer — DONE 2026-09-15 (commit 66bda26).** `email-history/+server.ts` now selects
+  `channel`/`recipient_phone` (outbound) and `channel`/`sender_phone` (inbound); forward rows tagged
+  `channel: 'email'`. `inbox.ts` types (`InboxEmail`, `InboundInboxMessage`) carry `channel`, nullable
+  email + new phone fields; `groupMessagesByContact`'s key/name/avatar helpers use a phone-guarded
+  `guarded-sms:<phone>` key for an unmatched SMS sender, separate from email's `guarded:<email>`;
+  `conversationCustomerEmail` skips a channel with no email address instead of returning null.
+  Gate met: svelte-check 0/4196, 95/95 relevant vitest, eslint clean, Prettier clean.
+- **6B Composer + send path — DONE 2026-09-15 (commit d5c3859).** New command `enqueue_conversation_reply_sms`
+  (mirrors the email reply command's recipient resolution) + read-only `sms-estimate` route for the composer's
+  live impact line; `ConversationComposer.svelte` gained an `sms` channel (no subject/attachments, debounced
+  character/segment/cost line or blocked-send reason); reply route branches on `channel`. Found and fixed a
+  live-blocking bug: the SMS outbox wake trigger raised on the scheduling migration's placeholder secret URL,
+  rolling back every SMS send. Gate met: 11/11 pgTAP, 122/122 vitest, svelte-check 0/4199, Prettier clean, and
+  browser-verified live (as Raad LTD admin — `office` role has no `conversations.*` permission by design and
+  cannot open Communications; use owner/admin for any future Communications browser check). SMS tab renders
+  correctly, blocked-send reason shows plainly, failed send renders as a Not Sent/Retry bubble. No unexpected console errors (only the expected 422 from
+    the blocked send itself). **Still needs:** the commit (Jafar approves each stage's commit explicitly, per 6A).
+- **6C Thread rendering + polish — Planned, depends on 6B.** SMS chat bubbles, delivery ticks
+  (sent/delivered/failed), scheduled-message indicator, MMS attachments, phone-based identity resolution when
+  a client isn't yet matched. `+page.svelte`'s `activeChannel` switch is currently binary (email/website_chat).
+
 ## Build principle (Jafar, durable 2026-08-30)
 
 The full unified inbox is built following GHL end-to-end — root architecture/data model, real-time
