@@ -388,7 +388,7 @@ restrictions; worth checking before Stage 9B/9C if Jafar wants any live send pro
   signature/similar-and-delete, settings-business, team invitation resend) -- none touch communications; not
   investigated further as out of this campaign's scope. Completes what unblocks Stage 8's live proof once a
   real business exists to actually submit.
-- **9D Automatic trigger for status sync — DONE 2026-09-15 (unit-tested against mocks; files UNCOMMITTED).**
+- **9D Automatic trigger for status sync — DONE 2026-09-15 (unit-tested against mocks; committed `7c91e84`).**
   Closes 9C's gap: `syncTrustHubRegistrationStatus` had no caller. Researched Twilio's own guidance for this
   exact ISV scenario (troubleshooting-sole-proprietor-brand-registration-failures, not memory): Twilio
   recommends a push notification (Event Streams webhook) over repeatedly polling the Brand endpoint. Jafar

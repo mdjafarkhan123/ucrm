@@ -8,13 +8,10 @@ traffic) until a country launch gate passes.
 
 ## Active part
 
-Stage 9 (Twilio Trust Hub ISV registration): 9A/9B/9C are DONE and committed (`89c347d`, `3772b2a`, `44ba025`).
-Stage 9D (automatic trigger for 9C's status sync — webhook + daily safety-net poll) is DONE 2026-09-15,
-unit-tested against mocks, **files UNCOMMITTED** (Jafar commits explicitly, same pattern as every prior
-stage). See ROADMAP.md's "9D" entry for full detail. New files: `trust-hub-status-trigger-store.ts`,
-`trust-hub-status-poll-cron.ts` (+ spec), `api/jafar/internal/trust-hub-status-cron/+server.ts` (+ spec),
-`api/webhooks/twilio/trust-hub-events/+server.ts` (+ spec); migration `20260920120000_communications_sms_
-trust_hub_status_trigger.sql` already **applied to dev DB**; `env.ts` gained two new optional secrets.
+Stage 9 (Twilio Trust Hub ISV registration): 9A/9B/9C/9D are all DONE and committed (`89c347d`, `3772b2a`,
+`44ba025`, `7c91e84`). 9D added the automatic trigger for 9C's status sync — an Event Streams webhook
+(primary) plus a daily safety-net poll — since nothing previously called `syncTrustHubRegistrationStatus`.
+See ROADMAP.md's "9D" entry for full detail.
 
 Twilio's own guidance recommends the Event Streams push-webhook over polling for exactly this Brand/Campaign
 status use case; Jafar approved building both (webhook primary, daily poll as safety net). Because every
@@ -30,13 +27,13 @@ Business-registration thread stays blocked on Jafar obtaining real Bangladesh bu
 
 Independent threads; Jafar picks which to resume:
 
-1. Ask Jafar to review and commit Stage 9D's files (listed above).
-2. Jafar creates the one-time Twilio Event Streams Sink + Subscription on the live account (pointed at
+1. Jafar creates the one-time Twilio Event Streams Sink + Subscription on the live account (pointed at
    `/api/webhooks/twilio/trust-hub-events`, Basic auth via `TRUST_HUB_EVENTS_WEBHOOK_USERNAME` +
    `TRUST_HUB_EVENTS_WEBHOOK_SECRET`, the 9 Brand/Campaign event types, Batch=false) and sets the matching
    env vars + Vault secrets (`trust_hub_status_cron_target_url`/`_secret`) for the poll route — needed before
    either trigger can actually fire; not required to keep building other Communications work meanwhile.
-3. Business registration (blocked on Jafar's paperwork, see above).
+2. Business registration (blocked on Jafar's paperwork, see above).
+3. Stage 8's non-blocked pieces (price reconciliation logic, 200-tenant load test) can start in parallel.
 
 Stage 8 (billing reconciliation, recovery and launch proof) stays deferred behind Stage 9's live-proof
 prerequisite; its non-blocked pieces (price reconciliation logic, 200-tenant load test) can start in parallel.
