@@ -5,6 +5,9 @@ import {
 	SOLE_PROPRIETOR_TRUST_POLICY_SID,
 	STARTER_CUSTOMER_PROFILE_POLICY_SID,
 	createTwilioTrustHubClient,
+	type BrandRegistrationStatus,
+	type CampaignStatus,
+	type CreatedCampaign,
 	type EvaluationOutcome,
 	type TwilioTrustHubClient
 } from './twilio-trust-hub';
@@ -215,6 +218,56 @@ function buildSoleProprietorAttributes(answers: SmsRegistrationAnswers) {
 		// Twilio sends a one-time SMS passcode to this exact number and needs a YES reply from its owner -- must
 		// be the contractor's own real mobile number, never a Twilio-provisioned number.
 		mobile_phone_number: answers.authorized_representative.phone_number
+	};
+}
+
+// A `sole_proprietorship` with no registration ID is only eligible for Twilio's Sole Proprietor path (enforced
+// by the Zod schema's superRefine, which also requires a US/Canada address for this branch); everyone else
+// goes Standard. Shared by the submission saga and the status sync below so both agree on which path a
+// registration took.
+function isSoleProprietorPath(answers: SmsRegistrationAnswers): boolean {
+	return answers.business_type === 'sole_proprietorship' && !answers.business_registration_id;
+}
+
+// --- Stage 9C: Campaign (Usa2p) content ---
+// Twilio's own `us_app_to_person_usecase` enum has exactly one valid value for a Sole Proprietor Brand
+// ("there is only one valid use case for a Sole Proprietor Brand" -- Twilio's Sole Proprietor ISV guide). Every
+// Standard-path UCRM registration uses 'CUSTOMER_CARE': Stage 2C's SMS mode is 'off'|'operational' only (no
+// marketing mode exists yet), and GoHighLevel's own published use-case guidance places a customer-support/
+// account-update product like ours under Customer Care, not Marketing/Mixed -- confirmed per Jafar's direction
+// to follow GHL's approach here (2026-09-15) rather than inventing a category.
+const STANDARD_CAMPAIGN_USE_CASE = 'CUSTOMER_CARE';
+const SOLE_PROPRIETOR_CAMPAIGN_USE_CASE = 'SOLE_PROPRIETOR';
+
+const CONSENT_METHOD_LABEL: Record<SmsRegistrationAnswers['messaging']['consent_method'], string> =
+	{
+		website_form: 'a website form',
+		paper_form: 'a paper form the customer signs',
+		verbal: 'a verbal request the business records',
+		text_initiated: 'the customer texting the business first',
+		other: 'another method the business described'
+	};
+
+// A literal URL, or the word "link"/"url" (contractors often write a sample with a merge-field placeholder
+// like "{PaymentLink}" rather than a real resolvable address -- still true evidence the campaign sends links).
+const CONTAINS_URL = /https?:\/\/|link|url/i;
+// A run of 7+ digits (optionally grouped with spaces/dashes/parens/a leading +) reads as a phone number in a
+// sample message -- deliberately loose since a false positive only costs one unnecessary
+// `has_embedded_phone: true`, while a false negative would understate what the campaign actually sends.
+const CONTAINS_PHONE_NUMBER = /(?:\+?\d[\d\-.\s()]{5,}\d)/;
+
+/** Build Twilio's required Campaign fields from the contractor's own attested Stage 3A messaging answers --
+ *  never invented platform copy. `sample_messages` doubles as the source of truth for whether the campaign
+ *  embeds links or phone numbers, so the flags Twilio sees always match what the samples actually show. */
+function buildCampaignContent(messaging: SmsRegistrationAnswers['messaging']) {
+	return {
+		description: messaging.description,
+		messageFlow:
+			`${messaging.consent_description} Consent is collected via ${CONSENT_METHOD_LABEL[messaging.consent_method]}. ` +
+			`End users can reply STOP at any time to stop receiving messages.`,
+		messageSamples: messaging.sample_messages,
+		hasEmbeddedLinks: messaging.sample_messages.some((sample) => CONTAINS_URL.test(sample)),
+		hasEmbeddedPhone: messaging.sample_messages.some((sample) => CONTAINS_PHONE_NUMBER.test(sample))
 	};
 }
 
@@ -765,11 +818,7 @@ export async function submitRegistrationToTrustHub(
 	};
 	const { answers, countryCode } = submission;
 
-	// Chosen from the contractor's own attested answers, never guessed: a `sole_proprietorship` with no
-	// registration ID is only eligible for Twilio's Sole Proprietor path (enforced by the Zod schema's
-	// superRefine, which also requires a US/Canada address for this branch). Everyone else goes Standard.
-	const isSoleProprietor =
-		answers.business_type === 'sole_proprietorship' && !answers.business_registration_id;
+	const isSoleProprietor = isSoleProprietorPath(answers);
 
 	const { customerProfile, trustProduct } = isSoleProprietor
 		? await submitSoleProprietorSections(store, twilio, ctx, input, answers)
@@ -801,6 +850,201 @@ export async function submitRegistrationToTrustHub(
 		trustProductSid: trustProduct.providerSid!,
 		brandRegistrationSid: brand.providerSid!,
 		brandStatus: brand.providerStatus ?? 'PENDING'
+	};
+}
+
+export type SyncTrustHubStatusResult = {
+	registrationId: string;
+	brandStatus: BrandRegistrationStatus;
+	campaignStatus: CampaignStatus | null;
+	// What this sync did to the contractor-facing registration: matches the same three outcomes
+	// communication_sms_registrations already models (2C-3) -- never a new status this table doesn't know.
+	registrationStatus: 'under_review' | 'action_needed' | 'approved';
+};
+
+const TERMINAL_FAILURE_BRAND_STATUSES: readonly BrandRegistrationStatus[] = ['FAILED', 'SUSPENDED'];
+const TERMINAL_FAILURE_CAMPAIGN_STATUSES: readonly CampaignStatus[] = ['FAILED', 'SUSPENDED'];
+
+/**
+ * Stage 9C: re-read a submitted registration's live Twilio status and reflect it onto
+ * communication_sms_registrations.status, creating the Campaign once the Brand is approved. Safe to call
+ * repeatedly (a poll, or a future status-callback webhook): re-fetches rather than re-creates, and the
+ * Campaign is only ever created once (ensureResourceCreated's ledger check), matching how Brand Registration
+ * itself is protected against duplication. Throws TrustHubSubmissionError if nothing has been submitted yet or
+ * the organization's Twilio subaccount has no Messaging Service; throws TwilioTrustHubError for a transport
+ * failure.
+ */
+export async function syncTrustHubRegistrationStatus(
+	deps: TrustHubSubmissionDeps,
+	input: { registrationId: string }
+): Promise<SyncTrustHubStatusResult> {
+	const { store, twilio } = deps;
+
+	const submission = await store.getLatestSubmission(input.registrationId);
+	if (!submission) {
+		throw new TrustHubSubmissionError(
+			'This registration has no attested submission to sync.',
+			'no_submission',
+			false
+		);
+	}
+	const ctx: Ctx = {
+		organizationId: submission.organizationId,
+		registrationId: input.registrationId
+	};
+
+	const brandResource = await store.getResource(input.registrationId, 'brand_registration');
+	if (!brandResource?.providerSid) {
+		throw new TrustHubSubmissionError(
+			'This registration has not been submitted to Twilio yet -- nothing to sync.',
+			'not_submitted',
+			false
+		);
+	}
+
+	const brand = await twilio.fetchBrandRegistration(brandResource.providerSid);
+	const brandFailed = TERMINAL_FAILURE_BRAND_STATUSES.includes(brand.status);
+	await store.upsertResource({
+		...ctx,
+		resourceRole: 'brand_registration',
+		providerSid: brand.sid,
+		providerStatus: brand.status,
+		status: brandFailed ? 'failed' : brand.status === 'APPROVED' ? 'approved' : 'submitted',
+		failureReason: brandFailed ? brand.failureReason : null
+	});
+	await store.recordEvent({
+		...ctx,
+		resourceRole: 'brand_registration',
+		operation: 'sync_status',
+		step: 'fetch_brand_status',
+		result: brandFailed ? 'needs_review' : 'succeeded',
+		detail: { provider_status: brand.status }
+	});
+
+	if (brandFailed) {
+		await store.recordRegistrationOutcome({
+			registrationId: input.registrationId,
+			status: 'action_needed',
+			requiredFixes:
+				brand.failureReason ??
+				"Twilio could not approve this business's registration (Brand). Contact support for details."
+		});
+		return {
+			registrationId: input.registrationId,
+			brandStatus: brand.status,
+			campaignStatus: null,
+			registrationStatus: 'action_needed'
+		};
+	}
+
+	if (brand.status !== 'APPROVED') {
+		await store.recordRegistrationCheck({
+			registrationId: input.registrationId,
+			detail: `Twilio Brand registration is ${brand.status}.`
+		});
+		return {
+			registrationId: input.registrationId,
+			brandStatus: brand.status,
+			campaignStatus: null,
+			registrationStatus: 'under_review'
+		};
+	}
+
+	// --- Brand approved: create (once) and sync the Campaign ---
+	const messagingServiceSid = await store.getMessagingServiceSid(ctx.organizationId);
+	if (!messagingServiceSid) {
+		throw new TrustHubSubmissionError(
+			"This organization's Twilio subaccount has no Messaging Service yet -- cannot register a Campaign.",
+			'no_messaging_service',
+			false
+		);
+	}
+
+	const existingCampaign = await store.getResource(input.registrationId, 'campaign');
+	let campaign: CreatedCampaign;
+	if (existingCampaign?.providerSid) {
+		campaign = await twilio.fetchCampaign({
+			messagingServiceSid,
+			campaignSid: existingCampaign.providerSid
+		});
+	} else {
+		const content = buildCampaignContent(submission.answers.messaging);
+		const stored = await ensureResourceCreated(store, ctx, 'campaign', 'create_campaign', () =>
+			twilio
+				.createCampaign({
+					messagingServiceSid,
+					brandRegistrationSid: brand.sid,
+					usAppToPersonUsecase: isSoleProprietorPath(submission.answers)
+						? SOLE_PROPRIETOR_CAMPAIGN_USE_CASE
+						: STANDARD_CAMPAIGN_USE_CASE,
+					...content
+				})
+				.then((created) => ({ sid: created.sid, status: created.status }))
+		);
+		campaign = {
+			sid: stored.providerSid!,
+			status: (stored.providerStatus as CampaignStatus) ?? 'PENDING',
+			failureReason: stored.failureReason
+		};
+	}
+
+	const campaignFailed = TERMINAL_FAILURE_CAMPAIGN_STATUSES.includes(campaign.status);
+	await store.upsertResource({
+		...ctx,
+		resourceRole: 'campaign',
+		providerSid: campaign.sid,
+		providerStatus: campaign.status,
+		status: campaignFailed ? 'failed' : campaign.status === 'VERIFIED' ? 'approved' : 'submitted',
+		failureReason: campaignFailed ? campaign.failureReason : null
+	});
+	await store.recordEvent({
+		...ctx,
+		resourceRole: 'campaign',
+		operation: 'sync_status',
+		step: 'fetch_campaign_status',
+		result: campaignFailed ? 'needs_review' : 'succeeded',
+		detail: { provider_status: campaign.status }
+	});
+
+	if (campaign.status === 'VERIFIED') {
+		await store.recordRegistrationOutcome({
+			registrationId: input.registrationId,
+			status: 'approved',
+			providerOutcome: 'Twilio approved this business for SMS (Brand and Campaign both verified).'
+		});
+		return {
+			registrationId: input.registrationId,
+			brandStatus: brand.status,
+			campaignStatus: campaign.status,
+			registrationStatus: 'approved'
+		};
+	}
+
+	if (campaignFailed) {
+		await store.recordRegistrationOutcome({
+			registrationId: input.registrationId,
+			status: 'action_needed',
+			requiredFixes:
+				campaign.failureReason ??
+				'Twilio could not approve this business Campaign. Contact support for details.'
+		});
+		return {
+			registrationId: input.registrationId,
+			brandStatus: brand.status,
+			campaignStatus: campaign.status,
+			registrationStatus: 'action_needed'
+		};
+	}
+
+	await store.recordRegistrationCheck({
+		registrationId: input.registrationId,
+		detail: `Twilio Campaign registration is ${campaign.status}.`
+	});
+	return {
+		registrationId: input.registrationId,
+		brandStatus: brand.status,
+		campaignStatus: campaign.status,
+		registrationStatus: 'under_review'
 	};
 }
 

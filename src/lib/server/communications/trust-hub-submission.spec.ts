@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { submitRegistrationToTrustHub, TrustHubSubmissionError } from './trust-hub-submission';
+import {
+	submitRegistrationToTrustHub,
+	syncTrustHubRegistrationStatus,
+	TrustHubSubmissionError
+} from './trust-hub-submission';
 import type {
 	RegistrationSubmissionForSaga,
 	StoredTrustHubResource,
@@ -58,7 +62,15 @@ const VALID_SUBMISSION: RegistrationSubmissionForSaga = {
 function createFakeStore() {
 	const resources = new Map<string, StoredTrustHubResource>();
 	const events: TrustHubEventInput[] = [];
+	const registrationOutcomes: Array<{
+		registrationId: string;
+		status: 'approved' | 'action_needed';
+		providerOutcome?: string | null;
+		requiredFixes?: string | null;
+	}> = [];
+	const registrationChecks: Array<{ registrationId: string; detail?: string | null }> = [];
 	let submission: RegistrationSubmissionForSaga | null = VALID_SUBMISSION;
+	let messagingServiceSid: string | null = 'MG'.padEnd(34, '1');
 	let seq = 0;
 
 	const key = (registrationId: string, role: TrustHubResourceRole) => `${registrationId}:${role}`;
@@ -86,6 +98,15 @@ function createFakeStore() {
 		},
 		async recordEvent(input) {
 			events.push(input);
+		},
+		async getMessagingServiceSid() {
+			return messagingServiceSid;
+		},
+		async recordRegistrationOutcome(input) {
+			registrationOutcomes.push(input);
+		},
+		async recordRegistrationCheck(input) {
+			registrationChecks.push(input);
 		}
 	};
 
@@ -93,8 +114,13 @@ function createFakeStore() {
 		store,
 		events,
 		resources,
+		registrationOutcomes,
+		registrationChecks,
 		setSubmission: (value: RegistrationSubmissionForSaga | null) => {
 			submission = value;
+		},
+		setMessagingServiceSid: (value: string | null) => {
+			messagingServiceSid = value;
 		}
 	};
 }
@@ -156,6 +182,18 @@ function createFakeTwilio() {
 		async createBrandRegistration() {
 			calls.push('createBrandRegistration');
 			return { sid: nextSid('BN'), status: 'PENDING', failureReason: null };
+		},
+		async fetchBrandRegistration(sid) {
+			calls.push('fetchBrandRegistration');
+			return { sid, status: 'APPROVED', failureReason: null };
+		},
+		async createCampaign() {
+			calls.push('createCampaign');
+			return { sid: nextSid('QE'), status: 'PENDING', failureReason: null };
+		},
+		async fetchCampaign({ campaignSid }) {
+			calls.push('fetchCampaign');
+			return { sid: campaignSid, status: 'VERIFIED', failureReason: null };
 		}
 	};
 
@@ -358,6 +396,228 @@ describe('submitRegistrationToTrustHub', () => {
 			);
 
 			expect(fakeTwilio.calls).toEqual([]);
+		});
+	});
+});
+
+describe('syncTrustHubRegistrationStatus', () => {
+	let fakeStore: ReturnType<typeof createFakeStore>;
+	let fakeTwilio: ReturnType<typeof createFakeTwilio>;
+
+	beforeEach(async () => {
+		fakeStore = createFakeStore();
+		fakeTwilio = createFakeTwilio();
+		// A submitted Brand is this function's precondition -- get there via the real saga rather than
+		// hand-rolling a ledger row, so these tests exercise the same shape Stage 9B actually produces.
+		await submitRegistrationToTrustHub(
+			{ store: fakeStore.store, twilio: fakeTwilio.twilio },
+			baseInput
+		);
+		fakeTwilio.calls.length = 0;
+	});
+
+	it('rejects a registration with no attested submission', async () => {
+		fakeStore.setSubmission(null);
+		await expect(
+			syncTrustHubRegistrationStatus(
+				{ store: fakeStore.store, twilio: fakeTwilio.twilio },
+				{ registrationId: REGISTRATION_ID }
+			)
+		).rejects.toMatchObject({ code: 'no_submission' });
+	});
+
+	it('rejects a registration that was never submitted to Twilio', async () => {
+		const freshStore = createFakeStore();
+		await expect(
+			syncTrustHubRegistrationStatus(
+				{ store: freshStore.store, twilio: fakeTwilio.twilio },
+				{ registrationId: REGISTRATION_ID }
+			)
+		).rejects.toMatchObject({ code: 'not_submitted' });
+	});
+
+	it('leaves the registration under review while the Brand is still pending, and never checks for a Campaign', async () => {
+		fakeTwilio.twilio.fetchBrandRegistration = async (sid) => ({
+			sid,
+			status: 'IN_REVIEW',
+			failureReason: null
+		});
+
+		const result = await syncTrustHubRegistrationStatus(
+			{ store: fakeStore.store, twilio: fakeTwilio.twilio },
+			{ registrationId: REGISTRATION_ID }
+		);
+
+		expect(result).toMatchObject({
+			brandStatus: 'IN_REVIEW',
+			campaignStatus: null,
+			registrationStatus: 'under_review'
+		});
+		expect(fakeStore.registrationChecks).toHaveLength(1);
+		expect(fakeStore.registrationOutcomes).toHaveLength(0);
+		expect(fakeTwilio.calls).not.toContain('createCampaign');
+	});
+
+	it('marks the registration action_needed with a sanitized reason when the Brand fails', async () => {
+		fakeTwilio.twilio.fetchBrandRegistration = async (sid) => ({
+			sid,
+			status: 'FAILED',
+			failureReason: 'invalid_address'
+		});
+
+		const result = await syncTrustHubRegistrationStatus(
+			{ store: fakeStore.store, twilio: fakeTwilio.twilio },
+			{ registrationId: REGISTRATION_ID }
+		);
+
+		expect(result.registrationStatus).toBe('action_needed');
+		expect(fakeStore.registrationOutcomes).toEqual([
+			{ registrationId: REGISTRATION_ID, status: 'action_needed', requiredFixes: 'invalid_address' }
+		]);
+		expect(fakeStore.resources.get(`${REGISTRATION_ID}:brand_registration`)?.status).toBe('failed');
+	});
+
+	it('refuses to register a Campaign when the organization has no Messaging Service yet', async () => {
+		fakeStore.setMessagingServiceSid(null);
+		await expect(
+			syncTrustHubRegistrationStatus(
+				{ store: fakeStore.store, twilio: fakeTwilio.twilio },
+				{ registrationId: REGISTRATION_ID }
+			)
+		).rejects.toMatchObject({ code: 'no_messaging_service' });
+	});
+
+	it("creates the Campaign from the contractor's own attested messaging answers once the Brand is approved", async () => {
+		const createCalls: Array<{
+			description: string;
+			messageSamples: string[];
+			usAppToPersonUsecase: string;
+		}> = [];
+		fakeTwilio.twilio.createCampaign = async (input) => {
+			createCalls.push(input);
+			return { sid: 'QE'.padEnd(34, '0'), status: 'PENDING', failureReason: null };
+		};
+
+		const result = await syncTrustHubRegistrationStatus(
+			{ store: fakeStore.store, twilio: fakeTwilio.twilio },
+			{ registrationId: REGISTRATION_ID }
+		);
+
+		expect(createCalls).toEqual([
+			{
+				messagingServiceSid: 'MG'.padEnd(34, '1'),
+				brandRegistrationSid: expect.stringMatching(/^BN/),
+				description: VALID_SUBMISSION.answers.messaging.description,
+				messageFlow: expect.stringContaining(
+					VALID_SUBMISSION.answers.messaging.consent_description
+				),
+				messageSamples: VALID_SUBMISSION.answers.messaging.sample_messages,
+				usAppToPersonUsecase: 'CUSTOMER_CARE',
+				// Neither sample message in VALID_SUBMISSION mentions a link or a phone number.
+				hasEmbeddedLinks: false,
+				hasEmbeddedPhone: false
+			}
+		]);
+		expect(result.registrationStatus).toBe('under_review');
+		expect(fakeStore.resources.get(`${REGISTRATION_ID}:campaign`)?.status).toBe('submitted');
+	});
+
+	it('detects an embedded link from a sample message even when it is a merge-field placeholder, not a real URL', async () => {
+		fakeStore.setSubmission({
+			...VALID_SUBMISSION,
+			answers: {
+				...VALID_SUBMISSION.answers,
+				messaging: {
+					...VALID_SUBMISSION.answers.messaging,
+					sample_messages: [
+						'Hi {FirstName}, your invoice is ready. Pay securely here: {PaymentLink}',
+						'Reply STOP to opt out of these updates any time.'
+					]
+				}
+			}
+		});
+		const createCalls: Array<{ hasEmbeddedLinks: boolean; hasEmbeddedPhone: boolean }> = [];
+		fakeTwilio.twilio.createCampaign = async (input) => {
+			createCalls.push(input);
+			return { sid: 'QE'.padEnd(34, '0'), status: 'PENDING', failureReason: null };
+		};
+
+		await syncTrustHubRegistrationStatus(
+			{ store: fakeStore.store, twilio: fakeTwilio.twilio },
+			{ registrationId: REGISTRATION_ID }
+		);
+
+		expect(createCalls[0]).toMatchObject({ hasEmbeddedLinks: true, hasEmbeddedPhone: false });
+	});
+
+	it('uses the Sole Proprietor use case for a sole-proprietor registration', async () => {
+		const soleProprietorFakeStore = createFakeStore();
+		soleProprietorFakeStore.setSubmission(SOLE_PROPRIETOR_SUBMISSION);
+		await submitRegistrationToTrustHub(
+			{ store: soleProprietorFakeStore.store, twilio: fakeTwilio.twilio },
+			baseInput
+		);
+		fakeTwilio.calls.length = 0;
+		const createCalls: Array<{ usAppToPersonUsecase: string }> = [];
+		fakeTwilio.twilio.createCampaign = async (input) => {
+			createCalls.push(input);
+			return { sid: 'QE'.padEnd(34, '0'), status: 'PENDING', failureReason: null };
+		};
+
+		await syncTrustHubRegistrationStatus(
+			{ store: soleProprietorFakeStore.store, twilio: fakeTwilio.twilio },
+			{ registrationId: REGISTRATION_ID }
+		);
+
+		expect(createCalls[0].usAppToPersonUsecase).toBe('SOLE_PROPRIETOR');
+	});
+
+	it('approves the registration once the Campaign is verified, and never creates a second Campaign', async () => {
+		// First sync creates the Campaign (PENDING); second sync fetches it and finds it VERIFIED.
+		await syncTrustHubRegistrationStatus(
+			{ store: fakeStore.store, twilio: fakeTwilio.twilio },
+			{ registrationId: REGISTRATION_ID }
+		);
+		fakeTwilio.calls.length = 0;
+
+		const result = await syncTrustHubRegistrationStatus(
+			{ store: fakeStore.store, twilio: fakeTwilio.twilio },
+			{ registrationId: REGISTRATION_ID }
+		);
+
+		expect(fakeTwilio.calls).toEqual(['fetchBrandRegistration', 'fetchCampaign']);
+		expect(result.registrationStatus).toBe('approved');
+		expect(fakeStore.registrationOutcomes).toEqual([
+			{
+				registrationId: REGISTRATION_ID,
+				status: 'approved',
+				providerOutcome: 'Twilio approved this business for SMS (Brand and Campaign both verified).'
+			}
+		]);
+		expect(fakeStore.resources.get(`${REGISTRATION_ID}:campaign`)?.status).toBe('approved');
+	});
+
+	it('marks the registration action_needed with a sanitized reason when the Campaign fails', async () => {
+		await syncTrustHubRegistrationStatus(
+			{ store: fakeStore.store, twilio: fakeTwilio.twilio },
+			{ registrationId: REGISTRATION_ID }
+		);
+		fakeTwilio.twilio.fetchCampaign = async ({ campaignSid }) => ({
+			sid: campaignSid,
+			status: 'FAILED',
+			failureReason: 'carrier rejected: inconsistent sample messages'
+		});
+
+		const result = await syncTrustHubRegistrationStatus(
+			{ store: fakeStore.store, twilio: fakeTwilio.twilio },
+			{ registrationId: REGISTRATION_ID }
+		);
+
+		expect(result.registrationStatus).toBe('action_needed');
+		expect(fakeStore.registrationOutcomes.at(-1)).toEqual({
+			registrationId: REGISTRATION_ID,
+			status: 'action_needed',
+			requiredFixes: 'carrier rejected: inconsistent sample messages'
 		});
 	});
 });

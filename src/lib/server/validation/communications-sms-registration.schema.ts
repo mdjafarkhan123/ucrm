@@ -2,6 +2,12 @@ import { z } from 'zod';
 
 const shortText = (label: string, max = 160) =>
 	z.string().trim().min(1, `Enter ${label}.`).max(max, `Keep ${label} under ${max} characters.`);
+const boundedText = (label: string, min: number, max: number) =>
+	z
+		.string()
+		.trim()
+		.min(min, `Enter at least ${min} characters for ${label}.`)
+		.max(max, `Keep ${label} under ${max} characters.`);
 const optionalText = (max = 160) =>
 	z
 		.string()
@@ -43,14 +49,18 @@ const representativeSchema = z.object({
 		.regex(/^\+[1-9]\d{7,14}$/, 'Enter the representative phone in international format.')
 });
 
+// Minimums mirror Twilio's own A2P Campaign (Usa2p) requirements, not an arbitrary UX choice: Description and
+// MessageFlow both need 40+ characters, and each MessageSample needs 20+ (max 1024) -- Stage 9C forwards these
+// answers to Twilio as-is, so a too-short attested answer must fail here rather than fail a real, billable
+// Twilio submission later.
 const messagingSchema = z.object({
-	description: shortText('how the business will use texting', 2000),
+	description: boundedText('how the business will use texting', 40, 2000),
 	consent_method: z.enum(['website_form', 'paper_form', 'verbal', 'text_initiated', 'other'], {
 		message: 'Choose how customers agree to receive texts.'
 	}),
-	consent_description: shortText('how customer consent is collected', 2000),
+	consent_description: boundedText('how customer consent is collected', 40, 2000),
 	sample_messages: z
-		.array(shortText('each sample message', 1600))
+		.array(boundedText('each sample message', 20, 1024))
 		.min(2, 'Add at least two sample messages.')
 		.max(5, 'Add no more than five sample messages.'),
 	privacy_policy_url: webUrl.optional(),

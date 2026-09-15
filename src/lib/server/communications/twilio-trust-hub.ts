@@ -32,6 +32,7 @@ const ADDRESS_SID = /^AD[0-9A-Fa-f]{32}$/;
 const SUPPORTING_DOCUMENT_SID = /^RD[0-9A-Fa-f]{32}$/;
 const EVALUATION_SID = /^EL[0-9A-Fa-f]{32}$/;
 const BRAND_REGISTRATION_SID = /^BN[0-9A-Fa-f]{32}$/;
+const CAMPAIGN_SID = /^QE[0-9A-Fa-f]{32}$/;
 // Entity assignments and Trust Product entity assignments observed with an RA prefix; not load-bearing for any
 // ledger cross-reference (assignments are not one of the tracked resource roles), so validated loosely.
 const ASSIGNMENT_SID = /^[A-Z]{2}[0-9A-Fa-f]{32}$/;
@@ -88,9 +89,21 @@ export type EvaluationOutcome = {
 	status: 'compliant' | 'noncompliant';
 	results: EvaluationResultItem[];
 };
+export type BrandRegistrationStatus = 'PENDING' | 'IN_REVIEW' | 'APPROVED' | 'FAILED' | 'SUSPENDED';
 export type CreatedBrandRegistration = {
 	sid: string;
-	status: 'PENDING' | 'APPROVED' | 'FAILED' | 'SUSPENDED';
+	status: BrandRegistrationStatus;
+	failureReason: string | null;
+};
+
+// Verified against Twilio's Usa2p (A2P Campaign) resource doc, 2026-09-15: PENDING (not yet seen by The
+// Campaign Registry) -> IN_PROGRESS (TCR reviewing) -> VERIFIED (approved) | FAILED (rejected), with SUSPENDED
+// as a rare separate terminal state -- a distinct enum from BrandRegistrationStatus (Twilio's own naming: a
+// Brand is "APPROVED", a Campaign is "VERIFIED").
+export type CampaignStatus = 'PENDING' | 'IN_PROGRESS' | 'VERIFIED' | 'FAILED' | 'SUSPENDED';
+export type CreatedCampaign = {
+	sid: string;
+	status: CampaignStatus;
 	failureReason: string | null;
 };
 
@@ -127,6 +140,19 @@ export type CreateSupportingDocumentInput = {
 	friendlyName: string;
 	type: string;
 	attributes: Record<string, unknown>;
+};
+export type CreateCampaignInput = {
+	messagingServiceSid: string;
+	brandRegistrationSid: string;
+	// Twilio requires min 40 chars for description/messageFlow and 2-5 samples of 20-1024 chars each -- the
+	// caller (trust-hub-submission.ts) owns building content that actually meets those bounds; this adapter
+	// only carries it to Twilio verbatim.
+	description: string;
+	messageFlow: string;
+	messageSamples: string[];
+	usAppToPersonUsecase: string;
+	hasEmbeddedLinks: boolean;
+	hasEmbeddedPhone: boolean;
 };
 
 /**
@@ -171,6 +197,15 @@ export type TwilioTrustHubClient = {
 		skipAutomaticSecVet?: boolean;
 		mock?: boolean;
 	}): Promise<CreatedBrandRegistration>;
+	/** Re-read a Brand's current status (Stage 9C: syncing status back onto communication_sms_registrations). */
+	fetchBrandRegistration(brandRegistrationSid: string): Promise<CreatedBrandRegistration>;
+	/** Create the Campaign (Usa2p resource) once the Brand is approved. Real, billable, and -- per Twilio's own
+	 *  guide -- must never be recreated once it exists, matching brand_registration's ledger treatment. */
+	createCampaign(input: CreateCampaignInput): Promise<CreatedCampaign>;
+	fetchCampaign(input: {
+		messagingServiceSid: string;
+		campaignSid: string;
+	}): Promise<CreatedCampaign>;
 };
 
 function basicAuthHeader(user: string, password: string): string {
@@ -182,8 +217,22 @@ type TrustHubRequest = {
 	path: string;
 	method: 'GET' | 'POST';
 	auth: string;
-	form?: Record<string, string>;
+	// A string[] value is sent as the same key repeated (Twilio's convention for list parameters, e.g.
+	// MessageSamples on the Usa2p/Campaign create call), not a single JSON-encoded field.
+	form?: Record<string, string | string[]>;
 };
+
+function encodeForm(form: Record<string, string | string[]>): string {
+	const params = new URLSearchParams();
+	for (const [key, value] of Object.entries(form)) {
+		if (Array.isArray(value)) {
+			for (const item of value) params.append(key, item);
+		} else {
+			params.append(key, value);
+		}
+	}
+	return params.toString();
+}
 
 async function trustHubRequest(
 	request: TrustHubRequest
@@ -200,7 +249,7 @@ async function trustHubRequest(
 				authorization: request.auth,
 				...(request.form ? { 'content-type': 'application/x-www-form-urlencoded' } : {})
 			},
-			body: request.form ? new URLSearchParams(request.form).toString() : undefined,
+			body: request.form ? encodeForm(request.form) : undefined,
 			signal: controller.signal
 		});
 	} catch {
@@ -298,6 +347,19 @@ function readCustomerProfile(
 	return { sid, status: status as CustomerProfileStatus };
 }
 
+function readErrorsSummary(body: unknown): string | null {
+	const direct = readString(body, 'failure_reason');
+	if (direct) return direct;
+	const errors =
+		body && typeof body === 'object' && Array.isArray((body as { errors?: unknown }).errors)
+			? ((body as { errors: unknown[] }).errors as unknown[])
+			: [];
+	const messages = errors
+		.map((entry) => readString(entry, 'message'))
+		.filter((message): message is string => Boolean(message));
+	return messages.length > 0 ? messages.join('; ') : null;
+}
+
 function readBrandRegistration(body: unknown): CreatedBrandRegistration {
 	const sid = requireSid(
 		readString(body, 'sid'),
@@ -308,7 +370,21 @@ function readBrandRegistration(body: unknown): CreatedBrandRegistration {
 	return {
 		sid,
 		status: status as CreatedBrandRegistration['status'],
-		failureReason: readString(body, 'failure_reason')
+		failureReason: readErrorsSummary(body)
+	};
+}
+
+function readCampaign(body: unknown): CreatedCampaign {
+	const sid = requireSid(
+		readString(body, 'sid'),
+		CAMPAIGN_SID,
+		'twilio_trust_hub_missing_campaign_sid'
+	);
+	const status = readString(body, 'campaign_status') ?? 'PENDING';
+	return {
+		sid,
+		status: status as CampaignStatus,
+		failureReason: readErrorsSummary(body)
 	};
 }
 
@@ -533,6 +609,54 @@ export function createTwilioTrustHubClient(
 				}
 			});
 			return readBrandRegistration(body);
+		},
+
+		async fetchBrandRegistration(brandRegistrationSid) {
+			const { body } = await trustHubRequest({
+				base: MESSAGING_BASE,
+				path: `/v1/a2p/BrandRegistrations/${brandRegistrationSid}`,
+				method: 'GET',
+				auth
+			});
+			return readBrandRegistration(body);
+		},
+
+		async createCampaign({
+			messagingServiceSid,
+			brandRegistrationSid,
+			description,
+			messageFlow,
+			messageSamples,
+			usAppToPersonUsecase,
+			hasEmbeddedLinks,
+			hasEmbeddedPhone
+		}) {
+			const { body } = await trustHubRequest({
+				base: MESSAGING_BASE,
+				path: `/v1/Services/${messagingServiceSid}/Compliance/Usa2p`,
+				method: 'POST',
+				auth,
+				form: {
+					BrandRegistrationSid: brandRegistrationSid,
+					Description: description,
+					MessageFlow: messageFlow,
+					MessageSamples: messageSamples,
+					UsAppToPersonUsecase: usAppToPersonUsecase,
+					HasEmbeddedLinks: String(hasEmbeddedLinks),
+					HasEmbeddedPhone: String(hasEmbeddedPhone)
+				}
+			});
+			return readCampaign(body);
+		},
+
+		async fetchCampaign({ messagingServiceSid, campaignSid }) {
+			const { body } = await trustHubRequest({
+				base: MESSAGING_BASE,
+				path: `/v1/Services/${messagingServiceSid}/Compliance/Usa2p/${campaignSid}`,
+				method: 'GET',
+				auth
+			});
+			return readCampaign(body);
 		}
 	};
 }

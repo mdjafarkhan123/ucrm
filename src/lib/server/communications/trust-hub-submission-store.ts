@@ -73,6 +73,20 @@ export type TrustHubSubmissionStore = {
 	/** Create-or-update the single row for (registrationId, resourceRole); never a second row for the same role. */
 	upsertResource(input: UpsertResourceInput): Promise<StoredTrustHubResource>;
 	recordEvent(input: TrustHubEventInput): Promise<void>;
+	/** The Messaging Service SID Stage 2B provisioned for this organization's Twilio subaccount -- the Campaign
+	 *  (Usa2p resource) is created under it. Null if the subaccount has no Messaging Service yet. */
+	getMessagingServiceSid(organizationId: string): Promise<string | null>;
+	/** Stage 9C: reflect a Twilio sync result onto the contractor-facing registration, via the same
+	 *  security-definer commands the contractor's own submit/decide path uses (2C-3). An automated sync never
+	 *  supplies a human decider. */
+	recordRegistrationOutcome(input: {
+		registrationId: string;
+		status: 'approved' | 'action_needed';
+		providerOutcome?: string | null;
+		requiredFixes?: string | null;
+	}): Promise<void>;
+	/** Refresh last_checked_at + log a readiness check without changing status (Brand/Campaign still pending). */
+	recordRegistrationCheck(input: { registrationId: string; detail?: string | null }): Promise<void>;
 };
 
 class TrustHubSubmissionStoreError extends Error {
@@ -186,6 +200,36 @@ export function createSupabaseTrustHubSubmissionStore(
 			});
 			// History is best-effort observability: a failed audit insert must never mask the submission outcome.
 			if (error) console.error('Failed to record Trust Hub submission event', { step: input.step });
+		},
+
+		async getMessagingServiceSid(organizationId) {
+			const { data, error } = await client
+				.from('communication_twilio_accounts')
+				.select('messaging_service_sid')
+				.eq('organization_id', organizationId)
+				.maybeSingle();
+			if (error)
+				throw new TrustHubSubmissionStoreError("Could not read the organization's Twilio account.");
+			return data?.messaging_service_sid ?? null;
+		},
+
+		async recordRegistrationOutcome({ registrationId, status, providerOutcome, requiredFixes }) {
+			const { error } = await client.rpc('communication_sms_record_registration_outcome', {
+				p_registration_id: registrationId,
+				p_status: status,
+				p_provider_outcome: providerOutcome ?? undefined,
+				p_required_fixes: requiredFixes ?? undefined
+			});
+			if (error)
+				throw new TrustHubSubmissionStoreError('Could not record the registration outcome.');
+		},
+
+		async recordRegistrationCheck({ registrationId, detail }) {
+			const { error } = await client.rpc('communication_sms_record_registration_check', {
+				p_registration_id: registrationId,
+				p_detail: detail ?? undefined
+			});
+			if (error) throw new TrustHubSubmissionStoreError('Could not record the registration check.');
 		}
 	};
 }
