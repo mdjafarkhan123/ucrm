@@ -131,6 +131,36 @@ of Jafar's approval of this contract; organizations may change them within effec
 Website Chat, invoice, payment, Job/review, Scheduling, lead, missed-call, booking, on-my-way, and receipt entries
 remain absent from contractor catalogs until their owning contracts and channels are dependency-ready.
 
+### SMS customer action — Communications A2 Stage 5 approved 2026-09-12
+
+**Send SMS** is an ordinary customer-message action available to any dependency-ready preset or custom recipe;
+it is not tied to a fixed list of use cases. The contractor writes the text or inserts an editable copy of a saved
+reply, uses only variables supplied by the owning workflow, and sees the rendered preview, required compliance
+wording, segment estimate and estimated retail cost. Saved-reply changes never silently rewrite a recipe. An
+authorized user may send a clearly labelled, normally charged test only to their verified team phone.
+
+At execution, the action uses the customer's current primary SMS-capable number. It never silently falls back to
+another saved customer number. The default business sender continues the customer's established eligible
+conversation number, otherwise the organization default; an authorized step-level selection may pin another
+eligible number. Unattended Automation does not infer a sender from a staff assignment.
+
+Delays remain separate Wait steps. One optional workflow sending window and timezone choice may narrow when
+customer communications run, while Communications' business-wide and recipient-local legal quiet-hours guard is
+always stricter. A held eligible SMS shows its next permitted date, time and timezone and reruns current outcome,
+reply, consent, number, sender, balance, cap, pause and usefulness checks before release. One-off scheduled texts
+belong to Conversations; the SMS action has no separate send-later control.
+
+A customer reply keeps the approved recipe-level behavior: later customer-message steps pause and alert the
+responsible team, whose authorized choices are Resume, Skip next or Stop. Do not add a reply switch to every SMS
+action. Automation history distinguishes Waiting, Scheduled, Skipped and Failed with a plain reason;
+Conversations owns Queued, Sent, Delivered, Checking send status and attempt-level failure evidence. The linked
+records never imply customer read receipt. A skipped step creates no fake message bubble, and restoring balance,
+registration or service never replays stale work automatically.
+
+The first SMS action slice excludes AI writing, a Manual SMS task action, automated MMS/media upload, branching,
+loops, bulk retroactive enrollment, a second scheduler and marketing behavior. Approved secure record links may
+be used in text. Each excluded feature needs demonstrated demand and its owning dependency before later approval.
+
 ## Events and transaction ownership
 
 - A domain command commits its durable fact and one versioned domain event in the same Postgres transaction. A

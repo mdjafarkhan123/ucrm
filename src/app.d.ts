@@ -13,7 +13,7 @@ declare global {
 		}
 		interface PageData {
 			user?: SessionUser;
-			organization?: { id: string; name: string; role: string } | null;
+			organization?: { id: string; name: string; slug: string; role: string } | null;
 		}
 		// interface PageState {}
 		// interface Platform {}

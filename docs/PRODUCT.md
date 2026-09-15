@@ -55,7 +55,7 @@ Permissions decide whether people see all or assigned work and separately protec
 
 ## 6. Main navigation
 
-Navigation groups **Overview** (Dashboard, Schedule), **Customers** (Inbox, Customers, Requests, Pipeline), **Work & Money** (Jobs, Quotes, Invoices), **Growth** (Reputation, Growth Feed), and **System** (Settings, Team, Notifications, Usage).
+Navigation groups **Overview** (Dashboard, Schedule), **Customers** (Inbox, Customers, Requests, Pipeline), **Work & Money** (Jobs, Quotes, Invoices), **Growth** (Marketing, then Reputation when ready), and **System** (Settings, Team, Notifications, Usage).
 
 Global creation supports all major records. Global search finds names, phone numbers, messages, requests, jobs, quotes, and invoices.
 
@@ -154,9 +154,22 @@ Allow one connected thread across channels when appropriate and separate threads
 
 A missed call creates visible activity, identifies or creates the customer, alerts staff, and may trigger immediate compliant text-back.
 
+## 11A. Marketing
+
+Approved Marketing behavior, navigation, customer groups, one-off campaign workflow, safe gradual delivery,
+permissions, reporting, attribution, Automation boundary, Reputation sequence, and deliberately preserved later
+features live in `docs/marketing-product-blueprint.md`. Read it before changing promotional campaigns,
+Marketing audiences, promotional email or SMS, campaign results, or the Marketing/Automation/Communications
+boundary.
+
 ### Communications service and balance
 
-UCRM initially provides phone and messaging service to organizations in the United States and Canada through one isolated Twilio subaccount per organization under the platform-owned master account. Contractors search available inventory, select and purchase numbers inside UCRM, complete the required business and messaging registration, and may port their number away when leaving after valid charges are settled.
+UCRM initially targets 100–200 contractor organizations globally, like GHL, wherever Twilio supports the
+required communication behavior. Each organization receives one isolated Twilio subaccount under the
+platform-owned master account. Onboarding uses the contractor's operating country, recipient countries,
+sender capabilities, and current regulatory requirements to offer only eligible numbers or sender identities
+and collect the required registration. Contractors may port an eligible number away when leaving after valid
+charges are settled. One-way delivery is never presented as a two-way Conversations channel.
 
 The Platform Owner privately funds the provider balance. Each organization separately holds a prepaid Communication Balance where one communication credit represents one US dollar and the contractor interface presents the value in dollars. Contractors see their balance, published retail prices, usage, top-ups, adjustments, and refunds; only the Platform Owner sees provider cost and margin.
 
@@ -285,9 +298,12 @@ Any match between a recent customer and a new public review is shown as likely o
 
 Ready-made automations include speed to lead, missed-call text-back, booking confirmation, assessment reminders, appointment reminders, no-show follow-up, no-quote staff reminder, quote follow-up, deposit receipt, job confirmation, on-my-way, invoice reminders, payment receipt, review requests, and repeat-service reminders.
 
-Each preset lets the contractor enable it, choose timing and channel, edit messages, preview content, see active enrollments, and stop an enrollment.
+Every preset is an editable starting workflow, not a locked recipe. The contractor may add, remove, duplicate,
+reorder, and edit up to 50 steps. Each customer-message step independently chooses any currently supported
+channel, so SMS, email, and future channels are available across automation types rather than being fixed to
+named use cases. Contractors may also build workflows from scratch.
 
-Advanced automation follows: **When this happens → if these conditions are true → perform these actions.**
+Automation follows: **When this happens → if these conditions are true → perform these actions.**
 
 Actions may notify customers or staff, create tasks, assign work, change tags, schedule follow-up, move open deals forward, or create draft quotes.
 

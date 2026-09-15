@@ -26,7 +26,10 @@
 	// Name lookup for every id currently selected, seeded once from what the server sent (this component
 	// remounts under the owning page's `{#key}` whenever fresh data is reseeded) and topped up whenever a
 	// search result is added.
-	const known = new SvelteMap(initialServices.map((s) => [s.catalog_item_id, s]));
+	function createKnownServices() {
+		return new SvelteMap(initialServices.map((service) => [service.catalog_item_id, service]));
+	}
+	const known = createKnownServices();
 
 	let search = $state('');
 	let debounced = $state('');

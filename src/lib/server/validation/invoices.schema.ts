@@ -455,10 +455,11 @@ export type RecordInvoicePaymentInput = z.infer<typeof recordInvoicePaymentSchem
 // email. Strict so an unexpected field is refused rather than dropped.
 export const issueInvoiceAccessLinkSchema = z.strictObject({});
 
-// Invoices Part 7b: the five close/reopen transitions for an issued bill, each mapping 1:1 to a command built
-// and pgTAP-tested in Part 3b (void_invoice, write_off_invoice, restore_invoice_from_write_off,
-// mark_invoice_received, reopen_invoice). One discriminated shape because a single `/lifecycle` route runs all
-// five — from the office's point of view this is one operation. None takes a revision; each command re-locks
+// The four supported close/correction transitions for an issued bill, each mapping 1:1 to a database
+// command. Status-only Mark Received closures are retired: real money is recorded as a Payment, while valid
+// debt that will not be collected is written off. Reopen remains available for historical closures.
+// One discriminated shape lets a single `/lifecycle` route run all four operations. None takes a revision;
+// each command re-locks
 // the row and leans on the idempotency key, so a double-press replays rather than erroring. The commands
 // re-check every guard themselves (D2 among them — void refuses while ordinary payments are still applied), so
 // this schema only shapes the request.
@@ -480,7 +481,7 @@ const lifecycleNote = z
 	.nullish()
 	.transform((value) => value || null);
 
-// Restore, mark-received and reopen each record why in a few words — required, so the history reads.
+// Restore and reopen each record why in a few words — required, so the history reads.
 const lifecycleReason = z
 	.string()
 	.trim()
@@ -496,7 +497,6 @@ export const invoiceLifecycleSchema = z.discriminatedUnion('action', [
 	}),
 	z.object({ action: z.literal('write_off'), note: lifecycleNote, ...lifecycleRetry }),
 	z.object({ action: z.literal('restore_write_off'), reason: lifecycleReason, ...lifecycleRetry }),
-	z.object({ action: z.literal('mark_received'), reason: lifecycleReason, ...lifecycleRetry }),
 	z.object({ action: z.literal('reopen'), reason: lifecycleReason, ...lifecycleRetry })
 ]);
 

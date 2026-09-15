@@ -5,9 +5,9 @@
 **Purpose:** Turn UpliftContractor into a safe paid CRM, then deliver the lead-conversion services contractors
 most demand.
 
-## Approved launch position
+## Approved controlled-first-launch position
 
-The first paid release serves small established contractors through assisted onboarding. It supports the
+The controlled first launch serves a few closely supported, paying small established contractors through assisted onboarding. It supports the
 office-led Request → Quote → Job → Invoice → recorded Payment workflow, works online, launches with email and
 Website Chat, migrates opening-state data, and hands accounting records off through CSV.
 
@@ -97,7 +97,8 @@ staff reply races, provider outage, credit/rate limits and owner recovery contro
 
 ### 6. Ship one-click campaigns without harming service messages
 
-**Owner:** Communications Activation A3 + Customers segmentation + Automation/Communications delivery.  
+**Owner:** `marketing-growth`, with Customers, Automation, Communications, Requests/Bookings, and billing as
+dependencies.
 **Depends on:** Part 5 SMS truth for SMS campaigns; email campaigns may be enabled first after the same safeguards.  
 **Deliver:** owner/admin-only seasonal reminder and win-back campaigns; saved recipient segment from customer/job
 history; exact recipient preview; channel consent and global opt-out; editable template/test send; schedule/send;
@@ -111,8 +112,8 @@ unclaimed work, and duplicate execution cannot double-send.
 
 ### 7. Ship the Google review funnel
 
-**Owner:** new Reputation campaign + Jobs/Payments completion truth + Automation review pack + Platform Owner
-review-link controls.  
+**Owner:** `marketing-growth` Reputation part + Jobs/Payments completion truth + Automation review pack + Platform
+Owner review-link controls.
 **Depends on:** trustworthy completed-work eligibility; email, with SMS optional after Part 5.  
 **Deliver:** contractor Google review link; eligible completed-customer selection; manual request and preset;
 customer rating landing page; 4–5 ratings continue to Google; 1–3 ratings create private feedback and a protected
@@ -141,7 +142,7 @@ or routine staff intervention, and support/pilot evidence shows no unresolved la
 ### 9. Prove production and launch gradually
 
 **Owner:** Production Operations + Platform Owner.  
-**Depends on:** every capability sold in the pilot; Jafar's separate infrastructure topology/cutover approval.  
+**Depends on:** every capability sold in the controlled first launch; Jafar's separate infrastructure topology/cutover approval. Preparation may proceed alongside Part 3, but infrastructure implementation remains behind that approval.
 **Deliver:** immutable app/worker images; production-like staging; pinned official self-hosted Supabase stack;
 secure networking/secrets; off-host base backups and continuous WAL archive; clean-machine point-in-time restore;
 managed-to-self-hosted cutover and rollback rehearsal; monitoring/alerts; restart, dependency-failure and
@@ -162,6 +163,7 @@ uptime decision. UCRM will make no 40,000-user capacity claim until a named work
 
 ## Final launch gate
 
-Jafar may open paid access only after Parts 1–3 and 9 pass for the narrow pilot promise. Parts 4–7 are the first
-commercial expansion and should be sold only after their own gates pass. Wider rollout waits for Part 8 plus a
-successful bounded pilot. A page existing is never completion evidence by itself.
+Jafar may open the controlled first launch only after Parts 1–4 and 9 pass. Begin with a few closely supported
+paying contractors. Parts 5–7 follow after that first launch and must not be sold before their own gates pass.
+Wider rollout waits for the necessary Part 8 work plus evidence from the first customer group. A page existing is
+never completion evidence by itself.

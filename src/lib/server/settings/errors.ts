@@ -71,3 +71,31 @@ export function taxRateWriteError(error: DatabaseError) {
 
 	return databaseError();
 }
+
+// The invoice payment-term commands (save/remove/set-defaults) refuse the same way the tax rate commands do:
+// raising rather than returning a 'stale' result. 'settings.invoices.manage' is already checked at the route,
+// so 42501 here only ever means the route's own check and the command's disagreed.
+export function invoiceTermWriteError(error: DatabaseError) {
+	if (error.code === '42501')
+		return json(
+			{ error: 'You do not have access to invoice settings.', reason: 'permission_denied' },
+			{ status: 403 }
+		);
+
+	if (error.code === 'P0409')
+		return json(
+			{
+				error: error.message ?? 'Someone else changed invoice settings while you were editing.',
+				reason: 'stale'
+			},
+			{ status: 409, headers: NO_STORE_HEADERS }
+		);
+
+	if (error.code === '23505')
+		return validationError({ name: 'Another payment term already uses that name.' });
+
+	if (error.code === '23514')
+		return validationError({ form: error.message ?? 'That change is not allowed.' });
+
+	return databaseError();
+}

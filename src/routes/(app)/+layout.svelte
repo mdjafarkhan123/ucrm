@@ -68,26 +68,29 @@
 	// the click feels stuck. This fetches the files for the pages the office moves between all day once
 	// the browser has nothing else to do, so those clicks paint straight away. Hovering a link already
 	// does the same thing on its own; this covers the clicks that come too fast for a hover.
-	// The id in the client path is a placeholder — only the page's code is fetched, never its data.
+	// The id in the detail paths is a placeholder — only the page's code is fetched, never its data.
+	// It must still satisfy the `uuid` route matcher, or `resolve()` yields a path the router can't match
+	// and `preloadCode` throws; a nil uuid matches the shape without ever pointing at a real record.
+	const WARM_UUID = '00000000-0000-0000-0000-000000000000';
 	const warmRoutes = [
 		resolve('/(app)/dashboard'),
 		resolve('/(app)/schedule'),
 		resolve('/(app)/clients'),
 		resolve('/(app)/clients/new'),
-		resolve('/(app)/clients/[id=uuid]', { id: 'warm' }),
+		resolve('/(app)/clients/[id=uuid]', { id: WARM_UUID }),
 		resolve('/(app)/requests'),
 		resolve('/(app)/requests/new'),
-		resolve('/(app)/requests/[id=uuid]', { id: 'warm' }),
+		resolve('/(app)/requests/[id=uuid]', { id: WARM_UUID }),
 		resolve('/(app)/quotes'),
 		resolve('/(app)/quotes/new'),
 		resolve('/(app)/jobs'),
 		resolve('/(app)/jobs/new'),
-		resolve('/(app)/jobs/[id=uuid]', { id: 'warm' }),
+		resolve('/(app)/jobs/[id=uuid]', { id: WARM_UUID }),
 		resolve('/(app)/invoices'),
 		resolve('/(app)/invoices/new'),
 		resolve('/(app)/invoices/ready-to-bill'),
 		resolve('/(app)/invoices/send'),
-		resolve('/(app)/invoices/[id=uuid]', { id: 'warm' }),
+		resolve('/(app)/invoices/[id=uuid]', { id: WARM_UUID }),
 		resolve('/(app)/pipeline'),
 		resolve('/(app)/pipeline/outcomes'),
 		resolve('/(app)/communications'),
@@ -98,6 +101,7 @@
 		resolve('/(app)/settings/taxes'),
 		resolve('/(app)/settings/price-book'),
 		resolve('/(app)/settings/quotes'),
+		resolve('/(app)/settings/invoices'),
 		resolve('/(app)/settings/forms'),
 		resolve('/(app)/settings/communications/email'),
 		resolve('/(app)/settings/communications/sms'),

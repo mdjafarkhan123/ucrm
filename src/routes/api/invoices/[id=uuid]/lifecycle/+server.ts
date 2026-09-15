@@ -7,8 +7,8 @@ import { requireOrganization } from '$lib/server/auth/organization';
 import { enforceOrganizationWriteRateLimit } from '$lib/server/security/rate-limit';
 import { updateInvoiceError } from '$lib/server/invoices/errors';
 
-// Invoices Part 7b: the five close/reopen transitions for an issued bill, each mapping to a command built and
-// pgTAP-tested in Part 3b. One route with an `action` discriminator, because from the office's point of view
+// The four supported close/correction transitions for an issued bill, each mapping to a database command.
+// One route with an `action` discriminator, because from the office's point of view
 // this is one operation. Every command re-checks its own permission (invoices.void / invoices.bad_debt /
 // invoices.record_payment), re-locks the row and re-runs its guards — including D2, where void refuses while
 // ordinary payments are still applied and the message comes straight back to the dialog. None takes a
@@ -59,12 +59,6 @@ export const POST: RequestHandler = async (event) => {
 				return supabase.rpc('write_off_invoice', { ...target, new_note: input.note, ...retry });
 			case 'restore_write_off':
 				return supabase.rpc('restore_invoice_from_write_off', {
-					...target,
-					new_reason: input.reason,
-					...retry
-				});
-			case 'mark_received':
-				return supabase.rpc('mark_invoice_received', {
 					...target,
 					new_reason: input.reason,
 					...retry

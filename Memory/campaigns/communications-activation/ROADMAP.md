@@ -4,11 +4,11 @@ Permanent behavior lives in docs/contractor-email-contract.md and docs/unified-i
 
 ## Approved sequence (Jafar, updated 2026-08-29)
 
-Email activation and realtime inbox (complete) → contractor-settings 6A/6B Automation → A2 SMS → A3
-marketing campaigns.
+Email activation and realtime inbox (complete) → contractor-settings 6A/6B Automation → A2 SMS.
 
-Marketing is deliberately last, and **no marketing groundwork is added early** — no purpose/lane column
-until A3 scopes it. Backfilling today's rows as transactional is trivial.
+Marketing product ownership moved to the dedicated `marketing-growth` campaign on 2026-09-15 after its product
+blueprint was approved. Communications supplies delivery, sender health, consent, callbacks, and service-message
+protection; it does not duplicate Marketing audience, content, launch, or reporting ownership.
 
 ## Planning boundary — clarified by Jafar
 
@@ -22,8 +22,8 @@ research is supporting reference, not authorization to code.
 | ---- | ----------------------------- | ----------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A1-D | Managed email-domain activation | Done — accepted 2026-08-30              | A1 outbound proof      | One owner action safely reconciles separate sending/receiving domains, Cloudflare DNS, Brevo verification and the domain webhook; the test domain passes                     |
 | A1-V | Finish email live verification | Done — accepted 2026-08-30              | A1-D                   | Fresh real email reaches a real inbox and replies; attachment, bounded backlog and one-day soak pass; recovery and monitored drain remain healthy                           |
-| A2   | SMS channel via Twilio        | In progress — Stages 1/2A/2B/2C and 3A done; Stage 3B active (Phone & SMS registration UI) | Country capability and tenant registration | Approved behavior and UI blueprints cover Conversations, Automation, contractor settings and Jafar controls; an eligible contractor can send and receive SMS and use SMS in an eligible automation |
-| A3   | One-click marketing campaigns | Not scoped                                | A2                     | Contractor can send a segmented bulk campaign without risking transactional deliverability                                                                                  |
+| A2   | SMS channel via Twilio        | In progress — Stages 1–3 done; Stage 4: 4A+4B done, 4C next | Country capability and tenant registration | Approved behavior and UI blueprints cover Conversations, Automation, contractor settings and Jafar controls; an eligible contractor can send and receive SMS and use SMS in an eligible automation |
+| A3   | Marketing delivery dependency | Routed to `marketing-growth` 2026-09-15   | Email foundation; A2 for future SMS | Communications exposes the safe delivery and result contracts required by Marketing without owning the Marketing product                                                     |
 
 ## Stage 2C parts (money + control layer; split for multi-session, Jafar approved 2026-09-14)
 
@@ -161,11 +161,60 @@ confirming they are an authorized representative; preserve their identity, wordi
     count + active holds list, read-only. Gate met: svelte-check 0/3421, Prettier clean, 20/20 relevant vitest
     green, and browser-verified live on dev (rename + compliance save round-tripped, toasts, no console errors).
     3C is now fully done.
-- **3D SMS usage — Planned; depends on 3A.** Add balance, top-up requests, lean health and ledger using the
-  existing Stage 2C money truth.
+- **3D SMS usage — DONE 2026-09-15 (commit 9ee1a76).** Balance, top-up requests, lean health and ledger using
+  the existing Stage 2C money truth; no schema change. Fixed during browser verification: the messaging-health
+  query's `communication_delivery_intents!inner(channel)` embed was ambiguous (two FKs from
+  communication_message_events to that table) and 500'd — disambiguated by naming the delivery_intent_id FK
+  constraint explicitly; not catchable by the mocked-client unit tests. Gate met: svelte-check clean, Prettier
+  clean, 13/13 vitest green, browser-verified live (balance strip, empty states, submit + cancel a top-up).
+  **Stage 3 (contractor Settings: 3A–3D) is now fully done.**
 
 Stages 4–8 continue in `docs/communications-a2-implementation-plan.md`: shared send/worker, signed webhooks,
 Conversations SMS, Automation SMS, then reconciliation and live launch proof.
+
+## Stage 4 parts (sending engine; Jafar approved 2026-09-15)
+
+Use Jobber/HighLevel's familiar contractor workflow and Twilio's documented safety patterns. Stage 4 remains dark:
+no contractor send UI or live traffic until Stage 5 webhooks and a country launch gate pass.
+
+- **4A Consent-aware enqueue command — DONE, verified; both commits UNCOMMITTED (entangled tree, Jafar commits).**
+  - **4A-i Consent proof foundation — DONE, verified (33 pgTAP asserts pass), applied to dev DB; files UNCOMMITTED.**
+    Subject-scoped (service / work_updates / billing_updates), exact-number proof; owner/admin-only external proof
+    (customer_sms / web_form / signed_agreement; verbal refused); newer opt-out is global and beats older opt-in;
+    compute-on-read `communication_sms_consent_status(org,method,subject)`. Stage 1 global consent projection dropped.
+    Files: `supabase/migrations/20260919100000_communications_sms_consent_subject_scoped_proof.sql` + matching test.
+  - **4A-ii Atomic enqueue command — DONE 2026-09-15, verified (37/37 pgTAP), applied to dev DB; files UNCOMMITTED.**
+    `communication_sms_enqueue_operational(...)` freezes recipient/sender/body/segments/rate/logical-send with the
+    credit reservation + message snapshot + outbox row in one transaction; rechecks consent (exact number + subject),
+    destination, readiness/holds, balance (promotional credit first, atomic reservation), and schedules `available_at`
+    for a platform-configurable quiet-hours window; idempotent by (org, logical_send_key), changed payload refused.
+    Helpers: `communication_sms_estimate_segments`, `communication_sms_quiet_hours_available_at`/`_set_quiet_hours_
+    policy` (+ `communication_sms_quiet_hours_policy` singleton). Reservation gained `reserved_promotional_minor`/
+    `reserved_purchased_minor`; delivery-intent payload check made channel-correct (SMS body lives only in snapshot).
+    Files: `supabase/migrations/20260919110000_communications_sms_consent_aware_enqueue_command.sql` + matching test
+    (fixed a never-run test bug: permission assertion used pgTAP `throws_ok(sql, errcode, description)`, whose 3-arg
+    form treats arg 3 as the expected message — corrected to the 4-arg form with NULL errmsg to check SQLSTATE only).
+- **4B Bounded Twilio worker — DONE 2026-09-15, verified, applied to dev DB; files UNCOMMITTED (entangled tree).**
+  SMS claim/finalize/quarantine mirroring the email spine + a Twilio Messages submission adapter + the bounded SMS
+  worker (separate lease `communications-sms-outbox`, reuses generic lease/wake-ledger). Claim rechecks live gates
+  (recipient still active, global opt-out = STOP race, sender/registration readiness, outbound holds, quiet hours,
+  reservation still held), records the `started` attempt atomically. Finalize: submitted keeps the reservation
+  (settlement is Stage 8), cancelled releases it, submission_unknown holds it + opens a reconciliation item; lost
+  responses idempotent by finalized_claim_token. Email quarantine scoped to `channel='email'` so it no longer eats
+  SMS rows. Adapter classifies 2xx→submitted, 429/5xx→retry, other 4xx→cancelled, network/no-SID→submission_unknown,
+  one call (no hidden retries); credential-resolution failure = safe retry. Gate met: 19/19 vitest (adapter + worker:
+  idle, submit+finalize under one lease, each outcome without a 2nd send, credential-unavailable→retry, quarantine-
+  once drain, lease already_running/deadline/ledger-error), svelte-check 0/3436, and a rolled-back dev-DB integration
+  proof (finalize money math A–C, email/SMS quarantine channel isolation D–E, idempotent replay F, foreign lease G).
+  Files: `supabase/migrations/20260919120000_communications_sms_bounded_worker.sql`, `src/lib/server/communications/
+  twilio.ts` (added `submitTwilioSms`), `sms-worker.ts` + `sms-worker.spec.ts` + `twilio-sms-submit.spec.ts`.
+- **4C Wake and basic owner health — Planned; depends on 4B (done) → dependency-ready.** Separately authenticated SMS
+  wake route + cron dispatch + wake-on-insert trigger for `channel='sms'`, and a lean SMS worker health read in the
+  Jafar Communications control room; no new dashboard. NOTE for 4C: `get_communication_email_worker_health()` counts
+  `communication_outbox_events` with NO channel filter (due/processing/submission_unknown) — 4C must scope email
+  health to `channel='email'` and add the SMS equivalent, or the two channels cross-count.
+
+Full approved behavior, exclusions and gates: `docs/communications-a2-implementation-plan.md` §4.
 
 ## Build principle (Jafar, durable 2026-08-30)
 
@@ -224,10 +273,11 @@ pattern.
 | R2 | Instant send + optimistic UI | Done — live-verified 2026-08-30 | R1 (done) | MET: outbound dispatches immediately through the durable outbox wake trigger; cron remains the retry safety net |
 | R3 | Full status ladder / receipts | Not scoped | R2 | Sent→delivered→read/opened indicators consistent across channels (email now, SMS/chat later), GHL-style |
 
-## Open product questions
+## Marketing ownership pointer
 
-- Q6 What is a marketing campaign for? Recommended: seasonal reminders and win-backs, selected by job history.
-- Q7 Who may bulk-send? Recommended: owner and admin only.
+Marketing purpose, access, workflow, UI, safe delivery, reporting, later Reputation, and deferred growth features
+are settled in `docs/marketing-product-blueprint.md` and owned by `marketing-growth`. Do not re-open them from
+this roadmap unless that campaign explicitly changes the shared Communications contract.
 
 ## Known external latency
 

@@ -1036,16 +1036,16 @@ export async function deleteInvoice(
 	return readOrThrow<DeleteInvoiceResult>(response, 'That invoice could not be deleted.');
 }
 
-// --- Lifecycle: void / bad debt / mark received (Part 7b) ------------------------------------------------
+// --- Lifecycle: void / bad debt / historical closure correction ------------------------------------------
 
-// One of the five close/reopen transitions on an issued bill. Each maps to a command re-checked and
+// One of the supported close/correction transitions on an issued bill. Each maps to a command re-checked and
 // re-guarded in the database; the browser only says which one and carries the reason. `void` picks one of
-// four internal reasons plus an optional note, `write_off` an optional note, the rest a required short reason.
+// four internal reasons plus an optional note, `write_off` an optional note, and corrections require a reason.
+// Reopen exists only to correct historical status-only closures; creating another such closure is retired.
 export type InvoiceLifecycleAction =
 	| { action: 'void'; reason: InvoiceVoidReason; note: string | null }
 	| { action: 'write_off'; note: string | null }
 	| { action: 'restore_write_off'; reason: string }
-	| { action: 'mark_received'; reason: string }
 	| { action: 'reopen'; reason: string };
 
 export async function runInvoiceLifecycleAction(

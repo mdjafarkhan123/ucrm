@@ -1,39 +1,45 @@
 # Communications Activation: Current Checkpoint
 
 ## Goal
-Make Communications deliver email, SMS, then marketing through a GHL-style unified inbox. Email is live;
-SMS Stages 1/2A/2B/2C and contractor Stages 3A/3B/3C are all complete.
+Make Communications deliver email and SMS through a GHL-style unified inbox and provide safe delivery channels
+to dependent products such as Marketing. Email is live; SMS Stages 1–3 are complete. Stage 4 is in progress and
+stays dark (no send UI, no live traffic) until Stage 5 webhooks + a country launch gate pass.
 
 ## Active part
-Stage 3C is DONE and committed (48ccd7c). Next dependency-ready part is **3D SMS usage** (balance, top-up
-requests, lean health and ledger using existing Stage 2C money truth).
+Stage 4A and 4B are DONE and verified. **Next dependency-ready part: 4C (SMS wake + basic owner health).**
 
-## What just finished (3C-3, committed 48ccd7c)
-Added Phone numbers, Compliance & sender info, and Holds/opt-outs sections to
-`src/routes/(app)/settings/communications/sms/+page.svelte`, backed by the 3C-2 endpoints, plus new client lib
-`src/lib/communications/sms-settings.ts` (types + fetchers, mirrors `sms-registration.ts`). Numbers: list,
-inline rename, make-default (disabled unless ready + SMS-capable); release/replacement have no backend yet, so
-they show as a "contact Jafar" notice, not a fake button. Compliance: two toggles + custom wording + 1–60 day
-interval with explicit Save. Holds: opt-out count + active holds list, read-only. Verified: svelte-check
-0/3421, Prettier clean, 20/20 relevant vitest green, browser-verified live on dev (rename + compliance save
-round-tripped with toasts, no console errors). Committed SMS-only (12 files: 3C-1 migration + pgTAP, 3C-2's 6
-API files, 3C-3's page + client lib, the product blueprint doc) — `database.types.ts` deliberately left out,
-matching how 3A/3B shipped; it still lags several other in-flight campaigns' schema changes on this branch and
-needs its own regeneration pass, not a partial one.
+## 4B status (done, verified, NOT committed)
+Implemented, applied to dev DB, green. Files on disk, UNCOMMITTED (tree entangled with other campaigns — Jafar
+commits in batches):
+- `supabase/migrations/20260919120000_communications_sms_bounded_worker.sql` — SMS claim/finalize/quarantine +
+  release helper; scopes the email quarantine to `channel='email'`. Applied via MCP `apply_migration` (it stamps
+  its own history version; disk keeps the future-dated planning filename). Same for 4A's two migrations.
+- `src/lib/server/communications/twilio.ts` — added `submitTwilioSms` (Messages adapter, one call, no retries).
+- `src/lib/server/communications/sms-worker.ts` + `sms-worker.spec.ts` + `twilio-sms-submit.spec.ts`.
+Verified: 19/19 vitest, svelte-check 0/3436, and a rolled-back dev-DB integration proof (finalize money math,
+email/SMS quarantine channel isolation, idempotent replay, foreign-lease rejection all OK).
 
 ## Exact next action
-Start 3D SMS usage: data → API → UI split like 2C/3C, reusing Stage 2C's money/ledger tables.
-
-## Uncommitted / unapplied
-Nothing for this campaign. (Other campaigns still have their own uncommitted work on this branch, including
-`database.types.ts` — not this campaign's to resolve.)
+Start **4C: SMS wake and basic owner health** (`docs/communications-a2-implementation-plan.md` §4C). Mirror the
+email autodrain (`20260829030837_communications_email_autodrain_activation.sql`) and its wake-on-insert trigger
+(`20260830043551_...`): a separately authenticated `/api/internal/communications/sms-worker` route calling
+`runMonitoredSmsWake` (worker name `communications-sms-outbox`), a `dispatch_communication_sms_outbox_wake` cron
+function + inactive cron job, a wake-on-insert trigger for `channel='sms'`, and a `get_communication_sms_worker_
+health()` read surfaced in the Jafar Communications control room. **Must fix while here:** scope the existing
+`get_communication_email_worker_health()` outbox counts to `channel='email'` (today it counts SMS rows too) and
+give SMS its own counts. Load `supabase-postgres-best-practices` before the migration. Stage 4 stays dark.
+(Optional first: ask Jafar whether to commit 4A+4B before 4C.)
 
 ## Constraint
-A2P 10DLC cannot be completed for Jafar's test org; nothing actually sends yet. Provider-owned actions (buy/
-release a number, carrier submission) stay Jafar's, never direct contractor mutations.
+A2P 10DLC cannot be completed for Jafar's test org; nothing actually sends. Provider-owned actions stay Jafar's.
+The 4B gate needs no live provider call, and 4C's wake stays inactive (cron created but not scheduled) until the
+Stage 5 + launch gate.
 
-## Essential pointers
-- Product UI: `docs/communications-sms-product-ui-blueprint.md` section 4 (SMS usage) for 3D.
-- API template: `src/routes/api/settings/communications/sms/registrations/+server.ts` and the 3C-2 routes.
+## Key reuse pointers (for 4C)
+- Generic worker plumbing already exists and is worker-name-keyed: `acquire/release_communication_worker_lease`,
+  `record_communication_worker_wake_dispatch/_result`, private `communication_worker_wake_ledger` (20260829030837).
+- SMS worker entry point: `runMonitoredSmsWake` in `src/lib/server/communications/sms-worker.ts`.
+- Worker route + auth pattern to mirror: `src/routes/api/internal/communications/email-worker/+server.ts`
+  (Bearer `COMMUNICATIONS_WORKER_SECRET`, timing-safe compare, `X-Wake-Correlation-Id`).
 
 Resume: `read memory and continue — communications-activation`.

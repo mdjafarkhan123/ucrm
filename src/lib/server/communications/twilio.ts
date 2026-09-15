@@ -144,6 +144,138 @@ export function buildRestrictedKeyMessagingPolicy(): RestrictedKeyPolicy {
 	return { allow: RESTRICTED_KEY_MESSAGING_CAPABILITIES };
 }
 
+// -----------------------------------------------------------------------------------------------------------------
+// Runtime SMS submission (A2 Stage 4B). The single call the bounded SMS worker makes per claim: one POST to the
+// subaccount's Messages endpoint, authenticated with that subaccount's least-privilege Restricted API key. There
+// are no hidden retries -- one HTTP request, one recorded outcome -- because a database-owned outbox, not the
+// client, owns retry timing. The frozen sender number and the organization's Messaging Service are both supplied
+// so the service governs compliance and status callbacks while the specific chosen number is the sender.
+//
+// The outcome vocabulary matches the finalize command exactly:
+//   - submitted           Twilio accepted the message (2xx with a Message SID). Delivery is later, via webhooks.
+//   - retry               a PROVEN pre-submission transient failure (429 rate limit, 5xx). The message was not
+//                         accepted, so re-sending later is safe.
+//   - cancelled           a definite rejection (a 4xx other than 429, e.g. an invalid number or an opted-out
+//                         recipient). Re-sending would fail the same way; the held funds are released.
+//   - submission_unknown  the outcome is genuinely unknown (network failure or timeout after the request left
+//                         UCRM, or a 2xx without a Message SID). Twilio may have accepted it, so it is quarantined
+//                         for reconciliation and never resent.
+
+const SMS_SEND_TIMEOUT_MS = 10_000;
+const MESSAGE_SID = /^(SM|MM)[0-9A-Fa-f]{32}$/;
+
+export type TwilioSmsSubmissionOutcome = 'retry' | 'cancelled' | 'submission_unknown';
+
+export class TwilioSmsSubmissionError extends Error {
+	constructor(
+		message: string,
+		public readonly outcome: TwilioSmsSubmissionOutcome,
+		public readonly code: string,
+		// Twilio's own numeric error code (e.g. 21610 opted-out, 21211 invalid To) when it returned one, for
+		// correlation and reconciliation. Never the response body itself -- it can echo request content.
+		public readonly providerCode: string | null = null
+	) {
+		super(message);
+		this.name = 'TwilioSmsSubmissionError';
+	}
+}
+
+export type SubmitTwilioSmsInput = {
+	subaccountSid: string;
+	messagingServiceSid: string;
+	apiKeySid: string;
+	apiKeySecret: string;
+	from: string;
+	to: string;
+	body: string;
+	// The frozen logical-send identity. Passed to Twilio as an idempotency-style tag for correlation only; the
+	// database outbox is the real exactly-once boundary.
+	deliveryIntentId: string;
+};
+
+/**
+ * Submit one SMS to Twilio. Resolves with the accepted Message SID, or throws a TwilioSmsSubmissionError whose
+ * `outcome` tells the worker exactly how to finalize the claim. Makes exactly one request; never retries.
+ */
+export async function submitTwilioSms(input: SubmitTwilioSmsInput): Promise<{ providerMessageId: string }> {
+	const url = new URL(
+		`/2010-04-01/Accounts/${input.subaccountSid}/Messages.json`,
+		TWILIO_API_BASE
+	);
+	// API-key auth is Basic with the key SID as username and its secret as password, scoped to the subaccount by
+	// the Account SID in the path.
+	const auth = basicAuthHeader(input.apiKeySid, input.apiKeySecret);
+
+	let response: Response;
+	try {
+		response = await fetch(url, {
+			method: 'POST',
+			headers: {
+				accept: 'application/json',
+				authorization: auth,
+				'content-type': 'application/x-www-form-urlencoded'
+			},
+			body: new URLSearchParams({
+				To: input.to,
+				From: input.from,
+				MessagingServiceSid: input.messagingServiceSid,
+				Body: input.body
+			}).toString(),
+			signal: AbortSignal.timeout(SMS_SEND_TIMEOUT_MS)
+		}).catch(() => {
+			throw new TwilioSmsSubmissionError(
+				'Twilio did not return a submission outcome.',
+				'submission_unknown',
+				'twilio_network_unknown'
+			);
+		});
+	} catch (error) {
+		if (error instanceof TwilioSmsSubmissionError) throw error;
+		throw new TwilioSmsSubmissionError(
+			'Twilio did not return a submission outcome.',
+			'submission_unknown',
+			'twilio_network_unknown'
+		);
+	}
+
+	let body: unknown = null;
+	const text = await response.text().catch(() => '');
+	if (text) {
+		try {
+			body = JSON.parse(text);
+		} catch {
+			body = null;
+		}
+	}
+
+	if (!response.ok) {
+		const providerCode =
+			body && typeof body === 'object' && 'code' in body && typeof (body as { code: unknown }).code === 'number'
+				? String((body as { code: number }).code)
+				: null;
+		// 429 (rate limit) and 5xx are proven pre-submission transients; every other 4xx is a definite rejection.
+		const retryable = response.status === 429 || response.status >= 500;
+		throw new TwilioSmsSubmissionError(
+			`Twilio rejected the message with status ${response.status}.`,
+			retryable ? 'retry' : 'cancelled',
+			`twilio_http_${response.status}`,
+			providerCode
+		);
+	}
+
+	const providerMessageId = readString(body, 'sid');
+	if (!providerMessageId || !MESSAGE_SID.test(providerMessageId)) {
+		// A 2xx without a usable Message SID: Twilio may have accepted the message but we cannot correlate it, so
+		// the safe outcome is unknown (hold + reconcile), never a blind resend.
+		throw new TwilioSmsSubmissionError(
+			'Twilio accepted the message without returning a usable identifier.',
+			'submission_unknown',
+			'twilio_missing_message_sid'
+		);
+	}
+	return { providerMessageId };
+}
+
 const platformEnvSchema = z.object({
 	TWILIO_ACCOUNT_SID: z.string().trim().regex(SUBACCOUNT_SID),
 	// The master Account Auth Token. Required, and used only for the two operations that must read back a

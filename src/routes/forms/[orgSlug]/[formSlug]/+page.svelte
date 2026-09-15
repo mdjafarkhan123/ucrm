@@ -68,6 +68,15 @@
 	let topLevelPhotos = $state<PhotoSlot[]>([]);
 	let questionPhotos = $state<Record<string, PhotoSlot[]>>({});
 
+	function setTextAnswer(questionId: string, event: Event) {
+		answers[questionId] = (event.currentTarget as HTMLInputElement | HTMLTextAreaElement).value;
+	}
+
+	function setNumberAnswer(questionId: string, event: Event) {
+		const value = (event.currentTarget as HTMLInputElement).value;
+		answers[questionId] = value === '' ? '' : Number(value);
+	}
+
 	// --- Booking (assessment/job forms only) ----------------------------------------------------------
 
 	let selectedCatalogItemId = $state('');
@@ -578,20 +587,27 @@
 										{#if question.help}<span class="public-form__help">{question.help}</span>{/if}
 
 										{#if question.type === 'short_text'}
-											<Input id={`q-${question.id}`} label="" bind:value={answers[question.id]} />
+											<Input
+												id={`q-${question.id}`}
+												label=""
+												value={(answers[question.id] as string) ?? ''}
+												oninput={(event: Event) => setTextAnswer(question.id, event)}
+											/>
 										{:else if question.type === 'long_text'}
 											<Textarea
 												id={`q-${question.id}`}
 												label=""
 												rows={3}
-												bind:value={answers[question.id]}
+												value={(answers[question.id] as string) ?? ''}
+												oninput={(event: Event) => setTextAnswer(question.id, event)}
 											/>
 										{:else if question.type === 'number'}
 											<Input
 												id={`q-${question.id}`}
 												label=""
 												type="number"
-												bind:value={answers[question.id]}
+												value={(answers[question.id] as number | '') ?? ''}
+												oninput={(event: Event) => setNumberAnswer(question.id, event)}
 											/>
 										{:else if question.type === 'dropdown' || question.type === 'dropdown_multi'}
 											{#if question.type === 'dropdown'}

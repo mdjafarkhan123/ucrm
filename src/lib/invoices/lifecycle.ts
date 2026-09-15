@@ -1,4 +1,4 @@
-// Invoices Part 7b: the vocabulary for the five close/reopen transitions on an issued bill. The browser reads
+// Invoice lifecycle vocabulary shared by the supported close/correction transitions on an issued bill. The browser reads
 // these labels and the server Zod schema validates against the same list, the way statuses.ts already works.
 // The transitions themselves are commands built and pgTAP-tested in Part 3b; this file adds no behaviour.
 

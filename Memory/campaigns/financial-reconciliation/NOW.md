@@ -7,21 +7,23 @@ recorded Payment journey.
 
 ## Active part
 
-Part 2 — paused 2026-09-14 after the Invoice sales page and whole-range summary were remote-verified and
-committed as `81e3ebb`. No aging/client-balance work has started.
+Part 2 — active. Invoice sales, current Client aging/balances, immutable payment-event, payment-allocation,
+and deposit/available-credit readers are complete through their server APIs. The next ledger is tax.
 
 ## Exact next action
 
-Design and add the aging/client-balance reader from the approved receivables rules: effective Invoice balance,
-unused Client credit, and net Client balance, with explicit aging buckets, tenant/financial permissions, bounded
-pagination, and totals that do not depend on the visible page. Verify it on remote Supabase.
+Inspect the authoritative tax behavior in `docs/financial-reconciliation-contract.md`,
+`docs/invoice-behavior-contract.md`, and the Invoice calculation/frozen-document schemas, then implement the
+smallest tenant- and permission-safe tax reader required by the reconciliation contract. Follow the database
+skill gates before SQL.
 
 ## Blockers
 
-Opening balances wait for Part 2's financial readers and reconciliation proof. No blocker on the next reader.
+Opening balances wait for Part 2's financial readers and reconciliation proof. No implementation blocker.
 
 ## Essential pointers
 
 - `docs/financial-reconciliation-contract.md`
-- Invoice balance authority in `supabase/migrations/20260905100000_invoice_payments_ledger_and_balances.sql`
-- Invoice correction reads in `supabase/migrations/20260910180000_invoice_payment_correction_read_and_filter.sql`
+- `docs/invoice-behavior-contract.md` document money and tax behavior
+- `supabase/migrations/20260914011420_financial_invoice_sales_reader.sql`
+- Invoice calculation and frozen-document migrations located from current code

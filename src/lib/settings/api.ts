@@ -20,6 +20,7 @@ export type SettingsHome = {
 		checklists_manage: boolean;
 		forms_manage: boolean;
 		quotes_manage: boolean;
+		invoices_manage: boolean;
 		automations_view: boolean;
 	};
 	readiness: {
@@ -665,4 +666,125 @@ export function saveQuoteSignaturePolicy(body: {
 	require_customer_signature: boolean;
 }): Promise<QuoteSignaturePolicySaveResult | SettingsSaveConflict> {
 	return saveSection('/api/settings/quotes/signature-policy', body);
+}
+
+// Settings → Invoices (Contractor Settings Part 5A). Owner/administrator only, same convention as Taxes: no
+// separate view/edit split, since the whole destination is hidden from every other role.
+export type InvoicePaymentTerm = {
+	id: string;
+	name: string;
+	rule: 'on_receipt' | 'net_days' | 'month_end' | 'next_month_end';
+	net_days: number | null;
+	/** Built in: its name may be edited, but not its rule, and it cannot be removed. */
+	is_protected: boolean;
+};
+
+export type InvoiceDefaults = {
+	residential_term_id: string | null;
+	commercial_term_id: string | null;
+	revision: number;
+	last_editor: SettingsEditor;
+};
+
+export type SettingsInvoices = {
+	terms: InvoicePaymentTerm[];
+	defaults: InvoiceDefaults;
+};
+
+export const settingsInvoicesKey = ['settings', 'invoices'] as const;
+
+export async function fetchSettingsInvoices(): Promise<SettingsInvoices> {
+	const response = await fetch('/api/settings/invoices');
+	if (!response.ok) {
+		const error = new Error('Invoice settings could not be loaded.') as SettingsReadError;
+		error.status = response.status;
+		throw error;
+	}
+	return response.json();
+}
+
+// Mirrors taxRequest above: these commands refuse by throwing, carrying the same {reason, fieldErrors} shape.
+export type InvoiceTermWriteError = Error & {
+	fieldErrors?: Record<string, string>;
+	reason?: string;
+};
+
+async function invoiceTermRequest<T>(
+	url: string,
+	method: string,
+	body: unknown,
+	fallback: string
+): Promise<T> {
+	const response = await fetch(url, {
+		method,
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(body)
+	});
+	if (!response.ok) {
+		const result = await response
+			.json()
+			.catch(
+				() => ({}) as { error?: string; field_errors?: Record<string, string>; reason?: string }
+			);
+		const error = new Error(result.error ?? fallback) as InvoiceTermWriteError;
+		error.fieldErrors = result.field_errors ?? {};
+		error.reason = result.reason;
+		throw error;
+	}
+	return response.json();
+}
+
+export type InvoicePaymentTermSaveBody = {
+	expected_revision: number;
+	name: string;
+	rule: InvoicePaymentTerm['rule'];
+	net_days: number | null;
+};
+
+export function createInvoicePaymentTerm(
+	body: InvoicePaymentTermSaveBody
+): Promise<{ term_id: string; invoice_settings_revision: number }> {
+	return invoiceTermRequest(
+		'/api/settings/invoices',
+		'POST',
+		body,
+		'That payment term could not be saved.'
+	);
+}
+
+export function updateInvoicePaymentTerm(
+	id: string,
+	body: InvoicePaymentTermSaveBody
+): Promise<{ term_id: string; invoice_settings_revision: number }> {
+	return invoiceTermRequest(
+		`/api/settings/invoices/terms/${id}`,
+		'PATCH',
+		body,
+		'That payment term could not be saved.'
+	);
+}
+
+export function removeInvoicePaymentTerm(
+	id: string,
+	body: { expected_revision: number }
+): Promise<{ term_id: string; invoice_settings_revision: number }> {
+	return invoiceTermRequest(
+		`/api/settings/invoices/terms/${id}`,
+		'DELETE',
+		body,
+		'That payment term could not be removed.'
+	);
+}
+
+export function setInvoiceDefaults(body: {
+	expected_revision: number;
+	residential_term_id: string;
+	commercial_term_id: string;
+}): Promise<{ invoice_settings_revision: number }> {
+	return invoiceTermRequest(
+		'/api/settings/invoices/defaults',
+		'PATCH',
+		body,
+		'Those defaults could not be saved.'
+	);
 }

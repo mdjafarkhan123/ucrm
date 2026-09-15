@@ -10,6 +10,7 @@ import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 import { createPresignedUploadUrl, deleteObject, headObject } from '$lib/server/storage/r2';
 import { forgetOrganizationTimezone } from '$lib/server/requests/timezone';
+import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
 vi.mock('$lib/server/access/permission', async () => {
 	const actual = await vi.importActual<typeof import('$lib/server/access/permission')>(
@@ -39,6 +40,8 @@ vi.mock('$lib/server/storage/r2', () => ({
 	headObject: vi.fn(),
 	deleteObject: vi.fn()
 }));
+
+vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
 
 const mockedRequire = vi.mocked(requireOrganizationPermission);
 const mockedRateLimit = vi.mocked(checkRateLimit);
@@ -412,6 +415,34 @@ describe('the settings home', () => {
 		).json();
 
 		expect(body.readiness.business_profile).toEqual({ complete: true, missing: [] });
+	});
+
+	it('never asks for SMS readiness, and shows no Phone & SMS badge, without the Communications permission', async () => {
+		mockedRequire.mockResolvedValue(context({ 'settings.business.view': true }));
+		const body = await (await getSettingsHome(readEvent())).json();
+
+		expect(body.readiness.sms_registration).toBeNull();
+		expect(getOwnerSupabaseClient).not.toHaveBeenCalled();
+	});
+
+	it('reports the plain SMS readiness state once granted the Communications permission', async () => {
+		mockedRequire.mockResolvedValue(
+			context({ 'settings.business.view': true, 'conversations.manage_connections': true })
+		);
+		const rpc = vi.fn().mockResolvedValue({ data: { readiness_state: 'ready' }, error: null });
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue({ rpc } as never);
+
+		const body = await (await getSettingsHome(readEvent())).json();
+
+		expect(body.readiness.sms_registration).toEqual({ readiness_state: 'ready' });
+		expect(rpc).toHaveBeenCalledWith(
+			'communication_sms_readiness',
+			expect.objectContaining({
+				p_organization_id: ORGANIZATION_ID,
+				p_country_code: 'US',
+				p_sender_type: 'long_code'
+			})
+		);
 	});
 });
 

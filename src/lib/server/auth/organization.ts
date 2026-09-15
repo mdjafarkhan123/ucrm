@@ -1,14 +1,15 @@
 import type { RequestEvent } from '@sveltejs/kit';
+import { isContractorRole, type ContractorRole } from '$lib/server/access/contractor';
 
 export type OrganizationContext = {
 	user: NonNullable<Awaited<ReturnType<RequestEvent['locals']['getUser']>>>;
-	organization: { id: string; name: string; slug: string; role: string };
+	organization: { id: string; name: string; slug: string; role: ContractorRole };
 };
 
 export async function getOrganizationContext(
 	event: RequestEvent,
 	user?: OrganizationContext['user']
-) {
+): Promise<OrganizationContext | null> {
 	const resolvedUser = user ?? (await event.locals.getUser());
 	if (!resolvedUser) return null;
 
@@ -30,6 +31,7 @@ export async function getOrganizationContext(
 		.maybeSingle();
 
 	if (error || !data || !data.organizations) return null;
+	if (!isContractorRole(data.role)) return null;
 
 	const organization = Array.isArray(data.organizations)
 		? data.organizations[0]

@@ -74,7 +74,6 @@
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import banIcon from '@tabler/icons/outline/ban.svg?raw';
 	import cashOffIcon from '@tabler/icons/outline/cash-off.svg?raw';
-	import clipboardCheckIcon from '@tabler/icons/outline/clipboard-check.svg?raw';
 	import undoIcon from '@tabler/icons/outline/arrow-back-up.svg?raw';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
 
@@ -308,9 +307,9 @@
 		return undefined;
 	});
 
-	// Part 7b — the close/reopen transitions, each gated on the bill's live status plus its own permission. An
-	// open issued bill (awaiting payment or past due) can be voided, written off as bad debt, or closed by
-	// hand; the two undo moves show only from the state they undo. Every command re-checks all of this and
+	// The supported close/correction transitions, each gated on the bill's live status plus its own permission.
+	// An open issued bill can be voided or written off as bad debt; correction moves show only from the state
+	// they undo. Historical status-only closures may be reopened but no new ones can be created. Every command re-checks all of this and
 	// void additionally refuses while ordinary payments are still on the bill (D2) — that refusal comes back
 	// into the dialog.
 	const isOpenIssued = $derived(
@@ -334,7 +333,6 @@
 	const canRestoreWriteOff = $derived(
 		Boolean(saved?.can_bad_debt) && saved?.invoice.derived_status === 'bad_debt'
 	);
-	const canMarkReceived = $derived(Boolean(saved?.can_record_payment) && isOpenIssued);
 	const canReopen = $derived(
 		Boolean(saved?.can_record_payment) && Boolean(saved?.invoice.marked_received_at)
 	);
@@ -369,12 +367,6 @@
 			onSelect: () => openCustomerView(true)
 		});
 
-		if (canMarkReceived)
-			items.push({
-				label: 'Mark as received',
-				icon: clipboardCheckIcon,
-				onSelect: () => (lifecycleMode = 'mark_received')
-			});
 		if (canReopen)
 			items.push({
 				label: 'Reopen invoice',
@@ -616,7 +608,7 @@
 		}
 	}
 
-	// --- Lifecycle: void / bad debt / mark received (Part 7b) -------------------------------------------
+	// --- Lifecycle: void / bad debt / historical closure correction --------------------------------------
 	// The dialog owns the fields and the retry fingerprint; the page owns the write and what follows. Which
 	// menu item was pressed decides the mode and, after it lands, the toast.
 	let lifecycleMode = $state<InvoiceLifecycleAction['action'] | null>(null);
@@ -625,7 +617,6 @@
 		void: 'Invoice voided',
 		write_off: 'Balance written off',
 		restore_write_off: 'Write-off undone',
-		mark_received: 'Invoice marked as received',
 		reopen: 'Invoice reopened'
 	};
 

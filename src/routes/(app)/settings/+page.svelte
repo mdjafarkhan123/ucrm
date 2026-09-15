@@ -17,6 +17,7 @@
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
 	import layoutKanbanIcon from '@tabler/icons/outline/layout-kanban.svg?raw';
 	import receiptTaxIcon from '@tabler/icons/outline/receipt-tax.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import listIcon from '@tabler/icons/outline/list-details.svg?raw';
 	import checklistIcon from '@tabler/icons/outline/checklist.svg?raw';
 	import formsIcon from '@tabler/icons/outline/forms.svg?raw';
@@ -153,6 +154,14 @@
 								icon={fileTextIcon}
 								title="Quote Settings"
 								description="Default terms, your representative block, target margin, and signature policy."
+							/>
+						{/if}
+						{#if home.permissions.invoices_manage}
+							<SettingsDestinationCard
+								href={resolve('/(app)/settings/invoices')}
+								icon={receiptIcon}
+								title="Invoice Settings"
+								description="Payment terms and which one applies by default."
 							/>
 						{/if}
 						{#if home.permissions.forms_manage}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import GettingStartedCard from '$lib/components/dashboard/GettingStartedCard.svelte';
 
 	const queryClient = useQueryClient();
 
@@ -51,7 +52,10 @@
 	}));
 	const mutation = createMutation<unknown, Error, MutationInput>(() => ({
 		mutationFn: submitMutation,
-		onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['crm', 'overview'] })
+		onSuccess: () => {
+			void queryClient.invalidateQueries({ queryKey: ['crm', 'overview'] });
+			void queryClient.invalidateQueries({ queryKey: ['onboarding', 'checklist'] });
+		}
 	}));
 
 	let formMode = $state<'customer' | 'property' | 'request' | null>(null);
@@ -197,6 +201,9 @@
 	<div class="workspace">
 		<main class="content">
 			<PageHeader title="Dashboard" description="Your workspace at a glance." />
+			{#if data.organization.id}
+				<GettingStartedCard onAddClient={() => openForm('customer')} />
+			{/if}
 			{#if !data.organization.id}
 				<section class="notice">
 					<strong>Your account is signed in, but it is not connected to an organization yet.</strong
@@ -538,18 +545,6 @@
 		justify-content: space-between;
 		gap: 24px;
 		margin-bottom: 32px;
-	}
-	h1 {
-		max-width: 650px;
-		margin-bottom: 10px;
-		color: var(--color-heading);
-		font-size: clamp(30px, 5vw, 48px);
-		line-height: 1.08;
-		letter-spacing: -0.03em;
-	}
-	.page-intro p {
-		color: var(--color-text--secondary);
-		font-size: 16px;
 	}
 	.page-actions {
 		display: flex;

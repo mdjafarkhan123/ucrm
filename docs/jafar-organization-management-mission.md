@@ -295,6 +295,28 @@ before stale work resumes.
 - Notifications Only permits approved transactional messages and surfaces ordinary replies read-only without enabling conversation.
 - Two-way SMS enables permitted unified-inbox conversations; every mode remains gated by consent, registration, balance, rate limits, and emergency controls.
 
+### SMS owner surfaces
+
+Use the existing organization areas rather than adding a separate SMS administration product:
+
+- **Integrations** shows contractor registration answers/attestation, safe provider/subaccount reference,
+  assigned numbers, use-case/readiness, last provider check, effective mode, restriction or pause, and the next
+  action. Provisioning, submission/resubmission and reasoned number lifecycle actions remain here.
+- **Commercial access** shows effective mode/allowance/cap, Purchased/Promotional/Reserved/Outstanding balances,
+  retail-rate version and renewal exposure. Top-up confirmation/rejection records the amount actually received;
+  adjustments/refunds append history and never directly edit balance.
+- **History and recovery** shows registration attempts, provider outcomes, number lifecycle, top-ups, credits,
+  rates/limits, pauses, failures and recovery without secrets or unnecessary message content.
+
+The existing Operations/Communications health surface owns the parent provider balance and protected reserve,
+contractor purchased-credit liability, normal outbound state, oldest queued work, callback/reconciliation health,
+failure/opt-out spikes, spend/segment caps, unusual-usage alerts, and organizations needing attention. Global and
+organization outbound pauses are separate reasoned actions. Future-dated retail rates affect new sends only;
+historical charges keep their original rate. Provider cost and retail margin are Platform Owner-only.
+
+A broad provider-subaccount suspension is emergency containment, not an ordinary balance, package or SMS switch.
+Recovery reruns current checks and never blindly resends uncertain or stale messages.
+
 ### Email
 
 - New organizations may use a verified platform-domain fallback for essential transactional email.

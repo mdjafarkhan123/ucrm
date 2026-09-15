@@ -7,19 +7,18 @@ Step 2, the second unstarted gate before the first paying customer.
 
 ## Where things stand
 
-**Parts 1 (client import), 2 (client export), and 3 (Price Book import/export) are all COMPLETE, COMMITTED,
-and verified** (commit `910c1e1` closes Part 3: a real browser run confirmed upload→map→review→commit→
-idempotent re-import→export all work, cost data included, after fixing a Part 7 B2 grant-lockdown bug).
+**Parts 1–3 and 5 are all DONE, COMMITTED-PENDING, and browser-verified.** Only Part 4 (opening balances)
+remains, and it is blocked. Campaign is **Paused** — no owning campaign for the launch financial-reconciliation
+audit (Step 3) exists yet, so there is nothing dependency-ready to build here.
 
 ## Next action
 
-Part 4 (opening balances) stays blocked on the launch financial-reconciliation audit (Step 3).
-
-Part 5 (assisted onboarding checklist + internal runbook) is now dependency-ready — Parts 1–3 it needs are
-done — but its scope is not yet defined. Next session: scope Part 5 with Jafar before building anything.
+None. Part 4 stays blocked on the launch financial-reconciliation audit (Step 3 in
+`docs/crm-launch-implementation-roadmap.md`) — do not start it until that audit's owning campaign closes.
 
 ## Blockers
 
-None for Part 5's scoping conversation. Part 4 blocked as above.
+Part 4 blocked as above. Nothing else to scope or build in this campaign right now.
 
-Resume command: `continue onboarding and data portability`.
+Resume command: `continue onboarding and data portability` (will re-check whether the financial-reconciliation
+audit has closed before doing anything).

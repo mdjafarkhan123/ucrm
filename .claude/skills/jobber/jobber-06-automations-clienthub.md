@@ -180,6 +180,29 @@ Config lives in **`OnlineBookingConfiguration`** + `RequestSettings` (see `jobbe
 - **Branding once, applied everywhere:** logo/colors set in one Business Profile flow into Client Hub _and_
   booking/request forms. Single source of truth for branding — worth matching so contractors set it once.
 
+## 4. Marketing Suite live observation — 2026-09-15
+
+Observed live in Jafar's Jobber trial account. Read-only tour; nothing was created, saved, connected, sent, or
+published.
+
+- **Marketing is one contractor-friendly destination.** Its dashboard describes the outcome as getting found,
+  building trust, converting leads, and growing repeat business. Large task cards expose Marketing Plan, Email
+  Campaigns, Reviews, Job Showcase, Google Business Profile optimization, Social Posting, Website, and Referrals.
+- **The entry points are jobs-to-be-done, not technical tools.** Cards use plain actions such as “Send email
+  campaigns” and “Automate review requests,” explain the business result, and show a small completion-time hint
+  (roughly 2–10 minutes). Quick links expose the routinely used Marketing areas without requiring a settings tour.
+- **Campaigns are explicitly grounded in CRM truth.** The Email Campaigns introduction promises branded
+  templates, automated campaigns, targeting by client tags/job history/service, and reporting that connects
+  engagement to revenue. This reinforces the existing documented behavior: campaign audiences are derived from
+  Clients and work history rather than maintained as a separate marketing contact database.
+- **Trial limitation:** the account exposed the Email Campaigns introductory page rather than the working
+  campaign builder, so the exact create/edit controls were not observed in this tour. The dashboard and product
+  entry points were observed live; builder behavior still relies on the cited Jobber help-center evidence.
+
+**UCRM lesson:** use Jobber's outcome-led Marketing hub and contractor-specific audience language. Keep the
+front door small even if later capabilities are broad; do not expose a HighLevel-style toolbox of unrelated
+marketing utilities as the primary navigation.
+
 ---
 
 ### Help-center sources

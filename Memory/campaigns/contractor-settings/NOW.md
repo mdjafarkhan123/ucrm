@@ -6,28 +6,41 @@ Give contractors one permission-aware control room for business identity and fea
 
 ## Where things stand
 
-Part 4B-2c (booking builder screens) closed 2026-09-13 — code-complete, browser-verified on Raad LTD, and
-committed. Details live in ROADMAP.md's 4B-2c entry. That pass also found and fixed two real bugs along the
-way: a `create_form` regression that broke all new-form creation, and a missing app-side worker for the
-organization geocoding queue (Service area radius still won't populate until Schedule 7b wires a real
-provider, but the worker is ready for it).
+Part 4 closed 2026-09-12. Part 5A (Invoice & payment settings) closed 2026-09-13 — full browser pass on Raad
+LTD done as both owner and a non-owner test role, all 5 checks correct (see ROADMAP.md for detail). That pass
+found and fixed one real bug: `createInvoicePaymentTerm` (`src/lib/settings/api.ts`) posted to
+`/api/settings/invoices/terms`, a URL with no route — the real create route is `POST /api/settings/invoices`.
+Every "Add term" was silently 404ing before the fix.
 
 ## Next action
 
-Part 4C (public rendering and abuse boundary — share/embed, published-version reads, Turnstile, bounded
-uploads, validation, rate limits) is next; dependency (4B) is fully closed. Scope it with Jafar before
-building: read the 4C roadmap entry, confirm what's still assumed vs. decided, then propose the plan.
+Paused by Jafar 2026-09-13. He picked "Job fields & forms", but on inspection the only unbuilt piece is Job
+**custom fields** (checklists already ship end to end; job forms == checklists in Jobber). Custom fields is a
+real but "later / power-user" feature (proven cross-cutting pattern; approved shape = one extensible engine
+wired to Jobs only). Jafar has no launch pull toward it, so it is shelved as later, not built. No code written.
+
+Two open housekeeping items when Settings resumes:
+
+1. **Part 5A invoice files are still UNCOMMITTED** (untracked in git — `InvoiceDefaultsDialog.svelte`,
+   `InvoicePaymentTermDialog.svelte`, `settings/invoices/*`, `api/settings/invoices/*`, the two migrations,
+   the pgTAP test). Closed in Memory, not yet in Git. Commit before this work is lost.
+2. Remaining Settings work is all gated on other campaigns/features (rest of Part 5 needs its owning feature;
+   6F-2..6I need owning domains + approval; 6D-6/6E-2 need the VPS) or is one small Quotes-owned Part-1
+   frozen-branding check. Nothing here is dependency-ready to build alone right now.
+
+Focus moved to the crm-launch-readiness campaign this session (gap-list walkthrough).
+
+## Blockers
+
+Nothing broken. Every remaining Settings item waits on another feature, the VPS decision, or Quotes.
 
 ## Env notes
 
-- Dev server can crash blank after a restart with "Cannot read properties of undefined (reading 'call')" —
-  a mixed `?v=` dep-cache issue. Fix: `rm -rf node_modules/.vite` + hard reload (Ctrl+Shift+R).
-- Full `npm run check` OOMs — verify TS with a scratch tsconfig (`extends: "./tsconfig.json"`, includes
-  `.svelte-kit/ambient.d.ts` + `.svelte-kit/env.d.ts` + `.svelte-kit/non-ambient.d.ts` + `src/app.d.ts` +
-  each touched file's own `.svelte-kit/types/.../$types.d.ts`) — delete it when done, it's scratch-only.
-  Prettier can't glob `(app)` — pass full paths.
-- Two deliberate departures from Jobber (radius instead of drawn service area; fixed buffer instead of
-  real drive-time) are noted in `docs/PRODUCT.md` § 9 and `.claude/skills/jobber/jobber-02-requests-leads.md` § 5.
-- pgTAP tests run against the shared dev database, not an isolated instance — real orgs carry real data.
+- 4 pre-existing svelte-check errors unrelated to this work (see Part 4 history in ROADMAP.md).
+- Dev server can crash blank after restart — `rm -rf node_modules/.vite` + hard reload.
+- `npm run check` can OOM in this shell; use
+  `NODE_OPTIONS="--max-old-space-size=8192" npx svelte-check --tsconfig ./tsconfig.json` instead.
+- Dev server already running this session on `localhost:5173` — no Cloudflare tunnel needed for Chrome on
+  this machine, just navigate straight to localhost.
 
 Resume command: `continue contractor settings`.

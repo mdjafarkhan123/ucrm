@@ -207,6 +207,56 @@ export const taxDefaultSchema = z
 
 export type TaxDefaultInput = z.infer<typeof taxDefaultSchema>;
 
+// Invoice payment terms (Contractor Settings Part 5A). Unlike every other organization_settings counter,
+// invoice_settings_revision starts at 0, not 1 — a brand new organization's very first term save legitimately
+// names revision 0 — so this gets its own expected-revision bound instead of reusing `expectedRevision`.
+const expectedInvoiceRevision = z.number().int().min(0);
+
+const invoicePaymentTermName = z
+	.string()
+	.trim()
+	.min(2, 'A payment term needs a name between 2 and 60 characters.')
+	.max(60, 'A payment term needs a name between 2 and 60 characters.');
+
+// Matches the database's own rule check (`save_invoice_payment_term`) so a bad choice never reaches it.
+const invoicePaymentTermRule = z.enum(['on_receipt', 'net_days', 'month_end', 'next_month_end'], {
+	message: 'Choose how this term works out its due date.'
+});
+
+export const invoicePaymentTermSaveSchema = z
+	.object({
+		expected_revision: expectedInvoiceRevision,
+		name: invoicePaymentTermName,
+		rule: invoicePaymentTermRule,
+		net_days: z
+			.number()
+			.int('A net term needs a whole number of days.')
+			.min(1, 'A net term needs a day count between 1 and 365.')
+			.max(365, 'A net term needs a day count between 1 and 365.')
+			.nullish()
+			.transform((value) => value ?? null)
+	})
+	.refine((value) => value.rule !== 'net_days' || value.net_days !== null, {
+		path: ['net_days'],
+		message: 'Enter how many days after issue this term is due.'
+	});
+
+export type InvoicePaymentTermSaveInput = z.infer<typeof invoicePaymentTermSaveSchema>;
+
+export const invoicePaymentTermRemoveSchema = z.object({
+	expected_revision: expectedInvoiceRevision
+});
+
+export type InvoicePaymentTermRemoveInput = z.infer<typeof invoicePaymentTermRemoveSchema>;
+
+export const invoiceDefaultsSchema = z.object({
+	expected_revision: expectedInvoiceRevision,
+	residential_term_id: z.string().uuid('Choose a payment term.'),
+	commercial_term_id: z.string().uuid('Choose a payment term.')
+});
+
+export type InvoiceDefaultsInput = z.infer<typeof invoiceDefaultsSchema>;
+
 // Serving an uploaded image inline from our own origin is how a file becomes a way to run code on the
 // app's domain, so the logo is limited to formats a browser renders as a picture and nothing else.
 // SVG is deliberately absent: it is a document that can carry script.

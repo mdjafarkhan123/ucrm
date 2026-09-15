@@ -6,10 +6,9 @@
 	import type { InvoiceLifecycleAction, InvoiceWriteError } from '$lib/invoices/api';
 	import banIcon from '@tabler/icons/outline/ban.svg?raw';
 	import cashOffIcon from '@tabler/icons/outline/cash-off.svg?raw';
-	import clipboardCheckIcon from '@tabler/icons/outline/clipboard-check.svg?raw';
 	import undoIcon from '@tabler/icons/outline/arrow-back-up.svg?raw';
 
-	// One of the five close/reopen transitions on an issued bill (Part 7b), built on the same ConfirmDialog +
+	// One of the supported close/correction transitions on an issued bill, built on the same ConfirmDialog +
 	// Textarea shape the Quote lifecycle already uses. This dialog owns its fields, its retry fingerprint and
 	// the error line; the page owns the tenant write and what follows (invalidate, toast). The database
 	// re-checks every guard and hands back the sentence to show — including D2, where void refuses while
@@ -87,18 +86,6 @@
 			reasonRequired: true,
 			fieldLabel: 'Reason'
 		},
-		mark_received: {
-			icon: clipboardCheckIcon,
-			title: 'Mark this invoice as received?',
-			intro:
-				'This closes the bill as paid without recording any money — use it when payment was handled outside the app. The client account balance is unchanged.',
-			confirmLabel: 'Mark as received',
-			tone: 'default',
-			destructive: false,
-			pickVoidReason: false,
-			reasonRequired: true,
-			fieldLabel: 'Reason'
-		},
 		reopen: {
 			icon: undoIcon,
 			title: 'Reopen this invoice?',
@@ -147,8 +134,6 @@
 				return { action: 'write_off', note };
 			case 'restore_write_off':
 				return { action: 'restore_write_off', reason: text.trim() };
-			case 'mark_received':
-				return { action: 'mark_received', reason: text.trim() };
 			case 'reopen':
 				return { action: 'reopen', reason: text.trim() };
 		}

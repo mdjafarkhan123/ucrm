@@ -2,28 +2,30 @@
 
 ## Goal
 
-Define the honest sell-ready CRM promise, then sequence every remaining product and production gate without
-turning competitor breadth into unapproved scope.
+Complete the nine-part path to a controlled first launch, then widen access only from measured customer and
+production evidence.
 
 ## Current state
 
-- Parts 1–4 complete 2026-09-10: baseline, implementation audit, launch promise and final ordered roadmap are
-  recorded.
-- Jafar approved the narrow paid pilot and set the commercial priority: website Quote/Chat lead capture,
-  no-human-reply automation, missed-call text-back, one-click campaigns and Google review recovery.
-- Part 5 waits for the owning campaigns and separately approved production topology/cutover work.
-- The first owning campaign, `paid-launch-trust`, completed all 17 parts 2026-09-11 (its campaign folder is
-  closed and removed per the memory protocol; see this file's git history or `docs/` for durable findings).
+- Part 1 is complete.
+- Part 2 is complete except for opening balances, which wait for Part 3's approved financial rules.
+- Part 3 is active through the `financial-reconciliation` owning campaign.
+- Part 4 is now part of the controlled-first-launch promise.
+- Part 9 preparation may run beside Part 3, but infrastructure implementation still needs Jafar's separate
+  topology and migration approval.
+- Parts 5–7 follow the controlled first launch; Part 8 is chosen from evidence from those early customers.
 
 ## Exact next action
 
-Resume the final cross-domain audit only after the remaining owning campaigns and production topology/cutover
-work reach their completion gates.
+Open `Memory/campaigns/financial-reconciliation/NOW.md` and perform its exact next action. This is the owning
+sub-campaign for active launch Part 3. Jafar does not need to name or track the sub-campaign separately.
+
+When the active sub-campaign closes, return to this main campaign, read its roadmap, update the nine-part status,
+and select the next dependency-ready part automatically.
 
 ## Essential pointers
 
-- `docs/research/crm-production-feature-gap-audit-2026-09-10.md`
+- `Memory/campaigns/financial-reconciliation/NOW.md`
 - `docs/crm-launch-implementation-roadmap.md`
-- `Memory/campaigns/crm-launch-readiness/ROADMAP.md`
 
-Resume command: `continue the CRM launch-readiness campaign`.
+Jafar's only required resume command: `continue the CRM launch-readiness campaign`.

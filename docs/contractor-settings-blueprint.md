@@ -495,11 +495,21 @@ Quote or real Job action; Lost and terminal lifecycle rules remain protected. Se
 
 **What exists here when ready:**
 
-- Assigned phone numbers
-- Messaging registration status
-- Calling and texting availability
-- Business-wide SMS quiet hours
-- Blocked numbers
+- One plain readiness summary: Not included, Needs setup, Waiting for your information, Under review, Action
+  needed, Finishing setup, Ready, or Outbound paused. Registration, insufficient balance, a restriction, and a
+  platform/organization pause remain separately explained causes.
+- Assigned phone numbers with label, country/type, Voice/SMS/MMS capability, registered use case, readiness,
+  default/continuity role, and renewal warning.
+- Reviewed requests for a number, port, replacement, or release. Jafar performs provider-owned actions;
+  contractors do not directly purchase or destroy platform-managed numbers.
+- The organization's SMS mode up to its package/override maximum, business-wide SMS quiet hours and blocked
+  numbers or ordinary business holds. Legal STOP cannot be cleared here.
+- Contractor-supplied and attested registration information, provider outcome, safe required fixes, and last
+  checked time. Provider approval is never implied before the assigned number is genuinely ready.
+
+Only owners and administrators manage this page. Number replacement, porting or release previews affected
+conversations, scheduled messages, automations, recurring charges and continuity before confirmation; historical
+messages retain the number used at the time.
 
 ### SMS usage
 
@@ -507,11 +517,19 @@ Quote or real Job action; Lost and terminal lifecycle rules remain protected. Se
 
 **What exists here:**
 
-- Current balance
-- Approximate messages remaining
-- Included monthly amount and message rate
-- Sent, delivered, and failed totals
-- A history of credits, charges, refunds, and top-ups
+- Spendable balance, Purchased Credit, expiring Promotional Credit, Reserved Credit and Outstanding Communication
+  Usage shown separately.
+- Included allowance, published retail rates, recent use and an approximate domestic SMS count clearly labelled as
+  an estimate.
+- Low-balance and upcoming number/registration-renewal warnings.
+- Offsite Top-up Requests with Awaiting confirmation, Confirmed, Rejected and Cancelled history. A request creates
+  no credit until Jafar confirms the amount received; there is no A2 card storage or automatic recharge.
+- An immutable retail ledger of allowances, top-ups, reservations, charges, releases, adjustments and refunds.
+- Sent, Delivered, Failed, Received and Opt-out totals with date, business-number and Conversations/Automation
+  source filters. Failure details link back to the existing message rather than copying Conversations history.
+
+Contractors never see provider cost or platform margin. The first slice excludes forecasts, carrier benchmarking
+and a separate analytics suite.
 
 ### Quick replies
 

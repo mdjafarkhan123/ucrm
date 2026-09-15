@@ -273,6 +273,17 @@ Read queries: `client(id)`, `clients(filter)` (100 recently updated), `clientMet
   imported.** Imported rows are full clients (not leads). [[import clients]]
 - **Clients Report** and **Lead Management** exist as dedicated reporting surfaces. [[clients report]] [[lead management]]
 
+**Observed live 2026-09-13 (JKA LTD trial, import placement + step 1):** Import lives on the **Clients list
+page**, not in Settings. The list header's **More Actions** menu holds three sibling tools: **Import Clients**,
+**Export Clients**, **Merge Clients** — so import, export, and dedupe/merge are separate first-class actions,
+and a standalone "Merge duplicate clients into a single profile" promo card also sits on the list. **Import
+step 1** is an intro modal: a downloadable **sample file** to format the spreadsheet, the line "We'll match
+your client information to our format when you begin importing" (auto column-mapping), the **5,000-client
+limit** stated up front, a help-docs link, and Cancel / **Begin Import**. Begin Import opens a **full-screen
+wizard** (an embedded micro-app). Its later steps (upload → column mapping → preview → result) **did not render
+in the Claude-in-Chrome sandbox** — same embedded-surface limitation seen elsewhere in Jobber — so those
+screens are documented from the help center + universal import-wizard convention, not observed live.
+
 ---
 
 ### Help-center sources

@@ -7,7 +7,6 @@ node_modules
 .wrangler
 /.svelte-kit
 /build
-AGENTS.md
 
 # OS
 .DS_Store
@@ -30,3 +29,9 @@ test-results
 
 # Supabase CLI temporary state
 /supabase/.temp/
+
+# Local agent scratch scripts
+/.scratch/
+
+# Local runtime logs
+*.out.log

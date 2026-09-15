@@ -1,12 +1,20 @@
 # CRM Launch Readiness Roadmap
 
-This campaign owns the launch promise, gap classification and final sequencing. Feature implementation remains
-with its owning domain campaign; infrastructure still requires Jafar's separate topology/migration approval.
+This parent campaign tracks the nine approved delivery parts. Each product domain remains responsible for its
+own implementation. Production infrastructure remains behind Jafar's separate topology and migration approval.
 
 | Part | Outcome | State | Dependency | Completion gate |
 | --- | --- | --- | --- | --- |
-| 1 | Establish the contractor-CRM production feature baseline from current primary sources | Complete 2026-09-10 | Existing product definition | Launch, wider-rollout and segment-specific capabilities are separated with sources |
-| 2 | Audit current UCRM implementation against that baseline and the approved product promise | Complete 2026-09-10 | Part 1 | Every major product area has evidenced current state, confirmed gap and launch classification |
-| 3 | Approve the sell-ready scope and migration/support model | Complete 2026-09-10 | Parts 1–2 | Jafar approved an assisted, opening-state, email/Website Chat, recorded-payment, CSV-accounting, online-only pilot for small established contractors |
-| 4 | Publish the final implementation sequence | Complete 2026-09-10 | Part 3 | `docs/crm-launch-implementation-roadmap.md` assigns every promised capability an order, owner, dependency, risk and completion test; exclusions are named |
-| 5 | Run the final cross-domain launch audit | Waiting on implementation and production-topology approval | All approved owning campaigns; production topology approval | Security, end-to-end journeys, accessibility, restore/cutover, failure behavior, monitoring and representative load gates pass |
+| 1 | Close trust blockers in security, permissions and financial history | Complete 2026-09-11 | Current product | Tenant/role isolation, immutable issued documents and safe financial corrections are proven |
+| 2 | Make assisted adoption and exit safe | In progress — only opening balances remain | Part 1; opening balances wait for Part 3 financial rules | Repeat import creates no duplicates; errors are explainable; complete export is independently usable |
+| 3 | Finish and reconcile the everyday CRM operating core | Active — owned by `financial-reconciliation` | Part 1 and completed Part 2 foundations | Reports, exports and the Request → Payment journey agree and failed bulk work is safely retryable |
+| 4 | Ship the minimum website speed-to-lead experience | Planned for the controlled first launch | Part 3; existing Website Chat, email and Automation | Form/Chat creates or matches one lead and sends at most one eligible reply, stopping on human activity |
+| 5 | Ship compliant missed-call text-back | Later, after the controlled first launch | Part 4; Twilio setup and messaging approval | Live tests prove consent, opt-out, quiet hours, deduplication, failure and cost controls |
+| 6 | Ship safe one-click campaigns | Planned — owned by `marketing-growth` | Part 5 for SMS; protected email may precede SMS | Recipient eligibility, cancellation, partial failure and transactional-delivery protection are proven |
+| 7 | Ship a policy-approved Google review flow | Later — routed through `marketing-growth` | Completed-work truth; email or approved SMS | Permissions, consent, reminders, private feedback and current policy approval pass |
+| 8 | Productize only the wider-rollout needs shown by early customers | Waiting for controlled-launch evidence | Parts 1–7 as actually sold | Contractors can onboard, operate, reconcile and leave without routine staff/database help |
+| 9 | Prove production and launch gradually | Preparation may run beside Part 3; implementation awaits topology approval | Every capability sold in the controlled first launch | Staging, backup/restore, cutover/rollback, security, monitoring, failure and measured-load gates pass |
+
+The controlled first launch waits for Parts 1–4 and 9. Start with a few closely supported paying contractors.
+Wider rollout waits for the necessary Part 8 work and evidence from that first group. No capacity claim is made
+without a named workload and measured result.

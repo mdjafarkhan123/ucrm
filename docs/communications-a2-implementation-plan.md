@@ -1,6 +1,7 @@
 # Communications A2 SMS Implementation Plan
 
-**Status:** Approved by Jafar on 2026-09-13; Stage 2 security corrections approved 2026-09-13  
+**Status:** Approved by Jafar on 2026-09-13; Stage 2 security corrections approved 2026-09-13; Stage 4
+scope approved 2026-09-15
 **Scope:** Manual and Automation SMS, contractor setup/usage, and existing Jafar controls  
 **Authority:** Approval starts Stage 1 planning and implementation preparation only. It does not silently authorize
 SQL, schema, RLS, permission, Twilio configuration, live sends, packages, or infrastructure changes; each applicable
@@ -18,6 +19,10 @@ record commit together, a bounded worker contacts the provider outside the datab
 are stored before projection, and the browser receives IDs-only live signals before rereading authorized data.
 
 ## Build boundaries
+
+- Use Jobber/HighLevel's familiar contractor workflow and plain-language screen behavior wherever it is
+  publicly evidenced. Use Twilio's documented provider, consent, delivery and webhook patterns underneath;
+  never invent or attribute unpublished competitor internals.
 
 - Extend the existing unified inbox, transactional outbox, bounded drain, Automation engine, Settings shell and
   Jafar control room. Do not create a second inbox, queue, automation engine, settings family or owner dashboard.
@@ -138,19 +143,54 @@ balance, empty, loading, error and narrow-screen states.
 
 ### 4. One SMS command and bounded Twilio worker
 
-**Build:** Add one server command used by manual and Automation sends. It freezes recipient, sender/service, final
-body, segment estimate, applicable retail rate and logical-send identity in one short transaction with the credit
-reservation and outbox row. At claim time it rechecks current consent, destination, number/registration readiness,
-quiet hours, workflow window, package/mode, credit, caps, pauses and work relevance.
+**Approved boundary (Jafar, 2026-09-15):** Build the delivery engine without exposing a contractor send button.
+Conversations UI, Automation wiring, inbound/status webhooks and detailed reconciliation remain in Stages 5–8.
+Stage 4 stays dark: no country or contractor traffic is enabled until signed webhooks, registration, the applicable
+country rules and a controlled live test pass.
+
+#### 4A. Consent-aware enqueue command
+
+**Build:** Add one server command used later by manual and Automation sends. It freezes recipient, sender/service,
+final body, segment estimate, applicable retail rate and logical-send identity in one short transaction with the
+credit reservation and outbox row. At enqueue and claim it rechecks current consent, destination,
+number/registration readiness, quiet hours, workflow window, package/mode, credit, caps, pauses and work relevance.
+
+Unknown consent blocks sending. Consent evidence is scoped to the exact customer phone number and one or more
+plain operational subjects: direct service conversations; work updates for requests, quotes, jobs and appointments;
+and billing updates for invoices, receipts and payment reminders. Marketing consent remains separate for A3.
+Accepted evidence is a customer SMS, explicit web-form consent, or a signed paper/digital agreement. Verbal consent
+is not accepted. Existing client-level SMS timestamps are not promoted automatically because they lack the required
+phone-number and evidence scope.
+
+Only the contractor owner or an administrator may record external consent proof at launch. The later Conversations
+UI uses one short proof form: exact phone number, consent method, date, covered subjects, evidence note/location and
+an explicit confirmation. It adds no document-upload system. A customer's inbound text permits a human reply in
+that conversation; it does not silently authorize Automation or unrelated recurring messages.
+
+**Gate:** Database and command tests prove atomic intent/reservation/outbox creation, same-key idempotency,
+changed-payload conflict, exact-number consent scope, subject separation, owner/admin-only external proof, unknown
+and opted-out refusal, balance/hold/readiness refusal, quiet-hour scheduling and no email behavior change.
+
+#### 4B. Bounded Twilio submission worker
 
 Add a Twilio adapter to the existing bounded drain runner with a separate SMS worker lease and budget. Record an
 attempt before the provider call, disable hidden create retries, finalize with the claim token, retry only proven
 pre-submission transient failures, and quarantine uncertain submissions for reconciliation instead of sending
 again. Immediate wake plus the scheduled safety wake remains the dispatch pattern.
 
-**Gate:** Unit and integration tests cover duplicate clicks, changed-payload conflicts, two workers racing, stale
-leases, 429 backoff, definite rejection, timeout after possible acceptance, callback-before-finalize, quiet-hour
-release, a STOP racing a claim, zero balance and email/SMS concurrency.
+**Gate:** Unit and integration tests cover two workers racing, stale leases, bounded 429 backoff, definite rejection,
+timeout after possible acceptance, callback-before-finalize fixtures, a STOP racing a claim, zero balance and
+email/SMS concurrency. No live provider call is required to pass this checkpoint.
+
+#### 4C. Wake and basic owner health
+
+Add a separately authenticated SMS worker wake, immediate best-effort wake plus scheduled safety wake, and a lean
+health read in Jafar's existing Communications control room. Show last wake, waiting count, oldest waiting age and
+uncertain submissions; add no new dashboard or detailed reconciliation UI.
+
+**Gate:** Route and browser tests prove single-flight execution, truthful backlog/age, failure visibility, no secret
+output and no contractor access. Stage 4 completes with traffic still disabled; Stage 5 signed webhooks are the next
+dependency.
 
 ### 5. Signed inbound and status webhooks
 
