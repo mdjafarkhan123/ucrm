@@ -34,10 +34,12 @@
 		return getCatalogEntry(step.key)?.label ?? step.key;
 	}
 
-	// Every email the recipe could send in one run — the honest upper bound the contract asks the rail to
-	// show, since waits and stops only ever reduce it.
+	// Every email or text the recipe could send in one run — the honest upper bound the contract asks the
+	// rail to show, since waits and stops only ever reduce it.
 	const maxMessages = $derived(
-		definition.steps.filter((step) => step.key === 'action.send_email').length
+		definition.steps.filter(
+			(step) => step.key === 'action.send_email' || step.key === 'action.send_sms'
+		).length
 	);
 	const stepLines = $derived(definition.steps.map(stepLine));
 </script>
@@ -96,7 +98,7 @@
 		</dl>
 
 		<div class="summary__meta">
-			<span class="summary__meta-label">Most emails one customer could get</span>
+			<span class="summary__meta-label">Most messages one customer could get</span>
 			<span class="summary__meta-value">{maxMessages}</span>
 		</div>
 	</div>

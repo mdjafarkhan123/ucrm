@@ -37,6 +37,8 @@ function workClient(
 		advanceError?: boolean;
 		perform?: (id: string) => string;
 		performError?: boolean;
+		performSms?: (id: string) => string;
+		performSmsError?: boolean;
 		claimError?: string;
 		retryError?: string;
 		recordError?: boolean;
@@ -64,6 +66,11 @@ function workClient(
 			if (options.performError) return { data: null, error: { message: 'send path exploded' } };
 			const id = String(args?.p_work_item_id);
 			return { data: options.perform ? options.perform(id) : 'action_sent', error: null };
+		}
+		if (name === 'perform_automation_sms_effect') {
+			if (options.performSmsError) return { data: null, error: { message: 'sms path exploded' } };
+			const id = String(args?.p_work_item_id);
+			return { data: options.performSms ? options.performSms(id) : 'action_sent', error: null };
 		}
 		if (name === 'retry_automation_work_item') {
 			if (options.retryError) return { data: null, error: { message: options.retryError } };
@@ -223,7 +230,7 @@ describe('drainAutomationWork', () => {
 		const { client, rpc } = workClient({
 			intake: [0],
 			claims: [[item('a')]],
-			advance: () => 'action_due',
+			advance: () => 'action_due_email',
 			perform: () => 'action_sent'
 		});
 
@@ -241,12 +248,32 @@ describe('drainAutomationWork', () => {
 		);
 	});
 
+	it('runs an sms action effect with no minted link and counts a send', async () => {
+		const { client, rpc } = workClient({
+			intake: [0],
+			claims: [[item('a')]],
+			advance: () => 'action_due_sms',
+			performSms: () => 'action_sent'
+		});
+
+		const result = await drainAutomationWork({ client, now: () => 0, createQuoteLink: stubLink });
+
+		expect(result).toMatchObject({ claimed: 1, sent: 1, completed: 0, stoppedBy: 'idle' });
+		expect(rpc).toHaveBeenCalledWith(
+			'perform_automation_sms_effect',
+			expect.objectContaining({ p_work_item_id: 'a', p_claim_token: 'claim-a' })
+		);
+		// No link minted for a text: the sms effect call never carries a quote URL/token.
+		const smsCall = rpc.mock.calls.find(([name]) => name === 'perform_automation_sms_effect');
+		expect(smsCall?.[1]).not.toHaveProperty('p_quote_url');
+	});
+
 	it('maps a permanent skip to cancelled and a temporary skip to retried', async () => {
 		const outcomes: Record<string, string> = { a: 'action_cancelled', b: 'action_deferred' };
 		const { client } = workClient({
 			intake: [0],
 			claims: [[item('a'), item('b')]],
-			advance: () => 'action_due',
+			advance: () => 'action_due_email',
 			perform: (id) => outcomes[id]
 		});
 
@@ -261,11 +288,31 @@ describe('drainAutomationWork', () => {
 		});
 	});
 
+	it('maps a permanent sms skip to cancelled and a temporary sms skip to retried', async () => {
+		const outcomes: Record<string, string> = { a: 'action_cancelled', b: 'action_deferred' };
+		const { client } = workClient({
+			intake: [0],
+			claims: [[item('a'), item('b')]],
+			advance: () => 'action_due_sms',
+			performSms: (id) => outcomes[id]
+		});
+
+		const result = await drainAutomationWork({ client, now: () => 0 });
+
+		expect(result).toMatchObject({
+			claimed: 2,
+			sent: 0,
+			cancelled: 1,
+			retried: 1,
+			stoppedBy: 'idle'
+		});
+	});
+
 	it('does not count an action whose claim was lost', async () => {
 		const { client } = workClient({
 			intake: [0],
 			claims: [[item('a')]],
-			advance: () => 'action_due',
+			advance: () => 'action_due_email',
 			perform: () => 'claim_lost'
 		});
 
@@ -284,7 +331,7 @@ describe('drainAutomationWork', () => {
 		const { client, rpc } = workClient({
 			intake: [0],
 			claims: [[item('a')]],
-			advance: () => 'action_due',
+			advance: () => 'action_due_email',
 			performError: true
 		});
 
@@ -297,6 +344,28 @@ describe('drainAutomationWork', () => {
 				p_work_item_id: 'a',
 				p_error_code: 'advance_failed',
 				p_error_message: 'send path exploded',
+				p_permanent: false
+			})
+		);
+	});
+
+	it('backs the row off through retry when the sms effect itself fails', async () => {
+		const { client, rpc } = workClient({
+			intake: [0],
+			claims: [[item('a')]],
+			advance: () => 'action_due_sms',
+			performSmsError: true
+		});
+
+		const result = await drainAutomationWork({ client, now: () => 0 });
+
+		expect(result).toMatchObject({ claimed: 1, sent: 0, retried: 1, stoppedBy: 'idle' });
+		expect(rpc).toHaveBeenCalledWith(
+			'retry_automation_work_item',
+			expect.objectContaining({
+				p_work_item_id: 'a',
+				p_error_code: 'advance_failed',
+				p_error_message: 'sms path exploded',
 				p_permanent: false
 			})
 		);

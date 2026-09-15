@@ -52,3 +52,16 @@ export function sendEmailStepsMissingContent(definition: AuthoredDefinition): nu
 	});
 	return missing;
 }
+
+// Stage 7: the send-sms steps that still lack authored copy. Same idea as the email check above, minus the
+// subject line a text has none of.
+export function sendSmsStepsMissingContent(definition: AuthoredDefinition): number[] {
+	const missing: number[] = [];
+	definition.steps.forEach((step, index) => {
+		if (step.key === 'action.send_sms') {
+			const body = typeof step.config?.body === 'string' ? step.config.body.trim() : '';
+			if (!body) missing.push(index);
+		}
+	});
+	return missing;
+}

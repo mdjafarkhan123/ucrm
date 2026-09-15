@@ -11,6 +11,7 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import SummaryRail from './SummaryRail.svelte';
 	import EmailActionEditor from './EmailActionEditor.svelte';
+	import SmsActionEditor from './SmsActionEditor.svelte';
 	import {
 		catalogEntriesByKind,
 		getCatalogEntry,
@@ -19,10 +20,11 @@
 	} from '$lib/automation/catalog';
 	import {
 		sendEmailStepsMissingContent,
+		sendSmsStepsMissingContent,
 		type AuthoredDefinition,
 		type AuthoredStep
 	} from '$lib/automation/authoring';
-	import { unknownEmailVariables } from '$lib/automation/email-variables';
+	import { unknownEmailVariables, unknownSmsVariables } from '$lib/automation/email-variables';
 	import {
 		createRecipeDraft,
 		saveRecipeDraft,
@@ -38,6 +40,7 @@
 	import arrowsSortIcon from '@tabler/icons/outline/arrows-sort.svg?raw';
 	import handStopIcon from '@tabler/icons/outline/hand-stop.svg?raw';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import messageIcon from '@tabler/icons/outline/message.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
 	import arrowUpIcon from '@tabler/icons/outline/arrow-up.svg?raw';
 	import arrowDownIcon from '@tabler/icons/outline/arrow-down.svg?raw';
@@ -189,6 +192,11 @@
 		definition.steps = [...definition.steps, step];
 	}
 
+	function addSms() {
+		const step: AuthoredStep = { type: 'action', key: 'action.send_sms', config: {} };
+		definition.steps = [...definition.steps, step];
+	}
+
 	function moveStep(index: number, direction: -1 | 1) {
 		const target = index + direction;
 		if (target < 0 || target >= definition.steps.length) return;
@@ -247,6 +255,39 @@
 		}
 	}
 
+	function stepSmsBody(index: number): string {
+		const value = definition.steps[index]?.config?.body;
+		return typeof value === 'string' ? value : '';
+	}
+
+	function setSmsBody(index: number, value: string) {
+		const step = definition.steps[index];
+		const config = { ...step.config };
+		if (value.trim()) config.body = value;
+		else delete config.body;
+		definition.steps[index] = { ...step, config };
+		definition.steps = [...definition.steps];
+
+		if (typeof config.body === 'string' && config.body.trim()) {
+			const { [index]: _cleared, ...rest } = errors.steps;
+			errors = { ...errors, steps: rest };
+		}
+	}
+
+	function stepSmsSenderId(index: number): string {
+		const value = definition.steps[index]?.config?.sender_id;
+		return typeof value === 'string' ? value : '';
+	}
+
+	function setSmsSenderId(index: number, value: string) {
+		const step = definition.steps[index];
+		const config = { ...step.config };
+		if (value) config.sender_id = value;
+		else delete config.sender_id;
+		definition.steps[index] = { ...step, config };
+		definition.steps = [...definition.steps];
+	}
+
 	function waitAmount(index: number): number {
 		const value = definition.steps[index]?.config?.amount;
 		return typeof value === 'number' ? value : 1;
@@ -280,16 +321,29 @@
 			next.steps[index] = 'Add a subject line and a message.';
 			ok = false;
 		}
+		for (const index of sendSmsStepsMissingContent(definition)) {
+			next.steps[index] = 'Add a message.';
+			ok = false;
+		}
 		// The picker only inserts allow-listed variables, but a hand-typed {{token}} could be unknown; catch it
 		// here so a save that the server would reject never leaves the builder.
 		definition.steps.forEach((step, index) => {
-			if (step.key !== 'action.send_email' || next.steps[index]) return;
-			const subject = typeof step.config?.subject === 'string' ? step.config.subject : '';
-			const body = typeof step.config?.body === 'string' ? step.config.body : '';
-			const unknown = [...unknownEmailVariables(subject), ...unknownEmailVariables(body)];
-			if (unknown.length > 0) {
-				next.steps[index] = `"{{${unknown[0]}}}" is not a value you can use here.`;
-				ok = false;
+			if (next.steps[index]) return;
+			if (step.key === 'action.send_email') {
+				const subject = typeof step.config?.subject === 'string' ? step.config.subject : '';
+				const body = typeof step.config?.body === 'string' ? step.config.body : '';
+				const unknown = [...unknownEmailVariables(subject), ...unknownEmailVariables(body)];
+				if (unknown.length > 0) {
+					next.steps[index] = `"{{${unknown[0]}}}" is not a value you can use here.`;
+					ok = false;
+				}
+			} else if (step.key === 'action.send_sms') {
+				const body = typeof step.config?.body === 'string' ? step.config.body : '';
+				const unknown = unknownSmsVariables(body);
+				if (unknown.length > 0) {
+					next.steps[index] = `"{{${unknown[0]}}}" is not a value you can use here.`;
+					ok = false;
+				}
 			}
 		});
 		errors = next;
@@ -302,7 +356,13 @@
 		else if (errors.trigger) id = 'builder-trigger';
 		else {
 			const firstStep = Object.keys(errors.steps)[0];
-			if (firstStep !== undefined) id = `builder-step-${firstStep}-subject`;
+			if (firstStep !== undefined) {
+				const step = definition.steps[Number(firstStep)];
+				id =
+					step?.key === 'action.send_sms'
+						? `builder-step-${firstStep}-body`
+						: `builder-step-${firstStep}-subject`;
+			}
 		}
 		if (!id) return;
 		const target = document.getElementById(id);
@@ -509,7 +569,11 @@
 									<span class="builder__step-index">{index + 1}</span>
 									<span class="builder__step-icon" aria-hidden="true">
 										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-										{@html step.key === 'action.send_email' ? mailIcon : clockIcon}
+										{@html step.key === 'action.send_email'
+											? mailIcon
+											: step.key === 'action.send_sms'
+												? messageIcon
+												: clockIcon}
 									</span>
 									<span class="builder__step-title">{label(step.key)}</span>
 									<div class="builder__step-controls">
@@ -533,7 +597,7 @@
 											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 											{@html arrowDownIcon}
 										</button>
-										{#if step.key === 'action.send_email'}
+										{#if step.key === 'action.send_email' || step.key === 'action.send_sms'}
 											<button
 												type="button"
 												class="builder__icon-button"
@@ -592,6 +656,15 @@
 											onSubjectChange={(value) => setEmailField(index, 'subject', value)}
 											onBodyChange={(value) => setEmailField(index, 'body', value)}
 										/>
+									{:else if step.key === 'action.send_sms'}
+										<SmsActionEditor
+											idPrefix={`builder-step-${index}`}
+											body={stepSmsBody(index)}
+											senderId={stepSmsSenderId(index)}
+											errorMessage={errors.steps[index] ?? ''}
+											onBodyChange={(value) => setSmsBody(index, value)}
+											onSenderIdChange={(value) => setSmsSenderId(index, value)}
+										/>
 									{/if}
 								</div>
 							</li>
@@ -607,6 +680,10 @@
 					<Button variant="tertiary" size="small" onclick={addEmail}>
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add an email
+					</Button>
+					<Button variant="tertiary" size="small" onclick={addSms}>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add a text
 					</Button>
 				</div>
 			</SectionBlock>

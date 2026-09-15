@@ -38,6 +38,13 @@ export const createRecipeDraftSchema = z
 
 export type CreateRecipeDraftBody = z.infer<typeof createRecipeDraftSchema>;
 
+// Stage 7: the Send SMS action editor's live segment/cost preview. Matches automationSmsBodySchema's cap
+// (src/lib/automation/email-variables.ts) loosely -- this only shapes the estimate request, not the saved
+// step, which the catalog schema still governs.
+export const automationSmsEstimateSchema = z
+	.object({ body: z.string().trim().min(1).max(1000) })
+	.strict();
+
 export const saveRecipeDraftSchema = z
 	.object({
 		expected_revision: z.number().int().min(1),

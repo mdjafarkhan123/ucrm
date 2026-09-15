@@ -121,3 +121,44 @@ export async function saveRecipeDraft(input: SaveDraftInput): Promise<DraftComma
 		throw httpError(response, await readError(response, 'We could not save that automation.'));
 	return (await response.json()) as DraftCommandResult;
 }
+
+// Stage 7: the Send SMS action editor's live segment/cost estimate. Never throws on a normal "not ready yet"
+// outcome (no sender, no published rate) — those come back as {ready: false, reason}; only a genuine request
+// failure throws. Mirrors estimateSmsReply (src/lib/communications/inbox.ts).
+export type AutomationSmsEstimate =
+	| {
+			ready: true;
+			encoding: string;
+			segment_count: number;
+			cost_minor: number;
+			currency: string;
+			sender_phone: string;
+	  }
+	| { ready: false; reason: string };
+
+export async function estimateAutomationSms(body: string): Promise<AutomationSmsEstimate> {
+	const response = await fetch('/api/settings/automation/sms-estimate', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ body })
+	});
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) throw httpError(response, result.error ?? 'This estimate could not be loaded.');
+	return result as AutomationSmsEstimate;
+}
+
+// The Send SMS action editor's optional "pin a number" picker: only numbers eligible to send right now.
+export type AutomationSmsSender = {
+	id: string;
+	phone_number: string;
+	display_name: string | null;
+	is_default_sender: boolean;
+};
+
+export async function fetchAutomationSmsSenders(): Promise<AutomationSmsSender[]> {
+	const response = await fetch('/api/settings/automation/sms-senders');
+	if (!response.ok)
+		throw httpError(response, await readError(response, 'The SMS numbers could not be loaded.'));
+	const body = (await response.json()) as { senders: AutomationSmsSender[] };
+	return body.senders;
+}

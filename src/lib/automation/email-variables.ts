@@ -1,10 +1,11 @@
-// Contractor Settings Part 6D-3: the allow-listed variables an automation email may contain.
+// Contractor Settings Part 6D-3 (email) + Stage 7 (SMS): the allow-listed variables an automation message may
+// contain.
 //
-// A contractor authors the follow-up email's subject and body as plain text. The only dynamic values they may
-// insert are these fixed tokens; the send path (private.render_automation_email) fills them from current
-// truth and escapes everything, so no authored or customer text can become markup. Any other `{{...}}` token
-// is rejected at save time — the builder offers only these, and the server validator enforces the same list
-// so the two cannot drift.
+// A contractor authors the follow-up copy as plain text. The only dynamic values they may insert are fixed
+// tokens; the send path (private.render_automation_email / private.render_automation_sms) fills them from
+// current truth, so no authored or customer text can become markup or an unresolved placeholder. Any other
+// `{{...}}` token is rejected at save time — the builder offers only these, and the server validator enforces
+// the same lists so the two cannot drift.
 
 import { z } from 'zod';
 
@@ -16,22 +17,29 @@ export const AUTOMATION_EMAIL_VARIABLES = [
 	{ token: 'quote_link', label: 'Quote link' }
 ] as const;
 
-export type AutomationEmailVariableToken = (typeof AUTOMATION_EMAIL_VARIABLES)[number]['token'];
+// SMS shares the same business-fact tokens minus quote_link: the SMS send path does not mint a customer
+// access link yet (docs/communications-a2-implementation-plan.md §7 leaves this for a follow-up), so a text
+// can never promise a link it cannot fill. If a contractor types {{quote_link}} in a text it must be
+// rejected at save time, never sent out as a literal, broken placeholder.
+export const AUTOMATION_SMS_VARIABLES = AUTOMATION_EMAIL_VARIABLES.filter(
+	(variable) => variable.token !== 'quote_link'
+);
 
-const ALLOWED_TOKENS = new Set<string>(AUTOMATION_EMAIL_VARIABLES.map((v) => v.token));
+export type AutomationEmailVariableToken = (typeof AUTOMATION_EMAIL_VARIABLES)[number]['token'];
+export type AutomationSmsVariableToken = (typeof AUTOMATION_SMS_VARIABLES)[number]['token'];
 
 // Matches every `{{...}}` placeholder, capturing the inner name. Deliberately strict: no inner whitespace, so
 // the SQL renderer's exact `replace('{{customer_name}}', …)` always matches what was validated here.
 const TOKEN_PATTERN = /\{\{([^}]*)\}\}/g;
 
-// Returns the list of placeholder names in a string that are NOT allow-listed (deduped, in order seen). An
+// Returns the list of placeholder names in a string that are NOT in `allowed` (deduped, in order seen). An
 // empty list means every placeholder is safe.
-export function unknownEmailVariables(text: string): string[] {
+function unknownVariablesAgainst(allowed: ReadonlySet<string>, text: string): string[] {
 	const unknown: string[] = [];
 	const seen = new Set<string>();
 	for (const match of text.matchAll(TOKEN_PATTERN)) {
 		const name = match[1];
-		if (!ALLOWED_TOKENS.has(name) && !seen.has(name)) {
+		if (!allowed.has(name) && !seen.has(name)) {
 			seen.add(name);
 			unknown.push(name);
 		}
@@ -39,11 +47,25 @@ export function unknownEmailVariables(text: string): string[] {
 	return unknown;
 }
 
-// A Zod refinement usable on any authored email string. Rejects unknown placeholders with a plain message
-// naming the first offender.
-function withKnownVariablesOnly<T extends z.ZodType<string>>(schema: T) {
+const EMAIL_ALLOWED_TOKENS = new Set<string>(AUTOMATION_EMAIL_VARIABLES.map((v) => v.token));
+const SMS_ALLOWED_TOKENS = new Set<string>(AUTOMATION_SMS_VARIABLES.map((v) => v.token));
+
+export function unknownEmailVariables(text: string): string[] {
+	return unknownVariablesAgainst(EMAIL_ALLOWED_TOKENS, text);
+}
+
+export function unknownSmsVariables(text: string): string[] {
+	return unknownVariablesAgainst(SMS_ALLOWED_TOKENS, text);
+}
+
+// A Zod refinement usable on any authored string. Rejects unknown placeholders with a plain message naming
+// the first offender.
+function withKnownVariablesOnly<T extends z.ZodType<string>>(
+	schema: T,
+	unknownVariables: (text: string) => string[]
+) {
 	return schema.superRefine((value, ctx) => {
-		const unknown = unknownEmailVariables(value);
+		const unknown = unknownVariables(value);
 		if (unknown.length > 0) {
 			ctx.addIssue({
 				code: 'custom',
@@ -62,7 +84,18 @@ export const automationEmailSubjectSchema = withKnownVariablesOnly(
 		.max(300)
 		.refine((value) => !/[\r\n]/.test(value), {
 			message: 'The subject cannot span multiple lines.'
-		})
+		}),
+	unknownEmailVariables
 );
 
-export const automationEmailBodySchema = withKnownVariablesOnly(z.string().trim().min(1).max(5000));
+export const automationEmailBodySchema = withKnownVariablesOnly(
+	z.string().trim().min(1).max(5000),
+	unknownEmailVariables
+);
+
+// Stage 7: the Send SMS action's body. The smaller SMS token set above; no subject. A shorter cap than email
+// since the enqueue command already refuses anything over 10 segments — this just keeps the editor sane.
+export const automationSmsBodySchema = withKnownVariablesOnly(
+	z.string().trim().min(1).max(1000),
+	unknownSmsVariables
+);

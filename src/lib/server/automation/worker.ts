@@ -5,10 +5,13 @@
 // there is deliberately NO single-flight lease like the Communications email worker takes, because production
 // runs more than one worker container and a global lock would serialise them.
 //
-// 6D-3: an `action` step now sends. advance returns 'action_due', and this module runs the effect — it mints
-// the customer link (the app origin lives here, not in the database) and calls perform_automation_email_effect,
-// which enqueues into the same Communications outbox the email worker already drains. Automation never talks to
-// the provider.
+// 6D-3: an `action` step now sends. advance returns 'action_due_email', and this module runs the effect — it
+// mints the customer link (the app origin lives here, not in the database) and calls
+// perform_automation_email_effect, which enqueues into the same Communications outbox the email worker already
+// drains. Automation never talks to the provider.
+//
+// Stage 7: advance also returns 'action_due_sms'. There is no link to mint for a text (its body has no
+// quote_link variable yet), so runSmsAction calls perform_automation_sms_effect directly.
 
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { createQuoteEmailAccessLink } from '$lib/server/communications/quote-email';
@@ -29,7 +32,9 @@ type ClaimedWorkItem = {
 };
 
 // What one transition did. `claim_lost` means another worker owns the row now — not an error, and not counted
-// as work this wake performed. `action_due` means the step is an action whose effect this module must run.
+// as work this wake performed. `action_due_email` / `action_due_sms` mean the step is an action whose
+// matching effect this module must run (Stage 7: advance now names which channel instead of a single
+// `action_due` that always meant email).
 type AdvanceOutcome =
 	| 'claim_lost'
 	| 'enrollment_inactive'
@@ -40,7 +45,8 @@ type AdvanceOutcome =
 	| 'stop_condition_met'
 	| 'completed'
 	| 'waiting'
-	| 'action_due'
+	| 'action_due_email'
+	| 'action_due_sms'
 	| 'action_not_available';
 
 // What running an action effect settled to. `claim_lost` mirrors advance: the lease moved on.
@@ -150,6 +156,21 @@ async function runEmailAction(
 	return performed.data as ActionEffectOutcome;
 }
 
+// Runs one SMS action effect. Unlike email there is no customer link to mint here (Stage 7's SMS body has no
+// quote_link variable yet), so this is a direct call: perform_automation_sms_effect owns every recheck, the
+// enqueue, and settling the row in one transaction.
+async function runSmsAction(
+	client: AutomationWorkerClient,
+	item: ClaimedWorkItem
+): Promise<ActionEffectOutcome> {
+	const performed = await client.rpc('perform_automation_sms_effect', {
+		p_work_item_id: item.work_item_id,
+		p_claim_token: item.claim_token
+	});
+	if (performed.error) throw new Error(performed.error.message);
+	return performed.data as ActionEffectOutcome;
+}
+
 // One claimed transition. Any failure is reported back through retry_automation_work_item so the row backs off
 // and stays visible instead of silently waiting out its lease.
 async function advanceOne(
@@ -166,10 +187,13 @@ async function advanceOne(
 		if (advanced.error) throw new Error(advanced.error.message);
 		const outcome = advanced.data as AdvanceOutcome;
 
-		if (outcome === 'action_due') {
+		if (outcome === 'action_due_email' || outcome === 'action_due_sms') {
 			// The effect settles the row itself. An infrastructure failure here (not a step outcome) falls to the
 			// catch below, which backs the row off exactly as an advance failure would.
-			const effect = await runEmailAction(client, item, createQuoteLink);
+			const effect =
+				outcome === 'action_due_email'
+					? await runEmailAction(client, item, createQuoteLink)
+					: await runSmsAction(client, item);
 			if (effect === 'action_sent') counts.sent += 1;
 			else if (effect === 'action_cancelled') counts.cancelled += 1;
 			else if (effect === 'action_deferred') counts.retried += 1;

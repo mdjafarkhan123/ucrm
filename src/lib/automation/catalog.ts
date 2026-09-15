@@ -10,7 +10,11 @@
 // and the validator refuses to accept them in a saved definition.
 
 import { z } from 'zod';
-import { automationEmailBodySchema, automationEmailSubjectSchema } from './email-variables';
+import {
+	automationEmailBodySchema,
+	automationEmailSubjectSchema,
+	automationSmsBodySchema
+} from './email-variables';
 
 export const AUTOMATION_SCHEMA_VERSION = 1;
 
@@ -191,10 +195,20 @@ const actions: CatalogEntry[] = [
 		key: 'action.send_sms',
 		kind: 'action',
 		label: 'Send a text message',
-		summary: 'Sends a follow-up text to the customer.',
+		summary: 'Sends a follow-up text to the customer through Communications.',
 		subject: 'quote',
-		availability: blocked('Text messaging is not available yet.'),
-		configSchema: z.object({ body: z.string().trim().min(1).max(1000) }).strict()
+		availability: enabled,
+		// Stage 7: the contractor authors the text as plain text, same allow-listed variables as email, no
+		// subject line. `sender_id` is an optional authorized pin to a specific eligible number; left unset it
+		// continues the customer's established conversation number, else the organization default (docs/
+		// automation-behavior-contract.md § SMS customer action). Whether that sender still exists and is
+		// eligible is rechecked live by the send effect every time the step runs, not at save time.
+		configSchema: z
+			.object({
+				body: automationSmsBodySchema,
+				sender_id: z.string().uuid().optional()
+			})
+			.strict()
 	},
 	{
 		key: 'action.notify_staff',

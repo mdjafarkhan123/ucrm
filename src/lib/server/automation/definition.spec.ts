@@ -70,10 +70,10 @@ describe('validateDefinition', () => {
 		expect(result.errors.some((e) => e.path === 'trigger')).toBe(true);
 	});
 
-	it('rejects a blocked catalog entry (SMS is not authorable yet)', () => {
+	it('rejects a blocked catalog entry (staff notification is not authorable yet)', () => {
 		const result = validateDefinition(
 			validInput({
-				steps: [{ type: 'action', key: 'action.send_sms', config: { body: 'hi' } }]
+				steps: [{ type: 'action', key: 'action.notify_staff', config: { user_ids: ['x'] } }]
 			}),
 			noLimits,
 			'draft'
@@ -81,6 +81,19 @@ describe('validateDefinition', () => {
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
 		expect(result.errors.some((e) => e.path === 'steps.0')).toBe(true);
+	});
+
+	it('accepts a send-sms step (Stage 7: authorable now)', () => {
+		const result = validateDefinition(
+			validInput({
+				steps: [
+					{ type: 'action', key: 'action.send_sms', config: { body: 'Hi {{customer_name}}' } }
+				]
+			}),
+			noLimits,
+			'draft'
+		);
+		expect(result.ok).toBe(true);
 	});
 
 	it('rejects unknown config fields via the strict per-entry schema', () => {
