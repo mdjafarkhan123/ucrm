@@ -143,9 +143,19 @@ export function buildClientImportObjectKey(organizationId: string, fileName: str
 }
 
 // The per-row error file the import worker writes on completion. One deterministic key per batch: regenerating
-// it (e.g. a re-run) overwrites in place rather than orphaning objects.
+// it (e.g. a re-run) overwrites in place rather than orphaning objects. Reused for every import entity_type --
+// the key is scoped by batch id, which is already unique across all of them.
 export function buildClientImportErrorObjectKey(organizationId: string, batchId: string): string {
 	return `${organizationId}/client-imports/errors/${batchId}.csv`;
+}
+
+// Same shape as buildClientImportObjectKey, for the opening-balances import (Part 4). Its own prefix keeps a
+// financial-fact upload out of the client-imports audit trail.
+export function buildOpeningBalanceImportObjectKey(
+	organizationId: string,
+	fileName: string
+): string {
+	return `${organizationId}/opening-balance-imports/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
 }
 
 export async function createPresignedUploadUrl(

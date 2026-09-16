@@ -7,10 +7,10 @@
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
-	// Generic on purpose: this step is shared by every import wizard (clients, Price Book, ...), each with its
-	// own field enum. The mapping shape (which column feeds which of our fields, and whether to protect an
-	// existing value) is the same regardless of what the fields actually are.
-	type ColumnMapping = Record<string, { field: string; dont_overwrite: boolean }>;
+	// Generic on purpose: this step is shared by every import wizard (clients, Price Book, opening balances,
+	// ...), each with its own field enum. dont_overwrite is optional because an import with no partial-merge
+	// concept (opening balances) never sets it -- showOverwriteToggle hides the column that would edit it.
+	type ColumnMapping = Record<string, { field: string; dont_overwrite?: boolean }>;
 
 	let {
 		headers,
@@ -19,6 +19,7 @@
 		errorMessage = '',
 		loading = false,
 		fieldOptions = IMPORT_FIELD_OPTIONS,
+		showOverwriteToggle = true,
 		onBack,
 		onReview
 	}: {
@@ -28,6 +29,9 @@
 		errorMessage?: string;
 		loading?: boolean;
 		fieldOptions?: { value: string; label: string }[];
+		// Some imports (opening balances) have no partial-merge concept -- a match is always a correction, so
+		// there is nothing to protect.
+		showOverwriteToggle?: boolean;
 		onBack: () => void;
 		onReview: () => void;
 	} = $props();
@@ -90,7 +94,9 @@
 						<th>Sample from your file</th>
 						<th>Matched</th>
 						<th>Our field</th>
-						<th>When updating</th>
+						{#if showOverwriteToggle}
+							<th>When updating</th>
+						{/if}
 					</tr>
 				</thead>
 				<tbody>
@@ -124,17 +130,19 @@
 									{/each}
 								</select>
 							</td>
-							<td>
-								<label class="chk" class:chk--disabled={!entry}>
-									<input
-										type="checkbox"
-										checked={entry?.dont_overwrite ?? false}
-										disabled={!entry}
-										onchange={(event) => toggleOverwrite(header, event.currentTarget.checked)}
-									/>
-									Don't overwrite
-								</label>
-							</td>
+							{#if showOverwriteToggle}
+								<td>
+									<label class="chk" class:chk--disabled={!entry}>
+										<input
+											type="checkbox"
+											checked={entry?.dont_overwrite ?? false}
+											disabled={!entry}
+											onchange={(event) => toggleOverwrite(header, event.currentTarget.checked)}
+										/>
+										Don't overwrite
+									</label>
+								</td>
+							{/if}
 						</tr>
 					{/each}
 				</tbody>

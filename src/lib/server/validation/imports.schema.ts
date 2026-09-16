@@ -117,3 +117,61 @@ export const importCatalogReviewSchema = z.object({
 });
 
 export type ImportCatalogReviewInput = z.infer<typeof importCatalogReviewSchema>;
+
+// Onboarding & Data Portability, Part 4: the opening-balances import (financial-reconciliation contract,
+// "Opening balances"). Unlike the client/Price Book mapping, a column here has no "don't overwrite" toggle --
+// there is no partial-merge concept, a match is always a correction (contract: "correcting an opening fact
+// appends a linked correction rather than editing or deleting history") -- and there is no match_action choice
+// either, since Review decides create vs. correct per row by whether the client already carries that balance
+// type. client_email identifies which existing client the row belongs to; this import never creates a client
+// (contract: these records do not invent historic Jobs, Invoices, or Payments -- the same rule extends to the
+// Client itself).
+export const IMPORT_OPENING_BALANCE_TARGETS = [
+	'client_email',
+	'balance_type',
+	'amount',
+	'as_of_date',
+	'source_note'
+] as const;
+
+const importOpeningBalanceTargetSchema = z.enum(IMPORT_OPENING_BALANCE_TARGETS);
+
+export type ImportOpeningBalanceTarget = (typeof IMPORT_OPENING_BALANCE_TARGETS)[number];
+
+const openingBalanceColumnMappingEntrySchema = z.object({
+	field: importOpeningBalanceTargetSchema
+});
+
+const OPENING_BALANCE_REQUIRED_TARGETS: ImportOpeningBalanceTarget[] = [
+	'client_email',
+	'balance_type',
+	'amount',
+	'as_of_date'
+];
+
+export const importOpeningBalancesMappingSchema = z.object({
+	column_mapping: z
+		.record(z.string().min(1), openingBalanceColumnMappingEntrySchema)
+		.refine((mapping) => Object.keys(mapping).length > 0, {
+			message: 'Match at least one column to one of our fields.'
+		})
+		.refine(
+			(mapping) => {
+				const targets = Object.values(mapping).map((entry) => entry.field);
+				return new Set(targets).size === targets.length;
+			},
+			{ message: 'Two columns are mapped to the same field. Each field can only be used once.' }
+		)
+		.refine(
+			(mapping) => {
+				const targets = new Set(Object.values(mapping).map((entry) => entry.field));
+				return OPENING_BALANCE_REQUIRED_TARGETS.every((target) => targets.has(target));
+			},
+			{
+				message:
+					'Match a column to the client email, balance type, amount, and as-of date before continuing.'
+			}
+		)
+});
+
+export type ImportOpeningBalancesMappingInput = z.infer<typeof importOpeningBalancesMappingSchema>;

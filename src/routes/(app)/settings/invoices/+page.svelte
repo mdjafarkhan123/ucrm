@@ -197,6 +197,19 @@
 				</div>
 			</SectionBlock>
 
+			<SectionBlock
+				title="Opening balances"
+				hint="Bring in what a client already owed you, or a credit they already had, from before you started using this CRM."
+				level={2}
+			>
+				<Button
+					variant="secondary"
+					href={resolve('/(app)/settings/invoices/opening-balances/import')}
+				>
+					Import opening balances
+				</Button>
+			</SectionBlock>
+
 			<AccountingExportSection />
 		</div>
 

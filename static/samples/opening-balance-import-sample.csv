@@ -1,0 +1,3 @@
+Client Email,Balance Type,Amount,As Of Date,Note
+alice.baker@example.com,receivable,1250.00,2026-01-01,Balance carried over from our old system
+bob.carter@example.com,credit,300.00,2026-01-01,Prepaid deposit on file

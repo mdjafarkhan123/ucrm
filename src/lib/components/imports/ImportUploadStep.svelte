@@ -14,6 +14,7 @@
 		loading = false,
 		title = 'Upload your client list',
 		subtitle = 'A spreadsheet saved as CSV, with one client per row.',
+		showMatchAction = true,
 		matchActionLabel = 'How should we handle clients you already have?',
 		matchHint = 'We recognise an existing client by a matching email or phone number.',
 		matchOptions = [
@@ -31,6 +32,9 @@
 		loading?: boolean;
 		title?: string;
 		subtitle?: string;
+		// Some imports (opening balances) have no skip/update choice -- a match always resolves the same way,
+		// so there is nothing to ask.
+		showMatchAction?: boolean;
 		matchActionLabel?: string;
 		matchHint?: string;
 		matchOptions?: { value: string; label: string }[];
@@ -68,16 +72,18 @@
 	</header>
 
 	<div class="panel__body">
-		<div class="field">
-			<Select
-				id="import-match-action"
-				label={matchActionLabel}
-				value={matchAction}
-				options={matchOptions}
-				onchange={(value) => (matchAction = value as MatchAction)}
-			/>
-			<p class="hint">{matchHint}</p>
-		</div>
+		{#if showMatchAction}
+			<div class="field">
+				<Select
+					id="import-match-action"
+					label={matchActionLabel}
+					value={matchAction}
+					options={matchOptions}
+					onchange={(value) => (matchAction = value as MatchAction)}
+				/>
+				<p class="hint">{matchHint}</p>
+			</div>
+		{/if}
 
 		<div class="field">
 			<label class="field__label" for="import-file">Your file</label>
