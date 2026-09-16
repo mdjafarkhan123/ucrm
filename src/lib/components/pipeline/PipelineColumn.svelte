@@ -1,3 +1,10 @@
+<script module lang="ts">
+	import { setKeyboardDragTrigger } from 'svelte-dnd-action';
+	// Global to the document, per the library's own contract -- narrowed once, here, so Enter stays free
+	// for `OpportunityCard`'s "open the Brief" handler instead of also starting a keyboard drag.
+	setKeyboardDragTrigger('space');
+</script>
+
 <script lang="ts">
 	import { createInfiniteQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { dndzone, TRIGGERS, type DndEvent } from 'svelte-dnd-action';

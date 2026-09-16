@@ -121,7 +121,9 @@
 	     guard treats any pointerdown target with a defined `.value` as a nested form control and refuses
 	     to start the drag -- every `<button>` element has that property (an empty string, never
 	     `undefined`), and this one is stretched over the entire card. `role="button"` plus the keydown
-	     handler below reproduce native button behaviour without tripping that guard. -->
+	     handler below reproduce native button behaviour without tripping that guard. Space is left to
+	     `PipelineColumn`'s keyboard-drag trigger (narrowed to Space there) -- claiming it here too would
+	     fire both a drag pickup and an open on the same press. -->
 	<div
 		class="opportunity-card__open"
 		role="button"
@@ -129,7 +131,7 @@
 		aria-label={`Open ${opportunity.title} for ${clientName}`}
 		onclick={onOpen}
 		onkeydown={(event) => {
-			if (event.key === 'Enter' || event.key === ' ') {
+			if (event.key === 'Enter') {
 				event.preventDefault();
 				onOpen();
 			}
