@@ -8,9 +8,9 @@ traffic) until a country launch gate passes.
 
 ## Active part
 
-Stage 6D-3 (MMS pricing + secure-link fallback) is DONE: code-complete, locally verified (pgTAP/vitest/
-svelte-check/Prettier all green last session), and now browser-verified this session. Still UNCOMMITTED —
-`git status`/`git diff` show every touched/new file, same set as before plus one bug fix below.
+Stage 6D-3 (MMS pricing + secure-link fallback) is DONE and COMMITTED this session (`28c801a`):
+code-complete, locally verified (pgTAP/vitest/svelte-check/Prettier all green), browser-verified, and now
+committed.
 
 This session: pushed the three migrations remote dev was missing (`20260923100000` claim-fix,
 `20260924100000` 6D-1 inbound media, `20260926100000` 6D-3) via Supabase MCP `apply_migration`, matching the
@@ -44,9 +44,9 @@ the surrounding "is this number allowed to send yet" gate is still blocked on th
 
 ## Exact next action
 
-Commit this session's work (Stage 6D-3 migration/code + the `SmsRetailRateActions.svelte` min-attribute fix).
-Nothing else is blocking. After commit, decide with Jafar whether Stage 6D is fully closed or whether the
-compose→send path deserves a follow-up once a real business/number exists to test against.
+Ask Jafar whether Stage 6D is fully closed now, or whether the compose→send path deserves a tracked
+follow-up once a real business/number exists to test against. No code work is queued until that answer, or
+until the Twilio Event Streams Sink / Bangladesh registration items below move.
 
 Separately, still waiting on Jafar directly (not code): (1) create the live Twilio Event Streams Sink for
 Stage 9D; (2) Bangladesh business registration — blocks all live proof (Stage 8, 9, any live MMS test, and
