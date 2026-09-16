@@ -6,12 +6,21 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import {
 	buildOutboundEmailAttachmentObjectKey,
+	buildOutboundSmsAttachmentObjectKey,
 	createPresignedUploadUrl
 } from '$lib/server/storage/r2';
-import { outboundAttachmentPresignSchema } from '$lib/server/validation/communications.schema';
+import {
+	outboundAttachmentPresignSchema,
+	outboundSmsMediaPresignSchema
+} from '$lib/server/validation/communications.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
+import { z } from 'zod';
 
 const PRESIGN_LIMIT = { windowSeconds: 300, maxAttempts: 40 };
+
+// Read only enough to pick a schema -- the chosen schema re-validates file_name/mime_type/size_bytes on
+// the same parse below, so an invalid channel value just falls back to the stricter default (email).
+const presignChannelSchema = z.object({ channel: z.enum(['email', 'sms']).default('email') });
 
 // One presign route serves every composer (reply and New conversation): both send through the same
 // paperclip, so both upload into the same <org>/outbound-email-attachments/ prefix before either send
@@ -33,7 +42,10 @@ export const POST: RequestHandler = async (event) => {
 	} catch {
 		return validationError({ form: 'Request body must be valid JSON.' });
 	}
-	const parsed = outboundAttachmentPresignSchema.safeParse(body);
+	const channel = presignChannelSchema.safeParse(body).data?.channel ?? 'email';
+	const schema =
+		channel === 'sms' ? outboundSmsMediaPresignSchema : outboundAttachmentPresignSchema;
+	const parsed = schema.safeParse(body);
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
 	const organizationId = check.auth.organization.id;
@@ -48,7 +60,10 @@ export const POST: RequestHandler = async (event) => {
 		return response;
 	}
 
-	const objectKey = buildOutboundEmailAttachmentObjectKey(organizationId, parsed.data.file_name);
+	const objectKey =
+		channel === 'sms'
+			? buildOutboundSmsAttachmentObjectKey(organizationId, parsed.data.file_name)
+			: buildOutboundEmailAttachmentObjectKey(organizationId, parsed.data.file_name);
 
 	let uploadUrl: string;
 	try {

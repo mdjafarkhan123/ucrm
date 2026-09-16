@@ -482,6 +482,7 @@ export async function presignOutboundAttachment(input: {
 	fileName: string;
 	mimeType: string;
 	sizeBytes: number;
+	channel?: 'email' | 'sms';
 }) {
 	const response = await fetch('/api/communications/attachments/presign-upload', {
 		method: 'POST',
@@ -489,7 +490,8 @@ export async function presignOutboundAttachment(input: {
 		body: JSON.stringify({
 			file_name: input.fileName,
 			mime_type: input.mimeType,
-			size_bytes: input.sizeBytes
+			size_bytes: input.sizeBytes,
+			channel: input.channel ?? 'email'
 		})
 	});
 	const result = await response.json().catch(() => ({}));
@@ -533,17 +535,18 @@ export async function sendConversationReply(
 	return result as { intent: { id: string; status: string; created_at: string } };
 }
 
-// SMS mirror of sendConversationReply: no subject, no attachments (MMS is a later stage). Same idempotency
+// SMS mirror of sendConversationReply: no subject, at most one photo (Stage 6D-2). Same idempotency
 // contract -- `idempotencyKey` belongs to the send attempt, and the endpoint dedupes a retry on it.
 export async function sendConversationReplySms(
 	clientId: string,
 	body: string,
+	attachments: OutboundAttachmentPayload[] = [],
 	idempotencyKey: string = crypto.randomUUID()
 ) {
 	const response = await fetch(`/api/communications/conversations/${clientId}/reply`, {
 		method: 'POST',
 		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify({ channel: 'sms', body, idempotency_key: idempotencyKey })
+		body: JSON.stringify({ channel: 'sms', body, idempotency_key: idempotencyKey, attachments })
 	});
 	const result = (await response.json().catch(() => ({}))) as {
 		error?: string;
@@ -568,12 +571,14 @@ export type SmsReplyEstimate =
 			cost_minor: number;
 			currency: string;
 			sender_phone: string;
+			mms_eligible: boolean;
 	  }
-	| { ready: false; reason: string };
+	| { ready: false; reason: string; mms_eligible: boolean };
 
-// The composer's live impact line. Never throws on a normal "not ready yet" outcome (no sender, no
-// published rate) -- those come back as {ready: false, reason} for the composer to show inline; only a
-// genuine request failure throws.
+// The composer's live impact line, plus (Stage 6D-2) whether the current sender can attach a photo --
+// resolved from the sender alone, so it comes back even for an empty draft. Never throws on a normal
+// "not ready yet" outcome (no sender, no published rate) -- those come back as {ready: false, reason} for
+// the composer to show inline; only a genuine request failure throws.
 export async function estimateSmsReply(clientId: string, body: string): Promise<SmsReplyEstimate> {
 	const response = await fetch(`/api/communications/conversations/${clientId}/sms-estimate`, {
 		method: 'POST',

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { createPresignedMediaUrl } from '$lib/server/storage/r2';
 import { runBoundedDrain, type BoundedDrainOptions, type BoundedDrainResult } from './drain';
 import { submitTwilioSms, TwilioSmsSubmissionError, type SubmitTwilioSmsInput } from './twilio';
 import { createSupabaseTwilioProvisioningStore } from './twilio-provisioning-store';
@@ -31,6 +32,13 @@ type ClaimedSms = {
 	segment_count: number;
 };
 
+type OutboundSmsAttachmentRow = {
+	file_name: string;
+	mime_type: string;
+	byte_size: number;
+	object_key: string;
+};
+
 type RpcResult<T> = Promise<{ data: T | null; error: { message: string } | null }>;
 
 export type CommunicationWorkerClient = {
@@ -50,6 +58,7 @@ type SmsWorkerDependencies = {
 	client?: CommunicationWorkerClient;
 	submit?: (input: SubmitTwilioSmsInput) => Promise<{ providerMessageId: string }>;
 	resolveCredentials?: ResolveSmsCredentials;
+	presignMedia?: (objectKey: string, fileName: string) => Promise<string>;
 };
 
 export type ProcessedSmsResult =
@@ -109,11 +118,23 @@ export async function processClaimedSms(
 	const client = resolveClient(dependencies.client);
 	const submit = dependencies.submit ?? submitTwilioSms;
 	const resolveCredentials = dependencies.resolveCredentials ?? defaultResolveSmsCredentials;
+	const presignMedia = dependencies.presignMedia ?? createPresignedMediaUrl;
 
 	const claimed = await client.rpc('claim_communication_sms_outbox_event');
 	if (claimed.error) throw rpcError('Could not claim an SMS', claimed.error);
 	const sms = Array.isArray(claimed.data) ? (claimed.data[0] as ClaimedSms | undefined) : undefined;
 	if (!sms) return { status: 'idle' };
+
+	// Same channel-agnostic read the email worker uses; almost always empty (a text has no picture), so this
+	// adds one cheap RPC per claim rather than a join every claim would otherwise pay for.
+	const attachmentsListed = await client.rpc('list_communication_outbound_attachments', {
+		target_delivery_intent_id: sms.delivery_intent_id
+	});
+	if (attachmentsListed.error)
+		throw rpcError('Could not list outbound SMS attachments', attachmentsListed.error);
+	const attachmentRows = Array.isArray(attachmentsListed.data)
+		? (attachmentsListed.data as OutboundSmsAttachmentRow[])
+		: [];
 
 	let outcome: 'submitted' | 'retry' | 'cancelled' | 'submission_unknown';
 	let providerMessageId: string | undefined;
@@ -136,6 +157,9 @@ export async function processClaimedSms(
 
 	if (credentials) {
 		try {
+			const mediaUrls = await Promise.all(
+				attachmentRows.map((row) => presignMedia(row.object_key, row.file_name))
+			);
 			const submitted = await submit({
 				subaccountSid: sms.subaccount_sid,
 				messagingServiceSid: sms.messaging_service_sid,
@@ -144,7 +168,8 @@ export async function processClaimedSms(
 				from: sms.sender_phone,
 				to: sms.recipient_phone,
 				body: sms.body,
-				deliveryIntentId: sms.delivery_intent_id
+				deliveryIntentId: sms.delivery_intent_id,
+				mediaUrls
 			});
 			outcome = 'submitted';
 			providerMessageId = submitted.providerMessageId;
@@ -183,10 +208,11 @@ export async function drainCommunicationSmsQueue(
 	const client = resolveClient(dependencies.client);
 	const submit = dependencies.submit ?? submitTwilioSms;
 	const resolveCredentials = dependencies.resolveCredentials ?? defaultResolveSmsCredentials;
+	const presignMedia = dependencies.presignMedia ?? createPresignedMediaUrl;
 
 	return runBoundedDrain(
 		() => quarantineStaleSmsClaims(client),
-		() => processClaimedSms({ client, submit, resolveCredentials }),
+		() => processClaimedSms({ client, submit, resolveCredentials, presignMedia }),
 		dependencies
 	);
 }

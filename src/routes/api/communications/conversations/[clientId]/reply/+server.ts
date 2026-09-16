@@ -6,7 +6,8 @@ import { NO_STORE_HEADERS, databaseError, validationError } from '$lib/server/ap
 import { renderManualEmailHtml } from '$lib/server/communications/manual-email';
 import {
 	OutboundAttachmentError,
-	resolveOutboundAttachments
+	resolveOutboundAttachments,
+	resolveOutboundSmsAttachment
 } from '$lib/server/communications/outbound-attachments';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
@@ -73,12 +74,24 @@ export const POST: RequestHandler = async (event) => {
 		}
 
 		if (smsParsed && smsParsed.success) {
+			let smsAttachments;
+			try {
+				const [photo] = smsParsed.data.attachments;
+				smsAttachments = photo ? [await resolveOutboundSmsAttachment(organizationId, photo)] : [];
+			} catch (error) {
+				if (error instanceof OutboundAttachmentError) {
+					return validationError({ attachments: error.message });
+				}
+				throw error;
+			}
+
 			const { data, error } = await ownerClient.rpc('enqueue_conversation_reply_sms', {
 				target_organization_id: organizationId,
 				target_actor_user_id: check.auth.user.id,
 				target_client_id: clientId,
 				target_logical_send_key: smsParsed.data.idempotency_key,
-				target_body: smsParsed.data.body
+				target_body: smsParsed.data.body,
+				target_attachments: smsAttachments
 			});
 			if (error) {
 				const dbError = error as { code?: string; message?: string };

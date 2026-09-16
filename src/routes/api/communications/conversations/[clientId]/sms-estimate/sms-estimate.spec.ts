@@ -45,7 +45,12 @@ describe('SMS reply estimate API', () => {
 		vi.mocked(hasPermission).mockReturnValue(true);
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue({ rpc, from } as never);
 		maybeSingle.mockResolvedValue({
-			data: { phone_number: '+15559990001', country_code: 'US', sender_type: 'long_code' },
+			data: {
+				phone_number: '+15559990001',
+				country_code: 'US',
+				sender_type: 'long_code',
+				capable_mms: true
+			},
 			error: null
 		});
 		rpc.mockImplementation((name: string) => {
@@ -87,7 +92,8 @@ describe('SMS reply estimate API', () => {
 			segment_count: 1,
 			cost_minor: 5,
 			currency: 'USD',
-			sender_phone: '+15559990001'
+			sender_phone: '+15559990001',
+			mms_eligible: true
 		});
 	});
 
@@ -98,7 +104,8 @@ describe('SMS reply estimate API', () => {
 		const result = await response.json();
 		expect(result).toEqual({
 			ready: false,
-			reason: 'No ready SMS number is available to send from.'
+			reason: 'No ready SMS number is available to send from.',
+			mms_eligible: false
 		});
 		expect(rpc).not.toHaveBeenCalled();
 	});
@@ -115,15 +122,23 @@ describe('SMS reply estimate API', () => {
 		const result = await response.json();
 		expect(result).toEqual({
 			ready: false,
-			reason: 'No SMS price is published for this destination yet.'
+			reason: 'No SMS price is published for this destination yet.',
+			mms_eligible: true
 		});
 	});
 
-	it('rejects an empty body without reading anything', async () => {
+	// Stage 6D-2: an empty draft still resolves MMS eligibility from the sender alone (so the composer's
+	// attach-photo button can appear before any text is typed), but never reaches the segment/rate RPCs --
+	// there's no cost to estimate for a message with no body yet.
+	it('resolves MMS eligibility for an empty body without estimating a cost', async () => {
 		const response = await POST(event({ body: '' }));
 		expect(response.status).toBe(200);
 		const result = await response.json();
-		expect(result).toEqual({ ready: false, reason: 'Enter a message to see its estimated cost.' });
-		expect(getOwnerSupabaseClient).not.toHaveBeenCalled();
+		expect(result).toEqual({
+			ready: false,
+			reason: 'Enter a message to see its estimated cost.',
+			mms_eligible: true
+		});
+		expect(rpc).not.toHaveBeenCalled();
 	});
 });

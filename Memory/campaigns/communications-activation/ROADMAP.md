@@ -300,11 +300,42 @@ the app layer. Split into 3 parts, data → send → polish, mirroring Stage 2C/
     `NODE_OPTIONS=--max-old-space-size=8192`, the plain `npm run check` OOMs on this machine); Prettier
     clean. Not live-tested (Stage 9's hard constraint: no real business registered yet, and MMS specifically
     also needs a real US/Canada number on both ends).
-  - **6D-2 Outbound picture sending — not started.** Composer "attach photo" for SMS, auto-shrink to a safe
-    size, `enqueue_conversation_reply_sms` gains attachments, `submitTwilioSms` gains `MediaUrl`, and the
-    eligibility check (reusing the existing sender-capability MMS flag from 2C-3) that must resolve real-MMS
-    vs secure-link *before* Twilio is ever called, matching the approved "cost/reason visible before send"
-    contract.
+  - **6D-2 Outbound picture sending — DONE 2026-09-16 (browser-verified; files UNCOMMITTED).** Migration
+    `20260925100000_communications_sms_outbound_media.sql` adds `private.attach_communication_outbound_sms_
+    media` (reuses the existing channel-agnostic `communication_outbound_attachments` table, no fork; 1-photo
+    cap, 5MB, jpeg/jpg/png/gif only) and an MMS eligibility gate (sender's own `capable_mms` + US/CA country)
+    inside `communication_sms_enqueue_operational_core`/`_operational`/`enqueue_conversation_reply_sms` (all
+    three drop+recreate, matching 6D-1's own precedent for a genuinely changed arg list). pgTAP 40/40 + 15/15
+    green against the local Postgres container. Full TS/UI slice built: attachment resolver, presign route,
+    reply route wiring, `submitTwilioSms`'s `MediaUrl`, the SMS worker's attachment fetch, the composer's
+    attach-photo control gated on `mmsEligible`. No MMS surcharge yet (6D-3's job); a picture sends today at
+    the plain per-segment rate, acceptable since nothing is live regardless (Stage 9's hard constraint).
+    Client-side auto-shrink is descoped to a separate future polish item (Twilio's real 5MB ceiling is already
+    enforced server-side).
+    Browser-verified live as Raad LTD owner, via a temporary full send-pipeline flip (sender ready + registration
+    approved + org mode + test credit — all reverted after, keeping only the true capability facts:
+    `capable_mms`/`capable_sms`/`country_code`/`sender_type` on the one dev sender) plus a real consent record
+    for test client Marta Olsen: paperclip shows/hides correctly on `mmsEligible`, one-photo cap enforced,
+    oversize (>5MB) and wrong-type rejections render in plain English, and the full presign → upload → send →
+    thread-display → download round trip works end to end. The SMS outbox wake cron is deliberately inactive
+    in dev, so no live Twilio call was ever made.
+    Found and fixed two real, pre-existing bugs while verifying (both apply to every outbound SMS, not just
+    MMS — neither was specific to this stage's own new code):
+    1. `email-history/+server.ts` never read an outbound SMS's body off its own frozen
+       `communication_sms_message_snapshots` row — `communication_delivery_intents.text_content` is null for
+       every SMS send. This crashed the whole conversation list (`previewText` calling `.replace` on null) the
+       moment any SMS was sent and the page refetched. Fixed by joining the snapshot table the same bounded,
+       page-keyed way as outbound attachments.
+    2. `communications/+page.svelte`'s `latestEmailSubject` only skipped Website Chat rows when picking the
+       email composer's default subject, not SMS rows (which also have `subject = null`) — crashed
+       `replySubject` calling `.trim()` on null whenever an SMS was a conversation's most recent non-chat
+       message. Fixed by skipping `channel === 'sms'` too.
+    Also found and fixed a real gap in this stage's own scope: the SMS-specific thread-rendering branch never
+    rendered `message.attachments` for an outbound picture (a stale comment referenced 6C's now-superseded
+    "MMS descoped" state) — a sent photo was silently invisible in the sender's own conversation forever, with
+    no confirmation it went out. Fixed by adding the same `AttachmentList` block the generic outbound (email)
+    branch already had. Gate met: 339/339 vitest (up from 338, new test covers the snapshot-body join),
+    full-project svelte-check 0/0, Prettier clean.
   - **6D-3 Polish + money — not started.** New MMS `message_unit` retail-rate row, and the secure-link
     fallback for non-image attachments / out-of-region pictures, reusing the existing quote/invoice
     `access-links` token pattern rather than inventing a new one.

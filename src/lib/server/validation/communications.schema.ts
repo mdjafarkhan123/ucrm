@@ -9,6 +9,12 @@ import {
 // total and dangerous-extension block list (docs/contractor-email-contract.md § Attachments).
 const MAX_OUTBOUND_ATTACHMENTS_PER_MESSAGE = 10;
 
+// Stage 6D-2: Twilio's own accepted-content-types docs cap jpeg/jpg/png/gif at 5 MB combined message+media,
+// and only those four image types are offered for MMS (the approved 6D contract is "pictures", not
+// arbitrary files -- anything else stays an email/secure-link attachment).
+export const MMS_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+export const MMS_PHOTO_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'] as const;
+
 export const outboundAttachmentPresignSchema = z.object({
 	file_name: z
 		.string()
@@ -24,6 +30,25 @@ export const outboundAttachmentPresignSchema = z.object({
 		.int()
 		.positive()
 		.max(INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES, 'Files must be 20 MB or smaller.')
+});
+
+export const outboundSmsMediaPresignSchema = z.object({
+	file_name: z
+		.string()
+		.trim()
+		.min(1, 'Choose a photo.')
+		.max(255)
+		.refine((name) => !DANGEROUS_ATTACHMENT_EXTENSIONS.has(attachmentExtension(name)), {
+			message: 'That file type is not allowed.'
+		}),
+	mime_type: z.enum(MMS_PHOTO_MIME_TYPES, {
+		message: 'Only JPEG, PNG or GIF pictures can be sent as a text message.'
+	}),
+	size_bytes: z
+		.number()
+		.int()
+		.positive()
+		.max(MMS_PHOTO_MAX_BYTES, 'A picture must be 5 MB or smaller to send as a text message.')
 });
 
 // What the send routes accept once a file has already been uploaded: only enough to look it back up and
@@ -231,19 +256,26 @@ export const conversationReplyEmailSchema = z.object({
 	attachments: outboundAttachmentsField
 });
 
-// SMS has no subject line and no attachments (MMS is a later stage); the 1600-char ceiling is a generous
-// client-side guide -- the enqueue command's own segment count (10-segment cap) is the authoritative limit.
+// SMS has no subject line. The 1600-char ceiling is a generous client-side guide -- the enqueue command's
+// own segment count (10-segment cap) is the authoritative limit. Stage 6D-2: at most one picture (the
+// private attach command re-enforces this cap, the mime type and the 5 MB ceiling; this just fails fast).
 export const conversationReplySmsSchema = z.object({
 	body: z
 		.string()
 		.trim()
 		.min(1, 'Enter a message.')
 		.max(1600, 'This message is too long to send as one text.'),
-	idempotency_key: z.string().uuid('Start a new reply attempt and try again.')
+	idempotency_key: z.string().uuid('Start a new reply attempt and try again.'),
+	attachments: z
+		.array(outboundAttachmentSchema)
+		.max(1, 'Attach at most one photo to a text message.')
+		.default([])
 });
 
+// Stage 6D-2: allows an empty body so the composer can resolve MMS eligibility on mount, before any text is
+// typed -- the segment/cost estimate itself still needs real text and stays gated on that in the route.
 export const conversationReplySmsEstimateSchema = z.object({
-	body: z.string().trim().min(1).max(1600)
+	body: z.string().trim().max(1600).default('')
 });
 
 export const forwardInboundMessageSchema = z.object({

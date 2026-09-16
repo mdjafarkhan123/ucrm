@@ -5,14 +5,14 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(37);
+select plan(40);
 
 -- ---------------------------------------------------------------------------------------------------------------
 -- Shape and access boundary.
 -- ---------------------------------------------------------------------------------------------------------------
 select has_table('public', 'communication_sms_quiet_hours_policy', 'the platform quiet-hours policy table exists');
 select has_function('public', 'communication_sms_enqueue_operational',
-  array['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text'],
+  array['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text', 'boolean'],
   'the consent-aware enqueue command exists');
 select has_function('public', 'communication_sms_estimate_segments', array['text'],
   'the segment-estimate helper exists');
@@ -22,11 +22,11 @@ select ok(
   (select relrowsecurity from pg_class where oid = 'public.communication_sms_quiet_hours_policy'::regclass),
   'the quiet-hours policy keeps row-level security enabled');
 select function_privs_are('public', 'communication_sms_enqueue_operational',
-  array['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text'],
+  array['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text', 'boolean'],
   'authenticated', array[]::text[],
   'authenticated clients cannot call the enqueue command directly');
 select function_privs_are('public', 'communication_sms_enqueue_operational',
-  array['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text'],
+  array['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text', 'boolean'],
   'service_role', array['EXECUTE'],
   'the server role owns the enqueue command');
 
@@ -283,6 +283,57 @@ select is(
   (select reserved_balance_minor from public.communication_sms_credit_accounts
    where organization_id = 'e4100000-0000-0000-0000-000000000001'),
   5::bigint, 'a promotional-funded send does not touch the purchased reserved balance');
+
+-- ---------------------------------------------------------------------------------------------------------------
+-- MMS eligibility (Stage 6D-2): Twilio's own hard limit is both ends US/Canada; this system checks the
+-- sender's own capable_mms flag and country_code (see the 6D-2 migration's header note for why).
+-- ---------------------------------------------------------------------------------------------------------------
+select throws_like(
+  $$select public.communication_sms_enqueue_operational(
+      'e4100000-0000-0000-0000-000000000001', 'e4000000-0000-0000-0000-000000000001',
+      'e4200000-0000-0000-0000-000000000001', 'e4300000-0000-0000-0000-000000000001',
+      null, 'service', 'Picture attached.', 'manual', 'send-key-mms-ineligible', true)$$,
+  '%Picture messaging is not available%',
+  'a non-US/Canada, non-MMS-capable default sender refuses a send with media'
+);
+
+-- Readiness is computed per (org, country, sender type, use case) via its own registration row (not
+-- through the sender's FK), so the US sender below needs its own approved US registration.
+insert into public.communication_sms_registrations (
+  id, organization_id, country_code, sender_type, use_case, status,
+  attested_by, attested_at, submitted_at, provider_outcome
+) values (
+  'e4500000-0000-0000-0000-000000000002', 'e4100000-0000-0000-0000-000000000001',
+  'US', 'long_code', 'customer_care', 'approved',
+  'e4000000-0000-0000-0000-000000000001', now(), now(), 'Approved'
+);
+insert into public.communication_sms_sender_identities (
+  id, organization_id, phone_number, lifecycle_state, allows_manual, allows_automated,
+  country_code, sender_type, capable_sms, capable_mms, registration_id, is_default_sender
+) values (
+  'e4400000-0000-0000-0000-000000000002', 'e4100000-0000-0000-0000-000000000001',
+  '+15559990099', 'ready', true, true, 'US', 'long_code', true, true,
+  'e4500000-0000-0000-0000-000000000002', false
+);
+insert into public.communication_sms_retail_rates (
+  destination, sender_type, message_unit, retail_rate_major, effective_from, set_by
+) values (
+  'US', 'long_code', 'segment', 0.05, now() - interval '1 day', 'e4000000-0000-0000-0000-000000000001'
+);
+select lives_ok(
+  $$select public.communication_sms_enqueue_operational(
+      'e4100000-0000-0000-0000-000000000001', 'e4000000-0000-0000-0000-000000000001',
+      'e4200000-0000-0000-0000-000000000001', 'e4300000-0000-0000-0000-000000000001',
+      'e4400000-0000-0000-0000-000000000002', 'service', 'Picture attached.', 'manual',
+      'send-key-mms-eligible', true)$$,
+  'an MMS-capable US/Canada sender allows a send with media through'
+);
+select is(
+  (select sms_sender_identity_id from public.communication_delivery_intents
+    where logical_send_key = 'send-key-mms-eligible'),
+  'e4400000-0000-0000-0000-000000000002'::uuid,
+  'the eligible send used the explicitly chosen MMS-capable sender'
+);
 
 -- ---------------------------------------------------------------------------------------------------------------
 -- Readiness/holds: an active outbound hold pauses new sends.

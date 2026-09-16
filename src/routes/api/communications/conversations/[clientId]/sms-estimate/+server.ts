@@ -28,9 +28,14 @@ export const POST: RequestHandler = async (event) => {
 	}
 	const parsed = conversationReplySmsEstimateSchema.safeParse(body);
 	if (!parsed.success) {
-		return json({ ready: false, reason: 'Enter a message to see its estimated cost.' } as const, {
-			headers: NO_STORE_HEADERS
-		});
+		return json(
+			{
+				ready: false,
+				reason: 'Enter a message to see its estimated cost.',
+				mms_eligible: false
+			} as const,
+			{ headers: NO_STORE_HEADERS }
+		);
 	}
 
 	const organizationId = check.auth.organization.id;
@@ -38,7 +43,7 @@ export const POST: RequestHandler = async (event) => {
 	try {
 		const { data: sender, error: senderError } = await ownerClient
 			.from('communication_sms_sender_identities')
-			.select('phone_number, country_code, sender_type')
+			.select('phone_number, country_code, sender_type, capable_mms')
 			.eq('organization_id', organizationId)
 			.eq('is_default_sender', true)
 			.eq('lifecycle_state', 'ready')
@@ -50,7 +55,27 @@ export const POST: RequestHandler = async (event) => {
 		}
 		if (!sender?.country_code || !sender.sender_type) {
 			return json(
-				{ ready: false, reason: 'No ready SMS number is available to send from.' } as const,
+				{
+					ready: false,
+					reason: 'No ready SMS number is available to send from.',
+					mms_eligible: false
+				} as const,
+				{ headers: NO_STORE_HEADERS }
+			);
+		}
+
+		// Decision (6D-2, recorded in campaign memory): eligibility is the sender's own MMS capability plus
+		// its registered country -- the only country signal this codebase tracks today, since a customer's
+		// own number country isn't tracked independently of the sender's.
+		const mmsEligible = sender.capable_mms === true && ['US', 'CA'].includes(sender.country_code);
+
+		if (!parsed.data.body) {
+			return json(
+				{
+					ready: false,
+					reason: 'Enter a message to see its estimated cost.',
+					mms_eligible: mmsEligible
+				} as const,
 				{ headers: NO_STORE_HEADERS }
 			);
 		}
@@ -80,7 +105,11 @@ export const POST: RequestHandler = async (event) => {
 		const retailRate = rate as { retail_rate_major: number; currency_code: string } | null;
 		if (!retailRate) {
 			return json(
-				{ ready: false, reason: 'No SMS price is published for this destination yet.' } as const,
+				{
+					ready: false,
+					reason: 'No SMS price is published for this destination yet.',
+					mms_eligible: mmsEligible
+				} as const,
 				{ headers: NO_STORE_HEADERS }
 			);
 		}
@@ -92,7 +121,8 @@ export const POST: RequestHandler = async (event) => {
 				segment_count: segment.segment_count,
 				cost_minor: Math.ceil(segment.segment_count * Number(retailRate.retail_rate_major) * 100),
 				currency: retailRate.currency_code,
-				sender_phone: sender.phone_number
+				sender_phone: sender.phone_number,
+				mms_eligible: mmsEligible
 			} as const,
 			{ headers: NO_STORE_HEADERS }
 		);

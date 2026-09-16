@@ -6,15 +6,15 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(11);
+select plan(15);
 
 select function_privs_are(
-  'public', 'enqueue_conversation_reply_sms', array['uuid', 'uuid', 'uuid', 'text', 'text'], 'service_role',
-  array['EXECUTE'], 'only the service worker can enqueue an SMS conversation reply'
+  'public', 'enqueue_conversation_reply_sms', array['uuid', 'uuid', 'uuid', 'text', 'text', 'jsonb'],
+  'service_role', array['EXECUTE'], 'only the service worker can enqueue an SMS conversation reply'
 );
 select function_privs_are(
-  'public', 'enqueue_conversation_reply_sms', array['uuid', 'uuid', 'uuid', 'text', 'text'], 'authenticated',
-  array[]::text[], 'authenticated clients cannot call the command directly'
+  'public', 'enqueue_conversation_reply_sms', array['uuid', 'uuid', 'uuid', 'text', 'text', 'jsonb'],
+  'authenticated', array[]::text[], 'authenticated clients cannot call the command directly'
 );
 
 -- ---------------------------------------------------------------------------------------------------------------
@@ -51,16 +51,18 @@ insert into public.communication_sms_registrations (
   attested_by, attested_at, submitted_at, provider_outcome
 ) values (
   'ec500000-0000-0000-0000-000000000001', 'ec100000-0000-0000-0000-000000000001',
-  'ZZ', 'long_code', 'customer_care', 'approved',
+  'US', 'long_code', 'customer_care', 'approved',
   'ec000000-0000-0000-0000-000000000001', now(), now(), 'Approved'
 );
 
+-- Country 'US' + capable_mms so this file can also exercise 6D-2's attach-a-photo path without a second
+-- fixture org; none of this file's other assertions inspect country_code or capable_mms.
 insert into public.communication_sms_sender_identities (
   id, organization_id, phone_number, lifecycle_state, allows_manual, allows_automated,
-  country_code, sender_type, capable_sms, registration_id, is_default_sender
+  country_code, sender_type, capable_sms, capable_mms, registration_id, is_default_sender
 ) values (
   'ec400000-0000-0000-0000-000000000001', 'ec100000-0000-0000-0000-000000000001',
-  '+15559990002', 'ready', true, true, 'ZZ', 'long_code', true,
+  '+15559990002', 'ready', true, true, 'US', 'long_code', true, true,
   'ec500000-0000-0000-0000-000000000001', true
 );
 
@@ -70,7 +72,7 @@ insert into public.communication_sms_org_modes (organization_id, package_max_mod
 insert into public.communication_sms_retail_rates (
   destination, sender_type, message_unit, retail_rate_major, effective_from, set_by
 ) values (
-  'ZZ', 'long_code', 'segment', 0.05, now() - interval '1 day', 'ec000000-0000-0000-0000-000000000001'
+  'US', 'long_code', 'segment', 0.05, now() - interval '1 day', 'ec000000-0000-0000-0000-000000000001'
 );
 
 insert into public.communication_sms_credit_accounts (organization_id, settled_balance_minor, reserved_balance_minor)
@@ -178,6 +180,47 @@ select throws_ok(
   )$$,
   '42501', 'You do not have permission to send a customer message.',
   'a member without conversations.send/customers.view cannot enqueue an SMS reply (inherited from the operational command)'
+);
+
+-- ---------------------------------------------------------------------------------------------------------------
+-- Stage 6D-2: a photo attaches to the reply through the same transaction as the intent.
+-- ---------------------------------------------------------------------------------------------------------------
+select lives_ok(
+  $$select public.enqueue_conversation_reply_sms(
+    'ec100000-0000-0000-0000-000000000001', 'ec000000-0000-0000-0000-000000000001',
+    'ec200000-0000-0000-0000-000000000001', 'reply-sms-with-photo', 'Here is a look at the job site.',
+    '[{"object_key": "ec100000-0000-0000-0000-000000000001/outbound-sms-attachments/site.jpg",
+       "file_name": "site.jpg", "mime_type": "image/jpeg", "byte_size": 204800}]'::jsonb
+  )$$,
+  'an MMS-eligible reply with one photo attaches successfully'
+);
+select is(
+  (select file_name from public.communication_outbound_attachments a
+    join public.communication_delivery_intents i on i.id = a.delivery_intent_id
+    where i.logical_send_key = 'reply-sms-with-photo'),
+  'site.jpg', 'the attached photo is recorded against the new intent'
+);
+select throws_like(
+  $$select public.enqueue_conversation_reply_sms(
+    'ec100000-0000-0000-0000-000000000001', 'ec000000-0000-0000-0000-000000000001',
+    'ec200000-0000-0000-0000-000000000001', 'reply-sms-photo-wrong-org', 'Nice try.',
+    '[{"object_key": "not-my-org/outbound-sms-attachments/site.jpg",
+       "file_name": "site.jpg", "mime_type": "image/jpeg", "byte_size": 204800}]'::jsonb
+  )$$,
+  '%does not belong to this business%',
+  'an object key outside this organization''s own prefix is refused'
+);
+select throws_like(
+  $$select public.enqueue_conversation_reply_sms(
+    'ec100000-0000-0000-0000-000000000001', 'ec000000-0000-0000-0000-000000000001',
+    'ec200000-0000-0000-0000-000000000001', 'reply-sms-two-photos', 'Two photos.',
+    '[{"object_key": "ec100000-0000-0000-0000-000000000001/outbound-sms-attachments/a.jpg",
+       "file_name": "a.jpg", "mime_type": "image/jpeg", "byte_size": 1000},
+      {"object_key": "ec100000-0000-0000-0000-000000000001/outbound-sms-attachments/b.jpg",
+       "file_name": "b.jpg", "mime_type": "image/jpeg", "byte_size": 1000}]'::jsonb
+  )$$,
+  '%Attach at most one photo%',
+  'a second photo on the same text message is refused'
 );
 
 select * from finish();

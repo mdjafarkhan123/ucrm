@@ -17,6 +17,8 @@ vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
 vi.mock('$lib/server/storage/r2', () => ({
 	buildOutboundEmailAttachmentObjectKey: (organizationId: string, fileName: string) =>
 		`${organizationId}/outbound-email-attachments/fixed-uuid-${fileName}`,
+	buildOutboundSmsAttachmentObjectKey: (organizationId: string, fileName: string) =>
+		`${organizationId}/outbound-sms-attachments/fixed-uuid-${fileName}`,
 	createPresignedUploadUrl: vi.fn()
 }));
 
@@ -88,5 +90,35 @@ describe('outbound attachment presign API', () => {
 		const response = await POST(event({ ...validBody, size_bytes: 21 * 1024 * 1024 }));
 		expect(response.status).toBe(422);
 		expect(createPresignedUploadUrl).not.toHaveBeenCalled();
+	});
+
+	describe('sms channel (Stage 6D-2 MMS photo)', () => {
+		const validSmsBody = {
+			channel: 'sms',
+			file_name: 'photo.jpg',
+			mime_type: 'image/jpeg',
+			size_bytes: 1024
+		};
+
+		it('issues an org-scoped key under the outbound-sms-attachments prefix', async () => {
+			const response = await POST(event(validSmsBody));
+			expect(response.status).toBe(200);
+			const payload = await response.json();
+			expect(payload.object_key).toBe(
+				`${organizationId}/outbound-sms-attachments/fixed-uuid-photo.jpg`
+			);
+		});
+
+		it('rejects a mime type MMS does not accept', async () => {
+			const response = await POST(event({ ...validSmsBody, mime_type: 'application/pdf' }));
+			expect(response.status).toBe(422);
+			expect(createPresignedUploadUrl).not.toHaveBeenCalled();
+		});
+
+		it('rejects a photo over the 5 MB MMS cap', async () => {
+			const response = await POST(event({ ...validSmsBody, size_bytes: 6 * 1024 * 1024 }));
+			expect(response.status).toBe(422);
+			expect(createPresignedUploadUrl).not.toHaveBeenCalled();
+		});
 	});
 });

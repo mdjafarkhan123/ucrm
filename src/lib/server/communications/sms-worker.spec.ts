@@ -30,10 +30,12 @@ const credentials: ResolveSmsCredentials = async () => ({
 	apiKeySecret: 'secret'
 });
 
-function clientWithClaim(value: typeof claim | undefined) {
+function clientWithClaim(value: typeof claim | undefined, attachments: unknown[] = []) {
 	const rpc = vi.fn(async (name: string) => {
 		if (name === 'claim_communication_sms_outbox_event')
 			return { data: value ? [value] : [], error: null };
+		if (name === 'list_communication_outbound_attachments')
+			return { data: attachments, error: null };
 		if (name === 'finalize_communication_sms_outbox_event')
 			return { data: [{ outbox_status: 'submitted' }], error: null };
 		return { data: null, error: { message: `Unexpected RPC ${name}.` } };
@@ -81,6 +83,31 @@ describe('processClaimedSms', () => {
 		);
 	});
 
+	it('presigns and forwards media URLs for a claimed SMS with a picture attached', async () => {
+		const { client } = clientWithClaim(claim, [
+			{
+				file_name: 'job-photo.jpg',
+				mime_type: 'image/jpeg',
+				byte_size: 12_345,
+				object_key: 'org-1/outbound-sms-attachments/job-photo.jpg'
+			}
+		]);
+		const submit = vi.fn().mockResolvedValue({ providerMessageId: 'SMabc' });
+		const presignMedia = vi.fn().mockResolvedValue('https://r2.example/signed-url');
+
+		await expect(
+			processClaimedSms({ client, submit, resolveCredentials: credentials, presignMedia })
+		).resolves.toEqual({ status: 'submitted', intentId: 'intent-1' });
+
+		expect(presignMedia).toHaveBeenCalledWith(
+			'org-1/outbound-sms-attachments/job-photo.jpg',
+			'job-photo.jpg'
+		);
+		expect(submit).toHaveBeenCalledWith(
+			expect.objectContaining({ mediaUrls: ['https://r2.example/signed-url'] })
+		);
+	});
+
 	it.each([
 		['retry', 'twilio_http_429'],
 		['cancelled', 'twilio_http_400'],
@@ -106,9 +133,10 @@ describe('processClaimedSms', () => {
 		const submit = vi.fn();
 		const resolveCredentials = vi.fn().mockRejectedValue(new Error('key missing'));
 
-		await expect(
-			processClaimedSms({ client, submit, resolveCredentials })
-		).resolves.toMatchObject({ status: 'retry', intentId: 'intent-1' });
+		await expect(processClaimedSms({ client, submit, resolveCredentials })).resolves.toMatchObject({
+			status: 'retry',
+			intentId: 'intent-1'
+		});
 		expect(submit).not.toHaveBeenCalled();
 		expect(rpc).toHaveBeenCalledWith(
 			'finalize_communication_sms_outbox_event',
@@ -143,6 +171,7 @@ describe('drainCommunicationSmsQueue', () => {
 				remaining -= 1;
 				return { data: [{ ...claim, outbox_event_id: `outbox-${remaining}` }], error: null };
 			}
+			if (name === 'list_communication_outbound_attachments') return { data: [], error: null };
 			if (name === 'finalize_communication_sms_outbox_event')
 				return { data: [{ outbox_status: 'submitted' }], error: null };
 			return { data: null, error: { message: `Unexpected RPC ${name}.` } };
@@ -210,16 +239,21 @@ describe('runMonitoredSmsWake', () => {
 		);
 		expect(rpc).toHaveBeenCalledWith(
 			'record_communication_worker_wake_result',
-			expect.objectContaining({ p_route_outcome: 'already_running', p_worker_name: SMS_WORKER_NAME })
+			expect.objectContaining({
+				p_route_outcome: 'already_running',
+				p_worker_name: SMS_WORKER_NAME
+			})
 		);
 	});
 
 	it('drains under the lease, records the outcome, and releases the lease', async () => {
 		const { client, rpc } = monitoredClient({});
 
-		await expect(
-			runMonitoredSmsWake({ client, ...wake, concurrency: 1 })
-		).resolves.toMatchObject({ outcome: 'idle', claimed: 0, stoppedBy: 'idle' });
+		await expect(runMonitoredSmsWake({ client, ...wake, concurrency: 1 })).resolves.toMatchObject({
+			outcome: 'idle',
+			claimed: 0,
+			stoppedBy: 'idle'
+		});
 		expect(rpc).toHaveBeenCalledWith(
 			'release_communication_worker_lease',
 			expect.objectContaining({ p_lease_token: 'lease-1', p_worker_name: SMS_WORKER_NAME })
@@ -229,17 +263,19 @@ describe('runMonitoredSmsWake', () => {
 	it('reports route_deadline without releasing the lease when the drain overruns', async () => {
 		const { client, rpc } = monitoredClient({ claimDelayMs: 60 });
 
-		await expect(
-			runMonitoredSmsWake({ client, ...wake, routeDeadlineMs: 5 })
-		).resolves.toEqual({ outcome: 'route_deadline' });
-		expect(rpc.mock.calls.map(([name]) => name)).not.toContain('release_communication_worker_lease');
+		await expect(runMonitoredSmsWake({ client, ...wake, routeDeadlineMs: 5 })).resolves.toEqual({
+			outcome: 'route_deadline'
+		});
+		expect(rpc.mock.calls.map(([name]) => name)).not.toContain(
+			'release_communication_worker_lease'
+		);
 	});
 
 	it('still returns the drain outcome when the ledger write fails', async () => {
 		const { client } = monitoredClient({ recordError: true });
 
-		await expect(
-			runMonitoredSmsWake({ client, ...wake, concurrency: 1 })
-		).resolves.toMatchObject({ outcome: 'idle' });
+		await expect(runMonitoredSmsWake({ client, ...wake, concurrency: 1 })).resolves.toMatchObject({
+			outcome: 'idle'
+		});
 	});
 });

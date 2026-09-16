@@ -6,6 +6,7 @@ import {
 	resolveOutboundAttachments
 } from '$lib/server/communications/outbound-attachments';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { headObject } from '$lib/server/storage/r2';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 
 vi.mock('$lib/server/access/permission', () => ({
@@ -17,6 +18,7 @@ vi.mock('$lib/server/communications/outbound-attachments', async (importOriginal
 	resolveOutboundAttachments: vi.fn()
 }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
+vi.mock('$lib/server/storage/r2', () => ({ headObject: vi.fn() }));
 vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/server/security/rate-limit')>()),
 	checkRateLimit: vi.fn()
@@ -57,6 +59,7 @@ describe('conversation reply API', () => {
 		vi.mocked(checkRateLimit).mockResolvedValue({ allowed: true, retryAfterSeconds: 0 });
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue({ rpc } as never);
 		vi.mocked(resolveOutboundAttachments).mockResolvedValue([]);
+		vi.mocked(headObject).mockResolvedValue({ contentType: 'image/jpeg', contentLength: 2048 });
 		rpc.mockResolvedValue({
 			data: { id: 'intent-1', status: 'queued', created_at: '2026-08-25T00:00:00.000Z' },
 			error: null
@@ -179,9 +182,43 @@ describe('conversation reply API', () => {
 				target_actor_user_id: userId,
 				target_client_id: clientId,
 				target_logical_send_key: validSmsBody.idempotency_key,
-				target_body: validSmsBody.body
+				target_body: validSmsBody.body,
+				target_attachments: []
 			});
 			expect(resolveOutboundAttachments).not.toHaveBeenCalled();
+		});
+
+		it('resolves and forwards a single attached photo through resolveOutboundSmsAttachment', async () => {
+			const photo = {
+				object_key: `${organizationId}/outbound-sms-attachments/photo.jpg`,
+				file_name: 'photo.jpg',
+				mime_type: 'image/jpeg'
+			};
+			const response = await POST(event({ ...validSmsBody, attachments: [photo] }));
+			expect(response.status).toBe(201);
+			expect(rpc).toHaveBeenCalledWith(
+				'enqueue_conversation_reply_sms',
+				expect.objectContaining({
+					target_attachments: [expect.objectContaining({ object_key: photo.object_key })]
+				})
+			);
+		});
+
+		it('rejects an attached photo stored under another organization before calling the database', async () => {
+			const response = await POST(
+				event({
+					...validSmsBody,
+					attachments: [
+						{
+							object_key: 'other-org/outbound-sms-attachments/photo.jpg',
+							file_name: 'photo.jpg',
+							mime_type: 'image/jpeg'
+						}
+					]
+				})
+			);
+			expect(response.status).toBe(422);
+			expect(rpc).not.toHaveBeenCalled();
 		});
 
 		it('rejects an empty SMS body before accessing the service role', async () => {

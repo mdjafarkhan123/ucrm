@@ -197,6 +197,9 @@ export type SubmitTwilioSmsInput = {
 	// The frozen logical-send identity. Passed to Twilio as an idempotency-style tag for correlation only; the
 	// database outbox is the real exactly-once boundary.
 	deliveryIntentId: string;
+	// Stage 6D-2: presigned inline URLs for the message's picture(s), one repeated MediaUrl field per
+	// Twilio's own form-encoding for MMS. Undefined/empty sends a plain SMS, matching today's behavior.
+	mediaUrls?: string[];
 };
 
 /**
@@ -211,6 +214,16 @@ export async function submitTwilioSms(
 	// the Account SID in the path.
 	const auth = basicAuthHeader(input.apiKeySid, input.apiKeySecret);
 
+	const params = new URLSearchParams({
+		To: input.to,
+		From: input.from,
+		MessagingServiceSid: input.messagingServiceSid,
+		Body: input.body
+	});
+	for (const mediaUrl of input.mediaUrls ?? []) {
+		params.append('MediaUrl', mediaUrl);
+	}
+
 	let response: Response;
 	try {
 		response = await fetch(url, {
@@ -220,12 +233,7 @@ export async function submitTwilioSms(
 				authorization: auth,
 				'content-type': 'application/x-www-form-urlencoded'
 			},
-			body: new URLSearchParams({
-				To: input.to,
-				From: input.from,
-				MessagingServiceSid: input.messagingServiceSid,
-				Body: input.body
-			}).toString(),
+			body: params.toString(),
 			signal: AbortSignal.timeout(SMS_SEND_TIMEOUT_MS)
 		}).catch(() => {
 			throw new TwilioSmsSubmissionError(

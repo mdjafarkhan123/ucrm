@@ -146,6 +146,7 @@ describe('reading Communications history', () => {
 				{ data: [{ id: 'client-1', display_name: 'Acme' }], error: null }, // clients
 				{ data: [], error: null }, // resent-into lookup
 				{ data: [], error: null }, // outbound attachments
+				{ data: [], error: null }, // sms message snapshots (bodies)
 				{ data: [], error: null }, // assignments
 				{ data: [], error: null } // my follows
 			]);
@@ -180,8 +181,8 @@ describe('reading Communications history', () => {
 					is_following: false
 				}
 			]);
-			// Only the outbound query and its five lookups run -- no inbound table is ever touched.
-			expect(from).toHaveBeenCalledTimes(6);
+			// Only the outbound query and its six lookups run -- no inbound table is ever touched.
+			expect(from).toHaveBeenCalledTimes(7);
 		});
 
 		it('attaches outbound attachments to the matching outbound message', async () => {
@@ -219,6 +220,7 @@ describe('reading Communications history', () => {
 					],
 					error: null
 				}, // outbound attachments
+				{ data: [], error: null }, // sms message snapshots (bodies)
 				{ data: [], error: null }, // assignments
 				{ data: [], error: null } // my follows
 			]);
@@ -235,6 +237,47 @@ describe('reading Communications history', () => {
 					byte_size: 5678
 				}
 			]);
+		});
+
+		it("reads an outbound SMS message's body from its frozen snapshot, not the null intent column", async () => {
+			const from = fromQueue([
+				{
+					data: [
+						{
+							id: 'out-sms-1',
+							client_id: 'client-1',
+							channel: 'sms',
+							recipient_phone: '+15550001111',
+							quote_id: null,
+							subject: null,
+							text_content: null,
+							status: 'queued',
+							failure_message: null,
+							created_at: '2026-09-16T10:00:00+00:00',
+							resent_from_intent_id: null,
+							send_kind: 'manual',
+							created_by: null
+						}
+					],
+					error: null
+				},
+				{ data: [{ id: 'client-1', display_name: 'Acme' }], error: null }, // clients
+				{ data: [], error: null }, // resent-into lookup
+				{ data: [], error: null }, // outbound attachments
+				{
+					data: [
+						{ delivery_intent_id: 'out-sms-1', body: 'Here is a photo for your appointment.' }
+					],
+					error: null
+				}, // sms message snapshots (bodies)
+				{ data: [], error: null }, // assignments
+				{ data: [], error: null } // my follows
+			]);
+			mockedOwnerClient.mockReturnValue({ from } as never);
+
+			const response = await GET(event(''));
+			const body = await response.json();
+			expect(body.emails[0].text_content).toBe('Here is a photo for your appointment.');
 		});
 
 		it('merges inbound replies in with unread computed from the personal read mark', async () => {
@@ -326,6 +369,8 @@ describe('reading Communications history', () => {
 					error: null
 				},
 				// outbound attachments
+				{ data: [], error: null },
+				// sms message snapshots (bodies)
 				{ data: [], error: null },
 				// read marks
 				{

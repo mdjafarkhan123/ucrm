@@ -114,6 +114,15 @@ export function buildOutboundEmailAttachmentObjectKey(
 	return `${organizationId}/outbound-email-attachments/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
 }
 
+// Stage 6D-2: the composer's "attach a photo" for SMS. Its own `<org>/outbound-sms-attachments/` prefix
+// is what attach_communication_outbound_sms_media checks server-side, kept out of the email prefix's path.
+export function buildOutboundSmsAttachmentObjectKey(
+	organizationId: string,
+	fileName: string
+): string {
+	return `${organizationId}/outbound-sms-attachments/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
+}
+
 // A stranger's photo on a public form gets its own `<org>/public-form-submissions/<form>/` prefix --
 // submit_form_response checks every photo key against exactly this prefix before it trusts one, matching
 // every other upload's isolation.
@@ -181,6 +190,24 @@ export async function createPresignedDownloadUrl(
 		Bucket: env.R2_BUCKET,
 		Key: objectKey,
 		ResponseContentDisposition: `attachment; filename="${fileName.replace(/"/g, '')}"`
+	});
+	return getSignedUrl(client, command, { expiresIn: DOWNLOAD_URL_TTL_SECONDS });
+}
+
+// Stage 6D-2: the URL Twilio's own servers GET/HEAD to fetch an outbound MMS picture (the MediaUrl
+// parameter). Twilio's accepted-content-types guide asks for an explicit Content-Disposition so the
+// recipient sees the right file name -- `inline` per that guide's own example, unlike the browser-facing
+// download link above. Generated fresh at submit time (the SMS worker calls Twilio right after), so the
+// same 5-minute TTL used for a human download is more than enough here.
+export async function createPresignedMediaUrl(
+	objectKey: string,
+	fileName: string
+): Promise<string> {
+	const { client, env } = getR2();
+	const command = new GetObjectCommand({
+		Bucket: env.R2_BUCKET,
+		Key: objectKey,
+		ResponseContentDisposition: `inline; filename="${fileName.replace(/"/g, '')}"`
 	});
 	return getSignedUrl(client, command, { expiresIn: DOWNLOAD_URL_TTL_SECONDS });
 }

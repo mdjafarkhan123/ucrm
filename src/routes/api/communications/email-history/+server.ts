@@ -378,6 +378,7 @@ export const GET: RequestHandler = async (event) => {
 		resentIntoResult,
 		attachmentsResult,
 		outboundAttachmentsResult,
+		smsSnapshotsResult,
 		readMarksResult,
 		assignmentsResult,
 		myFollowsResult,
@@ -418,6 +419,16 @@ export const GET: RequestHandler = async (event) => {
 			? ownerClient
 					.from('communication_outbound_attachments')
 					.select('id, delivery_intent_id, file_name, mime_type, byte_size')
+					.in('delivery_intent_id', outboundIds)
+			: Promise.resolve({ data: [], error: null }),
+		// An SMS intent's body lives on its own frozen snapshot row (20260925100000_communications_sms_...
+		// outbound_media.sql and earlier), never on communication_delivery_intents.text_content itself --
+		// that column stays null for every SMS send. Read it back here the same bounded, page-keyed way as
+		// the outbound attachments just above.
+		outboundIds.length
+			? ownerClient
+					.from('communication_sms_message_snapshots')
+					.select('delivery_intent_id, body')
 					.in('delivery_intent_id', outboundIds)
 			: Promise.resolve({ data: [], error: null }),
 		(inboundIds.length || chatPage.length) && clientIds.length
@@ -464,6 +475,7 @@ export const GET: RequestHandler = async (event) => {
 		resentIntoResult.error ||
 		attachmentsResult.error ||
 		outboundAttachmentsResult.error ||
+		smsSnapshotsResult.error ||
 		readMarksResult.error ||
 		assignmentsResult.error ||
 		myFollowsResult.error ||
@@ -482,6 +494,9 @@ export const GET: RequestHandler = async (event) => {
 		(assignmentsResult.data ?? []).map((row) => [row.client_id, row.assigned_to])
 	);
 	const followingClientIds = new Set((myFollowsResult.data ?? []).map((row) => row.client_id));
+	const smsBodyByIntent = new Map(
+		(smsSnapshotsResult.data ?? []).map((row) => [row.delivery_intent_id, row.body])
+	);
 
 	// Whoever ended a session, and the two candidate Clients a needs-review session is caught between.
 	// Neither can be known before the sessions above come back, so both ride the profile lookup that was
@@ -574,6 +589,7 @@ export const GET: RequestHandler = async (event) => {
 
 	const outboundMessages = outboundPage.map(({ direction: _direction, ...row }) => ({
 		...row,
+		text_content: row.channel === 'sms' ? (smsBodyByIntent.get(row.id) ?? '') : row.text_content,
 		client_name: namesById.get(row.client_id) ?? 'Client unavailable',
 		client_email: row.recipient_email,
 		client_phone: row.recipient_phone,

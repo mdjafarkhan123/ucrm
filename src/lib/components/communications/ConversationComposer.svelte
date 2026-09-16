@@ -56,29 +56,32 @@
 	let pendingTemplate = $state<CommunicationEmailTemplateListItem | null>(null);
 	let estimate = $state<SmsReplyEstimate | null>(null);
 	let estimating = $state(false);
+	// Resolved from the sender alone (Stage 6D-2), independent of the cost estimate above, so the attach
+	// button's visibility doesn't wait on the user typing anything.
+	let mmsEligible = $state(false);
 
 	// The composer's live impact line (blueprint: "live characters, estimated segments and estimated
-	// retail cost"). Debounced so every keystroke does not fire a request; a token guards against a
-	// slower, stale response landing after a faster, newer one already applied.
+	// retail cost"), plus MMS eligibility for the attach-photo button. Debounced so every keystroke does not
+	// fire a request; a token guards against a slower, stale response landing after a faster, newer one
+	// already applied. Still fires on an empty draft (just less often -- only on mount or after clearing the
+	// box) so eligibility resolves before the user has typed anything.
 	let estimateToken = 0;
 	$effect(() => {
 		if (channel !== 'sms') {
 			estimate = null;
 			estimating = false;
+			mmsEligible = false;
 			return;
 		}
 		const text = body.trim();
-		if (!text) {
-			estimate = null;
-			estimating = false;
-			return;
-		}
 		const token = ++estimateToken;
-		estimating = true;
+		estimating = Boolean(text);
 		const handle = setTimeout(async () => {
 			try {
 				const result = await estimateSmsReply(clientId, text);
-				if (token === estimateToken) estimate = result;
+				if (token !== estimateToken) return;
+				mmsEligible = result.mms_eligible;
+				estimate = text ? result : null;
 			} catch {
 				if (token === estimateToken) estimate = null;
 			} finally {
@@ -157,7 +160,7 @@
 		try {
 			const result =
 				channel === 'sms'
-					? await sendConversationReplySms(clientId, attempt.body, attempt.id)
+					? await sendConversationReplySms(clientId, attempt.body, attempt.attachments, attempt.id)
 					: await sendConversationReply(
 							clientId,
 							attempt.subject,
@@ -218,13 +221,13 @@
 			id: crypto.randomUUID(),
 			subject,
 			body,
-			attachments: channel === 'email' ? (attachmentsField?.getAttachments() ?? []) : []
+			attachments: attachmentsField?.getAttachments() ?? []
 		};
 		// Cleared up front, the way a messenger does: the message is now represented by its bubble in the
 		// timeline, so leaving a copy in the box would read as if nothing had been sent.
 		body = '';
 		estimate = null;
-		if (channel === 'email') attachmentsField?.reset();
+		attachmentsField?.reset();
 		void deliver(attempt);
 	}
 </script>
@@ -292,6 +295,13 @@
 		{#if channel === 'email'}
 			<ConversationAttachments
 				bind:this={attachmentsField}
+				disabled={sending}
+				onUploadingChange={(value) => (uploading = value)}
+			/>
+		{:else if mmsEligible}
+			<ConversationAttachments
+				bind:this={attachmentsField}
+				variant="sms-photo"
 				disabled={sending}
 				onUploadingChange={(value) => (uploading = value)}
 			/>

@@ -13470,6 +13470,7 @@ export type Database = {
 					p_body: string;
 					p_client_contact_method_id: string;
 					p_client_id: string;
+					p_has_media?: boolean;
 					p_logical_send_key: string;
 					p_organization_id: string;
 					p_send_kind: string;
@@ -15022,6 +15023,7 @@ export type Database = {
 			enqueue_conversation_reply_sms: {
 				Args: {
 					target_actor_user_id: string;
+					target_attachments?: Json;
 					target_body: string;
 					target_client_id: string;
 					target_logical_send_key: string;

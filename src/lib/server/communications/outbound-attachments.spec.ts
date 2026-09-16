@@ -1,11 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { headObject } from '$lib/server/storage/r2';
-import { OutboundAttachmentError, resolveOutboundAttachments } from './outbound-attachments';
+import {
+	OutboundAttachmentError,
+	resolveOutboundAttachments,
+	resolveOutboundSmsAttachment
+} from './outbound-attachments';
 
 vi.mock('$lib/server/storage/r2', () => ({ headObject: vi.fn() }));
 
 const organizationId = 'org-1';
 const objectKey = `${organizationId}/outbound-email-attachments/i/quote.pdf`;
+const smsObjectKey = `${organizationId}/outbound-sms-attachments/photo.jpg`;
 
 describe('resolveOutboundAttachments', () => {
 	beforeEach(() => {
@@ -73,5 +78,69 @@ describe('resolveOutboundAttachments', () => {
 				{ object_key: `${objectKey}-2`, file_name: 'b.pdf', mime_type: 'application/pdf' }
 			])
 		).rejects.toThrow('Attachments must total 20 MB or less.');
+	});
+});
+
+describe('resolveOutboundSmsAttachment', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it('measures the photo from storage rather than trusting the browser-declared size', async () => {
+		vi.mocked(headObject).mockResolvedValue({ contentType: 'image/jpeg', contentLength: 2048 });
+
+		const result = await resolveOutboundSmsAttachment(organizationId, {
+			object_key: smsObjectKey,
+			file_name: 'photo.jpg',
+			mime_type: 'application/octet-stream'
+		});
+
+		expect(result).toEqual({
+			file_name: 'photo.jpg',
+			mime_type: 'image/jpeg',
+			byte_size: 2048,
+			object_key: smsObjectKey
+		});
+	});
+
+	it('rejects an object key stored under another organization', async () => {
+		await expect(
+			resolveOutboundSmsAttachment(organizationId, {
+				object_key: 'other-org/outbound-sms-attachments/photo.jpg',
+				file_name: 'photo.jpg',
+				mime_type: 'image/jpeg'
+			})
+		).rejects.toThrow(OutboundAttachmentError);
+		expect(headObject).not.toHaveBeenCalled();
+	});
+
+	it('rejects a picture over the 5 MB MMS ceiling', async () => {
+		vi.mocked(headObject).mockResolvedValue({
+			contentType: 'image/jpeg',
+			contentLength: 6 * 1024 * 1024
+		});
+
+		await expect(
+			resolveOutboundSmsAttachment(organizationId, {
+				object_key: smsObjectKey,
+				file_name: 'photo.jpg',
+				mime_type: 'image/jpeg'
+			})
+		).rejects.toThrow('A picture must be 5 MB or smaller to send as a text message.');
+	});
+
+	it('rejects a mime type MMS does not accept', async () => {
+		vi.mocked(headObject).mockResolvedValue({
+			contentType: 'application/pdf',
+			contentLength: 2048
+		});
+
+		await expect(
+			resolveOutboundSmsAttachment(organizationId, {
+				object_key: smsObjectKey,
+				file_name: 'not-a-photo.pdf',
+				mime_type: 'application/pdf'
+			})
+		).rejects.toThrow('Only JPEG, PNG or GIF pictures can be sent as a text message.');
 	});
 });

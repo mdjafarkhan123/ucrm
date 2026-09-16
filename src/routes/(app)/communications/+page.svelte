@@ -236,12 +236,12 @@
 	}
 
 	// The email composer's default subject reuses the conversation's most recent email-shaped message --
-	// a chat message has none, so this skips backward past chat rows the same way `conversationCustomerEmail`
-	// does.
+	// neither a chat message nor an SMS has a subject line, so this skips backward past both the same way
+	// `conversationCustomerEmail` skips a channel with no email address.
 	function latestEmailSubject(group: ConversationGroup): string {
 		for (let index = group.messages.length - 1; index >= 0; index -= 1) {
 			const message = group.messages[index];
-			if (!isWebsiteChatMessage(message)) return message.subject;
+			if (!isWebsiteChatMessage(message) && message.channel !== 'sms') return message.subject;
 		}
 		return '';
 	}
@@ -797,8 +797,9 @@
 									{#if message.channel === 'sms'}
 										<!-- SMS reads as a text message, not a mail: no subject line, no Forward (an
 										     email-only feature -- communication_forward_events has no channel of its
-										     own), and MMS media isn't fetched yet (Stage 6C descoped it), so a picture
-										     shows as a plain notice instead of silently vanishing. -->
+										     own). An outbound picture (Stage 6D-2) reuses the same AttachmentList as
+										     email; an inbound picture isn't fetched yet (Stage 6D-1 descoped display),
+										     so it shows as a plain notice instead of silently vanishing. -->
 										{#if message.direction === 'outbound'}
 											<div class="communications__thread-message-meta">
 												<span>{sentByLabel(message)}</span>
@@ -847,6 +848,14 @@
 														>View quote</a
 													>
 												</p>
+											{/if}
+											{#if message.attachments.length > 0}
+												<div class="communications__attachments">
+													<AttachmentList
+														attachments={message.attachments}
+														fetchDownloadUrl={fetchOutboundAttachmentDownloadUrl}
+													/>
+												</div>
 											{/if}
 										{:else}
 											{@const kind = kindBadge(message)}
