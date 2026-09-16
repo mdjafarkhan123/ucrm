@@ -8,27 +8,28 @@ production evidence.
 ## Current state
 
 - Part 1 is complete.
-- Part 2 is complete except for opening balances. That block is now cleared: `financial-reconciliation` Part 6
-  landed the schema, rules and export column. Only the assisted-import screen remains.
+- Part 2 is complete 2026-09-17 — the opening-balances assisted-import wizard shipped, browser-verified, and
+  committed (`onboarding-and-data-portability` campaign closed, its Memory folder removed).
 - Part 3 is complete 2026-09-16 — `financial-reconciliation` campaign closed all 6 parts; its Memory folder is
   removed. Detail lives in code, migrations, tests and `docs/financial-reconciliation-contract.md`.
-- Part 4 is now part of the controlled-first-launch promise.
+- Part 4 (minimum website speed-to-lead) is now dependency-ready — Part 3 and the existing Website Chat, email,
+  and Automation it builds on are all in place. Not yet researched or planned.
 - Part 9 preparation may run beside remaining parts, but infrastructure implementation still needs Jafar's
   separate topology and migration approval.
 - Parts 5–7 follow the controlled first launch; Part 8 is chosen from evidence from those early customers.
 
 ## Exact next action
 
-Open `Memory/campaigns/onboarding-and-data-portability/NOW.md` and perform its exact next action (Part 4 —
-build the 4-screen opening-balances import wizard). This is the owning sub-campaign for the last piece of
-launch Part 2. Jafar does not need to name or track the sub-campaign separately.
-
-When Part 4 closes, Part 2 is complete. Return to this main campaign, read its roadmap, update the nine-part
-status, and select the next dependency-ready part (Part 4: minimum website speed-to-lead) automatically.
+Start Part 4 (minimum website speed-to-lead): research how comparable products (Jobber — see
+`.claude/skills/jobber/SKILL.md`) handle speed-to-lead, and inspect the existing Website Chat, email, and
+Automation code this builds on, before proposing an implementation plan to Jafar per CLAUDE.md Rule 2. This is
+a new feature area, not yet scoped — expect it to need its own campaign registration (goal, ordered parts,
+completion gate) before implementation starts.
 
 ## Essential pointers
 
-- `Memory/campaigns/onboarding-and-data-portability/NOW.md`
-- `docs/crm-launch-implementation-roadmap.md`
+- `docs/crm-launch-implementation-roadmap.md` (Part 4 scope: "Form/Chat creates or matches one lead and sends
+  at most one eligible reply, stopping on human activity")
+- `.claude/skills/jobber/SKILL.md`
 
 Jafar's only required resume command: `continue the CRM launch-readiness campaign`.
