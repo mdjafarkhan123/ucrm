@@ -5,9 +5,13 @@ import {
 	classifySmsConsentEvent,
 	collectTwilioValidationTokens,
 	getTwilioInboundWebhookUrl,
+	parseTwilioInboundMedia,
 	parseTwilioInboundParams,
+	twilioMediaFileName,
 	validateTwilioSignature
 } from '$lib/server/communications/twilio-webhook';
+
+type InboundMessageRow = { id: string; organization_id: string };
 
 const NO_STORE = { 'cache-control': 'no-store' } as const;
 const EMPTY_TWIML_HEADERS = { ...NO_STORE, 'content-type': 'text/xml' } as const;
@@ -59,18 +63,47 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	// STOP/START/HELP is processed the same identity-resolution pass as an ordinary reply (an unresolved
 	// or brand-new sender must still be protected), so the message is always recorded first.
-	const { error: messageError } = await client.rpc('record_communication_sms_inbound_message', {
-		target_organization_id: account.organizationId,
-		target_provider_message_id: identifiers.MessageSid,
-		target_from_number: identifiers.From,
-		target_body: identifiers.Body,
-		target_num_media: identifiers.NumMedia
-	});
+	const { data: inboundMessage, error: messageError } = await client.rpc(
+		'record_communication_sms_inbound_message',
+		{
+			target_organization_id: account.organizationId,
+			target_provider_message_id: identifiers.MessageSid,
+			target_from_number: identifiers.From,
+			target_body: identifiers.Body,
+			target_num_media: identifiers.NumMedia
+		}
+	);
 	if (messageError) {
 		console.error('Could not record an inbound Twilio SMS; asking the provider to retry.', {
 			code: messageError.code
 		});
 		return retryLater();
+	}
+
+	// A retry of an already-recorded message (on-conflict do-nothing) returns null here -- its attachments
+	// were either already inserted on the first delivery or never will be, the same accepted tradeoff the
+	// Brevo inbound webhook already makes for its own attachment insert below.
+	const inserted = inboundMessage as InboundMessageRow | null;
+	if (inserted?.id) {
+		const mediaItems = parseTwilioInboundMedia(params, identifiers.NumMedia);
+		if (mediaItems.length > 0) {
+			const attachmentRows = mediaItems.map((item, index) => ({
+				organization_id: inserted.organization_id,
+				inbound_message_id: inserted.id,
+				file_name: twilioMediaFileName(index, item.contentType),
+				mime_type: item.contentType,
+				byte_size: 0,
+				status: 'pending_import' as const,
+				provider: 'twilio' as const,
+				provider_download_token: item.mediaUrl
+			}));
+			const { error: attachmentError } = await client
+				.from('communication_inbound_attachments')
+				.insert(attachmentRows);
+			if (attachmentError) {
+				console.error('Could not record inbound MMS attachments.', attachmentError);
+			}
+		}
 	}
 
 	const consentEvent = classifySmsConsentEvent(identifiers);

@@ -57,17 +57,26 @@ function inboundRequest(params: Record<string, string>, signature: string | null
 function makeClient(options: {
 	messageError?: { code?: string } | null;
 	consentError?: { code?: string } | null;
+	messageData?: { id: string; organization_id: string } | null;
+	attachmentError?: { code?: string } | null;
 }) {
+	const insert = vi.fn().mockResolvedValue({ error: options.attachmentError ?? null });
+	const from = vi.fn(() => ({ insert }));
 	const rpc = vi.fn((fn: string) => {
 		if (fn === 'record_communication_sms_inbound_message') {
-			return Promise.resolve({ error: options.messageError ?? null });
+			return Promise.resolve({
+				data: options.messageError
+					? null
+					: (options.messageData ?? { id: 'message-1', organization_id: account.organizationId }),
+				error: options.messageError ?? null
+			});
 		}
 		if (fn === 'record_communication_sms_consent_event_from_reply') {
 			return Promise.resolve({ error: options.consentError ?? null });
 		}
 		return Promise.resolve({ error: null });
 	});
-	return { rpc };
+	return { rpc, from, insert };
 }
 
 const validParams = {
@@ -194,6 +203,59 @@ describe('Twilio inbound message route', () => {
 			target_event_kind: 'opt_out',
 			target_confirmed_by_provider: false
 		});
+	});
+
+	it('records an inbound MMS picture as a pending_import attachment', async () => {
+		const client = makeClient({});
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
+		const params = {
+			...validParams,
+			NumMedia: '1',
+			MediaUrl0: 'https://api.twilio.com/2010-04-01/Accounts/AC1/Messages/MM1/Media/ME1',
+			MediaContentType0: 'image/jpeg'
+		};
+
+		const response = await POST(inboundRequest(params, twilioSignature('current-token', params)));
+
+		expect(response.status).toBe(200);
+		expect(client.from).toHaveBeenCalledWith('communication_inbound_attachments');
+		expect(client.insert).toHaveBeenCalledWith([
+			{
+				organization_id: account.organizationId,
+				inbound_message_id: 'message-1',
+				file_name: 'mms-1.jpg',
+				mime_type: 'image/jpeg',
+				byte_size: 0,
+				status: 'pending_import',
+				provider: 'twilio',
+				provider_download_token:
+					'https://api.twilio.com/2010-04-01/Accounts/AC1/Messages/MM1/Media/ME1'
+			}
+		]);
+	});
+
+	it('records no attachment when NumMedia is zero', async () => {
+		const client = makeClient({});
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
+
+		await POST(inboundRequest(validParams, twilioSignature('current-token', validParams)));
+
+		expect(client.from).not.toHaveBeenCalled();
+	});
+
+	it('does not fail the webhook when the attachment insert itself fails', async () => {
+		const client = makeClient({ attachmentError: { code: '23505' } });
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
+		const params = {
+			...validParams,
+			NumMedia: '1',
+			MediaUrl0: 'https://api.twilio.com/2010-04-01/Accounts/AC1/Messages/MM1/Media/ME1',
+			MediaContentType0: 'image/jpeg'
+		};
+
+		const response = await POST(inboundRequest(params, twilioSignature('current-token', params)));
+
+		expect(response.status).toBe(200);
 	});
 
 	it('retries when consent evidence could not be stored, after the message already was', async () => {

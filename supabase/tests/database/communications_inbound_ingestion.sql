@@ -15,7 +15,7 @@ select function_privs_are(
 );
 select function_privs_are(
   'public', 'finalize_communication_inbound_attachment_import',
-  array['uuid', 'uuid', 'text', 'text', 'text'],
+  array['uuid', 'uuid', 'text', 'text', 'text', 'bigint'],
   'service_role', array['EXECUTE'], 'only the service worker can finalize an inbound attachment import'
 );
 select throws_ok(

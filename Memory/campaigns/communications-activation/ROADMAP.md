@@ -267,13 +267,48 @@ the app layer. Split into 3 parts, data → send → polish, mirroring Stage 2C/
   phone-labeled bubble, the Details dialog's phone fallback, and the MMS notice — then deleted. Live
   delivery-tick states (sms_delivered etc.) can't be produced end-to-end yet (A2P still unapproved for this
   org); covered by unit tests instead.
-- **6D MMS (pictures in Conversations) — Deferred by Jafar 2026-09-15, not yet scoped.** Genuinely unbuilt on
-  both sides, not a UI gap: inbound Twilio webhook never parses `MediaUrl0`/`NumMedia` media (only stores the
-  count), no inbound-attachment row or storage import path exists for SMS, and the outbound SMS send command/
-  composer has no attachment parameter at all. Needs its own research + plan (webhook media fetch/storage,
-  `communication_inbound_attachments` wiring, outbound upload + Twilio media params) before coding. The plan's
-  original §6 scope ("supported MMS/secure-link behavior") is not satisfied until this lands — Stage 6 is
-  otherwise done but not 100% complete against that original text.
+- **6D MMS (pictures in Conversations) — Jafar approved 2026-09-16 to build now**, following the already
+  approved 2026-09-12 behavior contract ("supported pictures send/arrive as MMS where country/sender/
+  destination allow it; other files use approved secure links; explain why when unavailable"). Research
+  confirmed live against Twilio's own docs + GHL's product behavior (not memory): MMS only works when BOTH
+  the contractor's and the customer's numbers are US/Canada (Twilio's hard technical limit, unrelated to our
+  settings); Twilio hard-caps media at 5MB and GHL keeps outgoing photos under ~500KB for carrier
+  reliability; MMS costs ~2.5x a plain text. Split into three parts mirroring the established data ->
+  send/composer -> polish template, unit-tested against mocks like Stage 8/9 (live proof stays blocked behind
+  the same business-registration constraint as everything else).
+  - **6D-1 Inbound picture receiving — DONE 2026-09-16 (unit-tested against mocks; files UNCOMMITTED).**
+    Reused the existing channel-agnostic `communication_inbound_attachments` table built for email (no fork),
+    added a denormalized `provider` column (`brevo`|`twilio`) so the import worker never needs a per-row
+    join, and widened `finalize_communication_inbound_attachment_import` with an optional `target_byte_size`
+    (Twilio never reports size upfront the way Brevo's ContentLength does; drop+recreate since the arg list
+    genuinely changed). New `downloadTwilioInboundMedia` in `twilio.ts` (host-validated to api.twilio.com,
+    Basic auth with the org's Restricted key, `/twilio/messaging/messages.media/read` capability confirmed
+    against Twilio's real Permissions PDF) + `parseTwilioInboundMedia`/`twilioMediaFileName` in
+    `twilio-webhook.ts` (Twilio gives no file name for inbound media, so one is synthesized from content
+    type). The Twilio inbound webhook route now inserts one `communication_inbound_attachments` row per
+    parsed media item after the message RPC, mirroring the Brevo inbound webhook's own precedent exactly
+    (an attachment-insert failure is logged only, never a 500 -- the message itself is already durably
+    recorded). `inbound-attachment-worker.ts` is now provider-aware: branches the download call and the
+    object-key builder (`buildInboundSmsAttachmentObjectKey`, its own `<org>/inbound-sms-attachments/`
+    prefix) and always passes the real downloaded `target_byte_size` on finalize. Migration
+    `20260924100000_communications_sms_inbound_media.sql`. Gate met: new pgTAP
+    `communications_sms_inbound_media.sql` (9/9) + the pre-existing `communications_inbound_ingestion.sql`'s
+    stale 5-arg finalize signature assertion fixed (38/38) -- both verified directly against the local
+    Postgres container, not just `supabase test db` (that command's full run is swamped by pre-existing,
+    out-of-scope Vault-URL wake-trigger failures); `vitest run` across the full communications + Twilio
+    webhook trees (248/248); full-project `svelte-check` 0 errors/warnings (needed
+    `NODE_OPTIONS=--max-old-space-size=8192`, the plain `npm run check` OOMs on this machine); Prettier
+    clean. Not live-tested (Stage 9's hard constraint: no real business registered yet, and MMS specifically
+    also needs a real US/Canada number on both ends).
+  - **6D-2 Outbound picture sending — not started.** Composer "attach photo" for SMS, auto-shrink to a safe
+    size, `enqueue_conversation_reply_sms` gains attachments, `submitTwilioSms` gains `MediaUrl`, and the
+    eligibility check (reusing the existing sender-capability MMS flag from 2C-3) that must resolve real-MMS
+    vs secure-link *before* Twilio is ever called, matching the approved "cost/reason visible before send"
+    contract.
+  - **6D-3 Polish + money — not started.** New MMS `message_unit` retail-rate row, and the secure-link
+    fallback for non-image attachments / out-of-region pictures, reusing the existing quote/invoice
+    `access-links` token pattern rather than inventing a new one.
+  The plan's original §6 scope ("supported MMS/secure-link behavior") is not satisfied until all three close.
 
 ## Stage 9 (new, added 2026-09-15): actually submit registrations to Twilio (ISV Trust Hub)
 
@@ -483,9 +518,24 @@ reconciliation *logic* itself does not, so it started here.
   security/performance advisors show only the expected baseline noise (new table's own "RLS enabled, no
   policies" note + a fresh unused-index notice). **Not live-tested** (Stage 9's hard constraint: no real
   business registered yet).
-- **8-3 200-tenant scale evidence** — not started, per the approved plan's "Scale evidence" section (hot
-  tenant + concurrent email; p95/p99 claim/projection latency, rows scanned, lock waits, drain recovery).
-  Independent of live Twilio proof; could run once 8-1/8-2 give it something real to measure.
+- **8-3 200-tenant scale evidence — DONE 2026-09-15.** Run against `e9db5a6` (see critical bug below).
+  200 synthetic tenants (1 hot at 20x volume), 4,380 SMS + 4,380 email sends, drained via 2+2 concurrent
+  worker slots. SMS claim+finalize: 4,380/4,380 drained in 7.00s, p50/p95/p99 2.65/3.63/4.29ms, 625.9 msg/s,
+  0 deadlocks/conflicts. Email claim+finalize: 4,080/4,380 drained (remaining 300 all hot-tenant, correctly
+  deferred by the real short-term rate limiter — confirms that safeguard, not a gap). Price settlement (8-1):
+  4,380/4,380 in 1.92s, p50/p95/p99 0.35/0.54/0.65ms; every reserved balance returned to exactly 0; total
+  charged $219.00 exactly matches 4,380 segments × $0.05. Usage-window reconciliation (8-2): 200/200 orgs in
+  0.14s, all matched. Hot tenant showed no starvation vs typical tenants. Full writeup:
+  `docs/research/communications-stage8-3-scale-evidence-2026-09-15.md`.
+  **Found and fixed a critical bug while seeding this test:** `claim_communication_sms_outbox_event()`
+  (Stage 4B) threw `column reference "delivery_intent_id" is ambiguous` on step 7 (reservation-still-held
+  check) for every candidate that passed all earlier checks — i.e. on the normal healthy path for essentially
+  every real SMS send. No prior test caught it (all mocked the RPC or called finalize directly against an
+  already-processing row). Fixed + regression-tested + committed `e9db5a6`
+  (`supabase/migrations/20260923100000_communications_sms_claim_ambiguous_delivery_intent_id_fix.sql` +
+  `supabase/tests/database/communications_sms_bounded_worker_claim.sql`, confirmed passing via
+  `npx supabase test db`); this load test then confirmed the fix holds under real concurrent load.
+  Local dev DB reset and verified clean of all synthetic data afterward.
 - **Live proof** (real test org, registered sender, controlled recipients) — blocked behind Stage 9's business
   registration constraint, unchanged.
 

@@ -95,6 +95,16 @@ export function buildInboundEmailAttachmentObjectKey(
 	return `${organizationId}/inbound-email-attachments/${inboundMessageId}/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
 }
 
+// Stage 6D-1: an inbound MMS picture, downloaded from Twilio's authenticated Media URL. Its own
+// `<org>/inbound-sms-attachments/<message>/` prefix keeps it out of every path that walks email attachments.
+export function buildInboundSmsAttachmentObjectKey(
+	organizationId: string,
+	inboundMessageId: string,
+	fileName: string
+): string {
+	return `${organizationId}/inbound-sms-attachments/${inboundMessageId}/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
+}
+
 // The composer's paperclip. Its own `<org>/outbound-email-attachments/` prefix is what
 // attach_communication_outbound_files checks server-side, matching every other upload's isolation.
 export function buildOutboundEmailAttachmentObjectKey(

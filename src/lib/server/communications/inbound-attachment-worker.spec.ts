@@ -11,10 +11,22 @@ const claimed = {
 	file_name: 'estimate.pdf',
 	mime_type: 'application/pdf',
 	claim_token: 'claim-1',
+	provider: 'brevo',
 	provider_download_token: 'download-token-1'
 };
 
-function clientWithClaim(value: (typeof claimed)[] = []) {
+const claimedTwilio = {
+	id: 'attachment-2',
+	organization_id: 'org-1',
+	inbound_message_id: 'message-2',
+	file_name: 'mms-1.jpg',
+	mime_type: 'image/jpeg',
+	claim_token: 'claim-2',
+	provider: 'twilio',
+	provider_download_token: 'https://api.twilio.com/2010-04-01/Accounts/AC1/Messages/MM1/Media/ME1'
+};
+
+function clientWithClaim(value: (typeof claimed | typeof claimedTwilio)[] = []) {
 	const rpc = vi.fn(async (name: string) => {
 		if (name === 'claim_communication_inbound_attachment_imports')
 			return { data: value, error: null };
@@ -57,7 +69,39 @@ describe('communication inbound attachment worker service', () => {
 			expect.objectContaining({
 				target_attachment_id: 'attachment-1',
 				target_claim_token: 'claim-1',
-				target_status: 'pending_scan'
+				target_status: 'pending_scan',
+				target_byte_size: 3
+			})
+		);
+	});
+
+	it('downloads a twilio MMS attachment through the twilio-branch dependency and its own object key prefix', async () => {
+		const { client, rpc } = clientWithClaim([claimedTwilio]);
+		const download = vi.fn();
+		const downloadTwilioMedia = vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3, 4]));
+		const store = vi.fn().mockResolvedValue(undefined);
+
+		await expect(
+			runCommunicationInboundAttachmentWorker({ client, download, downloadTwilioMedia, store })
+		).resolves.toEqual({ claimed: 1, imported: 1, failed: 0 });
+
+		expect(download).not.toHaveBeenCalled();
+		expect(downloadTwilioMedia).toHaveBeenCalledWith(
+			claimedTwilio.provider_download_token,
+			'org-1'
+		);
+		expect(store).toHaveBeenCalledWith(
+			expect.stringContaining('org-1/inbound-sms-attachments/message-2/'),
+			expect.any(Uint8Array),
+			'image/jpeg'
+		);
+		expect(rpc).toHaveBeenCalledWith(
+			'finalize_communication_inbound_attachment_import',
+			expect.objectContaining({
+				target_attachment_id: 'attachment-2',
+				target_claim_token: 'claim-2',
+				target_status: 'pending_scan',
+				target_byte_size: 4
 			})
 		);
 	});

@@ -1,7 +1,16 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '$lib/database.types';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { downloadBrevoInboundAttachment } from './brevo';
 import { INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES } from './inbound-email';
-import { buildInboundEmailAttachmentObjectKey, putObject } from '$lib/server/storage/r2';
+import { downloadTwilioInboundMedia } from './twilio';
+import { createSupabaseTwilioProvisioningStore } from './twilio-provisioning-store';
+import { defaultResolveSmsCredentials } from './sms-worker';
+import {
+	buildInboundEmailAttachmentObjectKey,
+	buildInboundSmsAttachmentObjectKey,
+	putObject
+} from '$lib/server/storage/r2';
 
 type ClaimedInboundAttachment = {
 	id: string;
@@ -10,6 +19,7 @@ type ClaimedInboundAttachment = {
 	file_name: string;
 	mime_type: string;
 	claim_token: string;
+	provider: string;
 	provider_download_token: string | null;
 };
 
@@ -22,8 +32,29 @@ export type CommunicationWorkerClient = {
 type WorkerDependencies = {
 	client?: CommunicationWorkerClient;
 	download?: (downloadToken: string) => Promise<Uint8Array>;
+	downloadTwilioMedia?: (mediaUrl: string, organizationId: string) => Promise<Uint8Array>;
 	store?: (objectKey: string, body: Uint8Array, mimeType: string) => Promise<void>;
 };
+
+// Resolves the claiming organization's current Twilio Restricted key just-in-time, the same lookup path the
+// SMS outbox worker uses to send, then downloads the media. Never retains the decrypted secret beyond the
+// single download it authorizes.
+async function defaultDownloadTwilioMedia(
+	mediaUrl: string,
+	organizationId: string
+): Promise<Uint8Array> {
+	const store = createSupabaseTwilioProvisioningStore(
+		getOwnerSupabaseClient() as unknown as SupabaseClient<Database>
+	);
+	const account = await store.getAccount(organizationId);
+	if (!account) throw new Error('No Twilio account is provisioned for this organization.');
+	const credentials = await defaultResolveSmsCredentials({
+		organizationId,
+		twilioAccountId: account.id,
+		subaccountSid: account.subaccountSid
+	});
+	return downloadTwilioInboundMedia(mediaUrl, credentials);
+}
 
 export type CommunicationInboundAttachmentWorkerResult = {
 	claimed: number;
@@ -43,6 +74,7 @@ export async function runCommunicationInboundAttachmentWorker(
 	const client: CommunicationWorkerClient =
 		injectedClient ?? (ownerClient as unknown as CommunicationWorkerClient);
 	const download = dependencies.download ?? downloadBrevoInboundAttachment;
+	const downloadTwilioMedia = dependencies.downloadTwilioMedia ?? defaultDownloadTwilioMedia;
 	const store = dependencies.store ?? putObject;
 
 	const claimed = await client.rpc('claim_communication_inbound_attachment_imports', {
@@ -62,11 +94,21 @@ export async function runCommunicationInboundAttachmentWorker(
 			if (!attachment.provider_download_token)
 				throw new Error('The claimed attachment has no provider download token.');
 
-			const bytes = await download(attachment.provider_download_token);
+			const bytes =
+				attachment.provider === 'twilio'
+					? await downloadTwilioMedia(
+							attachment.provider_download_token,
+							attachment.organization_id
+						)
+					: await download(attachment.provider_download_token);
 			if (bytes.byteLength > INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES)
 				throw new Error('The downloaded attachment exceeds the safe size ceiling.');
 
-			const objectKey = buildInboundEmailAttachmentObjectKey(
+			const buildObjectKey =
+				attachment.provider === 'twilio'
+					? buildInboundSmsAttachmentObjectKey
+					: buildInboundEmailAttachmentObjectKey;
+			const objectKey = buildObjectKey(
 				attachment.organization_id,
 				attachment.inbound_message_id,
 				attachment.file_name
@@ -77,7 +119,8 @@ export async function runCommunicationInboundAttachmentWorker(
 				target_attachment_id: attachment.id,
 				target_claim_token: attachment.claim_token,
 				target_status: 'pending_scan',
-				target_object_key: objectKey
+				target_object_key: objectKey,
+				target_byte_size: bytes.byteLength
 			};
 			imported += 1;
 		} catch (error) {

@@ -137,7 +137,10 @@ export const RESTRICTED_KEY_MESSAGING_CAPABILITIES = [
 	'/twilio/messaging/services/read', // GET messaging/v1/Services/{sid} -- confirm the sending service
 	// GET .../Usage/Records (and its Daily/Monthly subresources) -- Stage 8-2's usage-window reconciliation.
 	// Confirmed against Twilio's own Restricted API Keys Permissions PDF (Usage Records table, 2026-09-15).
-	'/twilio/billing/usage/read'
+	'/twilio/billing/usage/read',
+	// GET .../Messages/{sid}/Media/{sid} -- Stage 6D-1's inbound MMS download. Confirmed against Twilio's own
+	// Restricted API Keys Permissions PDF (Messaging Permissions table, `messages.media/read`, 2026-09-16).
+	'/twilio/messaging/messages.media/read'
 ] as const;
 
 export type RestrictedKeyCapability = (typeof RESTRICTED_KEY_MESSAGING_CAPABILITIES)[number];
@@ -836,4 +839,65 @@ export function createTwilioProvisioningClient(
 			}
 		}
 	};
+}
+
+// -----------------------------------------------------------------------------------------------------------------
+// Stage 6D-1: inbound MMS media download. Twilio's inbound webhook gives only an authenticated MediaUrl per
+// item, never the bytes themselves -- the worker fetches them separately, mirroring fetchTwilioMessagePrice's
+// transport style but returning raw bytes instead of parsed JSON.
+
+export class TwilioInboundMediaDownloadError extends Error {
+	constructor(
+		message: string,
+		public readonly status: number | null
+	) {
+		super(message);
+		this.name = 'TwilioInboundMediaDownloadError';
+	}
+}
+
+const INBOUND_MEDIA_DOWNLOAD_TIMEOUT_MS = 15_000;
+
+/**
+ * Download one inbound MMS media item from Twilio's authenticated Media URL. `mediaUrl` comes from a
+ * signature-validated webhook, but its host is still checked against api.twilio.com before ever being
+ * fetched -- defense in depth against a corrupted or malicious value reaching this far. Basic-auth with the
+ * organization's Restricted key (messages.media/read capability).
+ */
+export async function downloadTwilioInboundMedia(
+	mediaUrl: string,
+	credentials: { apiKeySid: string; apiKeySecret: string }
+): Promise<Uint8Array> {
+	let url: URL;
+	try {
+		url = new URL(mediaUrl);
+	} catch {
+		throw new TwilioInboundMediaDownloadError('Twilio returned an unusable media URL.', null);
+	}
+	if (url.protocol !== 'https:' || url.hostname !== 'api.twilio.com') {
+		throw new TwilioInboundMediaDownloadError('The media URL host was not Twilio.', null);
+	}
+
+	const controller = new AbortController();
+	const timeout = setTimeout(() => controller.abort(), INBOUND_MEDIA_DOWNLOAD_TIMEOUT_MS);
+	let response: Response;
+	try {
+		response = await fetch(url, {
+			headers: { authorization: basicAuthHeader(credentials.apiKeySid, credentials.apiKeySecret) },
+			signal: controller.signal
+		});
+	} catch {
+		throw new TwilioInboundMediaDownloadError('Twilio did not return the media download.', null);
+	} finally {
+		clearTimeout(timeout);
+	}
+
+	if (!response.ok) {
+		throw new TwilioInboundMediaDownloadError(
+			`Twilio rejected the media download with status ${response.status}.`,
+			response.status
+		);
+	}
+
+	return new Uint8Array(await response.arrayBuffer());
 }

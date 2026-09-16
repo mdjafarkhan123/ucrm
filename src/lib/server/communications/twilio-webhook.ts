@@ -239,6 +239,46 @@ export function parseTwilioInboundParams(
 	};
 }
 
+// --- Stage 6D-1: inbound MMS media --------------------------------------------------------------------
+
+export type TwilioInboundMediaItem = { mediaUrl: string; contentType: string };
+
+// Twilio's own hard ceiling on MediaUrlN/MediaContentTypeN pairs per inbound message.
+const MAX_TWILIO_INBOUND_MEDIA_ITEMS = 10;
+
+/** Reads MediaUrl0..N / MediaContentType0..N off the already-signature-validated raw form params, capped at
+ *  Twilio's own 10-item ceiling and at the NumMedia the params themselves reported. */
+export function parseTwilioInboundMedia(
+	params: Record<string, string>,
+	numMedia: number
+): TwilioInboundMediaItem[] {
+	const count = Math.min(Math.max(numMedia, 0), MAX_TWILIO_INBOUND_MEDIA_ITEMS);
+	const items: TwilioInboundMediaItem[] = [];
+	for (let index = 0; index < count; index += 1) {
+		const mediaUrl = params[`MediaUrl${index}`]?.trim();
+		const contentType = params[`MediaContentType${index}`]?.trim();
+		if (mediaUrl && contentType) items.push({ mediaUrl, contentType });
+	}
+	return items;
+}
+
+const TWILIO_MEDIA_EXTENSIONS: Record<string, string> = {
+	'image/jpeg': 'jpg',
+	'image/png': 'png',
+	'image/gif': 'gif',
+	'image/heic': 'heic',
+	'image/heif': 'heif',
+	'image/tiff': 'tiff',
+	'image/bmp': 'bmp'
+};
+
+/** Twilio gives no file name for inbound media -- synthesize a stable, content-type-derived one. An
+ *  unrecognized content type still gets a safe, extension-less-ambiguity name rather than failing import. */
+export function twilioMediaFileName(index: number, contentType: string): string {
+	const extension = TWILIO_MEDIA_EXTENSIONS[contentType.trim().toLowerCase()] ?? 'bin';
+	return `mms-${index + 1}.${extension}`;
+}
+
 export type SmsConsentEventKind = 'opt_in' | 'opt_out' | 'help_requested';
 
 /** Twilio's own default STOP-family keyword list (twilio.com/docs/messaging/tutorials/advanced-opt-out),

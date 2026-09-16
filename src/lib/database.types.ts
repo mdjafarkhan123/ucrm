@@ -2429,6 +2429,7 @@ export type Database = {
 					mime_type: string;
 					object_key: string | null;
 					organization_id: string;
+					provider: string;
 					provider_download_token: string | null;
 					status: string;
 					updated_at: string;
@@ -2445,6 +2446,7 @@ export type Database = {
 					mime_type: string;
 					object_key?: string | null;
 					organization_id: string;
+					provider?: string;
 					provider_download_token?: string | null;
 					status?: string;
 					updated_at?: string;
@@ -2461,6 +2463,7 @@ export type Database = {
 					mime_type?: string;
 					object_key?: string | null;
 					organization_id?: string;
+					provider?: string;
 					provider_download_token?: string | null;
 					status?: string;
 					updated_at?: string;
@@ -13056,6 +13059,7 @@ export type Database = {
 					mime_type: string;
 					object_key: string | null;
 					organization_id: string;
+					provider: string;
 					provider_download_token: string | null;
 					status: string;
 					updated_at: string;
@@ -15567,6 +15571,7 @@ export type Database = {
 			finalize_communication_inbound_attachment_import: {
 				Args: {
 					target_attachment_id: string;
+					target_byte_size?: number;
 					target_claim_token: string;
 					target_failure_reason?: string;
 					target_object_key?: string;
@@ -15584,6 +15589,7 @@ export type Database = {
 					mime_type: string;
 					object_key: string | null;
 					organization_id: string;
+					provider: string;
 					provider_download_token: string | null;
 					status: string;
 					updated_at: string;
