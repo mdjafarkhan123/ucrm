@@ -9,6 +9,7 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { headObject } from '$lib/server/storage/r2';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 
+vi.mock('$env/dynamic/private', () => ({ env: { APP_URL: 'https://app.example.com' } }));
 vi.mock('$lib/server/access/permission', () => ({
 	hasPermission: vi.fn(),
 	requireOrganizationPermission: vi.fn()
@@ -188,7 +189,7 @@ describe('conversation reply API', () => {
 			expect(resolveOutboundAttachments).not.toHaveBeenCalled();
 		});
 
-		it('resolves and forwards a single attached photo through resolveOutboundSmsAttachment', async () => {
+		it('resolves and forwards a single attached file through resolveOutboundSmsAttachment, with a secure-link token', async () => {
 			const photo = {
 				object_key: `${organizationId}/outbound-sms-attachments/photo.jpg`,
 				file_name: 'photo.jpg',
@@ -199,12 +200,38 @@ describe('conversation reply API', () => {
 			expect(rpc).toHaveBeenCalledWith(
 				'enqueue_conversation_reply_sms',
 				expect.objectContaining({
-					target_attachments: [expect.objectContaining({ object_key: photo.object_key })]
+					target_attachments: [
+						expect.objectContaining({
+							object_key: photo.object_key,
+							access_token_hash: expect.stringMatching(/^[0-9a-f]{64}$/),
+							link_url: expect.stringMatching(/^https:\/\/app\.example\.com\/m\/[A-Za-z0-9_-]{43}$/)
+						})
+					]
 				})
 			);
 		});
 
-		it('rejects an attached photo stored under another organization before calling the database', async () => {
+		it('resolves and forwards a non-image file the same way (Stage 6D-3: any file type is attachable)', async () => {
+			vi.mocked(headObject).mockResolvedValue({
+				contentType: 'application/pdf',
+				contentLength: 2048
+			});
+			const document = {
+				object_key: `${organizationId}/outbound-sms-attachments/quote.pdf`,
+				file_name: 'quote.pdf',
+				mime_type: 'application/pdf'
+			};
+			const response = await POST(event({ ...validSmsBody, attachments: [document] }));
+			expect(response.status).toBe(201);
+			expect(rpc).toHaveBeenCalledWith(
+				'enqueue_conversation_reply_sms',
+				expect.objectContaining({
+					target_attachments: [expect.objectContaining({ object_key: document.object_key })]
+				})
+			);
+		});
+
+		it('rejects an attached file stored under another organization before calling the database', async () => {
 			const response = await POST(
 				event({
 					...validSmsBody,

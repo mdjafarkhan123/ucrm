@@ -7,8 +7,10 @@ import { renderManualEmailHtml } from '$lib/server/communications/manual-email';
 import {
 	OutboundAttachmentError,
 	resolveOutboundAttachments,
-	resolveOutboundSmsAttachment
+	resolveOutboundSmsAttachment,
+	type ResolvedOutboundAttachment
 } from '$lib/server/communications/outbound-attachments';
+import { createSmsAttachmentSecureLink } from '$lib/server/communications/sms-attachment-access-links';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import {
@@ -74,10 +76,22 @@ export const POST: RequestHandler = async (event) => {
 		}
 
 		if (smsParsed && smsParsed.success) {
-			let smsAttachments;
+			let smsAttachments: (ResolvedOutboundAttachment & {
+				access_token_hash: string;
+				link_url: string;
+			})[];
 			try {
-				const [photo] = smsParsed.data.attachments;
-				smsAttachments = photo ? [await resolveOutboundSmsAttachment(organizationId, photo)] : [];
+				const [file] = smsParsed.data.attachments;
+				if (file) {
+					const resolved = await resolveOutboundSmsAttachment(organizationId, file);
+					// Made ahead of the enqueue call, always -- the command decides afterwards whether the
+					// picture could go as real MMS. An unused token (real MMS was possible) is simply never
+					// persisted; see sms-attachment-access-links.ts's own header note.
+					const { tokenHashHex, url } = createSmsAttachmentSecureLink();
+					smsAttachments = [{ ...resolved, access_token_hash: tokenHashHex, link_url: url }];
+				} else {
+					smsAttachments = [];
+				}
 			} catch (error) {
 				if (error instanceof OutboundAttachmentError) {
 					return validationError({ attachments: error.message });

@@ -1,9 +1,5 @@
 import { headObject } from '$lib/server/storage/r2';
 import { INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES } from '$lib/server/communications/inbound-email';
-import {
-	MMS_PHOTO_MAX_BYTES,
-	MMS_PHOTO_MIME_TYPES
-} from '$lib/server/validation/communications.schema';
 
 export type OutboundAttachmentInput = { object_key: string; file_name: string; mime_type: string };
 
@@ -70,10 +66,11 @@ export async function resolveOutboundAttachments(
 	return resolved;
 }
 
-// The SMS composer's single-photo mirror of resolveOutboundAttachments above: its own
-// `<org>/outbound-sms-attachments/` prefix, Twilio's 5 MB combined message+media ceiling, and only the
-// four image mime types MMS accepts. attach_communication_outbound_sms_media re-enforces all three
-// server-side; this check is advisory only, same relationship as the email path.
+// The SMS composer's single-file mirror of resolveOutboundAttachments above: its own
+// `<org>/outbound-sms-attachments/` prefix, and the same 20 MB ceiling email attachments already use.
+// Stage 6D-3: any file type is accepted here -- whether it goes out as a real MMS photo or a secure link is
+// decided later, inside the enqueue command, once the sender's MMS eligibility is known. This check is
+// advisory only, same relationship as the email path (the enqueue command re-enforces size and ownership).
 export async function resolveOutboundSmsAttachment(
 	organizationId: string,
 	attachment: OutboundAttachmentInput
@@ -94,22 +91,13 @@ export async function resolveOutboundSmsAttachment(
 	if (byteSize <= 0) {
 		throw new OutboundAttachmentError('That upload did not finish. Try again.');
 	}
-	if (byteSize > MMS_PHOTO_MAX_BYTES) {
-		throw new OutboundAttachmentError(
-			'A picture must be 5 MB or smaller to send as a text message.'
-		);
-	}
-
-	const mimeType = head.contentType ?? attachment.mime_type;
-	if (!MMS_PHOTO_MIME_TYPES.includes(mimeType as (typeof MMS_PHOTO_MIME_TYPES)[number])) {
-		throw new OutboundAttachmentError(
-			'Only JPEG, PNG or GIF pictures can be sent as a text message.'
-		);
+	if (byteSize > INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES) {
+		throw new OutboundAttachmentError('A file must be 20 MB or smaller to send as a text message.');
 	}
 
 	return {
 		file_name: attachment.file_name,
-		mime_type: mimeType,
+		mime_type: head.contentType ?? attachment.mime_type,
 		byte_size: byteSize,
 		object_key: attachment.object_key
 	};

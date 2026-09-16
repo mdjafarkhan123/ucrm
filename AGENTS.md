@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 This file is the single source of project instructions for Claude Code and Codex.
 
@@ -92,7 +92,7 @@ campaign — including when Jafar says `read memory and continue`.
 ## Non-Negotiable Rules
 
 1. **Communication style:** This project owner(jafar) is a non technical 15 years old guy. So present/write/share to him in everyday plain english
-2. **Reaearch, planning & coding rule:** No guesswork. Before starting any task — research/planning/coding from architecture, database/schema, APIs, realtime, state, background processing, and security to individual UI/UX components — first establish how this type of task/problem is commonly and successfully solved by top industries(JObber, GHL etc), mature products and senior engineering teams. Use the proven pattern, primitive, protocol, library, or platform convention that best fits our requirements, stack, and scale, and implement the smallest correct version of it. Do not create a custom approach when an established solution already exists; if multiple valid approaches exist, compare their trade-offs before proceeding.
+2. **Campaign memory task rule:** No guesswork. Before starting any campaign memory task — research/planning/coding from architecture, database/schema, APIs, realtime, state, background processing, and security to individual UI/UX components — first establish how this type of task/problem is commonly and successfully solved by top industries(JObber, GHL etc), mature products and senior engineering teams. Use the proven pattern, primitive, protocol, library, or platform convention that best fits our requirements, stack, and scale, and implement the smallest correct version of it. Do not create a custom approach when an established solution already exists; if multiple valid approaches exist, compare their trade-offs before proceeding.
 3. **Minimal scope.** Add only what is necessary to deliver the approved behavior safely. Keep unrelated improvements as proposals. Add fields, tables, packages, refactors, abstractions, or dependencies only when the current requirement clearly justifies them. Prefer explicit code over generic builders.
 
 4. **Frontend designing.** Design needs to be beautiful/Professional/Modern. Ui blueprint is the source of truth of what exist where as a summary. to build that part you visit jobber and if need then take screenshot `Design/foldername/`, then you design that part like jobber using our apps design skills/variables.

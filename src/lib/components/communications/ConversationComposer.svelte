@@ -285,6 +285,11 @@
 				{body.length} character{body.length === 1 ? '' : 's'}
 			{/if}
 		</p>
+		<p class="conversation-composer__impact">
+			{mmsEligible
+				? 'A picture attaches as a real picture text. Other files send as a secure link in the text.'
+				: 'A file attaches as a secure link in the text for this number.'}
+		</p>
 	{/if}
 	{#if formError}<p class="conversation-composer__error" role="alert">{formError}</p>{/if}
 	<footer class="conversation-composer__footer">
@@ -298,10 +303,10 @@
 				disabled={sending}
 				onUploadingChange={(value) => (uploading = value)}
 			/>
-		{:else if mmsEligible}
+		{:else}
 			<ConversationAttachments
 				bind:this={attachmentsField}
-				variant="sms-photo"
+				variant="sms"
 				disabled={sending}
 				onUploadingChange={(value) => (uploading = value)}
 			/>

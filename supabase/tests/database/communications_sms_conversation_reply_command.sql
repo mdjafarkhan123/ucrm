@@ -6,7 +6,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(15);
+select plan(21);
 
 select function_privs_are(
   'public', 'enqueue_conversation_reply_sms', array['uuid', 'uuid', 'uuid', 'text', 'text', 'jsonb'],
@@ -73,6 +73,9 @@ insert into public.communication_sms_retail_rates (
   destination, sender_type, message_unit, retail_rate_major, effective_from, set_by
 ) values (
   'US', 'long_code', 'segment', 0.05, now() - interval '1 day', 'ec000000-0000-0000-0000-000000000001'
+),
+(
+  'US', 'long_code', 'mms', 0.20, now() - interval '1 day', 'ec000000-0000-0000-0000-000000000001'
 );
 
 insert into public.communication_sms_credit_accounts (organization_id, settled_balance_minor, reserved_balance_minor)
@@ -219,8 +222,66 @@ select throws_like(
       {"object_key": "ec100000-0000-0000-0000-000000000001/outbound-sms-attachments/b.jpg",
        "file_name": "b.jpg", "mime_type": "image/jpeg", "byte_size": 1000}]'::jsonb
   )$$,
-  '%Attach at most one photo%',
-  'a second photo on the same text message is refused'
+  '%Attach at most one file%',
+  'a second file on the same text message is refused'
+);
+select is(
+  (select reserved_purchased_minor from public.communication_sms_credit_reservations r
+    join public.communication_delivery_intents i on i.id = r.delivery_intent_id
+    where i.logical_send_key = 'reply-sms-with-photo'),
+  20::bigint, 'a real MMS photo bills the flat 20-cent mms rate, not a per-segment charge'
+);
+
+-- ---------------------------------------------------------------------------------------------------------------
+-- Stage 6D-3: a non-image file (or an ineligible picture) gets a secure link baked into the body instead of
+-- a refusal. The wire body carries the link; raw_body keeps the customer's own typed text untouched.
+-- ---------------------------------------------------------------------------------------------------------------
+select lives_ok(
+  $$select public.enqueue_conversation_reply_sms(
+    'ec100000-0000-0000-0000-000000000001', 'ec000000-0000-0000-0000-000000000001',
+    'ec200000-0000-0000-0000-000000000001', 'reply-sms-with-link-file', 'Here is the estimate.',
+    '[{"object_key": "ec100000-0000-0000-0000-000000000001/outbound-sms-attachments/estimate.pdf",
+       "file_name": "estimate.pdf", "mime_type": "application/pdf", "byte_size": 40960,
+       "access_token_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "link_url": "https://app.example.test/m/token-one"}]'::jsonb
+  )$$,
+  'a non-image attachment sends successfully with a secure link instead of being refused'
+);
+select is(
+  (select body from public.communication_sms_message_snapshots snap
+    join public.communication_delivery_intents i on i.id = snap.delivery_intent_id
+    where i.logical_send_key = 'reply-sms-with-link-file'),
+  E'Here is the estimate.\n\nhttps://app.example.test/m/token-one',
+  'the wire body has the secure link appended'
+);
+select is(
+  (select raw_body from public.communication_sms_message_snapshots snap
+    join public.communication_delivery_intents i on i.id = snap.delivery_intent_id
+    where i.logical_send_key = 'reply-sms-with-link-file'),
+  'Here is the estimate.',
+  'raw_body keeps the customer''s own typed text, without the link'
+);
+select is(
+  (select count(*)::integer from public.communication_sms_attachment_access_links l
+    join public.communication_delivery_intents i on i.id = l.delivery_intent_id
+    where i.logical_send_key = 'reply-sms-with-link-file'
+      and l.token_hash = '\xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'::bytea),
+  1, 'the access link is recorded against the exact token hash the caller supplied'
+);
+
+-- A retry with a genuinely fresh token (never guaranteed to repeat -- see this migration's own header note)
+-- for the identical customer-typed text is still recognized as the same logical send, not a false conflict.
+select is(
+  (public.enqueue_conversation_reply_sms(
+    'ec100000-0000-0000-0000-000000000001', 'ec000000-0000-0000-0000-000000000001',
+    'ec200000-0000-0000-0000-000000000001', 'reply-sms-with-link-file', 'Here is the estimate.',
+    '[{"object_key": "ec100000-0000-0000-0000-000000000001/outbound-sms-attachments/estimate.pdf",
+       "file_name": "estimate.pdf", "mime_type": "application/pdf", "byte_size": 40960,
+       "access_token_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+       "link_url": "https://app.example.test/m/token-two"}]'::jsonb
+  )).id,
+  (select id from public.communication_delivery_intents where logical_send_key = 'reply-sms-with-link-file'),
+  'a retry with a different (never-reused) token for the same typed text replays the original send'
 );
 
 select * from finish();

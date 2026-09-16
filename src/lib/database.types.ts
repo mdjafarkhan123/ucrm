@@ -17767,6 +17767,10 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			resolve_communication_sms_attachment_access_link: {
+				Args: { supplied_token_hash: string };
+				Returns: Json;
+			};
 			resolve_inbound_message_review: {
 				Args: {
 					target_actor_user_id: string;

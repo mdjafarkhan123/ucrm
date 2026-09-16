@@ -663,8 +663,8 @@ export const communicationSmsPlatformHoldPlacementSchema = z.object({
 export const communicationSmsRetailRateSchema = z.object({
 	destination: smsCountryCodeSchema,
 	sender_type: smsSenderTypeSchema,
-	message_unit: z.literal('segment', {
-		error: 'Only the segment message unit is supported today.'
+	message_unit: z.enum(['segment', 'mms'], {
+		error: 'Choose a supported message unit.'
 	}),
 	currency_code: z
 		.string()

@@ -92,7 +92,7 @@ describe('outbound attachment presign API', () => {
 		expect(createPresignedUploadUrl).not.toHaveBeenCalled();
 	});
 
-	describe('sms channel (Stage 6D-2 MMS photo)', () => {
+	describe('sms channel (Stage 6D-3: any common file, MMS eligibility decided at send time)', () => {
 		const validSmsBody = {
 			channel: 'sms',
 			file_name: 'photo.jpg',
@@ -109,14 +109,26 @@ describe('outbound attachment presign API', () => {
 			);
 		});
 
-		it('rejects a mime type MMS does not accept', async () => {
-			const response = await POST(event({ ...validSmsBody, mime_type: 'application/pdf' }));
+		it('accepts a non-image file (whether it goes as real MMS or a secure link is decided at send time)', async () => {
+			const response = await POST(
+				event({ ...validSmsBody, file_name: 'quote.pdf', mime_type: 'application/pdf' })
+			);
+			expect(response.status).toBe(200);
+		});
+
+		it('accepts a picture over the 5 MB MMS cap (it will fall back to a secure link at send time)', async () => {
+			const response = await POST(event({ ...validSmsBody, size_bytes: 6 * 1024 * 1024 }));
+			expect(response.status).toBe(200);
+		});
+
+		it('rejects a dangerous file extension before ever presigning', async () => {
+			const response = await POST(event({ ...validSmsBody, file_name: 'invoice.exe' }));
 			expect(response.status).toBe(422);
 			expect(createPresignedUploadUrl).not.toHaveBeenCalled();
 		});
 
-		it('rejects a photo over the 5 MB MMS cap', async () => {
-			const response = await POST(event({ ...validSmsBody, size_bytes: 6 * 1024 * 1024 }));
+		it('rejects a file over the 20 MB cap', async () => {
+			const response = await POST(event({ ...validSmsBody, size_bytes: 21 * 1024 * 1024 }));
 			expect(response.status).toBe(422);
 			expect(createPresignedUploadUrl).not.toHaveBeenCalled();
 		});

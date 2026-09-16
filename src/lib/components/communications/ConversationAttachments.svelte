@@ -6,9 +6,7 @@
 	import {
 		MAX_OUTBOUND_ATTACHMENTS,
 		OUTBOUND_ATTACHMENT_TOTAL_SIZE_BYTES,
-		MAX_MMS_PHOTOS_PER_MESSAGE,
-		MMS_PHOTO_MAX_BYTES,
-		MMS_PHOTO_ACCEPTED_MIME_TYPES,
+		MAX_SMS_ATTACHMENTS_PER_MESSAGE,
 		isDangerousAttachmentName
 	} from '$lib/communications/attachment-limits';
 	import {
@@ -23,36 +21,36 @@
 	// pressed -- Send just forwards the object keys getAttachments() already resolved. The caller reads
 	// getAttachments() at send time and calls reset() after a successful send.
 	//
-	// Stage 6D-2: `variant="sms-photo"` reuses the same upload flow for the composer's "attach a photo" on
-	// SMS instead of forking a second component (Rule 8) -- only the accept filter, caps, prefix-channel and
-	// labels change.
+	// Stage 6D-2/6D-3: `variant="sms"` reuses the same upload flow for the composer's "attach a file" on
+	// SMS instead of forking a second component (Rule 8) -- only the caps, prefix-channel and labels change.
+	// Any common file type is accepted: a picture goes as real MMS when the sender/destination allow it,
+	// otherwise the text carries a secure link instead, so there is no client-side mime whitelist for SMS.
 	let {
 		disabled = false,
 		variant = 'email',
 		onUploadingChange
 	}: {
 		disabled?: boolean;
-		variant?: 'email' | 'sms-photo';
+		variant?: 'email' | 'sms';
 		onUploadingChange?: (uploading: boolean) => void;
 	} = $props();
 
-	const isPhoto = $derived(variant === 'sms-photo');
-	const maxAttachments = $derived(isPhoto ? MAX_MMS_PHOTOS_PER_MESSAGE : MAX_OUTBOUND_ATTACHMENTS);
-	const maxTotalBytes = $derived(
-		isPhoto ? MMS_PHOTO_MAX_BYTES : OUTBOUND_ATTACHMENT_TOTAL_SIZE_BYTES
+	const isSms = $derived(variant === 'sms');
+	const maxAttachments = $derived(
+		isSms ? MAX_SMS_ATTACHMENTS_PER_MESSAGE : MAX_OUTBOUND_ATTACHMENTS
 	);
+	const maxTotalBytes = OUTBOUND_ATTACHMENT_TOTAL_SIZE_BYTES;
 	const tooManyMessage = $derived(
-		isPhoto
-			? 'Attach at most one photo to a text message.'
+		isSms
+			? 'Attach at most one file to a text message.'
 			: `Attach at most ${MAX_OUTBOUND_ATTACHMENTS} files to one email.`
 	);
 	const tooLargeMessage = $derived(
-		isPhoto
-			? 'A picture must be 5 MB or smaller to send as a text message.'
+		isSms
+			? 'A file must be 20 MB or smaller to send as a text message.'
 			: 'Attachments must total 20 MB or less.'
 	);
-	const wrongTypeMessage = 'Only JPEG, PNG or GIF pictures can be sent as a text message.';
-	const triggerLabel = $derived(isPhoto ? 'Attach a photo' : 'Attach files');
+	const triggerLabel = $derived(isSms ? 'Attach a file' : 'Attach files');
 
 	type Item = {
 		key: string;
@@ -88,7 +86,7 @@
 				fileName: file.name,
 				mimeType: file.type || 'application/octet-stream',
 				sizeBytes: file.size,
-				channel: isPhoto ? 'sms' : 'email'
+				channel: isSms ? 'sms' : 'email'
 			});
 			let shownPercent = -1;
 			await uploadAttachmentFile(presigned.upload_url, file, (fraction) => {
@@ -123,12 +121,7 @@
 
 		let runningTotal = existing.reduce((sum, item) => sum + item.file.size, 0);
 		for (const file of incoming) {
-			if (isPhoto) {
-				if (!MMS_PHOTO_ACCEPTED_MIME_TYPES.includes(file.type)) {
-					rejectionError = wrongTypeMessage;
-					continue;
-				}
-			} else if (isDangerousAttachmentName(file.name)) {
+			if (isDangerousAttachmentName(file.name)) {
 				rejectionError = 'That file type is not allowed.';
 				continue;
 			}
@@ -208,8 +201,7 @@
 	<input
 		bind:this={fileInputEl}
 		type="file"
-		multiple={!isPhoto}
-		accept={isPhoto ? MMS_PHOTO_ACCEPTED_MIME_TYPES.join(',') : undefined}
+		multiple={!isSms}
 		id={pickerId}
 		class="conversation-attachments__input"
 		{disabled}

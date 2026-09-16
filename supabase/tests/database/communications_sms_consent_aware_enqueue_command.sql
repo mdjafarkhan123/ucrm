@@ -5,14 +5,14 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(40);
+select plan(43);
 
 -- ---------------------------------------------------------------------------------------------------------------
 -- Shape and access boundary.
 -- ---------------------------------------------------------------------------------------------------------------
 select has_table('public', 'communication_sms_quiet_hours_policy', 'the platform quiet-hours policy table exists');
 select has_function('public', 'communication_sms_enqueue_operational',
-  array['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text', 'boolean'],
+  array['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text', 'jsonb'],
   'the consent-aware enqueue command exists');
 select has_function('public', 'communication_sms_estimate_segments', array['text'],
   'the segment-estimate helper exists');
@@ -22,11 +22,11 @@ select ok(
   (select relrowsecurity from pg_class where oid = 'public.communication_sms_quiet_hours_policy'::regclass),
   'the quiet-hours policy keeps row-level security enabled');
 select function_privs_are('public', 'communication_sms_enqueue_operational',
-  array['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text', 'boolean'],
+  array['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text', 'jsonb'],
   'authenticated', array[]::text[],
   'authenticated clients cannot call the enqueue command directly');
 select function_privs_are('public', 'communication_sms_enqueue_operational',
-  array['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text', 'boolean'],
+  array['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text', 'jsonb'],
   'service_role', array['EXECUTE'],
   'the server role owns the enqueue command');
 
@@ -285,16 +285,27 @@ select is(
   5::bigint, 'a promotional-funded send does not touch the purchased reserved balance');
 
 -- ---------------------------------------------------------------------------------------------------------------
--- MMS eligibility (Stage 6D-2): Twilio's own hard limit is both ends US/Canada; this system checks the
--- sender's own capable_mms flag and country_code (see the 6D-2 migration's header note for why).
+-- Delivery mode (Stage 6D-3): Twilio's own hard limit is both ends US/Canada; this system checks the sender's
+-- own capable_mms flag and country_code (see the 6D-2 migration's header note for why). A picture attached
+-- through an ineligible sender no longer refuses the send (6D-2's placeholder behavior) -- it now sends as a
+-- secure link baked into the body instead, per 6D-3's approved contract.
 -- ---------------------------------------------------------------------------------------------------------------
-select throws_like(
+select lives_ok(
   $$select public.communication_sms_enqueue_operational(
       'e4100000-0000-0000-0000-000000000001', 'e4000000-0000-0000-0000-000000000001',
       'e4200000-0000-0000-0000-000000000001', 'e4300000-0000-0000-0000-000000000001',
-      null, 'service', 'Picture attached.', 'manual', 'send-key-mms-ineligible', true)$$,
-  '%Picture messaging is not available%',
-  'a non-US/Canada, non-MMS-capable default sender refuses a send with media'
+      null, 'service', 'Picture attached.', 'manual', 'send-key-mms-ineligible',
+      '[{"object_key": "e4100000-0000-0000-0000-000000000001/outbound-sms-attachments/photo.jpg",
+         "file_name": "photo.jpg", "mime_type": "image/jpeg", "byte_size": 204800,
+         "access_token_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc00",
+         "link_url": "https://app.example.test/m/token-ineligible"}]'::jsonb)$$,
+  'a non-US/Canada, non-MMS-capable default sender sends a picture as a secure link instead of being refused'
+);
+select is(
+  (select delivery_mode from public.communication_outbound_attachments a
+    join public.communication_delivery_intents i on i.id = a.delivery_intent_id
+    where i.logical_send_key = 'send-key-mms-ineligible'),
+  'secure_link', 'the ineligible sender''s photo is recorded as a secure-link delivery, not inline media'
 );
 
 -- Readiness is computed per (org, country, sender type, use case) via its own registration row (not
@@ -319,20 +330,38 @@ insert into public.communication_sms_retail_rates (
   destination, sender_type, message_unit, retail_rate_major, effective_from, set_by
 ) values (
   'US', 'long_code', 'segment', 0.05, now() - interval '1 day', 'e4000000-0000-0000-0000-000000000001'
+),
+(
+  'US', 'long_code', 'mms', 0.20, now() - interval '1 day', 'e4000000-0000-0000-0000-000000000001'
 );
 select lives_ok(
   $$select public.communication_sms_enqueue_operational(
       'e4100000-0000-0000-0000-000000000001', 'e4000000-0000-0000-0000-000000000001',
       'e4200000-0000-0000-0000-000000000001', 'e4300000-0000-0000-0000-000000000001',
       'e4400000-0000-0000-0000-000000000002', 'service', 'Picture attached.', 'manual',
-      'send-key-mms-eligible', true)$$,
-  'an MMS-capable US/Canada sender allows a send with media through'
+      'send-key-mms-eligible',
+      '[{"object_key": "e4100000-0000-0000-0000-000000000001/outbound-sms-attachments/photo2.jpg",
+         "file_name": "photo2.jpg", "mime_type": "image/jpeg", "byte_size": 204800}]'::jsonb)$$,
+  'an MMS-capable US/Canada sender sends a picture as real inline media'
 );
 select is(
   (select sms_sender_identity_id from public.communication_delivery_intents
     where logical_send_key = 'send-key-mms-eligible'),
   'e4400000-0000-0000-0000-000000000002'::uuid,
   'the eligible send used the explicitly chosen MMS-capable sender'
+);
+select is(
+  (select delivery_mode from public.communication_outbound_attachments a
+    join public.communication_delivery_intents i on i.id = a.delivery_intent_id
+    where i.logical_send_key = 'send-key-mms-eligible'),
+  'inline_media', 'the eligible sender''s photo is recorded as inline media, not a secure link'
+);
+select is(
+  (select amount_minor from public.communication_sms_credit_reservations r
+    join public.communication_delivery_intents i on i.id = r.delivery_intent_id
+    where i.logical_send_key = 'send-key-mms-eligible'),
+  20::bigint, 'a real MMS photo bills the flat 20-cent mms rate, not a per-segment charge '
+    '(still drawn from the promotional credit granted earlier in this suite)'
 );
 
 -- ---------------------------------------------------------------------------------------------------------------

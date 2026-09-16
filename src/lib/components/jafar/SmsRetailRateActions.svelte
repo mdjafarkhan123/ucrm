@@ -73,6 +73,17 @@
 		alphanumeric: 'Alphanumeric'
 	};
 
+	// Stage 6D-3: a picture text (MMS) bills Twilio as one flat unit per message, not per segment, so it gets
+	// its own message-unit rate alongside plain-text 'segment'.
+	const messageUnitOptions = [
+		{ value: 'segment', label: 'Text (per segment)' },
+		{ value: 'mms', label: 'Picture message (per MMS)' }
+	];
+	const messageUnitLabel: Record<string, string> = {
+		segment: 'per segment',
+		mms: 'per picture message'
+	};
+
 	// Group the flat, newest-first list into one row per destination/sender/message-unit/currency key, each
 	// carrying its own version history. The first version in a group whose effective_from has arrived is the
 	// one currently charged; anything before it in time is superseded, anything after is scheduled.
@@ -106,6 +117,7 @@
 	let publishOpen = $state(false);
 	let destination = $state('');
 	let senderType = $state('long_code');
+	let messageUnit = $state('segment');
 	let currencyCode = $state('USD');
 	let retailRateMajor = $state('');
 	let providerCostMajor = $state('');
@@ -118,6 +130,7 @@
 	function openPublish() {
 		destination = '';
 		senderType = 'long_code';
+		messageUnit = 'segment';
 		currencyCode = 'USD';
 		retailRateMajor = '';
 		providerCostMajor = '';
@@ -173,7 +186,7 @@
 		const body: Record<string, unknown> = {
 			destination: destination.trim().toUpperCase(),
 			sender_type: senderType,
-			message_unit: 'segment',
+			message_unit: messageUnit,
 			currency_code: currencyCode.trim().toUpperCase(),
 			retail_rate_major: rate
 		};
@@ -196,9 +209,9 @@
 		<div>
 			<h2>SMS retail rates</h2>
 			<p>
-				The price charged per message segment, by destination and sender type. A new rate always
-				takes effect now or on a future date &mdash; past charges keep the rate they were sent
-				under. Published rate versions cannot be edited or removed.
+				The price charged per text segment or picture message, by destination and sender type. A new
+				rate always takes effect now or on a future date &mdash; past charges keep the rate they
+				were sent under. Published rate versions cannot be edited or removed.
 			</p>
 		</div>
 		<Button size="small" variant="secondary" onclick={openPublish}>Publish a rate</Button>
@@ -231,11 +244,12 @@
 							<h3>
 								{group.versions[0].destination} &middot; {senderTypeLabel[
 									group.versions[0].sender_type
-								]}
+								]} &middot; {messageUnitLabel[group.versions[0].message_unit] ??
+									group.versions[0].message_unit}
 							</h3>
 							<p>
 								{group.current
-									? `${formatMoney(group.current.retail_rate_major, group.current.currency_code)} per segment`
+									? `${formatMoney(group.current.retail_rate_major, group.current.currency_code)} ${messageUnitLabel[group.current.message_unit] ?? group.current.message_unit}`
 									: 'No version has taken effect yet'}
 							</p>
 						</div>
@@ -278,13 +292,21 @@
 				options={senderTypeOptions}
 				bind:value={senderType}
 			/>
+			<Select
+				id="sms-rate-message-unit"
+				label="Message unit"
+				options={messageUnitOptions}
+				bind:value={messageUnit}
+			/>
 		</div>
 		<div class="sms-retail-rate-actions__fields">
 			<Input
 				id="sms-rate-retail"
-				label="Retail rate per segment"
+				label={messageUnit === 'mms'
+					? 'Retail rate per picture message'
+					: 'Retail rate per segment'}
 				type="number"
-				min="0.000001"
+				min="0"
 				step="0.0001"
 				bind:value={retailRateMajor}
 				invalid={Boolean(fieldErrors.retail_rate_major)}
@@ -295,7 +317,9 @@
 		</div>
 		<Input
 			id="sms-rate-cost"
-			label="Provider cost per segment (optional, Jafar-only)"
+			label={messageUnit === 'mms'
+				? 'Provider cost per picture message (optional, Jafar-only)'
+				: 'Provider cost per segment (optional, Jafar-only)'}
 			type="number"
 			min="0"
 			step="0.0001"

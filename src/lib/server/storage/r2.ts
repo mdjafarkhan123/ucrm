@@ -114,8 +114,8 @@ export function buildOutboundEmailAttachmentObjectKey(
 	return `${organizationId}/outbound-email-attachments/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
 }
 
-// Stage 6D-2: the composer's "attach a photo" for SMS. Its own `<org>/outbound-sms-attachments/` prefix
-// is what attach_communication_outbound_sms_media checks server-side, kept out of the email prefix's path.
+// The composer's "attach a file" for SMS. Its own `<org>/outbound-sms-attachments/` prefix is what
+// communication_sms_enqueue_operational_core checks server-side, kept out of the email prefix's path.
 export function buildOutboundSmsAttachmentObjectKey(
 	organizationId: string,
 	fileName: string

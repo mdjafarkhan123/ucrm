@@ -4,11 +4,10 @@
 export const OUTBOUND_ATTACHMENT_TOTAL_SIZE_BYTES = 20 * 1024 * 1024;
 export const MAX_OUTBOUND_ATTACHMENTS = 10;
 
-// Stage 6D-2: the SMS composer's "attach a photo" caps, mirroring MMS_PHOTO_MAX_BYTES/MMS_PHOTO_MIME_TYPES
-// in `$lib/server/validation/communications.schema.ts` (server-only, can't be imported from browser code).
-export const MMS_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
-export const MMS_PHOTO_ACCEPTED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-export const MAX_MMS_PHOTOS_PER_MESSAGE = 1;
+// Stage 6D-3: the SMS composer's "attach a file" cap. A picture goes as real MMS when the sender/destination
+// allow it; otherwise (any other file type, or an ineligible picture) the text carries a secure link instead
+// -- so the client-side cap is the same 20 MB/1-file shape as the rest of this module, not an MMS-specific one.
+export const MAX_SMS_ATTACHMENTS_PER_MESSAGE = 1;
 
 export const DANGEROUS_ATTACHMENT_EXTENSIONS = new Set([
 	'ade',

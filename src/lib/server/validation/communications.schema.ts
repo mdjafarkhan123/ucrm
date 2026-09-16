@@ -9,9 +9,9 @@ import {
 // total and dangerous-extension block list (docs/contractor-email-contract.md § Attachments).
 const MAX_OUTBOUND_ATTACHMENTS_PER_MESSAGE = 10;
 
-// Stage 6D-2: Twilio's own accepted-content-types docs cap jpeg/jpg/png/gif at 5 MB combined message+media,
-// and only those four image types are offered for MMS (the approved 6D contract is "pictures", not
-// arbitrary files -- anything else stays an email/secure-link attachment).
+// Twilio's own accepted-content-types docs cap jpeg/jpg/png/gif at 5 MB combined message+media -- the only
+// four image types that can ever go out as real MMS. Still used by the enqueue command's delivery-mode
+// decision (Stage 6D-3); anything else, or a picture over this size, gets a secure link instead of a refusal.
 export const MMS_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
 export const MMS_PHOTO_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'] as const;
 
@@ -32,23 +32,27 @@ export const outboundAttachmentPresignSchema = z.object({
 		.max(INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES, 'Files must be 20 MB or smaller.')
 });
 
+// Stage 6D-3: any common file type is accepted for the SMS composer's attach control -- a picture goes as
+// real MMS when the sender/destination allow it, otherwise the text carries a secure link, same as any other
+// file type (Jafar approved 2026-09-16). Same 20 MB ceiling and dangerous-extension block list as email.
 export const outboundSmsMediaPresignSchema = z.object({
 	file_name: z
 		.string()
 		.trim()
-		.min(1, 'Choose a photo.')
+		.min(1, 'Choose a file.')
 		.max(255)
 		.refine((name) => !DANGEROUS_ATTACHMENT_EXTENSIONS.has(attachmentExtension(name)), {
 			message: 'That file type is not allowed.'
 		}),
-	mime_type: z.enum(MMS_PHOTO_MIME_TYPES, {
-		message: 'Only JPEG, PNG or GIF pictures can be sent as a text message.'
-	}),
+	mime_type: z.string().trim().min(1).max(127),
 	size_bytes: z
 		.number()
 		.int()
 		.positive()
-		.max(MMS_PHOTO_MAX_BYTES, 'A picture must be 5 MB or smaller to send as a text message.')
+		.max(
+			INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES,
+			'A file must be 20 MB or smaller to send as a text message.'
+		)
 });
 
 // What the send routes accept once a file has already been uploaded: only enough to look it back up and
@@ -268,7 +272,7 @@ export const conversationReplySmsSchema = z.object({
 	idempotency_key: z.string().uuid('Start a new reply attempt and try again.'),
 	attachments: z
 		.array(outboundAttachmentSchema)
-		.max(1, 'Attach at most one photo to a text message.')
+		.max(1, 'Attach at most one file to a text message.')
 		.default([])
 });
 
