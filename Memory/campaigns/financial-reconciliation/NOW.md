@@ -7,40 +7,35 @@ recorded Payment journey.
 
 ## Active part
 
-Part 3 — accountant-ready CSV package. **Built, live and browser-verified 2026-09-16; not yet closed.**
-Design approved by Jafar 2026-09-16 (research: QuickBooks "Export data" zip, Stripe balance reports, Jobber
-per-report CSV). Delivered: `GET /api/exports/financial?from&to` (max 366 days, rate-limited) streaming a zip
-from the `financial_*_page` readers at 500 rows/page; 12 CSVs + `manifest.json` + `reconciliation_summary.json`
-(15 summary-vs-rows agreement checks); new read-only `financial_expenses_page` (applied remotely, index
-`job_expenses_date_idx`); download card in Settings → Invoices. Unit spec passes; real Raad LTD year package:
-22 RPCs, 1.7 s, all 15 checks agree; expenses function proven with rolled-back seed rows, cross-tenant and
-sales-role refusal.
+Part 4 — prove batch Invoice creation and delivery failure handling. Not started. Parts 1–3 are complete and
+committed; Part 3's acceptance list lives in
+`supabase/tests/database/financial_accounting_package_acceptance.sql` and passes (57 checks).
 
 ## Exact next action
 
-Close Part 3's completion gate: run the contract's seeded acceptance scenarios (void, rebill chain, write-off
-and restore, Mark Received, reversal, moved allocation, rated/unrated labor, expense, uninvoiced Visit) as one
-rolled-back `do` block against Raad LTD and confirm each traces into its CSV via the readers' paged functions and
-that every summary-vs-rows check still agrees. Also review the package with the `office`/`finance` test logins
-(Settings → Invoices → Download package) to confirm omitted files/columns match their permissions. Then record
-the outcome in the roadmap, close Part 3, and select Part 4 (batch Invoice creation).
+Read the existing batch surfaces before designing anything: `src/routes/api/invoices/batch/+server.ts`,
+`src/routes/api/invoices/batch/deliver/+server.ts` (+ its `.spec.ts`), `src/routes/api/invoices/ready-to-bill/`
+and the `src/routes/(app)/invoices/ready-to-bill` and `/send` pages. Establish what each already guarantees
+per item — visible per-item result, idempotency key, and retry that cannot double-bill the same claimed work —
+then report the gap to Jafar with a recommendation before implementing. Add the mixed-batch scenario (a failed
+item stays visible and is safely retryable without duplicating successful work) to the Part 3 acceptance test
+file as part of closing Part 4.
 
 ## Blockers
 
-Opening balances (Part 6) wait for Part 3's reconciliation proof. No implementation blocker.
+None. Opening balances (Part 6) are unblocked on the reconciliation side: Part 3 proved the ledgers agree, and
+opening balances stay out of export schema version 1 by design.
 
 ## Non-obvious risk
 
-MCP `apply_migration` records its own version number, so `supabase_migrations.schema_migrations` never lists the
-repo filename version; confirm a reader is live via `pg_proc`. Raad LTD has no time entries or expenses, so
-labor/expense branches can only be proven with rolled-back seed rows (insert as the admin connection, then
-`set_config('request.jwt.claims', …)` to impersonate — setting `role` first blocks the insert). Chrome's
-extension reports a download navigation as "503" even when the file saved (Downloads land in
-`/mnt/storage/Downloads`). `client_balances.csv` is a current snapshot aged as of the download day, not a
-period-end balance — the manifest says so. Scale evidence is tiny-org only.
+Invoice claims are the duplicate-billing guard: `public.invoice_sources` is append-only and immutable, and
+`private.job_uninvoiced_work` treats a claimed Visit/Job as billed. Any retry path must lean on that claim
+rather than on its own bookkeeping. MCP `apply_migration` records its own version number, so
+`supabase_migrations.schema_migrations` never lists the repo filename version; confirm a function is live via
+`pg_proc`. In the stock role matrix only Owner and Admin hold `invoices.view`, so invoice work cannot be
+role-tested with the office/sales/finance logins — use per-member permission overrides.
 
 ## Essential pointers
 
-- `docs/financial-reconciliation-contract.md` (Acceptance scenarios, Scale boundary)
-- `src/lib/server/exports/financial-export.ts` and its `.spec.ts`
-- `src/routes/api/exports/financial/+server.ts`
+- `docs/financial-reconciliation-contract.md` (Acceptance scenarios, Permission and export rules)
+- `supabase/tests/database/financial_accounting_package_acceptance.sql`

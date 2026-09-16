@@ -59,6 +59,9 @@ cash, tax, Job profitability, or Pipeline results.
   Time-entry identity and duration follow the existing own/team scope; exports must not widen that scope.
 - Pipeline outcomes require Pipeline access. Every read is explicitly tenant-scoped in addition to RLS.
 - A report or CSV omits unauthorized columns or records; it never substitutes zero for hidden money.
+- In the stock role matrix only Owner and Admin hold `invoices.view`, so today only they can start the accountant
+  package at all; Office, Sales and Finance are refused. The per-ledger omissions above therefore arise from
+  per-member permission overrides rather than from any stock role.
 
 The accountant-ready package contains stable, documented CSVs for invoices/sales, payment events, allocations,
 deposits/credits, refunds/reversals, tax, Job profitability, expenses, time entries, uninvoiced work, sales outcomes,
@@ -76,6 +79,12 @@ whose failed item is visible and safely retryable without duplicating successful
 
 For every scenario, net sales, tax, cash, receivables, available credit, Client balance, Job profitability, and row
 counts must reconcile where applicable. Cross-tenant access and cost/price permission tests are mandatory.
+
+`supabase/tests/database/financial_accounting_package_acceptance.sql` holds this list as one seeded period, traced
+through the same paged readers the package writes each CSV from, with all fifteen summary-versus-rows agreement
+checks recomputed and the cost-visibility and cross-tenant refusals asserted. Two scenarios wait on the parts that
+introduce them: the mixed batch belongs to batch Invoice creation, and both opening-balance types belong to opening
+balances, which are not in export schema version 1.
 
 ## Scale boundary
 
