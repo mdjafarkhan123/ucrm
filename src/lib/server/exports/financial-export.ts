@@ -26,7 +26,7 @@ import { hasPermission } from '$lib/server/access/permission';
 
 // Bumped only when a file's columns or the manifest shape change, so an accountant's import mapping can tell
 // the versions apart.
-export const FINANCIAL_EXPORT_SCHEMA_VERSION = 1;
+export const FINANCIAL_EXPORT_SCHEMA_VERSION = 2;
 
 // The readers clamp at 501; 500 keeps each round trip one ordered index range.
 const PAGE_SIZE = 500;
@@ -310,6 +310,48 @@ export const FINANCIAL_LEDGERS: readonly Ledger[] = [
 			'available_credit_minor',
 			'client_balance_minor',
 			'open_invoice_count'
+		]
+	},
+	{
+		file: 'opening_balances.csv',
+		description:
+			'Imported opening receivables and credits still in effect: the pre-CRM balances every current report and export folds into Client balance. A correction retires its predecessor, which stays traceable but drops out of this file.',
+		primaryKey: 'opening_balance_id',
+		links: [
+			{ column: 'root_opening_balance_id', references: 'opening_balances.csv:opening_balance_id' },
+			{
+				column: 'predecessor_opening_balance_id',
+				references: 'opening_balances.csv:opening_balance_id'
+			}
+		],
+		allowed: invoiceVisible,
+		page: {
+			fn: 'financial_opening_balances_page',
+			args: ({ organizationId }) => ({ target_organization_id: organizationId }),
+			cursor: (last) => ({
+				cursor_as_of_date: last.as_of_date,
+				cursor_opening_balance_id: last.opening_balance_id
+			})
+		},
+		summary: {
+			fn: 'financial_opening_balances_summary',
+			args: ({ organizationId }) => ({ target_organization_id: organizationId })
+		},
+		columns: [
+			'opening_balance_id',
+			'client_id',
+			'client_display_name',
+			'client_company_name',
+			'currency_code',
+			'balance_type',
+			'receivable_minor',
+			'credit_minor',
+			'as_of_date',
+			'source_note',
+			'root_opening_balance_id',
+			'predecessor_opening_balance_id',
+			'import_batch_id',
+			'created_at'
 		]
 	},
 	{
@@ -658,6 +700,8 @@ const AGREEMENT_CHECKS: { file: string; summaryKey: string; column: string }[] =
 	{ file: 'client_balances.csv', summaryKey: 'outstanding', column: 'outstanding' },
 	{ file: 'client_balances.csv', summaryKey: 'available_credit', column: 'available_credit' },
 	{ file: 'client_balances.csv', summaryKey: 'client_balance', column: 'client_balance' },
+	{ file: 'opening_balances.csv', summaryKey: 'receivable_total', column: 'receivable' },
+	{ file: 'opening_balances.csv', summaryKey: 'credit_total', column: 'credit' },
 	{ file: 'job_profitability.csv', summaryKey: 'revenue', column: 'revenue' },
 	{ file: 'job_profitability.csv', summaryKey: 'total_cost', column: 'total_cost' },
 	{ file: 'time_entries.csv', summaryKey: 'cost_total', column: 'cost_total' },
@@ -727,12 +771,6 @@ export function buildReconciliationSummary(
 				'Hours recorded with no labor rate on file. Excluded from cost rather than valued at zero.'
 		});
 	}
-	exceptions.push({
-		code: 'opening_balances_not_included',
-		meaning:
-			'Imported opening receivables and credits are not part of this schema version; they arrive in a later version and do not enter period sales, cash or tax.'
-	});
-
 	return {
 		export_type: 'financial_package',
 		schema_version: FINANCIAL_EXPORT_SCHEMA_VERSION,
@@ -819,7 +857,6 @@ export async function writeFinancialExport(
 		// Let the sink drain between ledgers so a slow download applies backpressure to the reads.
 		await state.pending;
 	}
-	omitted.push({ file: 'opening_balances.csv', reason: 'not_in_this_schema_version' });
 
 	addJson(
 		zip,

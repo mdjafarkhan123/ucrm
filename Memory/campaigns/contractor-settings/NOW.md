@@ -19,14 +19,12 @@ Paused by Jafar 2026-09-13. He picked "Job fields & forms", but on inspection th
 real but "later / power-user" feature (proven cross-cutting pattern; approved shape = one extensible engine
 wired to Jobs only). Jafar has no launch pull toward it, so it is shelved as later, not built. No code written.
 
-Two open housekeeping items when Settings resumes:
+Housekeeping resolved: Part 5A invoice files are committed (verified in git 2026-09-16, no longer untracked).
 
-1. **Part 5A invoice files are still UNCOMMITTED** (untracked in git — `InvoiceDefaultsDialog.svelte`,
-   `InvoicePaymentTermDialog.svelte`, `settings/invoices/*`, `api/settings/invoices/*`, the two migrations,
-   the pgTAP test). Closed in Memory, not yet in Git. Commit before this work is lost.
-2. Remaining Settings work is all gated on other campaigns/features (rest of Part 5 needs its owning feature;
-   6F-2..6I need owning domains + approval; 6D-6/6E-2 need the VPS) or is one small Quotes-owned Part-1
-   frozen-branding check. Nothing here is dependency-ready to build alone right now.
+Remaining Settings work is all gated on other campaigns/features (rest of Part 5 needs its owning feature;
+6F-2..6I need owning domains + approval; 6D-6/6E-2 need the VPS) or is one small Quotes-owned Part-1
+frozen-branding check (deferred, waits on the `quotes` campaign resuming). Still nothing dependency-ready to
+build alone as of 2026-09-16 — checked again this session, no gating campaign has changed status.
 
 Focus moved to the crm-launch-readiness campaign this session (gap-list walkthrough).
 

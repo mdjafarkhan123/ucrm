@@ -81,10 +81,10 @@ For every scenario, net sales, tax, cash, receivables, available credit, Client 
 counts must reconcile where applicable. Cross-tenant access and cost/price permission tests are mandatory.
 
 `supabase/tests/database/financial_accounting_package_acceptance.sql` holds this list as one seeded period, traced
-through the same paged readers the package writes each CSV from, with all fifteen summary-versus-rows agreement
-checks recomputed and the cost-visibility and cross-tenant refusals asserted. Two scenarios wait on the parts that
-introduce them: the mixed batch belongs to batch Invoice creation, and both opening-balance types belong to opening
-balances, which are not in export schema version 1.
+through the same paged readers the package writes each CSV from, with all seventeen summary-versus-rows agreement
+checks recomputed and the cost-visibility and cross-tenant refusals asserted. One scenario waits on the part that
+introduces it: the mixed batch belongs to batch Invoice creation. Both opening-balance types are seeded and traced
+from export schema version 2 onward.
 
 ## Scale boundary
 

@@ -19,7 +19,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(76);
+select plan(91);
 
 select is(
   has_function_privilege(
@@ -34,6 +34,30 @@ select is(
   ),
   true,
   'signed-in members can reach the checked expense ledger'
+);
+select is(
+  has_function_privilege(
+    'anon', 'public.financial_opening_balances_page(uuid,date,uuid,integer,text)', 'execute'
+  ),
+  false,
+  'signed-out callers cannot reach the opening-balances ledger'
+);
+select is(
+  has_function_privilege(
+    'authenticated', 'public.financial_opening_balances_page(uuid,date,uuid,integer,text)', 'execute'
+  ),
+  true,
+  'signed-in members can reach the checked opening-balances ledger'
+);
+select is(
+  has_function_privilege('anon', 'public.financial_opening_balances_summary(uuid)', 'execute'),
+  false,
+  'signed-out callers cannot reach the opening-balances summary'
+);
+select is(
+  has_function_privilege('authenticated', 'public.financial_opening_balances_summary(uuid)', 'execute'),
+  true,
+  'signed-in members can reach the checked opening-balances summary'
 );
 
 set local role postgres;
@@ -730,6 +754,139 @@ select is(
     'ac120000-0000-0000-0000-000000000001', '2031-01-01', '2032-01-01')),
   0::bigint,
   'restoring a write-off removes it from the reported exceptions'
+);
+
+-- Opening balances (Part 6): fold into the Client balance readers and get their own export CSV ----------
+-- A dedicated client with no Invoices or Payments, so every dollar in its balance is unambiguously an
+-- opening-balance fact. One correction chain (a receivable corrected upward) proves the replaced fact drops
+-- out everywhere while staying traceable, and a standalone credit fact proves both fact types are read.
+set local role postgres;
+
+insert into public.clients (id, organization_id, display_name, company_name, client_type)
+values ('ac130000-0000-0000-0000-000000000005', 'ac120000-0000-0000-0000-000000000001',
+        'Opening Balance Client', 'Opening Co', 'company');
+
+insert into public.import_batches
+  (id, organization_id, entity_type, source_filename, storage_object_key, status)
+values ('ac1c0000-0000-0000-0000-000000000001', 'ac120000-0000-0000-0000-000000000001',
+  'opening_balance', 'opening-balances.csv', 'orgs/package-a/opening-balances.csv', 'completed');
+
+insert into public.import_rows (id, organization_id, batch_id, source_row_number, raw, status)
+values
+  ('ac1d0000-0000-0000-0000-000000000001', 'ac120000-0000-0000-0000-000000000001',
+   'ac1c0000-0000-0000-0000-000000000001', 1, '{}'::jsonb, 'imported'),
+  ('ac1d0000-0000-0000-0000-000000000002', 'ac120000-0000-0000-0000-000000000001',
+   'ac1c0000-0000-0000-0000-000000000001', 2, '{}'::jsonb, 'imported'),
+  ('ac1d0000-0000-0000-0000-000000000003', 'ac120000-0000-0000-0000-000000000001',
+   'ac1c0000-0000-0000-0000-000000000001', 3, '{}'::jsonb, 'imported');
+
+-- The original receivable fact, later corrected.
+insert into public.client_opening_balances
+  (id, organization_id, client_id, balance_type, amount_minor, currency_code, as_of_date,
+   import_batch_id, import_row_id, created_by)
+values ('ac1e0000-0000-0000-0000-000000000001', 'ac120000-0000-0000-0000-000000000001',
+  'ac130000-0000-0000-0000-000000000005', 'receivable', 10000, 'USD', '2031-09-01',
+  'ac1c0000-0000-0000-0000-000000000001', 'ac1d0000-0000-0000-0000-000000000001',
+  'ac110000-0000-0000-0000-000000000001');
+
+-- The correction: same root, points back at the fact it replaces.
+insert into public.client_opening_balances
+  (id, organization_id, client_id, balance_type, amount_minor, currency_code, as_of_date,
+   predecessor_opening_balance_id, root_opening_balance_id, import_batch_id, import_row_id, created_by)
+values ('ac1e0000-0000-0000-0000-000000000002', 'ac120000-0000-0000-0000-000000000001',
+  'ac130000-0000-0000-0000-000000000005', 'receivable', 15000, 'USD', '2031-09-02',
+  'ac1e0000-0000-0000-0000-000000000001', 'ac1e0000-0000-0000-0000-000000000001',
+  'ac1c0000-0000-0000-0000-000000000001', 'ac1d0000-0000-0000-0000-000000000002',
+  'ac110000-0000-0000-0000-000000000001');
+
+update public.client_opening_balances
+set replaced_at = '2031-09-02 12:00:00+06', replaced_by_opening_balance_id = 'ac1e0000-0000-0000-0000-000000000002'
+where id = 'ac1e0000-0000-0000-0000-000000000001';
+
+-- A standalone, uncorrected credit fact.
+insert into public.client_opening_balances
+  (id, organization_id, client_id, balance_type, amount_minor, currency_code, as_of_date,
+   import_batch_id, import_row_id, created_by)
+values ('ac1e0000-0000-0000-0000-000000000003', 'ac120000-0000-0000-0000-000000000001',
+  'ac130000-0000-0000-0000-000000000005', 'credit', 5000, 'USD', '2031-09-01',
+  'ac1c0000-0000-0000-0000-000000000001', 'ac1d0000-0000-0000-0000-000000000003',
+  'ac110000-0000-0000-0000-000000000001');
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'ac110000-0000-0000-0000-000000000001', true);
+
+select is(
+  (select count(*)::int from public.financial_opening_balances_page(
+    'ac120000-0000-0000-0000-000000000001', null, null, 501)
+    where client_id = 'ac130000-0000-0000-0000-000000000005'),
+  2,
+  'the opening-balances page shows the correction and the credit, never the replaced predecessor'
+);
+select is(
+  (select count(*)::int from public.financial_opening_balances_page(
+    'ac120000-0000-0000-0000-000000000001', null, null, 501)
+    where opening_balance_id = 'ac1e0000-0000-0000-0000-000000000001'),
+  0,
+  'a replaced opening-balance fact never appears in the ledger'
+);
+select results_eq(
+  $$select root_opening_balance_id, predecessor_opening_balance_id from public.financial_opening_balances_page(
+    'ac120000-0000-0000-0000-000000000001', null, null, 501)
+    where opening_balance_id = 'ac1e0000-0000-0000-0000-000000000002'$$,
+  $$values ('ac1e0000-0000-0000-0000-000000000001'::uuid, 'ac1e0000-0000-0000-0000-000000000001'::uuid)$$,
+  'the correction stays traceable back to the fact it replaced'
+);
+select results_eq(
+  $$select receivable_total_minor, credit_total_minor, net_minor, fact_count
+    from public.financial_opening_balances_summary('ac120000-0000-0000-0000-000000000001')$$,
+  $$values (15000::bigint, 5000::bigint, 10000::bigint, 2::bigint)$$,
+  'the opening-balances summary counts only active facts, by type'
+);
+select is(
+  (select receivable_total_minor from public.financial_opening_balances_summary(
+    'ac120000-0000-0000-0000-000000000001')),
+  (select coalesce(sum(receivable_minor), 0)::bigint from public.financial_opening_balances_page(
+    'ac120000-0000-0000-0000-000000000001', null, null, 501)),
+  'opening_balances receivable total agrees with its rows'
+);
+select is(
+  (select credit_total_minor from public.financial_opening_balances_summary(
+    'ac120000-0000-0000-0000-000000000001')),
+  (select coalesce(sum(credit_minor), 0)::bigint from public.financial_opening_balances_page(
+    'ac120000-0000-0000-0000-000000000001', null, null, 501)),
+  'opening_balances credit total agrees with its rows'
+);
+select results_eq(
+  $$select outstanding_minor, overdue_91_plus_minor, available_credit_minor, client_balance_minor
+    from public.financial_client_aging_page(
+      'ac120000-0000-0000-0000-000000000001', '2031-12-31', null, null, 501)
+    where client_id = 'ac130000-0000-0000-0000-000000000005'$$,
+  $$values (15000::bigint, 15000::bigint, 5000::bigint, 10000::bigint)$$,
+  'a client with only opening balances shows them as outstanding (oldest bucket) and available credit'
+);
+select is(
+  (select (public.client_account_balance(array['ac130000-0000-0000-0000-000000000005'::uuid])
+    -> 'ac130000-0000-0000-0000-000000000005' ->> 'outstanding_minor')::bigint),
+  15000::bigint,
+  'the invoice-page balance widens outstanding by the active opening receivable'
+);
+select is(
+  (select (public.client_account_balance(array['ac130000-0000-0000-0000-000000000005'::uuid])
+    -> 'ac130000-0000-0000-0000-000000000005' ->> 'available_credit_minor')::bigint),
+  5000::bigint,
+  'the invoice-page balance widens available credit by the active opening credit'
+);
+select is(
+  (select (public.client_account_balance(array['ac130000-0000-0000-0000-000000000005'::uuid])
+    -> 'ac130000-0000-0000-0000-000000000005' ->> 'account_balance_minor')::bigint),
+  10000::bigint,
+  'the invoice-page account balance is opening receivable less opening credit with no Invoices at all'
+);
+
+select set_config('request.jwt.claim.sub', 'ac110000-0000-0000-0000-000000000003', true);
+select throws_ok(
+  $$select * from public.financial_opening_balances_page('ac120000-0000-0000-0000-000000000001')$$,
+  '42501', null, 'another tenant cannot read this organization''s opening balances'
 );
 
 -- Cost visibility and tenant boundaries --------------------------------------------------------------

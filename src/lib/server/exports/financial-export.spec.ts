@@ -174,6 +174,41 @@ const outcomes: Row[] = [
 	}
 ];
 
+const openingBalances: Row[] = [
+	{
+		opening_balance_id: 'ob-1',
+		client_id: 'cl-1',
+		client_display_name: 'Acme',
+		client_company_name: null,
+		currency_code: 'BDT',
+		balance_type: 'receivable',
+		receivable_minor: 10000,
+		credit_minor: 0,
+		as_of_date: '2026-07-01',
+		source_note: 'Migrated from old system',
+		root_opening_balance_id: 'ob-1',
+		predecessor_opening_balance_id: null,
+		import_batch_id: 'batch-1',
+		created_at: '2026-07-01T09:00:00Z'
+	},
+	{
+		opening_balance_id: 'ob-2',
+		client_id: 'cl-1',
+		client_display_name: 'Acme',
+		client_company_name: null,
+		currency_code: 'BDT',
+		balance_type: 'credit',
+		receivable_minor: 0,
+		credit_minor: 5000,
+		as_of_date: '2026-07-01',
+		source_note: 'Deposit carried over',
+		root_opening_balance_id: 'ob-2',
+		predecessor_opening_balance_id: null,
+		import_batch_id: 'batch-1',
+		created_at: '2026-07-01T09:00:00Z'
+	}
+];
+
 const pages: Record<string, Row[]> = {
 	financial_invoice_sales_page: invoices,
 	financial_invoice_tax_page: [],
@@ -181,6 +216,7 @@ const pages: Record<string, Row[]> = {
 	financial_payment_allocations_page: [],
 	financial_deposit_credits_page: [],
 	financial_client_aging_page: [],
+	financial_opening_balances_page: openingBalances,
 	financial_job_profitability_page: [],
 	financial_time_entries_page: timeEntries,
 	financial_expenses_page: [],
@@ -221,6 +257,12 @@ const summaries: Record<string, Row> = {
 		lost_unvalued_count: 0,
 		won_value_minor: 250000,
 		lost_value_minor: 99900
+	},
+	financial_opening_balances_summary: {
+		receivable_total_minor: 10000,
+		credit_total_minor: 5000,
+		net_minor: 5000,
+		fact_count: 2
 	}
 };
 
@@ -337,8 +379,13 @@ describe('writeFinancialExport', () => {
 		expect(strFromU8(files['payment_events.csv'])).not.toContain('user-secret');
 		expect(strFromU8(files['time_entries.csv'])).not.toContain('user-secret');
 
+		const openingBalanceRows = csv('opening_balances.csv');
+		expect(openingBalanceRows).toHaveLength(2);
+		expect(openingBalanceRows[0].receivable).toBe('100.00');
+		expect(openingBalanceRows[1].credit).toBe('50.00');
+
 		const manifest = json('manifest.json');
-		expect(manifest.schema_version).toBe(1);
+		expect(manifest.schema_version).toBe(2);
 		expect(manifest.currency_code).toBe('BDT');
 		expect(manifest.period).toEqual({
 			from: '2026-08-01',
@@ -351,9 +398,8 @@ describe('writeFinancialExport', () => {
 		expect(manifestRows['invoices_sales.csv']).toBe(1203);
 		expect(manifestRows['refunds_reversals.csv']).toBe(1);
 		expect(manifestRows['sales_outcomes.csv']).toBe(2);
-		expect(manifest.omitted_files).toEqual([
-			{ file: 'opening_balances.csv', reason: 'not_in_this_schema_version' }
-		]);
+		expect(manifestRows['opening_balances.csv']).toBe(2);
+		expect(manifest.omitted_files).toEqual([]);
 
 		const summary = json('reconciliation_summary.json');
 		expect(summary.totals['invoices_sales.csv']).toEqual({
@@ -363,6 +409,12 @@ describe('writeFinancialExport', () => {
 			write_off_count: 1,
 			historical_status_only_closure_count: 1
 		});
+		expect(summary.totals['opening_balances.csv']).toEqual({
+			receivable_total: '100.00',
+			credit_total: '50.00',
+			net: '50.00',
+			fact_count: 2
+		});
 		expect(summary.agreement_checks.every((check: { agrees: boolean }) => check.agrees)).toBe(true);
 		const wonCheck = summary.agreement_checks.find(
 			(check: { file: string }) => check.file === 'sales_outcomes.csv'
@@ -370,8 +422,7 @@ describe('writeFinancialExport', () => {
 		expect(wonCheck.rows_total).toBe('sum(estimated_value) = 2500.00');
 		expect(summary.exceptions.map((exception: { code: string }) => exception.code)).toEqual([
 			'historical_status_only_closure',
-			'write_off',
-			'opening_balances_not_included'
+			'write_off'
 		]);
 	});
 
@@ -399,10 +450,7 @@ describe('writeFinancialExport', () => {
 		expect(Object.keys(won[0])).not.toContain('estimated_value');
 
 		const manifest = json('manifest.json');
-		expect(manifest.omitted_files).toEqual([
-			{ file: 'expenses.csv', reason: 'permission_denied' },
-			{ file: 'opening_balances.csv', reason: 'not_in_this_schema_version' }
-		]);
+		expect(manifest.omitted_files).toEqual([{ file: 'expenses.csv', reason: 'permission_denied' }]);
 		const summary = json('reconciliation_summary.json');
 		expect(
 			summary.agreement_checks.some(
