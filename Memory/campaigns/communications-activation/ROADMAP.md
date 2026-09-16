@@ -336,10 +336,19 @@ the app layer. Split into 3 parts, data → send → polish, mirroring Stage 2C/
     no confirmation it went out. Fixed by adding the same `AttachmentList` block the generic outbound (email)
     branch already had. Gate met: 339/339 vitest (up from 338, new test covers the snapshot-body join),
     full-project svelte-check 0/0, Prettier clean.
-  - **6D-3 Polish + money — not started.** New MMS `message_unit` retail-rate row, and the secure-link
-    fallback for non-image attachments / out-of-region pictures, reusing the existing quote/invoice
-    `access-links` token pattern rather than inventing a new one.
-  The plan's original §6 scope ("supported MMS/secure-link behavior") is not satisfied until all three close.
+  - **6D-3 Polish + money — DONE 2026-09-16 (browser-verified live; committed `28c801a`).** New MMS
+    `message_unit` retail-rate row in `SmsRetailRateActions.svelte` (published a real
+    `US · long_code · mms` rate live) and a secure-link fallback for non-image attachments / out-of-region
+    pictures (`communication_sms_attachment_access_links` + public `/m/<token>` route), reusing the
+    existing quote/invoice access-links token pattern. Also fixed a pre-existing bug found while
+    verifying: the retail-rate input's `min="0.000001"` wasn't step-aligned with `step="0.0001"`, silently
+    blocking almost any normal price on both segment and MMS rates; `min` is now `"0"` (server still
+    enforces `.positive()`). Migration `20260926100000_communications_sms_secure_link_and_mms_rate.sql`
+    applied to dev DB.
+  **Stage 6D is now fully done** — the plan's original §6 scope ("supported MMS/secure-link behavior") is
+  satisfied. Full compose→send round trip for a real MMS/secure-link message still cannot be exercised
+  end-to-end until a real business/number exists (Stage 9's hard constraint); the plumbing itself is proven
+  via isolated test-row verification (see 6D-2/6D-3 notes above).
 
 ## Stage 9 (new, added 2026-09-15): actually submit registrations to Twilio (ISV Trust Hub)
 
