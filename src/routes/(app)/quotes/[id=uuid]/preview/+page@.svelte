@@ -21,6 +21,10 @@
 			: `/api/attachments/${attachmentId}/download`;
 	}
 
+	const logoHref = $derived(
+		doc.business.has_logo ? `/quotes/${page.params.id}/preview/logo` : null
+	);
+
 	// `Print or save PDF` in the quote menu opens this page with `?print=1`, so one menu press gets a
 	// print dialog instead of a page and then a second instruction.
 	onMount(() => {
@@ -33,7 +37,7 @@
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
-<CustomerQuoteDocument {doc} decisions="inert" {fileHref}>
+<CustomerQuoteDocument {doc} decisions="inert" {fileHref} {logoHref}>
 	{#snippet notice()}
 		<div class="preview-bar">
 			<span class="preview-bar__icon" aria-hidden="true">{@html eyeIcon}</span>

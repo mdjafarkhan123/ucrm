@@ -55,7 +55,7 @@ export type CustomerQuoteDocument = {
 		decided_at: string | null;
 	};
 	recipient: { name: string; email: string };
-	business: { name: string | null };
+	business: { name: string | null; brand_color: string | null; has_logo: boolean };
 	document: {
 		version_number: number;
 		published_at: string | null;

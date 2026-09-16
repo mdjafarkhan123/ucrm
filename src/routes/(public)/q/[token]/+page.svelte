@@ -15,6 +15,8 @@
 		return `/q/${token}/files/${attachmentId}${size ? `?size=${size}` : ''}`;
 	}
 
+	const logoHref = $derived(data.document?.business.has_logo ? `/q/${token}/logo` : null);
+
 	// The view is recorded from here, once, after the document has actually been drawn on this screen.
 	// That is what makes "the client opened your quote" mean what the office thinks it means: a mail
 	// scanner fetching the URL never runs this. It is fire and forget — the customer's quote is already
@@ -84,7 +86,13 @@
 </svelte:head>
 
 {#if data.document}
-	<CustomerQuoteDocument doc={data.document} decisions="live" onDecide={decide} {fileHref} />
+	<CustomerQuoteDocument
+		doc={data.document}
+		decisions="live"
+		onDecide={decide}
+		{fileHref}
+		{logoHref}
+	/>
 {:else if data.expired}
 	<main class="quote-unavailable">
 		<h1>This link has expired</h1>

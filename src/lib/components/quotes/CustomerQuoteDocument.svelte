@@ -19,6 +19,7 @@
 		decisions = 'hidden',
 		onDecide,
 		fileHref,
+		logoHref = null,
 		notice
 	}: {
 		doc: CustomerQuoteDocument;
@@ -39,6 +40,8 @@
 		) => Promise<void>;
 		/** Where a file on this document is served from, which differs for a customer and for staff. */
 		fileHref: (attachmentId: string, size?: 'thumb') => string;
+		/** Where the version's own frozen logo is served from. Null when the version has none. */
+		logoHref?: string | null;
 		/** A line above the document, for anything staff need told that the customer must never see. */
 		notice?: Snippet;
 	} = $props();
@@ -259,8 +262,15 @@
 {/snippet}
 
 <div class="customer-quote">
-	<header class="customer-quote__brand">
-		<span class="customer-quote__brand-mark" aria-hidden="true">{@html buildingIcon}</span>
+	<header
+		class="customer-quote__brand"
+		style:--customer-quote-brand={doc.business.brand_color || 'var(--color-brand)'}
+	>
+		{#if doc.business.has_logo && logoHref}
+			<img class="customer-quote__brand-logo" src={logoHref} alt="" />
+		{:else}
+			<span class="customer-quote__brand-mark" aria-hidden="true">{@html buildingIcon}</span>
+		{/if}
 		<span class="customer-quote__brand-name">{doc.business.name ?? 'Your contractor'}</span>
 	</header>
 
@@ -559,7 +569,14 @@
 	.customer-quote__brand-mark :global(svg) {
 		width: 22px;
 		height: 22px;
-		color: var(--color-brand);
+		color: var(--customer-quote-brand);
+	}
+
+	.customer-quote__brand-logo {
+		width: 32px;
+		height: 32px;
+		object-fit: contain;
+		border-radius: var(--radius-small);
 	}
 
 	.customer-quote__brand-name {
