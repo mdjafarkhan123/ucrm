@@ -16,6 +16,7 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import InvoicePaymentTermDialog from '$lib/components/settings/InvoicePaymentTermDialog.svelte';
 	import InvoiceDefaultsDialog from '$lib/components/settings/InvoiceDefaultsDialog.svelte';
+	import AccountingExportSection from '$lib/components/settings/AccountingExportSection.svelte';
 	import {
 		fetchSettingsInvoices,
 		settingsInvoicesKey,
@@ -195,6 +196,8 @@
 					</div>
 				</div>
 			</SectionBlock>
+
+			<AccountingExportSection />
 		</div>
 
 		{#if termDialog}
