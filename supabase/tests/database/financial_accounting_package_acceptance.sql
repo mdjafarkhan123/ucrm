@@ -1,12 +1,14 @@
--- CRM launch readiness, financial reconciliation Parts 3-4: accountant-package acceptance scenarios.
+-- CRM launch readiness, financial reconciliation Parts 3-4 and 6: accountant-package acceptance scenarios.
 -- Run as one transaction. Every fixture is rolled back.
 --
 -- The contract's acceptance list in one seeded period: an unpaid and a partly paid Invoice, a discounted
 -- taxable/non-taxable document, an unused and an applied deposit, a refund, a reversed mistaken receipt, a
 -- moved allocation, a void, a correction/rebill chain, a write-off and its restore, a Mark Received closure,
--- rated and unrated labor, an expense, a completed uninvoiced Visit, a Pipeline Won value, and (Part 4) a
+-- rated and unrated labor, an expense, a completed uninvoiced Visit, a Pipeline Won value, (Part 4) a
 -- mixed batch Invoice creation whose failed item is visible and safely retryable without duplicating
--- successful work.
+-- successful work, and (Part 6) one record traced end to end: Request -> Quote -> Job -> Invoice -> recorded
+-- Payment, into the same readers the accountant CSV package writes from. Every earlier scenario proves one
+-- stage in isolation; this is the only one that proves the identifiers actually chain together.
 --
 -- Each record is traced through the same paged reader the package writes its CSV from, and every
 -- summary-versus-rows agreement check the reconciliation summary publishes is recomputed here. Cost and
@@ -17,7 +19,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(68);
+select plan(76);
 
 select is(
   has_function_privilege(
@@ -884,6 +886,146 @@ select throws_ok(
 select is(
   (select count(*)::int from public.invoices where organization_id = 'ac120000-0000-0000-0000-000000000003'),
   1, 'the refused fresh attempt still leaves exactly one invoice behind'
+);
+
+-- One record traced end to end: Request -> Quote -> Job -> Invoice -> recorded Payment --------------
+-- Launch Part 6. Every scenario above proves one stage in isolation (an invoice, a payment, a job) with
+-- fixtures built straight at that stage. This scenario instead chains one record through every FK the real
+-- product uses -- quotes.request_id, jobs.quote_id, invoice_sources.job_id, invoice_payment_allocations ->
+-- client_payment_events -- and reads it back out of the same package readers, closing the "does the whole
+-- journey reconcile" half of the contract's acceptance list. A dedicated fourth organization keeps its
+-- amounts out of every hardcoded total asserted above.
+set local role postgres;
+
+insert into auth.users (
+  id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at
+)
+values ('ac110000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000000',
+  'authenticated', 'authenticated', 'package-journey-owner@example.test', 'test', now(), now(), now());
+
+insert into public.organizations (id, name, slug, lifecycle_status)
+values ('ac120000-0000-0000-0000-000000000004', 'Package D', 'package-d', 'active');
+
+insert into public.organization_members (organization_id, user_id, role)
+values ('ac120000-0000-0000-0000-000000000004', 'ac110000-0000-0000-0000-000000000005', 'owner');
+
+insert into public.clients (id, organization_id, display_name, company_name, client_type)
+values ('ac130000-0000-0000-0000-000000000004', 'ac120000-0000-0000-0000-000000000004',
+        'Journey Client', 'Journey Co', 'company');
+
+insert into public.properties (id, organization_id, client_id, address_line1, city)
+values ('ac140000-0000-0000-0000-000000000004', 'ac120000-0000-0000-0000-000000000004',
+        'ac130000-0000-0000-0000-000000000004', '4 Ledger Road', 'Dhaka');
+
+-- 1. Request: the customer's original ask.
+insert into public.requests (id, organization_id, client_id, property_id, title, status)
+values ('ac210000-0000-0000-0000-000000000001', 'ac120000-0000-0000-0000-000000000004',
+  'ac130000-0000-0000-0000-000000000004', 'ac140000-0000-0000-0000-000000000004',
+  'Traced journey request', 'converted');
+
+-- 2. Quote: carries the request it came from and, once accepted, becomes 'converted' itself.
+insert into public.quotes (id, organization_id, client_id, property_id, request_id, quote_number, title,
+  status, currency_code)
+values ('ac150000-0000-0000-0000-000000000002', 'ac120000-0000-0000-0000-000000000004',
+  'ac130000-0000-0000-0000-000000000004', 'ac140000-0000-0000-0000-000000000004',
+  'ac210000-0000-0000-0000-000000000001', 1, 'Traced journey quote', 'converted', 'USD');
+
+-- 3. Job: carries the quote it was created from, closed and ready to bill.
+insert into public.jobs (
+  id, organization_id, client_id, property_id, quote_id, job_number, title, job_type, status, price_basis,
+  billing_timing, currency_code, subtotal_minor, tax_source, tax_minor, total_minor, cost_minor,
+  closed_at, closed_by, created_by
+)
+values ('ac1b0000-0000-0000-0000-000000000007', 'ac120000-0000-0000-0000-000000000004',
+  'ac130000-0000-0000-0000-000000000004', 'ac140000-0000-0000-0000-000000000004',
+  'ac150000-0000-0000-0000-000000000002', 1001, 'Traced journey job', 'one_off', 'closed', 'job_total',
+  'on_closure', 'USD', 70000, 'no_tax', 0, 70000, 25000,
+  '2031-10-20 12:00:00+06', 'ac110000-0000-0000-0000-000000000005', 'ac110000-0000-0000-0000-000000000005');
+
+-- 4. Invoice: bills exactly this job, and invoice_sources is the claim that proves it.
+insert into public.invoices (
+  id, organization_id, client_id, invoice_number, subject, currency_code, customer_snapshot,
+  issue_date, due_date, due_date_source, issued_at, issue_method, document_frozen_at,
+  tax_source, subtotal_minor, tax_minor, total_minor, created_by
+)
+values ('ac170000-0000-0000-0000-000000000009', 'ac120000-0000-0000-0000-000000000004',
+  'ac130000-0000-0000-0000-000000000004', 1001, 'Traced journey invoice', 'USD',
+  '{"display_name":"Journey Client","company_name":"Journey Co"}'::jsonb,
+  '2031-10-25', '2031-11-24', 'custom', '2031-10-25 12:00:00+06', 'sent', '2031-10-25 12:00:00+06',
+  'no_tax', 70000, 0, 70000, 'ac110000-0000-0000-0000-000000000005');
+
+insert into public.invoice_sources
+  (organization_id, root_invoice_id, client_id, source_kind, job_id, claimed_by)
+values ('ac120000-0000-0000-0000-000000000004', 'ac170000-0000-0000-0000-000000000009',
+  'ac130000-0000-0000-0000-000000000004', 'job_total', 'ac1b0000-0000-0000-0000-000000000007',
+  'ac110000-0000-0000-0000-000000000005');
+
+-- 5. Payment: received and fully applied, so the journey ends with zero owed.
+insert into public.client_payment_events
+  (id, organization_id, client_id, event_type, amount_minor, currency_code, method, payment_date,
+   reference, actor_user_id, created_at)
+values ('ac180000-0000-0000-0000-000000000009', 'ac120000-0000-0000-0000-000000000004',
+  'ac130000-0000-0000-0000-000000000004', 'received', 70000, 'USD', 'bank_transfer', '2031-10-26',
+  'TRACE-PAY', 'ac110000-0000-0000-0000-000000000005', '2031-10-26 12:00:00+06');
+
+insert into public.invoice_payment_allocations
+  (id, organization_id, invoice_id, invoice_number, client_id, entry_type, amount_minor, currency_code,
+   payment_event_id, actor_user_id, created_at)
+values ('ac1a0000-0000-0000-0000-000000000007', 'ac120000-0000-0000-0000-000000000004',
+  'ac170000-0000-0000-0000-000000000009', 1001, 'ac130000-0000-0000-0000-000000000004',
+  'applied', 70000, 'USD', 'ac180000-0000-0000-0000-000000000009',
+  'ac110000-0000-0000-0000-000000000005', '2031-10-26 13:00:00+06');
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'ac110000-0000-0000-0000-000000000005', true);
+
+select is(
+  (select status from public.requests where id = 'ac210000-0000-0000-0000-000000000001'),
+  'converted', 'the traced request shows it produced a quote'
+);
+select is(
+  (select request_id from public.quotes where id = 'ac150000-0000-0000-0000-000000000002'),
+  'ac210000-0000-0000-0000-000000000001'::uuid, 'the quote carries the request it came from'
+);
+select is(
+  (select quote_id from public.jobs where id = 'ac1b0000-0000-0000-0000-000000000007'),
+  'ac150000-0000-0000-0000-000000000002'::uuid, 'the job carries the quote it was created from'
+);
+select is(
+  (select job_id from public.invoice_sources where root_invoice_id = 'ac170000-0000-0000-0000-000000000009'),
+  'ac1b0000-0000-0000-0000-000000000007'::uuid, 'the invoice claims the exact job it billed, not a guess'
+);
+select results_eq(
+  $$select net_sales_minor, total_minor from public.financial_invoice_sales_page(
+    'ac120000-0000-0000-0000-000000000004', '2031-01-01', '2032-01-01', null, null, 501)
+    where invoice_id = 'ac170000-0000-0000-0000-000000000009'$$,
+  $$values (70000::bigint, 70000::bigint)$$,
+  'the sales reader bills the traced invoice for exactly the traced job''s total'
+);
+select is(
+  (select cash_effect_minor from public.financial_payment_events_page(
+    'ac120000-0000-0000-0000-000000000004', '2031-01-01', '2032-01-01', null, null, 501)
+    where event_id = 'ac180000-0000-0000-0000-000000000009'),
+  70000::bigint, 'the cash reader receives exactly the traced invoice''s total'
+);
+-- Money columns are deliberately outside the authenticated grant on invoices (see the grant note above); the
+-- postgres role reads the source rows directly the same way "Restoring a written-off sale" does above.
+set local role postgres;
+select is(
+  (select total_minor from public.invoices where id = 'ac170000-0000-0000-0000-000000000009'),
+  (select amount_minor from public.invoice_payment_allocations
+    where invoice_id = 'ac170000-0000-0000-0000-000000000009' and entry_type = 'applied'),
+  'the traced payment applies exactly the invoice total, leaving zero owed'
+);
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'ac110000-0000-0000-0000-000000000005', true);
+
+select results_eq(
+  $$select revenue_minor, total_cost_minor from public.financial_job_profitability_page(
+    'ac120000-0000-0000-0000-000000000004', '2031-01-01', '2032-01-01', null, 501)
+    where job_id = 'ac1b0000-0000-0000-0000-000000000007'$$,
+  $$values (70000::bigint, 25000::bigint)$$,
+  'the profitability reader shows the traced job''s revenue and cost, not a recomputation'
 );
 
 select * from finish();
