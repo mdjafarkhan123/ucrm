@@ -38,20 +38,34 @@ ROADMAP.md for the outcome).
    by re-running the isolated 8-check trace block alone (`plan(8)`, own transaction, rolled back) and reading
    each TAP line individually — all 8 say `ok` by name. The temp-table grant snag is resolved (no serial
    column, explicit `grant insert, select on tap_log to authenticated`).
-3. Nothing committed to git yet. `git status` shows: the new migration file (untracked), the edited test file,
-   and this campaign's + `onboarding-and-data-portability`'s `NOW.md`/`ROADMAP.md`. `CLAUDE.md` also shows
-   modified — confirmed this is Jafar's own pre-existing edit (renumbered Non-Negotiable Rules, moved the
-   "no guesswork" rule up from Working Procedure), not something this session touched or needs to change.
+3. Committed (`8b195fe`): the opening-balance migration + the 8-check journey trace addition to
+   `financial_accounting_package_acceptance.sql`. `CLAUDE.md` stayed out of that commit — confirmed it is
+   Jafar's own pre-existing edit (renumbered Non-Negotiable Rules), untouched by this session.
+4. Worker RPC built and applied remotely:
+   `supabase/migrations/20261002100000_client_opening_balances_worker_rpc.sql` teaches the existing shared
+   `process_next_import_row()` (previously Client-only) a second `entity_type`: `'opening_balance'` rows insert
+   a fresh `client_opening_balances` fact (`planned_action='create'`) or a correction that inserts the
+   corrected fact and marks the predecessor replaced in the same transaction (`planned_action='update'`,
+   carrying `predecessor_opening_balance_id`). Locked the `resolved_payload` contract for this entity type in
+   the migration's header comment (onboarding-and-data-portability Part 4's Review step must produce this
+   shape). Verified remotely in rolled-back transactions: fresh-fact create, correction (predecessor marked
+   replaced, root chain intact), correcting an already-replaced fact fails cleanly (row failed, batch
+   error_count bumped, queue not wedged) — and regression-checked the untouched Client paths (create, update,
+   duplicate-email unique_violation, batch finalization) all still behave identically. Security advisors: no
+   findings on the new table or function. **Not yet committed to git.**
 
 ## Exact next action
 
-1. Verification is done. Ask Jafar whether to commit the migration + test file now (nothing committed this
-   session yet).
-2. Then: write the assisted-import worker RPC that turns a mapped `import_rows` row into a
-   `client_opening_balances` insert (the processor half of the table-then-processor split; mirrors the
-   client-import worker comment in `20260916090000_client_import_foundation.sql`), wire opening balances into
-   the accountant CSV package and reconciled Client balance, and hand the 4-screen import UI to
-   `onboarding-and-data-portability` Part 4.
+1. Commit `supabase/migrations/20261002100000_client_opening_balances_worker_rpc.sql` (ask Jafar first, per
+   the standing rule for schema/DB-writing changes — this session applied it remotely already with his
+   continue/"go" approval but the file itself isn't in git yet).
+2. Then: wire opening balances into the accountant CSV package (a new CSV + manifest/reconciliation-summary
+   entry, per `docs/financial-reconciliation-contract.md`'s "Permission and export rules") and the reconciled
+   Client balance (a reader that sums each client's active, unreplaced facts). Both are read-only additions
+   layered on the now-stable `client_opening_balances` table.
+3. Then hand the 4-screen import UI (Upload/Map/Review/Done for opening balances) to
+   `onboarding-and-data-portability` Part 4, pointing it at the `resolved_payload` contract this migration
+   fixed.
 
 ## Blockers
 
