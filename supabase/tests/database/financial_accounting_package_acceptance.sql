@@ -1,10 +1,12 @@
--- CRM launch readiness, financial reconciliation Part 3: accountant-package acceptance scenarios.
+-- CRM launch readiness, financial reconciliation Parts 3-4: accountant-package acceptance scenarios.
 -- Run as one transaction. Every fixture is rolled back.
 --
 -- The contract's acceptance list in one seeded period: an unpaid and a partly paid Invoice, a discounted
 -- taxable/non-taxable document, an unused and an applied deposit, a refund, a reversed mistaken receipt, a
 -- moved allocation, a void, a correction/rebill chain, a write-off and its restore, a Mark Received closure,
--- rated and unrated labor, an expense, a completed uninvoiced Visit, and a Pipeline Won value.
+-- rated and unrated labor, an expense, a completed uninvoiced Visit, a Pipeline Won value, and (Part 4) a
+-- mixed batch Invoice creation whose failed item is visible and safely retryable without duplicating
+-- successful work.
 --
 -- Each record is traced through the same paged reader the package writes its CSV from, and every
 -- summary-versus-rows agreement check the reconciliation summary publishes is recomputed here. Cost and
@@ -15,7 +17,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(57);
+select plan(68);
 
 select is(
   has_function_privilege(
@@ -753,6 +755,135 @@ select throws_ok(
   $$select * from public.financial_expenses_page(
     'ac120000-0000-0000-0000-000000000001', '2031-01-01', '2032-01-01')$$,
   '42501', null, 'another tenant cannot read this organization''s expenses'
+);
+
+-- Batch Invoice creation: a failed item stays visible, and retrying does not duplicate ----------------
+-- Launch Part 4's mixed-batch scenario. create_invoices_in_batch is deliberately all-or-nothing (see
+-- 20260908100000_invoice_batch_creation.sql): one bad job in a batch refuses the whole batch, so the good
+-- job's work is never claimed and stays exactly as billable as before. A corrected retry then bills it
+-- once, and neither a replay of that retry's own key nor a fresh attempt to rebill the same job can create
+-- a second invoice for the same work -- the guarantee public.invoice_sources exists to hold.
+set local role postgres;
+
+-- One organization per user is enforced (organization_members_user_id_key), so the earlier package-owner
+-- cannot also own this business; a fourth, dedicated user does.
+insert into auth.users (
+  id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at
+)
+values ('ac110000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000',
+  'authenticated', 'authenticated', 'package-batch-owner@example.test', 'test', now(), now(), now());
+
+insert into public.organizations (id, name, slug, lifecycle_status)
+values ('ac120000-0000-0000-0000-000000000003', 'Package C', 'package-c', 'active');
+
+insert into public.organization_members (organization_id, user_id, role)
+values ('ac120000-0000-0000-0000-000000000003', 'ac110000-0000-0000-0000-000000000004', 'owner');
+
+insert into public.clients (id, organization_id, display_name, company_name, client_type)
+values ('ac130000-0000-0000-0000-000000000003', 'ac120000-0000-0000-0000-000000000003',
+        'Batch Client', 'Batch Co', 'company');
+
+insert into public.properties (id, organization_id, client_id, address_line1, city)
+values ('ac140000-0000-0000-0000-000000000003', 'ac120000-0000-0000-0000-000000000003',
+        'ac130000-0000-0000-0000-000000000003', '3 Ledger Road', 'Dhaka');
+
+-- The good job: one priced line, unclaimed. The bad job: no priced lines at all, which is exactly what
+-- private.job_batch_billing_payload refuses a batch over.
+insert into public.jobs (
+  id, organization_id, client_id, property_id, job_number, title, job_type, status, price_basis,
+  currency_code, created_by
+)
+values
+  ('ac1b0000-0000-0000-0000-000000000005', 'ac120000-0000-0000-0000-000000000003',
+   'ac130000-0000-0000-0000-000000000003', 'ac140000-0000-0000-0000-000000000003', 2001,
+   'Good job', 'one_off', 'active', 'job_total', 'USD', 'ac110000-0000-0000-0000-000000000004'),
+  ('ac1b0000-0000-0000-0000-000000000006', 'ac120000-0000-0000-0000-000000000003',
+   'ac130000-0000-0000-0000-000000000003', 'ac140000-0000-0000-0000-000000000003', 2002,
+   'Bad job with nothing priced', 'one_off', 'active', 'job_total', 'USD',
+   'ac110000-0000-0000-0000-000000000004');
+
+insert into public.job_line_items
+  (organization_id, job_id, position, name, quantity, unit_price_minor, is_taxable)
+values ('ac120000-0000-0000-0000-000000000003', 'ac1b0000-0000-0000-0000-000000000005', 1,
+        'Good service', 1, 50000, true);
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'ac110000-0000-0000-0000-000000000004', true);
+
+-- 1. A batch covering both jobs refuses outright: the bad job has nothing to bill, so nothing is billed.
+select throws_ok(
+  $$select public.create_invoices_in_batch(
+    'ac120000-0000-0000-0000-000000000003',
+    array['ac1b0000-0000-0000-0000-000000000005','ac1b0000-0000-0000-0000-000000000006']::uuid[],
+    '{}'::uuid[], 'mixed-batch-attempt-1', 'mixed-batch-hash-1')$$,
+  '23514', null, 'a batch with one unbillable job refuses the whole batch'
+);
+select is(
+  (select count(*)::int from public.invoices where organization_id = 'ac120000-0000-0000-0000-000000000003'),
+  0, 'the refused batch left the good job''s work unbilled, not half-billed'
+);
+select is(
+  (select count(*)::int from public.invoice_sources
+    where organization_id = 'ac120000-0000-0000-0000-000000000003'),
+  0, 'the refused batch claimed nothing, so the good job stays visible to bill'
+);
+
+-- 2. A corrected retry -- the good job alone -- bills it exactly once.
+select is(
+  (public.create_invoices_in_batch(
+    'ac120000-0000-0000-0000-000000000003',
+    array['ac1b0000-0000-0000-0000-000000000005']::uuid[],
+    '{}'::uuid[], 'mixed-batch-attempt-2', 'mixed-batch-hash-2'
+  )->>'invoice_count'),
+  '1', 'the corrected retry bills exactly the good job'
+);
+select is(
+  (select count(*)::int from public.invoices where organization_id = 'ac120000-0000-0000-0000-000000000003'),
+  1, 'exactly one invoice now exists for this business'
+);
+select is(
+  (select count(*)::int from public.invoice_sources
+    where organization_id = 'ac120000-0000-0000-0000-000000000003'
+      and job_id = 'ac1b0000-0000-0000-0000-000000000005' and source_kind = 'job_total'),
+  1, 'the good job is claimed exactly once'
+);
+
+-- 3. Replaying the same retry key never queues a second invoice.
+select is(
+  (public.create_invoices_in_batch(
+    'ac120000-0000-0000-0000-000000000003',
+    array['ac1b0000-0000-0000-0000-000000000005']::uuid[],
+    '{}'::uuid[], 'mixed-batch-attempt-2', 'mixed-batch-hash-2'
+  )->>'applied'),
+  'false', 'replaying the same idempotency key reports it as already applied'
+);
+select is(
+  (public.create_invoices_in_batch(
+    'ac120000-0000-0000-0000-000000000003',
+    array['ac1b0000-0000-0000-0000-000000000005']::uuid[],
+    '{}'::uuid[], 'mixed-batch-attempt-2', 'mixed-batch-hash-2'
+  )->'invoices'->0->>'invoice_id'),
+  (select root_invoice_id::text from public.invoice_sources
+    where organization_id = 'ac120000-0000-0000-0000-000000000003'
+      and job_id = 'ac1b0000-0000-0000-0000-000000000005'),
+  'the replay returns the very invoice the retry already created'
+);
+select is(
+  (select count(*)::int from public.invoices where organization_id = 'ac120000-0000-0000-0000-000000000003'),
+  1, 'replaying the key still leaves exactly one invoice behind'
+);
+
+-- 4. A brand new attempt to bill the same, already-claimed job is refused, not silently duplicated.
+select throws_ok(
+  $$select public.create_invoices_in_batch(
+    'ac120000-0000-0000-0000-000000000003',
+    array['ac1b0000-0000-0000-0000-000000000005']::uuid[],
+    '{}'::uuid[], 'mixed-batch-attempt-3', 'mixed-batch-hash-3')$$,
+  '23505', null, 'a fresh attempt to rebill an already-claimed job is refused outright'
+);
+select is(
+  (select count(*)::int from public.invoices where organization_id = 'ac120000-0000-0000-0000-000000000003'),
+  1, 'the refused fresh attempt still leaves exactly one invoice behind'
 );
 
 select * from finish();
