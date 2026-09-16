@@ -57,3 +57,4 @@ export const invoiceTaxReportQuerySchema = invoiceSalesReportQuerySchema;
 export const uninvoicedWorkReportQuerySchema = invoiceSalesReportQuerySchema;
 export const jobProfitabilityReportQuerySchema = invoiceSalesReportQuerySchema;
 export const salesOutcomesReportQuerySchema = paymentEventsReportQuerySchema;
+export const timeEntriesReportQuerySchema = paymentEventsReportQuerySchema;
