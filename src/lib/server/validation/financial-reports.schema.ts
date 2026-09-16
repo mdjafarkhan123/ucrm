@@ -54,3 +54,4 @@ export const paymentEventsReportQuerySchema = z
 export const paymentAllocationsReportQuerySchema = paymentEventsReportQuerySchema;
 export const depositCreditsReportQuerySchema = paymentEventsReportQuerySchema;
 export const invoiceTaxReportQuerySchema = invoiceSalesReportQuerySchema;
+export const uninvoicedWorkReportQuerySchema = invoiceSalesReportQuerySchema;
