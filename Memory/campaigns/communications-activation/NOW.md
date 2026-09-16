@@ -8,18 +8,19 @@ traffic) until a country launch gate passes.
 
 ## Active part
 
-Stage 6D-1 (inbound MMS) is DONE and committed (`876f29c`).
+Stage 6D-1 (inbound MMS) is DONE and committed (`876f29c`). Stage 6D-2 (outbound picture sending) is DONE and
+committed (`2c4d5e9`, 2026-09-16 — Jafar chose to commit before continuing). See ROADMAP.md for the full 6D-2
+record, including two real pre-existing bugs found and fixed along the way. Client-side auto-shrink polish is
+descoped, not a blocker.
 
-Stage 6D-2 (outbound picture sending) is DONE and browser-verified 2026-09-16 (files UNCOMMITTED — see
-ROADMAP.md for the full record, including two real pre-existing bugs found and fixed: outbound SMS messages
-had a null `text_content` that crashed the conversation list, and a sent picture never rendered in its own
-thread). Client-side auto-shrink polish is descoped, not a blocker.
+Stage 6D-3 (MMS pricing + secure-link fallback for ineligible sends) is next — not started. Already covered by
+Jafar's 2026-09-16 approval to build all of 6D; no research or design decision is blocking it.
 
 ## Exact next action
 
-Jafar decides: commit Stages 6D-1 + 6D-2 now, or start Stage 6D-3 (MMS pricing + secure-link fallback for
-ineligible sends) first — both are already covered by Jafar's 2026-09-16 approval to build all of 6D. No
-research or design decision is blocking either path.
+Start Stage 6D-3: add the MMS `message_unit` retail-rate row and the secure-link fallback for non-image
+attachments / out-of-region pictures, reusing the existing quote/invoice `access-links` token pattern (see
+ROADMAP.md's 6D-3 entry).
 
 Separately, still waiting on a real action from Jafar, not code:
 
