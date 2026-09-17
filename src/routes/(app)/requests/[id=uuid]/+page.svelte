@@ -52,6 +52,8 @@
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import quoteIcon from '@tabler/icons/outline/file-invoice.svg?raw';
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
+	import InquiryAutomationCard from '$lib/components/automation/InquiryAutomationCard.svelte';
+	import { AUTOMATION_JOURNEY_READY } from '$lib/automation/journey';
 
 	const queryClient = useQueryClient();
 	const requestId = $derived(page.params.id ?? '');
@@ -491,6 +493,10 @@
 						<ActivityFeed entityType="request" entityId={requestId} {currentUserId} />
 					</RailCard>
 				{:else}
+					{#if AUTOMATION_JOURNEY_READY}
+						<InquiryAutomationCard record={{ kind: 'request', id: requestId }} />
+					{/if}
+
 					<RailCard title="Notes" icon={notesIcon} count={notesQuery.data?.length}>
 						<NotesPanel
 							entityType="request"

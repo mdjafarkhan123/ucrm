@@ -59,6 +59,8 @@
 	import starIcon from '@tabler/icons/outline/star.svg?raw';
 	import starFilledIcon from '@tabler/icons/filled/star.svg?raw';
 	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
+	import InquiryAutomationCard from '$lib/components/automation/InquiryAutomationCard.svelte';
+	import { AUTOMATION_JOURNEY_READY } from '$lib/automation/journey';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -1269,6 +1271,11 @@
 			</div>
 		</dl>
 	{/if}
+	{#if AUTOMATION_JOURNEY_READY && group.chatSession}
+		<div class="communications__automation">
+			<InquiryAutomationCard record={{ kind: 'chat_session', id: group.chatSession.id }} />
+		</div>
+	{/if}
 {/snippet}
 
 {#if selectedGroup}
@@ -1893,6 +1900,9 @@
 		margin-top: var(--space-large);
 		padding-top: var(--space-large);
 		border-top: var(--border-base) solid var(--color-border);
+	}
+	.communications__automation {
+		margin-top: var(--space-large);
 	}
 	.communications__related-group {
 		margin-top: var(--space-base);

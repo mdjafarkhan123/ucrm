@@ -68,7 +68,10 @@ export function buildPublicFormContactSchema(contact: ContactBlock) {
 		company: contactFieldSchema(contact.company.shown, contact.company.required, 200),
 		address: contactAddressSchema(contact.address.shown, contact.address.required),
 		email_marketing_consent: z.boolean().optional(),
-		phone_marketing_consent: z.boolean().optional()
+		phone_marketing_consent: z.boolean().optional(),
+		// Part 4 Stage 5: the visitor ticked the service-SMS box. The submit route replaces it with the stored
+		// evidence ({ given, disclosure }) after checking the number.
+		sms_service_consent: z.boolean().optional()
 	});
 }
 

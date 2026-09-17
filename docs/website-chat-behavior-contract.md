@@ -51,13 +51,11 @@ entirely. It is per widget rather than per organization because one organization
 several marketing sites, and the policy a visitor is pointed at belongs to the site they are on. The
 platform's own privacy policy is never shown on a contractor's widget.
 
-Transactional consent follows HighLevel literally (approved 2026-08-26, evidence in
-`Design/Website Chat/highlevel-identity-form.jpg`). One consent line sits directly under the fields, not in a
-separate step, and reads as a single channel-agnostic statement covering whichever reply method the visitor
-supplied, with its rate disclosure attached: *"By submitting you agree to receive SMS or e-mails for the
-provided channel. Rates may be applied."* It is always shown and, as HighLevel's is, checked by default — this
-is service consent for the channel the visitor themselves just offered, not a marketing opt-in. It is never
-hidden from a visitor who supplied only an email.
+Consent follows HighLevel's current A2P separation (corrected and approved 2026-09-17). The ordinary service
+and email notice remains visible with the identity fields. Supplying a phone number separately reveals an
+optional, unchecked service-SMS consent control; requiring a phone number never requires SMS consent. UCRM
+stores the exact disclosure, outcome, time and source. Automated SMS remains ineligible without that evidence.
+Final plain-language disclosure requires compliance review before live SMS activation.
 
 Marketing consent remains a separate thing: optional, unchecked, and outside the first release. Supplying a
 phone number never silently grants marketing consent.
@@ -155,9 +153,30 @@ shows automation-originated activity truthfully in the timeline.
 
 The Automation domain owns presets, sequences, delays, templates, enrollment/re-entry, cancellation,
 execution history, and configuration UI. The SMS track owns numbers, registration, balance, opt-out,
-quiet-hours, eligibility, delivery, and charges. A future Website Chat text-back preset sends at most once per
-session after its configured no-response delay, cancels when a human or AI responds first, and never blocks
-Website Chat when SMS is unavailable. Its SMS consumes Communication Balance, not Website Chat allowance.
+quiet-hours, eligibility, delivery, and charges.
+
+The Website Chat speed-to-lead preset follows HighLevel's workflow model: it is an editable starting recipe,
+not locked timing. Its starter Wait is five minutes, but an authorized contractor may edit/remove it and add,
+remove, duplicate or reorder supported Wait, condition, assignment, task, internal-notification and customer-
+message steps within Automation's existing recipe limit. Each configured action remains idempotent for its
+enrollment step. A delivered staff reply stops the pending automatic follow-up; a later customer reply pauses
+customer-facing steps and alerts the responsible team. Website Chat remains usable when SMS is unavailable.
+SMS consumes Communication Balance, not Website Chat allowance.
+
+New public inquiries follow Jobber's staff-alert pattern: they appear immediately in the shared inbox/activity
+surface and notify the contractor's configured recipients. This slice does not add mobile push; if that channel
+is introduced later, this intake event is admin-only. There is no notify-all fallback. When no recipient is configured, only the
+account owner is alerted and Settings warns that recipients should be chosen (Housecall Pro's pattern, approved
+2026-09-17); a new inquiry never reaches nobody. Recipients are chosen from team members permitted to see it. A
+configured email fallback may run after a definitive SMS failure; pending or unknown SMS delivery never causes a
+blind duplicate send.
+
+Shipped alert design (Part 4 Stage 4, 2026-09-17): the staff alert is a business setting, not a recipe step, so it
+always goes out whether or not any Automation is on (Jobber's settings-level team notifications). **Settings →
+Inquiry alerts** lists active team members; only people who can see every request and the team inbox can be
+chosen. Each chosen person — or the owner when nobody is chosen, shown as an "Owner only" warning on the Settings
+card and page — gets one entry in the contractor header bell and one email per new inquiry, and one "customer
+replied" alert when a reply pauses a follow-up. An alert opens the Request, or the chat conversation.
 
 ## Required UI surfaces and states
 

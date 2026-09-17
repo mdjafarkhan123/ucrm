@@ -16,6 +16,7 @@
 	import photoPlusIcon from '@tabler/icons/outline/photo-plus.svg?raw';
 	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
+	import { SERVICE_SMS_CONSENT_LABEL, serviceSmsConsentDescription } from '$lib/forms/sms-consent';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -45,6 +46,8 @@
 	let contactAddressPostalCode = $state('');
 	let emailMarketingConsent = $state(false);
 	let phoneMarketingConsent = $state(false);
+	// Service texts about this request. Unchecked, and offered only once a number is typed (HighLevel A2P pattern).
+	let smsServiceConsent = $state(false);
 
 	// --- Answers, keyed by question id ---------------------------------------------------------------
 
@@ -376,6 +379,7 @@
 			contact.phone = contactPhone.trim();
 			if (data.content.contact.phone.marketing_consent)
 				contact.phone_marketing_consent = phoneMarketingConsent;
+			if (contactPhone.trim()) contact.sms_service_consent = smsServiceConsent;
 		}
 		if (data.content.contact.company.shown) contact.company = contactCompany.trim();
 		if (data.content.contact.address.shown) {
@@ -528,6 +532,14 @@
 									bind:value={contactPhone}
 									required={data.content.contact.phone.required}
 								/>
+								{#if contactPhone.trim()}
+									<Checkbox
+										id="contact-phone-sms-consent"
+										label={SERVICE_SMS_CONSENT_LABEL}
+										description={serviceSmsConsentDescription(data.organizationName)}
+										bind:checked={smsServiceConsent}
+									/>
+								{/if}
 								{#if data.content.contact.phone.marketing_consent}
 									<Checkbox
 										id="contact-phone-consent"

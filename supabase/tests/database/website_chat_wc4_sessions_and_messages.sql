@@ -7,21 +7,21 @@ select plan(22);
 -- Public visitor traffic never touches these tables or commands directly.
 select is(
   has_function_privilege('anon',
-    'public.accept_website_chat_first_message(uuid, text, text, text, text, text, text, text, boolean, text, jsonb)',
+    'public.accept_website_chat_first_message(uuid, text, text, text, text, text, text, text, boolean, text, jsonb, text)',
     'execute'),
   false,
   'anonymous callers cannot start a Website Chat conversation directly'
 );
 select is(
   has_function_privilege('authenticated',
-    'public.accept_website_chat_first_message(uuid, text, text, text, text, text, text, text, boolean, text, jsonb)',
+    'public.accept_website_chat_first_message(uuid, text, text, text, text, text, text, text, boolean, text, jsonb, text)',
     'execute'),
   false,
   'signed-in members cannot start a Website Chat conversation directly'
 );
 select is(
   has_function_privilege('service_role',
-    'public.accept_website_chat_first_message(uuid, text, text, text, text, text, text, text, boolean, text, jsonb)',
+    'public.accept_website_chat_first_message(uuid, text, text, text, text, text, text, text, boolean, text, jsonb, text)',
     'execute'),
   true,
   'the server service role owns the first-message command'

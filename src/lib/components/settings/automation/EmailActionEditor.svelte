@@ -14,6 +14,8 @@
 		subject,
 		body,
 		errorMessage = '',
+		variables = AUTOMATION_EMAIL_VARIABLES,
+		subjectPlaceholder = 'e.g. Following up on your quote {{quote_number}}',
 		onSubjectChange,
 		onBodyChange
 	}: {
@@ -21,6 +23,9 @@
 		subject: string;
 		body: string;
 		errorMessage?: string;
+		// The insertable values; a website inquiry passes its smaller, quote-free list.
+		variables?: ReadonlyArray<{ token: string; label: string }>;
+		subjectPlaceholder?: string;
 		onSubjectChange: (value: string) => void;
 		onBodyChange: (value: string) => void;
 	} = $props();
@@ -73,7 +78,7 @@
 		maxlength="300"
 		onfocus={() => (lastField = 'subject')}
 		oninput={(event: Event) => onSubjectChange((event.currentTarget as HTMLInputElement).value)}
-		placeholder={'e.g. Following up on your quote {{quote_number}}'}
+		placeholder={subjectPlaceholder}
 	/>
 
 	<Textarea
@@ -90,7 +95,7 @@
 	<div class="email-editor__variables">
 		<span class="email-editor__variables-label">Insert a value</span>
 		<div class="email-editor__variable-list">
-			{#each AUTOMATION_EMAIL_VARIABLES as variable (variable.token)}
+			{#each variables as variable (variable.token)}
 				<button
 					type="button"
 					class="email-editor__variable"

@@ -191,6 +191,31 @@ describe('the first Website Chat message', () => {
 		rpc.mockResolvedValue({ data: { status: 'rate_limited' }, error: null });
 		expect((await postFirstMessage(firstMessageEvent())).status).toBe(429);
 	});
+
+	it('stores the SMS consent wording the widget showed, never text from the browser', async () => {
+		rpc.mockImplementation(async (name: string) =>
+			name === 'get_website_chat_widget_public_config'
+				? {
+						data: [{ widget_id: 'w', organization_id: 'o', business_name: 'Raad LTD' }],
+						error: null
+					}
+				: { data: { status: 'accepted', replayed: false, session_id: 'session-1' }, error: null }
+		);
+
+		await postFirstMessage(
+			firstMessageEvent({ ...firstMessageBody, sms_consent_disclosure: 'forged wording' })
+		);
+		const ticked = commandArgs('accept_website_chat_first_message');
+		expect(ticked.sms_consent_disclosure).toMatch(
+			/^Text me about my request\. I agree to receive text messages from Raad LTD /
+		);
+
+		rpc.mockClear();
+		await postFirstMessage(
+			firstMessageEvent({ ...firstMessageBody, consent_transactional_sms: false })
+		);
+		expect(commandArgs('accept_website_chat_first_message').sms_consent_disclosure).toBe('');
+	});
 });
 
 describe('every later Website Chat message', () => {

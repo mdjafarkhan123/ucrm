@@ -94,9 +94,19 @@ export const GET: RequestHandler = async (event) => {
 		lastEditorName = profile?.full_name ?? null;
 	}
 
-	// Overview renders the outstanding draft when there is one, otherwise the frozen active version; an active
-	// recipe's definition is immutable until an Edit opens a fresh draft.
-	const displayDefinition = recipe.draft_definition ?? activeVersion?.definition ?? null;
+	// A draft recipe shows its draft. An active or paused recipe shows what is actually live, and says separately
+	// whether its saved draft differs — the Zapier/HubSpot "unpublished changes" model: edits never reach customers
+	// until they are published. Both definitions come back from jsonb, so key order is canonical and a string
+	// comparison is an exact equality check.
+	const isLive =
+		(recipe.status === 'active' || recipe.status === 'paused') && activeVersion !== null;
+	const hasUnpublishedChanges =
+		isLive &&
+		recipe.draft_definition != null &&
+		JSON.stringify(recipe.draft_definition) !== JSON.stringify(activeVersion!.definition);
+	const displayDefinition = isLive
+		? activeVersion!.definition
+		: (recipe.draft_definition ?? activeVersion?.definition ?? null);
 
 	return json(
 		{
@@ -111,6 +121,7 @@ export const GET: RequestHandler = async (event) => {
 			draft_updated_at: recipe.draft_updated_at,
 			last_editor_name: lastEditorName,
 			has_draft: recipe.draft_definition != null,
+			has_unpublished_changes: hasUnpublishedChanges,
 			display_definition: displayDefinition,
 			active_version: activeVersion
 				? {

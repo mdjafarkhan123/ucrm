@@ -5,12 +5,15 @@ import {
 	isWellFormedWidgetToken,
 	logWebsiteChatPublicOutcome,
 	mintWebsiteChatSessionToken,
+	readCachedWebsiteChatWidgetPublicConfig,
+	resolveWebsiteChatWidgetPublicConfig,
 	websiteChatJsonResponse,
 	websiteChatPreflight,
 	websiteChatRefusal,
 	websiteChatVisitorIpHash
 } from '$lib/server/communications/website-chat-public';
 import { websiteChatFirstMessageSchema } from '$lib/server/validation/communications.schema';
+import { serviceSmsConsentDisclosure } from '$lib/forms/sms-consent';
 
 // The first message a visitor ever sends. This is the only Website Chat call that costs the contractor
 // money -- it creates the Client, opens the session and claims one conversation from the allowance --
@@ -70,6 +73,17 @@ export const POST: RequestHandler = async ({ url, request, getClientAddress }) =
 	// The command only ever sees the hash.
 	const sessionToken = mintWebsiteChatSessionToken(token, body.idempotency_key);
 
+	// Service-SMS consent, the web-form way: the browser only says whether the box was ticked, and the stored
+	// evidence is the wording the widget showed, built here from the same business name the widget was given.
+	// The box only exists once a phone number is typed, so a tick without one is ignored.
+	let smsConsentDisclosure = '';
+	if (body.consent_transactional_sms && body.phone) {
+		const config =
+			readCachedWebsiteChatWidgetPublicConfig(token, requestOrigin) ??
+			(await resolveWebsiteChatWidgetPublicConfig(token, requestOrigin));
+		if (config) smsConsentDisclosure = serviceSmsConsentDisclosure(config.businessName);
+	}
+
 	const client = getWebsiteChatPublicResolverClient();
 	const { data, error } = await client.rpc('accept_website_chat_first_message', {
 		widget_public_token: token,
@@ -84,7 +98,8 @@ export const POST: RequestHandler = async ({ url, request, getClientAddress }) =
 		message_body: body.message,
 		consent_transactional_sms: body.consent_transactional_sms,
 		visitor_ip_hash: websiteChatVisitorIpHash(getClientAddress()),
-		new_attribution: body.attribution
+		new_attribution: body.attribution,
+		sms_consent_disclosure: smsConsentDisclosure
 	});
 	if (error) throw error;
 

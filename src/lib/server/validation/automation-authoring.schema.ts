@@ -69,6 +69,14 @@ export const activateRecipeSchema = z
 
 export type ActivateRecipeBody = z.infer<typeof activateRecipeSchema>;
 
+// Discarding unpublished changes carries the same optimistic-lock token and retry key as activation.
+export const discardRecipeChangesSchema = z
+	.object({
+		expected_revision: z.number().int().min(1),
+		idempotency_key: idempotencyKey
+	})
+	.strict();
+
 // The closed set of state transitions handled by set_automation_recipe_lifecycle_state. `activate` and
 // `duplicate` are their own routes (they need the draft/name), so they are not part of this enum.
 export const lifecycleActionSchema = z

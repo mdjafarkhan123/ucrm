@@ -5036,6 +5036,42 @@ export type Database = {
           },
         ]
       }
+      inquiry_alert_recipients: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          organization_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          organization_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          organization_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiry_alert_recipients_member_fk"
+            columns: ["organization_id", "user_id"]
+            isOneToOne: true
+            referencedRelation: "organization_members"
+            referencedColumns: ["organization_id", "user_id"]
+          },
+          {
+            foreignKeyName: "inquiry_alert_recipients_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_access_links: {
         Row: {
           expires_at: string | null
@@ -11919,6 +11955,84 @@ export type Database = {
           },
         ]
       }
+      team_notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          email_attempts: number
+          email_available_at: string
+          email_claim_token: string | null
+          email_claimed_until: string | null
+          email_last_error: string | null
+          email_sent_at: string | null
+          email_state: string
+          id: string
+          kind: string
+          organization_id: string
+          read_at: string | null
+          source_key: string
+          subject_id: string
+          subject_type: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          email_attempts?: number
+          email_available_at?: string
+          email_claim_token?: string | null
+          email_claimed_until?: string | null
+          email_last_error?: string | null
+          email_sent_at?: string | null
+          email_state?: string
+          id?: string
+          kind: string
+          organization_id: string
+          read_at?: string | null
+          source_key: string
+          subject_id: string
+          subject_type: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          email_attempts?: number
+          email_available_at?: string
+          email_claim_token?: string | null
+          email_claimed_until?: string | null
+          email_last_error?: string | null
+          email_sent_at?: string | null
+          email_state?: string
+          id?: string
+          kind?: string
+          organization_id?: string
+          read_at?: string | null
+          source_key?: string
+          subject_id?: string
+          subject_type?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_notifications_member_fk"
+            columns: ["organization_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "organization_members"
+            referencedColumns: ["organization_id", "user_id"]
+          },
+          {
+            foreignKeyName: "team_notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       visit_checklist_answers: {
         Row: {
           answered_at: string
@@ -12240,6 +12354,7 @@ export type Database = {
           normalized_phone: string | null
           organization_id: string
           session_token_hash: string
+          sms_consent_disclosure: string | null
           started_at: string
           submitted_email: string | null
           submitted_phone_e164: string | null
@@ -12265,6 +12380,7 @@ export type Database = {
           normalized_phone?: string | null
           organization_id: string
           session_token_hash: string
+          sms_consent_disclosure?: string | null
           started_at?: string
           submitted_email?: string | null
           submitted_phone_e164?: string | null
@@ -12290,6 +12406,7 @@ export type Database = {
           normalized_phone?: string | null
           organization_id?: string
           session_token_hash?: string
+          sms_consent_disclosure?: string | null
           started_at?: string
           submitted_email?: string | null
           submitted_phone_e164?: string | null
@@ -12536,6 +12653,7 @@ export type Database = {
           new_idempotency_key: string
           new_session_token_hash: string
           requesting_origin: string
+          sms_consent_disclosure?: string
           visitor_email: string
           visitor_ip_hash?: string
           visitor_name: string
@@ -12922,6 +13040,31 @@ export type Database = {
           outcome: string
           subject_id: string
           subject_type: string
+        }[]
+      }
+      automation_inquiry_enrollments: {
+        Args: {
+          p_chat_session_id: string | null
+          p_limit?: number
+          p_organization_id: string
+          p_request_id: string | null
+        }
+        Returns: {
+          created_at: string
+          current_step_index: number
+          customer_messages_sent: number
+          enrollment_id: string
+          held_reason: string | null
+          next_due_at: string | null
+          paused_reason: string | null
+          recipe_id: string
+          recipe_name: string
+          source: string
+          state: string
+          stop_reason: string | null
+          subject_type: string
+          updated_at: string
+          version_number: number
         }[]
       }
       automation_record_enrollments: {
@@ -13427,6 +13570,22 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      claim_team_notification_emails: {
+        Args: { p_batch_size?: number; p_lease_seconds?: number }
+        Returns: {
+          attempts: number
+          body: string
+          claim_token: string
+          kind: string
+          notification_id: string
+          organization_id: string
+          organization_name: string
+          recipient_email: string
+          subject_id: string
+          subject_type: string
+          title: string
+        }[]
       }
       client_account_balance: {
         Args: { target_client_ids: string[] }
@@ -16697,6 +16856,17 @@ export type Database = {
           widget_id: string
         }[]
       }
+      inquiry_alert_members: {
+        Args: { p_organization_id: string }
+        Returns: {
+          can_receive: boolean
+          chosen: boolean
+          email: string
+          full_name: string
+          role: string
+          user_id: string
+        }[]
+      }
       intake_automation_events: {
         Args: { p_batch_size?: number }
         Returns: number
@@ -17034,6 +17204,14 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      mark_team_notifications_read: {
+        Args: {
+          p_notification_ids: string[]
+          p_organization_id: string
+          p_user_id: string
+        }
+        Returns: number
       }
       match_active_opening_balances: {
         Args: { client_ids: string[]; target_org: string }
@@ -19010,6 +19188,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      set_inquiry_alert_recipients: {
+        Args: {
+          p_actor_id: string
+          p_organization_id: string
+          p_user_ids: string[]
+        }
+        Returns: number
+      }
       set_invoice_discount: {
         Args: {
           expected_revision: number
@@ -19258,6 +19444,15 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      settle_team_notification_email: {
+        Args: {
+          p_claim_token: string
+          p_error?: string
+          p_notification_id: string
+          p_sent: boolean
+        }
+        Returns: string
+      }
       skip_automation_enrollment_step: {
         Args: {
           p_actor_user_id: string
@@ -19397,6 +19592,16 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      team_notification_links: {
+        Args: { p_organization_id: string; p_subject_ids: string[] }
+        Returns: {
+          client_id: string
+          job_id: string
+          request_id: string
+          subject_id: string
+          subject_type: string
+        }[]
       }
       unapply_client_payment: {
         Args: {

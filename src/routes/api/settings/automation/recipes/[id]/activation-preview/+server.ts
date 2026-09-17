@@ -83,7 +83,10 @@ export const GET: RequestHandler = async (event) => {
 				// Stage 7: an email or a text both count toward the impact ceiling — mirrors SummaryRail's
 				// "Most messages one customer could get" in the builder.
 				max_messages: validated.definition.steps.filter(
-					(step) => step.key === 'action.send_email' || step.key === 'action.send_sms'
+					(step) =>
+						step.key === 'action.send_email' ||
+						step.key === 'action.send_sms' ||
+						step.key === 'action.send_customer_message'
 				).length,
 				step_count: validated.definition.steps.length,
 				condition_count: validated.definition.conditions.length,

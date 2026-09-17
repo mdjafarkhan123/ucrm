@@ -99,3 +99,38 @@ export const automationSmsBodySchema = withKnownVariablesOnly(
 	z.string().trim().min(1).max(1000),
 	unknownSmsVariables
 );
+
+// CRM launch readiness Part 4, Stage 6: a website inquiry has no quote yet, so its "Reply by text or email"
+// copy may only use the business facts. private.enqueue_automation_inquiry_message renders the quote tokens as
+// empty strings, which is why they are refused here rather than sent out blank.
+export const AUTOMATION_INQUIRY_VARIABLES = AUTOMATION_EMAIL_VARIABLES.filter(
+	(variable) => variable.token === 'customer_name' || variable.token === 'business_name'
+);
+
+const INQUIRY_ALLOWED_TOKENS = new Set<string>(AUTOMATION_INQUIRY_VARIABLES.map((v) => v.token));
+
+export function unknownInquiryVariables(text: string): string[] {
+	return unknownVariablesAgainst(INQUIRY_ALLOWED_TOKENS, text);
+}
+
+export const automationInquiryEmailSubjectSchema = withKnownVariablesOnly(
+	z
+		.string()
+		.trim()
+		.min(1)
+		.max(300)
+		.refine((value) => !/[\r\n]/.test(value), {
+			message: 'The subject cannot span multiple lines.'
+		}),
+	unknownInquiryVariables
+);
+
+export const automationInquiryEmailBodySchema = withKnownVariablesOnly(
+	z.string().trim().min(1).max(5000),
+	unknownInquiryVariables
+);
+
+export const automationInquirySmsBodySchema = withKnownVariablesOnly(
+	z.string().trim().min(1).max(1000),
+	unknownInquiryVariables
+);

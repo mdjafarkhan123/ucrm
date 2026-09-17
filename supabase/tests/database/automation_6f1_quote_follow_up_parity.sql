@@ -3,13 +3,13 @@
 -- Proves three behaviours the engine was missing:
 --   1. The client's saved "quote follow-ups" preference is honoured at intake AND immediately before a send.
 --   2. Live work stops as soon as the quote is no longer Awaiting response -- not only when a send is reached.
---   3. Day/hour waits are measured from the original send, cumulatively, at the same local time of day --
+--   3. Day/hour/minute waits are measured from the original send, cumulatively, at the same local time of day --
 --      never from the moment a worker happened to pick the step up.
 
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(26);
+select plan(31);
 
 -- ---------------------------------------------------------------------------------------------------
 -- The stop check stays internal.
@@ -317,6 +317,78 @@ select is(
   private.automation_quote_stop_outcome('6f110000-0000-0000-0000-000000000001',
     '6f190000-0000-0000-0000-0000000000ff'),
   'quote_not_sendable', 'a quote that no longer exists stops the enrollment');
+
+-- ---------------------------------------------------------------------------------------------------
+-- 6. Minute waits (CRM launch readiness Part 4 Stage 2): cumulative from the anchor, and elapsed time
+--    even across a daylight-saving change.
+-- ---------------------------------------------------------------------------------------------------
+insert into public.automation_recipe_versions (id, recipe_id, organization_id, version_number, schema_version,
+  definition, definition_hash, trigger_key, activation_cutoff_sequence, activation_cutoff_snapshot)
+values ('6f1b0000-0000-0000-0000-000000000002', '6f1a0000-0000-0000-0000-000000000001',
+  '6f110000-0000-0000-0000-000000000001', 2, 1,
+  '{"schema_version":1,"trigger":{"key":"quote.delivery_succeeded","config":{}},"conditions":[],"steps":[{"type":"wait","key":"wait.relative_delay","config":{"amount":5,"unit":"minutes"}},{"type":"action","key":"action.send_email","config":{"subject":"S","body":"B {{quote_link}}"}},{"type":"wait","key":"wait.relative_delay","config":{"amount":1,"unit":"hours"}},{"type":"wait","key":"wait.relative_delay","config":{"amount":3,"unit":"weeks"}}],"stops":[{"key":"stop.quote_approved"}]}'::jsonb,
+  'hash-6f1-minutes', 'quote.delivery_succeeded', 0, pg_current_snapshot());
+
+insert into private.automation_events (id, organization_id, event_type, subject_type, subject_id, payload,
+  occurred_at, source_module, source_event_id, processed_at)
+values
+  ('6f1c0000-0000-0000-0000-000000000005', '6f110000-0000-0000-0000-000000000001',
+   'quote.delivery_succeeded', 'quote', pg_temp.qid(), '{}'::jsonb, now(),
+   'communications', '6f1c0000-0000-0000-0000-0000000000ee', now()),
+  ('6f1c0000-0000-0000-0000-000000000006', '6f110000-0000-0000-0000-000000000001',
+   'quote.delivery_succeeded', 'quote', pg_temp.qid(), '{}'::jsonb, now(),
+   'communications', '6f1c0000-0000-0000-0000-0000000000ff', now());
+
+-- Enrollment 5 anchors at an ordinary time; enrollment 6 anchors at 01:58 EDT on the Toronto fall-back night,
+-- where adding five minutes of wall clock would land an hour late.
+insert into private.automation_enrollments (id, organization_id, recipe_id, recipe_version_id, subject_type,
+  subject_id, trigger_event_id, source, re_entry_key, context, anchor_at)
+values
+  ('6f1d0000-0000-0000-0000-000000000005', '6f110000-0000-0000-0000-000000000001',
+   '6f1a0000-0000-0000-0000-000000000001', '6f1b0000-0000-0000-0000-000000000002', 'quote',
+   pg_temp.qid(), '6f1c0000-0000-0000-0000-000000000005', 'event', 'entry-5', '{}'::jsonb,
+   '2026-06-10 14:00:00+00'),
+  ('6f1d0000-0000-0000-0000-000000000006', '6f110000-0000-0000-0000-000000000001',
+   '6f1a0000-0000-0000-0000-000000000001', '6f1b0000-0000-0000-0000-000000000002', 'quote',
+   pg_temp.qid(), '6f1c0000-0000-0000-0000-000000000006', 'event', 'entry-6', '{}'::jsonb,
+   '2026-11-01 01:58:00-04');
+
+insert into private.automation_work_items (id, organization_id, enrollment_id, step_index, due_at,
+  available_at, claim_token, claimed_at)
+values
+  ('6f1e0000-0000-0000-0000-000000000005', '6f110000-0000-0000-0000-000000000001',
+   '6f1d0000-0000-0000-0000-000000000005', 0, now(), now(), '6f1f0000-0000-0000-0000-000000000005', now()),
+  ('6f1e0000-0000-0000-0000-000000000006', '6f110000-0000-0000-0000-000000000001',
+   '6f1d0000-0000-0000-0000-000000000005', 2, now(), now(), '6f1f0000-0000-0000-0000-000000000006', now()),
+  ('6f1e0000-0000-0000-0000-000000000007', '6f110000-0000-0000-0000-000000000001',
+   '6f1d0000-0000-0000-0000-000000000006', 0, now(), now(), '6f1f0000-0000-0000-0000-000000000007', now()),
+  ('6f1e0000-0000-0000-0000-000000000008', '6f110000-0000-0000-0000-000000000001',
+   '6f1d0000-0000-0000-0000-000000000006', 3, now(), now(), '6f1f0000-0000-0000-0000-000000000008', now());
+
+create function pg_temp.due_for(p_enrollment uuid, p_step integer) returns timestamptz language sql stable as
+  'select due_at from private.automation_work_items where enrollment_id = $1 and step_index = $2';
+
+select public.advance_automation_work_item('6f1e0000-0000-0000-0000-000000000005',
+  '6f1f0000-0000-0000-0000-000000000005');
+select is(pg_temp.due_for('6f1d0000-0000-0000-0000-000000000005', 1),
+  '2026-06-10 14:05:00+00'::timestamptz, 'a 5-minute wait is due five minutes after the anchor');
+
+select public.advance_automation_work_item('6f1e0000-0000-0000-0000-000000000006',
+  '6f1f0000-0000-0000-0000-000000000006');
+select is(pg_temp.due_for('6f1d0000-0000-0000-0000-000000000005', 3),
+  '2026-06-10 15:05:00+00'::timestamptz, 'minutes and hours add up cumulatively from the anchor');
+
+select is(
+  public.advance_automation_work_item('6f1e0000-0000-0000-0000-000000000007',
+    '6f1f0000-0000-0000-0000-000000000007'),
+  'waiting', 'a minute wait schedules the next step');
+select is(pg_temp.due_for('6f1d0000-0000-0000-0000-000000000006', 1),
+  '2026-11-01 02:03:00-04'::timestamptz, 'a 5-minute wait across the clock change is five real minutes');
+
+select throws_ok(
+  $$select public.advance_automation_work_item('6f1e0000-0000-0000-0000-000000000008',
+    '6f1f0000-0000-0000-0000-000000000008')$$,
+  '23514', 'This automation step has an unusable delay.', 'an unknown wait unit is refused');
 
 select * from finish();
 rollback;

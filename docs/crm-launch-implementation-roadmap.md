@@ -71,10 +71,12 @@ failed bulk item remains visible and safely retryable.
 
 **Owner:** Requests/Public Forms + Website Chat + Communications + Automation.  
 **Depends on:** Parts 1–3; existing Website Chat, email delivery and Automation engine.  
-**Deliver:** embeddable branded hero Quote/Request form; configurable questions and consent capture; deterministic
-lead/customer matching without guessed merges; Request and source attribution; immediate inbox notification;
-configurable no-human-reply timer; one editable automatic email reply preset; stop rules for any qualifying human
-reply; delivery, enrollment and failure history.
+**Deliver:** embeddable branded hero Quote/Request form; configurable questions and channel-specific consent
+capture; deterministic lead/customer matching without guessed merges; Request and source attribution; Jobber-
+style inbox/activity visibility and configured-recipient alerts; one HighLevel-style editable speed-to-lead preset
+whose five-minute Wait is only the starting value; supported Wait, condition, assignment, task, internal-
+notification and customer-message steps; stop/pause rules for staff and customer replies; delivery, enrollment
+and failure history.
 
 **Main risk:** duplicates, double replies, replying after a person has answered, and treating a chat open/read
 signal as a human response.  

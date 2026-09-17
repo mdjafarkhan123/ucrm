@@ -39,6 +39,8 @@ function workClient(
 		performError?: boolean;
 		performSms?: (id: string) => string;
 		performSmsError?: boolean;
+		performMessage?: (id: string) => string;
+		fallbacks?: number;
 		claimError?: string;
 		retryError?: string;
 		recordError?: boolean;
@@ -71,6 +73,16 @@ function workClient(
 			if (options.performSmsError) return { data: null, error: { message: 'sms path exploded' } };
 			const id = String(args?.p_work_item_id);
 			return { data: options.performSms ? options.performSms(id) : 'action_sent', error: null };
+		}
+		if (name === 'perform_automation_inquiry_message_effect') {
+			const id = String(args?.p_work_item_id);
+			return {
+				data: options.performMessage ? options.performMessage(id) : 'action_sent',
+				error: null
+			};
+		}
+		if (name === 'process_automation_sms_email_fallbacks') {
+			return { data: options.fallbacks ?? 0, error: null };
 		}
 		if (name === 'retry_automation_work_item') {
 			if (options.retryError) return { data: null, error: { message: options.retryError } };
@@ -107,6 +119,7 @@ describe('drainAutomationWork', () => {
 			cancelled: 0,
 			parked: 0,
 			retried: 0,
+			fallbacks: 0,
 			stoppedBy: 'idle'
 		});
 		expect(rpc).toHaveBeenCalledWith('claim_automation_work_items', expect.anything());
@@ -206,21 +219,22 @@ describe('drainAutomationWork', () => {
 			b: 'completed',
 			c: 'action_not_available',
 			d: 'enrollment_expired',
-			e: 'claim_lost'
+			e: 'claim_lost',
+			f: 'paused_customer_reply'
 		};
 		const { client } = workClient({
 			intake: [0],
-			claims: [[item('a'), item('b'), item('c'), item('d'), item('e')]],
+			claims: [[item('a'), item('b'), item('c'), item('d'), item('e'), item('f')]],
 			advance: (id) => outcomes[id]
 		});
 
 		const result = await drainAutomationWork({ client, now: () => 0 });
 
 		expect(result).toMatchObject({
-			claimed: 5,
+			claimed: 6,
 			waited: 1,
 			completed: 1,
-			parked: 1,
+			parked: 2,
 			cancelled: 1,
 			stoppedBy: 'idle'
 		});
@@ -266,6 +280,38 @@ describe('drainAutomationWork', () => {
 		// No link minted for a text: the sms effect call never carries a quote URL/token.
 		const smsCall = rpc.mock.calls.find(([name]) => name === 'perform_automation_sms_effect');
 		expect(smsCall?.[1]).not.toHaveProperty('p_quote_url');
+	});
+
+	it('runs a website inquiry customer message effect and counts a send', async () => {
+		const { client, rpc } = workClient({
+			intake: [0],
+			claims: [[item('a')]],
+			advance: () => 'action_due_customer_message',
+			performMessage: () => 'action_sent'
+		});
+
+		const result = await drainAutomationWork({ client, now: () => 0, createQuoteLink: stubLink });
+
+		expect(result).toMatchObject({ claimed: 1, sent: 1, stoppedBy: 'idle' });
+		expect(rpc).toHaveBeenCalledWith('perform_automation_inquiry_message_effect', {
+			p_work_item_id: 'a',
+			p_claim_token: 'claim-a'
+		});
+	});
+
+	it('drains due email fallbacks after intake and before claiming work', async () => {
+		const { client, rpc } = workClient({ intake: [0], claims: [], fallbacks: 3 });
+
+		const result = await drainAutomationWork({ client, now: () => 0 });
+
+		expect(result.fallbacks).toBe(3);
+		const order = rpc.mock.calls.map(([name]) => name);
+		expect(order.indexOf('intake_automation_events')).toBeLessThan(
+			order.indexOf('process_automation_sms_email_fallbacks')
+		);
+		expect(order.indexOf('process_automation_sms_email_fallbacks')).toBeLessThan(
+			order.indexOf('claim_automation_work_items')
+		);
 	});
 
 	it('maps a permanent skip to cancelled and a temporary skip to retried', async () => {
@@ -323,6 +369,7 @@ describe('drainAutomationWork', () => {
 			sent: 0,
 			cancelled: 0,
 			retried: 0,
+			fallbacks: 0,
 			stoppedBy: 'idle'
 		});
 	});

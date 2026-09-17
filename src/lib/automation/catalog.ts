@@ -13,6 +13,9 @@ import { z } from 'zod';
 import {
 	automationEmailBodySchema,
 	automationEmailSubjectSchema,
+	automationInquiryEmailBodySchema,
+	automationInquiryEmailSubjectSchema,
+	automationInquirySmsBodySchema,
 	automationSmsBodySchema
 } from './email-variables';
 
@@ -22,13 +25,20 @@ export type CatalogKind = 'trigger' | 'condition' | 'wait' | 'action' | 'stop';
 
 export type CatalogAvailability = { status: 'enabled' } | { status: 'blocked'; reason: string };
 
+// What a recipe acts on, fixed by its trigger. CRM launch readiness Part 4 Stage 6 added the website inquiry (a
+// form submission or chat session). Every condition, step and stop must match the trigger's subject, except
+// entries marked 'any' (a wait means the same thing for every subject).
+export type CatalogSubject = 'quote' | 'website_inquiry';
+
 export type CatalogEntry = {
 	key: string;
 	kind: CatalogKind;
 	label: string;
 	summary: string;
-	// v1 recipes all act on a Quote. Kept explicit so a later subject cannot be added by accident.
-	subject: 'quote';
+	subject: CatalogSubject | 'any';
+	// A stop the engine always applies for its subject. The builder shows it ticked and locked, and the
+	// validator adds it, so the saved recipe never claims less than what really happens.
+	alwaysOn?: boolean;
 	availability: CatalogAvailability;
 	// Strict config shape for this entry. `.strict()` is what rejects unknown fields at save time.
 	configSchema: z.ZodTypeAny;
@@ -90,6 +100,15 @@ const triggers: CatalogEntry[] = [
 		summary: 'Runs when the customer declines the quote.',
 		subject: 'quote',
 		availability: blocked('Available in a later update.'),
+		configSchema: NO_CONFIG
+	},
+	{
+		key: 'website_inquiry.received',
+		kind: 'trigger',
+		label: 'New website inquiry',
+		summary: 'Runs once when someone sends your website form or starts a website chat.',
+		subject: 'website_inquiry',
+		availability: enabled,
 		configSchema: NO_CONFIG
 	}
 ];
@@ -163,12 +182,15 @@ const waits: CatalogEntry[] = [
 		key: 'wait.relative_delay',
 		kind: 'wait',
 		label: 'Wait a while',
-		summary: 'Waits a set number of days or hours before the next step.',
-		subject: 'quote',
+		summary: 'Waits a set number of days, hours, or minutes before the next step.',
+		subject: 'any',
 		availability: enabled,
 		// Local send window is applied by the engine (6D); here we only fix a positive delay.
 		configSchema: z
-			.object({ unit: z.enum(['hours', 'days']), amount: z.number().int().min(1).max(2160) })
+			.object({
+				unit: z.enum(['minutes', 'hours', 'days']),
+				amount: z.number().int().min(1).max(2160)
+			})
 			.strict()
 	}
 ];
@@ -207,6 +229,24 @@ const actions: CatalogEntry[] = [
 			.object({
 				body: automationSmsBodySchema,
 				sender_id: z.string().uuid().optional()
+			})
+			.strict()
+	},
+	{
+		key: 'action.send_customer_message',
+		kind: 'action',
+		label: 'Reply by text or email',
+		summary:
+			'Texts the customer when they agreed to texts and a number is ready, otherwise emails them. If the text fails, the email goes instead.',
+		subject: 'website_inquiry',
+		availability: enabled,
+		// Stage 5 engine: sms_body is optional (without it the step only emails); the email copy is always needed
+		// because it is the fallback. Business-fact variables only — an inquiry has no quote.
+		configSchema: z
+			.object({
+				sms_body: automationInquirySmsBodySchema.optional(),
+				email_subject: automationInquiryEmailSubjectSchema,
+				email_body: automationInquiryEmailBodySchema
 			})
 			.strict()
 	},
@@ -252,15 +292,39 @@ const stopKeys: Array<{ key: string; label: string }> = [
 	{ key: 'stop.customer_reply', label: 'Customer replied' }
 ];
 
-const stops: CatalogEntry[] = stopKeys.map(({ key, label }) => ({
-	key,
-	kind: 'stop' as const,
-	label,
-	summary: 'Stops the automation for that quote.',
-	subject: 'quote' as const,
-	availability: enabled,
-	configSchema: NO_CONFIG
-}));
+const stops: CatalogEntry[] = [
+	...stopKeys.map(({ key, label }) => ({
+		key,
+		kind: 'stop' as const,
+		label,
+		summary: 'Stops the automation for that quote.',
+		subject: 'quote' as const,
+		availability: enabled,
+		configSchema: NO_CONFIG
+	})),
+	// Stage 3 engine rules, applied to every inquiry enrollment (HighLevel "User Replied" / "Stop on Response").
+	{
+		key: 'stop.inquiry_staff_reply',
+		kind: 'stop',
+		label: 'A team member replied',
+		summary: 'Stops the follow-up once a reply from your team is delivered.',
+		subject: 'website_inquiry',
+		alwaysOn: true,
+		availability: enabled,
+		configSchema: NO_CONFIG
+	},
+	{
+		key: 'stop.inquiry_customer_reply',
+		kind: 'stop',
+		label: 'Customer replied (pauses, so your team can Resume, Skip, or Stop)',
+		summary:
+			'Pauses before the next message once the customer answers something this automation sent.',
+		subject: 'website_inquiry',
+		alwaysOn: true,
+		availability: enabled,
+		configSchema: NO_CONFIG
+	}
+];
 
 export const AUTOMATION_CATALOG: readonly CatalogEntry[] = [
 	...triggers,
@@ -289,4 +353,23 @@ export function isEnabled(entry: CatalogEntry): boolean {
 export function triggerLabel(key: string | null): string {
 	if (!key) return 'No trigger yet';
 	return getCatalogEntry(key)?.label ?? key;
+}
+
+// The subject a trigger fixes for its recipe, or null when no (known) trigger is chosen yet.
+export function triggerSubject(key: string | null | undefined): CatalogSubject | null {
+	if (!key) return null;
+	const subject = getCatalogEntry(key)?.subject;
+	return subject && subject !== 'any' ? subject : null;
+}
+
+export function fitsSubject(entry: CatalogEntry, subject: CatalogSubject | null): boolean {
+	return entry.subject === 'any' || subject === null || entry.subject === subject;
+}
+
+// The stops the engine applies regardless of choice, for a subject.
+export function alwaysOnStopKeys(subject: CatalogSubject | null): string[] {
+	return AUTOMATION_CATALOG.filter(
+		(entry) =>
+			entry.kind === 'stop' && entry.alwaysOn && subject !== null && entry.subject === subject
+	).map((entry) => entry.key);
 }

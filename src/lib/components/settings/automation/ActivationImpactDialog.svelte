@@ -20,14 +20,18 @@
 	// route reads and re-validates the recipe's OWN draft, so nothing here is trusted as the definition). It
 	// shows future-only behavior, the effective limits, and active-recipe headroom, and blocks Activate on any
 	// blocking finding or over-limit.
+	// `publish` reviews saved edits to an automation that is already live (active or paused); publishing freezes a
+	// new version for new customers and turns a paused automation back on, exactly like turning a draft on.
 	let {
 		open,
 		recipeId,
+		mode = 'turn_on',
 		onClose,
 		onActivated
 	}: {
 		open: boolean;
 		recipeId: string;
+		mode?: 'turn_on' | 'publish' | 'publish_and_resume';
 		onClose: () => void;
 		onActivated: (result: ActivateResult) => Promise<void>;
 	} = $props();
@@ -46,6 +50,18 @@
 	let submitError = $state('');
 
 	const preview = $derived(previewQuery.data);
+
+	const copy = $derived(
+		mode === 'turn_on'
+			? { title: 'Turn this automation on', confirm: 'Turn on', verb: 'Turning this on' }
+			: mode === 'publish'
+				? { title: 'Publish your changes', confirm: 'Publish changes', verb: 'Publishing' }
+				: {
+						title: 'Publish your changes and resume',
+						confirm: 'Publish and resume',
+						verb: 'Publishing turns this automation back on and'
+					}
+	);
 
 	function limitText(limit: AutomationLimit): string {
 		if (limit.is_unlimited || limit.state === 'unlimited') return 'No limit';
@@ -82,7 +98,7 @@
 </script>
 
 {#if open}
-	<Dialog {open} title="Turn this automation on" {onClose}>
+	<Dialog {open} title={copy.title} {onClose}>
 		{#if previewQuery.isPending}
 			<LoadingSkeleton variant="card" rows={3} />
 		{:else if previewQuery.isError}
@@ -93,7 +109,7 @@
 		{:else if preview}
 			<div class="activation">
 				<p class="activation__lead">
-					Turning this on only affects customers <strong>from now on</strong>. Nobody already in a
+					{copy.verb} only affects customers <strong>from now on</strong>. Nobody already in a
 					previous run is changed.
 				</p>
 
@@ -137,7 +153,7 @@
 							<dd>{preview.summary.trigger_label}</dd>
 						</div>
 						<div class="activation__fact">
-							<dt>Most emails one customer could get</dt>
+							<dt>Most messages one customer could get</dt>
 							<dd>{preview.summary.max_messages}</dd>
 						</div>
 						<div class="activation__fact">
@@ -154,7 +170,7 @@
 						<p class="activation__limits-title">Your plan’s safety limits</p>
 						<dl class="activation__facts activation__facts--tight">
 							<div class="activation__fact">
-								<dt>Max emails per customer</dt>
+								<dt>Max messages per customer</dt>
 								<dd>
 									{limitText(
 										preview.effective_limits.automation_max_customer_messages_per_enrollment
@@ -162,7 +178,7 @@
 								</dd>
 							</div>
 							<div class="activation__fact">
-								<dt>Min minutes between emails</dt>
+								<dt>Min minutes between messages</dt>
 								<dd>
 									{limitText(
 										preview.effective_limits.automation_min_customer_message_spacing_minutes
@@ -193,7 +209,7 @@
 					Cancel
 				</Button>
 				<Button variation="work" onclick={confirm} disabled={!preview.valid} loading={activating}>
-					Turn on
+					{copy.confirm}
 				</Button>
 			</div>
 		{/if}

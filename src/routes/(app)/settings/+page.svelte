@@ -30,6 +30,7 @@
 	import deviceMobileMessageIcon from '@tabler/icons/outline/device-mobile-message.svg?raw';
 	import walletIcon from '@tabler/icons/outline/wallet.svg?raw';
 	import templateIcon from '@tabler/icons/outline/template.svg?raw';
+	import bellIcon from '@tabler/icons/outline/bell-ringing.svg?raw';
 	import robotIcon from '@tabler/icons/outline/robot.svg?raw';
 
 	const query = createQuery(() => ({
@@ -217,6 +218,15 @@
 									icon={messageCircleIcon}
 									title="Website Chat"
 									description="The chat widgets your website can show customers."
+								/>
+								<SettingsDestinationCard
+									href={resolve('/(app)/settings/inquiry-alerts')}
+									icon={bellIcon}
+									title="Inquiry alerts"
+									description="Who gets alerted when a website form or chat brings in a new customer."
+									status={home.readiness.inquiry_alerts_owner_only
+										? { label: 'Owner only', tone: 'warning' }
+										: undefined}
 								/>
 							{/if}
 							{#if home.permissions.snippets_manage}

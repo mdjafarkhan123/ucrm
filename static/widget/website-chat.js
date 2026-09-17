@@ -1,16 +1,20 @@
-//#region src/widget/website-chat.ts
-var e = null, t = null;
-function n() {
-	return t ??= import("./website-chat-phone.js").then((t) => e = t).catch(() => null), t;
+function e(e) {
+	return `I agree to receive text messages from ${e} about my request, quotes and appointments. Message frequency varies. Message and data rates may apply. Reply STOP to opt out or HELP for help. Consent is not a condition of purchase.`;
 }
-var r = null;
-function i() {
-	return r ??= import("./website-chat-realtime.js").then((e) => e).catch(() => null), r;
+//#endregion
+//#region src/widget/website-chat.ts
+var t = null, n = null;
+function r() {
+	return n ??= import("./website-chat-phone.js").then((e) => t = e).catch(() => null), n;
+}
+var i = null;
+function a() {
+	return i ??= import("./website-chat-realtime.js").then((e) => e).catch(() => null), i;
 }
 (function() {
-	let t = Array.from(document.querySelectorAll("script[data-widget-token]")), r = (t.find((e) => e.src === import.meta.url) ?? t[0] ?? null)?.getAttribute("data-widget-token") ?? "";
-	if (!r) return;
-	let a = new URL(import.meta.url, window.location.href).origin, o = (e) => `ucrm-wc-teaser-dismissed-${e}`, s = (e) => `ucrm-wc-draft-${e}`, c = (e) => `ucrm-wc-session-${e}`, l = (e) => `ucrm-wc-composer-${e}`, u = null, d = null, f = null, p = !1, ee = !0, m = null, h = !1, g = /* @__PURE__ */ new Set(), _ = "", te = null, v = null, y = [], ne = /* @__PURE__ */ new Set(), b = [], x = !1, S = !1, C = !1, w = !1, T = "", re = null, E = null, D = null, O = null, k = null, A = null, j = null, M = null, N = null, ie = 0, ae = !1, oe = null, se = null, ce = !1;
+	let n = Array.from(document.querySelectorAll("script[data-widget-token]")), i = (n.find((e) => e.src === import.meta.url) ?? n[0] ?? null)?.getAttribute("data-widget-token") ?? "";
+	if (!i) return;
+	let o = new URL(import.meta.url, window.location.href).origin, s = (e) => `ucrm-wc-teaser-dismissed-${e}`, c = (e) => `ucrm-wc-draft-${e}`, l = (e) => `ucrm-wc-session-${e}`, u = (e) => `ucrm-wc-composer-${e}`, d = null, f = null, p = null, m = !1, ee = !0, h = null, g = !1, _ = /* @__PURE__ */ new Set(), v = "", te = null, y = null, b = [], ne = /* @__PURE__ */ new Set(), x = [], S = !1, C = !1, w = !1, T = !1, E = "", re = null, D = null, O = null, k = null, A = null, j = null, M = null, N = null, P = null, ie = 0, ae = !1, oe = null, se = null, ce = !1;
 	function le(e) {
 		return `
 :host {
@@ -413,6 +417,14 @@ svg { display: block; }
 	background: var(--wc-color-surface-subtle);
 }
 
+.wc-consent[hidden] { display: none; }
+
+.wc-consent__label {
+	display: block;
+	font-weight: 600;
+	color: var(--wc-color-text);
+}
+
 .wc-consent input {
 	flex: 0 0 auto;
 	width: 16px;
@@ -729,59 +741,59 @@ svg { display: block; }
 		let t = e.trim().split(/\s+/).filter(Boolean);
 		return t.length === 0 ? "?" : t.length === 1 ? t[0].slice(0, 2).toUpperCase() : `${t[0][0]}${t[t.length - 1][0]}`.toUpperCase();
 	}
-	function P(e, t) {
+	function F(e, t) {
 		let n = document.createElement(e);
 		return n.className = t, n;
 	}
-	function F(e, t) {
-		let n = P("span", `wc-avatar wc-avatar--${e}`);
+	function I(e, t) {
+		let n = F("span", `wc-avatar wc-avatar--${e}`);
 		return n.setAttribute("aria-hidden", "true"), n.textContent = fe(t), n;
 	}
 	function pe(e) {
 		try {
-			return localStorage.getItem(o(e)) === "1";
+			return localStorage.getItem(s(e)) === "1";
 		} catch {
 			return !1;
 		}
 	}
 	function me() {
-		if (u) {
+		if (d) {
 			ee = !0;
 			try {
-				localStorage.setItem(o(u.widgetId), "1");
+				localStorage.setItem(s(d.widgetId), "1");
 			} catch {}
 			$();
 		}
 	}
 	let he = null;
-	function I(e) {
+	function L(e) {
 		try {
 			return he ??= new Intl.DisplayNames(void 0, { type: "region" }), he.of(e) ?? e;
 		} catch {
 			return e;
 		}
 	}
-	function L(e) {
+	function R(e) {
 		return String.fromCodePoint(...[...e].map((e) => 127462 + e.toUpperCase().charCodeAt(0) - 65));
 	}
 	let ge = null;
 	function _e() {
-		let t = e;
-		return t ? (ge ??= t.getCountries().map((e) => ({
-			code: e,
-			name: I(e),
-			dial: `+${t.getCountryCallingCode(e)}`
+		let e = t;
+		return e ? (ge ??= e.getCountries().map((t) => ({
+			code: t,
+			name: L(t),
+			dial: `+${e.getCountryCallingCode(t)}`
 		})).sort((e, t) => e.name.localeCompare(t.name)), ge) : [];
 	}
 	function ve() {
-		let t = new Set(e?.getCountries() ?? []);
-		for (let e of navigator.languages ?? [navigator.language]) {
-			let n = new Intl.Locale(e).maximize().region;
-			if (n && t.has(n)) return n;
+		let e = new Set(t?.getCountries() ?? []);
+		for (let t of navigator.languages ?? [navigator.language]) {
+			let n = new Intl.Locale(t).maximize().region;
+			if (n && e.has(n)) return n;
 		}
 		return "US";
 	}
-	function R() {
+	function z() {
 		return crypto.randomUUID ? crypto.randomUUID() : `wc-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
 	}
 	function ye() {
@@ -791,14 +803,14 @@ svg { display: block; }
 			phone: "",
 			email: "",
 			message: "",
-			consent: !0,
-			idempotencyKey: R()
+			consent: !1,
+			idempotencyKey: z()
 		};
 	}
 	function be(e) {
 		let t = ye();
 		try {
-			let n = localStorage.getItem(s(e));
+			let n = localStorage.getItem(c(e));
 			if (!n) return t;
 			let r = JSON.parse(n);
 			return {
@@ -807,21 +819,21 @@ svg { display: block; }
 				phone: typeof r.phone == "string" ? r.phone : "",
 				email: typeof r.email == "string" ? r.email : "",
 				message: typeof r.message == "string" ? r.message : "",
-				consent: r.consent !== !1,
+				consent: r.consent === !0,
 				idempotencyKey: r.idempotencyKey || t.idempotencyKey
 			};
 		} catch {
 			return t;
 		}
 	}
-	function z() {
-		if (!(!u || !m)) try {
-			localStorage.setItem(s(u.widgetId), JSON.stringify(m));
+	function B() {
+		if (!(!d || !h)) try {
+			localStorage.setItem(c(d.widgetId), JSON.stringify(h));
 		} catch {}
 	}
 	function xe() {
-		if (u) try {
-			localStorage.removeItem(s(u.widgetId));
+		if (d) try {
+			localStorage.removeItem(c(d.widgetId));
 		} catch {}
 	}
 	function Se() {
@@ -843,12 +855,12 @@ svg { display: block; }
 		return e;
 	}
 	let Ce = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-	function we(t) {
-		let n = e?.parsePhoneNumberFromString(t.phone, t.country);
+	function we(e) {
+		let n = t?.parsePhoneNumberFromString(e.phone, e.country);
 		return n?.isValid() ? n.number : null;
 	}
 	function Te(e) {
-		let t = u?.contactRequirement ?? "either";
+		let t = d?.contactRequirement ?? "either";
 		return t === "phone" ? {
 			phone: !0,
 			email: !1
@@ -865,30 +877,30 @@ svg { display: block; }
 		return e.name.trim().length < 2 && (n.name = "Invalid value"), e.message.trim() || (n.message = "Invalid value"), (e.phone.trim() ? !we(e) : t.phone) && (n.phone = "Invalid value"), (e.email.trim() ? !Ce.test(e.email.trim()) : t.email) && (n.email = "Invalid value"), n;
 	}
 	function De(e) {
-		let t = P("button", `wc-launcher wc-launcher--${e.launcherPosition}`);
-		return t.type = "button", t.setAttribute("aria-label", `Open chat with ${e.businessName}`), t.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 20l1.3 -3.9c-2.324 -3.437 -1.426 -7.872 2.1 -10.374c3.526 -2.501 8.59 -2.296 11.845 .48c3.255 2.777 3.695 7.266 1.029 10.501c-2.666 3.235 -7.615 4.215 -11.574 2.293l-4.7 1\" /></svg>", t.addEventListener("pointerenter", B, { once: !0 }), t.addEventListener("focus", B, { once: !0 }), t.addEventListener("click", () => {
-			p = !0, $();
+		let t = F("button", `wc-launcher wc-launcher--${e.launcherPosition}`);
+		return t.type = "button", t.setAttribute("aria-label", `Open chat with ${e.businessName}`), t.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 20l1.3 -3.9c-2.324 -3.437 -1.426 -7.872 2.1 -10.374c3.526 -2.501 8.59 -2.296 11.845 .48c3.255 2.777 3.695 7.266 1.029 10.501c-2.666 3.235 -7.615 4.215 -11.574 2.293l-4.7 1\" /></svg>", t.addEventListener("pointerenter", V, { once: !0 }), t.addEventListener("focus", V, { once: !0 }), t.addEventListener("click", () => {
+			m = !0, $();
 		}), t;
 	}
 	function Oe(e, t) {
-		let n = P("button", `wc-teaser wc-teaser--${e.launcherPosition}`);
-		n.type = "button", n.addEventListener("pointerenter", B, { once: !0 }), n.addEventListener("focus", B, { once: !0 }), n.addEventListener("click", () => {
-			p = !0, $();
+		let n = F("button", `wc-teaser wc-teaser--${e.launcherPosition}`);
+		n.type = "button", n.addEventListener("pointerenter", V, { once: !0 }), n.addEventListener("focus", V, { once: !0 }), n.addEventListener("click", () => {
+			m = !0, $();
 		});
-		let r = P("span", "wc-teaser__text");
+		let r = F("span", "wc-teaser__text");
 		r.textContent = t;
-		let i = P("span", "wc-teaser__dismiss");
+		let i = F("span", "wc-teaser__dismiss");
 		return i.setAttribute("role", "button"), i.setAttribute("tabindex", "0"), i.setAttribute("aria-label", "Dismiss"), i.innerHTML = ue, i.addEventListener("click", (e) => {
 			e.stopPropagation(), me();
 		}), i.addEventListener("keydown", (e) => {
 			(e.key === "Enter" || e.key === " ") && (e.preventDefault(), e.stopPropagation(), me());
-		}), n.append(F("medium", e.businessName), r, i), n;
+		}), n.append(I("medium", e.businessName), r, i), n;
 	}
-	function B() {
-		n();
+	function V() {
+		r();
 	}
 	function ke() {
-		let e = P("div", "wc-skeleton");
+		let e = F("div", "wc-skeleton");
 		e.setAttribute("aria-hidden", "true");
 		for (let t of [
 			40,
@@ -897,147 +909,147 @@ svg { display: block; }
 			64,
 			44
 		]) {
-			let n = P("div", "wc-skeleton__bar");
+			let n = F("div", "wc-skeleton__bar");
 			n.style.height = `${t}px`, e.appendChild(n);
 		}
 		return e;
 	}
 	function Ae(e, t) {
-		let n = P("div", "wc-empty"), r = P("p", "wc-empty__title");
+		let n = F("div", "wc-empty"), r = F("p", "wc-empty__title");
 		if (r.textContent = e, n.appendChild(r), t) {
-			let e = P("p", "wc-empty__description");
+			let e = F("p", "wc-empty__description");
 			e.textContent = t, n.appendChild(e);
 		}
 		return n;
 	}
-	let je = /* @__PURE__ */ new Map(), V = null, H = null, U = null, W = null, G = null;
-	function K(e, t, n = "") {
-		let r = P("div", `wc-field ${n}`.trim()), i = P("p", "wc-field__error");
+	let je = /* @__PURE__ */ new Map(), H = null, U = null, W = null, G = null, K = null, Me = null;
+	function q(e, t, n = "") {
+		let r = F("div", `wc-field ${n}`.trim()), i = F("p", "wc-field__error");
 		return i.hidden = !0, r.append(t, i), je.set(e, {
 			wrapper: r,
 			error: i
 		}), r;
 	}
-	function Me(e, t = "text") {
-		let n = P("input", "wc-input");
+	function Ne(e, t = "text") {
+		let n = F("input", "wc-input");
 		return n.type = t, n.placeholder = e, n.setAttribute("aria-label", e), n.autocomplete = "off", n;
 	}
-	function q() {
-		if (!m) return;
-		let e = Ee(m);
+	function J() {
+		if (!h) return;
+		let e = Ee(h);
 		for (let [t, n] of je) {
-			let r = g.has(t) ? e[t] : void 0;
+			let r = _.has(t) ? e[t] : void 0;
 			n.error.textContent = r ?? "", n.error.hidden = !r, n.wrapper.classList.toggle("wc-field--invalid", !!r);
 		}
-		V && (V.disabled = h || Object.keys(e).length > 0), H && (H.textContent = _, H.hidden = !_);
-	}
-	function Ne(t) {
-		if (!(!m || !e)) {
-			if (m.country = t, W) {
-				let e = W.querySelector(".wc-phone__flag");
-				e && (e.textContent = L(t)), W.setAttribute("aria-label", `Country: ${I(t)}`);
-			}
-			U && (U.value = new e.AsYouType(t).input(m.phone), m.phone = U.value), z(), q();
-		}
-	}
-	function J() {
-		G?.remove(), G = null, W?.setAttribute("aria-expanded", "false");
+		Me && (Me.hidden = !h.phone.trim()), H && (H.disabled = g || Object.keys(e).length > 0), U && (U.textContent = v, U.hidden = !v);
 	}
 	function Pe(e) {
-		if (G) {
-			J();
+		if (!(!h || !t)) {
+			if (h.country = e, G) {
+				let t = G.querySelector(".wc-phone__flag");
+				t && (t.textContent = R(e)), G.setAttribute("aria-label", `Country: ${L(e)}`);
+			}
+			W && (W.value = new t.AsYouType(e).input(h.phone), h.phone = W.value), B(), J();
+		}
+	}
+	function Y() {
+		K?.remove(), K = null, G?.setAttribute("aria-expanded", "false");
+	}
+	function Fe(e) {
+		if (K) {
+			Y();
 			return;
 		}
-		let t = P("div", "wc-country"), n = P("input", "wc-country__search");
+		let t = F("div", "wc-country"), n = F("input", "wc-country__search");
 		n.type = "search", n.placeholder = "Search countries", n.setAttribute("aria-label", "Search countries");
-		let r = P("ul", "wc-country__list");
+		let r = F("ul", "wc-country__list");
 		function i(e) {
 			let t = e.trim().toLowerCase(), n = _e().filter((e) => !t || e.name.toLowerCase().includes(t) || e.code.toLowerCase().includes(t) || e.dial.includes(t));
 			if (r.replaceChildren(), n.length === 0) {
-				let e = P("li", "wc-country__empty");
+				let e = F("li", "wc-country__empty");
 				e.textContent = "No matching country", r.appendChild(e);
 				return;
 			}
 			for (let e of n) {
-				let t = document.createElement("li"), n = P("button", "wc-country__option");
+				let t = document.createElement("li"), n = F("button", "wc-country__option");
 				n.type = "button";
-				let i = P("span", "wc-phone__flag");
-				i.textContent = L(e.code);
-				let a = P("span", "wc-country__name");
+				let i = F("span", "wc-phone__flag");
+				i.textContent = R(e.code);
+				let a = F("span", "wc-country__name");
 				a.textContent = e.name;
-				let o = P("span", "wc-country__dial");
+				let o = F("span", "wc-country__dial");
 				o.textContent = e.dial, n.append(i, a, o), n.addEventListener("click", () => {
-					Ne(e.code), J(), U?.focus();
+					Pe(e.code), Y(), W?.focus();
 				}), t.appendChild(n), r.appendChild(t);
 			}
 		}
 		n.addEventListener("input", () => i(n.value)), t.addEventListener("keydown", (e) => {
-			e.key === "Escape" && (e.stopPropagation(), J(), W?.focus());
-		}), i(""), t.append(n, r), e.appendChild(t), G = t, W?.setAttribute("aria-expanded", "true"), n.focus();
+			e.key === "Escape" && (e.stopPropagation(), Y(), G?.focus());
+		}), i(""), t.append(n, r), e.appendChild(t), K = t, G?.setAttribute("aria-expanded", "true"), n.focus();
 		let a = (t) => {
-			t.composedPath().includes(e) || (J(), d?.removeEventListener("mousedown", a));
+			t.composedPath().includes(e) || (Y(), f?.removeEventListener("mousedown", a));
 		};
-		d?.addEventListener("mousedown", a);
+		f?.addEventListener("mousedown", a);
 	}
-	function Fe() {
-		let t = P("div", "wc-phone");
-		W = P("button", "wc-phone__country"), W.type = "button", W.setAttribute("aria-haspopup", "listbox"), W.setAttribute("aria-expanded", "false");
-		let n = P("span", "wc-phone__flag");
-		return n.textContent = L(m.country), W.append(n), W.insertAdjacentHTML("beforeend", "<svg class=\"wc-phone__caret\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9l6 6l6 -6\" /></svg>"), W.setAttribute("aria-label", `Country: ${I(m.country)}`), W.addEventListener("click", () => Pe(t)), U = Me("Phone", "tel"), U.autocomplete = "tel", U.value = new e.AsYouType(m.country).input(m.phone), U.addEventListener("input", () => {
-			if (!m || !U || !e) return;
-			let t = U.value;
-			if (t.trim().startsWith("+")) {
-				let n = new e.AsYouType().input(t), r = e.parsePhoneNumberFromString(t);
-				if (U.value = n, r?.country && r.country !== m.country) {
-					m.country = r.country;
-					let e = W?.querySelector(".wc-phone__flag");
-					e && (e.textContent = L(r.country)), W?.setAttribute("aria-label", `Country: ${I(r.country)}`);
+	function Ie() {
+		let e = F("div", "wc-phone");
+		G = F("button", "wc-phone__country"), G.type = "button", G.setAttribute("aria-haspopup", "listbox"), G.setAttribute("aria-expanded", "false");
+		let n = F("span", "wc-phone__flag");
+		return n.textContent = R(h.country), G.append(n), G.insertAdjacentHTML("beforeend", "<svg class=\"wc-phone__caret\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9l6 6l6 -6\" /></svg>"), G.setAttribute("aria-label", `Country: ${L(h.country)}`), G.addEventListener("click", () => Fe(e)), W = Ne("Phone", "tel"), W.autocomplete = "tel", W.value = new t.AsYouType(h.country).input(h.phone), W.addEventListener("input", () => {
+			if (!h || !W || !t) return;
+			let e = W.value;
+			if (e.trim().startsWith("+")) {
+				let n = new t.AsYouType().input(e), r = t.parsePhoneNumberFromString(e);
+				if (W.value = n, r?.country && r.country !== h.country) {
+					h.country = r.country;
+					let e = G?.querySelector(".wc-phone__flag");
+					e && (e.textContent = R(r.country)), G?.setAttribute("aria-label", `Country: ${L(r.country)}`);
 				}
-			} else U.value = new e.AsYouType(m.country).input(t);
-			m.phone = U.value, z(), q();
-		}), U.addEventListener("blur", () => {
-			g.add("phone"), q();
-		}), t.append(W, U), K("phone", t);
+			} else W.value = new t.AsYouType(h.country).input(e);
+			h.phone = W.value, B(), J();
+		}), W.addEventListener("blur", () => {
+			_.add("phone"), J();
+		}), e.append(G, W), q("phone", e);
 	}
-	function Ie(e) {
-		let t = document.createElement("form");
-		t.className = "wc-form", t.noValidate = !0;
-		let n = Me("Name");
-		n.autocomplete = "name", n.value = m.name, n.addEventListener("input", () => {
-			m.name = n.value, z(), q();
-		}), n.addEventListener("blur", () => {
-			g.add("name"), q();
-		});
-		let r = Me("E-mail", "email");
-		r.autocomplete = "email", r.value = m.email, r.addEventListener("input", () => {
-			m.email = r.value, z(), q();
+	function Le(t) {
+		let n = document.createElement("form");
+		n.className = "wc-form", n.noValidate = !0;
+		let r = Ne("Name");
+		r.autocomplete = "name", r.value = h.name, r.addEventListener("input", () => {
+			h.name = r.value, B(), J();
 		}), r.addEventListener("blur", () => {
-			g.add("email"), q();
+			_.add("name"), J();
 		});
-		let i = P("textarea", "wc-textarea");
-		i.placeholder = "I want to know more", i.setAttribute("aria-label", "Message"), i.maxLength = 5e3, i.value = m.message, i.addEventListener("input", () => {
-			m.message = i.value, z(), q();
+		let i = Ne("E-mail", "email");
+		i.autocomplete = "email", i.value = h.email, i.addEventListener("input", () => {
+			h.email = i.value, B(), J();
 		}), i.addEventListener("blur", () => {
-			g.add("message"), q();
+			_.add("email"), J();
 		});
-		let a = P("input", "wc-hp");
-		a.type = "text", a.name = "company_website", a.tabIndex = -1, a.autocomplete = "off", a.setAttribute("aria-hidden", "true");
-		let o = P("label", "wc-consent"), s = document.createElement("input");
-		s.type = "checkbox", s.checked = m.consent, s.addEventListener("change", () => {
-			m.consent = s.checked, z();
+		let a = F("textarea", "wc-textarea");
+		a.placeholder = "I want to know more", a.setAttribute("aria-label", "Message"), a.maxLength = 5e3, a.value = h.message, a.addEventListener("input", () => {
+			h.message = a.value, B(), J();
+		}), a.addEventListener("blur", () => {
+			_.add("message"), J();
 		});
-		let c = P("span", "wc-consent__text");
-		if (c.textContent = "By submitting you agree to receive SMS or e-mails for the provided channel. Rates may be applied.", o.append(s, c), H = P("p", "wc-form__banner"), H.hidden = !0, H.setAttribute("role", "alert"), V = P("button", "wc-send"), V.type = "submit", V.innerHTML = `<span>Send</span>${de}`, t.append(K("name", n), Fe(), K("email", r), K("message", i), a, o), e.privacyPolicyUrl) {
-			let n = P("a", "wc-privacy");
-			n.href = e.privacyPolicyUrl, n.target = "_blank", n.rel = "noopener noreferrer", n.textContent = "Privacy policy", t.appendChild(n);
+		let o = F("input", "wc-hp");
+		o.type = "text", o.name = "company_website", o.tabIndex = -1, o.autocomplete = "off", o.setAttribute("aria-hidden", "true");
+		let s = F("label", "wc-consent"), c = document.createElement("input");
+		c.type = "checkbox", c.checked = h.consent, c.addEventListener("change", () => {
+			h.consent = c.checked, B();
+		});
+		let l = F("span", "wc-consent__text"), u = F("strong", "wc-consent__label");
+		if (u.textContent = "Text me about my request", l.append(u, ` ${e(t.businessName)}`), s.append(c, l), Me = s, U = F("p", "wc-form__banner"), U.hidden = !0, U.setAttribute("role", "alert"), H = F("button", "wc-send"), H.type = "submit", H.innerHTML = `<span>Send</span>${de}`, n.append(q("name", r), Ie(), q("email", i), q("message", a), o, s), t.privacyPolicyUrl) {
+			let e = F("a", "wc-privacy");
+			e.href = t.privacyPolicyUrl, e.target = "_blank", e.rel = "noopener noreferrer", e.textContent = "Privacy policy", n.appendChild(e);
 		}
-		return t.append(H, V), t.addEventListener("submit", (e) => {
-			e.preventDefault(), ct();
-		}), q(), t;
+		return n.append(U, H), n.addEventListener("submit", (e) => {
+			e.preventDefault(), ut();
+		}), J(), n;
 	}
-	function Le(e) {
+	function Re(e) {
 		try {
-			let t = localStorage.getItem(c(e));
+			let t = localStorage.getItem(l(e));
 			if (!t) return null;
 			let n = JSON.parse(t);
 			return typeof n.sessionId != "string" || typeof n.sessionToken != "string" ? null : {
@@ -1048,40 +1060,40 @@ svg { display: block; }
 			return null;
 		}
 	}
-	function Re(e, t) {
+	function ze(e, t) {
 		try {
-			localStorage.setItem(c(e), JSON.stringify(t));
-		} catch {}
-	}
-	function ze(e) {
-		try {
-			localStorage.removeItem(c(e)), localStorage.removeItem(l(e));
+			localStorage.setItem(l(e), JSON.stringify(t));
 		} catch {}
 	}
 	function Be(e) {
 		try {
-			return localStorage.getItem(l(e)) ?? "";
+			localStorage.removeItem(l(e)), localStorage.removeItem(u(e));
+		} catch {}
+	}
+	function Ve(e) {
+		try {
+			return localStorage.getItem(u(e)) ?? "";
 		} catch {
 			return "";
 		}
 	}
-	function Ve(e, t) {
+	function He(e, t) {
 		try {
-			t ? localStorage.setItem(l(e), t) : localStorage.removeItem(l(e));
+			t ? localStorage.setItem(u(e), t) : localStorage.removeItem(u(e));
 		} catch {}
 	}
-	function He(e, t) {
+	function Ue(e, t) {
 		return e.created_at === t.created_at ? e.id < t.id ? -1 : +(e.id > t.id) : e.created_at < t.created_at ? -1 : 1;
 	}
-	function Y(e) {
+	function X(e) {
 		let t = !1;
-		for (let n of e) if (!(!n || typeof n.id != "string" || ne.has(n.id)) && (ne.add(n.id), y.push(n), t = !0, n.direction === "inbound")) {
-			let e = b.findIndex((e) => e.body === n.body);
-			e !== -1 && b.splice(e, 1);
+		for (let n of e) if (!(!n || typeof n.id != "string" || ne.has(n.id)) && (ne.add(n.id), b.push(n), t = !0, n.direction === "inbound")) {
+			let e = x.findIndex((e) => e.body === n.body);
+			e !== -1 && x.splice(e, 1);
 		}
-		return t && y.sort(He), t;
+		return t && b.sort(Ue), t;
 	}
-	function Ue(e) {
+	function We(e) {
 		let t = new Date(e), n = /* @__PURE__ */ new Date(), r = new Date(n);
 		r.setDate(n.getDate() - 1);
 		let i = (e, t) => e.toDateString() === t.toDateString();
@@ -1091,109 +1103,109 @@ svg { display: block; }
 			year: "numeric"
 		});
 	}
-	function We(e) {
+	function Ge(e) {
 		return new Date(e).toLocaleTimeString(void 0, {
 			hour: "numeric",
 			minute: "2-digit"
 		});
 	}
-	function Ge(e, t) {
+	function Ke(e, t) {
 		if (e.sender_type === "system") {
-			let t = P("p", "wc-note");
+			let t = F("p", "wc-note");
 			return t.textContent = e.body, t;
 		}
-		let n = e.direction === "outbound", r = P("div", `wc-msg wc-msg--${n ? "in" : "out"}`), i = P("div", "wc-msg__row");
-		n && i.appendChild(F("base", t));
-		let a = P("div", "wc-msg__bubble");
+		let n = e.direction === "outbound", r = F("div", `wc-msg wc-msg--${n ? "in" : "out"}`), i = F("div", "wc-msg__row");
+		n && i.appendChild(I("base", t));
+		let a = F("div", "wc-msg__bubble");
 		a.textContent = e.body, i.appendChild(a);
-		let o = P("p", "wc-msg__meta"), s = e.sender_type === "automation" ? `${t} · Automated` : t;
-		return o.textContent = n ? `${s} · ${We(e.created_at)}` : We(e.created_at), r.append(i, o), r;
+		let o = F("p", "wc-msg__meta"), s = e.sender_type === "automation" ? `${t} · Automated` : t;
+		return o.textContent = n ? `${s} · ${Ge(e.created_at)}` : Ge(e.created_at), r.append(i, o), r;
 	}
-	function Ke(e) {
-		let t = P("div", `wc-msg wc-msg--out ${e.status === "sending" ? "wc-msg--sending" : ""}`.trim()), n = P("div", "wc-msg__row"), r = P("div", "wc-msg__bubble");
+	function qe(e) {
+		let t = F("div", `wc-msg wc-msg--out ${e.status === "sending" ? "wc-msg--sending" : ""}`.trim()), n = F("div", "wc-msg__row"), r = F("div", "wc-msg__bubble");
 		if (r.textContent = e.body, n.appendChild(r), t.appendChild(n), e.status === "failed") {
-			let n = P("button", "wc-msg__retry");
-			n.type = "button", n.textContent = "Not sent — tap to retry", n.addEventListener("click", () => void Ze(e)), t.appendChild(n);
+			let n = F("button", "wc-msg__retry");
+			n.type = "button", n.textContent = "Not sent — tap to retry", n.addEventListener("click", () => void Qe(e)), t.appendChild(n);
 		} else {
-			let e = P("p", "wc-msg__meta");
+			let e = F("p", "wc-msg__meta");
 			e.textContent = "Sending…", t.appendChild(e);
 		}
 		return t;
 	}
-	function qe() {
-		return !j || j.scrollHeight - j.scrollTop - j.clientHeight < 60;
-	}
 	function Je() {
-		j && (j.scrollTop = j.scrollHeight);
+		return !M || M.scrollHeight - M.scrollTop - M.clientHeight < 60;
 	}
-	function X(e) {
-		if (!E || !u) return;
-		let t = e || qe(), n = [], r = "";
-		for (let e of y) {
-			let t = Ue(e.created_at);
+	function Ye() {
+		M && (M.scrollTop = M.scrollHeight);
+	}
+	function Z(e) {
+		if (!D || !d) return;
+		let t = e || Je(), n = [], r = "";
+		for (let e of b) {
+			let t = We(e.created_at);
 			if (t !== r) {
-				let e = P("span", "wc-day");
+				let e = F("span", "wc-day");
 				e.textContent = t, n.push(e), r = t;
 			}
-			n.push(Ge(e, u.businessName));
+			n.push(Ke(e, d.businessName));
 		}
-		for (let e of b) n.push(Ke(e));
-		E.replaceChildren(...n), D && (D.hidden = !w, D.disabled = S, D.textContent = S ? "Loading…" : "Load earlier messages"), O && (O.textContent = T, O.hidden = !T), Q(), t && Je();
+		for (let e of x) n.push(qe(e));
+		D.replaceChildren(...n), O && (O.hidden = !T, O.disabled = C, O.textContent = C ? "Loading…" : "Load earlier messages"), k && (k.textContent = E, k.hidden = !E), et(), t && Ye();
 	}
-	async function Ye(e, t) {
-		if (!v) return null;
+	async function Xe(e, t) {
+		if (!y) return null;
 		let n = new URLSearchParams({
-			token: r,
+			token: i,
 			page_size: String(e)
 		});
 		t && (n.set("before_created_at", t.created_at), n.set("before_id", t.id));
-		let i = await fetch(`${a}/api/webchat/sessions/messages?${n.toString()}`, {
+		let r = await fetch(`${o}/api/webchat/sessions/messages?${n.toString()}`, {
 			credentials: "omit",
-			headers: { authorization: `Bearer ${v.sessionToken}` }
+			headers: { authorization: `Bearer ${y.sessionToken}` }
 		});
-		return i.status === 429 ? "rate_limited" : i.status === 200 ? await i.json() : null;
+		return r.status === 429 ? "rate_limited" : r.status === 200 ? await r.json() : null;
 	}
-	async function Z(e = 30) {
-		if (v) try {
-			let t = await Ye(e);
+	async function Q(e = 30) {
+		if (y) try {
+			let t = await Xe(e);
 			if (t === "rate_limited" || t === null || t.status !== "ok") return;
-			let n = Y(t.messages ?? []), r = !!t.closed_at;
-			if (r !== x) {
-				x = r, n = !0, $();
+			let n = X(t.messages ?? []), r = !!t.closed_at;
+			if (r !== S) {
+				S = r, n = !0, $();
 				return;
 			}
-			C || (w = t.has_more ?? !1, C = !0, n = !0), T && (T = "", n = !0), n && X(!1);
+			w || (T = t.has_more ?? !1, w = !0, n = !0), E && (E = "", n = !0), n && Z(!1);
 		} catch {
-			!C && !T && (T = "We can't load this conversation right now.", X(!1));
+			!w && !E && (E = "We can't load this conversation right now.", Z(!1));
 		}
 	}
-	async function Xe() {
-		if (!v || S || y.length === 0) return;
-		S = !0, X(!1);
-		let e = y[0];
+	async function Ze() {
+		if (!y || C || b.length === 0) return;
+		C = !0, Z(!1);
+		let e = b[0];
 		try {
-			let t = await Ye(30, e);
+			let t = await Xe(30, e);
 			if (t && t !== "rate_limited" && t.status === "ok") {
-				let e = j?.scrollHeight ?? 0;
-				Y(t.messages ?? []), w = t.has_more ?? !1, S = !1, X(!1), j && (j.scrollTop += j.scrollHeight - e);
+				let e = M?.scrollHeight ?? 0;
+				X(t.messages ?? []), T = t.has_more ?? !1, C = !1, Z(!1), M && (M.scrollTop += M.scrollHeight - e);
 				return;
 			}
-			T = t === "rate_limited" ? "That's a lot of requests at once. Please try again in a moment." : "We couldn't load older messages.";
+			E = t === "rate_limited" ? "That's a lot of requests at once. Please try again in a moment." : "We couldn't load older messages.";
 		} catch {
-			T = "We couldn't load older messages.";
+			E = "We couldn't load older messages.";
 		}
-		S = !1, X(!1);
+		C = !1, Z(!1);
 	}
-	async function Ze(e) {
-		if (v) {
-			e.status = "sending", T = "", X(!1);
+	async function Qe(e) {
+		if (y) {
+			e.status = "sending", E = "", Z(!1);
 			try {
-				let t = await fetch(`${a}/api/webchat/messages?token=${encodeURIComponent(r)}`, {
+				let t = await fetch(`${o}/api/webchat/messages?token=${encodeURIComponent(i)}`, {
 					method: "POST",
 					credentials: "omit",
 					headers: {
 						"content-type": "application/json",
-						authorization: `Bearer ${v.sessionToken}`
+						authorization: `Bearer ${y.sessionToken}`
 					},
 					body: JSON.stringify({
 						message: e.body,
@@ -1202,76 +1214,76 @@ svg { display: block; }
 				});
 				if (t.status === 200) {
 					let n = await t.json();
-					n.message_id && Y([{
+					n.message_id && X([{
 						id: n.message_id,
 						direction: "inbound",
 						sender_type: "visitor",
 						body: e.body,
 						created_at: (/* @__PURE__ */ new Date()).toISOString()
 					}]);
-					let r = b.indexOf(e);
-					r !== -1 && b.splice(r, 1), X(!0);
+					let r = x.indexOf(e);
+					r !== -1 && x.splice(r, 1), Z(!0);
 					return;
 				}
 				if (t.status === 409) {
-					e.status = "failed", x = !0, T = "This conversation has ended.", $();
+					e.status = "failed", S = !0, E = "This conversation has ended.", $();
 					return;
 				}
-				e.status = "failed", t.status === 429 && (T = "That's a lot of messages at once. Please try again in a moment.");
+				e.status = "failed", t.status === 429 && (E = "That's a lot of messages at once. Please try again in a moment.");
 			} catch {
 				e.status = "failed";
 			}
-			X(!1);
+			Z(!1);
 		}
 	}
-	function Qe() {
-		if (!u || !v || !k) return;
-		let e = k.value.trim();
-		if (!e || x) return;
+	function $e() {
+		if (!d || !y || !A) return;
+		let e = A.value.trim();
+		if (!e || S) return;
 		let t = {
-			localId: R(),
+			localId: z(),
 			body: e,
-			idempotencyKey: R(),
+			idempotencyKey: z(),
 			status: "sending"
 		};
-		b.push(t), k.value = "", k.style.height = "auto", Ve(u.widgetId, ""), X(!0), Ze(t);
+		x.push(t), A.value = "", A.style.height = "auto", He(d.widgetId, ""), Z(!0), Qe(t);
 	}
-	function Q() {
-		A && k && (A.disabled = x || k.value.trim().length === 0);
-	}
-	function $e(e) {
-		let t = P("div", "wc-composer");
-		k = P("textarea", "wc-composer__input"), k.rows = 1, k.placeholder = "Message…", k.setAttribute("aria-label", "Message"), k.maxLength = 5e3, k.value = Be(e.widgetId);
-		let n = () => {
-			k && (k.style.height = "auto", k.style.height = `${Math.min(k.scrollHeight, 120)}px`);
-		};
-		return k.addEventListener("input", () => {
-			Ve(e.widgetId, k?.value ?? ""), n(), Q();
-		}), k.addEventListener("keydown", (e) => {
-			e.key !== "Enter" || e.shiftKey || e.isComposing || (e.preventDefault(), Qe());
-		}), A = P("button", "wc-composer__send"), A.type = "button", A.setAttribute("aria-label", "Send message"), A.innerHTML = de, A.addEventListener("click", () => Qe()), t.append(k, A), queueMicrotask(n), Q(), t;
-	}
-	function et(e) {
-		let t = P("div", "wc-ended"), n = P("p", "wc-ended__text");
-		n.textContent = "This conversation has ended.";
-		let r = P("button", "wc-ended__restart");
-		return r.type = "button", r.textContent = "Start a new conversation", r.addEventListener("click", () => {
-			ot(), ze(e.widgetId), v = null, y = [], ne.clear(), b = [], x = !1, C = !1, w = !1, T = "", re = null, E = null, k = null, A = null, m = null, te = null, g = /* @__PURE__ */ new Set(), $();
-		}), t.append(n, r), t;
+	function et() {
+		j && A && (j.disabled = S || A.value.trim().length === 0);
 	}
 	function tt(e) {
-		let t = P("div", "wc-thread");
-		D = P("button", "wc-earlier"), D.type = "button", D.textContent = "Load earlier messages", D.hidden = !0, D.addEventListener("click", () => void Xe());
-		let n = P("div", "wc-intro"), r = P("div", "wc-intro__bubble");
-		return r.textContent = e.greetingText || "Enter your question below and we will get right back to you.", n.append(F("base", e.businessName), r), E = P("div", "wc-thread__list"), E.setAttribute("role", "log"), E.setAttribute("aria-live", "polite"), E.setAttribute("aria-label", "Conversation"), O = P("p", "wc-thread__banner"), O.hidden = !0, O.setAttribute("role", "status"), t.append(D, n, E, O), t;
+		let t = F("div", "wc-composer");
+		A = F("textarea", "wc-composer__input"), A.rows = 1, A.placeholder = "Message…", A.setAttribute("aria-label", "Message"), A.maxLength = 5e3, A.value = Ve(e.widgetId);
+		let n = () => {
+			A && (A.style.height = "auto", A.style.height = `${Math.min(A.scrollHeight, 120)}px`);
+		};
+		return A.addEventListener("input", () => {
+			He(e.widgetId, A?.value ?? ""), n(), et();
+		}), A.addEventListener("keydown", (e) => {
+			e.key !== "Enter" || e.shiftKey || e.isComposing || (e.preventDefault(), $e());
+		}), j = F("button", "wc-composer__send"), j.type = "button", j.setAttribute("aria-label", "Send message"), j.innerHTML = de, j.addEventListener("click", () => $e()), t.append(A, j), queueMicrotask(n), et(), t;
 	}
-	async function nt() {
-		if (!v) return null;
+	function nt(e) {
+		let t = F("div", "wc-ended"), n = F("p", "wc-ended__text");
+		n.textContent = "This conversation has ended.";
+		let r = F("button", "wc-ended__restart");
+		return r.type = "button", r.textContent = "Start a new conversation", r.addEventListener("click", () => {
+			ct(), Be(e.widgetId), y = null, b = [], ne.clear(), x = [], S = !1, w = !1, T = !1, E = "", re = null, D = null, A = null, j = null, h = null, te = null, _ = /* @__PURE__ */ new Set(), $();
+		}), t.append(n, r), t;
+	}
+	function rt(e) {
+		let t = F("div", "wc-thread");
+		O = F("button", "wc-earlier"), O.type = "button", O.textContent = "Load earlier messages", O.hidden = !0, O.addEventListener("click", () => void Ze());
+		let n = F("div", "wc-intro"), r = F("div", "wc-intro__bubble");
+		return r.textContent = e.greetingText || "Enter your question below and we will get right back to you.", n.append(I("base", e.businessName), r), D = F("div", "wc-thread__list"), D.setAttribute("role", "log"), D.setAttribute("aria-live", "polite"), D.setAttribute("aria-label", "Conversation"), k = F("p", "wc-thread__banner"), k.hidden = !0, k.setAttribute("role", "status"), t.append(O, n, D, k), t;
+	}
+	async function it() {
+		if (!y) return null;
 		try {
-			let e = await fetch(`${a}/api/webchat/sessions/realtime?token=${encodeURIComponent(r)}`, {
+			let e = await fetch(`${o}/api/webchat/sessions/realtime?token=${encodeURIComponent(i)}`, {
 				method: "POST",
 				credentials: "omit",
-				headers: { authorization: `Bearer ${v.sessionToken}` }
+				headers: { authorization: `Bearer ${y.sessionToken}` }
 			});
 			if (e.status !== 200) return null;
 			let t = await e.json();
@@ -1280,72 +1292,72 @@ svg { display: block; }
 			return null;
 		}
 	}
-	function rt() {
+	function at() {
 		se &&= (clearTimeout(se), null);
-		let e = N, t = M;
-		N = null, M = null, ie = 0;
+		let e = P, t = N;
+		P = null, N = null, ie = 0;
 		try {
 			e?.unsubscribe(), t?.disconnect();
 		} catch {}
 	}
-	async function it() {
-		if (!(!v || ae || N)) {
+	async function ot() {
+		if (!(!y || ae || P)) {
 			ae = !0;
 			try {
-				let e = await nt(), t = e ? await i() : null;
-				if (!e || !t || !v || !p) return;
-				M = new t.RealtimeClient(`${e.supabase_url}/realtime/v1`, { params: { apikey: e.supabase_key } }), await M.setAuth(e.supabase_key), ie = new Date(e.expires_at).getTime(), N = M.channel(e.channel_topic, { config: { private: !0 } }), N.on("broadcast", { event: "website_chat_message" }, (e) => {
+				let e = await it(), t = e ? await a() : null;
+				if (!e || !t || !y || !m) return;
+				N = new t.RealtimeClient(`${e.supabase_url}/realtime/v1`, { params: { apikey: e.supabase_key } }), await N.setAuth(e.supabase_key), ie = new Date(e.expires_at).getTime(), P = N.channel(e.channel_topic, { config: { private: !0 } }), P.on("broadcast", { event: "website_chat_message" }, (e) => {
 					let t = e?.payload;
-					t?.id && (Y([t]) && X(!1), t.sender_type === "system" && Z());
-				}), N.subscribe((e) => {
+					t?.id && (X([t]) && Z(!1), t.sender_type === "system" && Q());
+				}), P.subscribe((e) => {
 					if (e === "SUBSCRIBED") {
-						Z();
+						Q();
 						return;
 					}
-					(e === "CHANNEL_ERROR" || e === "TIMED_OUT" || e === "CLOSED") && rt();
+					(e === "CHANNEL_ERROR" || e === "TIMED_OUT" || e === "CLOSED") && at();
 				});
 				let n = Math.max(ie - Date.now() - 6e4, 3e4);
 				se = setTimeout(() => {
-					rt(), it();
+					at(), ot();
 				}, n);
 			} finally {
 				ae = !1;
 			}
 		}
 	}
-	function at() {
-		v && (it(), oe ??= setInterval(() => {
-			document.hidden || !p || N && N.state === "joined" || Z(10);
+	function st() {
+		y && (ot(), oe ??= setInterval(() => {
+			document.hidden || !m || P && P.state === "joined" || Q(10);
 		}, 4e3));
 	}
-	function ot() {
-		rt(), oe &&= (clearInterval(oe), null);
+	function ct() {
+		at(), oe &&= (clearInterval(oe), null);
 	}
-	function st() {
-		ce || (ce = !0, window.addEventListener("pagehide", () => ot()), window.addEventListener("pageshow", (e) => {
-			!e.persisted || !p || !v || (Z(), at());
+	function lt() {
+		ce || (ce = !0, window.addEventListener("pagehide", () => ct()), window.addEventListener("pageshow", (e) => {
+			!e.persisted || !m || !y || (Q(), st());
 		}), document.addEventListener("visibilitychange", () => {
-			document.hidden || !p || !v || (Z(), at());
+			document.hidden || !m || !y || (Q(), st());
 		}));
 	}
-	async function ct() {
-		if (!u || !m || h) return;
-		if (g = new Set(Object.keys(m)), Object.keys(Ee(m)).length > 0) {
-			q();
+	async function ut() {
+		if (!d || !h || g) return;
+		if (_ = new Set(Object.keys(h)), Object.keys(Ee(h)).length > 0) {
+			J();
 			return;
 		}
-		h = !0, _ = "", q();
-		let e = we(m), t = {
-			idempotency_key: m.idempotencyKey,
-			name: m.name.trim(),
+		g = !0, v = "", J();
+		let e = we(h), t = {
+			idempotency_key: h.idempotencyKey,
+			name: h.name.trim(),
 			...e ? { phone: e } : {},
-			...m.email.trim() ? { email: m.email.trim() } : {},
-			message: m.message.trim(),
-			consent_transactional_sms: m.consent,
+			...h.email.trim() ? { email: h.email.trim() } : {},
+			message: h.message.trim(),
+			consent_transactional_sms: !!e && h.consent,
 			attribution: Se()
 		};
 		try {
-			let e = await fetch(`${a}/api/webchat/sessions?token=${encodeURIComponent(r)}`, {
+			let e = await fetch(`${o}/api/webchat/sessions?token=${encodeURIComponent(i)}`, {
 				method: "POST",
 				credentials: "omit",
 				headers: { "content-type": "application/json" },
@@ -1354,65 +1366,65 @@ svg { display: block; }
 			if (e.status === 200) {
 				let t = await e.json();
 				if (!t.session_id || !t.session_token) {
-					_ = "Your message couldn't be sent. Please try again.";
+					v = "Your message couldn't be sent. Please try again.";
 					return;
 				}
-				v = {
+				y = {
 					sessionId: t.session_id,
 					sessionToken: t.session_token
-				}, Re(u.widgetId, v), b = [{
-					localId: R(),
-					body: m.message.trim(),
-					idempotencyKey: m.idempotencyKey,
+				}, ze(d.widgetId, y), x = [{
+					localId: z(),
+					body: h.message.trim(),
+					idempotencyKey: h.idempotencyKey,
 					status: "sending"
 				}], xe(), $();
 				return;
 			}
-			_ = e.status === 429 ? "That's a lot of messages at once. Please try again in a moment." : e.status === 409 || e.status === 503 ? "We can't take messages right now. Please try again later." : "Your message couldn't be sent. Please try again.";
+			v = e.status === 429 ? "That's a lot of messages at once. Please try again in a moment." : e.status === 409 || e.status === 503 ? "We can't take messages right now. Please try again later." : "Your message couldn't be sent. Please try again.";
 		} catch {
-			_ = "Your message couldn't be sent. Please check your connection and try again.";
+			v = "Your message couldn't be sent. Please check your connection and try again.";
 		} finally {
-			h = !1, q();
+			g = !1, J();
 		}
 	}
-	function lt(t) {
-		let r = P("section", `wc-panel wc-panel--${t.launcherPosition}`);
-		r.setAttribute("role", "dialog"), r.setAttribute("aria-label", `${t.businessName} chat`);
-		let i = P("header", "wc-panel__header"), a = P("h2", "wc-panel__title");
-		a.textContent = t.businessName;
-		let o = P("button", "wc-panel__close");
+	function dt(e) {
+		let n = F("section", `wc-panel wc-panel--${e.launcherPosition}`);
+		n.setAttribute("role", "dialog"), n.setAttribute("aria-label", `${e.businessName} chat`);
+		let i = F("header", "wc-panel__header"), a = F("h2", "wc-panel__title");
+		a.textContent = e.businessName;
+		let o = F("button", "wc-panel__close");
 		o.type = "button", o.setAttribute("aria-label", "Close chat"), o.innerHTML = ue, o.addEventListener("click", () => {
-			p = !1, J(), ot(), $();
-		}), i.append(F("base", t.businessName), a, o);
-		let s = P("div", "wc-panel__body"), c = P("footer", "wc-panel__footer"), l = document.createElement("em");
-		if (l.textContent = t.businessName, c.append(document.createTextNode("Powered by "), l), t.status !== "live") return s.appendChild(Ae(t.status === "draft" ? "This chat isn't set up yet." : "This chat isn't available right now.")), r.append(i, s), r;
-		if (v) return re ??= tt(t), s.appendChild(re), j = s, r.append(i, s), r.appendChild(x ? et(t) : $e(t)), r.appendChild(c), X(!0), C || Z(), at(), r;
-		let u = P("div", "wc-intro"), d = P("div", "wc-intro__bubble");
-		return d.textContent = t.greetingText || "Enter your question below and we will get right back to you.", u.append(F("base", t.businessName), d), s.append(u), e ? (m ??= be(t.widgetId), te ??= Ie(t), s.appendChild(te)) : (s.appendChild(ke()), n().then(() => {
-			p && $();
-		})), r.append(i, s, c), r;
+			m = !1, Y(), ct(), $();
+		}), i.append(I("base", e.businessName), a, o);
+		let s = F("div", "wc-panel__body"), c = F("footer", "wc-panel__footer"), l = document.createElement("em");
+		if (l.textContent = e.businessName, c.append(document.createTextNode("Powered by "), l), e.status !== "live") return s.appendChild(Ae(e.status === "draft" ? "This chat isn't set up yet." : "This chat isn't available right now.")), n.append(i, s), n;
+		if (y) return re ??= rt(e), s.appendChild(re), M = s, n.append(i, s), n.appendChild(S ? nt(e) : tt(e)), n.appendChild(c), Z(!0), w || Q(), st(), n;
+		let u = F("div", "wc-intro"), d = F("div", "wc-intro__bubble");
+		return d.textContent = e.greetingText || "Enter your question below and we will get right back to you.", u.append(I("base", e.businessName), d), s.append(u), t ? (h ??= be(e.widgetId), te ??= Le(e), s.appendChild(te)) : (s.appendChild(ke()), r().then(() => {
+			m && $();
+		})), n.append(i, s, c), n;
 	}
 	function $() {
-		!d || !f || !u || (f.replaceChildren(), !p && !ee && u.status === "live" && u.teaserText && f.appendChild(Oe(u, u.teaserText)), f.appendChild(p ? lt(u) : De(u)));
+		!f || !p || !d || (p.replaceChildren(), !m && !ee && d.status === "live" && d.teaserText && p.appendChild(Oe(d, d.teaserText)), p.appendChild(m ? dt(d) : De(d)));
 	}
-	function ut(e) {
+	function ft(e) {
 		let t = document.createElement("div");
-		t.id = "ucrm-website-chat", t.style.cssText = "all: initial; position: fixed; width: 0; height: 0; z-index: 2147483000;", document.body.appendChild(t), d = t.attachShadow({ mode: "open" });
+		t.id = "ucrm-website-chat", t.style.cssText = "all: initial; position: fixed; width: 0; height: 0; z-index: 2147483000;", document.body.appendChild(t), f = t.attachShadow({ mode: "open" });
 		let n = document.createElement("style");
-		n.textContent = le(e.brandColor || "#049a54"), f = document.createElement("div"), d.append(n, f), ee = pe(e.widgetId), v = Le(e.widgetId), st(), $();
+		n.textContent = le(e.brandColor || "#049a54"), p = document.createElement("div"), f.append(n, p), ee = pe(e.widgetId), y = Re(e.widgetId), lt(), $();
 	}
-	async function dt() {
+	async function pt() {
 		try {
-			let e = await fetch(`${a}/api/webchat/config?token=${encodeURIComponent(r)}`, { credentials: "omit" });
+			let e = await fetch(`${o}/api/webchat/config?token=${encodeURIComponent(i)}`, { credentials: "omit" });
 			return e.status === 200 ? (await e.json()).config ?? null : null;
 		} catch {
 			return null;
 		}
 	}
-	async function ft() {
-		let e = await dt();
-		e && (u = e, document.body ? ut(e) : document.addEventListener("DOMContentLoaded", () => ut(e)));
+	async function mt() {
+		let e = await pt();
+		e && (d = e, document.body ? ft(e) : document.addEventListener("DOMContentLoaded", () => ft(e)));
 	}
-	ft();
+	mt();
 })();
 //#endregion

@@ -28,6 +28,8 @@ export type RecipeDetail = {
 	draft_updated_at: string | null;
 	last_editor_name: string | null;
 	has_draft: boolean;
+	/** Active or paused, with saved edits that are not live yet. */
+	has_unpublished_changes: boolean;
 	display_definition: AuthoredDefinition | null;
 	active_version: { version_number: number; activated_at: string } | null;
 	created_at: string;
@@ -211,6 +213,25 @@ export async function activateRecipe(
 	if (!response.ok)
 		throw httpError(response, await readError(response, 'We could not activate that automation.'));
 	return (await response.json()) as ActivateResult;
+}
+
+// Throws away an active or paused automation's unpublished edits: its draft goes back to the live version.
+export async function discardRecipeChanges(
+	recipeId: string,
+	expectedRevision: number
+): Promise<{ draft_revision: number }> {
+	const response = await fetch(`/api/settings/automation/recipes/${recipeId}/discard-changes`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			expected_revision: expectedRevision,
+			idempotency_key: crypto.randomUUID()
+		})
+	});
+	await throwIfStale(response);
+	if (!response.ok)
+		throw httpError(response, await readError(response, 'We could not discard those changes.'));
+	return (await response.json()) as { draft_revision: number };
 }
 
 export async function setRecipeLifecycle(

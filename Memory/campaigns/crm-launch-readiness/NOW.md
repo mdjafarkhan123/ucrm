@@ -7,29 +7,22 @@ production evidence.
 
 ## Current state
 
-- Part 1 is complete.
-- Part 2 is complete 2026-09-17 — the opening-balances assisted-import wizard shipped, browser-verified, and
-  committed (`onboarding-and-data-portability` campaign closed, its Memory folder removed).
-- Part 3 is complete 2026-09-16 — `financial-reconciliation` campaign closed all 6 parts; its Memory folder is
-  removed. Detail lives in code, migrations, tests and `docs/financial-reconciliation-contract.md`.
-- Part 4 (minimum website speed-to-lead) is now dependency-ready — Part 3 and the existing Website Chat, email,
-  and Automation it builds on are all in place. Not yet researched or planned.
-- Part 9 preparation may run beside remaining parts, but infrastructure implementation still needs Jafar's
-  separate topology and migration approval.
-- Parts 5–7 follow the controlled first launch; Part 8 is chosen from evidence from those early customers.
+- Parts 1–4 complete. Automations switched on for contractors (`AUTOMATION_JOURNEY_READY = true`) and Part 4
+  committed 2026-09-18.
+- Parts 5–8 wait on evidence from the controlled first launch. Part 9 (prove production and launch gradually)
+  is the only remaining dependency-ready part — its preparation may run now, but implementation awaits Jafar's
+  topology approval per CLAUDE.md's production cutover gate.
 
 ## Exact next action
 
-Start Part 4 (minimum website speed-to-lead): research how comparable products (Jobber — see
-`.claude/skills/jobber/SKILL.md`) handle speed-to-lead, and inspect the existing Website Chat, email, and
-Automation code this builds on, before proposing an implementation plan to Jafar per CLAUDE.md Rule 2. This is
-a new feature area, not yet scoped — expect it to need its own campaign registration (goal, ordered parts,
-completion gate) before implementation starts.
+Ask Jafar whether to start Part 9 preparation (staging rehearsal plan, backup/restore, cutover/rollback,
+security, monitoring, failure and load-test gates) — present the concrete topology and migration plan for his
+approval before any infrastructure change, per CLAUDE.md's Approval boundary. Sonnet is enough to start
+research/planning; confirm model choice again once implementation scope is known.
 
 ## Essential pointers
 
-- `docs/crm-launch-implementation-roadmap.md` (Part 4 scope: "Form/Chat creates or matches one lead and sends
-  at most one eligible reply, stopping on human activity")
-- `.claude/skills/jobber/SKILL.md`
+- `Memory/campaigns/crm-launch-readiness/ROADMAP.md` Part 9 row.
+- `CLAUDE.md` Production cutover gate and Approval boundary sections.
 
-Jafar's only required resume command: `continue the CRM launch-readiness campaign`.
+Resume command: `continue CRM launch-readiness Part 9 preparation`.

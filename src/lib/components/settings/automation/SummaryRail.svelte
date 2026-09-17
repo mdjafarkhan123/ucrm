@@ -38,7 +38,10 @@
 	// rail to show, since waits and stops only ever reduce it.
 	const maxMessages = $derived(
 		definition.steps.filter(
-			(step) => step.key === 'action.send_email' || step.key === 'action.send_sms'
+			(step) =>
+				step.key === 'action.send_email' ||
+				step.key === 'action.send_sms' ||
+				step.key === 'action.send_customer_message'
 		).length
 	);
 	const stepLines = $derived(definition.steps.map(stepLine));

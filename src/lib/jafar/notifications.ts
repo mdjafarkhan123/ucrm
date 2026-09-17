@@ -121,7 +121,8 @@ export function relativeTime(value: string, now = Date.now()) {
 	const then = new Date(value).getTime();
 	if (Number.isNaN(then)) return '';
 
-	const seconds = Math.round((then - now) / 1000);
+	// An alert cannot come from the future; a device clock running slow must read "now", not "in 40 seconds".
+	const seconds = Math.min(0, Math.round((then - now) / 1000));
 	const absolute = Math.abs(seconds);
 	const formatter = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
 

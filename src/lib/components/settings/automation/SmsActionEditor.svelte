@@ -17,17 +17,25 @@
 	let {
 		idPrefix,
 		body,
-		senderId,
+		senderId = '',
 		errorMessage = '',
+		variables = AUTOMATION_SMS_VARIABLES,
+		showSender = true,
+		required = true,
 		onBodyChange,
 		onSenderIdChange
 	}: {
 		idPrefix: string;
 		body: string;
-		senderId: string;
+		senderId?: string;
 		errorMessage?: string;
+		// The insertable values; a website inquiry passes its smaller, quote-free list.
+		variables?: ReadonlyArray<{ token: string; label: string }>;
+		// The inquiry reply picks its number the usual way and has no per-step sender pin.
+		showSender?: boolean;
+		required?: boolean;
 		onBodyChange: (value: string) => void;
-		onSenderIdChange: (value: string) => void;
+		onSenderIdChange?: (value: string) => void;
 	} = $props();
 
 	const bodyId = $derived(`${idPrefix}-body`);
@@ -91,6 +99,7 @@
 	let senders = $state<AutomationSmsSender[] | null>(null);
 	let sendersError = $state(false);
 	$effect(() => {
+		if (!showSender) return;
 		let cancelled = false;
 		fetchAutomationSmsSenders()
 			.then((result) => {
@@ -119,7 +128,7 @@
 	<Textarea
 		id={bodyId}
 		label="Message"
-		required
+		{required}
 		rows={5}
 		maxlength={1000}
 		value={body}
@@ -129,7 +138,7 @@
 	<div class="sms-editor__variables">
 		<span class="sms-editor__variables-label">Insert a value</span>
 		<div class="sms-editor__variable-list">
-			{#each AUTOMATION_SMS_VARIABLES as variable (variable.token)}
+			{#each variables as variable (variable.token)}
 				<button
 					type="button"
 					class="sms-editor__variable"
@@ -158,21 +167,23 @@
 		{/if}
 	</p>
 
-	<div class="sms-editor__sender">
-		<Select
-			id={`${idPrefix}-sender`}
-			label="Send from"
-			value={senderId}
-			options={senderOptions}
-			disabled={sendersError}
-			onchange={onSenderIdChange}
-		/>
-		<p class="sms-editor__hint">
-			{sendersError
-				? 'The organization’s SMS numbers could not be loaded — the usual number will be used.'
-				: 'Left as the usual number, a text continues whichever number this customer’s texts have been using, or the organization default.'}
-		</p>
-	</div>
+	{#if showSender}
+		<div class="sms-editor__sender">
+			<Select
+				id={`${idPrefix}-sender`}
+				label="Send from"
+				value={senderId}
+				options={senderOptions}
+				disabled={sendersError}
+				onchange={(value) => onSenderIdChange?.(value)}
+			/>
+			<p class="sms-editor__hint">
+				{sendersError
+					? 'The organization’s SMS numbers could not be loaded — the usual number will be used.'
+					: 'Left as the usual number, a text continues whichever number this customer’s texts have been using, or the organization default.'}
+			</p>
+		</div>
+	{/if}
 
 	{#if errorMessage}
 		<p class="sms-editor__error" role="alert">{errorMessage}</p>

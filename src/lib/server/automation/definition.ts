@@ -10,9 +10,13 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import {
 	AUTOMATION_SCHEMA_VERSION,
+	alwaysOnStopKeys,
+	fitsSubject,
 	getCatalogEntry,
 	isEnabled,
-	type CatalogEntry
+	triggerSubject,
+	type CatalogEntry,
+	type CatalogSubject
 } from '$lib/automation/catalog';
 
 // Structural per-recipe limits the save path enforces. Values come from the resolved package/override
@@ -102,7 +106,8 @@ function resolveEntry(
 	key: string,
 	kind: CatalogEntry['kind'] | CatalogEntry['kind'][],
 	path: string,
-	errors: DefinitionError[]
+	errors: DefinitionError[],
+	subject: CatalogSubject | null = null
 ): CatalogEntry | null {
 	const entry = getCatalogEntry(key);
 	const kinds = Array.isArray(kind) ? kind : [kind];
@@ -113,6 +118,10 @@ function resolveEntry(
 	if (!isEnabled(entry)) {
 		const reason = entry.availability.status === 'blocked' ? entry.availability.reason : '';
 		errors.push({ path, message: reason || 'This building block is not available yet.' });
+		return null;
+	}
+	if (!fitsSubject(entry, subject)) {
+		errors.push({ path, message: 'This does not fit what starts this automation.' });
 		return null;
 	}
 	return entry;
@@ -144,6 +153,8 @@ export function validateDefinition(
 	const triggerConfig = triggerEntry
 		? validateConfig(triggerEntry, input.trigger.config, 'trigger', errors)
 		: input.trigger.config;
+	// Every later entry must act on the same thing the trigger does (a quote step cannot run on an inquiry).
+	const subject = triggerEntry ? triggerSubject(triggerEntry.key) : null;
 
 	// Conditions: 0..limit, each an enabled catalog condition with valid config.
 	if (limits.maxConditions !== null && input.conditions.length > limits.maxConditions) {
@@ -154,7 +165,7 @@ export function validateDefinition(
 	}
 	const conditions = input.conditions.map((condition, index) => {
 		const path = `conditions.${index}`;
-		const entry = resolveEntry(condition.key, 'condition', path, errors);
+		const entry = resolveEntry(condition.key, 'condition', path, errors, subject);
 		return {
 			key: condition.key,
 			config: entry ? validateConfig(entry, condition.config, path, errors) : condition.config
@@ -170,7 +181,7 @@ export function validateDefinition(
 	}
 	const steps = input.steps.map((step, index) => {
 		const path = `steps.${index}`;
-		const entry = resolveEntry(step.key, step.type, path, errors);
+		const entry = resolveEntry(step.key, step.type, path, errors, subject);
 		return {
 			type: step.type,
 			key: step.key,
@@ -182,12 +193,19 @@ export function validateDefinition(
 	const seenStops = new Set<string>();
 	const stops: Array<{ key: string }> = [];
 	input.stops.forEach((stop, index) => {
-		const entry = resolveEntry(stop.key, 'stop', `stops.${index}`, errors);
+		const entry = resolveEntry(stop.key, 'stop', `stops.${index}`, errors, subject);
 		if (entry && !seenStops.has(stop.key)) {
 			seenStops.add(stop.key);
 			stops.push({ key: stop.key });
 		}
 	});
+	// Stops the engine always applies are recorded even if the browser left them out.
+	for (const key of alwaysOnStopKeys(subject)) {
+		if (!seenStops.has(key)) {
+			seenStops.add(key);
+			stops.push({ key });
+		}
+	}
 
 	if (mode === 'activation') {
 		if (steps.length === 0)

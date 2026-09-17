@@ -34,5 +34,6 @@
 		initialRevision={query.data.draft_revision}
 		presetKey={query.data.preset_key}
 		presetVersion={query.data.preset_version}
+		live={query.data.status === 'active' || query.data.status === 'paused'}
 	/>
 {/if}

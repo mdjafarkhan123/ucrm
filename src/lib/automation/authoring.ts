@@ -65,3 +65,18 @@ export function sendSmsStepsMissingContent(definition: AuthoredDefinition): numb
 	});
 	return missing;
 }
+
+// Part 4 Stage 6: the "Reply by text or email" steps that still lack their email copy. The email is always
+// required (it is the fallback); the text is optional.
+export function customerMessageStepsMissingContent(definition: AuthoredDefinition): number[] {
+	const missing: number[] = [];
+	definition.steps.forEach((step, index) => {
+		if (step.key === 'action.send_customer_message') {
+			const subject =
+				typeof step.config?.email_subject === 'string' ? step.config.email_subject.trim() : '';
+			const body = typeof step.config?.email_body === 'string' ? step.config.email_body.trim() : '';
+			if (!subject || !body) missing.push(index);
+		}
+	});
+	return missing;
+}

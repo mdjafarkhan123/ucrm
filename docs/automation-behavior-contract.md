@@ -91,6 +91,11 @@ Stop when: one or more domain-owned stop conditions
 - Recipe states are Draft, Active, Paused, and Archived. Save updates only a draft. Activate freezes a new version
   after review and starts future-event eligibility. Editing an Active or Paused recipe creates or updates a draft
   based on its active version. Activating that draft changes new enrollments only.
+- An Active or Paused recipe whose saved draft differs from its live version has unpublished changes (Zapier/HubSpot
+  model). Its detail page shows the live version plus a notice with Review changes (editor), Discard (the draft
+  returns to the live version; customers unaffected), and Publish changes (the activation impact review; a Paused
+  recipe says Publish and resume). The editor for a live recipe says saved changes are not live and returns to the
+  detail page after saving.
 - Each enrollment stays pinned to the version under which it started. Current consent, preference, suppression,
   recipient, sender, entitlement, organization state, delivery, reply, payment, lifecycle, and abuse facts are
   never pinned.
@@ -118,7 +123,7 @@ The catalog is designed now; 6D enables only the dependency-ready subset.
 | --- | --- | --- |
 | Trigger | Customer delivery succeeded; customer viewed; customer requested changes; customer approved; customer declined | Customer delivery succeeded for an emailed published Quote |
 | Condition | Current Quote status; total comparison; assigned owner; recipient still attached; follow-up preference; delivery channel | Current status is Awaiting response and recipient remains eligible |
-| Wait | Relative days/hours using organization timezone and an explicit local send window | Day delay after successful delivery |
+| Wait | Relative days/hours/minutes (days keep the local time of day; hours and minutes are elapsed time) using organization timezone and an explicit local send window | Day delay after successful delivery |
 | Customer action | Send operational email; later send operational SMS when SMS is ready | Email through Communications |
 | Internal action | Notify an eligible staff member; create Task | Deferred until each owning command exists |
 | Quote action | Update an individually approved Quote status | Not enabled in 6D |
@@ -151,7 +156,9 @@ reply, consent, number, sender, balance, cap, pause and usefulness checks before
 belong to Conversations; the SMS action has no separate send-later control.
 
 A customer reply keeps the approved recipe-level behavior: later customer-message steps pause and alert the
-responsible team, whose authorized choices are Resume, Skip next or Stop. Do not add a reply switch to every SMS
+responsible team, whose authorized choices are Resume, Skip next or Stop. For website inquiries the responsible team is the
+Settings → Inquiry alerts recipients (owner when none), alerted in the header bell and by email; that new-inquiry
+alert is a business setting that runs independently of any recipe. Do not add a reply switch to every SMS
 action. Automation history distinguishes Waiting, Scheduled, Skipped and Failed with a plain reason;
 Conversations owns Queued, Sent, Delivered, Checking send status and attempt-level failure evidence. The linked
 records never imply customer read receipt. A skipped step creates no fake message bubble, and restoring balance,

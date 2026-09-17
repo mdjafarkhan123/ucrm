@@ -33,6 +33,18 @@ describe('validateDefinition', () => {
 		expect(result.definition.steps).toHaveLength(2);
 	});
 
+	it('accepts a wait measured in minutes and refuses an unknown wait unit', () => {
+		const wait = (unit: string) =>
+			validInput({
+				steps: [
+					{ type: 'wait', key: 'wait.relative_delay', config: { unit, amount: 5 } },
+					{ type: 'action', key: 'action.send_email', config: { ...emailConfig } }
+				]
+			});
+		expect(validateDefinition(wait('minutes'), noLimits, 'activation').ok).toBe(true);
+		expect(validateDefinition(wait('weeks'), noLimits, 'activation').ok).toBe(false);
+	});
+
 	it('computes the same hash regardless of the key order the browser sent', () => {
 		const a = validateDefinition(
 			{
@@ -166,5 +178,90 @@ describe('validateDefinition', () => {
 	it('rejects the wrong schema version', () => {
 		const result = validateDefinition(validInput({ schema_version: 999 }), noLimits, 'draft');
 		expect(result.ok).toBe(false);
+	});
+
+	describe('website inquiry recipes (Part 4 Stage 6)', () => {
+		const inquiry = (overrides: Record<string, unknown> = {}) => ({
+			schema_version: AUTOMATION_SCHEMA_VERSION,
+			trigger: { key: 'website_inquiry.received', config: {} },
+			conditions: [],
+			steps: [
+				{ type: 'wait', key: 'wait.relative_delay', config: { unit: 'minutes', amount: 5 } },
+				{
+					type: 'action',
+					key: 'action.send_customer_message',
+					config: {
+						sms_body: 'Hi {{customer_name}}, thanks for contacting {{business_name}}.',
+						email_subject: 'Thanks, {{customer_name}}',
+						email_body: 'We got your message.'
+					}
+				}
+			],
+			stops: [],
+			...overrides
+		});
+
+		it('accepts the reply step and records the always-on reply stops even when left out', () => {
+			const result = validateDefinition(inquiry(), noLimits, 'activation');
+			expect(result.ok).toBe(true);
+			if (!result.ok) return;
+			expect(result.triggerKey).toBe('website_inquiry.received');
+			expect(result.definition.stops.map((stop) => stop.key)).toEqual([
+				'stop.inquiry_staff_reply',
+				'stop.inquiry_customer_reply'
+			]);
+		});
+
+		it('allows an email-only reply but requires the email copy', () => {
+			const step = (config: Record<string, unknown>) =>
+				inquiry({ steps: [{ type: 'action', key: 'action.send_customer_message', config }] });
+			expect(
+				validateDefinition(
+					step({ email_subject: 'Hi', email_body: 'Thanks' }),
+					noLimits,
+					'activation'
+				).ok
+			).toBe(true);
+			expect(validateDefinition(step({ sms_body: 'Thanks' }), noLimits, 'activation').ok).toBe(
+				false
+			);
+		});
+
+		it('refuses quote variables, which have nothing to fill them for an inquiry', () => {
+			const result = validateDefinition(
+				inquiry({
+					steps: [
+						{
+							type: 'action',
+							key: 'action.send_customer_message',
+							config: { email_subject: 'Quote {{quote_number}}', email_body: 'See {{quote_link}}' }
+						}
+					]
+				}),
+				noLimits,
+				'activation'
+			);
+			expect(result.ok).toBe(false);
+		});
+
+		it('refuses quote steps, conditions and stops on an inquiry, and the inquiry step on a quote', () => {
+			const emailStep = { type: 'action', key: 'action.send_email', config: { ...emailConfig } };
+			for (const overrides of [
+				{ steps: [emailStep] },
+				{ conditions: [{ key: 'quote.recipient_attached', config: {} }] },
+				{ stops: [{ key: 'stop.quote_approved' }] }
+			]) {
+				expect(validateDefinition(inquiry(overrides), noLimits, 'draft').ok).toBe(false);
+			}
+			const quoteWithInquiryStep = validInput({ steps: inquiry().steps });
+			expect(validateDefinition(quoteWithInquiryStep, noLimits, 'draft').ok).toBe(false);
+		});
+
+		it('ships a preset that passes activation as-is', async () => {
+			const { getAutomationPreset } = await import('$lib/automation/presets');
+			const preset = getAutomationPreset('website_speed_to_lead');
+			expect(preset).toBeDefined();
+			expect(validateDefinition(preset!.blueprint, noLimits, 'activation').ok).toBe(true);
+		});
 	});
 });

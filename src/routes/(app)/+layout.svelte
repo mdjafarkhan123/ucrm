@@ -110,6 +110,7 @@
 		resolve('/(app)/settings/communications/website-chat'),
 		resolve('/(app)/settings/communications/snippets'),
 		resolve('/(app)/settings/communications/templates'),
+		resolve('/(app)/settings/inquiry-alerts'),
 		resolve('/(app)/settings/team'),
 		resolve('/(app)/settings/team/[userId]', { userId: 'warm' }),
 		resolve('/(app)/settings/team/activity')

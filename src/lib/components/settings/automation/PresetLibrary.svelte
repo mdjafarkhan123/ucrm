@@ -8,6 +8,7 @@
 	import robotIcon from '@tabler/icons/outline/robot.svg?raw';
 	import sparklesIcon from '@tabler/icons/outline/sparkles.svg?raw';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import messageIcon from '@tabler/icons/outline/message.svg?raw';
 	import pencilPlusIcon from '@tabler/icons/outline/pencil-plus.svg?raw';
 
 	// The preset library shown at /settings/automation/new when no build mode is chosen. Each card is a
@@ -61,7 +62,7 @@
 							<Badge status="informative" dot={false}>
 								<span class="preset-card__channel-icon" aria-hidden="true">
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-									{@html mailIcon}
+									{@html channel === 'email' ? mailIcon : messageIcon}
 								</span>
 								{channel === 'email' ? 'Email' : 'Text'}
 							</Badge>

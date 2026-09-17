@@ -12,6 +12,8 @@ import {
 } from '$lib/server/validation/public-forms.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import type { Json } from '$lib/database.types';
+import { parsePhoneNumberFromString, type CountryCode } from 'libphonenumber-js';
+import { serviceSmsConsentDisclosure } from '$lib/forms/sms-consent';
 
 const NOT_AVAILABLE = { error: 'That form is not available.' };
 
@@ -69,6 +71,36 @@ export const POST: RequestHandler = async (event) => {
 			{ status: 422 }
 		);
 
+	// Service-SMS consent (Part 4 Stage 5). Only meaningful when a phone number was entered. A ticked box needs a
+	// number a text can actually reach, so a local number is read in the business's country and stored as E.164;
+	// the stored evidence is the exact wording the page showed, never text sent by the browser.
+	const contact: Record<string, unknown> = { ...parsedContact.data };
+	const { sms_service_consent: smsConsentGiven, ...restContact } = contact;
+	const enteredPhone = typeof restContact.phone === 'string' ? restContact.phone.trim() : '';
+	const submittedContact: Record<string, unknown> = restContact;
+	if (resolved.content.contact.phone.shown && enteredPhone) {
+		const given = smsConsentGiven === true;
+		if (given) {
+			const parsed = parsePhoneNumberFromString(
+				enteredPhone,
+				(resolved.countryCode ?? undefined) as CountryCode | undefined
+			);
+			if (!parsed?.isValid())
+				return json(
+					{
+						error: 'To get texts, enter a full mobile number, including the country code.',
+						field_errors: { phone: 'Enter a full mobile number.' }
+					},
+					{ status: 422 }
+				);
+			submittedContact.phone = parsed.number;
+		}
+		submittedContact.sms_service_consent = {
+			given,
+			disclosure: serviceSmsConsentDisclosure(resolved.organizationName)
+		};
+	}
+
 	const answersSchema = buildPublicFormAnswersSchema(resolved.content.sections);
 	const parsedAnswers = answersSchema.safeParse(envelope.answers);
 	if (!parsedAnswers.success)
@@ -102,7 +134,7 @@ export const POST: RequestHandler = async (event) => {
 		target_organization_slug: resolved.organizationSlug,
 		target_form_slug: formSlug,
 		target_idempotency_key: envelope.idempotency_key,
-		target_contact: parsedContact.data as Json,
+		target_contact: submittedContact as Json,
 		target_answers: parsedAnswers.data as Json,
 		target_photo_object_keys: envelope.photo_object_keys,
 		target_selected_catalog_item_id:

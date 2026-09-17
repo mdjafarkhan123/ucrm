@@ -40,6 +40,11 @@ describe('owner notification presentation helpers', () => {
 		expect(relativeTime('2026-08-11T12:00:00Z', now)).toMatch(/2 days ago/i);
 	});
 
+	it('reads "now" when this device clock runs behind the server', () => {
+		const now = Date.parse('2026-08-13T12:00:00Z');
+		expect(relativeTime('2026-08-13T12:00:40Z', now)).toMatch(/now/i);
+	});
+
 	it('never shows a broken timestamp when a date cannot be read', () => {
 		expect(relativeTime('not-a-date')).toBe('');
 	});

@@ -4,11 +4,11 @@
 	import MobileNav from './MobileNav.svelte';
 	import GlobalSearchDialog from '$lib/components/search/GlobalSearchDialog.svelte';
 	import NotificationBell from '$lib/components/jafar/NotificationBell.svelte';
+	import TeamNotificationBell from '$lib/components/team/TeamNotificationBell.svelte';
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 
-	import bellIcon from '@tabler/icons/outline/bell.svg?raw';
 	import logoutIcon from '@tabler/icons/outline/logout.svg?raw';
 
 	let {
@@ -161,16 +161,8 @@
 			{#snippet notifications()}
 				{#if variant === 'owner'}
 					<NotificationBell />
-				{:else}
-					<button
-						class="topbar__icon-btn"
-						type="button"
-						aria-disabled="true"
-						title="Notifications — coming soon"
-						disabled
-					>
-						<span aria-hidden="true">{@html bellIcon}</span>
-					</button>
+				{:else if variant === 'contractor' && userId}
+					<TeamNotificationBell />
 				{/if}
 			{/snippet}
 		</Topbar>

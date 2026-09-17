@@ -27,6 +27,8 @@ export type SettingsHome = {
 		business_profile: { complete: boolean; missing: Array<'name' | 'timezone' | 'currency'> };
 		business_hours_set: boolean;
 		sms_registration: { readiness_state: string } | null;
+		/** Nobody is chosen for website inquiry alerts, so only the account owner gets them. */
+		inquiry_alerts_owner_only: boolean;
 	};
 };
 

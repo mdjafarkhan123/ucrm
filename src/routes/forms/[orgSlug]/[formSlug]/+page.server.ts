@@ -16,6 +16,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	return {
 		available: true as const,
 		organizationSlug: resolved.organizationSlug,
+		organizationName: resolved.organizationName,
 		outcome: resolved.outcome,
 		isBooking: isBookingOutcome(resolved.outcome),
 		title: resolved.title,

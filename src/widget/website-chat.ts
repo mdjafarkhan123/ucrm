@@ -24,6 +24,7 @@
  */
 
 import type { CountryCode } from 'libphonenumber-js/min';
+import { SERVICE_SMS_CONSENT_LABEL, serviceSmsConsentDescription } from '../lib/forms/sms-consent';
 
 // libphonenumber's metadata was 170 kB of the 180 kB this file used to weigh, loaded on every page
 // view of a contractor's site to serve one field of a form most visitors never open. It is imported
@@ -591,6 +592,14 @@ svg { display: block; }
 	background: var(--wc-color-surface-subtle);
 }
 
+.wc-consent[hidden] { display: none; }
+
+.wc-consent__label {
+	display: block;
+	font-weight: 600;
+	color: var(--wc-color-text);
+}
+
 .wc-consent input {
 	flex: 0 0 auto;
 	width: 16px;
@@ -1018,9 +1027,9 @@ svg { display: block; }
 			phone: '',
 			email: '',
 			message: '',
-			// Checked by default, exactly as HighLevel's is: this is service consent for the channel the
-			// visitor themselves just offered, not a marketing opt-in.
-			consent: true,
+			// Unticked, as HighLevel's A2P-compliant widget and our own forms are: typing a phone number never
+			// grants SMS consent by itself.
+			consent: false,
 			idempotencyKey: newIdempotencyKey()
 		};
 	}
@@ -1037,7 +1046,7 @@ svg { display: block; }
 				phone: typeof parsed.phone === 'string' ? parsed.phone : '',
 				email: typeof parsed.email === 'string' ? parsed.email : '',
 				message: typeof parsed.message === 'string' ? parsed.message : '',
-				consent: parsed.consent !== false,
+				consent: parsed.consent === true,
 				// Reusing the stored key is the point: if the previous attempt committed but its answer
 				// never reached the browser, retrying with the same key replays it instead of paying for
 				// a second conversation.
@@ -1227,6 +1236,7 @@ svg { display: block; }
 	let phoneInput: HTMLInputElement | null = null;
 	let countryButton: HTMLButtonElement | null = null;
 	let countryPopup: HTMLDivElement | null = null;
+	let consentNode: HTMLLabelElement | null = null;
 
 	function field(name: keyof IdentityDraft, control: HTMLElement, extraClass = '') {
 		const wrapper = element('div', `wc-field ${extraClass}`.trim());
@@ -1257,6 +1267,8 @@ svg { display: block; }
 			refs.wrapper.classList.toggle('wc-field--invalid', Boolean(message));
 		}
 
+		// The service-SMS box only means something once there is a number to text.
+		if (consentNode) consentNode.hidden = !draft.phone.trim();
 		if (sendButton) sendButton.disabled = submitting || Object.keys(errors).length > 0;
 		if (bannerNode) {
 			bannerNode.textContent = formBanner;
@@ -1467,6 +1479,8 @@ svg { display: block; }
 		honeypot.autocomplete = 'off';
 		honeypot.setAttribute('aria-hidden', 'true');
 
+		// Optional service-SMS consent, the same words the public forms show. The server rebuilds this wording
+		// from the business name and stores it as the evidence, so what is shown here must stay in step.
 		const consent = element('label', 'wc-consent');
 		const consentBox = document.createElement('input');
 		consentBox.type = 'checkbox';
@@ -1476,9 +1490,11 @@ svg { display: block; }
 			saveDraft();
 		});
 		const consentText = element('span', 'wc-consent__text');
-		consentText.textContent =
-			'By submitting you agree to receive SMS or e-mails for the provided channel. Rates may be applied.';
+		const consentLabel = element('strong', 'wc-consent__label');
+		consentLabel.textContent = SERVICE_SMS_CONSENT_LABEL;
+		consentText.append(consentLabel, ` ${serviceSmsConsentDescription(widget.businessName)}`);
 		consent.append(consentBox, consentText);
+		consentNode = consent;
 
 		bannerNode = element('p', 'wc-form__banner');
 		bannerNode.hidden = true;
@@ -2194,7 +2210,7 @@ svg { display: block; }
 			...(e164 ? { phone: e164 } : {}),
 			...(draft.email.trim() ? { email: draft.email.trim() } : {}),
 			message: draft.message.trim(),
-			consent_transactional_sms: draft.consent,
+			consent_transactional_sms: Boolean(e164) && draft.consent,
 			attribution: attribution()
 		};
 

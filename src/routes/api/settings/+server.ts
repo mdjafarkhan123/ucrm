@@ -9,6 +9,7 @@ import {
 	SMS_REGISTRATION_SENDER_TYPE,
 	SMS_REGISTRATION_USE_CASE
 } from '$lib/server/communications/sms-registration';
+import { loadInquiryAlertSettings } from '$lib/server/team/inquiry-alerts';
 
 // What the Settings home needs and nothing more: who is signed in, whether they may change business
 // settings, and one honest status per destination. No decorative badges — a card says something only
@@ -19,8 +20,8 @@ export const GET: RequestHandler = async (event) => {
 
 	const communicationsManage = hasPermission(check.access, 'conversations.manage_connections');
 
-	const [settingsResult, profileResult, currencyLockResult, smsReadinessResult] = await Promise.all(
-		[
+	const [settingsResult, profileResult, currencyLockResult, smsReadinessResult, inquiryAlerts] =
+		await Promise.all([
 			event.locals.supabase
 				.from('organization_settings')
 				.select('timezone_confirmed_at, currency_confirmed_at, hours_mode')
@@ -43,9 +44,15 @@ export const GET: RequestHandler = async (event) => {
 						p_sender_type: SMS_REGISTRATION_SENDER_TYPE,
 						p_use_case: SMS_REGISTRATION_USE_CASE
 					})
+				: Promise.resolve(null),
+			// Only the owner hears about website inquiries when nobody is chosen — worth a warning on the card.
+			communicationsManage
+				? loadInquiryAlertSettings(check.auth.organization.id).catch((error) => {
+						console.error('Could not load inquiry alert readiness for the Settings home.', error);
+						return null;
+					})
 				: Promise.resolve(null)
-		]
-	);
+		]);
 
 	if (settingsResult.error || currencyLockResult.error) return databaseError();
 	if (!settingsResult.data) return notFound('These business settings could not be found.');
@@ -98,7 +105,8 @@ export const GET: RequestHandler = async (event) => {
 				business_hours_set: businessHoursIsSet(settings.hours_mode),
 				sms_registration: communicationsManage
 					? { readiness_state: smsReadinessRow?.readiness_state ?? 'needs_setup' }
-					: null
+					: null,
+				inquiry_alerts_owner_only: inquiryAlerts?.owner_only ?? false
 			}
 		},
 		{ headers: PRIVATE_READ_HEADERS }

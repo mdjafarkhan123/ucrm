@@ -22,6 +22,7 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { automationSettingsKey, fetchAutomationSettings } from '$lib/settings/automation';
 	import { triggerLabel } from '$lib/automation/catalog';
+	import { automationEditorKey } from '$lib/settings/automation-authoring';
 	import {
 		automationRecipeDetailKey,
 		automationRecipeVersionsKey,
@@ -32,6 +33,7 @@
 		fetchRecipeHistory,
 		setRecipeLifecycle,
 		duplicateRecipe,
+		discardRecipeChanges,
 		StaleDraftError,
 		type RecipeDetail,
 		type RecipeVersion,
@@ -49,6 +51,7 @@
 	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
 	import copyIcon from '@tabler/icons/outline/copy.svg?raw';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
+	import pencilCheckIcon from '@tabler/icons/outline/pencil-check.svg?raw';
 
 	let { recipeId }: { recipeId: string } = $props();
 
@@ -118,7 +121,7 @@
 		before_activation: 'Happened before this was turned on',
 		not_entitled: 'Skipped — not included in the plan',
 		authority_blocked: 'Skipped — automation was off',
-		subject_gone: 'Skipped — the quote was gone',
+		subject_gone: 'Skipped — the quote or inquiry was gone',
 		condition_failed: 'Skipped — conditions weren’t met',
 		condition_unavailable: 'Couldn’t check the conditions',
 		follow_ups_declined: 'Skipped — this client turned quote follow-ups off'
@@ -203,10 +206,14 @@
 	let duplicateOpen = $state(false);
 	let duplicateName = $state('');
 	let duplicating = $state(false);
-	let confirmKind = $state<null | 'archive' | 'restore'>(null);
+	let confirmKind = $state<null | 'archive' | 'restore' | 'discard'>(null);
 	let lifecycleBusy = $state(false);
 
 	async function invalidateAll() {
+		// Publishing, discarding and lifecycle changes all move the draft revision. The builder seeds itself once from
+		// the editor read, so a cached copy would open with an old revision and every save would conflict — drop it
+		// so the next Edit loads fresh.
+		queryClient.removeQueries({ queryKey: automationEditorKey(recipeId) });
 		await Promise.all([
 			queryClient.invalidateQueries({ queryKey: automationRecipeDetailKey(recipeId) }),
 			queryClient.invalidateQueries({ queryKey: automationRecipeVersionsKey(recipeId) }),
@@ -221,9 +228,47 @@
 	// the time the dialog disappears — closing first would flash the old Draft/Turn-on state for a beat while
 	// the refetch was still in flight.
 	async function onActivated(result: ActivateResult) {
+		const published = activateMode !== 'turn_on';
 		await invalidateAll();
 		activateOpen = false;
-		toast.success(`Automation turned on (version ${result.version_number}).`);
+		toast.success(
+			published
+				? `Changes published (version ${result.version_number}).`
+				: `Automation turned on (version ${result.version_number}).`
+		);
+	}
+
+	// Saved edits to a live automation wait here until someone publishes or discards them (Zapier/HubSpot).
+	const activateMode = $derived.by((): 'turn_on' | 'publish' | 'publish_and_resume' => {
+		const detail = detailQuery.data;
+		if (!detail?.has_unpublished_changes) return 'turn_on';
+		return detail.status === 'paused' ? 'publish_and_resume' : 'publish';
+	});
+
+	let discarding = $state(false);
+	async function confirmDiscard() {
+		const detail = detailQuery.data;
+		if (!detail || discarding) return;
+		discarding = true;
+		try {
+			await discardRecipeChanges(recipeId, detail.draft_revision);
+			await invalidateAll();
+			confirmKind = null;
+			toast.success('Changes discarded.');
+		} catch (error) {
+			if (error instanceof StaleDraftError) {
+				await queryClient.invalidateQueries({ queryKey: automationRecipeDetailKey(recipeId) });
+				confirmKind = null;
+				toast.error('This automation just changed', 'We’ve reloaded it — please try again.');
+			} else {
+				toast.error(
+					'We could not discard those changes',
+					error instanceof Error ? error.message : undefined
+				);
+			}
+		} finally {
+			discarding = false;
+		}
 	}
 
 	const lifecycleLabels: Record<LifecycleAction, { verb: string; done: string }> = {
@@ -416,6 +461,42 @@
 			</p>
 		{/if}
 
+		{#if detail.has_unpublished_changes}
+			<div class="recipe-detail__changes" role="status">
+				<span class="recipe-detail__changes-icon" aria-hidden="true">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html pencilCheckIcon}
+				</span>
+				<p class="recipe-detail__changes-text">
+					You have saved changes that aren’t live yet{detail.last_editor_name
+						? ` (last edited by ${detail.last_editor_name})`
+						: ''}. Customers keep getting version {detail.active_version?.version_number} until you publish.
+				</p>
+				{#if canWrite && access}
+					<div class="recipe-detail__changes-actions">
+						{#if access.can_manage}
+							<Button variant="secondary" variation="subtle" size="small" href={editHref}>
+								Review changes
+							</Button>
+							<Button
+								variant="secondary"
+								variation="subtle"
+								size="small"
+								onclick={() => (confirmKind = 'discard')}
+							>
+								Discard
+							</Button>
+						{/if}
+						{#if access.can_activate}
+							<Button size="small" onclick={() => (activateOpen = true)}>
+								{detail.status === 'paused' ? 'Publish and resume' : 'Publish changes'}
+							</Button>
+						{/if}
+					</div>
+				{/if}
+			</div>
+		{/if}
+
 		<div class="recipe-detail__meta">
 			<StatusBadge status={statusBadge[detail.status].tone}>
 				{statusBadge[detail.status].label}
@@ -577,6 +658,7 @@
 	<ActivationImpactDialog
 		open={activateOpen}
 		{recipeId}
+		mode={activateMode}
 		onClose={() => (activateOpen = false)}
 		{onActivated}
 	/>
@@ -594,6 +676,20 @@
 	>
 		Archiving turns this automation off and makes it read-only. You can restore it later as a fresh
 		draft.
+	</ConfirmDialog>
+
+	<ConfirmDialog
+		open={confirmKind === 'discard'}
+		title="Discard your changes?"
+		tone="critical"
+		confirmLabel="Discard changes"
+		destructive
+		loading={discarding}
+		onConfirm={() => void confirmDiscard()}
+		onClose={() => (confirmKind = null)}
+	>
+		Your saved edits will be thrown away and the editor goes back to the live version. Nothing
+		changes for customers.
 	</ConfirmDialog>
 
 	<ConfirmDialog
@@ -681,6 +777,44 @@
 				width: 18px;
 				height: 18px;
 			}
+		}
+
+		&__changes {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--space-small) var(--space-base);
+			padding: var(--space-slim) var(--space-base);
+			border-radius: var(--radius-base);
+			color: var(--color-informative--onSurface);
+			background: var(--color-informative--surface);
+		}
+		&__changes-icon {
+			display: grid;
+			flex: 0 0 auto;
+			place-items: center;
+			padding: var(--space-smaller);
+			border-radius: var(--radius-circle);
+			color: var(--color-surface);
+			background: var(--color-informative);
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+		&__changes-text {
+			flex: 1 1 280px;
+			margin: 0;
+			font-size: var(--typography--fontSize-base);
+			line-height: var(--typography--lineHeight-large);
+		}
+		&__changes-actions {
+			display: flex;
+			flex: 0 0 auto;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--space-small);
 		}
 
 		&__meta {

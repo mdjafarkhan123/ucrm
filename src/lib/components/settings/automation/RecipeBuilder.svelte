@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { goto, beforeNavigate } from '$app/navigation';
+	import { automationRecipeDetailKey } from '$lib/settings/automation-lifecycle';
 	import { resolve } from '$app/paths';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -12,19 +13,28 @@
 	import SummaryRail from './SummaryRail.svelte';
 	import EmailActionEditor from './EmailActionEditor.svelte';
 	import SmsActionEditor from './SmsActionEditor.svelte';
+	import CustomerMessageEditor from './CustomerMessageEditor.svelte';
 	import {
+		alwaysOnStopKeys,
 		catalogEntriesByKind,
+		fitsSubject,
 		getCatalogEntry,
 		isEnabled,
+		triggerSubject,
 		type CatalogEntry
 	} from '$lib/automation/catalog';
 	import {
+		customerMessageStepsMissingContent,
 		sendEmailStepsMissingContent,
 		sendSmsStepsMissingContent,
 		type AuthoredDefinition,
 		type AuthoredStep
 	} from '$lib/automation/authoring';
-	import { unknownEmailVariables, unknownSmsVariables } from '$lib/automation/email-variables';
+	import {
+		unknownEmailVariables,
+		unknownInquiryVariables,
+		unknownSmsVariables
+	} from '$lib/automation/email-variables';
 	import {
 		createRecipeDraft,
 		saveRecipeDraft,
@@ -62,7 +72,8 @@
 		presetKey = null,
 		presetVersion = null,
 		recipeId = null,
-		initialRevision = 0
+		initialRevision = 0,
+		live = false
 	}: {
 		mode: 'create' | 'edit';
 		source: RecipeSource;
@@ -72,6 +83,8 @@
 		presetVersion?: number | null;
 		recipeId?: string | null;
 		initialRevision?: number;
+		/** Editing an active or paused automation: a save stays a draft until it is published from its page. */
+		live?: boolean;
 	} = $props();
 
 	const toast = getToastManager();
@@ -114,6 +127,14 @@
 	});
 
 	// --- Catalog choices -------------------------------------------------------------------------------
+	// The trigger fixes what the recipe acts on; only the blocks that fit it are offered (Part 4 Stage 6).
+	const subject = $derived(triggerSubject(definition.trigger?.key));
+	const fits = (entry: CatalogEntry) => fitsSubject(entry, subject);
+	const canAdd = (key: string) => {
+		const entry = getCatalogEntry(key);
+		return Boolean(entry && isEnabled(entry) && fits(entry));
+	};
+
 	const triggerOptions = $derived([
 		{ value: '', label: 'Choose a trigger' },
 		...catalogEntriesByKind('trigger').map((entry) => ({
@@ -128,12 +149,14 @@
 	const chosenConditionKeys = $derived(new Set(definition.conditions.map((c) => c.key)));
 	const addableConditions = $derived(
 		catalogEntriesByKind('condition').filter(
-			(entry) => isEnabled(entry) && !chosenConditionKeys.has(entry.key)
+			(entry) => isEnabled(entry) && fits(entry) && !chosenConditionKeys.has(entry.key)
 		)
 	);
 	const MAX_CONDITIONS = 6;
 
-	const stopEntries = $derived(catalogEntriesByKind('stop').filter(isEnabled));
+	const stopEntries = $derived(
+		catalogEntriesByKind('stop').filter((entry) => isEnabled(entry) && fits(entry))
+	);
 	const chosenStops = $derived(new Set(definition.stops.map((s) => s.key)));
 
 	function label(key: string): string {
@@ -142,8 +165,27 @@
 
 	// --- When ------------------------------------------------------------------------------------------
 	function setTrigger(key: string) {
+		const previousSubject = subject;
 		definition.trigger = key ? { key, config: {} } : null;
 		if (key) errors = { ...errors, trigger: '' };
+
+		// Switching between a quote and a website inquiry drops what cannot run on the new one, and ticks the
+		// stops that always apply to it.
+		const nextSubject = triggerSubject(key);
+		if (nextSubject === previousSubject || nextSubject === null) return;
+		const keep = (entryKey: string) => {
+			const entry = getCatalogEntry(entryKey);
+			return Boolean(entry && fitsSubject(entry, nextSubject));
+		};
+		const steps = definition.steps.filter((step) => keep(step.key));
+		if (steps.length !== definition.steps.length) errors = { ...errors, steps: {} };
+		definition.conditions = definition.conditions.filter((condition) => keep(condition.key));
+		definition.steps = steps;
+		const stops = definition.stops.filter((stop) => keep(stop.key));
+		for (const stopKey of alwaysOnStopKeys(nextSubject)) {
+			if (!stops.some((stop) => stop.key === stopKey)) stops.push({ key: stopKey });
+		}
+		definition.stops = stops;
 	}
 
 	// --- If --------------------------------------------------------------------------------------------
@@ -195,6 +237,36 @@
 	function addSms() {
 		const step: AuthoredStep = { type: 'action', key: 'action.send_sms', config: {} };
 		definition.steps = [...definition.steps, step];
+	}
+
+	function addCustomerMessage() {
+		const step: AuthoredStep = { type: 'action', key: 'action.send_customer_message', config: {} };
+		definition.steps = [...definition.steps, step];
+	}
+
+	function stepText(index: number, field: string): string {
+		const value = definition.steps[index]?.config?.[field];
+		return typeof value === 'string' ? value : '';
+	}
+
+	function setCustomerMessageField(
+		index: number,
+		field: 'sms_body' | 'email_subject' | 'email_body',
+		value: string
+	) {
+		const step = definition.steps[index];
+		const config = { ...step.config };
+		if (value.trim()) config[field] = value;
+		else delete config[field];
+		definition.steps[index] = { ...step, config };
+		definition.steps = [...definition.steps];
+
+		const subject = typeof config.email_subject === 'string' ? config.email_subject.trim() : '';
+		const body = typeof config.email_body === 'string' ? config.email_body.trim() : '';
+		if (subject && body) {
+			const { [index]: _cleared, ...rest } = errors.steps;
+			errors = { ...errors, steps: rest };
+		}
 	}
 
 	function moveStep(index: number, direction: -1 | 1) {
@@ -295,7 +367,7 @@
 
 	function waitUnit(index: number): string {
 		const value = definition.steps[index]?.config?.unit;
-		return value === 'hours' ? 'hours' : 'days';
+		return value === 'minutes' || value === 'hours' ? value : 'days';
 	}
 
 	// --- Stop ------------------------------------------------------------------------------------------
@@ -325,6 +397,11 @@
 			next.steps[index] = 'Add a message.';
 			ok = false;
 		}
+		for (const index of customerMessageStepsMissingContent(definition)) {
+			next.steps[index] =
+				'Add an email subject line and message. The email is used whenever a text is not.';
+			ok = false;
+		}
 		// The picker only inserts allow-listed variables, but a hand-typed {{token}} could be unknown; catch it
 		// here so a save that the server would reject never leaves the builder.
 		definition.steps.forEach((step, index) => {
@@ -333,6 +410,14 @@
 				const subject = typeof step.config?.subject === 'string' ? step.config.subject : '';
 				const body = typeof step.config?.body === 'string' ? step.config.body : '';
 				const unknown = [...unknownEmailVariables(subject), ...unknownEmailVariables(body)];
+				if (unknown.length > 0) {
+					next.steps[index] = `"{{${unknown[0]}}}" is not a value you can use here.`;
+					ok = false;
+				}
+			} else if (step.key === 'action.send_customer_message') {
+				const unknown = ['sms_body', 'email_subject', 'email_body'].flatMap((field) =>
+					unknownInquiryVariables(stepText(index, field))
+				);
 				if (unknown.length > 0) {
 					next.steps[index] = `"{{${unknown[0]}}}" is not a value you can use here.`;
 					ok = false;
@@ -411,7 +496,15 @@
 				stale = null;
 				await queryClient.invalidateQueries({ queryKey: automationEditorKey(recipeId) });
 				await invalidateLists();
-				toast.success('Draft saved.');
+				if (live) {
+					// Back to the automation's page, where the saved changes wait to be published or discarded.
+					await queryClient.invalidateQueries({ queryKey: automationRecipeDetailKey(recipeId) });
+					toast.success('Changes saved. Publish them to make them live.');
+					leaving = true;
+					await goto(resolve('/(app)/settings/automation/[id]', { id: recipeId }));
+				} else {
+					toast.success('Draft saved.');
+				}
 			}
 		} catch (error) {
 			if (error instanceof StaleDraftError) {
@@ -560,7 +653,7 @@
 				hint="The steps run in order. Use Move up and Move down to reorder them."
 			>
 				{#if definition.steps.length === 0}
-					<p class="builder__muted">No steps yet. Add a wait or an email to get started.</p>
+					<p class="builder__muted">No steps yet. Add a wait or a message to get started.</p>
 				{:else}
 					<ol class="builder__steps">
 						{#each definition.steps as step, index (index)}
@@ -571,7 +664,8 @@
 										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 										{@html step.key === 'action.send_email'
 											? mailIcon
-											: step.key === 'action.send_sms'
+											: step.key === 'action.send_sms' ||
+												  step.key === 'action.send_customer_message'
 												? messageIcon
 												: clockIcon}
 									</span>
@@ -597,7 +691,7 @@
 											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 											{@html arrowDownIcon}
 										</button>
-										{#if step.key === 'action.send_email' || step.key === 'action.send_sms'}
+										{#if step.type === 'action'}
 											<button
 												type="button"
 												class="builder__icon-button"
@@ -640,6 +734,7 @@
 												id={`builder-step-unit-${index}`}
 												value={waitUnit(index)}
 												options={[
+													{ value: 'minutes', label: 'Minutes' },
 													{ value: 'hours', label: 'Hours' },
 													{ value: 'days', label: 'Days' }
 												]}
@@ -655,6 +750,19 @@
 											errorMessage={errors.steps[index] ?? ''}
 											onSubjectChange={(value) => setEmailField(index, 'subject', value)}
 											onBodyChange={(value) => setEmailField(index, 'body', value)}
+										/>
+									{:else if step.key === 'action.send_customer_message'}
+										<CustomerMessageEditor
+											idPrefix={`builder-step-${index}`}
+											smsBody={stepText(index, 'sms_body')}
+											emailSubject={stepText(index, 'email_subject')}
+											emailBody={stepText(index, 'email_body')}
+											errorMessage={errors.steps[index] ?? ''}
+											onSmsBodyChange={(value) => setCustomerMessageField(index, 'sms_body', value)}
+											onEmailSubjectChange={(value) =>
+												setCustomerMessageField(index, 'email_subject', value)}
+											onEmailBodyChange={(value) =>
+												setCustomerMessageField(index, 'email_body', value)}
 										/>
 									{:else if step.key === 'action.send_sms'}
 										<SmsActionEditor
@@ -677,14 +785,25 @@
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add a wait
 					</Button>
-					<Button variant="tertiary" size="small" onclick={addEmail}>
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add an email
-					</Button>
-					<Button variant="tertiary" size="small" onclick={addSms}>
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add a text
-					</Button>
+					{#if canAdd('action.send_email')}
+						<Button variant="tertiary" size="small" onclick={addEmail}>
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add an email
+						</Button>
+					{/if}
+					{#if canAdd('action.send_sms')}
+						<Button variant="tertiary" size="small" onclick={addSms}>
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add a text
+						</Button>
+					{/if}
+					{#if canAdd('action.send_customer_message')}
+						<Button variant="tertiary" size="small" onclick={addCustomerMessage}>
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add a reply
+							by text or email
+						</Button>
+					{/if}
 				</div>
 			</SectionBlock>
 
@@ -699,7 +818,9 @@
 						<Checkbox
 							id={`builder-stop-${stop.key}`}
 							label={stop.label}
-							checked={chosenStops.has(stop.key)}
+							description={stop.alwaysOn ? 'Always on for website inquiries.' : ''}
+							checked={stop.alwaysOn || chosenStops.has(stop.key)}
+							disabled={stop.alwaysOn}
 							onchange={(checked) => toggleStop(stop.key, checked)}
 						/>
 					{/each}
@@ -732,11 +853,19 @@
 				</div>
 			{:else}
 				<span class="builder__bar-hint">
-					{dirty ? 'You have unsaved changes.' : 'All changes saved.'}
+					{#if dirty}
+						You have unsaved changes.
+					{:else if live}
+						This automation is live. Saved changes don’t reach customers until you publish them.
+					{:else}
+						All changes saved.
+					{/if}
 				</span>
 				<div class="builder__bar-actions">
 					<Button variant="secondary" href={homeHref}>Cancel</Button>
-					<Button variant="primary" loading={saving} onclick={save}>Save draft</Button>
+					<Button variant="primary" loading={saving} onclick={save}>
+						{live ? 'Save changes' : 'Save draft'}
+					</Button>
 				</div>
 			{/if}
 		</div>

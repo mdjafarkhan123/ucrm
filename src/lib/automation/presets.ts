@@ -81,7 +81,47 @@ const quoteFollowUp: AutomationPreset = {
 	}
 };
 
-export const AUTOMATION_PRESETS: readonly AutomationPreset[] = [quoteFollowUp];
+// CRM launch readiness Part 4: the website speed-to-lead starter (HighLevel's editable workflow model). The visitor
+// already sees an on-screen receipt and the team is alerted by the Inquiry alerts setting, so the recipe itself
+// is one delayed reply: if nobody on the team has replied within five minutes, text the customer when they agreed
+// to texts, else email them. Jafar chose one message over an instant receipt plus a follow-up (2026-09-17). A
+// delivered staff reply stops it; a customer reply pauses it. The wait and the copy are starting values only.
+const websiteSpeedToLead: AutomationPreset = {
+	key: 'website_speed_to_lead',
+	version: 1,
+	name: 'Website inquiry quick reply',
+	summary:
+		'When someone sends your website form or chat and nobody on your team has replied within 5 minutes, text them (or email them if texting is not possible).',
+	triggerKey: 'website_inquiry.received',
+	channels: ['sms', 'email'],
+	blueprint: {
+		schema_version: AUTOMATION_SCHEMA_VERSION,
+		trigger: { key: 'website_inquiry.received', config: {} },
+		conditions: [],
+		steps: [
+			{ type: 'wait', key: 'wait.relative_delay', config: { unit: 'minutes', amount: 5 } },
+			{
+				type: 'action',
+				key: 'action.send_customer_message',
+				config: {
+					sms_body:
+						'Hi {{customer_name}}, thanks for contacting {{business_name}}! ' +
+						"We got your message and we'll be in touch shortly. " +
+						'What is the best time to reach you?',
+					email_subject: 'Thanks for contacting {{business_name}}',
+					email_body:
+						'Hi {{customer_name}},\n\n' +
+						"Thanks for reaching out. We got your message and we'll be in touch shortly.\n\n" +
+						'If there is a best time to reach you, just reply to this email.\n\n' +
+						'Thanks,\n{{business_name}}'
+				}
+			}
+		],
+		stops: [{ key: 'stop.inquiry_staff_reply' }, { key: 'stop.inquiry_customer_reply' }]
+	}
+};
+
+export const AUTOMATION_PRESETS: readonly AutomationPreset[] = [quoteFollowUp, websiteSpeedToLead];
 
 const PRESETS_BY_KEY = new Map(AUTOMATION_PRESETS.map((preset) => [preset.key, preset]));
 

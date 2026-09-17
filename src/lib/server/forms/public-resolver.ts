@@ -10,6 +10,9 @@ import {
 export type ResolvedPublicForm = {
 	organizationId: string;
 	organizationSlug: string;
+	// The business name a visitor sees in the SMS consent wording, and the country a local phone number belongs to.
+	organizationName: string;
+	countryCode: string | null;
 	formId: string;
 	outcome: FormOutcome;
 	title: string;
@@ -38,11 +41,18 @@ export async function resolvePublicForm(
 ): Promise<ResolvedPublicForm | null> {
 	const { data: organization, error: organizationError } = await client
 		.from('organizations')
-		.select('id, slug')
+		.select('id, slug, name')
 		.eq('slug', organizationSlug)
 		.eq('lifecycle_status', 'active')
 		.maybeSingle();
 	if (organizationError || !organization) return null;
+
+	const { data: settings, error: settingsError } = await client
+		.from('organization_settings')
+		.select('country_code')
+		.eq('organization_id', organization.id)
+		.maybeSingle();
+	if (settingsError) return null;
 
 	const { data: form, error: formError } = await client
 		.from('forms')
@@ -98,6 +108,8 @@ export async function resolvePublicForm(
 	return {
 		organizationId: organization.id,
 		organizationSlug: organization.slug,
+		organizationName: organization.name,
+		countryCode: settings?.country_code ?? null,
 		formId: form.id,
 		outcome,
 		title: published.title,

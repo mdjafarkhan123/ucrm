@@ -12,6 +12,9 @@
 //
 // Stage 7: advance also returns 'action_due_sms'. There is no link to mint for a text (its body has no
 // quote_link variable yet), so runSmsAction calls perform_automation_sms_effect directly.
+//
+// Part 4 Stage 5: advance also returns 'action_due_customer_message' for a website inquiry's text-or-email step,
+// and each wake drains due SMS-to-email fallbacks (a watched text the provider reported as failed).
 
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { createQuoteEmailAccessLink } from '$lib/server/communications/quote-email';
@@ -43,10 +46,14 @@ type AdvanceOutcome =
 	// 6F-1: a domain stop condition ended the enrollment before this step ran (the quote is no longer
 	// awaiting a response, or the client turned quote follow-ups off).
 	| 'stop_condition_met'
+	// Part 4 Stage 3: a website inquiry's customer replied to what it sent, so the enrollment paused before
+	// this customer-facing step and now waits for staff to Resume, Skip next or Stop.
+	| 'paused_customer_reply'
 	| 'completed'
 	| 'waiting'
 	| 'action_due_email'
 	| 'action_due_sms'
+	| 'action_due_customer_message'
 	| 'action_not_available';
 
 // What running an action effect settled to. `claim_lost` mirrors advance: the lease moved on.
@@ -64,6 +71,8 @@ export type AutomationDrainCounts = {
 	cancelled: number;
 	parked: number;
 	retried: number;
+	// Due SMS-to-email fallbacks this wake settled (sent, skipped, or backed off).
+	fallbacks: number;
 };
 
 export type AutomationDrainResult = AutomationDrainCounts & {
@@ -95,6 +104,7 @@ const DEFAULT_MAX_CLAIMS = 200;
 const DEFAULT_TIME_BUDGET_MS = 20_000;
 const DEFAULT_INTAKE_BATCH_SIZE = 50;
 const DEFAULT_MAX_INTAKE_BATCHES = 20;
+const DEFAULT_FALLBACK_BATCH_SIZE = 25;
 
 export const AUTOMATION_WORKER_NAME = 'automation-worker';
 
@@ -171,6 +181,19 @@ async function runSmsAction(
 	return performed.data as ActionEffectOutcome;
 }
 
+// Runs one website-inquiry customer message. No link to mint: the effect picks text or email and settles the row.
+async function runCustomerMessageAction(
+	client: AutomationWorkerClient,
+	item: ClaimedWorkItem
+): Promise<ActionEffectOutcome> {
+	const performed = await client.rpc('perform_automation_inquiry_message_effect', {
+		p_work_item_id: item.work_item_id,
+		p_claim_token: item.claim_token
+	});
+	if (performed.error) throw new Error(performed.error.message);
+	return performed.data as ActionEffectOutcome;
+}
+
 // One claimed transition. Any failure is reported back through retry_automation_work_item so the row backs off
 // and stays visible instead of silently waiting out its lease.
 async function advanceOne(
@@ -187,13 +210,19 @@ async function advanceOne(
 		if (advanced.error) throw new Error(advanced.error.message);
 		const outcome = advanced.data as AdvanceOutcome;
 
-		if (outcome === 'action_due_email' || outcome === 'action_due_sms') {
+		if (
+			outcome === 'action_due_email' ||
+			outcome === 'action_due_sms' ||
+			outcome === 'action_due_customer_message'
+		) {
 			// The effect settles the row itself. An infrastructure failure here (not a step outcome) falls to the
 			// catch below, which backs the row off exactly as an advance failure would.
 			const effect =
 				outcome === 'action_due_email'
 					? await runEmailAction(client, item, createQuoteLink)
-					: await runSmsAction(client, item);
+					: outcome === 'action_due_sms'
+						? await runSmsAction(client, item)
+						: await runCustomerMessageAction(client, item);
 			if (effect === 'action_sent') counts.sent += 1;
 			else if (effect === 'action_cancelled') counts.cancelled += 1;
 			else if (effect === 'action_deferred') counts.retried += 1;
@@ -203,7 +232,8 @@ async function advanceOne(
 
 		if (outcome === 'waiting') counts.waited += 1;
 		else if (outcome === 'completed') counts.completed += 1;
-		else if (outcome === 'action_not_available') counts.parked += 1;
+		else if (outcome === 'action_not_available' || outcome === 'paused_customer_reply')
+			counts.parked += 1;
 		else if (
 			outcome === 'enrollment_inactive' ||
 			outcome === 'enrollment_expired' ||
@@ -249,12 +279,21 @@ export async function drainAutomationWork(
 		sent: 0,
 		cancelled: 0,
 		parked: 0,
-		retried: 0
+		retried: 0,
+		fallbacks: 0
 	};
 
 	// Intake first: an event that arrives with this wake should get its enrollment and its first work item
 	// before the work drain looks for due rows, so one wake can carry a delivery all the way to its first step.
 	counts.eventsProcessed = await drainAutomationEvents(client, options, deadline, now);
+
+	// One bounded batch of due email fallbacks per wake; each row settles in the database, so the next wake
+	// picks up anything left.
+	const fallbacks = await client.rpc('process_automation_sms_email_fallbacks', {
+		p_batch_size: DEFAULT_FALLBACK_BATCH_SIZE
+	});
+	if (fallbacks.error) throw rpcError('Could not send automation email fallbacks', fallbacks.error);
+	counts.fallbacks = typeof fallbacks.data === 'number' ? fallbacks.data : 0;
 
 	let stoppedBy: AutomationDrainResult['stoppedBy'] = 'idle';
 
