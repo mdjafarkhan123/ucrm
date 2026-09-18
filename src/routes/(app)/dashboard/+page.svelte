@@ -2,8 +2,10 @@
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import GettingStartedCard from '$lib/components/dashboard/GettingStartedCard.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 
 	const queryClient = useQueryClient();
+	const toast = getToastManager();
 
 	type Client = {
 		id: string;
@@ -138,6 +140,13 @@
 				endpoint: `/api/${mode === 'customer' ? 'clients' : mode === 'property' ? 'properties' : 'requests'}`,
 				payload
 			});
+			toast.success(
+				mode === 'customer'
+					? 'Customer created.'
+					: mode === 'property'
+						? 'Property created.'
+						: 'Request created.'
+			);
 			closeForm();
 			if (mode === 'customer')
 				customerForm = {

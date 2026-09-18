@@ -1,15 +1,17 @@
 <script lang="ts">
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+
+	const toast = getToastManager();
+
 	let currentPassword = $state('');
 	let password = $state('');
 	let passwordConfirmation = $state('');
 	let errorMessage = $state('');
-	let successMessage = $state('');
 	let isSubmitting = $state(false);
 
 	async function submit() {
 		isSubmitting = true;
 		errorMessage = '';
-		successMessage = '';
 		const response = await fetch('/api/auth/password-reset', {
 			method: 'PATCH',
 			headers: { 'content-type': 'application/json' },
@@ -28,7 +30,7 @@
 		currentPassword = '';
 		password = '';
 		passwordConfirmation = '';
-		successMessage = 'Your password was updated.';
+		toast.success('Password updated.');
 	}
 </script>
 
@@ -53,7 +55,6 @@
 			<label for="new-password-confirmation">Confirm new password</label>
 			<input id="new-password-confirmation" type="password" bind:value={passwordConfirmation} autocomplete="new-password" minlength="8" required />
 			{#if errorMessage}<p class="form-error" role="alert">{errorMessage}</p>{/if}
-			{#if successMessage}<p class="form-success" role="status">{successMessage}</p>{/if}
 			<button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Updating…' : 'Update password'}</button>
 		</form>
 	</section>
@@ -76,5 +77,4 @@
 	button:hover:not(:disabled) { background: var(--color-interactive--hover); }
 	button:disabled { opacity: 0.6; cursor: not-allowed; }
 	.form-error { color: var(--color-critical); font-size: var(--typography--fontSize-small); }
-	.form-success { color: var(--color-success); font-size: var(--typography--fontSize-small); }
 </style>

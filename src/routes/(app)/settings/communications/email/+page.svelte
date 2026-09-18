@@ -23,6 +23,7 @@
 		type SenderDraft
 	} from '$lib/communications/senders';
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 	import gaugeIcon from '@tabler/icons/outline/gauge.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
@@ -88,6 +89,7 @@
 	}
 
 	const queryClient = useQueryClient();
+	const toast = getToastManager();
 	const sendersQuery = createQuery(() => ({
 		queryKey: communicationSendersKey,
 		queryFn: fetchCommunicationSenders,
@@ -220,6 +222,7 @@
 		try {
 			if (editingSender) await updateCommunicationSender(editingSender.id, submissionDraft);
 			else await createCommunicationSender(submissionDraft);
+			toast.success(editingSender ? 'Email identity updated.' : 'Email identity added.');
 			await queryClient.invalidateQueries({ queryKey: communicationSendersKey });
 			dialogMode = null;
 			editingSender = null;
