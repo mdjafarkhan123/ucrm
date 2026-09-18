@@ -170,8 +170,8 @@
 				payload
 			);
 			open = false;
-			await onSaved(result);
 			toast.success('Tax saved');
+			await onSaved(result);
 		} catch (cause) {
 			const failure = cause as QuoteWriteError;
 			fieldErrors = failure.fieldErrors ?? {};

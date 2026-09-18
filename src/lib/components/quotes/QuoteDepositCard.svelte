@@ -209,8 +209,8 @@
 				{ deposit_type: depositTypeToSave, items }
 			);
 			configOpen = false;
-			await onSaved();
 			toast.success(depositTypeToSave === null ? 'Deposit removed' : 'Deposit saved');
+			await onSaved();
 		} catch (cause) {
 			const failure = cause as QuoteWriteError;
 			configError =
@@ -311,8 +311,8 @@
 				note: recordNote.trim() || null
 			});
 			recordOpen = false;
-			await onSaved();
 			toast.success('Deposit recorded');
+			await onSaved();
 		} catch (cause) {
 			const failure = cause as QuoteWriteError;
 			recordError = failure.fieldErrors?.form ?? failure.message;
@@ -349,8 +349,8 @@
 				reason: reverseReason.trim()
 			});
 			reverseOpen = false;
-			await onSaved();
 			toast.success('Deposit reversed');
+			await onSaved();
 		} catch (cause) {
 			const failure = cause as QuoteWriteError;
 			reverseError = failure.fieldErrors?.form ?? failure.message;
@@ -752,6 +752,7 @@
 
 		&__actions {
 			display: flex;
+			flex-wrap: wrap;
 			align-items: center;
 			justify-content: space-between;
 			gap: var(--space-small);

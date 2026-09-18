@@ -107,8 +107,8 @@
 				payload
 			);
 			open = false;
-			await onSaved(result);
 			toast.success(payload.type === null ? 'Discount removed' : 'Discount saved');
+			await onSaved(result);
 		} catch (cause) {
 			const failure = cause as QuoteWriteError;
 			fieldErrors = failure.fieldErrors ?? {};
@@ -287,13 +287,14 @@
 
 		&__actions {
 			display: flex;
+			flex-wrap: wrap;
 			align-items: center;
 			justify-content: space-between;
 			gap: var(--space-small);
 			margin-top: var(--space-small);
 
-			/* Three short verbs on one line. Left to itself, "Remove discount" breaks across two lines and
-			   the row grows taller than the fields above it. */
+			/* Each verb stays on one line. The small dialog cannot hold "Remove discount", Cancel and Save side
+			   by side, so Cancel and Save drop to a second row and keep the right edge instead of running off it. */
 			:global(.button) {
 				white-space: nowrap;
 			}
