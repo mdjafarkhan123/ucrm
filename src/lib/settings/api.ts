@@ -21,6 +21,7 @@ export type SettingsHome = {
 		forms_manage: boolean;
 		quotes_manage: boolean;
 		invoices_manage: boolean;
+		payments_manage: boolean;
 		automations_view: boolean;
 	};
 	readiness: {
@@ -789,4 +790,84 @@ export function setInvoiceDefaults(body: {
 		body,
 		'Those defaults could not be saved.'
 	);
+}
+
+// Settings → Payments (online payments Part 2). Owner/administrator only. The Stripe status is the safe
+// shape the server builds — it never carries a key or a webhook secret.
+export type StripeCheckStatus =
+	'ok' | 'key_rejected' | 'permission_missing' | 'account_unavailable' | 'webhook_missing';
+
+export type StripeConnectionStatus =
+	| { connected: false }
+	| {
+			connected: true;
+			account_name: string | null;
+			stripe_account_id: string;
+			livemode: boolean;
+			key_last4: string;
+			connected_at: string;
+			last_checked_at: string;
+			last_check_status: StripeCheckStatus;
+	  };
+
+export type PaymentSettings = {
+	online_invoice_payments_enabled: boolean;
+	online_deposit_payments_enabled: boolean;
+	online_tips_enabled: boolean;
+	online_receipt_email_enabled: boolean;
+	revision: number;
+};
+
+export type SettingsPayments = { stripe: StripeConnectionStatus; settings: PaymentSettings };
+
+export const settingsPaymentsKey = ['settings', 'payments'] as const;
+
+export async function fetchSettingsPayments(): Promise<SettingsPayments> {
+	const response = await fetch('/api/settings/payments');
+	if (!response.ok) {
+		const error = new Error('Payment settings could not be loaded.') as SettingsReadError;
+		error.status = response.status;
+		throw error;
+	}
+	return response.json();
+}
+
+export type StripeConnectError = Error & { fieldErrors?: Record<string, string>; reason?: string };
+
+async function stripeRequest(url: string, method: string, body?: unknown) {
+	const response = await fetch(url, {
+		method,
+		headers: body === undefined ? undefined : { 'content-type': 'application/json' },
+		body: body === undefined ? undefined : JSON.stringify(body)
+	});
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) {
+		const error = new Error(
+			result.error ?? 'Stripe could not be updated. Please try again.'
+		) as StripeConnectError;
+		error.fieldErrors = result.field_errors ?? {};
+		error.reason = result.reason;
+		throw error;
+	}
+	return result as { stripe: StripeConnectionStatus };
+}
+
+export function connectStripe(apiKey: string) {
+	return stripeRequest('/api/settings/payments/stripe', 'POST', { api_key: apiKey });
+}
+
+export function disconnectStripe() {
+	return stripeRequest('/api/settings/payments/stripe', 'DELETE');
+}
+
+export function checkStripeConnection() {
+	return stripeRequest('/api/settings/payments/stripe/check', 'POST');
+}
+
+export type PaymentSettingsSaveResult = { status: 'saved'; payment_settings_revision: number };
+
+export function savePaymentSettings(
+	body: Omit<PaymentSettings, 'revision'> & { expected_revision: number }
+): Promise<PaymentSettingsSaveResult | SettingsSaveConflict> {
+	return saveSection('/api/settings/payments', body);
 }

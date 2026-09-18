@@ -102,6 +102,7 @@
 		resolve('/(app)/settings/price-book'),
 		resolve('/(app)/settings/quotes'),
 		resolve('/(app)/settings/invoices'),
+		resolve('/(app)/settings/payments'),
 		resolve('/(app)/settings/forms'),
 		resolve('/(app)/settings/communications/email'),
 		resolve('/(app)/settings/communications/sms'),

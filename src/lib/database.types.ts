@@ -8939,7 +8939,14 @@ export type Database = {
           location_geocode_status: string
           logo_object_key: string | null
           longitude: number | null
+          online_deposit_payments_enabled: boolean
+          online_invoice_payments_enabled: boolean
+          online_receipt_email_enabled: boolean
+          online_tips_enabled: boolean
           organization_id: string
+          payment_settings_revision: number
+          payment_settings_updated_at: string | null
+          payment_settings_updated_by: string | null
           phone: string | null
           pipeline_detailed_assessment_stages: boolean
           pipeline_revision: number
@@ -9005,7 +9012,14 @@ export type Database = {
           location_geocode_status?: string
           logo_object_key?: string | null
           longitude?: number | null
+          online_deposit_payments_enabled?: boolean
+          online_invoice_payments_enabled?: boolean
+          online_receipt_email_enabled?: boolean
+          online_tips_enabled?: boolean
           organization_id: string
+          payment_settings_revision?: number
+          payment_settings_updated_at?: string | null
+          payment_settings_updated_by?: string | null
           phone?: string | null
           pipeline_detailed_assessment_stages?: boolean
           pipeline_revision?: number
@@ -9071,7 +9085,14 @@ export type Database = {
           location_geocode_status?: string
           logo_object_key?: string | null
           longitude?: number | null
+          online_deposit_payments_enabled?: boolean
+          online_invoice_payments_enabled?: boolean
+          online_receipt_email_enabled?: boolean
+          online_tips_enabled?: boolean
           organization_id?: string
+          payment_settings_revision?: number
+          payment_settings_updated_at?: string | null
+          payment_settings_updated_by?: string | null
           phone?: string | null
           pipeline_detailed_assessment_stages?: boolean
           pipeline_revision?: number
@@ -9392,6 +9413,83 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "client_payment_events"
             referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      payment_stripe_connections: {
+        Row: {
+          account_display_name: string | null
+          api_key_ciphertext: string
+          api_key_last4: string
+          api_key_nonce: string
+          api_key_tag: string
+          connected_at: string
+          connected_by: string | null
+          encryption_key_id: string
+          id: string
+          last_check_status: string
+          last_checked_at: string
+          last_event_received_at: string | null
+          livemode: boolean
+          organization_id: string
+          stripe_account_id: string
+          updated_at: string
+          webhook_endpoint_id: string
+          webhook_secret_ciphertext: string
+          webhook_secret_nonce: string
+          webhook_secret_tag: string
+        }
+        Insert: {
+          account_display_name?: string | null
+          api_key_ciphertext: string
+          api_key_last4: string
+          api_key_nonce: string
+          api_key_tag: string
+          connected_at?: string
+          connected_by?: string | null
+          encryption_key_id: string
+          id?: string
+          last_check_status?: string
+          last_checked_at?: string
+          last_event_received_at?: string | null
+          livemode: boolean
+          organization_id: string
+          stripe_account_id: string
+          updated_at?: string
+          webhook_endpoint_id: string
+          webhook_secret_ciphertext: string
+          webhook_secret_nonce: string
+          webhook_secret_tag: string
+        }
+        Update: {
+          account_display_name?: string | null
+          api_key_ciphertext?: string
+          api_key_last4?: string
+          api_key_nonce?: string
+          api_key_tag?: string
+          connected_at?: string
+          connected_by?: string | null
+          encryption_key_id?: string
+          id?: string
+          last_check_status?: string
+          last_checked_at?: string
+          last_event_received_at?: string | null
+          livemode?: boolean
+          organization_id?: string
+          stripe_account_id?: string
+          updated_at?: string
+          webhook_endpoint_id?: string
+          webhook_secret_ciphertext?: string
+          webhook_secret_nonce?: string
+          webhook_secret_tag?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_stripe_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -19292,6 +19390,17 @@ export type Database = {
       }
       set_organization_logo: {
         Args: { new_object_key: string; target_organization_id: string }
+        Returns: Json
+      }
+      set_organization_payment_settings: {
+        Args: {
+          expected_revision: number
+          new_deposit_payments: boolean
+          new_invoice_payments: boolean
+          new_receipt_email: boolean
+          new_tips: boolean
+          target_organization_id: string
+        }
         Returns: Json
       }
       set_organization_quote_representative: {

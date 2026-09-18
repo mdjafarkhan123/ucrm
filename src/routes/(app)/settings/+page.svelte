@@ -18,6 +18,7 @@
 	import layoutKanbanIcon from '@tabler/icons/outline/layout-kanban.svg?raw';
 	import receiptTaxIcon from '@tabler/icons/outline/receipt-tax.svg?raw';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
+	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
 	import listIcon from '@tabler/icons/outline/list-details.svg?raw';
 	import checklistIcon from '@tabler/icons/outline/checklist.svg?raw';
 	import formsIcon from '@tabler/icons/outline/forms.svg?raw';
@@ -163,6 +164,14 @@
 								icon={receiptIcon}
 								title="Invoice Settings"
 								description="Payment terms and which one applies by default."
+							/>
+						{/if}
+						{#if home.permissions.payments_manage}
+							<SettingsDestinationCard
+								href={resolve('/(app)/settings/payments')}
+								icon={creditCardIcon}
+								title="Payments"
+								description="Connect Stripe so customers can pay invoices and deposits online."
 							/>
 						{/if}
 						{#if home.permissions.forms_manage}

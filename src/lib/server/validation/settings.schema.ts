@@ -375,3 +375,28 @@ export const quoteRepresentativeSignatureUploadSchema = z.object({
 		.positive('That file is empty.')
 		.max(QUOTE_REPRESENTATIVE_SIGNATURE_MAX_BYTES, 'Signature images have to be under 1 MB.')
 });
+
+// Settings → Payments (online payments Part 2). The key is only ever accepted here and passed straight to
+// the server-side connection module; it is never echoed back or stored in plaintext.
+export const stripeConnectSchema = z
+	.object({
+		api_key: z
+			.string()
+			.trim()
+			.regex(/^rk_(test|live)_[A-Za-z0-9]{20,255}$/, {
+				message: 'Paste a restricted key. It starts with rk_live_ (or rk_test_ for practice mode).'
+			})
+	})
+	.strict();
+
+export const paymentSettingsSchema = z
+	.object({
+		expected_revision: expectedRevision,
+		online_invoice_payments_enabled: z.boolean(),
+		online_deposit_payments_enabled: z.boolean(),
+		online_tips_enabled: z.boolean(),
+		online_receipt_email_enabled: z.boolean()
+	})
+	.strict();
+
+export type PaymentSettingsInput = z.infer<typeof paymentSettingsSchema>;
