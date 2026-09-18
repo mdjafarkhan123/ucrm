@@ -12,7 +12,6 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
-	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import AttachmentList from '$lib/components/communications/AttachmentList.svelte';
 	import MessageDetailsDialog from '$lib/components/communications/MessageDetailsDialog.svelte';
@@ -55,7 +54,11 @@
 	import { clientDetailKey, fetchClient, fetchClients } from '$lib/clients/api';
 	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil-plus.svg?raw';
-	import inboundIcon from '@tabler/icons/outline/arrow-down-left.svg?raw';
+	import emailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
+	import messagesIcon from '@tabler/icons/outline/messages.svg?raw';
+	import searchIcon from '@tabler/icons/outline/search.svg?raw';
+	import arrowDownIcon from '@tabler/icons/outline/arrow-down.svg?raw';
 	import starIcon from '@tabler/icons/outline/star.svg?raw';
 	import starFilledIcon from '@tabler/icons/filled/star.svg?raw';
 	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
@@ -82,9 +85,15 @@
 	let newConversationOpen = $state(false);
 	let newConversationClientId = $state<string | null>(null);
 	let timelineEl = $state<HTMLDivElement | null>(null);
+	// This is deliberately driven by the reader's own scroll position, rather than by a message count:
+	// a new arrival only needs a "Jump to latest" affordance when the reader has chosen to inspect older
+	// messages. It also keeps the control honest on short conversations that do not overflow at all.
+	let showJumpToLatest = $state(false);
 	// Which composer shows for the selected conversation, when more than one channel is eligible.
 	// Reset (below) only when the selected conversation itself changes, never on every background refetch.
 	let activeChannel = $state<'email' | 'sms' | 'website_chat'>('email');
+	let composerExpanded = $state(false);
+	let composerGroupKey: string | null = null;
 	let endSessionTarget = $state<ConversationGroup | null>(null);
 	let resolveIdentityTarget = $state<ConversationGroup | null>(null);
 	let resolveIdentityError = $state('');
@@ -116,6 +125,7 @@
 	const visibleGroups = $derived(
 		listTab === 'unread' ? groups.filter((group) => group.unreadCount > 0) : groups
 	);
+	const unreadGroupCount = $derived(groups.filter((group) => group.unreadCount > 0).length);
 
 	// HighLevel opens an unread conversation scrolled to what needs attention rather than always the
 	// newest item overall -- the smallest version of that here is: default selection favors the first
@@ -134,6 +144,14 @@
 	const smsAvailable = $derived(Boolean(selectedGroup?.clientId));
 	const chatAvailable = $derived(Boolean(selectedGroup?.chatSession));
 	const canSend = $derived(inboxQuery.data?.can_send ?? false);
+	type ComposerChannel = 'email' | 'sms' | 'website_chat';
+	const composerChannels = $derived.by(() => {
+		const channels: ComposerChannel[] = [];
+		if (emailAvailable) channels.push('email');
+		if (smsAvailable) channels.push('sms');
+		if (chatAvailable) channels.push('website_chat');
+		return channels;
+	});
 
 	function latestMessageChannel(group: ConversationGroup): 'email' | 'sms' | 'website_chat' {
 		if (isWebsiteChatMessage(group.latest)) return 'website_chat';
@@ -145,10 +163,12 @@
 	// one tab would keep getting yanked back whenever the other channel receives a new message.
 	$effect(() => {
 		const key = selectedGroup?.key;
-		if (!key) return;
+		if (!key || key === composerGroupKey) return;
 		untrack(() => {
 			const group = groups.find((entry) => entry.key === key);
 			if (!group) return;
+			composerGroupKey = key;
+			composerExpanded = false;
 			if (!group.clientId) {
 				activeChannel = 'website_chat';
 			} else {
@@ -237,6 +257,12 @@
 		);
 	}
 
+	function rowChannel(group: ConversationGroup): { label: string; icon: string } {
+		if (isWebsiteChatMessage(group.latest)) return { label: 'Website chat', icon: messagesIcon };
+		if (group.latest.channel === 'sms') return { label: 'SMS', icon: messageIcon };
+		return { label: 'Email', icon: emailIcon };
+	}
+
 	// The email composer's default subject reuses the conversation's most recent email-shaped message --
 	// neither a chat message nor an SMS has a subject line, so this skips backward past both the same way
 	// `conversationCustomerEmail` skips a channel with no email address.
@@ -276,6 +302,7 @@
 
 	function selectGroup(group: ConversationGroup) {
 		selectedGroupKey = group.key;
+		showJumpToLatest = false;
 		// A stale rail from the previous conversation must not carry over -- the ≤1050px drawer is closed
 		// on every switch, same as if it had never been opened.
 		contextPanelOpen = false;
@@ -407,6 +434,14 @@
 	function handleTimelineScroll(event: Event) {
 		const el = event.currentTarget as HTMLDivElement;
 		stickToBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+		showJumpToLatest = !stickToBottom;
+	}
+
+	function scrollToLatest() {
+		if (!timelineEl) return;
+		stickToBottom = true;
+		showJumpToLatest = false;
+		timelineEl.scrollTo({ top: timelineEl.scrollHeight, behavior: 'smooth' });
 	}
 
 	$effect(() => {
@@ -438,7 +473,9 @@
 			// to respect a reader who has deliberately scrolled back through history.
 			const ownSend = visiblePendingSend?.id === latestId;
 			anchoredLatestId = latestId;
-			if (ownSend) stickToBottom = true;
+			if (ownSend) {
+				stickToBottom = true;
+			}
 			if (!stickToBottom) return;
 			el.scrollTop = el.scrollHeight;
 		});
@@ -523,11 +560,11 @@
 	}
 
 	function replyRecipient(group: ConversationGroup) {
-		return conversationCustomerEmail(group);
+		return contextQuery.data?.client.email ?? conversationCustomerEmail(group);
 	}
 
 	function replyPhone(group: ConversationGroup) {
-		return conversationCustomerPhone(group);
+		return contextQuery.data?.client.phone ?? conversationCustomerPhone(group);
 	}
 
 	// A 'system' part (the session ending) is narration, not a party in the conversation -- rendered as a
@@ -580,43 +617,40 @@
 		>
 			<aside class="communications__list" aria-label="Conversation history">
 				<div class="communications__list-header">
-					{#if inboxQuery.data?.can_view_team}
-						<SegmentedControl
-							bind:value={view}
-							size="small"
-							options={[
-								{ value: 'team', label: 'Team Inbox' },
-								{ value: 'mine', label: 'My Inbox' }
-							]}
-						/>
-					{:else}
-						<h2>My Inbox</h2>
-					{/if}
-					<div class="communications__list-header-end">
-						<span>{visibleGroups.length} conversation{visibleGroups.length === 1 ? '' : 's'}</span>
-						<!-- GHL puts a compose control right in the list header; without it a fresh email can
-						     only be started from the client's own page. -->
-						<Button
-							size="small"
-							variant="secondary"
-							onhover={prefetchClientPicker}
-							onclick={() => (newConversationOpen = true)}
-						>
-							<span class="communications__compose-icon" aria-hidden="true">{@html pencilIcon}</span
-							>
-							New
-						</Button>
+					<div class="communications__inbox-identity">
+						{#if inboxQuery.data?.can_view_team}
+							<div class="communications__inbox-switcher" aria-label="Inbox view">
+								<button
+									type="button"
+									class:communications__inbox-switcher-button--active={view === 'team'}
+									class="communications__inbox-switcher-button"
+									aria-pressed={view === 'team'}
+									onclick={() => (view = 'team')}>Team Inbox</button
+								>
+								<button
+									type="button"
+									class:communications__inbox-switcher-button--active={view === 'mine'}
+									class="communications__inbox-switcher-button"
+									aria-pressed={view === 'mine'}
+									onclick={() => (view = 'mine')}>My Inbox</button
+								>
+							</div>
+						{:else}
+							<h2>My Inbox</h2>
+						{/if}
+						<p>{visibleGroups.length} conversation{visibleGroups.length === 1 ? '' : 's'}</p>
 					</div>
+					<!-- This is the real, existing email flow. It remains in the list header as a compact action. -->
+					<Button
+						size="small"
+						variant="secondary"
+						onhover={prefetchClientPicker}
+						onclick={() => (newConversationOpen = true)}
+					>
+						<span class="communications__compose-icon" aria-hidden="true">{@html pencilIcon}</span>
+						<span class="communications__new-label">New</span>
+					</Button>
 				</div>
-				<SegmentedControl
-					bind:value={listTab}
-					size="small"
-					fullWidth
-					options={[
-						{ value: 'all', label: 'All' },
-						{ value: 'unread', label: 'Unread' }
-					]}
-				/>
 				<form
 					class="communications__search"
 					onsubmit={(event) => {
@@ -624,12 +658,39 @@
 						search = searchDraft;
 					}}
 				>
-					<label class="sr-only" for="communications-search">Search conversations</label><input
+					<label class="sr-only" for="communications-search">Search email or subject</label><input
 						id="communications-search"
+						type="search"
 						bind:value={searchDraft}
-						placeholder="Search email"
-					/><Button size="small" variant="secondary" type="submit">Search</Button>
+						placeholder="Search email or subject"
+					/><button
+						class="communications__search-submit"
+						type="submit"
+						aria-label="Search email or subject"
+					>
+						<span aria-hidden="true">{@html searchIcon}</span>
+					</button>
 				</form>
+				<div class="communications__list-tabs" aria-label="Conversation status">
+					<button
+						type="button"
+						class:communications__list-tab--active={listTab === 'unread'}
+						class="communications__list-tab"
+						aria-pressed={listTab === 'unread'}
+						onclick={() => (listTab = 'unread')}
+					>
+						Unread{#if unreadGroupCount > 0}
+							<span>{unreadGroupCount}</span>
+						{/if}
+					</button>
+					<button
+						type="button"
+						class:communications__list-tab--active={listTab === 'all'}
+						class="communications__list-tab"
+						aria-pressed={listTab === 'all'}
+						onclick={() => (listTab = 'all')}>All</button
+					>
+				</div>
 				{#if visibleGroups.length === 0}
 					<EmptyState
 						title={listTab === 'unread'
@@ -647,29 +708,35 @@
 				{:else}
 					<div class="communications__rows" role="list" aria-label="Conversations">
 						{#each visibleGroups as group (group.key)}
+							{@const channel = rowChannel(group)}
+							{@const preview = rowPreview(group)}
 							<div role="listitem">
 								<button
 									class:communications__row--selected={selectedGroup?.key === group.key}
 									class:communications__row--unread={group.unreadCount > 0}
 									class="communications__row"
 									type="button"
+									aria-current={selectedGroup?.key === group.key ? 'true' : undefined}
 									onclick={() => selectGroup(group)}
 									onkeydown={handleRowKeydown}
 								>
 									<Avatar id={group.avatarId} name={group.name} size="base" />
 									<span class="communications__row-copy">
 										<span class="communications__row-heading">
-											{#if group.latest.direction === 'inbound'}
-												<span class="communications__row-direction" aria-hidden="true"
-													>{@html inboundIcon}</span
-												>
-											{/if}
+											<span
+												class="communications__row-channel"
+												title={channel.label}
+												aria-hidden="true">{@html channel.icon}</span
+											>
 											<strong>{group.name}</strong>
 											{#if group.guarded}<Badge status="warning" size="small" dot={false}
 													>Needs review</Badge
 												>{/if}
 										</span>
-										<span>{rowHeadline(group)}</span><small>{rowPreview(group)}</small>
+										<small class="communications__row-preview"
+											><span>{rowHeadline(group)}</span>{#if preview}<span>{preview}</span
+												>{/if}</small
+										>
 									</span>
 									<span class="communications__row-end">
 										<time datetime={group.latest.created_at}
@@ -701,15 +768,15 @@
 
 			{#if selectedGroup}
 				{@const group = selectedGroup}
+				{@const channel = rowChannel(group)}
 				<main class="communications__message" aria-label="Conversation timeline">
 					<header class="communications__thread-header">
 						<div class="communications__recipient">
-							<Avatar id={group.avatarId} name={group.name} size="medium" />
+							<Avatar id={group.avatarId} name={group.name} size="base" />
 							<div>
 								<h2>{group.name}</h2>
 								{#if group.clientId}
-									<a href={resolve('/(app)/clients/[id=uuid]', { id: group.clientId })}
-										>View client</a
+									<span class="communications__conversation-type">{channel.label} conversation</span
 									>
 								{:else}
 									<span class="communications__unresolved-sender"
@@ -794,6 +861,7 @@
 									class:communications__thread-message--outbound={message.direction === 'outbound'}
 									class:communications__thread-message--unread={message.direction === 'inbound' &&
 										message.unread}
+									class:communications__thread-message--email={message.channel === 'email'}
 									data-message-id={message.id}
 								>
 									{#if message.channel === 'sms'}
@@ -1026,6 +1094,7 @@
 								class="communications__thread-message communications__thread-message--outbound"
 								class:communications__thread-message--pending={send.state === 'sending'}
 								class:communications__thread-message--failed={send.state === 'failed'}
+								class:communications__thread-message--email={send.channel === 'email'}
 								data-message-id={send.id}
 								aria-busy={send.state === 'sending'}
 							>
@@ -1048,6 +1117,12 @@
 								{/if}
 							</article>
 						{/if}
+						{#if showJumpToLatest}
+							<button class="communications__jump-to-latest" type="button" onclick={scrollToLatest}>
+								<span aria-hidden="true">{@html arrowDownIcon}</span>
+								Jump to latest
+							</button>
+						{/if}
 					</div>
 					{#if group.clientId || group.chatSession}
 						{#key `${group.key}:${activeChannel}`}
@@ -1069,19 +1144,6 @@
 										>
 									</div>
 								{/if}
-								{#if emailAvailable || chatAvailable}
-									<div class="communications__channel-tabs">
-										<SegmentedControl
-											bind:value={activeChannel}
-											size="small"
-											options={[
-												{ value: 'email', label: 'Email' },
-												...(smsAvailable ? [{ value: 'sms', label: 'SMS' }] : []),
-												...(chatAvailable ? [{ value: 'website_chat', label: 'Website Chat' }] : [])
-											]}
-										/>
-									</div>
-								{/if}
 								{#if activeChannel === 'website_chat' && group.chatSession}
 									{#if group.chatSession.closed_at}
 										<p class="communications__chat-ended">{endedStateLabel(group.chatSession)}</p>
@@ -1089,6 +1151,9 @@
 										<WebsiteChatComposer
 											sessionId={group.chatSession.id}
 											clientId={group.clientId}
+											channels={composerChannels}
+											onChannelChange={(channel) => (activeChannel = channel)}
+											bind:expanded={composerExpanded}
 											onPendingChange={(send) => handlePendingChange(group.key, send)}
 										/>
 									{/if}
@@ -1098,6 +1163,9 @@
 										channel="sms"
 										defaultSubject=""
 										recipientLabel={replyPhone(group)}
+										channels={composerChannels}
+										onChannelChange={(channel) => (activeChannel = channel)}
+										bind:expanded={composerExpanded}
 										onPendingChange={(send) => handlePendingChange(group.key, send)}
 									/>
 								{:else if group.clientId}
@@ -1106,6 +1174,9 @@
 										channel="email"
 										defaultSubject={replySubject(latestEmailSubject(group))}
 										recipientLabel={replyRecipient(group)}
+										channels={composerChannels}
+										onChannelChange={(channel) => (activeChannel = channel)}
+										bind:expanded={composerExpanded}
 										onPendingChange={(send) => handlePendingChange(group.key, send)}
 									/>
 								{/if}
@@ -1451,7 +1522,7 @@
 <style lang="scss">
 	:global(.communications) {
 		display: grid;
-		gap: var(--space-large);
+		gap: var(--space-base);
 		/* No min-height here: the workspace below sizes itself to the viewport, and a taller floor on the
 		   page container would only add dead space under it. */
 	}
@@ -1472,7 +1543,7 @@
 	}
 	.communications__workspace {
 		display: grid;
-		grid-template-columns: minmax(260px, 0.9fr) minmax(360px, 1.5fr) minmax(240px, 0.75fr);
+		grid-template-columns: minmax(284px, 0.82fr) minmax(360px, 1.5fr) minmax(240px, 0.75fr);
 		/* GHL docks the composer to the bottom of the conversation panel, and this bound is what makes that
 		   happen: pinned to the viewport, the timeline scrolls inside its own column instead of growing and
 		   pushing the composer below the fold. Each column then needs min-height: 0 to be allowed to shrink,
@@ -1481,7 +1552,7 @@
 		   main, and page-container top padding) and 72px of bottom padding from those same three. */
 		min-height: 420px;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-large);
+		border-radius: var(--radius-base);
 		overflow: hidden;
 		background: var(--color-surface);
 	}
@@ -1502,14 +1573,52 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-small);
-		padding: var(--space-base);
+		min-height: 60px;
+		padding: var(--space-small) var(--space-slim);
 		border-bottom: var(--border-base) solid var(--color-border);
 	}
-	.communications__list-header-end {
+	.communications__inbox-identity {
+		min-width: 0;
+	}
+	.communications__inbox-identity > p {
+		margin: var(--space-smallest) 0 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-smaller);
+	}
+	.communications__inbox-switcher {
 		display: flex;
-		flex: 0 0 auto;
 		align-items: center;
 		gap: var(--space-small);
+	}
+	.communications__inbox-switcher-button {
+		position: relative;
+		min-height: 32px;
+		padding: var(--space-smallest) 0;
+		border: 0;
+		color: var(--color-text--secondary);
+		font: inherit;
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
+		background: transparent;
+		cursor: pointer;
+	}
+	.communications__inbox-switcher-button:hover,
+	.communications__inbox-switcher-button:focus-visible,
+	.communications__inbox-switcher-button--active {
+		color: var(--color-heading);
+	}
+	.communications__inbox-switcher-button:focus-visible {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+	.communications__inbox-switcher-button--active::after {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		height: 2px;
+		background: var(--color-interactive);
+		content: '';
 	}
 	.communications__compose-icon {
 		display: inline-flex;
@@ -1524,19 +1633,16 @@
 		color: var(--color-heading);
 		font-size: var(--typography--fontSize-large);
 	}
-	.communications__list-header span {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
 	.communications__search {
 		display: flex;
 		align-items: center;
-		gap: var(--space-small);
-		margin: var(--space-base);
+		gap: var(--space-smallest);
+		margin: var(--space-small) var(--space-slim);
 		padding: 0 var(--space-small);
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-small);
 		color: var(--color-icon--secondary);
+		background: var(--color-surface--background--subtle);
 	}
 	.communications__search :global(svg) {
 		width: 18px;
@@ -1544,11 +1650,92 @@
 	}
 	.communications__search input {
 		width: 100%;
-		min-height: 36px;
+		min-height: 32px;
 		border: 0;
 		outline: 0;
 		color: var(--color-text);
 		background: transparent;
+	}
+	.communications__search:focus-within {
+		border-color: var(--color-border--interactive);
+		box-shadow: var(--shadow-focus);
+	}
+	.communications__search-submit {
+		display: inline-flex;
+		width: 28px;
+		height: 28px;
+		flex: 0 0 auto;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		border: 0;
+		border-radius: var(--radius-small);
+		color: var(--color-icon--secondary);
+		background: transparent;
+		cursor: pointer;
+	}
+	.communications__search-submit:hover,
+	.communications__search-submit:focus-visible {
+		color: var(--color-heading);
+		background: var(--color-surface--hover);
+	}
+	.communications__search-submit:focus-visible {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+	.communications__search-submit :global(svg) {
+		width: 16px;
+		height: 16px;
+	}
+	.communications__list-tabs {
+		display: flex;
+		gap: var(--space-large);
+		padding: 0 var(--space-slim);
+		border-bottom: var(--border-base) solid var(--color-border);
+	}
+	.communications__list-tab {
+		position: relative;
+		display: inline-flex;
+		min-height: 36px;
+		align-items: center;
+		gap: var(--space-smallest);
+		padding: var(--space-smallest) 0;
+		border: 0;
+		color: var(--color-text--secondary);
+		font: inherit;
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		background: transparent;
+		cursor: pointer;
+	}
+	.communications__list-tab:hover,
+	.communications__list-tab:focus-visible,
+	.communications__list-tab--active {
+		color: var(--color-heading);
+	}
+	.communications__list-tab:focus-visible {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+	.communications__list-tab--active::after {
+		position: absolute;
+		right: 0;
+		bottom: -1px;
+		left: 0;
+		height: 3px;
+		background: var(--color-interactive);
+		content: '';
+	}
+	.communications__list-tab span {
+		display: inline-flex;
+		min-width: 16px;
+		height: 16px;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--radius-pill);
+		color: var(--color-surface);
+		background: var(--color-interactive);
+		font-size: 10px;
 	}
 	.communications__rows {
 		flex: 1;
@@ -1559,9 +1746,9 @@
 		display: flex;
 		width: 100%;
 		gap: var(--space-small);
-		padding: var(--space-base);
+		padding: var(--space-small) var(--space-slim);
 		border: 0;
-		border-top: var(--border-base) solid var(--color-border);
+		border-bottom: var(--border-base) solid var(--color-border);
 		color: var(--color-text);
 		background: var(--color-surface);
 		text-align: left;
@@ -1569,7 +1756,7 @@
 	}
 	.communications__row:hover,
 	.communications__row--selected {
-		background: var(--color-surface--hover);
+		background: var(--color-surface--active);
 	}
 	.communications__row--unread {
 		background: var(--color-surface--background--subtle);
@@ -1582,7 +1769,7 @@
 		display: grid;
 		min-width: 0;
 		flex: 1;
-		gap: var(--space-smallest);
+		gap: 2px;
 	}
 	.communications__row-heading {
 		display: flex;
@@ -1599,25 +1786,25 @@
 	.communications__row--unread .communications__row-heading strong {
 		font-weight: 700;
 	}
-	.communications__row-direction {
+	.communications__row-channel {
 		display: inline-flex;
 		flex: 0 0 auto;
 		color: var(--color-icon--secondary);
 	}
-	.communications__row-direction :global(svg) {
+	.communications__row-channel :global(svg) {
 		width: 14px;
 		height: 14px;
 	}
-	.communications__row-copy > span,
-	.communications__row-copy > small {
+	.communications__row-preview {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-	}
-	.communications__row-copy > span,
-	.communications__row-copy > small {
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
+	}
+	.communications__row-preview span + span::before {
+		margin: 0 var(--space-smallest);
+		content: '\00b7';
 	}
 	.communications__row time {
 		color: var(--color-text--secondary);
@@ -1653,10 +1840,14 @@
 	}
 	.communications__recipient a,
 	.communications__unresolved-sender,
+	.communications__conversation-type,
 	.communications__context a {
 		color: var(--color-interactive--subtle);
 		font-size: var(--typography--fontSize-small);
 		text-decoration: none;
+	}
+	.communications__conversation-type {
+		color: var(--color-text--secondary);
 	}
 	.communications__unresolved-sender {
 		color: var(--color-text--secondary);
@@ -1692,6 +1883,7 @@
 		height: 16px;
 	}
 	.communications__timeline {
+		position: relative;
 		display: flex;
 		flex: 1;
 		flex-direction: column;
@@ -1715,6 +1907,21 @@
 		border-radius: var(--radius-large) var(--radius-large) var(--radius-small) var(--radius-large);
 		background: var(--color-interactive--background);
 		box-shadow: none;
+	}
+	/* Email is a document-shaped record, not a chat bubble. It spans the timeline like GHL's mail cards
+	   while the sender, delivery, forwarding and review controls above remain exactly the existing real
+	   actions. SMS and Website Chat retain the smaller conversational geometry. */
+	.communications__thread-message--email {
+		align-self: stretch;
+		width: auto;
+		max-width: none;
+		padding: var(--space-slim) var(--space-base);
+		border-radius: var(--radius-base);
+		background: var(--color-surface);
+		box-shadow: inset 0 0 0 var(--border-base) var(--color-border);
+	}
+	.communications__thread-message--email.communications__thread-message--outbound {
+		background: var(--color-surface);
 	}
 	.communications__thread-message--unread {
 		box-shadow:
@@ -1768,6 +1975,38 @@
 		color: var(--color-text);
 		font-size: var(--typography--fontSize-base);
 		line-height: 1.45;
+	}
+	.communications__jump-to-latest {
+		position: sticky;
+		bottom: var(--space-slim);
+		display: inline-flex;
+		align-self: center;
+		align-items: center;
+		gap: var(--space-smaller);
+		min-height: 32px;
+		margin-top: auto;
+		padding: var(--space-smallest) var(--space-slim);
+		border: var(--border-base) solid var(--color-border--interactive);
+		border-radius: var(--radius-base);
+		color: var(--color-heading);
+		font: inherit;
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		background: var(--color-surface);
+		box-shadow: var(--shadow-base);
+		cursor: pointer;
+	}
+	.communications__jump-to-latest:hover,
+	.communications__jump-to-latest:focus-visible {
+		background: var(--color-surface--hover);
+	}
+	.communications__jump-to-latest:focus-visible {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+	.communications__jump-to-latest :global(svg) {
+		width: 16px;
+		height: 16px;
 	}
 	.communications__date-divider {
 		display: flex;
@@ -1866,10 +2105,6 @@
 		color: var(--color-warning--onSurface);
 		background: var(--color-warning--surface);
 		font-size: var(--typography--fontSize-small);
-	}
-	.communications__channel-tabs {
-		display: flex;
-		padding: var(--space-base) var(--space-large) 0;
 	}
 	.communications__context {
 		min-height: 0;
