@@ -39,11 +39,20 @@ export type CustomerQuoteTotals = {
 	total_minor: number;
 };
 
-// Null when there is no required deposit. Before Payments exists, this is a fact to arrange with the
-// contractor, never a control the customer can pay through.
+// Null when there is no required deposit.
 export type CustomerQuoteDeposit = {
 	required_minor: number;
 	satisfied: boolean;
+};
+
+// Online deposit payment on the customer's copy (online payments Part 4). Built by the server from
+// `quote_online_deposit_context`; null when the business has not connected Stripe. Amounts and switches
+// only — nothing here identifies the business, the quote row or the Stripe account.
+export type CustomerQuoteDepositPayment = {
+	/** A Pay deposit button may be shown right now. */
+	available: boolean;
+	deposit_required_minor: number;
+	test_mode: boolean;
 };
 
 export type CustomerQuoteDocument = {

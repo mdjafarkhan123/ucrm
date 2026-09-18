@@ -2,7 +2,11 @@
 	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
 	import CustomerQuoteDocument from '$lib/components/quotes/CustomerQuoteDocument.svelte';
+	import CustomerQuoteDepositPayment from '$lib/components/quotes/CustomerQuoteDepositPayment.svelte';
 	import type { SignatureValue } from '$lib/signatures/signature';
+	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
+	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
+	import testPipeIcon from '@tabler/icons/outline/test-pipe.svg?raw';
 
 	// The customer's page. Everything it draws came from the token in the URL, resolved on the server,
 	// and it draws it with the same component staff see in Preview as client - there is no second,
@@ -71,6 +75,36 @@
 
 		await invalidateAll();
 	}
+
+	// Online deposit payment. Stripe sends the customer back here with `?payment=success` as soon as they
+	// finish, which can be a moment before Stripe's confirmation reaches our server. Until it does, the page
+	// says it is confirming and quietly reloads its data; it never claims the deposit arrived before the
+	// server has it. `doc.deposit.satisfied` is the one source of truth for whether it has.
+	const payment = $derived(data.payment);
+	const deposit = $derived(data.document?.deposit ?? null);
+	const canPay = $derived(Boolean(payment?.available && deposit && !deposit.satisfied));
+	const returnedFromStripe = $derived(page.url.searchParams.get('payment') === 'success');
+
+	// About a minute of checking. Cards confirm in seconds; after that the page stops asking and says so.
+	const POLL_MS = 2500;
+	let pollsLeft = $state(24);
+
+	type PaymentNews = 'thanks' | 'confirming' | 'slow' | null;
+	const news = $derived.by((): PaymentNews => {
+		if (!payment || !returnedFromStripe) return null;
+		if (deposit?.satisfied) return 'thanks';
+		return pollsLeft > 0 ? 'confirming' : 'slow';
+	});
+
+	$effect(() => {
+		// Read here so each tick schedules the next one; `news` alone stays 'confirming' and would not.
+		if (news !== 'confirming' || pollsLeft <= 0) return;
+		const timer = setTimeout(() => {
+			pollsLeft -= 1;
+			void invalidateAll();
+		}, POLL_MS);
+		return () => clearTimeout(timer);
+	});
 </script>
 
 <svelte:head>
@@ -85,6 +119,29 @@
 	<meta name="referrer" content="no-referrer" />
 </svelte:head>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
+{#snippet banner(
+	tone: 'success' | 'notice' | 'warning',
+	icon: string,
+	title: string,
+	detail: string
+)}
+	<div class="pay-banner pay-banner--{tone}" role="status">
+		<span class="pay-banner__icon" aria-hidden="true">{@html icon}</span>
+		<div>
+			<p class="pay-banner__title">{title}</p>
+			<p class="pay-banner__detail">{detail}</p>
+		</div>
+	</div>
+{/snippet}
+<!-- eslint-enable svelte/no-at-html-tags -->
+
+{#snippet depositPayButton()}
+	{#if payment}
+		<CustomerQuoteDepositPayment {token} />
+	{/if}
+{/snippet}
+
 {#if data.document}
 	<CustomerQuoteDocument
 		doc={data.document}
@@ -92,7 +149,45 @@
 		onDecide={decide}
 		{fileHref}
 		{logoHref}
-	/>
+		depositPayment={canPay ? depositPayButton : undefined}
+	>
+		{#snippet notice()}
+			{#if payment && (news || payment.test_mode)}
+				<div class="pay-banners">
+					{#if news === 'thanks'}
+						{@render banner(
+							'success',
+							circleCheckIcon,
+							'Deposit received — thank you',
+							`Your deposit payment has been confirmed and ${data.document?.business.name ?? 'the business'} has been told.`
+						)}
+					{:else if news === 'confirming'}
+						{@render banner(
+							'notice',
+							infoIcon,
+							'Confirming your payment…',
+							'This usually takes a few seconds. Please keep this page open.'
+						)}
+					{:else if news === 'slow'}
+						{@render banner(
+							'notice',
+							infoIcon,
+							'Your payment is still being confirmed',
+							'This is taking longer than usual. There is no need to pay again. Refresh this page in a few minutes to see it.'
+						)}
+					{/if}
+					{#if payment.test_mode}
+						{@render banner(
+							'warning',
+							testPipeIcon,
+							'Test mode — no real money',
+							'This business is still testing online payments. Only Stripe test cards work here.'
+						)}
+					{/if}
+				</div>
+			{/if}
+		{/snippet}
+	</CustomerQuoteDocument>
 {:else if data.expired}
 	<main class="quote-unavailable">
 		<h1>This link has expired</h1>
@@ -112,6 +207,65 @@
 {/if}
 
 <style lang="scss">
+	.pay-banners {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-small);
+	}
+
+	// Banner per the design skill: tinted surface, solid-colour icon circle, no border.
+	.pay-banner {
+		--pay-banner-surface: var(--color-informative--surface);
+		--pay-banner-text: var(--color-informative--onSurface);
+		--pay-banner-solid: var(--color-informative);
+
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		padding: var(--space-slim) var(--space-base);
+		border-radius: var(--radius-base);
+		background: var(--pay-banner-surface);
+		color: var(--pay-banner-text);
+
+		&--success {
+			--pay-banner-surface: var(--color-success--surface);
+			--pay-banner-text: var(--color-success--onSurface);
+			--pay-banner-solid: var(--color-success);
+		}
+
+		&--warning {
+			--pay-banner-surface: var(--color-warning--surface);
+			--pay-banner-text: var(--color-warning--onSurface);
+			--pay-banner-solid: var(--color-warning);
+		}
+	}
+
+	.pay-banner__icon {
+		display: grid;
+		flex: 0 0 auto;
+		place-items: center;
+		padding: var(--space-smaller);
+		border-radius: var(--radius-circle);
+		background: var(--pay-banner-solid);
+		color: var(--color-surface);
+
+		:global(svg) {
+			display: block;
+			width: 20px;
+			height: 20px;
+		}
+	}
+
+	.pay-banner__title {
+		margin: 0;
+		font-weight: 700;
+	}
+
+	.pay-banner__detail {
+		margin: 0;
+		font-size: var(--typography--fontSize-small);
+	}
+
 	.quote-unavailable {
 		display: flex;
 		flex-direction: column;

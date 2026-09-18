@@ -20,7 +20,8 @@
 		onDecide,
 		fileHref,
 		logoHref = null,
-		notice
+		notice,
+		depositPayment
 	}: {
 		doc: CustomerQuoteDocument;
 		/**
@@ -44,6 +45,8 @@
 		logoHref?: string | null;
 		/** A line above the document, for anything staff need told that the customer must never see. */
 		notice?: Snippet;
+		/** The customer's Pay deposit button (online payments Part 4). Undefined when it cannot be shown. */
+		depositPayment?: Snippet;
 	} = $props();
 
 	const money = $derived(
@@ -458,6 +461,8 @@
 							</p>
 							{#if doc.deposit.satisfied}
 								<Badge status="success" size="small">Received</Badge>
+							{:else if depositPayment}
+								{@render depositPayment()}
 							{:else}
 								<p class="customer-quote__deposit-note">
 									Arrange this deposit directly with {doc.business.name ?? 'your contractor'} — this page

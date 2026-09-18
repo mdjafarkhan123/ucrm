@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { verifyStripeWebhook } from '$lib/server/payments/stripe-connection';
-import { handleStripeEvent } from '$lib/server/payments/invoice-checkout';
+import { handleStripeEvent } from '$lib/server/payments/stripe-checkout-events';
 
 const NO_STORE = { 'cache-control': 'no-store' } as const;
 

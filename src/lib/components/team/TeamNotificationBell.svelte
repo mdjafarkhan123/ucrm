@@ -39,7 +39,9 @@
 			tone:
 				notification.kind === 'website_inquiry.customer_replied' ||
 				notification.kind === 'invoice.online_payment_failed' ||
-				notification.kind === 'invoice.online_overpayment'
+				notification.kind === 'invoice.online_overpayment' ||
+				notification.kind === 'quote.deposit_payment_failed' ||
+				notification.kind === 'quote.deposit_overpaid'
 					? ('attention' as const)
 					: undefined
 		}))

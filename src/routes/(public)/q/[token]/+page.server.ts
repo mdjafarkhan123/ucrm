@@ -4,6 +4,10 @@ import {
 	quoteAccessTokenHash
 } from '$lib/server/quotes/access-links';
 import type { CustomerQuoteDocument } from '$lib/quotes/customer-document';
+import {
+	customerDepositView,
+	getQuoteDepositContext
+} from '$lib/server/payments/quote-deposit-checkout';
 
 // The customer's copy. This is the only place in the app a stranger can reach quote data, and it reaches
 // it the long way round: the token from the URL is hashed here, the hash goes to the one function the
@@ -28,17 +32,24 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 	});
 
 	const tokenHash = quoteAccessTokenHash(params.token);
-	if (!tokenHash) return { document: null, expired: false };
+	if (!tokenHash) return { document: null, expired: false, payment: null };
 
-	const { data, error } = await getQuoteAccessResolverClient().rpc('resolve_quote_access_link', {
-		supplied_token_hash: tokenHash
-	});
+	const [{ data, error }, payment] = await Promise.all([
+		getQuoteAccessResolverClient().rpc('resolve_quote_access_link', {
+			supplied_token_hash: tokenHash
+		}),
+		// Online deposit payment is an extra on the page. If it cannot be worked out, the quote still shows.
+		getQuoteDepositContext(tokenHash)
+			.then(customerDepositView)
+			.catch(() => null)
+	]);
 
 	// Deliberately not logged with the token or the reason. A failure here is either a broken link or
 	// somebody guessing, and neither should write a customer's URL into a log file.
-	if (error || !data) return { document: null, expired: false };
+	if (error || !data) return { document: null, expired: false, payment: null };
 
-	if (typeof data === 'object' && 'expired' in data) return { document: null, expired: true };
+	if (typeof data === 'object' && 'expired' in data)
+		return { document: null, expired: true, payment: null };
 
-	return { document: data as unknown as CustomerQuoteDocument, expired: false };
+	return { document: data as unknown as CustomerQuoteDocument, expired: false, payment };
 };

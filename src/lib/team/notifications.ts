@@ -7,7 +7,10 @@ export type TeamNotificationKind =
 	| 'website_inquiry.customer_replied'
 	| 'invoice.paid_online'
 	| 'invoice.online_payment_failed'
-	| 'invoice.online_overpayment';
+	| 'invoice.online_overpayment'
+	| 'quote.deposit_paid_online'
+	| 'quote.deposit_payment_failed'
+	| 'quote.deposit_overpaid';
 
 export type TeamNotification = {
 	id: string;
@@ -40,6 +43,7 @@ export function teamNotificationHref(
 	subjectId: string
 ) {
 	if (subjectType === 'invoice') return `/invoices/${subjectId}`;
+	if (subjectType === 'quote') return `/quotes/${subjectId}`;
 	if (subjectType === 'website_chat_session') {
 		const key = link?.client_id ?? `webchat:${subjectId}`;
 		return `/communications?${new URLSearchParams({ client: key }).toString()}`;
