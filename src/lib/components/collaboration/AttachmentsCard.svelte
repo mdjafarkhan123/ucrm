@@ -5,6 +5,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import Lightbox, { type LightboxItem } from '$lib/components/ui/Lightbox.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import AuthorMeta from '$lib/components/collaboration/AuthorMeta.svelte';
 	import { formatFileSize } from '$lib/collaboration/format';
 	import { iconForMimeType } from '$lib/collaboration/file-icons';
@@ -71,6 +72,7 @@
 	} = $props();
 
 	const queryClient = useQueryClient();
+	const toast = getToastManager();
 	const uid = $props.id();
 	const pickerId = `${uid}-picker`;
 
@@ -301,9 +303,15 @@
 		removedIds = [];
 	}
 
+	// The page's Save already reported the failure, so a successful retry is the one upload that needs
+	// its own confirmation. A failed retry keeps its inline error on the row.
 	async function retry(item: QueuedFile) {
 		if (!targetId) return;
 		await uploadOne(item, targetId);
+		if (!queue.some((entry) => entry.key === item.key)) {
+			toast.success('File uploaded');
+			refresh(targetId);
+		}
 	}
 
 	async function download(attachment: Attachment) {

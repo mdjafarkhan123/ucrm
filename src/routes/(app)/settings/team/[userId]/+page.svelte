@@ -275,6 +275,7 @@
 			}
 			draft = null;
 			costRate = '';
+			toast.success('Member details saved');
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: teamMemberKey(actorUserId, userId) }),
 				queryClient.invalidateQueries({ queryKey: ['team', 'directory'] })
