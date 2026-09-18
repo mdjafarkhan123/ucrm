@@ -163,6 +163,19 @@ async function recordAudit(organizationId: string, actorUserId: string, change: 
 	if (error) console.error('Could not record the Stripe connection audit entry.', error.code);
 }
 
+/** A Stripe client acting with this organization's stored key, or null when Stripe is not connected. The key
+ *  itself never leaves this module. */
+export async function stripeClientForOrganization(
+	organizationId: string
+): Promise<{ stripe: Stripe; stripeAccountId: string } | null> {
+	const row = await loadRow(organizationId);
+	if (!row) return null;
+	return {
+		stripe: stripeClient(decryptFromRow(row, 'api_key')),
+		stripeAccountId: row.stripe_account_id
+	};
+}
+
 export async function getStripeConnectionStatus(
 	organizationId: string
 ): Promise<StripeConnectionStatus> {

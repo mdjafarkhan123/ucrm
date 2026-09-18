@@ -644,3 +644,15 @@ export const refundPaymentSchema = z.object({
 });
 
 export type RefundPaymentInput = z.infer<typeof refundPaymentSchema>;
+
+// The customer's Pay button (online payments Part 3). Only amounts: which invoice, how much it owes, whether a
+// partial amount or a tip is allowed are all decided by open_invoice_stripe_checkout from the link itself.
+export const invoiceCheckoutSchema = z.strictObject({
+	amount_minor: z.number().int().positive().max(1_000_000_000_000),
+	tip_minor: z.number().int().min(0).max(1_000_000_000_000).default(0)
+});
+
+// Staff turning "Allow partial online payments" on or off for one invoice.
+export const invoiceOnlinePartialPaymentsSchema = z.strictObject({
+	allowed: z.boolean()
+});

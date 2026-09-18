@@ -94,7 +94,8 @@ type RpcError = { code?: string; message?: string; status?: number };
 type InvitationRpc = (name: string, args: Record<string, unknown>) => RpcResult<unknown>;
 
 function invitationRpc(client: SupabaseClient<Database>) {
-	return client.rpc.bind(client) as unknown as InvitationRpc;
+	const rpc = (client as unknown as { rpc: InvitationRpc }).rpc;
+	return rpc.bind(client);
 }
 
 function hashInvitationToken(token: string) {

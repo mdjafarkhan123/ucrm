@@ -37,7 +37,9 @@
 			metaTitle: exactTime(notification.created_at),
 			unread: !notification.read_at,
 			tone:
-				notification.kind === 'website_inquiry.customer_replied'
+				notification.kind === 'website_inquiry.customer_replied' ||
+				notification.kind === 'invoice.online_payment_failed' ||
+				notification.kind === 'invoice.online_overpayment'
 					? ('attention' as const)
 					: undefined
 		}))

@@ -2,7 +2,12 @@ import { httpError } from '$lib/http-error';
 
 // CRM launch readiness Part 4, Stage 4: the contractor header bell and the inquiry-alert recipients setting.
 
-export type TeamNotificationKind = 'website_inquiry.received' | 'website_inquiry.customer_replied';
+export type TeamNotificationKind =
+	| 'website_inquiry.received'
+	| 'website_inquiry.customer_replied'
+	| 'invoice.paid_online'
+	| 'invoice.online_payment_failed'
+	| 'invoice.online_overpayment';
 
 export type TeamNotification = {
 	id: string;
@@ -34,6 +39,7 @@ export function teamNotificationHref(
 	subjectType: string,
 	subjectId: string
 ) {
+	if (subjectType === 'invoice') return `/invoices/${subjectId}`;
 	if (subjectType === 'website_chat_session') {
 		const key = link?.client_id ?? `webchat:${subjectId}`;
 		return `/communications?${new URLSearchParams({ client: key }).toString()}`;

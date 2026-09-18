@@ -18,6 +18,7 @@ import { requireOrganization } from '$lib/server/auth/organization';
 import { enforceOrganizationWriteRateLimit } from '$lib/server/security/rate-limit';
 import { updateInvoiceError } from '$lib/server/invoices/errors';
 import { organizationFormatting } from '$lib/server/requests/timezone';
+import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
 // One invoice in full for the detail screen. It reads `public.invoice_detail`, the definer twin of the list's
 // read model: it carries the frozen document and the derived contract status worked out once in the database,
@@ -52,13 +53,20 @@ export const GET: RequestHandler = async (event) => {
 	// The client's whole-account balance, gated in the same call: a reader without invoices.view_price gets an
 	// empty map and the rail simply shows no balance. Only one client is asked for, so this is a single row.
 	const clientId = document.invoice.client_id;
-	const [balanceResult, formatting] = await Promise.all([
+	const [balanceResult, formatting, partialResult, onlineOffered] = await Promise.all([
 		canSeePrice && clientId
 			? supabase.rpc('client_account_balance', { target_client_ids: [clientId] })
 			: Promise.resolve({ data: {} as Record<string, unknown>, error: null }),
-		organizationFormatting(supabase, organizationId)
+		organizationFormatting(supabase, organizationId),
+		supabase
+			.from('invoices')
+			.select('online_partial_payments_allowed')
+			.eq('organization_id', organizationId)
+			.eq('id', invoiceId)
+			.maybeSingle(),
+		onlineInvoicePaymentsOffered(organizationId)
 	]);
-	if (balanceResult.error) return databaseError();
+	if (balanceResult.error || partialResult.error) return databaseError();
 	const balances = (balanceResult.data ?? {}) as Record<string, unknown>;
 	const clientBalance = clientId ? (balances[clientId] ?? null) : null;
 
@@ -66,6 +74,10 @@ export const GET: RequestHandler = async (event) => {
 		{
 			...document,
 			client_balance: clientBalance,
+			online_payments: {
+				offered: onlineOffered,
+				partial_allowed: partialResult.data?.online_partial_payments_allowed ?? false
+			},
 			locale: formatting.ok ? formatting.formatting.locale : 'en-US',
 			can_edit: hasPermission(check.access, 'invoices.edit'),
 			can_send: hasPermission(check.access, 'invoices.send'),
@@ -79,6 +91,25 @@ export const GET: RequestHandler = async (event) => {
 		{ headers: PRIVATE_READ_HEADERS }
 	);
 };
+
+// Whether the customer's copy shows a Pay button at all: Stripe connected and invoice payments switched on.
+// The connection table is server-only, so it is asked with the owner client and only a yes/no leaves here.
+async function onlineInvoicePaymentsOffered(organizationId: string) {
+	const owner = getOwnerSupabaseClient();
+	const [connection, settings] = await Promise.all([
+		owner
+			.from('payment_stripe_connections')
+			.select('id')
+			.eq('organization_id', organizationId)
+			.maybeSingle(),
+		owner
+			.from('organization_settings')
+			.select('online_invoice_payments_enabled')
+			.eq('organization_id', organizationId)
+			.maybeSingle()
+	]);
+	return Boolean(connection.data && settings.data?.online_invoice_payments_enabled);
+}
 
 // Editing a draft's subject, invoice date and terms. The command checks invoices.edit itself and refuses a
 // stale revision, so the route only proves membership and validates the shape.

@@ -1,5 +1,5 @@
 import type { InvoiceDerivedStatus } from './statuses';
-import type { InvoicePaymentMethod } from './payment-methods';
+import type { InvoicePaymentMethod, PaymentMethod } from './payment-methods';
 import type { InvoiceVoidReason } from './lifecycle';
 import type { QuoteDiscountType, QuoteTaxSource } from '$lib/quotes/api';
 
@@ -524,7 +524,7 @@ export type InvoicePaymentHistoryEntry = {
 	amount_minor: number;
 	created_at: string;
 	source: 'payment' | 'deposit';
-	method: InvoicePaymentMethod | null;
+	method: PaymentMethod | null;
 	payment_date: string | null;
 	reference: string | null;
 	note: string | null;
@@ -609,6 +609,8 @@ export type InvoiceDetail = {
 	lines: InvoiceLineItem[];
 	delivery: InvoiceDelivery;
 	client_balance: InvoiceClientBalance | null;
+	/** Whether the customer's copy offers online payment, and this invoice's partial-payment switch. */
+	online_payments: { offered: boolean; partial_allowed: boolean };
 	locale: string;
 	can_edit: boolean;
 	can_send: boolean;
@@ -698,6 +700,20 @@ export async function saveInvoiceDiscount(
 		body: JSON.stringify({ expected_revision: expectedRevision, ...discount })
 	});
 	return readOrThrow(response, 'That discount could not be saved.');
+}
+
+// "Allow partial online payments" on one invoice. Kept off the document, so it applies straight away and
+// needs no revision.
+export async function setInvoiceOnlinePartialPayments(
+	id: string,
+	allowed: boolean
+): Promise<{ online_partial_payments_allowed: boolean }> {
+	const response = await fetch(`/api/invoices/${id}/online-payments`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ allowed })
+	});
+	return readOrThrow(response, 'That setting could not be saved.');
 }
 
 export type InvoiceTaxInput = {
@@ -879,7 +895,7 @@ export type PaymentDetail = {
 		id: string;
 		amount_minor: number;
 		currency_code: string;
-		method: InvoicePaymentMethod;
+		method: PaymentMethod;
 		// A `date` column, so `YYYY-MM-DD` — never a timestamp.
 		payment_date: string;
 		reference: string | null;

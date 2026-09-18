@@ -5546,6 +5546,7 @@ export type Database = {
           issued_by: string | null
           marked_received_at: string | null
           marked_received_by: string | null
+          online_partial_payments_allowed: boolean
           organization_id: string
           payment_term_id: string | null
           payment_term_snapshot: Json
@@ -5599,6 +5600,7 @@ export type Database = {
           issued_by?: string | null
           marked_received_at?: string | null
           marked_received_by?: string | null
+          online_partial_payments_allowed?: boolean
           organization_id: string
           payment_term_id?: string | null
           payment_term_snapshot?: Json
@@ -5652,6 +5654,7 @@ export type Database = {
           issued_by?: string | null
           marked_received_at?: string | null
           marked_received_by?: string | null
+          online_partial_payments_allowed?: boolean
           organization_id?: string
           payment_term_id?: string | null
           payment_term_snapshot?: Json
@@ -9493,6 +9496,90 @@ export type Database = {
           },
         ]
       }
+      payment_stripe_checkouts: {
+        Row: {
+          applied_minor: number | null
+          amount_minor: number
+          checkout_session_id: string | null
+          client_id: string
+          completed_at: string | null
+          created_at: string
+          currency_code: string
+          id: string
+          invoice_id: string
+          livemode: boolean
+          organization_id: string
+          payment_event_id: string | null
+          payment_intent_id: string | null
+          status: string
+          stripe_account_id: string
+          tip_minor: number
+          updated_at: string
+        }
+        Insert: {
+          applied_minor?: number | null
+          amount_minor: number
+          checkout_session_id?: string | null
+          client_id: string
+          completed_at?: string | null
+          created_at?: string
+          currency_code: string
+          id?: string
+          invoice_id: string
+          livemode: boolean
+          organization_id: string
+          payment_event_id?: string | null
+          payment_intent_id?: string | null
+          status?: string
+          stripe_account_id: string
+          tip_minor?: number
+          updated_at?: string
+        }
+        Update: {
+          applied_minor?: number | null
+          amount_minor?: number
+          checkout_session_id?: string | null
+          client_id?: string
+          completed_at?: string | null
+          created_at?: string
+          currency_code?: string
+          id?: string
+          invoice_id?: string
+          livemode?: boolean
+          organization_id?: string
+          payment_event_id?: string | null
+          payment_intent_id?: string | null
+          status?: string
+          stripe_account_id?: string
+          tip_minor?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payment_stripe_webhook_events: {
+        Row: {
+          event_type: string
+          organization_id: string
+          outcome: string
+          received_at: string
+          stripe_event_id: string
+        }
+        Insert: {
+          event_type: string
+          organization_id: string
+          outcome: string
+          received_at?: string
+          stripe_event_id: string
+        }
+        Update: {
+          event_type?: string
+          organization_id?: string
+          outcome?: string
+          received_at?: string
+          stripe_event_id?: string
+        }
+        Relationships: []
+      }
       permissions: {
         Row: {
           created_at: string
@@ -12724,6 +12811,33 @@ export type Database = {
       }
     }
     Functions: {
+      apply_stripe_checkout_event: {
+        Args: {
+          new_method: string | null
+          new_payment_intent_id: string | null
+          session_amount_total: number | null
+          session_currency: string | null
+          session_payment_status: string | null
+          stripe_event_id: string
+          stripe_event_type: string
+          target_checkout_id: string | null
+          target_checkout_session_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
+      invoice_online_payment_context: {
+        Args: { supplied_token_hash: string }
+        Returns: Json
+      }
+      open_invoice_stripe_checkout: {
+        Args: {
+          new_amount_minor: number
+          new_tip_minor: number
+          supplied_token_hash: string
+        }
+        Returns: Json
+      }
       accept_ownership_transfer: {
         Args: { accepting_user_id: string; target_transfer_id: string }
         Returns: {
@@ -15764,7 +15878,7 @@ export type Database = {
       }
       enqueue_payment_receipt_email: {
         Args: {
-          target_actor_user_id: string
+          target_actor_user_id: string | null
           target_logical_send_key: string
           target_organization_id: string
           target_payment_event_id: string
@@ -19390,6 +19504,14 @@ export type Database = {
       }
       set_organization_logo: {
         Args: { new_object_key: string; target_organization_id: string }
+        Returns: Json
+      }
+      set_invoice_online_partial_payments: {
+        Args: {
+          new_allowed: boolean
+          target_invoice_id: string
+          target_organization_id: string
+        }
         Returns: Json
       }
       set_organization_payment_settings: {

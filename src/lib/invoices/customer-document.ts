@@ -118,3 +118,20 @@ export type CustomerInvoiceDocument = {
 	lines: CustomerInvoiceLine[];
 	money: CustomerInvoiceMoney | null;
 };
+
+// Online payment on the customer's copy (online payments Part 3). Built by the server from
+// `invoice_online_payment_context`; null when the business has not connected Stripe. Amounts and switches
+// only — nothing here identifies the business, the invoice row or the Stripe account.
+export type CustomerInvoicePayment = {
+	/** A Pay button may be shown right now. */
+	available: boolean;
+	/** What can still be paid online: the balance less any bank payment already processing. */
+	balance_minor: number;
+	processing_minor: number;
+	/** Paid through Stripe in the last half hour, so the page the customer returns to can thank them. */
+	recent_paid_minor: number;
+	partial_allowed: boolean;
+	tips_enabled: boolean;
+	tip_base_minor: number;
+	test_mode: boolean;
+};

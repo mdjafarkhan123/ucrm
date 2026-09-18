@@ -4,6 +4,10 @@ import {
 	invoiceAccessTokenHash
 } from '$lib/server/invoices/access-links';
 import type { CustomerInvoiceDocument } from '$lib/invoices/customer-document';
+import {
+	customerPaymentView,
+	getInvoicePaymentContext
+} from '$lib/server/payments/invoice-checkout';
 
 // The customer's copy of a bill. This is the only place in the app a stranger can reach invoice data, and it
 // reaches it the long way round: the token from the URL is hashed here, the hash goes to the one function the
@@ -27,20 +31,24 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 	});
 
 	const tokenHash = invoiceAccessTokenHash(params.token);
-	if (!tokenHash) return { document: null, expired: false };
+	if (!tokenHash) return { document: null, expired: false, payment: null };
 
-	const { data, error } = await getInvoiceAccessResolverClient().rpc(
-		'resolve_invoice_access_link',
-		{
+	const [{ data, error }, payment] = await Promise.all([
+		getInvoiceAccessResolverClient().rpc('resolve_invoice_access_link', {
 			supplied_token_hash: tokenHash
-		}
-	);
+		}),
+		// Online payment is an extra on the page. If it cannot be worked out, the invoice still shows.
+		getInvoicePaymentContext(tokenHash)
+			.then(customerPaymentView)
+			.catch(() => null)
+	]);
 
 	// Deliberately not logged with the token or the reason. A failure here is either a broken link or
 	// somebody guessing, and neither should write a customer's URL into a log file.
-	if (error || !data) return { document: null, expired: false };
+	if (error || !data) return { document: null, expired: false, payment: null };
 
-	if (typeof data === 'object' && 'expired' in data) return { document: null, expired: true };
+	if (typeof data === 'object' && 'expired' in data)
+		return { document: null, expired: true, payment: null };
 
-	return { document: data as unknown as CustomerInvoiceDocument, expired: false };
+	return { document: data as unknown as CustomerInvoiceDocument, expired: false, payment };
 };

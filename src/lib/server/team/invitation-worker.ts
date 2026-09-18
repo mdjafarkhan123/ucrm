@@ -33,7 +33,8 @@ export type TeamInvitationWorkerResult = {
 };
 
 function workerRpc(client: SupabaseClient<Database>) {
-	return client.rpc.bind(client) as unknown as WorkerRpc;
+	const rpc = (client as unknown as { rpc: WorkerRpc }).rpc;
+	return rpc.bind(client);
 }
 
 async function requireRpcRows<T>(

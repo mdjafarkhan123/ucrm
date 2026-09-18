@@ -23,9 +23,10 @@ Product truth: docs/online-payments-behavior-contract.md (approved 2026-09-18, i
 1. **Payments behavior contract** — Done 2026-09-18 (approved).
 2. **Stripe connection** — Done 2026-09-18. Gate passed live with a sandbox restricted key: connect, check,
    signed test event 200, replace and disconnect remove their Stripe endpoints; key stored only encrypted.
-3. **Customer pays invoice online** — Next; needs 2. Public invoice Pay button (partial + tips per contract) →
-   Stripe Checkout → verified webhook → journaled, idempotent ledger receipt, async bank payments, overpayment
-   guard, receipt email, notification, cache invalidation. Gate: test card pays once despite webhook retries.
+3. **Customer pays invoice online** — Done 2026-09-18. Gate passed live in the sandbox: full pay, partial +
+   15% tip, overpayment (cash recorded mid-checkout → applied 0 + refund alert), same event delivered 3× →
+   one ledger row and one receipt. Not proven live: async bank payments (processing/failed paths) — prove in
+   Part 8.
 4. **Online quote deposit** — needs 3. Gate: deposit satisfies the quote in test mode.
 5. **Refunds, disputes, disconnect safety** — needs 3. In-app refund, dashboard refunds reflected, dispute
    alerts, stop sessions on disconnect/suspension. Gate: test refund reflected once.

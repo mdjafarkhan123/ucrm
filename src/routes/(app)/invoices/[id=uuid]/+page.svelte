@@ -13,6 +13,7 @@
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
@@ -45,6 +46,7 @@
 		sendPaymentReceipt,
 		runInvoiceLifecycleAction,
 		deleteInvoice,
+		setInvoiceOnlinePartialPayments,
 		invoiceCountsKey,
 		type InvoiceWriteError,
 		type InvoiceLifecycleAction,
@@ -76,6 +78,7 @@
 	import cashOffIcon from '@tabler/icons/outline/cash-off.svg?raw';
 	import undoIcon from '@tabler/icons/outline/arrow-back-up.svg?raw';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
+	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -689,6 +692,33 @@
 		}
 	}
 
+	// "Allow partial online payments" (Jobber's per-invoice switch, off by default, never on progress bills). It
+	// is a setting on how the customer may pay, not part of the bill, so it saves the moment it is flipped.
+	const showOnlinePayments = $derived(
+		Boolean(saved?.online_payments.offered) &&
+			!isProgress &&
+			!isVoided &&
+			!saved?.invoice.is_replaced &&
+			saved?.invoice.derived_status !== 'paid'
+	);
+	let partialSaving = $state(false);
+
+	async function togglePartialPayments(allowed: boolean) {
+		partialSaving = true;
+		try {
+			await setInvoiceOnlinePartialPayments(invoiceId, allowed);
+			await queryClient.invalidateQueries({ queryKey: invoiceDetailKey(invoiceId) });
+			toast.success(
+				allowed ? 'Partial online payments allowed' : 'Partial online payments turned off'
+			);
+		} catch (caught) {
+			await queryClient.invalidateQueries({ queryKey: invoiceDetailKey(invoiceId) });
+			toast.error((caught as InvoiceWriteError).message ?? 'That setting could not be saved.');
+		} finally {
+			partialSaving = false;
+		}
+	}
+
 	let deleting = $state(false);
 	async function removeDraft() {
 		if (!saved || deleting) return;
@@ -1039,6 +1069,20 @@
 								</div>
 							{/if}
 						</dl>
+					</RailCard>
+				{/if}
+
+				{#if showOnlinePayments}
+					<RailCard title="Online payment" icon={creditCardIcon}>
+						<Toggle
+							id="invoice-online-partial"
+							label="Allow partial payments"
+							description="Your client can choose to pay less than the full balance online."
+							checked={saved.online_payments.partial_allowed}
+							disabled={!saved.can_edit || partialSaving}
+							labelSide="start"
+							onchange={(allowed) => void togglePartialPayments(allowed)}
+						/>
 					</RailCard>
 				{/if}
 

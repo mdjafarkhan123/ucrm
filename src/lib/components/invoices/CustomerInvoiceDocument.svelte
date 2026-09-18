@@ -14,11 +14,14 @@
 	// look is a 1:1 build of Design/invoices/customer-invoice-mockup.html on real UCRM tokens.
 	let {
 		doc,
-		notice
+		notice,
+		payment
 	}: {
 		doc: CustomerInvoiceDocument;
-		/** A strip above the document, for anything staff need told that the customer must never see. */
+		/** A strip above the document: staff-only context in Preview, payment news on the customer's page. */
 		notice?: Snippet;
+		/** The customer's Pay button, under the balance. Only the customer's page passes one. */
+		payment?: Snippet;
 	} = $props();
 
 	const money = $derived(
@@ -224,6 +227,9 @@
 						<div class="customer-invoice__balance-due">Paid in full</div>
 					{:else if dueText}
 						<div class="customer-invoice__balance-due">Due <b>{dueText}</b></div>
+					{/if}
+					{#if payment && !paid && balanceMinor > 0}
+						<div class="customer-invoice__pay">{@render payment()}</div>
 					{/if}
 				</div>
 			{/if}
@@ -871,7 +877,8 @@
 			color: #000;
 		}
 
-		.customer-invoice__notice {
+		.customer-invoice__notice,
+		.customer-invoice__pay {
 			display: none;
 		}
 
