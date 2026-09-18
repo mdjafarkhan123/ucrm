@@ -12,12 +12,12 @@ quote flipped to "Ready for job", and the office/finance bell alert rendered
 `npm run check` (0 errors) and Prettier both clean on touched files. Supabase advisors: only the pre-existing
 baseline (104x `rls_enabled_no_policy` INFO, including the expected `payment_stripe_checkouts` one).
 
-**Not yet committed to git** — all Part 3 + Part 4 work is still uncommitted working-tree changes.
+Committed `b5ada9d` (Part 4). Part 3 was already committed earlier as `5905c7d`.
 
 ## Exact next action
 
-Ask Jafar whether to commit Part 3 + Part 4 now (single commit or split), then decide the next online-payments
-part (Venmo/Zelle/Cash App/e-Transfer instructions) or close the campaign if nothing else is scoped.
+Decide the next online-payments part (Venmo/Zelle/Cash App/e-Transfer instructions) or close the campaign if
+nothing else is scoped.
 
 ## Pointers
 
