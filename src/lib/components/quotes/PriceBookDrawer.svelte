@@ -7,6 +7,7 @@
 	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import CatalogItemDialog from './CatalogItemDialog.svelte';
 	import {
 		catalogItemsKey,
@@ -48,6 +49,7 @@
 	} = $props();
 
 	const queryClient = useQueryClient();
+	const toast = getToastManager();
 
 	let search = $state('');
 	let debouncedSearch = $state('');
@@ -104,6 +106,7 @@
 
 	function created(item: CatalogItem) {
 		creating = false;
+		toast.success(`“${item.name}” added to the price book`);
 		// The new item has to turn up the next time anybody searches for it, here or on a line's name.
 		void queryClient.invalidateQueries({ queryKey: ['catalog-items'] });
 		onAdd(item);

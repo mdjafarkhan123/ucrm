@@ -40,6 +40,7 @@
 		type QuoteSelectionKind
 	} from '$lib/quotes/api';
 	import { firstLineProblem } from '$lib/quotes/lines';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import listIcon from '@tabler/icons/outline/list-details.svg?raw';
 	import bookIcon from '@tabler/icons/outline/book.svg?raw';
 	import bookmarkIcon from '@tabler/icons/outline/bookmark.svg?raw';
@@ -132,6 +133,7 @@
 	} = $props();
 
 	const queryClient = useQueryClient();
+	const toast = getToastManager();
 
 	type DraftLine = {
 		id: string;
@@ -911,6 +913,7 @@
 			uploadedThisSession.clear();
 			editing = false;
 			draftLines = [];
+			toast.success('Pricing saved');
 		} catch (caught) {
 			const writeError = caught as QuoteWriteError;
 			if (writeError.reason === 'stale') {

@@ -7,6 +7,7 @@
 		type CatalogItem,
 		type CatalogItemFilter
 	} from '$lib/quotes/api';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import CatalogItemDialog from './CatalogItemDialog.svelte';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 
@@ -50,6 +51,7 @@
 	let hasValue = $derived(Boolean(value) || Boolean(placeholder));
 
 	const queryClient = useQueryClient();
+	const toast = getToastManager();
 	let open = $state(false);
 	let debouncedQuery = $state('');
 
@@ -125,6 +127,7 @@
 
 	function created(item: CatalogItem) {
 		creating = false;
+		toast.success(`“${item.name}” added to the price book`);
 		// The new item has to show up the next time somebody searches for it, on this line or any other.
 		void queryClient.invalidateQueries({ queryKey: ['catalog-items'] });
 		value = item.name;

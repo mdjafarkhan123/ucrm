@@ -14,6 +14,7 @@
 		type ClientPropertyInput
 	} from '$lib/clients/api';
 	import { fetchTaxPicker, taxPickerKey } from '$lib/settings/api';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 
 	// Adds, edits, or removes one property. Unlike the blocks in the page body, this dialog owns a record of
 	// its own, so its buttons are the save: it writes straight away and tells the page to refresh. Nothing
@@ -52,6 +53,8 @@
 	}
 
 	// A one-time copy taken when the dialog mounts, so a background refetch cannot overwrite typing.
+	const toast = getToastManager();
+
 	let draft = $state<PropertyDraft>(untrack(() => draftFrom(property)));
 	let saving = $state(false);
 	let deleting = $state(false);
@@ -114,6 +117,7 @@
 			const values = $state.snapshot(draft);
 			if (property) await updateProperty(property.id, values);
 			else await createProperty(clientId, values);
+			toast.success(property ? 'Property saved' : 'Property added');
 			onSaved();
 		} catch (thrown) {
 			error = messageFrom(thrown, 'That property could not be saved.');
@@ -128,6 +132,7 @@
 		error = '';
 		try {
 			await deleteProperty(property.id);
+			toast.success('Property removed');
 			onSaved();
 		} catch (thrown) {
 			error = messageFrom(thrown, 'That property could not be removed.');

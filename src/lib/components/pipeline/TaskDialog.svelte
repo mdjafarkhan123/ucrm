@@ -8,6 +8,7 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		createTask,
 		updateTask,
@@ -67,6 +68,7 @@
 	// typing.
 	let draft = $state<TaskDraft>(untrack(() => draftFrom(task)));
 	let saving = $state(false);
+	const toast = getToastManager();
 	let formError = $state('');
 	let fieldErrors = $state<Record<string, string>>({});
 
@@ -103,6 +105,7 @@
 			const saved = task
 				? await updateTask(task.id, input)
 				: await createTask(opportunityId, input);
+			toast.success(task ? 'Task saved' : 'Task added');
 			onSaved(saved);
 		} catch (thrown) {
 			if (thrown instanceof TaskWriteError) {

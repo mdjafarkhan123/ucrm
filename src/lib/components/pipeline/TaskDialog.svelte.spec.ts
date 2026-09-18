@@ -6,6 +6,13 @@ import { createQueryClient } from '$lib/query-client';
 import TaskDialog from './TaskDialog.svelte';
 import type { Task } from '$lib/pipeline/api';
 
+// The component reports its outcome through the shared toast manager, which the app shell provides; here
+// there is no shell, so a stub stands in and nothing asserts on it.
+vi.mock('$lib/components/ui/ToastManager.svelte', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/components/ui/ToastManager.svelte')>()),
+	getToastManager: () => ({ success: vi.fn(), error: vi.fn() })
+}));
+
 // The create/edit form: one shape for both, sends all four fields together, and shows a limit or
 // assignee refusal as the sentence the server wrote for it rather than a rewritten one — see the Task
 // write contract in `docs/sales-pipeline-behavior-contract.md`.

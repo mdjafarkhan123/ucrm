@@ -10,6 +10,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormNotesCard from '$lib/components/forms/FormNotesCard.svelte';
 	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import AssessmentBlock from '$lib/components/requests/AssessmentBlock.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
 	import { fetchClient, clientDetailKey, type ClientListItem } from '$lib/clients/api';
@@ -56,6 +57,7 @@
 	} = $props();
 
 	const queryClient = useQueryClient();
+	const toast = getToastManager();
 
 	type FormState = {
 		title: string;
@@ -218,6 +220,7 @@
 			}
 
 			if (andAnother) {
+				toast.success(`${request.title} saved`, 'Here is a fresh form.');
 				form = blankForm();
 				selectedClient = null;
 				choosingProperty = false;
@@ -227,6 +230,8 @@
 				lines = [];
 				pricingSaved = false;
 				noteSaved = false;
+			} else {
+				toast.success(`${request.title} saved`);
 			}
 			baseline = snapshot(form);
 			onSaved(request, andAnother);

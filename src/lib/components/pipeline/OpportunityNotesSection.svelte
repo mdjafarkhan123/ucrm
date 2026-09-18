@@ -92,6 +92,7 @@
 			invalidateNotes();
 			newBody = '';
 			composerOpen = false;
+			toast.success('Note added');
 		},
 		onError: (error: Error) => toast.error('Could not add the note', error.message)
 	}));
@@ -117,6 +118,7 @@
 		onSuccess: () => {
 			invalidateNotes();
 			editingId = null;
+			toast.success('Note saved');
 		},
 		onError: (error: Error) => toast.error('Could not save the note', error.message)
 	}));
@@ -140,6 +142,7 @@
 		onSuccess: () => {
 			invalidateNotes();
 			deletingNote = null;
+			toast.success('Note deleted');
 		},
 		onError: (error: Error) => {
 			toast.error('Could not delete the note', error.message);

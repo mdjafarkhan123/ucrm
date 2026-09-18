@@ -5,6 +5,13 @@ import { QueryClientProvider } from '@tanstack/svelte-query';
 import { createQueryClient } from '$lib/query-client';
 import OpportunityNotesSection from './OpportunityNotesSection.svelte';
 
+// The component reports its outcome through the shared toast manager, which the app shell provides; here
+// there is no shell, so a stub stands in and nothing asserts on it.
+vi.mock('$lib/components/ui/ToastManager.svelte', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/components/ui/ToastManager.svelte')>()),
+	getToastManager: () => ({ success: vi.fn(), error: vi.fn() })
+}));
+
 // The Brief's Notes block: immediate-save, both Request and Client targets, gated by pipeline.edit.
 
 function noteFixture(overrides: Record<string, unknown> = {}) {

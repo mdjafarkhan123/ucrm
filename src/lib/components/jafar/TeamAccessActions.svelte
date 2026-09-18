@@ -4,6 +4,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import OwnerReconfirmDialog from '$lib/components/jafar/OwnerReconfirmDialog.svelte';
 
 	type TeamMember = {
@@ -57,9 +58,7 @@
 	};
 
 	function permissionLabel(permissionKey: string) {
-		return permissionKey
-			.replace(/[._]/g, ' ')
-			.replace(/\b\w/g, (letter) => letter.toUpperCase());
+		return permissionKey.replace(/[._]/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 	}
 
 	function formatDateTime(value: string | null) {
@@ -76,6 +75,7 @@
 	// Profile correction (name any role; email non-admin only)
 	// ---------------------------------------------------------------------------
 
+	const toast = getToastManager();
 	let correctionMember = $state<TeamMember | null>(null);
 	let correctionName = $state('');
 	let correctionEmail = $state('');
@@ -98,34 +98,37 @@
 		if (!correctionMutation.isPending) correctionMember = null;
 	}
 
-	const correctionMutation = createMutation<MutationResponse, TeamActionError, ProfileCorrectionInput>(
-		() => ({
-			mutationFn: async (input) => {
-				const response = await fetch(
-					`/api/jafar/organizations/${organizationId}/team/${correctionMember?.user_id}`,
-					{
-						method: 'PATCH',
-						headers: { 'content-type': 'application/json' },
-						body: JSON.stringify(input)
-					}
-				);
-				const result = (await response.json()) as MutationResponse;
-				if (!response.ok) throw new TeamActionError(result);
-				return result;
-			},
-			onMutate: () => {
-				correctionFieldErrors = {};
-			},
-			onError: (error) => {
-				correctionFieldErrors = error.fieldErrors;
-				correctionFeedback = error.message;
-			},
-			onSuccess: () => {
-				correctionMember = null;
-				invalidateOrganization();
-			}
-		})
-	);
+	const correctionMutation = createMutation<
+		MutationResponse,
+		TeamActionError,
+		ProfileCorrectionInput
+	>(() => ({
+		mutationFn: async (input) => {
+			const response = await fetch(
+				`/api/jafar/organizations/${organizationId}/team/${correctionMember?.user_id}`,
+				{
+					method: 'PATCH',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify(input)
+				}
+			);
+			const result = (await response.json()) as MutationResponse;
+			if (!response.ok) throw new TeamActionError(result);
+			return result;
+		},
+		onMutate: () => {
+			correctionFieldErrors = {};
+		},
+		onError: (error) => {
+			correctionFieldErrors = error.fieldErrors;
+			correctionFeedback = error.message;
+		},
+		onSuccess: () => {
+			correctionMember = null;
+			invalidateOrganization();
+			toast.success('Profile correction saved.');
+		}
+	}));
 
 	function submitCorrection(event: SubmitEvent) {
 		event.preventDefault();
@@ -207,6 +210,7 @@
 			recoveryMember = null;
 			pendingRecoveryInput = null;
 			invalidateOrganization();
+			toast.success('Access recovery recorded.');
 		}
 	}));
 
@@ -215,7 +219,8 @@
 		if (!recoveryMember) return;
 		const errors: Record<string, string> = {};
 		if (!recoveryEmail.trim()) errors.new_email = 'Enter the new login email.';
-		if (!recoveryEvidence.trim()) errors.evidence_summary = 'Describe how you verified this person.';
+		if (!recoveryEvidence.trim())
+			errors.evidence_summary = 'Describe how you verified this person.';
 		if (!recoveryReason.trim()) errors.reason = 'Enter a recovery reason.';
 		recoveryFieldErrors = errors;
 		if (Object.keys(errors).length > 0) return;
@@ -274,10 +279,8 @@
 								>Fix profile</Button
 							>
 							{#if isAdministrator(member.role)}
-								<Button
-									variant="secondary"
-									variation="subtle"
-									onclick={() => openRecovery(member)}>Recover access</Button
+								<Button variant="secondary" variation="subtle" onclick={() => openRecovery(member)}
+									>Recover access</Button
 								>
 							{/if}
 						</div>
@@ -303,12 +306,7 @@
 			</p>
 			<Input id="team-correction-name" label="Name" bind:value={correctionName} />
 			{#if !isAdministrator(correctionMember.role)}
-				<Input
-					id="team-correction-email"
-					label="Email"
-					type="email"
-					bind:value={correctionEmail}
-				/>
+				<Input id="team-correction-email" label="Email" type="email" bind:value={correctionEmail} />
 			{:else}
 				<p class="team-access-actions__note">
 					This person is an owner or admin -- their login email can only change through

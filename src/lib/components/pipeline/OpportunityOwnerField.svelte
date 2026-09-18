@@ -52,6 +52,7 @@
 		onSuccess: (_data, ownerUserId) => {
 			invalidatePipeline(queryClient);
 			onAssigned?.(ownerUserId ? (team.find((member) => member.id === ownerUserId) ?? null) : null);
+			toast.success(ownerUserId ? 'Owner changed' : 'Owner cleared');
 		},
 		onError: (error: Error) => toast.error('Could not change the owner', error.message)
 	}));

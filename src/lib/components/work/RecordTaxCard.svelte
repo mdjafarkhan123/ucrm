@@ -8,6 +8,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import type { QuoteTaxSource, QuoteWriteError } from '$lib/quotes/api';
 	import { fetchTaxPicker, taxPickerKey } from '$lib/settings/api';
 	import taxIcon from '@tabler/icons/outline/receipt-tax.svg?raw';
@@ -133,6 +134,7 @@
 	let draftCustomName = $state('');
 	let draftCustomRate = $state('');
 	let draftSaveReusable = $state(false);
+	const toast = getToastManager();
 	let saving = $state(false);
 	let error = $state('');
 	let fieldErrors = $state<Record<string, string>>({});
@@ -169,6 +171,7 @@
 			);
 			open = false;
 			await onSaved(result);
+			toast.success('Tax saved');
 		} catch (cause) {
 			const failure = cause as QuoteWriteError;
 			fieldErrors = failure.fieldErrors ?? {};

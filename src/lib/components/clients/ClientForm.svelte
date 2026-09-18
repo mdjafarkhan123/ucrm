@@ -10,6 +10,7 @@
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import FormNotesCard from '$lib/components/forms/FormNotesCard.svelte';
 	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import ClientTagSelect from './ClientTagSelect.svelte';
 	import CommunicationSettingsDialog from './CommunicationSettingsDialog.svelte';
 	import {
@@ -36,6 +37,7 @@
 	} = $props();
 
 	const queryClient = useQueryClient();
+	const toast = getToastManager();
 
 	const DEFAULT_PREFERENCES: ClientPreferences = {
 		contact_policy: 'allow',
@@ -255,7 +257,12 @@
 				return;
 			}
 
-			if (andAnother) form = blankForm();
+			if (andAnother) {
+				toast.success(`${client.display_name} saved`, 'Here is a fresh form.');
+				form = blankForm();
+			} else {
+				toast.success(`${client.display_name} saved`);
+			}
 			baseline = snapshot(form);
 			onSaved(client, andAnother);
 		} catch (error) {

@@ -5,6 +5,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import OpportunityOwnerField from './OpportunityOwnerField.svelte';
 	import { followUp, formatMoney, type BoardFormatting } from '$lib/pipeline/money';
 	import {
@@ -51,6 +52,7 @@
 	// first rather than staging two drafts nobody asked to compare.
 	let editingField = $state<'value' | 'expectedClose' | 'nextFollowUp' | null>(null);
 	let valueDraft = $state('');
+	const toast = getToastManager();
 	let valueError = $state('');
 	let expectedCloseError = $state('');
 	let nextFollowUpError = $state('');
@@ -61,6 +63,7 @@
 			invalidatePipeline(queryClient);
 			onUpdate({ estimated_value: result.estimated_value });
 			editingField = null;
+			toast.success('Value saved');
 		},
 		// Kept inline rather than a toast — the checklist calls for the field to show its own failure so
 		// the value being retried stays visible next to the message that explains it.
@@ -75,6 +78,7 @@
 			invalidatePipeline(queryClient);
 			onUpdate({ expected_close_on: result.expected_close_on });
 			editingField = null;
+			toast.success('Expected close saved');
 		},
 		onError: (error: Error) => {
 			expectedCloseError = error.message;
@@ -87,6 +91,7 @@
 			invalidatePipeline(queryClient);
 			onUpdate({ next_follow_up_on: result.next_follow_up_on });
 			editingField = null;
+			toast.success('Follow-up date saved');
 		},
 		onError: (error: Error) => {
 			nextFollowUpError = error.message;

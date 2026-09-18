@@ -4,6 +4,13 @@ import { render } from 'vitest-browser-svelte';
 import MarkOpportunityLostDialog from './MarkOpportunityLostDialog.svelte';
 import type { OutcomeCommandResult } from '$lib/pipeline/api';
 
+// The component reports its outcome through the shared toast manager, which the app shell provides; here
+// there is no shell, so a stub stands in and nothing asserts on it.
+vi.mock('$lib/components/ui/ToastManager.svelte', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/components/ui/ToastManager.svelte')>()),
+	getToastManager: () => ({ success: vi.fn(), error: vi.fn() })
+}));
+
 // The card's Mark as lost action: reason and note are both optional except "Other", which requires a
 // note before the database is even asked — see 4B's packet and the RPC's own mirrored check.
 

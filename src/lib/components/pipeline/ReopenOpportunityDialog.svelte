@@ -2,6 +2,7 @@
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		reopenOpportunity,
 		OutcomeWriteError,
@@ -24,6 +25,7 @@
 
 	let explanation = $state('');
 	let saving = $state(false);
+	const toast = getToastManager();
 	let formError = $state('');
 	let fieldErrors = $state<Record<string, string>>({});
 	// Minted once per open, not per submit -- a retried submit after a dropped response carries the same
@@ -40,6 +42,7 @@
 				idempotencyKey,
 				reopenExplanation: explanation.trim()
 			});
+			toast.success('Opportunity reopened');
 			onSaved(result);
 		} catch (thrown) {
 			if (thrown instanceof OutcomeWriteError) {

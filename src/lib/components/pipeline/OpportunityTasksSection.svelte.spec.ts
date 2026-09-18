@@ -6,6 +6,13 @@ import { createQueryClient } from '$lib/query-client';
 import OpportunityTasksSection from './OpportunityTasksSection.svelte';
 import type { BoardFormatting } from '$lib/pipeline/money';
 
+// The component reports its outcome through the shared toast manager, which the app shell provides; here
+// there is no shell, so a stub stands in and nothing asserts on it.
+vi.mock('$lib/components/ui/ToastManager.svelte', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/components/ui/ToastManager.svelte')>()),
+	getToastManager: () => ({ success: vi.fn(), error: vi.fn() })
+}));
+
 // The Brief's Tasks block: the open list in card-priority order, a struck-through completed section, and
 // the complete/reopen checkbox — see `docs/sales-pipeline-behavior-contract.md`.
 

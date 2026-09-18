@@ -4,6 +4,13 @@ import { render } from 'vitest-browser-svelte';
 import ReopenOpportunityDialog from './ReopenOpportunityDialog.svelte';
 import type { OutcomeCommandResult } from '$lib/pipeline/api';
 
+// The component reports its outcome through the shared toast manager, which the app shell provides; here
+// there is no shell, so a stub stands in and nothing asserts on it.
+vi.mock('$lib/components/ui/ToastManager.svelte', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/components/ui/ToastManager.svelte')>()),
+	getToastManager: () => ({ success: vi.fn(), error: vi.fn() })
+}));
+
 // Reopen's only UI entry point (4C): a required short explanation, disabled Reopen until one is typed,
 // and the dialog stays actionable on failure the same way MarkOpportunityLostDialog's does.
 

@@ -24,6 +24,7 @@
 	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
 	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
 	import ClientCommunicationHistory from '$lib/components/communications/ClientCommunicationHistory.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		clientCommunicationHistoryKey,
 		fetchClientCommunicationHistory,
@@ -57,13 +58,11 @@
 	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
 	import targetIcon from '@tabler/icons/outline/target-arrow.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
-	import checkIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 
 	const queryClient = useQueryClient();
+	const toast = getToastManager();
 	const clientId = $derived(page.params.id ?? '');
-	// A save on the create or edit form lands here, so the confirmation travels in the URL.
-	const justSaved = $derived(page.url.searchParams.get('saved') !== null);
 	const currentUserId = $derived(page.data.user?.id as string | undefined);
 
 	const clientQuery = createQuery(() => ({
@@ -149,8 +148,6 @@
 	let pendingFileCount = $state(0);
 	let saving = $state(false);
 	let saveError = $state('');
-	// Set by a save made on this page, so the same confirmation strip serves both routes into it.
-	let justSavedHere = $state(false);
 
 	function discardDraft() {
 		identityDraft = null;
@@ -159,7 +156,6 @@
 		notePending = [];
 		attachmentsCard?.discardChanges();
 		saveError = '';
-		justSavedHere = false;
 	}
 
 	// A different client in the same page component starts with a clean sheet. The client id is the only
@@ -312,11 +308,14 @@
 			// Files last, and their failures are reported rather than thrown: everything above is already
 			// saved, so a stuck upload must not read as the whole save failing.
 			const failedFiles = (await attachmentsCard?.saveAll(clientId)) ?? 0;
-			if (failedFiles > 0)
+			if (failedFiles > 0) {
 				saveError =
 					failedFiles === 1
 						? 'Everything else was saved, but one file did not upload. Try it again below.'
 						: `Everything else was saved, but ${failedFiles} files did not upload. Try them again below.`;
+			} else {
+				toast.success('Client saved');
+			}
 
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: clientDetailKey(clientId) }),
@@ -325,7 +324,6 @@
 				queryClient.invalidateQueries({ queryKey: activityKey('client', clientId) }),
 				queryClient.invalidateQueries({ queryKey: notesKey('client', clientId) })
 			]);
-			justSavedHere = true;
 		} catch (error) {
 			saveError =
 				error instanceof ClientWriteError || error instanceof Error
@@ -420,12 +418,6 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <PageContainer variant="fill">
-	{#if (justSaved || justSavedHere) && client && !isEditing}
-		<p class="client-detail__saved" role="status">
-			<span aria-hidden="true">{@html checkIcon}</span>{client.display_name} was saved.
-		</p>
-	{/if}
-
 	{#if clientQuery.isPending}
 		<LoadingSkeleton variant="card" label="Loading client" />
 	{:else if (clientQuery.error as ClientReadError | null)?.status === 403}
@@ -622,24 +614,6 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
-	.client-detail__saved {
-		display: flex;
-		align-items: center;
-		gap: var(--space-small);
-		margin-bottom: var(--space-base);
-		padding: var(--space-slim) var(--space-base);
-		border-radius: var(--radius-base);
-		color: var(--color-success--onSurface);
-		background: var(--color-success--surface);
-		font-size: var(--typography--fontSize-small);
-
-		:global(svg) {
-			display: block;
-			width: 18px;
-			height: 18px;
-		}
-	}
-
 	// The grid, the main card, and the rail all live in RecordDetailLayout now. What is left here is only
 	// what this page's own content needs.
 	.client-detail {

@@ -23,6 +23,7 @@
 	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
 	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
 	import ActivityFeed from '$lib/components/collaboration/ActivityFeed.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		completeAssessment,
 		fetchRequest,
@@ -56,6 +57,7 @@
 	import { AUTOMATION_JOURNEY_READY } from '$lib/automation/journey';
 
 	const queryClient = useQueryClient();
+	const toast = getToastManager();
 	const requestId = $derived(page.params.id ?? '');
 	const currentUserId = $derived(page.data.user?.id as string | undefined);
 
@@ -169,11 +171,14 @@
 			// Files last, and their failures are reported rather than thrown: everything above is already
 			// saved, so a stuck upload must not read as the whole save failing.
 			const failedFiles = (await attachmentsCard?.saveAll(requestId)) ?? 0;
-			if (failedFiles > 0)
+			if (failedFiles > 0) {
 				saveError =
 					failedFiles === 1
 						? 'Everything else was saved, but one file did not upload. Try it again below.'
 						: `Everything else was saved, but ${failedFiles} files did not upload. Try them again below.`;
+			} else {
+				toast.success('Request saved');
+			}
 
 			await refresh();
 		} catch (error) {
@@ -203,13 +208,14 @@
 	let assessmentSaving = $state(false);
 	let assessmentError = $state('');
 
-	async function runAssessmentWrite(work: () => Promise<unknown>) {
+	async function runAssessmentWrite(work: () => Promise<unknown>, successMessage: string) {
 		if (assessmentSaving) return;
 		assessmentSaving = true;
 		assessmentError = '';
 		try {
 			await work();
 			await refresh();
+			toast.success(successMessage);
 		} catch (error) {
 			assessmentError =
 				error instanceof Error ? error.message : 'The visit could not be saved. Try again.';
@@ -224,29 +230,26 @@
 	// exists — so success is a plain confirmation on the request itself, not a redirect.
 
 	let convertSaving = $state(false);
-	let convertError = $state('');
-	let convertedNotice = $state('');
 
 	async function convertToQuote() {
 		if (!saved || convertSaving) return;
 		if (saved.stored_status === 'converted' || saved.stored_status === 'archived') return;
 		convertSaving = true;
-		convertError = '';
 		try {
 			const pricing = queryClient.getQueryData<{ revision: number; lines: unknown[] }>(
 				requestPricingKey(requestId)
 			);
 			const hash = `rev-${pricing?.revision ?? 0}:lines-${pricing?.lines.length ?? 0}`;
 			const result = await convertRequestToQuote(requestId, crypto.randomUUID(), hash);
-			convertedNotice = `Converted to Quote #${result.quote_number}.`;
+			toast.success(`Converted to Quote #${result.quote_number}`);
 			await refresh();
 		} catch (caught) {
 			const writeError = caught as QuoteWriteError;
 			if (writeError.reason === 'already_converted') {
-				convertedNotice = 'This request has already become a quote.';
+				toast.info('This request has already become a quote.');
 				await refresh();
 			} else {
-				convertError = writeError.message || 'This request could not become a quote.';
+				toast.error(writeError.message || 'This request could not become a quote.');
 			}
 		} finally {
 			convertSaving = false;
@@ -312,7 +315,11 @@
 			return {
 				label: 'Complete assessment',
 				loading: assessmentSaving,
-				onclick: () => void runAssessmentWrite(() => completeAssessment(requestId, true))
+				onclick: () =>
+					void runAssessmentWrite(
+						() => completeAssessment(requestId, true),
+						'Assessment marked complete'
+					)
 			};
 		return {
 			label: 'Convert to quote',
@@ -421,13 +428,6 @@
 					{/snippet}
 				</WorkRecordHeader>
 
-				{#if convertedNotice}
-					<p class="request-detail__convert-notice" role="status">{convertedNotice}</p>
-				{/if}
-				{#if convertError}
-					<p class="request-detail__convert-error" role="alert">{convertError}</p>
-				{/if}
-
 				<SectionBlock
 					title="Service overview"
 					icon={clipboardIcon}
@@ -473,10 +473,13 @@
 					saving={assessmentSaving}
 					error={assessmentError}
 					onSave={(draft: AssessmentDraft) =>
-						runAssessmentWrite(() => saveAssessment(requestId, draft))}
-					onRemove={() => runAssessmentWrite(() => removeAssessment(requestId))}
+						runAssessmentWrite(() => saveAssessment(requestId, draft), 'Visit saved')}
+					onRemove={() => runAssessmentWrite(() => removeAssessment(requestId), 'Visit removed')}
 					onComplete={(complete: boolean) =>
-						runAssessmentWrite(() => completeAssessment(requestId, complete))}
+						runAssessmentWrite(
+							() => completeAssessment(requestId, complete),
+							complete ? 'Assessment marked complete' : 'Assessment marked incomplete'
+						)}
 				/>
 
 				<RequestPricingBlock {requestId} />
@@ -527,22 +530,6 @@
 			margin: 0;
 			color: var(--color-text);
 			white-space: pre-wrap;
-		}
-		&__convert-notice,
-		&__convert-error {
-			margin: 0;
-			padding: var(--space-small) var(--space-base);
-			border-radius: var(--radius-base);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-		}
-		&__convert-notice {
-			color: var(--color-success--onSurface);
-			background: var(--color-success--surface);
-		}
-		&__convert-error {
-			color: var(--color-critical--onSurface);
-			background: var(--color-critical--surface);
 		}
 	}
 </style>

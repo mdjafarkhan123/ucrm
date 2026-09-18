@@ -6,6 +6,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import MoneyInput from '$lib/components/forms/MoneyInput.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import type { QuoteDiscountType, QuoteWriteError } from '$lib/quotes/api';
 	import discountIcon from '@tabler/icons/outline/discount.svg?raw';
 
@@ -66,6 +67,7 @@
 		return '';
 	});
 
+	const toast = getToastManager();
 	let open = $state(false);
 	let draftName = $state('');
 	let draftType = $state<QuoteDiscountType>('percentage');
@@ -106,6 +108,7 @@
 			);
 			open = false;
 			await onSaved(result);
+			toast.success(payload.type === null ? 'Discount removed' : 'Discount saved');
 		} catch (cause) {
 			const failure = cause as QuoteWriteError;
 			fieldErrors = failure.fieldErrors ?? {};

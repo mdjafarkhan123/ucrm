@@ -82,7 +82,10 @@
 	const completionMutation = createMutation(() => ({
 		mutationFn: (input: { task: Task; completed: boolean }) =>
 			setTaskCompletion(input.task.id, input.completed),
-		onSuccess: () => invalidatePipeline(queryClient),
+		onSuccess: (_result, input) => {
+			invalidatePipeline(queryClient);
+			toast.success(input.completed ? 'Task completed' : 'Task reopened');
+		},
 		onError: (error: Error) => toast.error('Could not update the task', error.message)
 	}));
 
@@ -91,6 +94,7 @@
 		onSuccess: () => {
 			invalidatePipeline(queryClient);
 			deletingTask = null;
+			toast.success('Task deleted');
 		},
 		onError: (error: Error) => {
 			toast.error('Could not delete the task', error.message);

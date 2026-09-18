@@ -3,6 +3,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		markOpportunityLost,
 		OutcomeWriteError,
@@ -34,6 +35,7 @@
 	let reason = $state('');
 	let note = $state('');
 	let saving = $state(false);
+	const toast = getToastManager();
 	let formError = $state('');
 	let fieldErrors = $state<Record<string, string>>({});
 	// Minted once per open, not per submit — a retried submit after a dropped response carries the same
@@ -53,6 +55,7 @@
 				reason: (reason || null) as LostReason | null,
 				note: note.trim() || null
 			});
+			toast.success('Marked as lost');
 			onSaved(result);
 		} catch (thrown) {
 			if (thrown instanceof OutcomeWriteError) {

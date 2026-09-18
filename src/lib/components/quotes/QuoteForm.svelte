@@ -13,6 +13,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import FormNotesCard from '$lib/components/forms/FormNotesCard.svelte';
 	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
 	import { fetchClient, clientDetailKey, type ClientListItem } from '$lib/clients/api';
@@ -88,6 +89,7 @@
 	let lines = $state<RequestPricingLineInput[]>([]);
 	let subtotalMinor = $state(0);
 	let fieldErrors = $state<Record<string, string>>({});
+	const toast = getToastManager();
 	let formError = $state('');
 	let saving = $state(false);
 	let layout = $state<RecordFormLayout>();
@@ -279,6 +281,7 @@
 			}
 
 			baseline = snapshot(form);
+			toast.success(`Quote #${savedQuote.number} created`);
 			onSaved({ id: savedQuote.id, number: savedQuote.number });
 		} catch (caught) {
 			const writeError = caught as QuoteWriteError;

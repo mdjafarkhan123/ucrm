@@ -6,6 +6,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import MoneyInput from '$lib/components/forms/MoneyInput.svelte';
 	import {
 		saveQuoteDeposit,
@@ -120,6 +121,7 @@
 	let depositOnlyPercent = $state('');
 	let scheduleRows = $state<DraftRow[]>([]);
 	let configSaving = $state(false);
+	const toast = getToastManager();
 	let configError = $state('');
 
 	function toDraftRow(item: { description: string; value_type: string; value: number }): DraftRow {
@@ -208,6 +210,7 @@
 			);
 			configOpen = false;
 			await onSaved();
+			toast.success(depositTypeToSave === null ? 'Deposit removed' : 'Deposit saved');
 		} catch (cause) {
 			const failure = cause as QuoteWriteError;
 			configError =
@@ -309,6 +312,7 @@
 			});
 			recordOpen = false;
 			await onSaved();
+			toast.success('Deposit recorded');
 		} catch (cause) {
 			const failure = cause as QuoteWriteError;
 			recordError = failure.fieldErrors?.form ?? failure.message;
@@ -346,6 +350,7 @@
 			});
 			reverseOpen = false;
 			await onSaved();
+			toast.success('Deposit reversed');
 		} catch (cause) {
 			const failure = cause as QuoteWriteError;
 			reverseError = failure.fieldErrors?.form ?? failure.message;

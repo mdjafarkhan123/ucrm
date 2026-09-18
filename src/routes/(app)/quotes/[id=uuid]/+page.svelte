@@ -889,6 +889,7 @@
 					failedFiles === 1
 						? 'Everything else was saved, but one file did not upload. Try it again below.'
 						: `Everything else was saved, but ${failedFiles} files did not upload. Try them again below.`;
+			else toast.success('Quote saved');
 
 			if (failedFiles === 0 && hadFileChanges) {
 				const filesAfter = await fetchAttachments('quote', quoteId);

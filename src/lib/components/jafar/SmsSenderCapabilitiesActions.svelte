@@ -8,6 +8,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 
 	type LifecycleState = 'pending_setup' | 'ready' | 'restricted' | 'suspended' | 'released';
 	type Sender = {
@@ -98,6 +99,7 @@
 	let capableVoice = $state(false);
 	let registrationId = $state('');
 	let fieldErrors = $state<Record<string, string>>({});
+	const toast = getToastManager();
 	let feedbackError = $state('');
 
 	function startEditing(sender: Sender) {
@@ -141,6 +143,7 @@
 		onSuccess: async () => {
 			editingId = null;
 			await queryClient.invalidateQueries({ queryKey: sendersKey });
+			toast.success('Sender capabilities saved.');
 		}
 	}));
 

@@ -9,6 +9,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 
 	type RegistrationStatus = 'waiting_for_info' | 'under_review' | 'action_needed' | 'approved';
 	type ReadinessState =
@@ -95,6 +96,7 @@
 	let startCountry = $state('');
 	let startSenderType = $state('long_code');
 	let startUseCase = $state('');
+	const toast = getToastManager();
 	let startFieldErrors = $state<Record<string, string>>({});
 
 	function openStart() {
@@ -130,6 +132,7 @@
 		onSuccess: async () => {
 			startOpen = false;
 			await queryClient.invalidateQueries({ queryKey: listKey });
+			toast.success('Registration started.');
 		}
 	}));
 
@@ -170,10 +173,12 @@
 				throw new Error(result.error ?? 'The readiness check could not be recorded.');
 			return result;
 		},
+		onError: (error) => toast.error(error.message),
 		onSuccess: async () => {
 			checkOpen = null;
 			checkDetail = '';
 			await queryClient.invalidateQueries({ queryKey: listKey });
+			toast.success('Readiness check recorded.');
 		}
 	}));
 
@@ -212,6 +217,7 @@
 		onSuccess: async () => {
 			outcomeOpen = null;
 			await queryClient.invalidateQueries({ queryKey: listKey });
+			toast.success('Registration outcome recorded.');
 		}
 	}));
 
