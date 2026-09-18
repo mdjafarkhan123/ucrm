@@ -15,14 +15,17 @@
 		estimateSmsReply,
 		sendConversationReply,
 		sendConversationReplySms,
+		sendWebsiteChatStaffMessage,
 		type OutboundAttachmentPayload,
 		type PendingOutboundSend,
 		type SmsReplyEstimate
 	} from '$lib/communications/inbox';
 
-	// One reply composer per open conversation -- the parent remounts this with {#key `${group.key}:
-	// ${activeChannel}`} whenever the conversation OR its channel changes, so subject/body/estimate reset
-	// for free instead of needing an effect.
+	// One reply composer for every channel -- email, SMS, and website chat share the same collapsed pill,
+	// expand/minimize header, and footer toolbar. Only the fields a channel actually needs (subject,
+	// attachments, the SMS cost estimate) render inside it. The parent remounts this with
+	// {#key `${group.key}:${activeChannel}`} whenever the conversation OR its channel changes, so every
+	// field resets for free instead of needing an effect.
 	//
 	// `onPendingChange` hands the in-flight send up to the timeline, which draws it as a bubble the moment
 	// Send is pressed. The composer still owns the attempt (the payload, the retry, the idempotency key);
@@ -30,17 +33,19 @@
 	let {
 		clientId,
 		channel,
-		defaultSubject,
-		recipientLabel,
+		sessionId = null,
+		defaultSubject = '',
+		recipientLabel = '',
 		channels,
 		onChannelChange,
 		expanded = $bindable(false),
 		onPendingChange
 	}: {
-		clientId: string;
-		channel: 'email' | 'sms';
-		defaultSubject: string;
-		recipientLabel: string;
+		clientId: string | null;
+		channel: 'email' | 'sms' | 'website_chat';
+		sessionId?: string | null;
+		defaultSubject?: string;
+		recipientLabel?: string;
 		channels: Array<'email' | 'sms' | 'website_chat'>;
 		onChannelChange: (channel: 'email' | 'sms' | 'website_chat') => void;
 		expanded?: boolean;
@@ -50,8 +55,8 @@
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 
-	// Seeding once is the point: {#key clientId} remounts this component when the conversation changes,
-	// so the initial value is always the right one.
+	// Seeding once is the point: {#key `${group.key}:${activeChannel}`} remounts this component when the
+	// conversation or channel changes, so the initial value is always the right one.
 	// svelte-ignore state_referenced_locally
 	let subject = $state(defaultSubject);
 	let body = $state('');
@@ -86,7 +91,7 @@
 		estimating = Boolean(text);
 		const handle = setTimeout(async () => {
 			try {
-				const result = await estimateSmsReply(clientId, text);
+				const result = await estimateSmsReply(clientId as string, text);
 				if (token !== estimateToken) return;
 				mmsEligible = result.mms_eligible;
 				estimate = text ? result : null;
@@ -106,10 +111,22 @@
 		});
 	}
 
-	// No ref into the wrapped Textarea's own element, so this appends rather than inserting at a caret
-	// position -- the text stays editable either way, which is the contract's actual requirement.
+	// Chat has a real element ref and inserts at the caret, restoring focus there. Email/SMS appends --
+	// the text stays editable either way, which is the contract's actual requirement.
 	function insertSnippet(text: string) {
-		body = body.trim().length > 0 ? `${body}\n${text}` : text;
+		if (channel !== 'website_chat' || !bodyEl) {
+			body = body.trim().length > 0 ? `${body}\n${text}` : text;
+			return;
+		}
+		const el = bodyEl;
+		const start = el.selectionStart ?? body.length;
+		const end = el.selectionEnd ?? body.length;
+		body = body.slice(0, start) + text + body.slice(end);
+		const caret = start + text.length;
+		requestAnimationFrame(() => {
+			el.focus();
+			el.setSelectionRange(caret, caret);
+		});
 	}
 
 	// A template seeds the whole draft, so it replaces subject and body rather than appending. If the user
@@ -135,7 +152,8 @@
 	}
 
 	// One attempt = one payload + one idempotency key, held so Retry replays exactly the same send rather
-	// than minting a second one the endpoint would treat as a new message.
+	// than minting a second one the endpoint would treat as a new message. Chat attempts only ever use
+	// `body`; `subject` and `attachments` stay empty for that channel.
 	type Attempt = {
 		id: string;
 		subject: string;
@@ -151,7 +169,7 @@
 		onPendingChange?.({
 			id: attempt.id,
 			channel,
-			subject: channel === 'sms' ? null : attempt.subject,
+			subject: channel === 'email' ? attempt.subject : null,
 			body: attempt.body,
 			created_at: new Date().toISOString(),
 			state,
@@ -166,21 +184,34 @@
 		sending = true;
 		publish('sending', attempt);
 		try {
-			const result =
-				channel === 'sms'
-					? await sendConversationReplySms(clientId, attempt.body, attempt.attachments, attempt.id)
-					: await sendConversationReply(
-							clientId,
-							attempt.subject,
-							attempt.body,
-							attempt.attachments,
-							attempt.id
-						);
-			// The mark flips here, on acceptance, rather than after the re-read below. The server has taken
-			// the message and told us what it did with it, which is the fact the user is waiting on -- making
-			// them watch a full inbox re-read first added seconds of "Sending…" to a message already sent.
-			publish('sent', attempt, { status: result.intent.status });
-			toast.success(channel === 'sms' ? 'Text sent' : 'Email sent');
+			if (channel === 'website_chat') {
+				await sendWebsiteChatStaffMessage(sessionId as string, attempt.body, attempt.id);
+				// The mark clears here, on acceptance, rather than after the re-read below -- the server has the
+				// message, which is the fact the user is waiting on. Chat has no delivery status of its own, so an
+				// accepted message simply reads as an ordinary sent bubble from this point.
+				publish('sent', attempt);
+			} else {
+				const result =
+					channel === 'sms'
+						? await sendConversationReplySms(
+								clientId as string,
+								attempt.body,
+								attempt.attachments,
+								attempt.id
+							)
+						: await sendConversationReply(
+								clientId as string,
+								attempt.subject,
+								attempt.body,
+								attempt.attachments,
+								attempt.id
+							);
+				// The mark flips here, on acceptance, rather than after the re-read below. The server has taken
+				// the message and told us what it did with it, which is the fact the user is waiting on -- making
+				// them watch a full inbox re-read first added seconds of "Sending…" to a message already sent.
+				publish('sent', attempt, { status: result.intent.status });
+				toast.success(channel === 'sms' ? 'Text sent' : 'Email sent');
+			}
 
 			// The re-read still has to happen, but it now runs behind an already-confirmed bubble. Awaiting it
 			// before dropping the bubble is what keeps the swap seamless: the real row is in the cache before
@@ -191,33 +222,49 @@
 			// a stale page until something else happened to invalidate it.
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] }),
-				queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(clientId) })
+				clientId
+					? queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(clientId) })
+					: Promise.resolve()
 			]);
 			onPendingChange?.(null);
 		} catch (error) {
-			const withFields = error as Error & { fieldErrors?: Record<string, string> };
-			const rejectedFields = withFields.fieldErrors ?? {};
-			// A validation rejection cannot succeed on replay, so there is nothing to retry: the draft goes
-			// back into the composer where it can actually be corrected. Everything else -- offline, a
-			// dropped connection, a server fault -- stays on the bubble as a retryable failure.
-			if (Object.keys(rejectedFields).length > 0) {
-				subject = attempt.subject;
-				body = attempt.body;
-				fieldErrors = rejectedFields;
-				formError = withFields.message;
-				attachmentsField?.reset();
-				onPendingChange?.(null);
+			if (channel === 'website_chat') {
+				publish('failed', attempt, { error: (error as Error).message });
 			} else {
-				publish('failed', attempt, { error: withFields.message });
+				const withFields = error as Error & { fieldErrors?: Record<string, string> };
+				const rejectedFields = withFields.fieldErrors ?? {};
+				// A validation rejection cannot succeed on replay, so there is nothing to retry: the draft goes
+				// back into the composer where it can actually be corrected. Everything else -- offline, a
+				// dropped connection, a server fault -- stays on the bubble as a retryable failure.
+				if (Object.keys(rejectedFields).length > 0) {
+					subject = attempt.subject;
+					body = attempt.body;
+					fieldErrors = rejectedFields;
+					formError = withFields.message;
+					attachmentsField?.reset();
+					onPendingChange?.(null);
+				} else {
+					publish('failed', attempt, { error: withFields.message });
+				}
 			}
 		} finally {
 			sending = false;
 		}
 	}
 
-	function send(event: SubmitEvent) {
-		event.preventDefault();
+	function submit(event?: SubmitEvent) {
+		event?.preventDefault();
 		if (sending || uploading) return;
+
+		if (channel === 'website_chat') {
+			const text = body.trim();
+			if (!text) return;
+			body = '';
+			bodyEl?.focus();
+			void deliver({ id: crypto.randomUUID(), subject: '', body: text, attachments: [] });
+			return;
+		}
+
 		const nextErrors: Record<string, string> = {};
 		if (channel === 'email' && !subject.trim()) nextErrors.subject = 'Enter a subject.';
 		if (!body.trim()) nextErrors.body = 'Enter a message.';
@@ -237,6 +284,15 @@
 		estimate = null;
 		attachmentsField?.reset();
 		void deliver(attempt);
+	}
+
+	// Chat sends on Enter (Shift+Enter for a newline), matching the visitor's own widget. Email/SMS require
+	// the Send button -- Enter stays a newline there.
+	function handleKeydown(event: KeyboardEvent) {
+		if (channel !== 'website_chat') return;
+		if (event.key !== 'Enter' || event.shiftKey) return;
+		event.preventDefault();
+		submit();
 	}
 
 	function collapse() {
@@ -271,9 +327,8 @@
 			</button>
 		</div>
 	{:else}
-		<form id="conversation-composer-expanded" class="conversation-composer__form" onsubmit={send}>
+		<form id="conversation-composer-expanded" class="conversation-composer__form" onsubmit={submit}>
 			<header class="conversation-composer__header">
-				<ComposerChannelMenu {channel} {channels} onSelect={onChannelChange} />
 				<button
 					type="button"
 					class="conversation-composer__collapse"
@@ -284,22 +339,24 @@
 					{@html minusIcon}
 				</button>
 			</header>
-			<dl class="conversation-composer__meta">
-				<div>
-					<dt>From</dt>
-					<dd>
-						{#if channel === 'sms'}
-							{estimate?.ready ? estimate.sender_phone : 'Organization default SMS number'}
-						{:else}
-							Your eligible email identity
-						{/if}
-					</dd>
-				</div>
-				<div>
-					<dt>To</dt>
-					<dd>{recipientLabel}</dd>
-				</div>
-			</dl>
+			{#if channel !== 'website_chat'}
+				<dl class="conversation-composer__meta">
+					<div>
+						<dt>From</dt>
+						<dd>
+							{#if channel === 'sms'}
+								{estimate?.ready ? estimate.sender_phone : 'Organization default SMS number'}
+							{:else}
+								Your eligible email identity
+							{/if}
+						</dd>
+					</div>
+					<div>
+						<dt>To</dt>
+						<dd>{recipientLabel}</dd>
+					</div>
+				</dl>
+			{/if}
 			{#if channel === 'email'}
 				<div
 					class="conversation-composer__subject"
@@ -327,11 +384,12 @@
 					bind:this={bodyEl}
 					id="conversation-composer-body"
 					bind:value={body}
-					placeholder="Type a message"
-					maxlength={channel === 'sms' ? 1600 : 20_000}
-					rows={5}
+					placeholder={channel === 'website_chat' ? 'Write a reply…' : 'Type a message'}
+					maxlength={channel === 'sms' ? 1600 : channel === 'website_chat' ? 5000 : 20_000}
+					rows={channel === 'website_chat' ? 3 : 5}
 					aria-required="true"
-					aria-invalid={Boolean(fieldErrors.body)}></textarea>
+					aria-invalid={Boolean(fieldErrors.body)}
+					onkeydown={handleKeydown}></textarea>
 			</div>
 			{#if fieldErrors.body}<p class="conversation-composer__field-error" role="alert">
 					{fieldErrors.body}
@@ -360,6 +418,7 @@
 			{#if formError}<p class="conversation-composer__error" role="alert">{formError}</p>{/if}
 			<footer class="conversation-composer__footer">
 				<div class="conversation-composer__tools">
+					<ComposerChannelMenu {channel} {channels} onSelect={onChannelChange} />
 					{#if channel === 'email'}
 						<EmailTemplatePickerButton disabled={sending} onApply={requestTemplate} />
 					{/if}
@@ -370,7 +429,7 @@
 							disabled={sending}
 							onUploadingChange={(value) => (uploading = value)}
 						/>
-					{:else}
+					{:else if channel === 'sms'}
 						<ConversationAttachments
 							bind:this={attachmentsField}
 							variant="sms"
@@ -481,9 +540,8 @@
 	.conversation-composer__header {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-small);
-		padding: var(--space-small);
+		justify-content: flex-end;
+		padding: var(--space-smaller) var(--space-small);
 		border-bottom: var(--border-base) solid var(--color-border);
 		background: var(--color-surface--background--subtle);
 	}

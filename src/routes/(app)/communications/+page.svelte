@@ -18,7 +18,6 @@
 	import ForwardEmailDialog from '$lib/components/communications/ForwardEmailDialog.svelte';
 	import ConversationAssignField from '$lib/components/communications/ConversationAssignField.svelte';
 	import ConversationComposer from '$lib/components/communications/ConversationComposer.svelte';
-	import WebsiteChatComposer from '$lib/components/communications/WebsiteChatComposer.svelte';
 	import ChooseClientDialog from '$lib/components/communications/ChooseClientDialog.svelte';
 	import ManualEmailDialog from '$lib/components/clients/ManualEmailDialog.svelte';
 	import {
@@ -1148,9 +1147,10 @@
 									{#if group.chatSession.closed_at}
 										<p class="communications__chat-ended">{endedStateLabel(group.chatSession)}</p>
 									{:else}
-										<WebsiteChatComposer
+										<ConversationComposer
 											sessionId={group.chatSession.id}
 											clientId={group.clientId}
+											channel="website_chat"
 											channels={composerChannels}
 											onChannelChange={(channel) => (activeChannel = channel)}
 											bind:expanded={composerExpanded}

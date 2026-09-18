@@ -9,9 +9,9 @@
 	} from '$lib/communications/snippets';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 
-	// The composer's snippet trigger: shared by ConversationComposer and WebsiteChatComposer so both reply
-	// paths insert reusable text the same way. Snippets stay editable after insert (contract requirement) --
-	// this only ever appends to the caller's draft, never owns it.
+	// The composer's snippet trigger, shared by every channel ConversationComposer renders so reusable text
+	// inserts the same way everywhere. Snippets stay editable after insert (contract requirement) -- this
+	// only ever appends to the caller's draft, never owns it.
 	let { disabled = false, onInsert }: { disabled?: boolean; onInsert: (body: string) => void } =
 		$props();
 
