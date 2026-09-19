@@ -5,13 +5,12 @@ the easiest possible setup. Contract approved 2026-09-18.
 
 ## Status
 
-Part 6 (pay-by-app methods) — Done and committed `eb98c42` 2026-09-19.
+Part 7 (Jafar Stripe slice) — Done and committed `4081c09` 2026-09-19.
 
 ## Exact next action
 
-Start Part 7 (Jafar Stripe slice) — needs Parts 2-5, which are done. Read
-`Memory/campaigns/jafar-panel/NOW.md` first since Part 7 extends jafar-panel Part 10's Stripe
-readiness/health/history/recovery work there.
+Start Part 8 (end-to-end proof) — needs all prior parts, which are done. Full test-mode journey plus guide
+screenshots; gate is the performance-review verification branch and Jafar sign-off.
 
 ## Pointers
 

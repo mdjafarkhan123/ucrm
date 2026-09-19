@@ -64,7 +64,13 @@ Product truth: docs/online-payments-behavior-contract.md (approved 2026-09-18, i
    (`JobWorkReportCard.svelte` etc.), not re-verified here. Test quote #39 ("Pay-by-app verification",
    Greenfield Property Group) was left in Raad LTD from this verification — harmless test clutter, matching
    what's already in that sandbox. Gate met: browser-verified. Committed `eb98c42`.
-7. **Jafar Stripe slice** — needs 2–5. Jafar-panel Part 10 Stripe readiness/health/history/recovery.
-   Gate: browser-verified; update jafar-panel Memory.
+7. **Jafar Stripe slice** — needs 2–5. Done 2026-09-19, committed `4081c09`. A read-only "Stripe connection
+   health" card in the organization Communications tab (account identity, live/test mode, last-checked time,
+   sanitized health badge, manual "Recheck now"), backed by the existing `stripe-connection.ts` readiness
+   module. No connect/disconnect controls for Jafar: the key is contractor-owned and never reaches the
+   platform owner, so there's nothing to recover on that side — visibility plus recheck is the complete,
+   intentionally narrower scope for this provider (docs/jafar-completion-contract.md). Browser-verified live
+   on Raad LTD's sandbox connection: card loaded real status, "Recheck now" updated `last_checked_at` live.
+   jafar-panel Memory updated.
 8. **End-to-end proof** — needs all. Full test-mode journey; guide screenshots. Gate: performance-review
    verification branch; Jafar sign-off.
