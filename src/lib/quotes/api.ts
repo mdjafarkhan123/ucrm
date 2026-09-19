@@ -849,7 +849,8 @@ export type QuoteDepositScheduleItem = {
 	is_deposit: boolean;
 };
 
-export type QuoteDepositMethod = 'cash' | 'check' | 'other';
+export type QuoteDepositMethod =
+	'cash' | 'check' | 'other' | 'venmo' | 'zelle' | 'cash_app' | 'e_transfer';
 
 /** One receipt or reversal on the immutable deposit ledger. A reversal names the receipt it corrects. */
 export type QuoteDepositEvent = {

@@ -404,7 +404,7 @@ export const paymentReceiptEmailSchema = z.strictObject({
 	idempotency_key: z.string().uuid('Start a new receipt attempt and try again.')
 });
 
-// The six manual methods the contract names — none of them processes a payment; each just acknowledges money
+// The ten manual methods the contract names — none of them processes a payment; each just acknowledges money
 // received elsewhere. Same order and spelling as the database's own check constraint.
 export const INVOICE_PAYMENT_METHODS = [
 	'other',
@@ -412,7 +412,11 @@ export const INVOICE_PAYMENT_METHODS = [
 	'cash',
 	'check',
 	'card_external',
-	'paypal'
+	'paypal',
+	'venmo',
+	'zelle',
+	'cash_app',
+	'e_transfer'
 ] as const;
 export type InvoicePaymentMethod = (typeof INVOICE_PAYMENT_METHODS)[number];
 

@@ -5,6 +5,7 @@
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import MoneyInput from '$lib/components/forms/MoneyInput.svelte';
@@ -76,7 +77,11 @@
 	const METHOD_LABELS: Record<QuoteDepositMethod, string> = {
 		cash: 'Cash',
 		check: 'Check',
-		other: 'Other'
+		other: 'Other',
+		venmo: 'Venmo',
+		zelle: 'Zelle',
+		cash_app: 'Cash App',
+		e_transfer: 'Interac e-Transfer'
 	};
 
 	function pricedAmount(item: { value_type: 'fixed' | 'percentage'; value: number }) {
@@ -579,12 +584,17 @@
 		<div class="quote-deposit-dialog">
 			{#if recordError}<p class="quote-deposit-dialog__error" role="alert">{recordError}</p>{/if}
 
-			<SegmentedControl
+			<Select
+				id="quote-deposit-record-method"
 				label="How was it received"
 				value={recordMethod}
 				options={[
 					{ value: 'cash', label: 'Cash' },
 					{ value: 'check', label: 'Check' },
+					{ value: 'venmo', label: 'Venmo' },
+					{ value: 'zelle', label: 'Zelle' },
+					{ value: 'cash_app', label: 'Cash App' },
+					{ value: 'e_transfer', label: 'Interac e-Transfer' },
 					{ value: 'other', label: 'Other' }
 				]}
 				disabled={recordSaving}

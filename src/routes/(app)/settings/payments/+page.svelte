@@ -10,6 +10,7 @@
 	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
+	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -27,6 +28,7 @@
 		settingsPaymentsKey,
 		type PaymentSettings,
 		type SettingsPayments,
+		type SettingsWriteError,
 		type StripeCheckStatus,
 		type StripeConnectError,
 		type StripeConnectionStatus
@@ -34,12 +36,18 @@
 	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
 	import stripeIcon from '@tabler/icons/outline/brand-stripe.svg?raw';
 	import settingsIcon from '@tabler/icons/outline/adjustments-horizontal.svg?raw';
+	import walletIcon from '@tabler/icons/outline/wallet.svg?raw';
 	import keyIcon from '@tabler/icons/outline/key.svg?raw';
 	import lifebuoyIcon from '@tabler/icons/outline/lifebuoy.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import plugOffIcon from '@tabler/icons/outline/plug-connected-x.svg?raw';
 
 	type Toggles = Omit<PaymentSettings, 'revision'>;
+	type ToggleKey =
+		| 'online_invoice_payments_enabled'
+		| 'online_deposit_payments_enabled'
+		| 'online_tips_enabled'
+		| 'online_receipt_email_enabled';
 
 	// The restricted key's permissions, exactly as Stripe's "Create restricted API key" screen names them
 	// (checked 2026-09-18). Everything not listed stays "None".
@@ -73,7 +81,18 @@
 			'The link that tells UCRM about payments was removed in Stripe. Replace the key to set it up again.'
 	};
 
-	const TOGGLES: Array<{ key: keyof Toggles; label: string; description: string }> = [
+	// Same order as the contract's §6 and the database columns; each field name doubles as the server's
+	// field_errors key, so a bad Venmo handle highlights the right box.
+	const PAY_BY_APP_KEYS = [
+		'pay_by_app_venmo_username',
+		'pay_by_app_cash_app_cashtag',
+		'pay_by_app_paypal_me_username',
+		'pay_by_app_zelle_contact',
+		'pay_by_app_e_transfer_email',
+		'pay_by_app_bank_transfer_instructions'
+	] as const satisfies readonly (keyof Toggles)[];
+
+	const TOGGLES: Array<{ key: ToggleKey; label: string; description: string }> = [
 		{
 			key: 'online_invoice_payments_enabled',
 			label: 'Accept online payments on invoices',
@@ -108,6 +127,7 @@
 	let savedToggles = $state<Toggles | null>(null);
 	let saving = $state(false);
 	let errorMessage = $state('');
+	let fieldErrors = $state<Record<string, string>>({});
 	let conflict = $state<{ editor_name: string | null } | null>(null);
 	let layout = $state<RecordFormLayout>();
 
@@ -130,7 +150,13 @@
 			online_invoice_payments_enabled: settings.online_invoice_payments_enabled,
 			online_deposit_payments_enabled: settings.online_deposit_payments_enabled,
 			online_tips_enabled: settings.online_tips_enabled,
-			online_receipt_email_enabled: settings.online_receipt_email_enabled
+			online_receipt_email_enabled: settings.online_receipt_email_enabled,
+			pay_by_app_venmo_username: settings.pay_by_app_venmo_username,
+			pay_by_app_cash_app_cashtag: settings.pay_by_app_cash_app_cashtag,
+			pay_by_app_paypal_me_username: settings.pay_by_app_paypal_me_username,
+			pay_by_app_zelle_contact: settings.pay_by_app_zelle_contact,
+			pay_by_app_e_transfer_email: settings.pay_by_app_e_transfer_email,
+			pay_by_app_bank_transfer_instructions: settings.pay_by_app_bank_transfer_instructions
 		};
 	}
 
@@ -147,7 +173,9 @@
 	const dirty = $derived(
 		toggles !== null &&
 			savedToggles !== null &&
-			TOGGLES.some(({ key }) => toggles![key] !== savedToggles![key])
+			[...TOGGLES.map(({ key }) => key), ...PAY_BY_APP_KEYS].some(
+				(key) => toggles![key] !== savedToggles![key]
+			)
 	);
 
 	beforeNavigate((navigation) => {
@@ -167,19 +195,22 @@
 		toggles = savedToggles ? { ...savedToggles } : null;
 		conflict = null;
 		errorMessage = '';
+		fieldErrors = {};
 	}
 
 	async function save() {
 		if (!query.data || !toggles) return;
 		saving = true;
 		errorMessage = '';
+		fieldErrors = {};
 		conflict = null;
 
 		const result = await savePaymentSettings({
 			expected_revision: query.data.settings.revision,
 			...toggles
-		}).catch((error: Error) => {
+		}).catch((error: SettingsWriteError) => {
 			errorMessage = error.message;
+			fieldErrors = error.fieldErrors ?? {};
 			return null;
 		});
 		saving = false;
@@ -403,6 +434,87 @@
 					<p class="payments__fine-print">
 						Which payment types appear (card, Apple Pay, Google Pay, bank) is chosen inside Stripe
 						under Settings → Payment methods.
+					</p>
+				</SectionBlock>
+
+				<SectionBlock
+					title="Other ways to pay"
+					icon={walletIcon}
+					hint="Fill in only what you use. Customers see these on invoices and quote deposits, alongside card payments if Stripe is connected — or on their own if it isn't."
+					form
+					level={3}
+				>
+					<Input
+						id="pay-by-app-venmo"
+						label="Venmo username"
+						placeholder="yourname"
+						bind:value={
+							() => current.pay_by_app_venmo_username ?? '',
+							(v) => (toggles = { ...current, pay_by_app_venmo_username: v || null })
+						}
+						invalid={Boolean(fieldErrors.pay_by_app_venmo_username)}
+						errorMessage={fieldErrors.pay_by_app_venmo_username ?? ''}
+					/>
+					<Input
+						id="pay-by-app-cash-app"
+						label="Cash App $Cashtag"
+						placeholder="yourcashtag"
+						bind:value={
+							() => current.pay_by_app_cash_app_cashtag ?? '',
+							(v) => (toggles = { ...current, pay_by_app_cash_app_cashtag: v || null })
+						}
+						invalid={Boolean(fieldErrors.pay_by_app_cash_app_cashtag)}
+						errorMessage={fieldErrors.pay_by_app_cash_app_cashtag ?? ''}
+					/>
+					<Input
+						id="pay-by-app-paypal"
+						label="PayPal.me username"
+						placeholder="yourname"
+						bind:value={
+							() => current.pay_by_app_paypal_me_username ?? '',
+							(v) => (toggles = { ...current, pay_by_app_paypal_me_username: v || null })
+						}
+						invalid={Boolean(fieldErrors.pay_by_app_paypal_me_username)}
+						errorMessage={fieldErrors.pay_by_app_paypal_me_username ?? ''}
+					/>
+					<Input
+						id="pay-by-app-zelle"
+						label="Zelle email or phone"
+						placeholder="you@example.com"
+						bind:value={
+							() => current.pay_by_app_zelle_contact ?? '',
+							(v) => (toggles = { ...current, pay_by_app_zelle_contact: v || null })
+						}
+						invalid={Boolean(fieldErrors.pay_by_app_zelle_contact)}
+						errorMessage={fieldErrors.pay_by_app_zelle_contact ?? ''}
+					/>
+					<Input
+						id="pay-by-app-e-transfer"
+						label="Interac e-Transfer email"
+						type="email"
+						placeholder="you@example.com"
+						bind:value={
+							() => current.pay_by_app_e_transfer_email ?? '',
+							(v) => (toggles = { ...current, pay_by_app_e_transfer_email: v || null })
+						}
+						invalid={Boolean(fieldErrors.pay_by_app_e_transfer_email)}
+						errorMessage={fieldErrors.pay_by_app_e_transfer_email ?? ''}
+					/>
+					<Textarea
+						id="pay-by-app-bank-transfer"
+						label="Bank transfer instructions"
+						rows={3}
+						maxlength={1000}
+						bind:value={
+							() => current.pay_by_app_bank_transfer_instructions ?? '',
+							(v) => (toggles = { ...current, pay_by_app_bank_transfer_instructions: v || null })
+						}
+						invalid={Boolean(fieldErrors.pay_by_app_bank_transfer_instructions)}
+						errorMessage={fieldErrors.pay_by_app_bank_transfer_instructions ?? ''}
+					/>
+					<p class="payments__fine-print">
+						Venmo, Cash App and PayPal.me open the app with the amount already filled in. Zelle and
+						e-Transfer move money bank-to-bank, so customers see a copy button instead.
 					</p>
 				</SectionBlock>
 			{/if}

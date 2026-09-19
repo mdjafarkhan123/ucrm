@@ -3,6 +3,8 @@
 	import { invalidateAll } from '$app/navigation';
 	import CustomerInvoiceDocument from '$lib/components/invoices/CustomerInvoiceDocument.svelte';
 	import CustomerInvoicePayment from '$lib/components/invoices/CustomerInvoicePayment.svelte';
+	import OtherWaysToPay from '$lib/components/payments/OtherWaysToPay.svelte';
+	import { hasAnyPayByAppMethod } from '$lib/payments/pay-by-app';
 	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
 	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
@@ -40,7 +42,13 @@
 		new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode })
 	);
 	const returnedFromStripe = $derived(page.url.searchParams.get('payment') === 'success');
-	const canPay = $derived(Boolean(payment?.available && payment.balance_minor > 0));
+	const canPay = $derived(
+		Boolean(
+			payment &&
+			payment.balance_minor > 0 &&
+			(payment.available || hasAnyPayByAppMethod(payment.pay_by_app))
+		)
+	);
 
 	// About a minute of checking. Cards confirm in seconds; after that the page stops asking and says so.
 	const POLL_MS = 2500;
@@ -97,7 +105,16 @@
 
 {#snippet payButton()}
 	{#if payment}
-		<CustomerInvoicePayment {payment} {currencyCode} {token} />
+		{#if payment.available}
+			<CustomerInvoicePayment {payment} {currencyCode} {token} />
+		{/if}
+		<OtherWaysToPay
+			methods={payment.pay_by_app}
+			amountMinor={payment.balance_minor}
+			{currencyCode}
+			memo={data.document ? `Invoice #${data.document.invoice.invoice_number}` : ''}
+			divider={payment.available}
+		/>
 	{/if}
 {/snippet}
 

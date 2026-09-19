@@ -121,6 +121,10 @@ export type SettingsSaveConflict = {
 	edited_at: string | null;
 };
 
+// Carries the server's per-field messages alongside the generic banner text, for a section (like Payments)
+// whose fields can fail Zod validation -- a toggle can't, so no earlier section needed this read.
+export type SettingsWriteError = Error & { status?: number; fieldErrors?: Record<string, string> };
+
 async function saveSection<T>(url: string, body: unknown): Promise<T | SettingsSaveConflict> {
 	const response = await fetch(url, {
 		method: 'PATCH',
@@ -136,7 +140,12 @@ async function saveSection<T>(url: string, body: unknown): Promise<T | SettingsS
 		};
 	}
 	if (!response.ok) {
-		throw httpError(response, result.error ?? 'That could not be saved.');
+		const error = httpError(
+			response,
+			result.error ?? 'That could not be saved.'
+		) as SettingsWriteError;
+		error.fieldErrors = result.field_errors ?? {};
+		throw error;
 	}
 	return result as T;
 }
@@ -815,6 +824,12 @@ export type PaymentSettings = {
 	online_deposit_payments_enabled: boolean;
 	online_tips_enabled: boolean;
 	online_receipt_email_enabled: boolean;
+	pay_by_app_venmo_username: string | null;
+	pay_by_app_cash_app_cashtag: string | null;
+	pay_by_app_paypal_me_username: string | null;
+	pay_by_app_zelle_contact: string | null;
+	pay_by_app_e_transfer_email: string | null;
+	pay_by_app_bank_transfer_instructions: string | null;
 	revision: number;
 };
 

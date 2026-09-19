@@ -11,6 +11,7 @@
 		loading = false,
 		fullWidth = false,
 		href,
+		target,
 		class: className = '',
 		onclick,
 		onhover
@@ -26,6 +27,9 @@
 		/** Renders a link instead of a button. Use it for anything that goes to another page, so the
 		 *  browser can open it in a new tab and SvelteKit can preload the page on hover. */
 		href?: string;
+		/** Only meaningful with `href`. Use `'_blank'` for a link that leaves the app entirely (another
+		 *  site, another app's deep link) so the page the customer was on stays open behind it. */
+		target?: string;
 		class?: string;
 		onclick?: (event: MouseEvent) => void;
 		/** Fires when the pointer or keyboard reaches the button, before it is pressed. Use it to start
@@ -44,6 +48,8 @@
 	<!-- eslint-disable svelte/no-navigation-without-resolve -->
 	<a
 		href={inactive ? undefined : href}
+		{target}
+		rel={target === '_blank' ? 'noopener noreferrer' : undefined}
 		class={classes}
 		class:button--full-width={fullWidth}
 		class:button--inactive={inactive}

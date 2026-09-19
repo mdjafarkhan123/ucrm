@@ -1,4 +1,4 @@
-// The six manual methods the contract names — none of them processes a payment; each just acknowledges money
+// The ten manual methods the contract names — none of them processes a payment; each just acknowledges money
 // received elsewhere. Same order and spelling as the database's check constraint and the server Zod schema.
 export const INVOICE_PAYMENT_METHODS = [
 	'other',
@@ -6,7 +6,11 @@ export const INVOICE_PAYMENT_METHODS = [
 	'cash',
 	'check',
 	'card_external',
-	'paypal'
+	'paypal',
+	'venmo',
+	'zelle',
+	'cash_app',
+	'e_transfer'
 ] as const;
 
 export type InvoicePaymentMethod = (typeof INVOICE_PAYMENT_METHODS)[number];
@@ -27,6 +31,10 @@ export const INVOICE_PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
 	check: 'Check',
 	card_external: 'Credit/debit card',
 	paypal: 'PayPal',
+	venmo: 'Venmo',
+	zelle: 'Zelle',
+	cash_app: 'Cash App',
+	e_transfer: 'Interac e-Transfer',
 	stripe_card: 'Card (online)',
 	stripe_bank: 'Bank payment (online)',
 	stripe_other: 'Online payment'

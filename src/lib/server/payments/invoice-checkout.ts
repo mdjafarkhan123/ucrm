@@ -1,6 +1,7 @@
 import type Stripe from 'stripe';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import type { CustomerInvoicePayment } from '$lib/invoices/customer-document';
+import { hasAnyPayByAppMethod, type PayByAppMethods } from '$lib/payments/pay-by-app';
 import { stripeClientForOrganization } from './stripe-connection';
 import { appOrigin } from './stripe-checkout-events';
 
@@ -29,13 +30,19 @@ export type InvoicePaymentContext = {
 	tip_base_minor: number;
 	livemode: boolean | null;
 	stripe_account_id: string | null;
+	pay_by_app: PayByAppMethods;
 };
 
 /** The part of the context the customer's browser may see: amounts and switches, no ids. */
 export function customerPaymentView(
 	context: InvoicePaymentContext | null
 ): CustomerInvoicePayment | null {
-	if (!context || context.unavailable_reason === 'not_connected') return null;
+	if (!context) return null;
+	const payByApp = hasAnyPayByAppMethod(context.pay_by_app) ? context.pay_by_app : null;
+	// Pay-by-app has nothing to do with Stripe, so a business with no Stripe connection still gets to show
+	// it. Only when there is truly nothing -- no Stripe and no pay-by-app method either -- is there no page
+	// to draw at all.
+	if (context.unavailable_reason === 'not_connected' && !payByApp) return null;
 	return {
 		available: context.available,
 		balance_minor: context.balance_minor,
@@ -44,7 +51,8 @@ export function customerPaymentView(
 		partial_allowed: context.partial_allowed,
 		tips_enabled: context.tips_enabled,
 		tip_base_minor: context.tip_base_minor,
-		test_mode: context.livemode === false
+		test_mode: context.livemode === false,
+		pay_by_app: payByApp
 	};
 }
 

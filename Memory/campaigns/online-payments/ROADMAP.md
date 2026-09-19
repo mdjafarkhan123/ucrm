@@ -37,9 +37,34 @@ Product truth: docs/online-payments-behavior-contract.md (approved 2026-09-18, i
    and 3 real refunds from before the fix were replayed to correct invoice #7's ledger. Disconnect-safety
    (expiring an open checkout when Stripe is disconnected) is code-complete but not live-tested — deferred by
    Jafar because testing it would require reconnecting Raad LTD's test Stripe key by hand afterward.
-6. **Pay-by-app methods** — needs 1; after Stripe per Jafar. Research first how top apps present these
-   (Venmo/Cash App/PayPal links prefilled with amount+note where supported, QR codes, copy buttons, Zelle and
-   e-Transfer instructions); add Venmo, Zelle, Cash App, e-Transfer to recorded methods. Gate: browser verified.
+6. **Pay-by-app methods** — needs 1; after Stripe per Jafar. Done 2026-09-19 (not committed). Researched:
+   Venmo (`venmo.com/u/<handle>?txn=pay&amount=&note=`), Cash App (`cash.app/$<handle>/<amount>`), PayPal.me
+   (`paypal.me/<handle>/<amount><CURRENCY>`) all support prefilled deep links; Zelle and Interac e-Transfer have
+   no such link anywhere (both are bank-to-bank from the sender's own banking app) so those stay copy-only,
+   matching the contract's §6 as already written — no new product decision was needed, only the link formats.
+   Data layer live-migrated (`20261011090000_online_payments_pay_by_app_methods.sql`): 6 new
+   `organization_settings` columns, Venmo/Zelle/Cash App/e-Transfer added to both invoice and quote-deposit
+   recorded methods, `set_organization_payment_settings` extended, and `invoice_online_payment_context` /
+   `quote_online_deposit_context` return a `pay_by_app` object independent of Stripe connection (a business
+   with no Stripe can still show these — confirmed live: a quote not yet approved, with no Stripe button
+   shown, still displayed the pay-by-app box). UI built: Settings → Payments' new "Other ways to pay"
+   `SectionBlock` with the 6 inputs (per-field save errors now surface under the right box — added
+   `fieldErrors` to `settings/api.ts`'s `saveSection`, a small generalization every settings section's save
+   now carries, though only Payments has fields that can fail validation); new shared
+   `$lib/components/payments/OtherWaysToPay.svelte` (tappable Venmo/Cash App/PayPal.me, copy-button
+   Zelle/e-Transfer/bank transfer); wired into `/i/[token]` and `/q/[token]`'s pay buttons, alongside Stripe
+   when connected or alone when it isn't (`Button.svelte` gained an optional `target` prop for the three
+   external app links). `svelte-check` 0 errors/warnings project-wide, Prettier clean. Live-verified in the
+   browser on Raad LTD (test sandbox): saved all 6 fields, triggered and saw a real field-level validation
+   error (bad PayPal.me handle) highlight the right box, then an existing past-due invoice (#11) and a
+   freshly created test quote (#39, deposit added, not yet approved) both showed the box with correct
+   prefilled amounts/memos in the Venmo/Cash App/PayPal.me links. Clipboard copy itself could not be verified
+   through the browser-automation harness (`navigator.clipboard.writeText` hangs under CDP automation,
+   unrelated to real browsers) — same proven pattern already used elsewhere in the app
+   (`JobWorkReportCard.svelte` etc.), not re-verified here. Test quote #39 ("Pay-by-app verification",
+   Greenfield Property Group) was left in Raad LTD from this verification — harmless test clutter, matching
+   what's already in that sandbox. Gate met: browser-verified. Nothing committed yet — ask Jafar before
+   committing.
 7. **Jafar Stripe slice** — needs 2–5. Jafar-panel Part 10 Stripe readiness/health/history/recovery.
    Gate: browser-verified; update jafar-panel Memory.
 8. **End-to-end proof** — needs all. Full test-mode journey; guide screenshots. Gate: performance-review

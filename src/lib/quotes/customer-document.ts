@@ -1,3 +1,5 @@
+import type { PayByAppMethods } from '$lib/payments/pay-by-app';
+
 // The exact shape `resolve_quote_access_link` returns. It is written out by hand because the database
 // function builds its JSON field by field on purpose: what is missing from this type is the point of it.
 // There is no cost, no margin, no catalog source, no private note and no second recipient here, and none
@@ -46,13 +48,14 @@ export type CustomerQuoteDeposit = {
 };
 
 // Online deposit payment on the customer's copy (online payments Part 4). Built by the server from
-// `quote_online_deposit_context`; null when the business has not connected Stripe. Amounts and switches
-// only — nothing here identifies the business, the quote row or the Stripe account.
+// `quote_online_deposit_context`; null when there is nothing at all to show. Amounts and switches only --
+// nothing here identifies the business, the quote row or the Stripe account.
 export type CustomerQuoteDepositPayment = {
-	/** A Pay deposit button may be shown right now. */
+	/** A Pay deposit button may be shown right now. False when Stripe isn't connected -- pay_by_app may still apply. */
 	available: boolean;
 	deposit_required_minor: number;
 	test_mode: boolean;
+	pay_by_app: PayByAppMethods | null;
 };
 
 export type CustomerQuoteDocument = {

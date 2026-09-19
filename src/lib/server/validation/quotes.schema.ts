@@ -265,7 +265,15 @@ export const quoteDepositSchema = z.object({
 		.max(12, 'A payment schedule can hold up to 12 installments.')
 });
 
-export const QUOTE_DEPOSIT_METHODS = ['cash', 'check', 'other'] as const;
+export const QUOTE_DEPOSIT_METHODS = [
+	'cash',
+	'check',
+	'other',
+	'venmo',
+	'zelle',
+	'cash_app',
+	'e_transfer'
+] as const;
 export type QuoteDepositMethod = (typeof QUOTE_DEPOSIT_METHODS)[number];
 
 // Recording money that changed hands off the app. The idempotency key is the same shape every other

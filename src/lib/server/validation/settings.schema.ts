@@ -389,13 +389,87 @@ export const stripeConnectSchema = z
 	})
 	.strict();
 
+// Pay-by-app handles (docs/online-payments-behavior-contract.md §6). A contractor may paste a full profile
+// link or lead with @/$ -- these strip that down to the bare handle UCRM builds its own link from, so
+// venmo.com/u/<handle>, cash.app/$<handle> and paypal.me/<handle> always come out right.
+const optionalHandle = (opts: { max: number; strip: string[]; pattern: RegExp; message: string }) =>
+	z
+		.string()
+		.trim()
+		.nullish()
+		.transform((value) => {
+			if (!value) return null;
+			let cleaned = value;
+			for (const prefix of opts.strip) {
+				if (cleaned.toLowerCase().startsWith(prefix)) cleaned = cleaned.slice(prefix.length);
+			}
+			return cleaned.trim() || null;
+		})
+		.refine((value) => value === null || (value.length <= opts.max && opts.pattern.test(value)), {
+			message: opts.message
+		});
+
+const venmoUsername = optionalHandle({
+	max: 30,
+	strip: ['@'],
+	pattern: /^[A-Za-z0-9_-]{5,30}$/,
+	message: 'Enter a Venmo username: 5-30 letters, numbers, underscores or hyphens.'
+});
+
+const cashAppCashtag = optionalHandle({
+	max: 20,
+	strip: ['$'],
+	pattern: /^[A-Za-z0-9_]{1,20}$/,
+	message: 'Enter a Cash App $Cashtag: up to 20 letters, numbers or underscores.'
+});
+
+const paypalMeUsername = optionalHandle({
+	max: 50,
+	strip: ['https://paypal.me/', 'http://paypal.me/', 'www.paypal.me/', 'paypal.me/'],
+	pattern: /^[A-Za-z0-9.]{1,50}$/,
+	message: 'Enter your PayPal.me username -- the part after paypal.me/.'
+});
+
+// Zelle takes either an email or a phone number; whichever the contractor uses with their own bank.
+const zelleContact = z
+	.string()
+	.trim()
+	.nullish()
+	.transform((value) => value || null)
+	.refine(
+		(value) =>
+			value === null ||
+			(value.length <= 254 &&
+				(z.string().email().safeParse(value).success || /^[+()0-9][()0-9\s-]{6,19}$/.test(value))),
+		{ message: 'Enter the email or phone number you use for Zelle.' }
+	);
+
+const eTransferEmail = z
+	.string()
+	.trim()
+	.toLowerCase()
+	.nullish()
+	.transform((value) => value || null)
+	.refine((value) => value === null || z.string().email().max(254).safeParse(value).success, {
+		message: 'Enter a valid email for Interac e-Transfer.'
+	});
+
 export const paymentSettingsSchema = z
 	.object({
 		expected_revision: expectedRevision,
 		online_invoice_payments_enabled: z.boolean(),
 		online_deposit_payments_enabled: z.boolean(),
 		online_tips_enabled: z.boolean(),
-		online_receipt_email_enabled: z.boolean()
+		online_receipt_email_enabled: z.boolean(),
+		pay_by_app_venmo_username: venmoUsername,
+		pay_by_app_cash_app_cashtag: cashAppCashtag,
+		pay_by_app_paypal_me_username: paypalMeUsername,
+		pay_by_app_zelle_contact: zelleContact,
+		pay_by_app_e_transfer_email: eTransferEmail,
+		pay_by_app_bank_transfer_instructions: optionalText(
+			1000,
+			'Keep bank transfer instructions under 1000 characters.'
+		)
 	})
 	.strict();
 

@@ -1,6 +1,7 @@
 import type Stripe from 'stripe';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import type { CustomerQuoteDepositPayment } from '$lib/quotes/customer-document';
+import { hasAnyPayByAppMethod, type PayByAppMethods } from '$lib/payments/pay-by-app';
 import { stripeClientForOrganization } from './stripe-connection';
 import { appOrigin } from './stripe-checkout-events';
 
@@ -30,17 +31,21 @@ export type QuoteDepositContext = {
 	deposit_required_minor: number;
 	livemode: boolean | null;
 	stripe_account_id: string | null;
+	pay_by_app: PayByAppMethods;
 };
 
 /** The part of the context the customer's browser may see: nothing here identifies the quote or the account. */
 export function customerDepositView(
 	context: QuoteDepositContext | null
 ): CustomerQuoteDepositPayment | null {
-	if (!context || context.unavailable_reason === 'not_connected') return null;
+	if (!context) return null;
+	const payByApp = hasAnyPayByAppMethod(context.pay_by_app) ? context.pay_by_app : null;
+	if (context.unavailable_reason === 'not_connected' && !payByApp) return null;
 	return {
 		available: context.available,
 		deposit_required_minor: context.deposit_required_minor,
-		test_mode: context.livemode === false
+		test_mode: context.livemode === false,
+		pay_by_app: payByApp
 	};
 }
 

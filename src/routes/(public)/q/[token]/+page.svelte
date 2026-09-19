@@ -3,6 +3,8 @@
 	import { invalidateAll } from '$app/navigation';
 	import CustomerQuoteDocument from '$lib/components/quotes/CustomerQuoteDocument.svelte';
 	import CustomerQuoteDepositPayment from '$lib/components/quotes/CustomerQuoteDepositPayment.svelte';
+	import OtherWaysToPay from '$lib/components/payments/OtherWaysToPay.svelte';
+	import { hasAnyPayByAppMethod } from '$lib/payments/pay-by-app';
 	import type { SignatureValue } from '$lib/signatures/signature';
 	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
@@ -82,7 +84,14 @@
 	// server has it. `doc.deposit.satisfied` is the one source of truth for whether it has.
 	const payment = $derived(data.payment);
 	const deposit = $derived(data.document?.deposit ?? null);
-	const canPay = $derived(Boolean(payment?.available && deposit && !deposit.satisfied));
+	const canPay = $derived(
+		Boolean(
+			payment &&
+			deposit &&
+			!deposit.satisfied &&
+			(payment.available || hasAnyPayByAppMethod(payment.pay_by_app))
+		)
+	);
 	const returnedFromStripe = $derived(page.url.searchParams.get('payment') === 'success');
 
 	// About a minute of checking. Cards confirm in seconds; after that the page stops asking and says so.
@@ -138,7 +147,16 @@
 
 {#snippet depositPayButton()}
 	{#if payment}
-		<CustomerQuoteDepositPayment {token} />
+		{#if payment.available}
+			<CustomerQuoteDepositPayment {token} />
+		{/if}
+		<OtherWaysToPay
+			methods={payment.pay_by_app}
+			amountMinor={payment.deposit_required_minor}
+			currencyCode={data.document?.document.currency_code ?? 'USD'}
+			memo={data.document ? `Deposit for quote #${data.document.quote.quote_number}` : ''}
+			divider={payment.available}
+		/>
 	{/if}
 {/snippet}
 

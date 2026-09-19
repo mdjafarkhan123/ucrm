@@ -1,3 +1,5 @@
+import type { PayByAppMethods } from '$lib/payments/pay-by-app';
+
 // The exact shape `private.invoice_customer_document` returns, written out by hand because the database
 // function builds its JSON field by field on purpose: what is missing from this type is the point of it.
 // There is no cost, no margin, no internal note and no other client here, and none of those may be added
@@ -120,10 +122,11 @@ export type CustomerInvoiceDocument = {
 };
 
 // Online payment on the customer's copy (online payments Part 3). Built by the server from
-// `invoice_online_payment_context`; null when the business has not connected Stripe. Amounts and switches
-// only — nothing here identifies the business, the invoice row or the Stripe account.
+// `invoice_online_payment_context`; null when there is nothing at all to show (an invalid link, or no Stripe
+// connection and no pay-by-app method either). Amounts and switches only — nothing here identifies the
+// business, the invoice row or the Stripe account.
 export type CustomerInvoicePayment = {
-	/** A Pay button may be shown right now. */
+	/** A Pay button may be shown right now. False when Stripe isn't connected -- pay_by_app may still apply. */
 	available: boolean;
 	/** What can still be paid online: the balance less any bank payment already processing. */
 	balance_minor: number;
@@ -134,4 +137,6 @@ export type CustomerInvoicePayment = {
 	tips_enabled: boolean;
 	tip_base_minor: number;
 	test_mode: boolean;
+	/** Venmo/Cash App/PayPal.me/Zelle/e-Transfer/bank transfer, whichever the contractor filled in. */
+	pay_by_app: PayByAppMethods | null;
 };
