@@ -63,8 +63,7 @@ Product truth: docs/online-payments-behavior-contract.md (approved 2026-09-18, i
    unrelated to real browsers) — same proven pattern already used elsewhere in the app
    (`JobWorkReportCard.svelte` etc.), not re-verified here. Test quote #39 ("Pay-by-app verification",
    Greenfield Property Group) was left in Raad LTD from this verification — harmless test clutter, matching
-   what's already in that sandbox. Gate met: browser-verified. Nothing committed yet — ask Jafar before
-   committing.
+   what's already in that sandbox. Gate met: browser-verified. Committed `eb98c42`.
 7. **Jafar Stripe slice** — needs 2–5. Jafar-panel Part 10 Stripe readiness/health/history/recovery.
    Gate: browser-verified; update jafar-panel Memory.
 8. **End-to-end proof** — needs all. Full test-mode journey; guide screenshots. Gate: performance-review
