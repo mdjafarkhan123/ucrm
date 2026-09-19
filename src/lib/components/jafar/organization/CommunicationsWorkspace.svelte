@@ -12,6 +12,7 @@
 	import WebsiteChatAllowanceActions from '$lib/components/jafar/WebsiteChatAllowanceActions.svelte';
 	import WebsiteChatAuthorityActions from '$lib/components/jafar/WebsiteChatAuthorityActions.svelte';
 	import AutomationAuthorityActions from '$lib/components/jafar/AutomationAuthorityActions.svelte';
+	import StripeConnectionActions from '$lib/components/jafar/StripeConnectionActions.svelte';
 	import SmsModeActions from '$lib/components/jafar/SmsModeActions.svelte';
 	import SmsRegistrationActions from '$lib/components/jafar/SmsRegistrationActions.svelte';
 	import SmsSenderCapabilitiesActions from '$lib/components/jafar/SmsSenderCapabilitiesActions.svelte';
@@ -85,6 +86,9 @@
 				</Card>
 				<Card class="organization-detail__commercial-explainer">
 					<AutomationAuthorityActions organizationId={access.organization.id} />
+				</Card>
+				<Card class="organization-detail__commercial-explainer">
+					<StripeConnectionActions organizationId={access.organization.id} />
 				</Card>
 			</section>
 

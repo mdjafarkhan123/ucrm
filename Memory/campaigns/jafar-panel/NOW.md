@@ -6,15 +6,21 @@ Finish the Platform Owner journey from contractor application through commercial
 
 ## Current state
 
-Parts 0–9A are closed. Part 10 waits for contractor-facing subsystems; Part 11 waits for Part 10.
+Parts 0–9A are closed. Part 10 is partially closed: SMS, Email domains, Website Chat, and Stripe slices are
+done and browser-verified live on Raad LTD. Stripe's scope is narrower than the other three by design
+(docs/jafar-completion-contract.md): Jafar sees account identity, live/test mode, health, last check, and
+sanitized failures with a manual recheck, but has no reconnect/disconnect authority — the key is
+contractor-owned, so there is no "recovery" action for Jafar to take. Only the review-link slice remains
+blocked. Part 11 still waits on it.
 
 ## Exact next action
 
-None. When a contractor subsystem ships, propose its matching Part 10 eligibility, health, history, and recovery slice before creating a packet.
+None. Review-link slice stays blocked until that contractor subsystem exists. When it ships, propose its
+matching Part 10 slice before creating a packet.
 
 ## Blockers
 
-Part 10 requires a real phone/SMS, email-domain, payment, Website Chat, or review-link subsystem.
+Review-link integration doesn't exist yet as a contractor feature.
 
 ## Essential pointers
 
