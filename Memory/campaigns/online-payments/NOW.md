@@ -5,27 +5,22 @@ the easiest possible setup. Contract approved 2026-09-18.
 
 ## Status
 
-Part 4 — Online quote deposit — DONE and browser-verified 2026-09-18 on Raad LTD (quote #31): approved+signed
-as customer, paid the $118.36 deposit with Stripe's sandbox Link test card, deposit showed "Received" and the
-quote flipped to "Ready for job", and the office/finance bell alert rendered
-("Deposit paid online on quote #31 · 118.36 USD received through Stripe") and opened the right quote.
-`npm run check` (0 errors) and Prettier both clean on touched files. Supabase advisors: only the pre-existing
-baseline (104x `rls_enabled_no_policy` INFO, including the expected `payment_stripe_checkouts` one).
+Part 5 — Refunds, disputes, disconnect safety — Done 2026-09-19, live-verified. See ROADMAP.md Part 5 for
+what was proven and the real bug found+fixed (a check constraint was silently blocking every refund
+confirmation). Disconnect-safety alone stays code-complete/not-live-tested; Jafar deferred it rather than
+reconnect Raad LTD's test Stripe key by hand.
 
-Committed `b5ada9d` (Part 4). Part 3 was already committed earlier as `5905c7d`.
+Not yet committed to git: this part's 3 migrations (all already applied live to the dev Supabase project) plus
+`StripeRefundDialog.svelte` and `stripe-refunds.ts` from earlier this campaign. `git status --short` shows the
+full file list.
 
 ## Exact next action
 
-Decide the next online-payments part (Venmo/Zelle/Cash App/e-Transfer instructions) or close the campaign if
-nothing else is scoped.
+Ask Jafar: commit Part 5 now, or keep going first? Then start Part 6 (pay-by-app methods) per ROADMAP.md —
+research how top apps present Venmo/Cash App/PayPal/Zelle/e-Transfer links before building.
 
 ## Pointers
 
-- docs/online-payments-behavior-contract.md
-- Part 4 code: `src/lib/server/payments/quote-deposit-checkout.ts`,
-  `src/lib/server/payments/stripe-checkout-events.ts`,
-  `src/routes/api/public/quotes/[token]/checkout/+server.ts`,
-  `src/lib/components/quotes/CustomerQuoteDepositPayment.svelte`,
-  `supabase/migrations/20261009090000_online_quote_deposit_payments.sql` (applied to dev DB).
-- 71 pre-existing server unit test failures (quotes, settings-business, team resend) predate commit 9d581a6;
-  not caused by this campaign.
+- docs/online-payments-behavior-contract.md §5–§6.
+- Stripe CLI: `/tmp/claude-1000/.../scratchpad/stripe` (copy forward each new session — `stripe config --list`
+  confirms it's still logged into the right sandbox, no re-login needed).

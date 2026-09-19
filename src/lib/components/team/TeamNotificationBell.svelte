@@ -41,7 +41,11 @@
 				notification.kind === 'invoice.online_payment_failed' ||
 				notification.kind === 'invoice.online_overpayment' ||
 				notification.kind === 'quote.deposit_payment_failed' ||
-				notification.kind === 'quote.deposit_overpaid'
+				notification.kind === 'quote.deposit_overpaid' ||
+				notification.kind === 'invoice.online_refund_failed' ||
+				notification.kind === 'invoice.payment_disputed' ||
+				notification.kind === 'quote.deposit_refund_failed' ||
+				notification.kind === 'quote.deposit_disputed'
 					? ('attention' as const)
 					: undefined
 		}))

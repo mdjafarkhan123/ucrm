@@ -989,6 +989,34 @@ export async function refundPayment(
 	return readOrThrow<RefundPaymentResult>(response, 'That refund could not be saved.');
 }
 
+export type StripePaymentRefundInput = {
+	amount_minor: number;
+	idempotency_key: string;
+	request_hash: string;
+};
+
+export type StripePaymentRefundResult = {
+	status: 'succeeded' | 'pending' | 'failed';
+};
+
+// Sends money back through Stripe on a payment Stripe collected (online payments Part 5). Unlike refundPayment,
+// this never records the correction itself -- it asks Stripe to send the money and reports what Stripe said;
+// the ledger only gets the refund once Stripe's webhook (or this same synchronous call) confirms it.
+export async function refundStripePayment(
+	paymentEventId: string,
+	input: StripePaymentRefundInput
+): Promise<StripePaymentRefundResult> {
+	const response = await fetch(`/api/payments/${paymentEventId}/stripe-refund`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	return readOrThrow<StripePaymentRefundResult>(
+		response,
+		'That refund could not be sent through Stripe.'
+	);
+}
+
 // One of a client's other bills, for the "Move to another invoice" picker. A thin slice of InvoiceListItem —
 // only what a picker row needs to show and choose from.
 export type ClientOpenInvoice = {

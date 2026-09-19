@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import { z } from 'zod';
 import type { RequestHandler } from './$types';
 import { requireAutomationAccess, type AutomationAccessCheck } from '$lib/server/access/automation';
+import type { Database } from '$lib/database.types';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { NO_STORE_HEADERS } from '$lib/server/api/errors';
 import { hasPermission } from '$lib/server/access/permission';
@@ -44,7 +45,10 @@ export const GET: RequestHandler = async (event) => {
 		p_request_id: requestId ?? null,
 		p_chat_session_id: chatSessionId ?? null,
 		p_limit: 20
-	});
+		// p_request_id/p_chat_session_id are genuinely one-or-the-other-null (querySchema above enforces
+		// exactly one); cast because the generated Args type can't express a nullable scalar without a SQL
+		// default (see the matching comment in stripe-checkout-events.ts).
+	} as Database['public']['Functions']['automation_inquiry_enrollments']['Args']);
 	if (error) {
 		console.error('Could not read inquiry enrollments.', error);
 		return json({ error: 'Automation history could not be loaded.' }, { status: 500 });

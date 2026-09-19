@@ -28,8 +28,15 @@ Product truth: docs/online-payments-behavior-contract.md (approved 2026-09-18, i
    one ledger row and one receipt. Not proven live: async bank payments (processing/failed paths) — prove in
    Part 8.
 4. **Online quote deposit** — needs 3. Gate: deposit satisfies the quote in test mode.
-5. **Refunds, disputes, disconnect safety** — needs 3. In-app refund, dashboard refunds reflected, dispute
-   alerts, stop sessions on disconnect/suspension. Gate: test refund reflected once.
+5. **Refunds, disputes, disconnect safety** — Done 2026-09-19. Gate passed live: in-app refund settles
+   pending→succeeded on its own (fresh webhook, ~12s), a dashboard-made refund is picked up with no in-app
+   click, a real disputed payment alerts the right team members and links to the right invoice. Found+fixed a
+   real bug along the way: `payment_stripe_webhook_events`'s `stripe_event_id` check constraint (from Part 3)
+   only allowed a bare `evt_...` id and was silently rejecting every refund confirmation's compound dedup key
+   — no refund could ever settle. Fixed in `20261010091000_payment_stripe_webhook_events_refund_key_format.sql`
+   and 3 real refunds from before the fix were replayed to correct invoice #7's ledger. Disconnect-safety
+   (expiring an open checkout when Stripe is disconnected) is code-complete but not live-tested — deferred by
+   Jafar because testing it would require reconnecting Raad LTD's test Stripe key by hand afterward.
 6. **Pay-by-app methods** — needs 1; after Stripe per Jafar. Research first how top apps present these
    (Venmo/Cash App/PayPal links prefilled with amount+note where supported, QR codes, copy buttons, Zelle and
    e-Transfer instructions); add Venmo, Zelle, Cash App, e-Transfer to recorded methods. Gate: browser verified.

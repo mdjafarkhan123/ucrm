@@ -645,6 +645,20 @@ export const refundPaymentSchema = z.object({
 
 export type RefundPaymentInput = z.infer<typeof refundPaymentSchema>;
 
+// Sending money back through Stripe on a Stripe-collected payment (online payments Part 5). Only the amount --
+// reserve_stripe_payment_refund decides the rest (which payment, how much is left to refund) from the
+// payment's own id, and the server fills in the method, date and reference from Stripe's own confirmation.
+export const stripePaymentRefundSchema = z.object({
+	amount_minor: z
+		.number()
+		.int()
+		.min(1, 'Enter how much to refund.')
+		.max(MINOR_UNIT_MAX, 'That amount is too large.'),
+	...paymentCorrectionRetry
+});
+
+export type StripePaymentRefundInput = z.infer<typeof stripePaymentRefundSchema>;
+
 // The customer's Pay button (online payments Part 3). Only amounts: which invoice, how much it owes, whether a
 // partial amount or a tip is allowed are all decided by open_invoice_stripe_checkout from the link itself.
 export const invoiceCheckoutSchema = z.strictObject({

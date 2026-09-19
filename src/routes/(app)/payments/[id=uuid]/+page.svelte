@@ -14,6 +14,7 @@
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import RefundPaymentDialog from '$lib/components/invoices/RefundPaymentDialog.svelte';
+	import StripeRefundDialog from '$lib/components/invoices/StripeRefundDialog.svelte';
 	import UnapplyPaymentDialog from '$lib/components/invoices/UnapplyPaymentDialog.svelte';
 	import MovePaymentDialog from '$lib/components/invoices/MovePaymentDialog.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -22,6 +23,7 @@
 		paymentDetailKey,
 		sendPaymentReceipt,
 		refundPayment,
+		refundStripePayment,
 		runPaymentAllocationAction,
 		type InvoiceWriteError,
 		type PaymentAllocationEntry
@@ -125,6 +127,12 @@
 		}
 	}
 
+	const isStripePayment = $derived(
+		saved?.payment.method === 'stripe_card' ||
+			saved?.payment.method === 'stripe_bank' ||
+			saved?.payment.method === 'stripe_other'
+	);
+
 	const menuItems = $derived([
 		{
 			label: 'View receipt',
@@ -137,7 +145,18 @@
 			onSelect: () => openReceipt(true)
 		},
 		...(saved?.can_correct_payment
-			? [{ label: 'Refund payment', icon: receiptRefundIcon, onSelect: () => (refundOpen = true) }]
+			? [
+					...(isStripePayment
+						? [
+								{
+									label: 'Refund through Stripe',
+									icon: receiptRefundIcon,
+									onSelect: () => (stripeRefundOpen = true)
+								}
+							]
+						: []),
+					{ label: 'Refund payment', icon: receiptRefundIcon, onSelect: () => (refundOpen = true) }
+				]
 			: [])
 	]);
 
@@ -156,18 +175,23 @@
 	// Everything touched here can affect an invoice's status and remaining balance, so a successful correction
 	// invalidates this payment plus the whole 'invoices' prefix (list, counts, and any open invoice detail)
 	// rather than trying to name the exact rows that changed.
-	async function afterCorrection(label: string) {
+	async function afterCorrection(label: string, tone: 'success' | 'error' = 'success') {
 		await Promise.all([
 			queryClient.invalidateQueries({ queryKey: paymentDetailKey(paymentId) }),
 			queryClient.invalidateQueries({ queryKey: ['invoices'] })
 		]);
-		toast.success(label);
+		toast[tone](label);
 	}
 
 	let refundOpen = $state(false);
+	let stripeRefundOpen = $state(false);
 
 	function saveRefund(payload: Parameters<typeof refundPayment>[1]) {
 		return refundPayment(paymentId, payload);
+	}
+
+	function saveStripeRefund(payload: Parameters<typeof refundStripePayment>[1]) {
+		return refundStripePayment(paymentId, payload);
 	}
 
 	// --- Applied-to row actions -----------------------------------------------------------------------------
@@ -325,6 +349,28 @@
 				onClose={() => (refundOpen = false)}
 				onSave={saveRefund}
 				onSaved={() => afterCorrection('Payment refunded')}
+			/>
+		{/if}
+
+		{#if stripeRefundOpen}
+			<StripeRefundDialog
+				open={stripeRefundOpen}
+				amountMinor={saved.payment.amount_minor}
+				currencyCode={saved.payment.currency_code}
+				locale={saved.locale}
+				onClose={() => (stripeRefundOpen = false)}
+				onSave={saveStripeRefund}
+				onSaved={(result) =>
+					result.status === 'failed'
+						? afterCorrection(
+								'Stripe could not send this refund — check your Stripe dashboard',
+								'error'
+							)
+						: afterCorrection(
+								result.status === 'succeeded'
+									? 'Payment refunded through Stripe'
+									: 'Refund sent — Stripe is still confirming it'
+							)}
 			/>
 		{/if}
 

@@ -44,13 +44,18 @@ export type StripeConnectFailure = {
 		| 'storage_failed';
 };
 
-/** The events Parts 3–5 act on. Everything else stays off so the endpoint carries no unrelated traffic. */
+/** The events Parts 3–5 act on. Everything else stays off so the endpoint carries no unrelated traffic.
+ *  Refund confirmation uses the `refund.*` events, not `charge.refunded`/`charge.refund.updated`: on this
+ *  account's API version, `charge.refunded` arrives with its `refunds` list empty and `charge.refund.updated`
+ *  never fires at all, so the aggregate/legacy charge events carry no usable refund data. `refund.*` events
+ *  hand the Refund object itself. */
 export const STRIPE_WEBHOOK_EVENTS: Stripe.WebhookEndpointCreateParams.EnabledEvent[] = [
 	'checkout.session.completed',
 	'checkout.session.async_payment_succeeded',
 	'checkout.session.async_payment_failed',
-	'charge.refunded',
-	'charge.refund.updated',
+	'refund.created',
+	'refund.updated',
+	'refund.failed',
 	'charge.dispute.created'
 ];
 
@@ -324,13 +329,15 @@ export async function disconnectStripe(input: { organizationId: string; actorUse
 	const row = await loadRow(input.organizationId);
 	if (!row) return { ok: true as const };
 
+	const stripe = stripeClient(decryptFromRow(row, 'api_key'));
+
 	try {
-		await stripeClient(decryptFromRow(row, 'api_key')).webhookEndpoints.del(
-			row.webhook_endpoint_id
-		);
+		await stripe.webhookEndpoints.del(row.webhook_endpoint_id);
 	} catch {
 		// A revoked key or an endpoint already deleted in Stripe must never block disconnecting.
 	}
+
+	await expireOpenCheckouts({ stripe, organizationId: input.organizationId });
 
 	const { error } = await getOwnerSupabaseClient()
 		.from('payment_stripe_connections')
@@ -340,6 +347,34 @@ export async function disconnectStripe(input: { organizationId: string; actorUse
 
 	await recordAudit(input.organizationId, input.actorUserId, 'disconnected');
 	return { ok: true as const };
+}
+
+// A customer can be sitting on a live Stripe Checkout page when the contractor disconnects. Once the
+// connection row is gone, verifyStripeWebhook can no longer find a signing secret for it, so a payment that
+// completes after this point would be lost money with no record. Expire every open session first (while the
+// key is still valid to call Stripe) and mark those attempts failed, so the customer sees a stopped payment
+// instead of one that silently vanishes.
+async function expireOpenCheckouts(input: { stripe: Stripe; organizationId: string }) {
+	const db = getOwnerSupabaseClient();
+	const { data: openCheckouts, error } = await db
+		.from('payment_stripe_checkouts')
+		.select('id, checkout_session_id')
+		.eq('organization_id', input.organizationId)
+		.eq('status', 'open');
+	if (error || !openCheckouts?.length) return;
+
+	for (const checkout of openCheckouts) {
+		if (checkout.checkout_session_id) {
+			await input.stripe.checkout.sessions
+				.expire(checkout.checkout_session_id)
+				.catch(() => undefined);
+		}
+		await db
+			.from('payment_stripe_checkouts')
+			.update({ status: 'failed', updated_at: new Date().toISOString() })
+			.eq('id', checkout.id)
+			.eq('status', 'open');
+	}
 }
 
 /** Re-check the stored key and webhook endpoint, and record the result. */

@@ -10,7 +10,11 @@ export type TeamNotificationKind =
 	| 'invoice.online_overpayment'
 	| 'quote.deposit_paid_online'
 	| 'quote.deposit_payment_failed'
-	| 'quote.deposit_overpaid';
+	| 'quote.deposit_overpaid'
+	| 'invoice.online_refund_failed'
+	| 'invoice.payment_disputed'
+	| 'quote.deposit_refund_failed'
+	| 'quote.deposit_disputed';
 
 export type TeamNotification = {
 	id: string;
