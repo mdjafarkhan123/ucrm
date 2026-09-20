@@ -7422,6 +7422,59 @@ export type Database = {
           },
         ]
       }
+      marketing_customer_groups: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          normalized_name: string | null
+          organization_id: string
+          revision: number
+          rules: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          normalized_name?: string | null
+          organization_id: string
+          revision?: number
+          rules: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          normalized_name?: string | null
+          organization_id?: string
+          revision?: number
+          rules?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_customer_groups_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_access_event_shapes: {
         Row: {
           event_type: string
@@ -17801,6 +17854,21 @@ export type Database = {
           p_user_id: string
         }
         Returns: number
+      }
+      marketing_preview_counts: {
+        Args: { rules: Json; target_organization_id: string }
+        Returns: Json
+      }
+      marketing_preview_recipients: {
+        Args: {
+          after_client_id?: string
+          after_display_name?: string
+          page_size?: number
+          rules: Json
+          status_filter?: string
+          target_organization_id: string
+        }
+        Returns: Json
       }
       match_active_opening_balances: {
         Args: { client_ids: string[]; target_org: string }

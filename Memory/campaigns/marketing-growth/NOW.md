@@ -10,33 +10,37 @@ In progress 2026-09-20. Provider boundary: Brevo for Jafar/platform email only; 
 operational + Marketing email. Marketing stays disabled globally until M6 (feature `marketing` is in no package).
 SES event pipeline is built and proven in sandbox (plan §2; AWS access = SSO profile `ucrm`).
 
-M1 done and committed: consent ledger, feature/permissions, public-form opt-in, staff-recorded consent (`37f8268`),
-unsubscribe (`43c9e53`), allowance limit (`62fe54d`).
+M1 complete and committed (`8ef77f7`).
 
-Readiness slice committed (`a2d363a`).
-
-Allowance UI committed and browser-verified. Legacy `client_communication_preferences.marketing` column retired
-(migration `20261014130000`, applied to dev; code and generated types updated).
+M2a (server) done: `marketing_customer_groups`, the whitelist rule compiler, and the two preview functions,
+with 17 pgTAP checks and 8 unit tests passing. Applied to dev; `npm run check` clean.
 
 ## Active part
 
-M1 complete. Next is M2 customer groups.
+M2 customer groups. M2a (server) closed; M2b (Customer groups UI) is next.
 
 ## Exact next action
 
-Start M2 customer groups: run the performance-review design branch first, and follow plan
-`docs/marketing-first-release-plan.md` (§3 M2). Usage counting/reservation arrives with M3 launch.
+Build M2b: the Marketing → Customer groups view (saved-group list with counts, rule builder, live count,
+"View customers" preview split). Load the `design` and `svelte` skills first. The API is
+`/api/marketing/customer-groups` (GET/POST), `/[id]` (PATCH/DELETE), `/preview` (POST, `view: counts |
+recipients`). Browser-verify the whole M2 path there, since M2a has no UI of its own yet.
 
 ## Blockers
 
 M4 needs SES production access (sandbox 200/day). M9 blocked until Communications A2 passes live SMS gates.
 
-## Open side question
+## Open side questions
 
-Delete unused `.claude/skills/aws-mail-manager` skill? (unanswered)
+- Delete unused `.claude/skills/aws-mail-manager` skill? (unanswered)
+- Two Customers in one organization cannot share an email address today (a unique index forbids it), so the
+  blueprint's "duplicate email destinations" number is always 0. The preview still computes it. Tell Jafar
+  if he ever wants shared household emails allowed.
 
 ## Pointers
 
-Plan: `docs/marketing-first-release-plan.md` (§3 M1). Blueprint: `docs/marketing-product-blueprint.md`.
+Part packet: `Memory/campaigns/marketing-growth/parts/m2-customer-groups.md` (holds the performance design
+verdict and the evidence M2's verification must still collect).
+Plan: `docs/marketing-first-release-plan.md` (§3 M2). Blueprint: `docs/marketing-product-blueprint.md` (§8).
 
 Resume: `continue marketing growth`
