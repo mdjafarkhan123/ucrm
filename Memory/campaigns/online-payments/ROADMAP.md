@@ -72,5 +72,29 @@ Product truth: docs/online-payments-behavior-contract.md (approved 2026-09-18, i
    intentionally narrower scope for this provider (docs/jafar-completion-contract.md). Browser-verified live
    on Raad LTD's sandbox connection: card loaded real status, "Recheck now" updated `last_checked_at` live.
    jafar-panel Memory updated.
-8. **End-to-end proof** — needs all. Full test-mode journey; guide screenshots. Gate: performance-review
-   verification branch; Jafar sign-off.
+8. **End-to-end proof** — needs all. In progress, paused by Jafar 2026-09-20. Full test-mode journey; guide
+   screenshots. Gate: performance-review verification branch; Jafar sign-off.
+   Proven live on Raad LTD's sandbox so far: quote #40 ($1,320, 25% deposit) sent by real email; customer page
+   showed the test-mode banner and the pay-by-app box; approved + signed; **$330 deposit paid by card through
+   Stripe**, confirmed by exactly one `checkout.session.completed` (`evt_1UHY35R5t9sA1JBVRibrSxqE`, outcome
+   `paid`), recorded as a `quote_deposit_events` row with method `stripe_card` and the payment-intent
+   reference — **Part 4's gate passed live**. Quote → job #23 → **invoice #27** ($1,200) raised and issued.
+   Still unproven: invoice card payment + tip, automatic receipt, and Part 3's two async bank paths
+   (`processing` → succeeded, `async_payment_failed`). Guide screenshots and the verification write-up not
+   started.
+   Environment note: the Claude Chrome extension has no permission for `checkout.stripe.com`, so the agent
+   cannot fill Stripe's form; Jafar paid the deposit by hand. Resolve before the remaining payments.
+9. **Quote deposit reaches the invoice** — surfaced by Part 8, pre-existing and method-independent. Jafar
+   approved 2026-09-20: follow Jobber's unallocated → applied lifecycle, applied automatically at billing.
+   - **9a automatic application** — Done 2026-09-20, committed `5eee391`. `create_invoice_from_work` now
+     credits the deposit paid on the quote behind the billed work, capped at what the bill owes; no table or
+     column changes, because the ledger, the available-credit helper and the invoice display already existed.
+     12 pgTAP assertions green (`supabase/tests/database/quote_deposit_applied_when_work_is_billed.sql`).
+     Gate met. Not yet seen in the browser — job #20 (quote #36, $3,510 deposit, no invoice yet) is the live
+     proof waiting to be billed.
+   - **9b leftover credit is spendable by hand** — needs 9a. Jobber's invoice **Deposits (Add Deposit)** row
+     (`jobber-05-invoices-payments.md` §174): leftover client credit goes onto any of that client's invoices.
+     `public.apply_client_payment` already does this in the database and is reachable from no route or screen;
+     the work is an `/api/*` route plus the dialog. Gate: browser-verified on a real leftover credit.
+     Known live case: invoice #27 is fully paid while quote #40's $330 deposit sits unspent — it needs 9b (or
+     a refund) to settle, and is why 9b should land before a first paying client.
