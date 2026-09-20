@@ -6,34 +6,37 @@ Ship simple, safe contractor Marketing: one-off email first, with every approved
 
 ## State
 
-In progress 2026-09-20. M1 and M2 complete and committed (`8ef77f7`, `a3f13ca`, `e854a84`).
+In progress 2026-09-20. M1, M2, M3a complete and committed (`8ef77f7`, `a3f13ca`, `e854a84`, `9e99852`).
 
-M3a (data layer + API routes) is done, verified, and about to be committed. `npm run db:types` was stale
-(migration was applied but types were never regenerated) and caused 52 false compile errors; regenerated and
-fixed two small real bugs surfaced along the way: `preview_text` was inferred as a required key instead of
-optional in `campaign-content.ts` (fixed with a trailing `.optional()`), and `marketing_update_campaign_draft`'s
-generated RPC arg types say `string` instead of `string | null` for its two nullable uuid params (Postgres
-codegen quirk, worked around with a narrowing cast in `campaigns.ts`). Also closed a real tenant-isolation gap:
-`createCampaign` accepted a `customer_group_id`/`template_id` straight from the client with no ownership check
-(the update RPC already had one) -- added the same check before insert.
-
-`npm run check` now passes 0 errors, `render-email.spec.ts`'s 7 tests pass, Prettier is clean on every new/edited
-file. New API routes (mirroring Customer Groups' permission/Zod/error convention exactly):
-`src/routes/api/marketing/campaigns/+server.ts` (GET list, POST create), `.../campaigns/[id=uuid]/+server.ts`
-(GET, PATCH, DELETE), `.../campaigns/preview/+server.ts` (POST content → rendered HTML, no id), and
-`src/routes/api/marketing/templates/+server.ts` (GET list platform+org templates, POST copy). New
-`src/lib/server/marketing/business-identity.ts` supplies the render footer's business name/address. Client
-wrappers added to `src/lib/marketing/api.ts` (fetchCampaigns, fetchCampaign, create/update/delete, preview,
-fetchMarketingTemplates, copy). No browser verification yet -- there is no UI to click through until M3b.
+M3b's first slice, the Templates tab, is done, browser-verified against the real managed Supabase project (Raad
+LTD, `jafarkhaninupwork@gmail.com`), and committed (`e53d53a`): Starter templates list (Preview + Use template,
+copy renders through the existing campaign-preview endpoint into a sandboxed iframe with a desktop/mobile
+toggle) and Your templates list (Preview only -- no edit/delete API exists for org templates yet, so none is
+offered). A copied starter shows "Added to your templates" instead of a second copy action. `npm run check`: 0
+errors. Prettier clean on touched files.
 
 ## Active part
 
-M3a is done pending the commit. M3b (the five-step journey UI, block editor, Templates screen) has not started.
+M3b in progress. Templates tab closed. Campaigns list tab and the five-step campaign creation journey (goal,
+customers, block editor, delivery, review) are next -- deliberately not started together with Templates because
+both need routes/screens that do not exist yet (no campaign detail page, no journey), so there was nothing
+useful to link a Campaigns list to yet.
 
 ## Exact next action
 
-Commit M3a (all the files above, already staged), then start M3b: the five-step campaign journey UI, the
-drag block editor, and the Templates nav screen. Browser-verify M3b end to end like M2b was.
+Build the Campaigns list tab (same SectionBlock/DataTable/EmptyState shell as Customer groups and Templates;
+`fetchCampaigns`/`marketingCampaignsKey` already exist in `src/lib/marketing/api.ts`) together with the
+five-step campaign creation journey it links to, modeled on `src/routes/(app)/clients/import/+page.svelte`'s
+step-state/step-component/mutation-per-step structure (Explore-agent survey, 2026-09-20, confirmed this is the
+closest existing precedent; no reusable block-editor or drag-and-drop component exists, so the block editor
+(step 3) is new, following `src/lib/forms/*`'s ordered-typed-item pattern with up/down reordering, no new
+drag-and-drop dependency). Leave-guard precedent: `beforeNavigate`/`onbeforeunload` pair in
+`src/routes/(app)/settings/business-profile/+page.svelte`. Steps 4 (Delivery) and 5 (Review) build the UI only;
+the real Send/Schedule launch command is M4's job -- decide how the button behaves before M4 exists (disabled
+with a note, most likely) when starting that step.
+
+This is large; split it at the next safe verified boundary (e.g. Campaigns list + journey shell/steps 1-2 first,
+then the block editor, then steps 4-5) rather than attempting it as one session.
 
 ## Blockers
 
@@ -42,8 +45,8 @@ piece -- see plan doc). M9 blocked until Communications A2 passes live SMS gates
 
 ## Pointers
 
-Plan: `docs/marketing-first-release-plan.md` (§3 M3, M4). Blueprint: `docs/marketing-product-blueprint.md` (§8
-step 3 for block editor spec, §5 for the Templates nav view). M2's customer-groups UI files are the convention
-template for M3b's screens.
+Plan: `docs/marketing-first-release-plan.md` (§3 M3, M4). Blueprint: `docs/marketing-product-blueprint.md` (§7
+campaign list/lifecycle, §8 the five-step journey and block editor spec). M2's customer-groups UI and M3b's
+Templates tab are the convention template for the Campaigns list.
 
-Resume: `continue marketing growth` — go straight to "Exact next action" above.
+Resume: `continue marketing growth` -- go straight to "Exact next action" above.
