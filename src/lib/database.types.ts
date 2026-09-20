@@ -974,6 +974,52 @@ export type Database = {
           },
         ]
       }
+      client_marketing_unsubscribe_links: {
+        Row: {
+          client_contact_method_id: string
+          client_id: string
+          id: string
+          issued_at: string
+          organization_id: string
+          token_hash: string
+        }
+        Insert: {
+          client_contact_method_id: string
+          client_id: string
+          id?: string
+          issued_at?: string
+          organization_id: string
+          token_hash: string
+        }
+        Update: {
+          client_contact_method_id?: string
+          client_id?: string
+          id?: string
+          issued_at?: string
+          organization_id?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_marketing_unsubscribe_links_method_fk"
+            columns: [
+              "organization_id",
+              "client_id",
+              "client_contact_method_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "client_contact_methods"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "client_marketing_unsubscribe_links_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_opening_balances: {
         Row: {
           amount_minor: number
@@ -17463,6 +17509,14 @@ export type Database = {
           total: number
         }[]
       }
+      issue_client_marketing_unsubscribe_link: {
+        Args: {
+          supplied_token_hash: string
+          target_client_contact_method_id: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       issue_invoice: {
         Args: {
           expected_revision: number
@@ -18425,6 +18479,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      record_client_marketing_unsubscribe: {
+        Args: { supplied_evidence?: Json; supplied_token_hash: string }
+        Returns: Json
+      }
       record_client_payment: {
         Args: {
           new_allocations: Json
@@ -19176,6 +19234,10 @@ export type Database = {
           target_organization_id: string
           target_payment_event_id: string
         }
+        Returns: Json
+      }
+      resolve_client_marketing_unsubscribe_link: {
+        Args: { supplied_token_hash: string }
         Returns: Json
       }
       resolve_communication_sms_attachment_access_link: {
