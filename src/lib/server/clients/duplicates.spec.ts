@@ -90,7 +90,6 @@ describe('client write rules', () => {
 		expect(parsed.lifecycle_status).toBe('lead');
 		expect(parsed.preferences.contact_policy).toBe('allow');
 		expect(parsed.preferences.review_requests).toBe(true);
-		expect(parsed.preferences.marketing).toBe(false);
 		expect(parsed.tag_ids).toEqual([]);
 	});
 

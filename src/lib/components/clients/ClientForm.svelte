@@ -45,8 +45,7 @@
 		invoice_reminders: true,
 		appointment_reminders: true,
 		job_follow_ups: true,
-		review_requests: true,
-		marketing: false
+		review_requests: true
 	};
 
 	const LEAD_SOURCES = [

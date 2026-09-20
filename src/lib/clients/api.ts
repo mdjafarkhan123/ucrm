@@ -45,7 +45,6 @@ export type ClientPreferences = {
 	appointment_reminders: boolean;
 	job_follow_ups: boolean;
 	review_requests: boolean;
-	marketing: boolean;
 };
 
 /**

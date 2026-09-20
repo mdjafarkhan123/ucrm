@@ -101,8 +101,7 @@
 		invoice_reminders: true,
 		appointment_reminders: true,
 		job_follow_ups: true,
-		review_requests: true,
-		marketing: false
+		review_requests: true
 	};
 
 	function preferencesOf(source: ClientDetail): ClientPreferences {
@@ -114,8 +113,7 @@
 			invoice_reminders: flags.invoice_reminders,
 			appointment_reminders: flags.appointment_reminders,
 			job_follow_ups: flags.job_follow_ups,
-			review_requests: flags.review_requests,
-			marketing: flags.marketing
+			review_requests: flags.review_requests
 		};
 	}
 

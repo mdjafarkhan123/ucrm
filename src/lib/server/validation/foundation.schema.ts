@@ -29,9 +29,7 @@ export const clientPreferencesSchema = z.object({
 	invoice_reminders: z.boolean().default(true),
 	appointment_reminders: z.boolean().default(true),
 	job_follow_ups: z.boolean().default(true),
-	review_requests: z.boolean().default(true),
-	// Marketing stays off until valid consent exists.
-	marketing: z.boolean().default(false)
+	review_requests: z.boolean().default(true)
 });
 
 export const clientWriteSchema = z
@@ -53,8 +51,7 @@ export const clientWriteSchema = z
 			invoice_reminders: true,
 			appointment_reminders: true,
 			job_follow_ups: true,
-			review_requests: true,
-			marketing: false
+			review_requests: true
 		}),
 		tag_ids: z.array(z.string().uuid()).max(30).default([])
 	})

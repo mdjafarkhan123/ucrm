@@ -61,7 +61,7 @@ export const GET: RequestHandler = async (event) => {
 		supabase
 			.from('client_communication_preferences')
 			.select(
-				'contact_policy, quote_follow_ups, invoice_reminders, appointment_reminders, job_follow_ups, review_requests, marketing, sms_opt_out_at, sms_opt_in_at'
+				'contact_policy, quote_follow_ups, invoice_reminders, appointment_reminders, job_follow_ups, review_requests, sms_opt_out_at, sms_opt_in_at'
 			)
 			.eq('organization_id', organizationId)
 			.eq('client_id', clientId)

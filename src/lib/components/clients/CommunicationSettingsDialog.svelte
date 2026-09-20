@@ -66,10 +66,6 @@
 			]
 		}
 	];
-
-	function isPaused(key: PreferenceFlag) {
-		return key === 'marketing' ? marketingPaused : allPaused;
-	}
 </script>
 
 <Dialog {open} title="Communication settings" size="large" {onClose}>
@@ -91,7 +87,7 @@
 			{#each group.items as item (item.key)}
 				<div
 					class="communication-settings__item"
-					class:communication-settings__item--paused={isPaused(item.key)}
+					class:communication-settings__item--paused={allPaused}
 				>
 					<Checkbox
 						id={`client-pref-${item.key}`}

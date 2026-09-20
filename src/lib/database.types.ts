@@ -678,7 +678,6 @@ export type Database = {
           created_at: string
           invoice_reminders: boolean
           job_follow_ups: boolean
-          marketing: boolean
           opt_out_source: string | null
           organization_id: string
           quote_follow_ups: boolean
@@ -694,7 +693,6 @@ export type Database = {
           created_at?: string
           invoice_reminders?: boolean
           job_follow_ups?: boolean
-          marketing?: boolean
           opt_out_source?: string | null
           organization_id: string
           quote_follow_ups?: boolean
@@ -710,7 +708,6 @@ export type Database = {
           created_at?: string
           invoice_reminders?: boolean
           job_follow_ups?: boolean
-          marketing?: boolean
           opt_out_source?: string | null
           organization_id?: string
           quote_follow_ups?: boolean
