@@ -6,7 +6,7 @@ Ship simple, safe contractor Marketing: one-off email first, with every approved
 
 ## State
 
-In progress 2026-09-20. Provider boundary: Brevo for Jafar/platform email only; Amazon SES for contractor CRM
+Paused 2026-09-20 at a clean boundary. Provider boundary: Brevo for Jafar/platform email only; Amazon SES for contractor CRM
 operational + Marketing email. Marketing stays disabled globally until M6 (feature `marketing` is in no package).
 SES event pipeline is built and proven in sandbox (plan §2; AWS access = SSO profile `ucrm`).
 
