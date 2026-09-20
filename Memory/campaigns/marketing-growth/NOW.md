@@ -6,41 +6,37 @@ Ship simple, safe contractor Marketing: one-off email first, with every approved
 
 ## State
 
-Paused 2026-09-20 at a clean boundary. Provider boundary: Brevo for Jafar/platform email only; Amazon SES for contractor CRM
+In progress 2026-09-20. Provider boundary: Brevo for Jafar/platform email only; Amazon SES for contractor CRM
 operational + Marketing email. Marketing stays disabled globally until M6 (feature `marketing` is in no package).
-SES event pipeline is built and proven in sandbox (plan §2; AWS access = SSO profile `ucrm`).
 
-M1 complete and committed (`8ef77f7`).
+M1 complete and committed (`8ef77f7`). M2 (server + UI) complete: M2a committed (`a3f13ca`); M2b browser-verified
+end to end against the real managed Supabase project (Raad LTD, `jafarkhaninupwork@gmail.com`) — create, every
+condition type, live count, View customers, save, reopen/edit with correct label hydration, delete — and ready
+to commit. One real bug was found and fixed during that verification: see ROADMAP.md's M2 entry.
 
-M2a (server) done: `marketing_customer_groups`, the whitelist rule compiler, and the two preview functions,
-with 17 pgTAP checks and 8 unit tests passing. Applied to dev; `npm run check` clean.
+The `marketing` feature override granted to Raad LTD for testing (`18f0d717-904e-48d8-bd99-9df7e3844cda`)
+expires automatically ~2026-09-20 11:31 UTC; no cleanup needed unless testing resumes after that.
 
 ## Active part
 
-M2 customer groups. M2a (server) closed; M2b (Customer groups UI) is next.
+M2 closed. M3 (drafts, goals, templates, editor, test email) is next, per
+`docs/marketing-first-release-plan.md` §3.
 
 ## Exact next action
 
-Build M2b: the Marketing → Customer groups view (saved-group list with counts, rule builder, live count,
-"View customers" preview split). Load the `design` and `svelte` skills first. The API is
-`/api/marketing/customer-groups` (GET/POST), `/[id]` (PATCH/DELETE), `/preview` (POST, `view: counts |
-recipients`). Browser-verify the whole M2 path there, since M2a has no UI of its own yet.
+1. Commit the M2b changes (marketing UI components, `lead-sources.ts` extraction, labels endpoint,
+   `AsyncMultiPicker` `SvelteMap` fix) — not yet committed as of this checkpoint.
+2. Read `docs/marketing-first-release-plan.md` §3 M3 and `docs/marketing-product-blueprint.md` for M3's
+   approved shape, then follow Non-Negotiable Rule 3 (research how mature products handle campaign drafts,
+   goals, templates, and a branded email editor) before planning implementation.
 
 ## Blockers
 
-M4 needs SES production access (sandbox 200/day). M9 blocked until Communications A2 passes live SMS gates.
-
-## Open side questions
-
-- Delete unused `.claude/skills/aws-mail-manager` skill? (unanswered)
-- Two Customers in one organization cannot share an email address today (a unique index forbids it), so the
-  blueprint's "duplicate email destinations" number is always 0. The preview still computes it. Tell Jafar
-  if he ever wants shared household emails allowed.
+None for starting M3. M4 needs SES production access (sandbox 200/day) — unrelated, later. M9 blocked until
+Communications A2 passes live SMS gates — unrelated, later.
 
 ## Pointers
 
-Part packet: `Memory/campaigns/marketing-growth/parts/m2-customer-groups.md` (holds the performance design
-verdict and the evidence M2's verification must still collect).
-Plan: `docs/marketing-first-release-plan.md` (§3 M2). Blueprint: `docs/marketing-product-blueprint.md` (§8).
+Plan: `docs/marketing-first-release-plan.md` (§3 M3). Blueprint: `docs/marketing-product-blueprint.md`.
 
-Resume: `continue marketing growth`
+Resume: `continue marketing growth` — go straight to "Exact next action" above.
