@@ -25,6 +25,7 @@
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
 	import InvoiceEmailDialog from '$lib/components/invoices/InvoiceEmailDialog.svelte';
 	import CollectPaymentDialog from '$lib/components/invoices/CollectPaymentDialog.svelte';
+	import AddDepositDialog from '$lib/components/invoices/AddDepositDialog.svelte';
 	import InvoiceLifecycleDialog from '$lib/components/invoices/InvoiceLifecycleDialog.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
@@ -43,6 +44,10 @@
 		queueInvoiceEmail,
 		issueInvoiceAccessLink,
 		recordInvoicePayment,
+		applyInvoiceCredit,
+		fetchInvoiceCredit,
+		invoiceCreditKey,
+		invoiceCreditPrefix,
 		sendPaymentReceipt,
 		runInvoiceLifecycleAction,
 		deleteInvoice,
@@ -51,6 +56,7 @@
 		type InvoiceWriteError,
 		type InvoiceLifecycleAction,
 		type InvoiceLineInput,
+		type ApplyInvoiceCreditInput,
 		type RecordInvoicePaymentResult
 	} from '$lib/invoices/api';
 	import { INVOICE_STATUS_LABELS, INVOICE_STATUS_TONES } from '$lib/invoices/statuses';
@@ -421,7 +427,9 @@
 		await Promise.all([
 			queryClient.invalidateQueries({ queryKey: invoiceDetailKey(invoiceId) }),
 			queryClient.invalidateQueries({ queryKey: ['invoices', 'list'] }),
-			queryClient.invalidateQueries({ queryKey: invoiceCountsKey })
+			queryClient.invalidateQueries({ queryKey: invoiceCountsKey }),
+			// Adding a deposit spends the client's spare money, and a payment recorded here may create some.
+			queryClient.invalidateQueries({ queryKey: invoiceCreditPrefix })
 		]);
 	}
 
@@ -609,6 +617,35 @@
 			toast.success('Payment recorded');
 			toast.error((cause as InvoiceWriteError).message);
 		}
+	}
+
+	// --- Add deposit (put the client's spare money on this invoice) ----------------------------------------
+	let addDepositOpen = $state(false);
+
+	// Offered only when there is spare money to spend on a bill that still owes. Jobber's row is always there;
+	// ours would open an empty list, so it waits until the client actually has credit.
+	const canAddDeposit = $derived(
+		canCollect && Boolean(saved?.client) && (saved?.client_balance?.available_credit_minor ?? 0) > 0
+	);
+
+	// The list is behind the button, so it loads when the pointer or keyboard reaches it, and stays cached.
+	function prefetchInvoiceCredit() {
+		if (!saved?.client) return;
+		const clientId = saved.client.id;
+		void queryClient.prefetchQuery({
+			queryKey: invoiceCreditKey(clientId),
+			queryFn: () => fetchInvoiceCredit(invoiceId, clientId),
+			staleTime: 15_000
+		});
+	}
+
+	function saveInvoiceCredit(input: ApplyInvoiceCreditInput) {
+		return applyInvoiceCredit(invoiceId, input);
+	}
+
+	async function onDepositAdded() {
+		await refreshInvoice();
+		toast.success('Deposit added');
 	}
 
 	// --- Lifecycle: void / bad debt / historical closure correction --------------------------------------
@@ -1069,6 +1106,22 @@
 								</div>
 							{/if}
 						</dl>
+						{#if canAddDeposit && saved.client_balance}
+							<div class="invoice-detail__credit">
+								<p class="invoice-detail__credit-note">
+									{formatMoney(saved.client_balance.available_credit_minor)} of this client&rsquo;s money
+									is not on any invoice yet.
+								</p>
+								<Button
+									variant="secondary"
+									size="small"
+									onhover={prefetchInvoiceCredit}
+									onclick={() => (addDepositOpen = true)}
+								>
+									Add deposit
+								</Button>
+							</div>
+						{/if}
 					</RailCard>
 				{/if}
 
@@ -1148,6 +1201,21 @@
 			/>
 		{/if}
 
+		{#if addDepositOpen && saved.money && saved.client}
+			<AddDepositDialog
+				open
+				{invoiceId}
+				invoiceNumber={saved.invoice.invoice_number}
+				clientId={saved.client.id}
+				remainingMinor={saved.money.remaining_minor}
+				currencyCode={saved.invoice.currency_code}
+				locale={saved.locale}
+				onClose={() => (addDepositOpen = false)}
+				onSave={saveInvoiceCredit}
+				onSaved={onDepositAdded}
+			/>
+		{/if}
+
 		{#if lifecycleMode}
 			<InvoiceLifecycleDialog
 				open
@@ -1185,6 +1253,22 @@
 			color: var(--color-heading);
 			font-weight: 600;
 		}
+	}
+
+	.invoice-detail__credit {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-small);
+		margin-top: var(--space-base);
+		padding-top: var(--space-base);
+		border-top: var(--border-base) solid var(--color-border);
+	}
+
+	.invoice-detail__credit-note {
+		margin: 0;
+		color: var(--color-text);
+		font-size: var(--typography--fontSize-small);
 	}
 
 	.invoice-detail__balance-amount {

@@ -92,9 +92,10 @@ Product truth: docs/online-payments-behavior-contract.md (approved 2026-09-18, i
      12 pgTAP assertions green (`supabase/tests/database/quote_deposit_applied_when_work_is_billed.sql`).
      Gate met. Not yet seen in the browser — job #20 (quote #36, $3,510 deposit, no invoice yet) is the live
      proof waiting to be billed.
-   - **9b leftover credit is spendable by hand** — needs 9a. Jobber's invoice **Deposits (Add Deposit)** row
-     (`jobber-05-invoices-payments.md` §174): leftover client credit goes onto any of that client's invoices.
-     `public.apply_client_payment` already does this in the database and is reachable from no route or screen;
-     the work is an `/api/*` route plus the dialog. Gate: browser-verified on a real leftover credit.
-     Known live case: invoice #27 is fully paid while quote #40's $330 deposit sits unspent — it needs 9b (or
-     a refund) to settle, and is why 9b should land before a first paying client.
+   - **9b leftover credit is spendable by hand** — Done 2026-09-20. The invoice Balance card shows "Add
+     deposit" when the client has spare money and the bill still owes; it opens a dialog listing that
+     money (`public.client_spendable_credit`, new read-only reader) and applies it through
+     `POST /api/invoices/[id]/credit` -> `apply_client_payment`. 11 pgTAP assertions in
+     `supabase/tests/database/client_spendable_credit_reader.sql`. Browser-verified on invoice #28: quote
+     #40's $330 Stripe deposit went onto it (balance $600 -> $270). Invoice #27 itself is fully paid, so
+     the $330 needed a new invoice to land on.

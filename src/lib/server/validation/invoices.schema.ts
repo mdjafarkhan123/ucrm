@@ -455,6 +455,28 @@ export const recordInvoicePaymentSchema = z.object({
 
 export type RecordInvoicePaymentInput = z.infer<typeof recordInvoicePaymentSchema>;
 
+// Putting money a client has already given -- a recorded payment or a quote deposit -- onto this one invoice
+// ("Add deposit"). Exactly which money is named by its kind and id; apply_client_payment checks it belongs to
+// the invoice's client and currency, and caps the amount against both what that money has left and what the
+// bill still owes, so this only shapes the request.
+export const applyInvoiceCreditSchema = z.object({
+	source: z.enum(['payment', 'deposit'], { message: 'Choose which money to use.' }),
+	source_id: z.string().uuid('Choose which money to use.'),
+	amount_minor: z
+		.number()
+		.int()
+		.min(1, 'Enter how much to apply.')
+		.max(MINOR_UNIT_MAX, 'That amount is too large.'),
+	idempotency_key: z.string().uuid('Start a new action and try again.'),
+	request_hash: z.string().trim().min(1, 'Reload and try again.').max(200, 'Reload and try again.')
+});
+
+export type ApplyInvoiceCreditInput = z.infer<typeof applyInvoiceCreditSchema>;
+
+// The client whose spare money is being listed. The reader is scoped to this organization and client, and
+// the apply command re-checks the client owns the invoice, so a wrong value only ever returns nothing.
+export const invoiceCreditQuerySchema = z.object({ client_id: z.string().uuid() });
+
 // Copying the customer link takes no body: which invoice is in the URL, and the recipient is the client's own
 // email. Strict so an unexpected field is refused rather than dropped.
 export const issueInvoiceAccessLinkSchema = z.strictObject({});

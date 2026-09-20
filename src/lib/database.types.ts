@@ -13972,6 +13972,21 @@ export type Database = {
         Args: { target_client_id: string; target_organization_id: string }
         Returns: Json
       }
+      client_spendable_credit: {
+        Args: { target_client_id: string; target_organization_id: string }
+        Returns: {
+          amount_minor: number
+          available_minor: number
+          currency_code: string
+          method: string
+          quote_id: string
+          quote_number: number
+          received_at: string
+          reference: string
+          source: string
+          source_id: string
+        }[]
+      }
       clone_quote_version_to_draft: {
         Args: { target_quote_id: string }
         Returns: Json

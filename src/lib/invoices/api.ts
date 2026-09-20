@@ -854,6 +854,72 @@ export async function recordInvoicePayment(
 	return readOrThrow<RecordInvoicePaymentResult>(response, 'That payment could not be recorded.');
 }
 
+// --- Adding a client's spare money to an invoice ("Add deposit") ----------------------------------------------
+
+/** One payment or quote deposit the client has given that still has money left. `quote_number` names the
+ *  quote a deposit was paid on; a payment has none. */
+export type InvoiceCreditSource = {
+	source: 'payment' | 'deposit';
+	source_id: string;
+	quote_id: string | null;
+	quote_number: number | null;
+	method: PaymentMethod | null;
+	reference: string | null;
+	currency_code: string;
+	amount_minor: number;
+	available_minor: number;
+	received_at: string;
+};
+
+// Client-wide, not per invoice: the same spare money is on offer from any of the client's bills. Every place
+// that spends, refunds or records money for a client invalidates this prefix along with the invoice caches.
+export const invoiceCreditPrefix = ['invoices', 'credit'] as const;
+export const invoiceCreditKey = (clientId: string) => [...invoiceCreditPrefix, clientId] as const;
+
+export async function fetchInvoiceCredit(
+	invoiceId: string,
+	clientId: string
+): Promise<InvoiceCreditSource[]> {
+	const response = await fetch(
+		`/api/invoices/${invoiceId}/credit?client_id=${encodeURIComponent(clientId)}`
+	);
+	const result = await readOrThrow<{ items: InvoiceCreditSource[] }>(
+		response,
+		'That client\u2019s credit could not be loaded.'
+	);
+	return result.items;
+}
+
+export type ApplyInvoiceCreditInput = {
+	source: 'payment' | 'deposit';
+	source_id: string;
+	amount_minor: number;
+	idempotency_key: string;
+	request_hash: string;
+};
+
+export type ApplyInvoiceCreditResult = {
+	allocation_id: string;
+	invoice_id: string;
+	invoice_number: number;
+	amount_minor: number;
+	source: 'payment' | 'quote_deposit';
+};
+
+// Puts some of that spare money on this one bill. The command caps the amount against what the money has left
+// and what the bill still owes, and a repeat with the same idempotency key replays rather than applying twice.
+export async function applyInvoiceCredit(
+	invoiceId: string,
+	input: ApplyInvoiceCreditInput
+): Promise<ApplyInvoiceCreditResult> {
+	const response = await fetch(`/api/invoices/${invoiceId}/credit`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	return readOrThrow<ApplyInvoiceCreditResult>(response, 'That deposit could not be added.');
+}
+
 export type QueuePaymentReceiptResult = {
 	intent: { id: string; status: string; created_at: string };
 };
