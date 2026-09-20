@@ -536,7 +536,11 @@
 						<a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer"
 							>API keys</a
 						>
-						and click <strong>Create restricted key</strong>. Name it <strong>UCRM</strong>.
+						and click <strong>Create restricted key</strong>.
+					</li>
+					<li>
+						Pick <strong>Powering an integration you built</strong>, click Continue, then click
+						<strong>Choose your own</strong>. Name the key <strong>UCRM</strong>.
 					</li>
 					<li>
 						Set only these permissions. Leave everything else as <strong>None</strong>.

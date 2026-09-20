@@ -53,6 +53,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [A recorded payment cannot be edited, deleted, or split across invoices](payments-cannot-be-edited-deleted-or-split-across-invoices.md) |
 | P2 | [Two job billing-reminder modes never raise a reminder](two-job-billing-reminder-modes-raise-no-reminder.md) |
 | P2 | [Client detail's financial summary widget is empty for everyone, not just some roles](client-financial-summary-widget-shows-empty-placeholders-for-everyone.md) |
+| P2 | [Disconnecting Stripe expires open checkouts: code-complete, never live-tested](stripe-disconnect-open-checkout-expiry-not-live-tested.md) |
 | P3 | [Offline field records on site (Jobs 15f)](offline-field-records-on-site.md) |
 | P3 | [`/get-started` page weight](get-started-page-weight.md) |
 | P3 | [Client photos are one request each](client-photos-are-one-request-each.md) |
