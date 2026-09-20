@@ -21,7 +21,8 @@
 		pipelineVisible = true,
 		clientsVisible = true,
 		quotesVisible = true,
-		invoicesVisible = true
+		invoicesVisible = true,
+		marketingVisible = false
 	}: {
 		children: import('svelte').Snippet;
 		variant?: 'contractor' | 'owner';
@@ -33,6 +34,7 @@
 		clientsVisible?: boolean;
 		quotesVisible?: boolean;
 		invoicesVisible?: boolean;
+		marketingVisible?: boolean;
 	} = $props();
 	let mobileOpen = $state(false);
 	let sidebarCollapsed = $state(false);
@@ -75,6 +77,9 @@
 		{
 			label: 'Growth',
 			items: [
+				...(marketingVisible
+					? [{ label: 'Marketing', href: '/marketing', icon: 'speakerphone' }]
+					: []),
 				{ label: 'Reputation', href: '/reputation', icon: 'star', unavailable: true },
 				{ label: 'Growth Feed', href: '/growth', icon: 'trendingUp', unavailable: true }
 			]

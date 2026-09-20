@@ -64,6 +64,19 @@
 	}));
 	const invoicesVisible = $derived(invoicesAccessQuery.data?.ok ?? true);
 
+	// Marketing is not in any package yet, so the common answer is "no". It therefore stays hidden until the
+	// server says yes, rather than flashing into the menu and disappearing. The probe goes through the page's own
+	// route and permission check, so the menu and the page can never disagree about who may see Marketing.
+	const marketingAccessQuery = createQuery<{ ok: boolean }>(() => ({
+		queryKey: ['nav', 'marketing-access', data.user?.id ?? null],
+		queryFn: async () => {
+			const response = await fetch('/api/marketing/readiness?access=1');
+			return { ok: response.ok };
+		},
+		staleTime: 5 * 60_000
+	}));
+	const marketingVisible = $derived(marketingAccessQuery.data?.ok ?? false);
+
 	// Every page is its own JavaScript file, so the first visit to one waits for that file to arrive and
 	// the click feels stuck. This fetches the files for the pages the office moves between all day once
 	// the browser has nothing else to do, so those clicks paint straight away. Hovering a link already
@@ -93,6 +106,7 @@
 		resolve('/(app)/invoices/[id=uuid]', { id: WARM_UUID }),
 		resolve('/(app)/pipeline'),
 		resolve('/(app)/pipeline/outcomes'),
+		resolve('/(app)/marketing'),
 		resolve('/(app)/communications'),
 		resolve('/(app)/settings'),
 		resolve('/(app)/settings/business-profile'),
@@ -140,5 +154,6 @@
 	{pipelineVisible}
 	{clientsVisible}
 	{quotesVisible}
-	{invoicesVisible}>{@render children()}</AppShell
+	{invoicesVisible}
+	{marketingVisible}>{@render children()}</AppShell
 >

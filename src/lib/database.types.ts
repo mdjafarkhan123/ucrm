@@ -15855,6 +15855,15 @@ export type Database = {
           value: number
         }[]
       }
+      effective_marketing_email_limit: {
+        Args: { at?: string; target_organization_id: string }
+        Returns: {
+          is_unlimited: boolean
+          source: string
+          state: string
+          value: number
+        }[]
+      }
       effective_website_chat_widgets_limit: {
         Args: { at?: string; target_organization_id: string }
         Returns: {

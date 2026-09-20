@@ -18,6 +18,7 @@
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 	import routeIcon from '@tabler/icons/outline/route.svg?raw';
 	import starIcon from '@tabler/icons/outline/star.svg?raw';
+	import speakerphoneIcon from '@tabler/icons/outline/speakerphone.svg?raw';
 	import trendingUpIcon from '@tabler/icons/outline/trending-up.svg?raw';
 	import usersGroupIcon from '@tabler/icons/outline/users-group.svg?raw';
 	import chartBarIcon from '@tabler/icons/outline/chart-bar.svg?raw';
@@ -64,6 +65,7 @@
 		mail: mailIcon,
 		route: routeIcon,
 		star: starIcon,
+		speakerphone: speakerphoneIcon,
 		trendingUp: trendingUpIcon,
 		usersGroup: usersGroupIcon,
 		chartBar: chartBarIcon
