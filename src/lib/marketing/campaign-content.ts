@@ -131,7 +131,9 @@ export type MarketingBlock = z.infer<typeof marketingBlockSchema>;
 export const marketingCampaignContentSchema = z
 	.object({
 		version: z.literal('1'),
-		subject: variableText(MARKETING_SUBJECT_MAX),
+		// Empty is allowed here: a draft is saveable at any point in the journey, before the Email step (3)
+		// has even been built. M4's Send/Schedule action is what will require a non-empty subject.
+		subject: z.string().trim().max(MARKETING_SUBJECT_MAX).superRefine(rejectUnknownVariables),
 		preview_text: z
 			.string()
 			.trim()
@@ -162,6 +164,14 @@ export const marketingGoalLabels: Record<MarketingGoal, string> = {
 	blank: 'Start from a blank campaign'
 };
 
+// Step 1's card copy (blueprint §8 step 1): who this goal is meant to reach.
+export const marketingGoalDescriptions: Record<MarketingGoal, string> = {
+	bring_back: 'Reach customers who have not booked in a while and invite them back.',
+	promote_service: 'Tell existing customers about a seasonal or additional service.',
+	announcement: 'Share news — a price change, new hours, or something new you offer.',
+	blank: 'Build the email yourself with no starting content.'
+};
+
 export const marketingCampaignStatuses = [
 	'draft',
 	'scheduled',
@@ -171,6 +181,28 @@ export const marketingCampaignStatuses = [
 	'needs_attention'
 ] as const;
 export type MarketingCampaignStatus = (typeof marketingCampaignStatuses)[number];
+
+export const marketingCampaignStatusLabels: Record<MarketingCampaignStatus, string> = {
+	draft: 'Draft',
+	scheduled: 'Scheduled',
+	sending: 'Sending',
+	completed: 'Completed',
+	cancelled: 'Cancelled',
+	needs_attention: 'Needs attention'
+};
+
+// Same five-tone system as Quotes' STORED_QUOTE_STATUSES (src/lib/quotes/statuses.ts).
+export const marketingCampaignStatusTones: Record<
+	MarketingCampaignStatus,
+	'success' | 'critical' | 'warning' | 'informative' | 'inactive'
+> = {
+	draft: 'inactive',
+	scheduled: 'informative',
+	sending: 'warning',
+	completed: 'success',
+	cancelled: 'inactive',
+	needs_attention: 'critical'
+};
 
 export type MarketingCampaignListItem = {
 	id: string;

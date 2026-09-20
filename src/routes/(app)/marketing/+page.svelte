@@ -14,13 +14,16 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import CustomerGroupsPanel from '$lib/components/marketing/CustomerGroupsPanel.svelte';
 	import TemplatesPanel from '$lib/components/marketing/TemplatesPanel.svelte';
+	import CampaignsPanel from '$lib/components/marketing/CampaignsPanel.svelte';
 	import {
 		fetchMarketingReadiness,
 		fetchCustomerGroups,
 		fetchMarketingTemplates,
+		fetchCampaigns,
 		marketingReadinessKey,
 		marketingCustomerGroupsKey,
 		marketingTemplatesKey,
+		marketingCampaignsKey,
 		type MarketingApiError
 	} from '$lib/marketing/api';
 	import type { MarketingReadinessReason } from '$lib/marketing/readiness';
@@ -28,8 +31,8 @@
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
 	// Marketing home. Overview answers "can I send Marketing email yet, and if not, what is the one thing to
-	// fix?" Customer groups and Templates are saved building blocks; Campaigns (and the creation journey)
-	// arrive in a later slice.
+	// fix?" Customer groups and Templates are saved building blocks; Campaigns is where a draft is built and
+	// (once M4 exists) sent.
 	const queryClient = useQueryClient();
 
 	const readinessQuery = createQuery(() => ({
@@ -44,6 +47,15 @@
 	// linked to. Overview is the default and carries no parameter.
 	const marketingTabs: Tab[] = [
 		{ value: 'overview', label: 'Overview' },
+		{
+			value: 'campaigns',
+			label: 'Campaigns',
+			onhover: () =>
+				void queryClient.prefetchQuery({
+					queryKey: marketingCampaignsKey,
+					queryFn: fetchCampaigns
+				})
+		},
 		{
 			value: 'customer-groups',
 			label: 'Customer groups',
@@ -158,6 +170,9 @@
 							{/if}
 						</SectionBlock>
 					{/if}
+				</TabPanel>
+				<TabPanel value="campaigns">
+					<CampaignsPanel />
 				</TabPanel>
 				<TabPanel value="customer-groups">
 					<CustomerGroupsPanel />

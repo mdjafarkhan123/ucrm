@@ -107,6 +107,8 @@
 		resolve('/(app)/pipeline'),
 		resolve('/(app)/pipeline/outcomes'),
 		resolve('/(app)/marketing'),
+		resolve('/(app)/marketing/campaigns/new'),
+		resolve('/(app)/marketing/campaigns/[id=uuid]/edit', { id: WARM_UUID }),
 		resolve('/(app)/communications'),
 		resolve('/(app)/settings'),
 		resolve('/(app)/settings/business-profile'),
