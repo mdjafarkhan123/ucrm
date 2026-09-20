@@ -3,6 +3,7 @@
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import { LEAD_SOURCES } from '$lib/clients/lead-sources';
 
 	// Edits lead source without saving it. Done hands the choice back to the page's draft.
 	let {
@@ -16,16 +17,6 @@
 		onDone: (next: string) => void;
 		onClose: () => void;
 	} = $props();
-
-	const LEAD_SOURCES = [
-		'Referral',
-		'Google search',
-		'Website',
-		'Social media',
-		'Repeat customer',
-		'Drive by',
-		'Other'
-	];
 
 	// Taken once on mount; the page mounts this fresh each time it opens.
 	let choice = $state(untrack(() => value));

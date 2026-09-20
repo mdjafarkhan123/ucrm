@@ -21,6 +21,7 @@
 		type ClientWriteValues,
 		type DuplicateCandidates
 	} from '$lib/clients/api';
+	import { LEAD_SOURCES } from '$lib/clients/lead-sources';
 	import userIcon from '@tabler/icons/outline/user.svg?raw';
 	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
@@ -47,16 +48,6 @@
 		job_follow_ups: true,
 		review_requests: true
 	};
-
-	const LEAD_SOURCES = [
-		'Referral',
-		'Google search',
-		'Website',
-		'Social media',
-		'Repeat customer',
-		'Drive by',
-		'Other'
-	];
 
 	const COUNTRIES = [
 		{ value: 'US', label: 'United States' },

@@ -1,24 +1,33 @@
 <script lang="ts">
-	import { createQuery } from '@tanstack/svelte-query';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { replaceState } from '$app/navigation';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Tabs, { type Tab } from '$lib/components/ui/Tabs.svelte';
+	import TabPanel from '$lib/components/ui/TabPanel.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import CustomerGroupsPanel from '$lib/components/marketing/CustomerGroupsPanel.svelte';
 	import {
 		fetchMarketingReadiness,
+		fetchCustomerGroups,
 		marketingReadinessKey,
+		marketingCustomerGroupsKey,
 		type MarketingApiError
 	} from '$lib/marketing/api';
 	import type { MarketingReadinessReason } from '$lib/marketing/readiness';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
-	// Marketing home. This first slice only answers "can I send Marketing email yet, and if not, what is the
-	// one thing to fix?" Campaigns, customer groups and templates arrive in later slices.
+	// Marketing home. Overview answers "can I send Marketing email yet, and if not, what is the one thing to
+	// fix?" Customer groups is the first saved-audience view; Campaigns and Templates arrive in later slices.
+	const queryClient = useQueryClient();
+
 	const readinessQuery = createQuery(() => ({
 		queryKey: marketingReadinessKey,
 		queryFn: fetchMarketingReadiness,
@@ -26,6 +35,31 @@
 		// A refusal never changes on its own, so it is not retried.
 		retry: (failures, error) => (error as MarketingApiError).status !== 403 && failures < 2
 	}));
+
+	// The open view lives in the URL the way Jobber's client tabs do, so it survives a reload and can be
+	// linked to. Overview is the default and carries no parameter.
+	const marketingTabs: Tab[] = [
+		{ value: 'overview', label: 'Overview' },
+		{
+			value: 'customer-groups',
+			label: 'Customer groups',
+			onhover: () =>
+				void queryClient.prefetchQuery({
+					queryKey: marketingCustomerGroupsKey,
+					queryFn: fetchCustomerGroups
+				})
+		}
+	];
+	const activeTab = $derived.by(() => {
+		const asked = page.url.searchParams.get('tab');
+		return marketingTabs.some((tab) => tab.value === asked) ? (asked as string) : 'overview';
+	});
+	function selectTab(next: string) {
+		const url = new URL(page.url);
+		if (next === 'overview') url.searchParams.delete('tab');
+		else url.searchParams.set('tab', next);
+		replaceState(url, page.state);
+	}
 
 	// Each fix names the screen that owns it; resolve() wants the full route id.
 	function fixHref(target: NonNullable<MarketingReadinessReason['fix']>['href']) {
@@ -61,52 +95,61 @@
 				title="You do not have access to Marketing"
 				description="Ask an owner or admin to give you Marketing access."
 			/>
-		{:else if readinessQuery.isPending}
-			<LoadingSkeleton variant="card" rows={3} label="Checking Marketing readiness" />
-		{:else if readinessQuery.isError}
-			<ErrorState
-				title="Marketing could not be checked"
-				description="Something went wrong on our side. Try again."
-				retry={() => readinessQuery.refetch()}
-			/>
 		{:else}
-			{@const readiness = readinessQuery.data}
-			<SectionBlock
-				title="Email readiness"
-				hint={readiness.ready
-					? 'Everything needed to send Marketing email is in place.'
-					: 'Finish these before you can send Marketing email. Your drafts and history stay safe.'}
-			>
-				{#if readiness.ready}
-					<p class="marketing__ready" role="status">
-						<span class="marketing__badge marketing__badge--ok" aria-hidden="true">
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							{@html checkIcon}
-						</span>
-						You are ready to send Marketing email.
-					</p>
-				{:else}
-					<ul class="marketing__reasons">
-						{#each readiness.reasons as reason (reason.code)}
-							<li class="marketing__reason">
-								<span class="marketing__badge marketing__badge--warn" aria-hidden="true">
-									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-									{@html alertIcon}
-								</span>
-								<div class="marketing__reason-copy">
-									<p class="marketing__reason-title">{reason.title}</p>
-									<p class="marketing__reason-detail">{reason.detail}</p>
-								</div>
-								{#if reason.fix}
-									<Button variant="secondary" size="small" href={fixHref(reason.fix.href)}>
-										{reason.fix.label}
-									</Button>
-								{/if}
-							</li>
-						{/each}
-					</ul>
-				{/if}
-			</SectionBlock>
+			<Tabs tabs={marketingTabs} value={activeTab} onChange={selectTab} label="Marketing views">
+				<TabPanel value="overview">
+					{#if readinessQuery.isPending}
+						<LoadingSkeleton variant="card" rows={3} label="Checking Marketing readiness" />
+					{:else if readinessQuery.isError}
+						<ErrorState
+							title="Marketing could not be checked"
+							description="Something went wrong on our side. Try again."
+							retry={() => readinessQuery.refetch()}
+						/>
+					{:else}
+						{@const readiness = readinessQuery.data}
+						<SectionBlock
+							title="Email readiness"
+							hint={readiness.ready
+								? 'Everything needed to send Marketing email is in place.'
+								: 'Finish these before you can send Marketing email. Your drafts and history stay safe.'}
+						>
+							{#if readiness.ready}
+								<p class="marketing__ready" role="status">
+									<span class="marketing__badge marketing__badge--ok" aria-hidden="true">
+										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+										{@html checkIcon}
+									</span>
+									You are ready to send Marketing email.
+								</p>
+							{:else}
+								<ul class="marketing__reasons">
+									{#each readiness.reasons as reason (reason.code)}
+										<li class="marketing__reason">
+											<span class="marketing__badge marketing__badge--warn" aria-hidden="true">
+												<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+												{@html alertIcon}
+											</span>
+											<div class="marketing__reason-copy">
+												<p class="marketing__reason-title">{reason.title}</p>
+												<p class="marketing__reason-detail">{reason.detail}</p>
+											</div>
+											{#if reason.fix}
+												<Button variant="secondary" size="small" href={fixHref(reason.fix.href)}>
+													{reason.fix.label}
+												</Button>
+											{/if}
+										</li>
+									{/each}
+								</ul>
+							{/if}
+						</SectionBlock>
+					{/if}
+				</TabPanel>
+				<TabPanel value="customer-groups">
+					<CustomerGroupsPanel />
+				</TabPanel>
+			</Tabs>
 		{/if}
 	</div>
 </PageContainer>

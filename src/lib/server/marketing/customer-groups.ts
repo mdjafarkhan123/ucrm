@@ -154,3 +154,39 @@ export async function previewRecipients(
 	if (error) throw error;
 	return (data ?? []) as MarketingPreviewRecipient[];
 }
+
+export type RuleLabel = { id: string; label: string };
+
+// The rule builder only ever stores ids (a catalog item, a Customer). Reopening a saved group has to show
+// their names again without a general-purpose "fetch by id list" on the Catalog or Client APIs, so this
+// stays a small helper scoped to what the rule builder needs, reading the same tables `catalog.view` and
+// `customers.view` already expose -- the caller has already proved `marketing.view` for the organization.
+export async function hydrateRuleLabels(
+	organizationId: string,
+	catalogItemIds: string[],
+	clientIds: string[]
+): Promise<{ catalog_items: RuleLabel[]; clients: RuleLabel[] }> {
+	const owner = getOwnerSupabaseClient();
+	const [catalogResult, clientResult] = await Promise.all([
+		catalogItemIds.length > 0
+			? owner
+					.from('catalog_items')
+					.select('id, name')
+					.eq('organization_id', organizationId)
+					.in('id', catalogItemIds)
+			: Promise.resolve({ data: [], error: null }),
+		clientIds.length > 0
+			? owner
+					.from('clients')
+					.select('id, display_name')
+					.eq('organization_id', organizationId)
+					.in('id', clientIds)
+			: Promise.resolve({ data: [], error: null })
+	]);
+	if (catalogResult.error) throw catalogResult.error;
+	if (clientResult.error) throw clientResult.error;
+	return {
+		catalog_items: (catalogResult.data ?? []).map((row) => ({ id: row.id, label: row.name })),
+		clients: (clientResult.data ?? []).map((row) => ({ id: row.id, label: row.display_name }))
+	};
+}
