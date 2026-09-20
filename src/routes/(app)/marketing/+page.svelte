@@ -13,11 +13,14 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import CustomerGroupsPanel from '$lib/components/marketing/CustomerGroupsPanel.svelte';
+	import TemplatesPanel from '$lib/components/marketing/TemplatesPanel.svelte';
 	import {
 		fetchMarketingReadiness,
 		fetchCustomerGroups,
+		fetchMarketingTemplates,
 		marketingReadinessKey,
 		marketingCustomerGroupsKey,
+		marketingTemplatesKey,
 		type MarketingApiError
 	} from '$lib/marketing/api';
 	import type { MarketingReadinessReason } from '$lib/marketing/readiness';
@@ -25,7 +28,8 @@
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
 	// Marketing home. Overview answers "can I send Marketing email yet, and if not, what is the one thing to
-	// fix?" Customer groups is the first saved-audience view; Campaigns and Templates arrive in later slices.
+	// fix?" Customer groups and Templates are saved building blocks; Campaigns (and the creation journey)
+	// arrive in a later slice.
 	const queryClient = useQueryClient();
 
 	const readinessQuery = createQuery(() => ({
@@ -47,6 +51,15 @@
 				void queryClient.prefetchQuery({
 					queryKey: marketingCustomerGroupsKey,
 					queryFn: fetchCustomerGroups
+				})
+		},
+		{
+			value: 'templates',
+			label: 'Templates',
+			onhover: () =>
+				void queryClient.prefetchQuery({
+					queryKey: marketingTemplatesKey,
+					queryFn: fetchMarketingTemplates
 				})
 		}
 	];
@@ -148,6 +161,9 @@
 				</TabPanel>
 				<TabPanel value="customer-groups">
 					<CustomerGroupsPanel />
+				</TabPanel>
+				<TabPanel value="templates">
+					<TemplatesPanel />
 				</TabPanel>
 			</Tabs>
 		{/if}
