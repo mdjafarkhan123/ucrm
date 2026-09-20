@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { beforeNavigate, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -8,19 +9,28 @@
 	import CampaignStepper from './CampaignStepper.svelte';
 	import CampaignGoalStep from './CampaignGoalStep.svelte';
 	import CampaignCustomersStep from './CampaignCustomersStep.svelte';
+	import CampaignEmailStep from './CampaignEmailStep.svelte';
 	import CampaignComingSoonStep from './CampaignComingSoonStep.svelte';
 	import {
 		fetchCustomerGroups,
 		createCampaignRequest,
 		updateCampaignRequest,
+		fetchRuleLabels,
 		StaleCampaignError,
 		marketingCampaignsKey,
 		marketingCampaignKey,
-		marketingCustomerGroupsKey
+		marketingCustomerGroupsKey,
+		type MarketingApiError,
+		type RuleLabel
 	} from '$lib/marketing/api';
 	import {
+		cloneMarketingCampaignContent,
+		describeMarketingContentProblem,
 		emptyMarketingCampaignContent,
+		type MarketingBlock,
+		type MarketingBlockType,
 		type MarketingCampaign,
+		type MarketingCampaignContent,
 		type MarketingGoal
 	} from '$lib/marketing/campaign-content';
 
@@ -50,10 +60,12 @@
 	// svelte-ignore state_referenced_locally
 	const templateId = initial?.template_id ?? null;
 	// svelte-ignore state_referenced_locally
-	const content = initial?.content ?? emptyMarketingCampaignContent;
+	let content = $state<MarketingCampaignContent>(
+		cloneMarketingCampaignContent(initial?.content ?? emptyMarketingCampaignContent)
+	);
 
 	function snapshot() {
-		return JSON.stringify({ name, goal, customerGroupId });
+		return JSON.stringify({ name, goal, customerGroupId, content });
 	}
 	let savedSnapshot = $state(snapshot());
 	const dirty = $derived(snapshot() !== savedSnapshot);
@@ -61,6 +73,7 @@
 	let nameError = $state('');
 	let goalError = $state('');
 	let customersError = $state('');
+	let contentError = $state('');
 	let saveError = $state('');
 	let saving = $state(false);
 
@@ -68,6 +81,52 @@
 		queryKey: marketingCustomerGroupsKey,
 		queryFn: fetchCustomerGroups
 	}));
+
+	// Names for catalog item ids a reopened draft's service_summary blocks already hold, so their chips show
+	// a name instead of a raw id -- same one-shot hydration CustomerGroupDialog uses for its own rule ids.
+	let catalogLabels = $state<RuleLabel[]>([]);
+	onMount(() => {
+		const ids = (initial?.content.blocks ?? [])
+			.filter((block) => block.type === 'service_summary')
+			.flatMap((block) => (block.type === 'service_summary' ? block.catalog_item_ids : []));
+		if (ids.length === 0) return;
+		void fetchRuleLabels(ids, []).then((result) => (catalogLabels = result.catalog_items));
+	});
+
+	function blankBlock(type: MarketingBlockType): MarketingBlock {
+		const id = crypto.randomUUID();
+		switch (type) {
+			case 'image':
+				return { id, type, url: '', alt: '' };
+			case 'heading':
+				return { id, type, level: 'h2', text: '' };
+			case 'text':
+				return { id, type, text: '' };
+			case 'button':
+				return { id, type, label: '', url: '' };
+			case 'divider':
+				return { id, type };
+			case 'service_summary':
+				return { id, type, title: '', catalog_item_ids: [] };
+		}
+	}
+
+	// Block array edits are owned here (not the step or its row editor) for the same reason form-builder
+	// question edits are owned by its page: a child reassigning an array on a plain, non-$bindable prop
+	// updates the underlying $state but doesn't re-render that child's own template.
+	function addBlock(type: MarketingBlockType) {
+		content.blocks = [...content.blocks, blankBlock(type)];
+	}
+	function moveBlock(index: number, by: number) {
+		const target = index + by;
+		if (target < 0 || target >= content.blocks.length) return;
+		const next = [...content.blocks];
+		[next[index], next[target]] = [next[target], next[index]];
+		content.blocks = next;
+	}
+	function removeBlock(index: number) {
+		content.blocks = content.blocks.filter((_, i) => i !== index);
+	}
 
 	async function saveDraft() {
 		saveError = '';
@@ -80,6 +139,13 @@
 		}
 		nameError = '';
 		goalError = '';
+		const problem = describeMarketingContentProblem(content);
+		if (problem) {
+			step = 3;
+			contentError = problem;
+			return;
+		}
+		contentError = '';
 		saving = true;
 		try {
 			const input = {
@@ -107,12 +173,15 @@
 				await queryClient.invalidateQueries({ queryKey: marketingCampaignKey(campaignId) });
 			toast.success('Campaign draft saved.');
 		} catch (cause) {
+			const fieldMessages = Object.values((cause as MarketingApiError)?.field_errors ?? {});
 			saveError =
 				cause instanceof StaleCampaignError
 					? cause.message
-					: cause instanceof Error
-						? cause.message
-						: 'That campaign could not be saved.';
+					: fieldMessages.length > 0
+						? fieldMessages[0]
+						: cause instanceof Error
+							? cause.message
+							: 'That campaign could not be saved.';
 		} finally {
 			saving = false;
 		}
@@ -186,8 +255,20 @@
 			onBack={() => (step = 1)}
 			onContinue={continueFromCustomers}
 		/>
+	{:else if step === 3}
+		<CampaignEmailStep
+			{content}
+			campaignName={name}
+			errorMessage={contentError}
+			{catalogLabels}
+			onAddBlock={addBlock}
+			onMoveBlock={moveBlock}
+			onRemoveBlock={removeBlock}
+			onBack={() => (step = 2)}
+			onContinue={() => (step = 4)}
+		/>
 	{:else}
-		<CampaignComingSoonStep onBack={() => (step = 2)} />
+		<CampaignComingSoonStep onBack={() => (step = 3)} />
 	{/if}
 </div>
 

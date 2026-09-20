@@ -17,6 +17,15 @@ export const MARKETING_BLOCK_TYPES = [
 ] as const;
 export type MarketingBlockType = (typeof MARKETING_BLOCK_TYPES)[number];
 
+export const MARKETING_BLOCK_TYPE_LABELS: Record<MarketingBlockType, string> = {
+	image: 'Image',
+	heading: 'Heading',
+	text: 'Text',
+	button: 'Button',
+	divider: 'Divider',
+	service_summary: 'Service summary'
+};
+
 // Caps. Bounded on purpose -- an email stays a fast, predictable render and safe to store. The editor shows
 // these as limits; the validator refuses past them.
 export const MARKETING_MAX_BLOCKS = 30;
@@ -36,6 +45,11 @@ export const MARKETING_CAMPAIGN_NAME_MAX = 160;
 // from ever being saved.
 export const MARKETING_VARIABLES = ['customer_first_name', 'business_name'] as const;
 export type MarketingVariable = (typeof MARKETING_VARIABLES)[number];
+
+export const MARKETING_VARIABLE_LABELS: Record<MarketingVariable, string> = {
+	customer_first_name: "Customer's first name",
+	business_name: 'Your business name'
+};
 
 const httpUrl = z
 	.string()
@@ -153,6 +167,46 @@ export const emptyMarketingCampaignContent: MarketingCampaignContent = {
 	subject: '',
 	blocks: []
 };
+
+// The editor deep-clones a loaded draft before touching it (never mutate a TanStack Query cache entry in
+// place -- same reason the request-form builder's `cloneContent` exists) and normalizes `preview_text` to an
+// always-defined string, since the editor's Input needs a stable string to bind, not `string | undefined`.
+export function cloneMarketingCampaignContent(
+	content: MarketingCampaignContent
+): MarketingCampaignContent {
+	const clone = structuredClone(content);
+	clone.preview_text ??= '';
+	return clone;
+}
+
+// A friendly, client-side mirror of the block-level Zod requirements above -- the server stays the source of
+// truth (CLAUDE.md rule 12); this only spares a round trip and names the exact block, the same split the
+// request-form builder's own `validate()` uses.
+export function describeMarketingContentProblem(content: MarketingCampaignContent): string | null {
+	for (let i = 0; i < content.blocks.length; i++) {
+		const block = content.blocks[i];
+		const position = `Block ${i + 1} (${MARKETING_BLOCK_TYPE_LABELS[block.type]})`;
+		switch (block.type) {
+			case 'heading':
+			case 'text':
+				if (!block.text.trim()) return `${position} needs its text.`;
+				break;
+			case 'button':
+				if (!block.label.trim()) return `${position} needs its button label.`;
+				if (!block.url.trim()) return `${position} needs a link.`;
+				break;
+			case 'image':
+				if (!block.url.trim()) return `${position} needs an image link.`;
+				break;
+			case 'service_summary':
+				if (!block.title.trim()) return `${position} needs a title.`;
+				break;
+			case 'divider':
+				break;
+		}
+	}
+	return null;
+}
 
 export const marketingGoals = ['bring_back', 'promote_service', 'announcement', 'blank'] as const;
 export type MarketingGoal = (typeof marketingGoals)[number];
