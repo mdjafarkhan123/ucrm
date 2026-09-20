@@ -71,6 +71,7 @@ describe('platform owner package version write API boundary', () => {
 					widgets: { state: 'numeric', value: 3 },
 					accepted_conversations: { state: 'numeric', value: 200 }
 				},
+				marketing_email_limit: { state: 'numeric', value: 5000 },
 				automation_limits: {
 					active_recipes: { state: 'numeric', value: 20 },
 					conditions_per_recipe: { state: 'numeric', value: 6 },
@@ -103,6 +104,12 @@ describe('platform owner package version write API boundary', () => {
 			target_widgets_value: 3,
 			target_accepted_conversations_state: 'numeric',
 			target_accepted_conversations_value: 200,
+			actor_email: 'owner@example.com'
+		});
+		expect(rpc).toHaveBeenCalledWith('manage_platform_package_marketing_allowance', {
+			target_version_id: 'version-id',
+			target_state: 'numeric',
+			target_value: 5000,
 			actor_email: 'owner@example.com'
 		});
 		expect(rpc).toHaveBeenCalledWith('manage_platform_package_automation_limits', {

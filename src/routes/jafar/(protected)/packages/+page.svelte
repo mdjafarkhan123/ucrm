@@ -67,6 +67,8 @@
 	let websiteChatWidgetsCount = $state('');
 	let websiteChatAcceptedConversationsState = $state<LimitState>('not_included');
 	let websiteChatAcceptedConversationsCount = $state('');
+	let marketingEmailState = $state<LimitState>('not_included');
+	let marketingEmailCount = $state('');
 
 	// The seven Automation ceilings, driven by one descriptor list so the editor and payload stay in
 	// lockstep with the database limit keys. Order matches the resolver and owner write command.
@@ -189,6 +191,10 @@
 									? Number(websiteChatAcceptedConversationsCount)
 									: null
 						}
+					},
+					marketing_email_limit: {
+						state: marketingEmailState,
+						value: marketingEmailState === 'numeric' ? Number(marketingEmailCount) : null
 					},
 					automation_limits: Object.fromEntries(
 						AUTOMATION_LIMIT_FIELDS.map((field) => {
@@ -318,6 +324,14 @@
 		websiteChatAcceptedConversationsCount =
 			websiteChatAcceptedConversations && websiteChatAcceptedConversations.limit_value !== null
 				? String(websiteChatAcceptedConversations.limit_value)
+				: '';
+		const marketingEmail = source?.limits.find(
+			(limit) => limit.limit_key === 'marketing_email_recipients'
+		);
+		marketingEmailState = marketingEmail?.limit_state ?? 'not_included';
+		marketingEmailCount =
+			marketingEmail && marketingEmail.limit_value !== null
+				? String(marketingEmail.limit_value)
 				: '';
 		const nextAutomationLimits = emptyAutomationLimits();
 		for (const field of AUTOMATION_LIMIT_FIELDS) {
@@ -678,6 +692,38 @@
 										>
 									{/if}
 								</div>
+							</div>
+						</div>
+					</fieldset>
+					<fieldset>
+						<legend>Marketing</legend>
+						<p class="packages__field-hint">
+							Marketing emails per month. Kept separate from quote and invoice email, so a campaign
+							can never use up the mail a contractor needs. Left as Not included, Marketing cannot
+							send on this plan.
+						</p>
+						<div class="packages__allowance-group">
+							<h3>Marketing email allowance</h3>
+							<div class="packages__seat-controls">
+								<div class="packages__seat-field">
+									<label for="marketing-email-state">Allowance type</label>
+									<Select
+										id="marketing-email-state"
+										value={marketingEmailState}
+										options={employeeSeatOptions}
+										onchange={(nextValue) => (marketingEmailState = nextValue as LimitState)}
+									/>
+								</div>
+								{#if marketingEmailState === 'numeric'}
+									<label
+										><span>Recipients per month</span><input
+											bind:value={marketingEmailCount}
+											type="number"
+											min="1"
+											required
+										/></label
+									>
+								{/if}
 							</div>
 						</div>
 					</fieldset>

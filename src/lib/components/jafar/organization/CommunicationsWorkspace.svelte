@@ -9,6 +9,7 @@
 	import EmailAllowanceActions from '$lib/components/jafar/EmailAllowanceActions.svelte';
 	import EmailReputationActions from '$lib/components/jafar/EmailReputationActions.svelte';
 	import EmailSendingPauseActions from '$lib/components/jafar/EmailSendingPauseActions.svelte';
+	import MarketingAllowanceActions from '$lib/components/jafar/MarketingAllowanceActions.svelte';
 	import WebsiteChatAllowanceActions from '$lib/components/jafar/WebsiteChatAllowanceActions.svelte';
 	import WebsiteChatAuthorityActions from '$lib/components/jafar/WebsiteChatAuthorityActions.svelte';
 	import AutomationAuthorityActions from '$lib/components/jafar/AutomationAuthorityActions.svelte';
@@ -80,6 +81,9 @@
 				</Card>
 				<Card class="organization-detail__commercial-explainer">
 					<WebsiteChatAllowanceActions organizationId={access.organization.id} />
+				</Card>
+				<Card class="organization-detail__commercial-explainer">
+					<MarketingAllowanceActions organizationId={access.organization.id} />
 				</Card>
 				<Card class="organization-detail__commercial-explainer">
 					<WebsiteChatAuthorityActions organizationId={access.organization.id} />

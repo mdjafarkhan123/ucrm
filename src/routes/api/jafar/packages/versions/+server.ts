@@ -77,6 +77,22 @@ export const POST: RequestHandler = async (event) => {
 				return json({ error: 'The package version could not be saved.' }, { status: 409 });
 			}
 		}
+		const marketingEmailLimit = input.marketing_email_limit;
+		if (marketingEmailLimit) {
+			const { error: marketingError } = await getOwnerSupabaseClient().rpc(
+				'manage_platform_package_marketing_allowance',
+				{
+					target_version_id: data,
+					target_state: marketingEmailLimit.state,
+					target_value: marketingEmailLimit.value as number,
+					actor_email: session.email
+				}
+			);
+			if (marketingError) {
+				console.error('Owner package Marketing allowance operation was rejected.', marketingError);
+				return json({ error: 'The package version could not be saved.' }, { status: 409 });
+			}
+		}
 		const automationLimits = input.automation_limits;
 		if (automationLimits) {
 			const { error: automationError } = await getOwnerSupabaseClient().rpc(

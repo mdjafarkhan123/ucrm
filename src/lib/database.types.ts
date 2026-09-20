@@ -17665,6 +17665,15 @@ export type Database = {
         }
         Returns: string
       }
+      manage_platform_package_marketing_allowance: {
+        Args: {
+          actor_email: string
+          target_state: string
+          target_value: number
+          target_version_id: string
+        }
+        Returns: string
+      }
       manage_platform_package_version: {
         Args: {
           actor_email?: string

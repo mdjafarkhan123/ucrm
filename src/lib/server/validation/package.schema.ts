@@ -48,6 +48,9 @@ export const packageVersionWriteSchema = z.object({
 		widgets: allowanceSchema,
 		accepted_conversations: allowanceSchema
 	}),
+	// Monthly Marketing email allowance. Optional so a save that omits it leaves the draft's setting alone;
+	// the editor always sends it.
+	marketing_email_limit: allowanceSchema.optional(),
 	// The seven Automation ceilings written together as a full rewrite of the draft's Automation rows.
 	// Optional so an older draft save without them leaves the resolver at not_included; the editor always
 	// sends all seven.
