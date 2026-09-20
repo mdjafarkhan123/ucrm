@@ -18,6 +18,7 @@
 	import TabPanel from '$lib/components/ui/TabPanel.svelte';
 	import ClientDetailHeader from '$lib/components/clients/ClientDetailHeader.svelte';
 	import ClientDetailsDialog from '$lib/components/clients/ClientDetailsDialog.svelte';
+	import MarketingConsentDialog from '$lib/components/clients/MarketingConsentDialog.svelte';
 	import PropertyDialog from '$lib/components/clients/PropertyDialog.svelte';
 	import LeadSourceDialog from '$lib/components/clients/LeadSourceDialog.svelte';
 	import ClientTagSelect from '$lib/components/clients/ClientTagSelect.svelte';
@@ -39,7 +40,8 @@
 		type ClientDetail,
 		type ClientIdentityDraft,
 		type ClientPreferences,
-		type ClientProperty
+		type ClientProperty,
+		type MarketingConsentState
 	} from '$lib/clients/api';
 	import { fetchTaxPicker, taxPickerKey } from '$lib/settings/api';
 	import {
@@ -59,6 +61,7 @@
 	import targetIcon from '@tabler/icons/outline/target-arrow.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
+	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -373,6 +376,43 @@
 
 	let detailsOpen = $state(false);
 	let leadSourceOpen = $state(false);
+	let marketingConsentOpen = $state(false);
+
+	// Consent is never staged with the rest of a client edit — it is dated evidence — so it reads straight
+	// from the saved client, and recording it writes on its own and refreshes.
+	const marketingConsent = $derived<MarketingConsentState | null>(
+		client?.marketing_consent ?? null
+	);
+	// Recording a real preference is an owner/admin job. Field/office roles still see the state, read-only.
+	const role = $derived((page.data.account as { role?: string } | undefined)?.role);
+	const canRecordConsent = $derived(role === 'owner' || role === 'admin');
+
+	const consentDateFormat = new Intl.DateTimeFormat(undefined, {
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric'
+	});
+
+	function consentSourceLabel(source: MarketingConsentState['source']) {
+		switch (source) {
+			case 'public_form':
+				return 'signup form';
+			case 'staff':
+				return 'your team';
+			case 'unsubscribe':
+				return 'unsubscribe link';
+			case 'complaint':
+				return 'a spam complaint';
+			default:
+				return null;
+		}
+	}
+
+	async function refreshMarketingConsent() {
+		marketingConsentOpen = false;
+		await queryClient.invalidateQueries({ queryKey: clientDetailKey(clientId) });
+		toast.success('Marketing consent recorded');
+	}
 	// Null while closed. Adding opens the same dialog with no property behind it.
 	let propertyDialog = $state<{ property: ClientProperty | null } | null>(null);
 
@@ -545,6 +585,41 @@
 					{/if}
 				</RailCard>
 
+				<RailCard title="Marketing email" icon={mailIcon}>
+					{#snippet actions()}
+						{#if canRecordConsent && marketingConsent}
+							<Button size="small" variant="tertiary" onclick={() => (marketingConsentOpen = true)}>
+								Record
+							</Button>
+						{/if}
+					{/snippet}
+					{#if !marketingConsent}
+						<p class="client-detail__rail-blank">
+							Add an email address to record marketing consent.
+						</p>
+					{:else}
+						<p class="client-detail__consent">
+							{#if marketingConsent.state === 'opted_in'}
+								<Badge status="success">Opted in</Badge>
+							{:else if marketingConsent.state === 'opted_out'}
+								<Badge status="critical">Opted out</Badge>
+							{:else}
+								<Badge status="informative">Not recorded</Badge>
+							{/if}
+						</p>
+						{#if marketingConsent.effective_at}
+							<p class="client-detail__rail-caption">
+								{consentDateFormat.format(
+									new Date(marketingConsent.effective_at)
+								)}{#if consentSourceLabel(marketingConsent.source)}
+									· via {consentSourceLabel(marketingConsent.source)}{/if}
+							</p>
+						{:else}
+							<p class="client-detail__rail-caption">No opt-in or opt-out recorded yet.</p>
+						{/if}
+					{/if}
+				</RailCard>
+
 				<RailCard title="Tags" count={tagIds.length}>
 					{#snippet actions()}
 						{#if tagsChanged}<Badge size="small" status="warning">Unsaved</Badge>{/if}
@@ -584,6 +659,16 @@
 					detailsOpen = false;
 				}}
 				onClose={() => (detailsOpen = false)}
+			/>
+		{/if}
+
+		{#if marketingConsentOpen && marketingConsent}
+			<MarketingConsentDialog
+				open={marketingConsentOpen}
+				{clientId}
+				consent={marketingConsent}
+				onSaved={() => void refreshMarketingConsent()}
+				onClose={() => (marketingConsentOpen = false)}
 			/>
 		{/if}
 
@@ -641,6 +726,18 @@
 		}
 
 		&__rail-blank {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__consent {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+		}
+
+		&__rail-caption {
+			margin-top: var(--space-slim);
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 		}

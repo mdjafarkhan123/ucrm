@@ -335,10 +335,10 @@ The contractor sends the campaign once. UCRM must not attempt to deliver every r
 
 1. Final confirmation freezes the campaign version and creates the recipient snapshot once.
 2. UCRM removes duplicate destinations and records every exclusion.
-3. UCRM queues one Marketing campaign through the provider's campaign service, not thousands of direct
-   transactional-email requests from the browser.
-4. UCRM and the provider release recipients progressively in bounded batches. A large campaign from one contractor
-   cannot occupy all platform/provider capacity.
+3. UCRM queues one Marketing campaign and its durable recipient work; the browser never sends customer email
+   directly.
+4. The UCRM Marketing worker releases recipients progressively through Amazon SES v2 in bounded batches. A large
+   campaign from one contractor cannot occupy all platform/provider capacity.
 5. Immediately before a waiting batch is released, UCRM rechecks current consent, unsubscribe, suppression,
    address, sender, campaign cancellation, organization state, reputation, allowance, and frequency for its
    recipients.
@@ -346,13 +346,14 @@ The contractor sends the campaign once. UCRM must not attempt to deliver every r
    launch or reconciliation harmless rather than double-sending.
 7. Provider callbacks update delivery, bounce, complaint, unsubscribe, and engagement outcomes. Provider
    acceptance is “Submitted,” not “Delivered.” Uncertain outcomes are reconciled before any retry.
-8. Cancellation stops unreleased UCRM/provider batches where still supported. Messages already accepted downstream
-   continue to their real outcome and cannot be recalled.
+8. Cancellation stops unreleased UCRM work. Messages already accepted by SES continue to their real outcome and
+   cannot be recalled.
 
 ### Pacing and priority
 
 - Marketing has a separate queue and rate budget from operational email.
-- Marketing uses the provider's campaign/batching primitive; the transactional endpoint remains for service mail.
+- Marketing uses a dedicated UCRM worker and the SES v2 send API; operational email keeps its own queue, rate
+  budget, configuration set, and protected capacity.
 - Requested Quotes, Invoices, receipts, security messages, and direct replies receive priority and protected
   capacity.
 - A new or unhealthy domain may deliver a small campaign over hours or days. The UI shows progress and the reason;

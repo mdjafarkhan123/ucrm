@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { requireClientPermission } from '$lib/server/access/clients';
+import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { databaseError, validationError } from '$lib/server/api/errors';
 import {
 	clientWriteSchema,
@@ -79,6 +80,53 @@ export const GET: RequestHandler = async (event) => {
 		(contactMethods ?? []).find((method) => method.kind === kind && method.is_primary)?.value ??
 		null;
 
+	// Marketing-email consent is tracked per email method in a service-role-only evidence ledger, so it is
+	// read here with the owner client rather than the request's RLS-scoped one. Only the primary email is
+	// surfaced: it is the address marketing would send to, and staff record against one email, not in bulk.
+	const primaryEmailMethod =
+		(contactMethods ?? []).find((method) => method.kind === 'email' && method.is_primary) ??
+		(contactMethods ?? []).find((method) => method.kind === 'email') ??
+		null;
+
+	let marketingConsent: {
+		email: string;
+		contact_method_id: string;
+		state: 'opted_in' | 'opted_out' | 'unknown';
+		source: string | null;
+		effective_at: string | null;
+	} | null = null;
+
+	if (primaryEmailMethod) {
+		const owner = getOwnerSupabaseClient();
+		const { data: consentRow, error: consentError } = await owner
+			.from('client_marketing_consent_state')
+			.select('state, effective_at, source_event_id')
+			.eq('organization_id', organizationId)
+			.eq('client_contact_method_id', primaryEmailMethod.id)
+			.maybeSingle();
+		if (consentError) return databaseError();
+
+		let source: string | null = null;
+		if (consentRow) {
+			const { data: sourceEvent, error: sourceError } = await owner
+				.from('client_marketing_consent_events')
+				.select('source')
+				.eq('organization_id', organizationId)
+				.eq('id', consentRow.source_event_id)
+				.maybeSingle();
+			if (sourceError) return databaseError();
+			source = sourceEvent?.source ?? null;
+		}
+
+		marketingConsent = {
+			email: primaryEmailMethod.value,
+			contact_method_id: primaryEmailMethod.id,
+			state: (consentRow?.state as 'opted_in' | 'opted_out' | undefined) ?? 'unknown',
+			source,
+			effective_at: consentRow?.effective_at ?? null
+		};
+	}
+
 	return json({
 		client: {
 			...client,
@@ -98,6 +146,7 @@ export const GET: RequestHandler = async (event) => {
 			),
 			property_count: (properties ?? []).length,
 			preferences,
+			marketing_consent: marketingConsent,
 			tag_ids: (tagAssignments ?? []).map((assignment) => assignment.tag_id)
 		}
 	});

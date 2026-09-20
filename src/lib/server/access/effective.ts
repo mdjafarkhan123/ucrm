@@ -126,6 +126,7 @@ const permissionFeaturePrefixes: Array<[string, string]> = [
 	// stays mapped to the retired `automation.workflows` key for immutable package history only.
 	['automations.', 'automations'],
 	['automation.', 'automation.workflows'],
+	['marketing.', 'marketing'],
 	['report.', 'reporting.advanced'],
 	['reports.', 'reporting.advanced'],
 	['team.', 'core.team']

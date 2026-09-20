@@ -14,6 +14,7 @@ import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import type { Json } from '$lib/database.types';
 import { parsePhoneNumberFromString, type CountryCode } from 'libphonenumber-js';
 import { serviceSmsConsentDisclosure } from '$lib/forms/sms-consent';
+import { emailMarketingConsentDisclosure } from '$lib/forms/marketing-consent';
 
 const NOT_AVAILABLE = { error: 'That form is not available.' };
 
@@ -75,9 +76,29 @@ export const POST: RequestHandler = async (event) => {
 	// number a text can actually reach, so a local number is read in the business's country and stored as E.164;
 	// the stored evidence is the exact wording the page showed, never text sent by the browser.
 	const contact: Record<string, unknown> = { ...parsedContact.data };
-	const { sms_service_consent: smsConsentGiven, ...restContact } = contact;
+	const {
+		sms_service_consent: smsConsentGiven,
+		email_marketing_consent: emailMarketingConsentGiven,
+		...restContact
+	} = contact;
 	const enteredPhone = typeof restContact.phone === 'string' ? restContact.phone.trim() : '';
 	const submittedContact: Record<string, unknown> = restContact;
+
+	// Marketing-email consent (Marketing M1). Only meaningful when this form asks for it and an email was entered.
+	// The browser sends only yes/no; the server builds the exact disclosure from the business name shown, so the
+	// stored evidence is what the visitor saw. The consent ledger records only opt-ins (see the after-processed
+	// trigger private.record_form_submission_marketing_consent).
+	const enteredEmail = typeof restContact.email === 'string' ? restContact.email.trim() : '';
+	if (
+		resolved.content.contact.email.shown &&
+		resolved.content.contact.email.marketing_consent &&
+		enteredEmail
+	) {
+		submittedContact.email_marketing_consent = {
+			given: emailMarketingConsentGiven === true,
+			disclosure: emailMarketingConsentDisclosure(resolved.organizationName)
+		};
+	}
 	if (resolved.content.contact.phone.shown && enteredPhone) {
 		const given = smsConsentGiven === true;
 		if (given) {

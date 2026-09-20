@@ -48,6 +48,21 @@ export type ClientPreferences = {
 	marketing: boolean;
 };
 
+/**
+ * Marketing-email consent for a client's email, read from the append-only evidence ledger (never from the
+ * legacy preference flag). `state` is 'unknown' until an opt-in or opt-out is recorded; `source` and
+ * `effective_at` are null until then.
+ */
+export type MarketingConsentState = {
+	/** The email address consent is tracked against — the client's primary email. */
+	email: string;
+	/** The contact method a recorded event targets. */
+	contact_method_id: string;
+	state: 'opted_in' | 'opted_out' | 'unknown';
+	source: 'public_form' | 'staff' | 'unsubscribe' | 'complaint' | null;
+	effective_at: string | null;
+};
+
 export type ClientPropertyInput = {
 	label?: string;
 	address_line1: string;
@@ -111,6 +126,11 @@ export type ClientDetail = ClientWriteValues & {
 	contact_methods: { id: string; kind: 'email' | 'phone'; value: string; is_primary: boolean }[];
 	preferences:
 		(ClientPreferences & { sms_opt_out_at: string | null; sms_opt_in_at: string | null }) | null;
+	/**
+	 * Marketing-email consent for the client's primary email. Null when the client has no email, so there is
+	 * nothing to send marketing to and nothing to record consent against.
+	 */
+	marketing_consent: MarketingConsentState | null;
 };
 
 export type DuplicateCandidates = {
@@ -199,6 +219,30 @@ export async function saveClient(values: ClientWriteValues, clientId?: string) {
 		);
 	}
 	return result.client as { id: string; display_name: string };
+}
+
+// Records one owner/admin-recorded marketing-consent change (a real verbal or written preference) into the
+// evidence ledger and returns the client's new consent state. Writes on its own the moment it is pressed —
+// it is evidence captured at that instant, not something staged with the rest of a client edit.
+export async function recordMarketingConsent(
+	clientId: string,
+	input: { contact_method_id: string; decision: 'opt_in' | 'opt_out'; note?: string }
+): Promise<MarketingConsentState> {
+	const response = await fetch(`/api/clients/${clientId}/marketing-consent`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) {
+		throw new ClientWriteError(
+			result.error ?? 'That consent change could not be recorded.',
+			result.field_errors ?? {},
+			[]
+		);
+	}
+	return result.marketing_consent as MarketingConsentState;
 }
 
 export async function updateProperty(propertyId: string, values: ClientPropertyInput) {

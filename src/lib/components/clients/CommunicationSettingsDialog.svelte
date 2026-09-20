@@ -62,11 +62,6 @@
 					key: 'review_requests',
 					label: 'Review requests',
 					description: 'An ask for a review after a job goes well.'
-				},
-				{
-					key: 'marketing',
-					label: 'Marketing messages',
-					description: 'Promotions and seasonal offers. Only send these with clear consent.'
 				}
 			]
 		}
@@ -109,6 +104,11 @@
 		</section>
 	{/each}
 
+	<p class="communication-settings__hint">
+		Marketing email consent is kept as a dated record on the <strong>Marketing email</strong> card, not
+		as a tick here — so you always know who agreed, when, and how.
+	</p>
+
 	<footer class="communication-settings__footer">
 		<Button variant="primary" onclick={onClose}>Done</Button>
 	</footer>
@@ -145,6 +145,12 @@
 
 		&__item--paused {
 			opacity: 0.55;
+		}
+
+		&__hint {
+			margin-top: var(--space-large);
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
 		}
 
 		&__footer {

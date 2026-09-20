@@ -17,6 +17,10 @@
 	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
 	import { SERVICE_SMS_CONSENT_LABEL, serviceSmsConsentDescription } from '$lib/forms/sms-consent';
+	import {
+		EMAIL_MARKETING_CONSENT_LABEL,
+		emailMarketingConsentDescription
+	} from '$lib/forms/marketing-consent';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -519,7 +523,8 @@
 								{#if data.content.contact.email.marketing_consent}
 									<Checkbox
 										id="contact-email-consent"
-										label="Send me occasional offers and updates by email"
+										label={EMAIL_MARKETING_CONSENT_LABEL}
+										description={emailMarketingConsentDescription(data.organizationName)}
 										bind:checked={emailMarketingConsent}
 									/>
 								{/if}

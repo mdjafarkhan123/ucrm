@@ -851,6 +851,129 @@ export type Database = {
           },
         ]
       }
+      client_marketing_consent_events: {
+        Row: {
+          client_contact_method_id: string
+          client_id: string
+          created_by: string | null
+          disclosure: string | null
+          event_kind: string
+          evidence: Json
+          id: string
+          occurred_at: string
+          organization_id: string
+          received_at: string
+          source: string
+          source_event_key: string
+        }
+        Insert: {
+          client_contact_method_id: string
+          client_id: string
+          created_by?: string | null
+          disclosure?: string | null
+          event_kind: string
+          evidence?: Json
+          id?: string
+          occurred_at: string
+          organization_id: string
+          received_at?: string
+          source: string
+          source_event_key: string
+        }
+        Update: {
+          client_contact_method_id?: string
+          client_id?: string
+          created_by?: string | null
+          disclosure?: string | null
+          event_kind?: string
+          evidence?: Json
+          id?: string
+          occurred_at?: string
+          organization_id?: string
+          received_at?: string
+          source?: string
+          source_event_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_marketing_consent_events_method_fk"
+            columns: [
+              "organization_id",
+              "client_id",
+              "client_contact_method_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "client_contact_methods"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "client_marketing_consent_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_marketing_consent_state: {
+        Row: {
+          client_contact_method_id: string
+          client_id: string
+          effective_at: string
+          organization_id: string
+          source_event_id: string
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          client_contact_method_id: string
+          client_id: string
+          effective_at: string
+          organization_id: string
+          source_event_id: string
+          state: string
+          updated_at?: string
+        }
+        Update: {
+          client_contact_method_id?: string
+          client_id?: string
+          effective_at?: string
+          organization_id?: string
+          source_event_id?: string
+          state?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_marketing_consent_state_client_fk"
+            columns: ["organization_id", "client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "client_marketing_consent_state_method_fk"
+            columns: ["organization_id", "client_contact_method_id"]
+            isOneToOne: true
+            referencedRelation: "client_contact_methods"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "client_marketing_consent_state_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_marketing_consent_state_source_event_fk"
+            columns: ["organization_id", "source_event_id"]
+            isOneToOne: false
+            referencedRelation: "client_marketing_consent_events"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       client_opening_balances: {
         Row: {
           amount_minor: number
