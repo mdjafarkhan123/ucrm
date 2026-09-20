@@ -7422,6 +7422,76 @@ export type Database = {
           },
         ]
       }
+      marketing_campaigns: {
+        Row: {
+          content: Json
+          created_at: string
+          created_by: string | null
+          customer_group_id: string | null
+          goal: string
+          id: string
+          name: string
+          organization_id: string
+          revision: number
+          status: string
+          template_id: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          customer_group_id?: string | null
+          goal: string
+          id?: string
+          name: string
+          organization_id: string
+          revision?: number
+          status?: string
+          template_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          customer_group_id?: string | null
+          goal?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          revision?: number
+          status?: string
+          template_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_campaigns_customer_group_id_fkey"
+            columns: ["customer_group_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_customer_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_campaigns_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_campaigns_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketing_customer_groups: {
         Row: {
           archived_at: string | null
@@ -7474,6 +7544,102 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      marketing_email_templates: {
+        Row: {
+          blocks: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          organization_id: string
+          preview_text: string | null
+          source_template_id: string | null
+          source_version_copied_at: number | null
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          blocks: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          preview_text?: string | null
+          source_template_id?: string | null
+          source_version_copied_at?: number | null
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          blocks?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          preview_text?: string | null
+          source_template_id?: string | null
+          source_version_copied_at?: number | null
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_email_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_email_templates_source_template_id_fkey"
+            columns: ["source_template_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_platform_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_platform_templates: {
+        Row: {
+          blocks: Json
+          created_at: string
+          goal: string | null
+          id: string
+          key: string
+          name: string
+          preview_text: string | null
+          subject: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          blocks: Json
+          created_at?: string
+          goal?: string | null
+          id?: string
+          key: string
+          name: string
+          preview_text?: string | null
+          subject: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          blocks?: Json
+          created_at?: string
+          goal?: string | null
+          id?: string
+          key?: string
+          name?: string
+          preview_text?: string | null
+          subject?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
       }
       member_access_event_shapes: {
         Row: {
@@ -17866,6 +18032,20 @@ export type Database = {
           page_size?: number
           rules: Json
           status_filter?: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
+      marketing_update_campaign_draft: {
+        Args: {
+          actor_user_id: string
+          expected_revision: number
+          new_content: Json
+          new_customer_group_id: string
+          new_goal: string
+          new_name: string
+          new_template_id: string
+          target_campaign_id: string
           target_organization_id: string
         }
         Returns: Json

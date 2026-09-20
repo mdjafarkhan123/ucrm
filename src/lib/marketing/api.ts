@@ -6,6 +6,16 @@ import {
 	type MarketingPreviewRecipient,
 	type MarketingRecipientPreviewCounts
 } from './customer-groups';
+import {
+	marketingCampaignKey,
+	marketingCampaignsKey,
+	marketingTemplatesKey,
+	type MarketingCampaign,
+	type MarketingCampaignContent,
+	type MarketingCampaignListItem,
+	type MarketingGoal
+} from './campaign-content';
+import type { MarketingEmailTemplate, MarketingPlatformTemplate } from './templates';
 
 export const marketingReadinessKey = ['marketing', 'readiness'] as const;
 
@@ -173,4 +183,106 @@ export async function searchClientsForRule(term: string): Promise<RuleLabel[]> {
 		id: client.id,
 		label: client.display_name
 	}));
+}
+
+export { marketingCampaignsKey, marketingCampaignKey, marketingTemplatesKey };
+
+export async function fetchCampaigns(): Promise<MarketingCampaignListItem[]> {
+	const response = await fetch('/api/marketing/campaigns');
+	if (!response.ok) throw await readMarketingError(response, 'Campaigns could not be loaded.');
+	const result = await response.json();
+	return result.campaigns;
+}
+
+export async function fetchCampaign(campaignId: string): Promise<MarketingCampaign> {
+	const response = await fetch(`/api/marketing/campaigns/${campaignId}`);
+	if (!response.ok) throw await readMarketingError(response, 'That campaign could not be loaded.');
+	const result = await response.json();
+	return result.campaign;
+}
+
+export type CampaignDraftFormInput = {
+	name: string;
+	goal: MarketingGoal;
+	customer_group_id?: string | null;
+	template_id?: string | null;
+	content: MarketingCampaignContent;
+};
+
+export class StaleCampaignError extends Error {}
+
+export async function createCampaignRequest(
+	input: CampaignDraftFormInput
+): Promise<MarketingCampaign> {
+	const response = await fetch('/api/marketing/campaigns', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	if (!response.ok) throw await readMarketingError(response, 'That campaign could not be saved.');
+	const result = await response.json();
+	return result.campaign;
+}
+
+export async function updateCampaignRequest(
+	campaignId: string,
+	revision: number,
+	input: CampaignDraftFormInput
+): Promise<{ revision: number; updated_at: string }> {
+	const response = await fetch(`/api/marketing/campaigns/${campaignId}`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ ...input, revision })
+	});
+	if (!response.ok) {
+		if (response.status === 409)
+			throw new StaleCampaignError('Someone else changed this campaign.');
+		throw await readMarketingError(response, 'That campaign could not be saved.');
+	}
+	return response.json();
+}
+
+export async function deleteCampaignRequest(campaignId: string): Promise<void> {
+	const response = await fetch(`/api/marketing/campaigns/${campaignId}`, { method: 'DELETE' });
+	if (!response.ok) throw await readMarketingError(response, 'That campaign could not be removed.');
+}
+
+export type MarketingRenderedEmailPreview = {
+	html: string;
+	text: string;
+	errors: { message: string; formattedMessage?: string }[];
+};
+
+export async function previewCampaignContent(
+	content: MarketingCampaignContent
+): Promise<MarketingRenderedEmailPreview> {
+	const response = await fetch('/api/marketing/campaigns/preview', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ content })
+	});
+	if (!response.ok) throw await readMarketingError(response, 'That preview could not be rendered.');
+	return response.json();
+}
+
+export async function fetchMarketingTemplates(): Promise<{
+	platform_templates: MarketingPlatformTemplate[];
+	templates: MarketingEmailTemplate[];
+}> {
+	const response = await fetch('/api/marketing/templates');
+	if (!response.ok) throw await readMarketingError(response, 'Templates could not be loaded.');
+	return response.json();
+}
+
+export async function copyMarketingTemplateRequest(
+	platformTemplateKey: string
+): Promise<MarketingEmailTemplate> {
+	const response = await fetch('/api/marketing/templates', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ platform_template_key: platformTemplateKey })
+	});
+	if (!response.ok) throw await readMarketingError(response, 'That template could not be copied.');
+	const result = await response.json();
+	return result.template;
 }

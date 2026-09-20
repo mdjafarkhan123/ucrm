@@ -112,16 +112,29 @@ Each slice is one focused session, independently verifiable, and ends with its o
 - **Performance design branch runs before building** (grows with Customers × work history per organization):
   EXPLAIN evidence on representative organization sizes, indexes justified by those plans, bounded pages.
 
-### M3 — Drafts, goals, templates, editor, test email
-- `marketing_campaigns` (Draft with a revision number; a stale save is refused and reloaded, never overwritten)
-  and organization-owned `marketing_email_templates` storing blocks as JSON. Four starter templates copied on use.
+### M3 — Drafts, goals, templates, editor
+- `marketing_campaigns` (Draft with a revision number; a stale save is refused and reloaded, never overwritten,
+  via a security-definer `marketing_update_campaign_draft` RPC mirroring `update_quote_draft`'s P0409 shape) and
+  organization-owned `marketing_email_templates` storing blocks as JSON, copied from
+  `marketing_platform_templates`' four starter templates on use (schema and seed applied 2026-09-20).
 - Five-step full-page journey with explicit Save draft and leave-guard. Block editor: image, heading, text,
-  button, divider, service summary. Server renders blocks to email HTML and appends the locked footer (business
-  identity, address, unsubscribe). Unsafe variables block with a named correction.
-- Test email to the signed-in user's verified staff address only, clearly labelled, through the operational
-  path's staff-test category (no Customer address accepted).
+  button, divider, service summary. Server renders blocks to email HTML via MJML (the established,
+  cross-client-safe library for this, not a hand-rolled table layout) and appends the locked footer (business
+  identity, address, unsubscribe). Variables are a fixed allow-list (`customer_first_name`, `business_name`)
+  enforced by Zod at save time; per-recipient missing-value handling is M4's job at launch time.
+- **Test email moved to M4 (decided 2026-09-20):** research during M3 found that no code path sends contractor
+  email via SES yet -- every current send (quotes, invoices, receipts) still goes through Brevo, and the
+  approved provider boundary forbids Marketing from using Brevo (the cross-contractor blocklist problem §2
+  exists to avoid). Building throwaway SES-calling code just for a test button would duplicate M4's real work
+  and could not actually deliver yet anyway (the AWS account is still in SES sandbox, which only reaches
+  pre-verified recipient addresses). Test email becomes a thin use of M4's real sender once it exists. The
+  block editor's on-screen desktop/mobile preview is M3's stand-in for "see what it looks like" until then.
 
 ### M4 — Launch, gradual delivery, cancellation (after §2 decision)
+- Builds the real "talk to Amazon SES" sending code for the first time (nothing sends via SES yet; every current
+  operational email still goes through Brevo). Once that exists, add the M3 "send me a test email" action as a
+  thin use of it: to the signed-in user's verified staff address only, clearly labelled, never counted against
+  the Marketing allowance, no Customer address accepted (moved here from M3 -- see M3's note).
 - Launch command (owner/admin, idempotency key, required review revision): freezes a campaign version, writes the
   recipient snapshot once, records exclusions, reserves allowance — all in one transaction.
 - Separate Marketing dispatcher on its own wake: fair claims (a per-organization cap per wake), rechecks current
