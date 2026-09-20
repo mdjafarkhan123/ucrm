@@ -185,6 +185,35 @@ export async function searchClientsForRule(term: string): Promise<RuleLabel[]> {
 	}));
 }
 
+export type MarketingDeliveryOptions = {
+	sender: { id: string; email_address: string; display_name: string } | null;
+	business_phone: string | null;
+	business_website: string | null;
+	forms: { id: string; name: string; outcome: string; public_slug: string }[];
+	organization_slug: string;
+	allowance: { state: string; value: number | null; is_unlimited: boolean };
+};
+
+// Same "always a value, never undefined" convention as an empty customer-group/campaign-content default --
+// lets the step render its empty states (no sender, no forms) instead of juggling an optional prop.
+export const emptyMarketingDeliveryOptions: MarketingDeliveryOptions = {
+	sender: null,
+	business_phone: null,
+	business_website: null,
+	forms: [],
+	organization_slug: '',
+	allowance: { state: 'not_included', value: null, is_unlimited: false }
+};
+
+export const marketingDeliveryOptionsKey = ['marketing', 'delivery-options'] as const;
+
+export async function fetchMarketingDeliveryOptions(): Promise<MarketingDeliveryOptions> {
+	const response = await fetch('/api/marketing/delivery-options');
+	if (!response.ok)
+		throw await readMarketingError(response, 'Delivery options could not be loaded.');
+	return response.json();
+}
+
 export { marketingCampaignsKey, marketingCampaignKey, marketingTemplatesKey };
 
 export async function fetchCampaigns(): Promise<MarketingCampaignListItem[]> {

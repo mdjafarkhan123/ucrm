@@ -10,9 +10,12 @@
 	import CampaignGoalStep from './CampaignGoalStep.svelte';
 	import CampaignCustomersStep from './CampaignCustomersStep.svelte';
 	import CampaignEmailStep from './CampaignEmailStep.svelte';
+	import CampaignDeliveryStep from './CampaignDeliveryStep.svelte';
 	import CampaignComingSoonStep from './CampaignComingSoonStep.svelte';
 	import {
 		fetchCustomerGroups,
+		fetchMarketingDeliveryOptions,
+		emptyMarketingDeliveryOptions,
 		createCampaignRequest,
 		updateCampaignRequest,
 		fetchRuleLabels,
@@ -20,6 +23,7 @@
 		marketingCampaignsKey,
 		marketingCampaignKey,
 		marketingCustomerGroupsKey,
+		marketingDeliveryOptionsKey,
 		type MarketingApiError,
 		type RuleLabel
 	} from '$lib/marketing/api';
@@ -37,7 +41,7 @@
 	// The five-step campaign draft journey (blueprint §8). Opening or changing the form never writes --
 	// only Save draft (here) or the eventual Send/Schedule (M4) does. `initial` is the existing draft when
 	// editing (routes/marketing/campaigns/[id=uuid]/edit); null when starting a new one
-	// (routes/marketing/campaigns/new). Steps 3-5 are not built yet -- see CampaignComingSoonStep.
+	// (routes/marketing/campaigns/new). Step 5 (Review) is not built yet -- see CampaignComingSoonStep.
 	let { initial }: { initial: MarketingCampaign | null } = $props();
 
 	const queryClient = useQueryClient();
@@ -74,12 +78,21 @@
 	let goalError = $state('');
 	let customersError = $state('');
 	let contentError = $state('');
+	let deliveryError = $state('');
 	let saveError = $state('');
 	let saving = $state(false);
 
 	const groupsQuery = createQuery(() => ({
 		queryKey: marketingCustomerGroupsKey,
 		queryFn: fetchCustomerGroups
+	}));
+
+	// Loaded once the journey reaches Delivery -- earlier steps never need a sender, a form list, or the
+	// Marketing allowance, so this stays off until then (CLAUDE.md rule 10).
+	const deliveryOptionsQuery = createQuery(() => ({
+		queryKey: marketingDeliveryOptionsKey,
+		queryFn: fetchMarketingDeliveryOptions,
+		enabled: step >= 4
 	}));
 
 	// Names for catalog item ids a reopened draft's service_summary blocks already hold, so their chips show
@@ -200,6 +213,19 @@
 		step = 3;
 	}
 
+	function continueFromDelivery() {
+		if (!content.cta) {
+			deliveryError = 'Choose what this campaign should ask customers to do.';
+			return;
+		}
+		if (content.cta.type === 'internal_form' && !content.cta.form_id) {
+			deliveryError = 'Choose a form.';
+			return;
+		}
+		deliveryError = '';
+		step = 5;
+	}
+
 	beforeNavigate((navigation) => {
 		if (!dirty) return;
 		if (!confirm('Leave this page? Your changes have not been saved.')) navigation.cancel();
@@ -267,8 +293,21 @@
 			onBack={() => (step = 2)}
 			onContinue={() => (step = 4)}
 		/>
+	{:else if step === 4}
+		<CampaignDeliveryStep
+			{content}
+			{customerGroupId}
+			groups={groupsQuery.data ?? []}
+			options={deliveryOptionsQuery.data ?? emptyMarketingDeliveryOptions}
+			isPending={deliveryOptionsQuery.isPending}
+			isError={deliveryOptionsQuery.isError}
+			errorMessage={deliveryError}
+			onRetry={() => deliveryOptionsQuery.refetch()}
+			onBack={() => (step = 3)}
+			onContinue={continueFromDelivery}
+		/>
 	{:else}
-		<CampaignComingSoonStep onBack={() => (step = 3)} />
+		<CampaignComingSoonStep onBack={() => (step = 4)} />
 	{/if}
 </div>
 

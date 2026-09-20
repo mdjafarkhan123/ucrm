@@ -4,17 +4,16 @@
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import arrowLeftIcon from '@tabler/icons/outline/arrow-left.svg?raw';
 
-	// Steps 3-5 (email editor, delivery, review) are not built yet -- this session's slice is the
-	// Campaigns list plus the Goal and Customers steps (see Memory/campaigns/marketing-growth/NOW.md). The
-	// draft up to Customers is real and already savable, so this is a placeholder, not a dead end.
+	// Step 5 (Review) is not built yet (see Memory/campaigns/marketing-growth/NOW.md). The draft up through
+	// Delivery is real and already savable, so this is a placeholder, not a dead end.
 	let { onBack }: { onBack: () => void } = $props();
 </script>
 
 <section class="panel">
 	<EmptyState
 		icon={clockIcon}
-		title="The rest of this journey is coming soon"
-		description="Building the message, choosing delivery, and reviewing before you send are the next parts of this feature. Your goal and customers are saved as a draft whenever you use Save draft above."
+		title="Review is coming soon"
+		description="A final read-through summary before you send is the next part of this feature. Everything up to Delivery is saved as a draft whenever you use Save draft above."
 	/>
 	<div class="panel__foot">
 		<Button variant="secondary" variation="subtle" onclick={onBack}>

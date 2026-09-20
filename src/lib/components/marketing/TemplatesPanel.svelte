@@ -52,7 +52,8 @@
 			version: '1',
 			subject: template.subject,
 			preview_text: template.preview_text ?? undefined,
-			blocks: template.blocks
+			blocks: template.blocks,
+			cta: null
 		};
 	}
 

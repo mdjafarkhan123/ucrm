@@ -142,6 +142,26 @@ export const marketingBlockSchema = z.discriminatedUnion('type', [
 
 export type MarketingBlock = z.infer<typeof marketingBlockSchema>;
 
+// The primary campaign action (blueprint §8 step 4): an existing UCRM Request/Booking form, the business's
+// own website, or a phone-call button. Only the chosen form's id is stored -- website and phone read the
+// live Business Profile fields at display and send time, the same "still exists" check the form option
+// needs, so there is nothing else to freeze into a draft.
+export const MARKETING_CTA_TYPES = ['internal_form', 'website', 'phone'] as const;
+export type MarketingCtaType = (typeof MARKETING_CTA_TYPES)[number];
+
+export const marketingCtaSchema = z.discriminatedUnion('type', [
+	z.object({ type: z.literal('internal_form'), form_id: z.string().uuid() }).strict(),
+	z.object({ type: z.literal('website') }).strict(),
+	z.object({ type: z.literal('phone') }).strict()
+]);
+export type MarketingCta = z.infer<typeof marketingCtaSchema>;
+
+export const MARKETING_CTA_TYPE_LABELS: Record<MarketingCtaType, string> = {
+	internal_form: 'An existing form',
+	website: 'Your website',
+	phone: 'A phone call'
+};
+
 export const marketingCampaignContentSchema = z
 	.object({
 		version: z.literal('1'),
@@ -156,7 +176,11 @@ export const marketingCampaignContentSchema = z
 			.optional()
 			.transform((value) => (value ? value : undefined))
 			.optional(),
-		blocks: z.array(marketingBlockSchema).max(MARKETING_MAX_BLOCKS)
+		blocks: z.array(marketingBlockSchema).max(MARKETING_MAX_BLOCKS),
+		cta: marketingCtaSchema
+			.nullable()
+			.optional()
+			.transform((value) => value ?? null)
 	})
 	.strict();
 
@@ -165,7 +189,8 @@ export type MarketingCampaignContent = z.infer<typeof marketingCampaignContentSc
 export const emptyMarketingCampaignContent: MarketingCampaignContent = {
 	version: '1',
 	subject: '',
-	blocks: []
+	blocks: [],
+	cta: null
 };
 
 // The editor deep-clones a loaded draft before touching it (never mutate a TanStack Query cache entry in
@@ -176,6 +201,7 @@ export function cloneMarketingCampaignContent(
 ): MarketingCampaignContent {
 	const clone = structuredClone(content);
 	clone.preview_text ??= '';
+	clone.cta ??= null;
 	return clone;
 }
 

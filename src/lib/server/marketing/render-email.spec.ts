@@ -24,7 +24,7 @@ const baseCtx: MarketingRenderContext = {
 };
 
 function contentWith(blocks: MarketingCampaignContent['blocks']): MarketingCampaignContent {
-	return { version: '1', subject: 'Hi {{customer_first_name}}', blocks };
+	return { version: '1', subject: 'Hi {{customer_first_name}}', blocks, cta: null };
 }
 
 describe('renderCampaignEmail', () => {
