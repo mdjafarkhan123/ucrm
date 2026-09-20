@@ -12,7 +12,11 @@
 		type RuleLabel
 	} from '$lib/marketing/api';
 	import { LEAD_SOURCES } from '$lib/clients/lead-sources';
-	import type { MarketingGroupRules } from '$lib/marketing/customer-groups';
+	import {
+		MARKETING_GROUP_RULE_CONDITIONS,
+		type MarketingGroupRuleConditionKey,
+		type MarketingGroupRules
+	} from '$lib/marketing/customer-groups';
 	import filterIcon from '@tabler/icons/outline/filter.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 
@@ -28,20 +32,9 @@
 		labels?: { catalog_items: RuleLabel[]; clients: RuleLabel[] };
 	} = $props();
 
-	type ConditionKey = Exclude<keyof MarketingGroupRules, 'version'>;
+	type ConditionKey = MarketingGroupRuleConditionKey;
 
-	const CONDITIONS: { key: ConditionKey; label: string }[] = [
-		{ key: 'lifecycle', label: 'Lead or customer status' },
-		{ key: 'tags', label: 'Has any of these tags' },
-		{ key: 'cities', label: 'City or service area' },
-		{ key: 'lead_sources', label: 'Original lead source' },
-		{ key: 'services', label: 'Used one of these services' },
-		{ key: 'work_type', label: 'One-off or recurring work' },
-		{ key: 'last_completed_job', label: 'Last completed Job' },
-		{ key: 'upcoming_work', label: 'Upcoming work' },
-		{ key: 'include_client_ids', label: 'Always include these customers' },
-		{ key: 'exclude_client_ids', label: 'Always exclude these customers' }
-	];
+	const CONDITIONS = MARKETING_GROUP_RULE_CONDITIONS;
 
 	function conditionLabel(key: ConditionKey) {
 		return CONDITIONS.find((entry) => entry.key === key)?.label ?? key;

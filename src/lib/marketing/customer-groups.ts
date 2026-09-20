@@ -49,6 +49,27 @@ export type MarketingGroupRules = z.infer<typeof marketingGroupRulesSchema>;
 
 export const emptyMarketingGroupRules: MarketingGroupRules = { version: '1' };
 
+// One shared list of condition keys and their plain-English labels -- CustomerGroupRuleBuilder (the editor)
+// and CampaignReviewStep (the read-only summary before send) both walk it, so a condition never has two
+// different names in the two places a contractor sees it.
+export type MarketingGroupRuleConditionKey = Exclude<keyof MarketingGroupRules, 'version'>;
+
+export const MARKETING_GROUP_RULE_CONDITIONS: {
+	key: MarketingGroupRuleConditionKey;
+	label: string;
+}[] = [
+	{ key: 'lifecycle', label: 'Lead or customer status' },
+	{ key: 'tags', label: 'Has any of these tags' },
+	{ key: 'cities', label: 'City or service area' },
+	{ key: 'lead_sources', label: 'Original lead source' },
+	{ key: 'services', label: 'Used one of these services' },
+	{ key: 'work_type', label: 'One-off or recurring work' },
+	{ key: 'last_completed_job', label: 'Last completed Job' },
+	{ key: 'upcoming_work', label: 'Upcoming work' },
+	{ key: 'include_client_ids', label: 'Always include these customers' },
+	{ key: 'exclude_client_ids', label: 'Always exclude these customers' }
+];
+
 // Every reason a matched customer would not receive the campaign. `recent_marketing` is always 0 until
 // launched campaigns exist (M4) and give "already emailed in the last 7 days" a source of truth.
 export const marketingExclusionReasons = [

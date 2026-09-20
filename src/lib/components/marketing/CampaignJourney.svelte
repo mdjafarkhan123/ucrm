@@ -11,7 +11,7 @@
 	import CampaignCustomersStep from './CampaignCustomersStep.svelte';
 	import CampaignEmailStep from './CampaignEmailStep.svelte';
 	import CampaignDeliveryStep from './CampaignDeliveryStep.svelte';
-	import CampaignComingSoonStep from './CampaignComingSoonStep.svelte';
+	import CampaignReviewStep from './CampaignReviewStep.svelte';
 	import {
 		fetchCustomerGroups,
 		fetchMarketingDeliveryOptions,
@@ -41,7 +41,7 @@
 	// The five-step campaign draft journey (blueprint §8). Opening or changing the form never writes --
 	// only Save draft (here) or the eventual Send/Schedule (M4) does. `initial` is the existing draft when
 	// editing (routes/marketing/campaigns/[id=uuid]/edit); null when starting a new one
-	// (routes/marketing/campaigns/new). Step 5 (Review) is not built yet -- see CampaignComingSoonStep.
+	// (routes/marketing/campaigns/new).
 	let { initial }: { initial: MarketingCampaign | null } = $props();
 
 	const queryClient = useQueryClient();
@@ -307,7 +307,18 @@
 			onContinue={continueFromDelivery}
 		/>
 	{:else}
-		<CampaignComingSoonStep onBack={() => (step = 4)} />
+		<CampaignReviewStep
+			{content}
+			{name}
+			{goal}
+			{customerGroupId}
+			groups={groupsQuery.data ?? []}
+			options={deliveryOptionsQuery.data ?? emptyMarketingDeliveryOptions}
+			isPending={deliveryOptionsQuery.isPending}
+			isError={deliveryOptionsQuery.isError}
+			onRetry={() => deliveryOptionsQuery.refetch()}
+			onBack={() => (step = 4)}
+		/>
 	{/if}
 </div>
 

@@ -4,6 +4,8 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import CustomerGroupPreview from './CustomerGroupPreview.svelte';
+	import MarketingSenderSummary from './MarketingSenderSummary.svelte';
+	import MarketingAllowanceNotice from './MarketingAllowanceNotice.svelte';
 	import {
 		MARKETING_CTA_TYPES,
 		MARKETING_CTA_TYPE_LABELS,
@@ -100,27 +102,7 @@
 		{:else}
 			<div class="block">
 				<h3>Sender &amp; replies</h3>
-				{#if options.sender}
-					<p class="sender">
-						<b>{options.sender.display_name}</b>
-						<span>&lt;{options.sender.email_address}&gt;</span>
-					</p>
-					<p class="hint">
-						Replies land in your shared Conversations inbox, linked back to this campaign.
-					</p>
-				{:else}
-					<p class="warning">
-						You don't have a verified sender yet.
-						<Button
-							variant="secondary"
-							variation="subtle"
-							size="small"
-							href="/settings/communications"
-						>
-							Set up a sender
-						</Button>
-					</p>
-				{/if}
+				<MarketingSenderSummary sender={options.sender} />
 			</div>
 
 			<div class="block">
@@ -208,15 +190,7 @@
 				{#if selectedGroup}
 					<CustomerGroupPreview rules={selectedGroup.rules} />
 				{/if}
-				<p class="hint">
-					{#if options.allowance.is_unlimited}
-						Your plan allows unlimited Marketing email.
-					{:else if options.allowance.state === 'numeric' && options.allowance.value !== null}
-						Your plan allows {options.allowance.value} Marketing emails per period.
-					{:else}
-						Marketing sending allowance isn't turned on for your plan yet.
-					{/if}
-				</p>
+				<MarketingAllowanceNotice allowance={options.allowance} />
 			</div>
 		{/if}
 
@@ -323,17 +297,6 @@
 			font-weight: 600;
 			color: var(--color-heading);
 			margin: 0;
-		}
-	}
-
-	.sender {
-		display: flex;
-		align-items: baseline;
-		gap: var(--space-smaller);
-		margin: 0;
-
-		span {
-			color: var(--color-text--secondary);
 		}
 	}
 
