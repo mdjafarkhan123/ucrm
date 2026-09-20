@@ -15,6 +15,9 @@ access = IAM Identity Center SSO profile `ucrm` (`aws sso login --sso-session uc
 **M1 committed so far:** `37f8268` (consent ledger + feature/permissions + public-form opt-in + staff-recorded
 consent) and `43c9e53` (unsubscribe). Both applied to dev `lgerqoeyusspmgzecwjs` and browser-verified.
 
+**Allowance slice: DONE.** Migration `20261014110000_marketing_allowance_limit.sql` (applied to dev, checks pass):
+new limit key `marketing_email_recipients`, unset on all packages; no separate period table (reuses the monthly window).
+
 **Unsubscribe slice: DONE, committed `43c9e53`.** Migration `20261014100000_marketing_unsubscribe_links.sql`.
 Approved by Jafar 2026-09-20: confirm-button page (not act-on-open, because mail scanners prefetch links) plus
 RFC 8058 one-click headers; schema addition approved. Routes `/u/[token]` (page + form action) and
@@ -26,15 +29,16 @@ link". Dev data now has three opted-out test addresses (Dana Whitfield, Tobias L
 
 ## Active part
 
-M1 — next slice: Marketing allowance periods (package values start unset).
+M1 — next slice: Marketing readiness read (blueprint §6).
 
 ## Exact next action
 
-Build Marketing allowance periods mirroring `communication_email_allowance_periods` / `..._usage_events`;
-package values start **unset** so launch stays disabled with "Marketing allowance not configured" until Jafar
-sets them. Schema change — needs Jafar's approval before applying. Then the remaining M1 slices in order:
-readiness read (blueprint §6), and the Growth → Marketing nav + home shell. Separately: the legacy `marketing`
-column drop migration (also needs schema approval). See plan §3 M1.
+Build the readiness read: one server function returning the blocking reasons (domain, business address, sender,
+pause, allowance, consent) with fix links. Allowance reason reads `private.effective_marketing_email_limit`
+(state `not_included` = "Marketing allowance not configured"). Then the Growth → Marketing nav + home shell.
+Still owed before M3 launch: a Jafar packages-page field + org-exception field for the Marketing allowance (writer
+`manage_platform_package_marketing_allowance` and the override key already exist, no UI yet), and the legacy
+`marketing` column drop (needs schema approval). Usage counting/reservation arrives with M3 launch. See plan §3 M1.
 
 ## Blockers
 
@@ -50,4 +54,4 @@ Delete unused `.claude/skills/aws-mail-manager` skill? (unanswered)
 - Consent/link patterns mirrored: `20261014090000_...consent_ledger.sql`,
   `20260821035539_quote_customer_access_links.sql`
 
-Resume: `continue marketing growth` — next slice is Marketing allowance periods (ask Jafar before applying schema).
+Resume: `continue marketing growth` — next slice is the Marketing readiness read.

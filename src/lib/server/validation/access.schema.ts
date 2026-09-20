@@ -14,7 +14,9 @@ export const limitKeySchema = z.enum([
 	'automation_max_customer_messages_per_enrollment',
 	'automation_min_customer_message_spacing_minutes',
 	'automation_max_delay_days',
-	'automation_max_enrollment_duration_days'
+	'automation_max_enrollment_duration_days',
+	// Marketing (M1): monthly Marketing email allowance; unset until Jafar configures a package.
+	'marketing_email_recipients'
 ]);
 export const organizationIdSchema = z.string().uuid();
 export const userIdSchema = z.string().uuid();
