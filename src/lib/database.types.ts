@@ -3019,6 +3019,7 @@ export type Database = {
           mime_type: string
           object_key: string
           organization_id: string
+          sort_order: number
           updated_at: string
         }
         Insert: {
@@ -3031,6 +3032,7 @@ export type Database = {
           mime_type: string
           object_key: string
           organization_id: string
+          sort_order?: number
           updated_at?: string
         }
         Update: {
@@ -3043,6 +3045,7 @@ export type Database = {
           mime_type?: string
           object_key?: string
           organization_id?: string
+          sort_order?: number
           updated_at?: string
         }
         Relationships: [

@@ -106,12 +106,10 @@ from (
     ('private', 'is_organization_member', array['authenticated']),
     ('private', 'member_organizations', array['authenticated']),
     ('private', 'permission_scope', array['authenticated']),
-    -- Granted to authenticated when the Field role's assigned-only scope shipped (20260907). Every caller is
-    -- SECURITY DEFINER, and authenticated has no USAGE on the private schema, so it is unreachable in
-    -- practice; the grant is recorded as it is rather than as the older "nobody".
-    ('private', 'member_permission_scope', array['authenticated']),
     ('private', 'permitted_organizations', array['authenticated']),
-    -- Command support and trigger functions: nobody's to call.
+    -- Command support and trigger functions: nobody's to call. member_permission_scope is here since
+    -- 20260921130200: every caller is SECURITY DEFINER, so signed-in users never needed it.
+    ('private', 'member_permission_scope', array[]::text[]),
     ('private', 'assert_employee_seat_available', array[]::text[]),
     ('private', 'assert_team_invitation_overrides', array[]::text[]),
     ('private', 'assert_membership_is_editable', array[]::text[]),

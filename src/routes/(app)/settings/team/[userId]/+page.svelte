@@ -273,13 +273,15 @@
 			if (rate !== (saved?.cost_per_hour_minor ?? null)) {
 				await saveTeamMemberCostRate(userId, rate);
 			}
-			draft = null;
-			costRate = '';
 			toast.success('Member details saved');
+			// Leave edit mode only after the refetch lands: reopening Edit earlier would reuse the old
+			// profile_revision and get a false "someone else changed this" conflict.
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: teamMemberKey(actorUserId, userId) }),
 				queryClient.invalidateQueries({ queryKey: ['team', 'directory'] })
 			]);
+			draft = null;
+			costRate = '';
 		} catch (error) {
 			stale = error instanceof TeamWriteError && error.stale;
 			saveError =

@@ -6,16 +6,13 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | --- | --- |
 | P1 | [Authenticated reads and non-quote/invoice/payment writes lack a shared rate-limit policy](authenticated-reads-and-pipeline-writes-are-not-rate-limited.md) |
 | P1 | [Background jobs have no production scheduler decision](background-jobs-have-no-production-scheduler-decision.md) |
-| P1 | [Published Quotes do not freeze the organization logo or brand color](published-quotes-do-not-freeze-the-organization-logo-or-brand-color.md) |
 | P1 | [Removing a saved line photo leaves the file in R2](removing-a-saved-line-photo-leaves-the-file-in-r2.md) |
 | P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
-| P1 | [Revising a sent quote does not carry over its tax source or deposit](revising-a-sent-quote-drops-tax-source-and-deposit.md) |
 | P2 | [A full page load can crash hydration and leave the previous page on screen](full-page-load-hydration-crash-leaves-the-previous-page-on-screen.md) |
 | P2 | [Issued invoices cannot be corrected from the browser](issued-invoices-cannot-be-corrected-from-the-browser.md) |
 | P2 | [Resolving a chat identity does not stop the next conflict](resolving-a-chat-identity-does-not-stop-the-next-conflict.md) |
 | P2 | [`EntityType` covers only clients and properties](entitytype-covers-only-clients-and-properties.md) |
 | P2 | [Active member's sign-in email not visible, recovery path unclear](active-member-email-not-visible-and-recovery-path-unclear.md) |
-| P2 | [Team member profile save may have the same stale-revision race](team-member-profile-save-may-have-the-same-stale-revision-race.md) |
 | P2 | [`Last communication` rail card on the client page](last-communication-rail-card-on-the-client-page.md) |
 | P2 | [No admin-alert delivery for loop-detected inbound threads](no-admin-alert-delivery-mechanism-for-loop-detected-inbound-threads.md) |
 | P2 | [Brevo transactional webhook retries forever on an unknown delivery_intent_id](brevo-transactional-webhook-unknown-intent-retry-storm.md) |
@@ -50,7 +47,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Two job billing-reminder modes never raise a reminder](two-job-billing-reminder-modes-raise-no-reminder.md) |
 | P2 | [Client detail's financial summary widget is empty for everyone, not just some roles](client-financial-summary-widget-shows-empty-placeholders-for-everyone.md) |
 | P2 | [Disconnecting Stripe expires open checkouts: code-complete, never live-tested](stripe-disconnect-open-checkout-expiry-not-live-tested.md) |
-| P3 | [Three small live database gaps found while fixing the stale tests](three-small-live-gaps-found-while-fixing-the-stale-database-tests.md) |
 | P3 | [Offline field records on site (Jobs 15f)](offline-field-records-on-site.md) |
 | P3 | [`/get-started` page weight](get-started-page-weight.md) |
 | P3 | [Client photos are one request each](client-photos-are-one-request-each.md) |
