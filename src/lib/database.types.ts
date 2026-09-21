@@ -13923,6 +13923,33 @@ export type Database = {
         Args: { reason?: string; target_quote_id: string }
         Returns: Json
       }
+      attach_file_to_record: {
+        Args: {
+          target_actor_id: string
+          target_entity_id: string
+          target_entity_type: string
+          target_file_id: string
+          target_organization_id: string
+          target_role?: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          entity_id: string
+          entity_type: string
+          file_id: string
+          id: string
+          organization_id: string
+          protected: boolean
+          role: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "file_links"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       attach_job_checklist: {
         Args: {
           target_job_id: string
@@ -16077,6 +16104,27 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_file_folder: {
+        Args: {
+          target_created_by: string
+          target_name: string
+          target_organization_id: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          organization_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "file_folders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_form: {
         Args: {
           new_description?: string
@@ -17064,6 +17112,28 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      file_usage: {
+        Args: {
+          cursor_created_at?: string
+          cursor_id?: string
+          target_file_id: string
+          target_limit?: number
+          target_organization_id: string
+        }
+        Returns: {
+          context: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          link_id: string
+          link_type: string
+          protected: boolean
+          role: string
+          status: string
+          title: string
+        }[]
+      }
       finalize_communication_email_domain_removal: {
         Args: {
           actor_owner_email: string
@@ -17256,6 +17326,7 @@ export type Database = {
           target_error?: string
           target_file_id: string
           target_state: string
+          target_thumbnail_object_key?: string
         }
         Returns: {
           checksum_sha256: string | null
@@ -18276,6 +18347,46 @@ export type Database = {
           object_key: string
         }[]
       }
+      list_file_folders: {
+        Args: { target_organization_id: string }
+        Returns: {
+          file_count: number
+          id: string
+          name: string
+        }[]
+      }
+      list_files: {
+        Args: {
+          cursor_created_at?: string
+          cursor_id?: string
+          only_attachable?: boolean
+          target_entity_id?: string
+          target_entity_type?: string
+          target_folder_id?: string
+          target_limit?: number
+          target_organization_id: string
+          target_search?: string
+          target_view?: string
+        }
+        Returns: {
+          created_at: string
+          display_name: string
+          folder_id: string
+          folder_name: string
+          has_thumbnail: boolean
+          id: string
+          kind: string
+          mime_type: string
+          origin_id: string
+          origin_type: string
+          processing_state: string
+          size_bytes: number
+          trashed_at: string
+          uploaded_by: string
+          uploaded_by_name: string
+          usage_count: number
+        }[]
+      }
       list_team_directory: {
         Args: {
           cursor_created_at?: string
@@ -18535,6 +18646,46 @@ export type Database = {
           target_organization_id: string
         }
         Returns: Json
+      }
+      move_file_to_folder: {
+        Args: {
+          target_actor_id: string
+          target_file_id: string
+          target_folder_id?: string
+          target_organization_id: string
+        }
+        Returns: {
+          checksum_sha256: string | null
+          claim_token: string | null
+          claimed_at: string | null
+          created_at: string
+          display_name: string
+          folder_id: string | null
+          id: string
+          kind: string | null
+          mime_type: string
+          object_key: string
+          organization_id: string
+          origin_id: string | null
+          origin_type: string
+          processing_attempts: number
+          processing_error: string | null
+          processing_state: string
+          scanned_at: string | null
+          size_bytes: number
+          thumbnail_object_key: string | null
+          trashed_at: string | null
+          trashed_by: string | null
+          updated_at: string
+          upload_completed_at: string | null
+          uploaded_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "files"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       move_job_visits: {
         Args: {
@@ -19741,6 +19892,46 @@ export type Database = {
         }
         Returns: Json
       }
+      rename_file: {
+        Args: {
+          target_actor_id: string
+          target_display_name: string
+          target_file_id: string
+          target_organization_id: string
+        }
+        Returns: {
+          checksum_sha256: string | null
+          claim_token: string | null
+          claimed_at: string | null
+          created_at: string
+          display_name: string
+          folder_id: string | null
+          id: string
+          kind: string | null
+          mime_type: string
+          object_key: string
+          organization_id: string
+          origin_id: string | null
+          origin_type: string
+          processing_attempts: number
+          processing_error: string | null
+          processing_state: string
+          scanned_at: string | null
+          size_bytes: number
+          thumbnail_object_key: string | null
+          trashed_at: string | null
+          trashed_by: string | null
+          updated_at: string
+          upload_completed_at: string | null
+          uploaded_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "files"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       reopen_invoice: {
         Args: {
           new_idempotency_key: string
@@ -20033,6 +20224,45 @@ export type Database = {
           target_session_id: string
         }
         Returns: Json
+      }
+      restore_file: {
+        Args: {
+          target_actor_id: string
+          target_file_id: string
+          target_organization_id: string
+        }
+        Returns: {
+          checksum_sha256: string | null
+          claim_token: string | null
+          claimed_at: string | null
+          created_at: string
+          display_name: string
+          folder_id: string | null
+          id: string
+          kind: string | null
+          mime_type: string
+          object_key: string
+          organization_id: string
+          origin_id: string | null
+          origin_type: string
+          processing_attempts: number
+          processing_error: string | null
+          processing_state: string
+          scanned_at: string | null
+          size_bytes: number
+          thumbnail_object_key: string | null
+          trashed_at: string | null
+          trashed_by: string | null
+          updated_at: string
+          upload_completed_at: string | null
+          uploaded_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "files"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       restore_form: {
         Args: {
@@ -21002,6 +21232,45 @@ export type Database = {
           subject_id: string
           subject_type: string
         }[]
+      }
+      trash_file: {
+        Args: {
+          target_actor_id: string
+          target_file_id: string
+          target_organization_id: string
+        }
+        Returns: {
+          checksum_sha256: string | null
+          claim_token: string | null
+          claimed_at: string | null
+          created_at: string
+          display_name: string
+          folder_id: string | null
+          id: string
+          kind: string | null
+          mime_type: string
+          object_key: string
+          organization_id: string
+          origin_id: string | null
+          origin_type: string
+          processing_attempts: number
+          processing_error: string | null
+          processing_state: string
+          scanned_at: string | null
+          size_bytes: number
+          thumbnail_object_key: string | null
+          trashed_at: string | null
+          trashed_by: string | null
+          updated_at: string
+          upload_completed_at: string | null
+          uploaded_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "files"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       unapply_client_payment: {
         Args: {

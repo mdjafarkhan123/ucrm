@@ -2,32 +2,34 @@
 
 **Goal:** One contractor File Manager backed by private R2, with one File linked to every CRM use.
 
-**Active part:** Part 4 — the File Manager workspace and the reusable File picker. Parts 1, 2, 3A and 3B are
-complete and every migration is pushed.
+**Active part:** Part 4 is built in full. Its last slice — reuse — is `20260921220000` (`attach_file_to_record`
+plus `list_files`'s `on_record` / `attachable` arguments), `POST /api/files/links`, `FilePicker.svelte` and
+`FileAttachToRecordDialog.svelte` wired into the details panel's "Attach to…". Nothing in Part 4 is committed
+yet.
 
-**Exact next action:** Build Part 4 in a fresh session. Before any UI, load the `design` and `jobber` skills and
-check `Design/Files and Media/` for the saved Jobber screenshots. The catalog, the upload/scan pipeline and the
-480px JPEG previews all exist server-side; nothing reads them yet, and no `/api/files` list or detail route
-exists.
+**Exact next action:** Commit Part 4 (read slice, write slice, reuse slice) as one change, then open Part 5,
+whose first job is a record editor that mounts `FilePicker` — that is also where the picker gets its browser
+pass and where a record-origin upload should gain its link on publish.
 
-**Blockers:** Part 4 cannot show an upload finishing in a running environment until deployment sets the values
-in ROADMAP "Approval gates" (worker secret, scanner host/port, two Vault secrets, and the cron job that ships
-switched off).
+**Blockers:**
+
+- An upload still cannot be watched turning usable until deployment sets the values in ROADMAP "Approval
+  gates" (worker secret, scanner host/port, two Vault secrets, and the cron job that ships switched off).
+  Until then every upload correctly stops at "Still being checked".
 
 **Non-obvious risks:**
 
-- **Open defect.** `files_available_means_verified_check` (Part 3A) is `not valid`, which exempts existing rows
-  but still checks every new one, so `private.backfill_files_from_attachments` can no longer insert a legacy
-  attachment as available. Part 5's re-sync depends on that function. The catalog pgTAP file stops there
-  (41 of 49 assertions run, none failed). Jafar decided 2026-09-21 to fix it inside Part 5 rather than now:
-  scope the constraint to Files whose key is under the pipeline's own `<org>/files/` prefix, which lets it be
-  validated instead of exempted. Nothing is waiting to be backfilled today.
-- Backfilled Files keep whatever thumbnail their old attachment had; only new uploads get a pipeline preview.
-- The local ClamAV container reports unhealthy while clamd itself answers fine on TCP — its own health check
-  uses the `LocalSocket` in `docker/clamav/clamd.conf`, which the app does not use.
+- `FilePicker` has no caller until Part 5, so it is proved by `FilePicker.svelte.spec.ts` (5 tests) rather
+  than in a browser. Everything else in Part 4 was checked in the real app on 2026-09-21.
+- Catalog search is `ilike` with no trigram index (pg_trgm is not installed). Bounded by tenant + page size;
+  one of the things Part 8 has to measure.
+- `supabase/tests/database/files_media_central_catalog.sql` aborts partway (41 of 49 assertions run, all
+  passing) because its backfill assertion re-runs `private.backfill_files_from_attachments` on rows already
+  there. Pre-existing.
+- `npm run test:unit` currently fails 71 tests across quotes, settings and team. All predate this work and
+  none touch Files.
 
 **Pointers:**
 
-- `docs/files-media-behavior-contract.md` — the whole approved model, the shipped allowlist, and the settled
-  HEIC/video decisions
-- `src/lib/server/files/` — policy, scanner, derivatives, worker
+- `docs/files-media-behavior-contract.md` — the approved model, including the three reuse decisions
+- `Design/Files and Media/README.md` — the workspace blueprint

@@ -22,7 +22,8 @@
 		clientsVisible = true,
 		quotesVisible = true,
 		invoicesVisible = true,
-		marketingVisible = false
+		marketingVisible = false,
+		filesVisible = true
 	}: {
 		children: import('svelte').Snippet;
 		variant?: 'contractor' | 'owner';
@@ -35,6 +36,7 @@
 		quotesVisible?: boolean;
 		invoicesVisible?: boolean;
 		marketingVisible?: boolean;
+		filesVisible?: boolean;
 	} = $props();
 	let mobileOpen = $state(false);
 	let sidebarCollapsed = $state(false);
@@ -71,7 +73,8 @@
 			items: [
 				{ label: 'Jobs', href: '/jobs', icon: 'tools' },
 				...(quotesVisible ? [{ label: 'Quotes', href: '/quotes', icon: 'fileInvoice' }] : []),
-				...(invoicesVisible ? [{ label: 'Invoices', href: '/invoices', icon: 'receipt' }] : [])
+				...(invoicesVisible ? [{ label: 'Invoices', href: '/invoices', icon: 'receipt' }] : []),
+				...(filesVisible ? [{ label: 'Files', href: '/files', icon: 'files' }] : [])
 			]
 		},
 		{

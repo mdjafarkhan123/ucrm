@@ -1,66 +1,26 @@
-// What the File Manager accepts, and how an upload is proved to be what it claims.
+// How an upload is proved to be what it claims.
 //
 // OWASP's file upload guidance asks for three separate checks that must all agree: a business-necessary
 // extension allowlist, a server-side size limit, and validation of the real file signature rather than the
-// `Content-Type` the browser sent. All three live here so there is one answer to "is this file allowed",
-// used by the upload route before a key is issued and again by the worker once the bytes exist.
+// `Content-Type` the browser sent. The allowlist and the size ceiling live in `$lib/files/allowlist.ts`,
+// because the file picker needs them too and one list cannot drift from itself. The signature check lives
+// here, where the bytes are.
 //
-// Video is deliberately absent. The behavior contract requires video's first formats, duration and byte
-// limits to come from measured mobile upload, processing, playback and storage evidence rather than a
-// competitor's number, and that evidence does not exist yet.
+// This module is the answer to "is this file allowed", used by the upload route before a key is issued and
+// again by the worker once the bytes exist.
 
-// Jafar approved 100 MB on 2026-09-21, matching Jobber's and CompanyCam's documented per-file limits.
-export const MAX_FILE_SIZE_BYTES = 104_857_600;
+import {
+	MAX_FILE_SIZE_BYTES,
+	allowedTypeFor,
+	fileExtension,
+	type SignatureFamily
+} from '$lib/files/allowlist';
 
-type SignatureFamily = 'jpeg' | 'png' | 'gif' | 'webp' | 'pdf' | 'zip' | 'ole' | 'none';
-
-type AllowedType = {
-	extensions: readonly string[];
-	mimeTypes: readonly string[];
-	signature: SignatureFamily;
-};
-
-// Kept narrow on purpose: the formats a contractor actually sends a customer or keeps as job evidence.
-// Anything a browser or Office viewer could be talked into executing stays out.
-const ALLOWED_TYPES: readonly AllowedType[] = [
-	{ extensions: ['jpg', 'jpeg'], mimeTypes: ['image/jpeg'], signature: 'jpeg' },
-	{ extensions: ['png'], mimeTypes: ['image/png'], signature: 'png' },
-	{ extensions: ['gif'], mimeTypes: ['image/gif'], signature: 'gif' },
-	{ extensions: ['webp'], mimeTypes: ['image/webp'], signature: 'webp' },
-	{ extensions: ['pdf'], mimeTypes: ['application/pdf'], signature: 'pdf' },
-	{
-		extensions: ['docx'],
-		mimeTypes: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-		signature: 'zip'
-	},
-	{
-		extensions: ['xlsx'],
-		mimeTypes: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-		signature: 'zip'
-	},
-	{ extensions: ['doc'], mimeTypes: ['application/msword'], signature: 'ole' },
-	{ extensions: ['xls'], mimeTypes: ['application/vnd.ms-excel'], signature: 'ole' },
-	// Plain text has no signature to check. Both are inert: nothing renders or executes them, they are
-	// downloaded or parsed as data, so the extension and size checks carry the weight alone.
-	{ extensions: ['csv'], mimeTypes: ['text/csv'], signature: 'none' },
-	{ extensions: ['txt'], mimeTypes: ['text/plain'], signature: 'none' }
-];
+export { MAX_FILE_SIZE_BYTES, fileExtension };
 
 // How many bytes the worker must hold back from the stream to identify the file. The longest signature
 // checked is WebP's 12; 64 leaves room for a format that needs a little more without buffering the object.
 export const SIGNATURE_SAMPLE_BYTES = 64;
-
-export function fileExtension(fileName: string): string {
-	const dot = fileName.lastIndexOf('.');
-	if (dot <= 0 || dot === fileName.length - 1) return '';
-	return fileName.slice(dot + 1).toLowerCase();
-}
-
-function allowedTypeFor(fileName: string): AllowedType | null {
-	const extension = fileExtension(fileName);
-	if (!extension) return null;
-	return ALLOWED_TYPES.find((type) => type.extensions.includes(extension)) ?? null;
-}
 
 export type UploadClaim = {
 	fileName: string;
@@ -128,6 +88,20 @@ export function detectSignature(sample: Uint8Array): SignatureFamily | null {
 	// The pre-2007 Office compound-document header.
 	if (startsWith(sample, [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1])) return 'ole';
 	return null;
+}
+
+// Renaming keeps the original extension, the way Explorer, Finder, Dropbox and OneDrive all do. The name is
+// what a download saves as, so letting "IMG_2093.jpg" become "Boiler before" would hand the contractor a
+// file their computer no longer knows how to open. It is also what `allowedTypeFor` reads, so dropping the
+// extension would quietly take a live file off the allowlist.
+export function renameKeepingExtension(currentName: string, requestedName: string): string {
+	const extension = fileExtension(currentName);
+	const typed = requestedName.trim();
+	if (!extension) return typed.slice(0, 255);
+	// Retyping the extension is not a mistake to correct -- it is the same name.
+	if (fileExtension(typed) === extension) return typed.slice(0, 255);
+	// The extension is added back afterwards, so the typed part is what gets cut if anything does.
+	return `${typed.slice(0, 254 - extension.length)}.${extension}`;
 }
 
 export type ContentVerdict = { ok: true } | { ok: false; reason: string };

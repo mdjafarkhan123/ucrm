@@ -3,7 +3,8 @@ import {
 	MAX_FILE_SIZE_BYTES,
 	checkUploadClaim,
 	checkUploadedContent,
-	detectSignature
+	detectSignature,
+	renameKeepingExtension
 } from './upload-policy';
 
 const JPEG = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);
@@ -94,5 +95,29 @@ describe('checkUploadedContent', () => {
 		expect(
 			checkUploadedContent('clients.csv', Uint8Array.from([0x6e, 0x61, 0x6d, 0x65]), 4, 4)
 		).toEqual({ ok: true });
+	});
+});
+
+describe('renameKeepingExtension', () => {
+	it('puts the original extension back on a name typed without one', () => {
+		expect(renameKeepingExtension('IMG_2093.jpg', 'Boiler before')).toBe('Boiler before.jpg');
+	});
+
+	it('does not double it up when the contractor types it themselves', () => {
+		expect(renameKeepingExtension('IMG_2093.jpg', 'Boiler before.jpg')).toBe('Boiler before.jpg');
+	});
+
+	it('keeps the real extension when a new one is typed, so the file still opens', () => {
+		expect(renameKeepingExtension('report.pdf', 'report.exe')).toBe('report.exe.pdf');
+	});
+
+	it('trims the typed part rather than the extension when the name is too long', () => {
+		const renamed = renameKeepingExtension('site.jpeg', 'x'.repeat(400));
+		expect(renamed.length).toBeLessThanOrEqual(255);
+		expect(renamed.endsWith('.jpeg')).toBe(true);
+	});
+
+	it('leaves a name with no extension alone', () => {
+		expect(renameKeepingExtension('receipt', 'Kitchen receipt')).toBe('Kitchen receipt');
 	});
 });

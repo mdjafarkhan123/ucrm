@@ -21,8 +21,43 @@ and `src/lib/server/files/derivatives.ts`. A photo that passes both the signatur
 resized to a 480px JPEG with `sharp`, stored beside its original at `<object key>.thumb.jpg`, and recorded on the
 File in the same statement that publishes it. Only `jpg/jpeg`, `png`, `gif` and `webp` under 40 MB get one;
 everything else — PDFs, Office documents, text, and an image the decoder cannot read — carries no preview and is
-drawn with a typed icon. A preview that cannot be made or stored never delays or blocks the File itself. The File
-Manager workspace is Part 4.
+drawn with a typed icon. A preview that cannot be made or stored never delays or blocks the File itself.
+
+The workspace's read side now exists too, added by `supabase/migrations/20260921190000_files_media_catalog_reads.sql`,
+`/api/files*` and `src/routes/(app)/files/`. Three `security invoker` functions — `list_files`, `file_usage` and
+`list_file_folders` — answer the catalog page, the "Used in" list and the folder rail under the reader's own
+policies, so the visible-usage count is taken over the same filtered rows the list is. Browsing, searching,
+smart views, folders, the details panel, the lightbox and downloads work.
+
+The write side exists as well, added by `supabase/migrations/20260921200000_files_media_manage_actions.sql`.
+Direct upload, rename, move, new folder, Trash and restore all run as service-role commands behind a
+permission-checked `/api/files*` route, matching the Part 3 pipeline's posture. Two behaviors are worth
+stating here because they are decisions, not mechanics:
+
+- **Renaming keeps the file's extension**, the way Explorer, Finder, Dropbox and OneDrive all do. The name is
+  what a download saves as and what the allowlist reads, so "Boiler before" becomes "Boiler before.jpg" and a
+  typed "report.exe" on a PDF becomes "report.exe.pdf".
+- **Moving a File to Trash detaches it from every record using it**, which is what this contract's Trash
+  section calls the confirmed action. The dialog lists those records first. Restoring brings the File and its
+  folder back; it does not put it back on them, and the dialog says so. A File carrying a use the customer
+  already received is refused outright.
+
+The reusable record picker exists as well, added by `supabase/migrations/20260921220000_files_media_attach_to_record.sql`,
+`src/lib/components/files/FilePicker.svelte`, `FileAttachToRecordDialog.svelte` and `POST /api/files/links`.
+Reuse now runs in both directions: the picker takes a record and offers the library, and the details panel's
+**Attach to…** takes a File and searches for the record. Three behaviors here are decisions, not mechanics:
+
+- **Attaching is the record's permission, not the library's.** Putting a document on a quote is an edit of
+  the quote, so `/api/files/links` checks the same gate the record's own notes and attachments use. That is
+  what lets a sales member, who holds `files.view` but never `files.manage`, put a file on the quote they are
+  building.
+- **Attaching the same File twice is attaching it once.** The command returns the existing link rather than
+  failing, so a double-click, or a colleague who attached it a second earlier, is not an error the contractor
+  has to read.
+- **A new upload started from inside the picker cannot be ticked until its check finishes.** The contract
+  already forbids attaching pending content, so the picker lists it with that status and says so in words
+  instead of offering a button that must refuse. Linking a record-origin upload automatically once it
+  publishes belongs to Part 5's adoption work.
 
 Decisions settled while building the schema, confirmed by Jafar 2026-09-21 (he asked for the industry-standard, contractor-easy choice):
 
@@ -79,6 +114,11 @@ Files is a routine main-navigation destination. It provides:
 - direct upload and a record-aware Attach existing file picker reused by every supported record editor;
 - image lightbox, safe PDF preview, native safe video playback, and download rows for other documents;
 - rename, move, download, attach, customer-share, move-to-trash, and restore actions when permitted.
+
+Two of those views ship later rather than now, decided while building the workspace on 2026-09-21. **Shared
+with customers** needs the explicit-share record that Part 7 creates, and **Videos** needs video on the upload
+allowlist, which waits for Part 8's measurements. Neither appears in the rail until its data exists, because a
+view that can only ever be empty reads as a broken feature rather than an honest "not yet".
 
 A File belongs to at most one manual folder. Smart views and CRM filters are derived and never behave like extra
 copies. Moving a File between folders does not change any attachment.

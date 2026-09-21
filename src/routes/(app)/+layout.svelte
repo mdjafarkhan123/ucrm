@@ -77,6 +77,19 @@
 	}));
 	const marketingVisible = $derived(marketingAccessQuery.data?.ok ?? false);
 
+	// Same idea for Files: browsing the library is its own files.view permission. A field member holds none
+	// of the three file permissions and reaches a photo through the job they are assigned to, so the menu
+	// item would only lead them to a refusal screen. limit=1 keeps the probe to the smallest page.
+	const filesAccessQuery = createQuery<{ ok: boolean }>(() => ({
+		queryKey: ['nav', 'files-access', data.user?.id ?? null],
+		queryFn: async () => {
+			const response = await fetch('/api/files?limit=1');
+			return { ok: response.status !== 403 };
+		},
+		staleTime: 5 * 60_000
+	}));
+	const filesVisible = $derived(filesAccessQuery.data?.ok ?? true);
+
 	// Every page is its own JavaScript file, so the first visit to one waits for that file to arrive and
 	// the click feels stuck. This fetches the files for the pages the office moves between all day once
 	// the browser has nothing else to do, so those clicks paint straight away. Hovering a link already
@@ -110,6 +123,7 @@
 		resolve('/(app)/marketing/campaigns/new'),
 		resolve('/(app)/marketing/campaigns/[id=uuid]/edit', { id: WARM_UUID }),
 		resolve('/(app)/communications'),
+		resolve('/(app)/files'),
 		resolve('/(app)/settings'),
 		resolve('/(app)/settings/business-profile'),
 		resolve('/(app)/settings/branding'),
@@ -157,5 +171,6 @@
 	{clientsVisible}
 	{quotesVisible}
 	{invoicesVisible}
-	{marketingVisible}>{@render children()}</AppShell
+	{marketingVisible}
+	{filesVisible}>{@render children()}</AppShell
 >

@@ -1,0 +1,124 @@
+import { json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+import { requireOrganizationPermission } from '$lib/server/access/permission';
+import { hasPermission } from '$lib/server/access/permission';
+import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
+
+// The smart views in the left rail, plus the folder view. "Shared with customers" and "Videos" are
+// deliberately absent: customer sharing is Part 7 and video is not on the upload allowlist until Part 8
+// measures it, so neither could ever be anything but an empty list that implies a missing feature.
+// `on_record` is the picker's first section rather than a rail view: the Files already on the record the
+// picker was opened from. It needs the record named, so it is the one view that reads entity_type/entity_id.
+const VIEWS = [
+	'all',
+	'recent',
+	'photos',
+	'documents',
+	'not_attached',
+	'trash',
+	'folder',
+	'on_record'
+] as const;
+type FileView = (typeof VIEWS)[number];
+
+const ENTITY_TYPES = [
+	'client',
+	'property',
+	'request',
+	'quote',
+	'job_expense',
+	'job',
+	'visit'
+] as const;
+
+const PAGE_SIZE_DEFAULT = 40;
+const PAGE_SIZE_MAX = 100;
+
+function readView(raw: string | null): FileView {
+	return (VIEWS as readonly string[]).includes(raw ?? '') ? (raw as FileView) : 'all';
+}
+
+// Cursor format: "<created_at>|<id>". Both halves are needed, because created_at alone is not unique and a
+// tie at a page boundary would silently drop or repeat a file.
+function readCursor(raw: string | null) {
+	if (!raw) return null;
+	const separator = raw.lastIndexOf('|');
+	if (separator < 1) return null;
+	const createdAt = raw.slice(0, separator);
+	const id = raw.slice(separator + 1);
+	if (!createdAt || !id) return null;
+	return { createdAt, id };
+}
+
+export const GET: RequestHandler = async (event) => {
+	// Browsing the library is its own permission. A member without it still reaches a file through the job
+	// or quote it is attached to; they just have no library to browse.
+	const access = await requireOrganizationPermission(event, 'files.view');
+	if ('response' in access) return access.response;
+
+	const params = event.url.searchParams;
+	const view = readView(params.get('view'));
+	const folderId = view === 'folder' ? params.get('folder_id') : null;
+	if (view === 'folder' && !folderId) return json({ files: [], next_cursor: null });
+
+	// The record the picker was opened from. A view of `on_record` without one would otherwise read as "no
+	// record named, so show everything", which is the opposite of what the section means.
+	const entityTypeParam = params.get('entity_type');
+	const entityType = (ENTITY_TYPES as readonly string[]).includes(entityTypeParam ?? '')
+		? entityTypeParam
+		: null;
+	const entityId = params.get('entity_id');
+	if (view === 'on_record' && (!entityType || !entityId))
+		return json({ files: [], next_cursor: null });
+
+	// The picker asks for this: a file that is still being checked, failed a check, or was quarantined
+	// cannot be attached to anything, so offering it would be offering a button that must then refuse.
+	const attachableOnly = params.get('attachable') === '1';
+
+	const search = params.get('search')?.trim() || null;
+	const limit = Math.min(
+		PAGE_SIZE_MAX,
+		Math.max(
+			1,
+			Number.parseInt(params.get('limit') ?? String(PAGE_SIZE_DEFAULT), 10) || PAGE_SIZE_DEFAULT
+		)
+	);
+	const cursor = readCursor(params.get('cursor'));
+
+	// One page and its usage counts in a single statement, under the caller's own policies -- see the
+	// migration for why this is a function rather than a PostgREST query.
+	const { data, error } = await event.locals.supabase.rpc('list_files', {
+		target_organization_id: access.auth.organization.id,
+		target_view: view === 'folder' ? 'all' : view,
+		target_folder_id: folderId ?? undefined,
+		target_search: search ?? undefined,
+		// One more than the page, so "is there another page" is answered without a second count query.
+		target_limit: limit + 1,
+		cursor_created_at: cursor?.createdAt ?? undefined,
+		cursor_id: cursor?.id ?? undefined,
+		target_entity_type: entityType ?? undefined,
+		target_entity_id: entityId ?? undefined,
+		only_attachable: attachableOnly
+	});
+	if (error) {
+		console.error('Could not list files.', error);
+		return databaseError();
+	}
+
+	const rows = data ?? [];
+	const hasMore = rows.length > limit;
+	const files = hasMore ? rows.slice(0, limit) : rows;
+	const last = files.at(-1);
+
+	return json(
+		{
+			files,
+			next_cursor: hasMore && last ? `${last.created_at}|${last.id}` : null,
+			// What this member may do with what they are looking at, resolved once here rather than guessed
+			// in the browser. Every write re-checks it server-side; this only decides which buttons show.
+			can_manage: hasPermission(access.access, 'files.manage'),
+			can_trash: hasPermission(access.access, 'files.trash')
+		},
+		{ headers: PRIVATE_READ_HEADERS }
+	);
+};

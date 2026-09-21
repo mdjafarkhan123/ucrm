@@ -22,6 +22,7 @@
 	import trendingUpIcon from '@tabler/icons/outline/trending-up.svg?raw';
 	import usersGroupIcon from '@tabler/icons/outline/users-group.svg?raw';
 	import chartBarIcon from '@tabler/icons/outline/chart-bar.svg?raw';
+	import filesIcon from '@tabler/icons/outline/files.svg?raw';
 	import collapseIcon from '@tabler/icons/outline/layout-sidebar-left-collapse.svg?raw';
 	import expandIcon from '@tabler/icons/outline/layout-sidebar-left-expand.svg?raw';
 
@@ -68,7 +69,8 @@
 		speakerphone: speakerphoneIcon,
 		trendingUp: trendingUpIcon,
 		usersGroup: usersGroupIcon,
-		chartBar: chartBarIcon
+		chartBar: chartBarIcon,
+		files: filesIcon
 	};
 
 	const allItems = $derived(groups.flatMap((group) => group.items));
