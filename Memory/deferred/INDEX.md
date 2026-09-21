@@ -11,7 +11,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
 | P2 | [A full page load can crash hydration and leave the previous page on screen](full-page-load-hydration-crash-leaves-the-previous-page-on-screen.md) |
 | P2 | [Issued invoices cannot be corrected from the browser](issued-invoices-cannot-be-corrected-from-the-browser.md) |
-| P2 | [Two migration ledger rows do not match the repo](two-migration-ledger-rows-do-not-match-the-repo.md) |
+| P2 | [The remote migration ledger no longer matches the repo (351 rows)](two-migration-ledger-rows-do-not-match-the-repo.md) |
 | P2 | [The automation worker's one-minute wake sweep is active on the shared remote database, contradicting a test's "off until deployment" assumption](automation-worker-wake-cron-unexpectedly-active.md) |
 | P2 | [Resolving a chat identity does not stop the next conflict](resolving-a-chat-identity-does-not-stop-the-next-conflict.md) |
 | P2 | [`EntityType` covers only clients and properties](entitytype-covers-only-clients-and-properties.md) |
@@ -62,12 +62,9 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [No image on a price list item](no-image-on-a-price-list-item.md) |
 | P3 | [Non-admin email-correction browser verification (Part 7)](non-admin-email-correction-browser-verification-part-7.md) |
 | P3 | [Replaced logo uploads are kept rather than cleaned up](replaced-logo-uploads-are-kept-rather-than-cleaned-up.md) |
-| P3 | [The Get started page ships an 8 MB chunk](the-get-started-page-ships-an-8-mb-chunk.md) |
-| P3 | [The get-started page ships a 7.9 MB client chunk](the-get-started-page-ships-a-7-9-mb-client-chunk.md) |
 | P3 | [Third KPI card on the Requests list has no real data source](third-kpi-card-on-the-requests-list-has-no-real-data-source.md) |
 | P3 | [Four more composite foreign keys use `on delete set null` without a column list](more-composite-foreign-keys-null-the-organization-on-delete.md) |
 | P3 | [Two unindexed foreign keys on the invitations table](two-unindexed-foreign-keys-on-the-invitations-table.md) |
-| P3 | [Packages editor seat/email allowance fields have an unsound null check](packages-editor-seat-and-email-allowance-fields-have-an-unsound-null-check.md) |
 | P3 | [Staff own actions lag behind their own realtime echo](staff-own-actions-lag-behind-realtime-echo.md) |
 | P3 | [Invoice email sends to the primary email only, not "+ billing contact"](invoice-email-sends-to-primary-only-not-billing-contact.md) |
 | P3 | [The payment-schedule dialog keeps its refusal banner after the numbers are fixed](job-payment-schedule-dialog-keeps-a-stale-reconciliation-banner.md) |

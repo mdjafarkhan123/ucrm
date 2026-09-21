@@ -17,3 +17,7 @@
   executed against the remote project in one rolled-back transaction, as the real `authenticated` role, and
   all 21 assertions passed. Its plan count and ordering are proven; only the CLI runner itself is untried.
 
+- **Works today (2026-09-21):** `npx supabase db query --linked -f <copy>.sql`, where the copy is the test file with its
+  final `select * from finish(); rollback;` replaced by `reset role; do $$ begin raise exception 'run=% failed=%',
+  currval('__tresults___numb_seq'), extensions.num_failed(); end $$;` — the error aborts and rolls everything back,
+  and its message carries the counts. Failing assertions are not named; bisect by trimming the copy.

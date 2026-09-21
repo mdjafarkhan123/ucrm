@@ -1,15 +1,15 @@
-# Two migration ledger rows do not match the repo
+# The remote migration ledger no longer matches the repo's migration files
 
-`supabase db push` is blocked: the remote ledger holds `20260831071453` and `20260831083814`, while the repo
-holds `20260831071500_automation_worker_wake_dispatch_ambiguous_column_fix.sql` and
-`20260831080000_automation_stop_reason_no_placeholder_when_blank.sql`. Same fixes, different timestamps —
-almost certainly applied through the MCP, which assigns its own version.
-
-Deferred because repairing schema history is not this campaign's work, and re-running the two local files
-could overwrite live function bodies that were edited after those files were written.
-
-Reactivates when someone needs `supabase db push`, or when Jafar approves a history repair. Until then,
-apply migrations through `mcp__supabase__apply_migration` and rename the local file to the version the
-ledger records.
-
-Known constraint: base any `create or replace` on `pg_get_functiondef`, not on the repo migration file.
+- **Priority:** P2 (see the production-cutover constraint below)
+- **Measured 2026-09-21** (`npx supabase migration list --linked`): 690 rows, 351 mismatched — 162 repo files with no
+  identical remote version, 189 remote versions with no identical repo file. Recent ones are the same fixes under
+  different timestamps (the MCP assigns its own version on apply; the repo file was then renamed or kept its own).
+  This note used to say "two rows"; it has grown with every migration applied through the MCP.
+- **Effect:** `supabase db push` is blocked, and pushing blindly could re-run migrations whose objects were edited
+  after their files were written.
+- **Reactivate when:** someone needs `supabase db push`, Jafar approves a history repair, or the managed-to-self-hosted
+  migration is rehearsed — a self-hosted database has to be rebuildable from the repo, so this must be settled first.
+- **Constraint:** Until repaired, apply migrations through `mcp__supabase__apply_migration` and rename the local file to
+  the version the ledger records. Base any `create or replace` on `pg_get_functiondef`, not on the repo file.
+- **Not yet checked:** whether every local-only file's content is truly applied remotely (a repair must prove it before
+  marking rows applied).
