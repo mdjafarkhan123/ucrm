@@ -866,6 +866,82 @@ export async function fetchConversationMessaging(clientId: string): Promise<Conv
 	return result as ConversationMessaging;
 }
 
+// A staff member stopping texts to a customer, or taking that stop back, shown as a centred line in the
+// thread (HighLevel writes the same "who, and when" line into the conversation). Loaded beside the thread,
+// not merged into the inbox page: these lines never reorder the conversation list or count as unread.
+export type TextStopNote = {
+	id: string;
+	kind: 'stopped' | 'turned_on';
+	phone: string | null;
+	by_name: string | null;
+	note: string | null;
+	created_at: string;
+};
+
+export const textStopNotesKey = (clientId: string) =>
+	[...conversationContextKey(clientId), 'text-stop-notes'] as const;
+
+export async function fetchTextStopNotes(clientId: string): Promise<TextStopNote[]> {
+	const response = await fetch(`/api/communications/conversations/${clientId}/sms-stop/history`);
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) throw httpError(response, result.error ?? 'Text changes could not be loaded.');
+	return (result as { notes: TextStopNote[] }).notes;
+}
+
+export type TimelineNoteSlot = { note: TextStopNote; showDay: boolean };
+
+export type TimelineNotePlacement = {
+	/** Notes to draw immediately before each message, keyed by message id. */
+	before: Map<string, TimelineNoteSlot[]>;
+	/** Whether each message opens a new calendar day, now that notes may sit between it and the last message. */
+	messageShowsDay: Map<string, boolean>;
+	/** Notes newer than every message. */
+	trailing: TimelineNoteSlot[];
+};
+
+/**
+ * Slots each note into an oldest-first message list by time, and works out where day dividers belong once
+ * notes are among the messages. `sameDay` is passed in so the caller's own timezone rule decides.
+ */
+export function placeTimelineNotes(
+	messages: TimelineMessage[],
+	notes: TextStopNote[],
+	sameDay: (a: string, b: string) => boolean
+): TimelineNotePlacement {
+	const ordered = [...notes].sort(
+		(a, b) => Date.parse(a.created_at) - Date.parse(b.created_at) || a.id.localeCompare(b.id)
+	);
+	const before = new Map<string, TimelineNoteSlot[]>();
+	const messageShowsDay = new Map<string, boolean>();
+	const trailing: TimelineNoteSlot[] = [];
+
+	let previousAt: string | null = null;
+	let next = 0;
+	for (const message of messages) {
+		const slots: TimelineNoteSlot[] = [];
+		while (
+			next < ordered.length &&
+			Date.parse(ordered[next].created_at) <= Date.parse(message.created_at)
+		) {
+			const note = ordered[next++];
+			slots.push({ note, showDay: previousAt === null || !sameDay(previousAt, note.created_at) });
+			previousAt = note.created_at;
+		}
+		if (slots.length) before.set(message.id, slots);
+		messageShowsDay.set(
+			message.id,
+			previousAt === null || !sameDay(previousAt, message.created_at)
+		);
+		previousAt = message.created_at;
+	}
+	for (; next < ordered.length; next += 1) {
+		const note = ordered[next];
+		trailing.push({ note, showDay: previousAt === null || !sameDay(previousAt, note.created_at) });
+		previousAt = note.created_at;
+	}
+	return { before, messageShowsDay, trailing };
+}
+
 export async function changeSmsStop(
 	clientId: string,
 	input: { contact_method_id: string; action: 'stop' | 'undo'; note?: string }

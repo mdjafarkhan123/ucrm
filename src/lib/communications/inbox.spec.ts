@@ -3,7 +3,9 @@ import {
 	conversationCustomerPhone,
 	groupMessagesByContact,
 	outboundEmailStatus,
+	placeTimelineNotes,
 	type InboundInboxMessage,
+	type TextStopNote,
 	type OutboundInboxMessage
 } from './inbox';
 
@@ -309,5 +311,82 @@ describe('outboundEmailStatus', () => {
 			label: 'Queued — not sent',
 			tone: 'informative'
 		});
+	});
+});
+
+describe('placeTimelineNotes', () => {
+	const day = (value: string) => value.slice(0, 10);
+	const sameDay = (a: string, b: string) => day(a) === day(b);
+
+	function note(id: string, created_at: string): TextStopNote {
+		return { id, kind: 'stopped', phone: '+15550100', by_name: 'Sam', note: null, created_at };
+	}
+
+	const first = outbound({ id: 'm1', created_at: '2026-09-20T09:00:00.000Z' });
+	const second = outbound({ id: 'm2', created_at: '2026-09-21T09:00:00.000Z' });
+
+	it('puts a note between the two messages it falls between', () => {
+		const placed = placeTimelineNotes(
+			[first, second],
+			[note('n1', '2026-09-20T12:00:00.000Z')],
+			sameDay
+		);
+		expect(placed.before.get('m2')?.map((slot) => slot.note.id)).toEqual(['n1']);
+		expect(placed.before.has('m1')).toBe(false);
+		expect(placed.trailing).toEqual([]);
+	});
+
+	it('puts a note newer than every message at the end', () => {
+		const placed = placeTimelineNotes(
+			[first, second],
+			[note('n1', '2026-09-21T15:00:00.000Z')],
+			sameDay
+		);
+		expect(placed.before.size).toBe(0);
+		expect(placed.trailing.map((slot) => slot.note.id)).toEqual(['n1']);
+	});
+
+	it('puts a note older than every message at the start', () => {
+		const placed = placeTimelineNotes([first], [note('n1', '2026-09-19T08:00:00.000Z')], sameDay);
+		expect(placed.before.get('m1')?.[0]).toMatchObject({ showDay: true });
+	});
+
+	it('draws a day divider only where the calendar day actually changes', () => {
+		const placed = placeTimelineNotes(
+			[first, second],
+			[note('n1', '2026-09-20T12:00:00.000Z')],
+			sameDay
+		);
+		// Same day as the first message: no divider before the note. The next message is a new day.
+		expect(placed.before.get('m2')?.[0].showDay).toBe(false);
+		expect(placed.messageShowsDay.get('m1')).toBe(true);
+		expect(placed.messageShowsDay.get('m2')).toBe(true);
+	});
+
+	it('does not repeat a day divider on a message that follows a note from the same day', () => {
+		const placed = placeTimelineNotes(
+			[first, second],
+			[note('n1', '2026-09-21T08:00:00.000Z')],
+			sameDay
+		);
+		expect(placed.before.get('m2')?.[0].showDay).toBe(true);
+		expect(placed.messageShowsDay.get('m2')).toBe(false);
+	});
+
+	it('compares moments, not text, so different fractional-second precision still orders correctly', () => {
+		const placed = placeTimelineNotes(
+			[outbound({ id: 'm1', created_at: '2026-09-21T09:00:00.5+00:00' })],
+			[note('n1', '2026-09-21T09:00:00.123456+00:00')],
+			sameDay
+		);
+		expect(placed.before.get('m1')).toHaveLength(1);
+	});
+
+	it('leaves messages untouched when there are no notes', () => {
+		const placed = placeTimelineNotes([first, second], [], sameDay);
+		expect(placed.before.size).toBe(0);
+		expect(placed.trailing).toEqual([]);
+		expect(placed.messageShowsDay.get('m1')).toBe(true);
+		expect(placed.messageShowsDay.get('m2')).toBe(true);
 	});
 });

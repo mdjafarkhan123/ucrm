@@ -10,6 +10,7 @@
 		changeSmsStop,
 		conversationMessagingKey,
 		fetchConversationMessaging,
+		textStopNotesKey,
 		type ConversationMessagingPhone
 	} from '$lib/communications/inbox';
 
@@ -42,8 +43,11 @@
 		onSuccess: async (_data, input) => {
 			toast.success(input.action === 'stop' ? 'Texts stopped' : 'Texts turned back on');
 			pending = null;
-			// The thread's composer reads the same standing, and the whole context key is one family.
-			await queryClient.invalidateQueries({ queryKey: conversationMessagingKey(clientId) });
+			// The thread's composer reads the same standing, and the thread shows this change as a line.
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: conversationMessagingKey(clientId) }),
+				queryClient.invalidateQueries({ queryKey: textStopNotesKey(clientId) })
+			]);
 		},
 		onError: (caught) => {
 			error = caught instanceof Error ? caught.message : 'That change could not be saved.';

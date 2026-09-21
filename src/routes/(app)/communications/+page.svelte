@@ -30,6 +30,7 @@
 		fetchConversationContext,
 		fetchInboundAttachmentDownloadUrl,
 		fetchInboxMessages,
+		fetchTextStopNotes,
 		fetchOutboundAttachmentDownloadUrl,
 		followConversation,
 		groupMessagesByContact,
@@ -38,15 +39,19 @@
 		markConversationRead,
 		outboundEmailStatus,
 		pendingSendStatus,
+		placeTimelineNotes,
 		resendInboxEmail,
 		resolveInboundReview,
 		resolveWebsiteChatIdentity,
+		textStopNotesKey,
 		unfollowConversation,
 		type ConversationGroup,
 		type InboundInboxMessage,
 		type InboxView,
 		type OutboundInboxMessage,
 		type PendingOutboundSend,
+		type TextStopNote,
+		type TimelineNoteSlot,
 		type WebsiteChatInboxMessage,
 		type WebsiteChatInboxSession
 	} from '$lib/communications/inbox';
@@ -60,6 +65,8 @@
 	import searchIcon from '@tabler/icons/outline/search.svg?raw';
 	import arrowDownIcon from '@tabler/icons/outline/arrow-down.svg?raw';
 	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
+	import messageOffIcon from '@tabler/icons/outline/message-circle-off.svg?raw';
+	import messageCheckIcon from '@tabler/icons/outline/message-circle-check.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -224,6 +231,25 @@
 		enabled: selectedGroup?.clientId !== null && selectedGroup?.clientId !== undefined,
 		staleTime: 30_000
 	}));
+
+	// The "texts stopped / turned back on" lines that sit in the thread. Small and per customer, so it loads
+	// with the conversation; a failed load just leaves the lines out rather than blocking the thread.
+	const textStopNotesQuery = createQuery(() => ({
+		queryKey: textStopNotesKey(selectedGroup?.clientId ?? ''),
+		queryFn: () => fetchTextStopNotes(selectedGroup?.clientId as string),
+		enabled: selectedGroup?.clientId !== null && selectedGroup?.clientId !== undefined,
+		staleTime: 30_000
+	}));
+
+	const notePlacement = $derived(
+		selectedGroup
+			? placeTimelineNotes(
+					selectedGroup.messages,
+					textStopNotesQuery.data ?? [],
+					(a, b) => calendarDay(a) === calendarDay(b)
+				)
+			: null
+	);
 
 	// Starting a new conversation needs the client's own contact methods, which the inbox page never loads --
 	// it only ever knows the address a conversation already used. Fetching on demand keeps that cost off the
@@ -616,6 +642,14 @@
 		return `This conversation ended · ${who} · ${formatWhen(session.closed_at ?? session.last_activity_at)}`;
 	}
 
+	function textStopLabel(note: TextStopNote) {
+		const who = note.by_name ?? 'A teammate';
+		const number = note.phone ? ` to ${note.phone}` : '';
+		return note.kind === 'stopped'
+			? `${who} stopped texts${number}`
+			: `${who} turned texts back on${number}`;
+	}
+
 	function identitySuggestions(session: WebsiteChatInboxSession) {
 		return session.candidates.map((candidate) => ({
 			clientId: candidate.client_id,
@@ -624,6 +658,28 @@
 		}));
 	}
 </script>
+
+<!-- A team member stopping texts to a customer, or taking that stop back: narration in the thread, like the
+     "conversation ended" line, not a message. Stopped and turned-on use different icons so they scan apart. -->
+{#snippet textStopNote(slot: TimelineNoteSlot)}
+	{@const note = slot.note}
+	{#if slot.showDay}
+		<div class="communications__date-divider" role="separator">
+			<span>{formatTimelineDay(note.created_at)}</span>
+		</div>
+	{/if}
+	<p
+		class="communications__stop-note"
+		class:communications__stop-note--stopped={note.kind === 'stopped'}
+	>
+		<span class="communications__stop-note-icon" aria-hidden="true"
+			>{@html note.kind === 'stopped' ? messageOffIcon : messageCheckIcon}</span
+		>
+		<span>{textStopLabel(note)}</span>
+		<time datetime={note.created_at}>{formatWhen(note.created_at)}</time>
+		{#if note.note}<span class="communications__stop-note-reason">“{note.note}”</span>{/if}
+	</p>
+{/snippet}
 
 <svelte:head><title>Communications · Contractor CRM</title></svelte:head>
 
@@ -866,7 +922,10 @@
 						onscroll={handleTimelineScroll}
 					>
 						{#each group.messages as message, index (message.id)}
-							{#if index === 0 || calendarDay(group.messages[index - 1].created_at) !== calendarDay(message.created_at)}
+							{#each notePlacement?.before.get(message.id) ?? [] as slot (slot.note.id)}
+								{@render textStopNote(slot)}
+							{/each}
+							{#if notePlacement?.messageShowsDay.get(message.id)}
 								<div class="communications__date-divider" role="separator">
 									<span>{formatTimelineDay(message.created_at)}</span>
 								</div>
@@ -1136,6 +1195,9 @@
 									{/if}
 								</article>
 							{/if}
+						{/each}
+						{#each notePlacement?.trailing ?? [] as slot (slot.note.id)}
+							{@render textStopNote(slot)}
 						{/each}
 						{#if visiblePendingSend}
 							{@const send = visiblePendingSend}
@@ -1972,6 +2034,31 @@
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 		text-align: center;
+	}
+	.communications__stop-note {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-smaller);
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		text-align: center;
+	}
+	.communications__stop-note-icon {
+		display: inline-flex;
+		color: var(--color-text--secondary);
+	}
+	.communications__stop-note--stopped .communications__stop-note-icon {
+		color: var(--color-warning--onSurface);
+	}
+	.communications__stop-note-icon :global(svg) {
+		width: 1rem;
+		height: 1rem;
+	}
+	.communications__stop-note-reason {
+		font-style: italic;
 	}
 	.communications__chat-divider {
 		display: flex;
