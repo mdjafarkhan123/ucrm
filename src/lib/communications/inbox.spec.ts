@@ -28,6 +28,8 @@ function outbound(overrides: Partial<OutboundInboxMessage> = {}): OutboundInboxM
 		resent_into_intent_id: null,
 		attachments: [],
 		can_resend: false,
+		scheduled_at: null,
+		can_cancel_scheduled: false,
 		send_kind: 'manual',
 		created_by_name: 'Jafar',
 		assigned_to: null,
@@ -257,7 +259,10 @@ describe('outboundEmailStatus', () => {
 			status: 'submitted',
 			delivery_outcome: 'sms_needs_checking'
 		});
-		expect(outboundEmailStatus(needsChecking)).toEqual({ label: 'Needs checking', tone: 'warning' });
+		expect(outboundEmailStatus(needsChecking)).toEqual({
+			label: 'Needs checking',
+			tone: 'warning'
+		});
 	});
 
 	it('still reads "Submitted" for an SMS accepted by Twilio with no status callback yet', () => {
@@ -276,6 +281,33 @@ describe('outboundEmailStatus', () => {
 
 	it('reads a freshly queued send with no hold reason as plain "Queued"', () => {
 		const queued = outbound({ channel: 'sms', status: 'queued', failure_message: null });
-		expect(outboundEmailStatus(queued)).toEqual({ label: 'Queued — not sent', tone: 'informative' });
+		expect(outboundEmailStatus(queued)).toEqual({
+			label: 'Queued — not sent',
+			tone: 'informative'
+		});
+	});
+
+	it('reads a genuinely future scheduled_at as "Scheduled for ..." rather than plain "Queued"', () => {
+		const scheduled = outbound({
+			status: 'queued',
+			failure_message: null,
+			scheduled_at: new Date(Date.now() + 3_600_000).toISOString()
+		});
+		const result = outboundEmailStatus(scheduled);
+		expect(result.tone).toBe('informative');
+		expect(result.label.startsWith('Scheduled for ')).toBe(true);
+	});
+
+	it('does not read a scheduled_at only seconds out as "Scheduled" -- that is the worker draining it now', () => {
+		const almostDue = outbound({
+			channel: 'sms',
+			status: 'queued',
+			failure_message: null,
+			scheduled_at: new Date(Date.now() + 5_000).toISOString()
+		});
+		expect(outboundEmailStatus(almostDue)).toEqual({
+			label: 'Queued — not sent',
+			tone: 'informative'
+		});
 	});
 });

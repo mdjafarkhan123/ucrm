@@ -257,7 +257,14 @@ export const conversationReplyEmailSchema = z.object({
 	subject: z.string().trim().min(1, 'Enter a subject.').max(998),
 	body: z.string().trim().min(1, 'Enter a message.').max(20_000),
 	idempotency_key: z.string().uuid('Start a new reply attempt and try again.'),
-	attachments: outboundAttachmentsField
+	attachments: outboundAttachmentsField,
+	// "Send Later": optional and email-only. When present, the enqueue command holds the message in the
+	// outbox instead of sending it now -- see docs on enqueue_conversation_reply_email's target_available_at.
+	scheduled_at: z
+		.string()
+		.datetime({ message: 'Choose a valid send time.' })
+		.refine((value) => new Date(value).getTime() > Date.now(), 'Choose a send time in the future.')
+		.optional()
 });
 
 // SMS has no subject line. The 1600-char ceiling is a generous client-side guide -- the enqueue command's

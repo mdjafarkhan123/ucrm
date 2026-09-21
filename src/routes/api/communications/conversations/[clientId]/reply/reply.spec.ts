@@ -146,6 +146,22 @@ describe('conversation reply API', () => {
 		);
 	});
 
+	it('forwards a future scheduled_at to the send command as target_available_at ("Send Later")', async () => {
+		const scheduledAt = '2099-01-01T12:00:00.000Z';
+		const response = await POST(event({ ...validBody, scheduled_at: scheduledAt }));
+		expect(response.status).toBe(201);
+		expect(rpc).toHaveBeenCalledWith(
+			'enqueue_conversation_reply_email',
+			expect.objectContaining({ target_available_at: scheduledAt })
+		);
+	});
+
+	it('rejects a scheduled_at in the past before accessing the service role', async () => {
+		const response = await POST(event({ ...validBody, scheduled_at: '2020-01-01T00:00:00.000Z' }));
+		expect(response.status).toBe(422);
+		expect(getOwnerSupabaseClient).not.toHaveBeenCalled();
+	});
+
 	it('rejects the reply, without calling the send command, when an attachment cannot be resolved', async () => {
 		vi.mocked(resolveOutboundAttachments).mockRejectedValue(
 			new OutboundAttachmentError('That file does not belong to this business.')

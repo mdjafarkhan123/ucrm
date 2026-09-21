@@ -367,10 +367,13 @@ export const GET: RequestHandler = async (event) => {
 	];
 	const outboundIds = outboundPage.map((row) => row.id);
 	const inboundIds = inboundPage.map((row) => row.id);
-	// Only a 'failed' or 'cancelled' row can ever be resendable, so this stays a small, filtered lookup
-	// even on a full page of otherwise-settled messages.
+	// 'failed'/'cancelled' need available_at for canResend below; 'queued' needs it too, to tell an
+	// ordinary near-instant queue from a genuine "Send Later" pick. Still a small, filtered lookup even on
+	// a full page of otherwise-settled messages.
 	const resendCandidateIds = outboundPage
-		.filter((row) => row.status === 'failed' || row.status === 'cancelled')
+		.filter(
+			(row) => row.status === 'failed' || row.status === 'cancelled' || row.status === 'queued'
+		)
 		.map((row) => row.id);
 	const [
 		clientsResult,
@@ -557,6 +560,14 @@ export const GET: RequestHandler = async (event) => {
 		const availableAt = outboxByIntent.get(row.id);
 		return availableAt === undefined || availableAt === 'infinity';
 	};
+	// A 'queued' row's available_at more than a minute out is a genuine "Send Later" pick, not the worker's
+	// own near-instant queueing -- see emailStatusDisplay's matching rule in $lib/communications/inbox.
+	const scheduledAt = (row: { id: string; status: string }) => {
+		if (row.status !== 'queued') return null;
+		const availableAt = outboxByIntent.get(row.id);
+		if (!availableAt || availableAt === 'infinity') return null;
+		return new Date(availableAt).getTime() > Date.now() + 60_000 ? availableAt : null;
+	};
 	const attachmentsByMessage = new Map<string, (typeof attachmentsResult.data)[number][]>();
 	for (const attachment of attachmentsResult.data ?? []) {
 		const list = attachmentsByMessage.get(attachment.inbound_message_id) ?? [];
@@ -595,6 +606,8 @@ export const GET: RequestHandler = async (event) => {
 		client_phone: row.recipient_phone,
 		attachments: outboundAttachmentsByMessage.get(row.id) ?? [],
 		can_resend: canResend(row),
+		scheduled_at: scheduledAt(row),
+		can_cancel_scheduled: canSend && scheduledAt(row) !== null,
 		created_by_name:
 			row.send_kind === 'manual'
 				? row.created_by

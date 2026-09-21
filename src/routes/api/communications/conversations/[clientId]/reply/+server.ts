@@ -145,7 +145,8 @@ export const POST: RequestHandler = async (event) => {
 			target_subject: input.subject,
 			target_html_content: renderManualEmailHtml(input.body),
 			target_text_content: input.body,
-			target_attachments: attachments
+			target_attachments: attachments,
+			target_available_at: input.scheduled_at
 		});
 		if (error) {
 			const dbError = error as { code?: string; message?: string };

@@ -40,6 +40,10 @@ export type InboxEmail = {
 	resent_into_intent_id: string | null;
 	attachments: OutboundAttachment[];
 	can_resend: boolean;
+	// "Send Later": set only while status is 'queued' and this is still genuinely in the future -- see
+	// emailStatusDisplay and can_cancel_scheduled below. Null for every ordinary (near-immediate) send.
+	scheduled_at: string | null;
+	can_cancel_scheduled: boolean;
 	send_kind: string;
 	created_by_name: string | null;
 	assigned_to: string | null;
@@ -108,10 +112,20 @@ export function outboundEmailStatus(email: OutboundInboxMessage): EmailStatusDis
 // The same mapping, over just the fields it actually reads, so a send that has been accepted but has no
 // stored row yet can label itself exactly as the row will once it arrives -- without that, the bubble
 // would flip from one wording to another as the real message swaps in.
+function formatScheduledAt(value: string) {
+	return new Intl.DateTimeFormat(undefined, {
+		month: 'short',
+		day: 'numeric',
+		hour: 'numeric',
+		minute: '2-digit'
+	}).format(new Date(value));
+}
+
 function emailStatusDisplay(email: {
 	status: string;
 	delivery_outcome?: OutboundInboxMessage['delivery_outcome'];
 	failure_message?: string | null;
+	scheduled_at?: string | null;
 }): EmailStatusDisplay {
 	// Once the provider has told us what happened after submission (Part 7.1), that outcome is the
 	// truer status than "Submitted" and replaces it.
@@ -142,6 +156,14 @@ function emailStatusDisplay(email: {
 	}
 	if (email.status === 'submitted') return { label: 'Submitted', tone: 'success' };
 	if (email.status === 'queued') {
+		// A genuinely future scheduled_at is a "Send Later" pick, not the worker holding the row back for
+		// its own reasons -- those two only ever differ by a handful of seconds, so this reads real intent.
+		if (email.scheduled_at && new Date(email.scheduled_at).getTime() > Date.now() + 60_000) {
+			return {
+				label: `Scheduled for ${formatScheduledAt(email.scheduled_at)}`,
+				tone: 'informative'
+			};
+		}
 		// A queued send the worker has already looked at and held back (quiet hours, an org not yet ready
 		// to send, ...) carries a reason in failure_message; a freshly queued one has none yet.
 		if (email.failure_message) return { label: 'Waiting to send', tone: 'informative' };
@@ -507,7 +529,9 @@ export async function sendConversationReply(
 	subject: string,
 	body: string,
 	attachments: OutboundAttachmentPayload[] = [],
-	idempotencyKey: string = crypto.randomUUID()
+	idempotencyKey: string = crypto.randomUUID(),
+	// "Send Later": an ISO instant to hold the email until, instead of sending it now. Email only.
+	scheduledAt: string | null = null
 ) {
 	const response = await fetch(`/api/communications/conversations/${clientId}/reply`, {
 		method: 'POST',
@@ -517,7 +541,8 @@ export async function sendConversationReply(
 			subject,
 			body,
 			idempotency_key: idempotencyKey,
-			attachments
+			attachments,
+			...(scheduledAt ? { scheduled_at: scheduledAt } : {})
 		})
 	});
 	const result = (await response.json().catch(() => ({}))) as {
@@ -662,6 +687,15 @@ export async function resendInboxEmail(id: string, idempotencyKey: string) {
 	const result = await response.json().catch(() => ({}));
 	if (!response.ok) throw httpError(response, result.error ?? 'This message could not be resent.');
 	return result as { intent: { id: string; status: string; created_at: string } };
+}
+
+// Cancels a "Send Later" email before the worker claims it -- see cancel_communication_conversation_reply.
+export async function cancelScheduledConversationReply(id: string) {
+	const response = await fetch(`/api/communications/${id}/cancel-scheduled`, { method: 'POST' });
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'This scheduled message could not be cancelled.');
+	return result as { intent: { id: string; status: string } };
 }
 
 export async function markConversationRead(clientId: string) {

@@ -21,6 +21,7 @@
 	import ChooseClientDialog from '$lib/components/communications/ChooseClientDialog.svelte';
 	import ManualEmailDialog from '$lib/components/clients/ManualEmailDialog.svelte';
 	import {
+		cancelScheduledConversationReply,
 		clientCommunicationHistoryKey,
 		conversationContextKey,
 		conversationCustomerEmail,
@@ -76,6 +77,7 @@
 	// since it has no client_id yet.
 	let selectedGroupKey = $state<string | null>(page.url.searchParams.get('client'));
 	let resendTarget = $state<OutboundInboxMessage | null>(null);
+	let cancelScheduledTarget = $state<OutboundInboxMessage | null>(null);
 	let detailsMessage = $state<InboundInboxMessage | null>(null);
 	let forwardTarget = $state<InboundInboxMessage | null>(null);
 	let linkTarget = $state<ConversationGroup | null>(null);
@@ -283,6 +285,17 @@
 			resendTarget = null;
 		},
 		onError: (error: Error) => toast.error('Could not resend the email', error.message)
+	}));
+
+	const cancelScheduledMutationState = createMutation(() => ({
+		mutationFn: (email: OutboundInboxMessage) => cancelScheduledConversationReply(email.id),
+		onSuccess: (_result, email) => {
+			queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] });
+			queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(email.client_id) });
+			toast.success('Scheduled email cancelled');
+			cancelScheduledTarget = null;
+		},
+		onError: (error: Error) => toast.error('Could not cancel the scheduled email', error.message)
 	}));
 
 	// Read state is per-conversation (per client), not per-message -- opening a conversation with an unread
@@ -986,6 +999,13 @@
 													onclick={() => (resendTarget = message)}>Resend</Button
 												>
 											{/if}
+											{#if message.can_cancel_scheduled}
+												<Button
+													size="small"
+													variant="secondary"
+													onclick={() => (cancelScheduledTarget = message)}>Cancel</Button
+												>
+											{/if}
 										</div>
 										<h3>{message.subject}</h3>
 										<p>{message.text_content}</p>
@@ -1373,6 +1393,24 @@
 		<p>
 			UCRM will recheck the recipient and sender before queueing a new attempt to
 			<strong>{target.client_email}</strong>.
+		</p>
+	</ConfirmDialog>
+{/if}
+
+{#if cancelScheduledTarget}
+	{@const target = cancelScheduledTarget}
+	<ConfirmDialog
+		open
+		title="Cancel this scheduled email?"
+		confirmLabel="Cancel email"
+		destructive
+		loading={cancelScheduledMutationState.isPending}
+		onConfirm={() => cancelScheduledMutationState.mutate(target)}
+		onClose={() => (cancelScheduledTarget = null)}
+	>
+		<p>
+			This email to <strong>{target.client_email}</strong> will not be sent. You can write a new one any
+			time.
 		</p>
 	</ConfirmDialog>
 {/if}

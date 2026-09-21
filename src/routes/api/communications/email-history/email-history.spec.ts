@@ -174,6 +174,8 @@ describe('reading Communications history', () => {
 					client_email: 'a@example.test',
 					attachments: [],
 					can_resend: false,
+					scheduled_at: null,
+					can_cancel_scheduled: false,
 					created_by_name: null,
 					resent_into_intent_id: null,
 					assigned_to: null,
@@ -262,6 +264,7 @@ describe('reading Communications history', () => {
 					error: null
 				},
 				{ data: [{ id: 'client-1', display_name: 'Acme' }], error: null }, // clients
+				{ data: [], error: null }, // outbox (available_at) -- a 'queued' row is now a scheduledAt candidate too
 				{ data: [], error: null }, // resent-into lookup
 				{ data: [], error: null }, // outbound attachments
 				{

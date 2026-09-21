@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Popover from '$lib/components/ui/Popover.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import ComposerChannelMenu from '$lib/components/communications/ComposerChannelMenu.svelte';
 	import ConversationAttachments from '$lib/components/communications/ConversationAttachments.svelte';
@@ -8,8 +9,12 @@
 	import EmailTemplatePickerButton from '$lib/components/communications/EmailTemplatePickerButton.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import type { CommunicationEmailTemplateListItem } from '$lib/communications/email-templates';
+	import { Dialog as DialogPrimitive } from 'bits-ui';
 	import sendIcon from '@tabler/icons/outline/send-2.svg?raw';
 	import minusIcon from '@tabler/icons/outline/minus.svg?raw';
+	import maximizeIcon from '@tabler/icons/outline/arrows-maximize.svg?raw';
+	import minimizeIcon from '@tabler/icons/outline/arrows-minimize.svg?raw';
+	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import {
 		clientCommunicationHistoryKey,
 		estimateSmsReply,
@@ -286,6 +291,73 @@
 		void deliver(attempt);
 	}
 
+	// "Send Later": email only -- see the migration note on enqueue_conversation_reply_email for why SMS is
+	// excluded (its consent/quiet-hours/balance gates are all checked once, at enqueue time). This bypasses
+	// the deliver()/onPendingChange bubble entirely: that machinery means "this is going out right now, here
+	// is a live mark for it," which is the wrong story for something that will not go out for hours.
+	let sendLaterOpen = $state(false);
+	let sendLaterAnchor = $state<HTMLButtonElement | null>(null);
+	let scheduledAtInput = $state('');
+	let scheduling = $state(false);
+
+	// A minute of slack so the round trip through the datetime-local input (minute precision) never lands
+	// exactly on "now" and trips the server's strictly-future check.
+	function earliestScheduleValue() {
+		const min = new Date(Date.now() + 60_000);
+		min.setSeconds(0, 0);
+		return new Date(min.getTime() - min.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+	}
+
+	function openSendLater() {
+		if (!scheduledAtInput) scheduledAtInput = earliestScheduleValue();
+		sendLaterOpen = true;
+	}
+
+	async function scheduleSend() {
+		const when = new Date(scheduledAtInput);
+		if (!scheduledAtInput || Number.isNaN(when.getTime()) || when.getTime() <= Date.now()) {
+			formError = 'Choose a send time in the future.';
+			return;
+		}
+		const nextErrors: Record<string, string> = {};
+		if (!subject.trim()) nextErrors.subject = 'Enter a subject.';
+		if (!body.trim()) nextErrors.body = 'Enter a message.';
+		fieldErrors = nextErrors;
+		if (Object.keys(nextErrors).length > 0) return;
+
+		scheduling = true;
+		formError = '';
+		try {
+			await sendConversationReply(
+				clientId as string,
+				subject,
+				body,
+				attachmentsField?.getAttachments() ?? [],
+				crypto.randomUUID(),
+				when.toISOString()
+			);
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] }),
+				clientId
+					? queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(clientId) })
+					: Promise.resolve()
+			]);
+			toast.success('Email scheduled');
+			body = '';
+			attachmentsField?.reset();
+			scheduledAtInput = '';
+			sendLaterOpen = false;
+		} catch (error) {
+			const withFields = error as Error & { fieldErrors?: Record<string, string> };
+			if (withFields.fieldErrors && Object.keys(withFields.fieldErrors).length > 0) {
+				fieldErrors = withFields.fieldErrors;
+			}
+			formError = withFields.message;
+		} finally {
+			scheduling = false;
+		}
+	}
+
 	// Chat sends on Enter (Shift+Enter for a newline), matching the visitor's own widget. Email/SMS require
 	// the Send button -- Enter stays a newline there.
 	function handleKeydown(event: KeyboardEvent) {
@@ -295,18 +367,196 @@
 		submit();
 	}
 
+	// Full-screen is a display mode of the already-expanded draft, not a separate composer -- the same
+	// subject/body state keeps typing when it pops out or back in.
+	let popped = $state(false);
+
 	function collapse() {
 		expanded = false;
+		popped = false;
 	}
 
 	function expand() {
 		expanded = true;
 		requestAnimationFrame(() => bodyEl?.focus());
 	}
+
+	function togglePopped() {
+		popped = !popped;
+	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class="conversation-composer" class:conversation-composer--expanded={expanded}>
+{#snippet composerForm()}
+	<form
+		id="conversation-composer-expanded"
+		class="conversation-composer__form"
+		class:conversation-composer__form--popped={popped}
+		onsubmit={submit}
+	>
+		<header class="conversation-composer__header">
+			<button
+				type="button"
+				class="conversation-composer__collapse"
+				aria-label="Minimize composer"
+				title="Minimize composer"
+				onclick={collapse}
+			>
+				{@html minusIcon}
+			</button>
+			<button
+				type="button"
+				class="conversation-composer__collapse"
+				aria-label={popped ? 'Exit full screen' : 'Expand to full screen'}
+				title={popped ? 'Exit full screen' : 'Expand to full screen'}
+				onclick={togglePopped}
+			>
+				{@html popped ? minimizeIcon : maximizeIcon}
+			</button>
+		</header>
+		{#if channel !== 'website_chat'}
+			<dl class="conversation-composer__meta">
+				<div>
+					<dt>From</dt>
+					<dd>
+						{#if channel === 'sms'}
+							{estimate?.ready ? estimate.sender_phone : 'Organization default SMS number'}
+						{:else}
+							Your eligible email identity
+						{/if}
+					</dd>
+				</div>
+				<div>
+					<dt>To</dt>
+					<dd>{recipientLabel}</dd>
+				</div>
+			</dl>
+		{/if}
+		{#if channel === 'email'}
+			<div
+				class="conversation-composer__subject"
+				class:conversation-composer__subject--invalid={Boolean(fieldErrors.subject)}
+			>
+				<label for="conversation-composer-subject">Subject</label>
+				<input
+					id="conversation-composer-subject"
+					bind:value={subject}
+					maxlength={998}
+					aria-required="true"
+					aria-invalid={Boolean(fieldErrors.subject)}
+				/>
+			</div>
+			{#if fieldErrors.subject}<p class="conversation-composer__field-error" role="alert">
+					{fieldErrors.subject}
+				</p>{/if}
+		{/if}
+		<div
+			class="conversation-composer__editor"
+			class:conversation-composer__editor--invalid={Boolean(fieldErrors.body)}
+		>
+			<label class="sr-only" for="conversation-composer-body">Message</label>
+			<textarea
+				bind:this={bodyEl}
+				id="conversation-composer-body"
+				bind:value={body}
+				placeholder={channel === 'website_chat' ? 'Write a reply…' : 'Type a message'}
+				maxlength={channel === 'sms' ? 1600 : channel === 'website_chat' ? 5000 : 20_000}
+				rows={channel === 'website_chat' ? 3 : 5}
+				aria-required="true"
+				aria-invalid={Boolean(fieldErrors.body)}
+				onkeydown={handleKeydown}></textarea>
+		</div>
+		{#if fieldErrors.body}<p class="conversation-composer__field-error" role="alert">
+				{fieldErrors.body}
+			</p>{/if}
+		{#if channel === 'sms'}
+			<p class="conversation-composer__impact">
+				{#if estimating}
+					Estimating…
+				{:else if estimate?.ready}
+					{body.length} character{body.length === 1 ? '' : 's'} · {estimate.segment_count} segment{estimate.segment_count ===
+					1
+						? ''
+						: 's'} · {formatEstimateCost(estimate)} estimated
+				{:else if estimate && !estimate.ready}
+					{estimate.reason}
+				{:else}
+					{body.length} character{body.length === 1 ? '' : 's'}
+				{/if}
+			</p>
+			<p class="conversation-composer__impact">
+				{mmsEligible
+					? 'A picture attaches as a real picture text. Other files send as a secure link in the text.'
+					: 'A file attaches as a secure link in the text for this number.'}
+			</p>
+		{/if}
+		{#if formError}<p class="conversation-composer__error" role="alert">{formError}</p>{/if}
+		<footer class="conversation-composer__footer">
+			<div class="conversation-composer__tools">
+				<ComposerChannelMenu {channel} {channels} onSelect={onChannelChange} />
+				{#if channel === 'email'}
+					<EmailTemplatePickerButton disabled={sending} onApply={requestTemplate} />
+				{/if}
+				<SnippetPickerButton disabled={sending} onInsert={insertSnippet} />
+				{#if channel === 'email'}
+					<ConversationAttachments
+						bind:this={attachmentsField}
+						disabled={sending}
+						onUploadingChange={(value) => (uploading = value)}
+					/>
+				{:else if channel === 'sms'}
+					<ConversationAttachments
+						bind:this={attachmentsField}
+						variant="sms"
+						disabled={sending}
+						onUploadingChange={(value) => (uploading = value)}
+					/>
+				{/if}
+			</div>
+			{#if channel === 'email'}
+				<div class="conversation-composer__send-group">
+					<Button variant="primary" type="submit" loading={sending} disabled={uploading}
+						>Send</Button
+					>
+					<button
+						type="button"
+						bind:this={sendLaterAnchor}
+						class="conversation-composer__send-later-trigger"
+						aria-label="More send options"
+						title="More send options"
+						disabled={sending || uploading}
+						onclick={openSendLater}
+					>
+						{@html chevronDownIcon}
+					</button>
+				</div>
+				<Popover
+					open={sendLaterOpen}
+					anchor={sendLaterAnchor}
+					title="Send later"
+					onClose={() => (sendLaterOpen = false)}
+				>
+					<div class="conversation-composer__send-later">
+						<label for="conversation-composer-schedule">Send at</label>
+						<input
+							id="conversation-composer-schedule"
+							type="datetime-local"
+							bind:value={scheduledAtInput}
+							min={earliestScheduleValue()}
+						/>
+						<Button type="button" variant="primary" loading={scheduling} onclick={scheduleSend}
+							>Schedule send</Button
+						>
+					</div>
+				</Popover>
+			{:else}
+				<Button variant="primary" type="submit" loading={sending} disabled={uploading}>Send</Button>
+			{/if}
+		</footer>
+	</form>
+{/snippet}
+
+<div class="conversation-composer" class:conversation-composer--expanded={expanded && !popped}>
 	{#if !expanded}
 		<div class="conversation-composer__collapsed">
 			<ComposerChannelMenu {channel} {channels} onSelect={onChannelChange} />
@@ -326,121 +576,29 @@
 				{@html sendIcon}
 			</button>
 		</div>
+	{:else if popped}
+		<DialogPrimitive.Root
+			open
+			onOpenChange={(next) => {
+				if (!next) popped = false;
+			}}
+		>
+			<DialogPrimitive.Portal>
+				<DialogPrimitive.Overlay class="conversation-composer__popout-overlay" />
+				<DialogPrimitive.Content
+					class="conversation-composer__popout-content"
+					aria-label={(channel === 'email'
+						? 'Email'
+						: channel === 'sms'
+							? 'Text message'
+							: 'Chat message') + ' composer, full screen'}
+				>
+					{@render composerForm()}
+				</DialogPrimitive.Content>
+			</DialogPrimitive.Portal>
+		</DialogPrimitive.Root>
 	{:else}
-		<form id="conversation-composer-expanded" class="conversation-composer__form" onsubmit={submit}>
-			<header class="conversation-composer__header">
-				<button
-					type="button"
-					class="conversation-composer__collapse"
-					aria-label="Minimize composer"
-					title="Minimize composer"
-					onclick={collapse}
-				>
-					{@html minusIcon}
-				</button>
-			</header>
-			{#if channel !== 'website_chat'}
-				<dl class="conversation-composer__meta">
-					<div>
-						<dt>From</dt>
-						<dd>
-							{#if channel === 'sms'}
-								{estimate?.ready ? estimate.sender_phone : 'Organization default SMS number'}
-							{:else}
-								Your eligible email identity
-							{/if}
-						</dd>
-					</div>
-					<div>
-						<dt>To</dt>
-						<dd>{recipientLabel}</dd>
-					</div>
-				</dl>
-			{/if}
-			{#if channel === 'email'}
-				<div
-					class="conversation-composer__subject"
-					class:conversation-composer__subject--invalid={Boolean(fieldErrors.subject)}
-				>
-					<label for="conversation-composer-subject">Subject</label>
-					<input
-						id="conversation-composer-subject"
-						bind:value={subject}
-						maxlength={998}
-						aria-required="true"
-						aria-invalid={Boolean(fieldErrors.subject)}
-					/>
-				</div>
-				{#if fieldErrors.subject}<p class="conversation-composer__field-error" role="alert">
-						{fieldErrors.subject}
-					</p>{/if}
-			{/if}
-			<div
-				class="conversation-composer__editor"
-				class:conversation-composer__editor--invalid={Boolean(fieldErrors.body)}
-			>
-				<label class="sr-only" for="conversation-composer-body">Message</label>
-				<textarea
-					bind:this={bodyEl}
-					id="conversation-composer-body"
-					bind:value={body}
-					placeholder={channel === 'website_chat' ? 'Write a reply…' : 'Type a message'}
-					maxlength={channel === 'sms' ? 1600 : channel === 'website_chat' ? 5000 : 20_000}
-					rows={channel === 'website_chat' ? 3 : 5}
-					aria-required="true"
-					aria-invalid={Boolean(fieldErrors.body)}
-					onkeydown={handleKeydown}></textarea>
-			</div>
-			{#if fieldErrors.body}<p class="conversation-composer__field-error" role="alert">
-					{fieldErrors.body}
-				</p>{/if}
-			{#if channel === 'sms'}
-				<p class="conversation-composer__impact">
-					{#if estimating}
-						Estimating…
-					{:else if estimate?.ready}
-						{body.length} character{body.length === 1 ? '' : 's'} · {estimate.segment_count} segment{estimate.segment_count ===
-						1
-							? ''
-							: 's'} · {formatEstimateCost(estimate)} estimated
-					{:else if estimate && !estimate.ready}
-						{estimate.reason}
-					{:else}
-						{body.length} character{body.length === 1 ? '' : 's'}
-					{/if}
-				</p>
-				<p class="conversation-composer__impact">
-					{mmsEligible
-						? 'A picture attaches as a real picture text. Other files send as a secure link in the text.'
-						: 'A file attaches as a secure link in the text for this number.'}
-				</p>
-			{/if}
-			{#if formError}<p class="conversation-composer__error" role="alert">{formError}</p>{/if}
-			<footer class="conversation-composer__footer">
-				<div class="conversation-composer__tools">
-					<ComposerChannelMenu {channel} {channels} onSelect={onChannelChange} />
-					{#if channel === 'email'}
-						<EmailTemplatePickerButton disabled={sending} onApply={requestTemplate} />
-					{/if}
-					<SnippetPickerButton disabled={sending} onInsert={insertSnippet} />
-					{#if channel === 'email'}
-						<ConversationAttachments
-							bind:this={attachmentsField}
-							disabled={sending}
-							onUploadingChange={(value) => (uploading = value)}
-						/>
-					{:else if channel === 'sms'}
-						<ConversationAttachments
-							bind:this={attachmentsField}
-							variant="sms"
-							disabled={sending}
-							onUploadingChange={(value) => (uploading = value)}
-						/>
-					{/if}
-				</div>
-				<Button variant="primary" type="submit" loading={sending} disabled={uploading}>Send</Button>
-			</footer>
-		</form>
+		{@render composerForm()}
 	{/if}
 </div>
 <!-- eslint-enable svelte/no-at-html-tags -->
@@ -537,10 +695,43 @@
 		}
 	}
 
+	.conversation-composer__form--popped {
+		flex: 1;
+		min-width: 0;
+		height: 100%;
+
+		.conversation-composer__editor {
+			flex: 1;
+			min-height: 0;
+
+			textarea {
+				height: 100%;
+				min-height: 100%;
+				resize: none;
+			}
+		}
+	}
+
+	:global(.conversation-composer__popout-overlay) {
+		position: fixed;
+		inset: 0;
+		z-index: var(--elevation-modal);
+		background: var(--color-overlay);
+	}
+
+	:global(.conversation-composer__popout-content) {
+		position: fixed;
+		inset: var(--space-large);
+		z-index: var(--elevation-modal);
+		display: flex;
+		outline: none;
+	}
+
 	.conversation-composer__header {
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
+		gap: var(--space-smallest);
 		padding: var(--space-smaller) var(--space-small);
 		border-bottom: var(--border-base) solid var(--color-border);
 		background: var(--color-surface--background--subtle);
@@ -702,6 +893,75 @@
 		flex-wrap: wrap;
 		align-items: center;
 		gap: var(--space-smaller);
+	}
+
+	/* "Send" and the chevron read as one split button: Send keeps its normal shape, the chevron sits flush
+	   against it with a hairline seam and the two outer corners it alone owns rounded to match. */
+	.conversation-composer__send-group {
+		display: flex;
+		flex: 0 0 auto;
+		align-items: stretch;
+
+		:global(.button) {
+			border-radius: var(--radius-small) 0 0 var(--radius-small);
+		}
+	}
+
+	.conversation-composer__send-later-trigger {
+		display: inline-flex;
+		width: 28px;
+		flex: 0 0 auto;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		border: 0;
+		border-left: var(--border-base) solid var(--color-overlay);
+		border-radius: 0 var(--radius-small) var(--radius-small) 0;
+		color: var(--color-surface);
+		background: var(--color-interactive);
+		cursor: pointer;
+
+		&:hover:not(:disabled) {
+			background: var(--color-interactive--hover);
+		}
+
+		&:disabled {
+			cursor: not-allowed;
+			opacity: 0.6;
+		}
+
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	.conversation-composer__send-later {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-small);
+		min-width: 220px;
+
+		label {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+		}
+
+		input {
+			padding: var(--space-smaller) var(--space-small);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-small);
+			color: var(--color-text);
+			background: var(--color-surface);
+			font: inherit;
+			font-size: var(--typography--fontSize-base);
+		}
 	}
 
 	.sr-only {
