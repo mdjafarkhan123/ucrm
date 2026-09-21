@@ -15,4 +15,9 @@ rows and needs his explicit go-ahead.
 **Pointers:** `parts/part-2-baseline.md`; `Memory/deferred/two-migration-ledger-rows-do-not-match-the-repo.md`. Docker works
 (`supabase_db_ucrm` local stack is running on 54322 — leave it alone; diff/dump use throwaway containers).
 
+**After this campaign (default):** return to the deferred-cleanup work this campaign came from — start at `Memory/deferred/INDEX.md`
+(65 notes on 2026-09-21; the ledger note is deleted when Part 4 closes and the database-tests note is updated). Already triaged and left
+for a decision or another campaign: R2 line-photo cleanup (Files and Media), unindexed foreign keys, functions executable by everyone,
+four more composite foreign keys, and the screen items. Ask Jafar before starting any of those.
+
 **Resume command:** `read memory and continue migration-baseline`
