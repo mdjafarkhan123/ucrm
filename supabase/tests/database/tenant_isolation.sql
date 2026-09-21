@@ -393,14 +393,17 @@ set local role postgres;
 select ok((select display_name = 'RLS Client B' from public.clients where id = '20000000-0000-0000-0000-000000000002'), 'cross-tenant client update changes no rows');
 set local role authenticated;
 
-select lives_ok(
+-- Business settings moved off raw table UPDATE onto save_organization_business_settings (a security
+-- definer command), and the table's UPDATE grant was revoked from authenticated entirely. A direct write
+-- now fails on privilege before RLS ever gets a chance to scope it, even inside the caller's own tenant.
+select throws_ok(
   $$update public.organization_settings set locale = 'en-GB' where organization_id = '10000000-0000-0000-0000-000000000001'$$,
-  'a member can update their organization settings'
+  '42501', null, 'direct settings writes are denied even inside your own organization'
 );
 
-select lives_ok(
+select throws_ok(
   $$update public.organization_settings set locale = 'fr-FR' where organization_id = '10000000-0000-0000-0000-000000000002'$$,
-  'cross-tenant settings update is denied'
+  '42501', null, 'cross-tenant settings update is denied'
 );
 
 set local role postgres;
@@ -429,7 +432,9 @@ select is((select count(*)::integer from public.properties), 0, 'a field worker 
 select is((select count(*)::integer from public.client_contacts), 0, 'a field worker cannot list named contacts');
 select is((select count(*)::integer from public.client_contact_methods), 0, 'a field worker cannot list contact methods');
 select is((select count(*)::integer from public.client_communication_preferences), 0, 'a field worker cannot list communication preferences');
-select is((select count(*)::integer from public.requests), 1, 'a field worker still sees work records in their organization');
+-- requests.view is 'assigned' for Field (20260910130000_request_assigned_scope_visibility.sql): a request is
+-- visible only when its assessment lists the member as an assignee. Request A's only assignee is user 1.
+select is((select count(*)::integer from public.requests), 0, 'a field worker cannot see a request they are not assigned to assess');
 select is((select count(*)::integer from public.notes), 0, 'a field worker cannot see any notes');
 select is((select count(*)::integer from public.tag_assignments), 0, 'a field worker cannot see any tag assignments');
 select is((select count(*)::integer from public.attachments), 0, 'a field worker cannot see any attachments');

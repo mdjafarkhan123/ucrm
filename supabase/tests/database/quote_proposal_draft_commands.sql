@@ -137,7 +137,7 @@ select is((select show_unit_prices from public.quote_versions where id = pg_temp
 -- 5. Tax, then discount, then both --------------------------------------------------------------------------
 
 select lives_ok(
-  $$select public.set_quote_draft_tax(pg_temp.qid(), pg_temp.rev(), 'Sales tax', 1000)$$,
+  $$select public.set_quote_draft_tax(pg_temp.qid(), pg_temp.rev(), 'custom', null, 'Sales tax', 1000)$$,
   'one named rate is set'
 );
 select is(pg_temp.money($m$select tax_minor from public.quote_versions where id = pg_temp.vid()$m$), 800::bigint,
@@ -186,7 +186,7 @@ select is(pg_temp.money($m$select total_minor from public.quote_versions where i
   'the total goes back to work plus tax');
 
 select lives_ok(
-  $$select public.set_quote_draft_tax(pg_temp.qid(), pg_temp.rev(), 'Sales tax', 0)$$,
+  $$select public.set_quote_draft_tax(pg_temp.qid(), pg_temp.rev(), 'no_tax')$$,
   'No tax is chosen'
 );
 select is((select tax_name from public.quote_versions where id = pg_temp.vid()), null,
@@ -261,7 +261,7 @@ select throws_ok(
   '23514', null, 'a discount the customer reads needs a name'
 );
 select throws_ok(
-  $$select public.set_quote_draft_tax(pg_temp.qid(), pg_temp.rev(), null, 1000)$$,
+  $$select public.set_quote_draft_tax(pg_temp.qid(), pg_temp.rev(), 'custom', null, null, 1000)$$,
   '23514', null, 'a tax the customer pays needs a name'
 );
 select throws_ok(

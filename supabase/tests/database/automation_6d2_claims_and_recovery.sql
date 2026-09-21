@@ -231,7 +231,8 @@ select is(
 );
 
 -- ---------------------------------------------------------------------------------------------------
--- The pre-6D-3 action park, and the resume that makes it safe.
+-- A known action effect reports itself due and stays claimed under its lease (6D-3); an unsupported
+-- action key still parks, and resume makes that safe.
 -- ---------------------------------------------------------------------------------------------------
 update private.automation_work_items
 set available_at = now() - interval '1 minute', due_at = now() - interval '1 minute'
@@ -242,20 +243,29 @@ select * from public.claim_automation_work_items(1, 1, 120, 8, 'test-worker-acti
 
 select is(
   (select public.advance_automation_work_item(work_item_id, claim_token) from action_claim),
-  'action_not_available',
-  'an action step parks truthfully while it has no adapter'
+  'action_due_email',
+  'a send-email action step reports the effect due for the worker to run'
 );
 select is(
-  (select state || ':' || attention_reason from private.automation_work_items
+  (select state || ':' || coalesce(attention_reason, 'none') from private.automation_work_items
    where id = (select work_item_id from action_claim)),
-  'needs_attention:action_not_available',
-  'the parked step says why it is waiting for a person'
+  'pending:none',
+  'the row stays claimed under its lease meanwhile, not parked'
 );
 select is(
   (select state from private.automation_enrollments where id = '6d200000-0000-0000-0000-000000000511'),
   'active',
-  'parking a step does not end the enrollment'
+  'reporting an effect due does not end the enrollment'
 );
+
+-- An action key the worker has no adapter for still parks; simulate that here directly, the same way this
+-- file's other fixtures are created directly, since driving it through a real unsupported key would need a
+-- whole extra recipe.
+update private.automation_work_items
+set state = 'needs_attention', attention_reason = 'action_not_available', attention_at = now(),
+  claim_token = null, claimed_at = null
+where id = (select work_item_id from action_claim);
+
 select is(
   public.resume_automation_work_items('6d200000-0000-0000-0000-000000000001', 'action_not_available', 100),
   1,

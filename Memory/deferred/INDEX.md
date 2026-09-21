@@ -6,20 +6,17 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | --- | --- |
 | P1 | [Authenticated reads and non-quote/invoice/payment writes lack a shared rate-limit policy](authenticated-reads-and-pipeline-writes-are-not-rate-limited.md) |
 | P1 | [Background jobs have no production scheduler decision](background-jobs-have-no-production-scheduler-decision.md) |
-| P1 | [Four older composite foreign keys still null the organization on delete](four-older-composite-foreign-keys-still-null-the-organization-on-delete.md) |
 | P1 | [Published Quotes do not freeze the organization logo or brand color](published-quotes-do-not-freeze-the-organization-logo-or-brand-color.md) |
 | P1 | [Removing a saved line photo leaves the file in R2](removing-a-saved-line-photo-leaves-the-file-in-r2.md) |
 | P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
 | P2 | [A full page load can crash hydration and leave the previous page on screen](full-page-load-hydration-crash-leaves-the-previous-page-on-screen.md) |
 | P2 | [Issued invoices cannot be corrected from the browser](issued-invoices-cannot-be-corrected-from-the-browser.md) |
-| P2 | [`automation_6d2` still asserts the pre-6D-3 action park](automation-6d2-action-park-assertions-are-stale.md) |
 | P2 | [Two migration ledger rows do not match the repo](two-migration-ledger-rows-do-not-match-the-repo.md) |
-| P2 | [`quote_proposal_draft_commands` still calls the 4-argument `set_quote_draft_tax`](quote-draft-commands-tax-assertions-are-stale.md) |
+| P2 | [The automation worker's one-minute wake sweep is active on the shared remote database, contradicting a test's "off until deployment" assumption](automation-worker-wake-cron-unexpectedly-active.md) |
 | P2 | [Resolving a chat identity does not stop the next conflict](resolving-a-chat-identity-does-not-stop-the-next-conflict.md) |
 | P2 | [`EntityType` covers only clients and properties](entitytype-covers-only-clients-and-properties.md) |
 | P2 | [Active member's sign-in email not visible, recovery path unclear](active-member-email-not-visible-and-recovery-path-unclear.md) |
 | P2 | [Team member profile save may have the same stale-revision race](team-member-profile-save-may-have-the-same-stale-revision-race.md) |
-| P2 | [`tenant_isolation.sql` still expects direct UPDATE on `organization_settings`](tenant-isolation-organization-settings-update-tests-are-stale.md) |
 | P2 | [`Last communication` rail card on the client page](last-communication-rail-card-on-the-client-page.md) |
 | P2 | [No admin-alert delivery for loop-detected inbound threads](no-admin-alert-delivery-mechanism-for-loop-detected-inbound-threads.md) |
 | P2 | [Brevo transactional webhook retries forever on an unknown delivery_intent_id](brevo-transactional-webhook-unknown-intent-retry-storm.md) |
@@ -68,9 +65,9 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [The Get started page ships an 8 MB chunk](the-get-started-page-ships-an-8-mb-chunk.md) |
 | P3 | [The get-started page ships a 7.9 MB client chunk](the-get-started-page-ships-a-7-9-mb-client-chunk.md) |
 | P3 | [Third KPI card on the Requests list has no real data source](third-kpi-card-on-the-requests-list-has-no-real-data-source.md) |
+| P3 | [Four more composite foreign keys use `on delete set null` without a column list](more-composite-foreign-keys-null-the-organization-on-delete.md) |
 | P3 | [Two unindexed foreign keys on the invitations table](two-unindexed-foreign-keys-on-the-invitations-table.md) |
 | P3 | [Packages editor seat/email allowance fields have an unsound null check](packages-editor-seat-and-email-allowance-fields-have-an-unsound-null-check.md) |
-| P3 | [Two typecheck failures unrelated to Website Chat WC1](typecheck-failures-unrelated-to-website-chat-wc1.md) |
 | P3 | [Staff own actions lag behind their own realtime echo](staff-own-actions-lag-behind-realtime-echo.md) |
 | P3 | [Invoice email sends to the primary email only, not "+ billing contact"](invoice-email-sends-to-primary-only-not-billing-contact.md) |
 | P3 | [The payment-schedule dialog keeps its refusal banner after the numbers are fixed](job-payment-schedule-dialog-keeps-a-stale-reconciliation-banner.md) |
