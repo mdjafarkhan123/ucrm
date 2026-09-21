@@ -9,12 +9,19 @@ vi.mock('$lib/server/access/permission', async () => {
 	return { ...actual, requireOrganizationPermission: vi.fn() };
 });
 
+vi.mock('$lib/server/requests/timezone', () => ({
+	organizationFormatting: vi.fn(async () => ({
+		ok: true,
+		formatting: { timezone: 'UTC', currency_code: 'USD', locale: 'en-GB' }
+	}))
+}));
+
 const mockedRequire = vi.mocked(requireOrganizationPermission);
 const clientId = '00000000-0000-4000-8000-000000000001';
 
-// One global queue: each `.from(table)` call pops the next result in the order the route issues them
-// (clients, client_contact_methods, properties, requests, quotes, opportunities) -- matching the
-// `email-history` spec's own convention for a route that fires several reads in one `Promise.all`.
+// One global queue: each `.from(table)` call pops the next result in the order the route issues them --
+// matching the `email-history` spec's own convention for a route that fires several reads in one
+// `Promise.all`.
 function chain(result: { data?: unknown; error?: unknown }) {
 	const obj: Record<string, unknown> = {};
 	for (const method of ['select', 'eq', 'is', 'order', 'limit']) obj[method] = vi.fn(() => obj);
@@ -26,142 +33,157 @@ function chain(result: { data?: unknown; error?: unknown }) {
 
 function fromQueue(results: Array<{ data?: unknown; error?: unknown }>) {
 	const queue = [...results];
-	const chains: Array<Record<string, unknown>> = [];
-	const from = vi.fn(() => {
-		const built = chain(queue.shift() ?? { data: null, error: null });
-		chains.push(built);
-		return built;
-	});
-	return Object.assign(from, { chains });
+	return vi.fn(() => chain(queue.shift() ?? { data: null, error: null }));
 }
 
-function event() {
+function event(from: ReturnType<typeof fromQueue>, section?: string) {
+	const url = new URL(`http://localhost/api/communications/conversations/${clientId}/context`);
+	if (section) url.searchParams.set('section', section);
 	return {
 		params: { clientId },
-		locals: { supabase: {} }
+		url,
+		locals: { supabase: { from } }
 	} as unknown as Parameters<typeof GET>[0];
 }
 
-describe('reading conversation work context', () => {
+function allow(...permissions: string[]) {
+	mockedRequire.mockResolvedValue({
+		auth: { organization: { id: 'org-1' }, user: { id: 'user-1' } },
+		access: {
+			permissions: Object.fromEntries(['customers.view', ...permissions].map((key) => [key, true])),
+			// A permission only counts when the organization's package includes its feature.
+			features: { 'core.quotes': true, 'core.jobs': true, 'sales.pipeline': true }
+		}
+	} as never);
+}
+
+const clientRow = {
+	id: clientId,
+	display_name: 'Acme',
+	company_name: 'Acme Co',
+	client_type: 'company'
+};
+
+describe('reading the conversation context rail', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockedRequire.mockResolvedValue({
-			auth: { organization: { id: 'org-1' }, user: { id: 'user-1' } },
-			access: { permissions: { 'customers.view': true }, features: {} }
-		} as never);
+		allow();
 	});
 
 	it('requires customers.view', async () => {
-		const from = fromQueue([
-			{ data: { id: clientId, display_name: 'Acme', company_name: null, client_type: 'company' } },
-			{ data: [] },
-			{ data: [] },
-			{ data: [] },
-			{ data: [] },
-			{ data: [] }
-		]);
-		const supabaseEvent = event();
-		(supabaseEvent.locals as { supabase: unknown }).supabase = { from };
-		await GET(supabaseEvent);
+		await GET(event(fromQueue([{ data: clientRow }, { data: [] }])));
 		expect(mockedRequire).toHaveBeenCalledWith(expect.anything(), 'customers.view');
 	});
 
 	it('404s when the client is not in this organization (or is deleted)', async () => {
-		const from = fromQueue([
-			{ data: null },
-			{ data: [] },
-			{ data: [] },
-			{ data: [] },
-			{ data: [] },
-			{ data: [] }
-		]);
-		const supabaseEvent = event();
-		(supabaseEvent.locals as { supabase: unknown }).supabase = { from };
-		const response = await GET(supabaseEvent);
+		const response = await GET(event(fromQueue([{ data: null }, { data: [] }])));
 		expect(response.status).toBe(404);
 	});
 
-	it("folds primary contact methods onto the client and returns each category's small recent set", async () => {
+	it('500s if either read fails', async () => {
+		const response = await GET(
+			event(fromQueue([{ data: clientRow }, { error: { message: 'boom' } }]))
+		);
+		expect(response.status).toBe(500);
+	});
+
+	it('returns only the client and folds primary contact methods onto it', async () => {
 		const from = fromQueue([
-			{
-				data: {
-					id: clientId,
-					display_name: 'Acme',
-					company_name: 'Acme Co',
-					client_type: 'company'
-				}
-			},
+			{ data: clientRow },
 			{
 				data: [
 					{ kind: 'email', value: 'a@example.test' },
 					{ kind: 'phone', value: '555-0100' }
 				]
-			},
-			{
-				data: [
-					{
-						id: 'prop-1',
-						label: 'Main',
-						address_line1: '1 Main St',
-						city: 'Metropolis',
-						state_region: 'NY',
-						postal_code: '10001'
-					}
-				]
-			},
-			{
-				data: [
-					{ id: 'req-1', title: 'Fix roof', status: 'new', created_at: '2026-08-20T00:00:00Z' }
-				]
-			},
-			{
-				data: [
-					{
-						id: 'quote-1',
-						quote_number: 42,
-						title: 'Roof repair',
-						status: 'draft',
-						created_at: '2026-08-21T00:00:00Z'
-					}
-				]
-			},
-			{ data: [] } // opportunities: empty, e.g. denied by RLS (no pipeline.view) or genuinely none
+			}
 		]);
-		const supabaseEvent = event();
-		(supabaseEvent.locals as { supabase: unknown }).supabase = { from };
-
-		const response = await GET(supabaseEvent);
+		const response = await GET(event(from));
 		expect(response.status).toBe(200);
 		const body = await response.json();
-		expect(body.client).toEqual({
-			id: clientId,
-			display_name: 'Acme',
-			company_name: 'Acme Co',
-			client_type: 'company',
-			email: 'a@example.test',
-			phone: '555-0100'
-		});
-		expect(body.properties).toHaveLength(1);
-		expect(body.requests).toHaveLength(1);
-		expect(body.quotes).toHaveLength(1);
-		// RLS is the only gate on quotes/opportunities visibility -- an empty array here is
-		// indistinguishable from "denied", which is exactly the "no disclosure" behavior the approved
-		// plan asks for. The route itself adds no extra permission check on top.
-		expect(body.opportunities).toEqual([]);
+		expect(body.client).toEqual({ ...clientRow, email: 'a@example.test', phone: '555-0100' });
+		// Opening a conversation costs two reads, however much work the customer has.
+		expect(from).toHaveBeenCalledTimes(2);
 	});
 
-	it('500s if any of the parallel reads fail', async () => {
-		const from = fromQueue([
-			{ data: { id: clientId, display_name: 'Acme', company_name: null, client_type: 'person' } },
-			{ data: [] },
-			{ data: [] },
-			{ error: { message: 'boom' } },
-			{ data: [] },
-			{ data: [] }
-		]);
-		const supabaseEvent = event();
-		(supabaseEvent.locals as { supabase: unknown }).supabase = { from };
-		const response = await GET(supabaseEvent);
+	it('lists only the tabs this member may see', async () => {
+		allow('quotes.view');
+		const response = await GET(event(fromQueue([{ data: clientRow }, { data: [] }])));
+		const body = await response.json();
+		expect(body.sections).toEqual(['properties', 'requests', 'quotes']);
+	});
+
+	it('rejects an unknown section', async () => {
+		const response = await GET(event(fromQueue([]), 'payments'));
+		expect(response.status).toBe(422);
+	});
+
+	it('answers a denied section with nothing, and never reads it', async () => {
+		const from = fromQueue([]);
+		const response = await GET(event(from, 'jobs'));
+		expect(response.status).toBe(200);
+		expect(await response.json()).toEqual({ items: [], has_more: false, locale: 'en-GB' });
+		expect(from).not.toHaveBeenCalled();
+	});
+
+	it('returns a section as the latest few, and says when there are more', async () => {
+		const rows = Array.from({ length: 7 }, (_, index) => ({
+			id: `req-${index}`,
+			title: `Request ${index}`,
+			status: 'new',
+			created_at: '2026-08-20T00:00:00Z'
+		}));
+		const response = await GET(event(fromQueue([{ data: rows }]), 'requests'));
+		const body = await response.json();
+		expect(body.items).toHaveLength(6);
+		expect(body.has_more).toBe(true);
+		expect(body.locale).toBe('en-GB');
+	});
+
+	const jobRow = {
+		id: 'job-1',
+		job_number: 23,
+		title: 'Rewire',
+		derived_status: 'upcoming',
+		currency_code: 'USD',
+		created_at: '2026-08-20T00:00:00Z'
+	};
+
+	it('withholds money, and never asks for it, without the price permission', async () => {
+		allow('jobs.view');
+		const from = fromQueue([{ data: [jobRow] }]);
+		const rpc = vi.fn();
+		const request = event(from, 'jobs');
+		(request.locals.supabase as unknown as { rpc: unknown }).rpc = rpc;
+		const body = await (await GET(request)).json();
+		expect(body.items[0].total_minor).toBeNull();
+		expect(rpc).not.toHaveBeenCalled();
+	});
+
+	it('shows money to a member who holds the price permission', async () => {
+		allow('jobs.view', 'jobs.view_price');
+		const rpc = vi.fn(async () => ({ data: { 'job-1': { total_minor: 132000 } }, error: null }));
+		const request = event(fromQueue([{ data: [jobRow] }]), 'jobs');
+		(request.locals.supabase as unknown as { rpc: unknown }).rpc = rpc;
+		const body = await (await GET(request)).json();
+		expect(body.items[0].total_minor).toBe(132000);
+		expect(rpc).toHaveBeenCalledWith('job_money', { target_job_ids: ['job-1'] });
+	});
+
+	it('reads how a pipeline opportunity ended along with its stage', async () => {
+		allow('pipeline.view');
+		const row = {
+			id: 'op-1',
+			title: 'Deal',
+			stage: 'request_closed',
+			outcome: 'won',
+			created_at: 'x'
+		};
+		const body = await (await GET(event(fromQueue([{ data: [row] }]), 'pipeline'))).json();
+		expect(body.items[0]).toMatchObject({ stage: 'request_closed', outcome: 'won' });
+	});
+
+	it('500s when a section read fails', async () => {
+		const response = await GET(event(fromQueue([{ error: { message: 'boom' } }]), 'requests'));
 		expect(response.status).toBe(500);
 	});
 });

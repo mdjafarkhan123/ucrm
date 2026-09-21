@@ -1,4 +1,5 @@
 import { httpError } from '$lib/http-error';
+import type { ContextSection } from '$lib/communications/context-sections';
 export type OutboundAttachment = {
 	id: string;
 	file_name: string;
@@ -747,16 +748,44 @@ export type ConversationContextQuote = {
 	quote_number: number;
 	title: string;
 	status: string;
+	currency_code: string;
 	created_at: string;
+	/** `null` when this member may not see prices -- withheld, never zeroed. */
+	total_minor: number | null;
 };
 
 export type ConversationContextOpportunity = {
 	id: string;
 	title: string;
 	stage: string;
+	outcome: string;
 	created_at: string;
 };
 
+export type ConversationContextJob = {
+	id: string;
+	job_number: number;
+	title: string;
+	derived_status: string;
+	currency_code: string;
+	created_at: string;
+	total_minor: number | null;
+};
+
+export type ConversationContextInvoice = {
+	id: string;
+	invoice_number: number;
+	subject: string;
+	derived_status: string;
+	currency_code: string;
+	due_date: string;
+	created_at: string;
+	total_minor: number | null;
+	remaining_minor: number | null;
+};
+
+// What opening a conversation loads: the client, and which record tabs this member may see. Each tab's
+// records are a separate read (`fetchConversationContextSection`) made only when the tab is reached for.
 export type ConversationContext = {
 	client: {
 		id: string;
@@ -766,14 +795,31 @@ export type ConversationContext = {
 		email: string | null;
 		phone: string | null;
 	};
+	sections: ContextSection[];
+};
+
+export type ContextSectionRows = {
 	properties: ConversationContextProperty[];
 	requests: ConversationContextRequest[];
 	quotes: ConversationContextQuote[];
-	opportunities: ConversationContextOpportunity[];
+	jobs: ConversationContextJob[];
+	invoices: ConversationContextInvoice[];
+	pipeline: ConversationContextOpportunity[];
+};
+
+export type ContextSectionPage<S extends ContextSection = ContextSection> = {
+	items: ContextSectionRows[S];
+	has_more: boolean;
+	locale: string;
 };
 
 export const conversationContextKey = (clientId: string) =>
 	['communications', 'conversation-context', clientId] as const;
+
+// Nested under the client's context key on purpose: everything that already invalidates that key after a
+// follow or an assignment change refreshes the open tab too.
+export const conversationContextSectionKey = (clientId: string, section: ContextSection) =>
+	[...conversationContextKey(clientId), section] as const;
 
 export async function fetchConversationContext(clientId: string): Promise<ConversationContext> {
 	const response = await fetch(`/api/communications/conversations/${clientId}/context`);
@@ -781,6 +827,18 @@ export async function fetchConversationContext(clientId: string): Promise<Conver
 	if (!response.ok)
 		throw httpError(response, result.error ?? 'Customer context could not be loaded.');
 	return result as ConversationContext;
+}
+
+export async function fetchConversationContextSection<S extends ContextSection>(
+	clientId: string,
+	section: S
+): Promise<ContextSectionPage<S>> {
+	const response = await fetch(
+		`/api/communications/conversations/${clientId}/context?section=${section}`
+	);
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) throw httpError(response, result.error ?? 'That could not be loaded.');
+	return result as ContextSectionPage<S>;
 }
 
 export const clientCommunicationHistoryKey = (clientId: string) =>

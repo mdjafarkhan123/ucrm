@@ -387,6 +387,23 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
+{#snippet sendButton()}
+	<button
+		type="submit"
+		class="conversation-composer__send"
+		aria-label="Send"
+		title="Send"
+		aria-busy={sending}
+		disabled={sending || uploading}
+	>
+		{#if sending}
+			<span class="conversation-composer__send-spinner" aria-hidden="true"></span>
+		{:else}
+			{@html sendIcon}
+		{/if}
+	</button>
+{/snippet}
+
 {#snippet composerForm()}
 	<form
 		id="conversation-composer-expanded"
@@ -515,9 +532,7 @@
 			</div>
 			{#if channel === 'email'}
 				<div class="conversation-composer__send-group">
-					<Button variant="primary" type="submit" loading={sending} disabled={uploading}
-						>Send</Button
-					>
+					{@render sendButton()}
 					<button
 						type="button"
 						bind:this={sendLaterAnchor}
@@ -550,7 +565,7 @@
 					</div>
 				</Popover>
 			{:else}
-				<Button variant="primary" type="submit" loading={sending} disabled={uploading}>Send</Button>
+				{@render sendButton()}
 			{/if}
 		</footer>
 	</form>
@@ -895,14 +910,60 @@
 		gap: var(--space-smaller);
 	}
 
-	/* "Send" and the chevron read as one split button: Send keeps its normal shape, the chevron sits flush
-	   against it with a hairline seam and the two outer corners it alone owns rounded to match. */
+	/* The compact composer's paper-plane button, live: the same 38x34 size, so the button doesn't change
+	   shape when the composer opens. */
+	.conversation-composer__send {
+		display: inline-flex;
+		width: 38px;
+		height: 34px;
+		flex: 0 0 auto;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		border: 0;
+		border-radius: var(--radius-small);
+		color: var(--color-surface);
+		background: var(--color-interactive);
+		cursor: pointer;
+		transition: background var(--timing-base) ease-out;
+
+		&:hover:not(:disabled) {
+			background: var(--color-interactive--hover);
+		}
+
+		&:disabled {
+			cursor: not-allowed;
+			opacity: 0.6;
+		}
+
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+
+		:global(svg) {
+			width: 18px;
+			height: 18px;
+		}
+	}
+
+	.conversation-composer__send-spinner {
+		width: 16px;
+		height: 16px;
+		border: 2px solid currentColor;
+		border-right-color: transparent;
+		border-radius: var(--radius-circle);
+		animation: spinning var(--timing-loading) linear infinite;
+	}
+
+	/* The paper plane and the chevron read as one split button: the chevron sits flush against Send with a
+	   hairline seam, and the two outer corners each owns are rounded to match. */
 	.conversation-composer__send-group {
 		display: flex;
 		flex: 0 0 auto;
 		align-items: stretch;
 
-		:global(.button) {
+		.conversation-composer__send {
 			border-radius: var(--radius-small) 0 0 var(--radius-small);
 		}
 	}

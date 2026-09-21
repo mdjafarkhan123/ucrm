@@ -1,21 +1,29 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireOrganizationPermission } from '$lib/server/access/permission';
+import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
 import {
 	databaseError,
 	notFound,
 	PRIVATE_READ_HEADERS,
 	validationError
 } from '$lib/server/api/errors';
+import {
+	CONTEXT_SECTIONS,
+	CONTEXT_SECTION_PERMISSIONS,
+	CONTEXT_SECTION_PRICE_PERMISSIONS,
+	isContextSection
+} from '$lib/communications/context-sections';
+import { readContextSection } from '$lib/server/communications/conversation-context';
+import { organizationFormatting } from '$lib/server/requests/timezone';
 
-// Part 5D's work-context right panel: one client's identity, contact methods, and a small recent set of
-// its real related work. Every category rides the same row-level security its own feature already
-// enforces (quotes.view on `quotes`, pipeline.view on `opportunities`) -- a viewer without one of those
-// permissions gets an empty array back from Postgres itself, not a 403 or a hidden count, which is exactly
-// the "no disclosure for denied domains" behavior the approved plan asks for. Requests carry no extra
-// permission beyond organization membership, matching `GET /api/requests`.
-const RELATED_WORK_LIMIT = 3;
-
+// The inbox's customer context rail. Without a `section` it returns only the client -- identity, primary
+// contact methods, and which of the record tabs this member may see -- so opening a conversation costs two
+// small reads however much work the customer has. Each record tab (`?section=quotes`, ...) is then read on
+// its own when the member reaches for it.
+//
+// A tab the member may not see is left out of `sections`, and asking for it anyway gets an empty answer
+// rather than a 403 or a hidden count, so a denied domain discloses nothing. The tabs' own row-level
+// security and gated money functions still apply underneath.
 export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'customers.view');
 	if ('response' in check) return check.response;
@@ -26,14 +34,38 @@ export const GET: RequestHandler = async (event) => {
 	const organizationId = check.auth.organization.id;
 	const supabase = event.locals.supabase;
 
-	const [
-		clientResult,
-		contactMethodsResult,
-		propertiesResult,
-		requestsResult,
-		quotesResult,
-		opportunitiesResult
-	] = await Promise.all([
+	const canSee = (permission: string | null) =>
+		permission === null || hasPermission(check.access, permission);
+
+	const requestedSection = event.url.searchParams.get('section');
+	if (requestedSection !== null) {
+		if (!isContextSection(requestedSection)) {
+			return validationError({ section: 'Choose a valid section.' });
+		}
+
+		const formatting = await organizationFormatting(supabase, organizationId);
+		const locale = formatting.ok ? formatting.formatting.locale : 'en-US';
+
+		if (!canSee(CONTEXT_SECTION_PERMISSIONS[requestedSection])) {
+			return json({ items: [], has_more: false, locale }, { headers: PRIVATE_READ_HEADERS });
+		}
+
+		const pricePermission = CONTEXT_SECTION_PRICE_PERMISSIONS[requestedSection];
+		const read = await readContextSection(requestedSection, {
+			supabase,
+			organizationId,
+			clientId,
+			canSeePrice: pricePermission ? hasPermission(check.access, pricePermission) : false
+		});
+		if (!read.ok) return databaseError();
+
+		return json(
+			{ items: read.items, has_more: read.hasMore, locale },
+			{ headers: PRIVATE_READ_HEADERS }
+		);
+	}
+
+	const [clientResult, contactMethodsResult] = await Promise.all([
 		supabase
 			.from('clients')
 			.select('id, display_name, company_name, client_type')
@@ -46,51 +78,10 @@ export const GET: RequestHandler = async (event) => {
 			.select('kind, value')
 			.eq('client_id', clientId)
 			.eq('organization_id', organizationId)
-			.eq('is_primary', true),
-		// `properties_client_active_idx (client_id, deleted_at, created_at)` gives this its scan and its
-		// order for free -- ordering by created_at rather than is_primary/updated_at is what rides that
-		// index instead of sorting after the fact.
-		supabase
-			.from('properties')
-			.select('id, label, address_line1, city, state_region, postal_code')
-			.eq('client_id', clientId)
-			.eq('organization_id', organizationId)
-			.is('deleted_at', null)
-			.order('created_at', { ascending: false })
-			.limit(RELATED_WORK_LIMIT),
-		supabase
-			.from('requests')
-			.select('id, title, status, created_at')
-			.eq('client_id', clientId)
-			.eq('organization_id', organizationId)
-			.order('created_at', { ascending: false })
-			.limit(RELATED_WORK_LIMIT),
-		supabase
-			.from('quotes')
-			.select('id, quote_number, title, status, created_at')
-			.eq('client_id', clientId)
-			.eq('organization_id', organizationId)
-			.order('created_at', { ascending: false })
-			.limit(RELATED_WORK_LIMIT),
-		supabase
-			.from('opportunities')
-			.select('id, title, stage, created_at')
-			.eq('client_id', clientId)
-			.eq('organization_id', organizationId)
-			.order('created_at', { ascending: false })
-			.limit(RELATED_WORK_LIMIT)
+			.eq('is_primary', true)
 	]);
 
-	if (
-		clientResult.error ||
-		contactMethodsResult.error ||
-		propertiesResult.error ||
-		requestsResult.error ||
-		quotesResult.error ||
-		opportunitiesResult.error
-	) {
-		return databaseError();
-	}
+	if (clientResult.error || contactMethodsResult.error) return databaseError();
 	if (!clientResult.data) return notFound('That client could not be found.');
 
 	const contactByKind = new Map(
@@ -104,10 +95,7 @@ export const GET: RequestHandler = async (event) => {
 				email: contactByKind.get('email') ?? null,
 				phone: contactByKind.get('phone') ?? null
 			},
-			properties: propertiesResult.data ?? [],
-			requests: requestsResult.data ?? [],
-			quotes: quotesResult.data ?? [],
-			opportunities: opportunitiesResult.data ?? []
+			sections: CONTEXT_SECTIONS.filter((section) => canSee(CONTEXT_SECTION_PERMISSIONS[section]))
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

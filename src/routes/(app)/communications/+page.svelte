@@ -16,7 +16,7 @@
 	import AttachmentList from '$lib/components/communications/AttachmentList.svelte';
 	import MessageDetailsDialog from '$lib/components/communications/MessageDetailsDialog.svelte';
 	import ForwardEmailDialog from '$lib/components/communications/ForwardEmailDialog.svelte';
-	import ConversationAssignField from '$lib/components/communications/ConversationAssignField.svelte';
+	import ConversationContextRail from '$lib/components/communications/ConversationContextRail.svelte';
 	import ConversationComposer from '$lib/components/communications/ConversationComposer.svelte';
 	import ChooseClientDialog from '$lib/components/communications/ChooseClientDialog.svelte';
 	import ManualEmailDialog from '$lib/components/clients/ManualEmailDialog.svelte';
@@ -59,11 +59,7 @@
 	import messagesIcon from '@tabler/icons/outline/messages.svg?raw';
 	import searchIcon from '@tabler/icons/outline/search.svg?raw';
 	import arrowDownIcon from '@tabler/icons/outline/arrow-down.svg?raw';
-	import starIcon from '@tabler/icons/outline/star.svg?raw';
-	import starFilledIcon from '@tabler/icons/filled/star.svg?raw';
 	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
-	import InquiryAutomationCard from '$lib/components/automation/InquiryAutomationCard.svelte';
-	import { AUTOMATION_JOURNEY_READY } from '$lib/automation/journey';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -1216,157 +1212,15 @@
 <!-- Same markup and query as the inline rail above -- reused here for the ≤1050px SidePanel so the two
      never drift. -->
 {#snippet contextPanel(group: ConversationGroup)}
-	<p class="communications__eyebrow">Customer context</p>
-	{#if group.clientId}
-		{@const clientId = group.clientId}
-		<Avatar id={clientId} name={group.name} size="large" />
-		<h2>{group.name}</h2>
-		<a href={resolve('/(app)/clients/[id=uuid]', { id: clientId })}>View client</a>
-
-		<div class="communications__context-actions">
-			<ConversationAssignField
-				{clientId}
-				assignedToId={group.assignedTo}
-				assignedToName={group.assignedToName}
-				canManage={inboxQuery.data?.can_manage_assignment ?? false}
-			/>
-			<Button
-				size="small"
-				variant={group.isFollowing ? 'primary' : 'secondary'}
-				disabled={followMutationState.isPending}
-				onclick={() => followMutationState.mutate({ clientId, following: group.isFollowing })}
-			>
-				<span class="communications__follow-icon" aria-hidden="true"
-					>{@html group.isFollowing ? starFilledIcon : starIcon}</span
-				>
-				{group.isFollowing ? 'Following' : 'Follow'}
-			</Button>
-		</div>
-
-		<dl>
-			<div>
-				<dt>Email</dt>
-				<dd>
-					{contextQuery.data?.client.email ?? conversationCustomerEmail(group)}
-				</dd>
-			</div>
-			{#if contextQuery.data?.client.phone}
-				<div>
-					<dt>Phone</dt>
-					<dd>{contextQuery.data.client.phone}</dd>
-				</div>
-			{/if}
-		</dl>
-
-		<div class="communications__related-work">
-			<p class="communications__eyebrow">Related work</p>
-			{#if contextQuery.isPending}
-				<LoadingSkeleton variant="card" label="Loading customer context" />
-			{:else if contextQuery.isError}
-				<p class="communications__context-note">Related work could not be loaded.</p>
-				<Button size="small" variant="secondary" onclick={() => contextQuery.refetch()}
-					>Try again</Button
-				>
-			{:else if contextQuery.data}
-				{@const context = contextQuery.data}
-				{#if context.properties.length === 0 && context.requests.length === 0 && context.quotes.length === 0 && context.opportunities.length === 0}
-					<p class="communications__context-note">Nothing else on record yet.</p>
-				{:else}
-					{#if context.properties.length > 0}
-						<div class="communications__related-group">
-							<h3>Properties</h3>
-							<ul>
-								{#each context.properties as property (property.id)}
-									<li>
-										{property.address_line1}, {property.city}{property.state_region
-											? `, ${property.state_region}`
-											: ''}
-									</li>
-								{/each}
-							</ul>
-						</div>
-					{/if}
-					{#if context.requests.length > 0}
-						<div class="communications__related-group">
-							<h3>Requests</h3>
-							<ul>
-								{#each context.requests as request (request.id)}
-									<li>
-										<a href={resolve('/(app)/requests/[id=uuid]', { id: request.id })}
-											>{request.title}</a
-										>
-									</li>
-								{/each}
-							</ul>
-						</div>
-					{/if}
-					{#if context.quotes.length > 0}
-						<div class="communications__related-group">
-							<h3>Quotes</h3>
-							<ul>
-								{#each context.quotes as quote (quote.id)}
-									<li>
-										<a href={resolve('/(app)/quotes/[id=uuid]', { id: quote.id })}
-											>#{quote.quote_number} · {quote.title}</a
-										>
-									</li>
-								{/each}
-							</ul>
-						</div>
-					{/if}
-					{#if context.opportunities.length > 0}
-						<div class="communications__related-group">
-							<h3>Opportunities</h3>
-							<ul>
-								{#each context.opportunities as opportunity (opportunity.id)}
-									<li>{opportunity.title}</li>
-								{/each}
-							</ul>
-						</div>
-					{/if}
-				{/if}
-			{/if}
-		</div>
-	{:else if group.chatSession}
-		<Avatar id={group.avatarId} name={group.name} size="large" />
-		<h2>{group.name}</h2>
-		<p class="communications__context-note">
-			This visitor's phone and email matched two different clients. UCRM never guesses -- resolve
-			identity to bring this conversation into one client's history.
-		</p>
-		<dl>
-			{#if group.chatSession.visitor_email}
-				<div>
-					<dt>Email</dt>
-					<dd>{group.chatSession.visitor_email}</dd>
-				</div>
-			{/if}
-			{#if group.chatSession.visitor_phone}
-				<div>
-					<dt>Phone</dt>
-					<dd>{group.chatSession.visitor_phone}</dd>
-				</div>
-			{/if}
-		</dl>
-	{:else}
-		<Avatar id={group.avatarId} name={group.name} size="large" />
-		<h2>{group.name}</h2>
-		<p class="communications__context-note">
-			This sender is not yet linked to a customer. It stays out of the customer's conversation until
-			reviewed.
-		</p>
-		<dl>
-			<div>
-				<dt>Email</dt>
-				<dd>{group.avatarId}</dd>
-			</div>
-		</dl>
-	{/if}
-	{#if AUTOMATION_JOURNEY_READY && group.chatSession}
-		<div class="communications__automation">
-			<InquiryAutomationCard record={{ kind: 'chat_session', id: group.chatSession.id }} />
-		</div>
-	{/if}
+	<ConversationContextRail
+		{group}
+		context={contextQuery}
+		canManageAssignment={inboxQuery.data?.can_manage_assignment ?? false}
+		followPending={followMutationState.isPending}
+		onToggleFollow={() =>
+			group.clientId &&
+			followMutationState.mutate({ clientId: group.clientId, following: group.isFollowing })}
+	/>
 {/snippet}
 
 {#if selectedGroup}
@@ -1564,13 +1418,6 @@
 		/* No min-height here: the workspace below sizes itself to the viewport, and a taller floor on the
 		   page container would only add dead space under it. */
 	}
-	.communications__eyebrow {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
-		letter-spacing: var(--typography--letterSpacing-loose);
-		text-transform: uppercase;
-	}
 	.communications__loading {
 		display: grid;
 		grid-template-columns: 0.9fr 1.5fr 0.8fr;
@@ -1581,7 +1428,7 @@
 	}
 	.communications__workspace {
 		display: grid;
-		grid-template-columns: minmax(284px, 0.82fr) minmax(360px, 1.5fr) minmax(240px, 0.75fr);
+		grid-template-columns: minmax(284px, 0.82fr) minmax(360px, 1.5fr) minmax(340px, 0.85fr);
 		/* GHL docks the composer to the bottom of the conversation panel, and this bound is what makes that
 		   happen: pinned to the viewport, the timeline scrolls inside its own column instead of growing and
 		   pushing the composer below the fold. Each column then needs min-height: 0 to be allowed to shrink,
@@ -1666,8 +1513,7 @@
 		height: 16px;
 	}
 	.communications__list-header h2,
-	.communications__message h2,
-	.communications__context h2 {
+	.communications__message h2 {
 		color: var(--color-heading);
 		font-size: var(--typography--fontSize-large);
 	}
@@ -1876,23 +1722,10 @@
 		align-items: center;
 		gap: var(--space-small);
 	}
-	.communications__recipient a,
 	.communications__unresolved-sender,
-	.communications__conversation-type,
-	.communications__context a {
-		color: var(--color-interactive--subtle);
-		font-size: var(--typography--fontSize-small);
-		text-decoration: none;
-	}
 	.communications__conversation-type {
 		color: var(--color-text--secondary);
-	}
-	.communications__unresolved-sender {
-		color: var(--color-text--secondary);
-	}
-	.communications__recipient a:hover,
-	.communications__context a:hover {
-		text-decoration: underline;
+		font-size: var(--typography--fontSize-small);
 	}
 	.communications__thread-actions {
 		display: flex;
@@ -1910,13 +1743,6 @@
 		display: inline-flex;
 	}
 	.communications__info-icon :global(svg) {
-		width: 16px;
-		height: 16px;
-	}
-	.communications__follow-icon {
-		display: inline-flex;
-	}
-	.communications__follow-icon :global(svg) {
 		width: 16px;
 		height: 16px;
 	}
@@ -2146,80 +1972,9 @@
 	}
 	.communications__context {
 		min-height: 0;
-		padding: var(--space-large);
 		border-left: var(--border-base) solid var(--color-border);
 		background: var(--color-surface--background--subtle);
-		overflow-y: auto;
-	}
-	.communications__context > :global(.avatar) {
-		margin-top: var(--space-large);
-	}
-	.communications__context h2 {
-		margin-top: var(--space-base);
-	}
-	.communications__context-note {
-		margin-top: var(--space-small);
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
-	.communications__context-actions {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: var(--space-small);
-		margin-top: var(--space-base);
-	}
-	.communications__related-work {
-		margin-top: var(--space-large);
-		padding-top: var(--space-large);
-		border-top: var(--border-base) solid var(--color-border);
-	}
-	.communications__automation {
-		margin-top: var(--space-large);
-	}
-	.communications__related-group {
-		margin-top: var(--space-base);
-	}
-	.communications__related-group h3 {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
-	}
-	.communications__related-group ul {
-		display: grid;
-		gap: var(--space-smallest);
-		margin-top: var(--space-smaller);
-		list-style: none;
-	}
-	.communications__related-group li {
-		color: var(--color-text);
-		font-size: var(--typography--fontSize-small);
-		overflow-wrap: anywhere;
-	}
-	.communications__related-group a {
-		color: var(--color-interactive--subtle);
-		text-decoration: none;
-	}
-	.communications__related-group a:hover {
-		text-decoration: underline;
-	}
-	.communications__context dl {
-		display: grid;
-		gap: var(--space-base);
-		margin-top: var(--space-large);
-	}
-	.communications__context dl div {
-		display: grid;
-		gap: var(--space-smallest);
-	}
-	.communications__context dt {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
-	.communications__context dd {
-		margin: 0;
-		color: var(--color-text);
-		overflow-wrap: anywhere;
+		overflow: hidden;
 	}
 	.sr-only {
 		position: absolute;

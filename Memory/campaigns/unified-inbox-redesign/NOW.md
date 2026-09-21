@@ -1,7 +1,10 @@
 # Unified inbox redesign — now
 
 - Goal: renew the existing inbox surface in separately verified slices without inventing unsupported behavior.
-- Active part: Slice 3 — docked composer. Core behavior and the composer-merge/footer-polish follow-up are both complete, browser-verified, and committed (`84e865a`, `e5c058f`).
-- Exact next action: ask Jafar if any more Slice 3 polish is wanted, or start Slice 4 (contact/context rail + narrow-screen drawer).
-- Blockers: none. Slice 4 has no known blocker (depends only on Part 1, already done).
-- Pointers: `Memory/campaigns/unified-inbox-redesign/ROADMAP.md`; `src/lib/components/communications/ConversationComposer.svelte` (now handles email/SMS/website_chat); `src/lib/components/communications/ComposerChannelMenu.svelte`.
+- Active part: Part 4 (context rail) — COMMITTED 2026-09-21 (built, type-checked, 12 endpoint tests pass, browser-verified light + dark, all 7 tabs). Slice 3 polish is closed (`d33d060`). Next: Jafar's DND answers, then whichever part he picks.
+- Jafar decided 2026-09-21: desktop app only — no mobile/narrow-window verification. The ≤1050px drawer opened and switched tabs fine once; nothing more to check. Unlinked-sender panel could not be checked (every Raad LTD conversation is linked); skip unless one appears.
+- Do-Not-Disturb (DND) research DONE: `docs/research/ghl-inbox-dnd-controls-2026-09-21.md`. Gap: no per-customer "pause / customer asked me to stop" control; `communication_sms_holds` is platform/org/provider only, while the SMS blueprint already promises "SMS is on hold for this customer". Recommendation is with Jafar (grilling, not yet answered): (1) two separate states — contractor pause (anyone who can message may set and clear it, logged) vs "customer asked to stop" (locked, legal, clears only by customer START); (2) show it in the Contact tab plus a line in the thread timeline like GHL; (3) whether an email pause blocks only marketing/optional email. Do not add a roadmap part until Jafar answers.
+- Jafar must do himself: sign in as the `finance` and `sales` test logins and confirm amounts are hidden without price permission (browser rules forbid me typing passwords). Server side is already proven by tests.
+- Decided 2026-09-21: Send Later stays email-only; Website Chat never gets it.
+- Blockers: none. Another agent works on a different campaign; unrelated modified files in `git status` are not ours (stage only the files above).
+- Pointers: `Memory/campaigns/unified-inbox-redesign/parts/part-4-context-rail.md`; roadmap: `Memory/campaigns/unified-inbox-redesign/ROADMAP.md`. `npm run check` needs `NODE_OPTIONS=--max-old-space-size=6144` on this machine.
