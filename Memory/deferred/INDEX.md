@@ -11,7 +11,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
 | P2 | [A full page load can crash hydration and leave the previous page on screen](full-page-load-hydration-crash-leaves-the-previous-page-on-screen.md) |
 | P2 | [Issued invoices cannot be corrected from the browser](issued-invoices-cannot-be-corrected-from-the-browser.md) |
-| P2 | [The remote migration ledger no longer matches the repo (351 rows)](two-migration-ledger-rows-do-not-match-the-repo.md) |
+| P2 | [The repo's migration files cannot rebuild the live database (351 ledger rows differ)](two-migration-ledger-rows-do-not-match-the-repo.md) |
 | P2 | [Resolving a chat identity does not stop the next conflict](resolving-a-chat-identity-does-not-stop-the-next-conflict.md) |
 | P2 | [`EntityType` covers only clients and properties](entitytype-covers-only-clients-and-properties.md) |
 | P2 | [Active member's sign-in email not visible, recovery path unclear](active-member-email-not-visible-and-recovery-path-unclear.md) |

@@ -4,8 +4,9 @@
 
 
 - **Campaign:** `clients-properties` (applies to every campaign that adds database tests)
-- **Reason:** Development runs against the remote Supabase project with no Docker and no local stack, so
-  the pgTAP runner cannot execute. Assertions are verified against the remote project instead, inside one
+- **Reason:** Development runs against the remote Supabase project. (Docker and a local stack exist on this machine as of
+  2026-09-21, but the repo's migrations cannot rebuild a database yet — see the migration-ledger note — so `supabase test db`
+  cannot run.) Assertions are verified against the remote project instead, inside one
   transaction that is rolled back.
 - **Reactivation trigger:** The app is containerized with local Supabase, or Docker becomes available.
 - **Prerequisites:** `npx supabase start`, then `npx supabase test db`. Expect the runner to surface plan
