@@ -11,5 +11,11 @@
   migration is rehearsed — a self-hosted database has to be rebuildable from the repo, so this must be settled first.
 - **Constraint:** Until repaired, apply migrations through `mcp__supabase__apply_migration` and rename the local file to
   the version the ledger records. Base any `create or replace` on `pg_get_functiondef`, not on the repo file.
-- **Not yet checked:** whether every local-only file's content is truly applied remotely (a repair must prove it before
-  marking rows applied).
+- **Checked 2026-09-21 (read-only):** repo has 500 files, remote ledger 528 rows. Of the 161 repo files with no identical
+  remote version, 159 match a remote row by name but only 77 have the same SQL; 82 differ (the repo file is usually the
+  longer, later-edited one). 30 remote rows have no same-named file and 19 of those have SQL found nowhere in the repo
+  text (e.g. `financial_uninvoiced_work_reader`, `online_invoice_payments_outcome_fix`). So renaming files is NOT a safe
+  repair: the repo cannot be proven to rebuild the live database.
+- **Likely fix (needs Jafar's approval):** take an exact structure snapshot of the live database (needs `pg_dump`; no Docker
+  or `psql` here), commit it as a new baseline migration, mark the older ledger rows as covered with
+  `supabase migration repair`, and rehearse a rebuild from scratch in staging. Old files stay in git history.
