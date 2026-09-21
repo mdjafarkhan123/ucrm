@@ -250,8 +250,10 @@ select throws_ok(
   '42501', null, 'a collected signature cannot be deleted'
 );
 
+-- Another table references signatures, so a plain truncate is refused by that link before the trigger runs.
+-- The cascading form skips the link check, which is the one that must still be stopped.
 select throws_ok(
-  $q$truncate public.job_signatures$q$,
+  $q$truncate public.job_signatures cascade$q$,
   '42501', null, 'collected signatures cannot be emptied'
 );
 

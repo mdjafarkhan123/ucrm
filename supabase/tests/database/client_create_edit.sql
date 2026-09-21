@@ -56,7 +56,7 @@ select lives_ok(
     "phone": "(555) 111-2222",
     "initial_note": "Called about a new roof.",
     "property": {"address_line1": "1 Write Street", "city": "Testville"},
-    "preferences": {"contact_policy": "no_marketing", "marketing": true},
+    "preferences": {"contact_policy": "no_marketing", "review_requests": false},
     "tag_ids": ["a2000000-0000-0000-0000-000000000001", "a2000000-0000-0000-0000-000000000002"]
   }'::jsonb)$$,
   'a member can create a client with contact details, an address, a note, tags, and preferences'
@@ -222,9 +222,9 @@ select is(
 );
 
 select is(
-  (select contact_policy || '/' || marketing::text from public.client_communication_preferences
+  (select contact_policy || '/' || review_requests::text from public.client_communication_preferences
     where client_id = (select id from public.clients where display_name = 'Dana Rivera')),
-  'do_not_disturb/true',
+  'do_not_disturb/false',
   'do not disturb is saved without erasing the detailed choices underneath'
 );
 

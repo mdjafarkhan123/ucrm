@@ -110,6 +110,11 @@ values
   ('d5600000-0000-0000-0000-000000000004', 'd5100000-0000-0000-0000-000000000001', 'd5400000-0000-0000-0000-000000000001', 3, current_date - 21, null, null),
   ('d5600000-0000-0000-0000-000000000005', 'd5100000-0000-0000-0000-000000000002', 'd5400000-0000-0000-0000-000000000003', 0, current_date, null, null);
 
+-- A crew member reads only jobs they are assigned a visit on, so the crew reads below need one on Job 1.
+insert into public.job_visit_assignments (organization_id, visit_id, job_id, user_id)
+values ('d5100000-0000-0000-0000-000000000001', 'd5600000-0000-0000-0000-000000000001',
+  'd5400000-0000-0000-0000-000000000001', 'd5000000-0000-0000-0000-000000000002');
+
 insert into public.invoices (
   id, organization_id, client_id, invoice_number, subject, currency_code, issue_date, due_date,
   due_date_source, root_invoice_id

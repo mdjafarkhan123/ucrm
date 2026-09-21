@@ -53,6 +53,7 @@ values
 select is(
   (select public.apply_organization_commercial_command(
     target_organization_id => '90000000-0000-0000-0000-0000000000b1',
+    actor_owner_email => 'owner@example.test',
     event_kind => 'initial_payment_confirmed',
     idempotency_key => '6b-test-initial-1',
     summary => 'Initial payment confirmed',
@@ -68,6 +69,7 @@ select is(
 select lives_ok(
   $$select public.apply_organization_commercial_command(
     target_organization_id => '90000000-0000-0000-0000-0000000000b1',
+    actor_owner_email => 'owner@example.test',
     event_kind => 'refund_recorded',
     idempotency_key => '6b-test-refund-valid-reference',
     summary => 'Refund recorded',
@@ -88,6 +90,7 @@ select lives_ok(
 select is(
   (select public.apply_organization_late_renewal_reactivation(
     target_organization_id => '90000000-0000-0000-0000-0000000000b1',
+    actor_owner_email => 'owner@example.test',
     idempotency_key => '6b-test-renewal-only',
     summary => 'Renewal confirmed',
     paid_through_effect => 'set',
@@ -155,6 +158,7 @@ select is(
 select throws_ok(
   $$select public.apply_organization_late_renewal_reactivation(
     target_organization_id => '90000000-0000-0000-0000-0000000000b2',
+    actor_owner_email => 'owner@example.test',
     idempotency_key => '6b-test-reactivate-no-actor-email',
     summary => 'Late renewal confirmed',
     paid_through_effect => 'set',

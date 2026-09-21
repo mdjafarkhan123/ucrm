@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(19);
+select plan(17);
 
 insert into auth.users (
   id, instance_id, aud, role, email, encrypted_password,
@@ -37,6 +37,11 @@ values
   ('10000000-0000-0000-0000-000000000011', 'employee_seats', 'numeric', 1, false, '2026-01-01T00:00:00Z'),
   ('10000000-0000-0000-0000-000000000012', 'employee_seats', 'unlimited', null, true, '2026-01-01T00:00:00Z');
 
+-- Role and permission changes are written by the team API through the service role, not by members writing these
+-- tables, so the one override this test reads is placed here the way the API would place it.
+insert into public.organization_member_permission_overrides (organization_id, user_id, permission_key, override_state)
+values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000013', 'customers.edit', 'grant');
+
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000011', true);
 
@@ -47,19 +52,17 @@ select is((select count(*)::integer from public.package_features where package_k
 select is((select count(*)::integer from public.organization_feature_overrides), 1, 'members see feature overrides in their organization');
 select is((select count(*)::integer from public.organization_limit_overrides), 1, 'members see limits in their organization');
 
-select lives_ok(
+select throws_ok(
   $$update public.organization_members set role = 'sales' where organization_id = '10000000-0000-0000-0000-000000000011' and user_id = '00000000-0000-0000-0000-000000000013'$$,
-  'an organization admin can change an employee role'
+  '42501', null, 'even an organization admin cannot change an employee role by writing the table'
 );
 
-select lives_ok(
-  $$insert into public.organization_member_permission_overrides (organization_id, user_id, permission_key, override_state) values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000013', 'customer.edit', 'grant')$$,
-  'an organization admin can grant an employee permission'
+select throws_ok(
+  $$insert into public.organization_member_permission_overrides (organization_id, user_id, permission_key, override_state) values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000013', 'customers.view', 'grant')$$,
+  '42501', null, 'even an organization admin cannot grant an employee permission by writing the table'
 );
 
 select is((select count(*)::integer from public.organization_member_permission_overrides), 1, 'admins see employee overrides in their organization');
-select is((select count(*)::integer from public.access_audit_events where event_type = 'employee_role_changed'), 1, 'role changes create an audit event');
-select is((select count(*)::integer from public.access_audit_events where event_type = 'employee_permission_override_changed'), 1, 'permission changes create an audit event');
 
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000012', true);
 select is((select count(*)::integer from public.organization_feature_overrides), 1, 'a member sees only their own organization feature override');
@@ -70,7 +73,7 @@ select is((select count(*)::integer from public.organization_member_permission_o
 select is((select count(*)::integer from public.organization_feature_overrides), 1, 'an employee sees their organization feature override');
 select is((select count(*)::integer from public.organization_limit_overrides), 1, 'an employee sees their organization limit override');
 select throws_ok(
-  $$insert into public.organization_member_permission_overrides (organization_id, user_id, permission_key, override_state) values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000013', 'invoice.view', 'grant')$$,
+  $$insert into public.organization_member_permission_overrides (organization_id, user_id, permission_key, override_state) values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000013', 'invoices.view', 'grant')$$,
   '42501',
   null,
   'a non-admin cannot create employee permission overrides'
@@ -79,9 +82,9 @@ select throws_ok(
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000011', true);
 select throws_ok(
   $$update public.organization_members set role = 'field' where organization_id = '10000000-0000-0000-0000-000000000011' and user_id = '00000000-0000-0000-0000-000000000011'$$,
-  '23514',
+  '42501',
   null,
-  'the last owner or admin cannot be demoted'
+  'the last owner or admin cannot be demoted from the browser, because no member writes roles directly'
 );
 select is((select role from public.organization_members where organization_id = '10000000-0000-0000-0000-000000000011' and user_id = '00000000-0000-0000-0000-000000000011'), 'admin', 'failed last-admin demotion changes no row');
 

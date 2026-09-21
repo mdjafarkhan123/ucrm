@@ -7,7 +7,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(45);
+select plan(47);
 
 -- throws_ok's three-argument form takes (query, errcode, errmsg) in this pgTAP build, so an error code is
 -- checked with the four-argument form and a null message, and a message is checked with a text second
@@ -586,6 +586,17 @@ select is(
     ->> 'unit_cost_minor'),
   null, 'an office member is not given internal cost on a line'
 );
+
+-- A field member reads only jobs they hold a visit on, so give them one on this job.
+set local role postgres;
+insert into public.job_visits (id, organization_id, job_id, position, visit_date)
+select '97000000-0000-0000-0000-000000000001', job.organization_id, job.id, 0, current_date
+from public.jobs as job where job.id = (select id from job_ref);
+insert into public.job_visit_assignments (organization_id, visit_id, job_id, user_id)
+select job.organization_id, '97000000-0000-0000-0000-000000000001', job.id,
+  '90000000-0000-0000-0000-000000000004'
+from public.jobs as job where job.id = (select id from job_ref);
+set local role authenticated;
 
 select set_config('request.jwt.claim.sub', '90000000-0000-0000-0000-000000000004', true);
 

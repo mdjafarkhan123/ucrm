@@ -146,6 +146,11 @@ values
   ('c2200000-0000-0000-0000-000000000001', 'c1100000-0000-0000-0000-000000000001', 'c1400000-0000-0000-0000-000000000003', 0, current_date),
   ('c2200000-0000-0000-0000-000000000002', 'c1100000-0000-0000-0000-000000000001', 'c1400000-0000-0000-0000-000000000001', 0, current_date);
 
+-- A crew member reads only jobs they are assigned a visit on, so the crew read below needs one on Job 1.
+insert into public.job_visit_assignments (organization_id, visit_id, job_id, user_id)
+values ('c1100000-0000-0000-0000-000000000001', 'c2200000-0000-0000-0000-000000000002',
+  'c1400000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000002');
+
 -- 3. What a schedule is allowed to be --------------------------------------------------------------------------
 
 select is(

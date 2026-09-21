@@ -330,6 +330,18 @@ select is(
 
 -- 8. Row level security --------------------------------------------------------------------------------------
 
+-- A field member sees only the jobs they hold a visit assignment on, so give them one on Job 1.
+insert into public.job_visits (id, organization_id, job_id, position, visit_date)
+select '92000000-0000-0000-0000-000000000001', job.organization_id, job.id, 0, current_date
+from public.jobs as job
+where job.organization_id = '91000000-0000-0000-0000-000000000001' and job.job_number = 1;
+
+insert into public.job_visit_assignments (organization_id, visit_id, job_id, user_id)
+select job.organization_id, '92000000-0000-0000-0000-000000000001', job.id,
+  '90000000-0000-0000-0000-000000000004'
+from public.jobs as job
+where job.organization_id = '91000000-0000-0000-0000-000000000001' and job.job_number = 1;
+
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '90000000-0000-0000-0000-000000000001', true);
 
@@ -359,7 +371,7 @@ select set_config('request.jwt.claim.sub', '90000000-0000-0000-0000-000000000004
 
 select is(
   (select count(*)::int from public.jobs),
-  2, 'a field member can open the work they are standing in front of'
+  1, 'a field member sees only the job they hold a visit on, not the organization''s other job'
 );
 
 -- 9. The gated money reader ------------------------------------------------------------------------------------
@@ -429,8 +441,10 @@ select throws_ok(
 set local role postgres;
 
 select is(
-  (select count(*)::int from public.permissions where key like 'jobs.%'),
-  5, 'only the five job permissions whose behavior exists are seeded'
+  (select array_agg(key order by key) from public.permissions where key like 'jobs.%'),
+  array['jobs.close', 'jobs.complete', 'jobs.create', 'jobs.edit', 'jobs.schedule', 'jobs.view',
+    'jobs.view_cost', 'jobs.view_price'],
+  'only the job permissions whose behavior exists are seeded'
 );
 
 select is(

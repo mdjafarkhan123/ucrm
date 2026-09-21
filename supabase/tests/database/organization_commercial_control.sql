@@ -18,8 +18,10 @@ select is((select relrowsecurity from pg_class where oid = 'public.organization_
 
 select is(has_table_privilege('anon', 'public.organization_commercial_events', 'select'), false, 'anonymous callers cannot read private commercial events');
 select is(has_table_privilege('authenticated', 'public.organization_commercial_events', 'select'), false, 'contractors cannot read private commercial events');
-select is(has_table_privilege('authenticated', 'public.organization_commercial_state', 'select'), false, 'contractors cannot read the commercial projection');
-select is(has_table_privilege('authenticated', 'public.organization_commercial_settings', 'select'), false, 'contractors cannot read the commercial timezone');
+-- Members read their own organization's paid-through state and timezone (20260816124431); the row policies below
+-- keep them to their own organization, and the private event history above stays closed to them.
+select is(has_table_privilege('authenticated', 'public.organization_commercial_state', 'select'), true, 'members can read their own commercial projection');
+select is(has_table_privilege('authenticated', 'public.organization_commercial_settings', 'select'), true, 'members can read their own commercial timezone');
 select is(has_table_privilege('authenticated', 'public.organization_safe_events', 'select'), true, 'contractors can read safe events subject to RLS');
 select is(has_table_privilege('authenticated', 'public.organization_safe_events', 'insert'), false, 'contractors cannot write safe events');
 select is(has_table_privilege('service_role', 'public.organization_commercial_events', 'insert'), true, 'the owner service role can append commercial events');
@@ -139,6 +141,7 @@ select is(
 select lives_ok(
   $$select public.apply_organization_commercial_command(
     target_organization_id => '90000000-0000-0000-0000-0000000000a1',
+    actor_owner_email => 'owner@example.test',
     event_kind => 'commercial_timezone_changed',
     idempotency_key => 'commercial-test-timezone-1',
     summary => 'Commercial timezone moved to Dhaka',
@@ -172,6 +175,7 @@ select is(
 select lives_ok(
   $$select public.apply_organization_commercial_command(
     target_organization_id => '90000000-0000-0000-0000-0000000000a1',
+    actor_owner_email => 'owner@example.test',
     event_kind => 'commercial_timezone_changed',
     idempotency_key => 'commercial-test-timezone-2',
     summary => 'Commercial timezone moved to UTC with recalculation',
@@ -205,6 +209,7 @@ select is(
 select lives_ok(
   $$select public.apply_organization_commercial_command(
     target_organization_id => '90000000-0000-0000-0000-0000000000a2',
+    actor_owner_email => 'owner@example.test',
     event_kind => 'initial_payment_confirmed',
     idempotency_key => 'commercial-test-dst-1',
     summary => 'Initial payment confirmed',
@@ -246,6 +251,7 @@ select throws_ok(
 select throws_ok(
   $$select public.apply_organization_commercial_command(
     target_organization_id => '90000000-0000-0000-0000-0000000000a1',
+    actor_owner_email => 'owner@example.test',
     event_kind => 'renewal_confirmed',
     idempotency_key => 'commercial-test-unsafe-payload',
     summary => 'Renewal confirmed',
@@ -261,6 +267,7 @@ select throws_ok(
 select throws_ok(
   $$select public.apply_organization_commercial_command(
     target_organization_id => '90000000-0000-0000-0000-0000000000a1',
+    actor_owner_email => 'owner@example.test',
     event_kind => 'refund_recorded',
     idempotency_key => 'commercial-test-orphan-refund',
     summary => 'Refund recorded',
@@ -274,6 +281,7 @@ select throws_ok(
 select throws_ok(
   $$select public.apply_organization_commercial_command(
     target_organization_id => '90000000-0000-0000-0000-0000000000a1',
+    actor_owner_email => 'owner@example.test',
     event_kind => 'organization_suspended',
     idempotency_key => 'commercial-test-reasonless-suspension',
     summary => 'Suspended',
@@ -287,6 +295,7 @@ select throws_ok(
 select throws_ok(
   $$select public.apply_organization_commercial_command(
     target_organization_id => '90000000-0000-0000-0000-0000000000a1',
+    actor_owner_email => 'owner@example.test',
     event_kind => 'organization_suspended',
     idempotency_key => 'commercial-test-uncategorised-suspension',
     summary => 'Suspended',
@@ -301,6 +310,7 @@ select throws_ok(
 select throws_ok(
   $$select public.apply_organization_commercial_command(
     target_organization_id => '90000000-0000-0000-0000-0000000000a1',
+    actor_owner_email => 'owner@example.test',
     event_kind => 'renewal_confirmed',
     idempotency_key => 'commercial-test-missing-paid-through',
     summary => 'Renewal confirmed',
@@ -313,6 +323,7 @@ select throws_ok(
 select throws_ok(
   $$select public.apply_organization_commercial_command(
     target_organization_id => '90000000-0000-0000-0000-0000000000a1',
+    actor_owner_email => 'owner@example.test',
     event_kind => 'commercial_timezone_changed',
     idempotency_key => 'commercial-test-bad-timezone',
     summary => 'Commercial timezone changed',

@@ -12,7 +12,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Revising a sent quote does not carry over its tax source or deposit](revising-a-sent-quote-drops-tax-source-and-deposit.md) |
 | P2 | [A full page load can crash hydration and leave the previous page on screen](full-page-load-hydration-crash-leaves-the-previous-page-on-screen.md) |
 | P2 | [Issued invoices cannot be corrected from the browser](issued-invoices-cannot-be-corrected-from-the-browser.md) |
-| P2 | [38 pgTAP files fail on a rebuild because they no longer match live](stale-database-tests-found-by-the-baseline-proof.md) |
 | P2 | [Resolving a chat identity does not stop the next conflict](resolving-a-chat-identity-does-not-stop-the-next-conflict.md) |
 | P2 | [`EntityType` covers only clients and properties](entitytype-covers-only-clients-and-properties.md) |
 | P2 | [Active member's sign-in email not visible, recovery path unclear](active-member-email-not-visible-and-recovery-path-unclear.md) |
@@ -51,6 +50,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Two job billing-reminder modes never raise a reminder](two-job-billing-reminder-modes-raise-no-reminder.md) |
 | P2 | [Client detail's financial summary widget is empty for everyone, not just some roles](client-financial-summary-widget-shows-empty-placeholders-for-everyone.md) |
 | P2 | [Disconnecting Stripe expires open checkouts: code-complete, never live-tested](stripe-disconnect-open-checkout-expiry-not-live-tested.md) |
+| P3 | [Three small live database gaps found while fixing the stale tests](three-small-live-gaps-found-while-fixing-the-stale-database-tests.md) |
 | P3 | [Offline field records on site (Jobs 15f)](offline-field-records-on-site.md) |
 | P3 | [`/get-started` page weight](get-started-page-weight.md) |
 | P3 | [Client photos are one request each](client-photos-are-one-request-each.md) |

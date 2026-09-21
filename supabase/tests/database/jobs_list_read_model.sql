@@ -8,7 +8,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(32);
+select plan(34);
 
 -- 1. Shape and privileges ----------------------------------------------------------------------------------
 
@@ -61,36 +61,45 @@ select is(
 -- 2. The derivation rule, without a clock -------------------------------------------------------------------
 
 select is(
-  private.job_derived_status('closed', 'one_off', null, date '2026-09-01'),
+  private.job_derived_status('closed', 'one_off', null, date '2026-09-01', false),
   'archived', 'a closed job reads as archived'
 );
 select is(
-  private.job_derived_status('closed', 'recurring', date '2026-09-10', date '2026-09-01'),
+  private.job_derived_status('closed', 'recurring', date '2026-09-10', date '2026-09-01', false),
   'archived', 'archived beats a contract that is running out'
 );
 select is(
-  private.job_derived_status('active', 'recurring', date '2026-09-10', date '2026-09-01'),
+  private.job_derived_status('active', 'recurring', date '2026-09-10', date '2026-09-01', false),
   'ending_soon', 'a recurring agreement ending within 30 days reads as ending soon'
 );
 select is(
-  private.job_derived_status('active', 'recurring', date '2026-10-01', date '2026-09-01'),
+  private.job_derived_status('active', 'recurring', date '2026-10-01', date '2026-09-01', false),
   'ending_soon', 'the thirtieth day is still within 30 days'
 );
 select is(
-  private.job_derived_status('active', 'recurring', date '2026-10-02', date '2026-09-01'),
+  private.job_derived_status('active', 'recurring', date '2026-10-02', date '2026-09-01', false),
   'unscheduled', 'a contract ending later than 30 days out is not ending soon yet'
 );
 select is(
-  private.job_derived_status('active', 'recurring', date '2026-08-31', date '2026-09-01'),
+  private.job_derived_status('active', 'recurring', date '2026-08-31', date '2026-09-01', false),
   'unscheduled', 'a contract whose end date has already passed is not ending soon'
 );
 select is(
-  private.job_derived_status('active', 'one_off', date '2026-09-10', date '2026-09-01'),
+  private.job_derived_status('active', 'one_off', date '2026-09-10', date '2026-09-01', false),
   'unscheduled', 'ending soon belongs to recurring agreements, not one-off work'
 );
 select is(
-  private.job_derived_status('active', 'one_off', null, date '2026-09-01'),
+  private.job_derived_status('active', 'one_off', null, date '2026-09-01', false),
   'unscheduled', 'an active job with nothing on the calendar reads as unscheduled'
+);
+
+select is(
+  private.job_derived_status('active', 'one_off', null, date '2026-09-01', true),
+  'requires_invoicing', 'an active job with a reminder due reads as requires invoicing'
+);
+select is(
+  private.job_derived_status('closed', 'one_off', null, date '2026-09-01', true),
+  'requires_invoicing', 'a closed job with a reminder still due is not archived until it is billed'
 );
 
 -- 3. Fixtures ------------------------------------------------------------------------------------------------
@@ -232,19 +241,31 @@ select is(
   1, 'the other organization sees only its own job'
 );
 
--- A field member holds jobs.view but not customers.view, so the job is visible and the client name it may
--- not read comes back empty rather than leaking.
+-- A field member holds jobs.view but not customers.view, and sees only the jobs they hold a visit on. So the
+-- one job they are assigned is visible, the other two are not, and they read that job's client because
+-- private.can_view_client opens a client to whoever is assigned to one of its jobs.
+set local role postgres;
+insert into public.job_visits (id, organization_id, job_id, position, visit_date)
+select '99000000-0000-0000-0000-000000000001', job.organization_id, job.id, 0, current_date
+from public.jobs as job
+where job.organization_id = '96000000-0000-0000-0000-000000000001' and job.job_number = 1;
+insert into public.job_visit_assignments (organization_id, visit_id, job_id, user_id)
+select job.organization_id, '99000000-0000-0000-0000-000000000001', job.id,
+  '95000000-0000-0000-0000-000000000003'
+from public.jobs as job
+where job.organization_id = '96000000-0000-0000-0000-000000000001' and job.job_number = 1;
+set local role authenticated;
 select set_config('request.jwt.claim.sub', '95000000-0000-0000-0000-000000000003', true);
 
 select is(
   (select count(*)::int from public.job_list_rows),
-  3, 'a field member still sees the organization''s jobs'
+  1, 'a field member sees only the job they hold a visit on'
 );
 
 select is(
   (select client_display_name from public.job_list_rows
     where organization_id = '96000000-0000-0000-0000-000000000001' and job_number = 1),
-  null, 'a reader without customers.view gets no client name off the jobs list'
+  'List Client A', 'a field member without customers.view still gets the client of a job they are assigned'
 );
 
 select * from finish();

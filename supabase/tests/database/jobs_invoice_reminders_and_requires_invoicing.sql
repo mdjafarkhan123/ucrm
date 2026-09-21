@@ -179,9 +179,11 @@ select is(
   1, 'the overview counts that one job under Requires invoicing'
 );
 
--- A reminder dated in the future is not yet due, so the job stays Unscheduled.
+-- A reminder dated in the future is not yet due, so the job stays Unscheduled. It is the 15th of next month,
+-- never a month-end, because a pending reminder on the same date would block the month-end one from rolling in.
 select public.add_job_invoice_reminder(
-  'd2000000-0000-0000-0000-000000000001', (select id from repeat_job), current_date + 40);
+  'd2000000-0000-0000-0000-000000000001', (select id from repeat_job),
+  (date_trunc('month', current_date) + interval '1 month' + interval '14 days')::date);
 select is(
   (select derived_status from public.job_list_rows where id = (select id from repeat_job)),
   'unscheduled', 'a reminder dated in the future does not yet require invoicing'

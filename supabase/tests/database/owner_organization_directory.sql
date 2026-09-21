@@ -53,6 +53,11 @@ values
   ('90000000-0000-0000-0000-0000000000fb', '6F Fixture Exception Far', '6f-fixture-exception-far', 'active'),
   ('90000000-0000-0000-0000-0000000000fc', '6F Fixture Multi Reason', '6f-fixture-multi-reason', 'active');
 
+-- The database no longer lets an organization hold two owners (organization_members_one_owner_idx), but the
+-- directory still reports administrator_ownership_unclear defensively. Dropping the index inside this
+-- rolled-back transaction lets f7 recreate the state so that branch keeps its test.
+drop index public.organization_members_one_owner_idx;
+
 insert into public.organization_members (organization_id, user_id, role)
 values
   ('90000000-0000-0000-0000-0000000000f1', '90000000-1111-0000-0000-0000000000f1', 'owner'),

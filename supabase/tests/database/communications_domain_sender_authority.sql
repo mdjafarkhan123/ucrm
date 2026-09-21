@@ -202,10 +202,10 @@ select throws_ok(
     ) values (
       'd2000000-0000-0000-0000-000000000001',
       'd3000000-0000-0000-0000-000000000001', 'late@mail.domain-a.test', 'Late Sender',
-      'pending_verification'
+      'enabled'
     )$$,
-  '23514', 'A live sender requires a verified sending domain.',
-  'a sender cannot be added after domain removal starts'
+  '23514', 'A live sender requires a verified healthy sending domain.',
+  'an enabled sender cannot be added after domain removal starts'
 );
 select function_privs_are(
   'public', 'finalize_communication_email_domain_removal',

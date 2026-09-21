@@ -93,6 +93,14 @@ do $$ begin
   perform private.store_job_money('c3400000-0000-0000-0000-000000000003');
 end $$;
 
+-- A crew member reads only jobs they are assigned a visit on, so the crew reads below need one on Job 1.
+insert into public.job_visits (id, organization_id, job_id, position, visit_date)
+values ('c3600000-0000-0000-0000-000000000001', 'c3100000-0000-0000-0000-000000000001',
+  'c3400000-0000-0000-0000-000000000001', 0, current_date);
+insert into public.job_visit_assignments (organization_id, visit_id, job_id, user_id)
+values ('c3100000-0000-0000-0000-000000000001', 'c3600000-0000-0000-0000-000000000001',
+  'c3400000-0000-0000-0000-000000000001', 'c3000000-0000-0000-0000-000000000002');
+
 -- 3. Writing a schedule ---------------------------------------------------------------------------------------
 
 set local role authenticated;

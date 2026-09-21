@@ -154,6 +154,14 @@ select is(
 
 -- Opening it -----------------------------------------------------------------------------------------
 
+-- The setup above updated organization_commercial_state, and a trigger opens the period that covers the
+-- real current time whenever that table changes. These assertions drive the command at fixed 2026 moments,
+-- so clear what the trigger opened and let the explicit calls below be the only thing that opens periods.
+delete from public.communication_email_allowance_periods
+where organization_id = '90000000-0000-0000-0000-0000000009a1';
+delete from public.website_chat_allowance_periods
+where organization_id = '90000000-0000-0000-0000-0000000009a1';
+
 select private.ensure_communication_allowance_periods(
   '90000000-0000-0000-0000-0000000009a1', '2026-08-20 12:00:00+00');
 

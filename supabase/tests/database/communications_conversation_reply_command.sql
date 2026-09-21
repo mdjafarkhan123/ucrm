@@ -8,7 +8,7 @@ select plan(16);
 
 select function_privs_are(
   'public', 'enqueue_conversation_reply_email',
-  array['uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text'], 'service_role',
+  array['uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text', 'jsonb', 'timestamp with time zone'], 'service_role',
   array['EXECUTE'], 'only the service worker can enqueue a conversation reply'
 );
 select throws_ok(

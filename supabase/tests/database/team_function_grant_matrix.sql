@@ -1,8 +1,8 @@
 -- Team & access, part 3A, items 7 and 8: who may execute what, and who may write what.
 --
 -- Every other test in this part proves what a command does. This one proves who can reach it at all. It
--- names all 49 functions the part ships or depends on, and for each one asserts a yes or no for anon,
--- authenticated and service_role -- 147 answers, no gaps. A new command that forgets its closing
+-- names all 66 functions the part ships or depends on, and for each one asserts a yes or no for anon,
+-- authenticated and service_role -- 198 answers, no gaps. A new command that forgets its closing
 -- `revoke all` fails here, and so does a policy helper that loses the EXECUTE its policies need.
 --
 -- The four groups and why each is what it is:
@@ -29,7 +29,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(167);
+select plan(218);
 
 create temporary table tap_results (id serial primary key, line text);
 
@@ -78,14 +78,38 @@ from (
     ('public', 'settle_team_invitation_identity_cleanup', array['service_role']),
     ('public', 'sweep_team_invitation_reservations', array['service_role']),
     ('public', 'update_team_member_profile', array['service_role']),
+    ('public', 'claim_member_identity_cleanup', array['service_role']),
+    ('public', 'claim_team_notification_emails', array['service_role']),
+    ('public', 'delete_member_availability_exception', array['service_role']),
+    ('public', 'expire_team_invitations_bounded', array['service_role']),
+    ('public', 'finalize_reconciled_team_invitation', array['service_role']),
+    ('public', 'inquiry_alert_members', array['service_role']),
+    ('public', 'mark_team_notifications_read', array['service_role']),
+    ('public', 'record_member_identity_cleanup_step', array['service_role']),
+    ('public', 'release_member_identity_cleanup', array['service_role']),
+    ('public', 'save_member_availability_exception', array['service_role']),
+    ('public', 'save_member_weekly_availability', array['service_role']),
+    ('public', 'settle_team_notification_email', array['service_role']),
+    ('public', 'sweep_team_invitation_reservations_bounded', array['service_role']),
+    ('public', 'team_notification_links', array['service_role']),
     -- A read both sides make: the contractor's own settings page, and the Platform Owner console.
     ('public', 'effective_employee_seat_limit', array['authenticated', 'service_role']),
+    -- The Team screens' own reads and the cost-rate save. Each checks the caller against the organization
+    -- (or team.manage) inside the function, so a signed-in session may call it and only sees its own tenant.
+    ('public', 'get_incomplete_assignments_for_member', array['authenticated']),
+    ('public', 'get_team_member_detail', array['authenticated']),
+    ('public', 'list_team_directory', array['authenticated']),
+    ('public', 'set_member_cost_rate', array['authenticated', 'service_role']),
     -- Policy helpers: evaluated as the querying user, so they must stay callable by that user.
     ('private', 'has_permission', array['authenticated']),
     ('private', 'is_organization_admin', array['authenticated']),
     ('private', 'is_organization_member', array['authenticated']),
     ('private', 'member_organizations', array['authenticated']),
     ('private', 'permission_scope', array['authenticated']),
+    -- Granted to authenticated when the Field role's assigned-only scope shipped (20260907). Every caller is
+    -- SECURITY DEFINER, and authenticated has no USAGE on the private schema, so it is unreachable in
+    -- practice; the grant is recorded as it is rather than as the older "nobody".
+    ('private', 'member_permission_scope', array['authenticated']),
     ('private', 'permitted_organizations', array['authenticated']),
     -- Command support and trigger functions: nobody's to call.
     ('private', 'assert_employee_seat_available', array[]::text[]),
@@ -99,9 +123,7 @@ from (
     ('private', 'member_access_summary_kinds_are_known', array[]::text[]),
     ('private', 'member_access_summary_value_fits', array[]::text[]),
     ('private', 'member_has_permission', array[]::text[]),
-    ('private', 'member_permission_scope', array[]::text[]),
-    ('private', 'prevent_member_access_event_mutation', array[]::text[]),
-    ('private', 'validate_client_owner', array[]::text[])
+    ('private', 'prevent_member_access_event_mutation', array[]::text[])
 ) as f (schema_name, function_name, allowed_roles)
 cross join (values ('anon'), ('authenticated'), ('service_role')) as r (role_name);
 
@@ -117,7 +139,7 @@ insert into tap_results (line) select is(
      join pg_namespace n on n.oid = p.pronamespace
     where (n.nspname, p.proname) in (
       select distinct schema_name, function_name from expected_execute)),
-  49, 'all 49 named functions exist, and none of them is overloaded'
+  66, 'all 66 named functions exist, and none of them is overloaded'
 );
 
 -- 3. Nothing on the exposed surface escaped the matrix -----------------------------------------------------
@@ -136,7 +158,7 @@ insert into tap_results (line) select is(
   '', 'no exposed team function is missing from this matrix'
 );
 
--- 4. The matrix itself, 49 functions by three roles --------------------------------------------------------
+-- 4. The matrix itself, 66 functions by three roles --------------------------------------------------------
 
 insert into tap_results (line)
 select is(
@@ -154,7 +176,7 @@ order by e.schema_name, e.function_name, e.role_name;
 -- 5. Locking a trigger function does not unhook its trigger ------------------------------------------------
 --
 -- Postgres checks EXECUTE on a trigger function when the trigger is created, not every time it fires, so
--- taking the grant away in 20260831090100 leaves the trigger working. This asserts the trigger is still
+-- taking the grant away leaves the trigger working. This asserts the trigger is still
 -- attached and still enabled, which is the half a grant change could plausibly have broken.
 
 insert into tap_results (line) select is(
@@ -163,10 +185,10 @@ insert into tap_results (line) select is(
      join pg_proc p on p.oid = t.tgfoid
      join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'private'
-      and p.proname = 'validate_client_owner'
+      and p.proname = 'prevent_member_access_event_mutation'
       and not t.tgisinternal
       and t.tgenabled = 'O'),
-  1, 'the client owner trigger is still attached and still fires'
+  1, 'the access-event edit guard trigger is still attached and still fires'
 );
 
 -- 6. No browser session may write any of the eight tables ---------------------------------------------------

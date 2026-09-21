@@ -11,8 +11,13 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(13);
 
-insert into public.organizations (id, name, slug, lifecycle_status, brand_color)
-values ('f3000000-0000-0000-0000-000000000001', 'WC3 Widget Test Co', 'wc3-widget-test-co', 'active', '#112233');
+insert into public.organizations (id, name, slug, lifecycle_status)
+values ('f3000000-0000-0000-0000-000000000001', 'WC3 Widget Test Co', 'wc3-widget-test-co', 'active');
+
+-- Brand colour lives on the organization's settings row, not on organizations itself.
+insert into public.organization_settings (organization_id, brand_color)
+values ('f3000000-0000-0000-0000-000000000001', '#112233')
+on conflict (organization_id) do update set brand_color = excluded.brand_color;
 
 -- A numeric override alone is enough entitlement, matching WC2's fixture shape -- no package
 -- assignment needed.

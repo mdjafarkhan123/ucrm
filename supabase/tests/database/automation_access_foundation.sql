@@ -86,12 +86,13 @@ values ('10000000-0000-0000-0000-0000000006a0', 'c0000000-0000-0000-0000-0000000
 select is((select count(*)::integer from public.features where feature_key = 'automations'), 1,
   'the automations feature exists in the catalog');
 select is(
-  (select (
-    (select count(*) from public.package_features where feature_key = 'automations')
-    + (select count(*) from public.platform_package_version_features where feature_key = 'automations')
-  )::integer),
-  0,
-  'the automations feature is attached to no package, so no ordinary contractor can reach it in 6B');
+  (select array_agg(distinct package.package_key order by package.package_key)
+   from public.platform_package_version_features feature
+   join public.platform_package_versions version on version.id = feature.package_version_id
+   join public.platform_packages package on package.package_id = version.package_id
+   where feature.feature_key = 'automations'),
+  array['elite']::text[],
+  'the automations feature is attached only to the Elite package, so only Elite contractors reach it');
 select is((select count(*)::integer from public.role_permissions
   where role = 'owner' and permission_key like 'automations.%'), 4,
   'owner receives all four automation permissions by default');

@@ -38,7 +38,10 @@ select is(
 set local role postgres;
 
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at)
-values ('90000000-1111-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', '6d-owner@example.test', 'test', now(), now(), now());
+values
+  ('90000000-1111-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', '6d-owner@example.test', 'test', now(), now(), now()),
+  ('90000000-1111-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', '6d-owner-2@example.test', 'test', now(), now(), now()),
+  ('90000000-1111-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', '6d-owner-3@example.test', 'test', now(), now(), now());
 
 insert into public.organizations (id, name, slug, lifecycle_status)
 values
@@ -51,8 +54,8 @@ values
 insert into public.organization_members (organization_id, user_id, role)
 values
   ('90000000-0000-0000-0000-0000000000d3', '90000000-1111-0000-0000-000000000001', 'owner'),
-  ('90000000-0000-0000-0000-0000000000d4', '90000000-1111-0000-0000-000000000001', 'owner'),
-  ('90000000-0000-0000-0000-0000000000d5', '90000000-1111-0000-0000-000000000001', 'owner');
+  ('90000000-0000-0000-0000-0000000000d4', '90000000-1111-0000-0000-000000000002', 'owner'),
+  ('90000000-0000-0000-0000-0000000000d5', '90000000-1111-0000-0000-000000000003', 'owner');
 
 insert into public.organization_package_assignments (organization_id, package_version_id, effective_at, assignment_source, reason)
 select org_id, version_id, now() - interval '2 minutes', 'provisioning', '6D test baseline assignment'
@@ -308,6 +311,7 @@ select throws_ok(
 );
 select public.apply_organization_commercial_command(
   target_organization_id => '90000000-0000-0000-0000-0000000000d4',
+  actor_owner_email => 'owner@example.test',
   event_kind => 'initial_payment_confirmed',
   idempotency_key => '6d-lc-d4-payment-1',
   summary => 'Payment recorded to restore eligibility.',

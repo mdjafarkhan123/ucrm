@@ -88,8 +88,8 @@ insert into tap_results (line) select is(
 
 -- The seeded vocabulary is the deliverable, so its size is asserted rather than assumed.
 insert into tap_results (line) select is(
-  (select count(*)::int from public.member_access_event_shapes), 16,
-  'the full Part 3 event vocabulary is seeded'
+  (select count(*)::int from public.member_access_event_shapes), 18,
+  'the full event vocabulary is seeded'
 );
 insert into tap_results (line) select is(
   (select subject_kind from public.member_access_event_shapes where event_type = 'member.role_changed'),
@@ -107,9 +107,10 @@ insert into tap_results (line) select is(
     from public.member_access_event_shapes as shape,
          lateral jsonb_each_text(shape.summary_keys) as entry(summary_key, value_kind)
     where entry.value_kind not in (
-      'role', 'member_status', 'permission_key_list', 'profile_field_list', 'id'
+      'role', 'member_status', 'permission_key_list', 'profile_field_list', 'id',
+      'availability_field_list', 'assignment_count'
     )),
-  0, 'no seeded shape allows a value kind outside the five closed vocabularies'
+  0, 'no seeded shape allows a value kind outside the seven closed vocabularies'
 );
 
 set local role postgres;
@@ -402,7 +403,7 @@ insert into tap_results (line) select is(
   0, 'another organization''s history is invisible'
 );
 insert into tap_results (line) select ok(
-  (select count(*) from public.member_access_event_shapes) = 16,
+  (select count(*) from public.member_access_event_shapes) = 18,
   'the allow-list itself is readable by any signed-in user'
 );
 

@@ -120,7 +120,7 @@ insert into public.quote_version_attachments (
 
 update public.quote_versions set
   discount_name = 'Summer discount', discount_type = 'percentage', discount_value = 1000,
-  tax_name = 'Sales tax', tax_rate_basis_points = 1000,
+  tax_name = 'Sales tax', tax_rate_basis_points = 1000, tax_source = 'custom',
   introduction = 'Your project options', client_message = 'Choose what suits you.'
 where quote_id = (select id from public.quotes where title = 'Professional proposal');
 
@@ -192,6 +192,10 @@ select throws_ok(
 );
 
 -- 4. Freeze, immutability, and clone -----------------------------------------------------------------------
+
+-- publish_quote stamps the send date before it freezes (quotes_publication_is_dated refuses a published quote
+-- with none), so a test that calls the freeze on its own has to stamp it the same way.
+update public.quotes set sent_at = coalesce(sent_at, now()) where title = 'Professional proposal';
 
 select throws_ok(
   $$select public.freeze_quote_version(

@@ -2,7 +2,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(13);
+select plan(12);
 
 select has_table('public', 'communication_twilio_provisioning_events',
   'Twilio provisioning steps have an explicit history record');

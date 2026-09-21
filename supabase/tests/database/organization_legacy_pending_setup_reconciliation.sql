@@ -39,6 +39,8 @@ set local role postgres;
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at)
 values
   ('90000000-1111-0000-0000-0000000000e1', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', '6e-owner-ready@example.test', 'test', now(), now(), now()),
+  ('90000000-1111-0000-0000-0000000000e3', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', '6e-owner-ready-2@example.test', 'test', now(), now(), now()),
+  ('90000000-1111-0000-0000-0000000000e4', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', '6e-owner-ready-3@example.test', 'test', now(), now(), now()),
   ('90000000-1111-0000-0000-0000000000e2', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', '6e-owner-not-ready@example.test', null, null, now(), now());
 
 insert into public.organizations (id, name, slug, lifecycle_status)
@@ -55,8 +57,8 @@ insert into public.organization_members (organization_id, user_id, role)
 values
   ('90000000-0000-0000-0000-0000000000e2', '90000000-1111-0000-0000-0000000000e1', 'owner'),
   ('90000000-0000-0000-0000-0000000000e3', '90000000-1111-0000-0000-0000000000e2', 'admin'),
-  ('90000000-0000-0000-0000-0000000000e4', '90000000-1111-0000-0000-0000000000e1', 'owner'),
-  ('90000000-0000-0000-0000-0000000000e7', '90000000-1111-0000-0000-0000000000e1', 'owner');
+  ('90000000-0000-0000-0000-0000000000e4', '90000000-1111-0000-0000-0000000000e3', 'owner'),
+  ('90000000-0000-0000-0000-0000000000e7', '90000000-1111-0000-0000-0000000000e4', 'owner');
 
 insert into public.organization_package_assignments (organization_id, package_version_id, effective_at, assignment_source, reason)
 select org_id, version_id, now() - interval '2 minutes', 'legacy_owner_action', '6E test baseline assignment'

@@ -18,7 +18,7 @@ select function_privs_are(
 );
 select function_privs_are(
   'public', 'enqueue_conversation_reply_email',
-  array['uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text', 'jsonb'], 'anon', array[]::text[],
+  array['uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'text', 'jsonb', 'timestamp with time zone'], 'anon', array[]::text[],
   'anon cannot call the attachment-aware reply command'
 );
 
@@ -170,10 +170,12 @@ select lives_ok(
   'a message with no files is an ordinary no-op'
 );
 
-select results_eq(
+-- Files attached in one call share one created_at, so the listing's tie-break is the random row id and
+-- their order is not guaranteed. Asserted as a set until an explicit position is approved (see Memory/deferred).
+select bag_eq(
   $$select file_name from public.list_communication_outbound_attachments('ea400000-0000-0000-0000-000000000001')$$,
   $$values ('quote.pdf'::text), ('plan.pdf'::text)$$,
-  'the worker reads a claimed message''s files in the order they were attached'
+  'the worker reads all of a claimed message''s files'
 );
 
 -- Nothing deletes a delivery intent today, but the organization-purge path eventually will, and an

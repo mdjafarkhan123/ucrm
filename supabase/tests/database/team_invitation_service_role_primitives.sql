@@ -9,7 +9,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(94);
+select plan(96);
 
 -- Every assertion's TAP line is captured here so the whole run can be inspected in one final SELECT --
 -- the query tool used to verify this file only returns the last statement's result set.
@@ -495,11 +495,26 @@ insert into tap_results (line) select is(
   (select state from public.organization_member_invitations where invited_email = 'drew@example.test'),
   'expired', 'the ordinary row is now expired'
 );
+-- Expiry only flags the sign-in identity for cleanup. The pending membership row goes when the cleanup
+-- worker deletes that identity (organization_members.user_id cascades from auth.users), not at expiry.
 insert into tap_results (line) select is(
   (select count(*)::int from public.organization_members
     where organization_id = 'a1000000-0000-0000-0000-000000000001'
       and user_id = 'a0000000-0000-0000-0000-000000000005'),
-  0, 'expiring an invited invitation deletes its pending membership row'
+  1, 'expiring an invited invitation keeps its pending membership row until the identity is deleted'
+);
+insert into tap_results (line) select is(
+  (select identity_cleanup_state from public.organization_member_invitations where invited_email = 'drew@example.test'),
+  'required', 'expiring an invited invitation flags its identity for cleanup'
+);
+set local role postgres;
+delete from auth.users where id = 'a0000000-0000-0000-0000-000000000005';
+set local role service_role;
+insert into tap_results (line) select is(
+  (select count(*)::int from public.organization_members
+    where organization_id = 'a1000000-0000-0000-0000-000000000001'
+      and user_id = 'a0000000-0000-0000-0000-000000000005'),
+  0, 'deleting the identity, as the cleanup worker does, removes the pending membership row'
 );
 
 -- Row E's lease now also lapses with no recorded outcome -- the next sweep must reconcile, not expire.

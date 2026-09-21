@@ -88,7 +88,7 @@ select is((select count(*)::int from public.automation_recipe_versions where rec
 select is((select definition_hash from public.automation_recipe_versions where recipe_id = '20000000-0000-0000-0000-0000000000a1'),
   'hash-a1-v1', 'the frozen version stores its server-computed hash');
 select is((select activation_cutoff_sequence from public.automation_recipe_versions where recipe_id = '20000000-0000-0000-0000-0000000000a1'),
-  null, 'the event-sequence cutoff stays empty until 6D');
+  0::bigint, 'the event-sequence marker is the latest event sequence, or 0 when there are no events yet');
 select is((select count(*)::int from public.automation_draft_command_receipts
   where idempotency_key = 'd1000000-0000-0000-0000-000000000001'), 1, 'an activation receipt is written');
 

@@ -44,19 +44,19 @@ insert into public.organization_limit_overrides (
 -- 1. Privilege matrix -----------------------------------------------------------------------------------
 
 select is(
-  has_function_privilege('anon', 'public.create_website_chat_widget(uuid, text, text, text, text, text, text, text, jsonb)', 'execute'),
+  has_function_privilege('anon', 'public.create_website_chat_widget(uuid, text, text, text, text, text, text, text, text, jsonb)', 'execute'),
   false, 'anonymous callers cannot create a website chat widget'
 );
 select is(
-  has_function_privilege('authenticated', 'public.create_website_chat_widget(uuid, text, text, text, text, text, text, text, jsonb)', 'execute'),
+  has_function_privilege('authenticated', 'public.create_website_chat_widget(uuid, text, text, text, text, text, text, text, text, jsonb)', 'execute'),
   true, 'a signed-in session can call widget create'
 );
 select is(
-  has_function_privilege('anon', 'public.update_website_chat_widget(uuid, uuid, integer, text, text, text, text, text, text, text, jsonb, boolean, boolean)', 'execute'),
+  has_function_privilege('anon', 'public.update_website_chat_widget(uuid, uuid, integer, text, text, text, text, text, text, text, text, jsonb, boolean, boolean)', 'execute'),
   false, 'anonymous callers cannot update a website chat widget'
 );
 select is(
-  has_function_privilege('authenticated', 'public.update_website_chat_widget(uuid, uuid, integer, text, text, text, text, text, text, text, jsonb, boolean, boolean)', 'execute'),
+  has_function_privilege('authenticated', 'public.update_website_chat_widget(uuid, uuid, integer, text, text, text, text, text, text, text, text, jsonb, boolean, boolean)', 'execute'),
   true, 'a signed-in session can call widget update'
 );
 select is(
@@ -84,7 +84,7 @@ select set_config('request.jwt.claim.sub', 'f1000000-0000-0000-0000-000000000002
 select throws_ok(
   $$select public.create_website_chat_widget(
       'f2000000-0000-0000-0000-000000000001', 'Field Attempt', 'bottom_right', null, null,
-      'either', 'hidden', null, '[]'::jsonb
+      'either', 'hidden', null, null, '[]'::jsonb
     )$$,
   '42501', null, 'a field member cannot create a widget'
 );
@@ -102,7 +102,7 @@ select set_config('request.jwt.claim.sub', 'f1000000-0000-0000-0000-000000000003
 select throws_ok(
   $$select public.create_website_chat_widget(
       'f2000000-0000-0000-0000-000000000001', 'Outsider Attempt', 'bottom_right', null, null,
-      'either', 'hidden', null, '[]'::jsonb
+      'either', 'hidden', null, null, '[]'::jsonb
     )$$,
   '42501', null, 'a non-member cannot create a widget for this organization'
 );
@@ -115,7 +115,7 @@ select set_config('request.jwt.claim.sub', 'f1000000-0000-0000-0000-000000000001
 select is(
   (public.create_website_chat_widget(
     'f2000000-0000-0000-0000-000000000001', 'Storefront Widget', 'bottom_right', 'Hi there', 'How can we help?',
-    'either', 'hidden', null, '[]'::jsonb
+    'either', 'hidden', null, null, '[]'::jsonb
   ) ->> 'name'),
   'Storefront Widget', 'the admin creates the first widget'
 );
@@ -123,7 +123,7 @@ select is(
 select is(
   (public.create_website_chat_widget(
     'f2000000-0000-0000-0000-000000000001', 'Support Widget', 'bottom_left', null, null,
-    'phone', 'always', 'Support page', '[]'::jsonb
+    'phone', 'always', 'Support page', null, '[]'::jsonb
   ) ->> 'name'),
   'Support Widget', 'the admin creates the second widget, reaching the cap of 2'
 );
@@ -131,7 +131,7 @@ select is(
 select throws_ok(
   $$select public.create_website_chat_widget(
       'f2000000-0000-0000-0000-000000000001', 'Third Widget', 'bottom_right', null, null,
-      'either', 'hidden', null, '[]'::jsonb
+      'either', 'hidden', null, null, '[]'::jsonb
     )$$,
   '23514', null, 'a third widget is refused at the entitlement cap'
 );
@@ -192,7 +192,7 @@ select throws_ok(
   format(
     $$select public.update_website_chat_widget(
         'f2000000-0000-0000-0000-000000000001', %L, 99, 'Storefront Widget', 'bottom_right', null, null,
-        'either', 'hidden', null, '[]'::jsonb, true, false
+        'either', 'hidden', null, null, '[]'::jsonb, true, false
       )$$,
     (select id from public.website_chat_widgets
      where organization_id = 'f2000000-0000-0000-0000-000000000001' and name = 'Storefront Widget')
@@ -205,7 +205,7 @@ select is(
     'f2000000-0000-0000-0000-000000000001',
     (select id from public.website_chat_widgets
      where organization_id = 'f2000000-0000-0000-0000-000000000001' and name = 'Storefront Widget'),
-    1, 'Storefront Widget', 'bottom_right', null, null, 'either', 'hidden', null, '[]'::jsonb, true, false
+    1, 'Storefront Widget', 'bottom_right', null, null, 'either', 'hidden', null, null, '[]'::jsonb, true, false
   ) ->> 'published')::boolean,
   true, 'the correct revision publishes the widget'
 );
@@ -217,7 +217,7 @@ select is(
     'f2000000-0000-0000-0000-000000000001',
     (select id from public.website_chat_widgets
      where organization_id = 'f2000000-0000-0000-0000-000000000001' and name = 'Storefront Widget'),
-    2, 'Storefront Widget', 'bottom_right', null, null, 'either', 'hidden', null, '[]'::jsonb, true, true
+    2, 'Storefront Widget', 'bottom_right', null, null, 'either', 'hidden', null, null, '[]'::jsonb, true, true
   ) ->> 'disabled_at') is not null,
   true, 'disabling the storefront widget frees its slot'
 );
@@ -225,7 +225,7 @@ select is(
 select is(
   (public.create_website_chat_widget(
     'f2000000-0000-0000-0000-000000000001', 'Third Widget', 'bottom_right', null, null,
-    'either', 'hidden', null, '[]'::jsonb
+    'either', 'hidden', null, null, '[]'::jsonb
   ) ->> 'name'),
   'Third Widget', 'a third widget can now be created because the disabled one freed a slot'
 );
@@ -234,7 +234,7 @@ select throws_ok(
   format(
     $$select public.update_website_chat_widget(
         'f2000000-0000-0000-0000-000000000001', %L, 3, 'Storefront Widget', 'bottom_right', null, null,
-        'either', 'hidden', null, '[]'::jsonb, true, false
+        'either', 'hidden', null, null, '[]'::jsonb, true, false
       )$$,
     (select id from public.website_chat_widgets
      where organization_id = 'f2000000-0000-0000-0000-000000000001' and name = 'Storefront Widget')
@@ -256,7 +256,7 @@ select throws_ok(
   format(
     $$select public.update_website_chat_widget(
         'f2000000-0000-0000-0000-000000000001', %L, 2, 'Hijacked', 'bottom_right', null, null,
-        'either', 'hidden', null, '[]'::jsonb, true, false
+        'either', 'hidden', null, null, '[]'::jsonb, true, false
       )$$,
     (select id from public.website_chat_widgets
      where organization_id = 'f2000000-0000-0000-0000-000000000001' and name = 'Support Widget')

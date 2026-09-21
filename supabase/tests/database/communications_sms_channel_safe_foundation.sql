@@ -50,18 +50,17 @@ insert into public.communication_sms_sender_identities (
 
 insert into public.communication_delivery_intents (
   id, organization_id, client_id, client_contact_method_id, channel, logical_send_key,
-  recipient_phone, text_content, sms_sender_identity_id
+  recipient_phone, sms_sender_identity_id
 ) values (
   'a2500000-0000-0000-0000-000000000001', 'a2100000-0000-0000-0000-000000000001',
   'a2200000-0000-0000-0000-000000000001', 'a2300000-0000-0000-0000-000000000001',
-  'sms', 'sms-foundation-one', '+15550000001', 'Your appointment is tomorrow.',
-  'a2400000-0000-0000-0000-000000000001'
+  'sms', 'sms-foundation-one', '+15550000001', 'a2400000-0000-0000-0000-000000000001'
 );
 insert into public.communication_sms_message_snapshots (
-  organization_id, delivery_intent_id, body, encoding, segment_count
+  organization_id, delivery_intent_id, raw_body, body, encoding, segment_count
 ) values (
   'a2100000-0000-0000-0000-000000000001', 'a2500000-0000-0000-0000-000000000001',
-  'Your appointment is tomorrow.', 'gsm7', 1
+  'Your appointment is tomorrow.', 'Your appointment is tomorrow.', 'gsm7', 1
 );
 insert into public.communication_outbox_events (organization_id, delivery_intent_id, channel)
 values ('a2100000-0000-0000-0000-000000000001', 'a2500000-0000-0000-0000-000000000001', 'sms');
@@ -79,11 +78,11 @@ select results_eq(
 
 insert into public.communication_delivery_intents (
   id, organization_id, client_id, client_contact_method_id, channel, logical_send_key,
-  recipient_phone, text_content
+  recipient_phone
 ) values (
   'a2500000-0000-0000-0000-000000000002', 'a2100000-0000-0000-0000-000000000001',
   'a2200000-0000-0000-0000-000000000001', 'a2300000-0000-0000-0000-000000000001',
-  'sms', 'sms-foundation-two', '+15550000001', 'Channel mismatch fixture'
+  'sms', 'sms-foundation-two', '+15550000001'
 );
 
 select throws_ok(
@@ -108,11 +107,11 @@ select throws_ok(
 select throws_ok(
   $$insert into public.communication_delivery_intents (
       organization_id, client_id, client_contact_method_id, channel, logical_send_key,
-      recipient_phone, text_content, sms_sender_identity_id
+      recipient_phone, sms_sender_identity_id
     ) values (
       'a2100000-0000-0000-0000-000000000002', 'a2200000-0000-0000-0000-000000000002',
       'a2300000-0000-0000-0000-000000000002', 'sms', 'cross-tenant-sender',
-      '+15550000002', 'Blocked', 'a2400000-0000-0000-0000-000000000001'
+      '+15550000002', 'a2400000-0000-0000-0000-000000000001'
     )$$,
   '23503', null,
   'an SMS intent cannot borrow another organization sender identity'
@@ -120,11 +119,11 @@ select throws_ok(
 select throws_ok(
   $$insert into public.communication_delivery_intents (
       organization_id, client_id, client_contact_method_id, channel, logical_send_key,
-      recipient_phone, text_content
+      recipient_phone
     ) values (
       'a2100000-0000-0000-0000-000000000001', 'a2200000-0000-0000-0000-000000000001',
       'a2300000-0000-0000-0000-000000000001', 'sms', 'sms-foundation-one',
-      '+15550000001', 'Duplicate'
+      '+15550000001'
     )$$,
   '23505', null,
   'a retry cannot duplicate one logical send'
@@ -140,26 +139,26 @@ insert into public.communication_sms_consent_events (
 );
 insert into public.communication_sms_consent_events (
   id, organization_id, client_id, client_contact_method_id, event_kind, source,
-  source_event_key, occurred_at
+  source_event_key, occurred_at, subjects, proof_method
 ) values (
   'a2600000-0000-0000-0000-000000000001', 'a2100000-0000-0000-0000-000000000001',
   'a2200000-0000-0000-0000-000000000001', 'a2300000-0000-0000-0000-000000000001',
-  'opt_in', 'import', 'older-import', '2026-09-13 09:00:00+00'
+  'opt_in', 'import', 'older-import', '2026-09-13 09:00:00+00', array['service'], 'signed_agreement'
 );
-select results_eq(
-  $$select state, source_event_id from public.communication_sms_consent_state
-    where organization_id = 'a2100000-0000-0000-0000-000000000001'
-      and client_contact_method_id = 'a2300000-0000-0000-0000-000000000001'$$,
-  $$values ('opted_out'::text, 'a2600000-0000-0000-0000-000000000002'::uuid)$$,
+select is(
+  public.communication_sms_consent_status(
+    'a2100000-0000-0000-0000-000000000001', 'a2300000-0000-0000-0000-000000000001', 'service'),
+  'opted_out',
   'a delayed older consent event cannot overwrite the newer customer reply'
 );
 select throws_ok(
   $$insert into public.communication_sms_consent_events (
       organization_id, client_id, client_contact_method_id, event_kind, source,
-      source_event_key, occurred_at
+      source_event_key, occurred_at, subjects, proof_method
     ) values (
       'a2100000-0000-0000-0000-000000000001', 'a2200000-0000-0000-0000-000000000001',
-      'a2300000-0000-0000-0000-000000000002', 'opt_in', 'staff', 'cross-tenant-method', now()
+      'a2300000-0000-0000-0000-000000000002', 'opt_in', 'staff', 'cross-tenant-method', now(),
+      array['service'], 'signed_agreement'
     )$$,
   '23503', null,
   'consent evidence cannot attach another organization contact method'
@@ -169,10 +168,11 @@ insert into public.communication_sms_credit_accounts (
   organization_id, settled_balance_minor, reserved_balance_minor
 ) values ('a2100000-0000-0000-0000-000000000001', 1000, 0);
 insert into public.communication_sms_credit_reservations (
-  id, organization_id, delivery_intent_id, source_key, amount_minor, segment_count
+  id, organization_id, delivery_intent_id, source_key, amount_minor, segment_count,
+  reserved_purchased_minor
 ) values (
   'a2700000-0000-0000-0000-000000000001', 'a2100000-0000-0000-0000-000000000001',
-  'a2500000-0000-0000-0000-000000000001', 'manual:sms-foundation-one', 25, 1
+  'a2500000-0000-0000-0000-000000000001', 'manual:sms-foundation-one', 25, 1, 25
 );
 insert into public.communication_sms_credit_ledger_entries (
   organization_id, reservation_id, source_key, entry_kind, amount_minor, balance_after_minor
@@ -182,10 +182,11 @@ insert into public.communication_sms_credit_ledger_entries (
 );
 select throws_ok(
   $$insert into public.communication_sms_credit_reservations (
-      organization_id, delivery_intent_id, source_key, amount_minor, segment_count
+      organization_id, delivery_intent_id, source_key, amount_minor, segment_count,
+      reserved_purchased_minor
     ) values (
       'a2100000-0000-0000-0000-000000000001', 'a2500000-0000-0000-0000-000000000001',
-      'manual:sms-foundation-one-retry', 25, 1
+      'manual:sms-foundation-one-retry', 25, 1, 25
     )$$,
   '23505', null,
   'one delivery intent can reserve credit only once'

@@ -166,6 +166,12 @@ values
   ('85000000-0000-0000-0000-000000000002', '81000000-0000-0000-0000-000000000001', (select id from public.opportunities where request_id = '84000000-0000-0000-0000-000000000001'), 'R1 open task two', 'open', null, null),
   ('85000000-0000-0000-0000-000000000003', '81000000-0000-0000-0000-000000000001', (select id from public.opportunities where request_id = '84000000-0000-0000-0000-000000000001'), 'R1 finished task', 'completed', now(), '80000000-0000-0000-0000-000000000001');
 
+-- Members hold no direct read on the stored pricing rows (costs and prices reach them only through the gated
+-- readers), so the assertions below that check what the command stored read them through a view owned by the
+-- test's own role, which keeps the check on the stored data without granting members anything.
+create temporary view stored_pricing_lines as select * from public.request_pricing_lines;
+grant select on stored_pricing_lines to authenticated;
+
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '80000000-0000-0000-0000-000000000001', true);
 
@@ -241,11 +247,11 @@ select is(
 );
 
 select is(
-  (select line_total_minor from public.request_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001' and position = 2),
+  (select line_total_minor from stored_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001' and position = 2),
   500::bigint, 'the half cent line rounds away from zero in the stored row'
 );
 select is(
-  (select line_cost_total_minor from public.request_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001' and position = 0),
+  (select line_cost_total_minor from stored_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001' and position = 0),
   25200::bigint, 'internal cost totals with the same rule'
 );
 select is(
@@ -253,11 +259,11 @@ select is(
   110938::bigint, 'the request carries the same subtotal the command returned'
 );
 select is(
-  (select array_agg(name order by position) from public.request_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001'),
+  (select array_agg(name order by position) from stored_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001'),
   array['Cedar board', 'Install crew', 'Site cleanup'], 'lines keep the order they were sent in'
 );
 select is(
-  (select image_attachment_id from public.request_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001' and position = 0),
+  (select image_attachment_id from stored_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001' and position = 0),
   '87000000-0000-0000-0000-000000000001'::uuid, 'a line keeps the photo it was saved with'
 );
 
@@ -299,7 +305,7 @@ select is(
   1, 'a refused replace leaves the revision alone'
 );
 select is(
-  (select count(*)::int from public.request_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001'),
+  (select count(*)::int from stored_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001'),
   3, 'a refused replace leaves the existing lines alone'
 );
 
@@ -409,7 +415,7 @@ select is(
 );
 select is(
   (select stage from public.opportunities where quote_id = (select id from public.quotes where request_id = '84000000-0000-0000-0000-000000000001')),
-  'request_closed', 'the new quote card is parked off the board until the quote parts land'
+  'quote_draft', 'the new quote card starts in Quote Draft on the board'
 );
 select is(
   (select outcome from public.opportunities where quote_id = (select id from public.quotes where request_id = '84000000-0000-0000-0000-000000000001')),
@@ -485,7 +491,7 @@ select is(
   4599::bigint, 'the copied price is the price at conversion time'
 );
 select is(
-  (select unit_price_minor from public.request_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001' and position = 0),
+  (select unit_price_minor from stored_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001' and position = 0),
   4599::bigint, 'editing the catalog never rewrites the request row either'
 );
 
@@ -497,11 +503,11 @@ set local role authenticated;
 select set_config('request.jwt.claim.sub', '80000000-0000-0000-0000-000000000001', true);
 
 select is(
-  (select image_attachment_id from public.request_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001' and position = 0),
+  (select image_attachment_id from stored_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001' and position = 0),
   null::uuid, 'deleting the photo clears it from the request line'
 );
 select is(
-  (select organization_id from public.request_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001' and position = 0),
+  (select organization_id from stored_pricing_lines where request_id = '84000000-0000-0000-0000-000000000001' and position = 0),
   '81000000-0000-0000-0000-000000000001'::uuid, 'the line itself survives the delete with its organization intact'
 );
 select is(
@@ -536,7 +542,8 @@ select set_config('request.jwt.claim.sub', '80000000-0000-0000-0000-000000000002
 select is((select count(*)::int from public.quotes), 0, 'the other organization sees no quotes');
 select is((select count(*)::int from public.quote_versions), 0, 'the other organization sees no quote versions');
 select is((select count(*)::int from public.quote_version_lines), 0, 'the other organization sees no quote lines');
-select is((select count(*)::int from public.request_pricing_lines), 0, 'the other organization sees no request pricing');
+select is(has_table_privilege('authenticated', 'public.request_pricing_lines', 'select'), false,
+  'the other organization sees no request pricing, because no member reads the stored rows directly');
 
 select is(
   (public.convert_request_to_quote('84000000-0000-0000-0000-000000000003', 'convert-key-orgb-0001', 'hash-r3') ->> 'quote_number')::int,

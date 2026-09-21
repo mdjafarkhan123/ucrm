@@ -184,7 +184,7 @@ select is(pg_temp.resolve('first-token')::text like '%source_catalog_item_id%', 
   'the price book is not exposed');
 
 select is(pg_temp.resolve('a-token-nobody-issued'), null, 'a random token opens nothing');
-select is(public.resolve_quote_access_link('\x00'::bytea), null, 'a malformed token opens nothing');
+select is(pg_temp.resolve_raw('\x00'::bytea), null, 'a malformed token opens nothing');
 select is(pg_temp.resolve_raw(null::bytea), null, 'no token opens nothing');
 
 -- 6. Rotation, revocation, and a version that moved on ----------------------------------------------------------
@@ -200,10 +200,10 @@ select is(pg_temp.resolve('first-token'), null, 'the forwarded old URL stops wor
 select isnt(pg_temp.resolve('second-token'), null, 'the new URL works');
 
 select lives_ok($$select public.revise_quote(pg_temp.qid())$$, 'staff start a new version');
--- Starting a revision does not take the document away from the customer: the version they were sent is
--- still the published one, exactly as it is in Jobber, until a new one goes out.
-select isnt(pg_temp.resolve('second-token'), null,
-  'while staff revise, the customer still sees the version they were sent');
+-- Starting a revision revokes the customer link (docs/quote-behavior-contract.md): the customer must not answer a
+-- document staff are already changing. The link stops opening and the new version gets a fresh one on send.
+select is(pg_temp.resolve('second-token'), null,
+  'starting a revision revokes the link the customer was sent');
 
 select lives_ok(
   $$select public.publish_quote(pg_temp.qid(), pg_temp.rev())$$,
