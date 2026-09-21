@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useQueryClient } from '@tanstack/svelte-query';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Popover from '$lib/components/ui/Popover.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -17,7 +17,9 @@
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import {
 		clientCommunicationHistoryKey,
+		conversationMessagingKey,
 		estimateSmsReply,
+		fetchConversationMessaging,
 		sendConversationReply,
 		sendConversationReplySms,
 		sendWebsiteChatStaffMessage,
@@ -77,6 +79,21 @@
 	// button's visibility doesn't wait on the user typing anything.
 	let mmsEligible = $state(false);
 	let bodyEl = $state<HTMLTextAreaElement | null>(null);
+
+	// Texts go to the customer's primary number. When staff have stopped texts to it, or the customer replied
+	// STOP, say so here and hold the Send button -- the server refuses the send either way. Shares its cache
+	// with the Contact tab, so it is usually already there.
+	const messaging = createQuery(() => ({
+		queryKey: conversationMessagingKey(clientId as string),
+		queryFn: () => fetchConversationMessaging(clientId as string),
+		enabled: channel === 'sms' && Boolean(clientId),
+		staleTime: 30_000
+	}));
+	const smsStopped = $derived.by(() => {
+		if (channel !== 'sms') return false;
+		const phones = messaging.data?.phones ?? [];
+		return (phones.find((phone) => phone.is_primary) ?? phones[0])?.state === 'opted_out';
+	});
 
 	// The composer's live impact line (blueprint: "live characters, estimated segments and estimated
 	// retail cost"), plus MMS eligibility for the attach-photo button. Debounced so every keystroke does not
@@ -394,7 +411,7 @@
 		aria-label="Send"
 		title="Send"
 		aria-busy={sending}
-		disabled={sending || uploading}
+		disabled={sending || uploading || smsStopped}
 	>
 		{#if sending}
 			<span class="conversation-composer__send-spinner" aria-hidden="true"></span>
@@ -486,6 +503,11 @@
 		{#if fieldErrors.body}<p class="conversation-composer__field-error" role="alert">
 				{fieldErrors.body}
 			</p>{/if}
+		{#if smsStopped}
+			<p class="conversation-composer__error" role="alert">
+				Texts to this customer are stopped. See Messaging in the Contact tab.
+			</p>
+		{/if}
 		{#if channel === 'sms'}
 			<p class="conversation-composer__impact">
 				{#if estimating}

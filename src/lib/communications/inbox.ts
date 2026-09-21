@@ -829,6 +829,56 @@ export async function fetchConversationContext(clientId: string): Promise<Conver
 	return result as ConversationContext;
 }
 
+// Whether each of a customer's phone numbers may be texted, and the customer's marketing-email standing.
+// `stopped_by` says who stopped it: the customer's own STOP is locked, a staff stop can be taken back.
+export type ConversationMessagingPhone = {
+	contact_method_id: string;
+	value: string;
+	is_primary: boolean;
+	state: 'opted_in' | 'opted_out' | 'unknown';
+	stopped_by: 'customer' | 'staff' | null;
+	stopped_at: string | null;
+	stopped_by_name: string | null;
+	note: string | null;
+	can_undo: boolean;
+};
+
+export type ConversationMessaging = {
+	can_manage: boolean;
+	phones: ConversationMessagingPhone[];
+	marketing_email: {
+		email: string;
+		state: 'opted_in' | 'opted_out' | 'unknown';
+		effective_at: string | null;
+	} | null;
+};
+
+// Nested under the client's context key so the invalidation a follow or assignment change already does
+// refreshes this too, and so a stop or restart can invalidate just this.
+export const conversationMessagingKey = (clientId: string) =>
+	[...conversationContextKey(clientId), 'messaging'] as const;
+
+export async function fetchConversationMessaging(clientId: string): Promise<ConversationMessaging> {
+	const response = await fetch(`/api/communications/conversations/${clientId}/sms-stop`);
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok)
+		throw httpError(response, result.error ?? 'Messaging status could not be loaded.');
+	return result as ConversationMessaging;
+}
+
+export async function changeSmsStop(
+	clientId: string,
+	input: { contact_method_id: string; action: 'stop' | 'undo'; note?: string }
+): Promise<void> {
+	const response = await fetch(`/api/communications/conversations/${clientId}/sms-stop`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) throw httpError(response, result.error ?? 'That change could not be saved.');
+}
+
 export async function fetchConversationContextSection<S extends ContextSection>(
 	clientId: string,
 	section: S

@@ -14575,6 +14575,20 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      communication_sms_client_stop_state: {
+        Args: { p_client_id: string; p_organization_id: string }
+        Returns: {
+          can_undo: boolean
+          contact_method_id: string
+          is_primary: boolean
+          note: string
+          state: string
+          stopped_at: string
+          stopped_by: string
+          stopped_by_user: string
+          value: string
+        }[]
+      }
       communication_sms_confirm_credit_topup: {
         Args: {
           p_decided_by: string
@@ -15432,6 +15446,67 @@ export type Database = {
       communication_sms_spendable_balance: {
         Args: { p_organization_id: string }
         Returns: number
+      }
+      communication_sms_staff_stop: {
+        Args: {
+          p_actor: string
+          p_client_contact_method_id: string
+          p_client_id: string
+          p_note: string
+          p_organization_id: string
+          p_source_event_key: string
+        }
+        Returns: {
+          client_contact_method_id: string
+          client_id: string
+          created_by: string | null
+          event_kind: string
+          evidence: Json
+          id: string
+          occurred_at: string
+          organization_id: string
+          proof_method: string | null
+          received_at: string
+          source: string
+          source_event_key: string
+          subjects: string[] | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "communication_sms_consent_events"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      communication_sms_staff_stop_undo: {
+        Args: {
+          p_actor: string
+          p_client_contact_method_id: string
+          p_client_id: string
+          p_organization_id: string
+          p_source_event_key: string
+        }
+        Returns: {
+          client_contact_method_id: string
+          client_id: string
+          created_by: string | null
+          event_kind: string
+          evidence: Json
+          id: string
+          occurred_at: string
+          organization_id: string
+          proof_method: string | null
+          received_at: string
+          source: string
+          source_event_key: string
+          subjects: string[] | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "communication_sms_consent_events"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       communication_sms_start_registration: {
         Args: {

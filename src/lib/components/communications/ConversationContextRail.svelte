@@ -6,6 +6,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import ConversationAssignField from '$lib/components/communications/ConversationAssignField.svelte';
 	import ConversationContextSection from '$lib/components/communications/ConversationContextSection.svelte';
+	import ConversationMessagingStatus from '$lib/components/communications/ConversationMessagingStatus.svelte';
 	import InquiryAutomationCard from '$lib/components/automation/InquiryAutomationCard.svelte';
 	import { AUTOMATION_JOURNEY_READY } from '$lib/automation/journey';
 	import {
@@ -175,6 +176,7 @@
 									{@render detail('Company', context.data.client.company_name)}
 								{/if}
 							</dl>
+							<ConversationMessagingStatus {clientId} />
 							{@render automation()}
 						{:else}
 							<ConversationContextSection {clientId} section={tab.value} />

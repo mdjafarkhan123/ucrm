@@ -36,3 +36,7 @@ Not verified: what the composer shows when a channel is blocked. The Text Messag
 ## Gap
 
 The inbox and customer rail have no contractor-facing control for: "this customer asked me on the phone to stop texting", or "pause messages to this customer for now". The backend cannot record either as a per-customer state, and the rail (Part 4) deliberately omitted it.
+
+## Decision (2026-09-21)
+
+Built as inbox Part 5, following the Jobber/HighLevel/Twilio pattern rather than HighLevel's single checkbox: one stop per phone number recorded by any member who can reply; a customer's own STOP is locked and only their START lifts it; a staff stop can be taken back (it re-records exactly the consent the customer had just before, and is refused when there was none); marketing email stays read-only in the inbox (managed on the customer page). No separate temporary pause. Not built: a timeline line for stop/undo events.
