@@ -231,7 +231,7 @@ insert into tap_results (line) select is(
 insert into tap_results (line) select throws_ok(
   $$select public.prepare_team_invitation_identity_cleanup(
     'b3000000-0000-0000-0000-000000000001', 'b5000000-0000-0000-0000-000000000099')$$,
-  '40001', 'The invitation cleanup lease is no longer valid.', 'a foreign worker cannot prepare cleanup'
+  'P0409', 'The invitation cleanup lease is no longer valid.', 'a foreign worker cannot prepare cleanup'
 );
 insert into tap_results (line) select lives_ok(
   $$select public.prepare_team_invitation_identity_cleanup(
@@ -305,5 +305,5 @@ insert into tap_results (line) select is(
 );
 
 select * from finish();
-select line from tap_results where line like 'not ok%' order by id;
+select line from tap_results order by id;
 rollback;

@@ -20,6 +20,11 @@ insert into auth.users (
 insert into public.organizations (id, name, slug, lifecycle_status) values
   ('e1000000-0000-0000-0000-000000000001', 'Deposit Display Org', 'deposit-display-org', 'active');
 
+-- Live requires a real tax answer before a quote can be sent (publish_quote refuses 'not_configured').
+insert into public.organization_settings (organization_id, tax_default_source)
+select id, 'no_tax' from public.organizations
+on conflict (organization_id) do update set tax_default_source = 'no_tax';
+
 insert into public.organization_members (organization_id, user_id, role) values
   ('e1000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000001', 'admin'),
   ('e1000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002', 'field');

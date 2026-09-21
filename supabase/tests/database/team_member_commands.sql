@@ -259,7 +259,7 @@ insert into tap_results (line) select throws_ok(
       'e0000000-0000-0000-0000-000000000004',
       'sales', false, 7
     )$$,
-  '40001', null, 'a stale editor is refused instead of overwriting'
+  'P0409', null, 'a stale editor is refused instead of overwriting'
 );
 insert into tap_results (line) select throws_ok(
   $$select public.change_team_member_role(
@@ -393,7 +393,7 @@ insert into tap_results (line) select throws_ok(
       'e0000000-0000-0000-0000-000000000004',
       '[]'::jsonb, 1
     )$$,
-  '40001', null, 'a stale permissions editor is refused too'
+  'P0409', null, 'a stale permissions editor is refused too'
 );
 insert into tap_results (line) select throws_ok(
   $$select public.save_team_member_permissions(
@@ -548,7 +548,7 @@ insert into tap_results (line) select throws_ok(
       'e0000000-0000-0000-0000-000000000004',
       'Ollie Renamed', '0400 000 000', 'Estimator', '#3366FF', 9
     )$$,
-  '40001', null, 'member details have their own conflict protection'
+  'P0409', null, 'member details have their own conflict protection'
 );
 insert into tap_results (line) select throws_ok(
   $$select public.update_team_member_profile(
@@ -993,6 +993,6 @@ set local role postgres;
 
 select * from finish();
 
-select line from tap_results where line like 'not ok%' order by id;
+select line from tap_results order by id;
 
 rollback;

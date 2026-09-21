@@ -98,7 +98,7 @@ insert into tap_results (line) select throws_ok(
     'c1000000-0000-0000-0000-000000000002', 'c3000000-0000-0000-0000-000000000001',
     'c5000000-0000-0000-0000-000000000002', 300
   )$$,
-  '40001', null, 'another organization cannot lease the cancelled identity'
+  'P0409', null, 'another organization cannot lease the cancelled identity'
 );
 insert into tap_results (line) select lives_ok(
   $$select public.claim_cancelled_team_invitation_cleanup(
@@ -117,7 +117,7 @@ insert into tap_results (line) select throws_ok(
     'c1000000-0000-0000-0000-000000000001', 'c3000000-0000-0000-0000-000000000001',
     'c5000000-0000-0000-0000-000000000002', 300
   )$$,
-  '40001', null, 'a live targeted lease cannot be stolen'
+  'P0409', null, 'a live targeted lease cannot be stolen'
 );
 insert into tap_results (line) select is(
   (select count(*)::int from public.claim_team_invitation_reconciliation('c5000000-0000-0000-0000-000000000002', 1, 300)),
@@ -166,7 +166,7 @@ insert into tap_results (line) select lives_ok(
 
 set local role postgres;
 
-select * from tap_results where line not like 'ok %' order by id;
+select line from tap_results order by id;
 select * from finish();
 
 rollback;

@@ -9,9 +9,11 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Published Quotes do not freeze the organization logo or brand color](published-quotes-do-not-freeze-the-organization-logo-or-brand-color.md) |
 | P1 | [Removing a saved line photo leaves the file in R2](removing-a-saved-line-photo-leaves-the-file-in-r2.md) |
 | P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
+| P1 | [Revising a sent quote does not carry over its tax source or deposit](revising-a-sent-quote-drops-tax-source-and-deposit.md) |
 | P2 | [A full page load can crash hydration and leave the previous page on screen](full-page-load-hydration-crash-leaves-the-previous-page-on-screen.md) |
 | P2 | [Issued invoices cannot be corrected from the browser](issued-invoices-cannot-be-corrected-from-the-browser.md) |
 | P2 | [The repo's migration files cannot rebuild the live database (351 ledger rows differ)](two-migration-ledger-rows-do-not-match-the-repo.md) |
+| P2 | [38 pgTAP files fail on a rebuild because they no longer match live](stale-database-tests-found-by-the-baseline-proof.md) |
 | P2 | [Resolving a chat identity does not stop the next conflict](resolving-a-chat-identity-does-not-stop-the-next-conflict.md) |
 | P2 | [`EntityType` covers only clients and properties](entitytype-covers-only-clients-and-properties.md) |
 | P2 | [Active member's sign-in email not visible, recovery path unclear](active-member-email-not-visible-and-recovery-path-unclear.md) |
@@ -54,7 +56,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [`/get-started` page weight](get-started-page-weight.md) |
 | P3 | [Client photos are one request each](client-photos-are-one-request-each.md) |
 | P3 | [ClientPicker and CatalogItemPicker can show a stale label after an external value revert](clientpicker-and-catalogitempicker-can-show-a-stale-label-after-an-external-value-revert.md) |
-| P3 | [Database test files under `supabase test db`](database-test-files-under-supabase-test-db.md) |
 | P3 | [Eleven older trigger functions in `private` are executable by everyone](eleven-older-trigger-functions-in-private-are-executable-by-everyone.md) |
 | P3 | [Missing business setup does not yet block the action that needs it](missing-business-setup-does-not-yet-block-the-action-that-needs-it.md) |
 | P3 | [Guide contractors to set up a sending email when it is missing](email-sender-setup-flow.md) |

@@ -167,6 +167,6 @@ insert into tap_results (line) select throws_ok(
 );
 
 reset role;
-select line from tap_results where line not like 'ok %' order by id;
+select line from tap_results order by id;
 select * from finish();
 rollback;

@@ -583,6 +583,6 @@ set local role postgres;
 
 select * from finish();
 
-select line from tap_results where line like 'not ok%' order by id;
+select line from tap_results order by id;
 
 rollback;

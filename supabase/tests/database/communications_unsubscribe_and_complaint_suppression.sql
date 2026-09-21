@@ -19,10 +19,10 @@ insert into public.clients (id, organization_id, display_name)
 values ('a1000000-0000-4000-8000-000000000002',
         'a1000000-0000-4000-8000-000000000001', 'R1 Test Client');
 
-insert into public.client_contact_methods (id, organization_id, client_id, kind, value, normalized_value)
+insert into public.client_contact_methods (id, organization_id, client_id, kind, value)
 values ('a1000000-0000-4000-8000-000000000003',
         'a1000000-0000-4000-8000-000000000001',
-        'a1000000-0000-4000-8000-000000000002', 'email', 'shared@r1.test', 'shared@r1.test');
+        'a1000000-0000-4000-8000-000000000002', 'email', 'shared@r1.test');
 
 -- Seed a delivery intent + one provider callback for it.
 create function pg_temp.seed_proc(p_email text, p_event text, p_pre_outcome text)
@@ -145,9 +145,9 @@ create function pg_temp.seed_claim(p_email text, p_reason text, p_class text)
 returns void language plpgsql as $$
 declare v_method uuid; v_intent uuid;
 begin
-  insert into public.client_contact_methods (organization_id, client_id, kind, value, normalized_value)
+  insert into public.client_contact_methods (organization_id, client_id, kind, value)
   values ('a1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000002',
-    'email', p_email, p_email)
+    'email', p_email)
   returning id into v_method;
 
   insert into public.communication_delivery_intents (

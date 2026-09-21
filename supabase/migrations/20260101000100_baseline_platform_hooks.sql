@@ -5,8 +5,9 @@
 --    on the short-lived channel they were granted). Realtime creates `realtime.messages` itself, so the
 --    Realtime service must already have started on the target database when this runs.
 -- 3. Vault placeholders. Names and descriptions only, never values: every environment sets its own real
---    URL and secret directly in Vault. Until it does, the workers' wake functions see a value that is not a
---    URL and stay silent, and the scheduled jobs (part 4) stay off.
+--    URL and secret directly in Vault. Until it does, the scheduled jobs (part 4) stay off. A placeholder is
+--    not a URL, and pg_net raises on one, so the wake calls made on the send path (for example, queuing an
+--    email) fail with "invalid URL" until the real values are set. Set them before using those paths.
 
 drop trigger if exists on_auth_user_created_create_profile on auth.users;
 create trigger on_auth_user_created_create_profile

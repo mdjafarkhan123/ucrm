@@ -63,6 +63,11 @@ insert into public.organizations (id, name, slug, lifecycle_status) values
   ('d9100000-0000-0000-0000-000000000001', 'Deposit 6B Org A', 'deposit-6b-org-a', 'active'),
   ('d9100000-0000-0000-0000-000000000002', 'Deposit 6B Org B', 'deposit-6b-org-b', 'active');
 
+-- Live requires a real tax answer before a quote can be sent (publish_quote refuses 'not_configured').
+insert into public.organization_settings (organization_id, tax_default_source)
+select id, 'no_tax' from public.organizations
+on conflict (organization_id) do update set tax_default_source = 'no_tax';
+
 insert into public.organization_members (organization_id, user_id, role) values
   ('d9100000-0000-0000-0000-000000000001', 'd9000000-0000-0000-0000-000000000001', 'owner'),
   ('d9100000-0000-0000-0000-000000000001', 'd9000000-0000-0000-0000-000000000002', 'office'),

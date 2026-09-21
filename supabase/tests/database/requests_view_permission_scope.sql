@@ -91,7 +91,7 @@ insert into tap_results (line) select is(
   'assigned', 'field resolves requests.view to assigned scope'
 );
 
-select line from tap_results where line not like 'ok%' order by id;
+select line from tap_results order by id;
 
 select * from finish();
 rollback;

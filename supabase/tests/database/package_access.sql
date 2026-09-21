@@ -32,10 +32,10 @@ values
   ('10000000-0000-0000-0000-000000000012', 'core.team', 'on', '2026-01-01T00:00:00Z');
 
 insert into public.organization_limit_overrides
-  (organization_id, limit_key, limit_value, is_unlimited, starts_at)
+  (organization_id, limit_key, limit_state, limit_value, is_unlimited, starts_at)
 values
-  ('10000000-0000-0000-0000-000000000011', 'employee_seats', 1, false, '2026-01-01T00:00:00Z'),
-  ('10000000-0000-0000-0000-000000000012', 'employee_seats', null, true, '2026-01-01T00:00:00Z');
+  ('10000000-0000-0000-0000-000000000011', 'employee_seats', 'numeric', 1, false, '2026-01-01T00:00:00Z'),
+  ('10000000-0000-0000-0000-000000000012', 'employee_seats', 'unlimited', null, true, '2026-01-01T00:00:00Z');
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000011', true);

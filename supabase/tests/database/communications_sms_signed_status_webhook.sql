@@ -20,10 +20,10 @@ insert into public.clients (id, organization_id, display_name)
 values ('b5000000-0000-4000-8000-000000000002',
         'b5000000-0000-4000-8000-000000000001', 'Stage 5A Test Client');
 
-insert into public.client_contact_methods (id, organization_id, client_id, kind, value, normalized_value)
+insert into public.client_contact_methods (id, organization_id, client_id, kind, value)
 values ('b5000000-0000-4000-8000-000000000003',
         'b5000000-0000-4000-8000-000000000001',
-        'b5000000-0000-4000-8000-000000000002', 'phone', '+15005550006', '+15005550006');
+        'b5000000-0000-4000-8000-000000000002', 'phone', '+15005550006');
 
 -- Seed an SMS delivery intent (submitted, with a MessageSid) plus one twilio status callback for it. An
 -- optional pre_outcome simulates an already-projected terminal state so protection/conflict is deterministic.

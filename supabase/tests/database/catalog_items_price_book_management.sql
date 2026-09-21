@@ -111,7 +111,7 @@ select is(
 );
 select throws_ok(
   $q$select public.update_catalog_item('89000000-0000-0000-0000-000000000001', '8d000000-0000-0000-0000-000000000001', 1, 'product', 'Fixture Item One', null, null, false, 6000, 3000, true)$q$,
-  '40001', null, 'a stale revision is refused instead of overwriting someone else'
+  'P0409', null, 'a stale revision is refused instead of overwriting someone else'
 );
 select throws_ok(
   $q$select public.update_catalog_item('89000000-0000-0000-0000-000000000001', '8d000000-0000-0000-0000-000000000001', 2, 'product', 'FIXTURE ITEM TWO', null, null, false, 5500, 2600, true)$q$,

@@ -20,7 +20,9 @@ from the live database, then prove it by rebuilding and diffing.
 - **Depends on:** Part 1. **Gate:** files only; nothing applied to the live database.
 
 ## Part 3 — Prove it
-- **State:** Next — packet `parts/part-3-prove.md`.
+- **State:** Done 2026-09-21 — rebuild on a throwaway stack: diff = accepted noise only; every table, column, function and grant fingerprint
+  matches live; 124 of 162 pgTAP files pass (4,747 assertions), including the three named. The other 38 are stale tests or live-behavior questions,
+  recorded in `Memory/deferred/stale-database-tests-found-by-the-baseline-proof.md`; one real live bug found (revise-quote note). Nothing applied to live.
 - **Outcome:** a fresh rebuild from the baseline, in a throwaway container, gives an empty `supabase db diff --linked`, and the
   pgTAP files (`tenant_isolation`, `quote_proposal_draft_commands`, `automation_6d2`) pass on it.
 - **Depends on:** Part 2. **Gate:** diff shows only the accepted noise list (packet) and passing tests, recorded.
