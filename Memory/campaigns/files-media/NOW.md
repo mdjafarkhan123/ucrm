@@ -2,14 +2,12 @@
 
 **Goal:** One contractor File Manager backed by private R2, with one File linked to every CRM use.
 
-**Active part:** Part 4 is built in full. Its last slice — reuse — is `20260921220000` (`attach_file_to_record`
-plus `list_files`'s `on_record` / `attachable` arguments), `POST /api/files/links`, `FilePicker.svelte` and
-`FileAttachToRecordDialog.svelte` wired into the details panel's "Attach to…". Nothing in Part 4 is committed
-yet.
+**Active part:** Part 4 is complete and committed (`1a84fe1`). Part 5, operational-record adoption, is next
+and dependency-ready.
 
-**Exact next action:** Commit Part 4 (read slice, write slice, reuse slice) as one change, then open Part 5,
-whose first job is a record editor that mounts `FilePicker` — that is also where the picker gets its browser
-pass and where a record-origin upload should gain its link on publish.
+**Exact next action:** Start Part 5 with one record — Client — mounting `FilePicker` in its files area so the
+CRM reads and writes the catalog there instead of the old `attachments` path. That is also where the picker
+gets its browser pass, and where a record-origin upload should gain its link when the worker publishes it.
 
 **Blockers:**
 
