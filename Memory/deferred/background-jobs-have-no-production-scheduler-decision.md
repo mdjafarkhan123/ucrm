@@ -17,3 +17,7 @@ worker container, where it is easier to watch and to deploy. One job is already 
 `supabase/migrations/_deferred/20260911120500_schedule_member_identity_cleanup_worker.sql`, held out of the
 migrations folder so the CLI cannot apply it. Until it is scheduled, identity cleanup after a permanent
 removal runs on demand (`POST /api/internal/team-members/identity-cleanup/worker`).
+
+Also known (2026-09-21): the automation one-minute sweep (`automation-worker-wake-one-minute`) has been switched on
+in the shared development database since 2026-08-31 — the migration installs it off. Its Vault target URL and
+secret must be set deliberately per environment; production must not inherit this by accident.

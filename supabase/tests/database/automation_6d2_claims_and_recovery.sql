@@ -389,10 +389,12 @@ select is(
   2,
   'both queues nudge the worker the moment due work lands'
 );
+-- Whether the sweep is switched on is a per-environment setting (it has been on in the shared development
+-- database since 2026-08-31), so this asserts only that the migration installed it, never its active flag.
 select is(
-  (select active from cron.job where jobname = 'automation-worker-wake-one-minute'),
-  false,
-  'the minute sweep is installed but not running until deployment configuration is in place'
+  (select count(*)::integer from cron.job where jobname = 'automation-worker-wake-one-minute'),
+  1,
+  'the minute sweep is installed'
 );
 
 select * from finish();
