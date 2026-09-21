@@ -56,8 +56,8 @@ icons, labels, or accessible descriptions.
 
 | Token | Light value | Dark value | Use |
 | --- | --- | --- | --- |
-| `--color-interactive` | `var(--color-base-green--600)` | `#8acc33` | Default interactive and CTA color |
-| `--color-interactive--hover` | `var(--color-base-green--700)` | `#a1d65c` | Hover state of the default interactive color |
+| `--color-interactive` | `var(--color-base-green--700)` | `#8acc33` | Default interactive and CTA color |
+| `--color-interactive--hover` | `var(--color-base-green--800)` | `#a1d65c` | Hover state of the default interactive color |
 | `--color-interactive--subtle` | `var(--color-base-blue--800)` | `var(--color-base-blue--200)` | Less prominent actions and navigation icons |
 | `--color-interactive--subtle--hover` | `var(--color-base-blue--900)` | `var(--color-base-blue--100)` | Hover state for subtle interaction |
 | `--color-interactive--background` | `var(--color-base-taupe--300)` | `var(--color-base-blue--700)` | Interactive background separated from its surface |

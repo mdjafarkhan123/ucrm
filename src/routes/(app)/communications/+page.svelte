@@ -124,6 +124,17 @@
 	);
 	const unreadGroupCount = $derived(groups.filter((group) => group.unreadCount > 0).length);
 
+	// The conversation list is one Tab stop, not one per row -- with hundreds of conversations a keyboard user
+	// would otherwise Tab through every one to reach the timeline. The stop is the row last focused, else the
+	// open conversation, else the first row; arrow keys move between the rest.
+	let focusedRowKey = $state<string | null>(null);
+	const rowTabStopKey = $derived.by(() => {
+		for (const key of [focusedRowKey, selectedGroup?.key]) {
+			if (key && visibleGroups.some((group) => group.key === key)) return key;
+		}
+		return visibleGroups[0]?.key ?? null;
+	});
+
 	// HighLevel opens an unread conversation scrolled to what needs attention rather than always the
 	// newest item overall -- the smallest version of that here is: default selection favors the first
 	// conversation with an unread inbound message, falling back to the most recent conversation once the
@@ -421,6 +432,9 @@
 	let anchoredKey: string | null = null;
 	let anchoredLatestId: string | null = null;
 	let stickToBottom = $state(true);
+	// Read out by screen readers when a customer's message arrives in the conversation that is open. Only the
+	// open conversation is announced, so a busy inbox never talks over the person while they read or type.
+	let newMessageAnnouncement = $state('');
 
 	// The composer owns the send -- its payload, its retry, its idempotency key -- and this only owns where
 	// the in-flight bubble is drawn. It is stored against the conversation it was sent from, not against
@@ -449,7 +463,11 @@
 		if (!timelineEl) return;
 		stickToBottom = true;
 		showJumpToLatest = false;
-		timelineEl.scrollTo({ top: timelineEl.scrollHeight, behavior: 'smooth' });
+		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		timelineEl.scrollTo({
+			top: timelineEl.scrollHeight,
+			behavior: reduceMotion ? 'auto' : 'smooth'
+		});
 	}
 
 	$effect(() => {
@@ -481,6 +499,10 @@
 			// to respect a reader who has deliberately scrolled back through history.
 			const ownSend = visiblePendingSend?.id === latestId;
 			anchoredLatestId = latestId;
+			const latest = group.messages.at(-1);
+			if (latest && latest.id === latestId && latest.direction === 'inbound') {
+				newMessageAnnouncement = `New message from ${group.name}, ${formatWhen(latest.created_at)}`;
+			}
 			if (ownSend) {
 				stickToBottom = true;
 			}
@@ -494,7 +516,7 @@
 	// each row button (an interactive element) rather than the `role="list"` container, which is not
 	// interactive and must not carry a key handler.
 	function handleRowKeydown(event: KeyboardEvent) {
-		if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+		if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
 		const list = (event.currentTarget as HTMLElement).closest('.communications__rows');
 		if (!list) return;
 		const rows = Array.from(list.querySelectorAll<HTMLButtonElement>('.communications__row'));
@@ -502,9 +524,13 @@
 		if (currentIndex === -1) return;
 		event.preventDefault();
 		const nextIndex =
-			event.key === 'ArrowDown'
-				? Math.min(currentIndex + 1, rows.length - 1)
-				: Math.max(currentIndex - 1, 0);
+			event.key === 'Home'
+				? 0
+				: event.key === 'End'
+					? rows.length - 1
+					: event.key === 'ArrowDown'
+						? Math.min(currentIndex + 1, rows.length - 1)
+						: Math.max(currentIndex - 1, 0);
 		rows[nextIndex]?.focus();
 	}
 
@@ -605,6 +631,8 @@
 <PageContainer variant="fill" class="communications">
 	<!-- No page header here on purpose: GHL's Conversations screen has none, and the inbox needs the
 	     vertical space. Jafar removed it 2026-08-25. -->
+	<h1 class="sr-only">Communications</h1>
+	<p class="sr-only" role="status" aria-live="polite">{newMessageAnnouncement}</p>
 	{#if inboxQuery.isPending}
 		<div class="communications__loading">
 			<LoadingSkeleton variant="card" label="Loading inbox" /><LoadingSkeleton
@@ -627,7 +655,7 @@
 				<div class="communications__list-header">
 					<div class="communications__inbox-identity">
 						{#if inboxQuery.data?.can_view_team}
-							<div class="communications__inbox-switcher" aria-label="Inbox view">
+							<div class="communications__inbox-switcher" role="group" aria-label="Inbox view">
 								<button
 									type="button"
 									class:communications__inbox-switcher-button--active={view === 'team'}
@@ -679,7 +707,7 @@
 						<span aria-hidden="true">{@html searchIcon}</span>
 					</button>
 				</form>
-				<div class="communications__list-tabs" aria-label="Conversation status">
+				<div class="communications__list-tabs" role="group" aria-label="Conversation status">
 					<button
 						type="button"
 						class:communications__list-tab--active={listTab === 'unread'}
@@ -725,6 +753,8 @@
 									class="communications__row"
 									type="button"
 									aria-current={selectedGroup?.key === group.key ? 'true' : undefined}
+									tabindex={rowTabStopKey === group.key ? 0 : -1}
+									onfocus={() => (focusedRowKey = group.key)}
 									onclick={() => selectGroup(group)}
 									onkeydown={handleRowKeydown}
 								>
@@ -825,8 +855,13 @@
 							{/if}
 						</div>
 					</header>
+					<!-- A scrolling area has to be reachable by keyboard so the arrow and Page keys can scroll it. -->
+					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 					<div
 						class="communications__timeline"
+						role="region"
+						tabindex="0"
+						aria-label={`Messages with ${group.name}`}
 						bind:this={timelineEl}
 						onscroll={handleTimelineScroll}
 					>
@@ -1642,6 +1677,13 @@
 	.communications__row--selected {
 		background: var(--color-surface--active);
 	}
+	/* Secondary text on the highlighted row falls below 4.5:1 in dark mode, so it steps up to full text colour. */
+	.communications__row:hover .communications__row-preview,
+	.communications__row:hover time,
+	.communications__row--selected .communications__row-preview,
+	.communications__row.communications__row--selected time {
+		color: var(--color-text);
+	}
 	.communications__row--unread {
 		background: var(--color-surface--background--subtle);
 	}
@@ -1745,6 +1787,10 @@
 	.communications__info-icon :global(svg) {
 		width: 16px;
 		height: 16px;
+	}
+	.communications__timeline:focus-visible {
+		outline: none;
+		box-shadow: inset 0 0 0 2px var(--color-focus);
 	}
 	.communications__timeline {
 		position: relative;

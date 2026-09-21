@@ -9,7 +9,9 @@
 	import EmailTemplatePickerButton from '$lib/components/communications/EmailTemplatePickerButton.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import type { CommunicationEmailTemplateListItem } from '$lib/communications/email-templates';
+	import { tick } from 'svelte';
 	import { Dialog as DialogPrimitive } from 'bits-ui';
+	import { browser } from '$app/environment';
 	import sendIcon from '@tabler/icons/outline/send-2.svg?raw';
 	import minusIcon from '@tabler/icons/outline/minus.svg?raw';
 	import maximizeIcon from '@tabler/icons/outline/arrows-maximize.svg?raw';
@@ -276,7 +278,7 @@
 
 	function submit(event?: SubmitEvent) {
 		event?.preventDefault();
-		if (sending || uploading) return;
+		if (sending || uploading || smsStopped) return;
 
 		if (channel === 'website_chat') {
 			const text = body.trim();
@@ -375,11 +377,17 @@
 		}
 	}
 
-	// Chat sends on Enter (Shift+Enter for a newline), matching the visitor's own widget. Email/SMS require
-	// the Send button -- Enter stays a newline there.
+	// Ctrl/Cmd+Enter sends on every channel, the way Gmail, Front and Help Scout do -- a modifier chord, so
+	// it never fires by accident while typing. Chat also sends on plain Enter (Shift+Enter for a newline),
+	// matching the visitor's own widget; email/SMS keep plain Enter as a newline. Enter that only confirms an
+	// IME composition (Japanese, Chinese, Korean input) is not a send.
+	const sendChord =
+		browser && /Mac|iPhone|iPad/.test(navigator.platform) ? '\u2318 Enter' : 'Ctrl+Enter';
+
 	function handleKeydown(event: KeyboardEvent) {
-		if (channel !== 'website_chat') return;
-		if (event.key !== 'Enter' || event.shiftKey) return;
+		if (event.key !== 'Enter' || event.isComposing) return;
+		const chord = event.ctrlKey || event.metaKey;
+		if (!chord && (channel !== 'website_chat' || event.shiftKey)) return;
 		event.preventDefault();
 		submit();
 	}
@@ -388,9 +396,14 @@
 	// subject/body state keeps typing when it pops out or back in.
 	let popped = $state(false);
 
+	let collapsedInputEl = $state<HTMLButtonElement | null>(null);
+
+	// The button that was just used is removed from the page when the composer changes shape, which would
+	// drop keyboard focus to the top of the document -- so focus is handed to whatever now stands in its place.
 	function collapse() {
 		expanded = false;
 		popped = false;
+		void tick().then(() => collapsedInputEl?.focus());
 	}
 
 	function expand() {
@@ -398,8 +411,10 @@
 		requestAnimationFrame(() => bodyEl?.focus());
 	}
 
-	function togglePopped() {
-		popped = !popped;
+	function setPopped(next: boolean) {
+		popped = next;
+		// Entering full screen is focused by the dialog's own open handler below, once its content exists.
+		if (!next) void tick().then(() => bodyEl?.focus());
 	}
 </script>
 
@@ -409,7 +424,8 @@
 		type="submit"
 		class="conversation-composer__send"
 		aria-label="Send"
-		title="Send"
+		title={channel === 'website_chat' ? 'Send' : `Send (${sendChord})`}
+		aria-keyshortcuts={channel === 'website_chat' ? undefined : 'Control+Enter Meta+Enter'}
 		aria-busy={sending}
 		disabled={sending || uploading || smsStopped}
 	>
@@ -443,7 +459,7 @@
 				class="conversation-composer__collapse"
 				aria-label={popped ? 'Exit full screen' : 'Expand to full screen'}
 				title={popped ? 'Exit full screen' : 'Expand to full screen'}
-				onclick={togglePopped}
+				onclick={() => setPopped(!popped)}
 			>
 				{@html popped ? minimizeIcon : maximizeIcon}
 			</button>
@@ -478,9 +494,15 @@
 					maxlength={998}
 					aria-required="true"
 					aria-invalid={Boolean(fieldErrors.subject)}
+					aria-describedby={fieldErrors.subject ? 'conversation-composer-subject-error' : undefined}
+					onkeydown={handleKeydown}
 				/>
 			</div>
-			{#if fieldErrors.subject}<p class="conversation-composer__field-error" role="alert">
+			{#if fieldErrors.subject}<p
+					id="conversation-composer-subject-error"
+					class="conversation-composer__field-error"
+					role="alert"
+				>
 					{fieldErrors.subject}
 				</p>{/if}
 		{/if}
@@ -498,9 +520,15 @@
 				rows={channel === 'website_chat' ? 3 : 5}
 				aria-required="true"
 				aria-invalid={Boolean(fieldErrors.body)}
+				aria-describedby={fieldErrors.body ? 'conversation-composer-body-error' : undefined}
+				aria-keyshortcuts={channel === 'website_chat' ? 'Enter' : 'Control+Enter Meta+Enter'}
 				onkeydown={handleKeydown}></textarea>
 		</div>
-		{#if fieldErrors.body}<p class="conversation-composer__field-error" role="alert">
+		{#if fieldErrors.body}<p
+				id="conversation-composer-body-error"
+				class="conversation-composer__field-error"
+				role="alert"
+			>
 				{fieldErrors.body}
 			</p>{/if}
 		{#if smsStopped}
@@ -599,6 +627,7 @@
 			<ComposerChannelMenu {channel} {channels} onSelect={onChannelChange} />
 			<button
 				type="button"
+				bind:this={collapsedInputEl}
 				class="conversation-composer__collapsed-input"
 				aria-expanded="false"
 				aria-controls="conversation-composer-expanded"
@@ -617,13 +646,18 @@
 		<DialogPrimitive.Root
 			open
 			onOpenChange={(next) => {
-				if (!next) popped = false;
+				if (!next) setPopped(false);
 			}}
 		>
 			<DialogPrimitive.Portal>
 				<DialogPrimitive.Overlay class="conversation-composer__popout-overlay" />
 				<DialogPrimitive.Content
 					class="conversation-composer__popout-content"
+					onOpenAutoFocus={(event) => {
+						event.preventDefault();
+						bodyEl?.focus();
+					}}
+					onCloseAutoFocus={(event) => event.preventDefault()}
 					aria-label={(channel === 'email'
 						? 'Email'
 						: channel === 'sms'

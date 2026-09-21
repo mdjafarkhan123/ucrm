@@ -217,8 +217,10 @@
 	--color-navy--dark: var(--color-base-lightBlue--800);
 	--color-base-white: var(--color-white);
 	--color-base-black: var(--color-black);
-	--color-interactive: var(--color-base-green--600);
-	--color-interactive--hover: var(--color-base-green--700);
+	/* One step darker than brand green: 600 on white measures 3.6:1, under the 4.5:1 minimum for text and for
+	   white button labels. 700 measures about 5.7:1. */
+	--color-interactive: var(--color-base-green--700);
+	--color-interactive--hover: var(--color-base-green--800);
 	--color-interactive--subtle: var(--color-base-blue--800);
 	--color-interactive--subtle--hover: var(--color-base-blue--900);
 	--color-interactive--background: var(--color-base-taupe--300);
