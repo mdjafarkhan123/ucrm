@@ -1,0 +1,567 @@
+-- Baseline, part 3 of 4: the starting rows a new database needs before anyone signs in.
+--
+-- Two kinds of rows are here:
+--   * Fixed by the code: permissions, role defaults, feature names, the access-event shapes. The app reads these by key.
+--   * Editable starting points: the Starter/Growth/Elite packages, the email and marketing templates, and the
+--     email sending limits. A new organization starts on `starter` (a foreign key), so at least that package
+--     has to exist. The owner can rename, change, retire or add packages and templates in the owner console
+--     at any time; these rows only give a fresh database something to run on.
+--
+-- Deliberately NOT here: SMS retail prices and the owner settings row (each environment sets its own),
+-- retired package versions, unpublished drafts, edit history from testing, and anything that belongs to a
+-- company. Copied from the live database on 2026-09-21.
+
+-- Fixed by the code -----------------------------------------------------------------------------------
+
+insert into public.features (description, feature_key)
+values
+  ('Workflow automations', 'automation.workflows'),
+  ('Automation recipes and enrollments', 'automations'),
+  ('Shared customer conversations and approved communication channels', 'communications'),
+  ('Unified inbox', 'communications.inbox'),
+  ('Customers and properties', 'core.customers_properties'),
+  ('Dashboard and workspace overview', 'core.dashboard'),
+  ('Invoices and payments', 'core.invoices_payments'),
+  ('Jobs and work records', 'core.jobs'),
+  ('Quotes and proposals', 'core.quotes'),
+  ('Requests and assessments', 'core.requests_assessments'),
+  ('Visits and schedule', 'core.schedule'),
+  ('Team and employee management', 'core.team'),
+  ('Advanced dispatch and routing', 'dispatch.advanced'),
+  ('Reputation and growth tools', 'growth.reputation'),
+  ('API and integrations', 'integrations.api'),
+  ('Marketing email campaigns', 'marketing'),
+  ('Customer-facing portal', 'portal.client'),
+  ('Advanced reporting', 'reporting.advanced'),
+  ('Sales pipeline and opportunities', 'sales.pipeline')
+on conflict (feature_key) do nothing;
+
+insert into public.permissions (description, key, scope_model)
+values
+  ('Activate, pause, resume, and archive automation recipes', 'automations.activate', 'none'),
+  ('Enroll, pause, resume, skip, and stop records in automations', 'automations.control_enrollment', 'none'),
+  ('Create and edit automation recipe drafts', 'automations.manage', 'none'),
+  ('View automation recipes and history', 'automations.view', 'none'),
+  ('Add, change, and archive price list items', 'catalog.edit', 'none'),
+  ('See the reusable product and service price list', 'catalog.view', 'none'),
+  ('Forward an inbound message to an external recipient', 'conversations.forward', 'none'),
+  ('Assign and follow conversations', 'conversations.manage_assignment', 'none'),
+  ('Manage communications channel connections', 'conversations.manage_connections', 'none'),
+  ('Permanently delete conversations with an audit record', 'conversations.permanently_delete', 'none'),
+  ('Send customer messages', 'conversations.send', 'none'),
+  ('See conversations assigned to, followed by, or mentioning the member', 'conversations.view_assigned', 'none'),
+  ('See all organization conversations', 'conversations.view_team', 'none'),
+  ('Archive and restore a client', 'customers.archive', 'none'),
+  ('Add a new client', 'customers.create', 'none'),
+  ('Move a client to Recently Deleted', 'customers.delete', 'none'),
+  ('Change client details, contacts, and communication preferences', 'customers.edit', 'none'),
+  ('Bulk import and export client lists', 'customers.import_export', 'none'),
+  ('Merge two clients into one', 'customers.merge', 'none'),
+  ('See clients and their properties', 'customers.view', 'none'),
+  ('See client lifetime revenue and balance', 'customers.view_financials', 'none'),
+  ('Change or remove anyone''s job expenses', 'expenses.manage_team', 'none'),
+  ('Record an expense on a job and change their own', 'expenses.record', 'none'),
+  ('Change or remove anyone''s job and visit records', 'field_records.manage_team', 'none'),
+  ('Add notes, photos and files to a job or visit, and change their own', 'field_records.record', 'none'),
+  ('Write off an uncollectable balance and reverse that write-off', 'invoices.bad_debt', 'none'),
+  ('Reverse, move or refund a recorded payment', 'invoices.correct_payment', 'none'),
+  ('Create an invoice', 'invoices.create', 'none'),
+  ('Delete a draft invoice', 'invoices.delete', 'none'),
+  ('Change an invoice''s details, lines and terms', 'invoices.edit', 'none'),
+  ('Record a payment received outside the app', 'invoices.record_payment', 'none'),
+  ('Issue an invoice by sending it or marking it sent', 'invoices.send', 'none'),
+  ('See invoices and their contents', 'invoices.view', 'none'),
+  ('See invoice amounts, totals and balances', 'invoices.view_price', 'none'),
+  ('Void an invalid or cancelled invoice', 'invoices.void', 'none'),
+  ('Finish, close and reopen a job', 'jobs.close', 'none'),
+  ('Mark a job''s visits complete or incomplete', 'jobs.complete', 'none'),
+  ('Start a job, including from an approved quote', 'jobs.create', 'none'),
+  ('Change a job''s details, scope and billing', 'jobs.edit', 'none'),
+  ('Schedule a job''s visits: add, move, reschedule and remove them', 'jobs.schedule', 'none'),
+  ('See jobs and their contents', 'jobs.view', 'assigned_or_all'),
+  ('See internal cost and profit on a job', 'jobs.view_cost', 'none'),
+  ('See job prices, totals and billing', 'jobs.view_price', 'none'),
+  ('Create and edit marketing campaign drafts', 'marketing.draft', 'none'),
+  ('Launch marketing campaigns', 'marketing.launch', 'none'),
+  ('View marketing campaigns and history', 'marketing.view', 'none'),
+  ('Create and change opportunities on the sales pipeline', 'pipeline.edit', 'none'),
+  ('See the sales pipeline and its opportunities', 'pipeline.view', 'none'),
+  ('See estimated values and totals on the sales pipeline', 'pipeline.view_value', 'none'),
+  ('Add, edit, and archive a property', 'property.manage', 'none'),
+  ('Turn an approved quote into a job', 'quotes.convert', 'none'),
+  ('Start a quote, including from a request', 'quotes.create', 'none'),
+  ('Change a draft quote', 'quotes.edit', 'none'),
+  ('Record an approval or decline the customer gave off the app', 'quotes.record_decision', 'none'),
+  ('Record and reverse an offline deposit payment on a quote', 'quotes.record_deposit', 'none'),
+  ('Publish a quote version and put it in front of the customer', 'quotes.send', 'none'),
+  ('See quotes and their contents', 'quotes.view', 'none'),
+  ('See internal cost and profit on a quote', 'quotes.view_cost', 'none'),
+  ('See quote prices and totals', 'quotes.view_price', 'none'),
+  ('See requests', 'requests.view', 'assigned_or_all'),
+  ('Change business profile, branding, and business hours', 'settings.business.edit', 'none'),
+  ('See business profile, branding, and business hours', 'settings.business.view', 'none'),
+  ('Build, edit and archive the reusable checklists in Settings', 'settings.checklists.manage', 'none'),
+  ('Create, edit, publish, and archive request and booking forms', 'settings.forms.manage', 'none'),
+  ('Manage payment terms and invoice defaults', 'settings.invoices.manage', 'none'),
+  ('Connect Stripe and manage online payment settings', 'settings.payments.manage', 'none'),
+  ('Add, edit, and permanently delete shared Price Book items in Settings', 'settings.price_book.manage', 'none'),
+  ('See and manage Quote Settings: terms, representative, target margin, and signature policy', 'settings.quotes.manage', 'none'),
+  ('See and manage saved tax rates and the Business default tax', 'settings.taxes.manage', 'none'),
+  ('Manage team members and their roles', 'team.manage', 'none'),
+  ('Record and change their own hours on a job', 'time.track_own', 'none'),
+  ('Record and change anyone''s hours on a job', 'time.track_team', 'none')
+on conflict (key) do nothing;
+
+insert into public.role_permissions (access_scope, permission_key, role)
+values
+  ('all', 'automations.activate', 'admin'),
+  ('all', 'automations.control_enrollment', 'admin'),
+  ('all', 'automations.manage', 'admin'),
+  ('all', 'automations.view', 'admin'),
+  ('all', 'catalog.edit', 'admin'),
+  ('all', 'catalog.view', 'admin'),
+  ('all', 'conversations.forward', 'admin'),
+  ('all', 'conversations.manage_assignment', 'admin'),
+  ('all', 'conversations.manage_connections', 'admin'),
+  ('all', 'conversations.send', 'admin'),
+  ('all', 'conversations.view_team', 'admin'),
+  ('all', 'customers.archive', 'admin'),
+  ('all', 'customers.create', 'admin'),
+  ('all', 'customers.delete', 'admin'),
+  ('all', 'customers.edit', 'admin'),
+  ('all', 'customers.import_export', 'admin'),
+  ('all', 'customers.merge', 'admin'),
+  ('all', 'customers.view', 'admin'),
+  ('all', 'customers.view_financials', 'admin'),
+  ('all', 'expenses.manage_team', 'admin'),
+  ('all', 'expenses.record', 'admin'),
+  ('all', 'field_records.manage_team', 'admin'),
+  ('all', 'field_records.record', 'admin'),
+  ('all', 'invoices.bad_debt', 'admin'),
+  ('all', 'invoices.correct_payment', 'admin'),
+  ('all', 'invoices.create', 'admin'),
+  ('all', 'invoices.delete', 'admin'),
+  ('all', 'invoices.edit', 'admin'),
+  ('all', 'invoices.record_payment', 'admin'),
+  ('all', 'invoices.send', 'admin'),
+  ('all', 'invoices.view', 'admin'),
+  ('all', 'invoices.view_price', 'admin'),
+  ('all', 'invoices.void', 'admin'),
+  ('all', 'jobs.close', 'admin'),
+  ('all', 'jobs.complete', 'admin'),
+  ('all', 'jobs.create', 'admin'),
+  ('all', 'jobs.edit', 'admin'),
+  ('all', 'jobs.schedule', 'admin'),
+  ('all', 'jobs.view', 'admin'),
+  ('all', 'jobs.view_cost', 'admin'),
+  ('all', 'jobs.view_price', 'admin'),
+  ('all', 'marketing.draft', 'admin'),
+  ('all', 'marketing.launch', 'admin'),
+  ('all', 'marketing.view', 'admin'),
+  ('all', 'pipeline.edit', 'admin'),
+  ('all', 'pipeline.view', 'admin'),
+  ('all', 'pipeline.view_value', 'admin'),
+  ('all', 'property.manage', 'admin'),
+  ('all', 'quotes.convert', 'admin'),
+  ('all', 'quotes.create', 'admin'),
+  ('all', 'quotes.edit', 'admin'),
+  ('all', 'quotes.record_decision', 'admin'),
+  ('all', 'quotes.record_deposit', 'admin'),
+  ('all', 'quotes.send', 'admin'),
+  ('all', 'quotes.view', 'admin'),
+  ('all', 'quotes.view_cost', 'admin'),
+  ('all', 'quotes.view_price', 'admin'),
+  ('all', 'requests.view', 'admin'),
+  ('all', 'settings.business.edit', 'admin'),
+  ('all', 'settings.business.view', 'admin'),
+  ('all', 'settings.checklists.manage', 'admin'),
+  ('all', 'settings.forms.manage', 'admin'),
+  ('all', 'settings.invoices.manage', 'admin'),
+  ('all', 'settings.payments.manage', 'admin'),
+  ('all', 'settings.price_book.manage', 'admin'),
+  ('all', 'settings.quotes.manage', 'admin'),
+  ('all', 'settings.taxes.manage', 'admin'),
+  ('all', 'team.manage', 'admin'),
+  ('all', 'time.track_own', 'admin'),
+  ('all', 'time.track_team', 'admin'),
+  ('all', 'expenses.record', 'field'),
+  ('all', 'field_records.record', 'field'),
+  ('all', 'jobs.complete', 'field'),
+  ('assigned', 'jobs.view', 'field'),
+  ('assigned', 'requests.view', 'field'),
+  ('all', 'settings.business.view', 'field'),
+  ('all', 'time.track_own', 'field'),
+  ('all', 'catalog.view', 'finance'),
+  ('all', 'customers.view', 'finance'),
+  ('all', 'customers.view_financials', 'finance'),
+  ('all', 'expenses.manage_team', 'finance'),
+  ('all', 'expenses.record', 'finance'),
+  ('all', 'field_records.manage_team', 'finance'),
+  ('all', 'field_records.record', 'finance'),
+  ('all', 'jobs.view', 'finance'),
+  ('all', 'jobs.view_cost', 'finance'),
+  ('all', 'jobs.view_price', 'finance'),
+  ('all', 'quotes.record_deposit', 'finance'),
+  ('all', 'quotes.view', 'finance'),
+  ('all', 'quotes.view_cost', 'finance'),
+  ('all', 'quotes.view_price', 'finance'),
+  ('all', 'requests.view', 'finance'),
+  ('all', 'settings.business.view', 'finance'),
+  ('all', 'time.track_own', 'finance'),
+  ('all', 'time.track_team', 'finance'),
+  ('all', 'catalog.edit', 'office'),
+  ('all', 'catalog.view', 'office'),
+  ('all', 'customers.archive', 'office'),
+  ('all', 'customers.create', 'office'),
+  ('all', 'customers.edit', 'office'),
+  ('all', 'customers.view', 'office'),
+  ('all', 'customers.view_financials', 'office'),
+  ('all', 'expenses.manage_team', 'office'),
+  ('all', 'expenses.record', 'office'),
+  ('all', 'field_records.manage_team', 'office'),
+  ('all', 'field_records.record', 'office'),
+  ('all', 'jobs.close', 'office'),
+  ('all', 'jobs.complete', 'office'),
+  ('all', 'jobs.create', 'office'),
+  ('all', 'jobs.edit', 'office'),
+  ('all', 'jobs.schedule', 'office'),
+  ('all', 'jobs.view', 'office'),
+  ('all', 'jobs.view_price', 'office'),
+  ('all', 'pipeline.edit', 'office'),
+  ('all', 'pipeline.view', 'office'),
+  ('all', 'pipeline.view_value', 'office'),
+  ('all', 'property.manage', 'office'),
+  ('all', 'quotes.convert', 'office'),
+  ('all', 'quotes.create', 'office'),
+  ('all', 'quotes.edit', 'office'),
+  ('all', 'quotes.record_decision', 'office'),
+  ('all', 'quotes.record_deposit', 'office'),
+  ('all', 'quotes.send', 'office'),
+  ('all', 'quotes.view', 'office'),
+  ('all', 'quotes.view_price', 'office'),
+  ('all', 'requests.view', 'office'),
+  ('all', 'settings.business.view', 'office'),
+  ('all', 'time.track_own', 'office'),
+  ('all', 'time.track_team', 'office'),
+  ('all', 'automations.activate', 'owner'),
+  ('all', 'automations.control_enrollment', 'owner'),
+  ('all', 'automations.manage', 'owner'),
+  ('all', 'automations.view', 'owner'),
+  ('all', 'catalog.edit', 'owner'),
+  ('all', 'catalog.view', 'owner'),
+  ('all', 'conversations.forward', 'owner'),
+  ('all', 'conversations.manage_assignment', 'owner'),
+  ('all', 'conversations.manage_connections', 'owner'),
+  ('all', 'conversations.send', 'owner'),
+  ('all', 'conversations.view_team', 'owner'),
+  ('all', 'customers.archive', 'owner'),
+  ('all', 'customers.create', 'owner'),
+  ('all', 'customers.delete', 'owner'),
+  ('all', 'customers.edit', 'owner'),
+  ('all', 'customers.import_export', 'owner'),
+  ('all', 'customers.merge', 'owner'),
+  ('all', 'customers.view', 'owner'),
+  ('all', 'customers.view_financials', 'owner'),
+  ('all', 'expenses.manage_team', 'owner'),
+  ('all', 'expenses.record', 'owner'),
+  ('all', 'field_records.manage_team', 'owner'),
+  ('all', 'field_records.record', 'owner'),
+  ('all', 'invoices.bad_debt', 'owner'),
+  ('all', 'invoices.correct_payment', 'owner'),
+  ('all', 'invoices.create', 'owner'),
+  ('all', 'invoices.delete', 'owner'),
+  ('all', 'invoices.edit', 'owner'),
+  ('all', 'invoices.record_payment', 'owner'),
+  ('all', 'invoices.send', 'owner'),
+  ('all', 'invoices.view', 'owner'),
+  ('all', 'invoices.view_price', 'owner'),
+  ('all', 'invoices.void', 'owner'),
+  ('all', 'jobs.close', 'owner'),
+  ('all', 'jobs.complete', 'owner'),
+  ('all', 'jobs.create', 'owner'),
+  ('all', 'jobs.edit', 'owner'),
+  ('all', 'jobs.schedule', 'owner'),
+  ('all', 'jobs.view', 'owner'),
+  ('all', 'jobs.view_cost', 'owner'),
+  ('all', 'jobs.view_price', 'owner'),
+  ('all', 'marketing.draft', 'owner'),
+  ('all', 'marketing.launch', 'owner'),
+  ('all', 'marketing.view', 'owner'),
+  ('all', 'pipeline.edit', 'owner'),
+  ('all', 'pipeline.view', 'owner'),
+  ('all', 'pipeline.view_value', 'owner'),
+  ('all', 'property.manage', 'owner'),
+  ('all', 'quotes.convert', 'owner'),
+  ('all', 'quotes.create', 'owner'),
+  ('all', 'quotes.edit', 'owner'),
+  ('all', 'quotes.record_decision', 'owner'),
+  ('all', 'quotes.record_deposit', 'owner'),
+  ('all', 'quotes.send', 'owner'),
+  ('all', 'quotes.view', 'owner'),
+  ('all', 'quotes.view_cost', 'owner'),
+  ('all', 'quotes.view_price', 'owner'),
+  ('all', 'requests.view', 'owner'),
+  ('all', 'settings.business.edit', 'owner'),
+  ('all', 'settings.business.view', 'owner'),
+  ('all', 'settings.checklists.manage', 'owner'),
+  ('all', 'settings.forms.manage', 'owner'),
+  ('all', 'settings.invoices.manage', 'owner'),
+  ('all', 'settings.payments.manage', 'owner'),
+  ('all', 'settings.price_book.manage', 'owner'),
+  ('all', 'settings.quotes.manage', 'owner'),
+  ('all', 'settings.taxes.manage', 'owner'),
+  ('all', 'team.manage', 'owner'),
+  ('all', 'time.track_own', 'owner'),
+  ('all', 'time.track_team', 'owner'),
+  ('all', 'catalog.edit', 'sales'),
+  ('all', 'catalog.view', 'sales'),
+  ('all', 'customers.create', 'sales'),
+  ('all', 'customers.edit', 'sales'),
+  ('all', 'customers.view', 'sales'),
+  ('all', 'field_records.manage_team', 'sales'),
+  ('all', 'field_records.record', 'sales'),
+  ('all', 'jobs.close', 'sales'),
+  ('all', 'jobs.complete', 'sales'),
+  ('all', 'jobs.create', 'sales'),
+  ('all', 'jobs.edit', 'sales'),
+  ('all', 'jobs.schedule', 'sales'),
+  ('all', 'jobs.view', 'sales'),
+  ('all', 'jobs.view_price', 'sales'),
+  ('all', 'pipeline.edit', 'sales'),
+  ('all', 'pipeline.view', 'sales'),
+  ('all', 'pipeline.view_value', 'sales'),
+  ('all', 'property.manage', 'sales'),
+  ('all', 'quotes.convert', 'sales'),
+  ('all', 'quotes.create', 'sales'),
+  ('all', 'quotes.edit', 'sales'),
+  ('all', 'quotes.record_decision', 'sales'),
+  ('all', 'quotes.send', 'sales'),
+  ('all', 'quotes.view', 'sales'),
+  ('all', 'quotes.view_price', 'sales'),
+  ('all', 'requests.view', 'sales'),
+  ('all', 'settings.business.view', 'sales')
+on conflict do nothing;
+
+insert into public.member_access_event_shapes (event_type, required_summary_keys, subject_kind, summary_keys)
+values
+  ('invitation.accepted', array['role']::text[], 'invitation', '{"role": "role"}'::jsonb),
+  ('invitation.cancelled', '{}'::text[], 'invitation', '{}'::jsonb),
+  ('invitation.expired', '{}'::text[], 'invitation', '{}'::jsonb),
+  ('invitation.resent', '{}'::text[], 'invitation', '{}'::jsonb),
+  ('invitation.sent', array['role']::text[], 'invitation', '{"role": "role"}'::jsonb),
+  ('member.availability_updated', array['changed']::text[], 'member', '{"changed": "availability_field_list"}'::jsonb),
+  ('member.deactivated', array['previous_status']::text[], 'member', '{"previous_status": "member_status"}'::jsonb),
+  ('member.identity_revoked', '{}'::text[], 'member', '{}'::jsonb),
+  ('member.permissions_changed', '{}'::text[], 'member', '{"added_permissions": "permission_key_list", "removed_permissions": "permission_key_list"}'::jsonb),
+  ('member.profile_updated', array['changed_fields']::text[], 'member', '{"changed_fields": "profile_field_list"}'::jsonb),
+  ('member.removed', '{}'::text[], 'member', '{}'::jsonb),
+  ('member.restored', array['restored_role']::text[], 'member', '{"restored_role": "role"}'::jsonb),
+  ('member.role_changed', array['previous_role', 'new_role']::text[], 'member', '{"new_role": "role", "previous_role": "role"}'::jsonb),
+  ('member.work_unassigned', '{}'::text[], 'member', '{"unassigned_assessments": "assignment_count", "unassigned_tasks": "assignment_count", "unassigned_visits": "assignment_count"}'::jsonb),
+  ('ownership.transfer_accepted', array['transfer_id']::text[], 'member', '{"transfer_id": "id"}'::jsonb),
+  ('ownership.transfer_cancelled', array['transfer_id']::text[], 'member', '{"transfer_id": "id"}'::jsonb),
+  ('ownership.transfer_declined', array['transfer_id']::text[], 'member', '{"transfer_id": "id"}'::jsonb),
+  ('ownership.transfer_requested', array['transfer_id']::text[], 'member', '{"transfer_id": "id"}'::jsonb)
+on conflict (event_type) do nothing;
+
+insert into public.communication_sms_quiet_hours_policy (id) values (true)
+on conflict do nothing;
+
+-- Starter packages (editable) --------------------------------------------------------------------------
+
+insert into public.platform_packages (billing_period, currency, display_name, package_id, package_key, price_usd_cents, public_description, sort_order, status)
+values
+  ('monthly', 'USD', 'Starter', '8297ad02-23e9-446c-be82-432dc29e835e', 'starter', 7900, 'The essential workspace for running day-to-day contractor operations.', 1, 'published'),
+  ('monthly', 'USD', 'Growth', '243822ea-0488-4177-af1e-314a74e38ef1', 'growth', 15000, 'A connected workspace for teams ready to manage more leads, customers, and communication.', 2, 'published'),
+  ('monthly', 'USD', 'Elite', '3ebf9698-d26d-4886-9919-57379b1ab33d', 'elite', 24900, 'The complete contractor operating workspace with advanced growth and integration capabilities.', 3, 'published')
+on conflict (package_key) do nothing;
+
+insert into public.package_features (feature_key, package_key)
+values
+  ('automation.workflows', 'elite'),
+  ('communications.inbox', 'elite'),
+  ('core.customers_properties', 'elite'),
+  ('core.dashboard', 'elite'),
+  ('core.invoices_payments', 'elite'),
+  ('core.jobs', 'elite'),
+  ('core.quotes', 'elite'),
+  ('core.requests_assessments', 'elite'),
+  ('core.schedule', 'elite'),
+  ('core.team', 'elite'),
+  ('dispatch.advanced', 'elite'),
+  ('growth.reputation', 'elite'),
+  ('integrations.api', 'elite'),
+  ('portal.client', 'elite'),
+  ('reporting.advanced', 'elite'),
+  ('sales.pipeline', 'elite'),
+  ('automation.workflows', 'growth'),
+  ('communications.inbox', 'growth'),
+  ('core.customers_properties', 'growth'),
+  ('core.dashboard', 'growth'),
+  ('core.invoices_payments', 'growth'),
+  ('core.jobs', 'growth'),
+  ('core.quotes', 'growth'),
+  ('core.requests_assessments', 'growth'),
+  ('core.schedule', 'growth'),
+  ('core.team', 'growth'),
+  ('portal.client', 'growth'),
+  ('reporting.advanced', 'growth'),
+  ('sales.pipeline', 'growth'),
+  ('core.customers_properties', 'starter'),
+  ('core.dashboard', 'starter'),
+  ('core.invoices_payments', 'starter'),
+  ('core.jobs', 'starter'),
+  ('core.quotes', 'starter'),
+  ('core.requests_assessments', 'starter'),
+  ('core.schedule', 'starter'),
+  ('core.team', 'starter')
+on conflict do nothing;
+
+insert into public.package_limits (is_unlimited, limit_key, limit_value, package_key)
+values
+  (false, 'employee_seats', 50, 'elite'),
+  (false, 'employee_seats', 10, 'growth'),
+  (false, 'employee_seats', 3, 'starter')
+on conflict do nothing;
+
+-- Created as drafts, given their features and limits, then published: a published version is locked.
+insert into public.platform_package_versions (billing_period, currency, display_name, id, package_id, price_usd_cents, public_description, published_at, retired_at, status, value_explanation, version_number)
+values
+  ('monthly', 'USD', 'Elite', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5', '3ebf9698-d26d-4886-9919-57379b1ab33d', 24900, 'The complete contractor operating workspace with advanced growth and integration capabilities.', null, null, 'draft', 'The broadest CRM, growth, dispatch, and integration coverage.', 2),
+  ('monthly', 'USD', 'Growth', 'f761215d-13b1-47bb-96c2-af8df77ba722', '243822ea-0488-4177-af1e-314a74e38ef1', 15000, 'A connected workspace for teams ready to manage more leads, customers, and communication.', null, null, 'draft', 'Expanded sales, communication, portal, automation, and reporting capabilities.', 2),
+  ('monthly', 'USD', 'Starter', '8fe08b15-23de-4b55-b29e-c57107047bac', '8297ad02-23e9-446c-be82-432dc29e835e', 7900, 'The essential workspace for running day-to-day contractor operations.', null, null, 'draft', 'Core CRM workflow for a small field-service team.', 3)
+on conflict (id) do nothing;
+
+insert into public.platform_package_version_features (feature_key, package_version_id)
+values
+  ('core.customers_properties', '8fe08b15-23de-4b55-b29e-c57107047bac'),
+  ('core.dashboard', '8fe08b15-23de-4b55-b29e-c57107047bac'),
+  ('core.invoices_payments', '8fe08b15-23de-4b55-b29e-c57107047bac'),
+  ('core.jobs', '8fe08b15-23de-4b55-b29e-c57107047bac'),
+  ('core.quotes', '8fe08b15-23de-4b55-b29e-c57107047bac'),
+  ('core.requests_assessments', '8fe08b15-23de-4b55-b29e-c57107047bac'),
+  ('core.schedule', '8fe08b15-23de-4b55-b29e-c57107047bac'),
+  ('core.team', '8fe08b15-23de-4b55-b29e-c57107047bac'),
+  ('portal.client', '8fe08b15-23de-4b55-b29e-c57107047bac'),
+  ('automation.workflows', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('automations', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('communications.inbox', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('core.customers_properties', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('core.dashboard', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('core.invoices_payments', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('core.jobs', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('core.quotes', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('core.requests_assessments', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('core.schedule', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('core.team', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('dispatch.advanced', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('growth.reputation', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('integrations.api', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('portal.client', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('reporting.advanced', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('sales.pipeline', 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('automation.workflows', 'f761215d-13b1-47bb-96c2-af8df77ba722'),
+  ('communications.inbox', 'f761215d-13b1-47bb-96c2-af8df77ba722'),
+  ('core.customers_properties', 'f761215d-13b1-47bb-96c2-af8df77ba722'),
+  ('core.dashboard', 'f761215d-13b1-47bb-96c2-af8df77ba722'),
+  ('core.invoices_payments', 'f761215d-13b1-47bb-96c2-af8df77ba722'),
+  ('core.jobs', 'f761215d-13b1-47bb-96c2-af8df77ba722'),
+  ('core.quotes', 'f761215d-13b1-47bb-96c2-af8df77ba722'),
+  ('core.requests_assessments', 'f761215d-13b1-47bb-96c2-af8df77ba722'),
+  ('core.schedule', 'f761215d-13b1-47bb-96c2-af8df77ba722'),
+  ('core.team', 'f761215d-13b1-47bb-96c2-af8df77ba722'),
+  ('portal.client', 'f761215d-13b1-47bb-96c2-af8df77ba722'),
+  ('reporting.advanced', 'f761215d-13b1-47bb-96c2-af8df77ba722'),
+  ('sales.pipeline', 'f761215d-13b1-47bb-96c2-af8df77ba722')
+on conflict do nothing;
+
+insert into public.platform_package_version_limits (limit_key, limit_state, limit_value, package_version_id)
+values
+  ('employee_seats', 'numeric', 3, '8fe08b15-23de-4b55-b29e-c57107047bac'),
+  ('essential_email_recipients', 'not_included', null, '8fe08b15-23de-4b55-b29e-c57107047bac'),
+  ('operational_email_recipients', 'not_included', null, '8fe08b15-23de-4b55-b29e-c57107047bac'),
+  ('website_chat_accepted_conversations', 'numeric', 50, '8fe08b15-23de-4b55-b29e-c57107047bac'),
+  ('website_chat_widgets', 'numeric', 50, '8fe08b15-23de-4b55-b29e-c57107047bac'),
+  ('automation_active_recipes', 'unlimited', null, 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('automation_max_conditions_per_recipe', 'unlimited', null, 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('automation_max_customer_messages_per_enrollment', 'unlimited', null, 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('automation_max_delay_days', 'unlimited', null, 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('automation_max_enrollment_duration_days', 'unlimited', null, 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('automation_max_steps_per_recipe', 'unlimited', null, 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('automation_min_customer_message_spacing_minutes', 'unlimited', null, 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('employee_seats', 'numeric', 50, 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('essential_email_recipients', 'not_included', null, 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('operational_email_recipients', 'not_included', null, 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('website_chat_accepted_conversations', 'not_included', null, 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('website_chat_widgets', 'not_included', null, 'c8faea0d-67d5-48fc-94da-8c9b9668c4b5'),
+  ('employee_seats', 'numeric', 10, 'f761215d-13b1-47bb-96c2-af8df77ba722')
+on conflict do nothing;
+
+-- Publish, keeping each version's original publication time.
+update public.platform_package_versions as version
+set status = 'published', published_at = published.published_at
+from (values
+  ('c8faea0d-67d5-48fc-94da-8c9b9668c4b5'::uuid, '2026-08-30T23:30:41.901655+00:00'::timestamptz),
+  ('f761215d-13b1-47bb-96c2-af8df77ba722'::uuid, '2026-08-11T00:09:36.818466+00:00'::timestamptz),
+  ('8fe08b15-23de-4b55-b29e-c57107047bac'::uuid, '2026-08-26T06:53:18.194739+00:00'::timestamptz)
+) as published(id, published_at)
+where version.id = published.id and version.status = 'draft';
+
+-- Message templates (editable) -------------------------------------------------------------------------
+
+insert into public.platform_message_templates (body_draft, body_published, published_at, published_by_owner_email, published_version, subject_draft, subject_published, template_key)
+values
+  ('<p>The account for <strong>{{business_name}}</strong> has been created and the administrator has been sent access instructions.</p> This is testing', '<p>The account for <strong>{{business_name}}</strong> has been created and the administrator has been sent access instructions.</p> This is testing', '2026-08-12T11:28:46.227669+00:00', 'system', 2, 'Your UpliftContractor account is ready', 'Your UpliftContractor account is ready', 'account_created_contact'),
+  ('<p>Thanks for applying for <strong>{{package_name}}</strong> ({{price}}).</p><p>{{payment_instructions}}</p>', '<p>Thanks for applying for <strong>{{package_name}}</strong> ({{price}}).</p><p>{{payment_instructions}}</p>', '2026-08-12T10:41:26.828503+00:00', 'system', 1, 'We received your UpliftContractor application', 'We received your UpliftContractor application', 'application_receipt'),
+  ('<p>Your UpliftContractor account for <strong>{{business_name}}</strong> and all of its data have now been permanently deleted.</p><p>If you''d like to use UpliftContractor again in the future, you''re welcome to sign up as a new account.</p>', '<p>Your UpliftContractor account for <strong>{{business_name}}</strong> and all of its data have now been permanently deleted.</p><p>If you''d like to use UpliftContractor again in the future, you''re welcome to sign up as a new account.</p>', '2026-08-15T06:05:44.01465+00:00', 'system', 1, 'Your {{business_name}} account has been deleted', 'Your {{business_name}} account has been deleted', 'organization_closure_completed'),
+  ('<p>This is a reminder that your UpliftContractor account for <strong>{{business_name}}</strong> is closing.</p><p>You have until <strong>{{closure_deadline_at}}</strong> to contact us and restore your account. After that date, your account and all of its data will be permanently deleted and cannot be recovered.</p>', '<p>This is a reminder that your UpliftContractor account for <strong>{{business_name}}</strong> is closing.</p><p>You have until <strong>{{closure_deadline_at}}</strong> to contact us and restore your account. After that date, your account and all of its data will be permanently deleted and cannot be recovered.</p>', '2026-08-15T06:05:44.01465+00:00', 'system', 1, '14 days left to restore your {{business_name}} account', '14 days left to restore your {{business_name}} account', 'organization_closure_fourteen_day_reminder'),
+  ('<p>Your UpliftContractor account for <strong>{{business_name}}</strong> is now closing.</p><p>Your team''s access has been turned off. All of your data is still safe and nothing is deleted yet.</p><p>If this was a mistake or you''d like to keep your account, contact us right away and we can restore it within the next 30 days. After that, your account and all of its data will be permanently deleted.</p>', '<p>Your UpliftContractor account for <strong>{{business_name}}</strong> is now closing.</p><p>Your team''s access has been turned off. All of your data is still safe and nothing is deleted yet.</p><p>If this was a mistake or you''d like to keep your account, contact us right away and we can restore it within the next 30 days. After that, your account and all of its data will be permanently deleted.</p>', '2026-08-15T06:05:44.01465+00:00', 'system', 1, 'Your {{business_name}} account is closing', 'Your {{business_name}} account is closing', 'organization_closure_started'),
+  ('<p>Your UpliftContractor account for <strong>{{business_name}}</strong> will be permanently deleted on <strong>{{closure_deadline_at}}</strong> unless you contact us before then.</p><p>Once your account is deleted, none of your data can be recovered.</p>', '<p>Your UpliftContractor account for <strong>{{business_name}}</strong> will be permanently deleted on <strong>{{closure_deadline_at}}</strong> unless you contact us before then.</p><p>Once your account is deleted, none of your data can be recovered.</p>', '2026-08-15T06:05:44.01465+00:00', 'system', 1, '3 days left to restore your {{business_name}} account', '3 days left to restore your {{business_name}} account', 'organization_closure_three_day_reminder'),
+  ('<p>You''ve been invited to administer <strong>{{business_name}}</strong> on UpliftContractor.</p><p><a href="{{setup_link}}">Set your password</a></p><p>This link expires in 24 hours and can only be used once.</p>', '<p>You''ve been invited to administer <strong>{{business_name}}</strong> on UpliftContractor.</p><p><a href="{{setup_link}}">Set your password</a></p><p>This link expires in 24 hours and can only be used once.</p>', '2026-08-12T10:41:26.828503+00:00', 'system', 1, 'Set up your {{business_name}} administrator account', 'Set up your {{business_name}} administrator account', 'password_setup'),
+  ('<p>Thanks for applying for <strong>{{package_name}}</strong> ({{price}}).</p><p>{{payment_instructions}}</p>', '<p>Thanks for applying for <strong>{{package_name}}</strong> ({{price}}).</p><p>{{payment_instructions}}</p>', '2026-08-12T10:41:26.828503+00:00', 'system', 1, null, null, 'received_page')
+on conflict (template_key) do nothing;
+
+insert into public.platform_message_template_versions (body, id, published_at, published_by_owner_email, subject, template_key, version)
+values
+  ('<p>The account for <strong>{{business_name}}</strong> has been created and the administrator has been sent access instructions.</p> This is testing', '6c4061a1-6a81-4919-bbd4-6b3f16f406b0', '2026-08-12T11:28:46.227669+00:00', 'system', 'Your UpliftContractor account is ready', 'account_created_contact', 2),
+  ('<p>Thanks for applying for <strong>{{package_name}}</strong> ({{price}}).</p><p>{{payment_instructions}}</p>', '5269da98-a5df-4566-bb0f-b7efa8e10d27', '2026-08-12T10:41:26.828503+00:00', 'system', 'We received your UpliftContractor application', 'application_receipt', 1),
+  ('<p>Your UpliftContractor account for <strong>{{business_name}}</strong> and all of its data have now been permanently deleted.</p><p>If you''d like to use UpliftContractor again in the future, you''re welcome to sign up as a new account.</p>', '8495ab2b-28bb-45e8-85af-9600b053ffd4', '2026-08-15T06:05:44.01465+00:00', 'system', 'Your {{business_name}} account has been deleted', 'organization_closure_completed', 1),
+  ('<p>This is a reminder that your UpliftContractor account for <strong>{{business_name}}</strong> is closing.</p><p>You have until <strong>{{closure_deadline_at}}</strong> to contact us and restore your account. After that date, your account and all of its data will be permanently deleted and cannot be recovered.</p>', '3785d3ef-c10b-4975-bc80-2cfc60ab8848', '2026-08-15T06:05:44.01465+00:00', 'system', '14 days left to restore your {{business_name}} account', 'organization_closure_fourteen_day_reminder', 1),
+  ('<p>Your UpliftContractor account for <strong>{{business_name}}</strong> is now closing.</p><p>Your team''s access has been turned off. All of your data is still safe and nothing is deleted yet.</p><p>If this was a mistake or you''d like to keep your account, contact us right away and we can restore it within the next 30 days. After that, your account and all of its data will be permanently deleted.</p>', '526ded9c-2462-4d99-ac2a-4cdf37b6cc24', '2026-08-15T06:05:44.01465+00:00', 'system', 'Your {{business_name}} account is closing', 'organization_closure_started', 1),
+  ('<p>Your UpliftContractor account for <strong>{{business_name}}</strong> will be permanently deleted on <strong>{{closure_deadline_at}}</strong> unless you contact us before then.</p><p>Once your account is deleted, none of your data can be recovered.</p>', 'b2a4a342-e97b-4163-84df-7af94ddae534', '2026-08-15T06:05:44.01465+00:00', 'system', '3 days left to restore your {{business_name}} account', 'organization_closure_three_day_reminder', 1),
+  ('<p>You''ve been invited to administer <strong>{{business_name}}</strong> on UpliftContractor.</p><p><a href="{{setup_link}}">Set your password</a></p><p>This link expires in 24 hours and can only be used once.</p>', 'f7092204-9c3f-47c7-88de-13bceb1fc6b3', '2026-08-12T10:41:26.828503+00:00', 'system', 'Set up your {{business_name}} administrator account', 'password_setup', 1),
+  ('<p>Thanks for applying for <strong>{{package_name}}</strong> ({{price}}).</p><p>{{payment_instructions}}</p>', 'e80e62c6-0da6-46ac-a9c5-d4b3abf7c7f8', '2026-08-12T10:41:26.828503+00:00', 'system', null, 'received_page', 1)
+on conflict (id) do nothing;
+
+insert into public.marketing_platform_templates (blocks, goal, id, key, name, preview_text, subject, version)
+values
+  ('[{"id": "ca1c0a8a-c31f-450d-93d0-168b363c93c7", "level": "h1", "text": "News from {{business_name}}", "type": "heading"}, {"id": "4a99c792-4f1a-42f2-b586-d7cf921af972", "text": "We wanted to let you know about something new.", "type": "text"}, {"id": "8bc9606d-c2a0-49dd-b331-7fd429354fa3", "type": "divider"}]'::jsonb, 'announcement', 'd994c376-ff59-4639-9200-e4007abd4798', 'announcement', 'Business announcement', 'We''ve got something to share with you.', 'News from {{business_name}}', 1),
+  ('[{"id": "66c4cb89-d738-42cc-ad2d-83432625c3b1", "level": "h1", "text": "We miss you, {{customer_first_name}}!", "type": "heading"}, {"id": "46122001-c542-4b81-9294-34f7e7ed9a39", "text": "It''s been a little while since we last worked together. We''d love to help again, whether it''s a quick fix or a bigger project.", "type": "text"}, {"id": "e9c4f0c4-eb3e-432b-8375-39d7e8f19fef", "label": "Book now", "type": "button", "url": "#"}, {"id": "ebf97c95-8266-4757-8ebf-125ad9b40e5d", "type": "divider"}]'::jsonb, 'bring_back', '85240559-dbf6-4409-b41c-9753ff1cb0b7', 'bring_back', 'We miss you / book again', 'It''s been a while — let''s get you back on the schedule.', 'We miss you, {{customer_first_name}}!', 1),
+  ('[{"id": "b9ce85b2-d548-4b28-97d6-294159bc1f1f", "level": "h1", "text": "Something else we can help with", "type": "heading"}, {"id": "6e1bf607-7eb9-4f48-b04b-cd8ab0d2f919", "text": "While we''re on the subject, here''s another service our customers often add on.", "type": "text"}, {"id": "7b282f80-d6d3-439f-ba5d-e40d29b74ac5", "label": "Learn more", "type": "button", "url": "#"}, {"id": "b9503654-9a4d-4b01-8e74-12cf09ac7a81", "type": "divider"}]'::jsonb, 'promote_service', '1ef5a243-daad-4f24-a3f6-57c7702ee5a4', 'complementary_offer', 'Complementary service offer', 'Here''s something else {{business_name}} can help with.', 'A service you might also need', 1),
+  ('[{"id": "2addeefb-1105-49af-9207-8abbb1795d11", "level": "h1", "text": "Time for your seasonal service", "type": "heading"}, {"id": "17d65630-d74c-4e31-9896-33438a843047", "text": "The season is changing, and now''s the best time to book so you get a slot before things fill up.", "type": "text"}, {"id": "461222ab-5a05-425c-a7b2-00e414ea2a41", "label": "Schedule now", "type": "button", "url": "#"}, {"id": "7191061c-8d5d-41cc-ae58-385d7e8d3c5b", "type": "divider"}]'::jsonb, 'promote_service', '4648cf51-5453-40fa-8799-ada2b6d15894', 'seasonal_reminder', 'Seasonal service reminder', 'A friendly reminder to book your seasonal service.', 'Time for your seasonal service, {{customer_first_name}}', 1)
+on conflict (key) do nothing;
+
+-- Email sending limits: the contract defaults, as they stand today ----------------------------------------
+
+insert into public.communication_email_warmup_stages (actor_owner_email, daily_ceiling, effective_from, id, organization_id, reason, scope, stage_key)
+values
+  ('system', 100, '2026-08-28T00:34:15.982144+00:00', '13b02eec-3ca8-414c-92b9-3faf537538ac', null, 'Initial platform defaults from the contractor email contract.', 'platform', 'days_1_3'),
+  ('system', 250, '2026-08-28T00:13:43.862493+00:00', 'acf01379-4eb4-497f-93a4-015cbdf444a7', null, 'Initial platform defaults from the contractor email contract.', 'platform', 'days_4_7'),
+  ('system', 500, '2026-08-28T00:13:43.862493+00:00', '703c7508-ee6c-4852-8635-3bed9a104874', null, 'Initial platform defaults from the contractor email contract.', 'platform', 'days_8_14')
+on conflict (id) do nothing;
+
+insert into public.communication_email_reputation_thresholds (actor_owner_email, effective_from, id, min_event_count, min_sample_recipients, organization_id, pause_rate, reason, scope, signal, warn_rate, window_hours, window_key)
+values
+  ('system', '2026-08-27T23:16:00.624553+00:00', '49752094-cd53-42c2-973b-537f64211b1f', 3, 1000, null, 0.1, 'Initial platform defaults from the contractor email contract.', 'platform', 'complaint', 0.05, 24, 'rolling_24h'),
+  ('system', '2026-08-27T10:43:25.128905+00:00', '3a17eb4c-89ec-4e1c-beac-cebda35aa545', 3, 1000, null, 0.1, 'Initial platform defaults from the contractor email contract.', 'platform', 'complaint', 0.05, 168, 'rolling_7d'),
+  ('system', '2026-08-27T10:43:25.128905+00:00', '7ec51cc5-9cde-4e4a-8a18-ca337ded62ef', 20, 1000, null, 2, 'Initial platform defaults from the contractor email contract.', 'platform', 'hard_bounce', 1, 24, 'rolling_24h'),
+  ('system', '2026-08-27T10:43:25.128905+00:00', 'ae10e673-4dd1-46b3-99d6-b202ab9b680a', 20, 1000, null, 2, 'Initial platform defaults from the contractor email contract.', 'platform', 'hard_bounce', 1, 168, 'rolling_7d'),
+  ('system', '2026-08-27T10:43:25.128905+00:00', '626805bd-bffa-4b19-8ead-ad966e0ee8e1', null, 1000, null, 1, 'Initial platform defaults from the contractor email contract.', 'platform', 'unsubscribe', 0.5, 24, 'rolling_24h'),
+  ('system', '2026-08-27T10:43:25.128905+00:00', 'bbb46b44-e02f-4c32-9e3b-ff2451c20537', null, 1000, null, 1, 'Initial platform defaults from the contractor email contract.', 'platform', 'unsubscribe', 0.5, 168, 'rolling_7d')
+on conflict (id) do nothing;
+
+insert into public.communication_email_platform_sending_settings (actor_owner_email, effective_from, id, provider_period_capacity, reason, reserve_percent, short_term_max_recipients, short_term_window_minutes, singleton_key)
+values
+  ('system', '2026-08-28T01:05:49.843073+00:00', '4a933c75-0c77-422a-9437-8316f9e8c752', null, 'Initial platform defaults from the contractor email contract.', 10, 100, 10, true)
+on conflict (id) do nothing;
+

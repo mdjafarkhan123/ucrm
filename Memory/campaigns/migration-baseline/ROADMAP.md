@@ -16,13 +16,14 @@ from the live database, then prove it by rebuilding and diffing.
 ## Part 2 — Build the baseline in the repo
 - **Outcome:** one baseline migration (structure + reference rows + cron schedules + omitted objects); the 500 old files leave
   `supabase/migrations/` (git keeps them); no repo file is unaccounted for.
-- **State:** Next — packet `parts/part-2-baseline.md`.
+- **State:** Done 2026-09-21 — four baseline files committed; old files in `supabase/migrations-archive/pre-baseline-2026-09-21/`.
 - **Depends on:** Part 1. **Gate:** files only; nothing applied to the live database.
 
 ## Part 3 — Prove it
+- **State:** Next — packet `parts/part-3-prove.md`.
 - **Outcome:** a fresh rebuild from the baseline, in a throwaway container, gives an empty `supabase db diff --linked`, and the
   pgTAP files (`tenant_isolation`, `quote_proposal_draft_commands`, `automation_6d2`) pass on it.
-- **Depends on:** Part 2. **Gate:** empty diff and passing tests, recorded.
+- **Depends on:** Part 2. **Gate:** diff shows only the accepted noise list (packet) and passing tests, recorded.
 
 ## Part 4 — Repair the remote ledger (approval gate)
 - **Outcome:** ledger backed up, then `supabase migration repair` so remote history reads as the baseline; `supabase migration list --linked`

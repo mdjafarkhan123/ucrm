@@ -2,22 +2,19 @@
 
 **Goal:** Repo migrations rebuild the live database exactly; remote ledger agrees. See `ROADMAP.md` (read only to change scope).
 
-**Active part:** Part 2 — build the baseline in the repo. Part 1 (inventory) closed 2026-09-21.
+**Active part:** Part 3 — prove it. Parts 1 and 2 closed 2026-09-21 (baseline committed; nothing applied to the live database or ledger).
 
-**Exact next action:** In a fresh session, read `parts/part-2-baseline.md` and follow it: (1) regenerate the structure dump with
-`npx supabase db dump --linked`; (2) run the unapplied-work replay-and-diff drift report and show Jafar anything in the repo but not live;
-(3) write the baseline migration (structure + reviewed reference rows + cron jobs off by default + `auth.users` trigger + `realtime.messages`
-policies + Vault placeholders); (4) move the old files out of `supabase/migrations/`. Files only — apply nothing to the live database.
+**Exact next action:** In a fresh session, read `parts/part-3-prove.md`, stand up the throwaway proof stack it describes, run all 162 pgTAP files on
+the rebuild, fix stale tests (first: `package_access.sql`), fix any real baseline gap and re-prove, and record the pass counts. Files and the
+throwaway stack only — apply nothing to the live database.
 
-**Blockers:** Part 2 needs Jafar's look at the drift report and at which owner-edited reference values to carry. Part 4 changes live ledger
-rows and needs his explicit go-ahead.
+**Blockers:** none. Part 4 (live ledger repair) needs Jafar's separate go-ahead.
 
-**Pointers:** `parts/part-2-baseline.md`; `Memory/deferred/two-migration-ledger-rows-do-not-match-the-repo.md`. Docker works
-(`supabase_db_ucrm` local stack is running on 54322 — leave it alone; diff/dump use throwaway containers).
+**Pointers:** `parts/part-3-prove.md`; `Memory/deferred/two-migration-ledger-rows-do-not-match-the-repo.md` (deleted when Part 4 closes). Until Part 4,
+new migrations still go through `mcp__supabase__apply_migration` with the local file renamed to the version the ledger records.
 
-**After this campaign (default):** return to the deferred-cleanup work this campaign came from — start at `Memory/deferred/INDEX.md`
-(65 notes on 2026-09-21; the ledger note is deleted when Part 4 closes and the database-tests note is updated). Already triaged and left
-for a decision or another campaign: R2 line-photo cleanup (Files and Media), unindexed foreign keys, functions executable by everyone,
-four more composite foreign keys, and the screen items. Ask Jafar before starting any of those.
+**After this campaign (default):** return to the deferred-cleanup work — start at `Memory/deferred/INDEX.md`. Already triaged and left for a
+decision or another campaign: R2 line-photo cleanup (Files and Media), unindexed foreign keys, functions executable by everyone, four more
+composite foreign keys, and the screen items. Ask Jafar before starting any of those.
 
 **Resume command:** `read memory and continue migration-baseline`
