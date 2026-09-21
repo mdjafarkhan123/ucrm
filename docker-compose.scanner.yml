@@ -1,0 +1,34 @@
+# The malware scanner the Files and Media upload pipeline streams every upload through.
+#
+#   docker compose -f docker-compose.scanner.yml up -d
+#
+# The first start downloads the virus definitions, which takes a few minutes; until the health check turns
+# healthy the pipeline leaves uploads pending rather than publishing anything unchecked. Then set, in .env:
+#
+#   FILES_SCANNER_HOST=127.0.0.1
+#   FILES_SCANNER_PORT=3310
+#
+# In production this same service sits on the app's private Docker network and FILES_SCANNER_HOST is the
+# service name instead of localhost. It is never published to the internet: clamd has no authentication of
+# its own, so being unreachable from outside the host is the whole of its access control.
+
+services:
+  clamav:
+    image: clamav/clamav:1.4
+    restart: unless-stopped
+    ports:
+      # Bound to loopback on purpose. Dropping the address would publish the scanner on every interface.
+      - '127.0.0.1:3310:3310'
+    volumes:
+      - ./docker/clamav/clamd.conf:/etc/clamav/clamd.conf:ro
+      # Keeping the definitions means a restart does not re-download roughly a gigabyte.
+      - clamav-definitions:/var/lib/clamav
+    healthcheck:
+      test: ['CMD', 'clamdcheck.sh']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5m
+
+volumes:
+  clamav-definitions:

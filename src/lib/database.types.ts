@@ -210,6 +210,7 @@ export type Database = {
           created_at: string
           entity_id: string
           entity_type: string
+          file_id: string | null
           file_name: string
           id: string
           mime_type: string
@@ -224,6 +225,7 @@ export type Database = {
           created_at?: string
           entity_id: string
           entity_type: string
+          file_id?: string | null
           file_name: string
           id?: string
           mime_type: string
@@ -238,6 +240,7 @@ export type Database = {
           created_at?: string
           entity_id?: string
           entity_type?: string
+          file_id?: string | null
           file_name?: string
           id?: string
           mime_type?: string
@@ -249,6 +252,13 @@ export type Database = {
           uploaded_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "attachments_file_fk"
+            columns: ["organization_id", "file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "attachments_note_id_fkey"
             columns: ["note_id"]
@@ -4793,6 +4803,188 @@ export type Database = {
           feature_key?: string
         }
         Relationships: []
+      }
+      file_folders: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_folders_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      file_links: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          entity_id: string
+          entity_type: string
+          file_id: string
+          id: string
+          organization_id: string
+          protected: boolean
+          role: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          entity_id: string
+          entity_type: string
+          file_id: string
+          id?: string
+          organization_id: string
+          protected?: boolean
+          role?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string
+          entity_type?: string
+          file_id?: string
+          id?: string
+          organization_id?: string
+          protected?: boolean
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_links_file_fk"
+            columns: ["organization_id", "file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "file_links_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      files: {
+        Row: {
+          checksum_sha256: string | null
+          claim_token: string | null
+          claimed_at: string | null
+          created_at: string
+          display_name: string
+          folder_id: string | null
+          id: string
+          kind: string | null
+          mime_type: string
+          object_key: string
+          organization_id: string
+          origin_id: string | null
+          origin_type: string
+          processing_attempts: number
+          processing_error: string | null
+          processing_state: string
+          scanned_at: string | null
+          size_bytes: number
+          thumbnail_object_key: string | null
+          trashed_at: string | null
+          trashed_by: string | null
+          updated_at: string
+          upload_completed_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          checksum_sha256?: string | null
+          claim_token?: string | null
+          claimed_at?: string | null
+          created_at?: string
+          display_name: string
+          folder_id?: string | null
+          id?: string
+          kind?: string | null
+          mime_type: string
+          object_key: string
+          organization_id: string
+          origin_id?: string | null
+          origin_type: string
+          processing_attempts?: number
+          processing_error?: string | null
+          processing_state?: string
+          scanned_at?: string | null
+          size_bytes: number
+          thumbnail_object_key?: string | null
+          trashed_at?: string | null
+          trashed_by?: string | null
+          updated_at?: string
+          upload_completed_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          checksum_sha256?: string | null
+          claim_token?: string | null
+          claimed_at?: string | null
+          created_at?: string
+          display_name?: string
+          folder_id?: string | null
+          id?: string
+          kind?: string | null
+          mime_type?: string
+          object_key?: string
+          organization_id?: string
+          origin_id?: string | null
+          origin_type?: string
+          processing_attempts?: number
+          processing_error?: string | null
+          processing_state?: string
+          scanned_at?: string | null
+          size_bytes?: number
+          thumbnail_object_key?: string | null
+          trashed_at?: string | null
+          trashed_by?: string | null
+          updated_at?: string
+          upload_completed_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "files_folder_fk"
+            columns: ["organization_id", "folder_id"]
+            isOneToOne: false
+            referencedRelation: "file_folders"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "files_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       form_bookable_services: {
         Row: {
@@ -14249,6 +14441,41 @@ export type Database = {
           twilio_account_id: string
         }[]
       }
+      claim_file_processing_jobs: {
+        Args: { batch_size?: number }
+        Returns: {
+          checksum_sha256: string | null
+          claim_token: string | null
+          claimed_at: string | null
+          created_at: string
+          display_name: string
+          folder_id: string | null
+          id: string
+          kind: string | null
+          mime_type: string
+          object_key: string
+          organization_id: string
+          origin_id: string | null
+          origin_type: string
+          processing_attempts: number
+          processing_error: string | null
+          processing_state: string
+          scanned_at: string | null
+          size_bytes: number
+          thumbnail_object_key: string | null
+          trashed_at: string | null
+          trashed_by: string | null
+          updated_at: string
+          upload_completed_at: string | null
+          uploaded_by: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "files"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       claim_form_booking_reservation: {
         Args: {
           new_ends_at: string
@@ -15671,6 +15898,45 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      complete_file_upload: {
+        Args: {
+          target_file_id: string
+          target_organization_id: string
+          target_uploaded_by: string
+        }
+        Returns: {
+          checksum_sha256: string | null
+          claim_token: string | null
+          claimed_at: string | null
+          created_at: string
+          display_name: string
+          folder_id: string | null
+          id: string
+          kind: string | null
+          mime_type: string
+          object_key: string
+          organization_id: string
+          origin_id: string | null
+          origin_type: string
+          processing_attempts: number
+          processing_error: string | null
+          processing_state: string
+          scanned_at: string | null
+          size_bytes: number
+          thumbnail_object_key: string | null
+          trashed_at: string | null
+          trashed_by: string | null
+          updated_at: string
+          upload_completed_at: string | null
+          uploaded_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "files"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       complete_job_visit: {
         Args: {
           target_job_id: string
@@ -16982,6 +17248,47 @@ export type Database = {
           intent_status: string
           outbox_status: string
         }[]
+      }
+      finalize_file_processing: {
+        Args: {
+          target_checksum_sha256?: string
+          target_claim_token: string
+          target_error?: string
+          target_file_id: string
+          target_state: string
+        }
+        Returns: {
+          checksum_sha256: string | null
+          claim_token: string | null
+          claimed_at: string | null
+          created_at: string
+          display_name: string
+          folder_id: string | null
+          id: string
+          kind: string | null
+          mime_type: string
+          object_key: string
+          organization_id: string
+          origin_id: string | null
+          origin_type: string
+          processing_attempts: number
+          processing_error: string | null
+          processing_state: string
+          scanned_at: string | null
+          size_bytes: number
+          thumbnail_object_key: string | null
+          trashed_at: string | null
+          trashed_by: string | null
+          updated_at: string
+          upload_completed_at: string | null
+          uploaded_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "files"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       finalize_organization_geocode: {
         Args: {
@@ -19242,9 +19549,58 @@ export type Database = {
         }
         Returns: Json
       }
+      register_pending_file: {
+        Args: {
+          target_display_name: string
+          target_folder_id?: string
+          target_mime_type: string
+          target_object_key: string
+          target_organization_id: string
+          target_origin_id?: string
+          target_origin_type: string
+          target_size_bytes: number
+          target_uploaded_by: string
+        }
+        Returns: {
+          checksum_sha256: string | null
+          claim_token: string | null
+          claimed_at: string | null
+          created_at: string
+          display_name: string
+          folder_id: string | null
+          id: string
+          kind: string | null
+          mime_type: string
+          object_key: string
+          organization_id: string
+          origin_id: string | null
+          origin_type: string
+          processing_attempts: number
+          processing_error: string | null
+          processing_state: string
+          scanned_at: string | null
+          size_bytes: number
+          thumbnail_object_key: string | null
+          trashed_at: string | null
+          trashed_by: string | null
+          updated_at: string
+          upload_completed_at: string | null
+          uploaded_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "files"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       release_communication_worker_lease: {
         Args: { p_lease_token: string; p_worker_name: string }
         Returns: boolean
+      }
+      release_file_processing_claim: {
+        Args: { target_claim_token: string; target_file_id: string }
+        Returns: undefined
       }
       release_member_identity_cleanup: {
         Args: {
@@ -20553,6 +20909,13 @@ export type Database = {
           supplied_token_hash: string
         }
         Returns: Json
+      }
+      sweep_abandoned_file_uploads: {
+        Args: { batch_size?: number; older_than_hours?: number }
+        Returns: {
+          id: string
+          object_key: string
+        }[]
       }
       sweep_communication_email_reputation: {
         Args: { batch_size?: number }

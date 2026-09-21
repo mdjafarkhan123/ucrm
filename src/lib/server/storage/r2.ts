@@ -45,6 +45,15 @@ export function buildAttachmentObjectKey(
 	return `${organizationId}/${entityType}/${entityId}/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
 }
 
+// A File Manager upload. One flat `<org>/files/` prefix rather than the attachment path's
+// `<org>/<entity>/<entity id>/`, because a File outlives every record it is attached to: it may start with
+// no record at all, gain and lose links over the years, and must never need its object moved when it does.
+// `register_pending_file` checks this exact prefix, so a key issued for one organization cannot be
+// committed against another.
+export function buildFileObjectKey(organizationId: string, fileName: string): string {
+	return `${organizationId}/files/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
+}
+
 // The small copy lives beside its original and is always a JPEG. Deriving the key rather than generating a
 // new one keeps the pair together, so the org/entity prefix check that guards attachment creation covers
 // both, and deleting the row can find the preview without storing a second lookup.

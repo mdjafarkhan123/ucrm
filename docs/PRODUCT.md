@@ -276,11 +276,19 @@ Automatic payment suppresses unnecessary reminders. Receipts may be sent by text
 
 ## 16. Files and proof of work
 
-Attach files to customers, messages, requests, quotes, invoices, jobs, visits, forms, and marketing activity.
+The approved detailed behavior is in `docs/files-media-behavior-contract.md`. Read it before changing file
+storage, attachments, R2 object handling, previews, sharing, deletion, or the contractor File Manager.
 
-Support job photos, before/after labels, line-item images, PDFs, customer signatures, form photos, logos, avatars, and marketing assets.
+The File Manager is the contractor's central place for every manageable file uploaded anywhere in the CRM.
+Each file is stored once in private Cloudflare R2 and may be connected to many customers, messages, requests,
+quotes, invoices, jobs, visits, forms, catalog items, and marketing activities without copying the original.
 
-Provide fast everyday previews, preserve originals, compare before/after photos, and create shareable proof-of-work presentations.
+Support job photos and videos, before/after labels, line-item images, PDFs, form photos, logos, and marketing
+assets. Security evidence such as signatures remains managed by its owning feature rather than becoming an
+ordinary reusable library file.
+
+Provide fast everyday previews, preserve originals and issued-document history, show where every file is used,
+compare before/after photos, and create deliberately shared proof-of-work presentations.
 
 ## 17. Reputation and service recovery
 
