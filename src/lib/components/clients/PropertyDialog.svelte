@@ -5,6 +5,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import RecordFilesCard from '$lib/components/files/RecordFilesCard.svelte';
 	import {
 		createProperty,
 		deleteProperty,
@@ -22,12 +23,15 @@
 	let {
 		open,
 		clientId,
+		clientLabel,
 		property = null,
 		onSaved,
 		onClose
 	}: {
 		open: boolean;
 		clientId: string;
+		/** The owning client's display name, for the file picker's "On <client>" section. */
+		clientLabel: string;
 		/** The property being edited, or null to add a new one. */
 		property?: ClientProperty | null;
 		onSaved: () => void;
@@ -213,6 +217,20 @@
 			<p class="property-dialog__error" role="alert">{error}</p>
 		{/if}
 
+		{#if property}
+			<RecordFilesCard
+				entityType="property"
+				entityId={property.id}
+				recordLabel="this property"
+				pickerLabel="On this property"
+				{clientId}
+				{clientLabel}
+				surface="section"
+			/>
+		{:else}
+			<p class="property-dialog__files-hint">Files can be added once this property is saved.</p>
+		{/if}
+
 		{#if confirmingDelete}
 			<!-- The confirmation replaces the footer rather than opening a second dialog on top of this one. -->
 			<div class="property-dialog__confirm">
@@ -290,6 +308,12 @@
 		&__error {
 			margin: 0;
 			color: var(--color-critical);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__files-hint {
+			margin: 0;
+			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 		}
 

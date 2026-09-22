@@ -2,22 +2,27 @@
 
 **Goal:** One contractor File Manager backed by private R2, with one File linked to every CRM use.
 
-**Active part:** Part 5, operational-record adoption. The Client slice (5A) is complete, browser-verified, and
-committed. Property is next.
+**Active part:** Part 5, operational-record adoption. Client (5A) and Property (5B) are both complete,
+browser-verified, and ready to commit. Request is next.
 
-**Exact next action:** Before building the Property slice, resolve where its Files card lives. Unlike Client,
-a Property has no detail page — it is only ever edited through `PropertyDialog.svelte`
-(`src/lib/components/clients/PropertyDialog.svelte`), which writes immediately and has no id to attach files
-to until a new property is first saved. Decide with Jafar (or research Jobber's own pattern) whether Files
-belongs inside that dialog (disabled/hidden until the property exists) or needs its own surface, then build
-Property the same way Client was built: `RecordFilesCard` with `entityType="property"`, reusing
-`detachFileFromRecord`/`attachFilesToRecord` and the existing `/api/files/links` route unchanged.
+**Exact next action:** Commit 5B (`PropertyDialog.svelte`, the client detail page's `clientLabel` prop, and the
+behavior contract update), then start Request the same way: mount `RecordFilesCard` with `entityType="request"`
+wherever its detail view sits.
 
 **Blockers:**
 
 - An upload still cannot be watched turning usable until deployment sets the values in ROADMAP "Approval
   gates" (worker secret, scanner host/port, two Vault secrets, and the cron job that ships switched off).
   Until then every upload correctly stops at "Still being checked".
+
+**What 5B shipped (uncommitted):** `PropertyDialog.svelte` now takes a required `clientLabel` prop and mounts
+`RecordFilesCard` (`surface="section"`, `entityType="property"`) once a property has an id, with an honest-empty
+line while adding a new one. Jobber has no property-level files feature to copy; placement follows this
+campaign's own contract, which already named the property dialog's own-button exception before this slice was
+built. `npm run check` and the files/clients unit tests are clean. Browser-verified on `/clients/<id>` (Raad
+LTD, Greenfield Property Group): "Add property" shows the honest-empty line with no card; "Edit property"
+shows the card, the "On this property" / "On Greenfield Property Group" picker sections, attach, and the same
+remove-confirmation wording as Client. Test attachment was removed after verification.
 
 **What 5A shipped (committed):**
 

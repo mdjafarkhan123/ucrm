@@ -75,6 +75,14 @@ reads the catalog instead of the old `attachments` rows. Three behaviors here ar
   inside a confirmation dialog, each of which carries its own button — the same exception a client's
   property dialog already uses — so nothing about a file is left staged and unsaved.
 
+The Property slice followed: `RecordFilesCard` mounts inside `PropertyDialog.svelte` itself, since a Property
+has no page of its own — it is only ever edited through that dialog, which already writes on its own button.
+Jobber has no property-level files feature to copy, so placement follows the exception above rather than a
+Jobber pattern. A new, unsaved property has no id to attach a File to, so the dialog shows "Files can be added
+once this property is saved" instead of the card until the property exists; editing a saved property shows the
+real card, plus an "On `<client>`" picker section so a file already on the owning client can be reused without
+re-uploading. Browser-verified 2026-09-22 (Raad LTD test org).
+
 Decisions settled while building the schema, confirmed by Jafar 2026-09-21 (he asked for the industry-standard, contractor-easy choice):
 
 - **Folders are flat.** The contract asks for optional user folders, not a tree. A nesting column can be

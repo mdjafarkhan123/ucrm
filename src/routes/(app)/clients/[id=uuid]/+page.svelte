@@ -668,6 +668,7 @@
 			<PropertyDialog
 				open
 				{clientId}
+				clientLabel={client.display_name}
 				property={propertyDialog.property}
 				onSaved={() => void refreshProperties()}
 				onClose={() => (propertyDialog = null)}
