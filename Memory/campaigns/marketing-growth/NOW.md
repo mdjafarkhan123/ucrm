@@ -6,32 +6,38 @@ Ship simple, safe contractor Marketing: one-off email first, with every approved
 
 ## State
 
-M3 complete 2026-09-20. All five journey steps (Goal, Customers, Email, Delivery, Review) are built, saved,
-and browser-verified end to end against Raad LTD (`e53d53a`, `cf61575`, `5576295`, `eedc056`, `fe7cba9`).
-Review shows the rendered desktop/mobile message, goal and customer-group rules, exact eligible/excluded
-counts with reasons (reusing `CustomerGroupPreview`), sender/replies, CTA destination, the allowance notice,
-the "cannot be recalled" statement, and an owner/admin-gated Send/Schedule button that stays disabled --
-nothing sends via SES yet.
+M1-M3 complete. SES production access APPROVED (console, 2026-09-22): 50,000 emails/24h, 14/sec, account
+`881776924275` "UCRM Production Workloads", us-east-1.
 
-## Not yet done
+M4 stage 1 (per-org SES sending identity) is **committed** as `97f94b2`. It still has never run against real AWS
+or a real DNS zone and waits on Jafar's IAM user and `AWS_SES_*` values.
 
-M4 (real SES send code, launch command, gradual dispatcher, cancellation, "send a test email") is the only
-part left before a campaign can actually go out.
+M4 stage 2 (launch snapshot + Marketing allowance + `marketing_launch_campaign`) is **done and committed** as
+`7fc6223`. Migration `20260922160000` is applied to the live database (Jafar approved 2026-09-22), types are
+regenerated, and `launchCampaign` is in `src/lib/server/marketing/campaigns.ts`. Nothing calls it yet by design.
+Read `Memory/campaigns/marketing-growth/parts/M4.md` before continuing.
+
+Unrelated: ~75 quote/settings/team unit tests fail on this branch. They fail identically without any of this
+work and belong to the in-flight files-media Quote adoption, not to Marketing.
 
 ## Exact next action
 
-M4 needs SES production access first (the account is still in sandbox) -- that's Jafar's action, not a build
-step. Ask Jafar whether SES production access has been requested/granted before starting M4. If not yet
-requested, that's the blocker to raise with him.
+Start stage 3, the Marketing dispatcher (claim/finalize RPC pair over `marketing_campaign_recipients`, internal
+worker route on `runBoundedDrain`, lease `communications-marketing-outbox`). Stage 3 needs the SES call to be
+real, so settle the From-address decision recorded at the end of `parts/M4.md` first, and note that stage 3
+cannot be proven end to end until Jafar supplies the `AWS_SES_*` values stage 1 is waiting on.
 
 ## Blockers
 
-M4 blocked on SES production access (infrastructure/provider action, outside this session's authorization).
-M9 (SMS marketing) blocked until Communications A2 passes live SMS gates -- later.
+Stage 1 cannot be proven without the AWS IAM user plus `AWS_SES_*` env values (Jafar), and the first
+live DNS run against a real contractor domain needs a separate direct go-ahead. M9 (SMS marketing) stays blocked
+until Communications A2 passes live SMS gates.
 
 ## Pointers
 
-Plan: `docs/marketing-first-release-plan.md` (§2 provider boundary, §3 M4). Blueprint:
-`docs/marketing-product-blueprint.md` (§8, §9). Roadmap: `Memory/campaigns/marketing-growth/ROADMAP.md` M4 row.
+Part packet: `Memory/campaigns/marketing-growth/parts/M4.md`. Plan: `docs/marketing-first-release-plan.md`
+(§2 provider boundary, §3 M4). Blueprint: `docs/marketing-product-blueprint.md` (§8, §9, §20).
+AWS: SSO `https://d-90667ef85d.awsapps.com/start/#/` -> "UCRM Production Workloads" -> AdministratorAccess
+-> SES (us-east-1); CLI profile `ucrm`, re-auth `aws sso login --sso-session ucrm`.
 
-Resume: `continue marketing growth` -- ask Jafar about SES production access before starting M4.
+Resume: `continue marketing growth` -- read parts/M4.md, continue at the current stage.
