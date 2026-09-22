@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -19,7 +18,7 @@
 		type JobExpenseInput,
 		type JobWriteError
 	} from '$lib/jobs/api';
-	import { attachmentsKey, deleteAttachment, fetchAttachments } from '$lib/collaboration/api';
+	import { detachFileFromRecord, fetchFiles } from '$lib/files/api';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import paperclipIcon from '@tabler/icons/outline/paperclip.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
@@ -45,7 +44,6 @@
 
 	const toast = getToastManager();
 	const queryClient = useQueryClient();
-	const currentUserId = $derived((page.data.user?.id as string | undefined) ?? '');
 
 	const expensesQuery = createQuery(() => ({
 		queryKey: jobExpensesKey(jobId),
@@ -122,21 +120,26 @@
 		if (!expense || busyId) return;
 		busyId = expense.id;
 		try {
-			// R2 is reachable only from the attachment route, so a receipt's file has to be removed there
-			// before the expense row goes — otherwise it sits in the bucket forever with nothing pointing at
-			// it. Best-effort per file: the expense is still removed even if a receipt refuses to.
+			// A receipt is a File like any other: removing the expense takes it off this record, the same
+			// "Remove from this record" every other file card does. The File itself, its stored object, and
+			// any other use it has stay untouched — it never belonged only to this expense.
 			if (expense.receipt_count > 0) {
-				const files = await fetchAttachments('job_expense', expense.id);
+				const { files } = await fetchFiles({
+					view: 'on_record',
+					folderId: '',
+					search: '',
+					entityType: 'job_expense',
+					entityId: expense.id
+				});
 				for (const file of files) {
 					try {
-						await deleteAttachment(file.id);
+						await detachFileFromRecord(file.id, 'job_expense', expense.id);
 					} catch (fileError) {
-						console.error('Could not delete a receipt before removing an expense.', fileError);
+						console.error('Could not take a receipt off an expense before removing it.', fileError);
 					}
 				}
-				void queryClient.invalidateQueries({
-					queryKey: attachmentsKey('job_expense', expense.id)
-				});
+				void queryClient.invalidateQueries({ queryKey: ['files', 'list'] });
+				void queryClient.invalidateQueries({ queryKey: ['files', 'detail'] });
 			}
 
 			await deleteJobExpense(jobId, expense.id);
@@ -241,7 +244,6 @@
 	{locale}
 	{currencyCode}
 	canManageTeam={Boolean(data?.can_manage_team)}
-	{currentUserId}
 	{writeExpense}
 	{onSaved}
 	onClose={() => {

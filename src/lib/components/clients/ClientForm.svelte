@@ -9,7 +9,7 @@
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import FormNotesCard from '$lib/components/forms/FormNotesCard.svelte';
-	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
+	import PendingFilesCard from '$lib/components/files/PendingFilesCard.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import ClientTagSelect from './ClientTagSelect.svelte';
 	import CommunicationSettingsDialog from './CommunicationSettingsDialog.svelte';
@@ -104,7 +104,7 @@
 	let saving = $state(false);
 	let layout = $state<RecordFormLayout>();
 	let settingsOpen = $state(false);
-	let attachmentsCard = $state<AttachmentsCard>();
+	let attachmentsCard = $state<PendingFilesCard>();
 	let pendingFileCount = $state(0);
 
 	// Save stays quiet until something has actually changed. The baseline is the empty form on a create
@@ -523,11 +523,10 @@
 				error={fieldErrors.initial_note ?? ''}
 			/>
 
-			<AttachmentsCard
+			<PendingFilesCard
 				bind:this={attachmentsCard}
 				onPendingChange={(count) => (pendingFileCount = count)}
 				entityType="client"
-				entityId={targetClientId || undefined}
 			/>
 		{/snippet}
 

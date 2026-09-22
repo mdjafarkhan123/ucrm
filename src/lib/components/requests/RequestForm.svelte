@@ -9,7 +9,7 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormNotesCard from '$lib/components/forms/FormNotesCard.svelte';
-	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
+	import PendingFilesCard from '$lib/components/files/PendingFilesCard.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import AssessmentBlock from '$lib/components/requests/AssessmentBlock.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
@@ -78,7 +78,7 @@
 	let formError = $state('');
 	let saving = $state(false);
 	let layout = $state<RecordFormLayout>();
-	let attachmentsCard = $state<AttachmentsCard>();
+	let attachmentsCard = $state<PendingFilesCard>();
 	let pendingFileCount = $state(0);
 
 	// The visit and the line items live outside `form` because each one is its own record with its own
@@ -347,11 +347,10 @@
 				error={fieldErrors.initial_note ?? ''}
 			/>
 
-			<AttachmentsCard
+			<PendingFilesCard
 				bind:this={attachmentsCard}
 				onPendingChange={(count) => (pendingFileCount = count)}
 				entityType="request"
-				entityId={savedRequestId || undefined}
 			/>
 		{/snippet}
 

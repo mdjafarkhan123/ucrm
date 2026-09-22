@@ -7,7 +7,8 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import MoneyInput from '$lib/components/forms/MoneyInput.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
-	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
+	import RecordFilesCard from '$lib/components/files/RecordFilesCard.svelte';
+	import PendingFilesCard from '$lib/components/files/PendingFilesCard.svelte';
 	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
 	import type { CalendarDate } from '@internationalized/date';
 	import { assignableTeamKey, fetchAssignableTeam, type TeamMember } from '$lib/team/api';
@@ -16,16 +17,20 @@
 	// One expense, recorded or corrected — the twin of the time-entry dialog. Jobber's form is matched field
 	// for field: item name, accounting code, description, date, total, who to pay back, and a receipt. The
 	// total is money, so it lives behind jobs.view_price on the reader; the person recording it typed it, so
-	// it is here. The receipt is a real attachment: the AttachmentsCard stages the picked files and this
-	// dialog's Save is the button that writes them, right after the expense itself is written and its id is
-	// known — the same "no write without a save button" rule the card follows on a page.
+	// it is here.
+	//
+	// The receipt is a File like any other, but the two directions need different cards. Correcting an
+	// existing expense already has a real id, so RecordFilesCard writes each change immediately, same as
+	// every other record. Recording a new one does not have an id yet — the File Manager can only check and
+	// file a File against a record that already exists — so PendingFilesCard stages the picked receipt in
+	// the browser and this dialog's Save is the button that uploads it, right after the expense itself is
+	// written and its id is known.
 	let {
 		open,
 		expense = null,
 		locale = 'en-US',
 		currencyCode = 'USD',
 		canManageTeam = false,
-		currentUserId = '',
 		writeExpense,
 		onSaved,
 		onClose
@@ -37,7 +42,6 @@
 		currencyCode?: string;
 		/** Whether this person may pick anyone to reimburse. Without it the list is still shown for context. */
 		canManageTeam?: boolean;
-		currentUserId?: string;
 		/** Writes the expense and resolves with its id, or throws a JobWriteError. */
 		writeExpense: (input: JobExpenseInput) => Promise<string>;
 		/** Called after the expense and its receipts are saved. */
@@ -53,7 +57,7 @@
 	let reimburseTo = $state('');
 	let saving = $state(false);
 	let error = $state('');
-	let receipts: AttachmentsCard | undefined = $state();
+	let receipts: PendingFilesCard | undefined = $state();
 
 	// The crew list feeds the "reimburse to" picker. Worth fetching only while the dialog is open.
 	const teamQuery = createQuery(() => ({
@@ -123,9 +127,10 @@
 				reimburse_to_user_id: reimburseTo || null
 			});
 
-			// The receipt files wait for exactly this moment: the expense now has an id to hang off. saveAll
-			// uploads the picked files and removes any staged for deletion, and reports how many failed.
-			const failures = (await receipts?.saveAll(id)) ?? 0;
+			// Only a brand-new expense has a staged receipt waiting on this moment: the expense now has an id
+			// to hang it off. Correcting an existing expense already wrote every receipt change immediately,
+			// through RecordFilesCard, so there is nothing left to save here.
+			const failures = expense ? 0 : ((await receipts?.saveAll(id)) ?? 0);
 			onSaved(
 				failures > 0
 					? expense
@@ -180,14 +185,22 @@
 			bind:value={reimburseTo}
 		/>
 
-		<AttachmentsCard
-			bind:this={receipts}
-			entityType="job_expense"
-			entityId={expense?.id}
-			{currentUserId}
-			title="Receipt"
-			surface="section"
-		/>
+		{#if expense}
+			<RecordFilesCard
+				entityType="job_expense"
+				entityId={expense.id}
+				recordLabel="this expense"
+				title="Receipt"
+				surface="section"
+			/>
+		{:else}
+			<PendingFilesCard
+				bind:this={receipts}
+				entityType="job_expense"
+				title="Receipt"
+				surface="section"
+			/>
+		{/if}
 
 		<div class="expense-dialog__actions">
 			<Button variant="secondary" variation="subtle" disabled={saving} onclick={closeIfIdle}>
