@@ -2,12 +2,11 @@
 
 **Goal:** One contractor File Manager backed by private R2, with one File linked to every CRM use.
 
-**Active part:** Part 5, operational-record adoption. Client (5A) and Property (5B) are both complete,
-browser-verified, and ready to commit. Request is next.
+**Active part:** Part 5, operational-record adoption. Client (`0f7b0c9`), Property (`f7010d3`), and Request are
+all complete, browser-verified, and committed. Job is next.
 
-**Exact next action:** Commit 5B (`PropertyDialog.svelte`, the client detail page's `clientLabel` prop, and the
-behavior contract update), then start Request the same way: mount `RecordFilesCard` with `entityType="request"`
-wherever its detail view sits.
+**Exact next action:** Mount `RecordFilesCard` with `entityType="job"` on the Job detail page, replacing
+whatever attachment mechanism it currently uses, the same way Request replaced its `AttachmentsCard`.
 
 **Blockers:**
 
@@ -15,47 +14,32 @@ wherever its detail view sits.
   gates" (worker secret, scanner host/port, two Vault secrets, and the cron job that ships switched off).
   Until then every upload correctly stops at "Still being checked".
 
-**What 5B shipped (uncommitted):** `PropertyDialog.svelte` now takes a required `clientLabel` prop and mounts
-`RecordFilesCard` (`surface="section"`, `entityType="property"`) once a property has an id, with an honest-empty
-line while adding a new one. Jobber has no property-level files feature to copy; placement follows this
-campaign's own contract, which already named the property dialog's own-button exception before this slice was
-built. `npm run check` and the files/clients unit tests are clean. Browser-verified on `/clients/<id>` (Raad
-LTD, Greenfield Property Group): "Add property" shows the honest-empty line with no card; "Edit property"
-shows the card, the "On this property" / "On Greenfield Property Group" picker sections, attach, and the same
-remove-confirmation wording as Client. Test attachment was removed after verification.
-
-**What 5A shipped (committed):**
-
-- `20260921230000` (detach command + auto-link on publish) and `20260922090000`, which corrects it: 230000
-  replaced the wrong `finalize_file_processing` signature and left a second overload behind. Both are pushed
-  to the linked database and `src/lib/database.types.ts` is regenerated.
-- `DELETE /api/files/links`, `detachFileFromRecord`, `RecordFilesCard.svelte` (+ 5 passing component tests),
-  and the client detail page, which now mounts it instead of `AttachmentsCard`.
-- Files left the client page's save bar. Adding happens in the picker dialog and removing in a confirm
-  dialog, both of which carry their own button — the design skill's modal exception, not a new pattern.
-- Browser-verified end to end on `/clients/<id>` (Raad LTD test org): attach from the picker lands the file in
-  the card and bumps its count; the remove confirm dialog reads "Remove `<name>`? This takes the file off this
-  client. It stays in your files, and anywhere else it is used keeps it."; after confirming, the file is gone
-  from the card but still listed in `/files`. Test attachments made during verification were cleaned up
-  afterward.
-- `supabase/tests/database/files_record_adoption.sql` passed 17/17 after fixing its `plan(16)` off-by-one
-  (17 assertions are written; only the plan count was stale). Run via a local `supabase db reset` +
-  `supabase test db` — the first attempt failed because the local stack was mid-reset and missing the last
-  three Files migrations; a fresh reset picked them all up.
+**What Request shipped (committed):** `src/routes/(app)/requests/[id=uuid]/+page.svelte` now mounts
+`RecordFilesCard` (`entityType="request"`, `clientId`/`clientLabel` from the request's client) in the rail,
+replacing `AttachmentsCard`. Unlike Property, a Request always has its own page and an id from creation, so
+there is no saved/unsaved split — it follows the Client shape. Files left the page's save bar entirely:
+`pendingFileCount`, `attachmentsCard` state, and the "files last" save step were removed along with it, since
+adding/removing now carries its own button (the same modal exception Client and Property use). `npm run check`
+is clean (only the 3 pre-existing `resolve()` union-complexity errors) and the files/clients unit tests
+(10/10) pass. Browser-verified on `/requests/<id>` (Raad LTD, "Gutter clean with visit" — Marcus Ellison): the
+picker offered "On this request", "Marcus Ellison" (client reuse, correctly empty), and All files; attaching
+`test-visit-photo.jpg` bumped the card to Files (1) with no dirty-bar prompt; the remove confirm read "This
+takes the file off this request. It stays in your files, and anywhere else it is used keeps it."; confirming
+showed the "Removed from this request" toast and returned the card to Files (0). Test attachment was cleaned
+up after verification.
 
 **Non-obvious risks:**
 
 - The picker's "no access to the library" branch tells the reader they can still upload straight to the
-  record, but offers no uploader. Harmless for Client (everyone who can edit a client holds `files.view`);
-  it has to be fixed before the Job and Visit slices, where field members land on it.
+  record, but offers no uploader. Harmless for Client and Request (everyone who can edit either holds
+  `files.view`); it has to be fixed before Job and Visit, where field members land on it.
 - `npm run check` needs `NODE_OPTIONS=--max-old-space-size=8192`; it OOMs otherwise. Three
   "union type too complex" errors in `(app)/+layout.svelte`, `OpportunityBriefDrawer` and `invoices/new`
   are pre-existing `resolve()` route-union noise, not this work.
 - `npm run test:unit` still fails 71 tests across quotes, settings and team. All predate this work.
-- Several `communications_*` and `automation_6d3` pgTAP files fail on a fresh local rebuild with
-  `invalid URL "REPLACE_ME_set_the_real_internal_route_url..."` — a stale placeholder unrelated to Files.
 
 **Pointers:**
 
-- `docs/files-media-behavior-contract.md` — the approved model, including the three reuse decisions
+- `docs/files-media-behavior-contract.md` — the approved model, including the reuse decisions and each
+  slice's placement reasoning
 - `Design/Files and Media/README.md` — the workspace blueprint

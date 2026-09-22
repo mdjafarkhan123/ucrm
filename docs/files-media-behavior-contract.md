@@ -83,6 +83,14 @@ once this property is saved" instead of the card until the property exists; edit
 real card, plus an "On `<client>`" picker section so a file already on the owning client can be reused without
 re-uploading. Browser-verified 2026-09-22 (Raad LTD test org).
 
+The Request slice followed the Client shape rather than the Property one: a Request always has its own detail
+page and an id from the moment it exists, so `RecordFilesCard` mounts straight into the page rail with no
+saved/unsaved split. It replaces the old `AttachmentsCard`, which had been staged through the page's save bar;
+files leave that bar for the same reason they left the Client's — adding happens in the picker and removing in
+its own confirm dialog, so the bar has nothing left to wait for. The card also takes the request's client as
+`clientId`/`clientLabel`, so a file already on that client can be reused without re-uploading, the same reuse
+path Property offers. Browser-verified 2026-09-22 (Raad LTD test org).
+
 Decisions settled while building the schema, confirmed by Jafar 2026-09-21 (he asked for the industry-standard, contractor-easy choice):
 
 - **Folders are flat.** The contract asks for optional user folders, not a tree. A nesting column can be

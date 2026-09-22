@@ -21,7 +21,7 @@
 	import AssessmentBlock from '$lib/components/requests/AssessmentBlock.svelte';
 	import RequestPricingBlock from '$lib/components/quotes/RequestPricingBlock.svelte';
 	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
-	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
+	import RecordFilesCard from '$lib/components/files/RecordFilesCard.svelte';
 	import ActivityFeed from '$lib/components/collaboration/ActivityFeed.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
@@ -87,8 +87,6 @@
 	let editingOverview = $state(false);
 	let descriptionDraft = $state('');
 	let notePending = $state<NoteChange[]>([]);
-	let attachmentsCard = $state<AttachmentsCard>();
-	let pendingFileCount = $state(0);
 	let saving = $state(false);
 	let saveError = $state('');
 
@@ -99,12 +97,8 @@
 
 	// Two separate questions for the bar at the bottom. An open editor puts the page in edit mode even
 	// before a word is typed, so Cancel is there to close it again; Save waits for a real change.
-	const isEditing = $derived(
-		editingTitle || editingOverview || notePending.length > 0 || pendingFileCount > 0
-	);
-	const isDirty = $derived(
-		titleChanged || overviewChanged || notePending.length > 0 || pendingFileCount > 0
-	);
+	const isEditing = $derived(editingTitle || editingOverview || notePending.length > 0);
+	const isDirty = $derived(titleChanged || overviewChanged || notePending.length > 0);
 
 	function discardDraft() {
 		editingTitle = false;
@@ -112,7 +106,6 @@
 		editingOverview = false;
 		descriptionDraft = '';
 		notePending = [];
-		attachmentsCard?.discardChanges();
 		saveError = '';
 	}
 
@@ -168,18 +161,7 @@
 				notePending = notePending.filter((entry) => entry !== change);
 			}
 
-			// Files last, and their failures are reported rather than thrown: everything above is already
-			// saved, so a stuck upload must not read as the whole save failing.
-			const failedFiles = (await attachmentsCard?.saveAll(requestId)) ?? 0;
-			if (failedFiles > 0) {
-				saveError =
-					failedFiles === 1
-						? 'Everything else was saved, but one file did not upload. Try it again below.'
-						: `Everything else was saved, but ${failedFiles} files did not upload. Try them again below.`;
-			} else {
-				toast.success('Request saved');
-			}
-
+			toast.success('Request saved');
 			await refresh();
 		} catch (error) {
 			saveError = error instanceof Error ? error.message : 'Those changes could not be saved.';
@@ -511,12 +493,13 @@
 						/>
 					</RailCard>
 
-					<AttachmentsCard
-						bind:this={attachmentsCard}
-						onPendingChange={(count: number) => (pendingFileCount = count)}
+					<RecordFilesCard
 						entityType="request"
 						entityId={requestId}
-						{currentUserId}
+						recordLabel="this request"
+						pickerLabel="On this request"
+						clientId={saved.client?.id ?? null}
+						clientLabel={saved.client?.display_name ?? null}
 					/>
 				{/if}
 			{/snippet}
