@@ -3,7 +3,7 @@
 **Goal:** One contractor File Manager backed by private R2, with one File linked to every CRM use.
 
 **Just closed:** Part 5F — record-scoped upload permission, extended to every linked-entity type in one pass,
-plus mounting `RecordFilesCard` on Visit. Not yet committed.
+plus mounting `RecordFilesCard` on Visit. Committed `d531915`.
 
 **What shipped (see `docs/files-media-behavior-contract.md` for the full write-up):**
 
@@ -34,11 +34,9 @@ test data, not customer content; fine to leave.
 
 **Exact next action (resume here):**
 
-1. Commit this session's work (nothing is committed yet): the Part 5F permission fix, the `FileUploader`
-   bind fix, Visit's adoption, and the contract/roadmap updates.
-2. Part 5 is then fully closed except forms and job expense receipts, which still run on the old
-   `AttachmentsCard` and were never started — decide with Jafar whether those finish Part 5 or move to Part 6
-   before selecting the next slice.
+Ask Jafar: forms and job expense receipts still run on the old `AttachmentsCard` and were never started, but
+Part 5's roadmap gate names them. Decide whether they finish Part 5 or move into Part 6, then select the next
+slice.
 
 **Other blockers (unrelated to this work):**
 
