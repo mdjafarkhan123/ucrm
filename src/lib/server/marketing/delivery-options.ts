@@ -33,7 +33,7 @@ export async function loadMarketingDeliveryOptions(
 ): Promise<MarketingDeliveryOptions> {
 	const owner = getOwnerSupabaseClient();
 
-	const [domains, settings, forms, allowance] = await Promise.all([
+	const [domains, marketingDomain, settings, forms, allowance] = await Promise.all([
 		owner
 			.from('communication_email_domains')
 			.select('id')
@@ -44,6 +44,15 @@ export async function loadMarketingDeliveryOptions(
 			.eq('provider_authenticated', true)
 			.eq('ownership_status', 'passing')
 			.eq('dkim_status', 'passing'),
+		// The verified news.<root> domain a campaign actually leaves from (stage 3's From-address decision,
+		// Memory/campaigns/marketing-growth/parts/M4.md) -- shown, not chosen, same as the sender itself.
+		owner
+			.from('communication_email_domains')
+			.select('domain_name')
+			.eq('organization_id', organizationId)
+			.eq('purpose', 'marketing_sending')
+			.eq('lifecycle_state', 'verified')
+			.maybeSingle(),
 		owner
 			.from('organization_settings')
 			.select('phone, website')
@@ -59,13 +68,16 @@ export async function loadMarketingDeliveryOptions(
 		owner.rpc('effective_marketing_email_limit', { target_organization_id: organizationId })
 	]);
 
-	for (const result of [domains, settings, forms, allowance]) {
+	for (const result of [domains, marketingDomain, settings, forms, allowance]) {
 		if (result.error) throw result.error;
 	}
 
 	const domainIds = (domains.data ?? []).map((domain) => domain.id);
+	// A derived address needs both an operational sender (for the display name and local part) and a
+	// verified marketing domain (to send through) -- a campaign cannot leave without both, so showing a
+	// real-looking address for only one half would be misleading.
 	let sender: MarketingDeliverySender | null = null;
-	if (domainIds.length > 0) {
+	if (domainIds.length > 0 && marketingDomain.data) {
 		const senders = await owner
 			.from('communication_email_senders')
 			.select('id, email_address, display_name, is_organization_default')
@@ -77,8 +89,14 @@ export async function loadMarketingDeliveryOptions(
 			.limit(1);
 		if (senders.error) throw senders.error;
 		const row = senders.data?.[0];
-		if (row)
-			sender = { id: row.id, email_address: row.email_address, display_name: row.display_name };
+		if (row) {
+			const localPart = row.email_address.split('@')[0];
+			sender = {
+				id: row.id,
+				email_address: `${localPart}@${marketingDomain.data.domain_name}`,
+				display_name: row.display_name
+			};
+		}
 	}
 
 	const publishedForms = (forms.data ?? []).filter((form) => form.current_published_version_id);

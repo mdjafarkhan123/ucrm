@@ -10,6 +10,7 @@ import {
 	GetEmailIdentityCommand,
 	GetTenantCommand,
 	PutEmailIdentityMailFromAttributesCommand,
+	SendEmailCommand,
 	type EventType
 } from '@aws-sdk/client-sesv2';
 import { getSesEnv, SesError } from './ses-env';
@@ -280,4 +281,84 @@ export function sesConfigurationSetArn(configurationSetName: string): string {
 export function sesMailFromMxTarget(): string {
 	const { env } = getSes();
 	return `feedback-smtp.${env.AWS_SES_REGION}.amazonses.com`;
+}
+
+// ---------------------------------------------------------------------------------------------------
+// Marketing send (M4 stage 3). Mirrors OperationalEmailSubmissionError's three-way outcome from brevo.ts:
+// 'retry' for a transient rejection worth trying again, 'cancelled' for one that will never succeed, and
+// 'submission_unknown' when the SDK call itself never returned an answer (a request that reached SES may
+// have already been accepted, so a blind retry risks a duplicate send to a real customer).
+// ---------------------------------------------------------------------------------------------------
+
+export class MarketingEmailSubmissionError extends Error {
+	constructor(
+		message: string,
+		public readonly outcome: 'retry' | 'cancelled' | 'submission_unknown',
+		public readonly code: string
+	) {
+		super(message);
+		this.name = 'MarketingEmailSubmissionError';
+	}
+}
+
+export type MarketingEmail = {
+	from: { email: string; name: string };
+	to: { email: string };
+	replyTo: { email: string; name: string };
+	subject: string;
+	htmlContent: string;
+	textContent: string;
+	tenantName: string;
+	configurationSetName: string;
+	// RFC 8058 List-Unsubscribe / List-Unsubscribe-Post, built by unsubscribe-links.ts.
+	headers: { name: string; value: string }[];
+};
+
+function formattedAddress(address: { email: string; name?: string }): string {
+	return address.name ? `${address.name} <${address.email}>` : address.email;
+}
+
+export async function sendMarketingEmail(message: MarketingEmail): Promise<{ messageId: string }> {
+	const { client } = getSes();
+	try {
+		const result = await client.send(
+			new SendEmailCommand({
+				FromEmailAddress: formattedAddress(message.from),
+				Destination: { ToAddresses: [message.to.email] },
+				ReplyToAddresses: [formattedAddress(message.replyTo)],
+				Content: {
+					Simple: {
+						Subject: { Data: message.subject, Charset: 'UTF-8' },
+						Body: {
+							Html: { Data: message.htmlContent, Charset: 'UTF-8' },
+							Text: { Data: message.textContent, Charset: 'UTF-8' }
+						},
+						Headers: message.headers.map((header) => ({
+							Name: header.name,
+							Value: header.value
+						}))
+					}
+				},
+				ConfigurationSetName: message.configurationSetName,
+				TenantName: message.tenantName
+			})
+		);
+
+		if (!result.MessageId)
+			throw new MarketingEmailSubmissionError(
+				'Amazon SES accepted the request without returning a message identifier.',
+				'submission_unknown',
+				'ses_missing_message_id'
+			);
+		return { messageId: result.MessageId };
+	} catch (error) {
+		if (error instanceof MarketingEmailSubmissionError) throw error;
+		const status = sesStatus(error);
+		const retryable = status === 429 || (status !== null && status >= 500);
+		throw new MarketingEmailSubmissionError(
+			`Amazon SES rejected the send${(error as AwsError)?.message ? `: ${(error as AwsError).message}` : '.'}`,
+			status == null ? 'submission_unknown' : retryable ? 'retry' : 'cancelled',
+			status == null ? 'ses_network_unknown' : `ses_${(error as AwsError)?.name ?? status}`
+		);
+	}
 }
