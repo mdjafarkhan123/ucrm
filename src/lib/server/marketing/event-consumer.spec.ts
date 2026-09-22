@@ -1,0 +1,224 @@
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('$env/dynamic/private', () => ({ env: {} }));
+
+import {
+	drainMarketingEventQueue,
+	runMonitoredMarketingEventsWake,
+	type MarketingEventsWorkerClient,
+	type SqsClientLike,
+	type SqsMessage
+} from './event-consumer';
+
+const deliveredMessage: SqsMessage = {
+	receiptHandle: 'receipt-1',
+	body: JSON.stringify({
+		eventType: 'Delivery',
+		mail: { messageId: 'msg-1', timestamp: '2026-09-22T10:00:00.000Z' },
+		delivery: {}
+	})
+};
+
+function fakeClient(overrides: Partial<MarketingEventsWorkerClient> = {}): {
+	client: MarketingEventsWorkerClient;
+	rpc: ReturnType<typeof vi.fn>;
+	insertEvent: ReturnType<typeof vi.fn>;
+} {
+	const rpc = vi.fn(async (name: string) => {
+		if (name === 'project_marketing_campaign_recipient_events') return { data: 0, error: null };
+		return { data: null, error: { message: `Unexpected RPC ${name}.` } };
+	});
+	const insertEvent = vi.fn(async () => ({ error: null }));
+	return {
+		client: { rpc, insertEvent, ...overrides } as MarketingEventsWorkerClient,
+		rpc,
+		insertEvent
+	};
+}
+
+function fakeSqs(batches: SqsMessage[][]): { sqs: SqsClientLike; removed: string[] } {
+	const removed: string[] = [];
+	let call = 0;
+	const sqs: SqsClientLike = {
+		async receive() {
+			const batch = batches[call] ?? [];
+			call += 1;
+			return batch;
+		},
+		async remove(receiptHandle) {
+			removed.push(receiptHandle);
+		}
+	};
+	return { sqs, removed };
+}
+
+describe('drainMarketingEventQueue', () => {
+	it('records a valid message, deletes it, and stops idle once the queue is empty', async () => {
+		const { client, insertEvent, rpc } = fakeClient();
+		const { sqs, removed } = fakeSqs([[deliveredMessage], []]);
+
+		const result = await drainMarketingEventQueue({ client, sqs });
+
+		expect(result).toMatchObject({
+			received: 1,
+			recorded: 1,
+			duplicates: 0,
+			skipped: 0,
+			stoppedBy: 'idle'
+		});
+		expect(insertEvent).toHaveBeenCalledWith({
+			provider_event_key: 'ses:msg-1:Delivery',
+			provider_message_id: 'msg-1',
+			event_kind: 'Delivery',
+			occurred_at: '2026-09-22T10:00:00.000Z',
+			payload: expect.objectContaining({ eventType: 'Delivery' })
+		});
+		expect(removed).toEqual(['receipt-1']);
+		expect(rpc).toHaveBeenCalledWith('project_marketing_campaign_recipient_events', {
+			batch_size: 200
+		});
+	});
+
+	it('deletes a duplicate message without re-throwing', async () => {
+		const { client } = fakeClient({
+			insertEvent: vi.fn(async () => ({ error: { code: '23505', message: 'duplicate key' } }))
+		});
+		const { sqs, removed } = fakeSqs([[deliveredMessage], []]);
+
+		const result = await drainMarketingEventQueue({ client, sqs });
+
+		expect(result).toMatchObject({ received: 1, recorded: 0, duplicates: 1 });
+		expect(removed).toEqual(['receipt-1']);
+	});
+
+	it('leaves an unparseable message undeleted for the DLQ policy', async () => {
+		const { client, insertEvent } = fakeClient();
+		const badMessage: SqsMessage = { receiptHandle: 'receipt-bad', body: 'not json' };
+		const { sqs, removed } = fakeSqs([[badMessage], []]);
+
+		const result = await drainMarketingEventQueue({ client, sqs });
+
+		expect(result).toMatchObject({ received: 1, recorded: 0, skipped: 1 });
+		expect(insertEvent).not.toHaveBeenCalled();
+		expect(removed).toEqual([]);
+	});
+
+	it('leaves a message that does not match the SES event shape undeleted', async () => {
+		const { client } = fakeClient();
+		const wrongShape: SqsMessage = {
+			receiptHandle: 'receipt-2',
+			body: JSON.stringify({ hello: 'world' })
+		};
+		const { sqs, removed } = fakeSqs([[wrongShape], []]);
+
+		const result = await drainMarketingEventQueue({ client, sqs });
+
+		expect(result).toMatchObject({ received: 1, recorded: 0, skipped: 1 });
+		expect(removed).toEqual([]);
+	});
+
+	it('throws and does not delete when a non-duplicate insert error occurs', async () => {
+		const { client } = fakeClient({
+			insertEvent: vi.fn(async () => ({ error: { message: 'storage failure' } }))
+		});
+		const { sqs, removed } = fakeSqs([[deliveredMessage]]);
+
+		await expect(drainMarketingEventQueue({ client, sqs })).rejects.toThrow(/storage failure/);
+		expect(removed).toEqual([]);
+	});
+
+	it('stops at max_messages once the bound is reached', async () => {
+		const { client } = fakeClient();
+		const { sqs } = fakeSqs([[deliveredMessage], [deliveredMessage], [deliveredMessage]]);
+
+		const result = await drainMarketingEventQueue({
+			client,
+			sqs,
+			maxMessages: 1,
+			receiveBatchSize: 1
+		});
+
+		expect(result).toMatchObject({ received: 1, stoppedBy: 'max_messages' });
+	});
+
+	it('stops at time_budget once the deadline passes', async () => {
+		const { client } = fakeClient();
+		const { sqs } = fakeSqs([[deliveredMessage], [deliveredMessage]]);
+		let clock = 0;
+		const now = () => {
+			clock += 15_000;
+			return clock;
+		};
+
+		const result = await drainMarketingEventQueue({ client, sqs, timeBudgetMs: 10_000, now });
+
+		expect(result.stoppedBy).toBe('time_budget');
+	});
+});
+
+describe('runMonitoredMarketingEventsWake', () => {
+	it('reports already_running when the lease cannot be acquired', async () => {
+		const rpc = vi.fn(async (name: string) => {
+			if (name === 'acquire_communication_worker_lease') return { data: null, error: null };
+			if (name === 'record_communication_worker_wake_result') return { data: null, error: null };
+			return { data: null, error: { message: `Unexpected RPC ${name}.` } };
+		});
+		const client = { rpc, insertEvent: vi.fn() } as unknown as MarketingEventsWorkerClient;
+
+		const result = await runMonitoredMarketingEventsWake({ wakeCorrelationId: 'wake-1', client });
+
+		expect(result).toEqual({ outcome: 'already_running' });
+	});
+
+	it('drains, records the result, and releases the lease on the happy path', async () => {
+		const rpcCalls: string[] = [];
+		const rpc = vi.fn(async (name: string) => {
+			rpcCalls.push(name);
+			if (name === 'acquire_communication_worker_lease')
+				return { data: 'lease-token', error: null };
+			if (name === 'release_communication_worker_lease') return { data: null, error: null };
+			if (name === 'record_communication_worker_wake_result') return { data: null, error: null };
+			if (name === 'project_marketing_campaign_recipient_events') return { data: 0, error: null };
+			return { data: null, error: { message: `Unexpected RPC ${name}.` } };
+		});
+		const client = {
+			rpc,
+			insertEvent: vi.fn(async () => ({ error: null }))
+		} as MarketingEventsWorkerClient;
+		const { sqs } = fakeSqs([[]]);
+
+		const result = await runMonitoredMarketingEventsWake({
+			wakeCorrelationId: 'wake-2',
+			client,
+			sqs
+		});
+
+		expect(result.outcome).toBe('idle');
+		expect(rpcCalls).toContain('acquire_communication_worker_lease');
+		expect(rpcCalls).toContain('release_communication_worker_lease');
+		expect(rpcCalls).toContain('record_communication_worker_wake_result');
+	});
+
+	it('records an error outcome and releases the lease when the drain throws', async () => {
+		const rpc = vi.fn(async (name: string) => {
+			if (name === 'acquire_communication_worker_lease')
+				return { data: 'lease-token', error: null };
+			if (name === 'release_communication_worker_lease') return { data: null, error: null };
+			if (name === 'record_communication_worker_wake_result') return { data: null, error: null };
+			return { data: null, error: { message: `Unexpected RPC ${name}.` } };
+		});
+		const client = {
+			rpc,
+			insertEvent: vi.fn(async () => ({ error: { message: 'boom' } }))
+		} as unknown as MarketingEventsWorkerClient;
+		const { sqs } = fakeSqs([[deliveredMessage]]);
+
+		await expect(
+			runMonitoredMarketingEventsWake({ wakeCorrelationId: 'wake-3', client, sqs })
+		).rejects.toThrow(/boom/);
+		expect(rpc).toHaveBeenCalledWith(
+			'record_communication_worker_wake_result',
+			expect.objectContaining({ p_route_outcome: 'error' })
+		);
+	});
+});

@@ -7655,6 +7655,59 @@ export type Database = {
           },
         ]
       }
+      marketing_campaign_recipient_events: {
+        Row: {
+          event_kind: string
+          id: string
+          normalized_kind: string | null
+          occurred_at: string | null
+          organization_id: string | null
+          payload: Json
+          processed_at: string | null
+          processing_attempts: number
+          processing_error: string | null
+          provider_event_key: string
+          provider_message_id: string
+          received_at: string
+        }
+        Insert: {
+          event_kind: string
+          id?: string
+          normalized_kind?: string | null
+          occurred_at?: string | null
+          organization_id?: string | null
+          payload: Json
+          processed_at?: string | null
+          processing_attempts?: number
+          processing_error?: string | null
+          provider_event_key: string
+          provider_message_id: string
+          received_at?: string
+        }
+        Update: {
+          event_kind?: string
+          id?: string
+          normalized_kind?: string | null
+          occurred_at?: string | null
+          organization_id?: string | null
+          payload?: Json
+          processed_at?: string | null
+          processing_attempts?: number
+          processing_error?: string | null
+          provider_event_key?: string
+          provider_message_id?: string
+          received_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_campaign_recipient_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketing_campaign_recipients: {
         Row: {
           attempt_count: number
@@ -16755,6 +16808,10 @@ export type Database = {
         Args: never
         Returns: undefined
       }
+      dispatch_communication_marketing_events_worker_wake: {
+        Args: never
+        Returns: undefined
+      }
       dispatch_communication_marketing_worker_wake: {
         Args: never
         Returns: undefined
@@ -19472,6 +19529,10 @@ export type Database = {
       }
       process_next_form_submission: { Args: never; Returns: Json }
       process_next_import_row: { Args: never; Returns: Json }
+      project_marketing_campaign_recipient_events: {
+        Args: { batch_size?: number }
+        Returns: number
+      }
       provision_organization_from_application: {
         Args: {
           target_actor_owner_email?: string

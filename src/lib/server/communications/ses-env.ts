@@ -39,6 +39,12 @@ export function getSesEnv(): SesEnv {
 	return { ...result.data, accountId: result.data.AWS_SES_EVENT_SNS_TOPIC_ARN.split(':')[4] };
 }
 
+// The queue name is a fixed part of the provisioned pipeline (docs/marketing-first-release-plan.md), the same
+// "derive, never store-then-guess" convention as the per-organization tenant/config-set names.
+export function sesEventQueueUrl(env: SesEnv): string {
+	return `https://sqs.${env.AWS_SES_REGION}.amazonaws.com/${env.accountId}/ucrm-ses-events`;
+}
+
 export class SesError extends Error {
 	constructor(
 		message: string,
