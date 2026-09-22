@@ -166,3 +166,51 @@ export async function deleteCampaignDraft(
 	if (error) throw error;
 	return Boolean(data);
 }
+
+export type CampaignLaunchResult = {
+	campaign_id: string;
+	status: string;
+	revision: number;
+	scheduled_for: string | null;
+	launched_at: string;
+	total_count: number;
+	eligible_count: number;
+	excluded_count: number;
+	replayed: boolean;
+};
+
+// Confirming a campaign. Everything that makes it irreversible happens inside marketing_launch_campaign, in
+// one transaction: the audience is frozen into marketing_campaign_recipients, the Marketing allowance is
+// reserved, and the campaign leaves draft. This wrapper only carries the call and turns the two refusals the
+// caller can act on into the same errors updateCampaignDraft raises.
+//
+// `idempotencyKey` is what makes a retried request safe: the same key answers with the original launch
+// instead of sending to the same people twice. The caller must reuse one key per user action, not per attempt.
+// The marketing.launch permission and the readiness checks belong to the route, as with every other command
+// here -- the RPC is service-role only and trusts the organization it is given.
+export async function launchCampaign(
+	organizationId: string,
+	userId: string,
+	campaignId: string,
+	revision: number,
+	sendAt: string | null,
+	idempotencyKey: string
+): Promise<CampaignLaunchResult> {
+	const owner = getOwnerSupabaseClient();
+	const { data, error } = await owner.rpc('marketing_launch_campaign', {
+		target_organization_id: organizationId,
+		target_campaign_id: campaignId,
+		actor_user_id: userId,
+		expected_revision: revision,
+		// Postgres codegen does not mark a nullable timestamptz parameter as nullable; null is what the
+		// function expects for "send it now".
+		send_at: sendAt as string,
+		idempotency_key: idempotencyKey
+	});
+	if (error) {
+		if (error.code === 'P0409') throw new CampaignChangedError(error.message);
+		if (error.code === '23514') throw new CampaignInvalidError(error.message);
+		throw error;
+	}
+	return data as unknown as CampaignLaunchResult;
+}

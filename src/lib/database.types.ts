@@ -7637,6 +7637,77 @@ export type Database = {
 					}
 				];
 			};
+			marketing_campaign_recipients: {
+				Row: {
+					campaign_id: string;
+					client_contact_method_id: string | null;
+					client_id: string;
+					created_at: string;
+					display_name: string;
+					excluded_reason: string | null;
+					id: string;
+					organization_id: string;
+					recipient_email: string | null;
+					status: string;
+					updated_at: string;
+				};
+				Insert: {
+					campaign_id: string;
+					client_contact_method_id?: string | null;
+					client_id: string;
+					created_at?: string;
+					display_name: string;
+					excluded_reason?: string | null;
+					id?: string;
+					organization_id: string;
+					recipient_email?: string | null;
+					status: string;
+					updated_at?: string;
+				};
+				Update: {
+					campaign_id?: string;
+					client_contact_method_id?: string | null;
+					client_id?: string;
+					created_at?: string;
+					display_name?: string;
+					excluded_reason?: string | null;
+					id?: string;
+					organization_id?: string;
+					recipient_email?: string | null;
+					status?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'marketing_campaign_recipients_campaign_fkey';
+						columns: ['organization_id', 'campaign_id'];
+						isOneToOne: false;
+						referencedRelation: 'marketing_campaigns';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'marketing_campaign_recipients_client_fkey';
+						columns: ['organization_id', 'client_id'];
+						isOneToOne: false;
+						referencedRelation: 'clients';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'marketing_campaign_recipients_contact_method_fkey';
+						columns: ['organization_id', 'client_contact_method_id'];
+						isOneToOne: false;
+						referencedRelation: 'client_contact_methods';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'marketing_campaign_recipients_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			marketing_campaigns: {
 				Row: {
 					content: Json;
@@ -7645,9 +7716,16 @@ export type Database = {
 					customer_group_id: string | null;
 					goal: string;
 					id: string;
+					launch_idempotency_key: string | null;
+					launched_at: string | null;
+					launched_by: string | null;
 					name: string;
 					organization_id: string;
+					recipient_eligible_count: number | null;
+					recipient_excluded_count: number | null;
+					recipient_total_count: number | null;
 					revision: number;
+					scheduled_for: string | null;
 					status: string;
 					template_id: string | null;
 					updated_at: string;
@@ -7660,9 +7738,16 @@ export type Database = {
 					customer_group_id?: string | null;
 					goal: string;
 					id?: string;
+					launch_idempotency_key?: string | null;
+					launched_at?: string | null;
+					launched_by?: string | null;
 					name: string;
 					organization_id: string;
+					recipient_eligible_count?: number | null;
+					recipient_excluded_count?: number | null;
+					recipient_total_count?: number | null;
 					revision?: number;
+					scheduled_for?: string | null;
 					status?: string;
 					template_id?: string | null;
 					updated_at?: string;
@@ -7675,9 +7760,16 @@ export type Database = {
 					customer_group_id?: string | null;
 					goal?: string;
 					id?: string;
+					launch_idempotency_key?: string | null;
+					launched_at?: string | null;
+					launched_by?: string | null;
 					name?: string;
 					organization_id?: string;
+					recipient_eligible_count?: number | null;
+					recipient_excluded_count?: number | null;
+					recipient_total_count?: number | null;
 					revision?: number;
+					scheduled_for?: string | null;
 					status?: string;
 					template_id?: string | null;
 					updated_at?: string;
@@ -7756,6 +7848,105 @@ export type Database = {
 						columns: ['organization_id'];
 						isOneToOne: false;
 						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			marketing_email_allowance_periods: {
+				Row: {
+					created_at: string;
+					ends_at: string;
+					id: string;
+					opened_by_commercial_event_id: string | null;
+					organization_id: string;
+					starts_at: string;
+				};
+				Insert: {
+					created_at?: string;
+					ends_at: string;
+					id?: string;
+					opened_by_commercial_event_id?: string | null;
+					organization_id: string;
+					starts_at: string;
+				};
+				Update: {
+					created_at?: string;
+					ends_at?: string;
+					id?: string;
+					opened_by_commercial_event_id?: string | null;
+					organization_id?: string;
+					starts_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'marketing_email_allowance_periods_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			marketing_email_capacity_reservations: {
+				Row: {
+					accepted_count: number;
+					allowance_period_id: string;
+					campaign_id: string;
+					created_at: string;
+					id: string;
+					organization_id: string;
+					reservation_state: string;
+					reserved_at: string;
+					reserved_count: number;
+					settled_at: string | null;
+					updated_at: string;
+				};
+				Insert: {
+					accepted_count?: number;
+					allowance_period_id: string;
+					campaign_id: string;
+					created_at?: string;
+					id?: string;
+					organization_id: string;
+					reservation_state?: string;
+					reserved_at?: string;
+					reserved_count: number;
+					settled_at?: string | null;
+					updated_at?: string;
+				};
+				Update: {
+					accepted_count?: number;
+					allowance_period_id?: string;
+					campaign_id?: string;
+					created_at?: string;
+					id?: string;
+					organization_id?: string;
+					reservation_state?: string;
+					reserved_at?: string;
+					reserved_count?: number;
+					settled_at?: string | null;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'marketing_email_capacity_reservations_campaign_fkey';
+						columns: ['organization_id', 'campaign_id'];
+						isOneToOne: false;
+						referencedRelation: 'marketing_campaigns';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'marketing_email_capacity_reservations_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'marketing_email_capacity_reservations_period_fkey';
+						columns: ['allowance_period_id'];
+						isOneToOne: false;
+						referencedRelation: 'marketing_email_allowance_periods';
 						referencedColumns: ['id'];
 					}
 				];
@@ -18601,6 +18792,17 @@ export type Database = {
 					p_user_id: string;
 				};
 				Returns: number;
+			};
+			marketing_launch_campaign: {
+				Args: {
+					actor_user_id: string;
+					expected_revision: number;
+					idempotency_key: string;
+					send_at: string;
+					target_campaign_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
 			};
 			marketing_preview_counts: {
 				Args: { rules: Json; target_organization_id: string };
