@@ -12,8 +12,25 @@ import {
 export async function loadMarketingReadiness(organizationId: string): Promise<MarketingReadiness> {
 	const owner = getOwnerSupabaseClient();
 
-	const [domains, settings, pauses, allowance, consent] = await Promise.all([
-		// A domain a sender can actually use: the same conditions the email worker checks before it sends.
+	const [domains, senderDomains, settings, pauses, allowance, consent] = await Promise.all([
+		// Marketing sends through its OWN Amazon SES identity on news.<root>, never through the operational
+		// Brevo domain, so this must ask about purpose='marketing_sending'. spf_status is part of the test
+		// because the custom MAIL FROM subdomain is what gives a bulk stream its SPF alignment -- an identity
+		// without it is not honestly ready to send a campaign.
+		owner
+			.from('communication_email_domains')
+			.select('id')
+			.eq('organization_id', organizationId)
+			.eq('purpose', 'marketing_sending')
+			.eq('lifecycle_state', 'verified')
+			.eq('provider_verified', true)
+			.eq('provider_authenticated', true)
+			.eq('ownership_status', 'passing')
+			.eq('dkim_status', 'passing')
+			.eq('spf_status', 'passing'),
+		// The contractor's operational sending domain, which is where their chosen sender identity (the
+		// display name and address customers already recognise) lives. Marketing's own From address is derived
+		// from it, so a contractor with no sender still has nothing to send as.
 		owner
 			.from('communication_email_domains')
 			.select('id')
@@ -46,19 +63,20 @@ export async function loadMarketingReadiness(organizationId: string): Promise<Ma
 			.limit(1)
 	]);
 
-	for (const result of [domains, settings, pauses, allowance, consent]) {
+	for (const result of [domains, senderDomains, settings, pauses, allowance, consent]) {
 		if (result.error) throw result.error;
 	}
 
 	const domainIds = (domains.data ?? []).map((domain) => domain.id);
+	const senderDomainIds = (senderDomains.data ?? []).map((domain) => domain.id);
 	let hasEnabledSender = false;
-	if (domainIds.length > 0) {
+	if (senderDomainIds.length > 0) {
 		const senders = await owner
 			.from('communication_email_senders')
 			.select('id')
 			.eq('organization_id', organizationId)
 			.eq('lifecycle_state', 'enabled')
-			.in('domain_id', domainIds)
+			.in('domain_id', senderDomainIds)
 			.limit(1);
 		if (senders.error) throw senders.error;
 		hasEnabledSender = (senders.data ?? []).length > 0;

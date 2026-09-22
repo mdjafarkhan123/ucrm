@@ -6,31 +6,6 @@ export type Database = {
 	__InternalSupabase: {
 		PostgrestVersion: '14.5';
 	};
-	graphql_public: {
-		Tables: {
-			[_ in never]: never;
-		};
-		Views: {
-			[_ in never]: never;
-		};
-		Functions: {
-			graphql: {
-				Args: {
-					extensions?: Json;
-					operationName?: string;
-					query?: string;
-					variables?: Json;
-				};
-				Returns: Json;
-			};
-		};
-		Enums: {
-			[_ in never]: never;
-		};
-		CompositeTypes: {
-			[_ in never]: never;
-		};
-	};
 	public: {
 		Tables: {
 			access_audit_events: {
@@ -3307,6 +3282,44 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'communication_email_senders';
 						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			communication_ses_tenants: {
+				Row: {
+					configuration_set_name: string;
+					created_at: string;
+					event_destination_ready: boolean;
+					organization_id: string;
+					tenant_arn: string | null;
+					tenant_name: string;
+					updated_at: string;
+				};
+				Insert: {
+					configuration_set_name: string;
+					created_at?: string;
+					event_destination_ready?: boolean;
+					organization_id: string;
+					tenant_arn?: string | null;
+					tenant_name: string;
+					updated_at?: string;
+				};
+				Update: {
+					configuration_set_name?: string;
+					created_at?: string;
+					event_destination_ready?: boolean;
+					organization_id?: string;
+					tenant_arn?: string | null;
+					tenant_name?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_ses_tenants_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: true;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
 					}
 				];
 			};
@@ -11925,10 +11938,10 @@ export type Database = {
 			};
 			quote_version_attachments: {
 				Row: {
-					attachment_id: string;
 					created_at: string;
 					customer_visible: boolean;
 					display_name: string;
+					file_id: string;
 					id: string;
 					organization_id: string;
 					position: number;
@@ -11936,10 +11949,10 @@ export type Database = {
 					quote_version_id: string;
 				};
 				Insert: {
-					attachment_id: string;
 					created_at?: string;
 					customer_visible?: boolean;
 					display_name: string;
+					file_id: string;
 					id?: string;
 					organization_id: string;
 					position: number;
@@ -11947,10 +11960,10 @@ export type Database = {
 					quote_version_id: string;
 				};
 				Update: {
-					attachment_id?: string;
 					created_at?: string;
 					customer_visible?: boolean;
 					display_name?: string;
+					file_id?: string;
 					id?: string;
 					organization_id?: string;
 					position?: number;
@@ -11959,10 +11972,10 @@ export type Database = {
 				};
 				Relationships: [
 					{
-						foreignKeyName: 'quote_version_attachments_attachment_fk';
-						columns: ['organization_id', 'attachment_id'];
+						foreignKeyName: 'quote_version_attachments_file_fk';
+						columns: ['organization_id', 'file_id'];
 						isOneToOne: false;
-						referencedRelation: 'attachments';
+						referencedRelation: 'files';
 						referencedColumns: ['organization_id', 'id'];
 					},
 					{
@@ -21750,9 +21763,6 @@ export type CompositeTypes<
 		: never;
 
 export const Constants = {
-	graphql_public: {
-		Enums: {}
-	},
 	public: {
 		Enums: {}
 	}
