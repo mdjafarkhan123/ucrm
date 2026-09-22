@@ -91,6 +91,54 @@ its own confirm dialog, so the bar has nothing left to wait for. The card also t
 `clientId`/`clientLabel`, so a file already on that client can be reused without re-uploading, the same reuse
 path Property offers. Browser-verified 2026-09-22 (Raad LTD test org).
 
+The Job slice followed the Request shape: `RecordFilesCard` mounts into the page rail with `entityType="job"`,
+titled "Photos and files" to match the card it replaced, and takes the job's client as `clientId`/`clientLabel`
+for reuse. `canManage` is `can_record_field_records || can_manage_team_field_records` — the same field-record
+write right that already gates the job's notes — rather than the card's own default, because a field member may
+open a job without being allowed to add to it. Browser-verified 2026-09-22 (Raad LTD test org, owner login):
+attach-existing and remove both round-trip correctly and the save bar never appears for files.
+
+Fixed alongside Job: `GET /api/files` gated every view, including `on_record`, behind the library's own
+`files.view` permission — contradicting its own comment and the "members can view permitted files" RLS policy,
+both of which already say a member reaches a File through a record they can view even without `files.view`.
+That gate blocked exactly the members the contract names in the permissions table below: field members, who
+hold neither library permission and reach the library only through their assigned job. The route now checks
+`on_record` against the named record's own view gate (`requireLinkedEntityAccess`, the same check the record's
+notes already use) and keeps the `files.view` gate for every other view, which really is "browse the whole
+library." This restores the documented design rather than changing it, so it shipped without a separate
+approval round; `npm run check` and the two files component spec files stayed green.
+
+Fixed as Part 5F: uploading a **new** file from inside a record's own picker now follows that record's own
+write permission, the same "record's permission, not the library's" rule attaching already used, instead of
+requiring the library-wide `files.manage`. `POST /api/files/uploads` checks
+`requireLinkedEntityAccess(event, origin_type, 'manage')` for every record-scoped origin
+(`client`/`property`/`request`/`quote`/`job_expense`/`job`/`visit`) in addition to `files.manage`; a library
+upload (`origin_type: 'file_manager'`) still needs `files.manage` only. `FilePicker`'s Upload button follows
+suit: `canUpload = canManageRecord || library's own can_manage`, where `canManageRecord` is the same
+record-write value the page already computes for its own save bar. `POST /api/files/uploads/[id]/complete`
+dropped its `files.manage` gate entirely and now only checks organization membership — `complete_file_upload`
+already restricts completion to the file's own uploader, so the real authorization happened at step one and
+the extra gate was only blocking a record-scoped uploader from finishing their own upload, never adding safety.
+
+This closes the Job/Visit gap and, in the same pass, the equivalent one for sales and finance: a sales member
+building a quote, who holds `files.view` but never `files.manage`, can now add a fresh file to it the same way
+a field member now can to their job — no separate on/off "Files and Media" permission needed, because the
+right already being checked is the record's own. Browser-verified 2026-09-22 for Job (Raad LTD, field member
+login): the Upload button appears without `files.manage` and an upload reaches "being checked" on the job. The
+other record types share the identical backend mechanism but each still needs its own browser pass once its
+page carries `RecordFilesCard` — Quote and Invoice do not yet (Part 6).
+
+The Visit slice closed Part 5. `VisitRecordsDialog` (opened from a visit's "Notes, photos and files" row action)
+replaces its `AttachmentsCard` with `RecordFilesCard`, `entityType="visit"`, taking the job's client as
+`clientId`/`clientLabel` the same way Job's own card does, with `canManage` the same
+`can_record_field_records || can_manage_team_field_records` right. Unlike Notes and the checklist answers this
+dialog still stages, files leave the dialog's own "Save records" bar for the reason every other slice already
+gives: adding happens in the picker and removing in its own confirm dialog, so nothing about a file was ever
+waiting to be saved — the dialog's `dirty` check and save path no longer mention files at all. Browser-verified
+2026-09-22 (Raad LTD, field member login, a visit they are assigned to): the Upload button appears without
+`files.manage` and the upload reaches `processing_state = 'pending'` with `origin_type = 'visit'` and the
+correct `origin_id`, the same "being checked" outcome Job produces.
+
 Decisions settled while building the schema, confirmed by Jafar 2026-09-21 (he asked for the industry-standard, contractor-easy choice):
 
 - **Folders are flat.** The contract asks for optional user folders, not a tree. A nesting column can be

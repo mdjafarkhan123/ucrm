@@ -1,7 +1,8 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireOrganizationPermission } from '$lib/server/access/permission';
-import { hasPermission } from '$lib/server/access/permission';
+import { requireOrganizationPermission, hasPermission } from '$lib/server/access/permission';
+import { requireLinkedEntityAccess, type LinkedEntityType } from '$lib/server/access/collaboration';
+import { resolveOrganizationAccess } from '$lib/server/access/effective';
 import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
 
 // The smart views in the left rail, plus the folder view. "Shared with customers" and "Videos" are
@@ -51,11 +52,6 @@ function readCursor(raw: string | null) {
 }
 
 export const GET: RequestHandler = async (event) => {
-	// Browsing the library is its own permission. A member without it still reaches a file through the job
-	// or quote it is attached to; they just have no library to browse.
-	const access = await requireOrganizationPermission(event, 'files.view');
-	if ('response' in access) return access.response;
-
 	const params = event.url.searchParams;
 	const view = readView(params.get('view'));
 	const folderId = view === 'folder' ? params.get('folder_id') : null;
@@ -70,6 +66,29 @@ export const GET: RequestHandler = async (event) => {
 	const entityId = params.get('entity_id');
 	if (view === 'on_record' && (!entityType || !entityId))
 		return json({ files: [], next_cursor: null });
+
+	// Browsing the library is its own permission. A member without it still reaches a file through a
+	// record it may view — that is `on_record`'s whole point, so it is gated on the record itself (the
+	// same gate its notes and other attachments already use) rather than on `files.view`. Every other view
+	// really is "browse the whole library", so it keeps the library gate.
+	let organizationId: string;
+	let userId: string;
+	if (view === 'on_record' && entityType && entityId) {
+		const recordAccess = await requireLinkedEntityAccess(
+			event,
+			entityType as LinkedEntityType,
+			'view'
+		);
+		if ('response' in recordAccess) return recordAccess.response;
+		organizationId = recordAccess.auth.organization.id;
+		userId = recordAccess.auth.user.id;
+	} else {
+		const libraryAccess = await requireOrganizationPermission(event, 'files.view');
+		if ('response' in libraryAccess) return libraryAccess.response;
+		organizationId = libraryAccess.auth.organization.id;
+		userId = libraryAccess.auth.user.id;
+	}
+	const access = await resolveOrganizationAccess(event.locals.supabase, organizationId, userId);
 
 	// The picker asks for this: a file that is still being checked, failed a check, or was quarantined
 	// cannot be attached to anything, so offering it would be offering a button that must then refuse.
@@ -88,7 +107,7 @@ export const GET: RequestHandler = async (event) => {
 	// One page and its usage counts in a single statement, under the caller's own policies -- see the
 	// migration for why this is a function rather than a PostgREST query.
 	const { data, error } = await event.locals.supabase.rpc('list_files', {
-		target_organization_id: access.auth.organization.id,
+		target_organization_id: organizationId,
 		target_view: view === 'folder' ? 'all' : view,
 		target_folder_id: folderId ?? undefined,
 		target_search: search ?? undefined,
@@ -116,8 +135,8 @@ export const GET: RequestHandler = async (event) => {
 			next_cursor: hasMore && last ? `${last.created_at}|${last.id}` : null,
 			// What this member may do with what they are looking at, resolved once here rather than guessed
 			// in the browser. Every write re-checks it server-side; this only decides which buttons show.
-			can_manage: hasPermission(access.access, 'files.manage'),
-			can_trash: hasPermission(access.access, 'files.trash')
+			can_manage: hasPermission(access, 'files.manage'),
+			can_trash: hasPermission(access, 'files.trash')
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

@@ -40,6 +40,7 @@
 		recordLabel,
 		clientId = null,
 		clientLabel = null,
+		canManageRecord = false,
 		onClose,
 		onAttached,
 		onUploaded
@@ -53,6 +54,9 @@
 		/** The record's customer, when it has one. Gives the second section its files. */
 		clientId?: string | null;
 		clientLabel?: string | null;
+		/** The record's own write permission, the same one that let this dialog open. Uploading straight to
+		 * this record follows it even for someone without the library's own files.manage. */
+		canManageRecord?: boolean;
 		onClose: () => void;
 		/** Called after a successful attach, so the record's own file list can refresh. */
 		onAttached?: (fileIds: string[]) => void;
@@ -163,7 +167,9 @@
 	}));
 
 	const files = $derived(filesQuery.data?.pages.flatMap((page) => page.files) ?? []);
-	const canManage = $derived(filesQuery.data?.pages[0]?.can_manage ?? false);
+	// The library's own can_manage, or this record's own write right -- either opens the Upload button, the
+	// same "record's permission, not the library's" rule /api/files/links already applies to attaching.
+	const canUpload = $derived(canManageRecord || (filesQuery.data?.pages[0]?.can_manage ?? false));
 	const refused = $derived((filesQuery.error as FileReadError | null)?.status === 403);
 	const alreadyAttached = $derived(
 		new Set((attachedQuery.data?.files ?? []).map((file) => file.id))
@@ -253,7 +259,7 @@
 						placeholder="Search files, clients, addresses, job or quote numbers"
 					/>
 				</div>
-				{#if canManage}
+				{#if canUpload}
 					<input
 						bind:this={fileInputEl}
 						type="file"
@@ -284,8 +290,13 @@
 				{/each}
 			</nav>
 
-			{#if canManage}
-				<FileUploader originType={entityType} originId={entityId} onUploaded={handleUploaded} />
+			{#if canUpload}
+				<FileUploader
+					bind:this={uploader}
+					originType={entityType}
+					originId={entityId}
+					onUploaded={handleUploaded}
+				/>
 				{#if uploadedHere > 0}
 					<p class="file-picker__note">
 						{uploadedHere === 1 ? 'That file is' : 'Those files are'} in your library now. As soon as

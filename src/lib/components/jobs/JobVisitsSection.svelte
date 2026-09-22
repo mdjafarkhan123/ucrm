@@ -1034,6 +1034,8 @@
 	{currentUserId}
 	{canRecord}
 	{canManageTeam}
+	{clientId}
+	clientLabel={clientName}
 	onSaved={() => void queryClient.invalidateQueries({ queryKey: jobEventsKey(jobId) })}
 	onClose={() => (recordsVisit = null)}
 />

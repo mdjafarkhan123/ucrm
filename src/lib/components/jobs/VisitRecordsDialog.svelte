@@ -4,7 +4,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
-	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
+	import RecordFilesCard from '$lib/components/files/RecordFilesCard.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -20,7 +20,6 @@
 	import checklistIcon from '@tabler/icons/outline/checklist.svg?raw';
 	import {
 		activityKey,
-		attachmentsKey,
 		createNote,
 		deleteNote,
 		notesKey,
@@ -36,6 +35,8 @@
 		currentUserId,
 		canRecord,
 		canManageTeam,
+		clientId = null,
+		clientLabel = null,
 		onSaved,
 		onClose
 	}: {
@@ -46,15 +47,15 @@
 		currentUserId: string;
 		canRecord: boolean;
 		canManageTeam: boolean;
+		clientId?: string | null;
+		clientLabel?: string | null;
 		onSaved?: () => void;
 		onClose: () => void;
 	} = $props();
 
 	const queryClient = useQueryClient();
 	let pendingNotes = $state<NoteChange[]>([]);
-	let pendingFiles = $state(0);
 	let pendingAnswers = $state<Record<string, ChecklistAnswerValue>>({});
-	let attachmentsCard = $state<AttachmentsCard>();
 	let saving = $state(false);
 	let error = $state('');
 
@@ -64,9 +65,7 @@
 		enabled: open && Boolean(jobId) && Boolean(visitId)
 	}));
 
-	const dirty = $derived(
-		pendingNotes.length > 0 || pendingFiles > 0 || Object.keys(pendingAnswers).length > 0
-	);
+	const dirty = $derived(pendingNotes.length > 0 || Object.keys(pendingAnswers).length > 0);
 
 	function answerValue(question: VisitChecklistQuestion): ChecklistAnswerValue {
 		return Object.hasOwn(pendingAnswers, question.id)
@@ -86,9 +85,7 @@
 
 	function discardAndClose() {
 		pendingNotes = [];
-		pendingFiles = 0;
 		pendingAnswers = {};
-		attachmentsCard?.discardChanges();
 		error = '';
 		onClose();
 	}
@@ -129,18 +126,8 @@
 				pendingNotes = pendingNotes.filter((entry) => entry !== change);
 			}
 
-			const failedFiles = (await attachmentsCard?.saveAll(visitId)) ?? 0;
-			if (failedFiles > 0) {
-				error =
-					failedFiles === 1
-						? 'The notes were saved, but one file still needs attention.'
-						: `The notes were saved, but ${failedFiles} files still need attention.`;
-				return;
-			}
-
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: notesKey('visit', visitId) }),
-				queryClient.invalidateQueries({ queryKey: attachmentsKey('visit', visitId) }),
 				queryClient.invalidateQueries({ queryKey: activityKey('visit', visitId) }),
 				queryClient.invalidateQueries({ queryKey: visitChecklistsKey(visitId) })
 			]);
@@ -280,16 +267,16 @@
 					/>
 				</SectionBlock>
 
-				<AttachmentsCard
-					bind:this={attachmentsCard}
+				<RecordFilesCard
 					entityType="visit"
 					entityId={visitId}
+					recordLabel="this visit"
+					pickerLabel="On this visit"
 					title="Photos and files"
 					surface="section"
-					canManage={canRecord}
-					{canManageTeam}
-					{currentUserId}
-					onPendingChange={(count) => (pendingFiles = count)}
+					{clientId}
+					{clientLabel}
+					canManage={canRecord || canManageTeam}
 				/>
 			</div>
 		{/if}

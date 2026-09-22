@@ -34,7 +34,7 @@
 	import JobExpensesSection from '$lib/components/jobs/JobExpensesSection.svelte';
 	import JobCostingCard from '$lib/components/jobs/JobCostingCard.svelte';
 	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
-	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
+	import RecordFilesCard from '$lib/components/files/RecordFilesCard.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		fetchJob,
@@ -101,8 +101,6 @@
 	let saving = $state(false);
 	let saveError = $state('');
 	let notePending = $state<NoteChange[]>([]);
-	let attachmentsCard = $state<AttachmentsCard>();
-	let pendingFileCount = $state(0);
 	let workReportCard = $state<JobWorkReportCard>();
 	let reportHasContent = $state(false);
 
@@ -116,12 +114,8 @@
 	);
 	const showInstructions = $derived(editingInstructions || Boolean(saved?.job.instructions));
 
-	const isEditing = $derived(
-		editingTitle || editingInstructions || notePending.length > 0 || pendingFileCount > 0
-	);
-	const isDirty = $derived(
-		titleChanged || instructionsChanged || notePending.length > 0 || pendingFileCount > 0
-	);
+	const isEditing = $derived(editingTitle || editingInstructions || notePending.length > 0);
+	const isDirty = $derived(titleChanged || instructionsChanged || notePending.length > 0);
 
 	// The read-only scope lines, mapped into the same shape the shared pricing block draws for a quote.
 	const jobLines = $derived<RequestPricingLine[]>(
@@ -180,7 +174,8 @@
 			? [
 					{
 						label: 'View client profile',
-						onSelect: () => void goto(resolve('/(app)/clients/[id=uuid]', { id: saved.job.client!.id }))
+						onSelect: () =>
+							void goto(resolve('/(app)/clients/[id=uuid]', { id: saved.job.client!.id }))
 					}
 				]
 			: []
@@ -350,7 +345,6 @@
 		editingInstructions = false;
 		instructionsDraft = '';
 		notePending = [];
-		attachmentsCard?.discardChanges();
 		saveError = '';
 	}
 
@@ -435,27 +429,20 @@
 				notePending = notePending.filter((entry) => entry !== change);
 			}
 
-			const failedFiles = (await attachmentsCard?.saveAll(jobId)) ?? 0;
-			if (failedFiles > 0) {
-				saveError =
-					failedFiles === 1
-						? 'Everything else was saved, but one file still needs attention.'
-						: `Everything else was saved, but ${failedFiles} files still need attention.`;
-			}
 			await refreshJob();
-			if (failedFiles === 0) toast.success('Job saved');
+			toast.success('Job saved');
 		} catch (caught) {
 			const writeError = caught as JobWriteError;
 			if (writeError.reason === 'stale') {
-				// Refresh the stale Job fields without throwing away independent notes or files the person
-				// already staged. Those records have their own ownership checks and no Job revision token.
+				// Refresh the stale Job fields without throwing away independent notes the person already
+				// staged. Notes have their own ownership checks and no Job revision token.
 				editingTitle = false;
 				titleDraft = '';
 				editingInstructions = false;
 				instructionsDraft = '';
 				await refreshJob();
 				saveError =
-					'Someone else changed this job. The latest version is now on screen; your notes and files are still waiting.';
+					'Someone else changed this job. The latest version is now on screen; your notes are still waiting.';
 			} else {
 				saveError =
 					writeError.fieldErrors?.form ?? writeError.message ?? 'Those changes could not be saved.';
@@ -679,15 +666,15 @@
 						/>
 					</RailCard>
 
-					<AttachmentsCard
-						bind:this={attachmentsCard}
+					<RecordFilesCard
 						entityType="job"
 						entityId={jobId}
+						recordLabel="this job"
+						pickerLabel="On this job"
 						title="Photos and files"
-						canManage={saved.can_record_field_records}
-						canManageTeam={saved.can_manage_team_field_records}
-						currentUserId={saved.current_user_id}
-						onPendingChange={(count) => (pendingFileCount = count)}
+						clientId={saved.job.client?.id ?? null}
+						clientLabel={saved.job.client?.display_name ?? null}
+						canManage={saved.can_record_field_records || saved.can_manage_team_field_records}
 					/>
 				{/if}
 

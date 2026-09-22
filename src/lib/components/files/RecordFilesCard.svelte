@@ -296,6 +296,7 @@
 		recordLabel={pickerLabel}
 		{clientId}
 		{clientLabel}
+		canManageRecord={canManage}
 		onClose={() => (pickerOpen = false)}
 		onAttached={() => refresh()}
 		onUploaded={noteUpload}

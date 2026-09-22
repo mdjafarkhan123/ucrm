@@ -1,7 +1,11 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
-import { linkedEntityBelongsToOrganization } from '$lib/server/access/collaboration';
+import {
+	linkedEntityBelongsToOrganization,
+	requireLinkedEntityAccess,
+	type LinkedEntityType
+} from '$lib/server/access/collaboration';
 import { databaseError, validationError } from '$lib/server/api/errors';
 import { fileUploadStartSchema } from '$lib/server/validation/files.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
@@ -23,7 +27,18 @@ export const POST: RequestHandler = async (event) => {
 	const parsed = fileUploadStartSchema.safeParse(body);
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
-	const access = await requireOrganizationPermission(event, 'files.manage');
+	// A record-scoped upload is the record's own edit, not the library's -- the same principle
+	// /api/files/links already applies to attaching an existing File. files.manage still opens every origin,
+	// including the library itself, which has no record to check against.
+	const libraryAccess = await requireOrganizationPermission(event, 'files.manage');
+	const access =
+		'auth' in libraryAccess || parsed.data.origin_type === 'file_manager'
+			? libraryAccess
+			: await requireLinkedEntityAccess(
+					event,
+					parsed.data.origin_type as LinkedEntityType,
+					'manage'
+				);
 	if ('response' in access) return access.response;
 	const organizationId = access.auth.organization.id;
 
