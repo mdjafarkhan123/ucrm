@@ -261,6 +261,16 @@ export function attachFilesToRecord(
 	);
 }
 
+/** Takes one File off one record. The File, its stored object, and its other uses are untouched. */
+export function detachFileFromRecord(fileId: string, entityType: FileEntityType, entityId: string) {
+	return writeJson<{ removed: boolean }>(
+		'/api/files/links',
+		'DELETE',
+		{ file_id: fileId, entity_type: entityType, entity_id: entityId },
+		'That file could not be taken off this record.'
+	);
+}
+
 export function createFileFolder(name: string) {
 	return writeJson<{ folder: FileFolder }>(
 		'/api/files/folders',

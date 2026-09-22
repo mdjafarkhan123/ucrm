@@ -59,6 +59,22 @@ Reuse now runs in both directions: the picker takes a record and offers the libr
   instead of offering a button that must refuse. Linking a record-origin upload automatically once it
   publishes belongs to Part 5's adoption work.
 
+Record adoption has begun with the Client, added by
+`supabase/migrations/20260921230000_files_media_record_adoption.sql` (corrected by `20260922090000`),
+`DELETE /api/files/links` and `src/lib/components/files/RecordFilesCard.svelte`. A client's file area now
+reads the catalog instead of the old `attachments` rows. Three behaviors here are decisions, not mechanics:
+
+- **Taking a file off a record removes one use, never the file.** The confirmation says so in those words,
+  and the file keeps every other use. A use the customer has already received is refused, by the same
+  trigger that protects it from Trash.
+- **A file uploaded from a record joins that record the moment it is published**, inside the statement that
+  publishes it. The contract forbids attaching content that has not been checked, so that moment is the
+  first one available; doing it in the database rather than the browser means a closed tab cannot lose the
+  link. The card says a file is being checked and shows it arriving.
+- **Files are not part of a record page's save bar.** Adding happens inside the picker dialog and removing
+  inside a confirmation dialog, each of which carries its own button — the same exception a client's
+  property dialog already uses — so nothing about a file is left staged and unsaved.
+
 Decisions settled while building the schema, confirmed by Jafar 2026-09-21 (he asked for the industry-standard, contractor-easy choice):
 
 - **Folders are flat.** The contract asks for optional user folders, not a tree. A nesting column can be

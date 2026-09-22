@@ -41,7 +41,8 @@
 		clientId = null,
 		clientLabel = null,
 		onClose,
-		onAttached
+		onAttached,
+		onUploaded
 	}: {
 		open: boolean;
 		/** The record being attached to. */
@@ -55,6 +56,8 @@
 		onClose: () => void;
 		/** Called after a successful attach, so the record's own file list can refresh. */
 		onAttached?: (fileIds: string[]) => void;
+		/** Called once per file uploaded from inside the picker, which joins its record once it is checked. */
+		onUploaded?: (fileId: string) => void;
 	} = $props();
 
 	const queryClient = useQueryClient();
@@ -215,8 +218,11 @@
 
 	// A new upload joins the library straight away, but it cannot go on a record until it has been checked --
 	// so it appears in this list, with that status, and is attachable the moment the check finishes.
-	function handleUploaded() {
+	function handleUploaded(fileId: string) {
 		uploadedHere += 1;
+		// The record it was uploaded from is the file's origin, so it joins that record by itself the moment
+		// the check finishes. The caller is told so its own list can wait for it rather than look empty.
+		onUploaded?.(fileId);
 		void queryClient.invalidateQueries({ queryKey: ['files', 'list'] });
 	}
 

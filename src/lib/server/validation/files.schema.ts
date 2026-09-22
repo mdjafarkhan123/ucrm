@@ -57,3 +57,12 @@ export const fileAttachSchema = z.object({
 	entity_type: attachmentEntityTypeSchema,
 	entity_id: z.uuid()
 });
+
+// Taking one File off one record. Singular where attaching is plural, because a record's file area removes
+// what the contractor pressed the button on, one decision at a time, and each one can be refused for its
+// own reason.
+export const fileDetachSchema = z.object({
+	file_id: z.uuid(),
+	entity_type: attachmentEntityTypeSchema,
+	entity_id: z.uuid()
+});

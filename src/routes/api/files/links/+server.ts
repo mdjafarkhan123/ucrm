@@ -6,7 +6,7 @@ import {
 } from '$lib/server/access/collaboration';
 import { databaseError, validationError } from '$lib/server/api/errors';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { fileAttachSchema } from '$lib/server/validation/files.schema';
+import { fileAttachSchema, fileDetachSchema } from '$lib/server/validation/files.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 
 // Reuse: putting Files the organization already has onto one record.
@@ -90,4 +90,54 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	return json({ attached_count: attached.length, attached, refused }, { status: 201 });
+};
+
+// The other half of reuse: taking one File off one record without touching the File or its other uses.
+//
+// The permission is the record's again, for the same reason attaching uses it -- removing a document from a
+// quote is an edit of the quote. It deliberately does not ask for `files.trash`: that permission governs the
+// library's own bin, and a sales member who may edit the quote may also undo a file they just put on it.
+export const DELETE: RequestHandler = async (event) => {
+	let body: unknown;
+	try {
+		body = await event.request.json();
+	} catch {
+		return validationError({ form: 'Request body must be valid JSON.' });
+	}
+
+	const parsed = fileDetachSchema.safeParse(body);
+	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
+
+	const access = await requireLinkedEntityAccess(event, parsed.data.entity_type, 'manage');
+	if ('response' in access) return access.response;
+
+	const organizationId = access.auth.organization.id;
+	const belongs = await linkedEntityBelongsToOrganization(
+		event.locals.supabase,
+		organizationId,
+		parsed.data.entity_type,
+		parsed.data.entity_id
+	);
+	if (!belongs) return validationError({ entity_id: 'That record was not found.' });
+
+	const owner = getOwnerSupabaseClient();
+	const { data, error } = await owner.rpc('detach_file_from_record', {
+		target_organization_id: organizationId,
+		target_file_id: parsed.data.file_id,
+		target_actor_id: access.auth.user.id,
+		target_entity_type: parsed.data.entity_type,
+		target_entity_id: parsed.data.entity_id
+	});
+
+	if (error) {
+		// 23503 is the protected-history trigger: this file is part of something the customer already
+		// received. Its message is written for the contractor, so it is passed straight through.
+		if (error.code === '23503') return json({ error: error.message }, { status: 409 });
+		console.error('Could not take a file off a record.', error);
+		return databaseError();
+	}
+
+	// `false` means the link had already gone -- a colleague removed it, or the button was pressed twice.
+	// The caller asked for it not to be there, and it is not, so that is a success with nothing removed.
+	return json({ removed: data === true });
 };

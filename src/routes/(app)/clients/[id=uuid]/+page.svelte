@@ -23,7 +23,7 @@
 	import LeadSourceDialog from '$lib/components/clients/LeadSourceDialog.svelte';
 	import ClientTagSelect from '$lib/components/clients/ClientTagSelect.svelte';
 	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
-	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
+	import RecordFilesCard from '$lib/components/files/RecordFilesCard.svelte';
 	import ClientCommunicationHistory from '$lib/components/communications/ClientCommunicationHistory.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
@@ -143,10 +143,9 @@
 	let leadSourceDraft = $state<string | null>(null);
 	let tagIdsDraft = $state<string[] | null>(null);
 	let notePending = $state<NoteChange[]>([]);
-	// Attachments keep their own staged files and deletes; the page only needs to know how many are waiting
-	// so the bar lights up, and holds a handle so Save can tell the card to write them.
-	let attachmentsCard = $state<AttachmentsCard>();
-	let pendingFileCount = $state(0);
+	// Files are not in the page draft. Adding one happens inside the picker dialog, which carries its own
+	// button, and removing one is confirmed in its own dialog, so the page's save bar has nothing to wait
+	// for — the same way a property dialog saves itself.
 	let saving = $state(false);
 	let saveError = $state('');
 
@@ -155,13 +154,12 @@
 		leadSourceDraft = null;
 		tagIdsDraft = null;
 		notePending = [];
-		attachmentsCard?.discardChanges();
 		saveError = '';
 	}
 
 	// A different client in the same page component starts with a clean sheet. The client id is the only
-	// thing this watches: `untrack` keeps the clearing itself out of the dependencies, or wiping the
-	// attachments card's staged files would count as a change and set the whole thing running again.
+	// thing this watches: `untrack` keeps the clearing itself out of the dependencies, or the clearing
+	// would count as a change and set the whole thing running again.
 	$effect(() => {
 		const id = clientId;
 		untrack(() => {
@@ -240,15 +238,10 @@
 		identityDraft !== null ||
 			leadSourceDraft !== null ||
 			tagIdsDraft !== null ||
-			notePending.length > 0 ||
-			pendingFileCount > 0
+			notePending.length > 0
 	);
 	const isDirty = $derived(
-		identityChanged ||
-			leadSourceChanged ||
-			tagsChanged ||
-			notePending.length > 0 ||
-			pendingFileCount > 0
+		identityChanged || leadSourceChanged || tagsChanged || notePending.length > 0
 	);
 
 	// --- Saving ---------------------------------------------------------------------------------------
@@ -306,17 +299,7 @@
 				notePending = notePending.filter((entry) => entry !== change);
 			}
 
-			// Files last, and their failures are reported rather than thrown: everything above is already
-			// saved, so a stuck upload must not read as the whole save failing.
-			const failedFiles = (await attachmentsCard?.saveAll(clientId)) ?? 0;
-			if (failedFiles > 0) {
-				saveError =
-					failedFiles === 1
-						? 'Everything else was saved, but one file did not upload. Try it again below.'
-						: `Everything else was saved, but ${failedFiles} files did not upload. Try them again below.`;
-			} else {
-				toast.success('Client saved');
-			}
+			toast.success('Client saved');
 
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: clientDetailKey(clientId) }),
@@ -636,12 +619,11 @@
 					/>
 				</RailCard>
 
-				<AttachmentsCard
-					bind:this={attachmentsCard}
-					onPendingChange={(count) => (pendingFileCount = count)}
+				<RecordFilesCard
 					entityType="client"
 					entityId={clientId}
-					{currentUserId}
+					recordLabel="this client"
+					pickerLabel="On this client"
 				/>
 			{/snippet}
 		</RecordDetailLayout>
