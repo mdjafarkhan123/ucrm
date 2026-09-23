@@ -2,10 +2,17 @@
 
 **Goal:** One contractor File Manager backed by private R2, with one File linked to every CRM use.
 
-**Done:** Parts 1–6E closed (6E closed 2026-09-23; see its ROADMAP row).
+**Done:** Parts 1–6F closed (6F commit `8810cb2`). Image blocks upload through the File Manager
+(`origin_type marketing_campaign`, role `campaign_image`); public route `(public)/ci/[campaignId]/[fileId]`
+serves the picture to recipients' mail clients. Not built: a "browse the library" reuse picker for image
+blocks (direct-upload-only) — Jafar may ask later.
 
-**Exact next action:** Ask Jafar which part to build next — 6F (marketing asset upload), Part 7 (customer
-publication / proof of work), or Part 8 (trash/export/security/scale) — then read that ROADMAP row and start it.
+**6F browser-verified 2026-09-23** (worker simulated in SQL): two real bugs fixed — uploads refused as "not
+found" (`2e284ac`) and broken images in the email preview, now signed R2 links (`d94df02`). Leftover test
+draft "6F image check" (`bc699e33…`) can be deleted.
+
+**Exact next action:** Ask Jafar to confirm starting Part 7 (customer publication / proof of work) — Part 8
+depends on 7 — then read Part 7's ROADMAP row and start it.
 
 **Blocker (campaign-wide):** the upload worker does not run locally; new uploads stay "Still being checked".
 
