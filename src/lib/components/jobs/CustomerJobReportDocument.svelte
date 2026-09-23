@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import photoOffIcon from '@tabler/icons/outline/photo-off.svg?raw';
 	import type { CustomerJobReportDocument } from '$lib/jobs/report-types';
 
 	// The customer's copy of a work report, and the only drawing of it there is. The token page hands it a
@@ -16,7 +17,7 @@
 		notice
 	}: {
 		doc: CustomerJobReportDocument;
-		fileHref: (attachmentId: string) => string;
+		fileHref: (fileId: string) => string;
 		/** A strip above the document, for anything staff need told that the customer must never see. */
 		notice?: Snippet;
 	} = $props();
@@ -96,13 +97,26 @@
 			<section class="customer-job-report__section">
 				<h2 class="customer-job-report__section-title">Photos</h2>
 				<div class="customer-job-report__photos">
-					{#each doc.photos as photo (photo.attachment_id)}
-						<img
-							class="customer-job-report__photo"
-							src={fileHref(photo.attachment_id)}
-							alt={photo.file_name}
-							loading="lazy"
-						/>
+					<!-- A removed photo has no id left to key on, and the list is frozen, so its position is stable. -->
+					{#each doc.photos as photo, index (photo.file_id ?? `removed-${index}`)}
+						{#if photo.removed}
+							<span
+								class="customer-job-report__photo customer-job-report__photo--removed"
+								role="img"
+								aria-label="Photo removed"
+							>
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+								{@html photoOffIcon}
+								<span aria-hidden="true">Photo removed</span>
+							</span>
+						{:else}
+							<img
+								class="customer-job-report__photo"
+								src={fileHref(photo.file_id)}
+								alt={photo.file_name}
+								loading="lazy"
+							/>
+						{/if}
 					{/each}
 				</div>
 			</section>
@@ -374,6 +388,21 @@
 		border-radius: var(--radius-base);
 		border: 1px solid var(--color-border);
 		background: var(--color-surface--background--subtle);
+
+		&--removed {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			gap: var(--space-small);
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+
+			:global(svg) {
+				width: 28px;
+				height: 28px;
+			}
+		}
 	}
 
 	.customer-job-report__checklist {

@@ -341,13 +341,9 @@ values
    'f1000000-0000-0000-0000-000000000001/job/f4000000/report.jpg.thumb.jpg',
    'f0000000-0000-0000-0000-000000000001');
 
--- The second one is already frozen into a work report the customer can open.
-insert into public.job_reports (organization_id, job_id)
-values ('f1000000-0000-0000-0000-000000000001', 'f4000000-0000-0000-0000-000000000001');
-
-insert into public.job_report_photos (organization_id, job_id, attachment_id)
-values ('f1000000-0000-0000-0000-000000000001', 'f4000000-0000-0000-0000-000000000001',
-        'f8000000-0000-0000-0000-000000000002');
+-- Part 7A moved a work report's photos onto public.files, so a report can no longer name a legacy
+-- attachment and the backfill no longer takes protection from one; the report protects its own
+-- 'report_photo' link instead (files_media_work_report_photos.sql).
 
 select is(private.backfill_files_from_attachments(), 2,
   'both existing attachments become Files');
@@ -365,7 +361,7 @@ select is(
 select is(
   (select protected from public.file_links
    where file_id = (select file_id from public.attachments where id = 'f8000000-0000-0000-0000-000000000002')),
-  true, 'a photo already inside a work report is backfilled as protected history');
+  false, 'a job photo is backfilled as an ordinary, unprotected attachment link');
 
 select is(
   (select protected from public.file_links

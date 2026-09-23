@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import CustomerJobReportDocument from '$lib/components/jobs/CustomerJobReportDocument.svelte';
+	import { fileImageUrl } from '$lib/files/api';
 	import printIcon from '@tabler/icons/outline/printer.svg?raw';
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 
@@ -12,8 +13,8 @@
 	const doc = $derived(data.preview.document);
 	const info = $derived(data.preview.preview);
 
-	function fileHref(attachmentId: string) {
-		return `/api/attachments/${attachmentId}/view`;
+	function fileHref(fileId: string) {
+		return fileImageUrl(fileId);
 	}
 
 	// `Print or save PDF` opens this page with `?print=1`, so one press gets a print dialog instead of a page

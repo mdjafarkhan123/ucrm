@@ -41,7 +41,7 @@ export type SaveJobReportInput = {
 	include_price: boolean;
 	signature_id: string | null;
 	summary: string | null;
-	photo_attachment_ids: string[];
+	photo_file_ids: string[];
 	checklist_selections: { visit_id: string; item_id: string }[];
 };
 

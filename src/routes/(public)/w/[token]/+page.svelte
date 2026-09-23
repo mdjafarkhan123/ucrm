@@ -9,8 +9,8 @@
 
 	const token = $derived(page.params.token ?? '');
 
-	function fileHref(attachmentId: string) {
-		return `/w/${token}/files/${attachmentId}`;
+	function fileHref(fileId: string) {
+		return `/w/${token}/files/${fileId}`;
 	}
 
 	// The view is recorded from here, once, after the document has actually been drawn on this screen. That is

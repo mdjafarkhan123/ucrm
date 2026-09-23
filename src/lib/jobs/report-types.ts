@@ -13,12 +13,12 @@ export type JobReportSelection = {
 	checklist: { visit_id: string; item_id: string }[];
 };
 
+// A File Manager photo linked to the job or one of its visits, checked and not in Trash.
 export type JobReportCandidatePhoto = {
-	attachment_id: string;
+	file_id: string;
 	file_name: string;
 	mime_type: string;
-	entity_type: 'job' | 'visit';
-	entity_id: string;
+	has_thumbnail: boolean;
 	created_at: string;
 };
 
@@ -68,11 +68,11 @@ export type CustomerJobReportLine = {
 	line_total_minor?: number;
 };
 
-export type CustomerJobReportPhoto = {
-	attachment_id: string;
-	file_name: string;
-	object_key: string;
-};
+// A photo moved to Trash after the customer's link was issued keeps its place as `removed`, with no id or
+// name, so their copy shows the gap instead of silently changing. Preview as client never has one.
+export type CustomerJobReportPhoto =
+	| { file_id: string; file_name: string; removed?: false }
+	| { file_id: null; file_name: null; removed: true };
 
 export type CustomerJobReportChecklistItem = {
 	item_id: string;

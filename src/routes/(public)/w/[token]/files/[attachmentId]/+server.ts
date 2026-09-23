@@ -22,21 +22,28 @@ export const GET: RequestHandler = async (event) => {
 	if (error || !data) throw httpError(404, 'That file is not available.');
 
 	const document = data as unknown as CustomerJobReportDocument;
-	const allowed = new Set(document.photos.map((photo) => photo.attachment_id));
+	const allowed = new Set(
+		document.photos.flatMap((photo) => (photo.file_id === null ? [] : [photo.file_id]))
+	);
 	if (!allowed.has(event.params.attachmentId)) throw httpError(404, 'That file is not available.');
 
+	// The document above already marks a trashed photo removed, but that resolve and this lookup are two
+	// separate queries — trashed_at is filtered again here so a Trash landing in between still wins.
 	const { data: file } = await supabase
-		.from('attachments')
-		.select('object_key, thumbnail_object_key, mime_type, file_name')
+		.from('files')
+		.select('object_key, thumbnail_object_key, mime_type, display_name')
 		.eq('id', event.params.attachmentId)
+		.eq('processing_state', 'available')
+		.is('trashed_at', null)
 		.maybeSingle();
-	if (!file) throw httpError(404, 'That file is not available.');
+	if (!file || !file.mime_type.startsWith('image/'))
+		throw httpError(404, 'That file is not available.');
 
 	const wantsThumbnail = event.url.searchParams.get('size') === 'thumb';
 	const objectKey =
 		wantsThumbnail && file.thumbnail_object_key ? file.thumbnail_object_key : file.object_key;
 
-	const safeName = file.file_name.replace(/["\\\r\n]/g, '');
+	const safeName = file.display_name.replace(/["\\\r\n]/g, '');
 
 	try {
 		const object = await getObjectStream(objectKey);

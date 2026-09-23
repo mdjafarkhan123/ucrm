@@ -5,7 +5,7 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
-	import { attachmentImageUrl } from '$lib/collaboration/api';
+	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import type { JobReportState } from '$lib/jobs/report-types';
 	import type { SaveJobReportInput } from '$lib/jobs/report-api';
 
@@ -59,10 +59,10 @@
 		return String(value ?? '');
 	}
 
-	function togglePhoto(attachmentId: string, checked: boolean) {
+	function togglePhoto(fileId: string, checked: boolean) {
 		const next = new Set(selectedPhotoIds);
-		if (checked) next.add(attachmentId);
-		else next.delete(attachmentId);
+		if (checked) next.add(fileId);
+		else next.delete(fileId);
 		selectedPhotoIds = next;
 	}
 
@@ -89,7 +89,7 @@
 				include_price: includePrice,
 				signature_id: signatureId || null,
 				summary: summary.trim() || null,
-				photo_attachment_ids: [...selectedPhotoIds],
+				photo_file_ids: [...selectedPhotoIds],
 				checklist_selections: [...selectedChecklist].map((key) => {
 					const [visit_id, item_id] = key.split(':');
 					return { visit_id, item_id };
@@ -145,18 +145,22 @@
 				<p class="edit-job-report__empty">This job has no photos yet.</p>
 			{:else}
 				<div class="edit-job-report__photos">
-					{#each jobReport.candidates.photos as photo (photo.attachment_id)}
+					{#each jobReport.candidates.photos as photo (photo.file_id)}
 						<label class="edit-job-report__photo">
 							<input
 								type="checkbox"
-								checked={selectedPhotoIds.has(photo.attachment_id)}
+								aria-label={photo.file_name}
+								checked={selectedPhotoIds.has(photo.file_id)}
 								disabled={saving}
-								onchange={(event) => togglePhoto(photo.attachment_id, event.currentTarget.checked)}
+								onchange={(event) => togglePhoto(photo.file_id, event.currentTarget.checked)}
 							/>
-							<img
-								src={attachmentImageUrl(photo.attachment_id, 'thumb')}
-								alt={photo.file_name}
-								loading="lazy"
+							<FileThumb
+								fileId={photo.file_id}
+								displayName={photo.file_name}
+								mimeType={photo.mime_type}
+								kind="image"
+								processingState="available"
+								hasThumbnail={photo.has_thumbnail}
 							/>
 						</label>
 					{/each}
@@ -244,27 +248,27 @@
 		&__photo {
 			position: relative;
 			display: block;
+			overflow: hidden;
 			cursor: pointer;
-
-			img {
-				display: block;
-				width: 100%;
-				aspect-ratio: 1;
-				object-fit: cover;
-				border-radius: var(--radius-base);
-				border: var(--border-thick) solid var(--color-border);
-			}
+			border-radius: var(--radius-base);
+			border: var(--border-thick) solid var(--color-border);
 
 			input {
 				position: absolute;
+				z-index: 1;
 				top: var(--space-smaller);
 				left: var(--space-smaller);
 				width: 18px;
 				height: 18px;
 			}
 
-			&:has(input:checked) img {
+			&:has(input:checked) {
 				border-color: var(--color-interactive);
+			}
+
+			&:has(input:focus-visible) {
+				outline: var(--border-thick) solid var(--color-interactive);
+				outline-offset: 2px;
 			}
 		}
 

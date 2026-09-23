@@ -17,7 +17,7 @@ export const saveJobReportSchema = z.strictObject({
 		.max(2000, 'That summary is too long. Keep it under 2000 characters.')
 		.nullish()
 		.transform((value) => value || null),
-	photo_attachment_ids: z
+	photo_file_ids: z
 		.array(z.string().uuid())
 		.max(300, 'That is too many photos to add.')
 		.default([]),

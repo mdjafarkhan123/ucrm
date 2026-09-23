@@ -6998,32 +6998,32 @@ export type Database = {
       }
       job_report_photos: {
         Row: {
-          attachment_id: string
           created_at: string
+          file_id: string
           id: string
           job_id: string
           organization_id: string
         }
         Insert: {
-          attachment_id: string
           created_at?: string
+          file_id: string
           id?: string
           job_id: string
           organization_id: string
         }
         Update: {
-          attachment_id?: string
           created_at?: string
+          file_id?: string
           id?: string
           job_id?: string
           organization_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "job_report_photos_attachment_fk"
-            columns: ["organization_id", "attachment_id"]
+            foreignKeyName: "job_report_photos_file_fk"
+            columns: ["organization_id", "file_id"]
             isOneToOne: false
-            referencedRelation: "attachments"
+            referencedRelation: "files"
             referencedColumns: ["organization_id", "id"]
           },
           {
@@ -17659,6 +17659,31 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      file_link_marketing_campaign: {
+        Args: {
+          target_entity_id: string
+          target_entity_type: string
+          target_organization_id: string
+        }
+        Returns: {
+          name: string
+          status: string
+        }[]
+      }
+      file_link_message: {
+        Args: {
+          target_entity_id: string
+          target_entity_type: string
+          target_organization_id: string
+        }
+        Returns: {
+          channel: string
+          client_id: string
+          client_name: string
+          status: string
+          subject: string
+        }[]
+      }
       file_usage: {
         Args: {
           cursor_created_at?: string
@@ -19143,6 +19168,37 @@ export type Database = {
         }
         Returns: number
       }
+      marketing_campaign_credited_work: {
+        Args: { target_campaign_id: string; target_organization_id: string }
+        Returns: {
+          client_id: string
+          client_name: string
+          credit_id: string
+          credited_at: string
+          job_id: string
+          request_id: string
+          revenue_minor: number
+          source: string
+          work_created_at: string
+          work_title: string
+        }[]
+      }
+      marketing_campaign_recipient_counts: {
+        Args: { target_campaign_id: string; target_organization_id: string }
+        Returns: {
+          bounced_count: number
+          cancelled_count: number
+          clicked_count: number
+          complained_count: number
+          delivered_count: number
+          excluded_count: number
+          failed_count: number
+          opened_count: number
+          submitted_count: number
+          unsubscribed_count: number
+          waiting_count: number
+        }[]
+      }
       marketing_campaign_window_attribution: {
         Args: {
           target_client_id: string
@@ -19154,6 +19210,23 @@ export type Database = {
           campaign_id: string
           delivered_at: string
           marketing_campaign_recipient_id: string
+        }[]
+      }
+      marketing_campaign_window_attribution_candidates: {
+        Args: {
+          target_campaign_id: string
+          target_organization_id: string
+          window_days?: number
+        }
+        Returns: {
+          client_id: string
+          client_name: string
+          delivered_at: string
+          job_id: string
+          request_id: string
+          work_created_at: string
+          work_kind: string
+          work_title: string
         }[]
       }
       marketing_cancel_campaign: {
@@ -21097,7 +21170,7 @@ export type Database = {
           new_include_service_details: boolean
           new_signature_id?: string
           new_summary?: string
-          photo_attachment_ids?: string[]
+          photo_file_ids?: string[]
           target_job_id: string
         }
         Returns: Json

@@ -216,6 +216,16 @@ Carried to Part 8: a published quote's `quote_version_lines.image_file_id` has n
 protected `file_links` still block their own delete trigger, so purge must handle both explicitly rather than
 relying on an ordinary foreign key.
 
+**Part 7A — Work Report photos.** A job's work report now picks its photos from the File Manager:
+`job_report_photos.file_id` replaces `attachment_id` (migration `20260924100000`), and the editor offers every
+checked, un-trashed image linked to the job or one of its visits (line photos excluded). A chosen photo gets a
+`report_photo` link on the job, kept off the job's own Files card; it is protected while a live (not turned off)
+customer link shows it, which gives "Used in" its "customer received" flag and Trash its strongest warning.
+Trashing such a photo drops it from the editable report selection; the customer's frozen copy shows "Photo
+removed" until Restore brings it back. Turning the link off releases the protection. Already-issued links were
+rewritten to name the same pictures by File id. The same migration also fixed "Used in" failing for every File
+since 6F: campaign names now come from `public.file_link_marketing_campaign`, mirroring 6E's message lookup.
+
 Decisions settled while building the schema, confirmed by Jafar 2026-09-21 (he asked for the industry-standard, contractor-easy choice):
 
 - **Folders are flat.** The contract asks for optional user folders, not a tree. A nesting column can be
