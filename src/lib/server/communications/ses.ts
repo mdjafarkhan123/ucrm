@@ -11,6 +11,7 @@ import {
 	GetTenantCommand,
 	PutEmailIdentityMailFromAttributesCommand,
 	SendEmailCommand,
+	UpdateConfigurationSetEventDestinationCommand,
 	type EventType
 } from '@aws-sdk/client-sesv2';
 import { getSesEnv, SesError } from './ses-env';
@@ -25,9 +26,10 @@ import { getSesEnv, SesError } from './ses-env';
 
 const SES_REQUEST_TIMEOUT_MS = 10_000;
 
-// The seven event types the provisioned SNS -> SQS pipeline was proven against. Engagement events (open,
-// click, subscription) are deliberately absent: Marketing does not render tracking pixels or rewrite links
-// in this release, so subscribing to them would only add noise.
+// The seven delivery event types the provisioned SNS -> SQS pipeline was proven against, plus OPEN and CLICK
+// (M5a, Jafar-approved): subscribing a configuration set to them is what makes SES add its open pixel and
+// rewrite links for click tracking. Results show opens as directional only. SUBSCRIPTION stays absent --
+// unsubscribe is UCRM-owned.
 const MARKETING_EVENT_TYPES: EventType[] = [
 	'SEND',
 	'DELIVERY',
@@ -35,7 +37,9 @@ const MARKETING_EVENT_TYPES: EventType[] = [
 	'COMPLAINT',
 	'REJECT',
 	'DELIVERY_DELAY',
-	'RENDERING_FAILURE'
+	'RENDERING_FAILURE',
+	'OPEN',
+	'CLICK'
 ];
 
 const EVENT_DESTINATION_NAME = 'sns-all-events';
@@ -221,10 +225,29 @@ export async function ensureSesEventDestination(configurationSetName: string): P
 			})
 		)
 	);
-	const alreadyAttached = (existing.EventDestinations ?? []).some(
+	const attached = (existing.EventDestinations ?? []).find(
 		(destination) => destination.SnsDestination?.TopicArn === env.AWS_SES_EVENT_SNS_TOPIC_ARN
 	);
-	if (alreadyAttached) return true;
+	if (attached) {
+		// A destination created before OPEN/CLICK were added is widened in place, so re-running activation
+		// upgrades an organization that already sends.
+		const current = new Set(attached.MatchingEventTypes ?? []);
+		if (MARKETING_EVENT_TYPES.every((type) => current.has(type)) && attached.Enabled) return true;
+		await sesCall('UpdateConfigurationSetEventDestination', () =>
+			client.send(
+				new UpdateConfigurationSetEventDestinationCommand({
+					ConfigurationSetName: configurationSetName,
+					EventDestinationName: attached.Name,
+					EventDestination: {
+						Enabled: true,
+						MatchingEventTypes: MARKETING_EVENT_TYPES,
+						SnsDestination: { TopicArn: env.AWS_SES_EVENT_SNS_TOPIC_ARN }
+					}
+				})
+			)
+		);
+		return true;
+	}
 
 	try {
 		await client.send(

@@ -4,6 +4,7 @@ import type {
 	MarketingCampaignContent,
 	MarketingVariable
 } from '$lib/marketing/campaign-content';
+import type { MarketingCtaTarget } from '$lib/server/marketing/call-to-action';
 
 // Turns a validated campaign content document into an actual email. Block content is written by an
 // authenticated organization member (marketing.draft), not the public, but it still becomes part of an MJML
@@ -40,6 +41,9 @@ export type MarketingRenderContext = {
 	// null renders a clearly-inert placeholder instead of a working link -- used for the editor's live
 	// preview, where there is no real recipient to bind an unsubscribe token to.
 	unsubscribeUrl: string | null;
+	// The campaign's primary action, rendered as one button after the content blocks. null when no action
+	// was chosen or its target no longer exists.
+	cta: MarketingCtaTarget | null;
 };
 
 export type MarketingRenderedEmail = {
@@ -138,6 +142,15 @@ function renderBlockText(block: MarketingBlock, ctx: MarketingRenderContext): st
 	}
 }
 
+function renderCtaMjml(cta: MarketingCtaTarget | null): string {
+	if (!cta) return '';
+	return `<mj-button href="${escapeHtml(cta.url)}" padding="24px 24px 8px" background-color="#2563eb" font-size="16px" font-weight="700" inner-padding="14px 28px">${escapeHtml(cta.label)}</mj-button>`;
+}
+
+function renderCtaText(cta: MarketingCtaTarget | null): string[] {
+	return cta ? [`${cta.label}: ${cta.url.replace(/^tel:/, '')}`] : [];
+}
+
 function footerAddressLines(business: MarketingBusinessIdentity): string[] {
 	return [
 		business.addressLine1,
@@ -150,7 +163,8 @@ function footerAddressLines(business: MarketingBusinessIdentity): string[] {
 function renderFooterMjml(ctx: MarketingRenderContext): string {
 	const addressLines = footerAddressLines(ctx.business);
 	const unsubscribeHtml = ctx.unsubscribeUrl
-		? `<a href="${escapeHtml(ctx.unsubscribeUrl)}" style="color:#6b7280">Unsubscribe</a>`
+		? // ses:no-track keeps Amazon's click tracking off the unsubscribe link: it must reach UCRM directly.
+			`<a ses:no-track href="${escapeHtml(ctx.unsubscribeUrl)}" style="color:#6b7280">Unsubscribe</a>`
 		: `<span style="color:#9ca3af">Unsubscribe (this link is only live on a real send)</span>`;
 
 	return `<mj-section padding="24px" background-color="#f9fafb">
@@ -193,6 +207,7 @@ export async function renderCampaignEmail(
 			<mj-section padding="24px 0 0">
 				<mj-column>
 					${content.blocks.map((block) => renderBlockMjml(block, ctx)).join('\n')}
+					${renderCtaMjml(ctx.cta)}
 				</mj-column>
 			</mj-section>
 			${renderFooterMjml(ctx)}
@@ -203,6 +218,7 @@ export async function renderCampaignEmail(
 
 	const text = [
 		...content.blocks.map((block) => renderBlockText(block, ctx)),
+		...renderCtaText(ctx.cta),
 		'',
 		renderFooterText(ctx)
 	].join('\n\n');

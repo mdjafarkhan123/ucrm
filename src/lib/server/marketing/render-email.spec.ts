@@ -20,7 +20,8 @@ const baseCtx: MarketingRenderContext = {
 	variables: { customer_first_name: 'Alex', business_name: 'Raad LTD' },
 	serviceNames: { 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa': 'Gutter cleaning' },
 	business,
-	unsubscribeUrl: 'https://example.com/u/token123'
+	unsubscribeUrl: 'https://example.com/u/token123',
+	cta: null
 };
 
 function contentWith(blocks: MarketingCampaignContent['blocks']): MarketingCampaignContent {
@@ -105,6 +106,22 @@ describe('renderCampaignEmail', () => {
 		expect(result.html).toContain('Raad LTD');
 		expect(result.html).toContain('123 Main St');
 		expect(result.text).toContain('Raad LTD');
+	});
+
+	it('renders the chosen call to action as a button and a plain-text line', async () => {
+		const result = await renderCampaignEmail(contentWith([]), {
+			...baseCtx,
+			cta: { type: 'phone', label: 'Call us', url: 'tel:+15125550100' }
+		});
+		expect(result.errors).toEqual([]);
+		expect(result.html).toContain('href="tel:+15125550100"');
+		expect(result.html).toContain('Call us');
+		expect(result.text).toContain('Call us: +15125550100');
+	});
+
+	it('keeps click tracking off the unsubscribe link', async () => {
+		const result = await renderCampaignEmail(contentWith([]), baseCtx);
+		expect(result.html).toMatch(/<a ses:no-track[^>]*href="https:\/\/example\.com\/u\/token123"/);
 	});
 });
 

@@ -32,6 +32,7 @@ const context: CampaignSendContext = {
 		cta: null
 	},
 	serviceNames: {},
+	cta: null,
 	business: {
 		name: 'Ridgeway Contracting',
 		addressLine1: '1 Main St',
@@ -43,17 +44,27 @@ const context: CampaignSendContext = {
 	},
 	fromEmail: 'hello@news.ridgeway.example',
 	fromName: 'Ridgeway Contracting',
+	senderId: 'sender-1',
+	receivingDomains: { 'domain-r': 'reply.ridgeway.example' },
 	replyTo: { email: 'hello@mail.ridgeway.example', name: 'Ridgeway Contracting' },
 	tenantName: 'ucrm-org-1',
 	configurationSetName: 'ucrm-marketing-org-1'
 };
 
-function clientWithClaim(value: typeof recipient | undefined) {
-	const rpc = vi.fn(async (name: string) => {
+const aliasRow = { alias_local_part: 'a1b2c3', receiving_domain_id: 'domain-r' };
+
+function clientWithClaim(
+	value: typeof recipient | undefined,
+	alias: typeof aliasRow | null = aliasRow
+) {
+	const rpc = vi.fn(async (name: string, args?: Record<string, unknown>) => {
+		void args;
 		if (name === 'claim_marketing_campaign_recipient')
 			return { data: value ? [value] : [], error: null };
 		if (name === 'issue_client_marketing_unsubscribe_link')
 			return { data: { unsubscribe_link_id: 'link-1' }, error: null };
+		if (name === 'issue_marketing_campaign_cta_link') return { data: null, error: null };
+		if (name === 'ensure_communication_reply_alias') return { data: alias, error: null };
 		if (name === 'finalize_marketing_campaign_send')
 			return { data: [{ recipient_status: 'submitted', campaign_status: 'sending' }], error: null };
 		return { data: null, error: { message: `Unexpected RPC ${name}.` } };
@@ -88,7 +99,7 @@ describe('processClaimedMarketingRecipient', () => {
 			expect.objectContaining({
 				from: { email: context.fromEmail, name: context.fromName },
 				to: { email: recipient.recipient_email },
-				replyTo: context.replyTo,
+				replyTo: { email: 'a1b2c3@reply.ridgeway.example', name: context.replyTo.name },
 				subject: 'Hello Alex',
 				tenantName: context.tenantName,
 				configurationSetName: context.configurationSetName
@@ -102,9 +113,18 @@ describe('processClaimedMarketingRecipient', () => {
 			'issue_client_marketing_unsubscribe_link',
 			expect.objectContaining({
 				target_organization_id: 'org-1',
-				target_client_contact_method_id: 'method-1'
+				target_client_contact_method_id: 'method-1',
+				target_marketing_campaign_recipient_id: 'recipient-1'
 			})
 		);
+		expect(rpc).toHaveBeenCalledWith('ensure_communication_reply_alias', {
+			target_organization_id: 'org-1',
+			target_sender_id: 'sender-1',
+			target_client_id: 'client-1',
+			target_contact_method_id: 'method-1'
+		});
+		// No call to action on this campaign, so no recipient-bound link is issued.
+		expect(rpc).not.toHaveBeenCalledWith('issue_marketing_campaign_cta_link', expect.anything());
 		expect(rpc).toHaveBeenCalledWith(
 			'finalize_marketing_campaign_send',
 			expect.objectContaining({
@@ -114,6 +134,39 @@ describe('processClaimedMarketingRecipient', () => {
 				target_provider_message_id: 'ses-message-1'
 			})
 		);
+	});
+
+	it('falls back to the organization Reply-To when no reply alias can be made', async () => {
+		const { client } = clientWithClaim(recipient, null);
+		const send = vi.fn().mockResolvedValue({ messageId: 'ses-message-1' });
+		const loadContext = vi.fn().mockResolvedValue(context);
+
+		await processClaimedMarketingRecipient({ client, send, loadContext });
+
+		expect(send).toHaveBeenCalledWith(expect.objectContaining({ replyTo: context.replyTo }));
+	});
+
+	it('binds a form call to action to this recipient with its own token', async () => {
+		const { client, rpc } = clientWithClaim(recipient);
+		const send = vi.fn().mockResolvedValue({ messageId: 'ses-message-1' });
+		const loadContext = vi.fn().mockResolvedValue({
+			...context,
+			cta: {
+				type: 'internal_form',
+				label: 'Book now',
+				url: 'https://app.example.test/forms/raad/book'
+			}
+		});
+
+		await processClaimedMarketingRecipient({ client, send, loadContext });
+
+		const issued = rpc.mock.calls.find(([name]) => name === 'issue_marketing_campaign_cta_link');
+		expect(issued?.[1]).toEqual(
+			expect.objectContaining({ target_recipient_id: 'recipient-1', target_claim_token: 'claim-1' })
+		);
+		const html: string = send.mock.calls[0][0].htmlContent;
+		expect(html).toMatch(/https:\/\/app\.example\.test\/forms\/raad\/book\?mc=[A-Za-z0-9_-]{43}/);
+		expect(html).toContain('Book now');
 	});
 
 	it('takes only the first whitespace token as customer_first_name', async () => {
@@ -171,7 +224,8 @@ describe('processClaimedMarketingRecipient', () => {
 describe('drainMarketingCampaignQueue', () => {
 	function drainingClient(claimCount: number, stale: number) {
 		let remaining = claimCount;
-		const rpc = vi.fn(async (name: string) => {
+		const rpc = vi.fn(async (name: string, args?: Record<string, unknown>) => {
+			void args;
 			if (name === 'quarantine_stale_marketing_campaign_claims')
 				return { data: stale, error: null };
 			if (name === 'claim_marketing_campaign_recipient') {
@@ -181,6 +235,7 @@ describe('drainMarketingCampaignQueue', () => {
 			}
 			if (name === 'issue_client_marketing_unsubscribe_link')
 				return { data: { unsubscribe_link_id: 'link-1' }, error: null };
+			if (name === 'ensure_communication_reply_alias') return { data: aliasRow, error: null };
 			if (name === 'finalize_marketing_campaign_send')
 				return {
 					data: [{ recipient_status: 'submitted', campaign_status: 'sending' }],
@@ -217,7 +272,8 @@ describe('runMonitoredMarketingWake', () => {
 		recordError?: boolean;
 		claimDelayMs?: number;
 	}) {
-		const rpc = vi.fn(async (name: string) => {
+		const rpc = vi.fn(async (name: string, args?: Record<string, unknown>) => {
+			void args;
 			if (name === 'acquire_communication_worker_lease')
 				return { data: 'leaseToken' in options ? options.leaseToken : 'lease-1', error: null };
 			if (name === 'release_communication_worker_lease') return { data: true, error: null };

@@ -16,6 +16,8 @@ const context: OrganizationMarketingSendContext = {
 	},
 	fromEmail: 'hello@news.ridgeway.example',
 	fromName: 'Ridgeway Contracting',
+	senderId: 'sender-1',
+	receivingDomains: { 'domain-r': 'reply.ridgeway.example' },
 	replyTo: { email: 'hello@mail.ridgeway.example', name: 'Ridgeway Contracting' },
 	tenantName: 'ucrm-org-1',
 	configurationSetName: 'ucrm-marketing-org-1'

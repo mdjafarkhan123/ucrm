@@ -168,6 +168,26 @@ Each slice is one focused session, independently verifiable, and ends with its o
   association labelled as such. Revenue only from real linked Invoices/Payments. Original lead source untouched.
 - Replies land in Conversations with Campaign origin.
 
+**Approved by Jafar 2026-09-23 (reviewed against Mailchimp/Klaviyo/SendGrid/Jobber patterns):**
+- **M5a — delivery truth.** Render the Step 4 call to action into the sent email (it was stored but never
+  rendered); an internal-form link carries an opaque recipient-bound token that reveals no ids. Reply-To becomes
+  the customer's own reply alias (`ensure_communication_reply_alias`), falling back to the operational sender
+  when the organization has no receiving domain; an inbound reply whose In-Reply-To matches a Marketing message
+  is tagged with that campaign. Unsubscribe links carry the campaign recipient so the recipient shows
+  Unsubscribed. SES built-in open and click tracking (event types OPEN, CLICK) on each Marketing configuration
+  set; recipients store delivered/opened/clicked/unsubscribed times.
+- **M5b — attribution.** Tracked (form submitted through a recipient token; the Request belongs to whoever
+  submitted, so a forwarded email still credits the campaign) and staff-declared links are stored. The 30-day
+  window is computed at read time from delivery: a Request, or a Job created without a Request, by the same
+  Customer; last touch only -- the most recent delivered campaign before that work gets the credit, so no work
+  is counted twice. A click is engagement only and never earns credit (link scanners click automatically).
+  Revenue is real payments on invoices of credited work, never quoted value.
+- **M5c — detail and results UI.** Campaign detail with Overview, Recipients (keyset-paged, search, filters),
+  Content, Results tabs; list rows gain delivered, clicked, and credited work/revenue. Jobber campaign report
+  screens are captured to `Design/` first.
+- **Production gate carried to M6:** click tracking goes through a branded tracking domain on the contractor's
+  own domain before any real-customer send; the shared `awstrack.me` domain is sandbox/pilot-test only.
+
 ### M6 — Integrated proof
 Blueprint §19 checks 1–15 in the browser across owner, admin, drafting staff, and a no-access role; tenant
 isolation; cancellation race; duplicate launch; callback disorder; worker restart; and a measured Marketing burst

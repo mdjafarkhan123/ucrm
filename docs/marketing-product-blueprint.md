@@ -480,8 +480,9 @@ First-release attribution order:
 1. **Direct tracked action:** the Customer used this campaign's recipient-bound UCRM Request/Booking link.
 2. **Direct declared relationship:** authorized staff connect a resulting Request/Job after reviewing the
    Customer and timing.
-3. **Defined-window association:** the same Customer created a Request after a delivered/clicked campaign within
-   the displayed attribution window and no stronger source exists.
+3. **Defined-window association:** the same Customer created a Request, or a Job with no Request (a phone
+   booking), after a delivered campaign within the displayed attribution window and no stronger source exists.
+   Only the most recent delivered campaign before that work is credited (amended 2026-09-23, Jafar-approved).
 
 The UI names which method was used. Direct tracked results are stronger than window-based association. Campaign
 revenue follows real linked Jobs/Invoices/Payments and never invents a payment from quoted value.

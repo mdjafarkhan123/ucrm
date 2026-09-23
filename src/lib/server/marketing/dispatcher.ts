@@ -19,6 +19,12 @@ import {
 	type MarketingBusinessIdentity
 } from '$lib/server/marketing/render-email';
 import {
+	createMarketingCtaToken,
+	resolveMarketingCtaTarget,
+	withRecipientToken,
+	type MarketingCtaTarget
+} from '$lib/server/marketing/call-to-action';
+import {
 	createMarketingUnsubscribeToken,
 	marketingUnsubscribeHeaders,
 	marketingUnsubscribeLinkUrl
@@ -92,7 +98,12 @@ export type OrganizationMarketingSendContext = {
 	business: MarketingBusinessIdentity;
 	fromEmail: string;
 	fromName: string;
+	senderId: string;
+	// The organization-wide Reply-To, used only when the customer's own reply alias cannot be made (no verified
+	// receiving domain). A real send prefers the alias so the reply lands in that customer's conversation.
 	replyTo: { email: string; name: string };
+	// Verified receiving domains by id, so a reply alias row becomes an address without another query.
+	receivingDomains: Record<string, string>;
 	tenantName: string;
 	configurationSetName: string;
 };
@@ -107,36 +118,43 @@ export async function buildOrganizationMarketingSendContext(
 ): Promise<OrganizationMarketingSendContext> {
 	const owner = getOwnerSupabaseClient();
 
-	const [organization, marketingDomain, sendingDomains, tenant] = await Promise.all([
-		owner.from('organizations').select('name').eq('id', organizationId).single(),
-		// The verified news.<root> identity a send actually leaves from -- claim_marketing_campaign_recipient
-		// only claims a recipient once this exists, so a missing row here means the identity dropped out from
-		// under an already-claimed recipient.
-		owner
-			.from('communication_email_domains')
-			.select('domain_name')
-			.eq('organization_id', organizationId)
-			.eq('purpose', 'marketing_sending')
-			.eq('lifecycle_state', 'verified')
-			.single(),
-		owner
-			.from('communication_email_domains')
-			.select('id')
-			.eq('organization_id', organizationId)
-			.eq('purpose', 'sending')
-			.eq('lifecycle_state', 'verified')
-			.eq('provider_verified', true)
-			.eq('provider_authenticated', true)
-			.eq('ownership_status', 'passing')
-			.eq('dkim_status', 'passing'),
-		owner
-			.from('communication_ses_tenants')
-			.select('tenant_name, configuration_set_name')
-			.eq('organization_id', organizationId)
-			.single()
-	]);
+	const [organization, marketingDomain, sendingDomains, tenant, receivingDomains] =
+		await Promise.all([
+			owner.from('organizations').select('name').eq('id', organizationId).single(),
+			// The verified news.<root> identity a send actually leaves from -- claim_marketing_campaign_recipient
+			// only claims a recipient once this exists, so a missing row here means the identity dropped out from
+			// under an already-claimed recipient.
+			owner
+				.from('communication_email_domains')
+				.select('domain_name')
+				.eq('organization_id', organizationId)
+				.eq('purpose', 'marketing_sending')
+				.eq('lifecycle_state', 'verified')
+				.single(),
+			owner
+				.from('communication_email_domains')
+				.select('id')
+				.eq('organization_id', organizationId)
+				.eq('purpose', 'sending')
+				.eq('lifecycle_state', 'verified')
+				.eq('provider_verified', true)
+				.eq('provider_authenticated', true)
+				.eq('ownership_status', 'passing')
+				.eq('dkim_status', 'passing'),
+			owner
+				.from('communication_ses_tenants')
+				.select('tenant_name, configuration_set_name')
+				.eq('organization_id', organizationId)
+				.single(),
+			owner
+				.from('communication_email_domains')
+				.select('id, domain_name')
+				.eq('organization_id', organizationId)
+				.eq('purpose', 'receiving')
+				.eq('lifecycle_state', 'verified')
+		]);
 
-	for (const result of [organization, marketingDomain, sendingDomains, tenant]) {
+	for (const result of [organization, marketingDomain, sendingDomains, tenant, receivingDomains]) {
 		if (result.error) throw result.error;
 	}
 	// .single() already errored above when a row was missing, so a null .data here is unreachable -- these
@@ -152,7 +170,7 @@ export async function buildOrganizationMarketingSendContext(
 	// same eligible-sender query as readiness.ts and delivery-options.ts.
 	const { data: senderRow, error: senderError } = await owner
 		.from('communication_email_senders')
-		.select('email_address, display_name')
+		.select('id, email_address, display_name')
 		.eq('organization_id', organizationId)
 		.eq('lifecycle_state', 'enabled')
 		.in('domain_id', sendingDomainIds)
@@ -170,7 +188,11 @@ export async function buildOrganizationMarketingSendContext(
 		business,
 		fromEmail: `${localPart}@${marketingDomain.data.domain_name}`,
 		fromName: senderRow.display_name,
+		senderId: senderRow.id,
 		replyTo: { email: senderRow.email_address, name: senderRow.display_name },
+		receivingDomains: Object.fromEntries(
+			(receivingDomains.data ?? []).map((domain) => [domain.id, domain.domain_name])
+		),
 		tenantName: tenant.data.tenant_name,
 		configurationSetName: tenant.data.configuration_set_name
 	};
@@ -179,7 +201,15 @@ export async function buildOrganizationMarketingSendContext(
 export type CampaignSendContext = OrganizationMarketingSendContext & {
 	content: MarketingCampaignContent;
 	serviceNames: Record<string, string>;
+	// Resolved once per campaign; each recipient's form link then gets its own token.
+	cta: MarketingCtaTarget | null;
 };
+
+export function appOrigin(): string {
+	const rawOrigin = env.APP_URL?.trim();
+	if (!rawOrigin) throw new Error('APP_URL must be set before Marketing email can send.');
+	return new URL(rawOrigin).origin;
+}
 
 // A launched campaign's content, sender identity, and tenant never change again, so this is built at most
 // once per campaign per worker process and reused for every recipient. Caching the in-flight promise (not
@@ -214,12 +244,15 @@ async function buildCampaignSendContext(
 		.filter((block) => block.type === 'service_summary')
 		.flatMap((block) => (block.type === 'service_summary' ? block.catalog_item_ids : []));
 
-	const labels = await hydrateRuleLabels(organizationId, catalogItemIds, []);
+	const [labels, cta] = await Promise.all([
+		hydrateRuleLabels(organizationId, catalogItemIds, []),
+		resolveMarketingCtaTarget(organizationId, content.cta, appOrigin())
+	]);
 	const serviceNames = Object.fromEntries(
 		labels.catalog_items.map((item) => [item.id, item.label])
 	);
 
-	return { content, serviceNames, ...orgContext };
+	return { content, serviceNames, cta, ...orgContext };
 }
 
 function loadCampaignSendContext(
@@ -263,17 +296,50 @@ export async function processClaimedMarketingRecipient(
 	try {
 		const context = await loadContext(recipient.organization_id, recipient.campaign_id);
 
-		const rawOrigin = env.APP_URL?.trim();
-		if (!rawOrigin) throw new Error('APP_URL must be set before Marketing email can send.');
-		const origin = new URL(rawOrigin).origin;
+		const origin = appOrigin();
 
 		const { token, tokenHash } = createMarketingUnsubscribeToken();
 		const issued = await client.rpc('issue_client_marketing_unsubscribe_link', {
 			target_organization_id: recipient.organization_id,
 			target_client_contact_method_id: recipient.client_contact_method_id,
-			supplied_token_hash: tokenHash
+			supplied_token_hash: tokenHash,
+			target_marketing_campaign_recipient_id: recipient.recipient_id
 		});
 		if (issued.error) throw rpcError('Could not issue a marketing unsubscribe link', issued.error);
+
+		let cta = context.cta;
+		if (cta?.type === 'internal_form') {
+			const ctaToken = createMarketingCtaToken();
+			const ctaIssued = await client.rpc('issue_marketing_campaign_cta_link', {
+				target_recipient_id: recipient.recipient_id,
+				target_claim_token: recipient.claim_token,
+				supplied_token_hash: ctaToken.tokenHash
+			});
+			if (ctaIssued.error)
+				throw rpcError('Could not issue a marketing call-to-action link', ctaIssued.error);
+			cta = withRecipientToken(cta, ctaToken.token);
+		}
+
+		// The same per-customer alias operational email uses, so a reply lands in this customer's own
+		// conversation; the inbound trigger then tags it with the campaign from In-Reply-To.
+		const aliased = await client.rpc('ensure_communication_reply_alias', {
+			target_organization_id: recipient.organization_id,
+			target_sender_id: context.senderId,
+			target_client_id: recipient.client_id,
+			target_contact_method_id: recipient.client_contact_method_id
+		});
+		if (aliased.error) throw rpcError('Could not prepare a reply address', aliased.error);
+		const alias = aliased.data as {
+			alias_local_part: string | null;
+			receiving_domain_id: string | null;
+		} | null;
+		const aliasDomain = alias?.receiving_domain_id
+			? context.receivingDomains[alias.receiving_domain_id]
+			: undefined;
+		const replyTo =
+			alias?.alias_local_part && aliasDomain
+				? { email: `${alias.alias_local_part}@${aliasDomain}`, name: context.replyTo.name }
+				: context.replyTo;
 
 		const variables = {
 			customer_first_name: firstNameToken(recipient.display_name),
@@ -284,7 +350,8 @@ export async function processClaimedMarketingRecipient(
 			variables,
 			serviceNames: context.serviceNames,
 			business: context.business,
-			unsubscribeUrl: marketingUnsubscribeLinkUrl(origin, token)
+			unsubscribeUrl: marketingUnsubscribeLinkUrl(origin, token),
+			cta
 		});
 		if (rendered.errors.length > 0)
 			throw new MarketingEmailSubmissionError(
@@ -297,7 +364,7 @@ export async function processClaimedMarketingRecipient(
 		const submitted = await send({
 			from: { email: context.fromEmail, name: context.fromName },
 			to: { email: recipient.recipient_email },
-			replyTo: context.replyTo,
+			replyTo,
 			subject: resolveMarketingVariablesPlainText(context.content.subject, variables),
 			htmlContent: rendered.html,
 			textContent: rendered.text,

@@ -1,7 +1,9 @@
 import type { MarketingCampaignContent } from '$lib/marketing/campaign-content';
 import { sendMarketingEmail, type MarketingEmail } from '$lib/server/communications/ses';
 import { hydrateRuleLabels } from '$lib/server/marketing/customer-groups';
+import { resolveMarketingCtaTarget } from '$lib/server/marketing/call-to-action';
 import {
+	appOrigin,
 	buildOrganizationMarketingSendContext,
 	type OrganizationMarketingSendContext
 } from '$lib/server/marketing/dispatcher';
@@ -54,7 +56,11 @@ export async function sendTestMarketingEmail(
 		variables,
 		serviceNames,
 		business: context.business,
-		unsubscribeUrl: null
+		unsubscribeUrl: null,
+		// The real target without a recipient token: a test email is not a campaign result.
+		cta: content.cta
+			? await resolveMarketingCtaTarget(organizationId, content.cta, appOrigin())
+			: null
 	});
 	if (rendered.errors.length > 0)
 		throw new MarketingTestSendError(

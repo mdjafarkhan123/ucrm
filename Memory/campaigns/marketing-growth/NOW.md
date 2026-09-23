@@ -6,18 +6,28 @@ Ship simple, safe contractor Marketing: one-off email first, with every approved
 
 ## State
 
-M1-M4 complete and committed. M4 stage 6 (Marketing-only reputation pause) is live (`20260923120000`).
+M1-M4 committed. M5 plan approved 2026-09-23 (plan §3 M5, blueprint §13 window amendment). M5a (delivery truth)
+built and committed: migration `20260923160000` live; SES OPEN/CLICK on Raad LTD's config set; unit + live
+rolled-back SQL checks pass. Not yet proven with a real inbox (Chrome extension was disconnected).
 
 ## Exact next action
 
-Plan M5 (results, replies, attribution) from plan §3 M5 and the roadmap row; present it to Jafar for approval.
+Build M5b (attribution) per plan §3 M5: public form reads `?mc=` token (`call-to-action.ts`
+`marketingCtaTokenHash`) and stores a tracked credit; staff-declared link; read-time 30-day last-touch window
+over Requests and Jobs-without-Request; revenue from real payments. Then M5c UI.
+
+## M5 completion gate (after M5c)
+
+One real campaign to a fresh consented test customer (Greenfield is frequency-blocked until 2026-09-30) with a
+form CTA: button carries `?mc=`, open/click times land, reply lands in that customer's conversation tagged with
+the campaign, form submit credits it -- all visible on the new campaign page.
 
 ## Blockers / open findings (raise with Jafar)
 
-- Both marketing wake cron jobs are active and fail every minute (Vault target URLs unset). Harmless; noisy.
-- DLQ alert and warmup-cap starvation in `claim_marketing_campaign_recipient` are recorded as M6 gates.
+- Both marketing wake cron jobs fail every minute (Vault target URLs unset). Harmless; noisy.
+- DLQ alert, warmup-cap starvation, and branded click-tracking domain are M6 gates.
 - M9 SMS marketing blocked on Communications A2. Raad LTD Marketing override + allowance expire 2026-09-24.
 
 ## Pointers
 
-`ROADMAP.md`, `docs/marketing-first-release-plan.md` §3. Resume: `continue marketing growth`.
+`docs/marketing-first-release-plan.md` §3 M5. Resume: `continue marketing growth`.

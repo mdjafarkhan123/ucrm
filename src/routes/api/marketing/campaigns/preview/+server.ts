@@ -8,6 +8,7 @@ import { marketingCampaignContentSchema } from '$lib/marketing/campaign-content'
 import { hydrateRuleLabels } from '$lib/server/marketing/customer-groups';
 import { getMarketingBusinessIdentity } from '$lib/server/marketing/business-identity';
 import { renderCampaignEmail } from '$lib/server/marketing/render-email';
+import { resolveMarketingCtaTarget } from '$lib/server/marketing/call-to-action';
 
 // The block editor's live preview: content in, rendered email out. No campaign id -- a draft that has not
 // been saved yet still needs to preview. Read-only, so marketing.view is enough, same as the customer-groups
@@ -37,9 +38,10 @@ export const POST: RequestHandler = async (event) => {
 		.flatMap((block) => (block.type === 'service_summary' ? block.catalog_item_ids : []));
 
 	try {
-		const [business, labels] = await Promise.all([
+		const [business, labels, cta] = await Promise.all([
 			getMarketingBusinessIdentity(organizationId, access.auth.organization.name),
-			hydrateRuleLabels(organizationId, catalogItemIds, [])
+			hydrateRuleLabels(organizationId, catalogItemIds, []),
+			resolveMarketingCtaTarget(organizationId, content.cta, event.url.origin)
 		]);
 		const serviceNames = Object.fromEntries(
 			labels.catalog_items.map((item) => [item.id, item.label])
@@ -49,7 +51,8 @@ export const POST: RequestHandler = async (event) => {
 			variables: { customer_first_name: 'Alex', business_name: business.name },
 			serviceNames,
 			business,
-			unsubscribeUrl: null
+			unsubscribeUrl: null,
+			cta
 		});
 		return json(rendered, { headers: NO_STORE_HEADERS });
 	} catch (error) {

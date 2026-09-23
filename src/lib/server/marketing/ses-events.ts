@@ -21,7 +21,9 @@ const sesEventSchema = z
 			.passthrough()
 			.optional(),
 		complaint: z.object({ timestamp: z.string().optional() }).passthrough().optional(),
-		delivery: z.object({ timestamp: z.string().optional() }).passthrough().optional()
+		delivery: z.object({ timestamp: z.string().optional() }).passthrough().optional(),
+		open: z.object({ timestamp: z.string().optional() }).passthrough().optional(),
+		click: z.object({ timestamp: z.string().optional() }).passthrough().optional()
 	})
 	.passthrough();
 
@@ -37,9 +39,13 @@ export function sesEventKey(event: SesEvent): string {
 }
 
 // The event-type-specific object carries the truer timestamp (when SES actually observed delivery/bounce/
-// complaint); mail.timestamp is only when the API accepted the send.
+// complaint/open/click); mail.timestamp is only when the API accepted the send.
 export function sesEventOccurredAt(event: SesEvent): string | null {
 	const specific =
-		event.bounce?.timestamp ?? event.complaint?.timestamp ?? event.delivery?.timestamp;
+		event.bounce?.timestamp ??
+		event.complaint?.timestamp ??
+		event.delivery?.timestamp ??
+		event.open?.timestamp ??
+		event.click?.timestamp;
 	return specific ?? event.mail.timestamp ?? null;
 }
