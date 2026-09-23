@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { headObject } from '$lib/server/storage/r2';
 import { INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES } from '$lib/server/communications/inbound-email';
 
@@ -101,4 +102,42 @@ export async function resolveOutboundSmsAttachment(
 		byte_size: byteSize,
 		object_key: attachment.object_key
 	};
+}
+
+// Files and Media Part 6E: the reuse path. No presign, no PUT, no headObject -- the File Manager already
+// verified this object when it was uploaded there, so its own row is the source of truth. `caller` is the
+// request's own RLS-bound client, the same one used to read a File before attaching it elsewhere
+// (/api/files/links), so a file this member cannot see answers "not found" rather than becoming sendable by
+// id alone.
+export async function resolveLibraryFileAttachments(
+	caller: SupabaseClient,
+	fileIds: string[]
+): Promise<ResolvedOutboundAttachment[]> {
+	if (fileIds.length === 0) return [];
+
+	const { data, error } = await caller
+		.from('files')
+		.select('id, display_name, mime_type, size_bytes, object_key, processing_state')
+		.in('id', fileIds)
+		.is('trashed_at', null);
+	if (error) {
+		throw new OutboundAttachmentError('Those files could not be read.');
+	}
+
+	const found = new Map((data ?? []).map((file) => [file.id, file]));
+	return fileIds.map((fileId) => {
+		const file = found.get(fileId);
+		if (!file) throw new OutboundAttachmentError('One of those files could not be found.');
+		if (file.processing_state !== 'available') {
+			throw new OutboundAttachmentError(
+				'One of those files is still being checked and cannot be sent yet.'
+			);
+		}
+		return {
+			file_name: file.display_name,
+			mime_type: file.mime_type,
+			byte_size: file.size_bytes,
+			object_key: file.object_key
+		};
+	});
 }

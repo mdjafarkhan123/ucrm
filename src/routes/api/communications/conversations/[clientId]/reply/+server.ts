@@ -3,9 +3,11 @@ import type { RequestHandler } from './$types';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { hasPermission } from '$lib/server/access/permission';
 import { NO_STORE_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
+import { INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES } from '$lib/server/communications/inbound-email';
 import { renderManualEmailHtml } from '$lib/server/communications/manual-email';
 import {
 	OutboundAttachmentError,
+	resolveLibraryFileAttachments,
 	resolveOutboundAttachments,
 	resolveOutboundSmsAttachment,
 	type ResolvedOutboundAttachment
@@ -76,14 +78,29 @@ export const POST: RequestHandler = async (event) => {
 		}
 
 		if (smsParsed && smsParsed.success) {
+			const [file] = smsParsed.data.attachments;
+			const [libraryFileId] = smsParsed.data.library_file_ids;
+			if (file && libraryFileId) {
+				return validationError({ attachments: 'Attach at most one file to a text message.' });
+			}
+
 			let smsAttachments: (ResolvedOutboundAttachment & {
 				access_token_hash: string;
 				link_url: string;
 			})[];
 			try {
-				const [file] = smsParsed.data.attachments;
+				let resolved: ResolvedOutboundAttachment | null = null;
 				if (file) {
-					const resolved = await resolveOutboundSmsAttachment(organizationId, file);
+					resolved = await resolveOutboundSmsAttachment(organizationId, file);
+				} else if (libraryFileId) {
+					[resolved] = await resolveLibraryFileAttachments(event.locals.supabase, [libraryFileId]);
+					if (resolved.byte_size > INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES) {
+						throw new OutboundAttachmentError(
+							'A file must be 20 MB or smaller to send as a text message.'
+						);
+					}
+				}
+				if (resolved) {
 					// Made ahead of the enqueue call, always -- the command decides afterwards whether the
 					// picture could go as real MMS. An unused token (real MMS was possible) is simply never
 					// persisted; see sms-attachment-access-links.ts's own header note.
@@ -116,6 +133,20 @@ export const POST: RequestHandler = async (event) => {
 				return databaseError();
 			}
 
+			// Best-effort: the text has already gone out with the real file content embedded above, so a
+			// failure here only means the File's "Used in" list will not mention this text -- worth logging,
+			// never worth undoing an already-sent message over.
+			if (libraryFileId) {
+				const { error: linkError } = await ownerClient.rpc('attach_file_to_record', {
+					target_organization_id: organizationId,
+					target_file_id: libraryFileId,
+					target_actor_id: check.auth.user.id,
+					target_entity_type: 'message',
+					target_entity_id: data.id
+				});
+				if (linkError) console.error('Could not link a library file to a sent text.', linkError);
+			}
+
 			return json(
 				{ intent: { id: data.id, status: data.status, created_at: data.created_at } },
 				{ status: 201, headers: NO_STORE_HEADERS }
@@ -127,9 +158,17 @@ export const POST: RequestHandler = async (event) => {
 		if (!emailParsed?.success) return databaseError();
 		const input = emailParsed.data;
 
-		let attachments;
+		let attachments: ResolvedOutboundAttachment[];
 		try {
-			attachments = await resolveOutboundAttachments(organizationId, input.attachments);
+			const [rawAttachments, libraryAttachments] = await Promise.all([
+				resolveOutboundAttachments(organizationId, input.attachments),
+				resolveLibraryFileAttachments(event.locals.supabase, input.library_file_ids)
+			]);
+			attachments = [...rawAttachments, ...libraryAttachments];
+			const totalBytes = attachments.reduce((sum, item) => sum + item.byte_size, 0);
+			if (totalBytes > INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES) {
+				throw new OutboundAttachmentError('Attachments must total 20 MB or less.');
+			}
 		} catch (error) {
 			if (error instanceof OutboundAttachmentError) {
 				return validationError({ attachments: error.message });
@@ -155,6 +194,20 @@ export const POST: RequestHandler = async (event) => {
 			}
 			console.error('Could not queue a conversation reply.', error);
 			return databaseError();
+		}
+
+		// Best-effort: the email has already gone out with the real file content embedded above, so a
+		// failure here only means the File's "Used in" list will not mention this email -- worth logging,
+		// never worth undoing an already-sent message over.
+		for (const fileId of input.library_file_ids) {
+			const { error: linkError } = await ownerClient.rpc('attach_file_to_record', {
+				target_organization_id: organizationId,
+				target_file_id: fileId,
+				target_actor_id: check.auth.user.id,
+				target_entity_type: 'message',
+				target_entity_id: data.id
+			});
+			if (linkError) console.error('Could not link a library file to a sent email.', linkError);
 		}
 
 		// R2: an AFTER INSERT trigger on the outbox fires the immediate drain automatically, so this route no

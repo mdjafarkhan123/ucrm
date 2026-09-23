@@ -278,6 +278,10 @@
 			return resolve('/(app)/invoices/[id=uuid]', { id: row.link_id });
 		if (row.link_type === 'job') return resolve('/(app)/jobs/[id=uuid]', { id: row.link_id });
 		if (row.link_type === 'organization') return resolve('/(app)/settings/branding');
+		// A message has no page of its own; it opens the client's conversation, the same way a visit or job
+		// expense opens its job. link_id is the message's client_id here, not the message's own id.
+		if (row.link_type === 'message')
+			return `${resolve('/(app)/communications')}?client=${row.link_id}`;
 		// A property has no page of its own; it is read on its client, which the row's context names.
 		return null;
 	}

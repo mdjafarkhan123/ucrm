@@ -360,7 +360,8 @@ const USAGE_GROUP_LABELS: Record<string, { singular: string; plural: string }> =
 	job: { singular: 'Job', plural: 'Jobs' },
 	visit: { singular: 'Visit', plural: 'Visits' },
 	job_expense: { singular: 'Job expense', plural: 'Job expenses' },
-	organization: { singular: 'Business logo', plural: 'Business logo' }
+	organization: { singular: 'Business logo', plural: 'Business logo' },
+	message: { singular: 'Message', plural: 'Messages' }
 };
 
 export function usageGroupLabel(entityType: string, count: number): string {

@@ -33,35 +33,46 @@
 	//
 	// Nothing here copies a file. Attaching is one more use of one stored object, which is why the same photo
 	// can sit on a quote, a job and an invoice without costing three uploads.
+	//
+	// mode 'select' (Files and Media Part 6E) is the same browsing UI with no record to attach to yet -- the
+	// message composer uses it to pick a File before a message exists. It drops the "record" section and the
+	// inline uploader (reuse only, per Jafar's 2026-09-22 call) and hands the picked Files back through
+	// onSelected instead of calling attach_file_to_record itself.
 	let {
 		open,
+		mode = 'attach',
 		entityType,
 		entityId,
-		recordLabel,
+		recordLabel = '',
 		clientId = null,
 		clientLabel = null,
 		canManageRecord = false,
 		onClose,
 		onAttached,
-		onUploaded
+		onUploaded,
+		onSelected
 	}: {
 		open: boolean;
-		/** The record being attached to. */
-		entityType: FileEntityType;
-		entityId: string;
+		mode?: 'attach' | 'select';
+		/** The record being attached to. Required in 'attach' mode; unused in 'select' mode. */
+		entityType?: FileEntityType;
+		entityId?: string;
 		/** What to call that record in the first section, e.g. "On this job". */
-		recordLabel: string;
+		recordLabel?: string;
 		/** The record's customer, when it has one. Gives the second section its files. */
 		clientId?: string | null;
 		clientLabel?: string | null;
 		/** The record's own write permission, the same one that let this dialog open. Uploading straight to
-		 * this record follows it even for someone without the library's own files.manage. */
+		 * this record follows it even for someone without the library's own files.manage. Ignored in 'select'
+		 * mode, which never uploads. */
 		canManageRecord?: boolean;
 		onClose: () => void;
-		/** Called after a successful attach, so the record's own file list can refresh. */
+		/** Called after a successful attach, so the record's own file list can refresh. 'attach' mode only. */
 		onAttached?: (fileIds: string[]) => void;
 		/** Called once per file uploaded from inside the picker, which joins its record once it is checked. */
 		onUploaded?: (fileId: string) => void;
+		/** 'select' mode only: called with the chosen Files once the user confirms. */
+		onSelected?: (files: FileListItem[]) => void;
 	} = $props();
 
 	const queryClient = useQueryClient();
@@ -73,18 +84,22 @@
 	// behavior contract fixes. Every section asks for attachable files only: a file still being checked
 	// cannot go on a record, so offering it would be offering a button that has to refuse.
 	const sections = $derived<Section[]>([
-		{
-			id: 'record',
-			label: recordLabel,
-			filters: {
-				view: 'on_record',
-				folderId: '',
-				search: '',
-				entityType,
-				entityId,
-				attachable: true
-			}
-		},
+		...(mode === 'attach' && entityType && entityId
+			? [
+					{
+						id: 'record',
+						label: recordLabel,
+						filters: {
+							view: 'on_record' as const,
+							folderId: '',
+							search: '',
+							entityType,
+							entityId,
+							attachable: true
+						}
+					}
+				]
+			: []),
 		...(clientId && clientLabel
 			? [
 					{
@@ -123,7 +138,8 @@
 		}
 	]);
 
-	let sectionId = $state('record');
+	// svelte-ignore state_referenced_locally
+	let sectionId = $state(mode === 'select' ? (clientId ? 'client' : 'recent') : 'record');
 	let search = $state('');
 	let debouncedSearch = $state('');
 	let selected = $state<string[]>([]);
@@ -163,13 +179,16 @@
 	const attachedQuery = createQuery(() => ({
 		queryKey: filesListKey(attachedFilters),
 		queryFn: () => fetchFiles(attachedFilters),
-		enabled: open
+		enabled: open && mode === 'attach' && Boolean(entityType && entityId)
 	}));
 
 	const files = $derived(filesQuery.data?.pages.flatMap((page) => page.files) ?? []);
 	// The library's own can_manage, or this record's own write right -- either opens the Upload button, the
 	// same "record's permission, not the library's" rule /api/files/links already applies to attaching.
-	const canUpload = $derived(canManageRecord || (filesQuery.data?.pages[0]?.can_manage ?? false));
+	// 'select' mode never uploads: it only reuses what is already checked and available.
+	const canUpload = $derived(
+		mode === 'attach' && (canManageRecord || (filesQuery.data?.pages[0]?.can_manage ?? false))
+	);
 	const refused = $derived((filesQuery.error as FileReadError | null)?.status === 403);
 	const alreadyAttached = $derived(
 		new Set((attachedQuery.data?.files ?? []).map((file) => file.id))
@@ -185,6 +204,14 @@
 
 	async function submit() {
 		if (attaching || selected.length === 0) return;
+		if (mode === 'select') {
+			const picked = files.filter((file) => selected.includes(file.id));
+			onSelected?.(picked);
+			selected = [];
+			onClose();
+			return;
+		}
+		if (!entityType || !entityId) return;
 		attaching = true;
 		attachError = '';
 		refusals = [];
@@ -242,7 +269,12 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<Dialog {open} title="Add files" size="large" onClose={handleClose}>
+<Dialog
+	{open}
+	title={mode === 'select' ? 'Attach a file' : 'Add files'}
+	size="large"
+	onClose={handleClose}
+>
 	{#if refused}
 		<EmptyState
 			icon={lockIcon}
@@ -382,7 +414,11 @@
 			<div class="file-picker__actions">
 				<Button variant="secondary" variation="subtle" onclick={handleClose}>Cancel</Button>
 				<Button loading={attaching} disabled={selected.length === 0} onclick={submit}>
-					{selected.length <= 1 ? 'Add file' : `Add ${selected.length} files`}
+					{#if mode === 'select'}
+						{selected.length <= 1 ? 'Attach file' : `Attach ${selected.length} files`}
+					{:else}
+						{selected.length <= 1 ? 'Add file' : `Add ${selected.length} files`}
+					{/if}
 				</Button>
 			</div>
 		</div>

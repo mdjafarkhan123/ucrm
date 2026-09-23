@@ -5,6 +5,7 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import ComposerChannelMenu from '$lib/components/communications/ComposerChannelMenu.svelte';
 	import ConversationAttachments from '$lib/components/communications/ConversationAttachments.svelte';
+	import ConversationLibraryAttachments from '$lib/components/communications/ConversationLibraryAttachments.svelte';
 	import SnippetPickerButton from '$lib/components/communications/SnippetPickerButton.svelte';
 	import EmailTemplatePickerButton from '$lib/components/communications/EmailTemplatePickerButton.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
@@ -29,6 +30,9 @@
 		type PendingOutboundSend,
 		type SmsReplyEstimate
 	} from '$lib/communications/inbox';
+	import type { FileListItem } from '$lib/files/api';
+
+	type LibraryFile = Pick<FileListItem, 'id' | 'display_name' | 'mime_type' | 'size_bytes'>;
 
 	// One reply composer for every channel -- email, SMS, and website chat share the same collapsed pill,
 	// expand/minimize header, and footer toolbar. Only the fields a channel actually needs (subject,
@@ -74,6 +78,7 @@
 	let formError = $state('');
 	let fieldErrors = $state<Record<string, string>>({});
 	let attachmentsField = $state<ConversationAttachments>();
+	let libraryFiles = $state<LibraryFile[]>([]);
 	let pendingTemplate = $state<CommunicationEmailTemplateListItem | null>(null);
 	let estimate = $state<SmsReplyEstimate | null>(null);
 	let estimating = $state(false);
@@ -183,6 +188,7 @@
 		subject: string;
 		body: string;
 		attachments: OutboundAttachmentPayload[];
+		libraryFileIds: string[];
 	};
 
 	function publish(
@@ -221,14 +227,17 @@
 								clientId as string,
 								attempt.body,
 								attempt.attachments,
-								attempt.id
+								attempt.id,
+								attempt.libraryFileIds
 							)
 						: await sendConversationReply(
 								clientId as string,
 								attempt.subject,
 								attempt.body,
 								attempt.attachments,
-								attempt.id
+								attempt.id,
+								null,
+								attempt.libraryFileIds
 							);
 				// The mark flips here, on acceptance, rather than after the re-read below. The server has taken
 				// the message and told us what it did with it, which is the fact the user is waiting on -- making
@@ -266,6 +275,7 @@
 					fieldErrors = rejectedFields;
 					formError = withFields.message;
 					attachmentsField?.reset();
+					libraryFiles = [];
 					onPendingChange?.(null);
 				} else {
 					publish('failed', attempt, { error: withFields.message });
@@ -285,7 +295,13 @@
 			if (!text) return;
 			body = '';
 			bodyEl?.focus();
-			void deliver({ id: crypto.randomUUID(), subject: '', body: text, attachments: [] });
+			void deliver({
+				id: crypto.randomUUID(),
+				subject: '',
+				body: text,
+				attachments: [],
+				libraryFileIds: []
+			});
 			return;
 		}
 
@@ -300,13 +316,15 @@
 			id: crypto.randomUUID(),
 			subject,
 			body,
-			attachments: attachmentsField?.getAttachments() ?? []
+			attachments: attachmentsField?.getAttachments() ?? [],
+			libraryFileIds: libraryFiles.map((file) => file.id)
 		};
 		// Cleared up front, the way a messenger does: the message is now represented by its bubble in the
 		// timeline, so leaving a copy in the box would read as if nothing had been sent.
 		body = '';
 		estimate = null;
 		attachmentsField?.reset();
+		libraryFiles = [];
 		void deliver(attempt);
 	}
 
@@ -353,7 +371,8 @@
 				body,
 				attachmentsField?.getAttachments() ?? [],
 				crypto.randomUUID(),
-				when.toISOString()
+				when.toISOString(),
+				libraryFiles.map((file) => file.id)
 			);
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] }),
@@ -364,6 +383,7 @@
 			toast.success('Email scheduled');
 			body = '';
 			attachmentsField?.reset();
+			libraryFiles = [];
 			scheduledAtInput = '';
 			sendLaterOpen = false;
 		} catch (error) {
@@ -571,12 +591,27 @@
 						disabled={sending}
 						onUploadingChange={(value) => (uploading = value)}
 					/>
+					<ConversationLibraryAttachments
+						files={libraryFiles}
+						onChange={(next) => (libraryFiles = next)}
+						disabled={sending}
+						{clientId}
+						clientLabel="This client's files"
+					/>
 				{:else if channel === 'sms'}
 					<ConversationAttachments
 						bind:this={attachmentsField}
 						variant="sms"
 						disabled={sending}
 						onUploadingChange={(value) => (uploading = value)}
+					/>
+					<ConversationLibraryAttachments
+						files={libraryFiles}
+						onChange={(next) => (libraryFiles = next)}
+						variant="sms"
+						disabled={sending}
+						{clientId}
+						clientLabel="This client's files"
 					/>
 				{/if}
 			</div>

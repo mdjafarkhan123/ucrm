@@ -532,7 +532,9 @@ export async function sendConversationReply(
 	attachments: OutboundAttachmentPayload[] = [],
 	idempotencyKey: string = crypto.randomUUID(),
 	// "Send Later": an ISO instant to hold the email until, instead of sending it now. Email only.
-	scheduledAt: string | null = null
+	scheduledAt: string | null = null,
+	// Files and Media Part 6E: existing library Files picked instead of re-uploaded.
+	libraryFileIds: string[] = []
 ) {
 	const response = await fetch(`/api/communications/conversations/${clientId}/reply`, {
 		method: 'POST',
@@ -543,6 +545,7 @@ export async function sendConversationReply(
 			body,
 			idempotency_key: idempotencyKey,
 			attachments,
+			library_file_ids: libraryFileIds,
 			...(scheduledAt ? { scheduled_at: scheduledAt } : {})
 		})
 	});
@@ -567,12 +570,20 @@ export async function sendConversationReplySms(
 	clientId: string,
 	body: string,
 	attachments: OutboundAttachmentPayload[] = [],
-	idempotencyKey: string = crypto.randomUUID()
+	idempotencyKey: string = crypto.randomUUID(),
+	// Files and Media Part 6E: at most one, and never together with a freshly-uploaded attachment.
+	libraryFileIds: string[] = []
 ) {
 	const response = await fetch(`/api/communications/conversations/${clientId}/reply`, {
 		method: 'POST',
 		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify({ channel: 'sms', body, idempotency_key: idempotencyKey, attachments })
+		body: JSON.stringify({
+			channel: 'sms',
+			body,
+			idempotency_key: idempotencyKey,
+			attachments,
+			library_file_ids: libraryFileIds
+		})
 	});
 	const result = (await response.json().catch(() => ({}))) as {
 		error?: string;

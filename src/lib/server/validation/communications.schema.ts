@@ -253,11 +253,19 @@ export const manualCommunicationEmailSchema = z.object({
 	attachments: outboundAttachmentsField
 });
 
+// Files and Media Part 6E: a File already in the library, picked instead of re-uploaded. Counted against
+// the same per-message attachment cap as freshly-uploaded ones -- the route enforces the combined total.
+const libraryFileIdsField = z
+	.array(z.string().uuid())
+	.max(MAX_OUTBOUND_ATTACHMENTS_PER_MESSAGE)
+	.default([]);
+
 export const conversationReplyEmailSchema = z.object({
 	subject: z.string().trim().min(1, 'Enter a subject.').max(998),
 	body: z.string().trim().min(1, 'Enter a message.').max(20_000),
 	idempotency_key: z.string().uuid('Start a new reply attempt and try again.'),
 	attachments: outboundAttachmentsField,
+	library_file_ids: libraryFileIdsField,
 	// "Send Later": optional and email-only. When present, the enqueue command holds the message in the
 	// outbox instead of sending it now -- see docs on enqueue_conversation_reply_email's target_available_at.
 	scheduled_at: z
@@ -279,6 +287,10 @@ export const conversationReplySmsSchema = z.object({
 	idempotency_key: z.string().uuid('Start a new reply attempt and try again.'),
 	attachments: z
 		.array(outboundAttachmentSchema)
+		.max(1, 'Attach at most one file to a text message.')
+		.default([]),
+	library_file_ids: z
+		.array(z.string().uuid())
 		.max(1, 'Attach at most one file to a text message.')
 		.default([])
 });
