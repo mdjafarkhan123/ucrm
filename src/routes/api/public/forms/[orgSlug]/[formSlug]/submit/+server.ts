@@ -15,6 +15,7 @@ import type { Json } from '$lib/database.types';
 import { parsePhoneNumberFromString, type CountryCode } from 'libphonenumber-js';
 import { serviceSmsConsentDisclosure } from '$lib/forms/sms-consent';
 import { emailMarketingConsentDisclosure } from '$lib/forms/marketing-consent';
+import { marketingCtaTokenHash } from '$lib/server/marketing/call-to-action';
 
 const NOT_AVAILABLE = { error: 'That form is not available.' };
 
@@ -161,7 +162,9 @@ export const POST: RequestHandler = async (event) => {
 		target_selected_catalog_item_id:
 			(booking ? envelope.selected_catalog_item_id : null) ?? undefined,
 		target_requested_starts_at: (booking ? envelope.requested_starts_at : null) ?? undefined,
-		target_requested_ends_at: (booking ? envelope.requested_ends_at : null) ?? undefined
+		target_requested_ends_at: (booking ? envelope.requested_ends_at : null) ?? undefined,
+		target_marketing_cta_token_hash:
+			marketingCtaTokenHash(envelope.marketing_cta_token) ?? undefined
 	});
 
 	if (error) {

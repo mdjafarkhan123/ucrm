@@ -22,7 +22,11 @@ export const publicFormEnvelopeSchema = z.object({
 	photo_object_keys: z.array(z.string().trim().min(1)).max(PUBLIC_FORM_PHOTO_MAX_COUNT).default([]),
 	selected_catalog_item_id: z.string().uuid().nullable().optional(),
 	requested_starts_at: z.iso.datetime({ offset: true }).nullable().optional(),
-	requested_ends_at: z.iso.datetime({ offset: true }).nullable().optional()
+	requested_ends_at: z.iso.datetime({ offset: true }).nullable().optional(),
+	// The Marketing call-to-action token (M5b), read from the page's own `?mc=` query param. An invalid or
+	// garbled value hashes to null (see marketingCtaTokenHash) and is silently ignored, never surfaced as a
+	// field error -- a broken token is not the visitor's business to diagnose.
+	marketing_cta_token: z.string().trim().max(200).nullable().optional()
 });
 
 export type PublicFormEnvelope = z.infer<typeof publicFormEnvelopeSchema>;

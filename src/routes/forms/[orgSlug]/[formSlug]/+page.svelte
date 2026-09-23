@@ -445,7 +445,11 @@
 						photo_object_keys: photoObjectKeys,
 						selected_catalog_item_id: data.isBooking ? selectedCatalogItemId || null : null,
 						requested_starts_at: data.isBooking ? (selectedSlot?.starts_at ?? null) : null,
-						requested_ends_at: data.isBooking ? (selectedSlot?.ends_at ?? null) : null
+						requested_ends_at: data.isBooking ? (selectedSlot?.ends_at ?? null) : null,
+						// 'mc' matches MARKETING_CTA_TOKEN_PARAM in $lib/server/marketing/call-to-action.ts, which
+						// places it on the link a Marketing email sends -- kept a literal here since that module is
+						// server-only and cannot be imported into this page.
+						marketing_cta_token: page.url.searchParams.get('mc')
 					})
 				}
 			);

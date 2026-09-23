@@ -247,3 +247,44 @@ export async function cancelCampaign(
 	}
 	return data as unknown as CampaignCancelResult;
 }
+
+// M5b attribution: authorized staff connecting a resulting Request/Job to a campaign after reviewing the
+// Customer and timing (blueprint §13 method 2). marketing.draft is the calling route's job to enforce, as
+// with every other marketing command.
+
+export class CampaignCreditInvalidError extends Error {}
+export class CampaignCreditConflictError extends Error {}
+
+export type CampaignResultCredit = {
+	id: string;
+	organization_id: string;
+	campaign_id: string;
+	marketing_campaign_recipient_id: string | null;
+	source: 'tracked' | 'declared';
+	request_id: string | null;
+	job_id: string | null;
+	client_id: string;
+	credited_at: string;
+	declared_by: string | null;
+};
+
+export async function declareCampaignCredit(
+	organizationId: string,
+	userId: string,
+	campaignId: string,
+	work: { requestId: string; jobId?: undefined } | { jobId: string; requestId?: undefined }
+): Promise<CampaignResultCredit> {
+	const owner = getOwnerSupabaseClient();
+	const { data, error } = await owner.rpc('declare_marketing_campaign_result_credit', {
+		target_organization_id: organizationId,
+		target_campaign_id: campaignId,
+		actor_user_id: userId,
+		...(work.requestId ? { target_request_id: work.requestId } : { target_job_id: work.jobId })
+	});
+	if (error) {
+		if (error.code === '23505') throw new CampaignCreditConflictError(error.message);
+		if (error.code === '23514') throw new CampaignCreditInvalidError(error.message);
+		throw error;
+	}
+	return data as unknown as CampaignResultCredit;
+}

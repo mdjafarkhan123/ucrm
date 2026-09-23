@@ -6,15 +6,24 @@ Ship simple, safe contractor Marketing: one-off email first, with every approved
 
 ## State
 
-M1-M4 committed. M5 plan approved 2026-09-23 (plan §3 M5, blueprint §13 window amendment). M5a (delivery truth)
-built and committed: migration `20260923160000` live; SES OPEN/CLICK on Raad LTD's config set; unit + live
-rolled-back SQL checks pass. Not yet proven with a real inbox (Chrome extension was disconnected).
+M1-M4 committed. M5a (delivery truth) committed. M5b (attribution) built this session, not yet committed:
+migration `20260923180000_marketing_campaign_attribution.sql` live on the linked project. Adds tracked credit
+(public form submit carries `?mc=` through to `process_next_form_submission`, which stores the credit the
+moment a Request/Job is created -- the resulting work's own client gets the credit, so a forwarded email still
+counts), staff-declared credit (`declare_marketing_campaign_result_credit`, exposed at
+`POST /api/marketing/campaigns/[id]/credits`, needs `marketing.draft`), and the read-time 30-day last-touch
+window (`marketing_campaign_window_attribution`, called by M5c, never stored). Verified with a live
+rolled-back SQL transaction (tracked credit, forwarded-email client, duplicate-declare rejection, window
+in/out of range) -- passed, zero residue. `npm run check` and the marketing/forms unit suites pass;
+`database.types.ts` regenerated.
 
 ## Exact next action
 
-Build M5b (attribution) per plan §3 M5: public form reads `?mc=` token (`call-to-action.ts`
-`marketingCtaTokenHash`) and stores a tracked credit; staff-declared link; read-time 30-day last-touch window
-over Requests and Jobs-without-Request; revenue from real payments. Then M5c UI.
+Commit the M5b changes (migration + `src/lib/server/marketing/campaigns.ts` + the new credits route +
+`public-forms.schema.ts` + the submit route + the public form page + `database.types.ts`), then build M5c:
+Campaign detail Overview/Recipients/Content/Results tabs (blueprint §12), including a way for staff to browse
+window-attributed candidates and call the declare endpoint. Capture Jobber's campaign report screens to
+`Design/` first per CLAUDE.md rule 5.
 
 ## M5 completion gate (after M5c)
 
@@ -30,4 +39,5 @@ the campaign, form submit credits it -- all visible on the new campaign page.
 
 ## Pointers
 
-`docs/marketing-first-release-plan.md` §3 M5. Resume: `continue marketing growth`.
+`docs/marketing-first-release-plan.md` §3 M5; `docs/marketing-product-blueprint.md` §12-13. Resume:
+`continue marketing growth`.
