@@ -11,6 +11,7 @@ import type { LinkedEntityType } from '$lib/server/access/collaboration';
 
 const UPLOAD_URL_TTL_SECONDS = 300;
 const DOWNLOAD_URL_TTL_SECONDS = 300;
+const PREVIEW_IMAGE_URL_TTL_SECONDS = 900;
 
 let cached: { env: R2Env; client: S3Client } | null = null;
 
@@ -222,6 +223,19 @@ export async function createPresignedMediaUrl(
 		ResponseContentDisposition: `inline; filename="${fileName.replace(/"/g, '')}"`
 	});
 	return getSignedUrl(client, command, { expiresIn: DOWNLOAD_URL_TTL_SECONDS });
+}
+
+// A picture inside a marketing email preview. The preview is a fully sandboxed srcdoc iframe -- an opaque
+// origin that sends no session cookie -- so the authenticated /api/files/[id]/view route cannot serve it;
+// a signed link needs no cookie. 15 minutes comfortably outlives the preview query's own cache lifetime.
+export async function createPresignedPreviewImageUrl(objectKey: string): Promise<string> {
+	const { client, env } = getR2();
+	const command = new GetObjectCommand({
+		Bucket: env.R2_BUCKET,
+		Key: objectKey,
+		ResponseContentDisposition: 'inline'
+	});
+	return getSignedUrl(client, command, { expiresIn: PREVIEW_IMAGE_URL_TTL_SECONDS });
 }
 
 // Photos are shown inline on the page, which a presigned link cannot do well: it expires after five

@@ -9,6 +9,7 @@ import { hydrateRuleLabels } from '$lib/server/marketing/customer-groups';
 import { getMarketingBusinessIdentity } from '$lib/server/marketing/business-identity';
 import { renderCampaignEmail } from '$lib/server/marketing/render-email';
 import { resolveMarketingCtaTarget } from '$lib/server/marketing/call-to-action';
+import { createPresignedPreviewImageUrl } from '$lib/server/storage/r2';
 
 // The block editor's live preview: content in, rendered email out. No campaign id -- a draft that has not
 // been saved yet still needs to preview. Read-only, so marketing.view is enough, same as the customer-groups
@@ -46,12 +47,25 @@ export const POST: RequestHandler = async (event) => {
 		const serviceNames = Object.fromEntries(
 			labels.catalog_items.map((item) => [item.id, item.label])
 		);
-		// The signed-in member's own preview: the same authenticated route every other File thumbnail in the
-		// app uses, never the public campaign-image route a recipient's mail client fetches from.
+		// The preview renders in a sandboxed iframe that sends no session cookie, so each picture gets a
+		// short-lived signed link instead. The member's own client is the permission check: RLS only returns
+		// Files this reader may see, and only a scanned, untrashed image is ever signed.
+		const imageFileIds = content.blocks.flatMap((block) =>
+			block.type === 'image' && block.file_id ? [block.file_id] : []
+		);
 		const imageUrls: Record<string, string> = {};
-		for (const block of content.blocks) {
-			if (block.type === 'image' && block.file_id)
-				imageUrls[block.file_id] = `/api/files/${block.file_id}/view`;
+		if (imageFileIds.length > 0) {
+			const { data: files, error } = await event.locals.supabase
+				.from('files')
+				.select('id, object_key, mime_type')
+				.in('id', imageFileIds)
+				.eq('processing_state', 'available')
+				.is('trashed_at', null);
+			if (error) throw error;
+			for (const file of files) {
+				if (file.mime_type.startsWith('image/'))
+					imageUrls[file.id] = await createPresignedPreviewImageUrl(file.object_key);
+			}
 		}
 
 		const rendered = await renderCampaignEmail(content, {
