@@ -34,8 +34,8 @@ export const GET: RequestHandler = async (event) => {
 	if (!allowed.has(event.params.attachmentId)) throw httpError(404, 'That file is not available.');
 
 	const { data: file } = await supabase
-		.from('attachments')
-		.select('object_key, thumbnail_object_key, mime_type, file_name')
+		.from('files')
+		.select('object_key, thumbnail_object_key, mime_type, display_name')
 		.eq('id', event.params.attachmentId)
 		.maybeSingle();
 	if (!file) throw httpError(404, 'That file is not available.');
@@ -47,7 +47,7 @@ export const GET: RequestHandler = async (event) => {
 	// A photo belongs on the page; anything else is handed over as a file to keep. Serving an arbitrary
 	// upload inline from our own origin is how a file turns into a way to run code on our domain.
 	const isImage = file.mime_type.startsWith('image/');
-	const safeName = file.file_name.replace(/["\\\r\n]/g, '');
+	const safeName = file.display_name.replace(/["\\\r\n]/g, '');
 
 	try {
 		const object = await getObjectStream(objectKey);

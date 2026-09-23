@@ -250,6 +250,8 @@
 		if (row.link_type === 'request')
 			return resolve('/(app)/requests/[id=uuid]', { id: row.link_id });
 		if (row.link_type === 'quote') return resolve('/(app)/quotes/[id=uuid]', { id: row.link_id });
+		if (row.link_type === 'invoice')
+			return resolve('/(app)/invoices/[id=uuid]', { id: row.link_id });
 		if (row.link_type === 'job') return resolve('/(app)/jobs/[id=uuid]', { id: row.link_id });
 		// A property has no page of its own; it is read on its client, which the row's context names.
 		return null;

@@ -3,7 +3,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(58);
+select plan(59);
 
 -- Money left the `authenticated` grant when the quote money columns were locked down, so these
 -- assertions read stored money the same way they read fixture ids: through a definer helper, rather
@@ -78,15 +78,23 @@ select lives_ok(
 );
 
 set local role postgres;
-insert into public.attachments (
-  id, organization_id, entity_type, entity_id, file_name, mime_type, size_bytes, object_key
+insert into public.files (
+  id, organization_id, display_name, mime_type, size_bytes, object_key,
+  origin_type, processing_state, uploaded_by, scanned_at, checksum_sha256
 ) values
-  ('b4000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', 'quote',
-    (select id from public.quotes where title = 'Draft commands quote'),
-    'site-plan.pdf', 'application/pdf', 2048, 'test/quotes/site-plan.pdf'),
-  ('b4000000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000001', 'client',
-    'b2000000-0000-0000-0000-000000000001',
-    'client-file.pdf', 'application/pdf', 1024, 'test/clients/file.pdf');
+  ('b4000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', 'site-plan.pdf',
+    'application/pdf', 2048, 'test/quotes/site-plan.pdf', 'file_manager', 'available',
+    'b0000000-0000-0000-0000-000000000001', now(), repeat('a', 64)),
+  ('b4000000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000001', 'client-file.pdf',
+    'application/pdf', 1024, 'test/clients/file.pdf', 'file_manager', 'available',
+    'b0000000-0000-0000-0000-000000000001', now(), repeat('b', 64));
+
+insert into public.file_links (organization_id, file_id, entity_type, entity_id)
+values
+  ('b1000000-0000-0000-0000-000000000001', 'b4000000-0000-0000-0000-000000000001', 'quote',
+    (select id from public.quotes where title = 'Draft commands quote')),
+  ('b1000000-0000-0000-0000-000000000001', 'b4000000-0000-0000-0000-000000000002', 'client',
+    'b2000000-0000-0000-0000-000000000001');
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'b0000000-0000-0000-0000-000000000001', true);
@@ -277,24 +285,30 @@ select throws_ok(
 
 select lives_ok(
   $$select public.replace_quote_version_attachments(pg_temp.qid(), pg_temp.rev(), jsonb_build_array(
-      jsonb_build_object('attachment_id', 'b4000000-0000-0000-0000-000000000001',
+      jsonb_build_object('file_id', 'b4000000-0000-0000-0000-000000000001',
         'display_name', 'Site plan', 'customer_visible', true)
     ))$$,
-  'a file uploaded to this quote can be shown to the customer'
+  'a file linked to this quote can be shown to the customer'
 );
 select is((select count(*)::integer from public.quote_version_attachments
     where quote_version_id = pg_temp.vid() and customer_visible), 1,
   'the reference is recorded, not a copy of the file');
+select is(
+  (select protected from public.file_links
+   where organization_id = 'b1000000-0000-0000-0000-000000000001'
+     and file_id = 'b4000000-0000-0000-0000-000000000001'
+     and entity_type = 'quote'),
+  true, 'the file''s link is marked protected once it is part of the customer document');
 select throws_ok(
   $$select public.replace_quote_version_attachments(pg_temp.qid(), pg_temp.rev(), jsonb_build_array(
-      jsonb_build_object('attachment_id', 'b4000000-0000-0000-0000-000000000002', 'display_name', 'Client file')
+      jsonb_build_object('file_id', 'b4000000-0000-0000-0000-000000000002', 'display_name', 'Client file')
     ))$$,
-  '23514', null, 'a file from elsewhere in the tenant cannot be pulled into this quote'
+  '23514', null, 'a file not linked to this quote cannot be pulled into it'
 );
 select throws_ok(
   $$select public.replace_quote_version_attachments(pg_temp.qid(), pg_temp.rev(), jsonb_build_array(
-      jsonb_build_object('attachment_id', 'b4000000-0000-0000-0000-000000000001', 'display_name', 'Site plan'),
-      jsonb_build_object('attachment_id', 'b4000000-0000-0000-0000-000000000001', 'display_name', 'Site plan again')
+      jsonb_build_object('file_id', 'b4000000-0000-0000-0000-000000000001', 'display_name', 'Site plan'),
+      jsonb_build_object('file_id', 'b4000000-0000-0000-0000-000000000001', 'display_name', 'Site plan again')
     ))$$,
   '23514', null, 'the same file cannot be listed twice'
 );

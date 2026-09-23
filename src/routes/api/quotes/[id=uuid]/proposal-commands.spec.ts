@@ -230,7 +230,7 @@ describe('customer-visible files', () => {
 			expected_revision: 7,
 			attachments: [
 				{
-					attachment_id: '00000000-0000-4000-8000-0000000000b1',
+					file_id: '00000000-0000-4000-8000-0000000000b1',
 					display_name: 'Site plan',
 					customer_visible: true
 				}
@@ -249,7 +249,7 @@ describe('customer-visible files', () => {
 	it('refuses a file that is not a file', async () => {
 		const target = commandEvent({
 			expected_revision: 7,
-			attachments: [{ attachment_id: 'not-a-file', display_name: 'Site plan' }]
+			attachments: [{ file_id: 'not-a-file', display_name: 'Site plan' }]
 		});
 
 		expect((await patchVersionAttachments(target)).status).toBe(422);

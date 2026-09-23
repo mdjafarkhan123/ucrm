@@ -15,15 +15,15 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import FormNotesCard from '$lib/components/forms/FormNotesCard.svelte';
-	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
+	import PendingFilesCard from '$lib/components/files/PendingFilesCard.svelte';
 	import { fetchClient, clientDetailKey, type ClientListItem } from '$lib/clients/api';
-	import { createNote, fetchAttachments, notesKey } from '$lib/collaboration/api';
+	import { createNote, notesKey } from '$lib/collaboration/api';
 	import {
 		createQuote,
 		saveQuoteLines,
 		saveQuoteCopy,
 		saveQuoteVisibility,
-		saveQuoteVersionAttachments,
+		syncQuoteVersionAttachments,
 		quoteCountsKey,
 		type QuoteVisibility,
 		type RequestPricingLineInput,
@@ -35,8 +35,6 @@
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import speakerphoneIcon from '@tabler/icons/outline/speakerphone.svg?raw';
 	import messageIcon from '@tabler/icons/outline/message.svg?raw';
-	import paperclipIcon from '@tabler/icons/outline/paperclip.svg?raw';
-	import photoIcon from '@tabler/icons/outline/photo.svg?raw';
 
 	// Writing a quote from scratch. The number, the draft version and the address it is written against
 	// all come from the database the moment this is saved, so nothing here guesses at them.
@@ -55,8 +53,6 @@
 	const queryClient = useQueryClient();
 	const sectionOptions = [
 		{ id: 'introduction', label: 'Introduction', icon: speakerphoneIcon },
-		{ id: 'attachments', label: 'Attachments', icon: paperclipIcon },
-		{ id: 'images', label: 'Images', icon: photoIcon },
 		{ id: 'client_message', label: 'Client Message', icon: messageIcon }
 	];
 	const introductionOption = sectionOptions.filter((option) => option.id === 'introduction');
@@ -93,15 +89,11 @@
 	let formError = $state('');
 	let saving = $state(false);
 	let layout = $state<RecordFormLayout>();
-	let documentAttachments = $state<AttachmentsCard>();
-	let imageAttachments = $state<AttachmentsCard>();
+	let pendingFilesCard = $state<PendingFilesCard>();
 	let productsAndServices = $state<ProductsAndServicesBlock>();
-	let pendingDocumentCount = $state(0);
-	let pendingImageCount = $state(0);
+	let pendingFileCount = $state(0);
 	let showIntroduction = $state(false);
 	let showClientMessage = $state(false);
-	let showAttachments = $state(false);
-	let showImages = $state(false);
 	let editingVisibility = $state(false);
 	let visibilityTouched = $state(false);
 	let visibility = $state<QuoteVisibility>({
@@ -116,11 +108,8 @@
 		show_line_totals: true,
 		show_totals: true
 	};
-	const pendingFileCount = $derived(pendingDocumentCount + pendingImageCount);
 	const optionalSectionOptions = $derived(
 		sectionOptions.filter((option) => {
-			if (option.id === 'attachments') return !showAttachments;
-			if (option.id === 'images') return !showImages;
 			if (option.id === 'client_message') return !showClientMessage;
 			return false;
 		})
@@ -133,7 +122,6 @@
 	let noteSaved = $state(false);
 	let copySaved = $state(false);
 	let visibilitySaved = $state(false);
-	let filesLinked = $state(false);
 
 	function snapshot(values: FormState) {
 		return JSON.stringify(values);
@@ -249,11 +237,7 @@
 			// A new quote is a new card on the pipeline, created by the database alongside it.
 			await invalidatePipeline(queryClient);
 
-			const [failedDocuments, failedImages] = await Promise.all([
-				documentAttachments?.saveAll(savedQuote.id) ?? 0,
-				imageAttachments?.saveAll(savedQuote.id) ?? 0
-			]);
-			const failedUploads = failedDocuments + failedImages;
+			const failedUploads = (await pendingFilesCard?.saveAll(savedQuote.id)) ?? 0;
 			if (failedUploads > 0) {
 				baseline = snapshot(form);
 				formError =
@@ -262,23 +246,7 @@
 						: `The quote was saved, but ${failedUploads} files did not upload. Retry them below.`;
 				return;
 			}
-
-			if (!filesLinked && (showAttachments || showImages)) {
-				const files = await fetchAttachments('quote', savedQuote.id);
-				if (files.length > 0) {
-					const written = await saveQuoteVersionAttachments(
-						savedQuote.id,
-						savedQuote.revision,
-						files.map((file) => ({
-							attachment_id: file.id,
-							display_name: file.file_name,
-							customer_visible: true
-						}))
-					);
-					savedQuote = { ...savedQuote, revision: written.revision };
-				}
-				filesLinked = true;
-			}
+			await syncQuoteVersionAttachments(savedQuote.id);
 
 			baseline = snapshot(form);
 			toast.success(`Quote #${savedQuote.number} created`);
@@ -398,35 +366,9 @@
 			<AddSectionControl
 				options={optionalSectionOptions}
 				onAdd={(section) => {
-					if (section === 'attachments') showAttachments = true;
-					else if (section === 'images') showImages = true;
-					else if (section === 'client_message') showClientMessage = true;
+					if (section === 'client_message') showClientMessage = true;
 				}}
 			/>
-
-			{#if showAttachments}
-				<AttachmentsCard
-					bind:this={documentAttachments}
-					onPendingChange={(count) => (pendingDocumentCount = count)}
-					entityType="quote"
-					entityId={savedQuote?.id}
-					title="Attachments"
-					surface="section"
-					kind="documents"
-				/>
-			{/if}
-
-			{#if showImages}
-				<AttachmentsCard
-					bind:this={imageAttachments}
-					onPendingChange={(count) => (pendingImageCount = count)}
-					entityType="quote"
-					entityId={savedQuote?.id}
-					title="Images"
-					surface="section"
-					kind="images"
-				/>
-			{/if}
 
 			{#if showClientMessage}
 				<SectionBlock title="Client message" icon={messageIcon} form>
@@ -460,6 +402,12 @@
 				id="quote-initial-note"
 				bind:value={form.initial_note}
 				error={fieldErrors.initial_note ?? ''}
+			/>
+
+			<PendingFilesCard
+				bind:this={pendingFilesCard}
+				onPendingChange={(count) => (pendingFileCount = count)}
+				entityType="quote"
 			/>
 		{/snippet}
 

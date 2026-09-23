@@ -315,7 +315,7 @@ export const quoteVersionAttachmentsSchema = z.object({
 	attachments: z
 		.array(
 			z.object({
-				attachment_id: z.string().uuid('That file could not be found.'),
+				file_id: z.string().uuid('That file could not be found.'),
 				display_name: z
 					.string()
 					.trim()

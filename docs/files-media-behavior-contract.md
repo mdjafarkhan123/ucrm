@@ -126,18 +126,63 @@ a field member now can to their job — no separate on/off "Files and Media" per
 right already being checked is the record's own. Browser-verified 2026-09-22 for Job (Raad LTD, field member
 login): the Upload button appears without `files.manage` and an upload reaches "being checked" on the job. The
 other record types share the identical backend mechanism but each still needs its own browser pass once its
-page carries `RecordFilesCard` — Quote and Invoice do not yet (Part 6).
+page carries `RecordFilesCard` — Invoice and Quote adopted it in Part 6A/6B below.
 
-The Visit slice closed Part 5. `VisitRecordsDialog` (opened from a visit's "Notes, photos and files" row action)
-replaces its `AttachmentsCard` with `RecordFilesCard`, `entityType="visit"`, taking the job's client as
-`clientId`/`clientLabel` the same way Job's own card does, with `canManage` the same
-`can_record_field_records || can_manage_team_field_records` right. Unlike Notes and the checklist answers this
-dialog still stages, files leave the dialog's own "Save records" bar for the reason every other slice already
-gives: adding happens in the picker and removing in its own confirm dialog, so nothing about a file was ever
-waiting to be saved — the dialog's `dirty` check and save path no longer mention files at all. Browser-verified
-2026-09-22 (Raad LTD, field member login, a visit they are assigned to): the Upload button appears without
-`files.manage` and the upload reaches `processing_state = 'pending'` with `origin_type = 'visit'` and the
-correct `origin_id`, the same "being checked" outcome Job produces.
+`VisitRecordsDialog` (opened from a visit's "Notes, photos and files" row action) replaces its `AttachmentsCard`
+with `RecordFilesCard`, `entityType="visit"`, taking the job's client as `clientId`/`clientLabel` the same way
+Job's own card does, with `canManage` the same `can_record_field_records || can_manage_team_field_records`
+right. Unlike Notes and the checklist answers this dialog still stages, files leave the dialog's own "Save
+records" bar for the reason every other slice already gives: adding happens in the picker and removing in its
+own confirm dialog, so nothing about a file was ever waiting to be saved — the dialog's `dirty` check and save
+path no longer mention files at all. Browser-verified 2026-09-22 (Raad LTD, field member login, a visit they
+are assigned to): the Upload button appears without `files.manage` and the upload reaches
+`processing_state = 'pending'` with `origin_type = 'visit'` and the correct `origin_id`, the same "being
+checked" outcome Job produces.
+
+**Create-forms need a different shape.** Every slice above edits a record that already exists, so
+`RecordFilesCard` can write each add/remove immediately against a real id. A *create* page — `ClientForm`,
+`RequestForm`, and recording a brand-new `JobExpenseDialog` entry — has no id yet, and the File Manager cannot
+pre-register a File against a record that doesn't exist: `files_origin_id_matches_type_check` requires a real
+`origin_id` for every `origin_type` except `file_manager`, and `finalize_file_processing` only links a File to
+its record once it publishes. So a create page uses `PendingFilesCard` instead: it stages picked files as
+plain browser `File` objects with no server contact, and only calls the real upload pipeline
+(`startFileUpload`/`uploadAttachmentFile`/`finishFileUpload`) once the page's own Save hands it the record's
+real id — the same external shape (`saveAll(id)`, `discardChanges()`, `onPendingChange`) `AttachmentsCard` had,
+matching how Jobber and QuickBooks let a receipt/attachment ride in the same one-button save as record
+creation. `JobExpenseDialog` branches on this: correcting an existing expense (`expense` set) uses
+`RecordFilesCard` like every other record; recording a new one uses `PendingFilesCard`, saved right after the
+write returns the new expense id. Removing an expense's receipt calls `detachFileFromRecord` rather than the
+pre-catalog `deleteAttachment`, since the object it points at may be a File shared elsewhere. Browser-verified
+2026-09-22 (Raad LTD, office-role login): `ClientForm`'s and `JobExpenseDialog`'s create paths registered a
+file against the new record's real id; `RequestForm`'s full save (with a real client picked) did the same;
+`JobExpenseDialog`'s edit path showed, added, and removed an existing expense's receipt correctly.
+
+This closes Part 5.
+
+**Part 6A — Invoice.** `InvoiceForm` stages files with `PendingFilesCard` and saves them after the invoice
+write returns its id, exactly like `RequestForm`. `fileEntityTypeSchema` in
+`src/lib/server/validation/files.schema.ts` is the legacy attachment entity list plus `'invoice'`, used only by
+the File Manager's upload/attach/detach schemas; the legacy `attachmentEntityTypeSchema` stays unchanged because
+the old `attachments` table never accepted invoices. Browser-verified 2026-09-22 (Raad LTD).
+
+**Part 6B — Quote.** A quote's frozen customer copy now points straight at the File Manager:
+`quote_version_attachments.file_id` references `public.files` (backfilled losslessly from
+`attachments.file_id`) and replaces the old `attachment_id` foreign key, whose `RESTRICT` was the only thing that
+used to stop a sent quote's file from being deleted. That protection now uses the File Manager's own lock: every
+`replace_quote_version_attachments` call recomputes `file_links.protected` for the quote, and it is true while
+any draft or sent version of that quote still lists the File. Because sent versions are never deleted, a File
+that went out on a quote stays locked on it permanently. `replace_quote_version_attachments` only accepts Files
+linked to that quote that are `available` and not in Trash. Revising (`clone_quote_version_to_draft`) copies the
+frozen rows unchanged; "Create similar" (`create_similar_quote`) also calls `attach_file_to_record` so the new
+quote gets its own link. The customer document and the public `/q/[token]/files/[id]` download read
+`public.files`. The create form uses one `PendingFilesCard` and the record page one `RecordFilesCard`, replacing
+the old separate Attachments and Images sections. Every file linked to the quote is customer-visible, as it
+already was in practice. After each add or remove, `syncQuoteVersionAttachments` copies the quote's available
+linked Files into the draft version. "Mark as awaiting response" waits for any sync still running, so a file
+added right before sending is always included and locked. Per-line photos (`quote_version_lines.image_attachment_id`)
+still use the legacy `attachments` table until Part 6C. Browser-verified 2026-09-22/23 (Raad LTD): create with a
+staged file, attach/detach on a draft, locked after sending, kept after revising, own link after "Create similar",
+and a file added then sent within a second is frozen into the sent version and locked.
 
 Decisions settled while building the schema, confirmed by Jafar 2026-09-21 (he asked for the industry-standard, contractor-easy choice):
 

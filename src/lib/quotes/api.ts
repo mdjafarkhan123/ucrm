@@ -1,4 +1,5 @@
 import type { StoredQuoteStatus } from './statuses';
+import { fetchFiles } from '$lib/files/api';
 
 export type PricingCategory = 'product' | 'service';
 
@@ -552,14 +553,14 @@ export type QuoteDiscountType = 'fixed' | 'percentage';
 /** One of the quote's own files, marked for the copy the customer reads. */
 export type QuoteVersionAttachment = {
 	id: string;
-	attachment_id: string;
+	file_id: string;
 	position: number;
 	customer_visible: boolean;
 	display_name: string;
 };
 
 export type QuoteVersionAttachmentInput = {
-	attachment_id: string;
+	file_id: string;
 	display_name: string;
 	customer_visible: boolean;
 };
@@ -977,4 +978,33 @@ export async function saveQuoteVersionAttachments(
 		{ expected_revision: expectedRevision, attachments },
 		'Those files could not be saved.'
 	);
+}
+
+/**
+ * Every file now on this quote's record becomes the customer document's file list, all customer-visible —
+ * matching every other adopted record, where the whole File Manager section is what the reader sees. Reads
+ * the quote fresh rather than trusting a possibly-stale reactive value, which is what keeps this safe to call
+ * after any attach/detach without a retry loop: a concurrent edit just means the next call catches up.
+ */
+export async function syncQuoteVersionAttachments(quoteId: string): Promise<void> {
+	const detail = await fetchQuote(quoteId);
+	if (!detail.version || detail.version.status !== 'draft') return;
+
+	const page = await fetchFiles({
+		view: 'on_record',
+		folderId: '',
+		search: '',
+		entityType: 'quote',
+		entityId: quoteId,
+		limit: 100
+	});
+	const attachments = page.files
+		.filter((file) => file.processing_state === 'available')
+		.map((file) => ({
+			file_id: file.id,
+			display_name: file.display_name,
+			customer_visible: true
+		}));
+
+	await saveQuoteVersionAttachments(quoteId, detail.version.revision, attachments);
 }

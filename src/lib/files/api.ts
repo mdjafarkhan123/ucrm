@@ -11,7 +11,7 @@ export type FileView =
 
 /** The CRM records a File can be attached to. Matches the file_links entity_type constraint. */
 export type FileEntityType =
-	'client' | 'property' | 'request' | 'quote' | 'job_expense' | 'job' | 'visit';
+	'client' | 'property' | 'request' | 'quote' | 'job_expense' | 'job' | 'visit' | 'invoice';
 
 export type FileKind = 'image' | 'video' | 'document';
 export type FileProcessingState = 'pending' | 'available' | 'failed' | 'quarantined';
@@ -25,6 +25,8 @@ export type FileListFilters = {
 	entityId?: string;
 	/** The picker's rule: only files that have passed their checks can be attached to anything. */
 	attachable?: boolean;
+	/** Overrides the server's default page size. Not part of any cached query key today. */
+	limit?: number;
 };
 
 export type FileListItem = {
@@ -105,6 +107,7 @@ export async function fetchFiles(filters: FileListFilters, cursor?: string): Pro
 		params.set('entity_id', filters.entityId);
 	}
 	if (filters.attachable) params.set('attachable', '1');
+	if (filters.limit) params.set('limit', String(filters.limit));
 	if (cursor) params.set('cursor', cursor);
 
 	const response = await fetch(`/api/files?${params.toString()}`);
@@ -302,6 +305,7 @@ const ORIGIN_LABELS: Record<string, string> = {
 	property: 'Property',
 	request: 'Request',
 	quote: 'Quote',
+	invoice: 'Invoice',
 	job: 'Job',
 	job_expense: 'Job expense',
 	visit: 'Visit'
@@ -326,6 +330,7 @@ const USAGE_GROUP_LABELS: Record<string, { singular: string; plural: string }> =
 	property: { singular: 'Property', plural: 'Properties' },
 	request: { singular: 'Request', plural: 'Requests' },
 	quote: { singular: 'Quote', plural: 'Quotes' },
+	invoice: { singular: 'Invoice', plural: 'Invoices' },
 	job: { singular: 'Job', plural: 'Jobs' },
 	visit: { singular: 'Visit', plural: 'Visits' },
 	job_expense: { singular: 'Job expense', plural: 'Job expenses' }

@@ -7,6 +7,7 @@
 	import ClientPicker from '$lib/components/work/ClientPicker.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
 	import QuoteSummaryCard from '$lib/components/quotes/QuoteSummaryCard.svelte';
+	import PendingFilesCard from '$lib/components/files/PendingFilesCard.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -94,6 +95,8 @@
 	let formError = $state('');
 	let saving = $state(false);
 	let layout = $state<RecordFormLayout>();
+	let attachmentsCard = $state<PendingFilesCard>();
+	let pendingFileCount = $state(0);
 
 	// One idempotency key per save intent: the same details retried keep it, so a double click or a network
 	// retry gets the first invoice back; changed details mint a new one.
@@ -112,7 +115,8 @@
 	const isDirty = $derived(
 		Boolean(seed?.installmentId) ||
 			snapshot(form) !== baseline ||
-			JSON.stringify(lines) !== baselineLines
+			JSON.stringify(lines) !== baselineLines ||
+			pendingFileCount > 0
 	);
 
 	// The seed lands once, a beat after mount. Its client, subject and property fill the form here; its lines
@@ -280,6 +284,17 @@
 			await queryClient.invalidateQueries({ queryKey: ['jobs'] });
 			await queryClient.invalidateQueries({ queryKey: ['invoices', 'billable-work'] });
 			await queryClient.invalidateQueries({ queryKey: ['invoices', 'ready-to-bill'] });
+
+			const failedUploads = (await attachmentsCard?.saveAll(result.invoice_id)) ?? 0;
+			if (failedUploads > 0) {
+				baseline = snapshot(form);
+				formError =
+					failedUploads === 1
+						? 'The invoice was saved, but one file did not upload. Retry it below.'
+						: `The invoice was saved, but ${failedUploads} files did not upload. Retry them below.`;
+				return;
+			}
+
 			baseline = snapshot(form);
 			onSaved({ id: result.invoice_id, number: result.invoice_number });
 		} catch (caught) {
@@ -362,6 +377,18 @@
 				// answered, so both go stale the moment it saves.
 				await queryClient.invalidateQueries({ queryKey: ['invoices', 'ready-to-bill'] });
 			}
+
+			const failedUploads = (await attachmentsCard?.saveAll(result.invoice_id)) ?? 0;
+			if (failedUploads > 0) {
+				baseline = snapshot(form);
+				baselineLines = JSON.stringify(lines);
+				formError =
+					failedUploads === 1
+						? 'The invoice was saved, but one file did not upload. Retry it below.'
+						: `The invoice was saved, but ${failedUploads} files did not upload. Retry them below.`;
+				return;
+			}
+
 			baseline = snapshot(form);
 			baselineLines = JSON.stringify(lines);
 			onSaved({ id: result.invoice_id, number: result.invoice_number });
@@ -502,6 +529,12 @@
 				subtotalMinor={shownSubtotalMinor}
 				{currencyCode}
 				{locale}
+			/>
+
+			<PendingFilesCard
+				bind:this={attachmentsCard}
+				onPendingChange={(count) => (pendingFileCount = count)}
+				entityType="invoice"
 			/>
 		{/snippet}
 

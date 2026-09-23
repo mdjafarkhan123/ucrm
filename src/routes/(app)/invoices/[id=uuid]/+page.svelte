@@ -27,6 +27,7 @@
 	import CollectPaymentDialog from '$lib/components/invoices/CollectPaymentDialog.svelte';
 	import AddDepositDialog from '$lib/components/invoices/AddDepositDialog.svelte';
 	import InvoiceLifecycleDialog from '$lib/components/invoices/InvoiceLifecycleDialog.svelte';
+	import RecordFilesCard from '$lib/components/files/RecordFilesCard.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -1171,6 +1172,16 @@
 					unsetHint="This invoice is not taxed yet."
 					onSave={(revision, payload) => saveInvoiceTax(invoiceId, revision, payload)}
 					onSaved={refreshInvoice}
+				/>
+
+				<RecordFilesCard
+					entityType="invoice"
+					entityId={invoiceId}
+					recordLabel="this invoice"
+					pickerLabel="On this invoice"
+					clientId={saved.client?.id ?? null}
+					clientLabel={saved.client?.company_name || saved.client?.display_name || null}
+					canManage={editable}
 				/>
 			{/snippet}
 		</RecordDetailLayout>

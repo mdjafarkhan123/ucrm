@@ -7,13 +7,16 @@ import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { getOrganizationContext, type OrganizationContext } from '$lib/server/auth/organization';
 
 export type LinkedEntityType =
-	'client' | 'property' | 'request' | 'quote' | 'job_expense' | 'job' | 'visit';
+	'client' | 'property' | 'request' | 'quote' | 'job_expense' | 'job' | 'visit' | 'invoice';
 
 // View follows the single customers.view gate for clients and properties (a Property's visibility already
 // follows its owning Client). Manage differs: client-scoped writes ride customers.edit, property-scoped
 // writes ride property.manage, matching private.can_manage_linked_entity in the migration.
 function linkedEntityPermissionKey(
-	entityType: Exclude<LinkedEntityType, 'request' | 'quote' | 'job_expense' | 'job' | 'visit'>,
+	entityType: Exclude<
+		LinkedEntityType,
+		'request' | 'quote' | 'job_expense' | 'job' | 'visit' | 'invoice'
+	>,
 	mode: 'view' | 'manage'
 ): string {
 	if (mode === 'view') return 'customers.view';
@@ -34,6 +37,16 @@ export async function requireLinkedEntityAccess(
 		const check = await requireOrganizationPermission(
 			event,
 			mode === 'view' ? 'quotes.view' : 'quotes.edit'
+		);
+		return 'response' in check ? { response: check.response } : { auth: check.auth };
+	}
+
+	// An invoice's notes and files follow the invoice itself, the same pair its own routes and
+	// private.can_view_invoice/can_manage_linked_record check.
+	if (entityType === 'invoice') {
+		const check = await requireOrganizationPermission(
+			event,
+			mode === 'view' ? 'invoices.view' : 'invoices.edit'
 		);
 		return 'response' in check ? { response: check.response } : { auth: check.auth };
 	}
@@ -84,7 +97,8 @@ export function parseLinkedEntityQuery(
 			entityType !== 'quote' &&
 			entityType !== 'job_expense' &&
 			entityType !== 'job' &&
-			entityType !== 'visit') ||
+			entityType !== 'visit' &&
+			entityType !== 'invoice') ||
 		!entityId
 	) {
 		return null;
@@ -100,11 +114,12 @@ export async function linkedEntityBelongsToOrganization(
 	entityType: LinkedEntityType,
 	entityId: string
 ): Promise<boolean> {
-	// Requests, quotes, job expenses, jobs and visits are not soft-deleted — an unwanted one is archived or
-	// removed — so only the two customer tables carry the deleted_at filter.
+	// Requests, quotes, invoices, job expenses, jobs and visits are not soft-deleted — an unwanted one is
+	// archived, voided or removed — so only the two customer tables carry the deleted_at filter.
 	if (
 		entityType === 'request' ||
 		entityType === 'quote' ||
+		entityType === 'invoice' ||
 		entityType === 'job_expense' ||
 		entityType === 'job' ||
 		entityType === 'visit'
@@ -114,11 +129,13 @@ export async function linkedEntityBelongsToOrganization(
 				? 'requests'
 				: entityType === 'quote'
 					? 'quotes'
-					: entityType === 'job_expense'
-						? 'job_expenses'
-						: entityType === 'job'
-							? 'jobs'
-							: 'job_visits';
+					: entityType === 'invoice'
+						? 'invoices'
+						: entityType === 'job_expense'
+							? 'job_expenses'
+							: entityType === 'job'
+								? 'jobs'
+								: 'job_visits';
 		const { data } = await supabase
 			.from(table)
 			.select('id')

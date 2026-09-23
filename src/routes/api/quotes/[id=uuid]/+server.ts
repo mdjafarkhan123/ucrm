@@ -33,7 +33,7 @@ const LINE_SELECT = `id, position, source_catalog_item_id, category, is_labor, n
 	 unit_label, quantity, is_taxable, image_attachment_id, line_kind, selection_kind,
 	 is_recommended`;
 
-const VERSION_ATTACHMENT_SELECT = 'id, attachment_id, position, customer_visible, display_name';
+const VERSION_ATTACHMENT_SELECT = 'id, file_id, position, customer_visible, display_name';
 
 // Both carry money — a schedule installment's `value` and a receipt's `amount_minor` — so both stay behind
 // `quotes.view_price`, the same as the version's own price columns above.

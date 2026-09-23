@@ -66,12 +66,18 @@ select is(
 set local role postgres;
 select set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000001', true);
 
-insert into public.attachments (
-  id, organization_id, entity_type, entity_id, file_name, mime_type, size_bytes, object_key
+insert into public.files (
+  id, organization_id, display_name, mime_type, size_bytes, object_key,
+  origin_type, processing_state, uploaded_by, scanned_at, checksum_sha256
 ) values (
-  'a4000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001', 'quote',
-  (select id from public.quotes where title = 'Professional proposal'),
-  'proposal-photo.jpg', 'image/jpeg', 1024, 'test/proposals/photo.jpg'
+  'a4000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
+  'proposal-photo.jpg', 'image/jpeg', 1024, 'test/proposals/photo.jpg',
+  'file_manager', 'available', 'a0000000-0000-0000-0000-000000000001', now(), repeat('a', 64)
+);
+
+insert into public.file_links (organization_id, file_id, entity_type, entity_id) values (
+  'a1000000-0000-0000-0000-000000000001', 'a4000000-0000-0000-0000-000000000001', 'quote',
+  (select id from public.quotes where title = 'Professional proposal')
 );
 
 insert into public.quote_version_lines (
@@ -110,7 +116,7 @@ insert into public.quote_version_lines (
 );
 
 insert into public.quote_version_attachments (
-  organization_id, quote_id, quote_version_id, attachment_id, position, customer_visible, display_name
+  organization_id, quote_id, quote_version_id, file_id, position, customer_visible, display_name
 ) values (
   'a1000000-0000-0000-0000-000000000001',
   (select id from public.quotes where title = 'Professional proposal'),
@@ -240,11 +246,11 @@ select throws_ok(
   'P0409', null, 'even a privileged delete cannot remove a published line'
 );
 select throws_ok(
-  $$delete from public.quote_version_attachments where attachment_id = 'a4000000-0000-0000-0000-000000000001'$$,
+  $$delete from public.quote_version_attachments where file_id = 'a4000000-0000-0000-0000-000000000001'$$,
   'P0409', null, 'even a privileged delete cannot remove a published visible file reference'
 );
 select throws_ok(
-  $$delete from public.attachments where id = 'a4000000-0000-0000-0000-000000000001'$$,
+  $$delete from public.files where id = 'a4000000-0000-0000-0000-000000000001'$$,
   '23503', null, 'the underlying customer-visible file cannot disappear from a published version'
 );
 

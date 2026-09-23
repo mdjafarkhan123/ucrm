@@ -44,7 +44,8 @@
 		clientLabel = null,
 		canManage = true,
 		title = 'Files',
-		surface = 'rail'
+		surface = 'rail',
+		onChange
 	}: {
 		entityType: FileEntityType;
 		entityId: string;
@@ -56,6 +57,8 @@
 		canManage?: boolean;
 		title?: string;
 		surface?: 'rail' | 'section';
+		/** Fires after a file is attached to or removed from this record, once the list has refreshed. */
+		onChange?: () => void;
 	} = $props();
 
 	const queryClient = useQueryClient();
@@ -112,6 +115,7 @@
 	function refresh() {
 		void queryClient.invalidateQueries({ queryKey: ['files', 'list'] });
 		void queryClient.invalidateQueries({ queryKey: ['files', 'detail'] });
+		onChange?.();
 	}
 
 	async function download(file: FileListItem) {

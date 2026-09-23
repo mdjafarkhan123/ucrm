@@ -2,12 +2,15 @@ import { z } from 'zod';
 import { attachmentEntityTypeSchema } from './collaboration.schema';
 import { MAX_FILE_SIZE_BYTES } from '$lib/server/files/upload-policy';
 
+// Every entity the Files catalog can link a File to. Invoice never had the legacy attachments pipeline
+// `attachmentEntityTypeSchema` guards, so that schema keeps matching the attachments table's own check
+// constraint and this one matches files_origin_type_check / file_links_entity_type_check instead, which
+// Part 6A widened to include 'invoice'.
+export const fileEntityTypeSchema = z.enum([...attachmentEntityTypeSchema.options, 'invoice']);
+
 // Where a File first entered UCRM. `file_manager` is a direct library upload with no originating record;
 // every other origin names one. Mirrors the files_origin_id_matches_type_check constraint.
-export const fileOriginTypeSchema = z.union([
-	z.literal('file_manager'),
-	attachmentEntityTypeSchema
-]);
+export const fileOriginTypeSchema = z.union([z.literal('file_manager'), fileEntityTypeSchema]);
 
 // Shape only. Whether this file type is actually allowed is `checkUploadClaim`'s answer, so the allowlist
 // lives in one place instead of being half-stated here and half-stated there.
@@ -54,7 +57,7 @@ export const fileFolderCreateSchema = z.object({
 // flows that own them, with their own meaning, rather than chosen from a dropdown in a file picker.
 export const fileAttachSchema = z.object({
 	file_ids: z.array(z.uuid()).min(1).max(100),
-	entity_type: attachmentEntityTypeSchema,
+	entity_type: fileEntityTypeSchema,
 	entity_id: z.uuid()
 });
 
@@ -63,6 +66,6 @@ export const fileAttachSchema = z.object({
 // own reason.
 export const fileDetachSchema = z.object({
 	file_id: z.uuid(),
-	entity_type: attachmentEntityTypeSchema,
+	entity_type: fileEntityTypeSchema,
 	entity_id: z.uuid()
 });

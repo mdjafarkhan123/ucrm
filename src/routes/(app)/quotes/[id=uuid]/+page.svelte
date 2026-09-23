@@ -31,18 +31,15 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
-	import AttachmentsCard from '$lib/components/collaboration/AttachmentsCard.svelte';
+	import RecordFilesCard from '$lib/components/files/RecordFilesCard.svelte';
 	import {
 		activityKey,
-		attachmentsKey,
 		createNote,
 		deleteNote,
 		fetchActivity,
-		fetchAttachments,
 		fetchNotes,
 		notesKey,
 		updateNote,
-		isImageAttachment,
 		type NoteChange
 	} from '$lib/collaboration/api';
 	import {
@@ -59,7 +56,7 @@
 		saveQuoteDraft,
 		saveQuoteLines,
 		saveQuoteTax,
-		saveQuoteVersionAttachments,
+		syncQuoteVersionAttachments,
 		collectQuoteSignature,
 		quoteSignatureImageHref,
 		saveQuoteVisibility,
@@ -93,8 +90,6 @@
 	import printIcon from '@tabler/icons/outline/printer.svg?raw';
 	import linkIcon from '@tabler/icons/outline/link.svg?raw';
 	import signatureIcon from '@tabler/icons/outline/signature.svg?raw';
-	import paperclipIcon from '@tabler/icons/outline/paperclip.svg?raw';
-	import photoIcon from '@tabler/icons/outline/photo.svg?raw';
 	import copyIcon from '@tabler/icons/outline/copy.svg?raw';
 	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
 	import archiveOffIcon from '@tabler/icons/outline/archive-off.svg?raw';
@@ -106,8 +101,6 @@
 	const currentUserId = $derived(page.data.user?.id as string | undefined);
 	const sectionOptions = [
 		{ id: 'introduction', label: 'Introduction', icon: speakerphoneIcon },
-		{ id: 'attachments', label: 'Attachments', icon: paperclipIcon },
-		{ id: 'images', label: 'Images', icon: photoIcon },
 		{ id: 'client_message', label: 'Client Message', icon: messageIcon }
 	];
 
@@ -126,15 +119,6 @@
 		staleTime: 15_000
 	}));
 
-	// The quote's own files, so the client-facing picker and the rail's Attachments card read one cache
-	// entry between them rather than fetching the same list twice.
-	const attachmentsQuery = createQuery(() => ({
-		queryKey: attachmentsKey('quote', quoteId),
-		queryFn: () => fetchAttachments('quote', quoteId),
-		enabled: Boolean(quoteId),
-		staleTime: 15_000
-	}));
-
 	let editingTitle = $state(false);
 	let titleDraft = $state('');
 	let editingDisclaimer = $state(false);
@@ -147,14 +131,7 @@
 	// Null means nobody has touched these yet, so they follow whatever the last read said. Staging them as
 	// a copy of the saved values instead would fight every refetch.
 	let visibilityDraft = $state<QuoteVisibility | null>(null);
-	let fileSelection = $state<string[] | null>(null);
 	let notePending = $state<NoteChange[]>([]);
-	let documentAttachments = $state<AttachmentsCard>();
-	let imageAttachments = $state<AttachmentsCard>();
-	let pendingDocumentCount = $state(0);
-	let pendingImageCount = $state(0);
-	let addedAttachments = $state(false);
-	let addedImages = $state(false);
 	let saving = $state(false);
 	let saveError = $state('');
 
@@ -188,39 +165,12 @@
 			)
 	);
 
-	const savedClientFiles = $derived(
-		(saved?.version_attachments ?? [])
-			.filter((entry) => entry.customer_visible)
-			.map((entry) => entry.attachment_id)
-	);
-	const clientFiles = $derived(fileSelection ?? savedClientFiles);
-	const clientFilesChanged = $derived(
-		fileSelection !== null &&
-			(clientFiles.length !== savedClientFiles.length ||
-				clientFiles.some((id) => !savedClientFiles.includes(id)))
-	);
-	const clientDocumentIds = $derived(
-		clientFiles.filter((id) => {
-			const file = (attachmentsQuery.data ?? []).find((entry) => entry.id === id);
-			return file ? !isImageAttachment(file) : false;
-		})
-	);
-	const clientImageIds = $derived(
-		clientFiles.filter((id) => {
-			const file = (attachmentsQuery.data ?? []).find((entry) => entry.id === id);
-			return file ? isImageAttachment(file) : false;
-		})
-	);
 	const showIntroduction = $derived(editingIntroduction || Boolean(saved?.version?.introduction));
 	const showClientMessage = $derived(
 		editingClientMessage || Boolean(saved?.version?.client_message)
 	);
-	const showAttachments = $derived(addedAttachments || clientDocumentIds.length > 0);
-	const showImages = $derived(addedImages || clientImageIds.length > 0);
 	const availableSections = $derived([
 		...(!showIntroduction ? (['introduction'] as const) : []),
-		...(!showAttachments ? (['attachments'] as const) : []),
-		...(!showImages ? (['images'] as const) : []),
 		...(!showClientMessage ? (['client_message'] as const) : [])
 	]);
 	const availableLowerSections = $derived(
@@ -232,7 +182,6 @@
 	const lowerSectionOptions = $derived(
 		sectionOptions.filter((option) => availableLowerSections.some((id) => id === option.id))
 	);
-	const pendingFileCount = $derived(pendingDocumentCount + pendingImageCount);
 
 	const isEditing = $derived(
 		editingTitle ||
@@ -240,8 +189,7 @@
 			editingIntroduction ||
 			editingClientMessage ||
 			editingVisibility ||
-			notePending.length > 0 ||
-			pendingFileCount > 0
+			notePending.length > 0
 	);
 	const isDirty = $derived(
 		titleChanged ||
@@ -249,9 +197,7 @@
 			introductionChanged ||
 			clientMessageChanged ||
 			visibilityChanged ||
-			clientFilesChanged ||
-			notePending.length > 0 ||
-			pendingFileCount > 0
+			notePending.length > 0
 	);
 	// Editing needs a draft to write into. A quote whose draft has been published away is read-only even
 	// though the quote itself still says draft, because every command refuses a quote with no draft.
@@ -366,6 +312,12 @@
 	// first, and the message a refusal carries is the sentence the database wrote.
 	let lifecycleSaving = $state(false);
 
+	// RecordFilesCard's onChange fires syncQuoteVersionAttachments in the background (fire-and-forget, by
+	// design — see its wiring below). Send freezes whatever the draft's attachments are at that instant, so
+	// it must await the latest in-flight sync first or a fast attach-then-send could publish a version whose
+	// file protection and customer document were never updated.
+	let pendingFileSync: Promise<unknown> = Promise.resolve();
+
 	async function runLifecycle(done: string, action: () => Promise<unknown>) {
 		if (lifecycleSaving) return;
 		lifecycleSaving = true;
@@ -442,7 +394,8 @@
 		}).format(totalMinor / 100);
 	});
 
-	function send() {
+	async function send() {
+		await pendingFileSync;
 		if (!saved?.version) return;
 		const revision = saved.version.revision;
 		void runLifecycle('Quote marked as awaiting response', () => publishQuote(quoteId, revision));
@@ -788,12 +741,7 @@
 		clientMessageDraft = '';
 		editingVisibility = false;
 		visibilityDraft = null;
-		fileSelection = null;
 		notePending = [];
-		documentAttachments?.discardChanges();
-		imageAttachments?.discardChanges();
-		addedAttachments = false;
-		addedImages = false;
 		saveError = '';
 	}
 
@@ -818,8 +766,6 @@
 			// Everything below shares one draft revision, so these go one after another and each carries the
 			// revision the one before it handed back. Firing them together would make the second a stale write.
 			let revision = saved.version.revision;
-			const filesBefore = attachmentsQuery.data ?? [];
-			const hadFileChanges = pendingFileCount > 0 || clientFilesChanged;
 
 			if (titleChanged || disclaimerChanged) {
 				const result = await saveQuoteDraft(quoteId, revision, {
@@ -879,47 +825,7 @@
 				notePending = notePending.filter((entry) => entry !== change);
 			}
 
-			const [failedDocuments, failedImages] = await Promise.all([
-				documentAttachments?.saveAll(quoteId) ?? 0,
-				imageAttachments?.saveAll(quoteId) ?? 0
-			]);
-			const failedFiles = failedDocuments + failedImages;
-			if (failedFiles > 0)
-				saveError =
-					failedFiles === 1
-						? 'Everything else was saved, but one file did not upload. Try it again below.'
-						: `Everything else was saved, but ${failedFiles} files did not upload. Try them again below.`;
-			else toast.success('Quote saved');
-
-			if (failedFiles === 0 && hadFileChanges) {
-				const filesAfter = await fetchAttachments('quote', quoteId);
-				const beforeIds = new Set(filesBefore.map((file) => file.id));
-				const afterIds = new Set(filesAfter.map((file) => file.id));
-				const desiredIds = [
-					...new Set([
-						...clientFiles.filter((id) => afterIds.has(id)),
-						...filesAfter.filter((file) => !beforeIds.has(file.id)).map((file) => file.id)
-					])
-				];
-				const differs =
-					desiredIds.length !== savedClientFiles.length ||
-					desiredIds.some((id) => !savedClientFiles.includes(id));
-				if (differs) {
-					const result = await saveQuoteVersionAttachments(
-						quoteId,
-						revision,
-						desiredIds.map((id) => ({
-							attachment_id: id,
-							display_name: filesAfter.find((file) => file.id === id)?.file_name ?? 'Attachment',
-							customer_visible: true
-						}))
-					);
-					revision = result.revision;
-				}
-				fileSelection = null;
-				addedAttachments = false;
-				addedImages = false;
-			}
+			toast.success('Quote saved');
 
 			await refreshQuote();
 		} catch (caught) {
@@ -1118,9 +1024,7 @@
 					<AddSectionControl
 						options={lowerSectionOptions}
 						onAdd={(section) => {
-							if (section === 'attachments') addedAttachments = true;
-							else if (section === 'images') addedImages = true;
-							else if (section === 'client_message') {
+							if (section === 'client_message') {
 								clientMessageDraft = '';
 								editingClientMessage = true;
 							}
@@ -1128,33 +1032,21 @@
 					/>
 				{/if}
 
-				{#if showAttachments}
-					<AttachmentsCard
-						bind:this={documentAttachments}
-						onPendingChange={(count: number) => (pendingDocumentCount = count)}
-						entityType="quote"
-						entityId={quoteId}
-						{currentUserId}
-						title="Attachments"
-						surface="section"
-						kind="documents"
-						includeIds={clientDocumentIds}
-					/>
-				{/if}
-
-				{#if showImages}
-					<AttachmentsCard
-						bind:this={imageAttachments}
-						onPendingChange={(count: number) => (pendingImageCount = count)}
-						entityType="quote"
-						entityId={quoteId}
-						{currentUserId}
-						title="Images"
-						surface="section"
-						kind="images"
-						includeIds={clientImageIds}
-					/>
-				{/if}
+				<RecordFilesCard
+					entityType="quote"
+					entityId={quoteId}
+					recordLabel="this quote"
+					pickerLabel="On this quote"
+					clientId={saved.quote.client?.id ?? null}
+					clientLabel={saved.quote.client?.company_name || saved.quote.client?.display_name || null}
+					canManage={editable}
+					surface="section"
+					onChange={() => {
+						pendingFileSync = syncQuoteVersionAttachments(quoteId)
+							.catch(() => {})
+							.then(refreshQuote);
+					}}
+				/>
 
 				{#if showClientMessage}<SectionBlock
 						title="Client message"

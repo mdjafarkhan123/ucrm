@@ -2,60 +2,26 @@
 
 **Goal:** One contractor File Manager backed by private R2, with one File linked to every CRM use.
 
-**Just closed:** Part 5F — record-scoped upload permission, extended to every linked-entity type in one pass,
-plus mounting `RecordFilesCard` on Visit. Committed `d531915`.
+**Done:** Parts 1–5, 6A (Invoice), 6B (Quote, closed 2026-09-23). Part 6 sub-part table is in ROADMAP.md.
 
-**What shipped (see `docs/files-media-behavior-contract.md` for the full write-up):**
+**Uncommitted:** Parts 6A and 6B are in the working tree but not git-committed. The tree also holds another
+agent's marketing changes, so stage only Files-and-Media paths. Ask Jafar before committing.
 
-- `POST /api/files/uploads` and its `/complete` route now authorize a record-scoped upload by the record's own
-  write permission (`requireLinkedEntityAccess`), not the library-wide `files.manage`. Covers every
-  `origin_type`: client/property/request/quote/job_expense/job/visit.
-- `FilePicker`'s Upload button follows the same rule via a new `canManageRecord` prop.
-- `VisitRecordsDialog` replaces its old `AttachmentsCard` with `RecordFilesCard` (matching the Job/Request
-  shape); files left the dialog's staged "Save records" bar.
-- Pre-existing bug fixed: `FileUploader` inside `FilePicker` was never bound, so its own Upload button silently
-  did nothing since Part 4 shipped.
+**Active part: 6C — shared line-item photo migration** (depends on 6B, now ready). Move the per-line photo
+box in `ProductsAndServicesBlock.svelte` (used by Quote, Request, Job, Visit) off `public.attachments` onto
+the File Manager in one pass. Quote's `quote_version_lines.image_attachment_id` and the `'lines'` block of
+`private.quote_customer_document` still read legacy `attachments` and must keep the sent-quote "historical
+truth" rule (`docs/files-media-behavior-contract.md`, Part 6B paragraph shows the pattern used for quote files).
 
-**Browser-verified 2026-09-22** (Raad LTD, field member `dev.jafarkhan@gmail.com`, via a scripted Playwright
-check — no live GUI tool was available this session): Job #20 and its visit both show the Upload button for a
-field member with no `files.manage`, and an upload reaches `processing_state = 'pending'` with the correct
-`origin_type`/`origin_id` (confirmed in the database directly, not just the UI). Sales/finance on a quote was
-**not** browser-tested — Quote has no `RecordFilesCard` yet (that's Part 6); Jafar agreed 2026-09-22 to skip
-that live check and rely on the backend fix being record-type-generic until Part 6 ships the quote screen.
+**Exact next action:** ask Jafar whether to commit 6A+6B first; then research/plan 6C (read the component and
+every `image_attachment_id` user) and present the plan before writing a migration.
 
-**Verified:** `npm run check` clean (only the 3 pre-existing `resolve()` union errors), `npx prettier --check`
-clean on every touched file, all touched component specs pass (15/15 across `FilePicker`, `RecordFilesCard`,
-`JobVisitsSection`).
+**Blocker (campaign-wide):** the upload processing worker does not run locally, so new uploads stay "Still
+being checked". Verify with files that are already `available`.
 
-**Test state in Raad LTD (owner login, left in place on purpose):** Job #20 ("Solar setup quote (revised
-scope) v2") has one visit, Sep 22 2026, with Field Tester assigned. Two test files
-(`part5f-test-upload.txt`, `visit-test-upload.txt`) sit in `pending` processing state on that job/visit — safe
-test data, not customer content; fine to leave.
+**Flagged, not fixed:**
+- The `job`/`visit` comment in `requireLinkedEntityAccess` (`src/lib/server/access/collaboration.ts`)
+  overstates what protects `/api/files/links` attach on a job/visit.
+- Not yet audited: whether any old `deleteAttachment` call site still deletes a shared R2 object outright.
 
-**Exact next action (resume here):**
-
-Ask Jafar: forms and job expense receipts still run on the old `AttachmentsCard` and were never started, but
-Part 5's roadmap gate names them. Decide whether they finish Part 5 or move into Part 6, then select the next
-slice.
-
-**Other blockers (unrelated to this work):**
-
-- An upload still cannot be watched turning usable until deployment sets the values in ROADMAP "Approval
-  gates" (worker secret, scanner host/port, two Vault secrets, and the cron job that ships switched off).
-  Until then every upload correctly stops at "Still being checked" / `processing_state = 'pending'`.
-
-**Non-obvious risks:**
-
-- `npm run check` needs `NODE_OPTIONS=--max-old-space-size=8192`; it OOMs otherwise. Three
-  "union type too complex" errors in `(app)/+layout.svelte`, `OpportunityBriefDrawer` and `invoices/new`
-  are pre-existing `resolve()` route-union noise, not this work.
-- `npm run test:unit` still fails 71 tests across quotes, settings and team. All predate this work.
-- Flagged, not fixed: the `job`/`visit` branch comment in
-  `src/lib/server/access/collaboration.ts`'s `requireLinkedEntityAccess` overstates what actually protects
-  `/api/files/links` attach on a job/visit — real but narrow gap, pre-existing, not introduced here. Worth a
-  dedicated look later, not blocking.
-
-**Pointers:**
-
-- `docs/files-media-behavior-contract.md` — the approved model, now current through Part 5F/Visit
-- `Design/Files and Media/README.md` — the workspace blueprint
+**Pointers:** `docs/files-media-behavior-contract.md`, `Design/Files and Media/README.md`.
