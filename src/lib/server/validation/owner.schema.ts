@@ -372,7 +372,9 @@ export const communicationEmailReputationOverrideSchema = z.object({
 
 export const communicationEmailReputationResumeSchema = z.object({
 	reason: reputationReasonSchema,
-	confirm_remediation: z.boolean().default(false)
+	confirm_remediation: z.boolean().default(false),
+	// Which automatic pause to lift: the operational one (optional follow-ups) or the Marketing-only one.
+	stream: z.enum(['operational', 'marketing']).default('operational')
 });
 
 // Jafar approving or denying a pending complaint-suppression removal request (Communications 7.2).

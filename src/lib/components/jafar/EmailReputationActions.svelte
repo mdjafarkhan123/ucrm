@@ -30,17 +30,21 @@
 		pause_rate: number | null;
 		reason: string;
 	};
+	type AutoPause = {
+		id: string;
+		reason: string;
+		engaged_at: string;
+		evidence: Record<string, unknown> | null;
+	};
 	type Reputation = {
 		metrics: Metric[];
 		overrides: Override[];
-		reputation_pause: {
-			id: string;
-			reason: string;
-			engaged_at: string;
-			evidence: Record<string, unknown> | null;
-		} | null;
+		reputation_pause: AutoPause | null;
 		state: { worst_status: 'ok' | 'warn' | 'pause'; evaluated_at: string } | null;
+		marketing_metrics: Metric[];
+		marketing_reputation_pause: AutoPause | null;
 	};
+	type PauseStream = 'operational' | 'marketing';
 	type ReputationResponse = { reputation: Reputation; error?: string };
 
 	let { organizationId }: { organizationId: string } = $props();
@@ -66,6 +70,15 @@
 	const metrics = $derived(reputation?.metrics ?? []);
 	const worstStatus = $derived(reputation?.state?.worst_status ?? 'ok');
 	const autoPause = $derived(reputation?.reputation_pause ?? null);
+	const marketingMetrics = $derived(reputation?.marketing_metrics ?? []);
+	const marketingPause = $derived(reputation?.marketing_reputation_pause ?? null);
+	const marketingWorstStatus = $derived<Metric['status']>(
+		marketingMetrics.some((metric) => metric.status === 'pause')
+			? 'pause'
+			: marketingMetrics.some((metric) => metric.status === 'warn')
+				? 'warn'
+				: 'ok'
+	);
 
 	const signalLabels: Record<Metric['signal'], string> = {
 		complaint: 'Spam complaints',
@@ -156,7 +169,23 @@
 
 	// --- Resuming the automatic pause ------------------------------------------------------------
 
-	let resumeOpen = $state(false);
+	const resumeCopy = {
+		operational: {
+			label: 'Resume optional email',
+			detail:
+				"Optional follow-ups start flowing again on the outbox worker's next run. Anything that has been waiting more than 24 hours is cancelled rather than sent late.",
+			success: 'Optional email has resumed for this organization.'
+		},
+		marketing: {
+			label: 'Resume Marketing',
+			detail:
+				'Campaigns that were sending pick up where they stopped on the next run. Every waiting customer is checked again for consent and suppression before anything is sent.',
+			success: 'Marketing has resumed for this organization.'
+		}
+	} as const;
+
+	let resumeStream = $state<PauseStream | null>(null);
+	const resumeOpen = $derived(resumeStream !== null);
 	let resumeReason = $state('');
 	let resumeConfirmed = $state(false);
 	const resumeReasonValid = $derived(resumeReason.trim().length >= 3);
@@ -169,7 +198,8 @@
 					headers: { 'content-type': 'application/json' },
 					body: JSON.stringify({
 						reason: resumeReason.trim(),
-						confirm_remediation: resumeConfirmed
+						confirm_remediation: resumeConfirmed,
+						stream: resumeStream ?? 'operational'
 					})
 				});
 				const result = (await response.json()) as ReputationResponse;
@@ -178,21 +208,110 @@
 				return result;
 			},
 			onSuccess: async (data) => {
-				resumeOpen = false;
-				resumeReason = '';
-				resumeConfirmed = false;
+				const stream = resumeStream ?? 'operational';
+				closeResume();
 				queryClient.setQueryData<ReputationResponse>(reputationKey, {
 					reputation: data.reputation
 				});
-				toast.success('Optional email has resumed for this organization.');
-				await queryClient.invalidateQueries({
-					queryKey: ['jafar', 'communications', 'email-reputation']
-				});
+				toast.success(resumeCopy[stream].success);
+				await Promise.all([
+					queryClient.invalidateQueries({
+						queryKey: ['jafar', 'communications', 'email-reputation']
+					}),
+					queryClient.invalidateQueries({ queryKey: ['jafar', 'communications', 'email-health'] })
+				]);
 			},
 			onError: (error) => toast.error(error.message)
 		})
 	);
+
+	function openResume(stream: PauseStream) {
+		resumeStream = stream;
+		resumeReason = '';
+		resumeConfirmed = false;
+	}
+
+	function closeResume() {
+		resumeStream = null;
+		resumeReason = '';
+		resumeConfirmed = false;
+	}
 </script>
+
+{#snippet pauseNotice(pause: AutoPause, stream: PauseStream)}
+	<div class="email-reputation__pause">
+		<p class="email-reputation__pause-reason">{pause.reason}</p>
+		<p class="email-reputation__pause-meta">
+			Paused automatically on {formatDateTime(pause.engaged_at)}. Only you can resume it.
+		</p>
+		<div class="email-reputation__actions">
+			<Button
+				size="small"
+				variant="secondary"
+				variation="subtle"
+				onclick={() => openResume(stream)}
+			>
+				{resumeCopy[stream].label}
+			</Button>
+		</div>
+	</div>
+{/snippet}
+
+{#snippet metricsTable(rows: Metric[], canOverride: boolean)}
+	<div class="email-reputation__table-wrap">
+		<table class="email-reputation__table">
+			<thead>
+				<tr>
+					<th scope="col">Signal</th>
+					<th scope="col">Window</th>
+					<th scope="col">Rate</th>
+					<th scope="col">Warn at</th>
+					<th scope="col">Pause at</th>
+					<th scope="col">Status</th>
+					{#if canOverride}
+						<th scope="col"><span class="email-reputation__sr-only">Change limit</span></th>
+					{/if}
+				</tr>
+			</thead>
+			<tbody>
+				{#each rows as metric (metric.signal + metric.window_key)}
+					<tr>
+						<th scope="row">{signalLabels[metric.signal]}</th>
+						<td>{windowLabels[metric.window_key]}</td>
+						<td>
+							{formatRate(metric.rate)}
+							<span class="email-reputation__sample">
+								{metric.event_count} of {metric.accepted_recipients}
+							</span>
+						</td>
+						<td>{formatRate(metric.warn_rate)}</td>
+						<td>
+							{formatRate(metric.pause_rate)}
+							{#if overrideFor(metric)}
+								<span class="email-reputation__sample">Tightened for this organization</span>
+							{/if}
+						</td>
+						<td>
+							<Badge status={statusTone[metric.status]}>{statusLabel[metric.status]}</Badge>
+						</td>
+						{#if canOverride}
+							<td class="email-reputation__row-action">
+								<Button
+									size="small"
+									variant="secondary"
+									variation="subtle"
+									onclick={() => openOverride(metric)}
+								>
+									Change limit
+								</Button>
+							</td>
+						{/if}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
+{/snippet}
 
 <div class="email-reputation">
 	<div class="email-reputation__heading">
@@ -200,7 +319,7 @@
 			<h3>Sending reputation</h3>
 			<p>
 				How this organization's recipients are reacting. If complaints or bounces cross the limit,
-				marketing-style follow-ups pause on their own — quotes, invoices, and replies keep going.
+				optional follow-ups pause on their own — quotes, invoices, and replies keep going.
 			</p>
 		</div>
 		{#if !reputationQuery.isPending && !reputationQuery.isError}
@@ -220,76 +339,29 @@
 		/>
 	{:else if reputation}
 		{#if autoPause}
-			<div class="email-reputation__pause">
-				<p class="email-reputation__pause-reason">{autoPause.reason}</p>
-				<p class="email-reputation__pause-meta">
-					Paused automatically on {formatDateTime(autoPause.engaged_at)}. Only you can resume it.
-				</p>
-				<div class="email-reputation__actions">
-					<Button
-						size="small"
-						variant="secondary"
-						variation="subtle"
-						onclick={() => {
-							resumeOpen = true;
-							resumeReason = '';
-							resumeConfirmed = false;
-						}}
-					>
-						Resume optional email
-					</Button>
-				</div>
-			</div>
+			{@render pauseNotice(autoPause, 'operational')}
 		{/if}
 
-		<div class="email-reputation__table-wrap">
-			<table class="email-reputation__table">
-				<thead>
-					<tr>
-						<th scope="col">Signal</th>
-						<th scope="col">Window</th>
-						<th scope="col">Rate</th>
-						<th scope="col">Warn at</th>
-						<th scope="col">Pause at</th>
-						<th scope="col">Status</th>
-						<th scope="col"><span class="email-reputation__sr-only">Change limit</span></th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each metrics as metric (metric.signal + metric.window_key)}
-						<tr>
-							<th scope="row">{signalLabels[metric.signal]}</th>
-							<td>{windowLabels[metric.window_key]}</td>
-							<td>
-								{formatRate(metric.rate)}
-								<span class="email-reputation__sample">
-									{metric.event_count} of {metric.accepted_recipients}
-								</span>
-							</td>
-							<td>{formatRate(metric.warn_rate)}</td>
-							<td>
-								{formatRate(metric.pause_rate)}
-								{#if overrideFor(metric)}
-									<span class="email-reputation__sample">Tightened for this organization</span>
-								{/if}
-							</td>
-							<td>
-								<Badge status={statusTone[metric.status]}>{statusLabel[metric.status]}</Badge>
-							</td>
-							<td class="email-reputation__row-action">
-								<Button
-									size="small"
-									variant="secondary"
-									variation="subtle"
-									onclick={() => openOverride(metric)}
-								>
-									Change limit
-								</Button>
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
+		{@render metricsTable(metrics, true)}
+
+		<div class="email-reputation__stream">
+			<div class="email-reputation__heading">
+				<div>
+					<h4>Marketing email</h4>
+					<p>
+						Campaigns are measured on their own. If complaints or bounces cross the limit, only
+						Marketing pauses — this organization's other email keeps going. It uses the same limits
+						as above.
+					</p>
+				</div>
+				<Badge status={statusTone[marketingWorstStatus]}>{statusLabel[marketingWorstStatus]}</Badge>
+			</div>
+
+			{#if marketingPause}
+				{@render pauseNotice(marketingPause, 'marketing')}
+			{/if}
+
+			{@render metricsTable(marketingMetrics, false)}
 		</div>
 	{/if}
 </div>
@@ -339,24 +411,17 @@
 
 <ConfirmDialog
 	open={resumeOpen}
-	title="Resume optional email"
+	title={resumeCopy[resumeStream ?? 'operational'].label}
 	tone="success"
-	confirmLabel="Resume optional email"
+	confirmLabel={resumeCopy[resumeStream ?? 'operational'].label}
 	loading={resumeMutation.isPending}
 	confirmDisabled={!resumeReasonValid || resumeMutation.isPending}
 	onConfirm={() => {
 		if (resumeReasonValid) resumeMutation.mutate();
 	}}
-	onClose={() => {
-		resumeOpen = false;
-		resumeReason = '';
-		resumeConfirmed = false;
-	}}
+	onClose={closeResume}
 >
-	<p>
-		Optional follow-ups start flowing again on the outbox worker's next run. Anything that has been
-		waiting more than 24 hours is cancelled rather than sent late.
-	</p>
+	<p>{resumeCopy[resumeStream ?? 'operational'].detail}</p>
 	<Checkbox
 		id="reputation-resume-confirm"
 		label="I have reviewed what this organization fixed"
@@ -394,6 +459,18 @@
 			margin-top: var(--space-small);
 			color: var(--color-text--secondary);
 			line-height: var(--typography--lineHeight-base);
+		}
+	}
+
+	.email-reputation__stream {
+		display: grid;
+		gap: var(--space-base);
+		padding-top: var(--space-base);
+		border-top: var(--border-base) solid var(--color-border);
+
+		h4 {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
 		}
 	}
 

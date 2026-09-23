@@ -9,8 +9,9 @@ import {
 	zodOwnerFieldErrors
 } from '$lib/server/validation/owner.schema';
 
-// Only Jafar resumes an automatic reputation pause, and only knowingly: while the organization is
-// still at or beyond a pause threshold the command refuses unless remediation review is confirmed.
+// Only Jafar resumes an automatic reputation pause -- operational or Marketing-only -- and only knowingly:
+// while the organization is still at or beyond a pause threshold the command refuses unless remediation
+// review is confirmed.
 export const POST: RequestHandler = async (event) => {
 	const session = await getOwnerSession(event);
 	if (!session) return ownerUnauthorized();
@@ -46,12 +47,17 @@ export const POST: RequestHandler = async (event) => {
 
 	try {
 		const client = getOwnerSupabaseClient();
-		const { data, error } = await client.rpc('resume_communication_email_reputation_pause', {
-			p_organization_id: parsedOrganizationId.data,
-			p_reason: parsed.data.reason,
-			p_actor_email: session.email,
-			p_confirm_remediation: parsed.data.confirm_remediation
-		});
+		const { data, error } = await client.rpc(
+			parsed.data.stream === 'marketing'
+				? 'resume_marketing_email_reputation_pause'
+				: 'resume_communication_email_reputation_pause',
+			{
+				p_organization_id: parsedOrganizationId.data,
+				p_reason: parsed.data.reason,
+				p_actor_email: session.email,
+				p_confirm_remediation: parsed.data.confirm_remediation
+			}
+		);
 		if (error) {
 			if (error.code === '23503') {
 				return json({ error: 'That organization was not found.' }, { status: 404 });

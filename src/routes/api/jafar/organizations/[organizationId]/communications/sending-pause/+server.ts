@@ -30,7 +30,11 @@ export const GET: RequestHandler = async (event) => {
 			.from('communication_email_sending_pauses')
 			.select('id, scope, organization_id, reason, engaged_by_owner_email, engaged_at')
 			.is('released_at', null)
-			.or(`scope.eq.platform,organization_id.eq.${parsedOrganizationId.data}`);
+			// Only Jafar's manual pause belongs on this card: the automatic reputation pauses have their own
+			// resume flow, and the manual release command cannot lift them.
+			.or(
+				`scope.eq.platform,and(organization_id.eq.${parsedOrganizationId.data},source.eq.manual)`
+			);
 		if (error) throw error;
 
 		const rows = data ?? [];

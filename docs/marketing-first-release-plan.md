@@ -146,6 +146,22 @@ Each slice is one focused session, independently verifiable, and ends with its o
   (Submitted is never Delivered). Cancel stops unreleased recipients and states how many were already handed off.
 - Reputation pause stops new Marketing release; only Jafar resumes; resume reruns eligibility.
 
+**Decided while building M4 (2026-09-22/23, Jafar-approved):**
+- Per-contractor verified SES identities, not a shared platform domain. Marketing sends from `news.<root>` with
+  MAIL FROM `bounce.news.<root>`, separate from operational `mail.<root>`; domain purpose `marketing_sending`
+  (so every `purpose='sending'` query keeps excluding it), and Marketing `verified` also requires SPF passing.
+  One SES tenant and configuration set per organization (`communication_ses_tenants`, names derived as
+  `ucrm-org-<orgId>` / `ucrm-marketing-<orgId>`).
+- From address is `<operational sender local part>@news.<root>` with the same display name; Reply-To is the
+  operational sender.
+- Marketing reputation is measured on its own (complaints and hard bounces over Marketing recipients, same
+  effective thresholds as operational) and engages a pause with `source='auto_marketing_reputation'`,
+  `applies_to='marketing'` that never holds operational email. The coupling is one-way: any organization pause,
+  including the operational reputation pause, still holds Marketing. Unsubscribes are not a Marketing pause signal.
+- Organization-wide holds are filtered in the Marketing claim's candidate query, so one held organization's
+  queue cannot starve other organizations.
+- Pointing activation at a real contractor's live domain needs Jafar's separate direct go-ahead.
+
 ### M5 — Results, replies, attribution
 - Paged Recipients tab and Results tab from recipient rows; opens shown as directional.
 - Recipient-bound token on the form link records a direct tracked result; staff-declared link; 30-day window

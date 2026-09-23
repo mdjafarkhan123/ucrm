@@ -17368,6 +17368,10 @@ export type Database = {
 				Args: { p_at?: string; p_organization_id: string };
 				Returns: Json;
 			};
+			evaluate_marketing_email_reputation: {
+				Args: { p_at?: string; p_organization_id: string };
+				Returns: Json;
+			};
 			expire_team_invitations: {
 				Args: never;
 				Returns: {
@@ -20712,6 +20716,15 @@ export type Database = {
 				Returns: number;
 			};
 			resume_communication_email_reputation_pause: {
+				Args: {
+					p_actor_email: string;
+					p_confirm_remediation?: boolean;
+					p_organization_id: string;
+					p_reason: string;
+				};
+				Returns: Json;
+			};
+			resume_marketing_email_reputation_pause: {
 				Args: {
 					p_actor_email: string;
 					p_confirm_remediation?: boolean;
