@@ -1,6 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Button from '$lib/components/ui/Button.svelte';
+	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
+	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
+	import {
+		calendarDateToString,
+		emptyDateTimePickerValue,
+		timeToString,
+		type DateTimePickerValue
+	} from '$lib/components/ui/date-time';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import CustomerGroupPreview from './CustomerGroupPreview.svelte';
@@ -18,7 +26,8 @@
 		MARKETING_GROUP_RULE_CONDITIONS,
 		type MarketingCustomerGroup
 	} from '$lib/marketing/customer-groups';
-	import type { MarketingDeliveryOptions } from '$lib/marketing/api';
+	import { sendTestEmailRequest, type MarketingDeliveryOptions } from '$lib/marketing/api';
+	import { zonedTimeToUtc } from '$lib/time/calendar-day';
 	import formsIcon from '@tabler/icons/outline/forms.svg?raw';
 	import worldIcon from '@tabler/icons/outline/world.svg?raw';
 	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
@@ -27,11 +36,11 @@
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowLeftIcon from '@tabler/icons/outline/arrow-left.svg?raw';
+	import sendIcon from '@tabler/icons/outline/send.svg?raw';
 
 	// Step 5 (blueprint §8 step 5): a final, read-only summary before send. Nothing here is editable -- every
-	// field was chosen on an earlier step; "Back" is how a contractor changes any of it. Send/Schedule stays
-	// disabled until M4 builds the real SES send path (Memory/campaigns/marketing-growth/NOW.md), same
-	// M3/M4 split as Delivery's sender picker and CTA note.
+	// field was chosen on an earlier step; "Back" is how a contractor changes any of it. Only the owner or an
+	// administrator ever sees a working Send/Schedule control (blueprint §14); everyone else is shown why not.
 	let {
 		content,
 		name,
@@ -42,7 +51,8 @@
 		isPending,
 		isError,
 		onRetry,
-		onBack
+		onBack,
+		onSend
 	}: {
 		content: MarketingCampaignContent;
 		name: string;
@@ -54,6 +64,7 @@
 		isError: boolean;
 		onRetry: () => void;
 		onBack: () => void;
+		onSend: (sendAt: string | null) => Promise<void>;
 	} = $props();
 
 	const ctaIcons: Record<MarketingCtaType, string> = {
@@ -86,6 +97,69 @@
 	const canSend = $derived(
 		page.data.organization?.role === 'owner' || page.data.organization?.role === 'admin'
 	);
+
+	let sendMode = $state<'now' | 'schedule'>('now');
+	let when = $state<DateTimePickerValue>(emptyDateTimePickerValue());
+	let sending = $state(false);
+	let sendError = $state('');
+
+	const sendModeOptions = [
+		{ value: 'now', label: 'Send now' },
+		{ value: 'schedule', label: 'Schedule for later' }
+	];
+
+	let testSending = $state(false);
+	let testMessage = $state('');
+	let testError = $state('');
+
+	async function sendTest() {
+		if (testSending) return;
+		testSending = true;
+		testMessage = '';
+		testError = '';
+		try {
+			await sendTestEmailRequest(content);
+			testMessage = 'A test email is on its way to your own inbox.';
+		} catch (cause) {
+			testError = cause instanceof Error ? cause.message : 'That test email could not be sent.';
+		} finally {
+			testSending = false;
+		}
+	}
+
+	async function handleSend() {
+		if (sending) return;
+		sendError = '';
+
+		let sendAt: string | null = null;
+		if (sendMode === 'schedule') {
+			const day = calendarDateToString(when.date);
+			const time = timeToString(when.startTime);
+			if (!day || !time) {
+				sendError = 'Pick a day and time to schedule this campaign for.';
+				return;
+			}
+			const parsed = zonedTimeToUtc(day, time, options.timezone);
+			if (!parsed) {
+				sendError = 'That date and time could not be read. Try picking them again.';
+				return;
+			}
+			if (parsed.getTime() <= Date.now()) {
+				sendError = 'Pick a time in the future.';
+				return;
+			}
+			sendAt = parsed.toISOString();
+		}
+
+		sending = true;
+		try {
+			await onSend(sendAt);
+		} catch (cause) {
+			sendError = cause instanceof Error ? cause.message : 'That campaign could not be sent.';
+		} finally {
+			sending = false;
+		}
+	}
 </script>
 
 <section class="panel">
@@ -187,6 +261,43 @@
 					haven't been sent to yet.
 				</span>
 			</div>
+
+			{#if canSend}
+				<div class="block">
+					<h3>Send</h3>
+					<SegmentedControl bind:value={sendMode} options={sendModeOptions} />
+					{#if sendMode === 'schedule'}
+						<DateTimePicker
+							id="campaign-review-send-at"
+							range={false}
+							dateLabel="Day to send"
+							timeLabel="Time"
+							bind:value={when}
+						/>
+					{/if}
+					{#if sendError}
+						<p class="warning" role="alert">{sendError}</p>
+					{/if}
+
+					<div class="test-send">
+						<Button
+							variant="secondary"
+							variation="subtle"
+							size="small"
+							loading={testSending}
+							onclick={() => void sendTest()}
+						>
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<span class="btn-icon" aria-hidden="true">{@html sendIcon}</span> Send a test email
+						</Button>
+						{#if testMessage}
+							<p class="test-send__success">{testMessage}</p>
+						{:else if testError}
+							<p class="test-send__error" role="alert">{testError}</p>
+						{/if}
+					</div>
+				</div>
+			{/if}
 		{/if}
 	</div>
 
@@ -197,12 +308,16 @@
 		</Button>
 		<div class="panel__foot-right">
 			{#if canSend}
-				<span class="panel__foot-note">
+				<Button
+					variant="primary"
+					loading={sending}
+					disabled={isPending || isError}
+					onclick={() => void handleSend()}
+				>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					<span class="btn-icon" aria-hidden="true">{@html rocketIcon}</span>
-					Sending isn't turned on yet — this only saves your plan for delivery.
-				</span>
-				<Button variant="primary" disabled>Send / Schedule</Button>
+					{sendMode === 'schedule' ? 'Schedule campaign' : 'Send now'}
+				</Button>
 			{:else}
 				<span class="panel__foot-note">
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -368,6 +483,31 @@
 		width: 16px;
 		height: 16px;
 		display: block;
+	}
+
+	.test-send {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-smaller);
+
+		&__success {
+			margin: 0;
+			padding: var(--space-slim) var(--space-base);
+			border-radius: var(--radius-base);
+			background: var(--color-success--surface);
+			color: var(--color-success--onSurface);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__error {
+			margin: 0;
+			padding: var(--space-slim) var(--space-base);
+			border-radius: var(--radius-base);
+			background: var(--color-critical--surface);
+			color: var(--color-critical--onSurface);
+			font-size: var(--typography--fontSize-small);
+		}
 	}
 
 	@media (max-width: 560px) {

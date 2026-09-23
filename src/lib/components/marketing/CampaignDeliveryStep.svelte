@@ -208,7 +208,7 @@
 			<span class="panel__foot-note">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				<span class="btn-icon" aria-hidden="true">{@html sendIcon}</span>
-				Sending isn't turned on yet -- this only saves your plan for delivery.
+				Nothing sends yet — you choose to send now or schedule on the next step.
 			</span>
 			<Button variant="primary" onclick={onContinue}>
 				Continue

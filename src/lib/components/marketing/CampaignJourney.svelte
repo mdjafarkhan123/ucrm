@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { beforeNavigate, replaceState } from '$app/navigation';
+	import { beforeNavigate, goto, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -18,6 +18,7 @@
 		emptyMarketingDeliveryOptions,
 		createCampaignRequest,
 		updateCampaignRequest,
+		launchCampaignRequest,
 		fetchRuleLabels,
 		StaleCampaignError,
 		marketingCampaignsKey,
@@ -200,6 +201,49 @@
 		}
 	}
 
+	// Same retry fingerprint as InvoiceLifecycleDialog.svelte: a key is reused only while the retried click's
+	// content (the saved draft plus the chosen send time) is unchanged, so a genuine retry never double-sends
+	// but picking a different time before retrying gets a fresh key.
+	let sendIdempotencyKey = crypto.randomUUID();
+	let lastSendFingerprint = '';
+
+	function fingerprint(value: unknown): string {
+		const json = JSON.stringify(value);
+		let hash = 0x811c9dc5;
+		for (let index = 0; index < json.length; index++) {
+			hash ^= json.charCodeAt(index);
+			hash = Math.imul(hash, 0x01000193);
+		}
+		return `v1:${(hash >>> 0).toString(16)}`;
+	}
+
+	async function onSend(sendAt: string | null) {
+		if (dirty || !campaignId) {
+			await saveDraft();
+			if (dirty || !campaignId) throw new Error(saveError || 'This campaign could not be saved.');
+		}
+
+		const hash = fingerprint({ snapshot: snapshot(), sendAt });
+		if (hash !== lastSendFingerprint) {
+			sendIdempotencyKey = crypto.randomUUID();
+			lastSendFingerprint = hash;
+		}
+
+		try {
+			await launchCampaignRequest(campaignId, revision as number, sendAt, sendIdempotencyKey);
+		} catch (cause) {
+			if (cause instanceof StaleCampaignError) {
+				throw new Error('Someone else changed this campaign while you were sending it. Reload it.');
+			}
+			throw cause;
+		}
+
+		await queryClient.invalidateQueries({ queryKey: marketingCampaignsKey });
+		await queryClient.invalidateQueries({ queryKey: marketingCampaignKey(campaignId) });
+		toast.success(sendAt ? 'Campaign scheduled.' : 'Campaign is sending.');
+		await goto(campaignsHref);
+	}
+
 	function continueFromGoal() {
 		nameError = name.trim() ? '' : 'Give this campaign a name.';
 		goalError = goal ? '' : 'Choose a goal.';
@@ -318,6 +362,7 @@
 			isError={deliveryOptionsQuery.isError}
 			onRetry={() => deliveryOptionsQuery.refetch()}
 			onBack={() => (step = 4)}
+			{onSend}
 		/>
 	{/if}
 </div>

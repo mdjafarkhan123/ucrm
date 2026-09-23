@@ -87,6 +87,10 @@ const baseRows = {
 		data: { state: 'not_included', value: null, is_unlimited: false, source: 'package' },
 		error: null
 	},
+	effective_marketing_email_limit: {
+		data: { state: 'not_included', value: null, is_unlimited: false, source: 'package' },
+		error: null
+	},
 	organization_feature_overrides: {
 		data: [
 			{

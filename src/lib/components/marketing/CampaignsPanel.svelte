@@ -16,6 +16,7 @@
 		fetchCampaigns,
 		fetchCustomerGroups,
 		deleteCampaignRequest,
+		cancelCampaignRequest,
 		marketingCampaignsKey,
 		marketingCustomerGroupsKey
 	} from '$lib/marketing/api';
@@ -28,6 +29,7 @@
 	import speakerphoneIcon from '@tabler/icons/outline/speakerphone.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import banIcon from '@tabler/icons/outline/ban.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -50,22 +52,36 @@
 
 	let deleteTarget = $state<MarketingCampaignListItem | null>(null);
 	let deleting = $state(false);
+	let cancelTarget = $state<MarketingCampaignListItem | null>(null);
+	let cancelling = $state(false);
 
 	function editHref(campaign: MarketingCampaignListItem) {
 		return resolve('/(app)/marketing/campaigns/[id=uuid]/edit', { id: campaign.id });
 	}
 
 	function menuItems(campaign: MarketingCampaignListItem) {
-		if (campaign.status !== 'draft') return [];
-		return [
-			{ label: 'Edit', icon: pencilIcon, onSelect: () => void goto(editHref(campaign)) },
-			{
-				label: 'Delete',
-				icon: trashIcon,
-				destructive: true,
-				onSelect: () => (deleteTarget = campaign)
-			}
-		];
+		if (campaign.status === 'draft') {
+			return [
+				{ label: 'Edit', icon: pencilIcon, onSelect: () => void goto(editHref(campaign)) },
+				{
+					label: 'Delete',
+					icon: trashIcon,
+					destructive: true,
+					onSelect: () => (deleteTarget = campaign)
+				}
+			];
+		}
+		if (campaign.status === 'scheduled' || campaign.status === 'sending') {
+			return [
+				{
+					label: 'Cancel campaign',
+					icon: banIcon,
+					destructive: true,
+					onSelect: () => (cancelTarget = campaign)
+				}
+			];
+		}
+		return [];
 	}
 
 	async function confirmDelete() {
@@ -80,6 +96,21 @@
 			toast.error(cause instanceof Error ? cause.message : 'That campaign could not be deleted.');
 		} finally {
 			deleting = false;
+		}
+	}
+
+	async function confirmCancel() {
+		if (!cancelTarget) return;
+		cancelling = true;
+		try {
+			await cancelCampaignRequest(cancelTarget.id);
+			cancelTarget = null;
+			await queryClient.invalidateQueries({ queryKey: marketingCampaignsKey });
+			toast.success('Campaign cancelled.');
+		} catch (cause) {
+			toast.error(cause instanceof Error ? cause.message : 'That campaign could not be cancelled.');
+		} finally {
+			cancelling = false;
 		}
 	}
 
@@ -115,7 +146,7 @@
 		<EmptyState
 			icon={speakerphoneIcon}
 			title="No campaigns yet"
-			description="Start from a goal, choose who to email, and build the message -- all in one guided flow."
+			description="Start from a goal, choose who to email, and build the message — all in one guided flow."
 		>
 			{#snippet action()}
 				<Button variant="secondary" href={newCampaignHref}>New campaign</Button>
@@ -149,7 +180,7 @@
 				<td>{dateFormatter.format(new Date(campaign.updated_at))}</td>
 			{/snippet}
 			{#snippet rowActions(campaign: MarketingCampaignListItem)}
-				{#if campaign.status === 'draft'}
+				{#if menuItems(campaign).length > 0}
 					<DropdownMenu triggerLabel={`Actions for ${campaign.name}`} items={menuItems(campaign)} />
 				{/if}
 			{/snippet}
@@ -169,4 +200,21 @@
 	onClose={() => (deleteTarget = null)}
 >
 	<p>This can't be undone. "{deleteTarget?.name}" and its draft content will be removed.</p>
+</ConfirmDialog>
+
+<ConfirmDialog
+	open={cancelTarget !== null}
+	title="Cancel this campaign?"
+	tone="critical"
+	destructive
+	confirmLabel="Cancel campaign"
+	cancelLabel="Keep sending"
+	loading={cancelling}
+	onConfirm={() => void confirmCancel()}
+	onClose={() => (cancelTarget = null)}
+>
+	<p>
+		Sent email cannot be recalled. Cancelling "{cancelTarget?.name}" only stops recipients who
+		haven't been sent to yet.
+	</p>
 </ConfirmDialog>

@@ -1,4 +1,5 @@
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { organizationTimezone } from '$lib/server/requests/timezone';
 
 // Everything the campaign journey's Delivery step (blueprint §8 step 4) needs to display or offer as a call
 // to action, gathered from the records that already own each fact -- same split as readiness.ts, which this
@@ -26,6 +27,9 @@ export type MarketingDeliveryOptions = {
 	// Only forms a customer could actually land on right now: enabled, published, not archived.
 	forms: MarketingDeliveryForm[];
 	allowance: { state: string; value: number | null; is_unlimited: boolean };
+	// The Schedule picker builds send_at in the contractor's own local time, same source as Requests' own
+	// calendar-day reads.
+	timezone: string;
 };
 
 export async function loadMarketingDeliveryOptions(
@@ -33,7 +37,7 @@ export async function loadMarketingDeliveryOptions(
 ): Promise<MarketingDeliveryOptions> {
 	const owner = getOwnerSupabaseClient();
 
-	const [domains, marketingDomain, settings, forms, allowance] = await Promise.all([
+	const [domains, marketingDomain, settings, forms, allowance, timezone] = await Promise.all([
 		owner
 			.from('communication_email_domains')
 			.select('id')
@@ -65,7 +69,8 @@ export async function loadMarketingDeliveryOptions(
 			.eq('is_enabled', true)
 			.is('archived_at', null)
 			.order('name'),
-		owner.rpc('effective_marketing_email_limit', { target_organization_id: organizationId })
+		owner.rpc('effective_marketing_email_limit', { target_organization_id: organizationId }),
+		organizationTimezone(owner, organizationId)
 	]);
 
 	for (const result of [domains, marketingDomain, settings, forms, allowance]) {
@@ -116,6 +121,7 @@ export async function loadMarketingDeliveryOptions(
 			state: limitRow?.state ?? 'not_included',
 			value: limitRow?.value ?? null,
 			is_unlimited: limitRow?.is_unlimited ?? false
-		}
+		},
+		timezone
 	};
 }

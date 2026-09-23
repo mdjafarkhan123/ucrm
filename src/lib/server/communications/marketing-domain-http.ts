@@ -31,18 +31,24 @@ export function marketingDomainErrorResponse(error: unknown, action: 'activate' 
 		(error instanceof CloudflareDnsError && (error.status === null || error.status >= 500)) ||
 		(error instanceof SesError && (error.status === null || error.status >= 500));
 	if (providerUnknown) {
+		console.error(
+			`Could not ${action} the Marketing sending domain (provider outcome unknown).`,
+			error
+		);
 		return json(
 			{ error: 'A provider did not confirm the change. Check the domain and try again.' },
 			{ status: 502, headers: noStore }
 		);
 	}
 	if (error instanceof CloudflareDnsError) {
+		console.error(`Could not ${action} the Marketing sending domain (Cloudflare rejected).`, error);
 		return json(
 			{ error: 'Cloudflare rejected a DNS change during Marketing activation.' },
 			{ status: 502, headers: noStore }
 		);
 	}
 	if (error instanceof SesError) {
+		console.error(`Could not ${action} the Marketing sending domain (SES rejected).`, error);
 		return json(
 			{ error: 'Amazon SES could not complete the Marketing sending identity.' },
 			{ status: 502, headers: noStore }

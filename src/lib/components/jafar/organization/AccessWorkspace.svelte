@@ -411,6 +411,89 @@
 		widgetsLimitOverrideReason = '';
 	}
 
+	// Limit override (marketing_email_recipients) --------------------------
+	let editingMarketingLimit = $state(false);
+	let marketingLimitOverrideState = $state<'inherit' | 'unlimited' | 'not_included' | 'numeric'>(
+		'numeric'
+	);
+	let marketingLimitOverrideValue = $state('');
+	let marketingLimitOverrideStartsAt = $state('');
+	let marketingLimitOverrideExpiry = $state('');
+	let marketingLimitOverrideReason = $state('');
+
+	function handleMarketingLimitOverrideStartsAtChange(value: DateTimePickerValue) {
+		marketingLimitOverrideStartsAt = dateTimePickerValueToLocalString(value);
+	}
+
+	function handleMarketingLimitOverrideExpiryChange(value: CalendarDate | undefined) {
+		marketingLimitOverrideExpiry = calendarDateToString(value);
+	}
+
+	const marketingLimitOverrideMutation = createMutation<
+		MutationResponse,
+		Error,
+		{
+			override_state: 'inherit' | 'unlimited' | 'not_included' | 'numeric';
+			limit_value?: number | null;
+			starts_at: string;
+			expires_at: string | null;
+			reason: string;
+			idempotency_key: string;
+		}
+	>(() => ({
+		mutationFn: async (input) => {
+			const response = await fetch(
+				`/api/jafar/organizations/${organizationId}/limit-overrides/marketing_email_recipients`,
+				{
+					method: 'PUT',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify(input)
+				}
+			);
+			const result = (await response.json()) as MutationResponse;
+			if (!response.ok) throw new Error(result.error ?? 'The limit override could not be changed.');
+			return result;
+		},
+		onMutate: clearFeedback,
+		onError: (error) => (actionError = error.message),
+		onSuccess: () => {
+			editingMarketingLimit = false;
+			actionMessage = 'Marketing email allowance exception updated.';
+			invalidateOrganization();
+		}
+	}));
+
+	function startEditingMarketingLimit() {
+		editingMarketingLimit = true;
+		marketingLimitOverrideState = access?.limits.marketing_email_recipients.state ?? 'numeric';
+		marketingLimitOverrideValue = access?.limits.marketing_email_recipients.value?.toString() ?? '';
+		marketingLimitOverrideStartsAt = localDateTimeValue(new Date());
+		marketingLimitOverrideExpiry = '';
+		marketingLimitOverrideReason = '';
+	}
+	function submitMarketingLimitOverride(event: SubmitEvent) {
+		event.preventDefault();
+		if (!marketingLimitOverrideReason.trim() || !marketingLimitOverrideStartsAt) return;
+		marketingLimitOverrideMutation.mutate({
+			override_state: marketingLimitOverrideState,
+			limit_value:
+				marketingLimitOverrideState === 'numeric' ? Number(marketingLimitOverrideValue) : null,
+			starts_at: localDateTimeToIso(marketingLimitOverrideStartsAt),
+			expires_at: marketingLimitOverrideExpiry
+				? new Date(marketingLimitOverrideExpiry).toISOString()
+				: null,
+			reason: marketingLimitOverrideReason.trim(),
+			idempotency_key: crypto.randomUUID()
+		});
+	}
+	function clearMarketingLimitOverride() {
+		editingMarketingLimit = true;
+		marketingLimitOverrideState = 'inherit';
+		marketingLimitOverrideStartsAt = localDateTimeValue(new Date());
+		marketingLimitOverrideExpiry = '';
+		marketingLimitOverrideReason = '';
+	}
+
 	const queryClient = useQueryClient();
 	const isLegacyUnversioned = $derived(access ? access.package.version_id === null : false);
 
@@ -427,7 +510,8 @@
 		'communications.inbox': 'Unified inbox',
 		'portal.client': 'Customer-facing portal',
 		'automation.workflows': 'Workflow automations',
-		'reporting.advanced': 'Advanced reporting'
+		'reporting.advanced': 'Advanced reporting',
+		marketing: 'Marketing'
 	};
 </script>
 
@@ -943,6 +1027,93 @@
 										variation="subtle"
 										loading={widgetsLimitOverrideMutation.isPending}
 										onclick={clearWidgetsLimitOverride}>Clear exception</Button
+									>
+								{/if}
+							</div>
+						{/if}
+					</div>
+				</Card>
+
+				<Card class="organization-detail__commercial-explainer">
+					<div>
+						<h3>Marketing email allowance</h3>
+						<p>
+							{access.limits.marketing_email_recipients.state === 'unlimited'
+								? 'Unlimited recipients'
+								: access.limits.marketing_email_recipients.state === 'numeric'
+									? `${access.limits.marketing_email_recipients.value} recipients per month`
+									: 'Not included'}
+							<Badge
+								status={access.limits.marketing_email_recipients.source === 'override'
+									? 'informative'
+									: 'inactive'}
+								>{access.limits.marketing_email_recipients.source === 'override'
+									? 'Exception'
+									: 'Package default'}</Badge
+							>
+						</p>
+						{#if editingMarketingLimit}
+							<form
+								onsubmit={submitMarketingLimitOverride}
+								class="organization-detail__inline-form"
+							>
+								<Select
+									id="marketing-limit-override-state"
+									ariaLabel="Marketing email allowance exception state"
+									options={LIMIT_OVERRIDE_STATE_OPTIONS}
+									bind:value={marketingLimitOverrideState}
+								/>
+								{#if marketingLimitOverrideState === 'numeric'}
+									<Input
+										id="marketing-limit-override-value"
+										label="Recipients per month"
+										type="number"
+										min="0"
+										bind:value={marketingLimitOverrideValue}
+									/>
+								{/if}
+								<CalendarPicker
+									id="marketing-limit-override-expiry"
+									label="Expires (leave blank for permanent)"
+									value={calendarDateFromString(marketingLimitOverrideExpiry)}
+									onchange={handleMarketingLimitOverrideExpiryChange}
+								/>
+								<DateTimePicker
+									id="marketing-limit-override-starts-at"
+									dateLabel="Starts at date"
+									timeLabel="Starts at time"
+									value={dateTimePickerValueFromLocalString(marketingLimitOverrideStartsAt)}
+									required
+									onchange={handleMarketingLimitOverrideStartsAtChange}
+								/>
+								<Input
+									id="marketing-limit-override-reason"
+									label="Private reason"
+									bind:value={marketingLimitOverrideReason}
+								/>
+								<div class="organization-detail__inline-form-actions">
+									<Button type="submit" loading={marketingLimitOverrideMutation.isPending}
+										>Save exception</Button
+									>
+									<Button
+										type="button"
+										variant="secondary"
+										variation="subtle"
+										onclick={() => (editingMarketingLimit = false)}>Cancel</Button
+									>
+								</div>
+							</form>
+						{:else}
+							<div class="organization-detail__inline-form-actions">
+								<Button variant="secondary" variation="subtle" onclick={startEditingMarketingLimit}
+									>Change Marketing exception</Button
+								>
+								{#if access.limits.marketing_email_recipients.source === 'override'}
+									<Button
+										variant="secondary"
+										variation="subtle"
+										loading={marketingLimitOverrideMutation.isPending}
+										onclick={clearMarketingLimitOverride}>Clear exception</Button
 									>
 								{/if}
 							</div>

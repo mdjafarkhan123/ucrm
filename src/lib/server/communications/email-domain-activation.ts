@@ -10,14 +10,17 @@ import {
 	listBrevoInboundWebhooks,
 	type BrevoDnsRecord
 } from './brevo';
+import { listCloudflareDnsRecords, resolveCloudflareZone } from './cloudflare-dns';
 import {
-	createCloudflareDnsRecord,
-	listCloudflareDnsRecords,
-	resolveCloudflareZone,
-	updateCloudflareDnsRecord,
-	type CloudflareDnsRecord,
-	type CloudflareRecordInput
-} from './cloudflare-dns';
+	assertSubdomainNotOccupied,
+	assertUnderSubdomain,
+	EmailDomainActivationError,
+	normalizeName,
+	reconcileRecord,
+	type ExpectedRecord
+} from './dns-reconcile';
+
+export { EmailDomainActivationError } from './dns-reconcile';
 
 // Managed email-domain activation reconciler (A1-D). This is a desired-state saga: every provider step is
 // idempotent, no database transaction is ever held across a Brevo or Cloudflare call, and a Recheck safely
@@ -40,23 +43,6 @@ const BREVO_INBOUND_MX = [
 	{ target: 'inbound1.sendinblue.com', priority: 10 },
 	{ target: 'inbound2.sendinblue.com', priority: 20 }
 ] as const;
-
-// A managed record type set. Anything else already living at a managed subdomain apex means the name is in
-// use by another service, so the reconciler refuses rather than guessing.
-const MANAGED_RECORD_TYPES = new Set(['TXT', 'CNAME', 'MX']);
-
-export class EmailDomainActivationError extends Error {
-	constructor(
-		message: string,
-		public readonly code: string,
-		// retryable: an unknown/ambiguous provider outcome the owner can safely re-run. A conflict
-		// (occupied name) is NOT retryable -- it needs a human decision.
-		public readonly retryable: boolean
-	) {
-		super(message);
-		this.name = 'EmailDomainActivationError';
-	}
-}
 
 type DnsStatus = 'unchecked' | 'pending' | 'passing' | 'failing';
 
@@ -104,22 +90,6 @@ function deriveDomains(rootDomain: string): { sending: string; receiving: string
 	return { sending: `mail.${root}`, receiving: `reply.${root}` };
 }
 
-// ---------------------------------------------------------------------------------------------------
-// Expected-record model. Each expected record is keyed by (type, name); the reconciler brings exactly
-// these to their desired content and writes nothing else.
-// ---------------------------------------------------------------------------------------------------
-
-type ExpectedRecord = {
-	type: string;
-	name: string;
-	content: string;
-	priority?: number;
-};
-
-function normalizeName(name: string): string {
-	return name.trim().toLowerCase().replace(/\.$/, '');
-}
-
 /**
  * Fully-qualifies a Brevo-issued host name against the managed domain and its Cloudflare zone apex.
  *
@@ -151,99 +121,6 @@ function brevoRecordToExpected(
 		name: qualifyBrevoHostName(record.host_name, domain, zoneName),
 		content: record.value.trim()
 	};
-}
-
-/**
- * Every Brevo-issued record for a managed subdomain must live at or under that subdomain. A record whose
- * host name escapes the subdomain would mean writing outside the name UCRM controls, so the run refuses.
- */
-function assertUnderSubdomain(records: ExpectedRecord[], subdomain: string): void {
-	const suffix = `.${subdomain}`;
-	for (const record of records) {
-		if (record.name !== subdomain && !record.name.endsWith(suffix)) {
-			throw new EmailDomainActivationError(
-				`Brevo returned a record for ${record.name}, which is outside ${subdomain}. Activation will not write outside the managed subdomain.`,
-				'record_outside_subdomain',
-				false
-			);
-		}
-	}
-}
-
-/**
- * Refuses a managed subdomain whose apex already serves another service. An MX that is not a Brevo inbound
- * target, or any record type UCRM does not manage, means the name is occupied and a human must decide.
- */
-function assertSubdomainNotOccupied(subdomain: string, existing: CloudflareDnsRecord[]): void {
-	for (const record of existing) {
-		const type = record.type.trim().toUpperCase();
-		if (!MANAGED_RECORD_TYPES.has(type)) {
-			throw new EmailDomainActivationError(
-				`${subdomain} already has a ${type} record and appears to be in use. Activation will not overwrite it.`,
-				'subdomain_occupied',
-				false
-			);
-		}
-		if (type === 'MX') {
-			const content = normalizeName(record.content);
-			const isBrevoInbound = BREVO_INBOUND_MX.some((mx) => content === normalizeName(mx.target));
-			if (!isBrevoInbound) {
-				throw new EmailDomainActivationError(
-					`${subdomain} already routes mail to ${record.content}. Activation will not replace an existing mail route.`,
-					'subdomain_occupied',
-					false
-				);
-			}
-		}
-	}
-}
-
-/**
- * Brings one expected record to its desired content in Cloudflare and reports how it settled. Reuses an
- * exact match, updates the single managed record of the same type when its content drifted, creates when
- * absent, and refuses an ambiguous name that has several conflicting records of the same type.
- */
-async function reconcileRecord(
-	zoneId: string,
-	expected: ExpectedRecord
-): Promise<'created' | 'updated' | 'unchanged'> {
-	const existing = await listCloudflareDnsRecords(zoneId, expected.name);
-	const sameType = existing.filter((record) => record.type.trim().toUpperCase() === expected.type);
-
-	const input: CloudflareRecordInput = {
-		type: expected.type,
-		name: expected.name,
-		content: expected.content,
-		proxied: false,
-		...(expected.priority != null ? { priority: expected.priority } : {})
-	};
-
-	// For MX, the identity is (type, name, priority); for everything else it is (type, name).
-	const matches =
-		expected.priority != null
-			? sameType.filter((record) => record.priority === expected.priority)
-			: sameType;
-
-	const exact = matches.find(
-		(record) => normalizeName(record.content) === normalizeName(expected.content)
-	);
-	if (exact) return 'unchanged';
-
-	if (matches.length === 0) {
-		await createCloudflareDnsRecord(zoneId, input);
-		return 'created';
-	}
-
-	if (matches.length === 1) {
-		await updateCloudflareDnsRecord(zoneId, matches[0].id, input);
-		return 'updated';
-	}
-
-	throw new EmailDomainActivationError(
-		`${expected.name} has several conflicting ${expected.type} records. Resolve them before activating.`,
-		'ambiguous_records',
-		false
-	);
 }
 
 // ---------------------------------------------------------------------------------------------------
@@ -382,7 +259,7 @@ async function reconcileSendingDomain(
 	assertUnderSubdomain(expected, sending);
 
 	// Occupancy: the sending subdomain apex must not already serve another service.
-	assertSubdomainNotOccupied(sending, await listCloudflareDnsRecords(zoneId, sending));
+	assertSubdomainNotOccupied(sending, await listCloudflareDnsRecords(zoneId, sending), []);
 
 	let recordsWritten = 0;
 	for (const record of expected) {
@@ -463,7 +340,11 @@ async function reconcileReceivingDomain(
 
 	// Occupancy: an MX target that is not one of Brevo's inbound servers means the name already receives
 	// mail elsewhere. Brevo's own inbound MX are allowed so a re-run is safe.
-	assertSubdomainNotOccupied(receiving, await listCloudflareDnsRecords(zoneId, receiving));
+	assertSubdomainNotOccupied(
+		receiving,
+		await listCloudflareDnsRecords(zoneId, receiving),
+		BREVO_INBOUND_MX.map((mx) => mx.target)
+	);
 
 	// Brevo's authentication records first, then the two documented inbound MX records.
 	const mxExpected: ExpectedRecord[] = BREVO_INBOUND_MX.map((mx) => ({

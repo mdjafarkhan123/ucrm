@@ -167,6 +167,8 @@ export async function deleteCampaignDraft(
 	return Boolean(data);
 }
 
+export class CampaignNotCancellableError extends Error {}
+
 export type CampaignLaunchResult = {
 	campaign_id: string;
 	status: string;
@@ -213,4 +215,35 @@ export async function launchCampaign(
 		throw error;
 	}
 	return data as unknown as CampaignLaunchResult;
+}
+
+export type CampaignCancelResult = {
+	campaign_id: string;
+	status: string;
+	cancelled_at: string;
+	cancelled_count: number;
+	in_flight_count: number;
+	submitted_count: number;
+};
+
+// Cancelling a scheduled or sending campaign. Idempotent by design (marketing_cancel_campaign reports zero
+// newly-cancelled recipients rather than erroring on a second call), so this never needs an idempotency key
+// the way launch does. The marketing.launch permission belongs to the calling route, as with every other
+// marketing command.
+export async function cancelCampaign(
+	organizationId: string,
+	userId: string,
+	campaignId: string
+): Promise<CampaignCancelResult> {
+	const owner = getOwnerSupabaseClient();
+	const { data, error } = await owner.rpc('marketing_cancel_campaign', {
+		target_organization_id: organizationId,
+		target_campaign_id: campaignId,
+		actor_user_id: userId
+	});
+	if (error) {
+		if (error.code === '23514') throw new CampaignNotCancellableError(error.message);
+		throw error;
+	}
+	return data as unknown as CampaignCancelResult;
 }

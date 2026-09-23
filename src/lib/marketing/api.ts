@@ -192,6 +192,7 @@ export type MarketingDeliveryOptions = {
 	forms: { id: string; name: string; outcome: string; public_slug: string }[];
 	organization_slug: string;
 	allowance: { state: string; value: number | null; is_unlimited: boolean };
+	timezone: string;
 };
 
 // Same "always a value, never undefined" convention as an empty customer-group/campaign-content default --
@@ -202,7 +203,8 @@ export const emptyMarketingDeliveryOptions: MarketingDeliveryOptions = {
 	business_website: null,
 	forms: [],
 	organization_slug: '',
-	allowance: { state: 'not_included', value: null, is_unlimited: false }
+	allowance: { state: 'not_included', value: null, is_unlimited: false },
+	timezone: 'UTC'
 };
 
 export const marketingDeliveryOptionsKey = ['marketing', 'delivery-options'] as const;
@@ -314,4 +316,63 @@ export async function copyMarketingTemplateRequest(
 	if (!response.ok) throw await readMarketingError(response, 'That template could not be copied.');
 	const result = await response.json();
 	return result.template;
+}
+
+export type CampaignLaunchResult = {
+	campaign_id: string;
+	status: string;
+	revision: number;
+	scheduled_for: string | null;
+	launched_at: string;
+	total_count: number;
+	eligible_count: number;
+	excluded_count: number;
+	replayed: boolean;
+};
+
+export async function launchCampaignRequest(
+	campaignId: string,
+	revision: number,
+	sendAt: string | null,
+	idempotencyKey: string
+): Promise<CampaignLaunchResult> {
+	const response = await fetch(`/api/marketing/campaigns/${campaignId}/launch`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ revision, send_at: sendAt, idempotency_key: idempotencyKey })
+	});
+	if (!response.ok) {
+		if (response.status === 409)
+			throw new StaleCampaignError('Someone else changed this campaign.');
+		throw await readMarketingError(response, 'That campaign could not be sent.');
+	}
+	return response.json();
+}
+
+export type CampaignCancelResult = {
+	campaign_id: string;
+	status: string;
+	cancelled_at: string;
+	cancelled_count: number;
+	in_flight_count: number;
+	submitted_count: number;
+};
+
+export async function cancelCampaignRequest(campaignId: string): Promise<CampaignCancelResult> {
+	const response = await fetch(`/api/marketing/campaigns/${campaignId}/cancel`, { method: 'POST' });
+	if (!response.ok)
+		throw await readMarketingError(response, 'That campaign could not be cancelled.');
+	return response.json();
+}
+
+export async function sendTestEmailRequest(
+	content: MarketingCampaignContent
+): Promise<{ messageId: string }> {
+	const response = await fetch('/api/marketing/campaigns/test-send', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ content })
+	});
+	if (!response.ok) throw await readMarketingError(response, 'That test email could not be sent.');
+	return response.json();
 }

@@ -6,41 +6,27 @@ Ship simple, safe contractor Marketing: one-off email first, with every approved
 
 ## State
 
-M1-M3 complete. SES production access APPROVED (console, 2026-09-22): 50,000 emails/24h, 14/sec, account
-`881776924275` "UCRM Production Workloads", us-east-1.
-
-M4 stages 1-4 are all **done and committed**: stage 1 `97f94b2` (per-org SES sending identity), stage 2
-`7fc6223` (launch snapshot + Marketing allowance), stage 3 `e8889dc` (the dispatcher), stage 4 `f76c14e` (the
-SES event consumer). Every stage's migration is applied to the linked remote database and
-`database.types.ts` is regenerated. Stages 1, 3, and 4 have never run against real AWS.
-
-Unrelated: ~75 quote/settings/team unit tests fail on this branch. They fail identically without any of this
-work and belong to the in-flight files-media Quote adoption, not to Marketing.
+M1-M3 complete. M4 stages 1-4 committed and live. Stage 5 (send/schedule/cancel/test email) is built and was
+browser-verified on Raad LTD on 2026-09-23 (test send, schedule then cancel, send now then cancel while sending;
+the database confirms recipients were cancelled and allowance returned). It is **not committed yet**. It sits
+alongside two owner-panel buttons and grant-fix migration `20260923090100`. Details: `parts/M4.md`.
 
 ## Exact next action
 
-Nothing left to build without Jafar. Ask him for:
+Jafar confirms the test email reached `info.socialmediauser1@gmail.com`, then approves the commit of the
+uncommitted marketing work (only marketing/owner-panel/access files and migrations `20260923090000` and
+`20260923090100`; other campaigns' files are also uncommitted, so leave them out). Then close M4 in ROADMAP and
+choose the next part.
 
-1. The AWS IAM user + `AWS_SES_*` values (stage 1's original ask), now also needing SQS
-   `ReceiveMessage`/`DeleteMessage` permission on the `ucrm-ses-events` queue for stage 4.
-2. The `communications_marketing_worker_target_url` and `communications_marketing_events_worker_target_url`
-   Vault secrets once the two worker routes are deployed.
+## Blockers / open findings
 
-Once those exist, prove stages 1, 3, and 4 against real AWS before asking about stage 5 (cancel + test email
-+ go-live UI) — that stage has not been discussed with Jafar yet.
-
-## Blockers
-
-Stages 1, 3, and 4 cannot be proven without the AWS IAM user plus `AWS_SES_*` env values and the two worker
-Vault secrets (all Jafar). The first live DNS run against a real contractor domain needs a separate direct
-go-ahead. M9 (SMS marketing) stays blocked until Communications A2 passes live SMS gates.
+- Cron jobs `communications-marketing-outbox-wake-one-minute` and `...-events-wake-one-minute` are active and
+  raise every minute because Vault `communications_marketing_worker_target_url` and
+  `communications_marketing_events_worker_target_url` are unset. Nothing sends; it only makes noise. Ask Jafar
+  whether to turn them off until deployment.
+- M9 (SMS marketing) stays blocked until Communications A2 passes the live SMS checks.
+- The Raad LTD Marketing override and the 1000/month allowance expire September 24, 2026.
 
 ## Pointers
 
-Part packet: `Memory/campaigns/marketing-growth/parts/M4.md`. Plan: `docs/marketing-first-release-plan.md`
-(§2 provider boundary, §3 M4). Blueprint: `docs/marketing-product-blueprint.md` (§8, §9, §20).
-AWS: SSO `https://d-90667ef85d.awsapps.com/start/#/` -> "UCRM Production Workloads" -> AdministratorAccess
--> SES (us-east-1); CLI profile `ucrm`, re-auth `aws sso login --sso-session ucrm`.
-
-Resume: `continue marketing growth` -- nothing to build until Jafar supplies the AWS credentials and Vault
-secrets above; check with him before starting stage 5.
+`parts/M4.md`, `docs/marketing-first-release-plan.md` §3 M4. Resume: `continue marketing growth`.

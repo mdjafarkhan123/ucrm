@@ -88,9 +88,7 @@ export async function quarantineStaleMarketingClaims(
 	return typeof quarantine.data === 'number' ? quarantine.data : 0;
 }
 
-export type CampaignSendContext = {
-	content: MarketingCampaignContent;
-	serviceNames: Record<string, string>;
+export type OrganizationMarketingSendContext = {
 	business: MarketingBusinessIdentity;
 	fromEmail: string;
 	fromName: string;
@@ -99,28 +97,19 @@ export type CampaignSendContext = {
 	configurationSetName: string;
 };
 
-// A launched campaign's content, sender identity, and tenant never change again, so this is built at most
-// once per campaign per worker process and reused for every recipient. Caching the in-flight promise (not
-// just its result) means two concurrent drain slots claiming the same campaign's recipients share one build
-// instead of racing two. A failed build is evicted so the next attempt retries rather than repeating the
-// same error forever.
-const campaignContextCache = new Map<string, Promise<CampaignSendContext>>();
-
-async function buildCampaignSendContext(
-	organizationId: string,
-	campaignId: string
-): Promise<CampaignSendContext> {
+// Everything a Marketing send needs from the organization itself, independent of any one campaign's content:
+// the real per-org SES tenant, the verified news.<root> identity, and the derived From address (stage 3's
+// decision). Shared by the dispatcher below (which adds a launched campaign's frozen content) and the
+// test-send path (which sends arbitrary in-editor content through this same real identity, stage 5 -- see
+// Memory/campaigns/marketing-growth/parts/M4.md).
+export async function buildOrganizationMarketingSendContext(
+	organizationId: string
+): Promise<OrganizationMarketingSendContext> {
 	const owner = getOwnerSupabaseClient();
 
-	const [campaign, organization, marketingDomain, sendingDomains, tenant] = await Promise.all([
-		owner
-			.from('marketing_campaigns')
-			.select('content')
-			.eq('id', campaignId)
-			.eq('organization_id', organizationId)
-			.single(),
+	const [organization, marketingDomain, sendingDomains, tenant] = await Promise.all([
 		owner.from('organizations').select('name').eq('id', organizationId).single(),
-		// The verified news.<root> identity a campaign actually leaves from -- claim_marketing_campaign_recipient
+		// The verified news.<root> identity a send actually leaves from -- claim_marketing_campaign_recipient
 		// only claims a recipient once this exists, so a missing row here means the identity dropped out from
 		// under an already-claimed recipient.
 		owner
@@ -147,12 +136,12 @@ async function buildCampaignSendContext(
 			.single()
 	]);
 
-	for (const result of [campaign, organization, marketingDomain, sendingDomains, tenant]) {
+	for (const result of [organization, marketingDomain, sendingDomains, tenant]) {
 		if (result.error) throw result.error;
 	}
 	// .single() already errored above when a row was missing, so a null .data here is unreachable -- these
 	// checks only narrow the type.
-	if (!campaign.data || !organization.data || !marketingDomain.data || !tenant.data)
+	if (!organization.data || !marketingDomain.data || !tenant.data)
 		throw new Error('A required Marketing send record could not be read.');
 
 	const sendingDomainIds = (sendingDomains.data ?? []).map((domain) => domain.id);
@@ -174,24 +163,10 @@ async function buildCampaignSendContext(
 	if (senderError) throw senderError;
 	if (!senderRow) throw new Error('The organization has no enabled sender.');
 
-	const content = campaign.data.content as unknown as MarketingCampaignContent;
-	const catalogItemIds = content.blocks
-		.filter((block) => block.type === 'service_summary')
-		.flatMap((block) => (block.type === 'service_summary' ? block.catalog_item_ids : []));
-
-	const [business, labels] = await Promise.all([
-		getMarketingBusinessIdentity(organizationId, organization.data.name),
-		hydrateRuleLabels(organizationId, catalogItemIds, [])
-	]);
-	const serviceNames = Object.fromEntries(
-		labels.catalog_items.map((item) => [item.id, item.label])
-	);
-
+	const business = await getMarketingBusinessIdentity(organizationId, organization.data.name);
 	const localPart = senderRow.email_address.split('@')[0];
 
 	return {
-		content,
-		serviceNames,
 		business,
 		fromEmail: `${localPart}@${marketingDomain.data.domain_name}`,
 		fromName: senderRow.display_name,
@@ -199,6 +174,52 @@ async function buildCampaignSendContext(
 		tenantName: tenant.data.tenant_name,
 		configurationSetName: tenant.data.configuration_set_name
 	};
+}
+
+export type CampaignSendContext = OrganizationMarketingSendContext & {
+	content: MarketingCampaignContent;
+	serviceNames: Record<string, string>;
+};
+
+// A launched campaign's content, sender identity, and tenant never change again, so this is built at most
+// once per campaign per worker process and reused for every recipient. Caching the in-flight promise (not
+// just its result) means two concurrent drain slots claiming the same campaign's recipients share one build
+// instead of racing two. A failed build is evicted so the next attempt retries rather than repeating the
+// same error forever.
+const campaignContextCache = new Map<string, Promise<CampaignSendContext>>();
+
+async function buildCampaignSendContext(
+	organizationId: string,
+	campaignId: string
+): Promise<CampaignSendContext> {
+	const owner = getOwnerSupabaseClient();
+
+	const [campaign, orgContext] = await Promise.all([
+		owner
+			.from('marketing_campaigns')
+			.select('content')
+			.eq('id', campaignId)
+			.eq('organization_id', organizationId)
+			.single(),
+		buildOrganizationMarketingSendContext(organizationId)
+	]);
+
+	if (campaign.error) throw campaign.error;
+	// .single() already errored above when the row was missing, so a null .data here is unreachable -- this
+	// check only narrows the type.
+	if (!campaign.data) throw new Error('A required Marketing send record could not be read.');
+
+	const content = campaign.data.content as unknown as MarketingCampaignContent;
+	const catalogItemIds = content.blocks
+		.filter((block) => block.type === 'service_summary')
+		.flatMap((block) => (block.type === 'service_summary' ? block.catalog_item_ids : []));
+
+	const labels = await hydrateRuleLabels(organizationId, catalogItemIds, []);
+	const serviceNames = Object.fromEntries(
+		labels.catalog_items.map((item) => [item.id, item.label])
+	);
+
+	return { content, serviceNames, ...orgContext };
 }
 
 function loadCampaignSendContext(

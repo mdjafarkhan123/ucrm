@@ -36,7 +36,7 @@ export type EffectiveAccess = {
 		}
 	>;
 	limits: Record<
-		'employee_seats' | 'website_chat_widgets',
+		'employee_seats' | 'website_chat_widgets' | 'marketing_email_recipients',
 		{
 			state: 'unlimited' | 'not_included' | 'numeric';
 			value: number | null;
