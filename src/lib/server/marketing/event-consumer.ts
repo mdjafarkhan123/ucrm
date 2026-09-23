@@ -1,6 +1,14 @@
-import { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } from '@aws-sdk/client-sqs';
+import {
+	SQSClient,
+	ReceiveMessageCommand,
+	DeleteMessageCommand,
+	GetQueueAttributesCommand
+} from '@aws-sdk/client-sqs';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '$lib/database.types';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { getSesEnv, sesEventQueueUrl } from '$lib/server/communications/ses-env';
+import { getSesEnv, sesEventQueueUrl, sesEventDlqUrl } from '$lib/server/communications/ses-env';
+import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
 import { parseSesEvent, sesEventKey, sesEventOccurredAt, type SesEvent } from './ses-events';
 
 // The Marketing SES event consumer (M4 stage 4): drain the provisioned SQS queue, durably record each event
@@ -87,10 +95,88 @@ function resolveSqs(sqs?: SqsClientLike): SqsClientLike {
 	};
 }
 
+export type DlqClientLike = { approximateDepth(): Promise<number> };
+
+let cachedDlq: { client: SQSClient; queueUrl: string } | null = null;
+
+function resolveDlq(dlq?: DlqClientLike): DlqClientLike {
+	if (dlq) return dlq;
+	if (!cachedDlq) {
+		const env = getSesEnv();
+		cachedDlq = {
+			client: new SQSClient({
+				region: env.AWS_SES_REGION,
+				credentials: {
+					accessKeyId: env.AWS_SES_ACCESS_KEY_ID,
+					secretAccessKey: env.AWS_SES_SECRET_ACCESS_KEY
+				},
+				requestHandler: { requestTimeout: 15_000, connectionTimeout: 5_000 }
+			}),
+			queueUrl: sesEventDlqUrl(env)
+		};
+	}
+	const { client, queueUrl } = cachedDlq;
+	return {
+		async approximateDepth() {
+			const result = await client.send(
+				new GetQueueAttributesCommand({
+					QueueUrl: queueUrl,
+					AttributeNames: ['ApproximateNumberOfMessages']
+				})
+			);
+			const raw = result.Attributes?.ApproximateNumberOfMessages;
+			const depth = raw ? Number.parseInt(raw, 10) : 0;
+			return Number.isFinite(depth) ? depth : 0;
+		}
+	};
+}
+
+const DLQ_ALERT_KIND = 'marketing_ses_dlq_message';
+// Amazon's own ApproximateNumberOfMessages is a poll estimate (not a push notification), so this rides
+// the same one-minute wake that drains the main queue instead of its own schedule. Re-alerting is
+// suppressed for a day at a time by checking for an unread notification of this kind first, so a
+// message stuck for a week produces one alert a day instead of one a minute.
+const DLQ_ALERT_QUIET_HOURS = 24;
+
+async function checkDlqAndAlert(
+	owner: SupabaseClient<Database>,
+	dlq: DlqClientLike
+): Promise<{ depth: number; alerted: boolean }> {
+	const depth = await dlq.approximateDepth();
+	if (depth <= 0) return { depth, alerted: false };
+
+	const since = new Date(Date.now() - DLQ_ALERT_QUIET_HOURS * 60 * 60 * 1000).toISOString();
+	const { data: recent, error } = await owner
+		.from('platform_owner_notifications')
+		.select('id')
+		.eq('kind', DLQ_ALERT_KIND)
+		.is('read_at', null)
+		.gte('created_at', since)
+		.limit(1);
+	if (error) {
+		console.error('Could not check for a recent SES dead-letter-queue alert.', error);
+		return { depth, alerted: false };
+	}
+	if (recent && recent.length > 0) return { depth, alerted: false };
+
+	await raiseOwnerAlert(owner, {
+		kind: DLQ_ALERT_KIND,
+		severity: 'urgent',
+		title: `${depth} marketing email event${depth === 1 ? '' : 's'} stuck in the SES dead-letter queue`,
+		body:
+			'Amazon SES could not process one or more marketing campaign delivery events after 5 attempts, ' +
+			'and moved them to the ucrm-ses-events-dlq queue in SQS. Recipient status may be stale until this ' +
+			'is investigated in the AWS console.',
+		target: { targetKind: 'platform', targetId: null }
+	});
+	return { depth, alerted: true };
+}
+
 export type EventDrainResult = {
 	received: number;
 	recorded: number;
 	duplicates: number;
+	ignored: number;
 	skipped: number;
 	processed: number;
 	stoppedBy: 'idle' | 'max_messages' | 'time_budget';
@@ -114,10 +200,19 @@ const DEFAULT_WAIT_TIME_SECONDS = 10;
 const DEFAULT_TIME_BUDGET_MS = 20_000;
 const DEFAULT_PROJECT_BATCH_SIZE = 200;
 
+// SES/SNS sends this plain-text confirmation to the topic every time a configuration set's event
+// destination is (re)created -- e.g. once per contractor's sender setup. It is never JSON, so without
+// this check it would silently poison the queue and eventually dead-letter on every new contractor,
+// making the DLQ alert fire for expected setup noise instead of real stuck events.
+const SNS_TOPIC_VALIDATION_MESSAGE =
+	'Successfully validated SNS topic for Amazon SES event publishing.';
+
 async function recordOneMessage(
 	client: MarketingEventsWorkerClient,
 	message: SqsMessage
-): Promise<'recorded' | 'duplicate' | 'invalid'> {
+): Promise<'recorded' | 'duplicate' | 'ignored' | 'invalid'> {
+	if (message.body.trim() === SNS_TOPIC_VALIDATION_MESSAGE) return 'ignored';
+
 	let parsedBody: unknown;
 	try {
 		parsedBody = JSON.parse(message.body);
@@ -177,6 +272,7 @@ export async function drainMarketingEventQueue(
 		received: 0,
 		recorded: 0,
 		duplicates: 0,
+		ignored: 0,
 		skipped: 0,
 		processed: 0,
 		stoppedBy: 'idle'
@@ -204,6 +300,7 @@ export async function drainMarketingEventQueue(
 			const outcome = await recordOneMessage(client, message);
 			if (outcome === 'recorded') result.recorded += 1;
 			else if (outcome === 'duplicate') result.duplicates += 1;
+			else if (outcome === 'ignored') result.ignored += 1;
 			else {
 				result.skipped += 1;
 				continue;
@@ -241,6 +338,8 @@ export type MonitoredMarketingEventsWakeResult = {
 type MonitoredWakeDependencies = {
 	client?: MarketingEventsWorkerClient;
 	sqs?: SqsClientLike;
+	dlq?: DlqClientLike;
+	owner?: SupabaseClient<Database>;
 } & EventDrainOptions & {
 		wakeCorrelationId: string;
 		leaseTtlSeconds?: number;
@@ -331,6 +430,18 @@ export async function runMonitoredMarketingEventsWake(
 			outcome: raced.result.stoppedBy,
 			result: raced.result
 		});
+
+		// Monitoring, not the drain's job: a failure here must never turn a successful drain into a
+		// reported error, so it is isolated and only logged.
+		try {
+			await checkDlqAndAlert(
+				dependencies.owner ?? getOwnerSupabaseClient(),
+				resolveDlq(dependencies.dlq)
+			);
+		} catch (error) {
+			console.error('Could not check the SES dead-letter queue for stuck marketing events.', error);
+		}
+
 		return { outcome: raced.result.stoppedBy, ...raced.result };
 	} catch (error) {
 		await releaseEventsWakeLease(client, leaseToken);

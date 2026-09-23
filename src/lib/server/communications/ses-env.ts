@@ -45,6 +45,12 @@ export function sesEventQueueUrl(env: SesEnv): string {
 	return `https://sqs.${env.AWS_SES_REGION}.amazonaws.com/${env.accountId}/ucrm-ses-events`;
 }
 
+// The redrive policy on ucrm-ses-events sends a message here after 5 failed receives
+// (docs/marketing-first-release-plan.md). Nothing publishes to it directly.
+export function sesEventDlqUrl(env: SesEnv): string {
+	return `https://sqs.${env.AWS_SES_REGION}.amazonaws.com/${env.accountId}/ucrm-ses-events-dlq`;
+}
+
 export class SesError extends Error {
 	constructor(
 		message: string,

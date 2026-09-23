@@ -2,13 +2,21 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('$env/dynamic/private', () => ({ env: {} }));
 
+const { raiseOwnerAlert } = vi.hoisted(() => ({
+	raiseOwnerAlert: vi.fn(async () => 'notification-id')
+}));
+vi.mock('$lib/server/jafar/owner-alerts', () => ({ raiseOwnerAlert }));
+
 import {
 	drainMarketingEventQueue,
 	runMonitoredMarketingEventsWake,
+	type DlqClientLike,
 	type MarketingEventsWorkerClient,
 	type SqsClientLike,
 	type SqsMessage
 } from './event-consumer';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '$lib/database.types';
 
 const deliveredMessage: SqsMessage = {
 	receiptHandle: 'receipt-1',
@@ -89,6 +97,21 @@ describe('drainMarketingEventQueue', () => {
 
 		expect(result).toMatchObject({ received: 1, recorded: 0, duplicates: 1 });
 		expect(removed).toEqual(['receipt-1']);
+	});
+
+	it('deletes the SNS topic-validation confirmation without recording or dead-lettering it', async () => {
+		const { client, insertEvent } = fakeClient();
+		const confirmation: SqsMessage = {
+			receiptHandle: 'receipt-confirmation',
+			body: 'Successfully validated SNS topic for Amazon SES event publishing.'
+		};
+		const { sqs, removed } = fakeSqs([[confirmation], []]);
+
+		const result = await drainMarketingEventQueue({ client, sqs });
+
+		expect(result).toMatchObject({ received: 1, recorded: 0, ignored: 1, skipped: 0 });
+		expect(insertEvent).not.toHaveBeenCalled();
+		expect(removed).toEqual(['receipt-confirmation']);
 	});
 
 	it('leaves an unparseable message undeleted for the DLQ policy', async () => {
@@ -220,5 +243,87 @@ describe('runMonitoredMarketingEventsWake', () => {
 			'record_communication_worker_wake_result',
 			expect.objectContaining({ p_route_outcome: 'error' })
 		);
+	});
+
+	function happyClient() {
+		const rpc = vi.fn(async (name: string) => {
+			if (name === 'acquire_communication_worker_lease')
+				return { data: 'lease-token', error: null };
+			if (name === 'release_communication_worker_lease') return { data: null, error: null };
+			if (name === 'record_communication_worker_wake_result') return { data: null, error: null };
+			if (name === 'project_marketing_campaign_recipient_events') return { data: 0, error: null };
+			return { data: null, error: { message: `Unexpected RPC ${name}.` } };
+		});
+		return {
+			rpc,
+			insertEvent: vi.fn(async () => ({ error: null }))
+		} as MarketingEventsWorkerClient;
+	}
+
+	function fakeOwner(recentRows: unknown[]): SupabaseClient<Database> {
+		const query = {
+			select: () => query,
+			eq: () => query,
+			is: () => query,
+			gte: () => query,
+			limit: async () => ({ data: recentRows, error: null })
+		};
+		return { from: () => query } as unknown as SupabaseClient<Database>;
+	}
+
+	function fakeDlq(depth: number): DlqClientLike {
+		return { approximateDepth: vi.fn(async () => depth) };
+	}
+
+	it('alerts when the dead-letter queue holds messages and no recent alert is unread', async () => {
+		raiseOwnerAlert.mockClear();
+		const { sqs } = fakeSqs([[]]);
+		const owner = fakeOwner([]);
+
+		await runMonitoredMarketingEventsWake({
+			wakeCorrelationId: 'wake-dlq-1',
+			client: happyClient(),
+			sqs,
+			dlq: fakeDlq(3),
+			owner
+		});
+
+		expect(raiseOwnerAlert).toHaveBeenCalledTimes(1);
+		expect(raiseOwnerAlert).toHaveBeenCalledWith(
+			owner,
+			expect.objectContaining({ kind: 'marketing_ses_dlq_message', severity: 'urgent' })
+		);
+	});
+
+	it('does not alert again while an unread alert from the last day still stands', async () => {
+		raiseOwnerAlert.mockClear();
+		const { sqs } = fakeSqs([[]]);
+		const owner = fakeOwner([{ id: 'existing-notification' }]);
+
+		await runMonitoredMarketingEventsWake({
+			wakeCorrelationId: 'wake-dlq-2',
+			client: happyClient(),
+			sqs,
+			dlq: fakeDlq(3),
+			owner
+		});
+
+		expect(raiseOwnerAlert).not.toHaveBeenCalled();
+	});
+
+	it('does not alert when the dead-letter queue is empty', async () => {
+		raiseOwnerAlert.mockClear();
+		const { sqs } = fakeSqs([[]]);
+		const owner = fakeOwner([]);
+
+		await runMonitoredMarketingEventsWake({
+			wakeCorrelationId: 'wake-dlq-3',
+			client: happyClient(),
+			sqs,
+			dlq: fakeDlq(0),
+			owner
+		});
+
+		expect(raiseOwnerAlert).not.toHaveBeenCalled();
 	});
 });
