@@ -5,6 +5,7 @@ import type { Database } from '$lib/database.types';
 import { requireClientPermission } from '$lib/server/access/clients';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { getOrganizationContext, type OrganizationContext } from '$lib/server/auth/organization';
+import { getCampaign } from '$lib/server/marketing/campaigns';
 
 export type LinkedEntityType =
 	| 'client'
@@ -157,6 +158,13 @@ export async function linkedEntityBelongsToOrganization(
 		return entityId === organizationId;
 	}
 
+	// marketing_campaigns grants `authenticated` nothing -- every marketing read goes through the marketing
+	// module's own org-scoped server reads -- so the caller's client would never see the row and every
+	// campaign image upload was refused as "not found". Use that module's read, as its own routes do.
+	if (entityType === 'marketing_campaign') {
+		return Boolean(await getCampaign(organizationId, entityId));
+	}
+
 	// Requests, quotes, invoices, job expenses, jobs and visits are not soft-deleted — an unwanted one is
 	// archived, voided or removed — so only the two customer tables carry the deleted_at filter.
 	if (
@@ -165,8 +173,7 @@ export async function linkedEntityBelongsToOrganization(
 		entityType === 'invoice' ||
 		entityType === 'job_expense' ||
 		entityType === 'job' ||
-		entityType === 'visit' ||
-		entityType === 'marketing_campaign'
+		entityType === 'visit'
 	) {
 		const table =
 			entityType === 'request'
@@ -179,9 +186,7 @@ export async function linkedEntityBelongsToOrganization(
 							? 'job_expenses'
 							: entityType === 'job'
 								? 'jobs'
-								: entityType === 'visit'
-									? 'job_visits'
-									: 'marketing_campaigns';
+								: 'job_visits';
 		const { data } = await supabase
 			.from(table)
 			.select('id')
