@@ -13,7 +13,12 @@ import {
 	type MarketingCampaign,
 	type MarketingCampaignContent,
 	type MarketingCampaignListItem,
-	type MarketingGoal
+	type MarketingCampaignOverview,
+	type MarketingCampaignRecipientFilter,
+	type MarketingCampaignRecipientsPage,
+	type MarketingCampaignResults,
+	type MarketingGoal,
+	type MarketingWindowAttributionCandidate
 } from './campaign-content';
 import type { MarketingEmailTemplate, MarketingPlatformTemplate } from './templates';
 
@@ -375,4 +380,68 @@ export async function sendTestEmailRequest(
 	});
 	if (!response.ok) throw await readMarketingError(response, 'That test email could not be sent.');
 	return response.json();
+}
+
+// --- M5c: campaign detail tabs ----------------------------------------------------------------------------
+
+export async function fetchCampaignOverview(
+	campaignId: string
+): Promise<MarketingCampaignOverview> {
+	const response = await fetch(`/api/marketing/campaigns/${campaignId}/overview`);
+	if (!response.ok)
+		throw await readMarketingError(response, 'That campaign overview could not be loaded.');
+	const result = await response.json();
+	return result.overview;
+}
+
+export type CampaignRecipientsFilters = {
+	statusFilter?: MarketingCampaignRecipientFilter | '';
+	search?: string;
+};
+
+export async function fetchCampaignRecipients(
+	campaignId: string,
+	filters: CampaignRecipientsFilters,
+	cursor?: string
+): Promise<MarketingCampaignRecipientsPage> {
+	const params = new URLSearchParams();
+	if (filters.statusFilter) params.set('status', filters.statusFilter);
+	if (filters.search) params.set('search', filters.search);
+	if (cursor) params.set('cursor', cursor);
+	const response = await fetch(
+		`/api/marketing/campaigns/${campaignId}/recipients?${params.toString()}`
+	);
+	if (!response.ok) throw await readMarketingError(response, 'Recipients could not be loaded.');
+	return response.json();
+}
+
+export async function fetchCampaignResults(campaignId: string): Promise<MarketingCampaignResults> {
+	const response = await fetch(`/api/marketing/campaigns/${campaignId}/results`);
+	if (!response.ok) throw await readMarketingError(response, 'Results could not be loaded.');
+	const result = await response.json();
+	return result.results;
+}
+
+export async function fetchCampaignAttributionCandidates(
+	campaignId: string
+): Promise<MarketingWindowAttributionCandidate[]> {
+	const response = await fetch(`/api/marketing/campaigns/${campaignId}/attribution-candidates`);
+	if (!response.ok)
+		throw await readMarketingError(response, 'Possible matches could not be loaded.');
+	const result = await response.json();
+	return result.candidates;
+}
+
+export async function declareCampaignCreditRequest(
+	campaignId: string,
+	work: { requestId: string } | { jobId: string }
+): Promise<void> {
+	const response = await fetch(`/api/marketing/campaigns/${campaignId}/credits`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(
+			'requestId' in work ? { request_id: work.requestId } : { job_id: work.jobId }
+		)
+	});
+	if (!response.ok) throw await readMarketingError(response, 'That work could not be credited.');
 }

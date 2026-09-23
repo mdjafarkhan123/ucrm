@@ -55,8 +55,14 @@
 	let cancelTarget = $state<MarketingCampaignListItem | null>(null);
 	let cancelling = $state(false);
 
-	function editHref(campaign: MarketingCampaignListItem) {
+	function editHref(campaign: MarketingCampaignListItem): string {
 		return resolve('/(app)/marketing/campaigns/[id=uuid]/edit', { id: campaign.id });
+	}
+	function detailHref(campaign: MarketingCampaignListItem): string {
+		return resolve('/(app)/marketing/campaigns/[id=uuid]', { id: campaign.id });
+	}
+	function openHref(campaign: MarketingCampaignListItem): string {
+		return campaign.status === 'draft' ? editHref(campaign) : detailHref(campaign);
 	}
 
 	function menuItems(campaign: MarketingCampaignListItem) {
@@ -158,15 +164,11 @@
 			items={campaignsQuery.data}
 			rowId={(campaign) => campaign.id}
 			caption="Campaigns"
-			onRowActivate={(campaign) => campaign.status === 'draft' && void goto(editHref(campaign))}
+			onRowActivate={(campaign) => void goto(openHref(campaign))}
 		>
 			{#snippet row(campaign: MarketingCampaignListItem)}
 				<th scope="row">
-					{#if campaign.status === 'draft'}
-						<a href={editHref(campaign)}>{campaign.name}</a>
-					{:else}
-						{campaign.name}
-					{/if}
+					<a href={openHref(campaign)}>{campaign.name}</a>
 				</th>
 				<td>{marketingGoalLabels[campaign.goal]}</td>
 				<td>

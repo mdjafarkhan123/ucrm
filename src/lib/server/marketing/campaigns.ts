@@ -3,7 +3,12 @@ import type {
 	MarketingCampaign,
 	MarketingCampaignContent,
 	MarketingCampaignListItem,
-	MarketingGoal
+	MarketingCampaignOverview,
+	MarketingCampaignRecipient,
+	MarketingCampaignRecipientsPage,
+	MarketingCampaignResults,
+	MarketingGoal,
+	MarketingWindowAttributionCandidate
 } from '$lib/marketing/campaign-content';
 
 // Campaign drafts. The table and its RPC are service-role only, so every function here takes the
@@ -287,4 +292,270 @@ export async function declareCampaignCredit(
 		throw error;
 	}
 	return data as unknown as CampaignResultCredit;
+}
+
+// ---------------------------------------------------------------------------------------------------
+// M5c: the campaign detail page's Overview, Recipients, and Results tabs (blueprint §12-13).
+// ---------------------------------------------------------------------------------------------------
+
+// One literal line, not built by concatenation -- supabase-js only infers a select's column shape from a
+// literal string, and a `+`-joined one widens to plain `string` and loses it (unlike LIST_COLUMNS/DETAIL_COLUMNS
+// above, which are already single literals).
+const OVERVIEW_COLUMNS =
+	'id, name, goal, status, customer_group_id, template_id, content, revision, created_at, updated_at, scheduled_for, launched_at, launched_by, recipient_total_count, recipient_eligible_count, recipient_excluded_count';
+
+type RecipientCountsRow = {
+	waiting_count: number;
+	submitted_count: number;
+	delivered_count: number;
+	failed_count: number;
+	excluded_count: number;
+	cancelled_count: number;
+	bounced_count: number;
+	complained_count: number;
+	unsubscribed_count: number;
+	opened_count: number;
+	clicked_count: number;
+};
+
+const EMPTY_RECIPIENT_COUNTS: RecipientCountsRow = {
+	waiting_count: 0,
+	submitted_count: 0,
+	delivered_count: 0,
+	failed_count: 0,
+	excluded_count: 0,
+	cancelled_count: 0,
+	bounced_count: 0,
+	complained_count: 0,
+	unsubscribed_count: 0,
+	opened_count: 0,
+	clicked_count: 0
+};
+
+// The Overview tab: campaign summary, its customer group's name (the campaign only stores the id), and the
+// five recipient buckets (blueprint §12) from marketing_campaign_recipient_counts -- one indexed scan of
+// this campaign's own rows, never the organization's full recipient history.
+export async function getCampaignOverview(
+	organizationId: string,
+	campaignId: string
+): Promise<MarketingCampaignOverview | null> {
+	const owner = getOwnerSupabaseClient();
+	const { data: campaign, error } = await owner
+		.from('marketing_campaigns')
+		.select(OVERVIEW_COLUMNS)
+		.eq('organization_id', organizationId)
+		.eq('id', campaignId)
+		.maybeSingle();
+	if (error) throw error;
+	if (!campaign) return null;
+
+	const [{ data: group, error: groupError }, { data: counts, error: countsError }] =
+		await Promise.all([
+			campaign.customer_group_id
+				? owner
+						.from('marketing_customer_groups')
+						.select('name')
+						.eq('id', campaign.customer_group_id)
+						.maybeSingle()
+				: Promise.resolve({ data: null, error: null }),
+			owner.rpc('marketing_campaign_recipient_counts', {
+				target_organization_id: organizationId,
+				target_campaign_id: campaignId
+			})
+		]);
+	if (groupError) throw groupError;
+	if (countsError) throw countsError;
+
+	const row = ((counts as RecipientCountsRow[] | null)?.[0] ??
+		EMPTY_RECIPIENT_COUNTS) as RecipientCountsRow;
+
+	return {
+		...(campaign as unknown as Omit<MarketingCampaignOverview, 'customer_group_name' | 'counts'>),
+		customer_group_name: (group as { name: string } | null)?.name ?? null,
+		counts: {
+			waiting: row.waiting_count,
+			submitted: row.submitted_count,
+			delivered: row.delivered_count,
+			failed_excluded: row.failed_count + row.excluded_count,
+			cancelled: row.cancelled_count
+		}
+	};
+}
+
+const RECIPIENT_PAGE_SIZE = 50;
+
+// A recipient page, keyset-paginated on the (campaign_id, status, display_name, id) index this campaign's
+// recipients already carry -- the cursor is "<display_name>|<id>" the same shape src/routes/api/invoices'
+// own cursor uses, so a tied name never skips or repeats a row.
+type RecipientRow = Omit<MarketingCampaignRecipient, 'credit'>;
+
+export async function listCampaignRecipients(
+	organizationId: string,
+	campaignId: string,
+	options: { cursor?: string; statusFilter?: string; search?: string } = {}
+): Promise<MarketingCampaignRecipientsPage> {
+	const owner = getOwnerSupabaseClient();
+	let query = owner
+		.from('marketing_campaign_recipients')
+		.select(
+			'id, client_id, display_name, recipient_email, status, excluded_reason, delivered_at, first_opened_at, first_clicked_at, unsubscribed_at'
+		)
+		.eq('organization_id', organizationId)
+		.eq('campaign_id', campaignId)
+		.order('display_name', { ascending: true })
+		.order('id', { ascending: true })
+		.limit(RECIPIENT_PAGE_SIZE + 1);
+
+	// Matches the same buckets marketing_campaign_recipient_counts groups by, so a filtered list and the
+	// Overview tab's counts never disagree about what "Delivered" or "Failed" means.
+	if (options.statusFilter === 'engaged') {
+		query = query.not('first_opened_at', 'is', null);
+	} else if (options.statusFilter === 'delivered') {
+		query = query.not('delivered_at', 'is', null);
+	} else if (options.statusFilter === 'unsubscribed') {
+		query = query.not('unsubscribed_at', 'is', null);
+	} else if (options.statusFilter === 'failed') {
+		query = query.in('status', ['bounced', 'complained', 'failed']);
+	} else if (options.statusFilter) {
+		query = query.eq('status', options.statusFilter);
+	}
+	if (options.search) {
+		const like = options.search.replace(/[%_]/g, (match) => `\\${match}`);
+		query = query.or(`display_name.ilike.%${like}%,recipient_email.ilike.%${like}%`);
+	}
+	if (options.cursor) {
+		const separator = options.cursor.lastIndexOf('|');
+		if (separator > 0) {
+			const name = options.cursor.slice(0, separator);
+			const id = options.cursor.slice(separator + 1);
+			// display_name strictly after the cursor's name, or tied on name and after its id -- a composite
+			// keyset predicate PostgREST expresses through .or() rather than a tuple comparison.
+			const escapedName = name.replace(/[,()]/g, (match) => `\\${match}`);
+			query = query.or(
+				`display_name.gt.${escapedName},and(display_name.eq.${escapedName},id.gt.${id})`
+			);
+		}
+	}
+
+	const { data, error } = await query;
+	if (error) throw error;
+	const rows = (data ?? []) as unknown as RecipientRow[];
+	const page = rows.slice(0, RECIPIENT_PAGE_SIZE);
+	const hasMore = rows.length > RECIPIENT_PAGE_SIZE;
+
+	// Attribution per recipient: a tracked credit carries this recipient's own id; a declared credit only
+	// carries the client, so both are matched by client_id -- the join a single small query does once per
+	// page rather than once per row.
+	const clientIds = [...new Set(page.map((row) => row.client_id))];
+	const { data: credits, error: creditsError } = clientIds.length
+		? await owner
+				.from('marketing_campaign_result_credits')
+				.select('client_id, source, request_id, job_id')
+				.eq('organization_id', organizationId)
+				.eq('campaign_id', campaignId)
+				.in('client_id', clientIds)
+		: { data: [], error: null };
+	if (creditsError) throw creditsError;
+	const creditByClient = new Map(
+		(credits ?? []).map((credit) => [
+			credit.client_id,
+			{
+				source: credit.source as 'tracked' | 'declared',
+				request_id: credit.request_id,
+				job_id: credit.job_id
+			}
+		])
+	);
+
+	const last = page.at(-1);
+	return {
+		recipients: page.map((row) => ({
+			...row,
+			credit: creditByClient.get(row.client_id) ?? null
+		})),
+		next_cursor: hasMore && last ? `${last.display_name}|${last.id}` : null
+	};
+}
+
+// The Results tab: delivery breakdown, credited Requests/Jobs with real revenue, and the launch-frozen
+// matched/eligible counts (blueprint §12 Q1-3). "Submitted" = every recipient past waiting/checking, whether
+// it went on to deliver, fail, or get cancelled.
+export async function getCampaignResults(
+	organizationId: string,
+	campaignId: string
+): Promise<MarketingCampaignResults | null> {
+	const owner = getOwnerSupabaseClient();
+	const { data: campaign, error: campaignError } = await owner
+		.from('marketing_campaigns')
+		.select('recipient_total_count, recipient_eligible_count, recipient_excluded_count')
+		.eq('organization_id', organizationId)
+		.eq('id', campaignId)
+		.maybeSingle();
+	if (campaignError) throw campaignError;
+	if (!campaign) return null;
+
+	const [
+		{ data: counts, error: countsError },
+		{ data: credited, error: creditedError },
+		{ data: settings, error: settingsError }
+	] = await Promise.all([
+		owner.rpc('marketing_campaign_recipient_counts', {
+			target_organization_id: organizationId,
+			target_campaign_id: campaignId
+		}),
+		owner.rpc('marketing_campaign_credited_work', {
+			target_organization_id: organizationId,
+			target_campaign_id: campaignId
+		}),
+		// Revenue is shown in the organization's own currency -- the single source of truth every invoice
+		// already prices in, the same lookup process_next_form_submission uses.
+		owner
+			.from('organization_settings')
+			.select('currency_code')
+			.eq('organization_id', organizationId)
+			.maybeSingle()
+	]);
+	if (countsError) throw countsError;
+	if (creditedError) throw creditedError;
+	if (settingsError) throw settingsError;
+
+	const row = ((counts as RecipientCountsRow[] | null)?.[0] ??
+		EMPTY_RECIPIENT_COUNTS) as RecipientCountsRow;
+	const work = (credited ?? []) as MarketingCampaignResults['credited_work'];
+	const submitted =
+		row.submitted_count + row.delivered_count + row.failed_count + row.cancelled_count;
+
+	return {
+		matched_count: campaign.recipient_total_count ?? 0,
+		eligible_count: campaign.recipient_eligible_count ?? 0,
+		excluded_count: campaign.recipient_excluded_count ?? 0,
+		submitted_count: submitted,
+		delivered_count: row.delivered_count,
+		bounced_count: row.bounced_count,
+		complained_count: row.complained_count,
+		unsubscribed_count: row.unsubscribed_count,
+		opened_count: row.opened_count,
+		clicked_count: row.clicked_count,
+		credited_work: work,
+		revenue_minor: work.reduce((sum, item) => sum + item.revenue_minor, 0),
+		currency_code: (settings as { currency_code: string } | null)?.currency_code ?? 'USD'
+	};
+}
+
+// The Results tab's "possible matches" browser: uncredited work this campaign's own last-touch window
+// (blueprint §13 method 3) would currently win, for staff to review and, if it really is this campaign's
+// result, declare through the existing declareCampaignCredit command.
+export async function listWindowAttributionCandidates(
+	organizationId: string,
+	campaignId: string,
+	windowDays = 30
+): Promise<MarketingWindowAttributionCandidate[]> {
+	const owner = getOwnerSupabaseClient();
+	const { data, error } = await owner.rpc('marketing_campaign_window_attribution_candidates', {
+		target_organization_id: organizationId,
+		target_campaign_id: campaignId,
+		window_days: windowDays
+	});
+	if (error) throw error;
+	return (data ?? []) as MarketingWindowAttributionCandidate[];
 }

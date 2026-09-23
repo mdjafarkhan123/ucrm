@@ -304,3 +304,163 @@ export const marketingCampaignKey = (id: string) => ['marketing', 'campaigns', i
 export const marketingCampaignPreviewKey = (content: MarketingCampaignContent) =>
 	['marketing', 'campaigns', 'preview', content] as const;
 export const marketingTemplatesKey = ['marketing', 'templates'] as const;
+
+// --- M5c: campaign detail tabs (blueprint §12-13) ---------------------------------------------------------
+
+// The recipient status check constraint's exact values (marketing_campaign_recipients_status_check).
+export const marketingRecipientStatuses = [
+	'waiting',
+	'checking',
+	'submitted',
+	'delivered',
+	'bounced',
+	'complained',
+	'unsubscribed',
+	'cancelled',
+	'failed',
+	'excluded'
+] as const;
+export type MarketingRecipientStatus = (typeof marketingRecipientStatuses)[number];
+
+export const marketingRecipientStatusLabels: Record<MarketingRecipientStatus, string> = {
+	waiting: 'Waiting',
+	checking: 'Checking',
+	submitted: 'Submitted',
+	delivered: 'Delivered',
+	bounced: 'Bounced',
+	complained: 'Complained',
+	unsubscribed: 'Unsubscribed',
+	cancelled: 'Cancelled',
+	failed: 'Failed',
+	excluded: 'Excluded'
+};
+
+export const marketingRecipientStatusTones: Record<
+	MarketingRecipientStatus,
+	'success' | 'critical' | 'warning' | 'informative' | 'inactive'
+> = {
+	waiting: 'informative',
+	checking: 'informative',
+	submitted: 'warning',
+	delivered: 'success',
+	bounced: 'critical',
+	complained: 'critical',
+	unsubscribed: 'warning',
+	cancelled: 'inactive',
+	failed: 'critical',
+	excluded: 'inactive'
+};
+
+export const marketingExcludedReasonLabels: Record<string, string> = {
+	inactive_customer: 'Inactive customer',
+	missing_email: 'No email on file',
+	complaint: 'Marked a past email as spam',
+	unsubscribed: 'Unsubscribed from marketing',
+	hard_bounce: 'A past email bounced',
+	do_not_disturb: 'Do not disturb',
+	no_marketing: 'Marketing not allowed for this customer',
+	no_consent: 'No marketing consent on file',
+	duplicate_destination: 'Duplicate email address'
+};
+
+export type MarketingCampaignRecipientBucketCounts = {
+	waiting: number;
+	submitted: number;
+	delivered: number;
+	failed_excluded: number;
+	cancelled: number;
+};
+
+export type MarketingCampaignOverview = MarketingCampaign & {
+	created_at: string;
+	scheduled_for: string | null;
+	launched_at: string | null;
+	launched_by: string | null;
+	recipient_total_count: number | null;
+	recipient_eligible_count: number | null;
+	recipient_excluded_count: number | null;
+	customer_group_name: string | null;
+	counts: MarketingCampaignRecipientBucketCounts;
+};
+
+// A recipient's attribution, when this campaign has one: `source` names whether the customer used the
+// campaign's own call-to-action link (tracked) or staff connected the work after review (declared) --
+// blueprint §13's "the UI names which method was used."
+export type MarketingCampaignRecipientCredit = {
+	source: 'tracked' | 'declared';
+	request_id: string | null;
+	job_id: string | null;
+};
+
+export type MarketingCampaignRecipient = {
+	id: string;
+	client_id: string;
+	display_name: string;
+	recipient_email: string | null;
+	status: string;
+	excluded_reason: string | null;
+	delivered_at: string | null;
+	first_opened_at: string | null;
+	first_clicked_at: string | null;
+	unsubscribed_at: string | null;
+	credit: MarketingCampaignRecipientCredit | null;
+};
+
+export type MarketingCampaignRecipientsPage = {
+	recipients: MarketingCampaignRecipient[];
+	next_cursor: string | null;
+};
+
+export type MarketingCampaignRecipientFilter =
+	'waiting' | 'delivered' | 'failed' | 'excluded' | 'unsubscribed' | 'engaged';
+
+export type MarketingCampaignCreditedWork = {
+	credit_id: string;
+	source: 'tracked' | 'declared';
+	request_id: string | null;
+	job_id: string | null;
+	client_id: string;
+	client_name: string;
+	credited_at: string;
+	work_title: string | null;
+	work_created_at: string | null;
+	revenue_minor: number;
+};
+
+export type MarketingCampaignResults = {
+	matched_count: number;
+	eligible_count: number;
+	excluded_count: number;
+	submitted_count: number;
+	delivered_count: number;
+	bounced_count: number;
+	complained_count: number;
+	unsubscribed_count: number;
+	opened_count: number;
+	clicked_count: number;
+	credited_work: MarketingCampaignCreditedWork[];
+	revenue_minor: number;
+	currency_code: string;
+};
+
+export type MarketingWindowAttributionCandidate = {
+	work_kind: 'request' | 'job';
+	request_id: string | null;
+	job_id: string | null;
+	client_id: string;
+	client_name: string;
+	work_title: string | null;
+	work_created_at: string;
+	delivered_at: string;
+};
+
+export const marketingCampaignOverviewKey = (id: string) =>
+	['marketing', 'campaigns', id, 'overview'] as const;
+export const marketingCampaignRecipientsKey = (
+	id: string,
+	filters: { statusFilter?: MarketingCampaignRecipientFilter | ''; search?: string }
+) => ['marketing', 'campaigns', id, 'recipients', filters] as const;
+export const marketingCampaignResultsKey = (id: string) =>
+	['marketing', 'campaigns', id, 'results'] as const;
+export const marketingCampaignAttributionCandidatesKey = (id: string) =>
+	['marketing', 'campaigns', id, 'attribution-candidates'] as const;
