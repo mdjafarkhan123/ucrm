@@ -6,7 +6,7 @@ Ship simple, safe contractor Marketing: one-off email first, with every approved
 
 ## State
 
-M1-M4 committed. M5a (delivery truth) committed. M5b (attribution) built this session, not yet committed:
+M1-M4 committed. M5a (delivery truth) committed. M5b (attribution) committed `0a60d65`:
 migration `20260923180000_marketing_campaign_attribution.sql` live on the linked project. Adds tracked credit
 (public form submit carries `?mc=` through to `process_next_form_submission`, which stores the credit the
 moment a Request/Job is created -- the resulting work's own client gets the credit, so a forwarded email still
