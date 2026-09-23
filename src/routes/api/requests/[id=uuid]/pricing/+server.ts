@@ -22,7 +22,7 @@ const NOT_FOUND = 'That request could not be found.';
 // (20260910151500), so a select naming them would fail for everyone regardless of permission. A permitted
 // reader gets them back through public.request_pricing_line_money, merged in below.
 const LINE_SELECT = `id, position, catalog_item_id, category, is_labor, name, description, unit_label,
-	 quantity, unit_price_minor, is_taxable, line_total_minor, image_attachment_id`;
+	 quantity, unit_price_minor, is_taxable, line_total_minor, image_file_id`;
 
 // The Products & Services and Labor blocks read this on their own rather than riding along with the
 // request detail, because the revision has to come back with the lines: it is what the next save sends to

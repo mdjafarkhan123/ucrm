@@ -675,7 +675,7 @@ describe('job detail API', () => {
 						unit_label: null,
 						quantity: 1,
 						is_taxable: true,
-						image_attachment_id: null
+						image_file_id: null
 					}
 				],
 				error: null
@@ -707,7 +707,7 @@ describe('job detail API', () => {
 						unit_label: null,
 						quantity: 1,
 						is_taxable: true,
-						image_attachment_id: null
+						image_file_id: null
 					}
 				],
 				error: null

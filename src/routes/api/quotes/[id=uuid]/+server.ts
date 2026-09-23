@@ -30,7 +30,7 @@ const VERSION_SELECT = `id, version_number, status, revision, contract_disclaime
 // applying `quotes.view_price` and `quotes.view_cost` in the database rather than out here.
 
 const LINE_SELECT = `id, position, source_catalog_item_id, category, is_labor, name, description,
-	 unit_label, quantity, is_taxable, image_attachment_id, line_kind, selection_kind,
+	 unit_label, quantity, is_taxable, image_file_id, line_kind, selection_kind,
 	 is_recommended`;
 
 const VERSION_ATTACHMENT_SELECT = 'id, file_id, position, customer_visible, display_name';

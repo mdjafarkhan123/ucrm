@@ -63,6 +63,8 @@ export type FileUsageRow = {
 	entity_id: string;
 	role: string;
 	protected: boolean;
+	/** A customer already received this exact use, on a published quote. Trashing it needs their warning. */
+	customer_received: boolean;
 	title: string | null;
 	context: string | null;
 	status: string | null;
@@ -177,6 +179,8 @@ export type FileUploadTarget = {
 	originType: string;
 	originId?: string | null;
 	folderId?: string | null;
+	/** The file_links role the upload will be linked to its record with. Defaults to a plain 'attachment'. */
+	originRole?: 'attachment' | 'line_photo';
 };
 
 export type StartedUpload = { file: { id: string }; upload_url: string };
@@ -191,7 +195,8 @@ export function startFileUpload(file: File, target: FileUploadTarget) {
 			size_bytes: file.size,
 			origin_type: target.originType,
 			origin_id: target.originId ?? null,
-			folder_id: target.folderId ?? null
+			folder_id: target.folderId ?? null,
+			...(target.originRole ? { origin_role: target.originRole } : {})
 		},
 		'That file could not be uploaded.'
 	);
@@ -225,13 +230,25 @@ export function moveFile(fileId: string, folderId: string | null) {
 	);
 }
 
-export function trashFile(fileId: string) {
-	return writeJson<{ file: unknown }>(
-		`/api/files/${fileId}/trash`,
-		'POST',
-		{},
-		'That file could not be moved to Trash.'
-	);
+// SQLSTATE P0412 comes back as this exact status when a customer already received the file and the
+// caller has not ticked "I understand" yet — the dialog reads it to ask again instead of showing a
+// dead-end error.
+export type TrashRequiresAcknowledgementError = FileReadError & { requiresAcknowledgement: true };
+
+export async function trashFile(fileId: string, acknowledgeCustomerCopies = false) {
+	try {
+		return await writeJson<{ file: unknown }>(
+			`/api/files/${fileId}/trash`,
+			'POST',
+			{ acknowledge_customer_copies: acknowledgeCustomerCopies },
+			'That file could not be moved to Trash.'
+		);
+	} catch (error) {
+		if (error instanceof Error && (error as FileReadError).status === 409) {
+			(error as TrashRequiresAcknowledgementError).requiresAcknowledgement = true;
+		}
+		throw error;
+	}
 }
 
 export function restoreFile(fileId: string) {
@@ -318,7 +335,8 @@ export function formatOrigin(originType: string): string {
 const ROLE_LABELS: Record<string, string> = {
 	attachment: 'Attachment',
 	work_photo: 'Work photo',
-	report_photo: 'Work report photo'
+	report_photo: 'Work report photo',
+	line_photo: 'Line item photo'
 };
 
 export function formatRole(role: string): string {

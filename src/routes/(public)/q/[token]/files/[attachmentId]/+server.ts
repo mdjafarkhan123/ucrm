@@ -25,18 +25,20 @@ export const GET: RequestHandler = async (event) => {
 	if (error || !data) throw httpError(404, 'That file is not available.');
 
 	const document = data as unknown as CustomerQuoteDocument;
+	const isFileId = (id: string | null): id is string => typeof id === 'string';
 	const allowed = new Set<string>([
-		...document.attachments.map((attachment) => attachment.id),
-		...document.lines
-			.map((line) => line.image_attachment_id)
-			.filter((id): id is string => typeof id === 'string')
+		...document.attachments.map((attachment) => attachment.id).filter(isFileId),
+		...document.lines.map((line) => line.image_file_id).filter(isFileId)
 	]);
 	if (!allowed.has(event.params.attachmentId)) throw httpError(404, 'That file is not available.');
 
+	// The document above already nulls out a trashed file's id, but that resolve and this lookup are two
+	// separate queries — trashed_at is filtered again here so a Trash landing in between still wins.
 	const { data: file } = await supabase
 		.from('files')
 		.select('object_key, thumbnail_object_key, mime_type, display_name')
 		.eq('id', event.params.attachmentId)
+		.is('trashed_at', null)
 		.maybeSingle();
 	if (!file) throw httpError(404, 'That file is not available.');
 

@@ -12,6 +12,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import FileThumb from './FileThumb.svelte';
 	import FileAttachToRecordDialog from './FileAttachToRecordDialog.svelte';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
@@ -37,7 +38,8 @@
 		trashFile,
 		usageGroupLabel,
 		type FileListItem,
-		type FileUsageRow
+		type FileUsageRow,
+		type TrashRequiresAcknowledgementError
 	} from '$lib/files/api';
 
 	// The right-side panel for one File. The library stays visible behind it and keeps its scroll, which is
@@ -93,17 +95,25 @@
 	const canManage = $derived(detail?.can_manage ?? false);
 	const canTrash = $derived(detail?.can_trash ?? false);
 	const inTrash = $derived(Boolean(file?.trashed_at));
-	// A use the customer already received cannot be detached, so the file cannot go to Trash until its
-	// owning record retires it. Saying so on the menu beats letting them press it and reading a refusal.
-	const hasProtectedUse = $derived(usage.some((row) => row.protected));
+	// Any file can go to Trash. A use the customer already received just needs the strongest warning below,
+	// named after the records that carry it, before Trash is allowed to proceed.
+	const customerReceivedRows = $derived(usage.filter((row) => row.customer_received));
 
 	let renameOpen = $state(false);
 	let renameValue = $state('');
 	let moveOpen = $state(false);
 	let moveValue = $state('');
 	let trashOpen = $state(false);
+	// Set once we know the customer-received warning applies: from this file's own usage rows, or — because
+	// usage here can lag what a customer just did — from the server refusing an unacknowledged Trash.
+	let trashNeedsAcknowledgement = $state(false);
+	let trashAcknowledged = $state(false);
 	let saving = $state(false);
 	let actionError = $state('');
+
+	const trashRequiresAcknowledgement = $derived(
+		customerReceivedRows.length > 0 || trashNeedsAcknowledgement
+	);
 
 	// Off until the move dialog is opened. The File Manager has usually filled this cache already — same
 	// query key — so the dialog normally paints its folder list with nothing to wait for.
@@ -177,15 +187,28 @@
 		);
 	}
 
-	function submitTrash() {
-		void runAction(
-			() => trashFile(file!.id),
-			() => {
-				trashOpen = false;
-				toast.success('File moved to Trash');
-				onClose();
+	async function submitTrash() {
+		if (!file || saving) return;
+		saving = true;
+		actionError = '';
+		try {
+			await trashFile(file.id, trashRequiresAcknowledgement);
+			refreshAfterWrite(file.id);
+			trashOpen = false;
+			toast.success('File moved to Trash');
+			onClose();
+		} catch (error) {
+			// The server knows something this panel's cached usage did not yet — fall back to the strongest
+			// dialog instead of leaving them at a dead-end error.
+			if ((error as TrashRequiresAcknowledgementError)?.requiresAcknowledgement) {
+				trashNeedsAcknowledgement = true;
+				trashAcknowledged = false;
+			} else {
+				actionError = error instanceof Error ? error.message : 'That did not save.';
 			}
-		);
+		} finally {
+			saving = false;
+		}
 	}
 
 	function submitRestore() {
@@ -217,9 +240,10 @@
 							label: 'Move to Trash',
 							icon: trashIcon,
 							destructive: true,
-							disabled: hasProtectedUse,
 							onSelect: () => {
 								actionError = '';
+								trashNeedsAcknowledgement = false;
+								trashAcknowledged = false;
 								trashOpen = true;
 							}
 						}
@@ -344,12 +368,6 @@
 				{/if}
 			</span>
 		</div>
-		{#if hasProtectedUse && !inTrash}
-			<p class="file-panel__note">
-				Part of this file has already gone to a customer, so it cannot be moved to Trash until that
-				record lets it go.
-			</p>
-		{/if}
 		{#if downloadError}
 			<p class="file-panel__error" role="alert">{downloadError}</p>
 		{/if}
@@ -535,17 +553,45 @@
 
 <ConfirmDialog
 	open={trashOpen}
-	title="Move this file to Trash?"
-	tone="critical"
+	title={trashRequiresAcknowledgement
+		? 'A customer has already seen this'
+		: 'Move this file to Trash?'}
+	tone={trashRequiresAcknowledgement ? 'critical' : 'default'}
 	destructive
 	confirmLabel="Move to Trash"
+	confirmDisabled={trashRequiresAcknowledgement && !trashAcknowledged}
 	loading={saving}
 	onConfirm={submitTrash}
 	onClose={() => (trashOpen = false)}
 >
 	<!-- The contract asks for every affected visible record and the consequence, before the button, not
-	     after it. The list is the same "Used in" this reader can already see. -->
-	{#if usageCount === 0}
+	     after it. The list is the same "Used in" this reader can already see. Severity grows with how far
+	     this file has already reached: nothing uses it, something uses it, or a customer has already seen
+	     it on a published quote. -->
+	{#if trashRequiresAcknowledgement}
+		<p>
+			A copy of this file was already sent to a customer on a published quote. Trashing it will not
+			pull that copy back — their document will show it as removed instead.
+		</p>
+		<p>Already sent to the customer:</p>
+		<ul class="file-panel__confirm-list file-panel__confirm-list--critical">
+			{#each customerReceivedRows as row (row.id)}
+				<li>
+					{row.title ?? 'Record'}{#if row.context}
+						· {row.context}{/if}
+				</li>
+			{/each}
+		</ul>
+		{#if usage.length > customerReceivedRows.length}
+			{@const otherCount = usage.length - customerReceivedRows.length}
+			<p>It will also be taken off {otherCount} other {otherCount === 1 ? 'record' : 'records'}.</p>
+		{/if}
+		<Checkbox
+			id={`${uid}-trash-acknowledge`}
+			label="I understand the customer will see this as removed"
+			bind:checked={trashAcknowledged}
+		/>
+	{:else if usageCount === 0}
 		<p>This file is not attached to anything. It waits in Trash for 30 days before it goes.</p>
 	{:else}
 		<p>
@@ -622,7 +668,6 @@
 		color: var(--color-critical);
 		font-size: var(--typography--fontSize-small);
 	}
-	.file-panel__note,
 	.file-panel__hint {
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
@@ -646,6 +691,11 @@
 		overflow-y: auto;
 		padding-inline-start: var(--space-base);
 		list-style: disc;
+
+		&--critical {
+			color: var(--color-critical--onSurface);
+			font-weight: 600;
+		}
 	}
 
 	.file-panel__facts {

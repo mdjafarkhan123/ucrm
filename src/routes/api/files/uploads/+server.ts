@@ -87,7 +87,8 @@ export const POST: RequestHandler = async (event) => {
 		target_origin_type: parsed.data.origin_type,
 		// The function defaults both to null; `undefined` is how the generated client omits an argument.
 		target_origin_id: parsed.data.origin_id ?? undefined,
-		target_folder_id: parsed.data.folder_id ?? undefined
+		target_folder_id: parsed.data.folder_id ?? undefined,
+		target_origin_role: parsed.data.origin_role
 	});
 	if (error) {
 		console.error('Could not register a pending file.', error);

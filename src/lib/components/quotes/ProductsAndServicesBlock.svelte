@@ -19,15 +19,12 @@
 	import CatalogItemPicker from './CatalogItemPicker.svelte';
 	import CatalogItemDialog from './CatalogItemDialog.svelte';
 	import PriceBookDrawer from './PriceBookDrawer.svelte';
-	import {
-		presignAttachmentUpload,
-		uploadAttachmentFile,
-		createAttachment,
-		deleteAttachment,
-		attachmentImageUrl
-	} from '$lib/collaboration/api';
+	import { uploadAttachmentFile } from '$lib/collaboration/api';
 	import { createImageThumbnail } from '$lib/collaboration/image-thumbnail';
 	import { MAX_ATTACHMENT_SIZE_BYTES } from '$lib/collaboration/attachment-limits';
+	import { startFileUpload, finishFileUpload, trashFile, fileImageUrl } from '$lib/files/api';
+	import type { FileProcessingState } from '$lib/files/api';
+	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import {
 		catalogItemsKey,
 		fetchCatalogItems,
@@ -147,12 +144,14 @@
 		unit_price_minor: number;
 		unit_cost_minor: number;
 		is_taxable: boolean;
-		image_attachment_id: string | null;
+		image_file_id: string | null;
 		/** A photo picked before its request or quote exists. It stays in the browser until page Save. */
 		imageFile: File | null;
 		imageThumbnail: Blob | null;
 		imagePreviewUrl: string;
 		imageUploading: boolean;
+		/** A saved line's photo is assumed already checked; one uploaded this session starts 'pending'. */
+		imageProcessingState: FileProcessingState;
 		/** This line came from a saved item whose cost the API withheld, so nothing here may write one. */
 		costHidden: boolean;
 		line_kind: QuoteLineKind;
@@ -201,11 +200,12 @@
 			unit_price_minor: line.unit_price_minor,
 			unit_cost_minor: line.unit_cost_minor,
 			is_taxable: line.is_taxable,
-			image_attachment_id: line.image_attachment_id,
+			image_file_id: line.image_file_id,
 			imageFile: null,
 			imageThumbnail: null,
 			imagePreviewUrl: '',
 			imageUploading: false,
+			imageProcessingState: 'available',
 			costHidden: false,
 			line_kind: line.line_kind ?? 'priced',
 			selection_kind: line.selection_kind ?? 'required',
@@ -248,19 +248,19 @@
 		untrack(() => onDraftChange(payload, subtotal));
 	});
 
-	async function discardIfOrphaned(attachmentId: string) {
-		if (!uploadedThisSession.has(attachmentId)) return;
-		uploadedThisSession.delete(attachmentId);
+	async function discardIfOrphaned(fileId: string) {
+		if (!uploadedThisSession.has(fileId)) return;
+		uploadedThisSession.delete(fileId);
 		try {
-			await deleteAttachment(attachmentId);
+			await trashFile(fileId);
 		} catch (caught) {
-			console.error('Could not delete an unsaved line photo.', attachmentId, caught);
+			console.error('Could not move an unsaved line photo to Trash.', fileId, caught);
 		}
 	}
 
 	function closeEdit() {
 		for (const line of draftLines) releaseLocalPreview(line);
-		for (const attachmentId of [...uploadedThisSession]) void discardIfOrphaned(attachmentId);
+		for (const fileId of [...uploadedThisSession]) void discardIfOrphaned(fileId);
 		priceBookOpen = false;
 		catalogDraft = null;
 		editing = false;
@@ -276,7 +276,7 @@
 		return (
 			!line.name.trim() &&
 			!line.description?.trim() &&
-			!line.image_attachment_id &&
+			!line.image_file_id &&
 			!line.imageFile &&
 			line.quantity === 1 &&
 			line.unit_price_minor === 0
@@ -292,7 +292,7 @@
 			unit_label: string | null;
 			is_taxable: boolean;
 			catalog_item_id: string | null;
-			image_attachment_id: string | null;
+			image_file_id: string | null;
 			imageFile?: File | null;
 			line_kind?: QuoteLineKind;
 			selection_kind?: QuoteSelectionKind;
@@ -309,7 +309,7 @@
 				line.unit_price_minor,
 				line.is_taxable,
 				line.catalog_item_id ?? '',
-				line.image_attachment_id ?? '',
+				line.image_file_id ?? '',
 				line.line_kind ?? 'priced',
 				line.selection_kind ?? 'required',
 				line.is_recommended ?? false,
@@ -358,11 +358,12 @@
 				unit_price_minor: 0,
 				unit_cost_minor: 0,
 				is_taxable: true,
-				image_attachment_id: null,
+				image_file_id: null,
 				imageFile: null,
 				imageThumbnail: null,
 				imagePreviewUrl: '',
 				imageUploading: false,
+				imageProcessingState: 'available',
 				costHidden: false,
 				line_kind: 'priced',
 				selection_kind: 'required',
@@ -378,7 +379,7 @@
 	function removeLine(id: string) {
 		const line = draftLines.find((entry) => entry.id === id);
 		if (line) releaseLocalPreview(line);
-		if (line?.image_attachment_id) void discardIfOrphaned(line.image_attachment_id);
+		if (line?.image_file_id) void discardIfOrphaned(line.image_file_id);
 		draftLines = draftLines.filter((entry) => entry.id !== id);
 	}
 
@@ -426,11 +427,12 @@
 				unit_price_minor: item.unit_price_minor,
 				unit_cost_minor: item.unit_cost_minor ?? 0,
 				is_taxable: item.is_taxable,
-				image_attachment_id: null,
+				image_file_id: null,
 				imageFile: null,
 				imageThumbnail: null,
 				imagePreviewUrl: '',
 				imageUploading: false,
+				imageProcessingState: 'available',
 				costHidden: item.unit_cost_minor === undefined,
 				line_kind: 'priced',
 				selection_kind: 'required',
@@ -454,11 +456,12 @@
 				unit_price_minor: 0,
 				unit_cost_minor: 0,
 				is_taxable: false,
-				image_attachment_id: null,
+				image_file_id: null,
 				imageFile: null,
 				imageThumbnail: null,
 				imagePreviewUrl: '',
 				imageUploading: false,
+				imageProcessingState: 'available',
 				costHidden: false,
 				line_kind: lineKind,
 				selection_kind: 'required',
@@ -627,13 +630,29 @@
 	function removeImage(id: string) {
 		const line = draftLines.find((entry) => entry.id === id);
 		if (line) releaseLocalPreview(line);
-		if (line?.image_attachment_id) void discardIfOrphaned(line.image_attachment_id);
+		if (line?.image_file_id) void discardIfOrphaned(line.image_file_id);
 		updateLine(id, {
-			image_attachment_id: null,
+			image_file_id: null,
 			imageFile: null,
 			imageThumbnail: null,
-			imagePreviewUrl: ''
+			imagePreviewUrl: '',
+			imageProcessingState: 'available'
 		});
+	}
+
+	/** Puts a line photo's bytes in the File Manager, linked to this record as a 'line_photo'. */
+	async function uploadLinePhoto(file: File, entityType: 'request' | 'quote', entityId: string) {
+		const started = await startFileUpload(file, {
+			originType: entityType,
+			originId: entityId,
+			originRole: 'line_photo'
+		});
+		await uploadAttachmentFile(started.upload_url, file);
+		// Saying the bytes landed is what makes the File claimable by the processing worker. Until it has
+		// been checked the photo is not usable yet, which is what the pending state below shows.
+		await finishFileUpload(started.file.id);
+		uploadedThisSession.add(started.file.id);
+		return started.file.id;
 	}
 
 	async function handleFileChosen(id: string, fileList: FileList | null) {
@@ -653,19 +672,18 @@
 			return;
 		}
 
-		const previousAttachmentId =
-			draftLines.find((line) => line.id === id)?.image_attachment_id ?? null;
+		const previousFileId = draftLines.find((line) => line.id === id)?.image_file_id ?? null;
 		updateLine(id, { imageUploading: true });
 
 		try {
-			const thumbnail = await createImageThumbnail(file);
 			// A create form has no server record yet. Jobber still shows the image box immediately, so keep
 			// the photo and its preview locally and let the page's Save hand us the new record id later.
 			if (!attachTo) {
+				const thumbnail = await createImageThumbnail(file);
 				const current = draftLines.find((line) => line.id === id);
 				if (current) releaseLocalPreview(current);
 				updateLine(id, {
-					image_attachment_id: null,
+					image_file_id: null,
 					imageFile: file,
 					imageThumbnail: thumbnail,
 					imagePreviewUrl: URL.createObjectURL(thumbnail ?? file),
@@ -673,37 +691,13 @@
 				});
 				return;
 			}
-			const presigned = await presignAttachmentUpload({
-				entityType: attachTo.entityType,
-				entityId: attachTo.entityId,
-				fileName: file.name,
-				mimeType: file.type,
-				sizeBytes: file.size
+			const fileId = await uploadLinePhoto(file, attachTo.entityType, attachTo.entityId);
+			updateLine(id, {
+				image_file_id: fileId,
+				imageUploading: false,
+				imageProcessingState: 'pending'
 			});
-			await uploadAttachmentFile(presigned.upload_url, file);
-
-			let thumbnailObjectKey: string | null = null;
-			if (thumbnail && presigned.thumbnail_upload_url && presigned.thumbnail_object_key) {
-				try {
-					await uploadAttachmentFile(presigned.thumbnail_upload_url, thumbnail);
-					thumbnailObjectKey = presigned.thumbnail_object_key;
-				} catch (thumbnailError) {
-					console.error('Could not upload the preview for a line photo.', thumbnailError);
-				}
-			}
-
-			const attachment = await createAttachment({
-				entityType: attachTo.entityType,
-				entityId: attachTo.entityId,
-				fileName: file.name,
-				mimeType: file.type,
-				sizeBytes: file.size,
-				objectKey: presigned.object_key,
-				thumbnailObjectKey
-			});
-			uploadedThisSession.add(attachment.id);
-			updateLine(id, { image_attachment_id: attachment.id, imageUploading: false });
-			if (previousAttachmentId) void discardIfOrphaned(previousAttachmentId);
+			if (previousFileId) void discardIfOrphaned(previousFileId);
 		} catch (caught) {
 			updateLine(id, { imageUploading: false });
 			error = caught instanceof Error ? caught.message : 'That photo could not be uploaded.';
@@ -720,47 +714,19 @@
 		entityId: string
 	) {
 		const file = line.imageFile;
-		const thumbnail = line.imageThumbnail;
 		if (!file) return true;
 		updateLine(line.id, { imageUploading: true });
 
 		try {
-			const presigned = await presignAttachmentUpload({
-				entityType,
-				entityId,
-				fileName: file.name,
-				mimeType: file.type,
-				sizeBytes: file.size
-			});
-			await uploadAttachmentFile(presigned.upload_url, file);
-
-			let thumbnailObjectKey: string | null = null;
-			if (thumbnail && presigned.thumbnail_upload_url && presigned.thumbnail_object_key) {
-				try {
-					await uploadAttachmentFile(presigned.thumbnail_upload_url, thumbnail);
-					thumbnailObjectKey = presigned.thumbnail_object_key;
-				} catch (thumbnailError) {
-					console.error('Could not upload the preview for a line photo.', thumbnailError);
-				}
-			}
-
-			const attachment = await createAttachment({
-				entityType,
-				entityId,
-				fileName: file.name,
-				mimeType: file.type,
-				sizeBytes: file.size,
-				objectKey: presigned.object_key,
-				thumbnailObjectKey
-			});
-			uploadedThisSession.add(attachment.id);
+			const fileId = await uploadLinePhoto(file, entityType, entityId);
 			releaseLocalPreview(line);
 			updateLine(line.id, {
-				image_attachment_id: attachment.id,
+				image_file_id: fileId,
 				imageFile: null,
 				imageThumbnail: null,
 				imagePreviewUrl: '',
-				imageUploading: false
+				imageUploading: false,
+				imageProcessingState: 'pending'
 			});
 			return true;
 		} catch (caught) {
@@ -808,7 +774,7 @@
 
 	onDestroy(() => {
 		for (const line of draftLines) releaseLocalPreview(line);
-		for (const attachmentId of [...uploadedThisSession]) void discardIfOrphaned(attachmentId);
+		for (const fileId of [...uploadedThisSession]) void discardIfOrphaned(fileId);
 	});
 
 	// The database is the only place a line total is calculated once it is saved. This is a preview of the
@@ -827,7 +793,7 @@
 		);
 	}
 
-	const anyLinePhoto = $derived(savedLines.some((line) => line.image_attachment_id));
+	const anyLinePhoto = $derived(savedLines.some((line) => line.image_file_id));
 
 	// A priced progress bill drops quantity and unit price. Its lines are a stage's share spread across the
 	// job's items, stored as a single lump priced at that share, so a per-unit reading of them is false: the
@@ -878,7 +844,7 @@
 				unit_price_minor: line.unit_price_minor,
 				unit_cost_minor: line.unit_cost_minor,
 				is_taxable: line.is_taxable,
-				image_attachment_id: line.image_attachment_id,
+				image_file_id: line.image_file_id,
 				...(showServiceDate ? { service_date: line.service_date ?? null } : {}),
 				...(carrySourceLine
 					? { source_job_line_item_id: line.source_job_line_item_id ?? null }
@@ -1057,7 +1023,7 @@
 								<div
 									class="pricing-card__image"
 									class:pricing-card__image--filled={Boolean(
-										line.imagePreviewUrl || line.image_attachment_id
+										line.imagePreviewUrl || line.image_file_id
 									)}
 								>
 									<input
@@ -1097,11 +1063,15 @@
 												{@html trashIcon}
 											</button>
 										</div>
-									{:else if line.image_attachment_id}
-										<img
-											src={attachmentImageUrl(line.image_attachment_id, 'thumb')}
-											alt=""
-											loading="lazy"
+									{:else if line.image_file_id}
+										<FileThumb
+											fileId={line.image_file_id}
+											displayName={line.name || 'Line photo'}
+											mimeType="image/jpeg"
+											kind="image"
+											processingState={line.imageProcessingState}
+											hasThumbnail={line.imageProcessingState === 'available'}
+											size="tile"
 										/>
 										<div class="pricing-card__image-tools">
 											<button
@@ -1280,12 +1250,8 @@
 								</th>
 								{#if anyLinePhoto}
 									<td class="pricing-table__photo">
-										{#if line.image_attachment_id}
-											<img
-												src={attachmentImageUrl(line.image_attachment_id, 'thumb')}
-												alt=""
-												loading="lazy"
-											/>
+										{#if line.image_file_id}
+											<img src={fileImageUrl(line.image_file_id, 'thumb')} alt="" loading="lazy" />
 										{/if}
 									</td>
 								{/if}
@@ -1590,6 +1556,13 @@
 			&--filled {
 				border-style: solid;
 				border-color: var(--color-border);
+			}
+
+			// FileThumb's own tile sizing is a 4/3 box; here it sits beside the description textarea and
+			// must fill whatever height that row stretches to instead.
+			:global(.file-thumb--tile) {
+				height: 100%;
+				aspect-ratio: auto;
 			}
 		}
 		&__image img {

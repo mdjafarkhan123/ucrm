@@ -95,7 +95,7 @@ export const GET: RequestHandler = async (event) => {
 			.from('job_line_items')
 			.select(
 				`id, position, source_catalog_item_id, line_kind, category, is_labor, name, description,
-				 unit_label, quantity, is_taxable, image_attachment_id`
+				 unit_label, quantity, is_taxable, image_file_id`
 			)
 			.eq('organization_id', organizationId)
 			.eq('job_id', jobId)

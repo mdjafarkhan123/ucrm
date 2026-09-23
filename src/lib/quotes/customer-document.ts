@@ -18,17 +18,21 @@ export type CustomerQuoteLine = {
 	name: string;
 	description: string | null;
 	unit_label: string | null;
-	image_attachment_id: string | null;
+	image_file_id: string | null;
+	/** True only when this line had a photo and it was later moved to Trash — never for a line with none. */
+	image_removed: boolean;
 	quantity?: number;
 	unit_price_minor?: number;
 	line_total_minor?: number;
 };
 
 export type CustomerQuoteAttachment = {
-	id: string;
-	name: string;
-	mime_type: string;
-	size_bytes: number;
+	/** Null once `removed` is true — the server withholds the file's own facts, not just its bytes. */
+	id: string | null;
+	name: string | null;
+	mime_type: string | null;
+	size_bytes: number | null;
+	removed: boolean;
 };
 
 export type CustomerQuoteTotals = {

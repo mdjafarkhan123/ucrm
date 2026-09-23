@@ -286,7 +286,7 @@ describe('request pricing API', () => {
 			unit_price_minor: 12500,
 			unit_cost_minor: 4000,
 			is_taxable: true,
-			image_attachment_id: null
+			image_file_id: null
 		});
 	});
 

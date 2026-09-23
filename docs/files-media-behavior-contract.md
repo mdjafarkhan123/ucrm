@@ -39,8 +39,9 @@ stating here because they are decisions, not mechanics:
   typed "report.exe" on a PDF becomes "report.exe.pdf".
 - **Moving a File to Trash detaches it from every record using it**, which is what this contract's Trash
   section calls the confirmed action. The dialog lists those records first. Restoring brings the File and its
-  folder back; it does not put it back on them, and the dialog says so. A File carrying a use the customer
-  already received is refused outright.
+  folder back; it does not put it back on them, and the dialog says so. Any File may go to Trash, including one
+  a customer already received on a published quote — Part 6C (below) replaced the earlier outright refusal with
+  a stronger, named warning and an explicit acknowledgement before that specific Trash goes through.
 
 The reusable record picker exists as well, added by `supabase/migrations/20260921220000_files_media_attach_to_record.sql`,
 `src/lib/components/files/FilePicker.svelte`, `FileAttachToRecordDialog.svelte` and `POST /api/files/links`.
@@ -180,9 +181,40 @@ the old separate Attachments and Images sections. Every file linked to the quote
 already was in practice. After each add or remove, `syncQuoteVersionAttachments` copies the quote's available
 linked Files into the draft version. "Mark as awaiting response" waits for any sync still running, so a file
 added right before sending is always included and locked. Per-line photos (`quote_version_lines.image_attachment_id`)
-still use the legacy `attachments` table until Part 6C. Browser-verified 2026-09-22/23 (Raad LTD): create with a
+still used the legacy `attachments` table until Part 6C, below. Browser-verified 2026-09-22/23 (Raad LTD): create with a
 staged file, attach/detach on a draft, locked after sending, kept after revising, own link after "Create similar",
 and a file added then sent within a second is frozen into the sent version and locked.
+
+**Part 6C — line-item photos and the global Trash rule.** `quote_version_lines.image_attachment_id` is
+replaced by `image_file_id`, a File Manager File carried forward on revise and "Create similar" the same way
+the quote's other attachments are; a published version keeps its line photo's File even after that File is
+moved to Trash, which is what lets the customer's copy show the photo as removed instead of silently changing.
+`ProductsAndServicesBlock` (the shared request/quote line editor) uploads a line photo through
+`startFileUpload`/`finishFileUpload` with `origin_role: 'line_photo'` instead of the legacy attachments
+pipeline, and shows it with the same `FileThumb` tile the File Manager itself uses.
+
+The Trash rule changed for every File, not only line photos, settled with Jafar 2026-09-23: **any File may go
+to Trash.** The confirmation dialog's severity now grows with how far the File has already reached rather than
+refusing outright:
+
+- **Not used anywhere** — a plain confirm.
+- **Used on one or more visible records, none customer-facing** — the existing confirm naming those records.
+- **A customer already received it on a published quote** — a red/critical dialog that names the affected
+  document(s) and requires an "I understand" tick before Confirm enables. `trash_file` still raises SQLSTATE
+  P0412 (`acknowledge_customer_copies` not set) so a stale client is caught server-side too; the panel reads
+  that refusal and falls back to the same strongest dialog rather than dead-ending on an error.
+
+Trash stays recoverable for 30 days regardless of tier; Restore puts a File back on the same published quotes
+it was removed from. The customer's own copy shows a removed line photo or attachment as "Photo removed" /
+"File removed" rather than silently dropping it — `quote_customer_document` nulls out a trashed line's
+`image_file_id` (keeping `image_removed: true`) and a trashed attachment's `id`/`name`/`mime_type`/`size_bytes`
+(keeping `removed: true`), and `CustomerQuoteDocument.svelte` draws the placeholder from those flags. The
+public `/q/[token]/files/[id]` route re-checks `trashed_at is null` on the file it serves, on top of the
+document's own filtering, since the two are separate queries a Trash can land between.
+
+Carried to Part 8: a published quote's `quote_version_lines.image_file_id` has no `ON DELETE` behavior and
+protected `file_links` still block their own delete trigger, so purge must handle both explicitly rather than
+relying on an ordinary foreign key.
 
 Decisions settled while building the schema, confirmed by Jafar 2026-09-21 (he asked for the industry-standard, contractor-easy choice):
 
@@ -344,10 +376,11 @@ network-loss cases are implemented and tested.
 
 ## Trash, retention, and export
 
-Moving a File to Trash first shows every affected visible record and the consequence. Ordinary unprotected links
-may be removed only through that confirmed action. A File required by an issued document, signature, financial
-record, sent message, or shared Work Report cannot enter ordinary Trash until the protected use is retired under
-its owning contract.
+Moving a File to Trash first shows every affected visible record and the consequence. Any File may go to Trash
+— settled with Jafar 2026-09-23 — with the confirmation growing stronger as the File's reach grows: unused is a
+plain confirm, used on visible records lists them, and a use a customer already received on a published quote
+is a named, red/critical warning that requires an explicit "I understand" before it proceeds. See Part 6C above
+for the full three-tier rule and how a customer's own copy then shows the loss.
 
 Trash is recoverable for 30 days. Restore returns the File to its previous folder when possible. Permanent purge is
 an authorized background lifecycle action that removes derivatives and the original R2 object only after every

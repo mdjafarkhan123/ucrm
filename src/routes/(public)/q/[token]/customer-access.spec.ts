@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const rpc = vi.fn();
 const maybeSingle = vi.fn();
-const from = vi.fn(() => ({ select: () => ({ eq: () => ({ maybeSingle }) }) }));
+const from = vi.fn(() => ({ select: () => ({ eq: () => ({ is: () => ({ maybeSingle }) }) }) }));
 const getObjectStream = vi.fn();
 
 vi.mock('$lib/server/db/owner-supabase', () => ({
@@ -22,7 +22,7 @@ const document = {
 	recipient: { name: 'Dana', email: 'dana@example.com' },
 	business: { name: 'Northside Roofing' },
 	document: { version_number: 2, show_totals: true },
-	lines: [{ id: 'line-1', image_attachment_id: 'photo-1' }],
+	lines: [{ id: 'line-1', image_file_id: 'photo-1' }],
 	attachments: [{ id: 'file-1', name: 'Scope.pdf', mime_type: 'application/pdf' }],
 	totals: { total_minor: 120000 }
 };

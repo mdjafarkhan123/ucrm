@@ -131,7 +131,7 @@ const jobScopeLineFields = z.object({
 	is_taxable: z.boolean().default(true),
 	// Carried, not created here: a converted job inherits its quote line's photo, and a rewrite of the
 	// scope must not silently drop it. Attaching a new photo to a job line belongs to Part 15.
-	image_attachment_id: z
+	image_file_id: z
 		.string()
 		.uuid()
 		.nullish()

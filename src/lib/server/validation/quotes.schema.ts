@@ -90,7 +90,7 @@ const requestPricingLineSchema = z
 		is_taxable: z.boolean().default(true),
 		// Set by the browser right after it uploads a photo for this request, ahead of Save. The write
 		// function is what actually checks the photo belongs to this request — not this schema.
-		image_attachment_id: z
+		image_file_id: z
 			.string()
 			.uuid()
 			.nullish()

@@ -100,12 +100,12 @@ describe('job scope API', () => {
 		await LINES(
 			patchEvent(
 				'/lines',
-				{ expected_revision: 3, lines: [{ ...line, image_attachment_id: attachmentId }] },
+				{ expected_revision: 3, lines: [{ ...line, image_file_id: attachmentId }] },
 				rpc
 			)
 		);
 
-		expect(rpc.mock.calls[0][1].new_lines[0].image_attachment_id).toBe(attachmentId);
+		expect(rpc.mock.calls[0][1].new_lines[0].image_file_id).toBe(attachmentId);
 	});
 
 	it('rejects a line with no name before touching the database', async () => {

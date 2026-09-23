@@ -19,7 +19,7 @@ import { asMoneyMap, withMoney } from '$lib/server/quotes/money';
 const NOT_FOUND = 'That quote could not be found.';
 
 const LINE_SELECT = `id, position, source_catalog_item_id, category, is_labor, name, description,
-	 unit_label, quantity, is_taxable, image_attachment_id, line_kind, selection_kind,
+	 unit_label, quantity, is_taxable, image_file_id, line_kind, selection_kind,
 	 is_recommended`;
 
 // Money is not on these rows to select. `authenticated` lost the grant on the money columns, so the

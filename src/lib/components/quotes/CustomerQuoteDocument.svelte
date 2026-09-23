@@ -7,6 +7,8 @@
 	import buildingIcon from '@tabler/icons/outline/building-store.svg?raw';
 	import fileIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import downloadIcon from '@tabler/icons/outline/download.svg?raw';
+	import photoOffIcon from '@tabler/icons/outline/photo-off.svg?raw';
+	import fileOffIcon from '@tabler/icons/outline/file-off.svg?raw';
 
 	// The customer's copy of a quote, and the only drawing of it there is. The token page hands it a
 	// document resolved from a link; Preview as client hands it the same document read straight from the
@@ -220,13 +222,21 @@
 			<tr class="customer-quote__row">
 				<td class="customer-quote__cell customer-quote__cell--name">
 					<div class="customer-quote__item">
-						{#if line.image_attachment_id}
+						{#if line.image_file_id}
 							<img
 								class="customer-quote__thumb"
-								src={fileHref(line.image_attachment_id, 'thumb')}
+								src={fileHref(line.image_file_id, 'thumb')}
 								alt=""
 								loading="lazy"
 							/>
+						{:else if line.image_removed}
+							<span
+								class="customer-quote__thumb customer-quote__thumb--removed"
+								role="img"
+								aria-label="Photo removed"
+							>
+								{@html photoOffIcon}
+							</span>
 						{/if}
 						<div>
 							<p class="customer-quote__item-name">{line.name}</p>
@@ -407,29 +417,42 @@
 				<section class="customer-quote__block">
 					<h2 class="customer-quote__block-title">Attachments</h2>
 					<ul class="customer-quote__files">
-						{#each doc.attachments as attachment (attachment.id)}
+						{#each doc.attachments as attachment, index (attachment.id ?? index)}
 							<li>
-								<a class="customer-quote__file" href={fileHref(attachment.id)}>
-									{#if isImage(attachment.mime_type)}
-										<img
-											class="customer-quote__file-thumb"
-											src={fileHref(attachment.id, 'thumb')}
-											alt={attachment.name}
-											loading="lazy"
-										/>
-									{:else}
+								{#if attachment.removed}
+									<span class="customer-quote__file customer-quote__file--removed">
 										<span class="customer-quote__file-icon" aria-hidden="true"
-											>{@html fileIcon}</span
+											>{@html fileOffIcon}</span
 										>
-									{/if}
-									<span class="customer-quote__file-text">
-										<span class="customer-quote__file-name">{attachment.name}</span>
-										<span class="customer-quote__file-size">{fileSize(attachment.size_bytes)}</span>
+										<span class="customer-quote__file-text">
+											<span class="customer-quote__file-name">File removed</span>
+										</span>
 									</span>
-									<span class="customer-quote__file-download" aria-hidden="true"
-										>{@html downloadIcon}</span
-									>
-								</a>
+								{:else}
+									<a class="customer-quote__file" href={fileHref(attachment.id!)}>
+										{#if isImage(attachment.mime_type!)}
+											<img
+												class="customer-quote__file-thumb"
+												src={fileHref(attachment.id!, 'thumb')}
+												alt={attachment.name}
+												loading="lazy"
+											/>
+										{:else}
+											<span class="customer-quote__file-icon" aria-hidden="true"
+												>{@html fileIcon}</span
+											>
+										{/if}
+										<span class="customer-quote__file-text">
+											<span class="customer-quote__file-name">{attachment.name}</span>
+											<span class="customer-quote__file-size"
+												>{fileSize(attachment.size_bytes!)}</span
+											>
+										</span>
+										<span class="customer-quote__file-download" aria-hidden="true"
+											>{@html downloadIcon}</span
+										>
+									</a>
+								{/if}
 							</li>
 						{/each}
 					</ul>
@@ -763,6 +786,19 @@
 		object-fit: cover;
 		border-radius: var(--radius-base);
 		border: 1px solid var(--color-border);
+
+		&--removed {
+			display: grid;
+			flex: 0 0 auto;
+			place-items: center;
+			color: var(--color-text--secondary);
+			background: var(--color-surface--background);
+
+			:global(svg) {
+				width: 24px;
+				height: 24px;
+			}
+		}
 	}
 
 	.customer-quote__item-name {
@@ -851,6 +887,15 @@
 		&:focus-visible {
 			outline: none;
 			box-shadow: var(--shadow-focus);
+		}
+
+		&--removed {
+			color: var(--color-text--secondary);
+
+			&:hover {
+				border-color: var(--color-border);
+				background: transparent;
+			}
 		}
 	}
 

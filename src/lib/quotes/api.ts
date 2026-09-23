@@ -18,7 +18,7 @@ export type RequestPricingLine = {
 	is_taxable: boolean;
 	line_total_minor: number;
 	line_cost_total_minor: number;
-	image_attachment_id: string | null;
+	image_file_id: string | null;
 	line_kind?: QuoteLineKind;
 	selection_kind?: QuoteSelectionKind;
 	is_recommended?: boolean;
@@ -61,7 +61,7 @@ export type RequestPricingLineInput = {
 	unit_price_minor: number;
 	unit_cost_minor: number;
 	is_taxable?: boolean;
-	image_attachment_id?: string | null;
+	image_file_id?: string | null;
 	line_kind?: QuoteLineKind;
 	selection_kind?: QuoteSelectionKind;
 	is_recommended?: boolean;

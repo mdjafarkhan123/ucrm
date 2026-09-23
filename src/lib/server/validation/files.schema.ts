@@ -12,6 +12,11 @@ export const fileEntityTypeSchema = z.enum([...attachmentEntityTypeSchema.option
 // every other origin names one. Mirrors the files_origin_id_matches_type_check constraint.
 export const fileOriginTypeSchema = z.union([z.literal('file_manager'), fileEntityTypeSchema]);
 
+// Mirrors files_origin_role_check: the file_links role the processing worker will link the upload with,
+// once it is available. Only a line photo is chosen by the caller today -- every other upload is a plain
+// 'attachment', so the field defaults to it and most callers never send it at all.
+export const fileOriginRoleSchema = z.enum(['attachment', 'line_photo']);
+
 // Shape only. Whether this file type is actually allowed is `checkUploadClaim`'s answer, so the allowlist
 // lives in one place instead of being half-stated here and half-stated there.
 export const fileUploadStartSchema = z
@@ -21,11 +26,16 @@ export const fileUploadStartSchema = z
 		size_bytes: z.number().int().positive().max(MAX_FILE_SIZE_BYTES),
 		origin_type: fileOriginTypeSchema,
 		origin_id: z.uuid().nullish(),
-		folder_id: z.uuid().nullish()
+		folder_id: z.uuid().nullish(),
+		origin_role: fileOriginRoleSchema.default('attachment')
 	})
 	.refine((value) => (value.origin_type === 'file_manager') === (value.origin_id == null), {
 		message: 'A file uploaded to the library has no record, and every other origin needs one.',
 		path: ['origin_id']
+	})
+	.refine((value) => value.origin_role === 'attachment' || value.origin_id != null, {
+		message: 'A line photo needs the record it was picked on.',
+		path: ['origin_role']
 	});
 
 export type FileUploadStart = z.infer<typeof fileUploadStartSchema>;
@@ -68,4 +78,10 @@ export const fileDetachSchema = z.object({
 	file_id: z.uuid(),
 	entity_type: fileEntityTypeSchema,
 	entity_id: z.uuid()
+});
+
+// Moving a File to Trash. The hardest warning level -- a customer already received it on a published
+// quote -- needs this explicit tick before the database will let it go (trash_file's P0412 otherwise).
+export const fileTrashSchema = z.object({
+	acknowledge_customer_copies: z.boolean().optional().default(false)
 });

@@ -121,7 +121,7 @@ export type JobScopeLineInput = {
 	is_taxable: boolean;
 	// Only ever carried forward, never chosen here: a line converted from a quote keeps its photo through a
 	// rewrite of the scope. Attaching a photo to a job line is Part 15's job.
-	image_attachment_id?: string | null;
+	image_file_id?: string | null;
 };
 
 // One appointment. `visit_date` is null for a "schedule later" visit; times are null for an anytime or an
@@ -240,7 +240,7 @@ export type JobLineItem = {
 	unit_price_minor: number | null;
 	unit_cost_minor: number | null;
 	is_taxable: boolean;
-	image_attachment_id: string | null;
+	image_file_id: string | null;
 	line_total_minor: number | null;
 	line_cost_total_minor: number | null;
 };
@@ -921,7 +921,7 @@ export async function fetchJobVisitLines(
 			is_taxable: line.is_taxable,
 			line_total_minor: line.line_total_minor ?? 0,
 			line_cost_total_minor: 0,
-			image_attachment_id: line.image_attachment_id,
+			image_file_id: line.image_file_id,
 			line_kind: line.line_kind,
 			source_job_line_item_id: line.source_job_line_item_id
 		}))
@@ -949,7 +949,7 @@ type RawVisitLines = {
 		unit_label: string | null;
 		quantity: number | string | null;
 		is_taxable: boolean;
-		image_attachment_id: string | null;
+		image_file_id: string | null;
 		unit_price_minor?: number;
 		unit_cost_minor?: number;
 		line_total_minor?: number;
