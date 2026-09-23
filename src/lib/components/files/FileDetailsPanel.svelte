@@ -573,19 +573,18 @@
 >
 	<!-- The contract asks for every affected visible record and the consequence, before the button, not
 	     after it. The list is the same "Used in" this reader can already see. Severity grows with how far
-	     this file has already reached: nothing uses it, something uses it, or a customer has already seen
-	     it on a published quote. -->
+	     this file has already reached: nothing uses it, something uses it, or a customer has already been
+	     sent it (a published quote, a work report link). -->
 	{#if trashRequiresAcknowledgement}
 		<p>
-			A copy of this file was already sent to a customer on a published quote. Trashing it will not
-			pull that copy back — their document will show it as removed instead.
+			A copy of this file was already sent to a customer. Trashing it will not pull that copy back —
+			what they received will show it as removed instead.
 		</p>
 		<p>Already sent to the customer:</p>
 		<ul class="file-panel__confirm-list file-panel__confirm-list--critical">
 			{#each customerReceivedRows as row (row.id)}
 				<li>
-					{row.title ?? 'Record'}{#if row.context}
-						· {row.context}{/if}
+					{row.title ?? 'Record'}{row.context ? ` · ${row.context}` : ''}
 				</li>
 			{/each}
 		</ul>
@@ -608,8 +607,7 @@
 		<ul class="file-panel__confirm-list">
 			{#each usage as row (row.id)}
 				<li>
-					{row.title ?? 'Record'}{#if row.context}
-						· {row.context}{/if}
+					{row.title ?? 'Record'}{row.context ? ` · ${row.context}` : ''}
 				</li>
 			{/each}
 		</ul>

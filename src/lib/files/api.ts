@@ -72,7 +72,7 @@ export type FileUsageRow = {
 	entity_id: string;
 	role: string;
 	protected: boolean;
-	/** A customer already received this exact use, on a published quote. Trashing it needs their warning. */
+	/** A customer already received this exact use (a published quote, a live work report link). Trashing it needs their warning. */
 	customer_received: boolean;
 	title: string | null;
 	context: string | null;
