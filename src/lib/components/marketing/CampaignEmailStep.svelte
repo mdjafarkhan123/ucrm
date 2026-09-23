@@ -31,6 +31,8 @@
 		onAddBlock,
 		onMoveBlock,
 		onRemoveBlock,
+		onUploadImage,
+		onDiscardOrphanedImage,
 		onBack,
 		onContinue
 	}: {
@@ -41,6 +43,9 @@
 		onAddBlock: (type: MarketingBlockType) => void;
 		onMoveBlock: (index: number, by: number) => void;
 		onRemoveBlock: (index: number) => void;
+		/** Uploads a photo for an image block, creating the draft first if this is its very first upload. */
+		onUploadImage: (file: File) => Promise<string>;
+		onDiscardOrphanedImage: (fileId: string) => void;
 		onBack: () => void;
 		onContinue: () => void;
 	} = $props();
@@ -112,6 +117,8 @@
 							{catalogLabels}
 							onMove={(by) => onMoveBlock(i, by)}
 							onRemove={() => onRemoveBlock(i)}
+							{onUploadImage}
+							{onDiscardOrphanedImage}
 						/>
 					{/each}
 				</ol>

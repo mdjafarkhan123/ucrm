@@ -37,6 +37,10 @@ export type MarketingRenderContext = {
 	// catalog_item_id -> current name, prefetched by the caller for whichever ids appear in service_summary
 	// blocks. Keeps this module a pure function with no database access of its own.
 	serviceNames: Record<string, string>;
+	// file_id -> the actual <img src> address, prefetched by the caller for whichever ids appear in image
+	// blocks. A member's in-app preview points at the authenticated /api/files/[id]/view; a real send or test
+	// send points at the public, unauthenticated campaign-image route, since the recipient has no session.
+	imageUrls: Record<string, string>;
 	business: MarketingBusinessIdentity;
 	// null renders a clearly-inert placeholder instead of a working link -- used for the editor's live
 	// preview, where there is no real recipient to bind an unsubscribe token to.
@@ -103,7 +107,7 @@ function renderBlockMjml(block: MarketingBlock, ctx: MarketingRenderContext): st
 		case 'button':
 			return `<mj-button href="${escapeHtml(block.url)}" padding="16px 24px" background-color="#2563eb">${resolveVariablesHtml(block.label, ctx.variables)}</mj-button>`;
 		case 'image':
-			return `<mj-image src="${escapeHtml(block.url)}" alt="${escapeHtml(block.alt)}"${
+			return `<mj-image src="${escapeHtml(ctx.imageUrls[block.file_id] ?? '')}" alt="${escapeHtml(block.alt)}"${
 				block.link_url ? ` href="${escapeHtml(block.link_url)}"` : ''
 			} padding="8px 24px" />`;
 		case 'divider':

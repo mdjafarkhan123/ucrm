@@ -32,6 +32,7 @@ const context: CampaignSendContext = {
 		cta: null
 	},
 	serviceNames: {},
+	imageUrls: {},
 	cta: null,
 	business: {
 		name: 'Ridgeway Contracting',

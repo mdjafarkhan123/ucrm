@@ -5,6 +5,7 @@ import { resolveMarketingCtaTarget } from '$lib/server/marketing/call-to-action'
 import {
 	appOrigin,
 	buildOrganizationMarketingSendContext,
+	campaignImageUrls,
 	type OrganizationMarketingSendContext
 } from '$lib/server/marketing/dispatcher';
 import {
@@ -28,6 +29,10 @@ export async function sendTestMarketingEmail(
 	organizationId: string,
 	recipientEmail: string,
 	content: MarketingCampaignContent,
+	// Null for a draft with an image block never saved -- unreachable in practice, since an image block
+	// cannot hold a real file_id until its upload has created the campaign row to attach to (see
+	// CampaignJourney's ensureCampaignId). Falls back to an empty image address rather than throwing.
+	campaignId: string | null = null,
 	dependencies: Dependencies = {}
 ): Promise<{ messageId: string }> {
 	const buildContext = dependencies.buildContext ?? buildOrganizationMarketingSendContext;
@@ -52,9 +57,11 @@ export async function sendTestMarketingEmail(
 	);
 
 	const variables = { customer_first_name: 'Alex', business_name: context.business.name };
+	const imageUrls = campaignId ? campaignImageUrls(appOrigin(), campaignId, content) : {};
 	const rendered = await renderCampaignEmail(content, {
 		variables,
 		serviceNames,
+		imageUrls,
 		business: context.business,
 		unsubscribeUrl: null,
 		// The real target without a recipient token: a test email is not a campaign result.

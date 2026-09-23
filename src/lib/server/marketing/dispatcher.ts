@@ -201,6 +201,8 @@ export async function buildOrganizationMarketingSendContext(
 export type CampaignSendContext = OrganizationMarketingSendContext & {
 	content: MarketingCampaignContent;
 	serviceNames: Record<string, string>;
+	// file_id -> the public campaign-image address every recipient's mail client fetches with no session.
+	imageUrls: Record<string, string>;
 	// Resolved once per campaign; each recipient's form link then gets its own token.
 	cta: MarketingCtaTarget | null;
 };
@@ -209,6 +211,36 @@ export function appOrigin(): string {
 	const rawOrigin = env.APP_URL?.trim();
 	if (!rawOrigin) throw new Error('APP_URL must be set before Marketing email can send.');
 	return new URL(rawOrigin).origin;
+}
+
+// The public, unauthenticated address a recipient's mail client fetches an image block from -- no signed-in
+// session to check a permission against, so the only gate is "does this file_id actually appear as an image
+// block's File on this campaign" (see (public)/ci/[campaignId]/[fileId]). Deterministic from the two ids
+// alone: no lookup needed to build it, only to serve it.
+export function marketingCampaignImageUrl(
+	origin: string,
+	campaignId: string,
+	fileId: string
+): string {
+	return `${origin}/ci/${campaignId}/${fileId}`;
+}
+
+// file_id -> its resolved <img src>, for whichever image blocks a campaign's content actually holds. A pure
+// function of the campaign id and the blocks themselves -- unlike serviceNames, nothing here needs to be
+// prefetched from the database, since the address is deterministic and the public route re-checks the File
+// itself (available, not trashed) at the moment it is actually fetched.
+export function campaignImageUrls(
+	origin: string,
+	campaignId: string,
+	content: MarketingCampaignContent
+): Record<string, string> {
+	const urls: Record<string, string> = {};
+	for (const block of content.blocks) {
+		if (block.type === 'image' && block.file_id) {
+			urls[block.file_id] = marketingCampaignImageUrl(origin, campaignId, block.file_id);
+		}
+	}
+	return urls;
 }
 
 // A launched campaign's content, sender identity, and tenant never change again, so this is built at most
@@ -251,8 +283,9 @@ async function buildCampaignSendContext(
 	const serviceNames = Object.fromEntries(
 		labels.catalog_items.map((item) => [item.id, item.label])
 	);
+	const imageUrls = campaignImageUrls(appOrigin(), campaignId, content);
 
-	return { content, serviceNames, cta, ...orgContext };
+	return { content, serviceNames, imageUrls, cta, ...orgContext };
 }
 
 function loadCampaignSendContext(
@@ -349,6 +382,7 @@ export async function processClaimedMarketingRecipient(
 		const rendered = await renderCampaignEmail(context.content, {
 			variables,
 			serviceNames: context.serviceNames,
+			imageUrls: context.imageUrls,
 			business: context.business,
 			unsubscribeUrl: marketingUnsubscribeLinkUrl(origin, token),
 			cta

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { beforeNavigate, goto, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -28,6 +28,8 @@
 		type MarketingApiError,
 		type RuleLabel
 	} from '$lib/marketing/api';
+	import { startFileUpload, finishFileUpload, trashFile } from '$lib/files/api';
+	import { uploadAttachmentFile } from '$lib/collaboration/api';
 	import {
 		cloneMarketingCampaignContent,
 		describeMarketingContentProblem,
@@ -111,7 +113,7 @@
 		const id = crypto.randomUUID();
 		switch (type) {
 			case 'image':
-				return { id, type, url: '', alt: '' };
+				return { id, type, file_id: '', alt: '' };
 			case 'heading':
 				return { id, type, level: 'h2', text: '' };
 			case 'text':
@@ -140,6 +142,65 @@
 	}
 	function removeBlock(index: number) {
 		content.blocks = content.blocks.filter((_, i) => i !== index);
+	}
+
+	// Image uploads made during this editing session that no save has claimed yet. A swap or a remove before
+	// the next save trashes the old upload rather than leaving it sitting unused in the library -- the same
+	// `uploadedThisSession` convention ProductsAndServicesBlock uses for a line photo. A File that was already
+	// part of a saved draft before this session started is left alone here; the server's own sync (Part 6F's
+	// migration on marketing_update_campaign_draft) drops its link once a save no longer references it.
+	const uploadedThisSession = new Set<string>();
+
+	async function discardOrphanedImage(fileId: string) {
+		if (!uploadedThisSession.has(fileId)) return;
+		uploadedThisSession.delete(fileId);
+		try {
+			await trashFile(fileId);
+		} catch (caught) {
+			console.error('Could not move an unsaved campaign image to Trash.', fileId, caught);
+		}
+	}
+
+	// The id an image upload attaches to. Step 3 (where blocks are edited) is unreachable until
+	// continueFromGoal has already required a name and a goal, so creating the draft here needs no field the
+	// user has not already supplied -- the same silent "first meaningful action creates the row" moment
+	// RequestForm's line photo upload relies on. A block still missing its file_id cannot pass the server's
+	// own validation, so it is left out of this one create call; the real content (with the finished upload)
+	// reaches the row moments later through the ordinary saveDraft/update path.
+	async function ensureCampaignId(): Promise<string> {
+		if (campaignId) return campaignId;
+		const created = await createCampaignRequest({
+			name: name.trim(),
+			goal: goal as MarketingGoal,
+			customer_group_id: customerGroupId,
+			template_id: templateId,
+			content: {
+				...content,
+				blocks: content.blocks.filter((block) => block.type !== 'image' || block.file_id)
+			}
+		});
+		campaignId = created.id;
+		revision = created.revision;
+		replaceState(
+			resolve('/(app)/marketing/campaigns/[id=uuid]/edit', { id: created.id }),
+			page.state
+		);
+		await queryClient.invalidateQueries({ queryKey: marketingCampaignsKey });
+		return created.id;
+	}
+
+	/** Uploads a campaign image block's photo, creating the draft first if this is its very first upload. */
+	async function uploadCampaignImage(file: File): Promise<string> {
+		const id = await ensureCampaignId();
+		const started = await startFileUpload(file, {
+			originType: 'marketing_campaign',
+			originId: id,
+			originRole: 'campaign_image'
+		});
+		await uploadAttachmentFile(started.upload_url, file);
+		await finishFileUpload(started.file.id);
+		uploadedThisSession.add(started.file.id);
+		return started.file.id;
 	}
 
 	async function saveDraft() {
@@ -182,6 +243,7 @@
 				);
 			}
 			savedSnapshot = snapshot();
+			uploadedThisSession.clear();
 			await queryClient.invalidateQueries({ queryKey: marketingCampaignsKey });
 			if (campaignId)
 				await queryClient.invalidateQueries({ queryKey: marketingCampaignKey(campaignId) });
@@ -270,6 +332,10 @@
 		step = 5;
 	}
 
+	onDestroy(() => {
+		for (const fileId of [...uploadedThisSession]) void discardOrphanedImage(fileId);
+	});
+
 	beforeNavigate((navigation) => {
 		if (!dirty) return;
 		if (!confirm('Leave this page? Your changes have not been saved.')) navigation.cancel();
@@ -334,6 +400,8 @@
 			onAddBlock={addBlock}
 			onMoveBlock={moveBlock}
 			onRemoveBlock={removeBlock}
+			onUploadImage={uploadCampaignImage}
+			onDiscardOrphanedImage={discardOrphanedImage}
 			onBack={() => (step = 2)}
 			onContinue={() => (step = 4)}
 		/>
@@ -353,6 +421,7 @@
 	{:else}
 		<CampaignReviewStep
 			{content}
+			{campaignId}
 			{name}
 			{goal}
 			{customerGroupId}

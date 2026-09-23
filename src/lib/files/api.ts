@@ -19,7 +19,8 @@ export type FileEntityType =
 	| 'job'
 	| 'visit'
 	| 'invoice'
-	| 'organization';
+	| 'organization'
+	| 'marketing_campaign';
 
 export type FileKind = 'image' | 'video' | 'document';
 export type FileProcessingState = 'pending' | 'available' | 'failed' | 'quarantined';
@@ -188,7 +189,7 @@ export type FileUploadTarget = {
 	originId?: string | null;
 	folderId?: string | null;
 	/** The file_links role the upload will be linked to its record with. Defaults to a plain 'attachment'. */
-	originRole?: 'attachment' | 'line_photo' | 'logo';
+	originRole?: 'attachment' | 'line_photo' | 'logo' | 'campaign_image';
 };
 
 export type StartedUpload = { file: { id: string }; upload_url: string };
@@ -333,7 +334,8 @@ const ORIGIN_LABELS: Record<string, string> = {
 	invoice: 'Invoice',
 	job: 'Job',
 	job_expense: 'Job expense',
-	visit: 'Visit'
+	visit: 'Visit',
+	marketing_campaign: 'Marketing campaign'
 };
 
 export function formatOrigin(originType: string): string {
@@ -344,7 +346,8 @@ const ROLE_LABELS: Record<string, string> = {
 	attachment: 'Attachment',
 	work_photo: 'Work photo',
 	report_photo: 'Work report photo',
-	line_photo: 'Line item photo'
+	line_photo: 'Line item photo',
+	campaign_image: 'Campaign image'
 };
 
 export function formatRole(role: string): string {
@@ -361,7 +364,8 @@ const USAGE_GROUP_LABELS: Record<string, { singular: string; plural: string }> =
 	visit: { singular: 'Visit', plural: 'Visits' },
 	job_expense: { singular: 'Job expense', plural: 'Job expenses' },
 	organization: { singular: 'Business logo', plural: 'Business logo' },
-	message: { singular: 'Message', plural: 'Messages' }
+	message: { singular: 'Message', plural: 'Messages' },
+	marketing_campaign: { singular: 'Marketing campaign', plural: 'Marketing campaigns' }
 };
 
 export function usageGroupLabel(entityType: string, count: number): string {

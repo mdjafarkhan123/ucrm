@@ -43,6 +43,7 @@
 	// administrator ever sees a working Send/Schedule control (blueprint §14); everyone else is shown why not.
 	let {
 		content,
+		campaignId,
 		name,
 		goal,
 		customerGroupId,
@@ -55,6 +56,7 @@
 		onSend
 	}: {
 		content: MarketingCampaignContent;
+		campaignId: string | null;
 		name: string;
 		goal: MarketingGoal | null;
 		customerGroupId: string | null;
@@ -118,7 +120,7 @@
 		testMessage = '';
 		testError = '';
 		try {
-			await sendTestEmailRequest(content);
+			await sendTestEmailRequest(content, campaignId);
 			testMessage = 'A test email is on its way to your own inbox.';
 		} catch (cause) {
 			testError = cause instanceof Error ? cause.message : 'That test email could not be sent.';

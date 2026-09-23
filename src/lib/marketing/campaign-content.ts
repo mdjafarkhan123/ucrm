@@ -79,11 +79,14 @@ const variableText = (max: number) =>
 
 const blockId = z.string().uuid();
 
+// Part 6F: the image comes from the File Manager, not a pasted address. file_id names an uploaded File this
+// organization owns; render-email.ts resolves it to an actual URL at render/send time (never stored here --
+// the same split serviceNames already uses for service_summary's catalog item ids).
 export const marketingImageBlockSchema = z
 	.object({
 		id: blockId,
 		type: z.literal('image'),
-		url: httpUrl,
+		file_id: z.string().uuid(),
 		alt: z.string().trim().max(MARKETING_IMAGE_ALT_MAX).default(''),
 		link_url: httpUrl.optional()
 	})
@@ -222,7 +225,7 @@ export function describeMarketingContentProblem(content: MarketingCampaignConten
 				if (!block.url.trim()) return `${position} needs a link.`;
 				break;
 			case 'image':
-				if (!block.url.trim()) return `${position} needs an image link.`;
+				if (!block.file_id) return `${position} needs a photo.`;
 				break;
 			case 'service_summary':
 				if (!block.title.trim()) return `${position} needs a title.`;

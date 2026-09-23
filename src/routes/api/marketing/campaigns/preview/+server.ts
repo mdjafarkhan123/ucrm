@@ -46,10 +46,18 @@ export const POST: RequestHandler = async (event) => {
 		const serviceNames = Object.fromEntries(
 			labels.catalog_items.map((item) => [item.id, item.label])
 		);
+		// The signed-in member's own preview: the same authenticated route every other File thumbnail in the
+		// app uses, never the public campaign-image route a recipient's mail client fetches from.
+		const imageUrls: Record<string, string> = {};
+		for (const block of content.blocks) {
+			if (block.type === 'image' && block.file_id)
+				imageUrls[block.file_id] = `/api/files/${block.file_id}/view`;
+		}
 
 		const rendered = await renderCampaignEmail(content, {
 			variables: { customer_first_name: 'Alex', business_name: business.name },
 			serviceNames,
+			imageUrls,
 			business,
 			unsubscribeUrl: null,
 			cta

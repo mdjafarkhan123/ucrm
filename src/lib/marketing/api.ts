@@ -371,12 +371,13 @@ export async function cancelCampaignRequest(campaignId: string): Promise<Campaig
 }
 
 export async function sendTestEmailRequest(
-	content: MarketingCampaignContent
+	content: MarketingCampaignContent,
+	campaignId: string | null
 ): Promise<{ messageId: string }> {
 	const response = await fetch('/api/marketing/campaigns/test-send', {
 		method: 'POST',
 		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify({ content })
+		body: JSON.stringify({ content, campaign_id: campaignId })
 	});
 	if (!response.ok) throw await readMarketingError(response, 'That test email could not be sent.');
 	return response.json();

@@ -15,7 +15,8 @@ export type LinkedEntityType =
 	| 'job'
 	| 'visit'
 	| 'invoice'
-	| 'organization';
+	| 'organization'
+	| 'marketing_campaign';
 
 // View follows the single customers.view gate for clients and properties (a Property's visibility already
 // follows its owning Client). Manage differs: client-scoped writes ride customers.edit, property-scoped
@@ -23,7 +24,14 @@ export type LinkedEntityType =
 function linkedEntityPermissionKey(
 	entityType: Exclude<
 		LinkedEntityType,
-		'request' | 'quote' | 'job_expense' | 'job' | 'visit' | 'invoice' | 'organization'
+		| 'request'
+		| 'quote'
+		| 'job_expense'
+		| 'job'
+		| 'visit'
+		| 'invoice'
+		| 'organization'
+		| 'marketing_campaign'
 	>,
 	mode: 'view' | 'manage'
 ): string {
@@ -54,6 +62,17 @@ export async function requireLinkedEntityAccess(
 	// 'organization' branch. There is no separate view permission — anyone who can reach settings can see it.
 	if (entityType === 'organization') {
 		const check = await requireOrganizationPermission(event, 'settings.business.edit');
+		return 'response' in check ? { response: check.response } : { auth: check.auth };
+	}
+
+	// A campaign image follows the campaign itself: marketing.view to see it, marketing.draft to upload or
+	// replace it -- the same pair its own routes and private.can_view_linked_entity/can_manage_linked_record
+	// check for 'marketing_campaign'.
+	if (entityType === 'marketing_campaign') {
+		const check = await requireOrganizationPermission(
+			event,
+			mode === 'view' ? 'marketing.view' : 'marketing.draft'
+		);
 		return 'response' in check ? { response: check.response } : { auth: check.auth };
 	}
 
@@ -115,7 +134,8 @@ export function parseLinkedEntityQuery(
 			entityType !== 'job' &&
 			entityType !== 'visit' &&
 			entityType !== 'invoice' &&
-			entityType !== 'organization') ||
+			entityType !== 'organization' &&
+			entityType !== 'marketing_campaign') ||
 		!entityId
 	) {
 		return null;
@@ -145,7 +165,8 @@ export async function linkedEntityBelongsToOrganization(
 		entityType === 'invoice' ||
 		entityType === 'job_expense' ||
 		entityType === 'job' ||
-		entityType === 'visit'
+		entityType === 'visit' ||
+		entityType === 'marketing_campaign'
 	) {
 		const table =
 			entityType === 'request'
@@ -158,7 +179,9 @@ export async function linkedEntityBelongsToOrganization(
 							? 'job_expenses'
 							: entityType === 'job'
 								? 'jobs'
-								: 'job_visits';
+								: entityType === 'visit'
+									? 'job_visits'
+									: 'marketing_campaigns';
 		const { data } = await supabase
 			.from(table)
 			.select('id')

@@ -64,6 +64,11 @@ export const POST: RequestHandler = async (event) => {
 		}
 	}
 
+	// An image block renders with <mj-image>; a document or video there would break the email.
+	if (parsed.data.origin_role === 'campaign_image' && !parsed.data.mime_type.startsWith('image/')) {
+		return validationError({ mime_type: 'Only a photo can be used for an image block.' });
+	}
+
 	// An upload that names a record must name one of this organization's records.
 	if (parsed.data.origin_type !== 'file_manager' && parsed.data.origin_id) {
 		const belongs = await linkedEntityBelongsToOrganization(

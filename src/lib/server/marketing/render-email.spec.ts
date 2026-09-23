@@ -19,6 +19,7 @@ const business: MarketingRenderContext['business'] = {
 const baseCtx: MarketingRenderContext = {
 	variables: { customer_first_name: 'Alex', business_name: 'Raad LTD' },
 	serviceNames: { 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa': 'Gutter cleaning' },
+	imageUrls: { 'cccccccc-cccc-cccc-cccc-cccccccccccc': 'https://example.com/photo.jpg' },
 	business,
 	unsubscribeUrl: 'https://example.com/u/token123',
 	cta: null
@@ -99,6 +100,22 @@ describe('renderCampaignEmail', () => {
 		);
 		expect(result.html).toContain('Gutter cleaning');
 		expect(result.html.match(/<li>/g)?.length).toBe(1);
+	});
+
+	it('resolves an image block to its prefetched url and skips an unknown file_id', async () => {
+		const result = await renderCampaignEmail(
+			contentWith([
+				{
+					id: '66666666-6666-6666-6666-666666666666',
+					type: 'image',
+					file_id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+					alt: 'Finished patio',
+					link_url: undefined
+				}
+			]),
+			baseCtx
+		);
+		expect(result.html).toContain('src="https://example.com/photo.jpg"');
 	});
 
 	it('always appends the locked footer with business identity and address', async () => {

@@ -2,9 +2,11 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import AsyncMultiPicker from './AsyncMultiPicker.svelte';
 	import InsertVariableMenu from './InsertVariableMenu.svelte';
 	import { searchCatalogItemsForRule, type RuleLabel } from '$lib/marketing/api';
+	import { MAX_ATTACHMENT_SIZE_BYTES } from '$lib/collaboration/attachment-limits';
 	import {
 		MARKETING_BLOCK_TYPE_LABELS,
 		MARKETING_HEADING_TEXT_MAX,
@@ -18,6 +20,8 @@
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import arrowUpIcon from '@tabler/icons/outline/arrow-up.svg?raw';
 	import arrowDownIcon from '@tabler/icons/outline/arrow-down.svg?raw';
+	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
+	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 
 	// One block in the email (blueprint §8 step 3). Field edits mutate `block` in place -- a plain,
 	// non-$bindable prop into the journey's own $state tree, the same direct-mutation convention
@@ -29,7 +33,9 @@
 		count,
 		catalogLabels = [],
 		onMove,
-		onRemove
+		onRemove,
+		onUploadImage,
+		onDiscardOrphanedImage
 	}: {
 		block: MarketingBlock;
 		index: number;
@@ -38,9 +44,60 @@
 		catalogLabels?: RuleLabel[];
 		onMove: (by: number) => void;
 		onRemove: () => void;
+		/** An image block's own photo well; unused by every other block type. */
+		onUploadImage?: (file: File) => Promise<string>;
+		onDiscardOrphanedImage?: (fileId: string) => void;
 	} = $props();
 
 	const catalogLabelById = $derived(new Map(catalogLabels.map((item) => [item.id, item])));
+
+	// --- Image block's photo well -------------------------------------------------------------------------
+
+	let imageInputEl: HTMLInputElement | undefined = $state();
+	let imageUploading = $state(false);
+	let imageError = $state('');
+	// A block loaded from a saved draft already cleared its scan; a block uploaded just now has not yet --
+	// the same optimistic-then-never-repolled state ProductsAndServicesBlock's own line photo uses.
+	let imageProcessingState = $state<'available' | 'pending'>('available');
+
+	function openImagePicker() {
+		imageInputEl?.click();
+	}
+
+	async function handleImageChosen(fileList: FileList | null) {
+		const chosen = fileList?.[0];
+		if (imageInputEl) imageInputEl.value = '';
+		if (!chosen || !onUploadImage || block.type !== 'image') return;
+
+		if (!chosen.type.startsWith('image/')) {
+			imageError = 'Only a photo can be used for an image block.';
+			return;
+		}
+		if (chosen.size > MAX_ATTACHMENT_SIZE_BYTES) {
+			imageError = 'That photo is over 25 MB.';
+			return;
+		}
+
+		const previousFileId = block.file_id;
+		imageUploading = true;
+		imageError = '';
+		try {
+			block.file_id = await onUploadImage(chosen);
+			imageProcessingState = 'pending';
+			if (previousFileId) onDiscardOrphanedImage?.(previousFileId);
+		} catch (caught) {
+			imageError = caught instanceof Error ? caught.message : 'That photo could not be uploaded.';
+		} finally {
+			imageUploading = false;
+		}
+	}
+
+	function removeImage() {
+		if (block.type !== 'image') return;
+		const previousFileId = block.file_id;
+		block.file_id = '';
+		if (previousFileId) onDiscardOrphanedImage?.(previousFileId);
+	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -132,12 +189,56 @@
 				placeholder="https://example.com"
 			/>
 		{:else if block.type === 'image'}
-			<Input
-				id={`block-${block.id}-url`}
-				label="Image link"
-				bind:value={block.url}
-				placeholder="https://example.com/photo.jpg"
-			/>
+			<div class="image-well" class:image-well--filled={Boolean(block.file_id)}>
+				<input
+					bind:this={imageInputEl}
+					type="file"
+					accept="image/*"
+					class="image-well__file-input"
+					tabindex={-1}
+					aria-hidden="true"
+					onchange={(event) =>
+						void handleImageChosen((event.currentTarget as HTMLInputElement).files)}
+				/>
+				{#if imageUploading}
+					<span class="image-well__loading" aria-hidden="true"></span>
+				{:else if block.file_id}
+					<FileThumb
+						fileId={block.file_id}
+						displayName={block.alt || 'Campaign image'}
+						mimeType="image/jpeg"
+						kind="image"
+						processingState={imageProcessingState}
+						hasThumbnail={false}
+						size="panel"
+					/>
+					<div class="image-well__tools">
+						<button
+							type="button"
+							class="image-well__tool"
+							aria-label="Replace photo"
+							onclick={openImagePicker}
+						>
+							{@html pencilIcon}
+						</button>
+						<button
+							type="button"
+							class="image-well__tool image-well__tool--danger"
+							aria-label="Remove photo"
+							onclick={removeImage}
+						>
+							{@html trashIcon}
+						</button>
+					</div>
+				{:else}
+					<button type="button" class="image-well__add" onclick={openImagePicker}>
+						{@html uploadIcon} Add a photo
+					</button>
+				{/if}
+			</div>
+			{#if imageError}
+				<p class="image-well__error" role="alert">{imageError}</p>
+			{/if}
 			<Input
 				id={`block-${block.id}-alt`}
 				label="Alt text (for accessibility)"
@@ -257,6 +358,96 @@
 				border-color: var(--color-critical);
 				color: var(--color-critical);
 			}
+		}
+	}
+
+	.image-well {
+		position: relative;
+		width: 100%;
+		max-width: 320px;
+		aspect-ratio: 4 / 3;
+		overflow: hidden;
+		border: var(--border-base) dashed var(--color-border--interactive);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background);
+
+		&--filled {
+			border-style: solid;
+		}
+
+		&__file-input {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+		}
+
+		&__add {
+			display: flex;
+			width: 100%;
+			height: 100%;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			gap: var(--space-smaller);
+			border: 0;
+			color: var(--color-text--secondary);
+			background: none;
+			font-size: var(--typography--fontSize-small);
+			cursor: pointer;
+
+			:global(svg) {
+				width: 22px;
+				height: 22px;
+			}
+			&:hover {
+				color: var(--color-interactive);
+			}
+		}
+
+		&__loading {
+			display: block;
+			width: 100%;
+			height: 100%;
+			background: var(--color-surface--hover);
+		}
+
+		&__tools {
+			position: absolute;
+			top: var(--space-smaller);
+			right: var(--space-smaller);
+			display: flex;
+			gap: var(--space-smaller);
+		}
+
+		&__tool {
+			display: grid;
+			width: 28px;
+			height: 28px;
+			place-items: center;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-circle);
+			color: var(--color-icon--secondary);
+			background: var(--color-surface);
+			cursor: pointer;
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
+			&:hover {
+				color: var(--color-interactive);
+			}
+			&--danger:hover {
+				color: var(--color-critical);
+			}
+		}
+
+		&__error {
+			margin: 0;
+			color: var(--color-critical--onSurface);
+			font-size: var(--typography--fontSize-smaller);
 		}
 	}
 

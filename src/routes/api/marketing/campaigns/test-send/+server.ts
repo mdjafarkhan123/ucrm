@@ -13,7 +13,10 @@ import { MarketingTestSendError, sendTestMarketingEmail } from '$lib/server/mark
 // campaign) since this never touches a real customer or the Marketing allowance. The recipient is always the
 // signed-in member's own address, never client-supplied, so a test can't be turned into an arbitrary send.
 
-const testSendSchema = z.object({ content: marketingCampaignContentSchema });
+const testSendSchema = z.object({
+	content: marketingCampaignContentSchema,
+	campaign_id: z.string().uuid().nullable().optional()
+});
 
 export const POST: RequestHandler = async (event) => {
 	const access = await requireOrganizationPermission(event, 'marketing.draft');
@@ -40,7 +43,8 @@ export const POST: RequestHandler = async (event) => {
 		const result = await sendTestMarketingEmail(
 			access.auth.organization.id,
 			recipientEmail,
-			parsed.data.content
+			parsed.data.content,
+			parsed.data.campaign_id ?? null
 		);
 		return json(result, { headers: NO_STORE_HEADERS });
 	} catch (error) {

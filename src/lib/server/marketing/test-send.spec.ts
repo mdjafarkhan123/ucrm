@@ -36,7 +36,7 @@ describe('sendTestMarketingEmail', () => {
 		const buildContext = vi.fn().mockResolvedValue(context);
 		const send = vi.fn().mockResolvedValue({ messageId: 'ses-message-1' });
 
-		const result = await sendTestMarketingEmail('org-1', 'contractor@example.test', content, {
+		const result = await sendTestMarketingEmail('org-1', 'contractor@example.test', content, null, {
 			buildContext,
 			send
 		});
@@ -58,7 +58,10 @@ describe('sendTestMarketingEmail', () => {
 		const send = vi.fn();
 
 		await expect(
-			sendTestMarketingEmail('org-1', 'contractor@example.test', content, { buildContext, send })
+			sendTestMarketingEmail('org-1', 'contractor@example.test', content, null, {
+				buildContext,
+				send
+			})
 		).rejects.toThrow(MarketingTestSendError);
 		expect(send).not.toHaveBeenCalled();
 	});
@@ -73,7 +76,10 @@ describe('sendTestMarketingEmail', () => {
 		const send = vi.fn().mockRejectedValue(submissionError);
 
 		await expect(
-			sendTestMarketingEmail('org-1', 'contractor@example.test', content, { buildContext, send })
+			sendTestMarketingEmail('org-1', 'contractor@example.test', content, null, {
+				buildContext,
+				send
+			})
 		).rejects.toBe(submissionError);
 	});
 });
