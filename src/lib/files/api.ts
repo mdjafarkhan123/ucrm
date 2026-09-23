@@ -11,7 +11,15 @@ export type FileView =
 
 /** The CRM records a File can be attached to. Matches the file_links entity_type constraint. */
 export type FileEntityType =
-	'client' | 'property' | 'request' | 'quote' | 'job_expense' | 'job' | 'visit' | 'invoice';
+	| 'client'
+	| 'property'
+	| 'request'
+	| 'quote'
+	| 'job_expense'
+	| 'job'
+	| 'visit'
+	| 'invoice'
+	| 'organization';
 
 export type FileKind = 'image' | 'video' | 'document';
 export type FileProcessingState = 'pending' | 'available' | 'failed' | 'quarantined';
@@ -180,7 +188,7 @@ export type FileUploadTarget = {
 	originId?: string | null;
 	folderId?: string | null;
 	/** The file_links role the upload will be linked to its record with. Defaults to a plain 'attachment'. */
-	originRole?: 'attachment' | 'line_photo';
+	originRole?: 'attachment' | 'line_photo' | 'logo';
 };
 
 export type StartedUpload = { file: { id: string }; upload_url: string };
@@ -351,7 +359,8 @@ const USAGE_GROUP_LABELS: Record<string, { singular: string; plural: string }> =
 	invoice: { singular: 'Invoice', plural: 'Invoices' },
 	job: { singular: 'Job', plural: 'Jobs' },
 	visit: { singular: 'Visit', plural: 'Visits' },
-	job_expense: { singular: 'Job expense', plural: 'Job expenses' }
+	job_expense: { singular: 'Job expense', plural: 'Job expenses' },
+	organization: { singular: 'Business logo', plural: 'Business logo' }
 };
 
 export function usageGroupLabel(entityType: string, count: number): string {

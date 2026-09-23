@@ -977,6 +977,7 @@ export type Database = {
 					client_id: string;
 					id: string;
 					issued_at: string;
+					marketing_campaign_recipient_id: string | null;
 					organization_id: string;
 					token_hash: string;
 				};
@@ -985,6 +986,7 @@ export type Database = {
 					client_id: string;
 					id?: string;
 					issued_at?: string;
+					marketing_campaign_recipient_id?: string | null;
 					organization_id: string;
 					token_hash: string;
 				};
@@ -993,10 +995,18 @@ export type Database = {
 					client_id?: string;
 					id?: string;
 					issued_at?: string;
+					marketing_campaign_recipient_id?: string | null;
 					organization_id?: string;
 					token_hash?: string;
 				};
 				Relationships: [
+					{
+						foreignKeyName: 'client_marketing_unsubscribe_links_campaign_recipient_fkey';
+						columns: ['marketing_campaign_recipient_id'];
+						isOneToOne: false;
+						referencedRelation: 'marketing_campaign_recipients';
+						referencedColumns: ['id'];
+					},
 					{
 						foreignKeyName: 'client_marketing_unsubscribe_links_method_fk';
 						columns: ['organization_id', 'client_id', 'client_contact_method_id'];
@@ -2775,6 +2785,7 @@ export type Database = {
 					in_reply_to_intent_id: string | null;
 					in_reply_to_provider_message_id: string | null;
 					loop_detected_at: string | null;
+					marketing_campaign_id: string | null;
 					message_kind: string;
 					organization_id: string;
 					owner_user_id: string | null;
@@ -2809,6 +2820,7 @@ export type Database = {
 					in_reply_to_intent_id?: string | null;
 					in_reply_to_provider_message_id?: string | null;
 					loop_detected_at?: string | null;
+					marketing_campaign_id?: string | null;
 					message_kind?: string;
 					organization_id: string;
 					owner_user_id?: string | null;
@@ -2843,6 +2855,7 @@ export type Database = {
 					in_reply_to_intent_id?: string | null;
 					in_reply_to_provider_message_id?: string | null;
 					loop_detected_at?: string | null;
+					marketing_campaign_id?: string | null;
 					message_kind?: string;
 					organization_id?: string;
 					owner_user_id?: string | null;
@@ -2884,6 +2897,13 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'communication_delivery_intents';
 						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_inbound_messages_marketing_campaign_fkey';
+						columns: ['organization_id', 'marketing_campaign_id'];
+						isOneToOne: false;
+						referencedRelation: 'marketing_campaigns';
+						referencedColumns: ['organization_id', 'id'];
 					},
 					{
 						foreignKeyName: 'communication_inbound_messages_organization_id_fkey';
@@ -7640,6 +7660,55 @@ export type Database = {
 					}
 				];
 			};
+			marketing_campaign_cta_links: {
+				Row: {
+					campaign_id: string;
+					id: string;
+					issued_at: string;
+					marketing_campaign_recipient_id: string;
+					organization_id: string;
+					token_hash: string;
+				};
+				Insert: {
+					campaign_id: string;
+					id?: string;
+					issued_at?: string;
+					marketing_campaign_recipient_id: string;
+					organization_id: string;
+					token_hash: string;
+				};
+				Update: {
+					campaign_id?: string;
+					id?: string;
+					issued_at?: string;
+					marketing_campaign_recipient_id?: string;
+					organization_id?: string;
+					token_hash?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'marketing_campaign_cta_links_campaign_fkey';
+						columns: ['organization_id', 'campaign_id'];
+						isOneToOne: false;
+						referencedRelation: 'marketing_campaigns';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'marketing_campaign_cta_links_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'marketing_campaign_cta_links_recipient_fkey';
+						columns: ['marketing_campaign_recipient_id'];
+						isOneToOne: true;
+						referencedRelation: 'marketing_campaign_recipients';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			marketing_campaign_recipient_events: {
 				Row: {
 					event_kind: string;
@@ -7702,16 +7771,20 @@ export type Database = {
 					client_contact_method_id: string | null;
 					client_id: string;
 					created_at: string;
+					delivered_at: string | null;
 					display_name: string;
 					excluded_reason: string | null;
 					failure_code: string | null;
 					failure_message: string | null;
+					first_clicked_at: string | null;
+					first_opened_at: string | null;
 					id: string;
 					organization_id: string;
 					provider_message_id: string | null;
 					recipient_email: string | null;
 					status: string;
 					submitted_at: string | null;
+					unsubscribed_at: string | null;
 					updated_at: string;
 				};
 				Insert: {
@@ -7722,16 +7795,20 @@ export type Database = {
 					client_contact_method_id?: string | null;
 					client_id: string;
 					created_at?: string;
+					delivered_at?: string | null;
 					display_name: string;
 					excluded_reason?: string | null;
 					failure_code?: string | null;
 					failure_message?: string | null;
+					first_clicked_at?: string | null;
+					first_opened_at?: string | null;
 					id?: string;
 					organization_id: string;
 					provider_message_id?: string | null;
 					recipient_email?: string | null;
 					status: string;
 					submitted_at?: string | null;
+					unsubscribed_at?: string | null;
 					updated_at?: string;
 				};
 				Update: {
@@ -7742,16 +7819,20 @@ export type Database = {
 					client_contact_method_id?: string | null;
 					client_id?: string;
 					created_at?: string;
+					delivered_at?: string | null;
 					display_name?: string;
 					excluded_reason?: string | null;
 					failure_code?: string | null;
 					failure_message?: string | null;
+					first_clicked_at?: string | null;
+					first_opened_at?: string | null;
 					id?: string;
 					organization_id?: string;
 					provider_message_id?: string | null;
 					recipient_email?: string | null;
 					status?: string;
 					submitted_at?: string | null;
+					unsubscribed_at?: string | null;
 					updated_at?: string;
 				};
 				Relationships: [
@@ -18596,6 +18677,7 @@ export type Database = {
 				Args: {
 					supplied_token_hash: string;
 					target_client_contact_method_id: string;
+					target_marketing_campaign_recipient_id?: string;
 					target_organization_id: string;
 				};
 				Returns: Json;
@@ -18618,6 +18700,14 @@ export type Database = {
 			issue_job_report_access_link: {
 				Args: { supplied_token_hash: string; target_job_id: string };
 				Returns: Json;
+			};
+			issue_marketing_campaign_cta_link: {
+				Args: {
+					supplied_token_hash: string;
+					target_claim_token: string;
+					target_recipient_id: string;
+				};
+				Returns: undefined;
 			};
 			issue_quote_access_link: {
 				Args: { supplied_token_hash: string; target_quote_id: string };
@@ -19756,6 +19846,7 @@ export type Database = {
 					in_reply_to_intent_id: string | null;
 					in_reply_to_provider_message_id: string | null;
 					loop_detected_at: string | null;
+					marketing_campaign_id: string | null;
 					message_kind: string;
 					organization_id: string;
 					owner_user_id: string | null;
@@ -19835,6 +19926,7 @@ export type Database = {
 					in_reply_to_intent_id: string | null;
 					in_reply_to_provider_message_id: string | null;
 					loop_detected_at: string | null;
+					marketing_campaign_id: string | null;
 					message_kind: string;
 					organization_id: string;
 					owner_user_id: string | null;
@@ -21283,10 +21375,6 @@ export type Database = {
 					new_residential_term_id: string;
 					target_organization_id: string;
 				};
-				Returns: Json;
-			};
-			set_organization_logo: {
-				Args: { new_object_key: string; target_organization_id: string };
 				Returns: Json;
 			};
 			set_organization_payment_settings: {

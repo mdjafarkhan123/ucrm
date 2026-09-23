@@ -9,10 +9,10 @@ export function organizationLogoUrl(revision: number) {
 	return `/api/settings/branding/logo/view?v=${revision}`;
 }
 
-// Every upload gets a fresh uuid in its key, and the part after the organization prefix is exactly that:
-// unique per upload, and no organization id in a header.
+// Every upload gets a fresh uuid in its key, so the object key itself already changes on every replacement
+// -- no organization id needs to leak into a header for the ETag to do its job.
 export function organizationLogoEtag(objectKey: string) {
-	return `"${objectKey.split('/logo/')[1] ?? objectKey}"`;
+	return `"${objectKey}"`;
 }
 
 /**

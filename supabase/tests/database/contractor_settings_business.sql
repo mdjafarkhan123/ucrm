@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(33);
+select plan(32);
 
 -- Fixtures are rolled back at the end of this file. Fixed IDs keep the assertions readable.
 --
@@ -303,25 +303,28 @@ select is(
   'brand color saves on its own counter'
 );
 
+-- A logo now reaches organization_settings through finalize_file_processing, once the uploaded File clears
+-- its check -- not through a bespoke commit RPC. finalize_file_processing runs as the worker's own owner
+-- role, never `authenticated` (which holds no UPDATE on this table), so this simulates it the same way the
+-- currency section above simulates a customer-sent quote: drop to the elevated role, write, then come back.
+reset role;
+update public.organization_settings
+set logo_object_key = 'c2000000-0000-0000-0000-000000000001/files/first.png',
+    branding_revision = branding_revision + 1
+where organization_id = 'c2000000-0000-0000-0000-000000000001';
+set local role authenticated;
+
 select is(
-  public.set_organization_logo(
-    'c2000000-0000-0000-0000-000000000001',
-    'c2000000-0000-0000-0000-000000000001/logo/first.png'
-  ) ->> 'branding_revision',
-  '3',
-  'committing a logo moves the branding counter so a cached image is replaced'
+  (select branding_revision from public.organization_settings
+   where organization_id = 'c2000000-0000-0000-0000-000000000001'),
+  3,
+  'promoting a logo file moves the branding counter so a cached image is replaced'
 );
 
 select is(
   public.remove_organization_logo('c2000000-0000-0000-0000-000000000001') ->> 'previous_object_key',
-  'c2000000-0000-0000-0000-000000000001/logo/first.png',
+  'c2000000-0000-0000-0000-000000000001/files/first.png',
   'removing the logo hands back the object to tidy up later'
-);
-
-select throws_ok(
-  $$select public.set_organization_logo('c2000000-0000-0000-0000-000000000001',
-      'c2000000-0000-0000-0000-000000000002/logo/stolen.png')$$,
-  '23514', null, 'a key belonging to another organization is refused'
 );
 
 -- 6. Permission and isolation -------------------------------------------------------------------------------

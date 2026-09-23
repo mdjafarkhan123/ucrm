@@ -7,7 +7,15 @@ import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { getOrganizationContext, type OrganizationContext } from '$lib/server/auth/organization';
 
 export type LinkedEntityType =
-	'client' | 'property' | 'request' | 'quote' | 'job_expense' | 'job' | 'visit' | 'invoice';
+	| 'client'
+	| 'property'
+	| 'request'
+	| 'quote'
+	| 'job_expense'
+	| 'job'
+	| 'visit'
+	| 'invoice'
+	| 'organization';
 
 // View follows the single customers.view gate for clients and properties (a Property's visibility already
 // follows its owning Client). Manage differs: client-scoped writes ride customers.edit, property-scoped
@@ -15,7 +23,7 @@ export type LinkedEntityType =
 function linkedEntityPermissionKey(
 	entityType: Exclude<
 		LinkedEntityType,
-		'request' | 'quote' | 'job_expense' | 'job' | 'visit' | 'invoice'
+		'request' | 'quote' | 'job_expense' | 'job' | 'visit' | 'invoice' | 'organization'
 	>,
 	mode: 'view' | 'manage'
 ): string {
@@ -38,6 +46,14 @@ export async function requireLinkedEntityAccess(
 			event,
 			mode === 'view' ? 'quotes.view' : 'quotes.edit'
 		);
+		return 'response' in check ? { response: check.response } : { auth: check.auth };
+	}
+
+	// The organization's own logo, viewed or managed the same way as everything else on the branding page:
+	// settings.business.edit, matching private.can_view_linked_entity/can_manage_linked_record's
+	// 'organization' branch. There is no separate view permission — anyone who can reach settings can see it.
+	if (entityType === 'organization') {
+		const check = await requireOrganizationPermission(event, 'settings.business.edit');
 		return 'response' in check ? { response: check.response } : { auth: check.auth };
 	}
 
@@ -98,7 +114,8 @@ export function parseLinkedEntityQuery(
 			entityType !== 'job_expense' &&
 			entityType !== 'job' &&
 			entityType !== 'visit' &&
-			entityType !== 'invoice') ||
+			entityType !== 'invoice' &&
+			entityType !== 'organization') ||
 		!entityId
 	) {
 		return null;
@@ -114,6 +131,12 @@ export async function linkedEntityBelongsToOrganization(
 	entityType: LinkedEntityType,
 	entityId: string
 ): Promise<boolean> {
+	// The organization is the record: there is no table to look up, entityId is only valid when it matches
+	// the organization the caller is already scoped to.
+	if (entityType === 'organization') {
+		return entityId === organizationId;
+	}
+
 	// Requests, quotes, invoices, job expenses, jobs and visits are not soft-deleted — an unwanted one is
 	// archived, voided or removed — so only the two customer tables carry the deleted_at filter.
 	if (

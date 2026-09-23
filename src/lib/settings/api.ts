@@ -4,6 +4,8 @@ import { httpError } from '$lib/http-error';
 // names the section that actually collided.
 
 import type { CatalogItem, PricingCategory } from '$lib/quotes/api';
+import { finishFileUpload, startFileUpload } from '$lib/files/api';
+import { uploadAttachmentFile } from '$lib/collaboration/api';
 
 export type SettingsMember = { name: string | null; email: string | null; role: string };
 
@@ -225,34 +227,18 @@ export function isSaveConflict(result: unknown): result is SettingsSaveConflict 
 	);
 }
 
-export async function uploadOrganizationLogo(
-	file: File
-): Promise<{ branding_revision: number; logo_url: string | null }> {
-	const presignResponse = await fetch('/api/settings/branding/logo-upload', {
-		method: 'POST',
-		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify({ file_name: file.name, mime_type: file.type, size_bytes: file.size })
+// A logo now goes through the shared File Manager pipeline (scan + thumbnail worker) like every other
+// upload, so this just starts and hands off the upload -- there is no logo_url to return. The file
+// promotes organization_settings.logo_object_key itself once it clears the safety check; the caller polls
+// for that the same way RecordFilesCard.svelte waits for any other upload to appear.
+export async function uploadOrganizationLogo(file: File, organizationId: string): Promise<void> {
+	const started = await startFileUpload(file, {
+		originType: 'organization',
+		originId: organizationId,
+		originRole: 'logo'
 	});
-	const presign = await presignResponse.json().catch(() => ({}));
-	if (!presignResponse.ok)
-		throw httpError(presignResponse, presign.error ?? 'That logo could not be uploaded.');
-
-	const putResponse = await fetch(presign.upload_url, {
-		method: 'PUT',
-		headers: { 'content-type': file.type },
-		body: file
-	});
-	if (!putResponse.ok) throw httpError(putResponse, 'That logo could not be uploaded.');
-
-	const commitResponse = await fetch('/api/settings/branding/logo', {
-		method: 'PUT',
-		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify({ object_key: presign.object_key })
-	});
-	const commit = await commitResponse.json().catch(() => ({}));
-	if (!commitResponse.ok)
-		throw httpError(commitResponse, commit.error ?? 'That logo could not be uploaded.');
-	return commit;
+	await uploadAttachmentFile(started.upload_url, file);
+	await finishFileUpload(started.file.id);
 }
 
 export async function removeOrganizationLogo(): Promise<{

@@ -3,6 +3,7 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -25,10 +26,32 @@
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
+
+	// A saved logo now goes through the shared File Manager worker, so it lands as "still being checked"
+	// rather than updating instantly. The page waits for it the same way RecordFilesCard.svelte waits for
+	// any other upload: poll until the branding revision moves past what it was before Save, bounded so a
+	// stalled check does not poll forever.
+	let waitingForLogo = $state(false);
+	let polling = $state(false);
+	let pollTimer: ReturnType<typeof setTimeout> | undefined;
+	let revisionBeforeSave = $state<number | null>(null);
+
 	const query = createQuery(() => ({
 		queryKey: settingsBusinessKey,
-		queryFn: fetchSettingsBusiness
+		queryFn: fetchSettingsBusiness,
+		refetchInterval: polling ? 10_000 : false
 	}));
+
+	$effect(() => {
+		if (!waitingForLogo || revisionBeforeSave === null) return;
+		const business = query.data;
+		if (!business || business.branding.revision <= revisionBeforeSave) return;
+		logoUrl = business.branding.logo_url;
+		waitingForLogo = false;
+		polling = false;
+		clearTimeout(pollTimer);
+		revisionBeforeSave = null;
+	});
 
 	const DEFAULT_COLOR = '#2c5cc5';
 	// Mirrors the server's LOGO_MIME_TYPES/LOGO_MAX_BYTES ($lib/server/validation/settings.schema) so a
@@ -99,7 +122,10 @@
 		pendingLogoPreviewUrl = '';
 	}
 
-	onDestroy(discardPendingLogo);
+	onDestroy(() => {
+		discardPendingLogo();
+		clearTimeout(pollTimer);
+	});
 
 	function cancel() {
 		color = savedColor;
@@ -152,6 +178,7 @@
 		saving = true;
 		errorMessage = '';
 		conflict = null;
+		let currentRevision = query.data.branding.revision;
 
 		if (color !== savedColor) {
 			const result = await saveBranding({
@@ -171,6 +198,7 @@
 				return;
 			}
 			savedColor = color;
+			currentRevision = result.branding_revision;
 			queryClient.setQueryData(settingsBusinessKey, (current: SettingsBusiness | undefined) =>
 				current
 					? { ...current, branding: { ...current.branding, revision: result.branding_revision } }
@@ -179,15 +207,23 @@
 		}
 
 		if (pendingLogoFile) {
+			const organizationId = page.data.organization?.id;
+			if (!organizationId) {
+				errorMessage = 'The business could not be found.';
+				saving = false;
+				return;
+			}
 			try {
-				const result = await uploadOrganizationLogo(pendingLogoFile);
-				logoUrl = result.logo_url;
+				await uploadOrganizationLogo(pendingLogoFile, organizationId);
 				discardPendingLogo();
-				queryClient.setQueryData(settingsBusinessKey, (current: SettingsBusiness | undefined) =>
-					current
-						? { ...current, branding: { ...current.branding, revision: result.branding_revision } }
-						: current
-				);
+				revisionBeforeSave = currentRevision;
+				waitingForLogo = true;
+				polling = true;
+				clearTimeout(pollTimer);
+				pollTimer = setTimeout(() => {
+					polling = false;
+					waitingForLogo = false;
+				}, 120_000);
 			} catch (error) {
 				errorMessage = error instanceof Error ? error.message : 'That logo could not be uploaded.';
 				saving = false;
@@ -263,6 +299,10 @@
 								<p class="branding__logo-pending">
 									Removed when you save. Quotes and invoices already sent to customers keep showing
 									it.
+								</p>
+							{:else if waitingForLogo}
+								<p class="branding__logo-pending">
+									One file is being checked for safety. It appears here as soon as that finishes.
 								</p>
 							{/if}
 							{#if canEdit}

@@ -263,20 +263,6 @@ export type InvoiceDefaultsInput = z.infer<typeof invoiceDefaultsSchema>;
 export const LOGO_MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp'] as const;
 export const LOGO_MAX_BYTES = 2 * 1024 * 1024;
 
-export const logoUploadSchema = z.object({
-	file_name: z.string().trim().min(1, 'Choose a file.').max(200),
-	mime_type: z.enum(LOGO_MIME_TYPES, 'Upload a PNG, JPG, or WEBP image.'),
-	size_bytes: z
-		.number()
-		.int()
-		.positive('That file is empty.')
-		.max(LOGO_MAX_BYTES, 'Logos have to be under 2 MB.')
-});
-
-export const logoCommitSchema = z.object({
-	object_key: z.string().trim().min(1).max(512)
-});
-
 // Quote Settings, Part 2C. Terms arrives as raw safe-formatting HTML; the route sanitizes it to the
 // approved allow-list before this length cap matters and before the database ever sees it. The generous raw
 // ceiling here only stops an absurd payload from reaching the sanitizer at all.

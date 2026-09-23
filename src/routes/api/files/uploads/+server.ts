@@ -8,6 +8,7 @@ import {
 } from '$lib/server/access/collaboration';
 import { databaseError, validationError } from '$lib/server/api/errors';
 import { fileUploadStartSchema } from '$lib/server/validation/files.schema';
+import { LOGO_MAX_BYTES, LOGO_MIME_TYPES } from '$lib/server/validation/settings.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { checkUploadClaim } from '$lib/server/files/upload-policy';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
@@ -50,6 +51,18 @@ export const POST: RequestHandler = async (event) => {
 		sizeBytes: parsed.data.size_bytes
 	});
 	if (!claim.allowed) return validationError({ [claim.field]: claim.reason });
+
+	// The generic upload policy allows larger and more image types than a business logo should. Nothing
+	// downstream catches that before finalize_file_processing promotes the File straight into
+	// organization_settings.logo_object_key, so a logo upload is held to its own, stricter allowlist here.
+	if (parsed.data.origin_role === 'logo') {
+		if (!(LOGO_MIME_TYPES as readonly string[]).includes(parsed.data.mime_type)) {
+			return validationError({ mime_type: 'Upload a PNG, JPG, or WEBP image.' });
+		}
+		if (parsed.data.size_bytes > LOGO_MAX_BYTES) {
+			return validationError({ size_bytes: 'Logos have to be under 2 MB.' });
+		}
+	}
 
 	// An upload that names a record must name one of this organization's records.
 	if (parsed.data.origin_type !== 'file_manager' && parsed.data.origin_id) {

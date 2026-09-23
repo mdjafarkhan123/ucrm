@@ -29,7 +29,9 @@ const ENTITY_TYPES = [
 	'quote',
 	'job_expense',
 	'job',
-	'visit'
+	'visit',
+	'invoice',
+	'organization'
 ] as const;
 
 const PAGE_SIZE_DEFAULT = 40;

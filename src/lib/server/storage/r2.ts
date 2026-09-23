@@ -76,13 +76,6 @@ export function buildJobSignatureObjectKey(organizationId: string, jobId: string
 	return `${organizationId}/job-signatures/${jobId}/${crypto.randomUUID()}.png`;
 }
 
-// A logo is not an attachment either: one per organization, replaced rather than listed, and served
-// inline from our own origin forever. Its own `<org>/logo/` prefix is what `set_organization_logo`
-// checks, so a key issued for one organization can never be committed against another.
-export function buildOrganizationLogoObjectKey(organizationId: string, fileName: string): string {
-	return `${organizationId}/logo/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
-}
-
 // The representative's signature image, uploaded as a file rather than drawn. Its own `<org>/
 // quote-representative-signature/` prefix is what `set_organization_quote_representative` checks, matching
 // the logo's trust boundary.

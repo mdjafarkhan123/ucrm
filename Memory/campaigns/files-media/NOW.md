@@ -2,20 +2,21 @@
 
 **Goal:** One contractor File Manager backed by private R2, with one File linked to every CRM use.
 
-**Done:** Parts 1–6C. Part 6C (line-item photos + global Trash rule) finished 2026-09-23: database
-(`supabase/migrations/20260923100000_files_media_line_photos_and_trash_warning.sql`) and frontend
-(`ProductsAndServicesBlock.svelte`'s line-photo upload and `FileThumb` tile sizing; `FileDetailsPanel.svelte`'s
-three-tier Trash `ConfirmDialog`; `CustomerQuoteDocument.svelte`/`customer-document.ts` removed-photo/file
-placeholders; the public `/q/[token]/files/[id]` route's added `trashed_at` re-check) both browser-verified on
-Raad LTD (office login: `dev.jafarkhan+office@gmail.com` / `PaidLaunch16!`) — line-photo upload reaching
-"Still being checked" with the tile filling its box, the strongest Trash tier on a file a customer already
-received, the customer preview showing "Photo removed", and Restore putting it back. Not yet git-committed;
-see ROADMAP.md for the full note. `svelte-check` and `prettier --check` are clean on every changed file.
+**Done:** Parts 1–6D. Part 6D (branding logo adoption) finished 2026-09-23: migrations `20260923130000`,
+`20260923140000` (bridge), `20260923150000` (bridge dropped), `20260923170000` (found-and-fixed
+`private.linked_entity_exists` missing its `'organization'` branch — see ROADMAP.md) all pushed live; the
+14-file frontend swap is complete and typechecked clean. Browser-verified as admin (office role has no
+`settings.business.edit`, so it cannot edit branding): Save shows "One file is being checked for safety",
+old logo keeps showing until promoted. DB-verified end to end by hand-promoting the File through
+`finalize_file_processing` (the worker does not run locally) — it linked correctly and bumped
+`organization_settings.branding_revision`. The frontend poll actually swapping the shown logo live was not
+re-observed: the Chrome browser session crashed mid-verification, after the upload/save step but before the
+promotion step. `contractor_settings_business.sql` pgTAP is green (32/32).
 
-**Not selected yet — three planned parts are equally dependency-ready** (all depend only on 4–5, already
-complete): 6D (branding adoption), 6E (messages: reuse only), 6F (marketing asset upload). Ask Jafar which to
-build next, or whether Part 7 (customer publication/proof of work) or Part 8 (trash/export/security/scale)
-takes priority instead — do not assume an order.
+**Not yet selected** — three planned parts are dependency-ready (depend only on 4–5, already complete): 6E
+(messages: reuse only), 6F (marketing asset upload), and Part 7 (customer publication/proof of work) or
+Part 8 (trash/export/security/scale) may take priority instead. Ask Jafar which to build next — do not
+assume an order.
 
 **Blocker (campaign-wide):** the upload worker does not run locally; new uploads stay "Still being checked".
 

@@ -4,11 +4,10 @@ import { GET as getBusiness } from './business/+server';
 import { PATCH as patchProfile } from './business/profile/+server';
 import { PATCH as patchHours } from './business/hours/+server';
 import { PATCH as patchBranding } from './branding/+server';
-import { POST as presignLogo } from './branding/logo-upload/+server';
-import { PUT as commitLogo, DELETE as removeLogo } from './branding/logo/+server';
+import { DELETE as removeLogo } from './branding/logo/+server';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
-import { createPresignedUploadUrl, deleteObject, headObject } from '$lib/server/storage/r2';
+import { deleteObject } from '$lib/server/storage/r2';
 import { forgetOrganizationTimezone } from '$lib/server/requests/timezone';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
@@ -34,10 +33,6 @@ vi.mock('$lib/server/requests/timezone', async () => {
 });
 
 vi.mock('$lib/server/storage/r2', () => ({
-	buildOrganizationLogoObjectKey: (organizationId: string, fileName: string) =>
-		`${organizationId}/logo/fixed-uuid-${fileName}`,
-	createPresignedUploadUrl: vi.fn(),
-	headObject: vi.fn(),
 	deleteObject: vi.fn()
 }));
 
@@ -45,8 +40,6 @@ vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn(
 
 const mockedRequire = vi.mocked(requireOrganizationPermission);
 const mockedRateLimit = vi.mocked(checkRateLimit);
-const mockedPresign = vi.mocked(createPresignedUploadUrl);
-const mockedHead = vi.mocked(headObject);
 const mockedDelete = vi.mocked(deleteObject);
 const mockedForgetTimezone = vi.mocked(forgetOrganizationTimezone);
 
@@ -225,8 +218,6 @@ function writeEvent(
 	} as unknown as Parameters<typeof patchProfile>[0] &
 		Parameters<typeof patchHours>[0] &
 		Parameters<typeof patchBranding>[0] &
-		Parameters<typeof presignLogo>[0] &
-		Parameters<typeof commitLogo>[0] &
 		Parameters<typeof removeLogo>[0] & { __rpc: ReturnType<typeof vi.fn> };
 }
 
@@ -645,83 +636,7 @@ describe('saving branding', () => {
 	});
 });
 
-describe('logo upload', () => {
-	it('issues a key under this organization and nobody else', async () => {
-		mockedPresign.mockResolvedValue('https://storage.example/put');
-		const response = await presignLogo(
-			writeEvent({ file_name: 'logo.png', mime_type: 'image/png', size_bytes: 1024 })
-		);
-		const body = await response.json();
-
-		expect(body.object_key.startsWith(`${ORGANIZATION_ID}/logo/`)).toBe(true);
-	});
-
-	it('turns away a file type the browser would not render as a picture', async () => {
-		const response = await presignLogo(
-			writeEvent({ file_name: 'logo.svg', mime_type: 'image/svg+xml', size_bytes: 1024 })
-		);
-
-		expect(response.status).toBe(422);
-		expect(mockedPresign).not.toHaveBeenCalled();
-	});
-
-	it('turns away a file over the size limit before signing anything', async () => {
-		const response = await presignLogo(
-			writeEvent({ file_name: 'logo.png', mime_type: 'image/png', size_bytes: 5 * 1024 * 1024 })
-		);
-
-		expect(response.status).toBe(422);
-		expect(mockedPresign).not.toHaveBeenCalled();
-	});
-});
-
-describe('committing and removing the logo', () => {
-	it('refuses a key belonging to another organization', async () => {
-		const response = await commitLogo(writeEvent({ object_key: 'org-2/logo/theirs.png' }));
-
-		expect(response.status).toBe(422);
-		expect(mockedHead).not.toHaveBeenCalled();
-	});
-
-	it('refuses bytes that arrived as something other than an image', async () => {
-		mockedHead.mockResolvedValue({ contentType: 'application/pdf', contentLength: 1024 } as never);
-		const response = await commitLogo(writeEvent({ object_key: 'org-1/logo/new.png' }));
-
-		expect(response.status).toBe(422);
-		expect(mockedDelete).toHaveBeenCalledWith('org-1/logo/new.png');
-	});
-
-	it('refuses bytes that arrived larger than the limit', async () => {
-		mockedHead.mockResolvedValue({
-			contentType: 'image/png',
-			contentLength: 5 * 1024 * 1024
-		} as never);
-		const response = await commitLogo(writeEvent({ object_key: 'org-1/logo/big.png' }));
-
-		expect(response.status).toBe(422);
-	});
-
-	it('keeps the replaced image instead of deleting it out from under a sent document', async () => {
-		mockedHead.mockResolvedValue({ contentType: 'image/png', contentLength: 2048 } as never);
-		const response = await commitLogo(
-			writeEvent(
-				{ object_key: 'org-1/logo/new.png' },
-				{
-					data: {
-						status: 'saved',
-						branding_revision: 6,
-						previous_object_key: 'org-1/logo/old.png'
-					},
-					error: null
-				}
-			)
-		);
-		const body = await response.json();
-
-		expect(body.logo_url).toBe('/api/settings/branding/logo/view?v=6');
-		expect(mockedDelete).not.toHaveBeenCalled();
-	});
-
+describe('removing the logo', () => {
 	it('removes the logo without touching the object behind it', async () => {
 		const response = await removeLogo(
 			writeEvent(undefined, {
@@ -742,10 +657,9 @@ describe('committing and removing the logo', () => {
 		expect(response.status).toBe(403);
 	});
 
-	it('rate-limits the logo writes the same way the other saves are limited', async () => {
+	it('rate-limits the logo removal the same way the other saves are limited', async () => {
 		mockedRateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 15 });
 
-		expect((await commitLogo(writeEvent({ object_key: 'org-1/logo/new.png' }))).status).toBe(429);
 		expect((await removeLogo(writeEvent(undefined))).status).toBe(429);
 	});
 });
