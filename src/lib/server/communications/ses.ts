@@ -134,7 +134,13 @@ export async function createSesIdentity(domain: string): Promise<void> {
 		await client.send(
 			new CreateEmailIdentityCommand({
 				EmailIdentity: domain,
-				DkimSigningAttributes: { DomainSigningAttributesOrigin: 'AWS_SES' }
+				// SES now refuses AWS_SES-origin signing without an explicit key length (verified 2026-09-25:
+				// "Invalid identity configuration"). 2048-bit is the strongest Easy DKIM key and what the
+				// existing identities already use.
+				DkimSigningAttributes: {
+					DomainSigningAttributesOrigin: 'AWS_SES',
+					NextSigningKeyLength: 'RSA_2048_BIT'
+				}
 			})
 		);
 	} catch (error) {
