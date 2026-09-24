@@ -122,6 +122,7 @@ export const GET: RequestHandler = async (event) => {
 				hasMoreUsage && lastUsage ? `${lastUsage.created_at}|${lastUsage.id}` : null,
 			can_manage: hasPermission(access, 'files.manage'),
 			can_trash: hasPermission(access, 'files.trash'),
+			can_share: hasPermission(access, 'files.share'),
 			can_describe: canDescribe
 		},
 		{ headers: PRIVATE_READ_HEADERS }

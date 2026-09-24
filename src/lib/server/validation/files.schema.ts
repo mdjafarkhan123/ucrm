@@ -106,3 +106,15 @@ export const fileDetachSchema = z.object({
 export const fileTrashSchema = z.object({
 	acknowledge_customer_copies: z.boolean().optional().default(false)
 });
+
+// Making one customer file share (Part 7D). The limits are the behavior contract's: one Client, at most 50
+// Files, and a choice of three lengths rather than a date, so a link can never be made to last for ever.
+export const fileShareCreateSchema = z.object({
+	client_id: z.uuid(),
+	file_ids: z
+		.array(z.uuid())
+		.min(1, 'Choose at least one file to share.')
+		.max(50, 'A share holds at most 50 files.')
+		.refine((ids) => new Set(ids).size === ids.length, 'The same file was chosen twice.'),
+	days: z.union([z.literal(7), z.literal(30), z.literal(90)])
+});

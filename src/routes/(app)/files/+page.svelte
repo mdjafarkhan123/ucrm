@@ -17,6 +17,8 @@
 	import FileDetailsPanel from '$lib/components/files/FileDetailsPanel.svelte';
 	import FileUploader from '$lib/components/files/FileUploader.svelte';
 	import FileLabelsDialog from '$lib/components/files/FileLabelsDialog.svelte';
+	import FileShareDialog from '$lib/components/files/FileShareDialog.svelte';
+	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import filesIcon from '@tabler/icons/outline/files.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
@@ -47,9 +49,9 @@
 	const toast = getToastManager();
 	const uid = $props.id();
 
-	// The rail. "Shared with customers" and "Videos" are deliberately missing: customer sharing arrives
-	// with Part 7 and video is not an accepted upload type yet, so either one would be a view that can
-	// only ever be empty — a promise the app cannot keep.
+	// The rail. "Videos" is deliberately missing: video is not an accepted upload type yet, so it would be a
+	// view that can only ever be empty. "Shared with customers" arrives with Part 7D-2, once shares can be
+	// listed and turned off.
 	const SMART_VIEWS: { value: FileView; label: string }[] = [
 		{ value: 'all', label: 'All files' },
 		{ value: 'recent', label: 'Recent' },
@@ -113,6 +115,29 @@
 	// The first page carries what this member may do, resolved server-side. Every write re-checks it; this
 	// only decides whether the Upload button and New folder are on screen at all.
 	const canManage = $derived(filesQuery.data?.pages[0]?.can_manage ?? false);
+	const canShare = $derived(filesQuery.data?.pages[0]?.can_share ?? false);
+
+	// --- Choosing several files to share --------------------------------------------------------------
+	// Ticking files is for sharing them with a customer, so it exists only for someone allowed to share and
+	// never in Trash. The chosen rows are kept by id with their facts, so loading another page or a refetch
+	// does not drop a choice; changing view or folder starts over, the way a file browser does.
+	let chosen = $state<Record<string, FileListItem>>({});
+	let shareOpen = $state(false);
+	const selecting = $derived(canShare && view !== 'trash');
+	const chosenFiles = $derived(Object.values(chosen));
+
+	function isShareable(file: FileListItem) {
+		return file.processing_state === 'available' && file.trashed_at === null;
+	}
+
+	function toggleChosen(file: FileListItem, next: boolean) {
+		if (next) chosen[file.id] = file;
+		else delete chosen[file.id];
+	}
+
+	function clearChosen() {
+		chosen = {};
+	}
 
 	// Every available photo on screen, so the lightbox's arrows and filmstrip walk the library rather than
 	// showing one picture at a time.
@@ -130,18 +155,21 @@
 	);
 
 	function selectView(next: FileView) {
+		clearChosen();
 		view = next;
 		folderId = '';
 		labelId = '';
 		closePanel();
 	}
 	function selectFolder(id: string) {
+		clearChosen();
 		view = 'folder';
 		folderId = id;
 		labelId = '';
 		closePanel();
 	}
 	function selectLabel(id: string) {
+		clearChosen();
 		view = 'label';
 		labelId = id;
 		folderId = '';
@@ -427,6 +455,26 @@
 					{/if}
 				</div>
 
+				{#if selecting && chosenFiles.length > 0}
+					<div class="files__selection" role="region" aria-label="Chosen files">
+						<span class="files__selection-count">
+							{chosenFiles.length}
+							{chosenFiles.length === 1 ? 'file' : 'files'} chosen
+						</span>
+						<Button
+							size="small"
+							disabled={chosenFiles.length > 50}
+							onclick={() => (shareOpen = true)}>Share with customer</Button
+						>
+						<Button variant="secondary" variation="subtle" size="small" onclick={clearChosen}>
+							Clear
+						</Button>
+						{#if chosenFiles.length > 50}
+							<span class="files__selection-note">A link holds at most 50 files.</span>
+						{/if}
+					</div>
+				{/if}
+
 				{#if canManage}
 					<FileUploader
 						bind:this={uploader}
@@ -451,11 +499,30 @@
 				{:else if layout === 'grid'}
 					<ul class="files__grid">
 						{#each files as file (file.id)}
-							<li>
+							<li
+								class="files__tile-cell"
+								class:files__tile-cell--chosen={Boolean(chosen[file.id])}
+							>
+								{#if selecting}
+									<span
+										class="files__tile-check"
+										class:files__tile-check--visible={chosenFiles.length > 0}
+									>
+										<Checkbox
+											id={`${uid}-choose-${file.id}`}
+											label={`Choose ${file.display_name}`}
+											hideLabel
+											checked={Boolean(chosen[file.id])}
+											disabled={!isShareable(file)}
+											onchange={(next) => toggleChosen(file, next)}
+										/>
+									</span>
+								{/if}
 								<button
 									type="button"
 									class="files__tile"
-									class:files__tile--selected={panelOpen && selectedFile?.id === file.id}
+									class:files__tile--selected={(panelOpen && selectedFile?.id === file.id) ||
+										Boolean(chosen[file.id])}
 									onclick={() => openPanel(file)}
 									onmouseenter={() => prefetchFile(file)}
 									onfocus={() => prefetchFile(file)}
@@ -482,6 +549,9 @@
 						<caption class="files__table-caption">Files</caption>
 						<thead>
 							<tr>
+								{#if selecting}<th scope="col" class="files__check-col"
+										><span class="files__sr">Choose</span></th
+									>{/if}
 								<th scope="col">Name</th>
 								<th scope="col">Type</th>
 								<th scope="col">Folder</th>
@@ -496,6 +566,18 @@
 									class:files__row--selected={panelOpen && selectedFile?.id === file.id}
 									onmouseenter={() => prefetchFile(file)}
 								>
+									{#if selecting}
+										<td class="files__check-col">
+											<Checkbox
+												id={`${uid}-choose-row-${file.id}`}
+												label={`Choose ${file.display_name}`}
+												hideLabel
+												checked={Boolean(chosen[file.id])}
+												disabled={!isShareable(file)}
+												onchange={(next) => toggleChosen(file, next)}
+											/>
+										</td>
+									{/if}
 									<th scope="row">
 										<button
 											type="button"
@@ -545,6 +627,10 @@
 	onClose={closePanel}
 	onOpenLightbox={openLightbox}
 />
+
+{#if shareOpen}
+	<FileShareDialog files={chosenFiles} onShared={clearChosen} onClose={() => (shareOpen = false)} />
+{/if}
 
 <Lightbox
 	open={lightboxOpen}
@@ -761,6 +847,62 @@
 		gap: var(--space-small);
 	}
 
+	.files__selection {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-small);
+		padding: var(--space-small) var(--space-base);
+		border: var(--border-base) solid var(--color-border--interactive);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--hover);
+	}
+	.files__selection-count {
+		margin-right: auto;
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+	.files__selection-note {
+		width: 100%;
+		color: var(--color-critical);
+		font-size: var(--typography--fontSize-small);
+	}
+	.files__tile-cell {
+		position: relative;
+
+		&:hover .files__tile-check,
+		&:focus-within .files__tile-check,
+		&--chosen .files__tile-check {
+			opacity: 1;
+		}
+	}
+	.files__tile-check {
+		position: absolute;
+		top: var(--space-base);
+		left: var(--space-base);
+		z-index: 1;
+		padding: 2px;
+		border-radius: var(--radius-small);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-low);
+		opacity: 0;
+		transition: opacity 120ms ease;
+
+		&--visible {
+			opacity: 1;
+		}
+	}
+	.files__check-col {
+		width: 44px;
+	}
+	.files__sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+	}
 	.files__grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));

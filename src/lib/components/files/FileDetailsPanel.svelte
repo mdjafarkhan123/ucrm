@@ -15,6 +15,7 @@
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import FileThumb from './FileThumb.svelte';
 	import FileAttachToRecordDialog from './FileAttachToRecordDialog.svelte';
+	import FileShareDialog from './FileShareDialog.svelte';
 	import PhotoDescribeForm from './PhotoDescribeForm.svelte';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
@@ -259,6 +260,9 @@
 	// "Attach to…": the file is already chosen, so the dialog asks which record it belongs on. Only offered
 	// for a file that has passed its checks, because an unchecked one cannot be attached to anything.
 	let attachOpen = $state(false);
+	// "Share with customer": a link to this one file for one Client. Only a checked, live file can be shared.
+	const canShare = $derived(detail?.can_share ?? false);
+	let shareOpen = $state(false);
 
 	async function handleDownload() {
 		if (!file) return;
@@ -366,6 +370,14 @@
 						attachOpen = true;
 					}}>Attach to…</Button
 				>
+				{#if canShare}
+					<Button
+						variant="secondary"
+						size="small"
+						disabled={file.processing_state !== 'available'}
+						onclick={() => (shareOpen = true)}>Share with customer</Button
+					>
+				{/if}
 			{/if}
 			{#if inTrash && canTrash}
 				<Button variant="secondary" size="small" disabled={saving} onclick={submitRestore}>
@@ -642,6 +654,9 @@
 		onClose={() => (attachOpen = false)}
 		onAttached={() => toast.success('File attached')}
 	/>
+	{#if shareOpen}
+		<FileShareDialog files={[file]} onClose={() => (shareOpen = false)} />
+	{/if}
 {/if}
 
 <!-- eslint-enable svelte/no-at-html-tags -->

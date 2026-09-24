@@ -144,7 +144,8 @@ export const GET: RequestHandler = async (event) => {
 			// What this member may do with what they are looking at, resolved once here rather than guessed
 			// in the browser. Every write re-checks it server-side; this only decides which buttons show.
 			can_manage: hasPermission(access, 'files.manage'),
-			can_trash: hasPermission(access, 'files.trash')
+			can_trash: hasPermission(access, 'files.trash'),
+			can_share: hasPermission(access, 'files.share')
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

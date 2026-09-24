@@ -77,6 +77,8 @@ export type FileListPage = {
 	next_cursor: string | null;
 	can_manage: boolean;
 	can_trash: boolean;
+	/** May share chosen files with a customer by link (files.share). */
+	can_share: boolean;
 };
 
 export type FileUsageRow = {
@@ -108,6 +110,7 @@ export type FileDetail = {
 	usage_next_cursor: string | null;
 	can_manage: boolean;
 	can_trash: boolean;
+	can_share: boolean;
 	/** May change this photo's caption and labels: files.manage, or a writer on a job the photo is on. */
 	can_describe: boolean;
 };
@@ -362,6 +365,32 @@ export function detachFileFromRecord(fileId: string, entityType: FileEntityType,
 		'DELETE',
 		{ file_id: fileId, entity_type: entityType, entity_id: entityId },
 		'That file could not be taken off this record.'
+	);
+}
+
+/** The three lengths a customer share can last. A share never gets longer once made. */
+export type FileShareDays = 7 | 30 | 90;
+
+export type CreatedFileShare = {
+	share: {
+		id: string;
+		client_id: string;
+		client_name: string;
+		file_count: number;
+		issued_at: string;
+		expires_at: string;
+	};
+	/** The customer link. This response is the only time it exists anywhere; it is not stored. */
+	url: string;
+};
+
+/** Makes one customer link to exactly these files. Their names are fixed on the customer's page from now. */
+export function createFileShare(fileIds: string[], clientId: string, days: FileShareDays) {
+	return writeJson<CreatedFileShare>(
+		'/api/files/shares',
+		'POST',
+		{ file_ids: fileIds, client_id: clientId, days },
+		'That link could not be made.'
 	);
 }
 
