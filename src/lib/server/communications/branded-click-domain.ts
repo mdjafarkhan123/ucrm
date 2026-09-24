@@ -188,15 +188,22 @@ function plainReason(error: unknown): string {
 
 /** True when public DNS already answers the click domain with the shared distribution's routing endpoint. */
 async function cnameIsVisible(domain: string, target: string): Promise<boolean> {
-	const resolver = new Resolver({ timeout: 3_000, tries: 2 });
-	resolver.setServers(PUBLIC_DNS_SERVERS);
-	try {
-		const answers = await resolver.resolveCname(domain);
-		return answers.some((answer) => normalizeName(answer) === normalizeName(target));
-	} catch {
-		// NXDOMAIN, no data yet, or a resolver timeout: not visible yet.
-		return false;
-	}
+	// Each resolver is asked on its own: one can keep a cached "no such name" for many minutes after another
+	// already sees the record. If CloudFront itself still cannot see it, the create reports that and the pass
+	// keeps waiting.
+	const answers = await Promise.all(
+		PUBLIC_DNS_SERVERS.map(async (server) => {
+			const resolver = new Resolver({ timeout: 3_000, tries: 2 });
+			resolver.setServers([server]);
+			try {
+				return await resolver.resolveCname(domain);
+			} catch {
+				// NXDOMAIN, no data yet, or a resolver timeout: not visible from this resolver yet.
+				return [];
+			}
+		})
+	);
+	return answers.flat().some((answer) => normalizeName(answer) === normalizeName(target));
 }
 
 /** True when an HTTPS request to the click domain is answered by SES's tracking endpoint. */
