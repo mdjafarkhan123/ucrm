@@ -16,22 +16,19 @@ own test domain. Done 2026-09-24: multi-tenant distribution `E3BC29BRFLB91P` (or
 https-only, AllViewer, CachingDisabled), default connection group `cg_3Jl58Y3IZa93OHuOotP7eXXB7K0`, routing
 endpoint `d30azkeso6lzew.cloudfront.net`. IAM inline policy `ucrm-branded-click-domain` is temporarily `cloudfront:*`
 (tighten after the test). AWS CLI: `--profile ucrm-app` (credential_process `scripts/aws-credentials-from-env.sh`).
-Next: (1) Jafar runs `! node scripts/cloudflare-add-cname.mjs upliftcontractor.com click.news.test.upliftcontractor.com
-d30azkeso6lzew.cloudfront.net --apply` (auto mode blocks DNS writes by Claude). (2) `aws cloudfront
-create-distribution-tenant --distribution-id E3BC29BRFLB91P --name ucrm-org-18f0d717-904e-48d8-bd99-9df7e3844cda
---connection-group-id cg_3Jl58Y3IZa93OHuOotP7eXXB7K0 --domains Domain=click.news.test.upliftcontractor.com
---managed-certificate-request ValidationTokenHost=cloudfront --enabled` (fails until the CNAME exists). (3) Wait for
-cert; `curl --head https://click.news.test.upliftcontractor.com/favicon.ico` must show `x-amz-ses-request-protocol:
-https` (risk: Host forwarding + HTTPS origin may fail awstrack's cert check). (4) Tracking options on config set
-`ucrm-marketing-18f0d717-904e-48d8-bd99-9df7e3844cda`, 1 simulator send + click reaches Results. (5) Tighten IAM,
-then build plan for Jafar. Later: M6e (blocked on `operational-email-ses`), check 15 review.
+Done 2026-09-24 (live): CNAME added, tenant `dt_3JltenyORfWpxcKagdGM7XAoQpi` active with its issued cert,
+HTTPS check passed, and Raad LTD's config set now tracks via `click.news.test.upliftcontractor.com` (REQUIRE).
+Findings are in the research doc's "Live test findings". (4) PASSED: real Gmail send, branded click + open reached Results. Test campaign
+`9b331950-6ede-4570-ab7a-cfed4d9ea175` awaits Jafar's OK to delete; allowance override ended again. (5) Jafar replaces the `cloudfront:*` inline policy in the AWS console with the research doc's "Scoped IAM policy"; then verify with get/list tenant calls. (6)
+then build plan for Jafar: per-org setup fully automatic inside the existing Jafar-panel Marketing domain
+activation (`MarketingDomainActions.svelte`), with status/recheck/turn off/remove controls (Jafar's direction). Later: M6e (blocked on `operational-email-ses`), check 15 review.
 
 ## Open findings (raise with Jafar)
 
 - Marketing wake cron jobs fail every minute (Vault target URLs unset) -- production-cutover work.
 - 2 harmless leftover messages in `ucrm-ses-events-dlq`; Jafar to clear via AWS console.
 - `npx supabase test db` has many pre-existing "Bad plan" failures outside marketing's scope.
-- Raad LTD has no Marketing allowance (override ended 2026-09-24); live checks need a new approved override.
+- Jafar gave standing approval (2026-09-24) to reopen Raad LTD's Marketing allowance override whenever a test needs it.
 - Blueprint §12 Results Q4 (cross-campaign "strongest") left for the list page's insight cards, not built.
 - Old test campaign `cce6af97-...` fails to open (ErrorState); undiagnosed, low priority.
 

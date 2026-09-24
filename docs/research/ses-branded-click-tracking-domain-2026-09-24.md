@@ -157,3 +157,51 @@ returns `x-amz-ses-request-protocol: https` for that contractor.
 5. Does a multi-tenant distribution accept a custom origin `r.us-east-1.awstrack.me` with AllViewer, and does a
    managed certificate issue while the CNAME stays DNS-only (grey cloud) in Cloudflare?
 6. Does any contractor root already send HSTS `includeSubDomains`? (This only matters if HTTP is ever used.)
+
+## Live test findings (2026-09-24, Raad LTD test domain `click.news.test.upliftcontractor.com`)
+
+- `create-distribution-tenant` with `ManagedCertificateRequest ValidationTokenHost=cloudfront` issued the ACM
+  certificate within ~5 minutes of the CNAME existing, but the domain stayed `inactive` and HTTPS timed out.
+  The certificate is **not** attached automatically: an `update-distribution-tenant` setting
+  `Customizations.Certificate.Arn` to the issued certificate (what the console's final "Submit" does) turned the
+  domain `active`; the tenant redeployed in under a minute. Automation must poll `get-managed-certificate-details`
+  for `issued`, then make that update.
+- Host forwarding + HTTPS origin to `r.us-east-1.awstrack.me` works: `HEAD /favicon.ico` returned 200 with
+  `x-amz-ses-request-protocol: https`.
+- `put-configuration-set-tracking-options` accepted `click.news.<root>` with `HttpsPolicy REQUIRE` without a
+  separate SES identity, confirming inherited verification through `news.<root>`.
+- End-to-end send (campaign `9b331950-…`, one recipient, real Gmail): the CTA link and the open pixel were both
+  rewritten to `https://click.news.test.upliftcontractor.com/…` (CL0 and CI0 paths); the unsubscribe link stayed
+  untracked. The click and the open both reached `marketing_campaign_recipients` and the Results API
+  (`clicked_count 1`). SES events can arrive a few minutes late, so a Results check right after a click may lag.
+- The worker's IAM user cannot read or edit its own IAM policies; tightening happens in the AWS console.
+
+## Scoped IAM policy for `ucrm-branded-click-domain` (replaces the temporary `cloudfront:*`)
+
+Covers everything the per-organization automation needs (create, check, attach certificate, disable, remove a
+tenant) and nothing that can change or delete the shared distribution or connection group.
+
+```json
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "BrandedClickDomainTenants",
+			"Effect": "Allow",
+			"Action": [
+				"cloudfront:CreateDistributionTenant",
+				"cloudfront:GetDistributionTenant",
+				"cloudfront:GetDistributionTenantByDomain",
+				"cloudfront:UpdateDistributionTenant",
+				"cloudfront:DeleteDistributionTenant",
+				"cloudfront:ListDistributionTenants",
+				"cloudfront:GetManagedCertificateDetails",
+				"cloudfront:VerifyDnsConfiguration",
+				"cloudfront:GetDistribution",
+				"cloudfront:GetConnectionGroup"
+			],
+			"Resource": "*"
+		}
+	]
+}
+```
