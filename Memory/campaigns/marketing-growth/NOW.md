@@ -18,10 +18,10 @@ endpoint `d30azkeso6lzew.cloudfront.net`. IAM inline policy `ucrm-branded-click-
 (tighten after the test). AWS CLI: `--profile ucrm-app` (credential_process `scripts/aws-credentials-from-env.sh`).
 Done 2026-09-24 (live): CNAME added, tenant `dt_3JltenyORfWpxcKagdGM7XAoQpi` active with its issued cert,
 HTTPS check passed, and Raad LTD's config set now tracks via `click.news.test.upliftcontractor.com` (REQUIRE).
-Findings are in the research doc's "Live test findings". (4) PASSED: real Gmail send, branded click + open reached Results. Test campaign
-`9b331950-6ede-4570-ab7a-cfed4d9ea175` awaits Jafar's OK to delete; allowance override ended again. (5) Jafar replaces the `cloudfront:*` inline policy in the AWS console with the research doc's "Scoped IAM policy"; then verify with get/list tenant calls. (6)
-then build plan for Jafar: per-org setup fully automatic inside the existing Jafar-panel Marketing domain
-activation (`MarketingDomainActions.svelte`), with status/recheck/turn off/remove controls (Jafar's direction). Later: M6e (blocked on `operational-email-ses`), check 15 review.
+Findings are in the research doc's "Live test findings". (4) PASSED: real Gmail send, branded click + open reached Results;
+test campaign deleted (Jafar approved), allowance override ended. Next: (5) Jafar approves the build plan in
+`parts/m6d-branded-links.md`, and runs `! aws sso login --profile ucrm` so Claude can apply the research doc's
+"Scoped IAM policy" to user `ucrm-marketing-ses-worker` and verify. (6) Build per the packet. Later: M6e (blocked on `operational-email-ses`), check 15 review.
 
 ## Open findings (raise with Jafar)
 
