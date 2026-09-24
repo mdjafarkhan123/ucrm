@@ -6,17 +6,16 @@ Contractor operational email (setup, sending, events, replies) runs on Amazon SE
 
 ## State
 
-Part 2 split into 2a (backend) and 2b (owner Email card UI). 2a code committed `174a8ec` in worktree
-`../Ucrm-email-ses` (branch `operational-email-ses`; `node_modules` and `.env` are symlinks to `../Ucrm`).
-Tests pass. Raad's DNS before the live run is saved outside the repo (Cloudflare can re-export it).
+Part 2a done and live-verified on Raad 2026-09-25 (mail.test.upliftcontractor.com on SES; reply row still on
+Brevo by design). Work is in worktree `../Ucrm-email-ses` (branch `operational-email-ses`; `node_modules` and
+`.env` are symlinks to `../Ucrm`). The agent may not type passwords: Jafar signs in to `localhost:5174/jafar`
+when a live check needs the owner panel (`npx vite dev --port 5174` in the worktree).
 
 ## Exact next action
 
-Live 2a gate: run the worktree app on port 5174 (`npx vite dev --port 5174`); Jafar signs in at
-`localhost:5174/jafar` (the agent may not type passwords). Then call
-`POST /api/jafar/organizations/<Raad id>/communications/domains/activate` with root `test.upliftcontractor.com`,
-recheck until `mail.test` shows verified on SES, and confirm Raad can still send (Brevo still sends until Part 3).
-Then build 2b.
+Build Part 2b: the approved owner Email card (contract "Email setup screens") replacing
+`EmailDomainActions.svelte` + `MarketingDomainActions.svelte` in `CommunicationsWorkspace.svelte`. Load the design,
+svelte, and bits-ui skills first. Gate: browser-verified on Raad.
 
 ## Blockers
 
