@@ -4,8 +4,8 @@
 
 **Active part:** 7B-3 — File Manager fast at 20k+ files (roadmap 7B-3). 7B-2 closed 2026-09-24.
 
-**Exact next action:** Jafar runs `! npx supabase db push --linked` (the permission guard blocked Claude's push)
-for `20260924170000_files_media_fast_at_scale.sql` (committed, not yet applied). Then fix the one cause left:
+**Exact next action:** `20260924170000_files_media_fast_at_scale.sql` is live (pushed by Jafar 2026-09-24).
+Fix the one cause left:
 per-link `private.can_view_linked_entity` (~0.7 ms each). Rolled-back tests at 20k files, old vs new results
 identical: all/labels/caption/no-match search now 30–100 ms, but client-name search matching 5k files 4.1 s,
 "Not attached" 3.7 s, field worker on_record 7.7 s (plan scans every file running `file_has_visible_link`).
