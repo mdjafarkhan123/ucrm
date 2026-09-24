@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
+import { getClickDomainEnv } from '$lib/server/communications/cloudfront';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { organizationIdSchema } from '$lib/server/validation/access.schema';
 
@@ -30,7 +31,7 @@ export const GET: RequestHandler = async (event) => {
 		client
 			.from('communication_email_domains')
 			.select(
-				'id, domain_name, dns_zone, lifecycle_state, ownership_status, dkim_status, spf_status, provider_verified, provider_authenticated, last_checked_at, verified_at, created_at'
+				'id, domain_name, dns_zone, lifecycle_state, ownership_status, dkim_status, spf_status, provider_verified, provider_authenticated, last_checked_at, verified_at, created_at, click_domain_status, click_domain_name, click_domain_error, click_domain_checked_at'
 			)
 			.eq('organization_id', organizationId.data)
 			.eq('purpose', 'marketing_sending')
@@ -59,7 +60,12 @@ export const GET: RequestHandler = async (event) => {
 	}
 
 	return json(
-		{ domains: data ?? [], suggested_root_domain: rootRow?.dns_zone ?? null },
+		{
+			domains: data ?? [],
+			suggested_root_domain: rootRow?.dns_zone ?? null,
+			// Branded click links need the shared CloudFront distribution configured on this server (M6d).
+			branded_links_configured: getClickDomainEnv() !== null
+		},
 		{ headers: noStore }
 	);
 };

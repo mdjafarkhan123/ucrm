@@ -1908,6 +1908,11 @@ export type Database = {
       }
       communication_email_domains: {
         Row: {
+          click_distribution_tenant_id: string | null
+          click_domain_checked_at: string | null
+          click_domain_error: string | null
+          click_domain_name: string | null
+          click_domain_status: string
           created_at: string
           created_by: string | null
           dkim_status: string
@@ -1936,6 +1941,11 @@ export type Database = {
           warmup_started_at: string | null
         }
         Insert: {
+          click_distribution_tenant_id?: string | null
+          click_domain_checked_at?: string | null
+          click_domain_error?: string | null
+          click_domain_name?: string | null
+          click_domain_status?: string
           created_at?: string
           created_by?: string | null
           dkim_status?: string
@@ -1964,6 +1974,11 @@ export type Database = {
           warmup_started_at?: string | null
         }
         Update: {
+          click_distribution_tenant_id?: string | null
+          click_domain_checked_at?: string | null
+          click_domain_error?: string | null
+          click_domain_name?: string | null
+          click_domain_status?: string
           created_at?: string
           created_by?: string | null
           dkim_status?: string

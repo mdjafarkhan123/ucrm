@@ -13,7 +13,10 @@ const noStore = { 'Cache-Control': 'no-store' };
  * SES -- is a 502 that is always safe to re-run, because the reconciler is a desired-state saga that wrote
  * nothing it cannot re-derive from current provider state. Provider messages never reach the response.
  */
-export function marketingDomainErrorResponse(error: unknown, action: 'activate' | 'recheck') {
+export function marketingDomainErrorResponse(
+	error: unknown,
+	action: 'activate' | 'recheck' | 'change branded links for'
+) {
 	if (error instanceof EmailDomainActivationError && !error.retryable) {
 		return json({ error: error.message, code: error.code }, { status: 409, headers: noStore });
 	}
@@ -50,7 +53,12 @@ export function marketingDomainErrorResponse(error: unknown, action: 'activate' 
 	if (error instanceof SesError) {
 		console.error(`Could not ${action} the Marketing sending domain (SES rejected).`, error);
 		return json(
-			{ error: 'Amazon SES could not complete the Marketing sending identity.' },
+			{
+				error:
+					action === 'change branded links for'
+						? 'Amazon refused the branded link change.'
+						: 'Amazon SES could not complete the Marketing sending identity.'
+			},
 			{ status: 502, headers: noStore }
 		);
 	}
@@ -61,7 +69,9 @@ export function marketingDomainErrorResponse(error: unknown, action: 'activate' 
 			error:
 				action === 'activate'
 					? 'The Marketing sending domain could not be activated.'
-					: 'The Marketing sending domain could not be rechecked.'
+					: action === 'recheck'
+						? 'The Marketing sending domain could not be rechecked.'
+						: 'Branded links could not be changed.'
 		},
 		{ status: 500, headers: noStore }
 	);

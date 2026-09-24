@@ -34,6 +34,17 @@ vi.mock('./cloudflare-dns', async () => {
 	};
 });
 
+// The branded click-link step (M6d) has its own spec; here it is a no-op that reports "not set up".
+vi.mock('./branded-click-domain', () => ({
+	reconcileClickDomain: vi.fn(async () => ({
+		status: 'not_set_up',
+		domain_name: null,
+		error: null,
+		checked_at: null,
+		configured: false
+	}))
+}));
+
 import * as ses from './ses';
 import * as cloudflare from './cloudflare-dns';
 

@@ -9,6 +9,7 @@ import {
 	GetConfigurationSetEventDestinationsCommand,
 	GetEmailIdentityCommand,
 	GetTenantCommand,
+	PutConfigurationSetTrackingOptionsCommand,
 	PutEmailIdentityMailFromAttributesCommand,
 	SendEmailCommand,
 	UpdateConfigurationSetEventDestinationCommand,
@@ -288,6 +289,40 @@ export async function associateSesTenantResource(
 		if (isAlreadyExists(error)) return;
 		throw toSesError('CreateTenantResourceAssociation', error);
 	}
+}
+
+/**
+ * The branded click-tracking domain the configuration set currently rewrites links onto, or null when it uses
+ * Amazon's default tracking host.
+ */
+export async function getSesClickTrackingDomain(
+	configurationSetName: string
+): Promise<string | null> {
+	const { client } = getSes();
+	const result = await sesCall('GetConfigurationSet', () =>
+		client.send(new GetConfigurationSetCommand({ ConfigurationSetName: configurationSetName }))
+	);
+	return result.TrackingOptions?.CustomRedirectDomain?.toLowerCase() ?? null;
+}
+
+/**
+ * Points open and click tracking at a branded domain, or back at Amazon's default host when `domain` is null.
+ * REQUIRE keeps every rewritten link on HTTPS; SES refuses a domain it cannot inherit verification for, which
+ * click.news.<root> gets from the verified news.<root> identity.
+ */
+export async function putSesClickTrackingDomain(
+	configurationSetName: string,
+	domain: string | null
+): Promise<void> {
+	const { client } = getSes();
+	await sesCall('PutConfigurationSetTrackingOptions', () =>
+		client.send(
+			new PutConfigurationSetTrackingOptionsCommand({
+				ConfigurationSetName: configurationSetName,
+				...(domain ? { CustomRedirectDomain: domain, HttpsPolicy: 'REQUIRE' as const } : {})
+			})
+		)
+	);
 }
 
 export function sesIdentityArn(domain: string): string {

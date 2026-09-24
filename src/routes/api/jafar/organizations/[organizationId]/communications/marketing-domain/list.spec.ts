@@ -5,6 +5,7 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
 vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
+vi.mock('$lib/server/communications/cloudfront', () => ({ getClickDomainEnv: vi.fn(() => null) }));
 
 const organizationId = '123e4567-e89b-12d3-a456-426614174000';
 
@@ -77,7 +78,8 @@ describe('owner Marketing domain list boundary', () => {
 		expect(response.status).toBe(200);
 		expect(await response.json()).toEqual({
 			domains,
-			suggested_root_domain: 'contractor.com'
+			suggested_root_domain: 'contractor.com',
+			branded_links_configured: false
 		});
 	});
 

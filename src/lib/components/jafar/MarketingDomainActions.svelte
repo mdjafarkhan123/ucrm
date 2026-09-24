@@ -2,6 +2,7 @@
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -20,10 +21,17 @@
 		last_checked_at: string | null;
 		verified_at: string | null;
 		created_at: string;
+		click_domain_status: ClickStatus;
+		click_domain_name: string | null;
+		click_domain_error: string | null;
+		click_domain_checked_at: string | null;
 	};
+	type ClickStatus = 'not_set_up' | 'waiting_certificate' | 'working' | 'turned_off' | 'problem';
+	type ClickAction = 'turn_on' | 'turn_off' | 'remove';
 	type ListResponse = {
 		domains?: MarketingDomain[];
 		suggested_root_domain?: string | null;
+		branded_links_configured?: boolean;
 		error?: string;
 	};
 	type ActivationSummary = {
@@ -176,6 +184,90 @@
 			await refreshDomains();
 		}
 	}));
+
+	// Branded click links (M6d): campaign links show click.news.<root> instead of Amazon's tracking address.
+	const clickLabels: Record<ClickStatus, string> = {
+		not_set_up: 'Not set up',
+		waiting_certificate: 'Waiting for certificate',
+		working: 'Working',
+		turned_off: 'Turned off',
+		problem: 'Problem'
+	};
+
+	function clickTone(status: ClickStatus): 'success' | 'warning' | 'critical' | 'informative' {
+		if (status === 'working') return 'success';
+		if (status === 'waiting_certificate') return 'warning';
+		if (status === 'problem') return 'critical';
+		return 'informative';
+	}
+
+	function clickDescription(domain: MarketingDomain): string {
+		if (!listQuery.data?.branded_links_configured) {
+			return "Branded links are not configured on this server. Campaign links use Amazon's address.";
+		}
+		if (domain.click_domain_error) return domain.click_domain_error;
+		switch (domain.click_domain_status) {
+			case 'working':
+				return 'Campaign links and the open pixel use this address.';
+			case 'waiting_certificate':
+				return "Amazon is issuing the security certificate. Links use Amazon's address until it is ready — press Check in a few minutes.";
+			case 'turned_off':
+				return domain.click_domain_name
+					? "Turned off. Campaign links use Amazon's address; turning on again is instant."
+					: "Turned off. Campaign links use Amazon's address.";
+			case 'problem':
+				return "Campaign links use Amazon's address until this is fixed.";
+			default:
+				return domain.lifecycle_state === 'verified'
+					? 'Press Check to set up branded links.'
+					: 'Sets up automatically once the Marketing domain is verified.';
+		}
+	}
+
+	let pendingRemoval = $state<MarketingDomain | null>(null);
+
+	const clickMutation = createMutation<
+		MutationResponse,
+		Error,
+		{ domain: MarketingDomain; action: ClickAction }
+	>(() => ({
+		mutationFn: async ({ domain, action }) => {
+			const response = await fetch(
+				`/api/jafar/organizations/${organizationId}/communications/marketing-domain/${domain.id}/click-domain`,
+				{
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify({ action, idempotency_key: crypto.randomUUID() })
+				}
+			);
+			const result = (await response.json()) as MutationResponse;
+			if (!response.ok) throw new Error(result.error ?? 'Branded links could not be changed.');
+			return result;
+		},
+		onMutate: () => {
+			feedbackError = '';
+			feedbackMessage = '';
+		},
+		onError: (error) => (feedbackError = error.message),
+		onSuccess: async (_result, { action }) => {
+			feedbackMessage =
+				action === 'turn_on'
+					? 'Branded links turned on.'
+					: action === 'turn_off'
+						? 'Branded links turned off.'
+						: 'Branded links removed.';
+			pendingRemoval = null;
+			await refreshDomains();
+		}
+	}));
+
+	function isChanging(domain: MarketingDomain, action: ClickAction) {
+		return (
+			clickMutation.isPending &&
+			clickMutation.variables?.domain.id === domain.id &&
+			clickMutation.variables?.action === action
+		);
+	}
 </script>
 
 <div class="marketing-domain-actions">
@@ -212,6 +304,11 @@
 		</p>
 	{:else}
 		{#each listQuery.data?.domains ?? [] as domain (domain.id)}
+			{@const configured = Boolean(listQuery.data?.branded_links_configured)}
+			{@const clickOn =
+				domain.click_domain_status === 'working' ||
+				domain.click_domain_status === 'waiting_certificate' ||
+				domain.click_domain_status === 'problem'}
 			<div class="marketing-domain-actions__card">
 				<div class="marketing-domain-actions__card-main">
 					<strong>{domain.domain_name}</strong>
@@ -232,10 +329,75 @@
 						onclick={() => recheckMutation.mutate(domain)}>Check</Button
 					>
 				</div>
+				<div class="marketing-domain-actions__links">
+					<div class="marketing-domain-actions__card-main">
+						<strong
+							>Branded links{domain.click_domain_name
+								? ` — ${domain.click_domain_name}`
+								: ''}</strong
+						>
+						<small>{clickDescription(domain)}</small>
+					</div>
+					<div class="marketing-domain-actions__card-status">
+						<Badge status={clickTone(domain.click_domain_status)}
+							>{clickLabels[domain.click_domain_status]}</Badge
+						>
+						{#if configured && clickOn}
+							<Button
+								size="small"
+								variant="secondary"
+								variation="subtle"
+								loading={isChanging(domain, 'turn_off')}
+								disabled={clickMutation.isPending}
+								onclick={() => clickMutation.mutate({ domain, action: 'turn_off' })}
+								>Turn off</Button
+							>
+						{:else if configured && domain.lifecycle_state === 'verified'}
+							<Button
+								size="small"
+								variant="secondary"
+								variation="subtle"
+								loading={isChanging(domain, 'turn_on')}
+								disabled={clickMutation.isPending}
+								onclick={() => clickMutation.mutate({ domain, action: 'turn_on' })}>Turn on</Button
+							>
+						{/if}
+						{#if domain.click_domain_name}
+							<Button
+								size="small"
+								variant="secondary"
+								variation="destructive"
+								disabled={clickMutation.isPending}
+								onclick={() => (pendingRemoval = domain)}>Remove</Button
+							>
+						{/if}
+					</div>
+				</div>
 			</div>
 		{/each}
 	{/if}
 </div>
+
+<ConfirmDialog
+	open={Boolean(pendingRemoval)}
+	title="Remove branded links"
+	tone="critical"
+	confirmLabel="Remove branded links"
+	destructive
+	loading={clickMutation.isPending}
+	onConfirm={() => {
+		if (pendingRemoval) clickMutation.mutate({ domain: pendingRemoval, action: 'remove' });
+	}}
+	onClose={() => {
+		if (!clickMutation.isPending) pendingRemoval = null;
+	}}
+>
+	<p>
+		Campaign links go back to Amazon's address right away, and
+		<strong>{pendingRemoval?.click_domain_name}</strong> is deleted along with its certificate and DNS
+		record. Turning branded links on again later takes a few minutes while Amazon issues a new certificate.
+	</p>
+</ConfirmDialog>
 
 <Dialog open={activateOpen} title="Activate Marketing" onClose={closeActivate}>
 	{#if activationResult}
@@ -336,6 +498,7 @@
 	}
 	.marketing-domain-actions__card {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-base);
@@ -343,6 +506,16 @@
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		background: var(--color-surface--background);
+	}
+	.marketing-domain-actions__links {
+		display: flex;
+		flex-basis: 100%;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-base);
+		padding-top: var(--space-small);
+		border-top: var(--border-base) solid var(--color-border);
 	}
 	.marketing-domain-actions__card-main {
 		display: grid;

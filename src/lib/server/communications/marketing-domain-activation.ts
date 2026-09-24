@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
+import { reconcileClickDomain, type ClickDomainSummary } from './branded-click-domain';
 import { listCloudflareDnsRecords, resolveCloudflareZone } from './cloudflare-dns';
 import {
 	assertSubdomainNotOccupied,
@@ -68,6 +69,7 @@ export type MarketingActivationResult = {
 	root_domain: string;
 	zone_id: string;
 	marketing: MarketingDomainSummary;
+	click: ClickDomainSummary;
 };
 
 type OwnerClient = SupabaseClient<Database>;
@@ -410,6 +412,10 @@ async function reconcileMarketingDomain(input: {
 
 	const domainId = await upsertMarketingDomainRow(client, existingId, row);
 
+	// Branded click links (M6d) come last: they need a verified sending identity, and the step records its own
+	// failures on the row rather than throwing, so it can never fail the sending activation above.
+	const click = await reconcileClickDomain({ client, organizationId, domainId, zoneId });
+
 	return {
 		root_domain: root,
 		zone_id: zoneId,
@@ -427,7 +433,8 @@ async function reconcileMarketingDomain(input: {
 			records_written: recordsWritten,
 			tenant_name: tenant.tenantName,
 			configuration_set_name: tenant.configurationSetName
-		}
+		},
+		click
 	};
 }
 

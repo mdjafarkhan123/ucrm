@@ -48,6 +48,13 @@ export const communicationDomainRecheckSchema = z.object({
 	idempotency_key: z.string().uuid('Start a new domain check and try again.')
 });
 
+// Marketing M6d: the owner's branded click-link controls. Turning on runs the same reconciliation Check does;
+// turning off and removing return links to Amazon's default address first.
+export const marketingClickDomainChangeSchema = z.object({
+	action: z.enum(['turn_on', 'turn_off', 'remove']),
+	idempotency_key: z.string().uuid('Start the change again and try again.')
+});
+
 // A1-D managed activation: the owner supplies only the root domain. UCRM derives mail.<root> for sending
 // and reply.<root> for receiving, resolves the Cloudflare zone by that exact apex, and reconciles both.
 export const communicationDomainActivationSchema = z.object({
