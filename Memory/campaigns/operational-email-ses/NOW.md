@@ -12,7 +12,7 @@ Start rule met (marketing SES work committed). All work happens in worktree `../
 
 ## Exact next action
 
-Start Part 2 in the worktree: owner "Set up" on the Everyday email row creates SES sending + receiving identities
+Start Part 2 in the worktree (Part 7, email credit, is approved and can follow any time): owner "Set up" on the Everyday email row creates SES sending + receiving identities
 (+ MAIL FROM, config set in the org's existing SES tenant) via Cloudflare, reusing the Marketing activation path
 (`marketing-domain-activation.ts`, `dns-reconcile.ts`) instead of the Brevo one (`email-domain-activation.ts`).
 Gate: Raad re-activated and verified live.

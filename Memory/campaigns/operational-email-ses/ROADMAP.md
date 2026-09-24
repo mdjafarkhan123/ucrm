@@ -23,6 +23,7 @@ separate git worktree on its own branch (started 2026-09-24: `../Ucrm-email-ses`
 | 4 | Customer replies on SES | Planned | 3; Jafar approval before creating AWS resources | One owned us-east-1 receipt-rule set → private S3 (30-day expiry) → SNS → SQS+DLQ → worker; reply, duplicate, oversized attachment, expired alias, auto-response, recovery proven live |
 | 5 | Contractor request-setup flow | Planned | 2 | Request email setup in Settings → Email, Needs attention item for Jafar, send-refusal links there (absorbs old P3 deferral) ; browser-verified |
 | 6 | Cutover, cleanup, live-mailbox rehearsal | Planned | 3–5 | Raad fully on SES; stale ap-northeast-1 MX on `test.upliftcontractor.com` removed; Brevo contractor code/webhooks/cleanup paths removed (platform Brevo kept); rehearsal on `upliftcontractor.com` with Hostinger mail working before and after |
+| 7 | Over-allowance email credit | Planned (approved 2026-09-24, contract `108b445`) | None in this campaign; reuses SMS Communication Balance | Essential email never stops on allowance/balance; optional overage charges Communication Balance and pauses when empty; Jafar price setting shows SES cost + industry hints; browser-verified |
 
 ## Known constraints
 
