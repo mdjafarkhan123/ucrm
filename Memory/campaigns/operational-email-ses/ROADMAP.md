@@ -13,11 +13,11 @@ already exist provider-neutrally; this is a provider swap plus the setup UI, not
 
 No coding until the marketing-growth agent has committed its current SES work (`dns-reconcile.ts`, the
 marketing-domain route, `CommunicationsWorkspace.svelte`, `email-domain-activation.ts` edits). Then build in a
-separate git worktree on its own branch; merge the shared `ses.ts`/`ses-env.ts` overlap at the end.
+separate git worktree on its own branch (started 2026-09-24: `../Ucrm-email-ses`, branch `operational-email-ses`); merge the shared `ses.ts`/`ses-env.ts` overlap at the end.
 
 | Part | Outcome | State | Depends on | Completion gate |
 | --- | --- | --- | --- | --- |
-| 1 | Research check + screen designs | Planned | Start rule | Jobber/GHL setup screens reviewed; Jafar approves designs for the owner Email card and contractor Settings → Email request flow |
+| 1 | Research check + screen designs | Done 2026-09-24 (`e786e40`; designs in contract "Email setup screens") | Start rule | Jobber/GHL setup screens reviewed; Jafar approves designs for the owner Email card and contractor Settings → Email request flow |
 | 2 | Operational domain setup on SES | Planned | 1 | Owner "Set up" creates sending + receiving SES identities (+ MAIL FROM, config set in the org's existing tenant) via Cloudflare; Raad re-activated and verified live |
 | 3 | Outbound sending + delivery events on SES | Planned | 2 | Email worker sends via SES with config set and opaque Reply-To; delivery/bounce/complaint update projection and suppressions; live send proven |
 | 4 | Customer replies on SES | Planned | 3; Jafar approval before creating AWS resources | One owned us-east-1 receipt-rule set → private S3 (30-day expiry) → SNS → SQS+DLQ → worker; reply, duplicate, oversized attachment, expired alias, auto-response, recovery proven live |

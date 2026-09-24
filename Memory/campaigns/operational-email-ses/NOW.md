@@ -6,18 +6,22 @@ Contractor operational email (setup, sending, events, replies) runs on Amazon SE
 
 ## State
 
-Planned 2026-09-23. Plan and all product decisions approved by Jafar (grilling round 1–2); decisions promoted
-to `docs/contractor-email-contract.md` (2026-09-23 amendment). No code written.
+Part 1 done 2026-09-24: Jafar approved the setup screen designs (contract section "Email setup screens").
+Start rule met (marketing SES work committed). All work happens in worktree `../Ucrm-email-ses` on branch
+`operational-email-ses`; merge the shared `ses.ts`/`ses-env.ts` overlap at the end.
 
 ## Exact next action
 
-Confirm the marketing-growth agent has committed its current SES work (see ROADMAP "Start rule"), create a
-separate git worktree/branch, then start Part 1 (Jobber/GHL screen research + designs for Jafar's approval).
+Start Part 2 in the worktree: owner "Set up" on the Everyday email row creates SES sending + receiving identities
+(+ MAIL FROM, config set in the org's existing SES tenant) via Cloudflare, reusing the Marketing activation path
+(`marketing-domain-activation.ts`, `dns-reconcile.ts`) instead of the Brevo one (`email-domain-activation.ts`).
+Gate: Raad re-activated and verified live.
 
 ## Blockers
 
-Waiting on the marketing agent's commit. Part 4 needs Jafar's approval before any AWS resource is created.
+Part 4 needs Jafar's approval before any AWS resource is created.
 
 ## Pointers
 
-`ROADMAP.md` (parts, start rule, rehearsal constraints). Resume: `continue operational email ses`.
+`docs/contractor-email-contract.md` ("Email setup screens", "Domain provisioning"); architecture research doc in
+`ROADMAP.md`. Resume: `continue operational email ses`.
