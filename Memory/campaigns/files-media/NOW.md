@@ -13,7 +13,8 @@ Candidate: in the `file_links` policy, skip the per-row check when the caller's 
 the entity type (once-per-query booleans), and make on_record drive from the record's links. Must keep
 visibility identical (entity-existence checks inside can_view_invoice/quote/visit/expense). Compare old vs new
 with the rolled-back old/new digest bench (rebuild from this note; one run per user, Management API times out ~2 min).
-Clients/properties/requests/invoices policies are also per-row; outside this campaign — ask Jafar first.
+Approved by Jafar 2026-09-24, after 7B-3: move the clients/properties/requests/invoices SELECT policies to the
+same once-per-query form (identical visibility, rolled-back old-vs-new digest check, then push).
 
 **Blocker (campaign-wide):** the upload worker does not run locally; new uploads stay "Still being checked".
 
