@@ -21,6 +21,7 @@
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import {
 		fetchFileLabels,
 		fileLabelsKey,
@@ -60,6 +61,7 @@
 
 	let view = $state<FileView>('all');
 	let folderId = $state('');
+	let labelId = $state('');
 	let search = $state('');
 	let debouncedSearch = $state('');
 	let layout = $state<'grid' | 'list'>('grid');
@@ -77,7 +79,7 @@
 		return () => clearTimeout(handle);
 	});
 
-	const filters = $derived({ view, folderId, search: debouncedSearch });
+	const filters = $derived({ view, folderId, labelId, search: debouncedSearch });
 
 	const filesQuery = createInfiniteQuery(() => ({
 		queryKey: filesListKey(filters),
@@ -89,9 +91,22 @@
 		queryKey: fileFoldersKey,
 		queryFn: fetchFileFolders
 	}));
+	// The rail lists labels the way it lists folders, so it loads with the page. Short by design (at most 100).
+	const labelsQuery = createQuery(() => ({
+		queryKey: fileLabelsKey,
+		queryFn: fetchFileLabels
+	}));
 
 	const files = $derived(filesQuery.data?.pages.flatMap((page) => page.files) ?? []);
 	const folders = $derived(foldersQuery.data ?? []);
+	const labels = $derived(labelsQuery.data ?? []);
+	const selectedLabel = $derived(labels.find((label) => label.id === labelId) ?? null);
+
+	// A label deleted while it is the one being viewed: go back to every file rather than show an empty
+	// list named after nothing.
+	$effect(() => {
+		if (view === 'label' && labelsQuery.isSuccess && !selectedLabel) selectView('all');
+	});
 	const refused = $derived((filesQuery.error as FileReadError | null)?.status === 403);
 	const isSearching = $derived(debouncedSearch.length > 0);
 	const selectedFile = $derived(files.find((file) => file.id === selectedId) ?? null);
@@ -109,18 +124,27 @@
 			id: file.id,
 			src: fileImageUrl(file.id),
 			thumbSrc: fileImageUrl(file.id, 'thumb'),
-			caption: file.display_name
+			caption: file.display_name,
+			description: file.caption
 		}))
 	);
 
 	function selectView(next: FileView) {
 		view = next;
 		folderId = '';
+		labelId = '';
 		closePanel();
 	}
 	function selectFolder(id: string) {
 		view = 'folder';
 		folderId = id;
+		labelId = '';
+		closePanel();
+	}
+	function selectLabel(id: string) {
+		view = 'label';
+		labelId = id;
+		folderId = '';
 		closePanel();
 	}
 
@@ -228,16 +252,18 @@
 		if (view === 'trash') return 'Trash is empty';
 		if (view === 'not_attached') return 'Everything is attached';
 		if (view === 'folder') return 'This folder is empty';
+		if (view === 'label') return `No photos labelled ${selectedLabel?.name ?? ''}`.trim();
 		if (view === 'photos') return 'No photos yet';
 		if (view === 'documents') return 'No documents yet';
 		return 'No files yet';
 	});
 	const emptyDescription = $derived.by(() => {
 		if (isSearching)
-			return 'Try a different word, a client name, an address, or a job or quote number.';
+			return 'Try a different word, a photo caption, a client name, an address, or a job or quote number.';
 		if (view === 'trash') return 'Files you move to Trash wait here for 30 days before they go.';
 		if (view === 'not_attached')
 			return 'Every file in your library is being used by a job, quote or client.';
+		if (view === 'label') return 'Open a photo and pick this label in its details to add it here.';
 		if (canManage)
 			return 'Photos and documents from your jobs, quotes and clients collect here automatically. You can also press Upload, or drag files onto this page.';
 		return 'Photos and documents from your jobs, quotes and clients collect here automatically.';
@@ -314,19 +340,38 @@
 						{/each}
 					</ul>
 				{/if}
-				{#if canManage}
-					<div class="files__rail-heading-row">
-						<p class="files__rail-heading">Labels</p>
-					</div>
-					<button
-						type="button"
-						class="files__rail-item"
-						onpointerenter={() =>
-							void queryClient.prefetchQuery({ queryKey: fileLabelsKey, queryFn: fetchFileLabels })}
-						onclick={() => (labelsDialogOpen = true)}
-					>
-						<span class="files__rail-item-label">Manage photo labels</span>
-					</button>
+				<div class="files__rail-heading-row">
+					<p class="files__rail-heading">Labels</p>
+					{#if canManage}
+						<button
+							type="button"
+							class="files__rail-add"
+							aria-label="Manage photo labels"
+							title="Manage photo labels"
+							onclick={() => (labelsDialogOpen = true)}
+						>
+							{@html pencilIcon}
+						</button>
+					{/if}
+				</div>
+				{#if labels.length === 0}
+					<p class="files__rail-empty">No labels yet.</p>
+				{:else}
+					<ul class="files__rail-list">
+						{#each labels as label (label.id)}
+							<li>
+								<button
+									type="button"
+									class="files__rail-item"
+									class:files__rail-item--active={view === 'label' && labelId === label.id}
+									aria-current={view === 'label' && labelId === label.id ? 'true' : undefined}
+									onclick={() => selectLabel(label.id)}
+								>
+									<span class="files__rail-item-label">{label.name}</span>
+								</button>
+							</li>
+						{/each}
+					</ul>
 				{/if}
 			</nav>
 
@@ -353,7 +398,7 @@
 						<SearchInput
 							id="files-search"
 							bind:value={search}
-							placeholder="Search files, clients, addresses, job or quote numbers"
+							placeholder="Search files, captions, clients, addresses, job or quote numbers"
 						/>
 					</div>
 					<SegmentedControl
@@ -424,6 +469,9 @@
 										hasThumbnail={file.has_thumbnail}
 									/>
 									<span class="files__tile-name">{file.display_name}</span>
+									{#if file.caption}
+										<span class="files__tile-caption">{file.caption}</span>
+									{/if}
 									<span class="files__tile-meta">{usageLabel(file)}</span>
 								</button>
 							</li>
@@ -749,6 +797,13 @@
 		color: var(--color-heading);
 		font-size: var(--typography--fontSize-base);
 		font-weight: 600;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.files__tile-caption {
+		overflow: hidden;
+		color: var(--color-text);
+		font-size: var(--typography--fontSize-small);
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}

@@ -149,7 +149,7 @@
 						<label class="edit-job-report__photo">
 							<input
 								type="checkbox"
-								aria-label={photo.file_name}
+								aria-label={photo.caption || photo.file_name}
 								checked={selectedPhotoIds.has(photo.file_id)}
 								disabled={saving}
 								onchange={(event) => togglePhoto(photo.file_id, event.currentTarget.checked)}
@@ -162,6 +162,17 @@
 								processingState="available"
 								hasThumbnail={photo.has_thumbnail}
 							/>
+							<!-- The words the customer will read under this photo, so nothing on their copy is a surprise. -->
+							{#if photo.caption || photo.labels.length > 0}
+								<span class="edit-job-report__photo-words">
+									{#if photo.labels.length > 0}
+										<span class="edit-job-report__photo-labels">{photo.labels.join(' · ')}</span>
+									{/if}
+									{#if photo.caption}
+										<span class="edit-job-report__photo-caption">{photo.caption}</span>
+									{/if}
+								</span>
+							{/if}
 						</label>
 					{/each}
 				</div>
@@ -264,6 +275,31 @@
 
 			&:has(input:checked) {
 				border-color: var(--color-interactive);
+			}
+
+			&-words {
+				display: flex;
+				flex-direction: column;
+				gap: var(--space-smallest);
+				padding: var(--space-smaller) var(--space-small);
+				font-size: var(--typography--fontSize-small);
+			}
+
+			&-labels {
+				overflow: hidden;
+				color: var(--color-interactive);
+				font-weight: 600;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			&-caption {
+				display: -webkit-box;
+				overflow: hidden;
+				color: var(--color-text);
+				-webkit-box-orient: vertical;
+				-webkit-line-clamp: 2;
+				line-clamp: 2;
 			}
 
 			&:has(input:focus-visible) {

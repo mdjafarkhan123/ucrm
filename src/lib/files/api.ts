@@ -2,12 +2,21 @@
 // the manage actions it writes with.
 
 /**
- * The smart views in the File Manager rail. `folder` is one user folder, named by `folderId`; `on_record`
+ * The smart views in the File Manager rail. `folder` is one user folder, named by `folderId`, and `label`
+ * the photos carrying one label, named by `labelId`; `on_record`
  * is the picker's first section — the files already on the record it was opened from — and is the only view
  * that reads `entityType`/`entityId`.
  */
 export type FileView =
-	'all' | 'recent' | 'photos' | 'documents' | 'not_attached' | 'trash' | 'folder' | 'on_record';
+	| 'all'
+	| 'recent'
+	| 'photos'
+	| 'documents'
+	| 'not_attached'
+	| 'trash'
+	| 'folder'
+	| 'label'
+	| 'on_record';
 
 /** The CRM records a File can be attached to. Matches the file_links entity_type constraint. */
 export type FileEntityType =
@@ -28,6 +37,8 @@ export type FileProcessingState = 'pending' | 'available' | 'failed' | 'quaranti
 export type FileListFilters = {
 	view: FileView;
 	folderId: string;
+	/** The rail's label, when `view` is `label`. */
+	labelId?: string;
 	search: string;
 	/** The picker's record context. Part of the key, so two pickers never share one cached section. */
 	entityType?: FileEntityType;
@@ -56,6 +67,8 @@ export type FileListItem = {
 	trashed_at: string | null;
 	/** Distinct records using this file that the reader may view. Never a raw link-row total. */
 	usage_count: number;
+	/** A photo's one-line description. Always null on a document. */
+	caption: string | null;
 };
 
 export type FileListPage = {
@@ -89,7 +102,6 @@ export type FileLabel = { id: string; name: string };
 export type FileDetail = {
 	file: Omit<FileListItem, 'usage_count'> & {
 		has_thumbnail: boolean;
-		caption: string | null;
 		labels: FileLabel[];
 	};
 	usage: FileUsageRow[];
@@ -122,6 +134,7 @@ export async function fetchFiles(filters: FileListFilters, cursor?: string): Pro
 	const params = new URLSearchParams();
 	if (filters.view !== 'all') params.set('view', filters.view);
 	if (filters.view === 'folder' && filters.folderId) params.set('folder_id', filters.folderId);
+	if (filters.view === 'label' && filters.labelId) params.set('label_id', filters.labelId);
 	if (filters.search) params.set('search', filters.search);
 	if (filters.view === 'on_record' && filters.entityType && filters.entityId) {
 		params.set('entity_type', filters.entityType);

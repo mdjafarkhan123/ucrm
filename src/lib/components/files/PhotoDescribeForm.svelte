@@ -95,6 +95,8 @@
 			// flashing back to the old words in between.
 			await queryClient.invalidateQueries({ queryKey: fileDetailKey(detail.file.id) });
 			void queryClient.invalidateQueries({ queryKey: ['files', 'list'] });
+			// Every work report editor that offers this photo shows its caption and labels.
+			void queryClient.invalidateQueries({ queryKey: ['jobs', 'report'] });
 			reset();
 			toast.success('Photo details saved');
 			onSaved?.();

@@ -42,10 +42,13 @@
 	let busy = $state(false);
 	let error = $state('');
 
-	// A label's name shows on photo details everywhere, so every open detail is refetched after a change.
+	// A label's name shows on photo details, library tiles and work report editors, so each is refetched
+	// after a change; a removed label also empties the rail's view of it.
 	function refresh() {
 		void queryClient.invalidateQueries({ queryKey: fileLabelsKey });
 		void queryClient.invalidateQueries({ queryKey: ['files', 'detail'] });
+		void queryClient.invalidateQueries({ queryKey: ['files', 'list'] });
+		void queryClient.invalidateQueries({ queryKey: ['jobs', 'report'] });
 	}
 
 	async function run(action: () => Promise<unknown>, done: () => void) {

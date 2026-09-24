@@ -2,24 +2,23 @@
 
 **Goal:** One contractor File Manager backed by private R2, with one File linked to every CRM use.
 
-**Active part:** 7B-2 — show captions and labels (roadmap entry 7B-2). 7B-1 closed 2026-09-24.
+**Active part:** 7B-2 — captions and labels shown (roadmap 7B-2). Built and pushed 2026-09-24; only the
+browser check is left. Then 7B-3 (File Manager fast at 20k+ files).
 
-**Exact next action:** Plan 7B-2, running performance-review's design branch first (label filter + caption
-search change `list_files`, which grows with an organization's files). Then build:
-1. Work report: add `caption` and `labels` to each photo in the document builder in
-   `20260924100000_files_media_work_report_photos.sql` (the `'photos'` jsonb) so issued links freeze them; show
-   them in the editor and the customer view.
-2. File Manager: a Labels filter in the left rail (under "Manage photo labels") and caption matching in search.
-3. Optionally show the caption in the Lightbox under the file name.
+**Exact next action:** Browser-check 7B-2 on Raad LTD (owner login), then commit memory and start 7B-3:
+1. `/files` rail lists labels; clicking "After" shows `test-visit-photo.jpg` only; the pencil opens Manage
+   labels (owner) and is absent for the sales login.
+2. Search "driveway" finds it by caption; tile and Lightbox show the caption.
+3. Job `b6229fd7-…` work report editor shows caption + labels under the photo; Preview as client shows them.
+4. Issue a customer link, change the caption, confirm `/w/<token>` still shows the old words.
 
 **Blocker (campaign-wide):** the upload worker does not run locally; new uploads stay "Still being checked".
 
-**Browser note:** a blank page with "Failed to hydrate … reading 'call'" is a stale Vite cache (two Svelte
-runtimes) — hard reload with ctrl+shift+r. Screenshots sometimes time out; read state with javascript.
-Test photo with caption + "After" label: `test-visit-photo.jpg` on job `b6229fd7-…` visit "Extra trim visit".
+**Browser note:** a blank page with "Failed to hydrate … reading 'call'" is a stale Vite cache — hard reload.
+Screenshots sometimes time out; read state with javascript.
 
 **Known stale pgTAP (not regressions):** `files_manage_actions.sql` 15–16, 23; `files_media_central_catalog.sql`
 16; `files_media_upload_pipeline.sql`. `npm run check` needs `NODE_OPTIONS=--max-old-space-size=8192`; its 3
-"union type too complex" errors pre-date 7A.
+"union type too complex" errors pre-date 7A. Supabase CLI is `npx supabase`.
 
-**Pointers:** `docs/files-media-behavior-contract.md` (Part 7B paragraph), roadmap 7B-2 entry.
+**Pointers:** roadmap 7B-2 and 7B-3 entries; `docs/files-media-behavior-contract.md` Part 7B.

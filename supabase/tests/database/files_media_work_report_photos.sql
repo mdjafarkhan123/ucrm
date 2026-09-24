@@ -203,8 +203,8 @@ select is(
 
 select is(
   public.resolve_job_report_access_link(decode(repeat('ab', 32), 'hex')) -> 'photos' -> 0,
-  '{"file_id": null, "file_name": null, "removed": true}'::jsonb,
-  'the customer''s copy shows it as removed');
+  '{"file_id": null, "file_name": null, "caption": null, "labels": [], "removed": true}'::jsonb,
+  'the customer''s copy shows it as removed, with no name or words left (7B-2)');
 
 select is(
   public.resolve_job_report_access_link(decode(repeat('ab', 32), 'hex')) -> 'photos' -> 1 ->> 'removed',

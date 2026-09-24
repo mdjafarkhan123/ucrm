@@ -8,6 +8,7 @@ import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
 // The smart views in the left rail, plus the folder view. "Shared with customers" and "Videos" are
 // deliberately absent: customer sharing is Part 7 and video is not on the upload allowlist until Part 8
 // measures it, so neither could ever be anything but an empty list that implies a missing feature.
+// `label` is one photo label from the rail, named by `label_id`, the way `folder` names its folder.
 // `on_record` is the picker's first section rather than a rail view: the Files already on the record the
 // picker was opened from. It needs the record named, so it is the one view that reads entity_type/entity_id.
 const VIEWS = [
@@ -18,6 +19,7 @@ const VIEWS = [
 	'not_attached',
 	'trash',
 	'folder',
+	'label',
 	'on_record'
 ] as const;
 type FileView = (typeof VIEWS)[number];
@@ -58,6 +60,8 @@ export const GET: RequestHandler = async (event) => {
 	const view = readView(params.get('view'));
 	const folderId = view === 'folder' ? params.get('folder_id') : null;
 	if (view === 'folder' && !folderId) return json({ files: [], next_cursor: null });
+	const labelId = view === 'label' ? params.get('label_id') : null;
+	if (view === 'label' && !labelId) return json({ files: [], next_cursor: null });
 
 	// The record the picker was opened from. A view of `on_record` without one would otherwise read as "no
 	// record named, so show everything", which is the opposite of what the section means.
@@ -110,7 +114,8 @@ export const GET: RequestHandler = async (event) => {
 	// migration for why this is a function rather than a PostgREST query.
 	const { data, error } = await event.locals.supabase.rpc('list_files', {
 		target_organization_id: organizationId,
-		target_view: view === 'folder' ? 'all' : view,
+		// A label is only ever on a photo, so the label view is the photos view narrowed to it.
+		target_view: view === 'folder' ? 'all' : view === 'label' ? 'photos' : view,
 		target_folder_id: folderId ?? undefined,
 		target_search: search ?? undefined,
 		// One more than the page, so "is there another page" is answered without a second count query.
@@ -119,7 +124,8 @@ export const GET: RequestHandler = async (event) => {
 		cursor_id: cursor?.id ?? undefined,
 		target_entity_type: entityType ?? undefined,
 		target_entity_id: entityId ?? undefined,
-		only_attachable: attachableOnly
+		only_attachable: attachableOnly,
+		target_label_id: labelId ?? undefined
 	});
 	if (error) {
 		console.error('Could not list files.', error);

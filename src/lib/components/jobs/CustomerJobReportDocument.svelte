@@ -110,12 +110,29 @@
 								<span aria-hidden="true">Photo removed</span>
 							</span>
 						{:else}
-							<img
-								class="customer-job-report__photo"
-								src={fileHref(photo.file_id)}
-								alt={photo.file_name}
-								loading="lazy"
-							/>
+							{@const labels = photo.labels ?? []}
+							<figure class="customer-job-report__figure">
+								<img
+									class="customer-job-report__photo"
+									src={fileHref(photo.file_id)}
+									alt={photo.caption || photo.file_name}
+									loading="lazy"
+								/>
+								{#if photo.caption || labels.length > 0}
+									<figcaption class="customer-job-report__figcaption">
+										{#if labels.length > 0}
+											<span class="customer-job-report__labels">
+												{#each labels as label (label)}
+													<span class="customer-job-report__label">{label}</span>
+												{/each}
+											</span>
+										{/if}
+										{#if photo.caption}
+											<span class="customer-job-report__caption">{photo.caption}</span>
+										{/if}
+									</figcaption>
+								{/if}
+							</figure>
 						{/if}
 					{/each}
 				</div>
@@ -379,6 +396,43 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
 		gap: var(--space-base);
+	}
+
+	.customer-job-report__figure {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-small);
+		margin: 0;
+		min-width: 0;
+	}
+
+	.customer-job-report__figcaption {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smaller);
+	}
+
+	.customer-job-report__labels {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-smallest);
+	}
+
+	.customer-job-report__label {
+		padding: 1px var(--space-small);
+		border-radius: var(--radius-base);
+		color: var(--color-text);
+		background: var(--color-surface--background--subtle);
+		border: 1px solid var(--color-border);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+	}
+
+	.customer-job-report__caption {
+		color: var(--color-text);
+		font-size: var(--typography--fontSize-base);
+		line-height: var(--typography--lineHeight-base);
+		overflow-wrap: anywhere;
 	}
 
 	.customer-job-report__photo {

@@ -6,6 +6,8 @@
 		/** Small copy, shown in the filmstrip along the bottom. */
 		thumbSrc: string;
 		caption: string;
+		/** A line of words about the photo (its File caption), shown under the name. */
+		description?: string | null;
 	};
 </script>
 
@@ -95,6 +97,9 @@
 				<header class="lightbox__bar">
 					<div class="lightbox__title">
 						<span class="lightbox__name">{current.caption}</span>
+						{#if current.description}
+							<span class="lightbox__description">{current.description}</span>
+						{/if}
 						{#if hasMany}
 							<span class="lightbox__count">{index + 1} of {items.length}</span>
 						{/if}
@@ -227,6 +232,14 @@
 			color: #fff;
 			font-size: var(--typography--fontSize-base);
 			font-weight: 600;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		&__description {
+			overflow: hidden;
+			color: rgba(255, 255, 255, 0.86);
+			font-size: var(--typography--fontSize-small);
 			text-overflow: ellipsis;
 			white-space: nowrap;
 		}

@@ -20,6 +20,9 @@ export type JobReportCandidatePhoto = {
 	mime_type: string;
 	has_thumbnail: boolean;
 	created_at: string;
+	caption: string | null;
+	/** Label names, alphabetical. */
+	labels: string[];
 };
 
 export type JobReportCandidateItem = {
@@ -68,11 +71,18 @@ export type CustomerJobReportLine = {
 	line_total_minor?: number;
 };
 
-// A photo moved to Trash after the customer's link was issued keeps its place as `removed`, with no id or
-// name, so their copy shows the gap instead of silently changing. Preview as client never has one.
+// A photo moved to Trash after the customer's link was issued keeps its place as `removed`, with no id,
+// name or words, so their copy shows the gap instead of silently changing. Preview as client never has one.
+// `caption` and `labels` are frozen with the link; a link issued before Part 7B-2 has neither.
 export type CustomerJobReportPhoto =
-	| { file_id: string; file_name: string; removed?: false }
-	| { file_id: null; file_name: null; removed: true };
+	| {
+			file_id: string;
+			file_name: string;
+			caption?: string | null;
+			labels?: string[];
+			removed?: false;
+	  }
+	| { file_id: null; file_name: null; caption?: null; labels?: string[]; removed: true };
 
 export type CustomerJobReportChecklistItem = {
 	item_id: string;

@@ -239,7 +239,13 @@ Jobber has neither (only hand-drawn text on the photo), so this goes beyond Jobb
   captioning grants no rename, move, or trash rights. Built in 7B-1 (migration `20260924120000`,
   `describe_file`, `src/lib/server/files/describe-access.ts`); the shared chip picker is `ui/TagSelect.svelte`.
 - **Customer copies stay as sent.** An issued work report link freezes each photo's caption and labels at
-  issue time; later edits change only the editable report and future links.
+  issue time; later edits change only the editable report and future links. Labels freeze as names, so a
+  renamed label does not change a sent report.
+- **Where they show (built in 7B-2):** under each photo on the work report (editor, Preview as client, the
+  customer link), under the file name on File Manager tiles and in the Lightbox, and in search (the caption
+  is matched like the file name). The File Manager rail lists every label like a folder; picking one shows
+  the photos carrying it. Everyone who may browse the library sees the label list; only `files.manage`
+  holders see its edit button.
 
 Decisions settled while building the schema, confirmed by Jafar 2026-09-21 (he asked for the industry-standard, contractor-easy choice):
 
