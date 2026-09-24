@@ -14,6 +14,7 @@ email; the Platform Owner organization page shows one Email card with separate "
 gets a "Request email setup" action in Settings → Email (they enter their domain; the request appears in the
 Platform Owner "Needs attention" list, and the send-refusal message links there); raw inbound MIME in S3 is kept
 30 days; the live-mailbox launch-gate rehearsal runs on `upliftcontractor.com` itself.
+Amended: 2026-09-24 — the email setup screens (Jafar approved the designs); see "Email setup screens".
 Scope: Contractor operational email, inbound replies, tenant controls, and Platform Owner controls
 
 Research evidence lives in:
@@ -350,6 +351,33 @@ Jafar can inspect and control:
 
 Contractors may choose stricter settings but cannot exceed Jafar's maximum, weaken platform safety, or bypass
 an organization or platform pause.
+
+## Email setup screens
+
+Approved 2026-09-24 against HighLevel's self-serve dedicated-domain flow and Jobber's shared-sender model. UCRM
+keeps the contractor free of DNS work: the contractor requests setup, and Jafar activates it.
+
+**Platform Owner organization page (Communications).** One Email card replaces the separate operational and
+Marketing domain cards:
+
+- An open contractor request shows at the top of the card with its date, domain, current mailbox provider and
+  optional note, plus **Set up** (activation prefilled with the requested domain) and **Close request** (Jafar
+  enters a note that the contractor sees).
+- An **Everyday email + replies** row shows the sending and receiving subdomains. A **Marketing email** row shows
+  the Marketing subdomain and its branded-links state.
+- Each row has one status (Not set up, Setting up, Ready or Problem) and one main action (Set up, Check, or See
+  what's wrong). Technical records, Replace domain and Remove sit behind a row's more-actions menu.
+
+**Contractor Settings → Email.** Until a verified domain exists, owners and admins see a "Set up your business
+email" card with **Request email setup**. The request asks for the website domain, where the business's email
+lives today (Google Workspace, Microsoft 365, GoDaddy, Hostinger, Other, or none), and an optional note. After
+the request is sent, the card shows its date and domain, says the current mailbox keeps working and that UCRM will
+make contact if domain access is needed, and offers **Cancel request**. It then moves through Setting up to Ready,
+which unlocks Add sender. A closed request shows Jafar's note. A send refused for a missing verified sender links
+to this page.
+
+**Platform Owner alerting.** A new request raises a "Waiting on you" alert on the Jafar home page linking to that
+organization, and adds an "Email setup requested" attention reason to the organizations list filter.
 
 ## Campaign ownership
 
