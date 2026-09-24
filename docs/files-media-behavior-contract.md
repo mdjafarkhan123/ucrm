@@ -369,6 +369,25 @@ Before/after comparison is an explicit presentation assembled for a Work Report,
 timestamps. Reports select Files, order them, group them into sections, and may choose pairs. The current Work
 Report remains the one proof-of-work product and is extended rather than duplicated.
 
+How arranging works (Part 7C, approved by Jafar 2026-09-24; Housecall Pro photo-report sections plus CompanyCam
+before/after pairs, built as a report item rather than a merged image):
+
+- **Sections** are optional headings, each with an optional note. Photos may sit above the first heading; a
+  report with no headings looks exactly as it did before sections existed.
+- **Starting layout.** Only when a report has no photos chosen yet, added photos are pre-sorted under Before,
+  During, After and Damage headings by their first matching label, with the rest under "Other". Labels never
+  reorder anything after that. Reports that existed before 7C kept their photos as one list in upload order.
+- **Order** is changed by dragging or by up/down buttons. Newly added photos go to the end.
+- **A before/after pair** is one report item made of two photos, always labelled Before (left) and After (right),
+  each keeping its own caption. Sides can be swapped and the pair split. A photo appears at most once in a
+  report, so pairing moves both photos to the pair's place. On a phone the pair stacks, Before on top.
+- **The customer sees one fixed layout:** large photos with captions, two across on a desktop and one on a
+  phone, with no slider or grid option. Preview as client and Print draw the same document.
+- **After sending**, an issued link keeps exactly what the customer was sent. When the report is edited
+  afterwards, the job page says so and offers "Copy updated link", which issues a new link and turns the old
+  one off.
+- Arranging needs the same permission as editing a work report.
+
 Useful contractor photo and document formats are supported through a conservative allowlist. Video support is in
 scope, but its first formats, duration, and byte limits must be chosen from measured mobile upload, processing,
 playback, and storage evidence rather than copied from a competitor.
