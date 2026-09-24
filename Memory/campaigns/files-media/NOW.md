@@ -4,15 +4,16 @@
 
 **Active part:** 7B-3 — File Manager fast at 20k+ files (roadmap 7B-3). 7B-2 closed 2026-09-24.
 
-**Exact next action:** Waiting on Jafar: (1) approve the design below, (2) say where timing tests may run —
-the rolled-back tests that swap policies on the shared remote DB were stopped by the permission guard.
-Measured 2026-09-24 (20k files, 5k linked to a client, owner): all 18 ms, rare label 429 ms, dense label
-729 ms, caption search 9.3 s, no-match search 9.5 s. Swapping the five Files SELECT policies to the project's
-`(select private.current_organization())` + `(select private.has_permission((select private.current_organization()), 'files.view'))`
-once-per-query form (same rules; sound because `organization_members` is UNIQUE(user_id)) gave: all 46 ms,
-rare 60 ms, dense 24 ms, but searches still ~4 s — the remaining cost is per-link `can_view_linked_entity`
-plus the per-entity-type record-name EXISTS in `list_files` search. Field-worker (no files.view) path not yet
-timed. Bench script lives only in the old session scratchpad; rebuild it from this note.
+**Exact next action:** Jafar runs `! npx supabase db push --linked` (the permission guard blocked Claude's push)
+for `20260924170000_files_media_fast_at_scale.sql` (committed, not yet applied). Then fix the one cause left:
+per-link `private.can_view_linked_entity` (~0.7 ms each). Rolled-back tests at 20k files, old vs new results
+identical: all/labels/caption/no-match search now 30–100 ms, but client-name search matching 5k files 4.1 s,
+"Not attached" 3.7 s, field worker on_record 7.7 s (plan scans every file running `file_has_visible_link`).
+Candidate: in the `file_links` policy, skip the per-row check when the caller's org-wide scope already covers
+the entity type (once-per-query booleans), and make on_record drive from the record's links. Must keep
+visibility identical (entity-existence checks inside can_view_invoice/quote/visit/expense). Compare old vs new
+with the rolled-back old/new digest bench (rebuild from this note; one run per user, Management API times out ~2 min).
+Clients/properties/requests/invoices policies are also per-row; outside this campaign — ask Jafar first.
 
 **Blocker (campaign-wide):** the upload worker does not run locally; new uploads stay "Still being checked".
 
