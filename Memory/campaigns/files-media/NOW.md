@@ -2,17 +2,15 @@
 
 **Goal:** One contractor File Manager backed by private R2, with one File linked to every CRM use.
 
-**Active part:** 7B-3 — File Manager fast at 20k+ files (roadmap 7B-3). 7B-2 closed 2026-09-24.
+**Active part:** 7B-3 — File Manager fast at 20k+ files (roadmap 7B-3).
 
-**Exact next action:** `20260924170000_files_media_fast_at_scale.sql` is live (pushed by Jafar 2026-09-24).
-Fix the one cause left:
-per-link `private.can_view_linked_entity` (~0.7 ms each). Rolled-back tests at 20k files, old vs new results
-identical: all/labels/caption/no-match search now 30–100 ms, but client-name search matching 5k files 4.1 s,
-"Not attached" 3.7 s, field worker on_record 7.7 s (plan scans every file running `file_has_visible_link`).
-Candidate: in the `file_links` policy, skip the per-row check when the caller's org-wide scope already covers
-the entity type (once-per-query booleans), and make on_record drive from the record's links. Must keep
-visibility identical (entity-existence checks inside can_view_invoice/quote/visit/expense). Compare old vs new
-with the rolled-back old/new digest bench (rebuild from this note; one run per user, Management API times out ~2 min).
+**Exact next action:** Jafar approves the push of `20260924190000_files_media_link_visibility_once_per_query.sql`
+(dry-run shows it is the only pending migration) → `npx supabase db push --linked` → browser check on Raad LTD
+(owner: All, client-name search, Not attached, a client's Files tab; field member: an assigned job's files) → close
+7B-3 and select 7C. Rolled-back 20k-file tests, old vs new, identical results for owner, finance and field:
+client search 3.7–5.3 s → 45–64 ms, Not attached 6.8–9.4 s → 0.18–0.26 s, field job files 13.2 s → 0.8 s.
+Field members can only reach `on_record` (server gate in `src/routes/api/files/+server.ts`), so the files policy's
+per-file test on other views is unreachable for them and was left as is.
 Approved by Jafar 2026-09-24, after 7B-3: move the clients/properties/requests/invoices SELECT policies to the
 same once-per-query form (identical visibility, rolled-back old-vs-new digest check, then push).
 
@@ -23,6 +21,7 @@ The browser window is narrow; drive pages with javascript. Bits UI menus do not 
 
 **Known stale pgTAP (not regressions):** `files_manage_actions.sql` 15–16, 23; `files_media_central_catalog.sql`
 16; `files_media_upload_pipeline.sql`. `npm run check` needs `NODE_OPTIONS=--max-old-space-size=8192`; its 3
-"union type too complex" errors pre-date 7A. Supabase CLI is `npx supabase`.
+"union type too complex" errors pre-date 7A. Supabase CLI is `npx supabase`; run SQL files with
+`npx supabase db query --linked -f <file>` from the repo root (~2 min limit per call).
 
 **Pointers:** roadmap 7B-3 entry; `docs/files-media-behavior-contract.md` Part 7B.
