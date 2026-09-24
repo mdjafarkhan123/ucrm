@@ -226,6 +226,21 @@ removed" until Restore brings it back. Turning the link off releases the protect
 rewritten to name the same pictures by File id. The same migration also fixed "Used in" failing for every File
 since 6F: campaign names now come from `public.file_link_marketing_campaign`, mirroring 6E's message lookup.
 
+**Part 7B — Photo captions and labels (decisions approved by Jafar 2026-09-24).** Follows CompanyCam's model;
+Jobber has neither (only hand-drawn text on the photo), so this goes beyond Jobber on purpose.
+
+- **One optional caption per File**, written once and shown wherever the photo appears (File Manager, record
+  Files cards, work reports). Uploading never asks for one.
+- **Labels come from one company-wide list** seeded with Before, During, After, and Damage. People holding
+  `files.manage` (owner, admin, office) add, rename, and remove labels; a photo can carry several.
+- **Who can caption and label a photo:** anyone with `files.manage`, plus anyone who may add photos to a job
+  or visit the photo is on (`field_records.record` / `manage_team`, on a job they can see; a field member sees
+  only jobs they are assigned to). Only `files.manage` holders create labels; everyone else picks, and
+  captioning grants no rename, move, or trash rights. Built in 7B-1 (migration `20260924120000`,
+  `describe_file`, `src/lib/server/files/describe-access.ts`); the shared chip picker is `ui/TagSelect.svelte`.
+- **Customer copies stay as sent.** An issued work report link freezes each photo's caption and labels at
+  issue time; later edits change only the editable report and future links.
+
 Decisions settled while building the schema, confirmed by Jafar 2026-09-21 (he asked for the industry-standard, contractor-easy choice):
 
 - **Folders are flat.** The contract asks for optional user folders, not a tree. A nesting column can be

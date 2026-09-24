@@ -1,7 +1,11 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getOrganizationContext } from '$lib/server/auth/organization';
-import { resolveOrganizationAccess } from '$lib/server/access/effective';
+import { getOrganizationContext, type OrganizationContext } from '$lib/server/auth/organization';
+import {
+	resolveOrganizationAccess,
+	type EffectiveOrganizationAccess
+} from '$lib/server/access/effective';
+import { canDescribeFile } from '$lib/server/files/describe-access';
 import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
 import { PRIVATE_READ_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
@@ -35,7 +39,7 @@ export const GET: RequestHandler = async (event) => {
 		event.locals.supabase
 			.from('files')
 			.select(
-				'id, display_name, mime_type, kind, size_bytes, thumbnail_object_key, folder_id, origin_type, origin_id, processing_state, uploaded_by, created_at, trashed_at'
+				'id, display_name, caption, mime_type, kind, size_bytes, thumbnail_object_key, folder_id, origin_type, origin_id, processing_state, uploaded_by, created_at, trashed_at'
 			)
 			.eq('id', fileId)
 			.maybeSingle(),
@@ -66,7 +70,7 @@ export const GET: RequestHandler = async (event) => {
 	const usage = hasMoreUsage ? usageRows.slice(0, USAGE_PAGE_SIZE) : usageRows;
 	const lastUsage = usage.at(-1);
 
-	const [folderResult, uploaderResult] = await Promise.all([
+	const [folderResult, uploaderResult, labelsResult, canDescribe] = await Promise.all([
 		fileResult.data.folder_id
 			? event.locals.supabase
 					.from('file_folders')
@@ -80,8 +84,27 @@ export const GET: RequestHandler = async (event) => {
 					.select('full_name')
 					.eq('id', fileResult.data.uploaded_by)
 					.maybeSingle()
-			: Promise.resolve({ data: null })
+			: Promise.resolve({ data: null }),
+		event.locals.supabase.from('file_label_assignments').select('label_id').eq('file_id', fileId),
+		fileResult.data.kind === 'image' && fileResult.data.trashed_at === null
+			? canDescribeFile(event.locals.supabase, access, fileId)
+			: Promise.resolve(false)
 	]);
+	if (labelsResult.error) {
+		console.error("Could not read a file's labels.", labelsResult.error);
+		return databaseError();
+	}
+	const labelIds = (labelsResult.data ?? []).map((row) => row.label_id);
+	const labelNames = labelIds.length
+		? await event.locals.supabase.from('file_labels').select('id, name').in('id', labelIds)
+		: { data: [], error: null };
+	if (labelNames.error) {
+		console.error("Could not read a file's label names.", labelNames.error);
+		return databaseError();
+	}
+	const labels = (labelNames.data ?? []).sort((a, b) =>
+		a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+	);
 
 	const { thumbnail_object_key, ...file } = fileResult.data;
 
@@ -91,20 +114,23 @@ export const GET: RequestHandler = async (event) => {
 				...file,
 				has_thumbnail: thumbnail_object_key !== null,
 				folder_name: folderResult.data?.name ?? null,
-				uploaded_by_name: uploaderResult.data?.full_name ?? null
+				uploaded_by_name: uploaderResult.data?.full_name ?? null,
+				labels
 			},
 			usage,
 			usage_next_cursor:
 				hasMoreUsage && lastUsage ? `${lastUsage.created_at}|${lastUsage.id}` : null,
 			can_manage: hasPermission(access, 'files.manage'),
-			can_trash: hasPermission(access, 'files.trash')
+			can_trash: hasPermission(access, 'files.trash'),
+			can_describe: canDescribe
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);
 };
 
-// Rename, move, or both. Folders are a display grouping, so neither of these touches a link: a file moved
-// into "Boiler jobs" is still attached to exactly the jobs and quotes it was attached to before.
+// Rename, move, caption, label -- any combination. Folders are a display grouping, so none of these touches a
+// link: a file moved into "Boiler jobs" is still attached to exactly the jobs and quotes it was attached to
+// before. Renaming and moving need files.manage; captioning and labelling a photo need only canDescribeFile.
 export const PATCH: RequestHandler = async (event) => {
 	const fileId = event.params.id;
 	if (!/^[0-9a-f-]{36}$/i.test(fileId)) return validationError({ id: 'That file was not found.' });
@@ -119,10 +145,39 @@ export const PATCH: RequestHandler = async (event) => {
 	const parsed = fileUpdateSchema.safeParse(body);
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
-	const access = await requireOrganizationPermission(event, 'files.manage');
-	if ('response' in access) return access.response;
+	const managing = parsed.data.display_name !== undefined || parsed.data.folder_id !== undefined;
+	const describing = parsed.data.caption !== undefined || parsed.data.label_ids !== undefined;
+
+	let access: { auth: OrganizationContext; access: EffectiveOrganizationAccess };
+	if (managing) {
+		const check = await requireOrganizationPermission(event, 'files.manage');
+		if ('response' in check) return check.response;
+		access = check;
+	} else {
+		const auth = await getOrganizationContext(event);
+		if (!auth)
+			return json(
+				{ error: 'Authentication or organization membership required.' },
+				{ status: 401 }
+			);
+		access = {
+			auth,
+			access: await resolveOrganizationAccess(
+				event.locals.supabase,
+				auth.organization.id,
+				auth.user.id
+			)
+		};
+	}
 	const organizationId = access.auth.organization.id;
 	const owner = getOwnerSupabaseClient();
+
+	if (describing && !(await canDescribeFile(event.locals.supabase, access.access, fileId))) {
+		return json(
+			{ error: 'You do not have access to do that.', reason: 'permission_denied' },
+			{ status: 403 }
+		);
+	}
 
 	let file: unknown = null;
 
@@ -171,6 +226,32 @@ export const PATCH: RequestHandler = async (event) => {
 			if (error.code === 'P0002')
 				return json({ error: 'That file or folder was not found.' }, { status: 404 });
 			console.error('Could not move a file.', error);
+			return databaseError();
+		}
+		file = data;
+	}
+
+	if (describing) {
+		const { data, error } = await owner.rpc('describe_file', {
+			target_organization_id: organizationId,
+			target_file_id: fileId,
+			target_actor_id: access.auth.user.id,
+			set_caption: parsed.data.caption !== undefined,
+			// Null and empty both clear the caption; the database turns an empty box into null.
+			target_caption: parsed.data.caption ?? '',
+			// Absent means "leave the labels alone", which the function reads as a null list.
+			target_label_ids: (parsed.data.label_ids ?? null) as string[]
+		});
+		if (error) {
+			if (error.code === 'P0002')
+				return json({ error: 'That file was not found.' }, { status: 404 });
+			if (error.code === 'P0404')
+				return validationError({
+					label_ids: 'One of those labels was just removed. Reopen the list and try again.'
+				});
+			if (error.code === '23514')
+				return validationError({ caption: 'Only photos take a caption or labels.' });
+			console.error('Could not describe a file.', error);
 			return databaseError();
 		}
 		file = data;

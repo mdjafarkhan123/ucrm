@@ -4897,6 +4897,77 @@ export type Database = {
           },
         ]
       }
+      file_label_assignments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          file_id: string
+          label_id: string
+          organization_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          file_id: string
+          label_id: string
+          organization_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          file_id?: string
+          label_id?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_label_assignments_file_fk"
+            columns: ["organization_id", "file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "file_label_assignments_label_fk"
+            columns: ["organization_id", "label_id"]
+            isOneToOne: false
+            referencedRelation: "file_labels"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      file_labels: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          organization_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          organization_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_labels_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       file_links: {
         Row: {
           created_at: string
@@ -4950,6 +5021,7 @@ export type Database = {
       }
       files: {
         Row: {
+          caption: string | null
           checksum_sha256: string | null
           claim_token: string | null
           claimed_at: string | null
@@ -4977,6 +5049,7 @@ export type Database = {
           uploaded_by: string | null
         }
         Insert: {
+          caption?: string | null
           checksum_sha256?: string | null
           claim_token?: string | null
           claimed_at?: string | null
@@ -5004,6 +5077,7 @@ export type Database = {
           uploaded_by?: string | null
         }
         Update: {
+          caption?: string | null
           checksum_sha256?: string | null
           claim_token?: string | null
           claimed_at?: string | null
@@ -14953,6 +15027,7 @@ export type Database = {
       claim_file_processing_jobs: {
         Args: { batch_size?: number }
         Returns: {
+          caption: string | null
           checksum_sha256: string | null
           claim_token: string | null
           claimed_at: string | null
@@ -16428,6 +16503,7 @@ export type Database = {
           target_uploaded_by: string
         }
         Returns: {
+          caption: string | null
           checksum_sha256: string | null
           claim_token: string | null
           claimed_at: string | null
@@ -16618,6 +16694,26 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "file_folders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_file_label: {
+        Args: {
+          target_actor_id: string
+          target_name: string
+          target_organization_id: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          organization_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "file_labels"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -16907,6 +17003,14 @@ export type Database = {
         }
         Returns: Json
       }
+      delete_file_label: {
+        Args: {
+          target_actor_id: string
+          target_label_id: string
+          target_organization_id: string
+        }
+        Returns: undefined
+      }
       delete_invoice_draft: {
         Args: {
           expected_revision: number
@@ -16995,6 +17099,50 @@ export type Database = {
       }
       delete_property: { Args: { p_property_id: string }; Returns: undefined }
       delete_quote: { Args: { target_quote_id: string }; Returns: Json }
+      describe_file: {
+        Args: {
+          set_caption: boolean
+          target_actor_id: string
+          target_caption: string
+          target_file_id: string
+          target_label_ids: string[]
+          target_organization_id: string
+        }
+        Returns: {
+          caption: string | null
+          checksum_sha256: string | null
+          claim_token: string | null
+          claimed_at: string | null
+          created_at: string
+          display_name: string
+          folder_id: string | null
+          id: string
+          kind: string | null
+          mime_type: string
+          object_key: string
+          organization_id: string
+          origin_id: string | null
+          origin_role: string
+          origin_type: string
+          processing_attempts: number
+          processing_error: string | null
+          processing_state: string
+          scanned_at: string | null
+          size_bytes: number
+          thumbnail_object_key: string | null
+          trashed_at: string | null
+          trashed_by: string | null
+          updated_at: string
+          upload_completed_at: string | null
+          uploaded_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "files"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       detach_file_from_record: {
         Args: {
           target_actor_id: string
@@ -17902,6 +18050,7 @@ export type Database = {
           target_thumbnail_object_key?: string
         }
         Returns: {
+          caption: string | null
           checksum_sha256: string | null
           claim_token: string | null
           claimed_at: string | null
@@ -19332,6 +19481,7 @@ export type Database = {
           target_organization_id: string
         }
         Returns: {
+          caption: string | null
           checksum_sha256: string | null
           claim_token: string | null
           claimed_at: string | null
@@ -20402,6 +20552,7 @@ export type Database = {
           target_uploaded_by: string
         }
         Returns: {
+          caption: string | null
           checksum_sha256: string | null
           claim_token: string | null
           claimed_at: string | null
@@ -20590,6 +20741,7 @@ export type Database = {
           target_organization_id: string
         }
         Returns: {
+          caption: string | null
           checksum_sha256: string | null
           claim_token: string | null
           claimed_at: string | null
@@ -20619,6 +20771,27 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "files"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      rename_file_label: {
+        Args: {
+          target_actor_id: string
+          target_label_id: string
+          target_name: string
+          target_organization_id: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          organization_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "file_labels"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -20923,6 +21096,7 @@ export type Database = {
           target_organization_id: string
         }
         Returns: {
+          caption: string | null
           checksum_sha256: string | null
           claim_token: string | null
           claimed_at: string | null
@@ -21954,6 +22128,7 @@ export type Database = {
           target_organization_id: string
         }
         Returns: {
+          caption: string | null
           checksum_sha256: string | null
           claim_token: string | null
           claimed_at: string | null

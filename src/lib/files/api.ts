@@ -83,12 +83,21 @@ export type FileUsageRow = {
 	created_at: string;
 };
 
+/** One entry of the organization's photo label list (Before, After, Damage...). */
+export type FileLabel = { id: string; name: string };
+
 export type FileDetail = {
-	file: Omit<FileListItem, 'usage_count'> & { has_thumbnail: boolean };
+	file: Omit<FileListItem, 'usage_count'> & {
+		has_thumbnail: boolean;
+		caption: string | null;
+		labels: FileLabel[];
+	};
 	usage: FileUsageRow[];
 	usage_next_cursor: string | null;
 	can_manage: boolean;
 	can_trash: boolean;
+	/** May change this photo's caption and labels: files.manage, or a writer on a job the photo is on. */
+	can_describe: boolean;
 };
 
 export type FileFolder = { id: string; name: string; file_count: number };
@@ -96,6 +105,7 @@ export type FileFolder = { id: string; name: string; file_count: number };
 export const filesListKey = (filters: FileListFilters) => ['files', 'list', filters] as const;
 export const fileDetailKey = (fileId: string) => ['files', 'detail', fileId] as const;
 export const fileFoldersKey = ['files', 'folders'] as const;
+export const fileLabelsKey = ['files', 'labels'] as const;
 
 // Carries the status the server refused with, so the query client stops retrying a 403/404 — the answer
 // never changes — and the page can say "no access" instead of blaming the connection.
@@ -237,6 +247,48 @@ export function moveFile(fileId: string, folderId: string | null) {
 		{ folder_id: folderId },
 		'That file could not be moved.'
 	);
+}
+
+/** Caption and labels together, because the editor saves them as one decision. */
+export function describeFile(fileId: string, caption: string, labelIds: string[]) {
+	return writeJson<{ file: unknown }>(
+		`/api/files/${fileId}`,
+		'PATCH',
+		{ caption, label_ids: labelIds },
+		'That caption and labels could not be saved.'
+	);
+}
+
+export async function fetchFileLabels(): Promise<FileLabel[]> {
+	const response = await fetch('/api/files/labels');
+	if (!response.ok) throw await readError(response, 'Your labels could not be loaded.');
+	const result = (await response.json()) as { labels: FileLabel[] };
+	return result.labels;
+}
+
+export async function createFileLabel(name: string) {
+	const result = await writeJson<{ label: FileLabel }>(
+		'/api/files/labels',
+		'POST',
+		{ name },
+		'That label could not be created.'
+	);
+	return result.label;
+}
+
+export async function renameFileLabel(labelId: string, name: string) {
+	const result = await writeJson<{ label: FileLabel }>(
+		`/api/files/labels/${labelId}`,
+		'PATCH',
+		{ name },
+		'That label could not be renamed.'
+	);
+	return result.label;
+}
+
+export async function deleteFileLabel(labelId: string) {
+	const response = await fetch(`/api/files/labels/${labelId}`, { method: 'DELETE' });
+	if (!response.ok) throw await writeError(response, 'That label could not be removed.');
 }
 
 // SQLSTATE P0412 comes back as this exact status when a customer already received the file and the

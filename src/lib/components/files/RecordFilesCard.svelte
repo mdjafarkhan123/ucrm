@@ -9,10 +9,15 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import FilePicker from './FilePicker.svelte';
 	import FileThumb from './FileThumb.svelte';
+	import PhotoDescribeDialog from './PhotoDescribeDialog.svelte';
 	import {
 		detachFileFromRecord,
 		downloadFile,
+		fetchFile,
+		fetchFileLabels,
 		fetchFiles,
+		fileDetailKey,
+		fileLabelsKey,
 		fileImageUrl,
 		filesListKey,
 		formatFileSize,
@@ -25,6 +30,7 @@
 	import downloadIcon from '@tabler/icons/outline/download.svg?raw';
 	import linkOffIcon from '@tabler/icons/outline/link-off.svg?raw';
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
+	import tagIcon from '@tabler/icons/outline/tag.svg?raw';
 
 	// A record's files, read from the central catalog rather than from a pile of rows belonging to this one
 	// record. What it draws is every File currently linked to this record, so a photo the office has also
@@ -162,6 +168,20 @@
 
 	// --- Photos -------------------------------------------------------------------------------------------
 
+	// Caption and labels, offered on a job or visit: that is where the crew who took a photo reaches it (they
+	// have no File Manager). The server's can_describe decides whether the dialog edits or only shows.
+	const offersDescribe = $derived(canManage && (entityType === 'job' || entityType === 'visit'));
+	let describing = $state<FileListItem | null>(null);
+
+	// Warm the dialog on hover, so a click paints from cache.
+	function prefetchDescribe(file: FileListItem) {
+		void queryClient.prefetchQuery({
+			queryKey: fileDetailKey(file.id),
+			queryFn: () => fetchFile(file.id)
+		});
+		void queryClient.prefetchQuery({ queryKey: fileLabelsKey, queryFn: fetchFileLabels });
+	}
+
 	let lightboxOpen = $state(false);
 	let lightboxIndex = $state(0);
 
@@ -245,6 +265,19 @@
 								hasThumbnail={file.has_thumbnail}
 							/>
 						</button>
+						{#if offersDescribe}
+							<button
+								type="button"
+								class="record-files__photo-describe"
+								aria-label={`Caption and labels for ${file.display_name}`}
+								title="Caption and labels"
+								onpointerenter={() => prefetchDescribe(file)}
+								onfocus={() => prefetchDescribe(file)}
+								onclick={() => (describing = file)}
+							>
+								{@html tagIcon}
+							</button>
+						{/if}
 						{#if canManage}
 							<button
 								type="button"
@@ -326,6 +359,15 @@
 		</p>
 		{#if removeError}<p class="record-files__notice" role="alert">{removeError}</p>{/if}
 	</ConfirmDialog>
+{/if}
+
+{#if offersDescribe}
+	<PhotoDescribeDialog
+		open={Boolean(describing)}
+		fileId={describing?.id ?? null}
+		fileName={describing?.display_name ?? ''}
+		onClose={() => (describing = null)}
+	/>
 {/if}
 
 <Lightbox
@@ -428,7 +470,8 @@
 			}
 		}
 
-		&__photo-remove {
+		&__photo-remove,
+		&__photo-describe {
 			position: absolute;
 			top: calc(var(--space-smaller) * -1);
 			right: calc(var(--space-smaller) * -1);
@@ -461,8 +504,28 @@
 		}
 
 		// Touch has no hover, so the remove button is always there on a small screen.
+		// Bottom-left, away from the remove button, and a little larger: it is the one a crew member taps.
+		&__photo-describe {
+			top: auto;
+			right: auto;
+			bottom: var(--space-smaller);
+			left: var(--space-smaller);
+			width: 24px;
+			height: 24px;
+
+			&:hover {
+				color: var(--color-interactive);
+			}
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
+		}
 		&__photo:hover &__photo-remove,
-		&__photo-remove:focus-visible {
+		&__photo-remove:focus-visible,
+		&__photo:hover &__photo-describe,
+		&__photo-describe:focus-visible {
 			opacity: 1;
 		}
 
@@ -517,7 +580,8 @@
 	}
 
 	@media (hover: none) {
-		.record-files__photo-remove {
+		.record-files__photo-remove,
+		.record-files__photo-describe {
 			opacity: 1;
 		}
 	}

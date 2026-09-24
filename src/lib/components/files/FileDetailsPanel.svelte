@@ -15,6 +15,7 @@
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import FileThumb from './FileThumb.svelte';
 	import FileAttachToRecordDialog from './FileAttachToRecordDialog.svelte';
+	import PhotoDescribeForm from './PhotoDescribeForm.svelte';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
@@ -422,6 +423,18 @@
 			{/if}
 		</dl>
 
+		{#if isPhoto && !inTrash}
+			{#if !detail}
+				{#if detailQuery.isPending}
+					<LoadingSkeleton variant="text" label="Loading caption and labels" rows={2} />
+				{/if}
+			{:else if detail.can_describe || detail.file.caption || detail.file.labels.length > 0}
+				<section class="file-panel__describe" aria-label="Caption and labels">
+					<PhotoDescribeForm {detail} />
+				</section>
+			{/if}
+		{/if}
+
 		<section class="file-panel__usage">
 			{#if detailQuery.isPending}
 				<LoadingSkeleton variant="text" label="Loading where this file is used" rows={4} />
@@ -719,6 +732,11 @@
 		dd {
 			color: var(--color-text);
 		}
+	}
+
+	.file-panel__describe {
+		padding-top: var(--space-base);
+		border-top: var(--border-base) solid var(--color-border);
 	}
 
 	.file-panel__usage {

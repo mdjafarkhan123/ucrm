@@ -53,15 +53,30 @@ export type FileUploadStart = z.infer<typeof fileUploadStartSchema>;
 // before the name reaches the database, which is why 255 is checked there and 200 here. `folder_id` is
 // nullable on purpose -- null means "take this file out of its folder" -- so absent and null are different
 // answers, and the refine below is what tells them apart.
+//
+// `caption` and `label_ids` are the Part 7B description of a photo. They ride the same request but a looser
+// permission -- anyone who may add photos to a job the photo is on may describe it -- so the route checks
+// them apart from the name and folder. An empty caption clears it; an empty label list removes every label.
 export const fileUpdateSchema = z
 	.object({
 		display_name: z.string().trim().min(1).max(200).optional(),
-		folder_id: z.uuid().nullable().optional()
+		folder_id: z.uuid().nullable().optional(),
+		caption: z.string().trim().max(500).nullable().optional(),
+		label_ids: z.array(z.uuid()).max(100).optional()
 	})
-	.refine((value) => value.display_name !== undefined || value.folder_id !== undefined, {
-		message: 'Nothing was changed.',
-		path: ['display_name']
-	});
+	.refine(
+		(value) =>
+			value.display_name !== undefined ||
+			value.folder_id !== undefined ||
+			value.caption !== undefined ||
+			value.label_ids !== undefined,
+		{ message: 'Nothing was changed.', path: ['display_name'] }
+	);
+
+// One photo label. Mirrors file_labels_name_check.
+export const fileLabelSchema = z.object({
+	name: z.string().trim().min(1).max(40)
+});
 
 export const fileFolderCreateSchema = z.object({
 	name: z.string().trim().min(1).max(120)

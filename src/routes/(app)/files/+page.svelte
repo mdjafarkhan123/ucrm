@@ -16,11 +16,14 @@
 	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import FileDetailsPanel from '$lib/components/files/FileDetailsPanel.svelte';
 	import FileUploader from '$lib/components/files/FileUploader.svelte';
+	import FileLabelsDialog from '$lib/components/files/FileLabelsDialog.svelte';
 	import filesIcon from '@tabler/icons/outline/files.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import {
+		fetchFileLabels,
+		fileLabelsKey,
 		createFileFolder,
 		downloadFile,
 		fetchFileFolders,
@@ -144,6 +147,7 @@
 	let fileInputEl = $state<HTMLInputElement | undefined>();
 	let draggingOver = $state(false);
 	let folderDialogOpen = $state(false);
+	let labelsDialogOpen = $state(false);
 	let folderName = $state('');
 	let folderSaving = $state(false);
 	let folderError = $state('');
@@ -309,6 +313,20 @@
 							</li>
 						{/each}
 					</ul>
+				{/if}
+				{#if canManage}
+					<div class="files__rail-heading-row">
+						<p class="files__rail-heading">Labels</p>
+					</div>
+					<button
+						type="button"
+						class="files__rail-item"
+						onpointerenter={() =>
+							void queryClient.prefetchQuery({ queryKey: fileLabelsKey, queryFn: fetchFileLabels })}
+						onclick={() => (labelsDialogOpen = true)}
+					>
+						<span class="files__rail-item-label">Manage photo labels</span>
+					</button>
 				{/if}
 			</nav>
 
@@ -522,6 +540,10 @@
 		</div>
 	</form>
 </Dialog>
+
+{#if canManage}
+	<FileLabelsDialog open={labelsDialogOpen} onClose={() => (labelsDialogOpen = false)} />
+{/if}
 
 <style lang="scss">
 	.files {
