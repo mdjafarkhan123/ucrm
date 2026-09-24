@@ -8392,6 +8392,54 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_warmup_state: {
+        Row: {
+          capped_until: string | null
+          created_at: string
+          domain_id: string
+          limit_override: number | null
+          organization_id: string
+          step: number
+          step_started_at: string
+          updated_at: string
+        }
+        Insert: {
+          capped_until?: string | null
+          created_at?: string
+          domain_id: string
+          limit_override?: number | null
+          organization_id: string
+          step?: number
+          step_started_at: string
+          updated_at?: string
+        }
+        Update: {
+          capped_until?: string | null
+          created_at?: string
+          domain_id?: string
+          limit_override?: number | null
+          organization_id?: string
+          step?: number
+          step_started_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_warmup_state_domain_fkey"
+            columns: ["organization_id", "domain_id"]
+            isOneToOne: false
+            referencedRelation: "communication_email_domains"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "marketing_warmup_state_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_access_event_shapes: {
         Row: {
           event_type: string
@@ -18777,6 +18825,10 @@ export type Database = {
         Args: { target_organization_id: string; target_user_id: string }
         Returns: Json
       }
+      get_marketing_warmup_progress: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
       get_organization_automation_authority: {
         Args: { p_organization_id: string }
         Returns: Json
@@ -19109,12 +19161,14 @@ export type Database = {
           target_entity_id?: string
           target_entity_type?: string
           target_folder_id?: string
+          target_label_id?: string
           target_limit?: number
           target_organization_id: string
           target_search?: string
           target_view?: string
         }
         Returns: {
+          caption: string
           created_at: string
           display_name: string
           folder_id: string

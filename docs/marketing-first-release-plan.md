@@ -200,6 +200,23 @@ Blueprint §19 checks 1–15 in the browser across owner, admin, drafting staff,
 isolation; cancellation race; duplicate launch; callback disorder; worker restart; and a measured Marketing burst
 while operational email latency is watched. Capacity statements stay within what is measured.
 
+### M6f — Earned warm-up (approved by Jafar 2026-09-24)
+Pattern: HighLevel's behavior-based sub-account ramp-up, on top of Jobber's gradual send and stop-on-problem
+(research: `docs/research/email-warmup-graduation-2026-09-23.md`). Applies to the Marketing domain only;
+operational email keeps the calendar-only 14-day ceiling so invoices and quotes are never held by Marketing.
+
+- Ladder per Marketing domain: 100 → 250 → 500 → 1,000 → 2,500 → 5,000 a day, then graduated (no warm-up cap).
+  Minimum days per step: 3, 4, 7, 7, 7, 7. A new or replaced domain starts at step 1.
+- A step advances only when all three hold: its minimum days have passed; real recipients accepted during the
+  step reach that step's daily limit; and hard-bounce and complaint rates over the step's sends are below the
+  platform pause thresholds (Amazon's 2% / 0.1%). Otherwise it holds.
+- Steps down one when a Marketing reputation pause engages, and one per full 30 days with no real sends.
+- Amazon SES mailbox-simulator recipients never count as earned volume or in the step's rates.
+- A capped organization is filtered out of the claim candidates until the next UTC day, so it cannot starve
+  other organizations' campaigns.
+- The contractor sees a warm-up progress card on Marketing Overview: step, today's limit and use, and what
+  unlocks the next step.
+
 ## 4. Security
 - Every write goes through `/api/marketing/*` with Zod; RLS on every new table scoped by organization and
   permission; launch and dispatcher functions are `security definer` with fixed `search_path` and re-derive

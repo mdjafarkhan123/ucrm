@@ -231,13 +231,10 @@ select ok(
    where id = 'fd700000-0000-0000-0000-000000000004'),
   'quarantine clears the claim token and timestamp');
 
--- Warmup ceiling: an organization override of 1/day stops a second send on the same day. --------------------
-insert into public.communication_email_warmup_stages (
-  scope, organization_id, stage_key, daily_ceiling, reason, actor_owner_email, effective_from
-) values (
-  'organization', 'fd200000-0000-0000-0000-000000000001', 'days_1_3', 1,
-  'Dispatcher test override', 'owner@example.test', now() - interval '2 days'
-);
+-- Warmup ceiling: a Marketing warm-up override of 1/day stops a second send on the same day. -----------------
+insert into public.marketing_warmup_state (domain_id, organization_id, step, step_started_at, limit_override)
+values ('fd500000-0000-0000-0000-000000000001', 'fd200000-0000-0000-0000-000000000001', 1, now() - interval '1 day', 1)
+on conflict (domain_id) do update set limit_override = excluded.limit_override;
 insert into public.marketing_campaigns (
   id, organization_id, name, goal, status, content, launched_at, launch_idempotency_key,
   recipient_total_count, recipient_eligible_count, recipient_excluded_count

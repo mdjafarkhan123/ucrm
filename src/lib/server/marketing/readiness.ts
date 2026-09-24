@@ -4,6 +4,7 @@ import {
 	type MarketingReadiness,
 	type MarketingReadinessFacts
 } from '$lib/marketing/readiness';
+import type { MarketingWarmupProgress } from '$lib/marketing/warmup';
 
 // Answers "can this organization send Marketing email?" from the records that already own each fact. Every
 // read is one small, indexed, single-organization lookup that stops at the first match, so the cost does not
@@ -12,7 +13,7 @@ import {
 export async function loadMarketingReadiness(organizationId: string): Promise<MarketingReadiness> {
 	const owner = getOwnerSupabaseClient();
 
-	const [domains, senderDomains, settings, pauses, allowance, consent] = await Promise.all([
+	const [domains, senderDomains, settings, pauses, allowance, consent, warmup] = await Promise.all([
 		// Marketing sends through its OWN Amazon SES identity on news.<root>, never through the operational
 		// Brevo domain, so this must ask about purpose='marketing_sending'. spf_status is part of the test
 		// because the custom MAIL FROM subdomain is what gives a bulk stream its SPF alignment -- an identity
@@ -60,7 +61,9 @@ export async function loadMarketingReadiness(organizationId: string): Promise<Ma
 			.select('client_contact_method_id')
 			.eq('organization_id', organizationId)
 			.eq('state', 'opted_in')
-			.limit(1)
+			.limit(1),
+		// Earned warm-up progress for the Overview card: one organization, bounded by one step's sends.
+		owner.rpc('get_marketing_warmup_progress', { p_organization_id: organizationId })
 	]);
 
 	for (const result of [domains, senderDomains, settings, pauses, allowance, consent]) {
@@ -96,5 +99,11 @@ export async function loadMarketingReadiness(organizationId: string): Promise<Ma
 		hasConsentedCustomer: (consent.data ?? []).length > 0
 	};
 
-	return buildMarketingReadiness(facts);
+	// The progress card is informational, so a failed read hides it rather than failing readiness.
+	if (warmup.error) console.error('Could not read Marketing warm-up progress.', warmup.error);
+
+	return {
+		...buildMarketingReadiness(facts),
+		warmup: warmup.error ? null : (warmup.data as MarketingWarmupProgress)
+	};
 }

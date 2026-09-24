@@ -10,11 +10,14 @@ M1-M5 complete. M6a, M6b, M6c closed (M6c load test passed 2026-09-24 -- results
 
 ## Exact next action
 
-M6f earned warm-up graduation (Jafar: build next). Read `docs/research/email-warmup-graduation-2026-09-23.md`,
-propose the design to Jafar, get approval, then build. Fold in the M6 gate "a warmup-capped organization cannot
-starve others": `claim_marketing_campaign_recipient` fetches only 50 candidates ordered by `launched_at` and
-`continue`s past warm-up-capped rows, so one capped org with >50 waiting recipients can fill every candidate
-slot and starve later-launched orgs (found by code reading 2026-09-24, not yet reproduced).
+M6f earned warm-up (design approved 2026-09-24, `docs/marketing-first-release-plan.md` §3 M6f). DONE and
+committed: migration `20260924130000_marketing_earned_warmup.sql` (pushed to remote), pgTAP
+`marketing_earned_warmup.sql` 31/31 + dispatcher/reputation tests pass locally, `src/lib/marketing/warmup.ts`
+(card wording, unit-tested), readiness API now returns `warmup`.
+Next: build `MarketingWarmupCard.svelte` (SectionBlock "Sending warm-up" on Marketing Overview, under Email
+readiness; render `describeMarketingWarmup(readiness.warmup)`; step ladder, today's-use bar, unlock checklist;
+load design + svelte skills), then browser-check on Raad LTD (needs a Jafar-approved temporary Marketing
+allowance override), then close M6f in ROADMAP.
 Later: M6d branded click-tracking domain (blocks real-customer send), M6e replies (blocked on
 `operational-email-ses`), check 15 doc review.
 
@@ -23,11 +26,10 @@ Later: M6d branded click-tracking domain (blocks real-customer send), M6e replie
 - Marketing wake cron jobs fail every minute (Vault target URLs unset) -- production-cutover work.
 - 2 harmless leftover messages in `ucrm-ses-events-dlq`; Jafar to clear via AWS console.
 - `npx supabase test db` has many pre-existing "Bad plan" failures outside marketing's scope.
-- Raad LTD has no Marketing allowance now (test override ended 2026-09-24); any live Marketing check needs a
-  new Jafar-approved `organization_limit_overrides` row.
+- Raad LTD has no Marketing allowance (override ended 2026-09-24); live checks need a new approved override.
 - Blueprint §12 Results Q4 (cross-campaign "strongest") left for the list page's insight cards, not built.
 - Old test campaign `cce6af97-...` fails to open (ErrorState); undiagnosed, low priority.
 
 ## Pointers
 
-`docs/marketing-first-release-plan.md` §3; blueprint §12-13, §19. Resume: `continue marketing growth`.
+Plan §3 (M6f); blueprint §12-13, §19. Resume: `continue marketing growth`.

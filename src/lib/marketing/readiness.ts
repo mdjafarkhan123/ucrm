@@ -1,6 +1,8 @@
 // What stops a contractor sending Marketing email right now, in plain words, each with the one screen that
 // fixes it. Shared by the server (which decides) and the page (which shows it), so the wording lives once.
 
+import type { MarketingWarmupProgress } from './warmup';
+
 export type MarketingReadinessCode =
 	| 'no_sending_domain'
 	| 'no_sender'
@@ -23,6 +25,8 @@ export type MarketingReadinessReason = {
 export type MarketingReadiness = {
 	ready: boolean;
 	reasons: MarketingReadinessReason[];
+	// How far the Marketing sending domain has warmed up; null when it could not be read.
+	warmup?: MarketingWarmupProgress | null;
 };
 
 export type MarketingReadinessFacts = {
