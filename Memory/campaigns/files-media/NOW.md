@@ -2,14 +2,13 @@
 
 **Goal:** One contractor File Manager backed by private R2, with one File linked to every CRM use.
 
-**Active part:** 7D — Selected-file customer shares + "Shared with customers" view (roadmap 7D).
+**Active part:** 7D-1 — make and open a customer file share (roadmap 7D-1; 7D-2 follows).
 
-**Exact next action:** Plan 7D. Research how mature products share chosen files with a customer (e.g. Jobber,
-CompanyCam, Google Drive/Dropbox share links: expiry, revoke, what the customer sees, download vs view), then
-grill Jafar on the open choices and record approved behavior in a `parts/7D-*.md` packet before any code.
-Contract already fixes: revocable, expiring, names only its chosen Files, reveals nothing else, no live folders;
-the "Shared with customers" rail view appears only once shares exist (`docs/files-media-behavior-contract.md`,
-"Customer visibility and historical truth").
+**Exact next action:** Build 7D-1 from `docs/files-media-behavior-contract.md`, "How a selected-file share
+works" (approved 2026-09-24). Copy the proven link shape: `job_report_access_links` (hash-only token, expiry,
+revoke reason, view tracking) and its `/w/[token]` page + file route; `/m/[token]` streams one R2 object.
+New `files.share` permission for owner/admin/office. Apply the performance-review gate to the share list and
+customer page before building (50-file cap per share).
 
 **Blocker (campaign-wide):** the upload worker does not run locally; new uploads stay "Still being checked".
 Test with existing checked photos (Raad LTD has 12) attached through a record's "Add" picker.
