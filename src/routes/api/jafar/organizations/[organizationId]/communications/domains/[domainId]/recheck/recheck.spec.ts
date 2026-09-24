@@ -8,6 +8,7 @@ import {
 	BrevoManagementError,
 	getBrevoDomain
 } from '$lib/server/communications/brevo';
+import { recheckOperationalDomain } from '$lib/server/communications/operational-domain-activation';
 
 vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
@@ -19,6 +20,10 @@ vi.mock('$lib/server/communications/brevo', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/server/communications/brevo')>()),
 	authenticateBrevoDomain: vi.fn(),
 	getBrevoDomain: vi.fn()
+}));
+
+vi.mock('$lib/server/communications/operational-domain-activation', () => ({
+	recheckOperationalDomain: vi.fn()
 }));
 
 const organizationId = '123e4567-e89b-12d3-a456-426614174000';
@@ -204,5 +209,44 @@ describe('owner sending-domain recheck boundary', () => {
 			provider_authenticated: false,
 			dkim_status: 'failing'
 		});
+	});
+
+	it('re-runs the Amazon SES activation for a domain on SES and records the receipt', async () => {
+		const client = clientWithResults([
+			{ data: null, error: null },
+			{
+				data: {
+					id: domainId,
+					domain_name: 'mail.ridgeway.example',
+					purpose: 'sending',
+					provider: 'ses',
+					lifecycle_state: 'pending_dns',
+					spf_status: 'pending',
+					verified_at: null,
+					provider_domain_id: 'arn:aws:ses:us-east-1:1:identity/mail.ridgeway.example'
+				},
+				error: null
+			},
+			{ data: null, error: null }
+		]);
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
+		vi.mocked(recheckOperationalDomain).mockResolvedValue({
+			sending: { domain_name: 'mail.ridgeway.example', lifecycle_state: 'verified' }
+		} as never);
+
+		const response = await POST(event({ idempotency_key: idempotencyKey }));
+
+		expect(response.status).toBe(200);
+		expect(recheckOperationalDomain).toHaveBeenCalledWith(
+			expect.objectContaining({ organizationId, domainId })
+		);
+		expect(authenticateBrevoDomain).not.toHaveBeenCalled();
+		expect(await response.json()).toMatchObject({
+			domain_id: domainId,
+			lifecycle_state: 'verified'
+		});
+		expect(client.inserts).toContainEqual(
+			expect.objectContaining({ event_type: 'domain.rechecked', idempotency_key: idempotencyKey })
+		);
 	});
 });

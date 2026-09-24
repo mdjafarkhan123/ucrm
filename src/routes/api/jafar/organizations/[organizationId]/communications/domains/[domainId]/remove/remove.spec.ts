@@ -4,6 +4,8 @@ import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 import { BrevoManagementError, deleteBrevoDomain } from '$lib/server/communications/brevo';
+import { deleteSesIdentity } from '$lib/server/communications/ses';
+import { SesError } from '$lib/server/communications/ses-env';
 
 vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
@@ -15,6 +17,7 @@ vi.mock('$lib/server/communications/brevo', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/server/communications/brevo')>()),
 	deleteBrevoDomain: vi.fn()
 }));
+vi.mock('$lib/server/communications/ses', () => ({ deleteSesIdentity: vi.fn() }));
 
 const organizationId = '123e4567-e89b-12d3-a456-426614174000';
 const domainId = '123e4567-e89b-12d3-a456-426614174001';
@@ -223,6 +226,44 @@ describe('owner sending-domain removal boundary', () => {
 				removal_reason: 'Organization no longer uses this sending domain.',
 				command_idempotency_key: idempotencyKey
 			})
+		);
+	});
+
+	it('deletes the Amazon SES identity, not a Brevo domain, for a domain on SES', async () => {
+		const client = clientWithResults([
+			{ data: null },
+			{ data: { ...domain, provider: 'ses' } },
+			{}
+		]);
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
+
+		const response = await POST(event('POST', commandBody()));
+
+		expect(response.status).toBe(200);
+		expect(deleteSesIdentity).toHaveBeenCalledWith(domain.domain_name);
+		expect(deleteBrevoDomain).not.toHaveBeenCalled();
+	});
+
+	it('keeps an unconfirmed Amazon SES deletion pending and retryable', async () => {
+		const client = clientWithResults([
+			{ data: null },
+			{ data: { ...domain, provider: 'ses' } },
+			{}
+		]);
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
+		vi.mocked(deleteSesIdentity).mockRejectedValue(
+			new SesError('timeout', null, 'ses_network_unknown')
+		);
+
+		const response = await POST(event('POST', commandBody()));
+
+		expect(response.status).toBe(502);
+		expect(await response.json()).toMatchObject({
+			lifecycle_state: 'removal_pending',
+			retryable: true
+		});
+		expect(client.updates).toContainEqual(
+			expect.objectContaining({ provider_cleanup_error: 'ses_network_unknown' })
 		);
 	});
 });

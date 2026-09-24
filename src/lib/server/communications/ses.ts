@@ -5,6 +5,7 @@ import {
 	CreateEmailIdentityCommand,
 	CreateTenantCommand,
 	CreateTenantResourceAssociationCommand,
+	DeleteEmailIdentityCommand,
 	GetConfigurationSetCommand,
 	GetConfigurationSetEventDestinationsCommand,
 	GetEmailIdentityCommand,
@@ -270,6 +271,20 @@ export async function ensureSesEventDestination(configurationSetName: string): P
 }
 
 /**
+ * Deletes a domain identity. An identity that is already gone is the desired state, so a retried removal is
+ * safe. Deleting the identity also ends every tenant association that pointed at it.
+ */
+export async function deleteSesIdentity(domain: string): Promise<void> {
+	const { client } = getSes();
+	try {
+		await client.send(new DeleteEmailIdentityCommand({ EmailIdentity: domain }));
+	} catch (error) {
+		if (isNotFound(error)) return;
+		throw toSesError('DeleteEmailIdentity', error);
+	}
+}
+
+/**
  * Authorizes a tenant to use one identity or configuration set. A tenant with neither cannot send at all, so
  * both associations are required before the dispatcher's first send.
  */
@@ -333,6 +348,15 @@ export function sesIdentityArn(domain: string): string {
 export function sesConfigurationSetArn(configurationSetName: string): string {
 	const { env } = getSes();
 	return `arn:aws:ses:${env.AWS_SES_REGION}:${env.accountId}:configuration-set/${configurationSetName}`;
+}
+
+/**
+ * The region-specific host that receives mail for an SES receiving domain. Customer replies only move to it once
+ * a receipt rule for the domain exists; until then a reply subdomain keeps its current MX.
+ */
+export function sesInboundMxTarget(): string {
+	const { env } = getSes();
+	return `inbound-smtp.${env.AWS_SES_REGION}.amazonaws.com`;
 }
 
 /** The region-specific host a custom MAIL FROM subdomain must point its MX record at. */

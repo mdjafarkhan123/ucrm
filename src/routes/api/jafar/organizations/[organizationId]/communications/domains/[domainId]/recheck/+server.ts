@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import type { Json } from '$lib/database.types';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import {
@@ -9,6 +10,8 @@ import {
 	type BrevoDnsRecord
 } from '$lib/server/communications/brevo';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { recheckOperationalDomain } from '$lib/server/communications/operational-domain-activation';
+import { sesDomainErrorResponse } from '$lib/server/communications/ses-domain-http';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { organizationIdSchema } from '$lib/server/validation/access.schema';
 import {
@@ -91,7 +94,7 @@ export const POST: RequestHandler = async (event) => {
 		const { data: domain, error: domainError } = await client
 			.from('communication_email_domains')
 			.select(
-				'id, domain_name, purpose, lifecycle_state, spf_status, verified_at, provider_domain_id'
+				'id, domain_name, purpose, provider, lifecycle_state, spf_status, verified_at, provider_domain_id'
 			)
 			.eq('organization_id', organizationId.data)
 			.eq('id', domainId.data)
@@ -101,62 +104,78 @@ export const POST: RequestHandler = async (event) => {
 		if (!domain || domain.purpose !== 'sending') {
 			return json({ error: 'Sending domain was not found.' }, { status: 404, headers: noStore });
 		}
-		if (domain.provider_domain_id == null) {
-			return json(
-				{ error: 'This sending domain has not been provisioned with Brevo.' },
-				{ status: 409, headers: noStore }
-			);
-		}
+		// An SES row re-runs the whole idempotent activation, which also writes the row; a row still on Brevo
+		// keeps the Brevo check until the cutover removes it.
+		let afterState: { [key: string]: Json | undefined };
+		if (domain.provider === 'ses') {
+			try {
+				const { sending } = await recheckOperationalDomain({
+					client,
+					organizationId: organizationId.data,
+					domainId: domain.id
+				});
+				afterState = sending;
+			} catch (error) {
+				return sesDomainErrorResponse(error, 'recheck', 'everyday email domain');
+			}
+		} else {
+			if (domain.provider_domain_id == null) {
+				return json(
+					{ error: 'This sending domain has not been provisioned with Brevo.' },
+					{ status: 409, headers: noStore }
+				);
+			}
 
-		let authenticationRejected = false;
-		try {
-			await authenticateBrevoDomain(domain.domain_name);
-		} catch (error) {
-			if (!(error instanceof BrevoManagementError) || error.status !== 400) throw error;
-			authenticationRejected = true;
-		}
-		const configuration = await getBrevoDomain(domain.domain_name);
-		const dnsRecords = configuration.dns_records ?? [];
-		const ownershipStatus = recordStatus(dnsRecords, /brevo-code|sendinblue-code/i);
-		const dkimStatus = recordStatus(dnsRecords, /dkim/i);
-		const dmarcStatus = recordStatus(dnsRecords, /_dmarc/i);
-		const providerVerified = configuration.verified;
-		const providerAuthenticated = configuration.authenticated && !authenticationRejected;
-		const ready =
-			providerVerified &&
-			providerAuthenticated &&
-			ownershipStatus === 'passing' &&
-			dkimStatus === 'passing';
-		const lifecycleState = ready
-			? 'verified'
-			: domain.verified_at || domain.lifecycle_state === 'unhealthy'
-				? 'unhealthy'
-				: 'pending_dns';
-		const now = new Date().toISOString();
-		const afterState = {
-			domain_name: domain.domain_name,
-			purpose: 'sending',
-			lifecycle_state: lifecycleState,
-			provider_verified: providerVerified,
-			provider_authenticated: providerAuthenticated,
-			ownership_status: ownershipStatus,
-			dkim_status: dkimStatus,
-			dmarc_status: dmarcStatus,
-			// SPF is optional for Brevo shared-IP domain authentication. Keep its
-			// recorded value for diagnostics, but never make a healthy Brevo domain
-			// look pending because no separate SPF record was provisioned.
-			spf_status: domain.spf_status,
-			dns_records: dnsRecords,
-			last_checked_at: now,
-			verified_at: ready ? (domain.verified_at ?? now) : domain.verified_at
-		};
+			let authenticationRejected = false;
+			try {
+				await authenticateBrevoDomain(domain.domain_name);
+			} catch (error) {
+				if (!(error instanceof BrevoManagementError) || error.status !== 400) throw error;
+				authenticationRejected = true;
+			}
+			const configuration = await getBrevoDomain(domain.domain_name);
+			const dnsRecords = configuration.dns_records ?? [];
+			const ownershipStatus = recordStatus(dnsRecords, /brevo-code|sendinblue-code/i);
+			const dkimStatus = recordStatus(dnsRecords, /dkim/i);
+			const dmarcStatus = recordStatus(dnsRecords, /_dmarc/i);
+			const providerVerified = configuration.verified;
+			const providerAuthenticated = configuration.authenticated && !authenticationRejected;
+			const ready =
+				providerVerified &&
+				providerAuthenticated &&
+				ownershipStatus === 'passing' &&
+				dkimStatus === 'passing';
+			const lifecycleState = ready
+				? 'verified'
+				: domain.verified_at || domain.lifecycle_state === 'unhealthy'
+					? 'unhealthy'
+					: 'pending_dns';
+			const now = new Date().toISOString();
+			afterState = {
+				domain_name: domain.domain_name,
+				purpose: 'sending',
+				lifecycle_state: lifecycleState,
+				provider_verified: providerVerified,
+				provider_authenticated: providerAuthenticated,
+				ownership_status: ownershipStatus,
+				dkim_status: dkimStatus,
+				dmarc_status: dmarcStatus,
+				// SPF is optional for Brevo shared-IP domain authentication. Keep its
+				// recorded value for diagnostics, but never make a healthy Brevo domain
+				// look pending because no separate SPF record was provisioned.
+				spf_status: domain.spf_status,
+				dns_records: dnsRecords,
+				last_checked_at: now,
+				verified_at: ready ? (domain.verified_at ?? now) : domain.verified_at
+			};
 
-		const { error: updateError } = await client
-			.from('communication_email_domains')
-			.update({ ...afterState, updated_at: now })
-			.eq('organization_id', organizationId.data)
-			.eq('id', domain.id);
-		if (updateError) throw updateError;
+			const { error: updateError } = await client
+				.from('communication_email_domains')
+				.update({ ...afterState, updated_at: now })
+				.eq('organization_id', organizationId.data)
+				.eq('id', domain.id);
+			if (updateError) throw updateError;
+		}
 
 		const { error: auditError } = await client.from('communication_email_authority_events').insert({
 			organization_id: organizationId.data,

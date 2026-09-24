@@ -3,6 +3,8 @@ import type { RequestHandler } from './$types';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { BrevoManagementError, deleteBrevoDomain } from '$lib/server/communications/brevo';
+import { deleteSesIdentity } from '$lib/server/communications/ses';
+import { SesError } from '$lib/server/communications/ses-env';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { organizationIdSchema } from '$lib/server/validation/access.schema';
@@ -20,6 +22,7 @@ type DomainRow = {
 	domain_name: string;
 	purpose: string;
 	lifecycle_state: string;
+	provider: string;
 	provider_domain_id: string | null;
 };
 
@@ -35,7 +38,7 @@ async function loadDomain(
 ): Promise<DomainRow | null> {
 	const { data, error } = await client
 		.from('communication_email_domains')
-		.select('id, domain_name, purpose, lifecycle_state, provider_domain_id')
+		.select('id, domain_name, purpose, lifecycle_state, provider, provider_domain_id')
 		.eq('organization_id', organizationId)
 		.eq('id', domainId)
 		.maybeSingle();
@@ -244,12 +247,17 @@ export const POST: RequestHandler = async (event) => {
 			);
 		}
 
+		// Both deletes treat "already gone" as done, so a retried removal is safe.
+		const providerName = domain.provider === 'ses' ? 'Amazon SES' : 'Brevo';
 		try {
-			await deleteBrevoDomain(domain.domain_name);
+			if (domain.provider === 'ses') await deleteSesIdentity(domain.domain_name);
+			else await deleteBrevoDomain(domain.domain_name);
 		} catch (error) {
 			if (!(error instanceof BrevoManagementError) || error.status !== 404) {
 				const cleanupCode =
-					error instanceof BrevoManagementError ? error.code : 'brevo_cleanup_unknown';
+					error instanceof BrevoManagementError || error instanceof SesError
+						? error.code
+						: `${domain.provider}_cleanup_unknown`;
 				const { error: cleanupUpdateError } = await client
 					.from('communication_email_domains')
 					.update({ provider_cleanup_error: cleanupCode, updated_at: new Date().toISOString() })
@@ -259,8 +267,7 @@ export const POST: RequestHandler = async (event) => {
 				if (cleanupUpdateError) throw cleanupUpdateError;
 				return json(
 					{
-						error:
-							'Brevo cleanup is not confirmed yet. This removal remains pending and can be retried.',
+						error: `${providerName} cleanup is not confirmed yet. This removal remains pending and can be retried.`,
 						domain_id: domain.id,
 						lifecycle_state: 'removal_pending',
 						retryable: true

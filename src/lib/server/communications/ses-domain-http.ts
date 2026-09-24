@@ -6,16 +6,17 @@ import { SesError } from './ses-env';
 const noStore = { 'Cache-Control': 'no-store' };
 
 /**
- * One error contract shared by the two owner Marketing sending-identity routes.
+ * One error contract shared by the owner SES domain routes (Marketing, and everyday email via `subject`).
  *
  * A non-retryable decision (an occupied name, a domain claimed by another organization) is a 409 the owner
  * resolves by hand. An ambiguous provider outcome -- a timeout, a network failure, or a 5xx from Cloudflare or
  * SES -- is a 502 that is always safe to re-run, because the reconciler is a desired-state saga that wrote
  * nothing it cannot re-derive from current provider state. Provider messages never reach the response.
  */
-export function marketingDomainErrorResponse(
+export function sesDomainErrorResponse(
 	error: unknown,
-	action: 'activate' | 'recheck' | 'change branded links for'
+	action: 'activate' | 'recheck' | 'change branded links for',
+	subject = 'Marketing sending domain'
 ) {
 	if (error instanceof EmailDomainActivationError && !error.retryable) {
 		return json({ error: error.message, code: error.code }, { status: 409, headers: noStore });
@@ -34,43 +35,40 @@ export function marketingDomainErrorResponse(
 		(error instanceof CloudflareDnsError && (error.status === null || error.status >= 500)) ||
 		(error instanceof SesError && (error.status === null || error.status >= 500));
 	if (providerUnknown) {
-		console.error(
-			`Could not ${action} the Marketing sending domain (provider outcome unknown).`,
-			error
-		);
+		console.error(`Could not ${action} the ${subject} (provider outcome unknown).`, error);
 		return json(
 			{ error: 'A provider did not confirm the change. Check the domain and try again.' },
 			{ status: 502, headers: noStore }
 		);
 	}
 	if (error instanceof CloudflareDnsError) {
-		console.error(`Could not ${action} the Marketing sending domain (Cloudflare rejected).`, error);
+		console.error(`Could not ${action} the ${subject} (Cloudflare rejected).`, error);
 		return json(
-			{ error: 'Cloudflare rejected a DNS change during Marketing activation.' },
+			{ error: `Cloudflare rejected a DNS change for the ${subject}.` },
 			{ status: 502, headers: noStore }
 		);
 	}
 	if (error instanceof SesError) {
-		console.error(`Could not ${action} the Marketing sending domain (SES rejected).`, error);
+		console.error(`Could not ${action} the ${subject} (SES rejected).`, error);
 		return json(
 			{
 				error:
 					action === 'change branded links for'
 						? 'Amazon refused the branded link change.'
-						: 'Amazon SES could not complete the Marketing sending identity.'
+						: `Amazon SES could not complete the ${subject}.`
 			},
 			{ status: 502, headers: noStore }
 		);
 	}
 
-	console.error(`Could not ${action} the Marketing sending domain.`, error);
+	console.error(`Could not ${action} the ${subject}.`, error);
 	return json(
 		{
 			error:
 				action === 'activate'
-					? 'The Marketing sending domain could not be activated.'
+					? `The ${subject} could not be set up.`
 					: action === 'recheck'
-						? 'The Marketing sending domain could not be rechecked.'
+						? `The ${subject} could not be rechecked.`
 						: 'Branded links could not be changed.'
 		},
 		{ status: 500, headers: noStore }
