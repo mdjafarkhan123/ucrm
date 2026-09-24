@@ -157,7 +157,7 @@ export async function createClickTenant(input: {
 	env: ClickDomainEnv;
 	name: string;
 	domain: string;
-}): Promise<ClickTenant> {
+}): Promise<ClickTenant | 'dns_not_ready'> {
 	try {
 		const result = await getCloudFront().send(
 			new CreateDistributionTenantCommand({
@@ -175,6 +175,15 @@ export async function createClickTenant(input: {
 		);
 		return toClickTenant(result.DistributionTenant, result.ETag);
 	} catch (error) {
+		// CloudFront refuses a domain whose DNS it cannot yet see pointing at it. A freshly written CNAME takes
+		// minutes to reach CloudFront's resolvers (found in the live remove-and-turn-on test), so this is a
+		// "try again shortly", not a failure.
+		if (
+			(error as AwsError)?.name === 'InvalidArgument' &&
+			/verify domain name ownership|not be pointing/i.test((error as AwsError)?.message ?? '')
+		) {
+			return 'dns_not_ready';
+		}
 		// A create that raced another pass: the tenant exists, so read it back.
 		if ((error as AwsError)?.name === 'EntityAlreadyExists') {
 			const existing = await getClickTenant(input.name);

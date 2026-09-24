@@ -29,6 +29,14 @@ vi.mock('./cloudflare-dns', async () => {
 	};
 });
 
+const resolveCname = vi.fn();
+vi.mock('node:dns/promises', () => ({
+	Resolver: class {
+		setServers() {}
+		resolveCname = resolveCname;
+	}
+}));
+
 import * as cloudfront from './cloudfront';
 import * as ses from './ses';
 import * as cloudflare from './cloudflare-dns';
@@ -120,6 +128,7 @@ beforeEach(() => {
 		name: 'contractor.com'
 	});
 	vi.mocked(ses.getSesClickTrackingDomain).mockResolvedValue(null);
+	resolveCname.mockResolvedValue([ENV.AWS_CLICK_ROUTING_ENDPOINT]);
 });
 
 describe('reconcileClickDomain', () => {
@@ -174,6 +183,39 @@ describe('reconcileClickDomain', () => {
 		});
 		expect(summary.status).toBe('waiting_certificate');
 		expect(ses.putSesClickTrackingDomain).toHaveBeenCalledWith(CONFIG_SET, null);
+	});
+
+	it('waits without creating the tenant until public DNS shows the new CNAME', async () => {
+		const { client } = fakeClient(baseRow());
+		vi.mocked(cloudfront.getClickTenant).mockResolvedValue(null);
+		resolveCname.mockRejectedValue(Object.assign(new Error('ENOTFOUND'), { code: 'ENOTFOUND' }));
+
+		const summary = await reconcileClickDomain({
+			client,
+			organizationId: ORG,
+			domainId: DOMAIN_ID,
+			zoneId: 'zone-1'
+		});
+
+		expect(cloudfront.createClickTenant).not.toHaveBeenCalled();
+		expect(summary.status).toBe('waiting_certificate');
+		expect(summary.error).toContain('Press Check again');
+	});
+
+	it('waits when CloudFront cannot see the CNAME yet, instead of reporting a problem', async () => {
+		const { client } = fakeClient(baseRow());
+		vi.mocked(cloudfront.getClickTenant).mockResolvedValue(null);
+		vi.mocked(cloudfront.createClickTenant).mockResolvedValue('dns_not_ready');
+
+		const summary = await reconcileClickDomain({
+			client,
+			organizationId: ORG,
+			domainId: DOMAIN_ID,
+			zoneId: 'zone-1'
+		});
+
+		expect(summary.status).toBe('waiting_certificate');
+		expect(ses.putSesClickTrackingDomain).not.toHaveBeenCalled();
 	});
 
 	it('attaches an issued certificate, then waits while the tenant redeploys', async () => {

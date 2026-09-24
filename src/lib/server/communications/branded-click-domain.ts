@@ -1,3 +1,4 @@
+import { Resolver } from 'node:dns/promises';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import {
@@ -75,6 +76,11 @@ type Outcome = {
 
 const CLICK_LABEL = 'click';
 const HEALTH_CHECK_TIMEOUT_MS = 8_000;
+// Public resolvers, not the server's own: the question is whether the wider internet (and so CloudFront) can
+// see the new CNAME yet, and a local cache can hold on to an old "no such name" answer.
+const PUBLIC_DNS_SERVERS = ['1.1.1.1', '8.8.8.8'];
+const DNS_NOT_READY_NOTE =
+	'Waiting for the link address to reach the internet (usually a few minutes). Press Check again shortly.';
 // SES's tracking endpoint stamps this header on every response it serves; a CloudFront error page or a
 // parked domain never carries it, so it proves requests really reach SES over HTTPS.
 const SES_TRACKING_HEADER = 'x-amz-ses-request-protocol';
@@ -180,6 +186,19 @@ function plainReason(error: unknown): string {
 // Health check
 // ---------------------------------------------------------------------------------------------------
 
+/** True when public DNS already answers the click domain with the shared distribution's routing endpoint. */
+async function cnameIsVisible(domain: string, target: string): Promise<boolean> {
+	const resolver = new Resolver({ timeout: 3_000, tries: 2 });
+	resolver.setServers(PUBLIC_DNS_SERVERS);
+	try {
+		const answers = await resolver.resolveCname(domain);
+		return answers.some((answer) => normalizeName(answer) === normalizeName(target));
+	} catch {
+		// NXDOMAIN, no data yet, or a resolver timeout: not visible yet.
+		return false;
+	}
+}
+
 /** True when an HTTPS request to the click domain is answered by SES's tracking endpoint. */
 async function clickDomainAnswers(domain: string): Promise<boolean> {
 	try {
@@ -219,13 +238,25 @@ async function bringUp(row: ClickRow, env: ClickDomainEnv, zoneId: string): Prom
 	assertUnderSubdomain([record], row.domain_name);
 	await reconcileRecord(zoneId, record);
 
-	let tenant =
-		(await findTenant(row)) ??
-		(await createClickTenant({
+	let tenant = await findTenant(row);
+	if (!tenant) {
+		// CloudFront only accepts the domain once it can see the CNAME, so a brand-new setup waits for DNS to
+		// spread rather than being reported as a problem.
+		const dnsNotReady: Outcome = {
+			status: 'waiting_certificate',
+			domainName: clickDomain,
+			tenantId: null,
+			error: DNS_NOT_READY_NOTE
+		};
+		if (!(await cnameIsVisible(clickDomain, env.AWS_CLICK_ROUTING_ENDPOINT))) return dnsNotReady;
+		const created = await createClickTenant({
 			env,
 			name: tenantNameFor(row.organization_id),
 			domain: clickDomain
-		}));
+		});
+		if (created === 'dns_not_ready') return dnsNotReady;
+		tenant = created;
+	}
 
 	if (
 		tenant.distributionId !== env.AWS_CLICK_DISTRIBUTION_ID ||
@@ -240,10 +271,11 @@ async function bringUp(row: ClickRow, env: ClickDomainEnv, zoneId: string): Prom
 
 	if (!tenant.enabled) tenant = await updateClickTenant(tenant, { enabled: true });
 
+	const tenantId = tenant.id;
 	const waiting = (error: string | null): Outcome => ({
 		status: 'waiting_certificate',
 		domainName: clickDomain,
-		tenantId: tenant.id,
+		tenantId,
 		error
 	});
 
@@ -274,7 +306,7 @@ async function bringUp(row: ClickRow, env: ClickDomainEnv, zoneId: string): Prom
 	}
 
 	await putSesClickTrackingDomain(configurationSetNameFor(row.organization_id), clickDomain);
-	return { status: 'working', domainName: clickDomain, tenantId: tenant.id, error: null };
+	return { status: 'working', domainName: clickDomain, tenantId, error: null };
 }
 
 async function runPass(

@@ -175,6 +175,10 @@ returns `x-amz-ses-request-protocol: https` for that contractor.
   untracked. The click and the open both reached `marketing_campaign_recipients` and the Results API
   (`clicked_count 1`). SES events can arrive a few minutes late, so a Results check right after a click may lag.
 - The worker's IAM user cannot read or edit its own IAM policies; tightening happens in the AWS console.
+- In-app remove-then-turn-on test: `create-distribution-tenant` right after writing a fresh CNAME failed with
+  `InvalidArgument` ("Could not verify Domain Name ownership"). CloudFront checks the domain's public DNS at create
+  time, so the reconciler waits until public resolvers show the CNAME (and treats that error as "waiting") before
+  creating the tenant. Deleting a disabled tenant succeeded on the first attempt right after the disable.
 
 ## Scoped IAM policy for `ucrm-branded-click-domain` (replaces the temporary `cloudfront:*`)
 
