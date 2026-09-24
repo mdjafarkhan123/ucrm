@@ -4,11 +4,15 @@
 
 **Active part:** 7B-3 — File Manager fast at 20k+ files (roadmap 7B-3). 7B-2 closed 2026-09-24.
 
-**Exact next action:** Run the performance-review design branch for `list_files` at 20k files: decide how to
-keep identical visibility while not running the files/label-assignment RLS functions per row before the
-filter (e.g. authorize once inside `list_files`, or a cheaper per-row policy). Present the verdict to Jafar,
-then build and re-measure the five scenarios in the roadmap entry (All, rare label, dense label, caption
-search hit, no-match search).
+**Exact next action:** Waiting on Jafar: (1) approve the design below, (2) say where timing tests may run —
+the rolled-back tests that swap policies on the shared remote DB were stopped by the permission guard.
+Measured 2026-09-24 (20k files, 5k linked to a client, owner): all 18 ms, rare label 429 ms, dense label
+729 ms, caption search 9.3 s, no-match search 9.5 s. Swapping the five Files SELECT policies to the project's
+`(select private.current_organization())` + `(select private.has_permission((select private.current_organization()), 'files.view'))`
+once-per-query form (same rules; sound because `organization_members` is UNIQUE(user_id)) gave: all 46 ms,
+rare 60 ms, dense 24 ms, but searches still ~4 s — the remaining cost is per-link `can_view_linked_entity`
+plus the per-entity-type record-name EXISTS in `list_files` search. Field-worker (no files.view) path not yet
+timed. Bench script lives only in the old session scratchpad; rebuild it from this note.
 
 **Blocker (campaign-wide):** the upload worker does not run locally; new uploads stay "Still being checked".
 
