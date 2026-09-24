@@ -10,14 +10,11 @@ M1-M5 complete. M6a, M6b, M6c closed (M6c load test passed 2026-09-24 -- results
 
 ## Exact next action
 
-M6f earned warm-up (design approved 2026-09-24, `docs/marketing-first-release-plan.md` §3 M6f). DONE and
-committed: migration `20260924130000_marketing_earned_warmup.sql` (pushed to remote), pgTAP
-`marketing_earned_warmup.sql` 31/31 + dispatcher/reputation tests pass locally, `src/lib/marketing/warmup.ts`
-(card wording, unit-tested), readiness API now returns `warmup`.
-Next: build `MarketingWarmupCard.svelte` (SectionBlock "Sending warm-up" on Marketing Overview, under Email
-readiness; render `describeMarketingWarmup(readiness.warmup)`; step ladder, today's-use bar, unlock checklist;
-load design + svelte skills), then browser-check on Raad LTD (needs a Jafar-approved temporary Marketing
-allowance override), then close M6f in ROADMAP.
+M6f earned warm-up (`docs/marketing-first-release-plan.md` §3 M6f). Database, wording, readiness API and the
+Overview card (`MarketingWarmupCard.svelte`, render-tested) are built and committed.
+Next: browser-check the card on Raad LTD's Marketing Overview (desktop + narrow width). The Chrome extension was
+not connected on 2026-09-24. Raad LTD has real warm-up data (step 1, 100/day); if Marketing will not open for
+it, the check needs a Jafar-approved temporary Marketing override. Then close M6f in ROADMAP.
 Later: M6d branded click-tracking domain (blocks real-customer send), M6e replies (blocked on
 `operational-email-ses`), check 15 doc review.
 

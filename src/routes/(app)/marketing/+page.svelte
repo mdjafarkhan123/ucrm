@@ -15,6 +15,7 @@
 	import CustomerGroupsPanel from '$lib/components/marketing/CustomerGroupsPanel.svelte';
 	import TemplatesPanel from '$lib/components/marketing/TemplatesPanel.svelte';
 	import CampaignsPanel from '$lib/components/marketing/CampaignsPanel.svelte';
+	import MarketingWarmupCard from '$lib/components/marketing/MarketingWarmupCard.svelte';
 	import {
 		fetchMarketingReadiness,
 		fetchCustomerGroups,
@@ -27,6 +28,7 @@
 		type MarketingApiError
 	} from '$lib/marketing/api';
 	import type { MarketingReadinessReason } from '$lib/marketing/readiness';
+	import { describeMarketingWarmup } from '$lib/marketing/warmup';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
@@ -133,6 +135,9 @@
 						/>
 					{:else}
 						{@const readiness = readinessQuery.data}
+						{@const warmupCard = readiness.warmup
+							? describeMarketingWarmup(readiness.warmup)
+							: null}
 						<SectionBlock
 							title="Email readiness"
 							hint={readiness.ready
@@ -169,6 +174,9 @@
 								</ul>
 							{/if}
 						</SectionBlock>
+						{#if warmupCard}
+							<MarketingWarmupCard card={warmupCard} />
+						{/if}
 					{/if}
 				</TabPanel>
 				<TabPanel value="campaigns">
