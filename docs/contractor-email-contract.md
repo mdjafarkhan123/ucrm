@@ -14,7 +14,8 @@ email; the Platform Owner organization page shows one Email card with separate "
 gets a "Request email setup" action in Settings → Email (they enter their domain; the request appears in the
 Platform Owner "Needs attention" list, and the send-refusal message links there); raw inbound MIME in S3 is kept
 30 days; the live-mailbox launch-gate rehearsal runs on `upliftcontractor.com` itself.
-Amended: 2026-09-24 — the email setup screens (Jafar approved the designs); see "Email setup screens".
+Amended: 2026-09-24 — the email setup screens (Jafar approved the designs); see "Email setup screens". Same day:
+over-allowance email credit from Communication Balance; see "Package allowances and counting".
 Scope: Contractor operational email, inbound replies, tenant controls, and Platform Owner controls
 
 Research evidence lives in:
@@ -130,7 +131,7 @@ cannot consume the protected platform reserve.
 
 ## Package allowances and counting
 
-Operational email is included in packages and does not deduct Communication Balance.
+Operational email within the package allowance is included and does not deduct Communication Balance.
 
 | Package | Billing-period allowance | Protected essential reserve |
 | --- | ---: | ---: |
@@ -149,6 +150,23 @@ A provider-accepted message counts even if it later bounces. Forwarded copies co
 Optional email pauses at the normal allowance. The protected reserve permits requested quotes, invoices,
 receipts, security notices, and direct human replies. If the reserve is exhausted, queue essential mail
 temporarily, warn the organization, and alert Jafar. Re-evaluate every queued message before release.
+
+**Over-allowance email credit (approved 2026-09-24; supersedes the two paragraph sentences above once built).**
+Jafar chose a mixed approach, based on Jobber (operational email is never limited) and HighLevel (usage is taken
+from a prepaid wallet):
+
+- Essential email (requested quotes, invoices, receipts, security notices and direct human replies) never stops
+  because of an allowance or the balance. It is still counted. When the protected reserve is used up, the
+  organization is warned and Jafar is alerted, but essential email is no longer queued.
+- Optional email beyond the period allowance takes the over-allowance price from the organization's existing
+  Communication Balance, the same balance and top-up flow SMS uses. With too little balance, optional email
+  pauses and the contractor is shown how to add credit.
+- Platform pause, organization pause, reputation pause, suppressions and consent still stop email of both
+  kinds, whatever the balance.
+- Jafar sets the over-allowance price per 1,000 emails on the Jafar panel, as an effective-dated setting with
+  history. The setting shows UCRM's real Amazon SES cost (about $0.10 per 1,000) and reference prices from the
+  industry (HighLevel about $0.675 per 1,000 from a wallet; Mailchimp adds overage blocks to the next bill;
+  Jobber has no limit) so that Jafar can see the whole picture.
 
 Jafar controls all allowance values while package defaults remain visible. An organization override may
 set a number, restore the package default, be effective-dated, or be unlimited subject to platform safety.
