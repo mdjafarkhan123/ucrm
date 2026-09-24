@@ -6,16 +6,17 @@ Contractor operational email (setup, sending, events, replies) runs on Amazon SE
 
 ## State
 
-Part 1 done 2026-09-24: Jafar approved the setup screen designs (contract section "Email setup screens").
-Start rule met (marketing SES work committed). All work happens in worktree `../Ucrm-email-ses` on branch
-`operational-email-ses`; merge the shared `ses.ts`/`ses-env.ts` overlap at the end.
+Part 2 split into 2a (backend) and 2b (owner Email card UI). 2a code committed `174a8ec` in worktree
+`../Ucrm-email-ses` (branch `operational-email-ses`; `node_modules` and `.env` are symlinks to `../Ucrm`).
+Tests pass. Raad's DNS before the live run is saved outside the repo (Cloudflare can re-export it).
 
 ## Exact next action
 
-Start Part 2 in the worktree (Part 7, email credit, is approved and can follow any time): owner "Set up" on the Everyday email row creates SES sending + receiving identities
-(+ MAIL FROM, config set in the org's existing SES tenant) via Cloudflare, reusing the Marketing activation path
-(`marketing-domain-activation.ts`, `dns-reconcile.ts`) instead of the Brevo one (`email-domain-activation.ts`).
-Gate: Raad re-activated and verified live.
+Live 2a gate: run the worktree app on port 5174 (`npx vite dev --port 5174`); Jafar signs in at
+`localhost:5174/jafar` (the agent may not type passwords). Then call
+`POST /api/jafar/organizations/<Raad id>/communications/domains/activate` with root `test.upliftcontractor.com`,
+recheck until `mail.test` shows verified on SES, and confirm Raad can still send (Brevo still sends until Part 3).
+Then build 2b.
 
 ## Blockers
 
@@ -23,5 +24,5 @@ Part 4 needs Jafar's approval before any AWS resource is created.
 
 ## Pointers
 
-`docs/contractor-email-contract.md` ("Email setup screens", "Domain provisioning"); architecture research doc in
-`ROADMAP.md`. Resume: `continue operational email ses`.
+`docs/contractor-email-contract.md` ("Email setup screens", "Domain provisioning"); ROADMAP known constraints.
+Resume: `continue operational email ses`.
