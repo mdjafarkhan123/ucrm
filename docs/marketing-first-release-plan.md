@@ -75,6 +75,13 @@ is IAM Identity Center SSO, profile `ucrm` (short-lived, no long-lived keys on d
 `aws sso login --sso-session ucrm`. SNS topic is not KMS-encrypted (SSE-SQS only) — acceptable for internal test,
 revisit before production.
 
+**Out of sandbox 2026-09-23:** `aws sesv2 get-account` shows `ProductionAccessEnabled: true`, 50,000/day quota,
+review case GRANTED. Any real recipient address can now receive Marketing mail; no per-recipient SES sandbox
+verification step is needed. Account-level Virtual Deliverability Manager (VDM) engagement tracking was also
+enabled this date (`put-account-vdm-attributes`, `DashboardAttributes.EngagementMetrics: ENABLED`) after M5's
+completion-gate test proved SES generates zero Open/Click events without it, even with a correct SNS/SQS event
+destination — this is a separate switch from the config-set's OPEN/CLICK subscription and applies account-wide.
+
 **Original recommendation (superseded):** ask Brevo two factual questions now (Enterprise sub-account price at our
 scale; domain authentication across main and sub-account). Choose A if both answers work; otherwise B. M1–M3 do
 not depend on this choice and can proceed meanwhile.

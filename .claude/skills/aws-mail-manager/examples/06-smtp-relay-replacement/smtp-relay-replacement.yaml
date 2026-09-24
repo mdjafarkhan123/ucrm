@@ -1,0 +1,384 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# SMTP Relay Replacement with Mail Manager
+#
+# Replaces an on-premises SMTP relay (such as Postfix relayhost) with a
+# Mail Manager AUTH ingress point that sends outbound email via SES.
+#
+# Your application sends SMTP to the ingress point (STARTTLS on port 587),
+# Mail Manager authenticates the connection, then the Send rule action
+# calls ses:SendRawEmail to deliver to the internet.
+#
+# Optionally stores SMTP credentials in Secrets Manager and auto-populates
+# the username (ingress point ID) and endpoint hostname after creation.
+#
+# Deployment:
+#   aws cloudformation create-stack \
+#     --stack-name smtp-relay \
+#     --template-body file://smtp-relay-replacement.yaml \
+#     --parameters ParameterKey=SmtpPassword,ParameterValue='YourP@ssw0rd!' \
+#     --capabilities CAPABILITY_NAMED_IAM \
+#     --region us-east-1
+#
+# After deployment, configure your application's SMTP settings:
+#   Host:     <SmtpEndpoint output>
+#   Port:     587
+#   TLS:      STARTTLS (required)
+#   Username: <SmtpUsername output> (the ingress point ID)
+#   Password: <the password you provided>
+#
+# SES Sandbox: Both sender and recipient must be verified SES identities.
+# Request production access to lift this restriction.
+#
+# Cleanup:
+#   aws cloudformation delete-stack --stack-name smtp-relay --region us-east-1
+#   Note: The Secrets Manager secret has DeletionPolicy: Retain and will
+#   continue to incur ~$0.40/month after stack deletion. To delete:
+#   aws secretsmanager delete-secret --secret-id <arn> --force-delete-without-recovery
+#
+# Security note: The SmtpPassword parameter uses NoEcho but CloudFormation
+# parameters can appear in stack events. For production, create the secret
+# externally and pass only the SecretArn, or use dynamic references:
+#   !Sub '{{resolve:secretsmanager:MySecretId:SecretString:password}}'
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Mail Manager SMTP relay replacement. Provisions an authenticated ingress
+  point that accepts SMTP from your applications and sends to the internet
+  via SES SendRawEmail. Optional Secrets Manager integration for credential
+  management.
+
+# ---------------------------------------------------------------------------
+# Metadata — Console parameter grouping
+# ---------------------------------------------------------------------------
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: SMTP Authentication
+        Parameters:
+          - SmtpPassword
+          - StoreInSecretsManager
+      - Label:
+          default: Optional — SES Resource Scoping
+        Parameters:
+          - SesIdentityArn
+          - SesConfigSetArn
+    ParameterLabels:
+      SmtpPassword:
+        default: SMTP Password
+      StoreInSecretsManager:
+        default: Store password in Secrets Manager?
+      SesIdentityArn:
+        default: SES Identity ARN (optional)
+      SesConfigSetArn:
+        default: SES Configuration Set ARN (optional)
+
+# ---------------------------------------------------------------------------
+# Parameters
+# ---------------------------------------------------------------------------
+Parameters:
+
+  SmtpPassword:
+    Type: String
+    Description: >
+      Password for SMTP authentication. Must contain uppercase, lowercase,
+      digit, and special character. Will be stored in Secrets Manager if enabled.
+    NoEcho: true
+    MinLength: 8
+    MaxLength: 64
+    AllowedPattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+=\-\[\]{}|:;''<>,./~`])[^"\\]{8,64}$'
+    ConstraintDescription: >
+      8-64 characters. Must contain lowercase, uppercase, digit, and special character.
+      Cannot contain double-quote (") or backslash (\).
+
+  StoreInSecretsManager:
+    Type: String
+    Description: >
+      Store SMTP credentials in Secrets Manager for programmatic retrieval.
+      Recommended when multiple applications share the same relay endpoint.
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+
+  SesIdentityArn:
+    Type: String
+    Description: >
+      Optional: Scope SendRawEmail permission to a specific SES identity.
+      Leave blank for wildcard (identity/*).
+      Format: arn:aws:ses:region:account:identity/example.com
+    Default: ''
+
+  SesConfigSetArn:
+    Type: String
+    Description: >
+      Optional: Scope SendRawEmail permission to a specific configuration set.
+      Leave blank for wildcard (configuration-set/*).
+    Default: ''
+
+# ---------------------------------------------------------------------------
+# Conditions
+# ---------------------------------------------------------------------------
+Conditions:
+  CreateSecret: !Equals [!Ref StoreInSecretsManager, 'true']
+  UseWildcardIdentity: !Equals [!Ref SesIdentityArn, '']
+  UseWildcardConfigSet: !Equals [!Ref SesConfigSetArn, '']
+
+# ---------------------------------------------------------------------------
+# Resources
+# ---------------------------------------------------------------------------
+Resources:
+
+  # -------------------------------------------------------------------------
+  # Secrets Manager — SMTP credentials for programmatic retrieval
+  # NOTE: DeletionPolicy: Retain keeps the secret after stack deletion to
+  # prevent accidental credential loss. The secret incurs ~$0.40/month
+  # until manually deleted:
+  #   aws secretsmanager delete-secret --secret-id <arn> --force-delete-without-recovery
+  # -------------------------------------------------------------------------
+  SmtpCredentialsSecret:
+    Type: AWS::SecretsManager::Secret
+    Condition: CreateSecret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name: !Sub '${AWS::StackName}-smtp-credentials'
+      Description: !Sub 'SMTP credentials for ${AWS::StackName} Mail Manager ingress point'
+      # For production, encrypt with a customer-managed KMS key:
+      # KmsKeyId: !GetAtt MyKmsKey.Arn
+      SecretString: !Sub |
+        {
+          "username": "PENDING_INGRESS_POINT_CREATION",
+          "password": "${SmtpPassword}",
+          "smtp_endpoint": "PENDING_INGRESS_POINT_CREATION",
+          "port": "587",
+          "tls": "REQUIRED"
+        }
+
+  # -------------------------------------------------------------------------
+  # IAM Role — Allows Mail Manager to call ses:SendRawEmail
+  # -------------------------------------------------------------------------
+  SendRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-send-role'
+      Description: !Sub 'Allows Mail Manager ${AWS::StackName} to send email via SES'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ses.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                'sts:ExternalId': !Ref AWS::AccountId
+      Policies:
+        - PolicyName: AllowSendRawEmail
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: SendRawEmailScoped
+                Effect: Allow
+                Action: ses:SendRawEmail
+                Resource:
+                  - !If
+                    - UseWildcardIdentity
+                    - !Sub 'arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/*'
+                    - !Ref SesIdentityArn
+                  - !If
+                    - UseWildcardConfigSet
+                    - !Sub 'arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:configuration-set/*'
+                    - !Ref SesConfigSetArn
+
+  # -------------------------------------------------------------------------
+  # Traffic Policy — Require TLS 1.2+ on all SMTP connections
+  # -------------------------------------------------------------------------
+  TrafficPolicy:
+    Type: AWS::SES::MailManagerTrafficPolicy
+    Properties:
+      TrafficPolicyName: !Sub '${AWS::StackName}-traffic-policy'
+      DefaultAction: DENY
+      MaxMessageSizeBytes: 10485760  # 10 MB
+      PolicyStatements:
+        - Action: ALLOW
+          Conditions:
+            - TlsExpression:
+                Evaluate:
+                  Attribute: TLS_PROTOCOL
+                Operator: MINIMUM_TLS_VERSION
+                Value: TLS1_2
+
+  # -------------------------------------------------------------------------
+  # Rule Set — Send all authenticated inbound mail to internet via SES
+  # -------------------------------------------------------------------------
+  RuleSet:
+    Type: AWS::SES::MailManagerRuleSet
+    Properties:
+      RuleSetName: !Sub '${AWS::StackName}-rule-set'
+      Rules:
+        - Name: send-to-internet
+          Actions:
+            - Send:
+                RoleArn: !GetAtt SendRole.Arn
+                ActionFailurePolicy: DROP
+
+  # -------------------------------------------------------------------------
+  # Ingress Point — AUTH type (authenticated SMTP)
+  # -------------------------------------------------------------------------
+  IngressPoint:
+    Type: AWS::SES::MailManagerIngressPoint
+    Properties:
+      IngressPointName: !Sub '${AWS::StackName}-ingress'
+      Type: AUTH
+      RuleSetId: !GetAtt RuleSet.RuleSetId
+      TrafficPolicyId: !GetAtt TrafficPolicy.TrafficPolicyId
+      IngressPointConfiguration:
+        SmtpPassword: !Ref SmtpPassword
+
+  # -------------------------------------------------------------------------
+  # Custom Resource — Update Secrets Manager with actual ingress point details
+  # After the ingress point is created, the Lambda updates the secret with
+  # the real username (ingress point ID) and SMTP endpoint hostname.
+  # -------------------------------------------------------------------------
+  UpdateSecretFunction:
+    Type: AWS::Lambda::Function
+    Condition: CreateSecret
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-update-secret'
+      Description: Updates Secrets Manager with ingress point details after creation
+      Runtime: python3.12
+      Handler: index.handler
+      Role: !GetAtt UpdateSecretRole.Arn
+      Timeout: 30
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          import cfnresponse
+
+          secrets_client = boto3.client('secretsmanager')
+
+          def handler(event, context):
+              try:
+                  if event['RequestType'] == 'Delete':
+                      cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+                      return
+
+                  secret_arn = event['ResourceProperties']['SecretArn']
+                  ingress_id = event['ResourceProperties']['IngressPointId']
+                  a_record = event['ResourceProperties']['ARecord']
+
+                  # Read password from the secret itself — avoids exposing it
+                  # in the CFN event payload or CloudTrail logs
+                  current = secrets_client.get_secret_value(SecretId=secret_arn)
+                  current_value = json.loads(current['SecretString'])
+                  password = current_value.get('password', '')
+
+                  secret_value = {
+                      'username': ingress_id,
+                      'password': password,
+                      'smtp_endpoint': a_record,
+                      'port': '587',
+                      'tls': 'REQUIRED'
+                  }
+
+                  secrets_client.update_secret(
+                      SecretId=secret_arn,
+                      SecretString=json.dumps(secret_value)
+                  )
+
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {
+                      'Message': 'Secret updated successfully'
+                  })
+              except Exception as e:
+                  print(f'Error: {str(e)}')
+                  cfnresponse.send(event, context, cfnresponse.FAILED, {
+                      'Message': str(e)
+                  })
+
+  UpdateSecretRole:
+    Type: AWS::IAM::Role
+    Condition: CreateSecret
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: ManageSecret
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:UpdateSecret
+                Resource: !GetAtt SmtpCredentialsSecret.Id
+
+  SecretUpdater:
+    Type: Custom::SecretUpdater
+    Condition: CreateSecret
+    Properties:
+      ServiceToken: !GetAtt UpdateSecretFunction.Arn
+      SecretArn: !Ref SmtpCredentialsSecret
+      IngressPointId: !GetAtt IngressPoint.IngressPointId
+      ARecord: !GetAtt IngressPoint.ARecord
+
+# ---------------------------------------------------------------------------
+# Outputs
+# ---------------------------------------------------------------------------
+Outputs:
+
+  SmtpEndpoint:
+    Description: SMTP endpoint hostname — configure your application to send here
+    Value: !GetAtt IngressPoint.ARecord
+    Export:
+      Name: !Sub '${AWS::StackName}-SmtpEndpoint'
+
+  SmtpUsername:
+    Description: SMTP username (the ingress point ID)
+    Value: !GetAtt IngressPoint.IngressPointId
+    Export:
+      Name: !Sub '${AWS::StackName}-SmtpUsername'
+
+  SmtpPort:
+    Description: SMTP port (STARTTLS required)
+    Value: '587'
+
+  SmtpPasswordSecretArn:
+    Condition: CreateSecret
+    Description: Secrets Manager ARN with complete SMTP credentials (username, password, endpoint)
+    Value: !Ref SmtpCredentialsSecret
+    Export:
+      Name: !Sub '${AWS::StackName}-SmtpPasswordSecretArn'
+
+  IngressPointId:
+    Description: Mail Manager ingress point ID
+    Value: !GetAtt IngressPoint.IngressPointId
+
+  RuleSetId:
+    Description: Mail Manager rule set ID
+    Value: !GetAtt RuleSet.RuleSetId
+
+  TrafficPolicyId:
+    Description: Mail Manager traffic policy ID
+    Value: !GetAtt TrafficPolicy.TrafficPolicyId
+
+  SendRoleArn:
+    Description: IAM role ARN used by the Send action
+    Value: !GetAtt SendRole.Arn
+
+  QuickStartCommand:
+    Description: >
+      Test SMTP connectivity (replace sender/recipient with verified SES identities
+      if in sandbox mode)
+    Value: !Sub |
+      python3 -c "import smtplib; s=smtplib.SMTP('${IngressPoint.ARecord}', 587); s.starttls(); s.login('${IngressPoint.IngressPointId}', 'YOUR_PASSWORD'); s.sendmail('sender@example.com', ['recipient@example.com'], 'Subject: Test\n\nTest email'); s.quit(); print('Email sent successfully')"

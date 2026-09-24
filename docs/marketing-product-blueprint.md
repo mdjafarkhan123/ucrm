@@ -539,8 +539,10 @@ Every important action has visible hover, keyboard focus, disabled, running, suc
 
 ## 16. Responsive behavior
 
-Desktop uses the full dashboard and multi-column review where useful. Narrow screens stack content into the same
-step order and keep one primary action visible without hiding exclusions or safety notices.
+UCRM is a desktop app; Marketing is built and verified for desktop browser width only. Narrow-screen/phone-width
+usability is not a first-release requirement and is not part of M6's completion gate (decided by Jafar
+2026-09-23). The layout notes below are aspirational design intent if narrow-screen support is picked up later,
+not a current commitment:
 
 - Marketing home cards become one column.
 - Campaign list becomes compact rows/cards with status and the most important result.
@@ -550,8 +552,7 @@ step order and keep one primary action visible without hiding exclusions or safe
 - Final review stacks message preview after the audience/delivery summary so the irreversible action follows all
   important facts.
 
-Desktop browser completion is required for the first release. Responsive web must remain usable, but a dedicated
-mobile-app campaign builder is Later Marketing unless customer evidence changes the priority.
+A dedicated mobile-app campaign builder is Later Marketing unless customer evidence changes the priority.
 
 ## 17. Automation boundary
 
@@ -593,7 +594,8 @@ The product behavior is complete only when a reviewer can prove:
 11. Partial failures and uncertain outcomes remain visible and recoverable.
 12. Replies appear in the correct authorized Conversation with Campaign origin.
 13. Results link to real Customer, Request, Job, Invoice, and Payment facts without overstating causation.
-14. Loading, empty, forbidden, not-included, stale, paused, partial-failure, and narrow-screen states are usable.
+14. Loading, empty, forbidden, not-included, stale, paused, and partial-failure states are usable. (Narrow-screen
+    usability is not required -- UCRM targets desktop browser width; see §16.)
 15. The deliberately preserved Later Marketing list remains in the approved roadmap after first-release completion.
 
 ## 20. Performance design verdict
