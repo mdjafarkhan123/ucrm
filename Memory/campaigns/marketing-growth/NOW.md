@@ -14,15 +14,14 @@ M6d branded click tracking, option A approved (CloudFront SaaS Manager, `click.n
 research `docs/research/ses-branded-click-tracking-domain-2026-09-24.md`). Jafar approved the live test on Raad LTD's
 own test domain. Done 2026-09-24: multi-tenant distribution `E3BC29BRFLB91P` (origin `r.us-east-1.awstrack.me`
 https-only, AllViewer, CachingDisabled), default connection group `cg_3Jl58Y3IZa93OHuOotP7eXXB7K0`, routing
-endpoint `d30azkeso6lzew.cloudfront.net`. IAM inline policy `ucrm-branded-click-domain` is temporarily `cloudfront:*`
-(tighten after the test). AWS CLI: `--profile ucrm-app` (credential_process `scripts/aws-credentials-from-env.sh`).
+endpoint `d30azkeso6lzew.cloudfront.net`. IAM inline policy `ucrm-branded-click-domain` is `scripts/aws/ucrm-branded-click-domain-policy.json`.
+AWS CLI: `--profile ucrm-app` (credential_process `scripts/aws-credentials-from-env.sh`).
 Done 2026-09-24 (live): CNAME added, tenant `dt_3JltenyORfWpxcKagdGM7XAoQpi` active with its issued cert,
 HTTPS check passed, and Raad LTD's config set now tracks via `click.news.test.upliftcontractor.com` (REQUIRE).
 Findings are in the research doc's "Live test findings". (4) PASSED: real Gmail send, branded click + open reached Results;
-test campaign deleted (Jafar approved), allowance override ended. Next: (5) Jafar approves the build plan in
-`parts/m6d-branded-links.md`, and runs `! aws iam put-user-policy --profile ucrm --user-name ucrm-marketing-ses-worker --policy-name
-ucrm-branded-click-domain --policy-document file://scripts/aws/ucrm-branded-click-domain-policy.json` (auto mode blocks
-Claude from IAM writes); Claude then verifies with get tenant/cert calls using `--profile ucrm-app`. (6) Build per the packet. Later: M6e (blocked on `operational-email-ses`), check 15 review.
+test campaign deleted (Jafar approved), allowance override ended. IAM tightened 2026-09-24 (scoped policy
+applied and verified: tenant/cert reads work, distribution-level calls denied). Next: (5) Jafar approves the build
+plan in `parts/m6d-branded-links.md`. (6) Build per the packet. Later: M6e (blocked on `operational-email-ses`), check 15 review.
 
 ## Open findings (raise with Jafar)
 
