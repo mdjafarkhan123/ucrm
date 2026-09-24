@@ -41,7 +41,7 @@ export const PUT: RequestHandler = async (event) => {
 		new_include_price: parsed.data.include_price,
 		new_signature_id: parsed.data.signature_id ?? undefined,
 		new_summary: parsed.data.summary ?? undefined,
-		photo_file_ids: parsed.data.photo_file_ids,
+		new_layout: parsed.data.layout,
 		checklist_selections: parsed.data.checklist_selections
 	});
 	if (error) return jobReportWriteError(error);

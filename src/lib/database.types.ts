@@ -21412,8 +21412,8 @@ export type Database = {
           new_include_price: boolean
           new_include_service_details: boolean
           new_signature_id?: string
+          new_layout?: Json
           new_summary?: string
-          photo_file_ids?: string[]
           target_job_id: string
         }
         Returns: Json

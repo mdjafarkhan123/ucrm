@@ -1,7 +1,11 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import photoOffIcon from '@tabler/icons/outline/photo-off.svg?raw';
-	import type { CustomerJobReportDocument } from '$lib/jobs/report-types';
+	import type {
+		CustomerJobReportDocument,
+		CustomerJobReportLayout,
+		CustomerJobReportLayoutItem
+	} from '$lib/jobs/report-types';
 
 	// The customer's copy of a work report, and the only drawing of it there is. The token page hands it a
 	// document resolved from a link; Preview as client hands it the same document read straight from the
@@ -57,7 +61,71 @@
 	});
 
 	const showMoney = $derived(doc.service_details?.totals != null);
+
+	// Where each photo sits. A document without a layout -- every link issued before Part 7C, and any report
+	// with no heading and no pair -- is one plain list in the order given.
+	const photoLayout = $derived<CustomerJobReportLayout>(
+		doc.layout ?? { top: doc.photos.map((_, index) => ({ photo: index })), sections: [] }
+	);
 </script>
+
+{#snippet figure(index: number)}
+	{@const photo = doc.photos[index]}
+	{#if !photo || photo.removed}
+		<span
+			class="customer-job-report__photo customer-job-report__photo--removed"
+			role="img"
+			aria-label="Photo removed"
+		>
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html photoOffIcon}
+			<span aria-hidden="true">Photo removed</span>
+		</span>
+	{:else}
+		{@const labels = photo.labels ?? []}
+		<figure class="customer-job-report__figure">
+			<img
+				class="customer-job-report__photo"
+				src={fileHref(photo.file_id)}
+				alt={photo.caption || photo.file_name}
+				loading="lazy"
+			/>
+			{#if photo.caption || labels.length > 0}
+				<figcaption class="customer-job-report__figcaption">
+					{#if labels.length > 0}
+						<span class="customer-job-report__labels">
+							{#each labels as label (label)}
+								<span class="customer-job-report__label">{label}</span>
+							{/each}
+						</span>
+					{/if}
+					{#if photo.caption}
+						<span class="customer-job-report__caption">{photo.caption}</span>
+					{/if}
+				</figcaption>
+			{/if}
+		</figure>
+	{/if}
+{/snippet}
+
+{#snippet layoutItem(item: CustomerJobReportLayoutItem)}
+	{#if 'photo' in item}
+		<div class="customer-job-report__cell">{@render figure(item.photo)}</div>
+	{:else}
+		<!-- A before/after pair takes the whole row, so the two sit side by side at the same size. -->
+		<div class="customer-job-report__pair" role="group" aria-label="Before and after">
+			<div class="customer-job-report__pair-side">
+				<span class="customer-job-report__pair-tag">Before</span>
+				{@render figure(item.before)}
+			</div>
+			<div class="customer-job-report__pair-side">
+				<span class="customer-job-report__pair-tag customer-job-report__pair-tag--after">After</span
+				>
+				{@render figure(item.after)}
+			</div>
+		</div>
+	{/if}
+{/snippet}
 
 <div class="customer-job-report">
 	{#if notice}
@@ -96,46 +164,28 @@
 		{#if doc.photos.length > 0}
 			<section class="customer-job-report__section">
 				<h2 class="customer-job-report__section-title">Photos</h2>
-				<div class="customer-job-report__photos">
-					<!-- A removed photo has no id left to key on, and the list is frozen, so its position is stable. -->
-					{#each doc.photos as photo, index (photo.file_id ?? `removed-${index}`)}
-						{#if photo.removed}
-							<span
-								class="customer-job-report__photo customer-job-report__photo--removed"
-								role="img"
-								aria-label="Photo removed"
-							>
-								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-								{@html photoOffIcon}
-								<span aria-hidden="true">Photo removed</span>
-							</span>
-						{:else}
-							{@const labels = photo.labels ?? []}
-							<figure class="customer-job-report__figure">
-								<img
-									class="customer-job-report__photo"
-									src={fileHref(photo.file_id)}
-									alt={photo.caption || photo.file_name}
-									loading="lazy"
-								/>
-								{#if photo.caption || labels.length > 0}
-									<figcaption class="customer-job-report__figcaption">
-										{#if labels.length > 0}
-											<span class="customer-job-report__labels">
-												{#each labels as label (label)}
-													<span class="customer-job-report__label">{label}</span>
-												{/each}
-											</span>
-										{/if}
-										{#if photo.caption}
-											<span class="customer-job-report__caption">{photo.caption}</span>
-										{/if}
-									</figcaption>
-								{/if}
-							</figure>
+				{#if photoLayout.top.length > 0}
+					<div class="customer-job-report__photos">
+						{#each photoLayout.top as item, index (index)}
+							{@render layoutItem(item)}
+						{/each}
+					</div>
+				{/if}
+				{#each photoLayout.sections as section, sectionIndex (sectionIndex)}
+					<div class="customer-job-report__photo-group">
+						<h3 class="customer-job-report__photo-heading">{section.heading}</h3>
+						{#if section.note}
+							<p class="customer-job-report__photo-note">{section.note}</p>
 						{/if}
-					{/each}
-				</div>
+						{#if section.items.length > 0}
+							<div class="customer-job-report__photos">
+								{#each section.items as item, index (index)}
+									{@render layoutItem(item)}
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{/each}
 			</section>
 		{/if}
 
@@ -392,10 +442,76 @@
 		white-space: pre-wrap;
 	}
 
+	// Large photos with their words: two across, one across on a phone (approved for 7C).
 	.customer-job-report__photos {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-large) var(--space-base);
+	}
+
+	.customer-job-report__photos + .customer-job-report__photo-group,
+	.customer-job-report__photo-group + .customer-job-report__photo-group {
+		margin-top: var(--space-larger);
+	}
+
+	.customer-job-report__photo-group {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-small);
+	}
+
+	.customer-job-report__photo-heading {
+		margin: 0;
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-large);
+		font-weight: 600;
+		line-height: var(--typography--lineHeight-base);
+	}
+
+	.customer-job-report__photo-note {
+		margin: 0 0 var(--space-small);
+		color: var(--color-text);
+		line-height: var(--typography--lineHeight-larger);
+		white-space: pre-wrap;
+	}
+
+	.customer-job-report__cell {
+		min-width: 0;
+	}
+
+	.customer-job-report__pair {
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: var(--space-base);
+		padding: var(--space-base);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
+	}
+
+	.customer-job-report__pair-side {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-small);
+		min-width: 0;
+	}
+
+	.customer-job-report__pair-tag {
+		align-self: flex-start;
+		padding: 2px var(--space-small);
+		border-radius: var(--radius-base);
+		color: var(--color-text--secondary);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+
+		&--after {
+			color: var(--color-success);
+		}
 	}
 
 	.customer-job-report__figure {
@@ -613,6 +729,14 @@
 		font-size: var(--typography--fontSize-small);
 	}
 
+	// Before stacks on top of After on a phone, and photos go one across.
+	@media (max-width: 560px) {
+		.customer-job-report__photos,
+		.customer-job-report__pair {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
 	@media (max-width: 720px) {
 		.customer-job-report__head,
 		.customer-job-report__hero,
@@ -662,6 +786,12 @@
 		}
 
 		.customer-job-report__section {
+			break-inside: avoid;
+		}
+
+		// A long photo section may run over pages, but never splits a photo or a pair.
+		.customer-job-report__cell,
+		.customer-job-report__pair {
 			break-inside: avoid;
 		}
 	}

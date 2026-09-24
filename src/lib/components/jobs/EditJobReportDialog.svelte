@@ -5,8 +5,9 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
-	import FileThumb from '$lib/components/files/FileThumb.svelte';
+	import JobReportPhotoLayout from '$lib/components/jobs/JobReportPhotoLayout.svelte';
 	import type { JobReportState } from '$lib/jobs/report-types';
+	import { fromLayout, toLayout, unnamedSections } from '$lib/jobs/report-layout';
 	import type { SaveJobReportInput } from '$lib/jobs/report-api';
 
 	// Choosing what the customer sees. Nothing here is new content — every photo, answer and line already
@@ -32,7 +33,8 @@
 	let includePrice = $state(untrack(() => jobReport.report.include_price));
 	let signatureId = $state(untrack(() => jobReport.report.signature_id ?? ''));
 	let summary = $state(untrack(() => jobReport.report.summary ?? ''));
-	let selectedPhotoIds = $state(new Set(untrack(() => jobReport.report.photo_ids)));
+	let photoLayout = $state(untrack(() => fromLayout(jobReport.report.layout)));
+	let invalidSectionIds = $state<string[]>([]);
 	let selectedChecklist = $state(
 		new Set(
 			untrack(() => jobReport.report.checklist.map((row) => `${row.visit_id}:${row.item_id}`))
@@ -59,13 +61,6 @@
 		return String(value ?? '');
 	}
 
-	function togglePhoto(fileId: string, checked: boolean) {
-		const next = new Set(selectedPhotoIds);
-		if (checked) next.add(fileId);
-		else next.delete(fileId);
-		selectedPhotoIds = next;
-	}
-
 	function toggleChecklistItem(key: string, checked: boolean) {
 		const next = new Set(selectedChecklist);
 		if (checked) next.add(key);
@@ -83,13 +78,19 @@
 	async function submit() {
 		if (saving) return;
 		problem = '';
+		invalidSectionIds = unnamedSections(photoLayout);
+		if (invalidSectionIds.length > 0) {
+			problem = 'Give every heading a name, or remove it.';
+			document.getElementById(`report-heading-${invalidSectionIds[0]}`)?.focus();
+			return;
+		}
 		try {
 			await onSave({
 				include_service_details: includeServiceDetails,
 				include_price: includePrice,
 				signature_id: signatureId || null,
 				summary: summary.trim() || null,
-				photo_file_ids: [...selectedPhotoIds],
+				layout: toLayout(photoLayout),
 				checklist_selections: [...selectedChecklist].map((key) => {
 					const [visit_id, item_id] = key.split(':');
 					return { visit_id, item_id };
@@ -141,42 +142,12 @@
 
 		<section class="edit-job-report__section">
 			<h3 class="edit-job-report__section-title">Photos</h3>
-			{#if jobReport.candidates.photos.length === 0}
-				<p class="edit-job-report__empty">This job has no photos yet.</p>
-			{:else}
-				<div class="edit-job-report__photos">
-					{#each jobReport.candidates.photos as photo (photo.file_id)}
-						<label class="edit-job-report__photo">
-							<input
-								type="checkbox"
-								aria-label={photo.caption || photo.file_name}
-								checked={selectedPhotoIds.has(photo.file_id)}
-								disabled={saving}
-								onchange={(event) => togglePhoto(photo.file_id, event.currentTarget.checked)}
-							/>
-							<FileThumb
-								fileId={photo.file_id}
-								displayName={photo.file_name}
-								mimeType={photo.mime_type}
-								kind="image"
-								processingState="available"
-								hasThumbnail={photo.has_thumbnail}
-							/>
-							<!-- The words the customer will read under this photo, so nothing on their copy is a surprise. -->
-							{#if photo.caption || photo.labels.length > 0}
-								<span class="edit-job-report__photo-words">
-									{#if photo.labels.length > 0}
-										<span class="edit-job-report__photo-labels">{photo.labels.join(' · ')}</span>
-									{/if}
-									{#if photo.caption}
-										<span class="edit-job-report__photo-caption">{photo.caption}</span>
-									{/if}
-								</span>
-							{/if}
-						</label>
-					{/each}
-				</div>
-			{/if}
+			<JobReportPhotoLayout
+				candidates={jobReport.candidates.photos}
+				bind:layout={photoLayout}
+				{invalidSectionIds}
+				disabled={saving}
+			/>
 		</section>
 
 		<section class="edit-job-report__section">
@@ -248,64 +219,6 @@
 			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
-		}
-
-		&__photos {
-			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-			gap: var(--space-small);
-		}
-
-		&__photo {
-			position: relative;
-			display: block;
-			overflow: hidden;
-			cursor: pointer;
-			border-radius: var(--radius-base);
-			border: var(--border-thick) solid var(--color-border);
-
-			input {
-				position: absolute;
-				z-index: 1;
-				top: var(--space-smaller);
-				left: var(--space-smaller);
-				width: 18px;
-				height: 18px;
-			}
-
-			&:has(input:checked) {
-				border-color: var(--color-interactive);
-			}
-
-			&-words {
-				display: flex;
-				flex-direction: column;
-				gap: var(--space-smallest);
-				padding: var(--space-smaller) var(--space-small);
-				font-size: var(--typography--fontSize-small);
-			}
-
-			&-labels {
-				overflow: hidden;
-				color: var(--color-interactive);
-				font-weight: 600;
-				text-overflow: ellipsis;
-				white-space: nowrap;
-			}
-
-			&-caption {
-				display: -webkit-box;
-				overflow: hidden;
-				color: var(--color-text);
-				-webkit-box-orient: vertical;
-				-webkit-line-clamp: 2;
-				line-clamp: 2;
-			}
-
-			&:has(input:focus-visible) {
-				outline: var(--border-thick) solid var(--color-interactive);
-				outline-offset: 2px;
-			}
 		}
 
 		&__visits {

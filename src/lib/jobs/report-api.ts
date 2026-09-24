@@ -1,4 +1,4 @@
-import type { JobReportState } from './report-types';
+import type { JobReportLayout, JobReportState } from './report-types';
 
 export type JobReportApiError = Error & {
 	fieldErrors?: Record<string, string>;
@@ -41,7 +41,7 @@ export type SaveJobReportInput = {
 	include_price: boolean;
 	signature_id: string | null;
 	summary: string | null;
-	photo_file_ids: string[];
+	layout: JobReportLayout;
 	checklist_selections: { visit_id: string; item_id: string }[];
 };
 

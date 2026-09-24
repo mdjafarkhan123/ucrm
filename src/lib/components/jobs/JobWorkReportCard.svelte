@@ -74,6 +74,8 @@
 			const link = await issueJobReportAccessLink(jobId);
 			await navigator.clipboard.writeText(link.url);
 			toast.success(`Link copied. Send it to ${link.recipient_email}.`);
+			// The new link is now the live one, so the "changed since you sent it" notice clears.
+			await refresh();
 		} catch (caught) {
 			toast.error((caught as JobReportApiError).message ?? 'That link could not be created.');
 		} finally {
@@ -124,6 +126,20 @@
 			<Badge size="small" status="success">Ready to share</Badge>
 			{#if summaryText}<p class="job-work-report__detail">{summaryText}</p>{/if}
 		</div>
+		<!-- The customer's link is frozen as sent. When the report has moved on, say so and offer the new
+		     link -- which turns the old one off, so the customer never reads an out-of-date copy. -->
+		{#if saved?.live_link && !saved.live_link.up_to_date}
+			<div class="job-work-report__stale" role="status">
+				<p class="job-work-report__stale-title">You've changed this report since you sent it.</p>
+				<p class="job-work-report__stale-text">
+					{saved.live_link.recipient_email} still has the old version. Copying the updated link turns
+					the old one off, so send them this new one.
+				</p>
+				<Button size="small" variant="primary" loading={linkSaving} onclick={() => void copyLink()}>
+					Copy updated link
+				</Button>
+			</div>
+		{/if}
 	{/if}
 </RailCard>
 
@@ -152,6 +168,31 @@
 		&__detail {
 			margin: 0;
 			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__stale {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smaller);
+			align-items: flex-start;
+			margin-top: var(--space-base);
+			padding: var(--space-small) var(--space-base);
+			border: var(--border-base) solid var(--color-warning);
+			border-radius: var(--radius-base);
+			background: var(--color-warning--surface);
+		}
+
+		&__stale-title {
+			margin: 0;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+		}
+
+		&__stale-text {
+			margin: 0 0 var(--space-smaller);
+			color: var(--color-text);
 			font-size: var(--typography--fontSize-small);
 		}
 

@@ -4,13 +4,39 @@
 // internal note anywhere in the customer-facing shapes, and none may be added without changing the one
 // database function that decides what a customer may see.
 
+// One place in a work report: a photo on its own, or a before/after pair.
+export type JobReportLayoutItem =
+	{ file_id: string } | { before_file_id: string; after_file_id: string };
+
+export type JobReportLayoutSection = {
+	heading: string;
+	note: string | null;
+	items: JobReportLayoutItem[];
+};
+
+// The contractor's arrangement: photos above the first heading, then each heading with its photos. The same
+// shape `job_report_state` returns and `save_job_report` takes.
+export type JobReportLayout = {
+	top: JobReportLayoutItem[];
+	sections: JobReportLayoutSection[];
+};
+
 export type JobReportSelection = {
 	include_service_details: boolean;
 	include_price: boolean;
 	signature_id: string | null;
 	summary: string | null;
+	/** Every photo on the report, in its arranged order. */
 	photo_ids: string[];
+	layout: JobReportLayout;
 	checklist: { visit_id: string; item_id: string }[];
+};
+
+// The customer's live link, and whether it still shows what a new link would.
+export type JobReportLiveLink = {
+	issued_at: string;
+	recipient_email: string;
+	up_to_date: boolean;
 };
 
 // A File Manager photo linked to the job or one of its visits, checked and not in Trash.
@@ -50,6 +76,7 @@ export type JobReportState = {
 	report: JobReportSelection;
 	has_content: boolean;
 	can_view_price: boolean;
+	live_link: JobReportLiveLink | null;
 	candidates: {
 		photos: JobReportCandidatePhoto[];
 		visits: JobReportCandidateVisit[];
@@ -107,6 +134,16 @@ export type CustomerJobReportSignature = {
 	collected_at: string;
 } | null;
 
+// Where the customer document places its photos, by index into `photos`. Present only when the report has a
+// heading or a pair; without it the photos are one plain list, which is how every link issued before
+// Part 7C looks.
+export type CustomerJobReportLayoutItem = { photo: number } | { before: number; after: number };
+
+export type CustomerJobReportLayout = {
+	top: CustomerJobReportLayoutItem[];
+	sections: { heading: string; note: string | null; items: CustomerJobReportLayoutItem[] }[];
+};
+
 // The document `private.job_report_customer_document` builds -- the same one the token page and Preview as
 // client both render, so the two can never drift.
 export type CustomerJobReportDocument = {
@@ -134,6 +171,7 @@ export type CustomerJobReportDocument = {
 	};
 	summary: string | null;
 	photos: CustomerJobReportPhoto[];
+	layout?: CustomerJobReportLayout;
 	checklist: CustomerJobReportChecklistVisit[];
 	service_details: {
 		lines: CustomerJobReportLine[];
