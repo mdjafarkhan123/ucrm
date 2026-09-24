@@ -102,22 +102,22 @@ select is(
 
 select throws_ok(
   $$select public.save_job_report('eb000000-0000-0000-0000-000000000001', false, false, null, null,
-      array['ee000000-0000-0000-0000-000000000006']::uuid[])$$,
+      '{"top": [{"file_id": "ee000000-0000-0000-0000-000000000006"}], "sections": []}'::jsonb)$$,
   'P0400', null, 'another job''s photo is refused');
 
 select throws_ok(
   $$select public.save_job_report('eb000000-0000-0000-0000-000000000001', false, false, null, null,
-      array['ee000000-0000-0000-0000-000000000003']::uuid[])$$,
+      '{"top": [{"file_id": "ee000000-0000-0000-0000-000000000003"}], "sections": []}'::jsonb)$$,
   'P0400', null, 'a PDF is refused');
 
 select throws_ok(
   $$select public.save_job_report('eb000000-0000-0000-0000-000000000001', false, false, null, null,
-      array['ee000000-0000-0000-0000-000000000005']::uuid[])$$,
+      '{"top": [{"file_id": "ee000000-0000-0000-0000-000000000005"}], "sections": []}'::jsonb)$$,
   'P0400', null, 'a photo in Trash is refused');
 
 select is(
   public.save_job_report('eb000000-0000-0000-0000-000000000001', false, false, null, null,
-    array['ee000000-0000-0000-0000-000000000001', 'ee000000-0000-0000-0000-000000000002']::uuid[]) ->> 'has_content',
+    '{"top": [{"file_id": "ee000000-0000-0000-0000-000000000001"}, {"file_id": "ee000000-0000-0000-0000-000000000002"}], "sections": []}'::jsonb) ->> 'has_content',
   'true', 'the job and visit photos are saved onto the report');
 
 select is(

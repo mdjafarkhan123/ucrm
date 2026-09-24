@@ -84,7 +84,7 @@ select is(
   '[]'::jsonb, 'a plain photo has an empty label list, not null');
 
 select public.save_job_report('fb000000-0000-0000-0000-000000000001', false, false, null, null,
-  array['fe000000-0000-0000-0000-000000000001', 'fe000000-0000-0000-0000-000000000002']::uuid[]);
+  '{"top": [{"file_id": "fe000000-0000-0000-0000-000000000001"}, {"file_id": "fe000000-0000-0000-0000-000000000002"}], "sections": []}'::jsonb);
 
 select is(
   (select photo - 'file_name' from jsonb_array_elements(
