@@ -22,6 +22,5 @@ activation (`src/lib/server/communications/marketing-domain-activation.ts`, `Mar
 
 ## Open
 
-- Jafar approval of this plan. IAM: Jafar must `! aws sso login --profile ucrm` (admin SSO expired), then Claude
-  applies the research doc's "Scoped IAM policy" and verifies. Production AWS account needs the same one-time
+- Jafar approval of this plan. IAM tightening: see NOW.md step (5). Production AWS account needs the same one-time
   distribution setup (goes into the production cutover runbook).

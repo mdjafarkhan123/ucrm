@@ -20,8 +20,9 @@ Done 2026-09-24 (live): CNAME added, tenant `dt_3JltenyORfWpxcKagdGM7XAoQpi` act
 HTTPS check passed, and Raad LTD's config set now tracks via `click.news.test.upliftcontractor.com` (REQUIRE).
 Findings are in the research doc's "Live test findings". (4) PASSED: real Gmail send, branded click + open reached Results;
 test campaign deleted (Jafar approved), allowance override ended. Next: (5) Jafar approves the build plan in
-`parts/m6d-branded-links.md`, and runs `! aws sso login --profile ucrm` so Claude can apply the research doc's
-"Scoped IAM policy" to user `ucrm-marketing-ses-worker` and verify. (6) Build per the packet. Later: M6e (blocked on `operational-email-ses`), check 15 review.
+`parts/m6d-branded-links.md`, and runs `! aws iam put-user-policy --profile ucrm --user-name ucrm-marketing-ses-worker --policy-name
+ucrm-branded-click-domain --policy-document file://scripts/aws/ucrm-branded-click-domain-policy.json` (auto mode blocks
+Claude from IAM writes); Claude then verifies with get tenant/cert calls using `--profile ucrm-app`. (6) Build per the packet. Later: M6e (blocked on `operational-email-ses`), check 15 review.
 
 ## Open findings (raise with Jafar)
 

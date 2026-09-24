@@ -1,0 +1,34 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "BrandedClickDomainTenants",
+			"Effect": "Allow",
+			"Action": [
+				"cloudfront:CreateDistributionTenant",
+				"cloudfront:GetDistributionTenant",
+				"cloudfront:GetDistributionTenantByDomain",
+				"cloudfront:UpdateDistributionTenant",
+				"cloudfront:DeleteDistributionTenant",
+				"cloudfront:ListDistributionTenants",
+				"cloudfront:GetManagedCertificateDetails",
+				"cloudfront:VerifyDnsConfiguration",
+				"cloudfront:GetDistribution",
+				"cloudfront:GetConnectionGroup"
+			],
+			"Resource": "*"
+		},
+		{
+			"Sid": "ClickDomainCertificates",
+			"Effect": "Allow",
+			"Action": ["acm:RequestCertificate", "acm:DescribeCertificate", "acm:ListCertificates"],
+			"Resource": "*"
+		},
+		{
+			"Sid": "ClickDomainTracking",
+			"Effect": "Allow",
+			"Action": ["ses:PutConfigurationSetTrackingOptions"],
+			"Resource": "*"
+		}
+	]
+}

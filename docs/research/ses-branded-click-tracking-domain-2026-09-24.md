@@ -181,27 +181,5 @@ returns `x-amz-ses-request-protocol: https` for that contractor.
 Covers everything the per-organization automation needs (create, check, attach certificate, disable, remove a
 tenant) and nothing that can change or delete the shared distribution or connection group.
 
-```json
-{
-	"Version": "2012-10-17",
-	"Statement": [
-		{
-			"Sid": "BrandedClickDomainTenants",
-			"Effect": "Allow",
-			"Action": [
-				"cloudfront:CreateDistributionTenant",
-				"cloudfront:GetDistributionTenant",
-				"cloudfront:GetDistributionTenantByDomain",
-				"cloudfront:UpdateDistributionTenant",
-				"cloudfront:DeleteDistributionTenant",
-				"cloudfront:ListDistributionTenants",
-				"cloudfront:GetManagedCertificateDetails",
-				"cloudfront:VerifyDnsConfiguration",
-				"cloudfront:GetDistribution",
-				"cloudfront:GetConnectionGroup"
-			],
-			"Resource": "*"
-		}
-	]
-}
-```
+The policy lives in `scripts/aws/ucrm-branded-click-domain-policy.json`; it keeps the test policy's ACM and
+SES statements and swaps `cloudfront:*` for the tenant actions only.
