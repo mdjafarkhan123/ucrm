@@ -4,9 +4,9 @@
 
 **Active part:** 7C — Work Report presentation: order, sections, before/after pairs (roadmap 7C).
 
-**Exact next action:** plan 7C — research how mature photo-report products (CompanyCam, Jobber, etc.) let a
-contractor order photos, group them into sections and pair before/after; grill Jafar on the choices; record
-approved behavior in a 7C part packet before any code. Issued `/w/` links must keep what the customer saw.
+**Exact next action:** product decisions approved — read `parts/7C-work-report-presentation.md`, load the
+SQL/Supabase/Svelte skills, design the schema for sections, pairs and order, then build: migration → editor →
+customer document → "changed since sent" notice → pgTAP + browser check on Raad LTD.
 
 **Blocker (campaign-wide):** the upload worker does not run locally; new uploads stay "Still being checked".
 
@@ -20,4 +20,4 @@ transaction; Raad LTD org `18f0d717-904e-48d8-bd99-9df7e3844cda`.
 "union type too complex" errors pre-date 7A. Supabase CLI is `npx supabase`; run SQL files with
 `npx supabase db query --linked -f <file>` from the repo root (~2 min limit per call).
 
-**Pointers:** roadmap 7C entry; `docs/files-media-behavior-contract.md` (work report sections).
+**Pointers:** `parts/7C-work-report-presentation.md`; `docs/files-media-behavior-contract.md` (work report sections).
