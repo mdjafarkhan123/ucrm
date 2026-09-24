@@ -13,7 +13,7 @@ own implementation. Production infrastructure remains behind Jafar's separate to
 | 6 | Ship safe one-click campaigns | Planned — owned by `marketing-growth` | Part 5 for SMS; protected email may precede SMS | Recipient eligibility, cancellation, partial failure and transactional-delivery protection are proven |
 | 7 | Ship a policy-approved Google review flow | Later — routed through `marketing-growth` | Completed-work truth; email or approved SMS | Permissions, consent, reminders, private feedback and current policy approval pass |
 | 8 | Productize only the wider-rollout needs shown by early customers | Waiting for controlled-launch evidence | Parts 1–7 as actually sold | Contractors can onboard, operate, reconcile and leave without routine staff/database help |
-| 9 | Prove production and launch gradually | Preparation may run beside Part 3; implementation awaits topology approval | Every capability sold in the controlled first launch | Staging, backup/restore, cutover/rollback, security, monitoring, failure and measured-load gates pass |
+| 9 | Prove production and launch gradually | In progress — corrected hybrid-pilot plan awaits P9A approval; no infrastructure implementation approved | Every capability sold in the controlled first launch | App packaging, staging, backup/restore, security, monitoring, failure and measured-load gates pass before controlled launch; self-hosted Supabase remains a separately approved later cutover |
 
 The controlled first launch waits for Parts 1–4 and 9. Start with a few closely supported paying contractors.
 Wider rollout waits for the necessary Part 8 work and evidence from that first group. No capacity claim is made

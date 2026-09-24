@@ -14,6 +14,17 @@
 - **Labor** — A Service classification for work performed by people. It is not a third Price book item type
   beside Product and Service.
 
+## Files and media
+
+- **File** — One organization-owned original stored once and reusable across records and documents. It is the
+  authoritative asset; using it in another place creates another link, not another copy. _Avoid_: Attachment
+  when referring to the stored asset itself.
+- **Attachment** — One use of a File on a Client, Request, Quote, Job, Visit, Invoice, message, or other record.
+  It supplies context without becoming a separate stored copy. _Avoid_: File when referring only to that use.
+- **File Manager** — The contractor-wide workspace and complete catalog of the organization's Files. Every
+  uploaded or recorded file appears there automatically, regardless of where it entered the product. _Avoid_:
+  Client file library when referring to the organization-wide system.
+
 ## Client relationships
 
 - **Client** — The contractor's complete relationship with a person or company, whether prospective or paying. _Avoid_: Contact or account when referring to the relationship record.

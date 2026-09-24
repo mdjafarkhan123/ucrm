@@ -5,6 +5,15 @@ Approved: 2026-08-15
 Amended: 2026-08-29 — platform-managed Cloudflare activation and per-domain Brevo inbound-webhook behavior
 (the "Domain provisioning and sender identity" activation paragraph) was approved and added on this date;
 it was not part of the original 2026-08-15 approval.  
+Amended: 2026-09-19 — Amazon SES is the contractor operational and Marketing email provider in the dedicated
+production workload account; Brevo is limited to UCRM/Jafar platform email. Contractor replies use SES receipt
+rules, private S3, SNS, SQS, and the existing UCRM Conversations worker contract.
+Amended: 2026-09-23 — Brevo→SES cutover decisions (Jafar): a clean switch with no Brevo fallback for contractor
+email; the Platform Owner organization page shows one Email card with separate "Everyday email + replies" and
+"Marketing email" rows, each with its own set-up/check action and status; a contractor without a verified sender
+gets a "Request email setup" action in Settings → Email (they enter their domain; the request appears in the
+Platform Owner "Needs attention" list, and the send-refusal message links there); raw inbound MIME in S3 is kept
+30 days; the live-mailbox launch-gate rehearsal runs on `upliftcontractor.com` itself.
 Scope: Contractor operational email, inbound replies, tenant controls, and Platform Owner controls
 
 Research evidence lives in:
@@ -14,6 +23,7 @@ Research evidence lives in:
 - `docs/research/email-reputation-thresholds.md`
 - `docs/research/ghl-email-gap-review.md`
 - `docs/research/jobber-email-gap-review.md`
+- `docs/research/amazon-ses-contractor-email-inbound-architecture-2026-09-19.md`
 
 This contract does not reopen or alter approved phone or SMS behavior. Marketing email, broad
 inbound email, and connected Gmail or Outlook mailboxes are later independently gated work.
@@ -31,21 +41,22 @@ Every package can receive replies to UCRM-sent operational email in Conversation
 this email-thread access even though broader multichannel inbox capabilities may remain a higher
 package entitlement.
 
-## Brevo and tenant isolation
+## SES and tenant isolation
 
-Launch with one platform-owned Brevo account and one server-held credential. Keep the email provider
-behind a narrow adapter so an organization can move to a Brevo sub-account or another provider later.
+Contractor-to-customer operational email and future Marketing email use Amazon SES in the dedicated UCRM
+production workload account in US East (N. Virginia). Brevo is limited to UCRM/Jafar platform email. Keep the
+provider behind a narrow adapter so a future reviewed provider move remains possible.
 
 Tenant isolation is enforced in UCRM:
 
-- one verified sending subdomain and one separate receiving subdomain per organization;
+- one SES-verified sending subdomain and one separate SES receiving subdomain per organization;
 - globally unique domain claims backed by database constraints;
 - organization-scoped sends, callbacks, aliases, suppressions, usage, and audit history;
 - an account-wide emergency pause and organization-specific pauses;
 - no provider credential in browser code or contractor-visible payloads.
 
-Platform and security email uses a separate UCRM system identity. Contractor-to-customer email never
-falls back to that identity.
+Platform and security email uses a separate Brevo-backed UCRM system identity. Contractor-to-customer email
+never falls back to that identity.
 
 ## Domain provisioning and sender identity
 
@@ -54,24 +65,27 @@ Jafar claims, verifies, replaces, restricts, and removes contractor domains. The
 prefixes, but sending and receiving domains must differ.
 
 Activation is platform-managed. After the contractor's Cloudflare zone has passed a mailbox-safe import,
-Jafar starts one resumable activation from the organization page. UCRM retrieves the current provider-issued
-records, writes only the approved sending and receiving subdomain records through a server-held, zone-scoped
-Cloudflare credential, verifies both domains, and registers the receiving domain for inbound parsing.
-Contractors never copy DNS records. DNS propagation and partial provider failure remain visible, retryable
-states; activation never overwrites root MX, mailbox authentication, or an unexpected occupied subdomain.
-Provider record counts are discovered at activation time rather than fixed in product behavior.
+Jafar starts one resumable activation from the organization page. UCRM retrieves SES-issued identity and DKIM
+records, writes only approved `mail`, `reply`, and optional `bounce.mail` subdomain records through a server-held,
+zone-scoped Cloudflare credential, verifies the SES identities, and adds the `reply` MX for SES receipt-rule
+ingestion. Customer reply MIME is stored privately in S3 and handed to the existing Conversations worker through
+SNS and SQS; delivery/bounce/complaint events use a separate SES configuration-set queue. Contractors never copy
+DNS records. DNS propagation and partial provider failure remain visible, retryable states; activation never
+overwrites root MX, mailbox authentication, or an unexpected occupied subdomain. Provider record counts are
+discovered at activation time rather than fixed in product behavior.
 
 **Pre-first-paying-contractor launch gate (added 2026-08-29).** The internal activation fixture
-(`reply.test.upliftcontractor.com`) proves Cloudflare DNS writing, Brevo reconciliation, webhook registration,
+(`reply.test.upliftcontractor.com`) proves Cloudflare DNS writing, SES identity and receipt-rule reconciliation,
 database state, reply-alias creation, and inbound routing — but it does NOT prove preservation of a live
 external root mailbox. Before onboarding the first paying contractor, rehearse the full activation on a domain
 that has an ACTIVE external mailbox (Hostinger/GoDaddy/Google/Microsoft) and verify normal inbound and outbound
 mailbox operation both before and after the nameserver/DNS management changes.
 
-Brevo verification plus passing SPF and DKIM is required before sending. DMARC with at least `p=none`
-is required before higher-volume optional email. Domain health is checked at least daily and on
-provider authentication failures. Suspicious changes, prolonged failure, replacement, or organization
-transfer require ownership revalidation.
+SES verification plus passing Easy DKIM is required before sending. A custom MAIL FROM subdomain is used for SPF
+alignment and never doubles as a normal sending or reply subdomain. DMARC with at least `p=none` is required
+before higher-volume optional email. Domain health is checked at least daily and on provider authentication
+failures. Suspicious changes, prolonged failure, replacement, or organization transfer require ownership
+revalidation.
 
 Organization administrators may create and disable sender addresses after domain verification.
 Regular staff use only identities allowed by their role or assignment. Jafar may inspect, restrict, or
@@ -150,7 +164,7 @@ customer's verbal preference with an audit note.
 
 A complaint immediately suppresses non-security mail from that organization. A hard bounce prevents
 further sending until the address is corrected and verified. UCRM owns an auditable suppression record
-and reconciles it with Brevo.
+and reconciles it with SES.
 
 Organization administrators may request removal of a corrected hard-bounce suppression. Only Jafar may
 approve complaint-suppression removal. Removal requires a reason, evidence, and any required renewed
@@ -267,7 +281,7 @@ rewrite secure quote, invoice, payment, or portal links for click tracking.
 
 ## Queueing, retries, and history
 
-Create an application-owned outbound record before calling Brevo. Every logical send has a durable
+Create an application-owned outbound record before calling SES. Every logical send has a durable
 idempotency key and retains the provider message identifier. Webhook processing is authenticated,
 organization-resolved, idempotent, and safe under out-of-order delivery.
 
@@ -310,15 +324,16 @@ Recoverable organization closure preserves inbound routing and provider resource
 permanent deletion previews active aliases, queued messages, and recent replies.
 
 Permanent purge removes messages, bodies, attachments, aliases, sender addresses, templates, consent and
-suppression records, provider identifiers, Brevo domains, and webhooks. Provider cleanup failure remains a
-retryable operation and cannot be reported as complete. The existing non-personal deletion receipt may
+suppression records, provider identifiers, SES identities, receipt rules, configuration sets, and queues.
+Provider cleanup failure remains a retryable operation and cannot be reported as complete. The existing non-personal deletion receipt may
 contain aggregate cleanup results but no recipients, content, domains, or message identifiers.
 
-Provider cleanup covers the organization-owned Brevo resources UCRM actually provisions and tracks: its
-sending/receiving domains, sender addresses, and receiving-domain webhook registration. Every receiving
-domain registers with Brevo against the same secured UCRM inbound endpoint. Persist each opaque Brevo webhook
-id at provisioning and include it in retryable replacement and permanent cleanup; deleting one organization
-must not alter another organization's registration or the shared endpoint secret.
+Provider cleanup covers the organization-owned SES resources UCRM actually provisions and tracks: sending and
+receiving identities, sender addresses, custom MAIL FROM settings, receipt-rule entries, configuration sets, and
+their opaque provider identifiers. Every receiving domain is handled by the single owned receipt-rule set and the
+same secured UCRM worker path. Persist each provider identifier at provisioning and include it in retryable
+replacement and permanent cleanup; deleting one organization must not alter another organization's resources or
+the shared worker secrets.
 
 ## Platform Owner controls
 

@@ -7,22 +7,22 @@ production evidence.
 
 ## Current state
 
-- Parts 1–4 complete. Automations switched on for contractors (`AUTOMATION_JOURNEY_READY = true`) and Part 4
-  committed 2026-09-18.
-- Parts 5–8 wait on evidence from the controlled first launch. Part 9 (prove production and launch gradually)
-  is the only remaining dependency-ready part — its preparation may run now, but implementation awaits Jafar's
-  topology approval per CLAUDE.md's production cutover gate.
+- Parts 1–4 complete. Parts 5–8 wait on controlled-launch evidence or their named dependencies.
+- Part 9 planning resumed 2026-09-20. No infrastructure has been built or changed.
+- The corrected plan recommends the easiest robust pilot: immutable app image on one VPS, managed Supabase for
+  database/Auth during the pilot, external R2, current DB-driven jobs, and no speculative Redis/BullMQ.
+- Self-hosted Supabase remains a later rehearsed destination rather than a first-customer dependency.
 
 ## Exact next action
 
-Ask Jafar whether to start Part 9 preparation (staging rehearsal plan, backup/restore, cutover/rollback,
-security, monitoring, failure and load-test gates) — present the concrete topology and migration plan for his
-approval before any infrastructure change, per CLAUDE.md's Approval boundary. Sonnet is enough to start
-research/planning; confirm model choice again once implementation scope is known.
+Obtain Jafar's explicit P9A approval or requested changes for the hybrid pilot topology, proposed 15-minute RPO,
+four-hour RTO, one-VPS application limitation, separate staging/restore resource, and staged delivery gates.
+After approval, start P9B application packaging only. Do not provision infrastructure or touch production data.
 
 ## Essential pointers
 
+- `docs/production-readiness-plan.md` — corrected recommendation awaiting P9A approval.
+- `docs/research/production-operations-pattern-2026-09-20.md` — current primary-source operations research.
 - `Memory/campaigns/crm-launch-readiness/ROADMAP.md` Part 9 row.
-- `CLAUDE.md` Production cutover gate and Approval boundary sections.
 
-Resume command: `continue CRM launch-readiness Part 9 preparation`.
+Resume command: `continue CRM launch-readiness Part 9 from the P9A approval gate`.

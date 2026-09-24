@@ -419,7 +419,7 @@
 			unit_cost_minor: 0,
 			line_total_minor: line.line_total_minor ?? 0,
 			line_cost_total_minor: 0,
-			image_attachment_id: null
+			image_file_id: null
 		}))
 	);
 

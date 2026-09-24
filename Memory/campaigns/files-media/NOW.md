@@ -4,13 +4,11 @@
 
 **Active part:** 7C — Work Report presentation: order, sections, before/after pairs (roadmap 7C).
 
-**Exact next action:** 7C built and committed (`0683090` database, `94f391c` app); pgTAP 52/52 local, unit
-12/12. Waiting on Jafar to approve pushing `20260924233000_work_report_sections_order_pairs.sql` (dry-run shows
-only it). The migration aborts itself if any existing report's customer document would change. After the push:
-browser check on a Raad LTD job — add photos (label pre-sort), drag + arrow moves, heading + note, pair + swap +
-split, Preview as client (2-across, pair side by side, phone width), Copy link → rearrange → "changed since you
-sent it" notice → Copy updated link clears it. Then close 7C and select 7D. The old local db was brought up to
-date with `npx supabase migration up --local`; test with `npx supabase test db --local <files>`.
+**Exact next action:** 7C built (`0683090` database, `94f391c` app) and its migration is live (pushed
+2026-09-24). Browser check on a Raad LTD job — add photos (label pre-sort), drag + arrow moves, heading + note,
+pair + swap + split, Preview as client (2-across, pair side by side, phone width), Copy link → rearrange →
+"changed since you sent it" notice → Copy updated link clears it. Then close 7C and select 7D. Local db: test
+with `npx supabase test db --local <files>`.
 
 **Blocker (campaign-wide):** the upload worker does not run locally; new uploads stay "Still being checked".
 

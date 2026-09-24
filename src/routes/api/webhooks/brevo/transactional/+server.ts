@@ -44,6 +44,14 @@ export const POST: RequestHandler = async ({ request }) => {
 	});
 	if (error?.code === '23505')
 		return json({ accepted: true, duplicate: true }, { headers: { 'cache-control': 'no-store' } });
+	if (error?.code === '23503') {
+		// The tag names a delivery intent that does not exist (deleted, or mail sent outside the outbox).
+		// A retry can never succeed, so acknowledge and skip rather than have Brevo resend it forever.
+		console.warn('Brevo transactional webhook names an unknown delivery intent; skipping.', {
+			intentId
+		});
+		return json({ accepted: true, skipped: true }, { headers: { 'cache-control': 'no-store' } });
+	}
 	if (error) {
 		// A storage failure here is transient: the event is real and not yet durably recorded, so ask
 		// Brevo to retry rather than dropping it. 429 is the provider's back-off-and-resend signal.

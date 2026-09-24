@@ -67,6 +67,16 @@ opt-out model:
 > message category, not one global "don't text me." Our per-contact SMS opt-out is coarser; matching
 > Jobber means per-category preferences (quote / invoice / reminder / follow-up / review).
 
+> **Observed live 2026-09-20 (EZ HVAC trial account):** the client detail page has three tabs —
+> *Client information*, *Communication*, *Files and media*. The **Communication tab is a message history
+> only** ("This client's emails, texts, and chats will appear here"), not a settings surface. Consent /
+> messaging preferences live **inside the Edit Client dialog**: a per-phone **"Receives messages"** toggle
+> plus a **"Communication settings"** link that opens the per-category toggles. So Jobber treats consent as a
+> plain on/off preference edited in the block dialog, with **no evidence trail** (no source/date/actor). For
+> our *marketing-email* consent we deliberately go further: we keep the append-only evidenced ledger
+> (source, disclosure, actor, occurred_at) that GDPR/CAN-SPAM records require — placement like Jobber's edit
+> dialog, behavior richer than a toggle.
+
 ### 1.3 Relationship connections
 
 `clientProperties` (`PropertyConnection`), `contacts` (`ContactModelConnection`), `requests`, `quotes`,

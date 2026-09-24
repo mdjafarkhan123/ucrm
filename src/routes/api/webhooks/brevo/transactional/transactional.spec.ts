@@ -102,6 +102,19 @@ describe('Brevo transactional callback route', () => {
 		expect(client.rpc).not.toHaveBeenCalled();
 	});
 
+	it('acknowledges and skips an event for an unknown delivery intent instead of retrying forever', async () => {
+		const client = clientWith({ error: { code: '23503' } });
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
+
+		const response = await POST(
+			eventWith({ event: 'delivered', id: 9 }, 'Bearer transactional-webhook-token')
+		);
+
+		expect(response.status).toBe(200);
+		expect(await response.json()).toEqual({ accepted: true, skipped: true });
+		expect(client.rpc).not.toHaveBeenCalled();
+	});
+
 	it('asks the provider to retry when the event could not be durably stored', async () => {
 		const client = clientWith({ error: { code: '08006' } });
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);

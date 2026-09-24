@@ -105,7 +105,7 @@
 				unit_price_minor: line.unit_price_minor ?? 0,
 				unit_cost_minor: line.unit_cost_minor ?? 0,
 				is_taxable: line.is_taxable,
-				image_attachment_id: line.image_attachment_id
+				image_file_id: line.image_file_id
 			})) satisfies RequestPricingLineInput[];
 	}
 
@@ -125,7 +125,7 @@
 				unit_price_minor: line.unit_price_minor ?? 0,
 				unit_cost_minor: line.unit_cost_minor ?? 0,
 				is_taxable: line.is_taxable,
-				image_attachment_id: line.image_attachment_id
+				image_file_id: line.image_file_id
 			})) satisfies RequestPricingLineInput[];
 	}
 
@@ -258,7 +258,7 @@
 			quantity: 1,
 			unit_price_minor: shares[index].base,
 			unit_cost_minor: 0,
-			image_attachment_id: null
+			image_file_id: null
 		}));
 	}
 

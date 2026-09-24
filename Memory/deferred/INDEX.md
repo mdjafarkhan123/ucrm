@@ -15,7 +15,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Active member's sign-in email not visible, recovery path unclear](active-member-email-not-visible-and-recovery-path-unclear.md) |
 | P2 | [`Last communication` rail card on the client page](last-communication-rail-card-on-the-client-page.md) |
 | P2 | [No admin-alert delivery for loop-detected inbound threads](no-admin-alert-delivery-mechanism-for-loop-detected-inbound-threads.md) |
-| P2 | [Brevo transactional webhook retries forever on an unknown delivery_intent_id](brevo-transactional-webhook-unknown-intent-retry-storm.md) |
 | P2 | [Composer day-two scope: CC, attachments, formatting, channel tabs](composer-day-two-scope.md) |
 | P2 | [Client documents drop line photos and need a completeness pass](client-documents-drop-line-photos-and-need-a-completeness-pass.md) |
 | P2 | [A customer file re-resolves the whole quote document](a-customer-file-re-resolves-the-whole-quote-document.md) |
@@ -51,15 +50,12 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [`/get-started` page weight](get-started-page-weight.md) |
 | P3 | [Client photos are one request each](client-photos-are-one-request-each.md) |
 | P3 | [ClientPicker and CatalogItemPicker can show a stale label after an external value revert](clientpicker-and-catalogitempicker-can-show-a-stale-label-after-an-external-value-revert.md) |
-| P3 | [Eleven older trigger functions in `private` are executable by everyone](eleven-older-trigger-functions-in-private-are-executable-by-everyone.md) |
 | P3 | [Missing business setup does not yet block the action that needs it](missing-business-setup-does-not-yet-block-the-action-that-needs-it.md) |
-| P3 | [Guide contractors to set up a sending email when it is missing](email-sender-setup-flow.md) |
 | P3 | [No image on a price list item](no-image-on-a-price-list-item.md) |
 | P3 | [Non-admin email-correction browser verification (Part 7)](non-admin-email-correction-browser-verification-part-7.md) |
 | P3 | [Replaced logo uploads are kept rather than cleaned up](replaced-logo-uploads-are-kept-rather-than-cleaned-up.md) |
 | P3 | [Third KPI card on the Requests list has no real data source](third-kpi-card-on-the-requests-list-has-no-real-data-source.md) |
 | P3 | [Four more composite foreign keys use `on delete set null` without a column list](more-composite-foreign-keys-null-the-organization-on-delete.md) |
-| P3 | [Two unindexed foreign keys on the invitations table](two-unindexed-foreign-keys-on-the-invitations-table.md) |
 | P3 | [Staff own actions lag behind their own realtime echo](staff-own-actions-lag-behind-realtime-echo.md) |
 | P3 | [Invoice email sends to the primary email only, not "+ billing contact"](invoice-email-sends-to-primary-only-not-billing-contact.md) |
 | P3 | [The payment-schedule dialog keeps its refusal banner after the numbers are fixed](job-payment-schedule-dialog-keeps-a-stale-reconciliation-banner.md) |

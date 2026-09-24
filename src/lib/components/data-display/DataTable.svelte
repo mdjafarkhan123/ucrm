@@ -182,6 +182,10 @@
 <style lang="scss">
 	.data-table {
 		overflow-x: auto;
+		// Lets this box shrink inside a flex/grid ancestor instead of forcing the whole layout wide to fit
+		// the table's nowrap min-content width; without it `overflow-x: auto` here never gets the chance to
+		// scroll internally because the ancestor grows to fit the table first.
+		min-width: 0;
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		background: var(--color-surface);

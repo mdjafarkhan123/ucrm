@@ -159,7 +159,7 @@
 					is_taxable: line.is_taxable ?? true,
 					line_total_minor: line.quantity * line.unit_price_minor,
 					line_cost_total_minor: line.quantity * line.unit_cost_minor,
-					image_attachment_id: line.image_attachment_id ?? null,
+					image_file_id: line.image_file_id ?? null,
 					line_kind: line.line_kind ?? 'priced',
 					selection_kind: line.selection_kind ?? 'required',
 					is_recommended: line.is_recommended ?? false,

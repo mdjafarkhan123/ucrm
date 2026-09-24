@@ -330,7 +330,7 @@
 				unit_price_minor: line.unit_price_minor,
 				unit_cost_minor: line.unit_cost_minor,
 				is_taxable: line.is_taxable ?? true,
-				image_attachment_id: line.image_attachment_id ?? null
+				image_file_id: line.image_file_id ?? null
 			}));
 
 		await saveJobLines(jobId, expectedRevision, scope);
