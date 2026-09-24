@@ -80,6 +80,8 @@
 			attachedTo = result.title;
 			void queryClient.invalidateQueries({ queryKey: ['files', 'list'] });
 			void queryClient.invalidateQueries({ queryKey: ['files', 'detail'] });
+			// A photo put on a job or visit becomes a work report choice.
+			void queryClient.invalidateQueries({ queryKey: ['jobs', 'report'] });
 			onAttached?.();
 		} catch (error) {
 			attachError = error instanceof Error ? error.message : 'That file could not be attached.';

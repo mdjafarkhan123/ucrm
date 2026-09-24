@@ -135,6 +135,8 @@
 		void queryClient.invalidateQueries({ queryKey: ['files', 'list'] });
 		void queryClient.invalidateQueries({ queryKey: fileDetailKey(fileId) });
 		void queryClient.invalidateQueries({ queryKey: fileFoldersKey });
+		// Trashing, restoring or unlinking a photo changes what a work report can show.
+		void queryClient.invalidateQueries({ queryKey: ['jobs', 'report'] });
 	}
 
 	async function runAction(action: () => Promise<unknown>, done: () => void) {

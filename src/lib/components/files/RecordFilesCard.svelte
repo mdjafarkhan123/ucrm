@@ -121,6 +121,8 @@
 	function refresh() {
 		void queryClient.invalidateQueries({ queryKey: ['files', 'list'] });
 		void queryClient.invalidateQueries({ queryKey: ['files', 'detail'] });
+		// A job's or visit's photos are the work report editor's choices.
+		void queryClient.invalidateQueries({ queryKey: ['jobs', 'report'] });
 		onChange?.();
 	}
 
