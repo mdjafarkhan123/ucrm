@@ -6,28 +6,21 @@ Ship simple, safe contractor Marketing: one-off email first, with every approved
 
 ## State
 
-M1-M5 complete. M6a, M6b, M6c, M6f closed (M6f card browser-verified 2026-09-24).
+M1-M5 complete. M6a, M6b, M6c, M6d, M6f closed (M6d branded click links live-verified 2026-09-24).
 
 ## Exact next action
 
-M6d branded click tracking, option A approved (CloudFront SaaS Manager, `click.news.<root>`, HttpsPolicy REQUIRE;
-research `docs/research/ses-branded-click-tracking-domain-2026-09-24.md`). Jafar approved the live test on Raad LTD's
-own test domain. Done 2026-09-24: multi-tenant distribution `E3BC29BRFLB91P` (origin `r.us-east-1.awstrack.me`
-https-only, AllViewer, CachingDisabled), default connection group `cg_3Jl58Y3IZa93OHuOotP7eXXB7K0`, routing
-endpoint `d30azkeso6lzew.cloudfront.net`. IAM inline policy `ucrm-branded-click-domain` is `scripts/aws/ucrm-branded-click-domain-policy.json`.
-AWS CLI: `--profile ucrm-app` (credential_process `scripts/aws-credentials-from-env.sh`).
-Done 2026-09-24 (live): CNAME added, tenant `dt_3JltenyORfWpxcKagdGM7XAoQpi` active with its issued cert,
-HTTPS check passed, and Raad LTD's config set now tracks via `click.news.test.upliftcontractor.com` (REQUIRE).
-Findings are in the research doc's "Live test findings". (4) PASSED: real Gmail send, branded click + open reached Results;
-test campaign deleted (Jafar approved), allowance override ended. IAM tightened 2026-09-24 (scoped policy
-applied and verified: tenant/cert reads work, distribution-level calls denied). Next: (5) Jafar approves the build
-plan in `parts/m6d-branded-links.md`. (6) Build per the packet. Later: M6e (blocked on `operational-email-ses`), check 15 review.
+Nothing dependency-ready to build. Remaining: M6e (blocked on `operational-email-ses` -- re-run the shared-SES-rate
+load check after operational email moves to SES), then blueprint §19 check 15 review with Jafar. Ask Jafar which to
+pick up, or pause.
 
 ## Open findings (raise with Jafar)
 
 - Marketing wake cron jobs fail every minute (Vault target URLs unset) -- production-cutover work.
+- Production AWS account needs the one-time branded-links setup (research doc's last section) at cutover.
 - 2 harmless leftover messages in `ucrm-ses-events-dlq`; Jafar to clear via AWS console.
 - `npx supabase test db` has many pre-existing "Bad plan" failures outside marketing's scope.
+- `svelte-check` has 3 pre-existing "union type too complex" errors (pipeline drawer, app layout, new invoice).
 - Jafar gave standing approval (2026-09-24) to reopen Raad LTD's Marketing allowance override whenever a test needs it.
 - Blueprint §12 Results Q4 (cross-campaign "strongest") left for the list page's insight cards, not built.
 - Old test campaign `cce6af97-...` fails to open (ErrorState); undiagnosed, low priority.

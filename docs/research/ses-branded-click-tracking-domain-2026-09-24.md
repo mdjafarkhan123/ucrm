@@ -187,3 +187,19 @@ tenant) and nothing that can change or delete the shared distribution or connect
 
 The policy lives in `scripts/aws/ucrm-branded-click-domain-policy.json`; it keeps the test policy's ACM and
 SES statements and swaps `cloudfront:*` for the tenant actions only.
+
+## One-time setup per AWS account (production cutover step)
+
+Built into the app 2026-09-24 (`branded-click-domain.ts`); each contractor's tenant, certificate, CNAME, and SES
+tracking option are automatic from the Jafar panel. Each AWS account (the production one included) needs, once, by hand:
+
+1. A multi-tenant CloudFront distribution: origin `r.<region>.awstrack.me`, HTTPS-only, origin request policy
+   AllViewer (forwards Host), cache policy CachingDisabled.
+2. Its default connection group; note the routing endpoint (`dXXXX.cloudfront.net`).
+3. The app's IAM user gets `scripts/aws/ucrm-branded-click-domain-policy.json`.
+4. Server env: `AWS_CLICK_DISTRIBUTION_ID`, `AWS_CLICK_CONNECTION_GROUP_ID`, `AWS_CLICK_ROUTING_ENDPOINT`
+   (see `.env.example`). Without them branded links are skipped and links keep Amazon's address.
+
+Dev account values: distribution `E3BC29BRFLB91P`, group `cg_3Jl58Y3IZa93OHuOotP7eXXB7K0`, endpoint
+`d30azkeso6lzew.cloudfront.net`. Full in-app path (remove → turn on → DNS wait → certificate → attach → working)
+passed live on Raad LTD 2026-09-24.
