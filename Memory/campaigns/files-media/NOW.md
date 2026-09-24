@@ -4,10 +4,12 @@
 
 **Active part:** 7B-4 — clients/properties/requests/invoices SELECT policies checked once per query (roadmap 7B-4).
 
-**Exact next action:** Load the SQL skill gates, read the live SELECT policies on `clients`, `properties`,
-`requests`, `invoices`, and rewrite them in the once-per-query form `20260924190000` used for `files`. Prove
-identical visibility for owner, finance, sales, office and field in a rolled-back old-vs-new digest check at
-scale, measure before/after, then ask Jafar to approve the push. After that, 7C.
+**Exact next action:** Jafar approves the push of `20260924210000_record_views_checked_once_per_query.sql`
+→ `npx supabase db push --linked` (dry-run first) → spot-check Clients, Requests, Invoices lists and Files search
+on Raad LTD → close 7B-4 and select 7C. Rolled-back tests, old vs new, identical rows for all six roles: admin at
+20k clients, clients list 13 s → 9 ms; owner/office/sales/finance/field at 5k, 3.3–5.5 s → under 0.07 s; field
+new-only at 20k under 0.07 s. The old rules exceed the 2-min limit at 20k for most roles; turning that limit off
+on the live database was blocked, so old-vs-new sameness is proven at 5k (admin at 20k).
 
 **Blocker (campaign-wide):** the upload worker does not run locally; new uploads stay "Still being checked".
 
