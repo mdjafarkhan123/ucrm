@@ -27,15 +27,31 @@ the "Upload" button had no accessible name in two places sharing the same bug: `
 and `PendingFilesCard.svelte` (used by every create-form's file picker — Client, Request, Job expense, Invoice,
 Quote). Both got `aria-label="Upload files"`. Re-ran after fixing: 0 violations across all six states.
 
-**Not yet done:** only the owner role and only the File Manager's own pages were checked — no pass yet on
-role-restricted variants (office/sales/finance/field), nor on the create-form dialogs that reuse
-`PendingFilesCard` on their own pages, nor keyboard-only (tab-order) navigation without a mouse.
+**Not yet done (accessibility):** only the owner role and only the File Manager's own pages were checked —
+no pass yet on the create-form dialogs that reuse `PendingFilesCard` on their own pages, nor keyboard-only
+(tab-order) navigation without a mouse. Accessibility fixes are committed (`96c8c76`).
 
-**Exact next action:** commit the accessibility fixes (`@axe-core/playwright` install + the two `aria-label`
-fixes + `role="region"`), then continue Part 8C with either the security/permission-evidence track (all five
-non-owner roles against files.export/files.share/Trash/purge) or the scale-measurement track (Part 8B's
-export build time and 8D's untested surfaces at a large file count) — ask Jafar which to do first, or keep
-going in whatever order seems natural, matching how he answered last time.
+**8C security/permission slice done 2026-09-25 (nothing to commit — pure verification, no code changed):**
+queried `role_permissions` live for the ground truth matrix (owner: view+manage+share+trash+export; admin/
+office: view+manage+share+trash, no export; sales/finance: view only; field: none of files.* — field's file
+access is entirely job-scoped via `on_record` reads gated on the record's own permission, confirmed separately).
+Logged in as all six real Raad LTD role accounts from CLAUDE.md and hit the actual API routes directly
+(Playwright's `context.request`, sharing the login cookie) — not just checked what the UI hides:
+`GET /api/files` returns `can_manage/can_share/can_trash/can_export` matching the matrix exactly for every
+role; `POST /api/files/shares`, `POST /api/files/uploads`, `POST /api/files/[id]/trash`, `POST
+/api/files/export`, and `GET /api/files/export/[id]/download` all correctly 403 for every role the matrix
+says shouldn't reach them (probes used well-formed payloads per each Zod schema, so the 403 is the
+permission gate itself, not a validation-error false positive). Field's `GET /api/files` (general library)
+correctly 403s, while its job-scoped `?view=on_record&entity_type=job&entity_id=<their assigned job>` read
+correctly 200s. Zero gaps found — no fix needed. Cross-tenant isolation itself (a different org reaching
+Raad LTD's files) was not re-tested here; it's covered by each part's own pgTAP (Part 2's 49 assertions,
+8B's 24/24) at the RLS layer, a different layer than this session's role/permission-route check.
+
+**Exact next action:** the only piece left to close Part 8C is measured (not assumed) performance at a
+large file count — Part 8B's export build time is explicitly untested at scale (needs the cron active
+first), and captions/label search (7B-2) and the Shared-with-customers list (7D-2a) were never load-tested
+the way the core catalog was in 7B-3/7B-4. Ask Jafar whether to do that now or treat it as blocked until the
+export cron is active on a real deploy.
 
 **Blocker (campaign-wide):** the upload/processing worker does not run locally; nothing async can be
 browser-verified end to end. Test reads with existing checked photos (Raad LTD has 12).
