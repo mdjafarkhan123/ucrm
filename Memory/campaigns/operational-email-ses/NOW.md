@@ -1,31 +1,34 @@
 # Operational Email on SES: Current Checkpoint
 
-## Goal
-
-Contractor operational email (setup, sending, events, replies) runs on Amazon SES instead of Brevo.
+Goal: contractor email (setup, sending, events, replies) runs only on Amazon SES; zero Brevo on the contractor
+side. Brevo stays only for platform/Jafar emails (`src/lib/server/email/brevo.ts`, untouched).
 
 ## State
 
-Parts 1, 2a, 2b, 3 all done and committed (`7de601a` in worktree `../Ucrm-email-ses`, branch
-`operational-email-ses`). Part 3's migration `20260925130000_operational_email_ses_sending.sql` is live on the
-shared remote database. Live-verified on Raad LTD: a real SES-backed sender created through the Settings UI,
-assigned to a staff member, a real reply sent and confirmed Delivered from a live SES event.
-
-Part 4 (customer replies on SES) is next. Per ROADMAP.md it needs Jafar's approval before any AWS resource is
-created -- present the concrete receipt-rule-set / S3 / SNS / SQS+DLQ topology for approval first, do not start
-building.
+Part 6 approved by Jafar 2026-09-25. Worktree `../Ucrm-email-ses`, branch `operational-email-ses`, last commit
+`beb3dda`. Done: step 1 (replies folded into Set up/Check), 2a (sending SES-only), 2b (owner routes SES-only;
+Remove now tears down sending + replies via `teardownOperationalDomain`), 2c (Brevo webhooks/inbound gone),
+2d prep (`ses-organization-cleanup.ts` + SES tenant/config-set delete helpers, not yet wired).
 
 ## Exact next action
 
-Read `ROADMAP.md`'s Part 4 row and "Known constraints", then present the Part 4 AWS topology to Jafar for
-approval before writing any code or creating any AWS resource.
+Finish step 2d: apply `Memory/campaigns/operational-email-ses/closure-cron-wip.patch` in the worktree
+(`git apply`), rewrite the provider tests in `organization-closure-cron.spec.ts` for SES, then delete
+`src/lib/server/communications/brevo.ts` + spec, Brevo inbound helpers in `email/env.ts`, contractor Brevo env
+keys (keep `BREVO_API_KEY`), and fix Brevo comments in settings/cleanup routes, email-health, twilio inbound.
+Delete the patch file once applied. Then step 3.
+
+## Step 3 needs (DB migration)
+
+Tables SES-only (provider checks/defaults; `record_communication_inbound_message` default 'brevo'); retiring
+a sending row via `finalize_communication_email_domain_removal` must also retire the org's receiving row;
+`apply_organization_purge` returns one `{kind:'ses_organization', provider_id:<org id>}` instead of Brevo ids;
+check for pending Brevo purge receipts; delete Raad's Brevo rows.
 
 ## Blockers
 
-Jafar's approval, not yet given, before creating AWS resources for Part 4.
+Live test (step 5) needs `cloudflared tunnel run` and Jafar sending replies. AWS: `aws --profile ucrm`
+(`aws sso login --sso-session ucrm`). Copy sibling files-media migrations untracked into worktree before `db push`.
+Known gap: org purge leaves Marketing CloudFront click-domain resources (marketing campaign's concern).
 
-## Pointers
-
-`docs/contractor-email-contract.md`; ROADMAP.md Part 4 row and "Known constraints" (includes a non-obvious
-sender-assignment rule found live-testing Part 3).
 Resume: `continue operational email ses`.
