@@ -8,6 +8,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Background jobs have no production scheduler decision](background-jobs-have-no-production-scheduler-decision.md) |
 | P1 | [Removing a saved line photo leaves the file in R2](removing-a-saved-line-photo-leaves-the-file-in-r2.md) |
 | P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
+| P1 | [Production AWS account needs the one-time SES branded-click-links setup](production-aws-ses-branded-click-links-setup.md) |
 | P2 | [A full page load can crash hydration and leave the previous page on screen](full-page-load-hydration-crash-leaves-the-previous-page-on-screen.md) |
 | P2 | [Issued invoices cannot be corrected from the browser](issued-invoices-cannot-be-corrected-from-the-browser.md) |
 | P2 | [Resolving a chat identity does not stop the next conflict](resolving-a-chat-identity-does-not-stop-the-next-conflict.md) |
@@ -45,7 +46,9 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [A recorded payment cannot be edited, deleted, or split across invoices](payments-cannot-be-edited-deleted-or-split-across-invoices.md) |
 | P2 | [Two job billing-reminder modes never raise a reminder](two-job-billing-reminder-modes-raise-no-reminder.md) |
 | P2 | [Client detail's financial summary widget is empty for everyone, not just some roles](client-financial-summary-widget-shows-empty-placeholders-for-everyone.md) |
+| P2 | [Invoices list KPI cards (Outstanding, Overdue, Collected) are hard-coded placeholders](invoices-list-kpi-cards-are-hard-coded-placeholders.md) |
 | P2 | [Disconnecting Stripe expires open checkouts: code-complete, never live-tested](stripe-disconnect-open-checkout-expiry-not-live-tested.md) |
+| P2 | [Marketing drain tail trickles and SES event handling falls behind](marketing-drain-tail-trickle-and-ses-event-lag.md) |
 | P3 | [Offline field records on site (Jobs 15f)](offline-field-records-on-site.md) |
 | P3 | [`/get-started` page weight](get-started-page-weight.md) |
 | P3 | [Client photos are one request each](client-photos-are-one-request-each.md) |
@@ -61,3 +64,4 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [The payment-schedule dialog keeps its refusal banner after the numbers are fixed](job-payment-schedule-dialog-keeps-a-stale-reconciliation-banner.md) |
 | P3 | [One-time flash of full nav + "not connected to an organization" after account menu](one-time-flash-of-full-nav-and-no-organization-banner-after-account-menu.md) |
 | P3 | [Team seat count overshoots right after an invitation is sent](team-seat-count-overshoots-right-after-an-invitation.md) |
+| P3 | [Marketing first-release leftovers: staff-launch check, cross-campaign insight, one broken test campaign](marketing-release-leftovers.md) |

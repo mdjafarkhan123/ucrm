@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import {
+		createInfiniteQuery,
+		createMutation,
+		createQuery,
+		useQueryClient
+	} from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { supabase } from '$lib/supabase.client';
@@ -27,6 +32,7 @@
 		conversationCustomerEmail,
 		conversationCustomerPhone,
 		endWebsiteChatSession,
+		fetchClientCommunicationHistory,
 		fetchConversationContext,
 		fetchInboundAttachmentDownloadUrl,
 		fetchInboxMessages,
@@ -47,7 +53,9 @@
 		unfollowConversation,
 		type ConversationGroup,
 		type InboundInboxMessage,
+		type InboxMessagePage,
 		type InboxView,
+		type OpenConversation,
 		type OutboundInboxMessage,
 		type PendingOutboundSend,
 		type TextStopNote,
@@ -55,6 +63,7 @@
 		type WebsiteChatInboxMessage,
 		type WebsiteChatInboxSession
 	} from '$lib/communications/inbox';
+	import { takeComposerDraft } from '$lib/communications/composer-draft';
 	import { previewText } from '$lib/collaboration/format';
 	import { clientDetailKey, fetchClient, fetchClients } from '$lib/clients/api';
 	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
@@ -79,12 +88,24 @@
 	// exactly a linked group's own key -- a guarded (unresolved-sender) group is never linkable this way,
 	// since it has no client_id yet.
 	let selectedGroupKey = $state<string | null>(page.url.searchParams.get('client'));
+	// The Client that link asked for. Their conversation may be older than the inbox's latest page, or not
+	// exist yet, so it is opened from their own history instead of quietly showing someone else's. Picking
+	// another conversation clears it; a key that merely drops out of the list later falls back as before.
+	let requestedClientId = $state<string | null>(
+		(() => {
+			const key = page.url.searchParams.get('client');
+			return key && !key.includes(':') ? key : null;
+		})()
+	);
+	// A message written elsewhere for this Client (a file share's "Send by email" / "Send by text"), held for
+	// the whole visit so switching channel tabs and back restores it.
+	const handedDraft = requestedClientId ? takeComposerDraft(requestedClientId) : null;
 	let resendTarget = $state<OutboundInboxMessage | null>(null);
 	let cancelScheduledTarget = $state<OutboundInboxMessage | null>(null);
 	let detailsMessage = $state<InboundInboxMessage | null>(null);
 	let forwardTarget = $state<InboundInboxMessage | null>(null);
-	let linkTarget = $state<ConversationGroup | null>(null);
-	let dismissTarget = $state<ConversationGroup | null>(null);
+	let linkTarget = $state<OpenConversation | null>(null);
+	let dismissTarget = $state<OpenConversation | null>(null);
 	let linkError = $state('');
 	let newConversationOpen = $state(false);
 	let newConversationClientId = $state<string | null>(null);
@@ -98,8 +119,8 @@
 	let activeChannel = $state<'email' | 'sms' | 'website_chat'>('email');
 	let composerExpanded = $state(false);
 	let composerGroupKey: string | null = null;
-	let endSessionTarget = $state<ConversationGroup | null>(null);
-	let resolveIdentityTarget = $state<ConversationGroup | null>(null);
+	let endSessionTarget = $state<OpenConversation | null>(null);
+	let resolveIdentityTarget = $state<OpenConversation | null>(null);
 	let resolveIdentityError = $state('');
 	// The ≤1050px context-rail replacement (5F): the rail's own content relocates into this drawer below
 	// the breakpoint instead of being rebuilt. Closes on every conversation switch so it never reopens
@@ -147,9 +168,67 @@
 	// conversation with an unread inbound message, falling back to the most recent conversation once the
 	// user has picked something or nothing is unread.
 	const firstUnreadGroup = $derived(groups.find((group) => group.unreadCount > 0) ?? null);
-	const selectedGroup = $derived(
-		groups.find((group) => group.key === selectedGroupKey) ?? firstUnreadGroup ?? groups[0] ?? null
+	const listedSelectedGroup = $derived(
+		groups.find((group) => group.key === selectedGroupKey) ?? null
 	);
+	const unlistedClientId = $derived(
+		!listedSelectedGroup && requestedClientId && requestedClientId === selectedGroupKey
+			? requestedClientId
+			: null
+	);
+
+	// The same read, key and paging as the Client's own Communication tab, so a Client visited there opens here
+	// instantly and every send path's invalidation already covers it.
+	const requestedHistoryQuery = createInfiniteQuery(() => ({
+		queryKey: clientCommunicationHistoryKey(unlistedClientId ?? ''),
+		queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
+			fetchClientCommunicationHistory(unlistedClientId as string, pageParam),
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage: InboxMessagePage) => lastPage.next_cursor ?? undefined,
+		enabled: unlistedClientId !== null && inboxQuery.isSuccess,
+		staleTime: 15_000
+	}));
+
+	// A Client with no messages at all is still a conversation that can be started, named from the
+	// work-context read the rail already makes for them.
+	const requestedGroup = $derived.by((): OpenConversation | null => {
+		if (!unlistedClientId || !requestedHistoryQuery.data) return null;
+		const pages = requestedHistoryQuery.data.pages;
+		const grouped = groupMessagesByContact(
+			pages.flatMap((entry) => entry.messages),
+			pages.flatMap((entry) => entry.website_chat),
+			pages.flatMap((entry) => entry.website_chat_sessions)
+		).find((group) => group.key === unlistedClientId);
+		if (grouped) return grouped;
+		const client = contextQuery.data?.client;
+		if (!client || client.id !== unlistedClientId) return null;
+		return {
+			key: client.id,
+			clientId: client.id,
+			name: client.display_name,
+			avatarId: client.id,
+			latest: null,
+			unreadCount: 0,
+			messages: [],
+			guarded: false,
+			senderEmail: null,
+			assignedTo: null,
+			assignedToName: null,
+			isFollowing: false,
+			chatSession: null
+		};
+	});
+	const defaultGroup = $derived(firstUnreadGroup ?? groups[0] ?? null);
+	// A requested Client never falls back to someone else's conversation while theirs loads -- the pane shows
+	// a skeleton instead. Only a history that cannot be read (no access, or no such Client) returns to the
+	// ordinary default.
+	const openingClientId = $derived(
+		unlistedClientId && !requestedHistoryQuery.isError ? unlistedClientId : null
+	);
+	const selectedGroup = $derived(
+		listedSelectedGroup ?? (openingClientId ? requestedGroup : defaultGroup)
+	);
+	const requestedGroupLoading = $derived(openingClientId !== null && requestedGroup === null);
 
 	const emailAvailable = $derived(Boolean(selectedGroup?.clientId));
 	// SMS shares email's availability rule (both need only a known client) rather than a separate org
@@ -168,7 +247,8 @@
 		return channels;
 	});
 
-	function latestMessageChannel(group: ConversationGroup): 'email' | 'sms' | 'website_chat' {
+	function latestMessageChannel(group: OpenConversation): 'email' | 'sms' | 'website_chat' {
+		if (!group.latest) return 'email';
 		if (isWebsiteChatMessage(group.latest)) return 'website_chat';
 		return group.latest.channel === 'sms' ? 'sms' : 'email';
 	}
@@ -180,11 +260,14 @@
 		const key = selectedGroup?.key;
 		if (!key || key === composerGroupKey) return;
 		untrack(() => {
-			const group = groups.find((entry) => entry.key === key);
-			if (!group) return;
+			const group = selectedGroup;
+			if (!group || group.key !== key) return;
 			composerGroupKey = key;
 			composerExpanded = false;
-			if (!group.clientId) {
+			if (handedDraft && handedDraft.clientId === key) {
+				activeChannel = handedDraft.channel;
+				composerExpanded = true;
+			} else if (!group.clientId) {
 				activeChannel = 'website_chat';
 			} else {
 				activeChannel = latestMessageChannel(group);
@@ -225,19 +308,26 @@
 	// Part 5D's work-context panel: one client's identity, contact methods, and a small related-work set.
 	// Loads independently of the timeline (which already has everything it needs from `inboxQuery`), so
 	// switching conversations never blocks on this -- only the panel itself shows a skeleton.
+	// Keyed by the requested Client too, before their conversation exists, because it also names them. Worked
+	// out without `selectedGroup`, which itself waits on this read for a Client with no messages.
+	const contextClientId = $derived(
+		listedSelectedGroup
+			? listedSelectedGroup.clientId
+			: (openingClientId ?? defaultGroup?.clientId ?? null)
+	);
 	const contextQuery = createQuery(() => ({
-		queryKey: conversationContextKey(selectedGroup?.clientId ?? ''),
-		queryFn: () => fetchConversationContext(selectedGroup?.clientId as string),
-		enabled: selectedGroup?.clientId !== null && selectedGroup?.clientId !== undefined,
+		queryKey: conversationContextKey(contextClientId ?? ''),
+		queryFn: () => fetchConversationContext(contextClientId as string),
+		enabled: contextClientId !== null,
 		staleTime: 30_000
 	}));
 
 	// The "texts stopped / turned back on" lines that sit in the thread. Small and per customer, so it loads
 	// with the conversation; a failed load just leaves the lines out rather than blocking the thread.
 	const textStopNotesQuery = createQuery(() => ({
-		queryKey: textStopNotesKey(selectedGroup?.clientId ?? ''),
-		queryFn: () => fetchTextStopNotes(selectedGroup?.clientId as string),
-		enabled: selectedGroup?.clientId !== null && selectedGroup?.clientId !== undefined,
+		queryKey: textStopNotesKey(contextClientId ?? ''),
+		queryFn: () => fetchTextStopNotes(contextClientId as string),
+		enabled: contextClientId !== null,
 		staleTime: 30_000
 	}));
 
@@ -272,7 +362,7 @@
 		});
 	}
 
-	function outboundIn(group: ConversationGroup, id: string) {
+	function outboundIn(group: OpenConversation, id: string) {
 		return (
 			group.messages.find(
 				(message): message is OutboundInboxMessage =>
@@ -300,7 +390,7 @@
 	// The email composer's default subject reuses the conversation's most recent email-shaped message --
 	// neither a chat message nor an SMS has a subject line, so this skips backward past both the same way
 	// `conversationCustomerEmail` skips a channel with no email address.
-	function latestEmailSubject(group: ConversationGroup): string {
+	function latestEmailSubject(group: OpenConversation): string {
 		for (let index = group.messages.length - 1; index >= 0; index -= 1) {
 			const message = group.messages[index];
 			if (!isWebsiteChatMessage(message) && message.channel !== 'sms') return message.subject;
@@ -347,6 +437,7 @@
 
 	function selectGroup(group: ConversationGroup) {
 		selectedGroupKey = group.key;
+		requestedClientId = null;
 		showJumpToLatest = false;
 		// A stale rail from the previous conversation must not carry over -- the ≤1050px drawer is closed
 		// on every switch, same as if it had never been opened.
@@ -614,16 +705,22 @@
 			: `Sent by ${email.created_by_name ?? 'a teammate'}`;
 	}
 
+	function draftFor(group: OpenConversation, channel: 'email' | 'sms') {
+		return handedDraft && handedDraft.clientId === group.key && handedDraft.channel === channel
+			? handedDraft
+			: null;
+	}
+
 	function replySubject(subject: string) {
 		if (!subject.trim()) return '';
 		return /^re:/i.test(subject.trim()) ? subject : `Re: ${subject}`;
 	}
 
-	function replyRecipient(group: ConversationGroup) {
+	function replyRecipient(group: OpenConversation) {
 		return contextQuery.data?.client.email ?? conversationCustomerEmail(group);
 	}
 
-	function replyPhone(group: ConversationGroup) {
+	function replyPhone(group: OpenConversation) {
 		return contextQuery.data?.client.phone ?? conversationCustomerPhone(group);
 	}
 
@@ -705,7 +802,9 @@
 	{:else}
 		<div
 			class="communications__workspace"
-			class:communications__workspace--single={groups.length === 0}
+			class:communications__workspace--single={groups.length === 0 &&
+				!selectedGroup &&
+				!requestedGroupLoading}
 		>
 			<aside class="communications__list" aria-label="Conversation history">
 				<div class="communications__list-header">
@@ -860,9 +959,25 @@
 				{/if}
 			</aside>
 
-			{#if selectedGroup}
+			{#if requestedGroupLoading}
+				<main class="communications__message" aria-label="Conversation timeline" aria-busy="true">
+					<!-- `status`, not `isError`: a query result only re-renders for the fields that were read, and
+					     `isError` stays false through a success, which left the rail stuck on its skeleton. -->
+					{#if contextQuery.status === 'error'}
+						<EmptyState
+							title="This conversation could not be opened"
+							description="Refresh the page and try again."
+							icon={inboxIcon}
+						/>
+					{:else}
+						<div class="communications__opening">
+							<LoadingSkeleton variant="card" label="Opening conversation" />
+						</div>
+					{/if}
+				</main>
+			{:else if selectedGroup}
 				{@const group = selectedGroup}
-				{@const channel = rowChannel(group)}
+				{@const channel = group.latest ? rowChannel({ ...group, latest: group.latest }) : null}
 				<main class="communications__message" aria-label="Conversation timeline">
 					<header class="communications__thread-header">
 						<div class="communications__recipient">
@@ -870,7 +985,8 @@
 							<div>
 								<h2>{group.name}</h2>
 								{#if group.clientId}
-									<span class="communications__conversation-type">{channel.label} conversation</span
+									<span class="communications__conversation-type"
+										>{channel ? `${channel.label} conversation` : 'New conversation'}</span
 									>
 								{:else}
 									<span class="communications__unresolved-sender"
@@ -921,6 +1037,11 @@
 						bind:this={timelineEl}
 						onscroll={handleTimelineScroll}
 					>
+						{#if group.messages.length === 0 && !visiblePendingSend}
+							<p class="communications__empty-thread">
+								No messages with {group.name} yet. What you send here starts the conversation.
+							</p>
+						{/if}
 						{#each group.messages as message, index (message.id)}
 							{#each notePlacement?.before.get(message.id) ?? [] as slot (slot.note.id)}
 								{@render textStopNote(slot)}
@@ -1275,6 +1396,7 @@
 										clientId={group.clientId}
 										channel="sms"
 										defaultSubject=""
+										initialBody={draftFor(group, 'sms')?.body ?? ''}
 										recipientLabel={replyPhone(group)}
 										channels={composerChannels}
 										onChannelChange={(channel) => (activeChannel = channel)}
@@ -1285,7 +1407,9 @@
 									<ConversationComposer
 										clientId={group.clientId}
 										channel="email"
-										defaultSubject={replySubject(latestEmailSubject(group))}
+										defaultSubject={draftFor(group, 'email')?.subject ??
+											replySubject(latestEmailSubject(group))}
+										initialBody={draftFor(group, 'email')?.body ?? ''}
 										recipientLabel={replyRecipient(group)}
 										channels={composerChannels}
 										onChannelChange={(channel) => (activeChannel = channel)}
@@ -1308,7 +1432,7 @@
 
 <!-- Same markup and query as the inline rail above -- reused here for the ≤1050px SidePanel so the two
      never drift. -->
-{#snippet contextPanel(group: ConversationGroup)}
+{#snippet contextPanel(group: OpenConversation)}
 	<ConversationContextRail
 		{group}
 		context={contextQuery}
@@ -2029,6 +2153,15 @@
 		cursor: pointer;
 	}
 	/* A `system` part narrates the conversation rather than speaking in it -- a centered note, not a bubble. */
+	.communications__opening {
+		padding: var(--space-base);
+	}
+	.communications__empty-thread {
+		margin: auto 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		text-align: center;
+	}
 	.communications__chat-note {
 		margin: 0;
 		color: var(--color-text--secondary);

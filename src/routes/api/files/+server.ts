@@ -5,9 +5,10 @@ import { requireLinkedEntityAccess, type LinkedEntityType } from '$lib/server/ac
 import { resolveOrganizationAccess } from '$lib/server/access/effective';
 import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
 
-// The smart views in the left rail, plus the folder view. "Shared with customers" and "Videos" are
-// deliberately absent: customer sharing is Part 7 and video is not on the upload allowlist until Part 8
-// measures it, so neither could ever be anything but an empty list that implies a missing feature.
+// The smart views in the left rail, plus the folder view. "Videos" is deliberately absent: video is not on
+// the upload allowlist until Part 8 measures it, so it could only ever be an empty list that implies a missing
+// feature. "Shared with customers" lists shares rather than files, so it has its own route
+// (/api/files/shares); this one only says whether the rail should offer it (`has_shares`).
 // `label` is one photo label from the rail, named by `label_id`, the way `folder` names its folder.
 // `on_record` is the picker's first section rather than a rail view: the Files already on the record the
 // picker was opened from. It needs the record named, so it is the one view that reads entity_type/entity_id.
@@ -132,6 +133,16 @@ export const GET: RequestHandler = async (event) => {
 		return databaseError();
 	}
 
+	// The rail offers "Shared with customers" only once there is a share to list. Asked on the first page
+	// alone -- one indexed row, under the caller's own policies -- and only of someone who may share.
+	const canShare = hasPermission(access, 'files.share');
+	let hasShares = false;
+	if (canShare && !cursor) {
+		const shareProbe = await event.locals.supabase.from('file_shares').select('id').limit(1);
+		if (shareProbe.error) console.error('Could not check for file shares.', shareProbe.error);
+		hasShares = (shareProbe.data ?? []).length > 0;
+	}
+
 	const rows = data ?? [];
 	const hasMore = rows.length > limit;
 	const files = hasMore ? rows.slice(0, limit) : rows;
@@ -144,7 +155,9 @@ export const GET: RequestHandler = async (event) => {
 			// What this member may do with what they are looking at, resolved once here rather than guessed
 			// in the browser. Every write re-checks it server-side; this only decides which buttons show.
 			can_manage: hasPermission(access, 'files.manage'),
-			can_trash: hasPermission(access, 'files.trash')
+			can_trash: hasPermission(access, 'files.trash'),
+			can_share: canShare,
+			has_shares: hasShares
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

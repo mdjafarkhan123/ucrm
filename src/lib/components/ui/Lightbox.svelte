@@ -69,11 +69,13 @@
 
 	// The photo either side is almost certainly the next one wanted, so it is fetched while this one is
 	// being looked at and the step feels instant.
-	const neighbours = $derived(
-		hasMany
-			? [items[(index + 1) % items.length], items[(index - 1 + items.length) % items.length]]
-			: []
-	);
+	// With exactly two photos the next and the previous one are the same photo, so it is listed once.
+	const neighbours = $derived.by(() => {
+		if (!hasMany) return [];
+		const next = items[(index + 1) % items.length];
+		const previous = items[(index - 1 + items.length) % items.length];
+		return next.id === previous.id ? [next] : [next, previous];
+	});
 </script>
 
 <svelte:window onkeydown={onKeydown} />

@@ -9,6 +9,7 @@ import { canDescribeFile } from '$lib/server/files/describe-access';
 import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
 import { PRIVATE_READ_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { embeddedOne } from '$lib/server/db/embedded';
 import { renameKeepingExtension } from '$lib/server/files/upload-policy';
 import { fileUpdateSchema } from '$lib/server/validation/files.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
@@ -70,26 +71,69 @@ export const GET: RequestHandler = async (event) => {
 	const usage = hasMoreUsage ? usageRows.slice(0, USAGE_PAGE_SIZE) : usageRows;
 	const lastUsage = usage.at(-1);
 
-	const [folderResult, uploaderResult, labelsResult, canDescribe] = await Promise.all([
-		fileResult.data.folder_id
-			? event.locals.supabase
-					.from('file_folders')
-					.select('id, name')
-					.eq('id', fileResult.data.folder_id)
-					.maybeSingle()
-			: Promise.resolve({ data: null }),
-		fileResult.data.uploaded_by
-			? event.locals.supabase
-					.from('profiles')
-					.select('full_name')
-					.eq('id', fileResult.data.uploaded_by)
-					.maybeSingle()
-			: Promise.resolve({ data: null }),
-		event.locals.supabase.from('file_label_assignments').select('label_id').eq('file_id', fileId),
-		fileResult.data.kind === 'image' && fileResult.data.trashed_at === null
-			? canDescribeFile(event.locals.supabase, access, fileId)
-			: Promise.resolve(false)
-	]);
+	const canShare = hasPermission(access, 'files.share');
+
+	const [folderResult, uploaderResult, labelsResult, canDescribe, sharesResult] = await Promise.all(
+		[
+			fileResult.data.folder_id
+				? event.locals.supabase
+						.from('file_folders')
+						.select('id, name')
+						.eq('id', fileResult.data.folder_id)
+						.maybeSingle()
+				: Promise.resolve({ data: null }),
+			fileResult.data.uploaded_by
+				? event.locals.supabase
+						.from('profiles')
+						.select('full_name')
+						.eq('id', fileResult.data.uploaded_by)
+						.maybeSingle()
+				: Promise.resolve({ data: null }),
+			event.locals.supabase.from('file_label_assignments').select('label_id').eq('file_id', fileId),
+			fileResult.data.kind === 'image' && fileResult.data.trashed_at === null
+				? canDescribeFile(event.locals.supabase, access, fileId)
+				: Promise.resolve(false),
+			// The live customer links this File is on: "Shared with" in the panel, and the count the Trash
+			// confirmation warns with. Only a sharer may read shares at all, so nobody else pays for the query.
+			canShare
+				? event.locals.supabase
+						.from('file_share_items')
+						.select(
+							'share:file_shares!inner(id, client_id, expires_at, client:clients(display_name))'
+						)
+						.eq('file_id', fileId)
+						.is('share.revoked_at', null)
+						.gt('share.expires_at', new Date().toISOString())
+						.limit(50)
+				: Promise.resolve({ data: [], error: null })
+		]
+	);
+	if (sharesResult.error) {
+		console.error("Could not read a file's customer shares.", sharesResult.error);
+		return databaseError();
+	}
+	// One row per Client, however many live links they hold: the panel names customers, not links.
+	const sharedWith = new Map<
+		string,
+		{ client_id: string; client_name: string | null; share_count: number; expires_at: string }
+	>();
+	for (const row of sharesResult.data ?? []) {
+		const share = embeddedOne(row.share);
+		if (!share) continue;
+		const client = embeddedOne(share.client);
+		const existing = sharedWith.get(share.client_id);
+		if (existing) {
+			existing.share_count += 1;
+			if (share.expires_at > existing.expires_at) existing.expires_at = share.expires_at;
+		} else {
+			sharedWith.set(share.client_id, {
+				client_id: share.client_id,
+				client_name: client?.display_name ?? null,
+				share_count: 1,
+				expires_at: share.expires_at
+			});
+		}
+	}
 	if (labelsResult.error) {
 		console.error("Could not read a file's labels.", labelsResult.error);
 		return databaseError();
@@ -122,7 +166,9 @@ export const GET: RequestHandler = async (event) => {
 				hasMoreUsage && lastUsage ? `${lastUsage.created_at}|${lastUsage.id}` : null,
 			can_manage: hasPermission(access, 'files.manage'),
 			can_trash: hasPermission(access, 'files.trash'),
-			can_describe: canDescribe
+			can_share: canShare,
+			can_describe: canDescribe,
+			shared_with: [...sharedWith.values()]
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

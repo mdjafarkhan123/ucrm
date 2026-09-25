@@ -1,6 +1,6 @@
 # Marketing Product Blueprint
 
-**Status:** Product behavior approved — implementation planning not started  
+**Status:** First release built and verified (closed 2026-09-25); later parts not started  
 **Approved:** 2026-09-15  
 **Purpose:** Define the complete Marketing destination while delivering only the most-needed contractor features
 first. This document describes customer behavior, workflows, screens, states, permissions, safety, and outcomes.
@@ -631,10 +631,11 @@ named workloads are measured.
 
 ## 21. Campaign handoff
 
-Implementation is routed through `Memory/campaigns/marketing-growth/NOW.md`. The campaign owns Marketing,
-future Reputation, and every deliberately preserved later feature. Communications, Automation, Customers,
-Jobs, Requests/Bookings, and billing remain dependencies rather than duplicate owners.
+The first release was built and verified by the `marketing-growth` campaign, closed 2026-09-25. The one remaining
+check, a representative marketing burst while operational email also runs on SES (§19 check 10 under shared SES
+rate), moved to the `operational-email-ses` campaign's cutover part. Leftover items are in `Memory/deferred/`
+(search "Marketing").
 
-Resume with:
-
-`continue the marketing-growth campaign`
+The next approved parts (§3) and the deliberately preserved Later Marketing list each start a new campaign when
+Jafar chooses to begin them. Communications, Automation, Customers, Jobs, Requests/Bookings, and billing remain
+dependencies rather than duplicate owners.

@@ -21,3 +21,6 @@ removal runs on demand (`POST /api/internal/team-members/identity-cleanup/worker
 Also known (2026-09-21): the automation one-minute sweep (`automation-worker-wake-one-minute`) has been switched on
 in the shared development database since 2026-08-31 — the migration installs it off. Its Vault target URL and
 secret must be set deliberately per environment; production must not inherit this by accident.
+
+Also known (2026-09-24): the Marketing wake cron jobs fail every minute in the shared development database
+because their Vault target URLs are unset. Set them deliberately per environment with the others.

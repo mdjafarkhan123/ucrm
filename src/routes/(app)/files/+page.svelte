@@ -17,6 +17,9 @@
 	import FileDetailsPanel from '$lib/components/files/FileDetailsPanel.svelte';
 	import FileUploader from '$lib/components/files/FileUploader.svelte';
 	import FileLabelsDialog from '$lib/components/files/FileLabelsDialog.svelte';
+	import FileShareDialog from '$lib/components/files/FileShareDialog.svelte';
+	import FileSharesView from '$lib/components/files/FileSharesView.svelte';
+	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import filesIcon from '@tabler/icons/outline/files.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
@@ -47,9 +50,10 @@
 	const toast = getToastManager();
 	const uid = $props.id();
 
-	// The rail. "Shared with customers" and "Videos" are deliberately missing: customer sharing arrives
-	// with Part 7 and video is not an accepted upload type yet, so either one would be a view that can
-	// only ever be empty — a promise the app cannot keep.
+	// The rail. "Videos" is deliberately missing: video is not an accepted upload type yet, so it would be a
+	// view that can only ever be empty. "Shared with customers" lists links rather than files, so it is not a
+	// FileView; it joins the rail below once the business has made a share.
+	type RailView = FileView | 'shared';
 	const SMART_VIEWS: { value: FileView; label: string }[] = [
 		{ value: 'all', label: 'All files' },
 		{ value: 'recent', label: 'Recent' },
@@ -59,7 +63,7 @@
 		{ value: 'trash', label: 'Trash' }
 	];
 
-	let view = $state<FileView>('all');
+	let view = $state<RailView>('all');
 	let folderId = $state('');
 	let labelId = $state('');
 	let search = $state('');
@@ -79,13 +83,17 @@
 		return () => clearTimeout(handle);
 	});
 
-	const filters = $derived({ view, folderId, labelId, search: debouncedSearch });
+	// The shares view keeps the file list's last filters, so the list's query simply rests while it is open
+	// and coming back paints from cache.
+	let fileView = $state<FileView>('all');
+	const filters = $derived({ view: fileView, folderId, labelId, search: debouncedSearch });
 
 	const filesQuery = createInfiniteQuery(() => ({
 		queryKey: filesListKey(filters),
 		queryFn: ({ pageParam }: { pageParam: string | undefined }) => fetchFiles(filters, pageParam),
 		initialPageParam: undefined as string | undefined,
-		getNextPageParam: (lastPage: FileListPage) => lastPage.next_cursor ?? undefined
+		getNextPageParam: (lastPage: FileListPage) => lastPage.next_cursor ?? undefined,
+		enabled: view !== 'shared'
 	}));
 	const foldersQuery = createQuery(() => ({
 		queryKey: fileFoldersKey,
@@ -113,6 +121,37 @@
 	// The first page carries what this member may do, resolved server-side. Every write re-checks it; this
 	// only decides whether the Upload button and New folder are on screen at all.
 	const canManage = $derived(filesQuery.data?.pages[0]?.can_manage ?? false);
+	const canShare = $derived(filesQuery.data?.pages[0]?.can_share ?? false);
+	// Remembered rather than read live, so the rail item does not blink out while a newly chosen view's first
+	// page is loading. Only ever the server's answer: it arrives with each view's first page.
+	let hasShares = $state(false);
+	$effect(() => {
+		const answer = filesQuery.data?.pages[0]?.has_shares;
+		if (answer !== undefined) hasShares = answer;
+	});
+	const showSharedView = $derived(hasShares || view === 'shared');
+
+	// --- Choosing several files to share --------------------------------------------------------------
+	// Ticking files is for sharing them with a customer, so it exists only for someone allowed to share and
+	// never in Trash. The chosen rows are kept by id with their facts, so loading another page or a refetch
+	// does not drop a choice; changing view or folder starts over, the way a file browser does.
+	let chosen = $state<Record<string, FileListItem>>({});
+	let shareOpen = $state(false);
+	const selecting = $derived(canShare && view !== 'trash' && view !== 'shared');
+	const chosenFiles = $derived(Object.values(chosen));
+
+	function isShareable(file: FileListItem) {
+		return file.processing_state === 'available' && file.trashed_at === null;
+	}
+
+	function toggleChosen(file: FileListItem, next: boolean) {
+		if (next) chosen[file.id] = file;
+		else delete chosen[file.id];
+	}
+
+	function clearChosen() {
+		chosen = {};
+	}
 
 	// Every available photo on screen, so the lightbox's arrows and filmstrip walk the library rather than
 	// showing one picture at a time.
@@ -129,20 +168,26 @@
 		}))
 	);
 
-	function selectView(next: FileView) {
+	function selectView(next: RailView) {
+		clearChosen();
 		view = next;
+		if (next !== 'shared') fileView = next;
 		folderId = '';
 		labelId = '';
 		closePanel();
 	}
 	function selectFolder(id: string) {
+		clearChosen();
 		view = 'folder';
+		fileView = 'folder';
 		folderId = id;
 		labelId = '';
 		closePanel();
 	}
 	function selectLabel(id: string) {
+		clearChosen();
 		view = 'label';
+		fileView = 'label';
 		labelId = id;
 		folderId = '';
 		closePanel();
@@ -193,8 +238,11 @@
 		return Array.from(event.dataTransfer?.types ?? []).includes('Files');
 	}
 
+	// The shares view lists links, not files, so there is nothing there to drop a file into.
+	const acceptsDrops = $derived(canManage && view !== 'shared');
+
 	function handleDrop(event: DragEvent) {
-		if (!canManage || !carriesFiles(event)) return;
+		if (!acceptsDrops || !carriesFiles(event)) return;
 		event.preventDefault();
 		draggingOver = false;
 		pickFiles(event.dataTransfer?.files ?? null);
@@ -302,6 +350,19 @@
 							</button>
 						</li>
 					{/each}
+					{#if showSharedView}
+						<li>
+							<button
+								type="button"
+								class="files__rail-item"
+								class:files__rail-item--active={view === 'shared'}
+								aria-current={view === 'shared' ? 'true' : undefined}
+								onclick={() => selectView('shared')}
+							>
+								Shared with customers
+							</button>
+						</li>
+					{/if}
 				</ul>
 
 				<div class="files__rail-heading-row">
@@ -382,7 +443,7 @@
 				class="files__main"
 				class:files__main--dropping={draggingOver}
 				ondragover={(event) => {
-					if (!canManage || !carriesFiles(event)) return;
+					if (!acceptsDrops || !carriesFiles(event)) return;
 					event.preventDefault();
 					draggingOver = true;
 				}}
@@ -393,40 +454,63 @@
 				}}
 				ondrop={handleDrop}
 			>
-				<div class="files__toolbar">
-					<div class="files__toolbar-search">
-						<SearchInput
-							id="files-search"
-							bind:value={search}
-							placeholder="Search files, captions, clients, addresses, job or quote numbers"
+				{#if view !== 'shared'}
+					<div class="files__toolbar">
+						<div class="files__toolbar-search">
+							<SearchInput
+								id="files-search"
+								bind:value={search}
+								placeholder="Search files, captions, clients, addresses, job or quote numbers"
+							/>
+						</div>
+						<SegmentedControl
+							name="files-layout"
+							label=""
+							size="small"
+							bind:value={layout}
+							options={[
+								{ value: 'grid', label: 'Grid' },
+								{ value: 'list', label: 'List' }
+							]}
 						/>
+						{#if canManage}
+							<input
+								bind:this={fileInputEl}
+								type="file"
+								multiple
+								accept={FILE_PICKER_ACCEPT}
+								class="files__file-input"
+								id={`${uid}-picker`}
+								onchange={(event) => pickFiles((event.currentTarget as HTMLInputElement).files)}
+							/>
+							<Button size="small" onclick={() => fileInputEl?.click()}>
+								<span class="files__button-icon" aria-hidden="true">{@html uploadIcon}</span>Upload
+							</Button>
+						{/if}
 					</div>
-					<SegmentedControl
-						name="files-layout"
-						label=""
-						size="small"
-						bind:value={layout}
-						options={[
-							{ value: 'grid', label: 'Grid' },
-							{ value: 'list', label: 'List' }
-						]}
-					/>
-					{#if canManage}
-						<input
-							bind:this={fileInputEl}
-							type="file"
-							multiple
-							accept={FILE_PICKER_ACCEPT}
-							class="files__file-input"
-							id={`${uid}-picker`}
-							onchange={(event) => pickFiles((event.currentTarget as HTMLInputElement).files)}
-						/>
-						<Button size="small" onclick={() => fileInputEl?.click()}>
-							<span class="files__button-icon" aria-hidden="true">{@html uploadIcon}</span>Upload
-						</Button>
-					{/if}
-				</div>
 
+					{#if selecting && chosenFiles.length > 0}
+						<div class="files__selection" role="region" aria-label="Chosen files">
+							<span class="files__selection-count">
+								{chosenFiles.length}
+								{chosenFiles.length === 1 ? 'file' : 'files'} chosen
+							</span>
+							<Button
+								size="small"
+								disabled={chosenFiles.length > 50}
+								onclick={() => (shareOpen = true)}>Share with customer</Button
+							>
+							<Button variant="secondary" variation="subtle" size="small" onclick={clearChosen}>
+								Clear
+							</Button>
+							{#if chosenFiles.length > 50}
+								<span class="files__selection-note">A link holds at most 50 files.</span>
+							{/if}
+						</div>
+					{/if}
+				{/if}
+
+				<!-- Outside the view switch, so opening "Shared with customers" never cuts off an upload in progress. -->
 				{#if canManage}
 					<FileUploader
 						bind:this={uploader}
@@ -435,104 +519,142 @@
 					/>
 				{/if}
 
-				{#if downloadError}
-					<p class="files__error" role="alert">{downloadError}</p>
-				{/if}
-
-				{#if filesQuery.isPending}
-					<LoadingSkeleton variant="card" label="Loading files" rows={4} />
-				{:else if filesQuery.isError}
-					<ErrorState
-						description="Your files could not be loaded. Try again."
-						retry={() => filesQuery.refetch()}
-					/>
-				{:else if files.length === 0}
-					<EmptyState icon={filesIcon} title={emptyTitle} description={emptyDescription} />
-				{:else if layout === 'grid'}
-					<ul class="files__grid">
-						{#each files as file (file.id)}
-							<li>
-								<button
-									type="button"
-									class="files__tile"
-									class:files__tile--selected={panelOpen && selectedFile?.id === file.id}
-									onclick={() => openPanel(file)}
-									onmouseenter={() => prefetchFile(file)}
-									onfocus={() => prefetchFile(file)}
-								>
-									<FileThumb
-										fileId={file.id}
-										displayName={file.display_name}
-										mimeType={file.mime_type}
-										kind={file.kind}
-										processingState={file.processing_state}
-										hasThumbnail={file.has_thumbnail}
-									/>
-									<span class="files__tile-name">{file.display_name}</span>
-									{#if file.caption}
-										<span class="files__tile-caption">{file.caption}</span>
-									{/if}
-									<span class="files__tile-meta">{usageLabel(file)}</span>
-								</button>
-							</li>
-						{/each}
-					</ul>
+				{#if view === 'shared'}
+					<FileSharesView />
 				{:else}
-					<table class="files__table">
-						<caption class="files__table-caption">Files</caption>
-						<thead>
-							<tr>
-								<th scope="col">Name</th>
-								<th scope="col">Type</th>
-								<th scope="col">Folder</th>
-								<th scope="col">Came from</th>
-								<th scope="col">Uploaded</th>
-								<th scope="col">Used in</th>
-							</tr>
-						</thead>
-						<tbody>
-							{#each files as file (file.id)}
-								<tr
-									class:files__row--selected={panelOpen && selectedFile?.id === file.id}
-									onmouseenter={() => prefetchFile(file)}
-								>
-									<th scope="row">
-										<button
-											type="button"
-											class="files__row-name"
-											onclick={() => openPanel(file)}
-											onfocus={() => prefetchFile(file)}
-										>
-											<FileThumb
-												fileId={file.id}
-												displayName={file.display_name}
-												mimeType={file.mime_type}
-												kind={file.kind}
-												processingState={file.processing_state}
-												hasThumbnail={file.has_thumbnail}
-												size="row"
-											/>
-											<span class="files__row-name-text">{file.display_name}</span>
-										</button>
-									</th>
-									<td>{formatFileType(file.mime_type, file.display_name)}</td>
-									<td>{file.folder_name ?? '—'}</td>
-									<td>{formatOrigin(file.origin_type)}</td>
-									<td>{formatUploadedAt(file.created_at)}</td>
-									<td>{usageLabel(file)}</td>
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				{/if}
+					{#if downloadError}
+						<p class="files__error" role="alert">{downloadError}</p>
+					{/if}
 
-				{#if files.length > 0}
-					<ListLoadMore
-						hasNextPage={filesQuery.hasNextPage}
-						isFetchingNextPage={filesQuery.isFetchingNextPage}
-						onLoadMore={() => filesQuery.fetchNextPage()}
-						endLabel="That is every file here."
-					/>
+					{#if filesQuery.isPending}
+						<LoadingSkeleton variant="card" label="Loading files" rows={4} />
+					{:else if filesQuery.isError}
+						<ErrorState
+							description="Your files could not be loaded. Try again."
+							retry={() => filesQuery.refetch()}
+						/>
+					{:else if files.length === 0}
+						<EmptyState icon={filesIcon} title={emptyTitle} description={emptyDescription} />
+					{:else if layout === 'grid'}
+						<ul class="files__grid">
+							{#each files as file (file.id)}
+								<li
+									class="files__tile-cell"
+									class:files__tile-cell--chosen={Boolean(chosen[file.id])}
+								>
+									{#if selecting}
+										<span
+											class="files__tile-check"
+											class:files__tile-check--visible={chosenFiles.length > 0}
+										>
+											<Checkbox
+												id={`${uid}-choose-${file.id}`}
+												label={`Choose ${file.display_name}`}
+												hideLabel
+												checked={Boolean(chosen[file.id])}
+												disabled={!isShareable(file)}
+												onchange={(next) => toggleChosen(file, next)}
+											/>
+										</span>
+									{/if}
+									<button
+										type="button"
+										class="files__tile"
+										class:files__tile--selected={(panelOpen && selectedFile?.id === file.id) ||
+											Boolean(chosen[file.id])}
+										onclick={() => openPanel(file)}
+										onmouseenter={() => prefetchFile(file)}
+										onfocus={() => prefetchFile(file)}
+									>
+										<FileThumb
+											fileId={file.id}
+											displayName={file.display_name}
+											mimeType={file.mime_type}
+											kind={file.kind}
+											processingState={file.processing_state}
+											hasThumbnail={file.has_thumbnail}
+										/>
+										<span class="files__tile-name">{file.display_name}</span>
+										{#if file.caption}
+											<span class="files__tile-caption">{file.caption}</span>
+										{/if}
+										<span class="files__tile-meta">{usageLabel(file)}</span>
+									</button>
+								</li>
+							{/each}
+						</ul>
+					{:else}
+						<table class="files__table">
+							<caption class="files__table-caption">Files</caption>
+							<thead>
+								<tr>
+									{#if selecting}<th scope="col" class="files__check-col"
+											><span class="files__sr">Choose</span></th
+										>{/if}
+									<th scope="col">Name</th>
+									<th scope="col">Type</th>
+									<th scope="col">Folder</th>
+									<th scope="col">Came from</th>
+									<th scope="col">Uploaded</th>
+									<th scope="col">Used in</th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each files as file (file.id)}
+									<tr
+										class:files__row--selected={panelOpen && selectedFile?.id === file.id}
+										onmouseenter={() => prefetchFile(file)}
+									>
+										{#if selecting}
+											<td class="files__check-col">
+												<Checkbox
+													id={`${uid}-choose-row-${file.id}`}
+													label={`Choose ${file.display_name}`}
+													hideLabel
+													checked={Boolean(chosen[file.id])}
+													disabled={!isShareable(file)}
+													onchange={(next) => toggleChosen(file, next)}
+												/>
+											</td>
+										{/if}
+										<th scope="row">
+											<button
+												type="button"
+												class="files__row-name"
+												onclick={() => openPanel(file)}
+												onfocus={() => prefetchFile(file)}
+											>
+												<FileThumb
+													fileId={file.id}
+													displayName={file.display_name}
+													mimeType={file.mime_type}
+													kind={file.kind}
+													processingState={file.processing_state}
+													hasThumbnail={file.has_thumbnail}
+													size="row"
+												/>
+												<span class="files__row-name-text">{file.display_name}</span>
+											</button>
+										</th>
+										<td>{formatFileType(file.mime_type, file.display_name)}</td>
+										<td>{file.folder_name ?? '—'}</td>
+										<td>{formatOrigin(file.origin_type)}</td>
+										<td>{formatUploadedAt(file.created_at)}</td>
+										<td>{usageLabel(file)}</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					{/if}
+
+					{#if files.length > 0}
+						<ListLoadMore
+							hasNextPage={filesQuery.hasNextPage}
+							isFetchingNextPage={filesQuery.isFetchingNextPage}
+							onLoadMore={() => filesQuery.fetchNextPage()}
+							endLabel="That is every file here."
+						/>
+					{/if}
 				{/if}
 			</div>
 		</div>
@@ -545,6 +667,10 @@
 	onClose={closePanel}
 	onOpenLightbox={openLightbox}
 />
+
+{#if shareOpen}
+	<FileShareDialog files={chosenFiles} onShared={clearChosen} onClose={() => (shareOpen = false)} />
+{/if}
 
 <Lightbox
 	open={lightboxOpen}
@@ -761,6 +887,62 @@
 		gap: var(--space-small);
 	}
 
+	.files__selection {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-small);
+		padding: var(--space-small) var(--space-base);
+		border: var(--border-base) solid var(--color-border--interactive);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--hover);
+	}
+	.files__selection-count {
+		margin-right: auto;
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+	.files__selection-note {
+		width: 100%;
+		color: var(--color-critical);
+		font-size: var(--typography--fontSize-small);
+	}
+	.files__tile-cell {
+		position: relative;
+
+		&:hover .files__tile-check,
+		&:focus-within .files__tile-check,
+		&--chosen .files__tile-check {
+			opacity: 1;
+		}
+	}
+	.files__tile-check {
+		position: absolute;
+		top: var(--space-base);
+		left: var(--space-base);
+		z-index: 1;
+		padding: 2px;
+		border-radius: var(--radius-small);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-low);
+		opacity: 0;
+		transition: opacity 120ms ease;
+
+		&--visible {
+			opacity: 1;
+		}
+	}
+	.files__check-col {
+		width: 44px;
+	}
+	.files__sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+	}
 	.files__grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));

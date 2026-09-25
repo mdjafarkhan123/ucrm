@@ -360,6 +360,35 @@ replacement must not rewrite what the customer previously received.
 General selected-file shares are revocable, expire, identify their selected Files, and reveal no other library
 content. Live folders or timelines that automatically expose future uploads are outside the first release.
 
+How a selected-file share works (Part 7D, approved by Jafar 2026-09-24; Housecall Pro's selected-attachment
+link plus CompanyCam's static Gallery, built on the same hashed-token link the work report already uses):
+
+- **Starting one.** From a File's details panel ("Share with customer") or from a multi-selection in the
+  library. Staff choose exactly one Client and how long the link lasts — 7, 30 (default) or 90 days — and see the
+  Files and the Client's name before the link is made. At most 50 Files per share. Any available File may be
+  shared, including one not linked to that Client; Files still being checked or in Trash cannot.
+- **Who may share.** A new `files.share` permission, granted to owner, admin and office.
+- **Fixed once made.** A share never gains Files and its expiry never moves. More Files or more time means a
+  new share.
+- **Delivery.** Copy link, or "Send by email" / "Send by text", which open the Client's inbox conversation with a
+  short message and the link written in; staff review and press Send, so it goes through the business's own
+  channels and stays in the conversation history. A button is off when the Client has no email address or
+  phone number. The draft is handed over in memory, never in the URL, so a reload opens the conversation
+  empty. The conversation opens even when it is older than the inbox's latest page or has no message yet.
+- **What the customer sees.** The business name and logo, then each shared File by the name it had when
+  shared: photos open full size, PDFs preview, every File downloads individually. No captions or labels, no
+  "Download all" in the first release, nothing else from the library.
+- **Afterwards.** Renaming a File does not change the name the customer sees. Moving a shared File to Trash
+  removes it from the customer's page, and the Trash confirmation says how many customers it is shared with.
+- **Expired or turned off.** The page says the link is no longer active and gives the business's phone and
+  email; no new link is issued automatically. An unknown link is a plain "not found". The phone is the Business
+  profile's; the email is the business's enabled sending address (the organization default first), the one its
+  customer emails come from. Turning a link off is final.
+- **Staff view.** "Shared with customers" in the rail lists shares, newest first: Client, File count, sent,
+  expires, whether it was opened, and Turn off; opening one lists its Files. A File's details panel names the
+  Clients it is currently shared with. The rail view appears only once the business has a share.
+- **Client history.** Creating and turning off a share each add one activity entry on the Client.
+
 ## Photos, video, and proof of work
 
 Photos may carry an optional caption and practical label such as Before, During, After, Damage,

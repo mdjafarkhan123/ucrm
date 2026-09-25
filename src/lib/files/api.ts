@@ -77,6 +77,10 @@ export type FileListPage = {
 	next_cursor: string | null;
 	can_manage: boolean;
 	can_trash: boolean;
+	/** May share chosen files with a customer by link (files.share). */
+	can_share: boolean;
+	/** The business has made at least one share, so the rail offers "Shared with customers". First page only. */
+	has_shares?: boolean;
 };
 
 export type FileUsageRow = {
@@ -108,8 +112,21 @@ export type FileDetail = {
 	usage_next_cursor: string | null;
 	can_manage: boolean;
 	can_trash: boolean;
+	can_share: boolean;
 	/** May change this photo's caption and labels: files.manage, or a writer on a job the photo is on. */
 	can_describe: boolean;
+	/** The Clients holding a live customer link to this file, one row each. Empty for a non-sharer. */
+	shared_with: FileSharedWith[];
+};
+
+export type FileSharedWith = {
+	client_id: string;
+	/** Null when this member may not see that Client. */
+	client_name: string | null;
+	/** How many live links that Client holds to this file. */
+	share_count: number;
+	/** The latest of those links' end dates. */
+	expires_at: string;
 };
 
 export type FileFolder = { id: string; name: string; file_count: number };
@@ -118,6 +135,9 @@ export const filesListKey = (filters: FileListFilters) => ['files', 'list', filt
 export const fileDetailKey = (fileId: string) => ['files', 'detail', fileId] as const;
 export const fileFoldersKey = ['files', 'folders'] as const;
 export const fileLabelsKey = ['files', 'labels'] as const;
+export const fileSharesKey = ['files', 'shares', 'list'] as const;
+export const fileShareDetailKey = (shareId: string) =>
+	['files', 'shares', 'detail', shareId] as const;
 
 // Carries the status the server refused with, so the query client stops retrying a 403/404 — the answer
 // never changes — and the page can say "no access" instead of blaming the connection.
@@ -362,6 +382,104 @@ export function detachFileFromRecord(fileId: string, entityType: FileEntityType,
 		'DELETE',
 		{ file_id: fileId, entity_type: entityType, entity_id: entityId },
 		'That file could not be taken off this record.'
+	);
+}
+
+/** The three lengths a customer share can last. A share never gets longer once made. */
+export type FileShareDays = 7 | 30 | 90;
+
+export type CreatedFileShare = {
+	share: {
+		id: string;
+		client_id: string;
+		client_name: string;
+		file_count: number;
+		issued_at: string;
+		expires_at: string;
+	};
+	/** The customer link. This response is the only time it exists anywhere; it is not stored. */
+	url: string;
+};
+
+/** Makes one customer link to exactly these files. Their names are fixed on the customer's page from now. */
+export function createFileShare(fileIds: string[], clientId: string, days: FileShareDays) {
+	return writeJson<CreatedFileShare>(
+		'/api/files/shares',
+		'POST',
+		{ file_ids: fileIds, client_id: clientId, days },
+		'That link could not be made.'
+	);
+}
+
+export type FileShareListItem = {
+	id: string;
+	client_id: string;
+	/** Null when this member may not see that Client. */
+	client_name: string | null;
+	file_count: number;
+	issued_at: string;
+	issued_by_name: string | null;
+	expires_at: string;
+	revoked_at: string | null;
+	first_viewed_at: string | null;
+	last_viewed_at: string | null;
+	view_count: number;
+};
+
+export type FileShareListPage = { shares: FileShareListItem[]; next_cursor: string | null };
+
+export type FileShareDetail = Omit<FileShareListItem, 'file_count' | 'issued_by_name'> & {
+	files: {
+		file_id: string;
+		/** The name the customer sees, fixed when the file was shared. */
+		shared_name: string;
+		/** Null when this member's own file access does not reach it. */
+		file: {
+			id: string;
+			display_name: string;
+			mime_type: string;
+			kind: FileKind;
+			size_bytes: number;
+			has_thumbnail: boolean;
+			processing_state: FileProcessingState;
+			trashed_at: string | null;
+		} | null;
+	}[];
+};
+
+export type FileShareState = 'active' | 'expired' | 'off';
+
+/** Turned off wins over expired: a link stopped early reads as a decision someone made. */
+export function fileShareState(share: {
+	revoked_at: string | null;
+	expires_at: string;
+}): FileShareState {
+	if (share.revoked_at) return 'off';
+	return new Date(share.expires_at).getTime() <= Date.now() ? 'expired' : 'active';
+}
+
+export async function fetchFileShares(cursor?: string): Promise<FileShareListPage> {
+	const params = new URLSearchParams();
+	if (cursor) params.set('cursor', cursor);
+	const response = await fetch(`/api/files/shares?${params.toString()}`);
+	if (!response.ok) throw await readError(response, 'Your shared links could not be loaded.');
+	return response.json();
+}
+
+export async function fetchFileShare(shareId: string): Promise<FileShareDetail> {
+	const response = await fetch(`/api/files/shares/${shareId}`);
+	if (!response.ok) throw await readError(response, 'That link could not be loaded.');
+	const result = (await response.json()) as { share: FileShareDetail };
+	return result.share;
+}
+
+/** Stops one customer link for good. More time for the customer means making a new link. */
+export function turnOffFileShare(shareId: string) {
+	return writeJson<{ share: { id: string; client_id: string; revoked_at: string | null } }>(
+		`/api/files/shares/${shareId}/turn-off`,
+		'POST',
+		{},
+		'That link could not be turned off.'
 	);
 }
 

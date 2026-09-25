@@ -5034,6 +5034,105 @@ export type Database = {
           },
         ]
       }
+      file_share_items: {
+        Row: {
+          file_id: string
+          organization_id: string
+          position: number
+          share_id: string
+          shared_name: string
+        }
+        Insert: {
+          file_id: string
+          organization_id: string
+          position: number
+          share_id: string
+          shared_name: string
+        }
+        Update: {
+          file_id?: string
+          organization_id?: string
+          position?: number
+          share_id?: string
+          shared_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_share_items_file_fkey"
+            columns: ["organization_id", "file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "file_share_items_share_fkey"
+            columns: ["organization_id", "share_id"]
+            isOneToOne: false
+            referencedRelation: "file_shares"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      file_shares: {
+        Row: {
+          client_id: string
+          expires_at: string
+          first_viewed_at: string | null
+          id: string
+          issued_at: string
+          issued_by: string | null
+          last_viewed_at: string | null
+          organization_id: string
+          revoked_at: string | null
+          revoked_by: string | null
+          token_hash: string
+          view_count: number
+        }
+        Insert: {
+          client_id: string
+          expires_at: string
+          first_viewed_at?: string | null
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          last_viewed_at?: string | null
+          organization_id: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          token_hash: string
+          view_count?: number
+        }
+        Update: {
+          client_id?: string
+          expires_at?: string
+          first_viewed_at?: string | null
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          last_viewed_at?: string | null
+          organization_id?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          token_hash?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_shares_client_fkey"
+            columns: ["organization_id", "client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "file_shares_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       files: {
         Row: {
           caption: string | null
@@ -7092,6 +7191,9 @@ export type Database = {
           id: string
           job_id: string
           organization_id: string
+          pair_side: string | null
+          position: number
+          section_id: string | null
         }
         Insert: {
           created_at?: string
@@ -7099,6 +7201,9 @@ export type Database = {
           id?: string
           job_id: string
           organization_id: string
+          pair_side?: string | null
+          position: number
+          section_id?: string | null
         }
         Update: {
           created_at?: string
@@ -7106,6 +7211,9 @@ export type Database = {
           id?: string
           job_id?: string
           organization_id?: string
+          pair_side?: string | null
+          position?: number
+          section_id?: string | null
         }
         Relationships: [
           {
@@ -7131,6 +7239,65 @@ export type Database = {
           },
           {
             foreignKeyName: "job_report_photos_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_report_photos_section_fk"
+            columns: ["organization_id", "job_id", "section_id"]
+            isOneToOne: false
+            referencedRelation: "job_report_sections"
+            referencedColumns: ["organization_id", "job_id", "id"]
+          },
+        ]
+      }
+      job_report_sections: {
+        Row: {
+          created_at: string
+          heading: string
+          id: string
+          job_id: string
+          note: string | null
+          organization_id: string
+          position: number
+        }
+        Insert: {
+          created_at?: string
+          heading: string
+          id?: string
+          job_id: string
+          note?: string | null
+          organization_id: string
+          position: number
+        }
+        Update: {
+          created_at?: string
+          heading?: string
+          id?: string
+          job_id?: string
+          note?: string | null
+          organization_id?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_report_sections_job_fk"
+            columns: ["organization_id", "job_id"]
+            isOneToOne: false
+            referencedRelation: "job_list_rows"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "job_report_sections_job_fk"
+            columns: ["organization_id", "job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "job_report_sections_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -16781,6 +16948,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_file_share: {
+        Args: {
+          supplied_token_hash: string
+          target_actor_id: string
+          target_client_id: string
+          target_days: number
+          target_file_ids: string[]
+          target_organization_id: string
+        }
+        Returns: Json
+      }
       create_form: {
         Args: {
           new_description?: string
@@ -20418,6 +20596,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      record_file_share_view: {
+        Args: { supplied_token_hash: string }
+        Returns: Json
+      }
       record_invitation_password_set: {
         Args: { target_invitation_id: string; target_lease_nonce: string }
         Returns: {
@@ -21119,6 +21301,10 @@ export type Database = {
         Args: { supplied_token_hash: string }
         Returns: Json
       }
+      resolve_file_share: {
+        Args: { supplied_token_hash: string }
+        Returns: Json
+      }
       resolve_inbound_message_review: {
         Args: {
           target_actor_user_id: string
@@ -21411,8 +21597,8 @@ export type Database = {
           checklist_selections?: Json
           new_include_price: boolean
           new_include_service_details: boolean
-          new_signature_id?: string
           new_layout?: Json
+          new_signature_id?: string
           new_summary?: string
           target_job_id: string
         }
@@ -22230,6 +22416,14 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      turn_off_file_share: {
+        Args: {
+          target_actor_id: string
+          target_organization_id: string
+          target_share_id: string
+        }
+        Returns: Json
       }
       unapply_client_payment: {
         Args: {
