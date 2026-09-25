@@ -5,23 +5,23 @@ side. Brevo stays only for platform/Jafar emails (`src/lib/server/email/brevo.ts
 
 ## State
 
-Part 6 step 5 (live test on Raad, all on `main`): outbound send proven; 2026-09-25 16:31 UTC Jafar's Gmail reply
-was `accepted` onto Greenfield (reply alias → Greenfield, Gmail added there as test data). Reply acceptance done.
+Part 6 step 5 on Raad (all on `main`): send and every Part 4 reply case proven live except the Marketing-reply
+case (see ROADMAP Part 4). Greenfield (`e10eed2b…`) carries two labelled test emails (Jafar's Gmail and
+push-test@mail.test…); filed test messages reference them, so they stay.
 
-Speed finding (dev tunnel): the SNS push wake is intermittent. For the Gmail reply SNS logged 2 failed HTTPS
-attempts and delivered on the 3rd ~45 s later (ledger `private.communication_worker_wake_ledger`); the cron
-tick filed it at 21 s. Test 4 minutes later: push arrived in 1.5 s, filed in 4 s. The tunnel counted fewer errors
-than SNS failures, so some attempts never reach the laptop; cause unconfirmed (no Cloudflare analytics / SNS
-delivery logs). Proven alternative to raise with Jafar at production planning: a continuously long-polling SQS
-worker container (no dependence on the push). Re-measure on the production endpoint either way.
+Speed (dev tunnel): SNS push wake is intermittent -- SNS logged failed HTTPS attempts that never reached the
+tunnel; the one-minute cron backstops it (worst case ~60 s). Cause unconfirmed. Raise at production planning:
+a continuously long-polling SQS worker container (standard consumer pattern) instead of relying on the push.
+Re-measure on the production endpoint either way.
 
 ## Exact next action
 
-Roadmap Part 4 gate cases, live on Raad: duplicate, oversized attachment, expired alias, auto-response,
-recovery, and a reply to a Marketing campaign email. Then the "Step 5 follow-ups" in ROADMAP.md.
+Marketing-reply case with Jafar: send a Raad Marketing campaign to a client whose email is his Gmail, he
+replies, verify it lands in the right Conversation with Campaign origin. Then the ROADMAP "Step 5 follow-ups".
 
 ## Blockers
 
-AWS SSO token expired: Jafar runs `aws sso login --sso-session ucrm`. Needs dev server + `cloudflared tunnel run`.
+Needs Jafar: dev server + `cloudflared tunnel run`, Raad-owner browser sign-in, a Gmail reply. AWS: `aws --profile
+ucrm` (renew with `aws sso login --sso-session ucrm`).
 
 Resume: `continue operational email ses`.
