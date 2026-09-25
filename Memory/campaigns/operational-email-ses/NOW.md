@@ -11,12 +11,10 @@ Raad's Brevo-era test emails deleted with Jafar's OK). pgTAP fixtures updated bu
 
 ## Exact next action
 
-Step 4: delete Raad's four Brevo leftovers in the Brevo account. The auto-mode classifier blocked the
-deletes; Jafar must run them himself or allow them. Items: sender `4` (office@mail.test.upliftcontractor.com),
-domains `6a926295628c23a1d7062d73` (reply.test…) and `6a92b053e1da0b7d9302b653` (mail.test…, the orphan),
-inbound webhook `2158695`. Do NOT touch `contact.`/`notifications.`/`replies.upliftcontractor.com`, sender 1,
-or webhook `2021984`. Ask Jafar whether `replies.upliftcontractor.com` and webhook `2021984` are still used:
-the webhook points at the deleted `/api/webhooks/brevo/inbound/...` route. Then step 5.
+Step 4 mostly done 2026-09-25: Raad's four Brevo leftovers deleted and confirmed gone. Remaining: domain
+`replies.upliftcontractor.com` and inbound webhook `2021984`. No code or database row uses either, and Jafar said
+all data is test ("clean, clear"), but his explicit permission covered only the four; confirm before deleting.
+Keep sender 1 and `contact.`/`notifications.`. Then step 5.
 
 ## Blockers
 
