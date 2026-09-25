@@ -14,12 +14,14 @@ HighLevel is the reference for review-request automation, manual sending, reques
 Contractor completes work
 → UCRM sends the chosen SMS review request
 → customer opens the branded UCRM feedback page
-→ 4–5 stars: direct to the contractor's Google review destination
-→ 1–3 stars: complete the contractor's private-feedback form
+→ Review routing off (default): the page shows two clear choices to every customer:
+  "Leave a Google review" or "Tell us privately"
+→ Review routing on (contractor opt-in): 4–5 stars go to the contractor's Google review
+  destination; 1–3 stars go to the contractor's private-feedback form
 → private feedback becomes a recovery item for the contractor's team
 ```
 
-The 4–5 / 1–3 split is the ready-made starting route. Review routing is off until the contractor deliberately enables it and accepts UCRM's warning.
+Every request link, whatever the channel (SMS now, email later), opens the UCRM feedback page—never Google directly. Review routing is off until the contractor deliberately enables it and accepts UCRM's warning; the 4–5 / 1–3 split is the ready-made starting route once it is on.
 
 ## Eligibility and enrolment
 
@@ -58,7 +60,8 @@ The 4–5 / 1–3 split is the ready-made starting route. Review routing is off 
 ### Review routing
 
 - Review routing is disabled by default for every contractor.
-- To enable it, the contractor must complete the review-link setup and acknowledge a hard UCRM warning explaining the responsibility and consequences of the chosen routing.
+- **While routing is off**, the feedback page shows every customer the same two clear choices: **Leave a Google review** (opens the contractor's Google review destination) and **Tell us privately** (opens the private-feedback form). Neither choice is hidden, delayed, or dependent on a rating.
+- To enable it, the contractor must complete the review-link setup and acknowledge a hard UCRM warning explaining the responsibility and consequences of the chosen routing, including that Google's review policy, the UK CMA, and the US FTC treat asking only satisfied customers for public reviews as prohibited or potentially unlawful.
 - The ready-made route is **4–5 stars → Google** and **1–3 stars → private feedback**.
 - Contractors can adjust their own routing setup after starting from this default.
 - Selecting 4 or 5 stars immediately opens the contractor's Google review destination. UCRM does not show an intermediate thank-you screen.
@@ -68,7 +71,7 @@ The 4–5 / 1–3 split is the ready-made starting route. Review routing is off 
 
 - UCRM begins with a useful default form that kindly asks the customer to explain what happened and whether they would like contact from the contractor.
 - The contractor can fully edit the wording, add questions, remove questions, and reorder questions. It is not a fixed survey.
-- The completed job, client, chosen rating, and request are already known to UCRM; the customer should not need to re-enter them.
+- The completed job, client, request, and (when routing is on) the chosen rating are already known to UCRM; the customer should not need to re-enter them.
 - After submission, UCRM shows a brief branded thank-you confirmation and creates the private recovery item.
 
 ## Reviews workspace and activity
@@ -87,7 +90,7 @@ The Requests tab uses clear status language: **Scheduled**, **Queued**, **Sent**
 
 ## Private-feedback recovery
 
-- Each submitted private-feedback form creates a **Recovery item** with the client, job, request, rating, answers, and a direct contact path.
+- Each submitted private-feedback form creates a **Recovery item** with the client, job, request, rating (when one was given), answers, and a direct contact path.
 - The item begins as **New**, then moves through **Contacting customer**, **Resolved**, and **Closed**.
 - An owner, administrator, or approved office manager can assign and handle a recovery item.
 - Owners/admins receive an immediate private alert when a new item arrives.
