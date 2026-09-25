@@ -5,26 +5,23 @@ side. Brevo stays only for platform/Jafar emails (`src/lib/server/email/brevo.ts
 
 ## State
 
-Part 6 step 5 (live test on Raad, all on `main`): outbound send and reply ingestion proven live; Jafar's Gmail
-replies land in Needs review (sent from an address not on Greenfield, correct by contract).
+Part 6 step 5 (live test on Raad, all on `main`): outbound send proven; 2026-09-25 16:31 UTC Jafar's Gmail reply
+was `accepted` onto Greenfield (reply alias → Greenfield, Gmail added there as test data). Reply acceptance done.
+
+Speed finding (dev tunnel): the SNS push wake is intermittent. For the Gmail reply SNS logged 2 failed HTTPS
+attempts and delivered on the 3rd ~45 s later (ledger `private.communication_worker_wake_ledger`); the cron
+tick filed it at 21 s. Test 4 minutes later: push arrived in 1.5 s, filed in 4 s. The tunnel counted fewer errors
+than SNS failures, so some attempts never reach the laptop; cause unconfirmed (no Cloudflare analytics / SNS
+delivery logs). Proven alternative to raise with Jafar at production planning: a continuously long-polling SQS
+worker container (no dependence on the push). Re-measure on the production endpoint either way.
 
 ## Exact next action
 
-Replies ingest live (`c0670fa`); instant pickup built (`d7a4d20`, SNS HTTPS subscription `025ff623…` to
-`https://app.upliftcontractor.com/api/webhooks/ses-inbound`). Measured S3 → inbound row: 3 s, 34 s, 33 s, 4 s; slow
-cases were SNS push attempts that never reached the app via the dev tunnel (cause unconfirmed; creating an IAM
-role for SNS delivery-status logs was blocked by the permission classifier; Cloudflare token lacks analytics).
-After those tests the subscription got a fast-retry DeliveryPolicy (2 immediate + 1 s exponential, 10 retries) —
-not yet measured. `dev.jafarkhan@gmail.com` was added (SQL, test data) as a non-primary email on Greenfield
-(`c8e1f036…`). Laptop clock fixed (chrony `authselectmode ignore`).
-Next: Jafar replies once more from Gmail to the Raad test email; verify the row is `accepted` with Greenfield's
-client_id and measure seconds; then roadmap Part 4 gate cases. Re-measure speed on the production endpoint.
-
-Small follow-ups from step 5: ROADMAP.md "Step 5 follow-ups" (do after the live test).
+Roadmap Part 4 gate cases, live on Raad: duplicate, oversized attachment, expired alias, auto-response,
+recovery, and a reply to a Marketing campaign email. Then the "Step 5 follow-ups" in ROADMAP.md.
 
 ## Blockers
 
-Needs Jafar: dev server + `cloudflared tunnel run`, his Jafar-panel and Raad-owner browser sign-ins, and a Gmail
-reply. AWS: `aws --profile ucrm` (renew with `aws sso login --sso-session ucrm`).
+AWS SSO token expired: Jafar runs `aws sso login --sso-session ucrm`. Needs dev server + `cloudflared tunnel run`.
 
 Resume: `continue operational email ses`.
