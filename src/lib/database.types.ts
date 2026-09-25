@@ -13476,6 +13476,127 @@ export type Database = {
 					}
 				];
 			};
+			review_feedback: {
+				Row: {
+					answers: Json;
+					id: string;
+					organization_id: string;
+					questions: Json;
+					rating: number | null;
+					request_id: string;
+					status: string;
+					submitted_at: string;
+				};
+				Insert: {
+					answers: Json;
+					id?: string;
+					organization_id: string;
+					questions: Json;
+					rating?: number | null;
+					request_id: string;
+					status?: string;
+					submitted_at?: string;
+				};
+				Update: {
+					answers?: Json;
+					id?: string;
+					organization_id?: string;
+					questions?: Json;
+					rating?: number | null;
+					request_id?: string;
+					status?: string;
+					submitted_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'review_feedback_request_fkey';
+						columns: ['organization_id', 'request_id'];
+						isOneToOne: false;
+						referencedRelation: 'review_requests';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			review_requests: {
+				Row: {
+					cancelled_at: string | null;
+					client_id: string;
+					continued_to_google_at: string | null;
+					created_at: string;
+					created_by: string | null;
+					feedback_submitted_at: string | null;
+					first_opened_at: string | null;
+					id: string;
+					job_id: string | null;
+					last_opened_at: string | null;
+					open_count: number;
+					organization_id: string;
+					rating: number | null;
+					token_hash: string;
+				};
+				Insert: {
+					cancelled_at?: string | null;
+					client_id: string;
+					continued_to_google_at?: string | null;
+					created_at?: string;
+					created_by?: string | null;
+					feedback_submitted_at?: string | null;
+					first_opened_at?: string | null;
+					id?: string;
+					job_id?: string | null;
+					last_opened_at?: string | null;
+					open_count?: number;
+					organization_id: string;
+					rating?: number | null;
+					token_hash: string;
+				};
+				Update: {
+					cancelled_at?: string | null;
+					client_id?: string;
+					continued_to_google_at?: string | null;
+					created_at?: string;
+					created_by?: string | null;
+					feedback_submitted_at?: string | null;
+					first_opened_at?: string | null;
+					id?: string;
+					job_id?: string | null;
+					last_opened_at?: string | null;
+					open_count?: number;
+					organization_id?: string;
+					rating?: number | null;
+					token_hash?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'review_requests_client_fkey';
+						columns: ['organization_id', 'client_id'];
+						isOneToOne: false;
+						referencedRelation: 'clients';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'review_requests_job_fkey';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'review_requests_job_fkey';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'jobs';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'review_requests_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			review_settings: {
 				Row: {
 					feedback_form: Json;
@@ -20932,6 +21053,14 @@ export type Database = {
 				Args: { supplied_token_hash: string };
 				Returns: Json;
 			};
+			record_review_request_google: {
+				Args: { supplied_rating: number; supplied_token_hash: string };
+				Returns: undefined;
+			};
+			record_review_request_open: {
+				Args: { supplied_token_hash: string };
+				Returns: undefined;
+			};
 			record_team_invitation_delivery: {
 				Args: {
 					target_error?: string;
@@ -21565,6 +21694,10 @@ export type Database = {
 			resolve_quote_access_link_logo: {
 				Args: { supplied_token_hash: string };
 				Returns: string;
+			};
+			resolve_review_request: {
+				Args: { supplied_token_hash: string };
+				Returns: Json;
 			};
 			resolve_website_chat_session_identity: {
 				Args: {
@@ -22542,6 +22675,15 @@ export type Database = {
 					signature_name?: string;
 					signature_object_key?: string;
 					supplied_evidence?: Json;
+					supplied_token_hash: string;
+				};
+				Returns: Json;
+			};
+			submit_review_feedback: {
+				Args: {
+					supplied_answers: Json;
+					supplied_questions: Json;
+					supplied_rating: number;
 					supplied_token_hash: string;
 				};
 				Returns: Json;

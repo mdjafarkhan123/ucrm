@@ -139,3 +139,16 @@ export const reviewSettingsSchema = z
 	});
 
 export type ReviewSettingsSchemaInput = z.infer<typeof reviewSettingsSchema>;
+
+// Google review campaign Part 2: what the customer's feedback page sends. Answers are checked again, per
+// question, against the organization's current feedback form in the route.
+const starRatingSchema = z.number().int().min(1).max(5).nullable().default(null);
+
+export const reviewGoogleChoiceSchema = z.object({ rating: starRatingSchema }).strict();
+
+export const reviewFeedbackSubmissionSchema = z
+	.object({
+		rating: starRatingSchema,
+		answers: z.record(z.string(), z.unknown()).default({})
+	})
+	.strict();

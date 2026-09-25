@@ -146,11 +146,12 @@ function questionAnswerSchema(question: FormQuestion): z.ZodTypeAny {
 // One schema per published form, keyed by each question's stable id -- the same id the builder assigns and
 // the same id a submitted answer maps back to (see $lib/forms/types.ts).
 export function buildPublicFormAnswersSchema(sections: FormContent['sections']) {
+	return buildQuestionAnswersSchema(sections.flatMap((section) => section.questions));
+}
+
+// The same answer rules for a flat list of questions, as the review feedback form asks them.
+export function buildQuestionAnswersSchema(questions: FormQuestion[]) {
 	const shape: Record<string, z.ZodTypeAny> = {};
-	for (const section of sections) {
-		for (const question of section.questions) {
-			shape[question.id] = questionAnswerSchema(question);
-		}
-	}
+	for (const question of questions) shape[question.id] = questionAnswerSchema(question);
 	return z.object(shape);
 }

@@ -4,8 +4,9 @@ Approved by Jafar 2026-09-25. Product truth: `docs/google-review-campaign-owner-
 
 1. **Review settings** — Done 2026-09-25 (browser-verified as owner; role access verified in the database;
    `/reviews/settings`). The "automation needs a link" half of its gate moves to Part 4.
-2. **Customer feedback page** — Planned; needs 1. Per-request unique public link; two-choice page when routing
-   off, star routing when on; private form + thank-you; records opened / continued to Google / submitted.
+2. **Customer feedback page** — Done 2026-09-26 (routed and two-choice journeys, submit, revisit and Google
+   exit verified in a real browser against the live database; `/v/[token]`, `review_requests`,
+   `review_feedback`). Settings "Preview feedback page" still needs Jafar's glance while signed in.
 3. **Manual "Request a review"** — Planned; needs 2. On completed job and client page; contact, channel (SMS
    first), style, send now/schedule; real delivery states; fieldworker only on own jobs.
 4. **Automation** — Planned; needs 3. New job subject in the existing automation engine; enrol on close with

@@ -2,17 +2,12 @@
 	import { page } from '$app/state';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
-	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import {
-		FORM_MAX_PHOTOS,
-		isChoiceQuestion,
-		type BookingSlot,
-		type FormQuestion,
-		type FormQuestionType
-	} from '$lib/forms/types';
+	import PublicFormQuestion from '$lib/components/forms/PublicFormQuestion.svelte';
+	import { blankAnswer, isAnswerEmpty } from '$lib/forms/answers';
+	import { FORM_MAX_PHOTOS, type BookingSlot, type FormQuestion } from '$lib/forms/types';
 	import photoPlusIcon from '@tabler/icons/outline/photo-plus.svg?raw';
 	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
@@ -55,13 +50,6 @@
 
 	// --- Answers, keyed by question id ---------------------------------------------------------------
 
-	function blankAnswer(type: FormQuestionType) {
-		if (type === 'dropdown_multi' || type === 'checkbox' || type === 'image_upload')
-			return [] as string[];
-		if (type === 'yes_no') return null as boolean | null;
-		return '';
-	}
-
 	function initialAnswers(): Record<string, unknown> {
 		const out: Record<string, unknown> = {};
 		if (!data.available) return out;
@@ -74,15 +62,6 @@
 	let answers = $state<Record<string, unknown>>(initialAnswers());
 	let topLevelPhotos = $state<PhotoSlot[]>([]);
 	let questionPhotos = $state<Record<string, PhotoSlot[]>>({});
-
-	function setTextAnswer(questionId: string, event: Event) {
-		answers[questionId] = (event.currentTarget as HTMLInputElement | HTMLTextAreaElement).value;
-	}
-
-	function setNumberAnswer(questionId: string, event: Event) {
-		const value = (event.currentTarget as HTMLInputElement).value;
-		answers[questionId] = value === '' ? '' : Number(value);
-	}
 
 	// --- Booking (assessment/job forms only) ----------------------------------------------------------
 
@@ -318,18 +297,6 @@
 	let errorMessage = $state('');
 	let fieldErrors = $state<Record<string, string>>({});
 
-	function optionsOf(options: string[] | undefined): string[] {
-		return options && options.length > 0 ? options : [];
-	}
-
-	function isAnswerEmpty(type: FormQuestionType, value: unknown): boolean {
-		if (type === 'dropdown_multi' || type === 'checkbox' || type === 'image_upload') {
-			return !Array.isArray(value) || value.length === 0;
-		}
-		if (type === 'yes_no') return value === null || value === undefined;
-		return value === '' || value === null || value === undefined;
-	}
-
 	function validate(): string | null {
 		if (!data.available) return 'This form is not available.';
 		if (!contactName.trim()) return 'Enter your name.';
@@ -479,6 +446,43 @@
 	<title>{data.available ? data.title : 'Form not available'}</title>
 </svelte:head>
 
+{#snippet imageUpload(question: FormQuestion)}
+	<div class="public-form__photos">
+		{#each questionPhotos[question.id] ?? [] as photo (photo.id)}
+			<div class="public-form__photo" class:public-form__photo--error={Boolean(photo.error)}>
+				<img src={photo.previewUrl} alt="" />
+				{#if photo.uploading}<span class="public-form__photo-status">Uploading…</span>{/if}
+				{#if photo.error}<span class="public-form__photo-status">{photo.error}</span>{/if}
+				<button
+					type="button"
+					class="public-form__photo-remove"
+					aria-label="Remove photo"
+					onclick={() => removeQuestionPhoto(question.id, photo.id)}
+				>
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html xIcon}
+				</button>
+			</div>
+		{/each}
+		{#if (questionPhotos[question.id]?.length ?? 0) < FORM_MAX_PHOTOS}
+			<label class="public-form__upload">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html photoPlusIcon}
+				<span>Add a photo</span>
+				<input
+					type="file"
+					accept="image/png,image/jpeg,image/webp"
+					multiple
+					onchange={(e) => {
+						void addQuestionPhotos(question.id, (e.currentTarget as HTMLInputElement).files);
+						(e.currentTarget as HTMLInputElement).value = '';
+					}}
+				/>
+			</label>
+		{/if}
+	</div>
+{/snippet}
+
 <main class="public-form">
 	<div class="public-form__layout">
 		{#if !data.available}
@@ -601,169 +605,7 @@
 							<h2 class="public-form__section-title">{section.title}</h2>
 							<div class="public-form__fields">
 								{#each section.questions as question (question.id)}
-									<div class="public-form__field">
-										<span class="public-form__label">
-											{question.label}{#if question.required}<em>*</em>{/if}
-										</span>
-										{#if question.help}<span class="public-form__help">{question.help}</span>{/if}
-
-										{#if question.type === 'short_text'}
-											<Input
-												id={`q-${question.id}`}
-												label=""
-												value={(answers[question.id] as string) ?? ''}
-												oninput={(event: Event) => setTextAnswer(question.id, event)}
-											/>
-										{:else if question.type === 'long_text'}
-											<Textarea
-												id={`q-${question.id}`}
-												label=""
-												rows={3}
-												value={(answers[question.id] as string) ?? ''}
-												oninput={(event: Event) => setTextAnswer(question.id, event)}
-											/>
-										{:else if question.type === 'number'}
-											<Input
-												id={`q-${question.id}`}
-												label=""
-												type="number"
-												value={(answers[question.id] as number | '') ?? ''}
-												oninput={(event: Event) => setNumberAnswer(question.id, event)}
-											/>
-										{:else if question.type === 'dropdown' || question.type === 'dropdown_multi'}
-											{#if question.type === 'dropdown'}
-												<Select
-													id={`q-${question.id}`}
-													ariaLabel={question.label}
-													placeholder="Choose…"
-													options={optionsOf(question.options).map((o) => ({ value: o, label: o }))}
-													value={(answers[question.id] as string) ?? ''}
-													onchange={(v) => (answers[question.id] = v)}
-												/>
-											{:else}
-												<div class="public-form__choices">
-													{#each optionsOf(question.options) as option (option)}
-														{@const list = (answers[question.id] as string[]) ?? []}
-														<label class="public-form__choice">
-															<input
-																type="checkbox"
-																checked={list.includes(option)}
-																onchange={(e) => {
-																	const checked = (e.currentTarget as HTMLInputElement).checked;
-																	const current = (answers[question.id] as string[]) ?? [];
-																	answers[question.id] = checked
-																		? [...current, option]
-																		: current.filter((o) => o !== option);
-																}}
-															/>
-															{option}
-														</label>
-													{/each}
-												</div>
-											{/if}
-										{:else if question.type === 'radio'}
-											<div class="public-form__choices">
-												{#each optionsOf(question.options) as option (option)}
-													<label class="public-form__choice">
-														<input
-															type="radio"
-															name={`q-${question.id}`}
-															value={option}
-															checked={answers[question.id] === option}
-															onchange={() => (answers[question.id] = option)}
-														/>
-														{option}
-													</label>
-												{/each}
-											</div>
-										{:else if question.type === 'checkbox'}
-											<div class="public-form__choices">
-												{#each optionsOf(question.options) as option (option)}
-													{@const list = (answers[question.id] as string[]) ?? []}
-													<label class="public-form__choice">
-														<input
-															type="checkbox"
-															checked={list.includes(option)}
-															onchange={(e) => {
-																const checked = (e.currentTarget as HTMLInputElement).checked;
-																const current = (answers[question.id] as string[]) ?? [];
-																answers[question.id] = checked
-																	? [...current, option]
-																	: current.filter((o) => o !== option);
-															}}
-														/>
-														{option}
-													</label>
-												{/each}
-											</div>
-										{:else if question.type === 'yes_no'}
-											<div class="public-form__choices public-form__choices--row">
-												<label class="public-form__choice">
-													<input
-														type="radio"
-														name={`q-${question.id}`}
-														checked={answers[question.id] === true}
-														onchange={() => (answers[question.id] = true)}
-													/>
-													Yes
-												</label>
-												<label class="public-form__choice">
-													<input
-														type="radio"
-														name={`q-${question.id}`}
-														checked={answers[question.id] === false}
-														onchange={() => (answers[question.id] = false)}
-													/>
-													No
-												</label>
-											</div>
-										{:else if question.type === 'image_upload'}
-											<div class="public-form__photos">
-												{#each questionPhotos[question.id] ?? [] as photo (photo.id)}
-													<div
-														class="public-form__photo"
-														class:public-form__photo--error={Boolean(photo.error)}
-													>
-														<img src={photo.previewUrl} alt="" />
-														{#if photo.uploading}<span class="public-form__photo-status"
-																>Uploading…</span
-															>{/if}
-														{#if photo.error}<span class="public-form__photo-status"
-																>{photo.error}</span
-															>{/if}
-														<button
-															type="button"
-															class="public-form__photo-remove"
-															aria-label="Remove photo"
-															onclick={() => removeQuestionPhoto(question.id, photo.id)}
-														>
-															<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-															{@html xIcon}
-														</button>
-													</div>
-												{/each}
-												{#if (questionPhotos[question.id]?.length ?? 0) < FORM_MAX_PHOTOS}
-													<label class="public-form__upload">
-														<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-														{@html photoPlusIcon}
-														<span>Add a photo</span>
-														<input
-															type="file"
-															accept="image/png,image/jpeg,image/webp"
-															multiple
-															onchange={(e) => {
-																void addQuestionPhotos(
-																	question.id,
-																	(e.currentTarget as HTMLInputElement).files
-																);
-																(e.currentTarget as HTMLInputElement).value = '';
-															}}
-														/>
-													</label>
-												{/if}
-											</div>
-										{/if}
-									</div>
+									<PublicFormQuestion {question} bind:value={answers[question.id]} {imageUpload} />
 								{/each}
 							</div>
 						</section>
@@ -962,49 +804,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-base);
-	}
-
-	.public-form__field {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-smaller);
-	}
-
-	.public-form__label {
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-
-		em {
-			margin-left: var(--space-smallest);
-			color: var(--color-critical);
-			font-style: normal;
-		}
-	}
-
-	.public-form__help {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
-
-	.public-form__choices {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-small);
-
-		&--row {
-			flex-direction: row;
-			gap: var(--space-large);
-		}
-	}
-
-	.public-form__choice {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-small);
-		color: var(--color-text);
-		font-size: var(--typography--fontSize-base);
-		cursor: pointer;
 	}
 
 	.public-form__photos {

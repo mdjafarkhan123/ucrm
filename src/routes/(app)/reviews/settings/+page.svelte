@@ -3,6 +3,7 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -15,6 +16,9 @@
 	import ReviewRoutingSection from '$lib/components/reviews/ReviewRoutingSection.svelte';
 	import ReviewFeedbackFormEditor from '$lib/components/reviews/ReviewFeedbackFormEditor.svelte';
 	import ReviewMessageStylesEditor from '$lib/components/reviews/ReviewMessageStylesEditor.svelte';
+	import ReviewFeedbackJourney from '$lib/components/reviews/ReviewFeedbackJourney.svelte';
+	import Dialog from '$lib/components/ui/Dialog.svelte';
+	import type { ReviewFeedbackPageModel } from '$lib/reviews/feedback-page';
 	import {
 		fetchReviewSettings,
 		reviewSettingsKey,
@@ -33,6 +37,7 @@
 	import externalLinkIcon from '@tabler/icons/outline/external-link.svg?raw';
 	import checkIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import circleIcon from '@tabler/icons/outline/circle-dashed.svg?raw';
+	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 
 	// Google review setup (docs/google-review-campaign-owner-brief.md): the Google link, what the review page
 	// shows, the private-feedback form and the request wording. Nothing writes until Save.
@@ -154,6 +159,29 @@
 	}
 
 	const routingError = $derived(fieldErrors.routing_enabled ?? '');
+
+	// The preview draws the customer's page from the settings on screen, saved or not, and records nothing.
+	// It is remounted on every open so it always starts at the first step.
+	let previewOpen = $state(false);
+	let previewModel = $state<ReviewFeedbackPageModel | null>(null);
+
+	function openPreview() {
+		if (!draft) return;
+		const googleUrl = trimmedUrl && urlValid ? trimmedUrl : null;
+		previewModel = {
+			business: {
+				name: page.data.organization?.name ?? 'Your business',
+				logo_url: page.data.logoUrl ?? null
+			},
+			customer_first_name: 'Sam',
+			google_review_url: googleUrl,
+			routing_enabled: draft.routing_enabled && googleUrl !== null,
+			routing_google_min_rating: draft.routing_google_min_rating,
+			feedback_form: $state.snapshot(draft.feedback_form),
+			feedback_submitted: false
+		};
+		previewOpen = true;
+	}
 </script>
 
 <svelte:head><title>Google reviews · Settings · Contractor CRM</title></svelte:head>
@@ -252,6 +280,17 @@
 		{/snippet}
 
 		{#snippet rail()}
+			<RailCard title="Your customer's page">
+				<p class="review-settings__check-note">
+					See exactly what a customer sees when they open a review link, including changes you have
+					not saved yet. Nothing is recorded.
+				</p>
+				<Button variant="secondary" size="small" onclick={openPreview}>
+					<span class="review-settings__button-icon" aria-hidden="true">{@html eyeIcon}</span>
+					Preview feedback page
+				</Button>
+			</RailCard>
+
 			<RailCard title="Setup checklist">
 				<ul class="review-settings__checklist">
 					<li class="review-settings__check">
@@ -321,10 +360,29 @@
 			>
 		{/snippet}
 	</RecordFormLayout>
+
+	<Dialog
+		open={previewOpen}
+		title="Preview: your customer's feedback page"
+		size="large"
+		onClose={() => (previewOpen = false)}
+	>
+		{#if previewOpen && previewModel}
+			<div class="review-settings__preview">
+				<ReviewFeedbackJourney model={previewModel} preview />
+			</div>
+		{/if}
+	</Dialog>
 {/if}
 
 <style lang="scss">
 	.review-settings {
+		&__preview {
+			padding: var(--space-base);
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background);
+		}
+
 		&__intro {
 			margin: 0;
 			color: var(--color-text--secondary);
