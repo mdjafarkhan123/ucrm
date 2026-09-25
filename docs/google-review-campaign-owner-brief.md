@@ -4,7 +4,7 @@
 
 ## Goal
 
-Give contractors a simple, powerful way to ask for reviews after successful work. UCRM sends a polite SMS first, gives the customer a branded feedback journey, directs customers to the contractor's Google review destination where configured, and turns private feedback into a recoverable customer-service task.
+Give contractors a simple, powerful way to ask for reviews after successful work. UCRM sends a polite review request by the contractor's chosen channel (SMS by default), gives the customer a branded feedback journey, directs customers to the contractor's Google review destination where configured, and turns private feedback into a recoverable customer-service task.
 
 HighLevel is the reference for review-request automation, manual sending, request tracking, and configurable retry timing. UCRM keeps the owner's chosen rating page and flexible private-feedback form as its own behavior. See [the official HighLevel research](research/highlevel-review-request-behavior-2026-09-25.md) for the confirmed reference behavior.
 
@@ -12,7 +12,7 @@ HighLevel is the reference for review-request automation, manual sending, reques
 
 ```text
 Contractor completes work
-→ UCRM sends the chosen SMS review request
+→ UCRM sends the review request by the chosen channel (SMS by default)
 → customer opens the branded UCRM feedback page
 → Review routing off (default): the page shows two clear choices to every customer:
   "Leave a Google review" or "Tell us privately"
@@ -21,14 +21,14 @@ Contractor completes work
 → private feedback becomes a recovery item for the contractor's team
 ```
 
-Every request link, whatever the channel (SMS now, email later), opens the UCRM feedback page—never Google directly. Review routing is off until the contractor deliberately enables it and accepts UCRM's warning; the 4–5 / 1–3 split is the ready-made starting route once it is on.
+Every request link, whatever the channel (SMS or email), opens the UCRM feedback page—never Google directly. Review routing is off until the contractor deliberately enables it and accepts UCRM's warning; the 4–5 / 1–3 split is the ready-made starting route once it is on.
 
 ## Eligibility and enrolment
 
 - A one-time job enters the normal review-request automation only after the contractor marks the whole job completed.
 - A recurring job can use an **after every N completed visits** setting chosen by the contractor. UCRM does not ask after every visit by default.
-- The automatic request uses the client's main mobile contact. A manual request lets the contractor choose another saved client contact.
-- A request is not sent if there is no usable mobile number, the job is reopened or cancelled before sending, or the contractor has turned the automation off.
+- The automatic request uses the client's main contact for the chosen channel (mobile for SMS, email address for Email). A manual request lets the contractor choose another saved client contact.
+- A request is not sent if there is no usable contact for the chosen channel, the job is reopened or cancelled before sending, or the contractor has turned the automation off.
 - Activating the automation affects future completed work only. It does not automatically send requests for past jobs; contractors use the manual request action for those.
 - UCRM provides **Request a review** on a completed job and on the client page.
 
@@ -36,23 +36,30 @@ Every request link, whatever the channel (SMS now, email later), opens the UCRM 
 
 ### Ready-made default
 
-- SMS is the first-priority channel.
+- SMS is the default channel. The contractor can switch the automation to **Email** instead (see Channel choice below).
 - The first message sends after the job-completion event at the next configured sending time.
-- The default has two gentle SMS reminders: three days and five days after the first message.
+- The default has two gentle reminders on the same channel: three days and five days after the first message.
 - The default customer cooldown is one review-request sequence per client every six months.
-- UCRM provides three editable SMS starting styles: **Friendly**, **Professional**, and **Short**.
+- UCRM provides three editable starting styles for each channel (SMS text, and email subject and body): **Friendly**, **Professional**, and **Short**.
+
+### Channel choice
+
+- The contractor chooses one channel for the automation: **SMS** (default) or **Email**. Each manual request can also choose its channel, starting from SMS.
+- Only channels that are ready can be picked: SMS needs the organization's texting number to be ready; email needs the organization's sending email to be ready. A channel that is not ready is shown with a short reason and a link to set it up.
+- Automatic SMS uses the client's main mobile contact; automatic email uses the client's main email address. If the chosen channel has no usable contact, the request is not sent and the Requests tab shows why.
+- **UI reuse:** the channel control reuses the existing channel dropdown `src/lib/components/communications/ComposerChannelMenu.svelte` (extended if needed, not copied), and the message fields reuse the existing automation editors `SmsActionEditor.svelte` and `EmailActionEditor.svelte` in `src/lib/components/settings/automation/`.
 
 ### Contractor control
 
 - The contractor can select the message style, edit every message, choose timing, add or remove follow-ups, set the duration, and choose the recurring-job visit frequency.
 - The setup displays the full sequence as a readable timeline before activation.
 - UCRM warns before activation when a chosen pattern is likely to be overly frequent or harmful to customer goodwill. The contractor can stop or change an active automation at any time.
-- Manual requests open a small pre-filled panel: select the client contact, choose the SMS style, review the message, then choose **Send now** or **Schedule**.
+- Manual requests open a small pre-filled panel: select the client contact, choose the channel (SMS preselected), choose the style, review the message, then choose **Send now** or **Schedule**.
 
 ### When the sequence stops
 
-- UCRM follows HighLevel's useful pattern: the SMS retry sequence stops after the customer continues to the Google review destination or submits private feedback.
-- It also stops when the contractor cancels the request, the SMS cannot be delivered, the customer is no longer eligible, or the job is reopened/cancelled.
+- UCRM follows HighLevel's useful pattern: the retry sequence stops after the customer continues to the Google review destination or submits private feedback.
+- It also stops when the contractor cancels the request, the message cannot be delivered (SMS failure or email bounce), the customer replies STOP or unsubscribes from email, the customer is no longer eligible, or the job is reopened/cancelled.
 - A later manual request remains possible for an authorized contractor user.
 
 ## Rating page and private-feedback form
@@ -127,6 +134,6 @@ When UCRM can obtain Google access and the contractor connects their Google Busi
 
 - The contractor starts with a ready-made, easy setup and receives advanced control only where it is useful.
 - Messages should sound polite, personal, and business-like—not robotic or generic.
-- SMS is the priority channel. Email can become an optional additional channel later; it is not part of this SMS-first default.
+- SMS is the default channel; the contractor can choose email instead for automatic and manual requests.
 - Every action should be visible in plain language to the contractor: what was sent, what the customer did, and what needs attention.
 - The manual Google-link route delivers useful review requests now. Google review syncing, reply management, and AI tools wait for the later connection phase.
