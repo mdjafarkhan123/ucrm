@@ -33,8 +33,8 @@
 	function reviewLabel(status: string, reason: string | null) {
 		if (status === 'accepted') return 'Accepted into this conversation';
 		if (reason === 'unknown_sender') return 'Pending review — unknown sender';
-		if (reason === 'ambiguous_sender')
-			return 'Pending review — sender matches more than one contact';
+		// The reply link was valid, but it came from an address not saved on that customer.
+		if (reason === 'ambiguous_sender') return 'Pending review — sent from an address not on file';
 		if (reason === 'expired_alias') return 'Pending review — reply link expired';
 		return 'Pending review';
 	}

@@ -54,6 +54,30 @@ When adding a variable:
 4. Keep secrets in `$lib/server/*`, `hooks.server.ts`, or `+server.ts` only.
 5. Document its deployment source without documenting its value.
 
+## AWS customer-reply pipeline
+
+Customer email replies arrive through fixed-name resources in the SES account and region (`us-east-1`), named
+in `src/lib/server/communications/ses-env.ts`:
+
+- receipt rule set `ucrm-ses-inbound-rules`, one rule per organization, written by the Email card's Set up and
+  Check: a single S3 action that stores the email in `ucrm-ses-inbound-mime` and notifies the topic;
+- SNS topic `ucrm-ses-inbound`, which only `ses.amazonaws.com` from this account may publish to;
+- SQS `ucrm-ses-inbound`, subscribed to the topic, the durable copy (redrive to `ucrm-ses-inbound-dlq` after 5
+  receives), drained by `/api/internal/communications/ses-inbound-worker` every minute from pg_cron;
+- an HTTPS subscription from the topic to `<PUBLIC_APP_URL>/api/webhooks/ses-inbound`, which verifies the SNS
+  signature and starts the same drain at once, so a reply shows within seconds instead of up to a minute.
+
+Each deployed environment needs its own HTTPS subscription, created once:
+
+```bash
+aws sns subscribe --region us-east-1 --topic-arn arn:aws:sns:us-east-1:<account>:ucrm-ses-inbound \
+  --protocol https --notification-endpoint <PUBLIC_APP_URL>/api/webhooks/ses-inbound
+```
+
+The endpoint confirms the subscription itself. Remove an environment's subscription when that environment is
+retired. The queue is shared by every environment pointed at this account, so only one environment should
+drain it at a time.
+
 ## Troubleshooting
 
 If startup fails with `Invalid public environment configuration` or `Invalid server environment

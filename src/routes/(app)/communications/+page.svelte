@@ -656,7 +656,7 @@
 		if (message.review_reason === 'unknown_sender')
 			return { label: 'Needs review — unknown sender', tone: 'warning' as const };
 		if (message.review_reason === 'ambiguous_sender')
-			return { label: 'Needs review — multiple matches', tone: 'warning' as const };
+			return { label: 'Needs review — address not on file', tone: 'warning' as const };
 		if (message.review_reason === 'expired_alias')
 			return { label: 'Needs review — link expired', tone: 'warning' as const };
 		return { label: 'Needs review', tone: 'warning' as const };
