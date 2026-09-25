@@ -48,6 +48,7 @@
 		channel,
 		sessionId = null,
 		defaultSubject = '',
+		initialBody = '',
 		recipientLabel = '',
 		channels,
 		onChannelChange,
@@ -58,6 +59,8 @@
 		channel: 'email' | 'sms' | 'website_chat';
 		sessionId?: string | null;
 		defaultSubject?: string;
+		/** A message written elsewhere for staff to review here, such as a file share's link. */
+		initialBody?: string;
 		recipientLabel?: string;
 		channels: Array<'email' | 'sms' | 'website_chat'>;
 		onChannelChange: (channel: 'email' | 'sms' | 'website_chat') => void;
@@ -72,7 +75,8 @@
 	// conversation or channel changes, so the initial value is always the right one.
 	// svelte-ignore state_referenced_locally
 	let subject = $state(defaultSubject);
-	let body = $state('');
+	// svelte-ignore state_referenced_locally
+	let body = $state(initialBody);
 	let sending = $state(false);
 	let uploading = $state(false);
 	let formError = $state('');

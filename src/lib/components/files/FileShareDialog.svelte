@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { useQueryClient } from '@tanstack/svelte-query';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import ClientPicker from '$lib/components/work/ClientPicker.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { activityKey } from '$lib/collaboration/api';
+	import { handOffComposerDraft } from '$lib/communications/composer-draft';
+	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
 	import FileThumb from './FileThumb.svelte';
 	import {
 		createFileShare,
@@ -38,6 +43,8 @@
 
 	let clientId = $state('');
 	let clientName = $state('');
+	let clientEmail = $state<string | null>(null);
+	let clientPhone = $state<string | null>(null);
 	let days = $state<string>('30');
 	let saving = $state(false);
 	let errorMessage = $state('');
@@ -100,11 +107,34 @@
 		}
 	}
 
+	// "Send by email" / "Send by text" open the Client's inbox conversation with this written in, so it goes
+	// out through the business's own channels and stays in their history. Nothing is sent until staff press
+	// Send there. The draft travels in memory, never in the URL, because it carries the live link.
+	function handOff(channel: 'email' | 'sms') {
+		if (!created) return;
+		const business = page.data.organization?.name ?? 'us';
+		const until = formatDate(created.share.expires_at);
+		handOffComposerDraft({
+			clientId: created.share.client_id,
+			channel,
+			subject: `Files from ${business}`,
+			body:
+				channel === 'email'
+					? `Hi ${created.share.client_name},\n\nHere are the files we shared with you. You can view and download them here:\n${created.url}\n\nThis link works until ${until}.`
+					: `Hi ${created.share.client_name}, here are the files from ${business}: ${created.url} (link works until ${until})`
+		});
+	}
+
+	const conversationHref = $derived(
+		created ? `${resolve('/(app)/communications')}?client=${created.share.client_id}` : ''
+	);
+
 	function selectLink(event: FocusEvent) {
 		(event.currentTarget as HTMLInputElement).select();
 	}
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
 <Dialog open title={created ? 'Link ready' : 'Share with customer'} {onClose}>
 	<div class="file-share">
 		{#if created}
@@ -131,6 +161,41 @@
 				The customer sees these files under the names they have now. Renaming a file later does not
 				change their page.
 			</p>
+			<div class="file-share__send">
+				<Button
+					variant="secondary"
+					href={conversationHref}
+					disabled={!clientEmail}
+					onclick={() => clientEmail && handOff('email')}
+				>
+					<span class="file-share__icon" aria-hidden="true">{@html mailIcon}</span>
+					Send by email
+				</Button>
+				<Button
+					variant="secondary"
+					href={conversationHref}
+					disabled={!clientPhone}
+					onclick={() => clientPhone && handOff('sms')}
+				>
+					<span class="file-share__icon" aria-hidden="true">{@html messageIcon}</span>
+					Send by text
+				</Button>
+			</div>
+			{#if !clientEmail || !clientPhone}
+				<p class="file-share__hint">
+					{created.share.client_name} has no
+					{!clientEmail && !clientPhone
+						? 'email address or phone number'
+						: !clientEmail
+							? 'email address'
+							: 'phone number'}
+					on file. Copy the link to send it another way.
+				</p>
+			{/if}
+			<p class="file-share__hint">
+				Sending opens their conversation with a message and the link written in. Nothing goes out
+				until you press Send.
+			</p>
 			<div class="file-share__actions">
 				<Button variant="secondary" onclick={onClose}>Done</Button>
 			</div>
@@ -143,6 +208,8 @@
 				onSelect={(client) => {
 					clientId = client?.id ?? '';
 					clientName = client?.display_name ?? '';
+					clientEmail = client?.email ?? null;
+					clientPhone = client?.phone ?? null;
 				}}
 			/>
 
@@ -296,6 +363,21 @@
 		margin: 0;
 		color: var(--color-critical);
 		font-size: var(--typography--fontSize-small);
+	}
+
+	.file-share__send {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-small);
+	}
+
+	.file-share__icon {
+		display: inline-flex;
+
+		:global(svg) {
+			width: 18px;
+			height: 18px;
+		}
 	}
 
 	.file-share__actions {

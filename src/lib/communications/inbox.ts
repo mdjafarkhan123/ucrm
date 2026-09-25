@@ -316,6 +316,12 @@ export type ConversationGroup = {
 	chatSession: WebsiteChatInboxSession | null;
 };
 
+/** The conversation open in the thread pane. Usually a listed group, but a Client opened from elsewhere in the
+ *  CRM may have no message yet -- then `latest` is null and `messages` is empty until the first send. */
+export type OpenConversation = Omit<ConversationGroup, 'latest'> & {
+	latest: TimelineMessage | null;
+};
+
 function timelineItemKey(item: TimelineMessage): string {
 	if (item.client_id) return item.client_id;
 	if (isWebsiteChatMessage(item)) return `webchat:${item.session_id}`;
@@ -406,7 +412,7 @@ export function groupMessagesByContact(
 // that derive the customer's address from the most recent outbound-shaped message skip a forward row and
 // fall back to the next one, matching the reply route's own server-side resolution (which has no knowledge
 // of forward events at all). A Website Chat row has no email address at all and is skipped the same way.
-export function conversationCustomerEmail(group: ConversationGroup): string {
+export function conversationCustomerEmail(group: Pick<ConversationGroup, 'messages'>): string {
 	for (let index = group.messages.length - 1; index >= 0; index -= 1) {
 		const message = group.messages[index];
 		if (isWebsiteChatMessage(message)) continue;
@@ -421,7 +427,7 @@ export function conversationCustomerEmail(group: ConversationGroup): string {
 
 // The SMS mirror of conversationCustomerEmail: the phone number an SMS reply would target, matching the
 // reply command's own "most recent activity, phone contact methods only" resolution.
-export function conversationCustomerPhone(group: ConversationGroup): string {
+export function conversationCustomerPhone(group: Pick<ConversationGroup, 'messages'>): string {
 	for (let index = group.messages.length - 1; index >= 0; index -= 1) {
 		const message = group.messages[index];
 		if (isWebsiteChatMessage(message)) continue;

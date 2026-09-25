@@ -14,7 +14,7 @@
 		conversationCustomerEmail,
 		fetchConversationContextSection,
 		type ConversationContext,
-		type ConversationGroup
+		type OpenConversation
 	} from '$lib/communications/inbox';
 	import {
 		CONTEXT_SECTION_LABELS,
@@ -45,7 +45,7 @@
 		followPending,
 		onToggleFollow
 	}: {
-		group: ConversationGroup;
+		group: OpenConversation;
 		context: CreateQueryResult<ConversationContext, Error>;
 		canManageAssignment: boolean;
 		followPending: boolean;

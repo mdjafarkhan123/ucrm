@@ -372,7 +372,9 @@ link plus CompanyCam's static Gallery, built on the same hashed-token link the w
   new share.
 - **Delivery.** Copy link, or "Send by email" / "Send by text", which open the Client's inbox conversation with a
   short message and the link written in; staff review and press Send, so it goes through the business's own
-  channels and stays in the conversation history.
+  channels and stays in the conversation history. A button is off when the Client has no email address or
+  phone number. The draft is handed over in memory, never in the URL, so a reload opens the conversation
+  empty. The conversation opens even when it is older than the inbox's latest page or has no message yet.
 - **What the customer sees.** The business name and logo, then each shared File by the name it had when
   shared: photos open full size, PDFs preview, every File downloads individually. No captions or labels, no
   "Download all" in the first release, nothing else from the library.
