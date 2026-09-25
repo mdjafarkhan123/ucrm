@@ -20,7 +20,8 @@ vi.mock('./cloudflare-dns', async () => {
 		resolveCloudflareZone: vi.fn(),
 		listCloudflareDnsRecords: vi.fn(),
 		createCloudflareDnsRecord: vi.fn(),
-		updateCloudflareDnsRecord: vi.fn()
+		updateCloudflareDnsRecord: vi.fn(),
+		deleteCloudflareDnsRecord: vi.fn()
 	};
 });
 
@@ -45,6 +46,7 @@ type DomainRow = {
 	organization_id: string;
 	purpose: string;
 	lifecycle_state: string;
+	provider?: string;
 	domain_name?: string;
 	verified_at?: string | null;
 };
@@ -259,6 +261,7 @@ describe('activateReplyIngestion', () => {
 				id: 'domain-existing',
 				organization_id: ORG,
 				purpose: 'receiving',
+				provider: 'ses',
 				domain_name: RECEIVING,
 				lifecycle_state: 'verified',
 				verified_at: '2026-01-01T00:00:00.000Z'
@@ -269,5 +272,71 @@ describe('activateReplyIngestion', () => {
 
 		expect(result.lifecycle_state).toBe('unhealthy');
 		expect(updated[0].row.verified_at).toBe('2026-01-01T00:00:00.000Z');
+	});
+
+	it('switching a Brevo-verified reply domain reads as pending while DNS moves, not as a problem', async () => {
+		const { client, updated } = makeClient([
+			{
+				id: 'domain-existing',
+				organization_id: ORG,
+				purpose: 'receiving',
+				provider: 'brevo',
+				domain_name: RECEIVING,
+				lifecycle_state: 'verified',
+				verified_at: '2026-01-01T00:00:00.000Z'
+			}
+		]);
+
+		const result = await activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT });
+
+		expect(result.lifecycle_state).toBe('pending_dns');
+		expect(updated[0].row.provider).toBe('ses');
+		expect(updated[0].row.verified_at).toBeNull();
+	});
+
+	it('removes the leftover Brevo backup MX only after the SES MX is written', async () => {
+		const order: string[] = [];
+		const brevoBackup = {
+			id: 'cf-brevo-20',
+			type: 'MX',
+			name: RECEIVING,
+			content: 'inbound2.sendinblue.com',
+			ttl: 1,
+			priority: 20,
+			proxied: false
+		};
+		vi.mocked(cloudflare.listCloudflareDnsRecords).mockResolvedValue([brevoBackup]);
+		vi.mocked(cloudflare.createCloudflareDnsRecord).mockImplementation(async (_zone, input) => {
+			order.push('ses-mx');
+			return { ...brevoBackup, id: 'cf-new', content: input.content, priority: 10 };
+		});
+		vi.mocked(cloudflare.deleteCloudflareDnsRecord).mockImplementation(async () => {
+			order.push('delete-brevo');
+		});
+		const { client } = makeClient();
+
+		const result = await activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT });
+
+		expect(order).toEqual(['ses-mx', 'delete-brevo']);
+		expect(cloudflare.deleteCloudflareDnsRecord).toHaveBeenCalledWith('zone-1', 'cf-brevo-20');
+		expect(result.records_written).toBe(2);
+	});
+
+	it('stays pending while any public resolver still answers with a Brevo MX', async () => {
+		mxAnswers[RECEIVING] = [INBOUND_MX, 'inbound2.sendinblue.com'];
+		const { client } = makeClient();
+
+		const result = await activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT });
+
+		expect(result.inbound_mx_status).toBe('pending');
+	});
+
+	it('never marks a receiving row as sending-authenticated', async () => {
+		mxAnswers[RECEIVING] = [INBOUND_MX];
+		const { client, inserted } = makeClient();
+
+		await activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT });
+
+		expect(inserted[0].provider_authenticated).toBe(false);
 	});
 });

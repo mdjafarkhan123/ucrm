@@ -1,5 +1,9 @@
 import { Resolver } from 'node:dns/promises';
-import { listCloudflareDnsRecords, resolveCloudflareZone } from './cloudflare-dns';
+import {
+	deleteCloudflareDnsRecord,
+	listCloudflareDnsRecords,
+	resolveCloudflareZone
+} from './cloudflare-dns';
 import {
 	assertSubdomainNotOccupied,
 	assertUnderSubdomain,
@@ -56,7 +60,10 @@ export type ReplyIngestionResult = {
 	records_written: number;
 };
 
-/** True when public DNS already answers the domain's MX with the SES inbound target. */
+/**
+ * True when public DNS answers the domain's MX with the SES inbound target and nothing else. A leftover Brevo
+ * answer still cached by a resolver means some senders would deliver there, so the switch is not finished.
+ */
 async function mxIsVisible(domain: string, target: string): Promise<boolean> {
 	// Each resolver is asked on its own, the same reasoning branded-click-domain.ts's cnameIsVisible uses: one
 	// resolver can hold a stale negative answer for minutes after another already sees the record.
@@ -71,7 +78,8 @@ async function mxIsVisible(domain: string, target: string): Promise<boolean> {
 			}
 		})
 	);
-	return answers.flat().some((record) => normalizeName(record.exchange) === normalizeName(target));
+	const exchanges = answers.flat().map((record) => normalizeName(record.exchange));
+	return exchanges.length > 0 && exchanges.every((exchange) => exchange === normalizeName(target));
 }
 
 /**
@@ -121,13 +129,29 @@ export async function activateReplyIngestion(input: {
 		sesInboundMxTarget(),
 		...BREVO_INBOUND_MX_TARGETS
 	]);
-	const recordsWritten = (await reconcileRecord(zoneId, mxRecord)) === 'unchanged' ? 0 : 1;
+	let recordsWritten = (await reconcileRecord(zoneId, mxRecord)) === 'unchanged' ? 0 : 1;
+
+	// Brevo published two MX records (priorities 10 and 20). reconcileRecord only replaces the one at SES's
+	// priority, so the other would stay behind as a backup route still delivering some replies to Brevo. Remove
+	// them only after the SES record exists, so the subdomain is never left without a mail route.
+	const brevoTargets = BREVO_INBOUND_MX_TARGETS.map(normalizeName);
+	for (const record of await listCloudflareDnsRecords(zoneId, receiving)) {
+		if (record.type.trim().toUpperCase() !== 'MX') continue;
+		if (!brevoTargets.includes(normalizeName(record.content))) continue;
+		await deleteCloudflareDnsRecord(zoneId, record.id);
+		recordsWritten += 1;
+	}
 
 	const mxReady = await mxIsVisible(receiving, sesInboundMxTarget());
 	const inboundMxStatus: DnsStatus = mxReady ? 'passing' : 'pending';
 
 	const now = new Date().toISOString();
-	const history = await readDomainHistory(client, existingId);
+	// A row verified under Brevo says nothing about SES receiving yet: while the switch propagates it is
+	// pending, not a broken domain, and its verified time restarts once SES actually receives.
+	const switchingProvider = existingId ? (await readProvider(client, existingId)) !== 'ses' : false;
+	const history = switchingProvider
+		? { verifiedAt: null, lifecycleState: null }
+		: await readDomainHistory(client, existingId);
 	const lifecycleState = nextLifecycleState(mxReady, history);
 
 	const domainId = await upsertDomainRow(client, existingId, {
@@ -140,7 +164,8 @@ export async function activateReplyIngestion(input: {
 		// the stable handle cleanup needs to delete it.
 		provider_domain_id: `reply-${organizationId}`,
 		provider_verified: identityReady,
-		provider_authenticated: identityReady,
+		// Receiving rows never carry sending authentication (communication_email_domains_purpose_health_check).
+		provider_authenticated: false,
 		ownership_status: sesStatusToDns(identity.dkimStatus),
 		dkim_status: 'unchecked',
 		spf_status: 'unchecked',
@@ -159,4 +184,14 @@ export async function activateReplyIngestion(input: {
 		inbound_mx_status: inboundMxStatus,
 		records_written: recordsWritten
 	};
+}
+
+async function readProvider(client: OwnerClient, domainId: string): Promise<string | null> {
+	const { data, error } = await client
+		.from('communication_email_domains')
+		.select('provider')
+		.eq('id', domainId)
+		.maybeSingle();
+	if (error) throw error;
+	return data?.provider ?? null;
 }
