@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import { OperationalEmailSubmissionError } from './brevo';
 import { OperationalSesEmailSubmissionError } from './ses';
 import { operationalConfigurationSetName, sesTenantName } from './ses-domain-identity';
 import {
@@ -22,8 +21,7 @@ const claim = {
 	logical_send_key: 'job-update-1',
 	sender_id: 'sender-1',
 	sender_email: 'service@mail.ridgeway.example',
-	sender_name: 'Ridgeway',
-	sender_provider: 'brevo'
+	sender_name: 'Ridgeway'
 };
 
 function clientWithClaim(
@@ -67,11 +65,10 @@ describe('processClaimedEmail', () => {
 		expect(send).toHaveBeenCalledWith(
 			expect.objectContaining({
 				from: { email: claim.sender_email, name: claim.sender_name },
-				intentId: 'intent-1'
-			}),
-			'brevo',
-			sesTenantName('org-1'),
-			operationalConfigurationSetName('org-1')
+				intentId: 'intent-1',
+				tenantName: sesTenantName('org-1'),
+				configurationSetName: operationalConfigurationSetName('org-1')
+			})
 		);
 		expect(rpc).toHaveBeenCalledWith(
 			'finalize_communication_outbox_event',
@@ -84,7 +81,7 @@ describe('processClaimedEmail', () => {
 		);
 	});
 
-	it('reads each listed attachment and hands Brevo base64 content', async () => {
+	it('reads each listed attachment and hands SES base64 content', async () => {
 		const attachmentRow = {
 			file_name: 'quote.pdf',
 			mime_type: 'application/pdf',
@@ -103,10 +100,7 @@ describe('processClaimedEmail', () => {
 		expect(send).toHaveBeenCalledWith(
 			expect.objectContaining({
 				attachments: [{ name: 'quote.pdf', content: Buffer.from([1, 2, 3, 4]).toString('base64') }]
-			}),
-			expect.any(String),
-			expect.any(String),
-			expect.any(String)
+			})
 		);
 	});
 
@@ -116,33 +110,7 @@ describe('processClaimedEmail', () => {
 
 		await processClaimedEmail({ client, send });
 
-		expect(send).toHaveBeenCalledWith(
-			expect.objectContaining({ attachments: [] }),
-			expect.any(String),
-			expect.any(String),
-			expect.any(String)
-		);
-	});
-
-	it.each([
-		['retry', 'brevo_http_503'],
-		['cancelled', 'brevo_http_400'],
-		['submission_unknown', 'brevo_network_unknown']
-	] as const)('records a %s provider outcome without a second send', async (outcome, code) => {
-		const { client, rpc } = clientWithClaim(claim);
-		const send = vi
-			.fn()
-			.mockRejectedValue(new OperationalEmailSubmissionError('Provider outcome.', outcome, code));
-
-		await expect(processClaimedEmail({ client, send })).resolves.toMatchObject({
-			status: outcome,
-			intentId: 'intent-1'
-		});
-		expect(send).toHaveBeenCalledTimes(1);
-		expect(rpc).toHaveBeenCalledWith(
-			'finalize_communication_outbox_event',
-			expect.objectContaining({ target_outcome: outcome, target_failure_code: code })
-		);
+		expect(send).toHaveBeenCalledWith(expect.objectContaining({ attachments: [] }));
 	});
 
 	it.each([
@@ -150,8 +118,7 @@ describe('processClaimedEmail', () => {
 		['cancelled', 'ses_MessageRejected'],
 		['submission_unknown', 'ses_network_unknown']
 	] as const)('records a %s SES provider outcome without a second send', async (outcome, code) => {
-		const sesClaim = { ...claim, sender_provider: 'ses' };
-		const { client, rpc } = clientWithClaim(sesClaim);
+		const { client, rpc } = clientWithClaim(claim);
 		const send = vi
 			.fn()
 			.mockRejectedValue(
@@ -163,10 +130,10 @@ describe('processClaimedEmail', () => {
 			intentId: 'intent-1'
 		});
 		expect(send).toHaveBeenCalledWith(
-			expect.anything(),
-			'ses',
-			sesTenantName('org-1'),
-			operationalConfigurationSetName('org-1')
+			expect.objectContaining({
+				tenantName: sesTenantName('org-1'),
+				configurationSetName: operationalConfigurationSetName('org-1')
+			})
 		);
 		expect(send).toHaveBeenCalledTimes(1);
 		expect(rpc).toHaveBeenCalledWith(
