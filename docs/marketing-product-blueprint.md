@@ -81,6 +81,10 @@ a separate marketing-only customer database.
 4. SMS campaigns only after SMS registration, consent, STOP/HELP, cost, quiet-hour, callback, and live-delivery
    safeguards pass
 
+The current owner-described review journey is recorded in
+[`docs/google-review-campaign-owner-brief.md`](google-review-campaign-owner-brief.md). It expands the customer
+journey and manual Google-link setup for this product part.
+
 ### Deliberately preserved Later Marketing
 
 These are named future product parts. Finishing the first release does not close or erase them.
