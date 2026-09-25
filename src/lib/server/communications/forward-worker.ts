@@ -1,15 +1,15 @@
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { getObjectBytes } from '$lib/server/storage/r2';
-import {
-	OperationalEmailSubmissionError,
-	sendOperationalEmail,
-	type OperationalEmail
-} from './brevo';
+import { OperationalEmailSubmissionError } from './brevo';
+import { OperationalSesEmailSubmissionError } from './ses';
+import { operationalConfigurationSetName, sesTenantName } from './ses-domain-identity';
+import { sendOperationalEmailAuto, type SendOperationalEmail } from './email-worker';
 import { runBoundedDrain, type BoundedDrainOptions, type BoundedDrainResult } from './drain';
 
 type ClaimedForward = {
 	forward_event_id: string;
 	claim_token: string;
+	organization_id: string;
 	recipient_emails: string[];
 	subject: string;
 	html_content: string;
@@ -17,6 +17,7 @@ type ClaimedForward = {
 	sender_id: string;
 	sender_email: string;
 	sender_name: string;
+	sender_provider: string;
 };
 
 type ForwardAttachmentRow = {
@@ -46,7 +47,7 @@ export type CommunicationForwardWorkerClient = {
 
 type WorkerDependencies = {
 	client?: CommunicationForwardWorkerClient;
-	send?: (message: OperationalEmail) => Promise<{ messageId: string }>;
+	send?: SendOperationalEmail;
 	readAttachment?: (objectKey: string) => Promise<Uint8Array>;
 };
 
@@ -86,7 +87,7 @@ export async function processClaimedForward(
 	dependencies: WorkerDependencies = {}
 ): Promise<ProcessedForwardResult> {
 	const client = resolveClient(dependencies.client);
-	const send = dependencies.send ?? sendOperationalEmail;
+	const send = dependencies.send ?? sendOperationalEmailAuto;
 	const readAttachment = dependencies.readAttachment ?? getObjectBytes;
 
 	const claimed = await client.rpc('claim_communication_forward_event');
@@ -134,19 +135,27 @@ export async function processClaimedForward(
 				}))
 		);
 
-		const submitted = await send({
-			from: { email: forward.sender_email, name: forward.sender_name },
-			to: forward.recipient_emails.map((email) => ({ email })),
-			subject: forward.subject,
-			htmlContent: forward.html_content,
-			textContent: forward.text_content,
-			intentId: forward.forward_event_id,
-			attachments
-		});
+		const submitted = await send(
+			{
+				from: { email: forward.sender_email, name: forward.sender_name },
+				to: forward.recipient_emails.map((email) => ({ email })),
+				subject: forward.subject,
+				htmlContent: forward.html_content,
+				textContent: forward.text_content,
+				intentId: forward.forward_event_id,
+				attachments
+			},
+			forward.sender_provider,
+			sesTenantName(forward.organization_id),
+			operationalConfigurationSetName(forward.organization_id)
+		);
 		outcome = 'submitted';
 		providerMessageId = submitted.messageId;
 	} catch (error) {
-		if (error instanceof OperationalEmailSubmissionError) {
+		if (
+			error instanceof OperationalEmailSubmissionError ||
+			error instanceof OperationalSesEmailSubmissionError
+		) {
 			outcome = error.outcome;
 			failureCode = error.code;
 			failureMessage = error.message;
@@ -177,7 +186,7 @@ export async function drainCommunicationForwardQueue(
 	dependencies: WorkerDependencies & BoundedDrainOptions = {}
 ): Promise<BoundedDrainResult> {
 	const client = resolveClient(dependencies.client);
-	const send = dependencies.send ?? sendOperationalEmail;
+	const send = dependencies.send ?? sendOperationalEmailAuto;
 	const readAttachment = dependencies.readAttachment ?? getObjectBytes;
 
 	return runBoundedDrain(

@@ -27,20 +27,45 @@ const deliveredMessage: SqsMessage = {
 	})
 };
 
+function operationalDeliveredMessage(
+	overrides: { intentId?: string | null; receiptHandle?: string } = {}
+): SqsMessage {
+	const intentId = overrides.intentId === undefined ? 'intent-1' : overrides.intentId;
+	return {
+		receiptHandle: overrides.receiptHandle ?? 'receipt-op-1',
+		body: JSON.stringify({
+			eventType: 'Delivery',
+			mail: {
+				messageId: 'msg-op-1',
+				timestamp: '2026-09-22T10:00:00.000Z',
+				tags: {
+					'ses:configuration-set': ['ucrm-operational-raad'],
+					...(intentId ? { 'ucrm-intent': [intentId] } : {})
+				}
+			},
+			delivery: {}
+		})
+	};
+}
+
 function fakeClient(overrides: Partial<MarketingEventsWorkerClient> = {}): {
 	client: MarketingEventsWorkerClient;
 	rpc: ReturnType<typeof vi.fn>;
 	insertEvent: ReturnType<typeof vi.fn>;
+	insertCallbackEvent: ReturnType<typeof vi.fn>;
 } {
 	const rpc = vi.fn(async (name: string) => {
 		if (name === 'project_marketing_campaign_recipient_events') return { data: 0, error: null };
+		if (name === 'process_communication_provider_callbacks') return { data: 0, error: null };
 		return { data: null, error: { message: `Unexpected RPC ${name}.` } };
 	});
 	const insertEvent = vi.fn(async () => ({ error: null }));
+	const insertCallbackEvent = vi.fn(async () => ({ error: null }));
 	return {
-		client: { rpc, insertEvent, ...overrides } as MarketingEventsWorkerClient,
+		client: { rpc, insertEvent, insertCallbackEvent, ...overrides } as MarketingEventsWorkerClient,
 		rpc,
-		insertEvent
+		insertEvent,
+		insertCallbackEvent
 	};
 }
 
@@ -85,6 +110,52 @@ describe('drainMarketingEventQueue', () => {
 		expect(rpc).toHaveBeenCalledWith('project_marketing_campaign_recipient_events', {
 			batch_size: 200
 		});
+		expect(rpc).toHaveBeenCalledWith('process_communication_provider_callbacks', {
+			batch_size: 200
+		});
+	});
+
+	it('routes an operational configuration-set event to insertCallbackEvent, not insertEvent', async () => {
+		const { client, insertEvent, insertCallbackEvent } = fakeClient();
+		const { sqs, removed } = fakeSqs([[operationalDeliveredMessage()], []]);
+
+		const result = await drainMarketingEventQueue({ client, sqs });
+
+		expect(result).toMatchObject({ received: 1, recorded: 1, ignored: 0, skipped: 0 });
+		expect(insertCallbackEvent).toHaveBeenCalledWith({
+			provider_event_key: 'ses:msg-op-1:Delivery',
+			delivery_intent_id: 'intent-1',
+			event_kind: 'delivered',
+			occurred_at: '2026-09-22T10:00:00.000Z',
+			payload: expect.objectContaining({ eventType: 'Delivery' })
+		});
+		expect(insertEvent).not.toHaveBeenCalled();
+		expect(removed).toEqual(['receipt-op-1']);
+	});
+
+	it('swallows a 23503 on an operational callback insert as ignored and deletes the message', async () => {
+		const { client } = fakeClient({
+			insertCallbackEvent: vi.fn(async () => ({
+				error: { code: '23503', message: 'foreign key violation' }
+			}))
+		});
+		const { sqs, removed } = fakeSqs([[operationalDeliveredMessage()], []]);
+
+		const result = await drainMarketingEventQueue({ client, sqs });
+
+		expect(result).toMatchObject({ received: 1, recorded: 0, ignored: 1, skipped: 0 });
+		expect(removed).toEqual(['receipt-op-1']);
+	});
+
+	it('calls process_communication_provider_callbacks once per drain', async () => {
+		const { client, rpc } = fakeClient();
+		const { sqs } = fakeSqs([[operationalDeliveredMessage()], []]);
+
+		await drainMarketingEventQueue({ client, sqs });
+
+		expect(
+			rpc.mock.calls.filter(([name]) => name === 'process_communication_provider_callbacks')
+		).toHaveLength(1);
 	});
 
 	it('deletes a duplicate message without re-throwing', async () => {
@@ -202,11 +273,13 @@ describe('runMonitoredMarketingEventsWake', () => {
 			if (name === 'release_communication_worker_lease') return { data: null, error: null };
 			if (name === 'record_communication_worker_wake_result') return { data: null, error: null };
 			if (name === 'project_marketing_campaign_recipient_events') return { data: 0, error: null };
+			if (name === 'process_communication_provider_callbacks') return { data: 0, error: null };
 			return { data: null, error: { message: `Unexpected RPC ${name}.` } };
 		});
 		const client = {
 			rpc,
-			insertEvent: vi.fn(async () => ({ error: null }))
+			insertEvent: vi.fn(async () => ({ error: null })),
+			insertCallbackEvent: vi.fn(async () => ({ error: null }))
 		} as MarketingEventsWorkerClient;
 		const { sqs } = fakeSqs([[]]);
 
@@ -252,11 +325,13 @@ describe('runMonitoredMarketingEventsWake', () => {
 			if (name === 'release_communication_worker_lease') return { data: null, error: null };
 			if (name === 'record_communication_worker_wake_result') return { data: null, error: null };
 			if (name === 'project_marketing_campaign_recipient_events') return { data: 0, error: null };
+			if (name === 'process_communication_provider_callbacks') return { data: 0, error: null };
 			return { data: null, error: { message: `Unexpected RPC ${name}.` } };
 		});
 		return {
 			rpc,
-			insertEvent: vi.fn(async () => ({ error: null }))
+			insertEvent: vi.fn(async () => ({ error: null })),
+			insertCallbackEvent: vi.fn(async () => ({ error: null }))
 		} as MarketingEventsWorkerClient;
 	}
 

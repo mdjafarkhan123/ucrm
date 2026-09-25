@@ -8,6 +8,7 @@ import {
 } from './dns-reconcile';
 import {
 	associateSesTenantResource,
+	ensureSesEventDestination,
 	getSesIdentity,
 	putSesIdentityMailFrom,
 	sesConfigurationSetArn,
@@ -73,6 +74,7 @@ export type OperationalSendingSummary = {
 	records_written: number;
 	tenant_name: string;
 	configuration_set_name: string;
+	event_destination_ready: boolean;
 };
 
 export type OperationalReceivingSummary = {
@@ -185,6 +187,9 @@ async function reconcileOperationalDomain(input: {
 	const tenant = await reconcileSesTenant(client, organizationId);
 	const configurationSetName = operationalConfigurationSetName(organizationId);
 	await ensureSesConfigurationSet(configurationSetName);
+	// Without this the operational dispatcher would send successfully and never learn what happened to it --
+	// this call already exists and is already reused as-is for Marketing's configuration set.
+	const eventDestinationReady = await ensureSesEventDestination(configurationSetName);
 
 	const sendingIdentity = await reconcileSesIdentity(sending);
 	const receivingIdentity = await reconcileSesIdentity(receiving);
@@ -282,7 +287,8 @@ async function reconcileOperationalDomain(input: {
 			spf_status: spfStatus,
 			records_written: sendingWritten,
 			tenant_name: tenant.tenantName,
-			configuration_set_name: configurationSetName
+			configuration_set_name: configurationSetName,
+			event_destination_ready: eventDestinationReady
 		},
 		receiving: {
 			domain_name: receiving,

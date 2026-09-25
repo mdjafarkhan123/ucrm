@@ -99,6 +99,30 @@ describe('contractor communication sender commands', () => {
 		expect(createBrevoSender).not.toHaveBeenCalled();
 	});
 
+	it('creates an SES sender without calling Brevo, since SES has no per-address provider registration', async () => {
+		const sesSender = { ...sender, provider: 'ses' } as Sender;
+		const enabled = {
+			...sesSender,
+			lifecycle_state: 'enabled',
+			provider_sender_id: null
+		} as Sender;
+		const client = clientWith(
+			{ data: { replayed: false, sender: sesSender }, error: null },
+			{ data: enabled, error: null }
+		);
+
+		await expect(createCommunicationSender(client as never, createInput)).resolves.toEqual({
+			sender: enabled,
+			replayed: false
+		});
+		expect(listBrevoSenders).not.toHaveBeenCalled();
+		expect(createBrevoSender).not.toHaveBeenCalled();
+		expect(client.rpc).toHaveBeenLastCalledWith(
+			'finalize_communication_email_sender_create',
+			expect.objectContaining({ provider_sender_id: null })
+		);
+	});
+
 	it('keeps an ambiguous provider create retryable behind the persisted claim', async () => {
 		const client = clientWith({ data: { replayed: false, sender }, error: null });
 		vi.mocked(listBrevoSenders).mockRejectedValue(

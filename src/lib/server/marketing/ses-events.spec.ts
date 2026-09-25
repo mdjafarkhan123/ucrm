@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { parseSesEvent, sesEventKey, sesEventOccurredAt } from './ses-events';
+import {
+	parseSesEvent,
+	sesEventConfigurationSetName,
+	sesEventKey,
+	sesEventOccurredAt,
+	sesEventTag
+} from './ses-events';
 
 const deliveryEvent = {
 	eventType: 'Delivery',
@@ -47,5 +53,36 @@ describe('sesEventOccurredAt', () => {
 
 	it('returns null when neither timestamp is present', () => {
 		expect(sesEventOccurredAt({ eventType: 'Send', mail: { messageId: 'msg-3' } })).toBeNull();
+	});
+});
+
+describe('sesEventConfigurationSetName', () => {
+	it('reads the ses:configuration-set tag SES attaches to every event', () => {
+		const event = parseSesEvent({
+			eventType: 'Delivery',
+			mail: {
+				messageId: 'msg-4',
+				tags: { 'ses:configuration-set': ['ucrm-operational-org-1'] }
+			}
+		});
+		expect(sesEventConfigurationSetName(event!)).toBe('ucrm-operational-org-1');
+	});
+
+	it('returns null when the event carries no configuration-set tag', () => {
+		expect(sesEventConfigurationSetName(deliveryEvent)).toBeNull();
+	});
+});
+
+describe('sesEventTag', () => {
+	it('reads the first value of a named EmailTag', () => {
+		const event = parseSesEvent({
+			eventType: 'Delivery',
+			mail: { messageId: 'msg-5', tags: { 'ucrm-intent': ['intent-1'] } }
+		});
+		expect(sesEventTag(event!, 'ucrm-intent')).toBe('intent-1');
+	});
+
+	it('returns null when the named tag was never set', () => {
+		expect(sesEventTag(deliveryEvent, 'ucrm-intent')).toBeNull();
 	});
 });

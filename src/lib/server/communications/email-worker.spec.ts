@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { OperationalEmailSubmissionError } from './brevo';
+import { OperationalSesEmailSubmissionError } from './ses';
+import { operationalConfigurationSetName, sesTenantName } from './ses-domain-identity';
 import {
 	drainCommunicationEmailQueue,
 	EMAIL_WORKER_NAME,
@@ -11,6 +13,7 @@ import {
 const claim = {
 	outbox_event_id: 'outbox-1',
 	delivery_intent_id: 'intent-1',
+	organization_id: 'org-1',
 	claim_token: 'claim-1',
 	recipient_email: 'customer@example.com',
 	subject: 'Your job update',
@@ -19,7 +22,8 @@ const claim = {
 	logical_send_key: 'job-update-1',
 	sender_id: 'sender-1',
 	sender_email: 'service@mail.ridgeway.example',
-	sender_name: 'Ridgeway'
+	sender_name: 'Ridgeway',
+	sender_provider: 'brevo'
 };
 
 function clientWithClaim(
@@ -64,7 +68,10 @@ describe('processClaimedEmail', () => {
 			expect.objectContaining({
 				from: { email: claim.sender_email, name: claim.sender_name },
 				intentId: 'intent-1'
-			})
+			}),
+			'brevo',
+			sesTenantName('org-1'),
+			operationalConfigurationSetName('org-1')
 		);
 		expect(rpc).toHaveBeenCalledWith(
 			'finalize_communication_outbox_event',
@@ -96,7 +103,10 @@ describe('processClaimedEmail', () => {
 		expect(send).toHaveBeenCalledWith(
 			expect.objectContaining({
 				attachments: [{ name: 'quote.pdf', content: Buffer.from([1, 2, 3, 4]).toString('base64') }]
-			})
+			}),
+			expect.any(String),
+			expect.any(String),
+			expect.any(String)
 		);
 	});
 
@@ -106,7 +116,12 @@ describe('processClaimedEmail', () => {
 
 		await processClaimedEmail({ client, send });
 
-		expect(send).toHaveBeenCalledWith(expect.objectContaining({ attachments: [] }));
+		expect(send).toHaveBeenCalledWith(
+			expect.objectContaining({ attachments: [] }),
+			expect.any(String),
+			expect.any(String),
+			expect.any(String)
+		);
 	});
 
 	it.each([
@@ -123,6 +138,36 @@ describe('processClaimedEmail', () => {
 			status: outcome,
 			intentId: 'intent-1'
 		});
+		expect(send).toHaveBeenCalledTimes(1);
+		expect(rpc).toHaveBeenCalledWith(
+			'finalize_communication_outbox_event',
+			expect.objectContaining({ target_outcome: outcome, target_failure_code: code })
+		);
+	});
+
+	it.each([
+		['retry', 'ses_ThrottlingException'],
+		['cancelled', 'ses_MessageRejected'],
+		['submission_unknown', 'ses_network_unknown']
+	] as const)('records a %s SES provider outcome without a second send', async (outcome, code) => {
+		const sesClaim = { ...claim, sender_provider: 'ses' };
+		const { client, rpc } = clientWithClaim(sesClaim);
+		const send = vi
+			.fn()
+			.mockRejectedValue(
+				new OperationalSesEmailSubmissionError('Provider outcome.', outcome, code)
+			);
+
+		await expect(processClaimedEmail({ client, send })).resolves.toMatchObject({
+			status: outcome,
+			intentId: 'intent-1'
+		});
+		expect(send).toHaveBeenCalledWith(
+			expect.anything(),
+			'ses',
+			sesTenantName('org-1'),
+			operationalConfigurationSetName('org-1')
+		);
 		expect(send).toHaveBeenCalledTimes(1);
 		expect(rpc).toHaveBeenCalledWith(
 			'finalize_communication_outbox_event',
@@ -208,18 +253,23 @@ describe('runMonitoredEmailWake', () => {
 		);
 		expect(rpc).toHaveBeenCalledWith(
 			'record_communication_worker_wake_result',
-			expect.objectContaining({ p_route_outcome: 'already_running', p_worker_name: EMAIL_WORKER_NAME })
+			expect.objectContaining({
+				p_route_outcome: 'already_running',
+				p_worker_name: EMAIL_WORKER_NAME
+			})
 		);
 	});
 
 	it('drains under the lease, records the outcome with counts, and releases the lease', async () => {
 		const { client, rpc } = monitoredClient({});
 
-		await expect(runMonitoredEmailWake({ client, ...wake, concurrency: 1 })).resolves.toMatchObject({
-			outcome: 'idle',
-			claimed: 0,
-			stoppedBy: 'idle'
-		});
+		await expect(runMonitoredEmailWake({ client, ...wake, concurrency: 1 })).resolves.toMatchObject(
+			{
+				outcome: 'idle',
+				claimed: 0,
+				stoppedBy: 'idle'
+			}
+		);
 		expect(rpc).toHaveBeenCalledWith(
 			'release_communication_worker_lease',
 			expect.objectContaining({ p_lease_token: 'lease-1' })
@@ -233,9 +283,9 @@ describe('runMonitoredEmailWake', () => {
 	it('reports route_deadline without releasing the lease when the drain overruns', async () => {
 		const { client, rpc } = monitoredClient({ claimDelayMs: 60 });
 
-		await expect(
-			runMonitoredEmailWake({ client, ...wake, routeDeadlineMs: 5 })
-		).resolves.toEqual({ outcome: 'route_deadline' });
+		await expect(runMonitoredEmailWake({ client, ...wake, routeDeadlineMs: 5 })).resolves.toEqual({
+			outcome: 'route_deadline'
+		});
 		expect(rpc.mock.calls.map(([name]) => name)).not.toContain(
 			'release_communication_worker_lease'
 		);
@@ -248,8 +298,8 @@ describe('runMonitoredEmailWake', () => {
 	it('still returns the drain outcome when the ledger write fails', async () => {
 		const { client } = monitoredClient({ recordError: true });
 
-		await expect(
-			runMonitoredEmailWake({ client, ...wake, concurrency: 1 })
-		).resolves.toMatchObject({ outcome: 'idle' });
+		await expect(runMonitoredEmailWake({ client, ...wake, concurrency: 1 })).resolves.toMatchObject(
+			{ outcome: 'idle' }
+		);
 	});
 });

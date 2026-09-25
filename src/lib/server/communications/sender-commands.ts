@@ -54,6 +54,11 @@ function parseClaim(value: unknown): SenderClaim {
 }
 
 async function reconcileSender(sender: Sender, desiredName: string) {
+	// SES has no per-address provider registration once the domain identity is verified: sending is governed
+	// entirely by the domain, so there is no provider-side sender object to create or rename.
+	// provider_sender_id is nullable and (provider, provider_sender_id) allows multiple ('ses', null) rows.
+	if (sender.provider === 'ses') return null;
+
 	const domain = sender.email_address.split('@')[1];
 	const providerSender = (await listBrevoSenders(domain)).find(
 		(candidate) => candidate.email.toLowerCase() === sender.email_address
@@ -115,7 +120,9 @@ export async function createCommunicationSender(
 		const finalized = await client.rpc('finalize_communication_email_sender_create', {
 			target_organization_id: input.organizationId,
 			target_sender_id: claim.sender.id,
-			provider_sender_id: providerSenderId,
+			// Postgres accepts NULL here (an SES sender has no provider-side id); generated RPC argument types
+			// do not preserve function-argument nullability.
+			provider_sender_id: providerSenderId as number,
 			actor_user_id: input.actorUserId,
 			command_idempotency_key: input.idempotencyKey
 		});

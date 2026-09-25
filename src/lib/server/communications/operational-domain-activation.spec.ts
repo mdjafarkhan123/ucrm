@@ -225,6 +225,8 @@ describe('activateOperationalDomain', () => {
 			`arn:config-set/${OPERATIONAL_SET}`
 		);
 		expect(result.sending.configuration_set_name).toBe(OPERATIONAL_SET);
+		expect(ses.ensureSesEventDestination).toHaveBeenCalledWith(OPERATIONAL_SET);
+		expect(result.sending.event_destination_ready).toBe(true);
 	});
 
 	it('stores a verified sending row on SES once the identity and DKIM pass', async () => {

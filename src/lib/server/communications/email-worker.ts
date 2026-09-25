@@ -5,11 +5,14 @@ import {
 	sendOperationalEmail,
 	type OperationalEmail
 } from './brevo';
+import { OperationalSesEmailSubmissionError, sendOperationalSesEmail } from './ses';
+import { operationalConfigurationSetName, sesTenantName } from './ses-domain-identity';
 import { runBoundedDrain, type BoundedDrainOptions, type BoundedDrainResult } from './drain';
 
 type ClaimedEmail = {
 	outbox_event_id: string;
 	delivery_intent_id: string;
+	organization_id: string;
 	claim_token: string;
 	recipient_email: string;
 	subject: string;
@@ -19,8 +22,32 @@ type ClaimedEmail = {
 	sender_id: string;
 	sender_email: string;
 	sender_name: string;
+	sender_provider: string;
 	reply_to_email: string | null;
 	reply_to_name: string | null;
+};
+
+// Dispatches to whichever provider the claimed row's sending domain is actually on. Both call sites compute
+// tenantName/configurationSetName unconditionally before calling send -- sesTenantName/
+// operationalConfigurationSetName are pure "derive, never store-then-guess" functions, so this is a harmless
+// no-op for a Brevo row.
+export type SendOperationalEmail = (
+	message: OperationalEmail,
+	provider: string,
+	tenantName: string,
+	configurationSetName: string
+) => Promise<{ messageId: string }>;
+
+export const sendOperationalEmailAuto: SendOperationalEmail = (
+	message,
+	provider,
+	tenantName,
+	configurationSetName
+) => {
+	if (provider === 'ses') {
+		return sendOperationalSesEmail({ ...message, tenantName, configurationSetName });
+	}
+	return sendOperationalEmail(message);
 };
 
 type OutboundAttachmentRow = {
@@ -38,7 +65,7 @@ export type CommunicationWorkerClient = {
 
 type WorkerDependencies = {
 	client?: CommunicationWorkerClient;
-	send?: (message: OperationalEmail) => Promise<{ messageId: string }>;
+	send?: SendOperationalEmail;
 	readAttachment?: (objectKey: string) => Promise<Uint8Array>;
 };
 
@@ -76,7 +103,7 @@ export async function processClaimedEmail(
 	dependencies: WorkerDependencies = {}
 ): Promise<ProcessedEmailResult> {
 	const client = resolveClient(dependencies.client);
-	const send = dependencies.send ?? sendOperationalEmail;
+	const send = dependencies.send ?? sendOperationalEmailAuto;
 	const readAttachment = dependencies.readAttachment ?? getObjectBytes;
 
 	const claimed = await client.rpc('claim_communication_outbox_event');
@@ -108,22 +135,30 @@ export async function processClaimedEmail(
 			}))
 		);
 
-		const submitted = await send({
-			from: { email: email.sender_email, name: email.sender_name },
-			to: { email: email.recipient_email },
-			replyTo: email.reply_to_email
-				? { email: email.reply_to_email, name: email.reply_to_name ?? undefined }
-				: undefined,
-			subject: email.subject,
-			htmlContent: email.html_content,
-			textContent: email.text_content,
-			intentId: email.delivery_intent_id,
-			attachments
-		});
+		const submitted = await send(
+			{
+				from: { email: email.sender_email, name: email.sender_name },
+				to: { email: email.recipient_email },
+				replyTo: email.reply_to_email
+					? { email: email.reply_to_email, name: email.reply_to_name ?? undefined }
+					: undefined,
+				subject: email.subject,
+				htmlContent: email.html_content,
+				textContent: email.text_content,
+				intentId: email.delivery_intent_id,
+				attachments
+			},
+			email.sender_provider,
+			sesTenantName(email.organization_id),
+			operationalConfigurationSetName(email.organization_id)
+		);
 		outcome = 'submitted';
 		providerMessageId = submitted.messageId;
 	} catch (error) {
-		if (error instanceof OperationalEmailSubmissionError) {
+		if (
+			error instanceof OperationalEmailSubmissionError ||
+			error instanceof OperationalSesEmailSubmissionError
+		) {
 			outcome = error.outcome;
 			failureCode = error.code;
 			failureMessage = error.message;
@@ -155,7 +190,7 @@ export async function drainCommunicationEmailQueue(
 	dependencies: WorkerDependencies & BoundedDrainOptions = {}
 ): Promise<BoundedDrainResult> {
 	const client = resolveClient(dependencies.client);
-	const send = dependencies.send ?? sendOperationalEmail;
+	const send = dependencies.send ?? sendOperationalEmailAuto;
 	const readAttachment = dependencies.readAttachment ?? getObjectBytes;
 
 	return runBoundedDrain(
@@ -178,10 +213,7 @@ const ROUTE_DEADLINE_MS = 40_000;
 // The route-reported outcome recorded in the ledger: the three drain terminals, the two the route itself
 // decides, and 'error' for an infrastructure failure the route turns into a 500.
 export type EmailWakeOutcome =
-	| BoundedDrainResult['stoppedBy']
-	| 'already_running'
-	| 'route_deadline'
-	| 'error';
+	BoundedDrainResult['stoppedBy'] | 'already_running' | 'route_deadline' | 'error';
 
 export type MonitoredEmailWakeResult = { outcome: EmailWakeOutcome } & Partial<BoundedDrainResult>;
 

@@ -16,6 +16,7 @@ import {
 	UpdateConfigurationSetEventDestinationCommand,
 	type EventType
 } from '@aws-sdk/client-sesv2';
+import MailComposer from 'nodemailer/lib/mail-composer';
 import { getSesEnv, SesError } from './ses-env';
 
 // Server-only Amazon SES v2 adapter. Like cloudflare-dns.ts, it exposes thin, idempotent primitives and
@@ -31,8 +32,10 @@ const SES_REQUEST_TIMEOUT_MS = 10_000;
 // The seven delivery event types the provisioned SNS -> SQS pipeline was proven against, plus OPEN and CLICK
 // (M5a, Jafar-approved): subscribing a configuration set to them is what makes SES add its open pixel and
 // rewrite links for click tracking. Results show opens as directional only. SUBSCRIPTION stays absent --
-// unsubscribe is UCRM-owned.
-const MARKETING_EVENT_TYPES: EventType[] = [
+// unsubscribe is UCRM-owned. Named SES_EVENT_TYPES, not MARKETING_EVENT_TYPES, because
+// ensureSesEventDestination is provider-agnostic and now serves both the Marketing and the operational
+// configuration set.
+const SES_EVENT_TYPES: EventType[] = [
 	'SEND',
 	'DELIVERY',
 	'BOUNCE',
@@ -240,7 +243,7 @@ export async function ensureSesEventDestination(configurationSetName: string): P
 		// A destination created before OPEN/CLICK were added is widened in place, so re-running activation
 		// upgrades an organization that already sends.
 		const current = new Set(attached.MatchingEventTypes ?? []);
-		if (MARKETING_EVENT_TYPES.every((type) => current.has(type)) && attached.Enabled) return true;
+		if (SES_EVENT_TYPES.every((type) => current.has(type)) && attached.Enabled) return true;
 		await sesCall('UpdateConfigurationSetEventDestination', () =>
 			client.send(
 				new UpdateConfigurationSetEventDestinationCommand({
@@ -248,7 +251,7 @@ export async function ensureSesEventDestination(configurationSetName: string): P
 					EventDestinationName: attached.Name,
 					EventDestination: {
 						Enabled: true,
-						MatchingEventTypes: MARKETING_EVENT_TYPES,
+						MatchingEventTypes: SES_EVENT_TYPES,
 						SnsDestination: { TopicArn: env.AWS_SES_EVENT_SNS_TOPIC_ARN }
 					}
 				})
@@ -264,7 +267,7 @@ export async function ensureSesEventDestination(configurationSetName: string): P
 				EventDestinationName: EVENT_DESTINATION_NAME,
 				EventDestination: {
 					Enabled: true,
-					MatchingEventTypes: MARKETING_EVENT_TYPES,
+					MatchingEventTypes: SES_EVENT_TYPES,
 					SnsDestination: { TopicArn: env.AWS_SES_EVENT_SNS_TOPIC_ARN }
 				}
 			})
@@ -444,6 +447,96 @@ export async function sendMarketingEmail(message: MarketingEmail): Promise<{ mes
 		const status = sesStatus(error);
 		const retryable = status === 429 || (status !== null && status >= 500);
 		throw new MarketingEmailSubmissionError(
+			`Amazon SES rejected the send${(error as AwsError)?.message ? `: ${(error as AwsError).message}` : '.'}`,
+			status == null ? 'submission_unknown' : retryable ? 'retry' : 'cancelled',
+			status == null ? 'ses_network_unknown' : `ses_${(error as AwsError)?.name ?? status}`
+		);
+	}
+}
+
+// ---------------------------------------------------------------------------------------------------
+// Operational send (Part 3). Same three-way outcome contract as OperationalEmailSubmissionError (brevo.ts),
+// but built as a raw MIME message via nodemailer's MailComposer instead of SESv2's Content.Simple: an
+// operational send can carry quote/invoice PDF attachments, which Content.Simple has no equivalent for.
+// ---------------------------------------------------------------------------------------------------
+
+export class OperationalSesEmailSubmissionError extends Error {
+	constructor(
+		message: string,
+		public readonly outcome: 'retry' | 'cancelled' | 'submission_unknown',
+		public readonly code: string
+	) {
+		super(message);
+		this.name = 'OperationalSesEmailSubmissionError';
+	}
+}
+
+export type OperationalSesEmail = {
+	from: { email: string; name?: string };
+	to: { email: string; name?: string } | { email: string; name?: string }[];
+	replyTo?: { email: string; name?: string };
+	subject: string;
+	htmlContent: string;
+	textContent: string;
+	intentId: string;
+	tenantName: string;
+	configurationSetName: string;
+	attachments?: { name: string; content: string }[];
+};
+
+function mailAddress(address: { email: string; name?: string }): {
+	name?: string;
+	address: string;
+} {
+	return { name: address.name, address: address.email };
+}
+
+async function buildRawOperationalMessage(message: OperationalSesEmail): Promise<Uint8Array> {
+	const composer = new MailComposer({
+		from: mailAddress(message.from),
+		to: Array.isArray(message.to) ? message.to.map(mailAddress) : mailAddress(message.to),
+		...(message.replyTo ? { replyTo: mailAddress(message.replyTo) } : {}),
+		subject: message.subject,
+		html: message.htmlContent,
+		text: message.textContent,
+		attachments: (message.attachments ?? []).map((attachment) => ({
+			filename: attachment.name,
+			content: attachment.content,
+			encoding: 'base64' as const
+		}))
+	});
+	return composer.compile().build();
+}
+
+export async function sendOperationalSesEmail(
+	message: OperationalSesEmail
+): Promise<{ messageId: string }> {
+	const { client } = getSes();
+	try {
+		const raw = await buildRawOperationalMessage(message);
+		const result = await client.send(
+			new SendEmailCommand({
+				Content: { Raw: { Data: raw } },
+				ConfigurationSetName: message.configurationSetName,
+				TenantName: message.tenantName,
+				// SES echoes tags into mail.tags on the SNS delivery event, the SES-side equivalent of Brevo's
+				// tags: ['ucrm:email:<id>'] -- this is what correlates a delivery event back to the intent.
+				EmailTags: [{ Name: 'ucrm-intent', Value: message.intentId }]
+			})
+		);
+
+		if (!result.MessageId)
+			throw new OperationalSesEmailSubmissionError(
+				'Amazon SES accepted the request without returning a message identifier.',
+				'submission_unknown',
+				'ses_missing_message_id'
+			);
+		return { messageId: result.MessageId };
+	} catch (error) {
+		if (error instanceof OperationalSesEmailSubmissionError) throw error;
+		const status = sesStatus(error);
+		const retryable = status === 429 || (status !== null && status >= 500);
+		throw new OperationalSesEmailSubmissionError(
 			`Amazon SES rejected the send${(error as AwsError)?.message ? `: ${(error as AwsError).message}` : '.'}`,
 			status == null ? 'submission_unknown' : retryable ? 'retry' : 'cancelled',
 			status == null ? 'ses_network_unknown' : `ses_${(error as AwsError)?.name ?? status}`

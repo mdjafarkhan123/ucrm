@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { OperationalEmailSubmissionError } from './brevo';
+import { OperationalSesEmailSubmissionError } from './ses';
+import { operationalConfigurationSetName, sesTenantName } from './ses-domain-identity';
 import {
 	drainCommunicationForwardQueue,
 	processClaimedForward,
@@ -9,13 +11,15 @@ import {
 const forward = {
 	forward_event_id: 'forward-1',
 	claim_token: 'claim-1',
+	organization_id: 'org-1',
 	recipient_emails: ['colleague@example.com'],
 	subject: 'Fwd: Your job update',
 	html_content: '<p>Forwarded.</p>',
 	text_content: 'Forwarded.',
 	sender_id: 'sender-1',
 	sender_email: 'service@mail.ridgeway.example',
-	sender_name: 'Ridgeway'
+	sender_name: 'Ridgeway',
+	sender_provider: 'brevo'
 };
 
 function clientWithClaim(
@@ -75,7 +79,10 @@ describe('processClaimedForward', () => {
 				from: { email: forward.sender_email, name: forward.sender_name },
 				to: [{ email: 'colleague@example.com' }],
 				intentId: 'forward-1'
-			})
+			}),
+			'brevo',
+			sesTenantName('org-1'),
+			operationalConfigurationSetName('org-1')
 		);
 		expect(rpc).toHaveBeenCalledWith(
 			'finalize_communication_forward_event',
@@ -112,7 +119,10 @@ describe('processClaimedForward', () => {
 		expect(send).toHaveBeenCalledWith(
 			expect.objectContaining({
 				attachments: [{ name: 'photo.jpg', content: Buffer.from([1, 2, 3, 4]).toString('base64') }]
-			})
+			}),
+			expect.any(String),
+			expect.any(String),
+			expect.any(String)
 		);
 	});
 
@@ -122,7 +132,12 @@ describe('processClaimedForward', () => {
 
 		await processClaimedForward({ client, send });
 
-		expect(send).toHaveBeenCalledWith(expect.objectContaining({ attachments: [] }));
+		expect(send).toHaveBeenCalledWith(
+			expect.objectContaining({ attachments: [] }),
+			expect.any(String),
+			expect.any(String),
+			expect.any(String)
+		);
 	});
 
 	it.each([
@@ -139,6 +154,36 @@ describe('processClaimedForward', () => {
 			status: outcome,
 			forwardEventId: 'forward-1'
 		});
+		expect(send).toHaveBeenCalledTimes(1);
+		expect(rpc).toHaveBeenCalledWith(
+			'finalize_communication_forward_event',
+			expect.objectContaining({ target_outcome: outcome, target_failure_code: code })
+		);
+	});
+
+	it.each([
+		['retry', 'ses_ThrottlingException'],
+		['cancelled', 'ses_MessageRejected'],
+		['submission_unknown', 'ses_network_unknown']
+	] as const)('records a %s SES provider outcome without a second send', async (outcome, code) => {
+		const sesForward = { ...forward, sender_provider: 'ses' };
+		const { client, rpc } = clientWithClaim(sesForward);
+		const send = vi
+			.fn()
+			.mockRejectedValue(
+				new OperationalSesEmailSubmissionError('Provider outcome.', outcome, code)
+			);
+
+		await expect(processClaimedForward({ client, send })).resolves.toMatchObject({
+			status: outcome,
+			forwardEventId: 'forward-1'
+		});
+		expect(send).toHaveBeenCalledWith(
+			expect.anything(),
+			'ses',
+			sesTenantName('org-1'),
+			operationalConfigurationSetName('org-1')
+		);
 		expect(send).toHaveBeenCalledTimes(1);
 		expect(rpc).toHaveBeenCalledWith(
 			'finalize_communication_forward_event',
