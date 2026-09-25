@@ -51,6 +51,27 @@ export function sesEventDlqUrl(env: SesEnv): string {
 	return `https://sqs.${env.AWS_SES_REGION}.amazonaws.com/${env.accountId}/ucrm-ses-events-dlq`;
 }
 
+// Operational email SES Part 4: the customer-reply pipeline, provisioned once for the whole account and kept
+// deliberately separate from the delivery-events pipeline above (its own queue, DLQ, and idempotency keys), so
+// a stuck reply can never block outgoing mail and vice versa. Fixed names, not env vars, following the same
+// "derive, never store-then-guess" convention as the tenant/config-set names.
+export const SES_INBOUND_BUCKET_NAME = 'ucrm-ses-inbound-mime';
+export const SES_INBOUND_RULE_SET_NAME = 'ucrm-ses-inbound-rules';
+
+export function sesInboundTopicArn(env: SesEnv): string {
+	return `arn:aws:sns:${env.AWS_SES_REGION}:${env.accountId}:ucrm-ses-inbound`;
+}
+
+export function sesInboundQueueUrl(env: SesEnv): string {
+	return `https://sqs.${env.AWS_SES_REGION}.amazonaws.com/${env.accountId}/ucrm-ses-inbound`;
+}
+
+// The redrive policy on ucrm-ses-inbound sends a message here after 5 failed receives. Nothing publishes to it
+// directly.
+export function sesInboundDlqUrl(env: SesEnv): string {
+	return `https://sqs.${env.AWS_SES_REGION}.amazonaws.com/${env.accountId}/ucrm-ses-inbound-dlq`;
+}
+
 export class SesError extends Error {
 	constructor(
 		message: string,

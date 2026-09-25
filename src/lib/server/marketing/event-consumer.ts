@@ -9,13 +9,27 @@ import type { Database } from '$lib/database.types';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { getSesEnv, sesEventQueueUrl, sesEventDlqUrl } from '$lib/server/communications/ses-env';
 import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
-import { parseSesEvent, sesEventKey, sesEventOccurredAt, type SesEvent } from './ses-events';
+import { operationalCallbackEventKind } from '$lib/server/communications/operational-ses-events';
+import {
+	parseSesEvent,
+	sesEventConfigurationSetName,
+	sesEventKey,
+	sesEventOccurredAt,
+	sesEventTag,
+	type SesEvent
+} from './ses-events';
 
 // The Marketing SES event consumer (M4 stage 4): drain the provisioned SQS queue, durably record each event
 // once (idempotent on provider_event_key), then run the projector RPC to advance recipient status. Unlike
 // dispatcher.ts's claim/finalize shape, there is nothing in Postgres to claim here -- SQS's own visibility
 // timeout is the retry mechanism, so a message is only ever deleted once it is durably recorded or confirmed
 // a duplicate. See Memory/campaigns/marketing-growth/parts/M4.md's "Stage 4 decisions" for the full reasoning.
+//
+// The one SNS -> SQS pipeline now carries both streams: a Marketing configuration set's events go to
+// marketing_campaign_recipient_events (insertEvent) as before, and an operational configuration set's events
+// (name starts with 'ucrm-operational-') go to communication_provider_callback_events (insertCallbackEvent)
+// instead. process_communication_provider_callbacks is
+// provider-neutral and already reads any channel='email' row, so it needs no change.
 
 type RpcResult<T> = Promise<{ data: T | null; error: { message: string } | null }>;
 
@@ -24,6 +38,13 @@ export type MarketingEventsWorkerClient = {
 	insertEvent(row: {
 		provider_event_key: string;
 		provider_message_id: string;
+		event_kind: string;
+		occurred_at: string | null;
+		payload: SesEvent;
+	}): Promise<{ error: { code?: string; message: string } | null }>;
+	insertCallbackEvent(row: {
+		provider_event_key: string;
+		delivery_intent_id: string | null;
 		event_kind: string;
 		occurred_at: string | null;
 		payload: SesEvent;
@@ -50,6 +71,12 @@ function resolveClient(client?: MarketingEventsWorkerClient): MarketingEventsWor
 			const { error } = await owner
 				.from('marketing_campaign_recipient_events')
 				.insert(row as never);
+			return { error };
+		},
+		insertCallbackEvent: async (row) => {
+			const { error } = await owner
+				.from('communication_provider_callback_events')
+				.insert({ ...row, provider: 'ses' } as never);
 			return { error };
 		}
 	};
@@ -162,11 +189,11 @@ async function checkDlqAndAlert(
 	await raiseOwnerAlert(owner, {
 		kind: DLQ_ALERT_KIND,
 		severity: 'urgent',
-		title: `${depth} marketing email event${depth === 1 ? '' : 's'} stuck in the SES dead-letter queue`,
+		title: `${depth} email delivery event${depth === 1 ? '' : 's'} stuck in the SES dead-letter queue`,
 		body:
-			'Amazon SES could not process one or more marketing campaign delivery events after 5 attempts, ' +
-			'and moved them to the ucrm-ses-events-dlq queue in SQS. Recipient status may be stale until this ' +
-			'is investigated in the AWS console.',
+			'Amazon SES could not process one or more marketing or operational email delivery events after ' +
+			'5 attempts, and moved them to the ucrm-ses-events-dlq queue in SQS. Recipient or delivery status ' +
+			'may be stale until this is investigated in the AWS console.',
 		target: { targetKind: 'platform', targetId: null }
 	});
 	return { depth, alerted: true };
@@ -179,6 +206,7 @@ export type EventDrainResult = {
 	ignored: number;
 	skipped: number;
 	processed: number;
+	processedCallbacks: number;
 	stoppedBy: 'idle' | 'max_messages' | 'time_budget';
 };
 
@@ -231,6 +259,29 @@ async function recordOneMessage(
 		return 'invalid';
 	}
 
+	const configurationSetName = sesEventConfigurationSetName(event);
+	if (configurationSetName?.startsWith('ucrm-operational-')) {
+		const { error } = await client.insertCallbackEvent({
+			provider_event_key: sesEventKey(event),
+			delivery_intent_id: sesEventTag(event, 'ucrm-intent'),
+			event_kind: operationalCallbackEventKind(event),
+			occurred_at: sesEventOccurredAt(event),
+			payload: event
+		});
+
+		if (!error) return 'recorded';
+		if (error.code === '23505') return 'duplicate';
+		if (error.code === '23503') {
+			// The tag names a delivery intent that no longer exists (deleted, or sent outside the outbox). A
+			// retry can never succeed, so this event is acknowledged and skipped rather than left for the DLQ.
+			console.warn('An operational SES event names an unknown delivery intent; skipping.', {
+				deliveryIntentId: sesEventTag(event, 'ucrm-intent')
+			});
+			return 'ignored';
+		}
+		throw rpcError('Could not record an operational email delivery event', error);
+	}
+
 	const { error } = await client.insertEvent({
 		provider_event_key: sesEventKey(event),
 		provider_message_id: event.mail.messageId,
@@ -275,6 +326,7 @@ export async function drainMarketingEventQueue(
 		ignored: 0,
 		skipped: 0,
 		processed: 0,
+		processedCallbacks: 0,
 		stoppedBy: 'idle'
 	};
 
@@ -315,6 +367,17 @@ export async function drainMarketingEventQueue(
 	if (projected.error)
 		throw rpcError('Could not project marketing campaign recipient events', projected.error);
 	result.processed = typeof projected.data === 'number' ? projected.data : 0;
+
+	const processedCallbacks = await client.rpc('process_communication_provider_callbacks', {
+		batch_size: dependencies.projectBatchSize ?? DEFAULT_PROJECT_BATCH_SIZE
+	});
+	if (processedCallbacks.error)
+		throw rpcError(
+			'Could not process operational email delivery callbacks',
+			processedCallbacks.error
+		);
+	result.processedCallbacks =
+		typeof processedCallbacks.data === 'number' ? processedCallbacks.data : 0;
 
 	return result;
 }

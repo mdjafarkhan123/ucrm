@@ -82,7 +82,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	// A retry of an already-recorded message (on-conflict do-nothing) returns null here -- its attachments
 	// were either already inserted on the first delivery or never will be, the same accepted tradeoff the
-	// Brevo inbound webhook already makes for its own attachment insert below.
+	// SES inbound worker makes for its own attachment insert.
 	const inserted = inboundMessage as InboundMessageRow | null;
 	if (inserted?.id) {
 		const mediaItems = parseTwilioInboundMedia(params, identifiers.NumMedia);

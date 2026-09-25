@@ -4,7 +4,7 @@ import type { RequestHandler } from './$types';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { recheckMarketingDomain } from '$lib/server/communications/marketing-domain-activation';
-import { marketingDomainErrorResponse } from '$lib/server/communications/marketing-domain-http';
+import { sesDomainErrorResponse } from '$lib/server/communications/ses-domain-http';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { organizationIdSchema } from '$lib/server/validation/access.schema';
@@ -109,6 +109,6 @@ export const POST: RequestHandler = async (event) => {
 
 		return json(result, { headers: noStore });
 	} catch (error) {
-		return marketingDomainErrorResponse(error, 'recheck');
+		return sesDomainErrorResponse(error, 'recheck');
 	}
 };

@@ -10,7 +10,7 @@ import {
 } from '$lib/server/validation/owner.schema';
 
 /**
- * Pushes the external (Auth + Brevo) cleanup for one stuck deletion receipt again, without waiting for
+ * Pushes the external (Auth + Amazon SES) cleanup for one stuck deletion receipt again, without waiting for
  * the nightly sweep. The organization was already purged under a step-up-confirmed action; this only
  * finishes that already-authorized deletion and is idempotent, so an owner session gates it -- no
  * fresh step-up. Failures stay durably tracked by the finish helpers (operation attempts + owner

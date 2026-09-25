@@ -1,15 +1,14 @@
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { getObjectBytes } from '$lib/server/storage/r2';
-import {
-	OperationalEmailSubmissionError,
-	sendOperationalEmail,
-	type OperationalEmail
-} from './brevo';
+import { OperationalSesEmailSubmissionError, sendOperationalSesEmail } from './ses';
+import { operationalConfigurationSetName, sesTenantName } from './ses-domain-identity';
+import type { SendOperationalEmail } from './email-worker';
 import { runBoundedDrain, type BoundedDrainOptions, type BoundedDrainResult } from './drain';
 
 type ClaimedForward = {
 	forward_event_id: string;
 	claim_token: string;
+	organization_id: string;
 	recipient_emails: string[];
 	subject: string;
 	html_content: string;
@@ -46,7 +45,7 @@ export type CommunicationForwardWorkerClient = {
 
 type WorkerDependencies = {
 	client?: CommunicationForwardWorkerClient;
-	send?: (message: OperationalEmail) => Promise<{ messageId: string }>;
+	send?: SendOperationalEmail;
 	readAttachment?: (objectKey: string) => Promise<Uint8Array>;
 };
 
@@ -86,7 +85,7 @@ export async function processClaimedForward(
 	dependencies: WorkerDependencies = {}
 ): Promise<ProcessedForwardResult> {
 	const client = resolveClient(dependencies.client);
-	const send = dependencies.send ?? sendOperationalEmail;
+	const send = dependencies.send ?? sendOperationalSesEmail;
 	const readAttachment = dependencies.readAttachment ?? getObjectBytes;
 
 	const claimed = await client.rpc('claim_communication_forward_event');
@@ -141,12 +140,14 @@ export async function processClaimedForward(
 			htmlContent: forward.html_content,
 			textContent: forward.text_content,
 			intentId: forward.forward_event_id,
-			attachments
+			attachments,
+			tenantName: sesTenantName(forward.organization_id),
+			configurationSetName: operationalConfigurationSetName(forward.organization_id)
 		});
 		outcome = 'submitted';
 		providerMessageId = submitted.messageId;
 	} catch (error) {
-		if (error instanceof OperationalEmailSubmissionError) {
+		if (error instanceof OperationalSesEmailSubmissionError) {
 			outcome = error.outcome;
 			failureCode = error.code;
 			failureMessage = error.message;
@@ -177,7 +178,7 @@ export async function drainCommunicationForwardQueue(
 	dependencies: WorkerDependencies & BoundedDrainOptions = {}
 ): Promise<BoundedDrainResult> {
 	const client = resolveClient(dependencies.client);
-	const send = dependencies.send ?? sendOperationalEmail;
+	const send = dependencies.send ?? sendOperationalSesEmail;
 	const readAttachment = dependencies.readAttachment ?? getObjectBytes;
 
 	return runBoundedDrain(

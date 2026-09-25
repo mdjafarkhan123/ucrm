@@ -24,7 +24,7 @@ export type GeocodeResult =
 
 // The provider could not give an answer at all -- network, timeout, rate-limit, auth. Distinct from
 // `not_found` so the caller retries later instead of marking a real address ungeocodable. `retryable` mirrors
-// the send-path convention in communications/brevo.ts: a 429/5xx/timeout is worth another attempt; a 4xx auth
+// the email send-path convention: a 429/5xx/timeout is worth another attempt; a 4xx auth
 // or quota rejection is not.
 export class GeocodingProviderError extends Error {
 	constructor(

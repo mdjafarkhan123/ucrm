@@ -5,16 +5,29 @@ import {
 	CreateEmailIdentityCommand,
 	CreateTenantCommand,
 	CreateTenantResourceAssociationCommand,
+	DeleteConfigurationSetCommand,
+	DeleteEmailIdentityCommand,
+	DeleteTenantCommand,
 	GetConfigurationSetCommand,
 	GetConfigurationSetEventDestinationsCommand,
 	GetEmailIdentityCommand,
 	GetTenantCommand,
+	ListTenantResourcesCommand,
 	PutConfigurationSetTrackingOptionsCommand,
 	PutEmailIdentityMailFromAttributesCommand,
 	SendEmailCommand,
 	UpdateConfigurationSetEventDestinationCommand,
 	type EventType
 } from '@aws-sdk/client-sesv2';
+import {
+	SESClient,
+	CreateReceiptRuleCommand,
+	DeleteReceiptRuleCommand,
+	DescribeReceiptRuleCommand,
+	UpdateReceiptRuleCommand,
+	type ReceiptRule
+} from '@aws-sdk/client-ses';
+import MailComposer from 'nodemailer/lib/mail-composer';
 import { getSesEnv, SesError } from './ses-env';
 
 // Server-only Amazon SES v2 adapter. Like cloudflare-dns.ts, it exposes thin, idempotent primitives and
@@ -30,8 +43,10 @@ const SES_REQUEST_TIMEOUT_MS = 10_000;
 // The seven delivery event types the provisioned SNS -> SQS pipeline was proven against, plus OPEN and CLICK
 // (M5a, Jafar-approved): subscribing a configuration set to them is what makes SES add its open pixel and
 // rewrite links for click tracking. Results show opens as directional only. SUBSCRIPTION stays absent --
-// unsubscribe is UCRM-owned.
-const MARKETING_EVENT_TYPES: EventType[] = [
+// unsubscribe is UCRM-owned. Named SES_EVENT_TYPES, not MARKETING_EVENT_TYPES, because
+// ensureSesEventDestination is provider-agnostic and now serves both the Marketing and the operational
+// configuration set.
+const SES_EVENT_TYPES: EventType[] = [
 	'SEND',
 	'DELIVERY',
 	'BOUNCE',
@@ -62,6 +77,25 @@ function getSes(): { client: SESv2Client; env: ReturnType<typeof getSesEnv> } {
 	return cached;
 }
 
+// Receipt rules (customer replies) have no SESv2 equivalent -- only the classic SES API manages them -- so
+// this is a second, separately cached client against the same credentials and region.
+let cachedV1: { client: SESClient; env: ReturnType<typeof getSesEnv> } | null = null;
+
+function getSesV1(): { client: SESClient; env: ReturnType<typeof getSesEnv> } {
+	if (cachedV1) return cachedV1;
+	const env = getSesEnv();
+	const client = new SESClient({
+		region: env.AWS_SES_REGION,
+		credentials: {
+			accessKeyId: env.AWS_SES_ACCESS_KEY_ID,
+			secretAccessKey: env.AWS_SES_SECRET_ACCESS_KEY
+		},
+		requestHandler: { requestTimeout: SES_REQUEST_TIMEOUT_MS, connectionTimeout: 5_000 }
+	});
+	cachedV1 = { client, env };
+	return cachedV1;
+}
+
 type AwsError = { name?: string; message?: string; $metadata?: { httpStatusCode?: number } };
 
 function sesStatus(error: unknown): number | null {
@@ -79,7 +113,7 @@ function isAlreadyExists(error: unknown): boolean {
 /**
  * Turns an SDK error into a SesError carrying an HTTP status. A network failure or timeout has no status,
  * which the reconciler reads as an ambiguous outcome it re-derives rather than a proven failure -- the same
- * contract cloudflare-dns.ts and brevo.ts use.
+ * contract cloudflare-dns.ts uses.
  */
 function toSesError(operation: string, error: unknown): SesError {
 	const status = sesStatus(error);
@@ -133,7 +167,13 @@ export async function createSesIdentity(domain: string): Promise<void> {
 		await client.send(
 			new CreateEmailIdentityCommand({
 				EmailIdentity: domain,
-				DkimSigningAttributes: { DomainSigningAttributesOrigin: 'AWS_SES' }
+				// SES now refuses AWS_SES-origin signing without an explicit key length (verified 2026-09-25:
+				// "Invalid identity configuration"). 2048-bit is the strongest Easy DKIM key and what the
+				// existing identities already use.
+				DkimSigningAttributes: {
+					DomainSigningAttributesOrigin: 'AWS_SES',
+					NextSigningKeyLength: 'RSA_2048_BIT'
+				}
 			})
 		);
 	} catch (error) {
@@ -187,6 +227,43 @@ export async function createSesTenant(tenantName: string): Promise<{ tenantArn: 
 	}
 }
 
+/** Every identity and configuration set associated with a tenant, as ARNs, across all pages. */
+export async function listSesTenantResources(
+	tenantName: string
+): Promise<{ type: string; arn: string }[]> {
+	const { client } = getSes();
+	const resources: { type: string; arn: string }[] = [];
+	let nextToken: string | undefined;
+	do {
+		let page;
+		try {
+			page = await client.send(
+				new ListTenantResourcesCommand({ TenantName: tenantName, NextToken: nextToken })
+			);
+		} catch (error) {
+			if (isNotFound(error)) return [];
+			throw toSesError('ListTenantResources', error);
+		}
+		for (const resource of page.TenantResources ?? []) {
+			if (resource.ResourceType && resource.ResourceArn)
+				resources.push({ type: resource.ResourceType, arn: resource.ResourceArn });
+		}
+		nextToken = page.NextToken;
+	} while (nextToken);
+	return resources;
+}
+
+/** Deletes a tenant. Already-gone is the desired state, so a retried cleanup is safe. */
+export async function deleteSesTenant(tenantName: string): Promise<void> {
+	const { client } = getSes();
+	try {
+		await client.send(new DeleteTenantCommand({ TenantName: tenantName }));
+	} catch (error) {
+		if (isNotFound(error)) return;
+		throw toSesError('DeleteTenant', error);
+	}
+}
+
 export async function configurationSetExists(configurationSetName: string): Promise<boolean> {
 	const { client } = getSes();
 	try {
@@ -212,6 +289,19 @@ export async function createSesConfigurationSet(configurationSetName: string): P
 	}
 }
 
+/** Deletes a configuration set. Already-gone is the desired state, so a retried cleanup is safe. */
+export async function deleteSesConfigurationSet(configurationSetName: string): Promise<void> {
+	const { client } = getSes();
+	try {
+		await client.send(
+			new DeleteConfigurationSetCommand({ ConfigurationSetName: configurationSetName })
+		);
+	} catch (error) {
+		if (isNotFound(error)) return;
+		throw toSesError('DeleteConfigurationSet', error);
+	}
+}
+
 /**
  * Attaches the shared SNS topic to this configuration set so its delivery events reach the one SQS queue the
  * event consumer drains. Returns true once the destination is in place, whether this call created it or an
@@ -233,7 +323,7 @@ export async function ensureSesEventDestination(configurationSetName: string): P
 		// A destination created before OPEN/CLICK were added is widened in place, so re-running activation
 		// upgrades an organization that already sends.
 		const current = new Set(attached.MatchingEventTypes ?? []);
-		if (MARKETING_EVENT_TYPES.every((type) => current.has(type)) && attached.Enabled) return true;
+		if (SES_EVENT_TYPES.every((type) => current.has(type)) && attached.Enabled) return true;
 		await sesCall('UpdateConfigurationSetEventDestination', () =>
 			client.send(
 				new UpdateConfigurationSetEventDestinationCommand({
@@ -241,7 +331,7 @@ export async function ensureSesEventDestination(configurationSetName: string): P
 					EventDestinationName: attached.Name,
 					EventDestination: {
 						Enabled: true,
-						MatchingEventTypes: MARKETING_EVENT_TYPES,
+						MatchingEventTypes: SES_EVENT_TYPES,
 						SnsDestination: { TopicArn: env.AWS_SES_EVENT_SNS_TOPIC_ARN }
 					}
 				})
@@ -257,7 +347,7 @@ export async function ensureSesEventDestination(configurationSetName: string): P
 				EventDestinationName: EVENT_DESTINATION_NAME,
 				EventDestination: {
 					Enabled: true,
-					MatchingEventTypes: MARKETING_EVENT_TYPES,
+					MatchingEventTypes: SES_EVENT_TYPES,
 					SnsDestination: { TopicArn: env.AWS_SES_EVENT_SNS_TOPIC_ARN }
 				}
 			})
@@ -266,6 +356,20 @@ export async function ensureSesEventDestination(configurationSetName: string): P
 	} catch (error) {
 		if (isAlreadyExists(error)) return true;
 		throw toSesError('CreateConfigurationSetEventDestination', error);
+	}
+}
+
+/**
+ * Deletes a domain identity. An identity that is already gone is the desired state, so a retried removal is
+ * safe. Deleting the identity also ends every tenant association that pointed at it.
+ */
+export async function deleteSesIdentity(domain: string): Promise<void> {
+	const { client } = getSes();
+	try {
+		await client.send(new DeleteEmailIdentityCommand({ EmailIdentity: domain }));
+	} catch (error) {
+		if (isNotFound(error)) return;
+		throw toSesError('DeleteEmailIdentity', error);
 	}
 }
 
@@ -335,6 +439,15 @@ export function sesConfigurationSetArn(configurationSetName: string): string {
 	return `arn:aws:ses:${env.AWS_SES_REGION}:${env.accountId}:configuration-set/${configurationSetName}`;
 }
 
+/**
+ * The region-specific host that receives mail for an SES receiving domain. Customer replies only move to it once
+ * a receipt rule for the domain exists; until then a reply subdomain keeps its current MX.
+ */
+export function sesInboundMxTarget(): string {
+	const { env } = getSes();
+	return `inbound-smtp.${env.AWS_SES_REGION}.amazonaws.com`;
+}
+
 /** The region-specific host a custom MAIL FROM subdomain must point its MX record at. */
 export function sesMailFromMxTarget(): string {
 	const { env } = getSes();
@@ -342,7 +455,7 @@ export function sesMailFromMxTarget(): string {
 }
 
 // ---------------------------------------------------------------------------------------------------
-// Marketing send (M4 stage 3). Mirrors OperationalEmailSubmissionError's three-way outcome from brevo.ts:
+// Marketing send (M4 stage 3). Uses a three-way outcome:
 // 'retry' for a transient rejection worth trying again, 'cancelled' for one that will never succeed, and
 // 'submission_unknown' when the SDK call itself never returned an answer (a request that reached SES may
 // have already been accepted, so a blind retry risks a duplicate send to a real customer).
@@ -418,5 +531,188 @@ export async function sendMarketingEmail(message: MarketingEmail): Promise<{ mes
 			status == null ? 'submission_unknown' : retryable ? 'retry' : 'cancelled',
 			status == null ? 'ses_network_unknown' : `ses_${(error as AwsError)?.name ?? status}`
 		);
+	}
+}
+
+// ---------------------------------------------------------------------------------------------------
+// Operational send (Part 3). Same three-way outcome contract as the Marketing send,
+// but built as a raw MIME message via nodemailer's MailComposer instead of SESv2's Content.Simple: an
+// operational send can carry quote/invoice PDF attachments, which Content.Simple has no equivalent for.
+// ---------------------------------------------------------------------------------------------------
+
+export class OperationalSesEmailSubmissionError extends Error {
+	constructor(
+		message: string,
+		public readonly outcome: 'retry' | 'cancelled' | 'submission_unknown',
+		public readonly code: string
+	) {
+		super(message);
+		this.name = 'OperationalSesEmailSubmissionError';
+	}
+}
+
+export type OperationalSesEmail = {
+	from: { email: string; name?: string };
+	to: { email: string; name?: string } | { email: string; name?: string }[];
+	replyTo?: { email: string; name?: string };
+	subject: string;
+	htmlContent: string;
+	textContent: string;
+	intentId: string;
+	tenantName: string;
+	configurationSetName: string;
+	attachments?: { name: string; content: string }[];
+};
+
+function mailAddress(address: { email: string; name?: string }): {
+	name?: string;
+	address: string;
+} {
+	return { name: address.name, address: address.email };
+}
+
+async function buildRawOperationalMessage(message: OperationalSesEmail): Promise<Uint8Array> {
+	const composer = new MailComposer({
+		from: mailAddress(message.from),
+		to: Array.isArray(message.to) ? message.to.map(mailAddress) : mailAddress(message.to),
+		...(message.replyTo ? { replyTo: mailAddress(message.replyTo) } : {}),
+		subject: message.subject,
+		html: message.htmlContent,
+		text: message.textContent,
+		attachments: (message.attachments ?? []).map((attachment) => ({
+			filename: attachment.name,
+			content: attachment.content,
+			encoding: 'base64' as const
+		}))
+	});
+	return composer.compile().build();
+}
+
+export async function sendOperationalSesEmail(
+	message: OperationalSesEmail
+): Promise<{ messageId: string }> {
+	const { client } = getSes();
+	try {
+		const raw = await buildRawOperationalMessage(message);
+		const result = await client.send(
+			new SendEmailCommand({
+				Content: { Raw: { Data: raw } },
+				ConfigurationSetName: message.configurationSetName,
+				TenantName: message.tenantName,
+				// SES echoes tags into mail.tags on the SNS delivery event, and
+				// this is what correlates a delivery event back to the intent.
+				EmailTags: [{ Name: 'ucrm-intent', Value: message.intentId }]
+			})
+		);
+
+		if (!result.MessageId)
+			throw new OperationalSesEmailSubmissionError(
+				'Amazon SES accepted the request without returning a message identifier.',
+				'submission_unknown',
+				'ses_missing_message_id'
+			);
+		return { messageId: result.MessageId };
+	} catch (error) {
+		if (error instanceof OperationalSesEmailSubmissionError) throw error;
+		const status = sesStatus(error);
+		const retryable = status === 429 || (status !== null && status >= 500);
+		throw new OperationalSesEmailSubmissionError(
+			`Amazon SES rejected the send${(error as AwsError)?.message ? `: ${(error as AwsError).message}` : '.'}`,
+			status == null ? 'submission_unknown' : retryable ? 'retry' : 'cancelled',
+			status == null ? 'ses_network_unknown' : `ses_${(error as AwsError)?.name ?? status}`
+		);
+	}
+}
+
+// ---------------------------------------------------------------------------------------------------
+// Receipt rules (Operational email SES Part 4: customer replies). One rule per organization's reply subdomain,
+// in the account's single active rule set (ucrm-ses-inbound-rules). Each rule's Recipients is that exact
+// subdomain, so rules for different organizations never overlap and their order in the set never matters.
+// ---------------------------------------------------------------------------------------------------
+
+export type ReceiptRuleTarget = {
+	bucketName: string;
+	objectKeyPrefix: string;
+	topicArn: string;
+};
+
+function isRuleNotFound(error: unknown): boolean {
+	return (error as AwsError)?.name === 'RuleDoesNotExistException';
+}
+
+function desiredReceiptRule(
+	ruleName: string,
+	recipientDomain: string,
+	target: ReceiptRuleTarget
+): ReceiptRule {
+	return {
+		Name: ruleName,
+		Enabled: true,
+		ScanEnabled: true,
+		Recipients: [recipientDomain],
+		Actions: [
+			{ S3Action: { BucketName: target.bucketName, ObjectKeyPrefix: target.objectKeyPrefix } },
+			{ SNSAction: { TopicArn: target.topicArn, Encoding: 'UTF-8' } }
+		]
+	};
+}
+
+/**
+ * Brings one organization's receipt rule to its desired state: created if missing, updated if its recipient or
+ * actions have drifted. Never touches rule order -- Recipients is an exact subdomain, so this rule can never
+ * shadow or be shadowed by another organization's.
+ */
+export async function reconcileSesReceiptRule(
+	ruleSetName: string,
+	ruleName: string,
+	recipientDomain: string,
+	target: ReceiptRuleTarget
+): Promise<void> {
+	const { client } = getSesV1();
+	const desired = desiredReceiptRule(ruleName, recipientDomain, target);
+
+	let existing: ReceiptRule | undefined;
+	try {
+		const described = await client.send(
+			new DescribeReceiptRuleCommand({ RuleSetName: ruleSetName, RuleName: ruleName })
+		);
+		existing = described.Rule;
+	} catch (error) {
+		if (!isRuleNotFound(error)) throw toSesError('DescribeReceiptRule', error);
+	}
+
+	if (!existing) {
+		try {
+			await client.send(new CreateReceiptRuleCommand({ RuleSetName: ruleSetName, Rule: desired }));
+		} catch (error) {
+			if (!isAlreadyExists(error)) throw toSesError('CreateReceiptRule', error);
+		}
+		return;
+	}
+
+	const matches =
+		existing.Recipients?.length === 1 &&
+		existing.Recipients[0] === recipientDomain &&
+		existing.Actions?.[0]?.S3Action?.BucketName === target.bucketName &&
+		existing.Actions?.[0]?.S3Action?.ObjectKeyPrefix === target.objectKeyPrefix &&
+		existing.Actions?.[1]?.SNSAction?.TopicArn === target.topicArn &&
+		existing.Enabled === true;
+	if (matches) return;
+
+	await sesCall('UpdateReceiptRule', () =>
+		client.send(new UpdateReceiptRuleCommand({ RuleSetName: ruleSetName, Rule: desired }))
+	);
+}
+
+/** Deletes an organization's receipt rule. Already-gone is the desired state, so a retried removal is safe. */
+export async function deleteSesReceiptRule(ruleSetName: string, ruleName: string): Promise<void> {
+	const { client } = getSesV1();
+	try {
+		await client.send(
+			new DeleteReceiptRuleCommand({ RuleSetName: ruleSetName, RuleName: ruleName })
+		);
+	} catch (error) {
+		if (isRuleNotFound(error)) return;
+		throw toSesError('DeleteReceiptRule', error);
 	}
 }

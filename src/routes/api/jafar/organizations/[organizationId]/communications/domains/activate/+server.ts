@@ -2,13 +2,8 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
-import { BrevoManagementError } from '$lib/server/communications/brevo';
-import { CloudflareDnsError } from '$lib/server/communications/cloudflare-dns';
-import {
-	activateEmailDomain,
-	EmailDomainActivationError
-} from '$lib/server/communications/email-domain-activation';
-import { getBrevoInboundWebhookUrl } from '$lib/server/email/env';
+import { activateOperationalDomain } from '$lib/server/communications/operational-domain-activation';
+import { sesDomainErrorResponse } from '$lib/server/communications/ses-domain-http';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { organizationIdSchema } from '$lib/server/validation/access.schema';
@@ -19,8 +14,8 @@ import {
 
 const noStore = { 'Cache-Control': 'no-store' };
 
-// Owner-only managed email-domain activation (A1-D). Derives mail.<root> + reply.<root>, writes only
-// UCRM-owned records through Cloudflare, verifies Brevo, and registers the inbound webhook. The reconciler
+// Owner-only managed everyday-email domain activation on Amazon SES. Derives mail.<root> + reply.<root>,
+// writes only UCRM-owned records through Cloudflare, and verifies both SES identities. The reconciler
 // is a desired-state saga, so a replay of the same idempotency key returns the recorded outcome and a fresh
 // key safely re-runs the reconciliation from current provider state.
 export const POST: RequestHandler = async (event) => {
@@ -91,14 +86,10 @@ export const POST: RequestHandler = async (event) => {
 			return json({ error: 'Organization was not found.' }, { status: 404, headers: noStore });
 		}
 
-		// Built before any provider call so a misconfigured origin fails closed rather than mid-saga.
-		const webhookUrl = getBrevoInboundWebhookUrl();
-
-		const result = await activateEmailDomain({
+		const result = await activateOperationalDomain({
 			client,
 			organizationId: organizationId.data,
-			rootDomain: parsed.data.root_domain,
-			webhookUrl
+			rootDomain: parsed.data.root_domain
 		});
 
 		const { error: auditError } = await client.from('communication_email_authority_events').insert({
@@ -127,38 +118,6 @@ export const POST: RequestHandler = async (event) => {
 
 		return json(result, { status: 201, headers: noStore });
 	} catch (error) {
-		// An occupied/conflicting name or another non-retryable decision the owner must resolve by hand.
-		if (error instanceof EmailDomainActivationError && !error.retryable) {
-			return json({ error: error.message, code: error.code }, { status: 409, headers: noStore });
-		}
-		// An ambiguous provider outcome (timeout/network). The reconciler wrote nothing it cannot re-derive;
-		// the owner can safely run activation again.
-		const providerUnknown =
-			error instanceof EmailDomainActivationError ||
-			(error instanceof CloudflareDnsError && (error.status === null || error.status >= 500)) ||
-			(error instanceof BrevoManagementError && (error.status === null || error.status >= 500));
-		if (providerUnknown) {
-			return json(
-				{ error: 'A provider did not confirm the change. Check the domain and try again.' },
-				{ status: 502, headers: noStore }
-			);
-		}
-		if (error instanceof CloudflareDnsError) {
-			return json(
-				{ error: 'Cloudflare rejected a DNS change during activation.' },
-				{ status: 502, headers: noStore }
-			);
-		}
-		if (error instanceof BrevoManagementError) {
-			return json(
-				{ error: 'Brevo could not complete domain activation.' },
-				{ status: 502, headers: noStore }
-			);
-		}
-		console.error('Could not activate the email domain.', error);
-		return json(
-			{ error: 'The email domain could not be activated.' },
-			{ status: 500, headers: noStore }
-		);
+		return sesDomainErrorResponse(error, 'activate', 'everyday email domain');
 	}
 };

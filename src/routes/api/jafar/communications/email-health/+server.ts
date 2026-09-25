@@ -11,7 +11,7 @@ import {
 async function loadHealth() {
 	const client = getOwnerSupabaseClient();
 	// Three independent reads: the sending side (pauses, queue depth), the return-path processor (whether
-	// Brevo callbacks are being turned into outcomes and suppressions), and the outbound drain worker
+	// SES delivery events are being turned into outcomes and suppressions), and the outbound drain worker
 	// (whether the once-a-minute wake is actually running and clearing the queue). Run them together.
 	const [sending, callbacks, worker] = await Promise.all([
 		client.rpc('get_communication_email_sending_health'),

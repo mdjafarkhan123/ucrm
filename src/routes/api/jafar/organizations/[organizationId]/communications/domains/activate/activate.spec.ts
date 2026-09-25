@@ -4,9 +4,9 @@ import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 import {
-	activateEmailDomain,
+	activateOperationalDomain,
 	EmailDomainActivationError
-} from '$lib/server/communications/email-domain-activation';
+} from '$lib/server/communications/operational-domain-activation';
 import { CloudflareDnsError } from '$lib/server/communications/cloudflare-dns';
 
 vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
@@ -15,13 +15,11 @@ vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/server/security/rate-limit')>()),
 	checkRateLimit: vi.fn()
 }));
-vi.mock('$lib/server/communications/email-domain-activation', async (importOriginal) => ({
-	...(await importOriginal<typeof import('$lib/server/communications/email-domain-activation')>()),
-	activateEmailDomain: vi.fn()
-}));
-vi.mock('$lib/server/email/env', async (importOriginal) => ({
-	...(await importOriginal<typeof import('$lib/server/email/env')>()),
-	getBrevoInboundWebhookUrl: vi.fn(() => 'https://app.example.com/api/webhooks/brevo/inbound')
+vi.mock('$lib/server/communications/operational-domain-activation', async (importOriginal) => ({
+	...(await importOriginal<
+		typeof import('$lib/server/communications/operational-domain-activation')
+	>()),
+	activateOperationalDomain: vi.fn()
 }));
 
 const organizationId = '123e4567-e89b-12d3-a456-426614174000';
@@ -31,7 +29,7 @@ const sendingDomainId = '123e4567-e89b-12d3-a456-426614174009';
 const activationResult = {
 	zone_id: 'zone-1',
 	sending: { domain_id: sendingDomainId, domain_name: 'mail.contractor.com', records_written: 3 },
-	receiving: { domain_name: 'reply.contractor.com', provider_inbound_webhook_id: '4242' }
+	receiving: { domain_name: 'reply.contractor.com', ses_identity_status: 'passing' }
 };
 
 function event(body: unknown, params: Record<string, string> = { organizationId }) {
@@ -85,7 +83,7 @@ describe('owner managed email-domain activation boundary', () => {
 			email: 'owner@example.com',
 			sessionId: 'session-1'
 		});
-		vi.mocked(activateEmailDomain).mockResolvedValue(activationResult as never);
+		vi.mocked(activateOperationalDomain).mockResolvedValue(activationResult as never);
 	});
 
 	it('refuses a request without an owner session before any database access', async () => {
@@ -96,7 +94,7 @@ describe('owner managed email-domain activation boundary', () => {
 		expect(response.status).toBe(401);
 		expect(response.headers.get('cache-control')).toBe('no-store');
 		expect(getOwnerSupabaseClient).not.toHaveBeenCalled();
-		expect(activateEmailDomain).not.toHaveBeenCalled();
+		expect(activateOperationalDomain).not.toHaveBeenCalled();
 	});
 
 	it('rejects an invalid organization identifier before touching providers', async () => {
@@ -104,7 +102,7 @@ describe('owner managed email-domain activation boundary', () => {
 
 		expect(response.status).toBe(422);
 		expect(getOwnerSupabaseClient).not.toHaveBeenCalled();
-		expect(activateEmailDomain).not.toHaveBeenCalled();
+		expect(activateOperationalDomain).not.toHaveBeenCalled();
 	});
 
 	it('validates the root domain before database or provider access', async () => {
@@ -114,7 +112,7 @@ describe('owner managed email-domain activation boundary', () => {
 
 		expect(response.status).toBe(422);
 		expect(getOwnerSupabaseClient).not.toHaveBeenCalled();
-		expect(activateEmailDomain).not.toHaveBeenCalled();
+		expect(activateOperationalDomain).not.toHaveBeenCalled();
 	});
 
 	it('stops a rate-limited owner without reconciling', async () => {
@@ -125,7 +123,7 @@ describe('owner managed email-domain activation boundary', () => {
 
 		expect(response.status).toBe(429);
 		expect(response.headers.get('cache-control')).toBe('no-store');
-		expect(activateEmailDomain).not.toHaveBeenCalled();
+		expect(activateOperationalDomain).not.toHaveBeenCalled();
 	});
 
 	it('replays the recorded activation receipt without provider I/O', async () => {
@@ -144,7 +142,7 @@ describe('owner managed email-domain activation boundary', () => {
 
 		expect(response.status).toBe(200);
 		expect(await response.json()).toMatchObject({ zone_id: 'zone-1', replayed: true });
-		expect(activateEmailDomain).not.toHaveBeenCalled();
+		expect(activateOperationalDomain).not.toHaveBeenCalled();
 	});
 
 	it('returns 404 when the organization does not exist', async () => {
@@ -157,7 +155,7 @@ describe('owner managed email-domain activation boundary', () => {
 		const response = await POST(event(validBody()));
 
 		expect(response.status).toBe(404);
-		expect(activateEmailDomain).not.toHaveBeenCalled();
+		expect(activateOperationalDomain).not.toHaveBeenCalled();
 	});
 
 	it('reconciles for the organization in the route and records the audit event', async () => {
@@ -172,7 +170,7 @@ describe('owner managed email-domain activation boundary', () => {
 
 		expect(response.status).toBe(201);
 		expect(await response.json()).toMatchObject({ zone_id: 'zone-1' });
-		expect(activateEmailDomain).toHaveBeenCalledWith(
+		expect(activateOperationalDomain).toHaveBeenCalledWith(
 			expect.objectContaining({ organizationId, rootDomain: 'contractor.com' })
 		);
 		expect(client.inserts).toContainEqual(
@@ -206,7 +204,7 @@ describe('owner managed email-domain activation boundary', () => {
 			{ data: { id: organizationId }, error: null }
 		]);
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
-		vi.mocked(activateEmailDomain).mockRejectedValue(
+		vi.mocked(activateOperationalDomain).mockRejectedValue(
 			new EmailDomainActivationError('That subdomain is in use.', 'subdomain_occupied', false)
 		);
 
@@ -222,7 +220,7 @@ describe('owner managed email-domain activation boundary', () => {
 			{ data: { id: organizationId }, error: null }
 		]);
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
-		vi.mocked(activateEmailDomain).mockRejectedValue(
+		vi.mocked(activateOperationalDomain).mockRejectedValue(
 			new CloudflareDnsError('Cloudflare timed out', null, 'cloudflare_network_error')
 		);
 

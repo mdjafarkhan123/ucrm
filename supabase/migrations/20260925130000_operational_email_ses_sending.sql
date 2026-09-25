@@ -1,0 +1,754 @@
+-- Operational email SES Part 3: outbound sending + delivery events on SES.
+--
+-- Sending, sender identity, and delivery-event ingestion for operational (everyday) email move onto Amazon SES,
+-- alongside Brevo, which some organizations may still be on mid-cutover. This never rebuilds the queueing,
+-- allowance, warm-up, or suppression logic (docs/contractor-email-contract.md) -- it only lets the worker see
+-- which provider a claimed row's sending domain is actually on, so it can call the right one.
+
+-- 1. Widen the two provider CHECK constraints Brevo-only sending left behind, following the exact precedent
+--    already used for communication_email_domains_provider_check (20260922150000_marketing_ses_sending_identity.sql).
+
+alter table "public"."communication_email_senders"
+    drop constraint "communication_email_senders_provider_check";
+
+alter table "public"."communication_email_senders"
+    add constraint "communication_email_senders_provider_check"
+    check ("provider" = any (array['brevo'::text, 'ses'::text]));
+
+alter table "public"."communication_provider_callback_events"
+    drop constraint "communication_provider_callback_events_provider_channel_check";
+
+alter table "public"."communication_provider_callback_events"
+    add constraint "communication_provider_callback_events_provider_channel_check"
+    check (
+        (("channel" = 'email'::text) and ("provider" = any (array['brevo'::text, 'ses'::text])))
+        or (("channel" = 'sms'::text) and ("provider" = 'twilio'::text))
+    );
+
+-- 2. claim_communication_outbox_event(): the worker needs organization_id (to derive the SES tenant and
+--    operational configuration set names, the same "derive, never store-then-guess" convention ses-env.ts
+--    already uses) and the resolved sending domain's provider, so a claim tells the worker which provider to
+--    call without a second lookup. claim_communication_sms_outbox_event already returns organization_id; this
+--    brings the email claim to the same shape. Every other line of this function is unchanged from the
+--    version this replaces.
+
+create or replace function "public"."claim_communication_outbox_event"()
+returns table(
+    "outbox_event_id" uuid, "delivery_intent_id" uuid, "organization_id" uuid, "claim_token" uuid,
+    "recipient_email" text, "subject" text, "html_content" text, "text_content" text, "logical_send_key" text,
+    "sender_id" uuid, "sender_email" text, "sender_name" text, "sender_provider" text,
+    "reply_to_email" text, "reply_to_name" text
+)
+    language "plpgsql" security definer
+    set "search_path" to 'pg_catalog', 'public', 'private'
+    as $$
+declare
+  candidate record;
+  current_recipient public.client_contact_methods;
+  selected_sender public.communication_email_senders;
+  sender_domain public.communication_email_domains;
+  assigned_member_status text;
+  active_allowance record;
+  allowance_limit_state text;
+  allowance_limit_value integer;
+  accepted_recipient_count integer;
+  reserved_recipient_count integer;
+  new_claim_token uuid;
+  alias public.communication_reply_aliases;
+  alias_domain public.communication_email_domains;
+  holding_pause public.communication_email_sending_pauses%rowtype;
+  hold_code text;
+  hold_message text;
+  today_start timestamptz := date_trunc('day', now() at time zone 'UTC') at time zone 'UTC';
+  warmup_ceiling integer;
+  warmup_used_today integer;
+  short_term_max integer;
+  short_term_window integer;
+  short_term_used integer;
+  short_term_oldest_at timestamptz;
+  short_term_retry_at timestamptz;
+  provider_capacity integer;
+  provider_reserve_percent integer;
+  provider_reserve integer;
+  provider_effective_cap integer;
+  current_period_start timestamptz := date_trunc('month', now() at time zone 'UTC') at time zone 'UTC';
+  platform_accepted bigint;
+  platform_reserved bigint;
+begin
+  if exists (
+    select 1 from public.communication_email_sending_pauses
+    where scope = 'platform' and released_at is null
+  ) then
+    return;
+  end if;
+
+  for candidate in
+    select
+      event.id as event_id,
+      event.delivery_intent_id,
+      intent.organization_id,
+      intent.client_id,
+      intent.client_contact_method_id,
+      intent.recipient_email,
+      intent.subject,
+      intent.html_content,
+      intent.text_content,
+      intent.logical_send_key,
+      intent.send_kind,
+      intent.allowance_class,
+      intent.retry_class,
+      intent.expires_at,
+      intent.sender_id,
+      intent.reply_alias_id,
+      intent.created_by
+    from public.communication_outbox_events event
+    join public.communication_delivery_intents intent on intent.id = event.delivery_intent_id
+    where event.channel = 'email' and event.status in ('pending', 'failed') and event.available_at <= now()
+    order by event.available_at, event.created_at, event.id
+    limit 50
+    for update of event skip locked
+  loop
+    if candidate.expires_at <= now() then
+      hold_message := case candidate.retry_class
+        when 'payment_receipt' then
+          'This receipt could not be sent within 72 hours, so UCRM cancelled it. Send it again once sending is working.'
+        when 'appointment_reminder' then
+          'This reminder was not sent before its appointment window passed, so UCRM cancelled it.'
+        when 'optional_followup' then
+          'This follow-up passed its send window before it could go out, so UCRM cancelled it.'
+        else
+          'This message could not be sent within 24 hours, so UCRM cancelled it. Send it again once sending is working.'
+      end;
+      update public.communication_delivery_intents
+      set status = 'cancelled', provider_message_id = null, accepted_at = null,
+        failure_code = 'retry_deadline_passed', failure_message = hold_message
+      where id = candidate.delivery_intent_id;
+      update public.communication_outbox_events
+      set status = 'cancelled', claimed_at = null, claim_token = null, last_error = hold_message
+      where id = candidate.event_id;
+      continue;
+    end if;
+
+    hold_code := null;
+    hold_message := null;
+
+    if exists (
+      select 1 from public.organizations org
+      where org.id = candidate.organization_id
+        and org.lifecycle_status = 'suspended'
+    ) then
+      hold_code := 'organization_suspended';
+      hold_message := 'Sending is suspended for this organization. UCRM will retry once it is reactivated.';
+    elsif exists (
+      select 1 from public.organization_closure_records closure
+      where closure.organization_id = candidate.organization_id
+        and closure.status in ('pending_closure', 'purge_in_progress')
+    ) then
+      hold_code := 'organization_closing';
+      hold_message := 'This organization is closing. UCRM will retry if the closure is reversed.';
+    end if;
+
+    if hold_code is not null then
+      update public.communication_delivery_intents
+      set failure_code = hold_code, failure_message = hold_message
+      where id = candidate.delivery_intent_id;
+      update public.communication_outbox_events
+      set available_at = least(now() + interval '1 hour', candidate.expires_at), last_error = hold_message
+      where id = candidate.event_id;
+      continue;
+    end if;
+
+    current_recipient := null;
+    select method.* into current_recipient
+    from public.client_contact_methods method
+    where method.organization_id = candidate.organization_id
+      and method.id = candidate.client_contact_method_id
+    for share;
+
+    if current_recipient.id is null
+      or current_recipient.client_id <> candidate.client_id
+      or current_recipient.kind <> 'email'
+      or current_recipient.normalized_value <> candidate.recipient_email then
+      update public.communication_delivery_intents
+      set status = 'cancelled', provider_message_id = null, accepted_at = null,
+        failure_code = 'recipient_no_longer_eligible',
+        failure_message = 'The queued recipient is no longer an active email method for this customer.'
+      where id = candidate.delivery_intent_id;
+      update public.communication_outbox_events
+      set status = 'cancelled', claimed_at = null, claim_token = null,
+        last_error = 'The queued recipient is no longer an active email method for this customer.'
+      where id = candidate.event_id;
+      continue;
+    end if;
+
+    if exists (
+      select 1
+      from public.communication_email_suppressions suppression
+      where suppression.organization_id = candidate.organization_id
+        and suppression.recipient_email = candidate.recipient_email
+        and suppression.released_at is null
+        and (
+          suppression.reason in ('hard_bounce', 'complaint')
+          or (suppression.reason = 'unsubscribe' and candidate.allowance_class = 'optional')
+        )
+    ) then
+      update public.communication_delivery_intents
+      set status = 'cancelled', provider_message_id = null, accepted_at = null,
+        failure_code = 'recipient_suppressed',
+        failure_message = 'This recipient address is on the organization suppression list.'
+      where id = candidate.delivery_intent_id;
+      update public.communication_outbox_events
+      set status = 'cancelled', claimed_at = null, claim_token = null,
+        last_error = 'This recipient address is on the organization suppression list.'
+      where id = candidate.event_id;
+      continue;
+    end if;
+
+    holding_pause := null;
+    select pause.* into holding_pause
+    from public.communication_email_sending_pauses pause
+    where pause.scope = 'organization'
+      and pause.organization_id = candidate.organization_id
+      and pause.released_at is null
+      and (pause.applies_to = 'all' or candidate.allowance_class = 'optional')
+    order by case when pause.applies_to = 'all' then 0 else 1 end
+    limit 1;
+
+    if holding_pause.id is not null then
+      if holding_pause.source = 'auto_reputation' then
+        hold_code := 'sending_paused_reputation';
+        hold_message := 'Optional email is paused while this organization''s delivery reputation is reviewed.';
+      else
+        hold_code := 'sending_paused_organization';
+        hold_message := 'Sending for this organization is paused. UCRM will retry when it resumes.';
+      end if;
+      update public.communication_delivery_intents
+      set failure_code = hold_code, failure_message = hold_message
+      where id = candidate.delivery_intent_id;
+      update public.communication_outbox_events
+      set available_at = least(now() + interval '5 minutes', candidate.expires_at), last_error = hold_message
+      where id = candidate.event_id;
+      continue;
+    end if;
+
+    selected_sender := null;
+    if candidate.sender_id is not null then
+      select sender.* into selected_sender
+      from public.communication_email_senders sender
+      where sender.organization_id = candidate.organization_id and sender.id = candidate.sender_id
+      for share;
+    elsif candidate.send_kind = 'automated' then
+      select sender.* into selected_sender
+      from public.communication_email_senders sender
+      where sender.organization_id = candidate.organization_id
+        and sender.is_organization_default and sender.lifecycle_state <> 'removed'
+      order by sender.created_at, sender.id limit 1 for share;
+    end if;
+
+    if selected_sender.id is null then
+      if candidate.send_kind = 'manual' then
+        update public.communication_delivery_intents set status = 'failed', provider_message_id = null,
+          accepted_at = null, failure_code = 'manual_sender_review_required',
+          failure_message = 'The original sender is no longer eligible. Review and reassign this message.'
+        where id = candidate.delivery_intent_id;
+        update public.communication_outbox_events set status = 'failed', available_at = 'infinity'::timestamptz,
+          claimed_at = null, claim_token = null,
+          last_error = 'The original sender is no longer eligible. Review and reassign this message.'
+        where id = candidate.event_id;
+      else
+        update public.communication_delivery_intents set status = 'cancelled', provider_message_id = null,
+          accepted_at = null, failure_code = 'automated_sender_invalid',
+          failure_message = 'The configured automated sender is no longer valid.'
+        where id = candidate.delivery_intent_id;
+        update public.communication_outbox_events set status = 'cancelled', claimed_at = null, claim_token = null,
+          last_error = 'The configured automated sender is no longer valid.'
+        where id = candidate.event_id;
+      end if;
+      continue;
+    end if;
+
+    assigned_member_status := null;
+    if selected_sender.assigned_user_id is not null then
+      select member.status into assigned_member_status from public.organization_members member
+      where member.organization_id = selected_sender.organization_id and member.user_id = selected_sender.assigned_user_id
+      for share;
+    end if;
+    sender_domain := null;
+    select domain.* into sender_domain from public.communication_email_domains domain
+    where domain.organization_id = selected_sender.organization_id and domain.id = selected_sender.domain_id
+    for share;
+
+    if selected_sender.lifecycle_state = 'pending_verification'
+      or (sender_domain.id is not null and sender_domain.lifecycle_state not in ('removal_pending', 'removed')
+        and (sender_domain.lifecycle_state <> 'verified' or not sender_domain.provider_verified
+          or not sender_domain.provider_authenticated or sender_domain.ownership_status <> 'passing'
+          or sender_domain.dkim_status <> 'passing')) then
+      update public.communication_delivery_intents set failure_code = 'sender_domain_temporarily_unavailable',
+        failure_message = 'The sending domain is temporarily unavailable. UCRM will check again.'
+      where id = candidate.delivery_intent_id;
+      update public.communication_outbox_events
+      set available_at = least(now() + interval '15 minutes', candidate.expires_at),
+        last_error = 'The sending domain is temporarily unavailable. UCRM will check again.'
+      where id = candidate.event_id;
+      continue;
+    end if;
+
+    if selected_sender.lifecycle_state <> 'enabled'
+      or (candidate.send_kind = 'manual' and not selected_sender.allows_manual)
+      or (candidate.send_kind = 'automated' and not selected_sender.allows_automated)
+      or (selected_sender.assigned_user_id is not null and assigned_member_status is distinct from 'active')
+      or sender_domain.id is null or sender_domain.purpose <> 'sending'
+      or sender_domain.lifecycle_state in ('removal_pending', 'removed') then
+      if candidate.send_kind = 'manual' then
+        update public.communication_delivery_intents set status = 'failed', provider_message_id = null,
+          accepted_at = null, failure_code = 'manual_sender_review_required',
+          failure_message = 'The original sender is no longer eligible. Review and reassign this message.'
+        where id = candidate.delivery_intent_id;
+        update public.communication_outbox_events set status = 'failed', available_at = 'infinity'::timestamptz,
+          claimed_at = null, claim_token = null,
+          last_error = 'The original sender is no longer eligible. Review and reassign this message.'
+        where id = candidate.event_id;
+      else
+        update public.communication_delivery_intents set status = 'cancelled', provider_message_id = null,
+          accepted_at = null, failure_code = 'automated_sender_invalid',
+          failure_message = 'The configured automated sender is no longer valid.'
+        where id = candidate.delivery_intent_id;
+        update public.communication_outbox_events set status = 'cancelled', claimed_at = null, claim_token = null,
+          last_error = 'The configured automated sender is no longer valid.'
+        where id = candidate.event_id;
+      end if;
+      continue;
+    end if;
+
+    warmup_ceiling := private.resolve_communication_email_warmup_ceiling(
+      candidate.organization_id, sender_domain.id, now());
+    if warmup_ceiling is not null then
+      select
+        coalesce((
+          select sum(usage.recipient_count)
+          from public.communication_email_usage_events usage
+          join public.communication_delivery_intents used_intent on used_intent.id = usage.delivery_intent_id
+          join public.communication_email_senders used_sender on used_sender.id = used_intent.sender_id
+          where usage.organization_id = candidate.organization_id
+            and usage.occurred_at >= today_start
+            and used_sender.domain_id = sender_domain.id
+        ), 0)
+      + coalesce((
+          select sum(reservation.recipient_count)
+          from public.communication_email_capacity_reservations reservation
+          join public.communication_delivery_intents reserved_intent on reserved_intent.id = reservation.delivery_intent_id
+          join public.communication_email_senders reserved_sender on reserved_sender.id = reserved_intent.sender_id
+          where reservation.organization_id = candidate.organization_id
+            and reservation.reservation_state in ('reserved', 'submission_unknown')
+            and reservation.reserved_at >= today_start
+            and reserved_sender.domain_id = sender_domain.id
+        ), 0)
+      into warmup_used_today;
+
+      if warmup_used_today + 1 > warmup_ceiling then
+        update public.communication_delivery_intents
+        set failure_code = 'email_warmup_ceiling_reached',
+          failure_message = 'This sending domain is still warming up and has reached today''s limit. UCRM will retry tomorrow.'
+        where id = candidate.delivery_intent_id;
+        update public.communication_outbox_events
+        set available_at = least(today_start + interval '1 day', candidate.expires_at),
+          last_error = 'This sending domain is still warming up and has reached today''s limit. UCRM will retry tomorrow.'
+        where id = candidate.event_id;
+        continue;
+      end if;
+    end if;
+
+    select rate.max_recipients, rate.window_minutes
+    into short_term_max, short_term_window
+    from private.resolve_communication_email_short_term_rate(candidate.organization_id, now()) rate;
+
+    if short_term_max is not null then
+      select
+        coalesce((
+          select sum(usage.recipient_count)
+          from public.communication_email_usage_events usage
+          where usage.organization_id = candidate.organization_id
+            and usage.occurred_at > now() - make_interval(mins => short_term_window)
+        ), 0)
+      + coalesce((
+          select sum(reservation.recipient_count)
+          from public.communication_email_capacity_reservations reservation
+          where reservation.organization_id = candidate.organization_id
+            and reservation.reservation_state in ('reserved', 'submission_unknown')
+            and reservation.reserved_at > now() - make_interval(mins => short_term_window)
+        ), 0)
+      into short_term_used;
+
+      select min(usage.occurred_at) into short_term_oldest_at
+      from public.communication_email_usage_events usage
+      where usage.organization_id = candidate.organization_id
+        and usage.occurred_at > now() - make_interval(mins => short_term_window);
+
+      if short_term_used + 1 > short_term_max then
+        short_term_retry_at := coalesce(short_term_oldest_at, now())
+          + make_interval(mins => short_term_window);
+        if short_term_retry_at <= now() then
+          short_term_retry_at := now() + interval '1 minute';
+        end if;
+        update public.communication_delivery_intents
+        set failure_code = 'email_short_term_rate_limited',
+          failure_message = format(
+            'This organization has reached its short-term sending limit (%s recipients per %s minutes). UCRM will retry shortly.',
+            short_term_max, short_term_window)
+        where id = candidate.delivery_intent_id;
+        update public.communication_outbox_events
+        set available_at = least(short_term_retry_at, candidate.expires_at),
+          last_error = 'Short-term sending limit reached. UCRM will retry shortly.'
+        where id = candidate.event_id;
+        continue;
+      end if;
+    end if;
+
+    select cap.capacity, cap.reserve_percent
+    into provider_capacity, provider_reserve_percent
+    from private.resolve_communication_email_provider_capacity(now()) cap;
+
+    if provider_capacity is not null then
+      provider_reserve := ceil(provider_capacity::numeric * provider_reserve_percent / 100.0)::integer;
+      if candidate.allowance_class = 'optional' then
+        provider_effective_cap := provider_capacity - provider_reserve;
+      else
+        provider_effective_cap := provider_capacity;
+      end if;
+
+      select coalesce(usage.accepted_recipients, 0) into platform_accepted
+      from public.communication_email_platform_period_usage usage
+      where usage.period_start = current_period_start;
+      platform_accepted := coalesce(platform_accepted, 0);
+
+      select coalesce(sum(reservation.recipient_count), 0) into platform_reserved
+      from public.communication_email_capacity_reservations reservation
+      where reservation.reservation_state in ('reserved', 'submission_unknown')
+        and reservation.reserved_at >= current_period_start;
+
+      if platform_accepted + platform_reserved + 1 > provider_effective_cap then
+        if candidate.allowance_class = 'optional' then
+          hold_message := 'The platform has reached its reserved monthly sending capacity. Essential email still sends; other email will retry.';
+          update public.communication_delivery_intents
+          set failure_code = 'email_platform_capacity_reserved', failure_message = hold_message
+          where id = candidate.delivery_intent_id;
+        else
+          hold_message := 'The platform has reached its monthly provider sending capacity. UCRM will retry shortly.';
+          update public.communication_delivery_intents
+          set failure_code = 'email_platform_capacity_reached', failure_message = hold_message
+          where id = candidate.delivery_intent_id;
+        end if;
+        update public.communication_outbox_events
+        set available_at = least(now() + interval '15 minutes', candidate.expires_at), last_error = hold_message
+        where id = candidate.event_id;
+        continue;
+      end if;
+    end if;
+
+    select * into active_allowance
+    from private.resolve_communication_email_allowance(candidate.organization_id, now());
+    if not found then
+      update public.communication_delivery_intents set failure_code = 'email_allowance_period_unavailable',
+        failure_message = 'No active email allowance period is available. UCRM will check again.'
+      where id = candidate.delivery_intent_id;
+      update public.communication_outbox_events
+      set available_at = least(now() + interval '15 minutes', candidate.expires_at),
+        last_error = 'No active email allowance period is available. UCRM will check again.'
+      where id = candidate.event_id;
+      continue;
+    end if;
+
+    if candidate.allowance_class = 'optional' then
+      allowance_limit_state := active_allowance.operational_limit_state;
+      allowance_limit_value := active_allowance.operational_limit_value;
+    else
+      allowance_limit_state := active_allowance.essential_limit_state;
+      allowance_limit_value := active_allowance.essential_limit_value;
+    end if;
+    if allowance_limit_state not in ('numeric', 'unlimited')
+      or (allowance_limit_state = 'numeric' and allowance_limit_value is null) then
+      update public.communication_delivery_intents set failure_code = 'email_allowance_unavailable',
+        failure_message = 'Email allowance is unavailable. UCRM will check again.'
+      where id = candidate.delivery_intent_id;
+      update public.communication_outbox_events
+      set available_at = least(now() + interval '15 minutes', candidate.expires_at),
+        last_error = 'Email allowance is unavailable. UCRM will check again.'
+      where id = candidate.event_id;
+      continue;
+    end if;
+
+    insert into public.communication_email_capacity_buckets (
+      organization_id, allowance_period_id, allowance_class
+    ) values (candidate.organization_id, active_allowance.period_id, candidate.allowance_class)
+    on conflict do nothing;
+    perform 1 from public.communication_email_capacity_buckets bucket
+    where bucket.organization_id = candidate.organization_id
+      and bucket.allowance_period_id = active_allowance.period_id
+      and bucket.allowance_class = candidate.allowance_class
+    for update;
+
+    if allowance_limit_state = 'numeric' then
+      select coalesce(sum(usage.recipient_count), 0)::integer into accepted_recipient_count
+      from public.communication_email_usage_events usage
+      where usage.organization_id = candidate.organization_id
+        and usage.allowance_period_id = active_allowance.period_id
+        and usage.allowance_class = candidate.allowance_class;
+      select coalesce(sum(reservation.recipient_count), 0)::integer into reserved_recipient_count
+      from public.communication_email_capacity_reservations reservation
+      where reservation.organization_id = candidate.organization_id
+        and reservation.allowance_period_id = active_allowance.period_id
+        and reservation.allowance_class = candidate.allowance_class
+        and reservation.reservation_state in ('reserved', 'submission_unknown');
+      if accepted_recipient_count + reserved_recipient_count >= allowance_limit_value then
+        update public.communication_delivery_intents set failure_code = 'email_allowance_exhausted',
+          failure_message = 'Email allowance is currently exhausted. UCRM will check again.'
+        where id = candidate.delivery_intent_id;
+        update public.communication_outbox_events
+        set available_at = least(now() + interval '15 minutes', candidate.expires_at),
+          last_error = 'Email allowance is currently exhausted. UCRM will check again.'
+        where id = candidate.event_id;
+        continue;
+      end if;
+    end if;
+
+    insert into public.communication_email_capacity_reservations (
+      organization_id, delivery_intent_id, allowance_period_id, allowance_class, reservation_state, reserved_at, settled_at
+    ) values (
+      candidate.organization_id, candidate.delivery_intent_id, active_allowance.period_id,
+      candidate.allowance_class, 'reserved', now(), null
+    ) on conflict on constraint communication_email_capacity_reservations_delivery_intent_key do update set
+      organization_id = excluded.organization_id,
+      allowance_period_id = excluded.allowance_period_id,
+      allowance_class = excluded.allowance_class,
+      reservation_state = 'reserved', reserved_at = now(), settled_at = null
+    where public.communication_email_capacity_reservations.reservation_state = 'released';
+    if not found then
+      raise exception 'The email capacity reservation is not available for this delivery intent.'
+        using errcode = 'object_not_in_prerequisite_state';
+    end if;
+
+    alias := null;
+    alias_domain := null;
+    if candidate.reply_alias_id is not null then
+      select rep_alias.* into alias from public.communication_reply_aliases rep_alias
+      where rep_alias.id = candidate.reply_alias_id and rep_alias.organization_id = candidate.organization_id
+      for share;
+      if alias.id is not null then
+        select * into alias_domain from public.communication_email_domains
+        where id = alias.receiving_domain_id and organization_id = candidate.organization_id
+        for share;
+      end if;
+    end if;
+
+    new_claim_token := gen_random_uuid();
+    update public.communication_outbox_events set status = 'processing', claimed_at = now(), claim_token = new_claim_token,
+      attempt_count = attempt_count + 1, last_error = null where id = candidate.event_id;
+    update public.communication_delivery_intents set status = 'claimed', sender_id = selected_sender.id,
+      failure_code = null, failure_message = null where id = candidate.delivery_intent_id;
+    return query select candidate.event_id, candidate.delivery_intent_id, candidate.organization_id, new_claim_token,
+      candidate.recipient_email, candidate.subject, candidate.html_content, candidate.text_content,
+      candidate.logical_send_key, selected_sender.id, selected_sender.email_address, selected_sender.display_name,
+      sender_domain.provider,
+      case when alias.id is not null and alias_domain.id is not null
+        then alias.alias_local_part || '@' || alias_domain.domain_name else null end,
+      case when alias.id is not null then selected_sender.display_name else null end;
+    return;
+  end loop;
+end;
+$$;
+
+alter function "public"."claim_communication_outbox_event"() owner to "postgres";
+
+-- 3. claim_communication_forward_event(): the same two additions, for the same reason -- message forwarding
+--    (docs/contractor-email-contract.md "Recipients, forwarding, and portal access") sends through the same
+--    per-organization sender/domain and must pick the same provider a claimed row's domain is actually on.
+
+create or replace function "public"."claim_communication_forward_event"()
+returns table(
+    "forward_event_id" uuid, "claim_token" uuid, "organization_id" uuid, "recipient_emails" text[],
+    "subject" text, "html_content" text, "text_content" text,
+    "sender_id" uuid, "sender_email" text, "sender_name" text, "sender_provider" text
+)
+    language "plpgsql" security definer
+    set "search_path" to 'pg_catalog', 'public'
+    as $$
+declare
+  candidate record;
+  selected_sender public.communication_email_senders;
+  sender_domain public.communication_email_domains;
+  assigned_member_status text;
+  new_claim_token uuid;
+begin
+  for candidate in
+    select event.*
+    from public.communication_forward_events event
+    where event.status in ('queued', 'failed') and event.available_at <= now()
+    order by event.available_at, event.created_at, event.id
+    limit 50
+    for update skip locked
+  loop
+    select sender.* into selected_sender
+    from public.communication_email_senders sender
+    where sender.organization_id = candidate.organization_id and sender.id = candidate.sender_id
+    for share;
+
+    assigned_member_status := null;
+    if selected_sender.assigned_user_id is not null then
+      select member.status into assigned_member_status from public.organization_members member
+      where member.organization_id = selected_sender.organization_id
+        and member.user_id = selected_sender.assigned_user_id
+      for share;
+    end if;
+    select domain.* into sender_domain from public.communication_email_domains domain
+    where domain.organization_id = selected_sender.organization_id and domain.id = selected_sender.domain_id
+    for share;
+
+    if selected_sender.id is null or selected_sender.lifecycle_state <> 'enabled'
+      or not selected_sender.allows_manual
+      or (selected_sender.assigned_user_id is not null and assigned_member_status is distinct from 'active')
+      or sender_domain.id is null or sender_domain.purpose <> 'sending'
+      or sender_domain.lifecycle_state not in ('verified')
+      or not sender_domain.provider_verified or not sender_domain.provider_authenticated
+      or sender_domain.ownership_status <> 'passing' or sender_domain.dkim_status <> 'passing' then
+      update public.communication_forward_events
+      set status = 'failed', available_at = 'infinity'::timestamptz,
+        failure_code = 'forward_sender_review_required',
+        failure_message = 'The original sender is no longer eligible. Review and reassign this message.'
+      where id = candidate.id;
+      continue;
+    end if;
+
+    new_claim_token := gen_random_uuid();
+    update public.communication_forward_events
+    set status = 'claimed', claimed_at = now(), claim_token = new_claim_token,
+      attempt_count = attempt_count + 1, failure_code = null, failure_message = null
+    where id = candidate.id;
+
+    return query select candidate.id, new_claim_token, candidate.organization_id, candidate.recipient_emails,
+      candidate.subject, candidate.html_content, candidate.text_content, selected_sender.id,
+      selected_sender.email_address, selected_sender.display_name, sender_domain.provider;
+    return;
+  end loop;
+end;
+$$;
+
+alter function "public"."claim_communication_forward_event"() owner to "postgres";
+
+-- 4. begin_communication_email_sender_create(): a new sender inherits its provider from the sending domain it
+--    is created against, instead of always defaulting to 'brevo'. Everything else about this function is
+--    unchanged from the version this replaces.
+
+create or replace function "public"."begin_communication_email_sender_create"(
+    "target_organization_id" uuid, "target_domain_id" uuid, "target_email_address" text,
+    "target_display_name" text, "target_assigned_user_id" uuid, "target_is_organization_default" boolean,
+    "target_allows_manual" boolean, "target_allows_automated" boolean, "actor_user_id" uuid,
+    "command_idempotency_key" text
+) returns jsonb
+    language "plpgsql"
+    set "search_path" to 'pg_catalog', 'public'
+    as $$
+declare
+  selected_domain public.communication_email_domains;
+  selected_sender public.communication_email_senders;
+  existing_event public.communication_email_authority_events;
+  desired_state jsonb;
+begin
+  if command_idempotency_key is null or char_length(btrim(command_idempotency_key)) not between 1 and 180 then
+    raise exception 'A valid idempotency key is required.' using errcode = 'check_violation';
+  end if;
+
+  target_email_address := lower(btrim(target_email_address));
+  target_display_name := btrim(target_display_name);
+  desired_state := jsonb_build_object(
+    'domain_id', target_domain_id,
+    'email_address', target_email_address,
+    'display_name', target_display_name,
+    'assigned_user_id', target_assigned_user_id,
+    'is_organization_default', target_is_organization_default,
+    'allows_manual', target_allows_manual,
+    'allows_automated', target_allows_automated
+  );
+
+  select * into existing_event
+  from public.communication_email_authority_events
+  where organization_id = target_organization_id
+    and idempotency_key = command_idempotency_key;
+
+  if found then
+    if existing_event.event_type <> 'sender.create.started'
+      or existing_event.after_state is distinct from desired_state then
+      raise exception 'The idempotency key was already used for another command.'
+        using errcode = 'unique_violation';
+    end if;
+
+    select * into strict selected_sender
+    from public.communication_email_senders
+    where organization_id = target_organization_id and id = existing_event.target_id;
+
+    return jsonb_build_object('replayed', true, 'sender', to_jsonb(selected_sender));
+  end if;
+
+  select * into selected_domain
+  from public.communication_email_domains
+  where organization_id = target_organization_id and id = target_domain_id
+  for update;
+
+  if not found or selected_domain.purpose <> 'sending'
+    or selected_domain.lifecycle_state <> 'verified'
+    or not selected_domain.provider_verified
+    or not selected_domain.provider_authenticated
+    or selected_domain.ownership_status <> 'passing'
+    or selected_domain.dkim_status <> 'passing' then
+    raise exception 'A verified healthy sending domain is required.' using errcode = 'check_violation';
+  end if;
+
+  if split_part(target_email_address, '@', 2) <> selected_domain.domain_name then
+    raise exception 'The sender address must use the selected sending domain.' using errcode = 'check_violation';
+  end if;
+
+  if not target_allows_manual and not target_allows_automated then
+    raise exception 'An enabled sender must allow manual or automated email.' using errcode = 'check_violation';
+  end if;
+
+  if target_assigned_user_id is not null and not exists (
+    select 1 from public.organization_members
+    where organization_id = target_organization_id
+      and user_id = target_assigned_user_id and status = 'active'
+  ) then
+    raise exception 'The assigned sender member must be active.' using errcode = 'check_violation';
+  end if;
+
+  if target_is_organization_default then
+    perform 1 from public.communication_email_senders
+    where organization_id = target_organization_id
+      and lifecycle_state = 'enabled' and is_organization_default
+    for update;
+  end if;
+
+  insert into public.communication_email_senders (
+    organization_id, domain_id, email_address, display_name, lifecycle_state,
+    assigned_user_id, is_organization_default, allows_manual, allows_automated, created_by, provider
+  ) values (
+    target_organization_id, target_domain_id, target_email_address, target_display_name,
+    'pending_verification', target_assigned_user_id, target_is_organization_default,
+    target_allows_manual, target_allows_automated, actor_user_id, selected_domain.provider
+  ) returning * into selected_sender;
+
+  insert into public.communication_email_authority_events (
+    organization_id, actor_kind, actor_user_id, event_type, target_type, target_id,
+    after_state, idempotency_key
+  ) values (
+    target_organization_id, 'contractor_user', actor_user_id, 'sender.create.started',
+    'sender', selected_sender.id, desired_state, command_idempotency_key
+  );
+
+  return jsonb_build_object('replayed', false, 'sender', to_jsonb(selected_sender));
+end;
+$$;
+
+alter function "public"."begin_communication_email_sender_create"(
+    "target_organization_id" uuid, "target_domain_id" uuid, "target_email_address" text,
+    "target_display_name" text, "target_assigned_user_id" uuid, "target_is_organization_default" boolean,
+    "target_allows_manual" boolean, "target_allows_automated" boolean, "actor_user_id" uuid,
+    "command_idempotency_key" text
+) owner to "postgres";

@@ -4,7 +4,7 @@ import type { RequestHandler } from './$types';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { changeClickDomain } from '$lib/server/communications/branded-click-domain';
-import { marketingDomainErrorResponse } from '$lib/server/communications/marketing-domain-http';
+import { sesDomainErrorResponse } from '$lib/server/communications/ses-domain-http';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { organizationIdSchema } from '$lib/server/validation/access.schema';
@@ -108,6 +108,6 @@ export const POST: RequestHandler = async (event) => {
 
 		return json(result, { headers: noStore });
 	} catch (error) {
-		return marketingDomainErrorResponse(error, 'change branded links for');
+		return sesDomainErrorResponse(error, 'change branded links for');
 	}
 };

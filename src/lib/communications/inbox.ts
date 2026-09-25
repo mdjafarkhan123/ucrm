@@ -19,7 +19,7 @@ export type InboxEmail = {
 	text_content: string;
 	status: string;
 	failure_message: string | null;
-	// Post-acceptance provider outcome. Null until a Brevo callback (email, Part 7.1) or a Twilio status
+	// Post-acceptance provider outcome. Null until an SES delivery event (email) or a Twilio status
 	// callback (sms, Stage 5A) lands for this message. The two vocabularies share this one column --
 	// 'sms_'-namespaced so an email reputation window filtering on this field keeps counting only its own.
 	delivery_outcome:

@@ -3,11 +3,7 @@ import { POST } from './+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
-import {
-	authenticateBrevoDomain,
-	BrevoManagementError,
-	getBrevoDomain
-} from '$lib/server/communications/brevo';
+import { recheckOperationalDomain } from '$lib/server/communications/operational-domain-activation';
 
 vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
@@ -15,10 +11,8 @@ vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/server/security/rate-limit')>()),
 	checkRateLimit: vi.fn()
 }));
-vi.mock('$lib/server/communications/brevo', async (importOriginal) => ({
-	...(await importOriginal<typeof import('$lib/server/communications/brevo')>()),
-	authenticateBrevoDomain: vi.fn(),
-	getBrevoDomain: vi.fn()
+vi.mock('$lib/server/communications/operational-domain-activation', () => ({
+	recheckOperationalDomain: vi.fn()
 }));
 
 const organizationId = '123e4567-e89b-12d3-a456-426614174000';
@@ -86,10 +80,10 @@ describe('owner sending-domain recheck boundary', () => {
 
 		expect(response.status).toBe(422);
 		expect(getOwnerSupabaseClient).not.toHaveBeenCalled();
-		expect(authenticateBrevoDomain).not.toHaveBeenCalled();
+		expect(recheckOperationalDomain).not.toHaveBeenCalled();
 	});
 
-	it('replays the immutable receipt without calling Brevo again', async () => {
+	it('replays the immutable receipt without calling the providers again', async () => {
 		const client = clientWithResults([
 			{
 				data: {
@@ -109,100 +103,54 @@ describe('owner sending-domain recheck boundary', () => {
 			lifecycle_state: 'verified',
 			replayed: true
 		});
-		expect(authenticateBrevoDomain).not.toHaveBeenCalled();
+		expect(recheckOperationalDomain).not.toHaveBeenCalled();
 	});
 
-	it('persists verified authority and an immutable receipt after a passing recheck', async () => {
+	it('refuses a domain that is not a sending domain', async () => {
+		const client = clientWithResults([
+			{ data: null, error: null },
+			{ data: { id: domainId, purpose: 'receiving' }, error: null }
+		]);
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
+
+		const response = await POST(event({ idempotency_key: idempotencyKey }));
+
+		expect(response.status).toBe(404);
+		expect(recheckOperationalDomain).not.toHaveBeenCalled();
+	});
+
+	it('re-runs the Amazon SES activation for a domain on SES and records the receipt', async () => {
 		const client = clientWithResults([
 			{ data: null, error: null },
 			{
-				data: {
-					id: domainId,
-					domain_name: 'mail.ridgeway.example',
-					purpose: 'sending',
-					lifecycle_state: 'pending_dns',
-					spf_status: 'unchecked',
-					verified_at: null,
-					provider_domain_id: '6a8bb41bb9734c854105f2f5'
-				},
+				data: { id: domainId, purpose: 'sending', provider: 'ses' },
 				error: null
 			},
-			{ data: null, error: null },
 			{ data: null, error: null }
 		]);
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
-		vi.mocked(authenticateBrevoDomain).mockResolvedValue(null);
-		vi.mocked(getBrevoDomain).mockResolvedValue({
-			domain: 'mail.ridgeway.example',
-			verified: true,
-			authenticated: true,
-			dns_records: [
-				{ type: 'TXT', host_name: '@', value: 'brevo-code:abc', status: true },
-				{ type: 'TXT', host_name: 'sib1._domainkey', value: 'dkim', status: true },
-				{ type: 'TXT', host_name: '_dmarc', value: 'v=DMARC1; p=none', status: true }
-			]
-		});
+		vi.mocked(recheckOperationalDomain).mockResolvedValue({
+			sending: {
+				domain_id: domainId,
+				domain_name: 'mail.ridgeway.example',
+				lifecycle_state: 'verified'
+			},
+			receiving: { domain_name: 'reply.ridgeway.example', lifecycle_state: 'pending_dns' }
+		} as never);
 
 		const response = await POST(event({ idempotency_key: idempotencyKey }));
-		const body = await response.json();
 
 		expect(response.status).toBe(200);
-		expect(authenticateBrevoDomain).toHaveBeenCalledWith('mail.ridgeway.example');
-		expect(getBrevoDomain).toHaveBeenCalledWith('mail.ridgeway.example');
-		expect(body).toMatchObject({
+		expect(recheckOperationalDomain).toHaveBeenCalledWith(
+			expect.objectContaining({ organizationId, domainId })
+		);
+		expect(await response.json()).toMatchObject({
 			domain_id: domainId,
 			lifecycle_state: 'verified',
-			ownership_status: 'passing',
-			dkim_status: 'passing',
-			spf_status: 'unchecked'
+			receiving: { domain_name: 'reply.ridgeway.example', lifecycle_state: 'pending_dns' }
 		});
-		expect(client.updates).toContainEqual(
-			expect.objectContaining({ lifecycle_state: 'verified', provider_authenticated: true })
-		);
 		expect(client.inserts).toContainEqual(
 			expect.objectContaining({ event_type: 'domain.rechecked', idempotency_key: idempotencyKey })
 		);
-	});
-
-	it('records a DNS failure as unhealthy after a domain had been verified', async () => {
-		const client = clientWithResults([
-			{ data: null, error: null },
-			{
-				data: {
-					id: domainId,
-					domain_name: 'mail.ridgeway.example',
-					purpose: 'sending',
-					lifecycle_state: 'verified',
-					spf_status: 'unchecked',
-					verified_at: '2026-08-24T00:00:00.000Z',
-					provider_domain_id: '6a8bb41bb9734c854105f2f5'
-				},
-				error: null
-			},
-			{ data: null, error: null },
-			{ data: null, error: null }
-		]);
-		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
-		vi.mocked(authenticateBrevoDomain).mockRejectedValue(
-			new BrevoManagementError('DNS mismatch', 400, 'brevo_http_400')
-		);
-		vi.mocked(getBrevoDomain).mockResolvedValue({
-			domain: 'mail.ridgeway.example',
-			verified: true,
-			authenticated: false,
-			dns_records: [
-				{ type: 'TXT', host_name: '@', value: 'brevo-code:abc', status: true },
-				{ type: 'TXT', host_name: 'sib1._domainkey', value: 'dkim', status: false }
-			]
-		});
-
-		const response = await POST(event({ idempotency_key: idempotencyKey }));
-
-		expect(response.status).toBe(200);
-		expect(await response.json()).toMatchObject({
-			lifecycle_state: 'unhealthy',
-			provider_authenticated: false,
-			dkim_status: 'failing'
-		});
 	});
 });

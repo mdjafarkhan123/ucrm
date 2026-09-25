@@ -62,7 +62,7 @@ function inbound(overrides: Partial<InboundInboxMessage> = {}): InboundInboxMess
 		attachment_count: 0,
 		attachments: [],
 		unread: true,
-		provider: 'brevo',
+		provider: 'ses',
 		provider_message_id: 'prov-1',
 		assigned_to: null,
 		assigned_to_name: null,

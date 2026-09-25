@@ -262,7 +262,7 @@ export async function getObjectStream(objectKey: string): Promise<{
 // A presigned upload URL is a window to put whatever bytes the caller likes at a key we then trust. For
 // a file we later serve inline from our own origin that is not good enough, so before the key is saved
 // we ask storage what actually landed there.
-// The outbound email worker needs the full bytes to hand Brevo as base64 -- a bounded fan-out over at
+// The outbound email worker needs the full bytes to build the raw MIME message for SES -- a bounded fan-out over at
 // most 10 attachments, unlike getObjectStream's browser-facing response which must not buffer.
 export async function getObjectBytes(objectKey: string): Promise<Uint8Array> {
 	const { client, env } = getR2();

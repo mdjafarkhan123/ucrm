@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { OperationalEmailSubmissionError } from './brevo';
+import { OperationalSesEmailSubmissionError } from './ses';
+import { operationalConfigurationSetName, sesTenantName } from './ses-domain-identity';
 import {
 	drainCommunicationForwardQueue,
 	processClaimedForward,
@@ -9,6 +10,7 @@ import {
 const forward = {
 	forward_event_id: 'forward-1',
 	claim_token: 'claim-1',
+	organization_id: 'org-1',
 	recipient_emails: ['colleague@example.com'],
 	subject: 'Fwd: Your job update',
 	html_content: '<p>Forwarded.</p>',
@@ -74,7 +76,9 @@ describe('processClaimedForward', () => {
 			expect.objectContaining({
 				from: { email: forward.sender_email, name: forward.sender_name },
 				to: [{ email: 'colleague@example.com' }],
-				intentId: 'forward-1'
+				intentId: 'forward-1',
+				tenantName: sesTenantName('org-1'),
+				configurationSetName: operationalConfigurationSetName('org-1')
 			})
 		);
 		expect(rpc).toHaveBeenCalledWith(
@@ -88,7 +92,7 @@ describe('processClaimedForward', () => {
 		);
 	});
 
-	it('reads each attached inbound file and hands Brevo base64 content', async () => {
+	it('reads each attached inbound file and hands SES base64 content', async () => {
 		const attachmentRow = {
 			id: 'attachment-1',
 			file_name: 'photo.jpg',
@@ -126,19 +130,27 @@ describe('processClaimedForward', () => {
 	});
 
 	it.each([
-		['retry', 'brevo_http_503'],
-		['cancelled', 'brevo_http_400'],
-		['submission_unknown', 'brevo_network_unknown']
-	] as const)('records a %s provider outcome without a second send', async (outcome, code) => {
+		['retry', 'ses_ThrottlingException'],
+		['cancelled', 'ses_MessageRejected'],
+		['submission_unknown', 'ses_network_unknown']
+	] as const)('records a %s SES provider outcome without a second send', async (outcome, code) => {
 		const { client, rpc } = clientWithClaim(forward);
 		const send = vi
 			.fn()
-			.mockRejectedValue(new OperationalEmailSubmissionError('Provider outcome.', outcome, code));
+			.mockRejectedValue(
+				new OperationalSesEmailSubmissionError('Provider outcome.', outcome, code)
+			);
 
 		await expect(processClaimedForward({ client, send })).resolves.toMatchObject({
 			status: outcome,
 			forwardEventId: 'forward-1'
 		});
+		expect(send).toHaveBeenCalledWith(
+			expect.objectContaining({
+				tenantName: sesTenantName('org-1'),
+				configurationSetName: operationalConfigurationSetName('org-1')
+			})
+		);
 		expect(send).toHaveBeenCalledTimes(1);
 		expect(rpc).toHaveBeenCalledWith(
 			'finalize_communication_forward_event',

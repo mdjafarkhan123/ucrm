@@ -137,7 +137,7 @@ export type CloudflareZone = { id: string; name: string };
  * subdomains, so widening zone lookup never widens what gets written.
  *
  * The apex NAME is returned alongside the id because callers must fully-qualify provider-issued DNS records:
- * Brevo shortens host names relative to the zone apex, so the reconciler needs the apex to expand them.
+ * a provider may shorten host names relative to the zone apex, so the reconciler needs the apex to expand them.
  *
  * Cloudflare's `name` filter is an exact match, so a zone whose name is not the exact candidate (a superstring
  * or unrelated match) is ignored, and two active zones sharing one apex is corruption we refuse rather than
