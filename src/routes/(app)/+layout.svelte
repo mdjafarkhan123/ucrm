@@ -77,6 +77,19 @@
 	}));
 	const marketingVisible = $derived(marketingAccessQuery.data?.ok ?? false);
 
+	// Reviews follows Marketing: hidden until the server says yes, through the page's own permission check.
+	// Until the Reviews workspace exists (Google review Part 5), the menu leads to Review settings, so the
+	// probe is the settings read and only people who may manage reviews see the item.
+	const reviewsAccessQuery = createQuery<{ ok: boolean }>(() => ({
+		queryKey: ['nav', 'reviews-access', data.user?.id ?? null],
+		queryFn: async () => {
+			const response = await fetch('/api/reviews/settings');
+			return { ok: response.ok };
+		},
+		staleTime: 5 * 60_000
+	}));
+	const reviewsVisible = $derived(reviewsAccessQuery.data?.ok ?? false);
+
 	// Same idea for Files: browsing the library is its own files.view permission. A field member holds none
 	// of the three file permissions and reaches a photo through the job they are assigned to, so the menu
 	// item would only lead them to a refusal screen. limit=1 keeps the probe to the smallest page.
@@ -174,5 +187,6 @@
 	{quotesVisible}
 	{invoicesVisible}
 	{marketingVisible}
+	{reviewsVisible}
 	{filesVisible}>{@render children()}</AppShell
 >

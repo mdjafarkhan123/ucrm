@@ -12,7 +12,8 @@ Approved by Jafar 2026-09-25. Product truth: `docs/google-review-campaign-owner-
 4. **Automation** — Planned; needs 3. New job subject in the existing automation engine; enrol on close with
    every Visit completed or every N completed visits (recurring); 6-month cooldown wins; reminders 3 and 5 days;
    brief's stop rules; cannot activate without a saved Google link. Run performance-review design branch first.
-5. **Reviews workspace** — Planned; needs 3. Top-level Reviews menu item; Requests + Private feedback tabs;
+5. **Reviews workspace** — Planned; needs 3. Menu item "Reviews" already live (2026-09-26) but points at
+   `/reviews/settings` and is probed by `reviews.manage`; move it to the workspace and its view permission. Top-level; Requests + Private feedback tabs;
    recovery items New → Contacting customer → Resolved → Closed; owner alerts; client/job history.
 6. **Live verification** — Planned; needs 4 and 5. Real SMS/email, every role login, performance verification.
    Then tell the jafar-panel campaign its review-link slice is unblocked.

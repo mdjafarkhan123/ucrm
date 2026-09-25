@@ -23,6 +23,7 @@
 		quotesVisible = true,
 		invoicesVisible = true,
 		marketingVisible = false,
+		reviewsVisible = false,
 		filesVisible = true
 	}: {
 		children: import('svelte').Snippet;
@@ -36,6 +37,7 @@
 		quotesVisible?: boolean;
 		invoicesVisible?: boolean;
 		marketingVisible?: boolean;
+		reviewsVisible?: boolean;
 		filesVisible?: boolean;
 	} = $props();
 	let mobileOpen = $state(false);
@@ -83,7 +85,7 @@
 				...(marketingVisible
 					? [{ label: 'Marketing', href: '/marketing', icon: 'speakerphone' }]
 					: []),
-				{ label: 'Reputation', href: '/reputation', icon: 'star', unavailable: true },
+				...(reviewsVisible ? [{ label: 'Reviews', href: '/reviews/settings', icon: 'star' }] : []),
 				{ label: 'Growth Feed', href: '/growth', icon: 'trendingUp', unavailable: true }
 			]
 		},
