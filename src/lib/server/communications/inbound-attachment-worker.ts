@@ -1,7 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { downloadBrevoInboundAttachment } from './brevo';
 import { INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES } from './inbound-email';
 import { fetchSesInboundAttachmentBytes } from './ses-inbound-email';
 import { downloadTwilioInboundMedia } from './twilio';
@@ -32,7 +31,6 @@ export type CommunicationWorkerClient = {
 
 type WorkerDependencies = {
 	client?: CommunicationWorkerClient;
-	download?: (downloadToken: string) => Promise<Uint8Array>;
 	downloadTwilioMedia?: (mediaUrl: string, organizationId: string) => Promise<Uint8Array>;
 	downloadSesAttachment?: (downloadToken: string) => Promise<Uint8Array>;
 	store?: (objectKey: string, body: Uint8Array, mimeType: string) => Promise<void>;
@@ -75,7 +73,6 @@ export async function runCommunicationInboundAttachmentWorker(
 	const ownerClient = injectedClient ? null : getOwnerSupabaseClient();
 	const client: CommunicationWorkerClient =
 		injectedClient ?? (ownerClient as unknown as CommunicationWorkerClient);
-	const download = dependencies.download ?? downloadBrevoInboundAttachment;
 	const downloadTwilioMedia = dependencies.downloadTwilioMedia ?? defaultDownloadTwilioMedia;
 	const downloadSesAttachment =
 		dependencies.downloadSesAttachment ?? fetchSesInboundAttachmentBytes;
@@ -98,15 +95,15 @@ export async function runCommunicationInboundAttachmentWorker(
 			if (!attachment.provider_download_token)
 				throw new Error('The claimed attachment has no provider download token.');
 
-			const bytes =
-				attachment.provider === 'twilio'
-					? await downloadTwilioMedia(
-							attachment.provider_download_token,
-							attachment.organization_id
-						)
-					: attachment.provider === 'ses'
-						? await downloadSesAttachment(attachment.provider_download_token)
-						: await download(attachment.provider_download_token);
+			let bytes: Uint8Array;
+			if (attachment.provider === 'twilio')
+				bytes = await downloadTwilioMedia(
+					attachment.provider_download_token,
+					attachment.organization_id
+				);
+			else if (attachment.provider === 'ses')
+				bytes = await downloadSesAttachment(attachment.provider_download_token);
+			else throw new Error(`Attachments from provider "${attachment.provider}" are not supported.`);
 			if (bytes.byteLength > INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES)
 				throw new Error('The downloaded attachment exceeds the safe size ceiling.');
 

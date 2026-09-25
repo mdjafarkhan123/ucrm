@@ -11,8 +11,8 @@ const claimed = {
 	file_name: 'estimate.pdf',
 	mime_type: 'application/pdf',
 	claim_token: 'claim-1',
-	provider: 'brevo',
-	provider_download_token: 'download-token-1'
+	provider: 'ses',
+	provider_download_token: 'org-1/ses-msg-1#0'
 };
 
 const claimedTwilio = {
@@ -53,25 +53,25 @@ function clientWithClaim(
 describe('communication inbound attachment worker service', () => {
 	it('claims nothing and imports nothing when the queue is empty', async () => {
 		const { client } = clientWithClaim([]);
-		const download = vi.fn();
+		const downloadSesAttachment = vi.fn();
 		const store = vi.fn();
 
 		await expect(
-			runCommunicationInboundAttachmentWorker({ client, download, store })
+			runCommunicationInboundAttachmentWorker({ client, downloadSesAttachment, store })
 		).resolves.toEqual({ claimed: 0, imported: 0, failed: 0 });
-		expect(download).not.toHaveBeenCalled();
+		expect(downloadSesAttachment).not.toHaveBeenCalled();
 	});
 
-	it('downloads, stores, and finalizes a claimed attachment as pending_scan', async () => {
+	it('downloads an SES attachment, stores it, and finalizes it as pending_scan', async () => {
 		const { client, rpc } = clientWithClaim([claimed]);
-		const download = vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3]));
+		const downloadSesAttachment = vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3]));
 		const store = vi.fn().mockResolvedValue(undefined);
 
 		await expect(
-			runCommunicationInboundAttachmentWorker({ client, download, store })
+			runCommunicationInboundAttachmentWorker({ client, downloadSesAttachment, store })
 		).resolves.toEqual({ claimed: 1, imported: 1, failed: 0 });
 
-		expect(download).toHaveBeenCalledWith('download-token-1');
+		expect(downloadSesAttachment).toHaveBeenCalledWith('org-1/ses-msg-1#0');
 		expect(store).toHaveBeenCalledWith(
 			expect.stringContaining('org-1/inbound-email-attachments/message-1/'),
 			expect.any(Uint8Array),
@@ -90,15 +90,20 @@ describe('communication inbound attachment worker service', () => {
 
 	it('downloads a twilio MMS attachment through the twilio-branch dependency and its own object key prefix', async () => {
 		const { client, rpc } = clientWithClaim([claimedTwilio]);
-		const download = vi.fn();
+		const downloadSesAttachment = vi.fn();
 		const downloadTwilioMedia = vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3, 4]));
 		const store = vi.fn().mockResolvedValue(undefined);
 
 		await expect(
-			runCommunicationInboundAttachmentWorker({ client, download, downloadTwilioMedia, store })
+			runCommunicationInboundAttachmentWorker({
+				client,
+				downloadSesAttachment,
+				downloadTwilioMedia,
+				store
+			})
 		).resolves.toEqual({ claimed: 1, imported: 1, failed: 0 });
 
-		expect(download).not.toHaveBeenCalled();
+		expect(downloadSesAttachment).not.toHaveBeenCalled();
 		expect(downloadTwilioMedia).toHaveBeenCalledWith(
 			claimedTwilio.provider_download_token,
 			'org-1'
@@ -119,41 +124,15 @@ describe('communication inbound attachment worker service', () => {
 		);
 	});
 
-	it('downloads an SES attachment through the ses-branch dependency by re-fetching and re-parsing the raw MIME', async () => {
-		const { client, rpc } = clientWithClaim([claimedSes]);
-		const download = vi.fn();
-		const downloadSesAttachment = vi.fn().mockResolvedValue(new Uint8Array([9, 8, 7]));
-		const store = vi.fn().mockResolvedValue(undefined);
-
-		await expect(
-			runCommunicationInboundAttachmentWorker({ client, download, downloadSesAttachment, store })
-		).resolves.toEqual({ claimed: 1, imported: 1, failed: 0 });
-
-		expect(download).not.toHaveBeenCalled();
-		expect(downloadSesAttachment).toHaveBeenCalledWith('org-1/ses-msg-1#0');
-		expect(store).toHaveBeenCalledWith(
-			expect.stringContaining('org-1/inbound-email-attachments/message-3/'),
-			expect.any(Uint8Array),
-			'image/jpeg'
-		);
-		expect(rpc).toHaveBeenCalledWith(
-			'finalize_communication_inbound_attachment_import',
-			expect.objectContaining({
-				target_attachment_id: 'attachment-3',
-				target_claim_token: 'claim-3',
-				target_status: 'pending_scan',
-				target_byte_size: 3
-			})
-		);
-	});
-
 	it('finalizes as import_failed when the download rejects', async () => {
 		const { client, rpc } = clientWithClaim([claimed]);
-		const download = vi.fn().mockRejectedValue(new Error('Brevo rejected the request.'));
+		const downloadSesAttachment = vi
+			.fn()
+			.mockRejectedValue(new Error('Amazon S3 rejected the request.'));
 		const store = vi.fn();
 
 		await expect(
-			runCommunicationInboundAttachmentWorker({ client, download, store })
+			runCommunicationInboundAttachmentWorker({ client, downloadSesAttachment, store })
 		).resolves.toEqual({ claimed: 1, imported: 0, failed: 1 });
 
 		expect(store).not.toHaveBeenCalled();
@@ -162,19 +141,35 @@ describe('communication inbound attachment worker service', () => {
 			expect.objectContaining({
 				target_attachment_id: 'attachment-1',
 				target_status: 'import_failed',
-				target_failure_reason: 'Brevo rejected the request.'
+				target_failure_reason: 'Amazon S3 rejected the request.'
 			})
 		);
 	});
 
 	it('finalizes as import_failed when the downloaded bytes exceed the safe size ceiling', async () => {
 		const { client, rpc } = clientWithClaim([claimed]);
-		const download = vi.fn().mockResolvedValue(new Uint8Array(21 * 1024 * 1024));
+		const downloadSesAttachment = vi.fn().mockResolvedValue(new Uint8Array(21 * 1024 * 1024));
 		const store = vi.fn();
 
-		await runCommunicationInboundAttachmentWorker({ client, download, store });
+		await runCommunicationInboundAttachmentWorker({ client, downloadSesAttachment, store });
 
 		expect(store).not.toHaveBeenCalled();
+		expect(rpc).toHaveBeenCalledWith(
+			'finalize_communication_inbound_attachment_import',
+			expect.objectContaining({ target_status: 'import_failed' })
+		);
+	});
+
+	it('refuses an attachment from a provider contractor email no longer uses', async () => {
+		const { client, rpc } = clientWithClaim([{ ...claimed, provider: 'brevo' }]);
+		const downloadSesAttachment = vi.fn();
+		const store = vi.fn();
+
+		await expect(
+			runCommunicationInboundAttachmentWorker({ client, downloadSesAttachment, store })
+		).resolves.toEqual({ claimed: 1, imported: 0, failed: 1 });
+
+		expect(downloadSesAttachment).not.toHaveBeenCalled();
 		expect(rpc).toHaveBeenCalledWith(
 			'finalize_communication_inbound_attachment_import',
 			expect.objectContaining({ target_status: 'import_failed' })
