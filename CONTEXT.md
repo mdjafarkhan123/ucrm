@@ -81,6 +81,15 @@
 
 ## Customer messaging
 
+## Reputation and reviews
+
+- **Review request** — One contractor-initiated request for feedback linked to a completed Job and a Client contact. It may be sent automatically by the review-request automation or deliberately from a completed Job or Client page. _Avoid_: Google review when the customer has only been invited, not confirmed to have posted publicly.
+- **Review-request automation** — The contractor-configured SMS sequence that enrols eligible completed work into a Review request, sends its chosen messages, and stops when its outcome is known. _Avoid_: Marketing campaign when referring to the post-work review sequence.
+- **Review routing** — The contractor's configured rule that sends a selected rating on the UCRM feedback page to the public Google destination or to private feedback. _Also called_: Review gate.
+- **Private feedback** — A customer's answers to the contractor's private feedback form after a Review request. It is not a public Google review and is visible only to authorized contractor team members.
+- **Recovery item** — The private work item created from submitted Private feedback. It carries the customer, related Job, rating, answers, owner/assignee, and resolution state. _Avoid_: Review when referring to the contractor's private service-recovery work.
+- **Review activity** — The factual history of a Review request: scheduled, sent, delivery result, UCRM feedback-page open, continued-to-Google click, private-feedback submission, cancellation, or other stop reason. A continued-to-Google click is not proof of a published Google review.
+
 - **Contact Widget** — The organization-branded website launcher that may offer Website Chat and configured external contact options. It is the installed customer-facing container, not a conversation channel. _Avoid_: Website Chat when referring to the whole launcher or channel picker.
 - **Website Chat** — UpliftContractor's owned persistent website-messaging channel whose conversations enter the organization's Conversations workspace. _Avoid_: Live Chat when immediate human availability is not guaranteed.
 - **External contact option** — A contractor-configured destination such as WhatsApp or Messenger that opens outside UpliftContractor and does not bring the resulting messages into Conversations. _Avoid_: Connected channel.

@@ -1,100 +1,129 @@
-# Google review campaign — owner product brief
+# Google review campaign — product plan
 
-**Status:** Owner direction recorded 2026-09-25. This is a product-behaviour brief, not an implementation plan.
+**Status:** Product behavior agreed with the owner on 2026-09-25. This plan defines what the feature does; it does not authorize application coding.
 
 ## Goal
 
-Give contractors an easy, powerful review-request system after successful work. It should help them ask customers for reviews through a natural SMS conversation, direct customers to Google where configured, and collect private feedback when a customer is unhappy.
+Give contractors a simple, powerful way to ask for reviews after successful work. UCRM sends a polite SMS first, gives the customer a branded feedback journey, directs customers to the contractor's Google review destination where configured, and turns private feedback into a recoverable customer-service task.
 
-The product must feel simple to use without removing advanced control. Contractors should get a strong ready-made setup, then adjust the automation when they need to.
+HighLevel is the reference for review-request automation, manual sending, request tracking, and configurable retry timing. UCRM keeps the owner's chosen rating page and flexible private-feedback form as its own behavior. See [the official HighLevel research](research/highlevel-review-request-behavior-2026-09-25.md) for the confirmed reference behavior.
 
-## Contractor journey
+## Plain-language customer journey
 
-1. The contractor completes a job.
-2. UCRM can enrol the client in a review-request automation.
-3. SMS is the first-priority channel. The client receives a polite, human-friendly review request that feels like it comes from the contractor's business, rather than a generic AI message.
-4. The SMS contains a link to a branded UCRM feedback page.
-5. The client selects a star rating and follows the configured next step.
-6. The contractor sees the resulting review activity and private feedback in UCRM as far as the current Google connection allows.
+```text
+Contractor completes work
+→ UCRM sends the chosen SMS review request
+→ customer opens the branded UCRM feedback page
+→ 4–5 stars: direct to the contractor's Google review destination
+→ 1–3 stars: complete the contractor's private-feedback form
+→ private feedback becomes a recovery item for the contractor's team
+```
 
-## When a client is enrolled
+The 4–5 / 1–3 split is the ready-made starting route. Review routing is off until the contractor deliberately enables it and accepts UCRM's warning.
 
-- For a one-time job, the normal automation begins only after the contractor marks the whole job as completed.
-- For a recurring job, the contractor chooses an "after every N completed visits" rule. UCRM does not automatically request a review after every recurring visit by default.
-- The normal automatic request goes to the client's main mobile contact.
-- For a manual request, the contractor can select a different client contact before sending it.
-- UCRM also provides a clear **Request a review** action on a completed job and on the client page. It is for a deliberate one-off request in addition to the normal automation.
+## Eligibility and enrolment
 
-## Review routing selected by the owner
-
-- Review routing is **off by default** for every contractor.
-- A contractor must actively enable it in UCRM settings.
-- Before enabling it, UCRM shows a hard warning explaining the responsibility and consequences of enabling review routing.
-- The contractor can configure their routing rule.
-- The starting default is:
-  - **4 or 5 stars:** continue to the contractor's Google review destination.
-  - **1, 2, or 3 stars:** continue to a UCRM private-feedback form.
-- The private-feedback form should acknowledge the customer's experience in a kind, human way and invite them to explain what happened so the contractor can address it.
-- UCRM provides a ready-made private-feedback form, while letting the contractor fully edit its content to match their own business voice.
-- Contractors can add, remove, and reorder the questions in their private-feedback form. They are not limited to one fixed set of questions.
-- When a customer selects 4 or 5 stars, UCRM sends them directly to the contractor's Google review destination. No UCRM thank-you screen appears before that redirect.
-- When a customer selects 1, 2, or 3 stars, UCRM opens the private-feedback form.
-
-## Request activity, notifications, and stopping reminders
-
-- The contractor can see each request in UCRM: who it was sent to, when it was sent, whether the SMS was delivered where that information is available, and whether the client opened the UCRM feedback link.
-- UCRM shows a simple in-app activity notification when the client opens the feedback link. The same activity belongs in the client's and completed job's history.
-- UCRM separately records when the client continues from UCRM to the Google review destination.
-- Before Google connection is available, UCRM must not claim that a customer submitted a Google review. It can show only that the customer opened the UCRM page or continued to Google.
-- The normal SMS reminder sequence stops after the client opens the UCRM feedback link. A contractor may still decide to make a later manual request.
-- A submitted private-feedback form creates a private recovery item and immediately alerts the contractor owner/admin team. The recovery item includes the client, job, rating, message, and a direct way to contact the client.
-- A contractor cannot activate Google-review automation until their Google review link has been added. UCRM shows a simple setup checklist instead.
+- A one-time job enters the normal review-request automation only after the contractor marks the whole job completed.
+- A recurring job can use an **after every N completed visits** setting chosen by the contractor. UCRM does not ask after every visit by default.
+- The automatic request uses the client's main mobile contact. A manual request lets the contractor choose another saved client contact.
+- A request is not sent if there is no usable mobile number, the job is reopened or cancelled before sending, or the contractor has turned the automation off.
+- Activating the automation affects future completed work only. It does not automatically send requests for past jobs; contractors use the manual request action for those.
+- UCRM provides **Request a review** on a completed job and on the client page.
 
 ## Review-request automation
 
-- Contractors can choose the sequence: message wording, timing, follow-ups, and duration.
-- UCRM provides a ready-made default instead of making every contractor design a sequence from zero.
-- UCRM provides three editable starting SMS styles: friendly, professional, and short. The contractor chooses one during setup and can make it sound like their own business.
-- The agreed starting direction is one initial SMS after completion and one or two gentle reminders over roughly one to two weeks.
-- Contractors can make the sequence more flexible in settings.
-- If a contractor chooses a pattern that may harm customer goodwill or the contractor's sending reputation, UCRM should show a clear notice before they activate it.
-- UCRM must make it easy to stop or change the automation.
+### Ready-made default
 
-## Google setup before one-click connection exists
+- SMS is the first-priority channel.
+- The first message sends after the job-completion event at the next configured sending time.
+- The default has two gentle SMS reminders: three days and five days after the first message.
+- The default customer cooldown is one review-request sequence per client every six months.
+- UCRM provides three editable SMS starting styles: **Friendly**, **Professional**, and **Short**.
 
-The Google connection is split into two stages.
+### Contractor control
 
-### Available now: simple manual setup
+- The contractor can select the message style, edit every message, choose timing, add or remove follow-ups, set the duration, and choose the recurring-job visit frequency.
+- The setup displays the full sequence as a readable timeline before activation.
+- UCRM warns before activation when a chosen pattern is likely to be overly frequent or harmful to customer goodwill. The contractor can stop or change an active automation at any time.
+- Manual requests open a small pre-filled panel: select the client contact, choose the SMS style, review the message, then choose **Send now** or **Schedule**.
 
-- The contractor enters or pastes their Google review link in UCRM.
-- UCRM uses that link for the contractor's review-request automation.
-- This lets contractors send customers to their real Google review destination without waiting for a Google application approval.
-- UCRM should make this setup as easy and guided as possible.
+### When the sequence stops
 
-### Paused until Google access is available
+- UCRM follows HighLevel's useful pattern: the SMS retry sequence stops after the customer continues to the Google review destination or submits private feedback.
+- It also stops when the contractor cancels the request, the SMS cannot be delivered, the customer is no longer eligible, or the job is reopened/cancelled.
+- A later manual request remains possible for an authorized contractor user.
 
-The following are intended later, once UCRM can obtain the necessary Google access and the contractor can connect their profile:
+## Rating page and private-feedback form
 
-- One-click Google profile connection.
-- Pulling real Google reviews into UCRM.
-- A live Google review/dashboard view inside UCRM.
-- AI-assisted review replies and review-management tools.
-- Automated matching of Google reviews to UCRM review requests.
+### Review routing
+
+- Review routing is disabled by default for every contractor.
+- To enable it, the contractor must complete the review-link setup and acknowledge a hard UCRM warning explaining the responsibility and consequences of the chosen routing.
+- The ready-made route is **4–5 stars → Google** and **1–3 stars → private feedback**.
+- Contractors can adjust their own routing setup after starting from this default.
+- Selecting 4 or 5 stars immediately opens the contractor's Google review destination. UCRM does not show an intermediate thank-you screen.
+- Selecting 1, 2, or 3 stars opens the private-feedback form.
+
+### Private-feedback form
+
+- UCRM begins with a useful default form that kindly asks the customer to explain what happened and whether they would like contact from the contractor.
+- The contractor can fully edit the wording, add questions, remove questions, and reorder questions. It is not a fixed survey.
+- The completed job, client, chosen rating, and request are already known to UCRM; the customer should not need to re-enter them.
+- After submission, UCRM shows a brief branded thank-you confirmation and creates the private recovery item.
+
+## Reviews workspace and activity
+
+UCRM has one simple **Reviews** area with two tabs:
+
+1. **Requests** — each request's client, completed job, channel, scheduled/sent time, delivery state, feedback-page open, Google-destination click, and final stop reason.
+2. **Private feedback** — recovery items that need attention or are already resolved.
+
+The Requests tab uses clear status language: **Scheduled**, **Queued**, **Sent**, **Delivered**, **Failed**, **Feedback page opened**, **Continued to Google**, **Private feedback submitted**, or **Cancelled**.
+
+- The contractor receives a light in-app activity notification when a customer opens the UCRM feedback page.
+- The same request activity appears in the client history and completed-job history.
+- Before one-click Google connection exists, UCRM shows only what it knows: it may show that the customer continued to Google, but never claims that a Google review was posted.
+- Once Google connection is available, connected public reviews may appear in this workspace and be matched to requests where the system has enough evidence.
+
+## Private-feedback recovery
+
+- Each submitted private-feedback form creates a **Recovery item** with the client, job, request, rating, answers, and a direct contact path.
+- The item begins as **New**, then moves through **Contacting customer**, **Resolved**, and **Closed**.
+- An owner, administrator, or approved office manager can assign and handle a recovery item.
+- Owners/admins receive an immediate private alert when a new item arrives.
+- Fieldworkers can send a review request for their own completed jobs, but cannot view the private-feedback workspace or recovery items.
+
+## Google setup and future connection
+
+### Available now: manual Google destination
+
+- The contractor pastes their Google review link into UCRM once.
+- UCRM shows a simple setup checklist and does not let Google-review automation activate until that link is present.
+- UCRM uses the saved link for requests and gives the contractor a preview/test route before activation.
+
+### Later: connected Google management
+
+When UCRM can obtain Google access and the contractor connects their Google Business Profile, the next phase adds:
+
+- one-click Google profile connection;
+- review importing and live review information;
+- matching public reviews to UCRM requests where possible;
+- Google review management inside UCRM; and
+- AI-assisted review-reply tools.
+
+## Team access
+
+| Person | What they can do |
+| --- | --- |
+| Owner / administrator | Configure review routing and automation, manage the Google link, send manual requests, view all activity, and handle private feedback. |
+| Approved office manager | Send manual requests, view activity, and handle private feedback. |
+| Fieldworker | Send a review request for their own completed job only. |
+| Other team members | No review or private-feedback access unless a later permission grants it. |
 
 ## Product principles
 
-- SMS is the primary review-request channel; other channels may support the journey later or in the same automation.
-- Messages should be polite, personal, clear, and business-like—not robotic or generic.
-- Contractors should have advanced control without facing a confusing setup process.
-- The app should make the risk of aggressive follow-up visible before activation.
-- UCRM should deliver as much useful Google-review workflow as possible before one-click Google connection is available.
-
-## Details not yet decided
-
-- What job event counts as the exact moment a review automation begins.
-- The exact ready-made message templates and reminder timing.
-- The maximum number of follow-ups and when the app displays a reputation warning.
-- Whether email joins the SMS sequence by default or remains an optional contractor choice.
-- Who on the contractor's team can view private feedback and receive alerts.
-- What the contractor sees in UCRM for sent requests, opened links, ratings, private feedback, and completed Google reviews before Google syncing is available.
-- What a client sees after submitting the private-feedback form.
+- The contractor starts with a ready-made, easy setup and receives advanced control only where it is useful.
+- Messages should sound polite, personal, and business-like—not robotic or generic.
+- SMS is the priority channel. Email can become an optional additional channel later; it is not part of this SMS-first default.
+- Every action should be visible in plain language to the contractor: what was sent, what the customer did, and what needs attention.
+- The manual Google-link route delivers useful review requests now. Google review syncing, reply management, and AI tools wait for the later connection phase.

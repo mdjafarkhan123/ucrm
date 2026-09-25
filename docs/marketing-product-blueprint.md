@@ -81,9 +81,9 @@ a separate marketing-only customer database.
 4. SMS campaigns only after SMS registration, consent, STOP/HELP, cost, quiet-hour, callback, and live-delivery
    safeguards pass
 
-The current owner-described review journey is recorded in
-[`docs/google-review-campaign-owner-brief.md`](google-review-campaign-owner-brief.md). It expands the customer
-journey and manual Google-link setup for this product part.
+The agreed Google review campaign behavior is recorded in
+[`docs/google-review-campaign-owner-brief.md`](google-review-campaign-owner-brief.md). It is the authoritative
+plan for the customer journey, manual Google-link setup, private feedback, recovery, and review-request activity.
 
 ### Deliberately preserved Later Marketing
 
