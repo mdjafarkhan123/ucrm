@@ -8,12 +8,13 @@ Done: migration `20260925200000_google_review_settings.sql` (applied live: revie
 `/reviews/settings` (+ Settings home card, team-access "Reviews" controls).
 
 Next action:
-1. `npm run check` shows 3 "union type too complex" errors (OpportunityBriefDrawer, (app)/+layout warm list,
-   invoices/new). Stash all Part 1 files and re-run to learn if the new route caused them; fix if so.
-2. Raad LTD is on Starter (no `growth.reputation`): grant the feature via the Jafar panel override, then
-   browser-verify as owner: load defaults, bad/good Google link, routing warning on/off, edit questions and
-   styles, save, reload, two-tab conflict (409), field role gets 403.
-3. Close Part 1; start Part 2 (customer feedback page).
+1. Browser-verify as Raad LTD owner (Raad already has Reviews via its package; the Jafar panel now lists it):
+   load defaults, bad/good Google link, routing warning on/off, edit questions and styles, save, reload,
+   two-tab conflict (409), field role gets 403. The agent cannot type passwords, so Jafar must sign the
+   Chrome window into the contractor owner account first.
+2. Close Part 1; start Part 2 (customer feedback page).
 
 Known unrelated: `settings-business.spec.ts` expects 8 permission flags; the API already sent 11 before
 this campaign (stale test).
+`npm run check` needs NODE_OPTIONS=--max-old-space-size=8192; its 3 "union type too complex" errors
+exist without the reviews route (not ours).

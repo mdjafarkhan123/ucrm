@@ -511,6 +511,7 @@
 		'portal.client': 'Customer-facing portal',
 		'automation.workflows': 'Workflow automations',
 		'reporting.advanced': 'Advanced reporting',
+		'growth.reputation': 'Reviews and reputation',
 		marketing: 'Marketing'
 	};
 </script>
