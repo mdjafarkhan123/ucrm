@@ -650,9 +650,17 @@ function desiredReceiptRule(
 		Enabled: true,
 		ScanEnabled: true,
 		Recipients: [recipientDomain],
+		// One S3 action that notifies the topic once the MIME is stored. Its notification carries the bucket and
+		// object key the inbound worker reads. A separate SNSAction would instead publish the whole message
+		// (bouncing anything over 150 KB) with an action type the worker rejects.
 		Actions: [
-			{ S3Action: { BucketName: target.bucketName, ObjectKeyPrefix: target.objectKeyPrefix } },
-			{ SNSAction: { TopicArn: target.topicArn, Encoding: 'UTF-8' } }
+			{
+				S3Action: {
+					BucketName: target.bucketName,
+					ObjectKeyPrefix: target.objectKeyPrefix,
+					TopicArn: target.topicArn
+				}
+			}
 		]
 	};
 }
@@ -693,9 +701,10 @@ export async function reconcileSesReceiptRule(
 	const matches =
 		existing.Recipients?.length === 1 &&
 		existing.Recipients[0] === recipientDomain &&
-		existing.Actions?.[0]?.S3Action?.BucketName === target.bucketName &&
-		existing.Actions?.[0]?.S3Action?.ObjectKeyPrefix === target.objectKeyPrefix &&
-		existing.Actions?.[1]?.SNSAction?.TopicArn === target.topicArn &&
+		existing.Actions?.length === 1 &&
+		existing.Actions[0].S3Action?.BucketName === target.bucketName &&
+		existing.Actions[0].S3Action?.ObjectKeyPrefix === target.objectKeyPrefix &&
+		existing.Actions[0].S3Action?.TopicArn === target.topicArn &&
 		existing.Enabled === true;
 	if (matches) return;
 
