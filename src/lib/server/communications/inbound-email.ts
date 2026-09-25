@@ -65,14 +65,21 @@ export function parseBrevoInboundWebhook(value: unknown): BrevoInboundItem[] | n
 
 export type CandidateRecipient = { address: string; local_part: string; domain_name: string };
 
+// Shared by every provider's candidate-recipient resolution: a raw address string in, a normalized
+// {address, local_part, domain_name} out, or null for something that is not a plausible address at all.
+export function parseCandidateAddress(rawAddress: string): CandidateRecipient | null {
+	const address = rawAddress.trim().toLowerCase();
+	const at = address.lastIndexOf('@');
+	if (at <= 0 || at === address.length - 1) return null;
+	return { address, local_part: address.slice(0, at), domain_name: address.slice(at + 1) };
+}
+
 // To first, then Cc, in the order Brevo supplied them -- the resolution function walks this array
 // looking for the first address on one of our own verified receiving domains.
 export function candidateRecipients(item: BrevoInboundItem): CandidateRecipient[] {
 	return [...item.To, ...item.Cc].flatMap((recipient) => {
-		const address = recipient.Address.trim().toLowerCase();
-		const at = address.lastIndexOf('@');
-		if (at <= 0 || at === address.length - 1) return [];
-		return [{ address, local_part: address.slice(0, at), domain_name: address.slice(at + 1) }];
+		const parsed = parseCandidateAddress(recipient.Address);
+		return parsed ? [parsed] : [];
 	});
 }
 
@@ -86,11 +93,14 @@ function normalizedHeaders(headers: BrevoInboundItem['Headers']): Record<string,
 
 export type InboundMessageKind = 'reply' | 'auto_response' | 'delivery_notice';
 
-// Auto-response and delivery-notice detection reads only the headers Brevo forwards verbatim -- these
-// are the standard signals other mail systems already set, not a UCRM-invented heuristic.
-export function classifyInboundMessageKind(item: BrevoInboundItem): InboundMessageKind {
-	const headers = normalizedHeaders(item.Headers);
-	const senderAddress = item.From.Address.trim().toLowerCase();
+// Auto-response and delivery-notice detection reads only the standard signals other mail systems already
+// set, not a UCRM-invented heuristic. Shared by every provider so the heuristics live in exactly one
+// place -- callers just supply their own lowercased headers map and sender address.
+export function classifyMessageKind(
+	headers: Record<string, string>,
+	senderAddress: string
+): InboundMessageKind {
+	const sender = senderAddress.trim().toLowerCase();
 
 	if (
 		headers['auto-submitted']?.toLowerCase().startsWith('auto-') ||
@@ -103,13 +113,17 @@ export function classifyInboundMessageKind(item: BrevoInboundItem): InboundMessa
 
 	if (
 		headers['content-type']?.toLowerCase().includes('multipart/report') ||
-		senderAddress.startsWith('mailer-daemon@') ||
-		senderAddress.startsWith('postmaster@')
+		sender.startsWith('mailer-daemon@') ||
+		sender.startsWith('postmaster@')
 	) {
 		return 'delivery_notice';
 	}
 
 	return 'reply';
+}
+
+export function classifyInboundMessageKind(item: BrevoInboundItem): InboundMessageKind {
+	return classifyMessageKind(normalizedHeaders(item.Headers), item.From.Address);
 }
 
 export const INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES = 20 * 1024 * 1024;

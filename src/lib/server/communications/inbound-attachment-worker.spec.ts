@@ -26,7 +26,20 @@ const claimedTwilio = {
 	provider_download_token: 'https://api.twilio.com/2010-04-01/Accounts/AC1/Messages/MM1/Media/ME1'
 };
 
-function clientWithClaim(value: (typeof claimed | typeof claimedTwilio)[] = []) {
+const claimedSes = {
+	id: 'attachment-3',
+	organization_id: 'org-1',
+	inbound_message_id: 'message-3',
+	file_name: 'photo.jpg',
+	mime_type: 'image/jpeg',
+	claim_token: 'claim-3',
+	provider: 'ses',
+	provider_download_token: 'org-1/ses-msg-1#0'
+};
+
+function clientWithClaim(
+	value: (typeof claimed | typeof claimedTwilio | typeof claimedSes)[] = []
+) {
 	const rpc = vi.fn(async (name: string) => {
 		if (name === 'claim_communication_inbound_attachment_imports')
 			return { data: value, error: null };
@@ -102,6 +115,34 @@ describe('communication inbound attachment worker service', () => {
 				target_claim_token: 'claim-2',
 				target_status: 'pending_scan',
 				target_byte_size: 4
+			})
+		);
+	});
+
+	it('downloads an SES attachment through the ses-branch dependency by re-fetching and re-parsing the raw MIME', async () => {
+		const { client, rpc } = clientWithClaim([claimedSes]);
+		const download = vi.fn();
+		const downloadSesAttachment = vi.fn().mockResolvedValue(new Uint8Array([9, 8, 7]));
+		const store = vi.fn().mockResolvedValue(undefined);
+
+		await expect(
+			runCommunicationInboundAttachmentWorker({ client, download, downloadSesAttachment, store })
+		).resolves.toEqual({ claimed: 1, imported: 1, failed: 0 });
+
+		expect(download).not.toHaveBeenCalled();
+		expect(downloadSesAttachment).toHaveBeenCalledWith('org-1/ses-msg-1#0');
+		expect(store).toHaveBeenCalledWith(
+			expect.stringContaining('org-1/inbound-email-attachments/message-3/'),
+			expect.any(Uint8Array),
+			'image/jpeg'
+		);
+		expect(rpc).toHaveBeenCalledWith(
+			'finalize_communication_inbound_attachment_import',
+			expect.objectContaining({
+				target_attachment_id: 'attachment-3',
+				target_claim_token: 'claim-3',
+				target_status: 'pending_scan',
+				target_byte_size: 3
 			})
 		);
 	});
