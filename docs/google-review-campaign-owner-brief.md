@@ -55,6 +55,10 @@ Every request link, whatever the channel (SMS or email), opens the UCRM feedback
 - The setup displays the full sequence as a readable timeline before activation.
 - Following HighLevel, the contractor sets the number of reminders and their interval; UCRM does not enforce a fixed maximum. The default is two reminders (HighLevel notes most teams use 2–3). UCRM warns before activation when a chosen pattern is likely to be overly frequent or harmful to customer goodwill. The contractor can stop or change an active automation at any time.
 - Manual requests open a small pre-filled panel: select the client contact, choose the channel (SMS preselected), choose the style, review the message, then choose **Send now** or **Schedule**.
+- A manual request follows the same reminder plan as the automation (HighLevel applies its retries to manual requests too). Until reminders exist (Part 4), a manual request sends its first message only (owner decision 2026-09-26).
+- If the client was already asked recently, the panel says when and still allows sending (owner decision 2026-09-26).
+- From the client page, the panel preselects the client's most recently completed job; the contractor may pick another completed job or **No particular job** (owner decision 2026-09-26).
+- **Request a review** appears on closed jobs where work was completed and on active recurring jobs once at least one visit is completed (owner decision 2026-09-26).
 
 ### When the sequence stops
 
