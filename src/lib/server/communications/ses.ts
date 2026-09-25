@@ -16,6 +16,14 @@ import {
 	UpdateConfigurationSetEventDestinationCommand,
 	type EventType
 } from '@aws-sdk/client-sesv2';
+import {
+	SESClient,
+	CreateReceiptRuleCommand,
+	DeleteReceiptRuleCommand,
+	DescribeReceiptRuleCommand,
+	UpdateReceiptRuleCommand,
+	type ReceiptRule
+} from '@aws-sdk/client-ses';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import { getSesEnv, SesError } from './ses-env';
 
@@ -64,6 +72,25 @@ function getSes(): { client: SESv2Client; env: ReturnType<typeof getSesEnv> } {
 	});
 	cached = { client, env };
 	return cached;
+}
+
+// Receipt rules (customer replies) have no SESv2 equivalent -- only the classic SES API manages them -- so
+// this is a second, separately cached client against the same credentials and region.
+let cachedV1: { client: SESClient; env: ReturnType<typeof getSesEnv> } | null = null;
+
+function getSesV1(): { client: SESClient; env: ReturnType<typeof getSesEnv> } {
+	if (cachedV1) return cachedV1;
+	const env = getSesEnv();
+	const client = new SESClient({
+		region: env.AWS_SES_REGION,
+		credentials: {
+			accessKeyId: env.AWS_SES_ACCESS_KEY_ID,
+			secretAccessKey: env.AWS_SES_SECRET_ACCESS_KEY
+		},
+		requestHandler: { requestTimeout: SES_REQUEST_TIMEOUT_MS, connectionTimeout: 5_000 }
+	});
+	cachedV1 = { client, env };
+	return cachedV1;
 }
 
 type AwsError = { name?: string; message?: string; $metadata?: { httpStatusCode?: number } };
@@ -541,5 +568,98 @@ export async function sendOperationalSesEmail(
 			status == null ? 'submission_unknown' : retryable ? 'retry' : 'cancelled',
 			status == null ? 'ses_network_unknown' : `ses_${(error as AwsError)?.name ?? status}`
 		);
+	}
+}
+
+// ---------------------------------------------------------------------------------------------------
+// Receipt rules (Operational email SES Part 4: customer replies). One rule per organization's reply subdomain,
+// in the account's single active rule set (ucrm-ses-inbound-rules). Each rule's Recipients is that exact
+// subdomain, so rules for different organizations never overlap and their order in the set never matters.
+// ---------------------------------------------------------------------------------------------------
+
+export type ReceiptRuleTarget = {
+	bucketName: string;
+	objectKeyPrefix: string;
+	topicArn: string;
+};
+
+function isRuleNotFound(error: unknown): boolean {
+	return (error as AwsError)?.name === 'RuleDoesNotExistException';
+}
+
+function desiredReceiptRule(
+	ruleName: string,
+	recipientDomain: string,
+	target: ReceiptRuleTarget
+): ReceiptRule {
+	return {
+		Name: ruleName,
+		Enabled: true,
+		ScanEnabled: true,
+		Recipients: [recipientDomain],
+		Actions: [
+			{ S3Action: { BucketName: target.bucketName, ObjectKeyPrefix: target.objectKeyPrefix } },
+			{ SNSAction: { TopicArn: target.topicArn, Encoding: 'UTF-8' } }
+		]
+	};
+}
+
+/**
+ * Brings one organization's receipt rule to its desired state: created if missing, updated if its recipient or
+ * actions have drifted. Never touches rule order -- Recipients is an exact subdomain, so this rule can never
+ * shadow or be shadowed by another organization's.
+ */
+export async function reconcileSesReceiptRule(
+	ruleSetName: string,
+	ruleName: string,
+	recipientDomain: string,
+	target: ReceiptRuleTarget
+): Promise<void> {
+	const { client } = getSesV1();
+	const desired = desiredReceiptRule(ruleName, recipientDomain, target);
+
+	let existing: ReceiptRule | undefined;
+	try {
+		const described = await client.send(
+			new DescribeReceiptRuleCommand({ RuleSetName: ruleSetName, RuleName: ruleName })
+		);
+		existing = described.Rule;
+	} catch (error) {
+		if (!isRuleNotFound(error)) throw toSesError('DescribeReceiptRule', error);
+	}
+
+	if (!existing) {
+		try {
+			await client.send(new CreateReceiptRuleCommand({ RuleSetName: ruleSetName, Rule: desired }));
+		} catch (error) {
+			if (!isAlreadyExists(error)) throw toSesError('CreateReceiptRule', error);
+		}
+		return;
+	}
+
+	const matches =
+		existing.Recipients?.length === 1 &&
+		existing.Recipients[0] === recipientDomain &&
+		existing.Actions?.[0]?.S3Action?.BucketName === target.bucketName &&
+		existing.Actions?.[0]?.S3Action?.ObjectKeyPrefix === target.objectKeyPrefix &&
+		existing.Actions?.[1]?.SNSAction?.TopicArn === target.topicArn &&
+		existing.Enabled === true;
+	if (matches) return;
+
+	await sesCall('UpdateReceiptRule', () =>
+		client.send(new UpdateReceiptRuleCommand({ RuleSetName: ruleSetName, Rule: desired }))
+	);
+}
+
+/** Deletes an organization's receipt rule. Already-gone is the desired state, so a retried removal is safe. */
+export async function deleteSesReceiptRule(ruleSetName: string, ruleName: string): Promise<void> {
+	const { client } = getSesV1();
+	try {
+		await client.send(
+			new DeleteReceiptRuleCommand({ RuleSetName: ruleSetName, RuleName: ruleName })
+		);
+	} catch (error) {
+		if (isRuleNotFound(error)) return;
+		throw toSesError('DeleteReceiptRule', error);
 	}
 }

@@ -57,8 +57,9 @@ const RECEIVING_LABEL = 'reply';
 const MAIL_FROM_LABEL = 'bounce';
 
 // Brevo's inbound MX targets. A reply subdomain still served by Brevo during the move to SES is expected, not
-// occupied. Removed with the rest of the Brevo contractor paths at cutover.
-const BREVO_INBOUND_MX_TARGETS = ['inbound1.sendinblue.com', 'inbound2.sendinblue.com'];
+// occupied. Removed with the rest of the Brevo contractor paths at cutover. Exported for the reply-ingestion
+// step (Part 4), which allows the exact same pre-existing targets when it writes the real MX.
+export const BREVO_INBOUND_MX_TARGETS = ['inbound1.sendinblue.com', 'inbound2.sendinblue.com'];
 
 export type OperationalSendingSummary = {
 	domain_id: string;
