@@ -6,22 +6,27 @@ Contractor operational email (setup, sending, events, replies) runs on Amazon SE
 
 ## State
 
-Part 2a done and live-verified on Raad 2026-09-25 (mail.test.upliftcontractor.com on SES; reply row still on
-Brevo by design). Work is in worktree `../Ucrm-email-ses` (branch `operational-email-ses`; `node_modules` and
-`.env` are symlinks to `../Ucrm`). The agent may not type passwords: Jafar signs in to `localhost:5174/jafar`
-when a live check needs the owner panel (`npx vite dev --port 5174` in the worktree).
+Part 2a and Part 2b both done and committed in worktree `../Ucrm-email-ses` (branch `operational-email-ses`;
+`node_modules` and `.env` are symlinks to `../Ucrm`). Part 2b (`e831175`) shipped the unified `EmailCard.svelte`
+and fixed a real bug found on Raad: the domain-picker query grabbed the oldest `sending` row instead of the
+live one. Raad's stale Brevo sending domain and its two demo senders were removed for real (provider + DB),
+and browser-verified on Raad's Communications tab — Email card and Technical records both now show
+`mail.test.upliftcontractor.com` on Amazon SES.
 
 ## Exact next action
 
-Build Part 2b: the approved owner Email card (contract "Email setup screens") replacing
-`EmailDomainActions.svelte` + `MarketingDomainActions.svelte` in `CommunicationsWorkspace.svelte`. Load the design,
-svelte, and bits-ui skills first. Gate: browser-verified on Raad.
+Start Part 3: outbound sending + delivery events on SES (email worker sends via SES with the config set and
+opaque Reply-To; delivery/bounce/complaint update projection and suppressions; live send proven). Read the
+roadmap's Part 3 row and "Known constraints" before starting — the email worker currently only knows Brevo
+(`src/lib/server/communications/email-worker.ts` imports only from `./brevo`), and `communication_email_senders`
+still has a DB check constraint locking `provider = 'brevo'` — that constraint must be widened as part of
+Part 3, not before.
 
 ## Blockers
 
-Part 4 needs Jafar's approval before any AWS resource is created.
+None technical. Part 4 needs Jafar's approval before any AWS resource is created (separate, later item).
 
 ## Pointers
 
-`docs/contractor-email-contract.md` ("Email setup screens", "Domain provisioning"); ROADMAP known constraints.
+`docs/contractor-email-contract.md`; roadmap Part 3 row and "Known constraints" in `ROADMAP.md`.
 Resume: `continue operational email ses`.
