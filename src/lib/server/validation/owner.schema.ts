@@ -48,12 +48,6 @@ export const communicationDomainRecheckSchema = z.object({
 	idempotency_key: z.string().uuid('Start a new domain check and try again.')
 });
 
-// Operational email SES Part 4: turning on customer replies (or checking them again) takes no input -- the
-// root domain comes from the organization's verified everyday sending domain on the server.
-export const customerRepliesActivationSchema = z.object({
-	idempotency_key: z.string().uuid('Start turning on customer replies again.')
-});
-
 // Marketing M6d: the owner's branded click-link controls. Turning on runs the same reconciliation Check does;
 // turning off and removing return links to Amazon's default address first.
 export const marketingClickDomainChangeSchema = z.object({

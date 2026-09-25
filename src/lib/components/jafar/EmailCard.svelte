@@ -78,12 +78,6 @@
 		error?: string;
 		field_errors?: Record<string, string>;
 	};
-	type CustomerRepliesResult = {
-		domain_name: string;
-		inbound_mx_status: DnsStatus;
-		replayed?: boolean;
-		error?: string;
-	};
 	type MarketingActivationResult = {
 		root_domain: string;
 		marketing: { domain_name: string };
@@ -150,7 +144,14 @@
 		ready: 'success',
 		problem: 'critical'
 	};
-	const everydayStatus = $derived(rowStatus(sending?.lifecycle_state));
+	// One status for sending and customer replies together: Ready only when both work. Replies are routed on
+	// the Check after the reply domain verifies, so a verified sender without a reply row is still setting up.
+	const everydayStatus = $derived.by((): RowStatus => {
+		const sendingStatus = rowStatus(sending?.lifecycle_state);
+		if (sendingStatus !== 'ready') return sendingStatus;
+		const repliesStatus = rowStatus(receiving?.lifecycle_state);
+		return repliesStatus === 'not_set_up' ? 'setting_up' : repliesStatus;
+	});
 	const marketingStatus = $derived(rowStatus(marketing?.lifecycle_state));
 
 	function formatTime(value: string | null | undefined) {
@@ -269,6 +270,10 @@
 			reasons.push('Domain ownership is not verified yet.');
 		if (sending.dkim_status !== 'passing') reasons.push('DKIM signing is not passing yet.');
 		if (!sending.provider_verified) reasons.push('Amazon SES has not verified this domain.');
+		if (receiving?.lifecycle_state === 'unhealthy')
+			reasons.push(
+				`Customer replies to ${receiving.domain_name} are not reaching UCRM. Check again repairs the mail route.`
+			);
 		if (!reasons.length)
 			reasons.push('This domain needs attention. Run Check for the latest state.');
 		return reasons;
@@ -396,95 +401,6 @@
 			await refreshOperational();
 		}
 	}));
-
-	// ---- Customer replies (Amazon SES receiving) ----
-	// Deliberately its own action, never folded into Everyday email's Check: turning it on moves the reply.
-	// subdomain's live mail route, so it only runs when this row's button is pressed.
-	type RepliesStatus = 'needs_everyday' | 'off' | 'turning_on' | 'on' | 'problem';
-	const repliesStatus = $derived.by((): RepliesStatus => {
-		if (everydayStatus !== 'ready') return 'needs_everyday';
-		if (!receiving || receiving.provider !== 'ses') return 'off';
-		if (receiving.lifecycle_state === 'verified') return 'on';
-		if (receiving.lifecycle_state === 'unhealthy') return 'problem';
-		return 'turning_on';
-	});
-	const repliesLabel: Record<RepliesStatus, string> = {
-		needs_everyday: 'Not set up',
-		off: 'Off',
-		turning_on: 'Turning on',
-		on: 'On',
-		problem: 'Problem'
-	};
-	const repliesTone: Record<RepliesStatus, 'informative' | 'warning' | 'success' | 'critical'> = {
-		needs_everyday: 'informative',
-		off: 'informative',
-		turning_on: 'warning',
-		on: 'success',
-		problem: 'critical'
-	};
-	const repliesDomain = $derived(
-		receiving?.domain_name ?? (sending?.dns_zone ? `reply.${sending.dns_zone}` : 'reply.')
-	);
-	const repliesDescription = $derived.by(() => {
-		switch (repliesStatus) {
-			case 'needs_everyday':
-				return 'Set up Everyday email first. Customer replies then come back into the inbox automatically.';
-			case 'off':
-				return receiving?.provider === 'brevo'
-					? `Replies to ${repliesDomain} still arrive through Brevo. Turn on to move them to Amazon SES.`
-					: `Replies to ${repliesDomain} are not coming into UCRM yet.`;
-			case 'turning_on':
-				return `Moving ${repliesDomain} to Amazon SES. This usually takes a few minutes.`;
-			case 'on':
-				return `Replies to ${repliesDomain} arrive in the inbox through Amazon SES.`;
-			case 'problem':
-				return `Replies to ${repliesDomain} are not reaching Amazon SES. Check again to repair the mail route.`;
-		}
-	});
-
-	let repliesConfirmOpen = $state(false);
-	const repliesMutation = createMutation<CustomerRepliesResult, Error, void>(() => ({
-		mutationFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/communications/customer-replies`,
-				{
-					method: 'POST',
-					headers: { 'content-type': 'application/json' },
-					body: JSON.stringify({ idempotency_key: crypto.randomUUID() })
-				}
-			);
-			const result = (await response.json()) as CustomerRepliesResult;
-			if (!response.ok) throw new Error(result.error ?? 'Customer replies could not be turned on.');
-			return result;
-		},
-		onMutate: () => {
-			feedbackError = '';
-			feedbackMessage = '';
-		},
-		onError: (error) => {
-			repliesConfirmOpen = false;
-			feedbackError = error.message;
-		},
-		onSuccess: async (result) => {
-			repliesConfirmOpen = false;
-			feedbackMessage =
-				result.inbound_mx_status === 'passing'
-					? `Customer replies are on for ${result.domain_name}.`
-					: `Customer replies are switching over for ${result.domain_name}. Use Check in a few minutes.`;
-			await refreshOperational();
-		}
-	}));
-	const repliesPrimaryLabel = $derived(
-		repliesStatus === 'off' || repliesStatus === 'needs_everyday'
-			? 'Turn on'
-			: repliesStatus === 'problem'
-				? 'Check again'
-				: 'Check'
-	);
-	function repliesPrimaryAction() {
-		if (repliesStatus === 'off') repliesConfirmOpen = true;
-		else repliesMutation.mutate();
-	}
 
 	// ---- Marketing email: Set up ----
 	let marketingSetupOpen = $state(false);
@@ -650,7 +566,7 @@
 			rows.push(['Receiving state', statusText(receiving.lifecycle_state)]);
 			rows.push(['Inbound mail', statusText(receiving.inbound_mx_status)]);
 		}
-		technicalRecords = { title: 'Everyday email — technical records', rows };
+		technicalRecords = { title: 'Everyday email + replies — technical records', rows };
 	}
 	function openMarketingTechnical() {
 		if (!marketing) return;
@@ -772,7 +688,7 @@
 			<div class="email-card__row">
 				<div class="email-card__row-main">
 					<div class="email-card__row-heading">
-						<strong>Everyday email</strong>
+						<strong>Everyday email + replies</strong>
 						<Badge status={statusTone[everydayStatus]}>{statusLabel[everydayStatus]}</Badge>
 					</div>
 					<p>{everydayDescription}</p>
@@ -791,26 +707,6 @@
 							triggerLabel="More actions for Everyday email"
 						/>
 					{/if}
-				</div>
-			</div>
-
-			<div class="email-card__row">
-				<div class="email-card__row-main">
-					<div class="email-card__row-heading">
-						<strong>Customer replies</strong>
-						<Badge status={repliesTone[repliesStatus]}>{repliesLabel[repliesStatus]}</Badge>
-					</div>
-					<p>{repliesDescription}</p>
-				</div>
-				<div class="email-card__row-actions">
-					<Button
-						size="small"
-						variant="secondary"
-						variation="subtle"
-						disabled={repliesStatus === 'needs_everyday'}
-						loading={repliesMutation.isPending && !repliesConfirmOpen}
-						onclick={repliesPrimaryAction}>{repliesPrimaryLabel}</Button
-					>
 				</div>
 			</div>
 		{/if}
@@ -1043,34 +939,6 @@
 </Dialog>
 
 <ConfirmDialog
-	open={repliesConfirmOpen}
-	title="Turn on customer replies"
-	confirmLabel="Turn on customer replies"
-	loading={repliesMutation.isPending}
-	onConfirm={() => repliesMutation.mutate()}
-	onClose={() => {
-		if (!repliesMutation.isPending) repliesConfirmOpen = false;
-	}}
->
-	<div class="email-card__confirm">
-		<p>
-			When a customer replies to an email from this business, the reply goes to
-			<strong>{repliesDomain}</strong>. Turning this on moves that address to Amazon SES, so replies
-			land in the UCRM inbox the same way they do today.
-		</p>
-		<ul>
-			<li>
-				Only <strong>{repliesDomain}</strong> changes. The business's own mailbox is never touched.
-			</li>
-			<li>
-				The switch takes a few minutes to spread. Replies sent during that time still arrive; the
-				row shows "Turning on" until it finishes.
-			</li>
-		</ul>
-	</div>
-</ConfirmDialog>
-
-<ConfirmDialog
 	open={removalOpen}
 	title="Remove Everyday email"
 	tone="critical"
@@ -1220,18 +1088,6 @@
 		flex-wrap: wrap;
 		justify-content: flex-end;
 		gap: var(--space-small);
-	}
-	.email-card__confirm {
-		display: grid;
-		gap: var(--space-small);
-		color: var(--color-text--secondary);
-		line-height: var(--typography--lineHeight-base);
-	}
-	.email-card__confirm ul {
-		display: grid;
-		gap: var(--space-small);
-		margin: 0;
-		padding-left: var(--space-large);
 	}
 	.email-card__impact {
 		padding: var(--space-small) var(--space-base);

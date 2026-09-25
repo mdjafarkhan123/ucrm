@@ -33,6 +33,7 @@ import {
 	type DnsStatus,
 	type OwnerClient
 } from './ses-domain-identity';
+import { reconcileReplyIngestion } from './operational-reply-ingestion';
 
 export { EmailDomainActivationError } from './dns-reconcile';
 
@@ -47,19 +48,14 @@ export { EmailDomainActivationError } from './dns-reconcile';
 //   - Only records under mail.<root> and reply.<root> are ever written. Root MX, root mailbox authentication,
 //     and any unexpected occupied subdomain record are never overwritten.
 //
-// Receiving is prepared, not switched. This run creates and verifies the reply.<root> SES identity (SES
-// requires a verified domain before it will receive for it), but it leaves reply.<root>'s MX and its receiving
-// row alone. Moving the MX before a receipt rule exists would drop customer replies, so the MX, the row, and
-// the receipt rule change together in the reply-ingestion step.
+// Customer replies are part of the same Set up. The reply.<root> SES identity is created here; once SES has
+// verified it (usually on the first Check after the DKIM records propagate), the same pass creates the receipt
+// rule, points reply.<root>'s MX at SES, and records the receiving row (operational-reply-ingestion.ts). SES
+// will not receive for an unverified domain, so the MX is never written before that.
 
 const SENDING_LABEL = 'mail';
 const RECEIVING_LABEL = 'reply';
 const MAIL_FROM_LABEL = 'bounce';
-
-// Brevo's inbound MX targets. A reply subdomain still served by Brevo during the move to SES is expected, not
-// occupied. Removed with the rest of the Brevo contractor paths at cutover. Exported for the reply-ingestion
-// step (Part 4), which allows the exact same pre-existing targets when it writes the real MX.
-export const BREVO_INBOUND_MX_TARGETS = ['inbound1.sendinblue.com', 'inbound2.sendinblue.com'];
 
 export type OperationalSendingSummary = {
 	domain_id: string;
@@ -83,7 +79,7 @@ export type OperationalReceivingSummary = {
 	// The SES identity's verification: with Easy DKIM the CNAMEs are the ownership proof.
 	ses_identity_status: DnsStatus;
 	records_written: number;
-	// The receiving row as it stands. Null until reply ingestion on SES creates or switches it.
+	// The receiving row. Null until the reply identity is verified and the MX has been written.
 	domain_id: string | null;
 	lifecycle_state: string | null;
 	inbound_mx_status: DnsStatus | null;
@@ -210,15 +206,14 @@ async function reconcileOperationalDomain(input: {
 	assertUnderSubdomain(sendingRecords, sending);
 	assertUnderSubdomain(receivingRecords, receiving);
 
-	// Occupancy: none of the three names may already serve another service. The provider's own mail hosts are
-	// allowed so a re-run, a Recheck, and a domain still receiving through Brevo are all safe.
+	// Occupancy: none of the three names may already serve another service. SES's own mail hosts are allowed
+	// so a re-run and a Recheck are safe.
 	assertSubdomainNotOccupied(sending, await listCloudflareDnsRecords(zoneId, sending), []);
 	assertSubdomainNotOccupied(mailFrom, await listCloudflareDnsRecords(zoneId, mailFrom), [
 		sesMailFromMxTarget()
 	]);
 	assertSubdomainNotOccupied(receiving, await listCloudflareDnsRecords(zoneId, receiving), [
-		sesInboundMxTarget(),
-		...BREVO_INBOUND_MX_TARGETS
+		sesInboundMxTarget()
 	]);
 
 	const sendingWritten = await writeRecords(zoneId, sendingRecords);
@@ -272,6 +267,20 @@ async function reconcileOperationalDomain(input: {
 		updated_at: now
 	});
 
+	const receivingReady =
+		settledReceiving.dkimSigningEnabled &&
+		sesStatusToDns(settledReceiving.dkimStatus) === 'passing';
+	const replies = receivingReady
+		? await reconcileReplyIngestion({
+				client,
+				organizationId,
+				root,
+				receiving,
+				zoneId,
+				receivingId
+			})
+		: null;
+
 	return {
 		root_domain: root,
 		zone_id: zoneId,
@@ -294,8 +303,14 @@ async function reconcileOperationalDomain(input: {
 		receiving: {
 			domain_name: receiving,
 			ses_identity_status: sesStatusToDns(settledReceiving.dkimStatus),
-			records_written: receivingWritten,
-			...(await readReceivingRow(client, receivingId))
+			records_written: receivingWritten + (replies?.records_written ?? 0),
+			...(replies
+				? {
+						domain_id: replies.domain_id,
+						lifecycle_state: replies.lifecycle_state,
+						inbound_mx_status: replies.inbound_mx_status
+					}
+				: await readReceivingRow(client, receivingId))
 		}
 	};
 }

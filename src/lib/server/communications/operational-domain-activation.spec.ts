@@ -38,8 +38,11 @@ vi.mock('./cloudflare-dns', async () => {
 	};
 });
 
+vi.mock('./operational-reply-ingestion', () => ({ reconcileReplyIngestion: vi.fn() }));
+
 import * as ses from './ses';
 import * as cloudflare from './cloudflare-dns';
+import { reconcileReplyIngestion } from './operational-reply-ingestion';
 
 const ORG = '11111111-1111-1111-1111-111111111111';
 const ROOT = 'contractor.com';
@@ -154,10 +157,16 @@ beforeEach(() => {
 	vi.mocked(ses.sesConfigurationSetArn).mockImplementation((name) => `arn:config-set/${name}`);
 	vi.mocked(ses.sesMailFromMxTarget).mockReturnValue(MAIL_FROM_MX);
 	vi.mocked(ses.sesInboundMxTarget).mockReturnValue(INBOUND_MX);
+	vi.mocked(reconcileReplyIngestion).mockResolvedValue({
+		domain_id: 'ses-receiving',
+		lifecycle_state: 'pending_dns',
+		inbound_mx_status: 'pending',
+		records_written: 1
+	});
 });
 
 describe('activateOperationalDomain', () => {
-	it('writes DKIM for both identities plus the MAIL FROM records, and no reply MX', async () => {
+	it('writes DKIM for both identities plus the MAIL FROM records', async () => {
 		const { client } = makeClient();
 
 		await activateOperationalDomain({ client, organizationId: ORG, rootDomain: ROOT });
@@ -309,31 +318,15 @@ describe('activateOperationalDomain', () => {
 		});
 	});
 
-	it('leaves the receiving row and its Brevo reply route untouched', async () => {
-		vi.mocked(cloudflare.listCloudflareDnsRecords).mockImplementation(async (_zone, name) =>
-			name === RECEIVING
-				? [
-						{
-							id: 'mx1',
-							type: 'MX',
-							name: RECEIVING,
-							content: 'inbound1.sendinblue.com',
-							ttl: 1,
-							priority: 10,
-							proxied: false
-						}
-					]
-				: []
-		);
-		const { client, updated } = makeClient([
+	it('turns on customer replies in the same pass once the reply identity is verified', async () => {
+		const { client } = makeClient([
 			{
-				id: 'brevo-receiving',
+				id: 'ses-receiving',
 				organization_id: ORG,
 				purpose: 'receiving',
-				provider: 'brevo',
+				provider: 'ses',
 				domain_name: RECEIVING,
-				lifecycle_state: 'verified',
-				inbound_mx_status: 'passing'
+				lifecycle_state: 'pending_dns'
 			}
 		]);
 
@@ -343,15 +336,40 @@ describe('activateOperationalDomain', () => {
 			rootDomain: ROOT
 		});
 
-		expect(updated.map((write) => write.id)).not.toContain('brevo-receiving');
-		expect(
-			writtenRecords().some((record) => record.type === 'MX' && record.name === RECEIVING)
-		).toBe(false);
+		expect(reconcileReplyIngestion).toHaveBeenCalledWith({
+			client,
+			organizationId: ORG,
+			root: ROOT,
+			receiving: RECEIVING,
+			zoneId: 'zone-1',
+			receivingId: 'ses-receiving'
+		});
 		expect(result.receiving).toMatchObject({
-			domain_id: 'brevo-receiving',
-			lifecycle_state: 'verified',
-			inbound_mx_status: 'passing',
-			ses_identity_status: 'passing'
+			domain_id: 'ses-receiving',
+			lifecycle_state: 'pending_dns',
+			inbound_mx_status: 'pending',
+			ses_identity_status: 'passing',
+			records_written: 4
+		});
+	});
+
+	it('does not route replies to SES before the reply identity is verified', async () => {
+		vi.mocked(ses.getSesIdentity).mockImplementation(async (domain) =>
+			domain === RECEIVING ? identity(domain, { dkimStatus: 'PENDING' }) : identity(domain)
+		);
+		const { client } = makeClient();
+
+		const result = await activateOperationalDomain({
+			client,
+			organizationId: ORG,
+			rootDomain: ROOT
+		});
+
+		expect(reconcileReplyIngestion).not.toHaveBeenCalled();
+		expect(result.receiving).toMatchObject({
+			domain_id: null,
+			lifecycle_state: null,
+			ses_identity_status: 'pending'
 		});
 	});
 

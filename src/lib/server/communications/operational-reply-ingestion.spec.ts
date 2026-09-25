@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
-import { activateReplyIngestion, ReplyIngestionNotReadyError } from './operational-reply-ingestion';
+import { reconcileReplyIngestion } from './operational-reply-ingestion';
 
 vi.mock('./ses', async () => {
 	const actual = await vi.importActual<typeof import('./ses')>('./ses');
@@ -136,18 +136,18 @@ beforeEach(() => {
 	);
 });
 
-describe('activateReplyIngestion', () => {
-	it('refuses to run before the reply subdomain is a verified SES identity', async () => {
-		vi.mocked(ses.getSesIdentity).mockResolvedValue(null);
-		const { client } = makeClient();
-
-		await expect(
-			activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT })
-		).rejects.toBeInstanceOf(ReplyIngestionNotReadyError);
-		expect(ses.reconcileSesReceiptRule).not.toHaveBeenCalled();
-		expect(cloudflare.createCloudflareDnsRecord).not.toHaveBeenCalled();
+function run(client: SupabaseClient<Database>, receivingId: string | null = null) {
+	return reconcileReplyIngestion({
+		client,
+		organizationId: ORG,
+		root: ROOT,
+		receiving: RECEIVING,
+		zoneId: 'zone-1',
+		receivingId
 	});
+}
 
+describe('reconcileReplyIngestion', () => {
 	it('creates the receipt rule before writing the MX record', async () => {
 		const { client } = makeClient();
 		const order: string[] = [];
@@ -167,7 +167,7 @@ describe('activateReplyIngestion', () => {
 			};
 		});
 
-		await activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT });
+		await run(client);
 
 		expect(order).toEqual(['rule', 'mx']);
 		expect(ses.reconcileSesReceiptRule).toHaveBeenCalledWith(
@@ -181,7 +181,7 @@ describe('activateReplyIngestion', () => {
 	it('never reads or writes outside the reply subdomain', async () => {
 		const { client } = makeClient();
 
-		await activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT });
+		await run(client);
 
 		const written = vi
 			.mocked(cloudflare.createCloudflareDnsRecord)
@@ -192,25 +192,6 @@ describe('activateReplyIngestion', () => {
 		for (const name of [...written, ...inspected]) {
 			expect(name === RECEIVING || name.endsWith(`.${RECEIVING}`)).toBe(true);
 		}
-	});
-
-	it('allows the pre-existing Brevo inbound targets without treating the subdomain as occupied', async () => {
-		vi.mocked(cloudflare.listCloudflareDnsRecords).mockResolvedValue([
-			{
-				id: 'cf-1',
-				type: 'MX',
-				name: RECEIVING,
-				content: 'inbound1.sendinblue.com',
-				ttl: 1,
-				priority: 10,
-				proxied: false
-			}
-		]);
-		const { client } = makeClient();
-
-		await expect(
-			activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT })
-		).resolves.toBeDefined();
 	});
 
 	it('refuses an MX already pointed at an unrelated third party', async () => {
@@ -227,15 +208,13 @@ describe('activateReplyIngestion', () => {
 		]);
 		const { client } = makeClient();
 
-		await expect(
-			activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT })
-		).rejects.toThrow();
+		await expect(run(client)).rejects.toThrow();
 	});
 
 	it('reports pending_dns until public DNS actually answers with the SES inbound target', async () => {
 		const { client, inserted } = makeClient();
 
-		const result = await activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT });
+		const result = await run(client);
 
 		expect(result.inbound_mx_status).toBe('pending');
 		expect(result.lifecycle_state).toBe('pending_dns');
@@ -248,7 +227,7 @@ describe('activateReplyIngestion', () => {
 		mxAnswers[RECEIVING] = [INBOUND_MX];
 		const { client, inserted } = makeClient();
 
-		const result = await activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT });
+		const result = await run(client);
 
 		expect(result.inbound_mx_status).toBe('passing');
 		expect(result.lifecycle_state).toBe('verified');
@@ -268,65 +247,17 @@ describe('activateReplyIngestion', () => {
 			}
 		]);
 
-		const result = await activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT });
+		const result = await run(client, 'domain-existing');
 
 		expect(result.lifecycle_state).toBe('unhealthy');
 		expect(updated[0].row.verified_at).toBe('2026-01-01T00:00:00.000Z');
 	});
 
-	it('switching a Brevo-verified reply domain reads as pending while DNS moves, not as a problem', async () => {
-		const { client, updated } = makeClient([
-			{
-				id: 'domain-existing',
-				organization_id: ORG,
-				purpose: 'receiving',
-				provider: 'brevo',
-				domain_name: RECEIVING,
-				lifecycle_state: 'verified',
-				verified_at: '2026-01-01T00:00:00.000Z'
-			}
-		]);
-
-		const result = await activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT });
-
-		expect(result.lifecycle_state).toBe('pending_dns');
-		expect(updated[0].row.provider).toBe('ses');
-		expect(updated[0].row.verified_at).toBeNull();
-	});
-
-	it('removes the leftover Brevo backup MX only after the SES MX is written', async () => {
-		const order: string[] = [];
-		const brevoBackup = {
-			id: 'cf-brevo-20',
-			type: 'MX',
-			name: RECEIVING,
-			content: 'inbound2.sendinblue.com',
-			ttl: 1,
-			priority: 20,
-			proxied: false
-		};
-		vi.mocked(cloudflare.listCloudflareDnsRecords).mockResolvedValue([brevoBackup]);
-		vi.mocked(cloudflare.createCloudflareDnsRecord).mockImplementation(async (_zone, input) => {
-			order.push('ses-mx');
-			return { ...brevoBackup, id: 'cf-new', content: input.content, priority: 10 };
-		});
-		vi.mocked(cloudflare.deleteCloudflareDnsRecord).mockImplementation(async () => {
-			order.push('delete-brevo');
-		});
+	it('stays pending while any public resolver still answers with another MX', async () => {
+		mxAnswers[RECEIVING] = [INBOUND_MX, 'mx.previous-provider.example'];
 		const { client } = makeClient();
 
-		const result = await activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT });
-
-		expect(order).toEqual(['ses-mx', 'delete-brevo']);
-		expect(cloudflare.deleteCloudflareDnsRecord).toHaveBeenCalledWith('zone-1', 'cf-brevo-20');
-		expect(result.records_written).toBe(2);
-	});
-
-	it('stays pending while any public resolver still answers with a Brevo MX', async () => {
-		mxAnswers[RECEIVING] = [INBOUND_MX, 'inbound2.sendinblue.com'];
-		const { client } = makeClient();
-
-		const result = await activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT });
+		const result = await run(client);
 
 		expect(result.inbound_mx_status).toBe('pending');
 	});
@@ -335,7 +266,7 @@ describe('activateReplyIngestion', () => {
 		mxAnswers[RECEIVING] = [INBOUND_MX];
 		const { client, inserted } = makeClient();
 
-		await activateReplyIngestion({ client, organizationId: ORG, rootDomain: ROOT });
+		await run(client);
 
 		expect(inserted[0].provider_authenticated).toBe(false);
 	});

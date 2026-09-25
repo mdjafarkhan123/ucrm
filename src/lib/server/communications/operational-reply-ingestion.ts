@@ -1,18 +1,12 @@
 import { Resolver } from 'node:dns/promises';
-import {
-	deleteCloudflareDnsRecord,
-	listCloudflareDnsRecords,
-	resolveCloudflareZone
-} from './cloudflare-dns';
+import { listCloudflareDnsRecords } from './cloudflare-dns';
 import {
 	assertSubdomainNotOccupied,
 	assertUnderSubdomain,
-	EmailDomainActivationError,
 	normalizeName,
 	reconcileRecord
 } from './dns-reconcile';
-import { BREVO_INBOUND_MX_TARGETS } from './operational-domain-activation';
-import { getSesIdentity, reconcileSesReceiptRule, sesInboundMxTarget } from './ses';
+import { reconcileSesReceiptRule, sesInboundMxTarget } from './ses';
 import {
 	SES_INBOUND_BUCKET_NAME,
 	SES_INBOUND_RULE_SET_NAME,
@@ -20,49 +14,40 @@ import {
 	sesInboundTopicArn
 } from './ses-env';
 import {
-	findExistingDomainId,
 	nextLifecycleState,
-	normalizeRootDomain,
 	readDomainHistory,
-	sesStatusToDns,
 	toStoredDnsRecords,
 	upsertDomainRow,
 	type DnsStatus,
 	type OwnerClient
 } from './ses-domain-identity';
 
-// Operational email SES Part 4: turns on customer replies for one organization's already-verified reply
-// subdomain. Deliberately separate from operational-domain-activation.ts (which Raad LTD's live sending
-// already runs through) so nothing here can affect an already-verified sending identity, and deliberately NOT
-// wired into the existing Set-up/Check routes: this step switches a real subdomain's live MX record, so it
-// runs only when explicitly invoked for one organization, never as a side effect of an unrelated Check click.
+// Operational email SES: the customer-replies half of Everyday email Set up / Check. Called by
+// operational-domain-activation.ts once reply.<root>'s SES identity is verified -- SES will not receive for a
+// domain it has not verified, so writing the MX earlier would route replies nowhere.
 //
 // Order matters (docs/research/amazon-ses-contractor-email-inbound-architecture-2026-09-19.md): the receipt
 // rule is created/updated BEFORE the MX record is written, so SES is already able to accept mail for the
-// domain the moment the MX propagates. Writing the MX first would risk a window where mail addressed to SES
-// has nowhere to go.
+// domain the moment the MX propagates.
 
-const RECEIVING_LABEL = 'reply';
 const PUBLIC_DNS_SERVERS = ['1.1.1.1', '8.8.8.8'];
 const MX_PRIORITY = 10;
 
-export class ReplyIngestionNotReadyError extends EmailDomainActivationError {
-	constructor(message: string) {
-		super(message, 'reply_ingestion_not_ready', true);
-	}
-}
-
 export type ReplyIngestionResult = {
 	domain_id: string;
-	domain_name: string;
 	lifecycle_state: 'pending_dns' | 'verified' | 'unhealthy';
 	inbound_mx_status: DnsStatus;
 	records_written: number;
 };
 
+/** The receipt rule's name. Classic SES receipt rules have no ARN; this plus the fixed rule set is the handle. */
+export function replyReceiptRuleName(organizationId: string): string {
+	return `reply-${organizationId}`;
+}
+
 /**
- * True when public DNS answers the domain's MX with the SES inbound target and nothing else. A leftover Brevo
- * answer still cached by a resolver means some senders would deliver there, so the switch is not finished.
+ * True when public DNS answers the domain's MX with the SES inbound target and nothing else. Any other answer
+ * still cached by a resolver means some senders would deliver elsewhere, so the route is not finished.
  */
 async function mxIsVisible(domain: string, target: string): Promise<boolean> {
 	// Each resolver is asked on its own, the same reasoning branded-click-domain.ts's cnameIsVisible uses: one
@@ -85,37 +70,23 @@ async function mxIsVisible(domain: string, target: string): Promise<boolean> {
 /**
  * Reconciles one organization's reply subdomain: the shared receipt rule set gets (or keeps) a rule routing
  * that exact subdomain to the inbound S3 bucket and SNS topic, then the subdomain's MX is pointed at SES. Both
- * steps are idempotent, so calling this again after DNS propagates simply advances inbound_mx_status.
- *
- * Requires the reply subdomain's SES identity to already be verified (activateOperationalDomain's job) --
- * SES will not receive for a domain it has not verified, so running this earlier would write DNS for nothing.
+ * steps are idempotent, so the next Check after DNS propagates simply advances inbound_mx_status.
  */
-export async function activateReplyIngestion(input: {
+export async function reconcileReplyIngestion(input: {
 	client: OwnerClient;
 	organizationId: string;
-	rootDomain: string;
+	root: string;
+	receiving: string;
+	zoneId: string;
+	receivingId: string | null;
 }): Promise<ReplyIngestionResult> {
-	const { client, organizationId } = input;
-	const root = normalizeRootDomain(input.rootDomain);
-	const receiving = `${RECEIVING_LABEL}.${root}`;
+	const { client, organizationId, root, receiving, zoneId, receivingId } = input;
+	const ruleName = replyReceiptRuleName(organizationId);
 
-	const identity = await getSesIdentity(receiving);
-	const identityReady =
-		Boolean(identity?.dkimSigningEnabled) && sesStatusToDns(identity?.dkimStatus) === 'passing';
-	if (!identity || !identityReady) {
-		throw new ReplyIngestionNotReadyError(
-			`${receiving} is not a verified Amazon SES identity yet. Run Set up / Check on the everyday email domain first.`
-		);
-	}
-
-	const existingId = await findExistingDomainId(client, organizationId, receiving, 'receiving');
-	const { id: zoneId } = await resolveCloudflareZone(root);
-
-	const env = getSesEnv();
-	await reconcileSesReceiptRule(SES_INBOUND_RULE_SET_NAME, `reply-${organizationId}`, receiving, {
+	await reconcileSesReceiptRule(SES_INBOUND_RULE_SET_NAME, ruleName, receiving, {
 		bucketName: SES_INBOUND_BUCKET_NAME,
 		objectKeyPrefix: `${organizationId}/`,
-		topicArn: sesInboundTopicArn(env)
+		topicArn: sesInboundTopicArn(getSesEnv())
 	});
 
 	const mxRecord = {
@@ -126,47 +97,28 @@ export async function activateReplyIngestion(input: {
 	};
 	assertUnderSubdomain([mxRecord], receiving);
 	assertSubdomainNotOccupied(receiving, await listCloudflareDnsRecords(zoneId, receiving), [
-		sesInboundMxTarget(),
-		...BREVO_INBOUND_MX_TARGETS
+		sesInboundMxTarget()
 	]);
-	let recordsWritten = (await reconcileRecord(zoneId, mxRecord)) === 'unchanged' ? 0 : 1;
-
-	// Brevo published two MX records (priorities 10 and 20). reconcileRecord only replaces the one at SES's
-	// priority, so the other would stay behind as a backup route still delivering some replies to Brevo. Remove
-	// them only after the SES record exists, so the subdomain is never left without a mail route.
-	const brevoTargets = BREVO_INBOUND_MX_TARGETS.map(normalizeName);
-	for (const record of await listCloudflareDnsRecords(zoneId, receiving)) {
-		if (record.type.trim().toUpperCase() !== 'MX') continue;
-		if (!brevoTargets.includes(normalizeName(record.content))) continue;
-		await deleteCloudflareDnsRecord(zoneId, record.id);
-		recordsWritten += 1;
-	}
+	const recordsWritten = (await reconcileRecord(zoneId, mxRecord)) === 'unchanged' ? 0 : 1;
 
 	const mxReady = await mxIsVisible(receiving, sesInboundMxTarget());
 	const inboundMxStatus: DnsStatus = mxReady ? 'passing' : 'pending';
 
 	const now = new Date().toISOString();
-	// A row verified under Brevo says nothing about SES receiving yet: while the switch propagates it is
-	// pending, not a broken domain, and its verified time restarts once SES actually receives.
-	const switchingProvider = existingId ? (await readProvider(client, existingId)) !== 'ses' : false;
-	const history = switchingProvider
-		? { verifiedAt: null, lifecycleState: null }
-		: await readDomainHistory(client, existingId);
+	const history = await readDomainHistory(client, receivingId);
 	const lifecycleState = nextLifecycleState(mxReady, history);
 
-	const domainId = await upsertDomainRow(client, existingId, {
+	const domainId = await upsertDomainRow(client, receivingId, {
 		organization_id: organizationId,
 		purpose: 'receiving',
 		domain_name: receiving,
 		dns_zone: root,
 		provider: 'ses',
-		// Receipt rules have no ARN in the classic SES API; the rule name plus the one fixed rule set name is
-		// the stable handle cleanup needs to delete it.
-		provider_domain_id: `reply-${organizationId}`,
-		provider_verified: identityReady,
+		provider_domain_id: ruleName,
+		provider_verified: true,
 		// Receiving rows never carry sending authentication (communication_email_domains_purpose_health_check).
 		provider_authenticated: false,
-		ownership_status: sesStatusToDns(identity.dkimStatus),
+		ownership_status: 'passing',
 		dkim_status: 'unchecked',
 		spf_status: 'unchecked',
 		inbound_mx_status: inboundMxStatus,
@@ -179,19 +131,8 @@ export async function activateReplyIngestion(input: {
 
 	return {
 		domain_id: domainId,
-		domain_name: receiving,
 		lifecycle_state: lifecycleState,
 		inbound_mx_status: inboundMxStatus,
 		records_written: recordsWritten
 	};
-}
-
-async function readProvider(client: OwnerClient, domainId: string): Promise<string | null> {
-	const { data, error } = await client
-		.from('communication_email_domains')
-		.select('provider')
-		.eq('id', domainId)
-		.maybeSingle();
-	if (error) throw error;
-	return data?.provider ?? null;
 }
