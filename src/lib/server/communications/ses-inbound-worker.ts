@@ -40,6 +40,9 @@ export type SesInboundWorkerClient = {
 		occurred_at: string | null;
 		payload: SesReceiptNotification;
 	}): Promise<{ data: { id: string } | null; error: { code?: string; message: string } | null }>;
+	findCallbackEventId(
+		providerEventKey: string
+	): Promise<{ data: { id: string } | null; error: { message: string } | null }>;
 	insertAttachments(
 		rows: {
 			organization_id: string;
@@ -79,6 +82,15 @@ function resolveClient(client?: SesInboundWorkerClient): SesInboundWorkerClient 
 				.select('id')
 				.single();
 			return { data: data as { id: string } | null, error };
+		},
+		findCallbackEventId: async (providerEventKey) => {
+			const { data, error } = await owner
+				.from('communication_provider_callback_events')
+				.select('id')
+				.eq('provider', 'ses')
+				.eq('provider_event_key', providerEventKey)
+				.maybeSingle();
+			return { data, error };
 		},
 		insertAttachments: async (rows) => {
 			const { error } = await owner.from('communication_inbound_attachments').insert(rows as never);
@@ -268,16 +280,20 @@ async function ingestOneMessage(
 		return 'invalid';
 	}
 
-	const callback = await client.insertCallbackEvent({
-		provider_event_key: sesInboundEventKey(notification),
+	const providerEventKey = sesInboundEventKey(notification);
+	let callback = await client.insertCallbackEvent({
+		provider_event_key: providerEventKey,
 		event_kind: 'inbound_email',
 		occurred_at: notification.mail.timestamp
 			? new Date(notification.mail.timestamp).toISOString()
 			: null,
 		payload: notification
 	});
-	if (callback.error?.code === '23505') return 'duplicate';
-	if (callback.error)
+	// An existing callback row only proves an earlier attempt got this far -- it may have failed on the S3 fetch or
+	// the filing RPC afterwards. Carry on with that row; the RPC's own unique key decides whether it is a duplicate.
+	const seenBefore = callback.error?.code === '23505';
+	if (seenBefore) callback = await client.findCallbackEventId(providerEventKey);
+	if (callback.error || !callback.data)
 		throw rpcError('Could not record an SES inbound callback event', callback.error);
 
 	// A failed S3 fetch or MIME parse is treated as transient and per-message -- an AWS blip, a permissions
@@ -302,7 +318,7 @@ async function ingestOneMessage(
 		'record_communication_inbound_message',
 		{
 			target_provider_message_id: notification.mail.messageId,
-			target_provider_callback_event_id: callback.data?.id,
+			target_provider_callback_event_id: callback.data.id,
 			target_sender_email: parsed.senderEmail,
 			target_sender_name: parsed.senderName,
 			target_to_recipients: parsed.toRecipients as unknown as Json,
@@ -318,6 +334,7 @@ async function ingestOneMessage(
 	if (rpcErr) throw rpcError('Could not resolve an SES inbound message', rpcErr);
 
 	const inserted = inboundMessage as InboundMessageRow | null;
+	if (!inserted && seenBefore) return 'duplicate';
 	if (inserted && parsed.attachments.length > 0) {
 		const rows = attachmentRows(
 			inserted.organization_id,

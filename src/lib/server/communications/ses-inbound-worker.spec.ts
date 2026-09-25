@@ -56,8 +56,15 @@ function fakeClient(overrides: Partial<SesInboundWorkerClient> = {}): {
 	});
 	const insertCallbackEvent = vi.fn(async () => ({ data: { id: 'callback-1' }, error: null }));
 	const insertAttachments = vi.fn(async () => ({ error: null }));
+	const findCallbackEventId = vi.fn(async () => ({ data: null, error: null }));
 	return {
-		client: { rpc, insertCallbackEvent, insertAttachments, ...overrides } as SesInboundWorkerClient,
+		client: {
+			rpc,
+			insertCallbackEvent,
+			findCallbackEventId,
+			insertAttachments,
+			...overrides
+		} as SesInboundWorkerClient,
 		rpc,
 		insertCallbackEvent,
 		insertAttachments
@@ -113,18 +120,39 @@ describe('drainSesInboundQueue', () => {
 		expect(removed).toEqual(['receipt-1']);
 	});
 
-	it('deletes a duplicate callback-event insert without re-throwing', async () => {
-		const { client } = fakeClient({
-			insertCallbackEvent: vi.fn(async () => ({
-				data: null,
-				error: { code: '23505', message: 'duplicate key' }
-			}))
+	const alreadyLogged = {
+		insertCallbackEvent: vi.fn(async () => ({
+			data: null,
+			error: { code: '23505', message: 'duplicate key' }
+		})),
+		findCallbackEventId: vi.fn(async () => ({ data: { id: 'callback-1' }, error: null }))
+	};
+
+	it('files a redelivered reply whose earlier attempt logged the callback but failed before filing', async () => {
+		const { client, rpc } = fakeClient(alreadyLogged);
+		const { sqs, removed } = fakeSqs([[validMessage], []]);
+
+		const result = await drainSesInboundQueue({ client, sqs, fetchObject });
+
+		expect(result).toMatchObject({ received: 1, recorded: 1, duplicates: 0 });
+		expect(rpc).toHaveBeenCalledWith(
+			'record_communication_inbound_message',
+			expect.objectContaining({ target_provider_callback_event_id: 'callback-1' })
+		);
+		expect(removed).toEqual(['receipt-1']);
+	});
+
+	it('deletes a redelivered reply as a duplicate once it is already filed', async () => {
+		const { client, insertAttachments } = fakeClient({
+			...alreadyLogged,
+			rpc: vi.fn(async () => ({ data: null, error: null }))
 		});
 		const { sqs, removed } = fakeSqs([[validMessage], []]);
 
 		const result = await drainSesInboundQueue({ client, sqs, fetchObject });
 
 		expect(result).toMatchObject({ received: 1, recorded: 0, duplicates: 1 });
+		expect(insertAttachments).not.toHaveBeenCalled();
 		expect(removed).toEqual(['receipt-1']);
 	});
 
