@@ -5,11 +5,10 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import TabPanel from '$lib/components/ui/TabPanel.svelte';
-	import EmailDomainActions from '$lib/components/jafar/EmailDomainActions.svelte';
+	import EmailCard from '$lib/components/jafar/EmailCard.svelte';
 	import EmailAllowanceActions from '$lib/components/jafar/EmailAllowanceActions.svelte';
 	import EmailReputationActions from '$lib/components/jafar/EmailReputationActions.svelte';
 	import EmailSendingPauseActions from '$lib/components/jafar/EmailSendingPauseActions.svelte';
-	import MarketingDomainActions from '$lib/components/jafar/MarketingDomainActions.svelte';
 	import MarketingAllowanceActions from '$lib/components/jafar/MarketingAllowanceActions.svelte';
 	import WebsiteChatAllowanceActions from '$lib/components/jafar/WebsiteChatAllowanceActions.svelte';
 	import WebsiteChatAuthorityActions from '$lib/components/jafar/WebsiteChatAuthorityActions.svelte';
@@ -69,7 +68,7 @@
 					<h2 id="integrations-title">Effective provider readiness</h2>
 				</div>
 				<Card class="organization-detail__commercial-explainer">
-					<EmailDomainActions organizationId={access.organization.id} />
+					<EmailCard organizationId={access.organization.id} />
 				</Card>
 				<Card class="organization-detail__commercial-explainer">
 					<EmailSendingPauseActions organizationId={access.organization.id} />
@@ -82,9 +81,6 @@
 				</Card>
 				<Card class="organization-detail__commercial-explainer">
 					<WebsiteChatAllowanceActions organizationId={access.organization.id} />
-				</Card>
-				<Card class="organization-detail__commercial-explainer">
-					<MarketingDomainActions organizationId={access.organization.id} />
 				</Card>
 				<Card class="organization-detail__commercial-explainer">
 					<MarketingAllowanceActions organizationId={access.organization.id} />

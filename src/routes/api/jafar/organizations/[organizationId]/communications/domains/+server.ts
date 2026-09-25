@@ -38,12 +38,15 @@ export const GET: RequestHandler = async (event) => {
 	const { data, error } = await client
 		.from('communication_email_domains')
 		.select(
-			'id, domain_name, dns_zone, lifecycle_state, ownership_status, dkim_status, dmarc_status, spf_status, provider_verified, provider_authenticated, last_checked_at, verified_at, warmup_started_at, transition_until, replacement_of_domain_id, provider_cleanup_error, created_at'
+			'id, purpose, provider, domain_name, dns_zone, lifecycle_state, ownership_status, dkim_status, dmarc_status, spf_status, inbound_mx_status, provider_verified, provider_authenticated, last_checked_at, verified_at, warmup_started_at, transition_until, replacement_of_domain_id, provider_cleanup_error, created_at'
 		)
 		.eq('organization_id', organizationId.data)
-		.eq('purpose', 'sending')
+		.in('purpose', ['sending', 'receiving'])
 		.neq('lifecycle_state', 'removed')
-		.order('created_at');
+		// Newest first: during a provider migration, an old domain can briefly stay live alongside its
+		// replacement until it is formally retired. The Email card shows one row per purpose, so it must
+		// pick the domain that is replacing the other, not whichever happened to be created first.
+		.order('created_at', { ascending: false });
 
 	if (error) {
 		console.error('Could not load sending domains for the owner.', error);
