@@ -5,30 +5,24 @@ side. Brevo stays only for platform/Jafar emails (`src/lib/server/email/brevo.ts
 
 ## State
 
-Part 6 approved by Jafar 2026-09-25. Worktree `../Ucrm-email-ses`, branch `operational-email-ses`, last commit
-`beb3dda`. Done: step 1 (replies folded into Set up/Check), 2a (sending SES-only), 2b (owner routes SES-only;
-Remove now tears down sending + replies via `teardownOperationalDomain`), 2c (Brevo webhooks/inbound gone),
-2d prep (`ses-organization-cleanup.ts` + SES tenant/config-set delete helpers, not yet wired).
+Part 6 approved 2026-09-25. Worktree `../Ucrm-email-ses`, branch `operational-email-ses`, last commit `9ecef26`.
+Steps 1–3 done and committed (3 = migration `20260925180000_operational_email_ses_only_tables.sql`, pushed live;
+Raad's Brevo-era test emails deleted with Jafar's OK). pgTAP fixtures updated but not run (no local stack).
 
 ## Exact next action
 
-Finish step 2d: apply `Memory/campaigns/operational-email-ses/closure-cron-wip.patch` in the worktree
-(`git apply`), rewrite the provider tests in `organization-closure-cron.spec.ts` for SES, then delete
-`src/lib/server/communications/brevo.ts` + spec, Brevo inbound helpers in `email/env.ts`, contractor Brevo env
-keys (keep `BREVO_API_KEY`), and fix Brevo comments in settings/cleanup routes, email-health, twilio inbound.
-Delete the patch file once applied. Then step 3.
-
-## Step 3 needs (DB migration)
-
-Tables SES-only (provider checks/defaults; `record_communication_inbound_message` default 'brevo'); retiring
-a sending row via `finalize_communication_email_domain_removal` must also retire the org's receiving row;
-`apply_organization_purge` returns one `{kind:'ses_organization', provider_id:<org id>}` instead of Brevo ids;
-check for pending Brevo purge receipts; delete Raad's Brevo rows.
+Step 4: delete Raad's four Brevo leftovers in the Brevo account. The auto-mode classifier blocked the
+deletes; Jafar must run them himself or allow them. Items: sender `4` (office@mail.test.upliftcontractor.com),
+domains `6a926295628c23a1d7062d73` (reply.test…) and `6a92b053e1da0b7d9302b653` (mail.test…, the orphan),
+inbound webhook `2158695`. Do NOT touch `contact.`/`notifications.`/`replies.upliftcontractor.com`, sender 1,
+or webhook `2021984`. Ask Jafar whether `replies.upliftcontractor.com` and webhook `2021984` are still used:
+the webhook points at the deleted `/api/webhooks/brevo/inbound/...` route. Then step 5.
 
 ## Blockers
 
-Live test (step 5) needs `cloudflared tunnel run` and Jafar sending replies. AWS: `aws --profile ucrm`
-(`aws sso login --sso-session ucrm`). Copy sibling files-media migrations untracked into worktree before `db push`.
+Live test (step 5) needs `cloudflared tunnel run` and Jafar sending replies. Raad currently has no receiving
+row; step 5's fresh Set up creates it. AWS: `aws --profile ucrm` (`aws sso login --sso-session ucrm`).
+Copy sibling files-media migrations untracked into worktree before `db push`.
 Known gap: org purge leaves Marketing CloudFront click-domain resources (marketing campaign's concern).
 
 Resume: `continue operational email ses`.
