@@ -102,7 +102,8 @@ campaign — including when Jafar says `read memory and continue`.
 - Server secrets stay server-side
 - All writes go through `/api/*` routes. Every `POST` and `PATCH` validates with Zod before database access.
 - **Performance — proportional evidence:** Follow `performance-review`'s invocation gate and two-stage completion contract. Never claim user or traffic capacity beyond the workload its evidence actually supports.
-- Git commit whenver need
+- **One working copy.** Jafar wants a single clean application: work in this folder on `main` and commit there
+  whenever needed. Create another branch, worktree, or clone only when Jafar asks for one.
 
 ---
 

@@ -11,9 +11,7 @@ already exist provider-neutrally; this is a provider swap plus the setup UI, not
 
 ## Start rule
 
-No coding until the marketing-growth agent has committed its current SES work (`dns-reconcile.ts`, the
-marketing-domain route, `CommunicationsWorkspace.svelte`, `email-domain-activation.ts` edits). Then build in a
-separate git worktree on its own branch (started 2026-09-24: `../Ucrm-email-ses`, branch `operational-email-ses`); merge the shared `ses.ts`/`ses-env.ts` overlap at the end.
+All work is on `main` in the main folder (the separate worktree was merged and removed 2026-09-25).
 
 | Part | Outcome | State | Depends on | Completion gate |
 | --- | --- | --- | --- | --- |
