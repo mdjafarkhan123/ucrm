@@ -14,7 +14,10 @@ export const GET: RequestHandler = async (event) => {
 	if (!tokenHash) throw httpError(404, 'That file is not available.');
 
 	const share = await resolveFileShare(tokenHash);
-	const file = share?.files.find((candidate) => candidate.id === event.params.fileId);
+	const file =
+		share?.state === 'active'
+			? share.files.find((candidate) => candidate.id === event.params.fileId)
+			: undefined;
 	if (!file) throw httpError(404, 'That file is not available.');
 
 	const wantsThumbnail = event.url.searchParams.get('size') === 'thumb';

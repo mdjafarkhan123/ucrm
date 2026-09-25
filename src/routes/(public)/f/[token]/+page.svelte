@@ -7,18 +7,23 @@
 	import pdfIcon from '@tabler/icons/outline/file-type-pdf.svg?raw';
 	import videoIcon from '@tabler/icons/outline/movie.svg?raw';
 	import downloadIcon from '@tabler/icons/outline/download.svg?raw';
+	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
+	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 	import type { SharedFileForCustomer } from './+page.server';
 
 	// The customer's page for files a business chose to share (Part 7D). Everything on it came from the token
 	// in the URL, resolved on the server: the business, then each shared File under the name it had when
-	// shared. Photos open full size, PDFs open in the browser, every File downloads on its own.
+	// shared. Photos open full size, PDFs open in the browser, every File downloads on its own. A link that has
+	// been turned off or has expired shows the business's phone and email instead, and nothing else.
 	let { data } = $props();
 
 	const token = $derived(page.params.token ?? '');
 	const share = $derived(data.share);
+	const business = $derived(data.share?.business ?? data.inactive!.business);
+	const contact = $derived(data.inactive?.business ?? null);
 
-	const photos = $derived(share.files.filter((file) => file.kind === 'image'));
-	const others = $derived(share.files.filter((file) => file.kind !== 'image'));
+	const photos = $derived(share?.files.filter((file) => file.kind === 'image') ?? []);
+	const others = $derived(share?.files.filter((file) => file.kind !== 'image') ?? []);
 
 	function fileHref(file: SharedFileForCustomer, variant: 'full' | 'thumb' | 'download' = 'full') {
 		const base = `/f/${token}/files/${file.id}`;
@@ -28,14 +33,14 @@
 	}
 
 	const brandInitials = $derived.by(() => {
-		const words = share.business.name.trim().split(/\s+/).filter(Boolean);
+		const words = business.name.trim().split(/\s+/).filter(Boolean);
 		if (words.length === 0) return '—';
 		if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
 		return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 	});
 
 	const availableUntil = $derived(
-		new Date(share.expires_at).toLocaleDateString(undefined, {
+		new Date(share?.expires_at ?? 0).toLocaleDateString(undefined, {
 			month: 'long',
 			day: 'numeric',
 			year: 'numeric'
@@ -74,7 +79,8 @@
 	let viewedToken = '';
 
 	$effect(() => {
-		if (viewedToken === token) return;
+		// A turned-off or expired link has nothing on screen to have been seen.
+		if (!share || viewedToken === token) return;
 		viewedToken = token;
 		void fetch(`/api/public/files/share/${token}/view`, {
 			method: 'POST',
@@ -85,7 +91,7 @@
 </script>
 
 <svelte:head>
-	<title>Files from {share.business.name}</title>
+	<title>{share ? `Files from ${business.name}` : 'Link no longer active'}</title>
 	<meta name="robots" content="noindex, nofollow" />
 	<meta name="referrer" content="no-referrer" />
 </svelte:head>
@@ -96,89 +102,132 @@
 		<div class="shared-files__brandbar"></div>
 
 		<header class="shared-files__head">
-			{#if share.business.has_logo}
-				<img class="shared-files__logo" src={`/f/${token}/logo`} alt={share.business.name} />
+			{#if business.has_logo}
+				<img class="shared-files__logo" src={`/f/${token}/logo`} alt={business.name} />
 			{:else}
 				<div class="shared-files__brand">
 					<div class="shared-files__brand-mark" aria-hidden="true">{brandInitials}</div>
-					<div class="shared-files__brand-name">{share.business.name}</div>
+					<div class="shared-files__brand-name">{business.name}</div>
 				</div>
 			{/if}
 		</header>
 
-		<section class="shared-files__hero">
-			<h1 class="shared-files__title">Files shared with you</h1>
-			<p class="shared-files__meta">
-				{share.business.name} shared {share.files.length}
-				{share.files.length === 1 ? 'file' : 'files'} with you. This link works until {availableUntil}.
-			</p>
-		</section>
-
-		{#if share.files.length === 0}
-			<p class="shared-files__empty">
-				These files are no longer available. Contact {share.business.name} if you still need them.
-			</p>
-		{/if}
-
-		{#if photos.length > 0}
-			<section class="shared-files__section" aria-labelledby="shared-photos-title">
-				<h2 id="shared-photos-title" class="shared-files__section-title">Photos</h2>
-				<ul class="shared-files__photos">
-					{#each photos as file, index (file.id)}
-						<li class="shared-files__photo">
-							<button
-								type="button"
-								class="shared-files__photo-button"
-								onclick={() => openPhoto(index)}
-								aria-label={`Open ${file.name} full size`}
+		{#if !share}
+			<section class="shared-files__hero">
+				<h1 class="shared-files__title">This link is no longer active</h1>
+				<p class="shared-files__meta">
+					{business.name} turned this link off, or it reached the date it was set to stop working.
+					{#if contact?.phone || contact?.email}
+						Get in touch with them if you still need the files.
+					{:else}
+						Contact them if you still need the files.
+					{/if}
+				</p>
+			</section>
+			{#if contact?.phone || contact?.email}
+				<ul class="shared-files__contact" aria-label={`Contact ${business.name}`}>
+					{#if contact.phone}
+						<li>
+							<a
+								class="shared-files__contact-link"
+								href={`tel:${contact.phone.replace(/[^+\d]/g, '')}`}
 							>
-								<img src={fileHref(file, 'thumb')} alt="" loading="lazy" />
-							</button>
-							<div class="shared-files__photo-foot">
-								<span class="shared-files__name" title={file.name}>{file.name}</span>
+								<span class="shared-files__contact-icon" aria-hidden="true">{@html phoneIcon}</span>
+								<span class="shared-files__contact-text">
+									<span class="shared-files__contact-label">Call</span>
+									<span class="shared-files__contact-value">{contact.phone}</span>
+								</span>
+							</a>
+						</li>
+					{/if}
+					{#if contact.email}
+						<li>
+							<a class="shared-files__contact-link" href={`mailto:${contact.email}`}>
+								<span class="shared-files__contact-icon" aria-hidden="true">{@html mailIcon}</span>
+								<span class="shared-files__contact-text">
+									<span class="shared-files__contact-label">Email</span>
+									<span class="shared-files__contact-value">{contact.email}</span>
+								</span>
+							</a>
+						</li>
+					{/if}
+				</ul>
+			{/if}
+		{:else}
+			<section class="shared-files__hero">
+				<h1 class="shared-files__title">Files shared with you</h1>
+				<p class="shared-files__meta">
+					{business.name} shared {share.files.length}
+					{share.files.length === 1 ? 'file' : 'files'} with you. This link works until {availableUntil}.
+				</p>
+			</section>
+
+			{#if share.files.length === 0}
+				<p class="shared-files__empty">
+					These files are no longer available. Contact {business.name} if you still need them.
+				</p>
+			{/if}
+
+			{#if photos.length > 0}
+				<section class="shared-files__section" aria-labelledby="shared-photos-title">
+					<h2 id="shared-photos-title" class="shared-files__section-title">Photos</h2>
+					<ul class="shared-files__photos">
+						{#each photos as file, index (file.id)}
+							<li class="shared-files__photo">
 								<button
 									type="button"
-									class="shared-files__icon-link"
-									onclick={() => (window.location.href = fileHref(file, 'download'))}
-									aria-label={`Download ${file.name}`}
-									title="Download"
+									class="shared-files__photo-button"
+									onclick={() => openPhoto(index)}
+									aria-label={`Open ${file.name} full size`}
 								>
-									<span class="shared-files__icon" aria-hidden="true">{@html downloadIcon}</span>
+									<img src={fileHref(file, 'thumb')} alt="" loading="lazy" />
 								</button>
-							</div>
-						</li>
-					{/each}
-				</ul>
-			</section>
-		{/if}
+								<div class="shared-files__photo-foot">
+									<span class="shared-files__name" title={file.name}>{file.name}</span>
+									<button
+										type="button"
+										class="shared-files__icon-link"
+										onclick={() => (window.location.href = fileHref(file, 'download'))}
+										aria-label={`Download ${file.name}`}
+										title="Download"
+									>
+										<span class="shared-files__icon" aria-hidden="true">{@html downloadIcon}</span>
+									</button>
+								</div>
+							</li>
+						{/each}
+					</ul>
+				</section>
+			{/if}
 
-		{#if others.length > 0}
-			<section class="shared-files__section" aria-labelledby="shared-documents-title">
-				<h2 id="shared-documents-title" class="shared-files__section-title">Documents</h2>
-				<ul class="shared-files__list">
-					{#each others as file (file.id)}
-						<li class="shared-files__row">
-							<span class="shared-files__row-icon" aria-hidden="true">{@html iconFor(file)}</span>
-							<div class="shared-files__row-text">
-								<span class="shared-files__name" title={file.name}>{file.name}</span>
-								<span class="shared-files__row-meta">
-									{formatFileType(file.mime_type, file.name)} · {formatFileSize(file.size_bytes)}
-								</span>
-							</div>
-							<div class="shared-files__row-actions">
-								{#if file.mime_type === 'application/pdf' || file.kind === 'video'}
-									<Button variant="secondary" size="small" href={fileHref(file)} target="_blank">
-										Open
+			{#if others.length > 0}
+				<section class="shared-files__section" aria-labelledby="shared-documents-title">
+					<h2 id="shared-documents-title" class="shared-files__section-title">Documents</h2>
+					<ul class="shared-files__list">
+						{#each others as file (file.id)}
+							<li class="shared-files__row">
+								<span class="shared-files__row-icon" aria-hidden="true">{@html iconFor(file)}</span>
+								<div class="shared-files__row-text">
+									<span class="shared-files__name" title={file.name}>{file.name}</span>
+									<span class="shared-files__row-meta">
+										{formatFileType(file.mime_type, file.name)} · {formatFileSize(file.size_bytes)}
+									</span>
+								</div>
+								<div class="shared-files__row-actions">
+									{#if file.mime_type === 'application/pdf' || file.kind === 'video'}
+										<Button variant="secondary" size="small" href={fileHref(file)} target="_blank">
+											Open
+										</Button>
+									{/if}
+									<Button variant="secondary" size="small" href={fileHref(file, 'download')}>
+										Download
 									</Button>
-								{/if}
-								<Button variant="secondary" size="small" href={fileHref(file, 'download')}>
-									Download
-								</Button>
-							</div>
-						</li>
-					{/each}
-				</ul>
-			</section>
+								</div>
+							</li>
+						{/each}
+					</ul>
+				</section>
+			{/if}
 		{/if}
 	</article>
 </div>
@@ -278,6 +327,74 @@
 		margin: 0;
 		padding: 0 var(--space-largest) var(--space-largest);
 		color: var(--color-text--secondary);
+	}
+
+	.shared-files__contact {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: var(--space-base);
+		margin: 0;
+		padding: 0 var(--space-largest) var(--space-largest);
+		list-style: none;
+	}
+
+	.shared-files__contact-link {
+		display: flex;
+		align-items: center;
+		gap: var(--space-base);
+		padding: var(--space-base);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-base);
+		color: inherit;
+		text-decoration: none;
+		transition:
+			border-color 150ms ease,
+			background 150ms ease;
+
+		&:hover {
+			border-color: var(--color-border--interactive);
+			background: var(--color-surface--hover);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--color-focus);
+			outline-offset: 1px;
+		}
+	}
+
+	.shared-files__contact-icon {
+		display: grid;
+		flex: none;
+		place-items: center;
+		width: 40px;
+		height: 40px;
+		border-radius: var(--radius-circle);
+		background: var(--color-surface--background);
+		color: var(--color-interactive);
+
+		:global(svg) {
+			width: 20px;
+			height: 20px;
+		}
+	}
+
+	.shared-files__contact-text {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.shared-files__contact-label {
+		font-size: var(--typography--fontSize-small);
+		color: var(--color-text--secondary);
+	}
+
+	.shared-files__contact-value {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-weight: 600;
+		color: var(--color-heading);
 	}
 
 	.shared-files__section {
@@ -457,7 +574,8 @@
 			padding-inline: var(--space-base);
 		}
 
-		.shared-files__empty {
+		.shared-files__empty,
+		.shared-files__contact {
 			padding-inline: var(--space-base);
 		}
 

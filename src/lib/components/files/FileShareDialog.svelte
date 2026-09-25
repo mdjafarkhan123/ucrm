@@ -74,6 +74,11 @@
 				Number(days) as FileShareDays
 			);
 			void queryClient.invalidateQueries({ queryKey: activityKey('client', clientId) });
+			// The shares view, each shared file's "Shared with" line, and the list's "has any shares" answer
+			// that puts "Shared with customers" in the rail.
+			void queryClient.invalidateQueries({ queryKey: ['files', 'shares'] });
+			void queryClient.invalidateQueries({ queryKey: ['files', 'detail'] });
+			void queryClient.invalidateQueries({ queryKey: ['files', 'list'] });
 			onShared?.();
 			await copyLink();
 		} catch (error) {

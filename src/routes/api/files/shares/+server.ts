@@ -1,8 +1,14 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
-import { NO_STORE_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
+import {
+	NO_STORE_HEADERS,
+	PRIVATE_READ_HEADERS,
+	databaseError,
+	validationError
+} from '$lib/server/api/errors';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { embeddedOne } from '$lib/server/db/embedded';
 import { createFileShareToken, fileShareUrl } from '$lib/server/files/share-links';
 import { fileShareCreateSchema } from '$lib/server/validation/files.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
@@ -63,5 +69,83 @@ export const POST: RequestHandler = async (event) => {
 	return json(
 		{ share: data, url: fileShareUrl(event.url.origin, token) },
 		{ status: 201, headers: NO_STORE_HEADERS }
+	);
+};
+
+const PAGE_SIZE = 25;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Cursor format: "<issued_at>|<id>" -- issued_at alone is not unique, and a tie at a page boundary would
+// drop or repeat a share. Anything malformed is treated as "first page" rather than trusted into a filter.
+function readCursor(raw: string | null) {
+	if (!raw) return null;
+	const separator = raw.lastIndexOf('|');
+	if (separator < 1) return null;
+	const issuedAt = raw.slice(0, separator);
+	const id = raw.slice(separator + 1);
+	if (!UUID_PATTERN.test(id) || Number.isNaN(Date.parse(issuedAt))) return null;
+	return { issuedAt, id };
+}
+
+// The "Shared with customers" view: the organization's shares, newest first, whether they are live, expired
+// or turned off. Read under the caller's own policies, which already limit it to files.share holders; the
+// permission check first only turns a quiet empty list into an honest 403.
+export const GET: RequestHandler = async (event) => {
+	const access = await requireOrganizationPermission(event, 'files.share');
+	if ('response' in access) return access.response;
+
+	const cursor = readCursor(event.url.searchParams.get('cursor'));
+	let query = event.locals.supabase
+		.from('file_shares')
+		.select(
+			'id, client_id, issued_at, issued_by, expires_at, revoked_at, first_viewed_at, last_viewed_at, view_count, client:clients(display_name), items:file_share_items(count)'
+		)
+		.order('issued_at', { ascending: false })
+		.order('id', { ascending: false })
+		// One more than the page, so "is there another page" needs no second count query.
+		.limit(PAGE_SIZE + 1);
+	if (cursor) {
+		query = query.or(
+			`issued_at.lt."${cursor.issuedAt}",and(issued_at.eq."${cursor.issuedAt}",id.lt.${cursor.id})`
+		);
+	}
+
+	const { data, error } = await query;
+	if (error) {
+		console.error('Could not list file shares.', error);
+		return databaseError();
+	}
+
+	const rows = data ?? [];
+	const hasMore = rows.length > PAGE_SIZE;
+	const page = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
+
+	const issuerIds = [...new Set(page.map((row) => row.issued_by).filter((id) => id !== null))];
+	const issuers = issuerIds.length
+		? await event.locals.supabase.from('profiles').select('id, full_name').in('id', issuerIds)
+		: { data: [], error: null };
+	if (issuers.error) console.error('Could not name who made file shares.', issuers.error);
+	const issuerNames = new Map((issuers.data ?? []).map((row) => [row.id, row.full_name]));
+
+	const last = page.at(-1);
+	return json(
+		{
+			shares: page.map((row) => ({
+				id: row.id,
+				client_id: row.client_id,
+				// A Client this member may not see is still their share to manage; it is just not named.
+				client_name: embeddedOne(row.client)?.display_name ?? null,
+				file_count: row.items[0]?.count ?? 0,
+				issued_at: row.issued_at,
+				issued_by_name: row.issued_by ? (issuerNames.get(row.issued_by) ?? null) : null,
+				expires_at: row.expires_at,
+				revoked_at: row.revoked_at,
+				first_viewed_at: row.first_viewed_at,
+				last_viewed_at: row.last_viewed_at,
+				view_count: row.view_count
+			})),
+			next_cursor: hasMore && last ? `${last.issued_at}|${last.id}` : null
+		},
+		{ headers: PRIVATE_READ_HEADERS }
 	);
 };

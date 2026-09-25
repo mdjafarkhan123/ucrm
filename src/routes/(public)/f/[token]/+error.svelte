@@ -1,6 +1,6 @@
 <script lang="ts">
-	// What an unknown, turned-off or expired file share link shows. One page for all three, so a stranger
-	// walking the URL space learns nothing about which links once existed.
+	// What a file share link that never existed shows. A turned-off or expired one has its own page with the
+	// business's contact details; this one names nobody, so a stranger walking the URL space learns nothing.
 </script>
 
 <svelte:head>
@@ -12,8 +12,8 @@
 <main class="share-unavailable">
 	<h1>This link is not available</h1>
 	<p>
-		The link may be mistyped, or it may no longer be active. Ask the business that sent it for a new
-		one.
+		The link may be mistyped or incomplete. Check it against the message you received, or ask the
+		business that sent it for a new one.
 	</p>
 </main>
 

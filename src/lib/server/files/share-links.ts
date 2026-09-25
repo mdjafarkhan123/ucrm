@@ -28,20 +28,34 @@ export function fileShareUrl(origin: string, token: string) {
 	return `${origin}/f/${token}`;
 }
 
-/** What `resolve_file_share` hands back. Object keys stay on the server; the page strips them. */
-export type ResolvedFileShare = {
-	business: { name: string; logo_object_key: string | null };
-	expires_at: string;
-	files: {
-		id: string;
-		name: string;
-		mime_type: string;
-		kind: 'image' | 'video' | 'document';
-		size_bytes: number;
-		object_key: string;
-		thumbnail_object_key: string | null;
-	}[];
+type ShareBusiness = {
+	name: string;
+	logo_object_key: string | null;
+	/** Only read on the "no longer active" page, so the customer knows who to ask. */
+	phone: string | null;
+	email: string | null;
 };
+
+/**
+ * What `resolve_file_share` hands back for a link that once existed. A turned-off or expired one carries
+ * only the business; object keys stay on the server and the page strips them.
+ */
+export type ResolvedFileShare =
+	| {
+			state: 'active';
+			business: ShareBusiness;
+			expires_at: string;
+			files: {
+				id: string;
+				name: string;
+				mime_type: string;
+				kind: 'image' | 'video' | 'document';
+				size_bytes: number;
+				object_key: string;
+				thumbnail_object_key: string | null;
+			}[];
+	  }
+	| { state: 'inactive'; business: ShareBusiness };
 
 // The public page has no signed-in user. It runs as the service role, whose only file-share privilege is
 // the two reader functions. Made once per process.
@@ -52,6 +66,7 @@ export function getFileShareResolverClient() {
 	return serviceClient;
 }
 
+/** Null only for a link that never existed. Turned off and expired come back as `state: 'inactive'`. */
 export async function resolveFileShare(tokenHash: string): Promise<ResolvedFileShare | null> {
 	const { data, error } = await getFileShareResolverClient().rpc('resolve_file_share', {
 		supplied_token_hash: tokenHash

@@ -100,6 +100,9 @@
 	// Any file can go to Trash. A use the customer already received just needs the strongest warning below,
 	// named after the records that carry it, before Trash is allowed to proceed.
 	const customerReceivedRows = $derived(usage.filter((row) => row.customer_received));
+	// The Clients holding a live link to this file. Trashing it takes it off each of their pages, which the
+	// Trash confirmation says out loud; a link itself is untouched and keeps showing any other files on it.
+	const sharedWith = $derived(detail?.shared_with ?? []);
 
 	let renameOpen = $state(false);
 	let renameValue = $state('');
@@ -421,6 +424,31 @@
 				<dt>Folder</dt>
 				<dd>{file.folder_name ?? 'No folder'}</dd>
 			</div>
+			{#if sharedWith.length > 0 && !inTrash}
+				<div class="file-panel__fact">
+					<dt>Shared with</dt>
+					<dd>
+						<ul class="file-panel__shared">
+							{#each sharedWith as shared (shared.client_id)}
+								<li>
+									{#if shared.client_name}
+										<a
+											class="file-panel__shared-link"
+											href={resolve('/(app)/clients/[id=uuid]', { id: shared.client_id })}
+											>{shared.client_name}</a
+										>
+									{:else}
+										A client you cannot view
+									{/if}
+									<span class="file-panel__shared-until"
+										>until {formatUploadedAt(shared.expires_at)}</span
+									>
+								</li>
+							{/each}
+						</ul>
+					</dd>
+				</div>
+			{/if}
 			{#if file.processing_state !== 'available'}
 				<div class="file-panel__fact">
 					<dt>Status</dt>
@@ -643,6 +671,15 @@
 			does not put it back on those records.
 		</p>
 	{/if}
+	{#if sharedWith.length > 0}
+		<p>
+			It is shared with {sharedWith.length}
+			{sharedWith.length === 1 ? 'customer' : 'customers'} by link. It disappears from {sharedWith.length ===
+			1
+				? 'their page'
+				: 'each of their pages'} while it is in Trash.
+		</p>
+	{/if}
 	{#if actionError}<p class="file-panel__error" role="alert">{actionError}</p>{/if}
 </ConfirmDialog>
 
@@ -749,6 +786,32 @@
 		dd {
 			color: var(--color-text);
 		}
+	}
+
+	.file-panel__shared {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smallest);
+		list-style: none;
+	}
+	.file-panel__shared-link {
+		color: var(--color-interactive);
+		font-weight: 600;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+			border-radius: var(--radius-small);
+		}
+	}
+	.file-panel__shared-until {
+		margin-inline-start: var(--space-smaller);
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
 	}
 
 	.file-panel__describe {

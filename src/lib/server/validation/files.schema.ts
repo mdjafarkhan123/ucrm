@@ -118,3 +118,6 @@ export const fileShareCreateSchema = z.object({
 		.refine((ids) => new Set(ids).size === ids.length, 'The same file was chosen twice.'),
 	days: z.union([z.literal(7), z.literal(30), z.literal(90)])
 });
+
+// Turning one customer file share off. The share is named by the URL; there is nothing else to choose.
+export const fileShareTurnOffSchema = z.object({ id: z.uuid() });

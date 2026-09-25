@@ -22417,6 +22417,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      turn_off_file_share: {
+        Args: {
+          target_actor_id: string
+          target_organization_id: string
+          target_share_id: string
+        }
+        Returns: Json
+      }
       unapply_client_payment: {
         Args: {
           new_idempotency_key: string

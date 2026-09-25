@@ -13,8 +13,9 @@ export type SharedFileForCustomer = {
 };
 
 // The customer's page for a file share (Part 7D). The token from the URL is hashed here and the hash goes to
-// the one reader function the service role may call. Every way of failing -- unknown, turned off, expired --
-// is the same plain 404, so the page cannot be used to learn whether a business or a share exists.
+// the one reader function the service role may call. A link that never existed is a plain 404, so the page
+// cannot be used to learn whether a business or a share exists. A real link that has been turned off or has
+// expired says so and gives the business's phone and email instead -- whoever holds it was sent it.
 //
 // Loading the page records nothing: mail scanners and link previews fetch URLs before any person sees them.
 // The view is recorded by the browser once the files are on screen.
@@ -29,12 +30,28 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 	const resolved = tokenHash ? await resolveFileShare(tokenHash) : null;
 	if (!resolved) error(404, 'This link is not available.');
 
+	const business = {
+		name: resolved.business.name,
+		has_logo: resolved.business.logo_object_key !== null
+	};
+
+	if (resolved.state === 'inactive') {
+		return {
+			share: null,
+			inactive: {
+				business: {
+					...business,
+					phone: resolved.business.phone,
+					email: resolved.business.email
+				}
+			}
+		};
+	}
+
 	return {
+		inactive: null,
 		share: {
-			business: {
-				name: resolved.business.name,
-				has_logo: resolved.business.logo_object_key !== null
-			},
+			business,
 			expires_at: resolved.expires_at,
 			files: resolved.files.map((file): SharedFileForCustomer => ({
 				id: file.id,

@@ -379,7 +379,9 @@ link plus CompanyCam's static Gallery, built on the same hashed-token link the w
 - **Afterwards.** Renaming a File does not change the name the customer sees. Moving a shared File to Trash
   removes it from the customer's page, and the Trash confirmation says how many customers it is shared with.
 - **Expired or turned off.** The page says the link is no longer active and gives the business's phone and
-  email; no new link is issued automatically. An unknown link is a plain "not found".
+  email; no new link is issued automatically. An unknown link is a plain "not found". The phone is the Business
+  profile's; the email is the business's enabled sending address (the organization default first), the one its
+  customer emails come from. Turning a link off is final.
 - **Staff view.** "Shared with customers" in the rail lists shares, newest first: Client, File count, sent,
   expires, whether it was opened, and Turn off; opening one lists its Files. A File's details panel names the
   Clients it is currently shared with. The rail view appears only once the business has a share.
