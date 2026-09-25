@@ -484,6 +484,7 @@
 								accept={FILE_PICKER_ACCEPT}
 								class="files__file-input"
 								id={`${uid}-picker`}
+								aria-label="Upload files"
 								onchange={(event) => pickFiles((event.currentTarget as HTMLInputElement).files)}
 							/>
 							<Button size="small" onclick={() => fileInputEl?.click()}>

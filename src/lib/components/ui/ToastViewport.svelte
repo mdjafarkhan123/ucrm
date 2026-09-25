@@ -5,7 +5,7 @@
 	let { manager }: { manager: ToastManager } = $props();
 </script>
 
-<div class="toast-viewport" aria-label="Notifications">
+<div class="toast-viewport" role="region" aria-label="Notifications">
 	{#each manager.toasts as toast (toast.id)}
 		<Toast
 			open={true}
