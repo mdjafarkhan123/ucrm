@@ -3,7 +3,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(32);
+select plan(38);
 
 select has_table('public', 'communication_reply_aliases', 'reply alias table exists');
 select has_table('public', 'communication_inbound_messages', 'inbound message table exists');
@@ -336,6 +336,86 @@ select is(
   (select attachment_count from public.communication_inbound_messages
     where id = 'da800000-0000-0000-0000-000000000002'),
   2, 'a second attachment insert bumps the message attachment count to two'
+);
+
+-- Operational email SES Part 4: the same inbound resolution now also records a real 'ses' provider.
+select throws_ok(
+  $$insert into public.communication_inbound_messages (
+    organization_id, sender_email, subject, text_content, provider
+  ) values (
+    'da100000-0000-0000-0000-000000000001', 'stranger@example.test', 'Bad provider', 'Body', 'twilio'
+  )$$,
+  '23514', null, 'an email-channel inbound message still rejects a provider that is not brevo or ses'
+);
+
+insert into public.communication_inbound_attachments (
+  id, organization_id, inbound_message_id, file_name, mime_type, byte_size, provider
+) values (
+  'da900000-0000-0000-0000-000000000003', 'da100000-0000-0000-0000-000000000001',
+  'da800000-0000-0000-0000-000000000002', 'ses-photo.jpg', 'image/jpeg', 999, 'ses'
+);
+select is(
+  (select provider from public.communication_inbound_attachments
+    where id = 'da900000-0000-0000-0000-000000000003'),
+  'ses', 'an inbound attachment may now record ses as its provider'
+);
+
+create function pg_temp.alias_local_part() returns text language sql stable as
+  $$select alias_local_part from public.communication_reply_aliases
+      where organization_id = 'da100000-0000-0000-0000-000000000001'$$;
+
+select is(
+  (public.record_communication_inbound_message(
+    target_provider_message_id => 'ses-msg-1',
+    target_sender_email => 'customer@alias-test.example',
+    target_sender_name => 'Customer',
+    target_subject => 'Re: Hello',
+    target_text_content => 'Reply body',
+    target_message_kind => 'reply',
+    target_candidate_recipients => jsonb_build_array(jsonb_build_object(
+      'address', pg_temp.alias_local_part() || '@reply.alias-test.example',
+      'local_part', pg_temp.alias_local_part(),
+      'domain_name', 'reply.alias-test.example'
+    )),
+    target_provider => 'ses'
+  )).provider,
+  'ses', 'record_communication_inbound_message records the real provider it was told'
+);
+select is(
+  (select review_status from public.communication_inbound_messages where provider_message_id = 'ses-msg-1'),
+  'accepted', 'the same alias resolution accepts a known conversation whichever provider delivered it'
+);
+select is(
+  (public.record_communication_inbound_message(
+    target_provider_message_id => 'ses-msg-1',
+    target_sender_email => 'customer@alias-test.example',
+    target_subject => 'Re: Hello',
+    target_text_content => 'Reply body',
+    target_message_kind => 'reply',
+    target_candidate_recipients => jsonb_build_array(jsonb_build_object(
+      'address', pg_temp.alias_local_part() || '@reply.alias-test.example',
+      'local_part', pg_temp.alias_local_part(),
+      'domain_name', 'reply.alias-test.example'
+    )),
+    target_provider => 'ses'
+  )),
+  null::public.communication_inbound_messages,
+  'the same SES message id delivered twice is deduped, not inserted again'
+);
+select is(
+  (public.record_communication_inbound_message(
+    target_provider_message_id => 'brevo-default-msg-1',
+    target_sender_email => 'stranger@example.test',
+    target_subject => 'No provider argument',
+    target_text_content => 'Body',
+    target_message_kind => 'reply',
+    target_candidate_recipients => jsonb_build_array(jsonb_build_object(
+      'address', 'unknown@reply.alias-test.example',
+      'local_part', 'unknown',
+      'domain_name', 'reply.alias-test.example'
+    ))
+  )).provider,
+  'brevo', 'omitting target_provider keeps the Brevo webhook route''s existing behavior unchanged'
 );
 
 reset role;

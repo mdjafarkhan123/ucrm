@@ -5034,6 +5034,57 @@ export type Database = {
           },
         ]
       }
+      file_purge_log: {
+        Row: {
+          display_name: string
+          file_id: string
+          had_thumbnail: boolean
+          id: string
+          object_key: string
+          organization_id: string
+          purged_at: string
+          trashed_at: string
+          trashed_by: string | null
+        }
+        Insert: {
+          display_name: string
+          file_id: string
+          had_thumbnail: boolean
+          id?: string
+          object_key: string
+          organization_id: string
+          purged_at?: string
+          trashed_at: string
+          trashed_by?: string | null
+        }
+        Update: {
+          display_name?: string
+          file_id?: string
+          had_thumbnail?: boolean
+          id?: string
+          object_key?: string
+          organization_id?: string
+          purged_at?: string
+          trashed_at?: string
+          trashed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_purge_log_file_fkey"
+            columns: ["organization_id", "file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "file_purge_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       file_share_items: {
         Row: {
           file_id: string
@@ -5145,7 +5196,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -5153,6 +5204,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -5173,7 +5225,7 @@ export type Database = {
           id?: string
           kind?: string | null
           mime_type: string
-          object_key: string
+          object_key?: string | null
           organization_id: string
           origin_id?: string | null
           origin_role?: string
@@ -5181,6 +5233,7 @@ export type Database = {
           processing_attempts?: number
           processing_error?: string | null
           processing_state?: string
+          purged_at?: string | null
           scanned_at?: string | null
           size_bytes: number
           thumbnail_object_key?: string | null
@@ -5201,7 +5254,7 @@ export type Database = {
           id?: string
           kind?: string | null
           mime_type?: string
-          object_key?: string
+          object_key?: string | null
           organization_id?: string
           origin_id?: string | null
           origin_role?: string
@@ -5209,6 +5262,7 @@ export type Database = {
           processing_attempts?: number
           processing_error?: string | null
           processing_state?: string
+          purged_at?: string | null
           scanned_at?: string | null
           size_bytes?: number
           thumbnail_object_key?: string | null
@@ -9411,6 +9465,56 @@ export type Database = {
           trigger_kind?: string
         }
         Relationships: []
+      }
+      organization_exports: {
+        Row: {
+          completed_at: string | null
+          error: string | null
+          expires_at: string | null
+          file_count: number | null
+          id: string
+          object_key: string | null
+          organization_id: string
+          requested_at: string
+          requested_by: string | null
+          status: string
+          total_bytes: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          error?: string | null
+          expires_at?: string | null
+          file_count?: number | null
+          id?: string
+          object_key?: string | null
+          organization_id: string
+          requested_at?: string
+          requested_by?: string | null
+          status?: string
+          total_bytes?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          error?: string | null
+          expires_at?: string | null
+          file_count?: number | null
+          id?: string
+          object_key?: string | null
+          organization_id?: string
+          requested_at?: string
+          requested_by?: string | null
+          status?: string
+          total_bytes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_exports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organization_feature_overrides: {
         Row: {
@@ -15267,7 +15371,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -15275,6 +15379,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -15356,6 +15461,28 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "organization_members"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      claim_next_organization_export: {
+        Args: never
+        Returns: {
+          completed_at: string | null
+          error: string | null
+          expires_at: string | null
+          file_count: number | null
+          id: string
+          object_key: string | null
+          organization_id: string
+          requested_at: string
+          requested_by: string | null
+          status: string
+          total_bytes: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "organization_exports"
           isOneToOne: false
           isSetofReturn: true
         }
@@ -16743,7 +16870,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -16751,6 +16878,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -17360,7 +17488,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -17368,6 +17496,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -18301,7 +18430,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -18309,6 +18438,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -18338,6 +18468,36 @@ export type Database = {
           campaign_status: string
           recipient_status: string
         }[]
+      }
+      finalize_organization_export: {
+        Args: {
+          target_error?: string
+          target_expires_at?: string
+          target_export_id: string
+          target_file_count?: number
+          target_object_key?: string
+          target_state: string
+          target_total_bytes?: number
+        }
+        Returns: {
+          completed_at: string | null
+          error: string | null
+          expires_at: string | null
+          file_count: number | null
+          id: string
+          object_key: string | null
+          organization_id: string
+          requested_at: string
+          requested_by: string | null
+          status: string
+          total_bytes: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organization_exports"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       finalize_organization_geocode: {
         Args: {
@@ -19738,7 +19898,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -19746,6 +19906,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -20293,6 +20454,20 @@ export type Database = {
         Args: { expected_revision: number; target_quote_id: string }
         Returns: Json
       }
+      purge_expired_organization_exports: {
+        Args: { batch_size?: number }
+        Returns: {
+          object_key: string
+        }[]
+      }
+      purge_expired_trashed_files: {
+        Args: { batch_size?: number; older_than_days?: number }
+        Returns: {
+          id: string
+          object_key: string
+          thumbnail_object_key: string
+        }[]
+      }
       quarantine_stale_communication_claims: {
         Args: { batch_size?: number; stale_after?: string }
         Returns: number
@@ -20434,63 +20609,122 @@ export type Database = {
         }
         Returns: Json
       }
-      record_communication_inbound_message: {
-        Args: {
-          target_candidate_recipients?: Json
-          target_cc_recipients?: Json
-          target_html_content?: string
-          target_in_reply_to_provider_message_id?: string
-          target_message_kind?: string
-          target_provider_callback_event_id?: string
-          target_provider_message_id?: string
-          target_sender_email?: string
-          target_sender_name?: string
-          target_subject?: string
-          target_text_content?: string
-          target_to_recipients?: Json
-        }
-        Returns: {
-          attachment_count: number
-          automation_suppressed: boolean
-          cc_recipients: Json
-          channel: string
-          client_contact_method_id: string | null
-          client_id: string | null
-          created_at: string
-          direction: string
-          html_content: string | null
-          id: string
-          in_reply_to_intent_id: string | null
-          in_reply_to_provider_message_id: string | null
-          loop_detected_at: string | null
-          marketing_campaign_id: string | null
-          message_kind: string
-          organization_id: string
-          owner_user_id: string | null
-          provider: string
-          provider_callback_event_id: string | null
-          provider_message_id: string | null
-          reply_alias_id: string | null
-          review_reason: string | null
-          review_resolved_at: string | null
-          review_resolved_by: string | null
-          review_status: string
-          sender_email: string | null
-          sender_id: string | null
-          sender_name: string | null
-          sender_phone: string | null
-          subject: string
-          text_content: string
-          to_recipients: Json
-          updated_at: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "communication_inbound_messages"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+      record_communication_inbound_message:
+        | {
+            Args: {
+              target_candidate_recipients?: Json
+              target_cc_recipients?: Json
+              target_html_content?: string
+              target_in_reply_to_provider_message_id?: string
+              target_message_kind?: string
+              target_provider_callback_event_id?: string
+              target_provider_message_id?: string
+              target_sender_email?: string
+              target_sender_name?: string
+              target_subject?: string
+              target_text_content?: string
+              target_to_recipients?: Json
+            }
+            Returns: {
+              attachment_count: number
+              automation_suppressed: boolean
+              cc_recipients: Json
+              channel: string
+              client_contact_method_id: string | null
+              client_id: string | null
+              created_at: string
+              direction: string
+              html_content: string | null
+              id: string
+              in_reply_to_intent_id: string | null
+              in_reply_to_provider_message_id: string | null
+              loop_detected_at: string | null
+              marketing_campaign_id: string | null
+              message_kind: string
+              organization_id: string
+              owner_user_id: string | null
+              provider: string
+              provider_callback_event_id: string | null
+              provider_message_id: string | null
+              reply_alias_id: string | null
+              review_reason: string | null
+              review_resolved_at: string | null
+              review_resolved_by: string | null
+              review_status: string
+              sender_email: string | null
+              sender_id: string | null
+              sender_name: string | null
+              sender_phone: string | null
+              subject: string
+              text_content: string
+              to_recipients: Json
+              updated_at: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "communication_inbound_messages"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: {
+              target_candidate_recipients?: Json
+              target_cc_recipients?: Json
+              target_html_content?: string
+              target_in_reply_to_provider_message_id?: string
+              target_message_kind?: string
+              target_provider?: string
+              target_provider_callback_event_id?: string
+              target_provider_message_id?: string
+              target_sender_email?: string
+              target_sender_name?: string
+              target_subject?: string
+              target_text_content?: string
+              target_to_recipients?: Json
+            }
+            Returns: {
+              attachment_count: number
+              automation_suppressed: boolean
+              cc_recipients: Json
+              channel: string
+              client_contact_method_id: string | null
+              client_id: string | null
+              created_at: string
+              direction: string
+              html_content: string | null
+              id: string
+              in_reply_to_intent_id: string | null
+              in_reply_to_provider_message_id: string | null
+              loop_detected_at: string | null
+              marketing_campaign_id: string | null
+              message_kind: string
+              organization_id: string
+              owner_user_id: string | null
+              provider: string
+              provider_callback_event_id: string | null
+              provider_message_id: string | null
+              reply_alias_id: string | null
+              review_reason: string | null
+              review_resolved_at: string | null
+              review_resolved_by: string | null
+              review_status: string
+              sender_email: string | null
+              sender_id: string | null
+              sender_name: string | null
+              sender_phone: string | null
+              subject: string
+              text_content: string
+              to_recipients: Json
+              updated_at: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "communication_inbound_messages"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
       record_communication_sms_consent_event_from_reply: {
         Args: {
           target_confirmed_by_provider: boolean
@@ -20813,7 +21047,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -20821,6 +21055,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -21002,7 +21237,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -21010,6 +21245,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -21137,6 +21373,28 @@ export type Database = {
       }
       request_communication_sms_outbox_wake: { Args: never; Returns: undefined }
       request_form_submission_worker_wake: { Args: never; Returns: undefined }
+      request_organization_export: {
+        Args: { target_actor_id: string; target_organization_id: string }
+        Returns: {
+          completed_at: string | null
+          error: string | null
+          expires_at: string | null
+          file_count: number | null
+          id: string
+          object_key: string | null
+          organization_id: string
+          requested_at: string
+          requested_by: string | null
+          status: string
+          total_bytes: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organization_exports"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       request_ownership_transfer: {
         Args: {
           requesting_user_id: string
@@ -21361,7 +21619,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -21369,6 +21627,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -22393,7 +22652,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -22401,6 +22660,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
