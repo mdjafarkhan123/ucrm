@@ -5,7 +5,8 @@ side. Brevo stays only for platform/Jafar emails (`src/lib/server/email/brevo.ts
 
 ## State
 
-Part 6 approved 2026-09-25. Worktree `../Ucrm-email-ses`, branch `operational-email-ses`, last commit `9ecef26`.
+Part 6 approved 2026-09-25. Branch `operational-email-ses` merged into `contractor-settings-4a-forms-foundation`
+(`17515c7`, Jafar's request); worktree and branch removed, all work now in the main folder.
 Steps 1–3 done and committed (3 = migration `20260925180000_operational_email_ses_only_tables.sql`, pushed live;
 Raad's Brevo-era test emails deleted with Jafar's OK). pgTAP fixtures updated but not run (no local stack).
 
@@ -18,7 +19,6 @@ inbound webhooks (all contractor-era leftovers deleted with Jafar's OK). Next: s
 
 Live test (step 5) needs `cloudflared tunnel run` and Jafar sending replies. Raad currently has no receiving
 row; step 5's fresh Set up creates it. AWS: `aws --profile ucrm` (`aws sso login --sso-session ucrm`).
-Copy sibling files-media migrations untracked into worktree before `db push`.
 Known gap: org purge leaves Marketing CloudFront click-domain resources (marketing campaign's concern).
 
 Resume: `continue operational email ses`.
