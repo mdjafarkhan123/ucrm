@@ -2,9 +2,10 @@
 
 **Goal:** One contractor File Manager backed by private R2, with one File linked to every CRM use.
 
-**Active part:** 8A done, not yet committed. 8B (owner-only export) is next.
+**Active part:** 8A done and committed (`0018ec5`). 8B (owner-only export) is next — not yet scoped beyond
+the one-line roadmap entry.
 
-**8A shipped (2026-09-25):** migration `20260925130000_files_media_trash_purge.sql` live on the remote —
+**8A shipped (2026-09-25, committed `0018ec5`):** migration `20260925130000_files_media_trash_purge.sql` live on the remote —
 `purge_expired_trashed_files()` (30-day sweep), `files.purged_at`/nullable `object_key`, `file_purge_log`
 (readable by `files.trash` holders), `restore_file` and `list_files('trash')` updated to exclude a purged
 File. Purge never deletes the `files` row — only clears its storage keys — specifically so
@@ -28,9 +29,10 @@ only the 3 known-stale "union type too complex" errors remain, zero new ones.
 `sweepAbandonedFileUploads` — not a new regression), no browser check (the worker doesn't run locally; nothing
 in Raad's real data is old enough to purge yet regardless). Not yet committed to git.
 
-**Exact next action:** `git commit` the 8A changes (migration, `processing-worker.ts`, the internal route, the
-view/download/public-route guards, the pgTAP file, and `database.types.ts`). Then start 8B: an owner-only
-"download everything" export (metadata, link manifests, checksums, permitted blobs).
+**Exact next action:** Scope 8B with Jafar (owner-only "download everything" export: metadata, link manifests,
+checksums, permitted blobs) — the roadmap entry is one line, no part packet exists yet. Research how mature
+products do a full-account data export before proposing a design (size/async delivery, R2 zip strategy,
+what "permitted blobs" means for a non-owner requester, if this can ever be non-owner).
 
 **Blocker (campaign-wide):** the upload worker does not run locally; new uploads stay "Still being checked".
 Test with existing checked photos (Raad LTD has 12).
