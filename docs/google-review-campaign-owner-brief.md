@@ -25,7 +25,7 @@ Every request link, whatever the channel (SMS or email), opens the UCRM feedback
 
 ## Eligibility and enrolment
 
-- A one-time job enters the normal review-request automation only after the contractor marks the whole job completed.
+- A one-time job enters the normal review-request automation only when it is closed with every Visit completed. A close that removed unfinished Visits is a cancellation and never enrolls; the contractor may still send a manual request (owner decision 2026-09-25).
 - A recurring job can use an **after every N completed visits** setting chosen by the contractor. UCRM does not ask after every visit by default. The six-month cooldown always wins, following Jobber: a client already asked in the last six months is skipped at their Nth visit, and becomes eligible again at the first Nth visit after the cooldown ends.
 - The automatic request uses the client's main contact for the chosen channel (mobile for SMS, email address for Email). A manual request lets the contractor choose another saved client contact.
 - A request is not sent if there is no usable contact for the chosen channel, the job is reopened or cancelled before sending, or the contractor has turned the automation off.
@@ -83,7 +83,7 @@ Every request link, whatever the channel (SMS or email), opens the UCRM feedback
 
 ## Reviews workspace and activity
 
-UCRM has one simple **Reviews** area with two tabs:
+UCRM has one simple **Reviews** area, a top-level item in the main side menu (following HighLevel's top-level Reputation menu; owner decision 2026-09-25), with two tabs:
 
 1. **Requests** — each request's client, completed job, channel, scheduled/sent time, delivery state, feedback-page open, Google-destination click, and final stop reason.
 2. **Private feedback** — recovery items that need attention or are already resolved.
