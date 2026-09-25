@@ -15264,10 +15264,12 @@ export type Database = {
 					claim_token: string;
 					forward_event_id: string;
 					html_content: string;
+					organization_id: string;
 					recipient_emails: string[];
 					sender_email: string;
 					sender_id: string;
 					sender_name: string;
+					sender_provider: string;
 					subject: string;
 					text_content: string;
 				}[];
@@ -15305,6 +15307,7 @@ export type Database = {
 					delivery_intent_id: string;
 					html_content: string;
 					logical_send_key: string;
+					organization_id: string;
 					outbox_event_id: string;
 					recipient_email: string;
 					reply_to_email: string;
@@ -15312,6 +15315,7 @@ export type Database = {
 					sender_email: string;
 					sender_id: string;
 					sender_name: string;
+					sender_provider: string;
 					subject: string;
 					text_content: string;
 				}[];

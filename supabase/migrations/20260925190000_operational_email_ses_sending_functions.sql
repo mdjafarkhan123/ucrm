@@ -1,29 +1,14 @@
 -- Operational email SES Part 3: outbound sending + delivery events on SES.
 --
+-- Originally written as 20260925130000_operational_email_ses_sending.sql, which never applied: the
+-- files-media trash-purge migration took the same version first, so the ledger skipped this file. Moved to
+-- its own version. Its original step 1 (widening provider CHECKs to brevo+ses) is dropped because
+-- 20260925180000_operational_email_ses_only_tables.sql already narrowed those constraints to SES only.
+--
 -- Sending, sender identity, and delivery-event ingestion for operational (everyday) email move onto Amazon SES,
 -- alongside Brevo, which some organizations may still be on mid-cutover. This never rebuilds the queueing,
 -- allowance, warm-up, or suppression logic (docs/contractor-email-contract.md) -- it only lets the worker see
 -- which provider a claimed row's sending domain is actually on, so it can call the right one.
-
--- 1. Widen the two provider CHECK constraints Brevo-only sending left behind, following the exact precedent
---    already used for communication_email_domains_provider_check (20260922150000_marketing_ses_sending_identity.sql).
-
-alter table "public"."communication_email_senders"
-    drop constraint "communication_email_senders_provider_check";
-
-alter table "public"."communication_email_senders"
-    add constraint "communication_email_senders_provider_check"
-    check ("provider" = any (array['brevo'::text, 'ses'::text]));
-
-alter table "public"."communication_provider_callback_events"
-    drop constraint "communication_provider_callback_events_provider_channel_check";
-
-alter table "public"."communication_provider_callback_events"
-    add constraint "communication_provider_callback_events_provider_channel_check"
-    check (
-        (("channel" = 'email'::text) and ("provider" = any (array['brevo'::text, 'ses'::text])))
-        or (("channel" = 'sms'::text) and ("provider" = 'twilio'::text))
-    );
 
 -- 2. claim_communication_outbox_event(): the worker needs organization_id (to derive the SES tenant and
 --    operational configuration set names, the same "derive, never store-then-guess" convention ses-env.ts
@@ -31,6 +16,9 @@ alter table "public"."communication_provider_callback_events"
 --    call without a second lookup. claim_communication_sms_outbox_event already returns organization_id; this
 --    brings the email claim to the same shape. Every other line of this function is unchanged from the
 --    version this replaces.
+
+-- The return columns change, which create or replace cannot do in place.
+drop function if exists "public"."claim_communication_outbox_event"();
 
 create or replace function "public"."claim_communication_outbox_event"()
 returns table(
@@ -563,6 +551,9 @@ alter function "public"."claim_communication_outbox_event"() owner to "postgres"
 --    (docs/contractor-email-contract.md "Recipients, forwarding, and portal access") sends through the same
 --    per-organization sender/domain and must pick the same provider a claimed row's domain is actually on.
 
+-- The return columns change, which create or replace cannot do in place.
+drop function if exists "public"."claim_communication_forward_event"();
+
 create or replace function "public"."claim_communication_forward_event"()
 returns table(
     "forward_event_id" uuid, "claim_token" uuid, "organization_id" uuid, "recipient_emails" text[],
@@ -752,3 +743,9 @@ alter function "public"."begin_communication_email_sender_create"(
     "target_allows_manual" boolean, "target_allows_automated" boolean, "actor_user_id" uuid,
     "command_idempotency_key" text
 ) owner to "postgres";
+
+-- Dropping the two claim functions discarded their privileges; restore the baseline's service-role-only access.
+revoke all on function "public"."claim_communication_outbox_event"() from public, anon, authenticated;
+grant all on function "public"."claim_communication_outbox_event"() to "service_role";
+revoke all on function "public"."claim_communication_forward_event"() from public, anon, authenticated;
+grant all on function "public"."claim_communication_forward_event"() to "service_role";
