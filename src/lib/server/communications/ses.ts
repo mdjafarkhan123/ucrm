@@ -5,11 +5,14 @@ import {
 	CreateEmailIdentityCommand,
 	CreateTenantCommand,
 	CreateTenantResourceAssociationCommand,
+	DeleteConfigurationSetCommand,
 	DeleteEmailIdentityCommand,
+	DeleteTenantCommand,
 	GetConfigurationSetCommand,
 	GetConfigurationSetEventDestinationsCommand,
 	GetEmailIdentityCommand,
 	GetTenantCommand,
+	ListTenantResourcesCommand,
 	PutConfigurationSetTrackingOptionsCommand,
 	PutEmailIdentityMailFromAttributesCommand,
 	SendEmailCommand,
@@ -224,6 +227,43 @@ export async function createSesTenant(tenantName: string): Promise<{ tenantArn: 
 	}
 }
 
+/** Every identity and configuration set associated with a tenant, as ARNs, across all pages. */
+export async function listSesTenantResources(
+	tenantName: string
+): Promise<{ type: string; arn: string }[]> {
+	const { client } = getSes();
+	const resources: { type: string; arn: string }[] = [];
+	let nextToken: string | undefined;
+	do {
+		let page;
+		try {
+			page = await client.send(
+				new ListTenantResourcesCommand({ TenantName: tenantName, NextToken: nextToken })
+			);
+		} catch (error) {
+			if (isNotFound(error)) return [];
+			throw toSesError('ListTenantResources', error);
+		}
+		for (const resource of page.TenantResources ?? []) {
+			if (resource.ResourceType && resource.ResourceArn)
+				resources.push({ type: resource.ResourceType, arn: resource.ResourceArn });
+		}
+		nextToken = page.NextToken;
+	} while (nextToken);
+	return resources;
+}
+
+/** Deletes a tenant. Already-gone is the desired state, so a retried cleanup is safe. */
+export async function deleteSesTenant(tenantName: string): Promise<void> {
+	const { client } = getSes();
+	try {
+		await client.send(new DeleteTenantCommand({ TenantName: tenantName }));
+	} catch (error) {
+		if (isNotFound(error)) return;
+		throw toSesError('DeleteTenant', error);
+	}
+}
+
 export async function configurationSetExists(configurationSetName: string): Promise<boolean> {
 	const { client } = getSes();
 	try {
@@ -246,6 +286,19 @@ export async function createSesConfigurationSet(configurationSetName: string): P
 	} catch (error) {
 		if (isAlreadyExists(error)) return;
 		throw toSesError('CreateConfigurationSet', error);
+	}
+}
+
+/** Deletes a configuration set. Already-gone is the desired state, so a retried cleanup is safe. */
+export async function deleteSesConfigurationSet(configurationSetName: string): Promise<void> {
+	const { client } = getSes();
+	try {
+		await client.send(
+			new DeleteConfigurationSetCommand({ ConfigurationSetName: configurationSetName })
+		);
+	} catch (error) {
+		if (isNotFound(error)) return;
+		throw toSesError('DeleteConfigurationSet', error);
 	}
 }
 
