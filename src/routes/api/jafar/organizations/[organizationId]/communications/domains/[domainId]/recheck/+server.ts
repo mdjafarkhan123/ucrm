@@ -78,13 +78,13 @@ export const POST: RequestHandler = async (event) => {
 
 		const { data: domain, error: domainError } = await client
 			.from('communication_email_domains')
-			.select('id, purpose, provider')
+			.select('id, purpose')
 			.eq('organization_id', organizationId.data)
 			.eq('id', domainId.data)
 			.neq('lifecycle_state', 'removed')
 			.maybeSingle();
 		if (domainError) throw domainError;
-		if (!domain || domain.purpose !== 'sending' || domain.provider !== 'ses') {
+		if (!domain || domain.purpose !== 'sending') {
 			return json({ error: 'Sending domain was not found.' }, { status: 404, headers: noStore });
 		}
 		// Re-runs the whole idempotent Set up, which also writes the rows and routes customer replies once the

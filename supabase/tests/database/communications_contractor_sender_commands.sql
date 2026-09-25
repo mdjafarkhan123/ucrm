@@ -37,7 +37,7 @@ select function_privs_are(
 );
 select function_privs_are(
   'public', 'finalize_communication_email_sender_create',
-  array['uuid', 'uuid', 'bigint', 'uuid', 'text'],
+  array['uuid', 'uuid', 'uuid', 'text'],
   'service_role', array['EXECUTE'], 'only service role can finalize sender creation'
 );
 select function_privs_are(
@@ -77,7 +77,7 @@ select is(
   (public.finalize_communication_email_sender_create(
     'e2000000-0000-0000-0000-000000000001',
     (select id from public.communication_email_senders where email_address = 'alex@mail.sender-test.example'),
-    93002, 'e1000000-0000-0000-0000-000000000001', 'sender-create-command'
+    'e1000000-0000-0000-0000-000000000001', 'sender-create-command'
   )).lifecycle_state,
   'enabled',
   'provider success enables the claimed sender atomically'

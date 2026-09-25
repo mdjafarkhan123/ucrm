@@ -35,20 +35,20 @@ values
   ('90000000-0000-0000-0000-000000000912', '9 Purge P3 Never Closed Test', '9-purge-p3-test', 'active'),
   ('90000000-0000-0000-0000-000000000913', '9 Purge P4 Provider Test', '9-purge-p4-test', 'active');
 
--- P4 carries live Brevo resources: one sending domain and one sender, each with an opaque provider
--- id. It deliberately has no members, so its purge isolates the provider-cleanup leg.
+-- P4 carries Amazon SES resources: one sending domain and one sender. It deliberately has no members,
+-- so its purge isolates the provider-cleanup leg.
 insert into public.communication_email_domains (id, organization_id, purpose, domain_name, provider_domain_id)
 values (
   '90000000-3333-0000-0000-000000000913', '90000000-0000-0000-0000-000000000913',
-  'sending', 'mail.p4example.test', 'brevo-dom-p4'
+  'sending', 'mail.p4example.test', 'arn:aws:ses:us-east-1:000000000000:identity/mail.p4example.test'
 );
 
 insert into public.communication_email_senders (
-  organization_id, domain_id, email_address, display_name, provider_sender_id
+  organization_id, domain_id, email_address, display_name
 )
 values (
   '90000000-0000-0000-0000-000000000913', '90000000-3333-0000-0000-000000000913',
-  'p4-sender@mail.p4example.test', 'P4 Sender', 7788
+  'p4-sender@mail.p4example.test', 'P4 Sender'
 );
 
 insert into public.organization_members (organization_id, user_id, role)
@@ -202,7 +202,7 @@ select ok(
     and component_results ->> 'provider_resources' = 'not_applicable'
    from public.organization_deletion_receipts
    where operation_id = (current_setting('test.p1_purge_result', true)::jsonb ->> 'operation_id')::uuid),
-  'the receipt honestly records every component outcome; P1 has no Brevo resources so provider_resources is not_applicable'
+  'the receipt honestly records every component outcome; P1 has no email domain so provider_resources is not_applicable'
 );
 -- With the Auth leg still pending, the whole receipt is not complete yet: the unified state model
 -- keeps it in_progress with no completion timestamp until every external leg finishes.
@@ -261,7 +261,7 @@ select is(
   'not_applicable', 'an organization with no onboarding provision records that component as not_applicable, not a fake success'
 );
 
--- Purging P4: provider (Brevo) cleanup is parked as a retryable leg -------------
+-- Purging P4: provider (Amazon SES) cleanup is parked as a retryable leg -------------
 -- P4 has no members, so the Auth leg is not applicable and the receipt's only outstanding leg is the
 -- provider cleanup: exactly the state that must stay retryable, never reported complete.
 
@@ -297,15 +297,15 @@ select ok(
 select is(
   (select jsonb_array_length(pending_provider_resources) from public.organization_deletion_receipts
    where operation_id = (current_setting('test.p4_purge_result', true)::jsonb ->> 'operation_id')::uuid),
-  2, 'the retry anchor holds both provider resources read out before the cascade'
+  1, 'the retry anchor holds one SES organization resource read out before the cascade'
 );
 select ok(
   (select
-     pending_provider_resources @> '[{"kind":"domain","provider_id":"brevo-dom-p4"}]'::jsonb
-     and pending_provider_resources @> '[{"kind":"sender","provider_id":"7788"}]'::jsonb
+     pending_provider_resources
+       = '[{"kind":"ses_organization","provider_id":"90000000-0000-0000-0000-000000000913"}]'::jsonb
    from public.organization_deletion_receipts
    where operation_id = (current_setting('test.p4_purge_result', true)::jsonb ->> 'operation_id')::uuid),
-  'the anchor carries the opaque domain and sender provider ids Brevo needs to delete them'
+  'the anchor carries the organization id the SES cleanup finds every resource from'
 );
 select ok(
   (select bool_and(

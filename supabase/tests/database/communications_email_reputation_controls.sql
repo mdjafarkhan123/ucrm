@@ -400,7 +400,7 @@ insert into public.communication_delivery_intents (
 insert into public.communication_provider_callback_events (
   provider, provider_event_key, delivery_intent_id, event_kind, payload, received_at
 ) values (
-  'brevo', 'reputation-sweep-queue-1', 'd8400000-0000-0000-0000-000000000009', 'spam', '{}'::jsonb, now()
+  'ses', 'reputation-sweep-queue-1', 'd8400000-0000-0000-0000-000000000009', 'spam', '{}'::jsonb, now()
 );
 
 select ok(

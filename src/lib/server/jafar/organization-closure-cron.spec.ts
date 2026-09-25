@@ -23,7 +23,7 @@ const PUBLISHED_TEMPLATE = {
 };
 
 type ClosureRecord = { id: string; organization_id: string; deadline_at: string };
-type ProviderResource = { kind: 'ses_organization' | 'domain' | 'sender'; provider_id: string };
+type ProviderResource = { kind: 'ses_organization'; provider_id: string };
 type UnfinishedReceipt = { operation_id: string; pending_auth_user_ids: string[] };
 type UnfinishedProviderReceipt = {
 	operation_id: string;
@@ -499,37 +499,6 @@ describe('runOrganizationClosureCron', () => {
 		expect(mockedRaiseAlert).toHaveBeenCalledWith(
 			harness.client,
 			expect.objectContaining({ kind: 'organization_purge_failed', severity: 'urgent' })
-		);
-	});
-
-	it('clears a leftover pre-SES Brevo anchor without calling any provider', async () => {
-		const harness = clientWith({
-			closureRecords: [],
-			unfinishedProviderReceipts: [
-				{
-					operation_id: 'op-3',
-					pending_provider_resources: [{ kind: 'sender', provider_id: '42' }]
-				}
-			],
-			receiptComponents: {
-				'op-3': { organization_data: 'succeeded', provider_resources: 'pending' }
-			}
-		});
-
-		const result = await runOrganizationClosureCron(harness.client);
-
-		expect(result).toMatchObject({ providerCleanupsCompleted: 1, providerCleanupsFailed: 0 });
-		expect(mockedRaiseAlert).not.toHaveBeenCalled();
-		expect(mockedPurgeSes).not.toHaveBeenCalled();
-		expect(harness.__receiptUpdates).toContainEqual(
-			expect.objectContaining({
-				operationId: 'op-3',
-				payload: expect.objectContaining({
-					component_results: expect.objectContaining({ provider_resources: 'succeeded' }),
-					pending_provider_resources: null,
-					status: 'completed'
-				})
-			})
 		);
 	});
 });

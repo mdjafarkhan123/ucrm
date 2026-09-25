@@ -41,7 +41,7 @@ select lives_ok(
 select is(
   (select provider from public.communication_inbound_attachments
     where id = 'ec300000-0000-0000-0000-000000000001'),
-  'brevo', 'the default provider is brevo, matching every pre-MMS row'
+  'ses', 'the default provider is ses, the only email provider'
 );
 
 select lives_ok(
@@ -63,7 +63,7 @@ select throws_ok(
       'ec100000-0000-0000-0000-000000000001', 'ec200000-0000-0000-0000-000000000001',
       'x.jpg', 'image/jpeg', 0, 'pending_import', 'other_provider'
     )$$,
-  '23514', null, 'a provider outside brevo/twilio is rejected'
+  '23514', null, 'a provider outside ses/twilio is rejected'
 );
 
 create temporary table media_claims on commit drop as

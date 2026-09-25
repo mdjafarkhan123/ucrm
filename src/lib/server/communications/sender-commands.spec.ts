@@ -15,7 +15,6 @@ const sender: Sender = {
 	email_address: 'alex@mail.ridgeway.example',
 	display_name: 'Alex | Ridgeway',
 	provider: 'ses',
-	provider_sender_id: null,
 	lifecycle_state: 'pending_verification',
 	assigned_user_id: '123e4567-e89b-12d3-a456-426614174030',
 	is_organization_default: true,
@@ -74,7 +73,7 @@ describe('contractor communication sender commands', () => {
 		});
 		expect(client.rpc).toHaveBeenLastCalledWith(
 			'finalize_communication_email_sender_create',
-			expect.objectContaining({ provider_sender_id: null })
+			expect.not.objectContaining({ provider_sender_id: expect.anything() })
 		);
 	});
 

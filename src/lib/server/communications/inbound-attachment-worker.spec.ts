@@ -160,8 +160,8 @@ describe('communication inbound attachment worker service', () => {
 		);
 	});
 
-	it('refuses an attachment from a provider contractor email no longer uses', async () => {
-		const { client, rpc } = clientWithClaim([{ ...claimed, provider: 'brevo' }]);
+	it('refuses an attachment from an unsupported provider', async () => {
+		const { client, rpc } = clientWithClaim([{ ...claimed, provider: 'unknown' }]);
 		const downloadSesAttachment = vi.fn();
 		const store = vi.fn();
 

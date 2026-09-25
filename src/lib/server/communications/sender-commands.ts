@@ -85,8 +85,6 @@ export async function createCommunicationSender(
 	const finalized = await client.rpc('finalize_communication_email_sender_create', {
 		target_organization_id: input.organizationId,
 		target_sender_id: claim.sender.id,
-		// Postgres accepts NULL here; generated RPC argument types do not preserve function-argument nullability.
-		provider_sender_id: null as unknown as number,
 		actor_user_id: input.actorUserId,
 		command_idempotency_key: input.idempotencyKey
 	});

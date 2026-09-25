@@ -345,7 +345,7 @@ select throws_ok(
   ) values (
     'da100000-0000-0000-0000-000000000001', 'stranger@example.test', 'Bad provider', 'Body', 'twilio'
   )$$,
-  '23514', null, 'an email-channel inbound message still rejects a provider that is not brevo or ses'
+  '23514', null, 'an email-channel inbound message rejects a provider that is not ses'
 );
 
 insert into public.communication_inbound_attachments (
@@ -404,7 +404,7 @@ select is(
 );
 select is(
   (public.record_communication_inbound_message(
-    target_provider_message_id => 'brevo-default-msg-1',
+    target_provider_message_id => 'default-provider-msg-1',
     target_sender_email => 'stranger@example.test',
     target_subject => 'No provider argument',
     target_text_content => 'Body',
@@ -415,7 +415,7 @@ select is(
       'domain_name', 'reply.alias-test.example'
     ))
   )).provider,
-  'brevo', 'omitting target_provider keeps the Brevo webhook route''s existing behavior unchanged'
+  'ses', 'omitting target_provider records the only email provider, ses'
 );
 
 reset role;

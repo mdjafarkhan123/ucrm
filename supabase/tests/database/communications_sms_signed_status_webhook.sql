@@ -70,11 +70,11 @@ select pg_temp.add_cb('SM00000000000000000000000000000008', 'sent');            
 insert into public.communication_provider_callback_events (provider, channel, provider_event_key, delivery_intent_id, event_kind, payload)
 values ('twilio', 'sms', 'SM0000000000000000000000000000ffff:delivered', null, 'delivered', '{}'::jsonb);
 
--- Isolation fixtures: a twilio row and a brevo row, both unresolved.
+-- Isolation fixtures: a twilio row and an ses row, both unresolved.
 insert into public.communication_provider_callback_events (provider, channel, provider_event_key, delivery_intent_id, event_kind, payload)
 values ('twilio', 'sms', 'ISO-TWILIO:delivered', null, 'delivered', '{}'::jsonb);
 insert into public.communication_provider_callback_events (provider, channel, provider_event_key, delivery_intent_id, event_kind, payload)
-values ('brevo', 'email', 'ISO-BREVO-A:delivered', null, 'delivered', '{}'::jsonb);
+values ('ses', 'email', 'ISO-SES-A:delivered', null, 'delivered', '{}'::jsonb);
 
 -- ---------------------------------------------------------------------------------------------------
 -- 1. The email drain must never claim a twilio row.
@@ -89,23 +89,23 @@ select is(
 
 select ok(
   (select processed_at is not null from public.communication_provider_callback_events
-    where provider = 'brevo' and provider_event_key = 'ISO-BREVO-A:delivered'),
-  'the email drain still claims a brevo row');
+    where provider = 'ses' and provider_event_key = 'ISO-SES-A:delivered'),
+  'the email drain still claims an ses row');
 
--- A fresh, still-unprocessed brevo row to prove the SMS drain skips it.
+-- A fresh, still-unprocessed ses row to prove the SMS drain skips it.
 insert into public.communication_provider_callback_events (provider, channel, provider_event_key, delivery_intent_id, event_kind, payload)
-values ('brevo', 'email', 'ISO-BREVO-B:delivered', null, 'delivered', '{}'::jsonb);
+values ('ses', 'email', 'ISO-SES-B:delivered', null, 'delivered', '{}'::jsonb);
 
 -- ---------------------------------------------------------------------------------------------------
--- 2. The SMS drain: project outcomes; never touch brevo.
+-- 2. The SMS drain: project outcomes; never touch ses.
 -- ---------------------------------------------------------------------------------------------------
 
 select public.process_communication_sms_provider_callbacks(2000);
 
 select ok(
   (select processed_at is null from public.communication_provider_callback_events
-    where provider = 'brevo' and provider_event_key = 'ISO-BREVO-B:delivered'),
-  'the SMS drain claims no brevo row');
+    where provider = 'ses' and provider_event_key = 'ISO-SES-B:delivered'),
+  'the SMS drain claims no ses row');
 
 select is(
   (select count(*)::int from public.communication_provider_callback_events

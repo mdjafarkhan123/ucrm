@@ -305,13 +305,13 @@ describe('activateOperationalDomain', () => {
 		expect(inserted[0].verified_at).toBeNull();
 	});
 
-	it('moves an existing Brevo sending row onto SES, keeping its first verification date', async () => {
+	it('reuses an existing sending row, keeping its first verification date', async () => {
 		const { client, updated, inserted } = makeClient([
 			{
-				id: 'brevo-sending',
+				id: 'existing-sending',
 				organization_id: ORG,
 				purpose: 'sending',
-				provider: 'brevo',
+				provider: 'ses',
 				domain_name: SENDING,
 				lifecycle_state: 'verified',
 				verified_at: '2026-08-01T00:00:00.000Z'
@@ -322,7 +322,7 @@ describe('activateOperationalDomain', () => {
 
 		expect(inserted).toHaveLength(0);
 		expect(updated[0]).toMatchObject({
-			id: 'brevo-sending',
+			id: 'existing-sending',
 			row: { provider: 'ses', verified_at: '2026-08-01T00:00:00.000Z' }
 		});
 	});
@@ -447,24 +447,6 @@ describe('recheckOperationalDomain', () => {
 
 		expect(result.sending.lifecycle_state).toBe('verified');
 		expect(updated[0].id).toBe('ses-sending');
-	});
-
-	it('refuses a row that is still on Brevo', async () => {
-		const { client } = makeClient([
-			{
-				id: 'brevo-sending',
-				organization_id: ORG,
-				purpose: 'sending',
-				provider: 'brevo',
-				domain_name: SENDING,
-				dns_zone: ROOT,
-				lifecycle_state: 'verified'
-			}
-		]);
-
-		await expect(
-			recheckOperationalDomain({ client, organizationId: ORG, domainId: 'brevo-sending' })
-		).rejects.toMatchObject({ code: 'operational_domain_not_found' });
 	});
 });
 

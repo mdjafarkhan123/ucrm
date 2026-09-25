@@ -135,13 +135,13 @@ export async function recheckOperationalDomain(input: {
 }): Promise<OperationalActivationResult> {
 	const { data, error } = await input.client
 		.from('communication_email_domains')
-		.select('id, domain_name, dns_zone, purpose, provider')
+		.select('id, domain_name, dns_zone, purpose')
 		.eq('organization_id', input.organizationId)
 		.eq('id', input.domainId)
 		.neq('lifecycle_state', 'removed')
 		.maybeSingle();
 	if (error) throw error;
-	if (!data || data.purpose !== 'sending' || data.provider !== 'ses') {
+	if (!data || data.purpose !== 'sending') {
 		throw new EmailDomainActivationError(
 			'Everyday email sending domain on Amazon SES was not found.',
 			'operational_domain_not_found',

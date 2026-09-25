@@ -25,9 +25,8 @@ const NOTICE_TEMPLATE_KEYS: Record<NoticeKind, string> = {
 
 type ClosureRecordRow = { id: string; organization_id: string; deadline_at: string };
 type PendingAuthCleanupRow = { operation_id: string; pending_auth_user_ids: string[] };
-// 'ses_organization' carries the organization id: the SES tenant is found from it, so no domain name is ever
-// stored. 'domain' and 'sender' are pre-SES Brevo anchors that may still sit on an older receipt.
-type ProviderResource = { kind: 'ses_organization' | 'domain' | 'sender'; provider_id: string };
+// Carries the organization id: the SES tenant is found from it, so no domain name is ever stored.
+type ProviderResource = { kind: 'ses_organization'; provider_id: string };
 type PendingProviderCleanupRow = {
 	operation_id: string;
 	pending_provider_resources: ProviderResource[];
@@ -235,8 +234,6 @@ async function finishProviderCleanup(
 
 	const failures: string[] = [];
 	for (const resource of params.resources) {
-		// Contractor email no longer runs on Brevo; an older Brevo anchor has nothing left to clean here.
-		if (resource.kind !== 'ses_organization') continue;
 		try {
 			await purgeOrganizationSesResources(resource.provider_id);
 		} catch (error) {

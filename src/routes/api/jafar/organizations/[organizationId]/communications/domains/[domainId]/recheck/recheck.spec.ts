@@ -106,10 +106,10 @@ describe('owner sending-domain recheck boundary', () => {
 		expect(recheckOperationalDomain).not.toHaveBeenCalled();
 	});
 
-	it('refuses a domain that is not on Amazon SES', async () => {
+	it('refuses a domain that is not a sending domain', async () => {
 		const client = clientWithResults([
 			{ data: null, error: null },
-			{ data: { id: domainId, purpose: 'sending', provider: 'brevo' }, error: null }
+			{ data: { id: domainId, purpose: 'receiving' }, error: null }
 		]);
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
 

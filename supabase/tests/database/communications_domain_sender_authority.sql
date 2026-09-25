@@ -40,12 +40,12 @@ insert into public.communication_email_domains (
    'pending', 'pending', 'unchecked', null);
 
 insert into public.communication_email_senders (
-  id, organization_id, domain_id, email_address, display_name, provider_sender_id,
+  id, organization_id, domain_id, email_address, display_name,
   lifecycle_state, is_organization_default, allows_manual, allows_automated
 ) values (
   'd4000000-0000-0000-0000-000000000001', 'd2000000-0000-0000-0000-000000000001',
   'd3000000-0000-0000-0000-000000000001', 'hello@mail.domain-a.test', 'Domain Test A',
-  92001, 'enabled', true, true, true
+  'enabled', true, true, true
 );
 
 select has_index(
@@ -185,7 +185,7 @@ select is(
 
 update public.communication_email_senders
 set lifecycle_state = 'removed', is_organization_default = false,
-    provider_sender_id = null, provider_cleanup_error = null
+    provider_cleanup_error = null
 where id = 'd4000000-0000-0000-0000-000000000001';
 
 select is(
