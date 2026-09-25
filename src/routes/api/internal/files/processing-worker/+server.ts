@@ -7,6 +7,7 @@ import {
 	sweepAbandonedFileUploads,
 	sweepExpiredTrash
 } from '$lib/server/files/processing-worker';
+import { sweepExpiredOrganizationExports } from '$lib/server/files/organization-export';
 
 // A burst of uploads can leave more than one batch waiting; loop until a claim comes back empty so it
 // drains in one tick instead of ten. Bounded because each file is a whole object read and scan, and this
@@ -55,6 +56,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	// Cheap when there is nothing to collect: one indexed delete/update that usually matches no rows.
 	const sweep = await sweepAbandonedFileUploads();
 	const trashSweep = await sweepExpiredTrash();
+	const exportSweep = await sweepExpiredOrganizationExports();
 
 	return json(
 		{
@@ -66,7 +68,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			deferred,
 			thumbnails,
 			abandoned: sweep.removed,
-			purged: trashSweep.purged
+			purged: trashSweep.purged,
+			exportsPurged: exportSweep.purged
 		},
 		{ headers: { 'cache-control': 'no-store' } }
 	);

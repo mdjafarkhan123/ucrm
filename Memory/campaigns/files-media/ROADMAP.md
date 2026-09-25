@@ -27,7 +27,7 @@ appears once and stays connected to every record using it.
 | 7D-2a | Manage shares: "Shared with customers" rail view + share panel, Turn off, details-panel "Shared with", expired/off contact page, turn-off client activity, Trash warning count | Done 2026-09-25 — migration `20260925120000` live; browser-checked on Raad LTD | 7D-1 | Passed: list/panel/turn-off in the app, turned-off link shows phone + email (unknown stays 404, its files 404), trashed file leaves the customer page, one activity entry, sales sees no shares |
 | 7D-2b | Send by email / Send by text: from the "Link ready" step, open the Client's inbox conversation with a short message + link written in, staff press Send | Done 2026-09-25 — browser-checked on Raad LTD: text (Tobias, older than the inbox's 50), email (Ingrid, no phone so text is off), and a Client with no messages ("New conversation"); nothing sent | 7D-2a | Inbox opens for a Client with and without earlier messages, on email and text, with message + link filled in and nothing sent until Send; browser-checked |
 | 8A | Auto-purge: permanently free storage 30 days after Trash | Done 2026-09-25, committed `0018ec5` (migration `20260925130000` live) — clears object_key/thumbnail_object_key and logs to `file_purge_log`, never deletes the `files` row (Jafar's call: customer-facing "Photo removed" placeholders must keep showing forever); reuses the existing minute-wake worker, no new cron. 21 pgTAP assertions incl. the RESTRICT-survival proof against a real published quote version; `npm run check` clean. Not yet browser-checked (nothing in real data is 30 days old yet) | 2–7D-2b | Met |
-| 8B | Complete organization export | Planned — approved 2026-09-25, owner-only | 8A | Owner-triggered bundle of File metadata, link manifests, checksums, and permitted blobs; scoped to what the export requester can see |
+| 8B | Complete organization export | Backend done 2026-09-25 (migrations `20260925140000`+`20260925141500` live; 24/24 pgTAP; worker + 3 routes written, `npm run check` clean) — frontend not started. Full design in `parts/8B.md` | 8A | Owner-triggered bundle of File metadata, link manifests, checksums, and permitted blobs; scoped to what the export requester can see |
 | 8C | Security, accessibility, and scale verification | Planned — approved 2026-09-25 | 8A–8B | Tenant/permission/failure evidence across all five roles, accessibility pass, and measured (not assumed) performance at a large file count |
 
 ## Approval gates
@@ -52,3 +52,8 @@ appears once and stays connected to every record using it.
   cannot decode HEVC, so it would need a second decoder for a narrow case), and video waits for Part 8's
   measurements and then becomes its own slice. Neither is rediscovered work; both are recorded in the contract.
 - No capacity claim follows until Part 8 measures and states the tested workload.
+- Part 8B's export build needs its own cron (`files-export-worker-wake-five-minutes`) because its HTTP
+  timeout must be far longer than the one-minute upload-processing wake's 60 seconds. Before it can run,
+  deployment must add a new Vault secret, `files_export_worker_target_url`, pointing at
+  `/api/internal/files/export-worker` (reuses the existing `files_processing_worker_secret` for its bearer
+  token — no new secret value, only a new URL entry), then activate that cron job.

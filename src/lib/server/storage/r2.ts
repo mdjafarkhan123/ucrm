@@ -5,7 +5,9 @@ import {
 	DeleteObjectCommand,
 	HeadObjectCommand
 } from '@aws-sdk/client-s3';
+import type { Readable } from 'node:stream';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { Upload } from '@aws-sdk/lib-storage';
 import { getR2Env, type R2Env } from './r2-env';
 import type { LinkedEntityType } from '$lib/server/access/collaboration';
 
@@ -277,6 +279,29 @@ export async function headObject(
 		new HeadObjectCommand({ Bucket: env.R2_BUCKET, Key: objectKey })
 	);
 	return { contentType: result.ContentType, contentLength: result.ContentLength };
+}
+
+// One export per organization, never reused -- the worker always writes a fresh zip, even for a re-run
+// after a failure, so a half-uploaded object from a crashed attempt is never mistaken for a finished one.
+export function buildOrganizationExportObjectKey(organizationId: string): string {
+	return `${organizationId}/exports/${crypto.randomUUID()}.zip`;
+}
+
+// The organization export's zip can run to gigabytes, so it is never buffered whole in Node: `Upload`
+// multipart-uploads directly from the stream as archiver produces it. Every other write in this file is a
+// single PutObject because every other object this app writes is small enough to hold in memory at once;
+// this is the one exception.
+export async function uploadStream(
+	objectKey: string,
+	body: Readable,
+	mimeType: string
+): Promise<void> {
+	const { client, env } = getR2();
+	const upload = new Upload({
+		client,
+		params: { Bucket: env.R2_BUCKET, Key: objectKey, Body: body, ContentType: mimeType }
+	});
+	await upload.done();
 }
 
 export async function deleteObject(objectKey: string): Promise<void> {

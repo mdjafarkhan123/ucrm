@@ -2,46 +2,50 @@
 
 **Goal:** One contractor File Manager backed by private R2, with one File linked to every CRM use.
 
-**Active part:** 8A done and committed (`0018ec5`). 8B (owner-only export) is next — not yet scoped beyond
-the one-line roadmap entry.
+**Active part:** 8B, backend done and committed; frontend not started. Design fully recorded in
+`parts/8B.md` (read it before touching this part again — permission model, cron split, manifest shape,
+scope decisions, and why each choice was made).
 
-**8A shipped (2026-09-25, committed `0018ec5`):** migration `20260925130000_files_media_trash_purge.sql` live on the remote —
-`purge_expired_trashed_files()` (30-day sweep), `files.purged_at`/nullable `object_key`, `file_purge_log`
-(readable by `files.trash` holders), `restore_file` and `list_files('trash')` updated to exclude a purged
-File. Purge never deletes the `files` row — only clears its storage keys — specifically so
-`quote_version_attachments`/`quote_version_lines`/`job_report_photos`'s RESTRICT foreign keys are never
-touched and every "Photo removed" placeholder a customer already saw keeps showing forever (Jafar approved
-this over full-row deletion, 2026-09-25). Worker wiring: `sweepExpiredTrash()` in
-`processing-worker.ts`, called from the existing `/api/internal/files/processing-worker` route (no new cron
-job — reuses the once-a-minute wake). Defensive `object_key is null` guards added to `/api/files/[id]/view`,
-`/download`, and the three public byte-serving routes (`/ci`, `/q/…/files`, `/w/…/files`) — verified those and
-`/f/…` (customer share) already gate on `trashed_at is null` first, so a purged File was already unreachable
-there; the guards are defense in depth for a direct-by-id fetch.
+**8B backend shipped (2026-09-25):** migrations `20260925140000` + fix `20260925141500` live on the remote
+— `files.export` permission (owner-only, unlike `files.manage`'s wider spread), `organization_exports`
+table + RLS, RPCs (`request_organization_export`, `claim_next_organization_export`,
+`finalize_organization_export`, `purge_expired_organization_exports`), and its own cron
+(`files-export-worker-wake-five-minutes`, ships switched off like every other worker cron). Worker
+(`src/lib/server/files/organization-export.ts`) streams every available File's blob into a zip that
+uploads to R2 as it's built (`archiver`'s `ZipArchive` + `@aws-sdk/lib-storage`'s `Upload`, new deps),
+alongside `manifest.json` (metadata, checksums, `file_links`). New routes: `POST/GET /api/files/export`
+(trigger + history, `files.export`-gated), `GET /api/files/export/[id]/download` (presigned URL, no bearer
+token needed — owner is already signed in), `/api/internal/files/export-worker` (the new 5-minute cron's
+target). The cheap expiry sweep rides the existing one-minute route instead.
 
-**Verified:** 21/21 new pgTAP assertions (`files_media_trash_purge.sql`) — bounds, idempotency, multi-tenant,
-RLS, and the RESTRICT-survival proof against a real published quote version. Ran against a rolled-back
-transaction on the live remote (0 files due for purge yet — nothing in real data is 30 days old). Full local
-`supabase test db` shows no new regressions beyond the pre-existing stale set already on record below.
-`npm run db:types` regenerated. Prettier clean on all touched `.ts` files. `npm run check` confirmed clean —
-only the 3 known-stale "union type too complex" errors remain, zero new ones.
+**Verified:** 24/24 new pgTAP (`files_media_organization_export.sql`), including two real bugs pgTAP caught
+before anything depended on them (fixed same session, see the fix migration's own header): a scalar-return
+claim function that answered "there's a job" even when the queue was empty, and a `RETURNING` clause that
+read `object_key` after its own `UPDATE` had already nulled it. `npm run check` clean (only the 3 known-stale
+"union type too complex" errors remain). Prettier clean on all touched `.ts`. `npm run db:types` regenerated.
 
-**Not yet done for 8A:** no unit test for `sweepExpiredTrash` (matches the existing gap on its sibling
-`sweepAbandonedFileUploads` — not a new regression), no browser check (the worker doesn't run locally; nothing
-in Raad's real data is old enough to purge yet regardless). Not yet committed to git.
+**Not yet done:** no frontend at all — no "Export everything" button, no status/download UI. No unit tests
+for `organization-export.ts` (only pgTAP covers the DB layer so far). Nothing browser-checked or
+email-checked (the export worker needs its own cron active, which needs deployment to add Vault secret
+`files_export_worker_target_url` — a new gate, not yet in ROADMAP.md's approval-gates section — see
+`parts/8B.md`). Real end-to-end (a zip actually built and downloaded) cannot happen locally any more than
+8A's purge could.
 
-**Exact next action:** Scope 8B with Jafar (owner-only "download everything" export: metadata, link manifests,
-checksums, permitted blobs) — the roadmap entry is one line, no part packet exists yet. Research how mature
-products do a full-account data export before proposing a design (size/async delivery, R2 zip strategy,
-what "permitted blobs" means for a non-owner requester, if this can ever be non-owner).
+**Exact next action:** Build the frontend trigger — an owner-only "Export everything" action in the Files
+workspace toolbar (`src/routes/(app)/files/+page.svelte`), calling `POST /api/files/export`, polling
+`GET /api/files/export` for status, and using the download route once `available`. Then add the new Vault
+secret note to ROADMAP.md's approval gates.
 
-**Blocker (campaign-wide):** the upload worker does not run locally; new uploads stay "Still being checked".
-Test with existing checked photos (Raad LTD has 12).
+**Blocker (campaign-wide):** the upload/processing worker does not run locally; nothing async can be
+browser-verified end to end. Test reads with existing checked photos (Raad LTD has 12).
 
 **Browser note:** the Chrome tab runs hidden, which pauses animation frames, slows timers and never loads
-`loading="lazy"` images — drive pages with javascript and read the DOM. Role checks: impersonate in SQL inside a
-rolled-back transaction; Raad LTD org `18f0d717-904e-48d8-bd99-9df7e3844cda`.
+`loading="lazy"` images — drive pages with javascript and read the DOM. Role checks: impersonate in SQL
+inside a rolled-back transaction; Raad LTD org `18f0d717-904e-48d8-bd99-9df7e3844cda`.
 
 **Known stale pgTAP (not regressions):** `files_manage_actions.sql` 15–16, 23; `files_media_central_catalog.sql`
-16; `files_media_upload_pipeline.sql`. `npm run check` needs `NODE_OPTIONS=--max-old-space-size=8192` and has 3
-pre-existing "union type too complex" errors. Supabase CLI is `npx supabase`; run SQL files with `npx supabase
-db query --linked -f <file>`.
+16. `npm run check` needs `NODE_OPTIONS=--max-old-space-size=8192`. Supabase CLI is `npx supabase`; a fresh
+local pgTAP run needs `npx supabase db reset --local` first (test db does not auto-rebuild). Do not run
+`supabase db query --linked -f <file>` for anything beyond read-only inspection — direct remote SQL writes
+are blocked by this environment's auto-mode classifier; use a normal timestamped migration + `db push
+--linked` instead, even for a same-day fix (see the 141500 migration for the precedent).

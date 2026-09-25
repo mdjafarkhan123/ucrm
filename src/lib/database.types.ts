@@ -9466,6 +9466,56 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_exports: {
+        Row: {
+          completed_at: string | null
+          error: string | null
+          expires_at: string | null
+          file_count: number | null
+          id: string
+          object_key: string | null
+          organization_id: string
+          requested_at: string
+          requested_by: string | null
+          status: string
+          total_bytes: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          error?: string | null
+          expires_at?: string | null
+          file_count?: number | null
+          id?: string
+          object_key?: string | null
+          organization_id: string
+          requested_at?: string
+          requested_by?: string | null
+          status?: string
+          total_bytes?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          error?: string | null
+          expires_at?: string | null
+          file_count?: number | null
+          id?: string
+          object_key?: string | null
+          organization_id?: string
+          requested_at?: string
+          requested_by?: string | null
+          status?: string
+          total_bytes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_exports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_feature_overrides: {
         Row: {
           actor_owner_email: string | null
@@ -15415,6 +15465,28 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      claim_next_organization_export: {
+        Args: never
+        Returns: {
+          completed_at: string | null
+          error: string | null
+          expires_at: string | null
+          file_count: number | null
+          id: string
+          object_key: string | null
+          organization_id: string
+          requested_at: string
+          requested_by: string | null
+          status: string
+          total_bytes: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "organization_exports"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       claim_onboarding_application_provision: {
         Args: { stale_after?: string; target_application_id: string }
         Returns: {
@@ -18397,6 +18469,36 @@ export type Database = {
           recipient_status: string
         }[]
       }
+      finalize_organization_export: {
+        Args: {
+          target_error?: string
+          target_expires_at?: string
+          target_export_id: string
+          target_file_count?: number
+          target_object_key?: string
+          target_state: string
+          target_total_bytes?: number
+        }
+        Returns: {
+          completed_at: string | null
+          error: string | null
+          expires_at: string | null
+          file_count: number | null
+          id: string
+          object_key: string | null
+          organization_id: string
+          requested_at: string
+          requested_by: string | null
+          status: string
+          total_bytes: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organization_exports"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       finalize_organization_geocode: {
         Args: {
           p_address_line1: string
@@ -20352,6 +20454,12 @@ export type Database = {
         Args: { expected_revision: number; target_quote_id: string }
         Returns: Json
       }
+      purge_expired_organization_exports: {
+        Args: { batch_size?: number }
+        Returns: {
+          object_key: string
+        }[]
+      }
       purge_expired_trashed_files: {
         Args: { batch_size?: number; older_than_days?: number }
         Returns: {
@@ -21206,6 +21314,28 @@ export type Database = {
       }
       request_communication_sms_outbox_wake: { Args: never; Returns: undefined }
       request_form_submission_worker_wake: { Args: never; Returns: undefined }
+      request_organization_export: {
+        Args: { target_actor_id: string; target_organization_id: string }
+        Returns: {
+          completed_at: string | null
+          error: string | null
+          expires_at: string | null
+          file_count: number | null
+          id: string
+          object_key: string | null
+          organization_id: string
+          requested_at: string
+          requested_by: string | null
+          status: string
+          total_bytes: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organization_exports"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       request_ownership_transfer: {
         Args: {
           requesting_user_id: string
