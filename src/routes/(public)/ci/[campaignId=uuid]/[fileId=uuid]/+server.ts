@@ -27,7 +27,12 @@ export const GET: RequestHandler = async ({ params }) => {
 		.select('object_key, mime_type, processing_state, trashed_at')
 		.eq('id', params.fileId)
 		.maybeSingle();
-	if (!file || file.processing_state !== 'available' || file.trashed_at !== null) {
+	if (
+		!file ||
+		file.processing_state !== 'available' ||
+		file.trashed_at !== null ||
+		!file.object_key
+	) {
 		throw httpError(404, 'That image is not available.');
 	}
 

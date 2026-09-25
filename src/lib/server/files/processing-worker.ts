@@ -351,3 +351,45 @@ export async function sweepAbandonedFileUploads(
 
 	return { removed: rows.length, objectsDeleted };
 }
+
+export type TrashPurgeSweepResult = { purged: number; objectsDeleted: number };
+
+// Files trashed 30+ days ago. The database logs and clears each row's storage keys and hands them back so
+// the objects behind them can be deleted; the files row itself is never removed (see the Part 8A migration).
+export async function sweepExpiredTrash(
+	dependencies: FileProcessingDependencies = {}
+): Promise<TrashPurgeSweepResult> {
+	const injectedClient = dependencies.client;
+	const client: FileWorkerClient =
+		injectedClient ?? (getOwnerSupabaseClient() as unknown as FileWorkerClient);
+	const removeObject = dependencies.removeObject ?? deleteObject;
+
+	const purged = await client.rpc('purge_expired_trashed_files', {
+		older_than_days: 30,
+		batch_size: 100
+	});
+	if (purged.error) throw rpcError('Could not purge expired trash', purged.error);
+	const rows = Array.isArray(purged.data)
+		? (purged.data as { object_key: string; thumbnail_object_key: string | null }[])
+		: [];
+
+	let objectsDeleted = 0;
+	for (const row of rows) {
+		const keys = [row.object_key, ...(row.thumbnail_object_key ? [row.thumbnail_object_key] : [])];
+		for (const key of keys) {
+			try {
+				await removeObject(key);
+				objectsDeleted += 1;
+			} catch (error) {
+				// The row is already logged and cleared, so a storage failure here leaves an object with
+				// nothing pointing at it. Logged rather than retried, matching the abandoned-upload sweep.
+				console.error('Could not delete a purged file object.', {
+					objectKey: key,
+					error: error instanceof Error ? error.message : error
+				});
+			}
+		}
+	}
+
+	return { purged: rows.length, objectsDeleted };
+}

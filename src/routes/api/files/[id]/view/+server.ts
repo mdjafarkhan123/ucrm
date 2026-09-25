@@ -34,6 +34,9 @@ export const GET: RequestHandler = async (event) => {
 	if (file.processing_state !== 'available')
 		return json({ error: 'That file is not ready yet.' }, { status: 409 });
 
+	// A purged File keeps its row (so "removed" keeps showing wherever it was used) but has no bytes left.
+	if (!file.object_key) return json({ error: 'That file was not found.' }, { status: 404 });
+
 	if (!file.mime_type.startsWith(VIEWABLE_MIME_PREFIX))
 		return json({ error: 'That file cannot be shown on the page.' }, { status: 415 });
 

@@ -40,7 +40,7 @@ export const GET: RequestHandler = async (event) => {
 		.eq('id', event.params.attachmentId)
 		.is('trashed_at', null)
 		.maybeSingle();
-	if (!file) throw httpError(404, 'That file is not available.');
+	if (!file || !file.object_key) throw httpError(404, 'That file is not available.');
 
 	const wantsThumbnail = event.url.searchParams.get('size') === 'thumb';
 	const objectKey =

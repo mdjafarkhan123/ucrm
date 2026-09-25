@@ -5034,6 +5034,57 @@ export type Database = {
           },
         ]
       }
+      file_purge_log: {
+        Row: {
+          display_name: string
+          file_id: string
+          had_thumbnail: boolean
+          id: string
+          object_key: string
+          organization_id: string
+          purged_at: string
+          trashed_at: string
+          trashed_by: string | null
+        }
+        Insert: {
+          display_name: string
+          file_id: string
+          had_thumbnail: boolean
+          id?: string
+          object_key: string
+          organization_id: string
+          purged_at?: string
+          trashed_at: string
+          trashed_by?: string | null
+        }
+        Update: {
+          display_name?: string
+          file_id?: string
+          had_thumbnail?: boolean
+          id?: string
+          object_key?: string
+          organization_id?: string
+          purged_at?: string
+          trashed_at?: string
+          trashed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_purge_log_file_fkey"
+            columns: ["organization_id", "file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "file_purge_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       file_share_items: {
         Row: {
           file_id: string
@@ -5145,7 +5196,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -5153,6 +5204,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -5173,7 +5225,7 @@ export type Database = {
           id?: string
           kind?: string | null
           mime_type: string
-          object_key: string
+          object_key?: string | null
           organization_id: string
           origin_id?: string | null
           origin_role?: string
@@ -5181,6 +5233,7 @@ export type Database = {
           processing_attempts?: number
           processing_error?: string | null
           processing_state?: string
+          purged_at?: string | null
           scanned_at?: string | null
           size_bytes: number
           thumbnail_object_key?: string | null
@@ -5201,7 +5254,7 @@ export type Database = {
           id?: string
           kind?: string | null
           mime_type?: string
-          object_key?: string
+          object_key?: string | null
           organization_id?: string
           origin_id?: string | null
           origin_role?: string
@@ -5209,6 +5262,7 @@ export type Database = {
           processing_attempts?: number
           processing_error?: string | null
           processing_state?: string
+          purged_at?: string | null
           scanned_at?: string | null
           size_bytes?: number
           thumbnail_object_key?: string | null
@@ -15267,7 +15321,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -15275,6 +15329,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -16743,7 +16798,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -16751,6 +16806,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -17360,7 +17416,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -17368,6 +17424,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -18301,7 +18358,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -18309,6 +18366,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -19738,7 +19796,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -19746,6 +19804,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -20293,6 +20352,14 @@ export type Database = {
         Args: { expected_revision: number; target_quote_id: string }
         Returns: Json
       }
+      purge_expired_trashed_files: {
+        Args: { batch_size?: number; older_than_days?: number }
+        Returns: {
+          id: string
+          object_key: string
+          thumbnail_object_key: string
+        }[]
+      }
       quarantine_stale_communication_claims: {
         Args: { batch_size?: number; stale_after?: string }
         Returns: number
@@ -20813,7 +20880,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -20821,6 +20888,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -21002,7 +21070,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -21010,6 +21078,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -21361,7 +21430,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -21369,6 +21438,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null
@@ -22393,7 +22463,7 @@ export type Database = {
           id: string
           kind: string | null
           mime_type: string
-          object_key: string
+          object_key: string | null
           organization_id: string
           origin_id: string | null
           origin_role: string
@@ -22401,6 +22471,7 @@ export type Database = {
           processing_attempts: number
           processing_error: string | null
           processing_state: string
+          purged_at: string | null
           scanned_at: string | null
           size_bytes: number
           thumbnail_object_key: string | null

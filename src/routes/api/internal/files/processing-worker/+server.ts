@@ -4,7 +4,8 @@ import type { RequestHandler } from './$types';
 import { getServerEnv } from '$lib/server/env';
 import {
 	runFileProcessingWorker,
-	sweepAbandonedFileUploads
+	sweepAbandonedFileUploads,
+	sweepExpiredTrash
 } from '$lib/server/files/processing-worker';
 
 // A burst of uploads can leave more than one batch waiting; loop until a claim comes back empty so it
@@ -51,8 +52,9 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (result.deferred === result.claimed) break;
 	}
 
-	// Cheap when there is nothing to collect: one indexed delete that usually matches no rows.
+	// Cheap when there is nothing to collect: one indexed delete/update that usually matches no rows.
 	const sweep = await sweepAbandonedFileUploads();
+	const trashSweep = await sweepExpiredTrash();
 
 	return json(
 		{
@@ -63,7 +65,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			quarantined,
 			deferred,
 			thumbnails,
-			abandoned: sweep.removed
+			abandoned: sweep.removed,
+			purged: trashSweep.purged
 		},
 		{ headers: { 'cache-control': 'no-store' } }
 	);

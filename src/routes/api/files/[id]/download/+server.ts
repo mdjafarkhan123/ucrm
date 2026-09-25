@@ -24,6 +24,9 @@ export const GET: RequestHandler = async (event) => {
 	if (file.processing_state !== 'available')
 		return json({ error: 'That file is not ready yet.' }, { status: 409 });
 
+	// A purged File keeps its row (so "removed" keeps showing wherever it was used) but has no bytes left.
+	if (!file.object_key) return json({ error: 'That file was not found.' }, { status: 404 });
+
 	try {
 		// The saved filename is the File's display name, so a renamed file downloads under the name the
 		// office gave it rather than the storage key's uuid.

@@ -36,7 +36,7 @@ export const GET: RequestHandler = async (event) => {
 		.eq('processing_state', 'available')
 		.is('trashed_at', null)
 		.maybeSingle();
-	if (!file || !file.mime_type.startsWith('image/'))
+	if (!file || !file.object_key || !file.mime_type.startsWith('image/'))
 		throw httpError(404, 'That file is not available.');
 
 	const wantsThumbnail = event.url.searchParams.get('size') === 'thumb';
