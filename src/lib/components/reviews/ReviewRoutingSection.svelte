@@ -47,7 +47,8 @@
 			acknowledged = false;
 			return;
 		}
-		// The switch stays off until the warning is accepted.
+		// The switch stays off until the warning is accepted. It is bound two-way, so the click has already
+		// set `enabled` to true; resetting it here is a real change that flips the switch back.
 		enabled = false;
 		understood = false;
 		warningOpen = true;
@@ -124,7 +125,7 @@
 			description={hasGoogleLink
 				? 'Off is recommended. Turning it on asks you to accept a warning first.'
 				: 'Add your Google review link above before you can turn this on.'}
-			checked={enabled}
+			bind:checked={enabled}
 			disabled={disabled || (!enabled && !hasGoogleLink)}
 			labelSide="start"
 			onchange={onToggle}

@@ -61,11 +61,14 @@
 	let layout = $state<RecordFormLayout>();
 
 	function seed(view: ReviewSettingsView) {
+		const feedbackForm = structuredClone(view.feedback_form);
+		// The question editor binds its help-text field two-way, and Svelte refuses to bind to `undefined`.
+		for (const question of feedbackForm.questions) question.help ??= '';
 		const next: Draft = {
 			google_review_url: view.google_review_url ?? '',
 			routing_enabled: view.routing_enabled,
 			routing_google_min_rating: view.routing_google_min_rating,
-			feedback_form: structuredClone(view.feedback_form),
+			feedback_form: feedbackForm,
 			message_styles: structuredClone(view.message_styles)
 		};
 		draft = next;

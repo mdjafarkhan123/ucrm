@@ -136,7 +136,7 @@ export async function saveReviewSettings(
 		p_message_styles: input.message_styles as unknown as Json
 	});
 	if (error) {
-		if (error.code === '40001') throw new ReviewSettingsConflictError(error.message);
+		if (error.code === 'P0409') throw new ReviewSettingsConflictError(error.message);
 		if (error.code === '42501') throw new ReviewSettingsForbiddenError(error.message);
 		if (error.code === '23514') throw new ReviewSettingsRuleError(error.message);
 		throw error;
