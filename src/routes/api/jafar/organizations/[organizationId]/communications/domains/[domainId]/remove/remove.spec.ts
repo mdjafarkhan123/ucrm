@@ -3,8 +3,7 @@ import { GET, POST } from './+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
-import { BrevoManagementError, deleteBrevoDomain } from '$lib/server/communications/brevo';
-import { deleteSesIdentity } from '$lib/server/communications/ses';
+import { teardownOperationalDomain } from '$lib/server/communications/operational-domain-activation';
 import { SesError } from '$lib/server/communications/ses-env';
 
 vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
@@ -13,11 +12,9 @@ vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/server/security/rate-limit')>()),
 	checkRateLimit: vi.fn()
 }));
-vi.mock('$lib/server/communications/brevo', async (importOriginal) => ({
-	...(await importOriginal<typeof import('$lib/server/communications/brevo')>()),
-	deleteBrevoDomain: vi.fn()
+vi.mock('$lib/server/communications/operational-domain-activation', () => ({
+	teardownOperationalDomain: vi.fn()
 }));
-vi.mock('$lib/server/communications/ses', () => ({ deleteSesIdentity: vi.fn() }));
 
 const organizationId = '123e4567-e89b-12d3-a456-426614174000';
 const domainId = '123e4567-e89b-12d3-a456-426614174001';
@@ -27,7 +24,8 @@ const domain = {
 	domain_name: 'mail.ridgeway.example',
 	purpose: 'sending',
 	lifecycle_state: 'verified',
-	provider_domain_id: '6a8bb41bb9734c854105f2f5'
+	provider: 'ses',
+	dns_zone: 'ridgeway.example'
 };
 
 function event(method: 'GET' | 'POST', body?: unknown) {
@@ -163,10 +161,10 @@ describe('owner sending-domain removal boundary', () => {
 		expect(await response.json()).toMatchObject({
 			impact: { live_sender_count: 1, live_replacement_count: 0 }
 		});
-		expect(deleteBrevoDomain).not.toHaveBeenCalled();
+		expect(teardownOperationalDomain).not.toHaveBeenCalled();
 	});
 
-	it('replays a confirmed removal without calling Brevo', async () => {
+	it('replays a confirmed removal without calling the providers', async () => {
 		const client = clientWithResults([
 			{
 				data: {
@@ -181,34 +179,12 @@ describe('owner sending-domain removal boundary', () => {
 
 		expect(response.status).toBe(200);
 		expect(await response.json()).toMatchObject({ lifecycle_state: 'removed', replayed: true });
-		expect(deleteBrevoDomain).not.toHaveBeenCalled();
+		expect(teardownOperationalDomain).not.toHaveBeenCalled();
 	});
 
-	it('keeps an ambiguous Brevo deletion visible and retryable', async () => {
+	it('tears down sending and replies at the providers, then records the receipt', async () => {
 		const client = clientWithResults([{ data: null }, { data: domain }, {}]);
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
-		vi.mocked(deleteBrevoDomain).mockRejectedValue(
-			new BrevoManagementError('No response', null, 'brevo_network_unknown')
-		);
-
-		const response = await POST(event('POST', commandBody()));
-
-		expect(response.status).toBe(502);
-		expect(await response.json()).toMatchObject({
-			lifecycle_state: 'removal_pending',
-			retryable: true
-		});
-		expect(client.updates).toEqual([
-			expect.objectContaining({ provider_cleanup_error: 'brevo_network_unknown' })
-		]);
-	});
-
-	it('treats Brevo not-found as confirmed cleanup and records the receipt', async () => {
-		const client = clientWithResults([{ data: null }, { data: domain }, {}]);
-		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
-		vi.mocked(deleteBrevoDomain).mockRejectedValue(
-			new BrevoManagementError('Not found', 404, 'brevo_http_404')
-		);
 
 		const response = await POST(event('POST', commandBody()));
 
@@ -217,6 +193,10 @@ describe('owner sending-domain removal boundary', () => {
 			domain_id: domainId,
 			lifecycle_state: 'removed',
 			provider_cleanup_confirmed: true
+		});
+		expect(teardownOperationalDomain).toHaveBeenCalledWith({
+			organizationId,
+			rootDomain: 'ridgeway.example'
 		});
 		expect(client.rpc).toHaveBeenNthCalledWith(
 			2,
@@ -229,29 +209,10 @@ describe('owner sending-domain removal boundary', () => {
 		);
 	});
 
-	it('deletes the Amazon SES identity, not a Brevo domain, for a domain on SES', async () => {
-		const client = clientWithResults([
-			{ data: null },
-			{ data: { ...domain, provider: 'ses' } },
-			{}
-		]);
-		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
-
-		const response = await POST(event('POST', commandBody()));
-
-		expect(response.status).toBe(200);
-		expect(deleteSesIdentity).toHaveBeenCalledWith(domain.domain_name);
-		expect(deleteBrevoDomain).not.toHaveBeenCalled();
-	});
-
 	it('keeps an unconfirmed Amazon SES deletion pending and retryable', async () => {
-		const client = clientWithResults([
-			{ data: null },
-			{ data: { ...domain, provider: 'ses' } },
-			{}
-		]);
+		const client = clientWithResults([{ data: null }, { data: domain }, {}]);
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
-		vi.mocked(deleteSesIdentity).mockRejectedValue(
+		vi.mocked(teardownOperationalDomain).mockRejectedValue(
 			new SesError('timeout', null, 'ses_network_unknown')
 		);
 

@@ -2,8 +2,8 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
-import { BrevoManagementError, deleteBrevoDomain } from '$lib/server/communications/brevo';
-import { deleteSesIdentity } from '$lib/server/communications/ses';
+import { CloudflareDnsError } from '$lib/server/communications/cloudflare-dns';
+import { teardownOperationalDomain } from '$lib/server/communications/operational-domain-activation';
 import { SesError } from '$lib/server/communications/ses-env';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
@@ -23,7 +23,7 @@ type DomainRow = {
 	purpose: string;
 	lifecycle_state: string;
 	provider: string;
-	provider_domain_id: string | null;
+	dns_zone: string | null;
 };
 
 type RemovalImpact = {
@@ -38,7 +38,7 @@ async function loadDomain(
 ): Promise<DomainRow | null> {
 	const { data, error } = await client
 		.from('communication_email_domains')
-		.select('id, domain_name, purpose, lifecycle_state, provider, provider_domain_id')
+		.select('id, domain_name, purpose, lifecycle_state, provider, dns_zone')
 		.eq('organization_id', organizationId)
 		.eq('id', domainId)
 		.maybeSingle();
@@ -247,34 +247,36 @@ export const POST: RequestHandler = async (event) => {
 			);
 		}
 
-		// Both deletes treat "already gone" as done, so a retried removal is safe.
-		const providerName = domain.provider === 'ses' ? 'Amazon SES' : 'Brevo';
+		// Removes sending and customer replies together at Amazon SES and Cloudflare. Every step treats
+		// "already gone" as done, so a retried removal is safe.
 		try {
-			if (domain.provider === 'ses') await deleteSesIdentity(domain.domain_name);
-			else await deleteBrevoDomain(domain.domain_name);
+			if (!domain.dns_zone) throw new Error('The sending domain has no recorded root domain.');
+			await teardownOperationalDomain({
+				organizationId: auth.organizationId,
+				rootDomain: domain.dns_zone
+			});
 		} catch (error) {
-			if (!(error instanceof BrevoManagementError) || error.status !== 404) {
-				const cleanupCode =
-					error instanceof BrevoManagementError || error instanceof SesError
-						? error.code
-						: `${domain.provider}_cleanup_unknown`;
-				const { error: cleanupUpdateError } = await client
-					.from('communication_email_domains')
-					.update({ provider_cleanup_error: cleanupCode, updated_at: new Date().toISOString() })
-					.eq('organization_id', auth.organizationId)
-					.eq('id', domain.id)
-					.eq('lifecycle_state', 'removal_pending');
-				if (cleanupUpdateError) throw cleanupUpdateError;
-				return json(
-					{
-						error: `${providerName} cleanup is not confirmed yet. This removal remains pending and can be retried.`,
-						domain_id: domain.id,
-						lifecycle_state: 'removal_pending',
-						retryable: true
-					},
-					{ status: 502, headers: noStore }
-				);
-			}
+			const cleanupCode =
+				error instanceof SesError || error instanceof CloudflareDnsError
+					? error.code
+					: 'ses_cleanup_unknown';
+			const { error: cleanupUpdateError } = await client
+				.from('communication_email_domains')
+				.update({ provider_cleanup_error: cleanupCode, updated_at: new Date().toISOString() })
+				.eq('organization_id', auth.organizationId)
+				.eq('id', domain.id)
+				.eq('lifecycle_state', 'removal_pending');
+			if (cleanupUpdateError) throw cleanupUpdateError;
+			return json(
+				{
+					error:
+						'Amazon SES cleanup is not confirmed yet. This removal remains pending and can be retried.',
+					domain_id: domain.id,
+					lifecycle_state: 'removal_pending',
+					retryable: true
+				},
+				{ status: 502, headers: noStore }
+			);
 		}
 
 		const { data: finalizeResult, error: finalizeError } = await client.rpc(

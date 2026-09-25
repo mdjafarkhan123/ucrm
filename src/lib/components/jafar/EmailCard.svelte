@@ -279,72 +279,7 @@
 		return reasons;
 	});
 
-	// ---- Everyday email + replies: Replace domain (legacy Brevo senders only; SES has no replace path yet) ----
-	let everydayReplaceOpen = $state(false);
-	let replaceDomainName = $state('');
-	let replaceDnsZone = $state('');
-	function openEverydayReplace() {
-		feedbackError = '';
-		feedbackMessage = '';
-		everydayFieldErrors = {};
-		replaceDomainName = '';
-		replaceDnsZone = sending?.dns_zone ?? '';
-		everydayReplaceOpen = true;
-	}
-	function closeEverydayReplace() {
-		if (replaceMutation.isPending) return;
-		everydayReplaceOpen = false;
-		replaceDomainName = '';
-		replaceDnsZone = '';
-		everydayFieldErrors = {};
-	}
-	const replaceMutation = createMutation<MutationResponse, Error, void>(() => ({
-		mutationFn: async () => {
-			if (!sending) throw new Error('There is no domain to replace.');
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/communications/domains/${sending.id}/replace`,
-				{
-					method: 'POST',
-					headers: { 'content-type': 'application/json' },
-					body: JSON.stringify({
-						domain_name: replaceDomainName.trim().toLowerCase(),
-						dns_zone: replaceDnsZone.trim().toLowerCase(),
-						idempotency_key: crypto.randomUUID()
-					})
-				}
-			);
-			const result = (await response.json()) as MutationResponse;
-			if (!response.ok) {
-				everydayFieldErrors = result.field_errors ?? {};
-				throw new Error(result.error ?? 'The replacement domain could not be provisioned.');
-			}
-			return result;
-		},
-		onMutate: () => {
-			everydayFieldErrors = {};
-			feedbackError = '';
-		},
-		onError: (error) => (feedbackError = error.message),
-		onSuccess: async () => {
-			feedbackMessage = 'Replacement domain provisioned. Verify it before switching.';
-			closeEverydayReplace();
-			await refreshOperational();
-		}
-	}));
-	function submitEverydayReplace(event: SubmitEvent) {
-		event.preventDefault();
-		if (!replaceDomainName.trim()) {
-			everydayFieldErrors = { domain_name: 'Enter a domain name.' };
-			return;
-		}
-		if (!replaceDnsZone.trim()) {
-			everydayFieldErrors = { dns_zone: 'Enter the parent DNS zone.' };
-			return;
-		}
-		replaceMutation.mutate();
-	}
-
-	// ---- Everyday email + replies: Remove (sending domain only) ----
+	// ---- Everyday email + replies: Remove (sending and customer replies together) ----
 	let removalOpen = $state(false);
 	let removalReason = $state('');
 	let removalConfirmation = $state('');
@@ -554,7 +489,7 @@
 		if (sending) {
 			rows.push(['Sending domain', sending.domain_name]);
 			rows.push(['Root domain', sending.dns_zone ?? '—']);
-			rows.push(['Provider', sending.provider === 'ses' ? 'Amazon SES' : sending.provider]);
+			rows.push(['Provider', 'Amazon SES']);
 			rows.push(['Ownership', statusText(sending.ownership_status)]);
 			rows.push(['DKIM', statusText(sending.dkim_status)]);
 			rows.push(['SPF (MAIL FROM)', statusText(sending.spf_status)]);
@@ -588,9 +523,6 @@
 	const everydayMenuItems = $derived.by((): MenuItem[] => {
 		if (!sending) return [];
 		const items: MenuItem[] = [{ label: 'Technical records', onSelect: openEverydayTechnical }];
-		if (sending.provider !== 'ses') {
-			items.push({ label: 'Replace domain', onSelect: openEverydayReplace });
-		}
 		items.push({ label: 'Remove', onSelect: openRemoval, destructive: true });
 		return items;
 	});
@@ -836,41 +768,6 @@
 </Dialog>
 
 <Dialog
-	open={everydayReplaceOpen}
-	title="Replace Everyday email domain"
-	onClose={closeEverydayReplace}
->
-	<form class="email-card__form" onsubmit={submitEverydayReplace}>
-		<p>
-			The current verified domain stays in use until the replacement is healthy. Queued manual email
-			stays held for review.
-		</p>
-		<Input
-			id="replace-domain-name"
-			label="Replacement sending domain"
-			placeholder="mail.yourbusiness.com"
-			bind:value={replaceDomainName}
-			invalid={Boolean(everydayFieldErrors.domain_name)}
-			errorMessage={everydayFieldErrors.domain_name}
-		/>
-		<Input
-			id="replace-dns-zone"
-			label="Parent DNS zone"
-			placeholder="yourbusiness.com"
-			bind:value={replaceDnsZone}
-			invalid={Boolean(everydayFieldErrors.dns_zone)}
-			errorMessage={everydayFieldErrors.dns_zone}
-		/>
-		<div class="email-card__dialog-actions">
-			<Button type="submit" loading={replaceMutation.isPending}>Provision replacement</Button
-			><Button type="button" variant="secondary" variation="subtle" onclick={closeEverydayReplace}
-				>Cancel</Button
-			>
-		</div>
-	</form>
-</Dialog>
-
-<Dialog
 	open={everydayProblemOpen}
 	title="What's wrong with Everyday email"
 	onClose={() => (everydayProblemOpen = false)}
@@ -961,8 +858,9 @@
 		</p>
 	{:else if removalPreviewQuery.data}
 		<p class="email-card__impact">
-			{removalPreviewQuery.data.impact.live_sender_count} active senders and {removalPreviewQuery
-				.data.impact.live_replacement_count} replacement domains would be affected.
+			{removalPreviewQuery.data.impact.live_sender_count} active senders would be affected. Customer replies{receiving
+				? ` to ${receiving.domain_name}`
+				: ''} stop coming into the inbox too.
 		</p>
 		<Input
 			id="remove-domain-confirmation"
@@ -971,7 +869,7 @@
 		/>
 		<Input id="remove-domain-reason" label="Private removal reason" bind:value={removalReason} />
 		{#if !removalPreviewQuery.data.can_remove}<p class="email-card__error" role="alert">
-				Remove or finish the affected senders and replacement domains first.
+				Remove the affected senders first.
 			</p>{/if}
 	{/if}
 </ConfirmDialog>

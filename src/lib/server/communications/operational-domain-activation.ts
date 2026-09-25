@@ -1,13 +1,21 @@
-import { listCloudflareDnsRecords, resolveCloudflareZone } from './cloudflare-dns';
+import {
+	deleteCloudflareDnsRecord,
+	listCloudflareDnsRecords,
+	resolveCloudflareZone
+} from './cloudflare-dns';
 import {
 	assertSubdomainNotOccupied,
 	assertUnderSubdomain,
 	EmailDomainActivationError,
+	normalizeName,
 	reconcileRecord,
 	type ExpectedRecord
 } from './dns-reconcile';
+import { SES_INBOUND_RULE_SET_NAME } from './ses-env';
 import {
 	associateSesTenantResource,
+	deleteSesIdentity,
+	deleteSesReceiptRule,
 	ensureSesEventDestination,
 	getSesIdentity,
 	putSesIdentityMailFrom,
@@ -33,7 +41,7 @@ import {
 	type DnsStatus,
 	type OwnerClient
 } from './ses-domain-identity';
-import { reconcileReplyIngestion } from './operational-reply-ingestion';
+import { reconcileReplyIngestion, replyReceiptRuleName } from './operational-reply-ingestion';
 
 export { EmailDomainActivationError } from './dns-reconcile';
 
@@ -341,4 +349,50 @@ async function readReceivingRow(
 		lifecycle_state: data?.lifecycle_state ?? null,
 		inbound_mx_status: (data?.inbound_mx_status as DnsStatus | undefined) ?? null
 	};
+}
+
+/**
+ * Undoes everything Set up created for one organization's everyday email, at the providers only; the owner
+ * route finalizes the database rows afterwards. Receiving stops first (MX, then receipt rule), so no reply is
+ * accepted by SES with nowhere to go. Only records whose exact content UCRM would have written are deleted --
+ * anything else under these names belongs to someone else and stays. Every delete treats "already gone" as
+ * done, so a retried removal is safe.
+ */
+export async function teardownOperationalDomain(input: {
+	organizationId: string;
+	rootDomain: string;
+}): Promise<void> {
+	const { root, sending, receiving, mailFrom } = deriveOperationalDomains(input.rootDomain);
+	const { id: zoneId } = await resolveCloudflareZone(root);
+
+	await deleteOwnedRecords(zoneId, receiving, [
+		{ type: 'MX', name: receiving, content: sesInboundMxTarget() }
+	]);
+	await deleteSesReceiptRule(SES_INBOUND_RULE_SET_NAME, replyReceiptRuleName(input.organizationId));
+
+	for (const domain of [receiving, sending]) {
+		// The DKIM CNAME names come from the identity's tokens, so read them before the identity is deleted.
+		const identity = await getSesIdentity(domain);
+		for (const record of identity ? sesDkimRecords(identity, domain) : []) {
+			await deleteOwnedRecords(zoneId, record.name, [record]);
+		}
+		await deleteSesIdentity(domain);
+	}
+	await deleteOwnedRecords(zoneId, mailFrom, sesMailFromRecords(mailFrom));
+}
+
+// Cloudflare may return a TXT value wrapped in quotes; compare the value itself.
+function recordValue(content: string): string {
+	return normalizeName(content.trim().replace(/^"(.*)"$/, '$1'));
+}
+
+async function deleteOwnedRecords(zoneId: string, name: string, owned: ExpectedRecord[]) {
+	for (const record of await listCloudflareDnsRecords(zoneId, name)) {
+		const ours = owned.some(
+			(expected) =>
+				expected.type === record.type.trim().toUpperCase() &&
+				recordValue(expected.content) === recordValue(record.content)
+		);
+		if (ours) await deleteCloudflareDnsRecord(zoneId, record.id);
+	}
 }

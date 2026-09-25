@@ -3,7 +3,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import {
 	activateOperationalDomain,
-	recheckOperationalDomain
+	recheckOperationalDomain,
+	teardownOperationalDomain
 } from './operational-domain-activation';
 import { EmailDomainActivationError } from './dns-reconcile';
 
@@ -13,6 +14,8 @@ vi.mock('./ses', async () => {
 		...actual,
 		getSesIdentity: vi.fn(),
 		createSesIdentity: vi.fn(),
+		deleteSesIdentity: vi.fn(),
+		deleteSesReceiptRule: vi.fn(),
 		putSesIdentityMailFrom: vi.fn(),
 		getSesTenant: vi.fn(),
 		createSesTenant: vi.fn(),
@@ -34,11 +37,17 @@ vi.mock('./cloudflare-dns', async () => {
 		resolveCloudflareZone: vi.fn(),
 		listCloudflareDnsRecords: vi.fn(),
 		createCloudflareDnsRecord: vi.fn(),
-		updateCloudflareDnsRecord: vi.fn()
+		updateCloudflareDnsRecord: vi.fn(),
+		deleteCloudflareDnsRecord: vi.fn()
 	};
 });
 
-vi.mock('./operational-reply-ingestion', () => ({ reconcileReplyIngestion: vi.fn() }));
+vi.mock('./operational-reply-ingestion', async () => ({
+	...(await vi.importActual<typeof import('./operational-reply-ingestion')>(
+		'./operational-reply-ingestion'
+	)),
+	reconcileReplyIngestion: vi.fn()
+}));
 
 import * as ses from './ses';
 import * as cloudflare from './cloudflare-dns';
@@ -456,5 +465,52 @@ describe('recheckOperationalDomain', () => {
 		await expect(
 			recheckOperationalDomain({ client, organizationId: ORG, domainId: 'brevo-sending' })
 		).rejects.toMatchObject({ code: 'operational_domain_not_found' });
+	});
+});
+
+describe('teardownOperationalDomain', () => {
+	function record(id: string, type: string, name: string, content: string) {
+		return { id, type, name, content, ttl: 1, priority: null, proxied: false };
+	}
+
+	it('stops receiving first, then deletes only the records UCRM wrote and both identities', async () => {
+		const order: string[] = [];
+		const zone: Record<string, ReturnType<typeof record>[]> = {
+			[RECEIVING]: [
+				record('reply-mx', 'MX', RECEIVING, INBOUND_MX),
+				record('someone-else', 'TXT', RECEIVING, 'google-site-verification=abc')
+			],
+			[`r1._domainkey.${RECEIVING}`]: [
+				record('r1', 'CNAME', `r1._domainkey.${RECEIVING}`, 'r1.dkim.amazonses.com')
+			],
+			[`s1._domainkey.${SENDING}`]: [
+				record('s1', 'CNAME', `s1._domainkey.${SENDING}`, 's1.dkim.amazonses.com')
+			],
+			[MAIL_FROM]: [
+				record('mf-mx', 'MX', MAIL_FROM, MAIL_FROM_MX),
+				record('mf-txt', 'TXT', MAIL_FROM, '"v=spf1 include:amazonses.com ~all"')
+			]
+		};
+		vi.mocked(cloudflare.listCloudflareDnsRecords).mockImplementation(
+			async (_zone, name) => zone[name] ?? []
+		);
+		vi.mocked(cloudflare.deleteCloudflareDnsRecord).mockImplementation(async (_zone, id) => {
+			order.push(`dns:${id}`);
+		});
+		vi.mocked(ses.deleteSesReceiptRule).mockImplementation(async () => {
+			order.push('rule');
+		});
+		vi.mocked(ses.deleteSesIdentity).mockImplementation(async (domain) => {
+			order.push(`identity:${domain}`);
+		});
+
+		await teardownOperationalDomain({ organizationId: ORG, rootDomain: ROOT });
+
+		expect(order.slice(0, 2)).toEqual(['dns:reply-mx', 'rule']);
+		expect(ses.deleteSesReceiptRule).toHaveBeenCalledWith('ucrm-ses-inbound-rules', `reply-${ORG}`);
+		expect(order).toContain(`identity:${RECEIVING}`);
+		expect(order).toContain(`identity:${SENDING}`);
+		expect(order).toEqual(expect.arrayContaining(['dns:r1', 'dns:s1', 'dns:mf-mx', 'dns:mf-txt']));
+		expect(order).not.toContain('dns:someone-else');
 	});
 });
