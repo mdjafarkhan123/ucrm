@@ -5,34 +5,26 @@ side. Brevo stays only for platform/Jafar emails (`src/lib/server/email/brevo.ts
 
 ## State
 
-Part 6 steps 1–4 done; all work is on `main` in the main folder. Step 5 (live test on Raad) in progress:
-Raad's Everyday email + replies show **Ready** (reply.test MX → SES). Outbound send is **proven live**: test 2 to
-client Greenfield Property Group (`dev.jafarkhan+part8@gmail.com`) was accepted by SES, after two fixes
-(`1774095`, `d6836eb`: skipped duplicate-version migration, then ambiguous `organization_id` in the claim).
-Jafar replied from Gmail; the MIME reached S3 (`ucrm-ses-inbound-mime/18f0d717…/`) but was NOT ingested.
+Part 6 step 5 (live test on Raad, all on `main`): outbound send and reply ingestion proven live; Jafar's Gmail
+replies land in Needs review (sent from an address not on Greenfield, correct by contract).
 
 ## Exact next action
 
-Fix the receipt-rule shape in `src/lib/server/communications/ses.ts` (`desiredReceiptRule` + the `matches`
-check in `reconcileSesReceiptRule`): use ONE `S3Action` carrying `TopicArn`, not S3Action + a separate
-`SNSAction`. The worker/parser (`ses-inbound-email.ts`) correctly expects the S3 action's notification
-(`receipt.action.type = 'S3'`, bucketName, objectKey); the separate SNS action sends `type: 'SNS'`, so every
-reply is counted `invalid`, and it also bounces mail over 150 KB (see
-`docs/research/amazon-ses-contractor-email-inbound-architecture-2026-09-19.md` line 23). Add a spec for the rule
-shape, then press Check on Raad's Email card (Jafar panel → Communications) to update the live rule, and have
-Jafar reply again. Jafar's first reply's SQS message goes to `ucrm-ses-inbound-dlq` after 5 receives; it can be
-discarded (test data). Then the roadmap Part 4 gate cases.
+Replies ingest live (`c0670fa`); instant pickup built (`d7a4d20`, SNS HTTPS subscription `025ff623…` to
+`https://app.upliftcontractor.com/api/webhooks/ses-inbound`). Measured S3 → inbound row: 3 s, 34 s, 33 s, 4 s; slow
+cases were SNS push attempts that never reached the app via the dev tunnel (cause unconfirmed; creating an IAM
+role for SNS delivery-status logs was blocked by the permission classifier; Cloudflare token lacks analytics).
+After those tests the subscription got a fast-retry DeliveryPolicy (2 immediate + 1 s exponential, 10 retries) —
+not yet measured. `dev.jafarkhan@gmail.com` was added (SQL, test data) as a non-primary email on Greenfield
+(`c8e1f036…`). Laptop clock fixed (chrony `authselectmode ignore`).
+Next: Jafar replies once more from Gmail to the Raad test email; verify the row is `accepted` with Greenfield's
+client_id and measure seconds; then roadmap Part 4 gate cases. Re-measure speed on the production endpoint.
 
-## Follow-ups found in step 5 (small, do after the live test)
-
-- `ManualEmailDialog.svelte:153` preview says "Delivery is currently disabled" — stale hard-coded text; remove.
-- Manual send toast says "Email sent" when it is only queued; say "queued" until SES accepts.
-- A failed Check (409 `subdomain_occupied`) showed no visible error on the Jafar Email card.
+Small follow-ups from step 5: ROADMAP.md "Step 5 follow-ups" (do after the live test).
 
 ## Blockers
 
 Needs Jafar: dev server + `cloudflared tunnel run`, his Jafar-panel and Raad-owner browser sign-ins, and a Gmail
 reply. AWS: `aws --profile ucrm` (renew with `aws sso login --sso-session ucrm`).
-Known gap: org purge leaves Marketing CloudFront click-domain resources (marketing campaign's concern).
 
 Resume: `continue operational email ses`.
