@@ -333,7 +333,9 @@ async function ingestOneMessage(
 	);
 	if (rpcErr) throw rpcError('Could not resolve an SES inbound message', rpcErr);
 
-	const inserted = inboundMessage as InboundMessageRow | null;
+	// PostgREST hands back a composite function's NULL (no row inserted) as a row of nulls.
+	const row = inboundMessage as Partial<InboundMessageRow> | null;
+	const inserted = row?.id ? (row as InboundMessageRow) : null;
 	if (!inserted && seenBefore) return 'duplicate';
 	if (inserted && parsed.attachments.length > 0) {
 		const rows = attachmentRows(

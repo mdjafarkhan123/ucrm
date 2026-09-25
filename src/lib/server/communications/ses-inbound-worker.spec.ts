@@ -145,7 +145,8 @@ describe('drainSesInboundQueue', () => {
 	it('deletes a redelivered reply as a duplicate once it is already filed', async () => {
 		const { client, insertAttachments } = fakeClient({
 			...alreadyLogged,
-			rpc: vi.fn(async () => ({ data: null, error: null }))
+			// PostgREST returns a composite-returning function's NULL as a row of nulls, not as null.
+			rpc: vi.fn(async () => ({ data: { id: null, organization_id: null }, error: null }))
 		});
 		const { sqs, removed } = fakeSqs([[validMessage], []]);
 
