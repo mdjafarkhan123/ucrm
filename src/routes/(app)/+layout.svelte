@@ -124,6 +124,7 @@
 		resolve('/(app)/marketing/campaigns/[id=uuid]', { id: WARM_UUID }),
 		resolve('/(app)/marketing/campaigns/[id=uuid]/edit', { id: WARM_UUID }),
 		resolve('/(app)/communications'),
+		resolve('/(app)/reviews/settings'),
 		resolve('/(app)/files'),
 		resolve('/(app)/settings'),
 		resolve('/(app)/settings/business-profile'),

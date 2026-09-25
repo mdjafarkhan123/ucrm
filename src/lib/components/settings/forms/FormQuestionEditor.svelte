@@ -31,7 +31,8 @@
 		onRemove,
 		onChangeType,
 		onAddOption,
-		onRemoveOption
+		onRemoveOption,
+		types = FORM_QUESTION_TYPES
 	}: {
 		question: FormQuestion;
 		index: number;
@@ -41,12 +42,16 @@
 		onChangeType: (type: FormQuestionType) => void;
 		onAddOption: () => void;
 		onRemoveOption: (i: number) => void;
+		// The answer types this form offers; the review feedback form leaves out photo upload.
+		types?: readonly FormQuestionType[];
 	} = $props();
 
-	const typeOptions = FORM_QUESTION_TYPES.map((type) => ({
-		value: type,
-		label: FORM_QUESTION_TYPE_LABELS[type]
-	}));
+	const typeOptions = $derived(
+		types.map((type) => ({
+			value: type,
+			label: FORM_QUESTION_TYPE_LABELS[type]
+		}))
+	);
 
 	const isChoice = $derived(isChoiceQuestion(question.type));
 </script>

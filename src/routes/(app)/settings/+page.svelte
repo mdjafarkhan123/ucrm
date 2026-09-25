@@ -33,6 +33,7 @@
 	import templateIcon from '@tabler/icons/outline/template.svg?raw';
 	import bellIcon from '@tabler/icons/outline/bell-ringing.svg?raw';
 	import robotIcon from '@tabler/icons/outline/robot.svg?raw';
+	import starIcon from '@tabler/icons/outline/star.svg?raw';
 
 	const query = createQuery(() => ({
 		queryKey: settingsHomeKey,
@@ -180,6 +181,14 @@
 								icon={formsIcon}
 								title="Request Forms"
 								description="The online forms customers fill in to request work from you."
+							/>
+						{/if}
+						{#if home.permissions.reviews_manage}
+							<SettingsDestinationCard
+								href={resolve('/(app)/reviews/settings')}
+								icon={starIcon}
+								title="Google reviews"
+								description="Your Google review link, review page, private feedback form, and request messages."
 							/>
 						{/if}
 					</div>

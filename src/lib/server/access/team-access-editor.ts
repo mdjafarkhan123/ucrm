@@ -199,6 +199,37 @@ const capabilityDefinitions: CapabilityDefinition[] = [
 		]
 	},
 	{
+		id: 'reviews',
+		name: 'Reviews',
+		description: 'Ask customers for Google reviews and look after private feedback.',
+		controls: [
+			{
+				id: 'request-reviews',
+				permissionKey: 'reviews.request',
+				label: 'Send review requests',
+				example: 'Ask a client for a review after their work is completed.'
+			},
+			{
+				id: 'view-reviews',
+				permissionKey: 'reviews.view',
+				label: 'View review requests',
+				example: 'See who was asked and what each customer did.'
+			},
+			{
+				id: 'handle-review-feedback',
+				permissionKey: 'reviews.feedback',
+				label: 'Handle private feedback',
+				example: 'Read private feedback and follow up with unhappy customers.'
+			},
+			{
+				id: 'manage-reviews',
+				permissionKey: 'reviews.manage',
+				label: 'Manage review setup',
+				example: 'Change the Google review link, review page, feedback form, and messages.'
+			}
+		]
+	},
+	{
 		id: 'business-settings',
 		name: 'Business settings',
 		description: 'Control shared business identity and hours.',

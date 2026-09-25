@@ -88,6 +88,7 @@ export const GET: RequestHandler = async (event) => {
 				price_book_manage: hasPermission(check.access, 'settings.price_book.manage'),
 				checklists_manage: hasPermission(check.access, 'settings.checklists.manage'),
 				forms_manage: hasPermission(check.access, 'settings.forms.manage'),
+				reviews_manage: hasPermission(check.access, 'reviews.manage'),
 				quotes_manage: hasPermission(check.access, 'settings.quotes.manage'),
 				invoices_manage: hasPermission(check.access, 'settings.invoices.manage'),
 				payments_manage: hasPermission(check.access, 'settings.payments.manage'),

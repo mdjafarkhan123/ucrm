@@ -70,7 +70,7 @@ const contactBlockSchema = z
 		}
 	});
 
-const questionSchema = z
+export const questionSchema = z
 	.object({
 		id: z.string().uuid(),
 		type: z.enum(FORM_QUESTION_TYPES),

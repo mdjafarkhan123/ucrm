@@ -127,6 +127,8 @@ const permissionFeaturePrefixes: Array<[string, string]> = [
 	['automations.', 'automations'],
 	['automation.', 'automation.workflows'],
 	['marketing.', 'marketing'],
+	// Google review requests and private feedback belong to the plan's Reputation tools.
+	['reviews.', 'growth.reputation'],
 	['report.', 'reporting.advanced'],
 	['reports.', 'reporting.advanced'],
 	['team.', 'core.team']

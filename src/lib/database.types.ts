@@ -13476,6 +13476,56 @@ export type Database = {
 					}
 				];
 			};
+			review_settings: {
+				Row: {
+					feedback_form: Json;
+					google_review_url: string | null;
+					message_styles: Json;
+					organization_id: string;
+					revision: number;
+					routing_acknowledged_at: string | null;
+					routing_acknowledged_by: string | null;
+					routing_enabled: boolean;
+					routing_google_min_rating: number;
+					updated_at: string;
+					updated_by: string | null;
+				};
+				Insert: {
+					feedback_form: Json;
+					google_review_url?: string | null;
+					message_styles: Json;
+					organization_id: string;
+					revision?: number;
+					routing_acknowledged_at?: string | null;
+					routing_acknowledged_by?: string | null;
+					routing_enabled?: boolean;
+					routing_google_min_rating?: number;
+					updated_at?: string;
+					updated_by?: string | null;
+				};
+				Update: {
+					feedback_form?: Json;
+					google_review_url?: string | null;
+					message_styles?: Json;
+					organization_id?: string;
+					revision?: number;
+					routing_acknowledged_at?: string | null;
+					routing_acknowledged_by?: string | null;
+					routing_enabled?: boolean;
+					routing_google_min_rating?: number;
+					updated_at?: string;
+					updated_by?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'review_settings_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: true;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			role_permissions: {
 				Row: {
 					access_scope: string;
@@ -21911,6 +21961,38 @@ export type Database = {
 					target_organization_id: string;
 				};
 				Returns: Json;
+			};
+			save_review_settings: {
+				Args: {
+					p_acknowledge_routing: boolean;
+					p_actor_id: string;
+					p_expected_revision: number;
+					p_feedback_form: Json;
+					p_google_review_url: string;
+					p_message_styles: Json;
+					p_organization_id: string;
+					p_routing_enabled: boolean;
+					p_routing_google_min_rating: number;
+				};
+				Returns: {
+					feedback_form: Json;
+					google_review_url: string | null;
+					message_styles: Json;
+					organization_id: string;
+					revision: number;
+					routing_acknowledged_at: string | null;
+					routing_acknowledged_by: string | null;
+					routing_enabled: boolean;
+					routing_google_min_rating: number;
+					updated_at: string;
+					updated_by: string | null;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'review_settings';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
 			};
 			save_team_member_permissions: {
 				Args: {

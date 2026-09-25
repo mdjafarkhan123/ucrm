@@ -21,6 +21,7 @@ export type SettingsHome = {
 		price_book_manage: boolean;
 		checklists_manage: boolean;
 		forms_manage: boolean;
+		reviews_manage: boolean;
 		quotes_manage: boolean;
 		invoices_manage: boolean;
 		payments_manage: boolean;
