@@ -487,6 +487,17 @@ Export respects the requester's permissions unless it is the separately authoriz
   failure-path evidence.
 - **Overall:** product design ready; schema/RLS work and processing-worker infrastructure wait for their campaign
   parts and required approval gates.
+- **Verified 2026-09-25 (Part 8C):** measured on a schema-identical local rebuild, one organization, `ANALYZE`d
+  after loading (a bulk-loaded, un-ANALYZEd table gave a misleading first-page plan and was not trusted). At
+  25,000 files: caption/name search (`list_files`'s unindexed `ilike`) costs ~10 ms when the term matches
+  commonly and ~50 ms in the worst case (a rare or non-matching term walks nearly the whole organization's
+  files). At 5,000 customer file shares: the "Shared with customers" list's first page and a deep cursor page
+  both run in 3–7 ms, because the paginated route's `LIMIT` lets Postgres stop early on the
+  `(organization_id, issued_at desc)` index regardless of total share count. No fix needed at these sizes; the
+  caption/name search's linear-with-file-count cost for rare terms is carried as a deferred item (a `pg_trgm`
+  index is the fix if a real organization's file count ever makes it matter — see Memory's deferred index).
+  Accessibility (axe-core, owner role, six File Manager states) and security/permission (all six roles against
+  the real API routes) were verified the same day with no gaps needing this document's attention.
 
 ## Completion gate
 
@@ -494,3 +505,8 @@ The campaign closes only when every supported upload origin registers one reusab
 without moving or losing R2 objects, every permitted usage is discoverable without leaking hidden records,
 customer sharing is explicit and historical documents remain truthful, trash/purge/export are complete, and the
 desktop/mobile, security, accessibility, failure, and proportional performance checks pass.
+
+**Met 2026-09-25.** The one open item is operational, not behavioral: the upload-processing and export-worker
+background crons ship switched off and need a deployment-time Vault secret each before their async paths run
+end to end outside a local/dev shortcut (tracked as a cross-campaign deployment task, not specific to Files
+and Media).

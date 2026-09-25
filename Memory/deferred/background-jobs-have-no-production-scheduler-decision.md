@@ -24,3 +24,12 @@ secret must be set deliberately per environment; production must not inherit thi
 
 Also known (2026-09-24): the Marketing wake cron jobs fail every minute in the shared development database
 because their Vault target URLs are unset. Set them deliberately per environment with the others.
+
+Also known (2026-09-25): Files and Media ships two more crons off by default, same pattern. Both need a Vault
+target URL set before they can run: `files-processing-worker-wake-one-minute` (needs
+`files_processing_worker_target_url` + `files_processing_worker_secret`, plus `FILES_PROCESSING_WORKER_SECRET`/
+`FILES_SCANNER_HOST`/`FILES_SCANNER_PORT` in the app's own env) and `files-export-worker-wake-five-minutes`
+(needs `files_export_worker_target_url` pointing at `/api/internal/files/export-worker`; reuses the processing
+worker's existing secret, no new secret value). Until these are active, upload processing and organization
+export both only ever reach `queued`/`pending` locally — this is why Files and Media parts 3, 8A, and 8B were
+each closed without a full local end-to-end run of their async path.
