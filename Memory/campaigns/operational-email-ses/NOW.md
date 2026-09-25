@@ -11,10 +11,8 @@ Raad's Brevo-era test emails deleted with Jafar's OK). pgTAP fixtures updated bu
 
 ## Exact next action
 
-Step 4 mostly done 2026-09-25: Raad's four Brevo leftovers deleted and confirmed gone. Remaining: domain
-`replies.upliftcontractor.com` and inbound webhook `2021984`. No code or database row uses either, and Jafar said
-all data is test ("clean, clear"), but his explicit permission covered only the four; confirm before deleting.
-Keep sender 1 and `contact.`/`notifications.`. Then step 5.
+Step 4 done 2026-09-25: Brevo now holds only sender 1, `contact.`/`notifications.upliftcontractor.com`, and no
+inbound webhooks (all contractor-era leftovers deleted with Jafar's OK). Next: step 5 live test.
 
 ## Blockers
 
