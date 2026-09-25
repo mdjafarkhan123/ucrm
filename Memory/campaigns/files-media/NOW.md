@@ -47,11 +47,12 @@ correctly 200s. Zero gaps found — no fix needed. Cross-tenant isolation itself
 Raad LTD's files) was not re-tested here; it's covered by each part's own pgTAP (Part 2's 49 assertions,
 8B's 24/24) at the RLS layer, a different layer than this session's role/permission-route check.
 
-**Exact next action:** the only piece left to close Part 8C is measured (not assumed) performance at a
-large file count — Part 8B's export build time is explicitly untested at scale (needs the cron active
-first), and captions/label search (7B-2) and the Shared-with-customers list (7D-2a) were never load-tested
-the way the core catalog was in 7B-3/7B-4. Ask Jafar whether to do that now or treat it as blocked until the
-export cron is active on a real deploy.
+**Exact next action (Jafar's call, 2026-09-25 — do it next session):** measure real performance at a large
+file count for the surfaces 7B-3/7B-4 never load-tested: caption/label search (7B-2) and the Shared-with-
+customers list (7D-2a). Set up a large synthetic file count for Raad LTD (matching 7B-3/7B-4's rolled-back
+old-vs-new method) and measure, don't assume. Part 8B's export-build-time measurement stays separately
+blocked until the export-worker cron is active on a real deploy — note that as a known gap in 8C's
+completion rather than waiting on it.
 
 **Blocker (campaign-wide):** the upload/processing worker does not run locally; nothing async can be
 browser-verified end to end. Test reads with existing checked photos (Raad LTD has 12).
