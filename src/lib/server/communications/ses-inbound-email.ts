@@ -59,9 +59,9 @@ export function sesCandidateRecipients(notification: SesReceiptNotification): Ca
 }
 
 // mailparser's `headers` Map re-structures well-known headers (e.g. content-type becomes {value, params}),
-// which the shared classifier was written against Brevo's raw string headers. `headerLines` is the raw,
-// unparsed wire text, so building the same lowercased/joined shape from it keeps one classifier for both
-// providers instead of forking the auto-response/delivery-notice heuristics.
+// while the shared classifier reads raw string headers. `headerLines` is the raw,
+// unparsed wire text, so building the lowercased/joined shape from it keeps the auto-response and
+// delivery-notice heuristics in one shared classifier.
 function headersFromHeaderLines(headerLines: HeaderLines): Record<string, string> {
 	const normalized: Record<string, string> = {};
 	for (const { key, line } of headerLines) {
@@ -82,7 +82,7 @@ function firstAddress(addressObject: AddressObject | AddressObject[] | undefined
 	return { address: entry.address, name: entry.name || undefined };
 }
 
-// Same {Address, Name} shape record_communication_inbound_message already receives from the Brevo route, so
+// The {Address, Name} shape record_communication_inbound_message expects, so
 // the stored to_recipients/cc_recipients jsonb stays provider-neutral.
 function flattenAddresses(
 	addressObject: AddressObject | AddressObject[] | undefined

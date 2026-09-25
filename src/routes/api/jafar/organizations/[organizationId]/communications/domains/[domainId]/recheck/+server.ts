@@ -132,7 +132,7 @@ export const POST: RequestHandler = async (event) => {
 			);
 		}
 
-		return json({ domain_id: domain.id, ...afterState }, { headers: noStore });
+		return json(afterState, { headers: noStore });
 	} catch (error) {
 		console.error('Could not recheck the sending domain.', error);
 		return json(

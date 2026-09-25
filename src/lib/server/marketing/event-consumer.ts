@@ -28,7 +28,7 @@ import {
 // The one SNS -> SQS pipeline now carries both streams: a Marketing configuration set's events go to
 // marketing_campaign_recipient_events (insertEvent) as before, and an operational configuration set's events
 // (name starts with 'ucrm-operational-') go to communication_provider_callback_events (insertCallbackEvent)
-// instead, the same table the Brevo webhook route writes to. process_communication_provider_callbacks is
+// instead. process_communication_provider_callbacks is
 // provider-neutral and already reads any channel='email' row, so it needs no change.
 
 type RpcResult<T> = Promise<{ data: T | null; error: { message: string } | null }>;

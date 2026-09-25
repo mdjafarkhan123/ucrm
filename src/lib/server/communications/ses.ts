@@ -113,7 +113,7 @@ function isAlreadyExists(error: unknown): boolean {
 /**
  * Turns an SDK error into a SesError carrying an HTTP status. A network failure or timeout has no status,
  * which the reconciler reads as an ambiguous outcome it re-derives rather than a proven failure -- the same
- * contract cloudflare-dns.ts and brevo.ts use.
+ * contract cloudflare-dns.ts uses.
  */
 function toSesError(operation: string, error: unknown): SesError {
 	const status = sesStatus(error);
@@ -455,7 +455,7 @@ export function sesMailFromMxTarget(): string {
 }
 
 // ---------------------------------------------------------------------------------------------------
-// Marketing send (M4 stage 3). Mirrors OperationalEmailSubmissionError's three-way outcome from brevo.ts:
+// Marketing send (M4 stage 3). Uses a three-way outcome:
 // 'retry' for a transient rejection worth trying again, 'cancelled' for one that will never succeed, and
 // 'submission_unknown' when the SDK call itself never returned an answer (a request that reached SES may
 // have already been accepted, so a blind retry risks a duplicate send to a real customer).
@@ -535,7 +535,7 @@ export async function sendMarketingEmail(message: MarketingEmail): Promise<{ mes
 }
 
 // ---------------------------------------------------------------------------------------------------
-// Operational send (Part 3). Same three-way outcome contract as OperationalEmailSubmissionError (brevo.ts),
+// Operational send (Part 3). Same three-way outcome contract as the Marketing send,
 // but built as a raw MIME message via nodemailer's MailComposer instead of SESv2's Content.Simple: an
 // operational send can carry quote/invoice PDF attachments, which Content.Simple has no equivalent for.
 // ---------------------------------------------------------------------------------------------------
@@ -599,8 +599,8 @@ export async function sendOperationalSesEmail(
 				Content: { Raw: { Data: raw } },
 				ConfigurationSetName: message.configurationSetName,
 				TenantName: message.tenantName,
-				// SES echoes tags into mail.tags on the SNS delivery event, the SES-side equivalent of Brevo's
-				// tags: ['ucrm:email:<id>'] -- this is what correlates a delivery event back to the intent.
+				// SES echoes tags into mail.tags on the SNS delivery event, and
+				// this is what correlates a delivery event back to the intent.
 				EmailTags: [{ Name: 'ucrm-intent', Value: message.intentId }]
 			})
 		);

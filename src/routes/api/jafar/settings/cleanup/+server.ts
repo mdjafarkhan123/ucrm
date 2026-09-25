@@ -29,7 +29,7 @@ export const GET: RequestHandler = async (event) => {
 				.select('id, organization_id, reason, started_at, deadline_at, organizations(name, slug)')
 				.eq('status', 'pending_closure')
 				.order('deadline_at', { ascending: true }),
-			// Receipts whose external cleanup (Auth users and/or Brevo resources) failed and is waiting
+			// Receipts whose external cleanup (Auth users and/or Amazon SES resources) failed and is waiting
 			// to be pushed again. The organization is already gone by now, so the receipt is the only
 			// handle -- it carries aggregate results only, never a recipient, domain, or message id.
 			client

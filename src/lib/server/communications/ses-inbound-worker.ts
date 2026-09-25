@@ -26,7 +26,7 @@ import { getSesEnv, sesInboundDlqUrl, sesInboundQueueUrl } from './ses-env';
 // idempotency space from the delivery-events pipeline in marketing/event-consumer.ts -- a stuck reply must
 // never block outgoing mail and vice versa). Unlike that consumer, there is no separate bulk projector RPC:
 // each message needs its own S3 fetch and MIME parse, so record_communication_inbound_message is called
-// directly per message, the same way the Brevo inbound webhook route calls it per item.
+// directly per message.
 
 type InboundMessageRow = { id: string; organization_id: string };
 

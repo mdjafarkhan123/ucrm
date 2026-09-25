@@ -130,7 +130,11 @@ describe('owner sending-domain recheck boundary', () => {
 		]);
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
 		vi.mocked(recheckOperationalDomain).mockResolvedValue({
-			sending: { domain_name: 'mail.ridgeway.example', lifecycle_state: 'verified' },
+			sending: {
+				domain_id: domainId,
+				domain_name: 'mail.ridgeway.example',
+				lifecycle_state: 'verified'
+			},
 			receiving: { domain_name: 'reply.ridgeway.example', lifecycle_state: 'pending_dns' }
 		} as never);
 

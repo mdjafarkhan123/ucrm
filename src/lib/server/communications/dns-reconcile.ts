@@ -6,8 +6,8 @@ import {
 	type CloudflareRecordInput
 } from './cloudflare-dns';
 
-// The DNS half of managed email-domain activation, shared by the Brevo operational reconciler and the SES
-// Marketing reconciler. These are the rules that keep a contractor's live zone safe -- write only inside the
+// The DNS half of managed email-domain activation, shared by the SES operational and
+// Marketing reconcilers. These are the rules that keep a contractor's live zone safe -- write only inside the
 // managed subdomain, never overwrite a name another service already owns, never proxy a mail record -- so
 // they live in one place rather than being copied per provider, where the two copies could drift apart.
 

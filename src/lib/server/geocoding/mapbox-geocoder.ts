@@ -5,7 +5,7 @@
 // "Map/directions provider boundary".
 //
 // A hung provider call must not hold a worker slot until it becomes a stale claim, so every call is bounded
-// by an explicit abort -- same convention as communications/brevo.ts's PROVIDER_SEND_TIMEOUT_MS.
+// by an explicit abort -- same convention as the email provider send paths.
 
 import { buildForwardGeocodeUrl, parseForwardGeocode } from '$lib/schedule/geocode-client';
 import {

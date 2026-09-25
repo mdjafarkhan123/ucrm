@@ -3,38 +3,19 @@ import { retryReceiptCleanup, runOrganizationClosureCron } from './organization-
 import { enqueueEmailDelivery } from '$lib/server/events/dispatcher';
 import { recordOperationOutcome } from '$lib/server/events/outbox';
 import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
-import {
-	BrevoManagementError,
-	deleteBrevoDomainById,
-	deleteBrevoSender
-} from '$lib/server/communications/brevo';
+import { purgeOrganizationSesResources } from '$lib/server/communications/ses-organization-cleanup';
 
 vi.mock('$lib/server/events/dispatcher', () => ({ enqueueEmailDelivery: vi.fn() }));
 vi.mock('$lib/server/events/outbox', () => ({ recordOperationOutcome: vi.fn() }));
 vi.mock('$lib/server/jafar/owner-alerts', () => ({ raiseOwnerAlert: vi.fn() }));
-vi.mock('$lib/server/communications/brevo', () => {
-	class MockBrevoManagementError extends Error {
-		constructor(
-			message: string,
-			public readonly status: number | null,
-			public readonly code: string
-		) {
-			super(message);
-			this.name = 'BrevoManagementError';
-		}
-	}
-	return {
-		BrevoManagementError: MockBrevoManagementError,
-		deleteBrevoDomainById: vi.fn(),
-		deleteBrevoSender: vi.fn()
-	};
-});
+vi.mock('$lib/server/communications/ses-organization-cleanup', () => ({
+	purgeOrganizationSesResources: vi.fn()
+}));
 
 const mockedEnqueueEmail = vi.mocked(enqueueEmailDelivery);
 const mockedRecordOutcome = vi.mocked(recordOperationOutcome);
 const mockedRaiseAlert = vi.mocked(raiseOwnerAlert);
-const mockedDeleteDomain = vi.mocked(deleteBrevoDomainById);
-const mockedDeleteSender = vi.mocked(deleteBrevoSender);
+const mockedPurgeSes = vi.mocked(purgeOrganizationSesResources);
 
 const PUBLISHED_TEMPLATE = {
 	subject_published: 'Reminder: {{business_name}}',
@@ -42,7 +23,7 @@ const PUBLISHED_TEMPLATE = {
 };
 
 type ClosureRecord = { id: string; organization_id: string; deadline_at: string };
-type ProviderResource = { kind: 'domain' | 'sender'; provider_id: string };
+type ProviderResource = { kind: 'ses_organization' | 'domain' | 'sender'; provider_id: string };
 type UnfinishedReceipt = { operation_id: string; pending_auth_user_ids: string[] };
 type UnfinishedProviderReceipt = {
 	operation_id: string;
@@ -209,8 +190,7 @@ describe('runOrganizationClosureCron', () => {
 		vi.clearAllMocks();
 		mockedEnqueueEmail.mockResolvedValue('delivery-1');
 		mockedRaiseAlert.mockResolvedValue('notification-1');
-		mockedDeleteDomain.mockResolvedValue(undefined);
-		mockedDeleteSender.mockResolvedValue(undefined);
+		mockedPurgeSes.mockResolvedValue(undefined);
 	});
 
 	it('sends a due 14-day reminder and claims it, but not the 3-day reminder yet', async () => {
@@ -423,7 +403,7 @@ describe('runOrganizationClosureCron', () => {
 		);
 	});
 
-	it('cleans up the Brevo provider resources returned by a successful purge', async () => {
+	it('cleans up the Amazon SES resources returned by a successful purge', async () => {
 		const harness = clientWith({
 			closureRecords: [{ id: 'closure-1', organization_id: 'org-1', deadline_at: daysFromNow(-1) }],
 			organizations: { 'org-1': { name: 'Ridgeway Electric' } },
@@ -432,10 +412,7 @@ describe('runOrganizationClosureCron', () => {
 					applied: true,
 					operation_id: 'op-1',
 					member_user_ids: [],
-					provider_resources: [
-						{ kind: 'domain', provider_id: 'brevo-domain-abc' },
-						{ kind: 'sender', provider_id: '42' }
-					]
+					provider_resources: [{ kind: 'ses_organization', provider_id: 'org-1' }]
 				},
 				error: null
 			}
@@ -444,8 +421,7 @@ describe('runOrganizationClosureCron', () => {
 		const result = await runOrganizationClosureCron(harness.client);
 
 		expect(result).toMatchObject({ purgesCompleted: 1, purgesFailed: 0 });
-		expect(mockedDeleteDomain).toHaveBeenCalledWith('brevo-domain-abc');
-		expect(mockedDeleteSender).toHaveBeenCalledWith(42);
+		expect(mockedPurgeSes).toHaveBeenCalledWith('org-1');
 		expect(harness.__receiptUpdates).toContainEqual(
 			expect.objectContaining({
 				operationId: 'op-1',
@@ -477,7 +453,7 @@ describe('runOrganizationClosureCron', () => {
 					applied: true,
 					operation_id: 'op-1',
 					member_user_ids: ['user-1'],
-					provider_resources: [{ kind: 'sender', provider_id: '42' }]
+					provider_resources: [{ kind: 'ses_organization', provider_id: 'org-1' }]
 				},
 				error: null
 			}
@@ -495,11 +471,9 @@ describe('runOrganizationClosureCron', () => {
 		expect((authUpdate?.payload as { completed_at?: string | null }).completed_at).toBeNull();
 	});
 
-	it('keeps the provider anchor and raises an alert when Brevo cleanup genuinely fails', async () => {
-		mockedDeleteSender.mockRejectedValueOnce(
-			new BrevoManagementError('Brevo down', 503, 'brevo_http_503')
-		);
-		const resources: ProviderResource[] = [{ kind: 'sender', provider_id: '42' }];
+	it('keeps the provider anchor and raises an alert when SES cleanup fails', async () => {
+		mockedPurgeSes.mockRejectedValueOnce(new Error('SES throttled'));
+		const resources: ProviderResource[] = [{ kind: 'ses_organization', provider_id: 'org-1' }];
 		const harness = clientWith({
 			closureRecords: [],
 			unfinishedProviderReceipts: [{ operation_id: 'op-3', pending_provider_resources: resources }],
@@ -528,10 +502,7 @@ describe('runOrganizationClosureCron', () => {
 		);
 	});
 
-	it('treats an already-gone Brevo resource (404) as success rather than retrying forever', async () => {
-		mockedDeleteSender.mockRejectedValueOnce(
-			new BrevoManagementError('Not found', 404, 'brevo_http_404')
-		);
+	it('clears a leftover pre-SES Brevo anchor without calling any provider', async () => {
 		const harness = clientWith({
 			closureRecords: [],
 			unfinishedProviderReceipts: [
@@ -549,6 +520,7 @@ describe('runOrganizationClosureCron', () => {
 
 		expect(result).toMatchObject({ providerCleanupsCompleted: 1, providerCleanupsFailed: 0 });
 		expect(mockedRaiseAlert).not.toHaveBeenCalled();
+		expect(mockedPurgeSes).not.toHaveBeenCalled();
 		expect(harness.__receiptUpdates).toContainEqual(
 			expect.objectContaining({
 				operationId: 'op-3',
@@ -624,8 +596,7 @@ describe('retryReceiptCleanup', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mockedRaiseAlert.mockResolvedValue('notification-1');
-		mockedDeleteDomain.mockResolvedValue(undefined);
-		mockedDeleteSender.mockResolvedValue(undefined);
+		mockedPurgeSes.mockResolvedValue(undefined);
 	});
 
 	it('reports not found without bumping retry_count when the receipt is gone', async () => {
@@ -662,8 +633,7 @@ describe('retryReceiptCleanup', () => {
 
 		expect(result).toEqual({ found: true, authOk: true, providerOk: true });
 		expect(harness.deleteUserCalls).toEqual(['user-1']);
-		expect(mockedDeleteDomain).not.toHaveBeenCalled();
-		expect(mockedDeleteSender).not.toHaveBeenCalled();
+		expect(mockedPurgeSes).not.toHaveBeenCalled();
 		expect(harness.updates).toContainEqual({ retry_count: 2 });
 	});
 
@@ -672,14 +642,14 @@ describe('retryReceiptCleanup', () => {
 			operation_id: 'op-1',
 			retry_count: 0,
 			pending_auth_user_ids: ['user-1'],
-			pending_provider_resources: [{ kind: 'sender', provider_id: '42' }]
+			pending_provider_resources: [{ kind: 'ses_organization', provider_id: 'org-1' }]
 		});
 
 		const result = await retryReceiptCleanup(harness.client, 'op-1');
 
 		expect(result).toEqual({ found: true, authOk: true, providerOk: true });
 		expect(harness.deleteUserCalls).toEqual(['user-1']);
-		expect(mockedDeleteSender).toHaveBeenCalledWith(42);
+		expect(mockedPurgeSes).toHaveBeenCalledWith('org-1');
 	});
 
 	it('keeps reporting unresolved when a leg fails again', async () => {

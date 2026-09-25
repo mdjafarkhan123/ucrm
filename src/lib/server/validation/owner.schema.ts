@@ -241,7 +241,7 @@ export const organizationEarlyPurgeSchema = z.object({
 		.max(200)
 });
 
-// Communications 8.5: Jafar retrying the external (Auth + Brevo) cleanup for one stuck deletion
+// Communications 8.5: Jafar retrying the external (Auth + Amazon SES) cleanup for one stuck deletion
 // receipt. The receipt is the only handle left once the organization is already purged, so the retry
 // is keyed by its operation_id alone.
 export const organizationCleanupRetrySchema = z.object({

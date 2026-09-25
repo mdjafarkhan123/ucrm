@@ -15,7 +15,7 @@ export async function loadMarketingReadiness(organizationId: string): Promise<Ma
 
 	const [domains, senderDomains, settings, pauses, allowance, consent, warmup] = await Promise.all([
 		// Marketing sends through its OWN Amazon SES identity on news.<root>, never through the operational
-		// Brevo domain, so this must ask about purpose='marketing_sending'. spf_status is part of the test
+		// mail.<root> domain, so this must ask about purpose='marketing_sending'. spf_status is part of the test
 		// because the custom MAIL FROM subdomain is what gives a bulk stream its SPF alignment -- an identity
 		// without it is not honestly ready to send a campaign.
 		owner
