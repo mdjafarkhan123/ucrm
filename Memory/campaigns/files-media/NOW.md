@@ -2,7 +2,7 @@
 
 **Goal:** One contractor File Manager backed by private R2, with one File linked to every CRM use.
 
-**Active part:** 8B, backend done and committed; frontend not started. Design fully recorded in
+**Active part:** 8B, backend and frontend both done, not yet committed. Design fully recorded in
 `parts/8B.md` (read it before touching this part again — permission model, cron split, manifest shape,
 scope decisions, and why each choice was made).
 
@@ -24,17 +24,29 @@ claim function that answered "there's a job" even when the queue was empty, and 
 read `object_key` after its own `UPDATE` had already nulled it. `npm run check` clean (only the 3 known-stale
 "union type too complex" errors remain). Prettier clean on all touched `.ts`. `npm run db:types` regenerated.
 
-**Not yet done:** no frontend at all — no "Export everything" button, no status/download UI. No unit tests
-for `organization-export.ts` (only pgTAP covers the DB layer so far). Nothing browser-checked or
-email-checked (the export worker needs its own cron active, which needs deployment to add Vault secret
-`files_export_worker_target_url` — a new gate, not yet in ROADMAP.md's approval-gates section — see
-`parts/8B.md`). Real end-to-end (a zip actually built and downloaded) cannot happen locally any more than
-8A's purge could.
+**8B frontend shipped (2026-09-25, uncommitted):** `can_export` added to `GET /api/files`'s response
+(`hasPermission(access, 'files.export')`) and to `FileListPage`/`api.ts`. New `FileExportButton.svelte`,
+mounted only on the "All files" view when `can_export` is true — a compact "Export everything" button that
+POSTs, polls `GET /api/files/export` every 5s while the latest row is `queued`/`processing` (stops itself
+once it settles, same bounded-poll shape as `RecordFilesCard`/`ImportDoneStep`), then shows a Download button
++ size/count/date once `available`, or the last error if `failed`. `npm run check`/eslint/prettier/svelte
+autofixer all clean. ROADMAP.md's approval-gates section already had the `files_export_worker_target_url`
+Vault-secret note from the backend commit — nothing more to add there.
 
-**Exact next action:** Build the frontend trigger — an owner-only "Export everything" action in the Files
-workspace toolbar (`src/routes/(app)/files/+page.svelte`), calling `POST /api/files/export`, polling
-`GET /api/files/export` for status, and using the download route once `available`. Then add the new Vault
-secret note to ROADMAP.md's approval gates.
+**Browser-verified live on Raad LTD (2026-09-25):** started a second local dev server (this worktree's own,
+port 5199 — a sibling worktree already held 5173/5174) and drove it with Playwright directly (no
+`chromium-cli` binary in this environment). Owner login (`info.socialmediauser1@gmail.com`) sees the button,
+clicking it gets a real 202 with a queued `organization_exports` row, the toast and "Preparing export…"
+state both show. Office-role login (`dev.jafarkhan+office@gmail.com`) never sees the button and the page
+throws no errors (the console 403s present on that role are pre-existing, unrelated dashboard widgets —
+marketing readiness, invoices, onboarding checklist — checked by URL, not from anything this part touched).
+
+**Not yet done:** no unit tests for `organization-export.ts` (only pgTAP covers the DB layer). The zip build
+itself is still unverified end to end — the export-worker cron is not active (needs the Vault secret +
+deployment), so a real run only ever reaches `queued` locally, same limitation 8A's purge had.
+
+**Exact next action:** Commit the 8B frontend, then start Part 8C (security/accessibility/scale
+verification) or ask Jafar if he wants the export cron activated on the next deploy first.
 
 **Blocker (campaign-wide):** the upload/processing worker does not run locally; nothing async can be
 browser-verified end to end. Test reads with existing checked photos (Raad LTD has 12).

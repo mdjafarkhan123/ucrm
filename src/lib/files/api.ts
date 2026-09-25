@@ -79,6 +79,8 @@ export type FileListPage = {
 	can_trash: boolean;
 	/** May share chosen files with a customer by link (files.share). */
 	can_share: boolean;
+	/** May request a full organization export (files.export, owner-only). */
+	can_export: boolean;
 	/** The business has made at least one share, so the rail offers "Shared with customers". First page only. */
 	has_shares?: boolean;
 };
@@ -481,6 +483,50 @@ export function turnOffFileShare(shareId: string) {
 		{},
 		'That link could not be turned off.'
 	);
+}
+
+// --- Organization export (Files and Media, Part 8B) ----------------------------------------------------
+
+export type OrganizationExportStatus = 'queued' | 'processing' | 'available' | 'failed' | 'expired';
+
+export type OrganizationExport = {
+	id: string;
+	status: OrganizationExportStatus;
+	file_count: number;
+	total_bytes: number;
+	error: string | null;
+	requested_at: string;
+	completed_at: string | null;
+	/** Set only once the export reaches `available`. */
+	expires_at: string | null;
+};
+
+export const fileExportsKey = ['files', 'export', 'list'] as const;
+
+/** The last few exports for this organization, newest first. */
+export async function fetchFileExports(): Promise<OrganizationExport[]> {
+	const response = await fetch('/api/files/export');
+	if (!response.ok) throw await readError(response, 'Your exports could not be loaded.');
+	const result = (await response.json()) as { exports: OrganizationExport[] };
+	return result.exports;
+}
+
+/** Queues a full backup of every File in the organization. Dedupes server-side against one already running. */
+export function requestFileExport() {
+	return writeJson<{ export: { id: string; status: OrganizationExportStatus } }>(
+		'/api/files/export',
+		'POST',
+		{},
+		'That export could not be started.'
+	);
+}
+
+/** Mints a short-lived download link for a completed export and hands it to the browser. */
+export async function downloadFileExport(exportId: string): Promise<void> {
+	const response = await fetch(`/api/files/export/${exportId}/download`);
+	if (!response.ok) throw await readError(response, 'That export could not be downloaded.');
+	const result = await response.json();
+	window.location.href = result.download_url;
 }
 
 export function createFileFolder(name: string) {

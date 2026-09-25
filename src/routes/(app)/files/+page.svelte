@@ -19,6 +19,7 @@
 	import FileLabelsDialog from '$lib/components/files/FileLabelsDialog.svelte';
 	import FileShareDialog from '$lib/components/files/FileShareDialog.svelte';
 	import FileSharesView from '$lib/components/files/FileSharesView.svelte';
+	import FileExportButton from '$lib/components/files/FileExportButton.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import filesIcon from '@tabler/icons/outline/files.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
@@ -122,6 +123,8 @@
 	// only decides whether the Upload button and New folder are on screen at all.
 	const canManage = $derived(filesQuery.data?.pages[0]?.can_manage ?? false);
 	const canShare = $derived(filesQuery.data?.pages[0]?.can_share ?? false);
+	// Owner-only (files.export). A full backup is a workspace-level action, not tied to any one view.
+	const canExport = $derived(filesQuery.data?.pages[0]?.can_export ?? false);
 	// Remembered rather than read live, so the rail item does not blink out while a newly chosen view's first
 	// page is loading. Only ever the server's answer: it arrives with each view's first page.
 	let hasShares = $state(false);
@@ -488,6 +491,10 @@
 							</Button>
 						{/if}
 					</div>
+
+					{#if canExport && view === 'all'}
+						<FileExportButton />
+					{/if}
 
 					{#if selecting && chosenFiles.length > 0}
 						<div class="files__selection" role="region" aria-label="Chosen files">

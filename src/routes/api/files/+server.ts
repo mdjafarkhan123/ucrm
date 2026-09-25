@@ -157,6 +157,7 @@ export const GET: RequestHandler = async (event) => {
 			can_manage: hasPermission(access, 'files.manage'),
 			can_trash: hasPermission(access, 'files.trash'),
 			can_share: canShare,
+			can_export: hasPermission(access, 'files.export'),
 			has_shares: hasShares
 		},
 		{ headers: PRIVATE_READ_HEADERS }
