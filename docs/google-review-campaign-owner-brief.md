@@ -26,7 +26,7 @@ Every request link, whatever the channel (SMS or email), opens the UCRM feedback
 ## Eligibility and enrolment
 
 - A one-time job enters the normal review-request automation only after the contractor marks the whole job completed.
-- A recurring job can use an **after every N completed visits** setting chosen by the contractor. UCRM does not ask after every visit by default.
+- A recurring job can use an **after every N completed visits** setting chosen by the contractor. UCRM does not ask after every visit by default. The six-month cooldown always wins, following Jobber: a client already asked in the last six months is skipped at their Nth visit, and becomes eligible again at the first Nth visit after the cooldown ends.
 - The automatic request uses the client's main contact for the chosen channel (mobile for SMS, email address for Email). A manual request lets the contractor choose another saved client contact.
 - A request is not sent if there is no usable contact for the chosen channel, the job is reopened or cancelled before sending, or the contractor has turned the automation off.
 - Activating the automation affects future completed work only. It does not automatically send requests for past jobs; contractors use the manual request action for those.
@@ -39,7 +39,7 @@ Every request link, whatever the channel (SMS or email), opens the UCRM feedback
 - SMS is the default channel. The contractor can switch the automation to **Email** instead (see Channel choice below).
 - The first message sends after the job-completion event at the next configured sending time.
 - The default has two gentle reminders on the same channel: three days and five days after the first message.
-- The default customer cooldown is one review-request sequence per client every six months.
+- The default customer cooldown is one automatic review-request sequence per client every six months. The cooldown applies to the automation only; manual requests are not blocked by it (HighLevel documents no cooldown on manual sends).
 - UCRM provides three editable starting styles for each channel (SMS text, and email subject and body): **Friendly**, **Professional**, and **Short**.
 
 ### Channel choice
@@ -53,7 +53,7 @@ Every request link, whatever the channel (SMS or email), opens the UCRM feedback
 
 - The contractor can select the message style, edit every message, choose timing, add or remove follow-ups, set the duration, and choose the recurring-job visit frequency.
 - The setup displays the full sequence as a readable timeline before activation.
-- UCRM warns before activation when a chosen pattern is likely to be overly frequent or harmful to customer goodwill. The contractor can stop or change an active automation at any time.
+- Following HighLevel, the contractor sets the number of reminders and their interval; UCRM does not enforce a fixed maximum. The default is two reminders (HighLevel notes most teams use 2–3). UCRM warns before activation when a chosen pattern is likely to be overly frequent or harmful to customer goodwill. The contractor can stop or change an active automation at any time.
 - Manual requests open a small pre-filled panel: select the client contact, choose the channel (SMS preselected), choose the style, review the message, then choose **Send now** or **Schedule**.
 
 ### When the sequence stops
