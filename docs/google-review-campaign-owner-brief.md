@@ -35,6 +35,8 @@ The product must feel simple to use without removing advanced control. Contracto
   - **4 or 5 stars:** continue to the contractor's Google review destination.
   - **1, 2, or 3 stars:** continue to a UCRM private-feedback form.
 - The private-feedback form should acknowledge the customer's experience in a kind, human way and invite them to explain what happened so the contractor can address it.
+- UCRM provides a ready-made private-feedback form, while letting the contractor fully edit its content to match their own business voice.
+- Contractors can add, remove, and reorder the questions in their private-feedback form. They are not limited to one fixed set of questions.
 - When a customer selects 4 or 5 stars, UCRM sends them directly to the contractor's Google review destination. No UCRM thank-you screen appears before that redirect.
 - When a customer selects 1, 2, or 3 stars, UCRM opens the private-feedback form.
 
