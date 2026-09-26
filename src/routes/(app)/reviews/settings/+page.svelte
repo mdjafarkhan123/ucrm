@@ -65,6 +65,8 @@
 	let routingAcknowledged = $state(false);
 	let saving = $state(false);
 	let errorMessage = $state('');
+	// A stale save shows only the conflict banner with its reload button, not the form's error summary too.
+	let conflict = $state(false);
 	let fieldErrors = $state<Record<string, string>>({});
 	let layout = $state<RecordFormLayout>();
 
@@ -122,6 +124,7 @@
 	function cancel() {
 		if (query.data) seed(query.data);
 		errorMessage = '';
+		conflict = false;
 	}
 
 	async function reloadLatest() {
@@ -132,12 +135,14 @@
 		});
 		seed(fresh);
 		errorMessage = '';
+		conflict = false;
 	}
 
 	async function save() {
 		if (!draft) return;
 		saving = true;
 		errorMessage = '';
+		conflict = false;
 		fieldErrors = {};
 		try {
 			const result = await saveReviewSettings({
@@ -159,6 +164,7 @@
 		} catch (error) {
 			const saveError = error as ReviewSettingsSaveError;
 			fieldErrors = saveError.fieldErrors ?? {};
+			conflict = saveError.status === 409;
 			errorMessage = saveError.message ?? 'Review settings could not be saved.';
 		} finally {
 			saving = false;
@@ -207,7 +213,12 @@
 		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Google reviews' }]}
 	/>
 
-	<RecordFormLayout title="Google reviews" icon={starIcon} bind:this={layout} error={errorMessage}>
+	<RecordFormLayout
+		title="Google reviews"
+		icon={starIcon}
+		bind:this={layout}
+		error={conflict ? '' : errorMessage}
+	>
 		{#snippet main()}
 			{#if draft}
 				<p class="review-settings__intro">
@@ -216,7 +227,7 @@
 					something went wrong.
 				</p>
 
-				{#if errorMessage.startsWith('Someone else saved')}
+				{#if conflict}
 					<div class="review-settings__conflict" role="alert">
 						<p>{errorMessage}</p>
 						<Button variant="secondary" size="small" onclick={() => void reloadLatest()}>
