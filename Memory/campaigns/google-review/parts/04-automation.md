@@ -3,36 +3,11 @@
 Product truth: brief § "How the automation is set up" (owner decisions 2026-09-26, following HighLevel).
 Split: **4A reminder plan** (every request, manual included), then **4B automatic ask** (Automations recipe).
 
-## 4A — Reminder plan (build first)
+## 4A — Done 2026-09-26 (see ROADMAP). Facts 4B relies on
 
-Behavior:
-- Reviews settings gains "Request behavior": first message timing (default Right away; or a delay in hours/days),
-  reminders (default 2: 3 and 5 days after the first message), and the text of every message per channel and
-  style (reminder copy gets its own starting text). Shown as a readable timeline; warn (don't block) when the
-  pattern looks pushy (e.g. more than 3 reminders or gaps under 2 days). Technical ceiling: 10 reminders
-  (Jafar approved 2026-09-26).
-- Every request (manual now, automatic in 4B) follows the plan. Manual "Send now/Schedule" sets the first
-  message; reminders count from when the first message actually sent.
-- Stops (brief § When the sequence stops): Google click, private feedback submitted, cancel, any message of the
-  request failed/bounced/STOP/unsubscribed, client deleted, job reopened or cancelled. Cancel works while any
-  message is still pending (today it only works before the first send).
-
-Chosen engineering shape (performance design verdict to finish in the build session):
-- Reminders are queued lazily, one at a time (automation contract: never pre-expand; recheck consent, balance,
-  sender and current copy at send). Pre-queuing all reminders was rejected: it would hold SMS credit for days
-  and freeze the text.
-- The raw link token is never stored (only `token_hash`), so each message mints its own link, like the quote
-  follow-up worker (`QuoteAccessLink` in `src/lib/server/automation/worker.ts`). Needs a per-message token
-  table that the feedback page resolves (`private.live_review_request` today reads `review_requests.token_hash`).
-- Due reminders: a `next_send_at`-style due marker per request, claimed with `FOR UPDATE SKIP LOCKED`, a
-  per-organization cap, and a lease, drained by the existing automation worker process and wake (no new service,
-  no new cron). Queueing reuses Part 3's SMS/email queue code in `create_review_request`.
-- Status/history: one row per message (request, slot, delivery intent); the request status reads slot 0 plus
-  the stop reason.
-
-Acceptance: manual request → first message → reminder queued at +3 days local time → clicking Google or
-submitting feedback cancels the pending reminder; a failed message stops the rest; settings timeline saves
-with revision conflict protection; field member still limited to own jobs.
+- Every request follows the saved plan; reminders are queued lazily by `claim_review_reminders` /
+  `send_review_reminder` (drain `src/lib/server/reviews/reminders.ts`, rides the automation wake). An automatic
+  request must go through the same `create_review_request` so it gets the same plan and stops.
 
 ## 4B — Automatic ask (after 4A)
 
