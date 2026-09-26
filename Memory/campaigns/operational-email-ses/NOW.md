@@ -4,26 +4,35 @@ Goal: contractor email runs only on Amazon SES; Brevo stays only for platform/Ja
 
 ## State
 
-Parts 1–4b and 6 done. 2026-09-26 cleanup session (`462fdb4`): previews show the real From address, team
-lists show unnamed members by email and drop removed people, Email card errors show inside dialogs, Check
-runs provider calls in parallel. Brevo `notifications.` domain deleted; stale DLQ reply deleted.
+Parts 1–4b, 5A and 6 done. Part 5 product decisions settled with Jafar 2026-09-26 and written into
+`docs/contractor-email-contract.md` → "Request lifecycle and sender fallback": a domain is required to request,
+cancel only while the request waits on Jafar, never editable, re-request always allowed, and manual sends fall
+back to the business address (Jobber's guarantee). 5A shipped that fallback (`1410c2a9`).
 
 ## Exact next action
 
+Build Part 5B, the contractor request-setup flow (ROADMAP row 5B). Not yet started, nothing designed in code.
+Approved screens: contract section "Email setup screens". Pieces, in this order:
 
-1. M6e burst check DONE 2026-09-26 (dev server, Raad, real SES; 520-recipient campaign `6b1c9d14...`).
-   Enqueue -> SES accepted: baseline n=11 p50 1.36 s / p95 3.30 s. During the burst n=6: p50 3.7 s, p95 15.5 s,
-   max 17 s; probes that landed in a big send window (35-50 marketing sends) took 10.7-17 s, others 0.9-2.1 s.
-   Cause FOUND (worker wake ledger): each enqueue wakes the email worker at once, but the dev server ran one
-   request at a time -- the email wake only started (06:19:34) after the marketing outbox/events wakes finished
-   (06:19:33), and those had waited for a 11 s SES-inbound wake. Head-of-line blocking in one shared dev process;
-   not SES (14/s cap, we used ~2.5/s), not our queues/leases. Industry fix = separate worker processes per lane
-   (important email vs bulk); fold into the production Docker worker plan (email worker its own container).
-   Re-measure there; needs Jafar's approval of the topology first (CLAUDE.md approval boundary). No code change.
-   `limit_override` on Raad reset to null. All M6e test data deleted with Jafar's yes (campaign, 521 clients, group,
-   tag, probe intents); Raad back to its 20 real clients.
-2. Next: Part 5 (contractor request-setup flow; ROADMAP row 5) -- product decisions with Jafar, use grilling.
-   Part 7 after.
+1. Request table + RPCs: one non-terminal request per organization; statuses open → activating → completed,
+   plus cancelled (contractor) and declined (Jafar closes with a note the contractor sees).
+2. Contractor Settings → Email card at `src/routes/(app)/settings/communications/email/+page.svelte`, which
+   today dead-ends at "Ask your platform owner to provision and verify a sending domain".
+3. Owner Email card request block (`src/lib/components/jafar/EmailCard.svelte`): Set up prefilled with the
+   requested domain, plus Close request.
+4. Jafar alerting: "Waiting on you" notification (existing platform notifications feed the panel in
+   `src/routes/jafar/(protected)/+page.svelte`) and an `email_setup_requested` attention reason in
+   `src/routes/jafar/(protected)/organizations/+page.svelte` + `src/routes/api/jafar/organizations/+server.ts`.
+5. Browser-verify the whole flow on Raad, then Part 7.
+
+## Notes that change the next action
+
+- Another agent is working a different campaign in this same folder; commit only operational-email files.
+- `npm run check` OOMs; run `NODE_OPTIONS=--max-old-space-size=8192 npx svelte-check --tsconfig ./tsconfig.json`.
+  Three pre-existing "union type too complex" errors are not ours.
+- Regenerating `db:types` reformats the whole file; run `npx prettier --write src/lib/database.types.ts` after.
+- Found while verifying 5A: Raad's office, sales and finance test roles have no `conversations.send` permission,
+  so they cannot send customer messages at all. Unverified whether that is intended; may matter to 5B testing.
 
 ## Open asks for Jafar
 
