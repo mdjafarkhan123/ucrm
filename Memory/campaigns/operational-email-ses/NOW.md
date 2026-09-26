@@ -4,18 +4,20 @@ Goal: contractor email runs only on Amazon SES; Brevo stays only for platform/Ja
 
 ## State
 
-Part 4b (ROADMAP) approved 2026-09-26; decisions promoted to `docs/contractor-email-contract.md` "Conversations and
-replies". A (shared receipt rule) live-proven; B (spam/virus quarantine) committed. In-Reply-To proven live for
-Marketing (Simple) sends; operational (Raw) not yet. SES region is us-east-1.
+Part 4b (ROADMAP; contract "Conversations and replies"). A live-proven, B committed. C database half pushed live:
+`20260926140000` rewrote `record_communication_inbound_message` (From-reply matching, new optional
+`target_sender_authenticated`); all 8 cases verified in a rolled-back DO block on Raad data. Nothing receives on
+mail./news. yet (no MX), so no live behaviour changed. SES region us-east-1.
 
 ## Exact next action
 
-4b step C: make mail./news.<root> receive. (1) MX + teardown for both, relax `assertSubdomainNotOccupied`
-allow-lists (`[]` today), update pinned activation specs. (2) New migration extending
-`record_communication_inbound_message` (latest def `20260925180000`): today it matches only `purpose='receiving'`
-domains, else returns NULL and the worker deletes silently. Match order: alias -> In-Reply-To (delivery intent or
-`marketing_campaign_recipients.provider_message_id`) -> sender vs org contacts -> review queue; never guess.
-Then D: live-prove Marketing + operational From-replies and an operational In-Reply-To link on Raad.
+Finish 4b C: (1) worker passes `target_sender_authenticated` = SES `receipt.dkimVerdict` or `dmarcVerdict`
+status PASS (add both to the schema in `ses-inbound-email.ts`; spec it); regenerate `database.types.ts`.
+(2) Set up writes MX -> `sesInboundMxTarget()` on mail.<root> (`operational-domain-activation.ts`, after the
+sending identity verifies) and news.<root> (`marketing-domain-activation.ts`); relax their
+`assertSubdomainNotOccupied` allow-lists; teardown deletes both MX; update pinned specs. Sending rows must keep
+`inbound_mx_status='unchecked'` (table check). Then D: live-prove Marketing + operational From-replies and an
+operational In-Reply-To link on Raad.
 
 ## Blockers
 
