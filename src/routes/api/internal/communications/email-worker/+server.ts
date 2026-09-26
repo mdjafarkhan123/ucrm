@@ -2,7 +2,10 @@ import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getServerEnv } from '$lib/server/env';
+import { env } from '$env/dynamic/private';
 import { runMonitoredEmailWake } from '$lib/server/communications/email-worker';
+import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { emailDatabaseRaisedOwnerAlerts } from '$lib/server/jafar/owner-alerts';
 
 function authorized(request: Request) {
 	const token = request.headers.get('authorization')?.match(/^Bearer (.+)$/i)?.[1];
@@ -27,5 +30,16 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	const wakeCorrelationId = request.headers.get('x-wake-correlation-id') ?? randomUUID();
 	const result = await runMonitoredEmailWake({ wakeCorrelationId });
+
+	// Urgent alerts a database trigger raised (a contractor's protected email reserve running out) cannot
+	// email Jafar from inside the database; this wake does it. Best effort: it never fails the drain's result.
+	try {
+		await emailDatabaseRaisedOwnerAlerts(getOwnerSupabaseClient(), {
+			origin: env.APP_URL?.trim() || undefined
+		});
+	} catch (error) {
+		console.error('Could not email database-raised owner alerts.', error);
+	}
+
 	return json(result, { headers: { 'cache-control': 'no-store' } });
 };

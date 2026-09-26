@@ -2,11 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from './+server';
 import { getServerEnv } from '$lib/server/env';
 import { runMonitoredEmailWake } from '$lib/server/communications/email-worker';
+import { emailDatabaseRaisedOwnerAlerts } from '$lib/server/jafar/owner-alerts';
 
 vi.mock('$lib/server/env', () => ({ getServerEnv: vi.fn() }));
 vi.mock('$lib/server/communications/email-worker', () => ({
 	runMonitoredEmailWake: vi.fn()
 }));
+vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn(() => ({})) }));
+vi.mock('$lib/server/jafar/owner-alerts', () => ({ emailDatabaseRaisedOwnerAlerts: vi.fn() }));
 
 const secret = 'a-communications-worker-secret-at-least-32-characters';
 
@@ -83,5 +86,21 @@ describe('communications email worker route', () => {
 		const response = await POST(eventWith(`Bearer ${secret}`));
 
 		expect(response.status).toBe(401);
+	});
+
+	it('emails database-raised owner alerts after the drain, without failing the wake', async () => {
+		vi.mocked(runMonitoredEmailWake).mockResolvedValue({ outcome: 'idle' } as never);
+		vi.mocked(emailDatabaseRaisedOwnerAlerts).mockRejectedValue(new Error('outbox down'));
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+
+		const response = await POST(eventWith(`Bearer ${secret}`));
+
+		expect(response.status).toBe(200);
+		expect(emailDatabaseRaisedOwnerAlerts).toHaveBeenCalledTimes(1);
+	});
+
+	it('does not touch owner alerts for an unauthorized wake', async () => {
+		await POST(eventWith('Bearer another-secret'));
+		expect(emailDatabaseRaisedOwnerAlerts).not.toHaveBeenCalled();
 	});
 });

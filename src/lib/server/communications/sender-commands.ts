@@ -133,3 +133,78 @@ export async function updateCommunicationSender(
 	if (finalized.error) databaseCommandError(finalized.error);
 	return { sender: finalized.data, replayed: claim.replayed };
 }
+
+/**
+ * Removes a sender address. History that references it is kept; queued email is left to the claim command,
+ * which holds manual email for review and cancels automated email rather than re-sending it from someone else.
+ */
+export async function removeCommunicationSender(
+	client: SupabaseClient<Database>,
+	input: {
+		organizationId: string;
+		actorUserId: string;
+		senderId: string;
+		idempotencyKey: string;
+	}
+) {
+	const removed = await client.rpc('remove_communication_email_sender', {
+		target_organization_id: input.organizationId,
+		target_sender_id: input.senderId,
+		actor_user_id: input.actorUserId,
+		command_idempotency_key: input.idempotencyKey
+	});
+	if (removed.error) databaseCommandError(removed.error);
+	return parseClaim(removed.data);
+}
+
+export type SenderRemovalImpact = {
+	is_organization_default: boolean;
+	assigned_member_name: string | null;
+	queued_email_count: number;
+	other_enabled_sender_count: number;
+};
+
+/** What removing a sender will change, shown before the owner confirms. */
+export async function loadSenderRemovalImpact(
+	client: SupabaseClient<Database>,
+	organizationId: string,
+	senderId: string
+): Promise<SenderRemovalImpact | null> {
+	const { data: sender, error } = await client
+		.from('communication_email_senders')
+		.select('id, assigned_user_id, is_organization_default, lifecycle_state')
+		.eq('organization_id', organizationId)
+		.eq('id', senderId)
+		.neq('lifecycle_state', 'removed')
+		.maybeSingle();
+	if (error) throw error;
+	if (!sender) return null;
+
+	const [queued, others, member] = await Promise.all([
+		client
+			.from('communication_delivery_intents')
+			.select('id', { count: 'exact', head: true })
+			.eq('organization_id', organizationId)
+			.eq('sender_id', senderId)
+			.in('status', ['queued', 'claimed']),
+		client
+			.from('communication_email_senders')
+			.select('id', { count: 'exact', head: true })
+			.eq('organization_id', organizationId)
+			.eq('lifecycle_state', 'enabled')
+			.neq('id', senderId),
+		sender.assigned_user_id
+			? client.from('profiles').select('full_name').eq('id', sender.assigned_user_id).maybeSingle()
+			: Promise.resolve({ data: null, error: null })
+	]);
+	if (queued.error) throw queued.error;
+	if (others.error) throw others.error;
+	if (member.error) throw member.error;
+
+	return {
+		is_organization_default: sender.is_organization_default,
+		assigned_member_name: member.data?.full_name ?? null,
+		queued_email_count: queued.count ?? 0,
+		other_enabled_sender_count: others.count ?? 0
+	};
+}

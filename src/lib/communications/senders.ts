@@ -83,3 +83,36 @@ export function updateCommunicationSender(senderId: string, draft: SenderDraft) 
 	const { domain_id: _domainId, email_address: _emailAddress, ...body } = draft;
 	return saveSender(`/api/settings/communications/senders/${senderId}`, 'PATCH', body);
 }
+
+export type SenderRemovalImpact = {
+	is_organization_default: boolean;
+	assigned_member_name: string | null;
+	queued_email_count: number;
+	other_enabled_sender_count: number;
+};
+
+export const senderRemovalImpactKey = (senderId: string) =>
+	[...communicationSendersKey, senderId, 'removal-impact'] as const;
+
+export async function fetchSenderRemovalImpact(senderId: string): Promise<SenderRemovalImpact> {
+	const response = await fetch(`/api/settings/communications/senders/${senderId}/remove`);
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok)
+		throw httpError(
+			response,
+			result.error ?? 'What removing this sender affects could not be loaded.'
+		);
+	return (result as { impact: SenderRemovalImpact }).impact;
+}
+
+/** One removal attempt: the caller keeps the key so a retry of the same click cannot remove twice. */
+export async function removeCommunicationSender(senderId: string, idempotencyKey: string) {
+	const response = await fetch(`/api/settings/communications/senders/${senderId}/remove`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ idempotency_key: idempotencyKey })
+	});
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok)
+		throw new SenderWriteError(result.error ?? 'The email identity could not be removed.');
+}

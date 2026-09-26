@@ -139,3 +139,92 @@ export async function raiseOwnerAlert(
 
 	return notificationId;
 }
+
+/**
+ * Alerts a database trigger writes straight into platform_owner_notifications, where no email can be sent.
+ * The email worker's wake picks them up through emailDatabaseRaisedOwnerAlerts below.
+ */
+export const DATABASE_RAISED_EMAIL_ALERT_KINDS = [
+	'communication_email_essential_reserve_exhausted'
+] as const;
+
+// An alert older than this is history, not something to interrupt Jafar about.
+const DATABASE_ALERT_LOOKBACK_MS = 24 * 60 * 60 * 1000;
+const DATABASE_ALERT_BATCH = 20;
+
+/**
+ * Emails each recent database-raised alert once per recipient. The idempotency key is the same one
+ * raiseOwnerAlert uses, so an alert that already has an outbox row -- sent, or failed and waiting in
+ * Operations for a manual retry -- is skipped rather than re-sent every minute.
+ */
+export async function emailDatabaseRaisedOwnerAlerts(
+	client: SupabaseClient<Database>,
+	options: { origin?: string; now?: Date } = {}
+) {
+	const since = new Date(
+		(options.now ?? new Date()).getTime() - DATABASE_ALERT_LOOKBACK_MS
+	).toISOString();
+	const { data: notifications, error } = await client
+		.from('platform_owner_notifications')
+		.select('id, kind, severity, title, body, target_kind, target_id')
+		.in('kind', [...DATABASE_RAISED_EMAIL_ALERT_KINDS])
+		.gte('created_at', since)
+		.order('created_at')
+		.limit(DATABASE_ALERT_BATCH);
+	if (error) throw error;
+	if (!notifications?.length) return 0;
+
+	const settings = await getOrCreateOwnerSettings(client);
+	const recipients = settings.alert_recipient_emails ?? [];
+	if (recipients.length === 0) return 0;
+
+	const pending = notifications.flatMap((notification) =>
+		recipients.map((recipient) => ({
+			notification,
+			recipient,
+			key: `owner_alert:${notification.id}:${recipient}`
+		}))
+	);
+	const { data: existing, error: existingError } = await client
+		.from('platform_outbox_deliveries')
+		.select('idempotency_key')
+		.in(
+			'idempotency_key',
+			pending.map((item) => item.key)
+		);
+	if (existingError) throw existingError;
+	const alreadyQueued = new Set((existing ?? []).map((row) => row.idempotency_key));
+
+	let queued = 0;
+	for (const { notification, recipient, key } of pending) {
+		if (alreadyQueued.has(key)) continue;
+		const params: RaiseOwnerAlertParams = {
+			kind: notification.kind,
+			severity: notification.severity as AlertSeverity,
+			title: notification.title,
+			body: notification.body ?? undefined,
+			target: {
+				targetKind: notification.target_kind as NotificationTargetKind,
+				targetId: notification.target_id
+			},
+			origin: options.origin
+		};
+		const { subject, htmlContent, textContent } = buildEmail(params);
+		try {
+			await enqueueEmailDelivery(client, {
+				templateKey: 'owner_alert',
+				target: emailTarget(params.target),
+				idempotencyKey: key,
+				recipientEmail: recipient,
+				subject,
+				htmlContent,
+				textContent
+			});
+			queued += 1;
+		} catch (sendError) {
+			// The outbox row now exists and shows in Operations for a manual retry.
+			console.error(`Could not email the owner alert to ${recipient}.`, sendError);
+		}
+	}
+	return queued;
+}

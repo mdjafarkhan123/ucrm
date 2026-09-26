@@ -3,6 +3,7 @@ import type { Database } from '$lib/database.types';
 import {
 	SenderCommandError,
 	createCommunicationSender,
+	removeCommunicationSender,
 	updateCommunicationSender
 } from './sender-commands';
 
@@ -108,5 +109,46 @@ describe('contractor communication sender commands', () => {
 		await expect(createCommunicationSender(client as never, createInput)).rejects.toBeInstanceOf(
 			SenderCommandError
 		);
+	});
+
+	it('removes a sender in one database command', async () => {
+		const removed = {
+			...sender,
+			lifecycle_state: 'removed',
+			is_organization_default: false
+		} as Sender;
+		const client = clientWith({ data: { replayed: false, sender: removed }, error: null });
+
+		await expect(
+			removeCommunicationSender(client as never, {
+				organizationId: sender.organization_id,
+				actorUserId: createInput.actorUserId,
+				senderId: sender.id,
+				idempotencyKey: createInput.idempotencyKey
+			})
+		).resolves.toEqual({ replayed: false, sender: removed });
+		expect(client.rpc).toHaveBeenCalledTimes(1);
+		expect(client.rpc).toHaveBeenCalledWith('remove_communication_email_sender', {
+			target_organization_id: sender.organization_id,
+			target_sender_id: sender.id,
+			actor_user_id: createInput.actorUserId,
+			command_idempotency_key: createInput.idempotencyKey
+		});
+	});
+
+	it('reports an already removed sender as not found', async () => {
+		const client = clientWith({
+			data: null,
+			error: { code: 'P0002', message: 'The sender was not found.' }
+		});
+
+		await expect(
+			removeCommunicationSender(client as never, {
+				organizationId: sender.organization_id,
+				actorUserId: createInput.actorUserId,
+				senderId: sender.id,
+				idempotencyKey: createInput.idempotencyKey
+			})
+		).rejects.toMatchObject({ status: 404, reason: 'not_found' });
 	});
 });

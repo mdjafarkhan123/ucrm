@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { raiseOwnerAlert } from './owner-alerts';
+import { emailDatabaseRaisedOwnerAlerts, raiseOwnerAlert } from './owner-alerts';
 import { createOwnerNotification } from '$lib/server/events/outbox';
 import { enqueueEmailDelivery } from '$lib/server/events/dispatcher';
 import { getOrCreateOwnerSettings } from '$lib/server/jafar/owner-settings';
@@ -136,6 +136,97 @@ describe('raiseOwnerAlert', () => {
 		await raiseOwnerAlert(client, applicationAlert);
 
 		expect(mockedCreateNotification).toHaveBeenCalled();
+		expect(mockedEnqueueEmail).not.toHaveBeenCalled();
+	});
+});
+
+describe('emailDatabaseRaisedOwnerAlerts', () => {
+	const reserveAlert = {
+		id: 'notification-9',
+		kind: 'communication_email_essential_reserve_exhausted',
+		severity: 'urgent',
+		title: 'Protected essential email reserve exhausted',
+		body: 'Raad LTD has used its whole protected essential email reserve.',
+		target_kind: 'organization',
+		target_id: 'org-7'
+	};
+
+	// A fake client answering the two reads this makes: recent notifications, then existing outbox keys.
+	function clientReturning(notifications: unknown[], existingKeys: string[]) {
+		const notificationQuery = {
+			select: vi.fn().mockReturnThis(),
+			in: vi.fn().mockReturnThis(),
+			gte: vi.fn().mockReturnThis(),
+			order: vi.fn().mockReturnThis(),
+			limit: vi.fn().mockResolvedValue({ data: notifications, error: null })
+		};
+		const outboxQuery = {
+			select: vi.fn().mockReturnThis(),
+			in: vi.fn().mockResolvedValue({
+				data: existingKeys.map((idempotency_key) => ({ idempotency_key })),
+				error: null
+			})
+		};
+		return {
+			notificationQuery,
+			client: {
+				from: vi.fn((table: string) =>
+					table === 'platform_owner_notifications' ? notificationQuery : outboxQuery
+				)
+			} as never
+		};
+	}
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockedSettings.mockResolvedValue(settingsWith(['owner@example.com']) as never);
+		mockedEnqueueEmail.mockResolvedValue('delivery-1');
+	});
+
+	it('emails a recent reserve-exhausted alert once, keyed like raiseOwnerAlert, with a link', async () => {
+		const { client, notificationQuery } = clientReturning([reserveAlert], []);
+
+		await expect(
+			emailDatabaseRaisedOwnerAlerts(client, { origin: 'https://crm.example' })
+		).resolves.toBe(1);
+		expect(notificationQuery.in).toHaveBeenCalledWith('kind', [
+			'communication_email_essential_reserve_exhausted'
+		]);
+		expect(mockedEnqueueEmail).toHaveBeenCalledWith(
+			client,
+			expect.objectContaining({
+				templateKey: 'owner_alert',
+				idempotencyKey: 'owner_alert:notification-9:owner@example.com',
+				recipientEmail: 'owner@example.com',
+				subject: 'Urgent: Protected essential email reserve exhausted',
+				target: { targetKind: 'organization', targetId: 'org-7' },
+				textContent: expect.stringContaining('https://crm.example')
+			})
+		);
+	});
+
+	it('skips an alert that already has an outbox row, so it is not re-sent every minute', async () => {
+		const { client } = clientReturning(
+			[reserveAlert],
+			['owner_alert:notification-9:owner@example.com']
+		);
+
+		await expect(emailDatabaseRaisedOwnerAlerts(client)).resolves.toBe(0);
+		expect(mockedEnqueueEmail).not.toHaveBeenCalled();
+	});
+
+	it('reads no settings when there is nothing recent to send', async () => {
+		const { client } = clientReturning([], []);
+
+		await expect(emailDatabaseRaisedOwnerAlerts(client)).resolves.toBe(0);
+		expect(mockedSettings).not.toHaveBeenCalled();
+	});
+
+	it('sends nothing when no alert recipient is configured', async () => {
+		mockedSettings.mockResolvedValue(settingsWith([]) as never);
+		const { client } = clientReturning([reserveAlert], []);
+
+		await expect(emailDatabaseRaisedOwnerAlerts(client)).resolves.toBe(0);
 		expect(mockedEnqueueEmail).not.toHaveBeenCalled();
 	});
 });

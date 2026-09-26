@@ -21394,6 +21394,15 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			remove_communication_email_sender: {
+				Args: {
+					actor_user_id: string;
+					command_idempotency_key: string;
+					target_organization_id: string;
+					target_sender_id: string;
+				};
+				Returns: Json;
+			};
 			remove_invoice_payment_term: {
 				Args: {
 					expected_revision: number;

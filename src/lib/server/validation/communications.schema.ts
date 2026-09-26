@@ -100,6 +100,10 @@ export const communicationSenderUpdateSchema = z
 		path: ['allows_manual']
 	});
 
+export const communicationSenderRemovalSchema = z.object({
+	idempotency_key: z.string().uuid('Start a new removal and try again.')
+});
+
 const websiteChatChannelOption = z.object({
 	type: z.enum(['whatsapp', 'messenger']),
 	destination: z.string().trim().min(1, 'Enter a destination.').max(300)

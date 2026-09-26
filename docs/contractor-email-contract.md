@@ -89,7 +89,11 @@ before higher-volume optional email. Domain health is checked at least daily and
 failures. Suspicious changes, prolonged failure, replacement, or organization transfer require ownership
 revalidation.
 
-Organization administrators may create and disable sender addresses after domain verification.
+Organization administrators may create, disable, and remove sender addresses after domain verification.
+Removal (approved 2026-09-26) is a soft state change: history, reply aliases, and customer replies stay, the
+address can be added again, and a sending domain can only be removed once it has no live senders. The
+confirmation names the effects first (business default, assigned staff member, emails still waiting); queued
+email is never re-sent from another identity -- manual email is held for review, automated email is cancelled.
 Regular staff use only identities allowed by their role or assignment. Jafar may inspect, restrict, or
 disable any sender.
 
