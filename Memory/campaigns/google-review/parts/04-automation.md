@@ -9,16 +9,26 @@ Split: **4A reminder plan** (every request, manual included), then **4B automati
   `send_review_reminder` (drain `src/lib/server/reviews/reminders.ts`, rides the automation wake). An automatic
   request must go through the same `create_review_request` so it gets the same plan and stops.
 
-## 4B — Automatic ask (after 4A)
+## 4B — Automatic ask (engine half done `ea9840c`)
 
-- New trigger `job.work_completed` (subject `job`): emitted in the job-close transaction when every Visit is
-  completed (a close that removed unfinished Visits never emits), and on each completed Visit of a recurring job
-  with the completed-visit count. Trigger config: recurring "after every N completed visits", off by default.
-- New action `action.send_review_request` (no copy in the recipe; content comes from Reviews settings, as
-  HighLevel's action points to Reputation Settings). Preset "Ask for a Google review". Cannot activate without a
-  saved Google link.
-- Action-time rechecks: job still eligible, a usable main contact for the chosen channel, Google link present,
-  no automatic request to this client in 6 months (manual requests don't count). Skips show a plain reason.
-- Automatic email uses a sender with `allows_automated`.
-- Engine touch points: `intake_automation_events`, `advance_automation_work_item`, a job stop-outcome function,
-  worker effect, `catalog.ts`, `presets.ts`, and definition validation.
+Built: event `job.work_completed` via trigger on `job_events` (one-off `job_closed`, recurring `visit_completed`),
+emitted only while the org has an active recipe on it. `close_job` already refuses unfinished visits, so a close
+is never a cancellation here. Trigger config `recurring_every_visits` (absent = off). Action
+`action.send_review_request` config `{channel}`; effect = `automation_review_request_draft` +
+`perform_automation_review_request_effect` (six-month rule counts only automatic requests that sent a message;
+per-client advisory lock). Skips create a visible request: status `not_sent`, stop_reason `not_sent` /
+`no_contact` / `recently_asked` + detail. Activate route refuses without a Google link (resume does not; the
+effect then records "Add your Google review link").
+
+Remaining:
+- Builder: trigger control "Recurring jobs: don't ask / after every N completed visits" (1–52); a
+  `ReviewRequestActionEditor` reusing `ComposerChannelMenu` (SMS/Email, not-ready reason + setup link,
+  readiness from `loadReviewChannelReadiness` via a new automation-permission GET, plus "wording and reminders
+  come from Review settings" link and a missing-Google-link warning); "Add a review request" button; step icon;
+  always-on stop description currently says "website inquiries" — make it subject-neutral.
+- Labels for `not_sent`, `recently_asked` ("Already asked automatically in the last 6 months"), and origin
+  "Automatic" in `src/lib/reviews/requests.ts` and the panel history.
+- Worker spec case; SummaryRail, RecipeDetailView, activation-preview step labels.
+- Performance verification: EXPLAIN the recipe probe (`automation_recipes_active_trigger_idx`) and the cooldown
+  query (`review_requests_client_idx`); time `complete_job_visit` with an active recipe (rolled back); intake of
+  a batch of job events. Capacity not established.
