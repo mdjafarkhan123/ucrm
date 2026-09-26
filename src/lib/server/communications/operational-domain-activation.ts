@@ -190,19 +190,43 @@ async function reconcileOperationalDomain(input: {
 	// that do not depend on each other now run together; every step that must precede another (MAIL FROM
 	// before DNS, occupancy before any write, records before the read-back) still waits for it.
 	const configurationSetName = operationalConfigurationSetName(organizationId);
-	const [{ id: zoneId }, tenant, eventDestinationReady, sendingIdentity, receivingIdentity] =
-		await Promise.all([
-			// The managed zone that CONTAINS the root, by longest suffix.
-			resolveCloudflareZone(root),
-			reconcileSesTenant(client, organizationId),
-			// Without the event destination the operational dispatcher would send successfully and never learn
-			// what happened to it -- the same call Marketing's configuration set reuses as-is.
-			ensureSesConfigurationSet(configurationSetName).then(() =>
-				ensureSesEventDestination(configurationSetName)
-			),
-			reconcileSesIdentity(sending),
-			reconcileSesIdentity(receiving)
-		]);
+	const [
+		{ zoneId, sendingExisting, mailFromExisting, receivingExisting },
+		tenant,
+		eventDestinationReady,
+		sendingIdentity,
+		receivingIdentity
+	] = await Promise.all([
+		// The managed zone that CONTAINS the root, by longest suffix, then what already sits at the three names.
+		// Reading is not writing: the occupancy check itself still runs below, before any write.
+		resolveCloudflareZone(root).then(async ({ id }) => {
+			const [sendingRecords, mailFromRecords, receivingRecords] = await Promise.all([
+				listCloudflareDnsRecords(id, sending),
+				listCloudflareDnsRecords(id, mailFrom),
+				listCloudflareDnsRecords(id, receiving)
+			]);
+			return {
+				zoneId: id,
+				sendingExisting: sendingRecords,
+				mailFromExisting: mailFromRecords,
+				receivingExisting: receivingRecords
+			};
+		}),
+		reconcileSesTenant(client, organizationId),
+		// Without the event destination the operational dispatcher would send successfully and never learn
+		// what happened to it -- the same call Marketing's configuration set reuses as-is.
+		ensureSesConfigurationSet(configurationSetName).then(() =>
+			ensureSesEventDestination(configurationSetName)
+		),
+		reconcileSesIdentity(sending),
+		reconcileSesIdentity(receiving)
+	]);
+
+	// Occupancy: none of the three names may already serve another service. SES's own mail hosts are allowed
+	// so a re-run and a Recheck are safe.
+	assertSubdomainNotOccupied(sending, sendingExisting, [sesInboundMxTarget()]);
+	assertSubdomainNotOccupied(mailFrom, mailFromExisting, [sesMailFromMxTarget()]);
+	assertSubdomainNotOccupied(receiving, receivingExisting, [sesInboundMxTarget()]);
 
 	// Point the identity at the custom MAIL FROM before writing DNS, so SES is already watching for the records
 	// when they appear. BehaviorOnMxFailure falls back to amazonses.com meanwhile, so nothing bounces while the
@@ -218,17 +242,6 @@ async function reconcileOperationalDomain(input: {
 	const receivingRecords = sesDkimRecords(receivingIdentity, receiving);
 	assertUnderSubdomain(sendingRecords, sending);
 	assertUnderSubdomain(receivingRecords, receiving);
-
-	// Occupancy: none of the three names may already serve another service. SES's own mail hosts are allowed
-	// so a re-run and a Recheck are safe.
-	const [sendingExisting, mailFromExisting, receivingExisting] = await Promise.all([
-		listCloudflareDnsRecords(zoneId, sending),
-		listCloudflareDnsRecords(zoneId, mailFrom),
-		listCloudflareDnsRecords(zoneId, receiving)
-	]);
-	assertSubdomainNotOccupied(sending, sendingExisting, [sesInboundMxTarget()]);
-	assertSubdomainNotOccupied(mailFrom, mailFromExisting, [sesMailFromMxTarget()]);
-	assertSubdomainNotOccupied(receiving, receivingExisting, [sesInboundMxTarget()]);
 
 	// The two record sets sit under different names, so writing them together cannot collide. Authorizing the
 	// tenant to send from this identity with this configuration set runs on every pass rather than only on the
@@ -258,12 +271,31 @@ async function reconcileOperationalDomain(input: {
 	// required: until it resolves, SES falls back to its own MAIL FROM and mail still flows.
 	const ready = providerVerified && providerAuthenticated;
 
+	// The reply subdomain touches only its own name and row, so it runs alongside the sending row's work below.
+	const receivingReady =
+		settledReceiving.dkimSigningEnabled &&
+		sesStatusToDns(settledReceiving.dkimStatus) === 'passing';
+	const repliesPending = receivingReady
+		? reconcileReplyIngestion({
+				client,
+				organizationId,
+				root,
+				receiving,
+				zoneId,
+				receivingId
+			})
+		: Promise.resolve(null);
+	// Awaited below; this only stops an early failure on the sending side from leaving it unobserved.
+	repliesPending.catch(() => {});
+
 	// Replies to the From address: only once SES has verified mail.<root>, since SES will not receive for an
 	// unverified identity. Occupancy was asserted above, before anything was written.
-	const fromReplies = ready ? await routeSendingRepliesToSes(zoneId, sending) : null;
+	const [fromReplies, history] = await Promise.all([
+		ready ? routeSendingRepliesToSes(zoneId, sending) : null,
+		readDomainHistory(client, sendingId)
+	]);
 
 	const now = new Date().toISOString();
-	const history = await readDomainHistory(client, sendingId);
 	const lifecycleState = nextLifecycleState(ready, history);
 
 	const domainId = await upsertDomainRow(client, sendingId, {
@@ -293,19 +325,7 @@ async function reconcileOperationalDomain(input: {
 		updated_at: now
 	});
 
-	const receivingReady =
-		settledReceiving.dkimSigningEnabled &&
-		sesStatusToDns(settledReceiving.dkimStatus) === 'passing';
-	const replies = receivingReady
-		? await reconcileReplyIngestion({
-				client,
-				organizationId,
-				root,
-				receiving,
-				zoneId,
-				receivingId
-			})
-		: null;
+	const replies = await repliesPending;
 
 	return {
 		root_domain: root,
@@ -342,11 +362,9 @@ async function reconcileOperationalDomain(input: {
 }
 
 async function writeRecords(zoneId: string, records: ExpectedRecord[]): Promise<number> {
-	let written = 0;
-	for (const record of records) {
-		if ((await reconcileRecord(zoneId, record)) !== 'unchanged') written += 1;
-	}
-	return written;
+	// Every record in a set has its own name and type, so they cannot collide and are written together.
+	const outcomes = await Promise.all(records.map((record) => reconcileRecord(zoneId, record)));
+	return outcomes.filter((outcome) => outcome !== 'unchanged').length;
 }
 
 async function readReceivingRow(
