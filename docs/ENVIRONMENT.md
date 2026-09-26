@@ -59,8 +59,10 @@ When adding a variable:
 Customer email replies arrive through fixed-name resources in the SES account and region (`us-east-1`), named
 in `src/lib/server/communications/ses-env.ts`:
 
-- receipt rule set `ucrm-ses-inbound-rules`, one rule per organization, written by the Email card's Set up and
-  Check: a single S3 action that stores the email in `ucrm-ses-inbound-mime` and notifies the topic;
+- receipt rule set `ucrm-ses-inbound-rules` holding ONE rule, `ucrm-inbound-all`, ensured by the Email card's
+  Set up and Check: no recipients (every verified domain whose MX points at SES), spam/virus scanning on, and a
+  single S3 action that stores the email under `inbound/` in `ucrm-ses-inbound-mime` and notifies the topic. SES
+  allows only 200 rules per set, so never add per-organization rules;
 - SNS topic `ucrm-ses-inbound`, which only `ses.amazonaws.com` from this account may publish to;
 - SQS `ucrm-ses-inbound`, subscribed to the topic, the durable copy (redrive to `ucrm-ses-inbound-dlq` after 5
   receives), drained by `/api/internal/communications/ses-inbound-worker` every minute from pg_cron;
