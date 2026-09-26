@@ -23,8 +23,12 @@ Approved by Jafar 2026-09-25. Product truth: `docs/google-review-campaign-owner-
    back): pages 14-58 ms; a status filter matching nothing scans all rows, ~1.1 s. **5B Private feedback tab**:
    Built 2026-09-26, live-checked as owner (tab + count, cards, Start contacting, dark mode) and sales (no tab).
    Migrations `20260926200000` (list/set-status functions, new-feedback bell alert to owners/admins, bell only,
-   no email) and `20260926210000` (trigger writing review milestones to client + job history). Not yet done: see
-   NOW.md. Feedback list perf not measured (keyset on `review_feedback_organization_submitted_idx`; an
-   organization's feedback is a small fraction of its requests).
+   no email) and `20260926210000` (trigger writing review milestones to client + job history). Closed 2026-09-26:
+   the history trigger, the bell alert row and office-role access were all proven in a real browser; a Reviews
+   tab click left its panel empty and was fixed (`74af3495`); the client half of the history had no surface, so
+   the client page gained the work records' History panel (`088123cd`). Feedback list perf not measured (keyset
+   on `review_feedback_organization_submitted_idx`; an organization's feedback is a small fraction of its
+   requests). Assigning a feedback item to a person was never built — the approved 5B shape had status only, and
+   the brief's "assign" is still open.
 6. **Live verification** — Planned; needs 4 and 5. Real SMS/email, every role login, performance verification.
    Then tell the jafar-panel campaign its review-link slice is unblocked.

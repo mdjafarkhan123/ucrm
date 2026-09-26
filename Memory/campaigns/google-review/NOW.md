@@ -1,30 +1,29 @@
 # Google review — NOW
 
 Goal: build the Google review campaign in `docs/google-review-campaign-owner-brief.md`.
-Active part: 5B — live checks done 2026-09-26. One gap blocks closing Part 5; it needs Jafar's answer.
+Active part: 6 — Live verification. Part 5 closed 2026-09-26.
 
-Verified live (Raad LTD, real browser): scheduling a request on job #2 then cancelling it writes
-`review.requested` and `review.cancelled` to `activity_events` for both client and job, and both show in the
-job's History panel. The bell alert row opens `/reviews?tab=feedback`. The office role sees the tab and its
-contents. Fixed and committed `74af3495`: a Reviews tab click left the panel empty because `page.url` does not
-follow `replaceState`; the open tab now lives in page state.
+Part 5 closed this session: the `review.requested` / `review.cancelled` trigger proven end to end in a real
+browser (scheduled a request on Raad job #2, cancelled it, both rows landed for client and job and both show
+in the panels); the bell alert row opens `/reviews?tab=feedback`; the office role sees the Private feedback
+tab and its contents. Two fixes committed: `74af3495` (a Reviews tab click left its panel empty — `page.url`
+does not follow `replaceState`, so the open tab now lives in page state) and `088123cd` (the client page had
+no history surface at all, so it gained the work records' History panel, reusing `ActivityFeed`).
 
-BLOCKER — ask Jafar before closing Part 5: the brief's "same request activity appears in the client history" has
-nowhere to appear. `src/routes/(app)/clients/[id=uuid]/+page.svelte` renders no activity feed (tabs are Details
-and Communication; `ActivityFeed.svelte` is used only on the quote and request pages), so the `entity_type =
-'client'` rows are invisible. Options put to him: add a client History rail card or tab mirroring the job one, or
-leave the rows until the Clients area grows its own history. Then close Part 5 and start Part 6.
+Next action — Part 6, live verification, needs Jafar present for the parts only he can do:
+1. Ask Jafar to delete this campaign's live test data first, or confirm I should (Raad LTD): review requests
+   `f251b5a8…` and `572757f9…` (tokens `UCRMTEST5B` + 32×`a` + `1`/`2`) with their private feedback, and
+   `814797d9…` (job #2, created and cancelled while testing) with its 4 `activity_events` rows and the bell
+   alerts. The two fake complaints are visible on his Reviews page until then.
+2. Then Part 6 proper: a real end-to-end ask on a real job to a real inbox, every role login, and the
+   performance verification. Raad has no SMS number, so SMS cannot be proven live here.
+3. When Part 6 passes, tell the jafar-panel campaign its review-link slice is unblocked.
 
-Also raised, not acted on, all outside this campaign: the same stale-`page.url` tab pattern in
-`clients/[id=uuid]`, `marketing`, `marketing/campaigns/[id]`, `jafar/*` and two components; the client page's
-"Work overview" and "Client schedule" are hardcoded placeholders; the office role cannot load client
-communication history; the insert summary says "sent" even when the request is only scheduled.
+Open with Jafar, not decided: the brief mentions assigning a private-feedback item to a person; the approved
+5B shape had status only, so it was never built.
 
-Live test data to delete when Part 5 closes (Raad LTD): requests `f251b5a8…` and `572757f9…` (tokens
-`UCRMTEST5B` + 32×`a` + `1`/`2`, with private feedback); `814797d9…` (job #2, created and cancelled this
-session) plus its 4 `activity_events` rows; and the bell alerts.
-
-Facts: Raad has no SMS number. Jafar wants the design "best, beautiful, modern, professional, easy to use".
-Known unrelated: `npm run check` needs NODE_OPTIONS=--max-old-space-size=8192; 3 "union type too complex" errors
-and 75 failing quote/settings unit tests predate this. Never raise SQLSTATE 40001 for a stale edit; use P0409.
-Supabase CLI is `npx supabase`. Another agent owns the uncommitted AGENTS.md/CLAUDE.md/communications files.
+Facts: Jafar wants the design "best, beautiful, modern, professional, easy to use". `npm run check` needs
+NODE_OPTIONS=--max-old-space-size=8192 and reports 3 pre-existing "union type too complex" errors; 75
+quote/settings unit tests were already failing. Never raise SQLSTATE 40001 for a stale edit; use P0409.
+Supabase CLI is `npx supabase`. Another agent is working in this same folder on Communications email setup —
+leave its uncommitted files alone and stage only this campaign's.
