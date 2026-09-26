@@ -18,6 +18,7 @@ import {
 	parseSesInboundMessage,
 	parseSesReceiptNotification,
 	sesInboundEventKey,
+	sesQuarantineReason,
 	type SesReceiptNotification
 } from './ses-inbound-email';
 import { getSesEnv, sesInboundDlqUrl, sesInboundQueueUrl } from './ses-env';
@@ -216,6 +217,7 @@ export type SesInboundDrainResult = {
 	received: number;
 	recorded: number;
 	duplicates: number;
+	quarantined: number;
 	invalid: number;
 	stoppedBy: 'idle' | 'max_messages' | 'time_budget';
 };
@@ -266,7 +268,7 @@ async function ingestOneMessage(
 	client: SesInboundWorkerClient,
 	fetchObject: FetchObject,
 	message: SqsMessage
-): Promise<'recorded' | 'duplicate' | 'invalid'> {
+): Promise<'recorded' | 'duplicate' | 'quarantined' | 'invalid'> {
 	let notification: SesReceiptNotification | null;
 	try {
 		notification = parseSesReceiptNotification(JSON.parse(message.body));
@@ -295,6 +297,17 @@ async function ingestOneMessage(
 	if (seenBefore) callback = await client.findCallbackEventId(providerEventKey);
 	if (callback.error || !callback.data)
 		throw rpcError('Could not record an SES inbound callback event', callback.error);
+
+	// Quarantine before the MIME is even fetched: it is never parsed, filed to a conversation, linked to a contact,
+	// or forwarded. The callback row above keeps SES's verdicts as the audit trail; the stored MIME expires with
+	// the bucket's lifecycle rule.
+	const quarantineReason = sesQuarantineReason(notification);
+	if (quarantineReason) {
+		console.warn(
+			`Quarantined an SES inbound message SES scanned as ${quarantineReason} FAIL (${notification.mail.messageId}).`
+		);
+		return 'quarantined';
+	}
 
 	// A failed S3 fetch or MIME parse is treated as transient and per-message -- an AWS blip, a permissions
 	// edge case, or one malformed message -- never a reason to abort the whole drain. It is left in the queue
@@ -380,6 +393,7 @@ export async function drainSesInboundQueue(
 		received: 0,
 		recorded: 0,
 		duplicates: 0,
+		quarantined: 0,
 		invalid: 0,
 		stoppedBy: 'idle'
 	};
@@ -406,6 +420,7 @@ export async function drainSesInboundQueue(
 			const outcome = await ingestOneMessage(client, fetchObject, message);
 			if (outcome === 'recorded') result.recorded += 1;
 			else if (outcome === 'duplicate') result.duplicates += 1;
+			else if (outcome === 'quarantined') result.quarantined += 1;
 			else {
 				result.invalid += 1;
 				continue;

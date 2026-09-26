@@ -15,6 +15,9 @@ import { getSesEnv, SES_INBOUND_BUCKET_NAME, type SesEnv } from './ses-env';
 // why the S3 action, and why the real recipient must come from SES's own trusted envelope `receipt.recipients`
 // rather than the MIME To/Cc headers, which SES documents can legitimately differ from the true recipients.
 
+// SES's verdict on the receipt rule's spam/virus scan (ScanEnabled). Values: PASS, FAIL, GRAY, PROCESSING_FAILED.
+const sesVerdictSchema = z.object({ status: z.string() }).passthrough().optional();
+
 const sesReceiptNotificationSchema = z
 	.object({
 		notificationType: z.literal('Received'),
@@ -27,6 +30,8 @@ const sesReceiptNotificationSchema = z
 		receipt: z
 			.object({
 				recipients: z.array(z.string().trim().min(3)).min(1),
+				spamVerdict: sesVerdictSchema,
+				virusVerdict: sesVerdictSchema,
 				action: z
 					.object({
 						type: z.literal('S3'),
@@ -48,6 +53,15 @@ export function parseSesReceiptNotification(value: unknown): SesReceiptNotificat
 
 export function sesInboundEventKey(notification: SesReceiptNotification): string {
 	return `ses-inbound:${notification.mail.messageId}`;
+}
+
+// SES scans but never acts on its own verdicts ("SES doesn't take any actions on received email based on the
+// results"). A definite FAIL is quarantined, following AWS's own drop-spam receipt example; GRAY and
+// PROCESSING_FAILED mean "not sure" and are filed normally, where the existing review rules still apply.
+export function sesQuarantineReason(notification: SesReceiptNotification): 'virus' | 'spam' | null {
+	if (notification.receipt.virusVerdict?.status === 'FAIL') return 'virus';
+	if (notification.receipt.spamVerdict?.status === 'FAIL') return 'spam';
+	return null;
 }
 
 // The trusted envelope recipients SES itself validated during the SMTP transaction -- never the MIME To/Cc.

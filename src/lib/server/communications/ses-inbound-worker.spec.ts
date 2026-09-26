@@ -159,6 +159,57 @@ describe('drainSesInboundQueue', () => {
 		expect(removed).toEqual(['receipt-1']);
 	});
 
+	it.each([
+		['virus', { virusVerdict: { status: 'FAIL' } }],
+		['spam', { spamVerdict: { status: 'FAIL' } }]
+	])(
+		'quarantines a %s FAIL without fetching, filing, or keeping it queued',
+		async (_kind, verdict) => {
+			const { client, rpc, insertCallbackEvent } = fakeClient();
+			const fetchSpy = vi.fn(async () => plainTextMime);
+			const flagged: SqsMessage = {
+				receiptHandle: 'receipt-flagged',
+				body: JSON.stringify({
+					...validNotification,
+					receipt: { ...validNotification.receipt, ...verdict }
+				})
+			};
+			const { sqs, removed } = fakeSqs([[flagged], []]);
+
+			const result = await drainSesInboundQueue({ client, sqs, fetchObject: fetchSpy });
+
+			expect(result).toMatchObject({ received: 1, recorded: 0, quarantined: 1, invalid: 0 });
+			// The callback row (with SES's verdicts in its payload) is the audit trail; nothing reaches a conversation.
+			expect(insertCallbackEvent).toHaveBeenCalledTimes(1);
+			expect(fetchSpy).not.toHaveBeenCalled();
+			expect(rpc).not.toHaveBeenCalledWith(
+				'record_communication_inbound_message',
+				expect.anything()
+			);
+			expect(removed).toEqual(['receipt-flagged']);
+		}
+	);
+
+	it('files a message whose verdicts are GRAY or PROCESSING_FAILED', async () => {
+		const { client } = fakeClient();
+		const unsure: SqsMessage = {
+			receiptHandle: 'receipt-unsure',
+			body: JSON.stringify({
+				...validNotification,
+				receipt: {
+					...validNotification.receipt,
+					spamVerdict: { status: 'GRAY' },
+					virusVerdict: { status: 'PROCESSING_FAILED' }
+				}
+			})
+		};
+		const { sqs } = fakeSqs([[unsure], []]);
+
+		const result = await drainSesInboundQueue({ client, sqs, fetchObject });
+
+		expect(result).toMatchObject({ recorded: 1, quarantined: 0 });
+	});
+
 	it('leaves an unparseable message body undeleted for the DLQ policy', async () => {
 		const { client } = fakeClient();
 		const badMessage: SqsMessage = { receiptHandle: 'receipt-bad', body: 'not json' };
