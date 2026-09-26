@@ -10,19 +10,16 @@ runs provider calls in parallel. Brevo `notifications.` domain deleted; stale DL
 
 ## Exact next action
 
-Check speed done 2026-09-26 (`0cb2f3a`): measured live on Raad 6-8 s -> 3.6-4.9 s (server side, no browser).
 
-1. Part 6 follow-up: Marketing M6e burst check (ROADMAP row 6; M6c method/baseline in git `716250a`
-   marketing ROADMAP M6c row). IN PROGRESS 2026-09-26: campaign `6b1c9d14-ccfd-45ec-bd9d-7762c27b9669`
-   launched 06:09 UTC to 520 SES-simulator clients (tag/group/clients named "M6e ... (safe to delete)", plus
-   client "M6e ops probe"). Baseline operational (enqueue -> SES accepted, n=11): p50 1.36 s, p95 3.30 s.
-   During-burst probes were blocked by the permission check (queues real sends on Raad's SES account); the
-   campaign will have finished unmeasured. Next session: get Jafar's go-ahead for the probe sends, launch a
-   second campaign to the same "M6e burst test" group (clients stay opted in), and run the probe (enqueue
-   `enqueue_manual_communication_email` to the ops-probe client every 25 s; subjects "M6e probe during N")
-   while it sends; compare with the baseline and M6c's p50 1.08 s/p95 1.73 s. Still active and must be ended:
-   `marketing_warmup_state.limit_override = 1000` on Raad (set back to null). Deleting test data needs Jafar's yes.
-2. Then Part 5 (contractor request-setup flow; ROADMAP row 5) -- product decisions with Jafar, use grilling.
+1. M6e burst check DONE 2026-09-26 (dev server, Raad, real SES; 520-recipient campaign `6b1c9d14...`).
+   Enqueue -> SES accepted: baseline n=11 p50 1.36 s / p95 3.30 s. During the burst n=6: p50 3.7 s, p95 15.5 s,
+   max 17 s; probes that landed in a big send window (35-50 marketing sends) took 10.7-17 s, others 0.9-2.1 s.
+   So a big marketing send can delay one operational email by up to ~17 s (not lost). Cause NOT isolated:
+   marketing and email workers are separate endpoints, so it is SES-rate or dev-server CPU; small n. Decide with
+   Jafar whether to chase it (e.g. give operational email its own reserved send capacity) or accept.
+   `limit_override` on Raad reset to null. Left for Jafar's yes to delete: campaign "M6e burst test (safe to
+   delete)", its 520 simulator clients/tag/group, client "M6e ops probe", the 17 probe intents.
+2. Next: Part 5 (contractor request-setup flow; ROADMAP row 5) -- product decisions with Jafar, use grilling.
    Part 7 after.
 
 ## Open asks for Jafar
