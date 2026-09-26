@@ -14,8 +14,18 @@ back to the business address (Jobber's guarantee). 5A shipped that fallback (`14
 Build Part 5B, the contractor request-setup flow (ROADMAP row 5B). Not yet started, nothing designed in code.
 Approved screens: contract section "Email setup screens". Pieces, in this order:
 
-1. Request table + RPCs: one non-terminal request per organization; statuses open → activating → completed,
-   plus cancelled (contractor) and declined (Jafar closes with a note the contractor sees).
+1. Request table + RPCs: one live request per organization (partial unique index). Open design fork, decide
+   first: either the request row tracks setup progress itself (needs two lines added to whatever command the
+   owner's Set up calls, plus a transition when a sending domain verifies), or it stays a plain ask with only
+   `open` / `cancelled` / `declined` and both cards derive "Setting up" and "Ready" from the existing
+   `communication_email_domains` rows. Deriving avoids editing Part 2a/3 provisioning code and cannot drift,
+   but every place that counts open requests (owner card block, Jafar alert, attention filter) must then also
+   exclude organizations that already have a sending domain. Follow the in-house precedent
+   `communication_sms_registrations` (baseline line 20347) for table shape: one status column with a check, a
+   composite lifecycle check tying status to which timestamps and notes may be set, server-only RLS
+   (`revoke all from public, anon, authenticated`, `grant all to service_role`), writes through named commands.
+   Gate on `requireOrganizationAdmin`, as the SMS registration routes do, which matches the contract's
+   "owners and admins".
 2. Contractor Settings → Email card at `src/routes/(app)/settings/communications/email/+page.svelte`, which
    today dead-ends at "Ask your platform owner to provision and verify a sending domain".
 3. Owner Email card request block (`src/lib/components/jafar/EmailCard.svelte`): Set up prefilled with the
