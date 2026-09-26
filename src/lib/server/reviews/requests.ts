@@ -18,6 +18,7 @@ import {
 } from '$lib/reviews/settings';
 import type { ReviewRequestContext, ReviewRequestSummary } from '$lib/reviews/requests';
 import type { ReviewWorkspaceCounts, ReviewWorkspacePage } from '$lib/reviews/workspace';
+import type { ReviewFeedbackPage, ReviewFeedbackStatus } from '$lib/reviews/feedback';
 
 const TOKEN_BYTES = 32;
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
@@ -379,4 +380,52 @@ export async function loadReviewWorkspaceCounts(
 	});
 	if (error) throw error;
 	return (data as unknown as ReviewWorkspaceCounts | null) ?? null;
+}
+
+// Google review campaign Part 5B: the Private feedback tab. Null when the member may not see private feedback.
+export async function listReviewFeedback(
+	organizationId: string,
+	actorId: string,
+	input: { status?: string; search?: string; cursor?: string }
+): Promise<ReviewFeedbackPage | null> {
+	const separator = input.cursor?.lastIndexOf('|') ?? -1;
+	const { data, error } = await getReviewRequestClient().rpc('list_review_feedback', {
+		p_organization_id: organizationId,
+		p_actor_id: actorId,
+		p_status: input.status as string,
+		p_search: input.search as string,
+		p_cursor_submitted_at: (input.cursor && separator > 0
+			? input.cursor.slice(0, separator)
+			: undefined) as string,
+		p_cursor_id: (input.cursor && separator > 0
+			? input.cursor.slice(separator + 1)
+			: undefined) as string
+	});
+	if (error) throw error;
+	if (!data) return null;
+	const result = data as unknown as {
+		feedback: ReviewFeedbackPage['feedback'];
+		next_cursor: { submitted_at: string; id: string } | null;
+	};
+	return {
+		feedback: result.feedback,
+		next_cursor: result.next_cursor
+			? `${result.next_cursor.submitted_at}|${result.next_cursor.id}`
+			: null
+	};
+}
+
+export async function setReviewFeedbackStatus(
+	organizationId: string,
+	actorId: string,
+	feedbackId: string,
+	status: ReviewFeedbackStatus
+): Promise<void> {
+	const { error } = await getReviewRequestClient().rpc('set_review_feedback_status', {
+		p_organization_id: organizationId,
+		p_actor_id: actorId,
+		p_feedback_id: feedbackId,
+		p_status: status
+	});
+	if (error) throw refusalFrom(error) ?? error;
 }

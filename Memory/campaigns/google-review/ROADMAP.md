@@ -18,11 +18,13 @@ Approved by Jafar 2026-09-25. Product truth: `docs/google-review-campaign-owner-
    #24, 2026-09-26 — automatic email delivered to a real inbox via SES, confirmed in Gmail; recipe `34803b3e`
    paused afterward).
 5. **Reviews workspace** — Approved 2026-09-26 as two builds. **5A page + Requests tab**: Built and browser-verified
-   2026-09-26 (`/reviews`; menu item now probes `reviews.view`; `list_review_requests` + `review_request_counts`;
-   owner and office see it, sales gets a no-access screen). Perf on 50k synthetic requests (rolled back): pages
-   14-58 ms; a status filter matching nothing scans all rows, ~1.1 s (not load-tested beyond that; search with many
-   clients not measured). Not yet checked: field-member login, dark mode, cancel-request click, client/job history
-   still only shows in the request panel. **5B Private feedback tab**: Planned; recovery cards New → Contacting
-   customer → Resolved → Closed (`review_feedback.status`), `reviews.feedback`, bell alert to owners/admins only.
+   2026-09-26 (`/reviews`; `list_review_requests` + `review_request_counts`; owner and office see it, sales gets
+   a no-access screen; field member sees no menu item; dark mode fine). Perf on 50k synthetic requests (rolled
+   back): pages 14-58 ms; a status filter matching nothing scans all rows, ~1.1 s. **5B Private feedback tab**:
+   Built 2026-09-26, live-checked as owner (tab + count, cards, Start contacting, dark mode) and sales (no tab).
+   Migrations `20260926200000` (list/set-status functions, new-feedback bell alert to owners/admins, bell only,
+   no email) and `20260926210000` (trigger writing review milestones to client + job history). Not yet done: see
+   NOW.md. Feedback list perf not measured (keyset on `review_feedback_organization_submitted_idx`; an
+   organization's feedback is a small fraction of its requests).
 6. **Live verification** — Planned; needs 4 and 5. Real SMS/email, every role login, performance verification.
    Then tell the jafar-panel campaign its review-link slice is unblocked.

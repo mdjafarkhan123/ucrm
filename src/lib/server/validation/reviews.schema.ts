@@ -275,3 +275,18 @@ export const reviewWorkspaceListQuerySchema = z.object({
 		.regex(/^[0-9T:.+\-Z ]{10,40}\|[0-9a-f-]{36}$/i)
 		.optional()
 });
+
+// Google review campaign Part 5B: one page of the Reviews workspace's Private feedback tab. 'open' is New plus
+// Contacting customer; the cursor is the "<submitted_at>|<id>" the previous page handed back.
+export const reviewFeedbackListQuerySchema = z.object({
+	status: z.enum(['open', 'new', 'contacting', 'resolved', 'closed']).optional(),
+	search: z.string().trim().max(100).optional(),
+	cursor: z
+		.string()
+		.regex(/^[0-9T:.+\-Z ]{10,40}\|[0-9a-f-]{36}$/i)
+		.optional()
+});
+
+export const reviewFeedbackStatusSchema = z.object({
+	status: z.enum(['new', 'contacting', 'resolved', 'closed'])
+});

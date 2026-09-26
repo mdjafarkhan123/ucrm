@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { createInfiniteQuery, createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { goto } from '$app/navigation';
+	import { goto, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -9,6 +10,9 @@
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
+	import Tabs, { type Tab } from '$lib/components/ui/Tabs.svelte';
+	import TabPanel from '$lib/components/ui/TabPanel.svelte';
+	import ReviewFeedbackPanel from '$lib/components/reviews/ReviewFeedbackPanel.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -34,6 +38,14 @@
 		type ReviewWorkspacePage,
 		type ReviewWorkspaceRequest
 	} from '$lib/reviews/workspace';
+	import {
+		DEFAULT_REVIEW_FEEDBACK_FILTERS,
+		fetchReviewFeedback,
+		reviewFeedbackKey,
+		type ReviewFeedbackPage
+	} from '$lib/reviews/feedback';
+	import { activityKey } from '$lib/collaboration/api';
+	import { jobEventsKey } from '$lib/jobs/api';
 	import type { ReviewChannel } from '$lib/reviews/settings';
 	import sendIcon from '@tabler/icons/outline/send.svg?raw';
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
@@ -93,6 +105,43 @@
 		staleTime: 5 * 60_000
 	}));
 	const canManage = $derived(settingsAccessQuery.data === true);
+
+	// Private feedback is only for people who may handle it; the numbers query already says so (a null count
+	// means no). While it loads, a link straight to that tab is kept so the page does not flick to Requests.
+	const wantsFeedback = $derived(page.url.searchParams.get('tab') === 'feedback');
+	const canSeeFeedback = $derived(
+		countsQuery.data
+			? countsQuery.data.new_feedback !== null
+			: wantsFeedback && countsQuery.isPending
+	);
+	const activeTab = $derived(canSeeFeedback && wantsFeedback ? 'feedback' : 'requests');
+	const tabs = $derived.by(() => {
+		const list: Tab[] = [{ value: 'requests', label: 'Requests' }];
+		if (canSeeFeedback) {
+			const waiting = countsQuery.data?.new_feedback ?? 0;
+			list.push({
+				value: 'feedback',
+				label: waiting > 0 ? `Private feedback (${waiting})` : 'Private feedback',
+				// Revealed content warms on hover, so the tab is ready by the time it is pressed.
+				onhover: () =>
+					void queryClient.prefetchInfiniteQuery({
+						queryKey: reviewFeedbackKey(DEFAULT_REVIEW_FEEDBACK_FILTERS),
+						queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
+							fetchReviewFeedback(DEFAULT_REVIEW_FEEDBACK_FILTERS, pageParam),
+						initialPageParam: undefined as string | undefined,
+						getNextPageParam: (lastPage: ReviewFeedbackPage) => lastPage.next_cursor ?? undefined,
+						pages: 1
+					})
+			});
+		}
+		return list;
+	});
+	function selectTab(next: string) {
+		const url = new URL(page.url);
+		if (next === 'requests') url.searchParams.delete('tab');
+		else url.searchParams.set('tab', next);
+		replaceState(url, page.state);
+	}
 
 	const statusOptions = [
 		{ value: '', label: 'Any status' },
@@ -211,8 +260,25 @@
 		if (!cancelTarget) return;
 		cancelling = true;
 		try {
-			await cancelReviewRequest(cancelTarget.id);
-			await queryClient.invalidateQueries({ queryKey: reviewWorkspaceKey });
+			const cancelled = cancelTarget;
+			await cancelReviewRequest(cancelled.id);
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: reviewWorkspaceKey }),
+				// The cancel is recorded on the client's and the job's history.
+				...(cancelled.client
+					? [
+							queryClient.invalidateQueries({
+								queryKey: activityKey('client', cancelled.client.id)
+							})
+						]
+					: []),
+				...(cancelled.job_id
+					? [
+							queryClient.invalidateQueries({ queryKey: activityKey('job', cancelled.job_id) }),
+							queryClient.invalidateQueries({ queryKey: jobEventsKey(cancelled.job_id) })
+						]
+					: [])
+			]);
 			toast.success('Review request cancelled');
 			cancelTarget = null;
 		} catch (error) {
@@ -288,163 +354,178 @@
 			</div>
 		{/if}
 
-		<section class="reviews__requests" aria-labelledby="reviews-requests-heading">
-			{#if !refused}
-				<div class="reviews__requests-head">
-					<h2 id="reviews-requests-heading">Requests</h2>
-					<p>Newest first. Reminders stop by themselves as soon as a customer responds.</p>
-				</div>
-			{/if}
+		<div class="reviews__tabs">
+			<Tabs {tabs} value={activeTab} onChange={selectTab} label="Reviews views">
+				<TabPanel value="requests">
+					<section class="reviews__requests" aria-labelledby="reviews-requests-heading">
+						{#if !refused}
+							<div class="reviews__requests-head">
+								<h2 id="reviews-requests-heading">Requests</h2>
+								<p>Newest first. Reminders stop by themselves as soon as a customer responds.</p>
+							</div>
+						{/if}
 
-			{#if !refused}
-				<div class="reviews__toolbar">
-					<div class="reviews__search">
-						<SearchInput
-							id="reviews-search"
-							bind:value={search}
-							placeholder="Search by client name"
-						/>
-					</div>
-					<div class="reviews__select">
-						<Select
-							id="reviews-status-filter"
-							ariaLabel="Filter by status"
-							bind:value={status}
-							options={statusOptions}
-						/>
-					</div>
-					<div class="reviews__select">
-						<Select
-							id="reviews-channel-filter"
-							ariaLabel="Filter by how it was sent"
-							bind:value={channel}
-							options={channelOptions}
-						/>
-					</div>
-					{#if hasFilters}
-						<Button variant="secondary" onclick={clearFilters}>Clear</Button>
-					{/if}
-				</div>
-			{/if}
-
-			{#if requestsQuery.isPending}
-				<LoadingSkeleton variant="table" label="Loading review requests" rows={5} />
-			{:else if refused}
-				<EmptyState
-					icon={starIcon}
-					title="You do not have access to Reviews"
-					description="Ask an owner or admin to give you review access."
-				/>
-			{:else if requestsQuery.isError}
-				<ErrorState
-					description="Review requests could not be loaded. Refresh and try again."
-					retry={() => requestsQuery.refetch()}
-				/>
-			{:else if requests.length === 0}
-				<EmptyState
-					icon={starIcon}
-					title={hasFilters ? 'No matching requests' : 'No review requests yet'}
-					description={hasFilters
-						? 'Try a different search or clear the filters.'
-						: 'Open a finished job and choose Request a review, or turn on automatic asking so every completed job sends one for you.'}
-				/>
-			{:else}
-				<DataTable
-					{columns}
-					items={requests}
-					rowId={(request) => request.id}
-					caption="Review requests"
-					onRowActivate={(request) => {
-						const link = jobHref(request) ?? clientHref(request);
-						if (link) void goto(link);
-					}}
-				>
-					{#snippet row(request: ReviewWorkspaceRequest)}
-						<th scope="row">
-							<div class="reviews-cell">
-								<Avatar
-									id={request.client?.id ?? request.id}
-									name={request.client?.name ?? 'Client removed'}
-									size="small"
-								/>
-								<div class="reviews-cell__copy">
-									{#if clientHref(request)}
-										<a class="reviews-cell__title" href={clientHref(request)}>
-											{request.client?.name}
-										</a>
-									{:else}
-										<span class="reviews-cell__title reviews-cell__title--muted"
-											>Client removed</span
-										>
-									{/if}
-									<span class="reviews-cell__sub">
-										{#if request.job_number}
-											Job #{request.job_number}{request.job_title ? ` · ${request.job_title}` : ''}
-										{:else}
-											No particular job
-										{/if}
-									</span>
+						{#if !refused}
+							<div class="reviews__toolbar">
+								<div class="reviews__search">
+									<SearchInput
+										id="reviews-search"
+										bind:value={search}
+										placeholder="Search by client name"
+									/>
 								</div>
-							</div>
-						</th>
-						<td>
-							<div class="reviews-cell">
-								<span class="reviews-cell__channel" aria-hidden="true">
-									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-									{@html request.channel === 'sms' ? smsIcon : mailIcon}
-								</span>
-								<div class="reviews-cell__copy">
-									<span class="reviews-cell__title">
-										{request.channel === 'sms' ? 'Text message' : 'Email'}
-									</span>
-									<span class="reviews-cell__sub">
-										{request.recipient ??
-											(request.origin === 'automation' ? 'Automatic' : 'By hand')}
-									</span>
+								<div class="reviews__select">
+									<Select
+										id="reviews-status-filter"
+										ariaLabel="Filter by status"
+										bind:value={status}
+										options={statusOptions}
+									/>
 								</div>
-							</div>
-						</td>
-						<td>
-							<div class="reviews-cell__copy">
-								<span class="reviews-cell__title reviews-cell__title--nowrap">
-									{dateTime.format(new Date(firstSendTime(request)))}
-								</span>
-								<span class="reviews-cell__sub">
-									{request.origin === 'automation' ? 'Sent automatically' : 'Sent by hand'}
-								</span>
-							</div>
-						</td>
-						<td>
-							<div class="reviews-cell__copy">
-								<StatusBadge status={REVIEW_REQUEST_STATUS_TONES[request.status]}>
-									{REVIEW_REQUEST_STATUS_LABELS[request.status]}
-									{#if request.rating}· {request.rating}★{/if}
-								</StatusBadge>
-								{#if statusNote(request)}
-									<span class="reviews-cell__sub">{statusNote(request)}</span>
+								<div class="reviews__select">
+									<Select
+										id="reviews-channel-filter"
+										ariaLabel="Filter by how it was sent"
+										bind:value={channel}
+										options={channelOptions}
+									/>
+								</div>
+								{#if hasFilters}
+									<Button variant="secondary" onclick={clearFilters}>Clear</Button>
 								{/if}
 							</div>
-						</td>
-					{/snippet}
-					{#snippet rowActions(request: ReviewWorkspaceRequest)}
-						{@const items = menuItems(request)}
-						{#if items.length > 0}
-							<DropdownMenu
-								{items}
-								triggerLabel={`Actions for ${request.client?.name ?? 'this request'}`}
-							/>
 						{/if}
-					{/snippet}
-					{#snippet footer()}
-						<ListLoadMore
-							hasNextPage={requestsQuery.hasNextPage}
-							isFetchingNextPage={requestsQuery.isFetchingNextPage}
-							onLoadMore={() => requestsQuery.fetchNextPage()}
-						/>
-					{/snippet}
-				</DataTable>
-			{/if}
-		</section>
+
+						{#if requestsQuery.isPending}
+							<LoadingSkeleton variant="table" label="Loading review requests" rows={5} />
+						{:else if refused}
+							<EmptyState
+								icon={starIcon}
+								title="You do not have access to Reviews"
+								description="Ask an owner or admin to give you review access."
+							/>
+						{:else if requestsQuery.isError}
+							<ErrorState
+								description="Review requests could not be loaded. Refresh and try again."
+								retry={() => requestsQuery.refetch()}
+							/>
+						{:else if requests.length === 0}
+							<EmptyState
+								icon={starIcon}
+								title={hasFilters ? 'No matching requests' : 'No review requests yet'}
+								description={hasFilters
+									? 'Try a different search or clear the filters.'
+									: 'Open a finished job and choose Request a review, or turn on automatic asking so every completed job sends one for you.'}
+							/>
+						{:else}
+							<DataTable
+								{columns}
+								items={requests}
+								rowId={(request) => request.id}
+								caption="Review requests"
+								onRowActivate={(request) => {
+									const link = jobHref(request) ?? clientHref(request);
+									if (link) void goto(link);
+								}}
+							>
+								{#snippet row(request: ReviewWorkspaceRequest)}
+									<th scope="row">
+										<div class="reviews-cell">
+											<Avatar
+												id={request.client?.id ?? request.id}
+												name={request.client?.name ?? 'Client removed'}
+												size="small"
+											/>
+											<div class="reviews-cell__copy">
+												{#if clientHref(request)}
+													<a class="reviews-cell__title" href={clientHref(request)}>
+														{request.client?.name}
+													</a>
+												{:else}
+													<span class="reviews-cell__title reviews-cell__title--muted"
+														>Client removed</span
+													>
+												{/if}
+												<span class="reviews-cell__sub">
+													{#if request.job_number}
+														Job #{request.job_number}{request.job_title
+															? ` · ${request.job_title}`
+															: ''}
+													{:else}
+														No particular job
+													{/if}
+												</span>
+											</div>
+										</div>
+									</th>
+									<td>
+										<div class="reviews-cell">
+											<span class="reviews-cell__channel" aria-hidden="true">
+												<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+												{@html request.channel === 'sms' ? smsIcon : mailIcon}
+											</span>
+											<div class="reviews-cell__copy">
+												<span class="reviews-cell__title">
+													{request.channel === 'sms' ? 'Text message' : 'Email'}
+												</span>
+												<span class="reviews-cell__sub">
+													{request.recipient ??
+														(request.origin === 'automation' ? 'Automatic' : 'By hand')}
+												</span>
+											</div>
+										</div>
+									</td>
+									<td>
+										<div class="reviews-cell__copy">
+											<span class="reviews-cell__title reviews-cell__title--nowrap">
+												{dateTime.format(new Date(firstSendTime(request)))}
+											</span>
+											<span class="reviews-cell__sub">
+												{request.origin === 'automation' ? 'Sent automatically' : 'Sent by hand'}
+											</span>
+										</div>
+									</td>
+									<td>
+										<div class="reviews-cell__copy">
+											<StatusBadge status={REVIEW_REQUEST_STATUS_TONES[request.status]}>
+												{REVIEW_REQUEST_STATUS_LABELS[request.status]}
+												{#if request.rating}· {request.rating}★{/if}
+											</StatusBadge>
+											{#if statusNote(request)}
+												<span class="reviews-cell__sub">{statusNote(request)}</span>
+											{/if}
+										</div>
+									</td>
+								{/snippet}
+								{#snippet rowActions(request: ReviewWorkspaceRequest)}
+									{@const items = menuItems(request)}
+									{#if items.length > 0}
+										<DropdownMenu
+											{items}
+											triggerLabel={`Actions for ${request.client?.name ?? 'this request'}`}
+										/>
+									{/if}
+								{/snippet}
+								{#snippet footer()}
+									<ListLoadMore
+										hasNextPage={requestsQuery.hasNextPage}
+										isFetchingNextPage={requestsQuery.isFetchingNextPage}
+										onLoadMore={() => requestsQuery.fetchNextPage()}
+									/>
+								{/snippet}
+							</DataTable>
+						{/if}
+					</section>
+				</TabPanel>
+				{#if canSeeFeedback}
+					<TabPanel value="feedback">
+						{#if activeTab === 'feedback'}
+							<ReviewFeedbackPanel />
+						{/if}
+					</TabPanel>
+				{/if}
+			</Tabs>
+		</div>
 	</PageContainer>
 </div>
 
@@ -479,10 +560,13 @@
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 	}
 
+	.reviews__tabs {
+		margin-top: var(--space-large);
+	}
+
 	.reviews__requests {
 		display: grid;
 		gap: var(--space-base);
-		margin-top: var(--space-large);
 	}
 
 	.reviews__requests-head {

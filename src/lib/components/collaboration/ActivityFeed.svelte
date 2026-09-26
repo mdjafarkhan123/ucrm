@@ -19,6 +19,10 @@
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import messageIcon from '@tabler/icons/outline/message.svg?raw';
+	import starIcon from '@tabler/icons/outline/star.svg?raw';
+	import googleIcon from '@tabler/icons/outline/brand-google.svg?raw';
+	import feedbackIcon from '@tabler/icons/outline/message-heart.svg?raw';
+	import cancelIcon from '@tabler/icons/outline/circle-x.svg?raw';
 
 	let {
 		entityType,
@@ -68,7 +72,12 @@
 		property_contact_added: userPlusIcon,
 		'quote.viewed_by_client': eyeIcon,
 		'quote.approved': checkIcon,
-		'quote.changes_requested': messageIcon
+		'quote.changes_requested': messageIcon,
+		'review.requested': starIcon,
+		'review.opened': eyeIcon,
+		'review.continued_to_google': googleIcon,
+		'review.feedback_submitted': feedbackIcon,
+		'review.cancelled': cancelIcon
 	};
 
 	function iconFor(eventType: string) {
@@ -81,7 +90,10 @@
 	const CUSTOMER_EVENTS = new Set([
 		'quote.viewed_by_client',
 		'quote.approved',
-		'quote.changes_requested'
+		'quote.changes_requested',
+		'review.opened',
+		'review.continued_to_google',
+		'review.feedback_submitted'
 	]);
 </script>
 

@@ -10,6 +10,8 @@
 	import EmailActionEditor from '$lib/components/settings/automation/EmailActionEditor.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { clientCommunicationHistoryKey } from '$lib/communications/inbox';
+	import { activityKey } from '$lib/collaboration/api';
+	import { jobEventsKey } from '$lib/jobs/api';
 	import {
 		REVIEW_MESSAGE_VARIABLES,
 		REVIEW_STYLES,
@@ -194,7 +196,15 @@
 		await Promise.all([
 			queryClient.invalidateQueries({ queryKey: ['reviews', 'request-context'] }),
 			queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] }),
-			queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(context.client.id) })
+			queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(context.client.id) }),
+			// The request is recorded on the client's and the job's history.
+			queryClient.invalidateQueries({ queryKey: activityKey('client', context.client.id) }),
+			...(jobId === NO_JOB
+				? []
+				: [
+						queryClient.invalidateQueries({ queryKey: activityKey('job', jobId) }),
+						queryClient.invalidateQueries({ queryKey: jobEventsKey(jobId) })
+					])
 		]);
 	}
 

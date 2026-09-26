@@ -15188,6 +15188,10 @@ export type Database = {
 					version_number: number;
 				}[];
 			};
+			automation_review_request_draft: {
+				Args: { p_claim_token: string; p_work_item_id: string };
+				Returns: Json;
+			};
 			begin_communication_email_domain_removal: {
 				Args: {
 					expected_live_replacement_count: number;
@@ -19827,6 +19831,18 @@ export type Database = {
 					usage_count: number;
 				}[];
 			};
+			list_review_feedback: {
+				Args: {
+					p_actor_id: string;
+					p_cursor_id?: string;
+					p_cursor_submitted_at?: string;
+					p_limit?: number;
+					p_organization_id: string;
+					p_search?: string;
+					p_status?: string;
+				};
+				Returns: Json;
+			};
 			list_review_requests: {
 				Args: {
 					p_actor_id: string;
@@ -20316,6 +20332,22 @@ export type Database = {
 			};
 			perform_automation_inquiry_message_effect: {
 				Args: { p_claim_token: string; p_work_item_id: string };
+				Returns: string;
+			};
+			perform_automation_review_request_effect: {
+				Args: {
+					p_body_html: string;
+					p_body_text: string;
+					p_claim_token: string;
+					p_first_reminder_days: number;
+					p_first_send_delay_amount: number;
+					p_first_send_delay_unit: string;
+					p_link_url: string;
+					p_style: string;
+					p_subject: string;
+					p_token_hash: string;
+					p_work_item_id: string;
+				};
 				Returns: string;
 			};
 			perform_automation_sms_effect: {
@@ -22042,10 +22074,6 @@ export type Database = {
 				};
 				Returns: Json;
 			};
-			review_request_counts: {
-				Args: { p_actor_id: string; p_organization_id: string };
-				Returns: Json;
-			};
 			review_import_batch: {
 				Args: { payload: Json };
 				Returns: {
@@ -22075,6 +22103,10 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			review_request_counts: {
+				Args: { p_actor_id: string; p_organization_id: string };
+				Returns: Json;
 			};
 			revise_quote: { Args: { target_quote_id: string }; Returns: Json };
 			revoke_job_report_access_link: {
@@ -22730,6 +22762,15 @@ export type Database = {
 					new_show_totals: boolean;
 					new_show_unit_prices: boolean;
 					target_quote_id: string;
+				};
+				Returns: Json;
+			};
+			set_review_feedback_status: {
+				Args: {
+					p_actor_id: string;
+					p_feedback_id: string;
+					p_organization_id: string;
+					p_status: string;
 				};
 				Returns: Json;
 			};

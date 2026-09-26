@@ -14,7 +14,8 @@ export type TeamNotificationKind =
 	| 'invoice.online_refund_failed'
 	| 'invoice.payment_disputed'
 	| 'quote.deposit_refund_failed'
-	| 'quote.deposit_disputed';
+	| 'quote.deposit_disputed'
+	| 'review.private_feedback';
 
 export type TeamNotification = {
 	id: string;
@@ -48,6 +49,7 @@ export function teamNotificationHref(
 ) {
 	if (subjectType === 'invoice') return `/invoices/${subjectId}`;
 	if (subjectType === 'quote') return `/quotes/${subjectId}`;
+	if (subjectType === 'review_feedback') return '/reviews?tab=feedback';
 	if (subjectType === 'website_chat_session') {
 		const key = link?.client_id ?? `webchat:${subjectId}`;
 		return `/communications?${new URLSearchParams({ client: key }).toString()}`;
