@@ -8,14 +8,14 @@ Parts 1–4b done (4b D live-proven 2026-09-26 on Raad). Active: Part 6 step 4 (
 
 ## Exact next action
 
-Part 6 step 4 (checked 2026-09-26): Raad's Brevo domain, Brevo inbound webhooks and all contractor `provider='brevo'`
-DB rows are already gone. Only leftover: Brevo transactional webhook id 2148798 -> deleted route
-`/api/webhooks/brevo/transactional`; Jafar approved deleting it but the permission classifier blocked the API
-DELETE, so Jafar deletes it in Brevo (Settings -> Webhooks) or allows it. Unused `.env` keys
-`BREVO_EVENTS_WEBHOOK_SECRET`, `BREVO_TRANSACTIONAL_WEBHOOK_TOKEN`, `BREVO_INBOUND_WEBHOOK_TOKEN` can go too.
-Keep Brevo domain contact. (SYSTEM_FROM_EMAIL); notifications.upliftcontractor.com is unused platform-side, ask
-Jafar. Then step 5: Raad's sending row dates from the Brevo era (2026-08-29), so Remove + fresh Set up + live
-send/reply with Jafar. After Part 6: Part 5, then Part 7.
+Part 6 step 4 done 2026-09-26 (Jafar deleted the last Brevo transactional webhook; no contractor Brevo left).
+Step 5 is blocked by a product gap: Jafar-panel Remove refuses while live senders exist
+(`begin_communication_email_domain_removal`), but no UI or API removes a sender (`senders/[senderId]` has
+PATCH only; "active" off still counts). Awaiting Jafar's choice: build contractor "Remove sender" first
+(recommended), or accept the 2026-09-26 live proof and skip the fresh Set up. Raad's sender to recreate after:
+office@mail.<root>, "Raad LTD Office", assigned to owner, business default, manual only.
+Open question for Jafar: delete unused platform Brevo domain notifications.upliftcontractor.com?
+After Part 6: Part 5, then Part 7.
 
 ## Blockers
 
