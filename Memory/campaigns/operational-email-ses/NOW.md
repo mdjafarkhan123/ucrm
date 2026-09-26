@@ -9,13 +9,16 @@ Gmail reply accepted into the Inbox under Greenfield Property Group).
 
 ## Exact next action
 
-1. Ask Jafar two yes/no questions, then act: (a) delete unused Brevo domain notifications.upliftcontractor.com
-   (keep contact. — SYSTEM_FROM_EMAIL uses it); (b) purge the 2 stale 2026-09-25 messages in
-   `ucrm-ses-inbound-dlq` (replies to "SES live test 2", already re-filed).
-2. Then start Part 5 (contractor request-setup flow; ROADMAP row 5) — product decisions, use grilling.
-Small UI notes seen in step 5 (not fixed): sender "Assigned team member" list shows 4 "Unnamed team member"
-rows (role test users without names); email preview shows "From: Your eligible email identity" not the address.
-Still owed from ROADMAP row 6: Marketing M6e burst check. Part 7 after Part 5.
+Jafar 2026-09-26: "on new session do all the necessary improvements you noticed and do the rest work".
+1. Fix (approved): sender dialog "Assigned team member" list shows 4 "Unnamed team member" rows (role test
+   users without names) -- show a real fallback (e.g. email) so members are distinguishable; email preview
+   (client "Message" dialog) shows "From: Your eligible email identity" -- show the actual sender address.
+2. Irreversible deletes still need a plain yes (ask once at start): delete unused Brevo domain
+   notifications.upliftcontractor.com (keep contact. -- SYSTEM_FROM_EMAIL); purge the 3 stale 2026-09-25
+   "SES live test 2" reply copies in `ucrm-ses-inbound-dlq` (already filed).
+3. ROADMAP row 6 follow-ups: Marketing M6e burst check; Email card Check ~10 s; failed Check (409
+   `subdomain_occupied`) shows no error on the Jafar Email card.
+4. Then Part 5 (contractor request-setup flow; ROADMAP row 5) -- product decisions, use grilling. Part 7 after.
 
 ## Blockers
 
