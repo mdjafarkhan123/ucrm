@@ -21,7 +21,7 @@ const CONNECT_FAILURES = {
 			'This key is missing a permission UCRM needs. In Stripe, edit the key and match the permissions in the guide below.'
 	},
 	stripe_unavailable: {
-		status: 502,
+		status: 503,
 		field: 'Stripe could not be reached just now. Please try again in a minute.'
 	},
 	not_configured: {

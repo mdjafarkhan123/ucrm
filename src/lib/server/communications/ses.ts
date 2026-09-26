@@ -8,6 +8,7 @@ import {
 	DeleteConfigurationSetCommand,
 	DeleteEmailIdentityCommand,
 	DeleteTenantCommand,
+	DeleteTenantResourceAssociationCommand,
 	GetConfigurationSetCommand,
 	GetConfigurationSetEventDestinationsCommand,
 	GetEmailIdentityCommand,
@@ -391,6 +392,29 @@ export async function associateSesTenantResource(
 	} catch (error) {
 		if (isAlreadyExists(error)) return;
 		throw toSesError('CreateTenantResourceAssociation', error);
+	}
+}
+
+/**
+ * Withdraws a tenant's use of one identity or configuration set. SES refuses to delete a resource that is still
+ * associated with a tenant, so every teardown calls this first. Not associated and already gone both count as
+ * done, so a retried cleanup is safe.
+ */
+export async function disassociateSesTenantResource(
+	tenantName: string,
+	resourceArn: string
+): Promise<void> {
+	const { client } = getSes();
+	try {
+		await client.send(
+			new DeleteTenantResourceAssociationCommand({
+				TenantName: tenantName,
+				ResourceArn: resourceArn
+			})
+		);
+	} catch (error) {
+		if (isNotFound(error)) return;
+		throw toSesError('DeleteTenantResourceAssociation', error);
 	}
 }
 

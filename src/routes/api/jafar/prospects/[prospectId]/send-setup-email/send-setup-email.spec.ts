@@ -147,7 +147,7 @@ describe('platform owner prospect setup-email send API boundary', () => {
 		expect(mockedIssueSetupLink).not.toHaveBeenCalled();
 	});
 
-	it('returns 502 when delivery fails', async () => {
+	it('returns 503 when delivery fails', async () => {
 		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
@@ -159,7 +159,7 @@ describe('platform owner prospect setup-email send API boundary', () => {
 		mockedIssueSetupLink.mockResolvedValue({ sent: false, error: 'Brevo request failed' });
 
 		const response = await POST(event(prospectId));
-		expect(response.status).toBe(502);
+		expect(response.status).toBe(503);
 	});
 
 	it('sends the setup email on the happy path', async () => {

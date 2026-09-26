@@ -70,7 +70,7 @@ export const POST: RequestHandler = async (event) => {
 		if (!result.sent)
 			return json(
 				{ error: 'The setup email could not be sent. You can try resending it.' },
-				{ status: 502 }
+				{ status: 503 }
 			);
 
 		return json({ ok: true });

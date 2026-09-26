@@ -43,7 +43,10 @@ export const POST: RequestHandler = async (event) => {
 	const parsed = administratorEmailRecoverySchema.safeParse(body);
 	if (!parsed.success) {
 		return json(
-			{ error: 'Please review the recovery details.', field_errors: zodOwnerFieldErrors(parsed.error) },
+			{
+				error: 'Please review the recovery details.',
+				field_errors: zodOwnerFieldErrors(parsed.error)
+			},
 			{ status: 422 }
 		);
 	}
@@ -128,7 +131,7 @@ export const POST: RequestHandler = async (event) => {
 			});
 			return json(
 				{ error: 'The login email could not be updated. This has been queued for retry.' },
-				{ status: 502 }
+				{ status: 503 }
 			);
 		}
 

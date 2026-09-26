@@ -21,6 +21,7 @@ vi.mock('./ses', async () => {
 		createSesConfigurationSet: vi.fn(),
 		ensureSesEventDestination: vi.fn(),
 		associateSesTenantResource: vi.fn(),
+		disassociateSesTenantResource: vi.fn(),
 		sesIdentityArn: vi.fn(),
 		sesConfigurationSetArn: vi.fn(),
 		sesMailFromMxTarget: vi.fn(),
@@ -525,8 +526,16 @@ describe('teardownMarketingDomain', () => {
 		vi.mocked(ses.deleteSesIdentity).mockImplementation(async (domain) => {
 			order.push(`identity:${domain}`);
 		});
+		vi.mocked(ses.disassociateSesTenantResource).mockImplementation(async (tenant, arn) => {
+			order.push(`unlink:${tenant}:${arn}`);
+		});
 
-		await teardownMarketingDomain({ rootDomain: ROOT });
+		await teardownMarketingDomain({ organizationId: ORG, rootDomain: ROOT });
+
+		// SES refuses to delete an identity a tenant still uses, so it is unlinked just before the delete.
+		expect(order.indexOf(`unlink:ucrm-org-${ORG}:${IDENTITY_ARN}`)).toBe(
+			order.indexOf(`identity:${MARKETING}`) - 1
+		);
 
 		expect(order[0]).toBe('dns:news-mx');
 		expect(order).toEqual(

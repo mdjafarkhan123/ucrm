@@ -10,6 +10,7 @@ import {
 import {
 	associateSesTenantResource,
 	deleteSesIdentity,
+	disassociateSesTenantResource,
 	ensureSesEventDestination,
 	getSesIdentity,
 	putSesIdentityMailFrom,
@@ -30,6 +31,7 @@ import {
 	sesDkimRecords,
 	sesMailFromRecords,
 	sesStatusToDns,
+	sesTenantName,
 	toStoredDnsRecords,
 	upsertDomainRow,
 	type DnsStatus,
@@ -379,6 +381,10 @@ export async function teardownOperationalDomain(input: {
 		for (const record of identity ? sesDkimRecords(identity, domain) : []) {
 			await deleteOwnedRecords(zoneId, record.name, [record]);
 		}
+		await disassociateSesTenantResource(
+			sesTenantName(input.organizationId),
+			sesIdentityArn(domain)
+		);
 		await deleteSesIdentity(domain);
 	}
 	await deleteOwnedRecords(zoneId, mailFrom, sesMailFromRecords(mailFrom));

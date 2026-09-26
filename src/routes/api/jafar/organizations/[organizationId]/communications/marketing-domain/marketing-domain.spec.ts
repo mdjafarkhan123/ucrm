@@ -244,7 +244,7 @@ describe('owner Marketing sending-identity activation boundary', () => {
 		expect(await response.json()).toMatchObject({ code: 'ses_not_configured' });
 	});
 
-	it('maps an ambiguous provider outcome to a retryable 502', async () => {
+	it('maps an ambiguous provider outcome to a retryable 503', async () => {
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue(
 			clientWithResults([
 				{ data: null, error: null },
@@ -257,7 +257,7 @@ describe('owner Marketing sending-identity activation boundary', () => {
 
 		const response = await activate(activateEvent(body));
 
-		expect(response.status).toBe(502);
+		expect(response.status).toBe(503);
 	});
 });
 

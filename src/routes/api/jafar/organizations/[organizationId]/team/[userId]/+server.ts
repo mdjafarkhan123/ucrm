@@ -4,7 +4,10 @@ import { getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { organizationIdSchema, userIdSchema } from '$lib/server/validation/access.schema';
-import { teamProfileCorrectionSchema, zodOwnerFieldErrors } from '$lib/server/validation/owner.schema';
+import {
+	teamProfileCorrectionSchema,
+	zodOwnerFieldErrors
+} from '$lib/server/validation/owner.schema';
 import { recordOperationOutcome } from '$lib/server/events/outbox';
 
 export const PATCH: RequestHandler = async (event) => {
@@ -73,12 +76,15 @@ export const PATCH: RequestHandler = async (event) => {
 		if (nextEmail !== null && emailLookupFailed) {
 			return json(
 				{ error: 'Could not verify the current login email. Try again in a moment.' },
-				{ status: 502 }
+				{ status: 503 }
 			);
 		}
 		const emailChanged = nextEmail !== null && nextEmail !== currentEmail;
 
-		if (emailChanged && (membershipResult.data.role === 'owner' || membershipResult.data.role === 'admin')) {
+		if (
+			emailChanged &&
+			(membershipResult.data.role === 'owner' || membershipResult.data.role === 'admin')
+		) {
 			return json(
 				{ error: 'An administrator email change uses the recovery action instead.' },
 				{ status: 409 }
@@ -116,7 +122,7 @@ export const PATCH: RequestHandler = async (event) => {
 				});
 				return json(
 					{ error: 'The login email could not be updated. This has been queued for retry.' },
-					{ status: 502 }
+					{ status: 503 }
 				);
 			}
 		}

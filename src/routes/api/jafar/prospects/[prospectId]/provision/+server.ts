@@ -136,7 +136,7 @@ export const POST: RequestHandler = async (event) => {
 					success: false,
 					error: failureReason
 				});
-				return json({ error: failureReason }, { status: alreadyExists ? 409 : 502 });
+				return json({ error: failureReason }, { status: alreadyExists ? 409 : 503 });
 			}
 
 			administratorUserId = createdUser.user.id;

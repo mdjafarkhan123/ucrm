@@ -63,7 +63,7 @@ export const POST: RequestHandler = async (event) => {
 		});
 		if (!result.ok) {
 			const status =
-				result.reason === 'unavailable' ? 409 : result.reason.startsWith('stripe') ? 502 : 422;
+				result.reason === 'unavailable' ? 409 : result.reason.startsWith('stripe') ? 503 : 422;
 			return json({ error: MESSAGES[result.reason], reason: result.reason }, { status, headers });
 		}
 		return json({ url: result.url }, { headers });

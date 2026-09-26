@@ -275,7 +275,7 @@ export const POST: RequestHandler = async (event) => {
 					lifecycle_state: 'removal_pending',
 					retryable: true
 				},
-				{ status: 502, headers: noStore }
+				{ status: 503, headers: noStore }
 			);
 		}
 

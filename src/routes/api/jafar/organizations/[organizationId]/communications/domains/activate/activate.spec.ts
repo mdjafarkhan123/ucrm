@@ -214,7 +214,7 @@ describe('owner managed email-domain activation boundary', () => {
 		expect(await response.json()).toMatchObject({ code: 'subdomain_occupied' });
 	});
 
-	it('maps an ambiguous provider outcome to a retryable 502', async () => {
+	it('maps an ambiguous provider outcome to a retryable 503', async () => {
 		const client = clientWithResults([
 			{ data: null, error: null },
 			{ data: { id: organizationId }, error: null }
@@ -226,6 +226,6 @@ describe('owner managed email-domain activation boundary', () => {
 
 		const response = await POST(event(validBody()));
 
-		expect(response.status).toBe(502);
+		expect(response.status).toBe(503);
 	});
 });

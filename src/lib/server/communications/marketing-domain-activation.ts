@@ -11,6 +11,7 @@ import { routeSendingRepliesToSes } from './operational-reply-ingestion';
 import {
 	associateSesTenantResource,
 	deleteSesIdentity,
+	disassociateSesTenantResource,
 	getSesIdentity,
 	putSesIdentityMailFrom,
 	sesConfigurationSetArn,
@@ -29,6 +30,7 @@ import {
 	sesDkimRecords,
 	sesMailFromRecords,
 	sesStatusToDns,
+	sesTenantName,
 	toStoredDnsRecords,
 	upsertDomainRow,
 	type DnsStatus,
@@ -323,7 +325,10 @@ async function reconcileMarketingDomain(input: {
  * Receiving stops first (the reply MX, then the identity SES receives for). Only records whose exact content
  * UCRM would have written are deleted, and "already gone" counts as done, so a retried cleanup is safe.
  */
-export async function teardownMarketingDomain(input: { rootDomain: string }): Promise<void> {
+export async function teardownMarketingDomain(input: {
+	organizationId: string;
+	rootDomain: string;
+}): Promise<void> {
 	const { root, marketing, mailFrom } = deriveMarketingDomains(input.rootDomain);
 	const { id: zoneId } = await resolveCloudflareZone(root);
 
@@ -335,6 +340,10 @@ export async function teardownMarketingDomain(input: { rootDomain: string }): Pr
 	for (const record of identity ? sesDkimRecords(identity, marketing) : []) {
 		await deleteOwnedRecords(zoneId, record.name, [record]);
 	}
+	await disassociateSesTenantResource(
+		sesTenantName(input.organizationId),
+		sesIdentityArn(marketing)
+	);
 	await deleteSesIdentity(marketing);
 	await deleteOwnedRecords(zoneId, mailFrom, sesMailFromRecords(mailFrom));
 }

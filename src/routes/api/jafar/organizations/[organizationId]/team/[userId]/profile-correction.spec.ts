@@ -23,10 +23,11 @@ function session() {
 function patchEvent(body: unknown, orgId = organizationId, memberId = userId) {
 	return {
 		params: { organizationId: orgId, userId: memberId },
-		request: new Request(
-			`http://localhost/api/jafar/organizations/${orgId}/team/${memberId}`,
-			{ method: 'PATCH', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } }
-		)
+		request: new Request(`http://localhost/api/jafar/organizations/${orgId}/team/${memberId}`, {
+			method: 'PATCH',
+			body: JSON.stringify(body),
+			headers: { 'content-type': 'application/json' }
+		})
 	} as Parameters<typeof PATCH>[0];
 }
 
@@ -115,7 +116,9 @@ describe('team member profile correction PATCH boundary', () => {
 	it('rejects a body with neither name nor email', async () => {
 		mockedClient.mockReturnValue(mockClient({}));
 
-		const response = await PATCH(patchEvent({ reason: 'x'.repeat(5), idempotency_key: idempotencyKey }));
+		const response = await PATCH(
+			patchEvent({ reason: 'x'.repeat(5), idempotency_key: idempotencyKey })
+		);
 
 		expect(response.status).toBe(422);
 	});
@@ -190,17 +193,17 @@ describe('team member profile correction PATCH boundary', () => {
 		);
 	});
 
-	it('502s an email correction when the auth email lookup fails instead of guessing', async () => {
+	it('503s an email correction when the auth email lookup fails instead of guessing', async () => {
 		mockedClient.mockReturnValue(mockClient({ role: 'field', getUserByIdFails: true }));
 
 		const response = await PATCH(
 			patchEvent(validBody({ email: 'new@example.com', full_name: null }))
 		);
 
-		expect(response.status).toBe(502);
+		expect(response.status).toBe(503);
 	});
 
-	it('queues a retryable operation and returns 502 when the auth update fails', async () => {
+	it('queues a retryable operation and returns 503 when the auth update fails', async () => {
 		mockedClient.mockReturnValue(
 			mockClient({
 				role: 'field',
@@ -213,7 +216,7 @@ describe('team member profile correction PATCH boundary', () => {
 			patchEvent(validBody({ email: 'new@example.com', full_name: null }))
 		);
 
-		expect(response.status).toBe(502);
+		expect(response.status).toBe(503);
 		expect(mockedRecordOutcome).toHaveBeenCalledWith(
 			expect.anything(),
 			expect.objectContaining({

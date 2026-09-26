@@ -34,7 +34,11 @@ function postEvent(body: unknown, orgId = organizationId, memberId = userId) {
 		params: { organizationId: orgId, userId: memberId },
 		request: new Request(
 			`http://localhost/api/jafar/organizations/${orgId}/team/${memberId}/administrator-recovery`,
-			{ method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } }
+			{
+				method: 'POST',
+				body: JSON.stringify(body),
+				headers: { 'content-type': 'application/json' }
+			}
 		)
 	} as Parameters<typeof POST>[0];
 }
@@ -237,7 +241,7 @@ describe('administrator email recovery POST boundary', () => {
 		expect(body.member.email).toBe('new-admin@example.com');
 	});
 
-	it('queues a retryable operation and returns 502 when the auth update fails', async () => {
+	it('queues a retryable operation and returns 503 when the auth update fails', async () => {
 		mockedClient.mockReturnValue(
 			mockClient({
 				role: 'owner',
@@ -247,7 +251,7 @@ describe('administrator email recovery POST boundary', () => {
 
 		const response = await POST(postEvent(validBody()));
 
-		expect(response.status).toBe(502);
+		expect(response.status).toBe(503);
 		expect(mockedRecordOutcome).toHaveBeenCalledWith(
 			expect.anything(),
 			expect.objectContaining({

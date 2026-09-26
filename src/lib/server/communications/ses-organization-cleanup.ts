@@ -4,7 +4,10 @@ import {
 	deleteSesConfigurationSet,
 	deleteSesIdentity,
 	deleteSesTenant,
-	listSesTenantResources
+	disassociateSesTenantResource,
+	listSesTenantResources,
+	sesConfigurationSetArn,
+	sesIdentityArn
 } from './ses';
 import {
 	marketingConfigurationSetName,
@@ -34,13 +37,23 @@ export async function purgeOrganizationSesResources(organizationId: string): Pro
 		if (domain.startsWith('mail.')) {
 			await teardownOperationalDomain({ organizationId, rootDomain: domain.slice('mail.'.length) });
 		} else if (domain.startsWith('news.')) {
-			await teardownMarketingDomain({ rootDomain: domain.slice('news.'.length) });
+			await teardownMarketingDomain({
+				organizationId,
+				rootDomain: domain.slice('news.'.length)
+			});
 		} else {
+			await disassociateSesTenantResource(tenantName, sesIdentityArn(domain));
 			await deleteSesIdentity(domain);
 		}
 	}
 
-	await deleteSesConfigurationSet(operationalConfigurationSetName(organizationId));
-	await deleteSesConfigurationSet(marketingConfigurationSetName(organizationId));
+	// SES refuses to delete a configuration set a tenant still uses.
+	for (const configurationSetName of [
+		operationalConfigurationSetName(organizationId),
+		marketingConfigurationSetName(organizationId)
+	]) {
+		await disassociateSesTenantResource(tenantName, sesConfigurationSetArn(configurationSetName));
+		await deleteSesConfigurationSet(configurationSetName);
+	}
 	await deleteSesTenant(tenantName);
 }

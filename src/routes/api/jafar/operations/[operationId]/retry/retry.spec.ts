@@ -35,7 +35,7 @@ function single(data: unknown, error: null | { message: string } = null) {
 }
 
 function clientWith(tables: Record<string, unknown>) {
-	return { from: (table: string) => (tables[table] as { select: () => unknown }) };
+	return { from: (table: string) => tables[table] as { select: () => unknown } };
 }
 
 function attemptTable(data: unknown, error: null | { message: string } = null) {
@@ -205,7 +205,7 @@ describe('platform owner operation retry API boundary', () => {
 		);
 	});
 
-	it('returns 502 when the setup email retry still fails to send', async () => {
+	it('returns 503 when the setup email retry still fails to send', async () => {
 		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
 			clientWith({
@@ -228,7 +228,7 @@ describe('platform owner operation retry API boundary', () => {
 		mockedIssueSetupLink.mockResolvedValue({ sent: false, error: 'Brevo is unavailable.' });
 
 		const response = await POST(event(operationId));
-		expect(response.status).toBe(502);
+		expect(response.status).toBe(503);
 	});
 
 	it('rejects retrying an operation type that has its own screen', async () => {

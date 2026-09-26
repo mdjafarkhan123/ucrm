@@ -22,6 +22,7 @@ vi.mock('./ses', async () => {
 		createSesConfigurationSet: vi.fn(),
 		ensureSesEventDestination: vi.fn(),
 		associateSesTenantResource: vi.fn(),
+		disassociateSesTenantResource: vi.fn(),
 		sesIdentityArn: vi.fn(),
 		sesConfigurationSetArn: vi.fn(),
 		sesMailFromMxTarget: vi.fn(),
@@ -554,8 +555,18 @@ describe('teardownOperationalDomain', () => {
 		vi.mocked(ses.deleteSesIdentity).mockImplementation(async (domain) => {
 			order.push(`identity:${domain}`);
 		});
+		vi.mocked(ses.disassociateSesTenantResource).mockImplementation(async (tenant, arn) => {
+			order.push(`unlink:${tenant}:${arn}`);
+		});
 
 		await teardownOperationalDomain({ organizationId: ORG, rootDomain: ROOT });
+
+		// SES refuses to delete an identity a tenant still uses, so each is unlinked just before its delete.
+		for (const domain of [RECEIVING, SENDING]) {
+			expect(order.indexOf(`unlink:ucrm-org-${ORG}:arn:identity/${domain}`)).toBe(
+				order.indexOf(`identity:${domain}`) - 1
+			);
+		}
 
 		// Receiving stops first: the reply MX, then the reply identity SES receives for, before sending.
 		// Receiving stops first: both reply MX records go before any identity.

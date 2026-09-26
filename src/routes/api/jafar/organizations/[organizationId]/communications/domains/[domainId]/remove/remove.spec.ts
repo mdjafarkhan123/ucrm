@@ -218,7 +218,7 @@ describe('owner sending-domain removal boundary', () => {
 
 		const response = await POST(event('POST', commandBody()));
 
-		expect(response.status).toBe(502);
+		expect(response.status).toBe(503);
 		expect(await response.json()).toMatchObject({
 			lifecycle_state: 'removal_pending',
 			retryable: true
