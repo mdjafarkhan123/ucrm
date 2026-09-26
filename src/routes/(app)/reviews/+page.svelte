@@ -108,7 +108,14 @@
 
 	// Private feedback is only for people who may handle it; the numbers query already says so (a null count
 	// means no). While it loads, a link straight to that tab is kept so the page does not flick to Requests.
-	const wantsFeedback = $derived(page.url.searchParams.get('tab') === 'feedback');
+	// `replaceState` rewrites the address bar without re-running load, so `page.url` does not follow it and
+	// cannot be the tab's source of truth. The open tab lives here instead: seeded from the address the page
+	// was opened at, and re-seeded whenever a real navigation (the bell alert's link) arrives with another.
+	let requestedTab = $state(page.url.searchParams.get('tab'));
+	$effect(() => {
+		requestedTab = page.url.searchParams.get('tab');
+	});
+	const wantsFeedback = $derived(requestedTab === 'feedback');
 	const canSeeFeedback = $derived(
 		countsQuery.data
 			? countsQuery.data.new_feedback !== null
@@ -137,6 +144,7 @@
 		return list;
 	});
 	function selectTab(next: string) {
+		requestedTab = next === 'requests' ? null : next;
 		const url = new URL(page.url);
 		if (next === 'requests') url.searchParams.delete('tab');
 		else url.searchParams.set('tab', next);
