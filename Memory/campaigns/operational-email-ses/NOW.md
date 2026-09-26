@@ -12,11 +12,14 @@ a live SES send. Nothing else in this campaign is dependency-ready to build alon
 
 ## Exact next action
 
-Nothing is dependency-ready to build alone until a real contractor organization goes over its email
-allowance with the published rate live, so the full charge -> defer/insufficient-balance -> "Add credit"
-path can be browser-verified end to end against a real send. That needs either a real contractor sending
-enough optional email past its allowance, or Jafar's go-ahead to manually drive one organization over its
-allowance on the real database to prove the gate.
+Jafar chose not to wait for organic usage (2026-09-26): next session, actively drive Raad LTD (the
+established test contractor) over its real email allowance on the live database to browser-verify the full
+charge -> defer/insufficient-balance -> "Add credit" path end to end. This touches Raad's real Communication
+Balance ledger, so before writing anything: read `resolve_communication_email_allowance` to see Raad's
+current period's operational limit state/value (if it resolves "unlimited", no charge will ever trigger --
+surface that to Jafar before proceeding, don't guess a fix). Decide and confirm with Jafar the specific
+mechanism (e.g. send enough real emails to reach the limit then one more, vs. some safer way to reach the
+boundary) before touching Raad's real balance -- this is a real financial ledger, not test data.
 
 ## Notes that change the next action
 
@@ -37,7 +40,6 @@ allowance on the real database to prove the gate.
 
 ## Blockers
 
-AWS: `aws --profile ucrm` (renew `aws sso login --sso-session ucrm`). Real usage: needs a real organization to
-exceed its email allowance.
+AWS: `aws --profile ucrm` (renew `aws sso login --sso-session ucrm`).
 
 Resume: `continue operational email ses`.
