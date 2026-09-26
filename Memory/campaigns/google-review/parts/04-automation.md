@@ -20,15 +20,12 @@ per-client advisory lock). Skips create a visible request: status `not_sent`, st
 `no_contact` / `recently_asked` + detail. Activate route refuses without a Google link (resume does not; the
 effect then records "Add your Google review link").
 
-Remaining:
-- Builder: trigger control "Recurring jobs: don't ask / after every N completed visits" (1–52); a
-  `ReviewRequestActionEditor` reusing `ComposerChannelMenu` (SMS/Email, not-ready reason + setup link,
-  readiness from `loadReviewChannelReadiness` via a new automation-permission GET, plus "wording and reminders
-  come from Review settings" link and a missing-Google-link warning); "Add a review request" button; step icon;
-  always-on stop description currently says "website inquiries" — make it subject-neutral.
-- Labels for `not_sent`, `recently_asked` ("Already asked automatically in the last 6 months"), and origin
-  "Automatic" in `src/lib/reviews/requests.ts` and the panel history.
-- Worker spec case; SummaryRail, RecipeDetailView, activation-preview step labels.
-- Performance verification: EXPLAIN the recipe probe (`automation_recipes_active_trigger_idx`) and the cooldown
-  query (`review_requests_client_idx`); time `complete_job_visit` with an active recipe (rolled back); intake of
-  a batch of job events. Capacity not established.
+Builder half done `0cbdf66` (browser-checked on Raad: recurring control, SMS/Email warnings, draft save).
+Perf verified 2026-09-26 (rolled back, single samples, no capacity claim): recipe probe, six-month query and
+visit count all use their indexes; `complete_job_visit` ~14 ms without a recipe, ~24 ms with one; intake of
+the one event ~21 ms. Batch intake of many job events not measured.
+
+Remaining (needs Jafar's yes — it switches a real automation on in Raad):
+- Live proof: activate draft recipe `34803b3e-…` ("Ask for a Google review", Raad, Email, every 4 visits),
+  close a one-off job, run the wake; expect a "Not sent" request (Raad has no automatic sender) with its reason
+  in the job's Request a review panel and "Automatic email" in the line. Then pause/archive it.
