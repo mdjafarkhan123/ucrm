@@ -1,7 +1,7 @@
 <script lang="ts">
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import type { AuthoredDefinition } from '$lib/automation/authoring';
-	import { getCatalogEntry, triggerLabel } from '$lib/automation/catalog';
+	import { getCatalogEntry, sendsCustomerMessage, triggerLabel } from '$lib/automation/catalog';
 	import listCheckIcon from '@tabler/icons/outline/list-check.svg?raw';
 
 	// The builder's read-only rail: a plain-English retelling of the draft the user is editing, so they can
@@ -37,13 +37,22 @@
 	// Every email or text the recipe could send in one run — the honest upper bound the contract asks the
 	// rail to show, since waits and stops only ever reduce it.
 	const maxMessages = $derived(
-		definition.steps.filter(
-			(step) =>
-				step.key === 'action.send_email' ||
-				step.key === 'action.send_sms' ||
-				step.key === 'action.send_customer_message'
-		).length
+		definition.steps.filter((step) => sendsCustomerMessage(step.key)).length
 	);
+	const asksForReview = $derived(
+		definition.steps.some((step) => step.key === 'action.send_review_request')
+	);
+
+	// Google review Part 4B: the job trigger's recurring-visit choice, in words.
+	const triggerLine = $derived.by(() => {
+		const base = triggerLabel(definition.trigger?.key ?? null);
+		if (definition.trigger?.key !== 'job.work_completed') return base;
+		const every = Number(definition.trigger.config?.recurring_every_visits);
+		if (!Number.isFinite(every) || every < 1) return `${base} (one-time jobs only)`;
+		return every === 1
+			? `${base} (recurring jobs: after every visit)`
+			: `${base} (recurring jobs: after every ${every} visits)`;
+	});
 	const stepLines = $derived(definition.steps.map(stepLine));
 </script>
 
@@ -54,7 +63,7 @@
 		<dl class="summary__list">
 			<div class="summary__row">
 				<dt>When</dt>
-				<dd>{triggerLabel(definition.trigger?.key ?? null)}</dd>
+				<dd>{triggerLine}</dd>
 			</div>
 
 			<div class="summary__row">
@@ -104,6 +113,9 @@
 			<span class="summary__meta-label">Most messages one customer could get</span>
 			<span class="summary__meta-value">{maxMessages}</span>
 		</div>
+		{#if asksForReview}
+			<p class="summary__muted">Plus any review reminders set in Review settings.</p>
+		{/if}
 	</div>
 </SectionBlock>
 

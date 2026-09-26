@@ -40,6 +40,8 @@ function workClient(
 		performSms?: (id: string) => string;
 		performSmsError?: boolean;
 		performMessage?: (id: string) => string;
+		reviewDraft?: unknown;
+		performReview?: (id: string) => string;
 		fallbacks?: number;
 		claimError?: string;
 		retryError?: string;
@@ -78,6 +80,16 @@ function workClient(
 			const id = String(args?.p_work_item_id);
 			return {
 				data: options.performMessage ? options.performMessage(id) : 'action_sent',
+				error: null
+			};
+		}
+		if (name === 'automation_review_request_draft') {
+			return { data: options.reviewDraft ?? null, error: null };
+		}
+		if (name === 'perform_automation_review_request_effect') {
+			const id = String(args?.p_work_item_id);
+			return {
+				data: options.performReview ? options.performReview(id) : 'action_sent',
 				error: null
 			};
 		}
@@ -299,6 +311,58 @@ describe('drainAutomationWork', () => {
 			p_work_item_id: 'a',
 			p_claim_token: 'claim-a'
 		});
+	});
+
+	it('writes a job review request from Review settings with its own link and counts a send', async () => {
+		const { client, rpc } = workClient({
+			intake: [0],
+			claims: [[item('a')]],
+			advance: () => 'action_due_review_request',
+			reviewDraft: {
+				channel: 'sms',
+				business_name: 'Raad LTD',
+				customer_name: 'Sam Carter',
+				customer_first_name: 'Sam',
+				message_styles: null,
+				request_plan: null
+			},
+			performReview: () => 'action_sent'
+		});
+
+		const result = await drainAutomationWork({
+			client,
+			now: () => 0,
+			createQuoteLink: stubLink,
+			reviewLinkOrigin: () => 'https://app.example.com'
+		});
+
+		expect(result).toMatchObject({ claimed: 1, sent: 1, stoppedBy: 'idle' });
+		const call = rpc.mock.calls.find(
+			([name]) => name === 'perform_automation_review_request_effect'
+		);
+		const args = call?.[1] as Record<string, unknown>;
+		expect(args).toMatchObject({ p_work_item_id: 'a', p_claim_token: 'claim-a', p_subject: '' });
+		expect(String(args.p_link_url)).toMatch(/^https:\/\/app\.example\.com\//);
+		// The text carries the business and the customer's link, not a raw {{placeholder}}.
+		expect(String(args.p_body_text)).toContain(String(args.p_link_url));
+		expect(String(args.p_body_text)).not.toContain('{{');
+	});
+
+	it('does not run the review request effect when the draft finds the claim gone', async () => {
+		const { client, rpc } = workClient({
+			intake: [0],
+			claims: [[item('a')]],
+			advance: () => 'action_due_review_request',
+			reviewDraft: null
+		});
+
+		const result = await drainAutomationWork({ client, now: () => 0, createQuoteLink: stubLink });
+
+		expect(result).toMatchObject({ claimed: 1, sent: 0, cancelled: 0, retried: 0 });
+		expect(rpc).not.toHaveBeenCalledWith(
+			'perform_automation_review_request_effect',
+			expect.anything()
+		);
 	});
 
 	it('drains due email fallbacks after intake and before claiming work', async () => {

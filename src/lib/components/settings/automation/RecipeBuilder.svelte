@@ -14,12 +14,14 @@
 	import EmailActionEditor from './EmailActionEditor.svelte';
 	import SmsActionEditor from './SmsActionEditor.svelte';
 	import CustomerMessageEditor from './CustomerMessageEditor.svelte';
+	import ReviewRequestActionEditor from './ReviewRequestActionEditor.svelte';
 	import {
 		alwaysOnStopKeys,
 		catalogEntriesByKind,
 		fitsSubject,
 		getCatalogEntry,
 		isEnabled,
+		RECURRING_EVERY_VISITS_MAX,
 		triggerSubject,
 		type CatalogEntry
 	} from '$lib/automation/catalog';
@@ -58,6 +60,7 @@
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import starIcon from '@tabler/icons/outline/star.svg?raw';
 
 	// The shared When/If/Then/Stop builder. It serves both `/settings/automation/new` (create a draft from a
 	// preset or from scratch) and `/settings/automation/[id]/edit` (edit an existing draft), because the two
@@ -188,6 +191,24 @@
 		definition.stops = stops;
 	}
 
+	// Google review Part 4B: a recurring job is asked only after every N completed visits; absent means off.
+	const recurringEvery = $derived.by(() => {
+		const value = definition.trigger?.config?.recurring_every_visits;
+		return typeof value === 'number' ? value : null;
+	});
+
+	function setRecurringEvery(value: number | null) {
+		if (!definition.trigger) return;
+		const config = { ...definition.trigger.config };
+		if (value === null) delete config.recurring_every_visits;
+		else
+			config.recurring_every_visits = Math.min(
+				RECURRING_EVERY_VISITS_MAX,
+				Math.max(1, Number.isFinite(value) ? Math.floor(value) : 1)
+			);
+		definition.trigger = { ...definition.trigger, config };
+	}
+
 	// --- If --------------------------------------------------------------------------------------------
 	function addCondition(key: string) {
 		if (!key || definition.conditions.length >= MAX_CONDITIONS) return;
@@ -242,6 +263,25 @@
 	function addCustomerMessage() {
 		const step: AuthoredStep = { type: 'action', key: 'action.send_customer_message', config: {} };
 		definition.steps = [...definition.steps, step];
+	}
+
+	function addReviewRequest() {
+		const step: AuthoredStep = {
+			type: 'action',
+			key: 'action.send_review_request',
+			config: { channel: 'sms' }
+		};
+		definition.steps = [...definition.steps, step];
+	}
+
+	function reviewChannel(index: number): 'sms' | 'email' {
+		return definition.steps[index]?.config?.channel === 'email' ? 'email' : 'sms';
+	}
+
+	function setReviewChannel(index: number, channel: 'sms' | 'email') {
+		const step = definition.steps[index];
+		definition.steps[index] = { ...step, config: { ...step.config, channel } };
+		definition.steps = [...definition.steps];
 	}
 
 	function stepText(index: number, field: string): string {
@@ -583,6 +623,35 @@
 				{#if errors.trigger}
 					<p class="builder__error" role="alert">{errors.trigger}</p>
 				{/if}
+				{#if definition.trigger?.key === 'job.work_completed'}
+					<div class="builder__recurring">
+						<Select
+							id="builder-trigger-recurring"
+							label="Recurring jobs"
+							value={recurringEvery === null ? 'off' : 'every'}
+							options={[
+								{ value: 'off', label: 'Don’t ask' },
+								{ value: 'every', label: 'Ask after every few completed visits' }
+							]}
+							onchange={(value) => setRecurringEvery(value === 'off' ? null : 4)}
+						/>
+						{#if recurringEvery !== null}
+							<Input
+								id="builder-trigger-recurring-every"
+								type="number"
+								label="After every how many visits"
+								min="1"
+								max={String(RECURRING_EVERY_VISITS_MAX)}
+								value={String(recurringEvery)}
+								oninput={(event: Event) =>
+									setRecurringEvery(Number((event.currentTarget as HTMLInputElement).value))}
+							/>
+						{/if}
+					</div>
+					<p class="builder__muted-note">
+						One-time jobs are asked once, when the job is closed with its work done.
+					</p>
+				{/if}
 			</SectionBlock>
 
 			<!-- If -->
@@ -667,7 +736,9 @@
 											: step.key === 'action.send_sms' ||
 												  step.key === 'action.send_customer_message'
 												? messageIcon
-												: clockIcon}
+												: step.key === 'action.send_review_request'
+													? starIcon
+													: clockIcon}
 									</span>
 									<span class="builder__step-title">{label(step.key)}</span>
 									<div class="builder__step-controls">
@@ -764,6 +835,11 @@
 											onEmailBodyChange={(value) =>
 												setCustomerMessageField(index, 'email_body', value)}
 										/>
+									{:else if step.key === 'action.send_review_request'}
+										<ReviewRequestActionEditor
+											channel={reviewChannel(index)}
+											onChannelChange={(channel) => setReviewChannel(index, channel)}
+										/>
 									{:else if step.key === 'action.send_sms'}
 										<SmsActionEditor
 											idPrefix={`builder-step-${index}`}
@@ -804,6 +880,13 @@
 							by text or email
 						</Button>
 					{/if}
+					{#if canAdd('action.send_review_request')}
+						<Button variant="tertiary" size="small" onclick={addReviewRequest}>
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add a review
+							request
+						</Button>
+					{/if}
 				</div>
 			</SectionBlock>
 
@@ -818,7 +901,7 @@
 						<Checkbox
 							id={`builder-stop-${stop.key}`}
 							label={stop.label}
-							description={stop.alwaysOn ? 'Always on for website inquiries.' : ''}
+							description={stop.alwaysOn ? 'Always on for this trigger.' : ''}
 							checked={stop.alwaysOn || chosenStops.has(stop.key)}
 							disabled={stop.alwaysOn}
 							onchange={(checked) => toggleStop(stop.key, checked)}
@@ -887,6 +970,19 @@
 		&__muted {
 			color: var(--color-text--secondary);
 			font-style: italic;
+		}
+
+		&__recurring {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+			gap: var(--space-small);
+			margin-top: var(--space-base);
+		}
+
+		&__muted-note {
+			margin-top: var(--space-smaller);
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
 		}
 
 		&__rows,

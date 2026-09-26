@@ -11,6 +11,7 @@ export type ReviewRequestStatus =
 	| 'delivered'
 	| 'failed'
 	| 'cancelled'
+	| 'not_sent'
 	| 'opened'
 	| 'continued_to_google'
 	| 'feedback_submitted';
@@ -22,6 +23,7 @@ export const REVIEW_REQUEST_STATUS_LABELS: Record<ReviewRequestStatus, string> =
 	delivered: 'Delivered',
 	failed: 'Not delivered',
 	cancelled: 'Cancelled',
+	not_sent: 'Not sent',
 	opened: 'Opened',
 	continued_to_google: 'Went to Google',
 	feedback_submitted: 'Left private feedback'
@@ -37,6 +39,7 @@ export const REVIEW_REQUEST_STATUS_TONES: Record<
 	delivered: 'informative',
 	failed: 'critical',
 	cancelled: 'inactive',
+	not_sent: 'warning',
 	opened: 'warning',
 	continued_to_google: 'success',
 	feedback_submitted: 'success'
@@ -54,7 +57,8 @@ export type ReviewRequestStopReason =
 	| 'job_not_eligible'
 	| 'no_contact'
 	| 'plan_changed'
-	| 'error';
+	| 'error'
+	| 'recently_asked';
 
 export const REVIEW_REQUEST_STOP_LABELS: Record<ReviewRequestStopReason, string> = {
 	cancelled: 'Cancelled',
@@ -67,7 +71,8 @@ export const REVIEW_REQUEST_STOP_LABELS: Record<ReviewRequestStopReason, string>
 	job_not_eligible: 'The job was reopened or is no longer complete',
 	no_contact: 'The contact was removed',
 	plan_changed: 'Your reminder plan changed',
-	error: 'A reminder kept failing to send'
+	error: 'A reminder kept failing to send',
+	recently_asked: 'Already asked automatically in the last 6 months'
 };
 
 export type ReviewRequestMessageState =
@@ -85,6 +90,8 @@ export type ReviewRequestSummary = {
 	id: string;
 	job_id: string | null;
 	job_number: number | null;
+	// Part 4B: 'automation' when an Automations recipe asked, not a person.
+	origin: 'manual' | 'automation';
 	channel: ReviewChannel;
 	style: ReviewStyle;
 	recipient: string | null;

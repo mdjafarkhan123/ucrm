@@ -121,7 +121,7 @@
 		before_activation: 'Happened before this was turned on',
 		not_entitled: 'Skipped — not included in the plan',
 		authority_blocked: 'Skipped — automation was off',
-		subject_gone: 'Skipped — the quote or inquiry was gone',
+		subject_gone: 'Skipped — the record was gone',
 		condition_failed: 'Skipped — conditions weren’t met',
 		condition_unavailable: 'Couldn’t check the conditions',
 		follow_ups_declined: 'Skipped — this client turned quote follow-ups off'
@@ -136,6 +136,12 @@
 		stopped: 'Stopped',
 		failed: 'Needs attention'
 	};
+	// A job's intake records a client who turned review requests off the same way as quote follow-ups.
+	function historyOutcomeLabel(entry: RecipeHistoryEntry): string {
+		if (entry.outcome === 'follow_ups_declined' && entry.subject_type === 'job')
+			return 'Skipped — this client turned review requests off';
+		return outcomeLabel[entry.outcome];
+	}
 	function historyTone(outcome: RecipeHistoryOutcome): 'success' | 'warning' | 'inactive' {
 		if (outcome === 'enrolled') return 'success';
 		if (outcome === 'condition_unavailable') return 'warning';
@@ -150,6 +156,7 @@
 		});
 	}
 	const quoteHref = (subjectId: string) => resolve('/(app)/quotes/[id=uuid]', { id: subjectId });
+	const jobHref = (subjectId: string) => resolve('/(app)/jobs/[id=uuid]', { id: subjectId });
 
 	const statusBadge: Record<
 		RecipeStatus,
@@ -554,7 +561,7 @@
 								<li class="recipe-detail__event">
 									<div class="recipe-detail__event-head">
 										<StatusBadge status={historyTone(entry.outcome)}>
-											{outcomeLabel[entry.outcome]}
+											{historyOutcomeLabel(entry)}
 										</StatusBadge>
 										<span class="recipe-detail__event-time">
 											{formatDateTime(entry.happened_at)}
@@ -564,6 +571,10 @@
 										{#if entry.subject_type === 'quote'}
 											<a class="recipe-detail__event-link" href={quoteHref(entry.subject_id)}>
 												View quote
+											</a>
+										{:else if entry.subject_type === 'job'}
+											<a class="recipe-detail__event-link" href={jobHref(entry.subject_id)}>
+												View job
 											</a>
 										{/if}
 										{#if entry.enrollment_state}

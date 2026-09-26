@@ -5,7 +5,7 @@ import { requireAutomationAccess } from '$lib/server/access/automation';
 import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
 import { validateDefinition } from '$lib/server/automation/definition';
 import { definitionLimits, activeRecipesLimit } from '$lib/server/automation/commands';
-import { triggerLabel } from '$lib/automation/catalog';
+import { sendsCustomerMessage, triggerLabel } from '$lib/automation/catalog';
 
 // Settings → Automation: the impact preview the activation dialog reads when it opens. `activate` is required
 // — only someone who could actually activate needs to see the impact. It reads the recipe's OWN saved draft,
@@ -82,12 +82,8 @@ export const GET: RequestHandler = async (event) => {
 				trigger_label: triggerLabel(validated.triggerKey),
 				// Stage 7: an email or a text both count toward the impact ceiling — mirrors SummaryRail's
 				// "Most messages one customer could get" in the builder.
-				max_messages: validated.definition.steps.filter(
-					(step) =>
-						step.key === 'action.send_email' ||
-						step.key === 'action.send_sms' ||
-						step.key === 'action.send_customer_message'
-				).length,
+				max_messages: validated.definition.steps.filter((step) => sendsCustomerMessage(step.key))
+					.length,
 				step_count: validated.definition.steps.length,
 				condition_count: validated.definition.conditions.length,
 				stop_count: validated.definition.stops.length

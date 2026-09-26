@@ -267,6 +267,8 @@
 
 	// Where the request's reminders stand, when that adds to the status badge.
 	function reminderLine(request: ReviewRequestContext['requests'][number]) {
+		// An automatic ask that was skipped never had reminders; notSentReason says why instead.
+		if (request.status === 'not_sent') return '';
 		const sent = request.messages.filter(
 			(message) => message.slot > 0 && message.state !== 'cancelled'
 		).length;
@@ -286,8 +288,22 @@
 		return line ? line.charAt(0).toUpperCase() + line.slice(1) : '';
 	}
 
+	// Why an automatic ask was skipped: the specific detail when the database wrote one, else the reason.
+	function notSentReason(request: ReviewRequestContext['requests'][number]) {
+		if (request.status !== 'not_sent') return '';
+		if (request.stop_detail) return request.stop_detail;
+		return request.stop_reason ? REVIEW_REQUEST_STOP_LABELS[request.stop_reason] : '';
+	}
+
 	function requestLine(request: ReviewRequestContext['requests'][number]) {
-		const how = request.channel === 'sms' ? 'Text' : 'Email';
+		const how =
+			request.origin === 'automation'
+				? request.channel === 'sms'
+					? 'Automatic text'
+					: 'Automatic email'
+				: request.channel === 'sms'
+					? 'Text'
+					: 'Email';
 		const to = request.recipient ? ` to ${request.recipient}` : '';
 		const at =
 			request.status === 'scheduled' && request.send_at
@@ -418,7 +434,9 @@
 							{#if reminderLine(request)}
 								<span class="review-request__item-reminders">{reminderLine(request)}</span>
 							{/if}
-							{#if request.stop_detail && request.stop_reason && ['not_sent', 'not_delivered'].includes(request.stop_reason)}
+							{#if notSentReason(request)}
+								<span class="review-request__item-failure">{notSentReason(request)}</span>
+							{:else if request.stop_detail && request.stop_reason && ['not_sent', 'not_delivered'].includes(request.stop_reason)}
 								<span class="review-request__item-failure">{request.stop_detail}</span>
 							{/if}
 							{#if request.status === 'failed' && request.failure_message}

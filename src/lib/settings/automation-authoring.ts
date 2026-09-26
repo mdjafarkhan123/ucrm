@@ -155,6 +155,25 @@ export type AutomationSmsSender = {
 	is_default_sender: boolean;
 };
 
+// Google review Part 4B: the review request step's readiness line.
+export type AutomationReviewReadiness = {
+	sms_ready: boolean;
+	email_ready: boolean;
+	has_google_link: boolean;
+};
+
+export const automationReviewReadinessKey = ['settings', 'automation', 'review-readiness'] as const;
+
+export async function fetchAutomationReviewReadiness(): Promise<AutomationReviewReadiness> {
+	const response = await fetch('/api/settings/automation/review-readiness');
+	if (!response.ok)
+		throw httpError(
+			response,
+			await readError(response, 'Whether review requests can send could not be checked.')
+		);
+	return response.json();
+}
+
 export async function fetchAutomationSmsSenders(): Promise<AutomationSmsSender[]> {
 	const response = await fetch('/api/settings/automation/sms-senders');
 	if (!response.ok)

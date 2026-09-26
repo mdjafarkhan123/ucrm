@@ -403,6 +403,19 @@ export function isEnabled(entry: CatalogEntry): boolean {
 
 // The plain label a list/summary shows for a trigger key; falls back to the raw key so an unknown or
 // retired key is never rendered blank.
+// The steps that message the customer, counted toward "most messages one customer could get". A review request
+// counts once; its reminders come from Review settings and are shown separately.
+const CUSTOMER_MESSAGE_ACTION_KEYS = new Set([
+	'action.send_email',
+	'action.send_sms',
+	'action.send_customer_message',
+	'action.send_review_request'
+]);
+
+export function sendsCustomerMessage(key: string): boolean {
+	return CUSTOMER_MESSAGE_ACTION_KEYS.has(key);
+}
+
 export function triggerLabel(key: string | null): string {
 	if (!key) return 'No trigger yet';
 	return getCatalogEntry(key)?.label ?? key;
