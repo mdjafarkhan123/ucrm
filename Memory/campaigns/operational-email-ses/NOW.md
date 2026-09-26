@@ -4,21 +4,23 @@ Goal: contractor email runs only on Amazon SES; Brevo stays only for platform/Ja
 
 ## State
 
-Parts 1–4b done. Part 6 done 2026-09-26 (step 5 live on Raad: fresh Set up, office@ sender, delivered send,
-Gmail reply accepted into the Inbox under Greenfield Property Group).
+Parts 1–4b and 6 done. 2026-09-26 cleanup session (`462fdb4`): previews show the real From address, team
+lists show unnamed members by email and drop removed people, Email card errors show inside dialogs, Check
+runs provider calls in parallel. Brevo `notifications.` domain deleted; stale DLQ reply deleted.
 
 ## Exact next action
 
-Jafar 2026-09-26: "on new session do all the necessary improvements you noticed and do the rest work".
-1. Fix (approved): sender dialog "Assigned team member" list shows 4 "Unnamed team member" rows (role test
-   users without names) -- show a real fallback (e.g. email) so members are distinguishable; email preview
-   (client "Message" dialog) shows "From: Your eligible email identity" -- show the actual sender address.
-2. Irreversible deletes still need a plain yes (ask once at start): delete unused Brevo domain
-   notifications.upliftcontractor.com (keep contact. -- SYSTEM_FROM_EMAIL); purge the 3 stale 2026-09-25
-   "SES live test 2" reply copies in `ucrm-ses-inbound-dlq` (already filed).
-3. ROADMAP row 6 follow-ups: Marketing M6e burst check; Email card Check ~10 s; failed Check (409
-   `subdomain_occupied`) shows no error on the Jafar Email card.
-4. Then Part 5 (contractor request-setup flow; ROADMAP row 5) -- product decisions, use grilling. Part 7 after.
+1. Live-time Check on Raad (Jafar panel → Raad → Communications → Email card → Check). Before: ~10 s;
+   target ~3 s. Not measured after the change -- the browser extension disconnected.
+2. Remaining Part 6 follow-up: Marketing M6e burst check (see ROADMAP row 6).
+3. Then Part 5 (contractor request-setup flow; ROADMAP row 5) -- product decisions with Jafar, use grilling.
+   Part 7 after.
+
+## Open asks for Jafar
+
+- `ucrm-ses-inbound-dlq` still holds one AWS "setup notification" test ping (2026-09-25, recipient@example.com).
+  Harmless junk; delete only with Jafar's yes.
+- Cloudflare DNS records for the deleted Brevo `notifications.upliftcontractor.com` may remain; harmless.
 
 ## Blockers
 
