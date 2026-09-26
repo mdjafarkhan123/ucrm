@@ -10,7 +10,7 @@ Behavior:
   reminders (default 2: 3 and 5 days after the first message), and the text of every message per channel and
   style (reminder copy gets its own starting text). Shown as a readable timeline; warn (don't block) when the
   pattern looks pushy (e.g. more than 3 reminders or gaps under 2 days). Technical ceiling: 10 reminders
-  (needs Jafar's OK — brief says "no fixed maximum").
+  (Jafar approved 2026-09-26).
 - Every request (manual now, automatic in 4B) follows the plan. Manual "Send now/Schedule" sets the first
   message; reminders count from when the first message actually sent.
 - Stops (brief § When the sequence stops): Google click, private feedback submitted, cancel, any message of the

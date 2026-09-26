@@ -3,7 +3,7 @@
 Goal: build the Google review campaign in `docs/google-review-campaign-owner-brief.md`.
 Active part: 4A — reminder plan for every review request. Read `parts/04-automation.md` (4A section).
 
-Next action — once Jafar OKs the 10-reminder technical ceiling (asked 2026-09-26), in a fresh session:
+Next action — in a fresh session (10-reminder ceiling approved 2026-09-26):
 1. Finish the performance design verdict for 4A (performance-review design branch), then load the Postgres
    best-practices skill.
 2. Build 4A: migration (per-message token table, per-message rows, due marker + claim), worker drain, settings

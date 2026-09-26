@@ -47,7 +47,8 @@ Every request link, whatever the channel (SMS or email), opens the UCRM feedback
 - **One reminder plan for every request.** Following HighLevel's Reputation settings, the Reviews settings page
   holds the request behavior: when the first message goes after a request is created (default **right away**;
   the contractor may choose a delay), how many reminders follow, how many days apart, and the message for the
-  first send and each reminder. The plan applies to every request, whether sent by hand or automatically.
+  first send and each reminder. A safety ceiling of 10 reminders applies (owner decision 2026-09-26); the
+  setup warns well before that. The plan applies to every request, whether sent by hand or automatically.
 - **The automatic ask is an automation.** Following HighLevel's Workflow "Review Request" action, automatic asking
   is a ready-made recipe in Automations: **When a job's work is completed → Send a review request**. The
   contractor turns it on there; it cannot be activated until a Google review link is saved.
