@@ -4,21 +4,17 @@ Goal: contractor email runs only on Amazon SES; Brevo stays only for platform/Ja
 
 ## State
 
-Part 4b (ROADMAP; contract "Conversations and replies"). A live-proven, B committed, C code-complete and
-unit-tested: the worker passes `target_sender_authenticated`; Set up/Check writes the SES inbound MX on
-mail.<root> / news.<root> once each identity verifies (`routeSendingRepliesToSes`); operational Remove and org
-purge (`teardownMarketingDomain`) delete it first. Not yet run against Raad: no real MX exists until an owner
-runs Check on Raad's everyday and Marketing domains. SES region us-east-1.
+Parts 1–4b done (4b D live-proven 2026-09-26 on Raad). Active: Part 6 step 4 (ROADMAP row 6).
 
 ## Exact next action
 
-D: with Jafar, run Check on Raad's everyday email and Marketing domains (this writes the two MX records live),
-confirm with `dig MX mail.<root>` / `news.<root>`, then live-prove a Gmail reply to the From address of an
-operational email and a Marketing email, plus an operational In-Reply-To link, all landing in Raad's inbox.
+Part 6 step 4: ask Jafar's OK, then delete Raad's old Brevo sending domain and contractor inbound webhook via
+the Brevo API (keep the Brevo account and `BREVO_API_KEY`). Then step 5: fresh Set up on Raad + live send and
+reply with Jafar. After Part 6: Part 5 (contractor request-setup flow), then Part 7.
 
 ## Blockers
 
-Needs Jafar for D: dev server + `cloudflared tunnel run`, Raad-owner sign-in, Gmail replies. AWS: `aws --profile
-ucrm` (renew `aws sso login --sso-session ucrm`). A Raad review-queue test row ("Shared rule check") can be dismissed.
+Step 4 needs Jafar's explicit yes (irreversible provider deletes). AWS: `aws --profile ucrm` (renew `aws sso
+login --sso-session ucrm`). Check lives on the Jafar panel org page → Communications tab.
 
 Resume: `continue operational email ses`.
