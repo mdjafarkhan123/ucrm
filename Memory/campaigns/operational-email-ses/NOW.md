@@ -20,8 +20,8 @@ runs provider calls in parallel. Brevo `notifications.` domain deleted; stale DL
    not SES (14/s cap, we used ~2.5/s), not our queues/leases. Industry fix = separate worker processes per lane
    (important email vs bulk); fold into the production Docker worker plan (email worker its own container).
    Re-measure there; needs Jafar's approval of the topology first (CLAUDE.md approval boundary). No code change.
-   `limit_override` on Raad reset to null. Left for Jafar's yes to delete: campaign "M6e burst test (safe to
-   delete)", its 520 simulator clients/tag/group, client "M6e ops probe", the 17 probe intents.
+   `limit_override` on Raad reset to null. All M6e test data deleted with Jafar's yes (campaign, 521 clients, group,
+   tag, probe intents); Raad back to its 20 real clients.
 2. Next: Part 5 (contractor request-setup flow; ROADMAP row 5) -- product decisions with Jafar, use grilling.
    Part 7 after.
 
