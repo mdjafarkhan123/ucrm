@@ -29,6 +29,18 @@ describe('runBoundedDrain', () => {
 		});
 	});
 
+	it('keeps draining in the other slots when one slot sees a momentary idle', async () => {
+		// Slot two's first claim collides with slot one's locked rows and comes back idle; slot one must still
+		// drain the rest instead of the whole wake stopping after one send.
+		const processOne = queued('submitted', 'idle', 'submitted', 'submitted');
+
+		const result = await runBoundedDrain(async () => 0, processOne, { concurrency: 2 });
+
+		expect(result.submitted).toBe(3);
+		expect(result.claimed).toBe(3);
+		expect(result.stoppedBy).toBe('idle');
+	});
+
 	it('stops at the maximum claim count without overshooting across slots', async () => {
 		const processOne = vi.fn(async (): Promise<DrainProcessResult> => ({ status: 'submitted' }));
 

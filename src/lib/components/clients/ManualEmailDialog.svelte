@@ -107,7 +107,7 @@
 			// The client Communication tab (Part 5D) caches under its own key, which the inbox invalidation
 			// above does not prefix-match.
 			queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(client.id) });
-			toast.success('Email sent');
+			toast.success('Email queued. Its delivery status shows in the conversation.');
 			close();
 		} catch {
 			formError = 'The email could not be queued. Check your connection and try again.';
@@ -150,8 +150,7 @@
 			</dl>
 			<div class="manual-email__body">{body}</div>
 			<p class="manual-email__notice">
-				Sending checks the recipient and your sender identity again. Delivery is currently disabled,
-				so queued email will not be sent.
+				Sending checks the recipient and your sender identity again.
 			</p>
 			{#if formError}<p class="manual-email__error" role="alert">{formError}</p>{/if}
 			<footer class="manual-email__footer">

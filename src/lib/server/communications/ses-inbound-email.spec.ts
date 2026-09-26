@@ -3,6 +3,7 @@ import {
 	parseSesInboundMessage,
 	parseSesReceiptNotification,
 	sesCandidateRecipients,
+	sesInReplyToProviderMessageId,
 	sesInboundEventKey
 } from './ses-inbound-email';
 
@@ -107,6 +108,7 @@ describe('parseSesInboundMessage', () => {
 		expect(result.subject).toBe('Re: Your quote');
 		expect(result.textContent.trim()).toBe('Thanks, sounds good!');
 		expect(result.messageKind).toBe('reply');
+		expect(result.inReplyToProviderMessageId).toBeNull();
 		expect(result.candidateRecipients).toEqual([
 			{
 				address: 'r_abc123@reply.upliftcontractor.com',
@@ -115,6 +117,16 @@ describe('parseSesInboundMessage', () => {
 			}
 		]);
 		expect(result.attachments).toEqual([]);
+	});
+
+	it('links a reply to the SES email it answers through In-Reply-To', async () => {
+		const parsed = parseSesReceiptNotification(notification())!;
+		const replyMime = plainTextMime.replace(
+			'Subject:',
+			'In-Reply-To: <0100019a-abc-000000@email.amazonses.com>\r\nSubject:'
+		);
+		const result = await parseSesInboundMessage(parsed, Buffer.from(replyMime));
+		expect(result.inReplyToProviderMessageId).toBe('0100019a-abc-000000');
 	});
 
 	it('classifies an Auto-Submitted header as auto_response, reusing the shared Brevo heuristic', async () => {
@@ -138,5 +150,17 @@ describe('parseSesInboundMessage', () => {
 		expect(result.attachments[0].filename).toBe('photo.jpg');
 		expect(result.attachments[0].contentType).toBe('image/jpeg');
 		expect(result.attachments[0].content.toString()).toBe('fake-image-bytes');
+	});
+});
+
+describe('sesInReplyToProviderMessageId', () => {
+	it('keeps the bare SES id for regional and us-east-1 Message-IDs', () => {
+		expect(sesInReplyToProviderMessageId('<id-1@eu-west-1.amazonses.com>')).toBe('id-1');
+		expect(sesInReplyToProviderMessageId('<id-2@email.amazonses.com>')).toBe('id-2');
+	});
+
+	it('ignores missing and non-SES Message-IDs', () => {
+		expect(sesInReplyToProviderMessageId(undefined)).toBeNull();
+		expect(sesInReplyToProviderMessageId('<CAF1x@mail.gmail.com>')).toBeNull();
 	});
 });

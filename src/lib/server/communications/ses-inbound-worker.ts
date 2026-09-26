@@ -318,6 +318,7 @@ async function ingestOneMessage(
 		'record_communication_inbound_message',
 		{
 			target_provider_message_id: notification.mail.messageId,
+			target_in_reply_to_provider_message_id: parsed.inReplyToProviderMessageId,
 			target_provider_callback_event_id: callback.data.id,
 			target_sender_email: parsed.senderEmail,
 			target_sender_name: parsed.senderName,

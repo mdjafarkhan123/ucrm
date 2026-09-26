@@ -99,6 +99,14 @@ function flattenAddresses(
 	);
 }
 
+// SES stamps every email it sends with Message-ID <messageId@email.amazonses.com> (or <region>.amazonses.com),
+// while UCRM stores only the bare messageId SendEmail returned. A reply's In-Reply-To names the email it answers,
+// so its bare id links the reply to the exact sent email; a non-SES id cannot be one of ours and is dropped.
+export function sesInReplyToProviderMessageId(inReplyTo: string | undefined): string | null {
+	const match = inReplyTo?.match(/<?([^<>@\s]+)@[a-z0-9.-]*amazonses\.com>?/i);
+	return match ? match[1] : null;
+}
+
 export type ParsedSesInboundMessage = {
 	senderEmail: string;
 	senderName: string | undefined;
@@ -108,6 +116,7 @@ export type ParsedSesInboundMessage = {
 	htmlContent: string | undefined;
 	textContent: string;
 	messageKind: InboundMessageKind;
+	inReplyToProviderMessageId: string | null;
 	candidateRecipients: CandidateRecipient[];
 	attachments: Attachment[];
 };
@@ -134,6 +143,7 @@ export async function parseSesInboundMessage(
 		htmlContent: parsed.html === false ? undefined : parsed.html,
 		textContent: parsed.text ?? '',
 		messageKind: classifyMessageKind(headersFromHeaderLines(parsed.headerLines), sender.address),
+		inReplyToProviderMessageId: sesInReplyToProviderMessageId(parsed.inReplyTo),
 		candidateRecipients: sesCandidateRecipients(notification),
 		attachments: parsed.attachments
 	};

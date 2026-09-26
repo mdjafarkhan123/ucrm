@@ -61,9 +61,9 @@ export async function runBoundedDrain(
 		stoppedBy: 'idle'
 	};
 
-	// The first slot to stop records why; the rest observe it and exit. 'idle' is the default terminal reason
-	// and only a bound that trips first overrides it.
-	let stopped: 'idle' | 'max_claims' | 'time_budget' | null = null;
+	// The first slot to hit a bound records it; the rest observe it and exit. 'idle' is the default terminal
+	// reason, when every slot retired because it found nothing to claim.
+	let stopped: 'max_claims' | 'time_budget' | null = null;
 
 	// Reserve a claim slot before hitting the database. Reserving here (rather than counting after) keeps the
 	// total claims across all slots exactly bounded by maxClaims instead of overshooting by up to
@@ -94,9 +94,10 @@ export async function runBoundedDrain(
 			}
 
 			if (outcome.status === 'idle') {
-				// Nothing was claimable: release the reservation and mark the queue drained.
+				// Nothing was claimable for this slot: release the reservation and retire only this slot. An idle
+				// answer can be momentary -- a claim function may briefly lock rows another slot is about to take --
+				// so the other slots keep draining until they see idle themselves.
 				result.claimed -= 1;
-				stopped ??= 'idle';
 				return;
 			}
 

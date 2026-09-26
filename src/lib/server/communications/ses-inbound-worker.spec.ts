@@ -36,6 +36,7 @@ const plainTextMime = Buffer.from(
 	[
 		'From: jane@example.com',
 		'To: r_abc@reply.example.com',
+		'In-Reply-To: <sent-1@eu-west-1.amazonses.com>',
 		'Subject: Re: quote',
 		'Content-Type: text/plain; charset=utf-8',
 		'',
@@ -113,6 +114,7 @@ describe('drainSesInboundQueue', () => {
 			'record_communication_inbound_message',
 			expect.objectContaining({
 				target_provider_message_id: 'ses-msg-1',
+				target_in_reply_to_provider_message_id: 'sent-1',
 				target_sender_email: 'jane@example.com',
 				target_provider: 'ses'
 			})
