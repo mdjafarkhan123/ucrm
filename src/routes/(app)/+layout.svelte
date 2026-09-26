@@ -77,13 +77,12 @@
 	}));
 	const marketingVisible = $derived(marketingAccessQuery.data?.ok ?? false);
 
-	// Reviews follows Marketing: hidden until the server says yes, through the page's own permission check.
-	// Until the Reviews workspace exists (Google review Part 5), the menu leads to Review settings, so the
-	// probe is the settings read and only people who may manage reviews see the item.
+	// Reviews follows Marketing: hidden until the server says yes, through the workspace's own permission
+	// check (reviews.view). Counts is the smallest read behind that check.
 	const reviewsAccessQuery = createQuery<{ ok: boolean }>(() => ({
 		queryKey: ['nav', 'reviews-access', data.user?.id ?? null],
 		queryFn: async () => {
-			const response = await fetch('/api/reviews/settings');
+			const response = await fetch('/api/reviews/workspace/counts');
 			return { ok: response.ok };
 		},
 		staleTime: 5 * 60_000
@@ -137,6 +136,7 @@
 		resolve('/(app)/marketing/campaigns/[id=uuid]', { id: WARM_UUID }),
 		resolve('/(app)/marketing/campaigns/[id=uuid]/edit', { id: WARM_UUID }),
 		resolve('/(app)/communications'),
+		resolve('/(app)/reviews'),
 		resolve('/(app)/reviews/settings'),
 		resolve('/(app)/files'),
 		resolve('/(app)/settings'),

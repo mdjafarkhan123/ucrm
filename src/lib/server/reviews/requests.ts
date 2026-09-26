@@ -17,6 +17,7 @@ import {
 	type ReviewStyle
 } from '$lib/reviews/settings';
 import type { ReviewRequestContext, ReviewRequestSummary } from '$lib/reviews/requests';
+import type { ReviewWorkspaceCounts, ReviewWorkspacePage } from '$lib/reviews/workspace';
 
 const TOKEN_BYTES = 32;
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
@@ -325,4 +326,57 @@ export async function cancelReviewRequest(
 	});
 	if (error) throw refusalFrom(error) ?? error;
 	return data as unknown as ReviewRequestSummary;
+}
+
+export type ReviewWorkspaceListInput = {
+	status?: string;
+	channel?: string;
+	search?: string;
+	cursor?: string;
+};
+
+// One page of the Reviews workspace's Requests tab. Null when the member may not view review requests.
+export async function listReviewWorkspaceRequests(
+	organizationId: string,
+	actorId: string,
+	input: ReviewWorkspaceListInput
+): Promise<ReviewWorkspacePage | null> {
+	const separator = input.cursor?.lastIndexOf('|') ?? -1;
+	const { data, error } = await getReviewRequestClient().rpc('list_review_requests', {
+		p_organization_id: organizationId,
+		p_actor_id: actorId,
+		p_status: input.status as string,
+		p_channel: input.channel as string,
+		p_search: input.search as string,
+		p_cursor_created_at: (input.cursor && separator > 0
+			? input.cursor.slice(0, separator)
+			: undefined) as string,
+		p_cursor_id: (input.cursor && separator > 0
+			? input.cursor.slice(separator + 1)
+			: undefined) as string
+	});
+	if (error) throw error;
+	if (!data) return null;
+	const result = data as unknown as {
+		requests: ReviewWorkspacePage['requests'];
+		next_cursor: { created_at: string; id: string } | null;
+	};
+	return {
+		requests: result.requests,
+		next_cursor: result.next_cursor
+			? `${result.next_cursor.created_at}|${result.next_cursor.id}`
+			: null
+	};
+}
+
+export async function loadReviewWorkspaceCounts(
+	organizationId: string,
+	actorId: string
+): Promise<ReviewWorkspaceCounts | null> {
+	const { data, error } = await getReviewRequestClient().rpc('review_request_counts', {
+		p_organization_id: organizationId,
+		p_actor_id: actorId
+	});
+	if (error) throw error;
+	return (data as unknown as ReviewWorkspaceCounts | null) ?? null;
 }

@@ -250,3 +250,28 @@ export const reviewRequestCreateSchema = z
 	});
 
 export type ReviewRequestCreateInput = z.infer<typeof reviewRequestCreateSchema>;
+
+// Google review campaign Part 5A: one page of the Reviews workspace's Requests tab. The cursor is the
+// "<created_at>|<id>" the previous page handed back.
+export const reviewWorkspaceListQuerySchema = z.object({
+	status: z
+		.enum([
+			'queued',
+			'scheduled',
+			'sent',
+			'delivered',
+			'failed',
+			'cancelled',
+			'not_sent',
+			'opened',
+			'continued_to_google',
+			'feedback_submitted'
+		])
+		.optional(),
+	channel: z.enum(REVIEW_CHANNELS).optional(),
+	search: z.string().trim().max(100).optional(),
+	cursor: z
+		.string()
+		.regex(/^[0-9T:.+\-Z ]{10,40}\|[0-9a-f-]{36}$/i)
+		.optional()
+});

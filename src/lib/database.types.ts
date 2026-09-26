@@ -19827,6 +19827,19 @@ export type Database = {
 					usage_count: number;
 				}[];
 			};
+			list_review_requests: {
+				Args: {
+					p_actor_id: string;
+					p_channel?: string;
+					p_cursor_created_at?: string;
+					p_cursor_id?: string;
+					p_limit?: number;
+					p_organization_id: string;
+					p_search?: string;
+					p_status?: string;
+				};
+				Returns: Json;
+			};
 			list_team_directory: {
 				Args: {
 					cursor_created_at?: string;
@@ -22027,6 +22040,10 @@ export type Database = {
 					target_event_id: string;
 					target_quote_id: string;
 				};
+				Returns: Json;
+			};
+			review_request_counts: {
+				Args: { p_actor_id: string; p_organization_id: string };
 				Returns: Json;
 			};
 			review_import_batch: {

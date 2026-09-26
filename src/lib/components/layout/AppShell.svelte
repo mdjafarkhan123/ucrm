@@ -85,7 +85,7 @@
 				...(marketingVisible
 					? [{ label: 'Marketing', href: '/marketing', icon: 'speakerphone' }]
 					: []),
-				...(reviewsVisible ? [{ label: 'Reviews', href: '/reviews/settings', icon: 'star' }] : []),
+				...(reviewsVisible ? [{ label: 'Reviews', href: '/reviews', icon: 'star' }] : []),
 				{ label: 'Growth Feed', href: '/growth', icon: 'trendingUp', unavailable: true }
 			]
 		},
