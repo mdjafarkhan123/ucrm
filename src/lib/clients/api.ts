@@ -130,6 +130,8 @@ export type ClientDetail = ClientWriteValues & {
 	 * nothing to send marketing to and nothing to record consent against.
 	 */
 	marketing_consent: MarketingConsentState | null;
+	/** Whether this member may ask this client for a Google review from the client page. */
+	can_request_review?: boolean;
 };
 
 export type DuplicateCandidates = {

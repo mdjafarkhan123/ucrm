@@ -33,6 +33,7 @@
 	import JobLaborSection from '$lib/components/jobs/JobLaborSection.svelte';
 	import JobExpensesSection from '$lib/components/jobs/JobExpensesSection.svelte';
 	import JobCostingCard from '$lib/components/jobs/JobCostingCard.svelte';
+	import RequestReviewButton from '$lib/components/reviews/RequestReviewButton.svelte';
 	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
 	import RecordFilesCard from '$lib/components/files/RecordFilesCard.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -105,6 +106,14 @@
 	let reportHasContent = $state(false);
 
 	const editable = $derived(Boolean(saved?.can_edit));
+	// Google review Part 3: closed jobs where work was done, and ongoing recurring jobs once a visit is done.
+	const canRequestReview = $derived(
+		Boolean(
+			saved?.can_request_review &&
+			(saved.job.status === 'closed' || saved.job.job_type === 'recurring') &&
+			saved.visits.some((visit) => visit.completed_at)
+		)
+	);
 	const title = $derived(saved?.job.title?.trim() || `Job #${saved?.job.job_number ?? ''}`);
 	const titleChanged = $derived(
 		editingTitle && titleDraft.trim() !== (saved?.job.title?.trim() ?? '')
@@ -504,6 +513,9 @@
 					{/snippet}
 					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
 					{#snippet badges()}
+						{#if canRequestReview}
+							<RequestReviewButton target={{ jobId: saved.job.id }} variant="tertiary" />
+						{/if}
 						{#if saved.job.status === 'closed' && saved.can_close}
 							<Button
 								size="small"

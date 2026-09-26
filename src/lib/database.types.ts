@@ -13520,10 +13520,13 @@ export type Database = {
 			review_requests: {
 				Row: {
 					cancelled_at: string | null;
+					cancelled_by: string | null;
+					channel: string;
 					client_id: string;
 					continued_to_google_at: string | null;
 					created_at: string;
 					created_by: string | null;
+					delivery_intent_id: string | null;
 					feedback_submitted_at: string | null;
 					first_opened_at: string | null;
 					id: string;
@@ -13531,15 +13534,19 @@ export type Database = {
 					last_opened_at: string | null;
 					open_count: number;
 					organization_id: string;
+					origin: string;
 					rating: number | null;
 					token_hash: string;
 				};
 				Insert: {
 					cancelled_at?: string | null;
+					cancelled_by?: string | null;
+					channel: string;
 					client_id: string;
 					continued_to_google_at?: string | null;
 					created_at?: string;
 					created_by?: string | null;
+					delivery_intent_id?: string | null;
 					feedback_submitted_at?: string | null;
 					first_opened_at?: string | null;
 					id?: string;
@@ -13547,15 +13554,19 @@ export type Database = {
 					last_opened_at?: string | null;
 					open_count?: number;
 					organization_id: string;
+					origin?: string;
 					rating?: number | null;
 					token_hash: string;
 				};
 				Update: {
 					cancelled_at?: string | null;
+					cancelled_by?: string | null;
+					channel?: string;
 					client_id?: string;
 					continued_to_google_at?: string | null;
 					created_at?: string;
 					created_by?: string | null;
+					delivery_intent_id?: string | null;
 					feedback_submitted_at?: string | null;
 					first_opened_at?: string | null;
 					id?: string;
@@ -13563,6 +13574,7 @@ export type Database = {
 					last_opened_at?: string | null;
 					open_count?: number;
 					organization_id?: string;
+					origin?: string;
 					rating?: number | null;
 					token_hash?: string;
 				};
@@ -13573,6 +13585,13 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'clients';
 						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'review_requests_delivery_intent_id_fkey';
+						columns: ['delivery_intent_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_delivery_intents';
+						referencedColumns: ['id'];
 					},
 					{
 						foreignKeyName: 'review_requests_job_fkey';
@@ -15249,6 +15268,14 @@ export type Database = {
 					p_actor_email: string;
 					p_delivery_intent_id: string;
 					p_reason: string;
+				};
+				Returns: Json;
+			};
+			cancel_review_request: {
+				Args: {
+					p_actor_id: string;
+					p_organization_id: string;
+					p_request_id: string;
 				};
 				Returns: Json;
 			};
@@ -17428,6 +17455,24 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			create_review_request: {
+				Args: {
+					p_actor_id: string;
+					p_body_html: string;
+					p_body_text: string;
+					p_channel: string;
+					p_client_id: string;
+					p_contact_method_id: string;
+					p_idempotency_key: string;
+					p_job_id: string;
+					p_link_url: string;
+					p_organization_id: string;
+					p_send_at: string;
+					p_subject: string;
+					p_token_hash: string;
+				};
+				Returns: Json;
+			};
 			create_similar_quote: { Args: { target_quote_id: string }; Returns: Json };
 			create_website_chat_widget: {
 				Args: {
@@ -19417,6 +19462,15 @@ export type Database = {
 					start_time: string;
 					starts_at: string;
 				}[];
+			};
+			get_review_request_context: {
+				Args: {
+					p_actor_id: string;
+					p_client_id: string;
+					p_job_id: string;
+					p_organization_id: string;
+				};
+				Returns: Json;
 			};
 			get_team_member_detail: {
 				Args: { target_organization_id: string; target_user_id: string };

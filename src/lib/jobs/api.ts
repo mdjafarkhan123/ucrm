@@ -437,6 +437,7 @@ export type JobDetail = {
 	can_see_cost: boolean;
 	can_manage_taxes: boolean;
 	can_invoice: boolean;
+	can_request_review: boolean;
 	current_user_id: string;
 	can_record_field_records: boolean;
 	can_manage_team_field_records: boolean;

@@ -4,6 +4,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import ManualEmailDialog from '$lib/components/clients/ManualEmailDialog.svelte';
+	import RequestReviewButton from '$lib/components/reviews/RequestReviewButton.svelte';
 	import type { ClientDetail } from '$lib/clients/api';
 	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
 	import messageIcon from '@tabler/icons/outline/message.svg?raw';
@@ -55,6 +56,9 @@
 			<Button variant="secondary" size="small" onclick={() => (manualEmailOpen = true)}
 				>Message</Button
 			>
+			{#if client.can_request_review}
+				<RequestReviewButton target={{ clientId: client.id }} />
+			{/if}
 			<Button variant="secondary" size="small" onclick={onEdit}>Edit</Button>
 		</div>
 	</div>

@@ -7,6 +7,7 @@ import {
 	REVIEW_FEEDBACK_INTRO_MAX,
 	REVIEW_FEEDBACK_MAX_QUESTIONS,
 	REVIEW_FEEDBACK_QUESTION_TYPES,
+	REVIEW_CHANNELS,
 	REVIEW_SMS_BODY_MAX,
 	REVIEW_STYLES,
 	REVIEW_THANK_YOU_MESSAGE_MAX,
@@ -152,3 +153,51 @@ export const reviewFeedbackSubmissionSchema = z
 		answers: z.record(z.string(), z.unknown()).default({})
 	})
 	.strict();
+
+// Google review campaign Part 3: a manual review request as the panel sends it. The message is the style's
+// text as the contractor edited it, variables unfilled; the server fills them and makes the link.
+export const reviewRequestContextQuerySchema = z.union([
+	z.object({ job_id: z.uuid(), client_id: z.undefined() }),
+	z.object({ client_id: z.uuid(), job_id: z.undefined() })
+]);
+
+export const reviewRequestCreateSchema = z
+	.object({
+		client_id: z.uuid(),
+		job_id: z.uuid().nullable(),
+		channel: z.enum(REVIEW_CHANNELS),
+		contact_method_id: z.uuid('Choose who to send it to.'),
+		subject: z.string().default(''),
+		body: z.string(),
+		send_at: z.iso
+			.datetime({ offset: true })
+			.nullable()
+			.default(null)
+			.refine(
+				(value) => {
+					if (value === null) return true;
+					const at = Date.parse(value);
+					return at > Date.now() && at <= Date.now() + 90 * 24 * 60 * 60 * 1000;
+				},
+				{ message: 'Choose a time in the next 90 days.' }
+			),
+		idempotency_key: z.string().trim().min(8).max(200)
+	})
+	.strict()
+	.superRefine((input, ctx) => {
+		const body =
+			input.channel === 'sms'
+				? reviewMessageText(REVIEW_SMS_BODY_MAX, true, 'Write the text message.')
+				: reviewMessageText(REVIEW_EMAIL_BODY_MAX, true, 'Write the email.');
+		for (const issue of body.safeParse(input.body).error?.issues ?? []) {
+			ctx.addIssue({ code: 'custom', path: ['body'], message: issue.message });
+		}
+		if (input.channel === 'email') {
+			const subject = emailStyleSchema.shape.subject.safeParse(input.subject);
+			for (const issue of subject.error?.issues ?? []) {
+				ctx.addIssue({ code: 'custom', path: ['subject'], message: issue.message });
+			}
+		}
+	});
+
+export type ReviewRequestCreateInput = z.infer<typeof reviewRequestCreateSchema>;

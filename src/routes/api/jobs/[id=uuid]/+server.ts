@@ -404,6 +404,8 @@ export const GET: RequestHandler = async (event) => {
 			can_see_cost: canSeeCost,
 			can_manage_taxes: canManageTaxes,
 			can_invoice: canInvoice,
+			// Google review Part 3: the database decides per job whether this member worked on it.
+			can_request_review: hasPermission(check.access, 'reviews.request'),
 			current_user_id: check.auth.user.id,
 			can_record_field_records: canRecordFieldRecords,
 			can_manage_team_field_records: canManageTeamFieldRecords,

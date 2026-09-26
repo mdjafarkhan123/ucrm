@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { requireClientPermission } from '$lib/server/access/clients';
+import { permissionScope } from '$lib/server/access/permission';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { databaseError, validationError } from '$lib/server/api/errors';
 import {
@@ -147,7 +148,10 @@ export const GET: RequestHandler = async (event) => {
 			property_count: (properties ?? []).length,
 			preferences,
 			marketing_consent: marketingConsent,
-			tag_ids: (tagAssignments ?? []).map((assignment) => assignment.tag_id)
+			tag_ids: (tagAssignments ?? []).map((assignment) => assignment.tag_id),
+			// Google review Part 3. A member limited to their own jobs asks from the job page instead, since
+			// the client page may offer a job they did not work on or no job at all.
+			can_request_review: permissionScope(access.access, 'reviews.request') === 'all'
 		}
 	});
 };

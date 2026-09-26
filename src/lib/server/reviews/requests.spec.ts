@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { createReviewRequestToken, reviewRequestTokenHash } from './requests';
+import {
+	createReviewRequestToken,
+	fillReviewMessage,
+	renderReviewEmailHtml,
+	reviewRequestTokenHash
+} from './requests';
 import {
 	reviewFeedbackSubmissionSchema,
-	reviewGoogleChoiceSchema
+	reviewGoogleChoiceSchema,
+	reviewRequestCreateSchema
 } from '$lib/server/validation/reviews.schema';
 import { buildQuestionAnswersSchema } from '$lib/server/validation/public-forms.schema';
 import { DEFAULT_REVIEW_FEEDBACK_FORM } from '$lib/reviews/settings';
@@ -48,5 +54,53 @@ describe('what the feedback page sends', () => {
 			false
 		);
 		expect(schema.safeParse({ [whatHappened.id]: 'Late' }).success).toBe(false);
+	});
+});
+
+describe('manual review request messages', () => {
+	const link = 'https://app.example.com/v/abc_DEF-123';
+
+	it('fills every review variable and leaves unknown text alone', () => {
+		expect(
+			fillReviewMessage(
+				'Hi {{customer_first_name}}, from {{business_name}}: {{review_link}} {{x}}',
+				{
+					customer_first_name: 'Sam',
+					business_name: 'Raad LTD',
+					review_link: link
+				}
+			)
+		).toBe(`Hi Sam, from Raad LTD: ${link} {{x}}`);
+	});
+
+	it('escapes the email text and makes only the review link clickable', () => {
+		const html = renderReviewEmailHtml(`Hi <b>Sam</b> & co\nTell us: ${link}`, link);
+		expect(html).toBe(
+			`<p>Hi &lt;b&gt;Sam&lt;/b&gt; &amp; co<br>Tell us: <a href="${link}">${link}</a></p>`
+		);
+		expect(html).toContain(link);
+	});
+
+	const valid = {
+		client_id: '6b1f3c1e-8f0a-4c52-9d3e-2a7f5b1c0e01',
+		job_id: null,
+		channel: 'sms',
+		contact_method_id: '6b1f3c1e-8f0a-4c52-9d3e-2a7f5b1c0e02',
+		body: 'Thanks! {{review_link}}',
+		idempotency_key: 'a1b2c3d4e5f6'
+	};
+
+	it('accepts a text message that carries the review link', () => {
+		expect(reviewRequestCreateSchema.safeParse(valid).success).toBe(true);
+	});
+
+	it('refuses a message without the link, an email without a subject, and a past send time', () => {
+		expect(reviewRequestCreateSchema.safeParse({ ...valid, body: 'Thanks!' }).success).toBe(false);
+		expect(
+			reviewRequestCreateSchema.safeParse({ ...valid, channel: 'email', subject: '' }).success
+		).toBe(false);
+		expect(
+			reviewRequestCreateSchema.safeParse({ ...valid, send_at: '2020-01-01T10:00:00Z' }).success
+		).toBe(false);
 	});
 });
