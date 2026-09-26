@@ -33,11 +33,9 @@ const { CreateReceiptRuleCommand, DescribeReceiptRuleCommand, UpdateReceiptRuleC
 
 const TARGET = {
 	bucketName: 'ucrm-ses-inbound-mime',
-	objectKeyPrefix: 'org-1/',
+	objectKeyPrefix: 'inbound/',
 	topicArn: 'arn:aws:sns:us-east-1:123456789012:inbound'
 };
-const DOMAIN = 'reply.example.com';
-
 // The inbound worker only accepts S3-action notifications (bucket + object key). The rule must therefore
 // store the MIME with ONE S3 action that notifies the topic itself -- never a second SNS action.
 const EXPECTED_ACTIONS = [
@@ -63,18 +61,21 @@ beforeEach(() => {
 });
 
 describe('reconcileSesReceiptRule', () => {
-	it('creates a missing rule with one S3 action that notifies the topic', async () => {
+	it('creates a missing rule that receives for every verified domain, scanned, with one S3 action', async () => {
 		send.mockImplementation(async (command) => {
 			if (command instanceof DescribeReceiptRuleCommand) throw notFound();
 			return {};
 		});
 
-		await reconcileSesReceiptRule('set', 'rule', DOMAIN, TARGET);
+		await reconcileSesReceiptRule('set', 'rule', TARGET);
 
 		const [create] = sentOf(CreateReceiptRuleCommand) as InstanceType<
 			typeof CreateReceiptRuleCommand
 		>[];
-		expect(create.input.Rule?.Recipients).toEqual([DOMAIN]);
+		// No Recipients is SES's "all recipients in all verified domains": one rule for every organization,
+		// clear of the fixed 200-rules-per-set ceiling.
+		expect(create.input.Rule?.Recipients).toEqual([]);
+		expect(create.input.Rule?.ScanEnabled).toBe(true);
 		expect(create.input.Rule?.Actions).toEqual(EXPECTED_ACTIONS);
 	});
 
@@ -82,7 +83,8 @@ describe('reconcileSesReceiptRule', () => {
 		const legacy: ReceiptRule = {
 			Name: 'rule',
 			Enabled: true,
-			Recipients: [DOMAIN],
+			ScanEnabled: true,
+			Recipients: [],
 			Actions: [
 				{ S3Action: { BucketName: TARGET.bucketName, ObjectKeyPrefix: TARGET.objectKeyPrefix } },
 				{ SNSAction: { TopicArn: TARGET.topicArn, Encoding: 'UTF-8' } }
@@ -92,7 +94,7 @@ describe('reconcileSesReceiptRule', () => {
 			command instanceof DescribeReceiptRuleCommand ? { Rule: legacy } : {}
 		);
 
-		await reconcileSesReceiptRule('set', 'rule', DOMAIN, TARGET);
+		await reconcileSesReceiptRule('set', 'rule', TARGET);
 
 		const [update] = sentOf(UpdateReceiptRuleCommand) as InstanceType<
 			typeof UpdateReceiptRuleCommand
@@ -104,16 +106,57 @@ describe('reconcileSesReceiptRule', () => {
 		const current: ReceiptRule = {
 			Name: 'rule',
 			Enabled: true,
-			Recipients: [DOMAIN],
+			ScanEnabled: true,
+			Recipients: [],
 			Actions: EXPECTED_ACTIONS
 		};
 		send.mockImplementation(async (command) =>
 			command instanceof DescribeReceiptRuleCommand ? { Rule: current } : {}
 		);
 
-		await reconcileSesReceiptRule('set', 'rule', DOMAIN, TARGET);
+		await reconcileSesReceiptRule('set', 'rule', TARGET);
 
 		expect(sentOf(UpdateReceiptRuleCommand)).toHaveLength(0);
 		expect(sentOf(CreateReceiptRuleCommand)).toHaveLength(0);
+	});
+
+	it('widens a legacy one-subdomain rule to every verified domain', async () => {
+		const legacy: ReceiptRule = {
+			Name: 'rule',
+			Enabled: true,
+			ScanEnabled: true,
+			Recipients: ['reply.example.com'],
+			Actions: EXPECTED_ACTIONS
+		};
+		send.mockImplementation(async (command) =>
+			command instanceof DescribeReceiptRuleCommand ? { Rule: legacy } : {}
+		);
+
+		await reconcileSesReceiptRule('set', 'rule', TARGET);
+
+		const [update] = sentOf(UpdateReceiptRuleCommand) as InstanceType<
+			typeof UpdateReceiptRuleCommand
+		>[];
+		expect(update.input.Rule?.Recipients).toEqual([]);
+	});
+
+	it('turns spam and virus scanning back on when it was switched off', async () => {
+		const unscanned: ReceiptRule = {
+			Name: 'rule',
+			Enabled: true,
+			ScanEnabled: false,
+			Recipients: [],
+			Actions: EXPECTED_ACTIONS
+		};
+		send.mockImplementation(async (command) =>
+			command instanceof DescribeReceiptRuleCommand ? { Rule: unscanned } : {}
+		);
+
+		await reconcileSesReceiptRule('set', 'rule', TARGET);
+
+		const [update] = sentOf(UpdateReceiptRuleCommand) as InstanceType<
+			typeof UpdateReceiptRuleCommand
+		>[];
+		expect(update.input.Rule?.ScanEnabled).toBe(true);
 	});
 });

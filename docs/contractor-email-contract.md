@@ -234,6 +234,15 @@ Reply aliases remain active while the conversation or related work is active and
 or last activity. Jafar may configure the default. Replies to expired aliases enter a guarded organization
 review queue without automatically exposing the former conversation.
 
+Some mail clients reply to the From address instead of Reply-To (RFC 5322 makes Reply-To advisory). Approved
+2026-09-26, following GoHighLevel's dedicated-sending-domain pattern: the operational and Marketing sending
+subdomains also receive mail. A reply is matched in this order, and never guessed: the opaque conversation
+address, then the sent email it answers (`In-Reply-To`), then the sender's address against the organization's
+contacts. A reply still unmatched or matching several contacts enters the guarded organization review queue.
+Receiving scales past Amazon SES's fixed 200-rule ceiling through one account-wide receipt rule; UCRM routes
+each message by its recipient address. Mail that SES scans as virus or spam `FAIL` is quarantined: never shown
+in Conversations, linked to a contact, or forwarded.
+
 Auto-response headers, delivery notices, and repeated-message patterns do not trigger customer automations
 or ordinary assignment alerts. Loop protection pauses the thread and alerts an administrator.
 

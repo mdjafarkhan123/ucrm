@@ -1,9 +1,7 @@
 import { teardownOperationalDomain } from './operational-domain-activation';
-import { replyReceiptRuleName } from './operational-reply-ingestion';
 import {
 	deleteSesConfigurationSet,
 	deleteSesIdentity,
-	deleteSesReceiptRule,
 	deleteSesTenant,
 	listSesTenantResources
 } from './ses';
@@ -12,7 +10,6 @@ import {
 	operationalConfigurationSetName,
 	sesTenantName
 } from './ses-domain-identity';
-import { SES_INBOUND_RULE_SET_NAME } from './ses-env';
 
 const IDENTITY_ARN_MARKER = ':identity/';
 
@@ -39,7 +36,6 @@ export async function purgeOrganizationSesResources(organizationId: string): Pro
 		}
 	}
 
-	await deleteSesReceiptRule(SES_INBOUND_RULE_SET_NAME, replyReceiptRuleName(organizationId));
 	await deleteSesConfigurationSet(operationalConfigurationSetName(organizationId));
 	await deleteSesConfigurationSet(marketingConfigurationSetName(organizationId));
 	await deleteSesTenant(tenantName);

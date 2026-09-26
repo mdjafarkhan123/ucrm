@@ -9,6 +9,7 @@ vi.mock('./ses', async () => {
 		...actual,
 		getSesIdentity: vi.fn(),
 		reconcileSesReceiptRule: vi.fn(),
+		sesIdentityArn: vi.fn((domain: string) => `arn:identity/${domain}`),
 		sesInboundMxTarget: vi.fn()
 	};
 });
@@ -172,9 +173,8 @@ describe('reconcileReplyIngestion', () => {
 		expect(order).toEqual(['rule', 'mx']);
 		expect(ses.reconcileSesReceiptRule).toHaveBeenCalledWith(
 			'ucrm-ses-inbound-rules',
-			`reply-${ORG}`,
-			RECEIVING,
-			expect.objectContaining({ objectKeyPrefix: `${ORG}/` })
+			'ucrm-inbound-all',
+			expect.objectContaining({ objectKeyPrefix: 'inbound/' })
 		);
 	});
 
@@ -221,6 +221,8 @@ describe('reconcileReplyIngestion', () => {
 		expect(inserted[0].lifecycle_state).toBe('pending_dns');
 		expect(inserted[0].purpose).toBe('receiving');
 		expect(inserted[0].provider).toBe('ses');
+		// Each organization's row keys on its own reply identity; the receipt rule is shared by all of them.
+		expect(inserted[0].provider_domain_id).toBe(`arn:identity/${RECEIVING}`);
 	});
 
 	it('reports verified once public DNS answers with the SES inbound target', async () => {

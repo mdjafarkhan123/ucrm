@@ -22,7 +22,6 @@ import {
 import {
 	SESClient,
 	CreateReceiptRuleCommand,
-	DeleteReceiptRuleCommand,
 	DescribeReceiptRuleCommand,
 	UpdateReceiptRuleCommand,
 	type ReceiptRule
@@ -625,9 +624,11 @@ export async function sendOperationalSesEmail(
 }
 
 // ---------------------------------------------------------------------------------------------------
-// Receipt rules (Operational email SES Part 4: customer replies). One rule per organization's reply subdomain,
-// in the account's single active rule set (ucrm-ses-inbound-rules). Each rule's Recipients is that exact
-// subdomain, so rules for different organizations never overlap and their order in the set never matters.
+// Receipt rule (Operational email SES Part 4b: customer replies). ONE rule in the account's single active rule
+// set (ucrm-ses-inbound-rules) receives for every organization: it has no Recipients, which SES documents as
+// "Match all recipients in all verified domains". SES caps a rule set at 200 rules (not adjustable), so a rule
+// per organization would stop working at ~200 organizations. SES only receives for a domain whose MX points at
+// it and whose identity is verified; the inbound RPC routes each message to its organization by recipient.
 // ---------------------------------------------------------------------------------------------------
 
 export type ReceiptRuleTarget = {
@@ -640,16 +641,12 @@ function isRuleNotFound(error: unknown): boolean {
 	return (error as AwsError)?.name === 'RuleDoesNotExistException';
 }
 
-function desiredReceiptRule(
-	ruleName: string,
-	recipientDomain: string,
-	target: ReceiptRuleTarget
-): ReceiptRule {
+function desiredReceiptRule(ruleName: string, target: ReceiptRuleTarget): ReceiptRule {
 	return {
 		Name: ruleName,
 		Enabled: true,
 		ScanEnabled: true,
-		Recipients: [recipientDomain],
+		Recipients: [],
 		// One S3 action that notifies the topic once the MIME is stored. Its notification carries the bucket and
 		// object key the inbound worker reads. A separate SNSAction would instead publish the whole message
 		// (bouncing anything over 150 KB) with an action type the worker rejects.
@@ -666,18 +663,16 @@ function desiredReceiptRule(
 }
 
 /**
- * Brings one organization's receipt rule to its desired state: created if missing, updated if its recipient or
- * actions have drifted. Never touches rule order -- Recipients is an exact subdomain, so this rule can never
- * shadow or be shadowed by another organization's.
+ * Brings the shared receipt rule to its desired state: created if missing, updated if its recipients, scanning,
+ * or actions have drifted.
  */
 export async function reconcileSesReceiptRule(
 	ruleSetName: string,
 	ruleName: string,
-	recipientDomain: string,
 	target: ReceiptRuleTarget
 ): Promise<void> {
 	const { client } = getSesV1();
-	const desired = desiredReceiptRule(ruleName, recipientDomain, target);
+	const desired = desiredReceiptRule(ruleName, target);
 
 	let existing: ReceiptRule | undefined;
 	try {
@@ -699,8 +694,8 @@ export async function reconcileSesReceiptRule(
 	}
 
 	const matches =
-		existing.Recipients?.length === 1 &&
-		existing.Recipients[0] === recipientDomain &&
+		(existing.Recipients?.length ?? 0) === 0 &&
+		existing.ScanEnabled === true &&
 		existing.Actions?.length === 1 &&
 		existing.Actions[0].S3Action?.BucketName === target.bucketName &&
 		existing.Actions[0].S3Action?.ObjectKeyPrefix === target.objectKeyPrefix &&
@@ -711,17 +706,4 @@ export async function reconcileSesReceiptRule(
 	await sesCall('UpdateReceiptRule', () =>
 		client.send(new UpdateReceiptRuleCommand({ RuleSetName: ruleSetName, Rule: desired }))
 	);
-}
-
-/** Deletes an organization's receipt rule. Already-gone is the desired state, so a retried removal is safe. */
-export async function deleteSesReceiptRule(ruleSetName: string, ruleName: string): Promise<void> {
-	const { client } = getSesV1();
-	try {
-		await client.send(
-			new DeleteReceiptRuleCommand({ RuleSetName: ruleSetName, RuleName: ruleName })
-		);
-	} catch (error) {
-		if (isRuleNotFound(error)) return;
-		throw toSesError('DeleteReceiptRule', error);
-	}
 }

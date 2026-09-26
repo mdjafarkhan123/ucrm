@@ -15,7 +15,6 @@ vi.mock('./ses', async () => {
 		getSesIdentity: vi.fn(),
 		createSesIdentity: vi.fn(),
 		deleteSesIdentity: vi.fn(),
-		deleteSesReceiptRule: vi.fn(),
 		putSesIdentityMailFrom: vi.fn(),
 		getSesTenant: vi.fn(),
 		createSesTenant: vi.fn(),
@@ -479,17 +478,17 @@ describe('teardownOperationalDomain', () => {
 		vi.mocked(cloudflare.deleteCloudflareDnsRecord).mockImplementation(async (_zone, id) => {
 			order.push(`dns:${id}`);
 		});
-		vi.mocked(ses.deleteSesReceiptRule).mockImplementation(async () => {
-			order.push('rule');
-		});
 		vi.mocked(ses.deleteSesIdentity).mockImplementation(async (domain) => {
 			order.push(`identity:${domain}`);
 		});
 
 		await teardownOperationalDomain({ organizationId: ORG, rootDomain: ROOT });
 
-		expect(order.slice(0, 2)).toEqual(['dns:reply-mx', 'rule']);
-		expect(ses.deleteSesReceiptRule).toHaveBeenCalledWith('ucrm-ses-inbound-rules', `reply-${ORG}`);
+		// Receiving stops first: the reply MX, then the reply identity SES receives for, before sending.
+		expect(order[0]).toBe('dns:reply-mx');
+		expect(order.indexOf(`identity:${RECEIVING}`)).toBeLessThan(
+			order.indexOf(`identity:${SENDING}`)
+		);
 		expect(order).toContain(`identity:${RECEIVING}`);
 		expect(order).toContain(`identity:${SENDING}`);
 		expect(order).toEqual(expect.arrayContaining(['dns:r1', 'dns:s1', 'dns:mf-mx', 'dns:mf-txt']));

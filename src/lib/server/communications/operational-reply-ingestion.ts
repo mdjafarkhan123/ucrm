@@ -6,9 +6,11 @@ import {
 	normalizeName,
 	reconcileRecord
 } from './dns-reconcile';
-import { reconcileSesReceiptRule, sesInboundMxTarget } from './ses';
+import { reconcileSesReceiptRule, sesIdentityArn, sesInboundMxTarget } from './ses';
 import {
 	SES_INBOUND_BUCKET_NAME,
+	SES_INBOUND_OBJECT_KEY_PREFIX,
+	SES_INBOUND_RULE_NAME,
 	SES_INBOUND_RULE_SET_NAME,
 	getSesEnv,
 	sesInboundTopicArn
@@ -40,11 +42,6 @@ export type ReplyIngestionResult = {
 	records_written: number;
 };
 
-/** The receipt rule's name. Classic SES receipt rules have no ARN; this plus the fixed rule set is the handle. */
-export function replyReceiptRuleName(organizationId: string): string {
-	return `reply-${organizationId}`;
-}
-
 /**
  * True when public DNS answers the domain's MX with the SES inbound target and nothing else. Any other answer
  * still cached by a resolver means some senders would deliver elsewhere, so the route is not finished.
@@ -68,9 +65,9 @@ async function mxIsVisible(domain: string, target: string): Promise<boolean> {
 }
 
 /**
- * Reconciles one organization's reply subdomain: the shared receipt rule set gets (or keeps) a rule routing
- * that exact subdomain to the inbound S3 bucket and SNS topic, then the subdomain's MX is pointed at SES. Both
- * steps are idempotent, so the next Check after DNS propagates simply advances inbound_mx_status.
+ * Reconciles one organization's reply subdomain: the account-wide receipt rule is ensured (it already receives
+ * for every verified domain), then the subdomain's MX is pointed at SES. Both steps are idempotent, so the next
+ * Check after DNS propagates simply advances inbound_mx_status.
  */
 export async function reconcileReplyIngestion(input: {
 	client: OwnerClient;
@@ -81,11 +78,10 @@ export async function reconcileReplyIngestion(input: {
 	receivingId: string | null;
 }): Promise<ReplyIngestionResult> {
 	const { client, organizationId, root, receiving, zoneId, receivingId } = input;
-	const ruleName = replyReceiptRuleName(organizationId);
 
-	await reconcileSesReceiptRule(SES_INBOUND_RULE_SET_NAME, ruleName, receiving, {
+	await reconcileSesReceiptRule(SES_INBOUND_RULE_SET_NAME, SES_INBOUND_RULE_NAME, {
 		bucketName: SES_INBOUND_BUCKET_NAME,
-		objectKeyPrefix: `${organizationId}/`,
+		objectKeyPrefix: SES_INBOUND_OBJECT_KEY_PREFIX,
 		topicArn: sesInboundTopicArn(getSesEnv())
 	});
 
@@ -114,7 +110,9 @@ export async function reconcileReplyIngestion(input: {
 		domain_name: receiving,
 		dns_zone: root,
 		provider: 'ses',
-		provider_domain_id: ruleName,
+		// The reply identity is what makes SES receive for this domain, and it is unique per domain (the shared
+		// rule is not, and provider_domain_id is unique per provider).
+		provider_domain_id: sesIdentityArn(receiving),
 		provider_verified: true,
 		// Receiving rows never carry sending authentication (communication_email_domains_purpose_health_check).
 		provider_authenticated: false,

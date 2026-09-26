@@ -57,6 +57,10 @@ export function sesEventDlqUrl(env: SesEnv): string {
 // "derive, never store-then-guess" convention as the tenant/config-set names.
 export const SES_INBOUND_BUCKET_NAME = 'ucrm-ses-inbound-mime';
 export const SES_INBOUND_RULE_SET_NAME = 'ucrm-ses-inbound-rules';
+// The one receipt rule every organization's receiving subdomain shares (ses.ts explains why), and the S3 key
+// prefix it stores MIME under. The organization comes from the recipient address, never from the object key.
+export const SES_INBOUND_RULE_NAME = 'ucrm-inbound-all';
+export const SES_INBOUND_OBJECT_KEY_PREFIX = 'inbound/';
 
 export function sesInboundTopicArn(env: SesEnv): string {
 	return `arn:aws:sns:${env.AWS_SES_REGION}:${env.accountId}:ucrm-ses-inbound`;

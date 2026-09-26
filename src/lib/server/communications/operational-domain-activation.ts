@@ -11,11 +11,9 @@ import {
 	reconcileRecord,
 	type ExpectedRecord
 } from './dns-reconcile';
-import { SES_INBOUND_RULE_SET_NAME } from './ses-env';
 import {
 	associateSesTenantResource,
 	deleteSesIdentity,
-	deleteSesReceiptRule,
 	ensureSesEventDestination,
 	getSesIdentity,
 	putSesIdentityMailFrom,
@@ -41,7 +39,7 @@ import {
 	type DnsStatus,
 	type OwnerClient
 } from './ses-domain-identity';
-import { reconcileReplyIngestion, replyReceiptRuleName } from './operational-reply-ingestion';
+import { reconcileReplyIngestion } from './operational-reply-ingestion';
 
 export { EmailDomainActivationError } from './dns-reconcile';
 
@@ -353,10 +351,10 @@ async function readReceivingRow(
 
 /**
  * Undoes everything Set up created for one organization's everyday email, at the providers only; the owner
- * route finalizes the database rows afterwards. Receiving stops first (MX, then receipt rule), so no reply is
- * accepted by SES with nowhere to go. Only records whose exact content UCRM would have written are deleted --
- * anything else under these names belongs to someone else and stays. Every delete treats "already gone" as
- * done, so a retried removal is safe.
+ * route finalizes the database rows afterwards. Receiving stops first (MX, then the reply identity SES receives
+ * for), so no reply is accepted by SES with nowhere to go. Only records whose exact content UCRM would have
+ * written are deleted -- anything else under these names belongs to someone else and stays. Every delete
+ * treats "already gone" as done, so a retried removal is safe.
  */
 export async function teardownOperationalDomain(input: {
 	organizationId: string;
@@ -368,7 +366,6 @@ export async function teardownOperationalDomain(input: {
 	await deleteOwnedRecords(zoneId, receiving, [
 		{ type: 'MX', name: receiving, content: sesInboundMxTarget() }
 	]);
-	await deleteSesReceiptRule(SES_INBOUND_RULE_SET_NAME, replyReceiptRuleName(input.organizationId));
 
 	for (const domain of [receiving, sending]) {
 		// The DKIM CNAME names come from the identity's tokens, so read them before the identity is deleted.
