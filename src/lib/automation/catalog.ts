@@ -26,9 +26,10 @@ export type CatalogKind = 'trigger' | 'condition' | 'wait' | 'action' | 'stop';
 export type CatalogAvailability = { status: 'enabled' } | { status: 'blocked'; reason: string };
 
 // What a recipe acts on, fixed by its trigger. CRM launch readiness Part 4 Stage 6 added the website inquiry (a
-// form submission or chat session). Every condition, step and stop must match the trigger's subject, except
-// entries marked 'any' (a wait means the same thing for every subject).
-export type CatalogSubject = 'quote' | 'website_inquiry';
+// form submission or chat session). Google review Part 4B added the job whose work was completed. Every
+// condition, step and stop must match the trigger's subject, except entries marked 'any' (a wait means the same
+// thing for every subject).
+export type CatalogSubject = 'quote' | 'website_inquiry' | 'job';
 
 export type CatalogEntry = {
 	key: string;
@@ -50,6 +51,15 @@ const NO_CONFIG = z.object({}).strict();
 // catalog only guarantees a non-empty selection here, so 6C stays decoupled from exact status strings.
 const statusSelectionConfig = z
 	.object({ statuses: z.array(z.string().min(1)).min(1).max(20) })
+	.strict();
+
+// Google review Part 4B: a recurring job is never asked automatically unless the contractor picks "after every
+// N completed visits" (owner decision 2026-09-26). Absent means off.
+export const RECURRING_EVERY_VISITS_MAX = 52;
+const jobWorkCompletedConfig = z
+	.object({
+		recurring_every_visits: z.number().int().min(1).max(RECURRING_EVERY_VISITS_MAX).optional()
+	})
 	.strict();
 
 const blocked = (reason: string): CatalogAvailability => ({ status: 'blocked', reason });
@@ -110,6 +120,16 @@ const triggers: CatalogEntry[] = [
 		subject: 'website_inquiry',
 		availability: enabled,
 		configSchema: NO_CONFIG
+	},
+	{
+		key: 'job.work_completed',
+		kind: 'trigger',
+		label: "A job's work is completed",
+		summary:
+			'Runs when a one-time job is closed with its work done, and on recurring jobs after every chosen number of completed visits.',
+		subject: 'job',
+		availability: enabled,
+		configSchema: jobWorkCompletedConfig
 	}
 ];
 
@@ -251,6 +271,18 @@ const actions: CatalogEntry[] = [
 			.strict()
 	},
 	{
+		key: 'action.send_review_request',
+		kind: 'action',
+		label: 'Send a review request',
+		summary:
+			'Asks the customer for a Google review with the message and reminders from your Review settings.',
+		subject: 'job',
+		availability: enabled,
+		// Following HighLevel's Review Request action, the wording, style and reminders live in Review settings;
+		// the step only picks the channel. SMS is the default (brief § Channel choice).
+		configSchema: z.object({ channel: z.enum(['sms', 'email']) }).strict()
+	},
+	{
 		key: 'action.notify_staff',
 		kind: 'action',
 		label: 'Notify a team member',
@@ -320,6 +352,27 @@ const stops: CatalogEntry[] = [
 		summary:
 			'Pauses before the next message once the customer answers something this automation sent.',
 		subject: 'website_inquiry',
+		alwaysOn: true,
+		availability: enabled,
+		configSchema: NO_CONFIG
+	},
+	// Google review Part 4B engine rules, applied to every job enrollment (brief § When the sequence stops).
+	{
+		key: 'stop.job_reopened',
+		kind: 'stop',
+		label: 'The job was reopened or is no longer complete',
+		summary: 'Stops before asking once the job is reopened or no longer has completed work.',
+		subject: 'job',
+		alwaysOn: true,
+		availability: enabled,
+		configSchema: NO_CONFIG
+	},
+	{
+		key: 'stop.client_review_opt_out',
+		kind: 'stop',
+		label: 'The client turned off review requests',
+		summary: 'Stops before asking once the client is removed or no longer wants review requests.',
+		subject: 'job',
 		alwaysOn: true,
 		availability: enabled,
 		configSchema: NO_CONFIG

@@ -15,10 +15,17 @@
 //
 // Part 4 Stage 5: advance also returns 'action_due_customer_message' for a website inquiry's text-or-email step,
 // and each wake drains due SMS-to-email fallbacks (a watched text the provider reported as failed).
+//
+// Google review Part 4B: advance also returns 'action_due_review_request' for a job's review request. The message
+// is written here from Review settings with its own customer link (src/lib/server/reviews/automatic.ts).
 
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { createQuoteEmailAccessLink } from '$lib/server/communications/quote-email';
-import { drainReviewReminders } from '$lib/server/reviews/reminders';
+import { drainReviewReminders, reviewLinkOrigin } from '$lib/server/reviews/reminders';
+import {
+	writeAutomaticReviewRequest,
+	type AutomaticReviewDraft
+} from '$lib/server/reviews/automatic';
 
 type RpcResult<T> = Promise<{ data: T | null; error: { message: string } | null }>;
 
@@ -55,6 +62,7 @@ type AdvanceOutcome =
 	| 'action_due_email'
 	| 'action_due_sms'
 	| 'action_due_customer_message'
+	| 'action_due_review_request'
 	| 'action_not_available';
 
 // What running an action effect settled to. `claim_lost` mirrors advance: the lease moved on.
@@ -96,6 +104,8 @@ export type AutomationDrainOptions = {
 	// Mints the customer access link for an email action. Injectable so the effect is testable without env or
 	// real crypto; defaults to the same link minter the quote send uses.
 	createQuoteLink?: () => QuoteAccessLink;
+	// The app origin a review request's customer link points at. Injectable for tests.
+	reviewLinkOrigin?: () => string;
 };
 
 // Conservative defaults to verify under load, not capacity claims. The time budget stays under the route
@@ -197,13 +207,36 @@ async function runCustomerMessageAction(
 	return performed.data as ActionEffectOutcome;
 }
 
+// Runs one job's automatic review request: read what to write, write it from Review settings with a fresh
+// customer link, then let perform_automation_review_request_effect re-check, queue or record why not, and settle.
+async function runReviewRequestAction(
+	client: AutomationWorkerClient,
+	item: ClaimedWorkItem,
+	origin: () => string
+): Promise<ActionEffectOutcome> {
+	const draft = await client.rpc('automation_review_request_draft', {
+		p_work_item_id: item.work_item_id,
+		p_claim_token: item.claim_token
+	});
+	if (draft.error) throw new Error(draft.error.message);
+	// Null: the claim moved on between advance and here.
+	if (!draft.data) return 'claim_lost';
+	const performed = await client.rpc(
+		'perform_automation_review_request_effect',
+		writeAutomaticReviewRequest(item, draft.data as AutomaticReviewDraft, origin())
+	);
+	if (performed.error) throw new Error(performed.error.message);
+	return performed.data as ActionEffectOutcome;
+}
+
 // One claimed transition. Any failure is reported back through retry_automation_work_item so the row backs off
 // and stays visible instead of silently waiting out its lease.
 async function advanceOne(
 	client: AutomationWorkerClient,
 	item: ClaimedWorkItem,
 	counts: AutomationDrainCounts,
-	createQuoteLink: () => QuoteAccessLink
+	createQuoteLink: () => QuoteAccessLink,
+	origin: () => string
 ): Promise<void> {
 	try {
 		const advanced = await client.rpc('advance_automation_work_item', {
@@ -216,7 +249,8 @@ async function advanceOne(
 		if (
 			outcome === 'action_due_email' ||
 			outcome === 'action_due_sms' ||
-			outcome === 'action_due_customer_message'
+			outcome === 'action_due_customer_message' ||
+			outcome === 'action_due_review_request'
 		) {
 			// The effect settles the row itself. An infrastructure failure here (not a step outcome) falls to the
 			// catch below, which backs the row off exactly as an advance failure would.
@@ -225,7 +259,9 @@ async function advanceOne(
 					? await runEmailAction(client, item, createQuoteLink)
 					: outcome === 'action_due_sms'
 						? await runSmsAction(client, item)
-						: await runCustomerMessageAction(client, item);
+						: outcome === 'action_due_review_request'
+							? await runReviewRequestAction(client, item, origin)
+							: await runCustomerMessageAction(client, item);
 			if (effect === 'action_sent') counts.sent += 1;
 			else if (effect === 'action_cancelled') counts.cancelled += 1;
 			else if (effect === 'action_deferred') counts.retried += 1;
@@ -273,6 +309,7 @@ export async function drainAutomationWork(
 	const batchSize = options.batchSize ?? DEFAULT_BATCH_SIZE;
 	const maxClaims = Math.max(1, options.maxClaims ?? DEFAULT_MAX_CLAIMS);
 	const createQuoteLink = options.createQuoteLink ?? createQuoteEmailAccessLink;
+	const origin = options.reviewLinkOrigin ?? reviewLinkOrigin;
 
 	const counts: AutomationDrainCounts = {
 		eventsProcessed: 0,
@@ -300,7 +337,7 @@ export async function drainAutomationWork(
 	counts.fallbacks = typeof fallbacks.data === 'number' ? fallbacks.data : 0;
 
 	// Due review reminders ride the same wake (Google review campaign Part 4A): no new service, no new cron.
-	counts.reviewReminders = (await drainReviewReminders(client, deadline, now)).sent;
+	counts.reviewReminders = (await drainReviewReminders(client, deadline, now, origin)).sent;
 
 	let stoppedBy: AutomationDrainResult['stoppedBy'] = 'idle';
 
@@ -333,7 +370,7 @@ export async function drainAutomationWork(
 		// enough that ordering the batch costs nothing. 6D-3 introduces the network call that will make
 		// bounded concurrency worth measuring here.
 		for (const item of items) {
-			await advanceOne(client, item, counts, createQuoteLink);
+			await advanceOne(client, item, counts, createQuoteLink, origin);
 		}
 	}
 

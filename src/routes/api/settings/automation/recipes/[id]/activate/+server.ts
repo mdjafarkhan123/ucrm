@@ -95,6 +95,23 @@ export const POST: RequestHandler = async (event) => {
 
 	const service = getOwnerSupabaseClient();
 
+	// Google review Part 4B: asking for reviews needs somewhere to send the customer (brief § Google setup).
+	if (validated.definition.steps.some((step) => step.key === 'action.send_review_request')) {
+		const { data: reviewSettings, error: reviewError } = await service
+			.from('review_settings')
+			.select('google_review_url')
+			.eq('organization_id', organizationId)
+			.maybeSingle();
+		if (reviewError)
+			return json({ error: 'We could not check your Review settings.' }, { status: 500 });
+		if (!reviewSettings?.google_review_url) {
+			return json(
+				{ error: 'Add your Google review link in Review settings before turning this on.' },
+				{ status: 422 }
+			);
+		}
+	}
+
 	try {
 		// `p_active_limit` is nullable in the SQL function (null = unlimited; it guards with `is not null`),
 		// but Supabase's type generator marks every arg without a DEFAULT as non-nullable.

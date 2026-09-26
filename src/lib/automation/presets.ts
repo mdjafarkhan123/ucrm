@@ -121,7 +121,32 @@ const websiteSpeedToLead: AutomationPreset = {
 	}
 };
 
-export const AUTOMATION_PRESETS: readonly AutomationPreset[] = [quoteFollowUp, websiteSpeedToLead];
+// Google review campaign Part 4B: the ready-made automatic ask (HighLevel's Workflow "Review Request" action;
+// brief § How the automation is set up). One step: the message, style, first-send delay and reminders all come
+// from Review settings, so there is no copy here. SMS by default; recurring jobs stay off until the contractor
+// picks "after every N completed visits". It cannot be activated without a saved Google review link.
+const googleReviewRequest: AutomationPreset = {
+	key: 'google_review_request',
+	version: 1,
+	name: 'Ask for a Google review',
+	summary:
+		"When a job's work is completed, ask the customer for a Google review with the message and reminders from your Review settings.",
+	triggerKey: 'job.work_completed',
+	channels: ['sms'],
+	blueprint: {
+		schema_version: AUTOMATION_SCHEMA_VERSION,
+		trigger: { key: 'job.work_completed', config: {} },
+		conditions: [],
+		steps: [{ type: 'action', key: 'action.send_review_request', config: { channel: 'sms' } }],
+		stops: [{ key: 'stop.job_reopened' }, { key: 'stop.client_review_opt_out' }]
+	}
+};
+
+export const AUTOMATION_PRESETS: readonly AutomationPreset[] = [
+	quoteFollowUp,
+	websiteSpeedToLead,
+	googleReviewRequest
+];
 
 const PRESETS_BY_KEY = new Map(AUTOMATION_PRESETS.map((preset) => [preset.key, preset]));
 
