@@ -10,10 +10,11 @@ runs provider calls in parallel. Brevo `notifications.` domain deleted; stale DL
 
 ## Exact next action
 
-1. Live-time Check on Raad (Jafar panel → Raad → Communications → Email card → Check). Before: ~10 s;
-   target ~3 s. Not measured after the change -- the browser extension disconnected.
-2. Remaining Part 6 follow-up: Marketing M6e burst check (see ROADMAP row 6).
-3. Then Part 5 (contractor request-setup flow; ROADMAP row 5) -- product decisions with Jafar, use grilling.
+Check speed done 2026-09-26 (`0cb2f3a`): measured live on Raad 6-8 s -> 3.6-4.9 s (server side, no browser).
+
+1. Part 6 follow-up: Marketing M6e burst check (ROADMAP row 6; M6c method/baseline in git `716250a`
+   marketing ROADMAP M6c row). Deleting its test data afterwards needs Jafar's yes.
+2. Then Part 5 (contractor request-setup flow; ROADMAP row 5) -- product decisions with Jafar, use grilling.
    Part 7 after.
 
 ## Open asks for Jafar
