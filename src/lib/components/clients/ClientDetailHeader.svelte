@@ -11,10 +11,22 @@
 	import coinIcon from '@tabler/icons/outline/coin.svg?raw';
 	import fileIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import toolIcon from '@tabler/icons/outline/tool.svg?raw';
+	import historyIcon from '@tabler/icons/outline/history.svg?raw';
 
 	// The identity card at the top of a client's page: who they are, how to reach them, and how much work
 	// they represent. Money and job counts have no source yet, so they read as not-yet rather than zero.
-	let { client, onEdit }: { client: ClientDetail; onEdit: () => void } = $props();
+	// History matches the work records' own header: one icon button that swaps the rail, warmed on hover.
+	let {
+		client,
+		onEdit,
+		onHistory,
+		onHistoryHover
+	}: {
+		client: ClientDetail;
+		onEdit: () => void;
+		onHistory?: () => void;
+		onHistoryHover?: () => void;
+	} = $props();
 
 	const isCustomer = $derived(client.lifecycle_status === 'customer');
 
@@ -49,6 +61,19 @@
 		<Badge status={isCustomer ? 'success' : 'informative'}>{isCustomer ? 'Customer' : 'Lead'}</Badge
 		>
 		<div class="client-header__buttons">
+			{#if onHistory}
+				<button
+					type="button"
+					class="client-header__icon-button"
+					aria-label="Client history"
+					title="Client history"
+					onclick={onHistory}
+					onmouseenter={onHistoryHover}
+					onfocus={onHistoryHover}
+				>
+					<span aria-hidden="true">{@html historyIcon}</span>
+				</button>
+			{/if}
 			<span class="client-header__waiting" title={callReason}>
 				<Button variant="secondary" size="small" disabled>Call</Button>
 				<span class="client-header__reason">{callReason}</span>
@@ -151,8 +176,49 @@
 
 		&__buttons {
 			display: flex;
+			align-items: center;
 			gap: var(--space-small);
 			margin-left: auto;
+		}
+
+		// Same square icon button the work records' header uses, so History reads identically wherever it is.
+		&__icon-button {
+			display: inline-flex;
+			box-sizing: border-box;
+			width: var(--space-larger);
+			height: var(--space-larger);
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			padding: 0;
+			border: var(--border-base) solid var(--color-border--interactive);
+			border-radius: var(--radius-base);
+			background: var(--color-surface);
+			color: var(--color-interactive--subtle);
+			cursor: pointer;
+			transition: all var(--timing-base) ease-out;
+
+			:global(svg) {
+				display: block;
+				width: 20px;
+				height: 20px;
+			}
+
+			&:hover,
+			&:focus-visible {
+				border-color: var(--color-interactive--subtle--hover);
+				background: var(--color-surface--hover);
+				color: var(--color-interactive--subtle--hover);
+			}
+
+			&:active {
+				background: var(--color-surface--active);
+			}
+
+			&:focus-visible {
+				outline: transparent;
+				box-shadow: var(--shadow-focus);
+			}
 		}
 
 		&__identity {

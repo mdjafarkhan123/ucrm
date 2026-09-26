@@ -49,6 +49,8 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Invoices list KPI cards (Outstanding, Overdue, Collected) are hard-coded placeholders](invoices-list-kpi-cards-are-hard-coded-placeholders.md) |
 | P2 | [Disconnecting Stripe expires open checkouts: code-complete, never live-tested](stripe-disconnect-open-checkout-expiry-not-live-tested.md) |
 | P2 | [Marketing drain tail trickles and SES event handling falls behind](marketing-drain-tail-trickle-and-ses-event-lag.md) |
+| P2 | [Tab selection is read from a `page.url` that `replaceState` does not update](tab-selection-read-from-a-stale-page-url.md) |
+| P2 | [The office role cannot load a client's communication history](office-role-cannot-load-client-communication-history.md) |
 | P3 | [Offline field records on site (Jobs 15f)](offline-field-records-on-site.md) |
 | P3 | [`/get-started` page weight](get-started-page-weight.md) |
 | P3 | [Client photos are one request each](client-photos-are-one-request-each.md) |
@@ -65,3 +67,4 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [One-time flash of full nav + "not connected to an organization" after account menu](one-time-flash-of-full-nav-and-no-organization-banner-after-account-menu.md) |
 | P3 | [Team seat count overshoots right after an invitation is sent](team-seat-count-overshoots-right-after-an-invitation.md) |
 | P3 | [Marketing first-release leftovers: staff-launch check, cross-campaign insight, one broken test campaign](marketing-release-leftovers.md) |
+| P3 | [Review history says "sent" for a request that is only scheduled](review-history-says-sent-for-a-scheduled-request.md) |

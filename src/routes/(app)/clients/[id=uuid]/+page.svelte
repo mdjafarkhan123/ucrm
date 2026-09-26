@@ -48,6 +48,7 @@
 		activityKey,
 		createNote,
 		deleteNote,
+		fetchActivity,
 		fetchNotes,
 		fetchTagAssignments,
 		notesKey,
@@ -55,6 +56,7 @@
 		updateNote,
 		type NoteChange
 	} from '$lib/collaboration/api';
+	import ActivityFeed from '$lib/components/collaboration/ActivityFeed.svelte';
 	import homeIcon from '@tabler/icons/outline/home.svg?raw';
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
 	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
@@ -62,6 +64,7 @@
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -353,6 +356,21 @@
 		replaceState(url, page.state);
 	}
 
+	// --- History ----------------------------------------------------------------------------------------
+	// The same panel the work records use: it swaps the whole rail rather than opening beside the notes, and
+	// nothing about it loads with the page -- hovering the button starts the fetch, so the feed is usually
+	// already there by the time the click lands. A client's review milestones reach it through the shared
+	// activity feed the `review_requests` trigger writes.
+	let showHistory = $state(false);
+
+	function warmHistory() {
+		if (!clientId) return;
+		void queryClient.prefetchQuery({
+			queryKey: activityKey('client', clientId),
+			queryFn: () => fetchActivity('client', clientId)
+		});
+	}
+
 	// --- Dialogs --------------------------------------------------------------------------------------
 
 	let detailsOpen = $state(false);
@@ -468,7 +486,12 @@
 			onCancel={discardDraft}
 		>
 			{#snippet main()}
-				<ClientDetailHeader {client} onEdit={() => (detailsOpen = true)} />
+				<ClientDetailHeader
+					{client}
+					onEdit={() => (detailsOpen = true)}
+					onHistory={() => (showHistory = !showHistory)}
+					onHistoryHover={warmHistory}
+				/>
 				{#if identityChanged}
 					<p class="client-detail__pending">
 						Client details changed. Save at the bottom of the page to keep them.
@@ -548,83 +571,98 @@
 			{/snippet}
 
 			{#snippet rail()}
-				<RailCard title="Lead source" icon={targetIcon}>
-					{#snippet actions()}
-						<PencilButton onclick={() => (leadSourceOpen = true)} label="Edit lead source" />
-					{/snippet}
-					{#if client.lead_source}
-						<p class="client-detail__lead-source">
-							{client.lead_source}
-							{#if leadSourceChanged}
-								<Badge size="small" status="warning">Unsaved</Badge>
-							{/if}
-						</p>
-					{:else}
-						<p class="client-detail__rail-blank">
-							Not recorded yet. Add it so you know what brings work in.
-						</p>
-					{/if}
-				</RailCard>
-
-				<RailCard title="Marketing email" icon={mailIcon}>
-					{#snippet actions()}
-						{#if canRecordConsent && marketingConsent}
-							<Button size="small" variant="tertiary" onclick={() => (marketingConsentOpen = true)}>
-								Record
+				{#if showHistory}
+					<RailCard title="Client history" icon={clockIcon}>
+						{#snippet actions()}
+							<Button size="small" variant="tertiary" onclick={() => (showHistory = false)}>
+								Close
 							</Button>
-						{/if}
-					{/snippet}
-					{#if !marketingConsent}
-						<p class="client-detail__rail-blank">
-							Add an email address to record marketing consent.
-						</p>
-					{:else}
-						<p class="client-detail__consent">
-							{#if marketingConsent.state === 'opted_in'}
-								<Badge status="success">Opted in</Badge>
-							{:else if marketingConsent.state === 'opted_out'}
-								<Badge status="critical">Opted out</Badge>
-							{:else}
-								<Badge status="informative">Not recorded</Badge>
-							{/if}
-						</p>
-						{#if marketingConsent.effective_at}
-							<p class="client-detail__rail-caption">
-								{consentDateFormat.format(
-									new Date(marketingConsent.effective_at)
-								)}{#if consentSourceLabel(marketingConsent.source)}
-									· via {consentSourceLabel(marketingConsent.source)}{/if}
+						{/snippet}
+						<ActivityFeed entityType="client" entityId={clientId} {currentUserId} />
+					</RailCard>
+				{:else}
+					<RailCard title="Lead source" icon={targetIcon}>
+						{#snippet actions()}
+							<PencilButton onclick={() => (leadSourceOpen = true)} label="Edit lead source" />
+						{/snippet}
+						{#if client.lead_source}
+							<p class="client-detail__lead-source">
+								{client.lead_source}
+								{#if leadSourceChanged}
+									<Badge size="small" status="warning">Unsaved</Badge>
+								{/if}
 							</p>
 						{:else}
-							<p class="client-detail__rail-caption">No opt-in or opt-out recorded yet.</p>
+							<p class="client-detail__rail-blank">
+								Not recorded yet. Add it so you know what brings work in.
+							</p>
 						{/if}
-					{/if}
-				</RailCard>
+					</RailCard>
 
-				<RailCard title="Tags" count={tagIds.length}>
-					{#snippet actions()}
-						{#if tagsChanged}<Badge size="small" status="warning">Unsaved</Badge>{/if}
-					{/snippet}
-					<ClientTagSelect {tagIds} onChange={(next) => (tagIdsDraft = next)} />
-				</RailCard>
+					<RailCard title="Marketing email" icon={mailIcon}>
+						{#snippet actions()}
+							{#if canRecordConsent && marketingConsent}
+								<Button
+									size="small"
+									variant="tertiary"
+									onclick={() => (marketingConsentOpen = true)}
+								>
+									Record
+								</Button>
+							{/if}
+						{/snippet}
+						{#if !marketingConsent}
+							<p class="client-detail__rail-blank">
+								Add an email address to record marketing consent.
+							</p>
+						{:else}
+							<p class="client-detail__consent">
+								{#if marketingConsent.state === 'opted_in'}
+									<Badge status="success">Opted in</Badge>
+								{:else if marketingConsent.state === 'opted_out'}
+									<Badge status="critical">Opted out</Badge>
+								{:else}
+									<Badge status="informative">Not recorded</Badge>
+								{/if}
+							</p>
+							{#if marketingConsent.effective_at}
+								<p class="client-detail__rail-caption">
+									{consentDateFormat.format(
+										new Date(marketingConsent.effective_at)
+									)}{#if consentSourceLabel(marketingConsent.source)}
+										· via {consentSourceLabel(marketingConsent.source)}{/if}
+								</p>
+							{:else}
+								<p class="client-detail__rail-caption">No opt-in or opt-out recorded yet.</p>
+							{/if}
+						{/if}
+					</RailCard>
 
-				<RailCard title="Notes" icon={notesIcon} count={notesCount}>
-					<NotesPanel
+					<RailCard title="Tags" count={tagIds.length}>
+						{#snippet actions()}
+							{#if tagsChanged}<Badge size="small" status="warning">Unsaved</Badge>{/if}
+						{/snippet}
+						<ClientTagSelect {tagIds} onChange={(next) => (tagIdsDraft = next)} />
+					</RailCard>
+
+					<RailCard title="Notes" icon={notesIcon} count={notesCount}>
+						<NotesPanel
+							entityType="client"
+							entityId={clientId}
+							canManage
+							{currentUserId}
+							pending={notePending}
+							onChange={(next) => (notePending = next)}
+						/>
+					</RailCard>
+
+					<RecordFilesCard
 						entityType="client"
 						entityId={clientId}
-						canManage
-						{currentUserId}
-						pending={notePending}
-						onChange={(next) => (notePending = next)}
+						recordLabel="this client"
+						pickerLabel="On this client"
 					/>
-				</RailCard>
-
-				<RecordFilesCard
-					entityType="client"
-					entityId={clientId}
-					recordLabel="this client"
-					pickerLabel="On this client"
-				/>
+				{/if}
 			{/snippet}
 		</RecordDetailLayout>
 

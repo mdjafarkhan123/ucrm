@@ -14,4 +14,8 @@
 - **Constraint:** Not a security issue — do not route through the paid-launch-trust campaign. Whatever
   populates this widget needs an actual query against quotes/invoices totals per client; check whether one
   was ever built for it.
+- **Also placeholder on the same page:** the "Work overview" and "Client schedule" section blocks are
+  hard-coded `EmptyState`s in `src/routes/(app)/clients/[id=uuid]/+page.svelte`, so they read "No work yet"
+  and "Nothing booked" even for a client with jobs (confirmed 2026-09-26 on Tester Account, which owns
+  several). Same underlying gap: client-page sections that were never wired to a query.
 - **Pointers:** Client detail page's financial summary widget; `/api/clients/[id=uuid]` payload shape.
