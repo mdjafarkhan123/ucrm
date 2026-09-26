@@ -64,10 +64,25 @@ export type ReviewFeedbackForm = {
 	thank_you_message: string;
 };
 
-export type ReviewMessageStyles = {
-	default_style: ReviewStyle;
+// One message's wording in every channel and style.
+export type ReviewMessageSet = {
 	sms: Record<ReviewStyle, { body: string }>;
 	email: Record<ReviewStyle, { subject: string; body: string }>;
+};
+
+export type ReviewMessageStyles = ReviewMessageSet & { default_style: ReviewStyle };
+
+// Google review campaign Part 4A: the reminder plan every request follows (HighLevel's "Request behavior").
+// `wait_days` counts from when the previous message actually went out.
+export type ReviewReminder = { id: string; wait_days: number; messages: ReviewMessageSet };
+
+export const REVIEW_FIRST_SEND_UNITS = ['hours', 'days'] as const;
+export type ReviewFirstSendUnit = (typeof REVIEW_FIRST_SEND_UNITS)[number];
+
+export type ReviewRequestPlan = {
+	// 0 = right away. Used by automatic requests; a manual request picks Send now or Schedule instead.
+	first_send_delay: { amount: number; unit: ReviewFirstSendUnit };
+	reminders: ReviewReminder[];
 };
 
 export type ReviewChannelReadiness = {
@@ -84,6 +99,7 @@ export type ReviewSettingsView = {
 	routing_acknowledged_at: string | null;
 	feedback_form: ReviewFeedbackForm;
 	message_styles: ReviewMessageStyles;
+	request_plan: ReviewRequestPlan;
 	readiness: ReviewChannelReadiness;
 	updated_at: string | null;
 };
@@ -96,6 +112,7 @@ export type ReviewSettingsInput = {
 	acknowledge_routing: boolean;
 	feedback_form: ReviewFeedbackForm;
 	message_styles: ReviewMessageStyles;
+	request_plan: ReviewRequestPlan;
 };
 
 // Google review links come in several official shapes: the g.page short link from Business Profile's "Ask
@@ -172,3 +189,74 @@ export const DEFAULT_REVIEW_MESSAGE_STYLES: ReviewMessageStyles = {
 };
 
 export const DEFAULT_ROUTING_GOOGLE_MIN_RATING = 4;
+
+// Reminder limits. The ceiling of 10 is a technical safety limit (owner decision 2026-09-26); the setup warns
+// long before it.
+export const REVIEW_REMINDERS_MAX = 10;
+export const REVIEW_REMINDER_WAIT_MIN_DAYS = 1;
+export const REVIEW_REMINDER_WAIT_MAX_DAYS = 60;
+export const REVIEW_FIRST_SEND_DELAY_MAX: Record<ReviewFirstSendUnit, number> = {
+	hours: 72,
+	days: 30
+};
+// Past these the plan still saves, but the setup says it may annoy customers.
+export const REVIEW_REMINDERS_GENTLE_MAX = 3;
+export const REVIEW_REMINDER_GENTLE_MIN_DAYS = 2;
+
+export const DEFAULT_REVIEW_REMINDER_MESSAGES: ReviewMessageSet = {
+	sms: {
+		friendly: {
+			body: 'Hi {{customer_first_name}}, just a friendly reminder from {{business_name}}. If you have a minute, we would love to hear how we did: {{review_link}}'
+		},
+		professional: {
+			body: 'Hello {{customer_first_name}}, a gentle reminder from {{business_name}}. Your feedback on our recent work would be much appreciated: {{review_link}}'
+		},
+		short: {
+			body: 'A quick reminder from {{business_name}}: how did we do? {{review_link}}'
+		}
+	},
+	email: {
+		friendly: {
+			subject: 'A quick reminder from {{business_name}}',
+			body: 'Hi {{customer_first_name}},\n\nJust a friendly reminder in case our last message got buried. If you have a minute, we would love to hear how we did.\n\n{{review_link}}\n\nThank you,\n{{business_name}}'
+		},
+		professional: {
+			subject: 'Reminder: your feedback for {{business_name}}',
+			body: 'Hello {{customer_first_name}},\n\nA gentle reminder that we would value your feedback on the work we recently completed for you.\n\n{{review_link}}\n\nKind regards,\n{{business_name}}'
+		},
+		short: {
+			subject: 'How did we do?',
+			body: 'Hi {{customer_first_name}},\n\nA quick reminder: how did we do? {{review_link}}\n\nThanks,\n{{business_name}}'
+		}
+	}
+};
+
+export function newReviewReminder(id: string, waitDays: number): ReviewReminder {
+	return { id, wait_days: waitDays, messages: structuredClone(DEFAULT_REVIEW_REMINDER_MESSAGES) };
+}
+
+// The ready-made plan: send right away, then remind 3 and 5 days after the first message. Fixed ids so the
+// default reminders keep their identity once an organization saves them.
+export const DEFAULT_REVIEW_REQUEST_PLAN: ReviewRequestPlan = {
+	first_send_delay: { amount: 0, unit: 'hours' },
+	reminders: [
+		newReviewReminder('0d3c7a52-4b1e-4f3a-9a61-7e2b8c5d1f01', 3),
+		newReviewReminder('0d3c7a52-4b1e-4f3a-9a61-7e2b8c5d1f02', 2)
+	]
+};
+
+/** Plain-language cautions for a plan that may feel pushy. They never stop a save. */
+export function reviewPlanWarnings(plan: ReviewRequestPlan): string[] {
+	const warnings: string[] = [];
+	if (plan.reminders.length > REVIEW_REMINDERS_GENTLE_MAX) {
+		warnings.push(
+			`${plan.reminders.length} reminders is a lot. Most businesses send 2 or 3; more can put customers off.`
+		);
+	}
+	if (plan.reminders.some((reminder) => reminder.wait_days < REVIEW_REMINDER_GENTLE_MIN_DAYS)) {
+		warnings.push(
+			'A reminder only 1 day after the last message can feel pushy. Leaving at least 2 days is kinder.'
+		);
+	}
+	return warnings;
+}

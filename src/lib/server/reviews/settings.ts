@@ -13,10 +13,12 @@ import {
 import {
 	DEFAULT_REVIEW_FEEDBACK_FORM,
 	DEFAULT_REVIEW_MESSAGE_STYLES,
+	DEFAULT_REVIEW_REQUEST_PLAN,
 	DEFAULT_ROUTING_GOOGLE_MIN_RATING,
 	type ReviewChannelReadiness,
 	type ReviewFeedbackForm,
 	type ReviewMessageStyles,
+	type ReviewRequestPlan,
 	type ReviewSettingsInput,
 	type ReviewSettingsView
 } from '$lib/reviews/settings';
@@ -33,6 +35,8 @@ type ReviewSettingsRow = {
 	routing_acknowledged_at: string | null;
 	feedback_form: ReviewFeedbackForm;
 	message_styles: ReviewMessageStyles;
+	// Null for a row saved before reminders existed: still on the ready-made plan.
+	request_plan: ReviewRequestPlan | null;
 	updated_at: string;
 };
 
@@ -94,7 +98,7 @@ export async function loadReviewSettings(organizationId: string): Promise<Review
 		getOwnerSupabaseClient()
 			.from('review_settings')
 			.select(
-				'revision, google_review_url, routing_enabled, routing_google_min_rating, routing_acknowledged_at, feedback_form, message_styles, updated_at'
+				'revision, google_review_url, routing_enabled, routing_google_min_rating, routing_acknowledged_at, feedback_form, message_styles, request_plan, updated_at'
 			)
 			.eq('organization_id', organizationId)
 			.maybeSingle(),
@@ -112,11 +116,12 @@ export async function loadReviewSettings(organizationId: string): Promise<Review
 			routing_acknowledged_at: null,
 			feedback_form: DEFAULT_REVIEW_FEEDBACK_FORM,
 			message_styles: DEFAULT_REVIEW_MESSAGE_STYLES,
+			request_plan: DEFAULT_REVIEW_REQUEST_PLAN,
 			readiness,
 			updated_at: null
 		};
 	}
-	return { ...saved, readiness };
+	return { ...saved, request_plan: saved.request_plan ?? DEFAULT_REVIEW_REQUEST_PLAN, readiness };
 }
 
 export async function saveReviewSettings(
@@ -133,7 +138,8 @@ export async function saveReviewSettings(
 		p_routing_google_min_rating: input.routing_google_min_rating,
 		p_acknowledge_routing: input.acknowledge_routing,
 		p_feedback_form: input.feedback_form as unknown as Json,
-		p_message_styles: input.message_styles as unknown as Json
+		p_message_styles: input.message_styles as unknown as Json,
+		p_request_plan: input.request_plan as unknown as Json
 	});
 	if (error) {
 		if (error.code === 'P0409') throw new ReviewSettingsConflictError(error.message);

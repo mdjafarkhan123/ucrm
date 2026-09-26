@@ -85,6 +85,7 @@ describe('manual review request messages', () => {
 		client_id: '6b1f3c1e-8f0a-4c52-9d3e-2a7f5b1c0e01',
 		job_id: null,
 		channel: 'sms',
+		style: 'friendly',
 		contact_method_id: '6b1f3c1e-8f0a-4c52-9d3e-2a7f5b1c0e02',
 		body: 'Thanks! {{review_link}}',
 		idempotency_key: 'a1b2c3d4e5f6'

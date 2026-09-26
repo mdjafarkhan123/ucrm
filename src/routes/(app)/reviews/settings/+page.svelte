@@ -16,6 +16,7 @@
 	import ReviewRoutingSection from '$lib/components/reviews/ReviewRoutingSection.svelte';
 	import ReviewFeedbackFormEditor from '$lib/components/reviews/ReviewFeedbackFormEditor.svelte';
 	import ReviewMessageStylesEditor from '$lib/components/reviews/ReviewMessageStylesEditor.svelte';
+	import ReviewRequestPlanEditor from '$lib/components/reviews/ReviewRequestPlanEditor.svelte';
 	import ReviewFeedbackJourney from '$lib/components/reviews/ReviewFeedbackJourney.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import type { ReviewFeedbackPageModel } from '$lib/reviews/feedback-page';
@@ -29,6 +30,7 @@
 		isGoogleReviewUrl,
 		type ReviewFeedbackForm,
 		type ReviewMessageStyles,
+		type ReviewRequestPlan,
 		type ReviewSettingsView
 	} from '$lib/reviews/settings';
 	import { settingsHomeKey } from '$lib/settings/api';
@@ -54,6 +56,7 @@
 		routing_google_min_rating: number;
 		feedback_form: ReviewFeedbackForm;
 		message_styles: ReviewMessageStyles;
+		request_plan: ReviewRequestPlan;
 	};
 
 	let draft = $state<Draft | null>(null);
@@ -74,7 +77,8 @@
 			routing_enabled: view.routing_enabled,
 			routing_google_min_rating: view.routing_google_min_rating,
 			feedback_form: feedbackForm,
-			message_styles: structuredClone(view.message_styles)
+			message_styles: structuredClone(view.message_styles),
+			request_plan: structuredClone(view.request_plan)
 		};
 		draft = next;
 		savedSnapshot = JSON.stringify(next);
@@ -143,12 +147,15 @@
 				routing_google_min_rating: draft.routing_google_min_rating,
 				acknowledge_routing: routingAcknowledged,
 				feedback_form: draft.feedback_form,
-				message_styles: draft.message_styles
+				message_styles: draft.message_styles,
+				request_plan: draft.request_plan
 			});
 			queryClient.setQueryData(reviewSettingsKey, result);
 			seed(result);
 			toast.success('Review settings saved.');
 			void queryClient.invalidateQueries({ queryKey: settingsHomeKey });
+			// A request sent from now on follows the saved reminder plan.
+			void queryClient.invalidateQueries({ queryKey: ['reviews', 'request-context'] });
 		} catch (error) {
 			const saveError = error as ReviewSettingsSaveError;
 			fieldErrors = saveError.fieldErrors ?? {};
@@ -270,6 +277,8 @@
 				/>
 
 				<ReviewFeedbackFormEditor bind:form={draft.feedback_form} disabled={saving} {fieldErrors} />
+
+				<ReviewRequestPlanEditor bind:plan={draft.request_plan} disabled={saving} {fieldErrors} />
 
 				<ReviewMessageStylesEditor
 					bind:styles={draft.message_styles}

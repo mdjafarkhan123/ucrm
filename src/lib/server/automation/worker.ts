@@ -18,6 +18,7 @@
 
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { createQuoteEmailAccessLink } from '$lib/server/communications/quote-email';
+import { drainReviewReminders } from '$lib/server/reviews/reminders';
 
 type RpcResult<T> = Promise<{ data: T | null; error: { message: string } | null }>;
 
@@ -73,6 +74,8 @@ export type AutomationDrainCounts = {
 	retried: number;
 	// Due SMS-to-email fallbacks this wake settled (sent, skipped, or backed off).
 	fallbacks: number;
+	// Google review reminders this wake queued (Part 4A).
+	reviewReminders: number;
 };
 
 export type AutomationDrainResult = AutomationDrainCounts & {
@@ -280,7 +283,8 @@ export async function drainAutomationWork(
 		cancelled: 0,
 		parked: 0,
 		retried: 0,
-		fallbacks: 0
+		fallbacks: 0,
+		reviewReminders: 0
 	};
 
 	// Intake first: an event that arrives with this wake should get its enrollment and its first work item
@@ -294,6 +298,9 @@ export async function drainAutomationWork(
 	});
 	if (fallbacks.error) throw rpcError('Could not send automation email fallbacks', fallbacks.error);
 	counts.fallbacks = typeof fallbacks.data === 'number' ? fallbacks.data : 0;
+
+	// Due review reminders ride the same wake (Google review campaign Part 4A): no new service, no new cron.
+	counts.reviewReminders = (await drainReviewReminders(client, deadline, now)).sent;
 
 	let stoppedBy: AutomationDrainResult['stoppedBy'] = 'idle';
 

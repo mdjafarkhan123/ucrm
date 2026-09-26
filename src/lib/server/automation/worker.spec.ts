@@ -81,6 +81,7 @@ function workClient(
 				error: null
 			};
 		}
+		if (name === 'claim_review_reminders') return { data: [], error: null };
 		if (name === 'process_automation_sms_email_fallbacks') {
 			return { data: options.fallbacks ?? 0, error: null };
 		}
@@ -120,6 +121,7 @@ describe('drainAutomationWork', () => {
 			parked: 0,
 			retried: 0,
 			fallbacks: 0,
+			reviewReminders: 0,
 			stoppedBy: 'idle'
 		});
 		expect(rpc).toHaveBeenCalledWith('claim_automation_work_items', expect.anything());
@@ -170,8 +172,8 @@ describe('drainAutomationWork', () => {
 
 		const result = await drainAutomationWork({
 			client,
-			// deadline calc, intake check, iter-1 check (in budget), iter-2 check (over budget).
-			now: scriptedNow([0, 0, 0, 2000]),
+			// deadline calc, intake check, review reminder check, iter-1 check (in budget), iter-2 check (over).
+			now: scriptedNow([0, 0, 0, 0, 2000]),
 			timeBudgetMs: 1000
 		});
 

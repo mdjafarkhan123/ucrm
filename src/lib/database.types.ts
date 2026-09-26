@@ -13517,66 +13517,129 @@ export type Database = {
 					}
 				];
 			};
+			review_request_messages: {
+				Row: {
+					created_at: string;
+					delivery_intent_id: string | null;
+					id: string;
+					organization_id: string;
+					request_id: string;
+					slot: number;
+					token_hash: string;
+				};
+				Insert: {
+					created_at?: string;
+					delivery_intent_id?: string | null;
+					id?: string;
+					organization_id: string;
+					request_id: string;
+					slot: number;
+					token_hash: string;
+				};
+				Update: {
+					created_at?: string;
+					delivery_intent_id?: string | null;
+					id?: string;
+					organization_id?: string;
+					request_id?: string;
+					slot?: number;
+					token_hash?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'review_request_messages_delivery_intent_id_fkey';
+						columns: ['delivery_intent_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_delivery_intents';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'review_request_messages_request_fkey';
+						columns: ['organization_id', 'request_id'];
+						isOneToOne: false;
+						referencedRelation: 'review_requests';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
 			review_requests: {
 				Row: {
 					cancelled_at: string | null;
 					cancelled_by: string | null;
 					channel: string;
 					client_id: string;
+					contact_method_id: string | null;
 					continued_to_google_at: string | null;
 					created_at: string;
 					created_by: string | null;
-					delivery_intent_id: string | null;
 					feedback_submitted_at: string | null;
 					first_opened_at: string | null;
 					id: string;
 					job_id: string | null;
 					last_opened_at: string | null;
+					next_reminder_at: string | null;
 					open_count: number;
 					organization_id: string;
 					origin: string;
 					rating: number | null;
-					token_hash: string;
+					reminder_attempts: number;
+					reminder_claim_token: string | null;
+					stop_detail: string | null;
+					stop_reason: string | null;
+					stopped_at: string | null;
+					style: string;
 				};
 				Insert: {
 					cancelled_at?: string | null;
 					cancelled_by?: string | null;
 					channel: string;
 					client_id: string;
+					contact_method_id?: string | null;
 					continued_to_google_at?: string | null;
 					created_at?: string;
 					created_by?: string | null;
-					delivery_intent_id?: string | null;
 					feedback_submitted_at?: string | null;
 					first_opened_at?: string | null;
 					id?: string;
 					job_id?: string | null;
 					last_opened_at?: string | null;
+					next_reminder_at?: string | null;
 					open_count?: number;
 					organization_id: string;
 					origin?: string;
 					rating?: number | null;
-					token_hash: string;
+					reminder_attempts?: number;
+					reminder_claim_token?: string | null;
+					stop_detail?: string | null;
+					stop_reason?: string | null;
+					stopped_at?: string | null;
+					style?: string;
 				};
 				Update: {
 					cancelled_at?: string | null;
 					cancelled_by?: string | null;
 					channel?: string;
 					client_id?: string;
+					contact_method_id?: string | null;
 					continued_to_google_at?: string | null;
 					created_at?: string;
 					created_by?: string | null;
-					delivery_intent_id?: string | null;
 					feedback_submitted_at?: string | null;
 					first_opened_at?: string | null;
 					id?: string;
 					job_id?: string | null;
 					last_opened_at?: string | null;
+					next_reminder_at?: string | null;
 					open_count?: number;
 					organization_id?: string;
 					origin?: string;
 					rating?: number | null;
-					token_hash?: string;
+					reminder_attempts?: number;
+					reminder_claim_token?: string | null;
+					stop_detail?: string | null;
+					stop_reason?: string | null;
+					stopped_at?: string | null;
+					style?: string;
 				};
 				Relationships: [
 					{
@@ -13585,13 +13648,6 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'clients';
 						referencedColumns: ['organization_id', 'id'];
-					},
-					{
-						foreignKeyName: 'review_requests_delivery_intent_id_fkey';
-						columns: ['delivery_intent_id'];
-						isOneToOne: false;
-						referencedRelation: 'communication_delivery_intents';
-						referencedColumns: ['id'];
 					},
 					{
 						foreignKeyName: 'review_requests_job_fkey';
@@ -13622,6 +13678,7 @@ export type Database = {
 					google_review_url: string | null;
 					message_styles: Json;
 					organization_id: string;
+					request_plan: Json | null;
 					revision: number;
 					routing_acknowledged_at: string | null;
 					routing_acknowledged_by: string | null;
@@ -13635,6 +13692,7 @@ export type Database = {
 					google_review_url?: string | null;
 					message_styles: Json;
 					organization_id: string;
+					request_plan?: Json | null;
 					revision?: number;
 					routing_acknowledged_at?: string | null;
 					routing_acknowledged_by?: string | null;
@@ -13648,6 +13706,7 @@ export type Database = {
 					google_review_url?: string | null;
 					message_styles?: Json;
 					organization_id?: string;
+					request_plan?: Json | null;
 					revision?: number;
 					routing_acknowledged_at?: string | null;
 					routing_acknowledged_by?: string | null;
@@ -15694,6 +15753,26 @@ export type Database = {
 					state_region: string;
 				}[];
 			};
+			claim_review_reminders: {
+				Args: {
+					p_batch_size?: number;
+					p_lease_seconds?: number;
+					p_max_attempts?: number;
+					p_per_organization_cap?: number;
+				};
+				Returns: {
+					business_name: string;
+					channel: string;
+					claim_token: string;
+					customer_first_name: string;
+					customer_name: string;
+					organization_id: string;
+					request_id: string;
+					request_plan: Json;
+					slot: number;
+					style: string;
+				}[];
+			};
 			claim_team_invitation: {
 				Args: {
 					target_email: string;
@@ -17463,11 +17542,13 @@ export type Database = {
 					p_channel: string;
 					p_client_id: string;
 					p_contact_method_id: string;
+					p_first_reminder_days: number;
 					p_idempotency_key: string;
 					p_job_id: string;
 					p_link_url: string;
 					p_organization_id: string;
 					p_send_at: string;
+					p_style: string;
 					p_subject: string;
 					p_token_hash: string;
 				};
@@ -22158,6 +22239,7 @@ export type Database = {
 					p_google_review_url: string;
 					p_message_styles: Json;
 					p_organization_id: string;
+					p_request_plan: Json;
 					p_routing_enabled: boolean;
 					p_routing_google_min_rating: number;
 				};
@@ -22166,6 +22248,7 @@ export type Database = {
 					google_review_url: string | null;
 					message_styles: Json;
 					organization_id: string;
+					request_plan: Json | null;
 					revision: number;
 					routing_acknowledged_at: string | null;
 					routing_acknowledged_by: string | null;
@@ -22229,6 +22312,21 @@ export type Database = {
 			schedule_calendar_context: {
 				Args: { target_organization_id: string };
 				Returns: Json;
+			};
+			send_review_reminder: {
+				Args: {
+					p_body_html: string;
+					p_body_text: string;
+					p_claim_token: string;
+					p_link_url: string;
+					p_next_wait_days: number;
+					p_request_id: string;
+					p_slot: number;
+					p_subject: string;
+					p_token_hash: string;
+					p_wait_days: number;
+				};
+				Returns: string;
 			};
 			set_automation_recipe_lifecycle_state: {
 				Args: {

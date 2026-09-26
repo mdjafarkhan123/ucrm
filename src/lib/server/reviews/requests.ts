@@ -8,10 +8,13 @@ import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-l
 import {
 	DEFAULT_REVIEW_FEEDBACK_FORM,
 	DEFAULT_REVIEW_MESSAGE_STYLES,
+	DEFAULT_REVIEW_REQUEST_PLAN,
 	DEFAULT_ROUTING_GOOGLE_MIN_RATING,
 	type ReviewChannel,
 	type ReviewFeedbackForm,
-	type ReviewMessageStyles
+	type ReviewMessageStyles,
+	type ReviewRequestPlan,
+	type ReviewStyle
 } from '$lib/reviews/settings';
 import type { ReviewRequestContext, ReviewRequestSummary } from '$lib/reviews/requests';
 
@@ -163,14 +166,16 @@ function refusalFrom(error: { code?: string; message: string }) {
 async function loadReviewMessageSetup(organizationId: string) {
 	const { data, error } = await getReviewRequestClient()
 		.from('review_settings')
-		.select('google_review_url, message_styles')
+		.select('google_review_url, message_styles, request_plan')
 		.eq('organization_id', organizationId)
 		.maybeSingle();
 	if (error) throw error;
 	return {
 		google_review_url: data?.google_review_url ?? null,
 		message_styles:
-			(data?.message_styles as ReviewMessageStyles | undefined) ?? DEFAULT_REVIEW_MESSAGE_STYLES
+			(data?.message_styles as ReviewMessageStyles | undefined) ?? DEFAULT_REVIEW_MESSAGE_STYLES,
+		request_plan:
+			(data?.request_plan as ReviewRequestPlan | null | undefined) ?? DEFAULT_REVIEW_REQUEST_PLAN
 	};
 }
 
@@ -194,10 +199,11 @@ export async function loadReviewRequestContext(
 	return {
 		...(context.data as unknown as Omit<
 			ReviewRequestContext,
-			'has_google_link' | 'message_styles'
+			'has_google_link' | 'message_styles' | 'reminder_wait_days'
 		>),
 		has_google_link: Boolean(setup.google_review_url),
-		message_styles: setup.message_styles
+		message_styles: setup.message_styles,
+		reminder_wait_days: setup.request_plan.reminders.map((reminder) => reminder.wait_days)
 	};
 }
 
@@ -235,6 +241,7 @@ export type SendReviewRequestInput = {
 	client_id: string;
 	job_id: string | null;
 	channel: ReviewChannel;
+	style: ReviewStyle;
 	contact_method_id: string;
 	subject: string;
 	body: string;
@@ -290,6 +297,7 @@ export async function sendReviewRequest(
 		p_client_id: input.client_id,
 		p_job_id: input.job_id as string,
 		p_channel: input.channel,
+		p_style: input.style,
 		p_contact_method_id: input.contact_method_id,
 		p_subject: subject,
 		p_body_text: bodyText,
@@ -297,6 +305,8 @@ export async function sendReviewRequest(
 		p_link_url: linkUrl,
 		p_token_hash: tokenHash,
 		p_send_at: input.send_at as string,
+		// The plan as it stands now; each later reminder re-reads it when it comes due.
+		p_first_reminder_days: (context.reminder_wait_days[0] ?? null) as number,
 		p_idempotency_key: input.idempotency_key
 	});
 	if (error) throw refusalFrom(error) ?? error;

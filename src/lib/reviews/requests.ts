@@ -1,5 +1,5 @@
 import { httpError } from '$lib/http-error';
-import type { ReviewChannel, ReviewMessageStyles } from './settings';
+import type { ReviewChannel, ReviewMessageStyles, ReviewStyle } from './settings';
 
 // Google review campaign Part 3: the manual "Request a review" panel, browser side. The shapes mirror
 // public.get_review_request_context and private.review_request_summary.
@@ -42,17 +42,61 @@ export const REVIEW_REQUEST_STATUS_TONES: Record<
 	feedback_submitted: 'success'
 };
 
+// Part 4A: why a request's reminders stopped early. A sequence that simply ran out of reminders has none.
+export type ReviewRequestStopReason =
+	| 'cancelled'
+	| 'continued_to_google'
+	| 'feedback_submitted'
+	| 'not_delivered'
+	| 'not_sent'
+	| 'client_removed'
+	| 'client_opted_out'
+	| 'job_not_eligible'
+	| 'no_contact'
+	| 'plan_changed'
+	| 'error';
+
+export const REVIEW_REQUEST_STOP_LABELS: Record<ReviewRequestStopReason, string> = {
+	cancelled: 'Cancelled',
+	continued_to_google: 'The customer went to Google',
+	feedback_submitted: 'The customer left private feedback',
+	not_delivered: 'A message could not be delivered',
+	not_sent: 'A reminder could not be sent',
+	client_removed: 'The client was deleted',
+	client_opted_out: 'The client turned off review requests',
+	job_not_eligible: 'The job was reopened or is no longer complete',
+	no_contact: 'The contact was removed',
+	plan_changed: 'Your reminder plan changed',
+	error: 'A reminder kept failing to send'
+};
+
+export type ReviewRequestMessageState =
+	'queued' | 'scheduled' | 'sent' | 'delivered' | 'failed' | 'cancelled';
+
+export type ReviewRequestMessage = {
+	// 0 is the first message; 1 and up are reminders.
+	slot: number;
+	state: ReviewRequestMessageState;
+	send_at: string | null;
+	sent_at: string | null;
+};
+
 export type ReviewRequestSummary = {
 	id: string;
 	job_id: string | null;
 	job_number: number | null;
 	channel: ReviewChannel;
+	style: ReviewStyle;
 	recipient: string | null;
 	status: ReviewRequestStatus;
 	created_at: string;
 	send_at: string | null;
 	sent_at: string | null;
 	failure_message: string | null;
+	messages: ReviewRequestMessage[];
+	next_reminder_at: string | null;
+	stop_reason: ReviewRequestStopReason | null;
+	stop_detail: string | null;
 	cancellable: boolean;
 };
 
@@ -79,6 +123,8 @@ export type ReviewRequestContext = {
 	requests: ReviewRequestSummary[];
 	has_google_link: boolean;
 	message_styles: ReviewMessageStyles;
+	// The current plan's reminder waits, in order: what a request sent now will follow.
+	reminder_wait_days: number[];
 };
 
 export type ReviewRequestTarget = { jobId: string } | { clientId: string };
@@ -120,6 +166,7 @@ export type CreateReviewRequestInput = {
 	client_id: string;
 	job_id: string | null;
 	channel: ReviewChannel;
+	style: ReviewStyle;
 	contact_method_id: string;
 	subject: string;
 	body: string;

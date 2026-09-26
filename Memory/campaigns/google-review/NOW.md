@@ -1,18 +1,22 @@
 # Google review — NOW
 
 Goal: build the Google review campaign in `docs/google-review-campaign-owner-brief.md`.
-Active part: 4A — reminder plan for every review request. Read `parts/04-automation.md` (4A section).
+Active part: 4A — reminder plan. Read `parts/04-automation.md` (4A section).
 
-Next action — in a fresh session (10-reminder ceiling approved 2026-09-26):
-1. Finish the performance design verdict for 4A (performance-review design branch), then load the Postgres
-   best-practices skill.
-2. Build 4A: migration (per-message token table, per-message rows, due marker + claim), worker drain, settings
-   "Request behavior" + timeline UI, cancel-while-pending, stop rules. Then prove it live.
+State 2026-09-26: 4A built and committed (migration `20260926120000_review_request_reminders.sql` applied;
+drain `src/lib/server/reviews/reminders.ts` rides the automation wake; settings "Request behavior" timeline in
+`ReviewRequestPlanEditor.svelte`; panel shows plan + reminder progress). DB path proven in a rolled-back
+transaction (create, idempotent retry, not-due, waits for first send, manual-only sender stops it, automated
+sender sends slot 1 with its own link, Google click stops + cancels waiting reminder). Unit tests + svelte-check pass.
 
-Facts: Raad has no SMS number; manual email uses the default sender with `allows_manual` (automation must use
-`allows_automated`). Operational review emails carry no unsubscribe link yet (suppression is honoured).
+Next action:
+1. Browser-verify as owner: `/reviews/settings` → Request behavior (add/remove/edit wording, warnings, save,
+   reload, stale-save conflict), then the Request a review panel note + recent-requests reminder lines;
+   field member still limited to own jobs.
+2. Run the performance verification branch for the reminder drain (claim EXPLAIN on
+   `review_requests_next_reminder_idx`), then close 4A and start 4B.
 
-Known unrelated: `settings-business.spec.ts` expects 8 permission flags (stale). `npm run check` needs
-NODE_OPTIONS=--max-old-space-size=8192; 3 "union type too complex" errors predate this. Never raise SQLSTATE
-40001 for a stale edit; use P0409. Playwright vs `npm run dev`: wait ~9s first visit.
-Part 2 leftover: Jafar to glance at Review settings → "Preview feedback page" while signed in.
+Facts: Raad's only email sender is manual-only (`allows_automated` false), so its email reminders stop with
+"not set up to send automatic messages"; Raad has no SMS number. Ask Jafar before changing Raad's sender.
+Known unrelated: `npm run check` needs NODE_OPTIONS=--max-old-space-size=8192; 3 "union type too complex"
+errors predate this. Never raise SQLSTATE 40001 for a stale edit; use P0409.

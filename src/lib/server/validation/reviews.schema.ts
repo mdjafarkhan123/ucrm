@@ -8,6 +8,11 @@ import {
 	REVIEW_FEEDBACK_MAX_QUESTIONS,
 	REVIEW_FEEDBACK_QUESTION_TYPES,
 	REVIEW_CHANNELS,
+	REVIEW_FIRST_SEND_DELAY_MAX,
+	REVIEW_FIRST_SEND_UNITS,
+	REVIEW_REMINDERS_MAX,
+	REVIEW_REMINDER_WAIT_MAX_DAYS,
+	REVIEW_REMINDER_WAIT_MIN_DAYS,
 	REVIEW_SMS_BODY_MAX,
 	REVIEW_STYLES,
 	REVIEW_THANK_YOU_MESSAGE_MAX,
@@ -90,25 +95,67 @@ const emailStyleSchema = z
 	})
 	.strict();
 
+const messageSetShape = {
+	sms: z
+		.object({
+			friendly: smsStyleSchema,
+			professional: smsStyleSchema,
+			short: smsStyleSchema
+		})
+		.strict(),
+	email: z
+		.object({
+			friendly: emailStyleSchema,
+			professional: emailStyleSchema,
+			short: emailStyleSchema
+		})
+		.strict()
+};
+
 const messageStylesSchema = z
+	.object({ default_style: z.enum(REVIEW_STYLES), ...messageSetShape })
+	.strict();
+
+// Part 4A: when the first message goes and the reminders that follow it.
+const requestPlanSchema = z
 	.object({
-		default_style: z.enum(REVIEW_STYLES),
-		sms: z
+		first_send_delay: z
 			.object({
-				friendly: smsStyleSchema,
-				professional: smsStyleSchema,
-				short: smsStyleSchema
-			})
-			.strict(),
-		email: z
-			.object({
-				friendly: emailStyleSchema,
-				professional: emailStyleSchema,
-				short: emailStyleSchema
+				amount: z.number().int().min(0),
+				unit: z.enum(REVIEW_FIRST_SEND_UNITS)
 			})
 			.strict()
+			.refine((delay) => delay.amount <= REVIEW_FIRST_SEND_DELAY_MAX[delay.unit], {
+				message: 'Choose a delay of up to 72 hours or 30 days.',
+				path: ['amount']
+			}),
+		reminders: z
+			.array(
+				z
+					.object({
+						id: z.uuid(),
+						wait_days: z
+							.number()
+							.int()
+							.min(REVIEW_REMINDER_WAIT_MIN_DAYS, 'Wait at least 1 day.')
+							.max(REVIEW_REMINDER_WAIT_MAX_DAYS, 'Wait no more than 60 days.'),
+						messages: z.object(messageSetShape).strict()
+					})
+					.strict()
+			)
+			.max(REVIEW_REMINDERS_MAX, `Send at most ${REVIEW_REMINDERS_MAX} reminders.`)
 	})
-	.strict();
+	.strict()
+	.superRefine((plan, ctx) => {
+		const ids = plan.reminders.map((reminder) => reminder.id);
+		if (new Set(ids).size !== ids.length) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['reminders'],
+				message: 'Each reminder must be unique.'
+			});
+		}
+	});
 
 export const reviewSettingsSchema = z
 	.object({
@@ -126,7 +173,8 @@ export const reviewSettingsSchema = z
 		routing_google_min_rating: z.number().int().min(2).max(5),
 		acknowledge_routing: z.boolean().default(false),
 		feedback_form: feedbackFormSchema,
-		message_styles: messageStylesSchema
+		message_styles: messageStylesSchema,
+		request_plan: requestPlanSchema
 	})
 	.strict()
 	.superRefine((input, ctx) => {
@@ -166,6 +214,7 @@ export const reviewRequestCreateSchema = z
 		client_id: z.uuid(),
 		job_id: z.uuid().nullable(),
 		channel: z.enum(REVIEW_CHANNELS),
+		style: z.enum(REVIEW_STYLES),
 		contact_method_id: z.uuid('Choose who to send it to.'),
 		subject: z.string().default(''),
 		body: z.string(),

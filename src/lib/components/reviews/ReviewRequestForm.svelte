@@ -20,6 +20,7 @@
 	import {
 		REVIEW_REQUEST_STATUS_LABELS,
 		REVIEW_REQUEST_STATUS_TONES,
+		REVIEW_REQUEST_STOP_LABELS,
 		cancelReviewRequest,
 		createReviewRequest,
 		type ReviewRequestContext
@@ -215,6 +216,7 @@
 				client_id: context.client.id,
 				job_id: context.job?.id ?? (jobId === NO_JOB ? null : jobId),
 				channel,
+				style,
 				contact_method_id: contactMethodId,
 				subject: channel === 'email' ? emailSubject : '',
 				body: channel === 'sms' ? smsBody : emailBody,
@@ -242,12 +244,46 @@
 		try {
 			await cancelReviewRequest(id);
 			await refresh();
-			toast.success('Scheduled review request cancelled');
+			toast.success('Review request cancelled');
 		} catch (error) {
 			formError = (error as Error).message;
 		} finally {
 			cancellingId = null;
 		}
+	}
+
+	// "2 reminders will follow, 3 and 5 days after the first message": the plan this request will follow.
+	const planNote = $derived.by(() => {
+		const waits = context.reminder_wait_days;
+		if (waits.length === 0) return 'No reminders will follow. You can add them in Review settings.';
+		const days = waits.map((_, index) =>
+			waits.slice(0, index + 1).reduce((total, wait) => total + wait, 0)
+		);
+		const list =
+			days.length === 1 ? `${days[0]}` : `${days.slice(0, -1).join(', ')} and ${days.at(-1)}`;
+		const count = waits.length === 1 ? '1 reminder follows' : `${waits.length} reminders follow`;
+		return `${count}, ${list} days after the first message goes out. They stop as soon as the customer responds.`;
+	});
+
+	// Where the request's reminders stand, when that adds to the status badge.
+	function reminderLine(request: ReviewRequestContext['requests'][number]) {
+		const sent = request.messages.filter(
+			(message) => message.slot > 0 && message.state !== 'cancelled'
+		).length;
+		const parts: string[] = [];
+		if (sent > 0) parts.push(sent === 1 ? '1 reminder sent' : `${sent} reminders sent`);
+		if (request.next_reminder_at && request.status !== 'cancelled') {
+			parts.push(`next reminder ${dateFormat.format(new Date(request.next_reminder_at))}`);
+		} else if (
+			request.stop_reason &&
+			!['cancelled', 'continued_to_google', 'feedback_submitted'].includes(request.stop_reason)
+		) {
+			parts.push(
+				`reminders stopped: ${REVIEW_REQUEST_STOP_LABELS[request.stop_reason].toLowerCase()}`
+			);
+		}
+		const line = parts.join(' · ');
+		return line ? line.charAt(0).toUpperCase() + line.slice(1) : '';
 	}
 
 	function requestLine(request: ReviewRequestContext['requests'][number]) {
@@ -366,6 +402,7 @@
 			/>
 		{/if}
 	</div>
+	<p class="review-request__plan">{planNote}</p>
 
 	{#if context.requests.length > 0}
 		<section class="review-request__history" aria-labelledby="review-request-history-title">
@@ -378,6 +415,12 @@
 								{REVIEW_REQUEST_STATUS_LABELS[request.status]}
 							</Badge>
 							<span>{requestLine(request)}</span>
+							{#if reminderLine(request)}
+								<span class="review-request__item-reminders">{reminderLine(request)}</span>
+							{/if}
+							{#if request.stop_detail && request.stop_reason && ['not_sent', 'not_delivered'].includes(request.stop_reason)}
+								<span class="review-request__item-failure">{request.stop_detail}</span>
+							{/if}
 							{#if request.status === 'failed' && request.failure_message}
 								<span class="review-request__item-failure">{request.failure_message}</span>
 							{/if}
@@ -500,6 +543,17 @@
 			color: var(--color-text);
 			font-size: var(--typography--fontSize-small);
 			overflow-wrap: anywhere;
+		}
+
+		&__plan {
+			margin: calc(var(--space-small) * -1) 0 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__item-reminders {
+			flex-basis: 100%;
+			color: var(--color-text--secondary);
 		}
 
 		&__item-failure {
