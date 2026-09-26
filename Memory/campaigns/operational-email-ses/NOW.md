@@ -8,14 +8,14 @@ Parts 1–4b done (4b D live-proven 2026-09-26 on Raad). Active: Part 6 step 4 (
 
 ## Exact next action
 
-Part 6 step 4 done 2026-09-26 (Jafar deleted the last Brevo transactional webhook; no contractor Brevo left).
-Step 5 is blocked by a product gap: Jafar-panel Remove refuses while live senders exist
-(`begin_communication_email_domain_removal`), but no UI or API removes a sender (`senders/[senderId]` has
-PATCH only; "active" off still counts). Awaiting Jafar's choice: build contractor "Remove sender" first
-(recommended), or accept the 2026-09-26 live proof and skip the fresh Set up. Raad's sender to recreate after:
-office@mail.<root>, "Raad LTD Office", assigned to owner, business default, manual only.
-Open question for Jafar: delete unused platform Brevo domain notifications.upliftcontractor.com?
-After Part 6: Part 5, then Part 7.
+Part 6 step 5 prerequisite built 2026-09-26 (Jafar approved, "all flexibility"): contractor Remove sender
+(`8c9db50`; UI swept into `c2a1904`) + Jafar Gmail alert for the reserve-exhausted trigger. NOT yet live:
+1. Migration `20260926180000_remove_email_sender.sql` is committed but unapplied -- the classifier blocked
+   `supabase db push --linked`; ask Jafar to approve it (dry run shows only this file). Until then Remove 500s.
+2. Browser-verify on Raad (settings/communications/email -> Edit -> Remove sender: impact list, removal).
+3. Step 5: Jafar panel Remove + Set up on Raad's everyday email, recreate sender office@mail.<root>
+   "Raad LTD Office" (assigned to owner, default, manual on, automated per new default), live send + Gmail reply.
+After Part 6: Part 5, then Part 7. Open: delete unused Brevo domain notifications.upliftcontractor.com? (ask)
 
 ## Blockers
 
