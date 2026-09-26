@@ -6,6 +6,7 @@
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
+	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
@@ -17,6 +18,9 @@
 		communicationSendersKey,
 		createCommunicationSender,
 		fetchCommunicationSenders,
+		fetchSenderRemovalImpact,
+		removeCommunicationSender,
+		senderRemovalImpactKey,
 		SenderWriteError,
 		updateCommunicationSender,
 		type CommunicationEmailSender,
@@ -27,6 +31,7 @@
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 	import gaugeIcon from '@tabler/icons/outline/gauge.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 
 	// This billing period's email standing. `optional` is ordinary business email; `essential` is the
 	// protected reserve that keeps requested quotes, invoices, receipts and direct replies moving
@@ -129,6 +134,58 @@
 	]);
 	const isEditing = $derived(dialogMode === 'edit');
 
+	// Removal: the impact loads only once the owner reaches for Remove (hover prefetch), never with the page.
+	let removingSender = $state<CommunicationEmailSender | null>(null);
+	let removalKey = $state('');
+	let removing = $state(false);
+	let removalError = $state('');
+	const removalImpactQuery = createQuery(() => ({
+		queryKey: senderRemovalImpactKey(removingSender?.id ?? ''),
+		queryFn: () => fetchSenderRemovalImpact(removingSender!.id),
+		enabled: removingSender !== null,
+		staleTime: 10_000
+	}));
+	const removalImpact = $derived(removalImpactQuery.data ?? null);
+
+	function prefetchRemovalImpact(senderId: string) {
+		void queryClient.prefetchQuery({
+			queryKey: senderRemovalImpactKey(senderId),
+			queryFn: () => fetchSenderRemovalImpact(senderId),
+			staleTime: 10_000
+		});
+	}
+
+	function openRemoval() {
+		if (!editingSender || saving) return;
+		removingSender = editingSender;
+		removalKey = crypto.randomUUID();
+		removalError = '';
+		dialogMode = null;
+		editingSender = null;
+	}
+
+	function closeRemoval() {
+		if (removing) return;
+		removingSender = null;
+	}
+
+	async function confirmRemoval() {
+		if (!removingSender || removing) return;
+		removing = true;
+		removalError = '';
+		try {
+			await removeCommunicationSender(removingSender.id, removalKey);
+			toast.success('Email identity removed.');
+			await queryClient.invalidateQueries({ queryKey: communicationSendersKey });
+			removingSender = null;
+		} catch (error) {
+			removalError =
+				error instanceof Error ? error.message : 'The email identity could not be removed.';
+		} finally {
+			removing = false;
+		}
+	}
+
 	function emptyDraft(): SenderDraft {
 		return {
 			domain_id: '',
@@ -137,7 +194,7 @@
 			assigned_user_id: null,
 			is_organization_default: false,
 			allows_manual: true,
-			allows_automated: false,
+			allows_automated: true,
 			enabled: true
 		};
 	}
@@ -246,7 +303,7 @@
 		<PageHeader
 			eyebrow="Communications"
 			title="Email identity"
-			description="Choose the verified email addresses your team and future automations can use."
+			description="Choose the verified email addresses your team and automations can use."
 		>
 			{#snippet actions()}
 				<Button href={resolve('/settings')} variant="secondary" variation="subtle"
@@ -527,7 +584,8 @@
 				/>
 				<Checkbox
 					id="sender-automated"
-					label="Allow future automations to use this sender"
+					label="Allow automations to use this sender"
+					description="Automatic messages, like review requests and follow-ups, go out from the business default."
 					checked={draft.allows_automated}
 					onchange={(checked) => (draft.allows_automated = checked)}
 				/>
@@ -546,6 +604,19 @@
 					/>{/if}
 			</div>
 			<div class="email-identities__actions">
+				{#if editingSender}
+					{@const senderId = editingSender.id}
+					<span class="email-identities__remove"
+						><Button
+							type="button"
+							variant="tertiary"
+							variation="destructive"
+							disabled={saving}
+							onhover={() => prefetchRemovalImpact(senderId)}
+							onclick={openRemoval}>Remove sender</Button
+						></span
+					>
+				{/if}
 				<Button type="submit" loading={saving}>{isEditing ? 'Save changes' : 'Add sender'}</Button
 				><Button
 					type="button"
@@ -557,6 +628,53 @@
 			</div>
 		</form>
 	</Dialog>
+{/if}
+
+{#if removingSender}
+	<ConfirmDialog
+		open
+		title="Remove this email identity?"
+		icon={trashIcon}
+		tone="critical"
+		destructive
+		confirmLabel="Remove sender"
+		loading={removing}
+		confirmDisabled={!removalImpact}
+		onConfirm={() => void confirmRemoval()}
+		onClose={closeRemoval}
+	>
+		<p class="email-removal__lead">
+			<strong>{removingSender.email_address}</strong> will stop sending right away. Past emails and customer
+			replies stay in your inbox, and you can add this address again later.
+		</p>
+		{#if removalImpactQuery.isPending}
+			<LoadingSkeleton variant="text" rows={2} label="Checking what this affects" />
+		{:else if removalImpactQuery.isError}
+			<p class="email-identities__error" role="alert">
+				What this affects could not be checked. Close this and try again.
+			</p>
+		{:else if removalImpact}
+			{@const effects = [
+				removalImpact.is_organization_default
+					? removalImpact.other_enabled_sender_count > 0
+						? 'This is your business default. Choose another default so automatic emails keep a sender.'
+						: 'This is your only active sender. Quotes, invoices and other automatic emails wait until you add a new one.'
+					: null,
+				removalImpact.assigned_member_name
+					? `${removalImpact.assigned_member_name} can no longer send email from it.`
+					: null,
+				removalImpact.queued_email_count > 0
+					? `${removalImpact.queued_email_count} email${removalImpact.queued_email_count === 1 ? ' is' : 's are'} still waiting to send from it. Staff emails are held for review; automatic ones are cancelled.`
+					: null
+			].filter((effect) => effect !== null)}
+			{#if effects.length}
+				<ul class="email-removal__effects">
+					{#each effects as effect (effect)}<li>{effect}</li>{/each}
+				</ul>
+			{/if}
+		{/if}
+		{#if removalError}<p class="email-identities__error" role="alert">{removalError}</p>{/if}
+	</ConfirmDialog>
 {/if}
 
 <style lang="scss">
@@ -716,6 +834,19 @@
 		flex-wrap: wrap;
 		justify-content: flex-end;
 		gap: var(--space-small);
+	}
+	.email-identities__remove {
+		margin-right: auto;
+	}
+	.email-removal__lead {
+		margin: 0;
+	}
+	.email-removal__effects {
+		display: grid;
+		gap: var(--space-small);
+		margin: var(--space-base) 0 0;
+		padding-left: var(--space-large);
+		color: var(--color-text);
 	}
 	.email-identities__sr-only {
 		position: absolute;
