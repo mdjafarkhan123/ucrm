@@ -8,11 +8,12 @@ State 2026-09-26: 4B engine (`ea9840c`) and builder (`0cbdf66`) committed; perfo
 Next action:
 1. Live proof (no-sender case) PASSED 2026-09-26: job #23 closed -> automatic request "Not sent" with reason,
    seen on screen in the job's Request a review panel. Recipe `34803b3e` is still ACTIVE in Raad.
-2. GHL sender rule shipped (`c2a1904`); Raad's Office sender now "Manual and automated" (done in UI).
-   Job #23 re-close was correctly ignored (one ask per one-off job). Remaining: finish job #14 "Panel upgrade
-   quote" (same client, email dev.jafarkhan+part8@gmail.com): add visit, complete, Finish job. Agent was
-   blocked from sending a real email, so Jafar clicks it. Then check the request shows sent + email arrives,
-   then pause recipe `34803b3e`.
+2. GHL sender rule shipped (`c2a1904`). Jobs #23 and #14 are used up (one ask per one-off job; both recorded
+   "Not sent" because the operational-email-ses session removed Raad's Office sender at 04:24 for its step 5).
+   Wait until that campaign recreates Raad's sender (check `communication_email_senders`: enabled, default,
+   allows_automated). Then finish a fresh one-off job whose client email is Jafar's (#14's client
+   e10eed2b has dev.jafarkhan+part8@gmail.com; add a new job for it), check the request shows sent and the
+   email arrives, then pause recipe `34803b3e`. Agent needs Jafar in manual mode to send real email.
 3. Close 4B: reduce the packet to its roadmap entry, pick the next part from ROADMAP.md.
 
 Facts: Raad has no SMS number.
