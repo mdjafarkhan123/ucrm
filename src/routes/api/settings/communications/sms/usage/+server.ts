@@ -49,7 +49,9 @@ export const GET: RequestHandler = async (event) => {
 		adjustmentsResult,
 		reservationsResult,
 		optOutResult,
-		messageEventsResult
+		messageEventsResult,
+		emailChargesResult,
+		emailReservationsResult
 	] = await Promise.all([
 		client
 			.from('communication_sms_credit_accounts')
@@ -59,11 +61,17 @@ export const GET: RequestHandler = async (event) => {
 		client.rpc('communication_sms_promotional_balance', { p_organization_id: organizationId }),
 		client.rpc('communication_sms_spendable_balance', { p_organization_id: organizationId }),
 		client.rpc('communication_sms_active_outbound_hold', { p_organization_id: organizationId }),
+		// communication_sms_credit_ledger_entries carries no channel column of its own (Part 7 widened the
+		// shared balance to email over-allowance charges too), so a channel-specific total has to join back
+		// through the reservation that produced the charge.
 		client
 			.from('communication_sms_credit_ledger_entries')
-			.select('amount_minor')
+			.select(
+				'amount_minor, communication_sms_credit_reservations!communication_sms_credit_ledger_entries_reservation_fk!inner(channel)'
+			)
 			.eq('organization_id', organizationId)
 			.eq('entry_kind', 'charge')
+			.eq('communication_sms_credit_reservations.channel', 'sms')
 			.gte('occurred_at', month.start)
 			.lt('occurred_at', month.end),
 		client
@@ -77,6 +85,7 @@ export const GET: RequestHandler = async (event) => {
 			.from('communication_sms_credit_reservations')
 			.select('segment_count')
 			.eq('organization_id', organizationId)
+			.eq('channel', 'sms')
 			.eq('state', 'settled')
 			.gte('settled_at', month.start)
 			.lt('settled_at', month.end),
@@ -91,7 +100,25 @@ export const GET: RequestHandler = async (event) => {
 			)
 			.eq('organization_id', organizationId)
 			.eq('communication_delivery_intents.channel', 'sms')
-			.gte('occurred_at', healthSince)
+			.gte('occurred_at', healthSince),
+		client
+			.from('communication_sms_credit_ledger_entries')
+			.select(
+				'amount_minor, communication_sms_credit_reservations!communication_sms_credit_ledger_entries_reservation_fk!inner(channel)'
+			)
+			.eq('organization_id', organizationId)
+			.eq('entry_kind', 'charge')
+			.eq('communication_sms_credit_reservations.channel', 'email')
+			.gte('occurred_at', month.start)
+			.lt('occurred_at', month.end),
+		client
+			.from('communication_sms_credit_reservations')
+			.select('recipient_count')
+			.eq('organization_id', organizationId)
+			.eq('channel', 'email')
+			.eq('state', 'settled')
+			.gte('settled_at', month.start)
+			.lt('settled_at', month.end)
 	]);
 
 	for (const result of [
@@ -103,7 +130,9 @@ export const GET: RequestHandler = async (event) => {
 		adjustmentsResult,
 		reservationsResult,
 		optOutResult,
-		messageEventsResult
+		messageEventsResult,
+		emailChargesResult,
+		emailReservationsResult
 	]) {
 		if (result.error) {
 			console.error('Could not load the SMS usage page.', result.error);
@@ -119,6 +148,8 @@ export const GET: RequestHandler = async (event) => {
 	const reservations = (reservationsResult.data ?? []) as { segment_count: number }[];
 	const events = (messageEventsResult.data ?? []) as { event_kind: string }[];
 	const holdRows = (holdResult.data ?? []) as { scope: string; reason: string }[];
+	const emailCharges = (emailChargesResult.data ?? []) as { amount_minor: number }[];
+	const emailReservations = (emailReservationsResult.data ?? []) as { recipient_count: number }[];
 
 	const sentCount = events.filter((row) => row.event_kind === 'sent').length;
 	const spendableBalanceMinor = spendableBalanceResult.data ?? 0;
@@ -149,6 +180,12 @@ export const GET: RequestHandler = async (event) => {
 				segments: reservations.reduce((sum, row) => sum + row.segment_count, 0),
 				adjustments_count: adjustments.length,
 				adjustments_amount_minor: adjustments.reduce((sum, row) => sum + row.amount_minor, 0)
+			},
+			email_usage_summary: {
+				period_start: month.start,
+				period_end: month.end,
+				retail_charge_minor: emailCharges.reduce((sum, row) => sum - row.amount_minor, 0),
+				recipients: emailReservations.reduce((sum, row) => sum + (row.recipient_count ?? 0), 0)
 			},
 			messaging_health: {
 				period_days: HEALTH_WINDOW_DAYS,

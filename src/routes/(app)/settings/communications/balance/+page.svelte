@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { createInfiniteQuery, createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import {
+		createInfiniteQuery,
+		createMutation,
+		createQuery,
+		useQueryClient
+	} from '@tanstack/svelte-query';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -40,6 +45,7 @@
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import activityIcon from '@tabler/icons/outline/activity.svg?raw';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
+	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -201,12 +207,18 @@
 			/>
 			<KpiCard
 				label="SMS usage this month"
-				value={formatSmsMoney(
-					usage.usage_summary.retail_charge_minor,
-					usage.balance.currency_code
-				)}
+				value={formatSmsMoney(usage.usage_summary.retail_charge_minor, usage.balance.currency_code)}
 				note={`${usage.usage_summary.messages} message${usage.usage_summary.messages === 1 ? '' : 's'} · ${usage.usage_summary.segments} segment${usage.usage_summary.segments === 1 ? '' : 's'}`}
 				icon={activityIcon}
+			/>
+			<KpiCard
+				label="Email usage this month"
+				value={formatSmsMoney(
+					usage.email_usage_summary.retail_charge_minor,
+					usage.balance.currency_code
+				)}
+				note={`${usage.email_usage_summary.recipients} recipient${usage.email_usage_summary.recipients === 1 ? '' : 's'} beyond your plan's allowance`}
+				icon={mailIcon}
 			/>
 			<KpiCard
 				tone={smsAvailabilityTone[usage.availability.state]}
@@ -333,7 +345,11 @@
 		<SectionBlock title="Ledger" icon={historyIcon} level={2}>
 			<FilterBar onClear={entryKindFilter ? () => (entryKindFilter = '') : undefined}>
 				<FilterField label="Entry type" id="balance-ledger-entry-kind">
-					<Select id="balance-ledger-entry-kind" options={entryKindOptions} bind:value={entryKindFilter} />
+					<Select
+						id="balance-ledger-entry-kind"
+						options={entryKindOptions}
+						bind:value={entryKindFilter}
+					/>
 				</FilterField>
 			</FilterBar>
 

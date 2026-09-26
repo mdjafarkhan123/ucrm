@@ -66,29 +66,40 @@ describe('GET /api/settings/communications/sms/usage', () => {
 			data: { currency_code: 'USD', settled_balance_minor: 5000, reserved_balance_minor: 300 },
 			error: null
 		});
-		const charges = tableBuilder({
+		const smsCharges = tableBuilder({
 			data: [{ amount_minor: -150 }, { amount_minor: -50 }],
 			error: null
 		});
 		const adjustments = tableBuilder({ data: [{ amount_minor: 25 }], error: null });
-		const reservations = tableBuilder({
+		const emailCharges = tableBuilder({ data: [{ amount_minor: -75 }], error: null });
+		const smsReservations = tableBuilder({
 			data: [{ segment_count: 1 }, { segment_count: 2 }],
+			error: null
+		});
+		const emailReservations = tableBuilder({
+			data: [{ recipient_count: 3 }, { recipient_count: 4 }],
 			error: null
 		});
 		const messageEvents = tableBuilder({
 			data: [{ event_kind: 'sent' }, { event_kind: 'sent' }, { event_kind: 'delivered' }],
 			error: null
 		});
+		// Ledger entries is queried three times (SMS charges, adjustments, email charges) and reservations
+		// twice (SMS, email), in that call order -- distinguish each by its position among calls to that table.
 		const from = vi.fn((table: string) => {
 			if (table === 'communication_sms_credit_accounts') return account;
 			if (table === 'communication_sms_credit_ledger_entries') {
-				// Called twice: once for charges, once for adjustments. Distinguish by call order.
-				return from.mock.calls.filter((c) => c[0] === 'communication_sms_credit_ledger_entries')
-					.length === 1
-					? charges
-					: adjustments;
+				const callIndex = from.mock.calls.filter(
+					(c) => c[0] === 'communication_sms_credit_ledger_entries'
+				).length;
+				return [smsCharges, adjustments, emailCharges][callIndex - 1];
 			}
-			if (table === 'communication_sms_credit_reservations') return reservations;
+			if (table === 'communication_sms_credit_reservations') {
+				const callIndex = from.mock.calls.filter(
+					(c) => c[0] === 'communication_sms_credit_reservations'
+				).length;
+				return [smsReservations, emailReservations][callIndex - 1];
+			}
 			if (table === 'communication_message_events') return messageEvents;
 			throw new Error(`Unexpected table ${table}`);
 		});
@@ -123,6 +134,10 @@ describe('GET /api/settings/communications/sms/usage', () => {
 			segments: 3,
 			adjustments_count: 1,
 			adjustments_amount_minor: 25
+		});
+		expect(payload.email_usage_summary).toMatchObject({
+			retail_charge_minor: 75,
+			recipients: 7
 		});
 		expect(payload.messaging_health).toMatchObject({
 			sent: 2,

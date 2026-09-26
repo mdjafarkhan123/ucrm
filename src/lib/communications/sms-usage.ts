@@ -23,6 +23,13 @@ export type SmsUsageSummary = {
 	adjustments_amount_minor: number;
 };
 
+export type EmailUsageSummary = {
+	period_start: string;
+	period_end: string;
+	retail_charge_minor: number;
+	recipients: number;
+};
+
 export type SmsMessagingHealth = {
 	period_days: number;
 	sent: number;
@@ -41,6 +48,7 @@ export type SmsUsageHome = {
 	balance: SmsUsageBalance;
 	availability: SmsAvailability;
 	usage_summary: SmsUsageSummary;
+	email_usage_summary: EmailUsageSummary;
 	messaging_health: SmsMessagingHealth;
 };
 
