@@ -9,12 +9,14 @@ import {
 } from '$lib/server/api/errors';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
-// Which address an email preview will say it comes "From". The enqueue functions own the real choice and
-// check it again at send time; this read mirrors their two rules so the preview can name the address:
-// - `manual` -- a message or inbox reply goes from the sender assigned to the person writing it
-//   (enqueue_manual_communication_email, enqueue_conversation_reply_email).
+// Which address an email preview will say it comes "From". The enqueue functions own the real choice and check
+// it again at send time; this read reaches the same answer two ways:
+// - `manual` -- a message or inbox reply. manual_email_sender_preview calls the very resolver the enqueue
+//   functions call (enqueue_manual_communication_email, enqueue_conversation_reply_email), which prefers the
+//   writer's own sender and falls back to the business address, so the preview cannot disagree with the send.
 // - `business` -- a quote, invoice or receipt goes from the business's default automated sender
-//   (enqueue_quote_communication_email, enqueue_invoice_communication_email).
+//   (enqueue_quote_communication_email, enqueue_invoice_communication_email); that rule is a single filter and
+//   is still mirrored here.
 // A sender whose domain is not fully verified cannot send, so it resolves to null here as it fails there.
 // The owner client is needed because domain readiness is only visible to connection managers under RLS;
 // the reply names nothing beyond the address a customer would see on the email itself.
@@ -28,19 +30,25 @@ export const GET: RequestHandler = async (event) => {
 	}
 
 	const client = getOwnerSupabaseClient();
-	let query = client
+
+	if (kind === 'manual') {
+		const { data, error } = await client
+			.rpc('manual_email_sender_preview', {
+				target_organization_id: context.organization.id,
+				target_actor_user_id: context.user.id
+			})
+			.maybeSingle();
+		if (error) return databaseError();
+		return json({ sender: data ?? null }, { headers: PRIVATE_READ_HEADERS });
+	}
+
+	const { data: sender, error } = await client
 		.from('communication_email_senders')
 		.select('display_name, email_address, domain_id')
 		.eq('organization_id', context.organization.id)
-		.eq('lifecycle_state', 'enabled');
-	query =
-		kind === 'manual'
-			? query
-					.eq('assigned_user_id', context.user.id)
-					.eq('allows_manual', true)
-					.order('is_organization_default', { ascending: false })
-			: query.eq('allows_automated', true).eq('is_organization_default', true);
-	const { data: sender, error } = await query
+		.eq('lifecycle_state', 'enabled')
+		.eq('allows_automated', true)
+		.eq('is_organization_default', true)
 		.order('created_at')
 		.order('id')
 		.limit(1)

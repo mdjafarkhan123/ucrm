@@ -19936,6 +19936,13 @@ export type Database = {
 				};
 				Returns: string;
 			};
+			manual_email_sender_preview: {
+				Args: { target_actor_user_id: string; target_organization_id: string };
+				Returns: {
+					display_name: string;
+					email_address: string;
+				}[];
+			};
 			manual_enroll_automation: {
 				Args: {
 					p_actor_user_id: string;

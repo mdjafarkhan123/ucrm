@@ -413,6 +413,31 @@ to this page.
 **Platform Owner alerting.** A new request raises a "Waiting on you" alert on the Jafar home page linking to that
 organization, and adds an "Email setup requested" attention reason to the organizations list filter.
 
+### Request lifecycle and sender fallback (approved 2026-09-26)
+
+**A domain is required to request.** UCRM has no shared fallback sending identity, so an organization with no
+website domain of its own cannot send operational email at all. The request form therefore requires a domain the
+business owns; a contractor without one sees an explanation instead of a submit button and no request is created.
+
+**Cancel, not edit.** Following Twilio toll-free verification (delete while pending, no edit, resubmit goes to the
+back of the queue) and AWS Support cases (no cancel once an agent is working; resolve or reply instead):
+
+- while the request is still waiting on Jafar, the contractor may cancel it outright;
+- once Jafar starts activation the Cancel action is gone — a half-written DNS and SES provisioning must not be
+  abandoned — and the card says setup is underway and to make contact;
+- a request is never editable; a wrong domain is cancelled and re-requested;
+- after Jafar closes a request the contractor may always send a new one.
+
+**Sender fallback follows Jobber.** Jobber never fails a team member's email for a missing identity: all Jobber
+mail leaves Jobber's own address and the contractor only chooses where replies return, defaulting to the sender
+and falling back to a named team member or the company email address. UCRM matches the guarantee, not the shared
+domain: when a staff member sends manual email or a Conversation reply and has no enabled manual sender assigned
+to them, the send uses the organization's default manual sender rather than refusing. The customer sees the
+business display name and address; the opaque per-conversation reply alias is unchanged, so the reply still
+returns to the same Conversation. An organization with no usable default sender at all still refuses, because
+there is nothing to send from. No nagging banner is needed, and per-person sender assignment stays available for
+contractors who want named addresses.
+
 ## Campaign ownership
 
 The Communications campaign owns provider transport, domains, sender identities, allowances, safety,
