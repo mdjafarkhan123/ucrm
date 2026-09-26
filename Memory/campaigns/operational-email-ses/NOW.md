@@ -4,21 +4,21 @@ Goal: contractor email runs only on Amazon SES; Brevo stays only for platform/Ja
 
 ## State
 
-Parts 1–4b done (4b D live-proven 2026-09-26 on Raad). Active: Part 6 step 4 (ROADMAP row 6).
+Parts 1–4b done. Part 6 done 2026-09-26 (step 5 live on Raad: fresh Set up, office@ sender, delivered send,
+Gmail reply accepted into the Inbox under Greenfield Property Group).
 
 ## Exact next action
 
-Step 5 in progress on Raad (Jafar approved 2026-09-26). Done: office@ sender removed; Everyday email removed
-(fix `8aa2d33`) and re-set up; mail.test + reply.test verified -> Everyday email "Ready" (2026-09-26).
-Concurrent-session worry cleared by Jafar. Next (needs Raad owner/admin signed in; Chrome is signed in as
-Jafar = field member there; Claude may not type live passwords -> ask Jafar to sign in):
-1. /settings/communications/email: recreate sender office@mail.test.upliftcontractor.com "Raad LTD Office",
-   assigned Jafar Khan, default, manual on, automated on. 2. Live send + Gmail reply into the inbox.
-After Part 6: Part 5, then Part 7. Open: delete unused Brevo domain notifications.upliftcontractor.com? (ask)
+1. Ask Jafar two yes/no questions, then act: (a) delete unused Brevo domain notifications.upliftcontractor.com
+   (keep contact. — SYSTEM_FROM_EMAIL uses it); (b) purge the 2 stale 2026-09-25 messages in
+   `ucrm-ses-inbound-dlq` (replies to "SES live test 2", already re-filed).
+2. Then start Part 5 (contractor request-setup flow; ROADMAP row 5) — product decisions, use grilling.
+Small UI notes seen in step 5 (not fixed): sender "Assigned team member" list shows 4 "Unnamed team member"
+rows (role test users without names); email preview shows "From: Your eligible email identity" not the address.
+Still owed from ROADMAP row 6: Marketing M6e burst check. Part 7 after Part 5.
 
 ## Blockers
 
-Step 4 needs Jafar's explicit yes (irreversible provider deletes). AWS: `aws --profile ucrm` (renew `aws sso
-login --sso-session ucrm`). Check lives on the Jafar panel org page → Communications tab.
+AWS: `aws --profile ucrm` (renew `aws sso login --sso-session ucrm`).
 
 Resume: `continue operational email ses`.
