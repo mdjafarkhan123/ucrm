@@ -6,7 +6,8 @@ export const organizationAttentionReasons = [
 	'administrator_missing',
 	'administrator_ownership_unclear',
 	'setup_or_recovery_failed',
-	'legacy_review'
+	'legacy_review',
+	'email_setup_requested'
 ] as const;
 
 export const organizationDirectoryQuerySchema = z.object({

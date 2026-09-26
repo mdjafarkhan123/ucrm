@@ -497,3 +497,48 @@ export const emailTemplateUpdateSchema = z
 			value.body !== undefined,
 		{ message: 'Nothing to change.', path: ['name'] }
 	);
+
+// Contractors paste whatever they have: "https://www.Acme.com/contact", "www.acme.com". Reduce it to the bare
+// domain the business owns, then require a real domain name.
+function bareDomain(value: unknown) {
+	if (typeof value !== 'string') return value;
+	return value
+		.trim()
+		.toLowerCase()
+		.replace(/^[a-z]+:\/\//, '')
+		.replace(/^www\./, '')
+		.replace(/[/?#].*$/, '')
+		.replace(/:\d+$/, '');
+}
+
+export const emailSetupRequestSchema = z.object({
+	root_domain: z.preprocess(
+		bareDomain,
+		z
+			.string()
+			.min(4, 'Enter the website domain your business owns, such as yourbusiness.com.')
+			.max(253)
+			.regex(
+				/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/,
+				'Enter the website domain your business owns, such as yourbusiness.com.'
+			)
+	),
+	mailbox_provider: z.enum(
+		['google_workspace', 'microsoft_365', 'godaddy', 'hostinger', 'other', 'none'],
+		{ message: 'Choose where your business email lives today.' }
+	),
+	note: z
+		.string()
+		.trim()
+		.max(1000, 'Keep the note under 1,000 characters.')
+		.optional()
+		.transform((value) => value || null)
+});
+
+export const emailSetupCloseSchema = z.object({
+	note: z
+		.string()
+		.trim()
+		.min(1, 'Write a note the contractor will see.')
+		.max(1000, 'Keep the note under 1,000 characters.')
+});

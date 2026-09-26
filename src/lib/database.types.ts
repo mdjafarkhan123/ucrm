@@ -2301,6 +2301,56 @@ export type Database = {
 					}
 				];
 			};
+			communication_email_setup_requests: {
+				Row: {
+					closed_at: string | null;
+					closed_note: string | null;
+					created_at: string;
+					id: string;
+					mailbox_provider: string;
+					note: string | null;
+					organization_id: string;
+					requested_by: string | null;
+					root_domain: string;
+					status: string;
+					updated_at: string;
+				};
+				Insert: {
+					closed_at?: string | null;
+					closed_note?: string | null;
+					created_at?: string;
+					id?: string;
+					mailbox_provider: string;
+					note?: string | null;
+					organization_id: string;
+					requested_by?: string | null;
+					root_domain: string;
+					status?: string;
+					updated_at?: string;
+				};
+				Update: {
+					closed_at?: string | null;
+					closed_note?: string | null;
+					created_at?: string;
+					id?: string;
+					mailbox_provider?: string;
+					note?: string | null;
+					organization_id?: string;
+					requested_by?: string | null;
+					root_domain?: string;
+					status?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_email_setup_requests_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			communication_email_suppression_removal_requests: {
 				Row: {
 					consent_confirmed: boolean;
@@ -14582,6 +14632,56 @@ export type Database = {
 			};
 		};
 		Views: {
+			communication_email_setup_requests_waiting: {
+				Row: {
+					closed_at: string | null;
+					closed_note: string | null;
+					created_at: string | null;
+					id: string | null;
+					mailbox_provider: string | null;
+					note: string | null;
+					organization_id: string | null;
+					requested_by: string | null;
+					root_domain: string | null;
+					status: string | null;
+					updated_at: string | null;
+				};
+				Insert: {
+					closed_at?: string | null;
+					closed_note?: string | null;
+					created_at?: string | null;
+					id?: string | null;
+					mailbox_provider?: string | null;
+					note?: string | null;
+					organization_id?: string | null;
+					requested_by?: string | null;
+					root_domain?: string | null;
+					status?: string | null;
+					updated_at?: string | null;
+				};
+				Update: {
+					closed_at?: string | null;
+					closed_note?: string | null;
+					created_at?: string | null;
+					id?: string | null;
+					mailbox_provider?: string | null;
+					note?: string | null;
+					organization_id?: string | null;
+					requested_by?: string | null;
+					root_domain?: string | null;
+					status?: string | null;
+					updated_at?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_email_setup_requests_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			job_list_rows: {
 				Row: {
 					billing_timing: string | null;
@@ -15974,6 +16074,78 @@ export type Database = {
 				SetofOptions: {
 					from: '*';
 					to: 'import_batches';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_email_setup_request_cancel: {
+				Args: { p_organization_id: string; p_request_id: string };
+				Returns: {
+					closed_at: string | null;
+					closed_note: string | null;
+					created_at: string;
+					id: string;
+					mailbox_provider: string;
+					note: string | null;
+					organization_id: string;
+					requested_by: string | null;
+					root_domain: string;
+					status: string;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_email_setup_requests';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_email_setup_request_close: {
+				Args: { p_note: string; p_request_id: string };
+				Returns: {
+					closed_at: string | null;
+					closed_note: string | null;
+					created_at: string;
+					id: string;
+					mailbox_provider: string;
+					note: string | null;
+					organization_id: string;
+					requested_by: string | null;
+					root_domain: string;
+					status: string;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_email_setup_requests';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_email_setup_request_create: {
+				Args: {
+					p_actor_id: string;
+					p_mailbox_provider: string;
+					p_note: string;
+					p_organization_id: string;
+					p_root_domain: string;
+				};
+				Returns: {
+					closed_at: string | null;
+					closed_note: string | null;
+					created_at: string;
+					id: string;
+					mailbox_provider: string;
+					note: string | null;
+					organization_id: string;
+					requested_by: string | null;
+					root_domain: string;
+					status: string;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_email_setup_requests';
 					isOneToOne: true;
 					isSetofReturn: false;
 				};

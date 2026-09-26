@@ -22,7 +22,8 @@
 		| 'administrator_missing'
 		| 'administrator_ownership_unclear'
 		| 'setup_or_recovery_failed'
-		| 'legacy_review';
+		| 'legacy_review'
+		| 'email_setup_requested';
 	type Organization = {
 		id: string;
 		name: string;
@@ -56,7 +57,8 @@
 		administrator_ownership_unclear: { label: 'Multiple owners', tone: 'warning' },
 		setup_or_recovery_failed: { label: 'Setup or recovery issue', tone: 'critical' },
 		expiring_soon: { label: 'Expiring soon', tone: 'warning' },
-		legacy_review: { label: 'Needs review', tone: 'warning' }
+		legacy_review: { label: 'Needs review', tone: 'warning' },
+		email_setup_requested: { label: 'Email setup requested', tone: 'warning' }
 	};
 	const attentionReasonOrder = Object.keys(attentionMeta) as AttentionReason[];
 
@@ -72,7 +74,8 @@
 			administrator_missing: 0,
 			administrator_ownership_unclear: 0,
 			setup_or_recovery_failed: 0,
-			legacy_review: 0
+			legacy_review: 0,
+			email_setup_requested: 0
 		}
 	};
 

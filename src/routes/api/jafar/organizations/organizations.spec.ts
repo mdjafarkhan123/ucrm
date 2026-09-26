@@ -33,7 +33,8 @@ function directoryResult(overrides: Partial<Record<string, unknown>> = {}) {
 				administrator_missing: 0,
 				administrator_ownership_unclear: 0,
 				setup_or_recovery_failed: 0,
-				legacy_review: 0
+				legacy_review: 0,
+				email_setup_requested: 0
 			}
 		},
 		...overrides
@@ -57,7 +58,9 @@ describe('platform owner organization directory GET boundary', () => {
 	it('rejects an invalid attention reason filter', async () => {
 		mockedOwnerSession.mockResolvedValue(session());
 
-		const response = await GET(event('http://localhost/api/jafar/organizations?attention_reason=bogus'));
+		const response = await GET(
+			event('http://localhost/api/jafar/organizations?attention_reason=bogus')
+		);
 
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
@@ -75,7 +78,9 @@ describe('platform owner organization directory GET boundary', () => {
 	it('rejects a malformed page cursor', async () => {
 		mockedOwnerSession.mockResolvedValue(session());
 
-		const response = await GET(event('http://localhost/api/jafar/organizations?cursor=not-base64-json'));
+		const response = await GET(
+			event('http://localhost/api/jafar/organizations?cursor=not-base64-json')
+		);
 
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
@@ -125,7 +130,10 @@ describe('platform owner organization directory GET boundary', () => {
 		mockedClient.mockReturnValue({ rpc } as never);
 
 		const cursor = Buffer.from(
-			JSON.stringify({ created_at: '2026-08-01T00:00:00Z', id: '123e4567-e89b-12d3-a456-426614174000' }),
+			JSON.stringify({
+				created_at: '2026-08-01T00:00:00Z',
+				id: '123e4567-e89b-12d3-a456-426614174000'
+			}),
 			'utf8'
 		).toString('base64url');
 
@@ -145,7 +153,10 @@ describe('platform owner organization directory GET boundary', () => {
 		mockedOwnerSession.mockResolvedValue(session());
 		const rpc = vi.fn().mockResolvedValue({
 			data: directoryResult({
-				next_cursor: { created_at: '2026-08-01T00:00:00Z', id: '123e4567-e89b-12d3-a456-426614174000' }
+				next_cursor: {
+					created_at: '2026-08-01T00:00:00Z',
+					id: '123e4567-e89b-12d3-a456-426614174000'
+				}
 			}),
 			error: null
 		});
@@ -156,7 +167,10 @@ describe('platform owner organization directory GET boundary', () => {
 
 		expect(typeof body.next_cursor).toBe('string');
 		const decoded = JSON.parse(Buffer.from(body.next_cursor, 'base64url').toString('utf8'));
-		expect(decoded).toEqual({ created_at: '2026-08-01T00:00:00Z', id: '123e4567-e89b-12d3-a456-426614174000' });
+		expect(decoded).toEqual({
+			created_at: '2026-08-01T00:00:00Z',
+			id: '123e4567-e89b-12d3-a456-426614174000'
+		});
 	});
 
 	it('returns organizations and totals from the directory function', async () => {
@@ -190,7 +204,9 @@ describe('platform owner organization directory GET boundary', () => {
 
 	it('returns a safe server error when the directory function fails', async () => {
 		mockedOwnerSession.mockResolvedValue(session());
-		const rpc = vi.fn().mockResolvedValue({ data: null, error: { message: 'internal database details' } });
+		const rpc = vi
+			.fn()
+			.mockResolvedValue({ data: null, error: { message: 'internal database details' } });
 		mockedClient.mockReturnValue({ rpc } as never);
 
 		const response = await GET(event());

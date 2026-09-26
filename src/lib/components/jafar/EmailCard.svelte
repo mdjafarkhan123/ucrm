@@ -8,6 +8,8 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import { mailboxProviderLabel, type EmailSetupRequest } from '$lib/communications/email-setup';
 
 	type DnsStatus = 'unchecked' | 'pending' | 'passing' | 'failing';
 	type RowStatus = 'not_set_up' | 'setting_up' | 'ready' | 'problem' | 'removal_unfinished';
@@ -104,6 +106,26 @@
 		staleTime: 30_000
 	}));
 
+	// The contractor's open ask, until Jafar sets the domain up or closes it. Setting up is done with the same
+	// Set up action below, prefilled with the domain they asked for.
+	const requestKey = $derived(['jafar', 'organizations', organizationId, 'email-setup-request']);
+	const requestQuery = createQuery<{ request: EmailSetupRequest | null; error?: string }>(() => ({
+		queryKey: requestKey,
+		queryFn: async () => {
+			const response = await fetch(
+				`/api/jafar/organizations/${organizationId}/communications/email-setup`
+			);
+			const result = (await response.json()) as {
+				request: EmailSetupRequest | null;
+				error?: string;
+			};
+			if (!response.ok) throw new Error(result.error ?? 'The setup request could not be loaded.');
+			return result;
+		},
+		staleTime: 30_000
+	}));
+	const setupRequest = $derived(requestQuery.data?.request ?? null);
+
 	const marketingKey = $derived(['jafar', 'organizations', organizationId, 'marketing-domains']);
 	const marketingQuery = createQuery<MarketingListResponse>(() => ({
 		queryKey: marketingKey,
@@ -188,7 +210,7 @@
 		feedbackMessage = '';
 		everydayFieldErrors = {};
 		everydayActivationResult = null;
-		everydayRootDomain = sending?.dns_zone ?? '';
+		everydayRootDomain = sending?.dns_zone ?? setupRequest?.root_domain ?? '';
 		everydaySetupOpen = true;
 	}
 	function closeEverydaySetup() {
@@ -227,7 +249,10 @@
 		onError: (error) => (feedbackError = error.message),
 		onSuccess: async (result) => {
 			everydayActivationResult = result;
-			await refreshOperational();
+			await Promise.all([
+				refreshOperational(),
+				queryClient.invalidateQueries({ queryKey: requestKey })
+			]);
 		}
 	}));
 
@@ -282,6 +307,59 @@
 			reasons.push('This domain needs attention. Run Check for the latest state.');
 		return reasons;
 	});
+
+	// ---- Contractor's request: Close request ----
+	let closeRequestOpen = $state(false);
+	let closeNote = $state('');
+	let closeFieldErrors = $state<Record<string, string>>({});
+	function openCloseRequest() {
+		feedbackError = '';
+		feedbackMessage = '';
+		closeNote = '';
+		closeFieldErrors = {};
+		closeRequestOpen = true;
+	}
+	function dismissCloseRequest() {
+		if (closeRequestMutation.isPending) return;
+		closeRequestOpen = false;
+	}
+	const closeRequestMutation = createMutation<MutationResponse, Error, void>(() => ({
+		mutationFn: async () => {
+			if (!setupRequest) throw new Error('There is no open request to close.');
+			const response = await fetch(
+				`/api/jafar/organizations/${organizationId}/communications/email-setup/${setupRequest.id}/close`,
+				{
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify({ note: closeNote })
+				}
+			);
+			const result = (await response.json()) as MutationResponse;
+			if (!response.ok) {
+				closeFieldErrors = result.field_errors ?? {};
+				throw new Error(result.error ?? 'The request could not be closed.');
+			}
+			return result;
+		},
+		onMutate: () => {
+			closeFieldErrors = {};
+			feedbackError = '';
+		},
+		onError: (error) => (feedbackError = error.message),
+		onSuccess: async () => {
+			closeRequestOpen = false;
+			feedbackMessage = 'Request closed. The contractor can see your note.';
+			await queryClient.invalidateQueries({ queryKey: requestKey });
+		}
+	}));
+	function submitCloseRequest(event: SubmitEvent) {
+		event.preventDefault();
+		if (!closeNote.trim()) {
+			closeFieldErrors = { note: 'Write a note the contractor will see.' };
+			return;
+		}
+		closeRequestMutation.mutate();
+	}
 
 	// ---- Everyday email + replies: Remove (sending and customer replies together) ----
 	let removalOpen = $state(false);
@@ -609,6 +687,7 @@
 			marketingSetupOpen ||
 			everydayProblemOpen ||
 			marketingProblemOpen ||
+			closeRequestOpen ||
 			removalOpen
 	);
 
@@ -638,6 +717,29 @@
 	{#if feedbackError && !dialogOpen}<p class="email-card__error" role="alert">
 			{feedbackError}
 		</p>{/if}
+
+	{#if setupRequest}
+		<div class="email-card__request" role="status">
+			<div class="email-card__row-main">
+				<div class="email-card__row-heading">
+					<strong>Email setup requested</strong>
+					<Badge status="warning">Waiting on you</Badge>
+				</div>
+				<p>
+					{setupRequest.root_domain} · email lives at {mailboxProviderLabel(
+						setupRequest.mailbox_provider
+					)} · asked {formatTime(setupRequest.created_at)}
+				</p>
+				{#if setupRequest.note}<p class="email-card__request-note">“{setupRequest.note}”</p>{/if}
+			</div>
+			<div class="email-card__row-actions">
+				<Button size="small" onclick={openEverydaySetup}>Set up</Button>
+				<Button size="small" variant="secondary" variation="subtle" onclick={openCloseRequest}
+					>Close request</Button
+				>
+			</div>
+		</div>
+	{/if}
 
 	<div class="email-card__rows">
 		{#if operationalQuery.isPending}
@@ -754,6 +856,35 @@
 					variant="secondary"
 					variation="subtle"
 					onclick={closeEverydaySetup}>Cancel</Button
+				>
+			</div>
+		</form>
+	{/if}
+</Dialog>
+
+<Dialog open={closeRequestOpen} title="Close request" onClose={dismissCloseRequest}>
+	{#if closeRequestOpen}
+		<form class="email-card__form" onsubmit={submitCloseRequest}>
+			<p>
+				The contractor sees this note on their Email settings page. They can send a new request any
+				time.
+			</p>
+			<Textarea
+				id="close-request-note"
+				label="Note for the contractor"
+				rows={4}
+				maxlength={1000}
+				bind:value={closeNote}
+				invalid={Boolean(closeFieldErrors.note)}
+				errorMessage={closeFieldErrors.note}
+			/>
+			{#if !closeFieldErrors.note}{@render dialogError()}{/if}
+			<div class="email-card__dialog-actions">
+				<Button type="submit" loading={closeRequestMutation.isPending}>Close request</Button><Button
+					type="button"
+					variant="secondary"
+					variation="subtle"
+					onclick={dismissCloseRequest}>Keep open</Button
 				>
 			</div>
 		</form>
@@ -971,6 +1102,20 @@
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		background: var(--color-surface--background);
+	}
+	.email-card__request {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-base);
+		padding: var(--space-slim) var(--space-base);
+		border-radius: var(--radius-base);
+		color: var(--color-warning--onSurface);
+		background: var(--color-warning--surface);
+	}
+	.email-card__request-note {
+		font-style: italic;
 	}
 	.email-card__row-main {
 		display: grid;

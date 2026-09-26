@@ -4,36 +4,24 @@ Goal: contractor email runs only on Amazon SES; Brevo stays only for platform/Ja
 
 ## State
 
-Parts 1–4b, 5A and 6 done. Part 5 product decisions settled with Jafar 2026-09-26 and written into
-`docs/contractor-email-contract.md` → "Request lifecycle and sender fallback": a domain is required to request,
-cancel only while the request waits on Jafar, never editable, re-request always allowed, and manual sends fall
-back to the business address (Jobber's guarantee). 5A shipped that fallback (`1410c2a9`).
+Parts 1–4b, 5A and 6 done. Part 5B is BUILT and checked but NOT yet browser-verified. Design fork decided
+2026-09-26: the request stores only open / cancelled / declined / fulfilled; "Setting up" and "Ready" are read
+from the sending-domain rows (`src/lib/server/communications/email-setup-requests.ts`, `deriveEmailSetup`).
+Shipped: table + commands + waiting view (`20260926230000_email_setup_requests.sql`), directory reason
+`email_setup_requested` (`20260926231000_...`), both applied live; contractor routes
+`/api/settings/communications/email-setup`, Jafar routes under `.../communications/email-setup`;
+contractor card `src/lib/components/settings/EmailSetupCard.svelte`; Jafar request block in `EmailCard.svelte`;
+"Waiting on you" alert raised on request (in-app only, not emailed). Unit + SQL smoke checks pass.
 
 ## Exact next action
 
-Build Part 5B, the contractor request-setup flow (ROADMAP row 5B). Not yet started, nothing designed in code.
-Approved screens: contract section "Email setup screens". Pieces, in this order:
-
-1. Request table + RPCs: one live request per organization (partial unique index). Open design fork, decide
-   first: either the request row tracks setup progress itself (needs two lines added to whatever command the
-   owner's Set up calls, plus a transition when a sending domain verifies), or it stays a plain ask with only
-   `open` / `cancelled` / `declined` and both cards derive "Setting up" and "Ready" from the existing
-   `communication_email_domains` rows. Deriving avoids editing Part 2a/3 provisioning code and cannot drift,
-   but every place that counts open requests (owner card block, Jafar alert, attention filter) must then also
-   exclude organizations that already have a sending domain. Follow the in-house precedent
-   `communication_sms_registrations` (baseline line 20347) for table shape: one status column with a check, a
-   composite lifecycle check tying status to which timestamps and notes may be set, server-only RLS
-   (`revoke all from public, anon, authenticated`, `grant all to service_role`), writes through named commands.
-   Gate on `requireOrganizationAdmin`, as the SMS registration routes do, which matches the contract's
-   "owners and admins".
-2. Contractor Settings → Email card at `src/routes/(app)/settings/communications/email/+page.svelte`, which
-   today dead-ends at "Ask your platform owner to provision and verify a sending domain".
-3. Owner Email card request block (`src/lib/components/jafar/EmailCard.svelte`): Set up prefilled with the
-   requested domain, plus Close request.
-4. Jafar alerting: "Waiting on you" notification (existing platform notifications feed the panel in
-   `src/routes/jafar/(protected)/+page.svelte`) and an `email_setup_requested` attention reason in
-   `src/routes/jafar/(protected)/organizations/+page.svelte` + `src/routes/api/jafar/organizations/+server.ts`.
-5. Browser-verify the whole flow on Raad, then Part 7.
+Browser-verify 5B (Chrome extension was not connected when built; ask Jafar to reconnect it). Raad LTD already
+has a VERIFIED sending domain, so its contractor card is correctly hidden and it cannot show the request states
+for real. Do not tear down Raad's live domain to test. Either mock `/api/settings/communications/email-setup`
+responses in the browser to check the four card states + the request dialog + Cancel, and check the Jafar
+EmailCard block and the "Email setup requested" filter the same way, or ask Jafar for an org with no domain
+(Jaaroweb has none; no login known). Real Raad POST should answer 409 "already has a sending domain".
+Then Part 7 (see ROADMAP).
 
 ## Notes that change the next action
 

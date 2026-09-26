@@ -13,6 +13,7 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
+	import EmailSetupCard from '$lib/components/settings/EmailSetupCard.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import {
 		communicationSendersKey,
@@ -424,6 +425,8 @@
 			{/if}
 		</SectionBlock>
 
+		<EmailSetupCard />
+
 		<SectionBlock
 			title="Sender identities"
 			hint="Domains are provisioned and verified by UCRM."
@@ -445,7 +448,7 @@
 			{:else if !domains.length}
 				<EmptyState
 					title="A sending domain is needed first"
-					description="Ask your platform owner to provision and verify a sending domain before adding an email identity."
+					description="Request email setup above. You can add senders once UCRM has set up and verified your domain."
 				/>
 			{:else if !canCreate}
 				<p class="email-identities__notice" role="status">
