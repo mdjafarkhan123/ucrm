@@ -7,11 +7,11 @@ Approved by Jafar 2026-09-25. Product truth: `docs/google-review-campaign-owner-
 2. **Customer feedback page** — Done 2026-09-26 (routed and two-choice journeys, submit, revisit and Google
    exit verified in a real browser against the live database; `/v/[token]`, `review_requests`,
    `review_feedback`). Settings "Preview feedback page" still needs Jafar's glance while signed in.
-3. **Manual "Request a review"** — Planned; needs 2. On completed job and client page; contact, channel (SMS
-   first), style, send now/schedule; real delivery states; fieldworker only on own jobs.
-4. **Automation** — Planned; needs 3. New job subject in the existing automation engine; enrol on close with
-   every Visit completed or every N completed visits (recurring); 6-month cooldown wins; reminders 3 and 5 days;
-   brief's stop rules; cannot activate without a saved Google link. Run performance-review design branch first.
+3. **Manual "Request a review"** — Done 2026-09-26 (`9654e1e`, `a690456`). Proven live as owner (send, schedule,
+   cancel, client-page job pick) and as field member (button only on a closed job they were assigned to).
+4. **Reminders + automatic ask** — In progress; needs 3. Decisions made 2026-09-26 (brief § How the automation
+   is set up). 4A reminder plan for every request, then 4B automatic ask as an Automations recipe. Packet:
+   `parts/04-automation.md`. Gate: both proven live; performance design + verification done.
 5. **Reviews workspace** — Planned; needs 3. Menu item "Reviews" already live (2026-09-26) but points at
    `/reviews/settings` and is probed by `reviews.manage`; move it to the workspace and its view permission. Top-level; Requests + Private feedback tabs;
    recovery items New → Contacting customer → Resolved → Closed; owner alerts; client/job history.

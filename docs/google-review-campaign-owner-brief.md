@@ -42,6 +42,20 @@ Every request link, whatever the channel (SMS or email), opens the UCRM feedback
 - The default customer cooldown is one automatic review-request sequence per client every six months. The cooldown applies to the automation only; manual requests are not blocked by it (HighLevel documents no cooldown on manual sends).
 - UCRM provides three editable starting styles for each channel (SMS text, and email subject and body): **Friendly**, **Professional**, and **Short**.
 
+### How the automation is set up (owner decisions 2026-09-26, following HighLevel)
+
+- **One reminder plan for every request.** Following HighLevel's Reputation settings, the Reviews settings page
+  holds the request behavior: when the first message goes after a request is created (default **right away**;
+  the contractor may choose a delay), how many reminders follow, how many days apart, and the message for the
+  first send and each reminder. The plan applies to every request, whether sent by hand or automatically.
+- **The automatic ask is an automation.** Following HighLevel's Workflow "Review Request" action, automatic asking
+  is a ready-made recipe in Automations: **When a job's work is completed → Send a review request**. The
+  contractor turns it on there; it cannot be activated until a Google review link is saved.
+- **Six-month rule counts automatic asks only.** HighLevel documents no limit on asking again; UCRM keeps its
+  six-month automatic cooldown (from Jobber), but a hand-sent request neither counts toward it nor is blocked by it.
+- **Recurring jobs are off by default.** A recurring job never asks automatically until the contractor picks
+  "after every N completed visits".
+
 ### Channel choice
 
 - The contractor chooses one channel for the automation: **SMS** (default) or **Email**. Each manual request can also choose its channel, starting from SMS.
