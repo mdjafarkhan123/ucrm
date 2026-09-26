@@ -666,6 +666,41 @@ export const communicationSmsRetailRateSchema = z.object({
 		.transform((value) => value || undefined)
 });
 
+// Part 7B: the over-allowance email retail price Jafar sets, in currency major units per 1,000 recipients.
+// Same immutable-version shape as communicationSmsRetailRateSchema, minus the SMS-only destination/sender/
+// message-unit dimensions -- email has one price per currency, not one per route.
+export const communicationEmailRetailRateSchema = z.object({
+	currency_code: z
+		.string()
+		.trim()
+		.toUpperCase()
+		.regex(/^[A-Z]{3}$/, 'Enter a 3-letter currency code.')
+		.default('USD'),
+	retail_rate_major: z
+		.number()
+		.positive('Enter a rate greater than zero.')
+		.max(1000, 'That rate is too large.'),
+	provider_cost_major: z
+		.number()
+		.min(0, 'Provider cost cannot be negative.')
+		.max(1000, 'That cost is too large.')
+		.optional(),
+	effective_from: z
+		.string()
+		.refine((value) => !Number.isNaN(Date.parse(value)), 'Enter a valid effective date and time.')
+		.refine(
+			(value) => Date.parse(value) >= Date.now(),
+			'The effective date must be now or in the future.'
+		)
+		.optional(),
+	note: z
+		.string()
+		.trim()
+		.max(2000, 'Keep the note under 2,000 characters.')
+		.optional()
+		.transform((value) => value || undefined)
+});
+
 export function zodOwnerFieldErrors(error: z.ZodError) {
 	return Object.fromEntries(
 		error.issues.map((issue) => [String(issue.path[0] ?? 'form'), issue.message] as const)

@@ -6,6 +6,31 @@ export type Database = {
 	__InternalSupabase: {
 		PostgrestVersion: '14.5';
 	};
+	graphql_public: {
+		Tables: {
+			[_ in never]: never;
+		};
+		Views: {
+			[_ in never]: never;
+		};
+		Functions: {
+			graphql: {
+				Args: {
+					extensions?: Json;
+					operationName?: string;
+					query?: string;
+					variables?: Json;
+				};
+				Returns: Json;
+			};
+		};
+		Enums: {
+			[_ in never]: never;
+		};
+		CompositeTypes: {
+			[_ in never]: never;
+		};
+	};
 	public: {
 		Tables: {
 			access_audit_events: {
@@ -2169,6 +2194,39 @@ export type Database = {
 					}
 				];
 			};
+			communication_email_retail_rates: {
+				Row: {
+					created_at: string;
+					currency_code: string;
+					effective_from: string;
+					id: string;
+					note: string | null;
+					provider_cost_major: number | null;
+					retail_rate_major: number;
+					set_by: string;
+				};
+				Insert: {
+					created_at?: string;
+					currency_code?: string;
+					effective_from?: string;
+					id?: string;
+					note?: string | null;
+					provider_cost_major?: number | null;
+					retail_rate_major: number;
+					set_by: string;
+				};
+				Update: {
+					created_at?: string;
+					currency_code?: string;
+					effective_from?: string;
+					id?: string;
+					note?: string | null;
+					provider_cost_major?: number | null;
+					retail_rate_major?: number;
+					set_by?: string;
+				};
+				Relationships: [];
+			};
 			communication_email_senders: {
 				Row: {
 					allows_automated: boolean;
@@ -3661,13 +3719,14 @@ export type Database = {
 					price_check_attempts: number;
 					price_check_available_at: string;
 					price_checked_at: string | null;
+					recipient_count: number | null;
 					reported_provider_price_currency: string | null;
 					reported_provider_price_minor: number | null;
 					reported_segment_count: number | null;
 					reserved_at: string;
 					reserved_promotional_minor: number;
 					reserved_purchased_minor: number;
-					segment_count: number;
+					segment_count: number | null;
 					settled_at: string | null;
 					source_key: string;
 					state: string;
@@ -3681,13 +3740,14 @@ export type Database = {
 					price_check_attempts?: number;
 					price_check_available_at?: string;
 					price_checked_at?: string | null;
+					recipient_count?: number | null;
 					reported_provider_price_currency?: string | null;
 					reported_provider_price_minor?: number | null;
 					reported_segment_count?: number | null;
 					reserved_at?: string;
 					reserved_promotional_minor?: number;
 					reserved_purchased_minor?: number;
-					segment_count: number;
+					segment_count?: number | null;
 					settled_at?: string | null;
 					source_key: string;
 					state?: string;
@@ -3701,13 +3761,14 @@ export type Database = {
 					price_check_attempts?: number;
 					price_check_available_at?: string;
 					price_checked_at?: string | null;
+					recipient_count?: number | null;
 					reported_provider_price_currency?: string | null;
 					reported_provider_price_minor?: number | null;
 					reported_segment_count?: number | null;
 					reserved_at?: string;
 					reserved_promotional_minor?: number;
 					reserved_purchased_minor?: number;
-					segment_count?: number;
+					segment_count?: number | null;
 					settled_at?: string | null;
 					source_key?: string;
 					state?: string;
@@ -16078,6 +16139,51 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			communication_email_effective_retail_rate: {
+				Args: { p_at?: string; p_currency_code?: string };
+				Returns: {
+					created_at: string;
+					currency_code: string;
+					effective_from: string;
+					id: string;
+					note: string | null;
+					provider_cost_major: number | null;
+					retail_rate_major: number;
+					set_by: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_email_retail_rates';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_email_set_retail_rate: {
+				Args: {
+					p_currency_code?: string;
+					p_effective_from?: string;
+					p_note?: string;
+					p_provider_cost_major?: number;
+					p_retail_rate_major: number;
+					p_set_by: string;
+				};
+				Returns: {
+					created_at: string;
+					currency_code: string;
+					effective_from: string;
+					id: string;
+					note: string | null;
+					provider_cost_major: number | null;
+					retail_rate_major: number;
+					set_by: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_email_retail_rates';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			communication_email_setup_request_cancel: {
 				Args: { p_organization_id: string; p_request_id: string };
 				Returns: {
@@ -16252,13 +16358,14 @@ export type Database = {
 					price_check_attempts: number;
 					price_check_available_at: string;
 					price_checked_at: string | null;
+					recipient_count: number | null;
 					reported_provider_price_currency: string | null;
 					reported_provider_price_minor: number | null;
 					reported_segment_count: number | null;
 					reserved_at: string;
 					reserved_promotional_minor: number;
 					reserved_purchased_minor: number;
-					segment_count: number;
+					segment_count: number | null;
 					settled_at: string | null;
 					source_key: string;
 					state: string;
@@ -17040,13 +17147,14 @@ export type Database = {
 					price_check_attempts: number;
 					price_check_available_at: string;
 					price_checked_at: string | null;
+					recipient_count: number | null;
 					reported_provider_price_currency: string | null;
 					reported_provider_price_minor: number | null;
 					reported_segment_count: number | null;
 					reserved_at: string;
 					reserved_promotional_minor: number;
 					reserved_purchased_minor: number;
-					segment_count: number;
+					segment_count: number | null;
 					settled_at: string | null;
 					source_key: string;
 					state: string;
@@ -23691,6 +23799,9 @@ export type CompositeTypes<
 		: never;
 
 export const Constants = {
+	graphql_public: {
+		Enums: {}
+	},
 	public: {
 		Enums: {}
 	}

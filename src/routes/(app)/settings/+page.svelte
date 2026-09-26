@@ -218,13 +218,13 @@
 										description="Registration, sending numbers and texting readiness."
 										status={smsRegistrationBadge(home.readiness.sms_registration.readiness_state)}
 									/>
-									<SettingsDestinationCard
-										href={resolve('/settings/communications/sms-usage')}
-										icon={walletIcon}
-										title="SMS usage"
-										description="Balance, top-ups, charges and delivery health."
-									/>
 								{/if}
+								<SettingsDestinationCard
+									href={resolve('/settings/communications/balance')}
+									icon={walletIcon}
+									title="Communication Balance"
+									description="Balance and top-ups for texts and extra email sending, plus this month's charges."
+								/>
 								<SettingsDestinationCard
 									href={resolve('/settings/communications/blocked-addresses')}
 									icon={mailOffIcon}

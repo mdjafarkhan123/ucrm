@@ -18,6 +18,7 @@ export type InboxEmail = {
 	subject: string;
 	text_content: string;
 	status: string;
+	failure_code: string | null;
 	failure_message: string | null;
 	// Post-acceptance provider outcome. Null until an SES delivery event (email) or a Twilio status
 	// callback (sms, Stage 5A) lands for this message. The two vocabularies share this one column --

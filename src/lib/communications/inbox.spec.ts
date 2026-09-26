@@ -22,6 +22,7 @@ function outbound(overrides: Partial<OutboundInboxMessage> = {}): OutboundInboxM
 		subject: 'Quote ready',
 		text_content: 'Here it is.',
 		status: 'submitted',
+		failure_code: null,
 		failure_message: null,
 		delivery_outcome: null,
 		delivery_outcome_at: null,

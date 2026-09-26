@@ -170,7 +170,7 @@ export const GET: RequestHandler = async (event) => {
 	let outboundQuery = ownerClient
 		.from('communication_delivery_intents')
 		.select(
-			'id, client_id, channel, recipient_email, recipient_phone, quote_id, subject, text_content, status, failure_message, created_at, resent_from_intent_id, send_kind, created_by, delivery_outcome, delivery_outcome_at'
+			'id, client_id, channel, recipient_email, recipient_phone, quote_id, subject, text_content, status, failure_code, failure_message, created_at, resent_from_intent_id, send_kind, created_by, delivery_outcome, delivery_outcome_at'
 		)
 		.eq('organization_id', organizationId)
 		.order('created_at', { ascending: false })

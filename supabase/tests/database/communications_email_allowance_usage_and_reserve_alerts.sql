@@ -13,10 +13,10 @@ select has_table(
   'public', 'communication_email_allowance_alerts',
   'the once-per-period allowance alert has a table'
 );
-select has_trigger(
+select hasnt_trigger(
   'public', 'communication_delivery_intents',
   'communication_delivery_intents_essential_reserve_exhausted',
-  'the exhaustion is recorded by a trigger on the table that already stamps the failure'
+  'the exhaustion trigger is gone -- essential email never sets the failure_code it used to key off (Part 7)'
 );
 select function_privs_are(
   'public', 'get_organization_communication_email_usage', array['uuid'], 'authenticated',
@@ -89,7 +89,8 @@ insert into public.communication_email_usage_events (
   ('e1000000-0000-0000-0000-000000000001', 'e6000000-0000-0000-0000-0000000000a2', 1,
    'e0000000-0000-0000-0000-000000000001', 'essential');
 
--- --- The next essential message is held, and Jafar is alerted -------------------------------------
+-- --- The next essential message is claimed and sent anyway, and Jafar is alerted once --------------
+-- (2026-09-24 contract change, built in Part 7: essential email never queues for an exhausted reserve.)
 
 insert into public.communication_delivery_intents (
   id, organization_id, client_id, client_contact_method_id, logical_send_key,
@@ -106,12 +107,12 @@ values ('e1000000-0000-0000-0000-000000000001', 'e6000000-0000-0000-0000-0000000
 select public.claim_communication_outbox_event();
 
 select results_eq(
-  $$select event.status, intent.failure_code
+  $$select event.status, intent.status, intent.failure_code
     from public.communication_outbox_events event
     join public.communication_delivery_intents intent on intent.id = event.delivery_intent_id
     where event.delivery_intent_id = 'e6000000-0000-0000-0000-0000000000b1'$$,
-  $$values ('pending'::text, 'email_allowance_exhausted'::text)$$,
-  'essential mail past the reserve stays queued, it is not cancelled'
+  $$values ('processing'::text, 'claimed'::text, null::text)$$,
+  'essential mail past the reserve is claimed and sent anyway, never held'
 );
 select is(
   (select count(*) from public.communication_email_allowance_alerts
@@ -125,7 +126,7 @@ select is(
   1::bigint, 'Jafar is alerted about the exhausted reserve'
 );
 
--- --- A second held message does not alert again ---------------------------------------------------
+-- --- A second essential message past reserve still sends, and does not alert again ------------------
 
 insert into public.communication_delivery_intents (
   id, organization_id, client_id, client_contact_method_id, logical_send_key,
@@ -144,13 +145,13 @@ select public.claim_communication_outbox_event();
 select is(
   (select count(*) from public.communication_email_allowance_alerts
    where organization_id = 'e1000000-0000-0000-0000-000000000001'),
-  1::bigint, 'a second held message does not record a second alert'
+  1::bigint, 'a second exhausted send does not record a second alert'
 );
 select is(
   (select count(*) from public.platform_owner_notifications
    where kind = 'communication_email_essential_reserve_exhausted'
      and target_id = 'e1000000-0000-0000-0000-000000000001'),
-  1::bigint, 'a second held message does not alert Jafar again'
+  1::bigint, 'a second exhausted send does not alert Jafar again'
 );
 
 -- --- The organization-facing usage read -----------------------------------------------------------
@@ -158,8 +159,8 @@ select is(
 create temporary table usage_read on commit drop as
 select * from public.get_organization_communication_email_usage('e1000000-0000-0000-0000-000000000001');
 
-select is((select essential_used from usage_read), 2,
-  'the read counts the essential recipients spent this period');
+select is((select essential_used from usage_read), 4,
+  'the read counts the 2 accepted plus the 2 exhausted-but-still-sent essential recipients (Part 7: essential never queues)');
 select is((select essential_limit_value from usage_read), 2,
   'the read carries the effective essential reserve');
 select ok((select essential_reserve_exhausted from usage_read),

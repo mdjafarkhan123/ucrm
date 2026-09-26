@@ -167,30 +167,30 @@
 	];
 </script>
 
-<svelte:head><title>SMS usage · Contractor CRM</title></svelte:head>
+<svelte:head><title>Communication Balance · Contractor CRM</title></svelte:head>
 
 <PageContainer variant="fill">
 	<PageHeader
 		eyebrow="Settings · Communications"
-		title="SMS usage"
-		description="Your text messaging balance, this month's charges, and lean delivery health."
+		title="Communication Balance"
+		description="One balance for texts and extra email sending beyond your plan, this month's SMS charges, and lean delivery health."
 	/>
 
 	{#if usageQuery.isPending}
 		<LoadingSkeleton variant="card" rows={3} />
 	{:else if usageQuery.isError}
 		<ErrorState
-			description="The SMS usage could not be loaded."
+			description="The Communication Balance could not be loaded."
 			retry={() => usageQuery.refetch()}
 		/>
 	{:else}
 		{@const usage = usageQuery.data}
-		<div class="sms-usage__balance-strip">
+		<div class="balance__balance-strip">
 			<KpiCard
 				tone="brand"
 				label="Available balance"
 				value={formatSmsMoney(usage.balance.spendable_balance_minor, usage.balance.currency_code)}
-				note="Ready to spend on outbound texts"
+				note="Ready to spend on outbound texts and over-allowance email"
 				icon={walletIcon}
 			/>
 			<KpiCard
@@ -200,7 +200,7 @@
 				icon={receiptIcon}
 			/>
 			<KpiCard
-				label="Usage this month"
+				label="SMS usage this month"
 				value={formatSmsMoney(
 					usage.usage_summary.retail_charge_minor,
 					usage.balance.currency_code
@@ -217,22 +217,22 @@
 			/>
 		</div>
 
-		<div class="sms-usage__add-credit">
+		<div class="balance__add-credit">
 			<div>
-				<p class="sms-usage__add-credit-title">Need more balance?</p>
-				<p class="sms-usage__add-credit-copy">
+				<p class="balance__add-credit-title">Need more balance?</p>
+				<p class="balance__add-credit-copy">
 					Requesting a top-up creates no usable credit until Jafar confirms the payment arrived.
 				</p>
 			</div>
 			<Button onclick={openRequest}>Request top-up</Button>
 		</div>
 
-		<SectionBlock title="Messaging health" icon={activityIcon} level={2}>
-			<p class="sms-usage__hint">
+		<SectionBlock title="SMS messaging health" icon={activityIcon} level={2}>
+			<p class="balance__hint">
 				The last {usage.messaging_health.period_days} days. For message-by-message detail, use Conversations
 				once it supports SMS.
 			</p>
-			<div class="sms-usage__health-grid">
+			<div class="balance__health-grid">
 				<KpiCard
 					variant="compact"
 					label="Sent"
@@ -288,27 +288,27 @@
 					description="Request a top-up above once you need more balance."
 				/>
 			{:else}
-				<ul class="sms-usage__topups">
+				<ul class="balance__topups">
 					{#each topupsQuery.data.requests as request (request.id)}
-						<li class="sms-usage__topup">
+						<li class="balance__topup">
 							<div>
-								<p class="sms-usage__topup-amount">
+								<p class="balance__topup-amount">
 									{formatSmsMoney(request.requested_amount_minor, request.currency_code)} requested
 								</p>
-								<p class="sms-usage__topup-meta">
+								<p class="balance__topup-meta">
 									{formatTime(request.requested_at)}
 									{#if request.offsite_reference}· Ref: {request.offsite_reference}{/if}
 								</p>
 								{#if request.status === 'confirmed' && request.settled_amount_minor !== null}
-									<p class="sms-usage__topup-meta">
+									<p class="balance__topup-meta">
 										Confirmed: {formatSmsMoney(request.settled_amount_minor, request.currency_code)}
 									</p>
 								{/if}
 								{#if request.status === 'rejected' && request.decision_reason}
-									<p class="sms-usage__topup-meta">Declined: {request.decision_reason}</p>
+									<p class="balance__topup-meta">Declined: {request.decision_reason}</p>
 								{/if}
 							</div>
-							<div class="sms-usage__topup-actions">
+							<div class="balance__topup-actions">
 								<StatusBadge status={smsCreditTopupStatusTone[request.status]}>
 									{smsCreditTopupStatusLabel[request.status]}
 								</StatusBadge>
@@ -332,8 +332,8 @@
 
 		<SectionBlock title="Ledger" icon={historyIcon} level={2}>
 			<FilterBar onClear={entryKindFilter ? () => (entryKindFilter = '') : undefined}>
-				<FilterField label="Entry type" id="sms-ledger-entry-kind">
-					<Select id="sms-ledger-entry-kind" options={entryKindOptions} bind:value={entryKindFilter} />
+				<FilterField label="Entry type" id="balance-ledger-entry-kind">
+					<Select id="balance-ledger-entry-kind" options={entryKindOptions} bind:value={entryKindFilter} />
 				</FilterField>
 			</FilterBar>
 
@@ -355,7 +355,7 @@
 					columns={ledgerColumns}
 					items={ledgerEntries}
 					rowId={(entry: SmsLedgerEntry) => entry.id}
-					caption="SMS credit ledger"
+					caption="Communication Balance ledger"
 				>
 					{#snippet row(entry: SmsLedgerEntry)}
 						<td>{formatTime(entry.occurred_at)}</td>
@@ -382,13 +382,13 @@
 </PageContainer>
 
 <Dialog open={requestOpen} title="Request a top-up" onClose={() => (requestOpen = false)}>
-	<form class="sms-usage__form" onsubmit={submitRequest}>
+	<form class="balance__form" onsubmit={submitRequest}>
 		<p>
 			Send payment offsite, then log the request here. Jafar confirms once the money arrives and
 			credits your balance.
 		</p>
 		<Input
-			id="sms-topup-amount"
+			id="balance-topup-amount"
 			label="Amount (USD)"
 			type="number"
 			min="0.01"
@@ -399,14 +399,14 @@
 			errorMessage={requestFieldErrors.requested_amount_minor}
 		/>
 		<Input
-			id="sms-topup-reference"
+			id="balance-topup-reference"
 			label="Payment reference (optional)"
 			bind:value={offsiteReference}
 			invalid={Boolean(requestFieldErrors.offsite_reference)}
 			errorMessage={requestFieldErrors.offsite_reference}
 		/>
 		<Textarea
-			id="sms-topup-note"
+			id="balance-topup-note"
 			label="Note (optional)"
 			bind:value={requestNote}
 			rows={3}
@@ -414,7 +414,7 @@
 			invalid={Boolean(requestFieldErrors.note)}
 			errorMessage={requestFieldErrors.note}
 		/>
-		<div class="sms-usage__form-actions">
+		<div class="balance__form-actions">
 			<Button type="submit" loading={requestMutation.isPending}>Submit request</Button>
 			<Button
 				type="button"
@@ -429,7 +429,7 @@
 </Dialog>
 
 <style lang="scss">
-	.sms-usage {
+	.balance {
 		&__balance-strip {
 			display: grid;
 			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -525,7 +525,7 @@
 	}
 
 	@media (max-width: 639px) {
-		.sms-usage__topup {
+		.balance__topup {
 			flex-direction: column;
 			align-items: flex-start;
 		}

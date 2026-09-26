@@ -8,7 +8,6 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import {
 		dateTimePickerValueFromLocalString,
@@ -17,12 +16,8 @@
 		type DateTimePickerValue
 	} from '$lib/components/ui/date-time';
 
-	type SenderType = 'long_code' | 'toll_free' | 'short_code' | 'alphanumeric';
 	type RetailRate = {
 		id: string;
-		destination: string;
-		sender_type: SenderType;
-		message_unit: string;
 		currency_code: string;
 		retail_rate_major: number;
 		provider_cost_major: number | null;
@@ -47,62 +42,38 @@
 	}
 
 	const queryClient = useQueryClient();
-	const listKey = ['jafar', 'communications', 'sms', 'retail-rates'] as const;
+	const listKey = ['jafar', 'communications', 'email', 'retail-rates'] as const;
 
 	const listQuery = createQuery<ListResponse>(() => ({
 		queryKey: listKey,
 		queryFn: async () => {
-			const response = await fetch('/api/jafar/communications/sms/retail-rates');
+			const response = await fetch('/api/jafar/communications/email/retail-rates');
 			const result = (await response.json()) as ListResponse;
-			if (!response.ok) throw new Error(result.error ?? 'SMS retail rates could not be loaded.');
+			if (!response.ok) throw new Error(result.error ?? 'Email retail rates could not be loaded.');
 			return result;
 		},
 		staleTime: 15_000
 	}));
 
-	const senderTypeOptions = [
-		{ value: 'long_code', label: 'Long code' },
-		{ value: 'toll_free', label: 'Toll-free' },
-		{ value: 'short_code', label: 'Short code' },
-		{ value: 'alphanumeric', label: 'Alphanumeric' }
-	];
-	const senderTypeLabel: Record<SenderType, string> = {
-		long_code: 'Long code',
-		toll_free: 'Toll-free',
-		short_code: 'Short code',
-		alphanumeric: 'Alphanumeric'
-	};
-
-	// Stage 6D-3: a picture text (MMS) bills Twilio as one flat unit per message, not per segment, so it gets
-	// its own message-unit rate alongside plain-text 'segment'.
-	const messageUnitOptions = [
-		{ value: 'segment', label: 'Text (per segment)' },
-		{ value: 'mms', label: 'Picture message (per MMS)' }
-	];
-	const messageUnitLabel: Record<string, string> = {
-		segment: 'per segment',
-		mms: 'per picture message'
-	};
-
-	// Group the flat, newest-first list into one row per destination/sender/message-unit/currency key, each
-	// carrying its own version history. The first version in a group whose effective_from has arrived is the
-	// one currently charged; anything before it in time is superseded, anything after is scheduled.
+	// Group the flat, newest-first list into one row per currency, each carrying its own version history. The
+	// first version whose effective_from has arrived is the one currently charged; anything before it in time
+	// is superseded, anything after is scheduled. Mirrors SmsRetailRateActions' grouping, minus the SMS-only
+	// destination/sender/message-unit dimensions -- email has one price per currency.
 	const groups = $derived.by(() => {
 		const rates = listQuery.data?.rates ?? [];
 		const byKey = new Map<string, RetailRate[]>();
 		for (const rate of rates) {
-			const key = `${rate.destination}|${rate.sender_type}|${rate.message_unit}|${rate.currency_code}`;
-			const versions = byKey.get(key) ?? [];
+			const versions = byKey.get(rate.currency_code) ?? [];
 			versions.push(rate);
-			byKey.set(key, versions);
+			byKey.set(rate.currency_code, versions);
 		}
 		return [...byKey.entries()]
-			.map(([key, versions]) => {
+			.map(([currencyCode, versions]) => {
 				const now = Date.now();
 				const current = versions.find((v) => new Date(v.effective_from).getTime() <= now) ?? null;
-				return { key, versions, current };
+				return { currencyCode, versions, current };
 			})
-			.sort((a, b) => a.key.localeCompare(b.key));
+			.sort((a, b) => a.currencyCode.localeCompare(b.currencyCode));
 	});
 
 	function formatMoney(major: number, currency: string) {
@@ -115,9 +86,6 @@
 	}
 
 	let publishOpen = $state(false);
-	let destination = $state('');
-	let senderType = $state('long_code');
-	let messageUnit = $state('segment');
 	let currencyCode = $state('USD');
 	// Input's type="number" binds back a JS number, or null when empty -- never a string to .trim().
 	let retailRateMajor = $state<number | null>(null);
@@ -129,9 +97,6 @@
 	let feedbackError = $state('');
 
 	function openPublish() {
-		destination = '';
-		senderType = 'long_code';
-		messageUnit = 'segment';
 		currencyCode = 'USD';
 		retailRateMajor = null;
 		providerCostMajor = null;
@@ -148,7 +113,7 @@
 	const publishMutation = createMutation<MutationResponse, RateError, Record<string, unknown>>(
 		() => ({
 			mutationFn: async (body) => {
-				const response = await fetch('/api/jafar/communications/sms/retail-rates', {
+				const response = await fetch('/api/jafar/communications/email/retail-rates', {
 					method: 'POST',
 					headers: { 'content-type': 'application/json' },
 					body: JSON.stringify(body)
@@ -175,18 +140,11 @@
 
 	function submitPublish(event: SubmitEvent) {
 		event.preventDefault();
-		if (!/^[A-Za-z]{2}$/.test(destination.trim())) {
-			fieldErrors = { destination: 'Enter a 2-letter country code.' };
-			return;
-		}
 		if (retailRateMajor === null || !Number.isFinite(retailRateMajor) || retailRateMajor <= 0) {
 			fieldErrors = { retail_rate_major: 'Enter a rate greater than zero.' };
 			return;
 		}
 		const body: Record<string, unknown> = {
-			destination: destination.trim().toUpperCase(),
-			sender_type: senderType,
-			message_unit: messageUnit,
 			currency_code: currencyCode.trim().toUpperCase(),
 			retail_rate_major: retailRateMajor
 		};
@@ -203,58 +161,62 @@
 	}
 </script>
 
-<Card class="sms-retail-rate-actions__card">
-	<div class="sms-retail-rate-actions__heading">
+<Card class="email-retail-rate-actions__card">
+	<div class="email-retail-rate-actions__heading">
 		<div>
-			<h2>SMS retail rates</h2>
+			<h2>Over-allowance email retail rate</h2>
 			<p>
-				The price charged per text segment or picture message, by destination and sender type. A new
-				rate always takes effect now or on a future date &mdash; past charges keep the rate they
-				were sent under. Published rate versions cannot be edited or removed.
+				The price charged per 1,000 recipients once an organization's optional email goes past its
+				package allowance and self-funds from its Communication Balance. Essential email (receipts,
+				invoices, quotes) is never limited or charged this way. A new rate always takes effect now
+				or on a future date &mdash; past charges keep the rate they were sent under. Published rate
+				versions cannot be edited or removed.
+			</p>
+			<p class="email-retail-rate-actions__reference">
+				For reference: Amazon SES actually costs UCRM about $0.10 per 1,000 emails. In the industry,
+				HighLevel charges about $0.675 per 1,000 from a prepaid wallet, Mailchimp bills overage in
+				blocks on the next invoice, and Jobber has no limit at all.
 			</p>
 		</div>
 		<Button size="small" variant="secondary" onclick={openPublish}>Publish a rate</Button>
 	</div>
 
-	{#if feedbackMessage}<p class="sms-retail-rate-actions__success" role="status">
+	{#if feedbackMessage}<p class="email-retail-rate-actions__success" role="status">
 			{feedbackMessage}
 		</p>{/if}
-	{#if feedbackError}<p class="sms-retail-rate-actions__error" role="alert">{feedbackError}</p>{/if}
+	{#if feedbackError}<p class="email-retail-rate-actions__error" role="alert">
+			{feedbackError}
+		</p>{/if}
 
 	{#if listQuery.isPending}
-		<LoadingSkeleton variant="table" rows={3} label="Loading SMS retail rates" />
+		<LoadingSkeleton variant="table" rows={2} label="Loading email retail rates" />
 	{:else if listQuery.isError}
 		<ErrorState
-			title="SMS retail rates could not be loaded"
+			title="Email retail rates could not be loaded"
 			description={listQuery.error instanceof Error ? listQuery.error.message : 'Try again.'}
 			retry={() => listQuery.refetch()}
 		/>
 	{:else if groups.length === 0}
 		<EmptyState
 			title="No rate published yet"
-			description="Contractors cannot be charged for SMS in a destination until a rate is published."
+			description="No organization can be charged for over-allowance email until a rate is published."
 		/>
 	{:else}
-		<ul class="sms-retail-rate-actions__list">
-			{#each groups as group (group.key)}
-				<li class="sms-retail-rate-actions__row">
-					<div class="sms-retail-rate-actions__row-heading">
+		<ul class="email-retail-rate-actions__list">
+			{#each groups as group (group.currencyCode)}
+				<li class="email-retail-rate-actions__row">
+					<div class="email-retail-rate-actions__row-heading">
 						<div>
-							<h3>
-								{group.versions[0].destination} &middot; {senderTypeLabel[
-									group.versions[0].sender_type
-								]} &middot; {messageUnitLabel[group.versions[0].message_unit] ??
-									group.versions[0].message_unit}
-							</h3>
+							<h3>{group.currencyCode} &middot; per 1,000 recipients</h3>
 							<p>
 								{group.current
-									? `${formatMoney(group.current.retail_rate_major, group.current.currency_code)} ${messageUnitLabel[group.current.message_unit] ?? group.current.message_unit}`
+									? `${formatMoney(group.current.retail_rate_major, group.current.currency_code)} per 1,000`
 									: 'No version has taken effect yet'}
 							</p>
 						</div>
 					</div>
 					{#if group.versions.length > 1}
-						<ul class="sms-retail-rate-actions__history">
+						<ul class="email-retail-rate-actions__history">
 							{#each group.versions as version (version.id)}
 								<li>
 									{formatMoney(version.retail_rate_major, version.currency_code)} &middot; effective
@@ -265,7 +227,7 @@
 							{/each}
 						</ul>
 					{:else if group.versions[0].note}
-						<p class="sms-retail-rate-actions__meta">{group.versions[0].note}</p>
+						<p class="email-retail-rate-actions__meta">{group.versions[0].note}</p>
 					{/if}
 				</li>
 			{/each}
@@ -274,36 +236,11 @@
 </Card>
 
 <Dialog open={publishOpen} title="Publish a retail rate" onClose={() => (publishOpen = false)}>
-	<form class="sms-retail-rate-actions__form" onsubmit={submitPublish}>
-		<div class="sms-retail-rate-actions__fields">
+	<form class="email-retail-rate-actions__form" onsubmit={submitPublish}>
+		<div class="email-retail-rate-actions__fields">
 			<Input
-				id="sms-rate-destination"
-				label="Destination (2-letter country code)"
-				bind:value={destination}
-				maxlength={2}
-				invalid={Boolean(fieldErrors.destination)}
-				errorMessage={fieldErrors.destination}
-				required
-			/>
-			<Select
-				id="sms-rate-sender-type"
-				label="Sender type"
-				options={senderTypeOptions}
-				bind:value={senderType}
-			/>
-			<Select
-				id="sms-rate-message-unit"
-				label="Message unit"
-				options={messageUnitOptions}
-				bind:value={messageUnit}
-			/>
-		</div>
-		<div class="sms-retail-rate-actions__fields">
-			<Input
-				id="sms-rate-retail"
-				label={messageUnit === 'mms'
-					? 'Retail rate per picture message'
-					: 'Retail rate per segment'}
+				id="email-rate-retail"
+				label="Retail rate per 1,000 recipients"
 				type="number"
 				min="0"
 				step="0.0001"
@@ -312,13 +249,16 @@
 				errorMessage={fieldErrors.retail_rate_major}
 				required
 			/>
-			<Input id="sms-rate-currency" label="Currency code" bind:value={currencyCode} maxlength={3} />
+			<Input
+				id="email-rate-currency"
+				label="Currency code"
+				bind:value={currencyCode}
+				maxlength={3}
+			/>
 		</div>
 		<Input
-			id="sms-rate-cost"
-			label={messageUnit === 'mms'
-				? 'Provider cost per picture message (optional, Jafar-only)'
-				: 'Provider cost per segment (optional, Jafar-only)'}
+			id="email-rate-cost"
+			label="Provider cost per 1,000 recipients (optional, Jafar-only)"
 			type="number"
 			min="0"
 			step="0.0001"
@@ -327,21 +267,21 @@
 			errorMessage={fieldErrors.provider_cost_major}
 		/>
 		<DateTimePicker
-			id="sms-rate-effective-from"
+			id="email-rate-effective-from"
 			dateLabel="Effective from (optional)"
 			timeLabel="Effective at"
 			value={dateTimePickerValueFromLocalString(effectiveFrom)}
 			onchange={handleEffectiveFromChange}
 		/>
-		<p class="sms-retail-rate-actions__hint">Leave blank to take effect immediately.</p>
+		<p class="email-retail-rate-actions__hint">Leave blank to take effect immediately.</p>
 		<Textarea
-			id="sms-rate-note"
+			id="email-rate-note"
 			label="Note (optional)"
 			bind:value={note}
 			rows={2}
 			maxlength={2000}
 		/>
-		<div class="sms-retail-rate-actions__dialog-actions">
+		<div class="email-retail-rate-actions__dialog-actions">
 			<Button type="submit" loading={publishMutation.isPending}>Publish rate</Button>
 			<Button
 				type="button"
@@ -356,58 +296,61 @@
 </Dialog>
 
 <style lang="scss">
-	:global(.sms-retail-rate-actions__card) {
+	:global(.email-retail-rate-actions__card) {
 		display: grid;
 		gap: var(--space-base);
 	}
-	.sms-retail-rate-actions__form {
+	.email-retail-rate-actions__form {
 		display: grid;
 		gap: var(--space-base);
 	}
-	.sms-retail-rate-actions__fields {
+	.email-retail-rate-actions__fields {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: var(--space-base);
 	}
-	.sms-retail-rate-actions__heading {
+	.email-retail-rate-actions__heading {
 		display: flex;
 		align-items: flex-start;
 		justify-content: space-between;
 		gap: var(--space-base);
 	}
-	.sms-retail-rate-actions__heading h2 {
+	.email-retail-rate-actions__heading h2 {
 		margin: 0;
 		color: var(--color-heading);
 		font-size: var(--typography--fontSize-largest);
 		line-height: var(--typography--lineHeight-tightest);
 	}
-	.sms-retail-rate-actions__heading p {
+	.email-retail-rate-actions__heading p {
 		margin: var(--space-small) 0 0;
 		max-width: 70ch;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 		line-height: var(--typography--lineHeight-base);
 	}
-	.sms-retail-rate-actions__success {
+	.email-retail-rate-actions__reference {
+		font-style: italic;
+	}
+	.email-retail-rate-actions__success {
 		color: var(--color-success--onSurface);
 	}
-	.sms-retail-rate-actions__error {
+	.email-retail-rate-actions__error {
 		color: var(--color-critical);
 		font-size: var(--typography--fontSize-small);
 	}
-	.sms-retail-rate-actions__hint {
+	.email-retail-rate-actions__hint {
 		margin: calc(var(--space-small) * -1) 0 0;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 	}
-	.sms-retail-rate-actions__list {
+	.email-retail-rate-actions__list {
 		display: grid;
 		gap: var(--space-base);
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
-	.sms-retail-rate-actions__row {
+	.email-retail-rate-actions__row {
 		display: grid;
 		gap: var(--space-smallest);
 		padding: var(--space-base);
@@ -415,22 +358,22 @@
 		border-radius: var(--radius-base);
 		background: var(--color-surface--background);
 	}
-	.sms-retail-rate-actions__row-heading h3 {
+	.email-retail-rate-actions__row-heading h3 {
 		margin: 0;
 		color: var(--color-heading);
 		font-size: var(--typography--fontSize-base);
 	}
-	.sms-retail-rate-actions__row-heading p {
+	.email-retail-rate-actions__row-heading p {
 		margin: var(--space-smallest) 0 0;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 	}
-	.sms-retail-rate-actions__meta {
+	.email-retail-rate-actions__meta {
 		margin: 0;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 	}
-	.sms-retail-rate-actions__history {
+	.email-retail-rate-actions__history {
 		margin: 0;
 		padding-left: var(--space-large);
 		color: var(--color-text--secondary);
@@ -440,15 +383,15 @@
 			margin-top: var(--space-smallest);
 		}
 	}
-	.sms-retail-rate-actions__dialog-actions {
+	.email-retail-rate-actions__dialog-actions {
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: flex-end;
 		gap: var(--space-small);
 	}
 	@media (max-width: 639px) {
-		.sms-retail-rate-actions__heading,
-		.sms-retail-rate-actions__fields {
+		.email-retail-rate-actions__heading,
+		.email-retail-rate-actions__fields {
 			flex-direction: column;
 			grid-template-columns: 1fr;
 		}

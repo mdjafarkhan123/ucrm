@@ -24,7 +24,7 @@
 	import ConversationContextRail from '$lib/components/communications/ConversationContextRail.svelte';
 	import ConversationComposer from '$lib/components/communications/ConversationComposer.svelte';
 	import ChooseClientDialog from '$lib/components/communications/ChooseClientDialog.svelte';
-	import ManualEmailDialog from '$lib/components/clients/ManualEmailDialog.svelte';
+	import ChooseChannelDialog from '$lib/components/communications/ChooseChannelDialog.svelte';
 	import {
 		cancelScheduledConversationReply,
 		clientCommunicationHistoryKey,
@@ -76,6 +76,7 @@
 	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
 	import messageOffIcon from '@tabler/icons/outline/message-circle-off.svg?raw';
 	import messageCheckIcon from '@tabler/icons/outline/message-circle-check.svg?raw';
+	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -350,6 +351,16 @@
 		enabled: newConversationClientId !== null,
 		staleTime: 30_000
 	}));
+	// Only the channels this client actually has a saved address or number for -- website chat is never
+	// offered, since a chat conversation needs a real visitor session, not a staff-started draft.
+	const newConversationChannels = $derived.by((): Array<'email' | 'sms'> => {
+		const client = newConversationClientQuery.data;
+		if (!client) return [];
+		const channels: Array<'email' | 'sms'> = [];
+		if (client.contact_methods.some((method) => method.kind === 'email')) channels.push('email');
+		if (client.contact_methods.some((method) => method.kind === 'phone')) channels.push('sms');
+		return channels;
+	});
 
 	// The picker's client list is behind a dialog, so it never loads with the page. Warming it on hover is
 	// the standing rule for revealed content -- by the time the dialog opens the list is usually there.
@@ -360,6 +371,26 @@
 				fetchClients({ search: '', status: '', tagId: '', sort: 'updated_at', dir: 'desc' }),
 			staleTime: 15_000
 		});
+	}
+
+	function cancelNewConversation() {
+		newConversationOpen = false;
+		newConversationClientId = null;
+	}
+
+	// Picking client + channel lands directly on that conversation in the main pane -- a client with no
+	// messages yet already renders there as an empty thread (`requestedGroup`, above), so this needs no
+	// popup composer of its own. Presetting `composerGroupKey` here means the reset effect below (which
+	// only fires once per newly-selected key) finds nothing left to do once `selectedGroup` resolves.
+	function startNewConversation(clientId: string, channel: 'email' | 'sms') {
+		selectedGroupKey = clientId;
+		requestedClientId = clientId;
+		composerGroupKey = clientId;
+		activeChannel = channel;
+		composerExpanded = true;
+		showJumpToLatest = false;
+		contextPanelOpen = false;
+		cancelNewConversation();
 	}
 
 	function outboundIn(group: OpenConversation, id: string) {
@@ -385,6 +416,16 @@
 		if (isWebsiteChatMessage(group.latest)) return { label: 'Website chat', icon: messagesIcon };
 		if (group.latest.channel === 'sms') return { label: 'SMS', icon: messageIcon };
 		return { label: 'Email', icon: emailIcon };
+	}
+
+	// The row's own unread badge means the same "unread messages" count everywhere, but a guarded group has
+	// no client to hold a read position against -- opening it can never clear that count (see the mark-read
+	// route's own comment). This explains that in the reader's own words, tailored to why it is stuck, rather
+	// than leaving them to guess why the number never goes away.
+	function needsReviewHint(group: ConversationGroup): string {
+		return group.chatSession?.match_status === 'needs_review'
+			? 'This chat matched two different customers. Open it and choose which one to clear this.'
+			: "This message isn't linked to a customer yet. Link it to a customer or dismiss it to clear this.";
 	}
 
 	// The email composer's default subject reuses the conversation's most recent email-shaped message --
@@ -831,7 +872,8 @@
 						{/if}
 						<p>{visibleGroups.length} conversation{visibleGroups.length === 1 ? '' : 's'}</p>
 					</div>
-					<!-- This is the real, existing email flow. It remains in the list header as a compact action. -->
+					<!-- Pick a client, then a channel they actually have -- Continue lands directly on that
+					     conversation in the main pane, never in a popup composer. -->
 					<Button
 						size="small"
 						variant="secondary"
@@ -922,9 +964,6 @@
 												aria-hidden="true">{@html channel.icon}</span
 											>
 											<strong>{group.name}</strong>
-											{#if group.guarded}<Badge status="warning" size="small" dot={false}
-													>Needs review</Badge
-												>{/if}
 										</span>
 										<small class="communications__row-preview"
 											><span>{rowHeadline(group)}</span>{#if preview}<span>{preview}</span
@@ -944,12 +983,25 @@
 												/>
 											</span>
 										{/if}
-										{#if group.unreadCount > 0}
-											<Badge size="small" dot={false}
-												><span class="sr-only">{group.unreadCount} unread</span><span
-													aria-hidden="true">{group.unreadCount}</span
-												></Badge
-											>
+										{#if group.guarded}
+											{@const hint = needsReviewHint(group)}
+											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+											<span class="communications__attention" title={hint}>
+												<span class="communications__attention-icon" aria-hidden="true"
+													>{@html alertTriangleIcon}</span
+												>
+												{#if group.unreadCount > 0}
+													<span class="communications__attention-count" aria-hidden="true"
+														>{group.unreadCount}</span
+													>
+												{/if}
+												<span class="sr-only">{hint}</span>
+											</span>
+										{:else if group.unreadCount > 0}
+											<span class="communications__unread-count">
+												<span class="sr-only">{group.unreadCount} unread</span>
+												<span aria-hidden="true">{group.unreadCount}</span>
+											</span>
 										{/if}
 									</span>
 								</button>
@@ -1007,18 +1059,15 @@
 								<span class="communications__info-icon" aria-hidden="true">{@html infoIcon}</span>
 								Info
 							</Button>
-							{#if group.guarded && group.senderEmail}
-								<Badge status="warning">Needs review</Badge>
-								{#if inboxQuery.data?.can_manage_assignment}
-									<Button size="small" variant="primary" onclick={() => (linkTarget = group)}
-										>Link to a client</Button
-									>
-									<Button size="small" variant="secondary" onclick={() => (dismissTarget = group)}
-										>Dismiss</Button
-									>
-								{/if}
-							{:else if group.guarded && group.chatSession?.match_status === 'needs_review'}
-								<Badge status="warning">Needs review</Badge>
+							<!-- The name's own subtitle line already says "Needs review" in words (below), so the
+							     header does not repeat it as a pill too -- only the actions that clear it show here. -->
+							{#if group.guarded && group.senderEmail && inboxQuery.data?.can_manage_assignment}
+								<Button size="small" variant="primary" onclick={() => (linkTarget = group)}
+									>Link to a client</Button
+								>
+								<Button size="small" variant="secondary" onclick={() => (dismissTarget = group)}
+									>Dismiss</Button
+								>
 							{/if}
 							{#if group.chatSession && !group.chatSession.closed_at && canSend}
 								<Button size="small" variant="secondary" onclick={() => (endSessionTarget = group)}
@@ -1243,6 +1292,12 @@
 										{#if message.failure_message}<p class="communications__notice" role="status">
 												{message.failure_message}
 											</p>{/if}
+										{#if message.failure_code === 'email_balance_insufficient'}
+											<p class="communications__notice communications__notice--quiet">
+												<a href={resolve('/(app)/settings/communications/balance')}>Add credit</a>
+												to send it.
+											</p>
+										{/if}
 										{#if message.quote_id}
 											<p class="communications__notice communications__notice--quiet">
 												Related work: <a
@@ -1557,27 +1612,22 @@
 		open
 		title="New conversation"
 		confirmLabel="Continue"
-		lead="Who is this email for? Pick the client and you can write the message next."
+		lead="Who do you want to message? Pick the client and you can choose how to reach them next."
 		pending={newConversationClientQuery.isFetching}
 		errorMessage={newConversationClientQuery.error?.message ?? ''}
-		onCancel={() => {
-			newConversationOpen = false;
-			newConversationClientId = null;
-		}}
+		onCancel={cancelNewConversation}
 		onConfirm={(clientId) => (newConversationClientId = clientId)}
 	/>
 {/if}
 
-<!-- Reuses the client page's own email dialog rather than building a second composer: same command, same
-     recipient rules, same allowance class. -->
 {#if newConversationClientId && newConversationClientQuery.data}
-	<ManualEmailDialog
+	{@const client = newConversationClientQuery.data}
+	<ChooseChannelDialog
 		open
-		client={newConversationClientQuery.data}
-		onClose={() => {
-			newConversationClientId = null;
-			newConversationOpen = false;
-		}}
+		clientName={client.display_name}
+		channels={newConversationChannels}
+		onCancel={cancelNewConversation}
+		onConfirm={(channel) => startNewConversation(client.id, channel)}
 	/>
 {/if}
 
@@ -1929,6 +1979,63 @@
 		flex-direction: column;
 		align-items: flex-end;
 		gap: var(--space-smallest);
+	}
+	/* A real unread count: bold and brand-colored, the way an unread badge reads in any messaging app --
+	   distinct from the "needs review" indicator below, which is never just a plain number. */
+	.communications__unread-count {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 20px;
+		height: 20px;
+		padding: 0 var(--space-smaller);
+		border-radius: var(--radius-large);
+		background: var(--color-interactive);
+		color: var(--color-surface);
+		font-size: var(--typography--fontSize-smaller);
+		font-weight: 700;
+		line-height: 1;
+	}
+	/* A guarded conversation's count can never clear by opening it -- there is no client yet to hold a read
+	   position against (see needsReviewHint). A plain unread-style number would promise otherwise, so this
+	   reuses the app's own "needs attention" icon instead, with the count riding its corner and the "why" in
+	   its title -- one glance says review, not read. */
+	.communications__attention {
+		position: relative;
+		display: inline-flex;
+		flex: 0 0 auto;
+		align-items: center;
+		justify-content: center;
+		width: 24px;
+		height: 24px;
+		border-radius: var(--radius-circle);
+		background: var(--color-warning--surface);
+	}
+	.communications__attention-icon {
+		display: inline-flex;
+	}
+	.communications__attention-icon :global(svg) {
+		width: 16px;
+		height: 16px;
+		color: var(--color-warning);
+	}
+	.communications__attention-count {
+		position: absolute;
+		top: -4px;
+		right: -4px;
+		display: inline-flex;
+		min-width: 16px;
+		height: 16px;
+		align-items: center;
+		justify-content: center;
+		padding: 0 3px;
+		border-radius: var(--radius-circle);
+		box-shadow: 0 0 0 2px var(--color-surface);
+		background: var(--color-warning);
+		color: var(--color-heading);
+		font-size: 9px;
+		font-weight: 700;
+		line-height: 1;
 	}
 	.communications__message {
 		display: flex;

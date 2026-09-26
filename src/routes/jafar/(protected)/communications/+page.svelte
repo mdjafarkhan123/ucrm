@@ -9,6 +9,7 @@
 	import EmailOutboxWorkerHealth, {
 		type WorkerHealth
 	} from '$lib/components/jafar/EmailOutboxWorkerHealth.svelte';
+	import EmailRetailRateActions from '$lib/components/jafar/EmailRetailRateActions.svelte';
 	import EmailReputationPlatformControls from '$lib/components/jafar/EmailReputationPlatformControls.svelte';
 	import EmailSendingCapacityControls from '$lib/components/jafar/EmailSendingCapacityControls.svelte';
 	import EmailSuppressionRemovalQueue from '$lib/components/jafar/EmailSuppressionRemovalQueue.svelte';
@@ -356,6 +357,8 @@
 	<EmailSuppressionRemovalQueue />
 
 	<EmailSendingCapacityControls />
+
+	<EmailRetailRateActions />
 
 	<MessageRecoveryQueue />
 
