@@ -9,6 +9,8 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Removing a saved line photo leaves the file in R2](removing-a-saved-line-photo-leaves-the-file-in-r2.md) |
 | P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
 | P1 | [Production AWS account needs the one-time SES branded-click-links setup](production-aws-ses-branded-click-links-setup.md) |
+| P1 | [Package versions can have no email limits configured at all](package-versions-can-have-no-email-limits-configured.md) |
+| P2 | [SES production-domain cutover: capacity cap and rehearsal notes](ses-production-domain-cutover-notes.md) |
 | P2 | [A full page load can crash hydration and leave the previous page on screen](full-page-load-hydration-crash-leaves-the-previous-page-on-screen.md) |
 | P2 | [Issued invoices cannot be corrected from the browser](issued-invoices-cannot-be-corrected-from-the-browser.md) |
 | P2 | [Resolving a chat identity does not stop the next conflict](resolving-a-chat-identity-does-not-stop-the-next-conflict.md) |
