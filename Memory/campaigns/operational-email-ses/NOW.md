@@ -14,9 +14,12 @@ runs provider calls in parallel. Brevo `notifications.` domain deleted; stale DL
 1. M6e burst check DONE 2026-09-26 (dev server, Raad, real SES; 520-recipient campaign `6b1c9d14...`).
    Enqueue -> SES accepted: baseline n=11 p50 1.36 s / p95 3.30 s. During the burst n=6: p50 3.7 s, p95 15.5 s,
    max 17 s; probes that landed in a big send window (35-50 marketing sends) took 10.7-17 s, others 0.9-2.1 s.
-   So a big marketing send can delay one operational email by up to ~17 s (not lost). Cause NOT isolated:
-   marketing and email workers are separate endpoints, so it is SES-rate or dev-server CPU; small n. Decide with
-   Jafar whether to chase it (e.g. give operational email its own reserved send capacity) or accept.
+   Cause FOUND (worker wake ledger): each enqueue wakes the email worker at once, but the dev server ran one
+   request at a time -- the email wake only started (06:19:34) after the marketing outbox/events wakes finished
+   (06:19:33), and those had waited for a 11 s SES-inbound wake. Head-of-line blocking in one shared dev process;
+   not SES (14/s cap, we used ~2.5/s), not our queues/leases. Industry fix = separate worker processes per lane
+   (important email vs bulk); fold into the production Docker worker plan (email worker its own container).
+   Re-measure there; needs Jafar's approval of the topology first (CLAUDE.md approval boundary). No code change.
    `limit_override` on Raad reset to null. Left for Jafar's yes to delete: campaign "M6e burst test (safe to
    delete)", its 520 simulator clients/tag/group, client "M6e ops probe", the 17 probe intents.
 2. Next: Part 5 (contractor request-setup flow; ROADMAP row 5) -- product decisions with Jafar, use grilling.
