@@ -10,7 +10,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 
 	type DnsStatus = 'unchecked' | 'pending' | 'passing' | 'failing';
-	type RowStatus = 'not_set_up' | 'setting_up' | 'ready' | 'problem';
+	type RowStatus = 'not_set_up' | 'setting_up' | 'ready' | 'problem' | 'removal_unfinished';
 	type MenuItem = {
 		label: string;
 		onSelect: () => void;
@@ -130,19 +130,23 @@
 		if (!lifecycleState) return 'not_set_up';
 		if (lifecycleState === 'verified') return 'ready';
 		if (lifecycleState === 'unhealthy') return 'problem';
+		// A removal whose provider cleanup failed stays pending until Remove is run again.
+		if (lifecycleState === 'removal_pending') return 'removal_unfinished';
 		return 'setting_up';
 	}
 	const statusLabel: Record<RowStatus, string> = {
 		not_set_up: 'Not set up',
 		setting_up: 'Setting up',
 		ready: 'Ready',
-		problem: 'Problem'
+		problem: 'Problem',
+		removal_unfinished: 'Removal unfinished'
 	};
 	const statusTone: Record<RowStatus, 'informative' | 'warning' | 'success' | 'critical'> = {
 		not_set_up: 'informative',
 		setting_up: 'warning',
 		ready: 'success',
-		problem: 'critical'
+		problem: 'critical',
+		removal_unfinished: 'warning'
 	};
 	// One status for sending and customer replies together: Ready only when both work. Replies are routed on
 	// the Check after the reply domain verifies, so a verified sender without a reply row is still setting up.
@@ -332,7 +336,10 @@
 		onError: (error) => (feedbackError = error.message),
 		onSuccess: async () => {
 			feedbackMessage = 'Everyday email removal has been recorded.';
-			closeRemoval();
+			// closeRemoval() refuses while the mutation is pending, which it still is inside onSuccess.
+			removalOpen = false;
+			removalReason = '';
+			removalConfirmation = '';
 			await refreshOperational();
 		}
 	}));
@@ -566,11 +573,14 @@
 			? 'Set up'
 			: everydayStatus === 'problem'
 				? "See what's wrong"
-				: 'Check'
+				: everydayStatus === 'removal_unfinished'
+					? 'Finish removal'
+					: 'Check'
 	);
 	function everydayPrimaryAction() {
 		if (everydayStatus === 'not_set_up') openEverydaySetup();
 		else if (everydayStatus === 'problem') everydayProblemOpen = true;
+		else if (everydayStatus === 'removal_unfinished') openRemoval();
 		else everydayRecheckMutation.mutate();
 	}
 
