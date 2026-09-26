@@ -2,6 +2,7 @@ import { httpError } from '$lib/http-error';
 // The team, as anyone in it sees it: just names and calendar colours, for putting someone on a visit.
 export type TeamMember = {
 	id: string;
+	/** Their name, or their sign-in email when they never gave one; null only if neither could be read. */
 	full_name: string | null;
 	avatar_url: string | null;
 	/** The colour this member's work wears on the calendar, chosen on their team profile. */

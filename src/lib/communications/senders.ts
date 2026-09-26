@@ -116,3 +116,21 @@ export async function removeCommunicationSender(senderId: string, idempotencyKey
 	if (!response.ok)
 		throw new SenderWriteError(result.error ?? 'The email identity could not be removed.');
 }
+
+// The address an email preview names in its "From" line. `manual` is the writer's own assigned sender;
+// `business` is the default sender quotes, invoices and receipts go out from. Kept under the senders key
+// so any sender change on the Email settings page refreshes it too.
+export type ResolvedEmailSenderKind = 'manual' | 'business';
+export type ResolvedEmailSender = { display_name: string; email_address: string } | null;
+
+export const resolvedEmailSenderKey = (kind: ResolvedEmailSenderKind) =>
+	[...communicationSendersKey, 'resolved', kind] as const;
+
+export async function fetchResolvedEmailSender(
+	kind: ResolvedEmailSenderKind
+): Promise<ResolvedEmailSender> {
+	const response = await fetch(`/api/communications/email-sender?kind=${kind}`);
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) throw httpError(response, result.error ?? 'The sender could not be loaded.');
+	return (result as { sender: ResolvedEmailSender }).sender;
+}

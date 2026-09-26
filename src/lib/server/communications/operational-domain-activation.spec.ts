@@ -181,29 +181,42 @@ describe('activateOperationalDomain', () => {
 
 		await activateOperationalDomain({ client, organizationId: ORG, rootDomain: ROOT });
 
-		expect(writtenRecords()).toEqual([
-			...['s1', 's2', 's3'].map((token) => ({
-				type: 'CNAME',
-				name: `${token}._domainkey.${SENDING}`,
-				content: `${token}.dkim.amazonses.com`,
-				proxied: false
-			})),
-			{ type: 'MX', name: MAIL_FROM, content: MAIL_FROM_MX, proxied: false, priority: 10 },
-			{
-				type: 'TXT',
-				name: MAIL_FROM,
-				content: 'v=spf1 include:amazonses.com ~all',
-				proxied: false
-			},
-			...['r1', 'r2', 'r3'].map((token) => ({
-				type: 'CNAME',
-				name: `${token}._domainkey.${RECEIVING}`,
-				content: `${token}.dkim.amazonses.com`,
-				proxied: false
-			})),
-			// Replies to the From address: the shared receipt rule first, then mail.<root> receives too.
-			{ type: 'MX', name: SENDING, content: INBOUND_MX, proxied: false, priority: 10 }
-		]);
+		// The sending and reply record sets are written together, so only the From-reply MX has a fixed place:
+		// it is written last, after the identities have verified.
+		const written = writtenRecords();
+		expect(written.at(-1)).toEqual({
+			type: 'MX',
+			name: SENDING,
+			content: INBOUND_MX,
+			proxied: false,
+			priority: 10
+		});
+		expect(written).toHaveLength(9);
+		expect(written).toEqual(
+			expect.arrayContaining([
+				...['s1', 's2', 's3'].map((token) => ({
+					type: 'CNAME',
+					name: `${token}._domainkey.${SENDING}`,
+					content: `${token}.dkim.amazonses.com`,
+					proxied: false
+				})),
+				{ type: 'MX', name: MAIL_FROM, content: MAIL_FROM_MX, proxied: false, priority: 10 },
+				{
+					type: 'TXT',
+					name: MAIL_FROM,
+					content: 'v=spf1 include:amazonses.com ~all',
+					proxied: false
+				},
+				...['r1', 'r2', 'r3'].map((token) => ({
+					type: 'CNAME',
+					name: `${token}._domainkey.${RECEIVING}`,
+					content: `${token}.dkim.amazonses.com`,
+					proxied: false
+				})),
+				// Replies to the From address: the shared receipt rule first, then mail.<root> receives too.
+				{ type: 'MX', name: SENDING, content: INBOUND_MX, proxied: false, priority: 10 }
+			])
+		);
 		expect(ses.reconcileSesReceiptRule).toHaveBeenCalled();
 	});
 

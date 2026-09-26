@@ -1,4 +1,5 @@
 <script lang="ts">
+	import EmailSenderLabel from '$lib/components/communications/EmailSenderLabel.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Popover from '$lib/components/ui/Popover.svelte';
@@ -496,7 +497,7 @@
 						{#if channel === 'sms'}
 							{estimate?.ready ? estimate.sender_phone : 'Organization default SMS number'}
 						{:else}
-							Your eligible email identity
+							<EmailSenderLabel kind="manual" />
 						{/if}
 					</dd>
 				</div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import EmailSenderLabel from '$lib/components/communications/EmailSenderLabel.svelte';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -141,7 +142,7 @@
 				</div>
 				<div>
 					<dt>From</dt>
-					<dd>Your eligible email identity</dd>
+					<dd><EmailSenderLabel kind="manual" /></dd>
 				</div>
 				<div>
 					<dt>Subject</dt>

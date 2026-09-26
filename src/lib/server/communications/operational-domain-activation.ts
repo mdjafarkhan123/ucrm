@@ -181,21 +181,28 @@ async function reconcileOperationalDomain(input: {
 	const { client, organizationId, root, sending, receiving, mailFrom } = input;
 
 	// Claim checks first, so a name owned by another organization stops the run before any provider call.
-	const sendingId = await findExistingDomainId(client, organizationId, sending, 'sending');
-	const receivingId = await findExistingDomainId(client, organizationId, receiving, 'receiving');
+	const [sendingId, receivingId] = await Promise.all([
+		findExistingDomainId(client, organizationId, sending, 'sending'),
+		findExistingDomainId(client, organizationId, receiving, 'receiving')
+	]);
 
-	// The managed zone that CONTAINS the root, by longest suffix.
-	const { id: zoneId } = await resolveCloudflareZone(root);
-
-	const tenant = await reconcileSesTenant(client, organizationId);
+	// Each provider call is a ~0.4 s round trip, and run one after another they made Check take ~10 s. Calls
+	// that do not depend on each other now run together; every step that must precede another (MAIL FROM
+	// before DNS, occupancy before any write, records before the read-back) still waits for it.
 	const configurationSetName = operationalConfigurationSetName(organizationId);
-	await ensureSesConfigurationSet(configurationSetName);
-	// Without this the operational dispatcher would send successfully and never learn what happened to it --
-	// this call already exists and is already reused as-is for Marketing's configuration set.
-	const eventDestinationReady = await ensureSesEventDestination(configurationSetName);
-
-	const sendingIdentity = await reconcileSesIdentity(sending);
-	const receivingIdentity = await reconcileSesIdentity(receiving);
+	const [{ id: zoneId }, tenant, eventDestinationReady, sendingIdentity, receivingIdentity] =
+		await Promise.all([
+			// The managed zone that CONTAINS the root, by longest suffix.
+			resolveCloudflareZone(root),
+			reconcileSesTenant(client, organizationId),
+			// Without the event destination the operational dispatcher would send successfully and never learn
+			// what happened to it -- the same call Marketing's configuration set reuses as-is.
+			ensureSesConfigurationSet(configurationSetName).then(() =>
+				ensureSesEventDestination(configurationSetName)
+			),
+			reconcileSesIdentity(sending),
+			reconcileSesIdentity(receiving)
+		]);
 
 	// Point the identity at the custom MAIL FROM before writing DNS, so SES is already watching for the records
 	// when they appear. BehaviorOnMxFailure falls back to amazonses.com meanwhile, so nothing bounces while the
@@ -214,28 +221,33 @@ async function reconcileOperationalDomain(input: {
 
 	// Occupancy: none of the three names may already serve another service. SES's own mail hosts are allowed
 	// so a re-run and a Recheck are safe.
-	assertSubdomainNotOccupied(sending, await listCloudflareDnsRecords(zoneId, sending), [
-		sesInboundMxTarget()
+	const [sendingExisting, mailFromExisting, receivingExisting] = await Promise.all([
+		listCloudflareDnsRecords(zoneId, sending),
+		listCloudflareDnsRecords(zoneId, mailFrom),
+		listCloudflareDnsRecords(zoneId, receiving)
 	]);
-	assertSubdomainNotOccupied(mailFrom, await listCloudflareDnsRecords(zoneId, mailFrom), [
-		sesMailFromMxTarget()
-	]);
-	assertSubdomainNotOccupied(receiving, await listCloudflareDnsRecords(zoneId, receiving), [
-		sesInboundMxTarget()
-	]);
+	assertSubdomainNotOccupied(sending, sendingExisting, [sesInboundMxTarget()]);
+	assertSubdomainNotOccupied(mailFrom, mailFromExisting, [sesMailFromMxTarget()]);
+	assertSubdomainNotOccupied(receiving, receivingExisting, [sesInboundMxTarget()]);
 
-	const sendingWritten = await writeRecords(zoneId, sendingRecords);
-	const receivingWritten = await writeRecords(zoneId, receivingRecords);
-
-	// Authorize the tenant to send from this identity with this configuration set. Runs on every pass rather
-	// than only on the run that created them, so a Recheck repairs a missing association.
-	await associateSesTenantResource(tenant.tenantName, sesIdentityArn(sending));
-	await associateSesTenantResource(tenant.tenantName, sesConfigurationSetArn(configurationSetName));
+	// The two record sets sit under different names, so writing them together cannot collide. Authorizing the
+	// tenant to send from this identity with this configuration set runs on every pass rather than only on the
+	// run that created them, so a Recheck repairs a missing association.
+	const [sendingWritten, receivingWritten] = await Promise.all([
+		writeRecords(zoneId, sendingRecords),
+		writeRecords(zoneId, receivingRecords),
+		associateSesTenantResource(tenant.tenantName, sesIdentityArn(sending)),
+		associateSesTenantResource(tenant.tenantName, sesConfigurationSetArn(configurationSetName))
+	]);
 
 	// Read the identities back after the records are in place: SES re-checks on its own schedule, so this
 	// reports the truth at this moment and a later Recheck picks up the change.
-	const settled = (await getSesIdentity(sending)) ?? sendingIdentity;
-	const settledReceiving = (await getSesIdentity(receiving)) ?? receivingIdentity;
+	const [settledRead, settledReceivingRead] = await Promise.all([
+		getSesIdentity(sending),
+		getSesIdentity(receiving)
+	]);
+	const settled = settledRead ?? sendingIdentity;
+	const settledReceiving = settledReceivingRead ?? receivingIdentity;
 
 	// With Easy DKIM the three CNAMEs ARE the proof of domain control, so ownership and DKIM share one status.
 	const dkimStatus = sesStatusToDns(settled.dkimStatus);

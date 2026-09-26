@@ -1,4 +1,5 @@
 <script lang="ts">
+	import EmailSenderLabel from '$lib/components/communications/EmailSenderLabel.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 
@@ -40,7 +41,7 @@
 			</div>
 			<div>
 				<dt>From</dt>
-				<dd>Your eligible email identity</dd>
+				<dd><EmailSenderLabel kind="business" /></dd>
 			</div>
 			<div>
 				<dt>Invoice</dt>

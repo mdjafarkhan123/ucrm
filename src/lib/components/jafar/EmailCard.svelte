@@ -579,7 +579,7 @@
 	);
 	function everydayPrimaryAction() {
 		if (everydayStatus === 'not_set_up') openEverydaySetup();
-		else if (everydayStatus === 'problem') everydayProblemOpen = true;
+		else if (everydayStatus === 'problem') openProblem('everyday');
 		else if (everydayStatus === 'removal_unfinished') openRemoval();
 		else everydayRecheckMutation.mutate();
 	}
@@ -596,12 +596,34 @@
 				? "See what's wrong"
 				: 'Check'
 	);
+	// A dialog opens clean, so an earlier action's error is not shown as if it came from this one.
+	function openProblem(row: 'everyday' | 'marketing') {
+		feedbackError = '';
+		feedbackMessage = '';
+		if (row === 'everyday') everydayProblemOpen = true;
+		else marketingProblemOpen = true;
+	}
+
+	const dialogOpen = $derived(
+		everydaySetupOpen ||
+			marketingSetupOpen ||
+			everydayProblemOpen ||
+			marketingProblemOpen ||
+			removalOpen
+	);
+
 	function marketingPrimaryAction() {
 		if (marketingStatus === 'not_set_up') openMarketingSetup();
-		else if (marketingStatus === 'problem') marketingProblemOpen = true;
+		else if (marketingStatus === 'problem') openProblem('marketing');
 		else marketingRecheckMutation.mutate();
 	}
 </script>
+
+<!-- A failure that happens while a dialog is open has to show inside it: the card's own alert sits behind
+     the dialog's backdrop, where a failed Check or Set up would otherwise look like nothing happened. -->
+{#snippet dialogError()}
+	{#if feedbackError}<p class="email-card__error" role="alert">{feedbackError}</p>{/if}
+{/snippet}
 
 <div class="email-card">
 	<div class="email-card__heading">
@@ -613,7 +635,9 @@
 	</div>
 
 	{#if feedbackMessage}<p class="email-card__success" role="status">{feedbackMessage}</p>{/if}
-	{#if feedbackError}<p class="email-card__error" role="alert">{feedbackError}</p>{/if}
+	{#if feedbackError && !dialogOpen}<p class="email-card__error" role="alert">
+			{feedbackError}
+		</p>{/if}
 
 	<div class="email-card__rows">
 		{#if operationalQuery.isPending}
@@ -723,6 +747,7 @@
 				invalid={Boolean(everydayFieldErrors.root_domain)}
 				errorMessage={everydayFieldErrors.root_domain}
 			/>
+			{#if !everydayFieldErrors.root_domain}{@render dialogError()}{/if}
 			<div class="email-card__dialog-actions">
 				<Button type="submit" loading={everydayActivateMutation.isPending}>Set up</Button><Button
 					type="button"
@@ -765,6 +790,7 @@
 				invalid={Boolean(marketingFieldErrors.root_domain)}
 				errorMessage={marketingFieldErrors.root_domain}
 			/>
+			{#if !marketingFieldErrors.root_domain}{@render dialogError()}{/if}
 			<div class="email-card__dialog-actions">
 				<Button type="submit" loading={marketingActivateMutation.isPending}>Set up</Button><Button
 					type="button"
@@ -786,6 +812,7 @@
 		<ul>
 			{#each everydayProblemReasons as reason (reason)}<li>{reason}</li>{/each}
 		</ul>
+		{@render dialogError()}
 		<div class="email-card__dialog-actions">
 			<Button
 				type="button"
@@ -810,6 +837,7 @@
 		<ul>
 			{#each marketingProblemReasons as reason (reason)}<li>{reason}</li>{/each}
 		</ul>
+		{@render dialogError()}
 		<div class="email-card__dialog-actions">
 			<Button
 				type="button"
@@ -878,6 +906,7 @@
 			bind:value={removalConfirmation}
 		/>
 		<Input id="remove-domain-reason" label="Private removal reason" bind:value={removalReason} />
+		{@render dialogError()}
 		{#if !removalPreviewQuery.data.can_remove}<p class="email-card__error" role="alert">
 				Remove the affected senders first.
 			</p>{/if}
@@ -975,7 +1004,7 @@
 		display: grid;
 		gap: var(--space-base);
 	}
-	.email-card__form > p,
+	.email-card__form > p:not(.email-card__error),
 	.email-card__result > p {
 		color: var(--color-text--secondary);
 		line-height: var(--typography--lineHeight-base);
