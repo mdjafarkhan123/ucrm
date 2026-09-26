@@ -20906,6 +20906,7 @@ export type Database = {
 					target_provider?: string;
 					target_provider_callback_event_id?: string;
 					target_provider_message_id?: string;
+					target_sender_authenticated?: boolean;
 					target_sender_email?: string;
 					target_sender_name?: string;
 					target_subject?: string;

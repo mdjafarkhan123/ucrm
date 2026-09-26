@@ -3,15 +3,19 @@ import { listCloudflareDnsRecords, resolveCloudflareZone } from './cloudflare-dn
 import {
 	assertSubdomainNotOccupied,
 	assertUnderSubdomain,
+	deleteOwnedRecords,
 	EmailDomainActivationError,
 	reconcileRecord
 } from './dns-reconcile';
+import { routeSendingRepliesToSes } from './operational-reply-ingestion';
 import {
 	associateSesTenantResource,
+	deleteSesIdentity,
 	getSesIdentity,
 	putSesIdentityMailFrom,
 	sesConfigurationSetArn,
 	sesIdentityArn,
+	sesInboundMxTarget,
 	sesMailFromMxTarget,
 	type SesIdentity
 } from './ses';
@@ -45,6 +49,8 @@ import {
 //     contractor's invoices depend on.
 //   - The row is purpose='marketing_sending', so every existing purpose='sending' query keeps excluding it.
 //   - Only records under news.<root> are ever written. The root, mail.<root>, and reply.<root> are untouched.
+//   - news.<root> receives too once SES has verified it, for mail clients that reply to From instead of
+//     Reply-To (docs/contractor-email-contract.md, "Conversations and replies").
 
 const MARKETING_SUBDOMAIN_LABEL = 'news';
 const MAIL_FROM_LABEL = 'bounce';
@@ -203,8 +209,10 @@ async function reconcileMarketingDomain(input: {
 	assertUnderSubdomain(expected, marketing);
 
 	// Occupancy: neither the marketing subdomain apex nor the bounce name may already serve another service.
-	// SES's own feedback host is allowed at the bounce name so a re-run and a Recheck are safe.
-	assertSubdomainNotOccupied(marketing, await listCloudflareDnsRecords(zoneId, marketing), []);
+	// SES's own inbound and feedback hosts are allowed so a re-run and a Recheck are safe.
+	assertSubdomainNotOccupied(marketing, await listCloudflareDnsRecords(zoneId, marketing), [
+		sesInboundMxTarget()
+	]);
 	assertSubdomainNotOccupied(mailFrom, await listCloudflareDnsRecords(zoneId, mailFrom), [
 		sesMailFromMxTarget()
 	]);
@@ -243,6 +251,14 @@ async function reconcileMarketingDomain(input: {
 		spfStatus === 'passing' &&
 		settled.mailFromDomain === mailFrom;
 
+	// Replies to the From address: SES receives only for a verified identity. SPF alignment is a sending concern,
+	// so it does not hold replies back.
+	const fromReplies =
+		providerVerified && providerAuthenticated
+			? await routeSendingRepliesToSes(zoneId, marketing)
+			: null;
+	if (fromReplies) recordsWritten += fromReplies.written;
+
 	const now = new Date().toISOString();
 	const history = await readDomainHistory(client, existingId);
 	const lifecycleState = nextLifecycleState(ready, history);
@@ -265,7 +281,7 @@ async function reconcileMarketingDomain(input: {
 		// inbound_mx_status 'unchecked' (communication_email_domains_purpose_health_check).
 		dmarc_status: 'unchecked' as const,
 		inbound_mx_status: 'unchecked' as const,
-		dns_records: toStoredDnsRecords(expected),
+		dns_records: toStoredDnsRecords(fromReplies ? [...expected, fromReplies.record] : expected),
 		lifecycle_state: lifecycleState,
 		last_checked_at: now,
 		// First verification stamps the clock; a later healthy recheck keeps the original date, and a domain
@@ -300,4 +316,25 @@ async function reconcileMarketingDomain(input: {
 		},
 		click
 	};
+}
+
+/**
+ * Undoes what Set up created for one organization's Marketing sending identity, at the providers only.
+ * Receiving stops first (the reply MX, then the identity SES receives for). Only records whose exact content
+ * UCRM would have written are deleted, and "already gone" counts as done, so a retried cleanup is safe.
+ */
+export async function teardownMarketingDomain(input: { rootDomain: string }): Promise<void> {
+	const { root, marketing, mailFrom } = deriveMarketingDomains(input.rootDomain);
+	const { id: zoneId } = await resolveCloudflareZone(root);
+
+	await deleteOwnedRecords(zoneId, marketing, [
+		{ type: 'MX', name: marketing, content: sesInboundMxTarget() }
+	]);
+	// The DKIM CNAME names come from the identity's tokens, so read them before the identity is deleted.
+	const identity = await getSesIdentity(marketing);
+	for (const record of identity ? sesDkimRecords(identity, marketing) : []) {
+		await deleteOwnedRecords(zoneId, record.name, [record]);
+	}
+	await deleteSesIdentity(marketing);
+	await deleteOwnedRecords(zoneId, mailFrom, sesMailFromRecords(mailFrom));
 }

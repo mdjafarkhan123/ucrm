@@ -116,7 +116,9 @@ describe('drainSesInboundQueue', () => {
 				target_provider_message_id: 'ses-msg-1',
 				target_in_reply_to_provider_message_id: 'sent-1',
 				target_sender_email: 'jane@example.com',
-				target_provider: 'ses'
+				target_provider: 'ses',
+				// The fixture carries no DKIM/DMARC verdicts, so the sender is not treated as authenticated.
+				target_sender_authenticated: false
 			})
 		);
 		expect(removed).toEqual(['receipt-1']);

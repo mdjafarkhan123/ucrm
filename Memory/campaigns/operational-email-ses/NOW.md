@@ -4,20 +4,17 @@ Goal: contractor email runs only on Amazon SES; Brevo stays only for platform/Ja
 
 ## State
 
-Part 4b (ROADMAP; contract "Conversations and replies"). A live-proven, B committed. C database half pushed live:
-`20260926140000` rewrote `record_communication_inbound_message` (From-reply matching, new optional
-`target_sender_authenticated`); all 8 cases verified in a rolled-back DO block on Raad data. Nothing receives on
-mail./news. yet (no MX), so no live behaviour changed. SES region us-east-1.
+Part 4b (ROADMAP; contract "Conversations and replies"). A live-proven, B committed, C code-complete and
+unit-tested: the worker passes `target_sender_authenticated`; Set up/Check writes the SES inbound MX on
+mail.<root> / news.<root> once each identity verifies (`routeSendingRepliesToSes`); operational Remove and org
+purge (`teardownMarketingDomain`) delete it first. Not yet run against Raad: no real MX exists until an owner
+runs Check on Raad's everyday and Marketing domains. SES region us-east-1.
 
 ## Exact next action
 
-Finish 4b C: (1) worker passes `target_sender_authenticated` = SES `receipt.dkimVerdict` or `dmarcVerdict`
-status PASS (add both to the schema in `ses-inbound-email.ts`; spec it); regenerate `database.types.ts`.
-(2) Set up writes MX -> `sesInboundMxTarget()` on mail.<root> (`operational-domain-activation.ts`, after the
-sending identity verifies) and news.<root> (`marketing-domain-activation.ts`); relax their
-`assertSubdomainNotOccupied` allow-lists; teardown deletes both MX; update pinned specs. Sending rows must keep
-`inbound_mx_status='unchecked'` (table check). Then D: live-prove Marketing + operational From-replies and an
-operational In-Reply-To link on Raad.
+D: with Jafar, run Check on Raad's everyday email and Marketing domains (this writes the two MX records live),
+confirm with `dig MX mail.<root>` / `news.<root>`, then live-prove a Gmail reply to the From address of an
+operational email and a Marketing email, plus an operational In-Reply-To link, all landing in Raad's inbox.
 
 ## Blockers
 

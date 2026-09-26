@@ -25,7 +25,8 @@ vi.mock('./ses', async () => {
 		sesIdentityArn: vi.fn(),
 		sesConfigurationSetArn: vi.fn(),
 		sesMailFromMxTarget: vi.fn(),
-		sesInboundMxTarget: vi.fn()
+		sesInboundMxTarget: vi.fn(),
+		reconcileSesReceiptRule: vi.fn()
 	};
 });
 
@@ -174,7 +175,7 @@ beforeEach(() => {
 });
 
 describe('activateOperationalDomain', () => {
-	it('writes DKIM for both identities plus the MAIL FROM records', async () => {
+	it('writes DKIM for both identities, the MAIL FROM records, and the From-reply MX once verified', async () => {
 		const { client } = makeClient();
 
 		await activateOperationalDomain({ client, organizationId: ORG, rootDomain: ROOT });
@@ -198,8 +199,74 @@ describe('activateOperationalDomain', () => {
 				name: `${token}._domainkey.${RECEIVING}`,
 				content: `${token}.dkim.amazonses.com`,
 				proxied: false
-			}))
+			})),
+			// Replies to the From address: the shared receipt rule first, then mail.<root> receives too.
+			{ type: 'MX', name: SENDING, content: INBOUND_MX, proxied: false, priority: 10 }
 		]);
+		expect(ses.reconcileSesReceiptRule).toHaveBeenCalled();
+	});
+
+	it('records the From-reply MX on the sending row, whose inbound status stays unchecked', async () => {
+		const { client, inserted } = makeClient();
+
+		await activateOperationalDomain({ client, organizationId: ORG, rootDomain: ROOT });
+
+		expect(inserted[0].inbound_mx_status).toBe('unchecked');
+		expect(inserted[0].dns_records).toContainEqual(
+			expect.objectContaining({ type: 'MX', host_name: SENDING, value: INBOUND_MX })
+		);
+	});
+
+	it('keeps an SES inbound MX already on mail.<root>, so a Recheck is safe', async () => {
+		vi.mocked(cloudflare.listCloudflareDnsRecords).mockImplementation(async (_zone, name) =>
+			name === SENDING
+				? [
+						{
+							id: 'mail-mx',
+							type: 'MX',
+							name: SENDING,
+							content: INBOUND_MX,
+							ttl: 1,
+							priority: 10,
+							proxied: false
+						}
+					]
+				: []
+		);
+		const { client } = makeClient();
+
+		const result = await activateOperationalDomain({
+			client,
+			organizationId: ORG,
+			rootDomain: ROOT
+		});
+
+		expect(result.sending.lifecycle_state).toBe('verified');
+		expect(writtenRecords().some((record) => record.name === SENDING)).toBe(false);
+	});
+
+	it('refuses a sending subdomain that already routes mail somewhere else', async () => {
+		vi.mocked(cloudflare.listCloudflareDnsRecords).mockImplementation(async (_zone, name) =>
+			name === SENDING
+				? [
+						{
+							id: 'mx1',
+							type: 'MX',
+							name: SENDING,
+							content: 'mx.mailbox-host.com',
+							ttl: 1,
+							priority: 10,
+							proxied: false
+						}
+					]
+				: []
+		);
+		const { client } = makeClient();
+
+		await expect(
+			activateOperationalDomain({ client, organizationId: ORG, rootDomain: ROOT })
+		).rejects.toMatchObject({ code: 'subdomain_occupied' });
+		expect(cloudflare.createCloudflareDnsRecord).not.toHaveBeenCalled();
 	});
 
 	it('never reads or writes the root domain', async () => {
@@ -302,6 +369,11 @@ describe('activateOperationalDomain', () => {
 		expect(result.sending.lifecycle_state).toBe('pending_dns');
 		expect(result.receiving.ses_identity_status).toBe('pending');
 		expect(inserted[0].verified_at).toBeNull();
+		// SES will not receive for an unverified identity, so mail.<root> gets no MX yet.
+		expect(writtenRecords().some((record) => record.type === 'MX' && record.name === SENDING)).toBe(
+			false
+		);
+		expect(ses.reconcileSesReceiptRule).not.toHaveBeenCalled();
 	});
 
 	it('reuses an existing sending row, keeping its first verification date', async () => {
@@ -461,6 +533,7 @@ describe('teardownOperationalDomain', () => {
 				record('reply-mx', 'MX', RECEIVING, INBOUND_MX),
 				record('someone-else', 'TXT', RECEIVING, 'google-site-verification=abc')
 			],
+			[SENDING]: [record('mail-mx', 'MX', SENDING, INBOUND_MX)],
 			[`r1._domainkey.${RECEIVING}`]: [
 				record('r1', 'CNAME', `r1._domainkey.${RECEIVING}`, 'r1.dkim.amazonses.com')
 			],
@@ -485,7 +558,8 @@ describe('teardownOperationalDomain', () => {
 		await teardownOperationalDomain({ organizationId: ORG, rootDomain: ROOT });
 
 		// Receiving stops first: the reply MX, then the reply identity SES receives for, before sending.
-		expect(order[0]).toBe('dns:reply-mx');
+		// Receiving stops first: both reply MX records go before any identity.
+		expect(order.slice(0, 2)).toEqual(['dns:reply-mx', 'dns:mail-mx']);
 		expect(order.indexOf(`identity:${RECEIVING}`)).toBeLessThan(
 			order.indexOf(`identity:${SENDING}`)
 		);

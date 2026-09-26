@@ -238,7 +238,10 @@ Some mail clients reply to the From address instead of Reply-To (RFC 5322 makes 
 2026-09-26, following GoHighLevel's dedicated-sending-domain pattern: the operational and Marketing sending
 subdomains also receive mail. A reply is matched in this order, and never guessed: the opaque conversation
 address, then the sent email it answers (`In-Reply-To`), then the sender's address against the organization's
-contacts. A reply still unmatched or matching several contacts enters the guarded organization review queue.
+contacts. The contact-address step is trusted only when Amazon SES authenticated the sender (DKIM or DMARC
+`PASS`, one From address), because a bare From header is trivially forged. A reply still unmatched, matching
+several contacts, or unauthenticated enters the guarded organization review queue. The sending subdomains
+receive only after SES verifies them, and removal deletes their MX records before the identities.
 Receiving scales past Amazon SES's fixed 200-rule ceiling through one account-wide receipt rule; UCRM routes
 each message by its recipient address. Mail that SES scans as virus or spam `FAIL` is quarantined: never shown
 in Conversations, linked to a contact, or forwarded.

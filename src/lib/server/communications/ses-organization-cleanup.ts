@@ -1,3 +1,4 @@
+import { teardownMarketingDomain } from './marketing-domain-activation';
 import { teardownOperationalDomain } from './operational-domain-activation';
 import {
 	deleteSesConfigurationSet,
@@ -17,7 +18,8 @@ const IDENTITY_ARN_MARKER = ':identity/';
  * Removes every Amazon SES resource a purged organization owned, found from its organization id alone: the
  * tenant lists the identities and configuration sets associated with it, so no domain name ever has to be
  * stored on the deletion receipt. An everyday sending identity (mail.<root>) gets the same full teardown as
- * Remove -- replies, reply identity, and the DNS records UCRM wrote. Every step treats "already gone" as
+ * Remove -- replies, reply identity, and the DNS records UCRM wrote -- and a Marketing identity (news.<root>)
+ * gets its own, reply MX included. Every step treats "already gone" as
  * done, so the closure sweep can safely retry after a partial failure.
  */
 export async function purgeOrganizationSesResources(organizationId: string): Promise<void> {
@@ -31,6 +33,8 @@ export async function purgeOrganizationSesResources(organizationId: string): Pro
 	for (const domain of identities) {
 		if (domain.startsWith('mail.')) {
 			await teardownOperationalDomain({ organizationId, rootDomain: domain.slice('mail.'.length) });
+		} else if (domain.startsWith('news.')) {
+			await teardownMarketingDomain({ rootDomain: domain.slice('news.'.length) });
 		} else {
 			await deleteSesIdentity(domain);
 		}

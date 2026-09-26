@@ -4,7 +4,8 @@ import {
 	parseSesReceiptNotification,
 	sesCandidateRecipients,
 	sesInReplyToProviderMessageId,
-	sesInboundEventKey
+	sesInboundEventKey,
+	sesSenderAuthenticated
 } from './ses-inbound-email';
 
 function notification(overrides: Partial<Record<string, unknown>> = {}) {
@@ -162,5 +163,57 @@ describe('sesInReplyToProviderMessageId', () => {
 	it('ignores missing and non-SES Message-IDs', () => {
 		expect(sesInReplyToProviderMessageId(undefined)).toBeNull();
 		expect(sesInReplyToProviderMessageId('<CAF1x@mail.gmail.com>')).toBeNull();
+	});
+});
+
+describe('sesSenderAuthenticated', () => {
+	function withVerdicts(dkim?: string, dmarc?: string) {
+		const base = notification();
+		const parsed = parseSesReceiptNotification({
+			...base,
+			receipt: {
+				...base.receipt,
+				...(dkim ? { dkimVerdict: { status: dkim } } : {}),
+				...(dmarc ? { dmarcVerdict: { status: dmarc } } : {})
+			}
+		});
+		if (!parsed) throw new Error('fixture did not parse');
+		return parsed;
+	}
+
+	it('trusts a DKIM PASS, which SES reports only when the signing domain matches From', () => {
+		expect(sesSenderAuthenticated(withVerdicts('PASS', 'GRAY'), 1)).toBe(true);
+	});
+
+	it('trusts a DMARC PASS', () => {
+		expect(sesSenderAuthenticated(withVerdicts('GRAY', 'PASS'), 1)).toBe(true);
+	});
+
+	it('does not trust GRAY, FAIL, PROCESSING_FAILED, or missing verdicts', () => {
+		expect(sesSenderAuthenticated(withVerdicts('GRAY', 'GRAY'), 1)).toBe(false);
+		expect(sesSenderAuthenticated(withVerdicts('FAIL', 'FAIL'), 1)).toBe(false);
+		expect(sesSenderAuthenticated(withVerdicts('PROCESSING_FAILED', 'PROCESSING_FAILED'), 1)).toBe(
+			false
+		);
+		expect(sesSenderAuthenticated(withVerdicts(), 1)).toBe(false);
+	});
+
+	it('never trusts a message with several From addresses, even when SES passed it', () => {
+		expect(sesSenderAuthenticated(withVerdicts('PASS', 'PASS'), 2)).toBe(false);
+		expect(sesSenderAuthenticated(withVerdicts('PASS', 'PASS'), 0)).toBe(false);
+	});
+
+	it('marks a parsed message authenticated from its single From and a passing verdict', async () => {
+		const parsed = await parseSesInboundMessage(withVerdicts('PASS'), Buffer.from(plainTextMime));
+		expect(parsed.senderAuthenticated).toBe(true);
+	});
+
+	it('does not mark a two-From message authenticated', async () => {
+		const twoFrom = plainTextMime.replace(
+			'From: "Jane Doe" <jane@example.com>',
+			'From: attacker@evil.test, jane@example.com'
+		);
+		const parsed = await parseSesInboundMessage(withVerdicts('PASS'), Buffer.from(twoFrom));
+		expect(parsed.senderAuthenticated).toBe(false);
 	});
 });

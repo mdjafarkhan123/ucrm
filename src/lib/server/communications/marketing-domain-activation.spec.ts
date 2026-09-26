@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
-import { activateMarketingDomain, recheckMarketingDomain } from './marketing-domain-activation';
+import {
+	activateMarketingDomain,
+	recheckMarketingDomain,
+	teardownMarketingDomain
+} from './marketing-domain-activation';
 import { EmailDomainActivationError } from './dns-reconcile';
 
 vi.mock('./ses', async () => {
@@ -19,7 +23,10 @@ vi.mock('./ses', async () => {
 		associateSesTenantResource: vi.fn(),
 		sesIdentityArn: vi.fn(),
 		sesConfigurationSetArn: vi.fn(),
-		sesMailFromMxTarget: vi.fn()
+		sesMailFromMxTarget: vi.fn(),
+		sesInboundMxTarget: vi.fn(),
+		reconcileSesReceiptRule: vi.fn(),
+		deleteSesIdentity: vi.fn()
 	};
 });
 
@@ -30,7 +37,8 @@ vi.mock('./cloudflare-dns', async () => {
 		resolveCloudflareZone: vi.fn(),
 		listCloudflareDnsRecords: vi.fn(),
 		createCloudflareDnsRecord: vi.fn(),
-		updateCloudflareDnsRecord: vi.fn()
+		updateCloudflareDnsRecord: vi.fn(),
+		deleteCloudflareDnsRecord: vi.fn()
 	};
 });
 
@@ -53,6 +61,7 @@ const ROOT = 'contractor.com';
 const MARKETING = 'news.contractor.com';
 const MAIL_FROM = 'bounce.news.contractor.com';
 const MX_TARGET = 'feedback-smtp.us-east-1.amazonses.com';
+const INBOUND_MX = 'inbound-smtp.us-east-1.amazonaws.com';
 const IDENTITY_ARN = `arn:aws:ses:us-east-1:881776924275:identity/${MARKETING}`;
 const CONFIG_SET_ARN = `arn:aws:ses:us-east-1:881776924275:configuration-set/ucrm-marketing-${ORG}`;
 
@@ -165,10 +174,11 @@ beforeEach(() => {
 	vi.mocked(ses.sesIdentityArn).mockReturnValue(IDENTITY_ARN);
 	vi.mocked(ses.sesConfigurationSetArn).mockReturnValue(CONFIG_SET_ARN);
 	vi.mocked(ses.sesMailFromMxTarget).mockReturnValue(MX_TARGET);
+	vi.mocked(ses.sesInboundMxTarget).mockReturnValue(INBOUND_MX);
 });
 
 describe('activateMarketingDomain', () => {
-	it('writes the DKIM, MX, and SPF records the SES identity needs, and nothing else', async () => {
+	it('writes the DKIM, MX, SPF, and From-reply MX records the SES identity needs, and nothing else', async () => {
 		const { client } = makeClient();
 
 		await activateMarketingDomain({ client, organizationId: ORG, rootDomain: ROOT });
@@ -201,8 +211,50 @@ describe('activateMarketingDomain', () => {
 				name: MAIL_FROM,
 				content: 'v=spf1 include:amazonses.com ~all',
 				proxied: false
-			}
+			},
+			// Replies to the From address: news.<root> receives once SES has verified it.
+			{ type: 'MX', name: MARKETING, content: INBOUND_MX, proxied: false, priority: 10 }
 		]);
+		expect(ses.reconcileSesReceiptRule).toHaveBeenCalled();
+	});
+
+	it('does not route From replies to SES before the identity is verified', async () => {
+		vi.mocked(ses.getSesIdentity).mockResolvedValue(
+			identity({ dkimStatus: 'PENDING', verifiedForSending: false })
+		);
+		const { client } = makeClient();
+
+		await activateMarketingDomain({ client, organizationId: ORG, rootDomain: ROOT });
+
+		const written = vi
+			.mocked(cloudflare.createCloudflareDnsRecord)
+			.mock.calls.map(([, input]) => input);
+		expect(written.some((record) => record.name === MARKETING)).toBe(false);
+		expect(ses.reconcileSesReceiptRule).not.toHaveBeenCalled();
+	});
+
+	it('refuses a marketing subdomain that already routes mail somewhere else', async () => {
+		vi.mocked(cloudflare.listCloudflareDnsRecords).mockImplementation(async (_zone, name) =>
+			name === MARKETING
+				? [
+						{
+							id: 'mx1',
+							type: 'MX',
+							name: MARKETING,
+							content: 'mx.mailbox-host.com',
+							ttl: 1,
+							priority: 10,
+							proxied: false
+						}
+					]
+				: []
+		);
+		const { client } = makeClient();
+
+		await expect(
+			activateMarketingDomain({ client, organizationId: ORG, rootDomain: ROOT })
+		).rejects.toMatchObject({ code: 'subdomain_occupied' });
+		expect(cloudflare.createCloudflareDnsRecord).not.toHaveBeenCalled();
 	});
 
 	it('never writes outside the marketing subdomain', async () => {
@@ -441,5 +493,45 @@ describe('recheckMarketingDomain', () => {
 		await expect(
 			recheckMarketingDomain({ client, organizationId: ORG, domainId: 'domain-7' })
 		).rejects.toMatchObject({ code: 'marketing_domain_mismatch' });
+	});
+});
+
+describe('teardownMarketingDomain', () => {
+	function record(id: string, type: string, name: string, content: string) {
+		return { id, type, name, content, ttl: 1, priority: null, proxied: false };
+	}
+
+	it('stops receiving first, then deletes only the records UCRM wrote and the identity', async () => {
+		const order: string[] = [];
+		const zone: Record<string, ReturnType<typeof record>[]> = {
+			[MARKETING]: [
+				record('news-mx', 'MX', MARKETING, INBOUND_MX),
+				record('someone-else', 'TXT', MARKETING, 'google-site-verification=abc')
+			],
+			[`tok1._domainkey.${MARKETING}`]: [
+				record('tok1', 'CNAME', `tok1._domainkey.${MARKETING}`, 'tok1.dkim.amazonses.com')
+			],
+			[MAIL_FROM]: [
+				record('mf-mx', 'MX', MAIL_FROM, MX_TARGET),
+				record('mf-txt', 'TXT', MAIL_FROM, '"v=spf1 include:amazonses.com ~all"')
+			]
+		};
+		vi.mocked(cloudflare.listCloudflareDnsRecords).mockImplementation(
+			async (_zone, name) => zone[name] ?? []
+		);
+		vi.mocked(cloudflare.deleteCloudflareDnsRecord).mockImplementation(async (_zone, id) => {
+			order.push(`dns:${id}`);
+		});
+		vi.mocked(ses.deleteSesIdentity).mockImplementation(async (domain) => {
+			order.push(`identity:${domain}`);
+		});
+
+		await teardownMarketingDomain({ rootDomain: ROOT });
+
+		expect(order[0]).toBe('dns:news-mx');
+		expect(order).toEqual(
+			expect.arrayContaining(['dns:tok1', `identity:${MARKETING}`, 'dns:mf-mx', 'dns:mf-txt'])
+		);
+		expect(order).not.toContain('dns:someone-else');
 	});
 });

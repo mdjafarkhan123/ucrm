@@ -1,13 +1,9 @@
-import {
-	deleteCloudflareDnsRecord,
-	listCloudflareDnsRecords,
-	resolveCloudflareZone
-} from './cloudflare-dns';
+import { listCloudflareDnsRecords, resolveCloudflareZone } from './cloudflare-dns';
 import {
 	assertSubdomainNotOccupied,
 	assertUnderSubdomain,
+	deleteOwnedRecords,
 	EmailDomainActivationError,
-	normalizeName,
 	reconcileRecord,
 	type ExpectedRecord
 } from './dns-reconcile';
@@ -39,7 +35,7 @@ import {
 	type DnsStatus,
 	type OwnerClient
 } from './ses-domain-identity';
-import { reconcileReplyIngestion } from './operational-reply-ingestion';
+import { reconcileReplyIngestion, routeSendingRepliesToSes } from './operational-reply-ingestion';
 
 export { EmailDomainActivationError } from './dns-reconcile';
 
@@ -57,7 +53,9 @@ export { EmailDomainActivationError } from './dns-reconcile';
 // Customer replies are part of the same Set up. The reply.<root> SES identity is created here; once SES has
 // verified it (usually on the first Check after the DKIM records propagate), the same pass creates the receipt
 // rule, points reply.<root>'s MX at SES, and records the receiving row (operational-reply-ingestion.ts). SES
-// will not receive for an unverified domain, so the MX is never written before that.
+// will not receive for an unverified domain, so the MX is never written before that. mail.<root> receives too,
+// once its own identity is verified, for mail clients that reply to From instead of Reply-To
+// (docs/contractor-email-contract.md, "Conversations and replies").
 
 const SENDING_LABEL = 'mail';
 const RECEIVING_LABEL = 'reply';
@@ -214,7 +212,9 @@ async function reconcileOperationalDomain(input: {
 
 	// Occupancy: none of the three names may already serve another service. SES's own mail hosts are allowed
 	// so a re-run and a Recheck are safe.
-	assertSubdomainNotOccupied(sending, await listCloudflareDnsRecords(zoneId, sending), []);
+	assertSubdomainNotOccupied(sending, await listCloudflareDnsRecords(zoneId, sending), [
+		sesInboundMxTarget()
+	]);
 	assertSubdomainNotOccupied(mailFrom, await listCloudflareDnsRecords(zoneId, mailFrom), [
 		sesMailFromMxTarget()
 	]);
@@ -244,6 +244,10 @@ async function reconcileOperationalDomain(input: {
 	// required: until it resolves, SES falls back to its own MAIL FROM and mail still flows.
 	const ready = providerVerified && providerAuthenticated;
 
+	// Replies to the From address: only once SES has verified mail.<root>, since SES will not receive for an
+	// unverified identity. Occupancy was asserted above, before anything was written.
+	const fromReplies = ready ? await routeSendingRepliesToSes(zoneId, sending) : null;
+
 	const now = new Date().toISOString();
 	const history = await readDomainHistory(client, sendingId);
 	const lifecycleState = nextLifecycleState(ready, history);
@@ -264,7 +268,9 @@ async function reconcileOperationalDomain(input: {
 		spf_status: spfStatus,
 		// inbound_mx_status stays 'unchecked' on a sending row (purpose_health_check).
 		inbound_mx_status: 'unchecked',
-		dns_records: toStoredDnsRecords(sendingRecords),
+		dns_records: toStoredDnsRecords(
+			fromReplies ? [...sendingRecords, fromReplies.record] : sendingRecords
+		),
 		lifecycle_state: lifecycleState,
 		last_checked_at: now,
 		// First verification stamps the clock; a later recheck keeps the original date, so warm-up and
@@ -301,7 +307,7 @@ async function reconcileOperationalDomain(input: {
 			ownership_status: dkimStatus,
 			dkim_status: dkimStatus,
 			spf_status: spfStatus,
-			records_written: sendingWritten,
+			records_written: sendingWritten + (fromReplies?.written ?? 0),
 			tenant_name: tenant.tenantName,
 			configuration_set_name: configurationSetName,
 			event_destination_ready: eventDestinationReady
@@ -351,8 +357,8 @@ async function readReceivingRow(
 
 /**
  * Undoes everything Set up created for one organization's everyday email, at the providers only; the owner
- * route finalizes the database rows afterwards. Receiving stops first (MX, then the reply identity SES receives
- * for), so no reply is accepted by SES with nowhere to go. Only records whose exact content UCRM would have
+ * route finalizes the database rows afterwards. Receiving stops first (both MX records, then the identities SES
+ * receives for), so no reply is accepted by SES with nowhere to go. Only records whose exact content UCRM would have
  * written are deleted -- anything else under these names belongs to someone else and stays. Every delete
  * treats "already gone" as done, so a retried removal is safe.
  */
@@ -363,9 +369,9 @@ export async function teardownOperationalDomain(input: {
 	const { root, sending, receiving, mailFrom } = deriveOperationalDomains(input.rootDomain);
 	const { id: zoneId } = await resolveCloudflareZone(root);
 
-	await deleteOwnedRecords(zoneId, receiving, [
-		{ type: 'MX', name: receiving, content: sesInboundMxTarget() }
-	]);
+	for (const name of [receiving, sending]) {
+		await deleteOwnedRecords(zoneId, name, [{ type: 'MX', name, content: sesInboundMxTarget() }]);
+	}
 
 	for (const domain of [receiving, sending]) {
 		// The DKIM CNAME names come from the identity's tokens, so read them before the identity is deleted.
@@ -376,20 +382,4 @@ export async function teardownOperationalDomain(input: {
 		await deleteSesIdentity(domain);
 	}
 	await deleteOwnedRecords(zoneId, mailFrom, sesMailFromRecords(mailFrom));
-}
-
-// Cloudflare may return a TXT value wrapped in quotes; compare the value itself.
-function recordValue(content: string): string {
-	return normalizeName(content.trim().replace(/^"(.*)"$/, '$1'));
-}
-
-async function deleteOwnedRecords(zoneId: string, name: string, owned: ExpectedRecord[]) {
-	for (const record of await listCloudflareDnsRecords(zoneId, name)) {
-		const ours = owned.some(
-			(expected) =>
-				expected.type === record.type.trim().toUpperCase() &&
-				recordValue(expected.content) === recordValue(record.content)
-		);
-		if (ours) await deleteCloudflareDnsRecord(zoneId, record.id);
-	}
 }

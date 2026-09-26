@@ -32,6 +32,8 @@ const sesReceiptNotificationSchema = z
 				recipients: z.array(z.string().trim().min(3)).min(1),
 				spamVerdict: sesVerdictSchema,
 				virusVerdict: sesVerdictSchema,
+				dkimVerdict: sesVerdictSchema,
+				dmarcVerdict: sesVerdictSchema,
 				action: z
 					.object({
 						type: z.literal('S3'),
@@ -62,6 +64,21 @@ export function sesQuarantineReason(notification: SesReceiptNotification): 'viru
 	if (notification.receipt.virusVerdict?.status === 'FAIL') return 'virus';
 	if (notification.receipt.spamVerdict?.status === 'FAIL') return 'spam';
 	return null;
+}
+
+// True only when SES itself authenticated the From domain. SES reports DKIM PASS only when the signing domain
+// matches the From domain (a mismatch is GRAY), and DMARC PASS requires aligned SPF or DKIM; DMARC alone would
+// miss senders on p=none, which SES reports as GRAY even when aligned. SES checks the From header, so a message
+// with several From addresses never counts: which one was checked is ambiguous.
+export function sesSenderAuthenticated(
+	notification: SesReceiptNotification,
+	fromAddressCount: number
+): boolean {
+	if (fromAddressCount !== 1) return false;
+	return (
+		notification.receipt.dkimVerdict?.status === 'PASS' ||
+		notification.receipt.dmarcVerdict?.status === 'PASS'
+	);
 }
 
 // The trusted envelope recipients SES itself validated during the SMTP transaction -- never the MIME To/Cc.
@@ -131,6 +148,7 @@ export type ParsedSesInboundMessage = {
 	textContent: string;
 	messageKind: InboundMessageKind;
 	inReplyToProviderMessageId: string | null;
+	senderAuthenticated: boolean;
 	candidateRecipients: CandidateRecipient[];
 	attachments: Attachment[];
 };
@@ -158,6 +176,7 @@ export async function parseSesInboundMessage(
 		textContent: parsed.text ?? '',
 		messageKind: classifyMessageKind(headersFromHeaderLines(parsed.headerLines), sender.address),
 		inReplyToProviderMessageId: sesInReplyToProviderMessageId(parsed.inReplyTo),
+		senderAuthenticated: sesSenderAuthenticated(notification, flattenAddresses(parsed.from).length),
 		candidateRecipients: sesCandidateRecipients(notification),
 		attachments: parsed.attachments
 	};

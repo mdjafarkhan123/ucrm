@@ -342,7 +342,8 @@ async function ingestOneMessage(
 			target_text_content: parsed.textContent,
 			target_message_kind: parsed.messageKind,
 			target_candidate_recipients: parsed.candidateRecipients as unknown as Json,
-			target_provider: 'ses'
+			target_provider: 'ses',
+			target_sender_authenticated: parsed.senderAuthenticated
 		}
 	);
 	if (rpcErr) throw rpcError('Could not resolve an SES inbound message', rpcErr);

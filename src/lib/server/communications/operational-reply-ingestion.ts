@@ -4,7 +4,8 @@ import {
 	assertSubdomainNotOccupied,
 	assertUnderSubdomain,
 	normalizeName,
-	reconcileRecord
+	reconcileRecord,
+	type ExpectedRecord
 } from './dns-reconcile';
 import { reconcileSesReceiptRule, sesIdentityArn, sesInboundMxTarget } from './ses';
 import {
@@ -64,6 +65,38 @@ async function mxIsVisible(domain: string, target: string): Promise<boolean> {
 	return exchanges.length > 0 && exchanges.every((exchange) => exchange === normalizeName(target));
 }
 
+// The one account-wide receipt rule receives for every verified identity; each message is routed by recipient.
+async function ensureSharedReceiptRule(): Promise<void> {
+	await reconcileSesReceiptRule(SES_INBOUND_RULE_SET_NAME, SES_INBOUND_RULE_NAME, {
+		bucketName: SES_INBOUND_BUCKET_NAME,
+		objectKeyPrefix: SES_INBOUND_OBJECT_KEY_PREFIX,
+		topicArn: sesInboundTopicArn(getSesEnv())
+	});
+}
+
+/**
+ * Lets a verified sending subdomain (mail.<root> or news.<root>) receive too, for mail clients that reply to
+ * the From address instead of Reply-To. The caller must already have verified the SES identity and asserted
+ * the name is not occupied. The receipt rule is ensured before the MX, as for reply.<root>. MX visibility is
+ * not tracked: a sending row keeps inbound_mx_status 'unchecked' (purpose_health_check), and the reply alias on
+ * reply.<root> stays the primary route.
+ */
+export async function routeSendingRepliesToSes(
+	zoneId: string,
+	subdomain: string
+): Promise<{ record: ExpectedRecord; written: number }> {
+	await ensureSharedReceiptRule();
+	const record: ExpectedRecord = {
+		type: 'MX',
+		name: subdomain,
+		content: sesInboundMxTarget(),
+		priority: MX_PRIORITY
+	};
+	assertUnderSubdomain([record], subdomain);
+	const written = (await reconcileRecord(zoneId, record)) === 'unchanged' ? 0 : 1;
+	return { record, written };
+}
+
 /**
  * Reconciles one organization's reply subdomain: the account-wide receipt rule is ensured (it already receives
  * for every verified domain), then the subdomain's MX is pointed at SES. Both steps are idempotent, so the next
@@ -79,11 +112,7 @@ export async function reconcileReplyIngestion(input: {
 }): Promise<ReplyIngestionResult> {
 	const { client, organizationId, root, receiving, zoneId, receivingId } = input;
 
-	await reconcileSesReceiptRule(SES_INBOUND_RULE_SET_NAME, SES_INBOUND_RULE_NAME, {
-		bucketName: SES_INBOUND_BUCKET_NAME,
-		objectKeyPrefix: SES_INBOUND_OBJECT_KEY_PREFIX,
-		topicArn: sesInboundTopicArn(getSesEnv())
-	});
+	await ensureSharedReceiptRule();
 
 	const mxRecord = {
 		type: 'MX' as const,

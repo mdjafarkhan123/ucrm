@@ -1,5 +1,6 @@
 import {
 	createCloudflareDnsRecord,
+	deleteCloudflareDnsRecord,
 	listCloudflareDnsRecords,
 	updateCloudflareDnsRecord,
 	type CloudflareDnsRecord,
@@ -135,4 +136,28 @@ export async function reconcileRecord(
 		'ambiguous_records',
 		false
 	);
+}
+
+// Cloudflare may return a TXT value wrapped in quotes; compare the value itself.
+function recordValue(content: string): string {
+	return normalizeName(content.trim().replace(/^"(.*)"$/, '$1'));
+}
+
+/**
+ * Deletes, at one name, only the records whose exact type and content UCRM would have written. Anything else
+ * under the name belongs to someone else and stays. "Already gone" is simply nothing to delete.
+ */
+export async function deleteOwnedRecords(
+	zoneId: string,
+	name: string,
+	owned: ExpectedRecord[]
+): Promise<void> {
+	for (const record of await listCloudflareDnsRecords(zoneId, name)) {
+		const ours = owned.some(
+			(expected) =>
+				expected.type === record.type.trim().toUpperCase() &&
+				recordValue(expected.content) === recordValue(record.content)
+		);
+		if (ours) await deleteCloudflareDnsRecord(zoneId, record.id);
+	}
 }
