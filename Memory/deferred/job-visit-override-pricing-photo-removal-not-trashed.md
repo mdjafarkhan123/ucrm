@@ -13,3 +13,6 @@
 - **Constraint:** fix needs the same entrySavedFileIds-diff approach, computed from the dialog's own saved
   pricing snapshot since this path never calls openEdit().
 - **Pointer:** src/lib/components/jobs/JobVisitDialog.svelte, src/lib/components/quotes/ProductsAndServicesBlock.svelte.
+- **Check first (2026-09-27):** a visit-override line may share its `image_file_id` with the job's own line
+  (and a job line with its quote's). Confirm what `/api/files/[id]/trash` does with a file still linked
+  elsewhere before trashing on removal — the same question applies to the existing block fix.

@@ -11,3 +11,7 @@ become enforceable on a paid plan, or when the Team page's cache invalidation is
 Constraint already known: seats are `organization_members` in `pending`/`active` plus invitations in
 `reserving` only -- an `invited` row is already counted through its pending membership, so any optimistic
 client-side bump must not add a seat for both.
+
+Investigated 2026-09-27: `private.employee_seats_used`, `attach_team_invitation_identity` (atomic
+reserving→invited + pending member) and the Team page (no optimistic bump) all count correctly by reading.
+Only a live repro remains, which sends a real invite email — needs Jafar's OK (e.g. to his own +alias).
