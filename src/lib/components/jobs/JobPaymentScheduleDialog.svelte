@@ -65,6 +65,9 @@
 
 	let saving = $state(false);
 	let error = $state('');
+	// The draft a refusal was about. Once the stages change, that message no longer describes the screen
+	// (the live "Adds up to" line is the truth), so the banner steps aside until the next save says otherwise.
+	let errorDraft = $state('');
 
 	function toDraftRow(stage: JobPaymentStage): DraftRow {
 		return {
@@ -139,6 +142,16 @@
 
 	const plannedTotal = $derived(rowAmounts.reduce((sum, amount) => sum + amount, 0));
 
+	const draftKey = $derived(
+		JSON.stringify([mode, rows.map((row) => [row.description, row.fixedValue, row.percentDraft])])
+	);
+	const visibleError = $derived(error && errorDraft === draftKey ? error : '');
+
+	function fail(message: string) {
+		error = message;
+		errorDraft = draftKey;
+	}
+
 	// A row that sits before a billed one cannot be removed: dropping it would move the billed stage's
 	// position, and a billed stage keeps everything about it, position included.
 	const lastBilledIndex = $derived(
@@ -173,10 +186,11 @@
 			await onSaved();
 		} catch (cause) {
 			const failure = cause as JobWriteError;
-			error =
+			fail(
 				failure.reason === 'stale'
 					? 'Someone else changed this job. Close this, check the latest figures, and try again.'
-					: (failure.fieldErrors?.form ?? failure.message);
+					: (failure.fieldErrors?.form ?? failure.message)
+			);
 		} finally {
 			saving = false;
 		}
@@ -184,33 +198,37 @@
 
 	function save() {
 		if (totalMinor <= 0) {
-			error = 'Add priced lines to this job before setting a payment schedule.';
+			fail('Add priced lines to this job before setting a payment schedule.');
 			return;
 		}
 		if (rows.length < 2) {
-			error = 'A payment schedule needs at least 2 stages.';
+			fail('A payment schedule needs at least 2 stages.');
 			return;
 		}
 		for (const row of rows) {
 			if (row.description.trim().length < 2) {
-				error = 'Give every stage a description.';
+				fail('Give every stage a description.');
 				return;
 			}
 			if (rawValue(row) <= 0) {
-				error = 'Every stage needs an amount above zero.';
+				fail('Every stage needs an amount above zero.');
 				return;
 			}
 		}
 		if (mode === 'percentage') {
 			const basisPoints = rows.reduce((sum, row) => sum + rawValue(row), 0);
 			if (basisPoints !== 10000) {
-				error = `The percentages must add up to 100%. They currently add up to ${(basisPoints / 100).toFixed(2)}%.`;
+				fail(
+					`The percentages must add up to 100%. They currently add up to ${(basisPoints / 100).toFixed(2)}%.`
+				);
 				return;
 			}
 		} else if (plannedTotal !== totalMinor) {
-			error = `The stages must add up to the job total. They currently add up to ${money.format(
-				plannedTotal / 100
-			)} but the total is ${money.format(totalMinor / 100)}.`;
+			fail(
+				`The stages must add up to the job total. They currently add up to ${money.format(
+					plannedTotal / 100
+				)} but the total is ${money.format(totalMinor / 100)}.`
+			);
 			return;
 		}
 
@@ -232,7 +250,7 @@
 	onClose={saving ? () => {} : onClose}
 >
 	<div class="schedule-dialog">
-		{#if error}<p class="schedule-dialog__error" role="alert">{error}</p>{/if}
+		{#if visibleError}<p class="schedule-dialog__error" role="alert">{visibleError}</p>{/if}
 
 		<p class="schedule-dialog__intro">
 			Split this job into stages you invoice one at a time. Every stage together has to come to the
