@@ -1,13 +1,15 @@
 # Now — Deferred launch sweep
 
-**Goal:** Clear the 46 ready deferred tasks before the first paying client, most urgent first.
+**Goal:** Clear the ready deferred tasks before the first paying client, most urgent first.
 
-**Active part:** 1 — Email can silently stop.
+**Active part:** 2 — Broken things (Opus). Part 1 done `32f49eb0`.
 
-**Exact next action:** Guard shipped (`20260927160000`), live-proven. Ask Jafar how to correct the package terms (see the deferred note), do it through the Jafar Panel, then close Part 1 and start Part 2.
+**Exact next action:** Start with `office-role-cannot-load-client-communication-history` (reproduce with the
+office test login on Raad LTD), then `two-job-billing-reminder-modes-raise-no-reminder`, then the rest of the
+Part 2 list in ROADMAP order. Fix, verify, delete each note and its deferred INDEX row, commit per fix.
 
-**Blockers:** Jafar's choice on the package-terms correction.
+**Blockers:** None. Do not touch packages (Jafar, 2026-09-27).
 
 **Pointers:**
-- Memory/deferred/package-versions-can-have-no-email-limits-configured.md
-- Memory/campaigns/deferred-launch-sweep/ROADMAP.md (only when closing a part)
+- Memory/campaigns/deferred-launch-sweep/ROADMAP.md Part 2 (task-note names)
+- Memory/deferred/<task>.md for each task
