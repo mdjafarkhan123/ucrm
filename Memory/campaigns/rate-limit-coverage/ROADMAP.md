@@ -1,4 +1,4 @@
-# Roadmap — Rate-limit coverage (re-verified 2026-09-27, awaiting Jafar's approval)
+# Roadmap — Rate-limit coverage (approved 2026-09-27)
 
 ## Origin
 
@@ -16,9 +16,10 @@ Memory/deferred/authenticated-reads-and-pipeline-writes-are-not-rate-limited.md.
   Fine for the pilot, a known scaling cost on every request at full scale; Redis is already in the
   production plan and is the industry-standard home for a per-request limiter.
 
-## Proposed parts (not approved)
+## Parts
 
-1. **Front-door limit** — in `hooks.server.ts`, for `/api/*` only: per-person read bucket (GET/HEAD) and
+1. **Front-door limit** — DONE `45127a76` (live-verified all roles + Jafar Panel; counter adds ~68 ms per
+   request on managed Supabase — expected ~1 ms once DB/Redis share the VPS). Was: in `hooks.server.ts`, for `/api/*` only: per-person read bucket (GET/HEAD) and
    per-person write bucket, one check per request (GitHub/Stripe model: per-identity, reads and writes
    budgeted separately). Jafar Panel requests keyed on the owner session. Existing per-route/per-org
    buckets stay as inner limits. Limiter behind a small interface so storage can be swapped. Friendly 429
@@ -29,8 +30,8 @@ Memory/deferred/authenticated-reads-and-pipeline-writes-are-not-rate-limited.md.
 3. **Redis storage** — blocked until the VPS/Redis exists; do as part of the production cutover.
 4. **Close-out** — delete the deferred note.
 
-## Open decisions for Jafar
+## Decisions (Jafar, 2026-09-27)
 
-- Storage path: database now + Redis at VPS (recommended) vs. other options.
-- Starting numbers: proposed 600 reads/min and 120 saves/min per person, confirmed by measuring real
-  page loads and editing before shipping.
+- Database counter now; Redis swap (only `checkRateLimit`'s body changes) at the VPS move, failing open
+  if Redis is down. When this campaign closes, move Part 3 onto crm-launch-readiness's cutover list.
+- 600 reads / 120 writes per person per minute (measured normal fast browsing: ~38 API requests/min).
