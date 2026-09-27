@@ -8,6 +8,7 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import OwnerReconfirmDialog from '$lib/components/jafar/OwnerReconfirmDialog.svelte';
 	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
+	import { jafarOrganizationKey, jafarOrganizationsKey } from '$lib/jafar/query-keys';
 
 	type CommercialAction = 'renewal' | 'correction' | 'refund' | 'reversal';
 	type OriginalEvent = {
@@ -192,9 +193,9 @@
 							? 'Refund recorded.'
 							: 'Payment reversal recorded.';
 			void queryClient.invalidateQueries({
-				queryKey: ['jafar', 'organizations', organizationId]
+				queryKey: jafarOrganizationKey(organizationId)
 			});
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'organizations'] });
+			void queryClient.invalidateQueries({ queryKey: jafarOrganizationsKey });
 		}
 	}));
 

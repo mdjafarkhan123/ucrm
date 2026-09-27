@@ -6,6 +6,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import OwnerReconfirmDialog from '$lib/components/jafar/OwnerReconfirmDialog.svelte';
 	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
+	import { jafarOrganizationKey } from '$lib/jafar/query-keys';
 
 	type FreeAccessGrant = { grant_id: string; starts_at: string; access_until_date: string | null };
 	type FreeAccessState = { active: FreeAccessGrant | null; future: FreeAccessGrant | null };
@@ -210,7 +211,7 @@
 							? 'Free access converted to forever.'
 							: 'Free access ended.';
 			void queryClient.invalidateQueries({
-				queryKey: ['jafar', 'organizations', organizationId]
+				queryKey: jafarOrganizationKey(organizationId)
 			});
 		}
 	}));

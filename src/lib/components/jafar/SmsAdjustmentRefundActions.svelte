@@ -10,6 +10,10 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import OwnerReconfirmDialog from '$lib/components/jafar/OwnerReconfirmDialog.svelte';
+	import {
+		jafarOrganizationSmsAdjustmentsKey,
+		jafarOrganizationSmsRefundsKey
+	} from '$lib/jafar/query-keys';
 
 	type LedgerEntry = {
 		id: string;
@@ -52,8 +56,8 @@
 	let { organizationId }: { organizationId: string } = $props();
 
 	const queryClient = useQueryClient();
-	const adjustmentsKey = $derived(['jafar', 'organizations', organizationId, 'sms', 'adjustments']);
-	const refundsKey = $derived(['jafar', 'organizations', organizationId, 'sms', 'refunds']);
+	const adjustmentsKey = $derived(jafarOrganizationSmsAdjustmentsKey(organizationId));
+	const refundsKey = $derived(jafarOrganizationSmsRefundsKey(organizationId));
 
 	const adjustmentsQuery = createQuery<ListResponse>(() => ({
 		queryKey: adjustmentsKey,

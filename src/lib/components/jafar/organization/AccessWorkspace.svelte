@@ -29,6 +29,7 @@
 	import SmsHoldActions from '$lib/components/jafar/SmsHoldActions.svelte';
 	import SmsPromotionalCreditActions from '$lib/components/jafar/SmsPromotionalCreditActions.svelte';
 	import SmsAdjustmentRefundActions from '$lib/components/jafar/SmsAdjustmentRefundActions.svelte';
+	import { jafarOrganizationKey, jafarOrganizationsKey } from '$lib/jafar/query-keys';
 	import {
 		calendarDateFromString,
 		calendarDateToString,
@@ -80,8 +81,8 @@
 	}
 
 	function invalidateOrganization() {
-		void queryClient.invalidateQueries({ queryKey: ['jafar', 'organizations', organizationId] });
-		void queryClient.invalidateQueries({ queryKey: ['jafar', 'organizations'] });
+		void queryClient.invalidateQueries({ queryKey: jafarOrganizationKey(organizationId) });
+		void queryClient.invalidateQueries({ queryKey: jafarOrganizationsKey });
 	}
 
 	// Package change ----------------------------------------------------------

@@ -10,6 +10,7 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import { jafarOrganizationSmsRegistrationsKey } from '$lib/jafar/query-keys';
 
 	type RegistrationStatus = 'waiting_for_info' | 'under_review' | 'action_needed' | 'approved';
 	type ReadinessState =
@@ -40,7 +41,7 @@
 	let { organizationId }: { organizationId: string } = $props();
 
 	const queryClient = useQueryClient();
-	const listKey = $derived(['jafar', 'organizations', organizationId, 'sms', 'registrations']);
+	const listKey = $derived(jafarOrganizationSmsRegistrationsKey(organizationId));
 
 	const listQuery = createQuery<ListResponse>(() => ({
 		queryKey: listKey,

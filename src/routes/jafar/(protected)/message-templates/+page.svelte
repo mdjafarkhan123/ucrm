@@ -14,6 +14,7 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import { jafarMessageTemplateKey, jafarMessageTemplatesKey } from '$lib/jafar/query-keys';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -98,7 +99,7 @@
 	let bodyTextareaEl = $state<HTMLTextAreaElement | undefined>();
 
 	const list = createQuery<ListResponse>(() => ({
-		queryKey: ['jafar', 'message-templates'],
+		queryKey: jafarMessageTemplatesKey,
 		queryFn: async () => {
 			const response = await fetch('/api/jafar/message-templates');
 			const result = (await response.json()) as ListResponse;
@@ -108,7 +109,7 @@
 	}));
 
 	const detail = createQuery<DetailResponse>(() => ({
-		queryKey: ['jafar', 'message-templates', selectedKey],
+		queryKey: jafarMessageTemplateKey(selectedKey),
 		queryFn: async () => {
 			const response = await fetch(`/api/jafar/message-templates/${selectedKey}`);
 			const result = (await response.json()) as DetailResponse;
@@ -135,9 +136,7 @@
 	const missingRequired = $derived(
 		(detail.data?.placeholders ?? [])
 			.filter((placeholder) => placeholder.required)
-			.filter(
-				(placeholder) => !`${subjectDraft}\n${bodyDraft}`.includes(`{{${placeholder.key}}}`)
-			)
+			.filter((placeholder) => !`${subjectDraft}\n${bodyDraft}`.includes(`{{${placeholder.key}}}`))
 	);
 
 	const saveDraft = createMutation<MutationResponse, Error, void>(() => ({
@@ -161,7 +160,7 @@
 			toast.success('Draft saved.');
 			if (result.template)
 				savedDraft = { subject: result.template.subject_draft, body: result.template.body_draft };
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'message-templates'] });
+			void queryClient.invalidateQueries({ queryKey: jafarMessageTemplatesKey });
 		}
 	}));
 
@@ -186,21 +185,18 @@
 		onSuccess: () => {
 			publishConfirmed = false;
 			toast.success('Template published. It is now the live version.');
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'message-templates'] });
+			void queryClient.invalidateQueries({ queryKey: jafarMessageTemplatesKey });
 		}
 	}));
 
 	const restoreVersion = createMutation<MutationResponse, Error, number>(() => ({
 		mutationFn: async (version) => {
 			if (!selectedKey) throw new Error('Choose a template first.');
-			const response = await fetch(
-				`/api/jafar/message-templates/${selectedKey}/restore-version`,
-				{
-					method: 'POST',
-					headers: { 'content-type': 'application/json' },
-					body: JSON.stringify({ version })
-				}
-			);
+			const response = await fetch(`/api/jafar/message-templates/${selectedKey}/restore-version`, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ version })
+			});
 			const result = (await response.json()) as MutationResponse;
 			if (!response.ok) throw new Error(result.error ?? 'The draft could not be restored.');
 			return result;
@@ -215,7 +211,7 @@
 				bodyDraft = result.template.body_draft;
 				savedDraft = { subject: result.template.subject_draft, body: result.template.body_draft };
 			}
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'message-templates'] });
+			void queryClient.invalidateQueries({ queryKey: jafarMessageTemplatesKey });
 		}
 	}));
 
@@ -364,8 +360,7 @@
 									bind:value={bodyDraft}
 									required
 									rows="14"
-									spellcheck="false"
-								></textarea></label
+									spellcheck="false"></textarea></label
 							>
 
 							{#if missingRequired.length > 0}
@@ -453,9 +448,8 @@
 							<div class="templates__restore-confirm" role="alertdialog" aria-live="assertive">
 								<span aria-hidden="true">{@html alertIcon}</span>
 								<p>
-									Restore version <strong>{restoringVersion}</strong> into the draft? Any unsaved
-									changes in the editor above will be lost. This does not publish anything by
-									itself.
+									Restore version <strong>{restoringVersion}</strong> into the draft? Any unsaved changes
+									in the editor above will be lost. This does not publish anything by itself.
 								</p>
 								<div class="templates__restore-confirm-actions">
 									<Button

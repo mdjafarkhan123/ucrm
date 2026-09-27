@@ -7,6 +7,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import { jafarOrganizationWebsiteChatAuthorityKey } from '$lib/jafar/query-keys';
 
 	type Suspension = {
 		event_id: string;
@@ -39,12 +40,7 @@
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
-	const authorityKey = $derived([
-		'jafar',
-		'organizations',
-		organizationId,
-		'website-chat-authority'
-	]);
+	const authorityKey = $derived(jafarOrganizationWebsiteChatAuthorityKey(organizationId));
 	const endpoint = $derived(
 		`/api/jafar/organizations/${organizationId}/communications/website-chat-authority`
 	);

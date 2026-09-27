@@ -17,6 +17,7 @@
 		dateTimePickerValueToLocalString,
 		localDateTimeToIso
 	} from '$lib/components/ui/date-time';
+	import { jafarOrganizationWebsiteChatAllowanceKey } from '$lib/jafar/query-keys';
 
 	type AllowanceKey = 'website_chat_accepted_conversations';
 	type Allowance = {
@@ -42,12 +43,7 @@
 	let { organizationId }: { organizationId: string } = $props();
 
 	const queryClient = useQueryClient();
-	const allowanceKey = $derived([
-		'jafar',
-		'organizations',
-		organizationId,
-		'website-chat-allowance'
-	]);
+	const allowanceKey = $derived(jafarOrganizationWebsiteChatAllowanceKey(organizationId));
 	const allowancesQuery = createQuery<AllowanceResponse>(() => ({
 		queryKey: allowanceKey,
 		queryFn: async () => {

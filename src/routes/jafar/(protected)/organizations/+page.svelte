@@ -14,6 +14,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import { jafarOrganizationsListKey } from '$lib/jafar/query-keys';
 
 	type LifecycleStatus = 'active' | 'suspended' | 'pending_setup' | 'pending_closure' | 'closed';
 	type AttentionReason =
@@ -92,7 +93,7 @@
 	});
 
 	const organizations = createInfiniteQuery<DirectoryPage>(() => ({
-		queryKey: ['jafar', 'organizations', debouncedSearch.trim(), attentionFilter],
+		queryKey: jafarOrganizationsListKey(debouncedSearch.trim(), attentionFilter),
 		queryFn: async ({ pageParam }) => {
 			const params = new URLSearchParams();
 			if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());

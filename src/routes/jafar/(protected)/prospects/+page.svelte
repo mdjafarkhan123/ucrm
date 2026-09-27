@@ -4,6 +4,13 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { markRecordNotificationsRead, notificationsKey } from '$lib/jafar/notifications';
+	import {
+		jafarOrganizationsKey,
+		jafarPackagesKey,
+		jafarProspectKey,
+		jafarProspectsKey,
+		jafarProspectsListKey
+	} from '$lib/jafar/query-keys';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
@@ -325,7 +332,7 @@
 	}
 
 	const prospects = createQuery<ProspectListResponse>(() => ({
-		queryKey: ['jafar', 'prospects', stageFilter, search],
+		queryKey: jafarProspectsListKey(stageFilter, search),
 		queryFn: async () => {
 			const params = new URLSearchParams();
 			if (stageFilter) params.set('stage', stageFilter);
@@ -339,7 +346,7 @@
 	}));
 
 	const prospectDetail = createQuery<ProspectDetailResponse>(() => ({
-		queryKey: ['jafar', 'prospect', selectedProspectId],
+		queryKey: jafarProspectKey(selectedProspectId),
 		enabled: Boolean(selectedProspectId),
 		queryFn: async () => {
 			if (!selectedProspectId) throw new Error('Choose a prospect first.');
@@ -351,7 +358,7 @@
 	}));
 
 	const packageOptionsQuery = createQuery<PackagesResponse>(() => ({
-		queryKey: ['jafar', 'packages'],
+		queryKey: jafarPackagesKey,
 		enabled: editingPackage,
 		queryFn: async () => {
 			const response = await fetch('/api/jafar/packages');
@@ -400,8 +407,8 @@
 		onSuccess: () => {
 			editingCorrection = false;
 			actionMessage = 'Correction saved.';
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospects'] });
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospect', selectedProspectId] });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 		}
 	}));
 
@@ -422,8 +429,8 @@
 		onSuccess: () => {
 			editingPackage = false;
 			actionMessage = 'Package changed.';
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospects'] });
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospect', selectedProspectId] });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 		}
 	}));
 
@@ -444,8 +451,8 @@
 		onSuccess: () => {
 			confirmingNotProceeding = false;
 			actionMessage = 'Application marked not proceeding.';
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospects'] });
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospect', selectedProspectId] });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 		}
 	}));
 
@@ -463,8 +470,8 @@
 		onError: (error) => (actionError = error.message),
 		onSuccess: () => {
 			actionMessage = 'Application marked reviewed.';
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospects'] });
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospect', selectedProspectId] });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 		}
 	}));
 
@@ -483,8 +490,8 @@
 		onError: (error) => (actionError = error.message),
 		onSuccess: () => {
 			actionMessage = 'Marked as not a duplicate.';
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospects'] });
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospect', selectedProspectId] });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 		}
 	}));
 
@@ -510,8 +517,8 @@
 		onSuccess: () => {
 			confirmingPayment = false;
 			actionMessage = 'Payment confirmed.';
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospects'] });
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospect', selectedProspectId] });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 		}
 	}));
 
@@ -538,9 +545,9 @@
 				result.setup_email_sent === false
 					? 'Organization provisioned, but the setup email could not be sent. Resend it below.'
 					: 'Organization provisioned. Setup email sent.';
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospects'] });
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospect', selectedProspectId] });
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'organizations'] });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
+			void queryClient.invalidateQueries({ queryKey: jafarOrganizationsKey });
 		}
 	}));
 
@@ -561,8 +568,8 @@
 		onSuccess: () => {
 			confirmingReversal = false;
 			actionMessage = 'Payment reversed. The application now needs attention.';
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospects'] });
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospect', selectedProspectId] });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 		}
 	}));
 
@@ -580,7 +587,7 @@
 		onError: (error) => (actionError = error.message),
 		onSuccess: () => {
 			actionMessage = 'Setup email sent.';
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'prospect', selectedProspectId] });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 		}
 	}));
 
@@ -816,11 +823,8 @@
 				onchange={clearSelection}
 			/>
 		</div>
-		<Button
-			type="button"
-			variant="secondary"
-			variation="destructive"
-			onclick={clearFilters}>Clear filters</Button
+		<Button type="button" variant="secondary" variation="destructive" onclick={clearFilters}
+			>Clear filters</Button
 		>
 	</section>
 

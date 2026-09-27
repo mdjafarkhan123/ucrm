@@ -10,6 +10,7 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import { jafarSuppressionRemovalsKey } from '$lib/jafar/query-keys';
 
 	type PendingRequest = {
 		id: string;
@@ -40,7 +41,7 @@
 		error?: string;
 	};
 
-	const queueKey = ['jafar', 'communications', 'suppression-removals'] as const;
+	const queueKey = jafarSuppressionRemovalsKey;
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 

@@ -9,6 +9,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import { jafarEmailSendingCapacityKey } from '$lib/jafar/query-keys';
 
 	type StageKey = 'days_1_3' | 'days_4_7' | 'days_8_14';
 
@@ -50,7 +51,7 @@
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
-	const overviewKey = ['jafar', 'communications', 'email-sending-capacity'] as const;
+	const overviewKey = jafarEmailSendingCapacityKey;
 
 	const overviewQuery = createQuery<OverviewResponse>(() => ({
 		queryKey: overviewKey,

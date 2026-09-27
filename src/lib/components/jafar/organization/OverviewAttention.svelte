@@ -9,6 +9,11 @@
 		OperationListResponse,
 		OperationAttempt
 	} from './types';
+	import {
+		jafarOrganizationEmailDomainsKey,
+		jafarOrganizationEmailReputationKey,
+		jafarOrganizationEmailSendingPauseKey
+	} from '$lib/jafar/query-keys';
 
 	let {
 		access,
@@ -31,7 +36,7 @@
 	// These are the existing Communications cache entries and full API responses.
 	// Overview reads only health signals; the detailed controls stay in their workspace.
 	const pauseQuery = createQuery(() => ({
-		queryKey: ['jafar', 'organizations', access.organization.id, 'email-sending-pause'],
+		queryKey: jafarOrganizationEmailSendingPauseKey(access.organization.id),
 		queryFn: async () => {
 			const response = await fetch(
 				`/api/jafar/organizations/${access.organization.id}/communications/sending-pause`
@@ -45,7 +50,7 @@
 		staleTime: 15_000
 	}));
 	const reputationQuery = createQuery(() => ({
-		queryKey: ['jafar', 'organizations', access.organization.id, 'email-reputation'],
+		queryKey: jafarOrganizationEmailReputationKey(access.organization.id),
 		queryFn: async () => {
 			const response = await fetch(
 				`/api/jafar/organizations/${access.organization.id}/communications/reputation`
@@ -61,7 +66,7 @@
 		staleTime: 30_000
 	}));
 	const domainsQuery = createQuery(() => ({
-		queryKey: ['jafar', 'organizations', access.organization.id, 'email-domains'],
+		queryKey: jafarOrganizationEmailDomainsKey(access.organization.id),
 		queryFn: async () => {
 			const response = await fetch(
 				`/api/jafar/organizations/${access.organization.id}/communications/domains`

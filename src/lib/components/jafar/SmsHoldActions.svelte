@@ -9,6 +9,7 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import OwnerReconfirmDialog from '$lib/components/jafar/OwnerReconfirmDialog.svelte';
+	import { jafarOrganizationSmsHoldsKey } from '$lib/jafar/query-keys';
 
 	type HoldScope = 'organization' | 'provider';
 	type Hold = {
@@ -44,7 +45,7 @@
 	let { organizationId }: { organizationId: string } = $props();
 
 	const queryClient = useQueryClient();
-	const listKey = $derived(['jafar', 'organizations', organizationId, 'sms', 'holds']);
+	const listKey = $derived(jafarOrganizationSmsHoldsKey(organizationId));
 
 	const listQuery = createQuery<ListResponse>(() => ({
 		queryKey: listKey,

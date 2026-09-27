@@ -9,6 +9,10 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import {
+		jafarOrganizationSmsRegistrationsKey,
+		jafarOrganizationSmsSendersKey
+	} from '$lib/jafar/query-keys';
 
 	type LifecycleState = 'pending_setup' | 'ready' | 'restricted' | 'suspended' | 'released';
 	type Sender = {
@@ -33,15 +37,9 @@
 	let { organizationId }: { organizationId: string } = $props();
 
 	const queryClient = useQueryClient();
-	const sendersKey = $derived(['jafar', 'organizations', organizationId, 'sms', 'senders']);
+	const sendersKey = $derived(jafarOrganizationSmsSendersKey(organizationId));
 	// Shares its cache with SmsRegistrationActions's identical query key.
-	const registrationsKey = $derived([
-		'jafar',
-		'organizations',
-		organizationId,
-		'sms',
-		'registrations'
-	]);
+	const registrationsKey = $derived(jafarOrganizationSmsRegistrationsKey(organizationId));
 
 	const sendersQuery = createQuery<SenderListResponse>(() => ({
 		queryKey: sendersKey,

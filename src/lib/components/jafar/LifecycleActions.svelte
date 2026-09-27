@@ -5,6 +5,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import OwnerReconfirmDialog from '$lib/components/jafar/OwnerReconfirmDialog.svelte';
+	import { jafarOrganizationKey, jafarOrganizationsKey } from '$lib/jafar/query-keys';
 
 	type SuspensionCategory = 'nonpayment' | 'payment_dispute' | 'security' | 'support' | 'other';
 	type LifecycleInput =
@@ -124,9 +125,9 @@
 				feedbackMessage =
 					input.status === 'suspended' ? 'Organization suspended.' : 'Organization reactivated.';
 				void queryClient.invalidateQueries({
-					queryKey: ['jafar', 'organizations', organizationId]
+					queryKey: jafarOrganizationKey(organizationId)
 				});
-				void queryClient.invalidateQueries({ queryKey: ['jafar', 'organizations'] });
+				void queryClient.invalidateQueries({ queryKey: jafarOrganizationsKey });
 			}
 		})
 	);
@@ -159,7 +160,9 @@
 
 <Dialog open={activeAction === 'suspended'} title="Suspend organization" onClose={closeDialog}>
 	<form class="lifecycle-actions__form" onsubmit={(event) => submit('suspended', event)}>
-		<p>Contractors lose access immediately. Records stay preserved and reactivation stays available.</p>
+		<p>
+			Contractors lose access immediately. Records stay preserved and reactivation stays available.
+		</p>
 		<div class="lifecycle-actions__field">
 			<label for="suspend-category">Category</label>
 			<Select

@@ -6,6 +6,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import OwnerReconfirmDialog from '$lib/components/jafar/OwnerReconfirmDialog.svelte';
+	import { jafarOrganizationKey, jafarOrganizationsKey } from '$lib/jafar/query-keys';
 
 	type TeamMember = {
 		user_id: string;
@@ -67,8 +68,8 @@
 	}
 
 	function invalidateOrganization() {
-		void queryClient.invalidateQueries({ queryKey: ['jafar', 'organizations', organizationId] });
-		void queryClient.invalidateQueries({ queryKey: ['jafar', 'organizations'] });
+		void queryClient.invalidateQueries({ queryKey: jafarOrganizationKey(organizationId) });
+		void queryClient.invalidateQueries({ queryKey: jafarOrganizationsKey });
 	}
 
 	// ---------------------------------------------------------------------------

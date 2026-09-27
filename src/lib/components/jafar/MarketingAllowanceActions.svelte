@@ -9,6 +9,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
+	import { jafarOrganizationMarketingAllowanceKey } from '$lib/jafar/query-keys';
 
 	type LimitState = 'unlimited' | 'not_included' | 'numeric';
 	type OverrideState = LimitState | 'inherit';
@@ -29,7 +30,7 @@
 	let { organizationId }: { organizationId: string } = $props();
 
 	const queryClient = useQueryClient();
-	const allowanceKey = $derived(['jafar', 'organizations', organizationId, 'marketing-allowance']);
+	const allowanceKey = $derived(jafarOrganizationMarketingAllowanceKey(organizationId));
 	const allowanceQuery = createQuery<AllowanceResponse>(() => ({
 		queryKey: allowanceKey,
 		queryFn: async () => {

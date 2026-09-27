@@ -25,6 +25,7 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import { jafarEmailHealthKey, jafarSmsWorkerHealthKey } from '$lib/jafar/query-keys';
 
 	type PlatformPause = {
 		id: string;
@@ -51,8 +52,8 @@
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
-	const healthKey = ['jafar', 'communications', 'email-health'] as const;
-	const smsWorkerHealthKey = ['jafar', 'communications', 'sms-worker-health'] as const;
+	const healthKey = jafarEmailHealthKey;
+	const smsWorkerHealthKey = jafarSmsWorkerHealthKey;
 
 	const healthQuery = createQuery<HealthResponse>(() => ({
 		queryKey: healthKey,

@@ -15,6 +15,7 @@
 		localDateTimeToIso,
 		type DateTimePickerValue
 	} from '$lib/components/ui/date-time';
+	import { jafarEmailRetailRatesKey } from '$lib/jafar/query-keys';
 
 	type RetailRate = {
 		id: string;
@@ -42,7 +43,7 @@
 	}
 
 	const queryClient = useQueryClient();
-	const listKey = ['jafar', 'communications', 'email', 'retail-rates'] as const;
+	const listKey = jafarEmailRetailRatesKey;
 
 	const listQuery = createQuery<ListResponse>(() => ({
 		queryKey: listKey,

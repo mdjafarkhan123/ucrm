@@ -4,6 +4,7 @@
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import { jafarOrganizationSmsRegistrationEventsKey } from '$lib/jafar/query-keys';
 
 	type RegistrationEvent = {
 		id: string;
@@ -30,7 +31,7 @@
 	let { organizationId }: { organizationId: string } = $props();
 
 	const listQuery = createQuery<ListResponse>(() => ({
-		queryKey: ['jafar', 'organizations', organizationId, 'sms', 'registration-events'],
+		queryKey: jafarOrganizationSmsRegistrationEventsKey(organizationId),
 		queryFn: async () => {
 			const response = await fetch(
 				`/api/jafar/organizations/${organizationId}/communications/sms/registration-events`

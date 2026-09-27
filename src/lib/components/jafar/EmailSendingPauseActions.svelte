@@ -7,6 +7,10 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import {
+		jafarEmailHealthKey,
+		jafarOrganizationEmailSendingPauseKey
+	} from '$lib/jafar/query-keys';
 
 	type OrgPause = {
 		id: string;
@@ -24,7 +28,7 @@
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
-	const pauseKey = $derived(['jafar', 'organizations', organizationId, 'email-sending-pause']);
+	const pauseKey = $derived(jafarOrganizationEmailSendingPauseKey(organizationId));
 
 	const pauseQuery = createQuery<PauseResponse>(() => ({
 		queryKey: pauseKey,
@@ -81,7 +85,7 @@
 				);
 				await Promise.all([
 					queryClient.invalidateQueries({ queryKey: pauseKey }),
-					queryClient.invalidateQueries({ queryKey: ['jafar', 'communications', 'email-health'] })
+					queryClient.invalidateQueries({ queryKey: jafarEmailHealthKey })
 				]);
 			},
 			onError: (error) => toast.error(error.message)

@@ -6,6 +6,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import { jafarOrganizationSmsModeKey } from '$lib/jafar/query-keys';
 
 	type SmsMode = 'off' | 'operational';
 	type OrgMode = {
@@ -28,7 +29,7 @@
 	let { organizationId }: { organizationId: string } = $props();
 
 	const queryClient = useQueryClient();
-	const modeKey = $derived(['jafar', 'organizations', organizationId, 'sms', 'mode']);
+	const modeKey = $derived(jafarOrganizationSmsModeKey(organizationId));
 
 	const modeQuery = createQuery<ModeResponse>(() => ({
 		queryKey: modeKey,

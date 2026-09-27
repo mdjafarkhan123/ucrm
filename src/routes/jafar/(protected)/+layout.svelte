@@ -3,6 +3,18 @@
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import AppShell from '$lib/components/layout/AppShell.svelte';
 	import OwnerRouteSkeleton from '$lib/components/layout/OwnerRouteSkeleton.svelte';
+	import { notificationsKey } from '$lib/jafar/notifications';
+	import {
+		jafarEmailHealthKey,
+		jafarEmailTemplatesKey,
+		jafarMessageTemplatesKey,
+		jafarOperationsKey,
+		jafarOrganizationKey,
+		jafarOrganizationsKey,
+		jafarPackagesKey,
+		jafarProspectsKey,
+		jafarSettingsKey
+	} from '$lib/jafar/query-keys';
 	let { children } = $props();
 	const queryClient = useQueryClient();
 
@@ -15,38 +27,38 @@
 
 	function hasCachedRouteData(pathname: string) {
 		if (pathname === '/jafar') {
-			return hasCachedData(['jafar', 'organizations']);
+			return hasCachedData(jafarOrganizationsKey);
 		}
 		if (pathname.startsWith('/jafar/prospects')) {
-			return hasCachedData(['jafar', 'prospects']);
+			return hasCachedData(jafarProspectsKey);
 		}
 		if (pathname === '/jafar/packages') {
-			return hasCachedData(['jafar', 'packages']);
+			return hasCachedData(jafarPackagesKey);
 		}
 		if (pathname.startsWith('/jafar/organizations/')) {
 			const organizationId = pathname.slice('/jafar/organizations/'.length).split('/')[0];
-			return hasCachedData(['jafar', 'organizations', organizationId]);
+			return hasCachedData(jafarOrganizationKey(organizationId));
 		}
 		if (pathname === '/jafar/organizations') {
-			return hasCachedData(['jafar', 'organizations']);
+			return hasCachedData(jafarOrganizationsKey);
 		}
 		if (pathname === '/jafar/operations') {
-			return hasCachedData(['jafar', 'operations']);
+			return hasCachedData(jafarOperationsKey);
 		}
 		if (pathname === '/jafar/message-templates') {
-			return hasCachedData(['jafar', 'message-templates']);
+			return hasCachedData(jafarMessageTemplatesKey);
 		}
 		if (pathname === '/jafar/email-templates') {
-			return hasCachedData(['jafar', 'email-templates']);
+			return hasCachedData(jafarEmailTemplatesKey);
 		}
 		if (pathname === '/jafar/communications') {
-			return hasCachedData(['jafar', 'communications', 'email-health']);
+			return hasCachedData(jafarEmailHealthKey);
 		}
 		if (pathname === '/jafar/settings') {
-			return hasCachedData(['jafar', 'settings']);
+			return hasCachedData(jafarSettingsKey);
 		}
 		if (pathname === '/jafar/notifications') {
-			return hasCachedData(['jafar', 'notifications']);
+			return hasCachedData(notificationsKey);
 		}
 		return false;
 	}

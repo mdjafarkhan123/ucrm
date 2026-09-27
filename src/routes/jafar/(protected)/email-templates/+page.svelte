@@ -9,6 +9,7 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import { jafarEmailTemplatesKey } from '$lib/jafar/query-keys';
 
 	// Jafar's platform Email Templates library (docs/contractor-email-contract.md § "Templates, snippets, and
 	// branding"). Not /jafar/message-templates -- that page is the 8 fixed-key system/security emails with a
@@ -45,7 +46,7 @@
 	let deleteTarget = $state<TemplateRow | null>(null);
 
 	const list = createQuery<ListResponse>(() => ({
-		queryKey: ['jafar', 'email-templates'],
+		queryKey: jafarEmailTemplatesKey,
 		queryFn: async () => {
 			const response = await fetch('/api/jafar/email-templates');
 			const result = (await response.json()) as ListResponse;
@@ -109,7 +110,7 @@
 		onMutate: () => (formError = ''),
 		onSuccess: async (result) => {
 			toast.success(selectedId === 'new' ? 'Template created.' : 'Template saved.');
-			await queryClient.invalidateQueries({ queryKey: ['jafar', 'email-templates'] });
+			await queryClient.invalidateQueries({ queryKey: jafarEmailTemplatesKey });
 			await tick();
 			if (result.template) selectedId = result.template.id;
 		}
@@ -126,7 +127,7 @@
 			toast.success('Template deleted.');
 			deleteTarget = null;
 			if (selectedId === deletedId) selectedId = null;
-			await queryClient.invalidateQueries({ queryKey: ['jafar', 'email-templates'] });
+			await queryClient.invalidateQueries({ queryKey: jafarEmailTemplatesKey });
 		},
 		onError: (error) => toast.error(error.message)
 	}));

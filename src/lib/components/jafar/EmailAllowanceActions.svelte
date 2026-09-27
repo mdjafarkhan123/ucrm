@@ -10,6 +10,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import type { DateTimePickerValue } from '$lib/components/ui/date-time';
+	import { jafarOrganizationEmailAllowancesKey } from '$lib/jafar/query-keys';
 	import {
 		calendarDateFromString,
 		calendarDateToString,
@@ -43,7 +44,7 @@
 	let { organizationId }: { organizationId: string } = $props();
 
 	const queryClient = useQueryClient();
-	const allowanceKey = $derived(['jafar', 'organizations', organizationId, 'email-allowances']);
+	const allowanceKey = $derived(jafarOrganizationEmailAllowancesKey(organizationId));
 	const allowancesQuery = createQuery<AllowanceResponse>(() => ({
 		queryKey: allowanceKey,
 		queryFn: async () => {

@@ -9,6 +9,11 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import {
+		jafarEmailHealthKey,
+		jafarEmailReputationOverviewKey,
+		jafarOrganizationEmailReputationKey
+	} from '$lib/jafar/query-keys';
 
 	type Metric = {
 		signal: 'complaint' | 'hard_bounce' | 'unsubscribe';
@@ -51,7 +56,7 @@
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
-	const reputationKey = $derived(['jafar', 'organizations', organizationId, 'email-reputation']);
+	const reputationKey = $derived(jafarOrganizationEmailReputationKey(organizationId));
 	const endpoint = $derived(`/api/jafar/organizations/${organizationId}/communications/reputation`);
 
 	const reputationQuery = createQuery<ReputationResponse>(() => ({
@@ -216,9 +221,9 @@
 				toast.success(resumeCopy[stream].success);
 				await Promise.all([
 					queryClient.invalidateQueries({
-						queryKey: ['jafar', 'communications', 'email-reputation']
+						queryKey: jafarEmailReputationOverviewKey
 					}),
-					queryClient.invalidateQueries({ queryKey: ['jafar', 'communications', 'email-health'] })
+					queryClient.invalidateQueries({ queryKey: jafarEmailHealthKey })
 				]);
 			},
 			onError: (error) => toast.error(error.message)

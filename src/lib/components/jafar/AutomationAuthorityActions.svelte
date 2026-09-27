@@ -14,6 +14,10 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import type { DateTimePickerValue } from '$lib/components/ui/date-time';
 	import {
+		jafarOrganizationAutomationAuthorityKey,
+		jafarOrganizationKey
+	} from '$lib/jafar/query-keys';
+	import {
 		calendarDateFromString,
 		calendarDateToString,
 		dateTimePickerValueFromDate,
@@ -73,7 +77,7 @@
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
-	const authorityKey = $derived(['jafar', 'organizations', organizationId, 'automation-authority']);
+	const authorityKey = $derived(jafarOrganizationAutomationAuthorityKey(organizationId));
 	const endpoint = $derived(
 		`/api/jafar/organizations/${organizationId}/automation/automation-authority`
 	);
@@ -288,7 +292,7 @@
 			toast.success('Automation limit exception updated.');
 			await queryClient.invalidateQueries({ queryKey: authorityKey });
 			await queryClient.invalidateQueries({
-				queryKey: ['jafar', 'organizations', organizationId]
+				queryKey: jafarOrganizationKey(organizationId)
 			});
 		},
 		onError: (error) => toast.error(error.message)

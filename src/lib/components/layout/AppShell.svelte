@@ -8,6 +8,7 @@
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { useQueryClient } from '@tanstack/svelte-query';
 
 	import logoutIcon from '@tabler/icons/outline/logout.svg?raw';
 
@@ -124,6 +125,7 @@
 	const sidebarLogoUrl = $derived(variant === 'contractor' ? logoUrl : null);
 	const accountLabel = $derived(variant === 'owner' ? 'Platform owner' : 'Your account');
 	let isSigningOut = $state(false);
+	const queryClient = useQueryClient();
 
 	async function signOut() {
 		isSigningOut = true;
@@ -134,6 +136,9 @@
 				{ method: 'DELETE' }
 			);
 			if (!response.ok) throw new Error('Sign out request failed.');
+
+			// A next sign-in on this same tab must never see this session's cached data.
+			queryClient.clear();
 
 			if (variant === 'owner') {
 				await invalidateAll();

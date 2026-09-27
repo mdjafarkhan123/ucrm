@@ -7,6 +7,14 @@
 		OperationListResponse,
 		AccessResponse
 	} from '$lib/components/jafar/organization/types';
+	import {
+		jafarOperationTargetKey,
+		jafarOrganizationAccessKey,
+		jafarOrganizationCommercialKey,
+		jafarOrganizationHistoryKey,
+		jafarOrganizationTeamKey,
+		jafarPackagesKey
+	} from '$lib/jafar/query-keys';
 	import Tabs, { type Tab } from '$lib/components/ui/Tabs.svelte';
 	import { dev } from '$app/environment';
 	import { replaceState } from '$app/navigation';
@@ -59,7 +67,7 @@
 	}
 
 	const accessQuery = createQuery<AccessResponse>(() => ({
-		queryKey: ['jafar', 'organizations', organizationId, 'access'],
+		queryKey: jafarOrganizationAccessKey(organizationId),
 		enabled: !preview && Boolean(organizationId),
 		queryFn: async () => {
 			const response = await fetch(`/api/jafar/organizations/${organizationId}/access`);
@@ -79,7 +87,7 @@
 	const isStaleData = $derived(!preview && accessQuery.isError && Boolean(access));
 
 	const commercialQuery = createQuery<CommercialState>(() => ({
-		queryKey: ['jafar', 'organizations', organizationId, 'commercial'],
+		queryKey: jafarOrganizationCommercialKey(organizationId),
 		enabled: !preview && Boolean(organizationId) && Boolean(access),
 		queryFn: async () => {
 			const response = await fetch(`/api/jafar/organizations/${organizationId}/commercial`);
@@ -90,7 +98,7 @@
 	}));
 
 	const teamQuery = createQuery<TeamResponse>(() => ({
-		queryKey: ['jafar', 'organizations', organizationId, 'team'],
+		queryKey: jafarOrganizationTeamKey(organizationId),
 		enabled: !preview && Boolean(organizationId) && Boolean(access),
 		queryFn: async () => {
 			const response = await fetch(`/api/jafar/organizations/${organizationId}/team`);
@@ -101,7 +109,7 @@
 	}));
 
 	const historyQuery = createQuery<HistoryResponse>(() => ({
-		queryKey: ['jafar', 'organizations', organizationId, 'history'],
+		queryKey: jafarOrganizationHistoryKey(organizationId),
 		enabled: !preview && Boolean(organizationId) && Boolean(access),
 		queryFn: async () => {
 			const response = await fetch(`/api/jafar/organizations/${organizationId}/history`);
@@ -114,7 +122,7 @@
 	const applicationId = $derived(historyQuery.data?.applicationId ?? null);
 
 	const organizationOperationsQuery = createQuery<OperationListResponse>(() => ({
-		queryKey: ['jafar', 'operations', 'target', organizationId],
+		queryKey: jafarOperationTargetKey(organizationId),
 		enabled: !preview && Boolean(organizationId) && Boolean(access),
 		queryFn: async () => {
 			const response = await fetch(`/api/jafar/operations?target_id=${organizationId}`);
@@ -125,7 +133,7 @@
 	}));
 
 	const applicationOperationsQuery = createQuery<OperationListResponse>(() => ({
-		queryKey: ['jafar', 'operations', 'target', applicationId],
+		queryKey: jafarOperationTargetKey(applicationId),
 		enabled: !preview && Boolean(applicationId) && Boolean(access),
 		queryFn: async () => {
 			const response = await fetch(`/api/jafar/operations?target_id=${applicationId}`);
@@ -143,7 +151,7 @@
 	);
 
 	const packagesCatalogQuery = createQuery<PackagesCatalogResponse>(() => ({
-		queryKey: ['jafar', 'packages'],
+		queryKey: jafarPackagesKey,
 		enabled: !preview && Boolean(access),
 		queryFn: async () => {
 			const response = await fetch('/api/jafar/packages');

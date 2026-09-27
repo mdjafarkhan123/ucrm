@@ -7,6 +7,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import { jafarSettingsKey } from '$lib/jafar/query-keys';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -65,7 +66,7 @@
 	}
 
 	const settings = createQuery<SettingsResponse>(() => ({
-		queryKey: ['jafar', 'settings'],
+		queryKey: jafarSettingsKey,
 		queryFn: async () => {
 			const response = await fetch('/api/jafar/settings');
 			const result = (await response.json()) as SettingsResponse;
@@ -116,7 +117,7 @@
 		onSuccess: (result) => {
 			toast.success('Settings saved.');
 			savedDraft = result.settings ? draftFromSettings(result.settings) : getDraft();
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'settings'] });
+			void queryClient.invalidateQueries({ queryKey: jafarSettingsKey });
 		}
 	}));
 

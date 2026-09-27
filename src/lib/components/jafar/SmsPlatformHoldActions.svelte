@@ -9,6 +9,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import OwnerReconfirmDialog from '$lib/components/jafar/OwnerReconfirmDialog.svelte';
+	import { jafarSmsPlatformHoldsKey } from '$lib/jafar/query-keys';
 
 	type Hold = {
 		id: string;
@@ -40,7 +41,7 @@
 	}
 
 	const queryClient = useQueryClient();
-	const listKey = ['jafar', 'communications', 'sms', 'platform-holds'] as const;
+	const listKey = jafarSmsPlatformHoldsKey;
 
 	const listQuery = createQuery<ListResponse>(() => ({
 		queryKey: listKey,

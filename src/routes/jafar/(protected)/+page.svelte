@@ -18,6 +18,7 @@
 		severityLabel,
 		type NotificationListResponse
 	} from '$lib/jafar/notifications';
+	import { jafarOrganizationsKey } from '$lib/jafar/query-keys';
 
 	type LifecycleStatus = 'pending_setup' | 'active' | 'suspended';
 	type Organization = {
@@ -31,7 +32,7 @@
 	type OrganizationResponse = { organizations: Organization[]; error?: string };
 
 	const organizations = createQuery<OrganizationResponse>(() => ({
-		queryKey: ['jafar', 'organizations'],
+		queryKey: jafarOrganizationsKey,
 		queryFn: async () => {
 			const response = await fetch('/api/jafar/organizations');
 			const result = (await response.json()) as OrganizationResponse;

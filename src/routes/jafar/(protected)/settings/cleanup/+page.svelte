@@ -11,6 +11,11 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import OwnerReconfirmDialog from '$lib/components/jafar/OwnerReconfirmDialog.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import {
+		jafarOrganizationsKey,
+		jafarSettingsCleanupImpactKey,
+		jafarSettingsCleanupKey
+	} from '$lib/jafar/query-keys';
 
 	type ClosingOrganization = {
 		id: string;
@@ -61,7 +66,7 @@
 	const toast = getToastManager();
 
 	const cleanupQuery = createQuery<CleanupResponse>(() => ({
-		queryKey: ['jafar', 'settings', 'cleanup'],
+		queryKey: jafarSettingsCleanupKey,
 		queryFn: async () => {
 			const response = await fetch('/api/jafar/settings/cleanup');
 			const result = (await response.json()) as CleanupResponse;
@@ -93,7 +98,7 @@
 	// The impact preview is revealed content — it never loads with the page. Hovering "Delete now"
 	// prefetches it, and a click that beats the fetch shows a skeleton inside the dialog.
 	const impactQuery = createQuery<ImpactResponse>(() => ({
-		queryKey: ['jafar', 'settings', 'cleanup', 'impact', deleteTarget?.organization_id ?? 'none'],
+		queryKey: jafarSettingsCleanupImpactKey(deleteTarget?.organization_id ?? 'none'),
 		queryFn: () => loadImpact(deleteTarget!.organization_id),
 		enabled: deleteTarget !== null,
 		staleTime: 30_000
@@ -101,7 +106,7 @@
 
 	function prefetchImpact(organizationId: string) {
 		void queryClient.prefetchQuery({
-			queryKey: ['jafar', 'settings', 'cleanup', 'impact', organizationId],
+			queryKey: jafarSettingsCleanupImpactKey(organizationId),
 			queryFn: () => loadImpact(organizationId),
 			staleTime: 30_000
 		});
@@ -175,8 +180,8 @@
 			deleteTarget = null;
 			pendingStepUpInput = null;
 			toast.success('Organization permanently deleted.');
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'settings', 'cleanup'] });
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'organizations'] });
+			void queryClient.invalidateQueries({ queryKey: jafarSettingsCleanupKey });
+			void queryClient.invalidateQueries({ queryKey: jafarOrganizationsKey });
 		}
 	}));
 
@@ -219,7 +224,7 @@
 				toast.error(
 					'Some cleanup steps still failed. They will keep retrying automatically each night.'
 				);
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'settings', 'cleanup'] });
+			void queryClient.invalidateQueries({ queryKey: jafarSettingsCleanupKey });
 		},
 		onError: (error) => toast.error(error.message)
 	}));

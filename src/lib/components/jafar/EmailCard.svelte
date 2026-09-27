@@ -10,6 +10,12 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import { mailboxProviderLabel, type EmailSetupRequest } from '$lib/communications/email-setup';
+	import {
+		jafarOrganizationEmailDomainRemovalKey,
+		jafarOrganizationEmailDomainsKey,
+		jafarOrganizationEmailSetupRequestKey,
+		jafarOrganizationMarketingDomainsKey
+	} from '$lib/jafar/query-keys';
 
 	type DnsStatus = 'unchecked' | 'pending' | 'passing' | 'failing';
 	type RowStatus = 'not_set_up' | 'setting_up' | 'ready' | 'problem' | 'removal_unfinished';
@@ -92,7 +98,7 @@
 
 	const queryClient = useQueryClient();
 
-	const operationalKey = $derived(['jafar', 'organizations', organizationId, 'email-domains']);
+	const operationalKey = $derived(jafarOrganizationEmailDomainsKey(organizationId));
 	const operationalQuery = createQuery<OperationalListResponse>(() => ({
 		queryKey: operationalKey,
 		queryFn: async () => {
@@ -108,7 +114,7 @@
 
 	// The contractor's open ask, until Jafar sets the domain up or closes it. Setting up is done with the same
 	// Set up action below, prefilled with the domain they asked for.
-	const requestKey = $derived(['jafar', 'organizations', organizationId, 'email-setup-request']);
+	const requestKey = $derived(jafarOrganizationEmailSetupRequestKey(organizationId));
 	const requestQuery = createQuery<{ request: EmailSetupRequest | null; error?: string }>(() => ({
 		queryKey: requestKey,
 		queryFn: async () => {
@@ -126,7 +132,7 @@
 	}));
 	const setupRequest = $derived(requestQuery.data?.request ?? null);
 
-	const marketingKey = $derived(['jafar', 'organizations', organizationId, 'marketing-domains']);
+	const marketingKey = $derived(jafarOrganizationMarketingDomainsKey(organizationId));
 	const marketingQuery = createQuery<MarketingListResponse>(() => ({
 		queryKey: marketingKey,
 		queryFn: async () => {
@@ -379,7 +385,7 @@
 		removalConfirmation = '';
 	}
 	const removalPreviewQuery = createQuery<RemovalPreview>(() => ({
-		queryKey: ['jafar', 'organizations', organizationId, 'email-domain-removal', sending?.id],
+		queryKey: jafarOrganizationEmailDomainRemovalKey(organizationId, sending?.id),
 		enabled: Boolean(sending && removalOpen),
 		queryFn: async () => {
 			const response = await fetch(

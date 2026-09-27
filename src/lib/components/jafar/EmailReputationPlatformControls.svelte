@@ -12,6 +12,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import { jafarEmailReputationOverviewKey } from '$lib/jafar/query-keys';
 
 	type Signal = 'complaint' | 'hard_bounce' | 'unsubscribe';
 	type WindowKey = 'rolling_24h' | 'rolling_7d';
@@ -50,7 +51,7 @@
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
-	const overviewKey = ['jafar', 'communications', 'email-reputation'] as const;
+	const overviewKey = jafarEmailReputationOverviewKey;
 
 	const overviewQuery = createQuery<OverviewResponse>(() => ({
 		queryKey: overviewKey,

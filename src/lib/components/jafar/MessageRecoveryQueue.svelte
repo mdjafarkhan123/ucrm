@@ -10,6 +10,7 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import { jafarMessageRecoveryQueueKey } from '$lib/jafar/query-keys';
 
 	type QueuedMessage = {
 		delivery_intent_id: string;
@@ -56,7 +57,7 @@
 		error?: string;
 	};
 
-	const queueKey = ['jafar', 'communications', 'messages'] as const;
+	const queueKey = jafarMessageRecoveryQueueKey;
 	const historyKey = (intentId: string) => [...queueKey, intentId] as const;
 	const queryClient = useQueryClient();
 	const toast = getToastManager();

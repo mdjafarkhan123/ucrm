@@ -17,6 +17,7 @@
 		localDateTimeToIso,
 		type DateTimePickerValue
 	} from '$lib/components/ui/date-time';
+	import { jafarOrganizationSmsPromotionalCreditsKey } from '$lib/jafar/query-keys';
 
 	type PromotionalCredit = {
 		id: string;
@@ -59,13 +60,7 @@
 	let { organizationId }: { organizationId: string } = $props();
 
 	const queryClient = useQueryClient();
-	const listKey = $derived([
-		'jafar',
-		'organizations',
-		organizationId,
-		'sms',
-		'promotional-credits'
-	]);
+	const listKey = $derived(jafarOrganizationSmsPromotionalCreditsKey(organizationId));
 
 	const listQuery = createQuery<ListResponse>(() => ({
 		queryKey: listKey,

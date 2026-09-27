@@ -9,6 +9,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import OwnerReconfirmDialog from '$lib/components/jafar/OwnerReconfirmDialog.svelte';
+	import { jafarOrganizationSmsCreditTopupsKey } from '$lib/jafar/query-keys';
 
 	type TopupStatus = 'awaiting_confirmation' | 'confirmed' | 'rejected' | 'cancelled';
 	type TopupRequest = {
@@ -59,7 +60,7 @@
 	let { organizationId }: { organizationId: string } = $props();
 
 	const queryClient = useQueryClient();
-	const listKey = $derived(['jafar', 'organizations', organizationId, 'sms', 'credit-topups']);
+	const listKey = $derived(jafarOrganizationSmsCreditTopupsKey(organizationId));
 
 	const listQuery = createQuery<ListResponse>(() => ({
 		queryKey: listKey,

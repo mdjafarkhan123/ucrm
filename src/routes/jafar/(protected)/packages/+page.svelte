@@ -8,6 +8,7 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import { jafarPackagesKey } from '$lib/jafar/query-keys';
 
 	const queryClient = useQueryClient();
 
@@ -133,7 +134,7 @@
 	let retiringPackageKey = $state<PackageDefinition['package_key'] | null>(null);
 
 	const packages = createQuery<PackagesResponse>(() => ({
-		queryKey: ['jafar', 'packages'],
+		queryKey: jafarPackagesKey,
 		queryFn: async () => {
 			const response = await fetch('/api/jafar/packages');
 			const result = (await response.json()) as PackagesResponse;
@@ -219,7 +220,7 @@
 		onSuccess: (result) => {
 			editingVersionId = result.version_id ?? editingVersionId;
 			actionMessage = 'Draft saved. Review it, then publish when ready.';
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'packages'] });
+			void queryClient.invalidateQueries({ queryKey: jafarPackagesKey });
 		}
 	}));
 
@@ -246,7 +247,7 @@
 			editingVersionId = null;
 			actionMessage =
 				'Package version published. The prior published version is retained for history.';
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'packages'] });
+			void queryClient.invalidateQueries({ queryKey: jafarPackagesKey });
 		}
 	}));
 
@@ -267,7 +268,7 @@
 			onSuccess: () => {
 				retiringPackageKey = null;
 				actionMessage = 'Package retired. Organizations already on it keep their current access.';
-				void queryClient.invalidateQueries({ queryKey: ['jafar', 'packages'] });
+				void queryClient.invalidateQueries({ queryKey: jafarPackagesKey });
 			}
 		})
 	);

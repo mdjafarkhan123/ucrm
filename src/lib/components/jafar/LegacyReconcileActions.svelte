@@ -7,6 +7,11 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import OwnerReconfirmDialog from '$lib/components/jafar/OwnerReconfirmDialog.svelte';
+	import {
+		jafarOrganizationKey,
+		jafarOrganizationLegacyReviewKey,
+		jafarOrganizationsKey
+	} from '$lib/jafar/query-keys';
 
 	type SuspensionCategory = 'nonpayment' | 'payment_dispute' | 'security' | 'support' | 'other';
 	type Readiness = {
@@ -58,7 +63,7 @@
 	];
 
 	const readinessQuery = createQuery<ReadinessResponse>(() => ({
-		queryKey: ['jafar', 'organizations', organizationId, 'legacy-review'],
+		queryKey: jafarOrganizationLegacyReviewKey(organizationId),
 		queryFn: async () => {
 			const response = await fetch(`/api/jafar/organizations/${organizationId}/legacy-review`);
 			const result = (await response.json()) as ReadinessResponse;
@@ -70,9 +75,9 @@
 	const canActivate = $derived(
 		Boolean(
 			readiness?.package_assigned &&
-				readiness?.administrator_exists &&
-				readiness?.administrator_login_ready &&
-				(readiness?.paid_through_eligible || readiness?.free_access_active)
+			readiness?.administrator_exists &&
+			readiness?.administrator_login_ready &&
+			(readiness?.paid_through_eligible || readiness?.free_access_active)
 		)
 	);
 
@@ -158,9 +163,9 @@
 						? 'Legacy organization suspended.'
 						: 'Legacy organization activated.';
 				void queryClient.invalidateQueries({
-					queryKey: ['jafar', 'organizations', organizationId]
+					queryKey: jafarOrganizationKey(organizationId)
 				});
-				void queryClient.invalidateQueries({ queryKey: ['jafar', 'organizations'] });
+				void queryClient.invalidateQueries({ queryKey: jafarOrganizationsKey });
 			}
 		})
 	);
@@ -219,7 +224,9 @@
 		</ul>
 
 		<div class="legacy-reconcile-actions__buttons">
-			<Button onclick={() => openDialog('active')} disabled={!canActivate}>Activate organization</Button>
+			<Button onclick={() => openDialog('active')} disabled={!canActivate}
+				>Activate organization</Button
+			>
 			<Button variant="secondary" variation="destructive" onclick={() => openDialog('suspended')}
 				>Suspend organization</Button
 			>
@@ -234,14 +241,16 @@
 	{#if feedbackMessage}<p class="legacy-reconcile-actions__success" role="status">
 			{feedbackMessage}
 		</p>{/if}
-	{#if feedbackError}<p class="legacy-reconcile-actions__error" role="alert">{feedbackError}</p>{/if}
+	{#if feedbackError}<p class="legacy-reconcile-actions__error" role="alert">
+			{feedbackError}
+		</p>{/if}
 </div>
 
 <Dialog open={activeAction === 'active'} title="Activate legacy organization" onClose={closeDialog}>
 	<form class="legacy-reconcile-actions__form" onsubmit={(event) => submit('active', event)}>
 		<p>
-			This one-time review moves the organization out of legacy pending setup into active
-			commercial access.
+			This one-time review moves the organization out of legacy pending setup into active commercial
+			access.
 		</p>
 		<Input
 			id="legacy-activate-reason"

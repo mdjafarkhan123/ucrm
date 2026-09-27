@@ -4,6 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { markRecordNotificationsRead, notificationsKey } from '$lib/jafar/notifications';
+	import { jafarOperationsKey, jafarOperationsListKey } from '$lib/jafar/query-keys';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
@@ -19,7 +20,8 @@
 
 	const queryClient = useQueryClient();
 
-	type OperationStatus = 'pending' | 'retrying' | 'succeeded' | 'acknowledged' | 'manually_resolved';
+	type OperationStatus =
+		'pending' | 'retrying' | 'succeeded' | 'acknowledged' | 'manually_resolved';
 	type Operation = {
 		id: string;
 		correlation_id: string;
@@ -115,7 +117,7 @@
 	}
 
 	const operations = createQuery<OperationListResponse>(() => ({
-		queryKey: ['jafar', 'operations', statusFilter],
+		queryKey: jafarOperationsListKey(statusFilter),
 		queryFn: async () => {
 			const params = new URLSearchParams();
 			if (statusFilter) params.set('status', statusFilter);
@@ -157,7 +159,7 @@
 		onError: (error) => (actionError = error.message),
 		onSuccess: () => {
 			actionMessage = 'Retried. The operation clears automatically once it succeeds.';
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'operations'] });
+			void queryClient.invalidateQueries({ queryKey: jafarOperationsKey });
 		}
 	}));
 
@@ -168,15 +170,14 @@
 				method: 'POST'
 			});
 			const result = (await response.json()) as ActionResponse;
-			if (!response.ok)
-				throw new Error(result.error ?? 'The operation could not be acknowledged.');
+			if (!response.ok) throw new Error(result.error ?? 'The operation could not be acknowledged.');
 			return result;
 		},
 		onMutate: () => clearFeedback(),
 		onError: (error) => (actionError = error.message),
 		onSuccess: () => {
 			actionMessage = 'Marked as seen.';
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'operations'] });
+			void queryClient.invalidateQueries({ queryKey: jafarOperationsKey });
 		}
 	}));
 
@@ -198,7 +199,7 @@
 			resolvingOperation = false;
 			resolutionNote = '';
 			actionMessage = 'Operation resolved.';
-			void queryClient.invalidateQueries({ queryKey: ['jafar', 'operations'] });
+			void queryClient.invalidateQueries({ queryKey: jafarOperationsKey });
 		}
 	}));
 
@@ -242,8 +243,8 @@
 			<p class="operations__eyebrow">Recovery queue</p>
 			<h1>Operations</h1>
 			<p class="operations__description">
-				Background work that did not complete on its own, like a setup email that could not
-				send. Retry it, mark it seen, or close it with a note.
+				Background work that did not complete on its own, like a setup email that could not send.
+				Retry it, mark it seen, or close it with a note.
 			</p>
 		</div>
 	</header>
@@ -289,8 +290,8 @@
 
 	{#if linkedOperationMissing}
 		<p class="operations__linked-missing" role="status">
-			That notification points at an operation that is no longer in the last 100 attempts. The
-			full list is below.
+			That notification points at an operation that is no longer in the last 100 attempts. The full
+			list is below.
 		</p>
 	{/if}
 
@@ -310,7 +311,10 @@
 			</div>
 		{:else if operationList.length === 0}
 			<div class="operations__state">
-				<EmptyState title="Nothing needs attention" description="No operations match this filter." />
+				<EmptyState
+					title="Nothing needs attention"
+					description="No operations match this filter."
+				/>
 			</div>
 		{:else}
 			<div class="operations__table-wrap">
@@ -347,11 +351,17 @@
 								<td>
 									<small>{operation.target_kind} · {operation.target_id ?? '—'}</small>
 								</td>
-								<td><Badge status={statusTone(operation.status)}>{statusLabel(operation.status)}</Badge></td>
+								<td
+									><Badge status={statusTone(operation.status)}
+										>{statusLabel(operation.status)}</Badge
+									></td
+								>
 								<td>{operation.attempt_count}</td>
 								<td>{formatDate(operation.updated_at)}</td>
 								<td>
-									<span class="operations__row-action" aria-hidden="true">{@html arrowRightIcon}</span>
+									<span class="operations__row-action" aria-hidden="true"
+										>{@html arrowRightIcon}</span
+									>
 								</td>
 							</tr>
 						{/each}
@@ -413,7 +423,10 @@
 				</p>
 			{/if}
 
-			{#if actionMessage}<p class="operations__feedback operations__feedback--success" role="status">
+			{#if actionMessage}<p
+					class="operations__feedback operations__feedback--success"
+					role="status"
+				>
 					{actionMessage}
 				</p>{/if}
 			{#if actionError}<p class="operations__feedback operations__feedback--error" role="alert">
@@ -463,8 +476,7 @@
 						><span>What did you do to fix this?</span><textarea
 							bind:value={resolutionNote}
 							required
-							maxlength="500"
-						></textarea></label
+							maxlength="500"></textarea></label
 					>
 					<div class="operations__form-actions">
 						<Button

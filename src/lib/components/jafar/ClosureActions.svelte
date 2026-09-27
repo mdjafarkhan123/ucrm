@@ -5,8 +5,14 @@
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import OwnerReconfirmDialog from '$lib/components/jafar/OwnerReconfirmDialog.svelte';
+	import { jafarOrganizationKey, jafarOrganizationsKey } from '$lib/jafar/query-keys';
 
-	type ClosureRecord = { id: string; reason: string; started_at: string; deadline_at: string } | null;
+	type ClosureRecord = {
+		id: string;
+		reason: string;
+		started_at: string;
+		deadline_at: string;
+	} | null;
 	type MutationResponse = {
 		error?: string;
 		field_errors?: Record<string, string>;
@@ -49,9 +55,10 @@
 	let feedbackError = $state('');
 	let feedbackMessage = $state('');
 	let reconfirmOpen = $state(false);
-	let pendingStepUp = $state<{ kind: 'start' | 'restore'; input: StartInput | RestoreInput } | null>(
-		null
-	);
+	let pendingStepUp = $state<{
+		kind: 'start' | 'restore';
+		input: StartInput | RestoreInput;
+	} | null>(null);
 
 	function resetDialog() {
 		dialogOpen = null;
@@ -92,8 +99,8 @@
 	}
 
 	function invalidate() {
-		void queryClient.invalidateQueries({ queryKey: ['jafar', 'organizations', organizationId] });
-		void queryClient.invalidateQueries({ queryKey: ['jafar', 'organizations'] });
+		void queryClient.invalidateQueries({ queryKey: jafarOrganizationKey(organizationId) });
+		void queryClient.invalidateQueries({ queryKey: jafarOrganizationsKey });
 	}
 
 	const startMutation = createMutation<MutationResponse, ClosureActionError, StartInput>(() => ({
@@ -129,37 +136,39 @@
 		}
 	}));
 
-	const restoreMutation = createMutation<MutationResponse, ClosureActionError, RestoreInput>(() => ({
-		mutationFn: async (input) => {
-			const response = await fetch(`/api/jafar/organizations/${organizationId}/closure/restore`, {
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify(input)
-			});
-			const result = (await response.json()) as MutationResponse;
-			if (!response.ok) throw new ClosureActionError(result);
-			return result;
-		},
-		onMutate: () => {
-			fieldErrors = {};
-			feedbackError = '';
-		},
-		onError: (error, input) => {
-			if (error.stepUpRequired) {
-				pendingStepUp = { kind: 'restore', input };
-				reconfirmOpen = true;
-				return;
+	const restoreMutation = createMutation<MutationResponse, ClosureActionError, RestoreInput>(
+		() => ({
+			mutationFn: async (input) => {
+				const response = await fetch(`/api/jafar/organizations/${organizationId}/closure/restore`, {
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify(input)
+				});
+				const result = (await response.json()) as MutationResponse;
+				if (!response.ok) throw new ClosureActionError(result);
+				return result;
+			},
+			onMutate: () => {
+				fieldErrors = {};
+				feedbackError = '';
+			},
+			onError: (error, input) => {
+				if (error.stepUpRequired) {
+					pendingStepUp = { kind: 'restore', input };
+					reconfirmOpen = true;
+					return;
+				}
+				fieldErrors = error.fieldErrors;
+				feedbackError = error.message;
+			},
+			onSuccess: () => {
+				resetDialog();
+				pendingStepUp = null;
+				feedbackMessage = 'Organization restored.';
+				invalidate();
 			}
-			fieldErrors = error.fieldErrors;
-			feedbackError = error.message;
-		},
-		onSuccess: () => {
-			resetDialog();
-			pendingStepUp = null;
-			feedbackMessage = 'Organization restored.';
-			invalidate();
-		}
-	}));
+		})
+	);
 
 	function buildStartInput(): StartInput | null {
 		const errors: Record<string, string> = {};
@@ -217,7 +226,8 @@
 		{/if}
 		<Button variant="secondary" onclick={openRestore}>Restore organization</Button>
 	{:else}
-		<Button variant="secondary" variation="destructive" onclick={openStart}>Close organization</Button
+		<Button variant="secondary" variation="destructive" onclick={openStart}
+			>Close organization</Button
 		>
 	{/if}
 	{#if feedbackMessage}<p class="closure-actions__success" role="status">{feedbackMessage}</p>{/if}
@@ -231,9 +241,8 @@
 			automatic email notices go out now, then again 14 and 3 days before deletion.
 		</p>
 		<p>
-			<strong>If nobody restores this within 30 days, everything is deleted for good</strong> —
-			customers, jobs, invoices, files, and login access. You can restore it any time during those
-			30 days.
+			<strong>If nobody restores this within 30 days, everything is deleted for good</strong> — customers,
+			jobs, invoices, files, and login access. You can restore it any time during those 30 days.
 		</p>
 		<Input
 			id="closure-start-reason"

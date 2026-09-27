@@ -4,6 +4,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import { jafarOrganizationStripeConnectionKey } from '$lib/jafar/query-keys';
 
 	type CheckStatus =
 		'ok' | 'key_rejected' | 'permission_missing' | 'account_unavailable' | 'webhook_missing';
@@ -24,7 +25,7 @@
 	let { organizationId }: { organizationId: string } = $props();
 
 	const queryClient = useQueryClient();
-	const statusKey = $derived(['jafar', 'organizations', organizationId, 'stripe-connection']);
+	const statusKey = $derived(jafarOrganizationStripeConnectionKey(organizationId));
 	const endpoint = $derived(
 		`/api/jafar/organizations/${organizationId}/payments/stripe-connection`
 	);
