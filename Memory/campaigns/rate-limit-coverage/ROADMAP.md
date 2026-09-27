@@ -1,51 +1,36 @@
-# Roadmap — Rate-limit coverage (DRAFT, unverified)
-
-Everything below is one session's first-pass research/scan, not an approved plan. Re-research and
-re-verify from scratch before building anything — do not build straight from this file.
+# Roadmap — Rate-limit coverage (re-verified 2026-09-27, awaiting Jafar's approval)
 
 ## Origin
 
-Memory/deferred/authenticated-reads-and-pipeline-writes-are-not-rate-limited.md: quote/invoice/payment
-writes already share one rate-limit bucket per organization (`enforceOrganizationWriteRateLimit`, 20
-writes/60s, live-verified). Everything else — every authenticated GET/list read, and writes on jobs,
-clients, requests, team, settings, pipeline, collaboration, checklists, signatures — has none.
+Memory/deferred/authenticated-reads-and-pipeline-writes-are-not-rate-limited.md.
 
-## Draft finding: centralize instead of per-route
+## Verified findings (supersede the first-pass draft)
 
-A scan of `src/routes/api` (487 route files) found 354 with no rate-limit call at all. Editing each route
-individually was the original framing, but most organization-scoped routes already funnel through one of
-two shared gates:
+- The draft's "two shared gates" idea is wrong: signed-in API routes use ~7 different gate helpers
+  (requireOrganizationPermission/Admin, requireOrganization, requireClientPermission,
+  requireLinkedEntityAccess, requireContractorTeamAdmin, requireAutomationAccess, getOrganizationContext).
+  The one true funnel is `src/hooks.server.ts`, which already has the user id from `getClaims()` at no cost.
+- Browser data goes through `/api/*`; the browser Supabase client is used only for Realtime
+  (communications page, website chat) — outside this campaign.
+- `check_rate_limit` writes to a normal (logged) Postgres table: one extra DB round trip + write per check.
+  Fine for the pilot, a known scaling cost on every request at full scale; Redis is already in the
+  production plan and is the industry-standard home for a per-request limiter.
 
-- `requireOrganizationPermission` / `requireOrganizationAdmin` (`src/lib/server/access/permission.ts`) —
-  276+ direct call sites, reaches Jobs, Clients, Requests, Pipeline, Properties, Team, Settings,
-  Collaboration, Checklists, Signatures, Quotes, Invoices, Payments.
-- `getOwnerSession` / `ownerUnauthorized` (`src/lib/server/access/owner.ts` + `src/lib/server/auth/owner.ts`)
-  — 96 of the Jafar Panel routes.
+## Proposed parts (not approved)
 
-Draft idea: add the rate-limit check inside those two gates once, instead of touching hundreds of files,
-so current and future routes are covered automatically. Mirrors the "single enforcement point" pattern
-used by GitHub/Stripe/Cloudflare-style APIs.
+1. **Front-door limit** — in `hooks.server.ts`, for `/api/*` only: per-person read bucket (GET/HEAD) and
+   per-person write bucket, one check per request (GitHub/Stripe model: per-identity, reads and writes
+   budgeted separately). Jafar Panel requests keyed on the owner session. Existing per-route/per-org
+   buckets stay as inner limits. Limiter behind a small interface so storage can be swapped. Friendly 429
+   handling in the app. Gate: unit tests, live 429 at the limit for owner + field + office roles, normal
+   browsing never hits it, added latency per request measured.
+2. **Unsigned-route sweep** — public token, webchat, webhook, internal-worker routes. Confirm each one's
+   protection (some may live inside DB functions); fix real gaps, one-line reason for the rest.
+3. **Redis storage** — blocked until the VPS/Redis exists; do as part of the production cutover.
+4. **Close-out** — delete the deferred note.
 
-## Draft parts (unapproved, re-derive before use)
+## Open decisions for Jafar
 
-1. **Core organization gate** — read + write limiting inside `requireOrganizationPermission` /
-   `requireOrganizationAdmin`. Reuse the existing fixed-window `check_rate_limit` mechanism and the
-   existing write ceiling (20/60s per org per domain); add a separate, higher read ceiling. Retire the
-   now-redundant standalone quote/invoice/payment write-limit calls once the central gate covers them.
-2. **Jafar Panel gate** — same shape inside the owner-session gate, covering the ~96 admin routes.
-3. **Leftover sweep** — routes that reach neither gate: some `public/*` token routes, `internal/*` worker
-   routes, `webhooks/*`. Most already have their own protection (signature/secret/IP); confirm and close
-   any real gap, leave the rest with a one-line reason.
-4. **Close-out** — delete the deferred note, remove dead code.
-
-## Known risk
-
-Both gates are the busiest code paths in the app. A mistake here has app-wide (Part 1) or
-Jafar-Panel-wide (Part 2) blast radius. Re-verify this is still true and test under more than one role
-before treating any part as done.
-
-## Not yet decided (needs the redo)
-
-- Exact read-limit numbers (a reasoned default was floated, not confirmed).
-- Whether "domain" bucketing should derive from the permission-key prefix or from something else.
-- Full inventory/disposition of the leftover sweep (Part 3) — only spot-checked, not exhaustive.
+- Storage path: database now + Redis at VPS (recommended) vs. other options.
+- Starting numbers: proposed 600 reads/min and 120 saves/min per person, confirmed by measuring real
+  page loads and editing before shipping.

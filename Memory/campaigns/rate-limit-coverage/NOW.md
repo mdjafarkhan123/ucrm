@@ -1,20 +1,16 @@
 # Now — Rate-limit coverage
 
-**Goal:** Close the app-wide rate-limit gap (deferred item: authenticated-reads-and-pipeline-writes-are-not-rate-limited.md)
-so every authenticated route has a shared read/write policy, following proven industry patterns.
+**Goal:** Give every signed-in API request a shared, industry-standard read/write rate limit.
 
-**State:** Planned. No research is confirmed and no code has been written. Last session did a first-pass
-scan only.
+**State:** Planned. Research and route scan redone and verified 2026-09-27; plan in ROADMAP.md is
+awaiting Jafar's approval. No code written.
 
-**Exact next action:** Start over — re-research industry rate-limiting practice and re-verify the route
-scan from scratch. Treat ROADMAP.md as an unverified draft to sanity-check, not a plan to execute. Once
-re-confirmed, propose the campaign plan to Jafar again before building.
+**Exact next action:** Get Jafar's answers to the two open decisions in ROADMAP.md, then start Part 1
+(front-door limit in `src/hooks.server.ts`). Load performance-review (design verdict is drafted in the
+roadmap findings; verification branch after Part 1 is built).
 
-**Blockers:** None — dependency-ready any time.
+**Blockers:** Jafar's approval.
 
 **Pointers:**
-- Memory/deferred/authenticated-reads-and-pipeline-writes-are-not-rate-limited.md (origin/current source of truth)
-- Memory/campaigns/rate-limit-coverage/ROADMAP.md (last session's draft — unverified)
-- src/lib/server/security/rate-limit.ts (existing mechanism)
-- src/lib/server/access/permission.ts (organization gate candidate)
-- src/lib/server/access/owner.ts + src/lib/server/auth/owner.ts (Jafar Panel gate candidate)
+- Memory/campaigns/rate-limit-coverage/ROADMAP.md
+- src/hooks.server.ts, src/lib/server/security/rate-limit.ts
