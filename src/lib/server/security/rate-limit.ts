@@ -1,7 +1,9 @@
-import { json } from '@sveltejs/kit';
+import { json, type RequestEvent } from '@sveltejs/kit';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import { databaseError } from '$lib/server/api/errors';
+import { ownerSessionIdFromCookie } from '$lib/server/auth/owner';
+import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
 type RateLimitResult = { allowed: boolean; retryAfterSeconds: number };
 
@@ -56,4 +58,47 @@ export async function enforceOrganizationWriteRateLimit(
 		return databaseError();
 	}
 	return limit.allowed ? null : rateLimitedResponse(limit.retryAfterSeconds);
+}
+
+// Per person, per minute. Loose enough that opening pages, hovering links (each hover prefetches) and
+// editing never meet it; tight enough that a stuck loop or a stolen session scraping the CRM is stopped
+// within seconds. Reads and writes have separate budgets, the way GitHub and Stripe count them.
+const API_READ_LIMIT = { windowSeconds: 60, maxAttempts: 600 };
+const API_WRITE_LIMIT = { windowSeconds: 60, maxAttempts: 120 };
+
+/**
+ * The front-door limit every signed-in `/api/*` request passes, whatever gate the route itself uses. It
+ * keys on who is asking -- a contractor's user id, or the Jafar Panel session -- so one busy teammate
+ * never spends the rest of the team's budget. A request with no identity (webhooks, workers, public
+ * links) is left to that route's own protection. The per-route and per-organization limits still apply
+ * inside this one.
+ *
+ * It fails open: if the counter itself cannot be reached, the request goes through rather than locking
+ * every contractor out of their CRM over a counting problem.
+ */
+export async function enforceApiRateLimit(event: RequestEvent, userId: string | null) {
+	const { pathname } = event.url;
+	const method = event.request.method;
+	if (!pathname.startsWith('/api/') || method === 'OPTIONS') return null;
+
+	let caller: { key: string; client: SupabaseClient<Database> } | null = null;
+	if (pathname.startsWith('/api/jafar/')) {
+		const sessionId = ownerSessionIdFromCookie(event);
+		if (sessionId) caller = { key: `owner:${sessionId}`, client: getOwnerSupabaseClient() };
+	} else if (userId) {
+		caller = { key: `user:${userId}`, client: event.locals.supabase };
+	}
+	if (!caller) return null;
+
+	const isRead = method === 'GET' || method === 'HEAD';
+	try {
+		const limit = await checkRateLimit(caller.client, {
+			bucketKey: `api-${isRead ? 'read' : 'write'}:${caller.key}`,
+			...(isRead ? API_READ_LIMIT : API_WRITE_LIMIT)
+		});
+		return limit.allowed ? null : rateLimitedResponse(limit.retryAfterSeconds);
+	} catch (error) {
+		console.error('The API rate limit could not be checked; letting the request through.', error);
+		return null;
+	}
 }

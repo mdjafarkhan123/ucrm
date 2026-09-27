@@ -39,7 +39,8 @@ function verifySignature(value: string, signature: string, secret: string) {
 	const providedBuffer = Buffer.from(signature);
 	const expectedBuffer = Buffer.from(expected);
 	return (
-		providedBuffer.length === expectedBuffer.length && timingSafeEqual(providedBuffer, expectedBuffer)
+		providedBuffer.length === expectedBuffer.length &&
+		timingSafeEqual(providedBuffer, expectedBuffer)
 	);
 }
 
@@ -101,6 +102,16 @@ export function verifyOwnerCredentials(email: string, password: string) {
 export function ownerLoginRateLimitBucketKey(ipAddress: string) {
 	const { secret } = getOwnerConfig();
 	return `owner_login:${sign(ipAddress, secret)}`;
+}
+
+/**
+ * The signed session id from the cookie, checked for tampering but not looked up in the registry -- only
+ * good enough to key a rate-limit bucket, never to grant access. A forged or missing cookie gives null.
+ */
+export function ownerSessionIdFromCookie(event: RequestEvent): string | null {
+	const value = event.cookies.get(OWNER_SESSION_COOKIE);
+	if (!value) return null;
+	return decodeSignedSessionId(value, getOwnerConfig().secret);
 }
 
 export async function recordOwnerLoginAttempt(outcome: 'succeeded' | 'failed' | 'rate_limited') {

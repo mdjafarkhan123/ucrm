@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import type { Handle } from '@sveltejs/kit';
 import { getPublicEnv } from '$lib/config/public';
 import { getServerEnv } from '$lib/server/env';
+import { enforceApiRateLimit } from '$lib/server/security/rate-limit';
 
 const publicEnv = getPublicEnv();
 getServerEnv();
@@ -35,6 +36,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// server-confirmed user record, only who is asking.
 	event.locals.getUser = async () =>
 		claims ? { id: claims.claims.sub, email: claims.claims.email ?? null } : null;
+
+	const limited = await enforceApiRateLimit(event, claims?.claims.sub ?? null);
+	if (limited) return limited;
 
 	return resolve(event);
 };
