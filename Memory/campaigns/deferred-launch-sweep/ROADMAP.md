@@ -13,7 +13,8 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    `tab-selection-read-from-a-stale-page-url`, `board-presentation-and-formatting-are-read-behind-a-settings-permission`,
    `job-payment-schedule-dialog-keeps-a-stale-reconciliation-banner`, `team-seat-count-overshoots-right-after-an-invitation`,
    `review-history-says-sent-for-a-scheduled-request`, `job-visit-override-pricing-photo-removal-not-trashed`,
-   `marketing-release-leftovers`, `staff-own-actions-lag-behind-realtime-echo`.
+   `marketing-release-leftovers` (broken campaign now opens fine; its two feature items stay deferred),
+   `staff-own-actions-lag-behind-realtime-echo` (fixed; its slow inbox read moved to Part 8).
 3. **No fake numbers** — Planned. `invoices-list-kpi-cards-are-hard-coded-placeholders`,
    `client-financial-summary-widget-shows-empty-placeholders-for-everyone`,
    `third-kpi-card-on-the-requests-list-has-no-real-data-source`. One shared money read model.
@@ -35,7 +36,8 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    `name-search-across-list-apis-falls-back-to-a-sequential-scan`, `quote-overview-counts-scan-the-whole-tenant`,
    `six-unindexed-foreign-keys-from-the-collaboration-tables`, `a-customer-file-re-resolves-the-whole-quote-document`,
    `app-shell-idle-warmer-downloads-every-routine-route`, `client-photos-are-one-request-each`,
-   `list-table-rows-use-goto-instead-of-real-links`, `jafar-panel-organization-tabs-have-no-hover-prefetch`.
+   `list-table-rows-use-goto-instead-of-real-links`, `jafar-panel-organization-tabs-have-no-hover-prefetch`,
+   `inbox-read-takes-over-a-second`.
 9. **Final live checks** — Planned. `stripe-disconnect-open-checkout-expiry-not-live-tested`,
    `website-chat-realtime-connection-quota-unconfirmed`, `non-admin-email-correction-browser-verification-part-7`.
 

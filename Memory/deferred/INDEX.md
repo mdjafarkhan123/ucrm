@@ -59,8 +59,8 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [Replaced logo uploads are kept rather than cleaned up](replaced-logo-uploads-are-kept-rather-than-cleaned-up.md) |
 | P3 | [Third KPI card on the Requests list has no real data source](third-kpi-card-on-the-requests-list-has-no-real-data-source.md) |
 | P3 | [Four more composite foreign keys use `on delete set null` without a column list](more-composite-foreign-keys-null-the-organization-on-delete.md) |
-| P3 | [Staff own actions lag behind their own realtime echo](staff-own-actions-lag-behind-realtime-echo.md) |
 | P3 | [Invoice email sends to the primary email only, not "+ billing contact"](invoice-email-sends-to-primary-only-not-billing-contact.md) |
 | P3 | [One-time flash of full nav + "not connected to an organization" after account menu](one-time-flash-of-full-nav-and-no-organization-banner-after-account-menu.md) |
 | P3 | [Team seat count overshoots right after an invitation is sent](team-seat-count-overshoots-right-after-an-invitation.md) |
-| P3 | [Marketing first-release leftovers: staff-launch check, cross-campaign insight, one broken test campaign](marketing-release-leftovers.md) |
+| P3 | [Marketing first-release leftovers: staff-launch check, cross-campaign insight](marketing-release-leftovers.md) |
+| P3 | [The inbox read takes over a second every time](inbox-read-takes-over-a-second.md) |

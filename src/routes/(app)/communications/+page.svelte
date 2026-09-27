@@ -552,11 +552,12 @@
 	}));
 
 	// Ends a live Website Chat session from the staff side; the visitor's panel swaps to the ended state
-	// over the same socket, no reload involved.
+	// over the same socket, no reload involved. The re-read is awaited, the way the composer's send is, so
+	// the confirm stays busy until the ended state is on screen instead of closing onto the old thread.
 	const endSessionMutationState = createMutation(() => ({
 		mutationFn: (sessionId: string) => endWebsiteChatSession(sessionId),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] });
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] });
 			endSessionTarget = null;
 			toast.success('Conversation ended', 'The visitor sees this conversation as ended.');
 		},
@@ -568,14 +569,17 @@
 
 	// Says which Client a conflicting-identity chat session belongs to. Unlike the email guarded flow,
 	// there is no dismiss path -- the session already holds real messages and has already claimed an
-	// allowance unit, so it always belongs to somebody.
+	// allowance unit, so it always belongs to somebody. Awaited like the end above, so the dialog closes onto
+	// the linked conversation rather than the stale unresolved one.
 	const resolveIdentityMutationState = createMutation(() => ({
 		mutationFn: (input: { sessionId: string; clientId: string }) =>
 			resolveWebsiteChatIdentity(input.sessionId, input.clientId),
-		onSuccess: (_result, input) => {
-			queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] });
-			queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(input.clientId) });
-			queryClient.invalidateQueries({ queryKey: conversationContextKey(input.clientId) });
+		onSuccess: async (_result, input) => {
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] }),
+				queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(input.clientId) }),
+				queryClient.invalidateQueries({ queryKey: conversationContextKey(input.clientId) })
+			]);
 			selectedGroupKey = null;
 			contextPanelOpen = false;
 			resolveIdentityTarget = null;
