@@ -266,6 +266,14 @@ REDIS_URL=redis://redis:6379
 # App
 NODE_ENV=production
 PORT=3000
+
+# The visitor's real address. Without these, every visitor looks like nginx, and every per-address
+# limit (login, password reset, public links, website chat) becomes one bucket shared by everybody.
+# XFF_DEPTH counts trusted proxies in front of the app: 1 for nginx alone. If Cloudflare also sits in
+# front of nginx, use ADDRESS_HEADER=CF-Connecting-IP instead (and remove XFF_DEPTH), and only let
+# Cloudflare's addresses reach nginx, or the header can be forged.
+ADDRESS_HEADER=X-Forwarded-For
+XFF_DEPTH=1
 ```
 
 **Important about `REDIS_URL`:** Notice it says `redis://redis:6379` — `redis` here is the name of the Redis container from docker-compose.yml. Inside Docker, containers talk to each other by their service name, not by an IP address.

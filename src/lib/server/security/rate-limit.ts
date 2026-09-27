@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { json, type RequestEvent } from '@sveltejs/kit';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
@@ -58,6 +59,36 @@ export async function enforceOrganizationWriteRateLimit(
 		return databaseError();
 	}
 	return limit.allowed ? null : rateLimitedResponse(limit.retryAfterSeconds);
+}
+
+type RateLimitBucket = { bucketKey: string; windowSeconds: number; maxAttempts: number };
+
+/**
+ * An email address as a bucket-key part: hashed, so the counter table never holds anyone's address, and
+ * lower-cased first, so `Info@x.com` and `info@x.com` share one budget.
+ */
+export function emailBucketPart(email: string) {
+	return createHash('sha256').update(email.trim().toLowerCase()).digest('hex');
+}
+
+/**
+ * Limits for login and password calls. Supabase Auth's own per-address limits cannot tell visitors apart
+ * here, because it sees only this server's address, so the app keeps its own. The counter runs on the
+ * service client, since a signed-out visitor may not call it. It fails open, like the
+ * front-door limit: a counting problem must never stop every contractor from signing in.
+ */
+export async function enforceAuthRateLimits(buckets: RateLimitBucket[]) {
+	let results: RateLimitResult[];
+	try {
+		const client = getOwnerSupabaseClient();
+		results = await Promise.all(buckets.map((bucket) => checkRateLimit(client, bucket)));
+	} catch (error) {
+		console.error('A sign-in rate limit could not be checked; letting the request through.', error);
+		return null;
+	}
+	const refused = results.filter((result) => !result.allowed);
+	if (refused.length === 0) return null;
+	return rateLimitedResponse(Math.max(...refused.map((result) => result.retryAfterSeconds)));
 }
 
 // Per person, per minute. Loose enough that opening pages, hovering links (each hover prefetches) and

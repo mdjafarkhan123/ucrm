@@ -114,6 +114,16 @@ Rotate production credentials, prove private origin/network exposure, audit publ
 validation, and complete the shared authenticated rate-limit policy needed before wider traffic. Completion:
 security checks and tenant/role tests pass without exposing administrative services or secrets.
 
+The rate-limit policy itself is built (front-door per-person limit, per-route public limits, login and
+password-reset limits; all in `src/lib/server/security/rate-limit.ts`). Two cutover items remain:
+
+- **Real visitor address.** Set adapter-node's `ADDRESS_HEADER=CF-Connecting-IP` behind the Tunnel (or
+  `X-Forwarded-For` with `XFF_DEPTH` behind nginx; see `Deployment-guide.md` Step 7). Without it every visitor
+  shares one address and every per-address limit becomes one bucket for everybody — which is the case today
+  through the development tunnel (`127.0.0.1`). Prove it by checking a bucket key in `platform_rate_limit_buckets`.
+- **Counter storage.** The counter is one Postgres upsert per API request. When Redis is introduced, replace
+  only `checkRateLimit`'s body with a Redis counter that fails open; until then it stays in Postgres.
+
 ### P9F — measure the actual pilot workload
 
 Write the workload before running k6: tenant count and skew, staff and active sessions, database size, expected

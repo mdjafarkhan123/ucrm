@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { enforceApiRateLimit } from './rate-limit';
+import { emailBucketPart, enforceApiRateLimit, enforceAuthRateLimits } from './rate-limit';
 import { ownerSessionIdFromCookie } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
@@ -108,5 +108,43 @@ describe('enforceApiRateLimit', () => {
 
 		expect(result).toBeNull();
 		expect(getOwnerSupabaseClient).not.toHaveBeenCalled();
+	});
+});
+
+describe('enforceAuthRateLimits', () => {
+	beforeEach(() => vi.clearAllMocks());
+
+	const bucket = { bucketKey: 'login:address:1.2.3.4', windowSeconds: 900, maxAttempts: 50 };
+
+	it('passes when every bucket still has room', async () => {
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(
+			counter({ allowed: true, retry_after_seconds: 0 }) as never
+		);
+		expect(await enforceAuthRateLimits([bucket, bucket])).toBeNull();
+	});
+
+	it('answers 429 when any bucket is spent', async () => {
+		const client = {
+			rpc: vi
+				.fn()
+				.mockResolvedValueOnce({ data: [{ allowed: true, retry_after_seconds: 0 }], error: null })
+				.mockResolvedValueOnce({ data: [{ allowed: false, retry_after_seconds: 42 }], error: null })
+		};
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(client as never);
+
+		const result = await enforceAuthRateLimits([bucket, bucket]);
+		expect(result?.status).toBe(429);
+		expect(result?.headers.get('Retry-After')).toBe('42');
+	});
+
+	it('lets the attempt through when the counter cannot be reached', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		vi.mocked(getOwnerSupabaseClient).mockReturnValue(counter(new Error('down')) as never);
+		expect(await enforceAuthRateLimits([bucket])).toBeNull();
+	});
+
+	it('never stores the email itself, and ignores letter case', () => {
+		expect(emailBucketPart('Info@Example.com')).toBe(emailBucketPart('info@example.com'));
+		expect(emailBucketPart('info@example.com')).not.toContain('example');
 	});
 });

@@ -4,6 +4,19 @@ import {
 	passwordUpdateSchema,
 	zodAuthFieldErrors
 } from '$lib/server/validation/auth.schema';
+import { emailBucketPart, enforceAuthRateLimits } from '$lib/server/security/rate-limit';
+
+// Every reset request sends an email, and Supabase caps auth emails for the whole project each hour, so
+// one script cycling through addresses could use up everyone's reset emails. A few per address per hour,
+// and a few per email so nobody's inbox can be flooded. The answer is the same for every email, known or
+// not, so a limit reveals nothing about who has an account.
+const RESET_WINDOW_SECONDS = 3600;
+const RESETS_PER_EMAIL = 3;
+const RESETS_PER_ADDRESS = 10;
+
+// Changing a password while signed in asks for the current one; this stops a borrowed or stolen session
+// from guessing it.
+const PASSWORD_CHANGES = { windowSeconds: 900, maxAttempts: 10 };
 
 export async function POST(event) {
 	let body: unknown;
@@ -16,10 +29,27 @@ export async function POST(event) {
 	const parsed = passwordResetRequestSchema.safeParse(body);
 	if (!parsed.success) {
 		return json(
-			{ error: 'Please review the highlighted field.', field_errors: zodAuthFieldErrors(parsed.error) },
+			{
+				error: 'Please review the highlighted field.',
+				field_errors: zodAuthFieldErrors(parsed.error)
+			},
 			{ status: 422 }
 		);
 	}
+
+	const limited = await enforceAuthRateLimits([
+		{
+			bucketKey: `password-reset:email:${emailBucketPart(parsed.data.email)}`,
+			windowSeconds: RESET_WINDOW_SECONDS,
+			maxAttempts: RESETS_PER_EMAIL
+		},
+		{
+			bucketKey: `password-reset:address:${event.getClientAddress()}`,
+			windowSeconds: RESET_WINDOW_SECONDS,
+			maxAttempts: RESETS_PER_ADDRESS
+		}
+	]);
+	if (limited) return limited;
 
 	const { error } = await event.locals.supabase.auth.resetPasswordForEmail(parsed.data.email, {
 		redirectTo: `${event.url.origin}/auth/confirm?next=/reset-password`
@@ -41,17 +71,27 @@ export async function PATCH(event) {
 	const parsed = passwordUpdateSchema.safeParse(body);
 	if (!parsed.success) {
 		return json(
-			{ error: 'Please review the highlighted fields.', field_errors: zodAuthFieldErrors(parsed.error) },
+			{
+				error: 'Please review the highlighted fields.',
+				field_errors: zodAuthFieldErrors(parsed.error)
+			},
 			{ status: 422 }
 		);
 	}
 
 	const user = await event.locals.getUser();
-	if (!user) return json({ error: 'Your password-reset link is invalid or has expired.' }, { status: 401 });
+	if (!user)
+		return json({ error: 'Your password-reset link is invalid or has expired.' }, { status: 401 });
 
 	const { password, password_confirmation: _, current_password } = parsed.data;
 	if (!current_password && event.cookies.get('contractor_password_recovery') !== '1') {
 		return json({ error: 'Confirm your current password before changing it.' }, { status: 403 });
+	}
+	if (current_password) {
+		const limited = await enforceAuthRateLimits([
+			{ bucketKey: `password-change:${user.id}`, ...PASSWORD_CHANGES }
+		]);
+		if (limited) return limited;
 	}
 	const { error } = await event.locals.supabase.auth.updateUser({
 		password,
@@ -59,7 +99,10 @@ export async function PATCH(event) {
 	});
 	if (error) {
 		console.error('Contractor password update failed.', error);
-		return json({ error: 'We could not update your password. Check your current password and try again.' }, { status: 400 });
+		return json(
+			{ error: 'We could not update your password. Check your current password and try again.' },
+			{ status: 400 }
+		);
 	}
 	if (!current_password) {
 		event.cookies.delete('contractor_password_recovery', { path: '/' });
