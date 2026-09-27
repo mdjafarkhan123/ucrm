@@ -22,7 +22,12 @@
 	import { uploadAttachmentFile } from '$lib/collaboration/api';
 	import { createImageThumbnail } from '$lib/collaboration/image-thumbnail';
 	import { MAX_ATTACHMENT_SIZE_BYTES } from '$lib/collaboration/attachment-limits';
-	import { startFileUpload, finishFileUpload, trashFile, fileImageUrl } from '$lib/files/api';
+	import {
+		startFileUpload,
+		finishFileUpload,
+		releaseLinePhoto,
+		fileImageUrl
+	} from '$lib/files/api';
 	import type { FileProcessingState } from '$lib/files/api';
 	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import {
@@ -187,8 +192,8 @@
 	// storage forever. Never touches a photo that was already on a saved line before this session started.
 	const uploadedThisSession = new Set<string>();
 	// Photo file ids already on savedLines when this edit session opened. Save diffs this against what it
-	// is about to persist, so a previously-saved photo that Save actually drops gets moved to Trash instead
-	// of sitting as an untracked orphan — the same cleanup discardIfOrphaned already gives session uploads.
+	// is about to persist and releases each one it drops. A line photo is shared -- a quote's is its
+	// request's File, a job's its quote's -- so the server trashes it only when nothing uses it any more.
 	let entrySavedFileIds = new Set<string>();
 
 	function toDraft(line: RequestPricingLine): DraftLine {
@@ -261,19 +266,19 @@
 		if (!uploadedThisSession.has(fileId)) return;
 		uploadedThisSession.delete(fileId);
 		try {
-			await trashFile(fileId);
+			await releaseLinePhoto(fileId);
 		} catch (caught) {
-			console.error('Could not move an unsaved line photo to Trash.', fileId, caught);
+			console.error('Could not clean up an unsaved line photo.', fileId, caught);
 		}
 	}
 
-	/** Save already persisted this removal; this only lets the File Manager's own Trash catch up so a photo
-	 *  that was on a saved line, and no longer is, does not linger as an untracked orphan. */
-	async function trashDroppedSavedPhoto(fileId: string) {
+	/** Save already persisted this removal; this only lets a photo nothing shows any more reach Trash
+	 *  rather than linger as an untracked orphan. One another record still uses is left where it is. */
+	async function releaseDroppedSavedPhoto(fileId: string) {
 		try {
-			await trashFile(fileId);
+			await releaseLinePhoto(fileId);
 		} catch (caught) {
-			console.error('Could not move a removed line photo to Trash.', fileId, caught);
+			console.error('Could not clean up a removed line photo.', fileId, caught);
 		}
 	}
 
@@ -901,7 +906,7 @@
 			);
 			await onSave(revision, toInputs(draftLines));
 			for (const fileId of entrySavedFileIds) {
-				if (!finalFileIds.has(fileId)) void trashDroppedSavedPhoto(fileId);
+				if (!finalFileIds.has(fileId)) void releaseDroppedSavedPhoto(fileId);
 			}
 			uploadedThisSession.clear();
 			editing = false;

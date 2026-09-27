@@ -110,8 +110,9 @@
 	);
 	const savedPricingLines = $derived(pricing?.lines ?? []);
 
-	// What the pricing editor holds, reduced to the fields that actually bill, so reopening a dialog and
-	// changing nothing does not rewrite the visit's lines and bump its revision.
+	// What the pricing editor holds, reduced to the fields that actually bill -- plus the photo, so removing
+	// one alone still saves -- so reopening a dialog and changing nothing does not rewrite the visit's lines
+	// and bump its revision.
 	function pricingFingerprint(lines: RequestPricingLineInput[]) {
 		return JSON.stringify(
 			lines.map((line) => [
@@ -122,7 +123,8 @@
 				line.is_taxable ?? true,
 				line.description ?? '',
 				line.unit_label ?? '',
-				line.source_job_line_item_id ?? null
+				line.source_job_line_item_id ?? null,
+				line.image_file_id ?? null
 			])
 		);
 	}
@@ -140,7 +142,8 @@
 				unit_price_minor: line.unit_price_minor,
 				unit_cost_minor: line.unit_cost_minor,
 				is_taxable: line.is_taxable,
-				source_job_line_item_id: line.source_job_line_item_id ?? null
+				source_job_line_item_id: line.source_job_line_item_id ?? null,
+				image_file_id: line.image_file_id ?? null
 			}))
 		)
 	);

@@ -6,6 +6,7 @@ import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { replaceVisitLinesSchema } from '$lib/server/validation/jobs.schema';
 import { scheduleVisitError } from '$lib/server/jobs/errors';
 import { withCatalogCost } from '$lib/server/quotes/catalog-cost';
+import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
 // One visit's own pricing, replaced in one call — the twin of the job's own lines route, one level down.
 // `replace_job_visit_line_items` checks jobs.edit, refuses a job that is not billed per visit, a completed or
@@ -43,6 +44,14 @@ export const PATCH: RequestHandler = async (event) => {
 		source_catalog_item_id: catalog_item_id
 	}));
 
+	// The photos this visit's own lines show now, so the ones this save drops can be let go of afterwards.
+	const { data: before } = await event.locals.supabase
+		.from('job_visit_line_items')
+		.select('image_file_id')
+		.eq('organization_id', check.auth.organization.id)
+		.eq('visit_id', event.params.visitId)
+		.not('image_file_id', 'is', null);
+
 	const { data, error } = await event.locals.supabase.rpc('replace_job_visit_line_items', {
 		target_organization_id: check.auth.organization.id,
 		target_job_id: event.params.id,
@@ -52,5 +61,24 @@ export const PATCH: RequestHandler = async (event) => {
 	});
 
 	if (error) return scheduleVisitError(error);
+
+	// A visit's photo is its job's File (and the job's is its quote's), so a dropped one is usually still in
+	// use and release_line_photo leaves it be. Only a photo nothing shows any more goes to Trash.
+	const kept = new Set(lines.map((line) => line.image_file_id).filter(Boolean));
+	const dropped = new Set(
+		(before ?? [])
+			.map((row) => row.image_file_id)
+			.filter((id): id is string => !!id && !kept.has(id))
+	);
+	for (const fileId of dropped) {
+		const { error: releaseError } = await getOwnerSupabaseClient().rpc('release_line_photo', {
+			target_organization_id: check.auth.organization.id,
+			target_file_id: fileId,
+			target_actor_id: check.auth.user.id
+		});
+		if (releaseError)
+			console.error('Could not release a dropped visit line photo.', fileId, releaseError);
+	}
+
 	return json(data, { headers: NO_STORE_HEADERS });
 };

@@ -326,6 +326,17 @@ export async function deleteFileLabel(labelId: string) {
 	if (!response.ok) throw await writeError(response, 'That label could not be removed.');
 }
 
+/** Lets go of a line photo a line no longer shows. The server moves it to Trash only when nothing else —
+ *  another record's line, a customer file, a link, a share — still uses it; otherwise it stays put. */
+export async function releaseLinePhoto(fileId: string) {
+	return writeJson<{ released: boolean }>(
+		`/api/files/${fileId}/release`,
+		'POST',
+		{},
+		'That photo could not be cleaned up.'
+	);
+}
+
 // SQLSTATE P0412 comes back as this exact status when a customer already received the file and the
 // caller has not ticked "I understand" yet — the dialog reads it to ask again instead of showing a
 // dead-end error.

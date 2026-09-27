@@ -21650,6 +21650,14 @@ export type Database = {
 				Args: { target_claim_token: string; target_file_id: string };
 				Returns: undefined;
 			};
+			release_line_photo: {
+				Args: {
+					target_actor_id: string;
+					target_file_id: string;
+					target_organization_id: string;
+				};
+				Returns: boolean;
+			};
 			release_member_identity_cleanup: {
 				Args: {
 					target_lease_nonce: string;
