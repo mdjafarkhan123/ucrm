@@ -84,7 +84,10 @@ describe('trust-hub-events webhook route', () => {
 
 	it('rejects the wrong Basic auth password', async () => {
 		const response = await POST(
-			requestWith([BRAND_EVENT], basicAuthHeader(_TRUST_HUB_EVENTS_WEBHOOK_USERNAME, 'wrong-secret'))
+			requestWith(
+				[BRAND_EVENT],
+				basicAuthHeader(_TRUST_HUB_EVENTS_WEBHOOK_USERNAME, 'wrong-secret')
+			)
 		);
 		expect(response.status).toBe(403);
 	});
