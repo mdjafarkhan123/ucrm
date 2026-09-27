@@ -18,13 +18,10 @@ Memory/deferred/authenticated-reads-and-pipeline-writes-are-not-rate-limited.md.
 
 ## Parts
 
-1. **Front-door limit** — DONE `45127a76` (live-verified all roles + Jafar Panel; counter adds ~68 ms per
-   request on managed Supabase — expected ~1 ms once DB/Redis share the VPS). Was: in `hooks.server.ts`, for `/api/*` only: per-person read bucket (GET/HEAD) and
-   per-person write bucket, one check per request (GitHub/Stripe model: per-identity, reads and writes
-   budgeted separately). Jafar Panel requests keyed on the owner session. Existing per-route/per-org
-   buckets stay as inner limits. Limiter behind a small interface so storage can be swapped. Friendly 429
-   handling in the app. Gate: unit tests, live 429 at the limit for owner + field + office roles, normal
-   browsing never hits it, added latency per request measured.
+1. **Front-door limit** — DONE `45127a76`: one per-person read + write check in `hooks.server.ts` for
+   `/api/*`, Jafar Panel keyed on owner session, fails open. Live-verified for owner, field, office and
+   Jafar Panel. Counter adds ~68 ms per request on managed Supabase (expected ~1 ms on the VPS). 429 shows
+   the existing "Too many attempts" text; no client retry change.
 2. **Unsigned-route sweep** — public token, webchat, webhook, internal-worker routes. Confirm each one's
    protection (some may live inside DB functions); fix real gaps, one-line reason for the rest.
 3. **Redis storage** — blocked until the VPS/Redis exists; do as part of the production cutover.
