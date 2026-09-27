@@ -6,7 +6,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | --- | --- |
 | P1 | [Authenticated reads and non-quote/invoice/payment writes lack a shared rate-limit policy](authenticated-reads-and-pipeline-writes-are-not-rate-limited.md) |
 | P1 | [Background jobs have no production scheduler decision](background-jobs-have-no-production-scheduler-decision.md) |
-| P1 | [Removing a saved line photo leaves the file in R2](removing-a-saved-line-photo-leaves-the-file-in-r2.md) |
 | P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
 | P1 | [Production AWS account needs the one-time SES branded-click-links setup](production-aws-ses-branded-click-links-setup.md) |
 | P1 | [Package versions can have no email limits configured at all](package-versions-can-have-no-email-limits-configured.md) |
@@ -72,3 +71,4 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [Team seat count overshoots right after an invitation is sent](team-seat-count-overshoots-right-after-an-invitation.md) |
 | P3 | [Marketing first-release leftovers: staff-launch check, cross-campaign insight, one broken test campaign](marketing-release-leftovers.md) |
 | P3 | [Review history says "sent" for a request that is only scheduled](review-history-says-sent-for-a-scheduled-request.md) |
+| P3 | [Job Visit override-pricing line photo removal doesn't Trash the dropped photo](job-visit-override-pricing-photo-removal-not-trashed.md) |

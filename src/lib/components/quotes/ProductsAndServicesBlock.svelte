@@ -186,6 +186,10 @@
 	// swapping/removing one before Save, deletes it so a picked-then-discarded photo does not sit in
 	// storage forever. Never touches a photo that was already on a saved line before this session started.
 	const uploadedThisSession = new Set<string>();
+	// Photo file ids already on savedLines when this edit session opened. Save diffs this against what it
+	// is about to persist, so a previously-saved photo that Save actually drops gets moved to Trash instead
+	// of sitting as an untracked orphan — the same cleanup discardIfOrphaned already gives session uploads.
+	let entrySavedFileIds = new Set<string>();
 
 	function toDraft(line: RequestPricingLine): DraftLine {
 		return {
@@ -220,6 +224,11 @@
 
 	function openEdit() {
 		draftLines = savedLines.map(toDraft);
+		entrySavedFileIds = new Set(
+			savedLines
+				.map((line) => line.image_file_id)
+				.filter((fileId): fileId is string => Boolean(fileId))
+		);
 		error = '';
 		notice = '';
 		editing = true;
@@ -255,6 +264,16 @@
 			await trashFile(fileId);
 		} catch (caught) {
 			console.error('Could not move an unsaved line photo to Trash.', fileId, caught);
+		}
+	}
+
+	/** Save already persisted this removal; this only lets the File Manager's own Trash catch up so a photo
+	 *  that was on a saved line, and no longer is, does not linger as an untracked orphan. */
+	async function trashDroppedSavedPhoto(fileId: string) {
+		try {
+			await trashFile(fileId);
+		} catch (caught) {
+			console.error('Could not move a removed line photo to Trash.', fileId, caught);
 		}
 	}
 
@@ -875,7 +894,15 @@
 		saving = true;
 		error = '';
 		try {
+			const finalFileIds = new Set(
+				draftLines
+					.map((line) => line.image_file_id)
+					.filter((fileId): fileId is string => Boolean(fileId))
+			);
 			await onSave(revision, toInputs(draftLines));
+			for (const fileId of entrySavedFileIds) {
+				if (!finalFileIds.has(fileId)) void trashDroppedSavedPhoto(fileId);
+			}
 			uploadedThisSession.clear();
 			editing = false;
 			draftLines = [];
