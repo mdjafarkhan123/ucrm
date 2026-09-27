@@ -177,3 +177,19 @@ These supersede earlier unresolved qualifications for these five transitions in 
 
 Receipt correction history and explicit payment movement must remain visible. These decisions add no
 Invoice statuses and authorize no generalized accounting or provider framework.
+
+## Approved correction decisions D6–D9 (Jafar, 2026-09-28)
+
+6. **Issued correction carries payments.** Correcting an issued Invoice builds a replacement Draft; activating it
+   moves every ordinary payment still applied to the original onto the replacement in the same step, capped at the
+   replacement's total (any excess returns to Client credit). The confirm step shows the new total, the carried
+   amount, and what remains owed. This supersedes D3's "remain allocated until explicitly reallocated".
+7. **Fixing a payment follows Xero, not Jobber.** "Fix payment" opens the payment form prefilled; saving reverses
+   the original and records the corrected payment with the same Invoice allocations, atomically. "Mark as never
+   received" takes the payment off its Invoices and reverses it in one step. The original stays in history,
+   labelled as corrected.
+8. **One payment, several Invoices** follows Jobber's New Payment screen: Collect Payment lists the Client's
+   outstanding Invoices, the originating one preselected, each with an editable amount. Unallocated money
+   becomes Client credit.
+9. **Void notice:** the Void dialog offers "Email the client that this invoice is cancelled", ticked by default,
+   only when the Invoice was delivered to the client. Email only until SMS is live.

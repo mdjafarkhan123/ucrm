@@ -2,16 +2,17 @@
 
 **Goal:** Clear the ready deferred tasks before the first paying client, most urgent first.
 
-**Active part:** 3 — No fake numbers (Sonnet). Started 2026-09-28 in a separate terminal session that owns
-Part 3; it updates only the Part 3 line in ROADMAP.md when done.
+**Active part:** 4 — Fixing money mistakes (Opus). Decisions approved: D6–D9 in
+docs/invoice-behavior-contract.md. Part 3 may still be running in another session; it owns only its roadmap
+line and its own files (invoice counts, money overview migration) — commit only your own paths.
 
-**Exact next action:** once Part 3 shows Done in ROADMAP.md, start Part 4 (Fixing money mistakes, Opus):
-research Jobber first, ask Jafar the product decisions with a recommendation, then fix its three notes.
+**Exact next action:** build slice 4a (void cancellation email), then 4b, 4c, 4d per ROADMAP Part 4. Delete
+each task note + deferred INDEX row once its slices are done.
 
 **Blockers:** none. Do not touch packages (Jafar, 2026-09-27).
 
 **Known unrelated failure:** `src/routes/api/team/invitations/[invitationId]/resend/resend.spec.ts` fails
-(mock call arguments) — pre-existing, not from Part 2.
+(mock call arguments) — pre-existing.
 
 **Pointers:**
-- Memory/campaigns/deferred-launch-sweep/ROADMAP.md Part 3/4 (task-note names)
+- Memory/campaigns/deferred-launch-sweep/ROADMAP.md Part 4

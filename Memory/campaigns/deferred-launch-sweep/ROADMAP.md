@@ -19,9 +19,11 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
 3. **No fake numbers** — Planned. `invoices-list-kpi-cards-are-hard-coded-placeholders`,
    `client-financial-summary-widget-shows-empty-placeholders-for-everyone`,
    `third-kpi-card-on-the-requests-list-has-no-real-data-source`. One shared money read model.
-4. **Fixing money mistakes** — Planned. `issued-invoices-cannot-be-corrected-from-the-browser`,
-   `payments-cannot-be-edited-deleted-or-split-across-invoices`, `void-invoice-has-no-client-cancellation-email`.
-   Research Jobber first; corrections, never ledger mutations.
+4. **Fixing money mistakes** — In progress 2026-09-28 (decisions D6–D9 in docs/invoice-behavior-contract.md).
+   Slices, in order: 4a void cancellation email (`void-invoice-has-no-client-cancellation-email`);
+   4b one payment split across several invoices; 4c fix payment / mark never received
+   (4b+4c = `payments-cannot-be-edited-deleted-or-split-across-invoices`); 4d correct an issued invoice with
+   payments carried over (`issued-invoices-cannot-be-corrected-from-the-browser`).
 5. **Complete customer documents** — Planned. `client-documents-drop-line-photos-and-need-a-completeness-pass`,
    `line-photos-wrongly-appear-in-the-request-s-attachments-card`, `invoice-email-sends-to-primary-only-not-billing-contact`.
 6. **Protect customer history** — Planned. `property-deletion-guarded-once-work-references-a-property`,
