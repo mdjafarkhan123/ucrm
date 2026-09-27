@@ -1,4 +1,4 @@
--- Contractor Settings 3B: cancellation holds the seat and normalized email until Auth cleanup succeeds.
+-- Contractor Settings 3B: cancellation frees the seat at once but holds the normalized email until Auth cleanup succeeds.
 -- Run as one transaction. The final result set contains only failures; no rows means every assertion passed.
 begin;
 
@@ -86,8 +86,8 @@ insert into tap_results (line) select is(
   null, 'cancellation withdraws the acceptance token immediately'
 );
 insert into tap_results (line) select is(
-  (select status from public.organization_members where user_id = 'c0000000-0000-0000-0000-000000000003'),
-  'pending', 'the pending membership keeps the seat held before Auth deletion'
+  (select count(*)::int from public.organization_members where user_id = 'c0000000-0000-0000-0000-000000000003'),
+  0, 'cancellation removes the pending membership, freeing the seat before Auth deletion'
 );
 insert into tap_results (line) select throws_ok(
   $$select public.begin_team_invitation('c1000000-0000-0000-0000-000000000002', 'CANCEL-TARGET@example.test', 'sales', 'c0000000-0000-0000-0000-000000000002', '[]'::jsonb)$$,
@@ -139,7 +139,7 @@ insert into tap_results (line) select is(
 );
 insert into tap_results (line) select is(
   (select count(*)::int from public.organization_members where user_id = 'c0000000-0000-0000-0000-000000000003'),
-  0, 'cleanup preparation removes only the pending membership'
+  0, 'cleanup preparation leaves no membership behind'
 );
 insert into tap_results (line) select throws_ok(
   $$select public.begin_team_invitation('c1000000-0000-0000-0000-000000000002', 'cancel-target@example.test', 'sales', 'c0000000-0000-0000-0000-000000000002', '[]'::jsonb)$$,

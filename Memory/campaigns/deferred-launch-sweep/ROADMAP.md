@@ -8,7 +8,8 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
 
 1. **Email can silently stop** — Done 2026-09-27 (`32f49eb0`): a missing allowance counts as zero, live-proven.
    Package terms stay deferred until Jafar plans packages (note kept in Memory/deferred/).
-2. **Broken things** — Active. `office-role-cannot-load-client-communication-history`,
+2. **Broken things** — Done 2026-09-28. Seat count: send was correct live; the real bug was a cancelled invite
+   holding its seat and Team row until the worker ran (fixed in `cancel_team_invitation`). `office-role-cannot-load-client-communication-history`,
    `two-job-billing-reminder-modes-raise-no-reminder`, `full-page-load-hydration-crash-leaves-the-previous-page-on-screen` (investigated 2026-09-27: no leak, not reproducible; parked),
    `tab-selection-read-from-a-stale-page-url`, `board-presentation-and-formatting-are-read-behind-a-settings-permission`,
    `job-payment-schedule-dialog-keeps-a-stale-reconciliation-banner`, `team-seat-count-overshoots-right-after-an-invitation`,

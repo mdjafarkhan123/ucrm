@@ -2,18 +2,16 @@
 
 **Goal:** Clear the ready deferred tasks before the first paying client, most urgent first.
 
-**Active part:** 2 — Broken things (Opus). Every task is fixed or parked except one (see Blockers). Latest:
-line photos only go to Trash when nothing else uses them (`f04c25df`); end-chat/link-client wait for the
-refresh (`7982d50a`); the old broken marketing campaign opens fine now.
+**Active part:** 3 — No fake numbers (Sonnet). Started 2026-09-28 in a separate terminal session that owns
+Part 3; it updates only the Part 3 line in ROADMAP.md when done.
 
-**Exact next action:** ask Jafar for OK on the one test invite below. If yes, fix
-`team-seat-count-overshoots-right-after-an-invitation`, verify, delete note + INDEX row, commit. Then mark
-Part 2 Done in ROADMAP and move to Part 3 (No fake numbers, Sonnet). If Jafar says skip, park that note and
-close Part 2 the same way.
+**Exact next action:** once Part 3 shows Done in ROADMAP.md, start Part 4 (Fixing money mistakes, Opus):
+research Jobber first, ask Jafar the product decisions with a recommendation, then fix its three notes.
 
-**Blockers:** that task needs Jafar's OK to send one real test invite (to his own +alias). Do not touch
-packages (Jafar, 2026-09-27).
+**Blockers:** none. Do not touch packages (Jafar, 2026-09-27).
+
+**Known unrelated failure:** `src/routes/api/team/invitations/[invitationId]/resend/resend.spec.ts` fails
+(mock call arguments) — pre-existing, not from Part 2.
 
 **Pointers:**
-- Memory/campaigns/deferred-launch-sweep/ROADMAP.md Part 2/3 (task-note names)
-- Memory/deferred/team-seat-count-overshoots-right-after-an-invitation.md
+- Memory/campaigns/deferred-launch-sweep/ROADMAP.md Part 3/4 (task-note names)
