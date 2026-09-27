@@ -1,23 +1,14 @@
-# Package versions can have no email limits configured at all
+# Package versions carry no email allowance
 
-Found 2026-09-26 while browser-verifying operational-email-ses Part 7's over-allowance gate on Raad LTD.
+The silent stop is fixed (`20260927160000_email_allowance_never_silently_stops.sql`): a missing or
+`not_included` allowance now counts as zero, so essential email sends and optional email is paid from the
+Communication Balance. What remains is the package terms themselves.
 
-Raad's assigned package (`Elite`, version 2, marked "retired") has `platform_package_version_limits` rows for
-`operational_email_recipients` and `essential_email_recipients` both set to `limit_state = 'not_included'`
-with no numeric fallback. `resolve_communication_email_allowance` then returns `not_included` for that
-organization unless a per-org `organization_limit_overrides` row masks it. Two such overrides (unlimited,
-dated 2026-09-06, reasons "any reason" / "Test reason") were the only thing keeping Raad's essential
-(invoices/quotes/receipts/security notices) and operational email working — not test debris, load-bearing.
+These versions still say `not_included` for both email keys, against the approved table in
+docs/contractor-email-contract.md (Starter 2,500/250, Growth 10,000/1,000, Elite 30,000/3,000):
+Starter v3 (published, 1 org: Riverside Legacy Demo), Elite v2 (retired, 2 orgs: Raad LTD, Jaaroweb),
+Elite v3 (retired, 0), Growth v3 (draft, 0). Elite v4 (published) is unlimited on purpose.
 
-`not_included` is not a chargeable state: `claim_communication_outbox_event` treats it as
-`email_allowance_unavailable` and retries forever (15 min backoff) rather than sending or charging. If an
-override like this is ever cleared for an organization on a package version with no email limit configured,
-that organization's email silently stops sending with no user-facing error — it just retries forever.
-
-**Reactivation trigger:** before the production cutover, or before touching any organization's
-`organization_limit_overrides` rows for `operational_email_recipients`/`essential_email_recipients` — check
-whether every package version currently assigned to a live organization has real `numeric`/`unlimited` limits
-configured for both keys, not `not_included`. Retired/legacy package versions are the likely culprits.
-
-**Constraint already known:** fixing this is a package-data decision (what should Elite v2's real email limits
-be?), not a code bug — needs Jafar's input on the right numbers, not just a migration.
+Published/retired versions are immutable by trigger; correct them through the Jafar Panel: set Growth v3's
+draft numbers, publish a new Starter version, and move organizations only with Jafar's say-so. Raad's three
+unlimited overrides are test settings and are no longer load-bearing.
