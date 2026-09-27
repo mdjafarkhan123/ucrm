@@ -2,6 +2,7 @@
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import GettingStartedCard from '$lib/components/dashboard/GettingStartedCard.svelte';
+	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 
 	const queryClient = useQueryClient();
@@ -243,9 +244,9 @@
 
 			{#if overview.isPending}
 				<div class="loading-grid">
-					<div class="skeleton skeleton--card"></div>
-					<div class="skeleton skeleton--card"></div>
-					<div class="skeleton skeleton--card"></div>
+					<LoadingSkeleton variant="card" label="Loading workspace" />
+					<LoadingSkeleton variant="card" label="Loading workspace" />
+					<LoadingSkeleton variant="card" label="Loading workspace" />
 				</div>
 			{:else if overview.isError}
 				<section class="notice notice--error">
@@ -795,9 +796,6 @@
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 16px;
-	}
-	.skeleton--card {
-		height: 140px;
 	}
 	.modal-backdrop {
 		position: fixed;
