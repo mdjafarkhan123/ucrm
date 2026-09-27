@@ -57,7 +57,7 @@ export const GET: RequestHandler = async (event) => {
 		canSeePrice && clientId
 			? supabase.rpc('client_account_balance', { target_client_ids: [clientId] })
 			: Promise.resolve({ data: {} as Record<string, unknown>, error: null }),
-		organizationFormatting(supabase, organizationId),
+		organizationFormatting(organizationId),
 		supabase
 			.from('invoices')
 			.select('online_partial_payments_allowed')

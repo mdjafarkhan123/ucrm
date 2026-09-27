@@ -1,6 +1,4 @@
 import type { RequestHandler } from './$types';
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '$lib/database.types';
 import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
 import { databaseError, validationError } from '$lib/server/api/errors';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
@@ -55,10 +53,7 @@ export const GET: RequestHandler = async (event) => {
 	}
 	if (!limit.allowed) return rateLimitedResponse(limit.retryAfterSeconds);
 
-	const formatting = await organizationFormatting(
-		event.locals.supabase as SupabaseClient<Database>,
-		organizationId
-	);
+	const formatting = await organizationFormatting(organizationId);
 	if (!formatting.ok) return databaseError();
 
 	const generatedAt = new Date();

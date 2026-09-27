@@ -61,10 +61,7 @@ export const GET: RequestHandler = async (event) => {
 
 	let range: { from: string | null; to: string | null } = { from: null, to: null };
 	if (date !== 'all') {
-		const formattingLookup = await organizationFormatting(
-			event.locals.supabase,
-			check.auth.organization.id
-		);
+		const formattingLookup = await organizationFormatting(check.auth.organization.id);
 		if (!formattingLookup.ok) return databaseError();
 		range = resolveDateRange(date, formattingLookup.formatting.timezone, {
 			from: parsed.data.from,

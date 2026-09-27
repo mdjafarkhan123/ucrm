@@ -18,7 +18,7 @@ export const GET: RequestHandler = async (event) => {
 		event.locals.supabase.rpc('quote_status_counts', {
 			target_organization_id: check.auth.organization.id
 		}),
-		organizationFormatting(event.locals.supabase, check.auth.organization.id)
+		organizationFormatting(check.auth.organization.id)
 	]);
 	if (error) return databaseError();
 

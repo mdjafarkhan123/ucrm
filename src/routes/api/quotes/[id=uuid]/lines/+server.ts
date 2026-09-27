@@ -76,7 +76,7 @@ export const GET: RequestHandler = async (event) => {
 			: Promise.resolve({ data: [], error: null }),
 		// The block shows money in the organization's own currency, and this is the one row for the
 		// whole tenant, cached in process rather than fetched again per request.
-		organizationFormatting(supabase, organizationId),
+		organizationFormatting(organizationId),
 		wantsMoney && versionId
 			? supabase.rpc('quote_version_money', { target_version_ids: [versionId] })
 			: Promise.resolve({ data: {}, error: null }),

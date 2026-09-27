@@ -76,7 +76,7 @@ export const GET: RequestHandler = async (event) => {
 			cursor_reminder_id: cursor?.reminderId ?? null,
 			page_limit: limit + 1
 		}),
-		organizationFormatting(supabase, organizationId)
+		organizationFormatting(organizationId)
 	]);
 	if (error) return databaseError();
 

@@ -123,7 +123,7 @@ export const POST: RequestHandler = async (event) => {
 		}));
 	}
 
-	const formatting = await organizationFormatting(event.locals.supabase, organizationId);
+	const formatting = await organizationFormatting(organizationId);
 	const currencyCode = formatting.ok ? formatting.formatting.currency_code : 'USD';
 
 	const { rows: reviewRows, summary } = runOpeningBalanceReview({

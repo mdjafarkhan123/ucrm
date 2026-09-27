@@ -70,7 +70,7 @@ export async function loadMarketingDeliveryOptions(
 			.is('archived_at', null)
 			.order('name'),
 		owner.rpc('effective_marketing_email_limit', { target_organization_id: organizationId }),
-		organizationTimezone(owner, organizationId)
+		organizationTimezone(organizationId)
 	]);
 
 	for (const result of [domains, marketingDomain, settings, forms, allowance]) {

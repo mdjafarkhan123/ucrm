@@ -21,10 +21,7 @@ export const GET: RequestHandler = async (event) => {
 
 	const canViewValue = hasPermission(check.access, 'pipeline.view_value');
 
-	const formattingLookup = await organizationFormatting(
-		event.locals.supabase,
-		check.auth.organization.id
-	);
+	const formattingLookup = await organizationFormatting(check.auth.organization.id);
 	if (!formattingLookup.ok) return databaseError();
 	const { formatting } = formattingLookup;
 

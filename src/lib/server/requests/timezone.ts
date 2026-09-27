@@ -1,5 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '$lib/database.types';
+import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
 // Calendar statuses only make sense in the contractor's own timezone, so every request read needs this
 // value. It is one row per organization and it almost never changes, so it is held in process for a few
@@ -34,14 +33,16 @@ export function forgetOrganizationTimezone(organizationId: string) {
 export type FormattingLookup =
 	{ ok: true; formatting: OrganizationFormatting } | { ok: false; formatting: null };
 
-export async function organizationFormatting(
-	supabase: SupabaseClient<Database>,
-	organizationId: string
-): Promise<FormattingLookup> {
+// Read with the server's own client, never the caller's. Every member needs these three presentation values
+// to see their own work correctly, but organization_settings' row is readable only with
+// settings.business.view -- a member denied Settings got no row back, which read as "brand new
+// organization", and that UTC/USD answer was then cached for the whole team. Callers pass the organization
+// from their verified membership (`auth.organization.id`), never a client-supplied id.
+export async function organizationFormatting(organizationId: string): Promise<FormattingLookup> {
 	const cached = cache.get(organizationId);
 	if (cached && cached.expiresAt > Date.now()) return { ok: true, formatting: cached.formatting };
 
-	const { data, error } = await supabase
+	const { data, error } = await getOwnerSupabaseClient()
 		.from('organization_settings')
 		.select('timezone, currency_code, locale')
 		.eq('organization_id', organizationId)
@@ -64,10 +65,7 @@ export async function organizationFormatting(
 
 // Requests have read this leniently since they were built: a lookup that fails falls back to UTC for
 // that one request rather than failing the page. The failure is still never cached.
-export async function organizationTimezone(
-	supabase: SupabaseClient<Database>,
-	organizationId: string
-) {
-	const lookup = await organizationFormatting(supabase, organizationId);
+export async function organizationTimezone(organizationId: string) {
+	const lookup = await organizationFormatting(organizationId);
 	return lookup.ok ? lookup.formatting.timezone : FALLBACK.timezone;
 }

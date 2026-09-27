@@ -1,5 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '$lib/database.types';
+import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
 // Whether this organization shows the collapsed five-column board or the seven-column detailed one. It is
 // a presentation preference and nothing else: no stage, transition, history or report reads it.
@@ -14,11 +13,13 @@ export type PipelinePresentation = { detailed_assessment_stages: boolean };
 export type PipelinePresentationLookup =
 	{ ok: true; presentation: PipelinePresentation } | { ok: false; presentation: null };
 
+// Read with the server's own client for the same reason as `organizationFormatting`: a Pipeline viewer
+// denied settings.business.view must still see their organization's board, not the default one. The
+// caller has already checked pipeline.view and passes its verified `auth.organization.id`.
 export async function pipelinePresentation(
-	supabase: SupabaseClient<Database>,
 	organizationId: string
 ): Promise<PipelinePresentationLookup> {
-	const { data, error } = await supabase
+	const { data, error } = await getOwnerSupabaseClient()
 		.from('organization_settings')
 		.select('pipeline_detailed_assessment_stages')
 		.eq('organization_id', organizationId)

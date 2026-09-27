@@ -56,7 +56,7 @@ export const GET: RequestHandler = async (event) => {
 			.order('id', { ascending: true }),
 		// The pricing block has to show money in the organization's own currency, and this is the one
 		// row for the whole tenant, cached in process rather than fetched again per request.
-		organizationFormatting(supabase, organizationId),
+		organizationFormatting(organizationId),
 		// Cost is not in the select above (it left the authenticated grant): a permitted reader gets it
 		// back from this gated function instead, keyed by line id. An empty object comes back for anyone
 		// without quotes.view_cost, which is a no-op merge.

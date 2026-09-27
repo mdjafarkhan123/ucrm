@@ -100,7 +100,7 @@ export const GET: RequestHandler = async (event) => {
 			page_limit: limit + 1,
 			client_id_filter: client_id ?? null
 		}),
-		organizationFormatting(supabase, organizationId)
+		organizationFormatting(organizationId)
 	]);
 	if (error) return databaseError();
 

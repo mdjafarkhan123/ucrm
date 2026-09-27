@@ -58,7 +58,7 @@ export const GET: RequestHandler = async (event) => {
 			.eq('organization_id', organizationId)
 			.eq('client_id', row.client_id)
 			.eq('is_primary', true),
-		organizationTimezone(supabase, organizationId)
+		organizationTimezone(organizationId)
 	]);
 	if (assigneesError || contactMethodsError) return databaseError();
 

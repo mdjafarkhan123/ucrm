@@ -148,7 +148,7 @@ export const GET: RequestHandler = async (event) => {
 					target_job_id: jobId
 				})
 			: Promise.resolve({ data: null, error: null }),
-		organizationFormatting(supabase, organizationId),
+		organizationFormatting(organizationId),
 		// Which of this job's visits an invoice already claims. Scoped to one job and served by
 		// invoice_sources_job_idx, the same index the claim command itself relies on.
 		canSeeInvoiceStatus

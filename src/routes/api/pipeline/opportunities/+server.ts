@@ -107,10 +107,7 @@ export const GET: RequestHandler = async (event) => {
 	// database round trip.
 	let range: { from: string | null; to: string | null } = { from: null, to: null };
 	if (date !== 'all') {
-		const formatting = await organizationFormatting(
-			event.locals.supabase,
-			check.auth.organization.id
-		);
+		const formatting = await organizationFormatting(check.auth.organization.id);
 		// A timezone that could not be read is not a reason to answer with the wrong days.
 		if (!formatting.ok) return databaseError();
 		range = resolveDateRange(date, formatting.formatting.timezone, {

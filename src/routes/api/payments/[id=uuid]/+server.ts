@@ -26,7 +26,7 @@ export const GET: RequestHandler = async (event) => {
 	}
 	if (!detail) return notFound('That payment could not be found.');
 
-	const formatting = await organizationFormatting(supabase, check.auth.organization.id);
+	const formatting = await organizationFormatting(check.auth.organization.id);
 
 	return json(
 		{

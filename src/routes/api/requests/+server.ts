@@ -187,7 +187,7 @@ export const GET: RequestHandler = async (event) => {
 					.eq('is_primary', true)
 					.in('client_id', clientIds)
 			: Promise.resolve({ data: [], error: null }),
-		organizationTimezone(supabase, organizationId)
+		organizationTimezone(organizationId)
 	]);
 	if (contactMethodsError) return databaseError();
 

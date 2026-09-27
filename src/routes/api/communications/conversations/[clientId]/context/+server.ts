@@ -43,7 +43,7 @@ export const GET: RequestHandler = async (event) => {
 			return validationError({ section: 'Choose a valid section.' });
 		}
 
-		const formatting = await organizationFormatting(supabase, organizationId);
+		const formatting = await organizationFormatting(organizationId);
 		const locale = formatting.ok ? formatting.formatting.locale : 'en-US';
 
 		if (!canSee(CONTEXT_SECTION_PERMISSIONS[requestedSection])) {

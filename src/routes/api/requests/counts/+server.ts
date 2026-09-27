@@ -22,7 +22,7 @@ export const GET: RequestHandler = async (event) => {
 
 	// Where today starts and ends for this contractor. Worked out here, in the one place that owns the
 	// calendar rule, and handed to the database as two plain instants.
-	const timezone = await organizationTimezone(supabase, organizationId);
+	const timezone = await organizationTimezone(organizationId);
 	const { day_start, day_end } = organizationDayRange(timezone);
 
 	const { data, error } = await supabase.rpc('request_status_counts', {

@@ -57,12 +57,12 @@ export const GET: RequestHandler = async (event) => {
 	// The organization's own way of writing money and dates is needed either way — for the currency the
 	// totals are shown in, and for the calendar a date filter is measured against. The settings row is
 	// held in process for a few minutes, so this is usually free.
-	const formattingRead = organizationFormatting(event.locals.supabase, check.auth.organization.id);
+	const formattingRead = organizationFormatting(check.auth.organization.id);
 
 	// Which board this organization is showing. It rides along with the headings because this is the query
 	// the board already holds and already invalidates — saving the toggle refreshes the numbers and the
 	// shape together, so the board never has to be told twice or reloaded by hand.
-	const presentationRead = pipelinePresentation(event.locals.supabase, check.auth.organization.id);
+	const presentationRead = pipelinePresentation(check.auth.organization.id);
 
 	const countBetween = (range: BoardDateRange) =>
 		event.locals.supabase.rpc('pipeline_stage_counts', {

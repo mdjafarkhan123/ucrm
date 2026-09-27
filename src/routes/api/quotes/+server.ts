@@ -158,7 +158,7 @@ export const GET: RequestHandler = async (event) => {
 			.order(sortColumn, { ascending })
 			.order('id', { ascending })
 			.limit(limit + 1),
-		organizationFormatting(supabase, organizationId)
+		organizationFormatting(organizationId)
 	]);
 	if (error) return databaseError();
 
