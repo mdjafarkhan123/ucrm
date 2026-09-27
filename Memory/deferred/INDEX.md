@@ -64,4 +64,3 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [One-time flash of full nav + "not connected to an organization" after account menu](one-time-flash-of-full-nav-and-no-organization-banner-after-account-menu.md) |
 | P3 | [Team seat count overshoots right after an invitation is sent](team-seat-count-overshoots-right-after-an-invitation.md) |
 | P3 | [Marketing first-release leftovers: staff-launch check, cross-campaign insight, one broken test campaign](marketing-release-leftovers.md) |
-| P3 | [Job Visit override-pricing line photo removal doesn't Trash the dropped photo](job-visit-override-pricing-photo-removal-not-trashed.md) |
