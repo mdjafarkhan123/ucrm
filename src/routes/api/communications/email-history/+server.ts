@@ -69,6 +69,11 @@ export const GET: RequestHandler = async (event) => {
 			{ status: 403, headers: PRIVATE_READ_HEADERS }
 		);
 	}
+	// The shell's Inbox link and the client page's Communication tab and Message button ask only whether the
+	// member may see and send conversations -- the same checks as the feed, without paying for the feed.
+	if (event.url.searchParams.get('access') === '1') {
+		return json({ ok: true, can_send: canSend }, { headers: PRIVATE_READ_HEADERS });
+	}
 
 	// Team Inbox is only ever offered to someone who can see it; an assigned-only viewer always gets My
 	// Inbox regardless of what the query string asks for.

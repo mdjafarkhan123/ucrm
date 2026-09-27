@@ -7,6 +7,7 @@
 	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import { exactTime, previewText } from '$lib/collaboration/format';
+	import type { HttpError } from '$lib/http-error';
 	import {
 		clientCommunicationHistoryKey,
 		conversationCustomerEmail,
@@ -49,6 +50,12 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#if historyQuery.isPending}
 	<LoadingSkeleton variant="card" label="Loading communication history" />
+{:else if (historyQuery.error as HttpError | null)?.status === 403}
+	<EmptyState
+		icon={messageIcon}
+		title="Messages are not part of your role"
+		description="Ask the account owner if you need to see this client's emails and texts."
+	/>
 {:else if historyQuery.isError}
 	<ErrorState description="Communication history could not be loaded. Refresh and try again." />
 {:else if messages.length === 0}

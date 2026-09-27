@@ -985,6 +985,23 @@ export async function fetchConversationContextSection<S extends ContextSection>(
 	return result as ContextSectionPage<S>;
 }
 
+// Whether the signed-in member may see conversations at all (conversations.view_team or view_assigned), and
+// whether they may send. Shared by the shell's Inbox link and the client page's Communication tab and
+// Message button, so all three read one cached answer. The user id is in the key because the query client
+// survives sign-out on the same tab.
+export const communicationsAccessKey = (userId: string | null) =>
+	['nav', 'communications-access', userId] as const;
+
+export type CommunicationsAccess = { ok: boolean; canSend: boolean };
+
+export async function fetchCommunicationsAccess(): Promise<CommunicationsAccess> {
+	const response = await fetch('/api/communications/email-history?access=1');
+	if (response.status === 403) return { ok: false, canSend: false };
+	const result = await response.json().catch(() => ({}));
+	// Anything but a clear refusal keeps the links in place; the real read or send still decides.
+	return { ok: true, canSend: result.can_send ?? true };
+}
+
 export const clientCommunicationHistoryKey = (clientId: string) =>
 	['communications', 'client-history', clientId] as const;
 

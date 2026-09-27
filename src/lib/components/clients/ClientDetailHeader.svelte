@@ -20,10 +20,13 @@
 		client,
 		onEdit,
 		onHistory,
-		onHistoryHover
+		onHistoryHover,
+		canMessage = true
 	}: {
 		client: ClientDetail;
 		onEdit: () => void;
+		/** False for a member without conversations.send, who would only be refused on Send. */
+		canMessage?: boolean;
 		onHistory?: () => void;
 		onHistoryHover?: () => void;
 	} = $props();
@@ -78,9 +81,11 @@
 				<Button variant="secondary" size="small" disabled>Call</Button>
 				<span class="client-header__reason">{callReason}</span>
 			</span>
-			<Button variant="secondary" size="small" onclick={() => (manualEmailOpen = true)}
-				>Message</Button
-			>
+			{#if canMessage}
+				<Button variant="secondary" size="small" onclick={() => (manualEmailOpen = true)}
+					>Message</Button
+				>
+			{/if}
 			{#if client.can_request_review}
 				<RequestReviewButton target={{ clientId: client.id }} />
 			{/if}

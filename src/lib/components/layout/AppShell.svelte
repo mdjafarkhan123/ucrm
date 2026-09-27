@@ -19,6 +19,7 @@
 		logoUrl = null,
 		account = null,
 		userId,
+		inboxVisible = true,
 		pipelineVisible = true,
 		clientsVisible = true,
 		quotesVisible = true,
@@ -33,6 +34,7 @@
 		logoUrl?: string | null;
 		account?: { name: string | null; email: string | null; role: string } | null;
 		userId?: string;
+		inboxVisible?: boolean;
 		pipelineVisible?: boolean;
 		clientsVisible?: boolean;
 		quotesVisible?: boolean;
@@ -65,7 +67,7 @@
 		{
 			label: 'Customers',
 			items: [
-				{ label: 'Inbox', href: '/communications', icon: 'inbox' },
+				...(inboxVisible ? [{ label: 'Inbox', href: '/communications', icon: 'inbox' }] : []),
 				...(clientsVisible ? [{ label: 'Clients', href: '/clients', icon: 'users' }] : []),
 				{ label: 'Requests', href: '/requests', icon: 'route' },
 				...(pipelineVisible ? [{ label: 'Pipeline', href: '/pipeline', icon: 'chartBar' }] : [])

@@ -28,7 +28,10 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		clientCommunicationHistoryKey,
+		communicationsAccessKey,
 		fetchClientCommunicationHistory,
+		fetchCommunicationsAccess,
+		type CommunicationsAccess,
 		type InboxMessagePage
 	} from '$lib/communications/inbox';
 	import {
@@ -336,10 +339,23 @@
 		});
 	}
 
-	const clientTabs: Tab[] = [
+	// Only a member who may see conversations gets the Communication tab, and only one who may send gets the
+	// header's Message button; the shell's Inbox link asks the same question under the same key, so this is
+	// normally already cached.
+	const communicationsAccessQuery = createQuery<CommunicationsAccess>(() => ({
+		queryKey: communicationsAccessKey(currentUserId ?? null),
+		queryFn: fetchCommunicationsAccess,
+		staleTime: 5 * 60_000
+	}));
+	const canSeeCommunication = $derived(communicationsAccessQuery.data?.ok ?? true);
+	const canMessage = $derived(communicationsAccessQuery.data?.canSend ?? true);
+
+	const clientTabs: Tab[] = $derived([
 		{ value: 'details', label: 'Details' },
-		{ value: 'communication', label: 'Communication', onhover: prefetchCommunicationHistory }
-	];
+		...(canSeeCommunication
+			? [{ value: 'communication', label: 'Communication', onhover: prefetchCommunicationHistory }]
+			: [])
+	]);
 
 	// The open tab lives in the URL the way Jobber's does, so it survives a reload and can be linked to.
 	// Details is the default and carries no parameter; anything unrecognised falls back to it.
@@ -488,6 +504,7 @@
 			{#snippet main()}
 				<ClientDetailHeader
 					{client}
+					{canMessage}
 					onEdit={() => (detailsOpen = true)}
 					onHistory={() => (showHistory = !showHistory)}
 					onHistoryHover={warmHistory}
@@ -564,9 +581,11 @@
 						</SectionBlock>
 					</TabPanel>
 
-					<TabPanel value="communication">
-						<ClientCommunicationHistory {clientId} active={activeTab === 'communication'} />
-					</TabPanel>
+					{#if canSeeCommunication}
+						<TabPanel value="communication">
+							<ClientCommunicationHistory {clientId} active={activeTab === 'communication'} />
+						</TabPanel>
+					{/if}
 				</Tabs>
 			{/snippet}
 

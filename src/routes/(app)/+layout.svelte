@@ -4,6 +4,11 @@
 	import { preloadCode } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import AppShell from '$lib/components/layout/AppShell.svelte';
+	import {
+		communicationsAccessKey,
+		fetchCommunicationsAccess,
+		type CommunicationsAccess
+	} from '$lib/communications/inbox';
 	import type { LayoutData } from './$types';
 
 	let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props();
@@ -102,6 +107,14 @@
 	}));
 	const filesVisible = $derived(filesAccessQuery.data?.ok ?? true);
 
+	// Same idea for the Inbox: sales, finance and field hold no conversations permission by default.
+	const inboxAccessQuery = createQuery<CommunicationsAccess>(() => ({
+		queryKey: communicationsAccessKey(data.user?.id ?? null),
+		queryFn: fetchCommunicationsAccess,
+		staleTime: 5 * 60_000
+	}));
+	const inboxVisible = $derived(inboxAccessQuery.data?.ok ?? true);
+
 	// Every page is its own JavaScript file, so the first visit to one waits for that file to arrive and
 	// the click feels stuck. This fetches the files for the pages the office moves between all day once
 	// the browser has nothing else to do, so those clicks paint straight away. Hovering a link already
@@ -192,6 +205,7 @@
 	logoUrl={data.logoUrl}
 	account={data.account}
 	userId={data.user.id}
+	{inboxVisible}
 	{pipelineVisible}
 	{clientsVisible}
 	{quotesVisible}
