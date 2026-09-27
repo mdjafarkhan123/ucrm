@@ -12,16 +12,17 @@ import { syncTrustHubRegistrationStatus } from '$lib/server/communications/trust
 
 // Stage 9D primary trigger: Twilio Event Streams pushes Brand/Campaign status changes here instead of us
 // polling for them (Twilio's own recommendation -- see the migration's header comment). Event Streams webhook
+// (Underscore-prefixed: SvelteKit refuses any other non-handler export from a route file.)
 // Sinks authenticate via HTTP Basic auth credentials embedded in the Sink's destination URL, not an
 // X-Twilio-Signature header like classic Twilio webhooks (confirmed against Twilio's Webhook Quickstart,
 // 2026-09-15) -- so this route's auth model deliberately differs from status/+server.ts's signature check.
 // The Sink must be created (once, for the whole platform account -- every contractor's Brand/Campaign lives
 // under our single ISV account) pointing at:
-//   https://<TRUST_HUB_EVENTS_WEBHOOK_USERNAME>:<TRUST_HUB_EVENTS_WEBHOOK_SECRET>@<host>/api/webhooks/twilio/trust-hub-events
+//   https://<_TRUST_HUB_EVENTS_WEBHOOK_USERNAME>:<TRUST_HUB_EVENTS_WEBHOOK_SECRET>@<host>/api/webhooks/twilio/trust-hub-events
 // subscribed to the nine A2P Brand/Campaign registration event types, with Batch set to false so each delivery
 // carries one event. That Sink/Subscription creation is a real (free) action on the live Twilio account and is
 // Jafar's to do, not automated here.
-export const TRUST_HUB_EVENTS_WEBHOOK_USERNAME = 'ucrm-trust-hub-events';
+export const _TRUST_HUB_EVENTS_WEBHOOK_USERNAME = 'ucrm-trust-hub-events';
 
 const BRAND_EVENT_TYPES = new Set([
 	'com.twilio.messaging.compliance.brand-registration.brand-registered',
@@ -60,7 +61,7 @@ function isAuthorized(request: Request): boolean {
 	} catch {
 		return false;
 	}
-	const expectedCredentials = `${TRUST_HUB_EVENTS_WEBHOOK_USERNAME}:${expected}`;
+	const expectedCredentials = `${_TRUST_HUB_EVENTS_WEBHOOK_USERNAME}:${expected}`;
 	const provided = Buffer.from(decoded);
 	const wanted = Buffer.from(expectedCredentials);
 	return provided.length === wanted.length && timingSafeEqual(provided, wanted);

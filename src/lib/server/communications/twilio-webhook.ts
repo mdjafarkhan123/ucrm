@@ -1,4 +1,4 @@
-import { validateRequest } from 'twilio';
+import twilio from 'twilio';
 import { env } from '$env/dynamic/private';
 import { z } from 'zod';
 import { decryptTwilioCredential } from './twilio-credential-crypto';
@@ -123,7 +123,7 @@ export function validateTwilioSignature(
 	if (!signature) return false;
 	for (const token of tokens) {
 		try {
-			if (validateRequest(token, signature, url, params)) return true;
+			if (twilio.validateRequest(token, signature, url, params)) return true;
 		} catch {
 			// A single malformed token must not abort the remaining candidates.
 		}

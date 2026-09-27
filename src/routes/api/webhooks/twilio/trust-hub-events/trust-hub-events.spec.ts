@@ -28,7 +28,7 @@ vi.mock('$lib/server/communications/trust-hub-submission', async (importOriginal
 	return { ...actual, syncTrustHubRegistrationStatus: vi.fn() };
 });
 
-import { POST, TRUST_HUB_EVENTS_WEBHOOK_USERNAME } from './+server';
+import { POST, _TRUST_HUB_EVENTS_WEBHOOK_USERNAME } from './+server';
 
 const SECRET = 'a-long-random-trust-hub-webhook-secret-value';
 const URL = 'http://localhost/api/webhooks/twilio/trust-hub-events';
@@ -84,7 +84,7 @@ describe('trust-hub-events webhook route', () => {
 
 	it('rejects the wrong Basic auth password', async () => {
 		const response = await POST(
-			requestWith([BRAND_EVENT], basicAuthHeader(TRUST_HUB_EVENTS_WEBHOOK_USERNAME, 'wrong-secret'))
+			requestWith([BRAND_EVENT], basicAuthHeader(_TRUST_HUB_EVENTS_WEBHOOK_USERNAME, 'wrong-secret'))
 		);
 		expect(response.status).toBe(403);
 	});
@@ -92,14 +92,14 @@ describe('trust-hub-events webhook route', () => {
 	it('rejects when the secret is not configured at all', async () => {
 		mockedServerEnv.mockReturnValue({ TRUST_HUB_EVENTS_WEBHOOK_SECRET: undefined } as never);
 		const response = await POST(
-			requestWith([BRAND_EVENT], basicAuthHeader(TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET))
+			requestWith([BRAND_EVENT], basicAuthHeader(_TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET))
 		);
 		expect(response.status).toBe(403);
 	});
 
 	it('rejects a body that is not a JSON array', async () => {
 		const response = await POST(
-			requestWith({ not: 'an array' }, basicAuthHeader(TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET))
+			requestWith({ not: 'an array' }, basicAuthHeader(_TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET))
 		);
 		expect(response.status).toBe(403);
 	});
@@ -114,7 +114,7 @@ describe('trust-hub-events webhook route', () => {
 		});
 
 		const response = await POST(
-			requestWith([BRAND_EVENT], basicAuthHeader(TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET))
+			requestWith([BRAND_EVENT], basicAuthHeader(_TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET))
 		);
 
 		expect(response.status).toBe(204);
@@ -137,7 +137,7 @@ describe('trust-hub-events webhook route', () => {
 		});
 
 		const response = await POST(
-			requestWith([CAMPAIGN_EVENT], basicAuthHeader(TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET))
+			requestWith([CAMPAIGN_EVENT], basicAuthHeader(_TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET))
 		);
 
 		expect(response.status).toBe(204);
@@ -151,7 +151,7 @@ describe('trust-hub-events webhook route', () => {
 		mockedFindByResourceSid.mockResolvedValue(null);
 
 		const response = await POST(
-			requestWith([BRAND_EVENT], basicAuthHeader(TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET))
+			requestWith([BRAND_EVENT], basicAuthHeader(_TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET))
 		);
 
 		expect(response.status).toBe(204);
@@ -162,7 +162,7 @@ describe('trust-hub-events webhook route', () => {
 		const response = await POST(
 			requestWith(
 				[{ type: 'com.twilio.messaging.compliance.number-registration.pending', data: {} }],
-				basicAuthHeader(TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET)
+				basicAuthHeader(_TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET)
 			)
 		);
 
@@ -175,7 +175,7 @@ describe('trust-hub-events webhook route', () => {
 		mockedSync.mockRejectedValue(new TwilioTrustHubError('timeout', null, 'network_error', true));
 
 		const response = await POST(
-			requestWith([BRAND_EVENT], basicAuthHeader(TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET))
+			requestWith([BRAND_EVENT], basicAuthHeader(_TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET))
 		);
 
 		expect(response.status).toBe(500);
@@ -186,7 +186,7 @@ describe('trust-hub-events webhook route', () => {
 		mockedSync.mockRejectedValue(new Error('no submission on file'));
 
 		const response = await POST(
-			requestWith([BRAND_EVENT], basicAuthHeader(TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET))
+			requestWith([BRAND_EVENT], basicAuthHeader(_TRUST_HUB_EVENTS_WEBHOOK_USERNAME, SECRET))
 		);
 
 		expect(response.status).toBe(204);
