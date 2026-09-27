@@ -763,6 +763,8 @@
 				<JobRemindersCard
 					jobId={saved.job.id}
 					reminders={saved.reminders}
+					billingTiming={saved.job.billing_timing}
+					jobClosed={saved.job.status === 'closed'}
 					today={saved.organization_today}
 					locale={saved.locale}
 					{editable}

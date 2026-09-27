@@ -30,10 +30,15 @@
 		today,
 		locale = 'en-US',
 		editable = false,
+		billingTiming,
+		jobClosed = false,
 		onChanged
 	}: {
 		jobId: string;
 		reminders: JobInvoiceReminder[];
+		/** The job's "when should we invoice" choice, so an empty card says what will raise a reminder. */
+		billingTiming: string;
+		jobClosed?: boolean;
 		/** The organisation's own calendar day, YYYY-MM-DD, so due state matches the derived status. */
 		today: string;
 		locale?: string;
@@ -53,6 +58,21 @@
 		on_completion: 'On completion',
 		per_visit: 'Per visit'
 	};
+
+	// An empty card names the rule that will fill it, the way Jobber's invoice-reminder setting always shows
+	// which schedule is active -- so no billing choice can leave a job silently never flagged for invoicing.
+	const EMPTY_TEXT: Record<string, string> = {
+		on_closure: 'A reminder will appear here when this job is closed.',
+		per_completed_visit: 'A reminder will appear here after each completed visit.',
+		month_end: 'A reminder will appear here at the end of each month while the contract runs.',
+		manual: 'This job is set to never remind you. Add a date if you want a reminder.'
+	};
+	const emptyText = $derived(
+		jobClosed
+			? 'Nothing left to invoice.'
+			: (EMPTY_TEXT[billingTiming] ??
+					'Nothing to invoice yet. A due reminder is what flags this job as needing an invoice.')
+	);
 
 	// A YYYY-MM-DD string read at local noon, so the formatted date can never slip a day across a timezone.
 	function formatDue(dueOn: string) {
@@ -171,10 +191,15 @@
 		{/if}
 	{/snippet}
 
-	{#if reminders.length === 0}
-		<p class="job-reminders__empty">
-			Nothing to invoice yet. A due reminder is what flags this job as needing an invoice.
-		</p>
+	{#if reminders.length === 0 && !jobClosed && billingTiming === 'custom_dates'}
+		<div class="job-reminders__warning" role="status">
+			<p>No dates picked yet. This job will not be flagged for invoicing until you add one.</p>
+			{#if editable}
+				<Button variant="secondary" size="small" onclick={openAdd}>Pick a date</Button>
+			{/if}
+		</div>
+	{:else if reminders.length === 0}
+		<p class="job-reminders__empty">{emptyText}</p>
 	{:else}
 		<ul class="job-reminders">
 			{#each reminders as reminder (reminder.id)}
@@ -332,6 +357,21 @@
 	.job-reminders__empty {
 		margin: 0;
 		color: var(--color-text--secondary);
+	}
+
+	.job-reminders__warning {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-small);
+		padding: var(--space-base);
+		border: var(--border-base) solid var(--color-warning);
+		border-radius: var(--radius-base);
+
+		p {
+			margin: 0;
+			color: var(--color-heading);
+		}
 	}
 
 	.job-reminders__hint {

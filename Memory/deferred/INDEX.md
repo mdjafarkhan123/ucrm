@@ -44,7 +44,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Payment-stage and visit-line reads have no EXPLAIN evidence](invoice-payment-stage-reads-lack-explain-evidence.md) |
 | P2 | [Voiding an invoice tells the client nothing](void-invoice-has-no-client-cancellation-email.md) |
 | P2 | [A recorded payment cannot be edited, deleted, or split across invoices](payments-cannot-be-edited-deleted-or-split-across-invoices.md) |
-| P2 | [Two job billing-reminder modes never raise a reminder](two-job-billing-reminder-modes-raise-no-reminder.md) |
 | P2 | [Client detail's financial summary widget is empty for everyone, not just some roles](client-financial-summary-widget-shows-empty-placeholders-for-everyone.md) |
 | P2 | [Invoices list KPI cards (Outstanding, Overdue, Collected) are hard-coded placeholders](invoices-list-kpi-cards-are-hard-coded-placeholders.md) |
 | P2 | [Disconnecting Stripe expires open checkouts: code-complete, never live-tested](stripe-disconnect-open-checkout-expiry-not-live-tested.md) |
