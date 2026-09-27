@@ -62,6 +62,8 @@ export const jafarOrganizationWebsiteChatAuthorityKey = (organizationId: string 
 	[...jafarOrganizationKey(organizationId), 'website-chat-authority'] as const;
 export const jafarOrganizationWebsiteChatAllowanceKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'website-chat-allowance'] as const;
+export const jafarOrganizationReviewCampaignKey = (organizationId: string | undefined) =>
+	[...jafarOrganizationKey(organizationId), 'review-campaign'] as const;
 
 export const jafarProspectsKey = ['jafar', 'prospects'] as const;
 export const jafarProspectsListKey = (stageFilter: string, search: string) =>

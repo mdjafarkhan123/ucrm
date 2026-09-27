@@ -124,6 +124,46 @@ export async function loadReviewSettings(organizationId: string): Promise<Review
 	return { ...saved, request_plan: saved.request_plan ?? DEFAULT_REVIEW_REQUEST_PLAN, readiness };
 }
 
+export type ReviewCampaignActivity = {
+	asked: number;
+	opened: number;
+	went_to_google: number;
+	private_feedback: number;
+};
+
+// Jafar Panel Part 10: the same last-30-day counts the contractor's own Reviews page shows
+// (public.review_request_counts), read directly with the owner client since Jafar holds no organization
+// membership for that function's permission check to pass.
+export async function loadReviewCampaignActivity(
+	organizationId: string
+): Promise<ReviewCampaignActivity> {
+	const owner = getOwnerSupabaseClient();
+	const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+	const scoped = () =>
+		owner
+			.from('review_requests')
+			.select('*', { count: 'exact', head: true })
+			.eq('organization_id', organizationId)
+			.gte('created_at', since);
+
+	const [asked, opened, wentToGoogle, feedback] = await Promise.all([
+		scoped().is('cancelled_at', null),
+		scoped().not('first_opened_at', 'is', null),
+		scoped().not('continued_to_google_at', 'is', null),
+		scoped().not('feedback_submitted_at', 'is', null)
+	]);
+	for (const result of [asked, opened, wentToGoogle, feedback]) {
+		if (result.error) throw result.error;
+	}
+
+	return {
+		asked: asked.count ?? 0,
+		opened: opened.count ?? 0,
+		went_to_google: wentToGoogle.count ?? 0,
+		private_feedback: feedback.count ?? 0
+	};
+}
+
 export async function saveReviewSettings(
 	organizationId: string,
 	actorId: string,
