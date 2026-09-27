@@ -71,8 +71,20 @@
 
 <style lang="scss">
 	.review-page {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		min-height: 100vh;
-		padding: var(--space-large) var(--space-base) var(--space-extravagant);
+		padding: var(--space-extravagant) var(--space-large);
 		background: var(--color-surface--background);
+	}
+
+	// Below the card's own mobile breakpoint the page stops being a "page with a card on it" and becomes
+	// the sheet itself — no visible seam between the two.
+	@media (max-width: 639px) {
+		.review-page {
+			padding: 0;
+			background: var(--color-surface);
+		}
 	}
 </style>

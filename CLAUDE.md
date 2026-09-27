@@ -92,7 +92,7 @@ campaign — including when Jafar says `read memory and continue`.
 
 - Jafar is a non-technical 15-year-old project owner. Talk with him with real senario context using everyday plain english, no jargon.
 - Never guesswork, no overengineering. Think / research critically and deeply considering all edge cases.
-- When a feature, workflow, behavior, or mechanism needs planning, first research how mature products/leading industries handle it. Discuss choices with Jafar using the `grilling` or `grill-me` skill when needed. Use the best proven pattern and established engineering convention that fits. Do not create a custom solution when an established one fits. If valid approaches have meaningful trade-offs, compare them and recommend the best fit before building. Tell Jafar which industry method you followed.
+- When a feature, workflow, behavior, or mechanism needs planning, or need to fix any problem, first research how mature products/leading industries handle it or solve it. Discuss choices with Jafar, use the `grilling` or `grill-me` skill when needed. Use the best proven pattern/robust one and established engineering convention that fits. Do not create a custom solution when an established/robust one fits. If valid approaches have meaningful trade-offs, compare them and recommend the best fit before building. Tell Jafar which industry method you followed.
 - **Frontend design.** Designs must be beautiful, professional, and modern.
 - **Svelte 5 only.** No Svelte 4 syntax anywhere.
 - SCSS + BEM for all styling. Tabler icons for all icons.
@@ -104,6 +104,7 @@ campaign — including when Jafar says `read memory and continue`.
 - **Performance — proportional evidence:** Follow `performance-review`'s invocation gate and two-stage completion contract. Never claim user or traffic capacity beyond the workload its evidence actually supports.
 - **One working copy.** Jafar wants a single clean application: work in this folder on `main` and commit there
   whenever needed. Create another branch, worktree, or clone only when Jafar asks for one.
+- Whenever you complete any work always commit to to git as soon as possible at a good point so it saves permanently rather than having in computer only. So if any files get deleted it can be bring back.
 
 ---
 

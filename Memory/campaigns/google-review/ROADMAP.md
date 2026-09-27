@@ -30,5 +30,20 @@ Approved by Jafar 2026-09-25. Product truth: `docs/google-review-campaign-owner-
    on `review_feedback_organization_submitted_idx`; an organization's feedback is a small fraction of its
    requests). Assigning a feedback item to a person was never built — the approved 5B shape had status only, and
    the brief's "assign" is still open.
-6. **Live verification** — Planned; needs 4 and 5. Real SMS/email, every role login, performance verification.
-   Then tell the jafar-panel campaign its review-link slice is unblocked.
+6. **Live verification** — Done 2026-09-26. Test data cleaned up (verified column-by-column first, no real
+   history touched). Real send proven on job #14: delivered to a real inbox, Jafar clicked through with
+   different ratings on 2 separate emails and confirmed it works well. Every role checked live in Raad LTD
+   (owner/admin full + settings; office full minus settings; sales/finance correctly blocked; field has no
+   Reviews access and correct assigned-only job scope). Perf: all three review tables carry the org-scoped
+   indexes they need; bounded per-org lists, no capacity claim made. Told the jafar-panel campaign its
+   review-link slice is unblocked.
+7. **Rating + private-feedback page polish** — Done 2026-09-26. Copy on the rating/choice screen
+   (`ReviewFeedbackJourney.svelte`) and the never-saved private-feedback defaults (`DEFAULT_REVIEW_FEEDBACK_FORM`
+   in `settings.ts`) rewritten kinder and warmer. Redesigned `/v/[token]`: desktop keeps a floating card with a
+   two-column choice-tile grid and hover lift; below 640px the real customer page (never the settings preview,
+   which always keeps its framed card so it reads correctly in its dialog) drops to an edge-to-edge sheet with
+   bigger touch targets, a stacked choice list, and a fixed bottom "Send feedback" bar on the form step.
+   Browser-verified against the live database at both a desktop and a mobile viewport: routed stars → form →
+   thanks, the two-choice path → form → thanks-with-Google-prompt, and the settings preview dialog still framed
+   at a narrow window width. Test review requests were inserted directly for this and fully deleted afterward;
+   `review_settings.routing_enabled` was restored to its original value.

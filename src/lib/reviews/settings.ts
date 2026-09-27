@@ -137,26 +137,26 @@ export function isGoogleReviewUrl(value: string) {
 
 // Fixed ids so the default questions keep the same identity once an organization saves them.
 export const DEFAULT_REVIEW_FEEDBACK_FORM: ReviewFeedbackForm = {
-	heading: 'Tell us about your experience',
+	heading: 'Tell us what is on your mind',
 	intro:
-		'Thank you for taking a moment to tell us how things went. Your answers go only to our team, and we read every one.',
+		'We really appreciate you taking the time. Whatever you share stays between us and helps us do better for you and for the next customer.',
 	questions: [
 		{
 			id: '6b1f3c1e-8f0a-4c52-9d3e-2a7f5b1c0e01',
 			type: 'long_text',
-			label: 'What happened, and what could we have done better?',
+			label: 'What happened, and how can we make it right?',
 			required: true
 		},
 		{
 			id: '6b1f3c1e-8f0a-4c52-9d3e-2a7f5b1c0e02',
 			type: 'yes_no',
-			label: 'Would you like us to contact you about this?',
+			label: 'Would you like us to follow up with you?',
 			required: true
 		}
 	],
-	thank_you_title: 'Thank you for your feedback',
+	thank_you_title: 'Thank you — we hear you',
 	thank_you_message:
-		'We have passed this straight to our team. If you asked us to get in touch, we will contact you soon.'
+		'Your feedback just landed with our team. If you asked us to follow up, we will be in touch soon.'
 };
 
 export const DEFAULT_REVIEW_MESSAGE_STYLES: ReviewMessageStyles = {

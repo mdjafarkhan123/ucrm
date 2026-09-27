@@ -17,6 +17,11 @@
 	//
 	// The public page records each step; the settings preview passes `preview` and records nothing. In the
 	// preview, Google opens in a new tab so the contractor can test their link without leaving their work.
+	//
+	// Mobile and desktop are deliberately different shapes, not one layout squeezed down: on the real
+	// customer page (`preview` false) a narrow viewport drops the floating card for an edge-to-edge sheet
+	// with a fixed bottom action bar on the form step, while the settings preview always keeps the floating
+	// card so it reads correctly inside its dialog regardless of window width.
 	type SubmitResult = { ok: true } | { ok: false; error: string };
 
 	let {
@@ -131,7 +136,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<article class="review-journey">
+<article class="review-journey" class:review-journey--preview={preview}>
 	<div class="review-journey__brandbar"></div>
 	<header class="review-journey__head">
 		{#if model.business.logo_url}
@@ -149,9 +154,9 @@
 			<p class="review-journey__eyebrow">{greeting}</p>
 			{#if routed}
 				<h1 class="review-journey__title">
-					How would you rate your experience with {model.business.name}?
+					How was your experience with {model.business.name}?
 				</h1>
-				<p class="review-journey__text">Tap a star to choose.</p>
+				<p class="review-journey__text">Your honest rating helps us know how we're doing.</p>
 				<div
 					class="review-journey__stars"
 					role="group"
@@ -178,10 +183,10 @@
 					{hoverRating ? REVIEW_STAR_LABELS[hoverRating - 1] : ' '}
 				</p>
 			{:else}
-				<h1 class="review-journey__title">How did we do?</h1>
+				<h1 class="review-journey__title">We'd love to hear from you</h1>
 				<p class="review-journey__text">
-					Thank you for choosing {model.business.name}. We would love to hear about your experience.
-					Choose whichever suits you.
+					Thank you for choosing {model.business.name}. Your feedback means a lot to us — share it
+					however feels right.
 				</p>
 				<div class="review-journey__choices">
 					<button type="button" class="review-journey__choice" onclick={() => goToGoogle(null)}>
@@ -190,7 +195,7 @@
 						</span>
 						<span class="review-journey__choice-text">
 							<strong>Leave a Google review</strong>
-							<span>Share your experience publicly on Google.</span>
+							<span>Share the love publicly — it takes less than a minute.</span>
 						</span>
 					</button>
 					<button
@@ -201,18 +206,18 @@
 						<span class="review-journey__choice-icon">{@html messageIcon}</span>
 						<span class="review-journey__choice-text">
 							<strong>Tell us privately</strong>
-							<span>Send your feedback straight to our team.</span>
+							<span>Have feedback or a concern? Send it straight to our team.</span>
 						</span>
 					</button>
 				</div>
 			{/if}
 		</section>
 	{:else if step === 'form'}
-		<section class="review-journey__body">
+		<section class="review-journey__body review-journey__body--form">
 			{#if googleUrl}
 				<button type="button" class="review-journey__back" onclick={backToChoice}>
 					<span aria-hidden="true">{@html arrowLeftIcon}</span>
-					Back
+					Go back
 				</button>
 			{/if}
 			<h1 class="review-journey__title">{form.heading}</h1>
@@ -234,9 +239,11 @@
 						}
 					/>
 				{/each}
-				<Button type="submit" size="large" fullWidth loading={submitting} disabled={submitting}>
-					Send feedback
-				</Button>
+				<div class="review-journey__submit-bar">
+					<Button type="submit" size="large" fullWidth loading={submitting} disabled={submitting}>
+						Send feedback
+					</Button>
+				</div>
 			</form>
 		</section>
 	{:else}
@@ -246,7 +253,9 @@
 			<p class="review-journey__text review-journey__text--authored">{form.thank_you_message}</p>
 			{#if googleUrl && !routed}
 				<div class="review-journey__after">
-					<p class="review-journey__text">Happy to share your experience publicly too?</p>
+					<p class="review-journey__text">
+						Would you also share this on Google? It helps other customers find us.
+					</p>
 					<Button variant="secondary" onclick={() => goToGoogle(null)}>
 						<span class="review-journey__button-icon" aria-hidden="true"
 							>{@html brandGoogleIcon}</span
@@ -261,11 +270,12 @@
 
 <style lang="scss">
 	.review-journey {
+		position: relative;
 		width: 100%;
 		max-width: 560px;
 		margin: 0 auto;
 		background: var(--color-surface);
-		border: 1px solid var(--color-border);
+		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-large);
 		box-shadow: var(--shadow-high);
 		overflow: hidden;
@@ -339,9 +349,9 @@
 		&__title {
 			margin: 0;
 			font-family: var(--typography--fontFamily-display);
-			font-size: var(--typography--fontSize-largest);
-			font-weight: 700;
-			line-height: var(--typography--lineHeight-base);
+			font-size: var(--typography--fontSize-jumbo);
+			font-weight: 900;
+			line-height: var(--typography--lineHeight-minuscule);
 			color: var(--color-heading);
 		}
 
@@ -357,32 +367,38 @@
 
 		&__choices {
 			display: grid;
+			grid-template-columns: 1fr 1fr;
 			gap: var(--space-base);
 			margin-top: var(--space-base);
 		}
 
 		&__choice {
 			display: flex;
+			flex-direction: column;
 			align-items: center;
-			gap: var(--space-base);
+			gap: var(--space-small);
 			width: 100%;
-			padding: var(--space-base) var(--space-large);
-			border: 1px solid var(--color-border);
+			padding: var(--space-large);
+			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-base);
 			background: var(--color-surface);
 			color: inherit;
 			font: inherit;
-			text-align: left;
+			text-align: center;
 			cursor: pointer;
 			transition:
-				border-color 150ms ease,
-				background 150ms ease,
-				box-shadow 150ms ease;
+				border-color var(--timing-base) ease-out,
+				background var(--timing-base) ease-out,
+				box-shadow var(--timing-base) ease-out,
+				transform var(--timing-base) ease-out;
 
-			&:hover {
-				border-color: var(--color-border--interactive);
-				background: var(--color-surface--hover);
-				box-shadow: var(--shadow-base);
+			@media (hover: hover) {
+				&:hover {
+					border-color: var(--color-border--interactive);
+					background: var(--color-surface--hover);
+					box-shadow: var(--shadow-base);
+					transform: translateY(-2px);
+				}
 			}
 
 			&:focus-visible {
@@ -395,15 +411,15 @@
 			display: grid;
 			flex: none;
 			place-items: center;
-			width: 44px;
-			height: 44px;
+			width: 56px;
+			height: 56px;
 			border-radius: var(--radius-circle);
 			background: var(--color-surface--background);
 			color: var(--color-brand);
 
 			:global(svg) {
-				width: 22px;
-				height: 22px;
+				width: 26px;
+				height: 26px;
 			}
 
 			&--google {
@@ -458,8 +474,10 @@
 				color: var(--color-warning);
 			}
 
-			&:hover {
-				transform: scale(1.08);
+			@media (hover: hover) {
+				&:hover {
+					transform: scale(1.08);
+				}
 			}
 
 			&:focus-visible {
@@ -525,6 +543,10 @@
 			margin-top: var(--space-base);
 		}
 
+		&__submit-bar {
+			width: 100%;
+		}
+
 		&__done {
 			color: var(--color-success);
 
@@ -542,7 +564,7 @@
 			width: 100%;
 			padding-top: var(--space-large);
 			margin-top: var(--space-base);
-			border-top: 1px solid var(--color-border);
+			border-top: var(--border-base) solid var(--color-border);
 		}
 
 		&__button-icon {
@@ -555,22 +577,78 @@
 		}
 	}
 
-	@media (max-width: 480px) {
+	// Below this width the real customer page (never the settings preview, which keeps its floating card
+	// so it reads correctly inside a dialog at any window size) trades the floating card for an edge-to-edge
+	// sheet with bigger touch targets, a stacked choice list instead of the desktop tile grid, and a fixed
+	// bottom action bar on the form step so "Send feedback" is always one thumb-reach away.
+	@media (max-width: 639px) {
 		.review-journey {
-			&__head,
-			&__body {
-				padding-inline: var(--space-large);
+			&__title {
+				font-size: var(--typography--fontSize-largest);
+			}
+
+			&__choices {
+				grid-template-columns: 1fr;
+				gap: var(--space-small);
+			}
+
+			&__choice {
+				flex-direction: row;
+				align-items: center;
+				text-align: left;
+				padding: var(--space-base) var(--space-large);
+			}
+
+			&__choice-icon {
+				width: 48px;
+				height: 48px;
+
+				:global(svg) {
+					width: 22px;
+					height: 22px;
+				}
 			}
 
 			&__star {
-				width: 46px;
-				height: 46px;
+				width: 58px;
+				height: 58px;
 
 				:global(svg) {
-					width: 38px;
-					height: 38px;
+					width: 46px;
+					height: 46px;
 				}
 			}
+		}
+
+		.review-journey:not(.review-journey--preview) .review-journey__head,
+		.review-journey:not(.review-journey--preview) .review-journey__body {
+			padding-inline: var(--space-large);
+		}
+
+		.review-journey:not(.review-journey--preview) {
+			max-width: none;
+			min-height: 100vh;
+			margin: 0;
+			border: none;
+			border-radius: 0;
+			box-shadow: none;
+		}
+
+		.review-journey:not(.review-journey--preview) .review-journey__body--form {
+			padding-bottom: calc(var(--space-largest) + 76px);
+		}
+
+		.review-journey:not(.review-journey--preview) .review-journey__submit-bar {
+			position: fixed;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			z-index: var(--elevation-base);
+			padding: var(--space-base) var(--space-large)
+				calc(var(--space-base) + env(safe-area-inset-bottom));
+			background: var(--color-surface);
+			border-top: var(--border-base) solid var(--color-border);
+			box-shadow: var(--shadow-high);
 		}
 	}
 </style>
