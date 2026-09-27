@@ -2,18 +2,18 @@
 
 **Goal:** Clear the ready deferred tasks before the first paying client, most urgent first.
 
-**Active part:** 2 — Broken things (Opus). Fixed so far: office inbox access, billing-reminder card, tab-in-URL
-helper (`src/lib/url-param.svelte.ts`), formatting read for Settings-denied members, schedule-dialog banner,
-review history wording. Also fixed the failing production build (`4a0e415f`). Hydration crash: investigated,
-not reproducible, parked in its note.
+**Active part:** 2 — Broken things (Opus). Every task is fixed or parked except one (see Blockers). Latest:
+line photos only go to Trash when nothing else uses them (`f04c25df`); end-chat/link-client wait for the
+refresh (`7982d50a`); the old broken marketing campaign opens fine now.
 
-**Exact next action:** `job-visit-override-pricing-photo-removal-not-trashed` — first answer the shared-file
-check at the bottom of its note. Then `marketing-release-leftovers`, `staff-own-actions-lag-behind-realtime-echo`.
-Fix, verify, delete each note and its deferred INDEX row, commit per fix. Then close Part 2 in ROADMAP.
+**Exact next action:** ask Jafar for OK on the one test invite below. If yes, fix
+`team-seat-count-overshoots-right-after-an-invitation`, verify, delete note + INDEX row, commit. Then mark
+Part 2 Done in ROADMAP and move to Part 3 (No fake numbers, Sonnet). If Jafar says skip, park that note and
+close Part 2 the same way.
 
-**Blockers:** `team-seat-count-overshoots-right-after-an-invitation` needs Jafar's OK to send one real test
-invite (to his own +alias); ask before touching it. Do not touch packages (Jafar, 2026-09-27).
+**Blockers:** that task needs Jafar's OK to send one real test invite (to his own +alias). Do not touch
+packages (Jafar, 2026-09-27).
 
 **Pointers:**
-- Memory/campaigns/deferred-launch-sweep/ROADMAP.md Part 2 (task-note names)
-- Memory/deferred/<task>.md for each task
+- Memory/campaigns/deferred-launch-sweep/ROADMAP.md Part 2/3 (task-note names)
+- Memory/deferred/team-seat-count-overshoots-right-after-an-invitation.md
