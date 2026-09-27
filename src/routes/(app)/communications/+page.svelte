@@ -283,13 +283,25 @@
 		const organizationId = page.data.organization?.id;
 		if (!organizationId) return;
 		const channel = supabase.channel(`wc-org:${organizationId}`, { config: { private: true } });
+		// A burst of activity (several inbound messages, or a chat session with rapid back-and-forth) fires
+		// several broadcasts within the same second -- without coalescing, each one triggers its own full
+		// inbox refetch for every open socket. Folding same-tick arrivals into one invalidation keeps the
+		// permission-safe, ids-only broadcast shape while cutting redundant refetches to one per burst.
+		let pendingInvalidate: ReturnType<typeof setTimeout> | null = null;
+		function scheduleInboxInvalidate() {
+			if (pendingInvalidate !== null) return;
+			pendingInvalidate = setTimeout(() => {
+				pendingInvalidate = null;
+				queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] });
+			}, 500);
+		}
 		channel.on('broadcast', { event: 'website_chat_activity' }, () => {
 			// A send of our own fires this broadcast too, and the composer already re-reads once the server
 			// answers -- letting both through cost a second full inbox download per message sent. While one of
 			// our sends is outstanding the refresh is already coming, so this stands down. Anything that
 			// arrived from somebody else meanwhile is picked up by that same re-read, a moment later.
 			if (untrack(() => pendingSend) !== null) return;
-			queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] });
+			scheduleInboxInvalidate();
 		});
 		// R1 live inbox: the email side broadcasts ids-only on this same org topic when an inbound email
 		// arrives or an outbound delivery intent changes status/outcome. The inbox query carries both the
@@ -298,10 +310,11 @@
 		// flight, for the same reason as above.
 		channel.on('broadcast', { event: 'communication_inbox_activity' }, () => {
 			if (untrack(() => pendingSend) !== null) return;
-			queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] });
+			scheduleInboxInvalidate();
 		});
 		channel.subscribe();
 		return () => {
+			if (pendingInvalidate !== null) clearTimeout(pendingInvalidate);
 			supabase.removeChannel(channel);
 		};
 	});
