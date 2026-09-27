@@ -17,7 +17,7 @@
 	} from '$lib/jafar/query-keys';
 	import Tabs, { type Tab } from '$lib/components/ui/Tabs.svelte';
 	import { dev } from '$app/environment';
-	import { replaceState } from '$app/navigation';
+	import { urlParam } from '$lib/url-param.svelte';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { createQuery } from '@tanstack/svelte-query';
@@ -50,21 +50,11 @@
 		{ value: 'team', label: 'Team' },
 		{ value: 'activity', label: 'Activity' }
 	];
-	let activeTab = $derived.by(() => {
-		const requested = page.url.searchParams.get('tab');
-		return organizationTabs.some((tab) => tab.value === requested)
-			? (requested as string)
-			: 'overview';
-	});
-	function selectTab(next: string) {
-		activeTab = next;
-		const url = new URL(page.url);
-		if (next === 'overview') url.searchParams.delete('tab');
-		else url.searchParams.set('tab', next);
-		// This is the current page URL with one query parameter changed, not a route id.
-		// eslint-disable-next-line svelte/no-navigation-without-resolve
-		replaceState(url, page.state);
-	}
+	const tabParam = urlParam('tab', 'overview');
+	const activeTab = $derived(
+		organizationTabs.some((tab) => tab.value === tabParam.current) ? tabParam.current : 'overview'
+	);
+	const selectTab = tabParam.set;
 
 	const accessQuery = createQuery<AccessResponse>(() => ({
 		queryKey: jafarOrganizationAccessKey(organizationId),

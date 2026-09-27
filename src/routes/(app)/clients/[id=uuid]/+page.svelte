@@ -2,7 +2,7 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { untrack } from 'svelte';
 	import { page } from '$app/state';
-	import { replaceState } from '$app/navigation';
+	import { urlParam } from '$lib/url-param.svelte';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
@@ -359,18 +359,11 @@
 
 	// The open tab lives in the URL the way Jobber's does, so it survives a reload and can be linked to.
 	// Details is the default and carries no parameter; anything unrecognised falls back to it.
-	const activeTab = $derived.by(() => {
-		const asked = page.url.searchParams.get('tab');
-		return clientTabs.some((tab) => tab.value === asked) ? (asked as string) : 'details';
-	});
-
-	function selectTab(next: string) {
-		const url = new URL(page.url);
-		if (next === 'details') url.searchParams.delete('tab');
-		else url.searchParams.set('tab', next);
-		// Replaced, not pushed, so Back leaves the client instead of stepping back through tabs.
-		replaceState(url, page.state);
-	}
+	const tabParam = urlParam('tab', 'details');
+	const activeTab = $derived(
+		clientTabs.some((tab) => tab.value === tabParam.current) ? tabParam.current : 'details'
+	);
+	const selectTab = tabParam.set;
 
 	// --- History ----------------------------------------------------------------------------------------
 	// The same panel the work records use: it swaps the whole rail rather than opening beside the notes, and

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { createQuery, createInfiniteQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { page } from '$app/state';
-	import { goto, replaceState } from '$app/navigation';
+	import { goto } from '$app/navigation';
+	import { urlParam } from '$lib/url-param.svelte';
 	import { resolve } from '$app/paths';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -94,18 +95,13 @@
 	}));
 	const historyEntries = $derived(historyQuery.data?.pages.flatMap((p) => p.entries) ?? []);
 
-	// URL owns the open tab so a refresh or shared link lands on the same one.
-	const activeTab = $derived(page.url.searchParams.get('tab') ?? 'overview');
+	// The address bar carries the open tab so a refresh or shared link lands on the same one.
+	const tabParam = urlParam('tab', 'overview');
+	const activeTab = $derived(tabParam.current);
 	function selectTab(next: string) {
 		if (next === 'versions') versionsRequested = true;
 		if (next === 'history') historyRequested = true;
-		const url = new URL(page.url);
-		if (next === 'overview') url.searchParams.delete('tab');
-		else url.searchParams.set('tab', next);
-		// Replaced, not pushed, so Back leaves the automation instead of stepping through tabs. The argument is
-		// this same page's URL with one query param changed, not a route id, so resolve() does not apply.
-		// eslint-disable-next-line svelte/no-navigation-without-resolve
-		replaceState(url, page.state);
+		tabParam.set(next);
 	}
 	const tabs = $derived([
 		{ value: 'overview', label: 'Overview' },

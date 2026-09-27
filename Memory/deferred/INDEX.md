@@ -48,7 +48,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Invoices list KPI cards (Outstanding, Overdue, Collected) are hard-coded placeholders](invoices-list-kpi-cards-are-hard-coded-placeholders.md) |
 | P2 | [Disconnecting Stripe expires open checkouts: code-complete, never live-tested](stripe-disconnect-open-checkout-expiry-not-live-tested.md) |
 | P2 | [Marketing drain tail trickles and SES event handling falls behind](marketing-drain-tail-trickle-and-ses-event-lag.md) |
-| P2 | [Tab selection is read from a `page.url` that `replaceState` does not update](tab-selection-read-from-a-stale-page-url.md) |
 | P3 | [Jafar Panel organization tabs have no hover-prefetch](jafar-panel-organization-tabs-have-no-hover-prefetch.md) |
 | P3 | [List-table rows use goto() instead of real links](list-table-rows-use-goto-instead-of-real-links.md) |
 | P3 | [Offline field records on site (Jobs 15f)](offline-field-records-on-site.md) |

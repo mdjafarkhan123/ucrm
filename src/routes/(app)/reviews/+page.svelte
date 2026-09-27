@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { createInfiniteQuery, createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { goto, replaceState } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { page } from '$app/state';
+	import { urlParam } from '$lib/url-param.svelte';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -108,14 +108,8 @@
 
 	// Private feedback is only for people who may handle it; the numbers query already says so (a null count
 	// means no). While it loads, a link straight to that tab is kept so the page does not flick to Requests.
-	// `replaceState` rewrites the address bar without re-running load, so `page.url` does not follow it and
-	// cannot be the tab's source of truth. The open tab lives here instead: seeded from the address the page
-	// was opened at, and re-seeded whenever a real navigation (the bell alert's link) arrives with another.
-	let requestedTab = $state(page.url.searchParams.get('tab'));
-	$effect(() => {
-		requestedTab = page.url.searchParams.get('tab');
-	});
-	const wantsFeedback = $derived(requestedTab === 'feedback');
+	const tabParam = urlParam('tab', 'requests');
+	const wantsFeedback = $derived(tabParam.current === 'feedback');
 	const canSeeFeedback = $derived(
 		countsQuery.data
 			? countsQuery.data.new_feedback !== null
@@ -143,13 +137,7 @@
 		}
 		return list;
 	});
-	function selectTab(next: string) {
-		requestedTab = next === 'requests' ? null : next;
-		const url = new URL(page.url);
-		if (next === 'requests') url.searchParams.delete('tab');
-		else url.searchParams.set('tab', next);
-		replaceState(url, page.state);
-	}
+	const selectTab = tabParam.set;
 
 	const statusOptions = [
 		{ value: '', label: 'Any status' },

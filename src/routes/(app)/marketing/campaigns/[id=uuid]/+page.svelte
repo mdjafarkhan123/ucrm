@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { page } from '$app/state';
-	import { replaceState } from '$app/navigation';
+	import { urlParam } from '$lib/url-param.svelte';
 	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
@@ -93,23 +93,11 @@
 		}
 	];
 
-	// A plain reactive variable, not a `$derived` re-read of `page.url` on every click: on this route
-	// `replaceState` updates the address bar but the app's own `page.url` doesn't reliably re-derive from
-	// it on tab switches, which silently stuck every tab (Content worst of all, since it has no cache
-	// fallback the way Recipients/Results' prefetched queries do). Owning the value locally and only using
-	// the URL to seed it once keeps the tab strip correct regardless.
-	function tabFromUrl(): string {
-		const asked = page.url.searchParams.get('tab');
-		return campaignTabs.some((tab) => tab.value === asked) ? (asked as string) : 'overview';
-	}
-	let activeTab = $state(tabFromUrl());
-	function selectTab(next: string) {
-		activeTab = next;
-		const url = new URL(page.url);
-		if (next === 'overview') url.searchParams.delete('tab');
-		else url.searchParams.set('tab', next);
-		replaceState(url, page.state);
-	}
+	const tabParam = urlParam('tab', 'overview');
+	const activeTab = $derived(
+		campaignTabs.some((tab) => tab.value === tabParam.current) ? tabParam.current : 'overview'
+	);
+	const selectTab = tabParam.set;
 
 	let cancelling = $state(false);
 	let cancelOpen = $state(false);

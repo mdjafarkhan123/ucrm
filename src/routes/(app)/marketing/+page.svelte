@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
-	import { page } from '$app/state';
-	import { replaceState } from '$app/navigation';
+	import { urlParam } from '$lib/url-param.svelte';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -77,16 +76,11 @@
 				})
 		}
 	];
-	const activeTab = $derived.by(() => {
-		const asked = page.url.searchParams.get('tab');
-		return marketingTabs.some((tab) => tab.value === asked) ? (asked as string) : 'overview';
-	});
-	function selectTab(next: string) {
-		const url = new URL(page.url);
-		if (next === 'overview') url.searchParams.delete('tab');
-		else url.searchParams.set('tab', next);
-		replaceState(url, page.state);
-	}
+	const tabParam = urlParam('tab', 'overview');
+	const activeTab = $derived(
+		marketingTabs.some((tab) => tab.value === tabParam.current) ? tabParam.current : 'overview'
+	);
+	const selectTab = tabParam.set;
 
 	// Each fix names the screen that owns it; resolve() wants the full route id.
 	function fixHref(target: NonNullable<MarketingReadinessReason['fix']>['href']) {
