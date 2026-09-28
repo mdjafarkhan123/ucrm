@@ -21,16 +21,16 @@ Helpers run with no write claim of mine held in the worktree; release mine befor
 - [x] Test 3 — I append the notice line with that ID (the send succeeded, then the power cut). A fresh helper
       must find the held claim and ask; told the session is closed, it confirms the notice by its ID and does
       not send it again
-- [ ] Test 4 — Part 2 of `pilot-test` is started in a test branch; a fresh helper treats the work as existing
+- [x] Test 4 — Part 2 of `pilot-test` is started in a test branch; a fresh helper treats the work as existing
       only there and marks it waiting to merge
-- [ ] Test 5 — a fresh helper told only "read memory and continue" asks which campaign
-- [ ] Fix the skill for each failure and rerun that test
+- [x] Test 5 — a fresh helper told only "read memory and continue" asks which campaign
+- [x] Fix the skill for each failure and rerun that test
 - [ ] Jafar's own window: `read memory and continue operations-prospects-ux`
 - [ ] Remove test fixtures, merge the skill into `main`, mark Part 2 done
 
 ## Next
 
-Tests 2 and 3 passed (check recorded by exact ID before the send; after the simulated crash the new session asked about the held claim, verified the notice by its ID, sent nothing, finished part 1) and their unclear rules are fixed on the branch. Test 4's setup is committed: `pilot-test` part 2 started in worktree `.claude/worktrees/pilot-test-part2` (branch `pilot-test-part2`). Release claim `929fa6d99498`, then start Test 4's helper with `read memory and continue pilot-test`; it must not merge into `main`.
+All five tests passed and every unclear rule they found is fixed on the branch; the `pilot-test` fixtures (campaign, index row, test branch, outbox) are removed. Ask Jafar for the go-ahead to merge branch `memory-skill-upgrade` into `main`, adding the header line `Plans live in docs/<feature>-behavior-contract.md` to `Memory/INDEX.md` at the same time. After the merge, his own window test runs in the normal folder: `read memory and continue operations-prospects-ux` (it will show him the page-plan questions).
 
 ## Notes
 
