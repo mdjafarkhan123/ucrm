@@ -42,20 +42,20 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    primary address and a separate billing-contact address when one is set, browser-verified on Raad LTD (Greenfield
    Property Group, invoice #35 and quote #44) — both delivery intents submitted, both access links opened their
    document.
-6. **Protect customer history** — Planned. `property-deletion-guarded-once-work-references-a-property`,
-   `historical-address-safety-and-property-transfer-between-clients`,
-   `client-duplicate-detection-merge-archive-restore-and-audit-history`, `entitytype-covers-only-clients-and-properties`.
-7. **Jobber parity** — Done 2026-09-28. `request-list-search-doesn-t-match-client-name`
-   and `last-communication-rail-card-on-the-client-page` are fixed, browser-verified on Raad LTD, and merged
-   into `main` (`0a640513`); their notes are deleted. Found
-   incidentally: Jobs and Quotes list search have the same missing-client-name gap Requests had — recorded as
-   new deferred note `jobs-and-quotes-list-search-also-misses-client-name.md`, not fixed (out of this part's
-   original list). Jafar approved five more slices 7a–7e (request status filter, client edit rewrite, quote
-   composer save-on-first-entry, job visit off-series marker, price-list item picture); all five built and
-   merged into `main`. 7e's photo carries through everywhere it should (item, price book list and drawer,
-   quote line, quote save) but stays a placeholder image because of the known files-processing-worker gap
-   (see `Memory/deferred/background-jobs-have-no-production-scheduler-decision.md`) — same as Parts 3, 8A,
-   8B. Its deferred note (`no-image-on-a-price-list-item.md`) is deleted.
+6. **Protect customer history** — split 2026-09-28; two of its four notes were obsolete. 6A **Done**
+   (`95680990`): closed `entitytype-covers-only-clients-and-properties` and
+   `historical-address-safety-and-property-transfer-between-clients` (both already satisfied by shipped work;
+   property transfer dropped — Jobber has no such feature), and gave the finance role real invoice access
+   (`20260928240000`, applied and verified live). 6B **Planned** — client archive + restore. 6C **Planned** —
+   property cascade delete, the destructive one; covers
+   `property-deletion-guarded-once-work-references-a-property`. Read the part note before either.
+7. **Jobber parity** — Done 2026-09-28 (`0a640513`). Request-list client-name search and the client page's
+   last-communication card fixed and browser-verified; plus five Jafar-approved slices 7a–7e (request status
+   filter, client edit rewrite, quote composer save-on-first-entry, job visit off-series marker, price-list item
+   picture). 7e's photo carries through everywhere but renders as a placeholder because of the known
+   files-processing-worker gap (`Memory/deferred/background-jobs-have-no-production-scheduler-decision.md`) —
+   same as Parts 3, 8A, 8B. Found incidentally and left deferred: Jobs and Quotes list search have the same
+   client-name gap (`jobs-and-quotes-list-search-also-misses-client-name.md`).
 8. **Speed** — Planned; performance-review skill. `get-started-page-weight`,
    `every-entitlement-gated-route-re-reads-the-whole-access-model`, `app-wide-rls-helpers-run-once-per-returned-row`,
    `name-search-across-list-apis-falls-back-to-a-sequential-scan`, `quote-overview-counts-scan-the-whole-tenant`,
@@ -65,6 +65,12 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    `inbox-read-takes-over-a-second`.
 9. **Final live checks** — Planned. `stripe-disconnect-open-checkout-expiry-not-live-tested`,
    `website-chat-realtime-connection-quota-unconfirmed`, `non-admin-email-correction-browser-verification-part-7`.
+10. **Merge duplicate clients** — Planned (Opus), split out of Part 6 with Jafar's approval on 2026-09-28
+    because moving every child row from one client to another is the riskiest write in the sweep. Jobber ships
+    this as a first-class "Merge Clients" action in the clients list's More Actions menu, beside Import and
+    Export. Covers the merge half of
+    `client-duplicate-detection-merge-archive-restore-and-audit-history`, plus the audit history; today there is
+    only create-time duplicate warning by `ilike '%term%'`, capped at 5 rows.
 
 46 tasks worked; 21 left deferred.
 

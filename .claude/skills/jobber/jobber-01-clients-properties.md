@@ -68,12 +68,12 @@ opt-out model:
 > Jobber means per-category preferences (quote / invoice / reminder / follow-up / review).
 
 > **Observed live 2026-09-20 (EZ HVAC trial account):** the client detail page has three tabs —
-> *Client information*, *Communication*, *Files and media*. The **Communication tab is a message history
+> _Client information_, _Communication_, _Files and media_. The **Communication tab is a message history
 > only** ("This client's emails, texts, and chats will appear here"), not a settings surface. Consent /
 > messaging preferences live **inside the Edit Client dialog**: a per-phone **"Receives messages"** toggle
 > plus a **"Communication settings"** link that opens the per-category toggles. So Jobber treats consent as a
 > plain on/off preference edited in the block dialog, with **no evidence trail** (no source/date/actor). For
-> our *marketing-email* consent we deliberately go further: we keep the append-only evidenced ledger
+> our _marketing-email_ consent we deliberately go further: we keep the append-only evidenced ledger
 > (source, disclosure, actor, occurred_at) that GDPR/CAN-SPAM records require — placement like Jobber's edit
 > dialog, behavior richer than a toggle.
 
@@ -167,8 +167,28 @@ Consequences to match:
 - **Price memory** (`recentPricing`) is per property, so repeat work at the same site pre-fills prior pricing.
 
 Mutations: `PropertyCreate`, `PropertyEdit` (both return `...Payload` with `userErrors`). No hard delete
-exposed for properties in the sampled schema **(unverified whether a `PropertyArchive`/delete exists)**, but
-the UI does offer Delete — see below.
+exposed for properties in the sampled schema, but the UI does offer Delete — see below.
+
+### 2.2a Property delete cascades and destroys work (help centre, verified 2026-09-28)
+
+From [Properties](https://help.getjobber.com/en/articles/properties/): deleting a property is **not blocked**
+when work references it. It cascades — "Deleting a property will delete associated quotes, jobs, and their
+associated estimate and price figures" — behind the confirmation "Deleting this property also deletes related
+quotes and jobs, including associated estimates and prices. This data also won't be included in your reports."
+It is **unrecoverable**, and the deleted work leaves reporting. Invoices are not named, consistent with
+Jobber's invoices billing the Client rather than the Property, so they survive.
+
+**There is no property transfer between clients.** A request's property can only be changed to another property
+**of the same client** (request page → `…` on the client details card → "Change property"). For a genuinely
+cross-client case Jobber's answer is to merge the clients, or to create the work fresh under the right client.
+
+§ **How WE compare:** our `properties` FKs from `requests`, `opportunities`, `quotes` and `jobs` are all
+`ON DELETE RESTRICT`, and three further RESTRICT keys guard money and delivery history —
+`invoice_sources_job_fk` (an invoiced job), `payment_stripe_checkouts_quote_fk` (a quote that took a deposit)
+and `communication_delivery_intents_quote_fk` (a quote emailed to a customer). A literal copy of Jobber's
+cascade would have to destroy Stripe checkout rows and the record that a customer was sent a quote, so the
+cascade must stop at those three and say what blocked it. Our cascade is also wider than Jobber's wording:
+it reaches requests and pipeline opportunities too. Jafar chose Jobber's destructive behavior on 2026-09-28.
 
 ### 2.3 How the client screen handles properties (live tour, 2026-08-17)
 
