@@ -15,8 +15,8 @@ round-trip to avoid leaving a mutated login email unverified. Next session: fill
 Save correction, confirm it round-trips (re-open Fix profile, check the new value persisted), then change it
 back to `dev.jafarkhan+office@gmail.com` before finishing, and delete the deferred note.
 
-**Answered 2026-09-28:** finance's missing invoice permissions are fixed; still to browser-verify with the
-`dev.jafarkhan+finance@gmail.com` login.
+**Answered 2026-09-28:** finance's missing invoice permissions are fixed and browser-verified on Raad LTD —
+finance sees the list and all three write buttons, office sees the list and amounts with none.
 
 **Blockers:** none. Do not touch packages (Jafar, 2026-09-27). The CLI runs as `npx --no-install supabase`.
 Browser testing needs the tunnel `cloudflared tunnel run badf2c43-7020-443a-a046-9954d139d711`; after a

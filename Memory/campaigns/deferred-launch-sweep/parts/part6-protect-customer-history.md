@@ -7,11 +7,11 @@ no longer applies.
 
 ## Steps
 
-- [x] 6A — closed the two obsolete notes; finance invoice permissions applied and verified (`95680990`)
+- [x] 6A — closed the two obsolete notes; finance invoice permissions applied (`95680990`), browser-verified
+      on Raad LTD, plus the write-button gating bug it exposed (`d2fea540`)
 - [ ] 6B — client archive + restore
 - [ ] 6C — property cascade delete (destructive; read Notes first)
-- [ ] Browser-verify the finance role can open Invoices on Raad LTD
-- [ ] Add client merge as roadmap Part 10 — done, see ROADMAP
+- [x] Add client merge as roadmap Part 10
 
 ## Next
 
