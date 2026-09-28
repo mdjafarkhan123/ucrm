@@ -5,7 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const documentRpc = vi.fn();
 const fileLookup = vi.fn();
 const rpc = vi.fn((name: string, args: unknown) =>
-	name === 'resolve_quote_access_file' ? { maybeSingle: () => fileLookup(args) } : documentRpc(name, args)
+	name === 'resolve_quote_access_file'
+		? { maybeSingle: () => fileLookup(args) }
+		: documentRpc(name, args)
 );
 const from = vi.fn();
 const getObjectStream = vi.fn();
