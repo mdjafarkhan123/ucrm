@@ -17,19 +17,20 @@
 - [ ] `client-photos-are-one-request-each` — industry pattern (batched short-lived signed URLs); touches client pages, wait for Part 6
 - [ ] `app-wide-rls-helpers-run-once-per-returned-row` — clients family; overlaps Part 6, wait for it
 - [ ] `name-search-across-list-apis-falls-back-to-a-sequential-scan` — Jafar 2026-09-28: add pg_trgm now (Clients, Requests, Jobs, catalog, files)
-- [ ] `quote-overview-counts-scan-the-whole-tenant` — Jafar 2026-09-28: fix now, don't wait for a real big company; copy `pipeline_stage_counts_read_model`
+- [x] `quote-overview-counts-scan-the-whole-tenant` — `quote_status_tallies` counter cache (triggers, never stale); 12.9 → 0.07 ms. The note's `pipeline_stage_counts_read_model` never existed
 - [ ] Browser-verify the four done items, merge to `main`, delete their deferred notes + INDEX rows
 
 ## Next
 
-Next task: `quote-overview-counts-scan-the-whole-tenant`, then name search. Branch rebased onto `main`
-2026-09-28, 9 commits ahead, nothing uncommitted.
+Next task: name search with pg_trgm (design verdict first). Branch 10 commits ahead of `main`, nothing
+uncommitted. 72 unit tests fail on `main` too (quote specs; deferred note `quote-api-tests-never-learned-the-rate-limit`) — not ours.
 
 ## Outside actions
 
 - Migration `20260929090000_organization_access_snapshot` pushed to the linked project — check:
   `select version from supabase_migrations.schema_migrations where version = '20260929090000'` — done.
-- Also pushed and confirmed: `20260929100000_attachments_note_id_index`, `20260929110000_resolve_quote_access_file`.
+- Also pushed and confirmed: `20260929100000_attachments_note_id_index`, `20260929110000_resolve_quote_access_file`,
+  `20260929120000_quote_status_tally`. `db push` runs a file as one transaction but rejects `LOCK TABLE`.
   These three files are only on this branch until merge; if `main` gains newer migrations, rebase before pushing.
 
 ## Notes
