@@ -45,14 +45,17 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
 6. **Protect customer history** — Planned. `property-deletion-guarded-once-work-references-a-property`,
    `historical-address-safety-and-property-transfer-between-clients`,
    `client-duplicate-detection-merge-archive-restore-and-audit-history`, `entitytype-covers-only-clients-and-properties`.
-7. **Jobber parity** — In progress 2026-09-28 (Sonnet). `request-list-search-doesn-t-match-client-name`
+7. **Jobber parity** — Done 2026-09-28. `request-list-search-doesn-t-match-client-name`
    and `last-communication-rail-card-on-the-client-page` are fixed, browser-verified on Raad LTD, and merged
    into `main` (`0a640513`); their notes are deleted. Found
    incidentally: Jobs and Quotes list search have the same missing-client-name gap Requests had — recorded as
    new deferred note `jobs-and-quotes-list-search-also-misses-client-name.md`, not fixed (out of this part's
-   original list). Jafar approved the remaining five on 2026-09-28 as slices 7a–7e (see `parts/part-7.md`):
-   request status filter, client edit rewrite, quote composer save-on-first-entry, job visit off-series
-   marker, price-list item picture.
+   original list). Jafar approved five more slices 7a–7e (request status filter, client edit rewrite, quote
+   composer save-on-first-entry, job visit off-series marker, price-list item picture); all five built and
+   merged into `main`. 7e's photo carries through everywhere it should (item, price book list and drawer,
+   quote line, quote save) but stays a placeholder image because of the known files-processing-worker gap
+   (see `Memory/deferred/background-jobs-have-no-production-scheduler-decision.md`) — same as Parts 3, 8A,
+   8B. Its deferred note (`no-image-on-a-price-list-item.md`) is deleted.
 8. **Speed** — Planned; performance-review skill. `get-started-page-weight`,
    `every-entitlement-gated-route-re-reads-the-whole-access-model`, `app-wide-rls-helpers-run-once-per-returned-row`,
    `name-search-across-list-apis-falls-back-to-a-sequential-scan`, `quote-overview-counts-scan-the-whole-tenant`,

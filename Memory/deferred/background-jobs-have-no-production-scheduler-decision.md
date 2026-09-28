@@ -32,4 +32,7 @@ target URL set before they can run: `files-processing-worker-wake-one-minute` (n
 (needs `files_export_worker_target_url` pointing at `/api/internal/files/export-worker`; reuses the processing
 worker's existing secret, no new secret value). Until these are active, upload processing and organization
 export both only ever reach `queued`/`pending` locally — this is why Files and Media parts 3, 8A, and 8B were
-each closed without a full local end-to-end run of their async path.
+each closed without a full local end-to-end run of their async path. The ClamAV container itself runs fine
+(`docker-compose.scanner.yml`); only `FILES_SCANNER_HOST`/`PORT` were never added to `.env`. Hit again in
+deferred-launch-sweep Part 7e (price-list photo): data-verified everywhere (item, price book, quote line,
+quote save) but stays a placeholder image until this is turned on -- same root cause, not a new bug.
