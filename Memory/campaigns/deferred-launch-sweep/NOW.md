@@ -6,8 +6,12 @@
 docs/invoice-behavior-contract.md. Part 3 may still be running in another session; it owns only its roadmap
 line and its own files (invoice counts, money overview migration) — commit only your own paths.
 
-**Exact next action:** 4a + 4b done (`4d96acd1`, not yet clicked through in a browser — extension was offline). Build 4c (fix payment / mark never received), then 4d, per ROADMAP Part 4. Delete
-each task note + deferred INDEX row once its slices are done.
+**Exact next action:** 4a–4c done (`4d96acd1`, `f6f95e39`; DB proven in rolled-back transactions, screens not yet
+clicked through — Chrome extension was offline). Build 4d: Correct invoice (prepare → edit draft → "Replace invoice"
+dialog showing difference + carried payments → activate) and Rebill on a voided invoice. activate_invoice_replacement
+must carry the original's live allocations (payments and deposits) onto the replacement, capped at its total (D6);
+issue_invoice must refuse a replacement draft (today a plain Send would leave both bills live). Then browser-check
+4a–4d and close Part 4.
 
 **Blockers:** none. Do not touch packages (Jafar, 2026-09-27).
 
