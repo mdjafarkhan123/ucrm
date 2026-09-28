@@ -59,6 +59,7 @@ Skills live under `.claude/skills/`. Load every skill relevant to the current ta
 | Sending email (transactional, marketing, notifications)                            | `.claude/skills/aws-ses/SKILL.md`                          |
 | Receiving and processing inbound email (routing, filtering, archiving, SMTP relay) | `.claude/skills/aws-mail-manager/SKILL.md`                 |
 | Agent-facing instructions or skills                                                | `.claude/skills/writing-for-agents/SKILL.md`               |
+| Concurrent agents, task reservations, or fresh-project setup                       | `.claude/skills/agent-coordination/SKILL.md`               |
 | Campaign start, resume, checkpoint, deferral, completion, or cleanup               | `.claude/skills/campaign-memory/SKILL.md`                  |
 | Stress-testing a plan, design, or unresolved decision with Jafar                   | `.claude/skills/grilling/SKILL.md`                         |
 | Researching how mature products/industries handle a workflow before building it    | `.claude/skills/research/SKILL.md`                         |
@@ -86,6 +87,12 @@ not campaign triggers or split thresholds by themselves. Load `.claude/skills/ca
 completely before starting, resuming, checkpointing, handing off, deferring, completing, or cleaning up a
 campaign — including when Jafar says `read memory and continue`.
 
+## Concurrent agent work
+
+Before starting any task, load `.claude/skills/agent-coordination/SKILL.md`, check active reservations with
+its bundled register command, and follow `docs/agent-concurrency.md`. Reserve the chosen task before work begins. This applies across campaigns
+and terminal tabs; Campaign Memory supplies task dependencies, while the register supplies live ownership.
+
 ---
 
 ## Hard Rules:
@@ -102,8 +109,9 @@ campaign — including when Jafar says `read memory and continue`.
 - Server secrets stay server-side
 - All writes go through `/api/*` routes. Every `POST` and `PATCH` validates with Zod before database access.
 - **Performance — proportional evidence:** Follow `performance-review`'s invocation gate and two-stage completion contract. Never claim user or traffic capacity beyond the workload its evidence actually supports.
-- **One working copy.** Jafar wants a single clean application: work in this folder on `main` and commit there
-  whenever needed. Create another branch, worktree, or clone only when Jafar asks for one.
+- **One final application.** The main folder on `main` is the integration point. Temporary Git worktrees and
+  branches are allowed only for simultaneous code writers under `docs/agent-concurrency.md`; remove them
+  after their work is integrated. Do not create another clone or product copy.
 - Whenever you complete any work always commit to to git as soon as possible at a good point so it saves permanently rather than having in computer only. So if any files get deleted it can be bring back.
 
 ---

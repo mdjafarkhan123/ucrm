@@ -9,6 +9,10 @@ Memory is temporary feature-delivery storage. It helps a fresh agent answer thre
 building, where did we stop, and what is the next approved action?
 
 The skill is the operating contract. `Memory/` only stores campaign state created under this contract.
+Live ownership across terminal sessions is governed by the `agent-coordination` skill, not by Memory.
+Load it when starting or resuming a campaign with concurrent sessions; on first use, it sets up the
+project's entry instructions and register. If it is unavailable, establish coordination before parallel
+work begins.
 
 ## Minimal-memory rule
 
@@ -43,8 +47,9 @@ Memory/
 
 - `INDEX.md` is a small campaign registry: name, state, purpose, checkpoint, and read trigger. It has no
   global current campaign. Target 50 lines.
-- `NOW.md` is the only normal resume checkpoint: goal, active part, exact next action, blockers, and only the
-  pointers required for that action. Target 20 lines; maximum 30.
+- `NOW.md` is the normal campaign checkpoint: goal, default active part, exact next action, blockers, and
+  only the pointers required for that action. It does not reserve a task or describe every concurrent agent.
+  Target 20 lines; maximum 30.
 - `ROADMAP.md` is the approved feature sequence: one concise entry per part with outcome, state,
   dependencies, and completion gate. Target 60 lines; maximum 100.
 - An active part packet holds only approved behavior, acceptance checks, unresolved decisions, and
@@ -68,6 +73,10 @@ beyond reliable context, split it at the nearest safe, verified boundary without
 Stabilize any atomic change before stopping, update `ROADMAP.md` and `NOW.md`, and hand off. Continue in the
 same session when restarting would cost more rediscovery than it saves.
 
+Before selecting or starting a part, check the live register as `docs/agent-concurrency.md` directs. A
+reserved part is unavailable to another agent. Concurrent parts must also have satisfied dependencies and
+independent code and external resources.
+
 ## Start
 
 1. Read `Memory/INDEX.md` if it exists to check overlap.
@@ -88,13 +97,19 @@ When Jafar names a campaign, read only `Memory/INDEX.md` and that campaign's `NO
 `read memory and continue`, use the index to identify the single dependency-ready campaign; if several
 qualify, ask which one to select.
 
+When Jafar asks for **an available task within a named campaign**, also read its `ROADMAP.md`; compare part
+dependencies with the live register, select a ready independent part, and claim it atomically before work.
+The default next action in `NOW.md` may already be claimed by another session. If no part is ready and
+independent, report that and wait instead of duplicating active work.
+
 After selection:
 
 1. Follow the pointers in `NOW.md`. Read the active part packet only when `NOW.md` points to it.
 2. Read only the authoritative sections named by the checkpoint.
 3. Verify the checkpoint against current code and Git state. If they disagree, repair Memory from the
    authoritative state before acting; ask Jafar only when the correction changes approved scope or behavior.
-4. Perform the exact next approved action and stop at its completion gate.
+4. Claim the selected task under `docs/agent-concurrency.md`, perform its approved action, and stop at its
+   completion gate.
 
 Do not read `ROADMAP.md` during an ordinary resume. Read it only to plan a campaign, change scope, close or
 select a part, resolve a dependency, or repair inconsistent Memory. Read deferred Memory only when the
@@ -105,8 +120,10 @@ campaign from file order, recency, or another conversation.
 
 ## Checkpoint and handoff
 
-After any turn that changes a campaign's state, refresh its checkpoint before the final response. Discussion
-and review turns with no campaign-state change do not write Memory.
+After any turn that changes a campaign's integrated state on `main`, refresh its checkpoint before the final
+response. Discussion and review turns with no campaign-state change do not write Memory. A writer in a
+temporary worktree hands off its committed result to the integrator; the integrator updates shared Memory
+after bringing that result into `main`, so parallel branches do not overwrite one another's checkpoint.
 
 1. Promote durable knowledge to its authoritative home.
 2. If a part closed, reduce it to its roadmap entry, delete its packet after promotion, and select the next
