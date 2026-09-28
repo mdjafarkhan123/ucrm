@@ -18,7 +18,9 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Composer day-two scope: CC, attachments, formatting, channel tabs](composer-day-two-scope.md) |
 | P3 | [Assigned-only members still pay per-row permission checks](app-wide-rls-helpers-run-once-per-returned-row.md) |
 | P2 | [Job detail with the maximum recurring Visit count is unmeasured](job-detail-with-the-maximum-recurring-visit-count-is-unmeasured.md) |
-| P2 | [Client duplicate detection, merge, archive, restore, and audit history](client-duplicate-detection-merge-archive-restore-and-audit-history.md) |
+| P3 | [Client archive and restore are not written to the client's history](client-archive-and-restore-not-in-client-history.md) |
+| P1 | [Raad LTD's Stripe sandbox key needs re-pasting (Jafar)](raad-stripe-sandbox-key-needs-re-pasting.md) |
+| P3 | [Every unnamed address is called "Primary property"](every-unnamed-address-is-called-primary-property.md) |
 | P2 | [Opportunity Brief activity timeline](opportunity-brief-activity-timeline.md) |
 | P2 | [Prospect detail page](prospect-detail-page.md) |
 | P2 | [Real (time-tracking) `Labor` block on the Request detail page](real-time-tracking-labor-block-on-the-request-detail-page.md) |
