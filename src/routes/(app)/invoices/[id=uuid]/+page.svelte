@@ -27,6 +27,7 @@
 	import CollectPaymentDialog from '$lib/components/invoices/CollectPaymentDialog.svelte';
 	import AddDepositDialog from '$lib/components/invoices/AddDepositDialog.svelte';
 	import InvoiceLifecycleDialog from '$lib/components/invoices/InvoiceLifecycleDialog.svelte';
+	import ReplaceInvoiceDialog from '$lib/components/invoices/ReplaceInvoiceDialog.svelte';
 	import RecordFilesCard from '$lib/components/files/RecordFilesCard.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
@@ -52,6 +53,8 @@
 		sendPaymentReceipt,
 		runInvoiceLifecycleAction,
 		sendInvoiceVoidNotice,
+		startInvoiceReplacement,
+		activateInvoiceReplacement,
 		deleteInvoice,
 		setInvoiceOnlinePartialPayments,
 		invoiceCountsKey,
@@ -87,6 +90,8 @@
 	import undoIcon from '@tabler/icons/outline/arrow-back-up.svg?raw';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
 	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
+	import filePencilIcon from '@tabler/icons/outline/file-pencil.svg?raw';
+	import copyIcon from '@tabler/icons/outline/copy.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -297,6 +302,89 @@
 		window.open(print ? `${path}?print=1` : path, '_blank', 'noopener');
 	}
 
+	// --- Correcting an issued bill / rebilling a voided one (D3, D4, D6) ---------------------------------
+	// A correction or rebill starts as a draft copy; it replaces the original only when activated, from its
+	// own page, through the Replace dialog. Until then it cannot be sent or paid on its own.
+	const isReplacementDraft = $derived(isDraft && Boolean(saved?.invoice.predecessor_invoice_id));
+	// The database also refuses a written-off or by-hand-closed bill ("undo that first"); the menu leaves the
+	// move out rather than offer one that can only fail.
+	const canCorrect = $derived(
+		Boolean(saved?.can_create) &&
+			issuedAndLive &&
+			!saved?.invoice.written_off_at &&
+			!saved?.invoice.marked_received_at
+	);
+	const canRebill = $derived(Boolean(saved?.can_create) && isVoided && !saved?.invoice.is_replaced);
+
+	let replacementStarting = $state(false);
+
+	async function startReplacement(action: 'correct' | 'rebill') {
+		if (!saved || replacementStarting) return;
+		replacementStarting = true;
+		try {
+			const { invoice_id } = await startInvoiceReplacement(
+				invoiceId,
+				action === 'correct' ? { action, expected_revision: saved.invoice.revision } : { action }
+			);
+			await queryClient.invalidateQueries({ queryKey: ['invoices', 'list'] });
+			await goto(resolve('/(app)/invoices/[id=uuid]', { id: invoice_id }));
+		} catch (caught) {
+			toast.error((caught as InvoiceWriteError).message ?? 'That correction could not be started.');
+		} finally {
+			replacementStarting = false;
+		}
+	}
+
+	// The bill this draft replaces: its number for the banner, and its totals for the Replace dialog.
+	const predecessorId = $derived(saved?.invoice.predecessor_invoice_id ?? null);
+	let replaceOpen = $state(false);
+	const predecessorQuery = createQuery(() => ({
+		queryKey: invoiceDetailKey(predecessorId ?? ''),
+		queryFn: () => fetchInvoice(predecessorId!),
+		enabled: Boolean(predecessorId) && replaceOpen,
+		staleTime: 15_000
+	}));
+	const predecessor = $derived(predecessorQuery.data);
+
+	function warmPredecessor() {
+		if (!predecessorId) return;
+		void queryClient.prefetchQuery({
+			queryKey: invoiceDetailKey(predecessorId),
+			queryFn: () => fetchInvoice(predecessorId),
+			staleTime: 15_000
+		});
+	}
+
+	async function confirmReplace(method: 'sent' | 'marked_sent', differenceMinor: number) {
+		if (!saved) return;
+		const result = await activateInvoiceReplacement(invoiceId, {
+			expected_revision: saved.invoice.revision,
+			previewed_difference_minor: differenceMinor,
+			method,
+			idempotency_key: crypto.randomUUID(),
+			request_hash: fingerprint({ id: invoiceId, action: 'activate', method, differenceMinor })
+		});
+		let emailed = method === 'sent';
+		if (emailed) {
+			try {
+				await queueInvoiceEmail(invoiceId, crypto.randomUUID());
+			} catch (cause) {
+				emailed = false;
+				toast.error(
+					`Invoice replaced, but the email was not sent: ${(cause as InvoiceWriteError).message}`
+				);
+			}
+		}
+		await Promise.all([
+			refreshInvoice(),
+			queryClient.invalidateQueries({ queryKey: ['invoices', 'detail'] }),
+			queryClient.invalidateQueries({ queryKey: ['payments'] })
+		]);
+		toast.success(
+			`Invoice #${result.predecessor_invoice_number} replaced${emailed ? ' · client emailed' : ''}`
+		);
+	}
+
 	// One primary action follows state, per the behavior contract: Send for a draft still waiting to go out;
 	// Collect Payment once it is issued and still owes money; nothing forced once it is closed. A draft can
 	// still take money (D1 — Save-and-Collect), but that path is Jobber's create-flow shortcut, not this
@@ -317,6 +405,12 @@
 	);
 	const primaryAction = $derived.by<PrimaryAction | undefined>(() => {
 		if (!saved) return undefined;
+		if (isReplacementDraft && draftEditable && saved.can_send)
+			return {
+				label: 'Replace invoice',
+				onclick: () => (replaceOpen = true),
+				onhover: warmPredecessor
+			};
 		if (draftEditable && saved.can_send)
 			return { label: 'Send invoice', onclick: () => (emailOpen = true) };
 		if (canCollect)
@@ -374,7 +468,7 @@
 				disabled: linkSaving,
 				onSelect: () => void copyClientLink()
 			});
-		if (draftEditable && saved.can_send)
+		if (draftEditable && saved.can_send && !isReplacementDraft)
 			items.push({
 				label: 'Mark as Sent',
 				icon: checkIcon,
@@ -387,6 +481,21 @@
 			icon: printIcon,
 			onSelect: () => openCustomerView(true)
 		});
+
+		if (canCorrect)
+			items.push({
+				label: 'Correct invoice',
+				icon: filePencilIcon,
+				disabled: replacementStarting,
+				onSelect: () => void startReplacement('correct')
+			});
+		if (canRebill)
+			items.push({
+				label: 'Rebill invoice',
+				icon: copyIcon,
+				disabled: replacementStarting,
+				onSelect: () => void startReplacement('rebill')
+			});
 
 		if (canReopen)
 			items.push({
@@ -943,6 +1052,41 @@
 					</div>
 				{/if}
 
+				{#if isReplacementDraft}
+					<div class="invoice-detail__closure invoice-detail__closure--replacement" role="note">
+						<p class="invoice-detail__closure-title">
+							{saved.invoice.replacement_kind === 'rebill' ? 'Rebill' : 'Correction'} of an earlier invoice
+						</p>
+						<div class="invoice-detail__closure-action">
+							<p class="invoice-detail__closure-note">
+								Edit it here, then press Replace invoice. Until then the original is still the bill.
+							</p>
+							{#if predecessorId}
+								<a
+									class="invoice-detail__closure-link"
+									href={resolve('/(app)/invoices/[id=uuid]', { id: predecessorId })}
+								>
+									Open the original
+								</a>
+							{/if}
+						</div>
+					</div>
+				{:else if saved.invoice.is_replaced && saved.invoice.replaced_by_invoice_id}
+					<div class="invoice-detail__closure invoice-detail__closure--replacement" role="note">
+						<p class="invoice-detail__closure-title">
+							Replaced on {dateTimeFormat.format(new Date(saved.invoice.replaced_at ?? ''))}
+						</p>
+						<a
+							class="invoice-detail__closure-link"
+							href={resolve('/(app)/invoices/[id=uuid]', {
+								id: saved.invoice.replaced_by_invoice_id
+							})}
+						>
+							Open the invoice that replaced it
+						</a>
+					</div>
+				{/if}
+
 				<ProductsAndServicesBlock
 					lines={invoiceLines}
 					revision={saved.invoice.revision}
@@ -1316,6 +1460,27 @@
 			/>
 		{/if}
 
+		{#if replaceOpen && saved.money}
+			<ReplaceInvoiceDialog
+				open
+				kind={saved.invoice.replacement_kind === 'rebill' ? 'rebill' : 'correction'}
+				original={predecessor?.money
+					? {
+							number: predecessor.invoice.invoice_number,
+							totalMinor: predecessor.money.total_minor,
+							paidMinor: predecessor.invoice.voided_at ? 0 : predecessor.money.allocated_minor
+						}
+					: null}
+				loadError={predecessorQuery.isError}
+				newTotalMinor={saved.money.total_minor}
+				currencyCode={saved.invoice.currency_code}
+				locale={saved.locale}
+				clientEmail={saved.client?.email ?? null}
+				onClose={() => (replaceOpen = false)}
+				onConfirm={confirmReplace}
+			/>
+		{/if}
+
 		{#if lifecycleMode}
 			<InvoiceLifecycleDialog
 				open
@@ -1402,6 +1567,20 @@
 
 	.invoice-detail__closure--voided {
 		border-left-color: var(--color-critical);
+	}
+
+	.invoice-detail__closure--replacement {
+		border-left-color: var(--color-interactive);
+	}
+
+	.invoice-detail__closure-link {
+		align-self: flex-start;
+		font-weight: 600;
+		color: var(--color-interactive);
+
+		&:hover {
+			text-decoration: underline;
+		}
 	}
 
 	.invoice-detail__closure--bad-debt {

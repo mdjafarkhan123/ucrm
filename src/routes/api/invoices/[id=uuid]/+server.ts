@@ -80,6 +80,8 @@ export const GET: RequestHandler = async (event) => {
 			},
 			locale: formatting.ok ? formatting.formatting.locale : 'en-US',
 			can_edit: hasPermission(check.access, 'invoices.edit'),
+			// Correcting or rebilling makes a new invoice, so it takes the create permission (the commands check it).
+			can_create: hasPermission(check.access, 'invoices.create'),
 			can_send: hasPermission(check.access, 'invoices.send'),
 			can_delete: hasPermission(check.access, 'invoices.delete'),
 			can_record_payment: hasPermission(check.access, 'invoices.record_payment'),

@@ -383,6 +383,46 @@ export const issueInvoiceSchema = z.object({
 	request_hash: z.string().trim().min(1, 'Reload and try again.').max(200, 'Reload and try again.')
 });
 
+// The correction chain (D3/D4/D6), one route with an action discriminator like /lifecycle:
+//   * correct  — make an editable replacement draft of an issued bill (prepare_invoice_correction);
+//   * rebill   — make a replacement draft of a voided bill (rebill_voided_invoice);
+//   * activate — issue that draft in place of the original, carrying its payments across
+//                (activate_invoice_replacement). The difference is the one the user was shown; the command
+//                refuses it if the numbers have moved since.
+export const invoiceReplacementSchema = z.discriminatedUnion('action', [
+	z.object({
+		action: z.literal('correct'),
+		expected_revision: z.number().int().min(0),
+		idempotency_key: z.string().uuid('Start a new action and try again.'),
+		request_hash: z
+			.string()
+			.trim()
+			.min(1, 'Reload and try again.')
+			.max(200, 'Reload and try again.')
+	}),
+	z.object({
+		action: z.literal('rebill'),
+		idempotency_key: z.string().uuid('Start a new action and try again.'),
+		request_hash: z
+			.string()
+			.trim()
+			.min(1, 'Reload and try again.')
+			.max(200, 'Reload and try again.')
+	}),
+	z.object({
+		action: z.literal('activate'),
+		expected_revision: z.number().int().min(0),
+		previewed_difference_minor: z.number().int(),
+		method: z.enum(['sent', 'marked_sent']),
+		idempotency_key: z.string().uuid('Start a new action and try again.'),
+		request_hash: z
+			.string()
+			.trim()
+			.min(1, 'Reload and try again.')
+			.max(200, 'Reload and try again.')
+	})
+]);
+
 // Deleting a draft. Only the revision the browser last read, plus the idempotency key and fingerprint so a
 // retried delete returns the first result rather than erroring on the already-gone invoice.
 export const deleteInvoiceSchema = z.object({

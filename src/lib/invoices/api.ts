@@ -623,6 +623,7 @@ export type InvoiceDetail = {
 	online_payments: { offered: boolean; partial_allowed: boolean };
 	locale: string;
 	can_edit: boolean;
+	can_create: boolean;
 	can_send: boolean;
 	can_delete: boolean;
 	can_record_payment: boolean;
@@ -778,6 +779,63 @@ export async function issueInvoice(
 		})
 	});
 	return readOrThrow<IssueInvoiceResult>(response, 'That invoice could not be issued.');
+}
+
+// --- Correcting an issued bill, rebilling a voided one (D3, D4, D6) ----------------------------------------
+
+/** Makes the replacement draft, or finds the one already started, and returns its id to open. */
+export async function startInvoiceReplacement(
+	id: string,
+	action: { action: 'correct'; expected_revision: number } | { action: 'rebill' }
+): Promise<{ invoice_id: string }> {
+	const response = await fetch(`/api/invoices/${id}/replacement`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			...action,
+			idempotency_key: crypto.randomUUID(),
+			request_hash: action.action
+		})
+	});
+	if (response.status === 409) {
+		const result = (await response
+			.clone()
+			.json()
+			.catch(() => ({}))) as {
+			reason?: string;
+			invoice_id?: string | null;
+		};
+		if (result.reason === 'already_started' && result.invoice_id)
+			return { invoice_id: result.invoice_id };
+	}
+	return readOrThrow<{ invoice_id: string }>(response, 'That correction could not be started.');
+}
+
+export type ActivateReplacementResult = {
+	invoice_id: string;
+	invoice_number: number;
+	predecessor_invoice_number: number;
+	difference_minor: number;
+	carried_minor: number;
+};
+
+/** Issues the replacement draft in place of the original, carrying its payments across (D6). */
+export async function activateInvoiceReplacement(
+	id: string,
+	input: {
+		expected_revision: number;
+		previewed_difference_minor: number;
+		method: 'sent' | 'marked_sent';
+		idempotency_key: string;
+		request_hash: string;
+	}
+): Promise<ActivateReplacementResult> {
+	const response = await fetch(`/api/invoices/${id}/replacement`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ action: 'activate', ...input })
+	});
+	return readOrThrow<ActivateReplacementResult>(response, 'That invoice could not be replaced.');
 }
 
 // --- Sending & the customer link --------------------------------------------------------------------------
