@@ -1,9 +1,13 @@
 import { createHash } from 'node:crypto';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const rpc = vi.fn();
-const maybeSingle = vi.fn();
-const from = vi.fn(() => ({ select: () => ({ eq: () => ({ is: () => ({ maybeSingle }) }) }) }));
+// The page awaits the document RPC directly; the file route asks for one row of the file RPC.
+const documentRpc = vi.fn();
+const fileLookup = vi.fn();
+const rpc = vi.fn((name: string, args: unknown) =>
+	name === 'resolve_quote_access_file' ? { maybeSingle: () => fileLookup(args) } : documentRpc(name, args)
+);
+const from = vi.fn();
 const getObjectStream = vi.fn();
 
 vi.mock('$lib/server/db/owner-supabase', () => ({
@@ -12,7 +16,7 @@ vi.mock('$lib/server/db/owner-supabase', () => ({
 vi.mock('$lib/server/storage/r2', () => ({ getObjectStream }));
 
 const { load } = await import('./+page.server');
-const { GET: readFile } = await import('./files/[attachmentId]/+server');
+const { GET: readFile } = await import('./files/[attachmentId=uuid]/+server');
 
 const token = 'a'.repeat(43);
 const tokenHash = `\\x${createHash('sha256').update(token, 'utf8').digest('hex')}`;
@@ -52,7 +56,7 @@ async function open(pathToken: string) {
 describe('opening a customer link', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		rpc.mockResolvedValue({ data: document, error: null });
+		documentRpc.mockResolvedValue({ data: document, error: null });
 	});
 
 	it('hashes the token and never sends the token itself', async () => {
@@ -80,10 +84,10 @@ describe('opening a customer link', () => {
 	});
 
 	it('gives the same empty answer for unknown, revoked and superseded links', async () => {
-		rpc.mockResolvedValue({ data: null, error: null });
+		documentRpc.mockResolvedValue({ data: null, error: null });
 		expect((await open(token)).answer.document).toBeNull();
 
-		rpc.mockResolvedValue({ data: null, error: { message: 'boom' } });
+		documentRpc.mockResolvedValue({ data: null, error: { message: 'boom' } });
 		expect((await open(token)).answer.document).toBeNull();
 	});
 
@@ -94,62 +98,73 @@ describe('opening a customer link', () => {
 });
 
 describe('files on a customer link', () => {
+	const fileId = '11111111-1111-4111-8111-111111111111';
+	const photoId = '22222222-2222-4222-8222-222222222222';
+
 	beforeEach(() => {
 		vi.clearAllMocks();
-		rpc.mockResolvedValue({ data: document, error: null });
-		maybeSingle.mockResolvedValue({
+		fileLookup.mockResolvedValue({
 			data: {
 				object_key: 'org/quote/file-1.pdf',
 				thumbnail_object_key: null,
 				mime_type: 'application/pdf',
-				file_name: 'Scope.pdf'
+				display_name: 'Scope.pdf'
 			},
 			error: null
 		});
 		getObjectStream.mockResolvedValue({ body: null, contentType: null, contentLength: 12 });
 	});
 
-	it('serves a file the document names', async () => {
-		const response = await readFile(fileEvent(token, 'file-1'));
+	it('asks for this one file by token hash, never building the whole document', async () => {
+		const response = await readFile(fileEvent(token, fileId));
 		expect(response.status).toBe(200);
 		expect(response.headers.get('cache-control')).toContain('private');
+		expect(rpc).toHaveBeenCalledTimes(1);
+		expect(rpc).toHaveBeenCalledWith('resolve_quote_access_file', {
+			supplied_token_hash: tokenHash,
+			target_file_id: fileId
+		});
+		expect(documentRpc).not.toHaveBeenCalled();
+		expect(JSON.stringify(rpc.mock.calls[0])).not.toContain(token);
 	});
 
 	it('hands over anything that is not a photo as a download, never inline', async () => {
-		const response = await readFile(fileEvent(token, 'file-1'));
+		const response = await readFile(fileEvent(token, fileId));
 		expect(response.headers.get('content-disposition')).toBe('attachment; filename="Scope.pdf"');
 		expect(response.headers.get('x-content-type-options')).toBe('nosniff');
 	});
 
 	it('shows a line photo on the page', async () => {
-		maybeSingle.mockResolvedValue({
+		fileLookup.mockResolvedValue({
 			data: {
 				object_key: 'org/quote/photo-1.jpg',
 				thumbnail_object_key: 'org/quote/photo-1-thumb.jpg',
 				mime_type: 'image/jpeg',
-				file_name: 'photo.jpg'
+				display_name: 'photo.jpg'
 			},
 			error: null
 		});
-		const response = await readFile(fileEvent(token, 'photo-1', '?size=thumb'));
+		const response = await readFile(fileEvent(token, photoId, '?size=thumb'));
 		expect(response.headers.get('content-disposition')).toBe('inline');
 		expect(getObjectStream).toHaveBeenCalledWith('org/quote/photo-1-thumb.jpg');
 	});
 
-	it('refuses a file the document does not name, without looking it up', async () => {
-		await expect(readFile(fileEvent(token, 'file-from-another-quote'))).rejects.toMatchObject({
-			status: 404
-		});
-		expect(maybeSingle).not.toHaveBeenCalled();
+	it('refuses a file the link does not name, or any file once the link stops resolving', async () => {
+		fileLookup.mockResolvedValue({ data: null, error: null });
+		await expect(readFile(fileEvent(token, fileId))).rejects.toMatchObject({ status: 404 });
+
+		fileLookup.mockResolvedValue({ data: null, error: { message: 'boom' } });
+		await expect(readFile(fileEvent(token, fileId))).rejects.toMatchObject({ status: 404 });
+		expect(getObjectStream).not.toHaveBeenCalled();
 	});
 
-	it('refuses every file once the link stops resolving', async () => {
-		rpc.mockResolvedValue({ data: null, error: null });
-		await expect(readFile(fileEvent(token, 'file-1'))).rejects.toMatchObject({ status: 404 });
+	it('does not go near the database for a token of the wrong shape', async () => {
+		await expect(readFile(fileEvent('short', fileId))).rejects.toMatchObject({ status: 404 });
+		expect(rpc).not.toHaveBeenCalled();
 	});
 
 	it('answers a broken storage read the same way as a missing file', async () => {
 		getObjectStream.mockRejectedValue(new Error('r2 is down'));
-		await expect(readFile(fileEvent(token, 'file-1'))).rejects.toMatchObject({ status: 404 });
+		await expect(readFile(fileEvent(token, fileId))).rejects.toMatchObject({ status: 404 });
 	});
 });

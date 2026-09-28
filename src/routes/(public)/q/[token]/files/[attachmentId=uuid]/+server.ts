@@ -4,7 +4,6 @@ import {
 	getQuoteAccessResolverClient,
 	quoteAccessTokenHash
 } from '$lib/server/quotes/access-links';
-import type { CustomerQuoteDocument } from '$lib/quotes/customer-document';
 import { getObjectStream } from '$lib/server/storage/r2';
 
 // Files on the customer's copy. The token buys one document, so it buys exactly the files that document
@@ -18,29 +17,15 @@ export const GET: RequestHandler = async (event) => {
 	const tokenHash = quoteAccessTokenHash(event.params.token);
 	if (!tokenHash) throw httpError(404, 'That file is not available.');
 
-	const supabase = getQuoteAccessResolverClient();
-	const { data, error } = await supabase.rpc('resolve_quote_access_link', {
-		supplied_token_hash: tokenHash
-	});
-	if (error || !data) throw httpError(404, 'That file is not available.');
-
-	const document = data as unknown as CustomerQuoteDocument;
-	const isFileId = (id: string | null): id is string => typeof id === 'string';
-	const allowed = new Set<string>([
-		...document.attachments.map((attachment) => attachment.id).filter(isFileId),
-		...document.lines.map((line) => line.image_file_id).filter(isFileId)
-	]);
-	if (!allowed.has(event.params.attachmentId)) throw httpError(404, 'That file is not available.');
-
-	// The document above already nulls out a trashed file's id, but that resolve and this lookup are two
-	// separate queries — trashed_at is filtered again here so a Trash landing in between still wins.
-	const { data: file } = await supabase
-		.from('files')
-		.select('object_key, thumbnail_object_key, mime_type, display_name')
-		.eq('id', event.params.attachmentId)
-		.is('trashed_at', null)
+	// One indexed check that this link's version names this file — a live line photo or a customer-visible
+	// attachment — instead of building the whole document once per photo. Trashed files never come back.
+	const { data: file, error } = await getQuoteAccessResolverClient()
+		.rpc('resolve_quote_access_file', {
+			supplied_token_hash: tokenHash,
+			target_file_id: event.params.attachmentId
+		})
 		.maybeSingle();
-	if (!file || !file.object_key) throw httpError(404, 'That file is not available.');
+	if (error || !file || !file.object_key) throw httpError(404, 'That file is not available.');
 
 	const wantsThumbnail = event.url.searchParams.get('size') === 'thumb';
 	const objectKey =
