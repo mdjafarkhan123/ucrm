@@ -974,6 +974,8 @@ export type PaymentAllocationEntry = {
 	/** True on an 'applied' row once it has been taken back off (by unapply or the first half of a move) —
 	 *  unapply/move both refuse a second reversal of the same allocation, so the screen stops offering one. */
 	is_reversed: boolean;
+	/** What the bill still owes now; null once the bill no longer exists. */
+	invoice_remaining_minor: number | null;
 };
 
 export type PaymentDetail = {
@@ -995,6 +997,16 @@ export type PaymentDetail = {
 		email: string | null;
 	} | null;
 	applied_to: PaymentAllocationEntry[];
+	/** Set once this payment was fixed or marked never received (D7). No replacement means never received. */
+	correction: {
+		corrected_at: string;
+		note: string | null;
+		replacement_payment_id: string | null;
+	} | null;
+	/** The mistaken payment this one corrected, when it was entered through Fix payment. */
+	replaces_payment_id: string | null;
+	/** Money already refunded out of this payment; Fix payment needs that undone first. */
+	refunded_minor: number;
 	locale: string;
 	can_send_receipt: boolean;
 	can_correct_payment: boolean;
@@ -1073,6 +1085,37 @@ export async function refundPayment(
 		body: JSON.stringify(input)
 	});
 	return readOrThrow<RefundPaymentResult>(response, 'That refund could not be saved.');
+}
+
+// --- Fix payment / Mark as never received (D7) ---------------------------------------------------------------
+
+export type FixPaymentInput = Omit<RecordInvoicePaymentInput, 'client_id' | 'allocations'> & {
+	allocations: { invoice_id: string; amount_minor: number }[];
+	reason: string | null;
+};
+
+export async function fixPayment(
+	paymentEventId: string,
+	input: FixPaymentInput
+): Promise<RecordInvoicePaymentResult> {
+	const response = await fetch(`/api/payments/${paymentEventId}/fix`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	return readOrThrow<RecordInvoicePaymentResult>(response, 'That payment could not be fixed.');
+}
+
+export async function withdrawPayment(
+	paymentEventId: string,
+	input: { reason: string | null; idempotency_key: string; request_hash: string }
+): Promise<void> {
+	const response = await fetch(`/api/payments/${paymentEventId}/withdraw`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	await readOrThrow<unknown>(response, 'That payment could not be marked as never received.');
 }
 
 export type StripePaymentRefundInput = {

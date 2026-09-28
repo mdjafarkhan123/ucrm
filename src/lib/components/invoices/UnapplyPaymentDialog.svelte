@@ -7,12 +7,14 @@
 	// Paid-launch-trust Part 11: "Take off this invoice" on one row of the payment screen's Applied to list.
 	// unapply_client_payment returns the money to client credit; the entry it reverses stays exactly as it
 	// was, which is why this asks for a reason rather than a confirmation of loss — nothing here is destroyed.
+	// "Mark as never received" (D7) is the same reason-and-confirm step, so it passes its own `copy`.
 	let {
 		open,
 		invoiceNumber,
 		amountMinor,
 		currencyCode,
 		locale,
+		copy,
 		onClose,
 		onSave,
 		onSaved
@@ -22,6 +24,8 @@
 		amountMinor: number;
 		currencyCode: string;
 		locale: string;
+		/** Replaces the take-off wording. The intro is shown as written, after the amount. */
+		copy?: { title: string; intro: string; confirmLabel: string; icon: string; critical?: boolean };
 		onClose: () => void;
 		onSave: (
 			reason: string | null,
@@ -58,7 +62,7 @@
 		error = '';
 
 		const trimmed = reason.trim() || null;
-		const hash = fingerprint({ allocation: 'unapply', reason: trimmed });
+		const hash = fingerprint({ action: copy?.title ?? 'unapply', reason: trimmed });
 		if (hash !== lastHash) {
 			idempotencyKey = crypto.randomUUID();
 			lastHash = hash;
@@ -80,9 +84,11 @@
 
 <ConfirmDialog
 	{open}
-	title="Take this payment off invoice #{invoiceNumber}?"
-	icon={arrowBackIcon}
-	confirmLabel="Take off invoice"
+	title={copy?.title ?? `Take this payment off invoice #${invoiceNumber}?`}
+	icon={copy?.icon ?? arrowBackIcon}
+	confirmLabel={copy?.confirmLabel ?? 'Take off invoice'}
+	tone={copy?.critical ? 'critical' : 'default'}
+	destructive={copy?.critical ?? false}
 	loading={saving}
 	confirmDisabled={saving}
 	onConfirm={() => void confirm()}
@@ -90,8 +96,12 @@
 >
 	<div class="unapply-payment">
 		<p class="unapply-payment__intro">
-			{money.format(amountMinor / 100)} goes back to the client's available credit. The original entry
-			stays on record.
+			{#if copy}
+				{money.format(amountMinor / 100)}: {copy.intro}
+			{:else}
+				{money.format(amountMinor / 100)} goes back to the client's available credit. The original entry
+				stays on record.
+			{/if}
 		</p>
 
 		<Textarea

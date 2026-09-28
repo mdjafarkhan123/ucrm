@@ -1171,6 +1171,7 @@ export type Database = {
 					original_event_id: string | null;
 					payment_date: string;
 					reference: string | null;
+					replacement_event_id: string | null;
 				};
 				Insert: {
 					actor_user_id?: string | null;
@@ -1187,6 +1188,7 @@ export type Database = {
 					original_event_id?: string | null;
 					payment_date: string;
 					reference?: string | null;
+					replacement_event_id?: string | null;
 				};
 				Update: {
 					actor_user_id?: string | null;
@@ -1203,6 +1205,7 @@ export type Database = {
 					original_event_id?: string | null;
 					payment_date?: string;
 					reference?: string | null;
+					replacement_event_id?: string | null;
 				};
 				Relationships: [
 					{
@@ -1229,6 +1232,13 @@ export type Database = {
 					{
 						foreignKeyName: 'client_payment_events_original_fk';
 						columns: ['organization_id', 'original_event_id'];
+						isOneToOne: false;
+						referencedRelation: 'client_payment_events';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'client_payment_events_replacement_fk';
+						columns: ['organization_id', 'replacement_event_id'];
 						isOneToOne: false;
 						referencedRelation: 'client_payment_events';
 						referencedColumns: ['organization_id', 'id'];
@@ -17488,6 +17498,22 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			correct_client_payment: {
+				Args: {
+					new_allocations: Json;
+					new_amount_minor: number;
+					new_idempotency_key: string;
+					new_method: string;
+					new_note: string;
+					new_payment_date: string;
+					new_reason: string;
+					new_reference: string;
+					new_request_hash: string;
+					target_organization_id: string;
+					target_payment_event_id: string;
+				};
+				Returns: Json;
+			};
 			correct_onboarding_application: {
 				Args: {
 					actor_email: string;
@@ -23724,6 +23750,16 @@ export type Database = {
 					new_request_hash: string;
 					target_invoice_id: string;
 					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			withdraw_client_payment: {
+				Args: {
+					new_idempotency_key: string;
+					new_reason: string;
+					new_request_hash: string;
+					target_organization_id: string;
+					target_payment_event_id: string;
 				};
 				Returns: Json;
 			};

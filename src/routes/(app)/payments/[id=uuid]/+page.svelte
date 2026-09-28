@@ -17,6 +17,7 @@
 	import StripeRefundDialog from '$lib/components/invoices/StripeRefundDialog.svelte';
 	import UnapplyPaymentDialog from '$lib/components/invoices/UnapplyPaymentDialog.svelte';
 	import MovePaymentDialog from '$lib/components/invoices/MovePaymentDialog.svelte';
+	import CollectPaymentDialog from '$lib/components/invoices/CollectPaymentDialog.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		fetchPayment,
@@ -25,6 +26,9 @@
 		refundPayment,
 		refundStripePayment,
 		runPaymentAllocationAction,
+		fixPayment,
+		withdrawPayment,
+		type FixPaymentInput,
 		type InvoiceWriteError,
 		type PaymentAllocationEntry
 	} from '$lib/invoices/api';
@@ -36,6 +40,8 @@
 	import receiptRefundIcon from '@tabler/icons/outline/receipt-refund.svg?raw';
 	import arrowBackIcon from '@tabler/icons/outline/arrow-back-up.svg?raw';
 	import arrowsExchangeIcon from '@tabler/icons/outline/arrows-exchange.svg?raw';
+	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
+	import banIcon from '@tabler/icons/outline/ban.svg?raw';
 
 	// One recorded payment. Jobber has this screen and Send Receipt lives on it, so ours is the same idea:
 	// what was paid, how, against which bill, and the two things staff do with it afterwards — send the
@@ -133,6 +139,16 @@
 			saved?.payment.method === 'stripe_other'
 	);
 
+	// Fixed or marked never received (D7): the page becomes a record of the mistake, with nothing left to do.
+	const isCorrected = $derived(Boolean(saved?.correction));
+	const canCorrect = $derived(Boolean(saved?.can_correct_payment) && !isCorrected);
+	const status = $derived.by(() => {
+		if (!saved?.correction) return { label: 'Recorded', tone: 'success' as const };
+		return saved.correction.replacement_payment_id
+			? { label: 'Corrected', tone: 'warning' as const }
+			: { label: 'Never received', tone: 'critical' as const };
+	});
+
 	const menuItems = $derived([
 		{
 			label: 'View receipt',
@@ -144,7 +160,17 @@
 			icon: printIcon,
 			onSelect: () => openReceipt(true)
 		},
-		...(saved?.can_correct_payment
+		...(canCorrect && !isStripePayment
+			? [
+					{ label: 'Fix payment', icon: pencilIcon, onSelect: () => (fixOpen = true) },
+					{
+						label: 'Mark as never received',
+						icon: banIcon,
+						onSelect: () => (withdrawOpen = true)
+					}
+				]
+			: []),
+		...(canCorrect
 			? [
 					...(isStripePayment
 						? [
@@ -199,7 +225,7 @@
 	let moveTarget = $state<PaymentAllocationEntry | null>(null);
 
 	function allocationMenuFor(entry: PaymentAllocationEntry) {
-		if (!saved?.can_correct_payment) return [];
+		if (!canCorrect) return [];
 		if (entry.entry_type !== 'applied' || entry.is_reversed || !entry.invoice_id) return [];
 		return [
 			{
@@ -223,6 +249,46 @@
 			idempotencyKey,
 			requestHash
 		);
+	}
+
+	// --- Fix payment / Mark as never received (D7) --------------------------------------------------------
+	let fixOpen = $state(false);
+	let withdrawOpen = $state(false);
+
+	// The bills this payment is still on, each with what it would owe once this payment is taken off.
+	const liveAllocations = $derived(
+		(saved?.applied_to ?? []).filter(
+			(entry) => entry.entry_type === 'applied' && !entry.is_reversed && entry.invoice_id
+		)
+	);
+	const fixPinned = $derived(
+		liveAllocations.map((entry) => ({
+			id: entry.invoice_id!,
+			number: entry.invoice_number,
+			detail: entry.subject || 'Currently applied',
+			owedMinor: (entry.invoice_remaining_minor ?? 0) + entry.amount_minor
+		}))
+	);
+
+	function saveFix(payload: FixPaymentInput) {
+		return fixPayment(paymentId, payload);
+	}
+
+	async function onFixed(result: { payment_event_id: string }) {
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: ['payments'] }),
+			queryClient.invalidateQueries({ queryKey: ['invoices'] })
+		]);
+		toast.success('Payment fixed');
+		await goto(resolve('/(app)/payments/[id=uuid]', { id: result.payment_event_id }));
+	}
+
+	function saveWithdraw(reason: string | null, idempotencyKey: string, requestHash: string) {
+		return withdrawPayment(paymentId, {
+			reason,
+			idempotency_key: idempotencyKey,
+			request_hash: requestHash
+		});
 	}
 
 	function saveMove(
@@ -258,10 +324,10 @@
 					icon={cashIcon}
 					recordType="Payment"
 					title={formatMoney(saved.payment.amount_minor)}
-					statusLabel="Recorded"
-					statusTone="success"
+					statusLabel={status.label}
+					statusTone={status.tone}
 					{menuItems}
-					primaryAction={saved.can_send_receipt
+					primaryAction={saved.can_send_receipt && !isCorrected
 						? { label: 'Send receipt', loading: sending, onclick: () => void sendReceipt() }
 						: undefined}
 				>
@@ -277,6 +343,38 @@
 					{/snippet}
 					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
 				</WorkRecordHeader>
+
+				{#if saved.correction}
+					<div class="payment-detail__correction" role="note">
+						<p class="payment-detail__correction-title">
+							{saved.correction.replacement_payment_id ? 'Fixed on' : 'Marked as never received on'}
+							{dateTimeFormat.format(new Date(saved.correction.corrected_at))}
+						</p>
+						{#if saved.correction.note}
+							<p class="payment-detail__correction-note">{saved.correction.note}</p>
+						{/if}
+						{#if saved.correction.replacement_payment_id}
+							<a
+								class="payment-detail__correction-link"
+								href={resolve('/(app)/payments/[id=uuid]', {
+									id: saved.correction.replacement_payment_id
+								})}
+							>
+								View the corrected payment
+							</a>
+						{/if}
+					</div>
+				{:else if saved.replaces_payment_id}
+					<div class="payment-detail__correction payment-detail__correction--info" role="note">
+						<p class="payment-detail__correction-note">This payment corrects an earlier one.</p>
+						<a
+							class="payment-detail__correction-link"
+							href={resolve('/(app)/payments/[id=uuid]', { id: saved.replaces_payment_id })}
+						>
+							View the original
+						</a>
+					</div>
+				{/if}
 
 				<SectionBlock title="Details" icon={fileTextIcon} level={2}>
 					{#if saved.payment.note}
@@ -374,6 +472,51 @@
 			/>
 		{/if}
 
+		{#if fixOpen && saved.client}
+			<CollectPaymentDialog
+				open
+				mode="fix"
+				clientId={saved.client.id}
+				pinned={fixPinned}
+				initial={{
+					amountMinor: saved.payment.amount_minor,
+					method: saved.payment.method as FixPaymentInput['method'],
+					paymentDate: saved.payment.payment_date,
+					reference: saved.payment.reference,
+					note: saved.payment.note,
+					applied: Object.fromEntries(
+						liveAllocations.map((entry) => [entry.invoice_id!, entry.amount_minor])
+					)
+				}}
+				currencyCode={saved.payment.currency_code}
+				locale={saved.locale}
+				onClose={() => (fixOpen = false)}
+				onSave={saveFix}
+				onSaved={(result) => onFixed(result)}
+			/>
+		{/if}
+
+		{#if withdrawOpen}
+			<UnapplyPaymentDialog
+				open
+				invoiceNumber={0}
+				amountMinor={saved.payment.amount_minor}
+				currencyCode={saved.payment.currency_code}
+				locale={saved.locale}
+				copy={{
+					title: 'Mark this payment as never received?',
+					intro:
+						'it comes off every invoice it is on, so they owe it again. The payment stays in history, marked as never received.',
+					confirmLabel: 'Mark as never received',
+					icon: banIcon,
+					critical: true
+				}}
+				onClose={() => (withdrawOpen = false)}
+				onSave={saveWithdraw}
+				onSaved={() => afterCorrection('Payment marked as never received')}
+			/>
+		{/if}
+
 		{#if unapplyTarget}
 			<UnapplyPaymentDialog
 				open={Boolean(unapplyTarget)}
@@ -407,6 +550,43 @@
 </PageContainer>
 
 <style lang="scss">
+	.payment-detail__correction {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smaller);
+		padding: var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-left: 3px solid var(--color-warning);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
+	}
+
+	.payment-detail__correction--info {
+		border-left-color: var(--color-interactive);
+	}
+
+	.payment-detail__correction-title {
+		margin: 0;
+		font-weight: 600;
+		color: var(--color-heading);
+	}
+
+	.payment-detail__correction-note {
+		margin: 0;
+		white-space: pre-wrap;
+		color: var(--color-text--secondary);
+	}
+
+	.payment-detail__correction-link {
+		align-self: flex-start;
+		font-weight: 600;
+		color: var(--color-interactive);
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
 	.payment-detail__note {
 		margin: 0;
 		white-space: pre-wrap;

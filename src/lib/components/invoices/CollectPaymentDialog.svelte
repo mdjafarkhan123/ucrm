@@ -22,17 +22,32 @@
 		type RecordInvoicePaymentResult
 	} from '$lib/invoices/api';
 
-	// Manual collection, Jobber's New Payment shape (D8): one payment received, spread across the client's
-	// unpaid bills. The bill the dialog was opened from is ticked first; the client's other issued bills that
-	// still owe are listed under it, each with its own amount. Whatever is not applied stays with the client
-	// as credit. The dialog owns its fields and validation; the page owns the write's tenant context
-	// (client_id) and what happens after (invalidate, toast). record_client_payment re-checks every bill.
+	// One received payment spread across a client's bills, Jobber's New Payment shape (D8). Two modes share it:
+	//   * collect — the bill the dialog was opened from is pinned and ticked first; the client's other issued
+	//     bills that still owe are listed under it.
+	//   * fix — Fix payment (D7): the form opens prefilled with the mistyped payment, its bills pinned with
+	//     what they would owe once it is taken off, and saving records the corrected payment in its place.
+	// Whatever is not applied stays with the client as credit. The dialog owns its fields and validation; the
+	// page owns the write and what happens after (invalidate, toast). The database re-checks every bill.
+	type PinnedInvoice = {
+		id: string;
+		number: number;
+		/** Short line under the number, e.g. "This invoice". */
+		detail: string;
+		/** The most this payment may put on the bill. */
+		owedMinor: number;
+	};
+	type PaymentPayload = Omit<RecordInvoicePaymentInput, 'client_id' | 'allocations'> & {
+		allocations: { invoice_id: string; amount_minor: number }[];
+		reason: string | null;
+	};
+
 	let {
 		open,
-		invoiceId,
+		mode = 'collect',
 		clientId,
-		invoiceNumber,
-		remainingMinor,
+		pinned,
+		initial,
 		currencyCode,
 		locale,
 		onClose,
@@ -40,41 +55,49 @@
 		onSaved
 	}: {
 		open: boolean;
-		invoiceId: string;
+		mode?: 'collect' | 'fix';
 		clientId: string;
-		invoiceNumber: number;
-		remainingMinor: number;
+		pinned: PinnedInvoice[];
+		/** Prefill. Without it the amount is what the pinned bills owe, each ticked in full. */
+		initial?: {
+			amountMinor: number;
+			method: InvoicePaymentMethod;
+			paymentDate: string;
+			reference: string | null;
+			note: string | null;
+			applied: Record<string, number>;
+		};
 		currencyCode: string;
 		locale: string;
 		onClose: () => void;
-		onSave: (
-			payload: Omit<RecordInvoicePaymentInput, 'client_id'>
-		) => Promise<RecordInvoicePaymentResult>;
+		onSave: (payload: PaymentPayload) => Promise<RecordInvoicePaymentResult>;
 		/** Handed the recorded payment and whether staff asked for the customer's receipt to go out with it.
 		 *  Emailing is the page's job, not this form's: the money is already recorded by the time this runs,
 		 *  so a receipt that fails to send must never read as a payment that failed. */
 		onSaved: (result: RecordInvoicePaymentResult, emailReceipt: boolean) => void | Promise<void>;
 	} = $props();
 
+	const fixing = $derived(mode === 'fix');
+
 	const money = $derived(
 		new Intl.NumberFormat(locale, { style: 'currency', currency: currencyCode })
 	);
 	const dueFormat = $derived(new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }));
 
-	// The same cache the Move dialog reads; the page prefetches it when the Collect button is reached.
+	// The same cache the Move dialog reads; the page prefetches it when the button that opens this is reached.
 	const openInvoicesQuery = createQuery(() => ({
 		queryKey: clientOpenInvoicesKey(clientId),
-		queryFn: () => fetchClientOpenInvoices(clientId, invoiceId),
+		queryFn: () => fetchClientOpenInvoices(clientId, pinned[0]?.id ?? ''),
 		enabled: open && Boolean(clientId),
 		staleTime: 15_000
 	}));
 
-	// Other bills this payment can settle: issued, still owing, same currency. Drafts are left out — they are
-	// not yet owed (D1) and are paid from their own page.
+	// Other bills this payment can settle: issued, still owing, same currency, not already pinned. Drafts are
+	// left out — they are not yet owed (D1) and are paid from their own page.
 	const otherInvoices = $derived(
 		(openInvoicesQuery.data ?? []).filter(
 			(invoice) =>
-				invoice.id !== invoiceId &&
+				!pinned.some((entry) => entry.id === invoice.id) &&
 				invoice.derived_status !== 'draft' &&
 				invoice.currency_code === currencyCode &&
 				(invoice.remaining_minor ?? 0) > 0
@@ -103,13 +126,21 @@
 	// The page mounts this component only while `collectPaymentOpen` is true (the same `{#if}`-gated shape
 	// InvoiceEmailDialog uses), so a fresh instance — and fresh state below — is what "opening the dialog"
 	// already means. No reset effect is needed.
-	let amountMinor = $state(untrack(() => remainingMinor));
-	let method = $state<InvoicePaymentMethod>('other');
-	let paymentDate = $state(todayIso());
-	let reference = $state('');
-	let note = $state('');
-	// Ticked bills and what each gets, by invoice id. This bill starts ticked with everything it owes.
-	let applied = $state<Record<string, number>>(untrack(() => ({ [invoiceId]: remainingMinor })));
+	let amountMinor = $state(
+		untrack(() => initial?.amountMinor ?? pinned.reduce((sum, entry) => sum + entry.owedMinor, 0))
+	);
+	let method = $state<InvoicePaymentMethod>(untrack(() => initial?.method ?? 'other'));
+	let paymentDate = $state(untrack(() => initial?.paymentDate ?? todayIso()));
+	let reference = $state(untrack(() => initial?.reference ?? ''));
+	let note = $state(untrack(() => initial?.note ?? ''));
+	let reason = $state('');
+	// Ticked bills and what each gets, by invoice id.
+	let applied = $state<Record<string, number>>(
+		untrack(
+			() =>
+				initial?.applied ?? Object.fromEntries(pinned.map((entry) => [entry.id, entry.owedMinor]))
+		)
+	);
 	// Which button is in flight, so only the pressed one spins. Both write the same payment; they differ only
 	// in whether the customer is emailed afterwards.
 	let savingMode = $state<'save' | 'receipt' | null>(null);
@@ -119,21 +150,32 @@
 	let idempotencyKey = crypto.randomUUID();
 	let lastHash = '';
 
+	function numberOf(id: string) {
+		return (
+			pinned.find((entry) => entry.id === id)?.number ??
+			otherInvoices.find((invoice) => invoice.id === id)?.invoice_number
+		);
+	}
+
 	function balanceOf(id: string) {
-		if (id === invoiceId) return remainingMinor;
+		const pin = pinned.find((entry) => entry.id === id);
+		if (pin) return pin.owedMinor;
 		return otherInvoices.find((invoice) => invoice.id === id)?.remaining_minor ?? 0;
 	}
 
 	const appliedMinor = $derived(Object.values(applied).reduce((sum, value) => sum + value, 0));
 	const creditMinor = $derived(Math.max(amountMinor - appliedMinor, 0));
 
-	// A new total is spread again over the ticked bills, this one first, each up to what it owes — so typing
+	// A new total is spread again over the ticked bills, pinned ones first, each up to what it owes — so typing
 	// the transfer amount is usually all staff need to do.
 	function setAmount(value: number) {
 		amountMinor = value;
 		let left = value;
 		const next: Record<string, number> = {};
-		for (const id of [invoiceId, ...otherInvoices.map((invoice) => invoice.id)]) {
+		for (const id of [
+			...pinned.map((entry) => entry.id),
+			...otherInvoices.map((invoice) => invoice.id)
+		]) {
 			if (!(id in applied)) continue;
 			next[id] = Math.min(balanceOf(id), left);
 			left -= next[id];
@@ -164,13 +206,9 @@
 			return errors;
 		}
 		for (const [id, value] of Object.entries(applied)) {
-			const number =
-				id === invoiceId
-					? invoiceNumber
-					: otherInvoices.find((invoice) => invoice.id === id)?.invoice_number;
 			if (value <= 0) errors[`applied_${id}`] = 'Enter an amount or untick this invoice.';
 			else if (value > balanceOf(id))
-				errors[`applied_${id}`] = `That is more than #${number} owes.`;
+				errors[`applied_${id}`] = `That is more than #${numberOf(id)} owes.`;
 		}
 		if (appliedMinor > amountMinor) {
 			errors.amount_minor = 'The invoices add up to more than the payment received.';
@@ -193,7 +231,8 @@
 			allocations: Object.entries(applied).map(([id, value]) => ({
 				invoice_id: id,
 				amount_minor: value
-			}))
+			})),
+			reason: fixing ? reason.trim() || null : null
 		};
 		const hash = fingerprint(core);
 		if (hash !== lastHash) {
@@ -220,8 +259,14 @@
 	}
 </script>
 
-<Dialog {open} title="Collect payment" size="default" onClose={close}>
+<Dialog {open} title={fixing ? 'Fix payment' : 'Collect payment'} size="default" onClose={close}>
 	<div class="collect-payment">
+		{#if fixing}
+			<p class="collect-payment__intro">
+				Enter the payment as it really happened. The mistyped one stays in history, marked as
+				corrected.
+			</p>
+		{/if}
 		<MoneyInput
 			id="collect-payment-amount"
 			label="Amount received"
@@ -262,7 +307,9 @@
 					</li>
 				{/snippet}
 
-				{@render row(invoiceId, invoiceNumber, 'This invoice', remainingMinor)}
+				{#each pinned as entry (entry.id)}
+					{@render row(entry.id, entry.number, entry.detail, entry.owedMinor)}
+				{/each}
 				{#if openInvoicesQuery.isPending}
 					<li class="collect-payment__row" aria-hidden="true">
 						<span class="skeleton skeleton--text skeleton--text-short"></span>
@@ -318,25 +365,38 @@
 			disabled={saving}
 		/>
 
+		{#if fixing}
+			<Textarea
+				id="collect-payment-reason"
+				label="Why is it being fixed? (optional)"
+				rows={2}
+				maxlength={2000}
+				bind:value={reason}
+				disabled={saving}
+			/>
+		{/if}
+
 		{#if error}<p class="collect-payment__error" role="alert">{error}</p>{/if}
 
 		<footer class="collect-payment__footer">
 			<Button variant="secondary" onclick={close} disabled={saving}>Cancel</Button>
-			<Button
-				variant="secondary"
-				onclick={() => void submit(true)}
-				disabled={savingMode === 'save'}
-				loading={savingMode === 'receipt'}
-			>
-				Save and email receipt
-			</Button>
+			{#if !fixing}
+				<Button
+					variant="secondary"
+					onclick={() => void submit(true)}
+					disabled={savingMode === 'save'}
+					loading={savingMode === 'receipt'}
+				>
+					Save and email receipt
+				</Button>
+			{/if}
 			<Button
 				variant="primary"
 				onclick={() => void submit(false)}
 				disabled={savingMode === 'receipt'}
 				loading={savingMode === 'save'}
 			>
-				Collect payment
+				{fixing ? 'Save corrected payment' : 'Collect payment'}
 			</Button>
 		</footer>
 	</div>
@@ -347,6 +407,11 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-base);
+	}
+
+	:global(.collect-payment__intro) {
+		margin: 0;
+		color: var(--color-text--secondary);
 	}
 
 	:global(.collect-payment__apply) {

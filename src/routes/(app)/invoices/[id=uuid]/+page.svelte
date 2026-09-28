@@ -600,7 +600,10 @@
 	// --- Collect Payment ---------------------------------------------------------------------------------
 	let collectPaymentOpen = $state(false);
 
-	function saveInvoicePayment(payload: Omit<RecordInvoicePaymentInput, 'client_id'>) {
+	function saveInvoicePayment({
+		reason: _reason,
+		...payload
+	}: Omit<RecordInvoicePaymentInput, 'client_id'> & { reason: string | null }) {
 		if (!saved?.client) throw new Error('This invoice has no client to record payment against.');
 		return recordInvoicePayment(invoiceId, { client_id: saved.client.id, ...payload });
 	}
@@ -1281,10 +1284,15 @@
 		{#if collectPaymentOpen && saved.money}
 			<CollectPaymentDialog
 				open
-				{invoiceId}
 				clientId={saved.client?.id ?? ''}
-				invoiceNumber={saved.invoice.invoice_number}
-				remainingMinor={saved.money.remaining_minor}
+				pinned={[
+					{
+						id: invoiceId,
+						number: saved.invoice.invoice_number,
+						detail: 'This invoice',
+						owedMinor: saved.money.remaining_minor
+					}
+				]}
 				currencyCode={saved.invoice.currency_code}
 				locale={saved.locale}
 				onClose={() => (collectPaymentOpen = false)}
