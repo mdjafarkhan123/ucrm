@@ -42,7 +42,9 @@ create index if not exists catalog_items_name_trgm_idx
   on public.catalog_items using gin (organization_id, name extensions.gin_trgm_ops,
     description extensions.gin_trgm_ops);
 
--- File Manager search: display_name OR caption.
-create index if not exists files_name_trgm_idx
-  on public.files using gin (organization_id, display_name extensions.gin_trgm_ops,
-    caption extensions.gin_trgm_ops);
+-- File Manager search is left out on purpose: `list_files` matches name OR caption OR a linked record's name
+-- in one condition, so the planner keeps a sequential scan whatever index exists. It needs that function
+-- restructured first.
+--
+-- Write cost, measured 2026-09-28 in a rolled-back run (30,000 existing clients): 2,000 client inserts took
+-- 0.46 s without clients_name_trgm_idx and 0.85 s with it — about 0.2 ms extra per client.
