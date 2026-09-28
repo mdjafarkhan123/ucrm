@@ -6,7 +6,7 @@
 docs/invoice-behavior-contract.md. Part 3 may still be running in another session; it owns only its roadmap
 line and its own files (invoice counts, money overview migration) — commit only your own paths.
 
-**Exact next action:** build slice 4a (void cancellation email), then 4b, 4c, 4d per ROADMAP Part 4. Delete
+**Exact next action:** 4a + 4b done (`4d96acd1`, not yet clicked through in a browser — extension was offline). Build 4c (fix payment / mark never received), then 4d, per ROADMAP Part 4. Delete
 each task note + deferred INDEX row once its slices are done.
 
 **Blockers:** none. Do not touch packages (Jafar, 2026-09-27).

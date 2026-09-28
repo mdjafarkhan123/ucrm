@@ -24,8 +24,8 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    rollup -- `client-work-overview-and-schedule-sections-are-empty`) and the Requests list's other two cards,
    found incidentally and not on this part's original list (`requests-new-and-conversion-rate-cards-have-no-real-data-source`).
 4. **Fixing money mistakes** — In progress 2026-09-28 (decisions D6–D9 in docs/invoice-behavior-contract.md).
-   Slices, in order: 4a void cancellation email (`void-invoice-has-no-client-cancellation-email`);
-   4b one payment split across several invoices; 4c fix payment / mark never received
+   Slices, in order: 4a void cancellation email — Done `4d96acd1` (`void-invoice-has-no-client-cancellation-email`);
+   4b one payment split across several invoices — Done `4d96acd1`; 4c fix payment / mark never received
    (4b+4c = `payments-cannot-be-edited-deleted-or-split-across-invoices`); 4d correct an issued invoice with
    payments carried over (`issued-invoices-cannot-be-corrected-from-the-browser`).
 5. **Complete customer documents** — Planned. `client-documents-drop-line-photos-and-need-a-completeness-pass`,

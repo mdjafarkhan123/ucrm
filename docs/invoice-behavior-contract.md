@@ -192,4 +192,4 @@ Invoice statuses and authorize no generalized accounting or provider framework.
    outstanding Invoices, the originating one preselected, each with an editable amount. Unallocated money
    becomes Client credit.
 9. **Void notice:** the Void dialog offers "Email the client that this invoice is cancelled", ticked by default,
-   only when the Invoice was delivered to the client. Email only until SMS is live.
+   only when the Invoice was issued to the client (sent or marked sent). Email only until SMS is live.

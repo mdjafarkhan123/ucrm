@@ -41,7 +41,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Website Chat's Realtime connection ceiling is measured but unconfirmed](website-chat-realtime-connection-quota-unconfirmed.md) |
 | P2 | [Automation-owned Email Template copies (sync + impact preview)](automation-owned-email-template-copies.md) |
 | P2 | [Payment-stage and visit-line reads have no EXPLAIN evidence](invoice-payment-stage-reads-lack-explain-evidence.md) |
-| P2 | [Voiding an invoice tells the client nothing](void-invoice-has-no-client-cancellation-email.md) |
 | P2 | [A recorded payment cannot be edited, deleted, or split across invoices](payments-cannot-be-edited-deleted-or-split-across-invoices.md) |
 | P2 | [Client page's Work overview and Client schedule sections are always empty](client-work-overview-and-schedule-sections-are-empty.md) |
 | P2 | [Requests list's "New requests" and "Conversion rate" cards have no real data source](requests-new-and-conversion-rate-cards-have-no-real-data-source.md) |
