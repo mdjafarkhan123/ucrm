@@ -23,11 +23,11 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    Deliberately left deferred: the client page's Work overview/Client schedule sections (bigger build, not a
    rollup -- `client-work-overview-and-schedule-sections-are-empty`) and the Requests list's other two cards,
    found incidentally and not on this part's original list (`requests-new-and-conversion-rate-cards-have-no-real-data-source`).
-4. **Fixing money mistakes** — In progress 2026-09-28 (decisions D6–D9 in docs/invoice-behavior-contract.md).
-   Slices, in order: 4a void cancellation email — Done `4d96acd1` (`void-invoice-has-no-client-cancellation-email`);
-   4b one payment split across several invoices — Done `4d96acd1`; 4c fix payment / mark never received — Done `f6f95e39`
-   (4b+4c = `payments-cannot-be-edited-deleted-or-split-across-invoices`); 4d correct an issued invoice with
-   payments carried over — DB done, screens WIP `444935b5` (`issued-invoices-cannot-be-corrected-from-the-browser`).
+4. **Fixing money mistakes** — Done 2026-09-28: void cancellation email, one payment split across invoices, fix payment
+   / mark never received, and correct an issued invoice (or rebill a voided one) with payments carried over — all
+   browser-checked on Raad LTD. Fixed on the way: replaced/voided bills showed a false balance (`5bd3b498`), and
+   the voided-invoice guard blocked rebilling (`20260928190000`, applied straight to the database because the
+   Part 7 session's `20260928180000` isn't in this folder yet).
 5. **Complete customer documents** — In progress 2026-09-28. `line-photos-wrongly-appear-in-the-request-s-attachments-card`:
    already fixed by the Files and Media migration before this part started — the old `AttachmentsCard`/`public.attachments`
    path it described isn't wired to requests any more; `file_links.role <> 'line_photo'` already keeps a line photo off
@@ -38,8 +38,7 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    (`CustomerQuoteDocument.svelte`) so it matches the convention used everywhere else. Quantity/other line content
    already matches Jobber's own field set (including the progress-bill exception, which lines up with Jobber's own
    `originalCost` concept) — no further completeness gap found. `invoice-email-sends-to-primary-only-not-billing-contact`
-   held: touches invoice email-sending code that Part 4 is still actively changing (4d screens WIP); resume once
-   Part 4 is Done.
+   was held for Part 4; Part 4 is Done, so it can resume.
 6. **Protect customer history** — Planned. `property-deletion-guarded-once-work-references-a-property`,
    `historical-address-safety-and-property-transfer-between-clients`,
    `client-duplicate-detection-merge-archive-restore-and-audit-history`, `entitytype-covers-only-clients-and-properties`.
