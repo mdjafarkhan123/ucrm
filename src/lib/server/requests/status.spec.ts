@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deriveRequestStatus, organizationDayRange } from './status';
+import { deriveRequestStatus, displayStatusFilter, organizationDayRange } from './status';
 
 const NEW_YORK = 'America/New_York';
 
@@ -92,5 +92,38 @@ describe('organizationDayRange', () => {
 		const range = organizationDayRange(NEW_YORK, new Date('2026-11-01T16:00:00Z'));
 		expect(range.day_start).toBe('2026-11-01T04:00:00.000Z');
 		expect(range.day_end).toBe('2026-11-02T05:00:00.000Z');
+	});
+});
+
+describe('displayStatusFilter', () => {
+	const range = { day_start: '2026-08-18T04:00:00.000Z', day_end: '2026-08-19T04:00:00.000Z' };
+
+	it('adds no filter when nothing is chosen', () => {
+		expect(displayStatusFilter([], range)).toBeNull();
+	});
+
+	it('matches a finished status on the stored value alone', () => {
+		expect(displayStatusFilter(['converted'], range)).toBe('status.eq.converted');
+	});
+
+	it('keeps an open request with a live assessment out of New', () => {
+		expect(displayStatusFilter(['new'], range)).toBe(
+			'and(status.eq.new,has_open_assessment.is.false)'
+		);
+	});
+
+	it('finds Unscheduled both on the stored value and on an undated live assessment', () => {
+		expect(displayStatusFilter(['unscheduled'], range)).toBe(
+			'and(status.eq.unscheduled,has_open_assessment.is.false),' +
+				'and(status.in.(new,unscheduled),has_open_assessment.is.true,assessment_starts_at.is.null)'
+		);
+	});
+
+	it('reads Today, Upcoming and Overdue against the contractor day', () => {
+		expect(displayStatusFilter(['overdue', 'today', 'upcoming'], range)).toBe(
+			'and(status.in.(new,unscheduled),has_open_assessment.is.true,assessment_starts_at.lt."2026-08-18T04:00:00.000Z"),' +
+				'and(status.in.(new,unscheduled),has_open_assessment.is.true,assessment_starts_at.gte."2026-08-18T04:00:00.000Z",assessment_starts_at.lt."2026-08-19T04:00:00.000Z"),' +
+				'and(status.in.(new,unscheduled),has_open_assessment.is.true,assessment_starts_at.gte."2026-08-19T04:00:00.000Z")'
+		);
 	});
 });

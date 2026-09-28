@@ -35,8 +35,7 @@
 	import {
 		REQUEST_STATUS_LABELS,
 		REQUEST_STATUS_TONES,
-		STORED_REQUEST_STATUSES,
-		type StoredRequestStatus
+		type DisplayRequestStatus
 	} from '$lib/requests/statuses';
 	import clipboardIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
 	import filterIcon from '@tabler/icons/outline/filter.svg?raw';
@@ -45,7 +44,7 @@
 
 	let search = $state('');
 	let debouncedSearch = $state('');
-	let status = $state<StoredRequestStatus | ''>('');
+	let status = $state<DisplayRequestStatus | ''>('');
 	let filtersOpen = $state(false);
 	let selectedIds = $state<Set<string>>(new Set());
 	let sortKey = $state<RequestSortKey>('requested');
@@ -108,9 +107,14 @@
 		}))
 	);
 
+	// Every status a badge can show, calendar ones included, so picking one lists exactly the rows
+	// wearing that badge.
 	const statusOptions = [
 		{ value: '', label: 'All statuses' },
-		...STORED_REQUEST_STATUSES.map((value) => ({ value, label: REQUEST_STATUS_LABELS[value] }))
+		...(Object.keys(REQUEST_STATUS_LABELS) as DisplayRequestStatus[]).map((value) => ({
+			value,
+			label: REQUEST_STATUS_LABELS[value]
+		}))
 	];
 
 	const dateFormat = new Intl.DateTimeFormat(undefined, {
@@ -199,7 +203,7 @@
 					<Select
 						id="requests-status-filter"
 						value={status}
-						onchange={(value) => (status = value as StoredRequestStatus | '')}
+						onchange={(value) => (status = value as DisplayRequestStatus | '')}
 						options={statusOptions}
 					/>
 				</FilterField>

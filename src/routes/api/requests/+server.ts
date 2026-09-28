@@ -10,9 +10,11 @@ import {
 } from '$lib/server/api/errors';
 import { requestSchema, zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import {
-	STORED_REQUEST_STATUSES,
+	DISPLAY_REQUEST_STATUSES,
 	deriveRequestStatus,
-	type StoredRequestStatus
+	displayStatusFilter,
+	organizationDayRange,
+	type DisplayRequestStatus
 } from '$lib/server/requests/status';
 import { organizationTimezone } from '$lib/server/requests/timezone';
 import { embeddedOne } from '$lib/server/api/embedded';
@@ -115,8 +117,8 @@ export const GET: RequestHandler = async (event) => {
 		.getAll('status')
 		.flatMap((value) => value.split(','))
 		.map((value) => value.trim())
-		.filter((value): value is StoredRequestStatus =>
-			(STORED_REQUEST_STATUSES as readonly string[]).includes(value)
+		.filter((value): value is DisplayRequestStatus =>
+			(DISPLAY_REQUEST_STATUSES as readonly string[]).includes(value)
 		);
 	const limit = Math.min(
 		PAGE_SIZE_MAX,
@@ -128,17 +130,25 @@ export const GET: RequestHandler = async (event) => {
 	const cursor = readCursor(params.get('cursor'));
 	const { column: sortColumn, ascending } = readSort(params);
 
+	// The contractor's timezone is needed twice — for the filter's day boundaries and for each row's
+	// badge — so it is read once, up front.
+	const timezone = await organizationTimezone(organizationId);
+	const now = new Date();
+
+	// Read from `request_list_rows` (the request with its assessment on the same row) so the Status
+	// filter can match the badge the office sees, calendar statuses included.
 	let query = supabase
-		.from('requests')
+		.from('request_list_rows')
 		.select(
 			`id, title, status, service_type, created_at, client_id,
+			 assessment_id, assessment_starts_at, assessment_ends_at, assessment_all_day, assessment_completed_at,
 			 client:clients!requests_client_organization_fk(id, display_name, company_name),
-			 property:properties!requests_property_organization_fk(id, label, address_line1, city, state_region, postal_code),
-			 assessment:assessments(id, starts_at, ends_at, all_day, completed_at)`
+			 property:properties!requests_property_organization_fk(id, label, address_line1, city, state_region, postal_code)`
 		)
 		.eq('organization_id', organizationId);
 
-	if (statuses.length > 0) query = query.in('status', statuses);
+	const statusFilter = displayStatusFilter(statuses, organizationDayRange(timezone, now));
+	if (statusFilter) query = query.or(statusFilter);
 	if (search) {
 		// PostgREST parses commas and parentheses inside or= as syntax, so the term is quoted and its
 		// backslashes, quotes, and ilike wildcards escaped before it goes in.
@@ -193,18 +203,18 @@ export const GET: RequestHandler = async (event) => {
 
 	// The one lookup that cannot be embedded: contact methods hang off the client, not the request.
 	// Fetched once for the whole page, so the list stays two round trips whatever the page size.
-	const clientIds = [...new Set(page.map((row) => row.client_id))];
-	const [{ data: contactMethods, error: contactMethodsError }, timezone] = await Promise.all([
+	const clientIds = [
+		...new Set(page.map((row) => row.client_id).filter((id): id is string => id !== null))
+	];
+	const { data: contactMethods, error: contactMethodsError } =
 		clientIds.length > 0
-			? supabase
+			? await supabase
 					.from('client_contact_methods')
 					.select('client_id, kind, value')
 					.eq('organization_id', organizationId)
 					.eq('is_primary', true)
 					.in('client_id', clientIds)
-			: Promise.resolve({ data: [], error: null }),
-		organizationTimezone(organizationId)
-	]);
+			: { data: [], error: null };
 	if (contactMethodsError) return databaseError();
 
 	const contactByClient = new Map<string, { email: string | null; phone: string | null }>();
@@ -215,17 +225,24 @@ export const GET: RequestHandler = async (event) => {
 		contactByClient.set(method.client_id, entry);
 	}
 
-	const now = new Date();
 	const requests = page.map((row) => {
-		const assessment = embeddedOne(row.assessment);
-		const contact = contactByClient.get(row.client_id);
+		const assessment = row.assessment_id
+			? {
+					id: row.assessment_id,
+					starts_at: row.assessment_starts_at,
+					ends_at: row.assessment_ends_at,
+					all_day: row.assessment_all_day ?? false,
+					completed_at: row.assessment_completed_at
+				}
+			: null;
+		const contact = row.client_id ? contactByClient.get(row.client_id) : undefined;
 		return {
 			id: row.id,
 			title: row.title,
 			service_type: row.service_type,
 			requested_at: row.created_at,
 			stored_status: row.status,
-			status: deriveRequestStatus(row.status, assessment, timezone, now),
+			status: deriveRequestStatus(row.status ?? 'new', assessment, timezone, now),
 			client: embeddedOne(row.client),
 			property: embeddedOne(row.property),
 			assessment,

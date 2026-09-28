@@ -4,7 +4,7 @@ export type RequestSortKey = 'requested' | 'title';
 
 export type RequestListFilters = {
 	search: string;
-	statuses: StoredRequestStatus[];
+	statuses: DisplayRequestStatus[];
 	sort: RequestSortKey;
 	dir: 'asc' | 'desc';
 };
