@@ -6,4 +6,4 @@
 // (20260910151000), so a select naming it would fail for everyone regardless of permission. A permitted
 // reader gets cost back through `public.catalog_item_cost`, merged in by `attachCatalogCost` below.
 export const CATALOG_SELECT = `id, category, name, description, unit_label, unit_price_minor,
-	 is_taxable, is_labor, archived_at, created_at, updated_at, revision, updated_by` as const;
+	 is_taxable, is_labor, archived_at, created_at, updated_at, revision, updated_by, image_file_id` as const;

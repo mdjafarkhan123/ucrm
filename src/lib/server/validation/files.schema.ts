@@ -6,12 +6,13 @@ import { MAX_FILE_SIZE_BYTES } from '$lib/server/files/upload-policy';
 // attachments pipeline `attachmentEntityTypeSchema` guards, so that schema keeps matching the attachments
 // table's own check constraint and this one matches files_origin_type_check / file_links_entity_type_check
 // instead, which Part 6A widened to include 'invoice', Part 6D widened to include 'organization', and Part
-// 6F widened to include 'marketing_campaign'.
+// 6F widened to include 'marketing_campaign', and deferred sweep 7e to include 'catalog_item'.
 export const fileEntityTypeSchema = z.enum([
 	...attachmentEntityTypeSchema.options,
 	'invoice',
 	'organization',
-	'marketing_campaign'
+	'marketing_campaign',
+	'catalog_item'
 ]);
 
 // Where a File first entered UCRM. `file_manager` is a direct library upload with no originating record;
@@ -21,7 +22,13 @@ export const fileOriginTypeSchema = z.union([z.literal('file_manager'), fileEnti
 // Mirrors files_origin_role_check: the file_links role the processing worker will link the upload with,
 // once it is available. Only a line photo or a business logo is chosen by the caller today -- every other
 // upload is a plain 'attachment', so the field defaults to it and most callers never send it at all.
-export const fileOriginRoleSchema = z.enum(['attachment', 'line_photo', 'logo', 'campaign_image']);
+export const fileOriginRoleSchema = z.enum([
+	'attachment',
+	'line_photo',
+	'logo',
+	'campaign_image',
+	'item_photo'
+]);
 
 // Shape only. Whether this file type is actually allowed is `checkUploadClaim`'s answer, so the allowlist
 // lives in one place instead of being half-stated here and half-stated there.

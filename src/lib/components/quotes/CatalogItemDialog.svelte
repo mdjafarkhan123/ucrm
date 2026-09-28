@@ -8,11 +8,16 @@
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import MoneyInput from '$lib/components/forms/MoneyInput.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import PhotoSlot from '$lib/components/files/PhotoSlot.svelte';
+	import { uploadAttachmentFile } from '$lib/collaboration/api';
+	import { MAX_ATTACHMENT_SIZE_BYTES } from '$lib/collaboration/attachment-limits';
+	import { startFileUpload, finishFileUpload } from '$lib/files/api';
 	import { markupPercentFrom, priceFromMarkup } from '$lib/quotes/markup';
 	import { relativeTime, exactTime } from '$lib/collaboration/format';
 	import {
 		createCatalogItem,
 		updateCatalogItem,
+		setCatalogItemPhoto,
 		type CatalogItem,
 		type PricingCategory,
 		type QuoteWriteError
@@ -92,6 +97,63 @@
 	let loadError = $state('');
 	let conflict = $state(false);
 
+	// Settings → Price Book only: the item's one optional photo. A newly picked photo is held here and only
+	// uploaded once the item is saved, because the upload has to name the item it belongs to.
+	let savedPhotoId = $state<string | null>(null);
+	let photoFile = $state<File | null>(null);
+	let photoPreviewUrl = $state('');
+	let photoRemoved = $state(false);
+	// A new item whose photo failed after the item itself saved: the next press retries only the photo.
+	let savedItem = $state<CatalogItem | null>(null);
+
+	const shownPhotoId = $derived(photoRemoved ? null : savedPhotoId);
+
+	function choosePhoto(file: File) {
+		error = '';
+		if (!file.type.startsWith('image/')) {
+			error = 'Only a photo can be added to an item.';
+			return;
+		}
+		if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
+			error = 'That photo is over 25 MB.';
+			return;
+		}
+		if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+		photoFile = file;
+		photoPreviewUrl = URL.createObjectURL(file);
+	}
+
+	function removePhoto() {
+		if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+		photoFile = null;
+		photoPreviewUrl = '';
+		photoRemoved = true;
+	}
+
+	$effect(() => () => {
+		if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+	});
+
+	/** Uploads a newly picked photo onto the saved item, or takes a removed one off. */
+	async function savePhoto(itemId: string): Promise<string | null> {
+		if (photoFile) {
+			const started = await startFileUpload(photoFile, {
+				originType: 'catalog_item',
+				originId: itemId,
+				originRole: 'item_photo'
+			});
+			await uploadAttachmentFile(started.upload_url, photoFile);
+			await finishFileUpload(started.file.id);
+			await setCatalogItemPhoto(itemId, started.file.id);
+			return started.file.id;
+		}
+		if (photoRemoved && savedPhotoId) {
+			await setCatalogItemPhoto(itemId, null);
+			return null;
+		}
+		return photoRemoved ? null : savedPhotoId;
+	}
+
 	async function loadManagedItem() {
 		if (!itemId) return;
 		loadingItem = true;
@@ -108,6 +170,8 @@
 			exemptFromTax = !item.is_taxable;
 			itemRevision = item.revision;
 			lastEditor = item.last_editor;
+			savedPhotoId = item.image_file_id ?? null;
+			photoRemoved = false;
 			conflict = false;
 		} catch {
 			loadError = 'This item could not be loaded.';
@@ -175,16 +239,44 @@
 					is_taxable: !exemptFromTax,
 					is_labor: isLaborDraft
 				};
+				const updatingId = itemId ?? savedItem?.id;
 				const result =
-					mode === 'update' && itemId
-						? await updatePriceBookItem(itemId, {
+					mode === 'update' || savedItem
+						? await updatePriceBookItem(updatingId ?? '', {
 								...payload,
-								expected_revision: itemRevision ?? 0
+								expected_revision: itemRevision ?? savedItem?.revision ?? 0
 							})
 						: await createPriceBookItem(payload);
+				let imageFileId: string | null;
+				try {
+					imageFileId = await savePhoto(result.id);
+				} catch (cause) {
+					// The item is saved; only its photo is not. Stay open so the photo can be tried again, and
+					// make the next press an update of this item rather than a second copy of it.
+					savedItem = {
+						id: result.id,
+						category,
+						name: result.name,
+						description: cleanDescription,
+						unit_label: payload.unit_label,
+						unit_price_minor: unitPriceMinor,
+						is_taxable: !exemptFromTax,
+						is_labor: isLaborDraft,
+						archived_at: null,
+						updated_at: new Date().toISOString(),
+						revision: result.revision,
+						image_file_id: savedPhotoId
+					};
+					itemRevision = result.revision;
+					error = `The item was saved, but its photo was not: ${
+						cause instanceof Error ? cause.message : 'the upload failed'
+					}. Try again, or remove the photo.`;
+					return;
+				}
 				// The commands answer with only id/name/revision. The rest of the saved shape is exactly what
 				// was just submitted, so it is rebuilt here rather than round-tripping for it.
 				onSaved({
+					image_file_id: imageFileId,
 					id: result.id,
 					category,
 					name: result.name,
@@ -300,6 +392,24 @@
 			/>
 
 			{#if managed}
+				<div class="catalog-item-dialog__photo">
+					<div class="catalog-item-dialog__photo-box">
+						<PhotoSlot
+							previewUrl={photoPreviewUrl}
+							fileId={shownPhotoId}
+							disabled={saving}
+							label={itemName.trim() || 'Item photo'}
+							onChoose={choosePhoto}
+							onRemove={removePhoto}
+						/>
+					</div>
+					<p class="catalog-item-dialog__photo-note">
+						<span class="catalog-item-dialog__photo-title">Photo (optional)</span>
+						Shown on quote lines when this item is picked. Items already on a quote keep the photo they
+						were given.
+					</p>
+				</div>
+
 				<div class="catalog-item-dialog__unit">
 					<Input
 						id="catalog-item-unit"
@@ -419,6 +529,30 @@
 		&__note {
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
+		}
+
+		&__photo {
+			display: flex;
+			align-items: center;
+			gap: var(--space-base);
+		}
+
+		&__photo-box {
+			width: 96px;
+			height: 96px;
+			flex: 0 0 auto;
+		}
+
+		&__photo-note {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__photo-title {
+			display: block;
+			margin-bottom: var(--space-smallest);
+			color: var(--color-heading);
+			font-weight: 600;
 		}
 
 		&__unit {

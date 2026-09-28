@@ -9,6 +9,7 @@
 	} from '$lib/quotes/api';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import CatalogItemDialog from './CatalogItemDialog.svelte';
+	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 
 	// A line's name field with a catalog search riding underneath it — pick a reusable default, or just
@@ -202,6 +203,17 @@
 								</Combobox.GroupHeading>
 								{#each group.items as item (item.id)}
 									<Combobox.Item value={item.id} label={item.name} class="catalog-picker__option">
+										{#if item.image_file_id}
+											<FileThumb
+												fileId={item.image_file_id}
+												displayName={item.name}
+												mimeType="image/jpeg"
+												kind="image"
+												processingState="available"
+												hasThumbnail
+												size="row"
+											/>
+										{/if}
 										<span class="catalog-picker__option-copy">
 											<strong>{item.name}</strong>
 											{#if item.description}<small>{item.description}</small>{/if}

@@ -9,6 +9,7 @@
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import CatalogItemDialog from './CatalogItemDialog.svelte';
+	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import {
 		catalogItemsKey,
 		fetchCatalogItems,
@@ -160,6 +161,17 @@
 				{#each items as item (item.id)}
 					{@const added = addedCounts[item.id] ?? 0}
 					<li class="price-book__item">
+						{#if item.image_file_id}
+							<FileThumb
+								fileId={item.image_file_id}
+								displayName={item.name}
+								mimeType="image/jpeg"
+								kind="image"
+								processingState="available"
+								hasThumbnail
+								size="row"
+							/>
+						{/if}
 						<div class="price-book__copy">
 							<strong>{item.name}</strong>
 							{#if item.description}<span class="price-book__description">{item.description}</span
@@ -298,6 +310,7 @@
 		&__copy {
 			display: grid;
 			min-width: 0;
+			flex: 1;
 			gap: 2px;
 
 			strong {

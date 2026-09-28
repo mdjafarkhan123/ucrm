@@ -17,7 +17,8 @@ export type LinkedEntityType =
 	| 'visit'
 	| 'invoice'
 	| 'organization'
-	| 'marketing_campaign';
+	| 'marketing_campaign'
+	| 'catalog_item';
 
 // View follows the single customers.view gate for clients and properties (a Property's visibility already
 // follows its owning Client). Manage differs: client-scoped writes ride customers.edit, property-scoped
@@ -33,6 +34,7 @@ function linkedEntityPermissionKey(
 		| 'invoice'
 		| 'organization'
 		| 'marketing_campaign'
+		| 'catalog_item'
 	>,
 	mode: 'view' | 'manage'
 ): string {
@@ -73,6 +75,16 @@ export async function requireLinkedEntityAccess(
 		const check = await requireOrganizationPermission(
 			event,
 			mode === 'view' ? 'marketing.view' : 'marketing.draft'
+		);
+		return 'response' in check ? { response: check.response } : { auth: check.auth };
+	}
+
+	// A price list item's photo follows the item: catalog.view to see it in the picker, catalog.edit to add
+	// or replace it -- the pair its own routes and private.can_view_linked_entity/can_manage_linked_record use.
+	if (entityType === 'catalog_item') {
+		const check = await requireOrganizationPermission(
+			event,
+			mode === 'view' ? 'catalog.view' : 'catalog.edit'
 		);
 		return 'response' in check ? { response: check.response } : { auth: check.auth };
 	}
@@ -136,7 +148,8 @@ export function parseLinkedEntityQuery(
 			entityType !== 'visit' &&
 			entityType !== 'invoice' &&
 			entityType !== 'organization' &&
-			entityType !== 'marketing_campaign') ||
+			entityType !== 'marketing_campaign' &&
+			entityType !== 'catalog_item') ||
 		!entityId
 	) {
 		return null;
@@ -173,20 +186,23 @@ export async function linkedEntityBelongsToOrganization(
 		entityType === 'invoice' ||
 		entityType === 'job_expense' ||
 		entityType === 'job' ||
-		entityType === 'visit'
+		entityType === 'visit' ||
+		entityType === 'catalog_item'
 	) {
 		const table =
-			entityType === 'request'
-				? 'requests'
-				: entityType === 'quote'
-					? 'quotes'
-					: entityType === 'invoice'
-						? 'invoices'
-						: entityType === 'job_expense'
-							? 'job_expenses'
-							: entityType === 'job'
-								? 'jobs'
-								: 'job_visits';
+			entityType === 'catalog_item'
+				? 'catalog_items'
+				: entityType === 'request'
+					? 'requests'
+					: entityType === 'quote'
+						? 'quotes'
+						: entityType === 'invoice'
+							? 'invoices'
+							: entityType === 'job_expense'
+								? 'job_expenses'
+								: entityType === 'job'
+									? 'jobs'
+									: 'job_visits';
 		const { data } = await supabase
 			.from(table)
 			.select('id')

@@ -69,6 +69,11 @@ export const POST: RequestHandler = async (event) => {
 		return validationError({ mime_type: 'Only a photo can be used for an image block.' });
 	}
 
+	// A price list item's photo is shown as a thumbnail on the item and on every line it is picked onto.
+	if (parsed.data.origin_role === 'item_photo' && !parsed.data.mime_type.startsWith('image/')) {
+		return validationError({ mime_type: 'Only a photo can be added to a price list item.' });
+	}
+
 	// An upload that names a record must name one of this organization's records.
 	if (parsed.data.origin_type !== 'file_manager' && parsed.data.origin_id) {
 		const belongs = await linkedEntityBelongsToOrganization(
