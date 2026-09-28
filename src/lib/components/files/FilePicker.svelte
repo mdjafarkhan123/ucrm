@@ -378,6 +378,7 @@
 										kind={file.kind}
 										processingState={file.processing_state}
 										hasThumbnail={file.has_thumbnail}
+										signedSrc={file.thumb_url}
 									/>
 									{#if added || picked}
 										<span class="file-picker__mark" aria-hidden="true">{@html checkIcon}</span>

@@ -35,7 +35,8 @@
 		fetchFiles,
 		fileDetailKey,
 		fileFoldersKey,
-		fileImageUrl,
+		listedFileImageUrl,
+		SIGNED_IMAGE_REFRESH_MS,
 		filesListKey,
 		fetchFile,
 		formatFileType,
@@ -94,7 +95,9 @@
 		queryFn: ({ pageParam }: { pageParam: string | undefined }) => fetchFiles(filters, pageParam),
 		initialPageParam: undefined as string | undefined,
 		getNextPageParam: (lastPage: FileListPage) => lastPage.next_cursor ?? undefined,
-		enabled: view !== 'shared'
+		enabled: view !== 'shared',
+		// Keeps the photos' signed links fresh on a page left open.
+		refetchInterval: SIGNED_IMAGE_REFRESH_MS
 	}));
 	const foldersQuery = createQuery(() => ({
 		queryKey: fileFoldersKey,
@@ -164,8 +167,8 @@
 	const lightboxItems = $derived<LightboxItem[]>(
 		photos.map((file) => ({
 			id: file.id,
-			src: fileImageUrl(file.id),
-			thumbSrc: fileImageUrl(file.id, 'thumb'),
+			src: listedFileImageUrl(file),
+			thumbSrc: listedFileImageUrl(file, 'thumb'),
 			caption: file.display_name,
 			description: file.caption
 		}))
@@ -581,6 +584,7 @@
 											kind={file.kind}
 											processingState={file.processing_state}
 											hasThumbnail={file.has_thumbnail}
+											signedSrc={file.thumb_url}
 										/>
 										<span class="files__tile-name">{file.display_name}</span>
 										{#if file.caption}
@@ -639,6 +643,7 @@
 													kind={file.kind}
 													processingState={file.processing_state}
 													hasThumbnail={file.has_thumbnail}
+													signedSrc={file.thumb_url}
 													size="row"
 												/>
 												<span class="files__row-name-text">{file.display_name}</span>

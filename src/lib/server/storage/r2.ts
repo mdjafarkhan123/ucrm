@@ -240,6 +240,30 @@ export async function createPresignedPreviewImageUrl(objectKey: string): Promise
 	return getSignedUrl(client, command, { expiresIn: PREVIEW_IMAGE_URL_TTL_SECONDS });
 }
 
+// A photo in a list, signed in one batch with the list itself so a grid of N photos costs one request to
+// us instead of N, and the bytes go browser ↔ R2 without passing through the app (the S3/CloudFront
+// pattern: short-lived signed links minted by the listing call). Every link is signed as of the start of
+// the current hour, so the same photo gets the same URL all hour and the browser's cache keeps working;
+// it stays valid for at least an hour after it is handed out. Callers must only sign an object the reader
+// may see — the link itself is the permission for as long as it lives.
+const LIST_IMAGE_URL_WINDOW_SECONDS = 3600;
+const LIST_IMAGE_URL_TTL_SECONDS = 2 * LIST_IMAGE_URL_WINDOW_SECONDS;
+
+export async function createPresignedListImageUrl(objectKey: string): Promise<string> {
+	const { client, env } = getR2();
+	const windowMs = LIST_IMAGE_URL_WINDOW_SECONDS * 1000;
+	const command = new GetObjectCommand({
+		Bucket: env.R2_BUCKET,
+		Key: objectKey,
+		ResponseContentDisposition: 'inline',
+		ResponseCacheControl: `private, max-age=${LIST_IMAGE_URL_WINDOW_SECONDS}, immutable`
+	});
+	return getSignedUrl(client, command, {
+		expiresIn: LIST_IMAGE_URL_TTL_SECONDS,
+		signingDate: new Date(Math.floor(Date.now() / windowMs) * windowMs)
+	});
+}
+
 // Photos are shown inline on the page, which a presigned link cannot do well: it expires after five
 // minutes, so every image on a page left open goes broken. Reading the object here and streaming it back
 // through our own route keeps an image a plain, permanent URL the browser can cache.

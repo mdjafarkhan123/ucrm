@@ -70,6 +70,10 @@ export type FileListItem = {
 	usage_count: number;
 	/** A photo's one-line description. Always null on a document. */
 	caption: string | null;
+	/** Signed links straight to storage, minted with the list; null when this is not a ready photo. They
+	 *  expire, so a list showing them refreshes itself (`SIGNED_IMAGE_REFRESH_MS`). */
+	image_url: string | null;
+	thumb_url: string | null;
 };
 
 export type FileListPage = {
@@ -189,6 +193,18 @@ export async function fetchFileFolders(): Promise<FileFolder[]> {
 export function fileImageUrl(fileId: string, size: 'thumb' | 'full' = 'full') {
 	return size === 'thumb' ? `/api/files/${fileId}/view?size=thumb` : `/api/files/${fileId}/view`;
 }
+
+/** A listed photo's picture: the signed link the list carried, or the permanent route when it had none. */
+export function listedFileImageUrl(
+	file: Pick<FileListItem, 'id' | 'image_url' | 'thumb_url'>,
+	size: 'thumb' | 'full' = 'full'
+) {
+	return (size === 'thumb' ? file.thumb_url : file.image_url) ?? fileImageUrl(file.id, size);
+}
+
+/** A list's signed links live at least an hour; refetching every half hour keeps them valid on a page
+ *  left open. Same-hour links come back identical, so a refetch does not reload any picture. */
+export const SIGNED_IMAGE_REFRESH_MS = 30 * 60_000;
 
 /** Mints a short-lived download link and hands it to the browser. */
 export async function downloadFile(fileId: string): Promise<void> {

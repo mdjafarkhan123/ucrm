@@ -18,7 +18,8 @@
 		fetchFiles,
 		fileDetailKey,
 		fileLabelsKey,
-		fileImageUrl,
+		listedFileImageUrl,
+		SIGNED_IMAGE_REFRESH_MS,
 		filesListKey,
 		formatFileSize,
 		type FileEntityType,
@@ -94,7 +95,7 @@
 	const filesQuery = createQuery(() => ({
 		queryKey: filesListKey(filters),
 		queryFn: () => fetchFiles(filters),
-		refetchInterval: polling ? 10_000 : false
+		refetchInterval: polling ? 10_000 : SIGNED_IMAGE_REFRESH_MS
 	}));
 
 	const files = $derived(filesQuery.data?.files ?? []);
@@ -190,8 +191,8 @@
 	const lightboxItems = $derived<LightboxItem[]>(
 		photos.map((file) => ({
 			id: file.id,
-			src: fileImageUrl(file.id),
-			thumbSrc: fileImageUrl(file.id, 'thumb'),
+			src: listedFileImageUrl(file),
+			thumbSrc: listedFileImageUrl(file, 'thumb'),
 			caption: file.display_name
 		}))
 	);
@@ -265,6 +266,7 @@
 								kind={file.kind}
 								processingState={file.processing_state}
 								hasThumbnail={file.has_thumbnail}
+								signedSrc={file.thumb_url}
 							/>
 						</button>
 						{#if offersDescribe}
@@ -307,6 +309,7 @@
 								kind={file.kind}
 								processingState={file.processing_state}
 								hasThumbnail={file.has_thumbnail}
+								signedSrc={file.thumb_url}
 								size="row"
 							/>
 						</span>

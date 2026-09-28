@@ -20,6 +20,7 @@
 		kind,
 		processingState,
 		hasThumbnail,
+		signedSrc = null,
 		size = 'tile'
 	}: {
 		fileId: string;
@@ -28,6 +29,8 @@
 		kind: FileKind;
 		processingState: FileProcessingState;
 		hasThumbnail: boolean;
+		/** A signed storage link a file list handed out for this exact size, used instead of the route. */
+		signedSrc?: string | null;
 		/** `tile` for a grid card, `row` for a list line, `panel` for the big preview in the details panel. */
 		size?: 'tile' | 'row' | 'panel';
 	} = $props();
@@ -37,7 +40,11 @@
 	const isReady = $derived(processingState === 'available');
 	const showsImage = $derived(isReady && kind === 'image');
 	// A grid asks for the 480px copy the pipeline made; the panel's large preview asks for the original.
-	const source = $derived(fileImageUrl(fileId, size === 'panel' ? 'full' : 'thumb'));
+	const routeSource = $derived(fileImageUrl(fileId, size === 'panel' ? 'full' : 'thumb'));
+	// A signed link that fails — it expired on a page left open, or storage refused it — falls back to the
+	// permanent route once, rather than leaving a broken picture.
+	let signedFailed = $state(false);
+	const source = $derived(signedSrc && !signedFailed ? signedSrc : routeSource);
 	// The thumbnail route falls back to the original on its own, so a backfilled photo with no small copy
 	// still draws — it just costs more bytes, which is worth saying out loud rather than hiding.
 	const sizeHint = $derived(hasThumbnail || size === 'panel' ? undefined : 'full-size original');
@@ -81,6 +88,9 @@
 			title={sizeHint}
 			loading="lazy"
 			decoding="async"
+			onerror={() => {
+				if (source !== routeSource) signedFailed = true;
+			}}
 		/>
 	{:else}
 		<span class="file-thumb__icon" aria-hidden="true">{@html placeholderIcon}</span>

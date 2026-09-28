@@ -4,6 +4,10 @@ import { requireOrganizationPermission, hasPermission } from '$lib/server/access
 import { requireLinkedEntityAccess, type LinkedEntityType } from '$lib/server/access/collaboration';
 import { resolveOrganizationAccess } from '$lib/server/access/effective';
 import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
+import { createPresignedListImageUrl } from '$lib/server/storage/r2';
+import type { Database } from '$lib/database.types';
+
+type ListedFile = Database['public']['Functions']['list_files']['Returns'][number];
 
 // The smart views in the left rail, plus the folder view. "Videos" is deliberately absent: video is not on
 // the upload allowlist until Part 8 measures it, so it could only ever be an empty list that implies a missing
@@ -143,14 +147,51 @@ export const GET: RequestHandler = async (event) => {
 		hasShares = (shareProbe.data ?? []).length > 0;
 	}
 
-	const rows = data ?? [];
+	const rows: ListedFile[] = data ?? [];
 	const hasMore = rows.length > limit;
 	const files = hasMore ? rows.slice(0, limit) : rows;
 	const last = files.at(-1);
 
+	// Signed picture links for this page's photos, so the grid draws with no request per photo. Only a
+	// scanned, still-stored image gets one — the same gate /api/files/[id]/view applies. The keys are read
+	// under the caller's own policies, so a row the list returned but the reader cannot see signs nothing.
+	const imageIds = files
+		.filter((file) => file.processing_state === 'available' && file.mime_type.startsWith('image/'))
+		.map((file) => file.id);
+	const imageUrls = new Map<string, { image_url: string; thumb_url: string }>();
+	if (imageIds.length > 0) {
+		const keys = await event.locals.supabase
+			.from('files')
+			.select('id, object_key, thumbnail_object_key')
+			.eq('organization_id', organizationId)
+			.in('id', imageIds)
+			.not('object_key', 'is', null);
+		if (keys.error) console.error('Could not read picture keys.', keys.error);
+		try {
+			for (const row of keys.data ?? []) {
+				if (!row.object_key) continue;
+				const imageUrl = await createPresignedListImageUrl(row.object_key);
+				imageUrls.set(row.id, {
+					image_url: imageUrl,
+					thumb_url: row.thumbnail_object_key
+						? await createPresignedListImageUrl(row.thumbnail_object_key)
+						: imageUrl
+				});
+			}
+		} catch (signError) {
+			// Storage not configured: the list still works and each picture falls back to its /view route.
+			console.error('Could not sign picture links.', signError);
+			imageUrls.clear();
+		}
+	}
+
 	return json(
 		{
-			files,
+			files: files.map((file) => ({
+				...file,
+				image_url: imageUrls.get(file.id)?.image_url ?? null,
+				thumb_url: imageUrls.get(file.id)?.thumb_url ?? null
+			})),
 			next_cursor: hasMore && last ? `${last.created_at}|${last.id}` : null,
 			// What this member may do with what they are looking at, resolved once here rather than guessed
 			// in the browser. Every write re-checks it server-side; this only decides which buttons show.
