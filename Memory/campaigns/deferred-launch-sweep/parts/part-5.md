@@ -21,25 +21,29 @@ address (when one is set), browser-verified on Raad LTD, and the deferred note i
       `enqueue_invoice_communication_email`/`enqueue_quote_communication_email` alive alongside new 8-arg
       ones (confirmed via `pg_proc`, query in Notes). Fix migration `20260928212000` drops the stale
       overloads — **written and committed, NOT yet applied**.
-- [ ] **Blocked:** `db push --dry-run` refuses with `DbPushMissingLocalError` — remote has migration
-      `20260928211000` from Part 7's worktree, not yet merged to `main`/not in this folder. `212000` sorts
-      after it once that file lands.
-- [x] `database.types.ts` regenerated and committed (shows the overload as a union type for now).
-- [ ] `npm run check` not run successfully — machine was memory-starved by another session's concurrent
-      `svelte-check`. Changed `.svelte` files were checked individually with the Svelte MCP autofixer instead
-      (no new issues; its warnings are pre-existing SCSS-nesting noise).
+- [x] Unblocked: `20260928211000` landed on `main` (Part 7d, `b7be59e4`). Dry-run confirmed only `212000`
+      pending, then applied it to the linked remote. `pg_proc` re-check: one 8-arg row per function — fixed.
+- [x] `database.types.ts` regenerated and committed — overload union is gone (one entry per function now).
+- [x] `npm run check` ran clean of any issue from this part's code (`--max-old-space-size=6144` needed; default
+      heap OOMs on this machine's current load — note that for future runs). Found 3 pre-existing
+      `resolve()` "union type too complex" errors and 2 pre-existing warnings in unrelated files (not touched
+      by this part, not caused by it) — recorded as new deferred note
+      `resolve-route-union-type-too-complex-to-represent.md`, not fixed here.
 - [ ] Browser-verify on Raad LTD: billing email on a real client, send invoice + quote, confirm two sends,
-      confirm the billing link opens the document. **Not started.**
+      confirm the billing link opens the document. **Blocked:** the Claude-in-Chrome browser extension isn't
+      connected this session (tabs_context_mcp reports "Browser extension is not connected"). Needs Jafar to
+      either verify manually or reconnect the extension.
 - [ ] Delete `Memory/deferred/invoice-email-sends-to-primary-only-not-billing-contact.md` + its ROADMAP.md
       mention once shipped and verified; mark Part 5 done with the date.
 
 ## Next
 
-1. Check if the Part 7 session/worktree has merged. If yes, its `20260928211000` file is on `main`: dry-run
-   then apply `20260928212000`, then re-run the `pg_proc` query in Notes to confirm one `oid` per function.
-   If not merged yet, wait — don't touch that worktree/branch.
-2. Run `npm run check` (check `free -h` first) and fix anything it finds.
-3. Browser-verify on Raad LTD, then close out the note's last two steps.
+1. Once the browser extension is connected: log in as Raad LTD owner (`info.socialmediauser1@gmail.com` /
+   `11223344`) at `https://app.upliftcontractor.com`, set a billing-contact email on a real client, send an
+   invoice and a quote, confirm both the primary and billing addresses receive a send, and confirm the billing
+   link opens the document.
+2. Delete `Memory/deferred/invoice-email-sends-to-primary-only-not-billing-contact.md` + its ROADMAP.md
+   mention once verified; mark Part 5 done with the date.
 
 ## Notes
 

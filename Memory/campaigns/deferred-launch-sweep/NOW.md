@@ -2,14 +2,17 @@
 
 **Goal:** Clear the ready deferred tasks before the first paying client, most urgent first.
 
-**Active part:** Part 5 paused mid-work 2026-09-28 (Sonnet) — billing-contact email parity: schema, migration
-applied, all app code (Zod/duplicates/API/UI/routes) written; a follow-up fix migration is drafted+committed
-but blocked (see Blockers). `npm run check` and browser verification still needed. See
-Memory/campaigns/deferred-launch-sweep/parts/part-5.md for exact remaining steps. Part 7 is held by another
-session (worktree, not yet merged).
+**Active part:** Part 5 paused 2026-09-28 (Sonnet) — billing-contact email parity is code-complete: migration
+applied to remote (stale-overload fix `20260928212000` too, confirmed one function per name), types
+regenerated, `npm run check` clean of anything this part caused. Only browser verification on Raad LTD is
+left, blocked because the Claude-in-Chrome extension wasn't connected this session. See
+Memory/campaigns/deferred-launch-sweep/parts/part-5.md. Part 7e (price-list item picture) is held by another
+live session working in `.claude/worktrees/deferred-sweep-part7b` — do not touch those files (catalog_items/File
+Manager SQL, CatalogItemDialog, ProductsAndServicesBlock, catalog-items API + quotes.schema/selects,
+files.schema); it will add a migration timestamped `20260928230000`.
 
-**Exact next action:** Resume Part 5 from its part note's unchecked steps (starts with checking whether
-Part 7 has merged). Then do Part 6 (Opus).
+**Exact next action:** Reconnect the Claude-in-Chrome extension and finish Part 5's browser verification (see
+part-5.md Next), then do Part 6 (Opus).
 
 **Question for Jafar (not yet asked):** the office and finance roles have no invoice permissions in the baseline
 permission matrix (`supabase/migrations/20260101000200_baseline_reference_data.sql`), so a role named "finance"
