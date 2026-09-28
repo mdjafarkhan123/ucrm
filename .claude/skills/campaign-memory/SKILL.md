@@ -65,7 +65,7 @@ test counts, command output, code and schema details, and the story of a session
    determined or the correction changes approved behavior or scope.
 7. Continue from the note's **Next**, or from the start of the part.
 
-Read `ROADMAP.md` only to choose, add, close, or reorder parts; read deferred Memory only when a note or Jafar
+Read `ROADMAP.md` only to choose, start, add, close, or reorder parts; read deferred Memory only when a note or Jafar
 names it. A campaign still in the older shape — its progress kept in `NOW.md` or a part packet — resumes as it
 is, and its next checkpoint moves the current part's position into a part note.
 
@@ -90,12 +90,13 @@ struggle to reconstruct, and before any handoff. A part that finishes without an
   carry on with the part.
 - When the part proves bigger than one session, or the conversation gets summarized to free space, checkpoint,
   move the remaining steps into a new part, and hand over.
-- When the campaign's state changes — Planning, In progress, Paused, or Blocked — update its `INDEX.md` row.
+- When the campaign's state changes, update its `INDEX.md` row: Planning, In progress, Paused (no one is working
+  on it, but it could continue), or Blocked (it cannot move until something outside it happens — say what).
 - Before each checkpoint, keep every Memory file you touched within its word limit, delete what the next
   session no longer needs, and confirm each pointer resolves.
 
 Commit only your own changes; another session's uncommitted edits are theirs. Memory lives only in the main
-folder, on `main`. From a temporary worktree, commit code on its branch and Memory in the main folder, and name
+folder, on `main`; a worktree's own copy of `Memory/` is stale, so ignore it. From a temporary worktree, commit code on its branch and Memory in the main folder, and name
 the worktree and branch in the part note. A part built in a worktree is **Waiting to merge** in `ROADMAP.md`
 until its code is on `main`. Change shared files — `INDEX.md`, `NOW.md`, `ROADMAP.md`, stage files — by
 editing lines in place, never by rewriting them whole, so parallel sessions keep each other's lines.
@@ -124,4 +125,4 @@ claim. When every part of a stage is done, reduce the stage to one roadmap line 
 Defer work that lies outside the campaign or has to wait for something outside it. Search
 `Memory/deferred/INDEX.md` first and update the existing record if the same work is there. Otherwise add a row
 and a note from the template: why it waits, what brings it back, and only the constraints already known.
-Remove both when the work is done or dropped.
+Remove both when the work is done, dropped, or taken up by a campaign.
