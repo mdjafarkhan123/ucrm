@@ -1323,7 +1323,9 @@
 							<div class="invoice-detail__balance-row">
 								<dt>Invoice balance</dt>
 								<dd class="invoice-detail__balance-amount">
-									{formatMoney(saved.money.remaining_minor)}
+									{formatMoney(
+										saved.invoice.is_replaced || isVoided ? 0 : saved.money.remaining_minor
+									)}
 								</dd>
 							</div>
 							{#if saved.client_balance}

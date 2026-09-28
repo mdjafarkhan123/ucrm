@@ -142,7 +142,14 @@ export const GET: RequestHandler = async (event) => {
 			// Withheld rather than zeroed: a person who may not see money gets no number at all, and the table
 			// shows a dash instead of a wrong total.
 			total_minor: canSeePrice ? (typeof total === 'number' ? total : 0) : null,
-			remaining_minor: canSeePrice ? (typeof remaining === 'number' ? remaining : 0) : null
+			// A replaced or voided bill owes nothing whatever its own total says.
+			remaining_minor: canSeePrice
+				? row.is_replaced || row.derived_status === 'voided'
+					? 0
+					: typeof remaining === 'number'
+						? remaining
+						: 0
+				: null
 		};
 	});
 

@@ -2,23 +2,17 @@
 
 **Goal:** Clear the ready deferred tasks before the first paying client, most urgent first.
 
-**Active part:** 4 — Fixing money mistakes (Opus). Decisions approved: D6–D9 in
-docs/invoice-behavior-contract.md. Part 3 may still be running in another session; it owns only its roadmap
-line and its own files (invoice counts, money overview migration) — commit only your own paths.
+**Active part:** 4 — Fixing money mistakes. Note: `parts/part-4.md`. Decisions D6–D9 in
+docs/invoice-behavior-contract.md. Part 7 is held by another session (worktree, not yet merged).
 
-**Exact next action:** finish slice 4d. DB is done and live (`444935b5`, migration 20260928160000). Screens are
-committed as WIP, lint-clean but NOT yet svelte-checked: run svelte-check (3 "union type too complex" errors in
-OpportunityBriefDrawer, (app)/+layout, invoices/new are pre-existing — ignore), fix anything new, then
-browser-check all of 4a–4d on Raad LTD (Chrome extension was offline all session): void #30 with the email box
-(goes to Jafar's +part8 inbox); split a payment; Fix payment + Mark never received; Correct invoice → edit →
-Replace invoice (carries payments), and Rebill on a voided bill. Then delete
-`issued-invoices-cannot-be-corrected-from-the-browser` + its deferred INDEX row, mark Part 4 Done in ROADMAP,
-move to Part 5.
+**Exact next action:** Jafar must decide the database-guard fix in `parts/part-4.md` (Rebill on a voided
+invoice fails). After his answer: apply it as one new migration, retest Rebill on Raad LTD, then close Part 4.
 
-**Blockers:** none. Do not touch packages (Jafar, 2026-09-27).
+**Blockers:** waiting on Jafar (the guard fix above). Do not touch packages (Jafar, 2026-09-27).
+Browser testing needs the tunnel `cloudflared tunnel run badf2c43-7020-443a-a046-9954d139d711`; after a
+dev-server restart the page can go blank — hard-reload (Ctrl+Shift+R).
 
 **Known unrelated failure:** `src/routes/api/team/invitations/[invitationId]/resend/resend.spec.ts` fails
 (mock call arguments) — pre-existing.
 
-**Pointers:**
-- Memory/campaigns/deferred-launch-sweep/ROADMAP.md Part 4
+**Pointers:** Memory/campaigns/deferred-launch-sweep/ROADMAP.md Part 4
