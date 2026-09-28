@@ -54,20 +54,21 @@ test counts, command output, code and schema details, and the story of a session
 3. Choose the part Jafar named. Otherwise take, in this order: a paused part (started, unclaimed); the next
    part `NOW.md` names; when those are claimed or Jafar asks for any available part, another part in
    `ROADMAP.md` whose dependencies are done and whose code and outside services don't overlap claimed work.
-   If none qualifies, say so and wait.
-4. Claim the part. Uncommitted files its note names belong to the part; take them over with the claim. If
-   another session wins the claim, choose again.
-5. Read the part note if it has one, otherwise its roadmap line; then only the plan section and sources they
-   point to.
+   If none qualifies, say so and wait. A part claimed by a session that seems to have stopped stays with that
+   session until Jafar confirms it is closed; meanwhile you may inspect its note and outcome checks, read-only.
+4. Read the part note if it has one, otherwise its roadmap line.
+5. Claim the part. Uncommitted files its note names belong to the part; take them over with the claim. If
+   another session wins the claim, choose again. Then read only the plan section and sources the note or
+   roadmap line points to.
 6. Check the saved progress against reality before acting on it: the code in Git — on `main`, or in the
    worktree and branch the note names — and, for each outside action the note records, its outcome check.
    Where they disagree, correct the note from what is really there. Ask Jafar when an outcome cannot be
    determined or the correction changes approved behavior or scope.
 7. Continue from the note's **Next**, or from the start of the part.
 
-Read `ROADMAP.md` only to choose, start, add, close, or reorder parts; read deferred Memory only when a note or Jafar
-names it. A campaign still in the older shape — its progress kept in `NOW.md` or a part packet — resumes as it
-is, and its next checkpoint moves the current part's position into a part note.
+Read `ROADMAP.md` only to choose, start, add, close, or reorder parts; read deferred Memory only when a note
+or Jafar names it. A campaign still in the older shape — its progress kept in `NOW.md` or a part packet —
+resumes as it is, and its next checkpoint moves the current part's position into a part note.
 
 ## Work and checkpoint
 
@@ -82,7 +83,7 @@ struggle to reconstruct, and before any handoff. A part that finishes without an
   — so a fresh session can act on it without this conversation.
 - A question waiting for Jafar goes into the note word for word.
 - Before an outside action that would do harm if repeated — a database change, a message to a customer, a
-  provider setting — record in the note how to check its outcome, with its exact identifier where one exists
+  provider setting — checkpoint with a line saying how to check its outcome, with its exact identifier where one exists
   (migration version, message or request ID, idempotency key), and use the service's own duplicate protection
   where it has one. After an interruption, verify the outcome before retrying; if it cannot be determined,
   stop and ask Jafar. Harmless, repeatable actions need none of this.
@@ -95,7 +96,8 @@ struggle to reconstruct, and before any handoff. A part that finishes without an
 - Before each checkpoint, keep every Memory file you touched within its word limit, delete what the next
   session no longer needs, and confirm each pointer resolves.
 
-Commit only your own changes; another session's uncommitted edits are theirs. Memory lives only in the main
+Commit only your own changes; another session's uncommitted edits are theirs. When a file holds both, stage a
+copy of its committed version with only your lines changed. Memory lives only in the main
 folder, on `main`; a worktree's own copy of `Memory/` is stale, so ignore it. From a temporary worktree, commit code on its branch and Memory in the main folder, and name
 the worktree and branch in the part note. A part built in a worktree is **Waiting to merge** in `ROADMAP.md`
 until its code is on `main`. Change shared files — `INDEX.md`, `NOW.md`, `ROADMAP.md`, stage files — by
@@ -107,8 +109,6 @@ When Jafar says pause, or the session has to stop, checkpoint where you are. On 
 steps and describe any half-done change in **Next**, naming its files; in a worktree, commit it to the branch
 as work in progress. Then release the claim and give Jafar the resume command:
 `read memory and continue <campaign>`.
-
-A session that stops without warning keeps its claim until Jafar confirms it is closed.
 
 ## Finish
 
