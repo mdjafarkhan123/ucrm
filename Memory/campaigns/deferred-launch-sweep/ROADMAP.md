@@ -56,9 +56,11 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
     Export. Covers the merge half of
     `client-duplicate-detection-merge-archive-restore-and-audit-history`, plus the audit history; today there is
     only create-time duplicate warning by `ilike '%term%'`, capped at 5 rows.
-11. **Speed on client pages** — Planned (Opus; performance-review). `client-photos-are-one-request-each`
-    (Jafar: follow the industry pattern — batched short-lived signed URLs) and
-    `app-wide-rls-helpers-run-once-per-returned-row`. Both waited on Part 6's client work, now done.
+11. **Speed on client pages** — Done 2026-09-28. Photo grids use batched signed R2 links (one request).
+    Side-table permission checks run once per query for full-access members (`20260929150000`,
+    `20260929160000`): owner's whole timeline 508 → 7 ms, one quote's timeline 15 → 4 ms (warm); every row
+    each of 8 users sees fingerprinted identical before/after. Assigned-only field crew still pay per row —
+    left deferred (`app-wide-rls-helpers-run-once-per-returned-row`, narrowed).
 
 46 tasks worked; 21 left deferred.
 

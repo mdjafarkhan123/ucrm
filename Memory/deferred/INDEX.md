@@ -16,7 +16,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Active member's sign-in email not visible, recovery path unclear](active-member-email-not-visible-and-recovery-path-unclear.md) |
 | P2 | [No admin-alert delivery for loop-detected inbound threads](no-admin-alert-delivery-mechanism-for-loop-detected-inbound-threads.md) |
 | P2 | [Composer day-two scope: CC, attachments, formatting, channel tabs](composer-day-two-scope.md) |
-| P2 | [App-wide RLS helpers run once per returned row](app-wide-rls-helpers-run-once-per-returned-row.md) |
+| P3 | [Assigned-only members still pay per-row permission checks](app-wide-rls-helpers-run-once-per-returned-row.md) |
 | P2 | [Job detail with the maximum recurring Visit count is unmeasured](job-detail-with-the-maximum-recurring-visit-count-is-unmeasured.md) |
 | P2 | [Client duplicate detection, merge, archive, restore, and audit history](client-duplicate-detection-merge-archive-restore-and-audit-history.md) |
 | P2 | [Opportunity Brief activity timeline](opportunity-brief-activity-timeline.md) |
@@ -31,7 +31,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Marketing drain tail trickles and SES event handling falls behind](marketing-drain-tail-trickle-and-ses-event-lag.md) |
 | P2 | [Jobs and Quotes list search also misses client name](jobs-and-quotes-list-search-also-misses-client-name.md) |
 | P3 | [Offline field records on site (Jobs 15f)](offline-field-records-on-site.md) |
-| P3 | [Client photos are one request each](client-photos-are-one-request-each.md) |
 | P3 | [File Manager search cannot use an index](file-manager-search-cannot-use-an-index.md) |
 | P3 | [ClientPicker and CatalogItemPicker can show a stale label after an external value revert](clientpicker-and-catalogitempicker-can-show-a-stale-label-after-an-external-value-revert.md) |
 | P3 | [Missing business setup does not yet block the action that needs it](missing-business-setup-does-not-yet-block-the-action-that-needs-it.md) |
