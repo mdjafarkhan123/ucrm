@@ -1,6 +1,6 @@
 # Part 7 — Jobber parity
 
-**Exact next action:** start slice 7d (Opus) — nothing written yet. Read its deferred note and `docs/schedule-behavior-contract.md` "Job detail Visits card" first; completed-by needs no migration, the off-series marker does. Worktree `.claude/worktrees/deferred-sweep-part7b`, branch
+**Exact next action:** 7d in progress (Opus). Migration `20260928210000_job_visit_series_date_and_off_series` written on the branch (visits remember their rule date `series_date`; a trigger keeps `off_series`). Outcome check before re-applying: `supabase migration list --linked` shows 20260928210000 remote. Then: add `completed_by_name`, `off_series`, `series_date` to the job-detail read (`src/routes/api/jobs/[id=uuid]/+server.ts`, names via `profiles` like the events endpoint) and `JobVisit`, show them on `JobVisitsSection`, browser-check, merge. Worktree `.claude/worktrees/deferred-sweep-part7b`, branch
 `worktree-deferred-sweep-part7b` (it has its own `.env`, `supabase/.temp` and a `node_modules` symlink; a
 dev server for browser checks runs from it on `http://localhost:5180`, already signed in to Raad LTD).
 Before each slice, read its deferred note and load the skills its work needs (svelte, supabase-postgres for
