@@ -46,17 +46,48 @@ export const GET: RequestHandler = async (event) => {
 		);
 	}
 
-	let access;
-	try {
-		access = await resolveOrganizationAccess(
-			event.locals.supabase,
-			auth.organization.id,
-			auth.user.id
+	const organizationId = auth.organization.id;
+	// The shell's Inbox link and the client page's Communication tab and Message button ask only whether the
+	// member may see and send conversations -- the same checks as the feed, without paying for the feed.
+	const accessOnly = event.url.searchParams.get('access') === '1';
+	// The client Communication tab asks for one client's history by id -- always both directions, never
+	// searched, and paged in its own smaller unit. `view`'s existing "mine" restriction below still applies
+	// unchanged: an assigned-only viewer only ever sees this client's messages when the client is already
+	// theirs, exactly as it already restricts the general inbox.
+	const requestedClientId = event.url.searchParams.get('client_id');
+	const includeInbound =
+		requestedClientId !== null || event.url.searchParams.get('channel') === 'all';
+	const search = requestedClientId ? '' : (event.url.searchParams.get('search')?.trim() ?? '');
+	const cursor = readCursor(event.url.searchParams.get('cursor'));
+	const pageSize = requestedClientId ? CLIENT_HISTORY_PAGE_SIZE : PAGE_SIZE;
+	const ownerClient = getOwnerSupabaseClient();
+
+	// Access and the rate limit depend only on who is asking, so they share one round trip (measured
+	// 2026-09-28: each round costs ~70-130 ms against a remote database). Their answers are still applied
+	// in the old order below, so a failed access check wins over a rate-limit answer.
+	const settle = <T>(work: PromiseLike<T>) =>
+		Promise.resolve(work).then(
+			(value) => ({ ok: true as const, value }),
+			(error: unknown) => ({ ok: false as const, error })
 		);
-	} catch (error) {
-		console.error('Could not resolve inbox access.', error);
+	const [accessResult, limitResult] = await Promise.all([
+		settle(resolveOrganizationAccess(event.locals.supabase, organizationId, auth.user.id)),
+		accessOnly
+			? null
+			: settle(
+					checkRateLimit(ownerClient, {
+						bucketKey: `communications_inbox_read:${organizationId}:${auth.user.id}`,
+						windowSeconds: 60,
+						maxAttempts: 120
+					})
+				)
+	]);
+
+	if (!accessResult.ok) {
+		console.error('Could not resolve inbox access.', accessResult.error);
 		return databaseError();
 	}
+	const access = accessResult.value;
 
 	const canViewTeam = hasPermission(access, 'conversations.view_team');
 	const canViewAssigned = hasPermission(access, 'conversations.view_assigned');
@@ -69,9 +100,7 @@ export const GET: RequestHandler = async (event) => {
 			{ status: 403, headers: PRIVATE_READ_HEADERS }
 		);
 	}
-	// The shell's Inbox link and the client page's Communication tab and Message button ask only whether the
-	// member may see and send conversations -- the same checks as the feed, without paying for the feed.
-	if (event.url.searchParams.get('access') === '1') {
+	if (accessOnly) {
 		return json({ ok: true, can_send: canSend }, { headers: PRIVATE_READ_HEADERS });
 	}
 
@@ -80,32 +109,16 @@ export const GET: RequestHandler = async (event) => {
 	const view: 'team' | 'mine' =
 		canViewTeam && event.url.searchParams.get('view') !== 'mine' ? 'team' : 'mine';
 
-	const organizationId = auth.organization.id;
-	// The client Communication tab asks for one client's history by id -- always both directions, never
-	// searched, and paged in its own smaller unit. `view`'s existing "mine" restriction below still applies
-	// unchanged: an assigned-only viewer only ever sees this client's messages when the client is already
-	// theirs, exactly as it already restricts the general inbox.
-	const requestedClientId = event.url.searchParams.get('client_id');
-	const includeInbound =
-		requestedClientId !== null || event.url.searchParams.get('channel') === 'all';
-	const search = requestedClientId ? '' : (event.url.searchParams.get('search')?.trim() ?? '');
-	const cursor = readCursor(event.url.searchParams.get('cursor'));
-	const pageSize = requestedClientId ? CLIENT_HISTORY_PAGE_SIZE : PAGE_SIZE;
-	const ownerClient = getOwnerSupabaseClient();
-	try {
-		const limit = await checkRateLimit(ownerClient, {
-			bucketKey: `communications_inbox_read:${organizationId}:${auth.user.id}`,
-			windowSeconds: 60,
-			maxAttempts: 120
-		});
-		if (!limit.allowed) {
-			const response = rateLimitedResponse(limit.retryAfterSeconds);
+	if (limitResult) {
+		if (!limitResult.ok) {
+			console.error('Could not rate-limit inbox access.', limitResult.error);
+			return databaseError();
+		}
+		if (!limitResult.value.allowed) {
+			const response = rateLimitedResponse(limitResult.value.retryAfterSeconds);
 			response.headers.set('Cache-Control', 'private, no-cache');
 			return response;
 		}
-	} catch (error) {
-		console.error('Could not rate-limit inbox access.', error);
-		return databaseError();
 	}
 
 	// My Inbox is every conversation assigned to or followed by the caller. A guarded/unresolved-sender
