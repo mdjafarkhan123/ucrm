@@ -17,10 +17,10 @@
 	import Tabs, { type Tab } from '$lib/components/ui/Tabs.svelte';
 	import TabPanel from '$lib/components/ui/TabPanel.svelte';
 	import ClientDetailHeader from '$lib/components/clients/ClientDetailHeader.svelte';
-	import ClientDetailsDialog from '$lib/components/clients/ClientDetailsDialog.svelte';
+	import ClientDetailsForm from '$lib/components/clients/ClientDetailsForm.svelte';
 	import MarketingConsentDialog from '$lib/components/clients/MarketingConsentDialog.svelte';
 	import PropertyDialog from '$lib/components/clients/PropertyDialog.svelte';
-	import LeadSourceDialog from '$lib/components/clients/LeadSourceDialog.svelte';
+	import LeadSourceEditor from '$lib/components/clients/LeadSourceEditor.svelte';
 	import ClientTagSelect from '$lib/components/clients/ClientTagSelect.svelte';
 	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
 	import RecordFilesCard from '$lib/components/files/RecordFilesCard.svelte';
@@ -100,9 +100,10 @@
 
 	const saved = $derived(clientQuery.data);
 
-	// --- The draft ------------------------------------------------------------------------------------
-	// A block's pencil opens a dialog, and Done puts the new values here rather than saving them. The page
-	// then shows the draft, marks what changed, and the action bar writes it all in one go.
+	// --- Editing ------------------------------------------------------------------------------------
+	// Jobber's three edit patterns (jobber-08-screen-patterns.md § How WE compare). The client's own details
+	// and lead source edit in place and their own Save writes there and then. The bottom bar only carries
+	// what has no block of its own: tags and notes. The full edit page opens from the header's ... menu.
 
 	const DEFAULT_PREFERENCES: ClientPreferences = {
 		contact_policy: 'allow',
@@ -139,17 +140,64 @@
 		};
 	}
 
-	// The same rule the server uses, so a staged name reads the way it will once it is saved.
-	function displayNameOf(values: ClientIdentityDraft) {
-		if (values.client_type === 'company') return values.company_name.trim();
-		return [values.first_name, values.last_name]
-			.map((part) => part.trim())
-			.filter(Boolean)
-			.join(' ');
+	// Which block is open in place, if any, and how its own save is going.
+	let editingBlock = $state<'details' | 'lead_source' | null>(null);
+	let blockSaving = $state(false);
+	let blockError = $state('');
+	let blockFieldErrors = $state<Record<string, string>>({});
+
+	function openBlock(block: 'details' | 'lead_source') {
+		editingBlock = block;
+		blockError = '';
+		blockFieldErrors = {};
 	}
 
-	let identityDraft = $state<ClientIdentityDraft | null>(null);
-	let leadSourceDraft = $state<string | null>(null);
+	function closeBlock() {
+		editingBlock = null;
+		blockError = '';
+		blockFieldErrors = {};
+	}
+
+	// A block's Save. The payload is rebuilt on a fresh read of the client, so it only ever changes the
+	// fields this block owns — a tag staged in the bar, or a preference changed elsewhere, is left alone.
+	async function saveBlock(change: Partial<ClientIdentityDraft> & { lead_source?: string }) {
+		if (blockSaving) return;
+		blockSaving = true;
+		blockError = '';
+		blockFieldErrors = {};
+		try {
+			const fresh = await queryClient.fetchQuery({
+				queryKey: clientDetailKey(clientId),
+				queryFn: () => fetchClient(clientId),
+				staleTime: 0
+			});
+			await saveClient(
+				{
+					...identityOf(fresh),
+					lead_source: fresh.lead_source ?? '',
+					tag_ids: fresh.tag_ids ?? [],
+					...change
+				},
+				clientId
+			);
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: clientDetailKey(clientId) }),
+				queryClient.invalidateQueries({ queryKey: ['clients', 'list'] }),
+				queryClient.invalidateQueries({ queryKey: activityKey('client', clientId) })
+			]);
+			toast.success(editingBlock === 'lead_source' ? 'Lead source saved' : 'Client details saved');
+			closeBlock();
+		} catch (error) {
+			if (error instanceof ClientWriteError) blockFieldErrors = error.fieldErrors;
+			blockError = error instanceof Error ? error.message : 'That could not be saved.';
+		} finally {
+			blockSaving = false;
+		}
+	}
+
+	// --- The bar's draft ------------------------------------------------------------------------------
+	// Tags and notes stage here and the bottom bar writes them together.
+
 	let tagIdsDraft = $state<string[] | null>(null);
 	let notePending = $state<NoteChange[]>([]);
 	// Files are not in the page draft. Adding one happens inside the picker dialog, which carries its own
@@ -159,8 +207,6 @@
 	let saveError = $state('');
 
 	function discardDraft() {
-		identityDraft = null;
-		leadSourceDraft = null;
 		tagIdsDraft = null;
 		notePending = [];
 		saveError = '';
@@ -172,29 +218,13 @@
 	$effect(() => {
 		const id = clientId;
 		untrack(() => {
-			if (id) discardDraft();
+			if (!id) return;
+			discardDraft();
+			closeBlock();
 		});
 	});
 
-	// What the page renders: the saved client with anything staged laid over the top. Preferences are left
-	// as saved on purpose — they carry opt-in timestamps the draft has no copy of, and a staged preference
-	// change is read straight from the draft by the dialog that set it.
-	const client = $derived.by(() => {
-		if (!saved) return undefined;
-		const identity = identityDraft ?? identityOf(saved);
-		return {
-			...saved,
-			client_type: identity.client_type,
-			lifecycle_status: identity.lifecycle_status,
-			first_name: identity.first_name,
-			last_name: identity.last_name,
-			company_name: identity.company_name,
-			email: identity.email,
-			phone: identity.phone,
-			display_name: displayNameOf(identity) || saved.display_name,
-			lead_source: leadSourceDraft ?? saved.lead_source
-		} satisfies ClientDetail;
-	});
+	const client = $derived(saved);
 
 	const properties = $derived(saved?.properties ?? []);
 
@@ -204,54 +234,20 @@
 	const tagIds = $derived(tagIdsDraft ?? savedTagIds);
 
 	// --- What is open, and what really changed ----------------------------------------------------------
-	// Two different questions, and the action bar needs both. A staged value means a block is open for
-	// editing, so the bar appears with a way out of it. It only counts as a change when it differs from what
-	// is saved — pressing Done in a dialog without touching anything must not offer to save.
+	// Two different questions, and the action bar needs both. A staged value means the bar has something
+	// open, so it appears with a way out. It only counts as a change when it differs from what is saved.
 	//
-	// Properties are in neither list on purpose: `PropertyDialog` owns them and saves itself, so they never
-	// enter the page draft or light up the action bar.
-
-	function samePreferences(a: ClientPreferences, b: ClientPreferences) {
-		return (Object.keys(DEFAULT_PREFERENCES) as (keyof ClientPreferences)[]).every(
-			(key) => a[key] === b[key]
-		);
-	}
-
-	function sameIdentity(a: ClientIdentityDraft, b: ClientIdentityDraft) {
-		return (
-			a.client_type === b.client_type &&
-			a.lifecycle_status === b.lifecycle_status &&
-			a.first_name.trim() === b.first_name.trim() &&
-			a.last_name.trim() === b.last_name.trim() &&
-			a.company_name.trim() === b.company_name.trim() &&
-			a.email.trim() === b.email.trim() &&
-			a.phone.trim() === b.phone.trim() &&
-			samePreferences(a.preferences, b.preferences)
-		);
-	}
+	// Properties, details and lead source are in neither list on purpose: each saves itself.
 
 	// The order tags were picked in means nothing, so only the set counts.
 	function sameTags(a: string[], b: string[]) {
 		return a.length === b.length && [...a].sort().join('|') === [...b].sort().join('|');
 	}
 
-	const identityChanged = $derived(
-		Boolean(saved && identityDraft && !sameIdentity(identityDraft, identityOf(saved)))
-	);
-	const leadSourceChanged = $derived(
-		leadSourceDraft !== null && leadSourceDraft.trim() !== (saved?.lead_source ?? '').trim()
-	);
 	const tagsChanged = $derived(tagIdsDraft !== null && !sameTags(tagIdsDraft, savedTagIds));
 
-	const isEditing = $derived(
-		identityDraft !== null ||
-			leadSourceDraft !== null ||
-			tagIdsDraft !== null ||
-			notePending.length > 0
-	);
-	const isDirty = $derived(
-		identityChanged || leadSourceChanged || tagsChanged || notePending.length > 0
-	);
+	const isEditing = $derived(tagIdsDraft !== null || notePending.length > 0);
+	const isDirty = $derived(tagsChanged || notePending.length > 0);
 
 	// --- Saving ---------------------------------------------------------------------------------------
 
@@ -269,19 +265,15 @@
 				staleTime: 0
 			});
 
-			if (identityChanged || leadSourceChanged || tagsChanged) {
-				const identity = identityDraft ?? identityOf(fresh);
+			if (tagsChanged && tagIdsDraft) {
 				await saveClient(
 					{
-						...identity,
-						lead_source: leadSourceDraft ?? fresh.lead_source ?? '',
-						preferences: identityDraft?.preferences ?? preferencesOf(fresh),
-						tag_ids: tagIdsDraft ?? fresh.tag_ids ?? []
+						...identityOf(fresh),
+						lead_source: fresh.lead_source ?? '',
+						tag_ids: tagIdsDraft
 					},
 					clientId
 				);
-				identityDraft = null;
-				leadSourceDraft = null;
 				tagIdsDraft = null;
 			}
 
@@ -396,8 +388,6 @@
 
 	// --- Dialogs --------------------------------------------------------------------------------------
 
-	let detailsOpen = $state(false);
-	let leadSourceOpen = $state(false);
 	let marketingConsentOpen = $state(false);
 
 	// Consent is never staged with the rest of a client edit — it is dated evidence — so it reads straight
@@ -512,15 +502,23 @@
 				<ClientDetailHeader
 					{client}
 					{canMessage}
-					onEdit={() => (detailsOpen = true)}
+					onEdit={() => openBlock('details')}
+					editing={editingBlock === 'details'}
 					onHistory={() => (showHistory = !showHistory)}
 					onHistoryHover={warmHistory}
-				/>
-				{#if identityChanged}
-					<p class="client-detail__pending">
-						Client details changed. Save at the bottom of the page to keep them.
-					</p>
-				{/if}
+				>
+					{#snippet editor()}
+						<ClientDetailsForm
+							values={identityOf(client)}
+							wasCustomer={client.lifecycle_status === 'customer'}
+							saving={blockSaving}
+							error={blockError}
+							fieldErrors={blockFieldErrors}
+							onSave={(next) => void saveBlock(next)}
+							onCancel={closeBlock}
+						/>
+					{/snippet}
+				</ClientDetailHeader>
 
 				<Tabs tabs={clientTabs} value={activeTab} onChange={selectTab} label="Client sections">
 					<TabPanel value="details">
@@ -609,14 +607,21 @@
 				{:else}
 					<RailCard title="Lead source" icon={targetIcon}>
 						{#snippet actions()}
-							<PencilButton onclick={() => (leadSourceOpen = true)} label="Edit lead source" />
+							{#if editingBlock !== 'lead_source'}
+								<PencilButton onclick={() => openBlock('lead_source')} label="Edit lead source" />
+							{/if}
 						{/snippet}
-						{#if client.lead_source}
+						{#if editingBlock === 'lead_source'}
+							<LeadSourceEditor
+								value={client.lead_source ?? ''}
+								saving={blockSaving}
+								error={blockError}
+								onSave={(next) => void saveBlock({ lead_source: next })}
+								onCancel={closeBlock}
+							/>
+						{:else if client.lead_source}
 							<p class="client-detail__lead-source">
 								{client.lead_source}
-								{#if leadSourceChanged}
-									<Badge size="small" status="warning">Unsaved</Badge>
-								{/if}
 							</p>
 						{:else}
 							<p class="client-detail__rail-blank">
@@ -713,19 +718,6 @@
 		</RecordDetailLayout>
 
 		<!-- Each dialog is mounted only while it is open, so it always starts from what the page holds now. -->
-		{#if detailsOpen}
-			<ClientDetailsDialog
-				open={detailsOpen}
-				values={identityDraft ?? identityOf(client)}
-				wasCustomer={saved?.lifecycle_status === 'customer'}
-				onDone={(next) => {
-					identityDraft = next;
-					detailsOpen = false;
-				}}
-				onClose={() => (detailsOpen = false)}
-			/>
-		{/if}
-
 		{#if marketingConsentOpen && marketingConsent}
 			<MarketingConsentDialog
 				open={marketingConsentOpen}
@@ -733,18 +725,6 @@
 				consent={marketingConsent}
 				onSaved={() => void refreshMarketingConsent()}
 				onClose={() => (marketingConsentOpen = false)}
-			/>
-		{/if}
-
-		{#if leadSourceOpen}
-			<LeadSourceDialog
-				open={leadSourceOpen}
-				value={client.lead_source ?? ''}
-				onDone={(next) => {
-					leadSourceDraft = next;
-					leadSourceOpen = false;
-				}}
-				onClose={() => (leadSourceOpen = false)}
 			/>
 		{/if}
 
@@ -813,15 +793,6 @@
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;
-		}
-
-		// Says the header is showing something not yet written, right where the changed values are.
-		&__pending {
-			padding: var(--space-slim) var(--space-base);
-			border-radius: var(--radius-base);
-			color: var(--color-warning--onSurface);
-			background: var(--color-warning--surface);
-			font-size: var(--typography--fontSize-small);
 		}
 	}
 </style>

@@ -1,8 +1,11 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
+	import { resolve } from '$app/paths';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
+	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import ManualEmailDialog from '$lib/components/clients/ManualEmailDialog.svelte';
 	import RequestReviewButton from '$lib/components/reviews/RequestReviewButton.svelte';
 	import type { ClientDetail } from '$lib/clients/api';
@@ -12,19 +15,28 @@
 	import fileIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import toolIcon from '@tabler/icons/outline/tool.svg?raw';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
+	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
 
 	// The identity card at the top of a client's page: who they are, how to reach them, and how much work
 	// they represent. Money and job counts have no source yet, so they read as not-yet rather than zero.
 	// History matches the work records' own header: one icon button that swaps the rail, warmed on hover.
+	//
+	// Editing follows Jobber: the name's pencil turns this card into the details form where it sits (the
+	// page hands it in as `editor`), and the ... menu opens the full edit page in a new tab.
 	let {
 		client,
 		onEdit,
+		editing = false,
+		editor,
 		onHistory,
 		onHistoryHover,
 		canMessage = true
 	}: {
 		client: ClientDetail;
 		onEdit: () => void;
+		/** True while the details form is open in place of the name and contact facts. */
+		editing?: boolean;
+		editor?: Snippet;
 		/** False for a member without conversations.send, who would only be refused on Send. */
 		canMessage?: boolean;
 		onHistory?: () => void;
@@ -47,6 +59,19 @@
 	const callReason = 'Calling arrives with the communications work';
 	const messageReason = 'Messaging arrives with the communications work';
 	let manualEmailOpen = $state(false);
+
+	const menuItems = $derived([
+		{
+			label: 'Edit client details',
+			icon: externalIcon,
+			onSelect: () =>
+				window.open(
+					resolve('/(app)/clients/[id=uuid]/edit', { id: client.id }),
+					'_blank',
+					'noopener'
+				)
+		}
+	]);
 
 	const moneyFormatters: Record<string, Intl.NumberFormat> = {};
 	function formatMoney(amountMinor: number, currency: string) {
@@ -118,55 +143,59 @@
 			{#if client.can_request_review}
 				<RequestReviewButton target={{ clientId: client.id }} />
 			{/if}
-			<Button variant="secondary" size="small" onclick={onEdit}>Edit</Button>
+			<DropdownMenu items={menuItems} triggerLabel="More client actions" />
 		</div>
 	</div>
 
-	<div class="client-header__identity">
-		<h1>{client.display_name}</h1>
-		<PencilButton size="base" onclick={onEdit} label="Edit {client.display_name}" />
-	</div>
+	{#if editing && editor}
+		{@render editor()}
+	{:else}
+		<div class="client-header__identity">
+			<h1>{client.display_name}</h1>
+			<PencilButton size="base" onclick={onEdit} label="Edit {client.display_name}" />
+		</div>
 
-	<div class="client-header__body">
-		<dl class="client-header__facts">
-			<div class="client-header__fact">
-				<dt><span aria-hidden="true">{@html phoneIcon}</span>Main phone</dt>
-				<dd>
-					{#if client.phone}
-						<a href={`tel:${client.phone}`}>{client.phone}</a>
-					{:else}
-						<span class="client-header__blank">Not added yet</span>
-					{/if}
-				</dd>
-			</div>
-			<div class="client-header__fact">
-				<dt><span aria-hidden="true">{@html messageIcon}</span>Main email</dt>
-				<dd>
-					{#if client.email}
-						<a href={`mailto:${client.email}`}>{client.email}</a>
-					{:else}
-						<span class="client-header__blank">Not added yet</span>
-					{/if}
-				</dd>
-			</div>
-			<div class="client-header__fact">
-				<dt>Client since</dt>
-				<dd>{clientSince}</dd>
-			</div>
-		</dl>
+		<div class="client-header__body">
+			<dl class="client-header__facts">
+				<div class="client-header__fact">
+					<dt><span aria-hidden="true">{@html phoneIcon}</span>Main phone</dt>
+					<dd>
+						{#if client.phone}
+							<a href={`tel:${client.phone}`}>{client.phone}</a>
+						{:else}
+							<span class="client-header__blank">Not added yet</span>
+						{/if}
+					</dd>
+				</div>
+				<div class="client-header__fact">
+					<dt><span aria-hidden="true">{@html messageIcon}</span>Main email</dt>
+					<dd>
+						{#if client.email}
+							<a href={`mailto:${client.email}`}>{client.email}</a>
+						{:else}
+							<span class="client-header__blank">Not added yet</span>
+						{/if}
+					</dd>
+				</div>
+				<div class="client-header__fact">
+					<dt>Client since</dt>
+					<dd>{clientSince}</dd>
+				</div>
+			</dl>
 
-		<ul class="client-header__stats">
-			{#each stats as stat (stat.label)}
-				<li class="client-header__stat">
-					<span class="client-header__stat-icon" aria-hidden="true">{@html stat.icon}</span>
-					<span class="client-header__stat-text">
-						<span class="client-header__stat-label">{stat.label}</span>
-						<span class="client-header__stat-value">{stat.value ?? stat.waiting}</span>
-					</span>
-				</li>
-			{/each}
-		</ul>
-	</div>
+			<ul class="client-header__stats">
+				{#each stats as stat (stat.label)}
+					<li class="client-header__stat">
+						<span class="client-header__stat-icon" aria-hidden="true">{@html stat.icon}</span>
+						<span class="client-header__stat-text">
+							<span class="client-header__stat-label">{stat.label}</span>
+							<span class="client-header__stat-value">{stat.value ?? stat.waiting}</span>
+						</span>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
 </section>
 
 {#if manualEmailOpen}
