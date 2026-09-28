@@ -47,8 +47,10 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
 9. **Final live checks** — In progress 2026-09-28. Non-admin email correction **Done**: office member's
    email changed, round-tripped, and changed back on Raad LTD, both audited; note deleted. Website Chat
    ceiling re-deferred to the staging VPS (managed limit is Supabase's, production's is ours; note updated).
-   Left: `stripe-disconnect-open-checkout-expiry-not-live-tested` — waits on Jafar for a throwaway org and a
-   Stripe test key he pastes himself (not Raad LTD's connection).
+   Left: `stripe-disconnect-open-checkout-expiry-not-live-tested` — Jafar chose (2026-09-28) to test on Raad
+   LTD's sandbox. IN FLIGHT: open checkout `fa4cfc6e-5175-4ec7-a935-44fd84b28d44` (invoice #35, $10); next,
+   disconnect Stripe. Check: `payment_stripe_connections` has no Raad row and that checkout is `failed`. If
+   Raad shows disconnected, Jafar must re-paste the sandbox key in Settings → Payments.
 10. **Merge duplicate clients** — Planned (Opus), split out of Part 6 with Jafar's approval on 2026-09-28
     because moving every child row from one client to another is the riskiest write in the sweep. Jobber ships
     this as a first-class "Merge Clients" action in the clients list's More Actions menu, beside Import and
