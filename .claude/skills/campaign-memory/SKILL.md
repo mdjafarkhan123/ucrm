@@ -47,10 +47,11 @@ test counts, command output, code and schema details, and the story of a session
 
 ## Resume
 
-1. Read `Memory/INDEX.md` and take the campaign Jafar named. For "read memory and continue" with no name, take
-   the only campaign ready to work; if several are, ask which. Decide per conversation, never from file order,
-   recency, or another conversation.
-2. Read that campaign's `NOW.md` and check the live register as the project's coordination rule directs.
+1. Read `Memory/INDEX.md`, check the live register as the project's coordination rule directs, and take the
+   campaign Jafar named. For "read memory and continue" with no name, take the only campaign with a part that
+   can move now — unclaimed, and waiting on nothing; if several can, ask which, and mention those waiting on
+   Jafar. Decide per conversation, never from file order, recency, or another conversation.
+2. Read that campaign's `NOW.md`.
 3. Choose the part Jafar named. Otherwise take, in this order: a paused part (started, unclaimed); the next
    part `NOW.md` names; when those are claimed or Jafar asks for any available part, another part in
    `ROADMAP.md` whose dependencies are done and whose code and outside services don't overlap claimed work.
@@ -66,9 +67,9 @@ test counts, command output, code and schema details, and the story of a session
    determined or the correction changes approved behavior or scope.
 7. Continue from the note's **Next**, or from the start of the part.
 
-Read `ROADMAP.md` only to choose, start, add, close, or reorder parts; read deferred Memory only when a note
+Read `ROADMAP.md` only to choose, start, add, close, reorder, or change the state of parts; read deferred Memory only when a note
 or Jafar names it. A campaign still in the older shape — its progress kept in `NOW.md` or a part packet —
-resumes as it is, and its next checkpoint moves the current part's position into a part note.
+resumes and checkpoints in that shape until it is moved to this one.
 
 ## Work and checkpoint
 
@@ -92,7 +93,8 @@ struggle to reconstruct, and before any handoff. A part that finishes without an
 - When the part proves bigger than one session, or the conversation gets summarized to free space, checkpoint,
   move the remaining steps into a new part, and hand over.
 - When the campaign's state changes, update its `INDEX.md` row: Planning, In progress, Paused (no one is working
-  on it, but it could continue), or Blocked (it cannot move until something outside it happens — say what).
+  on it, but it could continue), or Blocked (it cannot move until something outside the work happens — an
+  answer from Jafar, another campaign, a provider — say what).
 - Before each checkpoint, keep every Memory file you touched within its word limit, delete what the next
   session no longer needs, and confirm each pointer resolves.
 
