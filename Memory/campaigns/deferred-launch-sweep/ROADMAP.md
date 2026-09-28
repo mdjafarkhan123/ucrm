@@ -28,7 +28,7 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    browser-checked on Raad LTD. Fixed on the way: replaced/voided bills showed a false balance (`5bd3b498`), and
    the voided-invoice guard blocked rebilling (`20260928190000`, applied straight to the database because the
    Part 7 session's `20260928180000` isn't in this folder yet).
-5. **Complete customer documents** — In progress 2026-09-28. `line-photos-wrongly-appear-in-the-request-s-attachments-card`:
+5. **Complete customer documents** — Done 2026-09-28. `line-photos-wrongly-appear-in-the-request-s-attachments-card`:
    already fixed by the Files and Media migration before this part started — the old `AttachmentsCard`/`public.attachments`
    path it described isn't wired to requests any more; `file_links.role <> 'line_photo'` already keeps a line photo off
    the record's own file list. No code change; note closed. `client-documents-drop-line-photos-and-need-a-completeness-pass`:
@@ -38,7 +38,10 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    (`CustomerQuoteDocument.svelte`) so it matches the convention used everywhere else. Quantity/other line content
    already matches Jobber's own field set (including the progress-bill exception, which lines up with Jobber's own
    `originalCost` concept) — no further completeness gap found. `invoice-email-sends-to-primary-only-not-billing-contact`
-   was held for Part 4; Part 4 is Done, so it can resume.
+   was held for Part 4; Part 4 is Done, so it resumed and shipped: both invoices and quotes now email the client's
+   primary address and a separate billing-contact address when one is set, browser-verified on Raad LTD (Greenfield
+   Property Group, invoice #35 and quote #44) — both delivery intents submitted, both access links opened their
+   document.
 6. **Protect customer history** — Planned. `property-deletion-guarded-once-work-references-a-property`,
    `historical-address-safety-and-property-transfer-between-clients`,
    `client-duplicate-detection-merge-archive-restore-and-audit-history`, `entitytype-covers-only-clients-and-properties`.
