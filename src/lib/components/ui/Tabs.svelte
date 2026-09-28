@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Tabs as TabsPrimitive } from 'bits-ui';
-	import type { Snippet } from 'svelte';
+	import { setContext, type Snippet } from 'svelte';
 
 	// Underline tabs — the only tab style this app has. Use them to split one record's content into groups
 	// the user opens one at a time, never for moving between pages.
@@ -43,6 +43,15 @@
 
 	// A caller that does not track the open tab itself still gets a working strip.
 	const current = $derived(value ?? tabs[0]?.value);
+
+	// Bits UI renders every panel's content and only hides the closed ones, so a closed tab would still
+	// mount its components and fire their queries with the page. `TabPanel` reads the open tab from here
+	// and renders only its own content, the way Radix Tabs unmounts inactive content by default.
+	setContext('tabs:current', {
+		get value() {
+			return current;
+		}
+	});
 </script>
 
 <TabsPrimitive.Root
