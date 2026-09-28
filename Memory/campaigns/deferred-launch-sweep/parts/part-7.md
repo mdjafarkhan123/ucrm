@@ -1,6 +1,6 @@
 # Part 7 — Jobber parity
 
-**Exact next action:** start slice 7e (Opus) — nothing written yet. Read its deferred note first. Worktree `.claude/worktrees/deferred-sweep-part7b`, branch
+**Exact next action:** 7e in progress (Opus). Migration `20260928230000_catalog_item_photo` committed on the branch and being applied — check with `supabase migration list --linked`; if applied, do not re-run. Next: app code (Zod `image_file_id`, `PUT`-style image set on catalog PATCH, CATALOG_SELECT, files.schema `catalog_item`/`item_photo`, collaboration.ts, CatalogItemDialog upload, picker copies photo onto line, FileDetailsPanel link to price book). Worktree `.claude/worktrees/deferred-sweep-part7b`, branch
 `worktree-deferred-sweep-part7b` (it has its own `.env`, `supabase/.temp` and a `node_modules` symlink; a
 dev server for browser checks runs from it on `http://localhost:5180`, already signed in to Raad LTD).
 Before each slice, read its deferred note and load the skills its work needs (svelte, supabase-postgres for
