@@ -13,17 +13,17 @@
 - [x] `every-entitlement-gated-route-re-reads-the-whole-access-model` — `public.organization_access_snapshot` (invoker, no cache); identical output all roles; 440 → 81 ms median
 - [x] `six-unindexed-foreign-keys-from-the-collaboration-tables` — only `attachments.note_id` needed an index; the rest are covered or account-delete-only (migration comment says why)
 - [x] `a-customer-file-re-resolves-the-whole-quote-document` — `resolve_quote_access_file`; same answers on all 546 live link/file pairs; expired link now 404 not 500
-- [ ] `inbox-read-takes-over-a-second` — note file was never written (only its INDEX row); investigate from scratch
+- [x] `inbox-read-takes-over-a-second` — each step is one ~70–130 ms trip to the remote DB, not DB work; access snapshot + concurrent rate limit took it from >1 s to ~580 ms here. Production (DB beside app) is the real cure. No note file exists — delete only its INDEX row at merge
 - [ ] `client-photos-are-one-request-each` — industry pattern (batched short-lived signed URLs); touches client pages, wait for Part 6
 - [ ] `app-wide-rls-helpers-run-once-per-returned-row` — clients family; overlaps Part 6, wait for it
-- [ ] `name-search-across-list-apis-falls-back-to-a-sequential-scan` — pg_trgm decision
-- [ ] `quote-overview-counts-scan-the-whole-tenant`
+- [ ] `name-search-across-list-apis-falls-back-to-a-sequential-scan` — Jafar 2026-09-28: add pg_trgm now (Clients, Requests, Jobs, catalog, files)
+- [ ] `quote-overview-counts-scan-the-whole-tenant` — Jafar 2026-09-28: fix now, don't wait for a real big company; copy `pipeline_stage_counts_read_model`
 - [ ] Browser-verify the four done items, merge to `main`, delete their deferred notes + INDEX rows
 
 ## Next
 
-Next task: `inbox-read-takes-over-a-second` (no note exists; investigate from scratch). Branch rebased onto
-`main` 2026-09-28, 8 commits ahead, nothing uncommitted.
+Next task: `quote-overview-counts-scan-the-whole-tenant`, then name search. Branch rebased onto `main`
+2026-09-28, 9 commits ahead, nothing uncommitted.
 
 ## Outside actions
 
