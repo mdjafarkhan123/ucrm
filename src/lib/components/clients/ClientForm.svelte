@@ -17,6 +17,7 @@
 		fetchDuplicateCandidates,
 		saveClient,
 		ClientWriteError,
+		type ClientDetail,
 		type ClientPreferences,
 		type ClientWriteValues,
 		type DuplicateCandidates
@@ -27,15 +28,21 @@
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import settingsIcon from '@tabler/icons/outline/settings.svg?raw';
 
-	// Creating a client only. An existing client is edited block by block on its own page, so there is
-	// exactly one way to edit and no journey that lands the office back on a creation form.
+	// Creates a client, or — given `client` — edits one as a whole page. That full edit page is Jobber's
+	// third edit pattern, opened from the client page's ... menu; the client page itself edits block by
+	// block. Editing leaves out the first address, first note and files: an existing client's properties,
+	// notes and files are managed on its own page.
 	let {
+		client,
 		onSaved,
 		onCancel
 	}: {
+		client?: ClientDetail;
 		onSaved: (client: { id: string; display_name: string }, andAnother: boolean) => void;
 		onCancel: () => void;
 	} = $props();
+
+	const isEdit = $derived(Boolean(client));
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -98,7 +105,33 @@
 		};
 	}
 
-	let form = $state<FormState>(untrack(() => blankForm()));
+	// The loaded client, laid over a blank form. Taken once: the page mounts the form only after the client
+	// has loaded, so a background refetch never overwrites what is being typed.
+	function formFromClient(source: ClientDetail): FormState {
+		const { contact_policy, ...flags } = source.preferences ?? DEFAULT_PREFERENCES;
+		return {
+			...blankForm(),
+			client_type: source.client_type,
+			lifecycle_status: source.lifecycle_status,
+			first_name: source.first_name ?? '',
+			last_name: source.last_name ?? '',
+			company_name: source.company_name ?? '',
+			email: source.email ?? '',
+			phone: source.phone ?? '',
+			lead_source: source.lead_source ?? '',
+			preferences: {
+				contact_policy,
+				quote_follow_ups: flags.quote_follow_ups,
+				invoice_reminders: flags.invoice_reminders,
+				appointment_reminders: flags.appointment_reminders,
+				job_follow_ups: flags.job_follow_ups,
+				review_requests: flags.review_requests
+			},
+			tag_ids: source.tag_ids ?? []
+		};
+	}
+
+	let form = $state<FormState>(untrack(() => (client ? formFromClient(client) : blankForm())));
 	let fieldErrors = $state<Record<string, string>>({});
 	let formError = $state('');
 	let saving = $state(false);
@@ -117,7 +150,7 @@
 
 	// Set when a create succeeded but its files did not. The client exists from that moment on, so every
 	// later press of Save has to update it instead of creating a second one.
-	let savedClientId = $state('');
+	let savedClientId = $state(untrack(() => client?.id ?? ''));
 	const targetClientId = $derived(savedClientId);
 
 	const isCompany = $derived(form.client_type === 'company');
@@ -284,10 +317,17 @@
 		{ value: 'company', label: 'Company' }
 	];
 
-	const LIFECYCLE_OPTIONS = [
-		{ value: 'lead', label: 'Lead' },
+	// A client who has already bought cannot be pushed back to Lead.
+	const wasCustomer = $derived(client?.lifecycle_status === 'customer');
+	const LIFECYCLE_OPTIONS = $derived([
+		{
+			value: 'lead',
+			label: 'Lead',
+			disabled: wasCustomer,
+			title: wasCustomer ? 'A customer cannot be turned back into a lead.' : undefined
+		},
 		{ value: 'customer', label: 'Customer' }
-	];
+	]);
 
 	const policyOptions = [
 		{ value: 'allow', label: 'Allow all messages' },
@@ -295,7 +335,7 @@
 		{ value: 'do_not_disturb', label: 'Do not disturb' }
 	];
 
-	const title = 'New client';
+	const title = $derived(client ? `Edit ${client.display_name}` : 'New client');
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -447,59 +487,61 @@
 				{/if}
 			</SectionBlock>
 
-			<SectionBlock
-				title="Client address"
-				icon={mapPinIcon}
-				hint="Optional. Filling this in creates the client's first property."
-				form
-			>
-				<div class="client-form__grid">
-					<Input
-						id="client-address-line1"
-						label="Street address 1"
-						required={hasAnyAddress}
-						bind:value={form.address_line1}
-						invalid={Boolean(fieldErrors['property.address_line1'])}
-						errorMessage={fieldErrors['property.address_line1'] ?? ''}
-						autocomplete="address-line1"
-					/>
-					<Input
-						id="client-address-line2"
-						label="Street address 2 (optional)"
-						bind:value={form.address_line2}
-						autocomplete="address-line2"
-					/>
-					<Input
-						id="client-postal-code"
-						label="Postal code"
-						bind:value={form.postal_code}
-						invalid={Boolean(fieldErrors['property.postal_code'])}
-						errorMessage={fieldErrors['property.postal_code'] ?? ''}
-						autocomplete="postal-code"
-					/>
-					<Input
-						id="client-city"
-						label="City"
-						required={hasAnyAddress}
-						bind:value={form.city}
-						invalid={Boolean(fieldErrors['property.city'])}
-						errorMessage={fieldErrors['property.city'] ?? ''}
-						autocomplete="address-level2"
-					/>
-					<Input
-						id="client-state"
-						label="State or region"
-						bind:value={form.state_region}
-						invalid={Boolean(fieldErrors['property.state_region'])}
-						errorMessage={fieldErrors['property.state_region'] ?? ''}
-						autocomplete="address-level1"
-					/>
-					<div class="client-form__policy">
-						<label class="client-form__policy-label" for="client-country">Country</label>
-						<Select id="client-country" bind:value={form.country} options={COUNTRIES} />
+			{#if !isEdit}
+				<SectionBlock
+					title="Client address"
+					icon={mapPinIcon}
+					hint="Optional. Filling this in creates the client's first property."
+					form
+				>
+					<div class="client-form__grid">
+						<Input
+							id="client-address-line1"
+							label="Street address 1"
+							required={hasAnyAddress}
+							bind:value={form.address_line1}
+							invalid={Boolean(fieldErrors['property.address_line1'])}
+							errorMessage={fieldErrors['property.address_line1'] ?? ''}
+							autocomplete="address-line1"
+						/>
+						<Input
+							id="client-address-line2"
+							label="Street address 2 (optional)"
+							bind:value={form.address_line2}
+							autocomplete="address-line2"
+						/>
+						<Input
+							id="client-postal-code"
+							label="Postal code"
+							bind:value={form.postal_code}
+							invalid={Boolean(fieldErrors['property.postal_code'])}
+							errorMessage={fieldErrors['property.postal_code'] ?? ''}
+							autocomplete="postal-code"
+						/>
+						<Input
+							id="client-city"
+							label="City"
+							required={hasAnyAddress}
+							bind:value={form.city}
+							invalid={Boolean(fieldErrors['property.city'])}
+							errorMessage={fieldErrors['property.city'] ?? ''}
+							autocomplete="address-level2"
+						/>
+						<Input
+							id="client-state"
+							label="State or region"
+							bind:value={form.state_region}
+							invalid={Boolean(fieldErrors['property.state_region'])}
+							errorMessage={fieldErrors['property.state_region'] ?? ''}
+							autocomplete="address-level1"
+						/>
+						<div class="client-form__policy">
+							<label class="client-form__policy-label" for="client-country">Country</label>
+							<Select id="client-country" bind:value={form.country} options={COUNTRIES} />
+						</div>
 					</div>
-				</div>
-			</SectionBlock>
+				</SectionBlock>
+			{/if}
 		{/snippet}
 
 		{#snippet rail()}
@@ -517,17 +559,19 @@
 				<ClientTagSelect bind:tagIds={form.tag_ids} />
 			</RailCard>
 
-			<FormNotesCard
-				id="client-initial-note"
-				bind:value={form.initial_note}
-				error={fieldErrors.initial_note ?? ''}
-			/>
+			{#if !isEdit}
+				<FormNotesCard
+					id="client-initial-note"
+					bind:value={form.initial_note}
+					error={fieldErrors.initial_note ?? ''}
+				/>
 
-			<PendingFilesCard
-				bind:this={attachmentsCard}
-				onPendingChange={(count) => (pendingFileCount = count)}
-				entityType="client"
-			/>
+				<PendingFilesCard
+					bind:this={attachmentsCard}
+					onPendingChange={(count) => (pendingFileCount = count)}
+					entityType="client"
+				/>
+			{/if}
 		{/snippet}
 
 		{#snippet actions()}
