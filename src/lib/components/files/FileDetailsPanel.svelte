@@ -290,6 +290,7 @@
 		if (row.link_type === 'organization') return resolve('/(app)/settings/branding');
 		if (row.link_type === 'marketing_campaign')
 			return resolve('/(app)/marketing/campaigns/[id=uuid]', { id: row.link_id });
+		if (row.link_type === 'catalog_item') return resolve('/(app)/settings/price-book');
 		// A message has no page of its own; it opens the client's conversation, the same way a visit or job
 		// expense opens its job. link_id is the message's client_id here, not the message's own id.
 		if (row.link_type === 'message')

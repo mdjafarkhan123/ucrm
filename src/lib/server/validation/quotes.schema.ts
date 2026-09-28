@@ -448,7 +448,10 @@ export const catalogItemUpdateSchema = z
 		unit_cost_minor: minorAmount('a cost').optional(),
 		is_taxable: z.boolean().optional(),
 		is_labor: z.boolean().optional(),
-		archived: z.boolean().optional()
+		archived: z.boolean().optional(),
+		// The item's photo, uploaded for this item first. null takes it off. The database trigger checks the
+		// File really was uploaded for this item and is an image.
+		image_file_id: z.uuid().nullable().optional()
 	})
 	.refine((value) => Object.values(value).some((field) => field !== undefined), {
 		message: 'Nothing to change.',

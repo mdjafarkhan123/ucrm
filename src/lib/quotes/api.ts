@@ -92,6 +92,8 @@ export type CatalogItem = {
 	updated_at: string;
 	/** Bumped by the Settings Price Book commands; unused by the picker's own unprotected writes. */
 	revision: number;
+	/** The item's optional photo (a File Manager file). Picking the item copies it onto the line. */
+	image_file_id?: string | null;
 };
 
 export type CatalogItemPage = {
@@ -226,6 +228,20 @@ export async function updateCatalogItem(
 	const result = await readOrThrow<{ item: CatalogItem }>(
 		response,
 		'That price list item could not be updated.'
+	);
+	return result.item;
+}
+
+/** Puts an uploaded File on a price list item as its photo, or takes the photo off with `null`. */
+export async function setCatalogItemPhoto(id: string, fileId: string | null): Promise<CatalogItem> {
+	const response = await fetch(`/api/catalog-items/${id}`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ image_file_id: fileId })
+	});
+	const result = await readOrThrow<{ item: CatalogItem }>(
+		response,
+		'That photo could not be saved on the item.'
 	);
 	return result.item;
 }

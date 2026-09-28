@@ -29,7 +29,7 @@
 		fileImageUrl
 	} from '$lib/files/api';
 	import type { FileProcessingState } from '$lib/files/api';
-	import FileThumb from '$lib/components/files/FileThumb.svelte';
+	import PhotoSlot from '$lib/components/files/PhotoSlot.svelte';
 	import {
 		catalogItemsKey,
 		fetchCatalogItems,
@@ -54,8 +54,6 @@
 	import taxIcon from '@tabler/icons/outline/receipt-tax.svg?raw';
 	import taxOffIcon from '@tabler/icons/outline/receipt-off.svg?raw';
 	import gripIcon from '@tabler/icons/outline/grip-vertical.svg?raw';
-	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
-	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 
 	// One "Products and services" section, matching the real Jobber quote line-item card
 	// (jobber-03-quotes.md §8.1): name/qty/price/total on top, description + a photo underneath, drag to
@@ -186,7 +184,6 @@
 	// Every line owns its own file input. One shared input plus a "which line asked for it" variable meant
 	// a pick could land on nothing at all if that variable was ever cleared between the click and the
 	// browser handing the file back.
-	let fileInputs: Record<string, HTMLInputElement | undefined> = $state({});
 	// Photos uploaded during this edit session that have not been claimed by a save yet. Cancelling, or
 	// swapping/removing one before Save, deletes it so a picked-then-discarded photo does not sit in
 	// storage forever. Never touches a photo that was already on a saved line before this session started.
@@ -415,8 +412,27 @@
 		draftLines = event.detail.items;
 	}
 
+	// The item's photo comes with it, like its name and price. An item without one leaves whatever photo
+	// the line already had.
+	function catalogPhoto(item: CatalogItem): Partial<DraftLine> {
+		if (!item.image_file_id) return {};
+		return {
+			image_file_id: item.image_file_id,
+			imageFile: null,
+			imageThumbnail: null,
+			imagePreviewUrl: '',
+			imageProcessingState: 'available'
+		};
+	}
+
 	function applyCatalogItem(id: string, item: CatalogItem) {
+		const line = draftLines.find((entry) => entry.id === id);
+		if (line && item.image_file_id && line.image_file_id !== item.image_file_id) {
+			releaseLocalPreview(line);
+			if (line.image_file_id) void discardIfOrphaned(line.image_file_id);
+		}
 		updateLine(id, {
+			...catalogPhoto(item),
 			catalog_item_id: item.id,
 			category: item.category,
 			name: item.name,
@@ -451,7 +467,7 @@
 				unit_price_minor: item.unit_price_minor,
 				unit_cost_minor: item.unit_cost_minor ?? 0,
 				is_taxable: item.is_taxable,
-				image_file_id: null,
+				image_file_id: item.image_file_id ?? null,
 				imageFile: null,
 				imageThumbnail: null,
 				imagePreviewUrl: '',
@@ -647,10 +663,6 @@
 				: `“${item.name}” is in the price book now.`;
 	}
 
-	function openImagePicker(id: string) {
-		fileInputs[id]?.click();
-	}
-
 	function removeImage(id: string) {
 		const line = draftLines.find((entry) => entry.id === id);
 		if (line) releaseLocalPreview(line);
@@ -679,14 +691,7 @@
 		return started.file.id;
 	}
 
-	async function handleFileChosen(id: string, fileList: FileList | null) {
-		const chosen = fileList?.[0];
-		// Clearing the input lets the same file be picked again after a remove.
-		const input = fileInputs[id];
-		if (input) input.value = '';
-		if (!chosen) return;
-
-		const file = chosen;
+	async function handleFileChosen(id: string, file: File) {
 		if (!file.type.startsWith('image/')) {
 			error = 'Only a photo can be attached to a line.';
 			return;
@@ -1052,90 +1057,17 @@
 										}
 									/>
 								</div>
-								<div
-									class="pricing-card__image"
-									class:pricing-card__image--filled={Boolean(
-										line.imagePreviewUrl || line.image_file_id
-									)}
-								>
-									<input
-										bind:this={fileInputs[line.id]}
-										type="file"
-										accept="image/*"
-										class="pricing-card__file-input"
-										tabindex={-1}
-										aria-hidden="true"
-										onchange={(event) =>
-											void handleFileChosen(
-												line.id,
-												(event.currentTarget as HTMLInputElement).files
-											)}
+								<div class="pricing-card__image">
+									<PhotoSlot
+										previewUrl={line.imagePreviewUrl}
+										fileId={line.image_file_id}
+										processingState={line.imageProcessingState}
+										uploading={line.imageUploading}
+										disabled={saving}
+										label={line.name || 'Line photo'}
+										onChoose={(file) => void handleFileChosen(line.id, file)}
+										onRemove={() => removeImage(line.id)}
 									/>
-									{#if line.imageUploading}
-										<span class="pricing-card__image-loading" aria-hidden="true"></span>
-									{:else if line.imagePreviewUrl}
-										<img src={line.imagePreviewUrl} alt="" />
-										<div class="pricing-card__image-tools">
-											<button
-												type="button"
-												class="pricing-card__image-tool pricing-card__image-tool--replace"
-												aria-label="Replace photo"
-												disabled={saving}
-												onclick={() => openImagePicker(line.id)}
-											>
-												{@html pencilIcon}
-											</button>
-											<button
-												type="button"
-												class="pricing-card__image-tool pricing-card__image-tool--remove"
-												aria-label="Remove photo"
-												disabled={saving}
-												onclick={() => removeImage(line.id)}
-											>
-												{@html trashIcon}
-											</button>
-										</div>
-									{:else if line.image_file_id}
-										<FileThumb
-											fileId={line.image_file_id}
-											displayName={line.name || 'Line photo'}
-											mimeType="image/jpeg"
-											kind="image"
-											processingState={line.imageProcessingState}
-											hasThumbnail={line.imageProcessingState === 'available'}
-											size="tile"
-										/>
-										<div class="pricing-card__image-tools">
-											<button
-												type="button"
-												class="pricing-card__image-tool pricing-card__image-tool--replace"
-												aria-label="Replace photo"
-												disabled={saving}
-												onclick={() => openImagePicker(line.id)}
-											>
-												{@html pencilIcon}
-											</button>
-											<button
-												type="button"
-												class="pricing-card__image-tool pricing-card__image-tool--remove"
-												aria-label="Remove photo"
-												disabled={saving}
-												onclick={() => removeImage(line.id)}
-											>
-												{@html trashIcon}
-											</button>
-										</div>
-									{:else}
-										<button
-											type="button"
-											class="pricing-card__image-add"
-											aria-label="Add a photo"
-											disabled={saving}
-											onclick={() => openImagePicker(line.id)}
-										>
-											{@html uploadIcon}
-										</button>
-									{/if}
 								</div>
 							</div>
 							{#if showServiceDate}
@@ -1566,129 +1498,9 @@
 		}
 		// A photo of the work is worth reading, so it gets the whole fourth column beside the description
 		// rather than a stamp-sized tile.
-		&__file-input {
-			position: absolute;
-			width: 1px;
-			height: 1px;
-			overflow: hidden;
-			clip: rect(0 0 0 0);
-			white-space: nowrap;
-		}
 		&__image {
-			position: relative;
 			display: grid;
 			min-height: 96px;
-			place-items: center;
-			overflow: hidden;
-			border: var(--border-base) dashed var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			background: var(--color-surface);
-
-			// Once there is a photo the box stops inviting a drop and just frames what is there.
-			&--filled {
-				border-style: solid;
-				border-color: var(--color-border);
-			}
-
-			// FileThumb's own tile sizing is a 4/3 box; here it sits beside the description textarea and
-			// must fill whatever height that row stretches to instead.
-			:global(.file-thumb--tile) {
-				height: 100%;
-				aspect-ratio: auto;
-			}
-		}
-		&__image img {
-			display: block;
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
-		}
-		&__image-add {
-			display: grid;
-			width: 100%;
-			height: 100%;
-			place-items: center;
-			border: 0;
-			background: transparent;
-			color: var(--color-interactive);
-			cursor: pointer;
-
-			:global(svg) {
-				width: 22px;
-				height: 22px;
-			}
-			&:hover:not(:disabled) {
-				color: var(--color-interactive--hover);
-				background: var(--color-interactive--background--subtle--hover);
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-			&:disabled {
-				cursor: not-allowed;
-			}
-		}
-		// Replace and remove sit stacked on the photo and are always visible, so nobody has to guess that
-		// a saved photo can still be swapped.
-		&__image-tools {
-			position: absolute;
-			top: var(--space-smallest);
-			right: var(--space-smallest);
-			display: grid;
-			gap: var(--space-smallest);
-		}
-		&__image-tool {
-			display: grid;
-			width: 22px;
-			height: 22px;
-			place-items: center;
-			border: 0;
-			border-radius: var(--radius-circle);
-			background: var(--color-surface);
-			box-shadow: var(--shadow-low);
-			cursor: pointer;
-
-			:global(svg) {
-				width: 14px;
-				height: 14px;
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-			&:disabled {
-				cursor: not-allowed;
-				opacity: 0.6;
-			}
-			&--replace {
-				color: var(--color-interactive);
-
-				&:hover:not(:disabled) {
-					color: var(--color-interactive--hover);
-				}
-			}
-			&--remove {
-				color: var(--color-critical);
-
-				&:hover:not(:disabled) {
-					color: var(--color-critical--onSurface);
-				}
-			}
-		}
-		&__image-loading {
-			width: 22px;
-			height: 22px;
-			border: 2px solid var(--color-border);
-			border-top-color: var(--color-interactive);
-			border-radius: var(--radius-circle);
-			animation: pricing-card-spin 0.8s linear infinite;
-		}
-	}
-
-	@keyframes pricing-card-spin {
-		to {
-			transform: rotate(360deg);
 		}
 	}
 

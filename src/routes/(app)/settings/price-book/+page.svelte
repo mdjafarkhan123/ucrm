@@ -23,6 +23,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import CatalogItemDialog from '$lib/components/quotes/CatalogItemDialog.svelte';
+	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import { relativeTime, exactTime } from '$lib/collaboration/format';
 	import {
 		catalogItemsKey,
@@ -290,11 +291,24 @@
 					>
 						{#snippet row(item: CatalogItem)}
 							<th scope="row">
-								<div class="price-book-page__name">
-									<strong>{item.name}</strong>
-									{#if item.description}
-										<span class="price-book-page__description">{item.description}</span>
+								<div class="price-book-page__item">
+									{#if item.image_file_id}
+										<FileThumb
+											fileId={item.image_file_id}
+											displayName={item.name}
+											mimeType="image/jpeg"
+											kind="image"
+											processingState="available"
+											hasThumbnail
+											size="row"
+										/>
 									{/if}
+									<div class="price-book-page__name">
+										<strong>{item.name}</strong>
+										{#if item.description}
+											<span class="price-book-page__description">{item.description}</span>
+										{/if}
+									</div>
 								</div>
 							</th>
 							<td>
@@ -375,8 +389,15 @@
 		}
 	}
 
+	.price-book-page__item {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--space-small);
+	}
+
 	.price-book-page__name {
 		display: grid;
+		min-width: 0;
 		gap: 2px;
 	}
 
