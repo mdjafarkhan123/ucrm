@@ -25,12 +25,14 @@ Helpers run with no write claim of mine held in the worktree; release mine befor
       only there and marks it waiting to merge
 - [x] Test 5 — a fresh helper told only "read memory and continue" asks which campaign
 - [x] Fix the skill for each failure and rerun that test
-- [ ] Jafar's own window: `read memory and continue operations-prospects-ux`
-- [ ] Remove test fixtures, merge the skill into `main`, mark Part 2 done
+- [ ] Jafar's own window, in the normal project folder: `read memory and continue operations-prospects-ux` —
+      then mark Part 2 done
+- [x] Remove test fixtures and merge the skill into `main` (2026-09-28, with the `Plans live in` line added
+      to `Memory/INDEX.md`)
 
 ## Next
 
-All five tests passed and every unclear rule they found is fixed on the branch; the `pilot-test` fixtures (campaign, index row, test branch, outbox) are removed. Ask Jafar for the go-ahead to merge branch `memory-skill-upgrade` into `main`, adding the header line `Plans live in docs/<feature>-behavior-contract.md` to `Memory/INDEX.md` at the same time. After the merge, his own window test runs in the normal folder: `read memory and continue operations-prospects-ux` (it will show him the page-plan questions).
+The new skill is on `main`. Wait for Jafar's report from his own window test: a fresh session in the normal folder, told `read memory and continue operations-prospects-ux`, should show him the saved page plan with its two questions. If it goes as expected, mark Part 2 done and start Part 3 (checker); if not, fix the skill first.
 
 ## Notes
 
