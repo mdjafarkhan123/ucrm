@@ -4,8 +4,8 @@
 
 **Active part:** Parts 1–9 and 11 Done (Part 11 finished 2026-09-28) — details in ROADMAP.
 
-**Exact next action:** **Part 11** in progress — photos done; RLS draft verified, not pushed; see parts/part-11.md. Then
-both notes. Then Part 10 (merge clients, Opus). Jafar still needs to re-paste Raad's Stripe sandbox key.
+**Exact next action:** **Part 10, merge duplicate clients** (Opus) — its roadmap line has the scope. Jafar
+still needs to re-paste Raad's Stripe sandbox key.
 
 **Blockers:** none. Do not touch packages (Jafar, 2026-09-27). The CLI runs as `npx --no-install supabase`.
 Browser testing needs the tunnel `cloudflared tunnel run badf2c43-7020-443a-a046-9954d139d711`; after a
