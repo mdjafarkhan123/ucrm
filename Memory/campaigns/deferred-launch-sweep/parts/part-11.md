@@ -10,18 +10,18 @@ permission check per row for full-access members — same rows visible for every
 
 - [x] Photos: file lists hand out signed R2 links (committed "perf: file lists hand out signed photo links");
       verified live on Raad — 12 photos straight from R2, fallback to /view when a link fails.
-- [ ] RLS: snapshot visible-row counts per table for owner, field, office, sales, finance (Raad)
+- [x] RLS: snapshot visible-row fingerprints, 17 tables × 8 users (Raad roles + two other orgs)
 - [ ] RLS: one migration — `private.current_linked_entity_view_types()` + hoisted policies
 - [ ] RLS: re-count (must match exactly), EXPLAIN before/after, commit
 - [ ] Close both deferred notes; finish part
 
 ## Next
 
-Snapshot visible-row counts per role before writing the migration.
+Migration `20260929150000_side_table_permission_checks_run_once_per_query.sql` written; verify it applied, then re-fingerprint (snapshot SQL: DO block per user, `set local role authenticated` + jwt claims, md5 of rows) and compare. Owner full timeline before: 508 ms / 7791 buffers.
 
 ## Outside actions
 
-- RLS migration push — check: `supabase migration list --linked` shows the new version — pending
+- RLS migration `20260929150000` push — check: `supabase migration list --linked` shows it — pushing 2026-09-28
 
 ## Notes
 
