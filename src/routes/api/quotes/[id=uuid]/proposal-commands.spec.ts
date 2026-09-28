@@ -8,6 +8,12 @@ import { PATCH as patchLines } from './lines/+server';
 import { POST as preview } from './preview/+server';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 
+// The shared quote write limit is proven by its own tests; here it always lets the request through.
+vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/server/security/rate-limit')>()),
+	enforceOrganizationWriteRateLimit: vi.fn(async () => null)
+}));
+
 vi.mock('$lib/server/access/permission', async () => {
 	const actual = await vi.importActual<typeof import('$lib/server/access/permission')>(
 		'$lib/server/access/permission'

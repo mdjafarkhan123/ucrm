@@ -2,6 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from './+server';
 import { requireOrganization } from '$lib/server/auth/organization';
 
+// The shared quote write limit is proven by its own tests; here it always lets the request through.
+vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/server/security/rate-limit')>()),
+	enforceOrganizationWriteRateLimit: vi.fn(async () => null)
+}));
+
 vi.mock('$lib/server/auth/organization', () => ({
 	requireOrganization: vi.fn()
 }));

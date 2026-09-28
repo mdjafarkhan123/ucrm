@@ -103,7 +103,9 @@ describe('queueing a quote email', () => {
 			target_quote_id: quoteId,
 			target_logical_send_key: '00000000-0000-4000-8000-000000000001',
 			target_quote_url: 'https://app.example.com/q/token',
-			target_quote_token_hash: '\\xabc'
+			target_quote_token_hash: '\\xabc',
+			target_billing_quote_url: 'https://app.example.com/q/token',
+			target_billing_quote_token_hash: '\\xabc'
 		});
 	});
 });

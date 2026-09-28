@@ -10,7 +10,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Closing an organization cannot purge it once it sent a quote](organization-purge-fails-on-history-triggers.md) |
 | P1 | [Package versions carry no email allowance (silent stop fixed; terms remain)](package-versions-can-have-no-email-limits-configured.md) |
 | P2 | [Delete client, exactly like Jobber (Jafar decided; waits for "go")](delete-client-like-jobber.md) |
-| P2 | [Quote API tests never learned the rate limit (72 failing on main)](quote-api-tests-never-learned-the-rate-limit.md) |
 | P2 | [SES production-domain cutover: capacity cap and rehearsal notes](ses-production-domain-cutover-notes.md) |
 | P2 | [A full page load can crash hydration and leave the previous page on screen](full-page-load-hydration-crash-leaves-the-previous-page-on-screen.md) |
 | P2 | [Resolving a chat identity does not stop the next conflict](resolving-a-chat-identity-does-not-stop-the-next-conflict.md) |

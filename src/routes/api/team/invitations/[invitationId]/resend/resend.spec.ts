@@ -65,7 +65,8 @@ describe('team invitation resend API', () => {
 			organizationId,
 			invitationId,
 			businessName: 'Ridgeway',
-			origin: 'https://app.example.com'
+			origin: 'https://app.example.com',
+			resentBy: managerId
 		});
 		expect(response.status).toBe(200);
 		expect(response.headers.get('cache-control')).toBe('no-store');

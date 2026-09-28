@@ -4,7 +4,7 @@ Jafar approved all nine, in this order, 2026-09-29. Spec = the named note in `Me
 
 | Part | Delivers | Note | Done when | State |
 | --- | --- | --- | --- | --- |
-| 1 Quote API tests | checks trust the rate limit | `quote-api-tests-never-learned-the-rate-limit` | quote specs pass on `main` | In progress |
+| 1 Quote API tests | checks trust the rate limit | `quote-api-tests-never-learned-the-rate-limit` | whole unit suite passes (2,805) | Done 2026-09-29 |
 | 2 Client-name search | Jobs and Quotes find by client | `jobs-and-quotes-list-search-also-misses-client-name` | searching a client's name lists their jobs/quotes | Not started |
 | 3 Requests KPI cards | real New requests + Conversion rate | `requests-new-and-conversion-rate-cards-have-no-real-data-source` | cards show real 30-day numbers | Not started |
 | 4 Held-booking status | label, filter, counts | `request-needs-approval-status-has-no-label` | Jafar: "Follow Jobber" — research Jobber's label first | Not started |

@@ -4,6 +4,12 @@ import { requireOrganizationPermission } from '$lib/server/access/permission';
 // The staff pad: collecting a signature in person. It approves the quote, so it is guarded by the
 // permission to answer one, and a stored picture never outlives a refused command.
 
+// The shared quote write limit is proven by its own tests; here it always lets the request through.
+vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/server/security/rate-limit')>()),
+	enforceOrganizationWriteRateLimit: vi.fn(async () => null)
+}));
+
 vi.mock('$lib/server/access/permission', async () => {
 	const actual = await vi.importActual<typeof import('$lib/server/access/permission')>(
 		'$lib/server/access/permission'

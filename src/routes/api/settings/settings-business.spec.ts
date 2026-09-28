@@ -385,7 +385,12 @@ describe('the settings home', () => {
 			taxes_manage: false,
 			price_book_manage: false,
 			quotes_manage: false,
-			automations_view: false
+			automations_view: false,
+			checklists_manage: false,
+			forms_manage: false,
+			invoices_manage: false,
+			payments_manage: false,
+			reviews_manage: false
 		});
 	});
 
