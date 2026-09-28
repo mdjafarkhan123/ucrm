@@ -43,11 +43,17 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
 6. **Protect customer history** — Planned. `property-deletion-guarded-once-work-references-a-property`,
    `historical-address-safety-and-property-transfer-between-clients`,
    `client-duplicate-detection-merge-archive-restore-and-audit-history`, `entitytype-covers-only-clients-and-properties`.
-7. **Jobber parity** — Planned. `request-list-search-doesn-t-match-client-name`,
-   `request-status-filter-matches-the-stored-status-not-the-displayed-one`,
+7. **Jobber parity** — In progress 2026-09-28 (Sonnet). `request-list-search-doesn-t-match-client-name`
+   and `last-communication-rail-card-on-the-client-page` are fixed and browser-verified on Raad LTD, committed
+   on branch `worktree-deferred-sweep-part7` (`8006a42f`) in worktree `.claude/worktrees/deferred-sweep-part7`
+   — **not yet merged into `main`**; merge first, then delete both deferred notes + their INDEX rows. Found
+   incidentally: Jobs and Quotes list search have the same missing-client-name gap Requests had — recorded as
+   new deferred note `jobs-and-quotes-list-search-also-misses-client-name.md`, not fixed (out of this part's
+   original list). Remaining, each needs a decision with Jafar before building (see
+   `parts/part-7.md`): `request-status-filter-matches-the-stored-status-not-the-displayed-one`,
    `quote-composer-has-no-financial-rail-or-proposal-sections`,
    `client-detail-page-still-uses-the-superseded-staging-dialog-edit-shape`, `job-visit-card-backend-fields`,
-   `last-communication-rail-card-on-the-client-page`, `no-image-on-a-price-list-item`.
+   `no-image-on-a-price-list-item`.
 8. **Speed** — Planned; performance-review skill. `get-started-page-weight`,
    `every-entitlement-gated-route-re-reads-the-whole-access-model`, `app-wide-rls-helpers-run-once-per-returned-row`,
    `name-search-across-list-apis-falls-back-to-a-sequential-scan`, `quote-overview-counts-scan-the-whole-tenant`,

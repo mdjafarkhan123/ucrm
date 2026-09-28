@@ -1,4 +1,4 @@
 interface:
   display_name: 'Campaign Memory'
-  short_description: 'Manage resumable multi-part campaign checkpoints'
-  default_prompt: 'Use $campaign-memory to start, resume, checkpoint, defer, or complete a named multi-session campaign.'
+  short_description: 'Plan, split, and resume multi-session campaigns'
+  default_prompt: 'Use $campaign-memory to start, plan, resume, checkpoint, pause, defer, or finish a named multi-session campaign.'
