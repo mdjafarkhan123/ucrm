@@ -10,4 +10,5 @@ after the pilot.
 
 **Next part:** none — every part has started
 
-**Blockers:** none
+**Blockers:** Part 2 waits for Jafar's go-ahead to bring its branch into `main` — question in
+`parts/2-summary-file.md`

@@ -8,10 +8,18 @@
 ## Steps
 
 - [x] Create `pilot-test-summary.md` naming part 1
-- [ ] Add part 2 to the file
+- [x] Add part 2 to the file
 - [ ] Get the file onto `main`
 
 ## Next
 
-Add a line naming part 2 (Summary file) to `pilot-test-summary.md` in the worktree, and commit it on the
-branch.
+Wait for Jafar's answer to the question in Notes; the file on the branch already names both parts. On yes:
+in the main folder, merge branch `pilot-test-part2` into `main`, confirm `pilot-test-summary.md` on `main`
+names both parts, finish the part, then remove the `pilot-test-part2` worktree and branch. On no: ask him
+what should change.
+
+## Notes
+
+Question waiting for Jafar, word for word: "Part 2 of the pilot test is finished: the summary file now lists
+both parts. It is still in a separate test copy of the project (the `pilot-test-part2` branch). May I bring it
+into the main project (`main`) now — yes or no?"
