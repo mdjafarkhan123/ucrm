@@ -7,6 +7,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Background jobs have no production scheduler decision](background-jobs-have-no-production-scheduler-decision.md) |
 | P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
 | P1 | [Production AWS account needs the one-time SES branded-click-links setup](production-aws-ses-branded-click-links-setup.md) |
+| P1 | [Closing an organization cannot purge it once it sent a quote](organization-purge-fails-on-history-triggers.md) |
 | P1 | [Package versions carry no email allowance (silent stop fixed; terms remain)](package-versions-can-have-no-email-limits-configured.md) |
 | P2 | [Quote API tests never learned the rate limit (72 failing on main)](quote-api-tests-never-learned-the-rate-limit.md) |
 | P2 | [SES production-domain cutover: capacity cap and rehearsal notes](ses-production-domain-cutover-notes.md) |
