@@ -23,8 +23,10 @@ The campaign is ready when its `INDEX.md` row, `NOW.md`, and `ROADMAP.md` all po
 ## The plan
 
 One plan per feature, in plain English, describing what its users see and do: the workflow, screens, states,
-rules, permissions, and edge cases. It describes behavior only — code, database, and technology choices belong
-to the build. It opens with a summary Jafar can read in a minute and closes with two lists:
+rules, permissions, and edge cases. Guarantees users rely on belong here too, stated as behavior — "sending twice
+never sends the customer two messages"; how the system keeps them is technical planning, done during the
+build. A very large feature keeps one main plan that links its sub-documents. The plan opens with a summary
+Jafar can read in a minute and closes with two lists:
 
 - **Still unclear** — questions not settled yet.
 - **Not doing** — what is ruled out of this feature, and why.
@@ -41,13 +43,15 @@ unclear**, and its note lists them as steps. For each question:
    on another open one in the same round.
 3. Write the answer into the plan body, remove the question from **Still unclear**, and checkpoint.
 
-A new question that surfaces joins **Still unclear**. Planning is done when **Still unclear** is empty — or
-holds only what Jafar chose to leave for later — and Jafar approves the plan. Write the approval and its date
-into the plan's status line.
+A new question that surfaces joins **Still unclear**. Before asking for approval, check that every behavior can
+be built with the project's technology and outside services, and write any limit the check uncovers into the
+plan as behavior. Planning is done when **Still unclear** is empty — or holds only what Jafar chose to leave for
+later — and Jafar approves the plan. Write the approval and its date into the plan's status line.
 
 ## Split
 
-Turn the approved plan into build parts. Each part:
+Turn the approved plan into build parts, working out the technical approach as you go under the project's
+engineering rules; record lasting technical decisions in ADRs. Each part:
 
 - delivers a thin but complete piece Jafar can try — screen, server, data, and tests together, rather than one
   layer at a time;

@@ -5,7 +5,7 @@
 
 **In progress:**
 
-- <part> — `parts/<part>.md`
+- <part> — `parts/<part>.md`, or its next action in a few words when it has no note
 
 **Next part:** <part> — <what it delivers, in a few words>
 

@@ -15,6 +15,12 @@
 <The exact next action — what, where, and anything half-done with its files. A fresh session acts on this
 alone.>
 
+## Outside actions
+
+<!-- Only actions that would do harm if repeated. Leave this section out when there are none. -->
+
+- <action> — check: <how to confirm it happened, with its exact identifier> — <pending or done>
+
 ## Notes
 
 <Only what the remaining steps need and cannot find elsewhere: a decision made during the part, a trap, a
