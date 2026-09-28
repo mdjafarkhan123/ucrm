@@ -1,8 +1,6 @@
 # <Part> — <name>
 
-**Campaign:** <campaign> · **Plan:** `<plan file>` § <section>
-<!-- No plan document yet: state the approved behavior in a line here, and move it into the plan when the part finishes. -->
-
+**Campaign:** <campaign> · **Plan:** `<plan file>` § <section> <!-- no plan document yet: the approved behavior in one line, moved into the plan when the part finishes -->
 **Code:** `main` <!-- or: worktree `.claude/worktrees/<name>`, branch `<branch>` -->
 **Done when:** <the done-check from the roadmap>
 
