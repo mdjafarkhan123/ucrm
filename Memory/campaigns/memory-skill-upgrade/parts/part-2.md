@@ -14,13 +14,15 @@ Helpers run with no write claim of mine held in the worktree; release mine befor
 - [x] Test 1 — normal resume: a helper resumes `operations-prospects-ux` (still in the older shape); its six
       answers match the project; it moves the position into a part note, records the movement-plan approval
       question for Jafar word for word, commits only its own files, and releases its claim
-- [ ] Test 2 — a helper does a test outside action (a line with a unique ID appended to
-      `pilot/test-outbox.log` in this session's scratchpad), following the outside-action rule, then stops
-      before recording that it happened
-- [ ] Test 3 — a fresh helper finds the stopped session's claim and asks; once released, it confirms the test
-      action by its ID and does not repeat it
-- [ ] Test 4 — a fresh helper finds part work that exists only in a test branch and treats it as waiting to
-      merge
+- [ ] Tests 2–5 moved to the temporary `pilot-test` campaign (Jafar, 2026-09-28: no prospect decisions needed);
+      the prospect campaign waits for his page-plan answers
+- [ ] Test 2 — a helper resumes `pilot-test` Part 1 and stops right before its first outside action; its note
+      must already say how to check the action's outcome, by an exact ID; the claim stays held
+- [ ] Test 3 — I append the notice line with that ID (the send succeeded, then the power cut). A fresh helper
+      must find the held claim and ask; told the session is closed, it confirms the notice by its ID and does
+      not send it again
+- [ ] Test 4 — Part 2 of `pilot-test` is started in a test branch; a fresh helper treats the work as existing
+      only there and marks it waiting to merge
 - [ ] Test 5 — a fresh helper told only "read memory and continue" asks which campaign
 - [ ] Fix the skill for each failure and rerun that test
 - [ ] Jafar's own window: `read memory and continue operations-prospects-ux`
@@ -28,10 +30,7 @@ Helpers run with no write claim of mine held in the worktree; release mine befor
 
 ## Next
 
-Test 1 passed (six answers right; own files only; claim released) and its five unclear rules are fixed on
-the branch. The pilot part now waits for Jafar's answers to the page-plan question saved in
-`operations-prospects-ux/parts/03-prospect-detail-page.md`. Get them, then run Test 2 with his answers as the
-helper's opening message; release claim `b530759c2280` first.
+Release claim `013349efe503`, then start Test 2's helper with the message `read memory and continue pilot-test`. The pretend outbox is `pilot/test-outbox.log` in this session's scratchpad (empty at the start).
 
 ## Notes
 
