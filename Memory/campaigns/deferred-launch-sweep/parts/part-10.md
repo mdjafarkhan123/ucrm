@@ -19,7 +19,14 @@ redirect; browser-verified on Raad LTD.
 
 ## Next
 
-Write the migration (see decisions below).
+Migration written: `supabase/migrations/20260929170000_merge_clients.sql`. Push it, then run the rolled-back
+test in the scratchpad (merge "Tester Account" into "Greenfield Property Group" on Raad LTD as the owner;
+office role must be refused), then build the API.
+
+## Outside actions
+
+- Push migration `20260929170000` — check: `npx --no-install supabase migration list --linked` shows it
+  remote — pending
 
 ## Notes
 
