@@ -4,6 +4,13 @@
 	import GettingStartedCard from '$lib/components/dashboard/GettingStartedCard.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import type { PageProps } from './$types';
+
+	// The shell's server load already knows whether this account belongs to a business, so that answer is
+	// there before the first paint. The overview query is not, and treating "not loaded yet" as "no
+	// business" flashed a false warning and zero counts on every cold visit.
+	let { data: shell }: PageProps = $props();
+	const hasOrganization = $derived(Boolean(shell.organization));
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -205,16 +212,25 @@
 	}
 </script>
 
+{#snippet count(value: number)}
+	{#if overview.isPending}
+		<div class="stat-card__pending">
+			<LoadingSkeleton variant="heading" label="Loading count" />
+		</div>
+	{:else}
+		<strong>{overview.isError ? '—' : value}</strong>
+	{/if}
+{/snippet}
+
 <svelte:head><title>Workspace · Contractor CRM</title></svelte:head>
 
 <div class="page-scroller">
 	<div class="workspace">
 		<main class="content">
 			<PageHeader title="Dashboard" description="Your workspace at a glance." />
-			{#if data.organization.id}
+			{#if hasOrganization}
 				<GettingStartedCard onAddClient={() => openForm('customer')} />
-			{/if}
-			{#if !data.organization.id}
+			{:else}
 				<section class="notice">
 					<strong>Your account is signed in, but it is not connected to an organization yet.</strong
 					><span
@@ -225,20 +241,20 @@
 
 			<section class="stats" aria-label="Workspace summary">
 				<div class="stat-card">
-					<span>Customers</span><strong>{data.clients.length}</strong><small
+					<span>Customers</span>{@render count(data.clients.length)}<small
 						>Leads and active customers</small
 					>
 				</div>
 				<div class="stat-card">
-					<span>Properties</span><strong>{data.properties.length}</strong><small
+					<span>Properties</span>{@render count(data.properties.length)}<small
 						>Service locations</small
 					>
 				</div>
 				<div class="stat-card stat-card--request">
-					<span>Open requests</span><strong
-						>{data.requests.filter((request) => !['converted', 'archived'].includes(request.status))
-							.length}</strong
-					><small>Ready for the next action</small>
+					<span>Open requests</span>{@render count(
+						data.requests.filter((request) => !['converted', 'archived'].includes(request.status))
+							.length
+					)}<small>Ready for the next action</small>
 				</div>
 			</section>
 
@@ -619,6 +635,14 @@
 		display: block;
 		margin: 10px 0 4px;
 		color: var(--color-heading);
+		font-size: 32px;
+	}
+	/* Holds the number's exact line box, so the card doesn't jump when the count arrives. */
+	.stat-card__pending {
+		display: flex;
+		align-items: center;
+		height: 1.2em;
+		margin: 10px 0 4px;
 		font-size: 32px;
 	}
 	.stat-card--request {
