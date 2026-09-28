@@ -14826,6 +14826,47 @@ export type Database = {
 					}
 				];
 			};
+			request_list_rows: {
+				Row: {
+					assessment_all_day: boolean | null;
+					assessment_completed_at: string | null;
+					assessment_ends_at: string | null;
+					assessment_id: string | null;
+					assessment_starts_at: string | null;
+					client_id: string | null;
+					created_at: string | null;
+					has_open_assessment: boolean | null;
+					id: string | null;
+					organization_id: string | null;
+					property_id: string | null;
+					service_type: string | null;
+					status: string | null;
+					title: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'requests_client_organization_fk';
+						columns: ['organization_id', 'client_id'];
+						isOneToOne: false;
+						referencedRelation: 'clients';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'requests_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'requests_property_organization_fk';
+						columns: ['organization_id', 'property_id'];
+						isOneToOne: false;
+						referencedRelation: 'properties';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
 		};
 		Functions: {
 			accept_ownership_transfer: {

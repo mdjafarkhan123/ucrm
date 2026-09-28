@@ -71,3 +71,50 @@ export function organizationDayRange(timezone: string, now = new Date()) {
 		day_end: localMidnight(year, month, day + 1, timezone, now).toISOString()
 	};
 }
+
+// The Requests list's Status filter, as PostgREST or= branches over `request_list_rows`. It must pick
+// exactly the rows `deriveRequestStatus` would badge with the chosen statuses, so it follows the same
+// three steps: a finished request keeps its stored status; an open one with no live assessment keeps
+// its stored status too; an open one with a live assessment reads its start time against today.
+// Returns null when nothing is chosen, so the caller adds no filter at all.
+const OPEN_STORED = 'status.in.(new,unscheduled)';
+
+export function displayStatusFilter(
+	statuses: readonly DisplayRequestStatus[],
+	range: { day_start: string; day_end: string }
+): string | null {
+	const dayStart = `"${range.day_start}"`;
+	const dayEnd = `"${range.day_end}"`;
+	const branches = new Set<string>();
+	for (const status of statuses) {
+		switch (status) {
+			case 'new':
+				branches.add('and(status.eq.new,has_open_assessment.is.false)');
+				break;
+			case 'unscheduled':
+				branches.add('and(status.eq.unscheduled,has_open_assessment.is.false)');
+				branches.add(
+					`and(${OPEN_STORED},has_open_assessment.is.true,assessment_starts_at.is.null)`
+				);
+				break;
+			case 'today':
+				branches.add(
+					`and(${OPEN_STORED},has_open_assessment.is.true,assessment_starts_at.gte.${dayStart},assessment_starts_at.lt.${dayEnd})`
+				);
+				break;
+			case 'upcoming':
+				branches.add(
+					`and(${OPEN_STORED},has_open_assessment.is.true,assessment_starts_at.gte.${dayEnd})`
+				);
+				break;
+			case 'overdue':
+				branches.add(
+					`and(${OPEN_STORED},has_open_assessment.is.true,assessment_starts_at.lt.${dayStart})`
+				);
+				break;
+			default:
+				branches.add(`status.eq.${status}`);
+		}
+	}
+	return branches.size > 0 ? [...branches].join(',') : null;
+}
