@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createInfiniteQuery, createQuery } from '@tanstack/svelte-query';
+	import { createInfiniteQuery, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
@@ -33,7 +33,9 @@
 		readyToBillCountKey,
 		type InvoiceListItem,
 		type InvoiceListPage,
-		type InvoiceSortKey
+		type InvoiceSortKey,
+		fetchInvoice,
+		invoiceDetailKey
 	} from '$lib/invoices/api';
 	import {
 		INVOICE_FILTERABLE_STATUSES,
@@ -99,6 +101,7 @@
 
 	// Keyset pagination, so there is no page to jump to — each page hands back the cursor for the next one and
 	// Load more asks for it. That is what keeps the query fast however many invoices an office has.
+	const queryClient = useQueryClient();
 	const invoicesQuery = createInfiniteQuery(() => ({
 		queryKey: invoicesListKey(filters),
 		queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
@@ -202,6 +205,14 @@
 		{ key: 'total', label: 'Total' },
 		{ key: 'balance', label: 'Balance' }
 	];
+
+	function prefetchInvoice(item: { id: string }) {
+		void queryClient.prefetchQuery({
+			queryKey: invoiceDetailKey(item.id),
+			queryFn: () => fetchInvoice(item.id),
+			staleTime: 15_000
+		});
+	}
 </script>
 
 <svelte:head><title>Invoices · Contractor CRM</title></svelte:head>
@@ -329,6 +340,7 @@
 				caption="Invoices"
 				{sort}
 				onSortChange={handleSortChange}
+				onRowHover={prefetchInvoice}
 				onRowActivate={(invoice) => goto(resolve('/(app)/invoices/[id=uuid]', { id: invoice.id }))}
 			>
 				{#snippet row(invoice: InvoiceListItem)}

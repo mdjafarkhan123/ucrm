@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createInfiniteQuery, createQuery } from '@tanstack/svelte-query';
+	import { createInfiniteQuery, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
@@ -31,7 +31,9 @@
 		jobsListKey,
 		type JobListItem,
 		type JobListPage,
-		type JobSortKey
+		type JobSortKey,
+		fetchJob,
+		jobDetailKey
 	} from '$lib/jobs/api';
 	import {
 		JOB_FILTERABLE_STATUSES,
@@ -105,6 +107,7 @@
 
 	// Keyset pagination, so there is no page to jump to — each page hands back the cursor for the next
 	// one and Load more asks for it. That is what keeps the query fast however many jobs an office has.
+	const queryClient = useQueryClient();
 	const jobsQuery = createInfiniteQuery(() => ({
 		queryKey: jobsListKey(filters),
 		queryFn: ({ pageParam }: { pageParam: string | undefined }) => fetchJobs(filters, pageParam),
@@ -198,6 +201,14 @@
 		{ key: 'status', label: 'Status' },
 		{ key: 'total', label: 'Total' }
 	];
+
+	function prefetchJob(item: { id: string }) {
+		void queryClient.prefetchQuery({
+			queryKey: jobDetailKey(item.id),
+			queryFn: () => fetchJob(item.id),
+			staleTime: 15_000
+		});
+	}
 </script>
 
 <svelte:head><title>Jobs · Contractor CRM</title></svelte:head>
@@ -318,14 +329,16 @@
 				caption="Jobs"
 				{sort}
 				onSortChange={handleSortChange}
+				onRowHover={prefetchJob}
 				onRowActivate={(job) => goto(resolve('/(app)/jobs/[id=uuid]', { id: job.id }))}
 			>
 				{#snippet row(job: JobListItem)}
 					<th scope="row">
 						<div class="jobs-table__client">
 							<Avatar id={job.client?.id ?? job.id} name={clientName(job)} size="small" />
-							<a class="jobs-table__client-link" href={resolve('/(app)/jobs/[id=uuid]', { id: job.id })}
-								>{clientName(job)}</a
+							<a
+								class="jobs-table__client-link"
+								href={resolve('/(app)/jobs/[id=uuid]', { id: job.id })}>{clientName(job)}</a
 							>
 						</div>
 					</th>

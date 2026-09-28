@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createInfiniteQuery, createQuery } from '@tanstack/svelte-query';
+	import { createInfiniteQuery, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
@@ -30,7 +30,9 @@
 		requestsListKey,
 		type RequestListItem,
 		type RequestListPage,
-		type RequestSortKey
+		type RequestSortKey,
+		fetchRequest,
+		requestDetailKey
 	} from '$lib/requests/api';
 	import {
 		REQUEST_STATUS_LABELS,
@@ -81,6 +83,7 @@
 
 	// Keyset pagination, so there is no page to jump to — each page hands back the cursor for the next one
 	// and Load more asks for it. That is what keeps the query fast however many requests an office has.
+	const queryClient = useQueryClient();
 	const requestsQuery = createInfiniteQuery(() => ({
 		queryKey: requestsListKey(filters),
 		queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
@@ -145,6 +148,14 @@
 		{ key: 'requested', label: 'Requested', sortable: true },
 		{ key: 'status', label: 'Status' }
 	];
+
+	function prefetchRequest(item: { id: string }) {
+		void queryClient.prefetchQuery({
+			queryKey: requestDetailKey(item.id),
+			queryFn: () => fetchRequest(item.id),
+			staleTime: 30_000
+		});
+	}
 </script>
 
 <svelte:head><title>Requests · Contractor CRM</title></svelte:head>
@@ -241,6 +252,7 @@
 				selectable
 				bind:selectedIds
 				rowLabel={(request) => `Select ${request.title}`}
+				onRowHover={prefetchRequest}
 				onRowActivate={(request) => goto(requestHref(request))}
 				{sort}
 				onSortChange={handleSortChange}

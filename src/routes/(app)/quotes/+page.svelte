@@ -33,7 +33,9 @@
 		quotesListKey,
 		type QuoteListItem,
 		type QuoteListPage,
-		type QuoteSortKey
+		type QuoteSortKey,
+		fetchQuote,
+		quoteDetailKey
 	} from '$lib/quotes/api';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
@@ -225,6 +227,14 @@
 		{ key: 'status', label: 'Status' },
 		{ key: 'total', label: 'Total' }
 	];
+
+	function prefetchQuote(item: { id: string }) {
+		void queryClient.prefetchQuery({
+			queryKey: quoteDetailKey(item.id),
+			queryFn: () => fetchQuote(item.id),
+			staleTime: 15_000
+		});
+	}
 </script>
 
 <svelte:head><title>Quotes · Contractor CRM</title></svelte:head>
@@ -357,6 +367,7 @@
 				selectable
 				bind:selectedIds
 				rowLabel={(quote) => `Select quote #${quote.quote_number}`}
+				onRowHover={prefetchQuote}
 				onRowActivate={(quote) => void goto(resolve('/(app)/quotes/[id=uuid]', { id: quote.id }))}
 				{sort}
 				onSortChange={handleSortChange}

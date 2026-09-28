@@ -26,6 +26,7 @@
 		selectedIds = $bindable(new Set<string>()),
 		rowLabel,
 		onRowActivate,
+		onRowHover,
 		sort,
 		onSortChange,
 		row,
@@ -44,6 +45,8 @@
 		 * called the same thing and a screen reader cannot tell them apart. */
 		rowLabel?: (item: T) => string;
 		onRowActivate?: (item: T) => void;
+		/** Warms the record a row opens, so the click paints from cache. Fires on pointer or keyboard focus. */
+		onRowHover?: (item: T) => void;
 		/** The column currently sorted, if any. Null/undefined means the table's default order. */
 		sort?: DataTableSort | null;
 		/** Called with a sortable column's key when its header is activated. The caller owns the toggle
@@ -92,6 +95,17 @@
 		if ((window.getSelection()?.toString() ?? '').length > 0) return;
 		onRowActivate(item);
 	}
+
+	// A pointer only sweeping past a row on its way somewhere else shouldn't fetch that record.
+	let rowIntentTimer: ReturnType<typeof setTimeout> | undefined;
+	function intendRow(item: T) {
+		clearTimeout(rowIntentTimer);
+		rowIntentTimer = setTimeout(() => onRowHover?.(item), 100);
+	}
+	function cancelRowIntent() {
+		clearTimeout(rowIntentTimer);
+	}
+	$effect(() => cancelRowIntent);
 
 	// One cell has to span the whole table for a detail row, and the table's width is the caller's columns
 	// plus the two the table adds for itself.
@@ -151,6 +165,9 @@
 				<tr
 					class:data-table__row--clickable={Boolean(onRowActivate)}
 					onclick={(event) => activateRow(event, item)}
+					onmouseenter={onRowHover ? () => intendRow(item) : undefined}
+					onmouseleave={onRowHover ? cancelRowIntent : undefined}
+					onfocusin={onRowHover ? () => onRowHover(item) : undefined}
 				>
 					{#if selectable}
 						<td class="data-table__select-cell">
