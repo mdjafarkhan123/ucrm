@@ -1,15 +1,16 @@
 # Part 7 — Jobber parity
 
-**Exact next action:** Jafar approved all five items on 2026-09-28. Build them as slices 7a–7e in a new
-temporary worktree (claim `5574f60341e3` points at a removed worktree — release it and re-claim from the new
-one). Before each, read its deferred note and load the skills its work needs (svelte, supabase-postgres for
-migrations, jobber). Browser-check each on Raad LTD (owner login), commit, then delete its note + INDEX row.
+**Exact next action:** start slice 7b. Worktree `.claude/worktrees/deferred-sweep-part7b`, branch
+`worktree-deferred-sweep-part7b` (it has its own `.env`, `supabase/.temp` and a `node_modules` symlink; a
+dev server for browser checks runs from it on `http://localhost:5180`, already signed in to Raad LTD).
+Before each slice, read its deferred note and load the skills its work needs (svelte, supabase-postgres for
+migrations, jobber). Browser-check each on Raad LTD, commit on the branch, merge into `main`, then delete
+its note + INDEX row.
+
+**Done:** 7a (2026-09-28) — merged to `main`; migration `20260928180000` (view `request_list_rows`) applied.
 
 **Approved decisions and slices (suggested model: Opus for 7c–7e, Sonnet fine for 7a–7b):**
 
-- **7a** `request-status-filter-matches-the-stored-status-not-the-displayed-one` — Jafar chose to make the
-  filter match the displayed status (not relabel): a view/RPC like `request_status_counts` with the same
-  date math, permission-gated like the counts card.
 - **7b** `client-detail-page-still-uses-the-superseded-staging-dialog-edit-shape` — rewrite now to Jobber's
   three-edit pattern (`.claude/skills/jobber/jobber-08-screen-patterns.md` § How WE compare); touches
   `clients/[id]/+page.svelte` and `ClientDetailsDialog.svelte`.
