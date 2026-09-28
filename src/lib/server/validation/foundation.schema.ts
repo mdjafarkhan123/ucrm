@@ -40,6 +40,13 @@ export const clientWriteSchema = z
 		last_name: optionalText,
 		company_name: optionalText,
 		email: z.string().trim().email('Enter a valid email.').max(254).optional().or(z.literal('')),
+		billing_email: z
+			.string()
+			.trim()
+			.email('Enter a valid email.')
+			.max(254)
+			.optional()
+			.or(z.literal('')),
 		phone: z.string().trim().max(40).optional().or(z.literal('')),
 		lead_source: z.string().trim().max(80).optional().or(z.literal('')),
 		lead_temperature: z.enum(['hot', 'warm', 'cold']).optional(),
@@ -69,6 +76,19 @@ export const clientWriteSchema = z
 				path: ['company_name'],
 				message: 'Enter a company name.'
 			});
+	})
+	.superRefine((value, context) => {
+		if (
+			value.billing_email &&
+			value.email &&
+			value.billing_email.toLowerCase() === value.email.toLowerCase()
+		) {
+			context.addIssue({
+				code: 'custom',
+				path: ['billing_email'],
+				message: 'Billing email must be different from the primary email.'
+			});
+		}
 	});
 
 export type ClientWriteInput = z.infer<typeof clientWriteSchema>;

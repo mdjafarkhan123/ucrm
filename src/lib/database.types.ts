@@ -6,31 +6,6 @@ export type Database = {
 	__InternalSupabase: {
 		PostgrestVersion: '14.5';
 	};
-	graphql_public: {
-		Tables: {
-			[_ in never]: never;
-		};
-		Views: {
-			[_ in never]: never;
-		};
-		Functions: {
-			graphql: {
-				Args: {
-					extensions?: Json;
-					operationName?: string;
-					query?: string;
-					variables?: Json;
-				};
-				Returns: Json;
-			};
-		};
-		Enums: {
-			[_ in never]: never;
-		};
-		CompositeTypes: {
-			[_ in never]: never;
-		};
-	};
 	public: {
 		Tables: {
 			access_audit_events: {
@@ -155,6 +130,13 @@ export type Database = {
 						referencedColumns: ['id'];
 					},
 					{
+						foreignKeyName: 'assessment_assignees_assessment_id_fkey';
+						columns: ['assessment_id'];
+						isOneToOne: false;
+						referencedRelation: 'request_list_rows';
+						referencedColumns: ['assessment_id'];
+					},
+					{
 						foreignKeyName: 'assessment_assignees_member_fk';
 						columns: ['organization_id', 'user_id'];
 						isOneToOne: false;
@@ -214,6 +196,13 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'organizations';
 						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'assessments_request_organization_fk';
+						columns: ['organization_id', 'request_id'];
+						isOneToOne: false;
+						referencedRelation: 'request_list_rows';
+						referencedColumns: ['organization_id', 'id'];
 					},
 					{
 						foreignKeyName: 'assessments_request_organization_fk';
@@ -768,6 +757,7 @@ export type Database = {
 					client_id: string;
 					created_at: string;
 					id: string;
+					is_billing_contact: boolean;
 					is_primary: boolean;
 					kind: string;
 					label: string | null;
@@ -781,6 +771,7 @@ export type Database = {
 					client_id: string;
 					created_at?: string;
 					id?: string;
+					is_billing_contact?: boolean;
 					is_primary?: boolean;
 					kind: string;
 					label?: string | null;
@@ -794,6 +785,7 @@ export type Database = {
 					client_id?: string;
 					created_at?: string;
 					id?: string;
+					is_billing_contact?: boolean;
 					is_primary?: boolean;
 					kind?: string;
 					label?: string | null;
@@ -7851,11 +7843,14 @@ export type Database = {
 					id: string;
 					instructions: string | null;
 					job_id: string;
+					off_series: boolean | null;
 					organization_id: string;
 					position: number;
 					revision: number;
+					series_date: string | null;
 					source: string;
 					start_time: string | null;
+					time_changed_alone: boolean;
 					title: string | null;
 					updated_at: string;
 					visit_date: string | null;
@@ -7869,11 +7864,14 @@ export type Database = {
 					id?: string;
 					instructions?: string | null;
 					job_id: string;
+					off_series?: boolean | null;
 					organization_id: string;
 					position: number;
 					revision?: number;
+					series_date?: string | null;
 					source?: string;
 					start_time?: string | null;
+					time_changed_alone?: boolean;
 					title?: string | null;
 					updated_at?: string;
 					visit_date?: string | null;
@@ -7887,11 +7885,14 @@ export type Database = {
 					id?: string;
 					instructions?: string | null;
 					job_id?: string;
+					off_series?: boolean | null;
 					organization_id?: string;
 					position?: number;
 					revision?: number;
+					series_date?: string | null;
 					source?: string;
 					start_time?: string | null;
+					time_changed_alone?: boolean;
 					title?: string | null;
 					updated_at?: string;
 					visit_date?: string | null;
@@ -8369,6 +8370,13 @@ export type Database = {
 						columns: ['marketing_campaign_recipient_id'];
 						isOneToOne: false;
 						referencedRelation: 'marketing_campaign_recipients';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'marketing_campaign_result_credits_request_fkey';
+						columns: ['request_id'];
+						isOneToOne: false;
+						referencedRelation: 'request_list_rows';
 						referencedColumns: ['id'];
 					},
 					{
@@ -8975,6 +8983,13 @@ export type Database = {
 						columns: ['organization_id', 'quote_id'];
 						isOneToOne: false;
 						referencedRelation: 'quotes';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'opportunities_request_organization_fk';
+						columns: ['organization_id', 'request_id'];
+						isOneToOne: true;
+						referencedRelation: 'request_list_rows';
 						referencedColumns: ['organization_id', 'id'];
 					},
 					{
@@ -13424,6 +13439,13 @@ export type Database = {
 						foreignKeyName: 'quotes_request_organization_fk';
 						columns: ['organization_id', 'request_id'];
 						isOneToOne: false;
+						referencedRelation: 'request_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'quotes_request_organization_fk';
+						columns: ['organization_id', 'request_id'];
+						isOneToOne: false;
 						referencedRelation: 'requests';
 						referencedColumns: ['organization_id', 'id'];
 					}
@@ -13514,6 +13536,13 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'organizations';
 						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'request_pricing_lines_request_organization_fk';
+						columns: ['organization_id', 'request_id'];
+						isOneToOne: false;
+						referencedRelation: 'request_list_rows';
+						referencedColumns: ['organization_id', 'id'];
 					},
 					{
 						foreignKeyName: 'request_pricing_lines_request_organization_fk';
@@ -18479,62 +18508,121 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
-			enqueue_invoice_communication_email: {
-				Args: {
-					target_actor_user_id: string;
-					target_invoice_id: string;
-					target_invoice_token_hash: string;
-					target_invoice_url: string;
-					target_logical_send_key: string;
-					target_organization_id: string;
-				};
-				Returns: {
-					accepted_at: string | null;
-					allowance_class: string;
-					channel: string;
-					client_contact_method_id: string;
-					client_id: string;
-					client_payment_event_id: string | null;
-					created_at: string;
-					created_by: string | null;
-					delivery_outcome: string | null;
-					delivery_outcome_at: string | null;
-					delivery_outcome_detail: string | null;
-					direction: string;
-					expires_at: string;
-					failure_code: string | null;
-					failure_message: string | null;
-					html_content: string | null;
-					id: string;
-					invoice_id: string | null;
-					logical_send_key: string;
-					organization_id: string;
-					provider_message_id: string | null;
-					quote_access_link_id: string | null;
-					quote_id: string | null;
-					quote_recipient_id: string | null;
-					quote_version_id: string | null;
-					recipient_email: string | null;
-					recipient_phone: string | null;
-					reply_alias_id: string | null;
-					resent_from_intent_id: string | null;
-					retry_class: string;
-					retry_window_ends_at: string | null;
-					send_kind: string;
-					sender_id: string | null;
-					sms_sender_identity_id: string | null;
-					status: string;
-					subject: string | null;
-					text_content: string | null;
-					updated_at: string;
-				};
-				SetofOptions: {
-					from: '*';
-					to: 'communication_delivery_intents';
-					isOneToOne: true;
-					isSetofReturn: false;
-				};
-			};
+			enqueue_invoice_communication_email:
+				| {
+						Args: {
+							target_actor_user_id: string;
+							target_invoice_id: string;
+							target_invoice_token_hash: string;
+							target_invoice_url: string;
+							target_logical_send_key: string;
+							target_organization_id: string;
+						};
+						Returns: {
+							accepted_at: string | null;
+							allowance_class: string;
+							channel: string;
+							client_contact_method_id: string;
+							client_id: string;
+							client_payment_event_id: string | null;
+							created_at: string;
+							created_by: string | null;
+							delivery_outcome: string | null;
+							delivery_outcome_at: string | null;
+							delivery_outcome_detail: string | null;
+							direction: string;
+							expires_at: string;
+							failure_code: string | null;
+							failure_message: string | null;
+							html_content: string | null;
+							id: string;
+							invoice_id: string | null;
+							logical_send_key: string;
+							organization_id: string;
+							provider_message_id: string | null;
+							quote_access_link_id: string | null;
+							quote_id: string | null;
+							quote_recipient_id: string | null;
+							quote_version_id: string | null;
+							recipient_email: string | null;
+							recipient_phone: string | null;
+							reply_alias_id: string | null;
+							resent_from_intent_id: string | null;
+							retry_class: string;
+							retry_window_ends_at: string | null;
+							send_kind: string;
+							sender_id: string | null;
+							sms_sender_identity_id: string | null;
+							status: string;
+							subject: string | null;
+							text_content: string | null;
+							updated_at: string;
+						};
+						SetofOptions: {
+							from: '*';
+							to: 'communication_delivery_intents';
+							isOneToOne: true;
+							isSetofReturn: false;
+						};
+				  }
+				| {
+						Args: {
+							target_actor_user_id: string;
+							target_billing_invoice_token_hash?: string;
+							target_billing_invoice_url?: string;
+							target_invoice_id: string;
+							target_invoice_token_hash: string;
+							target_invoice_url: string;
+							target_logical_send_key: string;
+							target_organization_id: string;
+						};
+						Returns: {
+							accepted_at: string | null;
+							allowance_class: string;
+							channel: string;
+							client_contact_method_id: string;
+							client_id: string;
+							client_payment_event_id: string | null;
+							created_at: string;
+							created_by: string | null;
+							delivery_outcome: string | null;
+							delivery_outcome_at: string | null;
+							delivery_outcome_detail: string | null;
+							direction: string;
+							expires_at: string;
+							failure_code: string | null;
+							failure_message: string | null;
+							html_content: string | null;
+							id: string;
+							invoice_id: string | null;
+							logical_send_key: string;
+							organization_id: string;
+							provider_message_id: string | null;
+							quote_access_link_id: string | null;
+							quote_id: string | null;
+							quote_recipient_id: string | null;
+							quote_version_id: string | null;
+							recipient_email: string | null;
+							recipient_phone: string | null;
+							reply_alias_id: string | null;
+							resent_from_intent_id: string | null;
+							retry_class: string;
+							retry_window_ends_at: string | null;
+							send_kind: string;
+							sender_id: string | null;
+							sms_sender_identity_id: string | null;
+							status: string;
+							subject: string | null;
+							text_content: string | null;
+							updated_at: string;
+						};
+						SetofOptions: {
+							from: '*';
+							to: 'communication_delivery_intents';
+							isOneToOne: true;
+							isSetofReturn: false;
+						};
+				  };
 			enqueue_invoice_void_notice_email: {
 				Args: {
 					target_actor_user_id: string;
@@ -18703,62 +18791,121 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
-			enqueue_quote_communication_email: {
-				Args: {
-					target_actor_user_id: string;
-					target_logical_send_key: string;
-					target_organization_id: string;
-					target_quote_id: string;
-					target_quote_token_hash: string;
-					target_quote_url: string;
-				};
-				Returns: {
-					accepted_at: string | null;
-					allowance_class: string;
-					channel: string;
-					client_contact_method_id: string;
-					client_id: string;
-					client_payment_event_id: string | null;
-					created_at: string;
-					created_by: string | null;
-					delivery_outcome: string | null;
-					delivery_outcome_at: string | null;
-					delivery_outcome_detail: string | null;
-					direction: string;
-					expires_at: string;
-					failure_code: string | null;
-					failure_message: string | null;
-					html_content: string | null;
-					id: string;
-					invoice_id: string | null;
-					logical_send_key: string;
-					organization_id: string;
-					provider_message_id: string | null;
-					quote_access_link_id: string | null;
-					quote_id: string | null;
-					quote_recipient_id: string | null;
-					quote_version_id: string | null;
-					recipient_email: string | null;
-					recipient_phone: string | null;
-					reply_alias_id: string | null;
-					resent_from_intent_id: string | null;
-					retry_class: string;
-					retry_window_ends_at: string | null;
-					send_kind: string;
-					sender_id: string | null;
-					sms_sender_identity_id: string | null;
-					status: string;
-					subject: string | null;
-					text_content: string | null;
-					updated_at: string;
-				};
-				SetofOptions: {
-					from: '*';
-					to: 'communication_delivery_intents';
-					isOneToOne: true;
-					isSetofReturn: false;
-				};
-			};
+			enqueue_quote_communication_email:
+				| {
+						Args: {
+							target_actor_user_id: string;
+							target_logical_send_key: string;
+							target_organization_id: string;
+							target_quote_id: string;
+							target_quote_token_hash: string;
+							target_quote_url: string;
+						};
+						Returns: {
+							accepted_at: string | null;
+							allowance_class: string;
+							channel: string;
+							client_contact_method_id: string;
+							client_id: string;
+							client_payment_event_id: string | null;
+							created_at: string;
+							created_by: string | null;
+							delivery_outcome: string | null;
+							delivery_outcome_at: string | null;
+							delivery_outcome_detail: string | null;
+							direction: string;
+							expires_at: string;
+							failure_code: string | null;
+							failure_message: string | null;
+							html_content: string | null;
+							id: string;
+							invoice_id: string | null;
+							logical_send_key: string;
+							organization_id: string;
+							provider_message_id: string | null;
+							quote_access_link_id: string | null;
+							quote_id: string | null;
+							quote_recipient_id: string | null;
+							quote_version_id: string | null;
+							recipient_email: string | null;
+							recipient_phone: string | null;
+							reply_alias_id: string | null;
+							resent_from_intent_id: string | null;
+							retry_class: string;
+							retry_window_ends_at: string | null;
+							send_kind: string;
+							sender_id: string | null;
+							sms_sender_identity_id: string | null;
+							status: string;
+							subject: string | null;
+							text_content: string | null;
+							updated_at: string;
+						};
+						SetofOptions: {
+							from: '*';
+							to: 'communication_delivery_intents';
+							isOneToOne: true;
+							isSetofReturn: false;
+						};
+				  }
+				| {
+						Args: {
+							target_actor_user_id: string;
+							target_billing_quote_token_hash?: string;
+							target_billing_quote_url?: string;
+							target_logical_send_key: string;
+							target_organization_id: string;
+							target_quote_id: string;
+							target_quote_token_hash: string;
+							target_quote_url: string;
+						};
+						Returns: {
+							accepted_at: string | null;
+							allowance_class: string;
+							channel: string;
+							client_contact_method_id: string;
+							client_id: string;
+							client_payment_event_id: string | null;
+							created_at: string;
+							created_by: string | null;
+							delivery_outcome: string | null;
+							delivery_outcome_at: string | null;
+							delivery_outcome_detail: string | null;
+							direction: string;
+							expires_at: string;
+							failure_code: string | null;
+							failure_message: string | null;
+							html_content: string | null;
+							id: string;
+							invoice_id: string | null;
+							logical_send_key: string;
+							organization_id: string;
+							provider_message_id: string | null;
+							quote_access_link_id: string | null;
+							quote_id: string | null;
+							quote_recipient_id: string | null;
+							quote_version_id: string | null;
+							recipient_email: string | null;
+							recipient_phone: string | null;
+							reply_alias_id: string | null;
+							resent_from_intent_id: string | null;
+							retry_class: string;
+							retry_window_ends_at: string | null;
+							send_kind: string;
+							sender_id: string | null;
+							sms_sender_identity_id: string | null;
+							status: string;
+							subject: string | null;
+							text_content: string | null;
+							updated_at: string;
+						};
+						SetofOptions: {
+							from: '*';
+							to: 'communication_delivery_intents';
+							isOneToOne: true;
+							isSetofReturn: false;
+						};
+				  };
 			ensure_communication_reply_alias: {
 				Args: {
 					target_client_id: string;
@@ -23945,9 +24092,6 @@ export type CompositeTypes<
 		: never;
 
 export const Constants = {
-	graphql_public: {
-		Enums: {}
-	},
 	public: {
 		Enums: {}
 	}

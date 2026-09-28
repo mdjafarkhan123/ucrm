@@ -50,7 +50,7 @@ export const GET: RequestHandler = async (event) => {
 	] = await Promise.all([
 		supabase
 			.from('client_contact_methods')
-			.select('id, kind, value, is_primary')
+			.select('id, kind, value, is_primary, is_billing_contact')
 			.eq('organization_id', organizationId)
 			.eq('client_id', clientId),
 		supabase
@@ -89,6 +89,11 @@ export const GET: RequestHandler = async (event) => {
 	const primaryOf = (kind: 'email' | 'phone') =>
 		(contactMethods ?? []).find((method) => method.kind === kind && method.is_primary)?.value ??
 		null;
+
+	const billingEmail =
+		(contactMethods ?? []).find(
+			(method) => method.kind === 'email' && method.is_billing_contact
+		)?.value ?? null;
 
 	// Marketing-email consent is tracked per email method in a service-role-only evidence ledger, so it is
 	// read here with the owner client rather than the request's RLS-scoped one. Only the primary email is
@@ -149,6 +154,7 @@ export const GET: RequestHandler = async (event) => {
 			...client,
 			contact_methods: contactMethods ?? [],
 			email: primaryOf('email'),
+			billing_email: billingEmail,
 			phone: primaryOf('phone'),
 			primary_property:
 				(properties ?? []).find((property) => property.is_primary) ?? properties?.[0] ?? null,

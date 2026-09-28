@@ -149,7 +149,10 @@ export const POST: RequestHandler = async (event) => {
 		}
 
 		try {
+			// A second, independent link for the billing contact, if the client has one — the RPC only spends
+			// it when a billing_contact row actually exists.
 			const link = createInvoiceEmailAccessLink();
+			const billingLink = createInvoiceEmailAccessLink();
 			const { data: intent, error: enqueueError } = await ownerClient.rpc(
 				'enqueue_invoice_communication_email',
 				{
@@ -158,7 +161,9 @@ export const POST: RequestHandler = async (event) => {
 					target_invoice_id: item.invoice_id,
 					target_logical_send_key: item.idempotency_key,
 					target_invoice_url: link.url,
-					target_invoice_token_hash: link.tokenHash
+					target_invoice_token_hash: link.tokenHash,
+					target_billing_invoice_url: billingLink.url,
+					target_billing_invoice_token_hash: billingLink.tokenHash
 				}
 			);
 			if (enqueueError) {

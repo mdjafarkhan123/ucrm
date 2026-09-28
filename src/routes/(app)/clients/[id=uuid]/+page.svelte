@@ -135,6 +135,7 @@
 			last_name: source.last_name ?? '',
 			company_name: source.company_name ?? '',
 			email: source.email ?? '',
+			billing_email: source.billing_email ?? '',
 			phone: source.phone ?? '',
 			preferences: preferencesOf(source)
 		};

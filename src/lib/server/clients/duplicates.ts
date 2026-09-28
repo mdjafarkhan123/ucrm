@@ -7,7 +7,7 @@ type Supabase = SupabaseClient<Database>;
 export type DuplicateMatch = {
 	id: string;
 	display_name: string;
-	matched_on: 'email' | 'phone';
+	matched_on: 'email' | 'billing_email' | 'phone';
 };
 
 export type SimilarMatch = {
@@ -36,31 +36,45 @@ export function normalizePhone(value: string | null | undefined) {
 export async function findExactDuplicates(
 	supabase: Supabase,
 	organizationId: string,
-	input: { email?: string | null; phone?: string | null; excludeClientId?: string | null }
+	input: {
+		email?: string | null;
+		billing_email?: string | null;
+		phone?: string | null;
+		excludeClientId?: string | null;
+	}
 ): Promise<{ matches: DuplicateMatch[] } | { failed: true }> {
 	const email = normalizeEmail(input.email);
+	const billingEmail = normalizeEmail(input.billing_email);
 	const phone = normalizePhone(input.phone);
-	if (!email && !phone) return { matches: [] };
+	if (!email && !billingEmail && !phone) return { matches: [] };
 
 	// One straight lookup per kind. Each matches the whole (organization_id, kind, normalized_value)
 	// index, and the typed value never reaches a filter string it could break out of.
 	const lookup = (kind: 'email' | 'phone', value: string) =>
 		supabase
 			.from('client_contact_methods')
-			.select('client_id, kind')
+			.select('client_id')
 			.eq('organization_id', organizationId)
 			.eq('kind', kind)
 			.eq('normalized_value', value);
 
-	const [emailHits, phoneHits] = await Promise.all([
+	const [emailHits, billingEmailHits, phoneHits] = await Promise.all([
 		email ? lookup('email', email) : null,
+		// A separate query, not folded into the email one: both check the same `kind = 'email'` column, so
+		// only the input field it came from tells the office which box to fix.
+		billingEmail ? lookup('email', billingEmail) : null,
 		phone ? lookup('phone', phone) : null
 	]);
-	if (emailHits?.error || phoneHits?.error) return { failed: true };
+	if (emailHits?.error || billingEmailHits?.error || phoneHits?.error) return { failed: true };
 
-	const hits = [...(emailHits?.data ?? []), ...(phoneHits?.data ?? [])].filter(
-		(method) => method.client_id !== input.excludeClientId
-	);
+	const hits = [
+		...(emailHits?.data ?? []).map((hit) => ({ ...hit, matched_on: 'email' as const })),
+		...(billingEmailHits?.data ?? []).map((hit) => ({
+			...hit,
+			matched_on: 'billing_email' as const
+		})),
+		...(phoneHits?.data ?? []).map((hit) => ({ ...hit, matched_on: 'phone' as const }))
+	].filter((hit) => hit.client_id !== input.excludeClientId);
 	if (hits.length === 0) return { matches: [] };
 
 	const { data: clients, error: clientsError } = await supabase
@@ -78,7 +92,7 @@ export async function findExactDuplicates(
 			.map((hit) => ({
 				id: hit.client_id,
 				display_name: namesById.get(hit.client_id) as string,
-				matched_on: hit.kind as 'email' | 'phone'
+				matched_on: hit.matched_on
 			}))
 	};
 }
@@ -166,7 +180,11 @@ function escapeLike(value: string) {
 	return value.replace(/[\\%_]/g, (match) => `\\${match}`);
 }
 
-const FIELD_LABEL = { email: 'email address', phone: 'phone number' } as const;
+const FIELD_LABEL = {
+	email: 'email address',
+	billing_email: 'billing email',
+	phone: 'phone number'
+} as const;
 
 /**
  * The one refusal an exact duplicate gets, whether it was caught before the write or by the database

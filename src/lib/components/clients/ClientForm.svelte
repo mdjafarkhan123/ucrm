@@ -70,6 +70,7 @@
 		last_name: string;
 		company_name: string;
 		email: string;
+		billing_email: string;
 		phone: string;
 		lead_source: string;
 		initial_note: string;
@@ -91,6 +92,7 @@
 			last_name: '',
 			company_name: '',
 			email: '',
+			billing_email: '',
 			phone: '',
 			lead_source: '',
 			initial_note: '',
@@ -117,6 +119,7 @@
 			last_name: source.last_name ?? '',
 			company_name: source.company_name ?? '',
 			email: source.email ?? '',
+			billing_email: source.billing_email ?? '',
 			phone: source.phone ?? '',
 			lead_source: source.lead_source ?? '',
 			preferences: {
@@ -175,6 +178,7 @@
 			last_name: form.last_name.trim(),
 			company_name: form.company_name.trim(),
 			email: form.email.trim(),
+			billing_email: form.billing_email.trim(),
 			phone: form.phone.trim(),
 			lead_source: form.lead_source,
 			initial_note: form.initial_note.trim(),
@@ -197,11 +201,12 @@
 
 	// --- Duplicate warnings ---------------------------------------------------------------------------
 
-	let duplicateProbe = $state({ email: '', phone: '', name: '', address: '' });
+	let duplicateProbe = $state({ email: '', billingEmail: '', phone: '', name: '', address: '' });
 
 	// Waits for a pause in typing before asking, so a half-typed email does not fire a lookup per keystroke.
 	$effect(() => {
 		const email = form.email.trim();
+		const billingEmail = form.billing_email.trim();
 		const phone = form.phone.trim();
 		const name = isCompany
 			? form.company_name.trim()
@@ -209,14 +214,18 @@
 		const address = form.address_line1.trim();
 
 		const handle = setTimeout(() => {
-			duplicateProbe = { email, phone, name: name.length >= 3 ? name : '', address };
+			duplicateProbe = { email, billingEmail, phone, name: name.length >= 3 ? name : '', address };
 		}, 500);
 		return () => clearTimeout(handle);
 	});
 
 	const probeHasInput = $derived(
 		Boolean(
-			duplicateProbe.email || duplicateProbe.phone || duplicateProbe.name || duplicateProbe.address
+			duplicateProbe.email ||
+				duplicateProbe.billingEmail ||
+				duplicateProbe.phone ||
+				duplicateProbe.name ||
+				duplicateProbe.address
 		)
 	);
 
@@ -236,7 +245,9 @@
 	const similarMatches = $derived(duplicatesQuery.data?.similar ?? []);
 
 	function matchLabel(match: DuplicateCandidates['exact'][number]) {
-		return match.matched_on === 'email' ? 'email address' : 'phone number';
+		if (match.matched_on === 'email') return 'email address';
+		if (match.matched_on === 'billing_email') return 'billing email';
+		return 'phone number';
 	}
 
 	// --- Saving ---------------------------------------------------------------------------------------
@@ -432,6 +443,19 @@
 						errorMessage={fieldErrors.phone ?? ''}
 						autocomplete="tel"
 					/>
+
+					<div class="client-form__grid-full">
+						<Input
+							id="client-billing-email"
+							label="Billing email (optional)"
+							type="email"
+							bind:value={form.billing_email}
+							invalid={Boolean(fieldErrors.billing_email)}
+							errorMessage={fieldErrors.billing_email ?? ''}
+							autocomplete="email"
+						/>
+						<p class="client-form__hint">Also send invoices and quotes here.</p>
+					</div>
 
 					{#if !isCompany}
 						<Input
@@ -671,6 +695,12 @@
 				width: 16px;
 				height: 16px;
 			}
+		}
+
+		&__hint {
+			margin-top: var(--space-smaller);
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
 		}
 
 		&__warning {

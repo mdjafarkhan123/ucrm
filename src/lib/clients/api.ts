@@ -83,6 +83,7 @@ export type ClientWriteValues = {
 	last_name?: string;
 	company_name?: string;
 	email?: string;
+	billing_email?: string;
 	phone?: string;
 	lead_source?: string;
 	initial_note?: string;
@@ -102,6 +103,7 @@ export type ClientIdentityDraft = {
 	last_name: string;
 	company_name: string;
 	email: string;
+	billing_email: string;
 	phone: string;
 	preferences: ClientPreferences;
 };
@@ -115,6 +117,7 @@ export type ClientProperty = ClientPropertyInput & {
 export type ClientDetail = ClientWriteValues & {
 	id: string;
 	display_name: string;
+	billing_email: string | null;
 	created_at: string;
 	converted_to_customer_at: string | null;
 	archived_at: string | null;
@@ -122,7 +125,13 @@ export type ClientDetail = ClientWriteValues & {
 	/** Every property this client has, primary first. The form uses primary_property; the detail page uses this. */
 	properties: ClientProperty[];
 	property_count: number;
-	contact_methods: { id: string; kind: 'email' | 'phone'; value: string; is_primary: boolean }[];
+	contact_methods: {
+		id: string;
+		kind: 'email' | 'phone';
+		value: string;
+		is_primary: boolean;
+		is_billing_contact: boolean;
+	}[];
 	preferences:
 		(ClientPreferences & { sms_opt_out_at: string | null; sms_opt_in_at: string | null }) | null;
 	/**
@@ -148,7 +157,7 @@ export type ClientWorkSummary = {
 };
 
 export type DuplicateCandidates = {
-	exact: { id: string; display_name: string; matched_on: 'email' | 'phone' }[];
+	exact: { id: string; display_name: string; matched_on: 'email' | 'billing_email' | 'phone' }[];
 	similar: {
 		id: string;
 		display_name: string;
@@ -200,6 +209,7 @@ export async function fetchClient(clientId: string): Promise<ClientDetail> {
 
 export async function fetchDuplicateCandidates(input: {
 	email?: string;
+	billingEmail?: string;
 	phone?: string;
 	name?: string;
 	address?: string;
@@ -207,6 +217,7 @@ export async function fetchDuplicateCandidates(input: {
 }): Promise<DuplicateCandidates> {
 	const params = new URLSearchParams();
 	if (input.email) params.set('email', input.email);
+	if (input.billingEmail) params.set('billing_email', input.billingEmail);
 	if (input.phone) params.set('phone', input.phone);
 	if (input.name) params.set('name', input.name);
 	if (input.address) params.set('address', input.address);

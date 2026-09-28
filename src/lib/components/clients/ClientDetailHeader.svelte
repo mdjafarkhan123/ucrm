@@ -11,6 +11,7 @@
 	import type { ClientDetail } from '$lib/clients/api';
 	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
 	import messageIcon from '@tabler/icons/outline/message.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import coinIcon from '@tabler/icons/outline/coin.svg?raw';
 	import fileIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import toolIcon from '@tabler/icons/outline/tool.svg?raw';
@@ -177,6 +178,12 @@
 						{/if}
 					</dd>
 				</div>
+				{#if client.billing_email}
+					<div class="client-header__fact">
+						<dt><span aria-hidden="true">{@html receiptIcon}</span>Billing email</dt>
+						<dd><a href={`mailto:${client.billing_email}`}>{client.billing_email}</a></dd>
+					</div>
+				{/if}
 				<div class="client-header__fact">
 					<dt>Client since</dt>
 					<dd>{clientSince}</dd>

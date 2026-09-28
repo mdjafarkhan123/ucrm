@@ -151,6 +151,19 @@
 			autocomplete="tel"
 		/>
 
+		<div class="client-details-form__grid-full">
+			<Input
+				id="client-details-billing-email"
+				label="Billing email (optional)"
+				type="email"
+				bind:value={draft.billing_email}
+				invalid={Boolean(fieldErrors.billing_email)}
+				errorMessage={fieldErrors.billing_email ?? ''}
+				autocomplete="email"
+			/>
+			<p class="client-details-form__hint">Also send invoices and quotes here.</p>
+		</div>
+
 		{#if !isCompany}
 			<div class="client-details-form__grid-full">
 				<Input
@@ -277,6 +290,12 @@
 				width: 16px;
 				height: 16px;
 			}
+		}
+
+		&__hint {
+			margin-top: var(--space-smaller);
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
 		}
 
 		&__error {

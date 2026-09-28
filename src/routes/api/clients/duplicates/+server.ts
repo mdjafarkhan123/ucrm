@@ -19,6 +19,7 @@ export const GET: RequestHandler = async (event) => {
 	const [exact, similar] = await Promise.all([
 		findExactDuplicates(event.locals.supabase, organizationId, {
 			email: params.get('email'),
+			billing_email: params.get('billing_email'),
 			phone: params.get('phone'),
 			excludeClientId
 		}),

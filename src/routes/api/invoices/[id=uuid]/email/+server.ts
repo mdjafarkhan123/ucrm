@@ -45,14 +45,20 @@ export const POST: RequestHandler = async (event) => {
 		});
 		if (!limit.allowed) return rateLimitedResponse(limit.retryAfterSeconds);
 
+		// A second, independent link for the billing contact, if the client has one — the RPC only spends it
+		// when a billing_contact row actually exists, so generating it unconditionally never leaves a stray
+		// access link behind.
 		const link = createInvoiceEmailAccessLink();
+		const billingLink = createInvoiceEmailAccessLink();
 		const { data, error } = await ownerClient.rpc('enqueue_invoice_communication_email', {
 			target_organization_id: check.auth.organization.id,
 			target_actor_user_id: check.auth.user.id,
 			target_invoice_id: event.params.id,
 			target_logical_send_key: parsed.data.idempotency_key,
 			target_invoice_url: link.url,
-			target_invoice_token_hash: link.tokenHash
+			target_invoice_token_hash: link.tokenHash,
+			target_billing_invoice_url: billingLink.url,
+			target_billing_invoice_token_hash: billingLink.tokenHash
 		});
 		if (error) return emailSendPrerequisiteResponse(error) ?? updateInvoiceError(error);
 		return json(
