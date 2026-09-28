@@ -9,10 +9,24 @@ Independent sessions do not share conversation context. A campaign checkpoint sa
 a live reservation. Use this skill when agents may run at the same time, whether their tasks are in one
 campaign, different campaigns, or outside campaigns.
 
-## First use in a project
+## Detect setup on every invocation
 
-1. Check whether the project is a Git repository and whether `AGENTS.md`, `CLAUDE.md`, or equivalent
-   project instructions already define concurrent work. Preserve existing user choices and active changes.
+Check the project, not the conversation history. Setup is complete only when all of these are true:
+
+1. The project is a Git repository and this skill's bundled `scripts/agent-work.py` is reachable from it.
+2. Each agent client used for this project can discover the skill and its entry instructions (`AGENTS.md`
+   for Codex, `CLAUDE.md` for Claude Code, or an equivalent file) direct agents to check and claim work.
+3. Git ignores `/.agent-work/`, and the register command runs from the project.
+
+If all checks pass, follow **Each agent session** below. If any check fails, treat the project as unconfigured
+or partly configured and repair only the missing pieces. The presence or absence of `.agent-work/state.json`
+does not indicate setup: it is local, ignored, and created on demand. Existing dirty changes and active
+reservations must be inspected separately.
+
+## Setup or repair
+
+1. Preserve existing project instructions, user choices, and active changes. If the project is not yet a Git
+   repository, establish its intended repository before using this Git-backed register.
 2. Make this skill discoverable in the agent clients the project uses. A skill installed in a user or
    project skill catalog can be invoked for setup; a brand-new project with no instructions cannot make
    every agent load it automatically. Add a short pointer to the appropriate project instruction file(s)
@@ -25,8 +39,7 @@ campaign, different campaigns, or outside campaigns.
    controlled integration path into the primary branch. Existing dirty changes remain unclaimed until
    their owner is identified.
 
-Setup is complete when a fresh agent can reach this skill from the project's entry instructions, run the
-register command, and see how to reserve and release work. If the skill is only installed locally in one
+Repeat the detection checks before calling setup complete. If the skill is only installed locally in one
 terminal's environment, explain that other agent clients must receive it too.
 
 ## Each agent session
