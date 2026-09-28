@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { requireClientPermission } from '$lib/server/access/clients';
+import { hasPermission } from '$lib/server/access/permission';
 import { PRIVATE_READ_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import {
 	clientWriteSchema,
@@ -128,7 +129,14 @@ export const GET: RequestHandler = async (event) => {
 		if (error) return databaseError();
 		tagFilteredClientIds = (data ?? []).map((row) => row.entity_id);
 		if (tagFilteredClientIds.length === 0) {
-			return json({ clients: [], next_cursor: null }, { headers: PRIVATE_READ_HEADERS });
+			return json(
+				{
+					clients: [],
+					next_cursor: null,
+					can_archive: hasPermission(access.access, 'customers.archive')
+				},
+				{ headers: PRIVATE_READ_HEADERS }
+			);
 		}
 	}
 
@@ -138,8 +146,12 @@ export const GET: RequestHandler = async (event) => {
 			'id, display_name, company_name, client_type, lifecycle_status, lead_source, archived_at, updated_at'
 		)
 		.eq('organization_id', organizationId)
-		.is('deleted_at', null)
-		.is('archived_at', null);
+		.is('deleted_at', null);
+
+	// Archived is a place in this same list, not a separate screen: the Status filter either asks for the
+	// archived ones or, as everywhere else, hides them.
+	if (status === 'archived') query = query.not('archived_at', 'is', null);
+	else query = query.is('archived_at', null);
 
 	if (search) {
 		// PostgREST's or= filter string treats comma/parenthesis as syntax; quoting the value (and escaping
@@ -181,7 +193,11 @@ export const GET: RequestHandler = async (event) => {
 
 	const clientIds = clients.map((client) => client.id);
 	if (clientIds.length === 0) {
-		return json({ clients: [], next_cursor: null });
+		return json({
+			clients: [],
+			next_cursor: null,
+			can_archive: hasPermission(access.access, 'customers.archive')
+		});
 	}
 
 	const [
@@ -263,5 +279,14 @@ export const GET: RequestHandler = async (event) => {
 
 	const last = clients.at(-1) as Record<string, unknown> | undefined;
 	const nextCursor = hasMore && last ? `${last[sortColumn]}|${last.id}` : null;
-	return json({ clients: result, next_cursor: nextCursor }, { headers: PRIVATE_READ_HEADERS });
+	return json(
+		{
+			clients: result,
+			next_cursor: nextCursor,
+			// The page cannot read permissions itself, so the list says whether this member may archive —
+			// the same answer the archive route enforces.
+			can_archive: hasPermission(access.access, 'customers.archive')
+		},
+		{ headers: PRIVATE_READ_HEADERS }
+	);
 };

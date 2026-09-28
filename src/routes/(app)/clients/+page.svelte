@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { createInfiniteQuery, createQuery } from '@tanstack/svelte-query';
+	import {
+		createInfiniteQuery,
+		createMutation,
+		createQuery,
+		useQueryClient
+	} from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
@@ -25,20 +30,29 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import {
 		fetchClients,
+		setClientsArchived,
 		clientsListKey,
 		type ClientListItem,
 		type ClientListPage,
+		type ClientOpenWork,
 		type ClientReadError,
 		type ClientSortKey
 	} from '$lib/clients/api';
 	import { fetchTags, tagsKey } from '$lib/collaboration/api';
+	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import filterIcon from '@tabler/icons/outline/filter.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
+	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
+	import restoreIcon from '@tabler/icons/outline/archive-off.svg?raw';
+
+	const toast = getToastManager();
+	const queryClient = useQueryClient();
 
 	let search = $state('');
 	let debouncedSearch = $state('');
-	let status = $state<'lead' | 'customer' | ''>('');
+	let status = $state<'lead' | 'customer' | 'archived' | ''>('');
 	let tagId = $state('');
 	let filtersOpen = $state(false);
 	let sortKey = $state<ClientSortKey>('updated_at');
@@ -55,9 +69,9 @@
 		}
 	}
 
-	// Both bulk actions are switched off until clients carry real work to archive or delete alongside.
-	// The reason is spelled out for screen readers too, because a disabled button never takes focus.
-	const bulkReason = 'Not ready yet — this arrives once clients carry work.';
+	// Deleting a client outright is still switched off; archiving is what the office uses instead. The
+	// reason is spelled out for screen readers too, because a disabled button never takes focus.
+	const deleteReason = 'Not ready yet — archive a client instead of deleting them.';
 
 	$effect(() => {
 		const value = search;
@@ -66,7 +80,8 @@
 	});
 
 	function setStatus(value: string) {
-		status = value as 'lead' | 'customer' | '';
+		status = value as 'lead' | 'customer' | 'archived' | '';
+		selectedIds = new Set();
 	}
 	function setTag(value: string) {
 		tagId = value;
@@ -96,6 +111,9 @@
 	const tagsQuery = createQuery(() => ({ queryKey: tagsKey, queryFn: fetchTags }));
 
 	const clients = $derived(clientsQuery.data?.pages.flatMap((page) => page.clients) ?? []);
+	// The server answers whether this member may archive; the page never guesses from a role.
+	const canArchive = $derived(clientsQuery.data?.pages[0]?.can_archive === true);
+	const viewingArchived = $derived(status === 'archived');
 	const tagOptions = $derived([
 		{ value: '', label: 'All tags' },
 		...(tagsQuery.data ?? []).map((tag) => ({ value: tag.id, label: tag.name }))
@@ -153,15 +171,88 @@
 		return resolve('/(app)/clients/[id=uuid]', { id: client.id });
 	}
 	function clientMenuItems(client: ClientListItem) {
+		const archived = client.archived_at !== null;
 		return [
 			{ label: 'View client', onSelect: () => goto(clientHref(client)) },
 			{
 				label: 'Edit',
 				onSelect: () => goto(resolve('/(app)/clients/[id=uuid]/edit', { id: client.id }))
 			},
-			{ label: 'Archive', onSelect: () => {}, disabled: true }
+			...(canArchive
+				? [
+						archived
+							? {
+									label: 'Restore',
+									icon: restoreIcon,
+									onSelect: () => archiveMutation.mutate({ ids: [client.id], archived: false })
+								}
+							: {
+									label: 'Archive',
+									icon: archiveIcon,
+									onSelect: () => (archiveTarget = { ids: [client.id], name: client.display_name })
+								}
+					]
+				: [])
 		];
 	}
+
+	// Archiving follows Jobber: the client keeps everything and only leaves the working list, so it is a
+	// confirmation rather than a warning, and it is refused outright while live work remains.
+	let archiveTarget = $state<{ ids: string[]; name: string | null } | null>(null);
+
+	function blockedSentence(open: ClientOpenWork) {
+		const parts = [
+			open.requests === 1
+				? '1 open request'
+				: open.requests > 1
+					? `${open.requests} open requests`
+					: '',
+			open.quotes === 1 ? '1 open quote' : open.quotes > 1 ? `${open.quotes} open quotes` : '',
+			open.jobs === 1 ? '1 job still open' : open.jobs > 1 ? `${open.jobs} jobs still open` : '',
+			open.invoices === 1
+				? '1 unpaid invoice'
+				: open.invoices > 1
+					? `${open.invoices} unpaid invoices`
+					: ''
+		].filter(Boolean);
+		return parts.join(', ');
+	}
+
+	const archiveMutation = createMutation<
+		Awaited<ReturnType<typeof setClientsArchived>>,
+		Error,
+		{ ids: string[]; archived: boolean }
+	>(() => ({
+		mutationFn: ({ ids, archived }) => setClientsArchived(ids, archived),
+		onSuccess: (result, variables) => {
+			archiveTarget = null;
+			selectedIds = new Set();
+			void queryClient.invalidateQueries({ queryKey: ['clients'] });
+
+			const blocked = result.results.find((outcome) => outcome.open_work !== null);
+			if (result.changed === 0 && blocked?.open_work) {
+				toast.error(
+					'This client still has live work',
+					`Finish or archive it first — ${blockedSentence(blocked.open_work)}.`
+				);
+				return;
+			}
+			if (!variables.archived) {
+				toast.success(
+					result.changed === 1 ? 'Client restored.' : `${result.changed} clients restored.`
+				);
+				return;
+			}
+			const archivedLine =
+				result.changed === 1 ? 'Client archived.' : `${result.changed} clients archived.`;
+			if (result.skipped > 0) {
+				toast.warning(archivedLine, `${result.skipped} kept, because they still have live work.`);
+				return;
+			}
+			toast.success(archivedLine, 'Their history stays, and new work brings them back.');
+		},
+		onError: (error) => toast.error(error.message)
+	}));
 </script>
 
 <svelte:head><title>Clients · Contractor CRM</title></svelte:head>
@@ -213,7 +304,10 @@
 						options={[
 							{ value: '', label: 'All statuses' },
 							{ value: 'lead', label: 'Lead' },
-							{ value: 'customer', label: 'Customer' }
+							{ value: 'customer', label: 'Customer' },
+							// Archived clients live in this same list behind their own filter, the way Jobber
+							// keeps them — they are never a separate screen.
+							{ value: 'archived', label: 'Archived' }
 						]}
 					/>
 				</FilterField>
@@ -226,13 +320,28 @@
 		{#if selectedIds.size > 0}
 			<div class="clients-bulk-bar">
 				<span>{selectedIds.size} selected</span>
-				<span class="clients-bulk-bar__action" title={bulkReason}>
-					<Button variant="secondary" size="small" disabled>Archive</Button>
-					<span class="clients-bulk-bar__reason">{bulkReason}</span>
-				</span>
-				<span class="clients-bulk-bar__action" title={bulkReason}>
+				{#if canArchive}
+					{#if viewingArchived}
+						<Button
+							variant="secondary"
+							size="small"
+							loading={archiveMutation.isPending}
+							onclick={() => archiveMutation.mutate({ ids: [...selectedIds], archived: false })}
+							>Restore</Button
+						>
+					{:else}
+						<Button
+							variant="secondary"
+							size="small"
+							loading={archiveMutation.isPending}
+							onclick={() => (archiveTarget = { ids: [...selectedIds], name: null })}
+							>Archive</Button
+						>
+					{/if}
+				{/if}
+				<span class="clients-bulk-bar__action" title={deleteReason}>
 					<Button variant="secondary" variation="destructive" size="small" disabled>Delete</Button>
-					<span class="clients-bulk-bar__reason">{bulkReason}</span>
+					<span class="clients-bulk-bar__reason">{deleteReason}</span>
 				</span>
 			</div>
 		{/if}
@@ -289,11 +398,15 @@
 							—
 						{/if}
 					</td>
-					<td
-						><Badge status={client.lifecycle_status === 'customer' ? 'success' : 'informative'}
-							>{statusLabel(client.lifecycle_status)}</Badge
-						></td
-					>
+					<td>
+						{#if client.archived_at}
+							<Badge>Archived</Badge>
+						{:else}
+							<Badge status={client.lifecycle_status === 'customer' ? 'success' : 'informative'}
+								>{statusLabel(client.lifecycle_status)}</Badge
+							>
+						{/if}
+					</td>
 				{/snippet}
 				{#snippet rowActions(client: ClientListItem)}
 					<DropdownMenu
@@ -312,6 +425,31 @@
 		{/if}
 	{/if}
 </PageContainer>
+
+<ConfirmDialog
+	open={archiveTarget !== null}
+	title={archiveTarget && archiveTarget.ids.length > 1 ? 'Archive these clients' : 'Archive client'}
+	icon={archiveIcon}
+	confirmLabel="Archive"
+	loading={archiveMutation.isPending}
+	confirmDisabled={archiveMutation.isPending}
+	onConfirm={() => {
+		if (archiveTarget) archiveMutation.mutate({ ids: archiveTarget.ids, archived: true });
+	}}
+	onClose={() => {
+		if (!archiveMutation.isPending) archiveTarget = null;
+	}}
+>
+	<p>
+		{#if archiveTarget?.name}
+			<strong>{archiveTarget.name}</strong> leaves your client list.
+		{:else}
+			{archiveTarget?.ids.length} clients leave your client list.
+		{/if}
+		Everything stays — past quotes, jobs, invoices and messages — and you can find them again under the
+		Archived status filter. Starting new work for them brings them back automatically.
+	</p>
+</ConfirmDialog>
 
 <style lang="scss">
 	.clients-header-actions {

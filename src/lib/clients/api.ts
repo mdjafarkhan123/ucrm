@@ -2,7 +2,7 @@ export type ClientSortKey = 'updated_at' | 'name' | 'status';
 
 export type ClientListFilters = {
 	search: string;
-	status: 'lead' | 'customer' | '';
+	status: 'lead' | 'customer' | 'archived' | '';
 	tagId: string;
 	sort: ClientSortKey;
 	dir: 'asc' | 'desc';
@@ -36,6 +36,8 @@ export type ClientListPage = {
 	// Null means this was the last page. The list is keyset paginated, so there is no page number to
 	// jump to — the cursor is the only way to ask for what comes next.
 	next_cursor: string | null;
+	/** Whether this member holds customers.archive, so the list can offer Archive and Restore. */
+	can_archive: boolean;
 };
 
 export type ClientPreferences = {
@@ -141,6 +143,8 @@ export type ClientDetail = ClientWriteValues & {
 	marketing_consent: MarketingConsentState | null;
 	/** Whether this member may ask this client for a Google review from the client page. */
 	can_request_review?: boolean;
+	/** Whether this member may archive or restore this client (customers.archive). */
+	can_archive?: boolean;
 	/** The header's three stat tiles. Any figure is null when this member lacks the permission that gates
 	 *  it -- the tile then says so instead of showing a wrong or missing number. */
 	work_summary: ClientWorkSummary;
@@ -316,6 +320,45 @@ export async function deleteProperty(propertyId: string) {
 		result.field_errors ?? {},
 		[]
 	);
+}
+
+/** What a client still has open, and therefore why archiving them was refused. */
+export type ClientOpenWork = {
+	requests: number;
+	quotes: number;
+	jobs: number;
+	invoices: number;
+};
+
+export type ClientArchiveOutcome = {
+	client_id: string;
+	applied: boolean;
+	archived: boolean;
+	open_work: ClientOpenWork | null;
+};
+
+/**
+ * Archive or restore one client or a selection. Following Jobber, a client is never deleted here — they
+ * leave the working list and keep their whole history — and archiving is refused while they still have a
+ * live request, quote, job, or unsettled invoice, which comes back as that client's `open_work` counts.
+ */
+export async function setClientsArchived(clientIds: string[], archived: boolean) {
+	const response = await fetch('/api/clients/archive', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ client_ids: clientIds, archived })
+	});
+
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) {
+		throw new ClientWriteError(
+			result.error ??
+				(archived ? 'That client could not be archived.' : 'That client could not be restored.'),
+			result.field_errors ?? {},
+			[]
+		);
+	}
+	return result as { changed: number; skipped: number; results: ClientArchiveOutcome[] };
 }
 
 export async function fetchClients(

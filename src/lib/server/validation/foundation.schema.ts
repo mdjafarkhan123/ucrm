@@ -170,6 +170,13 @@ export const assessmentWriteSchema = z
 		{ path: ['ends_at'], message: 'The end time has to come after the start time.' }
 	);
 
+// One shape for archiving and restoring, single or several at once: the list's row menu sends one id,
+// the bulk bar sends the selection. False restores.
+export const clientArchiveSchema = z.object({
+	client_ids: z.array(z.string().uuid()).min(1).max(100),
+	archived: z.boolean()
+});
+
 export const assessmentCompleteSchema = z.object({
 	// False reopens an assessment marked complete by mistake.
 	complete: z.boolean().default(true)

@@ -12928,6 +12928,32 @@ export type Database = {
 					}
 				];
 			};
+			quote_status_tallies: {
+				Row: {
+					organization_id: string;
+					status: string;
+					total: number;
+				};
+				Insert: {
+					organization_id: string;
+					status: string;
+					total: number;
+				};
+				Update: {
+					organization_id?: string;
+					status?: string;
+					total?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'quote_status_tallies_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			quote_version_attachments: {
 				Row: {
 					created_at: string;
@@ -15277,6 +15303,7 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			archive_client: { Args: { target_client_id: string }; Returns: Json };
 			archive_form: {
 				Args: {
 					expected_revision: number;
@@ -20720,6 +20747,14 @@ export type Database = {
 				Args: { supplied_token_hash: string };
 				Returns: Json;
 			};
+			organization_access_snapshot: {
+				Args: {
+					at?: string;
+					target_organization_id: string;
+					target_user_id?: string;
+				};
+				Returns: Json;
+			};
 			organization_currency_is_locked: {
 				Args: { target_organization_id: string };
 				Returns: boolean;
@@ -22343,6 +22378,15 @@ export type Database = {
 				Args: { supplied_token_hash: string };
 				Returns: Json;
 			};
+			resolve_quote_access_file: {
+				Args: { supplied_token_hash: string; target_file_id: string };
+				Returns: {
+					display_name: string;
+					mime_type: string;
+					object_key: string;
+					thumbnail_object_key: string;
+				}[];
+			};
 			resolve_quote_access_link: {
 				Args: { supplied_token_hash: string };
 				Returns: Json;
@@ -22364,6 +22408,7 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			restore_client: { Args: { target_client_id: string }; Returns: Json };
 			restore_file: {
 				Args: {
 					target_actor_id: string;

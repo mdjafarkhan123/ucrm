@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { ClientWorkSummary } from '$lib/clients/api';
 import { requireClientPermission } from '$lib/server/access/clients';
-import { permissionScope } from '$lib/server/access/permission';
+import { hasPermission, permissionScope } from '$lib/server/access/permission';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { databaseError, validationError } from '$lib/server/api/errors';
 import {
@@ -91,9 +91,8 @@ export const GET: RequestHandler = async (event) => {
 		null;
 
 	const billingEmail =
-		(contactMethods ?? []).find(
-			(method) => method.kind === 'email' && method.is_billing_contact
-		)?.value ?? null;
+		(contactMethods ?? []).find((method) => method.kind === 'email' && method.is_billing_contact)
+			?.value ?? null;
 
 	// Marketing-email consent is tracked per email method in a service-role-only evidence ledger, so it is
 	// read here with the owner client rather than the request's RLS-scoped one. Only the primary email is
@@ -174,6 +173,9 @@ export const GET: RequestHandler = async (event) => {
 			// Google review Part 3. A member limited to their own jobs asks from the job page instead, since
 			// the client page may offer a job they did not work on or no job at all.
 			can_request_review: permissionScope(access.access, 'reviews.request') === 'all',
+			// Whether this member may archive or restore this client, so the header shows the action only to
+			// someone the archive route would actually let through.
+			can_archive: hasPermission(access.access, 'customers.archive'),
 			work_summary: workSummaryRow
 		}
 	});

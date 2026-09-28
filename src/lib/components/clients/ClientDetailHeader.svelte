@@ -17,6 +17,7 @@
 	import toolIcon from '@tabler/icons/outline/tool.svg?raw';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
 	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
+	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
 
 	// The identity card at the top of a client's page: who they are, how to reach them, and how much work
 	// they represent. Money and job counts have no source yet, so they read as not-yet rather than zero.
@@ -31,7 +32,10 @@
 		editor,
 		onHistory,
 		onHistoryHover,
-		canMessage = true
+		canMessage = true,
+		onArchive,
+		onRestore,
+		archiving = false
 	}: {
 		client: ClientDetail;
 		onEdit: () => void;
@@ -42,9 +46,14 @@
 		canMessage?: boolean;
 		onHistory?: () => void;
 		onHistoryHover?: () => void;
+		/** Both absent for a member without customers.archive, who would only be refused by the API. */
+		onArchive?: () => void;
+		onRestore?: () => void;
+		archiving?: boolean;
 	} = $props();
 
 	const isCustomer = $derived(client.lifecycle_status === 'customer');
+	const isArchived = $derived(client.archived_at !== null);
 
 	const dateFormat = new Intl.DateTimeFormat(undefined, {
 		day: 'numeric',
@@ -71,7 +80,12 @@
 					'_blank',
 					'noopener'
 				)
-		}
+		},
+		// Jobber puts Archive in this same ... menu, and swaps it for an Unarchive button once the client
+		// is archived — which is why restoring is a button beside the menu, not an item inside it.
+		...(onArchive && !isArchived
+			? [{ label: 'Archive client', icon: archiveIcon, onSelect: onArchive }]
+			: [])
 	]);
 
 	const moneyFormatters: Record<string, Intl.NumberFormat> = {};
@@ -116,9 +130,19 @@
 <section class="client-header" aria-label="Client summary">
 	<div class="client-header__top">
 		<Avatar id={client.id} name={client.display_name} size="medium" />
-		<Badge status={isCustomer ? 'success' : 'informative'}>{isCustomer ? 'Customer' : 'Lead'}</Badge
-		>
+		{#if isArchived}
+			<Badge>Archived</Badge>
+		{:else}
+			<Badge status={isCustomer ? 'success' : 'informative'}
+				>{isCustomer ? 'Customer' : 'Lead'}</Badge
+			>
+		{/if}
 		<div class="client-header__buttons">
+			{#if isArchived && onRestore}
+				<Button variant="secondary" size="small" loading={archiving} onclick={onRestore}
+					>Restore</Button
+				>
+			{/if}
 			{#if onHistory}
 				<button
 					type="button"

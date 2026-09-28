@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { urlParam } from '$lib/url-param.svelte';
@@ -18,6 +18,7 @@
 	import TabPanel from '$lib/components/ui/TabPanel.svelte';
 	import ClientDetailHeader from '$lib/components/clients/ClientDetailHeader.svelte';
 	import ClientDetailsForm from '$lib/components/clients/ClientDetailsForm.svelte';
+	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import MarketingConsentDialog from '$lib/components/clients/MarketingConsentDialog.svelte';
 	import PropertyDialog from '$lib/components/clients/PropertyDialog.svelte';
 	import LeadSourceEditor from '$lib/components/clients/LeadSourceEditor.svelte';
@@ -42,6 +43,7 @@
 		fetchClient,
 		type ClientReadError,
 		saveClient,
+		setClientsArchived,
 		type ClientDetail,
 		type ClientIdentityDraft,
 		type ClientPreferences,
@@ -99,6 +101,44 @@
 	}));
 
 	const saved = $derived(clientQuery.data);
+
+	// --- Archive and restore ------------------------------------------------------------------------
+	// The same checked endpoint the clients list uses. Archiving is refused while the client still has a
+	// live request, quote, job or unpaid invoice, and that refusal comes back as the counts to say so.
+	let archiveConfirmOpen = $state(false);
+
+	const archiveMutation = createMutation<
+		Awaited<ReturnType<typeof setClientsArchived>>,
+		Error,
+		{ archived: boolean }
+	>(() => ({
+		mutationFn: ({ archived }) => setClientsArchived([clientId], archived),
+		onSuccess: (result, variables) => {
+			archiveConfirmOpen = false;
+			void queryClient.invalidateQueries({ queryKey: ['clients'] });
+
+			const open = result.results[0]?.open_work;
+			if (result.changed === 0 && open) {
+				const parts = [
+					open.requests > 0 ? `${open.requests} open request${open.requests > 1 ? 's' : ''}` : '',
+					open.quotes > 0 ? `${open.quotes} open quote${open.quotes > 1 ? 's' : ''}` : '',
+					open.jobs > 0 ? `${open.jobs} job${open.jobs > 1 ? 's' : ''} still open` : '',
+					open.invoices > 0 ? `${open.invoices} unpaid invoice${open.invoices > 1 ? 's' : ''}` : ''
+				].filter(Boolean);
+				toast.error(
+					'This client still has live work',
+					`Finish or archive it first — ${parts.join(', ')}.`
+				);
+				return;
+			}
+			if (variables.archived) {
+				toast.success('Client archived.', 'Their history stays, and new work brings them back.');
+			} else {
+				toast.success('Client restored.');
+			}
+		},
+		onError: (error) => toast.error(error.message)
+	}));
 
 	// --- Editing ------------------------------------------------------------------------------------
 	// Jobber's three edit patterns (jobber-08-screen-patterns.md § How WE compare). The client's own details
@@ -507,6 +547,11 @@
 					editing={editingBlock === 'details'}
 					onHistory={() => (showHistory = !showHistory)}
 					onHistoryHover={warmHistory}
+					onArchive={client.can_archive ? () => (archiveConfirmOpen = true) : undefined}
+					onRestore={client.can_archive
+						? () => archiveMutation.mutate({ archived: false })
+						: undefined}
+					archiving={archiveMutation.isPending}
 				>
 					{#snippet editor()}
 						<ClientDetailsForm
@@ -741,6 +786,24 @@
 		{/if}
 	{/if}
 </PageContainer>
+
+<ConfirmDialog
+	open={archiveConfirmOpen}
+	title="Archive client"
+	confirmLabel="Archive"
+	loading={archiveMutation.isPending}
+	confirmDisabled={archiveMutation.isPending}
+	onConfirm={() => archiveMutation.mutate({ archived: true })}
+	onClose={() => {
+		if (!archiveMutation.isPending) archiveConfirmOpen = false;
+	}}
+>
+	<p>
+		<strong>{saved?.display_name}</strong> leaves your client list. Everything stays — past quotes, jobs,
+		invoices and messages — and you can find them again under the Archived status filter on the Clients
+		page. Starting new work for them brings them back automatically.
+	</p>
+</ConfirmDialog>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
