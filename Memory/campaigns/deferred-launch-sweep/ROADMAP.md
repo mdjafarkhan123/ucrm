@@ -44,9 +44,8 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    `historical-address-safety-and-property-transfer-between-clients`,
    `client-duplicate-detection-merge-archive-restore-and-audit-history`, `entitytype-covers-only-clients-and-properties`.
 7. **Jobber parity** — In progress 2026-09-28 (Sonnet). `request-list-search-doesn-t-match-client-name`
-   and `last-communication-rail-card-on-the-client-page` are fixed and browser-verified on Raad LTD, committed
-   on branch `worktree-deferred-sweep-part7` (`8006a42f`) in worktree `.claude/worktrees/deferred-sweep-part7`
-   — **not yet merged into `main`**; merge first, then delete both deferred notes + their INDEX rows. Found
+   and `last-communication-rail-card-on-the-client-page` are fixed, browser-verified on Raad LTD, and merged
+   into `main` (`0a640513`); their notes are deleted. Found
    incidentally: Jobs and Quotes list search have the same missing-client-name gap Requests had — recorded as
    new deferred note `jobs-and-quotes-list-search-also-misses-client-name.md`, not fixed (out of this part's
    original list). Remaining, each needs a decision with Jafar before building (see

@@ -14,7 +14,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Resolving a chat identity does not stop the next conflict](resolving-a-chat-identity-does-not-stop-the-next-conflict.md) |
 | P2 | [`EntityType` covers only clients and properties](entitytype-covers-only-clients-and-properties.md) |
 | P2 | [Active member's sign-in email not visible, recovery path unclear](active-member-email-not-visible-and-recovery-path-unclear.md) |
-| P2 | [`Last communication` rail card on the client page](last-communication-rail-card-on-the-client-page.md) |
 | P2 | [No admin-alert delivery for loop-detected inbound threads](no-admin-alert-delivery-mechanism-for-loop-detected-inbound-threads.md) |
 | P2 | [Composer day-two scope: CC, attachments, formatting, channel tabs](composer-day-two-scope.md) |
 | P2 | [A customer file re-resolves the whole quote document](a-customer-file-re-resolves-the-whole-quote-document.md) |
@@ -33,7 +32,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Quote composer has no financial rail or proposal sections](quote-composer-has-no-financial-rail-or-proposal-sections.md) |
 | P2 | [Quote Overview counts scan the whole tenant](quote-overview-counts-scan-the-whole-tenant.md) |
 | P2 | [Real (time-tracking) `Labor` block on the Request detail page](real-time-tracking-labor-block-on-the-request-detail-page.md) |
-| P2 | [Request list search doesn't match client name](request-list-search-doesn-t-match-client-name.md) |
 | P2 | [Request Status filter matches the stored status, not the displayed one](request-status-filter-matches-the-stored-status-not-the-displayed-one.md) |
 | P2 | [Six unindexed foreign keys from the collaboration tables](six-unindexed-foreign-keys-from-the-collaboration-tables.md) |
 | P2 | [Website Chat's Realtime connection ceiling is measured but unconfirmed](website-chat-realtime-connection-quota-unconfirmed.md) |

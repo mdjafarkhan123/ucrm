@@ -1,19 +1,9 @@
 # Part 7 — Jobber parity
 
-**Exact next action:** merge worktree branch `worktree-deferred-sweep-part7` (commit `8006a42f`, in
-`.claude/worktrees/deferred-sweep-part7`) into `main` — first check `main`'s working tree is clean of
-another session's uncommitted work before merging. After merge: run svelte-check + prettier once more from
-`main`, delete `Memory/deferred/request-list-search-doesn-t-match-client-name.md` and
-`Memory/deferred/last-communication-rail-card-on-the-client-page.md` + their two rows in
-`Memory/deferred/INDEX.md`, remove the worktree (`ExitWorktree` with `path` then `action: "remove"`, or
-`git worktree remove`), and release reservation `34d9a57131a3` (`agent-work.py release 34d9a57131a3`).
+**Exact next action:** merged into `main` (`0a640513`), worktree removed, both notes deleted. Ask Jafar
+for a decision on the 5 items below, one at a time, then build the approved ones.
 
-Both merged changes were browser-verified live on Raad LTD (office-role login) before committing: request
-search by "Riverbend" now finds that client's requests even though neither title contains the name; the
-client detail page's new "Last communication" rail card shows date/subject and its "Read more..." link
-correctly opens the Communication tab.
-
-**Then, for the 5 remaining Part 7 items, get Jafar's decision before building each** (none are a quick fix):
+**The 5 remaining items (each needs Jafar's decision before building; none are a quick fix):**
 
 1. `request-status-filter-matches-the-stored-status-not-the-displayed-one` — decide: filter by the same
    computed display-status the counts card already derives (extra per-row date math, needs a view/RPC like
