@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { City, Country, type ICity } from 'country-state-city';
+	import { Country } from 'country-state-city';
+	import { createQuery, keepPreviousData } from '@tanstack/svelte-query';
 	import { Combobox } from 'bits-ui';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
@@ -47,29 +48,40 @@
 			)
 			.slice(0, 80)
 	);
-	let cities = $derived(
-		selectedCountry ? (City.getCitiesOfCountry(selectedCountry.isoCode) ?? []) : []
-	);
-	let cityItems = $derived(cities.map((city) => ({ value: cityValue(city), label: city.name })));
-	let selectedCity = $derived(cities.find((city) => cityValue(city) === selectedCityValue));
-	let cityInputValue = $derived(cityOpen ? cityQuery : (selectedCity?.name ?? cityQuery));
-	let normalizedCityQuery = $derived(
-		cityQuery === selectedCity?.name ? '' : cityQuery.trim().toLowerCase()
-	);
-	let cityResults = $derived(
-		cities
-			.filter((city) => cityLabel(city).toLowerCase().includes(normalizedCityQuery))
-			.sort((a, b) => cityLabel(a).localeCompare(cityLabel(b)))
-			.slice(0, 80)
+	let selectedCityName = $derived(selectedCityValue.split('|')[0] ?? '');
+	let cityInputValue = $derived(cityOpen ? cityQuery : selectedCityName || cityQuery);
+	let citySearch = $derived(cityQuery === selectedCityName ? '' : cityQuery.trim());
+	let debouncedCitySearch = $state('');
+	$effect(() => {
+		const next = citySearch;
+		const handle = setTimeout(() => (debouncedCitySearch = next), 200);
+		return () => clearTimeout(handle);
+	});
+
+	// Cities come from the server as the person types; shipping the world's city list to the browser
+	// made this page about 8 MB.
+	const citiesQuery = createQuery(() => ({
+		queryKey: ['public-city-search', countryCode, debouncedCitySearch],
+		queryFn: async ({ signal }): Promise<CityMatch[]> => {
+			const params = new URLSearchParams({ country: countryCode, q: debouncedCitySearch });
+			const response = await fetch(`/api/public/locations/cities?${params}`, { signal });
+			if (!response.ok) throw new Error('City search failed.');
+			return ((await response.json()) as { cities: CityMatch[] }).cities;
+		},
+		enabled: Boolean(countryCode) && cityOpen,
+		placeholderData: keepPreviousData,
+		staleTime: Infinity
+	}));
+	let cityResults = $derived(countryCode ? (citiesQuery.data ?? []) : []);
+	let cityItems = $derived(
+		cityResults.map((city) => ({ value: cityValue(city), label: city.name }))
 	);
 	let describedBy = $derived(errorMessage ? `${id}-error` : undefined);
 
-	function cityValue(city: ICity) {
-		return `${city.name}|${city.stateCode}|${city.latitude}|${city.longitude}`;
-	}
+	type CityMatch = { name: string; stateCode: string };
 
-	function cityLabel(city: ICity) {
-		return city.stateCode ? `${city.name}, ${city.stateCode}` : city.name;
+	function cityValue(city: CityMatch) {
+		return `${city.name}|${city.stateCode}`;
 	}
 
 	function focusCountry(input: HTMLInputElement) {
@@ -80,7 +92,7 @@
 
 	function focusCity(input: HTMLInputElement) {
 		if (!selectedCountry) return;
-		cityQuery = selectedCity?.name ?? '';
+		cityQuery = selectedCityName;
 		cityOpen = true;
 		input.select();
 	}
@@ -98,7 +110,7 @@
 	}
 
 	function chooseCity(nextValue: string) {
-		const city = cities.find((item) => cityValue(item) === nextValue);
+		const city = cityResults.find((item) => cityValue(item) === nextValue);
 		if (!city || !selectedCountry) return;
 		lastCommittedCity = nextValue;
 		selectedCityValue = nextValue;
@@ -119,10 +131,7 @@
 		countryCode = country.isoCode;
 		countryQuery = country.name;
 		const initialCityName = parts.length > 1 ? parts.slice(0, -1).join(', ') : '';
-		const initialCity = (City.getCitiesOfCountry(country.isoCode) ?? []).find(
-			(city) => city.name.toLowerCase() === initialCityName.toLowerCase()
-		);
-		selectedCityValue = initialCity ? cityValue(initialCity) : '';
+		selectedCityValue = initialCityName ? `${initialCityName}|` : '';
 		cityQuery = initialCityName;
 	}
 
@@ -287,7 +296,8 @@
 											>{/if}
 									</Combobox.Item>
 								{:else}<div class="location-picker__empty">
-										No cities match “{cityQuery}”.
+										{#if citiesQuery.isPending || citiesQuery.isFetching}Searching…{:else if citiesQuery.isError}Couldn't
+											load cities. Try again.{:else}No cities match “{cityQuery}”.{/if}
 									</div>{/each}
 							</Combobox.Viewport>
 						</Combobox.Content>
