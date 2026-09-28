@@ -9,21 +9,14 @@ no longer applies.
 
 - [x] 6A — closed the two obsolete notes; finance invoice permissions applied (`95680990`), browser-verified
       on Raad LTD, plus the write-button gating bug it exposed (`d2fea540`)
-- [ ] 6B — client archive + restore
+- [x] 6B — client archive + restore (`ce48dfa2`), browser-verified 2026-09-28
 - [ ] 6C — property cascade delete (destructive; read Notes first)
 - [x] Add client merge as roadmap Part 10
 
 ## Next
 
-**6B, recommended next.** `clients.archived_at` and the `customers.archive` permission already exist (admin and
-office hold it). Three affordances in `src/routes/(app)/clients/+page.svelte` are disabled behind `bulkReason`
-"Not ready yet — this arrives once clients carry work": the row menu's "Archive" item, and the bulk Archive and
-bulk Delete buttons. Needs an API endpoint, a way to see and restore archived clients (the list hard-filters
-`archived_at is null`; the status filter offers only lead/customer), and a decision from Jafar on whether a
-client with unpaid invoices can be archived. Jobber gates archiving behind an `isArchivable` flag whose rule is
-not documented.
-
-No code is half-done. The permissions migration is applied, verified live, and committed.
+**6C, property cascade delete** — the destructive one. Read the 6C design under Notes and Jobber's § 2.2a
+before writing anything. Nothing is half-done.
 
 ## Notes
 

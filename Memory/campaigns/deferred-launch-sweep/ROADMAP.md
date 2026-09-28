@@ -8,14 +8,8 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
 
 1. **Email can silently stop** — Done 2026-09-27 (`32f49eb0`): a missing allowance counts as zero, live-proven.
    Package terms stay deferred until Jafar plans packages (note kept in Memory/deferred/).
-2. **Broken things** — Done 2026-09-28. Seat count: send was correct live; the real bug was a cancelled invite
-   holding its seat and Team row until the worker ran (fixed in `cancel_team_invitation`). `office-role-cannot-load-client-communication-history`,
-   `two-job-billing-reminder-modes-raise-no-reminder`, `full-page-load-hydration-crash-leaves-the-previous-page-on-screen` (investigated 2026-09-27: no leak, not reproducible; parked),
-   `tab-selection-read-from-a-stale-page-url`, `board-presentation-and-formatting-are-read-behind-a-settings-permission`,
-   `job-payment-schedule-dialog-keeps-a-stale-reconciliation-banner`, `team-seat-count-overshoots-right-after-an-invitation`,
-   `review-history-says-sent-for-a-scheduled-request`, `job-visit-override-pricing-photo-removal-not-trashed`,
-   `marketing-release-leftovers` (broken campaign now opens fine; its two feature items stay deferred),
-   `staff-own-actions-lag-behind-realtime-echo` (fixed; its slow inbox read moved to Part 8).
+2. **Broken things** — Done 2026-09-28: eleven notes fixed or closed, including a cancelled invite holding its
+   seat (`cancel_team_invitation`); the hydration crash was investigated, not reproducible, and parked.
 3. **No fake numbers** — Done 2026-09-28: one shared money read model (`invoice_money_overview`,
    `client_work_summary`, both permission-gated to null rather than a wrong number). Invoices list KPI tiles
    (Outstanding/Overdue/Collected this month) and the client header stats (Lifetime/Open quotes/Active jobs)
@@ -28,25 +22,15 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    browser-checked on Raad LTD. Fixed on the way: replaced/voided bills showed a false balance (`5bd3b498`), and
    the voided-invoice guard blocked rebilling (`20260928190000`, applied straight to the database because the
    Part 7 session's `20260928180000` isn't in this folder yet).
-5. **Complete customer documents** — Done 2026-09-28. `line-photos-wrongly-appear-in-the-request-s-attachments-card`:
-   already fixed by the Files and Media migration before this part started — the old `AttachmentsCard`/`public.attachments`
-   path it described isn't wired to requests any more; `file_links.role <> 'line_photo'` already keeps a line photo off
-   the record's own file list. No code change; note closed. `client-documents-drop-line-photos-and-need-a-completeness-pass`:
-   researched against Jobber (`jobber-03`/`jobber-05`) — Jobber's own invoice line item has no photo field at all, even
-   on its paid plans (photos are a quote-side Grow-plan upsell only); Jafar chose to match that and not build invoice
-   photos. Quote line items already carried the photo but had no click-to-enlarge; added the standard `Lightbox`
-   (`CustomerQuoteDocument.svelte`) so it matches the convention used everywhere else. Quantity/other line content
-   already matches Jobber's own field set (including the progress-bill exception, which lines up with Jobber's own
-   `originalCost` concept) — no further completeness gap found. `invoice-email-sends-to-primary-only-not-billing-contact`
-   was held for Part 4; Part 4 is Done, so it resumed and shipped: both invoices and quotes now email the client's
-   primary address and a separate billing-contact address when one is set, browser-verified on Raad LTD (Greenfield
-   Property Group, invoice #35 and quote #44) — both delivery intents submitted, both access links opened their
-   document.
+5. **Complete customer documents** — Done 2026-09-28. Line-photo note was already fixed by Files and Media;
+   Jafar chose to match Jobber (no invoice line photos); quote line photos gained the standard `Lightbox`;
+   invoices and quotes now also email a separate billing contact, browser-verified on Raad LTD.
 6. **Protect customer history** — split 2026-09-28; two of its four notes were obsolete. 6A **Done**
    (`95680990`): closed `entitytype-covers-only-clients-and-properties` and
    `historical-address-safety-and-property-transfer-between-clients` (both already satisfied by shipped work;
    property transfer dropped — Jobber has no such feature), and gave the finance role real invoice access
-   (`20260928240000`, applied and verified live). 6B **Planned** — client archive + restore. 6C **Planned** —
+   (`20260928240000`, applied and verified live). 6B **Done** (`ce48dfa2`) — client archive + restore, browser-verified 2026-09-28 (archive, Archived
+   filter, restore, refusal listing open work). 6C **Planned** —
    property cascade delete, the destructive one; covers
    `property-deletion-guarded-once-work-references-a-property`. Read the part note before either.
 7. **Jobber parity** — Done 2026-09-28 (`0a640513`). Request-list client-name search and the client page's
@@ -56,13 +40,10 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    files-processing-worker gap (`Memory/deferred/background-jobs-have-no-production-scheduler-decision.md`) —
    same as Parts 3, 8A, 8B. Found incidentally and left deferred: Jobs and Quotes list search have the same
    client-name gap (`jobs-and-quotes-list-search-also-misses-client-name.md`).
-8. **Speed** — Planned; performance-review skill. `get-started-page-weight`,
-   `every-entitlement-gated-route-re-reads-the-whole-access-model`, `app-wide-rls-helpers-run-once-per-returned-row`,
-   `name-search-across-list-apis-falls-back-to-a-sequential-scan`, `quote-overview-counts-scan-the-whole-tenant`,
-   `six-unindexed-foreign-keys-from-the-collaboration-tables`, `a-customer-file-re-resolves-the-whole-quote-document`,
-   `app-shell-idle-warmer-downloads-every-routine-route`, `client-photos-are-one-request-each`,
-   `list-table-rows-use-goto-instead-of-real-links`, `jafar-panel-organization-tabs-have-no-hover-prefetch`,
-   `inbox-read-takes-over-a-second`.
+8. **Speed** — Done 2026-09-28, merged to `main`: 10 of 12 notes fixed and measured (sign-up page ~8 MB →
+   531 kB; name search on a 50k-client tenant 240 → 3 ms via trigram indexes; list rows and the Jafar
+   Communications tab prefetch on hover; a closed tab no longer mounts or loads — shared `TabPanel`). Two moved
+   to Part 11. File Manager search split off to `file-manager-search-cannot-use-an-index`.
 9. **Final live checks** — In progress 2026-09-28. Non-admin email correction **Done**: office member's
    email changed, round-tripped, and changed back on Raad LTD, both audited; note deleted. Website Chat
    ceiling re-deferred to the staging VPS (managed limit is Supabase's, production's is ours; note updated).
@@ -74,6 +55,10 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
     Export. Covers the merge half of
     `client-duplicate-detection-merge-archive-restore-and-audit-history`, plus the audit history; today there is
     only create-time duplicate warning by `ilike '%term%'`, capped at 5 rows.
+11. **Speed on client pages** — Planned (Opus; performance-review). `client-photos-are-one-request-each`
+    (Jafar: follow the industry pattern — batched short-lived signed URLs) and
+    `app-wide-rls-helpers-run-once-per-returned-row`. Both waited on Part 6's client work; only 6C's property
+    files are still in flight.
 
 46 tasks worked; 21 left deferred.
 
