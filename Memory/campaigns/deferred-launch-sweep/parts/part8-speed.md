@@ -10,7 +10,7 @@
 - [x] `app-shell-idle-warmer-...` — 13 daily routes, skip on Save-Data/2G; ~890 → ~520 KB gzip. CLAUDE.md warm-list rule updated
 - [x] `jafar-panel-organization-tabs-...` — Communications tab (the only tab with own reads) prefetches on hover via shared `src/lib/jafar/organization-communications-queries.ts`
 - [x] `list-table-rows-use-goto-...` — rows already had real links; real gap was data. `DataTable` `onRowHover` (100 ms intent) prefetches detail on Jobs/Invoices/Quotes/Requests. Clients list waits for Part 6
-- [ ] `every-entitlement-gated-route-re-reads-the-whole-access-model` — one combined read, no cache
+- [x] `every-entitlement-gated-route-re-reads-the-whole-access-model` — `public.organization_access_snapshot` (invoker, no cache); identical output all roles; 440 → 81 ms median
 - [ ] `six-unindexed-foreign-keys-from-the-collaboration-tables`
 - [ ] `a-customer-file-re-resolves-the-whole-quote-document` — `resolve_quote_access_file` RPC
 - [ ] `inbox-read-takes-over-a-second` — note file was never written (only its INDEX row); investigate from scratch
@@ -22,8 +22,15 @@
 
 ## Next
 
-Start `every-entitlement-gated-route-re-reads-the-whole-access-model` (read `src/lib/server/access/effective.ts`,
-`permission.ts`, report `docs/research/jobs-performance-verification-2026-09-10.md`).
+Next task: `six-unindexed-foreign-keys-from-the-collaboration-tables` (confirm with `get_advisors` first).
+Branch is 5 commits ahead of `main`, nothing uncommitted.
+
+## Outside actions
+
+- Migration `20260929090000_organization_access_snapshot` pushed to the linked project — check:
+  `select version from supabase_migrations.schema_migrations where version = '20260929090000'` — done.
+  Its file is only on this branch until merge. A push from the worktree needs a temporary copy of
+  `main`'s newer migrations (e.g. `20260928240000_...`); delete the copy afterwards.
 
 ## Notes
 
