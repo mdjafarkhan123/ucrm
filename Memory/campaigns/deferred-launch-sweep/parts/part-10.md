@@ -9,9 +9,10 @@ redirect; browser-verified on Raad LTD.
 ## Steps
 
 - [x] Research Jobber (help.getjobber.com/en/articles/merge-duplicate-clients) and ask Jafar
-- [ ] Migration: `client_merges` record table, `client_merge_preview`, `merge_clients`, history triggers step
+- [x] Migration: `client_merges` record table, `client_merge_preview`, `merge_clients`, history triggers step
       aside while a merge runs (same pattern as `private.property_delete_in_progress` in `20260929140000`)
-- [ ] Test the function in rolled-back transactions on the live DB, then push
+- [x] Pushed (`20260929170000`, fix `20260929171000`) and tested in rolled-back transactions on Raad LTD:
+      every row moved, balances add up exactly, office refused, stop wins, open card checkout blocks
 - [ ] `/api/clients/merge` (preview GET + POST, Zod, `customers.merge`) and old-link redirect
 - [ ] UI: merge dialog (pick other client, swap arrows, confirmation screen listing what moves + warnings)
       in Clients list More actions and client page `…`
@@ -19,14 +20,8 @@ redirect; browser-verified on Raad LTD.
 
 ## Next
 
-Migration written: `supabase/migrations/20260929170000_merge_clients.sql`. Push it, then run the rolled-back
-test in the scratchpad (merge "Tester Account" into "Greenfield Property Group" on Raad LTD as the owner;
-office role must be refused), then build the API.
-
-## Outside actions
-
-- Push migration `20260929170000` — check: `npx --no-install supabase migration list --linked` shows it
-  remote — pending
+Build `/api/clients/merge` (Zod; calls `client_merge_preview` / `merge_clients` RPCs) and the old-link
+redirect via `resolve_merged_client`.
 
 ## Notes
 
