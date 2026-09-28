@@ -487,7 +487,9 @@ The current ContractorOs structure is retained and refined:
 - keep edit and other secondary actions in a menu;
 - use Edit Schedule for recurring work;
 - distinguish Add one Visit from Add multiple Visits;
-- mark a Visit that differs from its recurring series; and
+- mark a Visit that differs from its recurring series — moved off the date the repeat rule gave it,
+  unscheduled, or given its own time on that Visit alone (copying a time to later Visits changes the
+  series instead, like Jobber's "update future visits"); a moved Visit names its original date; and
 - distinguish an as-needed Job from an accidental empty schedule.
 
 Schedule may refine this cross-surface card during its parity part, but Jobs remains the source of Visit

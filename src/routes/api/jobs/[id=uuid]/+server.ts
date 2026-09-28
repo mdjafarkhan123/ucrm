@@ -104,7 +104,7 @@ export const GET: RequestHandler = async (event) => {
 			.from('job_visits')
 			.select(
 				`id, position, visit_date, start_time, end_time, all_day, title, instructions, completed_at,
-				 revision, assignments:job_visit_assignments(user_id)`
+				 completed_by, series_date, off_series, revision, assignments:job_visit_assignments(user_id)`
 			)
 			.eq('organization_id', organizationId)
 			.eq('job_id', jobId)
@@ -273,6 +273,23 @@ export const GET: RequestHandler = async (event) => {
 		(billedVisitRows.data ?? []).map((claim) => claim.visit_id as string)
 	);
 
+	// Who completed each visit, by name. `completed_by` points at the user rather than a profile, so the names
+	// come the way the job's history rail finds its actors: through `profiles`, whose RLS shows the reader
+	// their current teammates only — a visit completed by someone since removed keeps its date and no name.
+	const completerIds = [
+		...new Set(
+			(visitRows.data ?? []).map((visit) => visit.completed_by).filter((id): id is string => !!id)
+		)
+	];
+	const completerNames = new Map<string, string>();
+	if (completerIds.length > 0) {
+		const profiles = await supabase.from('profiles').select('id, full_name').in('id', completerIds);
+		if (profiles.error) return databaseError();
+		for (const profile of profiles.data ?? []) {
+			if (profile.full_name) completerNames.set(profile.id, profile.full_name);
+		}
+	}
+
 	const visits = (visitRows.data ?? []).map((visit) => ({
 		id: visit.id,
 		position: visit.position,
@@ -283,6 +300,9 @@ export const GET: RequestHandler = async (event) => {
 		title: visit.title,
 		instructions: visit.instructions,
 		completed_at: visit.completed_at,
+		completed_by_name: visit.completed_by ? (completerNames.get(visit.completed_by) ?? null) : null,
+		series_date: visit.series_date,
+		off_series: visit.off_series === true,
 		revision: visit.revision,
 		assignee_ids: ((visit.assignments ?? []) as { user_id: string }[]).map((a) => a.user_id),
 		// Only meaningful when canSeeInvoiceStatus computed it; false for a reader who cannot see invoices,
