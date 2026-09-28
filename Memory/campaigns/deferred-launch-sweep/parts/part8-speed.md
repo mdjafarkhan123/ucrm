@@ -6,24 +6,29 @@
 
 ## Steps
 
-- [x] `get-started-page-weight` — server city search; page JS ~8 MB → ~110 KB gzip. Browser check pending (Chrome extension was disconnected)
-- [x] `app-shell-idle-warmer-...` — 13 daily routes, skip on Save-Data/2G; ~890 → ~520 KB gzip. CLAUDE.md warm-list rule updated
-- [x] `jafar-panel-organization-tabs-...` — Communications tab (the only tab with own reads) prefetches on hover via shared `src/lib/jafar/organization-communications-queries.ts`
-- [x] `list-table-rows-use-goto-...` — rows already had real links; real gap was data. `DataTable` `onRowHover` (100 ms intent) prefetches detail on Jobs/Invoices/Quotes/Requests. Clients list waits for Part 6
-- [x] `every-entitlement-gated-route-re-reads-the-whole-access-model` — `public.organization_access_snapshot` (invoker, no cache); identical output all roles; 440 → 81 ms median
-- [x] `six-unindexed-foreign-keys-from-the-collaboration-tables` — only `attachments.note_id` needed an index; the rest are covered or account-delete-only (migration comment says why)
-- [x] `a-customer-file-re-resolves-the-whole-quote-document` — `resolve_quote_access_file`; same answers on all 546 live link/file pairs; expired link now 404 not 500
-- [x] `inbox-read-takes-over-a-second` — each step is one ~70–130 ms trip to the remote DB, not DB work; access snapshot + concurrent rate limit took it from >1 s to ~580 ms here. Production (DB beside app) is the real cure. No note file exists — delete only its INDEX row at merge
+- [x] `get-started-page-weight` — Browser check pending.
+- [x] `app-shell-idle-warmer-...`
+- [x] `jafar-panel-organization-tabs-...`
+- [x] `list-table-rows-use-goto-...`
+- [x] `every-entitlement-gated-route-re-reads-the-whole-access-model`
+- [x] `six-unindexed-foreign-keys-from-the-collaboration-tables`
+- [x] `a-customer-file-re-resolves-the-whole-quote-document`
+- [x] `inbox-read-takes-over-a-second`
 - [ ] `client-photos-are-one-request-each` — industry pattern (batched short-lived signed URLs); touches client pages, wait for Part 6
 - [ ] `app-wide-rls-helpers-run-once-per-returned-row` — clients family; overlaps Part 6, wait for it
-- [ ] `name-search-across-list-apis-falls-back-to-a-sequential-scan` — Jafar 2026-09-28: add pg_trgm now (Clients, Requests, Jobs, catalog, files)
-- [x] `quote-overview-counts-scan-the-whole-tenant` — `quote_status_tallies` counter cache (triggers, never stale); 12.9 → 0.07 ms. The note's `pipeline_stage_counts_read_model` never existed
-- [ ] Browser-verify the four done items, merge to `main`, delete their deferred notes + INDEX rows
+- [ ] `name-search-across-list-apis-falls-back-to-a-sequential-scan` — Jafar 2026-09-28: add pg_trgm now. WIP migration `20260929130000_trigram_name_search` committed on branch, **NOT pushed**. Rolled-back bench (50k-client tenant in 200k): no-match search 240 → 3.3 ms; common terms unchanged. Index 13 MB per 200k clients
+- [x] `quote-overview-counts-scan-the-whole-tenant`
+- [ ] Browser-verify the first four done items, merge to `main`, delete the done items' deferred notes + INDEX rows (`inbox-read-takes-over-a-second` has only a row, no file)
 
 ## Next
 
-Next task: name search with pg_trgm (design verdict first). Branch 10 commits ahead of `main`, nothing
-uncommitted. 72 unit tests fail on `main` too (quote specs; deferred note `quote-api-tests-never-learned-the-rate-limit`) — not ours.
+Finish the trigram migration, then push it: (1) remove the `files` index — `list_files` searches
+`name OR caption OR exists(linked record)`, and the plan stays a Seq Scan, so it is dead weight; file search
+would need `list_files` restructured (ask Jafar or defer). (2) Measure write cost: 2,000 client inserts took
+1.8 s with the index but no no-index baseline was taken — rerun both in one rolled-back script (scratch scripts
+were in the old session's scratchpad; rebuild them: fake org via `session_replication_role = replica`).
+(3) `db push --linked`, regenerate types, commit. Then the browser-verify + merge step. Branch 12 commits
+ahead of `main`. 72 unit tests fail on `main` too — deferred note `quote-api-tests-never-learned-the-rate-limit`.
 
 ## Outside actions
 

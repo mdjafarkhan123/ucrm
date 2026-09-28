@@ -15,6 +15,9 @@ round-trip to avoid leaving a mutated login email unverified. Next session: fill
 Save correction, confirm it round-trips (re-open Fix profile, check the new value persisted), then change it
 back to `dev.jafarkhan+office@gmail.com` before finishing, and delete the deferred note.
 
+**Part 8 (speed, Opus) paused 2026-09-28** in worktree `deferred-sweep-part8` — 9 of 12 fixes done; next is
+finishing the trigram search migration (not yet pushed). See `parts/part8-speed.md`.
+
 **Answered 2026-09-28:** finance's missing invoice permissions are fixed and browser-verified on Raad LTD —
 finance sees the list and all three write buttons, office sees the list and amounts with none.
 
