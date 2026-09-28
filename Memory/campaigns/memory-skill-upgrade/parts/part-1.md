@@ -7,7 +7,7 @@
 
 ## Steps
 
-- [ ] Write `SKILL.md`: layout and word limits, resume, checkpoint, pause, finish, defer
+- [x] Write `SKILL.md`: layout and word limits, resume, checkpoint, pause, finish, defer
 - [ ] Write `planning.md` and `setup.md`
 - [ ] Write `templates/` (INDEX, deferred INDEX, NOW, ROADMAP, stage, part, plan, deferred task); update
       `agents/openai.yaml`
@@ -16,7 +16,7 @@
 
 ## Next
 
-Write `SKILL.md` in the worktree.
+Write `planning.md` and `setup.md` in the worktree's `.claude/skills/campaign-memory/`.
 
 ## Notes
 
