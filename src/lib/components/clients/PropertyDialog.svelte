@@ -139,6 +139,13 @@
 	}
 
 	const impact = $derived(impactQuery.data);
+
+	// On a phone the confirmation opens below the fold and grows once the impact arrives, so it is brought
+	// into view again when it does. Reading `impact` here is what re-runs this.
+	function revealConfirm(node: HTMLElement) {
+		void impact;
+		node.scrollIntoView({ block: 'end', behavior: 'smooth' });
+	}
 	const blocked = $derived((impact?.blockers.length ?? 0) > 0);
 	const doomedWork = $derived(impact ? workSummary(impact) : '');
 
@@ -277,7 +284,7 @@
 
 		{#if confirmingDelete}
 			<!-- The confirmation replaces the footer rather than opening a second dialog on top of this one. -->
-			<div class="property-dialog__confirm" aria-live="polite">
+			<div class="property-dialog__confirm" aria-live="polite" {@attach revealConfirm}>
 				{#if impactQuery.isError}
 					<p class="property-dialog__confirm-text">
 						{impactQuery.error?.message ?? 'We could not check what this property holds.'}
@@ -300,8 +307,9 @@
 				{:else if doomedWork}
 					<p class="property-dialog__confirm-title">Delete this property and its work?</p>
 					<p class="property-dialog__confirm-text">
-						This also permanently deletes <strong>{doomedWork}</strong> at this address, with their visits,
-						notes and files. They won’t show in your reports any more. This can’t be undone.
+						This also permanently deletes <strong>{doomedWork}</strong> at this address, along with everything
+						attached to them — visits, notes and files. They won’t show in your reports any more. This
+						can’t be undone.
 					</p>
 				{:else}
 					<p class="property-dialog__confirm-title">Delete this property?</p>
@@ -448,8 +456,9 @@
 	}
 
 	@media (max-width: 767px) {
+		// minmax(0, …) lets a field shrink below its content's natural width instead of pushing past the dialog.
 		.property-dialog__grid {
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
 		}
 
 		.property-dialog__footer {

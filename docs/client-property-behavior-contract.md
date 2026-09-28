@@ -11,9 +11,8 @@ Approved here does not mean shipped. Built and live: client identity and contact
 and detail, properties with add, edit and remove, notes, tags, files, activity, tenant isolation,
 permissions, search, and create-time duplicate warnings.
 
-Approved but not built, each waiting on work objects or invoicing: property deletion guarded by real work,
-historical address snapshots, property transfer between clients, the billing address, and client merge,
-archive, restore and audit history. Their deferred records are listed in `Memory/deferred/INDEX.md`.
+Approved but not built, each waiting on work objects or invoicing: the billing
+address, and client merge and audit history. Their deferred records are listed in `Memory/deferred/INDEX.md`.
 
 ## Language and relationships
 
@@ -55,8 +54,14 @@ named contact or communication method before a communication-dependent action ca
 - A Client may hold many Properties. They are added, edited, and removed from the Properties block on the
   Client detail page, through a dialog that saves itself rather than staging into the page's action bar.
 - Naming a Property is optional; an unnamed one is identified by its street.
-- Removing a Property is a soft delete that promotes the oldest remaining Property to primary, so a Client
-  with any active Property always has exactly one primary. A Client may be left with none.
+- Deleting a Property follows Jobber (Jafar, 2026-09-28): it permanently deletes the Property together with
+  the requests, quotes and jobs at that address and everything attached to them, and they leave reporting.
+  The confirmation names how many of each will go. It refuses, naming each record, while any of that work
+  was invoiced, took a deposit or card checkout, was sent to the customer, or is tied to work at another
+  address — that is customer paperwork and money, which our history keys protect. The member also needs
+  `quotes.edit` / `jobs.edit` when quotes / jobs would go. Files left with no use go to Trash. The oldest
+  remaining Property becomes primary, so a Client with any Property always has exactly one primary; a Client
+  may be left with none. There is no moving a Property to another Client — Jobber has none either.
 - Billing Address is identified separately and is not yet implemented. Jobber stores an optional billing
   address on each Property; our schema currently carries a single `is_billing_address` flag, which stays
   unset until invoicing decides the shape.
