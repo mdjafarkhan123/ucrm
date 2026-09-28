@@ -30,7 +30,9 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import {
 		fetchClients,
+		fetchClient,
 		setClientsArchived,
+		clientDetailKey,
 		clientsListKey,
 		type ClientListItem,
 		type ClientListPage,
@@ -253,6 +255,14 @@
 		},
 		onError: (error) => toast.error(error.message)
 	}));
+
+	function prefetchClient(item: { id: string }) {
+		void queryClient.prefetchQuery({
+			queryKey: clientDetailKey(item.id),
+			queryFn: () => fetchClient(item.id),
+			staleTime: 15_000
+		});
+	}
 </script>
 
 <svelte:head><title>Clients · Contractor CRM</title></svelte:head>
@@ -370,6 +380,7 @@
 				selectable
 				bind:selectedIds
 				rowLabel={(client) => `Select ${client.display_name}`}
+				onRowHover={prefetchClient}
 				onRowActivate={(client) => goto(clientHref(client))}
 				{sort}
 				onSortChange={handleSortChange}
