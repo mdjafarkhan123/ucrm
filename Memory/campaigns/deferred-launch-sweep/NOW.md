@@ -9,7 +9,13 @@ gap (see `Memory/deferred/background-jobs-have-no-production-scheduler-decision.
 Worktree `deferred-sweep-part7b` removed, fully merged.
 
 **Exact next action:** Start Part 6 (Opus) — Protect customer history. See ROADMAP.md Part 6 line for its
-four tasks.
+four tasks. Separately (Sonnet, Part 9): the `non-admin-email-correction-browser-verification-part-7` deferred
+note's trigger is now satisfied — Raad LTD's office/sales/finance test-role members exist (`dev.jafarkhan+office@gmail.com`
+etc.). Reached the Jafar Panel → Organizations → Raad LTD → Team tab → office row → "Fix profile" dialog
+(Name/Email/Correction reason fields) but did not submit a change — stopped before live-testing the PATCH
+round-trip to avoid leaving a mutated login email unverified. Next session: fill Email with a test value,
+Save correction, confirm it round-trips (re-open Fix profile, check the new value persisted), then change it
+back to `dev.jafarkhan+office@gmail.com` before finishing, and delete the deferred note.
 
 **Question for Jafar (not yet asked):** the office and finance roles have no invoice permissions in the baseline
 permission matrix (`supabase/migrations/20260101000200_baseline_reference_data.sql`), so a role named "finance"
