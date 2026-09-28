@@ -29,7 +29,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Real (time-tracking) `Labor` block on the Request detail page](real-time-tracking-labor-block-on-the-request-detail-page.md) |
 | P2 | [Requests held for booking approval show a blank status badge](request-needs-approval-status-has-no-label.md) |
 | P2 | [Six unindexed foreign keys from the collaboration tables](six-unindexed-foreign-keys-from-the-collaboration-tables.md) |
-| P2 | [Website Chat's Realtime connection ceiling is measured but unconfirmed](website-chat-realtime-connection-quota-unconfirmed.md) |
+| P2 | [Website Chat live-connection ceiling (~600 measured, fits managed Pro cap of 500); re-test on the VPS](website-chat-realtime-connection-quota-unconfirmed.md) |
 | P2 | [Automation-owned Email Template copies (sync + impact preview)](automation-owned-email-template-copies.md) |
 | P2 | [Payment-stage and visit-line reads have no EXPLAIN evidence](invoice-payment-stage-reads-lack-explain-evidence.md) |
 | P2 | [Client page's Work overview and Client schedule sections are always empty](client-work-overview-and-schedule-sections-are-empty.md) |
@@ -44,7 +44,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [Client photos are one request each](client-photos-are-one-request-each.md) |
 | P3 | [ClientPicker and CatalogItemPicker can show a stale label after an external value revert](clientpicker-and-catalogitempicker-can-show-a-stale-label-after-an-external-value-revert.md) |
 | P3 | [Missing business setup does not yet block the action that needs it](missing-business-setup-does-not-yet-block-the-action-that-needs-it.md) |
-| P3 | [Non-admin email-correction browser verification (Part 7)](non-admin-email-correction-browser-verification-part-7.md) |
 | P3 | [Replaced logo uploads are kept rather than cleaned up](replaced-logo-uploads-are-kept-rather-than-cleaned-up.md) |
 | P3 | [Four more composite foreign keys use `on delete set null` without a column list](more-composite-foreign-keys-null-the-organization-on-delete.md) |
 | P3 | [One-time flash of full nav + "not connected to an organization" after account menu](one-time-flash-of-full-nav-and-no-organization-banner-after-account-menu.md) |

@@ -63,8 +63,11 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    `app-shell-idle-warmer-downloads-every-routine-route`, `client-photos-are-one-request-each`,
    `list-table-rows-use-goto-instead-of-real-links`, `jafar-panel-organization-tabs-have-no-hover-prefetch`,
    `inbox-read-takes-over-a-second`.
-9. **Final live checks** — Planned. `stripe-disconnect-open-checkout-expiry-not-live-tested`,
-   `website-chat-realtime-connection-quota-unconfirmed`, `non-admin-email-correction-browser-verification-part-7`.
+9. **Final live checks** — In progress 2026-09-28. Non-admin email correction **Done**: office member's
+   email changed, round-tripped, and changed back on Raad LTD, both audited; note deleted. Website Chat
+   ceiling re-deferred to the staging VPS (managed limit is Supabase's, production's is ours; note updated).
+   Left: `stripe-disconnect-open-checkout-expiry-not-live-tested` — waits on Jafar for a throwaway org and a
+   Stripe test key he pastes himself (not Raad LTD's connection).
 10. **Merge duplicate clients** — Planned (Opus), split out of Part 6 with Jafar's approval on 2026-09-28
     because moving every child row from one client to another is the riskiest write in the sweep. Jobber ships
     this as a first-class "Merge Clients" action in the clients list's More Actions menu, beside Import and

@@ -7,13 +7,8 @@ against the real code; 6A Done.
 
 **Exact next action:** **6B, client archive and restore** (Opus) — read the part note
 `parts/part6-protect-customer-history.md`, which also holds the design for 6C, the destructive property
-cascade delete. Separately (Sonnet, Part 9): the `non-admin-email-correction-browser-verification-part-7` deferred
-note's trigger is now satisfied — Raad LTD's office/sales/finance test-role members exist (`dev.jafarkhan+office@gmail.com`
-etc.). Reached the Jafar Panel → Organizations → Raad LTD → Team tab → office row → "Fix profile" dialog
-(Name/Email/Correction reason fields) but did not submit a change — stopped before live-testing the PATCH
-round-trip to avoid leaving a mutated login email unverified. Next session: fill Email with a test value,
-Save correction, confirm it round-trips (re-open Fix profile, check the new value persisted), then change it
-back to `dev.jafarkhan+office@gmail.com` before finishing, and delete the deferred note.
+cascade delete. Part 9 (Sonnet): two of three checks closed 2026-09-28; the Stripe disconnect test waits on
+Jafar (see ROADMAP Part 9).
 
 **Part 8 (speed, Opus) paused 2026-09-28** in worktree `deferred-sweep-part8` — 9 of 12 fixes done; next is
 finishing the trigram search migration (not yet pushed). See `parts/part8-speed.md`.
