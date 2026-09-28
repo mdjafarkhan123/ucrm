@@ -1,6 +1,6 @@
 # Part 7 — Jobber parity
 
-**Exact next action:** start slice 7c (quote composer save-on-first-entry) — Opus. Worktree `.claude/worktrees/deferred-sweep-part7b`, branch
+**Exact next action:** build slice 7c (Opus) — nothing written yet. Add the Discount and Tax rail cards to `QuoteForm.svelte` (`/quotes/new`), reusing `work/RecordDiscountCard` + `work/RecordTaxCard` in a staged mode: their `onSave` stores the choice locally (give each card a `staged` prop so it skips its "saved" toast), then `submit()` writes them after create with `saveQuoteDiscount` / `saveQuoteTax` behind `discountSaved` / `taxSaved` retry flags, like the copy/visibility steps already there. Tax needs `propertyId` = `form.property_id`. Introduction, Client message and Client view are already on the composer. Worktree `.claude/worktrees/deferred-sweep-part7b`, branch
 `worktree-deferred-sweep-part7b` (it has its own `.env`, `supabase/.temp` and a `node_modules` symlink; a
 dev server for browser checks runs from it on `http://localhost:5180`, already signed in to Raad LTD).
 Before each slice, read its deferred note and load the skills its work needs (svelte, supabase-postgres for
@@ -11,9 +11,7 @@ its note + INDEX row.
 
 **Approved decisions and slices (suggested model: Opus for 7c–7e, Sonnet fine for 7a–7b):**
 
-- **7c** `quote-composer-has-no-financial-rail-or-proposal-sections` — `/quotes/new` saves a draft on first
-  field entry so Discount/Tax/Introduction/Client message attach right there. Careful: changes how quotes
-  are created (empty-draft cleanup, double-create guard).
+- **7c** `quote-composer-has-no-financial-rail-or-proposal-sections` — **Jafar changed his decision 2026-09-28:** no save-while-typing draft (it broke his "press Save" rule and would leave empty quotes). Discount and Tax wait on the page and are written right after create when Save is pressed.
 - **7d** `job-visit-card-backend-fields` — store an off-series yes/no marker set when a visit is moved or
   edited alone, plus completed-by. Needs a migration; Jobs-owned, so check the jobs contract first.
 - **7e** `no-image-on-a-price-list-item` — one optional picture per price-list item via the File Manager
