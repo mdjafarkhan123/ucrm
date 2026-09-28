@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { marketingAllowanceQuery } from '$lib/jafar/organization-communications-queries';
 	import type { CalendarDate } from '@internationalized/date';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Badge from '$lib/components/ui/Badge.svelte';
@@ -31,18 +32,9 @@
 
 	const queryClient = useQueryClient();
 	const allowanceKey = $derived(jafarOrganizationMarketingAllowanceKey(organizationId));
-	const allowanceQuery = createQuery<AllowanceResponse>(() => ({
-		queryKey: allowanceKey,
-		queryFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/communications/marketing-allowance`
-			);
-			const result = (await response.json()) as AllowanceResponse;
-			if (!response.ok) throw new Error(result.error ?? 'Marketing allowance could not be loaded.');
-			return result;
-		},
-		staleTime: 30_000
-	}));
+	const allowanceQuery = createQuery<AllowanceResponse>(() =>
+		marketingAllowanceQuery<AllowanceResponse>(organizationId)
+	);
 
 	const stateOptions = [
 		{ value: 'inherit', label: 'Inherit from package' },

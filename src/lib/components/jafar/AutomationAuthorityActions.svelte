@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { automationAuthorityQuery } from '$lib/jafar/organization-communications-queries';
 	import type { CalendarDate } from '@internationalized/date';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Badge from '$lib/components/ui/Badge.svelte';
@@ -98,17 +99,9 @@
 		{ value: 'unlimited', label: 'Unlimited' }
 	];
 
-	const authorityQuery = createQuery<AuthorityResponse>(() => ({
-		queryKey: authorityKey,
-		queryFn: async () => {
-			const response = await fetch(endpoint);
-			const result = (await response.json()) as AuthorityResponse;
-			if (!response.ok)
-				throw new Error(result.error ?? 'Automation authority could not be loaded.');
-			return result;
-		},
-		staleTime: 15_000
-	}));
+	const authorityQuery = createQuery<AuthorityResponse>(() =>
+		automationAuthorityQuery<AuthorityResponse>(organizationId)
+	);
 
 	// Effective authority collapses two independent axes: a security suspension outranks an operational
 	// disable, which outranks the healthy default.

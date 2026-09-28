@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { websiteChatAuthorityQuery } from '$lib/jafar/organization-communications-queries';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -45,17 +46,9 @@
 		`/api/jafar/organizations/${organizationId}/communications/website-chat-authority`
 	);
 
-	const authorityQuery = createQuery<AuthorityResponse>(() => ({
-		queryKey: authorityKey,
-		queryFn: async () => {
-			const response = await fetch(endpoint);
-			const result = (await response.json()) as AuthorityResponse;
-			if (!response.ok)
-				throw new Error(result.error ?? 'Website Chat authority could not be loaded.');
-			return result;
-		},
-		staleTime: 15_000
-	}));
+	const authorityQuery = createQuery<AuthorityResponse>(() =>
+		websiteChatAuthorityQuery<AuthorityResponse>(organizationId)
+	);
 
 	let pendingAction = $state<PendingAction>(null);
 	let reason = $state('');

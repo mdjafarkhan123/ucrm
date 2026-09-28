@@ -20,7 +20,8 @@
 	import { urlParam } from '$lib/url-param.svelte';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { createQuery } from '@tanstack/svelte-query';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { prefetchOrganizationCommunications } from '$lib/jafar/organization-communications-queries';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowLeftIcon from '@tabler/icons/outline/arrow-left.svg?raw';
 	import shieldIcon from '@tabler/icons/outline/shield-check.svg?raw';
@@ -43,13 +44,22 @@
 	const organizationId = $derived(page.params.organizationId);
 	const preview = $derived(dev && scenario ? getOrganizationDetailPreview(scenario) : null);
 
-	const organizationTabs: Tab[] = [
+	const queryClient = useQueryClient();
+	// The Communications tab is the only one with reads of its own; the rest reuse the page's queries.
+	const organizationTabs: Tab[] = $derived([
 		{ value: 'overview', label: 'Overview' },
 		{ value: 'access', label: 'Access & limits' },
-		{ value: 'communications', label: 'Communications' },
+		{
+			value: 'communications',
+			label: 'Communications',
+			onhover: () => {
+				if (!preview && organizationId)
+					prefetchOrganizationCommunications(queryClient, organizationId);
+			}
+		},
 		{ value: 'team', label: 'Team' },
 		{ value: 'activity', label: 'Activity' }
-	];
+	]);
 	const tabParam = urlParam('tab', 'overview');
 	const activeTab = $derived(
 		organizationTabs.some((tab) => tab.value === tabParam.current) ? tabParam.current : 'overview'

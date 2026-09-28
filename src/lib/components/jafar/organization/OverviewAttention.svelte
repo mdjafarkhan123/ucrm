@@ -1,4 +1,9 @@
 <script lang="ts">
+	import {
+		emailDomainsQuery,
+		emailReputationQuery,
+		emailSendingPauseQuery
+	} from '$lib/jafar/organization-communications-queries';
 	import { createQuery, type CreateQueryResult } from '@tanstack/svelte-query';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -9,11 +14,6 @@
 		OperationListResponse,
 		OperationAttempt
 	} from './types';
-	import {
-		jafarOrganizationEmailDomainsKey,
-		jafarOrganizationEmailReputationKey,
-		jafarOrganizationEmailSendingPauseKey
-	} from '$lib/jafar/query-keys';
 
 	let {
 		access,
@@ -35,49 +35,24 @@
 
 	// These are the existing Communications cache entries and full API responses.
 	// Overview reads only health signals; the detailed controls stay in their workspace.
-	const pauseQuery = createQuery(() => ({
-		queryKey: jafarOrganizationEmailSendingPauseKey(access.organization.id),
-		queryFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${access.organization.id}/communications/sending-pause`
-			);
-			if (!response.ok) throw new Error('Email sending status could not be loaded.');
-			return (await response.json()) as {
-				platform_paused: boolean;
-				organization_pause: { id: string } | null;
+	const pauseQuery = createQuery(() =>
+		emailSendingPauseQuery<{ platform_paused: boolean; organization_pause: { id: string } | null }>(
+			access.organization.id
+		)
+	);
+	const reputationQuery = createQuery(() =>
+		emailReputationQuery<{
+			reputation: {
+				reputation_pause: { id: string } | null;
+				state: { worst_status: 'ok' | 'warn' | 'pause' } | null;
 			};
-		},
-		staleTime: 15_000
-	}));
-	const reputationQuery = createQuery(() => ({
-		queryKey: jafarOrganizationEmailReputationKey(access.organization.id),
-		queryFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${access.organization.id}/communications/reputation`
-			);
-			if (!response.ok) throw new Error('Email reputation could not be loaded.');
-			return (await response.json()) as {
-				reputation: {
-					reputation_pause: { id: string } | null;
-					state: { worst_status: 'ok' | 'warn' | 'pause' } | null;
-				};
-			};
-		},
-		staleTime: 30_000
-	}));
-	const domainsQuery = createQuery(() => ({
-		queryKey: jafarOrganizationEmailDomainsKey(access.organization.id),
-		queryFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${access.organization.id}/communications/domains`
-			);
-			if (!response.ok) throw new Error('Email domains could not be loaded.');
-			return (await response.json()) as {
-				domains?: { lifecycle_state: string; provider_cleanup_error: string | null }[];
-			};
-		},
-		staleTime: 30_000
-	}));
+		}>(access.organization.id)
+	);
+	const domainsQuery = createQuery(() =>
+		emailDomainsQuery<{
+			domains?: { lifecycle_state: string; provider_cleanup_error: string | null }[];
+		}>(access.organization.id)
+	);
 	const providersPending = $derived(
 		pauseQuery.isPending || reputationQuery.isPending || domainsQuery.isPending
 	);

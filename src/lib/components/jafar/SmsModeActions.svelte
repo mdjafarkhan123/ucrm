@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { smsModeQuery } from '$lib/jafar/organization-communications-queries';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -31,18 +32,7 @@
 	const queryClient = useQueryClient();
 	const modeKey = $derived(jafarOrganizationSmsModeKey(organizationId));
 
-	const modeQuery = createQuery<ModeResponse>(() => ({
-		queryKey: modeKey,
-		queryFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/communications/sms/mode`
-			);
-			const result = (await response.json()) as ModeResponse;
-			if (!response.ok) throw new Error(result.error ?? 'The SMS mode could not be loaded.');
-			return result;
-		},
-		staleTime: 15_000
-	}));
+	const modeQuery = createQuery<ModeResponse>(() => smsModeQuery<ModeResponse>(organizationId));
 
 	const modeOptions = [
 		{ value: 'off', label: 'Off' },

@@ -1,4 +1,8 @@
 <script lang="ts">
+	import {
+		smsRegistrationsQuery,
+		smsSendersQuery
+	} from '$lib/jafar/organization-communications-queries';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -9,10 +13,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
-	import {
-		jafarOrganizationSmsRegistrationsKey,
-		jafarOrganizationSmsSendersKey
-	} from '$lib/jafar/query-keys';
+	import { jafarOrganizationSmsSendersKey } from '$lib/jafar/query-keys';
 
 	type LifecycleState = 'pending_setup' | 'ready' | 'restricted' | 'suspended' | 'released';
 	type Sender = {
@@ -39,34 +40,14 @@
 	const queryClient = useQueryClient();
 	const sendersKey = $derived(jafarOrganizationSmsSendersKey(organizationId));
 	// Shares its cache with SmsRegistrationActions's identical query key.
-	const registrationsKey = $derived(jafarOrganizationSmsRegistrationsKey(organizationId));
 
-	const sendersQuery = createQuery<SenderListResponse>(() => ({
-		queryKey: sendersKey,
-		queryFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/communications/sms/sender-identities`
-			);
-			const result = (await response.json()) as SenderListResponse;
-			if (!response.ok)
-				throw new Error(result.error ?? 'SMS sender identities could not be loaded.');
-			return result;
-		},
-		staleTime: 15_000
-	}));
+	const sendersQuery = createQuery<SenderListResponse>(() =>
+		smsSendersQuery<SenderListResponse>(organizationId)
+	);
 
-	const registrationsQuery = createQuery<RegistrationListResponse>(() => ({
-		queryKey: registrationsKey,
-		queryFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/communications/sms/registrations`
-			);
-			const result = (await response.json()) as RegistrationListResponse;
-			if (!response.ok) throw new Error(result.error ?? 'SMS registrations could not be loaded.');
-			return result;
-		},
-		staleTime: 15_000
-	}));
+	const registrationsQuery = createQuery<RegistrationListResponse>(() =>
+		smsRegistrationsQuery<RegistrationListResponse>(organizationId)
+	);
 
 	const senderTypeOptions = [
 		{ value: 'long_code', label: 'Long code' },

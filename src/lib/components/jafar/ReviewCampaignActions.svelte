@@ -1,10 +1,10 @@
 <script lang="ts">
+	import { reviewCampaignQuery } from '$lib/jafar/organization-communications-queries';
 	import { createQuery } from '@tanstack/svelte-query';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import KpiCard from '$lib/components/data-display/KpiCard.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
-	import { jafarOrganizationReviewCampaignKey } from '$lib/jafar/query-keys';
 	import sendIcon from '@tabler/icons/outline/send.svg?raw';
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 	import googleIcon from '@tabler/icons/outline/brand-google.svg?raw';
@@ -28,19 +28,9 @@
 
 	let { organizationId }: { organizationId: string } = $props();
 
-	const campaignQuery = createQuery<CampaignResponse>(() => ({
-		queryKey: jafarOrganizationReviewCampaignKey(organizationId),
-		queryFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/communications/reviews`
-			);
-			const result = (await response.json()) as CampaignResponse;
-			if (!response.ok)
-				throw new Error(result.error ?? 'Review campaign status could not be loaded.');
-			return result;
-		},
-		staleTime: 15_000
-	}));
+	const campaignQuery = createQuery<CampaignResponse>(() =>
+		reviewCampaignQuery<CampaignResponse>(organizationId)
+	);
 
 	function formatDateTime(value: string) {
 		return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(

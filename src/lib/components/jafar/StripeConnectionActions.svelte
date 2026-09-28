@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { stripeConnectionQuery } from '$lib/jafar/organization-communications-queries';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -30,17 +31,9 @@
 		`/api/jafar/organizations/${organizationId}/payments/stripe-connection`
 	);
 
-	const statusQuery = createQuery<StatusResponse>(() => ({
-		queryKey: statusKey,
-		queryFn: async () => {
-			const response = await fetch(endpoint);
-			const result = (await response.json()) as StatusResponse;
-			if (!response.ok)
-				throw new Error(result.error ?? 'Stripe connection status could not be loaded.');
-			return result;
-		},
-		staleTime: 15_000
-	}));
+	const statusQuery = createQuery<StatusResponse>(() =>
+		stripeConnectionQuery<StatusResponse>(organizationId)
+	);
 
 	const recheckMutation = createMutation<StatusResponse, Error, void>(() => ({
 		mutationFn: async () => {

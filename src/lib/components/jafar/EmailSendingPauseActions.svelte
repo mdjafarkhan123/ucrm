@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { emailSendingPauseQuery } from '$lib/jafar/organization-communications-queries';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
@@ -30,19 +31,9 @@
 	const toast = getToastManager();
 	const pauseKey = $derived(jafarOrganizationEmailSendingPauseKey(organizationId));
 
-	const pauseQuery = createQuery<PauseResponse>(() => ({
-		queryKey: pauseKey,
-		queryFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/communications/sending-pause`
-			);
-			const result = (await response.json()) as PauseResponse;
-			if (!response.ok)
-				throw new Error(result.error ?? 'The organization email pause could not be loaded.');
-			return result;
-		},
-		staleTime: 15_000
-	}));
+	const pauseQuery = createQuery<PauseResponse>(() =>
+		emailSendingPauseQuery<PauseResponse>(organizationId)
+	);
 
 	const paused = $derived(Boolean(pauseQuery.data?.organization_pause));
 	const platformPaused = $derived(Boolean(pauseQuery.data?.platform_paused));

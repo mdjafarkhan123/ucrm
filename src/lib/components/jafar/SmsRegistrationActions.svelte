@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { smsRegistrationsQuery } from '$lib/jafar/organization-communications-queries';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -43,18 +44,9 @@
 	const queryClient = useQueryClient();
 	const listKey = $derived(jafarOrganizationSmsRegistrationsKey(organizationId));
 
-	const listQuery = createQuery<ListResponse>(() => ({
-		queryKey: listKey,
-		queryFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/communications/sms/registrations`
-			);
-			const result = (await response.json()) as ListResponse;
-			if (!response.ok) throw new Error(result.error ?? 'SMS registrations could not be loaded.');
-			return result;
-		},
-		staleTime: 15_000
-	}));
+	const listQuery = createQuery<ListResponse>(() =>
+		smsRegistrationsQuery<ListResponse>(organizationId)
+	);
 
 	const senderTypeOptions = [
 		{ value: 'long_code', label: 'Long code' },

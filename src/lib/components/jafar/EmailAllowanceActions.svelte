@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { emailAllowancesQuery } from '$lib/jafar/organization-communications-queries';
 	import type { CalendarDate } from '@internationalized/date';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Badge from '$lib/components/ui/Badge.svelte';
@@ -45,18 +46,9 @@
 
 	const queryClient = useQueryClient();
 	const allowanceKey = $derived(jafarOrganizationEmailAllowancesKey(organizationId));
-	const allowancesQuery = createQuery<AllowanceResponse>(() => ({
-		queryKey: allowanceKey,
-		queryFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/communications/email-allowances`
-			);
-			const result = (await response.json()) as AllowanceResponse;
-			if (!response.ok) throw new Error(result.error ?? 'Email allowances could not be loaded.');
-			return result;
-		},
-		staleTime: 30_000
-	}));
+	const allowancesQuery = createQuery<AllowanceResponse>(() =>
+		emailAllowancesQuery<AllowanceResponse>(organizationId)
+	);
 
 	const labels: Record<AllowanceKey, { title: string; description: string; unit: string }> = {
 		operational_email_recipients: {

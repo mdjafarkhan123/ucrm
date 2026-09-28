@@ -1,4 +1,9 @@
 <script lang="ts">
+	import {
+		emailDomainsQuery,
+		emailSetupRequestQuery,
+		marketingDomainsQuery
+	} from '$lib/jafar/organization-communications-queries';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -99,52 +104,22 @@
 	const queryClient = useQueryClient();
 
 	const operationalKey = $derived(jafarOrganizationEmailDomainsKey(organizationId));
-	const operationalQuery = createQuery<OperationalListResponse>(() => ({
-		queryKey: operationalKey,
-		queryFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/communications/domains`
-			);
-			const result = (await response.json()) as OperationalListResponse;
-			if (!response.ok) throw new Error(result.error ?? 'Everyday email could not be loaded.');
-			return result;
-		},
-		staleTime: 30_000
-	}));
+	const operationalQuery = createQuery<OperationalListResponse>(() =>
+		emailDomainsQuery<OperationalListResponse>(organizationId)
+	);
 
 	// The contractor's open ask, until Jafar sets the domain up or closes it. Setting up is done with the same
 	// Set up action below, prefilled with the domain they asked for.
 	const requestKey = $derived(jafarOrganizationEmailSetupRequestKey(organizationId));
-	const requestQuery = createQuery<{ request: EmailSetupRequest | null; error?: string }>(() => ({
-		queryKey: requestKey,
-		queryFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/communications/email-setup`
-			);
-			const result = (await response.json()) as {
-				request: EmailSetupRequest | null;
-				error?: string;
-			};
-			if (!response.ok) throw new Error(result.error ?? 'The setup request could not be loaded.');
-			return result;
-		},
-		staleTime: 30_000
-	}));
+	const requestQuery = createQuery<{ request: EmailSetupRequest | null; error?: string }>(() =>
+		emailSetupRequestQuery<{ request: EmailSetupRequest | null; error?: string }>(organizationId)
+	);
 	const setupRequest = $derived(requestQuery.data?.request ?? null);
 
 	const marketingKey = $derived(jafarOrganizationMarketingDomainsKey(organizationId));
-	const marketingQuery = createQuery<MarketingListResponse>(() => ({
-		queryKey: marketingKey,
-		queryFn: async () => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/communications/marketing-domain`
-			);
-			const result = (await response.json()) as MarketingListResponse;
-			if (!response.ok) throw new Error(result.error ?? 'Marketing email could not be loaded.');
-			return result;
-		},
-		staleTime: 30_000
-	}));
+	const marketingQuery = createQuery<MarketingListResponse>(() =>
+		marketingDomainsQuery<MarketingListResponse>(organizationId)
+	);
 
 	const sending = $derived(
 		operationalQuery.data?.domains?.find((domain) => domain.purpose === 'sending') ?? null

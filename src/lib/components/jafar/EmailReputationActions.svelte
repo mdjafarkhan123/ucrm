@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { emailReputationQuery } from '$lib/jafar/organization-communications-queries';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
@@ -59,17 +60,9 @@
 	const reputationKey = $derived(jafarOrganizationEmailReputationKey(organizationId));
 	const endpoint = $derived(`/api/jafar/organizations/${organizationId}/communications/reputation`);
 
-	const reputationQuery = createQuery<ReputationResponse>(() => ({
-		queryKey: reputationKey,
-		queryFn: async () => {
-			const response = await fetch(endpoint);
-			const result = (await response.json()) as ReputationResponse;
-			if (!response.ok)
-				throw new Error(result.error ?? 'The email reputation could not be loaded.');
-			return result;
-		},
-		staleTime: 30_000
-	}));
+	const reputationQuery = createQuery<ReputationResponse>(() =>
+		emailReputationQuery<ReputationResponse>(organizationId)
+	);
 
 	const reputation = $derived(reputationQuery.data?.reputation ?? null);
 	const metrics = $derived(reputation?.metrics ?? []);
