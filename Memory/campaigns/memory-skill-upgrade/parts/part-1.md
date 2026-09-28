@@ -16,7 +16,7 @@
 
 ## Next
 
-Review `SKILL.md`, `planning.md`, `setup.md`, and `templates/` in the worktree against the `writing-for-agents` skill: duplication, no-op sentences, negations, leading words, and one term per concept.
+Paused mid-review. Jafar shared a Codex review of the design (measure understanding rather than pages; checkpoint at meaningful points; verify outside effects before repeating a step; part notes only when progress must be handed over; keep technical planning; pilot before migrating). Agree the revisions with Jafar, then apply them to the files on the branch before continuing the review step.
 
 ## Notes
 
