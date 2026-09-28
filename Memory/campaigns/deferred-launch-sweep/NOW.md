@@ -2,11 +2,12 @@
 
 **Goal:** Clear the ready deferred tasks before the first paying client, most urgent first.
 
-**Active part:** none started — Part 4 is Done (2026-09-28). Next: Part 5, Complete customer documents (Sonnet).
-Part 7 is held by another session (worktree, not yet merged).
+**Active part:** Part 5 paused mid-work 2026-09-28 (Sonnet) — Jafar approved building Jobber's billing-contact
+email parity; migration drafted but not yet applied or tested. See Memory/campaigns/deferred-launch-sweep/parts/part-5.md
+for the exact remaining steps. Part 7 is held by another session (worktree, not yet merged).
 
-**Exact next action:** Part 5 — the one item left is `invoice-email-sends-to-primary-only-not-billing-contact`
-(deferred note holds the spec); it was waiting on Part 4, which is now done. Then do Part 6 (Opus).
+**Exact next action:** Resume Part 5 from its part note's unchecked steps, starting with applying the
+migration (dry-run first). Then do Part 6 (Opus).
 
 **Question for Jafar (not yet asked):** the office and finance roles have no invoice permissions in the baseline
 permission matrix (`supabase/migrations/20260101000200_baseline_reference_data.sql`), so a role named "finance"
