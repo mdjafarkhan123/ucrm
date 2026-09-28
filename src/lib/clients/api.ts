@@ -310,6 +310,25 @@ export async function createProperty(clientId: string, values: ClientPropertyInp
 	return result.property as ClientProperty;
 }
 
+/** What deleting a property would take with it, and the records that stop it (empty when nothing does). */
+export type PropertyDeleteImpact = {
+	requests: number;
+	quotes: number;
+	jobs: number;
+	visits: number;
+	blockers: string[];
+};
+
+export const propertyDeleteImpactKey = (propertyId: string) =>
+	['properties', 'delete-impact', propertyId] as const;
+
+export async function fetchPropertyDeleteImpact(propertyId: string) {
+	const response = await fetch(`/api/properties/${propertyId}/delete-impact`);
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) throw new Error(result.error ?? 'We could not check what this property holds.');
+	return result.impact as PropertyDeleteImpact;
+}
+
 export async function deleteProperty(propertyId: string) {
 	const response = await fetch(`/api/properties/${propertyId}`, { method: 'DELETE' });
 	if (response.ok) return;

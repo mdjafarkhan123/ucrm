@@ -21234,6 +21234,7 @@ export type Database = {
 				Args: { batch_size?: number };
 				Returns: number;
 			};
+			property_delete_impact: { Args: { p_property_id: string }; Returns: Json };
 			provision_organization_from_application: {
 				Args: {
 					target_actor_owner_email?: string;

@@ -9,6 +9,8 @@
 	import {
 		createProperty,
 		deleteProperty,
+		fetchPropertyDeleteImpact,
+		propertyDeleteImpactKey,
 		updateProperty,
 		ClientWriteError,
 		type ClientProperty,
@@ -58,6 +60,7 @@
 
 	// A one-time copy taken when the dialog mounts, so a background refetch cannot overwrite typing.
 	const toast = getToastManager();
+	const queryClient = useQueryClient();
 
 	let draft = $state<PropertyDraft>(untrack(() => draftFrom(property)));
 	let saving = $state(false);
@@ -102,6 +105,43 @@
 		}))
 	]);
 
+	// What a delete would take with it. Revealed only by the confirmation, so it stays off until then and the
+	// Delete button's hover warms it; the delete itself re-checks all of this, so a stale answer cannot let
+	// anything through.
+	const impactQuery = createQuery(() => ({
+		queryKey: propertyDeleteImpactKey(property?.id ?? ''),
+		queryFn: () => fetchPropertyDeleteImpact(property!.id),
+		enabled: Boolean(property) && confirmingDelete,
+		staleTime: 15_000,
+		gcTime: 60_000
+	}));
+
+	function warmImpact() {
+		if (!property) return;
+		void queryClient.prefetchQuery({
+			queryKey: propertyDeleteImpactKey(property.id),
+			queryFn: () => fetchPropertyDeleteImpact(property.id),
+			staleTime: 15_000
+		});
+	}
+
+	// "2 requests, 1 quote and 3 jobs" — only the kinds that are actually there.
+	function workSummary(counts: { requests: number; quotes: number; jobs: number }) {
+		const parts = [
+			[counts.requests, 'request'],
+			[counts.quotes, 'quote'],
+			[counts.jobs, 'job']
+		]
+			.filter(([count]) => Number(count) > 0)
+			.map(([count, noun]) => `${count} ${noun}${count === 1 ? '' : 's'}`);
+		if (parts.length <= 1) return parts[0] ?? '';
+		return `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}`;
+	}
+
+	const impact = $derived(impactQuery.data);
+	const blocked = $derived((impact?.blockers.length ?? 0) > 0);
+	const doomedWork = $derived(impact ? workSummary(impact) : '');
+
 	// The server needs a street and a city; everything else on a property is optional, including its name.
 	const canSubmit = $derived(Boolean(draft.address_line1.trim() && draft.city.trim()));
 
@@ -136,11 +176,15 @@
 		error = '';
 		try {
 			await deleteProperty(property.id);
-			toast.success('Property removed');
+			toast.success('Property deleted');
+			// The delete can reach requests, quotes, jobs, visits, the pipeline, files and notifications at
+			// once, so every cached view is marked stale; only what is on screen refetches now.
+			void queryClient.invalidateQueries();
 			onSaved();
 		} catch (thrown) {
-			error = messageFrom(thrown, 'That property could not be removed.');
+			error = messageFrom(thrown, 'That property could not be deleted.');
 			confirmingDelete = false;
+			void queryClient.invalidateQueries({ queryKey: propertyDeleteImpactKey(property.id) });
 		} finally {
 			deleting = false;
 		}
@@ -233,10 +277,38 @@
 
 		{#if confirmingDelete}
 			<!-- The confirmation replaces the footer rather than opening a second dialog on top of this one. -->
-			<div class="property-dialog__confirm">
-				<p class="property-dialog__confirm-text">
-					Remove this property from the client? The address will no longer be available to pick.
-				</p>
+			<div class="property-dialog__confirm" aria-live="polite">
+				{#if impactQuery.isError}
+					<p class="property-dialog__confirm-text">
+						{impactQuery.error?.message ?? 'We could not check what this property holds.'}
+					</p>
+				{:else if !impact}
+					<div class="property-dialog__confirm-loading" aria-label="Checking this property">
+						<span class="skeleton skeleton--text"></span>
+						<span class="skeleton skeleton--text-short"></span>
+					</div>
+				{:else if blocked}
+					<p class="property-dialog__confirm-title">This property can’t be deleted</p>
+					<ul class="property-dialog__blockers">
+						{#each impact.blockers as blocker (blocker)}
+							<li>{blocker}.</li>
+						{/each}
+					</ul>
+					<p class="property-dialog__confirm-text">
+						These are part of your customer’s paperwork or payments, so the address has to stay.
+					</p>
+				{:else if doomedWork}
+					<p class="property-dialog__confirm-title">Delete this property and its work?</p>
+					<p class="property-dialog__confirm-text">
+						This also permanently deletes <strong>{doomedWork}</strong> at this address, with their visits,
+						notes and files. They won’t show in your reports any more. This can’t be undone.
+					</p>
+				{:else}
+					<p class="property-dialog__confirm-title">Delete this property?</p>
+					<p class="property-dialog__confirm-text">
+						The address and its notes and files are removed for good. This can’t be undone.
+					</p>
+				{/if}
 				<div class="property-dialog__actions">
 					<Button
 						variant="secondary"
@@ -244,9 +316,11 @@
 						disabled={busy}
 						onclick={() => (confirmingDelete = false)}>Keep it</Button
 					>
-					<Button variation="destructive" loading={deleting} onclick={() => void remove()}>
-						Remove property
-					</Button>
+					{#if impact && !blocked}
+						<Button variation="destructive" loading={deleting} onclick={() => void remove()}>
+							Delete property
+						</Button>
+					{/if}
 				</div>
 			</div>
 		{:else}
@@ -256,6 +330,7 @@
 						variant="tertiary"
 						variation="destructive"
 						disabled={busy}
+						onhover={warmImpact}
 						onclick={() => (confirmingDelete = true)}>Delete</Button
 					>
 				{/if}
@@ -339,6 +414,29 @@
 			padding: var(--space-base);
 			border: var(--border-base) solid var(--color-critical);
 			border-radius: var(--radius-base);
+		}
+
+		&__confirm-title {
+			margin: 0;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+		}
+
+		&__confirm-loading {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-small);
+		}
+
+		&__blockers {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smaller);
+			margin: 0;
+			padding-left: var(--space-large);
+			color: var(--color-text);
+			font-size: var(--typography--fontSize-small);
 		}
 
 		&__confirm-text {

@@ -52,9 +52,10 @@ export const PATCH: RequestHandler = async (event) => {
 	return json({ property: data });
 };
 
-// Removes one property from its client. The work happens in `public.delete_property` so the soft delete and
-// the promotion of a replacement primary share a transaction — split across two requests, the first would be
-// refused by the deferred check that a client with properties has exactly one primary.
+// Deletes one property for good, together with the requests, quotes and jobs at that address, the way Jobber
+// does. `public.delete_property` owns the whole thing in one transaction: the permission checks, the refusal
+// when any of that work was invoiced, paid a deposit or was sent to the customer, the cascade, and the
+// promotion of a replacement primary the deferred one-primary check requires.
 export const DELETE: RequestHandler = async (event) => {
 	const access = await requireClientPermission(event, 'property.manage');
 	if ('response' in access) return access.response;
@@ -63,8 +64,12 @@ export const DELETE: RequestHandler = async (event) => {
 		p_property_id: event.params.id
 	});
 
-	// RLS hides other organizations' rows, so a property this member cannot reach reads as missing.
+	// A property this member cannot reach reads as missing, never as someone else's.
 	if (error?.code === 'P0002') return json(NOT_FOUND, { status: 404 });
+	// The database writes these for people: which record blocks the delete, or which permission is missing.
+	if (error?.code === '23514' || error?.code === 'P0409')
+		return json({ error: error.message }, { status: 409 });
+	if (error?.code === '42501') return json({ error: error.message }, { status: 403 });
 	if (error) return databaseError();
 	return new Response(null, { status: 204 });
 };
