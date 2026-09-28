@@ -41,7 +41,6 @@
 	import clipboardIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
 	import filterIcon from '@tabler/icons/outline/filter.svg?raw';
 	import chartIcon from '@tabler/icons/outline/chart-bar.svg?raw';
-	import calendarIcon from '@tabler/icons/outline/calendar-stats.svg?raw';
 	import trendingIcon from '@tabler/icons/outline/trending-up.svg?raw';
 
 	let search = $state('');
@@ -172,13 +171,6 @@
 				value="—"
 				note="Once requests turn into quotes and jobs"
 				icon={chartIcon}
-				variant="compact"
-			/>
-			<KpiCard
-				label="Assessments booked"
-				value="—"
-				note="Once assessments are being scheduled"
-				icon={calendarIcon}
 				variant="compact"
 			/>
 		</div>
@@ -329,7 +321,7 @@
 	.requests-stats {
 		display: grid;
 		gap: var(--space-base);
-		grid-template-columns: repeat(4, minmax(0, 1fr));
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 		margin-top: var(--space-large);
 	}
 

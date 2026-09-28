@@ -178,6 +178,18 @@
 		return formatter.format(amountMinor / 100);
 	}
 
+	// Outstanding/Overdue/Collected read from the same overview fetch as the status counts, so one loading
+	// state covers all four tiles. A signed-in reader without invoices.view_price gets null money back from
+	// the database, not a wrong number, and the tile says so instead of showing a dash with no explanation.
+	const overviewCurrency = $derived(countsQuery.data?.currency_code ?? 'USD');
+	const canSeeInvoiceMoney = $derived(
+		countsQuery.data != null && countsQuery.data.outstanding_minor !== null
+	);
+	function moneyNote(readyNote: string, unavailableNote: string) {
+		if (countsQuery.isPending) return 'Loading…';
+		return canSeeInvoiceMoney ? readyNote : unavailableNote;
+	}
+
 	function clientName(invoice: InvoiceListItem) {
 		return invoice.client?.company_name || invoice.client?.display_name || 'Client removed';
 	}
@@ -213,22 +225,31 @@
 			<StatusOverviewCard rows={overviewRows} loading={countsQuery.isPending} />
 			<KpiCard
 				label="Outstanding"
-				value="—"
-				note="Once billed amounts roll up"
+				value={formatMoney(countsQuery.data?.outstanding_minor ?? null, overviewCurrency)}
+				note={moneyNote(
+					'Owed across all open invoices',
+					'You do not have access to invoice amounts'
+				)}
 				icon={cashIcon}
 				variant="compact"
 			/>
 			<KpiCard
 				label="Overdue"
-				value="—"
-				note="Once bills start coming due"
+				value={formatMoney(countsQuery.data?.overdue_minor ?? null, overviewCurrency)}
+				note={moneyNote(
+					'Owed on bills already past due',
+					'You do not have access to invoice amounts'
+				)}
 				icon={alertIcon}
 				variant="compact"
 			/>
 			<KpiCard
 				label="Collected this month"
-				value="—"
-				note="Once payments are recorded"
+				value={formatMoney(countsQuery.data?.collected_this_month_minor ?? null, overviewCurrency)}
+				note={moneyNote(
+					'Payments recorded this month',
+					'You do not have access to invoice amounts'
+				)}
 				icon={chartIcon}
 				variant="compact"
 			/>
@@ -398,8 +419,7 @@
 		color: var(--color-text--secondary);
 	}
 
-	/* Overview card plus three metric tiles, the same top row as Jobs and Quotes. The tiles read "—" until
-	   the money rollups they need are built in later parts. */
+	/* Overview card plus three metric tiles, the same top row as Jobs and Quotes. */
 	.invoices-stats {
 		display: grid;
 		gap: var(--space-base);

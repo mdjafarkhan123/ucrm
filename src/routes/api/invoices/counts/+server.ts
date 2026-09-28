@@ -12,13 +12,16 @@ export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'invoices.view');
 	if ('response' in check) return check.response;
 
-	const [{ data, error }, formatting] = await Promise.all([
+	const [{ data, error }, { data: money, error: moneyError }, formatting] = await Promise.all([
 		event.locals.supabase.rpc('invoice_status_counts', {
+			target_organization_id: check.auth.organization.id
+		}),
+		event.locals.supabase.rpc('invoice_money_overview', {
 			target_organization_id: check.auth.organization.id
 		}),
 		organizationFormatting(check.auth.organization.id)
 	]);
-	if (error) return databaseError();
+	if (error || moneyError) return databaseError();
 
 	const counts = Object.fromEntries(
 		INVOICE_DERIVED_STATUSES.map((status) => [status, 0])
@@ -27,9 +30,18 @@ export const GET: RequestHandler = async (event) => {
 		if (row.derived_status in counts) counts[row.derived_status] = Number(row.total);
 	}
 
+	const moneyRow = (money ?? {}) as {
+		outstanding_minor: number | null;
+		overdue_minor: number | null;
+		collected_this_month_minor: number | null;
+	};
+
 	return json(
 		{
 			counts,
+			outstanding_minor: moneyRow.outstanding_minor ?? null,
+			overdue_minor: moneyRow.overdue_minor ?? null,
+			collected_this_month_minor: moneyRow.collected_this_month_minor ?? null,
 			currency_code: formatting.ok ? formatting.formatting.currency_code : 'USD',
 			locale: formatting.ok ? formatting.formatting.locale : 'en-US'
 		},

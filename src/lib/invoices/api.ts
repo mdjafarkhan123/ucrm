@@ -93,6 +93,10 @@ export async function fetchInvoices(
 
 export type InvoiceOverview = {
 	counts: InvoiceStatusCounts;
+	/** Null for a reader without invoices.view_price -- the same money-visibility rule as everywhere else. */
+	outstanding_minor: number | null;
+	overdue_minor: number | null;
+	collected_this_month_minor: number | null;
 	currency_code: string;
 	locale: string;
 };
@@ -510,6 +514,12 @@ export type InvoiceDelivery = {
 		last_viewed_at: string | null;
 		view_count: number;
 	};
+	/** The one "this invoice is cancelled" email, once queued. Never counted as `last_sent`. */
+	void_notice: {
+		sent_at: string;
+		status: string;
+		recipient_email: string;
+	} | null;
 };
 
 // One entry in the bill's money history: an application or an unapplication, from a manual receipt or a
@@ -788,6 +798,13 @@ export async function queueInvoiceEmail(
 		body: JSON.stringify({ idempotency_key: idempotencyKey })
 	});
 	return readOrThrow<QueueInvoiceEmailResult>(response, 'The invoice email could not be queued.');
+}
+
+// Emailing the client that a voided invoice is cancelled (D9). No key is sent: the server fixes one per invoice,
+// so a retry can never send a second notice.
+export async function sendInvoiceVoidNotice(id: string): Promise<void> {
+	const response = await fetch(`/api/invoices/${id}/void-notice`, { method: 'POST' });
+	await readOrThrow<unknown>(response, 'The cancellation email could not be queued.');
 }
 
 export type InvoiceAccessLink = {

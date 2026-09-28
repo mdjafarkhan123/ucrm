@@ -132,6 +132,19 @@ export type ClientDetail = ClientWriteValues & {
 	marketing_consent: MarketingConsentState | null;
 	/** Whether this member may ask this client for a Google review from the client page. */
 	can_request_review?: boolean;
+	/** The header's three stat tiles. Any figure is null when this member lacks the permission that gates
+	 *  it -- the tile then says so instead of showing a wrong or missing number. */
+	work_summary: ClientWorkSummary;
+};
+
+export type ClientWorkSummary = {
+	currency_code: string;
+	/** Null without customers.view_financials. */
+	lifetime_billed_minor: number | null;
+	/** Null without quotes.view. */
+	open_quotes_count: number | null;
+	/** Null without jobs.view. */
+	active_jobs_count: number | null;
 };
 
 export type DuplicateCandidates = {

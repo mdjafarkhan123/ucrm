@@ -16,9 +16,13 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    `review-history-says-sent-for-a-scheduled-request`, `job-visit-override-pricing-photo-removal-not-trashed`,
    `marketing-release-leftovers` (broken campaign now opens fine; its two feature items stay deferred),
    `staff-own-actions-lag-behind-realtime-echo` (fixed; its slow inbox read moved to Part 8).
-3. **No fake numbers** — Planned. `invoices-list-kpi-cards-are-hard-coded-placeholders`,
-   `client-financial-summary-widget-shows-empty-placeholders-for-everyone`,
-   `third-kpi-card-on-the-requests-list-has-no-real-data-source`. One shared money read model.
+3. **No fake numbers** — Done 2026-09-28: one shared money read model (`invoice_money_overview`,
+   `client_work_summary`, both permission-gated to null rather than a wrong number). Invoices list KPI tiles
+   (Outstanding/Overdue/Collected this month) and the client header stats (Lifetime/Open quotes/Active jobs)
+   are real; the Requests list's third KPI card was dropped (Jafar's call, matches Jobber's two-card layout).
+   Deliberately left deferred: the client page's Work overview/Client schedule sections (bigger build, not a
+   rollup -- `client-work-overview-and-schedule-sections-are-empty`) and the Requests list's other two cards,
+   found incidentally and not on this part's original list (`requests-new-and-conversion-rate-cards-have-no-real-data-source`).
 4. **Fixing money mistakes** — In progress 2026-09-28 (decisions D6–D9 in docs/invoice-behavior-contract.md).
    Slices, in order: 4a void cancellation email (`void-invoice-has-no-client-cancellation-email`);
    4b one payment split across several invoices; 4c fix payment / mark never received

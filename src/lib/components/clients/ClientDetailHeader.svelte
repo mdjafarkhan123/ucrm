@@ -42,19 +42,48 @@
 		client.created_at ? dateFormat.format(new Date(client.created_at)) : '—'
 	);
 
-	// Each figure waits on the part of the product that produces it, so it says what it is waiting for
-	// instead of showing a zero that is not true.
 	// Spelled out for screen readers as well as the hover title, because a disabled button never takes
 	// focus and its reason would otherwise reach mouse users only.
 	const callReason = 'Calling arrives with the communications work';
 	const messageReason = 'Messaging arrives with the communications work';
 	let manualEmailOpen = $state(false);
 
-	const stats = [
-		{ icon: coinIcon, label: 'Lifetime', waiting: 'Once you start invoicing' },
-		{ icon: fileIcon, label: 'Open quotes', waiting: 'Once you start quoting' },
-		{ icon: toolIcon, label: 'Active jobs', waiting: 'Once you start booking jobs' }
-	];
+	const moneyFormatters: Record<string, Intl.NumberFormat> = {};
+	function formatMoney(amountMinor: number, currency: string) {
+		let formatter = moneyFormatters[currency];
+		if (!formatter) {
+			formatter = new Intl.NumberFormat(undefined, { style: 'currency', currency });
+			moneyFormatters[currency] = formatter;
+		}
+		return formatter.format(amountMinor / 100);
+	}
+
+	// Each figure is null when this member lacks the permission that gates it (customers.view_financials,
+	// quotes.view, jobs.view) -- it then says why instead of showing a zero that may not be true.
+	const summary = $derived(client.work_summary);
+	const stats = $derived([
+		{
+			icon: coinIcon,
+			label: 'Lifetime',
+			value:
+				summary.lifetime_billed_minor === null
+					? null
+					: formatMoney(summary.lifetime_billed_minor, summary.currency_code),
+			waiting: 'You do not have access to this client’s billing'
+		},
+		{
+			icon: fileIcon,
+			label: 'Open quotes',
+			value: summary.open_quotes_count === null ? null : String(summary.open_quotes_count),
+			waiting: 'You do not have access to quotes'
+		},
+		{
+			icon: toolIcon,
+			label: 'Active jobs',
+			value: summary.active_jobs_count === null ? null : String(summary.active_jobs_count),
+			waiting: 'You do not have access to jobs'
+		}
+	]);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -132,7 +161,7 @@
 					<span class="client-header__stat-icon" aria-hidden="true">{@html stat.icon}</span>
 					<span class="client-header__stat-text">
 						<span class="client-header__stat-label">{stat.label}</span>
-						<span class="client-header__stat-value">{stat.waiting}</span>
+						<span class="client-header__stat-value">{stat.value ?? stat.waiting}</span>
 					</span>
 				</li>
 			{/each}

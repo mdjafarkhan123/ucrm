@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import type { ClientWorkSummary } from '$lib/clients/api';
 import { requireClientPermission } from '$lib/server/access/clients';
 import { permissionScope } from '$lib/server/access/permission';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
@@ -44,7 +45,8 @@ export const GET: RequestHandler = async (event) => {
 		{ data: contactMethods, error: contactMethodsError },
 		{ data: properties, error: propertiesError },
 		{ data: preferences, error: preferencesError },
-		{ data: tagAssignments, error: tagAssignmentsError }
+		{ data: tagAssignments, error: tagAssignmentsError },
+		{ data: workSummary, error: workSummaryError }
 	] = await Promise.all([
 		supabase
 			.from('client_contact_methods')
@@ -72,9 +74,16 @@ export const GET: RequestHandler = async (event) => {
 			.select('tag_id')
 			.eq('organization_id', organizationId)
 			.eq('entity_type', 'client')
-			.eq('entity_id', clientId)
+			.eq('entity_id', clientId),
+		supabase.rpc('client_work_summary', { target_client_ids: [clientId] })
 	]);
-	if (contactMethodsError || propertiesError || preferencesError || tagAssignmentsError)
+	if (
+		contactMethodsError ||
+		propertiesError ||
+		preferencesError ||
+		tagAssignmentsError ||
+		workSummaryError
+	)
 		return databaseError();
 
 	const primaryOf = (kind: 'email' | 'phone') =>
@@ -128,6 +137,13 @@ export const GET: RequestHandler = async (event) => {
 		};
 	}
 
+	const workSummaryRow = ((workSummary ?? {}) as Record<string, ClientWorkSummary>)[clientId] ?? {
+		currency_code: 'USD',
+		lifetime_billed_minor: null,
+		open_quotes_count: null,
+		active_jobs_count: null
+	};
+
 	return json({
 		client: {
 			...client,
@@ -151,7 +167,8 @@ export const GET: RequestHandler = async (event) => {
 			tag_ids: (tagAssignments ?? []).map((assignment) => assignment.tag_id),
 			// Google review Part 3. A member limited to their own jobs asks from the job page instead, since
 			// the client page may offer a job they did not work on or no job at all.
-			can_request_review: permissionScope(access.access, 'reviews.request') === 'all'
+			can_request_review: permissionScope(access.access, 'reviews.request') === 'all',
+			work_summary: workSummaryRow
 		}
 	});
 };

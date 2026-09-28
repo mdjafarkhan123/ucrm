@@ -43,8 +43,8 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Payment-stage and visit-line reads have no EXPLAIN evidence](invoice-payment-stage-reads-lack-explain-evidence.md) |
 | P2 | [Voiding an invoice tells the client nothing](void-invoice-has-no-client-cancellation-email.md) |
 | P2 | [A recorded payment cannot be edited, deleted, or split across invoices](payments-cannot-be-edited-deleted-or-split-across-invoices.md) |
-| P2 | [Client detail's financial summary widget is empty for everyone, not just some roles](client-financial-summary-widget-shows-empty-placeholders-for-everyone.md) |
-| P2 | [Invoices list KPI cards (Outstanding, Overdue, Collected) are hard-coded placeholders](invoices-list-kpi-cards-are-hard-coded-placeholders.md) |
+| P2 | [Client page's Work overview and Client schedule sections are always empty](client-work-overview-and-schedule-sections-are-empty.md) |
+| P2 | [Requests list's "New requests" and "Conversion rate" cards have no real data source](requests-new-and-conversion-rate-cards-have-no-real-data-source.md) |
 | P2 | [Disconnecting Stripe expires open checkouts: code-complete, never live-tested](stripe-disconnect-open-checkout-expiry-not-live-tested.md) |
 | P2 | [Marketing drain tail trickles and SES event handling falls behind](marketing-drain-tail-trickle-and-ses-event-lag.md) |
 | P3 | [Jafar Panel organization tabs have no hover-prefetch](jafar-panel-organization-tabs-have-no-hover-prefetch.md) |
@@ -57,7 +57,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [No image on a price list item](no-image-on-a-price-list-item.md) |
 | P3 | [Non-admin email-correction browser verification (Part 7)](non-admin-email-correction-browser-verification-part-7.md) |
 | P3 | [Replaced logo uploads are kept rather than cleaned up](replaced-logo-uploads-are-kept-rather-than-cleaned-up.md) |
-| P3 | [Third KPI card on the Requests list has no real data source](third-kpi-card-on-the-requests-list-has-no-real-data-source.md) |
 | P3 | [Four more composite foreign keys use `on delete set null` without a column list](more-composite-foreign-keys-null-the-organization-on-delete.md) |
 | P3 | [Invoice email sends to the primary email only, not "+ billing contact"](invoice-email-sends-to-primary-only-not-billing-contact.md) |
 | P3 | [One-time flash of full nav + "not connected to an organization" after account menu](one-time-flash-of-full-nav-and-no-organization-banner-after-account-menu.md) |
