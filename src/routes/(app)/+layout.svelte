@@ -116,9 +116,10 @@
 	const inboxVisible = $derived(inboxAccessQuery.data?.ok ?? true);
 
 	// Every page is its own JavaScript file, so the first visit to one waits for that file to arrive and
-	// the click feels stuck. This fetches the files for the pages the office moves between all day once
-	// the browser has nothing else to do, so those clicks paint straight away. Hovering a link already
-	// does the same thing on its own; this covers the clicks that come too fast for a hover.
+	// the click feels stuck. Once the browser is idle this fetches the code for the pages the office moves
+	// between all day — the sidebar's daily pages and their record pages — so those clicks paint straight
+	// away. Everything else loads on hover, like any link. Skipped on data saver or 2G (Google quicklink's
+	// rule), so a crew member on site doesn't spend mobile data on pages they may never open.
 	// The id in the detail paths is a placeholder — only the page's code is fetched, never its data.
 	// It must still satisfy the `uuid` route matcher, or `resolve()` yields a path the router can't match
 	// and `preloadCode` throws; a nil uuid matches the shape without ever pointing at a real record.
@@ -126,66 +127,29 @@
 	const warmRoutes = [
 		resolve('/(app)/dashboard'),
 		resolve('/(app)/schedule'),
+		resolve('/(app)/communications'),
 		resolve('/(app)/clients'),
-		resolve('/(app)/clients/new'),
 		resolve('/(app)/clients/[id=uuid]', { id: WARM_UUID }),
 		resolve('/(app)/requests'),
-		resolve('/(app)/requests/new'),
 		resolve('/(app)/requests/[id=uuid]', { id: WARM_UUID }),
 		resolve('/(app)/quotes'),
-		resolve('/(app)/quotes/new'),
 		resolve('/(app)/quotes/[id=uuid]', { id: WARM_UUID }),
 		resolve('/(app)/jobs'),
-		resolve('/(app)/jobs/new'),
 		resolve('/(app)/jobs/[id=uuid]', { id: WARM_UUID }),
 		resolve('/(app)/invoices'),
-		resolve('/(app)/invoices/new'),
-		resolve('/(app)/invoices/ready-to-bill'),
-		resolve('/(app)/invoices/send'),
-		resolve('/(app)/invoices/[id=uuid]', { id: WARM_UUID }),
-		resolve('/(app)/payments/[id=uuid]', { id: WARM_UUID }),
-		resolve('/(app)/pipeline'),
-		resolve('/(app)/pipeline/outcomes'),
-		resolve('/(app)/marketing'),
-		resolve('/(app)/marketing/campaigns/new'),
-		resolve('/(app)/marketing/campaigns/[id=uuid]', { id: WARM_UUID }),
-		resolve('/(app)/marketing/campaigns/[id=uuid]/edit', { id: WARM_UUID }),
-		resolve('/(app)/communications'),
-		resolve('/(app)/reviews'),
-		resolve('/(app)/reviews/settings'),
-		resolve('/(app)/files'),
-		resolve('/(app)/settings'),
-		resolve('/(app)/settings/business-profile'),
-		resolve('/(app)/settings/branding'),
-		resolve('/(app)/settings/business-hours'),
-		resolve('/(app)/settings/taxes'),
-		resolve('/(app)/settings/price-book'),
-		resolve('/(app)/settings/quotes'),
-		resolve('/(app)/settings/invoices'),
-		resolve('/(app)/settings/payments'),
-		resolve('/(app)/settings/forms'),
-		resolve('/(app)/settings/forms/[id]', { id: 'warm' }),
-		resolve('/(app)/settings/checklists'),
-		resolve('/(app)/settings/pipeline'),
-		resolve('/(app)/settings/security'),
-		resolve('/(app)/settings/automation'),
-		resolve('/(app)/settings/automation/new'),
-		resolve('/(app)/settings/automation/[id]', { id: 'warm' }),
-		resolve('/(app)/settings/automation/[id]/edit', { id: 'warm' }),
-		resolve('/(app)/settings/communications/email'),
-		resolve('/(app)/settings/communications/sms'),
-		resolve('/(app)/settings/communications/balance'),
-		resolve('/(app)/settings/communications/blocked-addresses'),
-		resolve('/(app)/settings/communications/website-chat'),
-		resolve('/(app)/settings/communications/snippets'),
-		resolve('/(app)/settings/communications/templates'),
-		resolve('/(app)/settings/inquiry-alerts'),
-		resolve('/(app)/settings/team'),
-		resolve('/(app)/settings/team/[userId]', { userId: 'warm' }),
-		resolve('/(app)/settings/team/activity')
+		resolve('/(app)/invoices/[id=uuid]', { id: WARM_UUID })
 	];
 
+	function onConstrainedConnection() {
+		const connection = (
+			navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }
+		).connection;
+		return Boolean(connection?.saveData || connection?.effectiveType?.includes('2g'));
+	}
+
 	onMount(() => {
+		if (onConstrainedConnection()) return;
+
 		const warm = () => {
 			for (const path of warmRoutes) void preloadCode(path);
 		};
