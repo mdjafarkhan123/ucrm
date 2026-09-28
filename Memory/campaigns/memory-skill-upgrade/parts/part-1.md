@@ -9,14 +9,14 @@
 
 - [x] Write `SKILL.md`: layout and word limits, resume, checkpoint, pause, finish, defer
 - [x] Write `planning.md` and `setup.md`
-- [ ] Write `templates/` (INDEX, deferred INDEX, NOW, ROADMAP, stage, part, plan, deferred task); update
+- [x] Write `templates/` (INDEX, deferred INDEX, NOW, ROADMAP, stage, part, plan, deferred task); update
       `agents/openai.yaml`
 - [ ] Review against the `writing-for-agents` skill; Prettier check
 - [ ] Commit on the branch, merge into `main`, mark part 1 done, release the claim, remove the worktree
 
 ## Next
 
-Write the eight files in the worktree's `.claude/skills/campaign-memory/templates/`, then update `agents/openai.yaml`.
+Review `SKILL.md`, `planning.md`, `setup.md`, and `templates/` in the worktree against the `writing-for-agents` skill: duplication, no-op sentences, negations, leading words, and one term per concept.
 
 ## Notes
 
