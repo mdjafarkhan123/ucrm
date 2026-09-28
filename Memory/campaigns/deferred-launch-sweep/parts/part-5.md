@@ -20,8 +20,9 @@ address (when one is set), browser-verified on Raad LTD, and the deferred note i
       `enqueue_quote_communication_email` to also queue a second send to the billing contact, each with its
       own access-link token (two new trailing optional parameters on each function, defaulted to null, so
       the six/six-argument callers that exist today keep working even before the routes are touched).
-      **Not yet applied to the database. Not yet tested.**
-- [ ] Apply the migration: `npx --no-install supabase db push --linked --dry-run` first, then for real.
+      Applied to the database 2026-09-28 (verified via `supabase migration list --linked` before and after —
+      remote now shows `20260928200000`).
+- [x] Apply the migration: `npx --no-install supabase db push --linked --dry-run` first, then for real.
 - [ ] `src/lib/server/validation/foundation.schema.ts`: add `billing_email` to `clientWriteSchema` (same
       shape as `email`), plus a `superRefine` check that it differs from `email` (case-insensitive) when
       both are set.
