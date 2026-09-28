@@ -27,7 +27,7 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    Slices, in order: 4a void cancellation email — Done `4d96acd1` (`void-invoice-has-no-client-cancellation-email`);
    4b one payment split across several invoices — Done `4d96acd1`; 4c fix payment / mark never received — Done `f6f95e39`
    (4b+4c = `payments-cannot-be-edited-deleted-or-split-across-invoices`); 4d correct an issued invoice with
-   payments carried over (`issued-invoices-cannot-be-corrected-from-the-browser`).
+   payments carried over — DB done, screens WIP `444935b5` (`issued-invoices-cannot-be-corrected-from-the-browser`).
 5. **Complete customer documents** — Planned. `client-documents-drop-line-photos-and-need-a-completeness-pass`,
    `line-photos-wrongly-appear-in-the-request-s-attachments-card`, `invoice-email-sends-to-primary-only-not-billing-contact`.
 6. **Protect customer history** — Planned. `property-deletion-guarded-once-work-references-a-property`,

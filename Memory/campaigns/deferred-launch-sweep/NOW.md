@@ -6,12 +6,14 @@
 docs/invoice-behavior-contract.md. Part 3 may still be running in another session; it owns only its roadmap
 line and its own files (invoice counts, money overview migration) — commit only your own paths.
 
-**Exact next action:** 4a–4c done (`4d96acd1`, `f6f95e39`; DB proven in rolled-back transactions, screens not yet
-clicked through — Chrome extension was offline). Build 4d: Correct invoice (prepare → edit draft → "Replace invoice"
-dialog showing difference + carried payments → activate) and Rebill on a voided invoice. activate_invoice_replacement
-must carry the original's live allocations (payments and deposits) onto the replacement, capped at its total (D6);
-issue_invoice must refuse a replacement draft (today a plain Send would leave both bills live). Then browser-check
-4a–4d and close Part 4.
+**Exact next action:** finish slice 4d. DB is done and live (`444935b5`, migration 20260928160000). Screens are
+committed as WIP, lint-clean but NOT yet svelte-checked: run svelte-check (3 "union type too complex" errors in
+OpportunityBriefDrawer, (app)/+layout, invoices/new are pre-existing — ignore), fix anything new, then
+browser-check all of 4a–4d on Raad LTD (Chrome extension was offline all session): void #30 with the email box
+(goes to Jafar's +part8 inbox); split a payment; Fix payment + Mark never received; Correct invoice → edit →
+Replace invoice (carries payments), and Rebill on a voided bill. Then delete
+`issued-invoices-cannot-be-corrected-from-the-browser` + its deferred INDEX row, mark Part 4 Done in ROADMAP,
+move to Part 5.
 
 **Blockers:** none. Do not touch packages (Jafar, 2026-09-27).
 
