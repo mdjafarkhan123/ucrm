@@ -25,14 +25,15 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
 5. **Complete customer documents** — Done 2026-09-28. Line-photo note was already fixed by Files and Media;
    Jafar chose to match Jobber (no invoice line photos); quote line photos gained the standard `Lightbox`;
    invoices and quotes now also email a separate billing contact, browser-verified on Raad LTD.
-6. **Protect customer history** — split 2026-09-28; two of its four notes were obsolete. 6A **Done**
+6. **Protect customer history** — Done 2026-09-28; split in three, two of its four notes were obsolete. 6A **Done**
    (`95680990`): closed `entitytype-covers-only-clients-and-properties` and
    `historical-address-safety-and-property-transfer-between-clients` (both already satisfied by shipped work;
    property transfer dropped — Jobber has no such feature), and gave the finance role real invoice access
    (`20260928240000`, applied and verified live). 6B **Done** (`ce48dfa2`) — client archive + restore, browser-verified 2026-09-28 (archive, Archived
-   filter, restore, refusal listing open work). 6C **Planned** —
-   property cascade delete, the destructive one; covers
-   `property-deletion-guarded-once-work-references-a-property`. Read the part note before either.
+   filter, restore, refusal listing open work). 6C **Done** (`e56a8bee`, `16163ee0`, migration
+   `20260929140000`) — deleting a property deletes the work at it, as Jobber does; refuses on invoiced,
+   deposit, sent, or cross-address work. Tested live in rolled-back transactions and browser-verified on Raad
+   LTD (blocked address, a throwaway address really deleted, phone layout).
 7. **Jobber parity** — Done 2026-09-28 (`0a640513`). Request-list client-name search and the client page's
    last-communication card fixed and browser-verified; plus five Jafar-approved slices 7a–7e (request status
    filter, client edit rewrite, quote composer save-on-first-entry, job visit off-series marker, price-list item
@@ -57,8 +58,7 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
     only create-time duplicate warning by `ilike '%term%'`, capped at 5 rows.
 11. **Speed on client pages** — Planned (Opus; performance-review). `client-photos-are-one-request-each`
     (Jafar: follow the industry pattern — batched short-lived signed URLs) and
-    `app-wide-rls-helpers-run-once-per-returned-row`. Both waited on Part 6's client work; only 6C's property
-    files are still in flight.
+    `app-wide-rls-helpers-run-once-per-returned-row`. Both waited on Part 6's client work, now done.
 
 46 tasks worked; 21 left deferred.
 
