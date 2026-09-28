@@ -2,7 +2,7 @@
 	import { navigating } from '$app/state';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import AppShell from '$lib/components/layout/AppShell.svelte';
-	import OwnerRouteSkeleton from '$lib/components/layout/OwnerRouteSkeleton.svelte';
+	import RouteSkeleton from '$lib/components/layout/RouteSkeleton.svelte';
 	import { notificationsKey } from '$lib/jafar/notifications';
 	import {
 		jafarEmailHealthKey,
@@ -71,7 +71,7 @@
 
 <AppShell variant="owner">
 	{#if showLoadingSkeleton}
-		<OwnerRouteSkeleton />
+		<RouteSkeleton />
 	{:else}
 		{@render children()}
 	{/if}

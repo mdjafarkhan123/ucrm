@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { createQuery } from '@tanstack/svelte-query';
+	import { navigating, page } from '$app/state';
 	import { preloadCode } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import AppShell from '$lib/components/layout/AppShell.svelte';
+	import PageContainer from '$lib/components/layout/PageContainer.svelte';
+	import RouteSkeleton from '$lib/components/layout/RouteSkeleton.svelte';
 	import {
 		communicationsAccessKey,
 		fetchCommunicationsAccess,
@@ -147,6 +150,26 @@
 		return Boolean(connection?.saveData || connection?.effectiveType?.includes('2g'));
 	}
 
+	// SvelteKit keeps the old page on screen until the next page's code has arrived, so a click on a page
+	// whose code isn't here yet looks like nothing happened. Once a move to another page has taken longer
+	// than 100 ms — the point where a response stops feeling instant — the content area switches to a
+	// skeleton until the page arrives. A page that is already here swaps in first, so it never flashes.
+	// Only a change of page counts: a filter or search written into the address stays on the same page.
+	// The old page stays mounted but hidden, so a cancelled or failed move brings it back as it was.
+	let slowNavigation = $state(false);
+	const navigatingToAnotherPage = $derived(
+		navigating.to !== null && navigating.to.url.pathname !== page.url.pathname
+	);
+
+	$effect(() => {
+		if (!navigatingToAnotherPage) {
+			slowNavigation = false;
+			return;
+		}
+		const handle = setTimeout(() => (slowNavigation = true), 100);
+		return () => clearTimeout(handle);
+	});
+
 	onMount(() => {
 		if (onConstrainedConnection()) return;
 
@@ -176,5 +199,21 @@
 	{invoicesVisible}
 	{marketingVisible}
 	{reviewsVisible}
-	{filesVisible}>{@render children()}</AppShell
+	{filesVisible}
 >
+	{#if slowNavigation}
+		<PageContainer variant="fill"><RouteSkeleton /></PageContainer>
+	{/if}
+	<div class="route-content" hidden={slowNavigation}>{@render children()}</div>
+</AppShell>
+
+<style lang="scss">
+	/* The wrapper exists only to hide the old page during a slow move; it must not change the layout. */
+	.route-content {
+		display: contents;
+
+		&[hidden] {
+			display: none;
+		}
+	}
+</style>
