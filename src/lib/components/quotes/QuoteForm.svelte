@@ -16,16 +16,23 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import FormNotesCard from '$lib/components/forms/FormNotesCard.svelte';
 	import PendingFilesCard from '$lib/components/files/PendingFilesCard.svelte';
+	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
+	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
 	import { fetchClient, clientDetailKey, type ClientListItem } from '$lib/clients/api';
 	import { createNote, notesKey } from '$lib/collaboration/api';
+	import { fetchTaxPicker, taxPickerKey } from '$lib/settings/api';
 	import {
 		createQuote,
 		saveQuoteLines,
 		saveQuoteCopy,
 		saveQuoteVisibility,
+		saveQuoteDiscount,
+		saveQuoteTax,
 		syncQuoteVersionAttachments,
 		quoteCountsKey,
 		type QuoteVisibility,
+		type QuoteDiscountInput,
+		type QuoteTaxInput,
 		type RequestPricingLineInput,
 		type QuoteWriteError
 	} from '$lib/quotes/api';
@@ -122,13 +129,49 @@
 	let noteSaved = $state(false);
 	let copySaved = $state(false);
 	let visibilitySaved = $state(false);
+	// Pending means chosen since the last write, so a change made after a partly failed save — even taking
+	// the discount off again — is still written on the retry.
+	let discountPending = $state(false);
+	let taxPending = $state(false);
+
+	// Discount and Tax are held here until Save, then written right after the quote exists, the same as
+	// the introduction and client view above. Nothing reaches the database before Save is pressed.
+	let discount = $state<QuoteDiscountInput | null>(null);
+	let tax = $state<QuoteTaxInput | null>(null);
+
+	// The database decides what "Business default" or "Property default" means at save time. Until then the
+	// card names the rate the tax dialog offered for that choice, from the same cached list.
+	const taxPickerQuery = createQuery(() => ({
+		queryKey: taxPickerKey(form.property_id),
+		queryFn: () => fetchTaxPicker(form.property_id),
+		enabled: Boolean(tax) && Boolean(form.property_id),
+		staleTime: 30_000
+	}));
+	const taxPreview = $derived.by(() => {
+		if (!tax || tax.source === 'no_tax') return { name: null, rateBasisPoints: 0 };
+		if (tax.source === 'custom')
+			return { name: tax.custom_name, rateBasisPoints: tax.custom_rate_basis_points ?? 0 };
+		const picker = taxPickerQuery.data;
+		const resolved =
+			tax.source === 'saved_rate'
+				? picker?.rates.find((rate) => rate.id === tax?.rate_id)
+				: tax.source === 'property_default'
+					? picker?.property_default
+					: picker?.business_default;
+		return { name: resolved?.name ?? null, rateBasisPoints: resolved?.rate_basis_points ?? 0 };
+	});
 
 	function snapshot(values: FormState) {
 		return JSON.stringify(values);
 	}
 	let baseline = $state(untrack(() => snapshot(form)));
 	const isDirty = $derived(
-		snapshot(form) !== baseline || lines.length > 0 || pendingFileCount > 0 || visibilityTouched
+		snapshot(form) !== baseline ||
+			lines.length > 0 ||
+			pendingFileCount > 0 ||
+			visibilityTouched ||
+			discountPending ||
+			taxPending
 	);
 
 	// Most clients have one property, so this only asks which when there is a real choice to make.
@@ -220,6 +263,22 @@
 				const written = await saveQuoteVisibility(savedQuote.id, savedQuote.revision, visibility);
 				savedQuote = { ...savedQuote, revision: written.revision };
 				visibilitySaved = true;
+			}
+
+			if (discountPending) {
+				const written = await saveQuoteDiscount(
+					savedQuote.id,
+					savedQuote.revision,
+					discount ?? { name: null, type: null, value: null }
+				);
+				savedQuote = { ...savedQuote, revision: written.revision };
+				discountPending = false;
+			}
+
+			if (taxPending && tax) {
+				const written = await saveQuoteTax(savedQuote.id, savedQuote.revision, tax);
+				savedQuote = { ...savedQuote, revision: written.revision };
+				taxPending = false;
 			}
 
 			if (!noteSaved && form.initial_note.trim()) {
@@ -397,6 +456,41 @@
 
 		{#snippet rail()}
 			<QuoteSummaryCard {subtotalMinor} {currencyCode} {locale} />
+
+			<RecordDiscountCard
+				revision={0}
+				name={discount?.name ?? null}
+				type={discount?.type ?? null}
+				value={discount?.value ?? null}
+				{currencyCode}
+				{locale}
+				editable
+				staged
+				onSave={async (_revision, payload) => {
+					discount = payload.type === null ? null : payload;
+					discountPending = true;
+				}}
+				onSaved={() => {}}
+			/>
+
+			<RecordTaxCard
+				revision={0}
+				propertyId={form.property_id}
+				taxSource={tax?.source ?? 'not_configured'}
+				rateId={tax?.rate_id ?? null}
+				name={taxPreview.name}
+				rateBasisPoints={taxPreview.rateBasisPoints}
+				{currencyCode}
+				{locale}
+				editable={Boolean(form.property_id)}
+				staged
+				unsetHint="Required before sending this quote."
+				onSave={async (_revision, payload) => {
+					tax = payload;
+					taxPending = true;
+				}}
+				onSaved={() => {}}
+			/>
 
 			<FormNotesCard
 				id="quote-initial-note"

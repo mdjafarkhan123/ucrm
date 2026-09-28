@@ -34,6 +34,7 @@
 		canSeePrice = true,
 		canManageTaxes = false,
 		recordNoun = 'quote',
+		staged = false,
 		unsetHint = 'Required before sending this quote.',
 		onSave,
 		onSaved
@@ -54,6 +55,9 @@
 		canManageTaxes?: boolean;
 		/** What the record is called in the sentence a stale save produces. */
 		recordNoun?: string;
+		/** The record does not exist yet. The page holds the choice and writes it when the record is saved, so
+		 * there is nothing to announce as saved here. */
+		staged?: boolean;
 		/** Why an unset tax matters here. A quote cannot be sent without one; a job simply is not taxed yet. */
 		unsetHint?: string;
 		/** Writes the tax choice against the revision it is handed. */
@@ -170,7 +174,7 @@
 				payload
 			);
 			open = false;
-			toast.success('Tax saved');
+			if (!staged) toast.success('Tax saved');
 			await onSaved(result);
 		} catch (cause) {
 			const failure = cause as QuoteWriteError;

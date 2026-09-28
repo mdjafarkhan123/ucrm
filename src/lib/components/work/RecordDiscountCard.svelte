@@ -30,6 +30,7 @@
 		editable = false,
 		canSeePrice = true,
 		recordNoun = 'quote',
+		staged = false,
 		onSave,
 		onSaved
 	}: {
@@ -47,6 +48,9 @@
 		canSeePrice?: boolean;
 		/** What the record is called in the sentence a stale save produces. */
 		recordNoun?: string;
+		/** The record does not exist yet. The page holds the choice and writes it when the record is saved, so
+		 * there is nothing to announce as saved here. */
+		staged?: boolean;
 		/** Writes the discount against the revision it is handed. */
 		onSave: (
 			revision: number,
@@ -107,7 +111,7 @@
 				payload
 			);
 			open = false;
-			toast.success(payload.type === null ? 'Discount removed' : 'Discount saved');
+			if (!staged) toast.success(payload.type === null ? 'Discount removed' : 'Discount saved');
 			await onSaved(result);
 		} catch (cause) {
 			const failure = cause as QuoteWriteError;
