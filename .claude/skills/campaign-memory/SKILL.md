@@ -1,156 +1,130 @@
 ---
 name: campaign-memory
-description: Manage lightweight roadmaps and checkpoints for work that spans sessions, has independently resumable stages, or is likely to need a fresh session to stay reliable. Use for campaign start, resume, checkpoint, handoff, pause, deferral, completion, cleanup, or when Jafar asks to read Memory and continue.
+description: Run work too big for one session as a campaign — plan it, split it into parts, and checkpoint progress so any fresh session can pick up where the last one stopped. Use to start, plan, resume, checkpoint, pause, defer, or finish a campaign, to set up Memory in a new project, or when Jafar says to read Memory and continue.
 ---
 
 # Campaign Memory
 
-Memory is temporary feature-delivery storage. It helps a fresh agent answer three questions: what are we
-building, where did we stop, and what is the next approved action?
+A **campaign** is work too big for one session. It moves through a **plan** — what users will get — and then
+**parts**, each one coherent piece of work. `Memory/` holds its working notes: small files that point a fresh
+session to the plan section and progress it needs, so it starts light and continues from the last checkpoint
+after checking what really happened since.
 
-The skill is the operating contract. `Memory/` only stores campaign state created under this contract.
-Live ownership across terminal sessions follows the project's short coordination rule, not Memory. Load
-the `agent-coordination` skill only to set up or repair that rule.
+- No `Memory/` folder yet → read [setup.md](setup.md) first.
+- Starting a campaign, working a planning part, or splitting a plan into parts → read [planning.md](planning.md).
+- Creating any Memory file or plan → copy its shape from [templates/](templates/).
 
-## Minimal-memory rule
-
-Save a fact only when both are true:
-
-1. A future session needs it to continue safely.
-2. It cannot be quickly rediscovered from the authoritative source.
-
-Keep product truth in product documents, durable technical decisions in ADRs, and implementation truth in
-code, migrations, tests, and Git. Link to an authoritative source when a pointer is enough.
-
-Memory may hold the feature goal, approved product decisions not yet promoted, current part, exact next
-action, dependencies, blockers, completion gate, and a non-obvious risk that changes the next action. Write
-each once, in the smallest file that needs it.
-
-Keep session narration, implementation explanations, code or schema inventories, command output, test
-counts, completed-file lists, research copies, and facts visible in the repository out of Memory.
-
-## Storage
+## Where things live
 
 ```text
 Memory/
-  INDEX.md
+  INDEX.md               one row per campaign
   campaigns/<campaign>/
-    NOW.md
-    ROADMAP.md
-    parts/<active-part>.md
+    NOW.md               goal, plan, and where to continue
+    ROADMAP.md           every part on one line — or, in a big campaign, every stage
+    stages/<stage>.md    one stage's parts (big campaigns only)
+    parts/<part>.md      a part note, while a part has progress worth handing over
   deferred/
-    INDEX.md
+    INDEX.md             postponed work, one row each
     <task>.md
 ```
 
-- `INDEX.md` is a small campaign registry: name, state, purpose, checkpoint, and read trigger. It has no
-  global current campaign. Target 50 lines.
-- `NOW.md` is the normal campaign checkpoint: goal, default active part, exact next action, blockers, and
-  only the pointers required for that action. It does not reserve a task or describe every concurrent agent.
-  Target 20 lines; maximum 30.
-- `ROADMAP.md` is the approved feature sequence: one concise entry per part with outcome, state,
-  dependencies, and completion gate. Target 60 lines; maximum 100.
-- An active part packet holds only approved behavior, acceptance checks, unresolved decisions, and
-  non-discoverable risks for the current part. Target 40 lines; maximum 80. Create it only when the roadmap
-  entry is insufficient to execute the part.
-- A deferred task holds only why it is postponed, what reactivates it, and any already-known constraint that
-  changes the future decision. Target 10 lines; maximum 20.
+Word limits: `NOW.md` 200 · `ROADMAP.md` and each stage file 800 · part note 500 · deferred task 150 · each
+`INDEX.md` row 50. A file over its limit is holding something that belongs elsewhere — the plan, an ADR, a
+stage file. Move it there; keep what the next session needs.
 
-Closed parts need only their roadmap entry. Delete their packets and archives after recording the outcome and
-completion state. Git is the history.
+Knowledge that outlasts the campaign lives outside Memory:
 
-## Session sizing
+- **The plan** — what the feature does for its users — one permanent document per feature, where the
+  `Memory/INDEX.md` header says.
+- **Technical decisions** a later developer must not reverse unknowingly — in ADRs.
+- **How it is built** — in code, tests, migrations, and Git.
 
-Before registration, decide whether the task should remain one session. Use a campaign when it has multiple
-independently verifiable outcomes, cannot finish safely in one session, or carrying the whole working context
-would materially reduce reliable implementation or verification. File count, step count, and guessed token
-count are signals, not thresholds.
-
-Make each part one coherent, independently verifiable outcome likely to fit a focused session. If a part grows
-beyond reliable context, split it at the nearest safe, verified boundary without changing approved behavior.
-Stabilize any atomic change before stopping, update `ROADMAP.md` and `NOW.md`, and hand off. Continue in the
-same session when restarting would cost more rediscovery than it saves.
-
-Before selecting or starting a part, check the live register as `docs/agent-concurrency.md` directs. A
-reserved part is unavailable to another agent. Concurrent parts must also have satisfied dependencies and
-independent code and external resources.
-
-## Start
-
-1. Read `Memory/INDEX.md` if it exists to check overlap.
-2. If `Memory/deferred/INDEX.md` exists, search it for terms that overlap the proposed campaign; open only
-   matching tasks.
-3. Inspect only the authoritative product and implementation sources needed to establish the starting state.
-4. Follow the project's applicable research and approval rules; promote durable findings to their
-   authoritative home.
-5. Propose the campaign goal, ordered parts, dependencies, risks, and completion gates; wait for approval.
-6. Register the campaign, create its concise roadmap and `NOW.md`, and create only the first needed packet.
-
-The campaign is ready when the registry, roadmap, checkpoint, and optional active packet name the same next
-action.
+Memory holds only what the next session needs and cannot quickly find there: the goal, pointers, each part's
+state and done-check, the position of unfinished work, blockers, and a non-obvious fact that changes the next
+step. Write it in plain English Jafar can follow, and point to sources instead of copying them. Commit hashes,
+test counts, command output, code and schema details, and the story of a session stay out.
 
 ## Resume
 
-When Jafar names a campaign, read only `Memory/INDEX.md` and that campaign's `NOW.md`. When Jafar says only
-`read memory and continue`, use the index to identify the single dependency-ready campaign; if several
-qualify, ask which one to select.
+1. Read `Memory/INDEX.md`, check the live register as the project's coordination rule directs, and take the
+   campaign Jafar named. For "read memory and continue" with no name, take the only campaign with a part that
+   can move now — unclaimed, and waiting on nothing; if several can, ask which, and mention those waiting on
+   Jafar. Decide per conversation, never from file order, recency, or another conversation.
+2. Read that campaign's `NOW.md`.
+3. Choose the part Jafar named. Otherwise take, in this order: a paused part (started, unclaimed); the next
+   part `NOW.md` names; when those are claimed or Jafar asks for any available part, another part in
+   `ROADMAP.md` whose dependencies are done and whose code and outside services don't overlap claimed work.
+   If none qualifies, say so and wait. A part claimed by a session that seems to have stopped stays with that
+   session until Jafar confirms it is closed; meanwhile you may inspect its note and outcome checks, read-only.
+4. Read the part note if it has one, otherwise its roadmap line.
+5. Claim the part. Uncommitted files its note names belong to the part; take them over with the claim. If
+   another session wins the claim, choose again. Then read only the plan section and sources the note or
+   roadmap line points to.
+6. Check the saved progress against reality before acting on it: the code in Git — on `main`, or in the
+   worktree and branch the note names — and, for each outside action the note records, its outcome check.
+   Where they disagree, correct the note from what is really there. Ask Jafar when an outcome cannot be
+   determined or the correction changes approved behavior or scope.
+7. Continue from the note's **Next**, or from the start of the part.
 
-Check the live register for the selected campaign. If another session owns the default part in `NOW.md`, or
-Jafar asks for **an available task**, read `ROADMAP.md`. Check dependencies and overlapping code or external
-resources, then choose another ready independent part in that same campaign. Keep looking past claimed parts;
-do not treat a claim on the campaign as a claim on every part. If none is ready and independent, report that
-and wait instead of duplicating active work. This applies to both "continue this campaign" and "start an
-available task" requests.
+Read `ROADMAP.md` only to choose, start, add, close, reorder, or change the state of parts; read deferred Memory only when a note
+or Jafar names it. A campaign still in the older shape — its progress kept in `NOW.md` or a part packet —
+resumes and checkpoints in that shape until it is moved to this one.
 
-After selection:
+## Work and checkpoint
 
-1. Claim the selected part under `docs/agent-concurrency.md` before starting it. If another agent wins the
-   claim first or its resources conflict, select another ready part or wait.
-2. For the default part, follow the pointers in `NOW.md`. For a different part, follow its `ROADMAP.md` entry
-   and read its matching part packet if one exists. Do not use the default part's pointers for it.
-3. Read only the authoritative sections needed for the selected part. Verify its planned state and
-   dependencies against current code and Git state. If they disagree, repair Memory from the authoritative
-   state before acting; ask Jafar only when the correction changes approved scope or behavior.
-4. Perform the selected part's approved action and stop at its completion gate.
+Work one part at a time. When a part is done and the next one is small and related, and this conversation
+hasn't been summarized, carry on with it; otherwise hand over.
 
-Do not read `ROADMAP.md` during an ordinary resume. Read it only to plan a campaign, change scope, close or
-select a part, find an alternative to a claimed default part, resolve a dependency, or repair inconsistent
-Memory. Read deferred Memory only when the checkpoint or Jafar names it.
+A **checkpoint** writes a part's state into its note — creating the note if needed — and commits it.
+Checkpoint whenever there is unfinished progress, a decision, or an open question that another session would
+struggle to reconstruct, and before any handoff. A part that finishes without any of these needs no note.
 
-Campaign selection is conversation-local. Several campaigns may be in progress. Never infer a global current
-campaign from file order, recency, or another conversation.
+- Tick **Steps** as they finish. **Next** states the exact next action — what, where, and anything half-done
+  — so a fresh session can act on it without this conversation.
+- A question waiting for Jafar goes into the note word for word.
+- Before an outside action that would do harm if repeated — a database change, a message to a customer, a
+  provider setting — checkpoint with a line saying how to check its outcome, with its exact identifier where one exists
+  (migration version, message or request ID, idempotency key), and use the service's own duplicate protection
+  where it has one. After an interruption, verify the outcome before retrying; if it cannot be determined,
+  stop and ask Jafar. Harmless, repeatable actions need none of this.
+- Work found outside the part: add it to `ROADMAP.md` if it belongs to this campaign, otherwise defer it; then
+  carry on with the part.
+- When the part proves bigger than one session, or the conversation gets summarized to free space, checkpoint,
+  move the remaining steps into a new part, and hand over.
+- When the campaign's state changes, update its `INDEX.md` row: Planning, In progress, Paused (no one is working
+  on it, but it could continue), or Blocked (it cannot move until something outside the work happens — an
+  answer from Jafar, another campaign, a provider — say what).
+- Before each checkpoint, keep every Memory file you touched within its word limit, delete what the next
+  session no longer needs, and confirm each pointer resolves.
 
-## Checkpoint and handoff
+Commit only your own changes; another session's uncommitted edits are theirs. When a file holds both, stage a
+copy of its committed version with only your lines changed. Memory lives only in the main
+folder, on `main`; a worktree's own copy of `Memory/` is stale, so ignore it. From a temporary worktree, commit code on its branch and Memory in the main folder, and name
+the worktree and branch in the part note. A part built in a worktree is **Waiting to merge** in `ROADMAP.md`
+until its code is on `main`. Change shared files — `INDEX.md`, `NOW.md`, `ROADMAP.md`, stage files — by
+editing lines in place, never by rewriting them whole, so parallel sessions keep each other's lines.
 
-After any turn that changes a campaign's integrated state on `main`, refresh its checkpoint before the final
-response. Discussion and review turns with no campaign-state change do not write Memory. A writer in a
-temporary worktree hands off its committed result to the integrator; the integrator updates shared Memory
-after bringing that result into `main`, so parallel branches do not overwrite one another's checkpoint.
+## Pause
 
-1. Promote durable knowledge to its authoritative home.
-2. If a part closed, reduce it to its roadmap entry, delete its packet after promotion, and select the next
-   dependency-ready part. Read the roadmap for this transition only.
-3. Replace `NOW.md` with the current goal, active part, exact next action, blockers, and essential pointers.
-4. Keep only unresolved context that changes the next session's action.
-5. When handing off or pausing, give Jafar an exact resume command naming the campaign.
+When Jafar says pause, or the session has to stop, checkpoint where you are. On `main`, commit only working
+steps and describe any half-done change in **Next**, naming its files; in a worktree, commit it to the branch
+as work in progress. Then release the claim and give Jafar the resume command:
+`read memory and continue <campaign>`.
 
-A checkpoint is complete when a fresh agent can identify one exact next action from the index and `NOW.md`,
-then load no more than the explicitly required active packet and source sections.
+## Finish
 
-## Pause, defer, and complete
+**A part** is finished when its done-check passes on `main`. Move anything durable to its permanent home —
+behavior that changed into the plan, with Jafar's approval; a technical decision into an ADR. Mark the part
+done in `ROADMAP.md` with the date, delete its note, point `NOW.md` at the next part, commit, and release the
+claim. When every part of a stage is done, reduce the stage to one roadmap line and delete its file.
 
-Use `Planned`, `In progress`, `Paused`, or `Blocked` in the registry. Update only the selected campaign.
+**A campaign** is finished when every part is done. Set the plan's status to built, remove the campaign's
+`INDEX.md` row, delete its folder, and commit. Git keeps the history.
 
-Before creating a deferral, search the deferred index and task names for the same underlying work. Update an
-existing record instead of creating a duplicate. If the work remains owned by an active campaign, keep it in
-that campaign's roadmap; use global deferred Memory when it must remain discoverable independently.
+## Defer
 
-For a global deferral, add one short index row and one short task file containing the reason, reactivation
-trigger, and only already-known constraints that change future work. Leave unresearched detail absent rather
-than investigating merely to fill the note. Remove the row and file when the task is resolved.
-
-When every part passes its completion gate, promote remaining durable knowledge, remove that campaign's
-registry row, and delete its temporary campaign folder. Preserve unrelated campaigns and deferrals.
-
-Before every checkpoint, deferral, pause, or completion, prune Memory against the minimal-memory rule and
-verify that all remaining pointers resolve.
+Defer work that lies outside the campaign or has to wait for something outside it. Search
+`Memory/deferred/INDEX.md` first and update the existing record if the same work is there. Otherwise add a row
+and a note from the template: why it waits, what brings it back, and only the constraints already known.
+Remove both when the work is done, dropped, or taken up by a campaign.
