@@ -4,7 +4,7 @@
 
 **Active part:** Parts 1–9 and 11 Done (Part 11 finished 2026-09-28) — details in ROADMAP.
 
-**Exact next action:** **Part 10, merge duplicate clients** (Opus) — its roadmap line has the scope.
+**Exact next action:** **Part 10, merge duplicate clients** (Opus) — in progress, follow `parts/part-10.md`.
 Raad's Stripe sandbox key was re-pasted and checks OK (2026-09-28).
 
 **Blockers:** none. Do not touch packages (Jafar, 2026-09-27). The CLI runs as `npx --no-install supabase`.
