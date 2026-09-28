@@ -4,10 +4,8 @@
 after the pilot.
 **Plan:** none — a test campaign; each roadmap line says what its part does.
 
-**In progress:**
+**In progress:** none
 
-- 1 Welcome notice — `parts/1-welcome-notice.md`
-
-**Next part:** 2 Summary file — waits for part 1
+**Next part:** 2 Summary file — `pilot-test-summary.md` naming both parts; ready, part 1 is done
 
 **Blockers:** none
