@@ -11,7 +11,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [SES production-domain cutover: capacity cap and rehearsal notes](ses-production-domain-cutover-notes.md) |
 | P2 | [A full page load can crash hydration and leave the previous page on screen](full-page-load-hydration-crash-leaves-the-previous-page-on-screen.md) |
 | P2 | [Resolving a chat identity does not stop the next conflict](resolving-a-chat-identity-does-not-stop-the-next-conflict.md) |
-| P2 | [`EntityType` covers only clients and properties](entitytype-covers-only-clients-and-properties.md) |
 | P2 | [Active member's sign-in email not visible, recovery path unclear](active-member-email-not-visible-and-recovery-path-unclear.md) |
 | P2 | [No admin-alert delivery for loop-detected inbound threads](no-admin-alert-delivery-mechanism-for-loop-detected-inbound-threads.md) |
 | P2 | [Composer day-two scope: CC, attachments, formatting, channel tabs](composer-day-two-scope.md) |
@@ -21,7 +20,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Job detail with the maximum recurring Visit count is unmeasured](job-detail-with-the-maximum-recurring-visit-count-is-unmeasured.md) |
 | P2 | [Client duplicate detection, merge, archive, restore, and audit history](client-duplicate-detection-merge-archive-restore-and-audit-history.md) |
 | P2 | [Every entitlement-gated route re-reads the whole access model](every-entitlement-gated-route-re-reads-the-whole-access-model.md) |
-| P2 | [Historical address safety and property transfer between clients](historical-address-safety-and-property-transfer-between-clients.md) |
 | P2 | [Name search across list APIs falls back to a sequential scan](name-search-across-list-apis-falls-back-to-a-sequential-scan.md) |
 | P2 | [Opportunity Brief activity timeline](opportunity-brief-activity-timeline.md) |
 | P2 | [Property deletion guarded once work references a property](property-deletion-guarded-once-work-references-a-property.md) |
