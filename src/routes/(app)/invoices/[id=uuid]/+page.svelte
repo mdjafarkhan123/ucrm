@@ -51,6 +51,7 @@
 		invoiceCreditPrefix,
 		sendPaymentReceipt,
 		runInvoiceLifecycleAction,
+		sendInvoiceVoidNotice,
 		deleteInvoice,
 		setInvoiceOnlinePartialPayments,
 		invoiceCountsKey,
@@ -58,15 +59,15 @@
 		type InvoiceLifecycleAction,
 		type InvoiceLineInput,
 		type ApplyInvoiceCreditInput,
-		type RecordInvoicePaymentResult
+		type RecordInvoicePaymentInput,
+		type RecordInvoicePaymentResult,
+		clientOpenInvoicesKey,
+		fetchClientOpenInvoices
 	} from '$lib/invoices/api';
 	import { INVOICE_STATUS_LABELS, INVOICE_STATUS_TONES } from '$lib/invoices/statuses';
 	import { diffInvoiceDocument } from '$lib/invoices/document-history';
 	import { INVOICE_VOID_REASON_LABELS, type InvoiceVoidReason } from '$lib/invoices/lifecycle';
-	import {
-		INVOICE_PAYMENT_METHOD_LABELS,
-		type InvoicePaymentMethod
-	} from '$lib/invoices/payment-methods';
+	import { INVOICE_PAYMENT_METHOD_LABELS } from '$lib/invoices/payment-methods';
 	import type {
 		RequestPricingLine,
 		RequestPricingLineInput,
@@ -300,7 +301,12 @@
 	// Collect Payment once it is issued and still owes money; nothing forced once it is closed. A draft can
 	// still take money (D1 — Save-and-Collect), but that path is Jobber's create-flow shortcut, not this
 	// screen's ongoing primary action, so Send wins here whenever the draft can still be sent.
-	type PrimaryAction = { label: string; loading?: boolean; onclick: () => void };
+	type PrimaryAction = {
+		label: string;
+		loading?: boolean;
+		onclick: () => void;
+		onhover?: () => void;
+	};
 	const canCollect = $derived(
 		Boolean(
 			saved?.can_record_payment &&
@@ -313,7 +319,12 @@
 		if (!saved) return undefined;
 		if (draftEditable && saved.can_send)
 			return { label: 'Send invoice', onclick: () => (emailOpen = true) };
-		if (canCollect) return { label: 'Collect payment', onclick: () => (collectPaymentOpen = true) };
+		if (canCollect)
+			return {
+				label: 'Collect payment',
+				onclick: () => (collectPaymentOpen = true),
+				onhover: warmOpenInvoices
+			};
 		return undefined;
 	});
 
@@ -586,27 +597,35 @@
 		}
 	}
 
-	// --- Collect Payment (single invoice) ----------------------------------------------------------------
+	// --- Collect Payment ---------------------------------------------------------------------------------
 	let collectPaymentOpen = $state(false);
 
-	function saveInvoicePayment(payload: {
-		amount_minor: number;
-		method: InvoicePaymentMethod;
-		payment_date: string;
-		reference: string | null;
-		note: string | null;
-		idempotency_key: string;
-		request_hash: string;
-	}) {
+	function saveInvoicePayment(payload: Omit<RecordInvoicePaymentInput, 'client_id'>) {
 		if (!saved?.client) throw new Error('This invoice has no client to record payment against.');
 		return recordInvoicePayment(invoiceId, { client_id: saved.client.id, ...payload });
+	}
+
+	// The client's other unpaid bills, which the Collect dialog lists; started when its button is reached.
+	function warmOpenInvoices() {
+		const clientId = saved?.client?.id;
+		if (!clientId) return;
+		void queryClient.prefetchQuery({
+			queryKey: clientOpenInvoicesKey(clientId),
+			queryFn: () => fetchClientOpenInvoices(clientId, invoiceId),
+			staleTime: 15_000
+		});
 	}
 
 	// The money is already recorded by the time this runs, so the receipt is reported separately from it: a
 	// receipt that could not be queued is a delivery problem, never a reason to make a recorded payment look
 	// like it failed. Same two-entry-point shape as Jobber, whose New Payment screen offers exactly this.
 	async function onPaymentSaved(result: RecordInvoicePaymentResult, emailReceipt: boolean) {
-		await refreshInvoice();
+		// One payment can settle several of the client's bills, so every open bill and bill page is stale.
+		await Promise.all([
+			refreshInvoice(),
+			queryClient.invalidateQueries({ queryKey: ['invoices', 'detail'] }),
+			queryClient.invalidateQueries({ queryKey: ['invoices', 'client-open'] })
+		]);
 		if (!emailReceipt) {
 			toast.success('Payment recorded');
 			return;
@@ -669,10 +688,50 @@
 		return runInvoiceLifecycleAction(invoiceId, action, idempotencyKey, requestHash);
 	}
 
-	async function onLifecycleSaved() {
+	async function onLifecycleSaved({ notifyClient }: { notifyClient: boolean }) {
 		const done = lifecycleMode ? LIFECYCLE_DONE[lifecycleMode] : 'Invoice updated';
+		if (!notifyClient) {
+			await refreshInvoice();
+			toast.success(done);
+			return;
+		}
+		// The void has already happened, so a failed email is reported on its own and never undoes it. The
+		// banner then offers the send again.
+		try {
+			await sendInvoiceVoidNotice(invoiceId);
+			toast.success(`${done} · client emailed`);
+		} catch (cause) {
+			toast.error(`${done}, but the email was not sent: ${voidNoticeFailure(cause)}`);
+		}
 		await refreshInvoice();
-		toast.success(done);
+	}
+
+	// Where the cancellation email would go: only for a bill the client was given (sent or marked sent) and
+	// who has an email address (D9).
+	const voidNoticeEmail = $derived(
+		saved?.invoice.issued_at && saved.client?.email ? saved.client.email : null
+	);
+
+	function voidNoticeFailure(cause: unknown) {
+		const failure = cause as InvoiceWriteError;
+		return failure.fieldErrors?.form ?? failure.message ?? 'please try again.';
+	}
+
+	// The later send, from the Voided banner, when the dialog's email was skipped or failed.
+	let voidNoticeSending = $state(false);
+
+	async function sendVoidNoticeNow() {
+		if (voidNoticeSending || !invoiceId) return;
+		voidNoticeSending = true;
+		try {
+			await sendInvoiceVoidNotice(invoiceId);
+			await refreshInvoice();
+			toast.success('Cancellation email sent');
+		} catch (cause) {
+			toast.error(voidNoticeFailure(cause));
+		} finally {
+			voidNoticeSending = false;
+		}
 	}
 
 	// The void reason / bad-debt note shown as a line under the header once the bill is in that state.
@@ -857,6 +916,26 @@
 						<p class="invoice-detail__closure-title">{closureBanner.title}</p>
 						{#if closureBanner.note}
 							<p class="invoice-detail__closure-note">{closureBanner.note}</p>
+						{/if}
+						{#if closureBanner.tone === 'voided'}
+							{#if saved.delivery.void_notice}
+								<p class="invoice-detail__closure-note">
+									Cancellation emailed to {saved.delivery.void_notice.recipient_email} on
+									{dateTimeFormat.format(new Date(saved.delivery.void_notice.sent_at))}.
+								</p>
+							{:else if voidNoticeEmail && saved.can_void}
+								<div class="invoice-detail__closure-action">
+									<p class="invoice-detail__closure-note">The client has not been told.</p>
+									<Button
+										variant="secondary"
+										size="small"
+										loading={voidNoticeSending}
+										onclick={() => void sendVoidNoticeNow()}
+									>
+										Email cancellation
+									</Button>
+								</div>
+							{/if}
 						{/if}
 					</div>
 				{/if}
@@ -1202,6 +1281,8 @@
 		{#if collectPaymentOpen && saved.money}
 			<CollectPaymentDialog
 				open
+				{invoiceId}
+				clientId={saved.client?.id ?? ''}
 				invoiceNumber={saved.invoice.invoice_number}
 				remainingMinor={saved.money.remaining_minor}
 				currencyCode={saved.invoice.currency_code}
@@ -1232,6 +1313,7 @@
 				open
 				mode={lifecycleMode}
 				invoiceNumber={saved.invoice.invoice_number}
+				clientEmail={voidNoticeEmail}
 				onClose={() => (lifecycleMode = null)}
 				onSave={saveLifecycle}
 				onSaved={onLifecycleSaved}
@@ -1326,6 +1408,14 @@
 		margin: 0;
 		color: var(--color-heading);
 		font-weight: 600;
+	}
+
+	.invoice-detail__closure-action {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-small);
 	}
 
 	.invoice-detail__closure-note {

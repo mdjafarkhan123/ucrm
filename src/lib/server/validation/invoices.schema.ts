@@ -425,33 +425,74 @@ export type InvoicePaymentMethod = (typeof INVOICE_PAYMENT_METHODS)[number];
 // only be able to disagree with the database's own arithmetic, so it isn't repeated. Spreading one payment
 // across several of a client's open invoices is a later, explicitly deferred screen; this shape carries only
 // what a single-invoice collection needs.
-export const recordInvoicePaymentSchema = z.object({
-	// The browser already has this from the detail read it is acting on; record_client_payment re-checks the
-	// invoice actually belongs to this client before it touches any money, so a tampered value only ever
-	// fails closed as "that client could not be found," never a cross-tenant write.
-	client_id: z.string().uuid(),
-	amount_minor: z
-		.number()
-		.int()
-		.min(1, 'Enter how much was paid.')
-		.max(MINOR_UNIT_MAX, 'That amount is too large.'),
-	method: z.enum(INVOICE_PAYMENT_METHODS, { message: 'Choose how this payment was received.' }),
-	payment_date: z.string().regex(ISO_DATE, 'Pick a valid payment date.'),
-	reference: z
-		.string()
-		.trim()
-		.max(200, 'Keep the reference under 200 characters.')
-		.nullish()
-		.transform((value) => value || null),
-	note: z
-		.string()
-		.trim()
-		.max(2000, 'Keep the note under 2000 characters.')
-		.nullish()
-		.transform((value) => value || null),
-	idempotency_key: z.string().uuid('Start a new action and try again.'),
-	request_hash: z.string().trim().min(1, 'Reload and try again.').max(200, 'Reload and try again.')
-});
+export const recordInvoicePaymentSchema = z
+	.object({
+		// The browser already has this from the detail read it is acting on; record_client_payment re-checks the
+		// invoice actually belongs to this client before it touches any money, so a tampered value only ever
+		// fails closed as "that client could not be found," never a cross-tenant write.
+		client_id: z.string().uuid(),
+		amount_minor: z
+			.number()
+			.int()
+			.min(1, 'Enter how much was paid.')
+			.max(MINOR_UNIT_MAX, 'That amount is too large.'),
+		method: z.enum(INVOICE_PAYMENT_METHODS, { message: 'Choose how this payment was received.' }),
+		payment_date: z.string().regex(ISO_DATE, 'Pick a valid payment date.'),
+		reference: z
+			.string()
+			.trim()
+			.max(200, 'Keep the reference under 200 characters.')
+			.nullish()
+			.transform((value) => value || null),
+		note: z
+			.string()
+			.trim()
+			.max(2000, 'Keep the note under 2000 characters.')
+			.nullish()
+			.transform((value) => value || null),
+		// One payment spread across several of the client's bills (D8, Jobber's New Payment screen). Absent means
+		// the old single-bill shape: the whole amount goes to the invoice in the URL. Whatever the list leaves
+		// unapplied stays with the client as credit. record_client_payment re-checks each bill's client, currency
+		// and balance, so this only shapes the list and keeps it within the money received.
+		allocations: z
+			.array(
+				z.object({
+					invoice_id: z.string().uuid(),
+					amount_minor: z
+						.number()
+						.int()
+						.min(1, 'Enter how much goes to each invoice.')
+						.max(MINOR_UNIT_MAX, 'That amount is too large.')
+				})
+			)
+			.max(50, 'Apply one payment to at most 50 invoices.')
+			.optional(),
+		idempotency_key: z.string().uuid('Start a new action and try again.'),
+		request_hash: z
+			.string()
+			.trim()
+			.min(1, 'Reload and try again.')
+			.max(200, 'Reload and try again.')
+	})
+	.superRefine((input, context) => {
+		if (!input.allocations) return;
+		const ids = new Set(input.allocations.map((entry) => entry.invoice_id));
+		if (ids.size !== input.allocations.length) {
+			context.addIssue({
+				code: 'custom',
+				path: ['allocations'],
+				message: 'Each invoice can appear once.'
+			});
+		}
+		const applied = input.allocations.reduce((sum, entry) => sum + entry.amount_minor, 0);
+		if (applied > input.amount_minor) {
+			context.addIssue({
+				code: 'custom',
+				path: ['allocations'],
+				message: 'The invoices add up to more than the payment received.'
+			});
+		}
+	});
 
 export type RecordInvoicePaymentInput = z.infer<typeof recordInvoicePaymentSchema>;
 

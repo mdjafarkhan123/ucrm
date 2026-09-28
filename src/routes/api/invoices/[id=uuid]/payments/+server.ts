@@ -7,11 +7,11 @@ import { requireOrganization } from '$lib/server/auth/organization';
 import { enforceOrganizationWriteRateLimit } from '$lib/server/security/rate-limit';
 import { updateInvoiceError } from '$lib/server/invoices/errors';
 
-// Collect Payment, single invoice. No new database command: 3b-1's record_client_payment already records the
-// receipt and applies it in one transaction when it is handed a one-entry allocation list. The command itself
-// re-checks the invoice belongs to the given client and caps the amount against what it still owes, so this
-// route repeats none of that. Spreading one payment across a client's several open invoices is a later,
-// deferred screen.
+// Collect Payment. No new database command: record_client_payment records the receipt and applies it in one
+// transaction across whatever allocation list it is handed. Without a list the whole amount goes to the invoice
+// in the URL (the original single-bill shape); with one, the payment is spread across the client's bills as
+// staff entered it and the rest stays as client credit (D8). The command re-checks every bill's client,
+// currency and balance, so this route repeats none of that.
 export const POST: RequestHandler = async (event) => {
 	const auth = await requireOrganization(event);
 	if (!auth) return unauthorized();
@@ -42,7 +42,9 @@ export const POST: RequestHandler = async (event) => {
 		new_payment_date: input.payment_date,
 		new_reference: input.reference,
 		new_note: input.note,
-		new_allocations: [{ invoice_id: event.params.id, amount_minor: input.amount_minor }],
+		new_allocations: input.allocations ?? [
+			{ invoice_id: event.params.id, amount_minor: input.amount_minor }
+		],
 		new_idempotency_key: input.idempotency_key,
 		new_request_hash: input.request_hash
 	});

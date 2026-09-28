@@ -828,7 +828,7 @@ export async function issueInvoiceAccessLink(id: string): Promise<InvoiceAccessL
 	return readOrThrow<InvoiceAccessLink>(response, 'That customer link could not be created.');
 }
 
-// --- Collecting payment (single invoice) ------------------------------------------------------------------
+// --- Collecting payment ----------------------------------------------------------------------------------
 
 export type RecordInvoicePaymentInput = {
 	client_id: string;
@@ -837,6 +837,9 @@ export type RecordInvoicePaymentInput = {
 	payment_date: string;
 	reference: string | null;
 	note: string | null;
+	/** How the payment is spread across the client's bills. Omitted: all of it goes to this invoice. Whatever
+	 *  the list leaves unapplied stays with the client as credit. */
+	allocations?: { invoice_id: string; amount_minor: number }[];
 	idempotency_key: string;
 	request_hash: string;
 };
@@ -1107,6 +1110,10 @@ export type ClientOpenInvoice = {
 	invoice_number: number;
 	subject: string;
 	derived_status: InvoiceDerivedStatus;
+	due_date: string;
+	currency_code: string;
+	/** What the bill still owes; null for a reader who may not see money. */
+	remaining_minor: number | null;
 };
 
 // The statuses a payment can still usefully move onto: still unpaid, or a draft (which D1 lets take money and
@@ -1139,7 +1146,10 @@ export async function fetchClientOpenInvoices(
 			id: invoice.id,
 			invoice_number: invoice.invoice_number,
 			subject: invoice.subject,
-			derived_status: invoice.derived_status
+			derived_status: invoice.derived_status,
+			due_date: invoice.due_date,
+			currency_code: invoice.currency_code,
+			remaining_minor: invoice.remaining_minor
 		}));
 }
 

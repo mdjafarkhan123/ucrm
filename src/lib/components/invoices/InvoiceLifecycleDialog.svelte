@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
+	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import { INVOICE_VOID_REASON_OPTIONS, type InvoiceVoidReason } from '$lib/invoices/lifecycle';
@@ -19,6 +20,7 @@
 		open,
 		mode,
 		invoiceNumber,
+		clientEmail = null,
 		onClose,
 		onSave,
 		onSaved
@@ -26,13 +28,17 @@
 		open: boolean;
 		mode: Mode;
 		invoiceNumber: number;
+		/** Where the cancellation email would go. Set only when the bill was issued to the client and they have
+		 *  an email address; null hides the choice (D9). */
+		clientEmail?: string | null;
 		onClose: () => void;
 		onSave: (
 			action: InvoiceLifecycleAction,
 			idempotencyKey: string,
 			requestHash: string
 		) => Promise<void>;
-		onSaved: () => void | Promise<void>;
+		/** `notifyClient` is true when a void should be followed by the cancellation email. */
+		onSaved: (outcome: { notifyClient: boolean }) => void | Promise<void>;
 	} = $props();
 
 	// What each mode says and asks for. `pickVoidReason` adds the four-way reason picker; `reasonRequired`
@@ -105,6 +111,8 @@
 	// A fresh instance every time the page opens the dialog (it is `{#if}`-gated), so plain initialisers are
 	// the reset — the same shape CollectPaymentDialog relies on.
 	let voidReason = $state('');
+	let notifyClient = $state(true);
+	const offerNotice = $derived(mode === 'void' && !!clientEmail);
 	let text = $state('');
 	let saving = $state(false);
 	let error = $state('');
@@ -153,7 +161,7 @@
 		saving = true;
 		try {
 			await onSave(action, idempotencyKey, hash);
-			await onSaved();
+			await onSaved({ notifyClient: offerNotice && notifyClient });
 			onClose();
 		} catch (cause) {
 			const failure = cause as InvoiceWriteError;
@@ -199,6 +207,16 @@
 			bind:value={text}
 			disabled={saving}
 		/>
+
+		{#if offerNotice}
+			<Checkbox
+				id="invoice-void-notify"
+				label="Email the client that this invoice is cancelled"
+				description={`Sent to ${clientEmail}.`}
+				bind:checked={notifyClient}
+				disabled={saving}
+			/>
+		{/if}
 
 		{#if error}<p class="invoice-lifecycle__error" role="alert">{error}</p>{/if}
 	</div>
