@@ -11,8 +11,8 @@
 - [x] `jafar-panel-organization-tabs-...` — Communications tab (the only tab with own reads) prefetches on hover via shared `src/lib/jafar/organization-communications-queries.ts`
 - [x] `list-table-rows-use-goto-...` — rows already had real links; real gap was data. `DataTable` `onRowHover` (100 ms intent) prefetches detail on Jobs/Invoices/Quotes/Requests. Clients list waits for Part 6
 - [x] `every-entitlement-gated-route-re-reads-the-whole-access-model` — `public.organization_access_snapshot` (invoker, no cache); identical output all roles; 440 → 81 ms median
-- [ ] `six-unindexed-foreign-keys-from-the-collaboration-tables`
-- [ ] `a-customer-file-re-resolves-the-whole-quote-document` — `resolve_quote_access_file` RPC
+- [x] `six-unindexed-foreign-keys-from-the-collaboration-tables` — only `attachments.note_id` needed an index; the rest are covered or account-delete-only (migration comment says why)
+- [x] `a-customer-file-re-resolves-the-whole-quote-document` — `resolve_quote_access_file`; same answers on all 546 live link/file pairs; expired link now 404 not 500
 - [ ] `inbox-read-takes-over-a-second` — note file was never written (only its INDEX row); investigate from scratch
 - [ ] `client-photos-are-one-request-each` — industry pattern (batched short-lived signed URLs); touches client pages, wait for Part 6
 - [ ] `app-wide-rls-helpers-run-once-per-returned-row` — clients family; overlaps Part 6, wait for it
@@ -22,15 +22,15 @@
 
 ## Next
 
-Next task: `six-unindexed-foreign-keys-from-the-collaboration-tables` (confirm with `get_advisors` first).
-Branch is 5 commits ahead of `main`, nothing uncommitted.
+Next task: `inbox-read-takes-over-a-second` (no note exists; investigate from scratch). Branch rebased onto
+`main` 2026-09-28, 8 commits ahead, nothing uncommitted.
 
 ## Outside actions
 
 - Migration `20260929090000_organization_access_snapshot` pushed to the linked project — check:
   `select version from supabase_migrations.schema_migrations where version = '20260929090000'` — done.
-  Its file is only on this branch until merge. A push from the worktree needs a temporary copy of
-  `main`'s newer migrations (e.g. `20260928240000_...`); delete the copy afterwards.
+- Also pushed and confirmed: `20260929100000_attachments_note_id_index`, `20260929110000_resolve_quote_access_file`.
+  These three files are only on this branch until merge; if `main` gains newer migrations, rebase before pushing.
 
 ## Notes
 
