@@ -1005,6 +1005,12 @@ export async function fetchCommunicationsAccess(): Promise<CommunicationsAccess>
 export const clientCommunicationHistoryKey = (clientId: string) =>
 	['communications', 'client-history', clientId] as const;
 
+// A separate key from the infinite-query history above: the rail's "Last communication" card only ever
+// wants the newest message and loads with the page itself (not gated behind the Communication tab), so it
+// runs as a plain query rather than sharing the infinite query's page-shaped cache entry.
+export const clientLastCommunicationKey = (clientId: string) =>
+	['communications', 'client-last-message', clientId] as const;
+
 // Same merged inbound/outbound shape and cursor format `fetchInboxMessages` already uses -- the client
 // Communication tab is that same history read scoped to one client, not a second timeline architecture.
 export async function fetchClientCommunicationHistory(

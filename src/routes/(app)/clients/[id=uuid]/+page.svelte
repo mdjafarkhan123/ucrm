@@ -28,12 +28,14 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		clientCommunicationHistoryKey,
+		clientLastCommunicationKey,
 		communicationsAccessKey,
 		fetchClientCommunicationHistory,
 		fetchCommunicationsAccess,
 		type CommunicationsAccess,
 		type InboxMessagePage
 	} from '$lib/communications/inbox';
+	import { exactTime } from '$lib/collaboration/format';
 	import {
 		ClientWriteError,
 		clientDetailKey,
@@ -67,6 +69,7 @@
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 
 	const queryClient = useQueryClient();
@@ -349,6 +352,17 @@
 	}));
 	const canSeeCommunication = $derived(communicationsAccessQuery.data?.ok ?? true);
 	const canMessage = $derived(communicationsAccessQuery.data?.canSend ?? true);
+
+	// The rail's own small read: just the newest message, so the card is there the moment the page is
+	// (Jobber's own client rail carries this under Tags), independent of the Communication tab's lazy,
+	// hover-warmed infinite history.
+	const lastCommunicationQuery = createQuery<InboxMessagePage>(() => ({
+		queryKey: clientLastCommunicationKey(clientId),
+		queryFn: () => fetchClientCommunicationHistory(clientId),
+		enabled: canSeeCommunication,
+		staleTime: 15_000
+	}));
+	const lastCommunication = $derived(lastCommunicationQuery.data?.messages[0] ?? null);
 
 	const clientTabs: Tab[] = $derived([
 		{ value: 'details', label: 'Details' },
@@ -657,6 +671,26 @@
 						<ClientTagSelect {tagIds} onChange={(next) => (tagIdsDraft = next)} />
 					</RailCard>
 
+					{#if canSeeCommunication}
+						<RailCard title="Last communication" icon={messageIcon}>
+							{#if lastCommunicationQuery.isPending}
+								<LoadingSkeleton variant="text" />
+							{:else if lastCommunication}
+								<p class="client-detail__rail-caption">
+									{exactTime(lastCommunication.created_at)}
+								</p>
+								<p class="client-detail__last-communication-subject">
+									{lastCommunication.subject}
+								</p>
+								<Button size="small" variant="tertiary" onclick={() => selectTab('communication')}>
+									Read more...
+								</Button>
+							{:else}
+								<p class="client-detail__rail-blank">Nothing sent yet.</p>
+							{/if}
+						</RailCard>
+					{/if}
+
 					<RailCard title="Notes" icon={notesIcon} count={notesCount}>
 						<NotesPanel
 							entityType="client"
@@ -771,6 +805,14 @@
 			margin-top: var(--space-slim);
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
+		}
+
+		&__last-communication-subject {
+			color: var(--color-heading);
+			font-weight: 600;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
 		}
 
 		// Says the header is showing something not yet written, right where the changed values are.
