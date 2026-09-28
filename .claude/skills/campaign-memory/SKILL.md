@@ -50,9 +50,10 @@ hashes, test counts, command output, code and schema details, and the story of a
    the only campaign ready to work; if several are, ask which. The choice holds for this conversation only —
    file order, recency, and other conversations never decide it.
 2. Read that campaign's `NOW.md` and check the live register as the project's coordination rule directs.
-3. Choose a part in this order: a paused part (started, unclaimed); the next part `NOW.md` names; when those
-   are claimed or Jafar asks for any available part, another part in `ROADMAP.md` whose dependencies are done
-   and whose code and outside services don't overlap claimed work. If none qualifies, say so and wait.
+3. Choose the part Jafar named. Otherwise take, in this order: a paused part (started, unclaimed); the next
+   part `NOW.md` names; when those are claimed or Jafar asks for any available part, another part in
+   `ROADMAP.md` whose dependencies are done and whose code and outside services don't overlap claimed work.
+   If none qualifies, say so and wait.
 4. Claim the part. Uncommitted files its note names belong to the part; take them over with the claim. If
    another session wins the claim, choose again.
 5. Read the part note — for a part not yet started, create it from its roadmap line and the template. Then read
@@ -79,6 +80,7 @@ session could take over from that point:
   carry on with the part.
 - When the part proves bigger than one session, or the conversation gets summarized to free space, checkpoint
   at the next working step, move the remaining steps into a new part, and hand over.
+- When the campaign's state changes — Planning, In progress, Paused, or Blocked — update its `INDEX.md` row.
 - Before each checkpoint, keep every Memory file you touched within its word limit, delete what the next
   session no longer needs, and confirm each pointer resolves.
 
@@ -99,7 +101,7 @@ until Jafar confirms that session is closed.
 
 ## Finish
 
-**A part** is finished when its done-check passes. Move anything durable to its permanent home — behavior that
+**A part** is finished when its done-check passes on `main`. Move anything durable to its permanent home — behavior that
 changed into the plan, with Jafar's approval; a technical decision into an ADR. Mark the part done in
 `ROADMAP.md` with the date, delete its note, point `NOW.md` at the next part, commit, and release the claim.
 When every part of a stage is done, reduce the stage to one roadmap line and delete its file.
@@ -109,7 +111,7 @@ When every part of a stage is done, reduce the stage to one roadmap line and del
 
 ## Defer
 
-Defer work that has to wait for something outside the campaign. Search `Memory/deferred/INDEX.md` first and
+Defer work that lies outside the campaign or has to wait for something outside it. Search `Memory/deferred/INDEX.md` first and
 update the existing record if the same work is there. Otherwise add a row and a note from the template: why it
 waits, what brings it back, and only the constraints already known. Remove both when the work is done or
 dropped.

@@ -15,8 +15,8 @@ File count, step count, and guessed size are hints, not rules. Anything smaller 
 2. Agree the **goal** with Jafar in a sentence or two: what users can do when the campaign is done.
 3. If an approved plan already covers the goal, go to [Split](#split). Otherwise the campaign opens with
    planning parts.
-4. Register it: add the `INDEX.md` row, and create `NOW.md` and `ROADMAP.md` from the templates with the parts
-   known so far.
+4. Register it: add the `INDEX.md` row; create `NOW.md` and `ROADMAP.md` from the templates with the parts
+   known so far; and when no plan exists yet, create the plan from its template.
 
 The campaign is ready when its `INDEX.md` row, `NOW.md`, and `ROADMAP.md` all point to the same next part.
 
