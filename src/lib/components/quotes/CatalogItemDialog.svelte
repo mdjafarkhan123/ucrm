@@ -268,9 +268,9 @@
 						image_file_id: savedPhotoId
 					};
 					itemRevision = result.revision;
-					error = `The item was saved, but its photo was not: ${
-						cause instanceof Error ? cause.message : 'the upload failed'
-					}. Try again, or remove the photo.`;
+					error = `The item was saved, but its photo was not. ${
+						cause instanceof Error ? cause.message : 'The upload failed.'
+					} Or remove the photo and save.`;
 					return;
 				}
 				// The commands answer with only id/name/revision. The rest of the saved shape is exactly what
