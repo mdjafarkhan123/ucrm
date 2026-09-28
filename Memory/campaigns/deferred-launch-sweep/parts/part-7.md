@@ -1,6 +1,6 @@
 # Part 7 — Jobber parity
 
-**Exact next action:** start slice 7b. Worktree `.claude/worktrees/deferred-sweep-part7b`, branch
+**Exact next action:** finish 7b (WIP committed on the branch, NOT merged). Built: header pencil opens `ClientDetailsForm` in place with its own Save; lead source card edits in place (`LeadSourceEditor`); bar keeps only tags + notes; `⋯` menu → "Edit client details" opens `/clients/[id]/edit` (ClientForm edit mode) in a new tab. Browser-verified: in-place details save (added phone +1 604 555 0100 to Raad's "Tester Account" — remove it again) and lead source editor opens/cancels. Still to do: check svelte-check output, test the `⋯` menu + edit page save, tags/notes bar, then merge, delete the 7b deferred note + INDEX row. Then 7c. Worktree `.claude/worktrees/deferred-sweep-part7b`, branch
 `worktree-deferred-sweep-part7b` (it has its own `.env`, `supabase/.temp` and a `node_modules` symlink; a
 dev server for browser checks runs from it on `http://localhost:5180`, already signed in to Raad LTD).
 Before each slice, read its deferred note and load the skills its work needs (svelte, supabase-postgres for
