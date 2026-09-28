@@ -303,6 +303,91 @@ function buildLimitOverridesMap(
 	) as EffectiveOrganizationAccess['limit_overrides'];
 }
 
+type LimitRow = { state: string; value: number | null; is_unlimited: boolean; source: string };
+type FeatureOverrideRow = {
+	feature_key: string;
+	override_state: string;
+	starts_at: string;
+	expires_at: string | null;
+	reason: string | null;
+	is_legacy_import: boolean;
+};
+type LimitOverrideRow = {
+	limit_key: string;
+	limit_state: string;
+	limit_value: number | null;
+	is_unlimited: boolean;
+	starts_at: string;
+	expires_at: string | null;
+};
+type OrganizationRow = {
+	id: string;
+	name: string;
+	slug: string;
+	lifecycle_status: string;
+	package_key: string;
+	scheduled_package_key: string | null;
+	scheduled_package_effective_at: string | null;
+};
+
+// Everything one member's access depends on, read in one call by `public.organization_access_snapshot`
+// (SECURITY INVOKER, so the caller's RLS applies as it did to the separate reads it replaced).
+type AccessSnapshot = {
+	organization: OrganizationRow;
+	assignment: { package_version_id: string; effective_at: string } | null;
+	package_version: {
+		id: string;
+		package_id: string;
+		version_number: number;
+		display_name: string;
+		public_description: string | null;
+		price_usd_cents: number | null;
+		currency: string;
+		billing_period: string;
+		status: string;
+	} | null;
+	platform_packages: Array<{
+		package_id: string;
+		package_key: string;
+		display_name: string;
+		sort_order: number;
+		status: string;
+		public_description: string | null;
+		price_usd_cents: number | null;
+		currency: string;
+		billing_period: string;
+	}>;
+	features: Array<{ feature_key: string; description: string | null }>;
+	package_features: Array<{ package_key: string; feature_key: string }>;
+	package_version_features: Array<{ package_version_id: string; feature_key: string }>;
+	feature_overrides: FeatureOverrideRow[];
+	limit_overrides: LimitOverrideRow[];
+	commercial_state: {
+		paid_through_date: string | null;
+		paid_through_source: string | null;
+		grace_ends_at: string | null;
+	} | null;
+	commercial_settings: { commercial_timezone: string | null } | null;
+	free_access_events: Array<{
+		id: string;
+		target_grant_id: string | null;
+		action: string;
+		starts_at: string;
+		access_until_date: string | null;
+		occurred_at: string;
+	}>;
+	employee_seat_limit: LimitRow | null;
+	website_chat_widgets_limit: LimitRow | null;
+	marketing_email_limit: LimitRow | null;
+	membership: { user_id: string; role: string } | null;
+	role_permissions: Array<{ permission_key: string; access_scope: string | null }>;
+	member_permission_overrides: Array<{
+		permission_key: string;
+		override_state: string;
+		access_scope: string | null;
+	}>;
+};
+
 function featureForPermission(permissionKey: string) {
 	return (
 		permissionFeaturePrefixes.find(([prefix]) => permissionKey.startsWith(prefix))?.[1] ?? null
@@ -310,36 +395,22 @@ function featureForPermission(permissionKey: string) {
 }
 
 // The TypeScript twin of private.member_permission_scope: an override wins over the role, a denied override
-// is no permission at all rather than a scope, and anything unstated is 'all'. The two access resolvers below
-// both call this so the rule cannot drift between them -- or away from the SQL, which is the real boundary.
-async function resolveMemberPermissions(
-	client: AccessClient,
-	organizationId: string,
-	userId: string,
-	role: string,
+// is no permission at all rather than a scope, and anything unstated is 'all'. Both package paths below
+// call this so the rule cannot drift between them -- or away from the SQL, which is the real boundary.
+function resolveMemberPermissions(
+	snapshot: AccessSnapshot,
 	features: Record<string, boolean>
-): Promise<{
+): {
 	permissions: Record<string, boolean>;
 	permission_scopes: Record<string, PermissionScope>;
-}> {
-	const [rolePermissionsResult, memberOverridesResult] = await Promise.all([
-		client.from('role_permissions').select('permission_key, access_scope').eq('role', role),
-		client
-			.from('organization_member_permission_overrides')
-			.select('permission_key, override_state, access_scope')
-			.eq('organization_id', organizationId)
-			.eq('user_id', userId)
-	]);
-	if (rolePermissionsResult.error) throw rolePermissionsResult.error;
-	if (memberOverridesResult.error) throw memberOverridesResult.error;
-
+} {
 	const resolved = new Map<string, { enabled: boolean; scope: PermissionScope }>(
-		(rolePermissionsResult.data ?? []).map((item) => [
+		snapshot.role_permissions.map((item) => [
 			item.permission_key,
 			{ enabled: true, scope: (item.access_scope ?? 'all') as PermissionScope }
 		])
 	);
-	for (const override of memberOverridesResult.data ?? []) {
+	for (const override of snapshot.member_permission_overrides) {
 		resolved.set(override.permission_key, {
 			enabled: override.override_state === 'grant',
 			scope: (override.access_scope ?? 'all') as PermissionScope
@@ -361,108 +432,49 @@ export function permissionIsEnabled(permissionKey: string, features: Record<stri
 	return featureKey ? features[featureKey] === true : true;
 }
 
-async function resolveLegacyOrganizationAccess(
-	client: AccessClient,
-	organizationId: string,
-	userId?: string,
-	now = new Date()
-): Promise<EffectiveOrganizationAccess> {
-	const { data: organization, error: organizationError } = await client
-		.from('organizations')
-		.select(
-			'id, name, slug, lifecycle_status, package_key, scheduled_package_key, scheduled_package_effective_at'
-		)
-		.eq('id', organizationId)
-		.maybeSingle();
-	if (organizationError) throw organizationError;
-	if (!organization) throw new OrganizationAccessNotFoundError();
+function effectiveLimit(row: LimitRow | null, label: string) {
+	if (!row) throw new Error(`The ${label} could not be resolved.`);
+	return {
+		value: row.value,
+		is_unlimited: row.is_unlimited,
+		state: row.state as LimitState,
+		source: row.source as 'package' | 'override'
+	};
+}
 
-	const [
-		packagesResult,
-		featuresResult,
-		packageFeaturesResult,
-		featureOverridesResult,
-		limitOverridesResult,
-		commercialStateResult,
-		commercialSettingsResult,
-		freeAccessEventsResult,
-		seatLimitResult,
-		websiteChatWidgetsLimitResult,
-		marketingEmailLimitResult
-	] = await Promise.all([
-		client
-			.from('platform_packages')
-			.select(
-				'package_id, package_key, display_name, sort_order, status, public_description, price_usd_cents, currency, billing_period'
-			),
-		client.from('features').select('feature_key, description'),
-		client.from('package_features').select('package_key, feature_key'),
-		client
-			.from('organization_feature_overrides')
-			.select('feature_key, override_state, starts_at, expires_at, reason, is_legacy_import')
-			.eq('organization_id', organizationId),
-		client
-			.from('organization_limit_overrides')
-			.select('limit_key, limit_state, limit_value, is_unlimited, starts_at, expires_at')
-			.eq('organization_id', organizationId),
-		client
-			.from('organization_commercial_state')
-			.select('paid_through_date, paid_through_source, grace_ends_at')
-			.eq('organization_id', organizationId)
-			.maybeSingle(),
-		client
-			.from('organization_commercial_settings')
-			.select('commercial_timezone')
-			.eq('organization_id', organizationId)
-			.maybeSingle(),
-		client
-			.from('organization_free_access_events')
-			.select('id, target_grant_id, action, starts_at, access_until_date, occurred_at')
-			.eq('organization_id', organizationId),
-		client.rpc('effective_employee_seat_limit', {
-			target_organization_id: organizationId,
-			at: now.toISOString()
-		}),
-		client.rpc('effective_website_chat_widgets_limit', {
-			target_organization_id: organizationId,
-			at: now.toISOString()
-		}),
-		client.rpc('effective_marketing_email_limit', {
-			target_organization_id: organizationId,
-			at: now.toISOString()
-		})
-	]);
+// The package half differs between a versioned assignment and the legacy package columns; everything else
+// about an organization's access is resolved the same way from the same rows.
+function resolvePackage(snapshot: AccessSnapshot, now: Date) {
+	const { organization, assignment } = snapshot;
 
-	const queryResults = [
-		packagesResult,
-		featuresResult,
-		packageFeaturesResult,
-		featureOverridesResult,
-		limitOverridesResult,
-		commercialStateResult,
-		commercialSettingsResult,
-		freeAccessEventsResult,
-		seatLimitResult,
-		websiteChatWidgetsLimitResult,
-		marketingEmailLimitResult
-	];
-	const failedQuery = queryResults.find((result) => result.error);
-	if (failedQuery?.error) throw failedQuery.error;
-	const seatLimit = seatLimitResult.data?.[0];
-	if (!seatLimit) throw new Error('The employee seat limit could not be resolved.');
-	const websiteChatWidgetsLimit = websiteChatWidgetsLimitResult.data?.[0];
-	if (!websiteChatWidgetsLimit)
-		throw new Error('The website chat widgets limit could not be resolved.');
-	const marketingEmailLimit = marketingEmailLimitResult.data?.[0];
-	if (!marketingEmailLimit) throw new Error('The Marketing email allowance could not be resolved.');
+	if (assignment) {
+		const version = snapshot.package_version;
+		if (!version) throw new Error('The organization package version is missing.');
+		const packageDefinition = snapshot.platform_packages.find(
+			(item) => item.package_id === version.package_id
+		);
+		if (!packageDefinition) throw new Error('The organization package definition is missing.');
+		const currentPackageKey = packageKey(packageDefinition.package_key);
+		return {
+			package: {
+				current_key: currentPackageKey,
+				effective_key: currentPackageKey,
+				package_id: packageDefinition.package_id,
+				version_id: version.id,
+				version_number: version.version_number,
+				status: version.status as 'draft' | 'published' | 'retired',
+				display_name: version.display_name,
+				public_description: version.public_description,
+				price_usd_cents: version.price_usd_cents,
+				currency: version.currency,
+				billing_period: version.billing_period,
+				scheduled_key: null,
+				scheduled_effective_at: null
+			},
+			packageFeatureKeys: new Set(snapshot.package_version_features.map((item) => item.feature_key))
+		};
+	}
 
-	const commercialTimezone = commercialSettingsResult.data?.commercial_timezone ?? null;
-	const freeAccessState = computeFreeAccessState(
-		freeAccessEventsResult.data ?? [],
-		todayInTimeZone(commercialTimezone ?? 'UTC', now)
-	);
-
-	const packages = packagesResult.data ?? [];
 	const currentPackageKey = packageKey(organization.package_key);
 	const scheduledPackageKey = organization.scheduled_package_key
 		? packageKey(organization.scheduled_package_key)
@@ -473,96 +485,11 @@ async function resolveLegacyOrganizationAccess(
 		scheduledAt !== null &&
 		Date.parse(scheduledAt) <= now.getTime();
 	const effectivePackageKey = scheduledIsDue ? scheduledPackageKey : currentPackageKey;
-	const effectivePackage = packages.find((item) => item.package_key === effectivePackageKey);
+	const effectivePackage = snapshot.platform_packages.find(
+		(item) => item.package_key === effectivePackageKey
+	);
 	if (!effectivePackage) throw new Error(`Package definition is missing: ${effectivePackageKey}`);
-
-	const featureRows = featuresResult.data ?? [];
-	const packageFeatureKeys = new Set(
-		(packageFeaturesResult.data ?? [])
-			.filter((item) => item.package_key === effectivePackageKey)
-			.map((item) => item.feature_key)
-	);
-	const nowMs = now.getTime();
-	const featureOverrides = (featureOverridesResult.data ?? []).filter((item) =>
-		isActiveWindow(item, nowMs)
-	);
-	const featureOverrideByKey = new Map(featureOverrides.map((item) => [item.feature_key, item]));
-	const packageFeatureFlags = Object.fromEntries(
-		featureRows.map((feature) => [feature.feature_key, packageFeatureKeys.has(feature.feature_key)])
-	);
-	const featureFlags = Object.fromEntries(
-		featureRows.map((feature) => {
-			const override = featureOverrideByKey.get(feature.feature_key);
-			return [
-				feature.feature_key,
-				override ? override.override_state === 'on' : packageFeatureKeys.has(feature.feature_key)
-			];
-		})
-	);
-
-	const limitOverrides = (limitOverridesResult.data ?? []).filter((item) =>
-		isActiveWindow(item, nowMs)
-	);
-	const limits = {
-		employee_seats: {
-			value: seatLimit.value,
-			is_unlimited: seatLimit.is_unlimited,
-			state: seatLimit.state as LimitState,
-			source: seatLimit.source as 'package' | 'override'
-		},
-		website_chat_widgets: {
-			value: websiteChatWidgetsLimit.value,
-			is_unlimited: websiteChatWidgetsLimit.is_unlimited,
-			state: websiteChatWidgetsLimit.state as LimitState,
-			source: websiteChatWidgetsLimit.source as 'package' | 'override'
-		},
-		marketing_email_recipients: {
-			value: marketingEmailLimit.value,
-			is_unlimited: marketingEmailLimit.is_unlimited,
-			state: marketingEmailLimit.state as LimitState,
-			source: marketingEmailLimit.source as 'package' | 'override'
-		}
-	};
-
-	let member: EffectiveOrganizationAccess['member'] = null;
-	let permissions: Record<string, boolean> = {};
-	let permissionScopes: Record<string, PermissionScope> = {};
-	if (userId) {
-		const { data: membership, error: membershipError } = await client
-			.from('organization_members')
-			.select('user_id, role')
-			.eq('organization_id', organizationId)
-			.eq('user_id', userId)
-			.maybeSingle();
-		if (membershipError) throw membershipError;
-		if (!membership)
-			throw new OrganizationAccessNotFoundError('Organization membership was not found.');
-		member = membership;
-
-		const resolved = await resolveMemberPermissions(
-			client,
-			organizationId,
-			userId,
-			membership.role,
-			featureFlags
-		);
-		permissions = resolved.permissions;
-		permissionScopes = resolved.permission_scopes;
-	}
-
 	return {
-		organization: {
-			id: organization.id,
-			name: organization.name,
-			slug: organization.slug,
-			lifecycle_status: organization.lifecycle_status
-		},
-		billing: computeCommercialBilling(
-			commercialStateResult.data ?? null,
-			commercialTimezone,
-			now,
-			freeAccessState.active !== null
-		),
 		package: {
 			current_key: currentPackageKey,
 			effective_key: effectivePackageKey,
@@ -578,150 +505,59 @@ async function resolveLegacyOrganizationAccess(
 			scheduled_key: scheduledPackageKey,
 			scheduled_effective_at: scheduledAt
 		},
-		features: featureFlags,
-		package_features: packageFeatureFlags,
-		feature_overrides: buildFeatureOverridesMap(featureOverrides),
-		limits,
-		limit_overrides: buildLimitOverridesMap(limitOverrides),
-		member,
-		permissions,
-		permission_scopes: permissionScopes,
-		free_access: freeAccessState
+		packageFeatureKeys: new Set(
+			snapshot.package_features
+				.filter((item) => item.package_key === effectivePackageKey)
+				.map((item) => item.feature_key)
+		)
 	};
 }
 
-type OrganizationRow = {
-	id: string;
-	name: string;
-	slug: string;
-	lifecycle_status: string;
-	package_key: string;
-	scheduled_package_key: string | null;
-	scheduled_package_effective_at: string | null;
-};
-
-async function resolveVersionedOrganizationAccess(
+export async function resolveOrganizationAccess(
 	client: AccessClient,
-	organization: OrganizationRow,
-	assignment: { package_version_id: string },
+	organizationId: string,
 	userId?: string,
 	now = new Date()
 ): Promise<EffectiveOrganizationAccess> {
-	const [
-		versionResult,
-		featuresResult,
-		packageFeaturesResult,
-		featureOverridesResult,
-		limitOverridesResult,
-		commercialStateResult,
-		commercialSettingsResult,
-		freeAccessEventsResult,
-		seatLimitResult,
-		websiteChatWidgetsLimitResult,
-		marketingEmailLimitResult
-	] = await Promise.all([
-		client
-			.from('platform_package_versions')
-			.select(
-				'id, package_id, version_number, display_name, public_description, price_usd_cents, currency, billing_period, status'
-			)
-			.eq('id', assignment.package_version_id)
-			.maybeSingle(),
-		client.from('features').select('feature_key, description'),
-		client
-			.from('platform_package_version_features')
-			.select('package_version_id, feature_key')
-			.eq('package_version_id', assignment.package_version_id),
-		client
-			.from('organization_feature_overrides')
-			.select('feature_key, override_state, starts_at, expires_at, reason, is_legacy_import')
-			.eq('organization_id', organization.id),
-		client
-			.from('organization_limit_overrides')
-			.select('limit_key, limit_state, limit_value, is_unlimited, starts_at, expires_at')
-			.eq('organization_id', organization.id),
-		client
-			.from('organization_commercial_state')
-			.select('paid_through_date, paid_through_source, grace_ends_at')
-			.eq('organization_id', organization.id)
-			.maybeSingle(),
-		client
-			.from('organization_commercial_settings')
-			.select('commercial_timezone')
-			.eq('organization_id', organization.id)
-			.maybeSingle(),
-		client
-			.from('organization_free_access_events')
-			.select('id, target_grant_id, action, starts_at, access_until_date, occurred_at')
-			.eq('organization_id', organization.id),
-		client.rpc('effective_employee_seat_limit', {
-			target_organization_id: organization.id,
-			at: now.toISOString()
-		}),
-		client.rpc('effective_website_chat_widgets_limit', {
-			target_organization_id: organization.id,
-			at: now.toISOString()
-		}),
-		client.rpc('effective_marketing_email_limit', {
-			target_organization_id: organization.id,
-			at: now.toISOString()
-		})
-	]);
+	const { data, error } = await client.rpc('organization_access_snapshot', {
+		target_organization_id: organizationId,
+		target_user_id: userId,
+		at: now.toISOString()
+	});
+	if (error) throw error;
+	const snapshot = data as unknown as AccessSnapshot | null;
+	if (!snapshot) throw new OrganizationAccessNotFoundError();
 
-	const queryResults = [
-		versionResult,
-		featuresResult,
-		packageFeaturesResult,
-		featureOverridesResult,
-		limitOverridesResult,
-		commercialStateResult,
-		commercialSettingsResult,
-		freeAccessEventsResult,
-		seatLimitResult,
-		websiteChatWidgetsLimitResult,
-		marketingEmailLimitResult
-	];
-	const failedQuery = queryResults.find((result) => result.error);
-	if (failedQuery?.error) throw failedQuery.error;
-	if (!versionResult.data) throw new Error('The organization package version is missing.');
-	const seatLimit = seatLimitResult.data?.[0];
-	if (!seatLimit) throw new Error('The employee seat limit could not be resolved.');
-	const websiteChatWidgetsLimit = websiteChatWidgetsLimitResult.data?.[0];
-	if (!websiteChatWidgetsLimit)
-		throw new Error('The website chat widgets limit could not be resolved.');
-	const marketingEmailLimit = marketingEmailLimitResult.data?.[0];
-	if (!marketingEmailLimit) throw new Error('The Marketing email allowance could not be resolved.');
+	const limits = {
+		employee_seats: effectiveLimit(snapshot.employee_seat_limit, 'employee seat limit'),
+		website_chat_widgets: effectiveLimit(
+			snapshot.website_chat_widgets_limit,
+			'website chat widgets limit'
+		),
+		marketing_email_recipients: effectiveLimit(
+			snapshot.marketing_email_limit,
+			'Marketing email allowance'
+		)
+	};
 
-	const commercialTimezone = commercialSettingsResult.data?.commercial_timezone ?? null;
+	const commercialTimezone = snapshot.commercial_settings?.commercial_timezone ?? null;
 	const freeAccessState = computeFreeAccessState(
-		freeAccessEventsResult.data ?? [],
+		snapshot.free_access_events,
 		todayInTimeZone(commercialTimezone ?? 'UTC', now)
 	);
-	const packageResult = await client
-		.from('platform_packages')
-		.select('package_id, package_key')
-		.eq('package_id', versionResult.data.package_id);
-	if (packageResult.error) throw packageResult.error;
-	const packageDefinition = (packageResult.data ?? [])[0];
-	if (!packageDefinition) throw new Error('The organization package definition is missing.');
 
-	const currentPackageKey = packageKey(packageDefinition.package_key);
+	const { package: resolvedPackage, packageFeatureKeys } = resolvePackage(snapshot, now);
 	const nowMs = now.getTime();
-	const featureOverrides = (featureOverridesResult.data ?? []).filter((item) =>
-		isActiveWindow(item, nowMs)
-	);
+	const featureOverrides = snapshot.feature_overrides.filter((item) => isActiveWindow(item, nowMs));
 	const featureOverrideByKey = new Map(featureOverrides.map((item) => [item.feature_key, item]));
-	const packageFeatureKeys = new Set(
-		(packageFeaturesResult.data ?? []).map((item) => item.feature_key)
-	);
 	const packageFeatureFlags = Object.fromEntries(
-		(featuresResult.data ?? []).map((feature) => [
+		snapshot.features.map((feature) => [
 			feature.feature_key,
 			packageFeatureKeys.has(feature.feature_key)
 		])
 	);
 	const features = Object.fromEntries(
-		(featuresResult.data ?? []).map((feature) => {
+		snapshot.features.map((feature) => {
 			const override = featureOverrideByKey.get(feature.feature_key);
 			return [
 				feature.feature_key,
@@ -729,85 +565,36 @@ async function resolveVersionedOrganizationAccess(
 			];
 		})
 	);
-
-	const limitOverrides = (limitOverridesResult.data ?? []).filter((item) =>
-		isActiveWindow(item, nowMs)
-	);
-	const limits = {
-		employee_seats: {
-			value: seatLimit.value,
-			is_unlimited: seatLimit.is_unlimited,
-			state: seatLimit.state as LimitState,
-			source: seatLimit.source as 'package' | 'override'
-		},
-		website_chat_widgets: {
-			value: websiteChatWidgetsLimit.value,
-			is_unlimited: websiteChatWidgetsLimit.is_unlimited,
-			state: websiteChatWidgetsLimit.state as LimitState,
-			source: websiteChatWidgetsLimit.source as 'package' | 'override'
-		},
-		marketing_email_recipients: {
-			value: marketingEmailLimit.value,
-			is_unlimited: marketingEmailLimit.is_unlimited,
-			state: marketingEmailLimit.state as LimitState,
-			source: marketingEmailLimit.source as 'package' | 'override'
-		}
-	};
+	const limitOverrides = snapshot.limit_overrides.filter((item) => isActiveWindow(item, nowMs));
 
 	let member: EffectiveOrganizationAccess['member'] = null;
 	let permissions: Record<string, boolean> = {};
 	let permissionScopes: Record<string, PermissionScope> = {};
 	if (userId) {
-		const { data: membership, error: membershipError } = await client
-			.from('organization_members')
-			.select('user_id, role')
-			.eq('organization_id', organization.id)
-			.eq('user_id', userId)
-			.maybeSingle();
-		if (membershipError) throw membershipError;
-		if (!membership)
+		if (!snapshot.membership)
 			throw new OrganizationAccessNotFoundError('Organization membership was not found.');
-		member = membership;
-
-		const resolved = await resolveMemberPermissions(
-			client,
-			organization.id,
-			userId,
-			membership.role,
-			features
-		);
+		member = snapshot.membership;
+		const resolved = resolveMemberPermissions(snapshot, features);
 		permissions = resolved.permissions;
 		permissionScopes = resolved.permission_scopes;
 	}
 
+	const { organization } = snapshot;
 	return {
 		organization: {
 			id: organization.id,
 			name: organization.name,
 			slug: organization.slug,
-			lifecycle_status: organization.lifecycle_status
+			lifecycle_status:
+				organization.lifecycle_status as EffectiveOrganizationAccess['organization']['lifecycle_status']
 		},
 		billing: computeCommercialBilling(
-			commercialStateResult.data ?? null,
+			snapshot.commercial_state,
 			commercialTimezone,
 			now,
 			freeAccessState.active !== null
 		),
-		package: {
-			current_key: currentPackageKey,
-			effective_key: currentPackageKey,
-			package_id: packageDefinition.package_id,
-			version_id: versionResult.data.id,
-			version_number: versionResult.data.version_number,
-			status: versionResult.data.status as 'draft' | 'published' | 'retired',
-			display_name: versionResult.data.display_name,
-			public_description: versionResult.data.public_description,
-			price_usd_cents: versionResult.data.price_usd_cents,
-			currency: versionResult.data.currency,
-			billing_period: versionResult.data.billing_period,
-			scheduled_key: null,
-			scheduled_effective_at: null
-		},
+		package: resolvedPackage,
 		features,
 		package_features: packageFeatureFlags,
 		feature_overrides: buildFeatureOverridesMap(featureOverrides),
@@ -818,37 +605,4 @@ async function resolveVersionedOrganizationAccess(
 		permission_scopes: permissionScopes,
 		free_access: freeAccessState
 	};
-}
-
-export async function resolveOrganizationAccess(
-	client: AccessClient,
-	organizationId: string,
-	userId?: string,
-	now = new Date()
-): Promise<EffectiveOrganizationAccess> {
-	const { data: organization, error: organizationError } = await client
-		.from('organizations')
-		.select(
-			'id, name, slug, lifecycle_status, package_key, scheduled_package_key, scheduled_package_effective_at'
-		)
-		.eq('id', organizationId)
-		.maybeSingle();
-	if (organizationError) throw organizationError;
-	if (!organization) throw new OrganizationAccessNotFoundError();
-
-	const { data: assignment, error: assignmentError } = await client
-		.from('organization_package_assignments')
-		.select('package_version_id, effective_at')
-		.eq('organization_id', organizationId)
-		.order('effective_at', { ascending: false })
-		.order('id', { ascending: false })
-		.limit(1)
-		.maybeSingle();
-	if (assignmentError) throw assignmentError;
-
-	if (assignment) {
-		return resolveVersionedOrganizationAccess(client, organization, assignment, userId, now);
-	}
-
-	return resolveLegacyOrganizationAccess(client, organizationId, userId, now);
 }

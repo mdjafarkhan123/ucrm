@@ -8,32 +8,52 @@ import {
 
 type QueryResult = { data: unknown; error: null };
 
-function query(result: QueryResult) {
-	const builder = {
-		select: () => builder,
-		eq: () => builder,
-		in: () => builder,
-		order: () => builder,
-		limit: () => builder,
-		maybeSingle: () =>
-			Promise.resolve({
-				...result,
-				data: Array.isArray(result.data) ? (result.data[0] ?? null) : result.data
-			}),
-		single: () => Promise.resolve(result),
-		then: (resolve: (value: QueryResult) => unknown) => Promise.resolve(result).then(resolve)
+// The table rows a test sets up, assembled the way `public.organization_access_snapshot` assembles them, so
+// the fixtures keep describing the database rather than the snapshot's shape.
+function snapshotFor(rows: Record<string, QueryResult>) {
+	const list = (table: string) => {
+		const data = rows[table]?.data;
+		return (Array.isArray(data) ? data : data ? [data] : []) as Record<string, unknown>[];
 	};
-	return builder;
+	const one = (table: string) => list(table)[0] ?? null;
+
+	const organization = one('organizations');
+	if (!organization) return null;
+	const assignment = one('organization_package_assignments');
+	const version = assignment ? one('platform_package_versions') : null;
+	const membership = one('organization_members');
+	return {
+		organization,
+		assignment,
+		package_version: version,
+		platform_packages: assignment
+			? list('platform_packages').filter((item) => item.package_id === version?.package_id)
+			: list('platform_packages'),
+		features: list('features'),
+		package_features: assignment ? [] : list('package_features'),
+		package_version_features: assignment ? list('platform_package_version_features') : [],
+		feature_overrides: list('organization_feature_overrides'),
+		limit_overrides: list('organization_limit_overrides'),
+		commercial_state: one('organization_commercial_state'),
+		commercial_settings: one('organization_commercial_settings'),
+		free_access_events: list('organization_free_access_events'),
+		employee_seat_limit: one('effective_employee_seat_limit'),
+		website_chat_widgets_limit: one('effective_website_chat_widgets_limit'),
+		marketing_email_limit: one('effective_marketing_email_limit'),
+		membership,
+		role_permissions: membership ? list('role_permissions') : [],
+		member_permission_overrides: list('organization_member_permission_overrides')
+	};
 }
 
 function clientFor(rows: Record<string, QueryResult>) {
 	return {
-		from: (table: string) => query(rows[table] ?? { data: [], error: null }),
-		rpc: (fn: string) => {
-			const result = rows[fn] ?? { data: [], error: null };
-			const data = Array.isArray(result.data) ? result.data : result.data ? [result.data] : [];
-			return Promise.resolve({ ...result, data });
-		}
+		rpc: (fn: string) =>
+			Promise.resolve(
+				fn === 'organization_access_snapshot'
+					? { data: snapshotFor(rows), error: null }
+					: { data: null, error: new Error(`Unexpected call to ${fn}`) }
+			)
 	} as unknown as AccessClient;
 }
 
