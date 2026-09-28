@@ -1,15 +1,15 @@
 ---
 name: agent-coordination
-description: Set up or use safe parallel agent sessions in one Git project. Use for concurrent terminal agents, task claiming, available campaign work, or first-time multi-agent setup in a project without agent rules.
+description: Set up or repair coordination for parallel agents in a Git project, including a fresh project without agent instructions. Ordinary task claiming uses the project's short rule and register command.
 ---
 
 # Agent coordination
 
 Independent sessions do not share conversation context. A campaign checkpoint says what remains; it is not
-a live reservation. Use this skill when agents may run at the same time, whether their tasks are in one
-campaign, different campaigns, or outside campaigns.
+a live reservation. Use this skill for initial setup or repair. Once configured, agents follow a short
+project rule and the register command without loading this skill.
 
-## Detect setup on every invocation
+## Check setup when invoked
 
 Check the project, not the conversation history. Setup is complete only when all of these are true:
 
@@ -18,8 +18,8 @@ Check the project, not the conversation history. Setup is complete only when all
    for Codex, `CLAUDE.md` for Claude Code, or an equivalent file) direct agents to check and claim work.
 3. Git ignores `/.agent-work/`, and the register command runs from the project.
 
-If all checks pass, follow **Each agent session** below. If any check fails, treat the project as unconfigured
-or partly configured and repair only the missing pieces. The presence or absence of `.agent-work/state.json`
+If all checks pass, setup is complete; no further project scan is needed during ordinary work. If any check
+fails, repair only the missing pieces. The presence or absence of `.agent-work/state.json`
 does not indicate setup: it is local, ignored, and created on demand. Existing dirty changes and active
 reservations must be inspected separately.
 
@@ -31,9 +31,10 @@ reservations must be inspected separately.
    project skill catalog can be invoked for setup; a brand-new project with no instructions cannot make
    every agent load it automatically. Add a short pointer to the appropriate project instruction file(s)
    after setup. If none exist, create minimal `AGENTS.md` for Codex and/or `CLAUDE.md` for Claude Code.
-3. The pointer must tell every coding agent to load this skill and run the bundled
-   `scripts/agent-work.py list` before selecting a task, then claim the task before writing. Link any
-   project-specific coordination guide when one exists. Ignore `/.agent-work/` in Git.
+3. Add a short project rule telling coding agents to run the bundled `scripts/agent-work.py list` before
+   selecting work, claim the exact task before starting, and release it after safe integration. Include a
+   compact command example and a pointer to any project-specific conflict guide. Tell agents to load this
+   full skill only for setup or repair. Ignore `/.agent-work/` in Git.
 4. Before enabling simultaneous code writers, confirm the project's branch and workspace policy with
    its owner. Separate temporary Git worktrees are the default isolation method where permitted. Keep one
    controlled integration path into the primary branch. Existing dirty changes remain unclaimed until
@@ -42,7 +43,7 @@ reservations must be inspected separately.
 Repeat the detection checks before calling setup complete. If the skill is only installed locally in one
 terminal's environment, explain that other agent clients must receive it too.
 
-## Each agent session
+## Runtime behavior to put in project instructions
 
 Run `python3 <path-to-this-skill>/scripts/agent-work.py list` from the project. For an available campaign
 task, read its roadmap and checkpoint, check dependencies, and choose a part that can progress alongside

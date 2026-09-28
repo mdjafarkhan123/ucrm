@@ -9,10 +9,8 @@ Memory is temporary feature-delivery storage. It helps a fresh agent answer thre
 building, where did we stop, and what is the next approved action?
 
 The skill is the operating contract. `Memory/` only stores campaign state created under this contract.
-Live ownership across terminal sessions is governed by the `agent-coordination` skill, not by Memory.
-Load it when starting or resuming a campaign with concurrent sessions; on first use, it sets up the
-project's entry instructions and register. If it is unavailable, establish coordination before parallel
-work begins.
+Live ownership across terminal sessions follows the project's short coordination rule, not Memory. Load
+the `agent-coordination` skill only to set up or repair that rule.
 
 ## Minimal-memory rule
 

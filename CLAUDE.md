@@ -59,7 +59,7 @@ Skills live under `.claude/skills/`. Load every skill relevant to the current ta
 | Sending email (transactional, marketing, notifications)                            | `.claude/skills/aws-ses/SKILL.md`                          |
 | Receiving and processing inbound email (routing, filtering, archiving, SMTP relay) | `.claude/skills/aws-mail-manager/SKILL.md`                 |
 | Agent-facing instructions or skills                                                | `.claude/skills/writing-for-agents/SKILL.md`               |
-| Concurrent agents, task reservations, or fresh-project setup                       | `.claude/skills/agent-coordination/SKILL.md`               |
+| Set up or repair parallel agent coordination                                       | `.claude/skills/agent-coordination/SKILL.md`               |
 | Campaign start, resume, checkpoint, deferral, completion, or cleanup               | `.claude/skills/campaign-memory/SKILL.md`                  |
 | Stress-testing a plan, design, or unresolved decision with Jafar                   | `.claude/skills/grilling/SKILL.md`                         |
 | Researching how mature products/industries handle a workflow before building it    | `.claude/skills/research/SKILL.md`                         |
@@ -89,9 +89,10 @@ campaign — including when Jafar says `read memory and continue`.
 
 ## Concurrent agent work
 
-Before starting any task, load `.claude/skills/agent-coordination/SKILL.md`, check active reservations with
-its bundled register command, and follow `docs/agent-concurrency.md`. Reserve the chosen task before work begins. This applies across campaigns
-and terminal tabs; Campaign Memory supplies task dependencies, while the register supplies live ownership.
+Before starting project work, run `python3 .claude/skills/agent-coordination/scripts/agent-work.py list`.
+Use that command's `claim <campaign-or-standalone> <task-id> --owner <session-label> --mode write --area <domain>`
+before changing files (`--mode read` for research). Release after safe integration. Read
+`docs/agent-concurrency.md` for conflicts or recovery. Load the full coordination skill only for setup or repair.
 
 ---
 
