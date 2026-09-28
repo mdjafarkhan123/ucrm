@@ -95,23 +95,27 @@ When Jafar names a campaign, read only `Memory/INDEX.md` and that campaign's `NO
 `read memory and continue`, use the index to identify the single dependency-ready campaign; if several
 qualify, ask which one to select.
 
-When Jafar asks for **an available task within a named campaign**, also read its `ROADMAP.md`; compare part
-dependencies with the live register, select a ready independent part, and claim it atomically before work.
-The default next action in `NOW.md` may already be claimed by another session. If no part is ready and
-independent, report that and wait instead of duplicating active work.
+Check the live register for the selected campaign. If another session owns the default part in `NOW.md`, or
+Jafar asks for **an available task**, read `ROADMAP.md`. Check dependencies and overlapping code or external
+resources, then choose another ready independent part in that same campaign. Keep looking past claimed parts;
+do not treat a claim on the campaign as a claim on every part. If none is ready and independent, report that
+and wait instead of duplicating active work. This applies to both "continue this campaign" and "start an
+available task" requests.
 
 After selection:
 
-1. Follow the pointers in `NOW.md`. Read the active part packet only when `NOW.md` points to it.
-2. Read only the authoritative sections named by the checkpoint.
-3. Verify the checkpoint against current code and Git state. If they disagree, repair Memory from the
-   authoritative state before acting; ask Jafar only when the correction changes approved scope or behavior.
-4. Claim the selected task under `docs/agent-concurrency.md`, perform its approved action, and stop at its
-   completion gate.
+1. Claim the selected part under `docs/agent-concurrency.md` before starting it. If another agent wins the
+   claim first or its resources conflict, select another ready part or wait.
+2. For the default part, follow the pointers in `NOW.md`. For a different part, follow its `ROADMAP.md` entry
+   and read its matching part packet if one exists. Do not use the default part's pointers for it.
+3. Read only the authoritative sections needed for the selected part. Verify its planned state and
+   dependencies against current code and Git state. If they disagree, repair Memory from the authoritative
+   state before acting; ask Jafar only when the correction changes approved scope or behavior.
+4. Perform the selected part's approved action and stop at its completion gate.
 
 Do not read `ROADMAP.md` during an ordinary resume. Read it only to plan a campaign, change scope, close or
-select a part, resolve a dependency, or repair inconsistent Memory. Read deferred Memory only when the
-checkpoint or Jafar names it.
+select a part, find an alternative to a claimed default part, resolve a dependency, or repair inconsistent
+Memory. Read deferred Memory only when the checkpoint or Jafar names it.
 
 Campaign selection is conversation-local. Several campaigns may be in progress. Never infer a global current
 campaign from file order, recency, or another conversation.
