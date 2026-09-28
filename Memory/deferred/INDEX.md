@@ -27,7 +27,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Opportunity Brief activity timeline](opportunity-brief-activity-timeline.md) |
 | P2 | [Property deletion guarded once work references a property](property-deletion-guarded-once-work-references-a-property.md) |
 | P2 | [Prospect detail page](prospect-detail-page.md) |
-| P2 | [Quote composer has no financial rail or proposal sections](quote-composer-has-no-financial-rail-or-proposal-sections.md) |
 | P2 | [Quote Overview counts scan the whole tenant](quote-overview-counts-scan-the-whole-tenant.md) |
 | P2 | [Real (time-tracking) `Labor` block on the Request detail page](real-time-tracking-labor-block-on-the-request-detail-page.md) |
 | P2 | [Requests held for booking approval show a blank status badge](request-needs-approval-status-has-no-label.md) |
