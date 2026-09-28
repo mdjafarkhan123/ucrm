@@ -28,8 +28,18 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    4b one payment split across several invoices — Done `4d96acd1`; 4c fix payment / mark never received — Done `f6f95e39`
    (4b+4c = `payments-cannot-be-edited-deleted-or-split-across-invoices`); 4d correct an issued invoice with
    payments carried over — DB done, screens WIP `444935b5` (`issued-invoices-cannot-be-corrected-from-the-browser`).
-5. **Complete customer documents** — Planned. `client-documents-drop-line-photos-and-need-a-completeness-pass`,
-   `line-photos-wrongly-appear-in-the-request-s-attachments-card`, `invoice-email-sends-to-primary-only-not-billing-contact`.
+5. **Complete customer documents** — In progress 2026-09-28. `line-photos-wrongly-appear-in-the-request-s-attachments-card`:
+   already fixed by the Files and Media migration before this part started — the old `AttachmentsCard`/`public.attachments`
+   path it described isn't wired to requests any more; `file_links.role <> 'line_photo'` already keeps a line photo off
+   the record's own file list. No code change; note closed. `client-documents-drop-line-photos-and-need-a-completeness-pass`:
+   researched against Jobber (`jobber-03`/`jobber-05`) — Jobber's own invoice line item has no photo field at all, even
+   on its paid plans (photos are a quote-side Grow-plan upsell only); Jafar chose to match that and not build invoice
+   photos. Quote line items already carried the photo but had no click-to-enlarge; added the standard `Lightbox`
+   (`CustomerQuoteDocument.svelte`) so it matches the convention used everywhere else. Quantity/other line content
+   already matches Jobber's own field set (including the progress-bill exception, which lines up with Jobber's own
+   `originalCost` concept) — no further completeness gap found. `invoice-email-sends-to-primary-only-not-billing-contact`
+   held: touches invoice email-sending code that Part 4 is still actively changing (4d screens WIP); resume once
+   Part 4 is Done.
 6. **Protect customer history** — Planned. `property-deletion-guarded-once-work-references-a-property`,
    `historical-address-safety-and-property-transfer-between-clients`,
    `client-duplicate-detection-merge-archive-restore-and-audit-history`, `entitytype-covers-only-clients-and-properties`.

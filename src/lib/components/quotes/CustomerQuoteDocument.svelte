@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import SignaturePad from '$lib/components/ui/SignaturePad.svelte';
+	import Lightbox, { type LightboxItem } from '$lib/components/ui/Lightbox.svelte';
 	import { emptySignature, signatureIsGiven, type SignatureValue } from '$lib/signatures/signature';
 	import type { CustomerQuoteDocument, CustomerQuoteLine } from '$lib/quotes/customer-document';
 	import type { Snippet } from 'svelte';
@@ -210,6 +211,32 @@
 		if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
 		return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 	}
+
+	const linePhotos = $derived(
+		doc.lines.filter((line): line is CustomerQuoteLine & { image_file_id: string } =>
+			Boolean(line.image_file_id)
+		)
+	);
+
+	let lightboxOpen = $state(false);
+	let lightboxIndex = $state(0);
+
+	const lightboxItems = $derived<LightboxItem[]>(
+		linePhotos.map((line) => ({
+			id: line.id,
+			src: fileHref(line.image_file_id),
+			thumbSrc: fileHref(line.image_file_id, 'thumb'),
+			caption: line.name,
+			description: line.description
+		}))
+	);
+
+	function openLinePhoto(line: CustomerQuoteLine) {
+		const position = linePhotos.findIndex((entry) => entry.id === line.id);
+		if (position === -1) return;
+		lightboxIndex = position;
+		lightboxOpen = true;
+	}
 </script>
 
 {#snippet lineRows(lines: CustomerQuoteLine[])}
@@ -223,12 +250,19 @@
 				<td class="customer-quote__cell customer-quote__cell--name">
 					<div class="customer-quote__item">
 						{#if line.image_file_id}
-							<img
-								class="customer-quote__thumb"
-								src={fileHref(line.image_file_id, 'thumb')}
-								alt=""
-								loading="lazy"
-							/>
+							<button
+								type="button"
+								class="customer-quote__thumb-open"
+								aria-label={`View photo for ${line.name}`}
+								onclick={() => openLinePhoto(line)}
+							>
+								<img
+									class="customer-quote__thumb"
+									src={fileHref(line.image_file_id, 'thumb')}
+									alt=""
+									loading="lazy"
+								/>
+							</button>
 						{:else if line.image_removed}
 							<span
 								class="customer-quote__thumb customer-quote__thumb--removed"
@@ -577,6 +611,13 @@
 	</div>
 </div>
 
+<Lightbox
+	open={lightboxOpen}
+	items={lightboxItems}
+	bind:index={lightboxIndex}
+	onClose={() => (lightboxOpen = false)}
+/>
+
 <style lang="scss">
 	.customer-quote {
 		min-height: 100vh;
@@ -778,6 +819,21 @@
 	.customer-quote__item {
 		display: flex;
 		gap: var(--space-base);
+	}
+
+	.customer-quote__thumb-open {
+		display: block;
+		flex: 0 0 auto;
+		padding: 0;
+		border: 0;
+		background: none;
+		cursor: pointer;
+		border-radius: var(--radius-base);
+
+		&:focus-visible {
+			outline: 2px solid var(--color-brand);
+			outline-offset: 2px;
+		}
 	}
 
 	.customer-quote__thumb {

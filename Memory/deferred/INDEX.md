@@ -17,7 +17,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [`Last communication` rail card on the client page](last-communication-rail-card-on-the-client-page.md) |
 | P2 | [No admin-alert delivery for loop-detected inbound threads](no-admin-alert-delivery-mechanism-for-loop-detected-inbound-threads.md) |
 | P2 | [Composer day-two scope: CC, attachments, formatting, channel tabs](composer-day-two-scope.md) |
-| P2 | [Client documents drop line photos and need a completeness pass](client-documents-drop-line-photos-and-need-a-completeness-pass.md) |
 | P2 | [A customer file re-resolves the whole quote document](a-customer-file-re-resolves-the-whole-quote-document.md) |
 | P2 | [App-wide RLS helpers run once per returned row](app-wide-rls-helpers-run-once-per-returned-row.md) |
 | P2 | [App shell idle warmer downloads every routine route](app-shell-idle-warmer-downloads-every-routine-route.md) |
@@ -27,7 +26,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Client duplicate detection, merge, archive, restore, and audit history](client-duplicate-detection-merge-archive-restore-and-audit-history.md) |
 | P2 | [Every entitlement-gated route re-reads the whole access model](every-entitlement-gated-route-re-reads-the-whole-access-model.md) |
 | P2 | [Historical address safety and property transfer between clients](historical-address-safety-and-property-transfer-between-clients.md) |
-| P2 | [Line photos wrongly appear in the request's Attachments card](line-photos-wrongly-appear-in-the-request-s-attachments-card.md) |
 | P2 | [Name search across list APIs falls back to a sequential scan](name-search-across-list-apis-falls-back-to-a-sequential-scan.md) |
 | P2 | [Opportunity Brief activity timeline](opportunity-brief-activity-timeline.md) |
 | P2 | [Property deletion guarded once work references a property](property-deletion-guarded-once-work-references-a-property.md) |
