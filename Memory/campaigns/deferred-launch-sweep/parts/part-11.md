@@ -21,7 +21,7 @@ Migration `20260929150000_side_table_permission_checks_run_once_per_query.sql` w
 
 ## Outside actions
 
-- RLS migration `20260929150000` push — check: `supabase migration list --linked` shows it — pushing 2026-09-28
+- RLS migrations `20260929150000` (applied, rows identical) and `20260929160000` — check: `supabase migration list --linked` shows both
 
 ## Notes
 
