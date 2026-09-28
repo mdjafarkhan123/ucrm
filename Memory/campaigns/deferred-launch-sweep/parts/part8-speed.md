@@ -35,11 +35,7 @@ uncommitted. 72 unit tests fail on `main` too (quote specs; deferred note `quote
 
 ## Notes
 
-Jafar's decisions 2026-09-28: city box = server search; access checks = "industry best method that is faster"
-(combine lookups; any cache must never serve one member's access to another); warmer = top pages, skip on
-data saver; photos = "follow industry best pattern". Part 6 runs in parallel in the main folder
-(customers-properties) — avoid client/property files until it merges. Memory edits: the worktree session
-can't write the main folder — ExitWorktree (keep), commit Memory, re-enter by path. Worktree needs
-`node_modules` symlink + copied `.env`; `npm run check`/`build` need `NODE_OPTIONS=--max-old-space-size=8192`;
-a build rewrites `static/widget/*.js` — restore them before committing. Pre-existing: 3 "union type too
-complex" check errors.
+Jafar 2026-09-28: photos = "follow industry best pattern". Part 6 runs in the main folder — avoid
+client/property files until it merges. Worktree needs `node_modules` symlink + `.env`; `npm run check`/`build`
+need `NODE_OPTIONS=--max-old-space-size=8192`; a build rewrites `static/widget/*.js` — restore before
+committing. Pre-existing: 3 "union type too complex" check errors.
