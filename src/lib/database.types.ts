@@ -1050,6 +1050,47 @@ export type Database = {
 					}
 				];
 			};
+			client_merges: {
+				Row: {
+					id: string;
+					merged_at: string;
+					merged_by: string | null;
+					merged_client_id: string;
+					merged_client_snapshot: Json;
+					moved: Json;
+					organization_id: string;
+					surviving_client_id: string;
+				};
+				Insert: {
+					id?: string;
+					merged_at?: string;
+					merged_by?: string | null;
+					merged_client_id: string;
+					merged_client_snapshot: Json;
+					moved: Json;
+					organization_id: string;
+					surviving_client_id: string;
+				};
+				Update: {
+					id?: string;
+					merged_at?: string;
+					merged_by?: string | null;
+					merged_client_id?: string;
+					merged_client_snapshot?: Json;
+					moved?: Json;
+					organization_id?: string;
+					surviving_client_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'client_merges_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			client_opening_balances: {
 				Row: {
 					amount_minor: number;
@@ -8215,6 +8256,7 @@ export type Database = {
 					first_clicked_at: string | null;
 					first_opened_at: string | null;
 					id: string;
+					merged_from_client_id: string | null;
 					organization_id: string;
 					provider_message_id: string | null;
 					recipient_email: string | null;
@@ -8239,6 +8281,7 @@ export type Database = {
 					first_clicked_at?: string | null;
 					first_opened_at?: string | null;
 					id?: string;
+					merged_from_client_id?: string | null;
 					organization_id: string;
 					provider_message_id?: string | null;
 					recipient_email?: string | null;
@@ -8263,6 +8306,7 @@ export type Database = {
 					first_clicked_at?: string | null;
 					first_opened_at?: string | null;
 					id?: string;
+					merged_from_client_id?: string | null;
 					organization_id?: string;
 					provider_message_id?: string | null;
 					recipient_email?: string | null;
@@ -16134,6 +16178,10 @@ export type Database = {
 				Args: { target_client_id: string; target_organization_id: string };
 				Returns: Json;
 			};
+			client_merge_preview: {
+				Args: { p_primary_client_id: string; p_secondary_client_id: string };
+				Returns: Json;
+			};
 			client_spendable_credit: {
 				Args: { target_client_id: string; target_organization_id: string };
 				Returns: {
@@ -20660,6 +20708,10 @@ export type Database = {
 					matched_value: string;
 				}[];
 			};
+			merge_clients: {
+				Args: { p_primary_client_id: string; p_secondary_client_id: string };
+				Returns: Json;
+			};
 			mint_website_chat_realtime_grant: {
 				Args: {
 					proposed_topic: string;
@@ -22375,6 +22427,7 @@ export type Database = {
 				Args: { supplied_token_hash: string };
 				Returns: Json;
 			};
+			resolve_merged_client: { Args: { p_client_id: string }; Returns: string };
 			resolve_payment_receipt_access_link: {
 				Args: { supplied_token_hash: string };
 				Returns: Json;

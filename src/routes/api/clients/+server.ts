@@ -133,7 +133,8 @@ export const GET: RequestHandler = async (event) => {
 				{
 					clients: [],
 					next_cursor: null,
-					can_archive: hasPermission(access.access, 'customers.archive')
+					can_archive: hasPermission(access.access, 'customers.archive'),
+					can_merge: hasPermission(access.access, 'customers.merge')
 				},
 				{ headers: PRIVATE_READ_HEADERS }
 			);
@@ -196,7 +197,8 @@ export const GET: RequestHandler = async (event) => {
 		return json({
 			clients: [],
 			next_cursor: null,
-			can_archive: hasPermission(access.access, 'customers.archive')
+			can_archive: hasPermission(access.access, 'customers.archive'),
+			can_merge: hasPermission(access.access, 'customers.merge')
 		});
 	}
 
@@ -285,7 +287,8 @@ export const GET: RequestHandler = async (event) => {
 			next_cursor: nextCursor,
 			// The page cannot read permissions itself, so the list says whether this member may archive —
 			// the same answer the archive route enforces.
-			can_archive: hasPermission(access.access, 'customers.archive')
+			can_archive: hasPermission(access.access, 'customers.archive'),
+			can_merge: hasPermission(access.access, 'customers.merge')
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

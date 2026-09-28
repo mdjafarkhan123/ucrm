@@ -38,6 +38,8 @@ export type ClientListPage = {
 	next_cursor: string | null;
 	/** Whether this member holds customers.archive, so the list can offer Archive and Restore. */
 	can_archive: boolean;
+	/** Whether this member holds customers.merge, so the list can offer Merge clients. */
+	can_merge?: boolean;
 };
 
 export type ClientPreferences = {
@@ -145,6 +147,8 @@ export type ClientDetail = ClientWriteValues & {
 	can_request_review?: boolean;
 	/** Whether this member may archive or restore this client (customers.archive). */
 	can_archive?: boolean;
+	/** Whether this member may merge another client into this one (customers.merge). */
+	can_merge?: boolean;
 	/** The header's three stat tiles. Any figure is null when this member lacks the permission that gates
 	 *  it -- the tile then says so instead of showing a wrong or missing number. */
 	work_summary: ClientWorkSummary;
@@ -195,12 +199,16 @@ export const clientDetailKey = (clientId: string) => ['clients', 'detail', clien
 // Carries the HTTP status the server refused with, so the query client stops retrying a 403/404 (the
 // answer never changes) and the page can say "no access" or "not found" instead of spinning or blaming
 // the connection.
-export type ClientReadError = Error & { status: number };
+/** `mergedInto` is set on a 404 for a client that was merged into another: the id of the client it became. */
+export type ClientReadError = Error & { status: number; mergedInto?: string };
 
 async function readError(response: Response, fallback: string): Promise<ClientReadError> {
-	const result = await response.json().catch(() => ({}) as { error?: string });
+	const result = await response
+		.json()
+		.catch(() => ({}) as { error?: string; merged_into?: string });
 	const error = new Error(result.error ?? fallback) as ClientReadError;
 	error.status = response.status;
+	if (typeof result.merged_into === 'string') error.mergedInto = result.merged_into;
 	return error;
 }
 
@@ -339,6 +347,57 @@ export async function deleteProperty(propertyId: string) {
 		result.field_errors ?? {},
 		[]
 	);
+}
+
+/** What merging the secondary client into the primary would move, change, and what stops it. */
+export type ClientMergePreview = {
+	moves: {
+		properties: number;
+		contacts: number;
+		phones: number;
+		emails: number;
+		requests: number;
+		quotes: number;
+		jobs: number;
+		invoices: number;
+		payments: number;
+		messages: number;
+		notes: number;
+		files: number;
+		tags: number;
+	};
+	/** Plain sentences about what changes on the kept client, such as an opt-out carrying over. */
+	warnings: string[];
+	/** Plain sentences about what stops the merge right now. Empty when nothing does. */
+	blockers: string[];
+};
+
+export const clientMergePreviewKey = (primaryId: string, secondaryId: string) =>
+	['clients', 'merge-preview', primaryId, secondaryId] as const;
+
+export async function fetchClientMergePreview(primaryId: string, secondaryId: string) {
+	const params = new URLSearchParams({ primary: primaryId, secondary: secondaryId });
+	const response = await fetch(`/api/clients/merge?${params}`);
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) throw new Error(result.error ?? 'We could not check these two clients.');
+	return result.preview as ClientMergePreview;
+}
+
+export async function mergeClients(primaryId: string, secondaryId: string) {
+	const response = await fetch('/api/clients/merge', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ primary_client_id: primaryId, secondary_client_id: secondaryId })
+	});
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) {
+		throw new ClientWriteError(
+			result.error ?? 'These clients could not be merged.',
+			result.field_errors ?? {},
+			[]
+		);
+	}
+	return result as { merge_id: string; surviving_client_id: string };
 }
 
 /** What a client still has open, and therefore why archiving them was refused. */

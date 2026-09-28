@@ -316,6 +316,22 @@ screens are documented from the help center + universal import-wizard convention
 
 ---
 
+### Merge duplicate clients (help center, read 2026-09-28)
+
+From help.getjobber.com/en/articles/merge-duplicate-clients: More actions → Merge client, pick the second
+client, arrows swap which is primary, a confirmation screen, then Confirm. The primary survives and the
+secondary is deleted; jobs, visits, quotes, requests, invoices, statements, properties, communications,
+notes, contact details, tags and custom fields all move, and each job or quote keeps its property. Primary
+values win on a conflict; a value only the secondary has copies over; emails, phones, tags and list custom
+fields combine without duplicates. Card-on-file details never transfer. Not undoable. Blocked by an
+unsettled payment authorization, a merge already running, an already-deleted client, an accounting sync in
+progress, or referral credits. Needs "View, edit, and delete full client and property info".
+
+§ **How WE compare:** built as `public.merge_clients` (migration `20260929170000`). A phone or email belongs to
+one client per organization, so the two never share one and nothing needs de-duplicating. Where we go
+further: any opt-out on either record survives (Jafar, 2026-09-28), and a `client_merges` record plus an
+old-link redirect keep the deleted duplicate findable.
+
 ### Help-center sources
 
 - Client Basics — https://help.getjobber.com/hc/en-us/articles/115009450867-Client-Basics

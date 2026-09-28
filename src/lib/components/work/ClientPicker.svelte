@@ -21,6 +21,7 @@
 		required = false,
 		placeholder = 'Search by name or company',
 		initialClient = null,
+		label = 'Client',
 		onSelect
 	}: {
 		value?: string;
@@ -35,6 +36,8 @@
 		/** Just the name of a client chosen upstream -- billing a job hands over an id and a name, not a whole
 		 * client record. Shows at rest exactly like `initialClient` without inventing the rest of the row. */
 		initialLabel?: string;
+		/** The field's visible label. */
+		label?: string;
 		onSelect?: (client: ClientListItem | null) => void;
 	} = $props();
 
@@ -114,7 +117,7 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div class="client-picker" class:client-picker--invalid={invalid}>
 	<label for={id}
-		>Client{#if required}<span aria-hidden="true">*</span>{/if}</label
+		>{label}{#if required}<span aria-hidden="true">*</span>{/if}</label
 	>
 	<Combobox.Root
 		type="single"

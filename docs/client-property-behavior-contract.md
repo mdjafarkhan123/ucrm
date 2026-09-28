@@ -109,6 +109,20 @@ permission and a conflict preview. It moves relationships transactionally to one
 audit mapping from merged identities, and never crosses organizations. Similarity alone never authorizes
 an automatic merge.
 
+Built 2026-09-28, following Jobber's "Merge duplicate clients". An owner or admin (`customers.merge`) opens
+**Merge clients** from the Clients list's More actions or **Merge client** from a client's `…` menu, picks the
+client to keep and the duplicate (a Swap button flips them), and reads the database's preview before
+confirming. Everything the duplicate has moves to the kept client in one transaction — properties, contact
+people, phones, emails, requests, quotes, jobs, invoices, payments, opening balances, conversations,
+marketing sends, review requests, notes, files, tags and timeline — and the duplicate is deleted. The kept
+client's values win; its blanks are filled from the duplicate; a lead becomes a customer if the duplicate was
+one; it stays archived only if both were. Any "stop" survives: an SMS opt-out, a stricter contact policy, or
+an automatic message turned off on either record carries over. Money only changes owner — amounts, numbers
+and documents the customer already received stay as they were. A card payment still settling for either
+client refuses the merge. There is no undo; `client_merges` keeps the duplicate's name, phones, emails and
+addresses, who merged it and when, and an old link to the duplicate opens the kept client. The client picker
+lists active clients only, so an archived duplicate is restored before it can be merged.
+
 ## Archive, deletion, and retention
 
 - Archive is the normal reversible action for an inactive Client and preserves history indefinitely.

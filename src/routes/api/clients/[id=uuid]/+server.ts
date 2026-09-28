@@ -39,7 +39,16 @@ export const GET: RequestHandler = async (event) => {
 		.is('deleted_at', null)
 		.maybeSingle();
 	if (error) return databaseError();
-	if (!client) return json(NOT_FOUND, { status: 404 });
+	if (!client) {
+		// A client merged into another is gone, but an old link to it (a bookmark, an email, a teammate's
+		// open tab) should land on the client it became rather than a dead end.
+		const { data: survivorId } = await supabase.rpc('resolve_merged_client', {
+			p_client_id: clientId
+		});
+		return json(survivorId ? { ...NOT_FOUND, merged_into: survivorId } : NOT_FOUND, {
+			status: 404
+		});
+	}
 
 	const [
 		{ data: contactMethods, error: contactMethodsError },
@@ -176,6 +185,8 @@ export const GET: RequestHandler = async (event) => {
 			// Whether this member may archive or restore this client, so the header shows the action only to
 			// someone the archive route would actually let through.
 			can_archive: hasPermission(access.access, 'customers.archive'),
+			// Whether this member may merge another client into this one (customers.merge).
+			can_merge: hasPermission(access.access, 'customers.merge'),
 			work_summary: workSummaryRow
 		}
 	});

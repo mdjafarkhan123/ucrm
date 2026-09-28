@@ -18,6 +18,7 @@
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
 	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
 	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
+	import mergeIcon from '@tabler/icons/outline/arrow-merge.svg?raw';
 
 	// The identity card at the top of a client's page: who they are, how to reach them, and how much work
 	// they represent. Money and job counts have no source yet, so they read as not-yet rather than zero.
@@ -35,6 +36,7 @@
 		canMessage = true,
 		onArchive,
 		onRestore,
+		onMerge,
 		archiving = false
 	}: {
 		client: ClientDetail;
@@ -49,6 +51,8 @@
 		/** Both absent for a member without customers.archive, who would only be refused by the API. */
 		onArchive?: () => void;
 		onRestore?: () => void;
+		/** Absent for a member without customers.merge. */
+		onMerge?: () => void;
 		archiving?: boolean;
 	} = $props();
 
@@ -83,6 +87,7 @@
 		},
 		// Jobber puts Archive in this same ... menu, and swaps it for an Unarchive button once the client
 		// is archived — which is why restoring is a button beside the menu, not an item inside it.
+		...(onMerge ? [{ label: 'Merge client', icon: mergeIcon, onSelect: onMerge }] : []),
 		...(onArchive && !isArchived
 			? [{ label: 'Archive client', icon: archiveIcon, onSelect: onArchive }]
 			: [])

@@ -2,6 +2,8 @@
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { untrack } from 'svelte';
 	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { urlParam } from '$lib/url-param.svelte';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -18,6 +20,7 @@
 	import TabPanel from '$lib/components/ui/TabPanel.svelte';
 	import ClientDetailHeader from '$lib/components/clients/ClientDetailHeader.svelte';
 	import ClientDetailsForm from '$lib/components/clients/ClientDetailsForm.svelte';
+	import ClientMergeDialog from '$lib/components/clients/ClientMergeDialog.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import MarketingConsentDialog from '$lib/components/clients/MarketingConsentDialog.svelte';
 	import PropertyDialog from '$lib/components/clients/PropertyDialog.svelte';
@@ -101,6 +104,15 @@
 	}));
 
 	const saved = $derived(clientQuery.data);
+
+	// A client merged into another no longer exists; an old link to it opens the client it became.
+	const mergedInto = $derived((clientQuery.error as ClientReadError | null)?.mergedInto);
+	$effect(() => {
+		if (mergedInto)
+			void goto(resolve('/(app)/clients/[id=uuid]', { id: mergedInto }), { replaceState: true });
+	});
+
+	let mergeOpen = $state(false);
 
 	// --- Archive and restore ------------------------------------------------------------------------
 	// The same checked endpoint the clients list uses. Archiving is refused while the client still has a
@@ -509,6 +521,10 @@
 	<title>{client?.display_name ?? 'Client'} · Contractor CRM</title>
 </svelte:head>
 
+{#if mergeOpen && saved}
+	<ClientMergeDialog open initialClient={saved} onClose={() => (mergeOpen = false)} />
+{/if}
+
 <!-- eslint-disable svelte/no-at-html-tags -->
 <PageContainer variant="fill">
 	{#if clientQuery.isPending}
@@ -519,6 +535,8 @@
 			title="You do not have access to this client"
 			description="You can open a client once one of their visits is assigned to you. Ask an owner or admin if you need it sooner."
 		/>
+	{:else if mergedInto}
+		<LoadingSkeleton variant="card" label="Opening the merged client" />
 	{:else if (clientQuery.error as ClientReadError | null)?.status === 404}
 		<EmptyState
 			title="This client could not be found"
@@ -551,6 +569,7 @@
 					onRestore={client.can_archive
 						? () => archiveMutation.mutate({ archived: false })
 						: undefined}
+					onMerge={client.can_merge ? () => (mergeOpen = true) : undefined}
 					archiving={archiveMutation.isPending}
 				>
 					{#snippet editor()}

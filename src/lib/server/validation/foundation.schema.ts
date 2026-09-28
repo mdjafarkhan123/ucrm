@@ -177,6 +177,17 @@ export const clientArchiveSchema = z.object({
 	archived: z.boolean()
 });
 
+// Merge one client into another. The primary survives; the secondary is merged in and deleted.
+export const clientMergeSchema = z
+	.object({
+		primary_client_id: z.string().uuid('Choose the client to keep.'),
+		secondary_client_id: z.string().uuid('Choose the client to merge in.')
+	})
+	.refine((value) => value.primary_client_id !== value.secondary_client_id, {
+		message: 'Choose two different clients.',
+		path: ['secondary_client_id']
+	});
+
 export const assessmentCompleteSchema = z.object({
 	// False reopens an assessment marked complete by mistake.
 	complete: z.boolean().default(true)

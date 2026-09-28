@@ -48,6 +48,8 @@
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
 	import restoreIcon from '@tabler/icons/outline/archive-off.svg?raw';
+	import mergeIcon from '@tabler/icons/outline/arrow-merge.svg?raw';
+	import ClientMergeDialog from '$lib/components/clients/ClientMergeDialog.svelte';
 
 	const toast = getToastManager();
 	const queryClient = useQueryClient();
@@ -116,6 +118,8 @@
 	// The server answers whether this member may archive; the page never guesses from a role.
 	const canArchive = $derived(clientsQuery.data?.pages[0]?.can_archive === true);
 	const viewingArchived = $derived(status === 'archived');
+	const canMerge = $derived(clientsQuery.data?.pages[0]?.can_merge === true);
+	let mergeOpen = $state(false);
 	const tagOptions = $derived([
 		{ value: '', label: 'All tags' },
 		...(tagsQuery.data ?? []).map((tag) => ({ value: tag.id, label: tag.name }))
@@ -136,6 +140,9 @@
 			icon: uploadIcon,
 			onSelect: () => goto(resolve('/(app)/clients/import'))
 		},
+		...(canMerge
+			? [{ label: 'Merge clients', icon: mergeIcon, onSelect: () => (mergeOpen = true) }]
+			: []),
 		...(canExport
 			? [
 					{
@@ -266,6 +273,10 @@
 </script>
 
 <svelte:head><title>Clients · Contractor CRM</title></svelte:head>
+
+{#if mergeOpen}
+	<ClientMergeDialog open onClose={() => (mergeOpen = false)} />
+{/if}
 
 <PageContainer variant="fill">
 	<PageHeader title="Clients" description="Every lead and customer relationship in one place.">
