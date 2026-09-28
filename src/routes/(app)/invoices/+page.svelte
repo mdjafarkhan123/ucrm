@@ -121,12 +121,11 @@
 	}));
 	const readyCount = $derived(readyQuery.data ?? 0);
 
-	// Office/sales/finance can lack invoices.view entirely depending on how the organization set up roles,
-	// and the list query is the thing that actually finds out -- default to visible so a permitted member's
-	// buttons aren't delayed behind this fetch, and hide only once a real denial comes back.
-	const invoicesActionsAllowed = $derived(
-		invoicesQuery.isError ? (invoicesQuery.error as { status?: number })?.status !== 403 : true
-	);
+	// Seeing the bills and writing them are separate rights: office is read-only here. The list answers both,
+	// so a member who may write keeps their buttons from the first page rather than waiting on a second fetch.
+	const firstPage = $derived(invoicesQuery.data?.pages[0]);
+	const canCreateInvoice = $derived(firstPage?.can_create ?? false);
+	const canSendInvoices = $derived(firstPage?.can_send ?? false);
 	const invoices = $derived(invoicesQuery.data?.pages.flatMap((page) => page.invoices) ?? []);
 	const locale = $derived(invoicesQuery.data?.pages[0]?.locale ?? 'en-US');
 	const hasActiveFilters = $derived(status !== '' || createdFrom !== '' || createdTo !== '');
@@ -211,11 +210,15 @@
 	<PageContainer variant="fill">
 		<PageHeader title="Invoices" description="The bills you have sent your customers.">
 			{#snippet actions()}
-				{#if invoicesActionsAllowed}
+				{#if canCreateInvoice}
 					<Button href={resolve('/(app)/invoices/ready-to-bill')}>
 						Ready to bill{readyCount > 0 ? ` (${readyCount})` : ''}
 					</Button>
+				{/if}
+				{#if canSendInvoices}
 					<Button href={resolve('/(app)/invoices/send')}>Send invoices</Button>
+				{/if}
+				{#if canCreateInvoice}
 					<Button variant="primary" href={resolve('/(app)/invoices/new')}>New Invoice</Button>
 				{/if}
 			{/snippet}

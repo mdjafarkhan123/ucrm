@@ -49,6 +49,8 @@ export type InvoiceListPage = {
 	// Null means this was the last page. Keyset paging, so there is no page number to jump to.
 	next_cursor: string | null;
 	locale: string;
+	can_create: boolean;
+	can_send: boolean;
 };
 
 export type InvoiceStatusCounts = Record<InvoiceDerivedStatus, number>;

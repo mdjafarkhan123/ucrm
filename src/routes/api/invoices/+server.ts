@@ -163,7 +163,10 @@ export const GET: RequestHandler = async (event) => {
 		{
 			invoices,
 			next_cursor: nextCursor,
-			locale: formatting.ok ? formatting.formatting.locale : 'en-US'
+			locale: formatting.ok ? formatting.formatting.locale : 'en-US',
+			// Reading the list says nothing about writing to it: a role can be given invoices.view alone.
+			can_create: hasPermission(check.access, 'invoices.create'),
+			can_send: hasPermission(check.access, 'invoices.send')
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);
