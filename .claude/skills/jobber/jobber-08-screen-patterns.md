@@ -228,10 +228,9 @@ surface.
 
 - **Editing reveals controls that reading hides**, as in the Jobber section above. Do not show
   `Add Line Item`, `Add Discount`, `Client view / Change` and their kind on a read-only block.
-- **Client detail is currently the odd one out.** It was built to the superseded 2026-08-17 rule — block
-  pencils open dialogs that stage into the bar, and `/clients/[id]/edit` was deleted. Jafar's call on
-  2026-08-18: convert it to the rules above when we next touch that page, not as a separate job. Do not
-  copy its editing shape into a new page.
+- **Client detail follows all three patterns (converted 2026-09-28).** Details and lead source edit in
+  place with their own Save; the bar keeps tags and notes; `⋯` → `Edit client details` opens
+  `/clients/[id]/edit` in a new tab.
 - **Honest empties.** Where a domain does not exist yet, the block says what it is waiting for rather than
   showing a zero. Jobber's empty-section pattern is the model for once the domain does exist.
 - **The blueprint decides which blocks exist; Jobber decides how they behave.** Where our blueprint in

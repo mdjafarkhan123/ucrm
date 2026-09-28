@@ -20,7 +20,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [App shell idle warmer downloads every routine route](app-shell-idle-warmer-downloads-every-routine-route.md) |
 | P2 | [Job Visits card — completed-by name and off-series marker need Jobs backend](job-visit-card-backend-fields.md) |
 | P2 | [Job detail with the maximum recurring Visit count is unmeasured](job-detail-with-the-maximum-recurring-visit-count-is-unmeasured.md) |
-| P2 | [Client detail page still uses the superseded staging-dialog edit shape](client-detail-page-still-uses-the-superseded-staging-dialog-edit-shape.md) |
 | P2 | [Client duplicate detection, merge, archive, restore, and audit history](client-duplicate-detection-merge-archive-restore-and-audit-history.md) |
 | P2 | [Every entitlement-gated route re-reads the whole access model](every-entitlement-gated-route-re-reads-the-whole-access-model.md) |
 | P2 | [Historical address safety and property transfer between clients](historical-address-safety-and-property-transfer-between-clients.md) |
