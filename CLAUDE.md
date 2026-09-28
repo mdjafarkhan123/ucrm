@@ -100,8 +100,8 @@ before changing files (`--mode read` for research). Release after safe integrati
 
 - Jafar is a non-technical 15-year-old project owner. Talk with him with real senario context using everyday plain english, no jargon.
 - Never guesswork, no overengineering. Think / research critically and deeply considering all edge cases.
-- When a feature, workflow, behavior, or mechanism needs planning, or need to fix any problem, first research how mature products/leading industries handle it or solve it. Discuss choices with Jafar, use the `grilling` or `grill-me` skill when needed. Use the best proven pattern/robust one and established engineering convention that fits. Do not create a custom solution when an established/robust one fits. If valid approaches have meaningful trade-offs, compare them and recommend the best fit before building. Tell Jafar which industry method you followed.
-- **Frontend design.** Designs must be beautiful, professional, and modern.
+- For any feature / workflow / behavior / mechanism / planning / question / decision / choice or to fix any problem, first research how mature products/leading industries handle it or solve it. Discuss choices with Jafar, use the `grilling` or `grill-me` skill when needed. Use the best proven pattern/robust one and established engineering convention that fits. Do not create a custom solution when an established/robust one fits. If valid approaches have meaningful trade-offs, compare them and recommend the best fit before building. Tell Jafar which industry method you followed.
+- **Frontend design.** Designs must be beautiful, professional, and modern like Notion, Vercel, Linear
 - **Svelte 5 only.** No Svelte 4 syntax anywhere.
 - SCSS + BEM for all styling. Tabler icons for all icons.
 - Component styles live inside the component's own `<style lang="scss">` block. Never import component styles through `app.scss`. `app.scss` contains only the global baseline, no per-component import is needed. SCSS variables and mixins are available in every component automatically via Vite `additionalData` — no import needed.
