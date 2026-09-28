@@ -5,9 +5,9 @@ import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
 import { STORED_QUOTE_STATUSES } from '$lib/server/validation/quotes.schema';
 import { organizationFormatting } from '$lib/server/requests/timezone';
 
-// The Overview card on the Quotes list. Counted live, like the Requests card, so the numbers are never
-// stale; the database groups and this route only fills in the statuses that had no rows so the card draws
-// a zero instead of a gap.
+// The Overview card on the Quotes list. Read from quote_status_tallies, which triggers keep in the same
+// transaction as every quote write, so the numbers are never stale and the read no longer grows with the
+// number of quotes. This route only fills in the statuses with no quotes so the card draws a zero.
 export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'quotes.view');
 	if ('response' in check) return check.response;
