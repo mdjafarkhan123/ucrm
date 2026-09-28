@@ -1,27 +1,28 @@
 # Part 7 — Jobber parity
 
-**Exact next action:** merged into `main` (`0a640513`), worktree removed, both notes deleted. Ask Jafar
-for a decision on the 5 items below, one at a time, then build the approved ones.
+**Exact next action:** Jafar approved all five items on 2026-09-28. Build them as slices 7a–7e in a new
+temporary worktree (claim `5574f60341e3` points at a removed worktree — release it and re-claim from the new
+one). Before each, read its deferred note and load the skills its work needs (svelte, supabase-postgres for
+migrations, jobber). Browser-check each on Raad LTD (owner login), commit, then delete its note + INDEX row.
 
-**The 5 remaining items (each needs Jafar's decision before building; none are a quick fix):**
+**Approved decisions and slices (suggested model: Opus for 7c–7e, Sonnet fine for 7a–7b):**
 
-1. `request-status-filter-matches-the-stored-status-not-the-displayed-one` — decide: filter by the same
-   computed display-status the counts card already derives (extra per-row date math, needs a view/RPC like
-   `request_status_counts`), or just relabel the existing stored-status filter so it stops promising something
-   it doesn't do. Recommend the relabel — cheaper, no new view/RLS surface, still honest.
-2. `quote-composer-has-no-financial-rail-or-proposal-sections` — decide whether `/quotes/new` starts writing
-   the quote on first field entry (so Discount/Tax/Introduction/Client message can attach immediately) or
-   keeps redirecting to the detail page to finish. This is a composer architecture change, not a UI add-on.
-3. `client-detail-page-still-uses-the-superseded-staging-dialog-edit-shape` — a real rewrite to Jobber's
-   3-edit-pattern convention (`.claude/skills/jobber/jobber-08-screen-patterns.md` § How WE compare); touches
-   `clients/[id]/+page.svelte` and `ClientDetailsDialog.svelte`.
-4. `job-visit-card-backend-fields` — needs a Jobs-owned decision on the off-series deviation flag (stored
-   column vs. server-side comparison against the recurrence rule) before the completed-by/off-series work
-   starts.
-5. `no-image-on-a-price-list-item` — needs schema approval (new migration on `catalog_items` via the File
-   Manager catalog, not the legacy `attachments` table) before the upload flow is built.
+- **7a** `request-status-filter-matches-the-stored-status-not-the-displayed-one` — Jafar chose to make the
+  filter match the displayed status (not relabel): a view/RPC like `request_status_counts` with the same
+  date math, permission-gated like the counts card.
+- **7b** `client-detail-page-still-uses-the-superseded-staging-dialog-edit-shape` — rewrite now to Jobber's
+  three-edit pattern (`.claude/skills/jobber/jobber-08-screen-patterns.md` § How WE compare); touches
+  `clients/[id]/+page.svelte` and `ClientDetailsDialog.svelte`.
+- **7c** `quote-composer-has-no-financial-rail-or-proposal-sections` — `/quotes/new` saves a draft on first
+  field entry so Discount/Tax/Introduction/Client message attach right there. Careful: changes how quotes
+  are created (empty-draft cleanup, double-create guard).
+- **7d** `job-visit-card-backend-fields` — store an off-series yes/no marker set when a visit is moved or
+  edited alone, plus completed-by. Needs a migration; Jobs-owned, so check the jobs contract first.
+- **7e** `no-image-on-a-price-list-item` — one optional picture per price-list item via the File Manager
+  catalog (not the legacy `attachments` table), shown on quote lines. Needs a migration.
 
-**Blockers:** none technical; each of the 5 above is blocked on a product decision, not code.
+**Blockers:** none. Do not touch packages (Jafar, 2026-09-27). Part 4 runs in the main folder in another window
+(invoices, payments) — use a worktree, and commit only your own paths.
 
 **Pointers:**
 - Memory/campaigns/deferred-launch-sweep/ROADMAP.md Part 7

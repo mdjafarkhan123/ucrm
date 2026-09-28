@@ -48,11 +48,9 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    into `main` (`0a640513`); their notes are deleted. Found
    incidentally: Jobs and Quotes list search have the same missing-client-name gap Requests had — recorded as
    new deferred note `jobs-and-quotes-list-search-also-misses-client-name.md`, not fixed (out of this part's
-   original list). Remaining, each needs a decision with Jafar before building (see
-   `parts/part-7.md`): `request-status-filter-matches-the-stored-status-not-the-displayed-one`,
-   `quote-composer-has-no-financial-rail-or-proposal-sections`,
-   `client-detail-page-still-uses-the-superseded-staging-dialog-edit-shape`, `job-visit-card-backend-fields`,
-   `no-image-on-a-price-list-item`.
+   original list). Jafar approved the remaining five on 2026-09-28 as slices 7a–7e (see `parts/part-7.md`):
+   request status filter, client edit rewrite, quote composer save-on-first-entry, job visit off-series
+   marker, price-list item picture.
 8. **Speed** — Planned; performance-review skill. `get-started-page-weight`,
    `every-entitlement-gated-route-re-reads-the-whole-access-model`, `app-wide-rls-helpers-run-once-per-returned-row`,
    `name-search-across-list-apis-falls-back-to-a-sequential-scan`, `quote-overview-counts-scan-the-whole-tenant`,
