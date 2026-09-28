@@ -55,6 +55,7 @@
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import calendarPlusIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
 	import repeatIcon from '@tabler/icons/outline/repeat.svg?raw';
+	import repeatOffIcon from '@tabler/icons/outline/repeat-off.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import folderIcon from '@tabler/icons/outline/folder.svg?raw';
 
@@ -323,7 +324,20 @@
 
 	function completedWhen(visit: JobVisit) {
 		if (!visit.completed_at) return '';
-		return `Completed ${dateFormat.format(new Date(visit.completed_at))}`;
+		const when = `Completed ${dateFormat.format(new Date(visit.completed_at))}`;
+		return visit.completed_by_name ? `${when} by ${visit.completed_by_name}` : when;
+	}
+
+	// A generated visit that no longer follows the repeat schedule, the way a calendar marks one changed
+	// occurrence of a series. Moved or unscheduled: name the day the schedule gave it. Otherwise only its
+	// time was changed on its own.
+	function offSeriesNote(visit: JobVisit) {
+		if (!visit.off_series) return '';
+		if (visit.series_date && visit.visit_date !== visit.series_date) {
+			return `Originally ${formatDay(visit.series_date)}`;
+		}
+		if (!visit.series_date) return 'Changed from the repeat schedule';
+		return 'Time changed for this visit only';
 	}
 
 	const seriesRange = $derived(
@@ -819,6 +833,17 @@
 			{#if visit.completed_at}
 				<p class="job-visits-section__sub">{completedWhen(visit)}</p>
 			{/if}
+			{#if visit.off_series}
+				<p
+					class="job-visits-section__off-series"
+					title="This visit no longer follows the job's repeat schedule."
+				>
+					<span class="job-visits-section__off-series-icon" aria-hidden="true"
+						>{@html repeatOffIcon}</span
+					>
+					{offSeriesNote(visit)}
+				</p>
+			{/if}
 			{#if visit.instructions}
 				<p class="job-visits-section__note">{visit.instructions}</p>
 			{/if}
@@ -1284,6 +1309,26 @@
 			margin: var(--space-smallest) 0 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
+		}
+
+		&__off-series {
+			display: flex;
+			align-items: center;
+			gap: var(--space-smallest);
+			margin: var(--space-smallest) 0 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__off-series-icon {
+			flex: 0 0 auto;
+			color: var(--color-icon--secondary);
+
+			:global(svg) {
+				display: block;
+				width: 14px;
+				height: 14px;
+			}
 		}
 
 		&__note {

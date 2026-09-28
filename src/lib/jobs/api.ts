@@ -257,6 +257,13 @@ export type JobVisit = {
 	title: string | null;
 	instructions: string | null;
 	completed_at: string | null;
+	// The completing teammate's name, or null when they have since left the team (or the visit is open).
+	completed_by_name: string | null;
+	// For a visit the job's repeat rule generated, the date the rule gave it; null for any other visit.
+	series_date: string | null;
+	// True when a generated visit is an exception to its series: moved off series_date, unscheduled, or given
+	// its own time. Copying a time forward to later visits changes the series instead and clears it.
+	off_series: boolean;
 	// The visit's own optimistic-lock token. An edit or a delete sends the revision it last read; a bump in
 	// between is refused so two dispatchers cannot silently overwrite each other.
 	revision: number;

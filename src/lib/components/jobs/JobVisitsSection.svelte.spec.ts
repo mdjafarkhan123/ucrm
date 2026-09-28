@@ -21,6 +21,9 @@ function makeVisit(overrides: Partial<JobVisit> = {}): JobVisit {
 		title: null,
 		instructions: null,
 		completed_at: null,
+		completed_by_name: null,
+		series_date: null,
+		off_series: false,
 		revision: 1,
 		assignee_ids: [],
 		invoiced: false,
@@ -149,5 +152,59 @@ describe('JobVisitsSection grouped card', () => {
 		renderSection({ isAsNeeded: true, visits: [] });
 
 		await expect.element(page.getByText('Dispatched as needed')).toBeVisible();
+	});
+
+	it('names who completed a past visit, and only the date when the name is unknown', async () => {
+		renderSection({
+			visits: [
+				makeVisit({ title: 'Next', visit_date: '2026-12-01' }),
+				makeVisit({
+					title: 'Named',
+					visit_date: '2026-08-01',
+					completed_at: '2026-08-01T12:00:00Z',
+					completed_by_name: 'Sam Carter'
+				}),
+				makeVisit({
+					title: 'Unnamed',
+					visit_date: '2026-08-02',
+					completed_at: '2026-08-02T12:00:00Z'
+				})
+			]
+		});
+
+		await page.getByRole('button', { name: /^Past/ }).click();
+
+		await expect.element(page.getByText(/^Completed .* by Sam Carter$/)).toBeVisible();
+		expect(page.getByText(/by/).elements()).toHaveLength(1);
+	});
+
+	it('marks a visit that left its repeat series and leaves the others plain', async () => {
+		renderSection({
+			jobType: 'recurring',
+			recurrence: weeklyOnMonday,
+			visits: [
+				makeVisit({ title: 'On series', visit_date: '2026-09-14', series_date: '2026-09-14' }),
+				makeVisit({
+					title: 'Moved',
+					visit_date: '2026-09-16',
+					series_date: '2026-09-21',
+					off_series: true
+				}),
+				makeVisit({
+					title: 'Own time',
+					visit_date: '2026-09-28',
+					series_date: '2026-09-28',
+					start_time: '15:00:00',
+					all_day: false,
+					off_series: true
+				})
+			]
+		});
+
+		await expect.element(page.getByText(/Originally /)).toBeVisible();
+		await expect.element(page.getByText('Time changed for this visit only')).toBeVisible();
+		expect(
+			page.getByTitle("This visit no longer follows the job's repeat schedule.").elements()
+		).toHaveLength(2);
 	});
 });
