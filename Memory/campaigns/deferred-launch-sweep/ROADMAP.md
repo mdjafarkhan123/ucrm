@@ -44,13 +44,11 @@ any product decision at the part's start, with a recommendation. Opus: Parts 1, 
    531 kB; name search on a 50k-client tenant 240 → 3 ms via trigram indexes; list rows and the Jafar
    Communications tab prefetch on hover; a closed tab no longer mounts or loads — shared `TabPanel`). Two moved
    to Part 11. File Manager search split off to `file-manager-search-cannot-use-an-index`.
-9. **Final live checks** — In progress 2026-09-28. Non-admin email correction **Done**: office member's
-   email changed, round-tripped, and changed back on Raad LTD, both audited; note deleted. Website Chat
-   ceiling re-deferred to the staging VPS (managed limit is Supabase's, production's is ours; note updated).
-   Left: `stripe-disconnect-open-checkout-expiry-not-live-tested` — Jafar chose (2026-09-28) to test on Raad
-   LTD's sandbox. IN FLIGHT: open checkout `fa4cfc6e-5175-4ec7-a935-44fd84b28d44` (invoice #35, $10); next,
-   disconnect Stripe. Check: `payment_stripe_connections` has no Raad row and that checkout is `failed`. If
-   Raad shows disconnected, Jafar must re-paste the sandbox key in Settings → Payments.
+9. **Final live checks** — Done 2026-09-28. Non-admin email correction: office member's email changed,
+   round-tripped and changed back on Raad LTD, both audited. Website Chat ceiling re-deferred to the staging
+   VPS (note updated). Stripe disconnect, on Raad's sandbox by Jafar's choice: a fresh customer checkout
+   (invoice #35) plus 6 stale ones all went `failed`, the connection row is gone, and the customer's Stripe
+   page stopped showing the business. **Raad needs its sandbox key re-pasted** (Settings → Payments) by Jafar.
 10. **Merge duplicate clients** — Planned (Opus), split out of Part 6 with Jafar's approval on 2026-09-28
     because moving every child row from one client to another is the riskiest write in the sweep. Jobber ships
     this as a first-class "Merge Clients" action in the clients list's More Actions menu, beside Import and

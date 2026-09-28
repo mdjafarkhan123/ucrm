@@ -5,8 +5,8 @@
 **Active part:** Parts 5, 7, 8 and 6B Done (2026-09-28) — details in ROADMAP.
 
 **Exact next action:** **6C, property cascade delete** (Opus) — read `parts/part6-protect-customer-history.md`.
-After it, Part 11 (speed on client pages, Opus) and Part 10 (merge clients, Opus). Part 9 waits on Jafar for
-a throwaway org and a Stripe test key.
+After it, Part 11 (speed on client pages, Opus) and Part 10 (merge clients, Opus). Part 9 Done; Jafar still has to
+re-paste Raad LTD's Stripe sandbox key (Settings → Payments) — until then Raad shows no Pay buttons.
 
 **Blockers:** none. Do not touch packages (Jafar, 2026-09-27). The CLI runs as `npx --no-install supabase`.
 Browser testing needs the tunnel `cloudflared tunnel run badf2c43-7020-443a-a046-9954d139d711`; after a
