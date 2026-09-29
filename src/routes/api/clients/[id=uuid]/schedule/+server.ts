@@ -1,11 +1,14 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import type { Database } from '$lib/database.types';
 import type { ClientScheduleEntry } from '$lib/clients/api';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
 import { organizationTimezone } from '$lib/server/requests/timezone';
 import { organizationDayRange } from '$lib/server/requests/status';
 import { calendarDay } from '$lib/server/time/calendar';
+
+type ScheduleRow = Database['public']['Functions']['client_schedule_rows']['Returns'][number];
 
 // The client page's Client schedule: this client's visits and on-site assessments — what is coming up, and
 // the most recent that has already gone by — the way Jobber's client page shows "upcoming and past scheduled
@@ -54,7 +57,7 @@ export const GET: RequestHandler = async (event) => {
 	// Upcoming is everything booked and not yet done, soonest first, so one dated before today that nobody
 	// closed off leads the list flagged Overdue instead of quietly vanishing — the same split the job page's
 	// Visits section makes. Past is what has been done, latest first.
-	const toEntry = (row: NonNullable<typeof data>[number]): ClientScheduleEntry => {
+	const toEntry = (row: ScheduleRow): ClientScheduleEntry => {
 		const completed = row.completed_at !== null;
 		if (row.kind === 'visit') {
 			const date: string | null = row.visit_date;
@@ -102,7 +105,7 @@ export const GET: RequestHandler = async (event) => {
 		return `${entry.date ?? ''} ${time}`;
 	};
 
-	const rows = data ?? [];
+	const rows: ScheduleRow[] = data ?? [];
 	const upcomingRows = rows
 		.filter((row) => row.bucket === 'upcoming')
 		.map(toEntry)
