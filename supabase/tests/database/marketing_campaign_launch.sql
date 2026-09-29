@@ -43,18 +43,28 @@ values
 insert into public.organization_members (organization_id, user_id, role)
 values ('fb200000-0000-0000-0000-000000000001', 'fb100000-0000-0000-0000-000000000001', 'owner');
 
-insert into public.organization_package_assignments (
-  organization_id, package_version_id, effective_at, assignment_source, reason
+-- The private test package, with its unlimited Marketing allowance taken away until the test sets one.
+insert into public.organization_package_agreements (
+  organization_id, edition_id, billing_interval, agreed_price_usd_cents, effective_from, source, reason
 )
-select organization.id, version.id, now() - interval '40 days', 'provisioning', 'Launch test baseline'
+select organization.id, edition.id, 'month', 0, now() - interval '40 days', 'test_reset', 'Launch test baseline'
 from (values
   ('fb200000-0000-0000-0000-000000000001'::uuid),
   ('fb200000-0000-0000-0000-000000000002'::uuid)
 ) as organization(id)
-cross join lateral (
-  select id from public.platform_package_versions
-  where status = 'published' order by version_number, id limit 1
-) as version;
+cross join public.package_editions edition
+join public.packages package on package.id = edition.package_id
+where package.slug = 'test-package' and edition.status = 'published';
+
+insert into public.organization_package_exceptions (
+  organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at, actor_owner_email
+)
+select organization.id, 'marketing_email_recipients', 'not_included', null, 'No Marketing allowance yet',
+  now() - interval '40 days', '2100-01-01T00:00:00Z', 'owner@example.test'
+from (values
+  ('fb200000-0000-0000-0000-000000000001'::uuid),
+  ('fb200000-0000-0000-0000-000000000002'::uuid)
+) as organization(id);
 
 select private.ensure_organization_commercial_rows('fb200000-0000-0000-0000-000000000001');
 select private.ensure_organization_commercial_rows('fb200000-0000-0000-0000-000000000002');
@@ -118,24 +128,25 @@ values
   ('fb600000-0000-0000-0000-000000000004', 'fb200000-0000-0000-0000-000000000001', 'No Group Offer', 'promote_service', null, 'draft', '{}'::jsonb),
   ('fb600000-0000-0000-0000-0000000000b1', 'fb200000-0000-0000-0000-000000000002', 'Other Org Offer', 'promote_service', 'fb500000-0000-0000-0000-000000000002', 'draft', '{}'::jsonb);
 
--- An unset allowance stops the launch before anything is written. --------------------------------------
+-- A plan without a Marketing allowance stops the launch before anything is written. -------------------
 select throws_ok(
   $$select public.marketing_launch_campaign('fb200000-0000-0000-0000-000000000001',
       'fb600000-0000-0000-0000-000000000001', 'fb100000-0000-0000-0000-000000000001', 1, null, 'key-unset')$$,
-  '23514', null, 'a campaign cannot launch while the Marketing allowance is unset');
+  '23514', null, 'a campaign cannot launch while the plan has no Marketing allowance');
 select is(
   (select count(*)::int from public.marketing_campaign_recipients
    where campaign_id = 'fb600000-0000-0000-0000-000000000001'),
   0, 'a refused launch leaves no recipient rows behind');
 
-insert into public.organization_limit_overrides (
-  organization_id, limit_key, limit_state, limit_value, reason, actor_owner_email, is_legacy_import
+-- The newest exception already in effect wins over the earlier "not included" one.
+insert into public.organization_package_exceptions (
+  organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at, actor_owner_email
 )
 values
   ('fb200000-0000-0000-0000-000000000001', 'marketing_email_recipients', 'numeric', 3,
-    'Launch test allowance', 'owner@example.test', false),
+    'Launch test allowance', now() - interval '1 minute', '2100-01-01T00:00:00Z', 'owner@example.test'),
   ('fb200000-0000-0000-0000-000000000002', 'marketing_email_recipients', 'numeric', 10,
-    'Launch test allowance', 'owner@example.test', false);
+    'Launch test allowance', now() - interval '1 minute', '2100-01-01T00:00:00Z', 'owner@example.test');
 
 -- A campaign with no audience chosen cannot be sent. ---------------------------------------------------
 select throws_ok(
@@ -218,9 +229,9 @@ select throws_ok(
   '23514', null, 'a second campaign cannot borrow allowance the first one is still holding');
 
 -- A future send time schedules instead of sending. -----------------------------------------------------
-update public.organization_limit_overrides set limit_value = 10
+update public.organization_package_exceptions set allowance_value = 10
 where organization_id = 'fb200000-0000-0000-0000-000000000001'
-  and limit_key = 'marketing_email_recipients';
+  and allowance_key = 'marketing_email_recipients' and allowance_state = 'numeric';
 select is(
   (public.marketing_launch_campaign('fb200000-0000-0000-0000-000000000001',
     'fb600000-0000-0000-0000-000000000003', 'fb100000-0000-0000-0000-000000000001', 1,

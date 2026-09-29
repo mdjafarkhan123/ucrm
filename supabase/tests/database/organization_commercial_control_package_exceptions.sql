@@ -19,12 +19,14 @@ set local role postgres;
 insert into public.organizations (id, name, slug, lifecycle_status)
 values ('90000000-0000-0000-0000-0000000000c1', '6C Package Test', '6c-package-test', 'active');
 
-insert into public.organization_package_assignments (organization_id, package_version_id, effective_at, assignment_source, reason)
-select '90000000-0000-0000-0000-0000000000c1', id, now() - interval '2 minutes', 'provisioning', '6C test baseline assignment'
-from public.platform_package_versions
-where status = 'published'
-order by version_number, id
-limit 1;
+-- The private test package: every working capability.
+insert into public.organization_package_agreements (
+  organization_id, edition_id, billing_interval, agreed_price_usd_cents, effective_from, source, reason
+)
+select '90000000-0000-0000-0000-0000000000c1', edition.id, 'month', 0, now() - interval '2 minutes', 'test_reset', '6C test baseline assignment'
+from public.package_editions edition
+join public.packages package on package.id = edition.package_id
+where package.slug = 'test-package' and edition.status = 'published';
 
 select is(
   (public.apply_organization_package_change(

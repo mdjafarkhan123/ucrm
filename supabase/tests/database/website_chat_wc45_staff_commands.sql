@@ -49,21 +49,20 @@ values
   ('90000000-0000-0000-0000-0000000045c1', 'Raad Staff Test', 'raad-staff-test', 'active'),
   ('90000000-0000-0000-0000-0000000045c9', 'Other Org', 'wc45-other-org', 'active');
 
-insert into public.organization_package_assignments (
-  organization_id, package_version_id, effective_at, assignment_source, reason
+-- The private test package: every working capability.
+insert into public.organization_package_agreements (
+  organization_id, edition_id, billing_interval, agreed_price_usd_cents, effective_from, source, reason
 )
-select '90000000-0000-0000-0000-0000000045c1', id, now() - interval '2 minutes', 'provisioning',
-  'Website Chat WC4.5 staff-command baseline'
-from public.platform_package_versions
-where status = 'published'
-order by version_number, id
-limit 1;
+select '90000000-0000-0000-0000-0000000045c1', edition.id, 'month', 0, now() - interval '2 minutes', 'test_reset', 'Website Chat WC4.5 staff-command baseline'
+from public.package_editions edition
+join public.packages package on package.id = edition.package_id
+where package.slug = 'test-package' and edition.status = 'published';
 
-select public.apply_organization_limit_exception(
-  '90000000-0000-0000-0000-0000000045c1', 'website_chat_accepted_conversations', 'numeric', 5,
-  now() - interval '30 seconds', null, 'website-chat-wc45',
-  'Room for the WC4.5 staff-command sessions.', 'owner@example.test'
-);
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
+   actor_owner_email)
+values ('90000000-0000-0000-0000-0000000045c1', 'website_chat_accepted_conversations', 'numeric', 5, 'Room for the WC4.5 staff-command sessions.',
+  now() - interval '30 seconds', '2100-01-01T00:00:00Z', 'owner@example.test');
 
 insert into public.website_chat_allowance_periods (organization_id, starts_at, ends_at)
 values ('90000000-0000-0000-0000-0000000045c1', now() - interval '1 minute', now() + interval '29 days');

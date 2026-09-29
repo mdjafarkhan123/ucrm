@@ -3,7 +3,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(41);
+select plan(42);
 
 -- Privileges -----------------------------------------------------------------
 
@@ -54,13 +54,22 @@ values (
 insert into public.organization_members (organization_id, user_id, role)
 values ('90000000-0000-0000-0000-000000000910', '90000000-1111-0000-0000-000000000910', 'owner');
 
-insert into public.organization_package_assignments (organization_id, package_version_id, effective_at, assignment_source, reason)
-select '90000000-0000-0000-0000-000000000910', id, now() - interval '2 minutes', 'provisioning', '9 purge test baseline assignment'
-from public.platform_package_versions where status = 'published' limit 1;
+-- The private test package: every working capability.
+insert into public.organization_package_agreements (
+  organization_id, edition_id, billing_interval, agreed_price_usd_cents, effective_from, source, reason
+)
+select '90000000-0000-0000-0000-000000000910', edition.id, 'month', 0, now() - interval '2 minutes', 'test_reset', '9 purge test baseline assignment'
+from public.package_editions edition
+join public.packages package on package.id = edition.package_id
+where package.slug = 'test-package' and edition.status = 'published';
 
-insert into public.organization_free_access_events (organization_id, package_version_id, action, access_until_date, starts_at, reason)
-select '90000000-0000-0000-0000-000000000910', id, 'grant', current_date + 30, current_date, '9 purge test free access grant'
-from public.platform_package_versions where status = 'published' limit 1;
+insert into public.organization_package_exceptions
+  (organization_id, capability_key, capability_state, reason, starts_at, ends_at, actor_owner_email)
+values ('90000000-0000-0000-0000-000000000910', 'marketing', 'off', '9 purge test exception', now() - interval '1 day',
+  now() + interval '30 days', 'owner@example.test');
+
+insert into public.organization_free_access_events (organization_id, action, access_until_date, starts_at, reason)
+values ('90000000-0000-0000-0000-000000000910', 'grant', current_date + 30, current_date, '9 purge test free access grant');
 
 insert into public.organization_payment_confirmations (organization_id, payment_kind, amount_usd_cents, private_reference, confirmed_at, paid_through_date)
 values ('90000000-0000-0000-0000-000000000910', 'initial', 9900, '9-purge-test-ref', now(), current_date + 30);
@@ -74,12 +83,14 @@ select public.apply_organization_commercial_command(
 
 insert into public.platform_onboarding_applications (
   id, business_name, main_contact_name, main_contact_email, main_contact_phone, trade, city_country,
-  time_zone, package_version_id, package_snapshot
+  time_zone, package_edition_id, billing_interval, package_snapshot
 )
 select
   '90000000-2222-0000-0000-000000000910', '9 Purge P1 Test', 'Test Contact', '9-purge-p1-contact@example.test',
-  '+10000000000', 'plumbing', 'Testville, US', 'America/New_York', id, '{}'::jsonb
-from public.platform_package_versions where status = 'published' limit 1;
+  '+10000000000', 'plumbing', 'Testville, US', 'America/New_York', edition.id, 'month', '{}'::jsonb
+from public.package_editions edition
+join public.packages package on package.id = edition.package_id
+where package.slug = 'test-package' and edition.status = 'published';
 
 insert into public.platform_onboarding_application_provisions (application_id, status, organization_id, administrator_user_id)
 values (
@@ -157,8 +168,12 @@ select is(
   0, 'the closure record is gone after purge'
 );
 select is(
-  (select count(*)::int from public.organization_package_assignments where organization_id = '90000000-0000-0000-0000-000000000910'),
-  0, 'package assignment history is gone after purge'
+  (select count(*)::int from public.organization_package_agreements where organization_id = '90000000-0000-0000-0000-000000000910'),
+  0, 'package agreement history is gone after purge'
+);
+select is(
+  (select count(*)::int from public.organization_package_exceptions where organization_id = '90000000-0000-0000-0000-000000000910'),
+  0, 'package exceptions are gone after purge'
 );
 select is(
   (select count(*)::int from public.organization_free_access_events where organization_id = '90000000-0000-0000-0000-000000000910'),
@@ -196,7 +211,7 @@ select is(
 select ok(
   (select
     component_results ->> 'organization_data' = 'succeeded'
-    and component_results ->> 'package_assignments' = 'succeeded'
+    and component_results ->> 'package_agreements' = 'succeeded'
     and component_results ->> 'free_access_history' = 'succeeded'
     and component_results ->> 'onboarding_provision_unlinked' = 'succeeded'
     and component_results ->> 'provider_resources' = 'not_applicable'
@@ -217,7 +232,7 @@ select ok(
   'an in_progress receipt carries no completion timestamp'
 );
 select ok(
-  (select component_results ?& array['organization_data', 'package_assignments', 'free_access_history', 'onboarding_provision_unlinked', 'provider_resources', 'auth_users']
+  (select component_results ?& array['organization_data', 'package_agreements', 'free_access_history', 'onboarding_provision_unlinked', 'provider_resources', 'auth_users']
    from public.organization_deletion_receipts
    where operation_id = (current_setting('test.p1_purge_result', true)::jsonb ->> 'operation_id')::uuid),
   'the receipt contains every expected component key'

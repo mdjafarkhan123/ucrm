@@ -41,10 +41,11 @@ values
   ('90000000-0000-0000-0000-0000000009a4', 'Allowance No Access', 'allowance-no-access', 'active',
     '2026-01-15 04:30:00+00');
 
-insert into public.organization_package_assignments (
-  organization_id, package_version_id, effective_at, assignment_source, reason
+-- The private test package: every working capability.
+insert into public.organization_package_agreements (
+  organization_id, edition_id, billing_interval, agreed_price_usd_cents, effective_from, source, reason
 )
-select organization.id, version.id, '2026-01-15 05:00:00+00', 'provisioning',
+select organization.id, edition.id, 'month', 0, '2026-01-15 05:00:00+00', 'test_reset',
   'Allowance period test baseline'
 from (values
   ('90000000-0000-0000-0000-0000000009a1'::uuid),
@@ -52,12 +53,9 @@ from (values
   ('90000000-0000-0000-0000-0000000009a3'::uuid),
   ('90000000-0000-0000-0000-0000000009a4'::uuid)
 ) as organization(id)
-cross join lateral (
-  select id from public.platform_package_versions
-  where status = 'published'
-  order by version_number, id
-  limit 1
-) as version;
+cross join public.package_editions edition
+join public.packages package on package.id = edition.package_id
+where package.slug = 'test-package' and edition.status = 'published';
 
 select private.ensure_organization_commercial_rows('90000000-0000-0000-0000-0000000009a1');
 select private.ensure_organization_commercial_rows('90000000-0000-0000-0000-0000000009a2');
@@ -83,18 +81,11 @@ where organization_id in (
 -- Free access only: no paid_through at all, which is precisely the shape a payment-triggered fix
 -- would have starved.
 insert into public.organization_free_access_events (
-  id, organization_id, package_version_id, action, starts_at, access_until_date, reason,
-  actor_owner_email, occurred_at
+  id, organization_id, action, starts_at, access_until_date, reason, actor_owner_email, occurred_at
 )
-select '90000000-0000-0000-0000-0000000009b1', '90000000-0000-0000-0000-0000000009a2', version.id,
+values ('90000000-0000-0000-0000-0000000009b1', '90000000-0000-0000-0000-0000000009a2',
   'grant', '2026-01-10', '2026-12-31', 'Allowance period test grant', 'owner@example.test',
-  '2026-01-10 09:30:00+00'
-from (
-  select id from public.platform_package_versions
-  where status = 'published'
-  order by version_number, id
-  limit 1
-) as version;
+  '2026-01-10 09:30:00+00');
 
 -- The window ---------------------------------------------------------------------------------------
 

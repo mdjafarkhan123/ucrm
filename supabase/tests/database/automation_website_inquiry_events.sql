@@ -18,8 +18,10 @@ set local role postgres;
 insert into public.organizations (id, name, slug, lifecycle_status)
 values ('4a100000-0000-0000-0000-000000000001', 'Speed to Lead Test', 'speed-to-lead-test', 'active');
 
-insert into public.organization_feature_overrides (organization_id, feature_key, override_state, reason)
-values ('4a100000-0000-0000-0000-000000000001', 'automations', 'on', 'Test fixture.');
+insert into public.organization_package_exceptions
+  (organization_id, capability_key, capability_state, reason, starts_at, ends_at, actor_owner_email)
+values ('4a100000-0000-0000-0000-000000000001', 'automations', 'on', 'Test fixture.', '2026-01-01T00:00:00Z', '2100-01-01T00:00:00Z',
+  'owner@example.test');
 
 insert into public.clients (id, organization_id, display_name, lifecycle_status)
 values ('4a100000-0000-0000-0000-000000000002', '4a100000-0000-0000-0000-000000000001', 'Test Lead', 'lead');

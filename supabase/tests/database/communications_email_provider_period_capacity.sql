@@ -96,12 +96,16 @@ insert into public.organizations (id, name, slug, lifecycle_status) values
   ('d1000000-0000-0000-0000-000000000001', 'Capacity Org', 'capacity-org', 'active');
 insert into public.communication_email_allowance_periods (organization_id, starts_at, ends_at) values
   ('d1000000-0000-0000-0000-000000000001', now() - interval '1 minute', now() + interval '29 days');
-select public.apply_organization_limit_exception(
-  'd1000000-0000-0000-0000-000000000001', 'operational_email_recipients', 'unlimited', null,
-  now() - interval '1 minute', null, 'capacity-fixture-operational', 'Fixture reason.', 'owner@example.test');
-select public.apply_organization_limit_exception(
-  'd1000000-0000-0000-0000-000000000001', 'essential_email_recipients', 'unlimited', null,
-  now() - interval '1 minute', null, 'capacity-fixture-essential', 'Fixture reason.', 'owner@example.test');
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
+   actor_owner_email)
+values ('d1000000-0000-0000-0000-000000000001', 'operational_email_recipients', 'unlimited', null, 'Fixture reason.',
+  now() - interval '1 minute', '2100-01-01T00:00:00Z', 'owner@example.test');
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
+   actor_owner_email)
+values ('d1000000-0000-0000-0000-000000000001', 'essential_email_recipients', 'unlimited', null, 'Fixture reason.',
+  now() - interval '1 minute', '2100-01-01T00:00:00Z', 'owner@example.test');
 
 insert into public.clients (id, organization_id, display_name) values
   ('d2000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', 'Capacity Customer');

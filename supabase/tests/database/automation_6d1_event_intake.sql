@@ -28,8 +28,10 @@ set local role postgres;
 insert into public.organizations (id, name, slug, lifecycle_status)
 values ('6d100000-0000-0000-0000-000000000001', 'Automation 6D-1 Test', 'automation-6d1-test', 'active');
 
-insert into public.organization_feature_overrides (organization_id, feature_key, override_state, reason)
-values ('6d100000-0000-0000-0000-000000000001', 'automations', 'on', 'Test fixture.');
+insert into public.organization_package_exceptions
+  (organization_id, capability_key, capability_state, reason, starts_at, ends_at, actor_owner_email)
+values ('6d100000-0000-0000-0000-000000000001', 'automations', 'on', 'Test fixture.', '2026-01-01T00:00:00Z', '2100-01-01T00:00:00Z',
+  'owner@example.test');
 
 insert into public.clients (id, organization_id, display_name)
 values ('6d100000-0000-0000-0000-000000000002', '6d100000-0000-0000-0000-000000000001', 'Test Customer');

@@ -51,22 +51,21 @@ set local role postgres;
 insert into public.organizations (id, name, slug, lifecycle_status)
 values ('90000000-0000-0000-0000-0000000004c1', 'Website Chat WC4 Test', 'website-chat-wc4-test', 'active');
 
-insert into public.organization_package_assignments (
-  organization_id, package_version_id, effective_at, assignment_source, reason
+-- The private test package: every working capability.
+insert into public.organization_package_agreements (
+  organization_id, edition_id, billing_interval, agreed_price_usd_cents, effective_from, source, reason
 )
-select '90000000-0000-0000-0000-0000000004c1', id, now() - interval '2 minutes', 'provisioning',
-  'Website Chat WC4 test baseline'
-from public.platform_package_versions
-where status = 'published'
-order by version_number, id
-limit 1;
+select '90000000-0000-0000-0000-0000000004c1', edition.id, 'month', 0, now() - interval '2 minutes', 'test_reset', 'Website Chat WC4 test baseline'
+from public.package_editions edition
+join public.packages package on package.id = edition.package_id
+where package.slug = 'test-package' and edition.status = 'published';
 
 -- One accepted conversation for the whole period, so the cap is reachable in a test.
-select public.apply_organization_limit_exception(
-  '90000000-0000-0000-0000-0000000004c1', 'website_chat_accepted_conversations', 'numeric', 1,
-  now() - interval '30 seconds', null, 'website-chat-wc4-cap',
-  'Cap of one accepted conversation for the WC4 database test.', 'owner@example.test'
-);
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
+   actor_owner_email)
+values ('90000000-0000-0000-0000-0000000004c1', 'website_chat_accepted_conversations', 'numeric', 1, 'Cap of one accepted conversation for the WC4 database test.',
+  now() - interval '30 seconds', '2100-01-01T00:00:00Z', 'owner@example.test');
 
 insert into public.website_chat_allowance_periods (organization_id, starts_at, ends_at)
 values ('90000000-0000-0000-0000-0000000004c1', now() - interval '1 minute', now() + interval '29 days');
@@ -96,21 +95,20 @@ insert into public.organizations (id, name, slug, lifecycle_status)
 values ('90000000-0000-0000-0000-0000000004c2', 'Website Chat WC4 Names', 'website-chat-wc4-names',
   'active');
 
-insert into public.organization_package_assignments (
-  organization_id, package_version_id, effective_at, assignment_source, reason
+-- The private test package: every working capability.
+insert into public.organization_package_agreements (
+  organization_id, edition_id, billing_interval, agreed_price_usd_cents, effective_from, source, reason
 )
-select '90000000-0000-0000-0000-0000000004c2', id, now() - interval '2 minutes', 'provisioning',
-  'Website Chat WC4 name-split baseline'
-from public.platform_package_versions
-where status = 'published'
-order by version_number, id
-limit 1;
+select '90000000-0000-0000-0000-0000000004c2', edition.id, 'month', 0, now() - interval '2 minutes', 'test_reset', 'Website Chat WC4 name-split baseline'
+from public.package_editions edition
+join public.packages package on package.id = edition.package_id
+where package.slug = 'test-package' and edition.status = 'published';
 
-select public.apply_organization_limit_exception(
-  '90000000-0000-0000-0000-0000000004c2', 'website_chat_accepted_conversations', 'numeric', 5,
-  now() - interval '30 seconds', null, 'website-chat-wc4-names',
-  'Room for the name-split conversations in the WC4 database test.', 'owner@example.test'
-);
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
+   actor_owner_email)
+values ('90000000-0000-0000-0000-0000000004c2', 'website_chat_accepted_conversations', 'numeric', 5, 'Room for the name-split conversations in the WC4 database test.',
+  now() - interval '30 seconds', '2100-01-01T00:00:00Z', 'owner@example.test');
 
 insert into public.website_chat_allowance_periods (organization_id, starts_at, ends_at)
 values ('90000000-0000-0000-0000-0000000004c2', now() - interval '1 minute', now() + interval '29 days');

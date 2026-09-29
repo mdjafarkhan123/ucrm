@@ -21,10 +21,11 @@ on conflict (organization_id) do update set brand_color = excluded.brand_color;
 
 -- A numeric override alone is enough entitlement, matching WC2's fixture shape -- no package
 -- assignment needed.
-insert into public.organization_limit_overrides (
-  organization_id, limit_key, limit_state, limit_value, is_unlimited, starts_at
+insert into public.organization_package_exceptions (
+  organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at, actor_owner_email
 ) values (
-  'f3000000-0000-0000-0000-000000000001', 'website_chat_widgets', 'numeric', 2, false, now() - interval '1 minute'
+  'f3000000-0000-0000-0000-000000000001', 'website_chat_widgets', 'numeric', 2, 'Test fixture.', now() - interval '1 minute',
+  '2100-01-01T00:00:00Z', 'owner@example.test'
 );
 
 insert into public.website_chat_widgets (
@@ -136,8 +137,8 @@ select is(
 
 update public.website_chat_widgets set published = true
 where id = 'f4000000-0000-0000-0000-000000000001';
-delete from public.organization_limit_overrides
-where organization_id = 'f3000000-0000-0000-0000-000000000001' and limit_key = 'website_chat_widgets';
+delete from public.organization_package_exceptions
+where organization_id = 'f3000000-0000-0000-0000-000000000001' and allowance_key = 'website_chat_widgets';
 
 select is(
   (select status from public.get_website_chat_widget_public_config(

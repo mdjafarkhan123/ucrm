@@ -32,8 +32,10 @@ insert into public.organizations (id, name, slug, lifecycle_status)
 values ('4c100000-0000-0000-0000-000000000001', 'Speedy Roofing', 'speedy-roofing-4c', 'active');
 insert into public.organization_members (organization_id, user_id, role, status)
 values ('4c100000-0000-0000-0000-000000000001', '4c000000-0000-0000-0000-000000000001', 'owner', 'active');
-insert into public.organization_feature_overrides (organization_id, feature_key, override_state, reason)
-values ('4c100000-0000-0000-0000-000000000001', 'automations', 'on', 'Test fixture.');
+insert into public.organization_package_exceptions
+  (organization_id, capability_key, capability_state, reason, starts_at, ends_at, actor_owner_email)
+values ('4c100000-0000-0000-0000-000000000001', 'automations', 'on', 'Test fixture.', '2026-01-01T00:00:00Z', '2100-01-01T00:00:00Z',
+  'owner@example.test');
 
 -- Clients: T (text-eligible), E (phone without consent), N (no contact), F1..F4 (text-eligible, for fallbacks),
 -- B (text-eligible, used after the balance runs out).

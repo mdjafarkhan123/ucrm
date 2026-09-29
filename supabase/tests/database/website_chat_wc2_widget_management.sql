@@ -34,11 +34,12 @@ values
   ('f2000000-0000-0000-0000-000000000001', 'f1000000-0000-0000-0000-000000000002', 'field'),
   ('f2000000-0000-0000-0000-000000000002', 'f1000000-0000-0000-0000-000000000003', 'admin');
 
--- Cap at 2 widgets, no package assignment needed -- an override alone resolves the entitlement.
-insert into public.organization_limit_overrides (
-  organization_id, limit_key, limit_state, limit_value, is_unlimited, starts_at
+-- Cap at 2 widgets, no package agreement needed -- an exception alone resolves the entitlement.
+insert into public.organization_package_exceptions (
+  organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at, actor_owner_email
 ) values (
-  'f2000000-0000-0000-0000-000000000001', 'website_chat_widgets', 'numeric', 2, false, now() - interval '1 minute'
+  'f2000000-0000-0000-0000-000000000001', 'website_chat_widgets', 'numeric', 2, 'Test fixture.', now() - interval '1 minute',
+  '2100-01-01T00:00:00Z', 'owner@example.test'
 );
 
 -- 1. Privilege matrix -----------------------------------------------------------------------------------

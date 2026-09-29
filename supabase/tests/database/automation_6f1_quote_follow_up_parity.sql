@@ -65,8 +65,10 @@ values ('6f160000-0000-0000-0000-000000000001', '6f110000-0000-0000-0000-0000000
   '6f150000-0000-0000-0000-000000000001', 'hello@mail.6f1.example', 'Automation 6F-1',
   'enabled', true, true, true);
 
-insert into public.organization_feature_overrides (organization_id, feature_key, override_state, reason)
-values ('6f110000-0000-0000-0000-000000000001', 'automations', 'on', 'Test fixture.');
+insert into public.organization_package_exceptions
+  (organization_id, capability_key, capability_state, reason, starts_at, ends_at, actor_owner_email)
+values ('6f110000-0000-0000-0000-000000000001', 'automations', 'on', 'Test fixture.', '2026-01-01T00:00:00Z', '2100-01-01T00:00:00Z',
+  'owner@example.test');
 
 select set_config('request.jwt.claim.sub', '6f100000-0000-0000-0000-000000000001', true);
 select public.create_quote(

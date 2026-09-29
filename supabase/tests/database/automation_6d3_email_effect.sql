@@ -69,8 +69,10 @@ values ('6d350000-0000-0000-0000-000000000001', '6d310000-0000-0000-0000-0000000
   '6d340000-0000-0000-0000-000000000001', 'hello@mail.6d3.example', 'Automation 6D-3',
   'enabled', true, true, true);
 
-insert into public.organization_feature_overrides (organization_id, feature_key, override_state, reason)
-values ('6d310000-0000-0000-0000-000000000001', 'automations', 'on', 'Test fixture.');
+insert into public.organization_package_exceptions
+  (organization_id, capability_key, capability_state, reason, starts_at, ends_at, actor_owner_email)
+values ('6d310000-0000-0000-0000-000000000001', 'automations', 'on', 'Test fixture.', '2026-01-01T00:00:00Z', '2100-01-01T00:00:00Z',
+  'owner@example.test');
 
 -- Build a genuinely published quote through the real commands.
 select set_config('request.jwt.claim.sub', '6d300000-0000-0000-0000-000000000001', true);

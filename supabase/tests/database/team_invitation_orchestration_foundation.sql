@@ -104,11 +104,14 @@ values
   ('b1000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'admin'),
   ('b1000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000002', 'admin');
 
-insert into public.organization_limit_overrides
-  (organization_id, limit_key, limit_value, is_unlimited, limit_state, starts_at)
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
+   actor_owner_email)
 values
-  ('b1000000-0000-0000-0000-000000000001', 'employee_seats', null, true, 'unlimited', '2026-01-01T00:00:00Z'),
-  ('b1000000-0000-0000-0000-000000000002', 'employee_seats', null, true, 'unlimited', '2026-01-01T00:00:00Z');
+  ('b1000000-0000-0000-0000-000000000001', 'employee_seats', 'unlimited', null, 'Test fixture.', '2026-01-01T00:00:00Z', '2100-01-01T00:00:00Z',
+   'owner@example.test'),
+  ('b1000000-0000-0000-0000-000000000002', 'employee_seats', 'unlimited', null, 'Test fixture.', '2026-01-01T00:00:00Z', '2100-01-01T00:00:00Z',
+   'owner@example.test');
 
 set local role service_role;
 

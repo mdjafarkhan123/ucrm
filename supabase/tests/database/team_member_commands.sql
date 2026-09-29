@@ -142,12 +142,14 @@ values
 
 -- The first company has room to spare; the second has exactly one seat, already taken by its owner, so a
 -- restore there has nowhere to go.
-insert into public.organization_limit_overrides
-  (organization_id, limit_key, limit_value, is_unlimited, limit_state, starts_at)
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
+   actor_owner_email)
 values
-  ('e1000000-0000-0000-0000-000000000001', 'employee_seats', null, true, 'unlimited',
-   '2026-01-01T00:00:00Z'),
-  ('e1000000-0000-0000-0000-000000000002', 'employee_seats', 1, false, 'numeric', '2026-01-01T00:00:00Z');
+  ('e1000000-0000-0000-0000-000000000001', 'employee_seats', 'unlimited', null, 'Test fixture.', '2026-01-01T00:00:00Z', '2100-01-01T00:00:00Z',
+   'owner@example.test'),
+  ('e1000000-0000-0000-0000-000000000002', 'employee_seats', 'numeric', 1, 'Test fixture.', '2026-01-01T00:00:00Z', '2100-01-01T00:00:00Z',
+   'owner@example.test');
 
 insert into public.organization_member_permission_overrides
   (organization_id, user_id, permission_key, override_state)

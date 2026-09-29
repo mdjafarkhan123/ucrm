@@ -1,6 +1,7 @@
 -- Contractor Settings Part 6B: Automation access foundation.
--- Proves the entitlement/permission seed, the single effective_automation_limits resolver (package
--- default, override precedence, effective dates, every key, not_included fallback, cross-tenant denial),
+-- Proves the entitlement/permission seed, the single effective_automation_limits resolver (edition
+-- allowance, platform safety limits, exception precedence, effective dates, every key, not_included
+-- fallback, cross-tenant denial),
 -- and the two-axis authority writer/read model (engage, idempotency, no-op, independence, release).
 --
 -- Written for a single-session, single-transaction run (Supabase MCP execute_sql or `supabase test db`).
@@ -9,7 +10,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(49);
+select plan(47);
 
 -- 1. Privilege matrix ---------------------------------------------------------------------------------
 select is(has_function_privilege('anon', 'public.effective_automation_limits(uuid, timestamptz)', 'execute'), false,
@@ -18,10 +19,6 @@ select is(has_function_privilege('authenticated', 'public.effective_automation_l
   'a signed-in session can read automation limits');
 select is(has_function_privilege('service_role', 'public.effective_automation_limits(uuid, timestamptz)', 'execute'), true,
   'the owner service role can read automation limits');
-select is(has_function_privilege('authenticated', 'public.manage_platform_package_automation_limits(uuid, text, integer, text, integer, text, integer, text, integer, text, integer, text, integer, text, integer, text)', 'execute'), false,
-  'contractors cannot write package automation limits');
-select is(has_function_privilege('service_role', 'public.manage_platform_package_automation_limits(uuid, text, integer, text, integer, text, integer, text, integer, text, integer, text, integer, text, integer, text)', 'execute'), true,
-  'the owner service role can write package automation limits');
 select is(has_function_privilege('authenticated', 'public.set_organization_automation_authority(uuid, text, boolean, text, text, uuid)', 'execute'), false,
   'contractors cannot write automation authority');
 select is(has_function_privilege('service_role', 'public.set_organization_automation_authority(uuid, text, boolean, text, text, uuid)', 'execute'), true,
@@ -42,57 +39,60 @@ values
 insert into public.organizations (id, name, slug, lifecycle_status)
 values
   ('10000000-0000-0000-0000-0000000006a0', 'Automation Org A', 'automation-org-a', 'active'),
-  ('10000000-0000-0000-0000-0000000006b0', 'Automation Org B', 'automation-org-b', 'active');
+  ('10000000-0000-0000-0000-0000000006b0', 'Automation Org B', 'automation-org-b', 'active'),
+  ('10000000-0000-0000-0000-0000000006c0', 'Automation Org C', 'automation-org-c', 'active');
 
 insert into public.organization_members (organization_id, user_id, role)
 values
   ('10000000-0000-0000-0000-0000000006a0', '00000000-0000-0000-0000-0000000006a1', 'admin'),
   ('10000000-0000-0000-0000-0000000006b0', '00000000-0000-0000-0000-0000000006b1', 'admin');
 
--- A published package version carrying all seven automation limits, assigned to Org A. An assignment
--- must reference a published version, so the seed elite published version is retired first (rolled back
--- with the whole test). Automation limits are written while the version is still a draft, then published.
-update public.platform_package_versions
-set status = 'retired', retired_at = now()
-where package_id = (select package_id from public.platform_packages where package_key = 'elite')
-  and status = 'published';
-
-insert into public.platform_package_versions
-  (id, package_id, version_number, status, display_name, public_description, value_explanation, price_usd_cents)
-select 'c0000000-0000-0000-0000-0000000006f0', package_id, 990, 'draft',
-  'Automation Foundation Test Draft', 'Automation foundation test version', 'Automation limits test', 9900
-from public.platform_packages where package_key = 'elite';
-
-select public.manage_platform_package_automation_limits(
-  'c0000000-0000-0000-0000-0000000006f0',
-  'numeric', 5,        -- active recipes
-  'numeric', 6,        -- conditions per recipe
-  'numeric', 10,       -- steps per recipe
-  'numeric', 4,        -- customer messages per enrollment
-  'numeric', 15,       -- min message spacing minutes
-  'numeric', 90,       -- max delay days
-  'unlimited', null,   -- max enrollment duration days
-  'owner@example.test'
-);
-
-update public.platform_package_versions
-set status = 'published', published_at = now()
+-- A published edition with automations and five active recipes, agreed by Org A. Org B is on the test
+-- package (unlimited recipes); Org C has no agreement. The six safety limits are one platform setting for
+-- every organization (ADR 0003 decision 4), set here for the test and rolled back with it.
+insert into public.packages (id, slug, visibility)
+values ('c0000000-0000-0000-0000-0000000006f1', 'automation-foundation-test', 'private');
+insert into public.package_editions (id, package_id, name, monthly_price_usd_cents)
+values ('c0000000-0000-0000-0000-0000000006f0', 'c0000000-0000-0000-0000-0000000006f1',
+  'Automation Foundation Test', 9900);
+insert into public.package_edition_capabilities (edition_id, capability_key)
+values ('c0000000-0000-0000-0000-0000000006f0', 'automations');
+insert into public.package_edition_allowances (edition_id, allowance_key, allowance_state, allowance_value)
+values ('c0000000-0000-0000-0000-0000000006f0', 'automation_active_recipes', 'numeric', 5);
+update public.package_editions set status = 'published', edition_number = 1, published_at = now()
 where id = 'c0000000-0000-0000-0000-0000000006f0';
 
-insert into public.organization_package_assignments (organization_id, package_version_id, effective_at, assignment_source, reason)
-values ('10000000-0000-0000-0000-0000000006a0', 'c0000000-0000-0000-0000-0000000006f0', now() - interval '2 minutes', 'provisioning', 'Automation foundation test baseline');
+insert into public.organization_package_agreements (
+  organization_id, edition_id, billing_interval, agreed_price_usd_cents, effective_from, source, reason
+)
+values ('10000000-0000-0000-0000-0000000006a0', 'c0000000-0000-0000-0000-0000000006f0', 'month', 9900,
+  now() - interval '2 minutes', 'test_reset', 'Automation foundation test baseline');
+insert into public.organization_package_agreements (
+  organization_id, edition_id, billing_interval, agreed_price_usd_cents, effective_from, source, reason
+)
+select '10000000-0000-0000-0000-0000000006b0', edition.id, 'month', 0, now() - interval '2 minutes', 'test_reset',
+  'Automation foundation test baseline'
+from public.package_editions edition
+join public.packages package on package.id = edition.package_id
+where package.slug = 'test-package' and edition.status = 'published';
+
+update public.platform_automation_safety_limits as safety
+set limit_state = v.limit_state, limit_value = v.limit_value
+from (values
+  ('automation_max_conditions_per_recipe', 'numeric', 6),
+  ('automation_max_steps_per_recipe', 'numeric', 10),
+  ('automation_max_customer_messages_per_enrollment', 'numeric', 4),
+  ('automation_min_customer_message_spacing_minutes', 'numeric', 15),
+  ('automation_max_delay_days', 'numeric', 90),
+  ('automation_max_enrollment_duration_days', 'unlimited', null)
+) as v (limit_key, limit_state, limit_value)
+where safety.limit_key = v.limit_key;
 
 -- 3. Seed: feature and permissions --------------------------------------------------------------------
 select is((select count(*)::integer from public.features where feature_key = 'automations'), 1,
   'the automations feature exists in the catalog');
-select is(
-  (select array_agg(distinct package.package_key order by package.package_key)
-   from public.platform_package_version_features feature
-   join public.platform_package_versions version on version.id = feature.package_version_id
-   join public.platform_packages package on package.package_id = version.package_id
-   where feature.feature_key = 'automations'),
-  array['elite']::text[],
-  'the automations feature is attached only to the Elite package, so only Elite contractors reach it');
+select is((select kind from public.package_capabilities where capability_key = 'automations'), 'extra',
+  'automations is an extra capability, so only packages that include it reach it');
 select is((select count(*)::integer from public.role_permissions
   where role = 'owner' and permission_key like 'automations.%'), 4,
   'owner receives all four automation permissions by default');
@@ -114,43 +114,51 @@ select is((select source from public.effective_automation_limits('10000000-0000-
   'active recipes identifies the package as its source');
 select is((select value from public.effective_automation_limits('10000000-0000-0000-0000-0000000006a0', now())
   where limit_key = 'automation_max_conditions_per_recipe'), 6,
-  'conditions per recipe resolves the package value');
+  'conditions per recipe resolves the platform value');
+select is((select source from public.effective_automation_limits('10000000-0000-0000-0000-0000000006a0', now())
+  where limit_key = 'automation_max_conditions_per_recipe'), 'platform',
+  'the safety limits identify the platform setting as their source');
 select is((select is_unlimited from public.effective_automation_limits('10000000-0000-0000-0000-0000000006a0', now())
   where limit_key = 'automation_max_enrollment_duration_days'), true,
-  'an unlimited package limit resolves as unlimited');
+  'an unlimited safety limit resolves as unlimited');
 select is((select state from public.effective_automation_limits('10000000-0000-0000-0000-0000000006a0', now())
   where limit_key = 'automation_max_enrollment_duration_days'), 'unlimited',
   'the unlimited limit keeps its unlimited state');
 
--- 5. Resolver: not_included fallback (no assignment) --------------------------------------------------
-select is((select bool_and(state = 'not_included') from public.effective_automation_limits('10000000-0000-0000-0000-0000000006b0', now())), true,
-  'an organization with no assignment fails closed to not_included on every key');
-select is((select count(*)::integer from public.effective_automation_limits('10000000-0000-0000-0000-0000000006b0', now())), 7,
+-- 5. Resolver: not_included fallback (no agreement) ---------------------------------------------------
+select is((select state from public.effective_automation_limits('10000000-0000-0000-0000-0000000006c0', now())
+  where limit_key = 'automation_active_recipes'), 'not_included',
+  'an organization with no agreement fails closed to not_included active recipes');
+select is((select bool_and(source = 'platform') from public.effective_automation_limits('10000000-0000-0000-0000-0000000006c0', now())
+  where limit_key <> 'automation_active_recipes'), true,
+  'the safety limits still come from the one platform setting');
+select is((select count(*)::integer from public.effective_automation_limits('10000000-0000-0000-0000-0000000006c0', now())), 7,
   'the not_included fallback still returns all seven keys');
 
--- 6. Resolver: override precedence and effective dates ------------------------------------------------
-select is((public.apply_organization_limit_exception(
-  '10000000-0000-0000-0000-0000000006a0', 'automation_active_recipes', 'numeric', 2,
-  now() - interval '30 seconds', null, 'auto-active-recipes-override',
-  'Reduce active recipes for this pilot organization.', 'owner@example.test'
-) ->> 'applied'), 'true', 'an automation limit exception applies through the established command');
+-- 6. Resolver: exception precedence and effective dates -----------------------------------------------
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at, actor_owner_email)
+values ('10000000-0000-0000-0000-0000000006a0', 'automation_active_recipes', 'numeric', 99,
+  'An active-recipes exception that has already ended.', now() - interval '2 hours', now() - interval '1 hour',
+  'owner@example.test');
+select is((select value from public.effective_automation_limits('10000000-0000-0000-0000-0000000006a0', now())
+  where limit_key = 'automation_active_recipes'), 5,
+  'an ended exception is ignored and the edition value applies');
+select is((select source from public.effective_automation_limits('10000000-0000-0000-0000-0000000006a0', now())
+  where limit_key = 'automation_active_recipes'), 'package',
+  'the ended exception does not become the source');
+
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at, actor_owner_email)
+values ('10000000-0000-0000-0000-0000000006a0', 'automation_active_recipes', 'numeric', 2,
+  'Reduce active recipes for this pilot organization.', now() - interval '30 seconds', now() + interval '30 days',
+  'owner@example.test');
 select is((select value from public.effective_automation_limits('10000000-0000-0000-0000-0000000006a0', now())
   where limit_key = 'automation_active_recipes'), 2,
-  'an active override wins over the package value');
+  'an active exception wins over the edition value');
 select is((select source from public.effective_automation_limits('10000000-0000-0000-0000-0000000006a0', now())
   where limit_key = 'automation_active_recipes'), 'override',
-  'the resolver identifies the override as its source');
-select is((public.apply_organization_limit_exception(
-  '10000000-0000-0000-0000-0000000006a0', 'automation_max_steps_per_recipe', 'numeric', 99,
-  now() - interval '2 hours', now() - interval '1 hour', 'auto-steps-expired-override',
-  'A steps override that has already expired.', 'owner@example.test'
-) ->> 'applied'), 'true', 'an expired-window exception still records');
-select is((select value from public.effective_automation_limits('10000000-0000-0000-0000-0000000006a0', now())
-  where limit_key = 'automation_max_steps_per_recipe'), 10,
-  'an expired override is ignored and the package value applies');
-select is((select source from public.effective_automation_limits('10000000-0000-0000-0000-0000000006a0', now())
-  where limit_key = 'automation_max_steps_per_recipe'), 'package',
-  'the expired override does not become the source');
+  'the resolver identifies the exception as its source');
 
 -- 7. Authority writer: engage, idempotency, no-op, independence, release ------------------------------
 select is((public.set_organization_automation_authority(
@@ -205,21 +213,22 @@ select is((public.get_organization_automation_authority('10000000-0000-0000-0000
 select is(jsonb_array_length(public.get_organization_automation_authority('10000000-0000-0000-0000-0000000006a0') -> 'recent_events'), 3,
   'the owner read model lists the three applied authority events');
 
--- 9. Member perspective under RLS: own overrides visible, package draft hidden, cross-tenant denied ----
+-- 9. Member perspective under RLS: own exceptions visible, cross-tenant denied ----------------------
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000006a1', true);
 
 select is((select value from public.effective_automation_limits('10000000-0000-0000-0000-0000000006a0', now())
   where limit_key = 'automation_active_recipes'), 2,
-  'a member sees their own active-recipes override');
+  'a member sees their own active-recipes exception');
 select is((select source from public.effective_automation_limits('10000000-0000-0000-0000-0000000006a0', now())
   where limit_key = 'automation_active_recipes'), 'override',
-  'the override is the member-visible source');
+  'the exception is the member-visible source');
 select is((select value from public.effective_automation_limits('10000000-0000-0000-0000-0000000006a0', now())
   where limit_key = 'automation_max_conditions_per_recipe'), 6,
-  'a member sees their published package conditions limit under RLS');
-select is((select bool_and(state = 'not_included') from public.effective_automation_limits('10000000-0000-0000-0000-0000000006b0', now())), true,
-  'a member of Org A resolves nothing but not_included for Org B (cross-tenant denial)');
+  'a member sees the platform conditions limit under RLS');
+select is((select state from public.effective_automation_limits('10000000-0000-0000-0000-0000000006b0', now())
+  where limit_key = 'automation_active_recipes'), 'not_included',
+  'a member of Org A cannot read Org B''s unlimited active recipes (cross-tenant denial)');
 select is((select security_state from public.organization_automation_authority
   where organization_id = '10000000-0000-0000-0000-0000000006a0'), 'suspended',
   'a member can read their own organization authority projection');

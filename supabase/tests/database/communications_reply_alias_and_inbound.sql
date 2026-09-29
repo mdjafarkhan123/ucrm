@@ -55,14 +55,16 @@ values
 
 insert into public.communication_email_allowance_periods (organization_id, starts_at, ends_at)
 values ('da100000-0000-0000-0000-000000000001', now() - interval '1 minute', now() + interval '29 days');
-select public.apply_organization_limit_exception(
-  'da100000-0000-0000-0000-000000000001', 'operational_email_recipients', 'numeric', 5,
-  now() - interval '1 minute', null, 'alias-operational-capacity', 'Alias test capacity.', 'owner@example.test'
-);
-select public.apply_organization_limit_exception(
-  'da100000-0000-0000-0000-000000000001', 'essential_email_recipients', 'numeric', 5,
-  now() - interval '1 minute', null, 'alias-essential-capacity', 'Alias test capacity.', 'owner@example.test'
-);
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
+   actor_owner_email)
+values ('da100000-0000-0000-0000-000000000001', 'operational_email_recipients', 'numeric', 5, 'Alias test capacity.',
+  now() - interval '1 minute', '2100-01-01T00:00:00Z', 'owner@example.test');
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
+   actor_owner_email)
+values ('da100000-0000-0000-0000-000000000001', 'essential_email_recipients', 'numeric', 5, 'Alias test capacity.',
+  now() - interval '1 minute', '2100-01-01T00:00:00Z', 'owner@example.test');
 
 insert into public.clients (id, organization_id, display_name)
 values ('da200000-0000-0000-0000-000000000001', 'da100000-0000-0000-0000-000000000001', 'Alias Client');

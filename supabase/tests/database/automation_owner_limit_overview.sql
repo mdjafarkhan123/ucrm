@@ -1,9 +1,9 @@
 -- Contractor Settings Part 6B, slice 3b: owner Automation limit-overview read model.
--- Proves get_organization_automation_limits assembles, for all seven keys in one call: the package default,
--- the effective value/source taken from the authoritative resolver, and the reasoned/effective-dated
--- exception (author, reason, window, active flag). Also proves the privilege matrix (owner-only), the
--- not_included fallback with no assignment, and that a scheduled/expired exception is shown but does not
--- become the effective value.
+-- Proves get_organization_automation_limits assembles, for all seven keys in one call: the edition default
+-- (active recipes) or platform safety setting (the other six), the effective value/source taken from the
+-- authoritative resolver, and the reasoned/effective-dated exception (author, reason, window, active flag).
+-- Also proves the privilege matrix (owner-only), the not_included fallback with no agreement, and that a
+-- scheduled exception is shown but does not become the effective value.
 --
 -- Single-session, single-transaction run (Supabase MCP execute_sql or `supabase test db`). Do not run
 -- through a per-statement runner: `set local role` would not survive.
@@ -29,38 +29,37 @@ values
   ('10000000-0000-0000-0000-0000000006c0', 'Automation Overview Org C', 'automation-overview-org-c', 'active'),
   ('10000000-0000-0000-0000-0000000006d0', 'Automation Overview Org D', 'automation-overview-org-d', 'active');
 
--- A published version carrying all seven automation limits, assigned to Org C. An assignment must
--- reference a published version, so the seed elite published version is retired first (rolled back with
--- the test). Limits are written while the version is a draft, then published.
-update public.platform_package_versions
-set status = 'retired', retired_at = now()
-where package_id = (select package_id from public.platform_packages where package_key = 'elite')
-  and status = 'published';
-
-insert into public.platform_package_versions
-  (id, package_id, version_number, status, display_name, public_description, value_explanation, price_usd_cents)
-select 'c0000000-0000-0000-0000-0000000006c0', package_id, 991, 'draft',
-  'Automation Overview Test Draft', 'Automation overview test version', 'Automation overview test', 9900
-from public.platform_packages where package_key = 'elite';
-
-select public.manage_platform_package_automation_limits(
-  'c0000000-0000-0000-0000-0000000006c0',
-  'numeric', 5,        -- active recipes
-  'numeric', 6,        -- conditions per recipe
-  'numeric', 10,       -- steps per recipe
-  'numeric', 4,        -- customer messages per enrollment
-  'numeric', 15,       -- min message spacing minutes
-  'numeric', 90,       -- max delay days
-  'unlimited', null,   -- max enrollment duration days
-  'owner@example.test'
-);
-
-update public.platform_package_versions
-set status = 'published', published_at = now()
+-- A published edition with five active recipes, agreed by Org C; Org D has no agreement. The six safety
+-- limits are one platform setting (ADR 0003 decision 4), set here and rolled back with the test.
+insert into public.packages (id, slug, visibility)
+values ('c0000000-0000-0000-0000-0000000006c1', 'automation-overview-test', 'private');
+insert into public.package_editions (id, package_id, name, monthly_price_usd_cents)
+values ('c0000000-0000-0000-0000-0000000006c0', 'c0000000-0000-0000-0000-0000000006c1',
+  'Automation Overview Test', 9900);
+insert into public.package_edition_capabilities (edition_id, capability_key)
+values ('c0000000-0000-0000-0000-0000000006c0', 'automations');
+insert into public.package_edition_allowances (edition_id, allowance_key, allowance_state, allowance_value)
+values ('c0000000-0000-0000-0000-0000000006c0', 'automation_active_recipes', 'numeric', 5);
+update public.package_editions set status = 'published', edition_number = 1, published_at = now()
 where id = 'c0000000-0000-0000-0000-0000000006c0';
 
-insert into public.organization_package_assignments (organization_id, package_version_id, effective_at, assignment_source, reason)
-values ('10000000-0000-0000-0000-0000000006c0', 'c0000000-0000-0000-0000-0000000006c0', now() - interval '2 minutes', 'provisioning', 'Automation overview test baseline');
+insert into public.organization_package_agreements (
+  organization_id, edition_id, billing_interval, agreed_price_usd_cents, effective_from, source, reason
+)
+values ('10000000-0000-0000-0000-0000000006c0', 'c0000000-0000-0000-0000-0000000006c0', 'month', 9900,
+  now() - interval '2 minutes', 'test_reset', 'Automation overview test baseline');
+
+update public.platform_automation_safety_limits as safety
+set limit_state = v.limit_state, limit_value = v.limit_value
+from (values
+  ('automation_max_conditions_per_recipe', 'numeric', 6),
+  ('automation_max_steps_per_recipe', 'numeric', 10),
+  ('automation_max_customer_messages_per_enrollment', 'numeric', 4),
+  ('automation_min_customer_message_spacing_minutes', 'numeric', 15),
+  ('automation_max_delay_days', 'numeric', 90),
+  ('automation_max_enrollment_duration_days', 'unlimited', null)
+) as v (limit_key, limit_state, limit_value)
+where safety.limit_key = v.limit_key;
 
 -- 3. Shape: always the seven keys, ordered ------------------------------------------------------------
 select is(jsonb_array_length(public.get_organization_automation_limits('10000000-0000-0000-0000-0000000006c0')), 7,
@@ -90,14 +89,14 @@ select is((pg_temp.limit_obj('10000000-0000-0000-0000-0000000006c0', 'automation
 select is((pg_temp.limit_obj('10000000-0000-0000-0000-0000000006c0', 'automation_active_recipes') ->> 'exception'), null,
   'a key with no exception reports a null exception');
 select is((pg_temp.limit_obj('10000000-0000-0000-0000-0000000006c0', 'automation_max_enrollment_duration_days') -> 'package_default' ->> 'state'), 'unlimited',
-  'an unlimited package default is reported as unlimited');
+  'an unlimited platform safety limit is reported as unlimited');
 
 -- 5. Active exception: precedence, author, reason, active flag ----------------------------------------
-select public.apply_organization_limit_exception(
-  '10000000-0000-0000-0000-0000000006c0', 'automation_active_recipes', 'numeric', 2,
-  now() - interval '30 seconds', null, 'auto-overview-active-override',
-  'Reduce active recipes for this pilot.', 'owner@example.test'
-);
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
+   actor_owner_email)
+values ('10000000-0000-0000-0000-0000000006c0', 'automation_active_recipes', 'numeric', 2, 'Reduce active recipes for this pilot.',
+  now() - interval '30 seconds', '2100-01-01T00:00:00Z', 'owner@example.test');
 
 select is((pg_temp.limit_obj('10000000-0000-0000-0000-0000000006c0', 'automation_active_recipes') -> 'effective' ->> 'value'), '2',
   'an active exception wins as the effective value');
@@ -112,24 +111,22 @@ select is((pg_temp.limit_obj('10000000-0000-0000-0000-0000000006c0', 'automation
 select is((pg_temp.limit_obj('10000000-0000-0000-0000-0000000006c0', 'automation_active_recipes') -> 'exception' ->> 'is_active'), 'true',
   'an in-window exception is reported active');
 
--- 6. Scheduled/expired exception: shown but not effective --------------------------------------------
-select public.apply_organization_limit_exception(
-  '10000000-0000-0000-0000-0000000006c0', 'automation_max_steps_per_recipe', 'numeric', 99,
-  now() + interval '1 day', null, 'auto-overview-future-override',
-  'A future steps override.', 'owner@example.test'
-);
+-- 6. Scheduled exception: shown but not effective ------------------------------------------------------
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
+   actor_owner_email)
+values ('10000000-0000-0000-0000-0000000006c0', 'automation_active_recipes', 'numeric', 99, 'A future recipes exception.',
+  now() + interval '1 day', '2100-01-01T00:00:00Z', 'owner@example.test');
 
-select is((pg_temp.limit_obj('10000000-0000-0000-0000-0000000006c0', 'automation_max_steps_per_recipe') -> 'effective' ->> 'value'), '10',
+select is((pg_temp.limit_obj('10000000-0000-0000-0000-0000000006c0', 'automation_active_recipes') -> 'effective' ->> 'value'), '2',
   'a future-dated exception does not change the effective value');
-select is((pg_temp.limit_obj('10000000-0000-0000-0000-0000000006c0', 'automation_max_steps_per_recipe') -> 'exception' ->> 'is_active'), 'false',
+select is((pg_temp.limit_obj('10000000-0000-0000-0000-0000000006c0', 'automation_active_recipes') -> 'exception' ->> 'is_active'), 'false',
   'a future-dated exception is reported as not active');
 
--- 7. Not_included fallback (no assignment) -----------------------------------------------------------
-select is(
-  (select bool_and((obj -> 'effective' ->> 'state') = 'not_included')
-   from jsonb_array_elements(public.get_organization_automation_limits('10000000-0000-0000-0000-0000000006d0')) as obj),
-  true,
-  'an organization with no assignment fails closed to not_included on every key');
+-- 7. Not_included fallback (no agreement) ------------------------------------------------------------
+select is((pg_temp.limit_obj('10000000-0000-0000-0000-0000000006d0', 'automation_active_recipes') -> 'effective' ->> 'state'),
+  'not_included',
+  'an organization with no agreement fails closed to not_included active recipes');
 
 select * from finish();
 rollback;
