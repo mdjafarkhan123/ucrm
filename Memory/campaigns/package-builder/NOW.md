@@ -5,7 +5,7 @@
 
 **Completed:** Planning (P1, P2). Jafar approved the build parts on 2026-09-29.
 
-**Next part:** P4b Billing workspace (`stages/1-foundation.md`). P4a done 2026-09-30: the ledger commands and `owner_organization_billing` reader are live; the late-renewal command is gone until P5.
+**Next part:** P4b Billing workspace (`stages/1-foundation.md`). P4a (ledger commands and `owner_organization_billing` reader) is live.
 
 **Blockers:** None.
 
