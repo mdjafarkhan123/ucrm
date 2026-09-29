@@ -2,18 +2,11 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Tables } from '$lib/database.types';
 
 export type AccessClient = SupabaseClient<Database>;
-export type PackageKey = 'starter' | 'growth' | 'elite';
 export type LimitKey = 'employee_seats' | 'website_chat_widgets' | 'marketing_email_recipients';
 export type LimitState = 'unlimited' | 'not_included' | 'numeric';
 // The stored scope vocabulary. 'assigned' is the only narrowing any permission declares today; the type stays
 // open so a later scope does not have to be threaded through every reader at once.
 export type PermissionScope = 'all' | 'assigned' | (string & {});
-
-export const PACKAGE_ORDER: Record<PackageKey, number> = {
-	starter: 1,
-	growth: 2,
-	elite: 3
-};
 
 export type OrganizationBilling = {
 	paid_through_date: string | null;
@@ -37,21 +30,22 @@ export type FreeAccessState = {
 export type EffectiveOrganizationAccess = {
 	organization: Pick<Tables<'organizations'>, 'id' | 'name' | 'slug' | 'lifecycle_status'>;
 	billing: OrganizationBilling;
+	// The organization's agreement in effect and the edition it agreed to; null when it has none, which
+	// leaves every capability off.
 	package: {
-		current_key: PackageKey;
-		effective_key: PackageKey;
 		package_id: string;
-		version_id: string | null;
-		version_number: number | null;
-		status: 'draft' | 'published' | 'retired';
-		display_name: string;
-		public_description: string | null;
-		price_usd_cents: number | null;
-		currency: string;
-		billing_period: string;
-		scheduled_key: PackageKey | null;
-		scheduled_effective_at: string | null;
-	};
+		slug: string;
+		edition_id: string;
+		edition_number: number;
+		edition_status: 'published' | 'superseded';
+		name: string;
+		promise: string | null;
+		agreement_id: string;
+		billing_interval: 'month' | 'year';
+		agreed_price_usd_cents: number;
+		currency: 'USD';
+		effective_from: string;
+	} | null;
 	features: Record<string, boolean>;
 	package_features: Record<string, boolean>;
 	feature_overrides: Record<
@@ -122,10 +116,8 @@ const permissionFeaturePrefixes: Array<[string, string]> = [
 	['payments.', 'core.invoices_payments'],
 	['inbox.', 'communications.inbox'],
 	['portal.', 'portal.client'],
-	// Automation (Part 6) rides on the `automations` feature. The legacy `automation.` prefix below
-	// stays mapped to the retired `automation.workflows` key for immutable package history only.
+	// Automation (Part 6) rides on the `automations` feature.
 	['automations.', 'automations'],
-	['automation.', 'automation.workflows'],
 	['marketing.', 'marketing'],
 	// Google review requests and private feedback belong to the plan's Reputation tools.
 	['reviews.', 'growth.reputation'],
@@ -234,134 +226,44 @@ function computeFreeAccessState(
 	return { active, future };
 }
 
-function packageKey(value: string): PackageKey {
-	if (value === 'starter' || value === 'growth' || value === 'elite') return value;
-	throw new Error(`Unsupported package key: ${value}`);
-}
-
-function isActiveWindow(row: { starts_at: string; expires_at: string | null }, now: number) {
-	const startsAt = Date.parse(row.starts_at);
-	const expiresAt = row.expires_at ? Date.parse(row.expires_at) : null;
-	return startsAt <= now && (expiresAt === null || expiresAt > now);
-}
-
-function buildFeatureOverridesMap(
-	featureOverrides: Array<{
-		feature_key: string;
-		override_state: string;
-		starts_at: string;
-		expires_at: string | null;
-		reason?: string | null;
-		is_legacy_import?: boolean;
-	}>
-): EffectiveOrganizationAccess['feature_overrides'] {
-	return Object.fromEntries(
-		featureOverrides.map((item) => [
-			item.feature_key,
-			{
-				state: item.override_state as 'on' | 'off',
-				starts_at: item.starts_at,
-				expires_at: item.expires_at,
-				reason: item.reason ?? null,
-				is_legacy_import: item.is_legacy_import ?? true
-			}
-		])
-	);
-}
-
-function buildLimitOverridesMap(
-	limitOverrides: Array<{
-		limit_key: string;
-		limit_state?: string;
-		limit_value: number | null;
-		is_unlimited: boolean;
-		starts_at: string;
-		expires_at: string | null;
-		reason?: string | null;
-		is_legacy_import?: boolean;
-	}>
-): EffectiveOrganizationAccess['limit_overrides'] {
-	return Object.fromEntries(
-		limitOverrides.map((item) => [
-			item.limit_key,
-			{
-				value: item.limit_value,
-				is_unlimited: item.is_unlimited,
-				state:
-					(item.limit_state as LimitState | undefined) ??
-					(item.is_unlimited
-						? 'unlimited'
-						: item.limit_value === null
-							? 'not_included'
-							: 'numeric'),
-				starts_at: item.starts_at,
-				expires_at: item.expires_at,
-				reason: item.reason ?? null,
-				is_legacy_import: item.is_legacy_import ?? true
-			}
-		])
-	) as EffectiveOrganizationAccess['limit_overrides'];
-}
-
 type LimitRow = { state: string; value: number | null; is_unlimited: boolean; source: string };
-type FeatureOverrideRow = {
-	feature_key: string;
-	override_state: string;
-	starts_at: string;
-	expires_at: string | null;
-	reason: string | null;
-	is_legacy_import: boolean;
-};
-type LimitOverrideRow = {
-	limit_key: string;
-	limit_state: string;
-	limit_value: number | null;
-	is_unlimited: boolean;
-	starts_at: string;
-	expires_at: string | null;
-};
-type OrganizationRow = {
-	id: string;
-	name: string;
-	slug: string;
-	lifecycle_status: string;
-	package_key: string;
-	scheduled_package_key: string | null;
-	scheduled_package_effective_at: string | null;
-};
 
 // Everything one member's access depends on, read in one call by `public.organization_access_snapshot`
 // (SECURITY INVOKER, so the caller's RLS applies as it did to the separate reads it replaced).
 type AccessSnapshot = {
-	organization: OrganizationRow;
-	assignment: { package_version_id: string; effective_at: string } | null;
-	package_version: {
+	organization: { id: string; name: string; slug: string; lifecycle_status: string };
+	agreement: {
+		id: string;
+		edition_id: string;
+		billing_interval: 'month' | 'year';
+		agreed_price_usd_cents: number;
+		effective_from: string;
+	} | null;
+	edition: {
 		id: string;
 		package_id: string;
-		version_number: number;
-		display_name: string;
-		public_description: string | null;
-		price_usd_cents: number | null;
-		currency: string;
-		billing_period: string;
-		status: string;
+		edition_number: number;
+		status: 'published' | 'superseded';
+		name: string;
+		promise: string | null;
 	} | null;
-	platform_packages: Array<{
-		package_id: string;
-		package_key: string;
-		display_name: string;
-		sort_order: number;
-		status: string;
-		public_description: string | null;
-		price_usd_cents: number | null;
-		currency: string;
-		billing_period: string;
+	package: { id: string; slug: string } | null;
+	capabilities: string[];
+	edition_capabilities: string[];
+	capability_exceptions: Array<{
+		capability_key: string;
+		state: 'on' | 'off';
+		starts_at: string;
+		ends_at: string;
+		reason: string;
 	}>;
-	features: Array<{ feature_key: string; description: string | null }>;
-	package_features: Array<{ package_key: string; feature_key: string }>;
-	package_version_features: Array<{ package_version_id: string; feature_key: string }>;
-	feature_overrides: FeatureOverrideRow[];
-	limit_overrides: LimitOverrideRow[];
+	allowance_exceptions: Array<{
+		allowance_key: string;
+		state: LimitState;
+		value: number | null;
+		starts_at: string;
+		ends_at: string;
+	}>;
 	commercial_state: {
 		paid_through_date: string | null;
 		paid_through_source: string | null;
@@ -442,74 +344,23 @@ function effectiveLimit(row: LimitRow | null, label: string) {
 	};
 }
 
-// The package half differs between a versioned assignment and the legacy package columns; everything else
-// about an organization's access is resolved the same way from the same rows.
-function resolvePackage(snapshot: AccessSnapshot, now: Date) {
-	const { organization, assignment } = snapshot;
-
-	if (assignment) {
-		const version = snapshot.package_version;
-		if (!version) throw new Error('The organization package version is missing.');
-		const packageDefinition = snapshot.platform_packages.find(
-			(item) => item.package_id === version.package_id
-		);
-		if (!packageDefinition) throw new Error('The organization package definition is missing.');
-		const currentPackageKey = packageKey(packageDefinition.package_key);
-		return {
-			package: {
-				current_key: currentPackageKey,
-				effective_key: currentPackageKey,
-				package_id: packageDefinition.package_id,
-				version_id: version.id,
-				version_number: version.version_number,
-				status: version.status as 'draft' | 'published' | 'retired',
-				display_name: version.display_name,
-				public_description: version.public_description,
-				price_usd_cents: version.price_usd_cents,
-				currency: version.currency,
-				billing_period: version.billing_period,
-				scheduled_key: null,
-				scheduled_effective_at: null
-			},
-			packageFeatureKeys: new Set(snapshot.package_version_features.map((item) => item.feature_key))
-		};
-	}
-
-	const currentPackageKey = packageKey(organization.package_key);
-	const scheduledPackageKey = organization.scheduled_package_key
-		? packageKey(organization.scheduled_package_key)
-		: null;
-	const scheduledAt = organization.scheduled_package_effective_at;
-	const scheduledIsDue =
-		scheduledPackageKey !== null &&
-		scheduledAt !== null &&
-		Date.parse(scheduledAt) <= now.getTime();
-	const effectivePackageKey = scheduledIsDue ? scheduledPackageKey : currentPackageKey;
-	const effectivePackage = snapshot.platform_packages.find(
-		(item) => item.package_key === effectivePackageKey
-	);
-	if (!effectivePackage) throw new Error(`Package definition is missing: ${effectivePackageKey}`);
+function resolvePackage(snapshot: AccessSnapshot): EffectiveOrganizationAccess['package'] {
+	const { agreement, edition, package: packageRow } = snapshot;
+	if (!agreement) return null;
+	if (!edition || !packageRow) throw new Error('The organization package edition is missing.');
 	return {
-		package: {
-			current_key: currentPackageKey,
-			effective_key: effectivePackageKey,
-			package_id: effectivePackage.package_id,
-			version_id: null,
-			version_number: null,
-			status: effectivePackage.status as 'draft' | 'published' | 'retired',
-			display_name: effectivePackage.display_name,
-			public_description: effectivePackage.public_description,
-			price_usd_cents: effectivePackage.price_usd_cents,
-			currency: effectivePackage.currency,
-			billing_period: effectivePackage.billing_period,
-			scheduled_key: scheduledPackageKey,
-			scheduled_effective_at: scheduledAt
-		},
-		packageFeatureKeys: new Set(
-			snapshot.package_features
-				.filter((item) => item.package_key === effectivePackageKey)
-				.map((item) => item.feature_key)
-		)
+		package_id: packageRow.id,
+		slug: packageRow.slug,
+		edition_id: edition.id,
+		edition_number: edition.edition_number,
+		edition_status: edition.status,
+		name: edition.name,
+		promise: edition.promise,
+		agreement_id: agreement.id,
+		billing_interval: agreement.billing_interval,
+		agreed_price_usd_cents: agreement.agreed_price_usd_cents,
+		currency: 'USD',
+		effective_from: agreement.effective_from
 	};
 }
 
@@ -546,26 +397,27 @@ export async function resolveOrganizationAccess(
 		todayInTimeZone(commercialTimezone ?? 'UTC', now)
 	);
 
-	const { package: resolvedPackage, packageFeatureKeys } = resolvePackage(snapshot, now);
-	const nowMs = now.getTime();
-	const featureOverrides = snapshot.feature_overrides.filter((item) => isActiveWindow(item, nowMs));
-	const featureOverrideByKey = new Map(featureOverrides.map((item) => [item.feature_key, item]));
+	// Exceptions arrive already filtered to those in effect, newest first, so the first one per key wins.
+	const editionCapabilities = new Set(snapshot.edition_capabilities);
+	const capabilityExceptions = new Map<string, AccessSnapshot['capability_exceptions'][number]>();
+	for (const item of snapshot.capability_exceptions) {
+		if (!capabilityExceptions.has(item.capability_key))
+			capabilityExceptions.set(item.capability_key, item);
+	}
+	const allowanceExceptions = new Map<string, AccessSnapshot['allowance_exceptions'][number]>();
+	for (const item of snapshot.allowance_exceptions) {
+		if (!allowanceExceptions.has(item.allowance_key))
+			allowanceExceptions.set(item.allowance_key, item);
+	}
 	const packageFeatureFlags = Object.fromEntries(
-		snapshot.features.map((feature) => [
-			feature.feature_key,
-			packageFeatureKeys.has(feature.feature_key)
-		])
+		snapshot.capabilities.map((key) => [key, editionCapabilities.has(key)])
 	);
 	const features = Object.fromEntries(
-		snapshot.features.map((feature) => {
-			const override = featureOverrideByKey.get(feature.feature_key);
-			return [
-				feature.feature_key,
-				override ? override.override_state === 'on' : packageFeatureKeys.has(feature.feature_key)
-			];
+		snapshot.capabilities.map((key) => {
+			const exception = capabilityExceptions.get(key);
+			return [key, exception ? exception.state === 'on' : editionCapabilities.has(key)];
 		})
 	);
-	const limitOverrides = snapshot.limit_overrides.filter((item) => isActiveWindow(item, nowMs));
 
 	let member: EffectiveOrganizationAccess['member'] = null;
 	let permissions: Record<string, boolean> = {};
@@ -594,12 +446,34 @@ export async function resolveOrganizationAccess(
 			now,
 			freeAccessState.active !== null
 		),
-		package: resolvedPackage,
+		package: resolvePackage(snapshot),
 		features,
 		package_features: packageFeatureFlags,
-		feature_overrides: buildFeatureOverridesMap(featureOverrides),
+		feature_overrides: Object.fromEntries(
+			[...capabilityExceptions].map(([key, item]) => [
+				key,
+				{
+					state: item.state,
+					starts_at: item.starts_at,
+					expires_at: item.ends_at,
+					reason: item.reason,
+					is_legacy_import: false
+				}
+			])
+		),
 		limits,
-		limit_overrides: buildLimitOverridesMap(limitOverrides),
+		limit_overrides: Object.fromEntries(
+			[...allowanceExceptions].map(([key, item]) => [
+				key,
+				{
+					state: item.state,
+					value: item.value,
+					is_unlimited: item.state === 'unlimited',
+					starts_at: item.starts_at,
+					expires_at: item.ends_at
+				}
+			])
+		),
 		member,
 		permissions,
 		permission_scopes: permissionScopes,
