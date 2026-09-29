@@ -404,9 +404,13 @@
 							<td class:billing-workspace__muted={charge.status === 'cancelled'}>
 								<strong>{formatPeriod(charge.period_start, charge.period_end)}</strong>
 							</td>
-							<td class="billing-workspace__money">{formatUsd(charge.amount_usd_cents)}</td>
-							<td class="billing-workspace__money">{formatUsd(charge.applied_usd_cents)}</td>
-							<td class="billing-workspace__money">
+							<td class="align-end billing-workspace__money"
+								>{formatUsd(charge.amount_usd_cents)}</td
+							>
+							<td class="align-end billing-workspace__money"
+								>{formatUsd(charge.applied_usd_cents)}</td
+							>
+							<td class="align-end billing-workspace__money">
 								<strong>{formatUsd(charge.outstanding_usd_cents)}</strong>
 							</td>
 							<td><Badge status={status.tone} size="small">{status.label}</Badge></td>
@@ -505,10 +509,14 @@
 							<td class:billing-workspace__muted={receipt.voided_at}>
 								<strong>{formatCalendarDate(receipt.received_on)}</strong>
 							</td>
-							<td class="billing-workspace__money">{formatUsd(receipt.amount_usd_cents)}</td>
+							<td class="align-end billing-workspace__money"
+								>{formatUsd(receipt.amount_usd_cents)}</td
+							>
 							<td>{receipt.method}</td>
 							<td class="billing-workspace__reference">{receipt.private_reference}</td>
-							<td class="billing-workspace__money">{formatUsd(receipt.unapplied_usd_cents)}</td>
+							<td class="align-end billing-workspace__money"
+								>{formatUsd(receipt.unapplied_usd_cents)}</td
+							>
 							<td><Badge status={status.tone} size="small">{status.label}</Badge></td>
 						{/snippet}
 						{#snippet rowActions(receipt)}
@@ -673,7 +681,6 @@
 	}
 	.billing-workspace__money {
 		font-variant-numeric: tabular-nums;
-		text-align: end;
 		white-space: nowrap;
 	}
 	.billing-workspace__reference {

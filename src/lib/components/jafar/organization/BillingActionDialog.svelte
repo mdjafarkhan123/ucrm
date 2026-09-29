@@ -384,7 +384,7 @@
 					id="billing-amount"
 					label="Amount received (USD)"
 					inputmode="decimal"
-					placeholder="149.00"
+					placeholder="0.00"
 					bind:value={amount}
 					invalid={Boolean(shownFieldErrors.amount_usd_cents)}
 					errorMessage={shownFieldErrors.amount_usd_cents}

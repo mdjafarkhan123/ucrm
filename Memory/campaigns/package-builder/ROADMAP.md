@@ -9,7 +9,7 @@ Build stages, approved by Jafar 2026-09-29:
 
 | Stage | Delivers | State | Parts |
 | --- | --- | --- | --- |
-| 1 Foundation | New storage and switch-over, money and coverage, grace | In progress — P3a done | `stages/1-foundation.md` |
+| 1 Foundation | New storage and switch-over, money and coverage, grace | In progress — P3a–P4b done | `stages/1-foundation.md` |
 | 2 Builder | Drafts, publishing, archive and restore | Not started | `stages/2-builder.md` |
 | 3 Customers | Package changes, public cards, activation, introductory offers | Not started | `stages/3-customers.md` |
 | 4 Sellable extras | Each extra verified before it can be sold | Not started | `stages/4-sellable-extras.md` |
