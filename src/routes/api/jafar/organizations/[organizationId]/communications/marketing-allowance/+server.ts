@@ -24,11 +24,18 @@ export const GET: RequestHandler = async (event) => {
 		const organizationId = parsedOrganizationId.data;
 		const [effectiveResult, overrideResult] = await Promise.all([
 			client.rpc('effective_marketing_email_limit', { target_organization_id: organizationId }),
+			// The newest exception that has not ended yet, whether it has started or is still to come.
 			client
-				.from('organization_limit_overrides')
-				.select('limit_state, limit_value, starts_at, expires_at, reason, actor_owner_email')
+				.from('organization_package_exceptions')
+				.select(
+					'limit_state:allowance_state, limit_value:allowance_value, starts_at, expires_at:ends_at, reason, actor_owner_email'
+				)
 				.eq('organization_id', organizationId)
-				.eq('limit_key', 'marketing_email_recipients')
+				.eq('allowance_key', 'marketing_email_recipients')
+				.gt('ends_at', new Date().toISOString())
+				.order('starts_at', { ascending: false })
+				.order('created_at', { ascending: false })
+				.limit(1)
 				.maybeSingle()
 		]);
 		if (effectiveResult.error) throw effectiveResult.error;

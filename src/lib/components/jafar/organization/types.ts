@@ -9,20 +9,21 @@ export type EffectiveAccess = {
 		is_overdue: boolean;
 		is_in_grace: boolean;
 	};
+	// The agreement in effect and the edition it agreed to; null when the organization has none.
 	package: {
-		current_key: PackageKey;
-		effective_key: PackageKey;
-		version_id: string | null;
-		version_number: number | null;
-		status: 'draft' | 'published' | 'retired';
-		display_name: string;
-		public_description: string | null;
-		price_usd_cents: number | null;
-		currency: string;
-		billing_period: string;
-		scheduled_key: PackageKey | null;
-		scheduled_effective_at: string | null;
-	};
+		package_id: string;
+		slug: string;
+		edition_id: string;
+		edition_number: number;
+		edition_status: 'published' | 'superseded';
+		name: string;
+		promise: string | null;
+		agreement_id: string;
+		billing_interval: 'month' | 'year';
+		agreed_price_usd_cents: number;
+		currency: 'USD';
+		effective_from: string;
+	} | null;
 	features: Record<string, boolean>;
 	package_features: Record<string, boolean>;
 	feature_overrides: Record<

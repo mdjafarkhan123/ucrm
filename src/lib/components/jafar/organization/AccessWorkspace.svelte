@@ -2,7 +2,6 @@
 	import type {
 		EffectiveAccess,
 		CommercialState,
-		PackagesCatalogResponse,
 		MutationResponse
 	} from '$lib/components/jafar/organization/types';
 	import type { CreateQueryResult } from '@tanstack/svelte-query';
@@ -42,18 +41,14 @@
 	let {
 		access,
 		preview,
-		packagesCatalogQuery,
 		commercialQuery,
-		publishedVersionOptions,
 		organizationId,
 		actionError = $bindable(''),
 		actionMessage = $bindable('')
 	}: {
 		access: EffectiveAccess | null;
 		preview: OrganizationDetailPreview | null;
-		packagesCatalogQuery: CreateQueryResult<PackagesCatalogResponse, Error>;
 		commercialQuery: CreateQueryResult<CommercialState, Error>;
-		publishedVersionOptions: { value: string; label: string }[];
 		organizationId: string | undefined;
 		actionError: string;
 		actionMessage: string;
@@ -83,91 +78,6 @@
 	function invalidateOrganization() {
 		void queryClient.invalidateQueries({ queryKey: jafarOrganizationKey(organizationId) });
 		void queryClient.invalidateQueries({ queryKey: jafarOrganizationsKey });
-	}
-
-	// Package change ----------------------------------------------------------
-	let editingPackage = $state(false);
-	let packageChangeTarget = $state('');
-	let packageChangeReason = $state('');
-
-	const packageChangeMutation = createMutation<
-		MutationResponse,
-		Error,
-		{ package_version_id: string; reason: string; idempotency_key: string }
-	>(() => ({
-		mutationFn: async (input) => {
-			const response = await fetch(`/api/jafar/organizations/${organizationId}/package`, {
-				method: 'PATCH',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify(input)
-			});
-			const result = (await response.json()) as MutationResponse;
-			if (!response.ok) throw new Error(result.error ?? 'The package could not be changed.');
-			return result;
-		},
-		onMutate: clearFeedback,
-		onError: (error) => (actionError = error.message),
-		onSuccess: () => {
-			editingPackage = false;
-			packageChangeTarget = '';
-			packageChangeReason = '';
-			actionMessage = 'Package updated.';
-			invalidateOrganization();
-		}
-	}));
-
-	function submitPackageChange(event: SubmitEvent) {
-		event.preventDefault();
-		if (!packageChangeTarget || !packageChangeReason.trim()) return;
-		packageChangeMutation.mutate({
-			package_version_id: packageChangeTarget,
-			reason: packageChangeReason.trim(),
-			idempotency_key: crypto.randomUUID()
-		});
-	}
-
-	// Legacy package-version assignment (moves a legacy org onto a real version) --
-	let showLegacyAssignForm = $state(false);
-	let legacyVersionId = $state('');
-	let legacyPaidThrough = $state('');
-	let legacyReason = $state('');
-
-	const legacyAssignMutation = createMutation<
-		MutationResponse,
-		Error,
-		{ package_version_id: string; paid_through_date: string; reason: string }
-	>(() => ({
-		mutationFn: async (input) => {
-			const response = await fetch(`/api/jafar/organizations/${organizationId}/package-version`, {
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify(input)
-			});
-			const result = (await response.json()) as MutationResponse;
-			if (!response.ok)
-				throw new Error(result.error ?? 'The package version could not be assigned.');
-			return result;
-		},
-		onMutate: clearFeedback,
-		onError: (error) => (actionError = error.message),
-		onSuccess: () => {
-			showLegacyAssignForm = false;
-			legacyVersionId = '';
-			legacyPaidThrough = '';
-			legacyReason = '';
-			actionMessage = 'Package version assigned and paid-through date recorded.';
-			invalidateOrganization();
-		}
-	}));
-
-	function submitLegacyAssign(event: SubmitEvent) {
-		event.preventDefault();
-		if (!legacyVersionId || !legacyPaidThrough || !legacyReason.trim()) return;
-		legacyAssignMutation.mutate({
-			package_version_id: legacyVersionId,
-			paid_through_date: legacyPaidThrough,
-			reason: legacyReason.trim()
-		});
 	}
 
 	// Feature overrides ------------------------------------------------------
@@ -496,7 +406,6 @@
 	}
 
 	const queryClient = useQueryClient();
-	const isLegacyUnversioned = $derived(access ? access.package.version_id === null : false);
 
 	const FEATURE_LABELS: Record<string, string> = {
 		'core.dashboard': 'Dashboard and workspace overview',
@@ -578,7 +487,7 @@
 				<div class="organization-detail__section-heading">
 					<p class="organization-detail__eyebrow">Commercial access</p>
 					<h2 id="commercial-title">Package and access position</h2>
-					<p>Change the package, review paid-through and grace state, and manage exceptions.</p>
+					<p>Review the package, paid-through and grace state, and exceptions.</p>
 				</div>
 
 				<div class="organization-detail__commercial-grid">
@@ -588,54 +497,20 @@
 						</div>
 						<div>
 							<p class="organization-detail__card-label">Package</p>
-							<h3>{access.package.display_name}</h3>
+							<h3>{access.package?.name ?? 'No package'}</h3>
 							<p>
-								{formatPrice(
-									access.package.price_usd_cents,
-									access.package.currency,
-									access.package.billing_period
-								)}
+								{access.package
+									? `Edition ${access.package.edition_number} · ${formatPrice(
+											access.package.agreed_price_usd_cents,
+											access.package.currency,
+											access.package.billing_interval
+										)}`
+									: 'Every capability is off until a package is agreed.'}
 							</p>
 						</div>
-						{#if editingPackage}
-							<form onsubmit={submitPackageChange} class="organization-detail__inline-form">
-								<Select
-									id="package-change-target"
-									ariaLabel="Target published package version"
-									placeholder={packagesCatalogQuery.isPending
-										? 'Loading published versions…'
-										: 'Choose a published version'}
-									options={publishedVersionOptions.filter(
-										(option) => option.value !== access?.package.version_id
-									)}
-									bind:value={packageChangeTarget}
-								/>
-								<Input
-									id="package-change-reason"
-									label="Private reason"
-									bind:value={packageChangeReason}
-								/>
-								<p class="organization-detail__form-note">
-									The selected published version takes effect immediately. The prior version, new
-									version, reason, and time are retained in owner history.
-								</p>
-								<div class="organization-detail__inline-form-actions">
-									<Button type="submit" loading={packageChangeMutation.isPending}
-										>Save package change</Button
-									>
-									<Button
-										type="button"
-										variant="secondary"
-										variation="subtle"
-										onclick={() => (editingPackage = false)}>Cancel</Button
-									>
-								</div>
-							</form>
-						{:else}
-							<Button variant="secondary" variation="subtle" onclick={() => (editingPackage = true)}
-								>Change package</Button
-							>
-						{/if}
+						<p class="organization-detail__form-note">
+							Changing a customer's package returns with the new package tools.
+						</p>
 					</Card>
 
 					<Card class="organization-detail__commercial-card">
@@ -714,62 +589,12 @@
 					<SmsAdjustmentRefundActions organizationId={access.organization.id} />
 				</Card>
 
-				{#if isLegacyUnversioned}
-					<Card class="organization-detail__commercial-explainer">
-						<div>
-							<h3>Assign a published package version</h3>
-							<p>
-								This organization still uses the legacy package column. Assigning a published
-								version records an immutable billing baseline and unlocks free-access management.
-							</p>
-							{#if showLegacyAssignForm}
-								<form onsubmit={submitLegacyAssign} class="organization-detail__inline-form">
-									<Select
-										id="legacy-assign-version"
-										ariaLabel="Published version"
-										placeholder={packagesCatalogQuery.isPending
-											? 'Loading published versions…'
-											: 'Choose a published version'}
-										options={publishedVersionOptions}
-										bind:value={legacyVersionId}
-									/>
-									<CalendarPicker
-										id="legacy-assign-paid-through"
-										label="Paid-through date"
-										value={calendarDateFromString(legacyPaidThrough)}
-										onchange={(value) => (legacyPaidThrough = calendarDateToString(value))}
-									/>
-									<Input
-										id="legacy-assign-reason"
-										label="Private reason"
-										bind:value={legacyReason}
-									/>
-									<div class="organization-detail__inline-form-actions">
-										<Button type="submit" loading={legacyAssignMutation.isPending}
-											>Assign version</Button
-										>
-										<Button
-											type="button"
-											variant="secondary"
-											variation="subtle"
-											onclick={() => (showLegacyAssignForm = false)}>Cancel</Button
-										>
-									</div>
-								</form>
-							{/if}
-						</div>
-						{#if !showLegacyAssignForm}
-							<Button onclick={() => (showLegacyAssignForm = true)}>Assign version</Button>
-						{/if}
-					</Card>
-				{/if}
-
 				<Card class="organization-detail__commercial-explainer">
 					<div>
 						<h3>Free access</h3>
 						<FreeAccessActions
 							organizationId={access.organization.id}
-							hasPackageAssignment={!isLegacyUnversioned}
+							hasPackageAssignment={access.package !== null}
 							freeAccess={access.free_access}
 						/>
 					</div>

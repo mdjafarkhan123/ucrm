@@ -1,21 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET, POST } from './+server';
-import { consumeOwnerStepUp, getOwnerSession } from '$lib/server/auth/owner';
+import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
-vi.mock('$lib/server/auth/owner', () => ({
-	getOwnerSession: vi.fn(),
-	consumeOwnerStepUp: vi.fn()
-}));
+vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
 
 const mockedOwnerSession = vi.mocked(getOwnerSession);
-const mockedConsumeStepUp = vi.mocked(consumeOwnerStepUp);
 const mockedClient = vi.mocked(getOwnerSupabaseClient);
 
 const organizationId = '123e4567-e89b-12d3-a456-426614174000';
 const originalEventId = '223e4567-e89b-12d3-a456-426614174000';
-const idempotencyKey = '323e4567-e89b-42d3-a456-426614174000';
 
 function session() {
 	return { email: 'owner@example.com', sessionId: 'session-id' };
@@ -23,18 +18,6 @@ function session() {
 
 function getEvent(id = organizationId) {
 	return { params: { organizationId: id } } as Parameters<typeof GET>[0];
-}
-
-function postEvent(body: unknown, id = organizationId) {
-	return {
-		params: { organizationId: id },
-		request: new Request(`http://localhost/api/jafar/organizations/${id}/commercial`, {
-			method: 'POST',
-			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify(body)
-		}),
-		cookies: {}
-	} as Parameters<typeof POST>[0];
 }
 
 function query(data: unknown) {
@@ -108,100 +91,6 @@ describe('platform owner commercial API boundary', () => {
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
-	it('validates each commercial action before database access', async () => {
-		mockedOwnerSession.mockResolvedValue(session());
-
-		const response = await POST(
-			postEvent({
-				action: 'refund',
-				idempotency_key: idempotencyKey,
-				original_event_id: originalEventId,
-				amount_usd_cents: -500,
-				paid_through_effect: 'unchanged',
-				private_reference: 'bank-2',
-				private_reason: 'Customer refund'
-			})
-		);
-
-		expect(response.status).toBe(422);
-		expect(mockedClient).not.toHaveBeenCalled();
-	});
-
-	it('requires password reconfirmation only when renewal also reactivates', async () => {
-		mockedOwnerSession.mockResolvedValue(session());
-		mockedConsumeStepUp.mockReturnValue(false);
-
-		const response = await POST(
-			postEvent({
-				action: 'renewal',
-				idempotency_key: idempotencyKey,
-				amount_usd_cents: 9900,
-				paid_through_effect: 'set',
-				paid_through_date: '2026-09-30',
-				private_reference: 'bank-2',
-				reactivate: true
-			})
-		);
-
-		expect(response.status).toBe(403);
-		expect(mockedClient).not.toHaveBeenCalled();
-	});
-
-	it('records a plain renewal without changing lifecycle or requiring step-up', async () => {
-		mockedOwnerSession.mockResolvedValue(session());
-		const client = commercialClient('active');
-		mockedClient.mockReturnValue(client as never);
-
-		const response = await POST(
-			postEvent({
-				action: 'renewal',
-				idempotency_key: idempotencyKey,
-				amount_usd_cents: 9900,
-				paid_through_effect: 'set',
-				paid_through_date: '2026-09-30',
-				private_reference: 'bank-2',
-				reactivate: false
-			})
-		);
-
-		expect(response.status).toBe(200);
-		expect(mockedConsumeStepUp).not.toHaveBeenCalled();
-		expect(client.rpc).toHaveBeenCalledWith(
-			'apply_organization_late_renewal_reactivation',
-			expect.objectContaining({
-				target_organization_id: organizationId,
-				idempotency_key: idempotencyKey,
-				reactivate: false,
-				paid_through_date: '2026-09-30'
-			})
-		);
-	});
-
-	it('returns a conflict when an adjustment references an invalid original event', async () => {
-		mockedOwnerSession.mockResolvedValue(session());
-		mockedClient.mockReturnValue(
-			commercialClient('active', {
-				data: null,
-				error: { code: '23514', message: 'The original event is not valid.' }
-			}) as never
-		);
-
-		const response = await POST(
-			postEvent({
-				action: 'reversal',
-				idempotency_key: idempotencyKey,
-				original_event_id: originalEventId,
-				amount_usd_cents: 9900,
-				paid_through_effect: 'unchanged',
-				private_reference: 'bank-3',
-				private_reason: 'Bank reversed the payment'
-			})
-		);
-
-		expect(response.status).toBe(409);
-		expect((await response.json()).error).toBe('The original event is not valid.');
-	});
-
 	it('includes the open closure record when the organization is pending closure', async () => {
 		mockedOwnerSession.mockResolvedValue(session());
 		const client = commercialClient('active');
@@ -221,5 +110,12 @@ describe('platform owner commercial API boundary', () => {
 
 		expect(response.status).toBe(200);
 		expect(result.closure).toEqual(closingRecord);
+	});
+
+	it('switches payment records off while the package system is rebuilt', async () => {
+		const response = await POST(getEvent() as Parameters<typeof POST>[0]);
+
+		expect(response.status).toBe(410);
+		expect(mockedClient).not.toHaveBeenCalled();
 	});
 });

@@ -33,7 +33,6 @@
 		getOrganizationDetailPreview,
 		organizationDetailScenarioLabel
 	} from '$lib/jafar/organization-detail-preview';
-	import { formatPrice } from '$lib/components/jafar/organization/format';
 	import OverviewWorkspace from '$lib/components/jafar/organization/OverviewWorkspace.svelte';
 	import AccessWorkspace from '$lib/components/jafar/organization/AccessWorkspace.svelte';
 	import CommunicationsWorkspace from '$lib/components/jafar/organization/CommunicationsWorkspace.svelte';
@@ -160,17 +159,6 @@
 			return result;
 		}
 	}));
-	const publishedVersionOptions = $derived(
-		(packagesCatalogQuery.data?.packages ?? []).flatMap((packageDefinition) =>
-			packageDefinition.versions
-				.filter((version) => version.status === 'published')
-				.map((version) => ({
-					value: version.id,
-					label: `${packageDefinition.display_name} · v${version.version_number} — ${formatPrice(version.price_usd_cents, version.currency, version.billing_period)}`
-				}))
-		)
-	);
-
 	const pageTitle = $derived(
 		isLoading
 			? 'Loading organization · Organizations'
@@ -377,9 +365,7 @@
 			<AccessWorkspace
 				{access}
 				{preview}
-				{packagesCatalogQuery}
 				{commercialQuery}
-				{publishedVersionOptions}
 				{organizationId}
 				bind:actionError
 				bind:actionMessage
