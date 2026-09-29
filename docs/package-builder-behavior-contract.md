@@ -1,6 +1,6 @@
 # Package builder
 
-**Status:** Core behavior approved by Jafar on 2026-09-29. Public offer presentation is being added; the examples of website, SEO, missed-call, and Google Business Profile services still need classification before the amended plan is closed. Build-part planning remains pending.
+**Status:** Core behavior approved by Jafar on 2026-09-29. Jafar clarified the combined service-and-software offer on 2026-09-29. The public-detail source and exact managed-service scopes still need approval before the amended plan is closed. Build-part planning remains pending.
 
 ## Summary
 
@@ -17,11 +17,22 @@ Jafar builds named packages by selecting working CRM capabilities and setting us
 
 ## Public offer and onboarding presentation
 
-- The marketing site may show a short, contractor-readable card for each public package: its name, USD monthly/yearly price and payment interval, a concise promise, and a few clear highlights. A **View details** action opens the full terms for that exact published edition. Private or archived editions do not appear in the public list.
+- Uplift sells one commercial package that may combine managed services with software access. Managed services include the custom-coded premium website, on-site SEO, and Google Business Profile optimization and management. Software capabilities include the CRM, website chat, missed-call text-back, automated lead follow-up, and review requests or feedback. Package editions decide the exact included services, capabilities, and allowances.
+- The builder has a separate, manually curated **Customer highlights** list. Jafar can add, edit, remove, and order short contractor-readable items such as “Premium functional website” or “Never miss a lead.” Highlights are presentation copy only: they never enable access, create an entitlement, or prove that a service is ready.
+- The marketing site may show a short card for each public package: its name, USD monthly/yearly price and payment interval, a concise promise, and four to six customer highlights. A **View details** action opens the full terms for that exact published edition. Private or archived editions do not appear in the public list.
 - The details separate understandable outcomes from precise inclusions: supported app capabilities, limits and reset periods, any separately delivered services, exclusions or prerequisites, introductory price and its end, later normal price, yearly upfront amount, and any separately charged provider usage. They explain that package payment is handled offsite.
 - The `/get-started` package step shows the same concise comparison and a View details action without losing the selected package or form progress. A visitor actively chooses an edition. Before submitting, the review shows the selected name, interval, exact agreed price or offer, and a link back to its full details. Submission preserves the selected published edition and its customer-facing terms for Jafar's later review.
-- Marketing copy may be simpler than the technical detail but must agree with it. A public card and its detail view refer to the same edition; a changed or archived edition prompts a marketing-site update before the old wording can keep being advertised.
-- Website creation, on-site SEO, missed-call text-back, automated lead follow-up, and Google Business Profile management are examples Jafar may want to highlight. Each must be classified as a delivered service or verified application capability, with its real scope and readiness checked before the package promises it.
+- Marketing copy may be simpler than the technical detail but must agree with it. The recommended source of truth is a public, read-only detail page generated from the CRM's published edition, linked from the static marketing site. This lets the marketing site keep its persuasive copy while the exact limits and terms stay current. If Jafar instead maintains the full details manually on the static site, publishing, revising, or archiving an edition must create a visible sync task and prevent the stale offer from being treated as current.
+- The marketing-site CTA carries the public package slug and billing choice into `/get-started`, where the same published edition is preselected and can still be changed. A stale, private, or archived slug is explained and requires a new selection.
+
+## Managed-service scope and ownership
+
+- Each included managed service records a customer-facing name, summary, setup deliverables, ongoing work and cadence, prerequisites, exclusions, turnaround target, and what happens when the package ends. These terms are versioned with the package edition.
+- Website scope states the included page or template scope, forms and chat connection, hosting and maintenance, content or asset responsibilities, revision/support boundaries, domain ownership, and export or handover terms. “Custom-coded” is advertised only when that delivery method is consistently fulfilled.
+- On-site SEO scope states the technical and page-level work included. It makes no ranking guarantee.
+- The contractor remains the primary owner of their Google Business Profile. Uplift receives manager or agency access, without taking the contractor's password, and documents the included optimization and ongoing management cadence. Removal of Uplift's access does not remove the contractor's profile.
+- Review requests ask eligible customers for honest feedback without requesting a specific star rating or hiding the public-review option after negative feedback. Private feedback may be offered separately. Public copy must not promise “5-star reviews only.”
+- A software capability may be advertised only after its actual workflow, provider prerequisites, access enforcement, and allowance counting have passed their build checks. Until then, it may remain a planned draft inclusion but cannot be published as delivered.
 
 ## Prices and offers
 
@@ -64,7 +75,8 @@ The [feasibility review](research/package-builder-feasibility-2026-09-29.md) con
 
 ## Still unclear
 
-- Are the example website, SEO, missed-call, follow-up, and Google Business Profile items actual deliverables included in the same package price, illustrative marketing copy for later, or a mix? For actual deliverables, identify who fulfills them and what the included scope is.
+- Will **View details** on the static marketing site link to the recommended CRM-generated public edition page, or will Jafar accept the extra drift risk and manually duplicate all technical terms on the static site?
+- Define the measurable included scope and end-of-service policy for the website, on-site SEO, and Google Business Profile management before those services are published.
 - P2 defines replacement boundaries and build-part done checks, including how fake assignments are handled. Feature-specific counting details are verified with their owning domains during implementation.
 
 ## Not doing
