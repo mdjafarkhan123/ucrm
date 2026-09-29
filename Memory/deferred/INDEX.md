@@ -30,7 +30,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Automation-owned Email Template copies (sync + impact preview)](automation-owned-email-template-copies.md) |
 | P2 | [Payment-stage and visit-line reads have no EXPLAIN evidence](invoice-payment-stage-reads-lack-explain-evidence.md) |
 | P2 | [Client page's Work overview and Client schedule sections are always empty](client-work-overview-and-schedule-sections-are-empty.md) |
-| P2 | [Requests list's "New requests" and "Conversion rate" cards have no real data source](requests-new-and-conversion-rate-cards-have-no-real-data-source.md) |
 | P2 | [Marketing drain tail trickles and SES event handling falls behind](marketing-drain-tail-trickle-and-ses-event-lag.md) |
 | P3 | [Offline field records on site (Jobs 15f)](offline-field-records-on-site.md) |
 | P3 | [File Manager search cannot use an index](file-manager-search-cannot-use-an-index.md) |
