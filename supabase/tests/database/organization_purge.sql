@@ -71,8 +71,13 @@ values ('90000000-0000-0000-0000-000000000910', 'marketing', 'off', '9 purge tes
 insert into public.organization_free_access_events (organization_id, action, access_until_date, starts_at, reason)
 values ('90000000-0000-0000-0000-000000000910', 'grant', current_date + 30, current_date, '9 purge test free access grant');
 
-insert into public.organization_payment_confirmations (organization_id, payment_kind, amount_usd_cents, private_reference, confirmed_at, paid_through_date)
-values ('90000000-0000-0000-0000-000000000910', 'initial', 9900, '9-purge-test-ref', now(), current_date + 30);
+select public.add_organization_billing_charge(
+  '90000000-0000-0000-0000-000000000910', 'owner@example.test', '9-purge-test-charge', current_date
+);
+select public.record_organization_billing_receipt(
+  '90000000-0000-0000-0000-000000000910', current_date, 9900, 'Bank transfer', '9-purge-test-ref',
+  'owner@example.test', '9-purge-test-receipt'
+);
 
 select public.apply_organization_commercial_command(
   '90000000-0000-0000-0000-000000000910', 'initial_payment_confirmed', '9-purge-p1-commercial-1',
@@ -180,8 +185,9 @@ select is(
   0, 'free access history is gone after purge'
 );
 select is(
-  (select count(*)::int from public.organization_payment_confirmations where organization_id = '90000000-0000-0000-0000-000000000910'),
-  0, 'payment confirmations are gone after purge'
+  (select count(*)::int from public.organization_billing_charges where organization_id = '90000000-0000-0000-0000-000000000910')
+    + (select count(*)::int from public.organization_billing_receipts where organization_id = '90000000-0000-0000-0000-000000000910'),
+  0, 'billing charges and payments are gone after purge'
 );
 select is(
   (select count(*)::int from public.organization_commercial_events where organization_id = '90000000-0000-0000-0000-000000000910'),

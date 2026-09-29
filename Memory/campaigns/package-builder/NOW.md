@@ -5,7 +5,7 @@
 
 **Completed:** Planning (P1, P2). Jafar approved the build parts on 2026-09-29.
 
-**Next part:** P4 Record money and coverage (`stages/1-foundation.md`). P3c done 2026-09-30.
+**Next part:** P4a Billing ledger in the database (`stages/1-foundation.md`, note `parts/p4a-billing-ledger.md`), then P4b. P3c done 2026-09-30.
 
 **Blockers:** None.
 
