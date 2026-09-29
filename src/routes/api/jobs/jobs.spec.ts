@@ -241,16 +241,31 @@ describe('job list API', () => {
 		expect(rejected.status).toBe(422);
 	});
 
-	it('searches a number against the number and a word against the title', async () => {
+	it('searches the title, the number when the term is one, and the client name', async () => {
+		// One mocked chain answers both the client lookup and the list, so the "matching clients" are the
+		// list rows themselves; only the shape of the list's or= matters here.
+		const listFilter = (event: ReturnType<typeof listEvent>) =>
+			String(
+				calls(event).find(
+					(call) => call.method === 'or' && String(call.args[0]).startsWith('title.ilike')
+				)?.args[0]
+			);
+
 		const numeric = listEvent('?search=12');
 		await GET(numeric);
-		expect(String(calls(numeric).find((call) => call.method === 'or')?.args[0])).toContain(
-			'job_number.eq.12'
-		);
+		expect(listFilter(numeric)).toContain('job_number.eq.12');
+		expect(listFilter(numeric)).toContain('client_id.in.(');
 
 		const word = listEvent('?search=panel');
 		await GET(word);
-		expect(calls(word).find((call) => call.method === 'ilike')?.args[0]).toBe('title');
+		expect(listFilter(word)).toContain('title.ilike."%panel%"');
+		expect(listFilter(word)).not.toContain('job_number');
+		expect(listFilter(word)).toContain('client_id.in.(');
+		expect(
+			calls(word).some(
+				(call) => call.method === 'or' && String(call.args[0]).startsWith('display_name.ilike')
+			)
+		).toBe(true);
 	});
 
 	it('reports a database failure instead of drawing an empty list', async () => {

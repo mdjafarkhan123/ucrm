@@ -41,6 +41,8 @@ export type RequestListPage = {
 	// Null means this was the last page. The list is keyset paginated, so there is no page number to
 	// jump to — the cursor is the only way to ask for what comes next.
 	next_cursor: string | null;
+	/** More clients matched the search than the list could include; see clientNameSearchBranch. */
+	search_narrowed?: boolean;
 };
 
 export type RequestStatusCounts = Record<DisplayRequestStatus, number>;

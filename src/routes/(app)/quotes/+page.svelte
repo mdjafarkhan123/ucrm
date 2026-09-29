@@ -401,6 +401,7 @@
 						hasNextPage={quotesQuery.hasNextPage}
 						isFetchingNextPage={quotesQuery.isFetchingNextPage}
 						onLoadMore={() => quotesQuery.fetchNextPage()}
+						searchNarrowed={quotesQuery.data?.pages.at(-1)?.search_narrowed ?? false}
 					/>
 				{/snippet}
 			</DataTable>

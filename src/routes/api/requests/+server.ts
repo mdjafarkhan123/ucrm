@@ -18,6 +18,7 @@ import {
 } from '$lib/server/requests/status';
 import { organizationTimezone } from '$lib/server/requests/timezone';
 import { embeddedOne } from '$lib/server/api/embedded';
+import { clientNameSearchBranch } from '$lib/server/api/client-name-search';
 
 export const POST: RequestHandler = async (event) => {
 	const auth = await requireOrganization(event);
@@ -149,28 +150,18 @@ export const GET: RequestHandler = async (event) => {
 
 	const statusFilter = displayStatusFilter(statuses, organizationDayRange(timezone, now));
 	if (statusFilter) query = query.or(statusFilter);
+	let searchNarrowed = false;
 	if (search) {
 		// PostgREST parses commas and parentheses inside or= as syntax, so the term is quoted and its
 		// backslashes, quotes, and ilike wildcards escaped before it goes in.
-		const escaped = search.replace(/[\%_]/g, (match) => `\\${match}`);
+		const escaped = search.replace(/[%_]/g, (match) => `\\${match}`);
 		const quoted = `"%${escaped.replace(/"/g, '\\"')}%"`;
 
-		// A request has no name of its own to search on the client's behalf, so the client's own name is
-		// looked up first (same two-step shape the tag filter already uses below) and folded into the
-		// same or= as another branch, rather than searching client columns through the embed.
-		const { data: matchingClients, error: matchingClientsError } = await supabase
-			.from('clients')
-			.select('id')
-			.eq('organization_id', organizationId)
-			.is('deleted_at', null)
-			.or(`display_name.ilike.${quoted},company_name.ilike.${quoted}`);
-		if (matchingClientsError) return databaseError();
-
-		const clientBranch =
-			matchingClients && matchingClients.length > 0
-				? `,client_id.in.(${matchingClients.map((row) => row.id).join(',')})`
-				: '';
-		query = query.or(`title.ilike.${quoted},service_type.ilike.${quoted}${clientBranch}`);
+		// A request has no name of its own, so the client's name is matched too (see clientNameSearchBranch).
+		const clientSearch = await clientNameSearchBranch(supabase, organizationId, quoted);
+		if (!clientSearch.ok) return databaseError();
+		searchNarrowed = clientSearch.narrowed;
+		query = query.or(`title.ilike.${quoted},service_type.ilike.${quoted}${clientSearch.branch}`);
 	}
 	if (cursor) {
 		// The seek (gte/lte) is what the index actually scans on, so the query starts at the cursor row
@@ -253,5 +244,8 @@ export const GET: RequestHandler = async (event) => {
 
 	const last = page.at(-1) as Record<string, unknown> | undefined;
 	const nextCursor = hasMore && last ? `${last[sortColumn]}|${last.id}` : null;
-	return json({ requests, next_cursor: nextCursor }, { headers: PRIVATE_READ_HEADERS });
+	return json(
+		{ requests, next_cursor: nextCursor, search_narrowed: searchNarrowed },
+		{ headers: PRIVATE_READ_HEADERS }
+	);
 };

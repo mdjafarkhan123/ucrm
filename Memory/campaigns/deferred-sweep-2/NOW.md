@@ -5,9 +5,9 @@
 
 **In progress:**
 
-- 2 Client-name search — starting
+- 3 Requests KPI cards — starting
 
-**Next part:** 3 Requests KPI cards
+**Next part:** 4 Held-booking status (research Jobber first)
 
 **Blockers:** none. Do not touch packages or Delete client (Jafar: "not now"). The CLI runs as
 `npx --no-install supabase`. Browser testing: tunnel `cloudflared tunnel run badf2c43-7020-443a-a046-9954d139d711`,

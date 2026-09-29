@@ -5,12 +5,15 @@
 		hasNextPage,
 		isFetchingNextPage,
 		onLoadMore,
-		endLabel = 'That is all of them.'
+		endLabel = 'That is all of them.',
+		searchNarrowed = false
 	}: {
 		hasNextPage: boolean;
 		isFetchingNextPage: boolean;
 		onLoadMore: () => void;
 		endLabel?: string;
+		/** The search matched more clients than the list could include, so this is not all of them. */
+		searchNarrowed?: boolean;
 	} = $props();
 </script>
 
@@ -20,7 +23,9 @@
 			{isFetchingNextPage ? 'Loading…' : 'Load more'}
 		</Button>
 	{:else}
-		<span class="list-load-more__end">{endLabel}</span>
+		<span class="list-load-more__end">
+			{searchNarrowed ? 'Many clients match — type more of the name to see the rest.' : endLabel}
+		</span>
 	{/if}
 </div>
 

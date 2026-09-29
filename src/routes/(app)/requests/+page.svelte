@@ -294,6 +294,7 @@
 						hasNextPage={requestsQuery.hasNextPage}
 						isFetchingNextPage={requestsQuery.isFetchingNextPage}
 						onLoadMore={() => requestsQuery.fetchNextPage()}
+						searchNarrowed={requestsQuery.data?.pages.at(-1)?.search_narrowed ?? false}
 					/>
 				{/snippet}
 			</DataTable>

@@ -1,4 +1,5 @@
 import { json } from '@sveltejs/kit';
+import { clientNameSearchBranch } from '$lib/server/api/client-name-search';
 import type { RequestHandler } from './$types';
 import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
 import {
@@ -83,15 +84,18 @@ export const GET: RequestHandler = async (event) => {
 	if (created_from) query = query.gte('created_at', created_from);
 	if (created_to) query = query.lte('created_at', created_to);
 
+	let searchNarrowed = false;
 	if (search) {
 		const escaped = search.replace(/[%_]/g, (match) => `\\${match}`);
 		const quoted = `"%${escaped.replace(/"/g, '\\"')}%"`;
-		// A person searching a list of jobs types either a name or a number, so both are tried. A
-		// non-numeric term never reaches the integer column.
+		// A person searching a list of jobs types a name, a number, or the client's name, so all are
+		// tried. A non-numeric term never reaches the integer column.
+		const clientSearch = await clientNameSearchBranch(supabase, organizationId, quoted);
+		if (!clientSearch.ok) return databaseError();
+		searchNarrowed = clientSearch.narrowed;
 		const asNumber = Number.parseInt(search, 10);
-		query = Number.isSafeInteger(asNumber)
-			? query.or(`title.ilike.${quoted},job_number.eq.${asNumber}`)
-			: query.ilike('title', `%${escaped}%`);
+		const numberBranch = Number.isSafeInteger(asNumber) ? `,job_number.eq.${asNumber}` : '';
+		query = query.or(`title.ilike.${quoted}${numberBranch}${clientSearch.branch}`);
 	}
 
 	if (cursor) {
@@ -180,6 +184,7 @@ export const GET: RequestHandler = async (event) => {
 		{
 			jobs,
 			next_cursor: nextCursor,
+			search_narrowed: searchNarrowed,
 			locale: formatting.ok ? formatting.formatting.locale : 'en-US'
 		},
 		{ headers: PRIVATE_READ_HEADERS }

@@ -16,6 +16,7 @@ import {
 	type StoredQuoteStatus
 } from '$lib/server/validation/quotes.schema';
 import { quoteWriteError } from '$lib/server/quotes/errors';
+import { clientNameSearchBranch } from '$lib/server/api/client-name-search';
 import { embeddedOne } from '$lib/server/api/embedded';
 import { organizationFormatting } from '$lib/server/requests/timezone';
 import { asMoneyMap } from '$lib/server/quotes/money';
@@ -121,15 +122,18 @@ export const GET: RequestHandler = async (event) => {
 	if (created_from) query = query.gte('created_at', created_from);
 	if (created_to) query = query.lte('created_at', created_to);
 
+	let searchNarrowed = false;
 	if (search) {
-		const escaped = search.replace(/[\%_]/g, (match) => `\\${match}`);
+		const escaped = search.replace(/[%_]/g, (match) => `\\${match}`);
 		const quoted = `"%${escaped.replace(/"/g, '\\"')}%"`;
-		// A person searching a list of quotes types either a name or a number, so both are tried. A
-		// non-numeric term never reaches the integer column.
+		// A person searching a list of quotes types a name, a number, or the client's name, so all are
+		// tried. A non-numeric term never reaches the integer column.
+		const clientSearch = await clientNameSearchBranch(supabase, organizationId, quoted);
+		if (!clientSearch.ok) return databaseError();
+		searchNarrowed = clientSearch.narrowed;
 		const asNumber = Number.parseInt(search, 10);
-		query = Number.isSafeInteger(asNumber)
-			? query.or(`title.ilike.${quoted},quote_number.eq.${asNumber}`)
-			: query.ilike('title', `%${escaped}%`);
+		const numberBranch = Number.isSafeInteger(asNumber) ? `,quote_number.eq.${asNumber}` : '';
+		query = query.or(`title.ilike.${quoted}${numberBranch}${clientSearch.branch}`);
 	}
 
 	if (cursor) {
@@ -231,6 +235,7 @@ export const GET: RequestHandler = async (event) => {
 		{
 			quotes,
 			next_cursor: nextCursor,
+			search_narrowed: searchNarrowed,
 			locale: formatting.ok ? formatting.formatting.locale : 'en-US'
 		},
 		{ headers: PRIVATE_READ_HEADERS }

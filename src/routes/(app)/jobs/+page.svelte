@@ -361,6 +361,7 @@
 						hasNextPage={jobsQuery.hasNextPage}
 						isFetchingNextPage={jobsQuery.isFetchingNextPage}
 						onLoadMore={() => jobsQuery.fetchNextPage()}
+						searchNarrowed={jobsQuery.data?.pages.at(-1)?.search_narrowed ?? false}
 					/>
 				{/snippet}
 			</DataTable>

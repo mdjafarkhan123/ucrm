@@ -68,6 +68,8 @@ export type JobListPage = {
 	jobs: JobListItem[];
 	// Null means this was the last page. Keyset paging, so there is no page number to jump to.
 	next_cursor: string | null;
+	/** More clients matched the search than the list could include; see clientNameSearchBranch. */
+	search_narrowed?: boolean;
 	locale: string;
 };
 
