@@ -85,34 +85,23 @@ values
   ('90000000-0000-0000-0000-0000000000fb', current_date + 30, 'legacy_owner_action', now() + interval '33 days', 'UTC');
 
 -- Free access grants: f3 is safe (expires in 10 days), f4 is expiring soon (3 days).
--- A free access event must reference a package version already assigned to the organization.
-insert into public.organization_package_assignments (organization_id, package_version_id, effective_at, assignment_source, reason)
-select org_id, version.id, now() - interval '2 minutes', 'legacy_owner_action', '6F test fixture baseline assignment'
-from (values
-  ('90000000-0000-0000-0000-0000000000f3'::uuid),
-  ('90000000-0000-0000-0000-0000000000f4'::uuid)
-) as orgs(org_id)
-cross join lateral (
-  select id from public.platform_package_versions where status = 'published' order by version_number, id limit 1
-) as version;
-
-insert into public.organization_free_access_events (organization_id, package_version_id, action, starts_at, access_until_date, reason)
-select '90000000-0000-0000-0000-0000000000f3', version.id, 'grant', current_date - 5, current_date + 10, '6F test fixture: safe grant'
-from (select id from public.platform_package_versions where status = 'published' order by version_number, id limit 1) as version;
-insert into public.organization_free_access_events (organization_id, package_version_id, action, starts_at, access_until_date, reason)
-select '90000000-0000-0000-0000-0000000000f4', version.id, 'grant', current_date - 5, current_date + 3, '6F test fixture: expiring grant'
-from (select id from public.platform_package_versions where status = 'published' order by version_number, id limit 1) as version;
+insert into public.organization_free_access_events (organization_id, action, starts_at, access_until_date, reason)
+values
+  ('90000000-0000-0000-0000-0000000000f3', 'grant', current_date - 5, current_date + 10, '6F test fixture: safe grant'),
+  ('90000000-0000-0000-0000-0000000000f4', 'grant', current_date - 5, current_date + 3, '6F test fixture: expiring grant');
 
 -- Package exceptions: fa expires in 5 days (soon), fb expires in 20 days (not soon).
-insert into public.organization_feature_overrides (organization_id, feature_key, override_state, starts_at, expires_at, reason, actor_owner_email)
+insert into public.organization_package_exceptions
+  (organization_id, capability_key, capability_state, reason, starts_at, ends_at, actor_owner_email)
 values (
-  '90000000-0000-0000-0000-0000000000fa', 'core.dashboard', 'on', now() - interval '1 day', now() + interval '5 days',
-  '6F test fixture: expiring feature exception', 'owner@example.test'
+  '90000000-0000-0000-0000-0000000000fa', 'core.dashboard', 'on', '6F test fixture: expiring feature exception',
+  now() - interval '1 day', now() + interval '5 days', 'owner@example.test'
 );
-insert into public.organization_limit_overrides (organization_id, limit_key, limit_state, limit_value, starts_at, expires_at, reason, actor_owner_email)
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at, actor_owner_email)
 values (
-  '90000000-0000-0000-0000-0000000000fb', 'employee_seats', 'numeric', 25, now() - interval '1 day', now() + interval '20 days',
-  '6F test fixture: distant limit exception', 'owner@example.test'
+  '90000000-0000-0000-0000-0000000000fb', 'employee_seats', 'numeric', 25, '6F test fixture: distant limit exception',
+  now() - interval '1 day', now() + interval '20 days', 'owner@example.test'
 );
 
 -- Unresolved vs. resolved operation attempts targeted at an organization.

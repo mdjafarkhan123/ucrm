@@ -16,6 +16,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Active member's sign-in email not visible, recovery path unclear](active-member-email-not-visible-and-recovery-path-unclear.md) |
 | P2 | [No admin-alert delivery for loop-detected inbound threads](no-admin-alert-delivery-mechanism-for-loop-detected-inbound-threads.md) |
 | P2 | [Composer day-two scope: CC, attachments, formatting, channel tabs](composer-day-two-scope.md) |
+| P3 | [Database tests left stale by other features](database-tests-stale-outside-packages.md) |
 | P3 | [Assigned-only members still pay per-row permission checks](app-wide-rls-helpers-run-once-per-returned-row.md) |
 | P2 | [Job detail with the maximum recurring Visit count is unmeasured](job-detail-with-the-maximum-recurring-visit-count-is-unmeasured.md) |
 | P1 | [Raad LTD's Stripe sandbox key needs re-pasting (Jafar)](raad-stripe-sandbox-key-needs-re-pasting.md) |

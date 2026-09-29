@@ -34,28 +34,26 @@ select is(
   'the owner service role can acknowledge a duplicate'
 );
 
--- A package version to satisfy the applications' foreign key. Reused from whatever is
--- currently published on growth -- only one published version per package is allowed,
--- and the seed migration already publishes one, so this test must not insert a competing
--- one. Its content is irrelevant here; nothing in this file asserts on it.
+-- An edition to satisfy the applications' foreign key: the private test package's published edition.
+-- Its content is irrelevant here; nothing in this file asserts on it.
 do $$
 begin
   perform set_config(
-    'test.pkg_version_id',
-    (select v.id::text from public.platform_package_versions v
-       join public.platform_packages p on p.package_id = v.package_id
-      where p.package_key = 'growth' and v.status = 'published' limit 1),
+    'test.pkg_edition_id',
+    (select e.id::text from public.package_editions e
+       join public.packages p on p.id = e.package_id
+      where p.slug = 'test-package' and e.status = 'published'),
     true
   );
 end $$;
 
 insert into public.platform_onboarding_applications (
   id, stage, business_name, main_contact_name, main_contact_email, main_contact_phone,
-  trade, city_country, time_zone, package_version_id, package_snapshot, possible_duplicate
+  trade, city_country, time_zone, package_edition_id, billing_interval, package_snapshot, possible_duplicate
 ) values (
   '50000000-0000-0000-0000-000000000010', 'new', 'Reviewed Test Co', 'Alex Reviewed',
   'alex@reviewed-test.example', '555-0200', 'Plumbing', 'Austin, USA', 'America/Chicago',
-  current_setting('test.pkg_version_id')::uuid, '{}'::jsonb, false
+  current_setting('test.pkg_edition_id')::uuid, 'month', '{}'::jsonb, false
 );
 
 select lives_ok(
@@ -84,11 +82,11 @@ select is(
 -- A possible-duplicate application for the acknowledge/close path.
 insert into public.platform_onboarding_applications (
   id, stage, business_name, main_contact_name, main_contact_email, main_contact_phone,
-  trade, city_country, time_zone, package_version_id, package_snapshot, possible_duplicate
+  trade, city_country, time_zone, package_edition_id, billing_interval, package_snapshot, possible_duplicate
 ) values (
   '50000000-0000-0000-0000-000000000020', 'new', 'Duplicate Test Co', 'Sam Duplicate',
   'sam@duplicate-test.example', '555-0201', 'Plumbing', 'Austin, USA', 'America/Chicago',
-  current_setting('test.pkg_version_id')::uuid, '{}'::jsonb, true
+  current_setting('test.pkg_edition_id')::uuid, 'month', '{}'::jsonb, true
 );
 
 select throws_ok(
@@ -123,11 +121,11 @@ select is(
 -- A second possible-duplicate application for the acknowledge path.
 insert into public.platform_onboarding_applications (
   id, stage, business_name, main_contact_name, main_contact_email, main_contact_phone,
-  trade, city_country, time_zone, package_version_id, package_snapshot, possible_duplicate
+  trade, city_country, time_zone, package_edition_id, billing_interval, package_snapshot, possible_duplicate
 ) values (
   '50000000-0000-0000-0000-000000000030', 'new', 'Duplicate Test Co Two', 'Jamie Duplicate',
   'jamie@duplicate-test.example', '555-0202', 'Plumbing', 'Austin, USA', 'America/Chicago',
-  current_setting('test.pkg_version_id')::uuid, '{}'::jsonb, true
+  current_setting('test.pkg_edition_id')::uuid, 'month', '{}'::jsonb, true
 );
 
 select lives_ok(
