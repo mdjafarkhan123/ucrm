@@ -48,6 +48,8 @@ Published editions preserve the package terms customers receive. A later change 
 
 ## Research
 
+- [Feature inventory and proposed builder controls](research/package-feature-controls-2026-09-29.md).
+
 - [Introductory offer patterns and proposed rules](research/package-introductory-offers-2026-09-29.md).
 
 - [Package audit and primary-source comparisons](research/package-flexibility-audit-2026-09-29.md).
