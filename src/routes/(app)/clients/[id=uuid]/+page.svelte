@@ -128,6 +128,7 @@
 		onSuccess: (result, variables) => {
 			archiveConfirmOpen = false;
 			void queryClient.invalidateQueries({ queryKey: ['clients'] });
+			void queryClient.invalidateQueries({ queryKey: activityKey('client', clientId) });
 
 			const open = result.results[0]?.open_work;
 			if (result.changed === 0 && open) {

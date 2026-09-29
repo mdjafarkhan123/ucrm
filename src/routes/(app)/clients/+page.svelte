@@ -237,6 +237,8 @@
 			archiveTarget = null;
 			selectedIds = new Set();
 			void queryClient.invalidateQueries({ queryKey: ['clients'] });
+			// Each archived or restored client gains a line in its history.
+			void queryClient.invalidateQueries({ queryKey: ['collaboration', 'activity', 'client'] });
 
 			const blocked = result.results.find((outcome) => outcome.open_work !== null);
 			if (result.changed === 0 && blocked?.open_work) {

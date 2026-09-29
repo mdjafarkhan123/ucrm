@@ -23,6 +23,9 @@
 	import googleIcon from '@tabler/icons/outline/brand-google.svg?raw';
 	import feedbackIcon from '@tabler/icons/outline/message-heart.svg?raw';
 	import cancelIcon from '@tabler/icons/outline/circle-x.svg?raw';
+	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
+	import restoreIcon from '@tabler/icons/outline/restore.svg?raw';
+	import mergeIcon from '@tabler/icons/outline/arrow-merge.svg?raw';
 
 	let {
 		entityType,
@@ -77,7 +80,11 @@
 		'review.opened': eyeIcon,
 		'review.continued_to_google': googleIcon,
 		'review.feedback_submitted': feedbackIcon,
-		'review.cancelled': cancelIcon
+		'review.cancelled': cancelIcon,
+		'client.archived': archiveIcon,
+		'client.restored': restoreIcon,
+		'client.restored_by_new_work': restoreIcon,
+		client_merged: mergeIcon
 	};
 
 	function iconFor(eventType: string) {
@@ -95,6 +102,13 @@
 		'review.continued_to_google',
 		'review.feedback_submitted'
 	]);
+
+	// New work brings an archived client back on its own. When a teammate added that work they are named;
+	// a website booking or an automation has nobody behind it.
+	function fallbackNameFor(eventType: string) {
+		if (CUSTOMER_EVENTS.has(eventType)) return 'The client';
+		return eventType === 'client.restored_by_new_work' ? 'Automatic' : 'Unknown';
+	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -130,7 +144,7 @@
 									profile={event.actor_user_id ? profileById.get(event.actor_user_id) : undefined}
 									{currentUserId}
 									timestamp={event.created_at}
-									fallbackName={CUSTOMER_EVENTS.has(event.event_type) ? 'The client' : 'Unknown'}
+									fallbackName={fallbackNameFor(event.event_type)}
 									size="small"
 								/>
 							</div>
