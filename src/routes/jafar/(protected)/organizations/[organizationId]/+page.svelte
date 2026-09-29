@@ -20,6 +20,7 @@
 	import { page } from '$app/state';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { prefetchOrganizationCommunications } from '$lib/jafar/organization-communications-queries';
+	import { prefetchOrganizationBilling } from '$lib/jafar/organization-billing-queries';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowLeftIcon from '@tabler/icons/outline/arrow-left.svg?raw';
 	import shieldIcon from '@tabler/icons/outline/shield-check.svg?raw';
@@ -36,15 +37,23 @@
 	import CommunicationsWorkspace from '$lib/components/jafar/organization/CommunicationsWorkspace.svelte';
 	import TeamWorkspace from '$lib/components/jafar/organization/TeamWorkspace.svelte';
 	import ActivityWorkspace from '$lib/components/jafar/organization/ActivityWorkspace.svelte';
+	import BillingWorkspace from '$lib/components/jafar/organization/BillingWorkspace.svelte';
 
 	const scenario = $derived(page.url.searchParams.get('scenario'));
 	const organizationId = $derived(page.params.organizationId);
 	const preview = $derived(dev && scenario ? getOrganizationDetailPreview(scenario) : null);
 
 	const queryClient = useQueryClient();
-	// The Communications tab is the only one with reads of its own; the rest reuse the page's queries.
+	// Communications and Billing have reads of their own, warmed on hover; the rest reuse the page's queries.
 	const organizationTabs: Tab[] = $derived([
 		{ value: 'overview', label: 'Overview' },
+		{
+			value: 'billing',
+			label: 'Billing',
+			onhover: () => {
+				if (!preview && organizationId) prefetchOrganizationBilling(queryClient, organizationId);
+			}
+		},
 		{ value: 'access', label: 'Access & limits' },
 		{
 			value: 'communications',
@@ -348,6 +357,8 @@
 				{attentionOperations}
 				{selectTab}
 			/>
+
+			<BillingWorkspace {organizationId} {preview} />
 
 			<AccessWorkspace
 				{access}

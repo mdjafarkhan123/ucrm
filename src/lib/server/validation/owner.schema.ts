@@ -127,78 +127,99 @@ export const freeAccessChangeSchema = z.discriminatedUnion('action', [
 	})
 ]);
 
-const commercialCommandBase = z.object({
-	idempotency_key: z.string().uuid('Start a new commercial action and try again.'),
-	paid_through_effect: z.enum(['set', 'unchanged']),
-	paid_through_date: calendarDate.nullish(),
-	private_reference: z.string().trim().min(1, 'Enter the private payment reference.').max(240),
-	private_reason: z.string().trim().min(1, 'Enter a private reason.').max(1000).nullish()
-});
-
-function requireConfirmedPaidThrough(
-	value: { paid_through_effect: 'set' | 'unchanged'; paid_through_date?: string | null },
-	context: z.RefinementCtx
-) {
-	if (value.paid_through_effect === 'set' && !value.paid_through_date) {
-		context.addIssue({
-			code: 'custom',
-			path: ['paid_through_date'],
-			message: 'Confirm the resulting paid-through date.'
-		});
-	}
-	if (value.paid_through_effect === 'unchanged' && value.paid_through_date) {
-		context.addIssue({
-			code: 'custom',
-			path: ['paid_through_date'],
-			message: 'Remove the date when confirming no paid-through change.'
-		});
-	}
-}
-
-const positiveAmount = z
+// Package builder P4b: the Billing workspace's commands, one per ledger command (ADR 0003 decision 6).
+// Money is whole US cents; every command carries the idempotency key the dialog made when it opened.
+const billingIdempotencyKey = z
+	.string()
+	.uuid('Start again from the Billing tab and try once more.');
+const billingAmount = z
 	.number()
-	.int()
+	.int('Enter an amount in dollars and cents.')
 	.positive('Enter an amount greater than zero.')
 	.max(100_000_000);
+const billingReason = z
+	.string()
+	.trim()
+	.min(3, 'Enter a reason of at least 3 characters.')
+	.max(1000);
+const billingMethod = z.string().trim().min(1, 'Enter how the money was paid.').max(80);
 
-const renewalCommercialCommandSchema = commercialCommandBase
-	.extend({
-		action: z.literal('renewal'),
-		amount_usd_cents: positiveAmount,
-		reactivate: z.boolean()
+export const organizationBillingCommandSchema = z.discriminatedUnion('action', [
+	z.object({
+		action: z.literal('add_charge'),
+		idempotency_key: billingIdempotencyKey,
+		period_start: calendarDate.nullish()
+	}),
+	z.object({
+		action: z.literal('record_payment'),
+		idempotency_key: billingIdempotencyKey,
+		received_on: calendarDate,
+		amount_usd_cents: billingAmount,
+		method: billingMethod,
+		private_reference: z.string().trim().min(1, 'Enter the payment reference.').max(240),
+		note: z.string().trim().max(1000).nullish(),
+		applications: z
+			.array(z.object({ charge_id: z.string().uuid(), amount_usd_cents: billingAmount }))
+			.max(24)
+	}),
+	z.object({
+		action: z.literal('apply_credit'),
+		idempotency_key: billingIdempotencyKey,
+		receipt_id: z.string().uuid(),
+		charge_id: z.string().uuid('Choose the charge to pay.'),
+		amount_usd_cents: billingAmount
+	}),
+	z.object({
+		action: z.literal('refund'),
+		idempotency_key: billingIdempotencyKey,
+		receipt_id: z.string().uuid(),
+		refunded_on: calendarDate,
+		amount_usd_cents: billingAmount,
+		method: billingMethod,
+		private_reference: z.string().trim().max(240).nullish(),
+		reason: billingReason
+	}),
+	z.object({
+		action: z.literal('void'),
+		idempotency_key: billingIdempotencyKey,
+		record_kind: z.enum(['charge', 'receipt', 'application', 'refund']),
+		record_id: z.string().uuid(),
+		reason: billingReason
+	}),
+	z.object({
+		action: z.literal('correct_payment'),
+		idempotency_key: billingIdempotencyKey,
+		original_receipt_id: z.string().uuid(),
+		received_on: calendarDate,
+		amount_usd_cents: billingAmount,
+		method: billingMethod,
+		private_reference: z.string().trim().min(1, 'Enter the payment reference.').max(240),
+		note: z.string().trim().max(1000).nullish(),
+		reason: billingReason
+	}),
+	z.object({
+		action: z.literal('confirm_coverage'),
+		idempotency_key: billingIdempotencyKey,
+		charge_id: z.string().uuid(),
+		covered_from: calendarDate,
+		covered_through: calendarDate
+	}),
+	z.object({
+		action: z.literal('adjust_paid_through'),
+		idempotency_key: billingIdempotencyKey,
+		paid_through_date: calendarDate,
+		reason: billingReason
 	})
-	.superRefine(requireConfirmedPaidThrough);
+]);
 
-const correctionCommercialCommandSchema = commercialCommandBase
-	.extend({
-		action: z.literal('correction'),
-		original_event_id: z.string().uuid('Choose the original payment or renewal.'),
-		private_reason: z.string().trim().min(1, 'Enter a private reason.').max(1000),
-		amount_usd_cents: z.number().int().min(-100_000_000).max(100_000_000).refine(Boolean, {
-			message: 'The corrected amount cannot be zero.'
-		})
-	})
-	.superRefine(requireConfirmedPaidThrough);
+export type OrganizationBillingCommand = z.infer<typeof organizationBillingCommandSchema>;
 
-const adjustmentCommercialCommandBase = commercialCommandBase.extend({
-	original_event_id: z.string().uuid('Choose the original payment or renewal.'),
-	private_reason: z.string().trim().min(1, 'Enter a private reason.').max(1000),
-	amount_usd_cents: positiveAmount
-});
-
-const refundCommercialCommandSchema = adjustmentCommercialCommandBase
-	.extend({ action: z.literal('refund') })
-	.superRefine(requireConfirmedPaidThrough);
-
-const reversalCommercialCommandSchema = adjustmentCommercialCommandBase
-	.extend({ action: z.literal('reversal') })
-	.superRefine(requireConfirmedPaidThrough);
-
-export const organizationCommercialCommandSchema = z.union([
-	renewalCommercialCommandSchema,
-	correctionCommercialCommandSchema,
-	refundCommercialCommandSchema,
-	reversalCommercialCommandSchema
+// Actions that take money back, cancel a record, or move access dates by hand need a fresh password.
+export const billingStepUpActions: ReadonlySet<OrganizationBillingCommand['action']> = new Set([
+	'refund',
+	'void',
+	'correct_payment',
+	'adjust_paid_through'
 ]);
 
 export const teamProfileCorrectionSchema = z

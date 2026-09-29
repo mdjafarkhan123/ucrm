@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { GET, POST } from './+server';
+import { GET } from './+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
@@ -33,13 +33,7 @@ function query(data: unknown) {
 	return builder;
 }
 
-function commercialClient(
-	lifecycleStatus: 'active' | 'suspended' = 'active',
-	rpcResult: { data: unknown; error: { code: string; message: string } | null } = {
-		data: { applied: true, event_id: 'event-1' },
-		error: null
-	}
-) {
+function commercialClient(lifecycleStatus: 'active' | 'suspended' = 'active') {
 	return {
 		from: (table: string) => {
 			if (table === 'organizations')
@@ -60,22 +54,9 @@ function commercialClient(
 				});
 			if (table === 'organization_commercial_settings')
 				return query({ commercial_timezone: 'America/New_York', timezone_source: 'imported' });
-			if (table === 'organization_commercial_events')
-				return query([
-					{
-						id: originalEventId,
-						event_kind: 'initial_payment_confirmed',
-						occurred_at: '2026-08-01T00:00:00Z',
-						summary: 'Initial payment confirmed.',
-						amount_usd_cents: 9900,
-						paid_through_after: '2026-08-31',
-						private_reference: 'bank-1'
-					}
-				]);
 			if (table === 'organization_closure_records') return query(null);
 			throw new Error(`Unexpected table: ${table}`);
-		},
-		rpc: vi.fn().mockResolvedValue(rpcResult)
+		}
 	};
 }
 
@@ -110,12 +91,5 @@ describe('platform owner commercial API boundary', () => {
 
 		expect(response.status).toBe(200);
 		expect(result.closure).toEqual(closingRecord);
-	});
-
-	it('switches payment records off while the package system is rebuilt', async () => {
-		const response = await POST(getEvent() as Parameters<typeof POST>[0]);
-
-		expect(response.status).toBe(410);
-		expect(mockedClient).not.toHaveBeenCalled();
 	});
 });

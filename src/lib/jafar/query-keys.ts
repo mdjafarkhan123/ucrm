@@ -12,6 +12,8 @@ export const jafarOrganizationAccessKey = (organizationId: string | undefined) =
 	[...jafarOrganizationKey(organizationId), 'access'] as const;
 export const jafarOrganizationCommercialKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'commercial'] as const;
+export const jafarOrganizationBillingKey = (organizationId: string | undefined) =>
+	[...jafarOrganizationKey(organizationId), 'billing'] as const;
 export const jafarOrganizationTeamKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'team'] as const;
 export const jafarOrganizationHistoryKey = (organizationId: string | undefined) =>

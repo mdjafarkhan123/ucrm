@@ -1,21 +1,18 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { packageSystemRebuilding } from '$lib/server/packages/rebuilding';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { organizationIdSchema } from '$lib/server/validation/access.schema';
 
-const originalEventSelect =
-	'id, event_kind, occurred_at, summary, amount_usd_cents, paid_through_after, private_reference';
-
+// Read-only: the commercial timezone, paid-through state, and any pending closure. Money is recorded
+// through the billing route.
 async function getCommercialState(organizationId: string) {
 	const client = getOwnerSupabaseClient();
 	const [
 		{ data: organization, error: organizationError },
 		{ data: state, error: stateError },
 		{ data: settings, error: settingsError },
-		{ data: originalEvents, error: originalEventsError },
 		{ data: closure, error: closureError }
 	] = await Promise.all([
 		client
@@ -36,13 +33,6 @@ async function getCommercialState(organizationId: string) {
 			.eq('organization_id', organizationId)
 			.maybeSingle(),
 		client
-			.from('organization_commercial_events')
-			.select(originalEventSelect)
-			.eq('organization_id', organizationId)
-			.in('event_kind', ['initial_payment_confirmed', 'renewal_confirmed'])
-			.order('occurred_at', { ascending: false })
-			.order('id', { ascending: false }),
-		client
 			.from('organization_closure_records')
 			.select('id, reason, started_at, deadline_at')
 			.eq('organization_id', organizationId)
@@ -53,7 +43,6 @@ async function getCommercialState(organizationId: string) {
 	if (organizationError) throw organizationError;
 	if (stateError) throw stateError;
 	if (settingsError) throw settingsError;
-	if (originalEventsError) throw originalEventsError;
 	if (closureError) throw closureError;
 	if (!organization) return null;
 
@@ -61,7 +50,6 @@ async function getCommercialState(organizationId: string) {
 		organization,
 		state,
 		settings,
-		original_events: originalEvents ?? [],
 		closure: closure ?? null
 	};
 }
@@ -80,5 +68,3 @@ export const GET: RequestHandler = async (event) => {
 		return json({ error: 'Commercial access could not be loaded.' }, { status: 500 });
 	}
 };
-
-export const POST: RequestHandler = (event) => packageSystemRebuilding(event);

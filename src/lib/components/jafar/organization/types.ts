@@ -57,18 +57,150 @@ export type CommercialState = {
 		grace_ends_at: string | null;
 	} | null;
 	settings: { commercial_timezone: string; timezone_source: string } | null;
-	original_events: {
-		id: string;
-		event_kind: string;
-		occurred_at: string;
-		summary: string;
-		amount_usd_cents: number | null;
-		paid_through_after: string | null;
-		private_reference: string | null;
-	}[];
 	closure: { id: string; reason: string; started_at: string; deadline_at: string } | null;
 	error?: string;
 };
+
+// Package builder P4b: what `owner_organization_billing` returns. Money is whole US cents; dates are
+// calendar days in the organization's commercial timezone.
+export type BillingCharge = {
+	id: string;
+	agreement_id: string;
+	period_start: string;
+	period_end: string;
+	amount_usd_cents: number;
+	applied_usd_cents: number;
+	outstanding_usd_cents: number;
+	status: 'unpaid' | 'partly_paid' | 'paid' | 'cancelled';
+	coverage_confirmed_at: string | null;
+	void_reason: string | null;
+	voided_at: string | null;
+	created_at: string;
+};
+export type BillingReceipt = {
+	id: string;
+	received_on: string;
+	amount_usd_cents: number;
+	method: string;
+	private_reference: string;
+	note: string | null;
+	replaces_receipt_id: string | null;
+	applied_usd_cents: number;
+	refunded_usd_cents: number;
+	unapplied_usd_cents: number;
+	void_reason: string | null;
+	voided_at: string | null;
+	actor_owner_email: string;
+	created_at: string;
+};
+export type BillingApplication = {
+	id: string;
+	receipt_id: string;
+	charge_id: string;
+	amount_usd_cents: number;
+	void_reason: string | null;
+	voided_at: string | null;
+	created_at: string;
+};
+export type BillingRefund = {
+	id: string;
+	receipt_id: string;
+	refunded_on: string;
+	amount_usd_cents: number;
+	method: string;
+	private_reference: string | null;
+	reason: string;
+	void_reason: string | null;
+	voided_at: string | null;
+	created_at: string;
+};
+export type BillingRenewalFlag = 'due_within_seven_days' | 'due_tomorrow' | 'overdue' | null;
+export type OrganizationBilling = {
+	commercial_timezone: string;
+	today: string;
+	paid_through_date: string | null;
+	grace_ends_at: string | null;
+	next_renewal_date: string | null;
+	renewal_flag: BillingRenewalFlag;
+	current_agreement: {
+		id: string;
+		edition_id: string;
+		edition_name: string;
+		edition_number: number;
+		package_slug: string;
+		billing_interval: 'month' | 'year';
+		agreed_price_usd_cents: number;
+		offer_terms: unknown;
+		effective_from: string;
+	} | null;
+	upcoming_agreements: {
+		id: string;
+		edition_name: string;
+		edition_number: number;
+		billing_interval: 'month' | 'year';
+		agreed_price_usd_cents: number;
+		effective_from: string;
+	}[];
+	totals: {
+		charged_usd_cents: number;
+		received_usd_cents: number;
+		refunded_usd_cents: number;
+		outstanding_usd_cents: number;
+		due_now_usd_cents: number;
+		credit_usd_cents: number;
+	};
+	charges: BillingCharge[];
+	receipts: BillingReceipt[];
+	applications: BillingApplication[];
+	refunds: BillingRefund[];
+};
+export type BillingResponse = { billing: OrganizationBilling; error?: string };
+export type BillingRecordKind = 'charge' | 'receipt' | 'application' | 'refund';
+// One billing command as the Billing tab sends it; the tab adds the idempotency key.
+export type BillingCommandInput =
+	| { action: 'add_charge'; period_start: string | null }
+	| {
+			action: 'record_payment';
+			received_on: string;
+			amount_usd_cents: number;
+			method: string;
+			private_reference: string;
+			note: string | null;
+			applications: { charge_id: string; amount_usd_cents: number }[];
+	  }
+	| { action: 'apply_credit'; receipt_id: string; charge_id: string; amount_usd_cents: number }
+	| {
+			action: 'refund';
+			receipt_id: string;
+			refunded_on: string;
+			amount_usd_cents: number;
+			method: string;
+			private_reference: string | null;
+			reason: string;
+	  }
+	| { action: 'void'; record_kind: BillingRecordKind; record_id: string; reason: string }
+	| {
+			action: 'correct_payment';
+			original_receipt_id: string;
+			received_on: string;
+			amount_usd_cents: number;
+			method: string;
+			private_reference: string;
+			note: string | null;
+			reason: string;
+	  }
+	| { action: 'confirm_coverage'; charge_id: string; covered_from: string; covered_through: string }
+	| { action: 'adjust_paid_through'; paid_through_date: string; reason: string };
+// Which billing dialog is open, and what it was opened from.
+export type BillingDialogState =
+	| { kind: 'add_charge' }
+	| { kind: 'record_payment'; chargeId: string | null }
+	| { kind: 'apply_credit'; chargeId: string | null; receiptId: string | null }
+	| { kind: 'refund'; receipt: BillingReceipt }
+	| { kind: 'void'; recordKind: BillingRecordKind; recordId: string; subject: string }
+	| { kind: 'correct_payment'; receipt: BillingReceipt }
+	| { kind: 'confirm_coverage'; charge: BillingCharge }
+	| { kind: 'adjust_paid_through' };
 
 export type TeamMember = {
 	user_id: string;

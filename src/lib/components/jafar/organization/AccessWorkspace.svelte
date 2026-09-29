@@ -20,9 +20,6 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import TabPanel from '$lib/components/ui/TabPanel.svelte';
-	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
-	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
-	import CommercialActions from '$lib/components/jafar/CommercialActions.svelte';
 	import FreeAccessActions from '$lib/components/jafar/FreeAccessActions.svelte';
 	import SmsCreditTopupActions from '$lib/components/jafar/SmsCreditTopupActions.svelte';
 	import SmsHoldActions from '$lib/components/jafar/SmsHoldActions.svelte';
@@ -554,27 +551,6 @@
 						</dl>
 					</Card>
 				</div>
-
-				<Card class="organization-detail__commercial-explainer">
-					{#if commercialQuery.isPending}
-						<LoadingSkeleton variant="text" label="Loading commercial actions" />
-					{:else if commercialQuery.isError}
-						<ErrorState
-							title="Commercial actions could not be loaded"
-							description={commercialQuery.error instanceof Error
-								? commercialQuery.error.message
-								: 'Commercial actions could not be loaded. Try again.'}
-							retry={() => commercialQuery.refetch()}
-						/>
-					{:else if commercialQuery.data}
-						<CommercialActions
-							organizationId={access.organization.id}
-							lifecycleStatus={access.organization.lifecycle_status}
-							currentPaidThroughDate={commercialQuery.data.state?.paid_through_date ?? null}
-							originalEvents={commercialQuery.data.original_events}
-						/>
-					{/if}
-				</Card>
 
 				<Card class="organization-detail__commercial-explainer">
 					<SmsCreditTopupActions organizationId={access.organization.id} />
