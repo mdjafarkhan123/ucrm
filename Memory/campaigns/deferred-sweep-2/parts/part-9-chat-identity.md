@@ -13,13 +13,18 @@
 
 ## Steps
 
-- [ ] Migration: `organization_settings` column (email|phone, default email) + one private matcher used by
+- [x] Migration (`20260929220000_contact_match_priority.sql`): `organization_settings` column (email|phone, default email) + one private matcher used by
       `accept_website_chat_first_message` and `process_next_form_submission`
 - [ ] Settings UI for the choice + API (Zod) ; update behavior contract identity paragraph
 - [ ] Tests; old Needs review sessions stay resolvable by staff; browser check
 - [ ] Close: delete deferred note + row, mark Done
 
+## Outside actions
+
+- Migration `20260929220000_contact_match_priority` pushed — check: `npx --no-install supabase migration list --linked`
+
 ## Next
 
-Write the migration (latest function bodies: chat in baseline ~line 11990, forms in
-`20260923180000_marketing_campaign_attribution.sql`).
+If the push is not confirmed, check the outside action first. Then: API route `src/routes/api/settings/contact-matching/+server.ts`
+(copy `api/settings/pipeline`), page `settings/contact-matching` (copy `settings/pipeline`, radio choice),
+card in `settings/+page.svelte` Business section, regenerate `src/lib/database.types.ts`.
