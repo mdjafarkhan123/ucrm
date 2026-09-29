@@ -17,7 +17,7 @@
 
 ## Next
 
-Browser check of the done-when example.
+Browser check of the done-when example. Jafar must sign in himself at `http://localhost:5173/jafar/login` (the agent cannot type passwords that go to remote Supabase); then drive the example on a test organization's Billing tab.
 
 ## Outside actions
 
