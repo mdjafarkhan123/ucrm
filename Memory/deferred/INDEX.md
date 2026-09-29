@@ -25,7 +25,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Opportunity Brief activity timeline](opportunity-brief-activity-timeline.md) |
 | P2 | [Prospect detail page](prospect-detail-page.md) |
 | P2 | [Real (time-tracking) `Labor` block on the Request detail page](real-time-tracking-labor-block-on-the-request-detail-page.md) |
-| P2 | [Requests held for booking approval show a blank status badge](request-needs-approval-status-has-no-label.md) |
 | P2 | [Website Chat live-connection ceiling (~600 measured, fits managed Pro cap of 500); re-test on the VPS](website-chat-realtime-connection-quota-unconfirmed.md) |
 | P2 | [Automation-owned Email Template copies (sync + impact preview)](automation-owned-email-template-copies.md) |
 | P2 | [Payment-stage and visit-line reads have no EXPLAIN evidence](invoice-payment-stage-reads-lack-explain-evidence.md) |

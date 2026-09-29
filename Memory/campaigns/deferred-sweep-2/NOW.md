@@ -5,9 +5,9 @@
 
 **In progress:** none
 
-**Next part:** 4 Held-booking status — research Jobber's label for `needs_approval` first
-(`.claude/skills/jobber/`), then make `deriveRequestStatus`, `request_status_counts`, and
-`displayStatusFilter` agree on it.
+**Next part:** 5 Address names — drop the "Primary property" default label (`properties.label`, client
+create) so an unnamed address shows its street alone, like Jobber; clean up existing rows carrying the
+fake label. The "Main" badge is the only thing that should say primary.
 
 **Blockers:** none. Do not touch packages or Delete client (Jafar: "not now"). The CLI runs as
 `npx --no-install supabase`. Browser testing: tunnel `cloudflared tunnel run badf2c43-7020-443a-a046-9954d139d711`,
