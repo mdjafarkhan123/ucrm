@@ -42,8 +42,12 @@ attribution. Website Chat does not automatically create a Request, Opportunity, 
 approved automation, or later qualified AI flow may do so when service intent is established.
 
 Matching uses normalized organization-scoped phone or email. Public input never overwrites an existing
-Client. When supplied identifiers point to different Clients, messaging remains usable through a guarded
-Needs review identity; UCRM never guesses, merges Clients, or exposes either Client's private history.
+Client. When the phone belongs to one Client and the email to another, the organization's contact matching
+priority decides, following HighLevel's Contact deduplication preferences: Settings → Contact matching, email
+first by default, phone first as the alternative; the other identifier is only the fallback (approved
+2026-09-29, replacing the earlier Needs review hold that repeated on every visit). The same rule applies to
+website request forms. Neither Client is edited or exposed; when the two are really one person, staff merge
+them (Jobber's Merge duplicate clients). Sessions already waiting in Needs review stay resolvable by staff.
 
 The form links to the organization's privacy policy. The link is a per-widget contractor setting
 (`website_chat_widgets.privacy_policy_url`, approved 2026-08-27), https only, and blank hides the link

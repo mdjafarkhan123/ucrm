@@ -15,6 +15,7 @@
 	import buildingIcon from '@tabler/icons/outline/building-store.svg?raw';
 	import paletteIcon from '@tabler/icons/outline/palette.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
+	import usersGroupIcon from '@tabler/icons/outline/users-group.svg?raw';
 	import layoutKanbanIcon from '@tabler/icons/outline/layout-kanban.svg?raw';
 	import receiptTaxIcon from '@tabler/icons/outline/receipt-tax.svg?raw';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
@@ -126,6 +127,12 @@
 							icon={layoutKanbanIcon}
 							title="Pipeline"
 							description="How the Pipeline board groups the Assessment stages."
+						/>
+						<SettingsDestinationCard
+							href={resolve('/settings/contact-matching')}
+							icon={usersGroupIcon}
+							title="Contact matching"
+							description="Which client a website chat or form joins when its phone and email belong to two clients."
 						/>
 						{#if home.permissions.taxes_manage}
 							<SettingsDestinationCard

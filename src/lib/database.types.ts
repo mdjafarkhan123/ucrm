@@ -10559,6 +10559,10 @@ export type Database = {
 					branding_updated_at: string | null;
 					branding_updated_by: string | null;
 					city: string | null;
+					contact_match_priority: string;
+					contact_match_revision: number;
+					contact_match_updated_at: string | null;
+					contact_match_updated_by: string | null;
 					country_code: string | null;
 					created_at: string;
 					currency_code: string;
@@ -10638,6 +10642,10 @@ export type Database = {
 					branding_updated_at?: string | null;
 					branding_updated_by?: string | null;
 					city?: string | null;
+					contact_match_priority?: string;
+					contact_match_revision?: number;
+					contact_match_updated_at?: string | null;
+					contact_match_updated_by?: string | null;
 					country_code?: string | null;
 					created_at?: string;
 					currency_code?: string;
@@ -10717,6 +10725,10 @@ export type Database = {
 					branding_updated_at?: string | null;
 					branding_updated_by?: string | null;
 					city?: string | null;
+					contact_match_priority?: string;
+					contact_match_revision?: number;
+					contact_match_updated_at?: string | null;
+					contact_match_updated_by?: string | null;
 					country_code?: string | null;
 					created_at?: string;
 					currency_code?: string;
@@ -22736,6 +22748,14 @@ export type Database = {
 					p_name: string;
 					p_organization_id: string;
 					p_recipe_id: string;
+				};
+				Returns: Json;
+			};
+			save_contact_match_priority: {
+				Args: {
+					expected_revision: number;
+					new_priority: string;
+					target_organization_id: string;
 				};
 				Returns: Json;
 			};

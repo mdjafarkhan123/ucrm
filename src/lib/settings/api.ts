@@ -220,6 +220,40 @@ export function savePipelineSettings(
 	return saveSection('/api/settings/pipeline', body);
 }
 
+// Settings → Contact matching. Its own read and its own revision, like Pipeline: HighLevel's Contact
+// deduplication preference — which contact wins when a website chat or form's phone and email belong to two
+// different clients.
+export type ContactMatchPriority = 'email' | 'phone';
+
+export type SettingsContactMatching = {
+	permissions: { view: boolean; edit: boolean };
+	contact_matching: {
+		priority: ContactMatchPriority;
+		revision: number;
+		last_editor: SettingsEditor;
+	};
+};
+
+export const settingsContactMatchingKey = ['settings', 'contact-matching'] as const;
+
+export async function fetchSettingsContactMatching(): Promise<SettingsContactMatching> {
+	const response = await fetch('/api/settings/contact-matching');
+	if (!response.ok) throw httpError(response, 'Contact matching settings could not be loaded.');
+	return response.json();
+}
+
+export type ContactMatchingSaveResult = {
+	status: 'saved';
+	contact_match_revision: number;
+	contact_match_priority: ContactMatchPriority;
+};
+
+export function saveContactMatchingSettings(
+	body: Record<string, unknown>
+): Promise<ContactMatchingSaveResult | SettingsSaveConflict> {
+	return saveSection('/api/settings/contact-matching', body);
+}
+
 export function isSaveConflict(result: unknown): result is SettingsSaveConflict {
 	return (
 		typeof result === 'object' &&

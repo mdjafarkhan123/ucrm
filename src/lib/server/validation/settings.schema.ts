@@ -147,6 +147,14 @@ export const pipelinePresentationSchema = z.object({
 
 export type PipelinePresentationInput = z.infer<typeof pipelinePresentationSchema>;
 
+// Which contact decides when a website chat or form's phone and email belong to two different clients.
+export const contactMatchPrioritySchema = z.object({
+	expected_revision: expectedRevision,
+	priority: z.enum(['email', 'phone'], { message: 'Choose email or phone.' })
+});
+
+export type ContactMatchPriorityInput = z.infer<typeof contactMatchPrioritySchema>;
+
 // A saved rate's own two fields. 100 basis points is 1%, so an integer already carries up to two decimal
 // places of percentage — the same bound `organization_tax_rates` checks.
 const taxRateName = z
