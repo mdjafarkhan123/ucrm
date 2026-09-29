@@ -1,6 +1,6 @@
 # Package builder
 
-**Status:** Product behavior planning completed and approved by Jafar on 2026-09-29. The package combines customer-facing services and application access. Website production, hosting, DNS, GBP operating procedures, and other fulfillment methods are outside this package-builder plan. Build-part planning started 2026-09-29; the technical approach is [ADR 0003](adr/0003-package-editions-agreements-and-offsite-billing-ledger.md).
+**Status:** Product behavior planning completed and approved by Jafar on 2026-09-29. The package combines customer-facing services and application access. Website production, hosting, DNS, GBP operating procedures, and other fulfillment methods are outside this package-builder plan. Jafar approved the build parts on 2026-09-29; the technical approach is [ADR 0003](adr/0003-package-editions-agreements-and-offsite-billing-ledger.md).
 
 ## Summary
 
@@ -56,7 +56,7 @@ Jafar builds named packages by selecting working CRM capabilities and setting us
 - The app does not collect or automatically verify package payments. Jafar may use a third party or other offsite method and records what he confirms. Each monthly or yearly service period has an amount due, separate from offsite money received. The owner view shows the assigned edition, coverage dates, next renewal, amount due, received, outstanding, credit, and receipt history. It flags renewal due in seven days and one day, then overdue.
 - For each receipt, Jafar records the date received, USD amount, provider or method, private reference, and optional note. He applies it to the intended charge. A partial payment leaves that period unpaid until its full agreed amount is covered. An overpayment remains credit until Jafar explicitly applies it to a future charge or records an offsite refund. Neither extra money nor a correction silently buys coverage.
 - Jafar confirms the exact service dates covered before paid-through moves. A new organization is activated only after its initial payment is confirmed, following the existing onboarding rule. Each correction or refund appends a reasoned record while preserving the original. Adjusting past money does not silently alter coverage; any coverage correction requires a separate confirmed action.
-- After paid-through ends, normal access continues for seven calendar days with an overdue warning. Access is suspended after grace until Jafar confirms payment or a reasoned exception. Records are preserved. Dates use the organization's time zone and the end of its local calendar day, as in the existing renewal contract.
+- After paid-through ends, normal access continues for seven calendar days. During that week the contractor's app shows an overdue banner naming the day access pauses, and Jafar's panel flags the organization. When grace ends unpaid, access pauses automatically until Jafar confirms payment or records a reasoned exception; confirming coverage restores it at once. A pause for security or another manual reason is not lifted by a payment. Records are preserved. Dates use the organization's time zone and the end of its local calendar day, as in the existing renewal contract.
 
 ## Build checks
 
@@ -76,9 +76,10 @@ Jafar decided on 2026-09-29 that the new package system replaces the old one com
 
 ## Still unclear
 
-- When grace ends unpaid, is access suspended automatically, as this plan says, or does Jafar suspend it manually? The earlier [Jafar panel contract](jafar-completion-contract.md) says “Automatic overdue messaging and suspension remain out.”
-- During the grace week, does the contractor see an overdue warning in their app, or does only Jafar see it?
-- [PRODUCT.md](PRODUCT.md) describes a dollar-valued monthly Communication Allowance included in each package. It was never built, and this plan's allowance list does not include it. Does it stay out of the builder for now?
+Left for their build parts, as Jafar approved on 2026-09-29:
+
+- The protected essential-email reserve rule (proposed: 10% of the email allowance, matching every earlier approved value).
+- Platform-wide automation safety values.
 
 ## Not doing
 
@@ -87,3 +88,4 @@ Jafar decided on 2026-09-29 that the new package system replaces the old one com
 - Selling a free-typed feature name as functionality before it exists and is enforced.
 - Building the contractor notification and offer-history screens in the package-builder campaign; [separate work is recorded](../Memory/deferred/contractor-account-offers-and-notification-history.md).
 - Deleting or resetting application data during planning.
+- A dollar-valued monthly Communication Allowance per package, described in [PRODUCT.md](PRODUCT.md). It stays out until texting is live (Jafar, 2026-09-29).

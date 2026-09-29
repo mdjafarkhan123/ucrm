@@ -110,6 +110,9 @@ lives in code, migrations, and tests.
 - Support immutable confirmations and corrections for initial payment, renewal, refund, reversal,
   paid-through date, seven-calendar-day grace in the commercial timezone, and late-renewal reactivation.
 - Suspension remains a separate confirmed action. Automatic overdue messaging and suspension remain out.
+  Superseded 2026-09-29 by the [package plan](package-builder-behavior-contract.md) as its build parts land:
+  package changes default to the next renewal, exceptions need an end date, money is tracked per service
+  period, and access pauses automatically when grace ends.
 - Free access is exceptional and audited; permanent free access requires password reconfirmation.
 - History combines onboarding, payments and corrections, provisioning and setup delivery, package and
   access changes, lifecycle, support, integrations, recovery, and deletion without exposing secrets.

@@ -3,12 +3,10 @@
 **Goal:** Jafar can build configurable packages and manually assign published editions that preserve each customer's features, limits, and price.
 **Plan:** `docs/package-builder-behavior-contract.md` · **Technical approach:** `docs/adr/0003-package-editions-agreements-and-offsite-billing-ledger.md`
 
-**In progress:**
+**Completed:** Planning (P1, P2). Jafar approved the build parts on 2026-09-29.
 
-- P2 — the build parts are proposed in `stages/`. Jafar's approval and his answers to three grace and allowance questions are pending. See `parts/P2.md`.
+**Next part:** P3 Switch to the new package storage (`stages/1-foundation.md`). It is the largest and riskiest part; start it in a fresh session and split it if it outgrows one.
 
-**Next part:** P3 Switch to the new package storage, after P2 is approved.
+**Blockers:** None.
 
-**Blockers:** Jafar's answers and approval (P2).
-
-Jafar approved on 2026-09-29 rebuilding the whole package system while keeping each feature's existing access check, and clearing the test organizations' old package and payment history. All organizations are fake. Coordinate the Jafar panel's final audit (its Part 11) with this campaign's P15.
+Jafar approved rebuilding the whole package system while keeping each feature's existing access check, and clearing the four test organizations' old package and payment history. All organizations are fake. Live test data on 2026-09-29: Raad LTD and Jaaroweb are on Elite v2, Riverside on Starter v3, and xdasd is legacy with no assignment; all seven onboarding applications point at old versions. The shared inbox (`conversations.*`) has no package lock today. Coordinate the Jafar panel's final audit (its Part 11) with this campaign's P15.

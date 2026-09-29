@@ -3,8 +3,8 @@
 ## Status
 
 Accepted 2026-09-29. Jafar approved replacing the whole package system while keeping each feature's
-existing access check, and clearing the test organizations' old package and payment history. Decision 9
-waits for Jafar's answer in the [package plan](../package-builder-behavior-contract.md#still-unclear).
+existing access check, and clearing the test organizations' old package and payment history. Jafar chose
+automatic suspension at the end of grace, with an overdue banner during it.
 Supersedes ADR 0001's fixed monthly price and the “package version” wording; the rest of ADR 0001 stands.
 
 ## Context
@@ -73,7 +73,7 @@ organizations are test data.
    read-only page built from the published edition, and passes the slug and billing choice to
    `/get-started`. Publishing, revising, or archiving leaves a reminder until Jafar confirms the site copy
    matches.
-9. **Grace end (awaiting Jafar).** If access suspends automatically, a scheduled SQL job suspends
+9. **Grace end suspends automatically.** A scheduled SQL job suspends
    organizations whose grace has ended, using the existing lifecycle suspension (category `nonpayment`,
    system actor). Confirming coverage lifts only that suspension; security and manual suspensions stay.
 
