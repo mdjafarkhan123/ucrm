@@ -9214,34 +9214,358 @@ export type Database = {
 					}
 				];
 			};
-			organization_billing_accounts: {
+			organization_billing_applications: {
 				Row: {
+					actor_owner_email: string;
+					amount_usd_cents: number;
+					charge_id: string;
 					created_at: string;
+					id: string;
+					idempotency_key: string;
 					organization_id: string;
-					paid_through_date: string | null;
-					paid_through_source: string | null;
-					updated_at: string;
+					receipt_id: string;
 				};
 				Insert: {
+					actor_owner_email: string;
+					amount_usd_cents: number;
+					charge_id: string;
 					created_at?: string;
+					id?: string;
+					idempotency_key: string;
 					organization_id: string;
-					paid_through_date?: string | null;
-					paid_through_source?: string | null;
-					updated_at?: string;
+					receipt_id: string;
 				};
 				Update: {
+					actor_owner_email?: string;
+					amount_usd_cents?: number;
+					charge_id?: string;
 					created_at?: string;
+					id?: string;
+					idempotency_key?: string;
 					organization_id?: string;
-					paid_through_date?: string | null;
-					paid_through_source?: string | null;
-					updated_at?: string;
+					receipt_id?: string;
 				};
 				Relationships: [
 					{
-						foreignKeyName: 'organization_billing_accounts_organization_id_fkey';
+						foreignKeyName: 'organization_billing_applications_charge_id_fkey';
+						columns: ['charge_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_billing_charges';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_billing_applications_organization_id_fkey';
 						columns: ['organization_id'];
-						isOneToOne: true;
+						isOneToOne: false;
 						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_billing_applications_receipt_id_fkey';
+						columns: ['receipt_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_billing_receipts';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_billing_charges: {
+				Row: {
+					actor_owner_email: string;
+					agreement_id: string;
+					amount_usd_cents: number;
+					anchor_date: string;
+					created_at: string;
+					id: string;
+					idempotency_key: string;
+					organization_id: string;
+					period_end: string;
+					period_start: string;
+				};
+				Insert: {
+					actor_owner_email: string;
+					agreement_id: string;
+					amount_usd_cents: number;
+					anchor_date: string;
+					created_at?: string;
+					id?: string;
+					idempotency_key: string;
+					organization_id: string;
+					period_end: string;
+					period_start: string;
+				};
+				Update: {
+					actor_owner_email?: string;
+					agreement_id?: string;
+					amount_usd_cents?: number;
+					anchor_date?: string;
+					created_at?: string;
+					id?: string;
+					idempotency_key?: string;
+					organization_id?: string;
+					period_end?: string;
+					period_start?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_billing_charges_agreement_id_fkey';
+						columns: ['agreement_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_package_agreements';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_billing_charges_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_billing_coverage_confirmations: {
+				Row: {
+					actor_owner_email: string;
+					charge_id: string;
+					commercial_event_id: string;
+					covered_from: string;
+					covered_through: string;
+					created_at: string;
+					id: string;
+					idempotency_key: string;
+					organization_id: string;
+				};
+				Insert: {
+					actor_owner_email: string;
+					charge_id: string;
+					commercial_event_id: string;
+					covered_from: string;
+					covered_through: string;
+					created_at?: string;
+					id?: string;
+					idempotency_key: string;
+					organization_id: string;
+				};
+				Update: {
+					actor_owner_email?: string;
+					charge_id?: string;
+					commercial_event_id?: string;
+					covered_from?: string;
+					covered_through?: string;
+					created_at?: string;
+					id?: string;
+					idempotency_key?: string;
+					organization_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_billing_coverage_confirma_commercial_event_id_fkey';
+						columns: ['commercial_event_id'];
+						isOneToOne: true;
+						referencedRelation: 'organization_commercial_events';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_billing_coverage_confirmation_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_billing_coverage_confirmations_charge_id_fkey';
+						columns: ['charge_id'];
+						isOneToOne: true;
+						referencedRelation: 'organization_billing_charges';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_billing_receipts: {
+				Row: {
+					actor_owner_email: string;
+					amount_usd_cents: number;
+					created_at: string;
+					id: string;
+					idempotency_key: string;
+					method: string;
+					note: string | null;
+					organization_id: string;
+					private_reference: string;
+					received_on: string;
+					replaces_receipt_id: string | null;
+				};
+				Insert: {
+					actor_owner_email: string;
+					amount_usd_cents: number;
+					created_at?: string;
+					id?: string;
+					idempotency_key: string;
+					method: string;
+					note?: string | null;
+					organization_id: string;
+					private_reference: string;
+					received_on: string;
+					replaces_receipt_id?: string | null;
+				};
+				Update: {
+					actor_owner_email?: string;
+					amount_usd_cents?: number;
+					created_at?: string;
+					id?: string;
+					idempotency_key?: string;
+					method?: string;
+					note?: string | null;
+					organization_id?: string;
+					private_reference?: string;
+					received_on?: string;
+					replaces_receipt_id?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_billing_receipts_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_billing_receipts_replaces_receipt_id_fkey';
+						columns: ['replaces_receipt_id'];
+						isOneToOne: true;
+						referencedRelation: 'organization_billing_receipts';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_billing_refunds: {
+				Row: {
+					actor_owner_email: string;
+					amount_usd_cents: number;
+					created_at: string;
+					id: string;
+					idempotency_key: string;
+					method: string;
+					organization_id: string;
+					private_reference: string | null;
+					reason: string;
+					receipt_id: string;
+					refunded_on: string;
+				};
+				Insert: {
+					actor_owner_email: string;
+					amount_usd_cents: number;
+					created_at?: string;
+					id?: string;
+					idempotency_key: string;
+					method: string;
+					organization_id: string;
+					private_reference?: string | null;
+					reason: string;
+					receipt_id: string;
+					refunded_on: string;
+				};
+				Update: {
+					actor_owner_email?: string;
+					amount_usd_cents?: number;
+					created_at?: string;
+					id?: string;
+					idempotency_key?: string;
+					method?: string;
+					organization_id?: string;
+					private_reference?: string | null;
+					reason?: string;
+					receipt_id?: string;
+					refunded_on?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_billing_refunds_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_billing_refunds_receipt_id_fkey';
+						columns: ['receipt_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_billing_receipts';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_billing_voids: {
+				Row: {
+					actor_owner_email: string;
+					application_id: string | null;
+					charge_id: string | null;
+					created_at: string;
+					id: string;
+					idempotency_key: string;
+					organization_id: string;
+					reason: string;
+					receipt_id: string | null;
+					refund_id: string | null;
+				};
+				Insert: {
+					actor_owner_email: string;
+					application_id?: string | null;
+					charge_id?: string | null;
+					created_at?: string;
+					id?: string;
+					idempotency_key: string;
+					organization_id: string;
+					reason: string;
+					receipt_id?: string | null;
+					refund_id?: string | null;
+				};
+				Update: {
+					actor_owner_email?: string;
+					application_id?: string | null;
+					charge_id?: string | null;
+					created_at?: string;
+					id?: string;
+					idempotency_key?: string;
+					organization_id?: string;
+					reason?: string;
+					receipt_id?: string | null;
+					refund_id?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_billing_voids_application_id_fkey';
+						columns: ['application_id'];
+						isOneToOne: true;
+						referencedRelation: 'organization_billing_applications';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_billing_voids_charge_id_fkey';
+						columns: ['charge_id'];
+						isOneToOne: true;
+						referencedRelation: 'organization_billing_charges';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_billing_voids_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_billing_voids_receipt_id_fkey';
+						columns: ['receipt_id'];
+						isOneToOne: true;
+						referencedRelation: 'organization_billing_receipts';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_billing_voids_refund_id_fkey';
+						columns: ['refund_id'];
+						isOneToOne: true;
+						referencedRelation: 'organization_billing_refunds';
 						referencedColumns: ['id'];
 					}
 				];
@@ -10357,53 +10681,6 @@ export type Database = {
 					},
 					{
 						foreignKeyName: 'organization_package_exceptions_organization_id_fkey';
-						columns: ['organization_id'];
-						isOneToOne: false;
-						referencedRelation: 'organizations';
-						referencedColumns: ['id'];
-					}
-				];
-			};
-			organization_payment_confirmations: {
-				Row: {
-					amount_usd_cents: number;
-					confirmed_at: string;
-					created_at: string;
-					currency: string;
-					id: string;
-					mismatch_reason: string | null;
-					organization_id: string;
-					paid_through_date: string;
-					payment_kind: string;
-					private_reference: string;
-				};
-				Insert: {
-					amount_usd_cents: number;
-					confirmed_at?: string;
-					created_at?: string;
-					currency?: string;
-					id?: string;
-					mismatch_reason?: string | null;
-					organization_id: string;
-					paid_through_date: string;
-					payment_kind: string;
-					private_reference: string;
-				};
-				Update: {
-					amount_usd_cents?: number;
-					confirmed_at?: string;
-					created_at?: string;
-					currency?: string;
-					id?: string;
-					mismatch_reason?: string | null;
-					organization_id?: string;
-					paid_through_date?: string;
-					payment_kind?: string;
-					private_reference?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: 'organization_payment_confirmations_organization_id_fkey';
 						columns: ['organization_id'];
 						isOneToOne: false;
 						referencedRelation: 'organizations';
@@ -15094,11 +15371,30 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			add_organization_billing_charge: {
+				Args: {
+					actor_owner_email: string;
+					idempotency_key: string;
+					period_start?: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			add_website_chat_widget_origin: {
 				Args: {
 					new_origin: string;
 					target_organization_id: string;
 					target_widget_id: string;
+				};
+				Returns: Json;
+			};
+			adjust_organization_paid_through: {
+				Args: {
+					actor_owner_email: string;
+					idempotency_key: string;
+					paid_through_date: string;
+					reason: string;
+					target_organization_id: string;
 				};
 				Returns: Json;
 			};
@@ -15129,6 +15425,17 @@ export type Database = {
 					private_reason: string;
 					target_organization_id: string;
 					target_user_id: string;
+				};
+				Returns: Json;
+			};
+			apply_organization_billing_credit: {
+				Args: {
+					actor_owner_email: string;
+					amount_usd_cents: number;
+					charge_id: string;
+					idempotency_key: string;
+					receipt_id: string;
+					target_organization_id: string;
 				};
 				Returns: Json;
 			};
@@ -15172,25 +15479,6 @@ export type Database = {
 					source_event_id?: string;
 					summary: string;
 					suspension_category?: string;
-					target_organization_id: string;
-				};
-				Returns: Json;
-			};
-			apply_organization_late_renewal_reactivation: {
-				Args: {
-					actor_owner_email?: string;
-					amount_usd_cents?: number;
-					idempotency_key: string;
-					occurred_at?: string;
-					original_confirmation_id?: string;
-					paid_through_date?: string;
-					paid_through_effect: string;
-					private_reason?: string;
-					private_reference?: string;
-					reactivate?: boolean;
-					safe_kind?: string;
-					safe_payload?: Json;
-					summary: string;
 					target_organization_id: string;
 				};
 				Returns: Json;
@@ -17573,6 +17861,17 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			confirm_organization_billing_coverage: {
+				Args: {
+					actor_owner_email: string;
+					charge_id: string;
+					covered_from: string;
+					covered_through: string;
+					idempotency_key: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			consume_onboarding_application_setup_link: {
 				Args: { target_email: string; target_token_hash: string };
 				Returns: {
@@ -17636,6 +17935,21 @@ export type Database = {
 					target_application_id: string;
 				};
 				Returns: undefined;
+			};
+			correct_organization_billing_receipt: {
+				Args: {
+					actor_owner_email: string;
+					amount_usd_cents: number;
+					idempotency_key: string;
+					method: string;
+					note?: string;
+					original_receipt_id: string;
+					private_reference: string;
+					reason: string;
+					received_on: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
 			};
 			create_automation_recipe_draft: {
 				Args: {
@@ -20718,6 +21032,10 @@ export type Database = {
 				Args: { candidate_email: string };
 				Returns: boolean;
 			};
+			owner_organization_billing: {
+				Args: { target_organization_id: string };
+				Returns: Json;
+			};
 			owner_organization_directory: {
 				Args: {
 					attention_reason?: string;
@@ -21605,6 +21923,34 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			record_organization_billing_receipt: {
+				Args: {
+					actor_owner_email: string;
+					amount_usd_cents: number;
+					applications?: Json;
+					idempotency_key: string;
+					method: string;
+					note?: string;
+					private_reference: string;
+					received_on: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			record_organization_billing_refund: {
+				Args: {
+					actor_owner_email: string;
+					amount_usd_cents: number;
+					idempotency_key: string;
+					method: string;
+					private_reference?: string;
+					reason: string;
+					receipt_id: string;
+					refunded_on: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
 			};
 			record_quote_decision: {
 				Args: {
@@ -23811,6 +24157,17 @@ export type Database = {
 					new_reason: string;
 					new_request_hash: string;
 					target_invoice_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			void_organization_billing_record: {
+				Args: {
+					actor_owner_email: string;
+					idempotency_key: string;
+					reason: string;
+					record_id: string;
+					record_kind: string;
 					target_organization_id: string;
 				};
 				Returns: Json;
