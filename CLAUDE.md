@@ -5,7 +5,7 @@ This file is the single source of project instructions for Claude Code and Codex
 ## Project
 
 - **Owner:** Jafar is the CRM/app owner.
-- **Product:** A CRM for contractors, targeting up to 40,000 users in Europe, the US, Canada, Australia, and the UK (not Asia). Capacity claims require measured evidence. The first paying client must receive the complete, fully built application—not a partial product before launch. Build a robust, production grade, industry top level app with all the ui/ux, features before launch.
+- **Product:** A CRM for contractors, targeting up to 40,000 users in Europe, the US, Canada, Australia, and the UK (not Asia). Capacity claims require measured evidence. The first paying client must receive the complete, fully built application—not a partial product before launch. Build a robust, production grade, industry top level app with all the ui/ux, features before launch. Right now its under development with all fake data and Organization
 - **Core workflow:** Lead → Request → Quote → Job → Invoice → Payment, following Jobber's CRM model.
 - **Frontend:** SvelteKit + Svelte 5 runes + TanStack Query (client state)
 - **Current development:** The SvelteKit app runs locally through a Cloudflare Tunnel and uses managed remote Supabase plus Cloudflare R2.
