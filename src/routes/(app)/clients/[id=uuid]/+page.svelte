@@ -505,12 +505,11 @@
 		{ key: 'zip', label: 'Zip' }
 	];
 
-	// The line under a street tells the office which property this is. One saved without a name falls back
-	// to what it is used for.
+	// The line under a street tells the office which property this is: its name if it has one, or that the
+	// bills go there. An unnamed address shows its street alone, as Jobber does; the Main badge marks the main one.
 	function propertyCaption(property: ClientProperty) {
 		if (property.label) return property.label;
-		if (property.is_billing_address) return 'Billing address';
-		return property.is_primary ? 'Main property' : 'Property';
+		return property.is_billing_address ? 'Billing address' : '';
 	}
 	function streetOf(property: ClientProperty) {
 		return [property.address_line1, property.address_line2].filter(Boolean).join(', ');

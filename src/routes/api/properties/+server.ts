@@ -37,9 +37,8 @@ export const POST: RequestHandler = async (event) => {
 		.insert({
 			organization_id: organizationId,
 			...rest,
-			// Naming a property is optional. Left blank it takes the street, which is what the office would
-			// have typed anyway and reads better in a list than a stock "Primary property".
-			label: label?.trim() || rest.address_line1.trim().slice(0, 120),
+			// Naming a property is optional. Left blank it has no name and shows by its street, as Jobber does.
+			label: label?.trim() || null,
 			address_line2: address_line2?.trim() || null,
 			state_region: state_region?.trim() || null,
 			postal_code: postal_code?.trim() || null,

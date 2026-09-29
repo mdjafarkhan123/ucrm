@@ -28,8 +28,9 @@ export const PATCH: RequestHandler = async (event) => {
 		.from('properties')
 		.update({
 			...rest,
-			// An empty box means the office cleared the field, so it is stored as nothing rather than "".
-			label: label?.trim() || undefined,
+			// An empty box means the office cleared the field, so it is stored as nothing rather than "". An
+			// absent name is left alone.
+			label: label === undefined ? undefined : label.trim() || null,
 			address_line2: address_line2?.trim() || null,
 			state_region: state_region?.trim() || null,
 			postal_code: postal_code?.trim() || null,

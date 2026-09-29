@@ -12422,7 +12422,7 @@ export type Database = {
 					id: string;
 					is_billing_address: boolean;
 					is_primary: boolean;
-					label: string;
+					label: string | null;
 					latitude: number | null;
 					longitude: number | null;
 					organization_id: string;
@@ -12445,7 +12445,7 @@ export type Database = {
 					id?: string;
 					is_billing_address?: boolean;
 					is_primary?: boolean;
-					label?: string;
+					label?: string | null;
 					latitude?: number | null;
 					longitude?: number | null;
 					organization_id: string;
@@ -12468,7 +12468,7 @@ export type Database = {
 					id?: string;
 					is_billing_address?: boolean;
 					is_primary?: boolean;
-					label?: string;
+					label?: string | null;
 					latitude?: number | null;
 					longitude?: number | null;
 					organization_id?: string;

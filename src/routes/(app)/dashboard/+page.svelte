@@ -83,7 +83,7 @@
 	});
 	let propertyForm = $state({
 		client_id: '',
-		label: 'Primary property',
+		label: '',
 		address_line1: '',
 		address_line2: '',
 		city: '',
@@ -170,7 +170,7 @@
 			if (mode === 'property')
 				propertyForm = {
 					client_id: '',
-					label: 'Primary property',
+					label: '',
 					address_line1: '',
 					address_line2: '',
 					city: '',
@@ -203,7 +203,8 @@
 		return data.clients.find((client) => client.id === id)?.display_name ?? 'Unknown customer';
 	}
 	function propertyName(id: string) {
-		return data.properties.find((property) => property.id === id)?.label ?? 'Unknown property';
+		const property = data.properties.find((property) => property.id === id);
+		return property ? property.label || property.address_line1 : 'Unknown property';
 	}
 	function formatDate(value: string) {
 		return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(
@@ -506,7 +507,7 @@
 									disabled={!requestForm.client_id}
 									><option value="">Choose property</option
 									>{#each requestProperties as property (property.id)}<option value={property.id}
-											>{property.label} · {property.city}</option
+											>{property.label || property.address_line1} · {property.city}</option
 										>{/each}</select
 								></label
 							>
