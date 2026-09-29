@@ -9682,60 +9682,6 @@ export type Database = {
 					}
 				];
 			};
-			organization_feature_overrides: {
-				Row: {
-					actor_owner_email: string | null;
-					created_at: string;
-					expires_at: string | null;
-					feature_key: string;
-					is_legacy_import: boolean;
-					organization_id: string;
-					override_state: string;
-					reason: string | null;
-					starts_at: string;
-					updated_at: string;
-				};
-				Insert: {
-					actor_owner_email?: string | null;
-					created_at?: string;
-					expires_at?: string | null;
-					feature_key: string;
-					is_legacy_import?: boolean;
-					organization_id: string;
-					override_state: string;
-					reason?: string | null;
-					starts_at?: string;
-					updated_at?: string;
-				};
-				Update: {
-					actor_owner_email?: string | null;
-					created_at?: string;
-					expires_at?: string | null;
-					feature_key?: string;
-					is_legacy_import?: boolean;
-					organization_id?: string;
-					override_state?: string;
-					reason?: string | null;
-					starts_at?: string;
-					updated_at?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: 'organization_feature_overrides_feature_key_fkey';
-						columns: ['feature_key'];
-						isOneToOne: false;
-						referencedRelation: 'features';
-						referencedColumns: ['feature_key'];
-					},
-					{
-						foreignKeyName: 'organization_feature_overrides_organization_id_fkey';
-						columns: ['organization_id'];
-						isOneToOne: false;
-						referencedRelation: 'organizations';
-						referencedColumns: ['id'];
-					}
-				];
-			};
 			organization_free_access_events: {
 				Row: {
 					access_until_date: string | null;
@@ -9746,7 +9692,6 @@ export type Database = {
 					id: string;
 					occurred_at: string;
 					organization_id: string;
-					package_version_id: string;
 					reason: string;
 					starts_at: string;
 					target_grant_id: string | null;
@@ -9760,7 +9705,6 @@ export type Database = {
 					id?: string;
 					occurred_at?: string;
 					organization_id: string;
-					package_version_id: string;
 					reason: string;
 					starts_at: string;
 					target_grant_id?: string | null;
@@ -9774,7 +9718,6 @@ export type Database = {
 					id?: string;
 					occurred_at?: string;
 					organization_id?: string;
-					package_version_id?: string;
 					reason?: string;
 					starts_at?: string;
 					target_grant_id?: string | null;
@@ -9785,13 +9728,6 @@ export type Database = {
 						columns: ['organization_id'];
 						isOneToOne: false;
 						referencedRelation: 'organizations';
-						referencedColumns: ['id'];
-					},
-					{
-						foreignKeyName: 'organization_free_access_events_package_version_id_fkey';
-						columns: ['package_version_id'];
-						isOneToOne: false;
-						referencedRelation: 'platform_package_versions';
 						referencedColumns: ['id'];
 					},
 					{
@@ -9850,59 +9786,6 @@ export type Database = {
 						foreignKeyName: 'organization_job_counters_organization_id_fkey';
 						columns: ['organization_id'];
 						isOneToOne: true;
-						referencedRelation: 'organizations';
-						referencedColumns: ['id'];
-					}
-				];
-			};
-			organization_limit_overrides: {
-				Row: {
-					actor_owner_email: string | null;
-					created_at: string;
-					expires_at: string | null;
-					is_legacy_import: boolean;
-					is_unlimited: boolean;
-					limit_key: string;
-					limit_state: string;
-					limit_value: number | null;
-					organization_id: string;
-					reason: string | null;
-					starts_at: string;
-					updated_at: string;
-				};
-				Insert: {
-					actor_owner_email?: string | null;
-					created_at?: string;
-					expires_at?: string | null;
-					is_legacy_import?: boolean;
-					is_unlimited?: boolean;
-					limit_key: string;
-					limit_state?: string;
-					limit_value?: number | null;
-					organization_id: string;
-					reason?: string | null;
-					starts_at?: string;
-					updated_at?: string;
-				};
-				Update: {
-					actor_owner_email?: string | null;
-					created_at?: string;
-					expires_at?: string | null;
-					is_legacy_import?: boolean;
-					is_unlimited?: boolean;
-					limit_key?: string;
-					limit_state?: string;
-					limit_value?: number | null;
-					organization_id?: string;
-					reason?: string | null;
-					starts_at?: string;
-					updated_at?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: 'organization_limit_overrides_organization_id_fkey';
-						columns: ['organization_id'];
-						isOneToOne: false;
 						referencedRelation: 'organizations';
 						referencedColumns: ['id'];
 					}
@@ -10410,51 +10293,6 @@ export type Database = {
 						columns: ['organization_id'];
 						isOneToOne: false;
 						referencedRelation: 'organizations';
-						referencedColumns: ['id'];
-					}
-				];
-			};
-			organization_package_assignments: {
-				Row: {
-					assignment_source: string;
-					created_at: string;
-					effective_at: string;
-					id: string;
-					organization_id: string;
-					package_version_id: string;
-					reason: string;
-				};
-				Insert: {
-					assignment_source: string;
-					created_at?: string;
-					effective_at?: string;
-					id?: string;
-					organization_id: string;
-					package_version_id: string;
-					reason: string;
-				};
-				Update: {
-					assignment_source?: string;
-					created_at?: string;
-					effective_at?: string;
-					id?: string;
-					organization_id?: string;
-					package_version_id?: string;
-					reason?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: 'organization_package_assignments_organization_id_fkey';
-						columns: ['organization_id'];
-						isOneToOne: false;
-						referencedRelation: 'organizations';
-						referencedColumns: ['id'];
-					},
-					{
-						foreignKeyName: 'organization_package_assignments_package_version_id_fkey';
-						columns: ['package_version_id'];
-						isOneToOne: false;
-						referencedRelation: 'platform_package_versions';
 						referencedColumns: ['id'];
 					}
 				];
@@ -11048,9 +10886,6 @@ export type Database = {
 					id: string;
 					lifecycle_status: string;
 					name: string;
-					package_key: string;
-					scheduled_package_effective_at: string | null;
-					scheduled_package_key: string | null;
 					slug: string;
 					updated_at: string;
 				};
@@ -11059,9 +10894,6 @@ export type Database = {
 					id?: string;
 					lifecycle_status?: string;
 					name: string;
-					package_key?: string;
-					scheduled_package_effective_at?: string | null;
-					scheduled_package_key?: string | null;
 					slug: string;
 					updated_at?: string;
 				};
@@ -11070,28 +10902,10 @@ export type Database = {
 					id?: string;
 					lifecycle_status?: string;
 					name?: string;
-					package_key?: string;
-					scheduled_package_effective_at?: string | null;
-					scheduled_package_key?: string | null;
 					slug?: string;
 					updated_at?: string;
 				};
-				Relationships: [
-					{
-						foreignKeyName: 'organizations_package_key_fkey';
-						columns: ['package_key'];
-						isOneToOne: false;
-						referencedRelation: 'platform_packages';
-						referencedColumns: ['package_key'];
-					},
-					{
-						foreignKeyName: 'organizations_scheduled_package_key_fkey';
-						columns: ['scheduled_package_key'];
-						isOneToOne: false;
-						referencedRelation: 'platform_packages';
-						referencedColumns: ['package_key'];
-					}
-				];
+				Relationships: [];
 			};
 			package_allowances: {
 				Row: {
@@ -11313,71 +11127,6 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'packages';
 						referencedColumns: ['id'];
-					}
-				];
-			};
-			package_features: {
-				Row: {
-					created_at: string;
-					feature_key: string;
-					package_key: string;
-				};
-				Insert: {
-					created_at?: string;
-					feature_key: string;
-					package_key: string;
-				};
-				Update: {
-					created_at?: string;
-					feature_key?: string;
-					package_key?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: 'package_features_feature_key_fkey';
-						columns: ['feature_key'];
-						isOneToOne: false;
-						referencedRelation: 'features';
-						referencedColumns: ['feature_key'];
-					},
-					{
-						foreignKeyName: 'package_features_package_key_fkey';
-						columns: ['package_key'];
-						isOneToOne: false;
-						referencedRelation: 'platform_packages';
-						referencedColumns: ['package_key'];
-					}
-				];
-			};
-			package_limits: {
-				Row: {
-					created_at: string;
-					is_unlimited: boolean;
-					limit_key: string;
-					limit_value: number | null;
-					package_key: string;
-				};
-				Insert: {
-					created_at?: string;
-					is_unlimited?: boolean;
-					limit_key: string;
-					limit_value?: number | null;
-					package_key: string;
-				};
-				Update: {
-					created_at?: string;
-					is_unlimited?: boolean;
-					limit_key?: string;
-					limit_value?: number | null;
-					package_key?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: 'package_limits_package_key_fkey';
-						columns: ['package_key'];
-						isOneToOne: false;
-						referencedRelation: 'platform_packages';
-						referencedColumns: ['package_key'];
 					}
 				];
 			};
@@ -11843,26 +11592,26 @@ export type Database = {
 			platform_email_template_packages: {
 				Row: {
 					created_at: string;
-					package_key: string;
+					package_id: string;
 					template_id: string;
 				};
 				Insert: {
 					created_at?: string;
-					package_key: string;
+					package_id: string;
 					template_id: string;
 				};
 				Update: {
 					created_at?: string;
-					package_key?: string;
+					package_id?: string;
 					template_id?: string;
 				};
 				Relationships: [
 					{
-						foreignKeyName: 'platform_email_template_packages_package_key_fkey';
-						columns: ['package_key'];
+						foreignKeyName: 'platform_email_template_packages_package_id_fkey';
+						columns: ['package_id'];
 						isOneToOne: false;
-						referencedRelation: 'platform_packages';
-						referencedColumns: ['package_key'];
+						referencedRelation: 'packages';
+						referencedColumns: ['id'];
 					},
 					{
 						foreignKeyName: 'platform_email_template_packages_template_id_fkey';
@@ -12031,7 +11780,6 @@ export type Database = {
 					currency: string;
 					id: string;
 					mismatch_reason: string | null;
-					package_version_id: string;
 					private_reference: string;
 				};
 				Insert: {
@@ -12043,7 +11791,6 @@ export type Database = {
 					currency?: string;
 					id?: string;
 					mismatch_reason?: string | null;
-					package_version_id: string;
 					private_reference: string;
 				};
 				Update: {
@@ -12055,7 +11802,6 @@ export type Database = {
 					currency?: string;
 					id?: string;
 					mismatch_reason?: string | null;
-					package_version_id?: string;
 					private_reference?: string;
 				};
 				Relationships: [
@@ -12064,13 +11810,6 @@ export type Database = {
 						columns: ['application_id'];
 						isOneToOne: false;
 						referencedRelation: 'platform_onboarding_applications';
-						referencedColumns: ['id'];
-					},
-					{
-						foreignKeyName: 'platform_onboarding_application_payment_package_version_id_fkey';
-						columns: ['package_version_id'];
-						isOneToOne: false;
-						referencedRelation: 'platform_package_versions';
 						referencedColumns: ['id'];
 					}
 				];
@@ -12264,6 +12003,7 @@ export type Database = {
 			};
 			platform_onboarding_applications: {
 				Row: {
+					billing_interval: string;
 					business_name: string;
 					city_country: string;
 					duplicate_acknowledged_at: string | null;
@@ -12276,8 +12016,8 @@ export type Database = {
 					main_contact_phone: string;
 					not_proceeding_at: string | null;
 					note: string | null;
+					package_edition_id: string;
 					package_snapshot: Json;
-					package_version_id: string;
 					payment_reversed_at: string | null;
 					personal_data_purge_after: string;
 					possible_duplicate: boolean;
@@ -12288,6 +12028,7 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					billing_interval: string;
 					business_name: string;
 					city_country: string;
 					duplicate_acknowledged_at?: string | null;
@@ -12300,8 +12041,8 @@ export type Database = {
 					main_contact_phone: string;
 					not_proceeding_at?: string | null;
 					note?: string | null;
+					package_edition_id: string;
 					package_snapshot: Json;
-					package_version_id: string;
 					payment_reversed_at?: string | null;
 					personal_data_purge_after?: string;
 					possible_duplicate?: boolean;
@@ -12312,6 +12053,7 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					billing_interval?: string;
 					business_name?: string;
 					city_country?: string;
 					duplicate_acknowledged_at?: string | null;
@@ -12324,8 +12066,8 @@ export type Database = {
 					main_contact_phone?: string;
 					not_proceeding_at?: string | null;
 					note?: string | null;
+					package_edition_id?: string;
 					package_snapshot?: Json;
-					package_version_id?: string;
 					payment_reversed_at?: string | null;
 					personal_data_purge_after?: string;
 					possible_duplicate?: boolean;
@@ -12337,10 +12079,10 @@ export type Database = {
 				};
 				Relationships: [
 					{
-						foreignKeyName: 'platform_onboarding_applications_package_version_id_fkey';
-						columns: ['package_version_id'];
+						foreignKeyName: 'platform_onboarding_applications_package_edition_id_fkey';
+						columns: ['package_edition_id'];
 						isOneToOne: false;
-						referencedRelation: 'platform_package_versions';
+						referencedRelation: 'package_editions';
 						referencedColumns: ['id'];
 					}
 				];
@@ -12621,166 +12363,6 @@ export type Database = {
 					reply_to_address?: string;
 					sender_display_name?: string;
 					updated_at?: string;
-				};
-				Relationships: [];
-			};
-			platform_package_version_features: {
-				Row: {
-					created_at: string;
-					feature_key: string;
-					package_version_id: string;
-				};
-				Insert: {
-					created_at?: string;
-					feature_key: string;
-					package_version_id: string;
-				};
-				Update: {
-					created_at?: string;
-					feature_key?: string;
-					package_version_id?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: 'platform_package_version_features_feature_key_fkey';
-						columns: ['feature_key'];
-						isOneToOne: false;
-						referencedRelation: 'features';
-						referencedColumns: ['feature_key'];
-					},
-					{
-						foreignKeyName: 'platform_package_version_features_package_version_id_fkey';
-						columns: ['package_version_id'];
-						isOneToOne: false;
-						referencedRelation: 'platform_package_versions';
-						referencedColumns: ['id'];
-					}
-				];
-			};
-			platform_package_version_limits: {
-				Row: {
-					created_at: string;
-					limit_key: string;
-					limit_state: string;
-					limit_value: number | null;
-					package_version_id: string;
-				};
-				Insert: {
-					created_at?: string;
-					limit_key: string;
-					limit_state: string;
-					limit_value?: number | null;
-					package_version_id: string;
-				};
-				Update: {
-					created_at?: string;
-					limit_key?: string;
-					limit_state?: string;
-					limit_value?: number | null;
-					package_version_id?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: 'platform_package_version_limits_package_version_id_fkey';
-						columns: ['package_version_id'];
-						isOneToOne: false;
-						referencedRelation: 'platform_package_versions';
-						referencedColumns: ['id'];
-					}
-				];
-			};
-			platform_package_versions: {
-				Row: {
-					billing_period: string;
-					created_at: string;
-					currency: string;
-					display_name: string;
-					id: string;
-					package_id: string;
-					price_usd_cents: number | null;
-					public_description: string | null;
-					published_at: string | null;
-					retired_at: string | null;
-					status: string;
-					value_explanation: string | null;
-					version_number: number;
-				};
-				Insert: {
-					billing_period?: string;
-					created_at?: string;
-					currency?: string;
-					display_name: string;
-					id?: string;
-					package_id: string;
-					price_usd_cents?: number | null;
-					public_description?: string | null;
-					published_at?: string | null;
-					retired_at?: string | null;
-					status?: string;
-					value_explanation?: string | null;
-					version_number: number;
-				};
-				Update: {
-					billing_period?: string;
-					created_at?: string;
-					currency?: string;
-					display_name?: string;
-					id?: string;
-					package_id?: string;
-					price_usd_cents?: number | null;
-					public_description?: string | null;
-					published_at?: string | null;
-					retired_at?: string | null;
-					status?: string;
-					value_explanation?: string | null;
-					version_number?: number;
-				};
-				Relationships: [
-					{
-						foreignKeyName: 'platform_package_versions_package_id_fkey';
-						columns: ['package_id'];
-						isOneToOne: false;
-						referencedRelation: 'platform_packages';
-						referencedColumns: ['package_id'];
-					}
-				];
-			};
-			platform_packages: {
-				Row: {
-					billing_period: string;
-					created_at: string;
-					currency: string;
-					display_name: string;
-					package_id: string;
-					package_key: string;
-					price_usd_cents: number | null;
-					public_description: string | null;
-					sort_order: number;
-					status: string;
-				};
-				Insert: {
-					billing_period?: string;
-					created_at?: string;
-					currency?: string;
-					display_name: string;
-					package_id?: string;
-					package_key: string;
-					price_usd_cents?: number | null;
-					public_description?: string | null;
-					sort_order: number;
-					status?: string;
-				};
-				Update: {
-					billing_period?: string;
-					created_at?: string;
-					currency?: string;
-					display_name?: string;
-					package_id?: string;
-					package_key?: string;
-					price_usd_cents?: number | null;
-					public_description?: string | null;
-					sort_order?: number;
-					status?: string;
 				};
 				Relationships: [];
 			};
@@ -15594,34 +15176,6 @@ export type Database = {
 				};
 				Returns: Json;
 			};
-			apply_organization_feature_exception: {
-				Args: {
-					actor_owner_email: string;
-					idempotency_key: string;
-					occurred_at?: string;
-					private_reason: string;
-					target_expires_at: string;
-					target_feature_key: string;
-					target_organization_id: string;
-					target_override_state: string;
-					target_starts_at: string;
-				};
-				Returns: Json;
-			};
-			apply_organization_free_access_change: {
-				Args: {
-					actor_owner_email: string;
-					idempotency_key: string;
-					occurred_at?: string;
-					private_reason: string;
-					target_access_until_date: string;
-					target_action: string;
-					target_grant_id: string;
-					target_organization_id: string;
-					target_starts_at: string;
-				};
-				Returns: Json;
-			};
 			apply_organization_late_renewal_reactivation: {
 				Args: {
 					actor_owner_email?: string;
@@ -15653,21 +15207,6 @@ export type Database = {
 				};
 				Returns: Json;
 			};
-			apply_organization_limit_exception: {
-				Args: {
-					actor_owner_email: string;
-					idempotency_key: string;
-					occurred_at?: string;
-					private_reason: string;
-					target_expires_at: string;
-					target_limit_key: string;
-					target_limit_state: string;
-					target_limit_value: number;
-					target_organization_id: string;
-					target_starts_at: string;
-				};
-				Returns: Json;
-			};
 			apply_organization_member_profile_correction: {
 				Args: {
 					actor_owner_email: string;
@@ -15679,29 +15218,6 @@ export type Database = {
 					private_reason: string;
 					target_organization_id: string;
 					target_user_id: string;
-				};
-				Returns: Json;
-			};
-			apply_organization_package_change: {
-				Args: {
-					actor_owner_email: string;
-					idempotency_key: string;
-					occurred_at?: string;
-					private_reason: string;
-					target_organization_id: string;
-					target_package_version_id: string;
-				};
-				Returns: Json;
-			};
-			apply_organization_pending_setup_reconciliation: {
-				Args: {
-					actor_owner_email: string;
-					idempotency_key: string;
-					occurred_at?: string;
-					private_reason: string;
-					target_organization_id: string;
-					target_status: string;
-					target_suspension_category: string;
 				};
 				Returns: Json;
 			};
@@ -18057,16 +17573,6 @@ export type Database = {
 				};
 				Returns: Json;
 			};
-			confirm_onboarding_application_payment: {
-				Args: {
-					actor_email: string;
-					amount_usd_cents: number;
-					mismatch_reason: string;
-					private_reference: string;
-					target_application_id: string;
-				};
-				Returns: undefined;
-			};
 			consume_onboarding_application_setup_link: {
 				Args: { target_email: string; target_token_hash: string };
 				Returns: {
@@ -18127,15 +17633,6 @@ export type Database = {
 					new_note: string;
 					new_time_zone: string;
 					new_trade: string;
-					target_application_id: string;
-				};
-				Returns: undefined;
-			};
-			correct_onboarding_application_package: {
-				Args: {
-					actor_email: string;
-					correction_reason: string;
-					new_package_version_id: string;
 					target_application_id: string;
 				};
 				Returns: undefined;
@@ -20838,74 +20335,6 @@ export type Database = {
 				};
 				Returns: Json;
 			};
-			manage_platform_package_automation_limits: {
-				Args: {
-					actor_email: string;
-					target_active_recipes_state: string;
-					target_active_recipes_value: number;
-					target_conditions_state: string;
-					target_conditions_value: number;
-					target_customer_messages_state: string;
-					target_customer_messages_value: number;
-					target_max_delay_state: string;
-					target_max_delay_value: number;
-					target_max_duration_state: string;
-					target_max_duration_value: number;
-					target_message_spacing_state: string;
-					target_message_spacing_value: number;
-					target_steps_state: string;
-					target_steps_value: number;
-					target_version_id: string;
-				};
-				Returns: string;
-			};
-			manage_platform_package_email_allowances: {
-				Args: {
-					actor_email: string;
-					target_essential_state: string;
-					target_essential_value: number;
-					target_operational_state: string;
-					target_operational_value: number;
-					target_version_id: string;
-				};
-				Returns: string;
-			};
-			manage_platform_package_marketing_allowance: {
-				Args: {
-					actor_email: string;
-					target_state: string;
-					target_value: number;
-					target_version_id: string;
-				};
-				Returns: string;
-			};
-			manage_platform_package_version: {
-				Args: {
-					actor_email?: string;
-					operation: string;
-					target_display_name?: string;
-					target_feature_keys?: string[];
-					target_limit_state?: string;
-					target_limit_value?: number;
-					target_package_key: string;
-					target_price_usd_cents?: number;
-					target_public_description?: string;
-					target_value_explanation?: string;
-					target_version_id?: string;
-				};
-				Returns: string;
-			};
-			manage_platform_package_website_chat_limits: {
-				Args: {
-					actor_email: string;
-					target_accepted_conversations_state: string;
-					target_accepted_conversations_value: number;
-					target_version_id: string;
-					target_widgets_state: string;
-					target_widgets_value: number;
-				};
-				Returns: string;
-			};
 			manual_email_sender_preview: {
 				Args: { target_actor_user_id: string; target_organization_id: string };
 				Returns: {
@@ -21251,13 +20680,22 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			organization_allowance: {
+				Args: {
+					at?: string;
+					target_allowance_key: string;
+					target_organization_id: string;
+				};
+				Returns: {
+					is_unlimited: boolean;
+					source: string;
+					state: string;
+					value: number;
+				}[];
+			};
 			organization_currency_is_locked: {
 				Args: { target_organization_id: string };
 				Returns: boolean;
-			};
-			organization_legacy_readiness: {
-				Args: { target_organization_id: string };
-				Returns: Json;
 			};
 			organization_tax_default_property_count: {
 				Args: { target_organization_id: string };
@@ -21731,18 +21169,6 @@ export type Database = {
 				Returns: number;
 			};
 			property_delete_impact: { Args: { p_property_id: string }; Returns: Json };
-			provision_organization_from_application: {
-				Args: {
-					target_actor_owner_email?: string;
-					target_administrator_role?: string;
-					target_administrator_user_id: string;
-					target_application_id: string;
-					target_organization_id: string;
-					target_organization_name: string;
-					target_slug: string;
-				};
-				Returns: string;
-			};
 			publish_form_draft: {
 				Args: {
 					expected_revision: number;
@@ -22142,15 +21568,6 @@ export type Database = {
 			record_job_report_link_view: {
 				Args: { supplied_token_hash: string };
 				Returns: Json;
-			};
-			record_legacy_organization_package: {
-				Args: {
-					target_organization_id: string;
-					target_package_version_id: string;
-					target_paid_through_date: string;
-					target_reason: string;
-				};
-				Returns: undefined;
 			};
 			record_member_identity_cleanup_step: {
 				Args: {
@@ -23896,6 +23313,7 @@ export type Database = {
 				  };
 			submit_onboarding_application: {
 				Args: {
+					target_billing_interval: string;
 					target_business_name: string;
 					target_city_country: string;
 					target_initial_administrator_email: string;
@@ -23904,7 +23322,7 @@ export type Database = {
 					target_main_contact_name: string;
 					target_main_contact_phone: string;
 					target_note: string;
-					target_package_version_id: string;
+					target_package_edition_id: string;
 					target_privacy_policy_version: string;
 					target_submitted_data: Json;
 					target_time_zone: string;

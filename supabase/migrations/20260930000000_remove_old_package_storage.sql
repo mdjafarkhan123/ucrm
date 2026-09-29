@@ -273,7 +273,7 @@ revoke all on public.platform_email_template_packages from anon, authenticated;
 create or replace function public.apply_organization_purge(
 	target_organization_id uuid,
 	purge_trigger_kind text,
-	actor_owner_email text
+	actor_owner_email text default null
 )
 returns jsonb
 language plpgsql
