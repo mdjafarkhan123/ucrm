@@ -1,14 +1,14 @@
 # Package builder — now
 
 **Goal:** Jafar can build configurable packages and manually assign published editions that preserve each customer's features, limits, and price.
-**Plan:** `docs/package-builder-behavior-contract.md`
+**Plan:** `docs/package-builder-behavior-contract.md` · **Technical approach:** `docs/adr/0003-package-editions-agreements-and-offsite-billing-ledger.md`
 
-**Completed:**
+**In progress:**
 
-- Product planning is complete and approved. The reviewable behavior contract is `docs/package-builder-behavior-contract.md`.
+- P2 — the build parts are proposed in `stages/`. Jafar's approval and his answers to three grace and allowance questions are pending. See `parts/P2.md`.
 
-**Next part:** Start a separate cloud coding task. That task first creates its technical implementation plan from the approved behavior contract and feasibility review, then implements only after following the project's normal checks.
+**Next part:** P3 Switch to the new package storage, after P2 is approved.
 
-**Blockers:** None in product behavior. Website production, hosting, DNS, GBP operating procedures, and other service-fulfillment work are deliberately outside this package-builder campaign.
+**Blockers:** Jafar's answers and approval (P2).
 
-The user expects two initial offers, not a hard package-count limit. All current organizations are fake. The agreed behavior is in the reviewable plan. No application or database change was made during planning. Coordinate with the existing Jafar-panel campaign before later implementation.
+Jafar approved on 2026-09-29 rebuilding the whole package system while keeping each feature's existing access check, and clearing the test organizations' old package and payment history. All organizations are fake. Coordinate the Jafar panel's final audit (its Part 11) with this campaign's P15.

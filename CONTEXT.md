@@ -41,18 +41,29 @@
 - **Payment confirmed** — The Platform Owner has manually verified that the prospect's offsite subscription payment is received. It is not a payment record held or processed by UpliftContractor.
 - **Organization** — An active or suspended contractor tenant created only after payment confirmation and successful account provisioning.
 - **Initial contractor administrator** — The first user for a newly provisioned organization. This person administers that contractor tenant; the Platform Owner never becomes a tenant member.
-- **Activated package** — The package applied to an organization at provisioning. It normally matches the prospect's selected package, but the Platform Owner may correct it to match the package actually paid for and must record a private reason.
+- **Activated package** — The package edition applied to an organization at provisioning. It normally matches the prospect's selected edition, but the Platform Owner may correct it to match the edition actually paid for and must record a private reason.
 - **Not proceeding** — A platform-owned final prospect outcome used when no account will be created. It is not an organization lifecycle state.
 - **Needs attention** — A prospect outcome meaning payment is confirmed but safe account provisioning cannot proceed without an owner resolving a specific problem. It is not an organization lifecycle state.
 - **Possible duplicate** — A prospect submission that may represent an existing prospect. It requires owner review; it never authorizes automatic merging or replacement of submitted information.
-- **Package** — A platform-owned commercial offering defined only in the `/jafar` package-management area. It is the single source of truth for what a prospect may select and what can be activated for an organization.
-- **Package version** — The dated, immutable record of a package's price, inclusions, and limits at a point in time. A later package edit creates a new version; it does not rewrite prior commercial terms.
-- **Package exception** — A time-bound or permanent organization-specific difference from the activated package. It is explicitly recorded and does not redefine the package.
-- **Activated package version** — The specific package version an organization bought. It remains its commercial and access baseline until the Platform Owner explicitly changes the organization to another version.
-- **Paid-through date** — The last date of paid access recorded by the Platform Owner for an organization whose subscription payment is handled outside UpliftContractor.
+- **Package** — A platform-owned commercial offer built only in the `/jafar` package builder, with a stable name and public slug. Its visibility, display order, and archived state can change without changing any customer's terms. _Avoid_: Plan, tier.
+- **Package edition** — The frozen customer-facing terms of one published revision of a package: capabilities, allowances, included services, highlights, and monthly and yearly USD prices. Revising published terms creates the next edition; it never rewrites an earlier one. _Avoid_: Package version.
+- **Package draft** — The single unpublished working copy of a package's next edition. It is saved whole and grants nothing until published.
+- **Capability** — A working product area an edition can include, such as Sales pipeline or Website chat. Core capabilities are in every edition; an extra becomes sellable only after its build checks pass. _Avoid_: Feature, when speaking to customers.
+- **Allowance** — A business limit Jafar sets in an edition, such as team seats or monthly marketing email. It is distinct from a safety control, which applies equally to every package.
+- **Customer highlight** — A short sales line shown on a package card. It never grants access or proves a service is ready.
+- **Included service** — Work Uplift delivers as part of a package, such as a premium website or Google Business Profile management, recorded with the edition that promises it.
+- **Introductory offer** — A temporary percentage or fixed USD reduction for a set number of monthly periods or the first yearly period. A code is one way to claim it. _Avoid_: Coupon, discount.
+- **Agreement** — The dated terms under which an organization receives one package edition: billing interval, agreed price, and any introductory offer. It remains the organization's commercial and access baseline until the Platform Owner explicitly agrees a change. _Avoid_: Subscription, package assignment.
+- **Package exception** — A temporary organization-specific difference from the agreed edition, with a reason, start date, and end date. Permanent negotiated terms use a private edition instead.
+- **Package charge** — The USD amount due for one service period under an agreement, or for the rest of a period after an immediate package change. _Avoid_: Invoice, which is a contractor's bill to their own customer.
+- **Package receipt** — A record of money the Platform Owner confirms was received offsite for an organization's package. _Avoid_: Payment, which is a contractor's customer payment.
+- **Package credit** — Money received but not yet applied to a package charge, plus unused paid time returned by an immediate package change. Only the Platform Owner applies or refunds it.
+- **Coverage** — The dates for which an organization's access is confirmed as paid or excepted. Coverage moves only by the Platform Owner's explicit confirmation.
+- **Service month** — A monthly window counted from the first confirmed coverage start. Monthly allowances reset on it for monthly and yearly agreements alike.
+- **Paid-through date** — The last day of an organization's confirmed coverage, for an organization whose package payment is handled outside UpliftContractor.
 - **Legacy organization** — An organization created before the paid-prospect onboarding flow. Its current package and paid-through date may be recorded, but missing prospect or payment history is never invented.
-- **Onboarding package snapshot** — The exact package version, USD price, and inclusions presented when a prospect submits the public form. It preserves what was selected even if the package is later revised or retired.
-- **Platform price** — The fixed USD monthly price set by UpliftContractor for a package. A payment provider may add its own separate fee; that fee is not part of the platform price and is not calculated by UpliftContractor.
+- **Onboarding package snapshot** — The exact package edition, billing interval, USD price, offer, and inclusions presented when a prospect submits the public form. It preserves what was selected even if the package is later revised or archived.
+- **Platform price** — The USD monthly or yearly price set by UpliftContractor for a package edition. A payment provider may add its own separate fee; that fee is not part of the platform price and is not calculated by UpliftContractor.
 - **Organization entitlement** — Platform-controlled access that determines which product capabilities and limits are available to a contractor organization. It is separate from team-member permissions.
 - **Team member** — A person with access to a contractor organization, including its owner, office staff, sales staff, field workers, finance staff, or subcontractors. _Avoid_: Employee, when referring to every organization user.
 - **Team-member permission** — A contractor-controlled rule describing what one team member may do inside the organization. The contractor owner or administrator normally manages it.

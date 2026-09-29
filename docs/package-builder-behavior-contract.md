@@ -1,6 +1,6 @@
 # Package builder
 
-**Status:** Product behavior planning completed and approved by Jafar on 2026-09-29. The package combines customer-facing services and application access. Website production, hosting, DNS, GBP operating procedures, and other fulfillment methods are outside this package-builder plan. Technical implementation planning and coding belong to the later coding task.
+**Status:** Product behavior planning completed and approved by Jafar on 2026-09-29. The package combines customer-facing services and application access. Website production, hosting, DNS, GBP operating procedures, and other fulfillment methods are outside this package-builder plan. Build-part planning started 2026-09-29; the technical approach is [ADR 0003](adr/0003-package-editions-agreements-and-offsite-billing-ledger.md).
 
 ## Summary
 
@@ -60,7 +60,9 @@ Jafar builds named packages by selecting working CRM capabilities and setting us
 
 ## Build checks
 
-The [feasibility review](research/package-builder-feasibility-2026-09-29.md) confirms useful version and access foundations, while fixed three-tier names, monthly-only prices, split draft saves, and receipt-only commercial history need replacement. Before selling an extra or declaring this feature complete, verify its enforcement, allowance counting, annual boundaries, concurrent saves, payment allocations, downgrade effects, and access after grace. Handle fake test assignments and the historical [email allowance discrepancy](../Memory/deferred/package-versions-can-have-no-email-limits-configured.md) in the replacement plan. No customer capacity claim follows from this design review.
+The [feasibility review](research/package-builder-feasibility-2026-09-29.md) confirms useful version and access foundations, while fixed three-tier names, monthly-only prices, split draft saves, and receipt-only commercial history need replacement. Before selling an extra or declaring this feature complete, verify its enforcement, allowance counting, annual boundaries, concurrent saves, payment allocations, downgrade effects, and access after grace. No customer capacity claim follows from this design review.
+
+Jafar decided on 2026-09-29 that the new package system replaces the old one completely. Each existing feature keeps its own check of what a customer may use, and that check reads the new package terms. The four test organizations lose their old package, payment, exception, and free-access history and move onto a package made in the new system. Their clients, jobs, invoices, team, and lifecycle history stay. The historical [email allowance discrepancy](../Memory/deferred/package-versions-can-have-no-email-limits-configured.md) ends with the old package versions.
 
 ## Research
 
@@ -74,7 +76,9 @@ The [feasibility review](research/package-builder-feasibility-2026-09-29.md) con
 
 ## Still unclear
 
-- No product-behavior decision blocks the coding handoff. The coding task must translate this contract into an implementation plan, including replacement boundaries, fake-data migration, and feature-specific counting verification.
+- When grace ends unpaid, is access suspended automatically, as this plan says, or does Jafar suspend it manually? The earlier [Jafar panel contract](jafar-completion-contract.md) says “Automatic overdue messaging and suspension remain out.”
+- During the grace week, does the contractor see an overdue warning in their app, or does only Jafar see it?
+- [PRODUCT.md](PRODUCT.md) describes a dollar-valued monthly Communication Allowance included in each package. It was never built, and this plan's allowance list does not include it. Does it stay out of the builder for now?
 
 ## Not doing
 
