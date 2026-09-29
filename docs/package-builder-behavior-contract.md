@@ -8,7 +8,7 @@ Jafar builds packages in the Jafar workspace by choosing supported capabilities 
 
 ## Building packages
 
-The builder lets Jafar select supported application capabilities and tune their configuration. Every package includes customers, requests, quotes, jobs, invoices, and payment recording. Normal scheduling and essential customer access to quotes and invoices are also included in every package. Separately selectable extras are sales pipeline, shared inbox, website chat, marketing email, Google review requests, custom automations, and advanced reports. Adjustable business allowances include team size, email allowances, website chat allowances, and the number of active automations; Jafar sets values for each package. The builder explains supporting feature requirements and lets Jafar add them, then blocks publication until the combination works. An extra can be published only after its application behavior and enforcement are verified. Safety protections remain in force for every package and are separate from sellable allowances. Exact counting and reset rules are still to be planned. Packages can be public offers or private negotiated offers. The current implementation must not constrain the new product design to Starter, Growth, and Elite.
+The builder lets Jafar select supported application capabilities and tune their configuration. Every package includes customers, requests, quotes, jobs, invoices, and payment recording. Normal scheduling and essential customer access to quotes and invoices are also included in every package. Separately selectable extras are sales pipeline, shared inbox, website chat, marketing email, Google review requests, custom automations, and advanced reports. Adjustable business allowances include team size, email allowances, website chat allowances, and the number of active automations; Jafar sets values for each package. The builder explains supporting feature requirements and lets Jafar add them, then blocks publication until the combination works. An extra can be published only after its application behavior and enforcement are verified. Safety protections remain in force for every package and are separate from sellable allowances. The team allowance counts the owner, active staff, and pending invitations; a seat becomes available when membership ends or an invitation expires. Email and accepted website chat allowances reset each monthly service period, including for yearly customers. Seats, chat widgets, and active automation recipes are concurrent counts. At a limit, the app explains why new use stops and preserves existing records. Exact email categories, counting time, and boundary cases still need verification. Packages can be public offers or private negotiated offers. The current implementation must not constrain the new product design to Starter, Growth, and Elite.
 
 ## Pricing
 
@@ -30,14 +30,14 @@ This plan extends the earlier onboarding contract’s monthly-only scope. Its US
 
 ## Customer editions
 
-Published editions preserve the package terms customers receive. A later change to features, limits, or price does not automatically change an existing customer's edition. Moving that customer requires Jafar's manual assignment. This is the user's blueprint/copy analogy; it does not decide whether implementation duplicates records or references an immutable shared version.
+Published editions preserve the package terms customers receive. A later change to features, limits, or price does not automatically change an existing customer's edition. Moving that customer requires Jafar's manual assignment. Before moving to a smaller edition, the app previews seats, widgets, or automations above the new allowance; Jafar resolves excess active resources before assigning it, while history and customer records remain. An edition move leaves the paid-through date and recorded payments unchanged. Jafar separately confirms any price difference and the next service period. This is the user's blueprint/copy analogy; it does not decide whether implementation duplicates records or references an immutable shared version.
 
 ## Still unclear
 
-- Exact counting, reset, and exhaustion rules for approved allowances; whether other business controls are needed after the capability audit.
+- Exact email categories, counting moments, and boundary cases; whether other business controls are needed after the capability audit.
 - Draft concurrent-edit behavior and how visibility, price, and promotion changes create editions.
 - Detailed introductory-period rules, billing-interval changes, manual receipt fields, credit application, partial-payment access, and late-payment corrections.
-- Customer assignment confirmation, effects on payment terms, overrides, and downgrade consequences.
+- Customer assignment confirmation, pricing of mid-period moves, negotiated exceptions, and adjustment handling.
 - Whether customer-specific editions or existing overrides serve negotiated exceptions.
 - Exact scope of replacing old code and resetting test assignments, followed by approved build parts and verification.
 
