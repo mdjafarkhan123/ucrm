@@ -1,6 +1,6 @@
 # Package builder
 
-**Status:** Planning — paused at Jafar's request on 2026-09-29. The direction below is confirmed; the complete behavior and implementation plan are not approved yet.
+**Status:** Planning — resumed on 2026-09-29. The direction below is confirmed; the complete behavior and implementation plan are not approved yet.
 
 ## Summary
 
@@ -9,6 +9,10 @@ Jafar builds packages in the Jafar workspace by choosing supported capabilities 
 ## Building packages
 
 The builder lets Jafar select supported application capabilities and tune their configuration. The exact selectable items, dependencies, mandatory capabilities, and tuning controls remain to be planned. The current implementation must not constrain the new product design to Starter, Growth, and Elite.
+
+## Pricing
+
+Packages support monthly and yearly prices. Jafar also wants introductory discounts, such as offers for the first three or six months. Exact discount rules, currencies, and collection arrangements remain under discussion.
 
 ## Customer editions
 
@@ -20,7 +24,7 @@ Published editions preserve the package terms customers receive. A later change 
 - Which settings and limits can be tuned for each capability.
 - Package creation, duplication, naming, visibility, ordering, archival, restoration, and unused-draft deletion.
 - Draft saving, exact publication review, and concurrent edit behavior.
-- Monthly versus annual prices, currencies, and billing arrangements.
+- Introductory discount rules, annual-offer treatment, currencies, and billing arrangements.
 - Customer assignment confirmation, effects on payment terms, overrides, and downgrade consequences.
 - Whether customer-specific editions or existing overrides serve negotiated exceptions.
 - Exact scope of replacing old code and resetting test assignments, followed by approved build parts and verification.
@@ -32,6 +36,8 @@ Published editions preserve the package terms customers receive. A later change 
 - Deleting or resetting application data during planning — this session authorized a campaign handoff only.
 
 ## Research
+
+- [Introductory offer patterns and proposed rules](research/package-introductory-offers-2026-09-29.md).
 
 - [Package audit and primary-source comparisons](research/package-flexibility-audit-2026-09-29.md).
 - Earlier [onboarding contract](jafar-onboarding-implementation-contract.md) and [versioning decision](adr/0001-paid-prospect-provisioning-and-versioned-packages.md) provide context; this replacement plan remains incomplete.

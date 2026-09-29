@@ -5,9 +5,9 @@
 
 **In progress:**
 
-- P1 planning — paused at Jafar's request; see `parts/P1.md`.
+- P1 planning — monthly/yearly pricing and introductory offers requested; see `parts/P1.md`.
 
-**Next part:** Resume P1 to settle the builder's choices and lifecycle before approving the complete plan. Build parts follow approval.
+**Next part:** Continue P1 to settle the builder's choices and lifecycle before approving the complete plan. Build parts follow approval.
 
 **Blockers:** None to resuming the discussion. Implementation awaits the completed design and Jafar's approval.
 
