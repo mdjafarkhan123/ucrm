@@ -45,6 +45,8 @@ export const jobListQuerySchema = z.object({
 	dir: z.enum(['asc', 'desc']).default('desc'),
 	created_from: z.string().datetime({ offset: true }).optional(),
 	created_to: z.string().datetime({ offset: true }).optional(),
+	/** Narrows to one client's jobs, e.g. the client page's Work overview. Unset on the ordinary list. */
+	client_id: z.string().uuid().optional(),
 	cursor: z.string().min(3).max(400).optional(),
 	limit: z.coerce.number().int().min(1).max(JOB_PAGE_SIZE_MAX).default(JOB_PAGE_SIZE_DEFAULT)
 });

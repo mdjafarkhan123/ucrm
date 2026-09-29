@@ -455,3 +455,45 @@ export async function fetchClients(
 	if (!response.ok) throw await readError(response, 'Clients could not be loaded.');
 	return response.json();
 }
+
+// --- Client schedule --------------------------------------------------------------------------------------
+
+/** One visit or on-site assessment on the client page's Client schedule. */
+export type ClientScheduleEntry = {
+	kind: 'visit' | 'assessment';
+	id: string;
+	/** The job a visit belongs to, or the request an assessment belongs to — what the row opens. */
+	record_id: string;
+	/** The contractor's own calendar day, YYYY-MM-DD. */
+	date: string | null;
+	/** A visit's plain wall-clock times; null for an anytime visit and for every assessment. */
+	start_time: string | null;
+	end_time: string | null;
+	/** An assessment's booked instants; null for an all-day one and for every visit. */
+	starts_at: string | null;
+	ends_at: string | null;
+	title: string;
+	/** "Job #12" or "Assessment". */
+	record_label: string;
+	completed: boolean;
+	/** Dated before today and never marked done. */
+	overdue: boolean;
+	assignee_ids: string[];
+};
+
+export type ClientSchedule = {
+	today: string;
+	timezone: string;
+	upcoming: ClientScheduleEntry[];
+	past: ClientScheduleEntry[];
+	has_more_upcoming: boolean;
+	has_more_past: boolean;
+};
+
+export const clientScheduleKey = (clientId: string) => ['clients', 'schedule', clientId] as const;
+
+export async function fetchClientSchedule(clientId: string): Promise<ClientSchedule> {
+	const response = await fetch(`/api/clients/${clientId}/schedule`);
+	if (!response.ok) throw await readError(response, "This client's schedule could not be loaded.");
+	return response.json();
+}

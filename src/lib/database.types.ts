@@ -16182,6 +16182,31 @@ export type Database = {
 				Args: { p_primary_client_id: string; p_secondary_client_id: string };
 				Returns: Json;
 			};
+			client_schedule_rows: {
+				Args: {
+					past_limit: number;
+					target_client_id: string;
+					target_organization_id: string;
+					upcoming_limit: number;
+				};
+				Returns: {
+					all_day: boolean;
+					assignee_ids: string[];
+					bucket: string;
+					completed_at: string;
+					end_time: string;
+					ends_at: string;
+					id: string;
+					job_number: number;
+					kind: string;
+					record_id: string;
+					record_title: string;
+					start_time: string;
+					starts_at: string;
+					title: string;
+					visit_date: string;
+				}[];
+			};
 			client_spendable_credit: {
 				Args: { target_client_id: string; target_organization_id: string };
 				Returns: {
@@ -22219,6 +22244,15 @@ export type Database = {
 			};
 			request_communication_sms_outbox_wake: { Args: never; Returns: undefined };
 			request_form_submission_worker_wake: { Args: never; Returns: undefined };
+			request_list_metrics: {
+				Args: { target_organization_id: string };
+				Returns: {
+					converted_current: number;
+					converted_previous: number;
+					new_current: number;
+					new_previous: number;
+				}[];
+			};
 			request_organization_export: {
 				Args: { target_actor_id: string; target_organization_id: string };
 				Returns: {
@@ -22267,15 +22301,6 @@ export type Database = {
 			request_pricing_line_money: {
 				Args: { target_request_id: string };
 				Returns: Json;
-			};
-			request_list_metrics: {
-				Args: { target_organization_id: string };
-				Returns: {
-					converted_current: number;
-					converted_previous: number;
-					new_current: number;
-					new_previous: number;
-				}[];
 			};
 			request_status_counts: {
 				Args: {

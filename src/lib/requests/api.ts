@@ -7,6 +7,10 @@ export type RequestListFilters = {
 	statuses: DisplayRequestStatus[];
 	sort: RequestSortKey;
 	dir: 'asc' | 'desc';
+	/** One client's records only — the client page's Work overview. Unset on the ordinary list. */
+	client_id?: string;
+	/** Rows per page when a caller needs fewer than the list's default. */
+	limit?: number;
 };
 
 export type RequestListItem = {
@@ -69,6 +73,8 @@ export async function fetchRequests(
 	for (const status of filters.statuses) params.append('status', status);
 	if (filters.sort !== 'requested') params.set('sort', filters.sort);
 	if (filters.dir !== 'desc') params.set('dir', filters.dir);
+	if (filters.client_id) params.set('client_id', filters.client_id);
+	if (filters.limit) params.set('limit', String(filters.limit));
 	if (cursor) params.set('cursor', cursor);
 
 	const response = await fetch(`/api/requests?${params.toString()}`);

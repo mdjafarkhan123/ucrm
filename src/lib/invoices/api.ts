@@ -22,6 +22,10 @@ export type InvoiceListFilters = {
 	created_to: string;
 	sort: InvoiceSortKey;
 	dir: 'asc' | 'desc';
+	/** One client's records only — the client page's Work overview. Unset on the ordinary list. */
+	client_id?: string;
+	/** Rows per page when a caller needs fewer than the list's default. */
+	limit?: number;
 };
 
 export type InvoiceListItem = {
@@ -87,6 +91,8 @@ export async function fetchInvoices(
 	if (filters.created_to) params.set('created_to', filters.created_to);
 	if (filters.sort !== 'created') params.set('sort', filters.sort);
 	if (filters.dir !== 'desc') params.set('dir', filters.dir);
+	if (filters.client_id) params.set('client_id', filters.client_id);
+	if (filters.limit) params.set('limit', String(filters.limit));
 	if (cursor) params.set('cursor', cursor);
 
 	const response = await fetch(`/api/invoices?${params.toString()}`);

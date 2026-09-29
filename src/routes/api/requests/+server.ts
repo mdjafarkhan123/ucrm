@@ -1,4 +1,5 @@
 import { json } from '@sveltejs/kit';
+import { z } from 'zod';
 import type { RequestHandler } from './$types';
 import { requireOrganization } from '$lib/server/auth/organization';
 import {
@@ -130,6 +131,12 @@ export const GET: RequestHandler = async (event) => {
 	);
 	const cursor = readCursor(params.get('cursor'));
 	const { column: sortColumn, ascending } = readSort(params);
+	// Narrows to one client's requests, e.g. the client page's Work overview. Unset on the ordinary list.
+	const clientIdParam = params.get('client_id');
+	const clientId = clientIdParam === null ? null : z.string().uuid().safeParse(clientIdParam);
+	if (clientId && !clientId.success) {
+		return validationError({ client_id: 'Choose a client in your organization.' });
+	}
 
 	// The contractor's timezone is needed twice — for the filter's day boundaries and for each row's
 	// badge — so it is read once, up front.
@@ -147,6 +154,7 @@ export const GET: RequestHandler = async (event) => {
 			 property:properties!requests_property_organization_fk(id, label, address_line1, city, state_region, postal_code)`
 		)
 		.eq('organization_id', organizationId);
+	if (clientId) query = query.eq('client_id', clientId.data);
 
 	const statusFilter = displayStatusFilter(statuses, organizationDayRange(timezone, now));
 	if (statusFilter) query = query.or(statusFilter);

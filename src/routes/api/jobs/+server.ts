@@ -54,7 +54,7 @@ export const GET: RequestHandler = async (event) => {
 	const parsed = jobListQuerySchema.safeParse(Object.fromEntries(event.url.searchParams.entries()));
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
-	const { search, sort, dir, created_from, created_to, limit } = parsed.data;
+	const { search, sort, dir, created_from, created_to, client_id, limit } = parsed.data;
 	const ascending = dir === 'asc';
 	const sortColumn = SORT_COLUMNS[sort];
 	const cursor = readCursor(parsed.data.cursor);
@@ -83,6 +83,7 @@ export const GET: RequestHandler = async (event) => {
 	if (types.length > 0) query = query.in('job_type', types);
 	if (created_from) query = query.gte('created_at', created_from);
 	if (created_to) query = query.lte('created_at', created_to);
+	if (client_id) query = query.eq('client_id', client_id);
 
 	let searchNarrowed = false;
 	if (search) {

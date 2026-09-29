@@ -20,6 +20,8 @@
 	import TabPanel from '$lib/components/ui/TabPanel.svelte';
 	import ClientDetailHeader from '$lib/components/clients/ClientDetailHeader.svelte';
 	import ClientDetailsForm from '$lib/components/clients/ClientDetailsForm.svelte';
+	import ClientWorkOverview from '$lib/components/clients/ClientWorkOverview.svelte';
+	import ClientSchedule from '$lib/components/clients/ClientSchedule.svelte';
 	import ClientMergeDialog from '$lib/components/clients/ClientMergeDialog.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import MarketingConsentDialog from '$lib/components/clients/MarketingConsentDialog.svelte';
@@ -68,8 +70,6 @@
 	} from '$lib/collaboration/api';
 	import ActivityFeed from '$lib/components/collaboration/ActivityFeed.svelte';
 	import homeIcon from '@tabler/icons/outline/home.svg?raw';
-	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
-	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
 	import targetIcon from '@tabler/icons/outline/target-arrow.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
@@ -634,21 +634,9 @@
 							{/if}
 						</SectionBlock>
 
-						<SectionBlock title="Work overview" icon={briefcaseIcon} level={2}>
-							<EmptyState
-								icon={briefcaseIcon}
-								title="No work yet"
-								description="Requests, quotes, jobs, and invoices for this client will all be listed here once you start creating them."
-							/>
-						</SectionBlock>
+						<ClientWorkOverview {clientId} />
 
-						<SectionBlock title="Client schedule" icon={calendarIcon} level={2}>
-							<EmptyState
-								icon={calendarIcon}
-								title="Nothing booked"
-								description="Visits and reminders for this client will show up here once jobs are being scheduled."
-							/>
-						</SectionBlock>
+						<ClientSchedule {clientId} />
 					</TabPanel>
 
 					{#if canSeeCommunication}
