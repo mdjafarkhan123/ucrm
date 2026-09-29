@@ -13,7 +13,6 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Delete client, exactly like Jobber (Jafar decided; waits for "go")](delete-client-like-jobber.md) |
 | P2 | [SES production-domain cutover: capacity cap and rehearsal notes](ses-production-domain-cutover-notes.md) |
 | P2 | [A full page load can crash hydration and leave the previous page on screen](full-page-load-hydration-crash-leaves-the-previous-page-on-screen.md) |
-| P2 | [Resolving a chat identity does not stop the next conflict](resolving-a-chat-identity-does-not-stop-the-next-conflict.md) |
 | P2 | [Active member's sign-in email not visible, recovery path unclear](active-member-email-not-visible-and-recovery-path-unclear.md) |
 | P2 | [No admin-alert delivery for loop-detected inbound threads](no-admin-alert-delivery-mechanism-for-loop-detected-inbound-threads.md) |
 | P2 | [Composer day-two scope: CC, attachments, formatting, channel tabs](composer-day-two-scope.md) |
