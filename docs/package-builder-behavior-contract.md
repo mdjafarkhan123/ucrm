@@ -1,59 +1,65 @@
 # Package builder
 
-**Status:** Planning — resumed on 2026-09-29. The direction below is confirmed; the complete behavior and implementation plan are not approved yet.
+**Status:** Complete behavior plan for Jafar's review, 2026-09-29. The choices recorded below were agreed during planning; approval of this complete plan and its build parts is still pending.
 
 ## Summary
 
-Jafar builds packages in the Jafar workspace by choosing supported capabilities and tuning their settings and limits, like selecting items from a storeroom. He expects to offer two packages initially; this is not a requested two-package ceiling. Each customer receives a particular published edition, including its features, limits, and price. Editing the offer creates a new edition. Existing customers keep their assigned edition until Jafar manually assigns a newer one. The application currently has only fake organizations and test data, so preserving real customer contracts during replacement is unnecessary.
+Jafar builds named packages by selecting working CRM capabilities and setting useful allowances. He expects to launch with two offers, with no two-package limit. A customer is assigned one published edition with agreed features, limits, USD price, billing interval, and any introductory offer. Publishing a revision leaves existing customers on their assigned edition until Jafar explicitly moves them. Jafar collects money outside the app, records it manually, and sees what each customer owes, paid, and has covered.
 
-## Building packages
+## Builder and catalog
 
-The builder lets Jafar select supported application capabilities and tune their configuration. Every package includes customers, requests, quotes, jobs, invoices, and payment recording. Normal scheduling and essential customer access to quotes and invoices are also included in every package. Separately selectable extras are sales pipeline, shared inbox, website chat, marketing email, Google review requests, custom automations, and advanced reports. Adjustable business allowances include team size, email allowances, website chat allowances, and the number of active automations; Jafar sets values for each package. The builder explains supporting feature requirements and lets Jafar add them, then blocks publication until the combination works. An extra can be published only after its application behavior and enforcement are verified. Safety protections remain in force for every package and are separate from sellable allowances. The team allowance counts the owner, active staff, and pending invitations; a seat becomes available when membership ends or an invitation expires. Email and accepted website chat allowances reset each monthly service period, including for yearly customers. Seats, chat widgets, and active automation recipes are concurrent counts. At a limit, the app explains why new use stops and preserves existing records. Essential emails such as quotes, invoices, receipts, security notices, and direct replies continue under the existing Communications policy and are counted. Optional operational email beyond its allowance uses prepaid Communication Balance or pauses when that balance is insufficient. Marketing email retains its separate allowance and sending rules. Accepted website chat conversations reset monthly even for yearly customers, superseding the former yearly-period chat allowance. Counting moments and boundary cases must be verified against each feature before sale. Packages can be public offers or private negotiated offers. The current implementation must not constrain the new product design to Starter, Growth, and Elite.
+- Only Jafar's platform workspace creates, copies, edits, publishes, archives, restores, orders, and assigns packages. Any number of packages may be named. An offer may be public or private.
+- Every package includes customers and properties, requests, quotes, jobs, invoices, recording of the contractor's customer payments, normal scheduling, and essential customer access to their quotes and invoices.
+- Jafar can separately include sales pipeline, shared inbox, website chat, marketing email, Google review requests, custom automations, and advanced reports. An item appears as sellable only after its actual screens, commands, background work, and access enforcement have been verified. A catalog label alone is insufficient.
+- The builder explains required supporting capabilities, lets Jafar include them, and refuses to publish a broken combination. It distinguishes business allowances from safety controls that apply to every package.
+- Jafar sets team seats, operational and marketing email allowances, website chat widgets and accepted conversations, and active automation recipes. The owner, active staff, and pending invitations consume seats; a seat is freed when its member leaves or invitation expires. Seats, widgets, and active recipes are counted at one time. Email and accepted chat allowances reset each monthly service period, including on yearly packages. The feature owner verifies each counting event and boundary before that control is sold. Grace-period usage counts toward the new service month and payment confirmation never gives a second reset for that month.
+- Reaching a limit blocks new use with a clear explanation and preserves existing records. Existing accepted chat sessions remain usable. Essential email—requested quotes, invoices, receipts, security notices, and direct replies—continues and is counted under the Communications policy. Optional operational email above its included allowance uses prepaid Communication Balance or pauses when that balance is insufficient. Marketing email follows its separate sending and allowance rules.
 
-## Pricing
+## Prices and offers
 
-Approved 2026-09-29: packages have independently set monthly and yearly prices in USD only. Yearly means one upfront payment for the year.
+- Each edition has independently set monthly and yearly USD prices. Yearly is paid once upfront for a year. Any normal yearly saving is part of that price, separate from a temporary offer.
+- Introductory offers may be a percentage or fixed USD reduction. Monthly offers have three- and six-month presets or a chosen duration; they apply to consecutive monthly service periods starting with the agreed coverage start. Late payment or an edition change does not automatically restart the offer. A yearly offer applies to the first yearly period only. The customer's agreed normal price follows the introductory period.
+- Jafar chooses eligible packages and billing intervals, new or existing customer eligibility, claim dates, redemption cap, and whether the offer is applied automatically or uses a code. Only one promotion applies at a time. With offsite payment, Jafar applies a code when recording the agreed terms and the customer's claim is retained in history. The claim deadline stops new claims; it does not cut short an existing customer's agreed discount. Show the introductory amount, exact periods, and later normal amount before assignment.
 
-Introductory offers support percentage or fixed-amount discounts, three/six-month presets and custom duration, and separate first-year offers for yearly customers. Controls include eligible packages and billing intervals, customer eligibility, claim dates, redemption caps, and optional promotion codes or automatic application. Only one promotion applies at a time. With offsite collection, Jafar applies a promotion code when recording the customer's agreed package; the claim and discount are saved in their history. Show the introductory price, duration, and subsequent normal price clearly. Preserve the customer’s agreed price and offer terms when public offers change. Annual base-price savings are separate from introductory promotions.
+## Drafts and published editions
 
-## Package catalog and publishing
+- Jafar can create or copy a package into a draft and save it without publishing. Save all edited terms together. A stale tab must reload and compare its changes before it can overwrite a newer saved draft.
+- Publication reviews the exact saved edition and refuses to proceed while the form differs from it or a save is in progress. Publishing freezes customer-facing terms. Revising those terms creates a new edition; existing customers keep their assigned edition. Catalog visibility and display order may change without altering an existing customer's terms.
+- Archiving removes an offer from new selection while assigned customers retain their edition and access. Jafar may restore it. Only a genuinely unused draft with no dependent records may be deleted.
 
-Jafar may create any number of named packages, duplicate a package into a new draft, choose public or private visibility, and set display order. He can save drafts freely and publish only after reviewing the exact saved terms. Archiving stops an offer being chosen by new customers while existing customers keep their assigned edition; Jafar may restore the offer later. Only unused drafts with no dependent records can be deleted. Publishing a revised offer creates a new edition and never silently moves assigned customers.
+## Assignment and changes
 
-## Offsite payments and monitoring
+- Jafar sees a comparison of the customer's current and proposed editions, actual agreed price and offer, gained and lost capabilities, allowance changes, and payment consequences before confirming a move. Permanent negotiated terms use a private published edition. Temporary feature or limit exceptions require a reason, effective date, and end date.
+- A move normally starts at the next renewal. An immediate move shows the unused old-term credit and new-term charge for the remaining covered time; Jafar confirms the amount and effective date. Recorded payments and paid-through dates are not silently changed. A new price, billing interval, or promotion requires an explicit agreement. Historical customer terms stay visible in Jafar's workspace; the later contractor account page will show the same agreed terms.
+- Before a smaller edition starts, the app previews active seats, widgets, automations, or other active resources above its limits. Jafar resolves those excess active resources first. Customer records and history remain intact.
 
-Jafar collects payment outside this application and manually records it here. He may use a third-party service such as Lemon Squeezy or Payoneer; no provider integration or availability is assumed. The package system itself does not collect or automatically verify payments.
+## Offsite payment and coverage
 
-Jafar must be able to see who paid, the USD amount, and the duration covered, alongside their assigned package and renewal status. Subscription terms and introductory offers still apply when collection is offsite. The system records each monthly or yearly amount due separately from money Jafar confirms receiving offsite. It shows the amount paid, remaining balance, and extra credit. A partial payment leaves a balance; an overpayment becomes credit and does not silently extend coverage. Jafar confirms the exact dates a payment covers before paid-through moves. The view shows the upcoming renewal. The existing seven-calendar-day grace period after coverage ends remains. For each offsite receipt, Jafar records received date, USD amount, provider or method, private reference, and optional note. A correction appends a reasoned adjustment and retains the original. Partial payment leaves the service period unpaid until the agreed amount is covered. Extra money remains credit until Jafar explicitly applies it to a later period or records an offsite refund; each action stays in history. The seven-day grace allows normal access with an overdue warning. After grace, access is suspended until Jafar confirms payment or an explicit exception; records remain preserved.
+- The app does not collect or automatically verify package payments. Jafar may use a third party or other offsite method and records what he confirms. Each monthly or yearly service period has an amount due, separate from offsite money received. The owner view shows the assigned edition, coverage dates, next renewal, amount due, received, outstanding, credit, and receipt history. It flags renewal due in seven days and one day, then overdue.
+- For each receipt, Jafar records the date received, USD amount, provider or method, private reference, and optional note. He applies it to the intended charge. A partial payment leaves that period unpaid until its full agreed amount is covered. An overpayment remains credit until Jafar explicitly applies it to a future charge or records an offsite refund. Neither extra money nor a correction silently buys coverage.
+- Jafar confirms the exact service dates covered before paid-through moves. A new organization is activated only after its initial payment is confirmed, following the existing onboarding rule. Each correction or refund appends a reasoned record while preserving the original. Adjusting past money does not silently alter coverage; any coverage correction requires a separate confirmed action.
+- After paid-through ends, normal access continues for seven calendar days with an overdue warning. Access is suspended after grace until Jafar confirms payment or a reasoned exception. Records are preserved. Dates use the organization's time zone and the end of its local calendar day, as in the existing renewal contract.
 
-This plan extends the earlier onboarding contract’s monthly-only scope. Its USD-only currency and offsite-collection boundaries remain in force. Contractor recording of payments from their own clients remains a separate CRM workflow.
+## Build checks
 
-## Customer editions
-
-Published editions preserve the package terms customers receive. A later change to features, limits, or price does not automatically change an existing customer's edition. Moving that customer requires Jafar's manual assignment. Before moving to a smaller edition, the app previews seats, widgets, or automations above the new allowance; Jafar resolves excess active resources before assigning it, while history and customer records remain. An edition move leaves the paid-through date and recorded payments unchanged. Jafar separately confirms any price difference and the next service period. The customer's introductory discount and billing interval stay fixed until a new explicit agreement; Jafar chooses its effective date and any price adjustment. Enduring negotiated price or feature terms use a private published edition. Temporary feature and limit exceptions use a reasoned override with an effective period and end date. The contractor's actual agreed terms appear together. This is the user's blueprint/copy analogy; it does not decide whether implementation duplicates records or references an immutable shared version.
-
-## Still unclear
-
-- Verify feature-specific counting moments and boundary cases, including email/chat period resets and existing active resources.
-- Draft concurrent-edit behavior and precise treatment of visibility, price, and promotion edits.
-- Exact start and expiry of introductory periods; credit allocation ordering and late-payment corrections.
-- Customer assignment confirmation, pricing of mid-period moves, and adjustment handling.
-- Exact scope of replacing old code and handling fake test assignments, followed by approved build parts and verification.
-
-## Not doing
-
-- In-app payment collection or automatic provider verification — Jafar receives and confirms payments offsite.
-- Automatic movement of existing customers to a newly published edition — Jafar wants manual assignment.
-- Treating a newly typed feature name as implemented functionality — capabilities require actual application behavior.
-- Contractor-facing notification and account/offer history screens — tracked as separate work, while the builder supplies their package and payment facts.
-- Deleting or resetting application data during planning.
+The [feasibility review](research/package-builder-feasibility-2026-09-29.md) confirms useful version and access foundations, while fixed three-tier names, monthly-only prices, split draft saves, and receipt-only commercial history need replacement. Before selling an extra or declaring this feature complete, verify its enforcement, allowance counting, annual boundaries, concurrent saves, payment allocations, downgrade effects, and access after grace. Handle fake test assignments and the historical [email allowance discrepancy](../Memory/deferred/package-versions-can-have-no-email-limits-configured.md) in the replacement plan. No customer capacity claim follows from this design review.
 
 ## Research
 
-- [Feature inventory and proposed builder controls](research/package-feature-controls-2026-09-29.md).
+- [Existing package audit and primary-source comparison](research/package-flexibility-audit-2026-09-29.md)
+- [Feature controls and readiness](research/package-feature-controls-2026-09-29.md)
+- [Introductory offer patterns](research/package-introductory-offers-2026-09-29.md)
+- [Feasibility and implementation boundaries](research/package-builder-feasibility-2026-09-29.md)
+- [Earlier onboarding contract](jafar-onboarding-implementation-contract.md) and [versioning decision](adr/0001-paid-prospect-provisioning-and-versioned-packages.md)
 
-- [Introductory offer patterns and proposed rules](research/package-introductory-offers-2026-09-29.md).
+## Still unclear
 
-- [Package audit and primary-source comparisons](research/package-flexibility-audit-2026-09-29.md).
-- [Feasibility check and implementation boundaries](research/package-builder-feasibility-2026-09-29.md).
-- Earlier [onboarding contract](jafar-onboarding-implementation-contract.md) and [versioning decision](adr/0001-paid-prospect-provisioning-and-versioned-packages.md) provide context; this replacement plan remains incomplete.
+- None for the behavior in this plan. P2 will define replacement boundaries and build-part done checks, including how fake assignments are handled. Feature-specific counting details are verified with their owning domains during implementation.
+
+## Not doing
+
+- In-app collection, automatic provider verification, or contractor self-service package changes.
+- Automatically moving existing customers to a new edition.
+- Selling a free-typed feature name as functionality before it exists and is enforced.
+- Building the contractor notification and offer-history screens in the package-builder campaign; [separate work is recorded](../Memory/deferred/contractor-account-offers-and-notification-history.md).
+- Deleting or resetting application data during planning.

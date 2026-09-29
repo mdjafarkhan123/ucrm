@@ -5,10 +5,10 @@
 
 **In progress:**
 
-- P1 planning — pricing, promotions, USD-only currency, visibility, and CRM basics approved; feature and catalog choices approved; email/chat reconciliation approved; two final timing choices pending; see `parts/P1.md`.
+- P1 planning — complete behavior plan drafted and feasibility checked; waiting for Jafar to approve the whole plan; see `parts/P1.md`.
 
-**Next part:** Continue P1 to settle the builder's choices and lifecycle before approving the complete plan. Build parts follow approval.
+**Next part:** Ask Jafar to approve the complete behavior plan. P2 defines replacement boundaries and build parts after approval.
 
-**Blockers:** None to resuming the discussion. Implementation awaits the completed design and Jafar's approval.
+**Blockers:** P1 waits for Jafar's complete-plan approval. Implementation still needs P2 build-part planning.
 
-The user expects two initial offers, not a hard package-count limit. All current organizations are fake. Keep the chosen edition behavior; other earlier recommendations remain proposals. No application or database change was made for this handoff. Coordinate with the existing Jafar-panel campaign before later implementation.
+The user expects two initial offers, not a hard package-count limit. All current organizations are fake. The agreed behavior is in the reviewable plan. No application or database change was made during planning. Coordinate with the existing Jafar-panel campaign before later implementation.
