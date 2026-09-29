@@ -5,8 +5,8 @@
 
 **In progress:** none
 
-**Next part:** 6 Archive in history — write a line to the client's timeline when a client is archived or
-restored (spec: `Memory/deferred/client-archive-and-restore-not-in-client-history.md`).
+**Next part:** 7 Client work + schedule — fill the client page's empty Work overview and Client schedule boxes
+with the client's real work (spec: `Memory/deferred/client-work-overview-and-schedule-sections-are-empty.md`).
 
 **Blockers:** none. Do not touch packages or Delete client (Jafar: "not now"). The CLI runs as
 `npx --no-install supabase`. Browser testing: tunnel `cloudflared tunnel run badf2c43-7020-443a-a046-9954d139d711`,
