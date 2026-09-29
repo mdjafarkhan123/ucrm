@@ -154,7 +154,8 @@ export const POST: RequestHandler = async (event) => {
 
 		const restrictedTo = (visibility ?? []).map((row) => row.package_key);
 		const visibleToOrg =
-			restrictedTo.length === 0 || restrictedTo.includes(check.access.package.effective_key);
+			restrictedTo.length === 0 ||
+			(check.access.package !== null && restrictedTo.includes(check.access.package.slug));
 		if (!visibleToOrg) return json({ error: 'Unknown email template.' }, { status: 404 });
 
 		const { data, error } = await event.locals.supabase

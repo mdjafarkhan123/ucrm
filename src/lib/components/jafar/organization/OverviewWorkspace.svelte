@@ -182,7 +182,7 @@
 							</div>
 							<div>
 								<dt>Package</dt>
-								<dd>{access.package.display_name}</dd>
+								<dd>{access.package?.name ?? 'No package'}</dd>
 							</div>
 						</dl>
 					</Card>
@@ -325,11 +325,17 @@
 					<span class="organization-detail__mini-icon">{@html usersIcon}</span>
 					<div>
 						<p>Package status</p>
-						<strong>{access.package.status}</strong>
+						<strong
+							>{access.package
+								? access.package.edition_status === 'published'
+									? 'Current edition'
+									: 'Older edition'
+								: 'No package'}</strong
+						>
 						<small
-							>{access.package.version_number
-								? `Version ${access.package.version_number}`
-								: 'Legacy assignment'}</small
+							>{access.package
+								? `Edition ${access.package.edition_number}`
+								: 'Every capability is off'}</small
 						>
 					</div>
 				</article>

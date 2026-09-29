@@ -38,11 +38,14 @@ export const GET: RequestHandler = async (event) => {
 		(copiesResult.data ?? []).map((copy) => [copy.source_template_id as string, copy])
 	);
 
-	const effectivePackageKey = check.access.package.effective_key;
+	const effectivePackageKey = check.access.package?.slug ?? null;
 	const templates = (templatesResult.data ?? [])
 		.filter((template) => {
 			const restrictedTo = restrictionsByTemplate.get(template.id) ?? [];
-			return restrictedTo.length === 0 || restrictedTo.includes(effectivePackageKey);
+			return (
+				restrictedTo.length === 0 ||
+				(effectivePackageKey !== null && restrictedTo.includes(effectivePackageKey))
+			);
 		})
 		.map((template) => {
 			const copy = copyByTemplate.get(template.id);

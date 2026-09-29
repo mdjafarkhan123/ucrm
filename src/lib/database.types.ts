@@ -10351,6 +10351,69 @@ export type Database = {
 					}
 				];
 			};
+			organization_package_agreements: {
+				Row: {
+					actor_owner_email: string | null;
+					agreed_price_usd_cents: number;
+					billing_interval: string;
+					created_at: string;
+					edition_id: string;
+					effective_from: string;
+					id: string;
+					idempotency_key: string | null;
+					offer_terms: Json | null;
+					organization_id: string;
+					reason: string;
+					service_anchor_date: string | null;
+					source: string;
+				};
+				Insert: {
+					actor_owner_email?: string | null;
+					agreed_price_usd_cents: number;
+					billing_interval: string;
+					created_at?: string;
+					edition_id: string;
+					effective_from: string;
+					id?: string;
+					idempotency_key?: string | null;
+					offer_terms?: Json | null;
+					organization_id: string;
+					reason: string;
+					service_anchor_date?: string | null;
+					source: string;
+				};
+				Update: {
+					actor_owner_email?: string | null;
+					agreed_price_usd_cents?: number;
+					billing_interval?: string;
+					created_at?: string;
+					edition_id?: string;
+					effective_from?: string;
+					id?: string;
+					idempotency_key?: string | null;
+					offer_terms?: Json | null;
+					organization_id?: string;
+					reason?: string;
+					service_anchor_date?: string | null;
+					source?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_package_agreements_edition_id_fkey';
+						columns: ['edition_id'];
+						isOneToOne: false;
+						referencedRelation: 'package_editions';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_package_agreements_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_package_assignments: {
 				Row: {
 					assignment_source: string;
@@ -10392,6 +10455,73 @@ export type Database = {
 						columns: ['package_version_id'];
 						isOneToOne: false;
 						referencedRelation: 'platform_package_versions';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_package_exceptions: {
+				Row: {
+					actor_owner_email: string;
+					allowance_key: string | null;
+					allowance_state: string | null;
+					allowance_value: number | null;
+					capability_key: string | null;
+					capability_state: string | null;
+					created_at: string;
+					ends_at: string;
+					id: string;
+					organization_id: string;
+					reason: string;
+					starts_at: string;
+				};
+				Insert: {
+					actor_owner_email: string;
+					allowance_key?: string | null;
+					allowance_state?: string | null;
+					allowance_value?: number | null;
+					capability_key?: string | null;
+					capability_state?: string | null;
+					created_at?: string;
+					ends_at: string;
+					id?: string;
+					organization_id: string;
+					reason: string;
+					starts_at: string;
+				};
+				Update: {
+					actor_owner_email?: string;
+					allowance_key?: string | null;
+					allowance_state?: string | null;
+					allowance_value?: number | null;
+					capability_key?: string | null;
+					capability_state?: string | null;
+					created_at?: string;
+					ends_at?: string;
+					id?: string;
+					organization_id?: string;
+					reason?: string;
+					starts_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_package_exceptions_allowance_key_fkey';
+						columns: ['allowance_key'];
+						isOneToOne: false;
+						referencedRelation: 'package_allowances';
+						referencedColumns: ['allowance_key'];
+					},
+					{
+						foreignKeyName: 'organization_package_exceptions_capability_key_fkey';
+						columns: ['capability_key'];
+						isOneToOne: false;
+						referencedRelation: 'package_capabilities';
+						referencedColumns: ['capability_key'];
+					},
+					{
+						foreignKeyName: 'organization_package_exceptions_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
 						referencedColumns: ['id'];
 					}
 				];
@@ -10963,6 +11093,229 @@ export type Database = {
 					}
 				];
 			};
+			package_allowances: {
+				Row: {
+					allowance_key: string;
+					capability_key: string | null;
+					label: string;
+					resets_monthly: boolean;
+					sort_order: number;
+					unit: string;
+				};
+				Insert: {
+					allowance_key: string;
+					capability_key?: string | null;
+					label: string;
+					resets_monthly: boolean;
+					sort_order: number;
+					unit: string;
+				};
+				Update: {
+					allowance_key?: string;
+					capability_key?: string | null;
+					label?: string;
+					resets_monthly?: boolean;
+					sort_order?: number;
+					unit?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'package_allowances_capability_key_fkey';
+						columns: ['capability_key'];
+						isOneToOne: false;
+						referencedRelation: 'package_capabilities';
+						referencedColumns: ['capability_key'];
+					}
+				];
+			};
+			package_capabilities: {
+				Row: {
+					capability_key: string;
+					description: string;
+					kind: string;
+					label: string;
+					sellable: boolean;
+					sort_order: number;
+				};
+				Insert: {
+					capability_key: string;
+					description: string;
+					kind: string;
+					label: string;
+					sellable?: boolean;
+					sort_order: number;
+				};
+				Update: {
+					capability_key?: string;
+					description?: string;
+					kind?: string;
+					label?: string;
+					sellable?: boolean;
+					sort_order?: number;
+				};
+				Relationships: [];
+			};
+			package_capability_requirements: {
+				Row: {
+					capability_key: string;
+					required_capability_key: string;
+				};
+				Insert: {
+					capability_key: string;
+					required_capability_key: string;
+				};
+				Update: {
+					capability_key?: string;
+					required_capability_key?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'package_capability_requirements_capability_key_fkey';
+						columns: ['capability_key'];
+						isOneToOne: false;
+						referencedRelation: 'package_capabilities';
+						referencedColumns: ['capability_key'];
+					},
+					{
+						foreignKeyName: 'package_capability_requirements_required_capability_key_fkey';
+						columns: ['required_capability_key'];
+						isOneToOne: false;
+						referencedRelation: 'package_capabilities';
+						referencedColumns: ['capability_key'];
+					}
+				];
+			};
+			package_edition_allowances: {
+				Row: {
+					allowance_key: string;
+					allowance_state: string;
+					allowance_value: number | null;
+					edition_id: string;
+				};
+				Insert: {
+					allowance_key: string;
+					allowance_state: string;
+					allowance_value?: number | null;
+					edition_id: string;
+				};
+				Update: {
+					allowance_key?: string;
+					allowance_state?: string;
+					allowance_value?: number | null;
+					edition_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'package_edition_allowances_allowance_key_fkey';
+						columns: ['allowance_key'];
+						isOneToOne: false;
+						referencedRelation: 'package_allowances';
+						referencedColumns: ['allowance_key'];
+					},
+					{
+						foreignKeyName: 'package_edition_allowances_edition_id_fkey';
+						columns: ['edition_id'];
+						isOneToOne: false;
+						referencedRelation: 'package_editions';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			package_edition_capabilities: {
+				Row: {
+					capability_key: string;
+					edition_id: string;
+				};
+				Insert: {
+					capability_key: string;
+					edition_id: string;
+				};
+				Update: {
+					capability_key?: string;
+					edition_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'package_edition_capabilities_capability_key_fkey';
+						columns: ['capability_key'];
+						isOneToOne: false;
+						referencedRelation: 'package_capabilities';
+						referencedColumns: ['capability_key'];
+					},
+					{
+						foreignKeyName: 'package_edition_capabilities_edition_id_fkey';
+						columns: ['edition_id'];
+						isOneToOne: false;
+						referencedRelation: 'package_editions';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			package_editions: {
+				Row: {
+					created_at: string;
+					edition_number: number | null;
+					exclusions: string | null;
+					highlights: Json;
+					id: string;
+					included_services: Json;
+					monthly_price_usd_cents: number | null;
+					name: string;
+					package_id: string;
+					promise: string | null;
+					published_at: string | null;
+					revision: number;
+					status: string;
+					superseded_at: string | null;
+					updated_at: string;
+					yearly_price_usd_cents: number | null;
+				};
+				Insert: {
+					created_at?: string;
+					edition_number?: number | null;
+					exclusions?: string | null;
+					highlights?: Json;
+					id?: string;
+					included_services?: Json;
+					monthly_price_usd_cents?: number | null;
+					name: string;
+					package_id: string;
+					promise?: string | null;
+					published_at?: string | null;
+					revision?: number;
+					status?: string;
+					superseded_at?: string | null;
+					updated_at?: string;
+					yearly_price_usd_cents?: number | null;
+				};
+				Update: {
+					created_at?: string;
+					edition_number?: number | null;
+					exclusions?: string | null;
+					highlights?: Json;
+					id?: string;
+					included_services?: Json;
+					monthly_price_usd_cents?: number | null;
+					name?: string;
+					package_id?: string;
+					promise?: string | null;
+					published_at?: string | null;
+					revision?: number;
+					status?: string;
+					superseded_at?: string | null;
+					updated_at?: string;
+					yearly_price_usd_cents?: number | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'package_editions_package_id_fkey';
+						columns: ['package_id'];
+						isOneToOne: false;
+						referencedRelation: 'packages';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			package_features: {
 				Row: {
 					created_at: string;
@@ -11027,6 +11380,39 @@ export type Database = {
 						referencedColumns: ['package_key'];
 					}
 				];
+			};
+			packages: {
+				Row: {
+					archived_at: string | null;
+					created_at: string;
+					created_by_email: string | null;
+					display_order: number;
+					id: string;
+					slug: string;
+					updated_at: string;
+					visibility: string;
+				};
+				Insert: {
+					archived_at?: string | null;
+					created_at?: string;
+					created_by_email?: string | null;
+					display_order?: number;
+					id?: string;
+					slug: string;
+					updated_at?: string;
+					visibility?: string;
+				};
+				Update: {
+					archived_at?: string | null;
+					created_at?: string;
+					created_by_email?: string | null;
+					display_order?: number;
+					id?: string;
+					slug?: string;
+					updated_at?: string;
+					visibility?: string;
+				};
+				Relationships: [];
 			};
 			payment_receipt_access_links: {
 				Row: {
@@ -11430,6 +11816,27 @@ export type Database = {
 					id?: string;
 					target_key?: string | null;
 					target_type?: string;
+				};
+				Relationships: [];
+			};
+			platform_automation_safety_limits: {
+				Row: {
+					limit_key: string;
+					limit_state: string;
+					limit_value: number | null;
+					updated_at: string;
+				};
+				Insert: {
+					limit_key: string;
+					limit_state: string;
+					limit_value?: number | null;
+					updated_at?: string;
+				};
+				Update: {
+					limit_key?: string;
+					limit_state?: string;
+					limit_value?: number | null;
+					updated_at?: string;
 				};
 				Relationships: [];
 			};

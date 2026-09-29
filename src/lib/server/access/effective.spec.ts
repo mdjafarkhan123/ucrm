@@ -6,242 +6,226 @@ import {
 	type AccessClient
 } from './effective';
 
-type QueryResult = { data: unknown; error: null };
+type Snapshot = Record<string, unknown>;
 
-// The table rows a test sets up, assembled the way `public.organization_access_snapshot` assembles them, so
-// the fixtures keep describing the database rather than the snapshot's shape.
-function snapshotFor(rows: Record<string, QueryResult>) {
-	const list = (table: string) => {
-		const data = rows[table]?.data;
-		return (Array.isArray(data) ? data : data ? [data] : []) as Record<string, unknown>[];
-	};
-	const one = (table: string) => list(table)[0] ?? null;
-
-	const organization = one('organizations');
-	if (!organization) return null;
-	const assignment = one('organization_package_assignments');
-	const version = assignment ? one('platform_package_versions') : null;
-	const membership = one('organization_members');
-	return {
-		organization,
-		assignment,
-		package_version: version,
-		platform_packages: assignment
-			? list('platform_packages').filter((item) => item.package_id === version?.package_id)
-			: list('platform_packages'),
-		features: list('features'),
-		package_features: assignment ? [] : list('package_features'),
-		package_version_features: assignment ? list('platform_package_version_features') : [],
-		feature_overrides: list('organization_feature_overrides'),
-		limit_overrides: list('organization_limit_overrides'),
-		commercial_state: one('organization_commercial_state'),
-		commercial_settings: one('organization_commercial_settings'),
-		free_access_events: list('organization_free_access_events'),
-		employee_seat_limit: one('effective_employee_seat_limit'),
-		website_chat_widgets_limit: one('effective_website_chat_widgets_limit'),
-		marketing_email_limit: one('effective_marketing_email_limit'),
-		membership,
-		role_permissions: membership ? list('role_permissions') : [],
-		member_permission_overrides: list('organization_member_permission_overrides')
-	};
-}
-
-function clientFor(rows: Record<string, QueryResult>) {
+function clientFor(snapshot: Snapshot | null) {
 	return {
 		rpc: (fn: string) =>
 			Promise.resolve(
 				fn === 'organization_access_snapshot'
-					? { data: snapshotFor(rows), error: null }
+					? { data: snapshot, error: null }
 					: { data: null, error: new Error(`Unexpected call to ${fn}`) }
 			)
 	} as unknown as AccessClient;
 }
 
-const baseRows = {
-	organizations: {
-		data: {
-			id: 'org-a',
-			name: 'Organization A',
-			lifecycle_status: 'active',
-			package_key: 'growth',
-			scheduled_package_key: null,
-			scheduled_package_effective_at: null
-		},
-		error: null
+// The shape `public.organization_access_snapshot` returns: the agreement in effect, its edition and
+// capabilities, and only the exceptions active at the requested moment, newest first.
+const baseSnapshot: Snapshot = {
+	organization: {
+		id: 'org-a',
+		name: 'Organization A',
+		slug: 'organization-a',
+		lifecycle_status: 'active'
 	},
-	platform_packages: {
-		data: [
-			{ package_key: 'starter', display_name: 'Starter', sort_order: 1 },
-			{ package_key: 'growth', display_name: 'Growth', sort_order: 2 },
-			{ package_key: 'elite', display_name: 'Elite', sort_order: 3 }
-		],
-		error: null
+	agreement: {
+		id: 'agreement-1',
+		edition_id: 'edition-growth-1',
+		billing_interval: 'month',
+		agreed_price_usd_cents: 14900,
+		effective_from: '2026-08-01T00:00:00.000Z'
 	},
-	features: {
-		data: [
-			{ feature_key: 'core.dashboard', description: 'Dashboard' },
-			{ feature_key: 'core.customers_properties', description: 'Customers' },
-			{ feature_key: 'core.team', description: 'Team' },
-			{ feature_key: 'core.invoices_payments', description: 'Finance' },
-			{ feature_key: 'sales.pipeline', description: 'Pipeline' },
-			{ feature_key: 'growth.reputation', description: 'Reputation' }
-		],
-		error: null
+	edition: {
+		id: 'edition-growth-1',
+		package_id: 'package-growth',
+		edition_number: 1,
+		status: 'published',
+		name: 'Growth',
+		promise: 'Everything a growing crew needs.'
 	},
-	package_features: {
-		data: [
-			{ package_key: 'growth', feature_key: 'core.dashboard' },
-			{ package_key: 'growth', feature_key: 'core.customers_properties' },
-			{ package_key: 'growth', feature_key: 'core.team' },
-			{ package_key: 'growth', feature_key: 'core.invoices_payments' },
-			{ package_key: 'growth', feature_key: 'sales.pipeline' },
-			{ package_key: 'elite', feature_key: 'growth.reputation' }
-		],
-		error: null
+	package: { id: 'package-growth', slug: 'growth' },
+	capabilities: [
+		'core.dashboard',
+		'core.customers_properties',
+		'core.team',
+		'core.invoices_payments',
+		'sales.pipeline',
+		'growth.reputation'
+	],
+	edition_capabilities: [
+		'core.dashboard',
+		'core.customers_properties',
+		'core.team',
+		'core.invoices_payments',
+		'sales.pipeline'
+	],
+	capability_exceptions: [
+		{
+			capability_key: 'core.team',
+			state: 'off',
+			starts_at: '2026-08-01T00:00:00.000Z',
+			ends_at: '2026-12-01T00:00:00.000Z',
+			reason: 'Paused while the owner restructures the team.'
+		}
+	],
+	allowance_exceptions: [
+		{
+			allowance_key: 'employee_seats',
+			state: 'numeric',
+			value: 4,
+			starts_at: '2026-08-01T00:00:00.000Z',
+			ends_at: '2026-12-01T00:00:00.000Z'
+		}
+	],
+	commercial_state: {
+		paid_through_date: '2026-12-31',
+		paid_through_source: 'renewal',
+		grace_ends_at: '2027-01-08T04:59:59.999Z'
 	},
-	effective_employee_seat_limit: {
-		data: { state: 'numeric', value: 4, is_unlimited: false, source: 'override' },
-		error: null
+	commercial_settings: { commercial_timezone: 'America/New_York' },
+	free_access_events: [],
+	employee_seat_limit: { state: 'numeric', value: 4, is_unlimited: false, source: 'override' },
+	website_chat_widgets_limit: {
+		state: 'not_included',
+		value: null,
+		is_unlimited: false,
+		source: 'package'
 	},
-	effective_website_chat_widgets_limit: {
-		data: { state: 'not_included', value: null, is_unlimited: false, source: 'package' },
-		error: null
+	marketing_email_limit: {
+		state: 'not_included',
+		value: null,
+		is_unlimited: false,
+		source: 'package'
 	},
-	effective_marketing_email_limit: {
-		data: { state: 'not_included', value: null, is_unlimited: false, source: 'package' },
-		error: null
-	},
-	organization_feature_overrides: {
-		data: [
-			{
-				feature_key: 'core.team',
-				override_state: 'off',
-				starts_at: '2026-01-01T00:00:00.000Z',
-				expires_at: null
-			},
-			{
-				feature_key: 'core.dashboard',
-				override_state: 'off',
-				starts_at: '2025-01-01T00:00:00.000Z',
-				expires_at: '2025-02-01T00:00:00.000Z'
-			},
-			{
-				feature_key: 'growth.reputation',
-				override_state: 'on',
-				starts_at: '2027-01-01T00:00:00.000Z',
-				expires_at: null
-			}
-		],
-		error: null
-	},
-	organization_limit_overrides: {
-		data: [
-			{
-				limit_key: 'employee_seats',
-				limit_value: 4,
-				is_unlimited: false,
-				starts_at: '2026-01-01T00:00:00.000Z',
-				expires_at: null
-			}
-		],
-		error: null
-	},
-	organization_commercial_state: {
-		data: {
-			paid_through_date: '2026-12-31',
-			paid_through_source: 'renewal',
-			grace_ends_at: '2027-01-08T04:59:59.999Z'
-		},
-		error: null
-	},
-	organization_commercial_settings: {
-		data: { commercial_timezone: 'America/New_York' },
-		error: null
-	},
-	organization_package_assignments: { data: [], error: null },
-	organization_members: { data: { user_id: 'user-a', role: 'sales' }, error: null },
-	role_permissions: {
-		data: [
-			{ permission_key: 'customer.view' },
-			{ permission_key: 'pipeline.view' },
-			{ permission_key: 'team.manage' }
-		],
-		error: null
-	},
-	organization_member_permission_overrides: {
-		data: [
-			{ permission_key: 'pipeline.view', override_state: 'deny' },
-			{ permission_key: 'team.manage', override_state: 'grant' },
-			{ permission_key: 'invoice.view', override_state: 'grant' }
-		],
-		error: null
-	}
+	membership: { user_id: 'user-a', role: 'sales' },
+	role_permissions: [
+		{ permission_key: 'customer.view', access_scope: null },
+		{ permission_key: 'pipeline.view', access_scope: null },
+		{ permission_key: 'team.manage', access_scope: null }
+	],
+	member_permission_overrides: [
+		{ permission_key: 'team.manage', override_state: 'grant', access_scope: null },
+		{ permission_key: 'invoice.view', override_state: 'grant', access_scope: null }
+	]
 };
 
+function snapshotWith(changes: Snapshot): Snapshot {
+	return { ...structuredClone(baseSnapshot), ...changes };
+}
+
 describe('resolveOrganizationAccess', () => {
-	it('combines package defaults, active overrides, limits, and member permissions', async () => {
+	it('combines the edition, active exceptions, limits, and member permissions', async () => {
 		const access = await resolveOrganizationAccess(
-			clientFor(baseRows),
+			clientFor(baseSnapshot),
 			'org-a',
 			'user-a',
 			new Date('2026-08-09T00:00:00.000Z')
 		);
 
-		expect(access.package.effective_key).toBe('growth');
+		expect(access.package).toEqual({
+			package_id: 'package-growth',
+			slug: 'growth',
+			edition_id: 'edition-growth-1',
+			edition_number: 1,
+			edition_status: 'published',
+			name: 'Growth',
+			promise: 'Everything a growing crew needs.',
+			agreement_id: 'agreement-1',
+			billing_interval: 'month',
+			agreed_price_usd_cents: 14900,
+			currency: 'USD',
+			effective_from: '2026-08-01T00:00:00.000Z'
+		});
 		expect(access.features['core.team']).toBe(false);
+		expect(access.package_features['core.team']).toBe(true);
 		expect(access.features['core.dashboard']).toBe(true);
 		expect(access.features['growth.reputation']).toBe(false);
+		expect(access.feature_overrides['core.team']).toMatchObject({
+			state: 'off',
+			expires_at: '2026-12-01T00:00:00.000Z'
+		});
 		expect(access.limits.employee_seats).toEqual({
 			value: 4,
 			is_unlimited: false,
 			state: 'numeric',
 			source: 'override'
 		});
+		expect(access.limit_overrides.employee_seats).toMatchObject({ state: 'numeric', value: 4 });
 		expect(access.permissions).toMatchObject({
 			'customer.view': true,
-			'pipeline.view': false,
+			'pipeline.view': true,
 			'team.manage': false,
 			'invoice.view': true
 		});
 	});
 
-	it('applies a due package downgrade/upgrade schedule before resolving features', async () => {
-		const rows = structuredClone(baseRows) as Record<string, QueryResult>;
-		(rows.organizations.data as Record<string, unknown>).scheduled_package_key = 'elite';
-		(rows.organizations.data as Record<string, unknown>).scheduled_package_effective_at =
-			'2026-08-08T00:00:00.000Z';
+	it('turns off every screen of a capability the edition does not include', async () => {
+		const snapshot = snapshotWith({
+			edition_capabilities: (baseSnapshot.edition_capabilities as string[]).filter(
+				(key) => key !== 'sales.pipeline'
+			),
+			capability_exceptions: []
+		});
 
 		const access = await resolveOrganizationAccess(
-			clientFor(rows),
+			clientFor(snapshot),
 			'org-a',
-			undefined,
+			'user-a',
 			new Date('2026-08-09T00:00:00.000Z')
 		);
 
-		expect(access.package.current_key).toBe('growth');
-		expect(access.package.effective_key).toBe('elite');
-		expect(access.features['growth.reputation']).toBe(true);
+		expect(access.features['sales.pipeline']).toBe(false);
+		expect(access.permissions['pipeline.view']).toBe(false);
+		expect(access.permission_scopes['pipeline.view']).toBeUndefined();
+		expect(access.permissions['customer.view']).toBe(true);
+	});
+
+	it('leaves every capability off and no package when the organization has no agreement', async () => {
+		const snapshot = snapshotWith({
+			agreement: null,
+			edition: null,
+			package: null,
+			edition_capabilities: [],
+			capability_exceptions: []
+		});
+
+		const access = await resolveOrganizationAccess(
+			clientFor(snapshot),
+			'org-a',
+			'user-a',
+			new Date('2026-08-09T00:00:00.000Z')
+		);
+
+		expect(access.package).toBeNull();
+		expect(Object.values(access.features).every((enabled) => enabled === false)).toBe(true);
+		expect(access.permissions['customer.view']).toBe(false);
+	});
+
+	it('refuses an agreement whose edition is missing instead of guessing', async () => {
+		const snapshot = snapshotWith({ edition: null });
+
+		await expect(resolveOrganizationAccess(clientFor(snapshot), 'org-a')).rejects.toThrow(
+			'The organization package edition is missing.'
+		);
 	});
 
 	it('uses the commercial calendar date and stored grace deadline across a DST boundary', async () => {
-		const rows = structuredClone(baseRows) as Record<string, QueryResult>;
-		rows.organization_commercial_state = {
-			data: {
+		const snapshot = snapshotWith({
+			commercial_state: {
 				paid_through_date: '2026-03-08',
 				paid_through_source: 'renewal',
 				grace_ends_at: '2026-03-16T03:59:59.999Z'
-			},
-			error: null
-		};
+			}
+		});
 
 		const beforeLocalMidnight = await resolveOrganizationAccess(
-			clientFor(rows),
+			clientFor(snapshot),
 			'org-a',
 			undefined,
 			new Date('2026-03-09T03:30:00.000Z')
 		);
 		const afterLocalMidnight = await resolveOrganizationAccess(
-			clientFor(rows),
+			clientFor(snapshot),
 			'org-a',
 			undefined,
 			new Date('2026-03-09T04:30:00.000Z')
@@ -262,18 +246,16 @@ describe('resolveOrganizationAccess', () => {
 	});
 
 	it('reports no free access grant and unmodified overdue billing when none exists', async () => {
-		const rows = structuredClone(baseRows) as Record<string, QueryResult>;
-		rows.organization_commercial_state = {
-			data: {
+		const snapshot = snapshotWith({
+			commercial_state: {
 				paid_through_date: '2026-01-01',
 				paid_through_source: 'renewal',
 				grace_ends_at: '2026-01-08T04:59:59.999Z'
-			},
-			error: null
-		};
+			}
+		});
 
 		const access = await resolveOrganizationAccess(
-			clientFor(rows),
+			clientFor(snapshot),
 			'org-a',
 			undefined,
 			new Date('2026-08-09T00:00:00.000Z')
@@ -284,17 +266,13 @@ describe('resolveOrganizationAccess', () => {
 	});
 
 	it('an active free access grant overrides overdue billing regardless of the paid-through date', async () => {
-		const rows = structuredClone(baseRows) as Record<string, QueryResult>;
-		rows.organization_commercial_state = {
-			data: {
+		const snapshot = snapshotWith({
+			commercial_state: {
 				paid_through_date: '2026-01-01',
 				paid_through_source: 'renewal',
 				grace_ends_at: '2026-01-08T04:59:59.999Z'
 			},
-			error: null
-		};
-		rows.organization_free_access_events = {
-			data: [
+			free_access_events: [
 				{
 					id: 'grant-1',
 					target_grant_id: null,
@@ -303,12 +281,11 @@ describe('resolveOrganizationAccess', () => {
 					access_until_date: '2026-09-01',
 					occurred_at: '2026-08-01T00:00:00.000Z'
 				}
-			],
-			error: null
-		};
+			]
+		});
 
 		const access = await resolveOrganizationAccess(
-			clientFor(rows),
+			clientFor(snapshot),
 			'org-a',
 			undefined,
 			new Date('2026-08-09T00:00:00.000Z')
@@ -325,9 +302,8 @@ describe('resolveOrganizationAccess', () => {
 	});
 
 	it('folds a grant, an extension, and a scheduled future grant to their current active and future state', async () => {
-		const rows = structuredClone(baseRows) as Record<string, QueryResult>;
-		rows.organization_free_access_events = {
-			data: [
+		const snapshot = snapshotWith({
+			free_access_events: [
 				{
 					id: 'grant-1',
 					target_grant_id: null,
@@ -352,12 +328,11 @@ describe('resolveOrganizationAccess', () => {
 					access_until_date: null,
 					occurred_at: '2026-08-06T00:00:00.000Z'
 				}
-			],
-			error: null
-		};
+			]
+		});
 
 		const access = await resolveOrganizationAccess(
-			clientFor(rows),
+			clientFor(snapshot),
 			'org-a',
 			undefined,
 			new Date('2026-08-09T00:00:00.000Z')
@@ -376,9 +351,8 @@ describe('resolveOrganizationAccess', () => {
 	});
 
 	it('excludes an ended grant from the active and future free access state', async () => {
-		const rows = structuredClone(baseRows) as Record<string, QueryResult>;
-		rows.organization_free_access_events = {
-			data: [
+		const snapshot = snapshotWith({
+			free_access_events: [
 				{
 					id: 'grant-1',
 					target_grant_id: null,
@@ -395,12 +369,11 @@ describe('resolveOrganizationAccess', () => {
 					access_until_date: null,
 					occurred_at: '2026-08-05T00:00:00.000Z'
 				}
-			],
-			error: null
-		};
+			]
+		});
 
 		const access = await resolveOrganizationAccess(
-			clientFor(rows),
+			clientFor(snapshot),
 			'org-a',
 			undefined,
 			new Date('2026-08-09T00:00:00.000Z')
@@ -410,72 +383,9 @@ describe('resolveOrganizationAccess', () => {
 	});
 
 	it('throws a typed not-found error when the organization is absent', async () => {
-		const rows = {
-			...structuredClone(baseRows),
-			organizations: { data: null, error: null }
-		};
-
-		await expect(resolveOrganizationAccess(clientFor(rows), 'missing')).rejects.toBeInstanceOf(
+		await expect(resolveOrganizationAccess(clientFor(null), 'missing')).rejects.toBeInstanceOf(
 			OrganizationAccessNotFoundError
 		);
-	});
-
-	it('resolves a versioned assignment before legacy package columns', async () => {
-		const rows = structuredClone(baseRows) as Record<string, QueryResult>;
-		(rows.organizations.data as Record<string, unknown>).package_key = 'starter';
-		(rows.organizations.data as Record<string, unknown>).scheduled_package_key = 'elite';
-		(rows.organizations.data as Record<string, unknown>).scheduled_package_effective_at =
-			'2026-08-08T00:00:00.000Z';
-		rows.organization_package_assignments = {
-			data: [{ package_version_id: 'version-growth-1', effective_at: '2026-08-01T00:00:00.000Z' }],
-			error: null
-		};
-		rows.platform_package_versions = {
-			data: [
-				{
-					id: 'version-growth-1',
-					package_id: 'package-growth',
-					display_name: 'Growth v1',
-					status: 'published'
-				}
-			],
-			error: null
-		};
-		rows.platform_packages = {
-			data: [
-				{ package_id: 'package-growth', package_key: 'growth' },
-				{ package_id: 'package-starter', package_key: 'starter' },
-				{ package_id: 'package-elite', package_key: 'elite' }
-			],
-			error: null
-		};
-		rows.platform_package_version_features = {
-			data: [{ package_version_id: 'version-growth-1', feature_key: 'sales.pipeline' }],
-			error: null
-		};
-		rows.organization_limit_overrides = { data: [], error: null };
-		rows.effective_employee_seat_limit = {
-			data: { state: 'numeric', value: 10, is_unlimited: false, source: 'package' },
-			error: null
-		};
-
-		const access = await resolveOrganizationAccess(
-			clientFor(rows),
-			'org-a',
-			undefined,
-			new Date('2026-08-09T00:00:00.000Z')
-		);
-
-		expect(access.package.current_key).toBe('growth');
-		expect(access.package.display_name).toBe('Growth v1');
-		expect(access.package.scheduled_key).toBeNull();
-		expect(access.features['sales.pipeline']).toBe(true);
-		expect(access.limits.employee_seats).toEqual({
-			value: 10,
-			is_unlimited: false,
-			state: 'numeric',
-			source: 'package'
-		});
 	});
 });
 
