@@ -127,21 +127,24 @@
 	// It must still satisfy the `uuid` route matcher, or `resolve()` yields a path the router can't match
 	// and `preloadCode` throws; a nil uuid matches the shape without ever pointing at a real record.
 	const WARM_UUID = '00000000-0000-0000-0000-000000000000';
-	const warmRoutes = [
-		resolve('/(app)/dashboard'),
-		resolve('/(app)/schedule'),
-		resolve('/(app)/communications'),
-		resolve('/(app)/clients'),
-		resolve('/(app)/clients/[id=uuid]', { id: WARM_UUID }),
-		resolve('/(app)/requests'),
-		resolve('/(app)/requests/[id=uuid]', { id: WARM_UUID }),
-		resolve('/(app)/quotes'),
-		resolve('/(app)/quotes/[id=uuid]', { id: WARM_UUID }),
-		resolve('/(app)/jobs'),
-		resolve('/(app)/jobs/[id=uuid]', { id: WARM_UUID }),
-		resolve('/(app)/invoices'),
-		resolve('/(app)/invoices/[id=uuid]', { id: WARM_UUID })
-	];
+	// Built with individual push() calls, not an array literal: checking that many resolve() calls'
+	// own route-id types together as one array expression is what tips TypeScript over its complexity
+	// limit (svelte-check: "Expression produces a union type that is too complex to represent"). Each
+	// push() argument is checked on its own against the array's plain `string` element type instead.
+	const warmRoutes: string[] = [];
+	warmRoutes.push(resolve('/(app)/dashboard'));
+	warmRoutes.push(resolve('/(app)/schedule'));
+	warmRoutes.push(resolve('/(app)/communications'));
+	warmRoutes.push(resolve('/(app)/clients'));
+	warmRoutes.push(resolve('/(app)/clients/[id=uuid]', { id: WARM_UUID }));
+	warmRoutes.push(resolve('/(app)/requests'));
+	warmRoutes.push(resolve('/(app)/requests/[id=uuid]', { id: WARM_UUID }));
+	warmRoutes.push(resolve('/(app)/quotes'));
+	warmRoutes.push(resolve('/(app)/quotes/[id=uuid]', { id: WARM_UUID }));
+	warmRoutes.push(resolve('/(app)/jobs'));
+	warmRoutes.push(resolve('/(app)/jobs/[id=uuid]', { id: WARM_UUID }));
+	warmRoutes.push(resolve('/(app)/invoices'));
+	warmRoutes.push(resolve('/(app)/invoices/[id=uuid]', { id: WARM_UUID }));
 
 	function onConstrainedConnection() {
 		const connection = (

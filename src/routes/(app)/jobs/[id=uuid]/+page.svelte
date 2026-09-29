@@ -91,6 +91,14 @@
 		return error?.message || 'That job could not be loaded. Refresh and try again.';
 	});
 	const saved = $derived(jobQuery.data);
+	// A plain `if`/`return`, not a ternary: checking resolve()'s own route-id type together with
+	// `undefined` in one conditional expression is what tips TypeScript over its complexity limit
+	// (svelte-check: "union type that is too complex to represent"). A separate return per branch
+	// checks each one on its own instead.
+	const clientHref = $derived.by((): string | undefined => {
+		if (!saved?.job.client) return undefined;
+		return resolve('/(app)/clients/[id=uuid]', { id: saved.job.client.id });
+	});
 
 	// The title's pencil and the instructions block each stage their own draft; the bottom bar saves both in
 	// one command. Every command in this repo guards on a revision, so a stale save is refused rather than
@@ -502,9 +510,7 @@
 					{#snippet summary()}
 						<ClientSummaryCard
 							name={saved.job.client?.display_name ?? 'No client'}
-							href={saved.job.client
-								? resolve('/(app)/clients/[id=uuid]', { id: saved.job.client.id })
-								: undefined}
+							href={clientHref}
 							addresses={[{ value: propertyLine, empty: 'No property on this job' }]}
 							phone={saved.job.client?.phone}
 							email={saved.job.client?.email}

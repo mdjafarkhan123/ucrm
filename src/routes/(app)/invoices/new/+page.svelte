@@ -347,7 +347,16 @@
 
 	function leave() {
 		picking = false;
-		void goto(jobId ? resolve('/(app)/jobs/[id=uuid]', { id: jobId }) : resolve('/(app)/invoices'));
+		// Two separate statements, not a ternary: unioning both resolve() calls' own route-id types in one
+		// expression is what tips TypeScript over its complexity limit (svelte-check: "union type that is
+		// too complex to represent"). Assigning into an already-typed `string` one at a time avoids that.
+		let destination: string;
+		if (jobId) {
+			destination = resolve('/(app)/jobs/[id=uuid]', { id: jobId });
+		} else {
+			destination = resolve('/(app)/invoices');
+		}
+		void goto(destination);
 	}
 
 	function handleSaved(invoice: { id: string; number: number }) {

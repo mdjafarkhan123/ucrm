@@ -132,6 +132,14 @@
 	const subject = $derived(
 		saved?.invoice.subject?.trim() || `Invoice #${saved?.invoice.invoice_number ?? ''}`
 	);
+	// A plain `if`/`return`, not a ternary: checking resolve()'s own route-id type together with
+	// `undefined` in one conditional expression is what tips TypeScript over its complexity limit
+	// (svelte-check: "union type that is too complex to represent"). A separate return per branch
+	// checks each one on its own instead.
+	const clientHref = $derived.by((): string | undefined => {
+		if (!saved?.client) return undefined;
+		return resolve('/(app)/clients/[id=uuid]', { id: saved.client.id });
+	});
 
 	// --- Staged edits (subject + terms + disclaimer), saved together by the bottom bar ---------------------
 	let editingTitle = $state(false);
@@ -994,9 +1002,7 @@
 					{#snippet summary()}
 						<ClientSummaryCard
 							name={saved.client?.company_name || saved.client?.display_name || 'No client'}
-							href={saved.client
-								? resolve('/(app)/clients/[id=uuid]', { id: saved.client.id })
-								: undefined}
+							href={clientHref}
 							addresses={[{ value: billingLine, empty: 'No billing address on this invoice' }]}
 							menuItems={clientMenuItems}
 						/>

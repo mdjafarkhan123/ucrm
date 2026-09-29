@@ -54,6 +54,14 @@
 			.filter(Boolean)
 			.join(', ');
 	});
+	// A plain `if`/`return`, not a ternary: checking resolve()'s own route-id type together with
+	// `undefined` in one conditional expression is what tips TypeScript over its complexity limit
+	// (svelte-check: "union type that is too complex to represent"). A separate return per branch,
+	// against this explicit return type, checks each one on its own instead.
+	const clientHref = $derived.by((): string | undefined => {
+		if (!opportunity?.client) return undefined;
+		return resolve('/(app)/clients/[id=uuid]', { id: opportunity.client.id });
+	});
 
 	// The board payload carries no contact details — phone and email live in a separate table, and
 	// joining them onto every card would cost a join per column page for something only one open card
@@ -89,9 +97,7 @@
 		{:else}
 			<ClientSummaryCard
 				name={clientName}
-				href={opportunity.client
-					? resolve('/(app)/clients/[id=uuid]', { id: opportunity.client.id })
-					: undefined}
+				href={clientHref}
 				addresses={[{ value: propertyLine, empty: 'No property on this work yet' }]}
 				phone={clientQuery.data?.phone ?? null}
 				email={clientQuery.data?.email ?? null}
