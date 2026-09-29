@@ -5,7 +5,7 @@
 
 **Completed:** Planning (P1, P2). Jafar approved the build parts on 2026-09-29.
 
-**Next part:** P3a New storage and the access switch — in progress on branch `wip/package-builder-p3a`, note `parts/P3a.md`; then P3b. P3 was split on 2026-09-29.
+**Next part:** P3a New storage and the access switch — database switched, browser check and merge left (branch `wip/package-builder-p3a`, note `parts/P3a.md`); then P3b.
 
 **Blockers:** None.
 
