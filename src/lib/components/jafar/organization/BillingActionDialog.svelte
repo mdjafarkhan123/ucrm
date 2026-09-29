@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import type { CalendarDate } from '@internationalized/date';
 	import type {
 		BillingCommandInput,
@@ -41,8 +42,12 @@
 	} = $props();
 
 	// The dialog is remounted for each opening, so reading the opening values once is intended.
-	const initial = (() => dialog)();
-	const today = calendarDateFromString(billing.today);
+	const initial = untrack(() => dialog);
+	const opening = untrack(() => ({
+		today: calendarDateFromString(billing.today),
+		paidThrough: calendarDateFromString(billing.paid_through_date)
+	}));
+	const today = opening.today;
 
 	const liveCharges = $derived(billing.charges.filter((charge) => charge.status !== 'cancelled'));
 	const openCharges = $derived(
@@ -86,7 +91,7 @@
 			: initial.kind === 'add_charge'
 				? undefined
 				: initial.kind === 'adjust_paid_through'
-					? (calendarDateFromString(billing.paid_through_date) ?? today)
+					? (opening.paidThrough ?? today)
 					: today
 	);
 	let amount = $state(

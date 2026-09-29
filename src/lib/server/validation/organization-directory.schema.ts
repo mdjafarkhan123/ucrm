@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 export const organizationAttentionReasons = [
 	'access_overdue',
+	'payment_overdue',
+	'renewal_due',
 	'expiring_soon',
 	'administrator_missing',
 	'administrator_ownership_unclear',

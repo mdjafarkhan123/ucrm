@@ -29,6 +29,8 @@ function directoryResult(overrides: Partial<Record<string, unknown>> = {}) {
 			matching: 0,
 			attention: {
 				access_overdue: 0,
+				payment_overdue: 0,
+				renewal_due: 0,
 				expiring_soon: 0,
 				administrator_missing: 0,
 				administrator_ownership_unclear: 0,

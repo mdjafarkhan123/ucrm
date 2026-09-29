@@ -11,17 +11,17 @@
 - [x] Old commercial POST, its schema, and `CommercialActions.svelte` deleted; the commercial GET stays read-only (Overview and Activity use it)
 - [x] `npm run check` has 0 errors (needs `NODE_OPTIONS=--max-old-space-size=8192`)
 - [x] Fix two `state_referenced_locally` warnings in `BillingActionDialog.svelte` (lines reading `billing.today` and `billing.paid_through_date` at mount) — wrap in `untrack` or a `$derived`
-- [ ] Directory renewal flag: new migration re-creating `owner_organization_directory` (latest copy in `20260929230000_package_editions_and_agreements.sql`) with two attention reasons — `renewal_due` (active, not on free access, paid-through within the next 7 days) and `payment_overdue` (paid-through passed, grace not ended). Add both to `organization-directory.schema.ts` and the directory page's `attentionMeta` and `emptyTotals`; push with `supabase db push --linked --dry-run` first
-- [ ] Unit test for the billing route (auth, Zod 422, step-up 403 for refund/void/correct/adjust, 409 mapping), modeled on `communications/sms/credit-topups/[requestId]/credit-topup-decision.spec.ts`
+- [x] Directory renewal flag (pushed; tests in `owner_organization_directory_renewal.sql`): new migration re-creating `owner_organization_directory` (latest copy in `20260929230000_package_editions_and_agreements.sql`) with two attention reasons — `renewal_due` (active, not on free access, paid-through within the next 7 days) and `payment_overdue` (paid-through passed, grace not ended). Add both to `organization-directory.schema.ts` and the directory page's `attentionMeta` and `emptyTotals`; push with `supabase db push --linked --dry-run` first
+- [x] Unit test for the billing route (`billing.spec.ts`) (auth, Zod 422, step-up 403 for refund/void/correct/adjust, 409 mapping), modeled on `communications/sms/credit-topups/[requestId]/credit-topup-decision.spec.ts`
 - [ ] Browser check of the done-when example (log in at `/jafar`), plus a quick look at each test login; then close P4b
 
 ## Next
 
-Fix the two warnings, then build the directory renewal flag migration.
+Browser check of the done-when example.
 
 ## Outside actions
 
-- Directory migration `20260930120000_directory_renewal_flags.sql` — check: `npx supabase migration list --linked` shows it remote; if so do not push again.
+- Directory migration `20260930120000_directory_renewal_flags.sql` — pushed to remote and local.
 
 ## Notes
 

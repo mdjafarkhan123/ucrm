@@ -19,6 +19,8 @@
 	type LifecycleStatus = 'active' | 'suspended' | 'pending_setup' | 'pending_closure' | 'closed';
 	type AttentionReason =
 		| 'access_overdue'
+		| 'payment_overdue'
+		| 'renewal_due'
 		| 'expiring_soon'
 		| 'administrator_missing'
 		| 'administrator_ownership_unclear'
@@ -54,6 +56,8 @@
 	// same way the attention-reason filter counts do.
 	const attentionMeta: Record<AttentionReason, { label: string; tone: 'critical' | 'warning' }> = {
 		access_overdue: { label: 'Access overdue', tone: 'critical' },
+		payment_overdue: { label: 'Payment overdue', tone: 'critical' },
+		renewal_due: { label: 'Renewal due', tone: 'warning' },
 		administrator_missing: { label: 'No administrator', tone: 'critical' },
 		administrator_ownership_unclear: { label: 'Multiple owners', tone: 'warning' },
 		setup_or_recovery_failed: { label: 'Setup or recovery issue', tone: 'critical' },
@@ -71,6 +75,8 @@
 		matching: 0,
 		attention: {
 			access_overdue: 0,
+			payment_overdue: 0,
+			renewal_due: 0,
 			expiring_soon: 0,
 			administrator_missing: 0,
 			administrator_ownership_unclear: 0,
