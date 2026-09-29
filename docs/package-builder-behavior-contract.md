@@ -1,6 +1,6 @@
 # Package builder
 
-**Status:** Complete behavior plan for Jafar's review, 2026-09-29. The choices recorded below were agreed during planning; approval of this complete plan and its build parts is still pending.
+**Status:** Core behavior approved by Jafar on 2026-09-29. Public offer presentation is being added; the examples of website, SEO, missed-call, and Google Business Profile services still need classification before the amended plan is closed. Build-part planning remains pending.
 
 ## Summary
 
@@ -14,6 +14,14 @@ Jafar builds named packages by selecting working CRM capabilities and setting us
 - The builder explains required supporting capabilities, lets Jafar include them, and refuses to publish a broken combination. It distinguishes business allowances from safety controls that apply to every package.
 - Jafar sets team seats, operational and marketing email allowances, website chat widgets and accepted conversations, and active automation recipes. The owner, active staff, and pending invitations consume seats; a seat is freed when its member leaves or invitation expires. Seats, widgets, and active recipes are counted at one time. Email and accepted chat allowances reset each monthly service period, including on yearly packages. The feature owner verifies each counting event and boundary before that control is sold. Grace-period usage counts toward the new service month and payment confirmation never gives a second reset for that month.
 - Reaching a limit blocks new use with a clear explanation and preserves existing records. Existing accepted chat sessions remain usable. Essential email—requested quotes, invoices, receipts, security notices, and direct replies—continues and is counted under the Communications policy. Optional operational email above its included allowance uses prepaid Communication Balance or pauses when that balance is insufficient. Marketing email follows its separate sending and allowance rules.
+
+## Public offer and onboarding presentation
+
+- The marketing site may show a short, contractor-readable card for each public package: its name, USD monthly/yearly price and payment interval, a concise promise, and a few clear highlights. A **View details** action opens the full terms for that exact published edition. Private or archived editions do not appear in the public list.
+- The details separate understandable outcomes from precise inclusions: supported app capabilities, limits and reset periods, any separately delivered services, exclusions or prerequisites, introductory price and its end, later normal price, yearly upfront amount, and any separately charged provider usage. They explain that package payment is handled offsite.
+- The `/get-started` package step shows the same concise comparison and a View details action without losing the selected package or form progress. A visitor actively chooses an edition. Before submitting, the review shows the selected name, interval, exact agreed price or offer, and a link back to its full details. Submission preserves the selected published edition and its customer-facing terms for Jafar's later review.
+- Marketing copy may be simpler than the technical detail but must agree with it. A public card and its detail view refer to the same edition; a changed or archived edition prompts a marketing-site update before the old wording can keep being advertised.
+- Website creation, on-site SEO, missed-call text-back, automated lead follow-up, and Google Business Profile management are examples Jafar may want to highlight. Each must be classified as a delivered service or verified application capability, with its real scope and readiness checked before the package promises it.
 
 ## Prices and offers
 
@@ -46,6 +54,8 @@ The [feasibility review](research/package-builder-feasibility-2026-09-29.md) con
 
 ## Research
 
+- [Public offer presentation and current onboarding audit](research/package-offer-presentation-2026-09-29.md)
+
 - [Existing package audit and primary-source comparison](research/package-flexibility-audit-2026-09-29.md)
 - [Feature controls and readiness](research/package-feature-controls-2026-09-29.md)
 - [Introductory offer patterns](research/package-introductory-offers-2026-09-29.md)
@@ -54,7 +64,8 @@ The [feasibility review](research/package-builder-feasibility-2026-09-29.md) con
 
 ## Still unclear
 
-- None for the behavior in this plan. P2 will define replacement boundaries and build-part done checks, including how fake assignments are handled. Feature-specific counting details are verified with their owning domains during implementation.
+- Are the example website, SEO, missed-call, follow-up, and Google Business Profile items actual deliverables included in the same package price, illustrative marketing copy for later, or a mix? For actual deliverables, identify who fulfills them and what the included scope is.
+- P2 defines replacement boundaries and build-part done checks, including how fake assignments are handled. Feature-specific counting details are verified with their owning domains during implementation.
 
 ## Not doing
 
