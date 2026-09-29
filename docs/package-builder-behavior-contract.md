@@ -16,11 +16,15 @@ Approved 2026-09-29: packages have independently set monthly and yearly prices i
 
 Introductory offers support percentage or fixed-amount discounts, three/six-month presets and custom duration, and separate first-year offers for yearly customers. Controls include eligible packages and billing intervals, customer eligibility, claim dates, redemption caps, and optional promotion codes or automatic application. Only one promotion applies at a time. Show the introductory price, duration, and subsequent normal price clearly. Preserve the customer’s agreed price and offer terms when public offers change. Annual base-price savings are separate from introductory promotions.
 
+## Package catalog and publishing
+
+Jafar may create any number of named packages, duplicate a package into a new draft, choose public or private visibility, and set display order. He can save drafts freely and publish only after reviewing the exact saved terms. Archiving stops an offer being chosen by new customers while existing customers keep their assigned edition; Jafar may restore the offer later. Only unused drafts with no dependent records can be deleted. Publishing a revised offer creates a new edition and never silently moves assigned customers.
+
 ## Offsite payments and monitoring
 
 Jafar collects payment outside this application and manually records it here. He may use a third-party service such as Lemon Squeezy or Payoneer; no provider integration or availability is assumed. The package system itself does not collect or automatically verify payments.
 
-Jafar must be able to see who paid, the USD amount, and the duration covered, alongside their assigned package and renewal status. Subscription terms and introductory offers still apply when collection is offsite. Exact receipt fields, balance handling, coverage calculation, and overdue behavior are being settled against the existing manual-payment workflow.
+Jafar must be able to see who paid, the USD amount, and the duration covered, alongside their assigned package and renewal status. Subscription terms and introductory offers still apply when collection is offsite. The system records each monthly or yearly amount due separately from money Jafar confirms receiving offsite. It shows the amount paid, remaining balance, and extra credit. A partial payment leaves a balance; an overpayment becomes credit and does not silently extend coverage. Jafar confirms the exact dates a payment covers before paid-through moves. The view shows the upcoming renewal. The existing seven-calendar-day grace period after coverage ends remains. Exact receipt fields, how credits are applied, and partial-payment access during grace remain to be settled.
 
 This plan extends the earlier onboarding contract’s monthly-only scope. Its USD-only currency and offsite-collection boundaries remain in force. Contractor recording of payments from their own clients remains a separate CRM workflow.
 
@@ -31,9 +35,8 @@ Published editions preserve the package terms customers receive. A later change 
 ## Still unclear
 
 - Exact counting, reset, and exhaustion rules for approved allowances; whether other business controls are needed after the capability audit.
-- Package creation, duplication, naming, ordering, archival, restoration, and unused-draft deletion.
-- Draft saving, exact publication review, and concurrent edit behavior.
-- Detailed introductory-period rules, billing-interval changes, manual payment records, partial/excess payments, coverage dates, and overdue behavior.
+- Draft concurrent-edit behavior and how visibility, price, and promotion changes create editions.
+- Detailed introductory-period rules, billing-interval changes, manual receipt fields, credit application, partial-payment access, and late-payment corrections.
 - Customer assignment confirmation, effects on payment terms, overrides, and downgrade consequences.
 - Whether customer-specific editions or existing overrides serve negotiated exceptions.
 - Exact scope of replacing old code and resetting test assignments, followed by approved build parts and verification.
@@ -43,7 +46,8 @@ Published editions preserve the package terms customers receive. A later change 
 - In-app payment collection or automatic provider verification — Jafar receives and confirms payments offsite.
 - Automatic movement of existing customers to a newly published edition — Jafar wants manual assignment.
 - Treating a newly typed feature name as implemented functionality — capabilities require actual application behavior.
-- Deleting or resetting application data during planning — this session authorized a campaign handoff only.
+- Contractor-facing notification and account/offer history screens — tracked as separate work, while the builder supplies their package and payment facts.
+- Deleting or resetting application data during planning.
 
 ## Research
 

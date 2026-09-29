@@ -5,7 +5,7 @@
 
 **In progress:**
 
-- P1 planning — pricing, promotions, USD-only currency, visibility, and CRM basics approved; feature-storeroom choices approved; catalog lifecycle and manual billing details under discussion; see `parts/P1.md`.
+- P1 planning — pricing, promotions, USD-only currency, visibility, and CRM basics approved; feature and catalog choices approved; manual billing direction agreed, usage and customer transitions next; see `parts/P1.md`.
 
 **Next part:** Continue P1 to settle the builder's choices and lifecycle before approving the complete plan. Build parts follow approval.
 

@@ -10,6 +10,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Closing an organization cannot purge it once it sent a quote](organization-purge-fails-on-history-triggers.md) |
 | P1 | [Package versions carry no email allowance (silent stop fixed; terms remain)](package-versions-can-have-no-email-limits-configured.md) |
 | P1 | [Pre-launch speed pass on the staging servers (HTTP/2, service worker, real-region timings)](pre-launch-speed-pass.md) |
+| P2 | [Contractor account, offers, and notification history](contractor-account-offers-and-notification-history.md) |
 | P2 | [Delete client, exactly like Jobber (Jafar decided; waits for "go")](delete-client-like-jobber.md) |
 | P2 | [SES production-domain cutover: capacity cap and rehearsal notes](ses-production-domain-cutover-notes.md) |
 | P2 | [A full page load can crash hydration and leave the previous page on screen](full-page-load-hydration-crash-leaves-the-previous-page-on-screen.md) |

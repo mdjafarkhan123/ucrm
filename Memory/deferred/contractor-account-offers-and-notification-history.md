@@ -1,0 +1,5 @@
+# Contractor account, offers, and notification history
+
+**Why it waits:** Jafar wants a contractor-facing top-bar notification place and perhaps a dedicated page for past/upcoming offers and offers they claimed. The package builder and manual payment terms are still being planned; the destination screen and which offers appear are undecided. The contractor shell already has a bell for some alerts, but `/notifications` is marked unavailable.
+**Brings it back:** Plan the contractor account/subscription experience once package catalog and manual payment history are settled, before launch.
+**Known constraints:** Show current agreed edition, coverage and paid history from the commercial record, not inferred from public offers. Do not imply in-app collection or self-service package changes without Jafar deciding those workflows. Reuse the existing bell and notification system. Industry reference: [Chargebee self-serve portal](https://www.chargebee.com/docs/billing/2.0/hosted-capabilities/self-serve-portal).
