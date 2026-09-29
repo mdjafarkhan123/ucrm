@@ -3,7 +3,9 @@
 **Goal:** Clear the nine deferred tasks that are ready now (approved by Jafar 2026-09-29).
 **Plan:** each part's note in `Memory/deferred/` is its spec; delete the note and its INDEX row when fixed.
 
-**In progress:** none
+**In progress:** Part 7 — uncommitted work-in-progress sitting in the working directory from another session
+writing concurrently in the main folder. See `parts/part-7-client-work-schedule.md` before touching any file
+it lists — check `git status` fresh and confirm that session has stopped first.
 
 **Next part:** 7 Client work + schedule — fill the client page's empty Work overview and Client schedule boxes
 with the client's real work (spec: `Memory/deferred/client-work-overview-and-schedule-sections-are-empty.md`).
