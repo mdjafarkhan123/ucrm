@@ -35,4 +35,3 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [Four more composite foreign keys use `on delete set null` without a column list](more-composite-foreign-keys-null-the-organization-on-delete.md) |
 | P3 | [One-time flash of full nav + "not connected to an organization" after account menu](one-time-flash-of-full-nav-and-no-organization-banner-after-account-menu.md) |
 | P3 | [Marketing first-release leftovers: staff-launch check, cross-campaign insight](marketing-release-leftovers.md) |
-| P3 | [`resolve()` route union type is too complex to represent (TypeScript)](resolve-route-union-type-too-complex-to-represent.md) |

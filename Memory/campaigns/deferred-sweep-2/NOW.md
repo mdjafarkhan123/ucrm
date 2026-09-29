@@ -3,9 +3,10 @@
 **Goal:** Clear the nine deferred tasks that are ready now (approved by Jafar 2026-09-29).
 **Plan:** each part's note in `Memory/deferred/` is its spec; delete the note and its INDEX row when fixed.
 
-**In progress:** Part 8 Type check — claimed by another session in its own worktree (check the register).
+**In progress:** none. Parts 1–8 are all Done on `main`.
 
-**Next part:** 9 Chat identity — first ask Jafar which model he wants (spec:
+**Next part:** 9 Chat identity — not build-ready. Its own note says "Merge versus move is an unresolved
+product decision" — ask Jafar which reconciliation model he wants before writing any code (spec:
 `Memory/deferred/resolving-a-chat-identity-does-not-stop-the-next-conflict.md`).
 
 **Blockers:** none. Do not touch packages or Delete client (Jafar: "not now"). The CLI runs as
