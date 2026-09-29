@@ -18,7 +18,7 @@ export const GET: RequestHandler = async (event) => {
 			.from('platform_email_templates')
 			.select('id, folder, name, subject, body, version')
 			.order('name'),
-		owner.from('platform_email_template_packages').select('template_id, package_key'),
+		owner.from('platform_email_template_packages').select('template_id, package_id'),
 		event.locals.supabase
 			.from('communications_email_templates')
 			.select('id, source_template_id, source_version_copied_at')
@@ -30,7 +30,7 @@ export const GET: RequestHandler = async (event) => {
 	const restrictionsByTemplate = new Map<string, string[]>();
 	for (const row of visibilityResult.data ?? []) {
 		const keys = restrictionsByTemplate.get(row.template_id) ?? [];
-		keys.push(row.package_key);
+		keys.push(row.package_id);
 		restrictionsByTemplate.set(row.template_id, keys);
 	}
 
@@ -38,13 +38,13 @@ export const GET: RequestHandler = async (event) => {
 		(copiesResult.data ?? []).map((copy) => [copy.source_template_id as string, copy])
 	);
 
-	const effectivePackageKey = check.access.package?.slug ?? null;
+	const effectivePackageId = check.access.package?.package_id ?? null;
 	const templates = (templatesResult.data ?? [])
 		.filter((template) => {
 			const restrictedTo = restrictionsByTemplate.get(template.id) ?? [];
 			return (
 				restrictedTo.length === 0 ||
-				(effectivePackageKey !== null && restrictedTo.includes(effectivePackageKey))
+				(effectivePackageId !== null && restrictedTo.includes(effectivePackageId))
 			);
 		})
 		.map((template) => {

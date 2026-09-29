@@ -33,7 +33,7 @@ export const PATCH: RequestHandler = async (event) => {
 
 	try {
 		const client = getOwnerSupabaseClient();
-		const { package_keys, ...fields } = parsed.data;
+		const { package_ids, ...fields } = parsed.data;
 
 		let template = null;
 		if (Object.keys(fields).length > 0) {
@@ -65,29 +65,29 @@ export const PATCH: RequestHandler = async (event) => {
 		}
 		if (!template) return json({ error: 'Unknown email template.' }, { status: 404 });
 
-		if (package_keys !== undefined) {
+		if (package_ids !== undefined) {
 			const { error: clearError } = await client
 				.from('platform_email_template_packages')
 				.delete()
 				.eq('template_id', id);
 			if (clearError) throw clearError;
 
-			if (package_keys.length) {
+			if (package_ids.length) {
 				const { error: visibilityError } = await client
 					.from('platform_email_template_packages')
-					.insert(package_keys.map((package_key) => ({ template_id: id, package_key })));
+					.insert(package_ids.map((package_id) => ({ template_id: id, package_id })));
 				if (visibilityError) throw visibilityError;
 			}
 		}
 
 		const { data: visibility, error: visibilityReadError } = await client
 			.from('platform_email_template_packages')
-			.select('package_key')
+			.select('package_id')
 			.eq('template_id', id);
 		if (visibilityReadError) throw visibilityReadError;
 
 		return json({
-			template: { ...template, package_keys: (visibility ?? []).map((row) => row.package_key) }
+			template: { ...template, package_ids: (visibility ?? []).map((row) => row.package_id) }
 		});
 	} catch (error) {
 		console.error('Could not save the email template.', error);

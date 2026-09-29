@@ -76,7 +76,7 @@ export const GET: RequestHandler = async (event) => {
 			client
 				.from('organization_free_access_events')
 				.select(
-					'id, action, package_version_id, access_until_date, reason, actor_owner_email, occurred_at'
+					'id, action, access_until_date, reason, actor_owner_email, occurred_at'
 				)
 				.eq('organization_id', parsedId.data)
 				.order('occurred_at', { ascending: false })
@@ -127,7 +127,7 @@ export const GET: RequestHandler = async (event) => {
 			id: `free_access:${row.id}`,
 			event_type: `free_access.${row.action}`,
 			target_type: 'organization.free_access',
-			target_key: row.package_version_id,
+			target_key: null,
 			actor_email: row.actor_owner_email,
 			occurred_at: row.occurred_at,
 			before_state: null,

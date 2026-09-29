@@ -34,8 +34,6 @@ export const jafarOrganizationStripeConnectionKey = (organizationId: string | un
 	[...jafarOrganizationKey(organizationId), 'stripe-connection'] as const;
 export const jafarOrganizationEmailSendingPauseKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'email-sending-pause'] as const;
-export const jafarOrganizationLegacyReviewKey = (organizationId: string | undefined) =>
-	[...jafarOrganizationKey(organizationId), 'legacy-review'] as const;
 export const jafarOrganizationEmailReputationKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'email-reputation'] as const;
 export const jafarOrganizationMarketingAllowanceKey = (organizationId: string | undefined) =>
@@ -70,8 +68,6 @@ export const jafarProspectsListKey = (stageFilter: string, search: string) =>
 	['jafar', 'prospects', stageFilter, search] as const;
 export const jafarProspectKey = (prospectId: string | null) =>
 	['jafar', 'prospect', prospectId] as const;
-
-export const jafarPackagesKey = ['jafar', 'packages'] as const;
 
 export const jafarOperationsKey = ['jafar', 'operations'] as const;
 export const jafarOperationsListKey = (statusFilter: string) =>

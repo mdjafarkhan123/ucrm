@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type {
 		CommercialState,
-		PackagesCatalogResponse,
 		TeamResponse,
 		HistoryResponse,
 		OperationListResponse,
@@ -12,8 +11,7 @@
 		jafarOrganizationAccessKey,
 		jafarOrganizationCommercialKey,
 		jafarOrganizationHistoryKey,
-		jafarOrganizationTeamKey,
-		jafarPackagesKey
+		jafarOrganizationTeamKey
 	} from '$lib/jafar/query-keys';
 	import Tabs, { type Tab } from '$lib/components/ui/Tabs.svelte';
 	import { dev } from '$app/environment';
@@ -149,16 +147,6 @@
 		].sort((a, b) => (a.updated_at < b.updated_at ? 1 : a.updated_at > b.updated_at ? -1 : 0))
 	);
 
-	const packagesCatalogQuery = createQuery<PackagesCatalogResponse>(() => ({
-		queryKey: jafarPackagesKey,
-		enabled: !preview && Boolean(access),
-		queryFn: async () => {
-			const response = await fetch('/api/jafar/packages');
-			const result = (await response.json()) as PackagesCatalogResponse;
-			if (!response.ok) throw new Error(result.error ?? 'Package definitions could not be loaded.');
-			return result;
-		}
-	}));
 	const pageTitle = $derived(
 		isLoading
 			? 'Loading organization · Organizations'
@@ -352,7 +340,6 @@
 			<OverviewWorkspace
 				{access}
 				{preview}
-				{packagesCatalogQuery}
 				{teamQuery}
 				{commercialQuery}
 				{historyQuery}

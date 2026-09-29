@@ -6,39 +6,55 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async () => {
 	const client = getOwnerSupabaseClient();
 
-	const [versionsResult, settings] = await Promise.all([
+	// Public, published, unarchived editions only. The cards are rebuilt in package-builder P9; until then
+	// each edition offers its monthly price when it has one, otherwise its yearly price.
+	const [editionsResult, settings] = await Promise.all([
 		client
-			.from('platform_package_versions')
+			.from('package_editions')
 			.select(
-				`id, display_name, public_description, value_explanation, price_usd_cents, currency,
-				billing_period,
-				platform_packages!inner(status, sort_order),
-				platform_package_version_features(features(description)),
-				platform_package_version_limits(limit_key, limit_state, limit_value)`
+				`id, name, promise, highlights, monthly_price_usd_cents, yearly_price_usd_cents,
+				packages!inner(visibility, archived_at, display_order),
+				package_edition_allowances(allowance_key, allowance_state, allowance_value)`
 			)
 			.eq('status', 'published')
-			.eq('platform_packages.status', 'published'),
+			.eq('packages.visibility', 'public')
+			.is('packages.archived_at', null),
 		getOrCreateOwnerSettings(client)
 	]);
-	if (versionsResult.error) throw versionsResult.error;
+	if (editionsResult.error) throw editionsResult.error;
 
-	const packages = versionsResult.data
-		.map((version) => ({
-			package_version_id: version.id,
-			display_name: version.display_name,
-			public_description: version.public_description ?? '',
-			value_explanation: version.value_explanation ?? '',
-			price_usd_cents: version.price_usd_cents ?? 0,
-			currency: version.currency,
-			billing_period: version.billing_period,
-			sort_order: version.platform_packages.sort_order,
-			features: version.platform_package_version_features
-				.map((row) => row.features?.description)
-				.filter((description): description is string => Boolean(description)),
-			seat_limit: version.platform_package_version_limits.find(
-				(limit) => limit.limit_key === 'employee_seats'
-			)
-		}))
+	const packages = editionsResult.data
+		.flatMap((edition) => {
+			const billingInterval =
+				edition.monthly_price_usd_cents !== null
+					? ('month' as const)
+					: edition.yearly_price_usd_cents !== null
+						? ('year' as const)
+						: null;
+			if (!billingInterval) return [];
+			const seats = edition.package_edition_allowances.find(
+				(allowance) => allowance.allowance_key === 'employee_seats'
+			);
+			return [
+				{
+					package_edition_id: edition.id,
+					billing_interval: billingInterval,
+					display_name: edition.name,
+					public_description: edition.promise ?? '',
+					price_usd_cents:
+						(billingInterval === 'month'
+							? edition.monthly_price_usd_cents
+							: edition.yearly_price_usd_cents) ?? 0,
+					sort_order: edition.packages.display_order,
+					features: (Array.isArray(edition.highlights) ? edition.highlights : []).filter(
+						(highlight): highlight is string => typeof highlight === 'string'
+					),
+					seat_limit: seats
+						? { limit_state: seats.allowance_state, limit_value: seats.allowance_value }
+						: undefined
+				}
+			];
+		})
 		.sort((a, b) => a.sort_order - b.sort_order);
 
 	return {

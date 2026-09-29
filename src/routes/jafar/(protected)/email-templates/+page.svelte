@@ -18,7 +18,7 @@
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 
-	type PackageOption = { package_key: string; display_name: string };
+	type PackageOption = { id: string; display_name: string; archived: boolean };
 	type TemplateRow = {
 		id: string;
 		name: string;
@@ -27,7 +27,7 @@
 		body: string;
 		version: number;
 		updated_at: string;
-		package_keys: string[];
+		package_ids: string[];
 	};
 	type ListResponse = { templates: TemplateRow[]; packages: PackageOption[]; error?: string };
 	type MutationResponse = {
@@ -41,7 +41,7 @@
 	let folder = $state('');
 	let subject = $state('');
 	let body = $state('');
-	let packageKeys = $state<string[]>([]);
+	let packageIds = $state<string[]>([]);
 	let formError = $state('');
 	let deleteTarget = $state<TemplateRow | null>(null);
 
@@ -66,7 +66,7 @@
 		folder = '';
 		subject = '';
 		body = '';
-		packageKeys = [];
+		packageIds = [];
 		formError = '';
 	}
 
@@ -76,19 +76,23 @@
 		folder = template.folder ?? '';
 		subject = template.subject;
 		body = template.body;
-		packageKeys = [...template.package_keys];
+		packageIds = [...template.package_ids];
 		formError = '';
 	}
 
-	function togglePackage(packageKey: string) {
-		packageKeys = packageKeys.includes(packageKey)
-			? packageKeys.filter((key) => key !== packageKey)
-			: [...packageKeys, packageKey];
+	function togglePackage(packageId: string) {
+		packageIds = packageIds.includes(packageId)
+			? packageIds.filter((id) => id !== packageId)
+			: [...packageIds, packageId];
+	}
+
+	function packageName(packageId: string) {
+		return packages.find((pkg) => pkg.id === packageId)?.display_name ?? 'Removed package';
 	}
 
 	const save = createMutation<MutationResponse, Error, void>(() => ({
 		mutationFn: async () => {
-			const payload = { name, folder: folder || null, subject, body, package_keys: packageKeys };
+			const payload = { name, folder: folder || null, subject, body, package_ids: packageIds };
 			const isCreate = selectedId === 'new';
 			const response = await fetch(
 				isCreate ? '/api/jafar/email-templates' : `/api/jafar/email-templates/${selectedId}`,
@@ -143,7 +147,7 @@
 			<h1>Email templates</h1>
 			<p class="email-templates__description">
 				Reusable content organizations can copy into their own communications. Visibility controls
-				which package tiers can copy a template.
+				which packages can copy a template.
 			</p>
 		</div>
 		<Button onclick={startCreate}
@@ -185,10 +189,11 @@
 										{#if template.folder}<Badge size="small">{template.folder}</Badge>{/if}
 									</th>
 									<td>
-										{#if template.package_keys.length === 0}
+										{#if template.package_ids.length === 0}
 											<Badge status="informative" size="small">All packages</Badge>
 										{:else}
-											{#each template.package_keys as key (key)}<Badge size="small">{key}</Badge
+											{#each template.package_ids as packageId (packageId)}<Badge size="small"
+													>{packageName(packageId)}</Badge
 												>{/each}
 										{/if}
 									</td>
@@ -248,12 +253,12 @@
 								>Visible to (leave all unchecked for every package)</span
 							>
 							<div class="email-templates__visibility-options">
-								{#each packages as pkg (pkg.package_key)}
+								{#each packages.filter((pkg) => !pkg.archived || packageIds.includes(pkg.id)) as pkg (pkg.id)}
 									<label class="email-templates__checkbox">
 										<input
 											type="checkbox"
-											checked={packageKeys.includes(pkg.package_key)}
-											onchange={() => togglePackage(pkg.package_key)}
+											checked={packageIds.includes(pkg.id)}
+											onchange={() => togglePackage(pkg.id)}
 										/>
 										<span>{pkg.display_name}</span>
 									</label>

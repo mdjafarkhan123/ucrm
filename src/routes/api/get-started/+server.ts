@@ -11,7 +11,7 @@ import {
 	zodOnboardingApplicationFieldErrors
 } from '$lib/server/validation/get-started.schema';
 
-// Postgres codes raised by submit_onboarding_application when the chosen package version is no
+// Postgres codes raised by submit_onboarding_application when the chosen package edition is no
 // longer published (check_violation) or no longer exists (foreign_key_violation).
 const UNAVAILABLE_PACKAGE_CODES = new Set(['23514', '23503']);
 
@@ -71,7 +71,8 @@ export const POST: RequestHandler = async (event) => {
 				target_city_country: data.city_country,
 				target_time_zone: data.time_zone,
 				target_note: data.note ?? '',
-				target_package_version_id: data.package_version_id,
+				target_package_edition_id: data.package_edition_id,
+				target_billing_interval: data.billing_interval,
 				target_privacy_policy_version: settings.privacy_policy_version,
 				target_submitted_data: {
 					business_name: data.business_name,
@@ -85,7 +86,8 @@ export const POST: RequestHandler = async (event) => {
 					city_country: data.city_country,
 					time_zone: data.time_zone,
 					note: data.note ?? null,
-					package_version_id: data.package_version_id
+					package_edition_id: data.package_edition_id,
+					billing_interval: data.billing_interval
 				}
 			}
 		);
@@ -97,7 +99,7 @@ export const POST: RequestHandler = async (event) => {
 				{
 					error: 'That package is no longer available. Please choose another one.',
 					field_errors: {
-						package_version_id: 'That package is no longer available. Please choose another one.'
+						package_edition_id: 'That package is no longer available. Please choose another one.'
 					}
 				},
 				{ status: 422 }

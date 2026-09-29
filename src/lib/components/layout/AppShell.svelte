@@ -107,7 +107,6 @@
 			items: [
 				{ label: 'Overview', href: '/jafar', icon: 'dashboard' },
 				{ label: 'Prospects', href: '/jafar/prospects', icon: 'users' },
-				{ label: 'Packages', href: '/jafar/packages', icon: 'package' },
 				{ label: 'Organizations', href: '/jafar/organizations', icon: 'building' },
 				{ label: 'Operations', href: '/jafar/operations', icon: 'alertTriangle' },
 				{ label: 'System emails', href: '/jafar/message-templates', icon: 'mail' },

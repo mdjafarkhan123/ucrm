@@ -2,7 +2,6 @@
 	import type {
 		EffectiveAccess,
 		CommercialState,
-		PackagesCatalogResponse,
 		TeamResponse,
 		HistoryResponse,
 		OperationListResponse,
@@ -27,7 +26,6 @@
 	let {
 		access,
 		preview,
-		packagesCatalogQuery,
 		teamQuery,
 		commercialQuery,
 		historyQuery,
@@ -38,7 +36,6 @@
 	}: {
 		access: EffectiveAccess | null;
 		preview: OrganizationDetailPreview | null;
-		packagesCatalogQuery: CreateQueryResult<PackagesCatalogResponse, Error>;
 		teamQuery: CreateQueryResult<TeamResponse, Error>;
 		commercialQuery: CreateQueryResult<CommercialState, Error>;
 		historyQuery: CreateQueryResult<HistoryResponse, Error>;
@@ -259,9 +256,9 @@
 							{:else if attentionOperations.length > 0}
 								<h3>Open recovery work</h3>
 								<p>Review the recovery items in Activity before changing access.</p>
-							{:else if packagesCatalogQuery.isPending || teamQuery.isPending || historyQuery.isPending || organizationOperationsQuery.isPending || (historyQuery.data?.applicationId && applicationOperationsQuery.isPending)}
-								<h3>Loading package versions</h3>
-								<p>Published package versions are loading before the next commercial action.</p>
+							{:else if teamQuery.isPending || historyQuery.isPending || organizationOperationsQuery.isPending || (historyQuery.data?.applicationId && applicationOperationsQuery.isPending)}
+								<h3>Loading organization health</h3>
+								<p>Team, history, and recovery checks are loading.</p>
 							{:else if access.billing.is_overdue && !access.billing.is_in_grace}
 								<h3>Paid-through date is past grace</h3>
 								<p>Review commercial eligibility before any further lifecycle change.</p>

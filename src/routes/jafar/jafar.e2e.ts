@@ -7,7 +7,7 @@ import { expect, test } from '@playwright/test';
  * test database, so mutating actions are left to manual verification instead.
  */
 
-const protectedPaths = ['/jafar', '/jafar/prospects', '/jafar/packages', '/jafar/organizations'];
+const protectedPaths = ['/jafar', '/jafar/prospects', '/jafar/organizations'];
 
 test.describe('platform owner area access control', () => {
 	for (const path of protectedPaths) {
@@ -71,11 +71,6 @@ test.describe('platform owner admin pages (authenticated, read-only)', () => {
 	test('prospects page loads the review list', async ({ page }) => {
 		await page.goto('/jafar/prospects');
 		await expect(page.getByRole('main').getByRole('heading', { name: 'Prospects' })).toBeVisible();
-	});
-
-	test('packages page loads the package catalog', async ({ page }) => {
-		await page.goto('/jafar/packages');
-		await expect(page.getByRole('main').getByRole('heading', { name: 'Packages' })).toBeVisible();
 	});
 
 	test('organizations list loads and links into a real organization detail page', async ({

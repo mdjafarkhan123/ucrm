@@ -45,11 +45,6 @@ export const prospectNotProceedingSchema = z.object({
 	reason: z.string().trim().min(1, 'Enter a private reason.').max(500).nullish()
 });
 
-export const prospectPackageCorrectionSchema = z.object({
-	package_version_id: z.string().uuid('Choose a package.'),
-	reason: z.string().trim().min(1, 'Enter a private reason for this correction.').max(500)
-});
-
 export const prospectPaymentReversalSchema = z.object({
 	reason: z.string().trim().min(1, 'Enter a private reason for the reversal.').max(500)
 });

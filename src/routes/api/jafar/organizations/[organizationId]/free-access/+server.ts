@@ -8,7 +8,7 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { organizationIdSchema } from '$lib/server/validation/access.schema';
 
 const eventSelect =
-	'id, organization_id, package_version_id, action, starts_at, access_until_date, target_grant_id, reason, actor_kind, actor_owner_email, occurred_at, created_at';
+	'id, organization_id, action, starts_at, access_until_date, target_grant_id, reason, actor_kind, actor_owner_email, occurred_at, created_at';
 
 async function getFreeAccessState(
 	client: ReturnType<typeof getOwnerSupabaseClient>,

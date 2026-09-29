@@ -6,7 +6,6 @@
 	import { markRecordNotificationsRead, notificationsKey } from '$lib/jafar/notifications';
 	import {
 		jafarOrganizationsKey,
-		jafarPackagesKey,
 		jafarProspectKey,
 		jafarProspectsKey,
 		jafarProspectsListKey
@@ -45,7 +44,7 @@
 		trade: string;
 		city_country: string;
 		time_zone: string;
-		package_version_id: string;
+		package_edition_id: string;
 		package_snapshot: unknown;
 		possible_duplicate: boolean;
 		submitted_at: string;
@@ -115,17 +114,6 @@
 		attempt_count: number;
 		updated_at: string;
 	};
-	type PackageVersionOption = {
-		id: string;
-		status: string;
-		display_name: string;
-		price_usd_cents: number | null;
-		currency: string;
-	};
-	type PackagesResponse = {
-		packages: { versions: PackageVersionOption[] }[];
-		error?: string;
-	};
 	type ProspectListResponse = { prospects: ProspectSummary[]; error?: string };
 	type ProspectDetailResponse = {
 		prospect: ProspectDetail;
@@ -175,10 +163,6 @@
 		note: string;
 		reason: string;
 	};
-	type PackageCorrectionForm = {
-		package_version_id: string;
-		reason: string;
-	};
 	type PaymentConfirmationForm = {
 		amountDollars: string;
 		private_reference: string;
@@ -200,13 +184,11 @@
 	let stageFilter = $state('');
 	let selectedProspectId = $state<string | null>(null);
 	let editingCorrection = $state(false);
-	let editingPackage = $state(false);
 	let confirmingNotProceeding = $state(false);
 	let confirmingPayment = $state(false);
 	let confirmingProvision = $state(false);
 	let confirmingReversal = $state(false);
 	let correctionForm = $state<CorrectionForm>(emptyCorrectionForm());
-	let packageCorrectionForm = $state<PackageCorrectionForm>(emptyPackageCorrectionForm());
 	let paymentForm = $state<PaymentConfirmationForm>(emptyPaymentForm());
 	let notProceedingReason = $state('');
 	let reversalReason = $state('');
@@ -229,10 +211,6 @@
 		};
 	}
 
-	function emptyPackageCorrectionForm(): PackageCorrectionForm {
-		return { package_version_id: '', reason: '' };
-	}
-
 	function emptyPaymentForm(): PaymentConfirmationForm {
 		return { amountDollars: '', private_reference: '', mismatch_reason: '' };
 	}
@@ -244,7 +222,6 @@
 
 	function openCorrectionForm(detail: ProspectDetail) {
 		clearFeedback();
-		editingPackage = false;
 		confirmingNotProceeding = false;
 		confirmingPayment = false;
 		confirmingProvision = false;
@@ -265,21 +242,9 @@
 		editingCorrection = true;
 	}
 
-	function openPackageCorrectionForm(detail: ProspectDetail) {
-		clearFeedback();
-		editingCorrection = false;
-		confirmingNotProceeding = false;
-		confirmingPayment = false;
-		confirmingProvision = false;
-		confirmingReversal = false;
-		packageCorrectionForm = { package_version_id: detail.package_version_id, reason: '' };
-		editingPackage = true;
-	}
-
 	function openNotProceedingConfirm() {
 		clearFeedback();
 		editingCorrection = false;
-		editingPackage = false;
 		confirmingPayment = false;
 		confirmingProvision = false;
 		confirmingReversal = false;
@@ -290,7 +255,6 @@
 	function openPaymentForm() {
 		clearFeedback();
 		editingCorrection = false;
-		editingPackage = false;
 		confirmingNotProceeding = false;
 		confirmingProvision = false;
 		confirmingReversal = false;
@@ -301,7 +265,6 @@
 	function openProvisionConfirm() {
 		clearFeedback();
 		editingCorrection = false;
-		editingPackage = false;
 		confirmingNotProceeding = false;
 		confirmingPayment = false;
 		confirmingReversal = false;
@@ -311,7 +274,6 @@
 	function openReversalConfirm() {
 		clearFeedback();
 		editingCorrection = false;
-		editingPackage = false;
 		confirmingNotProceeding = false;
 		confirmingPayment = false;
 		confirmingProvision = false;
@@ -357,23 +319,6 @@
 		}
 	}));
 
-	const packageOptionsQuery = createQuery<PackagesResponse>(() => ({
-		queryKey: jafarPackagesKey,
-		enabled: editingPackage,
-		queryFn: async () => {
-			const response = await fetch('/api/jafar/packages');
-			const result = (await response.json()) as PackagesResponse;
-			if (!response.ok) throw new Error(result.error ?? 'Packages could not be loaded.');
-			return result;
-		}
-	}));
-
-	const publishedPackageVersions = $derived(
-		(packageOptionsQuery.data?.packages ?? [])
-			.flatMap((packageDefinition) => packageDefinition.versions)
-			.filter((version) => version.status === 'published')
-	);
-
 	const prospectList = $derived(prospects.data?.prospects ?? []);
 	const attentionCount = $derived(
 		prospectList.filter((prospect) => prospect.stage === 'needs_attention').length
@@ -407,28 +352,6 @@
 		onSuccess: () => {
 			editingCorrection = false;
 			actionMessage = 'Correction saved.';
-			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
-			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
-		}
-	}));
-
-	const correctPackage = createMutation<ActionResponse, Error, void>(() => ({
-		mutationFn: async () => {
-			if (!selectedProspectId) throw new Error('Choose a prospect first.');
-			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/correct-package`, {
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify(packageCorrectionForm)
-			});
-			const result = (await response.json()) as ActionResponse;
-			if (!response.ok) throw new Error(result.error ?? 'The package could not be changed.');
-			return result;
-		},
-		onMutate: () => clearFeedback(),
-		onError: (error) => (actionError = error.message),
-		onSuccess: () => {
-			editingPackage = false;
-			actionMessage = 'Package changed.';
 			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
 			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 		}
@@ -600,7 +523,6 @@
 	function clearSelection() {
 		selectedProspectId = null;
 		editingCorrection = false;
-		editingPackage = false;
 		confirmingNotProceeding = false;
 		confirmingPayment = false;
 		confirmingProvision = false;
@@ -613,7 +535,6 @@
 	function selectProspect(id: string) {
 		selectedProspectId = id;
 		editingCorrection = false;
-		editingPackage = false;
 		confirmingNotProceeding = false;
 		confirmingPayment = false;
 		confirmingProvision = false;
@@ -704,15 +625,6 @@
 
 	function formatCents(cents: number, currency: string) {
 		return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(cents / 100);
-	}
-
-	function packageVersionOptionLabel(version: PackageVersionOption) {
-		if (version.price_usd_cents === null) return version.display_name;
-		const price = new Intl.NumberFormat(undefined, {
-			style: 'currency',
-			currency: version.currency
-		}).format(version.price_usd_cents / 100);
-		return `${version.display_name} · ${price} monthly`;
 	}
 
 	function correctionChanges(correction: Correction) {
@@ -1057,12 +969,6 @@
 								<Button
 									type="button"
 									variant="tertiary"
-									disabled={editingPackage}
-									onclick={() => openPackageCorrectionForm(detail)}>Change package</Button
-								>
-								<Button
-									type="button"
-									variant="tertiary"
 									disabled={confirmingPayment}
 									onclick={openPaymentForm}>Confirm payment</Button
 								>
@@ -1228,56 +1134,6 @@
 									onclick={() => (editingCorrection = false)}>Cancel</Button
 								>
 								<Button type="submit" loading={correctProspect.isPending}>Save correction</Button>
-							</div>
-						</form>
-					{/if}
-
-					{#if editingPackage}
-						<form
-							class="prospects__correction-form"
-							onsubmit={(event) => {
-								event.preventDefault();
-								correctPackage.mutate();
-							}}
-						>
-							<div class="prospects__form-grid">
-								<label class="prospects__form-wide"
-									><span>Package</span>
-									{#if packageOptionsQuery.isPending}
-										<p>Loading packages…</p>
-									{:else if packageOptionsQuery.isError}
-										<p class="prospects__feedback prospects__feedback--error" role="alert">
-											{packageOptionsQuery.error.message}
-										</p>
-									{:else}
-										<Select
-											id="package-correction-version"
-											ariaLabel="Package"
-											bind:value={packageCorrectionForm.package_version_id}
-											required
-											options={publishedPackageVersions.map((version) => ({
-												value: version.id,
-												label: packageVersionOptionLabel(version)
-											}))}
-										/>
-									{/if}
-								</label>
-								<label class="prospects__form-wide"
-									><span>Private reason for this change</span><textarea
-										bind:value={packageCorrectionForm.reason}
-										required
-										maxlength="500"></textarea></label
-								>
-							</div>
-							<div class="prospects__form-actions">
-								<Button
-									type="button"
-									variant="secondary"
-									variation="subtle"
-									disabled={correctPackage.isPending}
-									onclick={() => (editingPackage = false)}>Cancel</Button
-								>
-								<Button type="submit" loading={correctPackage.isPending}>Save package</Button>
 							</div>
 						</form>
 					{/if}

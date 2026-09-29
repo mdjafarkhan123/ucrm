@@ -129,7 +129,6 @@ describe('platform owner history API boundary', () => {
 											{
 												id: 'free-1',
 												action: 'grant',
-												package_version_id: 'version-1',
 												access_until_date: '2026-09-01',
 												reason: 'Pilot',
 												actor_owner_email: 'owner@example.com',
@@ -237,7 +236,7 @@ describe('platform owner history API boundary', () => {
 				id: 'free_access:free-1',
 				event_type: 'free_access.grant',
 				target_type: 'organization.free_access',
-				target_key: 'version-1',
+				target_key: null,
 				actor_email: 'owner@example.com',
 				occurred_at: '2026-08-11T00:00:00Z',
 				before_state: null,

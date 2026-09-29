@@ -145,17 +145,17 @@ export const POST: RequestHandler = async (event) => {
 					.maybeSingle(),
 				owner
 					.from('platform_email_template_packages')
-					.select('package_key')
+					.select('package_id')
 					.eq('template_id', parsed.data.source_template_id)
 			]);
 		if (sourceError) return databaseError();
 		if (visibilityError) return databaseError();
 		if (!source) return json({ error: 'Unknown email template.' }, { status: 404 });
 
-		const restrictedTo = (visibility ?? []).map((row) => row.package_key);
+		const restrictedTo = (visibility ?? []).map((row) => row.package_id);
 		const visibleToOrg =
 			restrictedTo.length === 0 ||
-			(check.access.package !== null && restrictedTo.includes(check.access.package.slug));
+			(check.access.package !== null && restrictedTo.includes(check.access.package.package_id));
 		if (!visibleToOrg) return json({ error: 'Unknown email template.' }, { status: 404 });
 
 		const { data, error } = await event.locals.supabase

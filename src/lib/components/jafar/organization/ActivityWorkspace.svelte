@@ -20,7 +20,6 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ClosureActions from '$lib/components/jafar/ClosureActions.svelte';
-	import LegacyReconcileActions from '$lib/components/jafar/LegacyReconcileActions.svelte';
 	import LifecycleActions from '$lib/components/jafar/LifecycleActions.svelte';
 	import SmsRegistrationHistory from '$lib/components/jafar/SmsRegistrationHistory.svelte';
 	import { formatDateTime } from './format';
@@ -219,7 +218,9 @@
 					</div>
 					<div class="organization-detail__status-line">
 						{#if access.organization.lifecycle_status === 'pending_setup'}
-							<LegacyReconcileActions organizationId={access.organization.id} />
+							<p class="organization-detail__muted">
+								Waiting for setup. The activation tools come back with the new package tools.
+							</p>
 						{:else}
 							{#if access.organization.lifecycle_status !== 'pending_closure' && access.organization.lifecycle_status !== 'closed'}
 								<LifecycleActions

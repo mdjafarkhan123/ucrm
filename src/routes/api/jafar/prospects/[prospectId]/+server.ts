@@ -6,7 +6,7 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { prospectIdSchema } from '$lib/server/validation/prospect.schema';
 
 const applicationSelect =
-	'id, stage, business_name, main_contact_name, main_contact_email, main_contact_phone, initial_administrator_name, initial_administrator_email, trade, city_country, time_zone, note, package_version_id, package_snapshot, possible_duplicate, duplicate_acknowledged_at, duplicate_acknowledged_by_owner_email, submitted_at, updated_at, not_proceeding_at, personal_data_purge_after, payment_reversed_at';
+	'id, stage, business_name, main_contact_name, main_contact_email, main_contact_phone, initial_administrator_name, initial_administrator_email, trade, city_country, time_zone, note, package_edition_id, billing_interval, package_snapshot, possible_duplicate, duplicate_acknowledged_at, duplicate_acknowledged_by_owner_email, submitted_at, updated_at, not_proceeding_at, personal_data_purge_after, payment_reversed_at';
 
 const duplicateMatchSelect =
 	'id, business_name, main_contact_email, initial_administrator_email, stage, submitted_at';

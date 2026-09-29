@@ -1,108 +1,11 @@
 import { z } from 'zod';
 
-export const packageKeySchema = z.enum(['starter', 'growth', 'elite']);
-export const limitKeySchema = z.enum([
-	'employee_seats',
-	'operational_email_recipients',
-	'essential_email_recipients',
-	'website_chat_widgets',
-	'website_chat_accepted_conversations',
-	// Automation (Part 6B): the seven versioned limits admitted by apply_organization_limit_exception.
-	'automation_active_recipes',
-	'automation_max_conditions_per_recipe',
-	'automation_max_steps_per_recipe',
-	'automation_max_customer_messages_per_enrollment',
-	'automation_min_customer_message_spacing_minutes',
-	'automation_max_delay_days',
-	'automation_max_enrollment_duration_days',
-	// Marketing (M1): monthly Marketing email allowance; unset until Jafar configures a package.
-	'marketing_email_recipients'
-]);
 export const organizationIdSchema = z.string().uuid();
 export const userIdSchema = z.string().uuid();
 export const permissionKeySchema = z
 	.string()
 	.trim()
 	.regex(/^[a-z][a-z0-9_.-]{1,79}$/, 'Use a valid permission key.');
-
-const isoDateTime = z.string().refine((value) => !Number.isNaN(Date.parse(value)), {
-	message: 'Use a valid ISO date and time.'
-});
-
-export const packageChangeSchema = z.object({
-	package_version_id: z.string().uuid(),
-	reason: z.string().trim().min(1, 'Enter a private reason.').max(1000),
-	idempotency_key: z.string().trim().min(8).max(200)
-});
-
-export const legacyPackageAssignmentSchema = z.object({
-	package_version_id: z.string().uuid(),
-	paid_through_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a valid paid-through date.'),
-	reason: z.string().trim().min(1, 'Enter a private reason.').max(500)
-});
-
-const overrideWindowSchema = z.object({
-	starts_at: isoDateTime,
-	expires_at: isoDateTime.nullish(),
-	reason: z.string().trim().min(1, 'Enter a private reason.').max(1000),
-	idempotency_key: z.string().trim().min(8).max(200)
-});
-
-export const featureOverrideSchema = overrideWindowSchema
-	.extend({ override_state: z.enum(['on', 'off', 'inherit']) })
-	.superRefine((value, context) => {
-		if (
-			value.expires_at &&
-			value.starts_at &&
-			Date.parse(value.expires_at) <= Date.parse(value.starts_at)
-		) {
-			context.addIssue({
-				code: 'custom',
-				path: ['expires_at'],
-				message: 'Expiry must be later than the start time.'
-			});
-		}
-	});
-
-export const limitOverrideSchema = overrideWindowSchema
-	.extend({
-		override_state: z.enum(['unlimited', 'not_included', 'numeric', 'inherit']),
-		limit_value: z.number().int().nonnegative().nullable().optional()
-	})
-	.superRefine((value, context) => {
-		if (
-			value.expires_at &&
-			value.starts_at &&
-			Date.parse(value.expires_at) <= Date.parse(value.starts_at)
-		) {
-			context.addIssue({
-				code: 'custom',
-				path: ['expires_at'],
-				message: 'Expiry must be later than the start time.'
-			});
-		}
-		if (
-			value.override_state === 'numeric' &&
-			(value.limit_value === null || value.limit_value === undefined)
-		) {
-			context.addIssue({
-				code: 'custom',
-				path: ['limit_value'],
-				message: 'Enter a numeric limit.'
-			});
-		}
-		if (
-			value.override_state !== 'numeric' &&
-			value.limit_value !== null &&
-			value.limit_value !== undefined
-		) {
-			context.addIssue({
-				code: 'custom',
-				path: ['limit_value'],
-				message: 'Only numeric limits can include a value.'
-			});
-		}
-	});
 
 // Ownership is handed over, never assigned, so it is not a role this screen can pick. The database
 // refuses it too; refusing it here is what turns a raised exception into a field message.

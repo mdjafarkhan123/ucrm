@@ -1,5 +1,3 @@
-export type PackageKey = 'starter' | 'growth' | 'elite';
-
 export type EffectiveAccess = {
 	organization: { id: string; name: string; slug: string; lifecycle_status: string };
 	billing: {
@@ -69,20 +67,6 @@ export type CommercialState = {
 		private_reference: string | null;
 	}[];
 	closure: { id: string; reason: string; started_at: string; deadline_at: string } | null;
-	error?: string;
-};
-
-export type PublishedVersion = {
-	id: string;
-	display_name: string;
-	version_number: number;
-	status: string;
-	price_usd_cents: number;
-	currency: string;
-	billing_period: string;
-};
-export type PackagesCatalogResponse = {
-	packages: { package_key: PackageKey; display_name: string; versions: PublishedVersion[] }[];
 	error?: string;
 };
 

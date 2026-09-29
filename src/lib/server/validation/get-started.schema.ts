@@ -23,7 +23,8 @@ const onboardingApplicationFieldsSchema = z.object({
 	city_country: z.string().trim().min(1, 'Enter your city and country.').max(160),
 	time_zone: z.string().trim().min(1, 'Enter your time zone.').max(64),
 	note: z.string().trim().max(2000).nullish(),
-	package_version_id: z.string().uuid('Choose a package.'),
+	package_edition_id: z.string().uuid('Choose a package.'),
+	billing_interval: z.enum(['month', 'year']),
 	privacy_policy_agreed: z
 		.boolean()
 		.refine((value) => value === true, 'You must agree to the privacy policy to continue.'),

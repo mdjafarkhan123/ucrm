@@ -41,7 +41,8 @@ const validBody = {
 	trade: 'Roofing',
 	city_country: 'Austin, USA',
 	time_zone: 'America/Chicago',
-	package_version_id: '11111111-1111-4111-8111-111111111111',
+	package_edition_id: '11111111-1111-4111-8111-111111111111',
+	billing_interval: 'month',
 	privacy_policy_agreed: true,
 	turnstile_token: 'a-token'
 };
@@ -135,7 +136,8 @@ describe('public onboarding application submission API boundary', () => {
 				target_main_contact_email: 'jordan@ridgeway.example',
 				target_initial_administrator_name: '',
 				target_initial_administrator_email: '',
-				target_package_version_id: '11111111-1111-4111-8111-111111111111',
+				target_package_edition_id: '11111111-1111-4111-8111-111111111111',
+				target_billing_interval: 'month',
 				target_privacy_policy_version: 'v1'
 			})
 		);
@@ -222,7 +224,7 @@ describe('public onboarding application submission API boundary', () => {
 		const result = await response.json();
 
 		expect(response.status).toBe(422);
-		expect(result.field_errors.package_version_id).toContain('no longer available');
+		expect(result.field_errors.package_edition_id).toContain('no longer available');
 		expect(mockedRaiseAlert).not.toHaveBeenCalled();
 		expect(mockedSendReceipt).not.toHaveBeenCalled();
 	});

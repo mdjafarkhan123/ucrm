@@ -6,7 +6,7 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { prospectListQuerySchema } from '$lib/server/validation/prospect.schema';
 
 const summarySelect =
-	'id, stage, business_name, main_contact_name, main_contact_email, main_contact_phone, trade, city_country, time_zone, package_version_id, package_snapshot, possible_duplicate, submitted_at, updated_at, not_proceeding_at';
+	'id, stage, business_name, main_contact_name, main_contact_email, main_contact_phone, trade, city_country, time_zone, package_edition_id, billing_interval, package_snapshot, possible_duplicate, submitted_at, updated_at, not_proceeding_at';
 
 function escapeProspectSearch(value: string) {
 	return value
