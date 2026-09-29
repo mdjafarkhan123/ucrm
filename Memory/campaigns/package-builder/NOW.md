@@ -5,7 +5,7 @@
 
 **Completed:** Planning (P1, P2). Jafar approved the build parts on 2026-09-29.
 
-**Next part:** P3 Switch to the new package storage (`stages/1-foundation.md`). It is the largest and riskiest part; start it in a fresh session and split it if it outgrows one.
+**Next part:** P3a New storage and the access switch — in progress on branch `wip/package-builder-p3a`, note `parts/P3a.md`; then P3b. P3 was split on 2026-09-29.
 
 **Blockers:** None.
 
