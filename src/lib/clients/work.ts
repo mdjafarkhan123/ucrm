@@ -3,7 +3,11 @@ import { INVOICE_STATUS_LABELS, INVOICE_STATUS_TONES } from '$lib/invoices/statu
 import { fetchJobs, type JobListItem } from '$lib/jobs/api';
 import { JOB_DERIVED_STATUSES, JOB_STATUS_LABELS, JOB_STATUS_TONES } from '$lib/jobs/statuses';
 import { fetchQuotes, type QuoteListItem } from '$lib/quotes/api';
-import { QUOTE_STATUS_LABELS, QUOTE_STATUS_TONES, STORED_QUOTE_STATUSES } from '$lib/quotes/statuses';
+import {
+	QUOTE_STATUS_LABELS,
+	QUOTE_STATUS_TONES,
+	STORED_QUOTE_STATUSES
+} from '$lib/quotes/statuses';
 import { fetchRequests, type RequestListItem } from '$lib/requests/api';
 import { REQUEST_STATUS_LABELS, REQUEST_STATUS_TONES } from '$lib/requests/statuses';
 import type { StatusTone } from '$lib/components/work/types';
@@ -69,7 +73,8 @@ type Address = {
 function addressOf(property: Address) {
 	if (!property) return null;
 	return (
-		[property.address_line1, property.city, property.state_region].filter(Boolean).join(', ') || null
+		[property.address_line1, property.city, property.state_region].filter(Boolean).join(', ') ||
+		null
 	);
 }
 
@@ -155,7 +160,11 @@ export async function fetchClientWork(
 				{ ...shared, ...range, statuses: [...STORED_QUOTE_STATUSES], sort: 'created' },
 				cursor
 			);
-			return { items: page.quotes.map(fromQuote), next_cursor: page.next_cursor, locale: page.locale };
+			return {
+				items: page.quotes.map(fromQuote),
+				next_cursor: page.next_cursor,
+				locale: page.locale
+			};
 		}
 		case 'job': {
 			const page = await fetchJobs(
@@ -182,7 +191,9 @@ export async function fetchClientWork(
 // exactly the newest N overall, so no kind's older rows are needed to get this view right.
 export async function fetchClientRecentWork(clientId: string): Promise<ClientRecentWork> {
 	const settled = await Promise.allSettled(
-		CLIENT_WORK_KINDS.map((kind) => fetchClientWork(clientId, kind, undefined, CLIENT_RECENT_WORK_LIMIT))
+		CLIENT_WORK_KINDS.map((kind) =>
+			fetchClientWork(clientId, kind, undefined, CLIENT_RECENT_WORK_LIMIT)
+		)
 	);
 
 	const kinds: ClientWorkKind[] = [];

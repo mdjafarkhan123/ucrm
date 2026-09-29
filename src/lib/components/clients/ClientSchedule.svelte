@@ -43,9 +43,7 @@
 
 	const denied = $derived((scheduleQuery.error as ClientReadError | null)?.status === 403);
 	const schedule = $derived(scheduleQuery.data);
-	const entries = $derived(
-		(view === 'upcoming' ? schedule?.upcoming : schedule?.past) ?? []
-	);
+	const entries = $derived((view === 'upcoming' ? schedule?.upcoming : schedule?.past) ?? []);
 	const hasMore = $derived(
 		view === 'upcoming' ? schedule?.has_more_upcoming : schedule?.has_more_past
 	);
@@ -63,7 +61,9 @@
 			timeZone: 'UTC'
 		})
 	);
-	const clockFormat = $derived(new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }));
+	const clockFormat = $derived(
+		new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' })
+	);
 	// An assessment's time is an instant, so it is read on the contractor's own clock, not the browser's.
 	const instantClockFormat = $derived(
 		new Intl.DateTimeFormat(locale, {
@@ -85,7 +85,9 @@
 		const day = formatDay(entry.date);
 		if (entry.start_time) {
 			const start = formatClock(entry.start_time);
-			return entry.end_time ? `${day} · ${start}–${formatClock(entry.end_time)}` : `${day} · ${start}`;
+			return entry.end_time
+				? `${day} · ${start}–${formatClock(entry.end_time)}`
+				: `${day} · ${start}`;
 		}
 		if (entry.starts_at) {
 			const start = instantClockFormat.format(new Date(entry.starts_at));
@@ -134,7 +136,9 @@
 		{#if scheduleQuery.isPending}
 			<LoadingSkeleton variant="table" label="Loading this client's schedule" rows={3} />
 		{:else if scheduleQuery.isError}
-			<ErrorState description="This client's schedule could not be loaded. Refresh and try again." />
+			<ErrorState
+				description="This client's schedule could not be loaded. Refresh and try again."
+			/>
 		{:else if entries.length === 0}
 			<EmptyState
 				icon={calendarIcon}
