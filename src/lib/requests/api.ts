@@ -47,6 +47,15 @@ export type RequestListPage = {
 
 export type RequestStatusCounts = Record<DisplayRequestStatus, number>;
 
+/** One 30-day window's requests: how many were created, and how many of those became a quote or job. */
+export type RequestWindow = { new: number; converted: number };
+
+export type RequestOverview = {
+	counts: RequestStatusCounts;
+	last_30_days: RequestWindow;
+	previous_30_days: RequestWindow;
+};
+
 export const requestsListKey = (filters: RequestListFilters) =>
 	['requests', 'list', filters] as const;
 export const requestCountsKey = ['requests', 'counts'] as const;
@@ -70,14 +79,13 @@ export async function fetchRequests(
 	return response.json();
 }
 
-export async function fetchRequestCounts(): Promise<RequestStatusCounts> {
+export async function fetchRequestCounts(): Promise<RequestOverview> {
 	const response = await fetch('/api/requests/counts');
 	if (!response.ok) {
 		const result = await response.json().catch(() => ({}) as { error?: string });
 		throw new Error(result.error ?? 'The overview could not be loaded.');
 	}
-	const result = (await response.json()) as { counts: RequestStatusCounts };
-	return result.counts;
+	return response.json();
 }
 
 // --- The detail page ------------------------------------------------------------------------------

@@ -23,6 +23,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import StatusOverviewCard from '$lib/components/work/StatusOverviewCard.svelte';
 	import type { StatusOverviewRow } from '$lib/components/work/types';
+	import { conversionRateCard, newRequestsCard } from '$lib/requests/metrics';
 	import {
 		fetchRequestCounts,
 		fetchRequests,
@@ -105,9 +106,21 @@
 	const overviewRows = $derived<StatusOverviewRow[]>(
 		(['new', 'unscheduled', 'overdue', 'assessment_completed'] as const).map((key) => ({
 			label: REQUEST_STATUS_LABELS[key],
-			count: countsQuery.data?.[key] ?? 0,
+			count: countsQuery.data?.counts[key] ?? 0,
 			tone: REQUEST_STATUS_TONES[key]
 		}))
+	);
+
+	const waitingCard = { value: '—', note: 'Past 30 days' };
+	const newRequests = $derived(
+		countsQuery.data
+			? newRequestsCard(countsQuery.data.last_30_days, countsQuery.data.previous_30_days)
+			: waitingCard
+	);
+	const conversionRate = $derived(
+		countsQuery.data
+			? conversionRateCard(countsQuery.data.last_30_days, countsQuery.data.previous_30_days)
+			: waitingCard
 	);
 
 	// Every status a badge can show, calendar ones included, so picking one lists exactly the rows
@@ -176,15 +189,15 @@
 			<StatusOverviewCard rows={overviewRows} loading={countsQuery.isPending} />
 			<KpiCard
 				label="New requests"
-				value="—"
-				note="Once there are 30 days of requests to compare"
+				value={newRequests.value}
+				note={newRequests.note}
 				icon={trendingIcon}
 				variant="compact"
 			/>
 			<KpiCard
 				label="Conversion rate"
-				value="—"
-				note="Once requests turn into quotes and jobs"
+				value={conversionRate.value}
+				note={conversionRate.note}
 				icon={chartIcon}
 				variant="compact"
 			/>

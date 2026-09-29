@@ -22268,6 +22268,15 @@ export type Database = {
 				Args: { target_request_id: string };
 				Returns: Json;
 			};
+			request_list_metrics: {
+				Args: { target_organization_id: string };
+				Returns: {
+					converted_current: number;
+					converted_previous: number;
+					new_current: number;
+					new_previous: number;
+				}[];
+			};
 			request_status_counts: {
 				Args: {
 					day_end: string;
