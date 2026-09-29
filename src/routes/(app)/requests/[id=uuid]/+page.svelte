@@ -270,7 +270,11 @@
 			label: 'Requested',
 			value: saved ? dateFormat.format(new Date(saved.created_at)) : null
 		},
-		{ label: 'Assessment', value: assessmentFact, empty: 'Not booked yet' },
+		// A website booking held for approval carries the customer's own time, which is what the office is
+		// being asked to accept.
+		saved?.stored_status === 'needs_approval' && !saved.assessment
+			? { label: 'Assessment', value: saved.preferred_time, empty: 'Waiting for approval' }
+			: { label: 'Assessment', value: assessmentFact, empty: 'Not booked yet' },
 		{ label: 'Service', value: saved?.service_type, empty: 'Not recorded' }
 	]);
 
@@ -289,7 +293,9 @@
 		if (saved.stored_status === 'archived' || saved.stored_status === 'converted') return undefined;
 		if (!saved.assessment)
 			return {
-				label: 'Schedule assessment',
+				// Jobber's own words for approving a held website booking: booking it is the approval.
+				label:
+					saved.stored_status === 'needs_approval' ? 'Accept and schedule' : 'Schedule assessment',
 				onclick: () => assessmentBlock?.open(),
 				onhover: () => assessmentBlock?.warm()
 			};

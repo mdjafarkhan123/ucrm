@@ -11,4 +11,6 @@
 
 **Blockers:** none. Do not touch packages or Delete client (Jafar: "not now"). The CLI runs as
 `npx --no-install supabase`. Browser testing: tunnel `cloudflared tunnel run badf2c43-7020-443a-a046-9954d139d711`,
-or headless Playwright against `localhost:5173` (wait ~8 s on a login page before submitting).
+or headless Playwright against `localhost:5173` (wait ~8 s on a login page before submitting). The script
+must sit in the project folder to find Playwright. The owner login is often rate-limited (10 tries / 15 min);
+the office test login works. Full `svelte-check` needs `NODE_OPTIONS=--max-old-space-size=12288`.

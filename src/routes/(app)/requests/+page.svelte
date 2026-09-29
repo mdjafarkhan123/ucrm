@@ -101,14 +101,16 @@
 	const requests = $derived(requestsQuery.data?.pages.flatMap((page) => page.requests) ?? []);
 	const hasActiveFilters = $derived(status !== '');
 
-	// The four the office acts on. Counted, never clickable — filtering lives on the Status chip below,
-	// the same split Jobber uses.
+	// The ones the office acts on, bookings waiting for approval first, as Jobber lists them. Counted,
+	// never clickable — filtering lives on the Status chip below, the same split Jobber uses.
 	const overviewRows = $derived<StatusOverviewRow[]>(
-		(['new', 'unscheduled', 'overdue', 'assessment_completed'] as const).map((key) => ({
-			label: REQUEST_STATUS_LABELS[key],
-			count: countsQuery.data?.counts[key] ?? 0,
-			tone: REQUEST_STATUS_TONES[key]
-		}))
+		(['needs_approval', 'new', 'unscheduled', 'overdue', 'assessment_completed'] as const).map(
+			(key) => ({
+				label: REQUEST_STATUS_LABELS[key],
+				count: countsQuery.data?.counts[key] ?? 0,
+				tone: REQUEST_STATUS_TONES[key]
+			})
+		)
 	);
 
 	const waitingCard = { value: '—', note: 'Past 30 days' };

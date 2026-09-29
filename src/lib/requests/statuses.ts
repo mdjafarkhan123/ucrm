@@ -2,7 +2,10 @@ import type { StatusTone } from '$lib/components/work/types';
 
 // The request statuses, in one place both the server and the browser can read. The server adds the rule
 // for working the calendar ones out; this file only says which statuses exist and what they are called.
+// needs_approval: a website booking waiting for the office to approve the customer's preferred time.
+// Booking the assessment is the approval, and moves it on like any new request.
 export const STORED_REQUEST_STATUSES = [
+	'needs_approval',
 	'new',
 	'unscheduled',
 	'assessment_completed',
@@ -24,6 +27,7 @@ export type RequestScheduleState = (typeof REQUEST_SCHEDULE_STATES)[number];
 export type DisplayRequestStatus = StoredRequestStatus | RequestScheduleState;
 
 export const REQUEST_STATUS_LABELS: Record<DisplayRequestStatus, string> = {
+	needs_approval: 'Needs approval',
 	new: 'New',
 	unscheduled: 'Unscheduled',
 	today: 'Today',
@@ -35,9 +39,10 @@ export const REQUEST_STATUS_LABELS: Record<DisplayRequestStatus, string> = {
 	archived: 'Archived'
 };
 
-// Requests have nine statuses; the design system has five tones. This is where one becomes the other,
+// Requests have ten statuses; the design system has five tones. This is where one becomes the other,
 // and it belongs to requests rather than to any shared component — a quote or an invoice maps its own.
 export const REQUEST_STATUS_TONES: Record<DisplayRequestStatus, StatusTone> = {
+	needs_approval: 'warning',
 	new: 'informative',
 	unscheduled: 'inactive',
 	today: 'warning',

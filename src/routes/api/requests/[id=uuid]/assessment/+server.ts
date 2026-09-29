@@ -86,10 +86,11 @@ export const PUT: RequestHandler = async (event) => {
 		if (assignError) return databaseError();
 	}
 
-	// Booking an assessment on a brand new request is what moves it out of "new". Once it is complete or
-	// closed, the calendar no longer decides its status.
+	// Booking an assessment on a brand new request is what moves it out of "new", and on a website booking
+	// held for approval it is the approval, as Jobber's Approve is. Once it is complete or closed, the
+	// calendar no longer decides its status.
 	let status = existing.status;
-	if (status === 'new') {
+	if (status === 'new' || status === 'needs_approval') {
 		const { error: statusError } = await supabase
 			.from('requests')
 			.update({ status: 'unscheduled' })

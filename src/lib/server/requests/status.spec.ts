@@ -4,6 +4,12 @@ import { deriveRequestStatus, displayStatusFilter, organizationDayRange } from '
 const NEW_YORK = 'America/New_York';
 
 describe('deriveRequestStatus', () => {
+	it('keeps a website booking held for approval as Needs approval until an assessment is booked', () => {
+		expect(
+			deriveRequestStatus('needs_approval', null, NEW_YORK, new Date('2026-08-18T15:00:00Z'))
+		).toBe('needs_approval');
+	});
+
 	it('leaves a request without an assessment on its stored status', () => {
 		expect(deriveRequestStatus('new', null, NEW_YORK, new Date('2026-08-18T15:00:00Z'))).toBe(
 			'new'
@@ -112,18 +118,24 @@ describe('displayStatusFilter', () => {
 		);
 	});
 
+	it('finds a booking waiting for approval until an assessment is booked', () => {
+		expect(displayStatusFilter(['needs_approval'], range)).toBe(
+			'and(status.eq.needs_approval,has_open_assessment.is.false)'
+		);
+	});
+
 	it('finds Unscheduled both on the stored value and on an undated live assessment', () => {
 		expect(displayStatusFilter(['unscheduled'], range)).toBe(
 			'and(status.eq.unscheduled,has_open_assessment.is.false),' +
-				'and(status.in.(new,unscheduled),has_open_assessment.is.true,assessment_starts_at.is.null)'
+				'and(status.in.(needs_approval,new,unscheduled),has_open_assessment.is.true,assessment_starts_at.is.null)'
 		);
 	});
 
 	it('reads Today, Upcoming and Overdue against the contractor day', () => {
 		expect(displayStatusFilter(['overdue', 'today', 'upcoming'], range)).toBe(
-			'and(status.in.(new,unscheduled),has_open_assessment.is.true,assessment_starts_at.lt."2026-08-18T04:00:00.000Z"),' +
-				'and(status.in.(new,unscheduled),has_open_assessment.is.true,assessment_starts_at.gte."2026-08-18T04:00:00.000Z",assessment_starts_at.lt."2026-08-19T04:00:00.000Z"),' +
-				'and(status.in.(new,unscheduled),has_open_assessment.is.true,assessment_starts_at.gte."2026-08-19T04:00:00.000Z")'
+			'and(status.in.(needs_approval,new,unscheduled),has_open_assessment.is.true,assessment_starts_at.lt."2026-08-18T04:00:00.000Z"),' +
+				'and(status.in.(needs_approval,new,unscheduled),has_open_assessment.is.true,assessment_starts_at.gte."2026-08-18T04:00:00.000Z",assessment_starts_at.lt."2026-08-19T04:00:00.000Z"),' +
+				'and(status.in.(needs_approval,new,unscheduled),has_open_assessment.is.true,assessment_starts_at.gte."2026-08-19T04:00:00.000Z")'
 		);
 	});
 });

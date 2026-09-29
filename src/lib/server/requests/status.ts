@@ -1,4 +1,4 @@
-// Request status has two halves. Six values are stored on the row; the three calendar ones — today,
+// Request status has two halves. Seven values are stored on the row; the three calendar ones — today,
 // upcoming, overdue — are worked out from the assessment's start time every time a request is read.
 // Storing them would need a nightly job per timezone and rows would be wrong in between.
 
@@ -77,7 +77,7 @@ export function organizationDayRange(timezone: string, now = new Date()) {
 // three steps: a finished request keeps its stored status; an open one with no live assessment keeps
 // its stored status too; an open one with a live assessment reads its start time against today.
 // Returns null when nothing is chosen, so the caller adds no filter at all.
-const OPEN_STORED = 'status.in.(new,unscheduled)';
+const OPEN_STORED = 'status.in.(needs_approval,new,unscheduled)';
 
 export function displayStatusFilter(
 	statuses: readonly DisplayRequestStatus[],
@@ -88,6 +88,9 @@ export function displayStatusFilter(
 	const branches = new Set<string>();
 	for (const status of statuses) {
 		switch (status) {
+			case 'needs_approval':
+				branches.add('and(status.eq.needs_approval,has_open_assessment.is.false)');
+				break;
 			case 'new':
 				branches.add('and(status.eq.new,has_open_assessment.is.false)');
 				break;
