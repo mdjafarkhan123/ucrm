@@ -1,6 +1,6 @@
 # Package builder
 
-**Status:** Behavior approved and clarified by Jafar on 2026-09-29. The package combines customer-facing services and application access. Website production, hosting, DNS, and other fulfillment methods are outside this package-builder plan. Build-part planning remains pending.
+**Status:** Product behavior planning completed and approved by Jafar on 2026-09-29. The package combines customer-facing services and application access. Website production, hosting, DNS, GBP operating procedures, and other fulfillment methods are outside this package-builder plan. Technical implementation planning and coding belong to the later coding task.
 
 ## Summary
 
@@ -74,7 +74,7 @@ The [feasibility review](research/package-builder-feasibility-2026-09-29.md) con
 
 ## Still unclear
 
-- P2 defines replacement boundaries and build-part done checks, including how fake assignments are handled. Feature-specific counting details are verified with their owning domains during implementation.
+- No product-behavior decision blocks the coding handoff. The coding task must translate this contract into an implementation plan, including replacement boundaries, fake-data migration, and feature-specific counting verification.
 
 ## Not doing
 
