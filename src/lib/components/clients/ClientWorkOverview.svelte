@@ -153,7 +153,7 @@
 			caption="This client's work"
 		>
 			{#snippet row(item: ClientWorkItem)}
-				<th scope="row">
+				<th scope="row" class="client-work__fluid client-work__fluid--item">
 					<div class="client-work__item">
 						<span class="client-work__icon" aria-hidden="true">{@html KIND_ICONS[item.kind]}</span>
 						<div class="client-work__text">
@@ -162,7 +162,8 @@
 						</div>
 					</div>
 				</th>
-				<td class="client-work__address" title={item.address ?? undefined}>{item.address ?? '—'}</td
+				<td class="client-work__fluid client-work__fluid--address" title={item.address ?? undefined}
+					>{item.address ?? '—'}</td
 				>
 				<td class="client-work__nowrap">{dateFormat.format(new Date(item.created_at))}</td>
 				<td>
@@ -214,7 +215,6 @@
 			display: flex;
 			flex-direction: column;
 			min-width: 0;
-			max-width: 170px;
 		}
 
 		&__link {
@@ -242,13 +242,25 @@
 			white-space: nowrap;
 		}
 
-		// A long street would otherwise stack word by word and push Amount off the table; the full address is
-		// on hover and on the record itself.
-		&__address {
-			max-width: 120px;
+		// Item and Address share whatever width Date, Status and Amount leave, and cut long text with an
+		// ellipsis instead of pushing Amount off the edge. `max-width: 0` stops their text from setting the
+		// column's width; the full address is on hover and on the record itself. Below the minimums the
+		// table scrolls sideways, as every DataTable does on a phone.
+		&__fluid {
+			max-width: 0;
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;
+
+			&--item {
+				width: 45%;
+				min-width: 150px;
+			}
+
+			&--address {
+				width: 35%;
+				min-width: 100px;
+			}
 		}
 
 		&__nowrap {

@@ -3,12 +3,10 @@
 **Goal:** Clear the nine deferred tasks that are ready now (approved by Jafar 2026-09-29).
 **Plan:** each part's note in `Memory/deferred/` is its spec; delete the note and its INDEX row when fixed.
 
-**In progress:** Part 7 — uncommitted work-in-progress sitting in the working directory from another session
-writing concurrently in the main folder. See `parts/part-7-client-work-schedule.md` before touching any file
-it lists — check `git status` fresh and confirm that session has stopped first.
+**In progress:** Part 8 Type check — claimed by another session in its own worktree (check the register).
 
-**Next part:** 7 Client work + schedule — fill the client page's empty Work overview and Client schedule boxes
-with the client's real work (spec: `Memory/deferred/client-work-overview-and-schedule-sections-are-empty.md`).
+**Next part:** 9 Chat identity — first ask Jafar which model he wants (spec:
+`Memory/deferred/resolving-a-chat-identity-does-not-stop-the-next-conflict.md`).
 
 **Blockers:** none. Do not touch packages or Delete client (Jafar: "not now"). The CLI runs as
 `npx --no-install supabase`. Browser testing: tunnel `cloudflared tunnel run badf2c43-7020-443a-a046-9954d139d711`,
