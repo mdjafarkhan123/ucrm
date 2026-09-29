@@ -8,7 +8,7 @@ Jafar builds packages in the Jafar workspace by choosing supported capabilities 
 
 ## Building packages
 
-The builder lets Jafar select supported application capabilities and tune their configuration. Every package includes customers, requests, quotes, jobs, invoices, and payment recording. Optional capabilities, dependencies, and tuning controls remain to be planned. Packages can be public offers or private negotiated offers. The current implementation must not constrain the new product design to Starter, Growth, and Elite.
+The builder lets Jafar select supported application capabilities and tune their configuration. Every package includes customers, requests, quotes, jobs, invoices, and payment recording. Normal scheduling and essential customer access to quotes and invoices are also included in every package. Separately selectable extras are sales pipeline, shared inbox, website chat, marketing email, Google review requests, custom automations, and advanced reports. Adjustable business allowances include team size, email allowances, website chat allowances, and the number of active automations; Jafar sets values for each package. The builder explains supporting feature requirements and lets Jafar add them, then blocks publication until the combination works. An extra can be published only after its application behavior and enforcement are verified. Safety protections remain in force for every package and are separate from sellable allowances. Exact counting and reset rules are still to be planned. Packages can be public offers or private negotiated offers. The current implementation must not constrain the new product design to Starter, Growth, and Elite.
 
 ## Pricing
 
@@ -30,8 +30,7 @@ Published editions preserve the package terms customers receive. A later change 
 
 ## Still unclear
 
-- Which optional capabilities are selectable and how dependent capabilities are explained and validated.
-- Which settings and limits can be tuned for each capability.
+- Exact counting, reset, and exhaustion rules for approved allowances; whether other business controls are needed after the capability audit.
 - Package creation, duplication, naming, ordering, archival, restoration, and unused-draft deletion.
 - Draft saving, exact publication review, and concurrent edit behavior.
 - Detailed introductory-period rules, billing-interval changes, manual payment records, partial/excess payments, coverage dates, and overdue behavior.
