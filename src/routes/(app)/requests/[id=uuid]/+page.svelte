@@ -67,6 +67,14 @@
 		enabled: Boolean(requestId)
 	}));
 	const saved = $derived(requestQuery.data);
+	// A plain `if`/`return`, not a ternary: checking resolve()'s own route-id type together with
+	// `undefined` in one conditional expression is what tips TypeScript over its complexity limit
+	// (svelte-check: "union type that is too complex to represent"). A separate return per branch
+	// checks each one on its own instead.
+	const clientHref = $derived.by((): string | undefined => {
+		if (!saved?.client) return undefined;
+		return resolve('/(app)/clients/[id=uuid]', { id: saved.client.id });
+	});
 
 	// The rail card carries the count, so the panel inside it needs no heading of its own, and both read
 	// the same key so they share one fetch.
@@ -402,9 +410,7 @@
 					{#snippet summary()}
 						<ClientSummaryCard
 							name={saved.client?.display_name ?? 'No client'}
-							href={saved.client
-								? resolve('/(app)/clients/[id=uuid]', { id: saved.client.id })
-								: undefined}
+							href={clientHref}
 							addresses={[{ value: propertyLine, empty: 'No property on this request' }]}
 							phone={saved.phone}
 							email={saved.email}

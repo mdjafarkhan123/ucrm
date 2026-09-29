@@ -111,6 +111,14 @@
 		staleTime: 15_000
 	}));
 	const saved = $derived(quoteQuery.data);
+	// A plain `if`/`return`, not a ternary: checking resolve()'s own route-id type together with
+	// `undefined` in one conditional expression is what tips TypeScript over its complexity limit
+	// (svelte-check: "union type that is too complex to represent"). A separate return per branch
+	// checks each one on its own instead.
+	const clientHref = $derived.by((): string | undefined => {
+		if (!saved?.quote.client) return undefined;
+		return resolve('/(app)/clients/[id=uuid]', { id: saved.quote.client.id });
+	});
 
 	const notesQuery = createQuery(() => ({
 		queryKey: notesKey('quote', quoteId),
@@ -898,9 +906,7 @@
 							name={saved.version?.client_display_name ??
 								saved.quote.client?.display_name ??
 								'No client'}
-							href={saved.quote.client
-								? resolve('/(app)/clients/[id=uuid]', { id: saved.quote.client.id })
-								: undefined}
+							href={clientHref}
 							addresses={[{ value: propertyLine, empty: 'No property on this quote' }]}
 							phone={saved.quote.client?.phone}
 							email={saved.quote.client?.email}

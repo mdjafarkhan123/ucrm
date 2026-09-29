@@ -62,6 +62,14 @@
 		enabled: Boolean(paymentId)
 	}));
 	const saved = $derived(paymentQuery.data);
+	// A plain `if`/`return`, not a ternary: checking resolve()'s own route-id type together with
+	// `undefined` in one conditional expression is what tips TypeScript over its complexity limit
+	// (svelte-check: "union type that is too complex to represent"). A separate return per branch
+	// checks each one on its own instead.
+	const clientHref = $derived.by((): string | undefined => {
+		if (!saved?.client) return undefined;
+		return resolve('/(app)/clients/[id=uuid]', { id: saved.client.id });
+	});
 
 	const dateFormat = new Intl.DateTimeFormat(undefined, {
 		day: 'numeric',
@@ -334,9 +342,7 @@
 					{#snippet summary()}
 						<ClientSummaryCard
 							name={clientName}
-							href={saved.client
-								? resolve('/(app)/clients/[id=uuid]', { id: saved.client.id })
-								: undefined}
+							href={clientHref}
 							email={saved.client?.email ?? null}
 							menuItems={clientMenuItems}
 						/>
