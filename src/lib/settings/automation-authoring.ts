@@ -42,19 +42,43 @@ export class StaleDraftError extends Error {
 export const automationEditorKey = (recipeId: string) =>
 	['settings', 'automation', 'editor', recipeId] as const;
 
-async function readError(response: Response, fallback: string): Promise<string> {
-	try {
-		const body = (await response.json()) as { error?: string };
-		return body.error ?? fallback;
-	} catch {
-		return fallback;
+// A save the server refused because of what was in it. `stepErrors` maps a step's position to its message
+// so the builder can mark that step; the error's own message is the first problem in plain words, so a
+// problem with the whole sequence (too many messages) still reads clearly in a toast.
+export class RecipeValidationError extends Error {
+	readonly status = 422;
+	constructor(
+		message: string,
+		readonly stepErrors: Record<number, string>
+	) {
+		super(message);
+		this.name = 'RecipeValidationError';
 	}
+}
+
+async function readError(response: Response, fallback: string): Promise<Error> {
+	let body: { error?: string; field_errors?: Record<string, string> } = {};
+	try {
+		body = (await response.json()) as typeof body;
+	} catch {
+		return httpError(response, fallback);
+	}
+	const fieldErrors = Object.entries(body.field_errors ?? {});
+	if (response.status === 422 && fieldErrors.length > 0) {
+		const stepErrors: Record<number, string> = {};
+		for (const [path, message] of fieldErrors) {
+			const match = /^definition\.steps\.(\d+)(\.|$)/.exec(path);
+			if (match && stepErrors[Number(match[1])] === undefined)
+				stepErrors[Number(match[1])] = message;
+		}
+		return new RecipeValidationError(fieldErrors[0][1], stepErrors);
+	}
+	return httpError(response, body.error ?? fallback);
 }
 
 export async function fetchRecipeEditor(recipeId: string): Promise<EditorRecipe> {
 	const response = await fetch(`/api/settings/automation/recipes/${recipeId}/editor`);
-	if (!response.ok)
-		throw httpError(response, await readError(response, 'That automation could not be loaded.'));
+	if (!response.ok) throw await readError(response, 'That automation could not be loaded.');
 	return (await response.json()) as EditorRecipe;
 }
 
@@ -80,8 +104,7 @@ export async function createRecipeDraft(input: CreateDraftInput): Promise<DraftC
 			definition: input.definition
 		})
 	});
-	if (!response.ok)
-		throw httpError(response, await readError(response, 'We could not create that automation.'));
+	if (!response.ok) throw await readError(response, 'We could not create that automation.');
 	return (await response.json()) as DraftCommandResult;
 }
 
@@ -117,8 +140,7 @@ export async function saveRecipeDraft(input: SaveDraftInput): Promise<DraftComma
 			body.updated_at ?? null
 		);
 	}
-	if (!response.ok)
-		throw httpError(response, await readError(response, 'We could not save that automation.'));
+	if (!response.ok) throw await readError(response, 'We could not save that automation.');
 	return (await response.json()) as DraftCommandResult;
 }
 
@@ -167,17 +189,13 @@ export const automationReviewReadinessKey = ['settings', 'automation', 'review-r
 export async function fetchAutomationReviewReadiness(): Promise<AutomationReviewReadiness> {
 	const response = await fetch('/api/settings/automation/review-readiness');
 	if (!response.ok)
-		throw httpError(
-			response,
-			await readError(response, 'Whether review requests can send could not be checked.')
-		);
+		throw await readError(response, 'Whether review requests can send could not be checked.');
 	return response.json();
 }
 
 export async function fetchAutomationSmsSenders(): Promise<AutomationSmsSender[]> {
 	const response = await fetch('/api/settings/automation/sms-senders');
-	if (!response.ok)
-		throw httpError(response, await readError(response, 'The SMS numbers could not be loaded.'));
+	if (!response.ok) throw await readError(response, 'The SMS numbers could not be loaded.');
 	const body = (await response.json()) as { senders: AutomationSmsSender[] };
 	return body.senders;
 }

@@ -42,7 +42,8 @@
 		saveRecipeDraft,
 		fetchRecipeEditor,
 		automationEditorKey,
-		StaleDraftError
+		StaleDraftError,
+		RecipeValidationError
 	} from '$lib/settings/automation-authoring';
 	import type { RecipeSource } from '$lib/settings/automation-recipes';
 	import { STORED_QUOTE_STATUSES, QUOTE_STATUS_LABELS } from '$lib/quotes/statuses';
@@ -484,9 +485,11 @@
 			if (firstStep !== undefined) {
 				const step = definition.steps[Number(firstStep)];
 				id =
-					step?.key === 'action.send_sms'
-						? `builder-step-${firstStep}-body`
-						: `builder-step-${firstStep}-subject`;
+					step?.key === 'wait.relative_delay'
+						? `builder-step-amount-${firstStep}`
+						: step?.key === 'action.send_sms'
+							? `builder-step-${firstStep}-body`
+							: `builder-step-${firstStep}-subject`;
 			}
 		}
 		if (!id) return;
@@ -549,6 +552,11 @@
 		} catch (error) {
 			if (error instanceof StaleDraftError) {
 				stale = { editorName: error.editorName, updatedAt: error.updatedAt };
+			} else if (error instanceof RecipeValidationError) {
+				// The server's safety checks (waits, message count, gaps) mark the step they are about.
+				errors = { ...errors, steps: { ...errors.steps, ...error.stepErrors } };
+				toast.error(error.message);
+				focusFirstError();
 			} else {
 				toast.error(error instanceof Error ? error.message : 'We could not save that automation.');
 			}
@@ -794,6 +802,8 @@
 												label="Amount"
 												min="1"
 												max="2160"
+												invalid={Boolean(errors.steps[index])}
+												errorMessage={errors.steps[index] ?? ''}
 												value={String(waitAmount(index))}
 												oninput={(event: Event) =>
 													setWaitAmount(
