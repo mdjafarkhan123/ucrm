@@ -11,6 +11,8 @@
 		jafarOperationsKey,
 		jafarOrganizationKey,
 		jafarOrganizationsKey,
+		jafarPackageKey,
+		jafarPackagesKey,
 		jafarProspectsKey,
 		jafarSettingsKey
 	} from '$lib/jafar/query-keys';
@@ -37,6 +39,12 @@
 		}
 		if (pathname === '/jafar/organizations') {
 			return hasCachedData(jafarOrganizationsKey);
+		}
+		if (pathname.startsWith('/jafar/packages/')) {
+			return hasCachedData(jafarPackageKey(pathname.slice('/jafar/packages/'.length)));
+		}
+		if (pathname === '/jafar/packages') {
+			return hasCachedData(jafarPackagesKey);
 		}
 		if (pathname === '/jafar/operations') {
 			return hasCachedData(jafarOperationsKey);

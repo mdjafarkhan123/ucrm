@@ -111,6 +111,7 @@
 				{ label: 'Overview', href: '/jafar', icon: 'dashboard' },
 				{ label: 'Prospects', href: '/jafar/prospects', icon: 'users' },
 				{ label: 'Organizations', href: '/jafar/organizations', icon: 'building' },
+				{ label: 'Packages', href: '/jafar/packages', icon: 'package' },
 				{ label: 'Operations', href: '/jafar/operations', icon: 'alertTriangle' },
 				{ label: 'System emails', href: '/jafar/message-templates', icon: 'mail' },
 				{ label: 'Email templates', href: '/jafar/email-templates', icon: 'fileText' },

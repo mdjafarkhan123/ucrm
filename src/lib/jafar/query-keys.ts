@@ -119,3 +119,7 @@ export const jafarSettingsKey = ['jafar', 'settings'] as const;
 export const jafarSettingsCleanupKey = ['jafar', 'settings', 'cleanup'] as const;
 export const jafarSettingsCleanupImpactKey = (organizationId: string | undefined) =>
 	['jafar', 'settings', 'cleanup', 'impact', organizationId] as const;
+
+export const jafarPackagesKey = ['jafar', 'packages'] as const;
+export const jafarPackageKey = (packageId: string | undefined) =>
+	['jafar', 'packages', packageId] as const;
