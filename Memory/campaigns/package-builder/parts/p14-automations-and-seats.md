@@ -16,6 +16,10 @@
 
 Write the migration setting the six values, then extend `src/lib/server/automation/definition.ts` validation.
 
+## Outside actions
+
+- Push migration `20261001190000_automation_safety_values` — check: `supabase migration list --linked` shows it, and `platform_automation_safety_limits` has 6 numeric rows — pending
+
 ## Notes
 
 Agreed safety values (Jafar, 2026-09-30, "my suggestion"): 6 conditions per automation, 10 steps, 5 customer messages per run, at least 1 hour between two customer messages, longest single wait 90 days (Jobber's cap), longest run 180 days.
