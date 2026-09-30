@@ -14,6 +14,7 @@ Jafar builds named packages by selecting working CRM capabilities and setting us
 - Without the shared inbox, a contractor has no Inbox and cannot reply, assign, or forward conversations in the app. Quote, invoice, and receipt emails still send, and each customer's messages, including replies, stay readable on that customer's page (Jafar, 2026-09-30, following Jobber, which keeps two-way messaging to its higher plan). Pipeline records keep being created from requests and quotes while Pipeline is off, so switching it on shows current work.
 - The builder explains required supporting capabilities, lets Jafar include them, and refuses to publish a broken combination. It distinguishes business allowances from safety controls that apply to every package.
 - Jafar sets team seats, operational and marketing email allowances, website chat widgets and accepted conversations, and active automation recipes. The owner, active staff, and pending invitations consume seats; a seat is freed when its member leaves or invitation expires. Seats, widgets, and active recipes are counted at one time. Email and accepted chat allowances reset each monthly service period, including on yearly packages. The feature owner verifies each counting event and boundary before that control is sold. Grace-period usage counts toward the new service month and payment confirmation never gives a second reset for that month. Each monthly period starts on the day of the month the service started (the last day of a shorter month when that day does not exist), in the business's time zone, and the next period opens before the current one ends so chat and email never pause at the restart. An allowance counts only while its feature is included.
+- Every business's automations follow the same safety values, whatever its package: at most 6 conditions and 10 steps per automation, 5 customer messages per run, at least 1 hour between two messages to the same customer, a longest single wait of 90 days (Jobber's follow-up cap), and a run that ends after 180 days. A save or switch-on that breaks one is refused with the reason on the step (Jafar, 2026-09-30). The active-automation limit applies to switching on and to resuming a paused automation.
 - Reaching a limit blocks new use with a clear explanation and preserves existing records. Existing accepted chat sessions remain usable. Essential email—requested quotes, invoices, receipts, security notices, and direct replies—continues and is counted under the Communications policy. Its protected reserve is always 10% of the operational email allowance, not a separate package setting (Jafar, 2026-09-30); passing it warns the business and Jafar but never stops essential email. Optional operational email above its included allowance uses prepaid Communication Balance or pauses when that balance is insufficient. Marketing email follows its separate sending and allowance rules.
 
 ## Public offer and onboarding presentation
@@ -78,12 +79,6 @@ Jafar decided on 2026-09-29 that the new package system replaces the old one com
 - [Introductory offer patterns](research/package-introductory-offers-2026-09-29.md)
 - [Feasibility and implementation boundaries](research/package-builder-feasibility-2026-09-29.md)
 - [Earlier onboarding contract](jafar-onboarding-implementation-contract.md) and [versioning decision](adr/0001-paid-prospect-provisioning-and-versioned-packages.md)
-
-## Still unclear
-
-Left for their build parts, as Jafar approved on 2026-09-29:
-
-- Platform-wide automation safety values.
 
 ## Not doing
 

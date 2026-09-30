@@ -3,9 +3,9 @@
 **Goal:** Jafar can build configurable packages and manually assign published editions that preserve each customer's features, limits, and price.
 **Plan:** `docs/package-builder-behavior-contract.md` · **Technical approach:** `docs/adr/0003-package-editions-agreements-and-offsite-billing-ledger.md`
 
-**Completed:** Stages 1–3, P12 (Pipeline, inbox, reviews sellable), and P13 (chat and email allowances; website chat and marketing sellable), 2026-09-30.
+**Completed:** Stages 1–4, 2026-10-01. Automations is sellable.
 
-**Next part:** P14 automations and team seats (`stages/4-sellable-extras.md`); it needs Jafar to agree the platform-wide automation safety values.
+**Next part:** P15 final check; it ends when Jafar publishes his two real packages.
 
 **Waiting on Jafar:** (1) OK to add P10's four activation rules to the plan § Offsite payment and coverage: coverage starts on the business's local activation day; first payment must cover the first charge, the intro price when an offer applies (extra is credit); a prospect's package changes only before payment or after a reversal; activation uses the edition the customer agreed to. (2) Jaaroweb is still on Starter Check from the P8b check; restoring it needs his password on the Billing tab.
 
