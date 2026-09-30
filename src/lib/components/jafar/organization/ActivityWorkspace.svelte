@@ -58,6 +58,9 @@
 		'free_access.end': 'Free access ended',
 		'commercial.initial_payment_confirmed': 'Initial payment confirmed',
 		'commercial.renewal_confirmed': 'Renewal recorded',
+		'commercial.coverage_confirmed': 'Paid dates confirmed',
+		'commercial.paid_through_adjusted': 'Paid-through date corrected',
+		'commercial.commercial_timezone_changed': 'Billing time zone changed',
 		'commercial.payment_correction_recorded': 'Payment correction recorded',
 		'commercial.refund_recorded': 'Refund recorded',
 		'commercial.payment_reversal_recorded': 'Payment reversal recorded',
@@ -67,6 +70,9 @@
 		'commercial.feature_exception_changed': 'Feature exception changed',
 		'commercial.limit_exception_changed': 'Limit exception changed',
 		'commercial.pending_setup_resolved': 'Legacy organization reviewed',
+		'commercial.organization_closure_started': 'Closure started',
+		'commercial.organization_closure_restored': 'Closure cancelled',
+		'commercial.organization_closure_completed': 'Closure completed',
 		'onboarding_application.provisioned': 'Organization provisioned from application',
 		'onboarding_application.reviewed': 'Application marked reviewed',
 		'onboarding_application.corrected': 'Application corrected',
@@ -77,6 +83,16 @@
 		'onboarding_application.not_proceeding': 'Application marked not proceeding',
 		'organization_member.profile_corrected': 'Team member profile corrected',
 		'organization_member.administrator_email_recovered': 'Administrator email recovered',
+		'organization_administrator_email_recovery.failed': 'Administrator email recovery failed',
+		'organization_member_profile_correction.failed': 'Team member profile correction failed',
+		'communications.email_organization_pause_engaged': 'Email sending paused',
+		'communications.email_organization_pause_released': 'Email sending resumed',
+		'communications.email_reputation_pause_engaged': 'Email paused for delivery problems',
+		'communications.email_reputation_pause_released': 'Email delivery pause lifted',
+		'communications.email_reputation_organization_threshold_changed': 'Email safety limit changed',
+		'communications.email_reputation_organization_threshold_cleared': 'Email safety limit reset',
+		'communications.website_chat_suspension_engaged': 'Website chat paused',
+		'communications.website_chat_suspension_released': 'Website chat resumed',
 		communication_sms_credit_topup_confirmed: 'SMS credit top-up confirmed',
 		communication_sms_credit_topup_rejected: 'SMS credit top-up rejected',
 		communication_sms_hold_placed: 'SMS sending paused',
@@ -91,6 +107,17 @@
 		communication_sms_org_mode_set: 'SMS mode changed',
 		communication_sms_sender_capabilities_set: 'SMS sender capabilities changed'
 	};
+
+	// A kind without a label still reads as words: "organization_purge.failed" → "Organization purge failed".
+	function historyEventLabel(eventType: string) {
+		const label = HISTORY_EVENT_LABELS[eventType];
+		if (label) return label;
+		const words = eventType
+			.replace(/^commercial\./, '')
+			.replace(/[._]+/g, ' ')
+			.trim();
+		return words.charAt(0).toUpperCase() + words.slice(1);
+	}
 
 	const OPERATION_TYPE_LABELS: Record<string, string> = {
 		setup_email_delivery: 'Setup email delivery',
@@ -330,10 +357,7 @@
 								<tbody>
 									{#each historyQuery.data?.events ?? [] as historyEvent (historyEvent.id)}
 										<tr>
-											<td
-												>{HISTORY_EVENT_LABELS[historyEvent.event_type] ??
-													historyEvent.event_type}</td
-											>
+											<td>{historyEventLabel(historyEvent.event_type)}</td>
 											<td>{historyEvent.actor_email ?? 'Not recorded'}</td>
 											<td>{formatDateTime(historyEvent.occurred_at)}</td>
 										</tr>
