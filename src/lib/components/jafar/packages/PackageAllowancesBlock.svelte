@@ -170,21 +170,24 @@
 			font-size: var(--typography--fontSize-small);
 		}
 
+		// A fixed-width column, so every row's switch and number line up whatever the unit is.
 		&__controls {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: flex-start;
+			display: grid;
+			grid-template-columns: auto 260px;
+			align-items: start;
 			gap: var(--space-small);
+
+			@media (max-width: 560px) {
+				grid-template-columns: minmax(0, 1fr);
+				width: 100%;
+			}
 		}
 
 		&__number {
-			display: flex;
-			align-items: flex-start;
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) 8.4rem;
+			align-items: start;
 			gap: var(--space-small);
-
-			:global(.input) {
-				width: 120px;
-			}
 		}
 
 		&__unit {

@@ -177,7 +177,7 @@
 		const errors: Record<string, string> = {};
 		draft.allowances.forEach((allowance, index) => {
 			if (allowance.state === 'numeric' && allowance.value === null) {
-				errors[`allowances.${index}.value`] = 'Enter a number or choose unlimited.';
+				errors[`allowances.${index}.value`] = 'Enter a number.';
 			}
 		});
 		return errors;
@@ -188,7 +188,7 @@
 		saveError = '';
 		fieldErrors = missingAllowanceNumbers(normalized);
 		if (Object.keys(fieldErrors).length) {
-			saveError = 'Some allowances have no number. Enter one or choose unlimited.';
+			saveError = 'Some allowances have no number. Enter one, or switch them to Unlimited.';
 			return;
 		}
 		saving = true;
@@ -306,7 +306,10 @@
 	}
 </script>
 
-<svelte:head><title>{form?.name || 'Package'} · Packages · Control Room</title></svelte:head>
+<svelte:head
+	><title>{form?.name || builder?.published?.name || 'Package'} · Packages · Control Room</title
+	></svelte:head
+>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <main class="package-builder">

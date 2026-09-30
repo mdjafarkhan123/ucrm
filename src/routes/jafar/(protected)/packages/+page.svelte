@@ -181,13 +181,13 @@
 						{#if pkg.archived_at}<Badge size="small">Archived</Badge>{/if}
 					</div>
 				</td>
-				<td class="packages-page__number"
+				<td class="packages-page__number align-end"
 					>{formatUsd(current(pkg)?.monthly_price_usd_cents ?? null)}</td
 				>
-				<td class="packages-page__number"
+				<td class="packages-page__number align-end"
 					>{formatUsd(current(pkg)?.yearly_price_usd_cents ?? null)}</td
 				>
-				<td class="packages-page__number">{pkg.organization_count}</td>
+				<td class="packages-page__number align-end">{pkg.organization_count}</td>
 			{/snippet}
 			{#snippet rowActions(pkg: PackageSummary)}
 				<DropdownMenu items={menuItems(pkg)} triggerLabel={`Actions for ${current(pkg)?.name}`} />
@@ -270,7 +270,6 @@
 		}
 
 		&__number {
-			text-align: end;
 			font-variant-numeric: tabular-nums;
 		}
 	}

@@ -3,9 +3,9 @@
 **Goal:** Jafar can build configurable packages and manually assign published editions that preserve each customer's features, limits, and price.
 **Plan:** `docs/package-builder-behavior-contract.md` · **Technical approach:** `docs/adr/0003-package-editions-agreements-and-offsite-billing-ledger.md`
 
-**Completed:** Planning (P1, P2); stage 1 Foundation (P3a–P5c) on 2026-09-30.
+**Completed:** Planning (P1, P2); stage 1 Foundation (P3a–P5c); P6 drafts, 2026-09-30.
 
-**Next part:** P6 Build package drafts (stage `stages/2-builder.md`).
+**Next part:** P7 Publish, archive, and restore (stage `stages/2-builder.md`). The builder lives at `/jafar/packages`; publish must add a button and a database command beside the draft commands in `supabase/migrations/20260930200000_package_drafts.sql`.
 
 **Blockers:** None. **Asked Jafar 2026-09-30:** approve which billing actions ask for the password (`billingStepUpActions`)?
 

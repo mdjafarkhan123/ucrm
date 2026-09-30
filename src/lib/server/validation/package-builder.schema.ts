@@ -44,7 +44,7 @@ const allowanceSchema = z
 			.nullable()
 	})
 	.refine((allowance) => allowance.state !== 'numeric' || allowance.value !== null, {
-		message: 'Enter a number or choose unlimited.',
+		message: 'Enter a number.',
 		path: ['value']
 	})
 	.transform((allowance) =>
