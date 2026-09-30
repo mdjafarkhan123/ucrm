@@ -11276,6 +11276,44 @@ export type Database = {
 					}
 				];
 			};
+			package_catalog_events: {
+				Row: {
+					actor_email: string | null;
+					created_at: string;
+					detail: Json;
+					edition_number: number | null;
+					event_type: string;
+					id: string;
+					package_id: string;
+				};
+				Insert: {
+					actor_email?: string | null;
+					created_at?: string;
+					detail?: Json;
+					edition_number?: number | null;
+					event_type: string;
+					id?: string;
+					package_id: string;
+				};
+				Update: {
+					actor_email?: string | null;
+					created_at?: string;
+					detail?: Json;
+					edition_number?: number | null;
+					event_type?: string;
+					id?: string;
+					package_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'package_catalog_events_package_id_fkey';
+						columns: ['package_id'];
+						isOneToOne: false;
+						referencedRelation: 'packages';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			package_edition_allowances: {
 				Row: {
 					allowance_key: string;
@@ -11421,6 +11459,7 @@ export type Database = {
 					slug: string;
 					updated_at: string;
 					visibility: string;
+					website_update_pending_since: string | null;
 				};
 				Insert: {
 					archived_at?: string | null;
@@ -11432,6 +11471,7 @@ export type Database = {
 					slug: string;
 					updated_at?: string;
 					visibility?: string;
+					website_update_pending_since?: string | null;
 				};
 				Update: {
 					archived_at?: string | null;
@@ -11443,6 +11483,7 @@ export type Database = {
 					slug?: string;
 					updated_at?: string;
 					visibility?: string;
+					website_update_pending_since?: string | null;
 				};
 				Relationships: [];
 			};
@@ -17878,6 +17919,14 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			confirm_package_website_update: {
+				Args: {
+					actor_owner_email: string;
+					seen_pending_since: string;
+					target_package_id: string;
+				};
+				Returns: Json;
+			};
 			consume_onboarding_application_setup_link: {
 				Args: { target_email: string; target_token_hash: string };
 				Returns: {
@@ -18486,6 +18535,7 @@ export type Database = {
 			};
 			delete_package_draft: {
 				Args: {
+					actor_owner_email?: string;
 					draft_edition_id: string;
 					loaded_revision: number;
 					target_package_id: string;
@@ -21031,6 +21081,14 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			move_package: {
+				Args: {
+					actor_owner_email: string;
+					direction: string;
+					target_package_id: string;
+				};
+				Returns: Json;
+			};
 			open_invoice_stripe_checkout: {
 				Args: {
 					new_amount_minor: number;
@@ -21581,6 +21639,15 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			publish_package_draft: {
+				Args: {
+					actor_owner_email: string;
+					draft_edition_id: string;
+					reviewed_revision: number;
+					target_package_id: string;
+				};
+				Returns: Json;
 			};
 			publish_quote: {
 				Args: { expected_revision: number; target_quote_id: string };
@@ -23576,6 +23643,22 @@ export type Database = {
 					p_idempotency_key: string;
 					p_organization_id: string;
 					p_reason: string;
+				};
+				Returns: Json;
+			};
+			set_package_archived: {
+				Args: {
+					actor_owner_email: string;
+					archived: boolean;
+					target_package_id: string;
+				};
+				Returns: Json;
+			};
+			set_package_visibility: {
+				Args: {
+					actor_owner_email: string;
+					new_visibility: string;
+					target_package_id: string;
 				};
 				Returns: Json;
 			};
