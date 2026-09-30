@@ -5,7 +5,7 @@
 
 **Completed:** Planning; stage 1 Foundation; stage 2 drafts and publish; P8a and P8b package changes; P9 public package cards and details, 2026-09-30.
 
-**Next part:** P10 activate a paid application. P12 is also ready.
+**Next part:** P10 activate a paid application — built, browser check left (`parts/p10.md`). P12 is also ready.
 
 **Waiting on Jafar:** Jaaroweb was left on Starter Check by the P8b check. To restore it: Billing tab → Oct 29 charge → Remove the $116 change credit (needs his password) → Change package → Test package, Now.
 

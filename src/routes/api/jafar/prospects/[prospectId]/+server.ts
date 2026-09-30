@@ -43,7 +43,7 @@ function duplicateMatchReasons(
 }
 
 export const GET: RequestHandler = async (event) => {
-	if (!await getOwnerSession(event)) return ownerUnauthorized();
+	if (!(await getOwnerSession(event))) return ownerUnauthorized();
 
 	const parsedId = prospectIdSchema.safeParse(event.params.prospectId);
 	if (!parsedId.success)
@@ -87,7 +87,7 @@ export const GET: RequestHandler = async (event) => {
 			client
 				.from('platform_onboarding_application_payment_confirmations')
 				.select(
-					'id, actor_owner_email, amount_usd_cents, currency, private_reference, mismatch_reason, confirmed_at'
+					'id, actor_owner_email, amount_usd_cents, currency, private_reference, mismatch_reason, received_on, method, note, confirmed_at'
 				)
 				.eq('application_id', parsedId.data)
 				.order('confirmed_at', { ascending: false }),

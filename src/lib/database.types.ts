@@ -12204,8 +12204,11 @@ export type Database = {
 					created_at: string;
 					currency: string;
 					id: string;
+					method: string | null;
 					mismatch_reason: string | null;
+					note: string | null;
 					private_reference: string;
+					received_on: string | null;
 				};
 				Insert: {
 					actor_owner_email: string;
@@ -12215,8 +12218,11 @@ export type Database = {
 					created_at?: string;
 					currency?: string;
 					id?: string;
+					method?: string | null;
 					mismatch_reason?: string | null;
+					note?: string | null;
 					private_reference: string;
+					received_on?: string | null;
 				};
 				Update: {
 					actor_owner_email?: string;
@@ -12226,8 +12232,11 @@ export type Database = {
 					created_at?: string;
 					currency?: string;
 					id?: string;
+					method?: string | null;
 					mismatch_reason?: string | null;
+					note?: string | null;
 					private_reference?: string;
+					received_on?: string | null;
 				};
 				Relationships: [
 					{
@@ -18061,6 +18070,18 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			confirm_onboarding_application_payment: {
+				Args: {
+					actor_email: string;
+					amount_usd_cents: number;
+					method: string;
+					note?: string;
+					private_reference: string;
+					received_on: string;
+					target_application_id: string;
+				};
+				Returns: string;
+			};
 			confirm_organization_billing_coverage: {
 				Args: {
 					actor_owner_email: string;
@@ -18141,6 +18162,16 @@ export type Database = {
 					new_note: string;
 					new_time_zone: string;
 					new_trade: string;
+					target_application_id: string;
+				};
+				Returns: undefined;
+			};
+			correct_onboarding_application_package: {
+				Args: {
+					actor_email: string;
+					correction_reason: string;
+					new_billing_interval: string;
+					new_edition_id: string;
 					target_application_id: string;
 				};
 				Returns: undefined;
@@ -21314,6 +21345,10 @@ export type Database = {
 				Args: { candidate_email: string };
 				Returns: boolean;
 			};
+			owner_onboarding_activation_preview: {
+				Args: { target_application_id: string };
+				Returns: Json;
+			};
 			owner_organization_billing: {
 				Args: { target_organization_id: string };
 				Returns: Json;
@@ -21791,6 +21826,19 @@ export type Database = {
 				Returns: number;
 			};
 			property_delete_impact: { Args: { p_property_id: string }; Returns: Json };
+			provision_organization_from_application: {
+				Args: {
+					expected_covered_from: string;
+					expected_covered_through: string;
+					target_actor_owner_email: string;
+					target_administrator_user_id: string;
+					target_application_id: string;
+					target_organization_id: string;
+					target_organization_name: string;
+					target_slug: string;
+				};
+				Returns: Json;
+			};
 			publish_form_draft: {
 				Args: {
 					expected_revision: number;

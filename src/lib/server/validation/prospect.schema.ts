@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { calendarDate } from './owner.schema';
 
 export const prospectStageSchema = z.enum([
 	'new',
@@ -49,17 +50,27 @@ export const prospectPaymentReversalSchema = z.object({
 	reason: z.string().trim().min(1, 'Enter a private reason for the reversal.').max(500)
 });
 
+// Package builder P10: the initial payment is a receipt, recorded with the same fields as any later one.
 export const prospectPaymentConfirmationSchema = z.object({
+	received_on: calendarDate,
 	amount_usd_cents: z.number().int().positive('Enter the amount received.'),
+	method: z.string().trim().min(1, 'Enter how the money was paid.').max(80),
 	private_reference: z
 		.string()
 		.trim()
 		.min(1, 'Enter a private payment reference.')
 		.max(240, 'Keep the payment reference under 240 characters.'),
-	mismatch_reason: z
-		.string()
-		.trim()
-		.min(1, 'Enter a reason for the amount mismatch.')
-		.max(500, 'Keep the mismatch reason under 500 characters.')
-		.nullish()
+	note: z.string().trim().max(1000, 'Keep the note under 1,000 characters.').nullish()
+});
+
+export const prospectPackageCorrectionSchema = z.object({
+	edition_id: z.string().uuid('Choose a package.'),
+	billing_interval: z.enum(['month', 'year'], { message: 'Choose monthly or yearly billing.' }),
+	reason: z.string().trim().min(1, 'Enter a private reason for this change.').max(500)
+});
+
+// The covered dates Jafar reviewed; activation refuses if they no longer match.
+export const prospectActivationSchema = z.object({
+	covered_from: calendarDate,
+	covered_through: calendarDate
 });

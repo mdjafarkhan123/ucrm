@@ -57,7 +57,7 @@ export const communicationDomainRemovalSchema = z.object({
 	idempotency_key: z.string().uuid('Start a new removal attempt and try again.')
 });
 
-const calendarDate = z
+export const calendarDate = z
 	.string()
 	.regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a valid calendar date.')
 	.refine((value) => {

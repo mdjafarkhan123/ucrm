@@ -8,7 +8,9 @@
 		jafarOrganizationsKey,
 		jafarProspectKey,
 		jafarProspectsKey,
-		jafarProspectsListKey
+		jafarProspectsListKey,
+		jafarPackagesKey,
+		jafarProspectActivationKey
 	} from '$lib/jafar/query-keys';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
@@ -23,6 +25,14 @@
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
+	import Banner from '$lib/components/ui/Banner.svelte';
+	import { fetchPackages } from '$lib/jafar/packages';
+	import {
+		formatCalendarDate,
+		formatUsd,
+		parseUsdCents
+	} from '$lib/components/jafar/organization/format';
 
 	const queryClient = useQueryClient();
 
@@ -34,6 +44,7 @@
 		| 'account_created'
 		| 'not_proceeding';
 	type JsonRecord = Record<string, unknown>;
+	type BillingInterval = 'month' | 'year';
 	type ProspectSummary = {
 		id: string;
 		stage: ProspectStage;
@@ -45,6 +56,7 @@
 		city_country: string;
 		time_zone: string;
 		package_edition_id: string;
+		billing_interval: BillingInterval;
 		package_snapshot: unknown;
 		possible_duplicate: boolean;
 		submitted_at: string;
@@ -99,7 +111,32 @@
 		currency: string;
 		private_reference: string;
 		mismatch_reason: string | null;
+		received_on: string | null;
+		method: string | null;
+		note: string | null;
 		confirmed_at: string;
+	};
+	// What activation will record (package builder P10): the database's own preview, so the dates Jafar
+	// confirms are the dates it checks.
+	type ActivationPreview = {
+		edition_name: string;
+		edition_number: number | null;
+		edition_superseded: boolean;
+		package_archived: boolean;
+		billing_interval: BillingInterval;
+		agreed_price_usd_cents: number | null;
+		payment: {
+			received_on: string | null;
+			amount_usd_cents: number;
+			method: string | null;
+			private_reference: string;
+		} | null;
+		credit_usd_cents: number | null;
+		time_zone: string;
+		covered_from: string;
+		covered_through: string;
+		next_renewal: string;
+		problems: string[];
 	};
 	type PaymentReversal = {
 		id: string;
@@ -164,9 +201,16 @@
 		reason: string;
 	};
 	type PaymentConfirmationForm = {
+		received_on: string;
 		amountDollars: string;
+		method: string;
 		private_reference: string;
-		mismatch_reason: string;
+		note: string;
+	};
+	type PackageCorrectionForm = {
+		package_id: string;
+		billing_interval: BillingInterval;
+		reason: string;
 	};
 	type ActionResponse = { ok?: boolean; error?: string };
 
@@ -188,6 +232,12 @@
 	let confirmingPayment = $state(false);
 	let confirmingProvision = $state(false);
 	let confirmingReversal = $state(false);
+	let changingPackage = $state(false);
+	let packageForm = $state<PackageCorrectionForm>({
+		package_id: '',
+		billing_interval: 'month',
+		reason: ''
+	});
 	let correctionForm = $state<CorrectionForm>(emptyCorrectionForm());
 	let paymentForm = $state<PaymentConfirmationForm>(emptyPaymentForm());
 	let notProceedingReason = $state('');
@@ -211,8 +261,22 @@
 		};
 	}
 
-	function emptyPaymentForm(): PaymentConfirmationForm {
-		return { amountDollars: '', private_reference: '', mismatch_reason: '' };
+	function localToday() {
+		const now = new Date();
+		const month = String(now.getMonth() + 1).padStart(2, '0');
+		const day = String(now.getDate()).padStart(2, '0');
+		return `${now.getFullYear()}-${month}-${day}`;
+	}
+
+	function emptyPaymentForm(detail?: ProspectDetail): PaymentConfirmationForm {
+		const agreed = detail ? packagePriceCents(detail.package_snapshot) : null;
+		return {
+			received_on: localToday(),
+			amountDollars: agreed === null ? '' : (agreed / 100).toFixed(2),
+			method: '',
+			private_reference: '',
+			note: ''
+		};
 	}
 
 	function clearFeedback() {
@@ -226,6 +290,7 @@
 		confirmingPayment = false;
 		confirmingProvision = false;
 		confirmingReversal = false;
+		changingPackage = false;
 		correctionForm = {
 			business_name: detail.business_name,
 			main_contact_name: detail.main_contact_name,
@@ -248,17 +313,19 @@
 		confirmingPayment = false;
 		confirmingProvision = false;
 		confirmingReversal = false;
+		changingPackage = false;
 		notProceedingReason = '';
 		confirmingNotProceeding = true;
 	}
 
-	function openPaymentForm() {
+	function openPaymentForm(detail: ProspectDetail) {
 		clearFeedback();
 		editingCorrection = false;
 		confirmingNotProceeding = false;
 		confirmingProvision = false;
 		confirmingReversal = false;
-		paymentForm = emptyPaymentForm();
+		changingPackage = false;
+		paymentForm = emptyPaymentForm(detail);
 		confirmingPayment = true;
 	}
 
@@ -268,7 +335,51 @@
 		confirmingNotProceeding = false;
 		confirmingPayment = false;
 		confirmingReversal = false;
+		changingPackage = false;
 		confirmingProvision = true;
+	}
+
+	function openPackageForm(detail: ProspectDetail) {
+		clearFeedback();
+		editingCorrection = false;
+		confirmingNotProceeding = false;
+		confirmingPayment = false;
+		confirmingProvision = false;
+		confirmingReversal = false;
+		packageForm = {
+			package_id:
+				packageChoices.find((pkg) => pkg.published?.edition_id === detail.package_edition_id)?.id ??
+				'',
+			billing_interval: detail.billing_interval,
+			reason: ''
+		};
+		changingPackage = true;
+	}
+
+	function prefetchPackages() {
+		void queryClient.prefetchQuery({
+			queryKey: jafarPackagesKey,
+			queryFn: fetchPackages,
+			staleTime: 30_000
+		});
+	}
+
+	function prefetchActivation() {
+		const prospectId = selectedProspectId;
+		if (!prospectId) return;
+		void queryClient.prefetchQuery({
+			queryKey: jafarProspectActivationKey(prospectId),
+			queryFn: () => loadActivation(prospectId),
+			staleTime: 30_000
+		});
+	}
+
+	async function loadActivation(prospectId: string) {
+		const response = await fetch(`/api/jafar/prospects/${prospectId}/activation`);
+		const result = (await response.json()) as { preview?: ActivationPreview; error?: string };
+		if (!response.ok || !result.preview)
+			throw new Error(result.error ?? 'The activation could not be previewed.');
+		return result.preview;
 	}
 
 	function openReversalConfirm() {
@@ -279,6 +390,11 @@
 		confirmingProvision = false;
 		reversalReason = '';
 		confirmingReversal = true;
+	}
+
+	// A package is corrected before payment, or after a reversal (package builder P10).
+	function canChangePackage(detail: ProspectDetail) {
+		return unpaidStages.includes(detail.stage) && !hasPayment;
 	}
 
 	function canProvision(detail: ProspectDetail) {
@@ -318,6 +434,45 @@
 			return result;
 		}
 	}));
+
+	const hasPayment = $derived(
+		(prospectDetail.data?.payment_confirmations.length ?? 0) > 0 &&
+			!prospectDetail.data?.prospect.payment_reversed_at
+	);
+
+	const packagesQuery = createQuery(() => ({
+		queryKey: jafarPackagesKey,
+		queryFn: fetchPackages,
+		staleTime: 30_000,
+		enabled: changingPackage
+	}));
+	const packageChoices = $derived(
+		(packagesQuery.data ?? []).filter((pkg) => pkg.published && !pkg.archived_at)
+	);
+	const chosenPackage = $derived(
+		packageChoices.find((pkg) => pkg.id === packageForm.package_id) ?? null
+	);
+	function chosenPrice(interval: BillingInterval) {
+		const published = chosenPackage?.published;
+		if (!published) return null;
+		return interval === 'month'
+			? published.monthly_price_usd_cents
+			: published.yearly_price_usd_cents;
+	}
+
+	const activationQuery = createQuery(() => ({
+		queryKey: jafarProspectActivationKey(selectedProspectId),
+		queryFn: () => loadActivation(selectedProspectId ?? ''),
+		enabled: confirmingProvision && Boolean(selectedProspectId),
+		staleTime: 30_000
+	}));
+	const activation = $derived(activationQuery.data ?? null);
+
+	const amountNote = $derived(
+		prospectDetail.data && confirmingPayment
+			? paymentAmountNote(prospectDetail.data.prospect)
+			: null
+	);
 
 	const prospectList = $derived(prospects.data?.prospects ?? []);
 	const attentionCount = $derived(
@@ -421,14 +576,17 @@
 	const confirmPayment = createMutation<ActionResponse, Error, void>(() => ({
 		mutationFn: async () => {
 			if (!selectedProspectId) throw new Error('Choose a prospect first.');
-			const amountCents = Math.round(Number(paymentForm.amountDollars) * 100);
+			const amountCents = parseUsdCents(paymentForm.amountDollars);
+			if (amountCents === null) throw new Error('Enter the amount received, like 1290.00.');
 			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/confirm-payment`, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({
+					received_on: paymentForm.received_on,
 					amount_usd_cents: amountCents,
+					method: paymentForm.method,
 					private_reference: paymentForm.private_reference,
-					mismatch_reason: paymentForm.mismatch_reason || null
+					note: paymentForm.note.trim() || null
 				})
 			});
 			const result = (await response.json()) as ActionResponse;
@@ -445,6 +603,34 @@
 		}
 	}));
 
+	const correctPackage = createMutation<ActionResponse, Error, void>(() => ({
+		mutationFn: async () => {
+			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			const editionId = chosenPackage?.published?.edition_id;
+			if (!editionId) throw new Error('Choose a package.');
+			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/correct-package`, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({
+					edition_id: editionId,
+					billing_interval: packageForm.billing_interval,
+					reason: packageForm.reason.trim()
+				})
+			});
+			const result = (await response.json()) as ActionResponse;
+			if (!response.ok) throw new Error(result.error ?? 'The package could not be changed.');
+			return result;
+		},
+		onMutate: () => clearFeedback(),
+		onError: (error) => (actionError = error.message),
+		onSuccess: () => {
+			changingPackage = false;
+			actionMessage = 'Package changed.';
+			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
+		}
+	}));
+
 	const provisionOrganization = createMutation<
 		ActionResponse & { setup_email_sent?: boolean },
 		Error,
@@ -452,8 +638,14 @@
 	>(() => ({
 		mutationFn: async () => {
 			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			if (!activation) throw new Error('Wait for the dates to cover to load.');
 			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/provision`, {
-				method: 'POST'
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({
+					covered_from: activation.covered_from,
+					covered_through: activation.covered_through
+				})
 			});
 			const result = (await response.json()) as ActionResponse & { setup_email_sent?: boolean };
 			if (!response.ok)
@@ -461,13 +653,19 @@
 			return result;
 		},
 		onMutate: () => clearFeedback(),
-		onError: (error) => (actionError = error.message),
+		onError: (error) => {
+			actionError = error.message;
+			// The dates may have moved on (a new day began); show the fresh ones.
+			void queryClient.invalidateQueries({
+				queryKey: jafarProspectActivationKey(selectedProspectId)
+			});
+		},
 		onSuccess: (result) => {
 			confirmingProvision = false;
 			actionMessage =
 				result.setup_email_sent === false
-					? 'Organization provisioned, but the setup email could not be sent. Resend it below.'
-					: 'Organization provisioned. Setup email sent.';
+					? 'Account activated, but the setup email could not be sent. Resend it below.'
+					: 'Account activated. Setup email sent.';
 			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
 			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 			void queryClient.invalidateQueries({ queryKey: jafarOrganizationsKey });
@@ -490,6 +688,7 @@
 		onError: (error) => (actionError = error.message),
 		onSuccess: () => {
 			confirmingReversal = false;
+			changingPackage = false;
 			actionMessage = 'Payment reversed. The application now needs attention.';
 			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
 			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
@@ -527,6 +726,7 @@
 		confirmingPayment = false;
 		confirmingProvision = false;
 		confirmingReversal = false;
+		changingPackage = false;
 		notProceedingReason = '';
 		reversalReason = '';
 		clearFeedback();
@@ -539,6 +739,7 @@
 		confirmingPayment = false;
 		confirmingProvision = false;
 		confirmingReversal = false;
+		changingPackage = false;
 		notProceedingReason = '';
 		reversalReason = '';
 		clearFeedback();
@@ -632,12 +833,16 @@
 		const after = asRecord(correction.after_state);
 		if (!before || !after) return [];
 
-		if ('package_version_id' in before || 'package_version_id' in after) {
+		if (
+			'package_version_id' in before ||
+			'package_version_id' in after ||
+			'package_edition_id' in before
+		) {
 			return [
 				{
 					label: 'Package',
-					before: `${packageName(before.package_snapshot)} · ${packagePrice(before.package_snapshot)}`,
-					after: `${packageName(after.package_snapshot)} · ${packagePrice(after.package_snapshot)}`
+					before: `${packageName(before.package_snapshot)} · ${packageTerms(before.package_snapshot)}`,
+					after: `${packageName(after.package_snapshot)} · ${packageTerms(after.package_snapshot)}`
 				}
 			];
 		}
@@ -652,12 +857,31 @@
 		return changes;
 	}
 
-	function paymentAmountMismatches(detail: ProspectDetail) {
-		const listedCents = packagePriceCents(detail.package_snapshot);
-		const enteredDollars = Number(paymentForm.amountDollars);
-		if (listedCents === null || !paymentForm.amountDollars || Number.isNaN(enteredDollars))
-			return false;
-		return Math.round(enteredDollars * 100) !== listedCents;
+	// How the typed amount compares with the agreed first payment: short, exact, or with credit left.
+	function paymentAmountNote(detail: ProspectDetail) {
+		const agreed = packagePriceCents(detail.package_snapshot);
+		const entered = parseUsdCents(paymentForm.amountDollars);
+		if (agreed === null || entered === null) return null;
+		if (entered < agreed)
+			return {
+				tone: 'error' as const,
+				text: `This is ${formatUsd(agreed - entered)} short of the agreed ${formatUsd(agreed)}. Record the payment once the full amount has arrived.`
+			};
+		if (entered > agreed)
+			return {
+				tone: 'notice' as const,
+				text: `${formatUsd(entered - agreed)} more than the agreed price. It stays as credit for a later charge.`
+			};
+		return null;
+	}
+
+	function intervalWord(value: unknown) {
+		return value === 'year' ? 'a year' : 'a month';
+	}
+
+	// "$1,290.00 a year" — price and billing together, as the application froze them.
+	function packageTerms(snapshot: unknown) {
+		return `${packagePrice(snapshot)} ${intervalWord(asRecord(snapshot)?.billing_period)}`;
 	}
 
 	function jsonPreview(value: unknown) {
@@ -692,7 +916,7 @@
 		<KpiCard
 			label="Need attention"
 			value={String(attentionCount)}
-			note="Review before provisioning"
+			note="Review before activating"
 			icon={alertIcon}
 			tone="warning"
 			variant="compact"
@@ -798,7 +1022,7 @@
 								</th>
 								<td>
 									<strong>{packageName(prospect.package_snapshot)}</strong>
-									<small>{packagePrice(prospect.package_snapshot)} monthly snapshot</small>
+									<small>{packageTerms(prospect.package_snapshot)}</small>
 								</td>
 								<td>
 									<Badge status={stageTone(prospect.stage)}>{stageLabel(prospect.stage)}</Badge>
@@ -930,7 +1154,7 @@
 						<div>
 							<dt>Package</dt>
 							<dd>
-								{packageName(detail.package_snapshot)} · {packagePrice(detail.package_snapshot)}
+								{packageName(detail.package_snapshot)} · {packageTerms(detail.package_snapshot)}
 							</dd>
 						</div>
 						<div>
@@ -965,13 +1189,24 @@
 									onclick={() => openCorrectionForm(detail)}>Correct details</Button
 								>
 							{/if}
-							{#if unpaidStages.includes(detail.stage)}
+							{#if canChangePackage(detail)}
+								<Button
+									type="button"
+									variant="tertiary"
+									disabled={changingPackage}
+									onhover={prefetchPackages}
+									onclick={() => openPackageForm(detail)}>Change package</Button
+								>
+							{/if}
+							{#if unpaidStages.includes(detail.stage) && !hasPayment}
 								<Button
 									type="button"
 									variant="tertiary"
 									disabled={confirmingPayment}
-									onclick={openPaymentForm}>Confirm payment</Button
+									onclick={() => openPaymentForm(detail)}>Confirm payment</Button
 								>
+							{/if}
+							{#if unpaidStages.includes(detail.stage)}
 								{#if !(detail.possible_duplicate && !detail.duplicate_acknowledged_at)}
 									<Button
 										type="button"
@@ -982,8 +1217,11 @@
 								{/if}
 							{/if}
 							{#if canProvision(detail)}
-								<Button type="button" disabled={confirmingProvision} onclick={openProvisionConfirm}
-									>Provision organization</Button
+								<Button
+									type="button"
+									disabled={confirmingProvision}
+									onhover={prefetchActivation}
+									onclick={openProvisionConfirm}>Activate account</Button
 								>
 							{/if}
 							{#if canReversePayment(detail)}
@@ -1147,16 +1385,33 @@
 							}}
 						>
 							<p class="prospects__payment-price-note">
-								Package price on file: <strong>{packagePrice(detail.package_snapshot)}</strong>
+								Agreed first payment: <strong>{packageTerms(detail.package_snapshot)}</strong>
+								for {packageName(detail.package_snapshot)}. Record the money once the full amount
+								has arrived; anything extra stays as credit.
 							</p>
 							<div class="prospects__form-grid">
 								<label
+									><span>Date received</span><input
+										bind:value={paymentForm.received_on}
+										type="date"
+										max={localToday()}
+										required
+									/></label
+								>
+								<label
 									><span>Amount received (USD)</span><input
 										bind:value={paymentForm.amountDollars}
-										type="number"
-										step="0.01"
-										min="0.01"
+										inputmode="decimal"
+										placeholder="0.00"
 										required
+									/></label
+								>
+								<label
+									><span>How it was paid</span><input
+										bind:value={paymentForm.method}
+										placeholder="Bank transfer, card, PayPal…"
+										required
+										maxlength="80"
 									/></label
 								>
 								<label
@@ -1166,15 +1421,15 @@
 										maxlength="240"
 									/></label
 								>
-								{#if paymentAmountMismatches(detail)}
-									<label class="prospects__form-wide"
-										><span>Reason the amount differs from the package price</span><textarea
-											bind:value={paymentForm.mismatch_reason}
-											required
-											maxlength="500"></textarea></label
-									>
-								{/if}
+								<label class="prospects__form-wide"
+									><span>Note (optional)</span><textarea
+										bind:value={paymentForm.note}
+										maxlength="1000"></textarea></label
+								>
 							</div>
+							{#if amountNote}
+								<Banner type={amountNote.tone}>{amountNote.text}</Banner>
+							{/if}
 							<div class="prospects__form-actions">
 								<Button
 									type="button"
@@ -1183,7 +1438,94 @@
 									disabled={confirmPayment.isPending}
 									onclick={() => (confirmingPayment = false)}>Cancel</Button
 								>
-								<Button type="submit" loading={confirmPayment.isPending}>Confirm payment</Button>
+								<Button
+									type="submit"
+									loading={confirmPayment.isPending}
+									disabled={amountNote?.tone === 'error'}>Confirm payment</Button
+								>
+							</div>
+						</form>
+					{/if}
+
+					{#if changingPackage}
+						<form
+							class="prospects__correction-form"
+							onsubmit={(event) => {
+								event.preventDefault();
+								correctPackage.mutate();
+							}}
+						>
+							<p class="prospects__payment-price-note">
+								Now on <strong>{packageName(detail.package_snapshot)}</strong> at
+								<strong>{packageTerms(detail.package_snapshot)}</strong>. Choose the package and
+								billing the customer actually agreed to. A private package works for negotiated
+								terms.
+							</p>
+							{#if packagesQuery.isPending}
+								<LoadingSkeleton variant="text" rows={2} label="Loading packages" />
+							{:else if packagesQuery.isError}
+								<Banner type="error"
+									>The packages could not be loaded. Close this and try again.</Banner
+								>
+							{:else}
+								<div class="prospects__form-grid">
+									<Select
+										id="prospect-package"
+										label="Package"
+										placeholder="Choose a published package"
+										bind:value={packageForm.package_id}
+										options={packageChoices.map((pkg) => ({
+											value: pkg.id,
+											label: `${pkg.published?.name ?? pkg.slug}${pkg.visibility === 'private' ? ' (private)' : ''}`
+										}))}
+									/>
+									<SegmentedControl
+										label="Billing"
+										bind:value={packageForm.billing_interval}
+										options={[
+											{
+												value: 'month',
+												label:
+													chosenPrice('month') === null
+														? 'Monthly'
+														: `Monthly · ${formatUsd(chosenPrice('month') ?? 0)}`,
+												disabled: Boolean(chosenPackage) && chosenPrice('month') === null,
+												title: 'This package has no monthly price'
+											},
+											{
+												value: 'year',
+												label:
+													chosenPrice('year') === null
+														? 'Yearly'
+														: `Yearly · ${formatUsd(chosenPrice('year') ?? 0)}`,
+												disabled: Boolean(chosenPackage) && chosenPrice('year') === null,
+												title: 'This package has no yearly price'
+											}
+										]}
+									/>
+									<label class="prospects__form-wide"
+										><span>Private reason for this change</span><textarea
+											bind:value={packageForm.reason}
+											required
+											maxlength="500"></textarea></label
+									>
+								</div>
+							{/if}
+							<div class="prospects__form-actions">
+								<Button
+									type="button"
+									variant="secondary"
+									variation="subtle"
+									disabled={correctPackage.isPending}
+									onclick={() => (changingPackage = false)}>Cancel</Button
+								>
+								<Button
+									type="submit"
+									loading={correctPackage.isPending}
+									disabled={!chosenPackage ||
+										chosenPrice(packageForm.billing_interval) === null ||
+										packageForm.reason.trim().length === 0}>Change package</Button
+								>
 							</div>
 						</form>
 					{/if}
@@ -1221,20 +1563,84 @@
 					{#if confirmingProvision}
 						<ConfirmDialog
 							open={confirmingProvision}
-							title="Confirm provisioning"
+							title="Activate account"
 							icon={checkIcon}
 							tone="success"
-							confirmLabel="Confirm provisioning"
+							confirmLabel="Activate account"
 							loading={provisionOrganization.isPending}
+							confirmDisabled={!activation ||
+								activation.problems.length > 0 ||
+								activationQuery.isFetching}
 							onConfirm={() => provisionOrganization.mutate()}
 							onClose={() => (confirmingProvision = false)}
 						>
 							<p>
-								This creates the <strong>{detail.business_name}</strong> organization and its first
-								administrator account, <strong>{administratorEmail(detail)}</strong>, on the
-								<strong>{packageName(detail.package_snapshot)}</strong> package. A single-use password-setup
-								email is sent to the administrator immediately; they cannot sign in until they use it.
+								This creates <strong>{detail.business_name}</strong> and its first administrator,
+								<strong>{administratorEmail(detail)}</strong>, who gets a single-use password-setup
+								email straight away.
 							</p>
+							{#if activationQuery.isPending}
+								<LoadingSkeleton variant="text" rows={4} label="Loading the dates to cover" />
+							{:else if activationQuery.isError}
+								<Banner type="error">{activationQuery.error.message}</Banner>
+							{:else if activation}
+								{#each activation.problems as problem (problem)}
+									<Banner type="warning">{problem}</Banner>
+								{/each}
+								<dl class="prospects__activation">
+									<div>
+										<dt>Package</dt>
+										<dd>
+											{activation.edition_name}{activation.edition_number
+												? ` · edition ${activation.edition_number}`
+												: ''}
+											{#if activation.edition_superseded}
+												<small
+													>A newer edition exists; the customer keeps the terms they agreed.</small
+												>
+											{/if}
+										</dd>
+									</div>
+									<div>
+										<dt>Billing</dt>
+										<dd>
+											{activation.agreed_price_usd_cents === null
+												? 'No agreed price'
+												: `${formatUsd(activation.agreed_price_usd_cents)} ${intervalWord(activation.billing_interval)}`}
+										</dd>
+									</div>
+									{#if activation.payment}
+										<div>
+											<dt>Payment received</dt>
+											<dd>
+												{formatUsd(activation.payment.amount_usd_cents)}
+												{#if activation.payment.received_on}
+													on {formatCalendarDate(activation.payment.received_on)}{/if}
+												{#if activation.payment.method}· {activation.payment.method}{/if}
+											</dd>
+										</div>
+									{/if}
+									{#if activation.credit_usd_cents}
+										<div>
+											<dt>Left as credit</dt>
+											<dd>{formatUsd(activation.credit_usd_cents)}</dd>
+										</div>
+									{/if}
+									<div>
+										<dt>Covered</dt>
+										<dd>
+											{formatCalendarDate(activation.covered_from)} to {formatCalendarDate(
+												activation.covered_through
+											)}
+											<small>Starts today in {activation.time_zone}.</small>
+										</dd>
+									</div>
+									<div>
+										<dt>Next renewal</dt>
+										<dd>{formatCalendarDate(activation.next_renewal)}</dd>
+									</div>
+								</dl>
+							{/if}
 						</ConfirmDialog>
 					{/if}
 
@@ -1332,6 +1738,14 @@
 											<strong
 												>{formatCents(confirmation.amount_usd_cents, confirmation.currency)} · {confirmation.private_reference}</strong
 											>
+											{#if confirmation.received_on || confirmation.method}
+												<p>
+													{confirmation.method ?? 'Received'}{confirmation.received_on
+														? ` · received ${formatCalendarDate(confirmation.received_on)}`
+														: ''}
+												</p>
+											{/if}
+											{#if confirmation.note}<p>{confirmation.note}</p>{/if}
 											{#if confirmation.mismatch_reason}
 												<p>Amount differs from package price: {confirmation.mismatch_reason}</p>
 											{/if}
@@ -1703,6 +2117,39 @@
 			margin: var(--space-smaller) 0 0;
 			color: var(--color-heading);
 			overflow-wrap: anywhere;
+		}
+	}
+
+	// The activation review: label and value side by side, one row each, so the dates read as a list.
+	.prospects__activation {
+		display: grid;
+		gap: var(--space-small);
+		margin: var(--space-base) 0 0;
+		padding: var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+
+		div {
+			display: grid;
+			grid-template-columns: minmax(7rem, 1fr) 2fr;
+			gap: var(--space-base);
+		}
+
+		dt {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		dd {
+			margin: 0;
+			color: var(--color-heading);
+			overflow-wrap: anywhere;
+		}
+
+		small {
+			display: block;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
 		}
 	}
 

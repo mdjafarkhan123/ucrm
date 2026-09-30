@@ -70,6 +70,8 @@ export const jafarProspectsListKey = (stageFilter: string, search: string) =>
 	['jafar', 'prospects', stageFilter, search] as const;
 export const jafarProspectKey = (prospectId: string | null) =>
 	['jafar', 'prospect', prospectId] as const;
+export const jafarProspectActivationKey = (prospectId: string | null) =>
+	[...jafarProspectKey(prospectId), 'activation'] as const;
 
 export const jafarOperationsKey = ['jafar', 'operations'] as const;
 export const jafarOperationsListKey = (statusFilter: string) =>
