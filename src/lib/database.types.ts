@@ -11359,6 +11359,7 @@ export type Database = {
 					status: string;
 					superseded_at: string | null;
 					updated_at: string;
+					updated_by_email: string | null;
 					yearly_price_usd_cents: number | null;
 				};
 				Insert: {
@@ -11377,6 +11378,7 @@ export type Database = {
 					status?: string;
 					superseded_at?: string | null;
 					updated_at?: string;
+					updated_by_email?: string | null;
 					yearly_price_usd_cents?: number | null;
 				};
 				Update: {
@@ -11395,6 +11397,7 @@ export type Database = {
 					status?: string;
 					superseded_at?: string | null;
 					updated_at?: string;
+					updated_by_email?: string | null;
 					yearly_price_usd_cents?: number | null;
 				};
 				Relationships: [
@@ -11412,6 +11415,7 @@ export type Database = {
 					archived_at: string | null;
 					created_at: string;
 					created_by_email: string | null;
+					creation_idempotency_key: string | null;
 					display_order: number;
 					id: string;
 					slug: string;
@@ -11422,6 +11426,7 @@ export type Database = {
 					archived_at?: string | null;
 					created_at?: string;
 					created_by_email?: string | null;
+					creation_idempotency_key?: string | null;
 					display_order?: number;
 					id?: string;
 					slug: string;
@@ -11432,6 +11437,7 @@ export type Database = {
 					archived_at?: string | null;
 					created_at?: string;
 					created_by_email?: string | null;
+					creation_idempotency_key?: string | null;
 					display_order?: number;
 					id?: string;
 					slug?: string;
@@ -18250,6 +18256,16 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			create_package_draft: {
+				Args: {
+					actor_owner_email: string;
+					copy_from_package_id?: string;
+					idempotency_key: string;
+					name: string;
+					slug: string;
+				};
+				Returns: Json;
+			};
 			create_quote: {
 				Args: {
 					disclaimer?: string;
@@ -18465,6 +18481,14 @@ export type Database = {
 					expected_revision: number;
 					target_organization_id: string;
 					target_rate_id: string;
+				};
+				Returns: Json;
+			};
+			delete_package_draft: {
+				Args: {
+					draft_edition_id: string;
+					loaded_revision: number;
+					target_package_id: string;
 				};
 				Returns: Json;
 			};
@@ -21015,6 +21039,10 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			open_package_draft: {
+				Args: { actor_owner_email: string; target_package_id: string };
+				Returns: Json;
+			};
 			open_quote_deposit_stripe_checkout: {
 				Args: { supplied_token_hash: string };
 				Returns: Json;
@@ -21079,6 +21107,11 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_package_builder: {
+				Args: { target_package_id: string };
+				Returns: Json;
+			};
+			owner_package_catalog: { Args: never; Returns: Json };
 			pause_automation_enrollment: {
 				Args: {
 					p_actor_user_id: string;
@@ -23100,6 +23133,16 @@ export type Database = {
 					new_trade: string;
 					new_website: string;
 					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			save_package_draft: {
+				Args: {
+					actor_owner_email: string;
+					draft_edition_id: string;
+					loaded_revision: number;
+					target_package_id: string;
+					terms: Json;
 				};
 				Returns: Json;
 			};
