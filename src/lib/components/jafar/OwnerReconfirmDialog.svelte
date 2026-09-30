@@ -93,17 +93,18 @@
 </AlertDialog.Root>
 
 <style lang="scss">
+	// The password check always opens over the dialog that asked for it, so it sits one layer higher.
 	:global(.owner-reconfirm-dialog__overlay) {
 		position: fixed;
 		inset: 0;
-		z-index: var(--elevation-modal);
+		z-index: calc(var(--elevation-modal) + 1);
 		background: var(--color-overlay);
 	}
 	:global(.owner-reconfirm-dialog__content) {
 		position: fixed;
 		top: 50%;
 		left: 50%;
-		z-index: var(--elevation-modal);
+		z-index: calc(var(--elevation-modal) + 1);
 		width: min(calc(100vw - var(--space-large) * 2), 420px);
 		max-height: calc(100dvh - var(--space-large) * 2);
 		overflow: auto;
