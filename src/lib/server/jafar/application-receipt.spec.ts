@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { sendApplicationReceipt } from './application-receipt';
+import { applicationPriceText, sendApplicationReceipt } from './application-receipt';
 import { enqueueEmailDelivery } from '$lib/server/events/dispatcher';
 
 vi.mock('$lib/server/events/dispatcher', () => ({ enqueueEmailDelivery: vi.fn() }));
@@ -11,11 +11,14 @@ const DEFAULT_TEMPLATE = {
 	body_published: '<p>Payment: {{payment_instructions}}</p>'
 };
 
-function clientWith(options: {
-	snapshot?: { display_name?: string; price_usd_cents?: number } | null;
-	template?: { subject_published: string | null; body_published: string | null } | null;
-} = {}) {
-	const snapshot = 'snapshot' in options ? options.snapshot : { display_name: 'Growth', price_usd_cents: 4900 };
+function clientWith(
+	options: {
+		snapshot?: { display_name?: string; price_usd_cents?: number } | null;
+		template?: { subject_published: string | null; body_published: string | null } | null;
+	} = {}
+) {
+	const snapshot =
+		'snapshot' in options ? options.snapshot : { display_name: 'Growth', price_usd_cents: 4900 };
 	const template = 'template' in options ? options.template : DEFAULT_TEMPLATE;
 
 	return {
@@ -24,7 +27,10 @@ function clientWith(options: {
 				return {
 					select: () => ({
 						eq: () => ({
-							single: async () => ({ data: snapshot ? { package_snapshot: snapshot } : null, error: null })
+							single: async () => ({
+								data: snapshot ? { package_snapshot: snapshot } : null,
+								error: null
+							})
 						})
 					})
 				};
@@ -94,5 +100,56 @@ describe('sendApplicationReceipt', () => {
 			'has not been published yet'
 		);
 		expect(mockedEnqueue).not.toHaveBeenCalled();
+	});
+});
+
+describe('applicationPriceText', () => {
+	const offer = {
+		id: 'offer-1',
+		name: 'Launch half price',
+		discount_kind: 'percent' as const,
+		percent_off: 50,
+		amount_off_usd_cents: null,
+		monthly_periods: 3,
+		periods: 3,
+		normal_price_usd_cents: 12900,
+		intro_price_usd_cents: 6450,
+		claim_ends_at: null
+	};
+
+	it('shows the monthly or yearly price', () => {
+		expect(applicationPriceText({ price_usd_cents: 12900, billing_period: 'month' })).toBe(
+			'$129/mo'
+		);
+		expect(applicationPriceText({ price_usd_cents: 129000, billing_period: 'year' })).toBe(
+			'$1,290/yr, paid upfront'
+		);
+	});
+
+	it('shows the intro price first when the application has an offer', () => {
+		expect(
+			applicationPriceText({
+				price_usd_cents: 12900,
+				billing_period: 'month',
+				offer: { ...offer, billing_interval: 'month' }
+			})
+		).toBe('$64.50/mo for 3 months, then $129/mo');
+		expect(
+			applicationPriceText({
+				price_usd_cents: 129000,
+				billing_period: 'year',
+				offer: {
+					...offer,
+					billing_interval: 'year',
+					periods: 1,
+					intro_price_usd_cents: 64500,
+					normal_price_usd_cents: 129000
+				}
+			})
+		).toBe('$645/yr for the first year, then $1,290/yr, paid upfront');
+	});
+
+	it('is empty when the snapshot has no price', () => {
+		expect(applicationPriceText({})).toBe('');
 	});
 });

@@ -2,9 +2,31 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import { enqueueEmailDelivery } from '$lib/server/events/dispatcher';
 import { renderTemplate, htmlToPlainText } from '$lib/server/jafar/message-templates';
+import { formatUsd } from '$lib/jafar/packages';
+import { offerLength, type ShownOffer } from '$lib/packages/public-package';
 
-function formatPrice(cents: number) {
-	return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0 })}/mo`;
+type ApplicationSnapshot = {
+	display_name?: string;
+	price_usd_cents?: number;
+	billing_period?: string;
+	offer?: ShownOffer | null;
+};
+
+/**
+ * The {{price}} an applicant sees on the received page and in the receipt: "$129/mo" or
+ * "$1,290/yr, paid upfront", and with an introductory offer (package builder P11b) what they pay first:
+ * "$64.50/mo for 3 months, then $129/mo".
+ */
+export function applicationPriceText(snapshot: ApplicationSnapshot) {
+	if (typeof snapshot.price_usd_cents !== 'number') return '';
+	const yearly = snapshot.billing_period === 'year';
+	const per = yearly ? '/yr' : '/mo';
+	const upfront = yearly ? ', paid upfront' : '';
+	const offer = snapshot.offer;
+	if (offer && typeof offer.intro_price_usd_cents === 'number') {
+		return `${formatUsd(offer.intro_price_usd_cents)}${per} ${offerLength(offer.billing_interval, offer.periods)}, then ${formatUsd(offer.normal_price_usd_cents)}${per}${upfront}`;
+	}
+	return `${formatUsd(snapshot.price_usd_cents)}${per}${upfront}`;
 }
 
 type SendApplicationReceiptParams = {
@@ -41,13 +63,10 @@ export async function sendApplicationReceipt(
 		throw new Error('The application receipt template has not been published yet.');
 	}
 
-	const snapshot = applicationResult.data.package_snapshot as {
-		display_name?: string;
-		price_usd_cents?: number;
-	};
+	const snapshot = applicationResult.data.package_snapshot as ApplicationSnapshot;
 	const values = {
 		package_name: snapshot.display_name ?? '',
-		price: typeof snapshot.price_usd_cents === 'number' ? formatPrice(snapshot.price_usd_cents) : '',
+		price: applicationPriceText(snapshot),
 		payment_instructions: params.paymentInstructions
 	};
 	const subject = renderTemplate(templateResult.data.subject_published ?? '', values);

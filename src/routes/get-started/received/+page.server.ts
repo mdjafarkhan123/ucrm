@@ -1,17 +1,10 @@
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { getOrCreateOwnerSettings } from '$lib/server/jafar/owner-settings';
 import { renderTemplate } from '$lib/server/jafar/message-templates';
+import { applicationPriceText } from '$lib/server/jafar/application-receipt';
 import type { PageServerLoad } from './$types';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function formatPrice(cents: number, billingPeriod: string | undefined) {
-	const amount = `$${(cents / 100).toLocaleString('en-US', {
-		minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
-		maximumFractionDigits: 2
-	})}`;
-	return billingPeriod === 'year' ? `${amount}/yr, paid upfront` : `${amount}/mo`;
-}
 
 /**
  * The application id in the link is a random, unguessable id (same trust model as the
@@ -42,21 +35,15 @@ export const load: PageServerLoad = async ({ url }) => {
 	if (applicationResult.error) throw applicationResult.error;
 	if (templateResult.error) throw templateResult.error;
 
-	const snapshot = applicationResult.data?.package_snapshot as {
-		display_name?: string;
-		price_usd_cents?: number;
-		billing_period?: string;
-	} | null;
+	const snapshot = applicationResult.data?.package_snapshot as
+		Parameters<typeof applicationPriceText>[0] | null;
 	if (!snapshot || !templateResult.data?.body_published) {
 		return { renderedBody: null };
 	}
 
 	const renderedBody = renderTemplate(templateResult.data.body_published, {
 		package_name: snapshot.display_name ?? '',
-		price:
-			typeof snapshot.price_usd_cents === 'number'
-				? formatPrice(snapshot.price_usd_cents, snapshot.billing_period)
-				: '',
+		price: applicationPriceText(snapshot),
 		payment_instructions: settings.payment_instructions ?? ''
 	});
 

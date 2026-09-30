@@ -1465,9 +1465,10 @@
 								<strong>{formatUsd(firstPaymentCents(detail.package_snapshot) ?? 0)}</strong>
 								for {packageName(
 									detail.package_snapshot
-								)}{#if snapshotOffer(detail.package_snapshot)}
-									with {offerHeadline(snapshotOffer(detail.package_snapshot)!)}{/if}. Record the
-								money once the full amount has arrived; anything extra stays as credit.
+								)}{#if snapshotOffer(detail.package_snapshot)}{' '}with {offerHeadline(
+										snapshotOffer(detail.package_snapshot)!
+									)}{/if}. Record the money once the full amount has arrived; anything extra stays
+								as credit.
 							</p>
 							<div class="prospects__form-grid">
 								<label
