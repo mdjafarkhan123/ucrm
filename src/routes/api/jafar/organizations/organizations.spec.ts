@@ -25,7 +25,6 @@ function directoryResult(overrides: Partial<Record<string, unknown>> = {}) {
 			all: 0,
 			active: 0,
 			suspended: 0,
-			pending_setup: 0,
 			matching: 0,
 			attention: {
 				access_overdue: 0,
@@ -35,7 +34,6 @@ function directoryResult(overrides: Partial<Record<string, unknown>> = {}) {
 				administrator_missing: 0,
 				administrator_ownership_unclear: 0,
 				setup_or_recovery_failed: 0,
-				legacy_review: 0,
 				email_setup_requested: 0
 			}
 		},

@@ -87,46 +87,6 @@ export const organizationLifecycleSchema = z.discriminatedUnion('status', [
 	})
 ]);
 
-export const organizationLegacyReconciliationSchema = z.discriminatedUnion('status', [
-	z.object({
-		status: z.literal('suspended'),
-		suspension_category: suspensionCategorySchema,
-		reason: z.string().trim().min(1, 'Enter a reconciliation reason.').max(1000),
-		idempotency_key: z.string().uuid('Start a new reconciliation and try again.')
-	}),
-	z.object({
-		status: z.literal('active'),
-		reason: z.string().trim().min(1, 'Enter a reconciliation reason.').max(1000),
-		idempotency_key: z.string().uuid('Start a new reconciliation and try again.')
-	})
-]);
-
-const freeAccessCommandBase = z.object({
-	reason: z.string().trim().min(1, 'Enter a private reason.').max(500),
-	idempotency_key: z.string().uuid('Start a new free access change and try again.')
-});
-
-export const freeAccessChangeSchema = z.discriminatedUnion('action', [
-	freeAccessCommandBase.extend({
-		action: z.literal('grant'),
-		starts_at: calendarDate,
-		access_until_date: calendarDate.nullish()
-	}),
-	freeAccessCommandBase.extend({
-		action: z.literal('extend'),
-		grant_id: z.string().uuid(),
-		access_until_date: calendarDate
-	}),
-	freeAccessCommandBase.extend({
-		action: z.literal('convert_to_forever'),
-		grant_id: z.string().uuid()
-	}),
-	freeAccessCommandBase.extend({
-		action: z.literal('end'),
-		grant_id: z.string().uuid()
-	})
-]);
-
 // Package builder P4b: the Billing workspace's commands, one per ledger command (ADR 0003 decision 6).
 // Money is whole US cents; every command carries the idempotency key the dialog made when it opened.
 const billingIdempotencyKey = z
@@ -142,6 +102,11 @@ const billingReason = z
 	.trim()
 	.min(3, 'Enter a reason of at least 3 characters.')
 	.max(1000);
+const freeAccessReason = z
+	.string()
+	.trim()
+	.min(3, 'Enter a reason of at least 3 characters.')
+	.max(500, 'Keep the reason under 500 characters.');
 const billingMethod = z.string().trim().min(1, 'Enter how the money was paid.').max(80);
 
 export const organizationBillingCommandSchema = z.discriminatedUnion('action', [
@@ -209,17 +174,42 @@ export const organizationBillingCommandSchema = z.discriminatedUnion('action', [
 		idempotency_key: billingIdempotencyKey,
 		paid_through_date: calendarDate,
 		reason: billingReason
+	}),
+	// Package builder P5c: free access is dated covered time without payment (P5a commands).
+	z.object({
+		action: z.literal('grant_free_access'),
+		idempotency_key: billingIdempotencyKey,
+		starts_on: calendarDate,
+		ends_on: calendarDate,
+		reason: freeAccessReason
+	}),
+	z.object({
+		action: z.literal('extend_free_access'),
+		idempotency_key: billingIdempotencyKey,
+		grant_id: z.string().uuid(),
+		ends_on: calendarDate,
+		reason: freeAccessReason
+	}),
+	z.object({
+		action: z.literal('end_free_access'),
+		idempotency_key: billingIdempotencyKey,
+		grant_id: z.string().uuid(),
+		reason: freeAccessReason
 	})
 ]);
 
 export type OrganizationBillingCommand = z.infer<typeof organizationBillingCommandSchema>;
 
-// Actions that take money back, cancel a record, or move access dates by hand need a fresh password.
+// Actions that take money back, cancel a record, or move access dates by hand (free access included) need a
+// fresh password.
 export const billingStepUpActions: ReadonlySet<OrganizationBillingCommand['action']> = new Set([
 	'refund',
 	'void',
 	'correct_payment',
-	'adjust_paid_through'
+	'adjust_paid_through',
+	'grant_free_access',
+	'extend_free_access',
+	'end_free_access'
 ]);
 
 export const teamProfileCorrectionSchema = z

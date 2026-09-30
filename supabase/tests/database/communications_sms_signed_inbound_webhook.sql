@@ -11,8 +11,8 @@
 begin;
 select plan(21);
 
-insert into public.organizations (id, name, slug)
-values ('b5b00000-0000-4000-8000-000000000001', 'Stage 5B Test Org', 'stage-5b-inbound-test');
+insert into public.organizations (id, name, slug, lifecycle_status)
+values ('b5b00000-0000-4000-8000-000000000001', 'Stage 5B Test Org', 'stage-5b-inbound-test', 'active');
 
 insert into public.clients (id, organization_id, display_name)
 values ('b5b00000-0000-4000-8000-000000000002', 'b5b00000-0000-4000-8000-000000000001', 'Existing Customer');

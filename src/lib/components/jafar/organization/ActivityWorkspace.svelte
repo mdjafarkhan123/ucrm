@@ -55,7 +55,6 @@
 		'limit_override.inherited': 'Seat limit override cleared',
 		'free_access.grant': 'Free access granted',
 		'free_access.extend': 'Free access extended',
-		'free_access.convert_to_forever': 'Free access converted to forever',
 		'free_access.end': 'Free access ended',
 		'commercial.initial_payment_confirmed': 'Initial payment confirmed',
 		'commercial.renewal_confirmed': 'Renewal recorded',
@@ -217,24 +216,18 @@
 						<h3>{access.organization.lifecycle_status}</h3>
 					</div>
 					<div class="organization-detail__status-line">
-						{#if access.organization.lifecycle_status === 'pending_setup'}
-							<p class="organization-detail__muted">
-								Waiting for setup. The activation tools come back with the new package tools.
-							</p>
-						{:else}
-							{#if access.organization.lifecycle_status !== 'pending_closure' && access.organization.lifecycle_status !== 'closed'}
-								<LifecycleActions
-									organizationId={access.organization.id}
-									lifecycleStatus={access.organization.lifecycle_status}
-								/>
-							{/if}
-							<ClosureActions
+						{#if access.organization.lifecycle_status !== 'pending_closure' && access.organization.lifecycle_status !== 'closed'}
+							<LifecycleActions
 								organizationId={access.organization.id}
-								organizationName={access.organization.name}
 								lifecycleStatus={access.organization.lifecycle_status}
-								closure={commercialQuery.data?.closure ?? null}
 							/>
 						{/if}
+						<ClosureActions
+							organizationId={access.organization.id}
+							organizationName={access.organization.name}
+							lifecycleStatus={access.organization.lifecycle_status}
+							closure={commercialQuery.data?.closure ?? null}
+						/>
 					</div>
 				</Card>
 			</section>

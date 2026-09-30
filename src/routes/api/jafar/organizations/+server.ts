@@ -14,11 +14,7 @@ function encodeCursor(cursor: DirectoryCursor): string {
 function decodeCursor(value: string): DirectoryCursor | null {
 	try {
 		const parsed = JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
-		if (
-			parsed &&
-			typeof parsed.created_at === 'string' &&
-			typeof parsed.id === 'string'
-		) {
+		if (parsed && typeof parsed.created_at === 'string' && typeof parsed.id === 'string') {
 			return parsed;
 		}
 		return null;
@@ -28,7 +24,7 @@ function decodeCursor(value: string): DirectoryCursor | null {
 }
 
 export const GET: RequestHandler = async (event) => {
-	if (!await getOwnerSession(event)) return ownerUnauthorized();
+	if (!(await getOwnerSession(event))) return ownerUnauthorized();
 
 	const parsed = organizationDirectoryQuerySchema.safeParse({
 		search: event.url.searchParams.get('search') ?? undefined,
@@ -71,7 +67,6 @@ export const GET: RequestHandler = async (event) => {
 				all: number;
 				active: number;
 				suspended: number;
-				pending_setup: number;
 				matching: number;
 				attention: Record<string, number>;
 			};

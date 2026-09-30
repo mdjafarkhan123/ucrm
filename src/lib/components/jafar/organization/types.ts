@@ -153,6 +153,21 @@ export type OrganizationBilling = {
 	receipts: BillingReceipt[];
 	applications: BillingApplication[];
 	refunds: BillingRefund[];
+	// Package builder P5c: the last covered day (paid-through or started free access), when access pauses,
+	// and the current and later free-access grants.
+	covered_through: string | null;
+	pauses_at: string | null;
+	free_access_today: boolean;
+	free_access: BillingFreeAccessGrant[];
+};
+export type BillingFreeAccessGrant = {
+	grant_id: string;
+	starts_at: string;
+	last_day: string;
+	is_current: boolean;
+	reason: string;
+	granted_by: string | null;
+	granted_at: string;
 };
 export type BillingResponse = { billing: OrganizationBilling; error?: string };
 export type BillingRecordKind = 'charge' | 'receipt' | 'application' | 'refund';
@@ -190,7 +205,10 @@ export type BillingCommandInput =
 			reason: string;
 	  }
 	| { action: 'confirm_coverage'; charge_id: string; covered_from: string; covered_through: string }
-	| { action: 'adjust_paid_through'; paid_through_date: string; reason: string };
+	| { action: 'adjust_paid_through'; paid_through_date: string; reason: string }
+	| { action: 'grant_free_access'; starts_on: string; ends_on: string; reason: string }
+	| { action: 'extend_free_access'; grant_id: string; ends_on: string; reason: string }
+	| { action: 'end_free_access'; grant_id: string; reason: string };
 // Which billing dialog is open, and what it was opened from.
 export type BillingDialogState =
 	| { kind: 'add_charge' }
@@ -200,7 +218,10 @@ export type BillingDialogState =
 	| { kind: 'void'; recordKind: BillingRecordKind; recordId: string; subject: string }
 	| { kind: 'correct_payment'; receipt: BillingReceipt }
 	| { kind: 'confirm_coverage'; charge: BillingCharge }
-	| { kind: 'adjust_paid_through' };
+	| { kind: 'adjust_paid_through' }
+	| { kind: 'grant_free_access' }
+	| { kind: 'extend_free_access'; grant: BillingFreeAccessGrant }
+	| { kind: 'end_free_access'; grant: BillingFreeAccessGrant };
 
 export type TeamMember = {
 	user_id: string;

@@ -20,7 +20,6 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import TabPanel from '$lib/components/ui/TabPanel.svelte';
-	import FreeAccessActions from '$lib/components/jafar/FreeAccessActions.svelte';
 	import SmsCreditTopupActions from '$lib/components/jafar/SmsCreditTopupActions.svelte';
 	import SmsHoldActions from '$lib/components/jafar/SmsHoldActions.svelte';
 	import SmsPromotionalCreditActions from '$lib/components/jafar/SmsPromotionalCreditActions.svelte';
@@ -563,17 +562,6 @@
 				</Card>
 				<Card class="organization-detail__commercial-explainer">
 					<SmsAdjustmentRefundActions organizationId={access.organization.id} />
-				</Card>
-
-				<Card class="organization-detail__commercial-explainer">
-					<div>
-						<h3>Free access</h3>
-						<FreeAccessActions
-							organizationId={access.organization.id}
-							hasPackageAssignment={access.package !== null}
-							freeAccess={access.free_access}
-						/>
-					</div>
 				</Card>
 
 				<Card class="organization-detail__commercial-explainer organization-detail__capabilities">

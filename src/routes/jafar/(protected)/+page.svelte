@@ -20,7 +20,7 @@
 	} from '$lib/jafar/notifications';
 	import { jafarOrganizationsKey } from '$lib/jafar/query-keys';
 
-	type LifecycleStatus = 'pending_setup' | 'active' | 'suspended';
+	type LifecycleStatus = 'active' | 'suspended' | 'pending_closure' | 'closed';
 	type Organization = {
 		id: string;
 		name: string;
@@ -57,37 +57,29 @@
 	const activeCount = $derived(
 		organizationList.filter((organization) => organization.lifecycle_status === 'active').length
 	);
-	const pendingCount = $derived(
-		organizationList.filter((organization) => organization.lifecycle_status === 'pending_setup')
-			.length
-	);
 	const suspendedCount = $derived(
 		organizationList.filter((organization) => organization.lifecycle_status === 'suspended').length
 	);
-	const attentionCount = $derived(pendingCount + suspendedCount);
+	const attentionCount = $derived(
+		organizationList.filter((organization) => organization.lifecycle_status !== 'active').length
+	);
 
 	function formatDate(value: string) {
 		return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(value));
 	}
 
-	/**
-	 * Provisioning creates organizations straight into `active`, so anything still sitting at
-	 * `pending_setup` came from the retired direct-create path. It is a record to reconcile, not
-	 * a setup step someone is waiting on, and the dashboard has to say so.
-	 */
 	function statusLabel(status: LifecycleStatus) {
-		return status === 'pending_setup'
-			? 'Legacy record'
-			: status === 'active'
-				? 'Active'
-				: 'Suspended';
+		return status === 'active'
+			? 'Active'
+			: status === 'suspended'
+				? 'Suspended'
+				: status === 'pending_closure'
+					? 'Closing'
+					: 'Closed';
 	}
 
 	function attentionNote(organization: Organization) {
-		const created = `created ${formatDate(organization.created_at)}`;
-		return organization.lifecycle_status === 'pending_setup'
-			? `Legacy record · needs reconciliation · ${created}`
-			: `Suspended · ${created}`;
+		return `${statusLabel(organization.lifecycle_status)} · created ${formatDate(organization.created_at)}`;
 	}
 </script>
 
@@ -126,7 +118,7 @@
 		<KpiCard
 			label="Needs attention"
 			value={String(attentionCount)}
-			note={`${suspendedCount} suspended · ${pendingCount} legacy to reconcile`}
+			note={`${suspendedCount} suspended · ${attentionCount - suspendedCount} closing or closed`}
 			icon={alertIcon}
 			tone="warning"
 		/>
@@ -198,12 +190,6 @@
 					<span>No organization lifecycle action is waiting for review.</span>
 				</div>
 			{:else}
-				{#if pendingCount > 0}
-					<p class="owner-overview__panel-note">
-						Legacy records were created before paid onboarding existed. Nobody is waiting on them,
-						so open each one when you have time and decide what it should become.
-					</p>
-				{/if}
 				<div class="owner-overview__attention-list">
 					{#each organizationList.filter((organization) => organization.lifecycle_status !== 'active') as organization (organization.id)}
 						<a
@@ -211,13 +197,11 @@
 							href={resolve(`/jafar/organizations/${organization.id}`)}
 						>
 							<span
-								class:owner-overview__attention-icon--warning={organization.lifecycle_status ===
-									'pending_setup'}
 								class:owner-overview__attention-icon--critical={organization.lifecycle_status ===
 									'suspended'}
 								class="owner-overview__attention-icon"
 							>
-								{@html organization.lifecycle_status === 'pending_setup' ? clockIcon : pauseIcon}
+								{@html organization.lifecycle_status === 'suspended' ? pauseIcon : clockIcon}
 							</span>
 							<span class="owner-overview__attention-content"
 								><strong>{organization.name}</strong><small>{attentionNote(organization)}</small
@@ -404,14 +388,6 @@
 	.owner-overview__attention-list,
 	.owner-overview__recent-list {
 		padding: var(--space-small) var(--space-large);
-	}
-	.owner-overview__panel-note {
-		margin: var(--space-base) var(--space-large) 0;
-		padding: var(--space-small) var(--space-base);
-		border-radius: var(--radius-base);
-		color: var(--color-text--secondary);
-		background: var(--color-surface--background--subtle);
-		font-size: var(--typography--fontSize-small);
 	}
 	.owner-overview__attention-item,
 	.owner-overview__recent-item {

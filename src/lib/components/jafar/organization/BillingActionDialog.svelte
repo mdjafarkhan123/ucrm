@@ -75,7 +75,10 @@
 		void: 'Cancel record',
 		correct_payment: 'Correct payment',
 		confirm_coverage: 'Confirm dates covered',
-		adjust_paid_through: 'Correct paid-through date'
+		adjust_paid_through: 'Correct paid-through date',
+		grant_free_access: 'Grant free access',
+		extend_free_access: 'Extend free access',
+		end_free_access: 'End free access'
 	};
 
 	let localError = $state('');
@@ -166,6 +169,28 @@
 	let creditAmount = $state<string | null>(null);
 	const creditAmountValue = $derived(
 		creditAmount ?? (suggestedCredit ? centsToInput(suggestedCredit) : '')
+	);
+
+	// Free access ------------------------------------------------------------------------------------------
+	// One current grant and one later grant, never overlapping (P5a). A new grant starts after the current one
+	// ends; an extension of the current grant stops before the later one starts.
+	const currentGrant = $derived(billing.free_access.find((grant) => grant.is_current) ?? null);
+	const laterGrant = $derived(billing.free_access.find((grant) => !grant.is_current) ?? null);
+	const earliestGrantStart = untrack(() => {
+		const current = billing.free_access.find((grant) => grant.is_current);
+		return current ? calendarDateFromString(current.last_day)?.add({ days: 1 }) : today;
+	});
+	let startsOn = $state<CalendarDate | undefined>(earliestGrantStart);
+	let endsOn = $state<CalendarDate | undefined>(undefined);
+	const extendedGrant = initial.kind === 'extend_free_access' ? initial.grant : null;
+	const extendMinimum = extendedGrant
+		? calendarDateFromString(extendedGrant.last_day)?.add({ days: 1 })
+		: undefined;
+	// The day before the later grant starts, when the grant being changed must stay clear of it.
+	const lastDayBeforeLater = $derived(
+		laterGrant && (initial.kind === 'grant_free_access' || extendedGrant?.is_current)
+			? calendarDateFromString(laterGrant.starts_at)?.subtract({ days: 1 })
+			: undefined
 	);
 
 	// Refund -----------------------------------------------------------------------------------------------
@@ -321,6 +346,33 @@
 				if (Object.keys(localFieldErrors).length) return null;
 				return { action: 'adjust_paid_through', paid_through_date: date, reason: why };
 			}
+			case 'grant_free_access': {
+				const starts = requireDate(startsOn, 'starts_on');
+				const ends = requireDate(endsOn, 'ends_on');
+				const why = requireText(reason, 'reason', reasonMessage, 3);
+				if (starts && ends && ends < starts)
+					localFieldErrors.ends_on = 'The last day must be on or after the first day.';
+				if (Object.keys(localFieldErrors).length) return null;
+				return { action: 'grant_free_access', starts_on: starts, ends_on: ends, reason: why };
+			}
+			case 'extend_free_access': {
+				const ends = requireDate(endsOn, 'ends_on');
+				const why = requireText(reason, 'reason', reasonMessage, 3);
+				if (ends && ends <= initial.grant.last_day)
+					localFieldErrors.ends_on = `Choose a day after ${formatCalendarDate(initial.grant.last_day)}.`;
+				if (Object.keys(localFieldErrors).length) return null;
+				return {
+					action: 'extend_free_access',
+					grant_id: initial.grant.grant_id,
+					ends_on: ends,
+					reason: why
+				};
+			}
+			case 'end_free_access': {
+				const why = requireText(reason, 'reason', reasonMessage, 3);
+				if (Object.keys(localFieldErrors).length) return null;
+				return { action: 'end_free_access', grant_id: initial.grant.grant_id, reason: why };
+			}
 		}
 	}
 
@@ -340,7 +392,8 @@
 					? 'Save correction'
 					: titles[initial.kind]
 	);
-	const destructive = initial.kind === 'void' || initial.kind === 'refund';
+	const destructive =
+		initial.kind === 'void' || initial.kind === 'refund' || initial.kind === 'end_free_access';
 	const title =
 		initial.kind === 'void' ? voidCopy[initial.recordKind].button : titles[initial.kind];
 </script>
@@ -657,6 +710,98 @@
 				bind:value={reason}
 				rows={3}
 				maxlength={1000}
+				invalid={Boolean(shownFieldErrors.reason)}
+				errorMessage={shownFieldErrors.reason}
+			/>
+		{:else if initial.kind === 'grant_free_access'}
+			<p class="billing-dialog__lead">
+				Give covered days without payment. No money is recorded and no charge changes. While free
+				access covers a day, the organization is never paused for payment, and a payment pause is
+				lifted as soon as it starts.
+			</p>
+			{#if laterGrant}
+				<p class="billing-dialog__hint">
+					Free access is already scheduled from {formatCalendarDate(laterGrant.starts_at)}, so this
+					grant starts today and ends before then.
+				</p>
+			{:else if currentGrant}
+				<p class="billing-dialog__hint">
+					Free access already runs through {formatCalendarDate(currentGrant.last_day)}, so this
+					grant starts after that. To add days to it instead, extend it.
+				</p>
+			{/if}
+			<div class="billing-dialog__grid">
+				<CalendarPicker
+					id="billing-free-starts"
+					label="First free day"
+					bind:value={startsOn}
+					minValue={earliestGrantStart}
+					maxValue={laterGrant ? today : undefined}
+					invalid={Boolean(shownFieldErrors.starts_on)}
+					errorMessage={shownFieldErrors.starts_on}
+				/>
+				<CalendarPicker
+					id="billing-free-ends"
+					label="Last free day"
+					bind:value={endsOn}
+					minValue={startsOn ?? earliestGrantStart}
+					maxValue={lastDayBeforeLater}
+					invalid={Boolean(shownFieldErrors.ends_on)}
+					errorMessage={shownFieldErrors.ends_on}
+				/>
+			</div>
+			<Textarea
+				id="billing-reason"
+				label="Reason"
+				bind:value={reason}
+				rows={3}
+				maxlength={500}
+				invalid={Boolean(shownFieldErrors.reason)}
+				errorMessage={shownFieldErrors.reason}
+			/>
+		{:else if initial.kind === 'extend_free_access'}
+			<p class="billing-dialog__lead">
+				Free access {initial.grant.is_current ? 'runs' : 'is scheduled'} from
+				{formatCalendarDate(initial.grant.starts_at)} through
+				<strong>{formatCalendarDate(initial.grant.last_day)}</strong>. Choose the new last free day.
+			</p>
+			<CalendarPicker
+				id="billing-free-ends"
+				label="New last free day"
+				bind:value={endsOn}
+				minValue={extendMinimum}
+				maxValue={lastDayBeforeLater}
+				invalid={Boolean(shownFieldErrors.ends_on)}
+				errorMessage={shownFieldErrors.ends_on}
+			/>
+			<Textarea
+				id="billing-reason"
+				label="Reason"
+				bind:value={reason}
+				rows={3}
+				maxlength={500}
+				invalid={Boolean(shownFieldErrors.reason)}
+				errorMessage={shownFieldErrors.reason}
+			/>
+		{:else if initial.kind === 'end_free_access'}
+			<p class="billing-dialog__lead">
+				<strong>
+					Free access {formatCalendarDate(initial.grant.starts_at)} – {formatCalendarDate(
+						initial.grant.last_day
+					)}
+				</strong>
+			</p>
+			<p class="billing-dialog__hint">
+				{initial.grant.is_current
+					? 'Free access stops at the end of today. If nothing is paid beyond today, the seven-day grace week follows and access then pauses.'
+					: 'This scheduled free access is cancelled and never starts.'} It stays in the history.
+			</p>
+			<Textarea
+				id="billing-reason"
+				label="Reason"
+				bind:value={reason}
+				rows={3}
+				maxlength={500}
 				invalid={Boolean(shownFieldErrors.reason)}
 				errorMessage={shownFieldErrors.reason}
 			/>

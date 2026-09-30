@@ -44,7 +44,7 @@ values
   ('90000000-0000-0000-0000-0000000000f2', '6F Fixture Overdue', '6f-fixture-overdue', 'active'),
   ('90000000-0000-0000-0000-0000000000f3', '6F Fixture Free Access Safe', '6f-fixture-free-access-safe', 'active'),
   ('90000000-0000-0000-0000-0000000000f4', '6F Fixture Free Access Expiring', '6f-fixture-free-access-expiring', 'active'),
-  ('90000000-0000-0000-0000-0000000000f5', '6F Fixture Legacy Review', '6f-fixture-legacy-review', 'pending_setup'),
+  ('90000000-0000-0000-0000-0000000000f5', '6F Fixture Suspended', '6f-fixture-suspended', 'suspended'),
   ('90000000-0000-0000-0000-0000000000f6', '6F Fixture Admin Missing', '6f-fixture-admin-missing', 'active'),
   ('90000000-0000-0000-0000-0000000000f7', '6F Fixture Admin Unclear', '6f-fixture-admin-unclear', 'active'),
   ('90000000-0000-0000-0000-0000000000f8', '6F Fixture Setup Failed', '6f-fixture-setup-failed', 'active'),
@@ -137,7 +137,7 @@ select is(
 );
 select is(
   (select org -> 'attention_reasons' from fixture_directory, jsonb_array_elements(result -> 'organizations') as org where org ->> 'id' = '90000000-0000-0000-0000-0000000000f5'),
-  '["legacy_review"]'::jsonb, 'a pending_setup organization is legacy_review, not access_overdue, even without paid coverage'
+  '[]'::jsonb, 'a suspended organization is not access_overdue, even without paid coverage'
 );
 select is(
   (select org -> 'attention_reasons' from fixture_directory, jsonb_array_elements(result -> 'organizations') as org where org ->> 'id' = '90000000-0000-0000-0000-0000000000f6'),

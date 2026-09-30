@@ -163,6 +163,26 @@ describe('platform owner billing ledger boundary', () => {
 			idempotency_key: idempotencyKey,
 			paid_through_date: '2026-10-31',
 			reason: 'Agreed extension'
+		},
+		{
+			action: 'grant_free_access',
+			idempotency_key: idempotencyKey,
+			starts_on: '2026-09-30',
+			ends_on: '2026-10-30',
+			reason: 'Trial month'
+		},
+		{
+			action: 'extend_free_access',
+			idempotency_key: idempotencyKey,
+			grant_id: chargeId,
+			ends_on: '2026-11-30',
+			reason: 'Longer trial'
+		},
+		{
+			action: 'end_free_access',
+			idempotency_key: idempotencyKey,
+			grant_id: chargeId,
+			reason: 'Trial over'
 		}
 	])('asks for the password again before $action', async (command) => {
 		mockedOwnerSession.mockResolvedValue(session());
@@ -172,6 +192,49 @@ describe('platform owner billing ledger boundary', () => {
 
 		expect(response.status).toBe(403);
 		expect((await response.json()).step_up_required).toBe(true);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it('grants dated free access through the P5a command once the password is confirmed', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		mockedConsumeStepUp.mockReturnValue(true);
+		const client = billingClient();
+		mockedClient.mockReturnValue(client as never);
+
+		const response = await POST(
+			event({
+				action: 'grant_free_access',
+				idempotency_key: idempotencyKey,
+				starts_on: '2026-09-30',
+				ends_on: '2026-10-30',
+				reason: 'Trial month'
+			})
+		);
+
+		expect(response.status).toBe(200);
+		expect(client.rpc).toHaveBeenCalledWith('grant_organization_free_access', {
+			target_organization_id: organizationId,
+			actor_owner_email: 'owner@example.com',
+			idempotency_key: idempotencyKey,
+			starts_on: '2026-09-30',
+			ends_on: '2026-10-30',
+			reason: 'Trial month'
+		});
+	});
+
+	it('refuses free access with no end date', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+
+		const response = await POST(
+			event({
+				action: 'grant_free_access',
+				idempotency_key: idempotencyKey,
+				starts_on: '2026-09-30',
+				reason: 'Forever'
+			})
+		);
+
+		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 

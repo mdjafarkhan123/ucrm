@@ -11169,7 +11169,7 @@ export type Database = {
 				Insert: {
 					created_at?: string;
 					id?: string;
-					lifecycle_status?: string;
+					lifecycle_status: string;
 					name: string;
 					slug: string;
 					updated_at?: string;

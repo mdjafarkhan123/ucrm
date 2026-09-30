@@ -3,7 +3,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(27);
+select plan(26);
 
 -- Privileges -----------------------------------------------------------------
 
@@ -40,7 +40,6 @@ insert into public.organizations (id, name, slug, lifecycle_status)
 values
   ('90000000-0000-0000-0000-000000000901', '9 Closure Active Test', '9-closure-active-test', 'active'),
   ('90000000-0000-0000-0000-000000000902', '9 Closure Suspended Test', '9-closure-suspended-test', 'suspended'),
-  ('90000000-0000-0000-0000-000000000903', '9 Closure Pending Setup Test', '9-closure-pending-setup-test', 'pending_setup'),
   ('90000000-0000-0000-0000-000000000904', '9 Closure Never Closed Test', '9-closure-never-closed-test', 'active');
 
 -- Closure start on an active organization (p1) ----------------------------------
@@ -101,13 +100,6 @@ select throws_ok(
     'Trying to close an already-closing organization.', 'owner@example.test'
   )$$,
   '23514', null, 'closure start is rejected for an organization already pending closure'
-);
-select throws_ok(
-  $$select public.apply_organization_closure_start(
-    '90000000-0000-0000-0000-000000000903', '9-close-p3-start-1',
-    'Trying to close a legacy pending_setup organization.', 'owner@example.test'
-  )$$,
-  '23514', null, 'closure start is rejected for a legacy pending_setup organization'
 );
 select throws_ok(
   $$select public.apply_organization_closure_restore(

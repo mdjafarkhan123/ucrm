@@ -282,13 +282,11 @@
 									? 'critical'
 									: 'warning')}
 						>{preview?.lifecycle ??
-							(access?.organization.lifecycle_status === 'pending_setup'
-								? 'Needs review'
-								: access?.organization.lifecycle_status === 'pending_closure'
-									? 'Closing'
-									: access?.organization.lifecycle_status === 'closed'
-										? 'Closed'
-										: access?.organization.lifecycle_status)}</Badge
+							(access?.organization.lifecycle_status === 'pending_closure'
+								? 'Closing'
+								: access?.organization.lifecycle_status === 'closed'
+									? 'Closed'
+									: access?.organization.lifecycle_status)}</Badge
 					>
 				</div>
 				<p class="organization-detail__description">

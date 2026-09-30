@@ -16,7 +16,7 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import { jafarOrganizationsListKey } from '$lib/jafar/query-keys';
 
-	type LifecycleStatus = 'active' | 'suspended' | 'pending_setup' | 'pending_closure' | 'closed';
+	type LifecycleStatus = 'active' | 'suspended' | 'pending_closure' | 'closed';
 	type AttentionReason =
 		| 'access_overdue'
 		| 'payment_overdue'
@@ -25,7 +25,6 @@
 		| 'administrator_missing'
 		| 'administrator_ownership_unclear'
 		| 'setup_or_recovery_failed'
-		| 'legacy_review'
 		| 'email_setup_requested';
 	type Organization = {
 		id: string;
@@ -41,7 +40,6 @@
 		all: number;
 		active: number;
 		suspended: number;
-		pending_setup: number;
 		matching: number;
 		attention: Record<AttentionReason, number>;
 	};
@@ -62,7 +60,6 @@
 		administrator_ownership_unclear: { label: 'Multiple owners', tone: 'warning' },
 		setup_or_recovery_failed: { label: 'Setup or recovery issue', tone: 'critical' },
 		expiring_soon: { label: 'Expiring soon', tone: 'warning' },
-		legacy_review: { label: 'Needs review', tone: 'warning' },
 		email_setup_requested: { label: 'Email setup requested', tone: 'warning' }
 	};
 	const attentionReasonOrder = Object.keys(attentionMeta) as AttentionReason[];
@@ -71,7 +68,6 @@
 		all: 0,
 		active: 0,
 		suspended: 0,
-		pending_setup: 0,
 		matching: 0,
 		attention: {
 			access_overdue: 0,
@@ -81,7 +77,6 @@
 			administrator_missing: 0,
 			administrator_ownership_unclear: 0,
 			setup_or_recovery_failed: 0,
-			legacy_review: 0,
 			email_setup_requested: 0
 		}
 	};
@@ -135,7 +130,6 @@
 
 	function lifecycleLabel(lifecycle: LifecycleStatus) {
 		if (lifecycle === 'active') return 'Active';
-		if (lifecycle === 'pending_setup') return 'Needs review';
 		if (lifecycle === 'pending_closure') return 'Closing';
 		if (lifecycle === 'closed') return 'Closed';
 		return 'Suspended';
@@ -143,7 +137,6 @@
 
 	function lifecycleTone(lifecycle: LifecycleStatus): 'success' | 'critical' | 'warning' {
 		if (lifecycle === 'active') return 'success';
-		if (lifecycle === 'pending_setup') return 'warning';
 		return 'critical';
 	}
 
@@ -191,9 +184,9 @@
 			variant="compact"
 		/>
 		<KpiCard
-			label="Needs review"
-			value={String(totals.pending_setup)}
-			note="Legacy organizations pending one-time review"
+			label="Renewals due"
+			value={String(totals.attention.renewal_due + totals.attention.payment_overdue)}
+			note="Due within seven days or in the grace week"
 			icon={alertIcon}
 			tone="warning"
 			variant="compact"

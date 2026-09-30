@@ -119,6 +119,26 @@ function runCommand(organizationId: string, email: string, command: Organization
 				paid_through_date: command.paid_through_date,
 				reason: command.reason
 			});
+		case 'grant_free_access':
+			return client.rpc('grant_organization_free_access', {
+				...common,
+				starts_on: command.starts_on,
+				ends_on: command.ends_on,
+				reason: command.reason
+			});
+		case 'extend_free_access':
+			return client.rpc('extend_organization_free_access', {
+				...common,
+				grant_id: command.grant_id,
+				ends_on: command.ends_on,
+				reason: command.reason
+			});
+		case 'end_free_access':
+			return client.rpc('end_organization_free_access', {
+				...common,
+				grant_id: command.grant_id,
+				reason: command.reason
+			});
 	}
 }
 

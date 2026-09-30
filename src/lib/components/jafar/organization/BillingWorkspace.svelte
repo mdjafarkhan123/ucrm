@@ -3,6 +3,7 @@
 		BillingCharge,
 		BillingCommandInput,
 		BillingDialogState,
+		BillingFreeAccessGrant,
 		BillingReceipt,
 		BillingResponse,
 		OrganizationBilling
@@ -12,6 +13,7 @@
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import calendarIcon from '@tabler/icons/outline/calendar-check.svg?raw';
 	import cashIcon from '@tabler/icons/outline/cash.svg?raw';
+	import giftIcon from '@tabler/icons/outline/gift.svg?raw';
 	import packageIcon from '@tabler/icons/outline/package.svg?raw';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import walletIcon from '@tabler/icons/outline/wallet.svg?raw';
@@ -91,7 +93,10 @@
 		void: 'Record cancelled. It stays in the history.',
 		correct_payment: 'Payment corrected. The original stays in the history.',
 		confirm_coverage: 'Dates confirmed as covered. The next charge has been added.',
-		adjust_paid_through: 'Paid-through date corrected.'
+		adjust_paid_through: 'Paid-through date corrected.',
+		grant_free_access: 'Free access granted.',
+		extend_free_access: 'Free access extended.',
+		end_free_access: 'Free access ended. It stays in the history.'
 	};
 
 	const billingMutation = createMutation<
@@ -163,6 +168,26 @@
 		{ key: 'unused', label: 'Unused credit', align: 'end' },
 		{ key: 'status', label: 'Status' }
 	];
+
+	const freeAccessColumns: DataTableColumn[] = [
+		{ key: 'dates', label: 'Free days' },
+		{ key: 'status', label: 'Status' },
+		{ key: 'reason', label: 'Reason' },
+		{ key: 'granted', label: 'Granted' }
+	];
+	// One current and one later grant at most (P5a), so a new grant is possible only while one is missing.
+	const canGrantFreeAccess = $derived(
+		(billing?.free_access.length ?? 0) < 2 && Boolean(billing?.current_agreement)
+	);
+	function freeAccessMenu(grant: BillingFreeAccessGrant) {
+		return [
+			{
+				label: grant.is_current ? 'End free access' : 'Cancel scheduled free access',
+				destructive: true,
+				onSelect: () => openDialog({ kind: 'end_free_access', grant })
+			}
+		];
+	}
 
 	const creditAvailable = $derived((billing?.totals.credit_usd_cents ?? 0) > 0);
 	const latestLiveChargeId = $derived(
@@ -260,7 +285,7 @@
 	}
 
 	const renewalBanner = $derived.by(() => {
-		if (!billing?.renewal_flag) return null;
+		if (!billing?.renewal_flag || billing.free_access_today) return null;
 		if (billing.renewal_flag === 'overdue')
 			return {
 				tone: 'critical',
@@ -313,15 +338,19 @@
 					value={billing.paid_through_date
 						? formatCalendarDate(billing.paid_through_date)
 						: 'Not yet'}
-					note={billing.next_renewal_date
-						? `Next period starts ${formatCalendarDate(billing.next_renewal_date)}`
-						: 'Confirm the first covered dates'}
+					note={billing.free_access_today
+						? `Free access covers through ${formatCalendarDate(billing.covered_through)}`
+						: billing.next_renewal_date
+							? `Next period starts ${formatCalendarDate(billing.next_renewal_date)}`
+							: 'Confirm the first covered dates'}
 					icon={calendarIcon}
-					tone={billing.renewal_flag === 'overdue'
-						? 'critical'
-						: billing.renewal_flag
-							? 'warning'
-							: 'default'}
+					tone={billing.free_access_today
+						? 'informative'
+						: billing.renewal_flag === 'overdue'
+							? 'critical'
+							: billing.renewal_flag
+								? 'warning'
+								: 'default'}
 					variant="compact"
 				/>
 				<KpiCard
@@ -368,6 +397,64 @@
 			{/if}
 
 			{#if feedback}<p class="billing-workspace__feedback" role="status">{feedback}</p>{/if}
+
+			<SectionBlock
+				title="Free access"
+				icon={giftIcon}
+				hint="Covered days without payment, always with an end date. While free access covers today, the organization is never paused for payment."
+			>
+				{#snippet actions()}
+					<Button
+						size="small"
+						variant="secondary"
+						disabled={!canGrantFreeAccess}
+						onclick={() => openDialog({ kind: 'grant_free_access' })}>Grant free access</Button
+					>
+				{/snippet}
+				{#if billing.free_access.length === 0}
+					<EmptyState
+						title="No free access"
+						description={billing.current_agreement
+							? 'Grant free access to cover dates without payment, for a trial or a goodwill gesture.'
+							: 'This organization has no package agreement, so there is nothing to cover.'}
+					/>
+				{:else}
+					<DataTable
+						caption="Free access"
+						columns={freeAccessColumns}
+						items={billing.free_access}
+						rowId={(grant) => grant.grant_id}
+					>
+						{#snippet row(grant)}
+							<td>
+								<strong>{formatPeriod(grant.starts_at, grant.last_day)}</strong>
+							</td>
+							<td>
+								<Badge status={grant.is_current ? 'success' : 'informative'} size="small"
+									>{grant.is_current ? 'Running' : 'Scheduled'}</Badge
+								>
+							</td>
+							<td class="billing-workspace__reason">{grant.reason}</td>
+							<td class="billing-workspace__secondary">
+								{formatDateTime(grant.granted_at)}{grant.granted_by ? ` · ${grant.granted_by}` : ''}
+							</td>
+						{/snippet}
+						{#snippet rowActions(grant)}
+							<div class="billing-workspace__row-actions">
+								<Button
+									size="small"
+									variant="secondary"
+									onclick={() => openDialog({ kind: 'extend_free_access', grant })}>Extend</Button
+								>
+								<DropdownMenu
+									triggerLabel="More free access actions"
+									items={freeAccessMenu(grant)}
+								/>
+							</div>
+						{/snippet}
+					</DataTable>
+				{/if}
+			</SectionBlock>
 
 			<SectionBlock
 				title="Charges"
@@ -612,7 +699,7 @@
 <OwnerReconfirmDialog
 	bind:open={reconfirmOpen}
 	title="Confirm it's you"
-	description="Refunds, cancellations, payment corrections, and paid-through changes need your password each time."
+	description="Refunds, cancellations, payment corrections, paid-through changes, and free access changes need your password each time."
 	confirmLabel="Continue"
 	onConfirm={confirmStepUp}
 />
@@ -687,6 +774,17 @@
 		max-width: 180px;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.billing-workspace__reason {
+		max-width: 320px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.billing-workspace__secondary {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
 		white-space: nowrap;
 	}
 	.billing-workspace__muted strong {

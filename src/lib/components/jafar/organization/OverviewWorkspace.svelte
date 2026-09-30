@@ -189,39 +189,31 @@
 							class="organization-detail__card-icon organization-detail__card-icon--{access
 								.organization.lifecycle_status === 'active'
 								? 'success'
-								: access.organization.lifecycle_status === 'pending_setup'
-									? 'warning'
-									: 'critical'}"
+								: 'critical'}"
 						>
 							{@html access.organization.lifecycle_status === 'active'
 								? checkIcon
-								: access.organization.lifecycle_status === 'pending_setup'
-									? alertIcon
-									: access.organization.lifecycle_status === 'pending_closure'
-										? clockIcon
-										: lockIcon}
+								: access.organization.lifecycle_status === 'pending_closure'
+									? clockIcon
+									: lockIcon}
 						</div>
 						<div>
 							<p class="organization-detail__card-label">Lifecycle</p>
 							<h3>
-								{access.organization.lifecycle_status === 'pending_setup'
-									? 'Needs review'
-									: access.organization.lifecycle_status === 'pending_closure'
-										? 'Closing'
-										: access.organization.lifecycle_status === 'closed'
-											? 'Closed'
-											: access.organization.lifecycle_status}
+								{access.organization.lifecycle_status === 'pending_closure'
+									? 'Closing'
+									: access.organization.lifecycle_status === 'closed'
+										? 'Closed'
+										: access.organization.lifecycle_status}
 							</h3>
 							<p>
 								{access.organization.lifecycle_status === 'suspended'
 									? 'New contractor actions are paused while records stay preserved.'
-									: access.organization.lifecycle_status === 'pending_setup'
-										? 'This legacy organization predates paid onboarding and needs a one-time review.'
-										: access.organization.lifecycle_status === 'pending_closure'
-											? 'Contractor access is blocked. Restore before the deadline or it deletes automatically.'
-											: access.organization.lifecycle_status === 'closed'
-												? 'This organization has been permanently deleted.'
-												: 'Commercial access is currently allowed.'}
+									: access.organization.lifecycle_status === 'pending_closure'
+										? 'Contractor access is blocked. Restore before the deadline or it deletes automatically.'
+										: access.organization.lifecycle_status === 'closed'
+											? 'This organization has been permanently deleted.'
+											: 'Commercial access is currently allowed.'}
 							</p>
 						</div>
 					</Card>
@@ -232,10 +224,7 @@
 						</div>
 						<div>
 							<p class="organization-detail__card-label">Next safe action</p>
-							{#if access.organization.lifecycle_status === 'pending_setup'}
-								<h3>One-time legacy review</h3>
-								<p>Open Activity for the one-time review checklist and lifecycle controls.</p>
-							{:else if access.organization.lifecycle_status === 'pending_closure'}
+							{#if access.organization.lifecycle_status === 'pending_closure'}
 								<h3>Closing organization</h3>
 								<p>
 									Restore before the deadline shown above, or let the countdown finish and delete

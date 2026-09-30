@@ -12,8 +12,8 @@ select plan(17);
 -- Shared tenant. One org, one client, one contact method the processor intents can reference.
 -- ---------------------------------------------------------------------------------------------------
 
-insert into public.organizations (id, name, slug)
-values ('a1000000-0000-4000-8000-000000000001', 'R1 Test Org', 'r1-return-path-test');
+insert into public.organizations (id, name, slug, lifecycle_status)
+values ('a1000000-0000-4000-8000-000000000001', 'R1 Test Org', 'r1-return-path-test', 'active');
 
 insert into public.clients (id, organization_id, display_name)
 values ('a1000000-0000-4000-8000-000000000002',

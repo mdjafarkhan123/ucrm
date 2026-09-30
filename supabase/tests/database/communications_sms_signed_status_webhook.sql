@@ -13,8 +13,8 @@ select plan(21);
 -- Shared tenant: one org, one client, one contact method the SMS intents can reference.
 -- ---------------------------------------------------------------------------------------------------
 
-insert into public.organizations (id, name, slug)
-values ('b5000000-0000-4000-8000-000000000001', 'Stage 5A Test Org', 'stage-5a-status-test');
+insert into public.organizations (id, name, slug, lifecycle_status)
+values ('b5000000-0000-4000-8000-000000000001', 'Stage 5A Test Org', 'stage-5a-status-test', 'active');
 
 insert into public.clients (id, organization_id, display_name)
 values ('b5000000-0000-4000-8000-000000000002',
