@@ -132,6 +132,10 @@ describe('/api/jafar/packages/[packageId]/draft', () => {
 		client({ data: { deleted: true, package_removed: true }, error: null });
 		const response = await DELETE(event('DELETE', { edition_id: editionId, revision: 1 }));
 		expect(await response.json()).toEqual({ package_removed: true });
+		expect(mockedClient.mock.results[0].value.rpc).toHaveBeenCalledWith(
+			'delete_package_draft',
+			expect.objectContaining({ actor_owner_email: 'owner@example.com' })
+		);
 	});
 
 	it('refuses to delete a draft that changed in another tab', async () => {

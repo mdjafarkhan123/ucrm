@@ -93,7 +93,8 @@ export const PATCH: RequestHandler = async (event) => {
 };
 
 export const DELETE: RequestHandler = async (event) => {
-	if (!(await getOwnerSession(event))) return ownerUnauthorized();
+	const session = await getOwnerSession(event);
+	if (!session) return ownerUnauthorized();
 	const parsedId = packageIdSchema.safeParse(event.params.packageId);
 	if (!parsedId.success)
 		return json({ error: 'The package identifier is invalid.' }, { status: 422 });
@@ -106,7 +107,8 @@ export const DELETE: RequestHandler = async (event) => {
 	const { data, error } = await getOwnerSupabaseClient().rpc('delete_package_draft', {
 		target_package_id: parsedId.data,
 		draft_edition_id: parsed.data.edition_id,
-		loaded_revision: parsed.data.revision
+		loaded_revision: parsed.data.revision,
+		actor_owner_email: session.email
 	});
 	if (error) return failed(error, 'delete');
 	const result = data as { deleted: boolean; package_removed?: boolean; draft?: unknown };

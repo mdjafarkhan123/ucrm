@@ -113,3 +113,20 @@ export function packageFieldErrors(error: z.ZodError) {
 		})
 	);
 }
+
+// Package builder P7: publishing names the exact draft and revision Jafar reviewed.
+export const publishPackageDraftSchema = z.object(draftRevisionSchema);
+
+// Package builder P7: catalog actions change the package, never an edition's terms.
+export const packageCatalogActionSchema = z.discriminatedUnion('action', [
+	z.object({ action: z.literal('set_visibility'), visibility: z.enum(['public', 'private']) }),
+	z.object({ action: z.literal('move'), direction: z.enum(['up', 'down']) }),
+	z.object({ action: z.literal('archive') }),
+	z.object({ action: z.literal('restore') }),
+	z.object({
+		action: z.literal('confirm_website'),
+		pending_since: z.iso.datetime({ offset: true })
+	})
+]);
+
+export type PackageCatalogAction = z.infer<typeof packageCatalogActionSchema>;
