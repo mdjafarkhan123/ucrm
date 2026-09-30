@@ -1,6 +1,8 @@
 <script lang="ts">
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import { formatUsd } from '$lib/jafar/packages';
 	import {
+		offerHeadline,
 		priceParts,
 		type BillingInterval,
 		type PublicPackage
@@ -27,6 +29,8 @@
 	} = $props();
 
 	const price = $derived(priceParts(pkg, interval));
+	// P11b: an introductory offer leads with the intro price and says plainly what follows it.
+	const offer = $derived(pkg.offers[interval]);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -44,9 +48,22 @@
 			{#if selected}<span class="package-card__selected">Selected</span>{/if}
 		</span>
 		<span class="package-card__price">
-			<strong>{price.amount}</strong>
+			{#if offer}
+				<strong>{formatUsd(offer.intro_price_usd_cents)}</strong>
+				<s class="package-card__normal"
+					><span class="package-card__hidden">Normally </span>{price.amount}</s
+				>
+			{:else}
+				<strong>{price.amount}</strong>
+			{/if}
 			<span>{price.per}</span>
 		</span>
+		{#if offer}
+			<span class="package-card__offer">
+				<span class="package-card__offer-name">{offerHeadline(offer)}</span>
+				<span class="package-card__offer-then">Then {price.amount} {price.per}</span>
+			</span>
+		{/if}
 		{#if interval !== wanted}
 			<span class="package-card__interval-note">
 				Only offered {interval === 'month' ? 'monthly' : 'yearly'}
@@ -147,6 +164,40 @@
 				color: var(--color-text--secondary);
 				font-size: var(--typography--fontSize-small);
 			}
+		}
+
+		&__normal {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-base);
+		}
+
+		&__hidden {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+			white-space: nowrap;
+		}
+
+		&__offer {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--space-small);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__offer-name {
+			padding: var(--space-smallest) var(--space-small);
+			border-radius: var(--radius-small);
+			color: var(--color-success--onSurface);
+			background: var(--color-success--surface);
+			font-weight: 700;
+		}
+
+		&__offer-then {
+			color: var(--color-text--secondary);
 		}
 
 		&__interval-note {

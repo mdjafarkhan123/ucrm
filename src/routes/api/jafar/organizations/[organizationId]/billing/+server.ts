@@ -149,7 +149,10 @@ function runCommand(organizationId: string, email: string, command: Organization
 				expected_effective_date: command.expected_effective_date,
 				expected_credit_usd_cents: command.expected_credit_usd_cents,
 				expected_charge_usd_cents: command.expected_charge_usd_cents,
-				reason: command.reason
+				reason: command.reason,
+				target_offer_id: command.offer_id ?? undefined,
+				offer_code: command.offer_code ?? undefined,
+				keep_offer: command.keep_offer
 			});
 		case 'cancel_package_change':
 			return client.rpc('cancel_scheduled_package_change', {

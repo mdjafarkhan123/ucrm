@@ -96,15 +96,20 @@ export const POST: RequestHandler = async (event) => {
 
 		// Refuse before creating a login account when something stops activation or the reviewed dates
 		// are stale; the database step checks both again.
+		const offerChoice = {
+			offer_decision: parsedBody.data.offer_decision ?? undefined,
+			offer_code: parsedBody.data.offer_code ?? undefined
+		};
 		const { data: preview, error: previewError } = await client.rpc(
 			'owner_onboarding_activation_preview',
-			{ target_application_id: applicationId }
+			{ target_application_id: applicationId, ...offerChoice }
 		);
 		if (previewError) throw previewError;
 		const activation = preview as {
 			problems: string[];
 			covered_from: string;
 			covered_through: string;
+			first_charge_usd_cents: number | null;
 		} | null;
 		if (!activation) return json({ error: 'Prospect was not found.' }, { status: 404 });
 		if (activation.problems.length > 0)
@@ -117,6 +122,15 @@ export const POST: RequestHandler = async (event) => {
 				{
 					error:
 						'The dates to cover have changed since you reviewed them. Review them and try again.',
+					reason: 'dates_changed'
+				},
+				{ status: 409 }
+			);
+		const expectedFirstCharge = parsedBody.data.expected_first_charge_usd_cents ?? null;
+		if (expectedFirstCharge !== null && activation.first_charge_usd_cents !== expectedFirstCharge)
+			return json(
+				{
+					error: 'The first charge has changed since you reviewed it. Review it and try again.',
 					reason: 'dates_changed'
 				},
 				{ status: 409 }
@@ -209,7 +223,9 @@ export const POST: RequestHandler = async (event) => {
 			target_administrator_user_id: administratorUserId,
 			target_actor_owner_email: session.email,
 			expected_covered_from: parsedBody.data.covered_from,
-			expected_covered_through: parsedBody.data.covered_through
+			expected_covered_through: parsedBody.data.covered_through,
+			...offerChoice,
+			expected_first_charge_usd_cents: expectedFirstCharge ?? undefined
 		});
 
 		if (rpcError) {

@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import {
+		createMutation,
+		createQuery,
+		keepPreviousData,
+		useQueryClient
+	} from '@tanstack/svelte-query';
 	import { tick } from 'svelte';
 	import { afterNavigate, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -24,11 +29,20 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
+	import Input from '$lib/components/ui/Input.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import { fetchPackages } from '$lib/jafar/packages';
+	import {
+		offerDiscount,
+		offerHeadline,
+		offerLength,
+		offerPriceSentence,
+		type ShownOffer
+	} from '$lib/packages/public-package';
+	import type { AgreementOfferTerms } from '$lib/components/jafar/organization/types';
 	import {
 		formatCalendarDate,
 		formatUsd,
@@ -137,6 +151,17 @@
 		covered_from: string;
 		covered_through: string;
 		next_renewal: string;
+		first_charge_usd_cents: number | null;
+		// P11b: the offer activation records. `source` is the offer the application showed, a typed code,
+		// or 'dropped' when Jafar chose the normal price; `blocking` means he still has to choose.
+		offer: {
+			source: 'shown' | 'code' | 'dropped' | null;
+			offer: { name: string; code?: string | null } | null;
+			problems: { code: string; message: string; availability: boolean }[];
+			blocking: boolean;
+			honored: boolean;
+			terms: AgreementOfferTerms | null;
+		};
 		problems: string[];
 	};
 	type PaymentReversal = {
@@ -232,6 +257,10 @@
 	let confirmingNotProceeding = $state(false);
 	let confirmingPayment = $state(false);
 	let confirmingProvision = $state(false);
+	// P11b: Jafar's answer when the offer the customer was shown has closed, and any code he typed.
+	let activationOfferDecision = $state<'honor' | 'drop' | null>(null);
+	let activationCodeText = $state('');
+	let activationCode = $state('');
 	let confirmingReversal = $state(false);
 	let changingPackage = $state(false);
 	let packageForm = $state<PackageCorrectionForm>({
@@ -270,7 +299,7 @@
 	}
 
 	function emptyPaymentForm(detail?: ProspectDetail): PaymentConfirmationForm {
-		const agreed = detail ? packagePriceCents(detail.package_snapshot) : null;
+		const agreed = detail ? firstPaymentCents(detail.package_snapshot) : null;
 		return {
 			received_on: localToday(),
 			amountDollars: agreed === null ? '' : (agreed / 100).toFixed(2),
@@ -337,6 +366,9 @@
 		confirmingPayment = false;
 		confirmingReversal = false;
 		changingPackage = false;
+		activationOfferDecision = null;
+		activationCodeText = '';
+		activationCode = '';
 		confirmingProvision = true;
 	}
 
@@ -380,8 +412,14 @@
 		});
 	}
 
-	async function loadActivation(prospectId: string) {
-		const response = await fetch(`/api/jafar/prospects/${prospectId}/activation`);
+	async function loadActivation(
+		prospectId: string,
+		offer: { decision: 'honor' | 'drop' | null; code: string } = { decision: null, code: '' }
+	) {
+		const params = new URLSearchParams();
+		if (offer.decision) params.set('offer_decision', offer.decision);
+		if (offer.code) params.set('offer_code', offer.code);
+		const response = await fetch(`/api/jafar/prospects/${prospectId}/activation?${params}`);
 		const result = (await response.json()) as { preview?: ActivationPreview; error?: string };
 		if (!response.ok || !result.preview)
 			throw new Error(result.error ?? 'The activation could not be previewed.');
@@ -466,11 +504,24 @@
 			: published.yearly_price_usd_cents;
 	}
 
+	const activationOfferChoice = $derived({
+		decision: activationOfferDecision,
+		code: activationCode
+	});
 	const activationQuery = createQuery(() => ({
-		queryKey: jafarProspectActivationKey(selectedProspectId),
-		queryFn: () => loadActivation(selectedProspectId ?? ''),
+		// The plain preview keeps the prefetched key; an offer answer or code adds to it.
+		queryKey:
+			activationOfferChoice.decision || activationOfferChoice.code
+				? [
+						...jafarProspectActivationKey(selectedProspectId),
+						activationOfferChoice.decision,
+						activationOfferChoice.code
+					]
+				: jafarProspectActivationKey(selectedProspectId),
+		queryFn: () => loadActivation(selectedProspectId ?? '', activationOfferChoice),
 		enabled: confirmingProvision && Boolean(selectedProspectId),
-		staleTime: 30_000
+		staleTime: 30_000,
+		placeholderData: keepPreviousData
 	}));
 	const activation = $derived(activationQuery.data ?? null);
 
@@ -650,7 +701,10 @@
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({
 					covered_from: activation.covered_from,
-					covered_through: activation.covered_through
+					covered_through: activation.covered_through,
+					offer_decision: activationOfferChoice.decision,
+					offer_code: activationOfferChoice.code || null,
+					expected_first_charge_usd_cents: activation.first_charge_usd_cents
 				})
 			});
 			const result = (await response.json()) as ActionResponse & { setup_email_sent?: boolean };
@@ -821,6 +875,19 @@
 		return typeof cents === 'number' ? cents : null;
 	}
 
+	// P11b: the offer the application showed, when there was one.
+	function snapshotOffer(snapshot: unknown) {
+		const offer = asRecord(asRecord(snapshot)?.offer);
+		return offer && typeof offer.intro_price_usd_cents === 'number'
+			? (offer as unknown as ShownOffer)
+			: null;
+	}
+
+	// The first payment the customer was asked for: the intro price when an offer applies.
+	function firstPaymentCents(snapshot: unknown) {
+		return snapshotOffer(snapshot)?.intro_price_usd_cents ?? packagePriceCents(snapshot);
+	}
+
 	function packagePrice(snapshot: unknown) {
 		const cents = packagePriceCents(snapshot);
 		if (cents === null) return 'Price not recorded';
@@ -866,7 +933,7 @@
 
 	// How the typed amount compares with the agreed first payment: short, exact, or with credit left.
 	function paymentAmountNote(detail: ProspectDetail) {
-		const agreed = packagePriceCents(detail.package_snapshot);
+		const agreed = firstPaymentCents(detail.package_snapshot);
 		const entered = parseUsdCents(paymentForm.amountDollars);
 		if (agreed === null || entered === null) return null;
 		if (entered < agreed)
@@ -888,6 +955,8 @@
 
 	// "$1,290.00 a year" — price and billing together, as the application froze them.
 	function packageTerms(snapshot: unknown) {
+		const offer = snapshotOffer(snapshot);
+		if (offer) return offerPriceSentence(offer);
 		return `${packagePrice(snapshot)} ${intervalWord(asRecord(snapshot)?.billing_period)}`;
 	}
 
@@ -1392,9 +1461,13 @@
 							}}
 						>
 							<p class="prospects__payment-price-note">
-								Agreed first payment: <strong>{packageTerms(detail.package_snapshot)}</strong>
-								for {packageName(detail.package_snapshot)}. Record the money once the full amount
-								has arrived; anything extra stays as credit.
+								Agreed first payment:
+								<strong>{formatUsd(firstPaymentCents(detail.package_snapshot) ?? 0)}</strong>
+								for {packageName(
+									detail.package_snapshot
+								)}{#if snapshotOffer(detail.package_snapshot)}
+									with {offerHeadline(snapshotOffer(detail.package_snapshot)!)}{/if}. Record the
+								money once the full amount has arrived; anything extra stays as credit.
 							</p>
 							<div class="prospects__form-grid">
 								<label
@@ -1614,6 +1687,86 @@
 											{activation.agreed_price_usd_cents === null
 												? 'No agreed price'
 												: `${formatUsd(activation.agreed_price_usd_cents)} ${intervalWord(activation.billing_interval)}`}
+										</dd>
+									</div>
+									<div>
+										<dt>Intro offer</dt>
+										<dd>
+											{#if activation.offer.terms}
+												{activation.offer.terms.name}: {offerDiscount(activation.offer.terms)}
+												{offerLength(
+													activation.offer.terms.billing_interval,
+													activation.offer.terms.periods
+												)}
+												<small
+													>{formatUsd(activation.offer.terms.intro_price_usd_cents)}
+													{intervalWord(activation.offer.terms.billing_interval)}, then
+													{formatUsd(activation.offer.terms.normal_price_usd_cents)} from
+													{formatCalendarDate(
+														activation.offer.terms.ends_before
+													)}.{#if activation.offer.honored}
+														Honored although it has closed.{/if}</small
+												>
+											{:else if activation.offer.source === 'dropped'}
+												None: activating at the normal price.
+											{:else}
+												None
+											{/if}
+											{#if activation.offer.source === 'shown' && (activation.offer.problems.length > 0 || activationOfferDecision)}
+												<SegmentedControl
+													label="The offer they were shown has closed"
+													size="small"
+													bind:value={
+														() => activationOfferDecision ?? '',
+														(value) => (activationOfferDecision = value as 'honor' | 'drop')
+													}
+													options={[
+														{ value: 'honor', label: 'Honor the offer' },
+														{ value: 'drop', label: 'Normal price' }
+													]}
+												/>
+											{:else if activation.offer.source === 'dropped'}
+												<Button
+													size="small"
+													variant="tertiary"
+													onclick={() => (activationOfferDecision = null)}
+													>Use the offer they were shown</Button
+												>
+											{/if}
+											{#if activation.offer.source !== 'shown'}
+												<form
+													class="prospects__offer-code"
+													onsubmit={(event) => {
+														event.preventDefault();
+														activationCode = activationCodeText.trim().toUpperCase();
+													}}
+												>
+													<Input
+														id="activation-offer-code"
+														label="Offer code"
+														size="small"
+														bind:value={
+															() => activationCodeText,
+															(value) => (activationCodeText = String(value ?? ''))
+														}
+													/>
+													<Button
+														type="submit"
+														size="small"
+														variant="secondary"
+														disabled={activationCodeText.trim().toUpperCase() === activationCode}
+														>{activationCodeText.trim() ? 'Apply code' : 'Remove code'}</Button
+													>
+												</form>
+											{/if}
+										</dd>
+									</div>
+									<div>
+										<dt>First charge</dt>
+										<dd>
+											{activation.first_charge_usd_cents === null
+												? '—'
+												: formatUsd(activation.first_charge_usd_cents)}
 										</dd>
 									</div>
 									{#if activation.payment}
@@ -2128,6 +2281,19 @@
 	}
 
 	// The activation review: label and value side by side, one row each, so the dates read as a list.
+	.prospects__offer-code {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: var(--space-small);
+		margin-top: var(--space-small);
+
+		> :global(:first-child) {
+			flex: 1;
+			min-width: 0;
+		}
+	}
+
 	.prospects__activation {
 		display: grid;
 		gap: var(--space-small);

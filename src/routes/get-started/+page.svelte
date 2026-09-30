@@ -13,6 +13,8 @@
 	import PackageCard from '$lib/components/packages/PackageCard.svelte';
 	import PackageDetails from '$lib/components/packages/PackageDetails.svelte';
 	import {
+		offerHeadline,
+		offerPriceSentence,
 		offeredInterval,
 		priceSentence,
 		type BillingInterval,
@@ -511,11 +513,22 @@
 							<span>Package</span>
 							<strong>{selected?.name ?? 'Not selected'}</strong>
 							{#if selected}
-								<p>
-									{priceSentence(selected, selectedInterval)} · billed {selectedInterval === 'month'
-										? 'monthly'
-										: 'yearly'}
-								</p>
+								{@const offer = selected.offers[selectedInterval]}
+								{#if offer}
+									<p class="get-started__review-offer">{offerHeadline(offer)}</p>
+									<p>
+										{offerPriceSentence(offer)} · billed {selectedInterval === 'month'
+											? 'monthly'
+											: 'yearly'}
+									</p>
+								{:else}
+									<p>
+										{priceSentence(selected, selectedInterval)} · billed {selectedInterval ===
+										'month'
+											? 'monthly'
+											: 'yearly'}
+									</p>
+								{/if}
 								<button
 									type="button"
 									class="get-started__review-link"
@@ -601,7 +614,11 @@
 	<Dialog open title={pkg.name} size="large" onClose={() => (detailsFor = null)}>
 		<div class="get-started__details">
 			<p class="get-started__details-lead">
-				{#if pkg.promise}{pkg.promise}<br />{/if}<strong>{priceSentence(pkg, interval)}</strong>
+				{#if pkg.promise}{pkg.promise}<br />{/if}<strong
+					>{pkg.offers[interval]
+						? offerPriceSentence(pkg.offers[interval])
+						: priceSentence(pkg, interval)}</strong
+				>
 			</p>
 			<PackageDetails {pkg} {interval} />
 			<div class="get-started__details-actions">
@@ -875,6 +892,14 @@
 				color: var(--color-text--secondary);
 				font-size: var(--typography--fontSize-small);
 			}
+		}
+
+		&__review-offer {
+			padding: var(--space-smallest) var(--space-small);
+			border-radius: var(--radius-small);
+			color: var(--color-success--onSurface) !important;
+			background: var(--color-success--surface);
+			font-weight: 700;
 		}
 
 		&__review-edit,

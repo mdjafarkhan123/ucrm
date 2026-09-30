@@ -1,3 +1,5 @@
+import type { ShownOffer } from '$lib/packages/public-package';
+
 export type EffectiveAccess = {
 	organization: { id: string; name: string; slug: string; lifecycle_status: string };
 	billing: {
@@ -161,6 +163,7 @@ export type BillingUpcomingAgreement = {
 	billing_interval: 'month' | 'year';
 	agreed_price_usd_cents: number;
 	effective_from: string;
+	offer_terms: AgreementOfferTerms | null;
 	// What is over the scheduled package's limits right now (P8b).
 	over_limits: PackageOverLimit[];
 };
@@ -180,7 +183,7 @@ export type OrganizationBilling = {
 		package_slug: string;
 		billing_interval: 'month' | 'year';
 		agreed_price_usd_cents: number;
-		offer_terms: unknown;
+		offer_terms: AgreementOfferTerms | null;
 		effective_from: string;
 	} | null;
 	upcoming_agreements: BillingUpcomingAgreement[];
@@ -264,6 +267,9 @@ export type BillingCommandInput =
 			expected_credit_usd_cents: number;
 			expected_charge_usd_cents: number;
 			reason: string;
+			offer_id: string | null;
+			offer_code: string | null;
+			keep_offer: boolean;
 	  }
 	| { action: 'cancel_package_change'; agreement_id: string; reason: string }
 	| {
@@ -295,6 +301,25 @@ export type PackageAllowanceSide = {
 	state: 'numeric' | 'unlimited' | 'not_included';
 	value: number | null;
 };
+/**
+ * Package builder P11a/P11b: the offer frozen onto an agreement when it was claimed. Service periods that
+ * start from `starts_on` up to the day before `ends_before` cost the intro price.
+ */
+export type AgreementOfferTerms = {
+	offer_id: string;
+	name: string;
+	code: string | null;
+	discount_kind: 'percent' | 'fixed';
+	percent_off: number | null;
+	amount_off_usd_cents: number | null;
+	billing_interval: 'month' | 'year';
+	periods: number;
+	starts_on: string;
+	ends_before: string;
+	normal_price_usd_cents: number;
+	intro_price_usd_cents: number;
+};
+
 export type PackageChangePreview = {
 	organization_id: string;
 	commercial_timezone: string;
@@ -311,6 +336,7 @@ export type PackageChangePreview = {
 		package_slug: string;
 		billing_interval: 'month' | 'year';
 		agreed_price_usd_cents: number;
+		offer_terms: AgreementOfferTerms | null;
 	} | null;
 	proposed: {
 		edition_id: string;
@@ -361,6 +387,15 @@ export type PackageChangePreview = {
 			amount_usd_cents: number;
 		}[];
 		next_charge: { period_start: string; period_end: string; amount_usd_cents: number } | null;
+	};
+	offer: {
+		/** The offer the change would record: a new one, or the running one kept. */
+		proposed: AgreementOfferTerms | null;
+		kept: boolean;
+		/** Whether the running offer can be kept: it lasts past the change and billing stays the same. */
+		can_keep: boolean;
+		/** Automatic offers this customer can take on the proposed package and billing. */
+		available: ShownOffer[];
 	};
 	blockers: PackageChangeBlocker[];
 };

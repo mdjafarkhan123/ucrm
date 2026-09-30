@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { createQuery } from '@tanstack/svelte-query';
+	import { createQuery, keepPreviousData } from '@tanstack/svelte-query';
 	import minusIcon from '@tabler/icons/outline/minus.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import type {
@@ -13,12 +13,15 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Checkbox from '$lib/components/ui/Checkbox.svelte';
+	import Input from '$lib/components/ui/Input.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { fetchPackages } from '$lib/jafar/packages';
+	import { offerDiscount, offerLength } from '$lib/packages/public-package';
 	import { jafarPackageChangePreviewKey, jafarPackagesKey } from '$lib/jafar/query-keys';
 	import { formatCalendarDate, formatPeriod, formatUsd } from './format';
 
@@ -66,6 +69,29 @@
 	let timing = $state<PackageChangeTiming>(opening.timing);
 	let reason = $state('');
 	let reasonError = $state('');
+	// P11b: no offer, an automatic offer by id, or 'code' for one Jafar types. Keeping the running offer is
+	// a separate tick box, off by default (Jafar, 2026-09-30).
+	let offerChoice = $state('');
+	let codeText = $state('');
+	let appliedCode = $state('');
+	let keepOffer = $state(false);
+	const offerRequest = $derived({
+		offerId: offerChoice && offerChoice !== 'code' ? offerChoice : null,
+		code: offerChoice === 'code' && appliedCode ? appliedCode : null,
+		keep: keepOffer
+	});
+	const runningOffer = $derived(
+		billing.current_agreement?.offer_terms &&
+			billing.current_agreement.offer_terms.ends_before > billing.today
+			? billing.current_agreement.offer_terms
+			: null
+	);
+
+	function resetOffer() {
+		offerChoice = '';
+		codeText = '';
+		appliedCode = '';
+	}
 
 	const chosen = $derived(choices.find((pkg) => pkg.id === packageId) ?? null);
 	const chosenPrice = (period: 'month' | 'year') =>
@@ -82,7 +108,8 @@
 			organizationId,
 			chosen?.published?.edition_id ?? '',
 			interval,
-			timing
+			timing,
+			offerRequest
 		),
 		queryFn: async (): Promise<PackageChangePreview> => {
 			const params = new URLSearchParams({
@@ -90,6 +117,9 @@
 				billing_interval: interval,
 				timing
 			});
+			if (offerRequest.offerId) params.set('offer_id', offerRequest.offerId);
+			if (offerRequest.code) params.set('offer_code', offerRequest.code);
+			if (offerRequest.keep) params.set('keep_offer', 'true');
 			const response = await fetch(
 				`/api/jafar/organizations/${organizationId}/billing/change-preview?${params}`
 			);
@@ -99,7 +129,9 @@
 			return result.preview;
 		},
 		enabled: Boolean(chosen?.published),
-		staleTime: 0
+		staleTime: 0,
+		// Changing the offer keeps the comparison on screen while the new figures load.
+		placeholderData: keepPreviousData
 	}));
 	const preview = $derived(previewQuery.data ?? null);
 
@@ -137,6 +169,9 @@
 	function perInterval(value: 'month' | 'year') {
 		return value === 'month' ? 'a month' : 'a year';
 	}
+	function offerSummary(terms: NonNullable<PackageChangePreview['offer']['proposed']>) {
+		return `${offerDiscount(terms)} ${offerLength(terms.billing_interval, terms.periods)}`;
+	}
 
 	function submit(event: SubmitEvent) {
 		event.preventDefault();
@@ -154,7 +189,10 @@
 			expected_effective_date: preview.effective_date,
 			expected_credit_usd_cents: preview.money.credit_usd_cents,
 			expected_charge_usd_cents: preview.money.new_charge?.amount_usd_cents ?? 0,
-			reason: reason.trim()
+			reason: reason.trim(),
+			offer_id: offerRequest.offerId,
+			offer_code: offerRequest.code,
+			keep_offer: offerRequest.keep
 		});
 	}
 </script>
@@ -175,12 +213,19 @@
 				onchange={() => {
 					if (chosen && chosenPrice(interval) === null)
 						interval = interval === 'month' ? 'year' : 'month';
+					resetOffer();
 				}}
 			/>
 			<SegmentedControl
 				label="Billing"
 				fullWidth
-				bind:value={() => interval, (value) => (interval = value as 'month' | 'year')}
+				bind:value={
+					() => interval,
+					(value) => {
+						interval = value as 'month' | 'year';
+						resetOffer();
+					}
+				}
 				options={[
 					{
 						value: 'month',
@@ -365,6 +410,80 @@
 							</ul>
 						</div>
 					</Banner>
+				{/if}
+			</section>
+
+			<section class="package-change__block" aria-labelledby="package-change-offer">
+				<h4 id="package-change-offer">Intro offer</h4>
+				{#if runningOffer}
+					<Checkbox
+						id="package-change-keep-offer"
+						label={`Keep the current offer: ${offerSummary(runningOffer)}`}
+						description={preview.offer.can_keep || keepOffer
+							? `It keeps its end date: the normal price starts ${formatCalendarDate(runningOffer.ends_before)}. The discount applies to the new price.`
+							: 'Only possible when the billing stays the same and the offer is still running on the day the change starts.'}
+						disabled={!preview.offer.can_keep && !keepOffer}
+						bind:checked={keepOffer}
+						onchange={(checked) => checked && resetOffer()}
+					/>
+				{/if}
+				{#if !keepOffer}
+					<div class="package-change__offer-choice">
+						<Select
+							id="package-change-offer-choice"
+							label="Add an offer"
+							bind:value={
+								() => offerChoice,
+								(value) => {
+									offerChoice = value;
+									codeText = '';
+									appliedCode = '';
+								}
+							}
+							options={[
+								{ value: '', label: 'No offer' },
+								...preview.offer.available.map((offer) => ({
+									value: offer.id,
+									label: `${offer.name} · ${offerDiscount(offer)} ${offerLength(offer.billing_interval, offer.periods)}`
+								})),
+								{ value: 'code', label: 'Enter a code…' }
+							]}
+						/>
+						{#if offerChoice === 'code'}
+							<div class="package-change__code">
+								<Input
+									id="package-change-offer-code"
+									label="Offer code"
+									bind:value={() => codeText, (value) => (codeText = String(value).toUpperCase())}
+								/>
+								<Button
+									type="button"
+									variant="secondary"
+									disabled={!codeText.trim() || codeText.trim() === appliedCode}
+									onclick={() => (appliedCode = codeText.trim())}>Apply</Button
+								>
+							</div>
+						{/if}
+					</div>
+				{/if}
+				{#if preview.offer.proposed}
+					{@const terms = preview.offer.proposed}
+					<p class="package-change__offer">
+						<strong>{terms.name}: {offerSummary(terms)}.</strong>
+						{formatUsd(terms.intro_price_usd_cents)}
+						{perInterval(terms.billing_interval)} from {formatCalendarDate(terms.starts_on)}, then
+						{formatUsd(terms.normal_price_usd_cents)}
+						{perInterval(terms.billing_interval)} from {formatCalendarDate(terms.ends_before)}.
+					</p>
+				{:else if runningOffer && !keepOffer}
+					<p class="package-change__hint">
+						The current offer stops with this change, so the new package is charged at its normal
+						price.
+					</p>
+				{:else if preview.offer.available.length === 0 && offerChoice === ''}
+					<p class="package-change__hint">
+						No automatic offer fits this customer, package, and billing. You can still enter a code.
+					</p>
 				{/if}
 			</section>
 
@@ -667,6 +786,28 @@
 		color: var(--color-text--secondary);
 		text-decoration: line-through;
 	}
+	.package-change__offer-choice {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: end;
+		gap: var(--space-base);
+	}
+	.package-change__code {
+		display: flex;
+		align-items: flex-end;
+		gap: var(--space-small);
+	}
+	.package-change__code > :global(:first-child) {
+		flex: 1;
+	}
+	.package-change__offer {
+		padding: var(--space-small) var(--space-base);
+		border-radius: var(--radius-base);
+		color: var(--color-success--onSurface);
+		background: var(--color-success--surface);
+		font-size: var(--typography--fontSize-small);
+		line-height: var(--typography--lineHeight-base);
+	}
 	.package-change__error {
 		color: var(--color-critical);
 		font-size: var(--typography--fontSize-small);
@@ -678,6 +819,7 @@
 	}
 	@media (max-width: 767px) {
 		.package-change__choices,
+		.package-change__offer-choice,
 		.package-change__compare {
 			grid-template-columns: 1fr;
 		}

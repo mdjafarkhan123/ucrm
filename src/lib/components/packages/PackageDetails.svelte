@@ -9,6 +9,8 @@
 	import alertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 	import {
 		allowanceSentence,
+		offerHeadline,
+		offerPriceSentence,
 		priceSentence,
 		yearlySavingPercent,
 		type BillingInterval,
@@ -105,10 +107,22 @@
 	<SectionBlock title="Price and payment" icon={creditCardIcon} level={3}>
 		<ul class="package-details__prices">
 			{#each prices as option (option)}
+				{@const offer = pkg.offers[option]}
 				<li class:package-details__price--chosen={option === interval}>
 					<span>{option === 'month' ? 'Monthly' : 'Yearly'}</span>
 					<strong>{priceSentence(pkg, option)}</strong>
 					{#if option === 'year' && saving}<em>Save {saving}% compared with monthly</em>{/if}
+					{#if offer}
+						<p class="package-details__offer">
+							<b>{offerHeadline(offer)}</b>
+							{offerPriceSentence(offer)}.{#if offer.claim_ends_at}
+								Join by {new Date(offer.claim_ends_at).toLocaleDateString('en-US', {
+									month: 'long',
+									day: 'numeric',
+									year: 'numeric'
+								})} to get it.{/if}
+						</p>
+					{/if}
 				</li>
 			{/each}
 		</ul>
@@ -222,6 +236,18 @@
 				font-style: normal;
 				font-weight: 600;
 			}
+		}
+
+		&__offer {
+			display: grid;
+			gap: var(--space-smallest);
+			margin: var(--space-smaller) 0 0;
+			padding: var(--space-small);
+			border-radius: var(--radius-small);
+			color: var(--color-success--onSurface, var(--color-success));
+			background: var(--color-success--surface);
+			font-size: var(--typography--fontSize-small);
+			line-height: var(--typography--lineHeight-base);
 		}
 
 		&__price--chosen {

@@ -70,7 +70,24 @@ export const prospectPackageCorrectionSchema = z.object({
 });
 
 // The covered dates Jafar reviewed; activation refuses if they no longer match.
+// P11b adds the offer: honor or drop one the customer was shown that has since closed, or a code Jafar
+// typed, and the first charge he reviewed.
+const activationOfferFields = {
+	offer_decision: z.enum(['honor', 'drop']).nullish(),
+	offer_code: z
+		.string()
+		.trim()
+		.toUpperCase()
+		.max(32, 'A code is at most 32 characters.')
+		.nullish()
+		.transform((code) => code || null)
+};
+
+export const prospectActivationPreviewSchema = z.object(activationOfferFields);
+
 export const prospectActivationSchema = z.object({
 	covered_from: calendarDate,
-	covered_through: calendarDate
+	covered_through: calendarDate,
+	...activationOfferFields,
+	expected_first_charge_usd_cents: z.number().int().min(0).max(100_000_000).nullish()
 });

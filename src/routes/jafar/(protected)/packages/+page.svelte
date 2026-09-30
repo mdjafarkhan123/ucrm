@@ -25,6 +25,7 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import PackageCreateDialog from '$lib/components/jafar/packages/PackageCreateDialog.svelte';
 	import PackageWebsiteReminder from '$lib/components/jafar/packages/PackageWebsiteReminder.svelte';
+	import PackageOffersSection from '$lib/components/jafar/packages/PackageOffersSection.svelte';
 	import { jafarPackageKey, jafarPackagesKey } from '$lib/jafar/query-keys';
 	import {
 		changePackage,
@@ -282,6 +283,8 @@
 				{@render packageTable(archived, 'Archived packages')}
 			</section>
 		{/if}
+
+		<PackageOffersSection {packages} />
 	{/if}
 </main>
 

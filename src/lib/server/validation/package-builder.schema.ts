@@ -130,3 +130,116 @@ export const packageCatalogActionSchema = z.discriminatedUnion('action', [
 ]);
 
 export type PackageCatalogAction = z.infer<typeof packageCatalogActionSchema>;
+
+// Package builder P11b: Jafar's offer builder. The limits mirror save_package_offer, which re-checks them,
+// so a bad value is explained next to its field here rather than refused there.
+export const packageOfferIdSchema = z.string().uuid('The offer identifier is invalid.');
+
+export const packageOfferTermsSchema = z
+	.object({
+		name: z
+			.string()
+			.trim()
+			.min(1, 'Give the offer a name.')
+			.max(80, 'Keep the name under 80 characters.'),
+		apply_mode: z.enum(['automatic', 'code']),
+		code: z
+			.string()
+			.trim()
+			.toUpperCase()
+			.nullish()
+			.transform((code) => code || null),
+		discount_kind: z.enum(['percent', 'fixed']),
+		percent_off: z
+			.number()
+			.int('Enter a whole percentage.')
+			.min(1, 'A percentage discount is from 1 to 100.')
+			.max(100, 'A percentage discount is from 1 to 100.')
+			.nullable(),
+		amount_off_usd_cents: z
+			.number()
+			.int('Enter an amount in dollars and cents.')
+			.min(1, 'Enter the amount taken off.')
+			.max(100_000_000, 'Enter an amount under $1,000,000.')
+			.nullable(),
+		applies_to_monthly: z.boolean(),
+		applies_to_yearly: z.boolean(),
+		monthly_periods: z
+			.number()
+			.int('Enter a whole number of months.')
+			.min(1, 'Choose from 1 to 36 months.')
+			.max(36, 'Choose from 1 to 36 months.')
+			.nullable(),
+		customer_eligibility: z.enum(['new', 'existing', 'any']),
+		claim_starts_at: z.iso.datetime({ offset: true, message: 'Choose when claims open.' }),
+		claim_ends_at: z.iso.datetime({ offset: true }).nullable(),
+		redemption_cap: z
+			.number()
+			.int('Enter a whole number.')
+			.min(1, 'A cap is at least 1 customer.')
+			.max(1_000_000, 'Enter a cap under 1,000,000.')
+			.nullable(),
+		package_ids: z
+			.array(packageIdSchema)
+			.min(1, 'Choose at least one package.')
+			.max(100, 'Choose 100 packages or fewer.')
+	})
+	.superRefine((offer, ctx) => {
+		if (offer.apply_mode === 'code') {
+			if (!offer.code)
+				ctx.addIssue({ code: 'custom', path: ['code'], message: 'Give the offer a code.' });
+			else if (!/^[A-Z0-9][A-Z0-9-]{2,31}$/.test(offer.code))
+				ctx.addIssue({
+					code: 'custom',
+					path: ['code'],
+					message: 'A code is 3 to 32 letters, numbers, or dashes.'
+				});
+		}
+		if (offer.discount_kind === 'percent' && offer.percent_off === null)
+			ctx.addIssue({
+				code: 'custom',
+				path: ['percent_off'],
+				message: 'Enter the percentage taken off.'
+			});
+		if (offer.discount_kind === 'fixed' && offer.amount_off_usd_cents === null)
+			ctx.addIssue({
+				code: 'custom',
+				path: ['amount_off_usd_cents'],
+				message: 'Enter the amount taken off.'
+			});
+		if (!offer.applies_to_monthly && !offer.applies_to_yearly)
+			ctx.addIssue({
+				code: 'custom',
+				path: ['applies_to_monthly'],
+				message: 'Choose monthly billing, yearly billing, or both.'
+			});
+		if (offer.applies_to_monthly && offer.monthly_periods === null)
+			ctx.addIssue({
+				code: 'custom',
+				path: ['monthly_periods'],
+				message: 'Choose how many months the offer lasts.'
+			});
+		if (offer.claim_ends_at && Date.parse(offer.claim_ends_at) <= Date.parse(offer.claim_starts_at))
+			ctx.addIssue({
+				code: 'custom',
+				path: ['claim_ends_at'],
+				message: 'The last claim day must come after the first.'
+			});
+	});
+
+export type PackageOfferTerms = z.infer<typeof packageOfferTermsSchema>;
+
+export const createPackageOfferSchema = z.object({
+	idempotency_key: z.string().uuid('Open the dialog again and try once more.'),
+	terms: packageOfferTermsSchema
+});
+
+export const packageOfferActionSchema = z.discriminatedUnion('action', [
+	z.object({
+		action: z.literal('save'),
+		expected_revision: z.number().int().positive(),
+		terms: packageOfferTermsSchema
+	}),
+	z.object({ action: z.literal('archive') }),
+	z.object({ action: z.literal('restore') })
+]);

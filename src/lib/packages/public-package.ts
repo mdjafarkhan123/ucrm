@@ -5,6 +5,24 @@ import { formatUsd } from '$lib/jafar/packages';
 
 export type BillingInterval = 'month' | 'year';
 
+/**
+ * Package builder P11b: an introductory offer as the database shows it to a visitor or to Jafar — the
+ * discount, how many periods it covers, and the price during and after it (`package_offer_shown`).
+ */
+export type ShownOffer = {
+	id: string;
+	name: string;
+	discount_kind: 'percent' | 'fixed';
+	percent_off: number | null;
+	amount_off_usd_cents: number | null;
+	monthly_periods: number | null;
+	billing_interval: BillingInterval;
+	periods: number;
+	normal_price_usd_cents: number;
+	intro_price_usd_cents: number;
+	claim_ends_at: string | null;
+};
+
 export type PublicPackage = {
 	edition_id: string;
 	slug: string;
@@ -24,6 +42,8 @@ export type PublicPackage = {
 		unit: string;
 		resets_monthly: boolean;
 	}[];
+	/** The automatic offer a new customer gets today on each billing, if any. */
+	offers: Record<BillingInterval, ShownOffer | null>;
 };
 
 export function priceFor(pkg: PublicPackage, interval: BillingInterval) {
@@ -82,4 +102,30 @@ export function allowanceSentence(allowance: PublicPackage['allowances'][number]
 	}
 	if (allowance.unit === 'seats') return `Up to ${formatted} ${count === 1 ? one : many}`;
 	return `${formatted} ${count === 1 ? one : many}${perMonth}`;
+}
+
+/** "50% off" or "$20 off". */
+export function offerDiscount(
+	offer: Pick<ShownOffer, 'discount_kind' | 'percent_off' | 'amount_off_usd_cents'>
+) {
+	return offer.discount_kind === 'percent'
+		? `${offer.percent_off}% off`
+		: `${formatUsd(offer.amount_off_usd_cents)} off`;
+}
+
+/** "for 3 months", "for the first month", "for the first year". */
+export function offerLength(interval: BillingInterval, periods: number) {
+	if (interval === 'year') return 'for the first year';
+	return periods === 1 ? 'for the first month' : `for ${periods} months`;
+}
+
+/** "50% off for 3 months". */
+export function offerHeadline(offer: ShownOffer) {
+	return `${offerDiscount(offer)} ${offerLength(offer.billing_interval, offer.periods)}`;
+}
+
+/** "$74.50 a month for 3 months, then $149 a month" — the exact intro and later price. */
+export function offerPriceSentence(offer: ShownOffer) {
+	const per = offer.billing_interval === 'month' ? 'a month' : 'a year';
+	return `${formatUsd(offer.intro_price_usd_cents)} ${per} ${offerLength(offer.billing_interval, offer.periods)}, then ${formatUsd(offer.normal_price_usd_cents)} ${per}`;
 }

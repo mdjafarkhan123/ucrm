@@ -64,7 +64,10 @@ describe('package change preview', () => {
 			target_organization_id: organizationId,
 			target_edition_id: editionId,
 			billing_interval: 'year',
-			timing: 'next_renewal'
+			timing: 'next_renewal',
+			target_offer_id: undefined,
+			offer_code: undefined,
+			keep_offer: false
 		});
 	});
 });

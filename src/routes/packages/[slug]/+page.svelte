@@ -3,7 +3,9 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import PackageDetails from '$lib/components/packages/PackageDetails.svelte';
+	import { formatUsd } from '$lib/jafar/packages';
 	import {
+		offerHeadline,
 		offeredInterval,
 		offersBoth,
 		priceParts,
@@ -19,6 +21,7 @@
 	const interval = $derived(data.pkg ? offeredInterval(data.pkg, wanted) : 'month');
 	const price = $derived(data.pkg ? priceParts(data.pkg, interval) : null);
 	const saving = $derived(data.pkg ? yearlySavingPercent(data.pkg) : null);
+	const offer = $derived(data.pkg ? data.pkg.offers[interval] : null);
 	const applyHref = $derived(
 		data.pkg
 			? `${resolve('/get-started')}?package=${encodeURIComponent(data.pkg.slug)}&billing=${interval}`
@@ -59,10 +62,18 @@
 							]}
 						/>
 					{/if}
-					<p class="package-page__price">
-						<strong>{price.amount}</strong>
-						<span>{price.per}</span>
-					</p>
+					{#if offer}
+						<p class="package-page__price">
+							<em class="package-page__offer-name">{offerHeadline(offer)}</em>
+							<strong>{formatUsd(offer.intro_price_usd_cents)}</strong>
+							<span>Then {price.amount} {price.per}</span>
+						</p>
+					{:else}
+						<p class="package-page__price">
+							<strong>{price.amount}</strong>
+							<span>{price.per}</span>
+						</p>
+					{/if}
 					<Button href={applyHref} fullWidth>Apply for {data.pkg.name}</Button>
 				</div>
 			</section>
@@ -161,6 +172,17 @@
 			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-base);
 			background: var(--color-surface--background);
+		}
+
+		&__offer-name {
+			width: fit-content;
+			padding: var(--space-smallest) var(--space-small);
+			border-radius: var(--radius-small);
+			color: var(--color-success--onSurface);
+			background: var(--color-success--surface);
+			font-size: var(--typography--fontSize-small);
+			font-style: normal;
+			font-weight: 700;
 		}
 
 		&__price {

@@ -309,7 +309,10 @@ describe('platform owner billing ledger boundary', () => {
 				expected_effective_date: '2026-09-30',
 				expected_credit_usd_cents: 12000,
 				expected_charge_usd_cents: 149000,
-				reason: 'Customer asked for yearly billing'
+				reason: 'Customer asked for yearly billing',
+				target_offer_id: undefined,
+				offer_code: undefined,
+				keep_offer: false
 			});
 		});
 

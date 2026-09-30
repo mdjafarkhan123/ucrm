@@ -11,7 +11,7 @@
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import DataTable, { type DataTableColumn } from '$lib/components/data-display/DataTable.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
-	import { formatDateTime, formatUsd } from './format';
+	import { formatCalendarDate, formatDateTime, formatUsd } from './format';
 
 	// Package builder P8b: the customer's agreed package on the Billing tab — current terms, a scheduled
 	// change with its cancel, and every earlier set of terms (plan § Assignment and changes: historical
@@ -80,6 +80,16 @@
 					Edition {current.edition_number} · {formatUsd(current.agreed_price_usd_cents)}
 					{perInterval(current.billing_interval)} · since {formatDateTime(current.effective_from)}
 				</span>
+				{#if current.offer_terms}
+					{@const offer = current.offer_terms}
+					<span class="billing-package__offer">
+						{offer.ends_before > billing.today ? 'Intro offer' : 'Intro offer ended'}: {offer.name},
+						{formatUsd(offer.intro_price_usd_cents)}
+						{perInterval(offer.billing_interval)} until normal price starts {formatCalendarDate(
+							offer.ends_before
+						)}
+					</span>
+				{/if}
 			</div>
 		</div>
 
@@ -92,6 +102,14 @@
 						at
 						{formatUsd(scheduled.agreed_price_usd_cents)}
 						{perInterval(scheduled.billing_interval)} on {formatDateTime(scheduled.effective_from)}.
+						{#if scheduled.offer_terms}
+							With {scheduled.offer_terms.name}: {formatUsd(
+								scheduled.offer_terms.intro_price_usd_cents
+							)}
+							{perInterval(scheduled.offer_terms.billing_interval)} until {formatCalendarDate(
+								scheduled.offer_terms.ends_before
+							)}.
+						{/if}
 					</p>
 				</div>
 				<Button
@@ -186,6 +204,14 @@
 	}
 	span.billing-package__secondary {
 		display: block;
+	}
+	.billing-package__current span.billing-package__offer {
+		width: fit-content;
+		padding: var(--space-smallest) var(--space-small);
+		border-radius: var(--radius-small);
+		color: var(--color-success--onSurface);
+		background: var(--color-success--surface);
+		font-weight: 600;
 	}
 	.billing-package__scheduled {
 		padding: var(--space-slim) var(--space-base);

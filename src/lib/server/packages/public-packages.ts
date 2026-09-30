@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
-import type { PublicPackage } from '$lib/packages/public-package';
+import type { PublicPackage, ShownOffer } from '$lib/packages/public-package';
 
 // Package builder P9: the published edition of every public, unarchived package, with the capability and
 // allowance labels a visitor reads. Private, archived, and superseded editions never leave this module.
@@ -43,8 +43,18 @@ export async function loadPublicPackages(
 		.eq('packages.visibility', 'public')
 		.is('packages.archived_at', null);
 	if (slug) query = query.eq('packages.slug', slug);
-	const { data, error } = await query;
+	const [{ data, error }, offersResult] = await Promise.all([
+		query,
+		client.rpc('public_package_offers')
+	]);
 	if (error) throw error;
+	if (offersResult.error) throw offersResult.error;
+
+	// P11b: the automatic offer each edition gives a new customer today, per billing.
+	const offers = (offersResult.data ?? []) as unknown as (ShownOffer & { edition_id: string })[];
+	const offerFor = (editionId: string, interval: 'month' | 'year') =>
+		offers.find((offer) => offer.edition_id === editionId && offer.billing_interval === interval) ??
+		null;
 
 	return data
 		.sort((a, b) => a.packages.display_order - b.packages.display_order)
@@ -77,7 +87,8 @@ export async function loadPublicPackages(
 					value: row.allowance_value,
 					unit: row.package_allowances!.unit,
 					resets_monthly: row.package_allowances!.resets_monthly
-				}))
+				})),
+			offers: { month: offerFor(edition.id, 'month'), year: offerFor(edition.id, 'year') }
 		}));
 }
 

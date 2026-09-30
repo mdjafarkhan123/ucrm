@@ -11,7 +11,8 @@ import {
 
 // Package builder P8b: what moving the organization to another published edition would do — both
 // editions side by side, features gained and lost, limit changes, what is over the new limits, and the
-// payment effect — before Jafar confirms it through the Billing command. Reading it changes nothing.
+// payment effect — before Jafar confirms it through the Billing command. Reading it changes nothing. P11b
+// adds the offer: one chosen or typed, or the running one kept, and the automatic offers available.
 
 export const GET: RequestHandler = async (event) => {
 	if (!(await getOwnerSession(event))) return ownerUnauthorized();
@@ -22,7 +23,10 @@ export const GET: RequestHandler = async (event) => {
 	const parsed = packageChangePreviewSchema.safeParse({
 		edition_id: event.url.searchParams.get('edition_id'),
 		billing_interval: event.url.searchParams.get('billing_interval'),
-		timing: event.url.searchParams.get('timing')
+		timing: event.url.searchParams.get('timing'),
+		offer_id: event.url.searchParams.get('offer_id') || null,
+		offer_code: event.url.searchParams.get('offer_code') || null,
+		keep_offer: event.url.searchParams.get('keep_offer') === 'true'
 	});
 	if (!parsed.success)
 		return json(
@@ -37,7 +41,10 @@ export const GET: RequestHandler = async (event) => {
 		target_organization_id: parsedId.data,
 		target_edition_id: parsed.data.edition_id,
 		billing_interval: parsed.data.billing_interval,
-		timing: parsed.data.timing
+		timing: parsed.data.timing,
+		target_offer_id: parsed.data.offer_id ?? undefined,
+		offer_code: parsed.data.offer_code ?? undefined,
+		keep_offer: parsed.data.keep_offer
 	});
 	if (error) {
 		if (['23503', '23514'].includes(error.code))

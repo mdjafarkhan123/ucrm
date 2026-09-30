@@ -115,6 +115,20 @@ const packageChangeTiming = z.enum(['next_renewal', 'now'], {
 	message: 'Choose when the change starts.'
 });
 
+// Package builder P11b: Change package may add an offer — one Jafar picks, or one he types the code of — or
+// keep the customer's running offer. The database checks eligibility and refuses asking for both.
+const packageChangeOfferFields = {
+	offer_id: z.string().uuid('Choose an offer.').nullish(),
+	offer_code: z
+		.string()
+		.trim()
+		.toUpperCase()
+		.max(32, 'A code is at most 32 characters.')
+		.nullish()
+		.transform((code) => code || null),
+	keep_offer: z.boolean().default(false)
+};
+
 export const organizationBillingCommandSchema = z.discriminatedUnion('action', [
 	z.object({
 		action: z.literal('add_charge'),
@@ -213,7 +227,8 @@ export const organizationBillingCommandSchema = z.discriminatedUnion('action', [
 		expected_effective_date: calendarDate,
 		expected_credit_usd_cents: z.number().int().min(0).max(100_000_000),
 		expected_charge_usd_cents: z.number().int().min(0).max(100_000_000),
-		reason: freeAccessReason
+		reason: freeAccessReason,
+		...packageChangeOfferFields
 	}),
 	z.object({
 		action: z.literal('cancel_package_change'),
@@ -234,7 +249,8 @@ export const organizationBillingCommandSchema = z.discriminatedUnion('action', [
 export const packageChangePreviewSchema = z.object({
 	edition_id: z.string().uuid('Choose a package.'),
 	billing_interval: packageBillingInterval,
-	timing: packageChangeTiming
+	timing: packageChangeTiming,
+	...packageChangeOfferFields
 });
 
 // Package builder P8b: a temporary exception switches one feature on or off, or sets one limit, for a
