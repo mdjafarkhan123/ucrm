@@ -50,6 +50,8 @@
 	.empty-state {
 		display: grid;
 		justify-items: center;
+		// Stretched to fill a tall page, the rows stay together in the middle instead of spreading apart.
+		align-content: center;
 		gap: var(--space-base);
 		padding: var(--space-extravagant) var(--space-large);
 		border: var(--border-base) dashed var(--color-border);

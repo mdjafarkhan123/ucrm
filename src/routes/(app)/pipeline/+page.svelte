@@ -241,24 +241,26 @@
 				description="Every open request, in the order it moves through your sales work."
 			>
 				{#snippet actions()}
-					<div class="pipeline__tiles">
-						<OutcomeTile
-							label="Won"
-							variant="won"
-							count={tilesQuery.data?.won.count ?? 0}
-							valueTotal={tilesQuery.data?.won.value_total}
-							formatting={tilesQuery.data ?? null}
-							href={outcomeHref('won')}
-						/>
-						<OutcomeTile
-							label="Lost"
-							variant="lost"
-							count={tilesQuery.data?.lost.count ?? 0}
-							valueTotal={tilesQuery.data?.lost.value_total}
-							formatting={tilesQuery.data ?? null}
-							href={outcomeHref('lost')}
-						/>
-					</div>
+					{#if refusal === null}
+						<div class="pipeline__tiles">
+							<OutcomeTile
+								label="Won"
+								variant="won"
+								count={tilesQuery.data?.won.count ?? 0}
+								valueTotal={tilesQuery.data?.won.value_total}
+								formatting={tilesQuery.data ?? null}
+								href={outcomeHref('won')}
+							/>
+							<OutcomeTile
+								label="Lost"
+								variant="lost"
+								count={tilesQuery.data?.lost.count ?? 0}
+								valueTotal={tilesQuery.data?.lost.value_total}
+								formatting={tilesQuery.data ?? null}
+								href={outcomeHref('lost')}
+							/>
+						</div>
+					{/if}
 				{/snippet}
 			</PageHeader>
 

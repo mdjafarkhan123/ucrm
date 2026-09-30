@@ -1,4 +1,4 @@
-import { httpError } from '$lib/http-error';
+import { httpError, type HttpError } from '$lib/http-error';
 import type { ReviewRequestStatus, ReviewRequestSummary } from './requests';
 import type { ReviewChannel } from './settings';
 
@@ -42,9 +42,12 @@ export const reviewWorkspaceCountsKey = ['reviews', 'workspace', 'counts'] as co
 // Everything the workspace caches, for invalidating after a request is cancelled.
 export const reviewWorkspaceKey = ['reviews', 'workspace'] as const;
 
+// The reason tells "not in your plan" apart from "not allowed", so the page can say which.
 async function readError(response: Response, fallback: string) {
-	const result = await response.json().catch(() => ({}) as { error?: string });
-	return httpError(response, result.error ?? fallback);
+	const result = await response.json().catch(() => ({}) as { error?: string; reason?: string });
+	const error = httpError(response, result.error ?? fallback) as HttpError & { reason?: string };
+	error.reason = result.reason;
+	return error;
 }
 
 export async function fetchReviewWorkspaceRequests(

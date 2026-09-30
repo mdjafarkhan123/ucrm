@@ -97,6 +97,9 @@
 	}));
 	const requests = $derived(requestsQuery.data?.pages.flatMap((page) => page.requests) ?? []);
 	const refused = $derived((requestsQuery.error as { status?: number } | null)?.status === 403);
+	const notInPlan = $derived(
+		(requestsQuery.error as { reason?: string } | null)?.reason === 'feature_unavailable'
+	);
 
 	// Whether to offer the setup shortcut: only people who manage review setup can open it.
 	const settingsAccessQuery = createQuery<boolean>(() => ({
@@ -394,6 +397,12 @@
 
 						{#if requestsQuery.isPending}
 							<LoadingSkeleton variant="table" label="Loading review requests" rows={5} />
+						{:else if notInPlan}
+							<EmptyState
+								icon={starIcon}
+								title="Review requests are not part of your plan"
+								description="Ask your account owner to add review requests to your plan."
+							/>
 						{:else if refused}
 							<EmptyState
 								icon={starIcon}
