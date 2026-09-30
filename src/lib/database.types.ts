@@ -18600,6 +18600,16 @@ export type Database = {
 					value: number;
 				}[];
 			};
+			end_organization_free_access: {
+				Args: {
+					actor_owner_email: string;
+					grant_id: string;
+					idempotency_key: string;
+					reason: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			end_website_chat_session: {
 				Args: {
 					target_actor_user_id: string;
@@ -19238,6 +19248,17 @@ export type Database = {
 					isOneToOne: false;
 					isSetofReturn: true;
 				};
+			};
+			extend_organization_free_access: {
+				Args: {
+					actor_owner_email: string;
+					ends_on: string;
+					grant_id: string;
+					idempotency_key: string;
+					reason: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
 			};
 			file_link_marketing_campaign: {
 				Args: {
@@ -20362,6 +20383,17 @@ export type Database = {
 					teaser_text: string;
 					widget_id: string;
 				}[];
+			};
+			grant_organization_free_access: {
+				Args: {
+					actor_owner_email: string;
+					ends_on: string;
+					idempotency_key: string;
+					reason: string;
+					starts_on: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
 			};
 			inquiry_alert_members: {
 				Args: { p_organization_id: string };
