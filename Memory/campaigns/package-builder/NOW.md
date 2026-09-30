@@ -5,7 +5,7 @@
 
 **Completed:** Planning (P1, P2). Jafar approved the build parts on 2026-09-29.
 
-**Next part:** P5b Contractor banner and paused screen (`stages/1-foundation.md`).
+**Next part:** P5b Contractor banner and paused screen — paused mid-way, see `parts/P5b.md`.
 
 **Blockers:** None. **Asked Jafar 2026-09-30:** approve which billing actions ask for the password (`billingStepUpActions`)?
 
