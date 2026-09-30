@@ -6,14 +6,14 @@
 
 ## Steps
 
-- [ ] Migration `supabase/migrations/20261001090000_package_changes_and_exceptions.sql`: cancellable future agreements, charge kind, credit notes, change preview and command, cancel scheduled change, apply credit note, add and end exceptions; every agreement reader skips cancelled ones
+- [x] Migration `supabase/migrations/20261001090000_package_changes_and_exceptions.sql`: cancellable future agreements, charge kind, credit notes, change preview and command, cancel scheduled change, apply credit note, add and end exceptions; every agreement reader skips cancelled ones
 - [ ] Push it (`supabase db push --linked`, dry run first), regenerate `src/lib/database.types.ts`
-- [ ] pgTAP file `supabase/tests/database/package_changes.test.sql` covering the done-check; run on a rehearsal transaction against the linked database where a fresh rebuild is not practical
+- [x] pgTAP file `supabase/tests/database/package_changes.sql` (43 checks) passes with the migration in a rolled-back rehearsal on the linked database; the ledger, grace, and access tests still pass too
 - [ ] Commit, close P8a, start P8b
 
 ## Next
 
-Write the migration (step 1).
+Push the migration (step 2): `npx supabase db push --linked`, then `npm run db:types`, `npm run check`.
 
 ## Outside actions
 
@@ -29,3 +29,5 @@ Decided with Jafar 2026-09-30 (following Stripe and Chargebee):
 - A scheduled change can be cancelled; its swapped charge is swapped back.
 - Exceptions: reason, start, end required; one per feature or limit at a time; planned capabilities refused; ending early keeps the record.
 - Catalog `organization_count` counts every org that ever agreed; P8b should show current customers instead.
+
+Rehearsal method: `npx supabase db query --linked -f <file>` with `begin;` + migration + test (each `select is(` rewritten to insert into a temp table) + `rollback;`; pgTAP here does not keep a results table.
