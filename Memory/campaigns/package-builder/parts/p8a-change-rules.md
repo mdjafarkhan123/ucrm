@@ -7,17 +7,17 @@
 ## Steps
 
 - [x] Migration `supabase/migrations/20261001090000_package_changes_and_exceptions.sql`: cancellable future agreements, charge kind, credit notes, change preview and command, cancel scheduled change, apply credit note, add and end exceptions; every agreement reader skips cancelled ones
-- [ ] Push it (`supabase db push --linked`, dry run first), regenerate `src/lib/database.types.ts`
+- [x] Pushed; `src/lib/database.types.ts` regenerated (run `npx prettier --write` on it after `npm run db:types`, or the diff is the whole file)
 - [x] pgTAP file `supabase/tests/database/package_changes.sql` (43 checks) passes with the migration in a rolled-back rehearsal on the linked database; the ledger, grace, and access tests still pass too
 - [ ] Commit, close P8a, start P8b
 
 ## Next
 
-Push the migration (step 2): `npx supabase db push --linked`, then `npm run db:types`, `npm run check`.
+Run `NODE_OPTIONS=--max-old-space-size=8192 npm run check` (plain `npm run check` ran out of memory) and fix any error from `organization_billing_applications.receipt_id` becoming nullable; commit; then close P8a in `stages/3-customers.md` (done 2026-09-30), delete this note, and start P8b.
 
 ## Outside actions
 
-- Migration push — check: `supabase migration list --linked` shows `20261001090000` remote — pending
+- Migration push — check: `supabase migration list --linked` shows `20261001090000` remote — done 2026-09-30
 
 ## Notes
 

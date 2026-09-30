@@ -9220,30 +9220,33 @@ export type Database = {
 					amount_usd_cents: number;
 					charge_id: string;
 					created_at: string;
+					credit_note_id: string | null;
 					id: string;
 					idempotency_key: string;
 					organization_id: string;
-					receipt_id: string;
+					receipt_id: string | null;
 				};
 				Insert: {
 					actor_owner_email: string;
 					amount_usd_cents: number;
 					charge_id: string;
 					created_at?: string;
+					credit_note_id?: string | null;
 					id?: string;
 					idempotency_key: string;
 					organization_id: string;
-					receipt_id: string;
+					receipt_id?: string | null;
 				};
 				Update: {
 					actor_owner_email?: string;
 					amount_usd_cents?: number;
 					charge_id?: string;
 					created_at?: string;
+					credit_note_id?: string | null;
 					id?: string;
 					idempotency_key?: string;
 					organization_id?: string;
-					receipt_id?: string;
+					receipt_id?: string | null;
 				};
 				Relationships: [
 					{
@@ -9251,6 +9254,13 @@ export type Database = {
 						columns: ['charge_id'];
 						isOneToOne: false;
 						referencedRelation: 'organization_billing_charges';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_billing_applications_credit_note_id_fkey';
+						columns: ['credit_note_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_billing_credit_notes';
 						referencedColumns: ['id'];
 					},
 					{
@@ -9278,6 +9288,7 @@ export type Database = {
 					created_at: string;
 					id: string;
 					idempotency_key: string;
+					kind: string;
 					organization_id: string;
 					period_end: string;
 					period_start: string;
@@ -9290,6 +9301,7 @@ export type Database = {
 					created_at?: string;
 					id?: string;
 					idempotency_key: string;
+					kind?: string;
 					organization_id: string;
 					period_end: string;
 					period_start: string;
@@ -9302,6 +9314,7 @@ export type Database = {
 					created_at?: string;
 					id?: string;
 					idempotency_key?: string;
+					kind?: string;
 					organization_id?: string;
 					period_end?: string;
 					period_start?: string;
@@ -9376,6 +9389,70 @@ export type Database = {
 						foreignKeyName: 'organization_billing_coverage_confirmations_charge_id_fkey';
 						columns: ['charge_id'];
 						isOneToOne: true;
+						referencedRelation: 'organization_billing_charges';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_billing_credit_notes: {
+				Row: {
+					actor_owner_email: string;
+					agreement_id: string;
+					amount_usd_cents: number;
+					created_at: string;
+					id: string;
+					idempotency_key: string;
+					organization_id: string;
+					reason: string;
+					source_charge_id: string;
+					unused_from: string;
+					unused_through: string;
+				};
+				Insert: {
+					actor_owner_email: string;
+					agreement_id: string;
+					amount_usd_cents: number;
+					created_at?: string;
+					id?: string;
+					idempotency_key: string;
+					organization_id: string;
+					reason: string;
+					source_charge_id: string;
+					unused_from: string;
+					unused_through: string;
+				};
+				Update: {
+					actor_owner_email?: string;
+					agreement_id?: string;
+					amount_usd_cents?: number;
+					created_at?: string;
+					id?: string;
+					idempotency_key?: string;
+					organization_id?: string;
+					reason?: string;
+					source_charge_id?: string;
+					unused_from?: string;
+					unused_through?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_billing_credit_notes_agreement_id_fkey';
+						columns: ['agreement_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_package_agreements';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_billing_credit_notes_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_billing_credit_notes_source_charge_id_fkey';
+						columns: ['source_charge_id'];
+						isOneToOne: false;
 						referencedRelation: 'organization_billing_charges';
 						referencedColumns: ['id'];
 					}
@@ -10563,6 +10640,10 @@ export type Database = {
 					actor_owner_email: string | null;
 					agreed_price_usd_cents: number;
 					billing_interval: string;
+					cancel_idempotency_key: string | null;
+					cancel_reason: string | null;
+					cancelled_at: string | null;
+					cancelled_by_email: string | null;
 					created_at: string;
 					edition_id: string;
 					effective_from: string;
@@ -10578,6 +10659,10 @@ export type Database = {
 					actor_owner_email?: string | null;
 					agreed_price_usd_cents: number;
 					billing_interval: string;
+					cancel_idempotency_key?: string | null;
+					cancel_reason?: string | null;
+					cancelled_at?: string | null;
+					cancelled_by_email?: string | null;
 					created_at?: string;
 					edition_id: string;
 					effective_from: string;
@@ -10593,6 +10678,10 @@ export type Database = {
 					actor_owner_email?: string | null;
 					agreed_price_usd_cents?: number;
 					billing_interval?: string;
+					cancel_idempotency_key?: string | null;
+					cancel_reason?: string | null;
+					cancelled_at?: string | null;
+					cancelled_by_email?: string | null;
 					created_at?: string;
 					edition_id?: string;
 					effective_from?: string;
@@ -10630,8 +10719,12 @@ export type Database = {
 					capability_key: string | null;
 					capability_state: string | null;
 					created_at: string;
+					end_reason: string | null;
+					ended_by_email: string | null;
+					ended_early_at: string | null;
 					ends_at: string;
 					id: string;
+					idempotency_key: string | null;
 					organization_id: string;
 					reason: string;
 					starts_at: string;
@@ -10644,8 +10737,12 @@ export type Database = {
 					capability_key?: string | null;
 					capability_state?: string | null;
 					created_at?: string;
+					end_reason?: string | null;
+					ended_by_email?: string | null;
+					ended_early_at?: string | null;
 					ends_at: string;
 					id?: string;
+					idempotency_key?: string | null;
 					organization_id: string;
 					reason: string;
 					starts_at: string;
@@ -10658,8 +10755,12 @@ export type Database = {
 					capability_key?: string | null;
 					capability_state?: string | null;
 					created_at?: string;
+					end_reason?: string | null;
+					ended_by_email?: string | null;
+					ended_early_at?: string | null;
 					ends_at?: string;
 					id?: string;
+					idempotency_key?: string | null;
 					organization_id?: string;
 					reason?: string;
 					starts_at?: string;
@@ -15427,6 +15528,22 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			add_organization_package_exception: {
+				Args: {
+					actor_owner_email: string;
+					allowance_key: string;
+					allowance_state: string;
+					allowance_value: number;
+					capability_key: string;
+					capability_state: string;
+					ends_at: string;
+					idempotency_key: string;
+					reason: string;
+					starts_at: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			add_website_chat_widget_origin: {
 				Args: {
 					new_origin: string;
@@ -15482,6 +15599,17 @@ export type Database = {
 					charge_id: string;
 					idempotency_key: string;
 					receipt_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			apply_organization_billing_credit_note: {
+				Args: {
+					actor_owner_email: string;
+					amount_usd_cents: number;
+					charge_id: string;
+					credit_note_id: string;
+					idempotency_key: string;
 					target_organization_id: string;
 				};
 				Returns: Json;
@@ -15934,6 +16062,16 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			cancel_scheduled_package_change: {
+				Args: {
+					actor_owner_email: string;
+					agreement_id: string;
+					idempotency_key: string;
+					reason: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			cancel_team_invitation: {
 				Args: { target_cancelled_by: string; target_invitation_id: string };
 				Returns: {
@@ -15999,6 +16137,21 @@ export type Database = {
 					unit_label: string;
 					unit_price_minor: number;
 				}[];
+			};
+			change_organization_package: {
+				Args: {
+					actor_owner_email: string;
+					billing_interval: string;
+					expected_charge_usd_cents: number;
+					expected_credit_usd_cents: number;
+					expected_effective_date: string;
+					idempotency_key: string;
+					reason: string;
+					target_edition_id: string;
+					target_organization_id: string;
+					timing: string;
+				};
+				Returns: Json;
 			};
 			change_team_member_role: {
 				Args: {
@@ -18685,6 +18838,16 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			end_organization_package_exception: {
+				Args: {
+					actor_owner_email: string;
+					exception_id: string;
+					idempotency_key: string;
+					reason: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			end_website_chat_session: {
 				Args: {
 					target_actor_user_id: string;
@@ -21165,11 +21328,24 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_organization_package_exceptions: {
+				Args: { target_organization_id: string };
+				Returns: Json;
+			};
 			owner_package_builder: {
 				Args: { target_package_id: string };
 				Returns: Json;
 			};
 			owner_package_catalog: { Args: never; Returns: Json };
+			owner_package_change_preview: {
+				Args: {
+					billing_interval: string;
+					target_edition_id: string;
+					target_organization_id: string;
+					timing: string;
+				};
+				Returns: Json;
+			};
 			pause_automation_enrollment: {
 				Args: {
 					p_actor_user_id: string;
