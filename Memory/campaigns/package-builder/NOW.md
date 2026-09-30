@@ -5,7 +5,7 @@
 
 **Completed:** Planning (P1, P2); stage 1 Foundation (P3a–P5c); P6 drafts and P7 publish/archive/restore (browser-checked), 2026-09-30. Stage 2 done.
 
-**Next part:** P8a package change rules (`parts/p8a-change-rules.md`), then P8b screens. P9 and P12 are also ready.
+**Next part:** P8b package change screens (P8a rules done 2026-09-30 — the database's catalog count includes past customers; P8b shows current ones). P9 and P12 are also ready.
 
 **Blockers:** None. **Decided by Jafar 2026-09-30:** keep the password list as built (`billingStepUpActions`): refund, void, correct payment, adjust paid-through, and free-access grant/extend/end. Everyday billing needs no password.
 
