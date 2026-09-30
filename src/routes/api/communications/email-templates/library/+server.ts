@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireOrganizationAdmin } from '$lib/server/access/permission';
+import { requireOrganizationAdmin, featureUnavailable } from '$lib/server/access/permission';
 import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
@@ -11,6 +11,8 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationAdmin(event, 'conversations.send');
 	if ('response' in check) return check.response;
+	const unavailable = featureUnavailable(check.access, 'communications.inbox');
+	if (unavailable) return unavailable;
 
 	const owner = getOwnerSupabaseClient();
 	const [templatesResult, visibilityResult, copiesResult] = await Promise.all([

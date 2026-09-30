@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireOrganizationAdmin } from '$lib/server/access/permission';
+import { requireOrganizationAdmin, featureUnavailable } from '$lib/server/access/permission';
 import { NO_STORE_HEADERS, databaseError, notFound } from '$lib/server/api/errors';
 import { emailTemplateWriteError } from '$lib/server/communications/errors';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
@@ -15,6 +15,8 @@ const WRITE_LIMIT = { windowSeconds: 60, maxAttempts: 20 };
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationAdmin(event, 'conversations.send');
 	if ('response' in check) return check.response;
+	const unavailable = featureUnavailable(check.access, 'communications.inbox');
+	if (unavailable) return unavailable;
 
 	const organizationId = check.auth.organization.id;
 

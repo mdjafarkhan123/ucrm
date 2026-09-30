@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
 import { getOrganizationContext } from '$lib/server/auth/organization';
-import { hasPermission } from '$lib/server/access/permission';
+import { featureUnavailable, hasPermission } from '$lib/server/access/permission';
 import { resolveOrganizationAccess } from '$lib/server/access/effective';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
@@ -89,11 +89,16 @@ export const GET: RequestHandler = async (event) => {
 	}
 	const access = accessResult.value;
 
+	// Without the shared inbox in the plan, a customer's history stays readable on their own page -- replies
+	// to a quote email are never lost -- but the inbox itself and every action in it are gone (Jafar,
+	// 2026-09-30, the way Jobber keeps two-way messaging to its higher plan).
+	const inboxIncluded = access.features['communications.inbox'] === true;
 	const canViewTeam = hasPermission(access, 'conversations.view_team');
 	const canViewAssigned = hasPermission(access, 'conversations.view_assigned');
-	const canManageAssignment = hasPermission(access, 'conversations.manage_assignment');
-	const canForward = hasPermission(access, 'conversations.forward');
-	const canSend = hasPermission(access, 'conversations.send');
+	const canManageAssignment =
+		inboxIncluded && hasPermission(access, 'conversations.manage_assignment');
+	const canForward = inboxIncluded && hasPermission(access, 'conversations.forward');
+	const canSend = inboxIncluded && hasPermission(access, 'conversations.send');
 	if (!canViewTeam && !canViewAssigned) {
 		return json(
 			{ error: 'You do not have access to conversations.', reason: 'permission_denied' },
@@ -101,7 +106,14 @@ export const GET: RequestHandler = async (event) => {
 		);
 	}
 	if (accessOnly) {
-		return json({ ok: true, can_send: canSend }, { headers: PRIVATE_READ_HEADERS });
+		return json(
+			{ ok: true, can_send: canSend, inbox: inboxIncluded },
+			{ headers: PRIVATE_READ_HEADERS }
+		);
+	}
+	if (!requestedClientId) {
+		const unavailable = featureUnavailable(access, 'communications.inbox', PRIVATE_READ_HEADERS);
+		if (unavailable) return unavailable;
 	}
 
 	// Team Inbox is only ever offered to someone who can see it; an assigned-only viewer always gets My

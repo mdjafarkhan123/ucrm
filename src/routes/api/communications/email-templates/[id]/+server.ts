@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireOrganizationAdmin } from '$lib/server/access/permission';
+import { requireOrganizationAdmin, featureUnavailable } from '$lib/server/access/permission';
 import { NO_STORE_HEADERS, databaseError, notFound, validationError } from '$lib/server/api/errors';
 import { emailTemplateWriteError } from '$lib/server/communications/errors';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
@@ -17,6 +17,8 @@ const WRITE_LIMIT = { windowSeconds: 60, maxAttempts: 20 };
 export const PATCH: RequestHandler = async (event) => {
 	const check = await requireOrganizationAdmin(event, 'conversations.send');
 	if ('response' in check) return check.response;
+	const unavailable = featureUnavailable(check.access, 'communications.inbox');
+	if (unavailable) return unavailable;
 
 	const organizationId = check.auth.organization.id;
 
@@ -64,6 +66,8 @@ export const PATCH: RequestHandler = async (event) => {
 export const DELETE: RequestHandler = async (event) => {
 	const check = await requireOrganizationAdmin(event, 'conversations.send');
 	if ('response' in check) return check.response;
+	const unavailable = featureUnavailable(check.access, 'communications.inbox');
+	if (unavailable) return unavailable;
 
 	const organizationId = check.auth.organization.id;
 

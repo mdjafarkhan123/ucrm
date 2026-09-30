@@ -1,6 +1,10 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
+import {
+	hasPermission,
+	requireOrganizationPermission,
+	featureUnavailable
+} from '$lib/server/access/permission';
 import { NO_STORE_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
@@ -24,6 +28,8 @@ import {
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'conversations.manage_assignment');
 	if ('response' in check) return check.response;
+	const unavailable = featureUnavailable(check.access, 'website_chat');
+	if (unavailable) return unavailable;
 	if (!hasPermission(check.access, 'customers.view')) {
 		return json(
 			{ error: 'You do not have access to this customer.', reason: 'permission_denied' },

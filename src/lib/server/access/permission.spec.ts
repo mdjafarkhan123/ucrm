@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RequestEvent } from '@sveltejs/kit';
-import { requireOrganizationPermission } from './permission';
+import { featureUnavailable, requireOrganizationPermission } from './permission';
 import { getOrganizationContext } from '$lib/server/auth/organization';
 
 vi.mock('$lib/server/auth/organization', () => ({ getOrganizationContext: vi.fn() }));
@@ -92,5 +92,22 @@ describe('requireOrganizationPermission', () => {
 			error: 'This is not part of your current plan.',
 			reason: 'feature_unavailable'
 		});
+	});
+});
+
+describe('featureUnavailable', () => {
+	it('answers "not part of your plan" for a feature the plan leaves out, and nothing when included', async () => {
+		const refusal = featureUnavailable(
+			{ features: { 'communications.inbox': false } } as never,
+			'communications.inbox'
+		);
+		expect(refusal?.status).toBe(403);
+		expect(await refusal?.json()).toMatchObject({ reason: 'feature_unavailable' });
+		expect(
+			featureUnavailable(
+				{ features: { 'communications.inbox': true } } as never,
+				'communications.inbox'
+			)
+		).toBeNull();
 	});
 });

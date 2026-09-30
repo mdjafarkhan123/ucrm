@@ -74,7 +74,7 @@ describe('reading Communications history', () => {
 	it('returns an honest empty My Inbox for assigned-only access with no assignments or follows', async () => {
 		mockedAccess.mockResolvedValue({
 			permissions: { 'conversations.view_assigned': true },
-			features: {}
+			features: { 'communications.inbox': true }
 		} as never);
 		const from = fromQueue([
 			{ data: [], error: null }, // assigned to me
@@ -102,7 +102,7 @@ describe('reading Communications history', () => {
 	it('ignores ?view=mine for an assigned-only viewer who is already forced to My Inbox', async () => {
 		mockedAccess.mockResolvedValue({
 			permissions: { 'conversations.view_assigned': true },
-			features: {}
+			features: { 'communications.inbox': true }
 		} as never);
 		const from = fromQueue([
 			{ data: [], error: null },
@@ -114,11 +114,50 @@ describe('reading Communications history', () => {
 		expect((await response.json()).view).toBe('mine');
 	});
 
+	describe('when the plan has no shared inbox', () => {
+		beforeEach(() => {
+			mockedAccess.mockResolvedValue({
+				permissions: {
+					'conversations.view_team': true,
+					'conversations.send': true,
+					'conversations.forward': true,
+					'conversations.manage_assignment': true
+				},
+				features: {}
+			} as never);
+		});
+
+		it('tells the menu to hide the inbox and the client page not to offer Message', async () => {
+			const response = await GET(event('access=1'));
+			expect(response.status).toBe(200);
+			expect(await response.json()).toEqual({ ok: true, can_send: false, inbox: false });
+		});
+
+		it('refuses the inbox itself as not part of the plan', async () => {
+			const response = await GET(event('channel=all'));
+			expect(response.status).toBe(403);
+			expect(await response.json()).toMatchObject({ reason: 'feature_unavailable' });
+		});
+
+		it("still shows one customer's history, read-only", async () => {
+			const from = fromQueue(Array.from({ length: 10 }, () => ({ data: [], error: null })));
+			mockedOwnerClient.mockReturnValue({ from } as never);
+
+			const response = await GET(event('client_id=client-1'));
+			expect(response.status).toBe(200);
+			expect(await response.json()).toMatchObject({
+				can_send: false,
+				can_forward: false,
+				can_manage_assignment: false
+			});
+		});
+	});
+
 	describe('with team access', () => {
 		beforeEach(() => {
 			mockedAccess.mockResolvedValue({
 				permissions: { 'conversations.view_team': true },
-				features: {}
+				features: { 'communications.inbox': true }
 			} as never);
 		});
 
@@ -643,7 +682,7 @@ describe('reading Communications history', () => {
 	it("restricts a client-scoped read to an assigned-only viewer's own clients, same as the general inbox", async () => {
 		mockedAccess.mockResolvedValue({
 			permissions: { 'conversations.view_assigned': true },
-			features: {}
+			features: { 'communications.inbox': true }
 		} as never);
 		const from = fromQueue([
 			{ data: [], error: null }, // assigned to me

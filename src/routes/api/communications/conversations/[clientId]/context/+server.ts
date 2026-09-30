@@ -1,6 +1,10 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
+import {
+	hasPermission,
+	requireOrganizationPermission,
+	featureUnavailable
+} from '$lib/server/access/permission';
 import {
 	databaseError,
 	notFound,
@@ -27,6 +31,8 @@ import { organizationFormatting } from '$lib/server/requests/timezone';
 export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'customers.view');
 	if ('response' in check) return check.response;
+	const unavailable = featureUnavailable(check.access, 'communications.inbox');
+	if (unavailable) return unavailable;
 
 	const clientId = event.params.clientId;
 	if (!clientId) return validationError({ form: 'Choose a valid conversation.' });

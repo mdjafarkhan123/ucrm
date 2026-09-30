@@ -133,6 +133,10 @@
 		queryFn: () => fetchInboxMessages(search, view),
 		staleTime: 15_000
 	}));
+	const inboxNotInPlan = $derived(
+		(inboxQuery.error as { status?: number; reason?: string } | null)?.reason ===
+			'feature_unavailable'
+	);
 	const messages = $derived(inboxQuery.data?.messages ?? []);
 	// Grouping runs over one already-fetched page (max 50 messages, no "load more" yet), so an O(n)
 	// client-side pass is cheap; a grouped server query would need its own pagination shape (order by each
@@ -851,6 +855,12 @@
 				label="Loading inbox"
 			/><LoadingSkeleton variant="card" label="Loading inbox" />
 		</div>
+	{:else if inboxNotInPlan}
+		<EmptyState
+			title="The shared inbox is not part of your plan"
+			description="Quote and invoice emails still send, and each customer's messages stay on their page. Ask your account owner to add the inbox to reply from here."
+			icon={inboxIcon}
+		/>
 	{:else if inboxQuery.isError}
 		<EmptyState
 			title="Conversation history could not be loaded"

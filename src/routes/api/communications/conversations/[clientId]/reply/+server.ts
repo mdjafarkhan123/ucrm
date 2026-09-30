@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireOrganizationPermission } from '$lib/server/access/permission';
+import { requireOrganizationPermission, featureUnavailable } from '$lib/server/access/permission';
 import { hasPermission } from '$lib/server/access/permission';
 import { NO_STORE_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import { INBOUND_ATTACHMENT_TOTAL_SIZE_BYTES } from '$lib/server/communications/inbound-email';
@@ -32,6 +32,8 @@ const KNOWN_REJECTION_CODES = ['42501', '23503', '55000', '23514', 'P0001', '235
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'conversations.send');
 	if ('response' in check) return check.response;
+	const unavailable = featureUnavailable(check.access, 'communications.inbox');
+	if (unavailable) return unavailable;
 	if (!hasPermission(check.access, 'customers.view')) {
 		return json(
 			{ error: 'You do not have access to this customer.', reason: 'permission_denied' },

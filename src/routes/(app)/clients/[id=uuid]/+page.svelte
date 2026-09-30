@@ -641,7 +641,11 @@
 
 					{#if canSeeCommunication}
 						<TabPanel value="communication">
-							<ClientCommunicationHistory {clientId} active={activeTab === 'communication'} />
+							<ClientCommunicationHistory
+								{clientId}
+								active={activeTab === 'communication'}
+								inbox={communicationsAccessQuery.data?.inbox ?? true}
+							/>
 						</TabPanel>
 					{/if}
 				</Tabs>

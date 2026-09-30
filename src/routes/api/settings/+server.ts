@@ -83,7 +83,11 @@ export const GET: RequestHandler = async (event) => {
 				communications_manage: communicationsManage,
 				// Snippets are gated on the same permission as sending a message, not channel management --
 				// a granted staff member who can send but not manage connections still needs this card.
-				snippets_manage: hasPermission(check.access, 'conversations.send'),
+				// Snippets and reply templates only exist to be dropped into an inbox reply, so they go
+				// with the shared inbox when the plan does not include it.
+				snippets_manage:
+					check.access.features['communications.inbox'] === true &&
+					hasPermission(check.access, 'conversations.send'),
 				taxes_manage: hasPermission(check.access, 'settings.taxes.manage'),
 				price_book_manage: hasPermission(check.access, 'settings.price_book.manage'),
 				checklists_manage: hasPermission(check.access, 'settings.checklists.manage'),

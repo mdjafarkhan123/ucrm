@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getOrganizationContext } from '$lib/server/auth/organization';
 import { resolveOrganizationAccess } from '$lib/server/access/effective';
-import { hasPermission } from '$lib/server/access/permission';
+import { featureUnavailable, hasPermission } from '$lib/server/access/permission';
 import {
 	NO_STORE_HEADERS,
 	databaseError,
@@ -41,6 +41,8 @@ export const POST: RequestHandler = async (event) => {
 			{ status: 403, headers: NO_STORE_HEADERS }
 		);
 	}
+	const unavailable = featureUnavailable(access, 'communications.inbox', NO_STORE_HEADERS);
+	if (unavailable) return unavailable;
 
 	let body: unknown;
 	try {

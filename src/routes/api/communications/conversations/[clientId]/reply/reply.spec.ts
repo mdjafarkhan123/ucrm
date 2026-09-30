@@ -10,9 +10,14 @@ import { headObject } from '$lib/server/storage/r2';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 
 vi.mock('$env/dynamic/private', () => ({ env: { APP_URL: 'https://app.example.com' } }));
-vi.mock('$lib/server/access/permission', () => ({
+vi.mock('$lib/server/access/permission', async () => ({
 	hasPermission: vi.fn(),
-	requireOrganizationPermission: vi.fn()
+	requireOrganizationPermission: vi.fn(),
+	featureUnavailable: (
+		await vi.importActual<typeof import('$lib/server/access/permission')>(
+			'$lib/server/access/permission'
+		)
+	).featureUnavailable
 }));
 vi.mock('$lib/server/communications/outbound-attachments', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/server/communications/outbound-attachments')>()),
@@ -54,7 +59,7 @@ describe('conversation reply API', () => {
 		vi.clearAllMocks();
 		vi.mocked(requireOrganizationPermission).mockResolvedValue({
 			auth: { user: { id: userId }, organization: { id: organizationId } },
-			access: { features: {}, limits: {}, permissions: {} }
+			access: { features: { 'communications.inbox': true }, limits: {}, permissions: {} }
 		} as never);
 		vi.mocked(hasPermission).mockReturnValue(true);
 		vi.mocked(checkRateLimit).mockResolvedValue({ allowed: true, retryAfterSeconds: 0 });
@@ -65,6 +70,19 @@ describe('conversation reply API', () => {
 			data: { id: 'intent-1', status: 'queued', created_at: '2026-08-25T00:00:00.000Z' },
 			error: null
 		});
+	});
+
+	it('refuses a reply as not part of the plan when the shared inbox is not included', async () => {
+		vi.mocked(requireOrganizationPermission).mockResolvedValue({
+			auth: { user: { id: userId }, organization: { id: organizationId } },
+			access: { features: {}, limits: {}, permissions: {} }
+		} as never);
+
+		const response = await POST(event(validBody));
+
+		expect(response.status).toBe(403);
+		expect(await response.json()).toMatchObject({ reason: 'feature_unavailable' });
+		expect(rpc).not.toHaveBeenCalled();
 	});
 
 	it('stops before validation or service access when sending is not permitted', async () => {

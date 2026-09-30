@@ -1,4 +1,4 @@
-import { httpError } from '$lib/http-error';
+import { httpError, type HttpError } from '$lib/http-error';
 import type { ContextSection } from '$lib/communications/context-sections';
 export type OutboundAttachment = {
 	id: string;
@@ -465,8 +465,15 @@ export async function fetchInboxMessages(
 	if (view === 'mine') params.set('view', 'mine');
 	const response = await fetch(`/api/communications/email-history?${params.toString()}`);
 	const result = await response.json().catch(() => ({}));
-	if (!response.ok)
-		throw httpError(response, result.error ?? 'Conversation history could not be loaded.');
+	if (!response.ok) {
+		// The reason tells "not in your plan" apart from "not allowed", so the page can say which.
+		const failure = httpError(
+			response,
+			result.error ?? 'Conversation history could not be loaded.'
+		) as HttpError & { reason?: string };
+		failure.reason = result.reason;
+		throw failure;
+	}
 	return result as InboxMessagePage;
 }
 
@@ -992,14 +999,16 @@ export async function fetchConversationContextSection<S extends ContextSection>(
 export const communicationsAccessKey = (userId: string | null) =>
 	['nav', 'communications-access', userId] as const;
 
-export type CommunicationsAccess = { ok: boolean; canSend: boolean };
+// `inbox` is whether the plan includes the shared inbox: without it the Inbox link goes, while the client's
+// Communication tab still shows their history read-only.
+export type CommunicationsAccess = { ok: boolean; canSend: boolean; inbox: boolean };
 
 export async function fetchCommunicationsAccess(): Promise<CommunicationsAccess> {
 	const response = await fetch('/api/communications/email-history?access=1');
-	if (response.status === 403) return { ok: false, canSend: false };
+	if (response.status === 403) return { ok: false, canSend: false, inbox: false };
 	const result = await response.json().catch(() => ({}));
 	// Anything but a clear refusal keeps the links in place; the real read or send still decides.
-	return { ok: true, canSend: result.can_send ?? true };
+	return { ok: true, canSend: result.can_send ?? true, inbox: result.inbox ?? true };
 }
 
 export const clientCommunicationHistoryKey = (clientId: string) =>

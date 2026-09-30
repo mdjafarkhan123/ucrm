@@ -3,9 +3,14 @@ import { POST } from './+server';
 import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
-vi.mock('$lib/server/access/permission', () => ({
+vi.mock('$lib/server/access/permission', async () => ({
 	hasPermission: vi.fn(),
-	requireOrganizationPermission: vi.fn()
+	requireOrganizationPermission: vi.fn(),
+	featureUnavailable: (
+		await vi.importActual<typeof import('$lib/server/access/permission')>(
+			'$lib/server/access/permission'
+		)
+	).featureUnavailable
 }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
 
@@ -40,7 +45,7 @@ describe('SMS reply estimate API', () => {
 		vi.clearAllMocks();
 		vi.mocked(requireOrganizationPermission).mockResolvedValue({
 			auth: { user: { id: userId }, organization: { id: organizationId } },
-			access: { features: {}, limits: {}, permissions: {} }
+			access: { features: { 'communications.inbox': true }, limits: {}, permissions: {} }
 		} as never);
 		vi.mocked(hasPermission).mockReturnValue(true);
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue({ rpc, from } as never);

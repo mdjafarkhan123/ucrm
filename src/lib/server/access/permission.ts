@@ -86,6 +86,22 @@ export async function requireOrganizationPermission(
 	}
 }
 
+// For a route whose permission is shared with core work but whose feature is sold separately: the shared
+// inbox's reply and assignment actions use the same `conversations.*` permissions as emailing a quote, so
+// the package check cannot ride on the permission name. Ask after the permission check, with the access it
+// already resolved; null means the feature is in the plan.
+export function featureUnavailable(
+	access: EffectiveOrganizationAccess,
+	featureKey: string,
+	headers?: HeadersInit
+): Response | null {
+	if (access.features[featureKey] === true) return null;
+	return json(
+		{ error: 'This is not part of your current plan.', reason: 'feature_unavailable' },
+		{ status: 403, headers }
+	);
+}
+
 // Same feature/permission gate as above, plus an owner/admin role check for content that is shared across
 // the whole team (a bad edit changes what every teammate sends) rather than personal to the caller. Mirrors
 // `private.is_organization_admin` at the RLS layer, so a member who fails this never reaches a database

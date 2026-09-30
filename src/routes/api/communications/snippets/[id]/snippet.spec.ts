@@ -17,7 +17,7 @@ const mockedRequire = vi.mocked(requireOrganizationPermission);
 const mockedRateLimit = vi.mocked(checkRateLimit);
 const context = {
 	auth: { organization: { id: 'org-1' }, user: { id: 'user-1' } },
-	access: { permissions: {}, features: {} }
+	access: { permissions: {}, features: { 'communications.inbox': true } }
 } as never;
 
 function builder(result: unknown) {

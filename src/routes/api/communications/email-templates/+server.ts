@@ -2,7 +2,8 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import {
 	requireOrganizationAdmin,
-	requireOrganizationPermission
+	requireOrganizationPermission,
+	featureUnavailable
 } from '$lib/server/access/permission';
 import {
 	NO_STORE_HEADERS,
@@ -31,6 +32,8 @@ const SAVE_LIMIT = { windowSeconds: 60, maxAttempts: 20 };
 export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'conversations.send');
 	if ('response' in check) return check.response;
+	const unavailable = featureUnavailable(check.access, 'communications.inbox');
+	if (unavailable) return unavailable;
 
 	const parsed = emailTemplateListQuerySchema.safeParse(
 		Object.fromEntries(event.url.searchParams.entries())
@@ -106,6 +109,8 @@ export const GET: RequestHandler = async (event) => {
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationAdmin(event, 'conversations.send');
 	if ('response' in check) return check.response;
+	const unavailable = featureUnavailable(check.access, 'communications.inbox');
+	if (unavailable) return unavailable;
 
 	const organizationId = check.auth.organization.id;
 

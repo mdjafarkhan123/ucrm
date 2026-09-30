@@ -26,9 +26,8 @@
 	// The Pipeline nav item is the one link in this shell that isn't available to every organization member
 	// -- Sales Pipeline is a package entitlement plus its own permission, both already enforced by the route
 	// itself. This asks the same question the route asks (so there is one answer, not two), off the
-	// blocking SSR path, so a Starter-tier or unpermitted member never sees a menu item that only leads to a
-	// refusal screen. Defaults to visible until the answer is back, since hiding is the exception, not the
-	// common case.
+	// blocking SSR path, so a member whose plan or role lacks it never sees a menu item that only leads to a
+	// refusal screen.
 	//
 	// The query key carries the user id: the query client lives in the true root layout and survives
 	// sign-out (nothing here clears it), so a key with no identity in it would let a second person who signs
@@ -44,7 +43,8 @@
 		staleTime: 5 * 60_000,
 		enabled: !paused
 	}));
-	const pipelineVisible = $derived(pipelineAccessQuery.data?.ok ?? true);
+	// Pipeline is sold separately, so like Marketing it stays hidden until the server says yes.
+	const pipelineVisible = $derived(pipelineAccessQuery.data?.ok ?? false);
 
 	// Same idea for Clients: a Field member holds no customers.view and only reaches the clients on their
 	// assigned visits, through the job and visit screens. limit=1 keeps the probe to the smallest page.
@@ -131,7 +131,10 @@
 		staleTime: 5 * 60_000,
 		enabled: !paused
 	}));
-	const inboxVisible = $derived(inboxAccessQuery.data?.ok ?? true);
+	// The shared inbox is sold separately, so like Marketing it stays hidden until the server says yes.
+	const inboxVisible = $derived(
+		(inboxAccessQuery.data?.ok ?? false) && (inboxAccessQuery.data?.inbox ?? false)
+	);
 
 	// Every page is its own JavaScript file, so the first visit to one waits for that file to arrive and
 	// the click feels stuck. Once the browser is idle this fetches the code for the pages the office moves

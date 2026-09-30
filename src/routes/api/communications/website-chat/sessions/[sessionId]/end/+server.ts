@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireOrganizationPermission } from '$lib/server/access/permission';
+import { requireOrganizationPermission, featureUnavailable } from '$lib/server/access/permission';
 import { NO_STORE_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
@@ -18,6 +18,8 @@ import {
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'conversations.send');
 	if ('response' in check) return check.response;
+	const unavailable = featureUnavailable(check.access, 'website_chat');
+	if (unavailable) return unavailable;
 
 	const sessionId = event.params.sessionId;
 	if (!sessionId || !UUID_PATTERN.test(sessionId)) {

@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireOrganizationPermission } from '$lib/server/access/permission';
+import { requireOrganizationPermission, featureUnavailable } from '$lib/server/access/permission';
 import {
 	NO_STORE_HEADERS,
 	PRIVATE_READ_HEADERS,
@@ -25,6 +25,8 @@ const SAVE_LIMIT = { windowSeconds: 60, maxAttempts: 20 };
 export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'conversations.send');
 	if ('response' in check) return check.response;
+	const unavailable = featureUnavailable(check.access, 'communications.inbox');
+	if (unavailable) return unavailable;
 
 	const parsed = communicationSnippetListQuerySchema.safeParse(
 		Object.fromEntries(event.url.searchParams.entries())
@@ -77,6 +79,8 @@ export const GET: RequestHandler = async (event) => {
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'conversations.send');
 	if ('response' in check) return check.response;
+	const unavailable = featureUnavailable(check.access, 'communications.inbox');
+	if (unavailable) return unavailable;
 
 	const organizationId = check.auth.organization.id;
 

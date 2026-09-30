@@ -44,7 +44,11 @@ const rpc = vi.fn();
 // to grant it -- the same pair the conversation reply route already asks for.
 function grant(
 	permissions: Record<string, boolean>,
-	features = { 'core.customers_properties': true }
+	features: Record<string, boolean> = {
+		'core.customers_properties': true,
+		'communications.inbox': true,
+		website_chat: true
+	}
 ) {
 	mockedRequire.mockResolvedValue({
 		auth: { organization: { id: 'org-1' }, user: { id: 'user-1' } },

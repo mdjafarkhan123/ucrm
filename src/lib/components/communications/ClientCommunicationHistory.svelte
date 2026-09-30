@@ -23,7 +23,12 @@
 	// read-only, newest first, both directions, compact rows, no composer -- sending stays on the client
 	// header. `active` gates the fetch so landing on the Details tab never pays for this read; the caller
 	// flips it true on tab-active and warms it earlier still via `Tab.onhover`.
-	let { clientId, active }: { clientId: string; active: boolean } = $props();
+	// `inbox` is false when the plan has no shared inbox: the history stays, the link into the inbox goes.
+	let {
+		clientId,
+		active,
+		inbox = true
+	}: { clientId: string; active: boolean; inbox?: boolean } = $props();
 
 	const historyQuery = createInfiniteQuery(() => ({
 		queryKey: clientCommunicationHistoryKey(clientId),
@@ -98,9 +103,11 @@
 			</li>
 		{/each}
 	</ul>
-	<a class="client-history__open" href={`${resolve('/(app)/communications')}?client=${clientId}`}
-		>Open conversation</a
-	>
+	{#if inbox}
+		<a class="client-history__open" href={`${resolve('/(app)/communications')}?client=${clientId}`}
+			>Open conversation</a
+		>
+	{/if}
 	<ListLoadMore
 		hasNextPage={historyQuery.hasNextPage}
 		isFetchingNextPage={historyQuery.isFetchingNextPage}

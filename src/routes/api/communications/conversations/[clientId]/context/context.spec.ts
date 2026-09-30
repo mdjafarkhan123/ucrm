@@ -52,7 +52,12 @@ function allow(...permissions: string[]) {
 		access: {
 			permissions: Object.fromEntries(['customers.view', ...permissions].map((key) => [key, true])),
 			// A permission only counts when the organization's package includes its feature.
-			features: { 'core.quotes': true, 'core.jobs': true, 'sales.pipeline': true }
+			features: {
+				'core.quotes': true,
+				'core.jobs': true,
+				'sales.pipeline': true,
+				'communications.inbox': true
+			}
 		}
 	} as never);
 }

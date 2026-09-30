@@ -63,7 +63,7 @@ describe('following/unfollowing a conversation', () => {
 	it('lets an assigned-only viewer follow for themselves -- no manage_assignment needed', async () => {
 		mockedAccess.mockResolvedValue({
 			permissions: { 'conversations.view_assigned': true },
-			features: {}
+			features: { 'communications.inbox': true }
 		} as never);
 		const response = await POST(event());
 		expect(response.status).toBe(200);
@@ -77,7 +77,7 @@ describe('following/unfollowing a conversation', () => {
 	it("unfollows, always scoped to the caller's own user_id", async () => {
 		mockedAccess.mockResolvedValue({
 			permissions: { 'conversations.view_team': true },
-			features: {}
+			features: { 'communications.inbox': true }
 		} as never);
 		const response = await DELETE(event());
 		expect(response.status).toBe(200);

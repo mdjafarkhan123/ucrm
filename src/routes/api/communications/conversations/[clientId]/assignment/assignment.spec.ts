@@ -49,7 +49,10 @@ describe('assigning a conversation', () => {
 		vi.clearAllMocks();
 		mockedRequire.mockResolvedValue({
 			auth: { organization: { id: 'org-1' }, user: { id: 'user-1' } },
-			access: { permissions: { 'conversations.manage_assignment': true }, features: {} }
+			access: {
+				permissions: { 'conversations.manage_assignment': true },
+				features: { 'communications.inbox': true }
+			}
 		} as never);
 		mockedOwnerClient.mockReturnValue({ from } as never);
 		mockedRateLimit.mockResolvedValue({ allowed: true, retryAfterSeconds: 0 });

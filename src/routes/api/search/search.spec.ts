@@ -113,7 +113,7 @@ describe('global core-record search', () => {
 
 	it('adds conversations only when the member can view them', async () => {
 		mockedAccess.mockResolvedValue({
-			features: {},
+			features: { 'communications.inbox': true },
 			permissions: { 'conversations.view_assigned': true }
 		} as never);
 		mockedConversationSearch.mockResolvedValue([
@@ -134,5 +134,17 @@ describe('global core-record search', () => {
 			userId: 'user-1'
 		});
 		expect((await response.json()).groups.conversations).toHaveLength(1);
+	});
+
+	it('leaves conversations out when the plan has no shared inbox', async () => {
+		mockedAccess.mockResolvedValue({
+			features: {},
+			permissions: { 'conversations.view_team': true }
+		} as never);
+
+		const response = await GET(event('roof'));
+
+		expect(mockedConversationSearch).not.toHaveBeenCalled();
+		expect((await response.json()).groups.conversations).toBeUndefined();
 	});
 });

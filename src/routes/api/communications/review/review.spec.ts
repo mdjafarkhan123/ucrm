@@ -39,7 +39,10 @@ describe('resolving a guarded conversation', () => {
 		vi.clearAllMocks();
 		mockedRequire.mockResolvedValue({
 			auth: { organization: { id: 'org-1' }, user: { id: 'user-1' } },
-			access: { permissions: { 'conversations.manage_assignment': true }, features: {} }
+			access: {
+				permissions: { 'conversations.manage_assignment': true },
+				features: { 'communications.inbox': true }
+			}
 		} as never);
 		mockedOwnerClient.mockReturnValue({ rpc } as never);
 		mockedRateLimit.mockResolvedValue({ allowed: true, retryAfterSeconds: 0 });

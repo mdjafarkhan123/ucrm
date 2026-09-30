@@ -1,6 +1,10 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
+import {
+	hasPermission,
+	requireOrganizationPermission,
+	featureUnavailable
+} from '$lib/server/access/permission';
 import { renderManualEmailHtml } from '$lib/server/communications/manual-email';
 import {
 	OutboundAttachmentError,
@@ -18,6 +22,8 @@ const noStore = { 'Cache-Control': 'no-store' };
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'conversations.send');
 	if ('response' in check) return check.response;
+	const unavailable = featureUnavailable(check.access, 'communications.inbox');
+	if (unavailable) return unavailable;
 	if (!hasPermission(check.access, 'customers.view')) {
 		return json(
 			{ error: 'You do not have access to this customer.', reason: 'permission_denied' },

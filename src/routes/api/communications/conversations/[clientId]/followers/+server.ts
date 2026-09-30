@@ -3,7 +3,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getOrganizationContext, type OrganizationContext } from '$lib/server/auth/organization';
 import { resolveOrganizationAccess } from '$lib/server/access/effective';
-import { hasPermission } from '$lib/server/access/permission';
+import { featureUnavailable, hasPermission } from '$lib/server/access/permission';
 import {
 	NO_STORE_HEADERS,
 	databaseError,
@@ -44,6 +44,8 @@ async function requireConversationView(event: RequestEvent): Promise<Conversatio
 			)
 		};
 	}
+	const unavailable = featureUnavailable(access, 'communications.inbox', NO_STORE_HEADERS);
+	if (unavailable) return { response: unavailable };
 	return { auth };
 }
 

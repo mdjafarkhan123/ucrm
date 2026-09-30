@@ -29,8 +29,12 @@ export const GET: RequestHandler = async (event) => {
 			auth.organization.id,
 			auth.user.id
 		);
-		const canViewTeamConversations = hasPermission(access, 'conversations.view_team');
-		const canViewAssignedConversations = hasPermission(access, 'conversations.view_assigned');
+		// Conversation results open the shared inbox, so they go when the plan has no inbox.
+		const inboxIncluded = access.features['communications.inbox'] === true;
+		const canViewTeamConversations =
+			inboxIncluded && hasPermission(access, 'conversations.view_team');
+		const canViewAssignedConversations =
+			inboxIncluded && hasPermission(access, 'conversations.view_assigned');
 		const [coreGroups, conversations] = await Promise.all([
 			searchCoreRecords(event.locals.supabase, auth.organization.id, parsed.data.q, {
 				clients: hasPermission(access, 'customers.view'),
