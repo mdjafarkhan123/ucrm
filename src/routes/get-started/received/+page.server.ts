@@ -5,8 +5,12 @@ import type { PageServerLoad } from './$types';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function formatPrice(cents: number) {
-	return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0 })}/mo`;
+function formatPrice(cents: number, billingPeriod: string | undefined) {
+	const amount = `$${(cents / 100).toLocaleString('en-US', {
+		minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+		maximumFractionDigits: 2
+	})}`;
+	return billingPeriod === 'year' ? `${amount}/yr, paid upfront` : `${amount}/mo`;
 }
 
 /**
@@ -41,6 +45,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	const snapshot = applicationResult.data?.package_snapshot as {
 		display_name?: string;
 		price_usd_cents?: number;
+		billing_period?: string;
 	} | null;
 	if (!snapshot || !templateResult.data?.body_published) {
 		return { renderedBody: null };
@@ -48,7 +53,10 @@ export const load: PageServerLoad = async ({ url }) => {
 
 	const renderedBody = renderTemplate(templateResult.data.body_published, {
 		package_name: snapshot.display_name ?? '',
-		price: typeof snapshot.price_usd_cents === 'number' ? formatPrice(snapshot.price_usd_cents) : '',
+		price:
+			typeof snapshot.price_usd_cents === 'number'
+				? formatPrice(snapshot.price_usd_cents, snapshot.billing_period)
+				: '',
 		payment_instructions: settings.payment_instructions ?? ''
 	});
 

@@ -91,15 +91,17 @@ export const POST: RequestHandler = async (event) => {
 				}
 			}
 		);
-		// The package can be retired or removed between the visitor loading the page and submitting it.
-		// The database refuses that on purpose, so it is the visitor's problem to fix, not a fault
-		// worth waking the owner for: ask them to pick again instead of showing a server error.
+		// The package can be revised, retired, or removed between the visitor loading the page and
+		// submitting it. The database refuses that on purpose so nobody agrees to terms they were not
+		// shown; it is not a fault worth waking the owner for. The page reloads the packages and asks
+		// the visitor to review the current terms.
 		if (submitError && UNAVAILABLE_PACKAGE_CODES.has(submitError.code))
 			return json(
 				{
-					error: 'That package is no longer available. Please choose another one.',
+					error: 'That package has changed or is no longer offered. Please review it again.',
 					field_errors: {
-						package_edition_id: 'That package is no longer available. Please choose another one.'
+						package_edition_id:
+							'That package has changed or is no longer offered. Please review it again.'
 					}
 				},
 				{ status: 422 }

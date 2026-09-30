@@ -224,7 +224,7 @@ describe('public onboarding application submission API boundary', () => {
 		const result = await response.json();
 
 		expect(response.status).toBe(422);
-		expect(result.field_errors.package_edition_id).toContain('no longer available');
+		expect(result.field_errors.package_edition_id).toContain('no longer offered');
 		expect(mockedRaiseAlert).not.toHaveBeenCalled();
 		expect(mockedSendReceipt).not.toHaveBeenCalled();
 	});
