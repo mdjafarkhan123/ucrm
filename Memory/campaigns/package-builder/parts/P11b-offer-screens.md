@@ -11,12 +11,13 @@
 - [x] Change package dialog: Offer box (automatic list, "Enter a code…", keep tick box, off by default); preview and command carry `offer_id`, `offer_code`, `keep_offer`
 - [x] Billing tab shows the running offer and the scheduled change's offer (migration `20261001150000`)
 - [x] Activation APIs accept `offer_decision`, `offer_code`, `expected_first_charge_usd_cents`; prospects page types and payment hints use the intro price
-- [ ] Activation dialog UI in `src/routes/jafar/(protected)/prospects/+page.svelte`
-- [ ] API tests for the offer routes; browser check of the done-check
+- [x] Activation dialog UI in `src/routes/jafar/(protected)/prospects/+page.svelte`
+- [x] API tests for the offer routes (`package-offers.spec.ts`)
+- [ ] Browser check of the done-check
 
 ## Next
 
-In the prospects page's activation `ConfirmDialog` (search `confirmingProvision`): add state for offer decision and typed code (reset in `openProvisionConfirm`); add both to the activation query key and to `loadActivation`'s URL (`offer_decision`, `offer_code`); show an "Intro offer" row (terms and first charge from `activation.offer.terms` / `first_charge_usd_cents`); when `activation.offer.source === 'shown'` and it has problems, offer Honor / Normal price; otherwise a code input with Apply. The `provisionOrganization` mutation must send `offer_decision`, `offer_code`, and `expected_first_charge_usd_cents: activation.first_charge_usd_cents`. Imported but still unused there: `offerDiscount`, `offerLength`.
+Run the browser check in the done line: build the offer on Jafar's Packages page, look at the package card and `/get-started`, then activate a test application with it and confirm the first charge is half the price.
 
 ## Outside actions
 
