@@ -3,9 +3,9 @@
 **Goal:** Jafar can build configurable packages and manually assign published editions that preserve each customer's features, limits, and price.
 **Plan:** `docs/package-builder-behavior-contract.md` · **Technical approach:** `docs/adr/0003-package-editions-agreements-and-offsite-billing-ledger.md`
 
-**Completed:** Planning; stage 1 Foundation; stage 2 drafts and publish; P8a and P8b package changes; P9 public package cards and details; P10 activate a paid application, 2026-09-30.
+**Completed:** Planning; stage 1 Foundation; stage 2 drafts and publish; P8a and P8b package changes; P9 public package cards and details; P10 activate a paid application; P11a offer rules (database), 2026-09-30.
 
-**Next part:** P11 introductory offers (stage 3). P12 is also ready.
+**Next part:** P11b offer screens (stage 3). The database already takes the new optional offer inputs on change preview, change, activation preview, and activation. P12 is also ready.
 
 **Waiting on Jafar:** (1) OK to add P10's four activation rules to the plan § Offsite payment and coverage: coverage starts on the business's local activation day; first payment must cover the agreed price (extra is credit); a prospect's package changes only before payment or after a reversal; activation uses the edition the customer agreed to. (2) Jaaroweb is still on Starter Check from the P8b check; restoring it needs his password on the Billing tab.
 

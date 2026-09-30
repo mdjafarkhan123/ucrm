@@ -11549,6 +11549,163 @@ export type Database = {
 					}
 				];
 			};
+			package_offer_claims: {
+				Row: {
+					actor_owner_email: string;
+					agreement_id: string;
+					created_at: string;
+					honored: boolean;
+					id: string;
+					method: string;
+					offer_id: string;
+					organization_id: string;
+					released_at: string | null;
+				};
+				Insert: {
+					actor_owner_email: string;
+					agreement_id: string;
+					created_at?: string;
+					honored?: boolean;
+					id?: string;
+					method: string;
+					offer_id: string;
+					organization_id: string;
+					released_at?: string | null;
+				};
+				Update: {
+					actor_owner_email?: string;
+					agreement_id?: string;
+					created_at?: string;
+					honored?: boolean;
+					id?: string;
+					method?: string;
+					offer_id?: string;
+					organization_id?: string;
+					released_at?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'package_offer_claims_agreement_id_fkey';
+						columns: ['agreement_id'];
+						isOneToOne: true;
+						referencedRelation: 'organization_package_agreements';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'package_offer_claims_offer_id_fkey';
+						columns: ['offer_id'];
+						isOneToOne: false;
+						referencedRelation: 'package_offers';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'package_offer_claims_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			package_offer_packages: {
+				Row: {
+					offer_id: string;
+					package_id: string;
+				};
+				Insert: {
+					offer_id: string;
+					package_id: string;
+				};
+				Update: {
+					offer_id?: string;
+					package_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'package_offer_packages_offer_id_fkey';
+						columns: ['offer_id'];
+						isOneToOne: false;
+						referencedRelation: 'package_offers';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'package_offer_packages_package_id_fkey';
+						columns: ['package_id'];
+						isOneToOne: false;
+						referencedRelation: 'packages';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			package_offers: {
+				Row: {
+					actor_owner_email: string;
+					amount_off_usd_cents: number | null;
+					applies_to_monthly: boolean;
+					applies_to_yearly: boolean;
+					apply_mode: string;
+					archived_at: string | null;
+					claim_ends_at: string | null;
+					claim_starts_at: string;
+					code: string | null;
+					created_at: string;
+					customer_eligibility: string;
+					discount_kind: string;
+					id: string;
+					idempotency_key: string;
+					monthly_periods: number | null;
+					name: string;
+					percent_off: number | null;
+					redemption_cap: number | null;
+					revision: number;
+					updated_at: string;
+				};
+				Insert: {
+					actor_owner_email: string;
+					amount_off_usd_cents?: number | null;
+					applies_to_monthly: boolean;
+					applies_to_yearly: boolean;
+					apply_mode: string;
+					archived_at?: string | null;
+					claim_ends_at?: string | null;
+					claim_starts_at: string;
+					code?: string | null;
+					created_at?: string;
+					customer_eligibility: string;
+					discount_kind: string;
+					id?: string;
+					idempotency_key: string;
+					monthly_periods?: number | null;
+					name: string;
+					percent_off?: number | null;
+					redemption_cap?: number | null;
+					revision?: number;
+					updated_at?: string;
+				};
+				Update: {
+					actor_owner_email?: string;
+					amount_off_usd_cents?: number | null;
+					applies_to_monthly?: boolean;
+					applies_to_yearly?: boolean;
+					apply_mode?: string;
+					archived_at?: string | null;
+					claim_ends_at?: string | null;
+					claim_starts_at?: string;
+					code?: string | null;
+					created_at?: string;
+					customer_eligibility?: string;
+					discount_kind?: string;
+					id?: string;
+					idempotency_key?: string;
+					monthly_periods?: number | null;
+					name?: string;
+					percent_off?: number | null;
+					redemption_cap?: number | null;
+					revision?: number;
+					updated_at?: string;
+				};
+				Relationships: [];
+			};
 			packages: {
 				Row: {
 					archived_at: string | null;
@@ -16155,8 +16312,11 @@ export type Database = {
 					expected_credit_usd_cents: number;
 					expected_effective_date: string;
 					idempotency_key: string;
+					keep_offer?: boolean;
+					offer_code?: string;
 					reason: string;
 					target_edition_id: string;
+					target_offer_id?: string;
 					target_organization_id: string;
 					timing: string;
 				};
@@ -21346,7 +21506,11 @@ export type Database = {
 				Returns: boolean;
 			};
 			owner_onboarding_activation_preview: {
-				Args: { target_application_id: string };
+				Args: {
+					offer_code?: string;
+					offer_decision?: string;
+					target_application_id: string;
+				};
 				Returns: Json;
 			};
 			owner_organization_billing: {
@@ -21379,12 +21543,16 @@ export type Database = {
 			owner_package_change_preview: {
 				Args: {
 					billing_interval: string;
+					keep_offer?: boolean;
+					offer_code?: string;
 					target_edition_id: string;
+					target_offer_id?: string;
 					target_organization_id: string;
 					timing: string;
 				};
 				Returns: Json;
 			};
+			owner_package_offers: { Args: never; Returns: Json };
 			pause_automation_enrollment: {
 				Args: {
 					p_actor_user_id: string;
@@ -21830,6 +21998,9 @@ export type Database = {
 				Args: {
 					expected_covered_from: string;
 					expected_covered_through: string;
+					expected_first_charge_usd_cents?: number;
+					offer_code?: string;
+					offer_decision?: string;
 					target_actor_owner_email: string;
 					target_administrator_user_id: string;
 					target_application_id: string;
@@ -21839,6 +22010,7 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			public_package_offers: { Args: never; Returns: Json };
 			publish_form_draft: {
 				Args: {
 					expected_revision: number;
@@ -23441,6 +23613,29 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			save_package_offer: {
+				Args: {
+					actor_owner_email: string;
+					amount_off_usd_cents: number;
+					applies_to_monthly: boolean;
+					applies_to_yearly: boolean;
+					apply_mode: string;
+					claim_ends_at: string;
+					claim_starts_at: string;
+					code: string;
+					customer_eligibility: string;
+					discount_kind: string;
+					expected_revision: number;
+					idempotency_key: string;
+					monthly_periods: number;
+					name: string;
+					offer_id: string;
+					package_ids: string[];
+					percent_off: number;
+					redemption_cap: number;
+				};
+				Returns: Json;
+			};
 			save_pipeline_presentation: {
 				Args: {
 					expected_revision: number;
@@ -23880,6 +24075,10 @@ export type Database = {
 					archived: boolean;
 					target_package_id: string;
 				};
+				Returns: Json;
+			};
+			set_package_offer_archived: {
+				Args: { actor_owner_email: string; archived: boolean; offer_id: string };
 				Returns: Json;
 			};
 			set_package_visibility: {
