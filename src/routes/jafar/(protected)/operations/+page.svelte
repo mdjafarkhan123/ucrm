@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { replaceState } from '$app/navigation';
+	import { tick } from 'svelte';
+	import { afterNavigate, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { markRecordNotificationsRead, notificationsKey } from '$lib/jafar/notifications';
@@ -96,8 +97,8 @@
 	 * The filter is switched to every status first, because a failure that already succeeded
 	 * on retry is hidden by the default working view and the link would land on nothing.
 	 */
-	$effect(() => {
-		const operationId = page.url.searchParams.get('operation');
+	afterNavigate(({ to }) => {
+		const operationId = to?.url.searchParams.get('operation');
 		if (!operationId) return;
 
 		statusFilter = 'all';
@@ -107,7 +108,8 @@
 			queryClient.invalidateQueries({ queryKey: notificationsKey })
 		);
 
-		replaceState(resolve('/jafar/operations'), page.state);
+		// On a fresh load SvelteKit runs this just before its router is ready, and replaceState would throw.
+		void tick().then(() => replaceState(resolve('/jafar/operations'), page.state));
 	});
 
 	function handleRowKeydown(event: KeyboardEvent, id: string) {

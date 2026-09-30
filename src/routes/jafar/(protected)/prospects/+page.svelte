@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { replaceState } from '$app/navigation';
+	import { tick } from 'svelte';
+	import { afterNavigate, replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { markRecordNotificationsRead, notificationsKey } from '$lib/jafar/notifications';
@@ -339,21 +340,26 @@
 		confirmingProvision = true;
 	}
 
-	function openPackageForm(detail: ProspectDetail) {
+	async function openPackageForm(detail: ProspectDetail) {
 		clearFeedback();
 		editingCorrection = false;
 		confirmingNotProceeding = false;
 		confirmingPayment = false;
 		confirmingProvision = false;
 		confirmingReversal = false;
-		packageForm = {
-			package_id:
-				packageChoices.find((pkg) => pkg.published?.edition_id === detail.package_edition_id)?.id ??
-				'',
-			billing_interval: detail.billing_interval,
-			reason: ''
-		};
+		packageForm = { package_id: '', billing_interval: detail.billing_interval, reason: '' };
 		changingPackage = true;
+		// Start on the customer's current package, once the list is in (it may still be loading on a fast click).
+		const packages = await queryClient.ensureQueryData({
+			queryKey: jafarPackagesKey,
+			queryFn: fetchPackages,
+			staleTime: 30_000
+		});
+		if (!changingPackage || packageForm.package_id) return;
+		packageForm.package_id =
+			packages.find(
+				(pkg) => !pkg.archived_at && pkg.published?.edition_id === detail.package_edition_id
+			)?.id ?? '';
 	}
 
 	function prefetchPackages() {
@@ -751,8 +757,8 @@
 	 * parameter is dropped from the address so a later refresh or a Back does not force the
 	 * panel open again.
 	 */
-	$effect(() => {
-		const applicationId = page.url.searchParams.get('application');
+	afterNavigate(({ to }) => {
+		const applicationId = to?.url.searchParams.get('application');
 		if (!applicationId) return;
 
 		selectProspect(applicationId);
@@ -760,7 +766,8 @@
 			queryClient.invalidateQueries({ queryKey: notificationsKey })
 		);
 
-		replaceState(resolve('/jafar/prospects'), page.state);
+		// On a fresh load SvelteKit runs this just before its router is ready, and replaceState would throw.
+		void tick().then(() => replaceState(resolve('/jafar/prospects'), page.state));
 	});
 
 	function handleProspectRowKeydown(event: KeyboardEvent, id: string) {
@@ -1195,7 +1202,7 @@
 									variant="tertiary"
 									disabled={changingPackage}
 									onhover={prefetchPackages}
-									onclick={() => openPackageForm(detail)}>Change package</Button
+									onclick={() => void openPackageForm(detail)}>Change package</Button
 								>
 							{/if}
 							{#if unpaidStages.includes(detail.stage) && !hasPayment}
