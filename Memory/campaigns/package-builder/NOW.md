@@ -5,7 +5,7 @@
 
 **Completed:** Planning (P1, P2). Jafar approved the build parts on 2026-09-29.
 
-**Next part:** P5 Grace, suspension, and free access (`stages/1-foundation.md`).
+**Next part:** P5a Pause and free access in the database (`stages/1-foundation.md`).
 
 **Blockers:** None. **Asked Jafar 2026-09-30:** approve which billing actions ask for the password (`billingStepUpActions`)?
 
