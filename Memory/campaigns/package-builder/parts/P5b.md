@@ -8,7 +8,7 @@
 
 - [x] Migration `20260930160000_contractor_account_standing.sql` (applied to the LOCAL database only) and test `contractor_account_standing.sql` (8 pass locally)
 - [x] `src/lib/account/standing.ts`, `components/layout/AccountGraceBanner.svelte`, `components/layout/PausedAccountScreen.svelte` written; not yet wired in or checked with the Svelte autofixer
-- [ ] Push the migration live, regenerate types (`npm run db:types`, then prettier on the file)
+- [x] Push the migration live, regenerate types (`npm run db:types`, then prettier on the file)
 - [ ] Wire in (below), autofixer, `npm run check` (needs `NODE_OPTIONS=--max-old-space-size=8192`), browser check, commit
 
 ## Next
@@ -21,4 +21,4 @@
 
 ## Outside actions
 
-- Live migration push — check: `select version from supabase_migrations.schema_migrations where version = '20260930160000'` — pending
+- Live migration push — check: `select version from supabase_migrations.schema_migrations where version = '20260930160000'` — done 2026-09-30

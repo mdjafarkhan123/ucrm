@@ -17880,6 +17880,7 @@ export type Database = {
 					consumed: boolean;
 				}[];
 			};
+			contractor_account_standing: { Args: never; Returns: Json };
 			convert_quote_to_job: {
 				Args: {
 					idempotency_key: string;
