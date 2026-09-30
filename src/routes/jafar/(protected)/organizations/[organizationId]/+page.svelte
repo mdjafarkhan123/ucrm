@@ -359,7 +359,6 @@
 				{access}
 				{preview}
 				{commercialQuery}
-				{teamQuery}
 				{historyQuery}
 				{organizationOperationsQuery}
 				{applicationOperationsQuery}

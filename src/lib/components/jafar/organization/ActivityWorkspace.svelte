@@ -2,7 +2,6 @@
 	import type {
 		EffectiveAccess,
 		CommercialState,
-		TeamResponse,
 		HistoryResponse,
 		OperationListResponse,
 		OperationAttempt
@@ -27,7 +26,6 @@
 		access,
 		preview,
 		commercialQuery,
-		teamQuery,
 		historyQuery,
 		organizationOperationsQuery,
 		applicationOperationsQuery,
@@ -37,7 +35,6 @@
 		access: EffectiveAccess | null;
 		preview: OrganizationDetailPreview | null;
 		commercialQuery: CreateQueryResult<CommercialState, Error>;
-		teamQuery: CreateQueryResult<TeamResponse, Error>;
 		historyQuery: CreateQueryResult<HistoryResponse, Error>;
 		organizationOperationsQuery: CreateQueryResult<OperationListResponse, Error>;
 		applicationOperationsQuery: CreateQueryResult<OperationListResponse, Error>;

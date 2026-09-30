@@ -256,10 +256,6 @@
 		)
 	);
 
-	function chargeLabel(chargeId: string) {
-		const charge = billing?.charges.find((candidate) => candidate.id === chargeId);
-		return charge ? formatPeriod(charge.period_start, charge.period_end) : 'a charge';
-	}
 	function receiptLabel(receiptId: string) {
 		const receipt = billing?.receipts.find((candidate) => candidate.id === receiptId);
 		return receipt
