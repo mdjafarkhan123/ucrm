@@ -8,20 +8,22 @@ import type { DefinitionLimits } from '$lib/server/automation/definition';
 // files so both the create and save handlers derive limits and translate a command's error the exact same
 // way.
 
-// The two structural limits validateDefinition enforces, projected from the resolved Automation access.
+// The per-recipe limits validateDefinition enforces, projected from the resolved Automation access.
 // `null` means unlimited; a non-numeric/absent limit is treated as unlimited so a save is never blocked by a
 // missing ceiling (activation, not save, enforces the active-recipes count).
 export function definitionLimits(automation: AutomationAccess): DefinitionLimits {
-	const asMax = (
-		key: 'automation_max_conditions_per_recipe' | 'automation_max_steps_per_recipe'
-	) => {
+	const asMax = (key: Exclude<keyof AutomationAccess['limits'], 'automation_active_recipes'>) => {
 		const limit = automation.limits[key];
 		if (limit.is_unlimited || limit.state !== 'numeric') return null;
 		return limit.value;
 	};
 	return {
 		maxConditions: asMax('automation_max_conditions_per_recipe'),
-		maxSteps: asMax('automation_max_steps_per_recipe')
+		maxSteps: asMax('automation_max_steps_per_recipe'),
+		maxCustomerMessages: asMax('automation_max_customer_messages_per_enrollment'),
+		minMessageSpacingMinutes: asMax('automation_min_customer_message_spacing_minutes'),
+		maxDelayDays: asMax('automation_max_delay_days'),
+		maxEnrollmentDays: asMax('automation_max_enrollment_duration_days')
 	};
 }
 

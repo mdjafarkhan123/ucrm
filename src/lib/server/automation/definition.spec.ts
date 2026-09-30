@@ -2,7 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { validateDefinition, type DefinitionLimits } from './definition';
 import { AUTOMATION_SCHEMA_VERSION } from '$lib/automation/catalog';
 
-const noLimits: DefinitionLimits = { maxConditions: null, maxSteps: null };
+const noLimits: DefinitionLimits = {
+	maxConditions: null,
+	maxSteps: null,
+	maxCustomerMessages: null,
+	minMessageSpacingMinutes: null,
+	maxDelayDays: null,
+	maxEnrollmentDays: null
+};
+const wait = (unit: 'minutes' | 'hours' | 'days', amount: number) => ({
+	type: 'wait',
+	key: 'wait.relative_delay',
+	config: { unit, amount }
+});
 const emailConfig = {
 	subject: 'Following up on your quote',
 	body: 'Hi {{customer_name}}, just checking in — view your quote here: {{quote_link}}'
@@ -140,7 +152,7 @@ describe('validateDefinition', () => {
 					{ key: 'quote.current_status', config: { statuses: ['awaiting_response'] } }
 				]
 			}),
-			{ maxConditions: 1, maxSteps: null },
+			{ ...noLimits, maxConditions: 1 },
 			'draft'
 		);
 		expect(result.ok).toBe(false);
@@ -262,6 +274,54 @@ describe('validateDefinition', () => {
 			const preset = getAutomationPreset('website_speed_to_lead');
 			expect(preset).toBeDefined();
 			expect(validateDefinition(preset!.blueprint, noLimits, 'activation').ok).toBe(true);
+		});
+	});
+
+	describe('platform safety values', () => {
+		const email = () => ({ type: 'action', key: 'action.send_email', config: { ...emailConfig } });
+		const errorsFor = (steps: unknown[], limits: Partial<DefinitionLimits>) => {
+			const result = validateDefinition(validInput({ steps }), { ...noLimits, ...limits }, 'draft');
+			return result.ok ? [] : result.errors;
+		};
+
+		it('refuses a single wait longer than the longest allowed wait, in any unit', () => {
+			expect(errorsFor([wait('days', 90), email()], { maxDelayDays: 90 })).toEqual([]);
+			expect(errorsFor([wait('days', 91), email()], { maxDelayDays: 90 })[0]?.path).toBe(
+				'steps.0.config.amount'
+			);
+			expect(errorsFor([wait('hours', 2161), email()], { maxDelayDays: 90 })).toHaveLength(1);
+		});
+
+		it('refuses more customer messages than one run may send', () => {
+			const five = Array.from({ length: 5 }, () => [wait('days', 1), email()]).flat();
+			expect(errorsFor(five, { maxCustomerMessages: 5 })).toEqual([]);
+			const six = [...five, wait('days', 1), email()];
+			expect(errorsFor(six, { maxCustomerMessages: 5 })[0]?.path).toBe('steps');
+		});
+
+		it('refuses two customer messages closer together than the shortest gap', () => {
+			expect(
+				errorsFor([email(), wait('minutes', 60), email()], { minMessageSpacingMinutes: 60 })
+			).toEqual([]);
+			// Two short waits in a row add up.
+			expect(
+				errorsFor([email(), wait('minutes', 30), wait('minutes', 30), email()], {
+					minMessageSpacingMinutes: 60
+				})
+			).toEqual([]);
+			const tooClose = errorsFor([email(), wait('minutes', 59), email()], {
+				minMessageSpacingMinutes: 60
+			});
+			expect(tooClose[0]?.path).toBe('steps.2');
+			expect(errorsFor([email(), email()], { minMessageSpacingMinutes: 60 })).toHaveLength(1);
+		});
+
+		it('refuses waits that add up to more than a run may last', () => {
+			const steps = [wait('days', 90), email(), wait('days', 90), email()];
+			expect(errorsFor(steps, { maxEnrollmentDays: 180 })).toEqual([]);
+			expect(
+				errorsFor([...steps, wait('days', 1), email()], { maxEnrollmentDays: 180 })[0]?.path
+			).toBe('steps');
 		});
 	});
 });

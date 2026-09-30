@@ -14,17 +14,92 @@ import {
 	fitsSubject,
 	getCatalogEntry,
 	isEnabled,
+	sendsCustomerMessage,
 	triggerSubject,
 	type CatalogEntry,
 	type CatalogSubject
 } from '$lib/automation/catalog';
 
-// Structural per-recipe limits the save path enforces. Values come from the resolved package/override
-// limits; `null` means unlimited. The active-recipes count limit is an activation check, not here.
+// Per-recipe limits the save path enforces. Values come from the resolved package/override limits and the
+// platform-wide safety values; `null` means unlimited. The active-recipes count limit is an activation check,
+// not here.
 export type DefinitionLimits = {
 	maxConditions: number | null;
 	maxSteps: number | null;
+	maxCustomerMessages: number | null;
+	minMessageSpacingMinutes: number | null;
+	maxDelayDays: number | null;
+	// The whole run ends after this many days, so waits adding up to more would never finish.
+	maxEnrollmentDays: number | null;
 };
+
+const MINUTES_PER_UNIT = { minutes: 1, hours: 60, days: 1440 } as const;
+
+function plural(count: number, word: string): string {
+	return `${count} ${word}${count === 1 ? '' : 's'}`;
+}
+
+function spacingText(minutes: number): string {
+	if (minutes % 1440 === 0) return plural(minutes / 1440, 'day');
+	if (minutes % 60 === 0) return plural(minutes / 60, 'hour');
+	return plural(minutes, 'minute');
+}
+
+// The safety values measured along the sequence: each wait's length, how many customer messages it sends,
+// the waiting time between two of them, and the waiting time in total. Wait days count as full days; the
+// engine keeping the local time of day never shortens a gap below the next whole day.
+function checkSequence(
+	steps: CanonicalDefinition['steps'],
+	limits: DefinitionLimits,
+	errors: DefinitionError[]
+): void {
+	let totalMinutes = 0;
+	let sinceLastMessage: number | null = null;
+	let messages = 0;
+	steps.forEach((step, index) => {
+		if (step.type === 'wait') {
+			const { unit, amount } = step.config as {
+				unit: keyof typeof MINUTES_PER_UNIT;
+				amount: number;
+			};
+			const minutes = amount * MINUTES_PER_UNIT[unit];
+			if (limits.maxDelayDays !== null && minutes > limits.maxDelayDays * 1440) {
+				errors.push({
+					path: `steps.${index}.config.amount`,
+					message: `A single wait can be at most ${plural(limits.maxDelayDays, 'day')}.`
+				});
+			}
+			totalMinutes += minutes;
+			if (sinceLastMessage !== null) sinceLastMessage += minutes;
+			return;
+		}
+		if (!sendsCustomerMessage(step.key)) return;
+		messages += 1;
+		if (
+			limits.minMessageSpacingMinutes !== null &&
+			sinceLastMessage !== null &&
+			sinceLastMessage < limits.minMessageSpacingMinutes
+		) {
+			errors.push({
+				path: `steps.${index}`,
+				message: `Wait at least ${spacingText(limits.minMessageSpacingMinutes)} between two messages to the customer.`
+			});
+		}
+		sinceLastMessage = 0;
+	});
+	if (limits.maxCustomerMessages !== null && messages > limits.maxCustomerMessages) {
+		errors.push({
+			path: 'steps',
+			message: `One customer can get at most ${plural(limits.maxCustomerMessages, 'message')} from an automation.`
+		});
+	}
+	if (limits.maxEnrollmentDays !== null && totalMinutes > limits.maxEnrollmentDays * 1440) {
+		errors.push({
+			path: 'steps',
+			message: `All the waits together can add up to at most ${plural(limits.maxEnrollmentDays, 'day')}.`
+		});
+	}
+}
 
 export type DefinitionMode = 'draft' | 'activation';
 
@@ -188,6 +263,9 @@ export function validateDefinition(
 			config: entry ? validateConfig(entry, step.config, path, errors) : step.config
 		};
 	});
+
+	// Only a sequence whose every step is valid can be measured against the safety values.
+	if (errors.length === 0) checkSequence(steps, limits, errors);
 
 	// Stops: each an enabled catalog stop. Duplicates are collapsed so the same outcome is not listed twice.
 	const seenStops = new Set<string>();
