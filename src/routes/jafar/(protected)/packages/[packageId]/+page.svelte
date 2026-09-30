@@ -7,6 +7,8 @@
 	import packageIcon from '@tabler/icons/outline/package.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
+	import sendIcon from '@tabler/icons/outline/send.svg?raw';
 	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
@@ -24,11 +26,16 @@
 	import PackageAllowancesBlock from '$lib/components/jafar/packages/PackageAllowancesBlock.svelte';
 	import PackageCapabilitiesBlock from '$lib/components/jafar/packages/PackageCapabilitiesBlock.svelte';
 	import PackageDraftConflictDialog from '$lib/components/jafar/packages/PackageDraftConflictDialog.svelte';
+	import PackageHistory from '$lib/components/jafar/packages/PackageHistory.svelte';
 	import PackageListRows from '$lib/components/jafar/packages/PackageListRows.svelte';
+	import PackagePublishDialog from '$lib/components/jafar/packages/PackagePublishDialog.svelte';
+	import PackageWebsiteReminder from '$lib/components/jafar/packages/PackageWebsiteReminder.svelte';
 	import { jafarPackageKey, jafarPackagesKey } from '$lib/jafar/query-keys';
 	import {
 		allowanceApplies,
+		changePackage,
 		deletePackageDraft,
+		describeDraft,
 		draftDifferences,
 		fetchPackageBuilder,
 		formatUsd,
@@ -36,15 +43,19 @@
 		isStaleDraft,
 		openPackageDraft,
 		PackageApiError,
+		publishPackageDraft,
 		savePackageDraft,
+		type CatalogAction,
 		type DraftForm,
 		type EditionTerms,
-		type PackageBuilder
+		type PackageBuilder,
+		type PublishProblem
 	} from '$lib/jafar/packages';
 
 	// Package builder P6: Jafar edits one package's draft and saves all of it together. The save names the
 	// revision this tab loaded; if another tab saved first, nothing is written and the two versions are
-	// compared (ADR 0003 decision 3). Publishing, visibility, and archiving arrive in P7.
+	// compared (ADR 0003 decision 3). P7: Jafar publishes the exact saved draft after reviewing it, and
+	// changes who can choose the package, archives or restores it, and confirms the marketing site matches.
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 	const packageId = $derived(page.params.packageId ?? '');
@@ -66,6 +77,11 @@
 	let deleteOpen = $state(false);
 	let deleting = $state(false);
 	let layout = $state<RecordFormLayout>();
+	let publishOpen = $state(false);
+	let publishing = $state(false);
+	let publishProblems = $state<PublishProblem[]>([]);
+	let archiveOpen = $state(false);
+	let catalogPending = $state<CatalogAction['action'] | null>(null);
 
 	/** The draft exactly as it would be saved: core features always in, one allowance row per allowance. */
 	function normalize(draft: DraftForm, reference: PackageBuilder): DraftForm {
@@ -201,11 +217,17 @@
 			conflict = null;
 			queryClient.setQueryData<PackageBuilder>(jafarPackageKey(packageId), (current) =>
 				current
-					? { ...current, draft, package: { ...current.package, slug: normalized.slug } }
+					? {
+							...current,
+							draft: { ...draft, publish_problems: current.draft?.publish_problems ?? [] },
+							package: { ...current.package, slug: normalized.slug }
+						}
 					: current
 			);
 			load({ ...builder!, package: { ...builder!.package, slug: normalized.slug } }, draft);
-			await queryClient.invalidateQueries({ queryKey: jafarPackagesKey });
+			// The publish checks for the new terms come with the refetched package; saving stays true until
+			// they arrive, so Review and publish never offers the old answer.
+			await refreshPackage();
 			toast.success('Draft saved.');
 		} catch (error) {
 			if (isStaleDraft(error) && error.body.draft) {
@@ -242,7 +264,12 @@
 		const saved = conflict;
 		conflict = null;
 		queryClient.setQueryData<PackageBuilder>(jafarPackageKey(packageId), (current) =>
-			current ? { ...current, draft: saved } : current
+			current
+				? {
+						...current,
+						draft: { ...saved, publish_problems: current.draft?.publish_problems ?? [] }
+					}
+				: current
 		);
 		void queryClient.invalidateQueries({ queryKey: jafarPackageKey(packageId) });
 		load(builder, saved);
@@ -298,6 +325,95 @@
 			await queryClient.invalidateQueries({ queryKey: jafarPackageKey(packageId) });
 		} finally {
 			deleting = false;
+		}
+	}
+
+	// The saved draft in words, and which lines differ from the published edition, for the publish review.
+	const savedLines = $derived(
+		builder?.draft
+			? describeDraft(savedForm(builder.draft), builder.capabilities, builder.allowances)
+			: []
+	);
+	const changedFields = $derived.by(() => {
+		if (!builder?.published) return new Set<string>();
+		const published = describeDraft(
+			savedForm(builder.published),
+			builder.capabilities,
+			builder.allowances
+		);
+		return new Set(
+			savedLines
+				.filter((line, index) => line.value !== published[index]?.value)
+				.map((line) => line.field)
+		);
+	});
+	const listing = $derived<'public' | 'private' | 'archived'>(
+		builder?.package.archived_at ? 'archived' : (builder?.package.visibility ?? 'private')
+	);
+	const savedProblems = $derived(builder?.draft?.publish_problems ?? []);
+	const websiteChanges = $derived.by(() => {
+		const since = builder?.package.website_update_pending_since;
+		if (!builder || !since) return [];
+		return builder.history
+			.filter((event) => event.created_at >= since && event.event_type !== 'website_confirmed')
+			.reverse();
+	});
+
+	function openPublish() {
+		publishProblems = [];
+		publishOpen = true;
+	}
+
+	async function refreshPackage() {
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: jafarPackageKey(packageId) }),
+			queryClient.invalidateQueries({ queryKey: jafarPackagesKey })
+		]);
+	}
+
+	async function publish() {
+		if (!loaded || dirty) return;
+		publishing = true;
+		try {
+			const result = await publishPackageDraft(packageId, {
+				edition_id: loaded.editionId,
+				revision: loaded.revision
+			});
+			publishOpen = false;
+			toast.success(`Edition ${result.edition_number} published.`);
+			await refreshPackage();
+		} catch (error) {
+			if (error instanceof PackageApiError && error.body.reason === 'not_ready') {
+				publishProblems = error.body.problems ?? [];
+				await refreshPackage();
+			} else {
+				publishOpen = false;
+				toast.error(
+					isStaleDraft(error)
+						? 'This draft was saved again after you opened the review. Check the latest version, then publish.'
+						: error instanceof Error
+							? error.message
+							: 'The draft could not be published.'
+				);
+				await refreshPackage();
+			}
+		} finally {
+			publishing = false;
+		}
+	}
+
+	async function runCatalogAction(command: CatalogAction, success: string) {
+		catalogPending = command.action;
+		try {
+			await changePackage(packageId, command);
+			archiveOpen = false;
+			toast.success(success);
+		} catch (error) {
+			archiveOpen = false;
+			toast.error(error instanceof Error ? error.message : 'The package could not be changed.');
+		} finally {
+			catalogPending = null;
+			await refreshPackage();
 		}
 	}
 
@@ -367,6 +483,25 @@
 							{/if}
 						</dd>
 					</div>
+					{#if builder.package.ever_published}
+						<div>
+							<dt>New customers</dt>
+							<dd>
+								{#if listing === 'archived'}
+									<Badge size="small">Archived</Badge>
+									<span class="package-builder__muted"
+										>Hidden from new customers. Customers on it keep their edition.</span
+									>
+								{:else if listing === 'public'}
+									<Badge status="informative" size="small">Public</Badge>
+									<span class="package-builder__muted">Can choose it on sign-up.</span>
+								{:else}
+									<Badge status="inactive" size="small">Private</Badge>
+									<span class="package-builder__muted">Only you can assign it.</span>
+								{/if}
+							</dd>
+						</div>
+					{/if}
 				</dl>
 				{#if builder.draft}
 					<p class="package-builder__muted">
@@ -375,6 +510,97 @@
 							: 'Saving keeps this as a private draft.'}
 					</p>
 				{/if}
+			</RailCard>
+
+			{#if builder.draft}
+				<RailCard title="Publish">
+					{#if dirty}
+						<p class="package-builder__muted">
+							Save your changes first. Publishing uses the saved draft, exactly as saved.
+						</p>
+					{:else if savedProblems.length}
+						<p class="package-builder__muted">Fix these before publishing:</p>
+						<ul class="package-builder__problems">
+							{#each savedProblems as problem (problem.code + (problem.key ?? ''))}
+								<li>{problem.message}</li>
+							{/each}
+						</ul>
+					{:else}
+						<p class="package-builder__muted">
+							Review the saved terms, then publish them as edition {(builder.published
+								?.edition_number ?? 0) + 1}.
+						</p>
+					{/if}
+					<div>
+						<Button
+							size="small"
+							disabled={dirty || saving || savedProblems.length > 0}
+							onclick={openPublish}
+							><span class="package-builder__button-icon" aria-hidden="true">{@html sendIcon}</span
+							>Review and publish</Button
+						>
+					</div>
+				</RailCard>
+			{/if}
+
+			{#if builder.package.ever_published}
+				<RailCard title="Catalog">
+					{#if listing === 'archived'}
+						<p class="package-builder__muted">
+							Restoring lets new customers choose it again{builder.package.visibility === 'private'
+								? ' once it is public'
+								: ''}.
+						</p>
+						<div>
+							<Button
+								size="small"
+								variant="secondary"
+								loading={catalogPending === 'restore'}
+								disabled={catalogPending !== null}
+								onclick={() => runCatalogAction({ action: 'restore' }, 'Package restored.')}
+								>Restore package</Button
+							>
+						</div>
+					{:else}
+						<p class="package-builder__muted">
+							{builder.package.visibility === 'public'
+								? 'Making it private removes it from sign-up. You can still assign it to a customer.'
+								: 'Making it public lists it on sign-up for new customers.'}
+						</p>
+						<div class="package-builder__rail-actions">
+							<Button
+								size="small"
+								variant="secondary"
+								loading={catalogPending === 'set_visibility'}
+								disabled={catalogPending !== null}
+								onclick={() =>
+									runCatalogAction(
+										{
+											action: 'set_visibility',
+											visibility: builder.package.visibility === 'public' ? 'private' : 'public'
+										},
+										builder.package.visibility === 'public'
+											? 'Package made private.'
+											: 'Package made public.'
+									)}
+								>{builder.package.visibility === 'public' ? 'Make private' : 'Make public'}</Button
+							>
+							<Button
+								size="small"
+								variant="secondary"
+								disabled={catalogPending !== null}
+								onclick={() => (archiveOpen = true)}
+								><span class="package-builder__button-icon" aria-hidden="true"
+									>{@html archiveIcon}</span
+								>Archive</Button
+							>
+						</div>
+					{/if}
+				</RailCard>
+			{/if}
+
+			<RailCard title="History">
+				<PackageHistory events={builder.history} />
 			</RailCard>
 
 			{#if builder.draft}
@@ -399,6 +625,22 @@
 				</RailCard>
 			{/if}
 		{/snippet}
+
+		{#if builder.package.website_update_pending_since}
+			<PackageWebsiteReminder
+				name={builder.published?.name ?? builder.draft?.name ?? 'This package'}
+				changes={websiteChanges}
+				pending={catalogPending === 'confirm_website'}
+				onConfirm={() =>
+					runCatalogAction(
+						{
+							action: 'confirm_website',
+							pending_since: builder.package.website_update_pending_since!
+						},
+						'Marked the marketing site as up to date.'
+					)}
+			/>
+		{/if}
 
 		{#if !builder.draft}
 			<RecordFormLayout title={builder.published?.name ?? 'Package'} icon={packageIcon} {rail}>
@@ -659,6 +901,38 @@
 	/>
 {/if}
 
+{#if builder?.draft}
+	<PackagePublishDialog
+		open={publishOpen}
+		editionNumber={(builder.published?.edition_number ?? 0) + 1}
+		lines={savedLines}
+		{changedFields}
+		previousEditionNumber={builder.published?.edition_number ?? null}
+		customerCount={builder.package.organization_count}
+		{listing}
+		problems={publishProblems}
+		pending={publishing}
+		onPublish={publish}
+		onClose={() => (publishOpen = false)}
+	/>
+{/if}
+
+<ConfirmDialog
+	open={archiveOpen}
+	title="Archive this package?"
+	icon={archiveIcon}
+	confirmLabel="Archive package"
+	loading={catalogPending === 'archive'}
+	onConfirm={() => runCatalogAction({ action: 'archive' }, 'Package archived.')}
+	onClose={() => (archiveOpen = false)}
+>
+	<p>
+		New customers can no longer choose it. {builder?.package.organization_count
+			? `The ${builder.package.organization_count} ${builder.package.organization_count === 1 ? 'customer' : 'customers'} already on it keep their edition, price, and access.`
+			: 'Nobody is on it today.'} You can restore it at any time.
+	</p>
+</ConfirmDialog>
+
 <ConfirmDialog
 	open={deleteOpen}
 	title={builder?.published ? 'Discard draft?' : 'Delete draft?'}
@@ -752,6 +1026,22 @@
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 			line-height: var(--typography--lineHeight-base);
+		}
+
+		&__problems {
+			display: grid;
+			gap: var(--space-smaller);
+			margin: 0;
+			padding-inline-start: var(--space-base);
+			color: var(--color-critical--onSurface);
+			font-size: var(--typography--fontSize-small);
+			line-height: var(--typography--lineHeight-base);
+		}
+
+		&__rail-actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: var(--space-small);
 		}
 
 		&__button-icon {

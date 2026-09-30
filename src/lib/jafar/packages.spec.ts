@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+	describeCatalogEvent,
 	draftDifferences,
+	isListed,
 	formatUsd,
 	missingRequirements,
 	slugify,
@@ -134,5 +136,40 @@ describe('slugify and formatUsd', () => {
 		expect(formatUsd(24900)).toBe('$249');
 		expect(formatUsd(24950)).toBe('$249.50');
 		expect(formatUsd(null)).toBe('—');
+	});
+});
+
+describe('describeCatalogEvent', () => {
+	it('names a published edition and the one it replaced', () => {
+		expect(
+			describeCatalogEvent({
+				event_type: 'published',
+				edition_number: 2,
+				detail: { replaces_edition_number: 1 }
+			})
+		).toBe('Published edition 2, replacing edition 1');
+		expect(describeCatalogEvent({ event_type: 'published', edition_number: 1, detail: {} })).toBe(
+			'Published edition 1'
+		);
+	});
+
+	it('says what visibility means for new customers', () => {
+		expect(
+			describeCatalogEvent({
+				event_type: 'visibility_changed',
+				edition_number: null,
+				detail: { from: 'private', to: 'public' }
+			})
+		).toBe('Made public: listed for new customers');
+	});
+});
+
+describe('isListed', () => {
+	it('lists only public, published, unarchived packages', () => {
+		const pkg = { visibility: 'public' as const, archived_at: null, published: {} };
+		expect(isListed(pkg)).toBe(true);
+		expect(isListed({ ...pkg, published: null })).toBe(false);
+		expect(isListed({ ...pkg, archived_at: '2026-09-30' })).toBe(false);
+		expect(isListed({ ...pkg, visibility: 'private' })).toBe(false);
 	});
 });

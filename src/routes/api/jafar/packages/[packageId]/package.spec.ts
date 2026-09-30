@@ -25,6 +25,10 @@ function event(method: string, body: unknown) {
 	} as Parameters<typeof PATCH>[0];
 }
 
+function publishEvent(body: unknown) {
+	return event('POST', body) as unknown as Parameters<typeof PUBLISH>[0];
+}
+
 function client(result: { data: unknown; error: { code: string; message: string } | null }) {
 	const rpc = vi.fn(() => Promise.resolve(result));
 	mockedClient.mockReturnValue({ rpc } as never);
@@ -40,7 +44,7 @@ describe('publishing a package draft', () => {
 	it('refuses anyone who is not the platform owner', async () => {
 		mockedOwnerSession.mockResolvedValue(null);
 		const rpc = client({ data: null, error: null });
-		const response = await PUBLISH(event('POST', { edition_id: editionId, revision: 1 }));
+		const response = await PUBLISH(publishEvent({ edition_id: editionId, revision: 1 }));
 		expect(response.status).toBe(401);
 		expect(rpc).not.toHaveBeenCalled();
 	});
@@ -50,7 +54,7 @@ describe('publishing a package draft', () => {
 			data: { published: true, applied: true, edition_number: 2 },
 			error: null
 		});
-		const response = await PUBLISH(event('POST', { edition_id: editionId, revision: 4 }));
+		const response = await PUBLISH(publishEvent({ edition_id: editionId, revision: 4 }));
 		expect(response.status).toBe(200);
 		expect(await response.json()).toEqual({ edition_number: 2 });
 		expect(rpc).toHaveBeenCalledWith('publish_package_draft', {
@@ -63,7 +67,7 @@ describe('publishing a package draft', () => {
 
 	it('returns the newer draft with 409 when it was saved after the review', async () => {
 		client({ data: { published: false, reason: 'stale', draft: { revision: 5 } }, error: null });
-		const response = await PUBLISH(event('POST', { edition_id: editionId, revision: 4 }));
+		const response = await PUBLISH(publishEvent({ edition_id: editionId, revision: 4 }));
 		expect(response.status).toBe(409);
 		expect(await response.json()).toMatchObject({ reason: 'stale', draft: { revision: 5 } });
 	});
@@ -71,14 +75,14 @@ describe('publishing a package draft', () => {
 	it('lists every problem when the draft cannot be sold yet', async () => {
 		const problems = [{ code: 'not_sellable', key: 'website_chat', message: 'Not ready.' }];
 		client({ data: { published: false, reason: 'not_ready', problems }, error: null });
-		const response = await PUBLISH(event('POST', { edition_id: editionId, revision: 4 }));
+		const response = await PUBLISH(publishEvent({ edition_id: editionId, revision: 4 }));
 		expect(response.status).toBe(422);
 		expect(await response.json()).toMatchObject({ reason: 'not_ready', problems });
 	});
 
 	it('rejects a malformed request before touching the database', async () => {
 		const rpc = client({ data: null, error: null });
-		const response = await PUBLISH(event('POST', { edition_id: 'nope', revision: 0 }));
+		const response = await PUBLISH(publishEvent({ edition_id: 'nope', revision: 0 }));
 		expect(response.status).toBe(422);
 		expect(rpc).not.toHaveBeenCalled();
 	});

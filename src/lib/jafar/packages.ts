@@ -27,7 +27,30 @@ export type PackageSummary = {
 		published_at: string;
 	} | null;
 	organization_count: number;
+	website_update_pending_since: string | null;
+	website_changes: Pick<CatalogEvent, 'event_type' | 'edition_number' | 'detail' | 'created_at'>[];
 };
+
+export type CatalogEventType =
+	| 'created'
+	| 'published'
+	| 'visibility_changed'
+	| 'moved'
+	| 'archived'
+	| 'restored'
+	| 'draft_discarded'
+	| 'website_confirmed';
+
+export type CatalogEvent = {
+	id: string;
+	event_type: CatalogEventType;
+	edition_number: number | null;
+	detail: Record<string, unknown>;
+	actor_email: string | null;
+	created_at: string;
+};
+
+export type PublishProblem = { code: string; key: string | null; message: string };
 
 export type IncludedService = { name: string; description: string };
 export type EditionAllowance = { key: string; state: AllowanceState; value: number | null };
@@ -73,12 +96,14 @@ export type PackageBuilder = {
 		slug: string;
 		visibility: 'public' | 'private';
 		archived_at: string | null;
+		website_update_pending_since: string | null;
 		ever_published: boolean;
 		organization_count: number;
 		email_template_count: number;
 	};
-	draft: EditionTerms | null;
+	draft: (EditionTerms & { publish_problems: PublishProblem[] }) | null;
 	published: EditionTerms | null;
+	history: CatalogEvent[];
 	capabilities: CapabilityReference[];
 	allowances: AllowanceReference[];
 };
@@ -103,7 +128,11 @@ export class PackageApiError extends Error {
 	constructor(
 		message: string,
 		readonly status: number,
-		readonly body: ApiError & { reason?: string; draft?: EditionTerms }
+		readonly body: ApiError & {
+			reason?: string;
+			draft?: EditionTerms;
+			problems?: PublishProblem[];
+		}
 	) {
 		super(message);
 	}
@@ -164,6 +193,65 @@ export function deletePackageDraft(
 		'DELETE',
 		input
 	);
+}
+
+export function publishPackageDraft(
+	packageId: string,
+	input: { edition_id: string; revision: number }
+) {
+	return send<{ edition_number: number }>(
+		`/api/jafar/packages/${packageId}/publish`,
+		'POST',
+		input
+	);
+}
+
+export type CatalogAction =
+	| { action: 'set_visibility'; visibility: 'public' | 'private' }
+	| { action: 'move'; direction: 'up' | 'down' }
+	| { action: 'archive' }
+	| { action: 'restore' }
+	| { action: 'confirm_website'; pending_since: string };
+
+export function changePackage(packageId: string, command: CatalogAction) {
+	return send<{ applied: boolean }>(`/api/jafar/packages/${packageId}`, 'PATCH', command);
+}
+
+/** One catalog history entry in words: "Published edition 2, replacing edition 1". */
+export function describeCatalogEvent(
+	event: Pick<CatalogEvent, 'event_type' | 'edition_number' | 'detail'>
+) {
+	switch (event.event_type) {
+		case 'created':
+			return event.detail.copied_from_package_id ? 'Created as a copy' : 'Created';
+		case 'published':
+			return typeof event.detail.replaces_edition_number === 'number'
+				? `Published edition ${event.edition_number}, replacing edition ${event.detail.replaces_edition_number}`
+				: `Published edition ${event.edition_number}`;
+		case 'visibility_changed':
+			return event.detail.to === 'public'
+				? 'Made public: listed for new customers'
+				: 'Made private: assigned by you only';
+		case 'moved':
+			return event.detail.direction === 'down' ? 'Moved down the list' : 'Moved up the list';
+		case 'archived':
+			return 'Archived: hidden from new customers';
+		case 'restored':
+			return 'Restored';
+		case 'draft_discarded':
+			return 'Discarded a draft';
+		case 'website_confirmed':
+			return 'Confirmed the marketing site is up to date';
+	}
+}
+
+/** Whether new customers can choose this package: public, published, and not archived. */
+export function isListed(pkg: {
+	visibility: 'public' | 'private';
+	archived_at: string | null;
+	published: unknown;
+}) {
+	return pkg.visibility === 'public' && pkg.archived_at === null && pkg.published !== null;
 }
 
 export function isStaleDraft(error: unknown): error is PackageApiError {
@@ -249,6 +337,44 @@ function describeAllowances(form: DraftForm, allowances: AllowanceReference[]) {
 		.join(', ');
 }
 
+export type DraftLine = { field: string; label: string; value: string };
+
+/** Every term of a draft in words, in the order the builder shows them. */
+export function describeDraft(
+	form: DraftForm,
+	capabilities: CapabilityReference[],
+	allowances: AllowanceReference[]
+): DraftLine[] {
+	const text = (value: string) => value.trim() || '—';
+	const extras =
+		capabilities
+			.filter(
+				(capability) => capability.kind !== 'core' && form.capabilities.includes(capability.key)
+			)
+			.map((capability) => capability.label)
+			.join(', ') || 'None';
+	return [
+		{ field: 'name', label: 'Name', value: text(form.name) },
+		{ field: 'slug', label: 'Web address', value: text(form.slug) },
+		{ field: 'promise', label: 'Promise', value: text(form.promise) },
+		{ field: 'monthly', label: 'Monthly price', value: formatUsd(form.monthly_price_usd_cents) },
+		{ field: 'yearly', label: 'Yearly price', value: formatUsd(form.yearly_price_usd_cents) },
+		{
+			field: 'highlights',
+			label: 'Customer highlights',
+			value: form.highlights.join(' · ') || '—'
+		},
+		{
+			field: 'services',
+			label: 'Included services',
+			value: form.included_services.map((service) => service.name).join(' · ') || '—'
+		},
+		{ field: 'capabilities', label: 'Extra capabilities', value: extras },
+		{ field: 'allowances', label: 'Allowances', value: describeAllowances(form, allowances) },
+		{ field: 'exclusions', label: 'Exclusions and prerequisites', value: text(form.exclusions) }
+	];
+}
+
 /**
  * What differs between the draft Jafar is editing and the one another tab saved, field by field, in
  * words he can compare before choosing which to keep.
@@ -259,36 +385,13 @@ export function draftDifferences(
 	capabilities: CapabilityReference[],
 	allowances: AllowanceReference[]
 ): DraftDifference[] {
-	const capabilityNames = (form: DraftForm) =>
-		capabilities
-			.filter(
-				(capability) => capability.kind !== 'core' && form.capabilities.includes(capability.key)
-			)
-			.map((capability) => capability.label)
-			.join(', ') || 'None';
-	const text = (value: string) => value.trim() || '—';
-	const fields: [string, string, (form: DraftForm) => string][] = [
-		['name', 'Name', (form) => text(form.name)],
-		['slug', 'Web address', (form) => text(form.slug)],
-		['promise', 'Promise', (form) => text(form.promise)],
-		['monthly', 'Monthly price', (form) => formatUsd(form.monthly_price_usd_cents)],
-		['yearly', 'Yearly price', (form) => formatUsd(form.yearly_price_usd_cents)],
-		['highlights', 'Customer highlights', (form) => form.highlights.join(' · ') || '—'],
-		[
-			'services',
-			'Included services',
-			(form) => form.included_services.map((service) => service.name).join(' · ') || '—'
-		],
-		['capabilities', 'Extra capabilities', capabilityNames],
-		['allowances', 'Allowances', (form) => describeAllowances(form, allowances)],
-		['exclusions', 'Exclusions and prerequisites', (form) => text(form.exclusions)]
-	];
-	return fields
-		.map(([field, label, describe]) => ({
-			field,
-			label,
-			mine: describe(mine),
-			saved: describe(saved)
+	const savedLines = describeDraft(saved, capabilities, allowances);
+	return describeDraft(mine, capabilities, allowances)
+		.map((line, index) => ({
+			field: line.field,
+			label: line.label,
+			mine: line.value,
+			saved: savedLines[index].value
 		}))
 		.filter((difference) => difference.mine !== difference.saved);
 }
