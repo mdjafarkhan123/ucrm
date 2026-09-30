@@ -13,7 +13,9 @@
 
 	// The customer's review journey (brief: "Rating page and private-feedback form"). Routing off: two equal
 	// choices, Google or private. Routing on: stars, where a pick at or above the threshold opens Google
-	// straight away and a lower one opens the private form. Then the contractor's own thank-you.
+	// straight away and a lower one opens the private form first -- with the Google link still on it, because
+	// hiding the public option from unhappy customers is review gating, which Google's policy, the UK CMA and
+	// the US FTC prohibit (Jafar, 2026-09-30). Then the contractor's own thank-you.
 	//
 	// The public page records each step; the settings preview passes `preview` and records nothing. In the
 	// preview, Google opens in a new tab so the contractor can test their link without leaving their work.
@@ -228,6 +230,18 @@
 				<span aria-hidden="true">{@html lockIcon}</span>
 				Only {model.business.name} sees your answers.
 			</p>
+			{#if routed && googleUrl}
+				<p class="review-journey__public">
+					Prefer to share it publicly?
+					<button
+						type="button"
+						class="review-journey__public-link"
+						onclick={() => goToGoogle(rating)}
+					>
+						Post a Google review
+					</button>
+				</p>
+			{/if}
 
 			<form class="review-journey__form" onsubmit={submit} novalidate>
 				<FormErrorSummary bind:this={errorSummary} message={errorMessage} />
@@ -533,6 +547,31 @@
 			:global(svg) {
 				width: 16px;
 				height: 16px;
+			}
+		}
+
+		&__public {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__public-link {
+			padding: 0;
+			border: none;
+			background: none;
+			color: var(--color-interactive);
+			font: inherit;
+			font-weight: 600;
+			cursor: pointer;
+
+			&:hover {
+				text-decoration: underline;
+			}
+
+			&:focus-visible {
+				outline: 2px solid var(--color-focus);
+				outline-offset: 2px;
 			}
 		}
 

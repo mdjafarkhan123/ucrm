@@ -17,7 +17,8 @@ Contractor completes work
 → Review routing off (default): the page shows two clear choices to every customer:
   "Leave a Google review" or "Tell us privately"
 → Review routing on (contractor opt-in): 4–5 stars go to the contractor's Google review
-  destination; 1–3 stars go to the contractor's private-feedback form
+  destination; 1–3 stars see the contractor's private-feedback form first, with a Google review
+  link still shown
 → private feedback becomes a recovery item for the contractor's team
 ```
 
@@ -91,7 +92,7 @@ Every request link, whatever the channel (SMS or email), opens the UCRM feedback
 - The ready-made route is **4–5 stars → Google** and **1–3 stars → private feedback**.
 - Contractors can adjust their own routing setup after starting from this default.
 - Selecting 4 or 5 stars immediately opens the contractor's Google review destination. UCRM does not show an intermediate thank-you screen.
-- Selecting 1, 2, or 3 stars opens the private-feedback form.
+- Selecting 1, 2, or 3 stars opens the private-feedback form first. The form always keeps a visible **Post a Google review** link, so no customer is kept from Google (Jafar, 2026-09-30, for the package plan's honest-feedback rule: hiding the public option from unhappy customers is review gating).
 
 ### Private-feedback form
 

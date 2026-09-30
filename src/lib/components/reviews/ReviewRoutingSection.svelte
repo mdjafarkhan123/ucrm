@@ -92,7 +92,8 @@
 					</li>
 					<li>
 						<span class="review-routing__route-icon">{@html messageIcon}</span>
-						{lowStars === 1 ? '1 star' : `1–${lowStars} stars`} open your private feedback form
+						{lowStars === 1 ? '1 star' : `1–${lowStars} stars`} open your private feedback form first,
+						with a Google review link still shown
 					</li>
 				</ul>
 			{:else}
@@ -113,6 +114,7 @@
 		<p class="review-routing__explain">
 			{#if enabled}
 				Review routing is on. Customers pick a star rating first and are sent on by what they pick.
+				Nobody is kept from Google: the private form always keeps a link to post a Google review.
 			{:else}
 				Every customer sees the same two choices. Nothing is hidden or depends on how happy they
 				are, which keeps you within Google's review rules.
@@ -160,12 +162,14 @@
 		<div class="routing-warning__banner" role="alert">
 			<span class="routing-warning__icon" aria-hidden="true">{@html alertIcon}</span>
 			<p>
-				This sends only customers who pick high star ratings to Google. Everyone else goes to your
-				private form instead.
+				Customers who pick high star ratings go straight to Google. Everyone else sees your private
+				form first, with a link to post a Google review still shown.
 			</p>
 		</div>
 		<p>
-			Asking only happy customers for public reviews is called review gating, and it is not allowed:
+			Asking only happy customers for public reviews is called review gating, and it is not allowed.
+			UCRM never hides the Google link from anyone, but steering customers by their rating can still
+			look like gating:
 		</p>
 		<ul class="routing-warning__list">
 			<li>
