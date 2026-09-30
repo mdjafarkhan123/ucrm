@@ -463,6 +463,11 @@
 		{/if}
 
 		{#if error}<p class="package-change__error" role="alert">{error}</p>{/if}
+		{#if preview && preview.blockers.length && !error}
+			<p class="package-change__error">
+				This change can't go ahead yet. The warning above says what to fix first.
+			</p>
+		{/if}
 
 		<div class="package-change__actions">
 			<Button type="button" variant="secondary" variation="subtle" onclick={onClose}>Close</Button>

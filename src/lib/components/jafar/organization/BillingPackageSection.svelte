@@ -184,7 +184,7 @@
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 	}
-	.billing-package__secondary {
+	span.billing-package__secondary {
 		display: block;
 	}
 	.billing-package__scheduled {

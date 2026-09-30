@@ -234,7 +234,7 @@
 		},
 		application: {
 			consequence:
-				'This amount comes off the charge, which is owed again, and goes back to the payment as credit.',
+				'This amount comes off the charge, which is owed again, and goes back to the payment or change credit it came from, ready to use again.',
 			button: 'Remove from charge'
 		},
 		refund: {

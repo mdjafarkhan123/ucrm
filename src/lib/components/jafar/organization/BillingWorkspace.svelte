@@ -598,7 +598,7 @@
 												? ` — removed: ${line.void_reason}`
 												: ''}
 										</span>
-										{#if !line.voided_at && !charge.coverage_confirmed_at && line.receipt_id}
+										{#if !line.voided_at && !charge.coverage_confirmed_at}
 											<Button
 												size="small"
 												variant="tertiary"
@@ -608,7 +608,7 @@
 														kind: 'void',
 														recordKind: 'application',
 														recordId: line.id,
-														subject: `${formatUsd(line.amount_usd_cents)} from ${receiptLabel(line.receipt_id ?? '')}, applied to ${formatPeriod(charge.period_start, charge.period_end)}`
+														subject: `${formatUsd(line.amount_usd_cents)} from ${line.receipt_id ? receiptLabel(line.receipt_id) : creditNoteLabel(line.credit_note_id ?? '')}, applied to ${formatPeriod(charge.period_start, charge.period_end)}`
 													})}>Remove</Button
 											>
 										{/if}
