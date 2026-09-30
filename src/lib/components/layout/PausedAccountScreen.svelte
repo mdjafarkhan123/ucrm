@@ -34,6 +34,8 @@
 	}
 </script>
 
+<svelte:head><title>Account paused · Contractor CRM</title></svelte:head>
+
 <!-- eslint-disable svelte/no-at-html-tags -->
 <main class="paused-account">
 	<section class="paused-account__card" aria-labelledby="paused-account-title">

@@ -7,6 +7,8 @@
 	import AppShell from '$lib/components/layout/AppShell.svelte';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import RouteSkeleton from '$lib/components/layout/RouteSkeleton.svelte';
+	import AccountGraceBanner from '$lib/components/layout/AccountGraceBanner.svelte';
+	import PausedAccountScreen from '$lib/components/layout/PausedAccountScreen.svelte';
 	import {
 		communicationsAccessKey,
 		fetchCommunicationsAccess,
@@ -15,6 +17,11 @@
 	import type { LayoutData } from './$types';
 
 	let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props();
+
+	// A paused organization sees only the paused screen, so nothing below asks the server anything: every
+	// answer would be a refusal, and the menu it feeds is not on screen.
+	const standing = $derived(data.standing);
+	const paused = $derived(standing?.state === 'paused');
 
 	// The Pipeline nav item is the one link in this shell that isn't available to every organization member
 	// -- Sales Pipeline is a package entitlement plus its own permission, both already enforced by the route
@@ -34,7 +41,8 @@
 			if (response.status === 403) return { ok: false };
 			return { ok: true };
 		},
-		staleTime: 5 * 60_000
+		staleTime: 5 * 60_000,
+		enabled: !paused
 	}));
 	const pipelineVisible = $derived(pipelineAccessQuery.data?.ok ?? true);
 
@@ -46,7 +54,8 @@
 			const response = await fetch('/api/clients?limit=1');
 			return { ok: response.status !== 403 };
 		},
-		staleTime: 5 * 60_000
+		staleTime: 5 * 60_000,
+		enabled: !paused
 	}));
 	const clientsVisible = $derived(clientsAccessQuery.data?.ok ?? true);
 
@@ -58,7 +67,8 @@
 			const response = await fetch('/api/quotes?limit=1');
 			return { ok: response.status !== 403 };
 		},
-		staleTime: 5 * 60_000
+		staleTime: 5 * 60_000,
+		enabled: !paused
 	}));
 	const quotesVisible = $derived(quotesAccessQuery.data?.ok ?? true);
 
@@ -68,7 +78,8 @@
 			const response = await fetch('/api/invoices?limit=1');
 			return { ok: response.status !== 403 };
 		},
-		staleTime: 5 * 60_000
+		staleTime: 5 * 60_000,
+		enabled: !paused
 	}));
 	const invoicesVisible = $derived(invoicesAccessQuery.data?.ok ?? true);
 
@@ -81,7 +92,8 @@
 			const response = await fetch('/api/marketing/readiness?access=1');
 			return { ok: response.ok };
 		},
-		staleTime: 5 * 60_000
+		staleTime: 5 * 60_000,
+		enabled: !paused
 	}));
 	const marketingVisible = $derived(marketingAccessQuery.data?.ok ?? false);
 
@@ -93,7 +105,8 @@
 			const response = await fetch('/api/reviews/workspace/counts');
 			return { ok: response.ok };
 		},
-		staleTime: 5 * 60_000
+		staleTime: 5 * 60_000,
+		enabled: !paused
 	}));
 	const reviewsVisible = $derived(reviewsAccessQuery.data?.ok ?? false);
 
@@ -106,7 +119,8 @@
 			const response = await fetch('/api/files?limit=1');
 			return { ok: response.status !== 403 };
 		},
-		staleTime: 5 * 60_000
+		staleTime: 5 * 60_000,
+		enabled: !paused
 	}));
 	const filesVisible = $derived(filesAccessQuery.data?.ok ?? true);
 
@@ -114,7 +128,8 @@
 	const inboxAccessQuery = createQuery<CommunicationsAccess>(() => ({
 		queryKey: communicationsAccessKey(data.user?.id ?? null),
 		queryFn: fetchCommunicationsAccess,
-		staleTime: 5 * 60_000
+		staleTime: 5 * 60_000,
+		enabled: !paused
 	}));
 	const inboxVisible = $derived(inboxAccessQuery.data?.ok ?? true);
 
@@ -174,7 +189,7 @@
 	});
 
 	onMount(() => {
-		if (onConstrainedConnection()) return;
+		if (paused || onConstrainedConnection()) return;
 
 		const warm = () => {
 			for (const path of warmRoutes) void preloadCode(path);
@@ -190,25 +205,34 @@
 	});
 </script>
 
-<AppShell
-	organizationName={data.organization?.name}
-	logoUrl={data.logoUrl}
-	account={data.account}
-	userId={data.user.id}
-	{inboxVisible}
-	{pipelineVisible}
-	{clientsVisible}
-	{quotesVisible}
-	{invoicesVisible}
-	{marketingVisible}
-	{reviewsVisible}
-	{filesVisible}
->
-	{#if slowNavigation}
-		<PageContainer variant="fill"><RouteSkeleton /></PageContainer>
-	{/if}
-	<div class="route-content" hidden={slowNavigation}>{@render children()}</div>
-</AppShell>
+{#if standing?.state === 'paused'}
+	<PausedAccountScreen {standing} />
+{:else}
+	<AppShell
+		organizationName={data.organization?.name}
+		logoUrl={data.logoUrl}
+		account={data.account}
+		userId={data.user.id}
+		{inboxVisible}
+		{pipelineVisible}
+		{clientsVisible}
+		{quotesVisible}
+		{invoicesVisible}
+		{marketingVisible}
+		{reviewsVisible}
+		{filesVisible}
+	>
+		{#snippet notice()}
+			{#if standing?.state === 'grace'}
+				<AccountGraceBanner lastAccessDay={standing.last_access_day} />
+			{/if}
+		{/snippet}
+		{#if slowNavigation}
+			<PageContainer variant="fill"><RouteSkeleton /></PageContainer>
+		{/if}
+		<div class="route-content" hidden={slowNavigation}>{@render children()}</div>
+	</AppShell>
+{/if}
 
 <style lang="scss">
 	/* The wrapper exists only to hide the old page during a slow move; it must not change the layout. */

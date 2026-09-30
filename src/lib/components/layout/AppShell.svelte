@@ -14,6 +14,7 @@
 
 	let {
 		children,
+		notice,
 		variant = 'contractor',
 		organizationName,
 		logoUrl = null,
@@ -29,6 +30,8 @@
 		filesVisible = true
 	}: {
 		children: import('svelte').Snippet;
+		/** An account-wide message shown above every page, such as the overdue-payment banner. */
+		notice?: import('svelte').Snippet;
 		variant?: 'contractor' | 'owner';
 		organizationName?: string | null;
 		logoUrl?: string | null;
@@ -182,6 +185,7 @@
 				{/if}
 			{/snippet}
 		</Topbar>
+		{@render notice?.()}
 		<div class="app-shell__main scroll-y-auto">{@render children()}</div>
 	</div>
 	<MobileNav bind:open={mobileOpen} {groups} {brand} {eyebrow} logoUrl={sidebarLogoUrl} />
