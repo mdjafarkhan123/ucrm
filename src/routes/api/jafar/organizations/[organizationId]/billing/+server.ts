@@ -12,7 +12,8 @@ import {
 } from '$lib/server/validation/owner.schema';
 
 // Package builder P4b: the Billing workspace reads the organization's offsite billing ledger in one call
-// and runs one ledger command per POST (ADR 0003 decision 6). The ledger rows themselves record who acted
+// and runs one ledger command per POST (ADR 0003 decision 6). P8b adds changing the package, cancelling a
+// scheduled change, and using the credit a change returns. The ledger rows themselves record who acted
 // and why, so there is no separate audit write here.
 
 function dollars(cents: number) {
@@ -139,6 +140,30 @@ function runCommand(organizationId: string, email: string, command: Organization
 				grant_id: command.grant_id,
 				reason: command.reason
 			});
+		case 'change_package':
+			return client.rpc('change_organization_package', {
+				...common,
+				target_edition_id: command.edition_id,
+				billing_interval: command.billing_interval,
+				timing: command.timing,
+				expected_effective_date: command.expected_effective_date,
+				expected_credit_usd_cents: command.expected_credit_usd_cents,
+				expected_charge_usd_cents: command.expected_charge_usd_cents,
+				reason: command.reason
+			});
+		case 'cancel_package_change':
+			return client.rpc('cancel_scheduled_package_change', {
+				...common,
+				agreement_id: command.agreement_id,
+				reason: command.reason
+			});
+		case 'apply_change_credit':
+			return client.rpc('apply_organization_billing_credit_note', {
+				...common,
+				credit_note_id: command.credit_note_id,
+				charge_id: command.charge_id,
+				amount_usd_cents: command.amount_usd_cents
+			});
 	}
 }
 
@@ -189,6 +214,16 @@ export const POST: RequestHandler = async (event) => {
 		const result = await runCommand(parsedId.data, session.email, parsed.data);
 		if (result.error) {
 			if (result.error.code === 'P0409') {
+				// A package change is refused when its date or amounts moved after Jafar reviewed them; the
+				// dialog then shows the fresh preview.
+				if (parsed.data.action === 'change_package')
+					return json(
+						{
+							error: 'The change moved on since you reviewed it. Check the new figures below.',
+							preview_stale: true
+						},
+						{ status: 409 }
+					);
 				return json(
 					{ error: 'This charge changed while you were looking at it. Review it and try again.' },
 					{ status: 409 }

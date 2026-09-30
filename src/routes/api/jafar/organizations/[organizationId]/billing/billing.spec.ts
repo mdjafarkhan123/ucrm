@@ -275,4 +275,117 @@ describe('platform owner billing ledger boundary', () => {
 		expect(response.status).toBe(409);
 		expect((await response.json()).error).toBe('Only $49.00 is still owed on this charge.');
 	});
+
+	describe('package changes (P8b)', () => {
+		const editionId = '523e4567-e89b-12d3-a456-426614174000';
+		const changePackage = {
+			action: 'change_package',
+			idempotency_key: idempotencyKey,
+			edition_id: editionId,
+			billing_interval: 'year',
+			timing: 'now',
+			expected_effective_date: '2026-09-30',
+			expected_credit_usd_cents: 12000,
+			expected_charge_usd_cents: 149000,
+			reason: 'Customer asked for yearly billing'
+		};
+
+		it('changes the package without a password, passing the reviewed figures through', async () => {
+			mockedOwnerSession.mockResolvedValue(session());
+			const client = billingClient();
+			mockedClient.mockReturnValue(client as never);
+
+			const response = await POST(event(changePackage));
+
+			expect(response.status).toBe(200);
+			expect(mockedConsumeStepUp).not.toHaveBeenCalled();
+			expect(client.rpc).toHaveBeenCalledWith('change_organization_package', {
+				target_organization_id: organizationId,
+				actor_owner_email: 'owner@example.com',
+				idempotency_key: idempotencyKey,
+				target_edition_id: editionId,
+				billing_interval: 'year',
+				timing: 'now',
+				expected_effective_date: '2026-09-30',
+				expected_credit_usd_cents: 12000,
+				expected_charge_usd_cents: 149000,
+				reason: 'Customer asked for yearly billing'
+			});
+		});
+
+		it('tells the dialog to reload the preview when the figures moved', async () => {
+			mockedOwnerSession.mockResolvedValue(session());
+			mockedClient.mockReturnValue(
+				billingClient({ data: null, error: { code: 'P0409', message: 'moved on' } }) as never
+			);
+
+			const response = await POST(event(changePackage));
+			const body = await response.json();
+
+			expect(response.status).toBe(409);
+			expect(body.preview_stale).toBe(true);
+		});
+
+		it('refuses a change without a reason or a known start', async () => {
+			mockedOwnerSession.mockResolvedValue(session());
+
+			const response = await POST(event({ ...changePackage, reason: '', timing: 'someday' }));
+			const body = await response.json();
+
+			expect(response.status).toBe(422);
+			expect(body.field_errors.reason).toBeTruthy();
+			expect(body.field_errors.timing).toBeTruthy();
+			expect(mockedClient).not.toHaveBeenCalled();
+		});
+
+		it('cancels a scheduled change', async () => {
+			mockedOwnerSession.mockResolvedValue(session());
+			const client = billingClient();
+			mockedClient.mockReturnValue(client as never);
+
+			const response = await POST(
+				event({
+					action: 'cancel_package_change',
+					idempotency_key: idempotencyKey,
+					agreement_id: editionId,
+					reason: 'Customer changed their mind'
+				})
+			);
+
+			expect(response.status).toBe(200);
+			expect(client.rpc).toHaveBeenCalledWith('cancel_scheduled_package_change', {
+				target_organization_id: organizationId,
+				actor_owner_email: 'owner@example.com',
+				idempotency_key: idempotencyKey,
+				agreement_id: editionId,
+				reason: 'Customer changed their mind'
+			});
+		});
+
+		it('uses change credit on a charge', async () => {
+			mockedOwnerSession.mockResolvedValue(session());
+			const client = billingClient();
+			mockedClient.mockReturnValue(client as never);
+
+			const response = await POST(
+				event({
+					action: 'apply_change_credit',
+					idempotency_key: idempotencyKey,
+					credit_note_id: receiptId,
+					charge_id: chargeId,
+					amount_usd_cents: 2500
+				})
+			);
+
+			expect(response.status).toBe(200);
+			expect(client.rpc).toHaveBeenCalledWith('apply_organization_billing_credit_note', {
+				target_organization_id: organizationId,
+				actor_owner_email: 'owner@example.com',
+				idempotency_key: idempotencyKey,
+				credit_note_id: receiptId,
+				charge_id: chargeId,
+				amount_usd_cents: 2500
+			});
+		});
+	});
 });

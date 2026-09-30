@@ -108,6 +108,12 @@ const freeAccessReason = z
 	.min(3, 'Enter a reason of at least 3 characters.')
 	.max(500, 'Keep the reason under 500 characters.');
 const billingMethod = z.string().trim().min(1, 'Enter how the money was paid.').max(80);
+const packageBillingInterval = z.enum(['month', 'year'], {
+	message: 'Choose monthly or yearly billing.'
+});
+const packageChangeTiming = z.enum(['next_renewal', 'now'], {
+	message: 'Choose when the change starts.'
+});
 
 export const organizationBillingCommandSchema = z.discriminatedUnion('action', [
 	z.object({
@@ -195,8 +201,112 @@ export const organizationBillingCommandSchema = z.discriminatedUnion('action', [
 		idempotency_key: billingIdempotencyKey,
 		grant_id: z.string().uuid(),
 		reason: freeAccessReason
+	}),
+	// Package builder P8b: the change Jafar reviewed, with the date and amounts the preview showed. The
+	// database refuses it if any of them has moved since.
+	z.object({
+		action: z.literal('change_package'),
+		idempotency_key: billingIdempotencyKey,
+		edition_id: z.string().uuid('Choose a package.'),
+		billing_interval: packageBillingInterval,
+		timing: packageChangeTiming,
+		expected_effective_date: calendarDate,
+		expected_credit_usd_cents: z.number().int().min(0).max(100_000_000),
+		expected_charge_usd_cents: z.number().int().min(0).max(100_000_000),
+		reason: freeAccessReason
+	}),
+	z.object({
+		action: z.literal('cancel_package_change'),
+		idempotency_key: billingIdempotencyKey,
+		agreement_id: z.string().uuid(),
+		reason: freeAccessReason
+	}),
+	z.object({
+		action: z.literal('apply_change_credit'),
+		idempotency_key: billingIdempotencyKey,
+		credit_note_id: z.string().uuid(),
+		charge_id: z.string().uuid('Choose the charge to pay.'),
+		amount_usd_cents: billingAmount
 	})
 ]);
+
+// What the change dialog asks the database to preview before Jafar confirms.
+export const packageChangePreviewSchema = z.object({
+	edition_id: z.string().uuid('Choose a package.'),
+	billing_interval: packageBillingInterval,
+	timing: packageChangeTiming
+});
+
+// Package builder P8b: a temporary exception switches one feature on or off, or sets one limit, for a
+// reasoned, dated period. Ending one early keeps its record.
+const exceptionReason = z
+	.string()
+	.trim()
+	.min(3, 'Enter a reason of at least 3 characters.')
+	.max(1000, 'Keep the reason under 1,000 characters.');
+const exceptionKey = z
+	.string()
+	.trim()
+	.regex(/^[a-z][a-z0-9_.]{1,79}$/, 'Choose a feature or limit.');
+
+export const packageExceptionCommandSchema = z.discriminatedUnion('action', [
+	z
+		.object({
+			action: z.literal('add'),
+			idempotency_key: billingIdempotencyKey,
+			target: z.enum(['capability', 'allowance']),
+			key: exceptionKey,
+			capability_state: z.enum(['on', 'off']).nullish(),
+			allowance_state: z.enum(['numeric', 'unlimited', 'not_included']).nullish(),
+			allowance_value: z
+				.number()
+				.int('Enter a whole number.')
+				.min(0, 'Enter a number of zero or more.')
+				.max(10_000_000)
+				.nullish(),
+			starts_at: z.iso.datetime({ offset: true, message: 'Choose when it starts.' }),
+			ends_at: z.iso.datetime({ offset: true, message: 'Choose when it ends.' }),
+			reason: exceptionReason
+		})
+		.superRefine((value, context) => {
+			if (value.target === 'capability' && !value.capability_state)
+				context.addIssue({
+					code: 'custom',
+					path: ['capability_state'],
+					message: 'Choose on or off.'
+				});
+			if (value.target === 'allowance' && !value.allowance_state)
+				context.addIssue({
+					code: 'custom',
+					path: ['allowance_state'],
+					message: 'Choose a number, unlimited, or not included.'
+				});
+			if (
+				value.target === 'allowance' &&
+				value.allowance_state === 'numeric' &&
+				(value.allowance_value === null || value.allowance_value === undefined)
+			)
+				context.addIssue({
+					code: 'custom',
+					path: ['allowance_value'],
+					message: 'Enter the limit.'
+				});
+			if (Date.parse(value.ends_at) <= Date.parse(value.starts_at))
+				context.addIssue({
+					code: 'custom',
+					path: ['ends_at'],
+					message: 'Choose an end after the start.'
+				});
+		}),
+	z.object({
+		action: z.literal('end'),
+		idempotency_key: billingIdempotencyKey,
+		exception_id: z.string().uuid(),
+		reason: exceptionReason
+	})
+]);
+
+export type PackageExceptionCommand = z.infer<typeof packageExceptionCommandSchema>;
 
 export type OrganizationBillingCommand = z.infer<typeof organizationBillingCommandSchema>;
 
