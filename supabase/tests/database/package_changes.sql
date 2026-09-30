@@ -10,11 +10,11 @@ select plan(43);
 
 select is(
   has_function_privilege('authenticated',
-    'public.change_organization_package(uuid, uuid, text, text, date, integer, integer, text, text, text)', 'execute'),
+    'public.change_organization_package(uuid, uuid, text, text, date, integer, integer, text, text, text, uuid, text, boolean)', 'execute'),
   false, 'contractors cannot change a package');
 select is(
   has_function_privilege('service_role',
-    'public.change_organization_package(uuid, uuid, text, text, date, integer, integer, text, text, text)', 'execute'),
+    'public.change_organization_package(uuid, uuid, text, text, date, integer, integer, text, text, text, uuid, text, boolean)', 'execute'),
   true, 'the owner service role can change a package');
 select is(
   has_function_privilege('authenticated',
