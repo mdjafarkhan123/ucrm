@@ -96,7 +96,7 @@
 		adjust_paid_through: 'Paid-through date corrected.',
 		grant_free_access: 'Free access granted.',
 		extend_free_access: 'Free access extended.',
-		end_free_access: 'Free access ended. It stays in the history.'
+		end_free_access: 'Free access ended. It stays in the Activity tab.'
 	};
 
 	const billingMutation = createMutation<
