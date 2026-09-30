@@ -24,6 +24,7 @@
 ## Outside actions
 
 - Migration push — check: `npx supabase migration list --linked` shows `20261001100000` remote — done 2026-09-30
+- Migration push `20261001110000_owner_organization_entitlements.sql` (Access tab read) — same check for `20261001110000`
 
 ## Notes
 
