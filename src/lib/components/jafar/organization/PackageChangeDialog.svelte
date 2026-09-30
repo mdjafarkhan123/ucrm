@@ -179,6 +179,7 @@
 			/>
 			<SegmentedControl
 				label="Billing"
+				fullWidth
 				bind:value={() => interval, (value) => (interval = value as 'month' | 'year')}
 				options={[
 					{
@@ -201,6 +202,7 @@
 			/>
 			<SegmentedControl
 				label="Starts"
+				fullWidth
 				bind:value={() => timing, (value) => (timing = value as PackageChangeTiming)}
 				options={[
 					{
@@ -465,7 +467,7 @@
 		<div class="package-change__actions">
 			<Button type="button" variant="secondary" variation="subtle" onclick={onClose}>Close</Button>
 			<Button type="submit" loading={pending} disabled={!canConfirm}>
-				{preview?.timing === 'next_renewal' ? 'Schedule change' : 'Change package now'}
+				{timing === 'next_renewal' ? 'Schedule change' : 'Change package now'}
 			</Button>
 		</div>
 	</form>
@@ -483,9 +485,12 @@
 	}
 	.package-change__choices {
 		display: grid;
-		grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 		align-items: end;
 		gap: var(--space-base);
+	}
+	.package-change__choices > :global(:first-child) {
+		grid-column: 1 / -1;
 	}
 	.package-change__loading {
 		display: grid;

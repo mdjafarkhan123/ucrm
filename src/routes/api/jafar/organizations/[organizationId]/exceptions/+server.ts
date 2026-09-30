@@ -12,15 +12,19 @@ import {
 
 // Package builder P8b: temporary exceptions on the Access tab. Each switches one feature on or off, or sets
 // one limit, with a reason, a start, and an end; ending one early keeps its record. The exception rows and
-// the commercial event the database writes record who acted and why.
+// the commercial event the database writes record who acted and why. Every answer also carries the tab's
+// features and limits as they stand now, so an exception's effect shows without a second request.
 
-async function loadExceptions(organizationId: string) {
-	const { data, error } = await getOwnerSupabaseClient().rpc(
-		'owner_organization_package_exceptions',
-		{ target_organization_id: organizationId }
-	);
-	if (error) throw error;
-	return data ?? [];
+async function loadAccessTab(organizationId: string) {
+	const client = getOwnerSupabaseClient();
+	const args = { target_organization_id: organizationId };
+	const [exceptions, entitlements] = await Promise.all([
+		client.rpc('owner_organization_package_exceptions', args),
+		client.rpc('owner_organization_entitlements', args)
+	]);
+	if (exceptions.error) throw exceptions.error;
+	if (entitlements.error) throw entitlements.error;
+	return { exceptions: exceptions.data ?? [], entitlements: entitlements.data };
 }
 
 export const GET: RequestHandler = async (event) => {
@@ -30,8 +34,7 @@ export const GET: RequestHandler = async (event) => {
 		return json({ error: 'The organization identifier is invalid.' }, { status: 422 });
 
 	try {
-		const exceptions = await loadExceptions(parsedId.data);
-		return json({ exceptions }, { headers: { 'cache-control': 'no-store' } });
+		return json(await loadAccessTab(parsedId.data), { headers: { 'cache-control': 'no-store' } });
 	} catch (error) {
 		console.error('Could not load package exceptions.', error);
 		return json({ error: 'Exceptions could not be loaded.' }, { status: 500 });
@@ -110,8 +113,10 @@ export const POST: RequestHandler = async (event) => {
 			throw result.error;
 		}
 
-		const exceptions = await loadExceptions(parsedId.data);
-		return json({ command: result.data, exceptions }, { headers: { 'cache-control': 'no-store' } });
+		return json(
+			{ command: result.data, ...(await loadAccessTab(parsedId.data)) },
+			{ headers: { 'cache-control': 'no-store' } }
+		);
 	} catch (error) {
 		console.error('Could not record the package exception.', error);
 		return json({ error: 'The exception could not be recorded.' }, { status: 500 });

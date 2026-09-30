@@ -21,6 +21,7 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { prefetchOrganizationCommunications } from '$lib/jafar/organization-communications-queries';
 	import { prefetchOrganizationBilling } from '$lib/jafar/organization-billing-queries';
+	import { prefetchOrganizationExceptions } from '$lib/jafar/organization-exceptions-queries';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowLeftIcon from '@tabler/icons/outline/arrow-left.svg?raw';
 	import shieldIcon from '@tabler/icons/outline/shield-check.svg?raw';
@@ -44,7 +45,7 @@
 	const preview = $derived(dev && scenario ? getOrganizationDetailPreview(scenario) : null);
 
 	const queryClient = useQueryClient();
-	// Communications and Billing have reads of their own, warmed on hover; the rest reuse the page's queries.
+	// Billing, Access, and Communications have reads of their own, warmed on hover; the rest reuse the page's queries.
 	const organizationTabs: Tab[] = $derived([
 		{ value: 'overview', label: 'Overview' },
 		{
@@ -54,7 +55,13 @@
 				if (!preview && organizationId) prefetchOrganizationBilling(queryClient, organizationId);
 			}
 		},
-		{ value: 'access', label: 'Access & limits' },
+		{
+			value: 'access',
+			label: 'Access & limits',
+			onhover: () => {
+				if (!preview && organizationId) prefetchOrganizationExceptions(queryClient, organizationId);
+			}
+		},
 		{
 			value: 'communications',
 			label: 'Communications',
@@ -165,9 +172,6 @@
 					? `${access.organization.name} · Organizations`
 					: 'Organization detail'
 	);
-
-	let actionError = $state('');
-	let actionMessage = $state('');
 </script>
 
 <svelte:head><title>{pageTitle}</title></svelte:head>
@@ -299,19 +303,6 @@
 			>
 		</header>
 
-		{#if actionMessage}<p
-				class="organization-detail__feedback organization-detail__feedback--success"
-				role="status"
-			>
-				{actionMessage}
-			</p>{/if}
-		{#if actionError}<p
-				class="organization-detail__feedback organization-detail__feedback--error"
-				role="alert"
-			>
-				{actionError}
-			</p>{/if}
-
 		{#if preview}
 			<section
 				class="organization-detail__preview-notice"
@@ -358,14 +349,7 @@
 
 			<BillingWorkspace {organizationId} {preview} />
 
-			<AccessWorkspace
-				{access}
-				{preview}
-				{commercialQuery}
-				{organizationId}
-				bind:actionError
-				bind:actionMessage
-			/>
+			<AccessWorkspace {access} {preview} {commercialQuery} {organizationId} />
 
 			<CommunicationsWorkspace {access} {preview} />
 
@@ -439,19 +423,6 @@
 	.organization-detail__stale-banner p {
 		margin: var(--space-smaller) 0 0;
 		color: inherit;
-	}
-	.organization-detail__feedback {
-		padding: var(--space-slim) var(--space-base);
-		border-radius: var(--radius-base);
-		font-size: var(--typography--fontSize-base);
-	}
-	.organization-detail__feedback--success {
-		color: var(--color-success--onSurface);
-		background: var(--color-success--surface);
-	}
-	.organization-detail__feedback--error {
-		color: var(--color-critical--onSurface);
-		background: var(--color-critical--surface);
 	}
 	.organization-detail__breadcrumb {
 		display: flex;

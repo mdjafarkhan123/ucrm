@@ -445,3 +445,34 @@ export type PackageExceptionCommandInput =
 			reason: string;
 	  }
 	| { action: 'end'; exception_id: string; reason: string };
+
+// Package builder P8b: the Access tab's features and limits as `owner_organization_entitlements` reports
+// them — the package's value, the exception running now, and what is in use for counted limits.
+export type EntitlementCapability = {
+	key: string;
+	label: string;
+	description: string;
+	kind: 'core' | 'extra' | 'planned';
+	in_package: boolean;
+	exception: { state: 'on' | 'off'; ends_at: string } | null;
+	effective: boolean;
+};
+export type EntitlementAllowance = {
+	key: string;
+	label: string;
+	unit: string;
+	resets_monthly: boolean;
+	package: PackageAllowanceSide;
+	exception: (PackageAllowanceSide & { ends_at: string }) | null;
+	in_use: number | null;
+};
+export type OrganizationEntitlements = {
+	capabilities: EntitlementCapability[];
+	allowances: EntitlementAllowance[];
+};
+export type AccessExceptionsResponse = {
+	exceptions: PackageException[];
+	entitlements: OrganizationEntitlements;
+	error?: string;
+	field_errors?: Record<string, string>;
+};

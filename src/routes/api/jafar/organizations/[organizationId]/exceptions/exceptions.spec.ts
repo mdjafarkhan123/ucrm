@@ -13,6 +13,7 @@ const organizationId = '123e4567-e89b-12d3-a456-426614174000';
 const exceptionId = '223e4567-e89b-12d3-a456-426614174000';
 const idempotencyKey = '423e4567-e89b-12d3-a456-426614174000';
 const exceptions = [{ id: exceptionId, status: 'active' }];
+const entitlements = { capabilities: [], allowances: [{ key: 'employee_seats', in_use: 6 }] };
 
 function event(body?: unknown) {
 	return {
@@ -29,7 +30,11 @@ function event(body?: unknown) {
 function client(command: { data: unknown; error: { code: string; message: string } | null }) {
 	const rpc = vi.fn((name: string) =>
 		Promise.resolve(
-			name === 'owner_organization_package_exceptions' ? { data: exceptions, error: null } : command
+			name === 'owner_organization_package_exceptions'
+				? { data: exceptions, error: null }
+				: name === 'owner_organization_entitlements'
+					? { data: entitlements, error: null }
+					: command
 		)
 	);
 	const builder = {
@@ -63,14 +68,14 @@ describe('package exceptions', () => {
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
-	it('lists every exception', async () => {
+	it('lists every exception with the features and limits as they stand', async () => {
 		mockedOwnerSession.mockResolvedValue({ email: 'owner@example.com' } as never);
 		mockedClient.mockReturnValue(client({ data: null, error: null }) as never);
 
 		const response = await GET(event());
 
 		expect(response.status).toBe(200);
-		expect((await response.json()).exceptions).toEqual(exceptions);
+		expect(await response.json()).toEqual({ exceptions, entitlements });
 	});
 
 	it('adds a limit exception, sending the feature side as null', async () => {
@@ -94,7 +99,7 @@ describe('package exceptions', () => {
 			starts_at: addSeats.starts_at,
 			ends_at: addSeats.ends_at
 		});
-		expect((await response.json()).exceptions).toEqual(exceptions);
+		expect(await response.json()).toMatchObject({ exceptions, entitlements });
 	});
 
 	it('refuses an exception with no end, or ending before it starts', async () => {

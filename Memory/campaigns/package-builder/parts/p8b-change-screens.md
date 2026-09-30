@@ -11,20 +11,20 @@
 - [x] Exceptions route `api/jafar/organizations/[id]/exceptions` (list, add, end early); tests
 - [ ] Delete the switched-off `feature-overrides` / `limit-overrides` routes once nothing posts to them (Access tab and four Communications panels: Email, Marketing, Website chat allowances, Automation authority)
 - [x] Billing tab: `BillingPackageSection.svelte` (current terms, scheduled change + cancel + over-limit warning, history), `PackageChangeDialog.svelte`, change credit block and dialogs in `BillingActionDialog.svelte`. Type check clean; **not yet opened in the browser**
-- [ ] Access tab: features and limits from the new snapshot; exceptions list, add, end early
+- [x] Access tab: `AccessExceptionsSection.svelte` (features, limits with in-use, exceptions list, Add and End early dialogs) reading new `owner_organization_entitlements` via the exceptions route; browser-checked on Jaaroweb (add 60 seats, end early, 0-seat refusal)
 - [ ] Browser check of the P8a done-checks through the screens
 
 ## Next
 
-1. Quick browser look at the Billing tab on Jaaroweb (`/jafar/organizations/4e99829a-dba2-4ea4-ae23-9fc16585f0f7?tab=billing`): open Change package, pick Starter Check, flip monthly/now, confirm the comparison and money read correctly. Do not confirm a change yet.
-2. Build the Access tab: replace the old override table and three limit cards in `AccessWorkspace.svelte` with features and limits read from the new snapshot, plus an exceptions list (query key `jafarOrganizationExceptionsKey`, route `api/jafar/organizations/[id]/exceptions`) with Add and End early dialogs. Its package card's "returns with the new package tools" line should point to the Billing tab instead.
-3. Point the four Communications panels off `limit-overrides`, then delete the two switched-off routes.
-4. Browser check of the done-checks.
+Change package dialog browser-checked 2026-09-30 (layout fixed; next-renewal and now money correct). Starter Check was restored from archive for that check.
+
+1. Point the four Communications panels off `limit-overrides`, then delete the two switched-off routes.
+2. Browser check of the done-checks.
 
 ## Outside actions
 
 - Migration push — check: `npx supabase migration list --linked` shows `20261001100000` remote — done 2026-09-30
-- Migration push `20261001110000_owner_organization_entitlements.sql` (Access tab read) — same check for `20261001110000`
+- Migration push `20261001110000_owner_organization_entitlements.sql` (Access tab read) — same check for `20261001110000` — done 2026-09-30
 
 ## Notes
 

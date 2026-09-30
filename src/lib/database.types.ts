@@ -21328,6 +21328,10 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_organization_entitlements: {
+				Args: { target_organization_id: string };
+				Returns: Json;
+			};
 			owner_organization_package_exceptions: {
 				Args: { target_organization_id: string };
 				Returns: Json;
