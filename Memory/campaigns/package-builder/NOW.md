@@ -7,7 +7,7 @@
 
 **Next part:** P15 final check; it ends when Jafar publishes his two real packages.
 
-**Waiting on Jafar:** (1) OK to add P10's four activation rules to the plan § Offsite payment and coverage: coverage starts on the business's local activation day; first payment must cover the first charge, the intro price when an offer applies (extra is credit); a prospect's package changes only before payment or after a reversal; activation uses the edition the customer agreed to. (2) Jaaroweb is still on Starter Check from the P8b check; restoring it needs his password on the Billing tab.
+**Waiting on Jafar:** Nothing. Jafar authorized whatever P15 needs (2026-10-01), including putting Jaaroweb back on its package: it is still on Starter Check from the P8b test, and the Billing tab asks for his `/jafar` password (in CLAUDE.md).
 
 **Blockers:** None. Password-protected billing actions are Jafar's list in `billingStepUpActions` (2026-09-30).
 
