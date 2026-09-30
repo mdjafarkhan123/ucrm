@@ -43,7 +43,7 @@
 		essential_email_recipients: {
 			title: 'Protected essential reserve',
 			description:
-				'Requested quotes, invoices, receipts, security notices, and direct replies use this reserve.',
+				'Always 10% of the operational allowance. Requested quotes, invoices, receipts, security notices, and direct replies never stop; passing this only raises a warning.',
 			unit: 'recipients'
 		}
 	};
