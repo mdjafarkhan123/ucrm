@@ -29,8 +29,15 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import OwnerReconfirmDialog from '$lib/components/jafar/OwnerReconfirmDialog.svelte';
 	import BillingActionDialog from './BillingActionDialog.svelte';
+	import BillingPackageSection from './BillingPackageSection.svelte';
+	import PackageChangeDialog from './PackageChangeDialog.svelte';
 	import { organizationBillingQuery } from '$lib/jafar/organization-billing-queries';
-	import { jafarOrganizationBillingKey, jafarOrganizationsKey } from '$lib/jafar/query-keys';
+	import {
+		jafarOrganizationBillingKey,
+		jafarOrganizationKey,
+		jafarOrganizationsKey,
+		jafarPackagesKey
+	} from '$lib/jafar/query-keys';
 	import { formatCalendarDate, formatDateTime, formatPeriod, formatUsd } from './format';
 
 	let {
@@ -54,14 +61,17 @@
 		error?: string;
 		field_errors?: Record<string, string>;
 		step_up_required?: boolean;
+		preview_stale?: boolean;
 	};
 	class BillingActionError extends Error {
 		fieldErrors: Record<string, string>;
 		stepUpRequired: boolean;
+		previewStale: boolean;
 		constructor(result: BillingMutationResponse) {
 			super(result.error ?? 'The billing action could not be recorded.');
 			this.fieldErrors = result.field_errors ?? {};
 			this.stepUpRequired = result.step_up_required === true;
+			this.previewStale = result.preview_stale === true;
 		}
 	}
 
@@ -74,15 +84,26 @@
 	let reconfirmOpen = $state(false);
 	let pendingCommand = $state<(BillingCommandInput & { idempotency_key: string }) | null>(null);
 
-	function openDialog(next: BillingDialogState) {
-		dialog = next;
+	// The Change package dialog is separate from the ledger dialogs but shares their key and error state.
+	let changeOpen = $state(false);
+
+	function startOpening() {
 		dialogKey = crypto.randomUUID();
 		dialogError = '';
 		dialogFieldErrors = {};
 		feedback = '';
 	}
+	function openDialog(next: BillingDialogState) {
+		startOpening();
+		dialog = next;
+	}
+	function openChange() {
+		startOpening();
+		changeOpen = true;
+	}
 	function closeDialog() {
 		dialog = null;
+		changeOpen = false;
 	}
 
 	const successMessages: Record<BillingCommandInput['action'], string> = {
@@ -96,7 +117,10 @@
 		adjust_paid_through: 'Paid-through date corrected.',
 		grant_free_access: 'Free access granted.',
 		extend_free_access: 'Free access extended.',
-		end_free_access: 'Free access ended. It stays in the Activity tab.'
+		end_free_access: 'Free access ended. It stays in the Activity tab.',
+		change_package: 'Package changed.',
+		cancel_package_change: 'Scheduled change cancelled. It stays in the package history.',
+		apply_change_credit: 'Change credit applied.'
 	};
 
 	const billingMutation = createMutation<
@@ -126,6 +150,11 @@
 			}
 			dialogError = error.message;
 			dialogFieldErrors = error.fieldErrors;
+			// The figures Jafar confirmed moved on; the dialog's preview reloads with the new ones.
+			if (error.previewStale)
+				void queryClient.invalidateQueries({
+					queryKey: [...jafarOrganizationKey(organizationId), 'package-change-preview']
+				});
 		},
 		onSuccess: (result, command) => {
 			if (result.billing)
@@ -134,7 +163,13 @@
 				});
 			pendingCommand = null;
 			dialog = null;
-			feedback = successMessages[command.action];
+			changeOpen = false;
+			feedback =
+				command.action === 'change_package' && command.timing === 'next_renewal'
+					? `Change scheduled for ${formatCalendarDate(command.expected_effective_date)}.`
+					: successMessages[command.action];
+			if (command.action === 'change_package' || command.action === 'cancel_package_change')
+				void queryClient.invalidateQueries({ queryKey: jafarPackagesKey });
 			// Paid-through feeds the access check, the Access tab, the history, and the directory's flags.
 			// The billing answer came back with the command, so only the rest is refetched.
 			void queryClient.invalidateQueries({
@@ -189,7 +224,27 @@
 		];
 	}
 
-	const creditAvailable = $derived((billing?.totals.credit_usd_cents ?? 0) > 0);
+	const paymentCreditAvailable = $derived(
+		(billing?.receipts ?? []).some(
+			(receipt) => !receipt.voided_at && receipt.unapplied_usd_cents > 0
+		)
+	);
+	const changeCreditAvailable = $derived(
+		(billing?.credit_notes ?? []).some((note) => note.unapplied_usd_cents > 0)
+	);
+	const creditNoteColumns: DataTableColumn[] = [
+		{ key: 'days', label: 'Unused days' },
+		{ key: 'amount', label: 'Credit', align: 'end' },
+		{ key: 'used', label: 'Used', align: 'end' },
+		{ key: 'left', label: 'Left', align: 'end' },
+		{ key: 'created', label: 'From the change on' }
+	];
+	function creditNoteLabel(creditNoteId: string) {
+		const note = billing?.credit_notes.find((candidate) => candidate.id === creditNoteId);
+		return note
+			? `change credit for ${formatPeriod(note.unused_from, note.unused_through)}`
+			: 'change credit';
+	}
 	const latestLiveChargeId = $derived(
 		billing?.charges.find((charge) => charge.status !== 'cancelled')?.id ?? null
 	);
@@ -235,10 +290,16 @@
 
 	function chargeMenu(charge: BillingCharge) {
 		const items = [];
-		if (charge.outstanding_usd_cents > 0 && creditAvailable)
+		if (charge.outstanding_usd_cents > 0 && paymentCreditAvailable)
 			items.push({
-				label: 'Use credit',
+				label: 'Use payment credit',
 				onSelect: () => openDialog({ kind: 'apply_credit', chargeId: charge.id, receiptId: null })
+			});
+		if (charge.outstanding_usd_cents > 0 && changeCreditAvailable)
+			items.push({
+				label: 'Use change credit',
+				onSelect: () =>
+					openDialog({ kind: 'apply_change_credit', chargeId: charge.id, creditNoteId: null })
 			});
 		if (
 			charge.id === latestLiveChargeId &&
@@ -386,17 +447,13 @@
 				</div>
 			{/if}
 
-			{#if billing.upcoming_agreements.length}
-				<p class="billing-workspace__note">
-					{#each billing.upcoming_agreements as upcoming (upcoming.id)}
-						Moves to {upcoming.edition_name} (edition {upcoming.edition_number}) at
-						{formatUsd(upcoming.agreed_price_usd_cents)} per {upcoming.billing_interval} on
-						{formatDateTime(upcoming.effective_from)}.
-					{/each}
-				</p>
-			{/if}
-
 			{#if feedback}<p class="billing-workspace__feedback" role="status">{feedback}</p>{/if}
+
+			<BillingPackageSection
+				{billing}
+				onChange={openChange}
+				onCancelChange={(agreement) => openDialog({ kind: 'cancel_package_change', agreement })}
+			/>
 
 			<SectionBlock
 				title="Free access"
@@ -490,6 +547,11 @@
 							{@const status = chargeStatus(charge, billing.today)}
 							<td class:billing-workspace__muted={charge.status === 'cancelled'}>
 								<strong>{formatPeriod(charge.period_start, charge.period_end)}</strong>
+								{#if charge.kind === 'change'}
+									<span class="billing-workspace__secondary"
+										>Rest of period after a package change</span
+									>
+								{/if}
 							</td>
 							<td class="align-end billing-workspace__money"
 								>{formatUsd(charge.amount_usd_cents)}</td
@@ -534,11 +596,13 @@
 								{#each billing.applications.filter((line) => line.charge_id === charge.id) as line (line.id)}
 									<li class:billing-workspace__trail-void={line.voided_at}>
 										<span>
-											{formatUsd(line.amount_usd_cents)} from {receiptLabel(
-												line.receipt_id
-											)}{line.voided_at ? ` — removed: ${line.void_reason}` : ''}
+											{formatUsd(line.amount_usd_cents)} from {line.receipt_id
+												? receiptLabel(line.receipt_id)
+												: creditNoteLabel(line.credit_note_id ?? '')}{line.voided_at
+												? ` — removed: ${line.void_reason}`
+												: ''}
 										</span>
-										{#if !line.voided_at && !charge.coverage_confirmed_at}
+										{#if !line.voided_at && !charge.coverage_confirmed_at && line.receipt_id}
 											<Button
 												size="small"
 												variant="tertiary"
@@ -548,7 +612,7 @@
 														kind: 'void',
 														recordKind: 'application',
 														recordId: line.id,
-														subject: `${formatUsd(line.amount_usd_cents)} from ${receiptLabel(line.receipt_id)}, applied to ${formatPeriod(charge.period_start, charge.period_end)}`
+														subject: `${formatUsd(line.amount_usd_cents)} from ${receiptLabel(line.receipt_id ?? '')}, applied to ${formatPeriod(charge.period_start, charge.period_end)}`
 													})}>Remove</Button
 											>
 										{/if}
@@ -665,6 +729,48 @@
 				{/if}
 			</SectionBlock>
 
+			{#if billing.credit_notes.length}
+				<SectionBlock
+					title="Change credit"
+					icon={walletIcon}
+					hint="Unused paid days returned when the package changed. Credit, not money received: use it on a charge; it cannot be refunded."
+				>
+					<DataTable
+						caption="Change credit"
+						columns={creditNoteColumns}
+						items={billing.credit_notes}
+						rowId={(note) => note.id}
+					>
+						{#snippet row(note)}
+							<td><strong>{formatPeriod(note.unused_from, note.unused_through)}</strong></td>
+							<td class="align-end billing-workspace__money">{formatUsd(note.amount_usd_cents)}</td>
+							<td class="align-end billing-workspace__money">{formatUsd(note.applied_usd_cents)}</td
+							>
+							<td class="align-end billing-workspace__money">
+								<strong>{formatUsd(note.unapplied_usd_cents)}</strong>
+							</td>
+							<td class="billing-workspace__secondary">{formatDateTime(note.created_at)}</td>
+						{/snippet}
+						{#snippet rowActions(note)}
+							<div class="billing-workspace__row-actions">
+								{#if note.unapplied_usd_cents > 0 && billing.totals.outstanding_usd_cents > 0}
+									<Button
+										size="small"
+										variant="secondary"
+										onclick={() =>
+											openDialog({
+												kind: 'apply_change_credit',
+												creditNoteId: note.id,
+												chargeId: null
+											})}>Use credit</Button
+									>
+								{/if}
+							</div>
+						{/snippet}
+					</DataTable>
+				</SectionBlock>
+			{/if}
+
 			<div class="billing-workspace__footer">
 				<p>
 					Dates follow the organization's time zone ({billing.commercial_timezone}), where today is
@@ -681,6 +787,20 @@
 		{/if}
 	</div>
 </TabPanel>
+
+{#if changeOpen && billing && organizationId}
+	{#key dialogKey}
+		<PackageChangeDialog
+			{organizationId}
+			{billing}
+			pending={billingMutation.isPending}
+			error={dialogError}
+			fieldErrors={dialogFieldErrors}
+			onSubmit={submitCommand}
+			onClose={closeDialog}
+		/>
+	{/key}
+{/if}
 
 {#if dialog && billing}
 	{#key dialogKey}

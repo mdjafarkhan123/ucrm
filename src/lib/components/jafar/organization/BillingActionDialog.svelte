@@ -16,6 +16,7 @@
 	import {
 		centsToInput,
 		formatCalendarDate,
+		formatDateTime,
 		formatPeriod,
 		formatUsd,
 		parseUsdCents
@@ -78,7 +79,9 @@
 		adjust_paid_through: 'Correct paid-through date',
 		grant_free_access: 'Grant free access',
 		extend_free_access: 'Extend free access',
-		end_free_access: 'End free access'
+		end_free_access: 'End free access',
+		cancel_package_change: 'Cancel scheduled change',
+		apply_change_credit: 'Use change credit'
 	};
 
 	let localError = $state('');
@@ -169,6 +172,26 @@
 	let creditAmount = $state<string | null>(null);
 	const creditAmountValue = $derived(
 		creditAmount ?? (suggestedCredit ? centsToInput(suggestedCredit) : '')
+	);
+
+	// Use change credit (P8b): unused paid time a package change returned, moved onto a charge.
+	const creditNotes = $derived(billing.credit_notes.filter((note) => note.unapplied_usd_cents > 0));
+	let noteId = $state(initial.kind === 'apply_change_credit' ? (initial.creditNoteId ?? '') : '');
+	let noteChargeId = $state(initial.kind === 'apply_change_credit' ? (initial.chargeId ?? '') : '');
+	const chosenNote = $derived(
+		creditNotes.find((note) => note.id === (noteId || creditNotes[0]?.id))
+	);
+	const chosenNoteCharge = $derived(
+		openCharges.find((charge) => charge.id === (noteChargeId || openCharges[0]?.id))
+	);
+	let noteAmount = $state<string | null>(null);
+	const noteAmountValue = $derived(
+		noteAmount ??
+			(chosenNote && chosenNoteCharge
+				? centsToInput(
+						Math.min(chosenNote.unapplied_usd_cents, chosenNoteCharge.outstanding_usd_cents)
+					)
+				: '')
 	);
 
 	// Free access ------------------------------------------------------------------------------------------
@@ -373,6 +396,28 @@
 				if (Object.keys(localFieldErrors).length) return null;
 				return { action: 'end_free_access', grant_id: initial.grant.grant_id, reason: why };
 			}
+			case 'cancel_package_change': {
+				const why = requireText(reason, 'reason', reasonMessage, 3);
+				if (Object.keys(localFieldErrors).length) return null;
+				return {
+					action: 'cancel_package_change',
+					agreement_id: initial.agreement.id,
+					reason: why
+				};
+			}
+			case 'apply_change_credit': {
+				const cents = requireAmount(noteAmountValue, 'amount_usd_cents');
+				if (!chosenNote || !chosenNoteCharge || cents === null) {
+					if (!chosenNoteCharge) localFieldErrors.charge_id = 'Choose the charge to pay.';
+					return null;
+				}
+				return {
+					action: 'apply_change_credit',
+					credit_note_id: chosenNote.id,
+					charge_id: chosenNoteCharge.id,
+					amount_usd_cents: cents
+				};
+			}
 		}
 	}
 
@@ -393,7 +438,10 @@
 					: titles[initial.kind]
 	);
 	const destructive =
-		initial.kind === 'void' || initial.kind === 'refund' || initial.kind === 'end_free_access';
+		initial.kind === 'void' ||
+		initial.kind === 'refund' ||
+		initial.kind === 'end_free_access' ||
+		initial.kind === 'cancel_package_change';
 	const title =
 		initial.kind === 'void' ? voidCopy[initial.recordKind].button : titles[initial.kind];
 </script>
@@ -804,6 +852,68 @@
 				maxlength={500}
 				invalid={Boolean(shownFieldErrors.reason)}
 				errorMessage={shownFieldErrors.reason}
+			/>
+		{:else if initial.kind === 'cancel_package_change'}
+			<p class="billing-dialog__lead">
+				<strong>
+					Move to {initial.agreement.edition_name} (edition {initial.agreement.edition_number}) on
+					{formatDateTime(initial.agreement.effective_from)}
+				</strong>
+			</p>
+			<p class="billing-dialog__hint">
+				The customer stays on their current package and price. A waiting charge at the new price
+				goes back to the current price. The cancelled change stays in the history.
+			</p>
+			<Textarea
+				id="billing-reason"
+				label="Reason"
+				bind:value={reason}
+				rows={3}
+				maxlength={500}
+				invalid={Boolean(shownFieldErrors.reason)}
+				errorMessage={shownFieldErrors.reason}
+			/>
+		{:else if initial.kind === 'apply_change_credit'}
+			<p class="billing-dialog__lead">
+				Move credit from unused days of an earlier package onto a charge. It is credit, not money
+				received, so it cannot be refunded.
+			</p>
+			<Select
+				id="billing-note-credit"
+				label="Credit from"
+				value={chosenNote?.id ?? ''}
+				options={creditNotes.map((note) => ({
+					value: note.id,
+					label: `Unused ${formatPeriod(note.unused_from, note.unused_through)} · ${formatUsd(note.unapplied_usd_cents)} left`
+				}))}
+				onchange={(value) => {
+					noteId = value;
+					noteAmount = null;
+				}}
+			/>
+			<Select
+				id="billing-note-charge"
+				label="Pay towards"
+				value={chosenNoteCharge?.id ?? ''}
+				options={openCharges.map((charge) => ({
+					value: charge.id,
+					label: `${formatPeriod(charge.period_start, charge.period_end)} · ${formatUsd(charge.outstanding_usd_cents)} owed`
+				}))}
+				onchange={(value) => {
+					noteChargeId = value;
+					noteAmount = null;
+				}}
+			/>
+			{#if shownFieldErrors.charge_id}<p class="billing-dialog__error" role="alert">
+					{shownFieldErrors.charge_id}
+				</p>{/if}
+			<Input
+				id="billing-note-amount"
+				label="Amount (USD)"
+				inputmode="decimal"
+				bind:value={() => noteAmountValue, (value) => (noteAmount = String(value ?? ''))}
+				invalid={Boolean(shownFieldErrors.amount_usd_cents)}
+				errorMessage={shownFieldErrors.amount_usd_cents}
 			/>
 		{/if}
 

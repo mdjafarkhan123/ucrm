@@ -123,3 +123,19 @@ export const jafarSettingsCleanupImpactKey = (organizationId: string | undefined
 export const jafarPackagesKey = ['jafar', 'packages'] as const;
 export const jafarPackageKey = (packageId: string | undefined) =>
 	['jafar', 'packages', packageId] as const;
+// Package builder P8b: one previewed move, fetched while the Change package dialog is open.
+export const jafarPackageChangePreviewKey = (
+	organizationId: string | undefined,
+	editionId: string,
+	billingInterval: string,
+	timing: string
+) =>
+	[
+		...jafarOrganizationKey(organizationId),
+		'package-change-preview',
+		editionId,
+		billingInterval,
+		timing
+	] as const;
+export const jafarOrganizationExceptionsKey = (organizationId: string | undefined) =>
+	[...jafarOrganizationKey(organizationId), 'exceptions'] as const;

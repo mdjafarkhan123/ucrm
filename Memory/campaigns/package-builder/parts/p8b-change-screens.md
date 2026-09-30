@@ -10,13 +10,16 @@
 - [x] Billing route: preview (GET `billing/change-preview`), change, cancel scheduled change, use change credit; Zod + tests
 - [x] Exceptions route `api/jafar/organizations/[id]/exceptions` (list, add, end early); tests
 - [ ] Delete the switched-off `feature-overrides` / `limit-overrides` routes once nothing posts to them (Access tab and four Communications panels: Email, Marketing, Website chat allowances, Automation authority)
-- [ ] Billing tab: Package block (current terms, scheduled change + cancel + over-limit warning, terms history), Change package dialog, change credit shown and usable
+- [x] Billing tab: `BillingPackageSection.svelte` (current terms, scheduled change + cancel + over-limit warning, history), `PackageChangeDialog.svelte`, change credit block and dialogs in `BillingActionDialog.svelte`. Type check clean; **not yet opened in the browser**
 - [ ] Access tab: features and limits from the new snapshot; exceptions list, add, end early
 - [ ] Browser check of the P8a done-checks through the screens
 
 ## Next
 
-Build the Billing tab Package block and Change package dialog (`src/lib/components/jafar/organization/`).
+1. Quick browser look at the Billing tab on Jaaroweb (`/jafar/organizations/4e99829a-dba2-4ea4-ae23-9fc16585f0f7?tab=billing`): open Change package, pick Starter Check, flip monthly/now, confirm the comparison and money read correctly. Do not confirm a change yet.
+2. Build the Access tab: replace the old override table and three limit cards in `AccessWorkspace.svelte` with features and limits read from the new snapshot, plus an exceptions list (query key `jafarOrganizationExceptionsKey`, route `api/jafar/organizations/[id]/exceptions`) with Add and End early dialogs. Its package card's "returns with the new package tools" line should point to the Billing tab instead.
+3. Point the four Communications panels off `limit-overrides`, then delete the two switched-off routes.
+4. Browser check of the done-checks.
 
 ## Outside actions
 
