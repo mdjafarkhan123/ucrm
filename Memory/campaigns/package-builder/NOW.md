@@ -5,7 +5,7 @@
 
 **Completed:** Planning (P1, P2); stage 1 Foundation (P3a–P5c); P6 drafts, 2026-09-30.
 
-**Next part:** P7 Publish, archive, and restore (stage `stages/2-builder.md`). The builder lives at `/jafar/packages`; publish must add a button and a database command beside the draft commands in `supabase/migrations/20260930200000_package_drafts.sql`.
+**Next part:** P7 Publish, archive, and restore (stage `stages/2-builder.md`). Draft commands: `supabase/migrations/20260930200000_package_drafts.sql`.
 
 **Blockers:** None. **Asked Jafar 2026-09-30:** approve which billing actions ask for the password (`billingStepUpActions`)?
 
