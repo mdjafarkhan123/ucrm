@@ -1,19 +1,14 @@
 <script lang="ts">
 	import { marketingAllowanceQuery } from '$lib/jafar/organization-communications-queries';
-	import type { CalendarDate } from '@internationalized/date';
-	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { createQuery } from '@tanstack/svelte-query';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
-	import Input from '$lib/components/ui/Input.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
-	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
-	import { jafarOrganizationMarketingAllowanceKey } from '$lib/jafar/query-keys';
 
+	// Package builder P8b: this shows the Marketing allowance; exceptions to it are added and ended on the
+	// Access tab with every other limit.
 	type LimitState = 'unlimited' | 'not_included' | 'numeric';
-	type OverrideState = LimitState | 'inherit';
 	type Allowance = {
 		effective: { state: LimitState; value: number | null; source: 'package' | 'override' };
 		override: {
@@ -26,31 +21,12 @@
 		} | null;
 	};
 	type AllowanceResponse = { allowance?: Allowance; error?: string };
-	type MutationResponse = { error?: string; field_errors?: Record<string, string> };
 
 	let { organizationId }: { organizationId: string } = $props();
 
-	const queryClient = useQueryClient();
-	const allowanceKey = $derived(jafarOrganizationMarketingAllowanceKey(organizationId));
 	const allowanceQuery = createQuery<AllowanceResponse>(() =>
 		marketingAllowanceQuery<AllowanceResponse>(organizationId)
 	);
-
-	const stateOptions = [
-		{ value: 'inherit', label: 'Inherit from package' },
-		{ value: 'numeric', label: 'Set a numeric limit' },
-		{ value: 'not_included', label: 'Not included' },
-		{ value: 'unlimited', label: 'Unlimited' }
-	];
-
-	let editing = $state(false);
-	let overrideState = $state<OverrideState>('inherit');
-	let overrideValue = $state('');
-	let expiresAt = $state('');
-	let reason = $state('');
-	let feedbackMessage = $state('');
-	let feedbackError = $state('');
-	let fieldErrors = $state<Record<string, string>>({});
 
 	function formatValue(state: LimitState, value: number | null) {
 		if (state === 'unlimited') return 'Unlimited marketing emails per month';
@@ -63,75 +39,6 @@
 			? new Date(value).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
 			: 'Not set';
 	}
-
-	function startEditing(allowance: Allowance, clear: boolean) {
-		feedbackMessage = '';
-		feedbackError = '';
-		fieldErrors = {};
-		editing = true;
-		overrideState = clear ? 'inherit' : (allowance.override?.limit_state ?? 'inherit');
-		overrideValue = clear ? '' : (allowance.override?.limit_value?.toString() ?? '');
-		expiresAt =
-			clear || !allowance.override?.expires_at ? '' : allowance.override.expires_at.slice(0, 10);
-		reason = '';
-	}
-
-	function handleExpiresAtChange(value: CalendarDate | undefined) {
-		expiresAt = calendarDateToString(value);
-	}
-
-	const allowanceMutation = createMutation<
-		MutationResponse,
-		Error,
-		{
-			override_state: OverrideState;
-			limit_value: number | null;
-			starts_at: string;
-			expires_at: string | null;
-			reason: string;
-			idempotency_key: string;
-		}
-	>(() => ({
-		mutationFn: async (body) => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/limit-overrides/marketing_email_recipients`,
-				{
-					method: 'PUT',
-					headers: { 'content-type': 'application/json' },
-					body: JSON.stringify(body)
-				}
-			);
-			const result = (await response.json()) as MutationResponse;
-			if (!response.ok) {
-				fieldErrors = result.field_errors ?? {};
-				throw new Error(result.error ?? 'The Marketing allowance exception could not be changed.');
-			}
-			return result;
-		},
-		onMutate: () => {
-			feedbackError = '';
-			fieldErrors = {};
-		},
-		onError: (error) => (feedbackError = error.message),
-		onSuccess: async () => {
-			editing = false;
-			feedbackMessage = 'Marketing allowance exception updated.';
-			await queryClient.invalidateQueries({ queryKey: allowanceKey });
-		}
-	}));
-
-	function submit(event: SubmitEvent) {
-		event.preventDefault();
-		if (!reason.trim()) return;
-		allowanceMutation.mutate({
-			override_state: overrideState,
-			limit_value: overrideState === 'numeric' ? Number(overrideValue) : null,
-			starts_at: new Date().toISOString(),
-			expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
-			reason: reason.trim(),
-			idempotency_key: crypto.randomUUID()
-		});
-	}
 </script>
 
 <div class="marketing-allowance-actions">
@@ -142,13 +49,6 @@
 			Marketing cannot send for this organization.
 		</p>
 	</div>
-
-	{#if feedbackMessage}<p class="marketing-allowance-actions__success" role="status">
-			{feedbackMessage}
-		</p>{/if}
-	{#if feedbackError}<p class="marketing-allowance-actions__error" role="alert">
-			{feedbackError}
-		</p>{/if}
 
 	{#if allowanceQuery.isPending}
 		<LoadingSkeleton variant="table" label="Loading Marketing allowance" />
@@ -189,76 +89,14 @@
 				</div>
 			</dl>
 		{/if}
-		{#if editing}
-			<form class="marketing-allowance-actions__form" onsubmit={submit}>
-				<Select
-					id="marketing-allowance-state"
-					ariaLabel="Marketing allowance exception state"
-					options={stateOptions}
-					bind:value={overrideState}
-				/>
-				{#if overrideState === 'numeric'}
-					<Input
-						id="marketing-allowance-value"
-						label="Marketing emails per month"
-						type="number"
-						min="0"
-						bind:value={overrideValue}
-						invalid={Boolean(fieldErrors.limit_value)}
-						errorMessage={fieldErrors.limit_value}
-					/>
-				{/if}
-				<CalendarPicker
-					id="marketing-allowance-expiry"
-					label="Expires (leave blank for permanent)"
-					value={calendarDateFromString(expiresAt)}
-					onchange={handleExpiresAtChange}
-				/>
-				<Input
-					id="marketing-allowance-reason"
-					label="Private reason"
-					bind:value={reason}
-					required
-					invalid={Boolean(fieldErrors.reason)}
-					errorMessage={fieldErrors.reason}
-				/>
-				<div class="marketing-allowance-actions__actions">
-					<Button
-						type="submit"
-						loading={allowanceMutation.isPending}
-						disabled={!reason.trim() || (overrideState === 'numeric' && !overrideValue)}
-						>Save exception</Button
-					>
-					<Button
-						type="button"
-						variant="secondary"
-						variation="subtle"
-						onclick={() => (editing = false)}>Cancel</Button
-					>
-				</div>
-			</form>
-		{:else}
-			<div class="marketing-allowance-actions__actions">
-				<Button
-					size="small"
-					variant="secondary"
-					variation="subtle"
-					onclick={() => startEditing(allowance, false)}>Change exception</Button
-				>
-				{#if allowance.override}<Button
-						size="small"
-						variant="secondary"
-						variation="subtle"
-						onclick={() => startEditing(allowance, true)}>Clear exception</Button
-					>{/if}
-			</div>
-		{/if}
+		<div class="marketing-allowance-actions__actions">
+			<Button size="small" variant="secondary" href="?tab=access">Change on the Access tab</Button>
+		</div>
 	{/if}
 </div>
 
 <style lang="scss">
-	.marketing-allowance-actions,
-	.marketing-allowance-actions__form {
+	.marketing-allowance-actions {
 		display: grid;
 		gap: var(--space-base);
 	}
@@ -270,13 +108,6 @@
 		margin-top: var(--space-small);
 		color: var(--color-text--secondary);
 		line-height: var(--typography--lineHeight-base);
-	}
-	.marketing-allowance-actions__success {
-		color: var(--color-success--onSurface);
-	}
-	.marketing-allowance-actions__error {
-		color: var(--color-critical);
-		font-size: var(--typography--fontSize-small);
 	}
 	.marketing-allowance-actions__summary {
 		display: flex;

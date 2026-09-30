@@ -1,26 +1,13 @@
 <script lang="ts">
 	import { emailAllowancesQuery } from '$lib/jafar/organization-communications-queries';
-	import type { CalendarDate } from '@internationalized/date';
-	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { createQuery } from '@tanstack/svelte-query';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
-	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
-	import Input from '$lib/components/ui/Input.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
-	import type { DateTimePickerValue } from '$lib/components/ui/date-time';
-	import { jafarOrganizationEmailAllowancesKey } from '$lib/jafar/query-keys';
-	import {
-		calendarDateFromString,
-		calendarDateToString,
-		dateTimePickerValueFromDate,
-		dateTimePickerValueFromLocalString,
-		dateTimePickerValueToLocalString,
-		localDateTimeToIso
-	} from '$lib/components/ui/date-time';
 
+	// Package builder P8b: this shows the email allowances; exceptions to them are added and ended on the
+	// Access tab with every other limit.
 	type AllowanceKey = 'operational_email_recipients' | 'essential_email_recipients';
 	type Allowance = {
 		limit_key: AllowanceKey;
@@ -40,12 +27,9 @@
 		override_author_email: string | null;
 	};
 	type AllowanceResponse = { allowances?: Allowance[]; error?: string };
-	type MutationResponse = { error?: string; field_errors?: Record<string, string> };
 
 	let { organizationId }: { organizationId: string } = $props();
 
-	const queryClient = useQueryClient();
-	const allowanceKey = $derived(jafarOrganizationEmailAllowancesKey(organizationId));
 	const allowancesQuery = createQuery<AllowanceResponse>(() =>
 		emailAllowancesQuery<AllowanceResponse>(organizationId)
 	);
@@ -63,23 +47,6 @@
 			unit: 'recipients'
 		}
 	};
-	const stateOptions = [
-		{ value: 'inherit', label: 'Inherit from package' },
-		{ value: 'numeric', label: 'Set a numeric limit' },
-		{ value: 'not_included', label: 'Not included' },
-		{ value: 'unlimited', label: 'Unlimited' }
-	];
-
-	let editingKey = $state<AllowanceKey | null>(null);
-	let overrideState = $state<'inherit' | 'unlimited' | 'not_included' | 'numeric'>('inherit');
-	let overrideValue = $state('');
-	let startsAt = $state('');
-	let expiresAt = $state('');
-	let reason = $state('');
-	let feedbackMessage = $state('');
-	let feedbackError = $state('');
-	let fieldErrors = $state<Record<string, string>>({});
-
 	function formatValue(state: Allowance['effective_state'], value: number | null) {
 		if (state === 'unlimited') return 'Unlimited recipients';
 		if (state === 'numeric') return `${value ?? 0} recipients`;
@@ -92,87 +59,6 @@
 			? new Date(value).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
 			: 'Not set';
 	}
-
-	function localDateTimeValue(value: Date) {
-		return dateTimePickerValueToLocalString(dateTimePickerValueFromDate(value));
-	}
-
-	function startEditing(allowance: Allowance) {
-		feedbackMessage = '';
-		feedbackError = '';
-		fieldErrors = {};
-		editingKey = allowance.limit_key;
-		overrideState = allowance.override_state ?? 'inherit';
-		overrideValue = allowance.override_value?.toString() ?? '';
-		startsAt = allowance.override_starts_at
-			? allowance.override_starts_at.slice(0, 16)
-			: localDateTimeValue(new Date());
-		expiresAt = allowance.override_expires_at ? allowance.override_expires_at.slice(0, 10) : '';
-		reason = '';
-	}
-
-	function handleStartsAtChange(value: DateTimePickerValue) {
-		startsAt = dateTimePickerValueToLocalString(value);
-	}
-
-	function handleExpiresAtChange(value: CalendarDate | undefined) {
-		expiresAt = calendarDateToString(value);
-	}
-
-	const allowanceMutation = createMutation<
-		MutationResponse,
-		Error,
-		{
-			limitKey: AllowanceKey;
-			override_state: 'inherit' | 'unlimited' | 'not_included' | 'numeric';
-			limit_value: number | null;
-			starts_at: string;
-			expires_at: string | null;
-			reason: string;
-			idempotency_key: string;
-		}
-	>(() => ({
-		mutationFn: async ({ limitKey, ...body }) => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/limit-overrides/${limitKey}`,
-				{
-					method: 'PUT',
-					headers: { 'content-type': 'application/json' },
-					body: JSON.stringify(body)
-				}
-			);
-			const result = (await response.json()) as MutationResponse;
-			if (!response.ok) {
-				fieldErrors = result.field_errors ?? {};
-				throw new Error(result.error ?? 'The email allowance exception could not be changed.');
-			}
-			return result;
-		},
-		onMutate: () => {
-			feedbackError = '';
-			fieldErrors = {};
-		},
-		onError: (error) => (feedbackError = error.message),
-		onSuccess: async () => {
-			editingKey = null;
-			feedbackMessage = 'Email allowance exception updated.';
-			await queryClient.invalidateQueries({ queryKey: allowanceKey });
-		}
-	}));
-
-	function submit(event: SubmitEvent) {
-		event.preventDefault();
-		if (!editingKey || !startsAt || !reason.trim()) return;
-		allowanceMutation.mutate({
-			limitKey: editingKey,
-			override_state: overrideState,
-			limit_value: overrideState === 'numeric' ? Number(overrideValue) : null,
-			starts_at: localDateTimeToIso(startsAt),
-			expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
-			reason: reason.trim(),
-			idempotency_key: crypto.randomUUID()
-		});
-	}
 </script>
 
 <div class="email-allowance-actions">
@@ -182,11 +68,6 @@
 			<p>These values control package capacity only. The email delivery worker remains disabled.</p>
 		</div>
 	</div>
-
-	{#if feedbackMessage}<p class="email-allowance-actions__success" role="status">
-			{feedbackMessage}
-		</p>{/if}
-	{#if feedbackError}<p class="email-allowance-actions__error" role="alert">{feedbackError}</p>{/if}
 
 	{#if allowancesQuery.isPending}
 		<LoadingSkeleton variant="table" label="Loading email allowance authority" />
@@ -250,94 +131,16 @@
 						</div>
 					{/if}
 				</dl>
-				{#if editingKey === allowance.limit_key}
-					<form class="email-allowance-actions__form" onsubmit={submit}>
-						<Select
-							id={`allowance-state-${allowance.limit_key}`}
-							ariaLabel="Allowance exception state"
-							options={stateOptions}
-							bind:value={overrideState}
-						/>
-						{#if overrideState === 'numeric'}
-							<Input
-								id={`allowance-value-${allowance.limit_key}`}
-								label="Recipient allowance"
-								type="number"
-								min="0"
-								bind:value={overrideValue}
-								invalid={Boolean(fieldErrors.limit_value)}
-								errorMessage={fieldErrors.limit_value}
-							/>
-						{/if}
-						<DateTimePicker
-							id={`allowance-start-${allowance.limit_key}`}
-							dateLabel="Starts at date"
-							timeLabel="Starts at time"
-							value={dateTimePickerValueFromLocalString(startsAt)}
-							required
-							onchange={handleStartsAtChange}
-						/>
-						<CalendarPicker
-							id={`allowance-expiry-${allowance.limit_key}`}
-							label="Expires (leave blank for permanent)"
-							value={calendarDateFromString(expiresAt)}
-							onchange={handleExpiresAtChange}
-						/>
-						<Input
-							id={`allowance-reason-${allowance.limit_key}`}
-							label="Private reason"
-							bind:value={reason}
-							required
-							invalid={Boolean(fieldErrors.reason)}
-							errorMessage={fieldErrors.reason}
-						/>
-						<div class="email-allowance-actions__actions">
-							<Button
-								type="submit"
-								loading={allowanceMutation.isPending}
-								disabled={!reason.trim() ||
-									!startsAt ||
-									(overrideState === 'numeric' && !overrideValue)}>Save exception</Button
-							>
-							<Button
-								type="button"
-								variant="secondary"
-								variation="subtle"
-								onclick={() => (editingKey = null)}>Cancel</Button
-							>
-						</div>
-					</form>
-				{:else}
-					<div class="email-allowance-actions__actions">
-						<Button
-							size="small"
-							variant="secondary"
-							variation="subtle"
-							onclick={() => startEditing(allowance)}>Change exception</Button
-						>
-						{#if allowance.override_state}<Button
-								size="small"
-								variant="secondary"
-								variation="subtle"
-								onclick={() =>
-									startEditing({
-										...allowance,
-										override_state: null,
-										override_value: null,
-										override_starts_at: null,
-										override_expires_at: null
-									})}>Clear exception</Button
-							>{/if}
-					</div>
-				{/if}
 			</section>
 		{/each}
+		<div class="email-allowance-actions__actions">
+			<Button size="small" variant="secondary" href="?tab=access">Change on the Access tab</Button>
+		</div>
 	{/if}
 </div>
 
 <style lang="scss">
-	.email-allowance-actions,
-	.email-allowance-actions__form {
+	.email-allowance-actions {
 		display: grid;
 		gap: var(--space-base);
 	}
@@ -351,13 +154,6 @@
 		margin-top: var(--space-small);
 		color: var(--color-text--secondary);
 		line-height: var(--typography--lineHeight-base);
-	}
-	.email-allowance-actions__success {
-		color: var(--color-success--onSurface);
-	}
-	.email-allowance-actions__error {
-		color: var(--color-critical);
-		font-size: var(--typography--fontSize-small);
 	}
 	.email-allowance-actions__allowance {
 		display: grid;

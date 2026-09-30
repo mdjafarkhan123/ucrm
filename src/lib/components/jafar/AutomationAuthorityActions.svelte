@@ -1,34 +1,16 @@
 <script lang="ts">
 	import { automationAuthorityQuery } from '$lib/jafar/organization-communications-queries';
-	import type { CalendarDate } from '@internationalized/date';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
-	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
-	import Input from '$lib/components/ui/Input.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
-	import type { DateTimePickerValue } from '$lib/components/ui/date-time';
-	import {
-		jafarOrganizationAutomationAuthorityKey,
-		jafarOrganizationKey
-	} from '$lib/jafar/query-keys';
-	import {
-		calendarDateFromString,
-		calendarDateToString,
-		dateTimePickerValueFromDate,
-		dateTimePickerValueFromLocalString,
-		dateTimePickerValueToLocalString,
-		localDateTimeToIso
-	} from '$lib/components/ui/date-time';
+	import { jafarOrganizationAutomationAuthorityKey } from '$lib/jafar/query-keys';
 
 	type LimitState = 'unlimited' | 'not_included' | 'numeric';
-	type OverrideState = 'inherit' | LimitState;
 
 	type AuthorityEvent = {
 		id: string;
@@ -68,7 +50,6 @@
 		};
 	};
 	type AuthorityResponse = { authority?: Authority; limits?: LimitOverview[]; error?: string };
-	type MutationResponse = { error?: string };
 	type PendingAction = {
 		axis: 'operational' | 'security';
 		engage: boolean;
@@ -92,13 +73,6 @@
 		automation_max_delay_days: 'Maximum delay (days)',
 		automation_max_enrollment_duration_days: 'Maximum enrollment duration (days)'
 	};
-	const LIMIT_OVERRIDE_STATE_OPTIONS = [
-		{ value: 'inherit', label: 'Inherit from package' },
-		{ value: 'numeric', label: 'Set a numeric limit' },
-		{ value: 'not_included', label: 'Not included' },
-		{ value: 'unlimited', label: 'Unlimited' }
-	];
-
 	const authorityQuery = createQuery<AuthorityResponse>(() =>
 		automationAuthorityQuery<AuthorityResponse>(organizationId)
 	);
@@ -125,9 +99,6 @@
 		if (state === 'unlimited') return 'Unlimited';
 		if (state === 'numeric') return value === null ? '—' : String(value);
 		return 'Not included';
-	}
-	function localDateTimeValue(value: Date) {
-		return dateTimePickerValueToLocalString(dateTimePickerValueFromDate(value));
 	}
 
 	// Authority change ------------------------------------------------------------------------------
@@ -210,100 +181,6 @@
 					? 'New enrollment and customer effects stop immediately while definitions and history stay readable. Use this for a temporary operational hold.'
 					: 'Automation writes become available again for this organization, unless a security suspension is still in place.'
 	);
-
-	// Limit exceptions ------------------------------------------------------------------------------
-	let editingLimitKey = $state<string | null>(null);
-	let overrideState = $state<OverrideState>('numeric');
-	let overrideValue = $state('');
-	let overrideStartsAt = $state('');
-	let overrideExpiry = $state('');
-	let overrideReason = $state('');
-
-	function startEditingLimit(row: LimitOverview) {
-		editingLimitKey = row.limit_key;
-		overrideState = row.exception ? row.exception.state : 'numeric';
-		overrideValue = row.exception?.value?.toString() ?? '';
-		overrideStartsAt = localDateTimeValue(new Date());
-		overrideExpiry = '';
-		overrideReason = '';
-	}
-	function startClearingLimit(row: LimitOverview) {
-		editingLimitKey = row.limit_key;
-		overrideState = 'inherit';
-		overrideValue = '';
-		overrideStartsAt = localDateTimeValue(new Date());
-		overrideExpiry = '';
-		overrideReason = '';
-	}
-	function cancelEditingLimit() {
-		if (limitMutation.isPending) return;
-		editingLimitKey = null;
-	}
-	function handleStartsAtChange(value: DateTimePickerValue) {
-		overrideStartsAt = dateTimePickerValueToLocalString(value);
-	}
-	function handleExpiryChange(value: CalendarDate | undefined) {
-		overrideExpiry = calendarDateToString(value);
-	}
-
-	const limitMutation = createMutation<
-		MutationResponse,
-		Error,
-		{
-			limitKey: string;
-			override_state: OverrideState;
-			limit_value: number | null;
-			starts_at: string;
-			expires_at: string | null;
-			reason: string;
-			idempotency_key: string;
-		}
-	>(() => ({
-		mutationFn: async (input) => {
-			const response = await fetch(
-				`/api/jafar/organizations/${organizationId}/limit-overrides/${input.limitKey}`,
-				{
-					method: 'PUT',
-					headers: { 'content-type': 'application/json' },
-					body: JSON.stringify({
-						override_state: input.override_state,
-						limit_value: input.limit_value,
-						starts_at: input.starts_at,
-						expires_at: input.expires_at,
-						reason: input.reason,
-						idempotency_key: input.idempotency_key
-					})
-				}
-			);
-			const result = (await response.json()) as MutationResponse;
-			if (!response.ok)
-				throw new Error(result.error ?? 'The limit exception could not be changed.');
-			return result;
-		},
-		onSuccess: async () => {
-			editingLimitKey = null;
-			toast.success('Automation limit exception updated.');
-			await queryClient.invalidateQueries({ queryKey: authorityKey });
-			await queryClient.invalidateQueries({
-				queryKey: jafarOrganizationKey(organizationId)
-			});
-		},
-		onError: (error) => toast.error(error.message)
-	}));
-
-	function submitLimitOverride(event: SubmitEvent) {
-		event.preventDefault();
-		if (!editingLimitKey || !overrideReason.trim() || !overrideStartsAt) return;
-		limitMutation.mutate({
-			limitKey: editingLimitKey,
-			override_state: overrideState,
-			limit_value: overrideState === 'numeric' ? Number(overrideValue) : null,
-			starts_at: localDateTimeToIso(overrideStartsAt),
-			expires_at: overrideExpiry ? new Date(overrideExpiry).toISOString() : null,
-			reason: overrideReason.trim(),
-			idempotency_key: crypto.randomUUID()
-		});
-	}
 </script>
 
 <div class="automation-authority">
@@ -418,7 +295,6 @@
 							<th scope="col">Package default</th>
 							<th scope="col">Effective</th>
 							<th scope="col">Exception</th>
-							<th scope="col"></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -451,78 +327,19 @@
 										None
 									{/if}
 								</td>
-								<td>
-									<div class="automation-authority__row-actions">
-										<Button
-											size="small"
-											variant="secondary"
-											variation="subtle"
-											onclick={() => startEditingLimit(row)}>Change</Button
-										>
-										{#if row.exception}
-											<Button
-												size="small"
-												variant="secondary"
-												variation="subtle"
-												onclick={() => startClearingLimit(row)}>Clear</Button
-											>
-										{/if}
-									</div>
-								</td>
 							</tr>
 						{/each}
 					</tbody>
 				</table>
 			</div>
 
-			{#if editingLimitKey}
-				<form onsubmit={submitLimitOverride} class="automation-authority__form">
-					<p><strong>{LIMIT_LABELS[editingLimitKey] ?? editingLimitKey}</strong></p>
-					<Select
-						id="automation-limit-override-state"
-						ariaLabel="Automation limit exception state"
-						options={LIMIT_OVERRIDE_STATE_OPTIONS}
-						bind:value={overrideState}
-					/>
-					{#if overrideState === 'numeric'}
-						<Input
-							id="automation-limit-override-value"
-							label="Limit value"
-							type="number"
-							min="0"
-							bind:value={overrideValue}
-						/>
-					{/if}
-					<CalendarPicker
-						id="automation-limit-override-expiry"
-						label="Expires (leave blank for permanent)"
-						value={calendarDateFromString(overrideExpiry)}
-						onchange={handleExpiryChange}
-					/>
-					<DateTimePicker
-						id="automation-limit-override-starts-at"
-						dateLabel="Starts at date"
-						timeLabel="Starts at time"
-						value={dateTimePickerValueFromLocalString(overrideStartsAt)}
-						required
-						onchange={handleStartsAtChange}
-					/>
-					<Input
-						id="automation-limit-override-reason"
-						label="Private reason"
-						bind:value={overrideReason}
-					/>
-					<div class="automation-authority__form-actions">
-						<Button type="submit" loading={limitMutation.isPending}>Save exception</Button>
-						<Button
-							type="button"
-							variant="secondary"
-							variation="subtle"
-							onclick={cancelEditingLimit}>Cancel</Button
-						>
-					</div>
-				</form>
-			{/if}
+			<div class="automation-authority__limits-footer">
+				<p>
+					Active recipes change with an exception on the Access tab. The other limits are safety
+					limits that apply to every organization alike.
+				</p>
+				<Button size="small" variant="secondary" href="?tab=access">Open the Access tab</Button>
+			</div>
 		</div>
 
 		{#if (authority?.recent_events.length ?? 0) > 0}
@@ -643,21 +460,14 @@
 		display: grid;
 		gap: var(--space-smallest);
 	}
-	.automation-authority__row-actions {
+	.automation-authority__limits-footer {
 		display: flex;
-		gap: var(--space-small);
-	}
-	.automation-authority__form {
-		display: grid;
-		gap: var(--space-small);
-		padding: var(--space-base);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface--background--subtle);
-	}
-	.automation-authority__form-actions {
-		display: flex;
-		gap: var(--space-small);
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-small) var(--space-base);
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
 	}
 	.automation-authority small {
 		color: var(--color-text--secondary);
