@@ -37,7 +37,7 @@ values
   ('90000000-0000-0000-2222-000000000006', current_date + 3, 'renewal', now() + interval '10 days', 'UTC');
 
 insert into public.organization_free_access_events (organization_id, action, starts_at, access_until_date, reason)
-values ('90000000-0000-0000-2222-000000000006', 'grant', current_date - 5, null, 'P4b test fixture: open-ended grant');
+values ('90000000-0000-0000-2222-000000000006', 'grant', current_date - 5, current_date + 60, 'P4b test fixture: running grant');
 
 reset role;
 

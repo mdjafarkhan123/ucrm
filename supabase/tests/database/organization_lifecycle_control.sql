@@ -103,7 +103,7 @@ select throws_ok(
 insert into public.organization_free_access_events (
   organization_id, action, starts_at, access_until_date, reason, actor_owner_email
 ) values (
-  '90000000-0000-0000-0000-0000000000d3', 'grant', current_date, null,
+  '90000000-0000-0000-0000-0000000000d3', 'grant', current_date, current_date + 30,
   'Grant free access to restore eligibility.', 'owner@example.test'
 );
 select is(
