@@ -12,5 +12,5 @@ Build stages, approved by Jafar 2026-09-29:
 | 1 Foundation (P3a–P5c) | New storage and switch-over, money and coverage, grace, free access in Jafar's panel | Done 2026-09-30 | — |
 | 2 Builder | Drafts, publishing, archive and restore | Done 2026-09-30 (P6, P7) | — |
 | 3 Customers | Package changes, public cards, activation, introductory offers | Done 2026-09-30 (P8a–P11b) | — |
-| 4 Sellable extras | Each extra verified before it can be sold | Next: P12 | `stages/4-sellable-extras.md` |
+| 4 Sellable extras | Each extra verified before it can be sold | Next: P13 | `stages/4-sellable-extras.md` |
 | P15 Final check | Every feasibility-review scenario on a fresh local database, speed checks, documents updated, plan marked built. The Jafar panel's final audit checks the new package rules, not the replaced ones | Not started | Waits for P3–P14; done when all scenarios pass and Jafar publishes his two real packages |
