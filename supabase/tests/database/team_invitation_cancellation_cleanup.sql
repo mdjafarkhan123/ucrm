@@ -50,6 +50,13 @@ values
    'owner@example.test'),
   ('c1000000-0000-0000-0000-000000000002', 'employee_seats', 'unlimited', null, 'Test fixture.', '2026-01-01T00:00:00Z', '2100-01-01T00:00:00Z',
    'owner@example.test');
+insert into public.organization_package_exceptions
+  (organization_id, capability_key, capability_state, reason, starts_at, ends_at, actor_owner_email)
+values
+  ('c1000000-0000-0000-0000-000000000001', 'core.team', 'on', 'Test fixture: an allowance counts only while its feature is on.', '2026-01-01T00:00:00Z',
+   '2100-01-01T00:00:00Z', 'owner@example.test'),
+  ('c1000000-0000-0000-0000-000000000002', 'core.team', 'on', 'Test fixture: an allowance counts only while its feature is on.', '2026-01-01T00:00:00Z',
+   '2100-01-01T00:00:00Z', 'owner@example.test');
 
 set local role service_role;
 

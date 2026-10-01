@@ -41,12 +41,8 @@ insert into public.communication_email_allowance_periods (id, organization_id, s
 insert into public.organization_package_exceptions
   (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
    actor_owner_email)
-values ('e1000000-0000-0000-0000-000000000001', 'operational_email_recipients', 'unlimited', null, 'Fixture reason.',
-  now() - interval '1 minute', '2100-01-01T00:00:00Z', 'owner@example.test');
-insert into public.organization_package_exceptions
-  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
-   actor_owner_email)
-values ('e1000000-0000-0000-0000-000000000001', 'essential_email_recipients', 'numeric', 2, 'Fixture reason.',
+-- The protected essential reserve is 10% of this allowance: two recipients (package builder, 2026-09-30).
+values ('e1000000-0000-0000-0000-000000000001', 'operational_email_recipients', 'numeric', 20, 'Fixture reason.',
   now() - interval '1 minute', '2100-01-01T00:00:00Z', 'owner@example.test');
 
 insert into public.clients (id, organization_id, display_name) values
@@ -173,7 +169,7 @@ select ok((select essential_reserve_exhausted_at from usage_read) is not null,
   'the read carries when the exhaustion was first detected');
 select is((select optional_used from usage_read), 0,
   'no ordinary email has been spent this period');
-select is((select optional_limit_state from usage_read), 'unlimited',
+select is((select optional_limit_state from usage_read), 'numeric',
   'the read carries the effective ordinary allowance state');
 select is((select period_ends_at from usage_read),
   (select ends_at from public.communication_email_allowance_periods

@@ -150,6 +150,13 @@ values
    'owner@example.test'),
   ('e1000000-0000-0000-0000-000000000002', 'employee_seats', 'numeric', 1, 'Test fixture.', '2026-01-01T00:00:00Z', '2100-01-01T00:00:00Z',
    'owner@example.test');
+insert into public.organization_package_exceptions
+  (organization_id, capability_key, capability_state, reason, starts_at, ends_at, actor_owner_email)
+values
+  ('e1000000-0000-0000-0000-000000000001', 'core.team', 'on', 'Test fixture: an allowance counts only while its feature is on.', '2026-01-01T00:00:00Z',
+   '2100-01-01T00:00:00Z', 'owner@example.test'),
+  ('e1000000-0000-0000-0000-000000000002', 'core.team', 'on', 'Test fixture: an allowance counts only while its feature is on.', '2026-01-01T00:00:00Z',
+   '2100-01-01T00:00:00Z', 'owner@example.test');
 
 insert into public.organization_member_permission_overrides
   (organization_id, user_id, permission_key, override_state)

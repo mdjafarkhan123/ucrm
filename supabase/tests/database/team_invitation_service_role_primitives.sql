@@ -103,6 +103,11 @@ insert into public.organization_package_exceptions
 values
   ('a1000000-0000-0000-0000-000000000001', 'employee_seats', 'unlimited', null, 'Test fixture.', '2026-01-01T00:00:00Z', '2100-01-01T00:00:00Z',
    'owner@example.test');
+insert into public.organization_package_exceptions
+  (organization_id, capability_key, capability_state, reason, starts_at, ends_at, actor_owner_email)
+values
+  ('a1000000-0000-0000-0000-000000000001', 'core.team', 'on', 'Test fixture: an allowance counts only while its feature is on.', '2026-01-01T00:00:00Z',
+   '2100-01-01T00:00:00Z', 'owner@example.test');
 
 set local role service_role;
 
@@ -498,13 +503,13 @@ insert into tap_results (line) select is(
   (select state from public.organization_member_invitations where invited_email = 'drew@example.test'),
   'expired', 'the ordinary row is now expired'
 );
--- Expiry only flags the sign-in identity for cleanup. The pending membership row goes when the cleanup
--- worker deletes that identity (organization_members.user_id cascades from auth.users), not at expiry.
+-- Expiry frees the seat at once by removing the pending membership row (package builder P14), and flags
+-- the sign-in identity for the cleanup worker to delete afterwards.
 insert into tap_results (line) select is(
   (select count(*)::int from public.organization_members
     where organization_id = 'a1000000-0000-0000-0000-000000000001'
       and user_id = 'a0000000-0000-0000-0000-000000000005'),
-  1, 'expiring an invited invitation keeps its pending membership row until the identity is deleted'
+  0, 'expiring an invited invitation removes its pending membership row at once'
 );
 insert into tap_results (line) select is(
   (select identity_cleanup_state from public.organization_member_invitations where invited_email = 'drew@example.test'),

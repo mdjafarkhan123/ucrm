@@ -35,6 +35,13 @@ insert into public.packages (id, slug, visibility) values
 insert into public.package_editions (id, package_id, name, monthly_price_usd_cents, yearly_price_usd_cents) values
   ('e8000000-0000-0000-0000-0000000000b1', 'c8000000-0000-0000-0000-0000000000b1', 'Big', 20000, 200000),
   ('e8000000-0000-0000-0000-0000000000b2', 'c8000000-0000-0000-0000-0000000000b2', 'Small', 5000, 50000);
+-- Every published package carries the core capabilities, as the builder adds them.
+insert into public.package_edition_capabilities (edition_id, capability_key)
+select edition.id, capability.capability_key
+from (values ('e8000000-0000-0000-0000-0000000000b1'::uuid), ('e8000000-0000-0000-0000-0000000000b2'::uuid))
+  as edition (id)
+cross join public.package_capabilities capability
+where capability.kind = 'core';
 insert into public.package_edition_capabilities (edition_id, capability_key) values
   ('e8000000-0000-0000-0000-0000000000b1', 'communications.inbox'),
   ('e8000000-0000-0000-0000-0000000000b1', 'website_chat');

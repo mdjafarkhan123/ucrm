@@ -33,11 +33,6 @@ insert into public.organization_package_exceptions
    actor_owner_email)
 values ('f1000000-0000-0000-0000-000000000001', 'operational_email_recipients', 'numeric', 1, 'Keep the sender-claim fixture to one optional recipient.',
   now() - interval '1 minute', '2100-01-01T00:00:00Z', 'owner@example.test');
-insert into public.organization_package_exceptions
-  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
-   actor_owner_email)
-values ('f1000000-0000-0000-0000-000000000001', 'essential_email_recipients', 'numeric', 1, 'Keep the sender-claim fixture to one essential recipient.',
-  now() - interval '1 minute', '2100-01-01T00:00:00Z', 'owner@example.test');
 
 insert into public.clients (id, organization_id, display_name)
 values (

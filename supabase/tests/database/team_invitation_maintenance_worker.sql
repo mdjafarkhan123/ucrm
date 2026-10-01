@@ -106,7 +106,7 @@ insert into tap_results (line) select is(
   (select count(*)::int from public.organization_members
    where user_id in ('c0000000-0000-0000-0000-000000000002',
                      'c0000000-0000-0000-0000-000000000003')),
-  2, 'expiry keeps pending memberships and seats until Auth cleanup is confirmed'
+  0, 'expiry frees pending memberships and seats at once; Auth cleanup follows (package builder P14)'
 );
 
 select public.sweep_team_invitation_reservations_bounded(2, interval '1 hour');

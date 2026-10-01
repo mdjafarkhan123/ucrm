@@ -27,6 +27,11 @@ insert into public.organization_package_exceptions (
   'f3000000-0000-0000-0000-000000000001', 'website_chat_widgets', 'numeric', 2, 'Test fixture.', now() - interval '1 minute',
   '2100-01-01T00:00:00Z', 'owner@example.test'
 );
+insert into public.organization_package_exceptions
+  (organization_id, capability_key, capability_state, reason, starts_at, ends_at, actor_owner_email)
+values
+  ('f3000000-0000-0000-0000-000000000001', 'website_chat', 'on', 'Test fixture: an allowance counts only while its feature is on.', '2026-01-01T00:00:00Z',
+   '2100-01-01T00:00:00Z', 'owner@example.test');
 
 insert into public.website_chat_widgets (
   id, organization_id, name, launcher_position, teaser_text, greeting_text, public_token, published
