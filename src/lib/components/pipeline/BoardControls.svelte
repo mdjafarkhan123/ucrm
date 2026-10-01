@@ -1,15 +1,20 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { CalendarDate } from '@internationalized/date';
 	import Select from '$lib/components/ui/Select.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
+	import SearchInput from '$lib/components/ui/SearchInput.svelte';
+	import { LEAD_SOURCES } from '$lib/clients/lead-sources';
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
+	import { fetchLeadSources, leadSourcesKey } from '$lib/pipeline/api';
 	import {
 		BOARD_DATE_LABELS,
 		BOARD_DATE_PRESETS,
 		BOARD_SORTS,
 		BOARD_SORT_LABELS,
 		directionLabel,
+		searchTerm,
 		sortHasDirection,
 		type BoardDatePreset,
 		type BoardFilters,
@@ -18,8 +23,8 @@
 	import arrowUpIcon from '@tabler/icons/outline/arrow-up.svg?raw';
 	import arrowDownIcon from '@tabler/icons/outline/arrow-down.svg?raw';
 
-	// The row of controls above the board: what order the cards are in, whose cards they are, when they came
-	// in, and how many there are altogether. It owns none of that state — it reports a change and the page
+	// The row of controls above the board: which cards to find, what order they are in, whose they are, where
+	// they came from, when they came in, and how many there are altogether. It owns none of that state — it reports a change and the page
 	// puts it in the URL, which is what makes refresh and the back button work.
 	let {
 		filters,
@@ -33,8 +38,36 @@
 		// Sorting by value is reading value, so the whole option is absent for a member without money —
 		// not disabled, which would still tell them the board has amounts on it.
 		canViewValue: boolean;
-		onChange: (next: BoardFilters) => void;
+		// `replace` asks the page not to add a history entry: typing a search is one visit to the board,
+		// not one per pause between letters.
+		onChange: (next: BoardFilters, options?: { replace?: boolean }) => void;
 	} = $props();
+
+	// The search box holds what is being typed; the URL holds what the board is searching for. `sent` is the
+	// term this bar last asked for, so the two can be told apart: a term arriving from the URL that this bar
+	// did not send is the Back button or a shared link, and the box follows it. One this bar did send must
+	// never be written back over what the person has typed since.
+	let search = $state(untrack(() => filters.q ?? ''));
+	let sent = untrack(() => filters.q ?? '');
+
+	$effect(() => {
+		const incoming = filters.q ?? '';
+		if (incoming !== sent) {
+			sent = incoming;
+			search = incoming;
+		}
+	});
+
+	$effect(() => {
+		const next = searchTerm(search) ?? '';
+		if (next === sent) return;
+		// Long enough that a name typed at ordinary speed is one request, short enough to feel live.
+		const handle = setTimeout(() => {
+			sent = next;
+			onChange({ ...filters, q: next || undefined }, { replace: true });
+		}, 300);
+		return () => clearTimeout(handle);
+	});
 
 	// The team only matters once someone opens the Salesperson list, but it is a small, long-lived list and
 	// the board almost always has an owner filter used against it, so it loads with the bar rather than
@@ -60,6 +93,37 @@
 			label: member.full_name ?? 'Unnamed teammate'
 		}))
 	]);
+
+	// Clients carry their lead source as free text, so the list is the client form's own sources plus any
+	// other spelling the open cards really carry ("Google", "staff"). The board matches a source whatever its
+	// capitals, so each appears once. Like any list that has to be opened, it loads when the pill is pointed
+	// at or focused, not with the page.
+	let wantSources = $state(false);
+	const sourcesQuery = createQuery(() => ({
+		queryKey: leadSourcesKey,
+		queryFn: fetchLeadSources,
+		enabled: wantSources,
+		staleTime: 60_000
+	}));
+
+	const sourceNames = $derived.by(() => {
+		const names = [...LEAD_SOURCES];
+		const extra = [...(sourcesQuery.data ?? []), ...(filters.source ? [filters.source] : [])];
+		for (const name of extra) {
+			if (!names.some((known) => known.toLowerCase() === name.toLowerCase())) names.push(name);
+		}
+		return names;
+	});
+
+	const sourceOptions = $derived([
+		{ value: '', label: 'All' },
+		...sourceNames.map((source) => ({ value: source, label: source }))
+	]);
+
+	// A link may carry "referral" for the list's "Referral"; the pill still shows it as chosen.
+	const selectedSource = $derived(
+		sourceNames.find((name) => name.toLowerCase() === filters.source?.toLowerCase()) ?? ''
+	);
 
 	const dateOptions = BOARD_DATE_PRESETS.map((preset) => ({
 		value: preset,
@@ -99,6 +163,14 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div class="board-controls">
 	<div class="board-controls__row">
+		<SearchInput
+			id="pipeline-search"
+			class="board-controls__search"
+			bind:value={search}
+			placeholder="Search cards"
+			ariaLabel="Search cards by client, title, quote number, address, phone, or email"
+		/>
+
 		<span class="board-controls__pill board-controls__pill--labelled">
 			<label class="board-controls__label" for="pipeline-sort">Sort by</label>
 			<Select
@@ -134,6 +206,22 @@
 				value={filters.owner}
 				options={ownerOptions}
 				onchange={(value) => update({ owner: value })}
+			/>
+		</span>
+
+		<span
+			class="board-controls__pill board-controls__pill--labelled"
+			role="presentation"
+			onpointerenter={() => (wantSources = true)}
+			onfocusin={() => (wantSources = true)}
+		>
+			<label class="board-controls__label" for="pipeline-source">Lead source</label>
+			<Select
+				id="pipeline-source"
+				class="board-controls__select"
+				value={selectedSource}
+				options={sourceOptions}
+				onchange={(value) => update({ source: value || undefined })}
 			/>
 		</span>
 
@@ -194,6 +282,13 @@
 		flex-wrap: wrap;
 		align-items: center;
 		gap: var(--space-small);
+	}
+	// A fixed, name-sized box at the start of the row. On a narrow screen it takes the row to itself.
+	.board-controls__row :global(.board-controls__search) {
+		flex: 0 1 280px;
+		width: auto;
+		min-width: 200px;
+		min-height: 44px;
 	}
 	.board-controls__row--range {
 		align-items: end;

@@ -12,7 +12,7 @@ import {
 	type AnyBoardStage,
 	type CustomStage
 } from '$lib/pipeline/stages';
-import { resolveDateRange, type BoardDateRange } from '$lib/server/pipeline/board';
+import { recordFilters, resolveDateRange, type BoardDateRange } from '$lib/server/pipeline/board';
 import { organizationFormatting, type OrganizationFormatting } from '$lib/server/requests/timezone';
 import { pipelinePresentation, type PipelinePresentation } from '$lib/server/pipeline/presentation';
 import { enabledCustomStages } from '$lib/server/pipeline/stages';
@@ -26,7 +26,7 @@ const ALL_BOARD_STAGES: readonly AnyBoardStage[] = [...BOARD_STAGES, ...QUOTE_BO
 // one count per column — four counts on every board load is the kind of thing that only hurts once the
 // boards are busy. The database groups; this route only fills in a zero for a stage that had no rows.
 //
-// It takes the same salesperson and date filters the columns take, because a heading that counts the
+// It takes the same salesperson, date, search and lead source filters the columns take, because a heading that counts the
 // whole board above a column showing eleven filtered cards is simply wrong. Both sides turn the date
 // preset into the same two instants in the organization's own timezone, so they cannot drift apart.
 //
@@ -48,13 +48,16 @@ export const GET: RequestHandler = async (event) => {
 		owner: query.get('owner') ?? undefined,
 		date: query.get('date') ?? undefined,
 		from: query.get('from') ?? undefined,
-		to: query.get('to') ?? undefined
+		to: query.get('to') ?? undefined,
+		q: query.get('q') ?? undefined,
+		source: query.get('source') ?? undefined
 	});
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
 	const { owner, date } = parsed.data;
 	const canViewValue = hasPermission(check.access, 'pipeline.view_value');
 	const canEdit = hasPermission(check.access, 'pipeline.edit');
+	const canCreateQuote = hasPermission(check.access, 'quotes.create');
 
 	// The organization's own way of writing money and dates is needed either way — for the currency the
 	// totals are shown in, and for the calendar a date filter is measured against. The settings row is
@@ -77,7 +80,9 @@ export const GET: RequestHandler = async (event) => {
 			owner_filter: owner === 'all' || owner === 'unassigned' ? owner : 'member',
 			filter_owner_user_id: owner === 'all' || owner === 'unassigned' ? undefined : owner,
 			created_from: range.from ?? undefined,
-			created_to: range.to ?? undefined
+			created_to: range.to ?? undefined,
+			// The same search and lead source the columns are paging with.
+			...recordFilters(parsed.data.q, parsed.data.source)
 		});
 
 	// A date filter has to become two instants before the counting query can be asked, so those two reads
@@ -98,7 +103,8 @@ export const GET: RequestHandler = async (event) => {
 			stagesLookup.stages,
 			counted.data,
 			canViewValue,
-			canEdit
+			canEdit,
+			canCreateQuote
 		);
 	}
 
@@ -124,7 +130,8 @@ export const GET: RequestHandler = async (event) => {
 		stagesLookup.stages,
 		counted.data,
 		canViewValue,
-		canEdit
+		canEdit,
+		canCreateQuote
 	);
 };
 
@@ -134,7 +141,8 @@ function summary(
 	customStages: CustomStage[],
 	rows: unknown,
 	canViewValue: boolean,
-	canEdit: boolean
+	canEdit: boolean,
+	canCreateQuote: boolean
 ): Response {
 	const counts = Object.fromEntries(ALL_BOARD_STAGES.map((stage) => [stage, 0])) as Record<
 		AnyBoardStage,
@@ -212,6 +220,8 @@ function summary(
 			// Whether this member may assign, reassign, or clear a card's owner. The board asks once, here,
 			// rather than every card guessing from whether it happens to have an owner already.
 			can_edit: canEdit,
+			// Whether the New quote button belongs in the header. Anyone in the organization may start a request.
+			can_create_quote: canCreateQuote,
 			// Which board to draw: false is the five-column default with one Assessment column, true is the
 			// seven-column detailed view. Presentation only — the counts above are the same either way.
 			detailed_assessment_stages: presentation.detailed_assessment_stages,

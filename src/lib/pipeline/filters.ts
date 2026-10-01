@@ -37,7 +37,23 @@ export type BoardFilters = {
 	// Only ever set while `date` is `custom`, and at least one end is needed before the range means anything.
 	from?: string;
 	to?: string;
+	// What was typed in the search box, trimmed. Absent until it is long enough to search with.
+	q?: string;
+	// One lead source, exactly as the client record spells it. Absent means every source.
+	source?: string;
 };
+
+// A search needs two characters before it narrows anything, the same floor the top-bar search uses.
+export const BOARD_SEARCH_MIN = 2;
+export const BOARD_SEARCH_MAX = 100;
+// The longest lead source a client record can hold.
+export const BOARD_LEAD_SOURCE_MAX = 80;
+
+// The search box holds whatever is being typed; this is the part of it the board will act on.
+export function searchTerm(raw: string | null | undefined): string | undefined {
+	const term = raw?.trim() ?? '';
+	return term.length >= BOARD_SEARCH_MIN && term.length <= BOARD_SEARCH_MAX ? term : undefined;
+}
 
 // What an untouched board asks for: the Task order, everybody, all time. Kept in one place so the
 // URL can leave out anything still at its default and stay readable.
@@ -91,7 +107,9 @@ export function filtersAreDefault(filters: BoardFilters) {
 		filters.sort === DEFAULT_BOARD_FILTERS.sort &&
 		filters.direction === DEFAULT_BOARD_FILTERS.direction &&
 		filters.owner === DEFAULT_BOARD_FILTERS.owner &&
-		filters.date === DEFAULT_BOARD_FILTERS.date
+		filters.date === DEFAULT_BOARD_FILTERS.date &&
+		!filters.q &&
+		!filters.source
 	);
 }
 
@@ -120,6 +138,11 @@ export function readBoardFilters(params: URLSearchParams): BoardFilters {
 		return raw && ISO_DAY.test(raw) ? raw : undefined;
 	};
 
+	const q = searchTerm(params.get('q'));
+	const rawSource = params.get('source')?.trim() ?? '';
+	const source =
+		rawSource.length > 0 && rawSource.length <= BOARD_LEAD_SOURCE_MAX ? rawSource : undefined;
+
 	return {
 		sort: one('sort', BOARD_SORTS, DEFAULT_BOARD_FILTERS.sort),
 		direction: one('direction', BOARD_DIRECTIONS, DEFAULT_BOARD_FILTERS.direction),
@@ -127,7 +150,10 @@ export function readBoardFilters(params: URLSearchParams): BoardFilters {
 		date,
 		// The two ends only mean anything inside a custom range; carrying them any other time would put
 		// them in the query key and split the cache for no reason.
-		...(date === 'custom' ? { from: day('from'), to: day('to') } : {})
+		...(date === 'custom' ? { from: day('from'), to: day('to') } : {}),
+		// Left out entirely when unset, for the same reason: an `undefined` key is still a key.
+		...(q ? { q } : {}),
+		...(source ? { source } : {})
 	};
 }
 
@@ -144,6 +170,8 @@ export function boardFilterParams(filters: BoardFilters): URLSearchParams {
 		if (filters.from) params.set('from', filters.from);
 		if (filters.to) params.set('to', filters.to);
 	}
+	if (filters.q) params.set('q', filters.q);
+	if (filters.source) params.set('source', filters.source);
 	return params;
 }
 

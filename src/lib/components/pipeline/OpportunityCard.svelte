@@ -301,6 +301,12 @@
 		</span>
 	{/if}
 	<span class="opportunity-card__client">{clientName}</span>
+	{#if opportunity.client?.lead_source}
+		<span class="opportunity-card__source">
+			<span class="opportunity-card__spoken">Lead source: </span>
+			<Badge size="small">{opportunity.client.lead_source}</Badge>
+		</span>
+	{/if}
 	{#if opportunity.quote?.delivery_failure}
 		<!-- The card stays in Awaiting response: the quote was sent. This says the customer has nothing yet;
 		     the Brief says why and what to do. -->
@@ -513,6 +519,9 @@
 	.opportunity-card__client {
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
+	}
+	.opportunity-card__source {
+		display: flex;
 	}
 	.opportunity-card__amount {
 		color: var(--color-heading);

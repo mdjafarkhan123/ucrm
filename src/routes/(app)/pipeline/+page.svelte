@@ -8,6 +8,7 @@
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import PipelineColumn from '$lib/components/pipeline/PipelineColumn.svelte';
 	import OpportunityBriefDrawer from '$lib/components/pipeline/OpportunityBriefDrawer.svelte';
 	import BoardControls from '$lib/components/pipeline/BoardControls.svelte';
@@ -89,14 +90,16 @@
 			: { ...urlFilters, date: 'all', from: undefined, to: undefined }
 	);
 
-	function setFilters(next: BoardFilters) {
+	function setFilters(next: BoardFilters, options?: { replace?: boolean }) {
 		const params = boardFilterParams(next);
 		const query = params.toString();
 		// Each change is its own history entry, so Back steps through the filters the way it steps through
-		// pages. Focus stays where it was, and the board does not jump to the top.
+		// pages. Typing a search is the exception: it replaces the entry, so Back leaves the search rather
+		// than un-typing it a pause at a time. Focus stays where it was, and the board does not jump to the top.
 		void goto(`${page.url.pathname}${query ? `?${query}` : ''}`, {
 			keepFocus: true,
-			noScroll: true
+			noScroll: true,
+			replaceState: options?.replace ?? false
 		});
 	}
 
@@ -144,6 +147,7 @@
 	const customCounts = $derived(summaryQuery.data?.custom_counts ?? {});
 	const canViewValue = $derived(summaryQuery.data?.can_view_value ?? false);
 	const canEdit = $derived(summaryQuery.data?.can_edit ?? false);
+	const canCreateQuote = $derived(summaryQuery.data?.can_create_quote ?? false);
 	// Absent from the payload entirely for a member without money, so there is nothing to guard against here.
 	const valueTotals = $derived(summaryQuery.data?.value_totals ?? null);
 	const isFiltered = $derived(!filtersAreDefault(applied));
@@ -300,6 +304,14 @@
 								href={outcomeHref('lost')}
 							/>
 						</div>
+						<!-- The board never creates work itself: these open the Request and Quote forms, and the
+						     card appears here once one of those exists. -->
+						<div class="pipeline__create">
+							<Button variant="primary" href={resolve('/(app)/requests/new')}>New request</Button>
+							{#if canCreateQuote}
+								<Button variant="secondary" href={resolve('/(app)/quotes/new')}>New quote</Button>
+							{/if}
+						</div>
 					{/if}
 				{/snippet}
 			</PageHeader>
@@ -449,6 +461,11 @@
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 220px));
 		gap: var(--space-base);
+	}
+	.pipeline__create {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-small);
 	}
 	@media (max-width: 639px) {
 		.pipeline__tiles {

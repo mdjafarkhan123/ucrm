@@ -21,7 +21,7 @@ const opportunity: OpportunityCard = {
 	created_at: '2026-08-10T00:00:00.000Z',
 	request: { id: 'req-1', status: 'new' },
 	quote: null,
-	client: { id: 'client-1', display_name: 'Ada Lovelace', company_name: null },
+	client: { id: 'client-1', display_name: 'Ada Lovelace', company_name: null, lead_source: null },
 	property: null,
 	owner: null,
 	estimated_value: null,

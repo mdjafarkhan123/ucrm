@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { BOARD_COLUMN_KEYS, OPPORTUNITY_STAGES } from '$lib/pipeline/stages';
 import { BOARD_DATE_PRESETS, BOARD_DIRECTIONS, BOARD_SORTS } from '$lib/server/pipeline/board';
+import { BOARD_LEAD_SOURCE_MAX, BOARD_SEARCH_MAX, BOARD_SEARCH_MIN } from '$lib/pipeline/filters';
 import { OUTCOME_SORTS, OUTCOME_TYPES } from '$lib/pipeline/outcomes';
 import { quoteSendChoiceSchema } from '$lib/server/validation/quotes.schema';
 
@@ -21,7 +22,15 @@ const boardFilterShape = {
 	owner: z.union([z.literal('all'), z.literal('unassigned'), z.string().uuid()]).default('all'),
 	date: z.enum(BOARD_DATE_PRESETS).default('all'),
 	from: isoDay.optional(),
-	to: isoDay.optional()
+	to: isoDay.optional(),
+	// The search box and the lead source. Both narrow the columns and the headings alike.
+	q: z
+		.string()
+		.trim()
+		.min(BOARD_SEARCH_MIN, `Enter at least ${BOARD_SEARCH_MIN} characters.`)
+		.max(BOARD_SEARCH_MAX, `Search must be ${BOARD_SEARCH_MAX} characters or fewer.`)
+		.optional(),
+	source: z.string().trim().min(1).max(BOARD_LEAD_SOURCE_MAX).optional()
 };
 
 type DateRangeInput = { date?: string; from?: string; to?: string };
