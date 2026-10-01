@@ -60,11 +60,6 @@ insert into public.organization_package_exceptions
    actor_owner_email)
 values ('da100000-0000-0000-0000-000000000001', 'operational_email_recipients', 'numeric', 5, 'Alias test capacity.',
   now() - interval '1 minute', '2100-01-01T00:00:00Z', 'owner@example.test');
-insert into public.organization_package_exceptions
-  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at,
-   actor_owner_email)
-values ('da100000-0000-0000-0000-000000000001', 'essential_email_recipients', 'numeric', 5, 'Alias test capacity.',
-  now() - interval '1 minute', '2100-01-01T00:00:00Z', 'owner@example.test');
 
 insert into public.clients (id, organization_id, display_name)
 values ('da200000-0000-0000-0000-000000000001', 'da100000-0000-0000-0000-000000000001', 'Alias Client');

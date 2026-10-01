@@ -59,7 +59,7 @@ values ('10000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-0000000
 insert into public.organization_package_exceptions
   (organization_id, capability_key, capability_state, reason, starts_at, ends_at, actor_owner_email)
 values
-  ('10000000-0000-0000-0000-000000000011', 'core.team', 'off', 'Test fixture.', '2026-01-01T00:00:00Z',
+  ('10000000-0000-0000-0000-000000000011', 'sales.pipeline', 'off', 'Test fixture.', '2026-01-01T00:00:00Z',
    '2100-01-01T00:00:00Z', 'owner@example.test'),
   ('10000000-0000-0000-0000-000000000012', 'core.team', 'off', 'An exception that has already ended.',
    '2026-01-01T00:00:00Z', '2026-01-02T00:00:00Z', 'owner@example.test');
@@ -69,7 +69,7 @@ values
   ('10000000-0000-0000-0000-000000000011', 'employee_seats', 'numeric', 1, 'Test fixture.', '2026-01-01T00:00:00Z',
    '2100-01-01T00:00:00Z', 'owner@example.test');
 
-select ok(not private.organization_has_capability('10000000-0000-0000-0000-000000000011', 'core.team', now()),
+select ok(not private.organization_has_capability('10000000-0000-0000-0000-000000000011', 'sales.pipeline', now()),
   'an active exception turns off a capability the edition includes');
 select ok(private.organization_has_capability('10000000-0000-0000-0000-000000000011', 'marketing', now()),
   'the test package includes marketing');

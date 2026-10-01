@@ -50,6 +50,16 @@ values
   ('10000000-0000-0000-0000-00000000d201', '00000000-0000-0000-0000-00000000d211', 'admin'),
   ('10000000-0000-0000-0000-00000000d202', '00000000-0000-0000-0000-00000000d212', 'admin');
 
+-- Resume reads the package (package builder P14): org A has Automations with no active-recipe cap.
+insert into public.organization_package_exceptions
+  (organization_id, capability_key, capability_state, reason, starts_at, ends_at, actor_owner_email)
+values ('10000000-0000-0000-0000-00000000d201', 'automations', 'on', 'Test fixture.', '2026-01-01T00:00:00Z',
+  '2100-01-01T00:00:00Z', 'owner@example.test');
+insert into public.organization_package_exceptions
+  (organization_id, allowance_key, allowance_state, allowance_value, reason, starts_at, ends_at, actor_owner_email)
+values ('10000000-0000-0000-0000-00000000d201', 'automation_active_recipes', 'unlimited', null, 'Test fixture.',
+  '2026-01-01T00:00:00Z', '2100-01-01T00:00:00Z', 'owner@example.test');
+
 -- Recipes are inserted directly (create is proven elsewhere); each starts as a draft at revision 1. a4 is a
 -- preset recipe, so its lineage is set inline (the source/lineage CHECK is enforced at insert time).
 insert into public.automation_recipes (id, organization_id, name, status, source, preset_key, preset_version, draft_definition, draft_revision, created_by)
