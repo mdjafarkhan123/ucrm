@@ -9198,7 +9198,9 @@ export type Database = {
 				Row: {
 					actor_user_id: string | null;
 					from_custom_stage_id: string | null;
+					from_progress_at: string | null;
 					from_stage: string | null;
+					from_stage_entered_at: string | null;
 					id: string;
 					occurred_at: string;
 					opportunity_id: string;
@@ -9209,7 +9211,9 @@ export type Database = {
 				Insert: {
 					actor_user_id?: string | null;
 					from_custom_stage_id?: string | null;
+					from_progress_at?: string | null;
 					from_stage?: string | null;
+					from_stage_entered_at?: string | null;
 					id?: string;
 					occurred_at?: string;
 					opportunity_id: string;
@@ -9220,7 +9224,9 @@ export type Database = {
 				Update: {
 					actor_user_id?: string | null;
 					from_custom_stage_id?: string | null;
+					from_progress_at?: string | null;
 					from_stage?: string | null;
+					from_stage_entered_at?: string | null;
 					id?: string;
 					occurred_at?: string;
 					opportunity_id?: string;
@@ -22182,6 +22188,15 @@ export type Database = {
 					stage_key: string;
 					value_total: number;
 				}[];
+			};
+			pipeline_undo_move: {
+				Args: {
+					restore_new_request?: boolean;
+					target_opportunity_id: string;
+					undone_from_stage: string;
+					undone_to_stage: string;
+				};
+				Returns: Json;
 			};
 			pipeline_update_opportunity_details: {
 				Args: {
