@@ -81,30 +81,38 @@ exists, and cards must not look draggable until the behavior is real.
 Elapsed time in the stage remains visible as neutral context, but age alone does not turn every card red.
 Day-to-day priority comes from the next open Task: overdue first, due today next, no next Task after that, then
 future Tasks. A separate inactivity warning uses an owner-configurable number of days for each stage. Expected
-close date remains optional and is an alternate sort, not the default work queue.
+close date remains optional and is an alternate sort, not the default work queue. The protected-stage defaults
+are New requests after 1 day, each Assessment state after 2 days, Draft after 2 days, Awaiting response after 5
+days, and Changes requested after 2 days.
 
 Revision 3 adds section-bound custom follow-up stages under these rules:
 
+- An organization may have up to 25 enabled custom stages. Names must be unique inside their Request or Quote
+  section; the same name may exist once in each section.
 - A custom stage belongs to either Requests or Quotes and cannot cross the conversion boundary.
 - Protected stages cannot be renamed, reordered, hidden, disabled, or deleted.
 - Custom stages organize follow-up only; they never replace or rewrite Request, Assessment, or Quote status.
 - A real system action always moves the card to the protected stage that action establishes.
 - Only owners and administrators configure stages through Settings; the board may link there.
-- Disabling or removing a populated custom stage requires a destination in the same section and explicit bulk
-  reassignment. Automation dependencies must be resolved first, and historical stage events retain their
-  original identity and label.
+- **Disable** is the normal removal action. Disabling a populated custom stage requires a destination in the
+  same section and explicit reassignment of every open card. A stage that has ever been used remains as a
+  historical identity and label; disabling it never rewrites prior events or reports.
 - Manual movement among custom stages in the same section is allowed in either direction. Protected stages
   remain action-gated, and a real Request, Assessment, or Quote action always wins over custom placement.
+- **On hold** is an ordinary custom follow-up stage, not an outcome. Moving a card there requires a future
+  Task. The card remains Open, its inactivity warning pauses only until that Task becomes due, and it never
+  counts as Lost merely because it is on hold.
 - One protected contractor pipeline is the launch model. Multiple independent pipelines, custom-stage
   automations, and administrator-built approval gates are not part of revision 3.
 
 Money on cards and columns, ownership, and the filter and sort bar arrive with their own parts. Nothing shows a
 placeholder value: a board without money shows no money rather than `$0.00`.
 
-The board supports search, lead-source display/filtering, saved filters, and an alternate table view. Lead
-source is a wider field-service pattern rather than documented current Jobber Pipeline parity. Safe bulk tools
-cover ownership, Tasks, and custom follow-up placement; customer communication, conversion, and closing work
-are never silent bulk side effects.
+The board supports search, lead-source display/filtering, personal saved filters, administrator-shared saved
+filters, and an alternate table view. Mobile defaults to a compact list. Lead source is a wider field-service
+pattern rather than documented current Jobber Pipeline parity. Safe bulk tools cover only ownership, Tasks,
+and custom follow-up placement; customer communication, conversion, protected-stage movement, and closing
+work are never silent bulk side effects.
 
 ## Outcomes
 
@@ -127,8 +135,11 @@ are never silent bulk side effects.
   Reopening removes an Opportunity from the current Lost totals and results while preserving its Lost and
   Reopened events in immutable history.
 - Sales reporting includes loss-reason breakdown, Request-to-Quote and Quote-to-Win conversion, source
-  conversion, days to win, and time in stage. Direct jobs are shown separately and never inflate conversion
-  percentages.
+  conversion, days to win, and time in stage. Outcome lists use the outcome date. Funnel reports group work by
+  its created-date cohort and show still-Open work separately instead of misclassifying it. Request-to-Quote,
+  Request-to-Won, and per-Quote win rates remain distinct. Direct jobs are shown separately and never inflate
+  conversion percentages. Days to win shows both median and average; an absent duration or value remains
+  missing rather than becoming a fake zero.
 
 ## Movement and automation
 
@@ -143,7 +154,11 @@ are never silent bulk side effects.
 - Repeated writes and provider/browser retries cannot duplicate transitions or history.
 - Moving a Draft Quote to Awaiting response opens the real review surface: send by an available customer
   channel, deliberately mark it sent outside UCRM, view the Quote, or cancel. The card does not move until the
-  chosen action succeeds; a drop alone never claims the customer received anything.
+  chosen action succeeds; a drop alone never claims the customer received anything. Provider queue acceptance
+  or a deliberate external mark-sent action establishes Awaiting response. An immediate send failure leaves
+  the Quote in Draft. A later delivery failure does not rewrite the historical send, but remains visibly failed
+  and alerts the responsible team member. External mark-sent records the actor, time, channel, and optional
+  note.
 - Every card offers the same allowed destinations through a non-drag Move/next-action control. An unavailable
   destination says the exact reason and genuine next step; the generic “That card could not be moved” message
   is only a last-resort technical failure.
@@ -164,7 +179,7 @@ are never silent bulk side effects.
   board's scroll, filters, or selected position.
 - A Task is an internal follow-up item, not a Job, Visit, or Event. The Brief form has a required title and
   optional instructions, one owner, and one due date. Dated Tasks appear on the assignee's Schedule, and a new
-  assignment notifies that teammate without notifying the customer.
+  assignment or reassignment notifies that teammate once without notifying the customer.
 - Each Opportunity may have at most five open and five completed Tasks. The card shows one open Task: the
   earliest due one, breaking equal due dates by creation order; when none are due, it shows the oldest open
   Task. An overdue Task is visibly overdue. Completion and reopening happen from the Brief, not the card.
@@ -217,11 +232,9 @@ loading is adopted only after a live usability prototype and measured-load check
 ## Still unclear
 
 Revision 3 (`pipeline-upgrade`). Round 1 was approved by Jafar on 2026-10-01 after the independent source check.
-Round 2 must settle:
+Rounds 1 and 2 were approved by Jafar on 2026-10-01. The final detail round must settle:
 
-- Custom-stage creation, disabling/removal, On hold behavior, maximum count, and inactivity defaults.
-- Send-or-mark-sent success/failure rules and its audit wording.
-- Exact inactivity reset events, thresholds, and Task-priority ties.
-- Task assignment notifications, Schedule behavior, contact quick actions, and channel fallbacks.
-- Cohort and value rules for conversion/time reports, especially Direct jobs and multiple Quotes.
-- Saved filters, table/mobile presentation, bulk-action limits, and the long-column prototype gate.
+- How a never-sent Draft Quote leaves the board without falsely becoming a lost sale, and how customer-declined
+  Quotes collect an internal Lost reason.
+- The exact events that reset inactivity and the value snapshot used by outcome reports.
+- Search scope, contact quick-action fallbacks, and assignment-notification channels.

@@ -11,5 +11,6 @@ first paying client.
 
 **Next part:** 3 Plan: build split — thin, verifiable build parts after revision 3 is approved.
 
-**Blockers:** Jafar's answers to round 2 in `parts/2-plan-details.md`. Planning only: no code until the build
-split is approved.
+**Blockers:** Round 2 is approved and saved. Jafar's answers to the final detail questions Q13–Q17 in
+`parts/2-plan-details.md` are required before revision 3 can be approved. Planning only: no code until the
+build split is approved.

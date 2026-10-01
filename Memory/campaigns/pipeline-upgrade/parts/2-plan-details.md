@@ -8,12 +8,13 @@
 
 - [x] Record Jafar's approval of the corrected round-1 foundation
 - [x] Ask round 2 detail questions, 2026-10-01
-- [ ] Write Jafar's answers into the plan
+- [x] Write Jafar's answers into the plan, 2026-10-01
 - [ ] Ask any dependent final details and obtain revision-3 approval
 
 ## Next
 
-Wait for Jafar's answers to Q7–Q12 below, then update the plan and recompute the decision frontier.
+Wait for Jafar's answers to Q13–Q17 below. Then write them into the plan, confirm that **Still unclear** is
+empty, and ask for revision-3 approval.
 
 ## Notes
 
@@ -51,3 +52,37 @@ compact-list views ship; bulk actions be limited to owner, Task, and custom-stag
 more remain until a prototype and load check prove a better lane-loading model?
 
 ➡️ Yes.
+
+❓ **Q13 — Honest Quote endings:** Jobber does not call a never-sent Draft a lost sale. Should archiving such a
+Draft remove it from the board as **abandoned before sending**, exclude it from Lost reasons and Quote win-rate
+math, and retain its audit history; while a customer-declined sent Quote becomes Lost, lets the customer leave
+an optional message, and lets staff classify the internal Lost reason afterward?
+
+➡️ Recommended: Yes.
+
+❓ **Q14 — Meaningful inactivity:** Should only real progress reset the warning—customer reply, successful or
+externally confirmed send, explicitly logged call outcome, Task completion, assessment schedule/completion,
+Quote revision/send, or another protected domain action—while owner/value/date edits, internal Notes, Task
+creation/reassignment, and manual custom-stage shuffling do not reset it?
+
+➡️ Recommended: Yes. This prevents staff from making an ignored customer look active through housekeeping.
+
+❓ **Q15 — Honest report value:** Should Won value be frozen from the accepted Quote total or the Job total at
+the moment a direct Request/Direct job becomes Won; Lost value be frozen from the last sent Quote total or
+the Opportunity value recorded on a Request at loss; later document edits not rewrite old outcomes; and missing
+values stay **Unvalued** rather than zero?
+
+➡️ Recommended: Yes.
+
+❓ **Q16 — Search and contact actions:** Should Pipeline search cover client/contact name, title, Request/Quote
+number, service address, phone, and email—but not Notes, file contents, or custom fields at launch; and should
+Email/Text open the existing Communications composer, multiple details open a chooser, and Call open the
+device dialler with an optional return note instead of pretending the call was logged automatically?
+
+➡️ Recommended: Yes.
+
+❓ **Q17 — Assignment alerts:** Should assigning or reassigning a Task to someone else create one in-app alert,
+use email or mobile/browser push only according to that teammate's preferences, avoid notifying a person about
+their own assignment, and never notify the customer?
+
+➡️ Recommended: Yes.
