@@ -144,6 +144,41 @@
 		normalized !== null && loaded !== null && JSON.stringify(normalized) !== loaded.snapshot
 	);
 
+	// A field's error goes away as soon as its value changes; the next save checks it again. Errors name
+	// their field by path ("allowances.2.value"), so each is compared with the form as it was when shown.
+	let errorBase: string | null = null;
+	function valueAt(source: unknown, path: string) {
+		return JSON.stringify(
+			path
+				.split('.')
+				.reduce<unknown>((value, part) => (value as Record<string, unknown> | null)?.[part], source)
+		);
+	}
+	$effect(() => {
+		const current = normalized;
+		const errors = fieldErrors;
+		untrack(() => {
+			if (!current || Object.keys(errors).length === 0) {
+				errorBase = null;
+				return;
+			}
+			if (errorBase === null) {
+				errorBase = JSON.stringify(current);
+				return;
+			}
+			const base = JSON.parse(errorBase);
+			const kept = Object.entries(errors).filter(
+				([path]) => valueAt(current, path) === valueAt(base, path)
+			);
+			if (kept.length === Object.keys(errors).length) return;
+			fieldErrors = Object.fromEntries(kept);
+			if (kept.length === 0) {
+				saveError = '';
+				errorBase = null;
+			}
+		});
+	});
+
 	const yearlySaving = $derived.by(() => {
 		if (form?.monthly_price_usd_cents == null || form.yearly_price_usd_cents == null) return null;
 		const twelveMonths = form.monthly_price_usd_cents * 12;
@@ -203,6 +238,7 @@
 	async function save(revision = loaded?.revision) {
 		if (!normalized || !loaded || revision === undefined) return;
 		saveError = '';
+		errorBase = null;
 		fieldErrors = missingAllowanceNumbers(normalized);
 		if (Object.keys(fieldErrors).length) {
 			saveError = 'Some allowances have no number. Enter one, or switch them to Unlimited.';
