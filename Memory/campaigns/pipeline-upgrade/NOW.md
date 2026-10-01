@@ -7,13 +7,11 @@ first paying client.
 
 **In progress:**
 
-- Nothing claimed. Stage A and B1–B4 finished 2026-10-01. B1: "Convert to job" on a Request marks its card
-  Won with the Job total. B2: a Job made from scratch is a "Direct job" in Sales Outcomes, never on the
-  board. B3: dropping a Draft on Awaiting response opens a send window; the card moves only after the choice
-  succeeds. B4: a quote whose email bounced, was refused, or never left shows "Delivery failed" on its card
-  and Brief, and one teammate gets one bell alert — proven with a simulated bounce; quote #46 on Raad LTD is
-  left showing it.
+- B5 Lost and abandoned quotes — paused 2026-10-01, unclaimed. Built, committed, and its database change
+  applied; two of three browser checks pass. One check and the close-out remain:
+  `parts/B5-lost-and-abandoned-quotes.md`.
+- Stage A and B1–B4 finished 2026-10-01.
 
-**Next part:** B5 — `stages/B-honest-outcomes.md`. B7 waits for nothing and may also start.
+**Next part:** finish B5 from its note, then B7 or B6 — `stages/B-honest-outcomes.md`.
 
 **Blockers:** None.
