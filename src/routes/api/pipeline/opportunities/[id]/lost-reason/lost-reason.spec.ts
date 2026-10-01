@@ -43,9 +43,10 @@ describe('set lost reason', () => {
 		expect(rpc).not.toHaveBeenCalled();
 	});
 
-	it('rejects a reason outside the list before querying the database', async () => {
+	// Which keys the organization offers only the database knows; the route refuses only a malformed one.
+	it('rejects a malformed reason before querying the database', async () => {
 		const rpc = vi.fn();
-		const response = await PATCH(event({ reason: 'too_far_away' }, rpc));
+		const response = await PATCH(event({ reason: 'Too far away!' }, rpc));
 
 		expect(response.status).toBe(422);
 		expect(rpc).not.toHaveBeenCalled();

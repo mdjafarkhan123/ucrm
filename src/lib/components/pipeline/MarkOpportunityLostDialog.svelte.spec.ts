@@ -1,8 +1,14 @@
 import { page } from 'vitest/browser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
+import { QueryClient } from '@tanstack/query-core';
+import { QueryClientProvider } from '@tanstack/svelte-query';
 import MarkOpportunityLostDialog from './MarkOpportunityLostDialog.svelte';
-import type { OutcomeCommandResult } from '$lib/pipeline/api';
+import {
+	lostReasonsKey,
+	type LostReasonOption,
+	type OutcomeCommandResult
+} from '$lib/pipeline/api';
 
 // The component reports its outcome through the shared toast manager, which the app shell provides; here
 // there is no shell, so a stub stands in and nothing asserts on it.
@@ -16,10 +22,35 @@ vi.mock('$lib/components/ui/ToastManager.svelte', async (importOriginal) => ({
 
 const opportunityId = 'opp-1';
 
+// The organization's own list, as the card menu has already warmed it: "No response" has been retired.
+const reasons: LostReasonOption[] = [
+	{ key: 'price_too_high', label: 'Price too high', is_built_in: true, retired_at: null },
+	{
+		key: 'no_response',
+		label: 'No response',
+		is_built_in: true,
+		retired_at: '2026-10-01T00:00:00Z'
+	},
+	{
+		key: 'custom_0a1b2c',
+		label: 'Out of service area',
+		is_built_in: false,
+		retired_at: null
+	},
+	{ key: 'other', label: 'Other', is_built_in: true, retired_at: null }
+];
+
+function renderWith(props: Record<string, unknown>) {
+	const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+	queryClient.setQueryData(lostReasonsKey, reasons);
+	return render(MarkOpportunityLostDialog, { props: props as never }, {
+		wrapper: QueryClientProvider,
+		wrapperProps: { client: queryClient }
+	} as never);
+}
+
 function renderDialog(onSaved = vi.fn(), onClose = vi.fn()) {
-	const screen = render(MarkOpportunityLostDialog, {
-		props: { open: true, opportunityId, onSaved, onClose }
-	});
+	const screen = renderWith({ open: true, opportunityId, onSaved, onClose });
 	return { screen, onSaved, onClose };
 }
 
@@ -117,14 +148,12 @@ describe('MarkOpportunityLostDialog', () => {
 	it('saves a reason on a customer decline without marking anything lost again', async () => {
 		mockFetch({ body: { event_id: 'event-1', reason: 'price_too_high', note: null }, status: 200 });
 		const onSaved = vi.fn();
-		render(MarkOpportunityLostDialog, {
-			props: {
-				open: true,
-				opportunityId,
-				existing: { reason: null, note: null, customerMessage: 'Too much for us right now' },
-				onSaved,
-				onClose: vi.fn()
-			}
+		renderWith({
+			open: true,
+			opportunityId,
+			existing: { reason: null, note: null, customerMessage: 'Too much for us right now' },
+			onSaved,
+			onClose: vi.fn()
 		});
 
 		await expect.element(page.getByText('Too much for us right now')).toBeVisible();
@@ -140,5 +169,30 @@ describe('MarkOpportunityLostDialog', () => {
 		const [, init] = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
 		expect(JSON.parse(init.body as string)).toEqual({ reason: 'price_too_high', note: null });
 		await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
+	});
+
+	it("offers the organization's own reasons, leaving out retired ones", async () => {
+		renderDialog();
+
+		await page.getByLabelText('Reason (optional)').click();
+		await expect
+			.element(page.getByRole('option', { name: 'Out of service area', exact: true }))
+			.toBeVisible();
+		await expect.element(page.getByRole('option', { name: /No response/ })).not.toBeInTheDocument();
+	});
+
+	it('keeps a retired reason on the record that already has it', async () => {
+		renderWith({
+			open: true,
+			opportunityId,
+			existing: { reason: 'no_response', note: null, customerMessage: null },
+			onSaved: vi.fn(),
+			onClose: vi.fn()
+		});
+
+		await page.getByLabelText('Reason (optional)').click();
+		await expect
+			.element(page.getByRole('option', { name: 'No response (retired)', exact: true }))
+			.toBeVisible();
 	});
 });

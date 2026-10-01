@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { createQuery } from '@tanstack/svelte-query';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
@@ -8,7 +9,8 @@
 		markOpportunityLost,
 		setLostReason,
 		OutcomeWriteError,
-		LOST_REASONS,
+		fetchLostReasons,
+		lostReasonsKey,
 		type LostReason,
 		type OutcomeCommandResult
 	} from '$lib/pipeline/api';
@@ -40,10 +42,23 @@
 	// svelte-ignore state_referenced_locally
 	const classifying = existing !== undefined;
 
-	const reasonOptions = [
-		{ value: '', label: 'No reason selected' },
-		...LOST_REASONS.map((reason) => ({ value: reason.value, label: reason.label }))
-	];
+	// The organization's own list. The card menu warms it on hover, so it is usually here already. A
+	// retired reason is offered only to the record that already carries it, so editing that record's note
+	// does not silently drop its reason.
+	const reasonsQuery = createQuery(() => ({
+		queryKey: lostReasonsKey,
+		queryFn: fetchLostReasons,
+		staleTime: 5 * 60_000
+	}));
+	const reasonOptions = $derived([
+		{ value: '', label: reasonsQuery.isPending ? 'Loading reasons…' : 'No reason selected' },
+		...(reasonsQuery.data ?? [])
+			.filter((option) => option.retired_at === null || option.key === existing?.reason)
+			.map((option) => ({
+				value: option.key,
+				label: option.retired_at === null ? option.label : `${option.label} (retired)`
+			}))
+	]);
 
 	// svelte-ignore state_referenced_locally
 	let reason = $state<string>(existing?.reason ?? '');
@@ -126,7 +141,12 @@
 
 		<div class="lost-dialog__field">
 			<label class="lost-dialog__label" for="lost-dialog-reason">Reason (optional)</label>
-			<Select id="lost-dialog-reason" bind:value={reason} options={reasonOptions} />
+			<Select
+				id="lost-dialog-reason"
+				bind:value={reason}
+				options={reasonOptions}
+				disabled={reasonsQuery.isPending}
+			/>
 		</div>
 
 		<Textarea

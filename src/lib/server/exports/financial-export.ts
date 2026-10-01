@@ -23,6 +23,7 @@ import Papa from 'papaparse';
 import { Zip, ZipDeflate, strToU8 } from 'fflate';
 import type { EffectiveOrganizationAccess } from '$lib/server/access/effective';
 import { hasPermission } from '$lib/server/access/permission';
+import { loadLostReasons, lostReasonLabeller } from '$lib/server/pipeline/lost-reasons';
 
 // Bumped only when a file's columns or the manifest shape change, so an accountant's import mapping can tell
 // the versions apart.
@@ -63,6 +64,11 @@ type Ledger = {
 	filter?: (row: Row) => boolean;
 	// An extra running total the agreement checks need beyond plain column sums (e.g. Won value only).
 	tally?: (row: Row, totals: Record<string, bigint>) => void;
+	// Fills in columns the reader does not return, from one lookup made before the first page.
+	decorate?: (
+		supabase: SupabaseClient,
+		context: FinancialExportContext
+	) => Promise<(row: Row) => Row>;
 	columns: readonly string[];
 };
 
@@ -537,6 +543,16 @@ export const FINANCIAL_LEDGERS: readonly Ledger[] = [
 			})
 		},
 		summary: { fn: 'financial_sales_outcomes_summary', args: range },
+		// A Lost record stores its reason's key; the file also carries the name the business gave it.
+		decorate: async (supabase, context) => {
+			const lookup = await loadLostReasons(supabase, context.organizationId);
+			if (!lookup.ok) throw new Error('Could not read lost reasons for the accounting export.');
+			const label = lostReasonLabeller(lookup.reasons);
+			return (row) => ({
+				...row,
+				lost_reason_label: label((row.lost_reason as string | null) ?? null)
+			});
+		},
 		columns: [
 			'opportunity_id',
 			'outcome',
@@ -554,7 +570,8 @@ export const FINANCIAL_LEDGERS: readonly Ledger[] = [
 			'client_company_name',
 			'currency_code',
 			'estimated_value_minor',
-			'lost_reason'
+			'lost_reason',
+			'lost_reason_label'
 		]
 	}
 ];
@@ -645,6 +662,8 @@ async function writeLedger(
 
 	entry.push(strToU8(Papa.unparse([headers]) + '\r\n'));
 
+	const decorate = ledger.decorate ? await ledger.decorate(supabase, context) : null;
+
 	let rows = 0;
 	let cursor: Record<string, unknown> = {};
 	for (;;) {
@@ -654,7 +673,8 @@ async function writeLedger(
 			page_limit: PAGE_SIZE,
 			sort_direction: 'asc'
 		});
-		const kept = ledger.filter ? page.filter(ledger.filter) : page;
+		const filtered = ledger.filter ? page.filter(ledger.filter) : page;
+		const kept = decorate ? filtered.map(decorate) : filtered;
 		if (kept.length > 0) {
 			for (const row of kept) {
 				for (const column of moneyColumns) {

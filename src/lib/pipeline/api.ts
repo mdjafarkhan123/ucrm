@@ -197,6 +197,8 @@ export type OutcomeRow = {
 		customer_declined: boolean;
 		customer_message: string | null;
 	};
+	// Won rows only. A Won quote nobody has made a Job from can still be reopened; anything else is final.
+	won?: { reopenable: boolean };
 };
 
 export type OutcomePage = {
@@ -469,19 +471,66 @@ export function updateOpportunityNote(
 
 // --- Outcomes -----------------------------------------------------------------------------------------
 
-// The fixed lost-reason vocabulary, mirroring the database's own check constraint and Jobber's list.
-// Leaving it unselected is valid.
-export const LOST_REASONS = [
-	{ value: 'price_too_high', label: 'Price too high' },
-	{ value: 'chose_another_contractor', label: 'Chose another contractor' },
-	{ value: 'no_response', label: 'No response' },
-	{ value: 'project_postponed', label: 'Project postponed' },
-	{ value: 'work_not_a_fit', label: 'Work was not a fit' },
-	{ value: 'duplicate_or_test_request', label: 'Duplicate or test request' },
-	{ value: 'other', label: 'Other' }
-] as const;
+// The organization's own lost reasons (Settings → Pipeline). A Lost record stores a reason's key. Retired
+// reasons are still listed, because old records carry them, but they are not offered for new choices.
+// Leaving the reason unselected is valid.
+export type LostReason = string;
 
-export type LostReason = (typeof LOST_REASONS)[number]['value'];
+export type LostReasonOption = {
+	key: LostReason;
+	label: string;
+	is_built_in: boolean;
+	retired_at: string | null;
+};
+
+export const lostReasonsKey = ['pipeline', 'lost-reasons'] as const;
+
+export async function fetchLostReasons(): Promise<LostReasonOption[]> {
+	const response = await fetch('/api/pipeline/lost-reasons');
+	if (!response.ok) throw await readError(response, 'Lost reasons could not be loaded.');
+	return ((await response.json()) as { reasons: LostReasonOption[] }).reasons;
+}
+
+// What a record's reason reads as. An unknown key shows as it is rather than vanishing.
+export function lostReasonLabel(reasons: LostReasonOption[] | undefined, key: string | null) {
+	if (!key) return null;
+	return reasons?.find((reason) => reason.key === key)?.label ?? key;
+}
+
+export class LostReasonWriteError extends Error {
+	fieldErrors: Record<string, string>;
+
+	constructor(message: string, fieldErrors: Record<string, string>) {
+		super(message);
+		this.name = 'LostReasonWriteError';
+		this.fieldErrors = fieldErrors;
+	}
+}
+
+async function lostReasonWrite(response: Response, fallback: string): Promise<LostReasonOption> {
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) {
+		const fields = (result.field_errors ?? {}) as Record<string, string>;
+		throw new LostReasonWriteError(fields.label ?? fields.form ?? result.error ?? fallback, fields);
+	}
+	return result.reason as LostReasonOption;
+}
+
+export function addLostReason(label: string): Promise<LostReasonOption> {
+	return fetch('/api/settings/pipeline/lost-reasons', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ label })
+	}).then((response) => lostReasonWrite(response, 'That reason could not be added.'));
+}
+
+export function setLostReasonRetired(key: string, retired: boolean): Promise<LostReasonOption> {
+	return fetch(`/api/settings/pipeline/lost-reasons/${encodeURIComponent(key)}`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ retired })
+	}).then((response) => lostReasonWrite(response, 'That reason could not be changed.'));
+}
 
 export type OutcomeCommandResult = {
 	applied: boolean;
@@ -549,7 +598,8 @@ export async function setLostReason(
 	return result;
 }
 
-// Restores a Lost card: its only entry point is a Lost row's Reopen action in the Sales Outcomes report.
+// Restores a Lost card, or a Won quote no Job has been made from. Its only entry point is a row's Reopen
+// action in the Sales Outcomes report.
 export function reopenOpportunity(
 	opportunityId: string,
 	input: { idempotencyKey: string; reopenExplanation: string }

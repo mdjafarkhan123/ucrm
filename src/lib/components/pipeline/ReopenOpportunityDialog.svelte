@@ -9,7 +9,7 @@
 		type OutcomeCommandResult
 	} from '$lib/pipeline/api';
 
-	// A Lost row's only Reopen entry point (Sales Outcomes report). Owns its own write, the same shape
+	// The only Reopen entry point, on a Lost row or a reopenable Won row of the Sales Outcomes report. Owns its own write, the same shape
 	// `MarkOpportunityLostDialog` uses -- there is no page draft to stage into, so Save writes straight away.
 	let {
 		open,
@@ -21,7 +21,7 @@
 		open: boolean;
 		opportunityId: string;
 		// What the Lost record stands for, so the notice says what really comes back.
-		subject?: 'request' | 'quote';
+		subject?: 'request' | 'quote' | 'won_quote';
 		onSaved: (result: OutcomeCommandResult) => void;
 		onClose: () => void;
 	} = $props();
@@ -65,7 +65,11 @@
 <Dialog {open} title="Reopen opportunity" onClose={saving ? () => {} : onClose}>
 	<div class="reopen-dialog">
 		<p class="reopen-dialog__notice">
-			{#if subject === 'quote'}
+			{#if subject === 'won_quote'}
+				This takes back the customer's approval. The quote goes back to waiting for their answer and
+				its card returns to the board. The approval stays in the quote's history, and any deposit
+				already paid stays recorded on the quote.
+			{:else if subject === 'quote'}
 				This puts the quote back where it stood before it was lost and returns its card to the
 				board. A customer's decline is cleared; it stays in the quote's history. Tasks removed when
 				it was lost do not come back.

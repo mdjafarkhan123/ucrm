@@ -8,7 +8,12 @@
 	import MarkOpportunityLostDialog from './MarkOpportunityLostDialog.svelte';
 	import { stageAge } from '$lib/pipeline/freshness';
 	import { appointment, followUp, formatMoney, type BoardFormatting } from '$lib/pipeline/money';
-	import { invalidatePipeline, type OpportunityCard } from '$lib/pipeline/api';
+	import {
+		fetchLostReasons,
+		invalidatePipeline,
+		lostReasonsKey,
+		type OpportunityCard
+	} from '$lib/pipeline/api';
 	import {
 		ALL_STAGE_LABELS,
 		isAnyBoardStage,
@@ -148,6 +153,17 @@
 	);
 	const ownerName = $derived(opportunity.owner?.full_name ?? 'Unassigned');
 
+	// "Mark as lost" asks for a reason from the organization's list; warming it as the menu is reached
+	// means the dialog opens with its choices already there.
+	function warmLostReasons() {
+		if (!canMarkLost) return;
+		void queryClient.prefetchQuery({
+			queryKey: lostReasonsKey,
+			queryFn: fetchLostReasons,
+			staleTime: 5 * 60_000
+		});
+	}
+
 	// The brief drawer needs the client's phone and email, which this card's payload does not carry.
 	// Warming the same cache entry the client detail page uses means the drawer is usually already
 	// holding it by the time the click lands.
@@ -196,6 +212,8 @@
 				class="opportunity-card__menu"
 				role="presentation"
 				onpointerdown={(event) => event.stopPropagation()}
+				onpointerenter={warmLostReasons}
+				onfocusin={warmLostReasons}
 			>
 				<DropdownMenu items={menuItems} triggerLabel={`More actions for ${opportunity.title}`} />
 			</span>

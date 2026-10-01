@@ -172,27 +172,21 @@ export const pipelineNoteUpdateSchema = z.object({
 	body: z.string().trim().min(1, 'Write a note before saving.').max(4000)
 });
 
-// The fixed lost-reason vocabulary, mirroring the database's own check constraint. Leaving it unselected
-// is valid; only "Other" requires a note, enforced below the same way the RPC enforces it again itself.
-export const LOST_REASON_VALUES = [
-	'price_too_high',
-	'chose_another_contractor',
-	'no_response',
-	'project_postponed',
-	'work_not_a_fit',
-	'duplicate_or_test_request',
-	'other'
-] as const;
+// A lost reason is a key from the organization's own list (Settings -> Pipeline). Which keys that list
+// offers, and which are retired, only the database knows, so it checks that; this only checks the shape.
+// Leaving it unselected is valid; only "Other" requires a note, enforced below and again in the RPC.
+const lostReasonKeySchema = z
+	.string()
+	.regex(/^[a-z0-9_]{2,64}$/, 'Choose a lost reason from the list.')
+	.nullish()
+	.transform((value) => value ?? null);
 
 const idempotencyKeySchema = z.string().uuid('Start a new action and try again.');
 
 export const markOpportunityLostSchema = z
 	.object({
 		idempotency_key: idempotencyKeySchema,
-		reason: z
-			.enum(LOST_REASON_VALUES)
-			.nullish()
-			.transform((value) => value ?? null),
+		reason: lostReasonKeySchema,
 		note: z
 			.string()
 			.trim()
@@ -209,10 +203,7 @@ export const markOpportunityLostSchema = z
 // fields may be cleared; "Other" still needs its note.
 export const setLostReasonSchema = z
 	.object({
-		reason: z
-			.enum(LOST_REASON_VALUES)
-			.nullish()
-			.transform((value) => value ?? null),
+		reason: lostReasonKeySchema,
 		note: z
 			.string()
 			.trim()
@@ -248,3 +239,15 @@ export const outcomePageQuerySchema = withDateRules(
 		to: isoDay.optional()
 	})
 );
+
+// Settings -> Pipeline -> Lost reasons.
+export const addLostReasonSchema = z.object({
+	label: z
+		.string()
+		.transform((value) => value.trim().replace(/\s+/g, ' '))
+		.pipe(
+			z.string().min(1, 'Give the reason a name.').max(60, 'Keep the reason under 60 characters.')
+		)
+});
+
+export const setLostReasonRetiredSchema = z.object({ retired: z.boolean() });

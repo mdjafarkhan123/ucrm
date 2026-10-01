@@ -27,7 +27,9 @@
 		outcomeTilesKey,
 		fetchOutcomeTiles,
 		invalidatePipeline,
-		LOST_REASONS,
+		fetchLostReasons,
+		lostReasonLabel,
+		lostReasonsKey,
 		type OutcomeRow
 	} from '$lib/pipeline/api';
 	import { formatMoney } from '$lib/pipeline/money';
@@ -175,11 +177,16 @@
 		return formatMoney(value, formatting) ?? '—';
 	}
 
-	const REASON_LABELS: Record<string, string> = Object.fromEntries(
-		LOST_REASONS.map((reason) => [reason.value, reason.label])
-	);
+	// Each Lost row names its reason from the organization's own list, retired reasons included, so only
+	// the Lost view asks for it.
+	const reasonsQuery = createQuery(() => ({
+		queryKey: lostReasonsKey,
+		queryFn: fetchLostReasons,
+		staleTime: 5 * 60_000,
+		enabled: applied.type === 'lost'
+	}));
 	function reasonLabel(row: OutcomeRow) {
-		return row.lost?.reason ? (REASON_LABELS[row.lost.reason] ?? row.lost.reason) : null;
+		return lostReasonLabel(reasonsQuery.data, row.lost?.reason ?? null);
 	}
 
 	// Reopen and the reason dialog each operate on one row at a time; null means closed.
@@ -203,6 +210,12 @@
 			},
 			{ label: 'Reopen', onSelect: () => (reopening = row) }
 		];
+	}
+	// Won is permanent once a Job exists (Jobber); only an approved quote with no Job can come back.
+	function wonActions(row: OutcomeRow) {
+		return row.won?.reopenable
+			? [{ label: 'Reopen', onSelect: () => (reopening = row) }]
+			: [{ label: 'Reopen — not possible once a job exists', disabled: true, onSelect: () => {} }];
 	}
 </script>
 
@@ -304,6 +317,9 @@
 			{#snippet lostRowActions(item: OutcomeRow)}
 				<DropdownMenu items={lostActions(item)} triggerLabel={`Actions for ${item.title}`} />
 			{/snippet}
+			{#snippet wonRowActions(item: OutcomeRow)}
+				<DropdownMenu items={wonActions(item)} triggerLabel={`Actions for ${item.title}`} />
+			{/snippet}
 			<DataTable
 				{columns}
 				items={rows}
@@ -311,7 +327,13 @@
 				caption="Sales Outcomes"
 				{sort}
 				onSortChange={handleSortChange}
-				rowActions={applied.type === 'lost' && canEdit ? lostRowActions : undefined}
+				rowActions={!canEdit
+					? undefined
+					: applied.type === 'lost'
+						? lostRowActions
+						: applied.type === 'won'
+							? wonRowActions
+							: undefined}
 			>
 				{#snippet row(item: OutcomeRow)}
 					<th scope="row">
@@ -366,7 +388,7 @@
 	<ReopenOpportunityDialog
 		open={Boolean(reopening)}
 		opportunityId={reopening.id}
-		subject={reopening.quote ? 'quote' : 'request'}
+		subject={reopening.outcome === 'won' ? 'won_quote' : reopening.quote ? 'quote' : 'request'}
 		onSaved={onReopened}
 		onClose={() => (reopening = null)}
 	/>

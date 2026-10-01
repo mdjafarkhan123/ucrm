@@ -169,7 +169,7 @@ const outcomes: Row[] = [
 		client_company_name: null,
 		currency_code: 'BDT',
 		estimated_value_minor: 99900,
-		lost_reason: 'Price',
+		lost_reason: 'price_too_high',
 		outcome_event_id: 'ev-2'
 	},
 	// A Direct job is a won row, but never part of the summary's won_value.
@@ -293,6 +293,26 @@ const summaries: Record<string, Row> = {
 // Mirrors the readers' keyset contract: rows strictly after the cursor's key, in ascending order.
 function fakeSupabase(calls: { fn: string; args: Record<string, unknown> }[]) {
 	return {
+		// The organization's lost reasons, read once so the Sales Outcomes file can name each reason.
+		from: () => ({
+			select: () => ({
+				eq: () => ({
+					order: () =>
+						Promise.resolve({
+							data: [
+								{
+									key: 'price_too_high',
+									label: 'Price too high',
+									is_built_in: true,
+									retired_at: null,
+									position: 1
+								}
+							],
+							error: null
+						})
+				})
+			})
+		}),
 		rpc(fn: string, args: Record<string, unknown>) {
 			calls.push({ fn, args });
 			if (fn.endsWith('_summary')) {
@@ -472,6 +492,9 @@ describe('writeFinancialExport', () => {
 
 		const won = csv('sales_outcomes.csv');
 		expect(Object.keys(won[0])).not.toContain('estimated_value');
+		// A Lost row carries its reason's key and the name the business gave it.
+		const lost = won.find((outcome) => outcome.lost_reason === 'price_too_high');
+		expect(lost?.lost_reason_label).toBe('Price too high');
 
 		const manifest = json('manifest.json');
 		expect(manifest.omitted_files).toEqual([{ file: 'expenses.csv', reason: 'permission_denied' }]);

@@ -6,6 +6,7 @@ import {
 	encodeSalesOutcomesCursor,
 	readSalesOutcomesCursor
 } from '$lib/server/reports/sales-outcomes';
+import { loadLostReasons, lostReasonLabeller } from '$lib/server/pipeline/lost-reasons';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { salesOutcomesReportQuerySchema } from '$lib/server/validation/financial-reports.schema';
 
@@ -99,7 +100,13 @@ export const GET: RequestHandler = async (event) => {
 	const returned = (pageResult.data ?? []) as SalesOutcomeRow[];
 	const summary = ((summaryResult.data ?? []) as SalesOutcomesSummary[])[0];
 	if (!summary) return databaseError();
-	const outcomes = returned.slice(0, parsed.data.limit);
+	// A Lost record stores its reason's key; the report also gives the name the business chose for it.
+	const reasonsLookup = await loadLostReasons(event.locals.supabase, check.auth.organization.id);
+	if (!reasonsLookup.ok) return databaseError();
+	const reasonLabel = lostReasonLabeller(reasonsLookup.reasons);
+	const outcomes = returned
+		.slice(0, parsed.data.limit)
+		.map((row) => ({ ...row, lost_reason_label: reasonLabel(row.lost_reason) }));
 	const last = outcomes.at(-1);
 
 	return json(

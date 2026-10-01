@@ -68,9 +68,12 @@ describe('mark opportunity lost', () => {
 		expect(rpc).not.toHaveBeenCalled();
 	});
 
-	it('rejects a reason outside the fixed vocabulary before querying the database', async () => {
+	// Which keys the organization offers only the database knows; the route refuses only a malformed one.
+	it('rejects a malformed reason before querying the database', async () => {
 		const rpc = vi.fn();
-		const response = await POST(event({ idempotency_key: idempotencyKey, reason: 'because' }, rpc));
+		const response = await POST(
+			event({ idempotency_key: idempotencyKey, reason: 'Because!' }, rpc)
+		);
 
 		expect(response.status).toBe(422);
 		expect(rpc).not.toHaveBeenCalled();

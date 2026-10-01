@@ -14,6 +14,7 @@
 	import PipelineStageList, {
 		type DraftStage
 	} from '$lib/components/settings/PipelineStageList.svelte';
+	import PipelineLostReasonList from '$lib/components/settings/PipelineLostReasonList.svelte';
 	import PipelineStageRemoveDialog from '$lib/components/settings/PipelineStageRemoveDialog.svelte';
 	import {
 		fetchSettingsPipeline,
@@ -407,6 +408,15 @@
 					where its cards go first. Switch on “On hold stage” for a column like “Waiting till spring”:
 					cards there stay open and are never counted as lost.
 				</p>
+
+				<SectionBlock
+					title="Lost reasons"
+					hint="The reasons your team picks from when work is lost. Changes here save straight away."
+					form
+					level={3}
+				>
+					<PipelineLostReasonList {canEdit} />
+				</SectionBlock>
 			{/if}
 		{/snippet}
 

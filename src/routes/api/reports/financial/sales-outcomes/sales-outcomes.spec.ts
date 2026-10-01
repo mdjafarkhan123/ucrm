@@ -53,7 +53,19 @@ function event(url: string, rows: unknown[] = [], error: unknown = null) {
 			error
 		})
 	);
-	return { url: new URL(url), locals: { supabase: { rpc } } } as unknown as Parameters<
+	// The organization's lost reasons, read once to name each row's reason.
+	const reasons = [
+		{
+			key: 'price_too_high',
+			label: 'Price too high',
+			is_built_in: true,
+			retired_at: null,
+			position: 1
+		}
+	];
+	const order = vi.fn().mockResolvedValue({ data: reasons, error: null });
+	const from = vi.fn(() => ({ select: () => ({ eq: () => ({ order }) }) }));
+	return { url: new URL(url), locals: { supabase: { rpc, from } } } as unknown as Parameters<
 		typeof GET
 	>[0];
 }
@@ -153,6 +165,7 @@ describe('financial sales-outcomes report', () => {
 			client_company_name: null,
 			currency_code: 'USD',
 			lost_reason: null,
+			lost_reason_label: null,
 			outcome_event_id: '00000000-0000-4000-8000-000000000005'
 		});
 		expect(body.summary).toEqual({
@@ -211,5 +224,14 @@ describe('financial sales-outcomes report', () => {
 			event(`${base}?from=2026-09-01&to=2026-10-01`, [], { code: '08000' })
 		);
 		expect(response.status).toBe(500);
+	});
+
+	it("names a Lost row's reason the way the business wrote it", async () => {
+		const response = await GET(event(`${base}?from=2026-09-01&to=2026-10-01`, [row(12, 'lost')]));
+		const body = await response.json();
+		expect(body.outcomes[0]).toMatchObject({
+			lost_reason: 'price_too_high',
+			lost_reason_label: 'Price too high'
+		});
 	});
 });

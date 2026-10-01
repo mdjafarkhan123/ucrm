@@ -101,6 +101,24 @@ export const GET: RequestHandler = async (event) => {
 	const page = returned.slice(0, limit);
 	const hasMore = returned.length > limit;
 
+	// A Won quote can be reopened only while it is still just approved: once a Job is made from it, the
+	// quote reads converted and the win is final. A Request or Direct job is only ever Won by becoming a
+	// Job, so it is never offered. One read for the whole page; the database re-checks on Reopen.
+	const reopenableQuoteIds = new Set<string>();
+	const wonQuoteIds =
+		type === 'won' ? page.flatMap((row) => (row.quote_id ? [row.quote_id] : [])) : [];
+	if (wonQuoteIds.length > 0) {
+		const { data: quotes, error: quotesError } = await event.locals.supabase
+			.from('quotes')
+			.select('id, status')
+			.eq('organization_id', check.auth.organization.id)
+			.in('id', wonQuoteIds);
+		if (quotesError) return databaseError();
+		for (const quote of quotes ?? []) {
+			if (quote.status === 'approved') reopenableQuoteIds.add(quote.id);
+		}
+	}
+
 	const outcomes = page.map((row) => ({
 		id: row.id,
 		title: row.title,
@@ -121,6 +139,9 @@ export const GET: RequestHandler = async (event) => {
 						customer_message: row.customer_message
 					}
 				}
+			: {}),
+		...(type === 'won'
+			? { won: { reopenable: row.quote_id !== null && reopenableQuoteIds.has(row.quote_id) } }
 			: {}),
 		client:
 			row.client_display_name === null
