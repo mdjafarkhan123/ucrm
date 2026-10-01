@@ -7,9 +7,9 @@ first paying client.
 
 **In progress:**
 
-- none
+- 2 Plan: details — `parts/2-plan-details.md`
 
-**Next part:** 2 Plan: details — settle the rules unlocked by Jafar's approved round 1.
+**Next part:** 3 Plan: build split — thin, verifiable build parts after revision 3 is approved.
 
-**Blockers:** none. Planning only: no code until the build split is approved. Independent evidence:
-`docs/research/pipeline-independent-source-check-2026-10-01.md`.
+**Blockers:** Jafar's answers to round 2 in `parts/2-plan-details.md`. Planning only: no code until the build
+split is approved.
