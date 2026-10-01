@@ -16,7 +16,8 @@ export type TeamNotificationKind =
 	| 'quote.deposit_refund_failed'
 	| 'quote.deposit_disputed'
 	| 'review.private_feedback'
-	| 'quote.delivery_failed';
+	| 'quote.delivery_failed'
+	| 'quote.customer_declined';
 
 export type TeamNotification = {
 	id: string;

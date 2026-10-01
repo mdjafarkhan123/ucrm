@@ -640,6 +640,7 @@
 								{/if}
 								<button
 									class="customer-quote__decision"
+									class:customer-quote__decision--decline={step === 'declined'}
 									type="button"
 									disabled={sending}
 									onclick={() => void confirmStep()}
@@ -1132,6 +1133,18 @@
 		&:disabled {
 			background: transparent;
 			color: var(--color-disabled);
+		}
+	}
+
+	// Confirming a "no" is not dressed in the colour of a "yes".
+	.customer-quote__decision--decline {
+		background: transparent;
+		border-color: var(--color-critical);
+		color: var(--color-critical);
+
+		&:disabled {
+			background: transparent;
+			border-color: var(--color-border);
 		}
 	}
 
