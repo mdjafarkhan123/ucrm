@@ -52,6 +52,9 @@ function boardRow(overrides: Record<string, unknown> = {}) {
 		assessment_starts_at: null,
 		assessment_ends_at: null,
 		custom_stage_id: null,
+		quote_delivery_failed_at: null,
+		quote_delivery_failed_email: null,
+		quote_delivery_failure: null,
 		...overrides
 	};
 }
@@ -120,8 +123,36 @@ describe('board column quote pointer', () => {
 		);
 
 		const body = await response.json();
-		expect(body.opportunities[0].quote).toEqual({ id: 'quote-1', status: 'draft' });
+		expect(body.opportunities[0].quote).toEqual({
+			id: 'quote-1',
+			status: 'draft',
+			delivery_failure: null
+		});
 		expect(body.opportunities[0].request).toBeNull();
+	});
+
+	it('says when the quote email did not reach the customer', async () => {
+		const response = await GET(
+			readEvent([
+				boardRow({
+					stage: 'quote_awaiting_response',
+					request_id: null,
+					request_status: null,
+					quote_id: 'quote-1',
+					quote_status: 'awaiting_response',
+					quote_delivery_failure: 'bounced',
+					quote_delivery_failed_at: '2026-10-01T09:00:00.000Z',
+					quote_delivery_failed_email: 'ada@example.com'
+				})
+			])
+		);
+
+		const body = await response.json();
+		expect(body.opportunities[0].quote.delivery_failure).toEqual({
+			reason: 'bounced',
+			failed_at: '2026-10-01T09:00:00.000Z',
+			recipient_email: 'ada@example.com'
+		});
 	});
 
 	it('is null for a Request-backed card', async () => {

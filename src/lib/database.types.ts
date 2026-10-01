@@ -9055,6 +9055,20 @@ export type Database = {
 						referencedColumns: ['organization_id', 'id'];
 					},
 					{
+						foreignKeyName: 'opportunities_job_organization_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'opportunities_job_organization_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'jobs';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
 						foreignKeyName: 'opportunities_organization_id_fkey';
 						columns: ['organization_id'];
 						isOneToOne: false;
@@ -21775,6 +21789,9 @@ export type Database = {
 					property_label: string;
 					property_postal_code: string;
 					property_state_region: string;
+					quote_delivery_failed_at: string;
+					quote_delivery_failed_email: string;
+					quote_delivery_failure: string;
 					quote_id: string;
 					quote_status: string;
 					request_id: string;

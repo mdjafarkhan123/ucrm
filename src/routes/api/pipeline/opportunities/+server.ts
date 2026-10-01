@@ -11,6 +11,7 @@ import {
 	sortColumn
 } from '$lib/server/pipeline/board';
 import { organizationFormatting } from '$lib/server/requests/timezone';
+import type { QuoteDeliveryFailureReason } from '$lib/quotes/send';
 
 // `locals.supabase` is an untyped client, and the generated types for a returns-table function claim
 // every column is non-null, which is wrong for this one by design: hidden client details, an unassigned
@@ -47,6 +48,9 @@ type BoardPageRow = {
 	assessment_starts_at: string | null;
 	assessment_ends_at: string | null;
 	custom_stage_id: string | null;
+	quote_delivery_failed_at: string | null;
+	quote_delivery_failed_email: string | null;
+	quote_delivery_failure: QuoteDeliveryFailureReason | null;
 };
 
 // One board column at a time. Each column asks for its own page, so a busy stage can keep loading
@@ -163,7 +167,22 @@ export const GET: RequestHandler = async (event) => {
 		// Present only for a member who may see money. Absent, not null, for everyone else.
 		...(canViewValue ? { estimated_value: row.estimated_value } : {}),
 		request: row.request_id ? { id: row.request_id, status: row.request_status } : null,
-		quote: row.quote_id ? { id: row.quote_id, status: row.quote_status as string } : null,
+		// A quote whose latest email bounced, was refused, or never left says so. The address is already
+		// withheld by the database from a member who may not see this client.
+		quote: row.quote_id
+			? {
+					id: row.quote_id,
+					status: row.quote_status as string,
+					delivery_failure:
+						row.quote_delivery_failure && row.quote_delivery_failed_at
+							? {
+									reason: row.quote_delivery_failure,
+									failed_at: row.quote_delivery_failed_at,
+									recipient_email: row.quote_delivery_failed_email
+								}
+							: null
+				}
+			: null,
 		// A member who may not see this client gets the card without the client's details, exactly as
 		// the clients table would have answered.
 		client:

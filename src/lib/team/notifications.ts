@@ -15,7 +15,8 @@ export type TeamNotificationKind =
 	| 'invoice.payment_disputed'
 	| 'quote.deposit_refund_failed'
 	| 'quote.deposit_disputed'
-	| 'review.private_feedback';
+	| 'review.private_feedback'
+	| 'quote.delivery_failed';
 
 export type TeamNotification = {
 	id: string;

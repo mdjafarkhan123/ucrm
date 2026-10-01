@@ -9,7 +9,7 @@ import {
 	type OutcomeType
 } from './outcomes';
 import type { DragActionKind } from './transitions';
-import type { QuoteSendChoice } from '$lib/quotes/send';
+import type { QuoteDeliveryFailure, QuoteSendChoice } from '$lib/quotes/send';
 
 export type OpportunityCard = {
 	id: string;
@@ -26,7 +26,9 @@ export type OpportunityCard = {
 	// Exactly one of `request`/`quote` is set -- the same single-source rule the database enforces on
 	// opportunities.request_id/quote_id.
 	request: { id: string; status: string } | null;
-	quote: { id: string; status: string } | null;
+	// `delivery_failure` is set while the quote is awaiting a response and its latest email did not reach
+	// the customer. The quote stays sent; this only says the customer has nothing yet.
+	quote: { id: string; status: string; delivery_failure: QuoteDeliveryFailure | null } | null;
 	client: { id: string; display_name: string; company_name: string | null } | null;
 	property: {
 		id: string;

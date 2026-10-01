@@ -170,7 +170,10 @@ communication, conversion, protected-stage movement, and closing work are never 
   chosen action succeeds; a drop alone never claims the customer received anything. Provider queue acceptance
   or a deliberate external mark-sent action establishes Awaiting response. An immediate send failure leaves
   the Quote in Draft. A later delivery failure does not rewrite the historical send, but remains visibly failed
-  and alerts the responsible team member. External mark-sent records the actor, time, channel, and optional
+  and alerts the responsible team member. Failed means the Quote's latest email bounced, was refused by the
+  customer's mailbox or mail server, or was cancelled before it left; a spam complaint is not a failure. The
+  card and Brief say "Delivery failed" until the Quote is sent again successfully. The one in-app alert goes
+  to the card's owner, otherwise the sender, otherwise the account owner. External mark-sent records the actor, time, channel, and optional
   note. The channels offered are In person, Phone call, Text message, My own email, Printed or posted copy,
   and Other.
 - Every card offers the same allowed destinations through a non-drag Move/next-action control. An unavailable

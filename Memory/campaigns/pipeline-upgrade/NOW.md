@@ -7,13 +7,13 @@ first paying client.
 
 **In progress:**
 
-- Nothing claimed. Stage A finished 2026-10-01. B1 finished 2026-10-01: "Convert to job" on a Request opens
-  the New Job form filled in, and saving it marks the Request Converted and its card Won with the Job total
-  (no priced lines = Won but Unvalued). B2 finished 2026-10-01: a Job made from scratch is a "Direct job" —
-  its own Type in Sales Outcomes, never on the board, never in the Won tile or Won list. B3 finished
-  2026-10-01: dropping a Draft on Awaiting response opens a send window (Email, "I already sent it", View
-  quote, Cancel); the card moves only after the choice succeeds.
+- Nothing claimed. Stage A and B1–B4 finished 2026-10-01. B1: "Convert to job" on a Request marks its card
+  Won with the Job total. B2: a Job made from scratch is a "Direct job" in Sales Outcomes, never on the
+  board. B3: dropping a Draft on Awaiting response opens a send window; the card moves only after the choice
+  succeeds. B4: a quote whose email bounced, was refused, or never left shows "Delivery failed" on its card
+  and Brief, and one teammate gets one bell alert — proven with a simulated bounce; quote #46 on Raad LTD is
+  left showing it.
 
-**Next part:** B4 — `stages/B-honest-outcomes.md`. B5 and B7 wait for nothing and may also start.
+**Next part:** B5 — `stages/B-honest-outcomes.md`. B7 waits for nothing and may also start.
 
 **Blockers:** None.

@@ -21,6 +21,7 @@
 	import alertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 	import userCircleIcon from '@tabler/icons/outline/user-circle.svg?raw';
 	import checklistIcon from '@tabler/icons/outline/checklist.svg?raw';
+	import mailOffIcon from '@tabler/icons/outline/mail-off.svg?raw';
 
 	// One card on the board. Opening it is a full-size button stretched behind everything else, so the
 	// keyboard and a screen reader still reach the whole card as one target — the owner control and the
@@ -207,6 +208,14 @@
 		</span>
 	{/if}
 	<span class="opportunity-card__client">{clientName}</span>
+	{#if opportunity.quote?.delivery_failure}
+		<!-- The card stays in Awaiting response: the quote was sent. This says the customer has nothing yet;
+		     the Brief says why and what to do. -->
+		<span class="opportunity-card__delivery-failed">
+			<span class="opportunity-card__icon" aria-hidden="true">{@html mailOffIcon}</span>
+			Delivery failed
+		</span>
+	{/if}
 	{#if amount}
 		<span class="opportunity-card__amount">{amount}</span>
 	{/if}
@@ -509,6 +518,15 @@
 			color: var(--color-critical--onSurface);
 			font-weight: 600;
 		}
+	}
+	// The words carry it; the colour and the icon only repeat them.
+	.opportunity-card__delivery-failed {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		color: var(--color-critical--onSurface);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
 	}
 	// The chase line repeats what the icon and the word say, so red is never the only thing carrying it.
 	.opportunity-card__chase {

@@ -52,3 +52,51 @@ describe('OpportunityCard keyboard open', () => {
 		expect(onOpen).toHaveBeenCalledOnce();
 	});
 });
+
+describe('OpportunityCard delivery failure', () => {
+	// The quote stays sent and the card stays in Awaiting response; the card only has to say, in words,
+	// that the customer has nothing yet.
+	it('says "Delivery failed" when the quote email did not reach the customer', async () => {
+		render(OpportunityCard, {
+			props: {
+				opportunity: {
+					...card,
+					stage: 'quote_awaiting_response',
+					request: null,
+					quote: {
+						id: 'quote-1',
+						status: 'awaiting_response',
+						delivery_failure: {
+							reason: 'bounced',
+							failed_at: '2026-10-01T09:00:00.000Z',
+							recipient_email: 'ada@example.com'
+						}
+					}
+				},
+				formatting: null,
+				canEdit: false,
+				onOpen: vi.fn()
+			}
+		});
+
+		await expect.element(page.getByText('Delivery failed')).toBeVisible();
+	});
+
+	it('says nothing about delivery for a quote that was delivered', async () => {
+		render(OpportunityCard, {
+			props: {
+				opportunity: {
+					...card,
+					stage: 'quote_awaiting_response',
+					request: null,
+					quote: { id: 'quote-1', status: 'awaiting_response', delivery_failure: null }
+				},
+				formatting: null,
+				canEdit: false,
+				onOpen: vi.fn()
+			}
+		});
+
+		await expect.element(page.getByText('Delivery failed')).not.toBeInTheDocument();
+	});
+});

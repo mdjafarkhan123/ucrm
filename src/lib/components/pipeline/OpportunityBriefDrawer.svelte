@@ -7,6 +7,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import StageAgeChip from './StageAgeChip.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Banner from '$lib/components/ui/Banner.svelte';
 	import OpportunityNextActionSection from './OpportunityNextActionSection.svelte';
 	import OpportunityDetailsSection from './OpportunityDetailsSection.svelte';
 	import OpportunityTasksSection from './OpportunityTasksSection.svelte';
@@ -16,6 +17,7 @@
 	import type { OpportunityCard } from '$lib/pipeline/api';
 	import { ALL_STAGE_LABELS, isAnyBoardStage } from '$lib/pipeline/stages';
 	import { clientDetailKey, fetchClient } from '$lib/clients/api';
+	import { quoteDeliveryFailureSentence } from '$lib/quotes/send';
 	import requestIcon from '@tabler/icons/outline/file-description.svg?raw';
 	import quoteIcon from '@tabler/icons/outline/file-invoice.svg?raw';
 
@@ -91,6 +93,25 @@
 				<StageAgeChip label={age.label} freshness={age.freshness} description={age.description} />
 			{/if}
 		</div>
+
+		{#if opportunity.quote?.delivery_failure}
+			<!-- The quote stays sent and the card stays where it is. Sending it again to a working address is
+			     what clears this, and that happens on the quote's own page. -->
+			<Banner type="error">
+				<strong>Delivery failed.</strong>
+				{quoteDeliveryFailureSentence(opportunity.quote.delivery_failure)} The customer has not received
+				this quote. Check the address, then send it again.
+				{#snippet action()}
+					<Button
+						size="small"
+						variant="secondary"
+						href={resolve('/(app)/quotes/[id=uuid]', { id: opportunity.quote?.id ?? '' })}
+					>
+						Open quote
+					</Button>
+				{/snippet}
+			</Banner>
+		{/if}
 
 		{#if opportunity.client && clientQuery.isPending}
 			<LoadingSkeleton variant="card" label="Loading client details" />
