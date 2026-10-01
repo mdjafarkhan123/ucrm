@@ -57,6 +57,9 @@ field records never collapse into one state machine.
   Request Converted. Such a Job keeps its `request_id` permanently and never a `quote_id`; at most one Job per
   Request; it stays with the Request's Client; the Request's priced lines and their photos are offered as the
   starting scope. Sales Pipeline records the resulting Won outcome (see `sales-pipeline-behavior-contract.md`).
+- A Job made from scratch — no Request, no Quote — is recorded for Sales Outcomes as a **Direct job**, valued at
+  the Job total when it was saved (Unvalued when nothing on it is priced). It is never a card on the Pipeline
+  board and is counted apart from Won. The record follows the Job's title and is removed with the Job.
 - Conversion **copies**, never references, the accepted version's selected lines into Job-owned rows. Later Job
   edits never touch Quote history, and later Quote history can never rewrite Job scope. The Quote becomes terminal
   `converted` in the same transaction.

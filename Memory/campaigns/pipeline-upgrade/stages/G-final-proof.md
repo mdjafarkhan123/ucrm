@@ -14,6 +14,10 @@ Carried from stage A (design in `docs/adr/0004-pipeline-custom-stages-anchor-to-
   stages (A4) were proven on the live database in rolled-back runs only. G1 or G2 should add pgTAP files
   for them, and run the pgTAP edit in `pipeline_unified_board_and_presentation_setting.sql` on a fresh
   rebuild — it has never been run there.
+- Found in B2, for G2: the value, owner, Task, and Note commands do not refuse a closed record when called
+  directly with its id (no screen offers it). A frozen Won, Lost, or Direct job value should not be editable.
+- B1 and B2's database rules (Request-to-Job Won, Direct job) were proven on the live database and in the
+  browser only; they need pgTAP files too.
 - Raad LTD's test data: one enabled custom stage, "Waiting on customer" (Quotes, after Awaiting response),
   switched to on hold and holding one card with a Task due 2026-10-15; two switched-off stages remain from
   A3's check.
