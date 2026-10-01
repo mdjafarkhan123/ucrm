@@ -8,13 +8,7 @@ a staff reason
 
 ## Steps
 
-- [x] Research: how Lost, archive, decline, value, and Tasks work today
-- [x] Database change written, applied, and proven with a rolled-back test of every rule
-- [x] Server: outcomes list returns reason, note, and the customer's message; new lost-reason route
-- [x] Board: "Mark as lost" on Awaiting response and Changes requested quote cards
-- [x] Quote page: "Mark as declined" asks what the customer said (optional)
-- [x] Sales Outcomes: Lost rows show the reason and the customer's message; "Add reason"; Reopen for quotes
-- [x] Unit tests pass; `npm run check` clean
+- [x] Database change, server routes, board card, quote page, Sales Outcomes, and tests — all on `main`
 - [x] Browser proof 1: "Staged rail test" (Quote #43) marked Lost from its card; shows under Lost at $198
 - [x] Browser proof 3: Quote #38 marked declined with a customer message; Sales Outcomes shows the
       message and took the reason "Price too high"
@@ -47,5 +41,3 @@ part per the Memory skill. In the plan, § Outcomes, say a decline reaches UCRM 
   like Jobber, the link only offers Approve and Request changes, so a decline is recorded by your team
   with 'Mark as declined'. Is that what you want, or should the customer's own quote page also get a
   Decline button with a message box?"
-- The dropdown in the Lost reason window ignores a click made through an accessibility reference in the
-  browser tool; click options by position instead. It works normally for a person.
