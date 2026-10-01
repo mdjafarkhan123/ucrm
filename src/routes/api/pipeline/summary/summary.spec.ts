@@ -18,13 +18,15 @@ const waiting = {
 	id: '7b0c8f2e-0000-4000-8000-000000000001',
 	section: 'quote',
 	name: 'Waiting on customer',
-	after_stage: 'quote_awaiting_response'
+	after_stage: 'quote_awaiting_response',
+	requires_future_task: false
 };
 const empty = {
 	id: '7b0c8f2e-0000-4000-8000-000000000002',
 	section: 'request',
 	name: 'Call back',
-	after_stage: 'new_request'
+	after_stage: 'new_request',
+	requires_future_task: false
 };
 
 function summaryEvent(rows: unknown[]) {

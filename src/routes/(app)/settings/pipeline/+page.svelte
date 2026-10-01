@@ -103,7 +103,8 @@
 								id: column.stage.id,
 								section: column.stage.section,
 								name: column.stage.name.trim(),
-								after_stage: column.stage.after_stage
+								after_stage: column.stage.after_stage,
+								requires_future_task: column.stage.requires_future_task
 							}
 						]
 					: []
@@ -156,13 +157,22 @@
 		// A new stage starts at the end of its section. It can be moved from there.
 		const last = SECTION_STAGES[section].at(-1);
 		if (!last || atLimit) return key;
-		stages = [...stages, { key, id: null, section, name: '', after_stage: last }];
+		stages = [
+			...stages,
+			{ key, id: null, section, name: '', after_stage: last, requires_future_task: false }
+		];
 		return key;
 	}
 
 	function renameStage(key: string, name: string) {
 		stages = stages.map((stage) => (stage.key === key ? { ...stage, name } : stage));
 		if (serverErrors[key]) serverErrors = { ...serverErrors, [key]: '' };
+	}
+
+	function requireTask(key: string, required: boolean) {
+		stages = stages.map((stage) =>
+			stage.key === key ? { ...stage, requires_future_task: required } : stage
+		);
 	}
 
 	function moveStage(section: BoardSection, index: number, by: -1 | 1) {
@@ -381,6 +391,7 @@
 							errors={rowErrors}
 							onAdd={() => addStage(section)}
 							onRename={renameStage}
+							onRequireTask={requireTask}
 							onMove={(index, by) => moveStage(section, index, by)}
 							onRemove={removeStage}
 							onRemoveIntent={warmStageCardCount}
@@ -393,7 +404,8 @@
 					{#if atLimit}You have reached the limit, so no more can be added.{/if}
 					Built-in stages follow real work — a request coming in, an assessment being booked, a quote
 					being sent — so they cannot be renamed, moved, or removed. Removing one of your own stages asks
-					where its cards go first.
+					where its cards go first. Switch on “On hold stage” for a column like “Waiting till spring”:
+					cards there stay open and are never counted as lost.
 				</p>
 			{/if}
 		{/snippet}

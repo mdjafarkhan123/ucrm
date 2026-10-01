@@ -160,7 +160,9 @@ const customStageSchema = z
 			.trim()
 			.min(1, 'Give this stage a name.')
 			.max(CUSTOM_STAGE_NAME_MAX, `Keep the name under ${CUSTOM_STAGE_NAME_MAX} characters.`),
-		after_stage: z.enum([...BOARD_STAGES, ...QUOTE_BOARD_STAGES])
+		after_stage: z.enum([...BOARD_STAGES, ...QUOTE_BOARD_STAGES]),
+		// On hold: cards need an open Task due after today to be moved in.
+		requires_future_task: z.boolean().default(false)
 	})
 	.refine((stage) => SECTION_STAGES[stage.section].includes(stage.after_stage), {
 		message: 'That stage cannot sit there.',

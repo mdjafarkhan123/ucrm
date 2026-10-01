@@ -13,6 +13,8 @@
 	import ScheduleAssessmentDialog from './ScheduleAssessmentDialog.svelte';
 	import AssessmentEntryChoiceDialog from './AssessmentEntryChoiceDialog.svelte';
 	import ConvertToQuoteDialog from './ConvertToQuoteDialog.svelte';
+	import TaskDialog from './TaskDialog.svelte';
+	import clockPauseIcon from '@tabler/icons/outline/clock-pause.svg?raw';
 	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -22,6 +24,8 @@
 		invalidatePipeline,
 		fetchBoardColumn,
 		placeOpportunity,
+		DragWriteError,
+		NEEDS_FUTURE_TASK,
 		type BoardColumnPage,
 		type OpportunityCard as Card
 	} from '$lib/pipeline/api';
@@ -151,6 +155,9 @@
 	let pendingChoice = $state<Card | null>(null);
 	// A card dropped on Draft, naming the client and the request before the irreversible conversion runs.
 	let pendingConvert = $state<Card | null>(null);
+	// A card an on-hold stage refused for having no follow-up Task with a future date. The Task dialog is
+	// open for it; saving the Task finishes the move into that stage.
+	let pendingHold = $state<{ card: Card; stage: CustomStage } | null>(null);
 
 	// Whether a card is one of this column's own: placed in this custom stage, or sitting in one of this
 	// protected column's real stages with no custom placement.
@@ -304,6 +311,18 @@
 			toast.success(destination ? `Moved to ${destination}.` : 'Change saved.');
 		} catch (error) {
 			items = cards;
+			// An on-hold stage wants a follow-up Task first. That is something the person can fix right here,
+			// so the board asks for the Task instead of only refusing; the board stays locked behind the
+			// dialog, exactly as it does for the schedule and convert dialogs.
+			const holdStage =
+				error instanceof DragWriteError && error.code === NEEDS_FUTURE_TASK
+					? customStages.find((candidate) => candidate.id === customStageId)
+					: undefined;
+			if (holdStage) {
+				toast.dismiss(loadingToastId);
+				pendingHold = { card, stage: holdStage };
+				return;
+			}
 			// A response can be lost after the server commits. Re-read truth before reporting the failure so
 			// the card never lies about where the server ultimately left it.
 			await invalidatePipeline(queryClient).catch(() => undefined);
@@ -313,8 +332,22 @@
 				error instanceof Error ? error.message : undefined
 			);
 		} finally {
-			onDragBusyChange(false);
+			if (pendingHold === null) onDragBusyChange(false);
 		}
+	}
+
+	// The follow-up Task now exists, so the move the stage refused is simply asked for again.
+	async function finishHold() {
+		if (!pendingHold) return;
+		const { card, stage: holdStage } = pendingHold;
+		pendingHold = null;
+		await performPlace(card, holdStage.id);
+	}
+
+	function cancelHold() {
+		pendingHold = null;
+		items = cards;
+		onDragBusyChange(false);
 	}
 
 	async function performMove(
@@ -435,7 +468,20 @@
 <section class="pipeline-column" aria-labelledby={headingId}>
 	<header class="pipeline-column__header">
 		<div class="pipeline-column__heading">
-			<h3 id={headingId}>{label}</h3>
+			<h3 id={headingId}>
+				{label}
+				{#if customStage?.requires_future_task}
+					<span
+						class="pipeline-column__hold"
+						role="img"
+						aria-label="On hold stage: cards need a task with a future due date"
+						title="On hold stage: cards need a task with a future due date"
+					>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html clockPauseIcon}
+					</span>
+				{/if}
+			</h3>
 			{#if count !== undefined}
 				<span class="pipeline-column__count">{count}</span>
 			{/if}
@@ -523,6 +569,17 @@
 		/>
 	{/if}
 
+	{#if pendingHold}
+		<TaskDialog
+			open={true}
+			opportunityId={pendingHold.card.id}
+			futureDueFor={pendingHold.stage.name}
+			timezone={formatting?.timezone}
+			onSaved={finishHold}
+			onClose={cancelHold}
+		/>
+	{/if}
+
 	{#if pendingConvert}
 		<ConvertToQuoteDialog
 			open={true}
@@ -565,6 +622,18 @@
 		font-size: var(--typography--fontSize-base);
 		font-weight: 700;
 		line-height: var(--typography--lineHeight-tight);
+	}
+	.pipeline-column__hold {
+		display: inline-grid;
+		place-items: center;
+		margin-left: var(--space-smaller);
+		color: var(--color-icon--secondary);
+		vertical-align: text-bottom;
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
 	}
 	.pipeline-column__count {
 		flex: 0 0 auto;

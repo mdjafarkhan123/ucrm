@@ -12160,6 +12160,7 @@ export type Database = {
 					name: string;
 					organization_id: string;
 					position: number;
+					requires_future_task: boolean;
 					section: string;
 					updated_at: string;
 				};
@@ -12172,6 +12173,7 @@ export type Database = {
 					name: string;
 					organization_id: string;
 					position: number;
+					requires_future_task?: boolean;
 					section: string;
 					updated_at?: string;
 				};
@@ -12184,6 +12186,7 @@ export type Database = {
 					name?: string;
 					organization_id?: string;
 					position?: number;
+					requires_future_task?: boolean;
 					section?: string;
 					updated_at?: string;
 				};

@@ -57,6 +57,16 @@ are drawn as one column.
     row. It is not part of `save_pipeline_settings`, so unsaved edits in the Settings form survive it. This
     follows HubSpot and Pipedrive, which both ask where a stage's deals go before removing it.
 
+11. **On hold is a flag on a custom stage, checked on the way in** (part A4).
+    `pipeline_custom_stages.requires_future_task`, saved with the stage list. `pipeline_place_opportunity`
+    refuses a card with no open Task due after the organization's today, as a `check_violation` with the
+    hint `needs_future_task`, which the board answers by offering the Task. Switching a stage off into an
+    on-hold destination holds every card to the same rule. Nothing re-checks a card already inside: a
+    Task falling due is the inactivity warning's business (stage C), not a reason to move the card.
+    Jafar chose a per-stage switch over one ready-made stage; it follows HubSpot's per-stage rules for
+    what a deal needs before it may enter a stage. Rejected: a fixed "On hold" stage, as Zendesk has for
+    tickets — a stage belongs to one section, so it would need two, and could not be named.
+
 ## Consequences
 
 - Reordering in Settings while the board is collapsed re-anchors that section's stages to the columns

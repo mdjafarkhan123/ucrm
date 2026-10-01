@@ -11,3 +11,8 @@ board (priority order, inactivity warning) and § Ownership and visibility; audi
 
 Trap for C1: an Opportunity may already hold five open Tasks, so the move from follow-up date to Task needs a
 rule for that case before any data is changed.
+
+Carried from stage A: an on-hold stage is a custom stage with `requires_future_task` on. The plan says its
+inactivity warning pauses only until the card's future Task becomes due; the part that builds the warning
+owns that. The warning needs its own progress clock — `stage_entered_at` restarts on every custom move
+(ADR 0004, point 8).

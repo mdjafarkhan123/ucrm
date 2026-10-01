@@ -7,3 +7,13 @@ Approved by Jafar 2026-10-01. Checks the whole plan
 | --- | --- | --- | --- | --- |
 | G1 Speed at volume | The board, search, table, and reports measured with a large fake organization, and anything slow fixed (`performance-review` verification branch) | A–F | The measured numbers are written down with the volume they were taken at, and no capacity claim goes beyond them | Not started |
 | G2 Full walk-through | Every plan rule checked with each role login on desktop and phone, then Jafar's own browser tour | G1 | Every rule in the plan is ticked or has a fix; Jafar finishes the tour with no open problem | Not started |
+
+Carried from stage A (design in `docs/adr/0004-pipeline-custom-stages-anchor-to-protected-stages.md`):
+
+- The database rules for moving cards among custom stages (A2), switching a stage off (A3), and on-hold
+  stages (A4) were proven on the live database in rolled-back runs only. G1 or G2 should add pgTAP files
+  for them, and run the pgTAP edit in `pipeline_unified_board_and_presentation_setting.sql` on a fresh
+  rebuild — it has never been run there.
+- Raad LTD's test data: one enabled custom stage, "Waiting on customer" (Quotes, after Awaiting response),
+  switched to on hold and holding one card with a Task due 2026-10-15; two switched-off stages remain from
+  A3's check.

@@ -102,6 +102,24 @@ describe('opportunity placement API', () => {
 		expect((await response.json()).field_errors.form).toMatch(/only go into a Requests stage/);
 	});
 
+	it('names the refusal of an on-hold stage, so the board can offer the follow-up task', async () => {
+		const rpc = vi.fn().mockResolvedValue({
+			data: null,
+			error: {
+				code: '23514',
+				hint: 'needs_future_task',
+				message: 'Cards in “Waiting till spring” need a follow-up task with a future due date.'
+			}
+		});
+
+		const response = await PATCH(event({ custom_stage_id: stageId }, rpc));
+		const body = await response.json();
+
+		expect(response.status).toBe(422);
+		expect(body.code).toBe('needs_future_task');
+		expect(body.field_errors.form).toMatch(/need a follow-up task/);
+	});
+
 	it('answers not found for a card this member may not move', async () => {
 		const rpc = vi.fn().mockResolvedValue({ data: null, error: { code: '42501' } });
 

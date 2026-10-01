@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import PipelineColumn from './PipelineColumn.svelte';
 import { DEFAULT_BOARD_FILTERS } from '$lib/pipeline/filters';
-import type { OpportunityCard } from '$lib/pipeline/api';
+import { DragWriteError, NEEDS_FUTURE_TASK, type OpportunityCard } from '$lib/pipeline/api';
 import type { AnyBoardStage, BoardColumn, CustomStage } from '$lib/pipeline/stages';
 
 const mocks = vi.hoisted(() => ({
@@ -29,6 +29,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@tanstack/svelte-query', async (importOriginal) => ({
 	...(await importOriginal<typeof import('@tanstack/svelte-query')>()),
 	createInfiniteQuery: () => mocks.query,
+	// The Task dialog's team list, when an on-hold stage asks for a follow-up task.
+	createQuery: () => ({ data: [] }),
 	useQueryClient: () => ({})
 }));
 
@@ -67,13 +69,15 @@ const waitingOnCustomer: CustomStage = {
 	id: '7b0c8f2e-0000-4000-8000-000000000001',
 	section: 'request',
 	name: 'Waiting on customer',
-	after_stage: 'new_request'
+	after_stage: 'new_request',
+	requires_future_task: false
 };
 const quoteFollowUp: CustomStage = {
 	id: '7b0c8f2e-0000-4000-8000-000000000002',
 	section: 'quote',
 	name: 'Chasing a decision',
-	after_stage: 'quote_awaiting_response'
+	after_stage: 'quote_awaiting_response',
+	requires_future_task: false
 };
 
 function renderColumn(stage: AnyBoardStage | BoardColumn) {
@@ -194,6 +198,30 @@ describe('PipelineColumn drop confirmation', () => {
 			)
 		);
 		expect(mocks.invalidatePipeline).toHaveBeenCalledOnce();
+	});
+
+	it('offers the follow-up task when an on-hold stage refuses a card that has none', async () => {
+		const message = 'Cards in “Waiting on customer” need a follow-up task with a future due date.';
+		mocks.placeOpportunity.mockRejectedValue(
+			new DragWriteError(message, { form: message }, NEEDS_FUTURE_TASK)
+		);
+		const { zone, onDragBusyChange } = renderColumn({
+			kind: 'custom',
+			stage: { ...waitingOnCustomer, requires_future_task: true }
+		});
+
+		finalize(zone);
+
+		await expect.element(page.getByRole('dialog', { name: 'Add a follow-up task' })).toBeVisible();
+		await expect
+			.element(page.getByRole('button', { name: 'Add task and move card' }))
+			.toBeDisabled();
+		expect(mocks.toast.error).not.toHaveBeenCalled();
+		// The board stays locked behind the dialog until the task is saved or the dialog is cancelled.
+		expect(onDragBusyChange).toHaveBeenLastCalledWith(true);
+
+		await page.getByRole('button', { name: 'Cancel' }).click();
+		expect(onDragBusyChange).toHaveBeenLastCalledWith(false);
 	});
 
 	it('restores a refused backward drop without calling the server or showing a toast', async () => {

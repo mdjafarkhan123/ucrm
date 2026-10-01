@@ -533,13 +533,19 @@ export type DragResult = {
 
 export class DragWriteError extends Error {
 	fieldErrors: Record<string, string>;
+	// Set for a refusal the board can help with rather than only report.
+	code: string | null;
 
-	constructor(message: string, fieldErrors: Record<string, string>) {
+	constructor(message: string, fieldErrors: Record<string, string>, code: string | null = null) {
 		super(message);
 		this.name = 'DragWriteError';
 		this.fieldErrors = fieldErrors;
+		this.code = code;
 	}
 }
+
+// An on-hold stage refused the card because it has no open Task due after today.
+export const NEEDS_FUTURE_TASK = 'needs_future_task';
 
 // Dropping a card onto a column. The server decides what that column requires and performs it first --
 // this only carries the inputs a drop can need: the times a schedule drop asks for, and the key that
@@ -577,7 +583,8 @@ export async function dragOpportunity(
 
 // Placing a card in a custom follow-up stage, or back in its real stage with `null`. Nothing about the
 // Request or Quote changes. A refusal carries the database's own sentence — which section the card
-// belongs to, or that the stage has gone — so the board can say exactly why.
+// belongs to, or that the stage has gone — so the board can say exactly why. An on-hold stage's refusal
+// also carries `NEEDS_FUTURE_TASK`, which the board answers by offering the Task.
 export async function placeOpportunity(
 	opportunityId: string,
 	customStageId: string | null
@@ -596,7 +603,8 @@ export async function placeOpportunity(
 	if (!response.ok) {
 		throw new DragWriteError(
 			result.field_errors?.form ?? result.error ?? 'That card could not be moved.',
-			result.field_errors ?? {}
+			result.field_errors ?? {},
+			typeof result.code === 'string' ? result.code : null
 		);
 	}
 	return result;

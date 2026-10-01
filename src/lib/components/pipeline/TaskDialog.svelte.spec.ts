@@ -30,12 +30,23 @@ const task: Task = {
 	created_at: '2026-08-10T00:00:00.000Z'
 };
 
-function renderDialog(props: { task?: Task | null } = {}, onSaved = vi.fn(), onClose = vi.fn()) {
+function renderDialog(
+	props: { task?: Task | null; futureDueFor?: string } = {},
+	onSaved = vi.fn(),
+	onClose = vi.fn()
+) {
 	const queryClient = createQueryClient();
 	const screen = render(
 		TaskDialog,
 		{
-			props: { open: true, opportunityId: 'opp-1', task: props.task ?? null, onSaved, onClose }
+			props: {
+				open: true,
+				opportunityId: 'opp-1',
+				task: props.task ?? null,
+				futureDueFor: props.futureDueFor ?? null,
+				onSaved,
+				onClose
+			}
 		},
 		{ wrapper: QueryClientProvider, wrapperProps: { client: queryClient } }
 	);
@@ -88,6 +99,24 @@ describe('TaskDialog', () => {
 		renderDialog();
 
 		await expect.element(page.getByRole('button', { name: 'Add task' })).toBeDisabled();
+	});
+
+	it('asks for a future due date when an on-hold stage is waiting for the task', async () => {
+		mockFetch({ body: task, status: 201 });
+		renderDialog({ futureDueFor: 'Waiting till spring' });
+
+		await expect
+			.element(page.getByText(/Cards in “Waiting till spring” need a task/))
+			.toBeVisible();
+		await page.getByRole('textbox', { name: 'Title' }).fill('Call Colin');
+		// A title alone is not enough here: the stage wants a day to come back on.
+		await expect
+			.element(page.getByRole('button', { name: 'Add task and move card' }))
+			.toBeDisabled();
+		expect(globalThis.fetch).not.toHaveBeenCalledWith(
+			'/api/pipeline/opportunities/opp-1/tasks',
+			expect.anything()
+		);
 	});
 
 	it('pre-fills an edit and sends a PATCH to that task', async () => {

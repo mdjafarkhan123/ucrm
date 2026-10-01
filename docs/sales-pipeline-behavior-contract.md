@@ -101,9 +101,11 @@ Revision 3 adds section-bound custom follow-up stages under these rules:
   historical identity and label; disabling it never rewrites prior events or reports.
 - Manual movement among custom stages in the same section is allowed in either direction. Protected stages
   remain action-gated, and a real Request, Assessment, or Quote action always wins over custom placement.
-- **On hold** is an ordinary custom follow-up stage, not an outcome. Moving a card there requires a future
-  Task. The card remains Open, its inactivity warning pauses only until that Task becomes due, and it never
-  counts as Lost merely because it is on hold.
+- **On hold** is an ordinary custom follow-up stage, not an outcome. Any custom stage becomes an on-hold
+  stage through its own switch in Settings, so an organization may name and keep several. Moving a card
+  there requires a future Task — an open Task due after today; without one the board offers to add it and
+  then completes the move. The card remains Open, its inactivity warning pauses only until that Task
+  becomes due, and it never counts as Lost merely because it is on hold.
 - One protected contractor pipeline is the launch model. Multiple independent pipelines, custom-stage
   automations, and administrator-built approval gates are not part of revision 3.
 

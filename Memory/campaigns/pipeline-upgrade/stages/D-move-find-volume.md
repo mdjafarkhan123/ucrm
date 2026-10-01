@@ -12,3 +12,8 @@ items A5, B1, B7, B8, C5. D2, D4, and D6 are scale-sensitive — run the `perfor
 | D4 Table view | The same cards as a sortable table with the same search and filters | D2 | Switching between Board and Table keeps the filters; a row opens the same Brief | Not started |
 | D5 Phone view | A compact list with a stage picker and tap-to-move; nothing needs dragging | D1 | At phone width the list shows, a card opens its Brief, and a tap moves the card | Not started |
 | D6 Bulk tools | Select several cards to change owner, add a Task, or place them in a custom stage; nothing else is offered in bulk | A2, D4 | Five selected cards are reassigned to one person at once; no bulk send, convert, close, or protected-stage move exists | Not started |
+
+Carried from stage A: a card's menu lists every custom stage of its section in one flat list; the Move
+button replaces it. Any new way of placing a card, bulk placement included, must go through
+`pipeline_place_opportunity` so an on-hold stage still asks for its future Task — the board answers that
+refusal (`NEEDS_FUTURE_TASK`) by opening the Task dialog in `PipelineColumn.svelte`.

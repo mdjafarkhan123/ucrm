@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { CalendarDate } from '@internationalized/date';
+	import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -25,6 +25,8 @@
 		open,
 		opportunityId,
 		task = null,
+		futureDueFor = null,
+		timezone,
 		onSaved,
 		onClose
 	}: {
@@ -32,6 +34,11 @@
 		opportunityId: string;
 		/** The Task being edited, or null to create a new one. */
 		task?: Task | null;
+		/** The on-hold stage a card is waiting to enter. Set, the due date becomes required and has to be
+		 *  after today, because that is the Task the stage is asking for. */
+		futureDueFor?: string | null;
+		/** The organization's timezone, which decides what "today" is for that rule. */
+		timezone?: string;
 		onSaved: (task: Task) => void;
 		onClose: () => void;
 	} = $props();
@@ -73,7 +80,15 @@
 	let fieldErrors = $state<Record<string, string>>({});
 
 	const isEdit = $derived(task !== null);
-	const canSubmit = $derived(draft.title.trim().length >= 2);
+	// The first day an on-hold stage accepts: tomorrow, on the organization's own calendar.
+	const earliestDue = $derived(
+		futureDueFor === null ? undefined : today(timezone ?? getLocalTimeZone()).add({ days: 1 })
+	);
+	const dueIsLateEnough = $derived(
+		earliestDue === undefined ||
+			(draft.due_on !== undefined && draft.due_on.compare(earliestDue) >= 0)
+	);
+	const canSubmit = $derived(draft.title.trim().length >= 2 && dueIsLateEnough);
 
 	// The Salesperson filter loads this same list as soon as the board renders, so this almost always
 	// finds it already warm.
@@ -123,8 +138,18 @@
 	}
 </script>
 
-<Dialog {open} title={isEdit ? 'Edit task' : 'New task'} onClose={saving ? () => {} : onClose}>
+<Dialog
+	{open}
+	title={futureDueFor !== null ? 'Add a follow-up task' : isEdit ? 'Edit task' : 'New task'}
+	onClose={saving ? () => {} : onClose}
+>
 	<div class="task-dialog">
+		{#if futureDueFor !== null}
+			<p class="task-dialog__reason">
+				Cards in “{futureDueFor}” need a task with a future due date, so nobody forgets to come back
+				to them. Add one and the card will move.
+			</p>
+		{/if}
 		<Input
 			id="task-dialog-title"
 			label="Title"
@@ -159,8 +184,11 @@
 			id="task-dialog-due"
 			label="Due date"
 			value={draft.due_on}
-			invalid={Boolean(fieldErrors.due_on)}
-			errorMessage={fieldErrors.due_on}
+			required={futureDueFor !== null}
+			minValue={earliestDue}
+			invalid={Boolean(fieldErrors.due_on) || (draft.due_on !== undefined && !dueIsLateEnough)}
+			errorMessage={fieldErrors.due_on ??
+				(draft.due_on !== undefined && !dueIsLateEnough ? 'Pick a day after today.' : '')}
 			onchange={(value) => (draft.due_on = value)}
 		/>
 
@@ -171,7 +199,7 @@
 				Cancel
 			</Button>
 			<Button variant="primary" disabled={!canSubmit} loading={saving} onclick={() => void save()}>
-				{isEdit ? 'Save' : 'Add task'}
+				{futureDueFor !== null ? 'Add task and move card' : isEdit ? 'Save' : 'Add task'}
 			</Button>
 		</div>
 	</div>
@@ -187,6 +215,15 @@
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-smaller);
+		}
+		&__reason {
+			margin: 0;
+			padding: var(--space-small) var(--space-base);
+			border-radius: var(--radius-base);
+			color: var(--color-text);
+			background: var(--color-surface--background);
+			font-size: var(--typography--fontSize-small);
+			line-height: var(--typography--lineHeight-base);
 		}
 		&__label {
 			color: var(--color-text--secondary);

@@ -13,3 +13,7 @@ Brief actions; audit items B3, B4, B5, B6 and section D.
 Push alerts and per-person notification settings are not in this campaign (Jafar, 2026-10-01): E2 and E3 send
 the in-app alert and the email only. The rest waits in
 `Memory/deferred/push-alerts-and-per-person-notification-settings.md`.
+
+Carried from stage A: the Brief shows only the real stage, not which custom stage the card is in. No
+screen shows a card's move history yet; whichever part draws it must read stage names without filtering
+on `disabled_at`, so a switched-off stage still shows its name.

@@ -16,7 +16,7 @@ const stage = (
 	id: string,
 	section: CustomStage['section'],
 	after_stage: CustomStage['after_stage']
-): CustomStage => ({ id, section, name: id, after_stage });
+): CustomStage => ({ id, section, name: id, after_stage, requires_future_task: false });
 
 const names = (columns: SectionColumn[]) =>
 	columns.map((column) => (column.kind === 'protected' ? column.key : column.stage.name));
@@ -157,7 +157,8 @@ describe('custom stage placement vocabulary', () => {
 			id: '7b0c8f2e-0000-4000-8000-000000000001',
 			section: 'quote' as const,
 			name: 'Waiting on customer',
-			after_stage: 'quote_awaiting_response' as const
+			after_stage: 'quote_awaiting_response' as const,
+			requires_future_task: false
 		};
 		expect(boardColumnRequestKey({ kind: 'protected', key: 'assessment' })).toBe('assessment');
 		expect(boardColumnRequestKey({ kind: 'custom', stage })).toBe(stage.id);

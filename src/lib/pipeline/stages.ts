@@ -146,6 +146,8 @@ export type CustomStage = {
 	section: BoardSection;
 	name: string;
 	after_stage: AnyBoardStage;
+	// An on-hold stage: a card may only be moved in while it has an open Task due after today.
+	requires_future_task: boolean;
 };
 
 // Where a custom stage sits: its section, and the protected stage it follows. Settings works with stages

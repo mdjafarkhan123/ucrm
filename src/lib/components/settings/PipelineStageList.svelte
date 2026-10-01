@@ -10,6 +10,7 @@
 	import { tick } from 'svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import {
 		BOARD_COLUMN_LABELS,
 		CUSTOM_STAGE_NAME_MAX,
@@ -31,6 +32,7 @@
 		errors,
 		onAdd,
 		onRename,
+		onRequireTask,
 		onMove,
 		onRemove,
 		onRemoveIntent
@@ -44,6 +46,8 @@
 		// Returns the new row's key, so its name box can take the cursor.
 		onAdd: () => string;
 		onRename: (key: string, name: string) => void;
+		// Turns a stage into an on-hold stage, or back: cards need a future Task to be moved in.
+		onRequireTask: (key: string, required: boolean) => void;
 		onMove: (index: number, by: -1 | 1) => void;
 		// A stage never saved is simply dropped from the form. A saved one is on the board, so the page asks
 		// first — and where its cards go.
@@ -91,6 +95,13 @@
 								oninput={(event: Event) =>
 									onRename(stage.key, (event.currentTarget as HTMLInputElement).value)}
 							/>
+							<Toggle
+								id={`pipeline-stage-hold-${stage.key}`}
+								label="On hold stage"
+								description="A card can only be moved here once it has a task due on a later day, so nobody forgets to come back to it."
+								checked={stage.requires_future_task}
+								onchange={(checked) => onRequireTask(stage.key, checked)}
+							/>
 						</div>
 						<div class="stage-list__actions">
 							<button
@@ -128,6 +139,9 @@
 						</div>
 					{:else}
 						<span class="stage-list__name">{stage.name}</span>
+						{#if stage.requires_future_task}
+							<span class="stage-list__note">On hold · cards need a future task</span>
+						{/if}
 					{/if}
 				</li>
 			{/if}
@@ -207,7 +221,10 @@
 		}
 
 		&__field {
+			display: flex;
 			flex: 1 1 auto;
+			flex-direction: column;
+			gap: var(--space-small);
 			min-width: 0;
 		}
 
