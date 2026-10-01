@@ -331,8 +331,12 @@
 
 	// After a move the card is redrawn in another column, which would leave a keyboard user's focus
 	// nowhere. Put it back on the card wherever it now is; a card that left the board has nothing to find.
+	// A move confirmed in a dialog calls this again once that dialog has closed: while it is open it keeps
+	// focus inside itself, and on closing it hands focus back to the Move button of a card that has gone.
+	// The frame's wait lets that hand-back happen first.
 	async function focusCard(cardId: string) {
 		await tick();
+		await new Promise((resolve) => requestAnimationFrame(resolve));
 		document
 			.querySelector<HTMLElement>(`[data-opportunity-id="${cardId}"] .opportunity-card__open`)
 			?.focus();
@@ -412,6 +416,7 @@
 	}
 
 	function cancelHold() {
+		if (pendingHold) void focusCard(pendingHold.card.id);
 		pendingHold = null;
 		items = cards;
 		onDragBusyChange(false);
@@ -498,9 +503,11 @@
 	async function confirmScheduledMove(startsAt: string, endsAt: string) {
 		if (!pendingCard || !pendingCardTarget) return;
 		try {
-			await performMove(pendingCard, pendingCardTarget, startsAt, endsAt, true);
+			const card = pendingCard;
+			await performMove(card, pendingCardTarget, startsAt, endsAt, true);
 			pendingCard = null;
 			pendingCardTarget = null;
+			void focusCard(card.id);
 		} catch (error) {
 			// The dialog remains open with its field/server error, so the board remains locked until the user
 			// retries successfully or cancels it.
@@ -510,6 +517,7 @@
 	}
 
 	function cancelScheduledMove() {
+		if (pendingCard) void focusCard(pendingCard.id);
 		pendingCard = null;
 		pendingCardTarget = null;
 		items = cards;
@@ -534,6 +542,7 @@
 	}
 
 	function cancelChoice() {
+		if (pendingChoice) void focusCard(pendingChoice.id);
 		pendingChoice = null;
 		items = cards;
 		onDragBusyChange(false);
@@ -543,15 +552,10 @@
 		if (!pendingConvert) return;
 		try {
 			// Converting only ever leads to Draft, whichever column or menu asked for it.
-			await performMove(
-				pendingConvert,
-				'quote_draft',
-				undefined,
-				undefined,
-				true,
-				crypto.randomUUID()
-			);
+			const card = pendingConvert;
+			await performMove(card, 'quote_draft', undefined, undefined, true, crypto.randomUUID());
 			pendingConvert = null;
+			void focusCard(card.id);
 		} catch (error) {
 			onDragBusyChange(true);
 			throw error;
@@ -559,6 +563,7 @@
 	}
 
 	function cancelConvert() {
+		if (pendingConvert) void focusCard(pendingConvert.id);
 		pendingConvert = null;
 		items = cards;
 		onDragBusyChange(false);
@@ -593,9 +598,11 @@
 			choice.method === 'email' ? 'Quote emailed to the customer.' : 'Quote marked as sent.',
 			'Moved to Awaiting response.'
 		);
+		void focusCard(card.id);
 	}
 
 	function cancelSend() {
+		if (pendingSend) void focusCard(pendingSend.card.id);
 		pendingSend = null;
 		items = cards;
 		onDragBusyChange(false);
