@@ -15177,6 +15177,7 @@ export type Database = {
 					last_message_sender_kind: string;
 					organization_id: string;
 					started_by_user_id: string | null;
+					topic: string;
 					updated_at: string;
 					uplift_last_read_at: string | null;
 				};
@@ -15188,6 +15189,7 @@ export type Database = {
 					last_message_sender_kind?: string;
 					organization_id: string;
 					started_by_user_id?: string | null;
+					topic?: string;
 					updated_at?: string;
 					uplift_last_read_at?: string | null;
 				};
@@ -15199,6 +15201,7 @@ export type Database = {
 					last_message_sender_kind?: string;
 					organization_id?: string;
 					started_by_user_id?: string | null;
+					topic?: string;
 					updated_at?: string;
 					uplift_last_read_at?: string | null;
 				};
@@ -24441,7 +24444,7 @@ export type Database = {
 					message_body: string;
 					message_client_id: string;
 					target_organization_id: string;
-					target_thread_id?: string;
+					target_thread_id: string;
 				};
 				Returns: Json;
 			};
@@ -24868,6 +24871,14 @@ export type Database = {
 				};
 				Returns: boolean;
 			};
+			set_support_thread_topic: {
+				Args: { new_topic: string; target_thread_id: string };
+				Returns: boolean;
+			};
+			set_support_thread_topic_by_uplift: {
+				Args: { new_topic: string; target_thread_id: string };
+				Returns: boolean;
+			};
 			set_support_thread_participant_by_uplift: {
 				Args: {
 					adding: boolean;
@@ -25009,6 +25020,15 @@ export type Database = {
 					supplied_questions: Json;
 					supplied_rating: number;
 					supplied_token_hash: string;
+				};
+				Returns: Json;
+			};
+			start_support_thread: {
+				Args: {
+					message_body: string;
+					message_client_id: string;
+					target_organization_id: string;
+					thread_topic: string;
 				};
 				Returns: Json;
 			};

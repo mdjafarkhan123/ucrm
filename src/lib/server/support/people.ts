@@ -43,12 +43,12 @@ export async function readPeopleChange(
 }
 
 /** The database's own sentences are written for the person: "Only an active member of this team…". */
-export function peopleChangeFailure(error: PostgrestError): Response {
+export function supportChangeFailure(error: PostgrestError): Response {
 	if (error.code === '42501')
 		return json({ error: error.message, reason: 'permission_denied' }, { status: 403 });
 	if (error.code === '23514') return json({ error: error.message }, { status: 422 });
 	if (error.code === 'P0002') return json(NOT_FOUND, { status: 404 });
-	console.error('Could not change who is in a support conversation.', error);
+	console.error('Could not change a support conversation.', error);
 	return json({ error: 'That change could not be saved.' }, { status: 500 });
 }
 

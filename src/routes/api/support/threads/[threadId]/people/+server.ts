@@ -4,7 +4,7 @@ import type { RequestHandler } from './$types';
 import { NO_STORE_HEADERS, PRIVATE_READ_HEADERS } from '$lib/server/api/errors';
 import { requireSupportMember } from '$lib/server/support/access';
 import {
-	peopleChangeFailure,
+	supportChangeFailure,
 	peopleReadFailure,
 	readPeopleChange
 } from '$lib/server/support/people';
@@ -38,6 +38,6 @@ export const POST: RequestHandler = async (event) => {
 		target_user_id: change.userId,
 		adding: true
 	});
-	if (error) return peopleChangeFailure(error);
+	if (error) return supportChangeFailure(error);
 	return json({ changed: data }, { headers: NO_STORE_HEADERS });
 };

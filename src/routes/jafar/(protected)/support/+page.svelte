@@ -10,12 +10,16 @@
 	import SupportConversation from '$lib/components/support/SupportConversation.svelte';
 	import SupportSettingsDialog from '$lib/components/support/SupportSettingsDialog.svelte';
 	import SupportPeople from '$lib/components/support/SupportPeople.svelte';
+	import SupportTopicMenu from '$lib/components/support/SupportTopicMenu.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
 	import { relativeTime } from '$lib/collaboration/format';
 	import { urlParam } from '$lib/url-param.svelte';
 	import {
 		SUPPORT_MAX_LOADED,
 		SUPPORT_PAGE_SIZE,
+		SUPPORT_TOPICS,
 		changeSupportInboxPeople,
+		changeSupportInboxTopic,
 		fetchSupportInbox,
 		fetchSupportInboxPeople,
 		fetchSupportInboxThread,
@@ -27,9 +31,11 @@
 		jafarSupportThreadPageKey,
 		markSupportInboxThreadRead,
 		replyToSupportThread,
+		supportTopicLabel,
 		type SupportInbox,
 		type SupportInboxThreadDetail,
-		type SupportSettings
+		type SupportSettings,
+		type SupportTopic
 	} from '$lib/support/api';
 	import messagesIcon from '@tabler/icons/outline/messages.svg?raw';
 	import arrowLeftIcon from '@tabler/icons/outline/arrow-left.svg?raw';
@@ -42,6 +48,17 @@
 	// The open conversation lives in the address, so a refresh or a shared link lands on it.
 	const selected = urlParam('thread', '');
 	const selectedId = $derived(selected.current || null);
+	// The topic filter (D4a) lives there too.
+	const topicParam = urlParam('topic', '');
+	const topicFilter = $derived(
+		(SUPPORT_TOPICS.find((item) => item.value === topicParam.current)?.value ?? null) as
+			| SupportTopic
+			| null
+	);
+	const topicOptions = [
+		{ value: '', label: 'All topics' },
+		...SUPPORT_TOPICS.map((item) => ({ value: item.value, label: item.label }))
+	];
 
 	let inboxLimit = $state(SUPPORT_PAGE_SIZE);
 	let threadLimit = $state(SUPPORT_PAGE_SIZE);
@@ -72,10 +89,17 @@
 		await queryClient.invalidateQueries({ queryKey: jafarSupportThreadKey(selectedId) });
 	}
 
+	async function changeTopic(topic: SupportTopic) {
+		if (!selectedId) return;
+		await changeSupportInboxTopic(selectedId, topic);
+		// The grey line is a new message, and the list shows and filters by the topic.
+		await queryClient.invalidateQueries({ queryKey: jafarSupportKey });
+	}
+
 	// New messages arrive live: the /jafar layout listens for them and refreshes these queries (D2).
 	const inbox = createQuery(() => ({
-		queryKey: jafarSupportInboxPageKey(inboxLimit),
-		queryFn: () => fetchSupportInbox(inboxLimit),
+		queryKey: jafarSupportInboxPageKey(inboxLimit, topicFilter),
+		queryFn: () => fetchSupportInbox(inboxLimit, topicFilter),
 		placeholderData: keepPreviousData
 	}));
 
@@ -193,6 +217,17 @@
 				{#if waitingCount > 0}
 					<Badge status="warning" size="small">{waitingCount} waiting for you</Badge>
 				{/if}
+				<Select
+					id="support-inbox-topic"
+					ariaLabel="Filter by topic"
+					class="support-inbox__topic-filter"
+					value={topicFilter ?? ''}
+					options={topicOptions}
+					onchange={(value) => {
+						inboxLimit = SUPPORT_PAGE_SIZE;
+						topicParam.set(value);
+					}}
+				/>
 			</header>
 
 			{#if inbox.isPending}
@@ -201,6 +236,12 @@
 				<ErrorState
 					description="The Support Inbox could not be loaded."
 					retry={() => void inbox.refetch()}
+				/>
+			{:else if threads.length === 0 && topicFilter}
+				<EmptyState
+					icon={messagesIcon}
+					title={`No ${supportTopicLabel(topicFilter)} chats`}
+					description="Choose All topics to see every conversation."
 				/>
 			{:else if threads.length === 0}
 				<EmptyState
@@ -230,7 +271,10 @@
 									>
 									<time datetime={item.last_message_at}>{relativeTime(item.last_message_at)}</time>
 								</span>
-								<span class="support-inbox__thread-member">{item.member_name}</span>
+								<span class="support-inbox__thread-member">
+									<span>{item.member_name}</span>
+									<span class="support-inbox__thread-topic">{supportTopicLabel(item.topic)}</span>
+								</span>
 								<span class="support-inbox__thread-bottom">
 									<span class="support-inbox__thread-preview"
 										>{waiting ? '' : 'You: '}{item.last_message_preview}</span
@@ -294,7 +338,10 @@
 					<div class="support-inbox__conversation-title">
 						{#if current}
 							<h2>{current.organization.name}</h2>
-							<p>{current.member_name}</p>
+							<p>
+								<span>{current.member_name}</span>
+								<SupportTopicMenu topic={current.topic} canChange onChange={changeTopic} />
+							</p>
 						{:else}
 							<LoadingSkeleton variant="heading" label="Loading conversation" />
 						{/if}
@@ -417,6 +464,12 @@
 				color: var(--color-heading);
 				font-size: var(--typography--fontSize-large);
 			}
+
+			// The topic filter sits at the end of the row, after the "waiting" badge.
+			:global(.support-inbox__topic-filter) {
+				width: 148px;
+				margin-left: auto;
+			}
 		}
 
 		&__pad {
@@ -486,6 +539,29 @@
 				color: var(--color-text--secondary);
 				font-size: var(--typography--fontSize-small);
 			}
+		}
+
+		&__thread-member {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+
+			> span:first-child {
+				min-width: 0;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+		}
+
+		&__thread-topic {
+			flex: none;
+			padding: 3px var(--space-small);
+			border-radius: var(--radius-circle);
+			color: var(--color-heading);
+			background: var(--color-inactive--surface);
+			font-size: var(--typography--fontSize-smaller);
+			font-weight: 600;
+			line-height: 1;
 		}
 
 		&__thread-member,
@@ -576,6 +652,9 @@
 			}
 
 			p {
+				display: flex;
+				align-items: center;
+				gap: var(--space-small);
 				margin: 0;
 				color: var(--color-text--secondary);
 				font-size: var(--typography--fontSize-small);

@@ -5,8 +5,7 @@ import { requireSupportMember, supportSendLimited } from '$lib/server/support/ac
 import { supportMemberMessageSchema } from '$lib/server/validation/support.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 
-// A team member writes to Uplift: in their own conversation (the first message creates it), or with
-// `thread_id` in another one they can see (D3).
+// A team member writes in a chat they can see. A new chat starts at POST /api/support/threads.
 export const POST: RequestHandler = async (event) => {
 	const check = await requireSupportMember(event);
 	if ('response' in check) return check.response;
@@ -26,17 +25,15 @@ export const POST: RequestHandler = async (event) => {
 
 	const { data, error } = await event.locals.supabase.rpc('send_support_message', {
 		target_organization_id: check.auth.organization.id,
+		target_thread_id: parsed.data.thread_id,
 		message_body: parsed.data.body,
-		message_client_id: parsed.data.client_message_id,
-		target_thread_id: parsed.data.thread_id
+		message_client_id: parsed.data.client_message_id
 	});
 	if (error) {
 		if (error.code === '42501')
 			return json(
 				{
-					error: parsed.data.thread_id
-						? 'That conversation is not one you can write in.'
-						: 'Only an active team member can message Uplift.',
+					error: 'That conversation is not one you can write in.',
 					reason: 'permission_denied'
 				},
 				{ status: 403 }
