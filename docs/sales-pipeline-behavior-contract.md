@@ -1,6 +1,8 @@
 # Sales Pipeline behavior contract
 
-Status: Approved 2026-08-18. Revised 2026-08-24 for the unified board and stage customization model.
+Status: Approved 2026-08-18. Revised 2026-08-24 for the unified board and stage customization model. Revision 3
+in planning since 2026-10-01 (`pipeline-upgrade` campaign); the body below stays the approved behavior until
+Jafar approves that revision.
 Owner: Sales Pipeline campaign
 
 ## Purpose
@@ -179,3 +181,24 @@ column offers an accessible `Load more` control for its next page; automatic loa
   first release.
 - The board never creates work. Any global create control on the page belongs to Requests or Quotes, not to
   the Pipeline.
+
+## Still unclear
+
+Revision 3 (`pipeline-upgrade`). Evidence for every item: `docs/research/pipeline-gap-audit-2026-10-01.md`.
+Round 1, asked 2026-10-01:
+
+- Q1 Campaign goal: Jobber parity, the problems fixed, and proven extras, all before the first paying client?
+- Q2 The Jobber-parity list (audit A1, A2, A4, A5, B1–B8) adopted under Jafar's "match the leaders" rule?
+- Q3 Small extras: Text and Call beside Email; a notification when given a task; an optional reason when a
+  quote is declined?
+- Q4 Stale cards: Jobber's fixed 24 hours, or Pipedrive's per-column days counted from the last activity?
+- Q5 Assessment: keep the folded column and its switch, or always show Jobber's seven columns?
+- Q6 Lost reasons: fixed list, or an owner-editable list starting from today's seven?
+- Q7 "Next follow-up" and "Expected close date": which stay, and does the board sort by close date?
+- Q8 Long columns: page scroll with Load more, or each column scrolls and loads more by itself?
+- Q9 Phone: add a phone layout to the web app (reverses "desktop only")?
+- Q10 Reports: add lost-reason breakdown, conversion rates, and days to win?
+- Q11 AI card summary: now or after launch?
+
+Later rounds hold the details these answers unlock: custom-column rules, the request-to-job flow, stale-card
+alerts, lead-source choice, and the build split.
