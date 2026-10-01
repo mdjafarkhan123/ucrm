@@ -526,20 +526,7 @@ export function saveTaxDefault(body: {
 	return saveSection('/api/settings/taxes/default', body);
 }
 
-// A short, curated list — the currencies a small field-service business is actually likely to invoice in.
-// Not a claim to cover every ISO 4217 code.
-export const COMMON_CURRENCIES = [
-	{ code: 'USD', label: 'US Dollar' },
-	{ code: 'CAD', label: 'Canadian Dollar' },
-	{ code: 'GBP', label: 'British Pound' },
-	{ code: 'EUR', label: 'Euro' },
-	{ code: 'AUD', label: 'Australian Dollar' },
-	{ code: 'NZD', label: 'New Zealand Dollar' },
-	{ code: 'PKR', label: 'Pakistani Rupee' },
-	{ code: 'INR', label: 'Indian Rupee' },
-	{ code: 'AED', label: 'UAE Dirham' },
-	{ code: 'SAR', label: 'Saudi Riyal' }
-];
+export { COMMON_CURRENCIES } from '$lib/settings/currencies';
 
 // Settings → Price Book. Owner/administrator only, like Taxes. Reads the same `catalog_items` table and
 // `/api/catalog-items` list the Quote/Request picker already uses — see `$lib/quotes/api.ts` for the

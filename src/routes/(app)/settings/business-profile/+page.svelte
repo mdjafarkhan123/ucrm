@@ -3,7 +3,6 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { Country } from 'country-state-city';
 	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -27,6 +26,7 @@
 		type SettingsBusiness
 	} from '$lib/settings/api';
 	import { TRADES } from '$lib/settings/trades';
+	import { COUNTRIES } from '$lib/settings/countries';
 	import buildingIcon from '@tabler/icons/outline/building-store.svg?raw';
 
 	const queryClient = useQueryClient();
@@ -35,10 +35,6 @@
 		queryKey: settingsBusinessKey,
 		queryFn: fetchSettingsBusiness
 	}));
-
-	const COUNTRIES = Country.getAllCountries()
-		.map((country) => ({ value: country.isoCode, label: country.name }))
-		.sort((a, b) => a.label.localeCompare(b.label));
 
 	type FormState = {
 		name: string;

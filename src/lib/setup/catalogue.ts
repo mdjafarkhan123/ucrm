@@ -3,11 +3,27 @@
 // validation and the task list's progress all read this same list and can never disagree about what a
 // section contains. Adding a question is a new entry here, not a database change.
 
+import { COMMON_CURRENCIES } from '$lib/settings/currencies';
 import { TRADES } from '$lib/settings/trades';
+import { parseSetupHours, parseSetupHoursExceptions } from '$lib/setup/hours';
 
 export type SetupAvailability = 'have' | 'not_yet' | 'need_help';
 
-export type SetupFactKind = 'text' | 'email' | 'phone' | 'choice' | 'trade';
+export type SetupFactKind =
+	| 'text'
+	| 'longtext'
+	| 'email'
+	| 'phone'
+	| 'choice'
+	/** A list plus "Other", saved as the words themselves. */
+	| 'choice_other'
+	/** Saved as the ISO country code. */
+	| 'country'
+	| 'timezone'
+	/** The normal week. Saved as JSON — see `$lib/setup/hours`. */
+	| 'hours'
+	/** Dated days that differ from the normal week. Saved as JSON. */
+	| 'hours_exceptions';
 
 export type SetupFact = {
 	key: string;
@@ -17,11 +33,36 @@ export type SetupFact = {
 	required: boolean;
 	maxLength?: number;
 	options?: { value: string; label: string }[];
+	/** Shows a short list of choices as radio buttons instead of a dropdown. */
+	layout?: 'radio';
+	/** `choice_other`: the label of the box that appears when "Other" is picked. */
+	otherLabel?: string;
 	/** Offers "I don't have this yet" and "I need Uplift's help" beside the answer. */
 	canDefer?: boolean;
 };
 
 export type SetupGroup = { title: string; hint: string; facts: SetupFact[] };
+
+const LANGUAGES = [
+	'English',
+	'French',
+	'German',
+	'Spanish',
+	'Italian',
+	'Dutch',
+	'Portuguese',
+	'Polish',
+	'Swedish',
+	'Danish',
+	'Norwegian',
+	'Finnish',
+	'Other'
+];
+
+const YES_NO = (yes: string, no: string) => [
+	{ value: 'yes', label: yes },
+	{ value: 'no', label: no }
+];
 
 export type SetupSection = {
 	key: string;
@@ -59,10 +100,11 @@ export const SETUP_SECTIONS: SetupSection[] = [
 					{
 						key: 'business.trade',
 						label: 'Trade',
-						kind: 'trade',
+						kind: 'choice_other',
 						required: true,
 						maxLength: 120,
-						options: TRADES.map((trade) => ({ value: trade, label: trade }))
+						options: TRADES.map((trade) => ({ value: trade, label: trade })),
+						otherLabel: 'Your trade'
 					},
 					{
 						key: 'business.type',
@@ -137,6 +179,133 @@ export const SETUP_SECTIONS: SetupSection[] = [
 						canDefer: true
 					}
 				]
+			},
+			{
+				title: 'Where you’re based',
+				hint: 'Where you run the business from — your home is fine. It stays private unless you say otherwise.',
+				facts: [
+					{
+						key: 'business.country',
+						label: 'Country',
+						kind: 'country',
+						required: true
+					},
+					{
+						key: 'business.address_line1',
+						label: 'Street address',
+						kind: 'text',
+						required: true,
+						maxLength: 160,
+						canDefer: true
+					},
+					{
+						key: 'business.address_line2',
+						label: 'Flat, unit or suite, if any',
+						kind: 'text',
+						required: false,
+						maxLength: 160
+					},
+					{
+						key: 'business.address_city',
+						label: 'Town or city',
+						kind: 'text',
+						required: true,
+						maxLength: 120
+					},
+					{
+						key: 'business.address_region',
+						label: 'State, province or county',
+						kind: 'text',
+						required: false,
+						maxLength: 120
+					},
+					{
+						key: 'business.address_postal_code',
+						label: 'Postcode or ZIP code',
+						kind: 'text',
+						required: true,
+						maxLength: 20
+					},
+					{
+						key: 'business.address_customers_visit',
+						label: 'Do customers come to this address?',
+						hint: 'A shop, showroom or office counts. A home you only work out from does not.',
+						kind: 'choice',
+						layout: 'radio',
+						required: true,
+						options: YES_NO('Yes, customers visit', 'No, I go to them')
+					},
+					{
+						key: 'business.address_public',
+						label: 'Can this address be shown publicly?',
+						hint: 'If you keep it private, customers only see your town and the areas you cover.',
+						kind: 'choice',
+						layout: 'radio',
+						required: true,
+						options: YES_NO('Yes, show the full address', 'No, keep it private')
+					}
+				]
+			},
+			{
+				title: 'Language, time and money',
+				hint: 'How words, times and prices appear across your system. Check each one — none of them becomes your default until you have confirmed it here.',
+				facts: [
+					{
+						key: 'business.language',
+						label: 'Language your customers read',
+						hint: 'Uplift writes your website and customer messages in this language.',
+						kind: 'choice_other',
+						required: true,
+						maxLength: 60,
+						options: LANGUAGES.map((language) => ({ value: language, label: language })),
+						otherLabel: 'Your language'
+					},
+					{
+						key: 'business.timezone',
+						label: 'Time zone',
+						hint: 'Sets the times on your schedule, bookings and reminders.',
+						kind: 'timezone',
+						required: true
+					},
+					{
+						key: 'business.currency',
+						label: 'Currency you charge in',
+						hint: 'Used on every quote, invoice and payment.',
+						kind: 'choice',
+						required: true,
+						options: COMMON_CURRENCIES.map((currency) => ({
+							value: currency.code,
+							label: `${currency.code} — ${currency.label}`
+						}))
+					}
+				]
+			},
+			{
+				title: 'Opening hours',
+				hint: 'When customers can reach you. Uplift uses these on your website, your Google profile and your reminders.',
+				facts: [
+					{
+						key: 'business.hours',
+						label: 'Normal weekly hours',
+						kind: 'hours',
+						required: true
+					},
+					{
+						key: 'business.hours_exceptions',
+						label: 'Holidays and one-off days',
+						hint: 'Days in the next year when you are closed or keep different hours — public holidays, Christmas week, a planned break.',
+						kind: 'hours_exceptions',
+						required: false
+					},
+					{
+						key: 'business.hours_seasonal',
+						label: 'Seasonal changes, if any',
+						hint: 'For example: closed in January, or longer hours from June to August.',
+						kind: 'longtext',
+						required: false,
+						maxLength: 500
+					}
+				]
 			}
 		]
 	}
@@ -169,6 +338,26 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 // cannot be a phone number at all. Seven digits is the shortest real subscriber number.
 const PHONE_PATTERN = /^\+?[0-9 ().-]{7,24}$/;
 
+function isTimeZone(value: string): boolean {
+	if (value.length > 80) return false;
+	try {
+		new Intl.DateTimeFormat('en-US', { timeZone: value });
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * What the database keeps for an answer that has already passed `setupValueError`. Most answers are the
+ * text itself; hours and dated exceptions are kept as real JSON so nothing downstream has to parse text.
+ */
+export function storedSetupValue(fact: SetupFact, value: string): unknown {
+	if (fact.kind === 'hours') return parseSetupHours(value).value;
+	if (fact.kind === 'hours_exceptions') return parseSetupHoursExceptions(value).value;
+	return value;
+}
+
 /** Why a typed value cannot be saved, in words for the person typing it — or null when it can. */
 export function setupValueError(fact: SetupFact, raw: string): string | null {
 	const value = raw.trim();
@@ -184,6 +373,14 @@ export function setupValueError(fact: SetupFact, raw: string): string | null {
 			return null;
 		case 'choice':
 			return fact.options?.some((option) => option.value === value) ? null : 'Choose an option.';
+		case 'country':
+			return /^[A-Z]{2}$/.test(value) ? null : 'Choose a country from the list.';
+		case 'timezone':
+			return isTimeZone(value) ? null : 'Choose a time zone from the list.';
+		case 'hours':
+			return parseSetupHours(value).error;
+		case 'hours_exceptions':
+			return parseSetupHoursExceptions(value).error;
 		default:
 			if (fact.maxLength && value.length > fact.maxLength)
 				return `Keep this under ${fact.maxLength} characters.`;

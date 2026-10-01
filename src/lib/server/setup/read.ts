@@ -44,7 +44,13 @@ export async function readSetupState(
 		if (!SETUP_FACTS.has(row.fact_key)) continue;
 		answers[row.fact_key] = {
 			availability: row.availability as SetupAvailability,
-			value: typeof row.value === 'string' ? row.value : null,
+			// Hours and dated exceptions are stored as JSON; the page works with every answer as text.
+			value:
+				typeof row.value === 'string'
+					? row.value
+					: row.value === null
+						? null
+						: JSON.stringify(row.value),
 			note: row.note
 		};
 	}

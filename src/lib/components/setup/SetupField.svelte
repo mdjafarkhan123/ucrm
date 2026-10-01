@@ -2,6 +2,11 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import RadioGroup from '$lib/components/ui/RadioGroup.svelte';
+	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import TimezonePicker from '$lib/components/ui/TimezonePicker.svelte';
+	import SetupHoursField from '$lib/components/setup/SetupHoursField.svelte';
+	import SetupHoursExceptions from '$lib/components/setup/SetupHoursExceptions.svelte';
+	import { COUNTRIES } from '$lib/settings/countries';
 	import type { SetupAvailability, SetupFact } from '$lib/setup/catalogue';
 
 	// One setup question. It only shows and collects: the page owns saving, so every question on a section
@@ -22,7 +27,7 @@
 		availability?: SetupAvailability;
 		note?: string;
 		error?: string;
-		/** The value came from what the CRM already knows and nobody has confirmed it yet. */
+		/** The value was filled in from what is already known and nobody has confirmed it yet. */
 		suggested?: boolean;
 		onedit: () => void;
 		oncommit: () => void;
@@ -42,23 +47,27 @@
 		{ value: 'need_help', label: "I need Uplift's help" }
 	];
 
-	// A trade is saved as the words themselves. Anything off the list is "Other" plus what was typed.
+	// A list-or-other answer is saved as the words themselves. Anything off the list is "Other" plus what
+	// was typed.
 	const OTHER = 'Other';
-	const listedTrade = $derived(
-		fact.kind === 'trade' && fact.options?.some((option) => option.value === value)
+	const listed = $derived(
+		fact.kind === 'choice_other' && fact.options?.some((option) => option.value === value)
 	);
-	const tradeChoice = $derived(value ? (listedTrade ? value : OTHER) : '');
-	const tradeOther = $derived(value && !listedTrade ? value : '');
+	const listChoice = $derived(value ? (listed ? value : OTHER) : '');
+	const otherText = $derived(value && !listed ? value : '');
 
-	function chooseTrade(next: string) {
+	function choose(next: string) {
 		value = next;
 		oncommit();
 	}
 
-	function typeOtherTrade(event: Event) {
+	function typeOther(event: Event) {
 		value = (event.currentTarget as HTMLInputElement).value || OTHER;
 		onedit();
 	}
+
+	// Hours and dated exceptions are editors with a heading of their own rather than one labelled box.
+	const isEditor = $derived(fact.kind === 'hours' || fact.kind === 'hours_exceptions');
 
 	function chooseAvailability(next: string) {
 		availability = next as SetupAvailability;
@@ -90,6 +99,39 @@
 				? 'Uplift will pick this up and get in touch — you can carry on with the rest.'
 				: 'No problem. You can come back and add it whenever you have it.'}
 		</p>
+	{:else if isEditor}
+		<div class="setup-field__heading">
+			<span class="setup-field__label">{fact.label}</span>
+			{#if fact.hint}<p class="setup-field__hint">{fact.hint}</p>{/if}
+		</div>
+		{#if fact.kind === 'hours'}
+			<SetupHoursField {id} bind:value onchange={onedit} />
+		{:else}
+			<SetupHoursExceptions {id} bind:value onchange={onedit} />
+		{/if}
+	{:else if fact.kind === 'choice' && fact.layout === 'radio'}
+		<RadioGroup label={fact.label} options={fact.options ?? []} {value} onchange={choose} />
+	{:else if fact.kind === 'country'}
+		<Select
+			{id}
+			label={fact.label}
+			placeholder="Choose your country"
+			options={COUNTRIES}
+			bind:value
+			required={fact.required}
+			onchange={oncommit}
+		/>
+	{:else if fact.kind === 'timezone'}
+		<TimezonePicker {id} bind:value required={fact.required} onchange={oncommit} />
+	{:else if fact.kind === 'longtext'}
+		<Textarea
+			{id}
+			label={fact.label}
+			bind:value
+			maxlength={fact.maxLength}
+			oninput={onedit}
+			onblur={oncommit}
+		/>
 	{:else if fact.kind === 'choice'}
 		<Select
 			{id}
@@ -100,23 +142,23 @@
 			required={fact.required}
 			onchange={oncommit}
 		/>
-	{:else if fact.kind === 'trade'}
+	{:else if fact.kind === 'choice_other'}
 		<Select
 			{id}
 			label={fact.label}
-			placeholder="Choose your trade"
+			placeholder="Choose one"
 			options={fact.options ?? []}
-			value={tradeChoice}
+			value={listChoice}
 			required={fact.required}
-			onchange={chooseTrade}
+			onchange={choose}
 		/>
-		{#if tradeChoice === OTHER}
+		{#if listChoice === OTHER}
 			<Input
 				id={`${id}-other`}
-				label="Your trade"
-				value={tradeOther}
+				label={fact.otherLabel ?? 'Tell us which'}
+				value={otherText}
 				maxlength={fact.maxLength}
-				oninput={typeOtherTrade}
+				oninput={typeOther}
 				onblur={oncommit}
 			/>
 		{/if}
@@ -140,8 +182,8 @@
 	{#if error}
 		<p class="setup-field__error" role="alert">{error}</p>
 	{:else if suggested && availability === 'have'}
-		<p class="setup-field__hint">From your account — change it if it isn't right.</p>
-	{:else if fact.hint && availability === 'have'}
+		<p class="setup-field__hint">Filled in for you — change it if it isn’t right.</p>
+	{:else if fact.hint && availability === 'have' && !isEditor}
 		<p class="setup-field__hint">{fact.hint}</p>
 	{/if}
 </div>
@@ -154,6 +196,18 @@
 		min-width: 0;
 		// Room above the field when "Mark as done" scrolls an unanswered question into view.
 		scroll-margin-top: var(--space-largest);
+
+		&__heading {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smaller);
+		}
+
+		&__label {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+		}
 
 		&__hint,
 		&__error {
