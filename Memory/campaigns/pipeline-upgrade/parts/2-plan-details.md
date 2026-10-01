@@ -17,25 +17,37 @@ Wait for Jafar's answers to Q7–Q12 below, then update the plan and recompute t
 
 ## Notes
 
-Q7 — Stage administration: maximum 25 custom stages; unique names within Request/Quote; disable is normal;
-removal moves active cards within the same section and preserves immutable history; used stages are retired,
-not physically erased.
+❓ **Q7 — Stage administration:** Should we allow up to 25 custom stages, require unique names inside each
+Request/Quote section, use Disable as the normal removal action, relocate active cards safely, and retain every
+used stage in history instead of physically erasing it?
 
-Q8 — On hold: it remains Open in a custom follow-up stage, requires a future Task, and suppresses inactivity
-only until that Task is due; it is never counted as Lost.
+➡️ Yes.
 
-Q9 — Send truth: queue acceptance or deliberate external mark-sent moves to Awaiting response; immediate queue
-failure stays Draft; later delivery failure stays Awaiting response with a visible failure/alert; retries are
-idempotent; external mark records actor, time, channel, and optional note.
+❓ **Q8 — On hold:** When a customer says “call me next month,” should the card stay Open in an On hold custom
+stage, require a future Task, pause inactivity only until that Task is due, and never count as Lost?
 
-Q10 — Attention: defaults New 1 day, Assessment 2, Draft 2, Awaiting response 5, Changes requested 2. Only
-customer contact, completed follow-up, stage progress, assessment, or quote work resets inactivity; internal
-edits do not. Notify once when another teammate receives/re-receives a Task.
+➡️ Yes.
 
-Q11 — Reports: outcome lists use outcome date; funnels use created cohorts and show Open separately; report
-Request-to-any-Quote, Request-to-Won, and per-Quote win rates separately; Direct jobs remain separate; days to
-win show median and average; value comes from accepted Quote or initial Direct-job value, never fake zero.
+❓ **Q9 — Honest sending:** Should queue acceptance or a deliberate external mark-sent action move the Quote to
+Awaiting response; immediate failure keep it Draft; later delivery failure remain visible with an alert; and
+external mark-sent record actor, time, channel, and optional note?
 
-Q12 — Views and bulk work: personal saved filters plus admin-shared views; table and mobile compact-list views;
-bulk owner, Task, and custom-stage actions only; no bulk sending, conversion, protected-stage move, or Lost;
-keep accessible Load more until a prototype and load check prove a lane-loading replacement.
+➡️ Yes.
+
+❓ **Q10 — Attention rules:** Should defaults be New 1 day, Assessment 2, Draft 2, Awaiting response 5, and
+Changes requested 2; reset only for meaningful customer/work progress; and notify once when another teammate is
+assigned or reassigned a Task?
+
+➡️ Yes.
+
+❓ **Q11 — Honest reports:** Should outcome lists use outcome date; funnels use created cohorts and show Open
+separately; Request-to-Quote, Request-to-Won, and per-Quote win rates stay distinct; Direct jobs stay separate;
+and days to win show both median and average without fake zero values?
+
+➡️ Yes.
+
+❓ **Q12 — Views and bulk work:** Should saved filters be personal with admin-shared options; table and mobile
+compact-list views ship; bulk actions be limited to owner, Task, and custom-stage changes; and accessible Load
+more remain until a prototype and load check prove a better lane-loading model?
+
+➡️ Yes.
