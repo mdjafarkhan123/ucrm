@@ -34,6 +34,7 @@
 		type SetupAnswers,
 		type SetupAvailability
 	} from '$lib/setup/catalogue';
+	import { countryCurrency } from '$lib/settings/countries';
 	import type { HttpError } from '$lib/http-error';
 	import type { PageProps } from './$types';
 
@@ -76,7 +77,14 @@
 			const fromAccount: Record<string, boolean> = {};
 			for (const fact of sectionFacts(current)) {
 				const answer = loaded.answers[fact.key];
-				const suggestion = answer ? undefined : loaded.suggestions[fact.key];
+				// Nothing knows the time zone better than the device in the person's hand, so that is the
+				// starting suggestion when the account has no confirmed one.
+				const suggestion = answer
+					? undefined
+					: (loaded.suggestions[fact.key] ??
+						(fact.kind === 'timezone'
+							? Intl.DateTimeFormat().resolvedOptions().timeZone
+							: undefined));
 				next[fact.key] = {
 					value: answer?.value ?? suggestion ?? '',
 					availability: answer?.availability ?? 'have',
@@ -120,8 +128,23 @@
 	function committed(key: string) {
 		touched.add(key);
 		suggested[key] = false;
+		if (key === COUNTRY) suggestCurrency();
 		clearTimeout(timer);
 		void flush();
+	}
+
+	const COUNTRY = 'business.country';
+	const CURRENCY = 'business.currency';
+
+	// Picking a country offers that country's currency, as a suggestion like any other: it is shown, not
+	// saved, until the person keeps it. An answer they already gave or touched is left alone.
+	function suggestCurrency() {
+		const currency = fields?.[CURRENCY];
+		if (!fields || !currency || saved[CURRENCY] || touched.has(CURRENCY)) return;
+		const code = countryCurrency(fields[COUNTRY]?.value);
+		if (!code) return;
+		currency.value = code;
+		suggested[CURRENCY] = true;
 	}
 
 	// Saves every touched question whose answer differs from what the server has. An answer that would be

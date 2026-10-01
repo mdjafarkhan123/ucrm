@@ -16,6 +16,8 @@ import {
 import { readSetupState } from '$lib/server/setup/read';
 import { setupSectionDoneSchema } from '$lib/server/validation/setup.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
+import { countryCurrency } from '$lib/settings/countries';
+import { setupHoursFromBusinessHours } from '$lib/setup/hours';
 import {
 	missingRequiredFacts,
 	sectionFacts,
@@ -36,27 +38,50 @@ export const GET: RequestHandler = async (event) => {
 	if (!section) return notFound('That setup section could not be found.');
 
 	const organizationId = check.auth.organization.id;
-	const [state, settingsResult, profileResult] = await Promise.all([
+	const [state, settingsResult, hoursResult, profileResult] = await Promise.all([
 		readSetupState(event.locals.supabase, organizationId),
 		event.locals.supabase
 			.from('organization_settings')
-			.select('trade, phone')
+			.select(
+				'trade, phone, address_line1, address_line2, city, region, postal_code, country_code, timezone, timezone_confirmed_at, currency_code, currency_confirmed_at, hours_mode'
+			)
 			.eq('organization_id', organizationId)
 			.maybeSingle(),
+		event.locals.supabase
+			.from('organization_business_hours')
+			.select('weekday, period_index, is_open, is_open_24h, opens_at, closes_at')
+			.eq('organization_id', organizationId),
 		event.locals.supabase
 			.from('profiles')
 			.select('full_name')
 			.eq('id', check.auth.user.id)
 			.maybeSingle()
 	]);
-	if (!state || settingsResult.error) return databaseError();
+	if (!state || settingsResult.error || hoursResult.error) return databaseError();
 
+	const settings = settingsResult.data;
+	const country = state.answers['business.country']?.value ?? settings?.country_code;
+	const hours = setupHoursFromBusinessHours(settings?.hours_mode, hoursResult.data ?? []);
+
+	// A time zone or currency nobody confirmed in Settings is only the account's starting default, so it
+	// is not offered as something the business said. The currency then falls back to the country's.
 	const known: Record<string, string | null | undefined> = {
 		'business.public_name': check.auth.organization.name,
-		'business.trade': settingsResult.data?.trade,
-		'business.public_phone': settingsResult.data?.phone,
+		'business.trade': settings?.trade,
+		'business.public_phone': settings?.phone,
 		'business.contact_name': profileResult.data?.full_name,
-		'business.contact_email': check.auth.user.email
+		'business.contact_email': check.auth.user.email,
+		'business.country': settings?.country_code,
+		'business.address_line1': settings?.address_line1,
+		'business.address_line2': settings?.address_line2,
+		'business.address_city': settings?.city,
+		'business.address_region': settings?.region,
+		'business.address_postal_code': settings?.postal_code,
+		'business.timezone': settings?.timezone_confirmed_at ? settings.timezone : null,
+		'business.currency': settings?.currency_confirmed_at
+			? settings.currency_code
+			: countryCurrency(country),
+		'business.hours': hours ? JSON.stringify(hours) : null
 	};
 
 	const answers: SetupAnswers = {};

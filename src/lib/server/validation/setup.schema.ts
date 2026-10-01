@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SETUP_FACTS, setupValueError } from '$lib/setup/catalogue';
+import { SETUP_FACTS, setupValueError, storedSetupValue } from '$lib/setup/catalogue';
 
 // One autosave: one or more facts from the setup wizard. The catalogue decides what a fact may hold, so
 // the same rule that the page shows beside the field is the one that refuses the save here.
@@ -49,12 +49,18 @@ export const setupAnswersSchema = z
 		}
 	})
 	.transform((input) => ({
-		answers: input.answers.map((answer) => ({
-			fact_key: answer.fact_key,
-			availability: answer.availability,
-			value: answer.availability === 'have' ? answer.value : null,
-			note: answer.availability && answer.availability !== 'have' ? answer.note : null
-		}))
+		answers: input.answers.map((answer) => {
+			const fact = SETUP_FACTS.get(answer.fact_key);
+			return {
+				fact_key: answer.fact_key,
+				availability: answer.availability,
+				value:
+					fact && answer.availability === 'have' && answer.value
+						? storedSetupValue(fact, answer.value)
+						: null,
+				note: answer.availability && answer.availability !== 'have' ? answer.note : null
+			};
+		})
 	}));
 
 export type SetupAnswersInput = z.infer<typeof setupAnswersSchema>;

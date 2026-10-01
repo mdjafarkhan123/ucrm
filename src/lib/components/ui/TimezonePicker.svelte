@@ -10,13 +10,15 @@
 		id,
 		invalid = false,
 		errorMessage = '',
-		required = false
+		required = false,
+		onchange
 	}: {
 		value?: string;
 		id: string;
 		invalid?: boolean;
 		errorMessage?: string;
 		required?: boolean;
+		onchange?: (value: string) => void;
 	} = $props();
 	type IntlWithTimezones = typeof Intl & { supportedValuesOf?: (key: 'timeZone') => string[] };
 	type TimezoneOption = {
@@ -97,6 +99,7 @@
 			timezoneOptions.find((option) => option.value === timezone)?.label ??
 			friendlyTimezone(timezone);
 		open = false;
+		onchange?.(timezone);
 	}
 
 	// bits-ui's Combobox keeps its own internal copy of the displayed text once the user picks an

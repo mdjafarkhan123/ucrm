@@ -7,24 +7,21 @@
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Toggle from '$lib/components/ui/Toggle.svelte';
-	import TimePicker from '$lib/components/ui/TimePicker.svelte';
+	import WeeklyHoursEditor from '$lib/components/settings/WeeklyHoursEditor.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
-	import { timeFromString, timeToString, type TimeRangeValue } from '$lib/components/ui/date-time';
+	import { timeFromString, timeToString } from '$lib/components/ui/date-time';
 	import {
 		fetchSettingsBusiness,
 		settingsBusinessKey,
 		saveBusinessHours,
 		isSaveConflict,
-		WEEKDAY_LABELS,
 		type BusinessHourPeriod,
 		type SettingsBusiness
 	} from '$lib/settings/api';
+	import { blankDay, closedWeek, suggestedWeek, type DayState } from '$lib/settings/weekly-hours';
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
-	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
-	import xIcon from '@tabler/icons/outline/x.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -33,29 +30,7 @@
 		queryFn: fetchSettingsBusiness
 	}));
 
-	type DayState = { isOpen: boolean; is24h: boolean; periods: TimeRangeValue[] };
 	type Mode = 'weekly' | 'appointment_only';
-
-	function blankDay(isOpen: boolean): DayState {
-		return {
-			isOpen,
-			is24h: false,
-			periods: isOpen ? [{ start: timeFromString('09:00'), end: timeFromString('17:00') }] : []
-		};
-	}
-
-	function suggestedWeek(): DayState[] {
-		return [0, 1, 2, 3, 4, 5, 6].map((weekday) => {
-			const open = weekday >= 1 && weekday <= 5;
-			return open
-				? {
-						isOpen: true,
-						is24h: false,
-						periods: [{ start: timeFromString('08:00'), end: timeFromString('17:00') }]
-					}
-				: blankDay(false);
-		});
-	}
 
 	function daysFromPeriods(periods: BusinessHourPeriod[]): DayState[] {
 		return [0, 1, 2, 3, 4, 5, 6].map((weekday) => {
@@ -105,9 +80,7 @@
 			started = true;
 			mode = business.hours.mode;
 			days =
-				business.hours.mode === 'weekly'
-					? daysFromPeriods(business.hours.periods)
-					: [0, 1, 2, 3, 4, 5, 6].map(() => blankDay(false));
+				business.hours.mode === 'weekly' ? daysFromPeriods(business.hours.periods) : closedWeek();
 			savedSnapshot = snapshot();
 		});
 	});
@@ -145,33 +118,13 @@
 	}
 	function useBlankWeekly() {
 		mode = 'weekly';
-		days = [0, 1, 2, 3, 4, 5, 6].map(() => blankDay(false));
+		days = closedWeek();
 		started = true;
 	}
 	function useAppointmentOnly() {
 		mode = 'appointment_only';
-		days = [0, 1, 2, 3, 4, 5, 6].map(() => blankDay(false));
+		days = closedWeek();
 		started = true;
-	}
-
-	function toggleDayOpen(weekday: number, isOpen: boolean) {
-		if (!days) return;
-		days[weekday] = isOpen ? blankDay(true) : blankDay(false);
-	}
-	function toggleDay24h(weekday: number, is24h: boolean) {
-		if (!days) return;
-		days[weekday].is24h = is24h;
-		if (is24h) days[weekday].periods = [];
-		else if (days[weekday].periods.length === 0)
-			days[weekday].periods = [{ start: timeFromString('09:00'), end: timeFromString('17:00') }];
-	}
-	function addPeriod(weekday: number) {
-		if (!days || days[weekday].periods.length >= 3) return;
-		days[weekday].periods.push({ start: undefined, end: undefined });
-	}
-	function removePeriod(weekday: number, index: number) {
-		if (!days) return;
-		days[weekday].periods.splice(index, 1);
 	}
 
 	function cancel() {
@@ -183,9 +136,7 @@
 		}
 		mode = query.data.hours.mode as Mode;
 		days =
-			query.data.hours.mode === 'weekly'
-				? daysFromPeriods(query.data.hours.periods)
-				: [0, 1, 2, 3, 4, 5, 6].map(() => blankDay(false));
+			query.data.hours.mode === 'weekly' ? daysFromPeriods(query.data.hours.periods) : closedWeek();
 		conflict = null;
 		errorMessage = '';
 	}
@@ -318,64 +269,7 @@
 					hint="Up to three periods a day. Mark a day closed, open 24 hours, or by appointment separately for each day."
 					form
 				>
-					<div class="business-hours__week">
-						{#each days as day, weekday (weekday)}
-							<div class="business-hours__day">
-								<div class="business-hours__day-header">
-									<span class="business-hours__day-name">{WEEKDAY_LABELS[weekday]}</span>
-									<Toggle
-										id={`hours-open-${weekday}`}
-										label={day.isOpen ? 'Open' : 'Closed'}
-										checked={day.isOpen}
-										disabled={!canEdit}
-										onchange={(checked) => toggleDayOpen(weekday, checked)}
-									/>
-								</div>
-								{#if day.isOpen}
-									<div class="business-hours__day-body">
-										<Toggle
-											id={`hours-24h-${weekday}`}
-											label="Open 24 hours"
-											checked={day.is24h}
-											disabled={!canEdit}
-											onchange={(checked) => toggleDay24h(weekday, checked)}
-										/>
-										{#if !day.is24h}
-											{#each day.periods as period, index (index)}
-												<div class="business-hours__period">
-													<TimePicker
-														bind:value={days[weekday].periods[index]}
-														range
-														label={`${WEEKDAY_LABELS[weekday]} period ${index + 1}`}
-														disabled={!canEdit}
-													/>
-													{#if canEdit}
-														<button
-															type="button"
-															class="business-hours__remove-period"
-															aria-label="Remove this period"
-															onclick={() => removePeriod(weekday, index)}
-															><!-- eslint-disable-next-line svelte/no-at-html-tags -->
-															{@html xIcon}</button
-														>
-													{/if}
-												</div>
-											{/each}
-											{#if canEdit && day.periods.length < 3}
-												<button
-													type="button"
-													class="business-hours__add-period"
-													onclick={() => addPeriod(weekday)}
-													><!-- eslint-disable-next-line svelte/no-at-html-tags -->
-													{@html plusIcon} Add another period</button
-												>
-											{/if}
-										{/if}
-									</div>
-								{/if}
-							</div>
-						{/each}
-					</div>
+					<WeeklyHoursEditor bind:days disabled={!canEdit} />
 				</SectionBlock>
 			{/if}
 		{/snippet}
@@ -410,82 +304,6 @@
 			display: flex;
 			flex-wrap: wrap;
 			gap: var(--space-small);
-		}
-		&__week {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: var(--space-base);
-		}
-		&__day {
-			min-width: 0;
-			padding: var(--space-base);
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-base);
-		}
-		&__day-header {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: var(--space-base);
-		}
-		&__day-name {
-			color: var(--color-heading);
-			font-weight: 700;
-		}
-		&__day-body {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-small);
-			margin-top: var(--space-base);
-		}
-		&__period {
-			display: flex;
-			align-items: flex-end;
-			gap: var(--space-small);
-		}
-		&__remove-period {
-			display: grid;
-			width: 32px;
-			height: 32px;
-			flex: 0 0 auto;
-			place-items: center;
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: var(--color-surface);
-			margin-bottom: 2px;
-		}
-		&__remove-period:hover {
-			background: var(--color-surface--hover);
-		}
-		&__remove-period :global(svg) {
-			width: 16px;
-			height: 16px;
-		}
-		&__add-period {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-smaller);
-			width: fit-content;
-			padding: var(--space-smaller) var(--space-small);
-			border: var(--border-base) dashed var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-interactive);
-			background: transparent;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-		}
-		&__add-period:hover {
-			background: var(--color-surface--hover);
-		}
-		&__add-period :global(svg) {
-			width: 14px;
-			height: 14px;
-		}
-	}
-	@media (max-width: 900px) {
-		.business-hours__week {
-			grid-template-columns: 1fr;
 		}
 	}
 </style>

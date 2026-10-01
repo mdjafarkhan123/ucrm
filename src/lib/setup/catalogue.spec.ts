@@ -65,6 +65,15 @@ describe('setupValueError', () => {
 		expect(setupValueError(type, 'charity')).not.toBeNull();
 	});
 
+	it('accepts a real country code and time zone and refuses made-up ones', () => {
+		const country = SETUP_FACTS.get('business.country')!;
+		const timezone = SETUP_FACTS.get('business.timezone')!;
+		expect(setupValueError(country, 'GB')).toBeNull();
+		expect(setupValueError(country, 'United Kingdom')).not.toBeNull();
+		expect(setupValueError(timezone, 'Europe/London')).toBeNull();
+		expect(setupValueError(timezone, 'Mars/Olympus')).not.toBeNull();
+	});
+
 	it('holds text to its length', () => {
 		expect(setupValueError(name, 'a'.repeat(120))).toBeNull();
 		expect(setupValueError(name, 'a'.repeat(121))).not.toBeNull();
