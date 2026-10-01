@@ -152,6 +152,22 @@ export type CustomStage = {
 // that have no id yet, so the ordering below asks for nothing more than this.
 type PlacedStage = Pick<CustomStage, 'section' | 'after_stage'>;
 
+// A custom stage is asked for by its id wherever a protected column is asked for by its name: a column's
+// page of cards, and the cursor that pages it.
+const CUSTOM_STAGE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+export function isCustomStageId(value: string): boolean {
+	return CUSTOM_STAGE_ID.test(value);
+}
+
+// Which side of the Request/Quote line a card is on, read off its real stage. Null once it has left the
+// board. A card can only be placed in a custom stage of its own section.
+export function stageSection(stage: OpportunityStage): BoardSection | null {
+	if (isBoardStage(stage)) return 'request';
+	if (isQuoteBoardStage(stage)) return 'quote';
+	return null;
+}
+
 // One column on the board, or one row in the Settings list: a protected column, or a custom stage.
 export type SectionColumn<T extends PlacedStage = CustomStage> =
 	{ kind: 'protected'; key: BoardColumnKey } | { kind: 'custom'; stage: T };
@@ -159,6 +175,12 @@ export type BoardColumn = SectionColumn<CustomStage>;
 
 export function boardColumnId(column: BoardColumn): string {
 	return column.kind === 'protected' ? column.key : `custom-${column.stage.id}`;
+}
+
+// What the server is asked for to read a column's cards: the protected column's name, or the custom
+// stage's id.
+export function boardColumnRequestKey(column: BoardColumn): string {
+	return column.kind === 'protected' ? column.key : column.stage.id;
 }
 
 function protectedColumns(section: BoardSection, detailed: boolean): readonly BoardColumnKey[] {

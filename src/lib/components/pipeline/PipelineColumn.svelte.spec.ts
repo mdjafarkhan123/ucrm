@@ -4,10 +4,11 @@ import { render } from 'vitest-browser-svelte';
 import PipelineColumn from './PipelineColumn.svelte';
 import { DEFAULT_BOARD_FILTERS } from '$lib/pipeline/filters';
 import type { OpportunityCard } from '$lib/pipeline/api';
-import type { AnyBoardStage, BoardColumn } from '$lib/pipeline/stages';
+import type { AnyBoardStage, BoardColumn, CustomStage } from '$lib/pipeline/stages';
 
 const mocks = vi.hoisted(() => ({
 	dragOpportunity: vi.fn(),
+	placeOpportunity: vi.fn(),
 	invalidatePipeline: vi.fn(),
 	toast: {
 		loading: vi.fn(() => 41),
@@ -39,6 +40,7 @@ vi.mock('$lib/components/ui/ToastManager.svelte', async (importOriginal) => ({
 vi.mock('$lib/pipeline/api', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/pipeline/api')>()),
 	dragOpportunity: mocks.dragOpportunity,
+	placeOpportunity: mocks.placeOpportunity,
 	invalidatePipeline: mocks.invalidatePipeline
 }));
 
@@ -46,6 +48,7 @@ const card: OpportunityCard = {
 	id: 'opportunity-1',
 	title: 'Kitchen remodel',
 	stage: 'assessment_unscheduled',
+	custom_stage_id: null,
 	stage_entered_at: '2026-08-23T00:00:00.000Z',
 	outcome: 'open',
 	created_at: '2026-08-23T00:00:00.000Z',
@@ -60,6 +63,19 @@ const card: OpportunityCard = {
 	assessment: null
 };
 
+const waitingOnCustomer: CustomStage = {
+	id: '7b0c8f2e-0000-4000-8000-000000000001',
+	section: 'request',
+	name: 'Waiting on customer',
+	after_stage: 'new_request'
+};
+const quoteFollowUp: CustomStage = {
+	id: '7b0c8f2e-0000-4000-8000-000000000002',
+	section: 'quote',
+	name: 'Chasing a decision',
+	after_stage: 'quote_awaiting_response'
+};
+
 function renderColumn(stage: AnyBoardStage | BoardColumn) {
 	const onDragBusyChange = vi.fn();
 	const screen = render(PipelineColumn, {
@@ -71,8 +87,9 @@ function renderColumn(stage: AnyBoardStage | BoardColumn) {
 			formatting: null,
 			canEdit: true,
 			onOpen: vi.fn(),
-			draggingFromStage: card.stage,
-			onDragStageChange: vi.fn(),
+			customStages: [waitingOnCustomer, quoteFollowUp],
+			dragging: { stage: card.stage, customStageId: null },
+			onDraggingChange: vi.fn(),
 			dragBusy: false,
 			onDragBusyChange
 		}
@@ -82,11 +99,11 @@ function renderColumn(stage: AnyBoardStage | BoardColumn) {
 	return { screen, zone, onDragBusyChange };
 }
 
-function finalize(zone: Element) {
+function finalize(zone: Element, dropped: OpportunityCard = card) {
 	zone.dispatchEvent(
 		new CustomEvent('finalize', {
 			detail: {
-				items: [card],
+				items: [dropped],
 				info: { id: card.id, trigger: 'droppedIntoZone', source: 'pointer' }
 			}
 		})
@@ -104,22 +121,79 @@ describe('PipelineColumn drop confirmation', () => {
 		mocks.invalidatePipeline.mockResolvedValue(undefined);
 	});
 
-	it('draws a custom stage as an empty column that takes no drop', async () => {
-		const { zone } = renderColumn({
-			kind: 'custom',
-			stage: {
-				id: '7b0c8f2e-0000-4000-8000-000000000001',
-				section: 'request',
-				name: 'Waiting on customer',
-				after_stage: 'new_request'
-			}
-		});
+	it('places a card dropped on a custom stage of its own section, with no dialog', async () => {
+		mocks.placeOpportunity.mockResolvedValue({});
+		const { zone, onDragBusyChange } = renderColumn({ kind: 'custom', stage: waitingOnCustomer });
 
 		finalize(zone);
 
 		await expect.element(page.getByRole('heading', { name: 'Waiting on customer' })).toBeVisible();
-		await expect.element(page.getByText('Nothing here.')).toBeVisible();
+		await vi.waitFor(() =>
+			expect(mocks.toast.success).toHaveBeenCalledWith('Moved to Waiting on customer.')
+		);
+		expect(mocks.placeOpportunity).toHaveBeenCalledWith(card.id, waitingOnCustomer.id);
 		expect(mocks.dragOpportunity).not.toHaveBeenCalled();
+		expect(mocks.invalidatePipeline).toHaveBeenCalledOnce();
+		expect(onDragBusyChange).toHaveBeenLastCalledWith(false);
+	});
+
+	it('refuses a request card dropped on a Quotes stage, and says why, without asking the server', async () => {
+		const { zone } = renderColumn({ kind: 'custom', stage: quoteFollowUp });
+
+		finalize(zone);
+
+		await vi.waitFor(() =>
+			expect(mocks.toast.error).toHaveBeenCalledWith(
+				'That card cannot go into Chasing a decision.',
+				'This is a request, so it can only go into a Requests stage. Convert it to a quote first.'
+			)
+		);
+		expect(mocks.placeOpportunity).not.toHaveBeenCalled();
+		expect(mocks.toast.loading).not.toHaveBeenCalled();
+	});
+
+	it('puts a placed card back when it is dropped on its own real stage, with no domain action', async () => {
+		mocks.placeOpportunity.mockResolvedValue({});
+		const { zone } = renderColumn('assessment_unscheduled');
+
+		finalize(zone, { ...card, custom_stage_id: waitingOnCustomer.id });
+
+		await vi.waitFor(() =>
+			expect(mocks.toast.success).toHaveBeenCalledWith('Moved to Assessment unscheduled.')
+		);
+		expect(mocks.placeOpportunity).toHaveBeenCalledWith(card.id, null);
+		expect(mocks.dragOpportunity).not.toHaveBeenCalled();
+	});
+
+	it('runs the real action when a placed card is dropped on a later protected stage', async () => {
+		const { zone } = renderColumn('assessment_completed');
+
+		finalize(zone, { ...card, custom_stage_id: waitingOnCustomer.id });
+
+		await vi.waitFor(() => expect(mocks.toast.success).toHaveBeenCalledWith('Change saved.'));
+		expect(mocks.dragOpportunity).toHaveBeenCalledWith(card.id, {
+			toStage: 'assessment_completed',
+			startsAt: undefined,
+			endsAt: undefined
+		});
+		expect(mocks.placeOpportunity).not.toHaveBeenCalled();
+	});
+
+	it("reports the server's own reason when a placement is refused", async () => {
+		mocks.placeOpportunity.mockRejectedValue(
+			new Error('That stage is no longer on the board. Refresh the page and try again.')
+		);
+		const { zone } = renderColumn({ kind: 'custom', stage: waitingOnCustomer });
+
+		finalize(zone);
+
+		await vi.waitFor(() =>
+			expect(mocks.toast.error).toHaveBeenCalledWith(
+				'That card could not be moved.',
+				'That stage is no longer on the board. Refresh the page and try again.'
+			)
+		);
+		expect(mocks.invalidatePipeline).toHaveBeenCalledOnce();
 	});
 
 	it('restores a refused backward drop without calling the server or showing a toast', async () => {

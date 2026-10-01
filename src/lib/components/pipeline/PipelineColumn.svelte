@@ -21,16 +21,22 @@
 		dragOpportunity,
 		invalidatePipeline,
 		fetchBoardColumn,
+		placeOpportunity,
 		type BoardColumnPage,
 		type OpportunityCard as Card
 	} from '$lib/pipeline/api';
 	import {
+		ALL_STAGE_LABELS,
 		ASSESSMENT_GROUP,
 		BOARD_COLUMN_LABELS,
 		boardColumnId,
+		boardColumnRequestKey,
+		isAnyBoardStage,
+		stageSection,
 		stagesInColumn,
 		type AnyBoardStage,
 		type BoardColumn,
+		type CustomStage,
 		type OpportunityStage
 	} from '$lib/pipeline/stages';
 	import {
@@ -52,10 +58,11 @@
 		filters,
 		formatting,
 		canEdit,
+		customStages = [],
 		onOpen,
 		onLost,
-		draggingFromStage,
-		onDragStageChange,
+		dragging,
+		onDraggingChange,
 		dragBusy,
 		onDragBusyChange
 	}: {
@@ -68,13 +75,18 @@
 		filters: BoardFilters;
 		formatting: BoardFormatting | null;
 		canEdit: boolean;
+		// Every custom follow-up stage on the board, so a card's menu can offer the ones in its section.
+		customStages?: readonly CustomStage[];
 		onOpen: (card: Card) => void;
 		onLost?: (opportunityId: string) => void;
-		// The stage a card is currently being dragged out of, board-wide, or null between gestures. Every
-		// column reads this to decide whether it may accept a drop from somewhere else -- there is no other
-		// way for a sibling column to know a drag is even happening.
-		draggingFromStage: OpportunityStage | null;
-		onDragStageChange: (stage: OpportunityStage | null) => void;
+		// The card currently being dragged, board-wide, or null between gestures: its real stage, and the
+		// custom stage it was sitting in if any. Every column reads this to decide whether it may accept a
+		// drop from somewhere else -- there is no other way for a sibling column to know a drag is even
+		// happening.
+		dragging: { stage: OpportunityStage; customStageId: string | null } | null;
+		onDraggingChange: (
+			dragging: { stage: OpportunityStage; customStageId: string | null } | null
+		) => void;
 		// A protected move is confirmed one at a time. While its dialog is open or its server action is
 		// saving, every zone stays still so the same source-of-truth card cannot start a second gesture.
 		dragBusy: boolean;
@@ -84,10 +96,10 @@
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 
-	// The protected column this is, or null for a custom stage. Nothing can put a card in a custom stage
-	// yet -- moving cards in and out is the next part of this work -- so a custom column is drawn empty
-	// without asking the server for cards, takes no drops, and starts no drags.
+	// The protected column this is, or null for a custom follow-up stage. A custom stage holds the cards
+	// somebody placed in it; each one keeps its real stage underneath, which is what a real action moves.
 	const stage = $derived(column.kind === 'protected' ? column.key : null);
+	const customStage = $derived(column.kind === 'custom' ? column.stage : null);
 	const columnId = $derived(boardColumnId(column));
 	const label = $derived(
 		column.kind === 'protected' ? BOARD_COLUMN_LABELS[column.key] : column.stage.name
@@ -97,11 +109,8 @@
 		// The filters are in the key, so changing a control asks a new question rather than reusing the
 		// answer to the old one, and paging restarts from the top of the new order on its own.
 		queryKey: boardColumnKey(columnId, filters),
-		queryFn: ({ pageParam }: { pageParam: string | undefined }) => {
-			if (stage === null) throw new Error('A custom stage has no cards to load.');
-			return fetchBoardColumn(stage, filters, pageParam);
-		},
-		enabled: stage !== null,
+		queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
+			fetchBoardColumn(boardColumnRequestKey(column), filters, pageParam),
 		initialPageParam: undefined as string | undefined,
 		getNextPageParam: (page: BoardColumnPage) => page.next_cursor ?? undefined,
 		// Cards only move when a Request or Assessment moves, and both of those invalidate this key
@@ -143,32 +152,46 @@
 	// A card dropped on Draft, naming the client and the request before the irreversible conversion runs.
 	let pendingConvert = $state<Card | null>(null);
 
-	// Whether a card currently being dragged out of a different column may land here at all. The first
-	// check recognises "this drag started in this very column" for both a real column (its own single
-	// stage) and the collapsed group (any of its three) -- always allowed, same as a plain reorder. The
-	// second checks whether the transition table reaches any stage this column actually represents.
-	// `true` -- refuse the drop -- for everything else, including any move the table simply never
-	// mentions (backward, cross-group, or otherwise not a real domain command).
+	// Whether a card is one of this column's own: placed in this custom stage, or sitting in one of this
+	// protected column's real stages with no custom placement.
+	function belongsHere(card: Card) {
+		if (customStage) return card.custom_stage_id === customStage.id;
+		// Widened from `AnyBoardStage[]` to `OpportunityStage[]` -- a superset, so the comparison still only
+		// ever matches a genuine board stage.
+		const realStages: readonly OpportunityStage[] = stage ? stagesInColumn(stage) : [];
+		return card.custom_stage_id === null && realStages.includes(card.stage);
+	}
+
+	// Whether a card currently being dragged out of a different column may land here at all.
+	//
+	// A custom stage takes every drop and answers in `handleFinalize`: a card from the wrong side of the
+	// Request/Quote line is handed straight back with the reason, which a zone that silently refused the
+	// drop could never say.
+	//
+	// A protected column allows two things. A card whose real stage is already here -- the drag started
+	// in this very column, or the card is coming home from a custom stage. And a card whose real stage the
+	// transition table can advance to a stage this column represents. `true` -- refuse the drop -- for
+	// everything else, including any move the table simply never mentions (backward, cross-group, or
+	// otherwise not a real domain command).
 	const dropRefused = $derived.by(() => {
-		if (draggingFromStage === null) return false;
-		if (stage === null) return true;
-		// Widened from `AnyBoardStage[]` to `OpportunityStage[]` -- a superset, so every real comparison
-		// below still only ever matches a genuine board stage.
-		const inThisColumn: readonly OpportunityStage[] = stagesInColumn(stage);
-		if (inThisColumn.includes(draggingFromStage)) return false;
-		return !allowedDragTargets(draggingFromStage).some((target) => inThisColumn.includes(target));
+		if (dragging === null || stage === null) return false;
+		const realStages: readonly OpportunityStage[] = stagesInColumn(stage);
+		if (realStages.includes(dragging.stage)) return false;
+		return !allowedDragTargets(dragging.stage).some((target) => realStages.includes(target));
 	});
 
 	function handleConsider(event: CustomEvent<DndEvent<Card>>) {
 		items = event.detail.items;
 		if (event.detail.info.trigger === TRIGGERS.DRAG_STARTED) {
 			const dragged = event.detail.items.find((item) => item.id === event.detail.info.id);
-			if (dragged) onDragStageChange(dragged.stage);
+			if (dragged) {
+				onDraggingChange({ stage: dragged.stage, customStageId: dragged.custom_stage_id });
+			}
 		}
 	}
 
 	async function handleFinalize(event: CustomEvent<DndEvent<Card>>) {
-		onDragStageChange(null);
+		onDraggingChange(null);
 
 		// The gesture ended without landing in any zone that would accept it -- a refused column, or a
 		// release off any drop target. svelte-dnd-action is supposed to hand the card back to its origin
@@ -185,11 +208,40 @@
 		// returning to its own column) needs no action at all. Restore every involved zone from query truth
 		// first: the card does not really leave its source stage until the domain action succeeds.
 		const dropped = event.detail.items.find(
-			(item) => item.id === event.detail.info.id && item.stage !== stage
+			(item) => item.id === event.detail.info.id && !belongsHere(item)
 		);
 		items = cards;
-		if (!dropped || stage === null) return;
+		if (!dropped) return;
 
+		// A custom stage is follow-up organization only, so the drop is the whole move -- no dialog and no
+		// domain action. The one thing it refuses is a card from the other side of the Request/Quote line.
+		if (customStage) {
+			const cardSection = stageSection(dropped.stage);
+			if (cardSection !== customStage.section) {
+				toast.error(
+					`That card cannot go into ${customStage.name}.`,
+					cardSection === 'request'
+						? 'This is a request, so it can only go into a Requests stage. Convert it to a quote first.'
+						: 'This is a quote, so it can only go into a Quotes stage.'
+				);
+				return;
+			}
+			await performPlace(dropped, customStage.id);
+			return;
+		}
+		if (stage === null) return;
+
+		// Coming home: the card was in a custom stage and this column is the real stage it never left.
+		// Nothing about the Request or Quote changes, so there is no action to perform -- only the
+		// placement to clear.
+		if (dropped.custom_stage_id !== null && belongsHereOnceUnplaced(dropped)) {
+			await performPlace(dropped, null);
+			return;
+		}
+
+		// From here on the drop asks for a real action, measured from the card's real stage -- the same
+		// action whether the card was dragged out of that stage's own column or out of a custom stage. Once
+		// it succeeds the real stage changes, and the database lets go of the custom placement by itself.
 		const fromStage = dropped.stage;
 
 		// The collapsed Assessment column has no single real stage of its own -- only a New request drop
@@ -227,6 +279,42 @@
 		}
 
 		await performMove(dropped, stage);
+	}
+
+	function belongsHereOnceUnplaced(card: Card) {
+		const realStages: readonly OpportunityStage[] = stage ? stagesInColumn(stage) : [];
+		return realStages.includes(card.stage);
+	}
+
+	// Places a card in a custom stage, or back in its real stage with null. Shared by a drop and by the
+	// card's own menu, so both lock the board, save, and report in exactly the same way. The card stays
+	// where it is until the server has answered and the board has re-read.
+	async function performPlace(card: Card, customStageId: string | null) {
+		const destination = customStageId
+			? customStages.find((candidate) => candidate.id === customStageId)?.name
+			: isAnyBoardStage(card.stage)
+				? ALL_STAGE_LABELS[card.stage]
+				: undefined;
+		onDragBusyChange(true);
+		const loadingToastId = toast.loading('Saving change…');
+		try {
+			await placeOpportunity(card.id, customStageId);
+			await invalidatePipeline(queryClient);
+			toast.dismiss(loadingToastId);
+			toast.success(destination ? `Moved to ${destination}.` : 'Change saved.');
+		} catch (error) {
+			items = cards;
+			// A response can be lost after the server commits. Re-read truth before reporting the failure so
+			// the card never lies about where the server ultimately left it.
+			await invalidatePipeline(queryClient).catch(() => undefined);
+			toast.dismiss(loadingToastId);
+			toast.error(
+				'That card could not be moved.',
+				error instanceof Error ? error.message : undefined
+			);
+		} finally {
+			onDragBusyChange(false);
+		}
 	}
 
 	async function performMove(
@@ -357,13 +445,13 @@
 		{/if}
 	</header>
 
-	{#if stage !== null && query.isPending}
+	{#if query.isPending}
 		<div class="pipeline-column__cards">
 			{#each { length: 3 }, index (index)}
 				<LoadingSkeleton variant="card" label="Loading opportunities" />
 			{/each}
 		</div>
-	{:else if stage !== null && query.isError}
+	{:else if query.isError}
 		<div class="pipeline-column__cards">
 			<p class="pipeline-column__message pipeline-column__message--error">
 				This column could not be loaded.
@@ -381,7 +469,7 @@
 				use:dndzone={{
 					items,
 					flipDurationMs: 150,
-					dragDisabled: !canEdit || stage === null || pendingCard !== null || dragBusy,
+					dragDisabled: !canEdit || pendingCard !== null || dragBusy,
 					dropFromOthersDisabled: dropRefused
 				}}
 				onconsider={handleConsider}
@@ -393,7 +481,9 @@
 							opportunity={card}
 							{formatting}
 							{canEdit}
-							showStageBadge={stage === ASSESSMENT_GROUP}
+							showStageBadge={stage === ASSESSMENT_GROUP || customStage !== null}
+							{customStages}
+							onPlace={dragBusy ? undefined : (customStageId) => performPlace(card, customStageId)}
 							onOpen={() => onOpen(card)}
 							{onLost}
 						/>

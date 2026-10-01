@@ -13,6 +13,7 @@ const card: OpportunityCardData = {
 	id: 'opportunity-1',
 	title: 'Kitchen remodel',
 	stage: 'assessment_unscheduled',
+	custom_stage_id: null,
 	stage_entered_at: '2026-08-23T00:00:00.000Z',
 	outcome: 'open',
 	created_at: '2026-08-23T00:00:00.000Z',

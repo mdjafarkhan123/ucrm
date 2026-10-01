@@ -46,11 +46,12 @@ function withDateRules<Schema extends z.ZodType<DateRangeInput>>(schema: Schema)
 // the others re-fetching, and every control below narrows or reorders that one column.
 //
 // `stage` carries a column name, which is a real stage for six of the seven and the named logical column
-// `assessment` for the collapsed one. A closed list, never a caller-supplied set of stages: the only
-// grouping that exists is the one the product approved.
+// `assessment` for the collapsed one, or the id of one of the organization's custom stages. Never a
+// caller-supplied set of stages: the only grouping that exists is the one the product approved, and the
+// database checks that an id is a stage this organization really has switched on.
 export const boardQuerySchema = withDateRules(
 	z.object({
-		stage: z.enum(BOARD_COLUMN_KEYS),
+		stage: z.union([z.enum(BOARD_COLUMN_KEYS), z.string().uuid().toLowerCase()]),
 		cursor: z.string().min(3).max(200).optional(),
 		limit: z.coerce.number().int().min(1).max(BOARD_PAGE_SIZE_MAX).default(BOARD_PAGE_SIZE_DEFAULT),
 		sort: z.enum(BOARD_SORTS).default('stage'),
@@ -87,6 +88,12 @@ export const dragOpportunitySchema = z
 			!value.starts_at || !value.ends_at || Date.parse(value.ends_at) > Date.parse(value.starts_at),
 		{ message: 'End time must be after the start time.', path: ['ends_at'] }
 	);
+
+// Placing a card in a custom follow-up stage. `null` puts it back in its real stage. Whether the stage is
+// switched on and belongs to the card's own section is the database's answer, with its own words.
+export const placeOpportunitySchema = z.object({
+	custom_stage_id: z.string().uuid().nullable()
+});
 
 // The card's ownership action. `null` clears ownership; eligibility for a real id is checked by the
 // database trigger, not here, so this only shapes the request.

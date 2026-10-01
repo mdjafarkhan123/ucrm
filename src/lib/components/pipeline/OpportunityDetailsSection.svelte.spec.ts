@@ -14,6 +14,7 @@ const opportunity: OpportunityCard = {
 	id: 'opp-1',
 	title: 'Rewire the panel',
 	stage: 'new_request',
+	custom_stage_id: null,
 	stage_entered_at: '2026-08-10T00:00:00.000Z',
 	outcome: 'open',
 	created_at: '2026-08-10T00:00:00.000Z',

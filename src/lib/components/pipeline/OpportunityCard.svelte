@@ -9,6 +9,12 @@
 	import { stageAge } from '$lib/pipeline/freshness';
 	import { appointment, followUp, formatMoney, type BoardFormatting } from '$lib/pipeline/money';
 	import { invalidatePipeline, type OpportunityCard } from '$lib/pipeline/api';
+	import {
+		ALL_STAGE_LABELS,
+		isAnyBoardStage,
+		stageSection,
+		type CustomStage
+	} from '$lib/pipeline/stages';
 	import { clientDetailKey, fetchClient } from '$lib/clients/api';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
 	import bellIcon from '@tabler/icons/outline/bell.svg?raw';
@@ -27,6 +33,8 @@
 		formatting,
 		canEdit,
 		showStageBadge = false,
+		customStages = [],
+		onPlace,
 		onOpen,
 		onLost
 	}: {
@@ -37,9 +45,15 @@
 		// Whether this member may assign, reassign, or clear the owner, and mark the card lost. Read-only
 		// otherwise.
 		canEdit: boolean;
-		// True only inside the collapsed Assessment column: its heading just says "Assessment", so the
-		// card is what has to say which of the three real sub-states it is really in.
+		// True wherever the column heading does not say the card's real stage: the collapsed Assessment
+		// column, whose heading just says "Assessment", and every custom follow-up column, where the card
+		// is still really a Draft or a New request underneath.
 		showStageBadge?: boolean;
+		// The organization's custom follow-up stages. The menu offers the ones in this card's own section.
+		customStages?: readonly CustomStage[];
+		// Places the card in a custom stage, or back in its real stage with null. The column owns the
+		// write, so the menu and a drop save, lock the board, and report in exactly the same way.
+		onPlace?: (customStageId: string | null) => void;
 		onOpen: () => void;
 		// Told after a successful Mark as lost, so the page can close this card's Brief if it happens to
 		// be open behind it — the card leaves the board on its own via the query invalidation below, but
@@ -53,19 +67,48 @@
 	// dialog's RPC, which refuses a quote-backed opportunity outright -- so the menu that would only ever
 	// fail is not offered at all, rather than shown greyed out the way Jobber does it for a Draft quote.
 	const canMarkLost = $derived(opportunity.quote === null);
-	const menuItems = [
-		{
-			label: 'Mark as lost',
-			destructive: true,
-			onSelect: () => (lostDialogOpen = true)
-		}
-	];
+	// The same moves a drag allows, for anyone not using a pointer: into any other custom stage on this
+	// card's side of the Request/Quote line, and back to the real stage it never stopped being in.
+	const section = $derived(stageSection(opportunity.stage));
+	const menuItems = $derived([
+		...(onPlace && opportunity.custom_stage_id && isAnyBoardStage(opportunity.stage)
+			? [
+					{
+						label: `Move back to ${ALL_STAGE_LABELS[opportunity.stage]}`,
+						onSelect: () => onPlace(null)
+					}
+				]
+			: []),
+		...(onPlace
+			? customStages
+					.filter((stage) => stage.section === section && stage.id !== opportunity.custom_stage_id)
+					.map((stage) => ({
+						label: `Move to ${stage.name}`,
+						onSelect: () => onPlace(stage.id)
+					}))
+			: []),
+		...(canMarkLost
+			? [
+					{
+						label: 'Mark as lost',
+						destructive: true,
+						onSelect: () => (lostDialogOpen = true)
+					}
+				]
+			: [])
+	]);
 	const age = $derived(stageAge(opportunity.stage_entered_at));
-	// The collapsed Assessment column's own state, read off the card's real stage -- never a second stored
-	// value. "Unscheduled" is worded as a plain state name rather than an instruction, the same register
-	// the other two use.
+	// The card's real state, read off its real stage -- never a second stored value. "Unscheduled" is
+	// worded as a plain state name rather than an instruction, the same register the other two use.
 	const stageBadge = $derived.by(() => {
 		if (!showStageBadge) return null;
+		if (opportunity.stage === 'new_request')
+			return { label: 'New request', status: 'informative' as const };
+		if (opportunity.stage === 'quote_draft') return { label: 'Draft', status: 'inactive' as const };
+		if (opportunity.stage === 'quote_awaiting_response')
+			return { label: 'Awaiting response', status: 'informative' as const };
+		if (opportunity.stage === 'quote_changes_requested')
+			return { label: 'Changes requested', status: 'warning' as const };
 		if (opportunity.stage === 'assessment_unscheduled')
 			return { label: 'Unscheduled', status: 'warning' as const };
 		if (opportunity.stage === 'assessment_scheduled')
@@ -142,7 +185,7 @@
 
 	<span class="opportunity-card__header">
 		<span class="opportunity-card__title">{opportunity.title}</span>
-		{#if canEdit && canMarkLost}
+		{#if canEdit && menuItems.length > 0}
 			<span
 				class="opportunity-card__menu"
 				role="presentation"

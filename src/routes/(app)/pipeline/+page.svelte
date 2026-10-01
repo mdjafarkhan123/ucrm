@@ -31,7 +31,9 @@
 		QUOTE_BOARD_STAGES,
 		boardColumnId,
 		sectionColumns,
+		type AnyBoardStage,
 		type BoardColumn,
+		type BoardSection,
 		type OpportunityStage
 	} from '$lib/pipeline/stages';
 	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
@@ -45,10 +47,11 @@
 	// Request moved.
 	let selected = $state<Card | null>(null);
 
-	// The one piece of state a drag actually needs to share across columns: which stage a card is being
-	// pulled out of, so every other column can tell whether it may accept the drop. Nothing else about a
-	// drag crosses a column boundary -- each column still owns its own cards and its own write.
-	let draggingFromStage = $state<OpportunityStage | null>(null);
+	// The one piece of state a drag actually needs to share across columns: the real stage of the card
+	// being pulled, and the custom stage it was sitting in if any, so every other column can tell whether
+	// it may accept the drop. Nothing else about a drag crosses a column boundary -- each column still owns
+	// its own cards and its own write.
+	let dragging = $state<{ stage: OpportunityStage; customStageId: string | null } | null>(null);
 	// A dropped card stays in its confirmed column while its protected action is being collected or saved.
 	// Locking the board during that short window prevents a second gesture from racing the same server truth.
 	let dragBusy = $state(false);
@@ -136,12 +139,7 @@
 				}
 			: null
 	);
-	const requestsTotal = $derived(
-		counts ? BOARD_STAGES.reduce((total, stage) => total + counts[stage], 0) : null
-	);
-	const quotesTotal = $derived(
-		counts ? QUOTE_BOARD_STAGES.reduce((total, stage) => total + counts[stage], 0) : null
-	);
+	const customCounts = $derived(summaryQuery.data?.custom_counts ?? {});
 	const canViewValue = $derived(summaryQuery.data?.can_view_value ?? false);
 	const canEdit = $derived(summaryQuery.data?.can_edit ?? false);
 	// Absent from the payload entirely for a member without money, so there is nothing to guard against here.
@@ -161,11 +159,28 @@
 	const quoteColumns = $derived<BoardColumn[]>(
 		sectionColumns('quote', detailedAssessmentStages, customStages)
 	);
-	// No card can be in a custom stage yet, so its heading is a true zero and it carries no money.
+	// A card placed in a custom stage is counted under that stage and not under its real one, so every
+	// heading is the number of cards drawn beneath it.
 	const countFor = (column: BoardColumn) =>
-		column.kind === 'protected' ? counts?.[column.key] : counts ? 0 : undefined;
+		column.kind === 'protected'
+			? counts?.[column.key]
+			: counts
+				? (customCounts[column.stage.id] ?? 0)
+				: undefined;
 	const valueTotalFor = (column: BoardColumn) =>
-		column.kind === 'protected' ? valueTotals?.[column.key] : undefined;
+		column.kind === 'protected'
+			? valueTotals?.[column.key]
+			: summaryQuery.data?.custom_value_totals?.[column.stage.id];
+	// A section's open work is every card on its side of the line, wherever it was placed.
+	const sectionTotal = (section: BoardSection, stages: readonly AnyBoardStage[]) =>
+		counts
+			? stages.reduce((total, stage) => total + counts[stage], 0) +
+				customStages
+					.filter((stage) => stage.section === section)
+					.reduce((total, stage) => total + (customCounts[stage.id] ?? 0), 0)
+			: null;
+	const requestsTotal = $derived(sectionTotal('request', BOARD_STAGES));
+	const quotesTotal = $derived(sectionTotal('quote', QUOTE_BOARD_STAGES));
 
 	// An empty board and a filter that matched nothing are different answers and must not look the same:
 	// only a genuinely empty board gets the new-account message. A filtered board with no matches keeps its
@@ -326,10 +341,11 @@
 									filters={applied}
 									{formatting}
 									{canEdit}
+									{customStages}
 									onOpen={(card) => (selected = card)}
 									onLost={closeSelectedIfLost}
-									{draggingFromStage}
-									onDragStageChange={(stage) => (draggingFromStage = stage)}
+									{dragging}
+									onDraggingChange={(next) => (dragging = next)}
 									{dragBusy}
 									onDragBusyChange={(busy) => (dragBusy = busy)}
 								/>
@@ -356,10 +372,11 @@
 									filters={applied}
 									{formatting}
 									{canEdit}
+									{customStages}
 									onOpen={(card) => (selected = card)}
 									onLost={closeSelectedIfLost}
-									{draggingFromStage}
-									onDragStageChange={(stage) => (draggingFromStage = stage)}
+									{dragging}
+									onDraggingChange={(next) => (dragging = next)}
 									{dragBusy}
 									onDragBusyChange={(busy) => (dragBusy = busy)}
 								/>

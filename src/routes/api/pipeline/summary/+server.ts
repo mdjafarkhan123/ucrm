@@ -67,8 +67,8 @@ export const GET: RequestHandler = async (event) => {
 	const presentationRead = pipelinePresentation(check.auth.organization.id);
 
 	// The custom columns ride along for the same reason: adding, renaming, or moving a stage in Settings
-	// refreshes this one query and the board redraws. No card can sit in a custom stage yet, so there is
-	// nothing to count for them here.
+	// refreshes this one query and the board redraws. Their numbers come back from the same grouped count
+	// as the protected ones, under the stage's id.
 	const stagesRead = enabledCustomStages(event.locals.supabase, check.auth.organization.id);
 
 	const countBetween = (range: BoardDateRange) =>
@@ -147,11 +147,26 @@ function summary(
 		number | null
 	>;
 
+	// A card placed in a custom stage is counted under that stage and not under its real one, so every
+	// heading is the number of cards actually drawn beneath it. Only stages the board is being told about
+	// get a number: a count for a column nobody can see would be money and cards that add up to nothing.
+	const customCounts = Object.fromEntries(customStages.map((stage) => [stage.id, 0])) as Record<
+		string,
+		number
+	>;
+	const customValueTotals = Object.fromEntries(
+		customStages.map((stage) => [stage.id, null])
+	) as Record<string, number | null>;
+
 	for (const row of (rows ?? []) as StageCountRow[]) {
-		if (!(row.stage_key in counts)) continue;
-		counts[row.stage_key as AnyBoardStage] = Number(row.open_count);
-		valueTotals[row.stage_key as AnyBoardStage] =
-			row.value_total === null ? null : Number(row.value_total);
+		const total = row.value_total === null ? null : Number(row.value_total);
+		if (row.stage_key in counts) {
+			counts[row.stage_key as AnyBoardStage] = Number(row.open_count);
+			valueTotals[row.stage_key as AnyBoardStage] = total;
+		} else if (row.stage_key in customCounts) {
+			customCounts[row.stage_key] = Number(row.open_count);
+			customValueTotals[row.stage_key] = total;
+		}
 	}
 
 	// The collapsed column's own heading, added up here rather than in the browser so the number under
@@ -171,7 +186,11 @@ function summary(
 			// The control bar's "showing N" line, both groups combined -- Jobber's own board shows one
 			// number for the whole board, not one per group. Added up from the same numbers the headings
 			// show rather than counted again, so it can never disagree with them.
-			result_count: ALL_BOARD_STAGES.reduce((total, stage) => total + counts[stage], 0),
+			result_count:
+				ALL_BOARD_STAGES.reduce((total, stage) => total + counts[stage], 0) +
+				Object.values(customCounts).reduce((total, count) => total + count, 0),
+			// Each custom column's own heading, by stage id.
+			custom_counts: customCounts,
 			// Present only for a member who may see money. Absent, not null, for everyone else.
 			...(canViewValue
 				? {
@@ -181,7 +200,9 @@ function summary(
 								groupedTotals.length === 0
 									? null
 									: groupedTotals.reduce((total, value) => total + value, 0)
-						}
+						},
+						// Each custom column's money, by stage id. Null on the same rule as above.
+						custom_value_totals: customValueTotals
 					}
 				: {}),
 			// Whether money exists for this member at all. The board asks once, here, instead of guessing

@@ -8,20 +8,23 @@ is decided, which every later board part builds on. A1 and A2 change the board's
 | Part | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- |
 | A1 Add custom stages in Settings | Owner or admin adds, renames, and reorders custom stages under Requests or Quotes; the seven protected stages are locked; the new columns show on the board | — | The owner adds "Waiting on customer" under Quotes and it appears as an empty column for everyone; a 26th stage and a repeated name in the same section are refused with a clear message; a sales login cannot change stages | Done 2026-10-01 |
-| A2 Move cards in and out | A card moves by drag or menu among custom stages of its own section, in either direction; it cannot cross the Request/Quote line; a real action pulls it to the protected stage; each move is kept in history | A1 | A Draft quote card goes into "Waiting on customer" and back; publishing that quote lands it in Awaiting response by itself; a Request card dropped on a Quote-side stage is refused and says why | Not started |
+| A2 Move cards in and out | A card moves by drag or menu among custom stages of its own section, in either direction; it cannot cross the Request/Quote line; a real action pulls it to the protected stage; each move is kept in history | A1 | A Draft quote card goes into "Waiting on customer" and back; publishing that quote lands it in Awaiting response by itself; a Request card dropped on a Quote-side stage is refused and says why | Done 2026-10-01 |
 | A3 Switch a stage off safely | Disable asks for a destination in the same section and moves every open card; the old name stays in history and reports | A2 | Disabling a stage holding three cards asks where they go, moves all three, and removes the column; an earlier move still shows the old stage name | Not started |
 | A4 On hold | Moving a card to an on-hold stage needs a future Task; the card stays Open and never counts as Lost | A2 | Moving a card to On hold with no future Task is refused and offers to add one; with one it moves and the Open count is unchanged | Not started |
 
 Open for A4, to settle with Jafar when it starts: how a stage becomes "on hold" — a ready-made optional On hold
 stage, or a switch on any custom stage.
 
-Carried from A1 (design in `docs/adr/0004-pipeline-custom-stages-anchor-to-protected-stages.md`):
+Carried from A1 and A2 (design in `docs/adr/0004-pipeline-custom-stages-anchor-to-protected-stages.md`):
 
-- A2 owns the whole card read-path change: the placement on `opportunities`, the counts and column-page
-  functions, their indexes, and its `performance-review`. Custom columns are drawn empty with no card query
-  until then (`PipelineColumn.svelte`, `stage === null`), and the summary sends no counts for them.
-- Raad LTD has one saved custom stage, "Waiting on customer" (Quotes, after Awaiting response), ready for A2.
-- A saved stage can only be renamed or moved until A3; Settings offers Remove only for an unsaved row.
-- The pgTAP edit in `pipeline_unified_board_and_presentation_setting.sql` (new command name) has not been
-  run on a fresh rebuild; the command itself was checked against the live database in a rolled-back
-  transaction.
+- A3: `opportunities_custom_stage_idx` finds every card in a stage; lock the stage row `for update` (ADR
+  point on A3). A saved stage can only be renamed or moved until then; Settings offers Remove only for an
+  unsaved row.
+- A4: placing goes through `pipeline_place_opportunity` and the board's `performPlace` in
+  `PipelineColumn.svelte`; the future-Task rule belongs in that command.
+- A card's menu lists every custom stage of its section in one flat list. Stage D's Move button replaces it.
+- The Brief still shows only the real stage; it does not say which custom stage the card is in.
+- A2's database rules were proven on the live database in rolled-back runs (20,000 cards). No pgTAP file
+  covers them, and the pgTAP edit in `pipeline_unified_board_and_presentation_setting.sql` has not been
+  run on a fresh rebuild. Stage G should close both.
+- Raad LTD has one custom stage, "Waiting on customer" (Quotes, after Awaiting response), holding no cards.

@@ -8,8 +8,12 @@ import type { DragActionKind } from './transitions';
 export type OpportunityCard = {
 	id: string;
 	title: string;
+	// The real stage, decided by the Request, Assessment, or Quote behind the card.
 	stage: OpportunityStage;
-	// When the card arrived in this stage. The column shows its age from here, never from created_at.
+	// The custom follow-up stage somebody placed the card in, or null when it sits in its real stage.
+	custom_stage_id: string | null;
+	// When the card arrived in the column it is drawn in. The column shows its age from here, never from
+	// created_at.
 	stage_entered_at: string;
 	outcome: OpportunityOutcome;
 	created_at: string;
@@ -43,7 +47,8 @@ export type OpportunityCard = {
 };
 
 export type BoardColumnPage = {
-	stage: BoardColumnKey;
+	// The protected column's name, or the custom stage's id.
+	stage: string;
 	opportunities: OpportunityCard[];
 	// Null means this was the last page of the column.
 	next_cursor: string | null;
@@ -70,6 +75,11 @@ export type BoardSummary = BoardFormatting & {
 	detailed_assessment_stages: boolean;
 	// The custom follow-up columns an owner or administrator added in Settings, in saved order.
 	custom_stages: CustomStage[];
+	// Each custom column's heading, by stage id. A card placed in a custom stage is counted here and not
+	// under its real stage.
+	custom_counts: Record<string, number>;
+	// Absent when this member may not see money, on the same rule as `value_totals`.
+	custom_value_totals?: Record<string, number | null>;
 };
 
 // One family, so anything that changes commercial work can clear the whole board with `['pipeline']`
@@ -111,8 +121,9 @@ async function readError(response: Response, fallback: string) {
 	return failure;
 }
 
+// `stage` is a protected column's name or a custom stage's id — `boardColumnRequestKey` gives either.
 export async function fetchBoardColumn(
-	stage: BoardColumnKey,
+	stage: string,
 	filters: BoardFilters,
 	cursor?: string
 ): Promise<BoardColumnPage> {
@@ -562,6 +573,33 @@ export async function dragOpportunity(
 		);
 	}
 	return result as DragResult;
+}
+
+// Placing a card in a custom follow-up stage, or back in its real stage with `null`. Nothing about the
+// Request or Quote changes. A refusal carries the database's own sentence — which section the card
+// belongs to, or that the stage has gone — so the board can say exactly why.
+export async function placeOpportunity(
+	opportunityId: string,
+	customStageId: string | null
+): Promise<{
+	id: string;
+	stage: OpportunityStage;
+	custom_stage_id: string | null;
+	applied: boolean;
+}> {
+	const response = await fetch(`/api/pipeline/opportunities/${opportunityId}/placement`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ custom_stage_id: customStageId })
+	});
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) {
+		throw new DragWriteError(
+			result.field_errors?.form ?? result.error ?? 'That card could not be moved.',
+			result.field_errors ?? {}
+		);
+	}
+	return result;
 }
 
 // What kind of dialog a drop needs before it can run, if any -- re-exported here so a component importing

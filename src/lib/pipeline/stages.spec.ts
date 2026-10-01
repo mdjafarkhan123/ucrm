@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+	boardColumnRequestKey,
 	canMoveColumn,
+	isCustomStageId,
 	moveColumn,
 	placeCustomStages,
 	sectionColumns,
+	stageSection,
 	type CustomStage,
 	type SectionColumn
 } from './stages';
@@ -138,5 +141,27 @@ describe('pipelineSettingsSchema', () => {
 		expect(
 			pipelineSettingsSchema.safeParse(settings([fresh('Waiting', 'quote', 'new_request')])).success
 		).toBe(false);
+	});
+});
+
+describe('custom stage placement vocabulary', () => {
+	it('reads a card’s section off its real stage, and none once it has left the board', () => {
+		expect(stageSection('new_request')).toBe('request');
+		expect(stageSection('assessment_completed')).toBe('request');
+		expect(stageSection('quote_changes_requested')).toBe('quote');
+		expect(stageSection('request_closed')).toBeNull();
+	});
+
+	it('asks for a protected column by name and a custom stage by its id', () => {
+		const stage = {
+			id: '7b0c8f2e-0000-4000-8000-000000000001',
+			section: 'quote' as const,
+			name: 'Waiting on customer',
+			after_stage: 'quote_awaiting_response' as const
+		};
+		expect(boardColumnRequestKey({ kind: 'protected', key: 'assessment' })).toBe('assessment');
+		expect(boardColumnRequestKey({ kind: 'custom', stage })).toBe(stage.id);
+		expect(isCustomStageId(stage.id)).toBe(true);
+		expect(isCustomStageId('quote_draft')).toBe(false);
 	});
 });

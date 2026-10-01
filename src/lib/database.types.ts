@@ -8944,9 +8944,11 @@ export type Database = {
 			};
 			opportunities: {
 				Row: {
+					board_column: string | null;
 					client_id: string;
 					created_at: string;
 					current_outcome_event_id: string | null;
+					custom_stage_id: string | null;
 					estimated_value: number | null;
 					expected_close_on: string | null;
 					id: string;
@@ -8964,9 +8966,11 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					board_column?: string | null;
 					client_id: string;
 					created_at?: string;
 					current_outcome_event_id?: string | null;
+					custom_stage_id?: string | null;
 					estimated_value?: number | null;
 					expected_close_on?: string | null;
 					id?: string;
@@ -8984,9 +8988,11 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					board_column?: string | null;
 					client_id?: string;
 					created_at?: string;
 					current_outcome_event_id?: string | null;
+					custom_stage_id?: string | null;
 					estimated_value?: number | null;
 					expected_close_on?: string | null;
 					id?: string;
@@ -9016,6 +9022,13 @@ export type Database = {
 						columns: ['organization_id', 'current_outcome_event_id'];
 						isOneToOne: false;
 						referencedRelation: 'opportunity_outcome_events';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'opportunities_custom_stage_fk';
+						columns: ['organization_id', 'custom_stage_id'];
+						isOneToOne: false;
+						referencedRelation: 'pipeline_custom_stages';
 						referencedColumns: ['organization_id', 'id'];
 					},
 					{
@@ -9131,32 +9144,45 @@ export type Database = {
 			opportunity_stage_events: {
 				Row: {
 					actor_user_id: string | null;
+					from_custom_stage_id: string | null;
 					from_stage: string | null;
 					id: string;
 					occurred_at: string;
 					opportunity_id: string;
 					organization_id: string;
+					to_custom_stage_id: string | null;
 					to_stage: string;
 				};
 				Insert: {
 					actor_user_id?: string | null;
+					from_custom_stage_id?: string | null;
 					from_stage?: string | null;
 					id?: string;
 					occurred_at?: string;
 					opportunity_id: string;
 					organization_id: string;
+					to_custom_stage_id?: string | null;
 					to_stage: string;
 				};
 				Update: {
 					actor_user_id?: string | null;
+					from_custom_stage_id?: string | null;
 					from_stage?: string | null;
 					id?: string;
 					occurred_at?: string;
 					opportunity_id?: string;
 					organization_id?: string;
+					to_custom_stage_id?: string | null;
 					to_stage?: string;
 				};
 				Relationships: [
+					{
+						foreignKeyName: 'opportunity_stage_events_from_custom_stage_fk';
+						columns: ['organization_id', 'from_custom_stage_id'];
+						isOneToOne: false;
+						referencedRelation: 'pipeline_custom_stages';
+						referencedColumns: ['organization_id', 'id'];
+					},
 					{
 						foreignKeyName: 'opportunity_stage_events_opportunity_fk';
 						columns: ['organization_id', 'opportunity_id'];
@@ -9170,6 +9196,13 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'organizations';
 						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'opportunity_stage_events_to_custom_stage_fk';
+						columns: ['organization_id', 'to_custom_stage_id'];
+						isOneToOne: false;
+						referencedRelation: 'pipeline_custom_stages';
+						referencedColumns: ['organization_id', 'id'];
 					}
 				];
 			};
@@ -21677,6 +21710,7 @@ export type Database = {
 					client_display_name: string;
 					client_id: string;
 					created_at: string;
+					custom_stage_id: string;
 					estimated_value: number;
 					expected_close_on: string;
 					id: string;
@@ -21831,6 +21865,10 @@ export type Database = {
 					outcome_key: string;
 					value_total: number;
 				}[];
+			};
+			pipeline_place_opportunity: {
+				Args: { target_custom_stage_id: string; target_opportunity_id: string };
+				Returns: Json;
 			};
 			pipeline_reopen_opportunity: {
 				Args: {

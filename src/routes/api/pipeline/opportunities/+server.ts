@@ -46,6 +46,7 @@ type BoardPageRow = {
 	quote_status: string | null;
 	assessment_starts_at: string | null;
 	assessment_ends_at: string | null;
+	custom_stage_id: string | null;
 };
 
 // One board column at a time. Each column asks for its own page, so a busy stage can keep loading
@@ -135,7 +136,13 @@ export const GET: RequestHandler = async (event) => {
 		cursor_value: cursor && cursor.sort === 'value' ? Number(cursor.value) : undefined,
 		cursor_id: cursor?.id ?? undefined
 	});
-	if (error) return databaseError();
+	if (error) {
+		// The one refusal a well-formed request can meet: a custom stage that was switched off after this
+		// board was drawn. Said as a field error, so the column can tell a stale board from a failure.
+		if (error.code === '22023')
+			return validationError({ stage: 'That column is no longer on the board.' });
+		return databaseError();
+	}
 
 	const returned = (rows ?? []) as BoardPageRow[];
 	const page = returned.slice(0, limit);
@@ -145,6 +152,9 @@ export const GET: RequestHandler = async (event) => {
 		id: row.id,
 		title: row.title,
 		stage: row.stage,
+		// The custom follow-up stage somebody placed this card in, or null when it sits in its real stage.
+		// `stage` above is the real one either way.
+		custom_stage_id: row.custom_stage_id,
 		stage_entered_at: row.stage_entered_at,
 		outcome: row.outcome,
 		created_at: row.created_at,

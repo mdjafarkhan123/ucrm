@@ -29,9 +29,25 @@ are drawn as one column.
    stage off is its own action (part A3) using `disabled_at`.
 4. **Name uniqueness is an exclusion constraint**, partial on enabled stages and deferrable, so two stages
    can swap names in one save.
-5. **A card's custom placement is not part of this table.** Part A2 adds it to `opportunities` as a
-   reference to a custom stage that sits beside the real `stage`, never in place of it: `stage` stays the
-   projection of Request and Quote truth.
+5. **A card's custom placement is not part of this table.** It is `opportunities.custom_stage_id` (part
+   A2), a reference to a custom stage that sits beside the real `stage`, never in place of it: `stage`
+   stays the projection of Request and Quote truth.
+6. **The board reads one value, `board_column`.** A stored generated column: the custom stage id as text
+   when the card is placed, the real stage otherwise. Every board index and both board readers
+   (`pipeline_board_page`, `pipeline_stage_counts`) key on it, so a custom column pages, sorts, filters,
+   and counts through the same access paths as a protected one, and a placed card is never also drawn or
+   counted under its real stage. Rejected: keeping the indexes on `stage` and adding a second set for
+   custom columns — twice the indexes, and a protected column would skip over its placed cards row by row.
+7. **A real action wins inside the stage trigger.** `opportunity_apply_stage` clears the placement
+   whenever the derived `stage` changes, so no Request, Assessment, or Quote command has to know custom
+   stages exist. `pipeline_place_opportunity` is the only writer of a placement; it refuses a stage from
+   the other section and does nothing when the card is already there.
+8. **`stage_entered_at` means "arrived in the column it is drawn in".** It restarts on a real stage change
+   and on a move into, out of, or between custom stages, so the card's age and the default sort stay
+   true to the column. The inactivity warning (stage C) must use its own progress clock, because the plan
+   says a manual custom move does not reset it.
+9. **History is one table.** `opportunity_stage_events` gains `from_custom_stage_id` and
+   `to_custom_stage_id`; a custom move is a row whose `from_stage` and `to_stage` are equal.
 
 ## Consequences
 
@@ -39,5 +55,9 @@ are drawn as one column.
   shown, so a stage that sat between two assessment stages moves to after Assessment completed.
 - A custom stage may not take the name of a built-in column in its section; that rule lives in the API
   validation, where the built-in names are.
-- Until A2, custom columns are drawn empty without a card query, and the board's card-reading functions
-  and indexes are unchanged.
+- Each custom column is one more page request when the board opens, the same as a protected column: up
+  to 25 more at the stage limit.
+- Anything that reads `opportunity_stage_events` for time in stage must treat a row with equal stages as
+  a custom move, not a stage change.
+- Switching a stage off (A3) must take the stage row `for update`: `pipeline_place_opportunity` holds it
+  `for share`, so the two cannot interleave.

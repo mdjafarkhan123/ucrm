@@ -51,6 +51,7 @@ function boardRow(overrides: Record<string, unknown> = {}) {
 		quote_status: null,
 		assessment_starts_at: null,
 		assessment_ends_at: null,
+		custom_stage_id: null,
 		...overrides
 	};
 }
@@ -279,5 +280,67 @@ describe('a page marker only works where it was cut', () => {
 		);
 		expect((await GET(event)).status).toBe(200);
 		expect(rpcOf(event)).toHaveBeenCalled();
+	});
+});
+
+describe('a custom follow-up column', () => {
+	const stageId = '7b0c8f2e-0000-4000-8000-000000000001';
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockedRequire.mockResolvedValue(context);
+		mockedHasPermission.mockReturnValue(false);
+	});
+
+	it('asks the database for the stage by its id', async () => {
+		const event = readEvent([], `stage=${stageId.toUpperCase()}`);
+		const response = await GET(event);
+
+		expect(response.status).toBe(200);
+		expect(rpcOf(event)).toHaveBeenCalledWith(
+			'pipeline_board_page',
+			expect.objectContaining({ target_stage: stageId })
+		);
+	});
+
+	it('keeps the real stage on a placed card and says where it was placed', async () => {
+		const response = await GET(
+			readEvent([boardRow({ stage: 'quote_draft', custom_stage_id: stageId })], `stage=${stageId}`)
+		);
+		const body = await response.json();
+
+		expect(body.opportunities[0].stage).toBe('quote_draft');
+		expect(body.opportunities[0].custom_stage_id).toBe(stageId);
+	});
+
+	it('pages with a marker cut from that same stage and refuses one from another', async () => {
+		const own = await GET(
+			readEvent([], `stage=${stageId}&cursor=${stageId}:stage:1:2026-08-21T00:00:00.000Z|opp-b`)
+		);
+		expect(own.status).toBe(200);
+
+		const other = await GET(
+			readEvent([], `stage=${stageId}&cursor=quote_draft:stage:1:2026-08-21T00:00:00.000Z|opp-b`)
+		);
+		expect(other.status).toBe(422);
+	});
+
+	it('says the column has gone when the stage was switched off', async () => {
+		const rpc = vi.fn().mockResolvedValue({ data: null, error: { code: '22023' } });
+		const response = await GET({
+			url: new URL(`http://localhost/api/pipeline/opportunities?stage=${stageId}`),
+			locals: { supabase: { rpc } }
+		} as unknown as Parameters<typeof GET>[0]);
+
+		expect(response.status).toBe(422);
+		expect((await response.json()).field_errors.stage).toBeDefined();
+	});
+
+	it('refuses a column name that is neither a stage nor an id', async () => {
+		const event = readEvent([], 'stage=somewhere');
+		const response = await GET(event);
+
+		expect(response.status).toBe(422);
+		expect(rpcOf(event)).not.toHaveBeenCalled();
 	});
 });

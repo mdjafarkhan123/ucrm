@@ -7,7 +7,7 @@ import {
 	type BoardDirection,
 	type BoardDatePreset
 } from '$lib/pipeline/filters';
-import { isBoardColumnKey, type BoardColumnKey } from '$lib/pipeline/stages';
+import { isBoardColumnKey, isCustomStageId } from '$lib/pipeline/stages';
 
 // The board's controls, translated from what a URL can carry into what the database read expects.
 //
@@ -44,7 +44,8 @@ export function sortColumn(sort: BoardSort) {
 // column never showed. The phase only matters when sorting by value: 1 is the estimated cards, 2 is the
 // unestimated ones that always come after them.
 export type BoardCursor = {
-	column: BoardColumnKey;
+	// A protected column's name, or a custom stage's id.
+	column: string;
 	sort: BoardSort;
 	phase: 1 | 2;
 	value: string;
@@ -71,7 +72,7 @@ export function readBoardCursor(raw: string | null | undefined): BoardCursor | n
 	if (firstColon < 1 || secondColon < 0 || thirdColon < 0) return null;
 
 	const column = head.slice(0, firstColon);
-	if (!isBoardColumnKey(column)) return null;
+	if (!isBoardColumnKey(column) && !isCustomStageId(column)) return null;
 	const sort = head.slice(firstColon + 1, secondColon) as BoardSort;
 	if (!(BOARD_SORTS as readonly string[]).includes(sort)) return null;
 	const phase = Number(head.slice(secondColon + 1, thirdColon));
