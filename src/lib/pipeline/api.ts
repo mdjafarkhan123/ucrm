@@ -126,6 +126,8 @@ export const opportunityTasksKey = (opportunityId: string) =>
 // the `invalidatePipeline` call every Lost/Reopen write already makes reaches them too -- neither needs a
 // write path of its own to invalidate.
 export const outcomeTilesKey = ['pipeline', 'outcomes', 'tiles'] as const;
+// Under the pipeline key, so anything that refreshes the board refreshes the list of sources too.
+export const leadSourcesKey = ['pipeline', 'lead-sources'] as const;
 export const outcomesListKey = (filters: OutcomeFilters) =>
 	['pipeline', 'outcomes', 'list', outcomeFilterKey(filters)] as const;
 
@@ -181,6 +183,14 @@ export type OutcomeTiles = {
 	lost: OutcomeTile;
 	can_view_value: boolean;
 } & BoardFormatting;
+
+// The lead sources on the organization's open cards, most used first.
+export async function fetchLeadSources(): Promise<string[]> {
+	const response = await fetch('/api/pipeline/lead-sources');
+	if (!response.ok) throw await readError(response, 'The lead sources could not be loaded.');
+	const body: { lead_sources: string[] } = await response.json();
+	return body.lead_sources;
+}
 
 export async function fetchOutcomeTiles(): Promise<OutcomeTiles> {
 	const response = await fetch('/api/pipeline/outcomes/summary');

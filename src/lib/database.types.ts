@@ -22179,6 +22179,13 @@ export type Database = {
 				Args: { target_opportunity_id: string; to_stage: string };
 				Returns: Json;
 			};
+			pipeline_lead_sources: {
+				Args: { target_organization_id: string };
+				Returns: {
+					lead_source: string;
+					open_count: number;
+				}[];
+			};
 			pipeline_mark_opportunity_lost: {
 				Args: {
 					idempotency_key: string;

@@ -7,6 +7,7 @@
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import { LEAD_SOURCES } from '$lib/clients/lead-sources';
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
+	import { fetchLeadSources, leadSourcesKey } from '$lib/pipeline/api';
 	import {
 		BOARD_DATE_LABELS,
 		BOARD_DATE_PRESETS,
@@ -93,14 +94,36 @@
 		}))
 	]);
 
+	// Clients carry their lead source as free text, so the list is the client form's own sources plus any
+	// other spelling the open cards really carry ("Google", "staff"). The board matches a source whatever its
+	// capitals, so each appears once. Like any list that has to be opened, it loads when the pill is pointed
+	// at or focused, not with the page.
+	let wantSources = $state(false);
+	const sourcesQuery = createQuery(() => ({
+		queryKey: leadSourcesKey,
+		queryFn: fetchLeadSources,
+		enabled: wantSources,
+		staleTime: 60_000
+	}));
+
+	const sourceNames = $derived.by(() => {
+		const names = [...LEAD_SOURCES];
+		const extra = [...(sourcesQuery.data ?? []), ...(filters.source ? [filters.source] : [])];
+		for (const name of extra) {
+			if (!names.some((known) => known.toLowerCase() === name.toLowerCase())) names.push(name);
+		}
+		return names;
+	});
+
 	const sourceOptions = $derived([
 		{ value: '', label: 'All' },
-		...LEAD_SOURCES.map((source) => ({ value: source, label: source })),
-		// A link carrying a source saved before this list existed still names what it is filtering by.
-		...(filters.source && !LEAD_SOURCES.includes(filters.source)
-			? [{ value: filters.source, label: filters.source }]
-			: [])
+		...sourceNames.map((source) => ({ value: source, label: source }))
 	]);
+
+	// A link may carry "referral" for the list's "Referral"; the pill still shows it as chosen.
+	const selectedSource = $derived(
+		sourceNames.find((name) => name.toLowerCase() === filters.source?.toLowerCase()) ?? ''
+	);
 
 	const dateOptions = BOARD_DATE_PRESETS.map((preset) => ({
 		value: preset,
@@ -186,12 +209,17 @@
 			/>
 		</span>
 
-		<span class="board-controls__pill board-controls__pill--labelled">
+		<span
+			class="board-controls__pill board-controls__pill--labelled"
+			role="presentation"
+			onpointerenter={() => (wantSources = true)}
+			onfocusin={() => (wantSources = true)}
+		>
 			<label class="board-controls__label" for="pipeline-source">Lead source</label>
 			<Select
 				id="pipeline-source"
 				class="board-controls__select"
-				value={filters.source ?? ''}
+				value={selectedSource}
 				options={sourceOptions}
 				onchange={(value) => update({ source: value || undefined })}
 			/>
