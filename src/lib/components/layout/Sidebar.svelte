@@ -26,7 +26,14 @@
 	import collapseIcon from '@tabler/icons/outline/layout-sidebar-left-collapse.svg?raw';
 	import expandIcon from '@tabler/icons/outline/layout-sidebar-left-expand.svg?raw';
 
-	export type NavItem = { label: string; href: string; icon: string; unavailable?: boolean };
+	/** `count` is a number waiting for attention, such as unread support conversations. Zero shows nothing. */
+	export type NavItem = {
+		label: string;
+		href: string;
+		icon: string;
+		unavailable?: boolean;
+		count?: number;
+	};
 	export type NavGroup = { label?: string; items: NavItem[] };
 
 	let {
@@ -150,12 +157,17 @@
 									href={item.href}
 									onclick={onnavigate}
 									aria-current={isActive(item.href) ? 'page' : undefined}
-									aria-label={item.label}
+									aria-label={item.count ? `${item.label}, ${item.count} unread` : item.label}
 									title={collapsed ? item.label : undefined}
 								>
 									<span class="sidebar__item-icon" aria-hidden="true"
 										>{@html iconMap[item.icon] ?? iconMap.dashboard}</span
 									><span class="sidebar__item-label">{item.label}</span>
+									{#if item.count}
+										<span class="sidebar__count" aria-hidden="true"
+											>{item.count > 99 ? '99+' : item.count}</span
+										>
+									{/if}
 								</a>
 								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							{/if}
@@ -370,6 +382,19 @@
 			font-weight: 600;
 			white-space: nowrap;
 		}
+		&__count {
+			flex: 0 0 auto;
+			min-width: 20px;
+			margin-left: auto;
+			padding: 0 var(--space-smaller);
+			border-radius: var(--radius-large);
+			color: var(--color-text--reverse);
+			background: var(--color-critical);
+			font-size: var(--typography--fontSize-smaller);
+			font-weight: 600;
+			line-height: 20px;
+			text-align: center;
+		}
 	}
 
 	.sidebar--collapsed {
@@ -392,6 +417,14 @@
 		.sidebar__item {
 			justify-content: center;
 			padding-inline: 0;
+		}
+		// Collapsed, the number sits on the icon's corner so it still shows.
+		.sidebar__count {
+			position: absolute;
+			top: 2px;
+			right: 10px;
+			min-width: 18px;
+			line-height: 18px;
 		}
 	}
 

@@ -3,6 +3,9 @@ import { GET as getInbox } from './threads/+server';
 import { GET as getThread } from './threads/[threadId]/+server';
 import { POST as postReply } from './threads/[threadId]/messages/+server';
 import { PATCH as patchSettings } from './settings/+server';
+import { GET as getUnread } from './unread/+server';
+import { POST as postRealtime } from './realtime/+server';
+import { POST as postRead } from './threads/[threadId]/read/+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
@@ -15,10 +18,11 @@ const mockedClient = vi.mocked(getOwnerSupabaseClient);
 const THREAD_ID = '123e4567-e89b-12d3-a456-426614174000';
 const CLIENT_MESSAGE_ID = '223e4567-e89b-12d3-a456-426614174000';
 
-const threadRow = (id: string, senderKind = 'member') => ({
+const threadRow = (id: string, senderKind = 'member', upliftLastReadAt: string | null = null) => ({
 	id,
 	started_by_user_id: 'user-1',
 	last_message_at: '2026-10-01T10:00:00Z',
+	uplift_last_read_at: upliftLastReadAt,
 	last_message_preview: 'Hello',
 	last_message_sender_kind: senderKind,
 	organizations: { id: 'org-1', name: 'Bright Spark Electrical' }
@@ -101,7 +105,10 @@ describe('Support Inbox API boundary', () => {
 		[
 			'support settings',
 			() => patchSettings(event({ body: { responder_name: 'Jafar', availability_note: '' } }))
-		]
+		],
+		['the unread count', () => getUnread(event())],
+		['a live channel', () => postRealtime(event())],
+		['a read mark', () => postRead(event({ body: { read_through: '2026-10-01T10:00:00Z' } }))]
 	])('refuses %s without the platform owner session', async (_name, call) => {
 		mockedOwnerSession.mockResolvedValue(null);
 		const response = await call();
@@ -205,5 +212,62 @@ describe('Support Inbox API boundary', () => {
 		);
 		expect(response.status).toBe(422);
 		expect(value.upsert).not.toHaveBeenCalled();
+	});
+});
+
+describe('Support Inbox unread and live updates', () => {
+	it('marks a thread unread only when the contractor wrote after Uplift last read it', async () => {
+		use(
+			client({
+				threads: [
+					threadRow('never-opened'),
+					threadRow('read-before-message', 'member', '2026-10-01T09:00:00Z'),
+					threadRow('read-after-message', 'member', '2026-10-01T10:00:00Z'),
+					threadRow('uplift-replied', 'uplift', null)
+				]
+			})
+		);
+		const body = await (await getInbox(event())).json();
+		expect(body.threads.map((thread: { unread: boolean }) => thread.unread)).toEqual([
+			true,
+			true,
+			false,
+			false
+		]);
+	});
+
+	it('counts unread conversations for the Support menu item', async () => {
+		const value = use(client({}));
+		value.rpc.mockResolvedValue({ data: 2, error: null });
+		const response = await getUnread(event());
+		expect(await response.json()).toEqual({ unread: 2 });
+		expect(value.rpc).toHaveBeenCalledWith('support_inbox_unread_count');
+	});
+
+	it("issues this owner session's live channel", async () => {
+		const value = use(client({}));
+		value.rpc.mockResolvedValue({ data: 'support-owner:' + 'a'.repeat(64), error: null });
+		const response = await postRealtime(event());
+		expect(await response.json()).toEqual({ topic: 'support-owner:' + 'a'.repeat(64) });
+		expect(value.rpc).toHaveBeenCalledWith('issue_support_realtime_grant', {
+			target_owner_session_id: 'session-id'
+		});
+	});
+
+	it('marks a conversation read up to the given time', async () => {
+		const value = use(client({}));
+		value.rpc.mockResolvedValue({ data: null, error: null });
+		const response = await postRead(event({ body: { read_through: '2026-10-01T10:00:00Z' } }));
+		expect(response.status).toBe(204);
+		expect(value.rpc).toHaveBeenCalledWith('mark_support_thread_read_by_uplift', {
+			target_thread_id: THREAD_ID,
+			read_through: '2026-10-01T10:00:00Z'
+		});
+	});
+
+	it('rejects a read mark with no valid time, before the database', async () => {
+		const response = await postRead(event({ body: { read_through: 'now' } }));
+		expect(response.status).toBe(422);
+		expect(mockedClient).not.toHaveBeenCalled();
 	});
 });

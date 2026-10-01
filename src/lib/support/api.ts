@@ -28,13 +28,31 @@ export type SupportThread = {
 export const SUPPORT_MESSAGE_MAX_LENGTH = 4000;
 export const SUPPORT_PAGE_SIZE = 50;
 export const SUPPORT_MAX_LOADED = 500;
-// Until live delivery arrives (D2), an open conversation asks again this often. A closed one asks nothing.
-export const SUPPORT_OPEN_REFRESH_MS = 15_000;
+
+export type SupportUnread = { unread: number };
 
 // The user id is part of the key: the query client outlives sign-out, and a thread belongs to one person.
 export const supportThreadKey = (userId: string | null) => ['support', 'thread', userId] as const;
 export const supportThreadPageKey = (userId: string | null, limit: number) =>
 	[...supportThreadKey(userId), limit] as const;
+
+export const supportUnreadKey = (userId: string | null) => ['support', 'unread', userId] as const;
+
+export async function fetchSupportUnread(): Promise<SupportUnread> {
+	const response = await fetch('/api/support/unread');
+	if (!response.ok) throw httpError(response, 'Unread messages could not be counted.');
+	return response.json();
+}
+
+/** The member's screen showed their conversation up to `readThrough`, the newest message's time. */
+export async function markSupportThreadRead(threadId: string, readThrough: string) {
+	const response = await fetch('/api/support/thread/read', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ thread_id: threadId, read_through: readThrough })
+	});
+	if (!response.ok) throw await failure(response, 'The conversation could not be marked as read.');
+}
 
 export async function fetchSupportThread(limit: number): Promise<SupportThread> {
 	const response = await fetch(`/api/support/thread?limit=${limit}`);
@@ -74,6 +92,8 @@ export type SupportInboxThread = {
 	last_message_preview: string;
 	/** `member` means the contractor wrote last, so the thread is waiting on Uplift. */
 	last_message_sender_kind: SupportSenderKind;
+	/** The contractor wrote after Uplift last opened the conversation. */
+	unread: boolean;
 };
 
 export type SupportSettings = { responder_name: string; availability_note: string };
@@ -94,6 +114,7 @@ export const jafarSupportKey = ['jafar', 'support'] as const;
 export const jafarSupportInboxKey = ['jafar', 'support', 'inbox'] as const;
 export const jafarSupportInboxPageKey = (limit: number) =>
 	[...jafarSupportInboxKey, limit] as const;
+export const jafarSupportUnreadKey = ['jafar', 'support', 'unread'] as const;
 export const jafarSupportThreadKey = (threadId: string | null) =>
 	['jafar', 'support', 'thread', threadId] as const;
 export const jafarSupportThreadPageKey = (threadId: string | null, limit: number) =>
@@ -112,6 +133,28 @@ export async function fetchSupportInboxThread(
 	const response = await fetch(`/api/jafar/support/threads/${threadId}?limit=${limit}`);
 	if (!response.ok) throw httpError(response, 'This conversation could not be loaded.');
 	return response.json();
+}
+
+export async function fetchSupportInboxUnread(): Promise<SupportUnread> {
+	const response = await fetch('/api/jafar/support/unread');
+	if (!response.ok) throw httpError(response, 'Unread conversations could not be counted.');
+	return response.json();
+}
+
+export async function markSupportInboxThreadRead(threadId: string, readThrough: string) {
+	const response = await fetch(`/api/jafar/support/threads/${threadId}/read`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ read_through: readThrough })
+	});
+	if (!response.ok) throw await failure(response, 'The conversation could not be marked as read.');
+}
+
+/** The secret live channel name for this /jafar session. */
+export async function fetchSupportOwnerTopic(): Promise<string> {
+	const response = await fetch('/api/jafar/support/realtime', { method: 'POST' });
+	if (!response.ok) throw await failure(response, 'Live updates could not be started.');
+	return (await response.json()).topic;
 }
 
 export async function replyToSupportThread(

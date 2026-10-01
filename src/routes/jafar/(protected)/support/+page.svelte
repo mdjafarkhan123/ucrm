@@ -13,14 +13,15 @@
 	import { urlParam } from '$lib/url-param.svelte';
 	import {
 		SUPPORT_MAX_LOADED,
-		SUPPORT_OPEN_REFRESH_MS,
 		SUPPORT_PAGE_SIZE,
 		fetchSupportInbox,
 		fetchSupportInboxThread,
 		jafarSupportInboxKey,
 		jafarSupportInboxPageKey,
+		jafarSupportKey,
 		jafarSupportThreadKey,
 		jafarSupportThreadPageKey,
+		markSupportInboxThreadRead,
 		replyToSupportThread,
 		type SupportInbox,
 		type SupportInboxThreadDetail,
@@ -42,21 +43,36 @@
 	let threadLimit = $state(SUPPORT_PAGE_SIZE);
 	let settingsOpen = $state(false);
 
-	// No live delivery yet (D2): the list checks for new messages on a timer while this page is open.
+	// New messages arrive live: the /jafar layout listens for them and refreshes these queries (D2).
 	const inbox = createQuery(() => ({
 		queryKey: jafarSupportInboxPageKey(inboxLimit),
 		queryFn: () => fetchSupportInbox(inboxLimit),
-		placeholderData: keepPreviousData,
-		refetchInterval: SUPPORT_OPEN_REFRESH_MS * 2
+		placeholderData: keepPreviousData
 	}));
 
 	const thread = createQuery(() => ({
 		queryKey: jafarSupportThreadPageKey(selectedId, threadLimit),
 		queryFn: () => fetchSupportInboxThread(selectedId as string, threadLimit),
 		enabled: selectedId !== null,
-		placeholderData: keepPreviousData,
-		refetchInterval: selectedId ? SUPPORT_OPEN_REFRESH_MS : false
+		placeholderData: keepPreviousData
 	}));
+
+	// An unread conversation becomes read once it is open on a tab Jafar is looking at, up to its newest
+	// message. Each newer message is marked once.
+	let pageVisible = $state(true);
+	let markedThrough: string | null = null;
+	$effect(() => {
+		const detail = thread.data;
+		if (!pageVisible || !detail || detail.thread.id !== selectedId || !detail.thread.unread) return;
+		const newest = detail.messages.at(-1);
+		if (!newest || newest.created_at === markedThrough) return;
+		markedThrough = newest.created_at;
+		markSupportInboxThreadRead(detail.thread.id, newest.created_at)
+			.then(() => queryClient.invalidateQueries({ queryKey: jafarSupportKey }))
+			.catch(() => {
+				markedThrough = null;
+			});
+	});
 
 	const threads = $derived(inbox.data?.threads ?? []);
 	const settings = $derived(inbox.data?.settings ?? null);
@@ -109,6 +125,9 @@
 </script>
 
 <svelte:head><title>Support Inbox · Control Room</title></svelte:head>
+<svelte:document
+	onvisibilitychange={() => (pageVisible = document.visibilityState === 'visible')}
+/>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <main class="support-inbox">
@@ -164,6 +183,7 @@
 							<button
 								class="support-inbox__thread"
 								class:support-inbox__thread--active={item.id === selectedId}
+								class:support-inbox__thread--unread={item.unread}
 								type="button"
 								aria-current={item.id === selectedId ? 'true' : undefined}
 								onpointerenter={() => warm(item.id)}
@@ -171,7 +191,10 @@
 								onclick={() => openThread(item.id)}
 							>
 								<span class="support-inbox__thread-top">
-									<strong>{item.organization.name}</strong>
+									<strong
+										>{#if item.unread}<span class="support-inbox__hidden">Unread: </span>{/if}{item
+											.organization.name}</strong
+									>
 									<time datetime={item.last_message_at}>{relativeTime(item.last_message_at)}</time>
 								</span>
 								<span class="support-inbox__thread-member">{item.member_name}</span>
@@ -421,6 +444,27 @@
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		// Unread reads like an unread email: the name and the latest words stand out until opened.
+		&__thread--unread {
+			.support-inbox__thread-top strong {
+				font-weight: 700;
+			}
+
+			.support-inbox__thread-preview {
+				color: var(--color-heading);
+				font-weight: 500;
+			}
+		}
+
+		&__hidden {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
 			white-space: nowrap;
 		}
 

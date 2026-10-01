@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { navigating } from '$app/state';
-	import { useQueryClient } from '@tanstack/svelte-query';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import AppShell from '$lib/components/layout/AppShell.svelte';
 	import RouteSkeleton from '$lib/components/layout/RouteSkeleton.svelte';
 	import { notificationsKey } from '$lib/jafar/notifications';
@@ -16,9 +16,47 @@
 		jafarProspectsKey,
 		jafarSettingsKey
 	} from '$lib/jafar/query-keys';
-	import { jafarSupportInboxKey } from '$lib/support/api';
+	import {
+		fetchSupportInboxUnread,
+		fetchSupportOwnerTopic,
+		jafarSupportInboxKey,
+		jafarSupportKey,
+		jafarSupportUnreadKey
+	} from '$lib/support/api';
+	import { SUPPORT_FALLBACK_REFRESH_MS, listenForSupportActivity } from '$lib/support/live';
 	let { children } = $props();
 	const queryClient = useQueryClient();
+
+	// Support conversations waiting unread for Uplift: the number on the Support menu item, on every page.
+	const supportUnread = createQuery(() => ({
+		queryKey: jafarSupportUnreadKey,
+		queryFn: fetchSupportInboxUnread
+	}));
+
+	// Support Inbox activity arrives live on this session's own secret channel (D2). Each ping refreshes the
+	// count, and the inbox and open conversation when they are on screen. If the channel cannot be issued,
+	// the same refresh runs every 30 seconds instead.
+	$effect(() => {
+		const refresh = () => void queryClient.invalidateQueries({ queryKey: jafarSupportKey });
+		let stop: (() => void) | null = null;
+		let fallback: ReturnType<typeof setInterval> | null = null;
+		let cancelled = false;
+		fetchSupportOwnerTopic()
+			.then((topic) => {
+				if (!cancelled) stop = listenForSupportActivity(topic, refresh);
+			})
+			.catch(() => {
+				if (cancelled) return;
+				fallback = setInterval(() => {
+					if (document.visibilityState === 'visible') refresh();
+				}, SUPPORT_FALLBACK_REFRESH_MS);
+			});
+		return () => {
+			cancelled = true;
+			stop?.();
+			if (fallback !== null) clearInterval(fallback);
+		};
+	});
 
 	function hasCachedData(queryKey: readonly unknown[]) {
 		return queryClient
@@ -77,7 +115,7 @@
 	});
 </script>
 
-<AppShell variant="owner">
+<AppShell variant="owner" supportUnread={supportUnread.data?.unread ?? 0}>
 	{#if showLoadingSkeleton}
 		<RouteSkeleton />
 	{:else}

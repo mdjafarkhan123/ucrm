@@ -27,7 +27,8 @@
 		invoicesVisible = true,
 		marketingVisible = false,
 		reviewsVisible = false,
-		filesVisible = true
+		filesVisible = true,
+		supportUnread = 0
 	}: {
 		children: import('svelte').Snippet;
 		/** An account-wide message shown above every page, such as the overdue-payment banner. */
@@ -45,6 +46,8 @@
 		marketingVisible?: boolean;
 		reviewsVisible?: boolean;
 		filesVisible?: boolean;
+		/** Owner only: support conversations waiting unread for Uplift, shown on the Support item. */
+		supportUnread?: number;
 	} = $props();
 	let mobileOpen = $state(false);
 	let sidebarCollapsed = $state(false);
@@ -105,13 +108,13 @@
 			]
 		}
 	]);
-	const ownerGroups: NavGroup[] = [
+	const ownerGroups: NavGroup[] = $derived([
 		{
 			items: [
 				{ label: 'Overview', href: '/jafar', icon: 'dashboard' },
 				{ label: 'Prospects', href: '/jafar/prospects', icon: 'users' },
 				{ label: 'Organizations', href: '/jafar/organizations', icon: 'building' },
-				{ label: 'Support', href: '/jafar/support', icon: 'messages' },
+				{ label: 'Support', href: '/jafar/support', icon: 'messages', count: supportUnread },
 				{ label: 'Packages', href: '/jafar/packages', icon: 'package' },
 				{ label: 'Operations', href: '/jafar/operations', icon: 'alertTriangle' },
 				{ label: 'System emails', href: '/jafar/message-templates', icon: 'mail' },
@@ -120,7 +123,7 @@
 				{ label: 'Settings', href: '/jafar/settings', icon: 'settings' }
 			]
 		}
-	];
+	]);
 	const groups = $derived(variant === 'owner' ? ownerGroups : contractorGroups);
 	// The sidebar identifies the signed-in business by its own saved name and logo once one exists, rather
 	// than the product's generic mark — but never for the owner's Control Room, which is never a business.

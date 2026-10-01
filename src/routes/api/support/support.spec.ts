@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET as getThread } from './thread/+server';
 import { POST as postMessage } from './messages/+server';
+import { GET as getUnread } from './unread/+server';
+import { POST as postRead } from './thread/read/+server';
 import { getOrganizationContext } from '$lib/server/auth/organization';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 
@@ -235,6 +237,71 @@ describe('POST /api/support/messages', () => {
 		const client = supabase({ rpcError: { code: '42501', message: 'no' } });
 		const response = await postMessage(
 			event(client, { body: { body: 'Hello', client_message_id: CLIENT_MESSAGE_ID } })
+		);
+		expect(response.status).toBe(403);
+	});
+});
+
+describe('GET /api/support/unread', () => {
+	it('refuses someone with no active organization', async () => {
+		mockedContext.mockResolvedValue(null);
+		const client = supabase({});
+		expect((await getUnread(event(client))).status).toBe(401);
+		expect(client.rpc).not.toHaveBeenCalled();
+	});
+
+	it("counts the signed-in member's unread messages in their own organization", async () => {
+		const client = supabase({});
+		client.rpc.mockResolvedValue({ data: 3, error: null });
+		const response = await getUnread(event(client));
+		expect(await response.json()).toEqual({ unread: 3 });
+		expect(client.rpc).toHaveBeenCalledWith('support_unread_count', {
+			target_organization_id: 'org-1'
+		});
+	});
+});
+
+describe('POST /api/support/thread/read', () => {
+	const THREAD_ID = '323e4567-e89b-12d3-a456-426614174000';
+	const READ_THROUGH = '2026-10-01T10:00:00.123456+00:00';
+
+	it('refuses someone with no active organization', async () => {
+		mockedContext.mockResolvedValue(null);
+		const client = supabase({});
+		const response = await postRead(
+			event(client, { body: { thread_id: THREAD_ID, read_through: READ_THROUGH } })
+		);
+		expect(response.status).toBe(401);
+		expect(client.rpc).not.toHaveBeenCalled();
+	});
+
+	it.each([
+		['a missing time', { thread_id: THREAD_ID }],
+		['a time that is not a time', { thread_id: THREAD_ID, read_through: 'yesterday' }],
+		['a thread id that is not an id', { thread_id: 'thread-1', read_through: READ_THROUGH }]
+	])('rejects %s before the database', async (_name, body) => {
+		const client = supabase({});
+		expect((await postRead(event(client, { body }))).status).toBe(422);
+		expect(client.rpc).not.toHaveBeenCalled();
+	});
+
+	it('marks the thread read up to the newest message the screen showed', async () => {
+		const client = supabase({});
+		client.rpc.mockResolvedValue({ data: null, error: null });
+		const response = await postRead(
+			event(client, { body: { thread_id: THREAD_ID, read_through: READ_THROUGH } })
+		);
+		expect(response.status).toBe(204);
+		expect(client.rpc).toHaveBeenCalledWith('mark_support_thread_read', {
+			target_thread_id: THREAD_ID,
+			read_through: READ_THROUGH
+		});
+	});
+
+	it("answers 403 for someone else's thread", async () => {
+		const client = supabase({ rpcError: { code: '42501', message: 'no' } });
+		const response = await postRead(
+			event(client, { body: { thread_id: THREAD_ID, read_through: READ_THROUGH } })
 		);
 		expect(response.status).toBe(403);
 	});

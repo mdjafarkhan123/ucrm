@@ -31,3 +31,14 @@ export const supportSettingsSchema = z.object({
 		.max(80, 'Keep the name under 80 characters.'),
 	availability_note: z.string().trim().max(160, 'Keep this under 160 characters.')
 });
+
+// "Seen up to here": the time of the newest message the reader's screen showed. The database never lets a
+// mark move backwards or past the present, so a stale or invented time cannot hide a later message.
+const readThroughSchema = z.string().datetime({ offset: true });
+
+export const supportMemberReadSchema = z.object({
+	thread_id: z.string().uuid(),
+	read_through: readThroughSchema
+});
+
+export const supportUpliftReadSchema = z.object({ read_through: readThroughSchema });

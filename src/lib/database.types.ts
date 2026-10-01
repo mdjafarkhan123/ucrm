@@ -13269,6 +13269,35 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			platform_support_realtime_grants: {
+				Row: {
+					channel_topic: string;
+					created_at: string;
+					expires_at: string;
+					owner_session_id: string;
+				};
+				Insert: {
+					channel_topic: string;
+					created_at?: string;
+					expires_at: string;
+					owner_session_id: string;
+				};
+				Update: {
+					channel_topic?: string;
+					created_at?: string;
+					expires_at?: string;
+					owner_session_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'platform_support_realtime_grants_owner_session_id_fkey';
+						columns: ['owner_session_id'];
+						isOneToOne: true;
+						referencedRelation: 'platform_owner_sessions';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			platform_support_settings: {
 				Row: {
 					availability_note: string;
@@ -15030,6 +15059,38 @@ export type Database = {
 					}
 				];
 			};
+			support_thread_reads: {
+				Row: {
+					created_at: string;
+					last_read_at: string;
+					thread_id: string;
+					updated_at: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					last_read_at: string;
+					thread_id: string;
+					updated_at?: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					last_read_at?: string;
+					thread_id?: string;
+					updated_at?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'support_thread_reads_thread_id_fkey';
+						columns: ['thread_id'];
+						isOneToOne: false;
+						referencedRelation: 'support_threads';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			support_threads: {
 				Row: {
 					created_at: string;
@@ -15040,6 +15101,7 @@ export type Database = {
 					organization_id: string;
 					started_by_user_id: string | null;
 					updated_at: string;
+					uplift_last_read_at: string | null;
 				};
 				Insert: {
 					created_at?: string;
@@ -15050,6 +15112,7 @@ export type Database = {
 					organization_id: string;
 					started_by_user_id?: string | null;
 					updated_at?: string;
+					uplift_last_read_at?: string | null;
 				};
 				Update: {
 					created_at?: string;
@@ -15060,6 +15123,7 @@ export type Database = {
 					organization_id?: string;
 					started_by_user_id?: string | null;
 					updated_at?: string;
+					uplift_last_read_at?: string | null;
 				};
 				Relationships: [
 					{
@@ -21453,6 +21517,10 @@ export type Database = {
 				Args: { cost_per_hour_minor: number; minutes: number };
 				Returns: number;
 			};
+			issue_support_realtime_grant: {
+				Args: { target_owner_session_id: string };
+				Returns: string;
+			};
 			list_communication_outbound_attachments: {
 				Args: { target_delivery_intent_id: string };
 				Returns: {
@@ -21620,6 +21688,14 @@ export type Database = {
 					target_quote_id: string;
 				};
 				Returns: Json;
+			};
+			mark_support_thread_read: {
+				Args: { read_through: string; target_thread_id: string };
+				Returns: undefined;
+			};
+			mark_support_thread_read_by_uplift: {
+				Args: { read_through: string; target_thread_id: string };
+				Returns: undefined;
 			};
 			mark_team_invitation_auth_attempt_started: {
 				Args: { target_attempt_nonce: string; target_invitation_id: string };
@@ -24825,6 +24901,11 @@ export type Database = {
 					supplied_token_hash: string;
 				};
 				Returns: Json;
+			};
+			support_inbox_unread_count: { Args: never; Returns: number };
+			support_unread_count: {
+				Args: { target_organization_id: string };
+				Returns: number;
 			};
 			sweep_abandoned_file_uploads: {
 				Args: { batch_size?: number; older_than_hours?: number };

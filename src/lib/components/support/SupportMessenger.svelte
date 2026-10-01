@@ -4,14 +4,18 @@
 	import SupportConversation from './SupportConversation.svelte';
 	import {
 		SUPPORT_MAX_LOADED,
-		SUPPORT_OPEN_REFRESH_MS,
 		SUPPORT_PAGE_SIZE,
 		fetchSupportThread,
+		fetchSupportUnread,
+		markSupportThreadRead,
 		sendSupportMessage,
 		supportThreadKey,
 		supportThreadPageKey,
-		type SupportThread
+		supportUnreadKey,
+		type SupportThread,
+		type SupportUnread
 	} from '$lib/support/api';
+	import { listenForSupportActivity } from '$lib/support/live';
 	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
 	import closeIcon from '@tabler/icons/outline/x.svg?raw';
 
@@ -19,8 +23,9 @@
 	// screen, opening the person's own conversation with Uplift (plan §7; Intercom / Help Scout messenger
 	// model). It is contractor-to-Uplift only and shares nothing with the customer inbox.
 	//
-	// Closed, it asks the server nothing: the conversation starts loading when the pointer or keyboard
-	// reaches the button, and is cached so reopening is instant.
+	// Closed, it loads only the unread count for the button's badge: the conversation starts loading when the
+	// pointer or keyboard reaches the button, and is cached so reopening is instant. Uplift's replies arrive
+	// live (D2): a ping refreshes the badge, and the conversation too when it is open.
 	let { userId }: { userId: string } = $props();
 
 	const queryClient = useQueryClient();
@@ -33,11 +38,41 @@
 		queryKey: supportThreadPageKey(userId, limit),
 		queryFn: () => fetchSupportThread(limit),
 		enabled: open,
-		placeholderData: keepPreviousData,
-		// No live delivery yet (D2): an open conversation checks for Uplift's reply on a timer. TanStack
-		// pauses the timer while the tab is in the background.
-		refetchInterval: open ? SUPPORT_OPEN_REFRESH_MS : false
+		placeholderData: keepPreviousData
 	}));
+
+	const unreadQuery = createQuery(() => ({
+		queryKey: supportUnreadKey(userId),
+		queryFn: fetchSupportUnread
+	}));
+	const unread = $derived(unreadQuery.data?.unread ?? 0);
+
+	// Refreshing a closed conversation only marks it stale, so a ping costs a closed messenger one small count.
+	$effect(() =>
+		listenForSupportActivity(`support-user:${userId}`, () => {
+			void queryClient.invalidateQueries({ queryKey: supportUnreadKey(userId) });
+			void queryClient.invalidateQueries({ queryKey: supportThreadKey(userId) });
+		})
+	);
+
+	// Seen means the panel is open on a tab the person is looking at. Each newer message is marked once.
+	let pageVisible = $state(true);
+	let markedThrough: string | null = null;
+	$effect(() => {
+		const threadId = thread?.thread_id;
+		const newest = thread?.messages.at(-1);
+		if (!open || !pageVisible || !threadId || !newest || newest.created_at === markedThrough)
+			return;
+		// Your own message already counts as read up to itself; with nothing unread there is nothing to do.
+		if (newest.sender_kind === 'member' && unread === 0) return;
+		markedThrough = newest.created_at;
+		markSupportThreadRead(threadId, newest.created_at)
+			.then(() => queryClient.setQueryData<SupportUnread>(supportUnreadKey(userId), { unread: 0 }))
+			.catch(() => {
+				// The badge stays until the next ping or visit tries again.
+				markedThrough = null;
+			});
+	});
 
 	function warm() {
 		void queryClient.prefetchQuery({
@@ -76,14 +111,20 @@
 	}
 
 	const thread = $derived(query.data);
+	const unreadLabel = $derived(unread > 99 ? '99+' : String(unread));
 	const availability = $derived(thread?.availability_note ?? '');
 </script>
 
+<svelte:document
+	onvisibilitychange={() => (pageVisible = document.visibilityState === 'visible')}
+/>
+
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#if open}
-	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -- Escape closes the panel from anywhere inside it. -->
+	<!-- Escape closes the panel from anywhere inside it. -->
 	<div
 		class="support-messenger"
+		tabindex="-1"
 		role="dialog"
 		aria-modal="false"
 		aria-labelledby="support-messenger-title"
@@ -139,12 +180,16 @@
 		type="button"
 		bind:this={launcherEl}
 		aria-haspopup="dialog"
+		aria-label={unread > 0 ? `Chat with Uplift, ${unread} unread` : undefined}
 		onpointerenter={warm}
 		onfocus={warm}
 		onclick={() => void openPanel()}
 	>
 		<span class="support-messenger__launcher-icon" aria-hidden="true">{@html messageIcon}</span>
 		<span class="support-messenger__launcher-label">Chat with Uplift</span>
+		{#if unread > 0}
+			<span class="support-messenger__badge" aria-hidden="true">{unreadLabel}</span>
+		{/if}
 	</button>
 {/if}
 
@@ -192,6 +237,23 @@
 			outline: none;
 			box-shadow: var(--shadow-focus);
 		}
+	}
+
+	// The same red count as the notification bell, on the button's top-right corner.
+	.support-messenger__badge {
+		position: absolute;
+		top: -4px;
+		right: -4px;
+		min-width: 20px;
+		padding: 0 var(--space-smaller);
+		border: 2px solid var(--color-surface);
+		border-radius: var(--radius-large);
+		color: var(--color-text--reverse);
+		background: var(--color-critical);
+		font-size: var(--typography--fontSize-smaller);
+		font-weight: 600;
+		line-height: 16px;
+		text-align: center;
 	}
 
 	.support-messenger__launcher-icon {

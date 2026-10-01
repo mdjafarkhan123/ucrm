@@ -6,7 +6,7 @@ import type { SupportInboxThread, SupportSenderKind, SupportSettings } from '$li
 // owner's session. Nothing here is reachable from a contractor's request.
 
 const THREAD_SELECT =
-	'id, started_by_user_id, last_message_at, last_message_preview, last_message_sender_kind, organizations(id, name)';
+	'id, started_by_user_id, last_message_at, last_message_preview, last_message_sender_kind, uplift_last_read_at, organizations(id, name)';
 
 type ThreadRow = {
 	id: string;
@@ -14,6 +14,7 @@ type ThreadRow = {
 	last_message_at: string;
 	last_message_preview: string;
 	last_message_sender_kind: string;
+	uplift_last_read_at: string | null;
 	organizations: { id: string; name: string } | { id: string; name: string }[] | null;
 };
 
@@ -38,7 +39,12 @@ function toInboxThread(row: ThreadRow, names: Map<string, string>): SupportInbox
 		member_name: (row.started_by_user_id && names.get(row.started_by_user_id)) || 'Team member',
 		last_message_at: row.last_message_at,
 		last_message_preview: row.last_message_preview,
-		last_message_sender_kind: row.last_message_sender_kind as SupportSenderKind
+		last_message_sender_kind: row.last_message_sender_kind as SupportSenderKind,
+		// The same test as public.support_inbox_unread_count: the contractor wrote last, after Uplift's mark.
+		unread:
+			row.last_message_sender_kind === 'member' &&
+			(row.uplift_last_read_at === null ||
+				Date.parse(row.last_message_at) > Date.parse(row.uplift_last_read_at))
 	};
 }
 
