@@ -9,6 +9,7 @@
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
 	import sendIcon from '@tabler/icons/outline/send.svg?raw';
+	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
@@ -511,6 +512,27 @@
 					</p>
 				{/if}
 			</RailCard>
+
+			{#if builder.draft}
+				<RailCard title="Preview">
+					<p class="package-builder__muted">
+						{dirty
+							? 'Save your changes first. The preview shows the saved draft.'
+							: 'See this draft exactly as a customer will, in a new tab. Nothing is published.'}
+					</p>
+					<div>
+						<Button
+							size="small"
+							variant="secondary"
+							href={resolve('/jafar/(protected)/packages/[packageId]/preview', { packageId })}
+							target="_blank"
+							disabled={dirty || saving}
+							><span class="package-builder__button-icon" aria-hidden="true">{@html eyeIcon}</span
+							>Preview as customer</Button
+						>
+					</div>
+				</RailCard>
+			{/if}
 
 			{#if builder.draft}
 				<RailCard title="Publish">
