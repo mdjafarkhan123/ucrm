@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { encodeBoardCursor, readBoardCursor, resolveDateRange } from './board';
+import { encodeBoardCursor, readBoardCursor, recordFilters, resolveDateRange } from './board';
 
 // Toronto, because it keeps daylight saving: a preset that quietly used UTC midnight would be an hour
 // out for four months of the year and would show yesterday's cards under "This month" every evening.
@@ -155,5 +155,49 @@ describe('created-date presets', () => {
 		// 20 August in Auckland has already started while it is still the 19th in Toronto.
 		expect(range.from).toBe('2026-07-31T12:00:00.000Z');
 		expect(range.to).toBe('2026-08-20T12:00:00.000Z');
+	});
+});
+
+describe('search and lead source', () => {
+	it('asks for nothing when neither is set', () => {
+		expect(recordFilters(undefined, undefined)).toEqual({});
+	});
+
+	it('matches a typed name anywhere in the text', () => {
+		expect(recordFilters('Ada', undefined)).toEqual({ search_like: '%Ada%' });
+	});
+
+	it('escapes the wildcards somebody typed, so they are searched for and not obeyed', () => {
+		expect(recordFilters('50%_off\\', undefined).search_like).toBe('%50\\%\\_off\\\\%');
+	});
+
+	it('also matches a phone number by its digits, however it was typed', () => {
+		expect(recordFilters('(555) 010-2030', undefined)).toEqual({
+			search_like: '%(555) 010-2030%',
+			search_digits: '5550102030'
+		});
+	});
+
+	it('does not treat a name with a number in it as a phone number', () => {
+		expect(recordFilters('Unit 12 Oak St', undefined).search_digits).toBeUndefined();
+	});
+
+	it('needs three digits before a number reads as a phone number', () => {
+		expect(recordFilters('12', undefined).search_digits).toBeUndefined();
+	});
+
+	it('also matches a Quote number, with or without the hash', () => {
+		expect(recordFilters('#1042', undefined).search_number).toBe(1042);
+		expect(recordFilters('1042', undefined)).toEqual({
+			search_like: '%1042%',
+			search_digits: '1042',
+			search_number: 1042
+		});
+	});
+
+	it('passes the lead source through as the client record spells it', () => {
+		expect(recordFilters(undefined, 'Google search')).toEqual({
+			lead_source_filter: 'Google search'
+		});
 	});
 });

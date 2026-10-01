@@ -34,7 +34,13 @@ export type OpportunityCard = {
 	// `delivery_failure` is set while the quote is awaiting a response and its latest email did not reach
 	// the customer. The quote stays sent; this only says the customer has nothing yet.
 	quote: { id: string; status: string; delivery_failure: QuoteDeliveryFailure | null } | null;
-	client: { id: string; display_name: string; company_name: string | null } | null;
+	// `lead_source` is where the client came from, null when nobody recorded it.
+	client: {
+		id: string;
+		display_name: string;
+		company_name: string | null;
+		lead_source: string | null;
+	} | null;
 	property: {
 		id: string;
 		label: string | null;
@@ -80,6 +86,8 @@ export type BoardSummary = BoardFormatting & {
 	can_view_value: boolean;
 	// Whether this member may assign, reassign, or clear a card's owner.
 	can_edit: boolean;
+	// Whether this member may start a quote, which decides if the New quote button shows.
+	can_create_quote: boolean;
 	// Which board this organization shows: false is the five-column default with one Assessment column,
 	// true expands it into the three protected stages. Presentation only — the counts are the same either
 	// way. It rides on the summary because that is the query the board already holds and already refreshes,

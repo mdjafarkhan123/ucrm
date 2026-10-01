@@ -32,9 +32,9 @@ const empty = {
 	inactivity_days: 2
 };
 
-function summaryEvent(rows: unknown[]) {
+function summaryEvent(rows: unknown[], query = '') {
 	return {
-		url: new URL('http://localhost/api/pipeline/summary'),
+		url: new URL(`http://localhost/api/pipeline/summary${query}`),
 		locals: { supabase: { rpc: vi.fn().mockResolvedValue({ data: rows, error: null }) } }
 	} as unknown as Parameters<typeof GET>[0];
 }
@@ -90,5 +90,24 @@ describe('board summary with custom follow-up columns', () => {
 		expect(body.custom_counts[waiting.id]).toBe(4);
 		expect(body).not.toHaveProperty('custom_value_totals');
 		expect(body).not.toHaveProperty('value_totals');
+	});
+
+	// The headings have to be counting the same cards the columns are showing.
+	it('counts with the same search and lead source the columns page with', async () => {
+		vi.mocked(hasPermission).mockReturnValue(true);
+		const event = summaryEvent(rows, '?q=555-0102&source=Referral');
+
+		expect((await GET(event)).status).toBe(200);
+
+		const rpc = (event.locals as unknown as { supabase: { rpc: ReturnType<typeof vi.fn> } })
+			.supabase.rpc;
+		expect(rpc).toHaveBeenCalledWith(
+			'pipeline_stage_counts',
+			expect.objectContaining({
+				search_like: '%555-0102%',
+				search_digits: '5550102',
+				lead_source_filter: 'Referral'
+			})
+		);
 	});
 });

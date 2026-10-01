@@ -43,6 +43,43 @@ export function sortColumn(sort: BoardSort) {
 	return SORT_COLUMNS[sort];
 }
 
+// The search box and the lead source, as the two board functions take them. Both routes build them here,
+// so the cards and the headings above them are always asked the same question.
+//
+// One typed term is matched three ways. As text, anywhere in a title, a name, an address, an email, or a
+// phone number as it was typed. As digits, when the term reads as a phone number, against the stored
+// digits-only form, so "(555) 010-2030" finds "555-010-2030". And as a Quote number, when it reads as one.
+export type BoardRecordFilters = {
+	search_like?: string;
+	search_digits?: string;
+	search_number?: number;
+	lead_source_filter?: string;
+};
+
+const PHONE_SHAPED = /^[\d\s()+.-]+$/;
+const NUMBER_SHAPED = /^#?(\d{1,9})$/;
+
+export function recordFilters(
+	q: string | undefined,
+	source: string | undefined
+): BoardRecordFilters {
+	const filters: BoardRecordFilters = {};
+	if (source) filters.lead_source_filter = source;
+	if (!q) return filters;
+
+	// The term's own wildcards are escaped, so a search for "50%" looks for those three characters.
+	filters.search_like = `%${q.replace(/[\\%_]/g, (character) => `\\${character}`)}%`;
+
+	if (PHONE_SHAPED.test(q)) {
+		const digits = q.replace(/\D/g, '');
+		if (digits.length >= 3 && digits.length <= 20) filters.search_digits = digits;
+	}
+	const number = NUMBER_SHAPED.exec(q);
+	if (number) filters.search_number = Number(number[1]);
+
+	return filters;
+}
+
 // A cursor is "<column>:<sort>:<phase>:<the sort column's value>|<id>". Both the column and the sort are
 // in it, because a marker means nothing outside the list it was cut from: replayed against another order
 // it would skip and repeat cards, and replayed against another column it would page a set of cards that

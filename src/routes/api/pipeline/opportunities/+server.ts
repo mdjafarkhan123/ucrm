@@ -7,6 +7,7 @@ import { boardQuerySchema } from '$lib/server/validation/pipeline.schema';
 import {
 	encodeBoardCursor,
 	readBoardCursor,
+	recordFilters,
 	resolveDateRange,
 	sortColumn,
 	type BoardCursor,
@@ -55,6 +56,7 @@ type BoardPageRow = {
 	quote_delivery_failed_email: string | null;
 	quote_delivery_failure: QuoteDeliveryFailureReason | null;
 	progress_at: string;
+	client_lead_source: string | null;
 };
 
 // One board column at a time. Each column asks for its own page, so a busy stage can keep loading
@@ -84,7 +86,9 @@ export const GET: RequestHandler = async (event) => {
 		owner: query.get('owner') ?? undefined,
 		date: query.get('date') ?? undefined,
 		from: query.get('from') ?? undefined,
-		to: query.get('to') ?? undefined
+		to: query.get('to') ?? undefined,
+		q: query.get('q') ?? undefined,
+		source: query.get('source') ?? undefined
 	});
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
@@ -152,7 +156,8 @@ export const GET: RequestHandler = async (event) => {
 				? cursor.value || undefined
 				: undefined,
 		cursor_id: cursor?.id ?? undefined,
-		board_today: today ?? undefined
+		board_today: today ?? undefined,
+		...recordFilters(parsed.data.q, parsed.data.source)
 	});
 	if (error) {
 		// The one refusal a well-formed request can meet: a custom stage that was switched off after this
@@ -205,7 +210,9 @@ export const GET: RequestHandler = async (event) => {
 				: {
 						id: row.client_id,
 						display_name: row.client_display_name,
-						company_name: row.client_company_name
+						company_name: row.client_company_name,
+						// Where this client came from, or null when nobody recorded it.
+						lead_source: row.client_lead_source
 					},
 		property:
 			row.property_id === null || row.property_address_line1 === null

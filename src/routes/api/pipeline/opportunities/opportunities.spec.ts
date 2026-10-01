@@ -64,6 +64,7 @@ function boardRow(overrides: Record<string, unknown> = {}) {
 		quote_delivery_failed_at: null,
 		quote_delivery_failed_email: null,
 		quote_delivery_failure: null,
+		client_lead_source: null,
 		...overrides
 	};
 }
@@ -497,5 +498,52 @@ describe('the expected close order', () => {
 			'pipeline_board_page',
 			expect.objectContaining({ sort_key: 'expected_close_on', cursor_date: '2026-10-05' })
 		);
+	});
+});
+
+describe('search and lead source', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockedRequire.mockResolvedValue(context);
+		mockedHasPermission.mockReturnValue(true);
+	});
+
+	it('asks the database for the typed term as text and as phone digits', async () => {
+		const event = readEvent([], 'stage=new_request&sort=stage&q=555-0102');
+		expect((await GET(event)).status).toBe(200);
+		expect(rpcOf(event)).toHaveBeenCalledWith(
+			'pipeline_board_page',
+			expect.objectContaining({ search_like: '%555-0102%', search_digits: '5550102' })
+		);
+	});
+
+	it('asks for one lead source by name', async () => {
+		const event = readEvent([], 'stage=new_request&sort=stage&source=Referral');
+		expect((await GET(event)).status).toBe(200);
+		expect(rpcOf(event)).toHaveBeenCalledWith(
+			'pipeline_board_page',
+			expect.objectContaining({ lead_source_filter: 'Referral' })
+		);
+	});
+
+	it('sends neither when the board is not searched or filtered', async () => {
+		const event = readEvent([], 'stage=new_request&sort=stage');
+		await GET(event);
+		const sent = rpcOf(event).mock.calls[0][1];
+		expect('search_like' in sent).toBe(false);
+		expect('lead_source_filter' in sent).toBe(false);
+	});
+
+	it('refuses a search too short to mean anything', async () => {
+		const event = readEvent([], 'stage=new_request&sort=stage&q=a');
+		expect((await GET(event)).status).toBe(422);
+		expect(rpcOf(event)).not.toHaveBeenCalled();
+	});
+
+	it('puts the client lead source on the card', async () => {
+		const rows = [boardRow({ client_lead_source: 'Referral' }), boardRow({ id: 'opp-2' })];
+		const body = await (await GET(readEvent(rows, 'stage=new_request&sort=stage'))).json();
+		expect(body.opportunities[0].client.lead_source).toBe('Referral');
+		expect(body.opportunities[1].client.lead_source).toBeNull();
 	});
 });
