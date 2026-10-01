@@ -300,7 +300,7 @@
 		}}
 	>
 		<div class="support-conversation__field" class:support-conversation__field--invalid={tooLong}>
-			<label class="sr-only" for={`${uid}-message`}>Message</label>
+			<label class="support-conversation__label" for={`${uid}-message`}>Message</label>
 			<textarea
 				id={`${uid}-message`}
 				bind:this={inputEl}
@@ -494,6 +494,19 @@
 			border-top: var(--border-base) solid var(--color-border);
 		}
 
+		// Read by screen readers only; the placeholder already tells sighted people what the box is for.
+		&__label {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
+			border: 0;
+		}
+
 		&__field {
 			display: flex;
 			align-items: flex-end;
@@ -528,7 +541,15 @@
 				outline: none;
 				resize: none;
 
+				// The field around it already shows the focus ring; the app-wide one would draw a second box inside.
+				&:focus-visible {
+					box-shadow: none;
+				}
+
+				// The app-wide placeholder offset makes room for a floating label; this box has none, and the offset
+				// would push the hint below the one-line box.
 				&::placeholder {
+					padding-top: 0;
 					color: var(--color-text--secondary);
 				}
 
