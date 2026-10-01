@@ -28,10 +28,15 @@ export {
 };
 
 // What the sort is called in the URL, and what the column it orders by is called in the database.
-const SORT_COLUMNS: Record<BoardSort, 'stage_entered_at' | 'created_at' | 'estimated_value'> = {
+const SORT_COLUMNS: Record<
+	BoardSort,
+	'attention' | 'stage_entered_at' | 'created_at' | 'estimated_value' | 'expected_close_on'
+> = {
+	attention: 'attention',
 	stage: 'stage_entered_at',
 	created: 'created_at',
-	value: 'estimated_value'
+	value: 'estimated_value',
+	close: 'expected_close_on'
 };
 
 export function sortColumn(sort: BoardSort) {
@@ -41,13 +46,14 @@ export function sortColumn(sort: BoardSort) {
 // A cursor is "<column>:<sort>:<phase>:<the sort column's value>|<id>". Both the column and the sort are
 // in it, because a marker means nothing outside the list it was cut from: replayed against another order
 // it would skip and repeat cards, and replayed against another column it would page a set of cards that
-// column never showed. The phase only matters when sorting by value: 1 is the estimated cards, 2 is the
-// unestimated ones that always come after them.
+// column never showed. The phase matters for three sorts. By value or expected close, 1 is the cards that have
+// one and 2 is those that do not, which always come after. In the Task order, 1 is a Task due today or
+// earlier, 2 is no dated Task, and 3 is a Task due later.
 export type BoardCursor = {
 	// A protected column's name, or a custom stage's id.
 	column: string;
 	sort: BoardSort;
-	phase: 1 | 2;
+	phase: 1 | 2 | 3;
 	value: string;
 	id: string;
 };
@@ -76,7 +82,7 @@ export function readBoardCursor(raw: string | null | undefined): BoardCursor | n
 	const sort = head.slice(firstColon + 1, secondColon) as BoardSort;
 	if (!(BOARD_SORTS as readonly string[]).includes(sort)) return null;
 	const phase = Number(head.slice(secondColon + 1, thirdColon));
-	if (phase !== 1 && phase !== 2) return null;
+	if (phase !== 1 && phase !== 2 && phase !== 3) return null;
 
 	return { column, sort, phase, value: head.slice(thirdColon + 1), id };
 }

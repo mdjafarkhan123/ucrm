@@ -36,6 +36,8 @@ export type FollowUp = {
 	/** `Aug 25`, or `Aug 25, 2027` once it leaves this year. */
 	label: string;
 	overdue: boolean;
+	/** Due on the organization's today: the board's second group, after overdue. */
+	dueToday: boolean;
 	/** Said in full, so the red is never the only thing carrying the meaning. */
 	description: string;
 };
@@ -64,6 +66,7 @@ export function followUp(
 	return {
 		label,
 		overdue,
+		dueToday: date === today,
 		description: overdue ? `Follow-up overdue since ${label}` : `Follow up on ${label}`
 	};
 }

@@ -11,14 +11,13 @@
 	import {
 		invalidatePipeline,
 		updateOpportunityExpectedClose,
-		updateOpportunityNextFollowUp,
 		updateOpportunityValue,
 		type OpportunityCard
 	} from '$lib/pipeline/api';
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
 
-	// The Brief's Opportunity details block: salesperson, estimated value, expected close, and next
-	// follow-up, each editable in place. The parent keys this component by `opportunity.id` — switching
+	// The Brief's Opportunity details block: salesperson, estimated value, and expected close, each
+	// editable in place. Follow-up lives only in Tasks. The parent keys this component by `opportunity.id` — switching
 	// cards remounts it, which is what resets a mid-edit row rather than an effect syncing local state to
 	// a prop.
 	let {
@@ -43,19 +42,17 @@
 	// already makes for the "Mark as lost" menu.
 	const canEditValue = $derived(canEdit && opportunity.quote === null);
 	const amount = $derived(formatting ? formatMoney(opportunity.estimated_value, formatting) : null);
-	const chase = $derived(formatting ? followUp(opportunity.next_follow_up_on, formatting) : null);
 	const closeOn = $derived(formatting ? followUp(opportunity.expected_close_on, formatting) : null);
 
 	const queryClient = useQueryClient();
 
 	// Which one row, if any, is open for editing. Only one at a time — opening a second field closes the
 	// first rather than staging two drafts nobody asked to compare.
-	let editingField = $state<'value' | 'expectedClose' | 'nextFollowUp' | null>(null);
+	let editingField = $state<'value' | 'expectedClose' | null>(null);
 	let valueDraft = $state('');
 	const toast = getToastManager();
 	let valueError = $state('');
 	let expectedCloseError = $state('');
-	let nextFollowUpError = $state('');
 
 	const valueMutation = createMutation(() => ({
 		mutationFn: (next: number | null) => updateOpportunityValue(opportunity.id, next),
@@ -82,19 +79,6 @@
 		},
 		onError: (error: Error) => {
 			expectedCloseError = error.message;
-		}
-	}));
-
-	const nextFollowUpMutation = createMutation(() => ({
-		mutationFn: (next: string | null) => updateOpportunityNextFollowUp(opportunity.id, next),
-		onSuccess: (result) => {
-			invalidatePipeline(queryClient);
-			onUpdate({ next_follow_up_on: result.next_follow_up_on });
-			editingField = null;
-			toast.success('Follow-up date saved');
-		},
-		onError: (error: Error) => {
-			nextFollowUpError = error.message;
 		}
 	}));
 
@@ -150,14 +134,6 @@
 	function clearExpectedClose() {
 		expectedCloseError = '';
 		expectedCloseMutation.mutate(null);
-	}
-	function commitNextFollowUp(value: CalendarDate | undefined) {
-		nextFollowUpError = '';
-		nextFollowUpMutation.mutate(toDay(value));
-	}
-	function clearNextFollowUp() {
-		nextFollowUpError = '';
-		nextFollowUpMutation.mutate(null);
 	}
 </script>
 
@@ -283,63 +259,6 @@
 								onclick={() => {
 									expectedCloseError = '';
 									editingField = 'expectedClose';
-								}}
-							/>
-						{/if}
-					</span>
-				{/if}
-			</dd>
-		</div>
-		<div class="brief__row">
-			<dt>Next follow-up</dt>
-			<dd>
-				{#if editingField === 'nextFollowUp'}
-					<div class="brief__editor brief__editor--date">
-						<CalendarPicker
-							id="brief-next-follow-up-input"
-							label="Next follow-up"
-							value={toCalendarDate(opportunity.next_follow_up_on)}
-							invalid={Boolean(nextFollowUpError)}
-							errorMessage={nextFollowUpError}
-							disabled={nextFollowUpMutation.isPending}
-							onchange={commitNextFollowUp}
-						/>
-						{#if opportunity.next_follow_up_on}
-							<button
-								type="button"
-								class="brief__editor-clear"
-								disabled={nextFollowUpMutation.isPending}
-								onclick={clearNextFollowUp}
-							>
-								Clear
-							</button>
-						{/if}
-						<button
-							type="button"
-							class="brief__editor-cancel"
-							aria-label="Close next follow-up editor"
-							onclick={() => (editingField = null)}
-						>
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							{@html xIcon}
-						</button>
-					</div>
-				{:else}
-					<span class="brief__value-row">
-						{#if chase}
-							<span class={chase.overdue ? 'brief__overdue' : ''}>
-								{chase.label}
-								{#if chase.overdue}<span class="brief__overdue-word">Overdue</span>{/if}
-							</span>
-						{:else}
-							<span class="brief__blank">No follow-up set</span>
-						{/if}
-						{#if canEdit}
-							<PencilButton
-								label="Edit next follow-up date"
-								onclick={() => {
-									nextFollowUpError = '';
-									editingField = 'nextFollowUp';
 								}}
 							/>
 						{/if}
@@ -474,16 +393,5 @@
 	.brief__blank {
 		color: var(--color-text--secondary);
 		font-weight: 400;
-	}
-	.brief__overdue {
-		color: var(--color-critical--onSurface);
-	}
-	.brief__overdue-word {
-		text-transform: uppercase;
-		&::before {
-			content: '· ';
-		}
-		font-size: var(--typography--fontSize-smaller);
-		letter-spacing: 0.04em;
 	}
 </style>

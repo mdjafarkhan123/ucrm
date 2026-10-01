@@ -46,7 +46,6 @@ export type OpportunityCard = {
 	// zero for either of those — zero is a real estimate somebody typed.
 	estimated_value?: number | null;
 	expected_close_on: string | null;
-	next_follow_up_on: string | null;
 	// The one open Task the card shows, in Jobber's priority order (earliest due, undated last, ties by
 	// creation). Null when the Opportunity has no open Task.
 	task: { id: string; title: string; due_on: string | null } | null;
@@ -292,19 +291,6 @@ export function updateOpportunityExpectedClose(
 		'expected-close',
 		{ expected_close_on: expectedCloseOn },
 		'The expected close date could not be updated.'
-	);
-}
-
-// The Brief's next follow-up date edit. `null` clears the date.
-export function updateOpportunityNextFollowUp(
-	opportunityId: string,
-	nextFollowUpOn: string | null
-): Promise<{ id: string; next_follow_up_on: string | null }> {
-	return patchOpportunityField(
-		opportunityId,
-		'next-follow-up',
-		{ next_follow_up_on: nextFollowUpOn },
-		'The next follow-up date could not be updated.'
 	);
 }
 

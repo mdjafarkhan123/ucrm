@@ -3,7 +3,6 @@ import {
 	taskCompletionSchema,
 	taskInputSchema,
 	updateOpportunityExpectedCloseSchema,
-	updateOpportunityNextFollowUpSchema,
 	updateOpportunityValueSchema
 } from './pipeline.schema';
 
@@ -72,27 +71,6 @@ describe('updateOpportunityExpectedCloseSchema', () => {
 	it('rejects a full timestamp', () => {
 		const result = updateOpportunityExpectedCloseSchema.safeParse({
 			expected_close_on: '2026-09-01T00:00:00.000Z'
-		});
-		expect(result.success).toBe(false);
-	});
-});
-
-describe('updateOpportunityNextFollowUpSchema', () => {
-	it('accepts an ISO day', () => {
-		const result = updateOpportunityNextFollowUpSchema.safeParse({
-			next_follow_up_on: '2026-09-05'
-		});
-		expect(result.success).toBe(true);
-	});
-
-	it('accepts null to clear the date', () => {
-		const result = updateOpportunityNextFollowUpSchema.safeParse({ next_follow_up_on: null });
-		expect(result.success).toBe(true);
-	});
-
-	it('rejects a non-ISO date shape', () => {
-		const result = updateOpportunityNextFollowUpSchema.safeParse({
-			next_follow_up_on: 'next tuesday'
 		});
 		expect(result.success).toBe(false);
 	});

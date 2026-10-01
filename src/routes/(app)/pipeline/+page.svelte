@@ -253,7 +253,7 @@
 	// to its default order as soon as the summary says which world this member is in.
 	$effect(() => {
 		if (summaryQuery.data && !canViewValue && urlFilters.sort === 'value') {
-			setFilters({ ...urlFilters, sort: 'stage', direction: 'desc' });
+			setFilters({ ...urlFilters, sort: 'attention', direction: 'desc' });
 		}
 	});
 </script>

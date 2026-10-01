@@ -8970,7 +8970,7 @@ export type Database = {
 					expected_close_on: string | null;
 					id: string;
 					job_id: string | null;
-					next_follow_up_on: string | null;
+					next_task_due_on: string | null;
 					organization_id: string;
 					outcome: string;
 					outcome_at: string | null;
@@ -8994,7 +8994,7 @@ export type Database = {
 					expected_close_on?: string | null;
 					id?: string;
 					job_id?: string | null;
-					next_follow_up_on?: string | null;
+					next_task_due_on?: string | null;
 					organization_id: string;
 					outcome?: string;
 					outcome_at?: string | null;
@@ -9018,7 +9018,7 @@ export type Database = {
 					expected_close_on?: string | null;
 					id?: string;
 					job_id?: string | null;
-					next_follow_up_on?: string | null;
+					next_task_due_on?: string | null;
 					organization_id?: string;
 					outcome?: string;
 					outcome_at?: string | null;
@@ -21816,8 +21816,10 @@ export type Database = {
 			};
 			pipeline_board_page: {
 				Args: {
+					board_today?: string;
 					created_from?: string;
 					created_to?: string;
+					cursor_date?: string;
 					cursor_id?: string;
 					cursor_phase?: number;
 					cursor_sort_key?: string;
@@ -21842,7 +21844,7 @@ export type Database = {
 					estimated_value: number;
 					expected_close_on: string;
 					id: string;
-					next_follow_up_on: string;
+					next_task_due_on: string;
 					outcome: string;
 					owner_avatar_url: string;
 					owner_full_name: string;
@@ -22069,10 +22071,8 @@ export type Database = {
 				Args: {
 					new_estimated_value?: number;
 					new_expected_close_on?: string;
-					new_next_follow_up_on?: string;
 					new_owner_user_id?: string;
 					set_expected_close?: boolean;
-					set_next_follow_up?: boolean;
 					set_owner?: boolean;
 					set_value?: boolean;
 					target_opportunity_id: string;
@@ -22081,7 +22081,6 @@ export type Database = {
 					estimated_value: number;
 					expected_close_on: string;
 					id: string;
-					next_follow_up_on: string;
 					owner_user_id: string;
 					updated_at: string;
 				}[];

@@ -8,9 +8,12 @@ import {
 	encodeBoardCursor,
 	readBoardCursor,
 	resolveDateRange,
-	sortColumn
+	sortColumn,
+	type BoardCursor,
+	type BoardSort
 } from '$lib/server/pipeline/board';
 import { organizationFormatting } from '$lib/server/requests/timezone';
+import { calendarDay } from '$lib/server/time/calendar';
 import type { QuoteDeliveryFailureReason } from '$lib/quotes/send';
 
 // `locals.supabase` is an untyped client, and the generated types for a returns-table function claim
@@ -39,7 +42,7 @@ type BoardPageRow = {
 	owner_avatar_url: string | null;
 	estimated_value: number | null;
 	expected_close_on: string | null;
-	next_follow_up_on: string | null;
+	next_task_due_on: string | null;
 	task_id: string | null;
 	task_title: string | null;
 	task_due_on: string | null;
@@ -99,26 +102,27 @@ export const GET: RequestHandler = async (event) => {
 	// The board sends a fresh request without a cursor whenever the controls change, so this only ever
 	// catches a hand-edited URL.
 	const cursor = readBoardCursor(parsed.data.cursor);
-	const cursorValueIsBroken =
-		cursor?.sort === 'value' && cursor.phase === 1 && !Number.isFinite(Number(cursor.value));
 	if (
 		parsed.data.cursor &&
-		(!cursor || cursor.column !== stage || cursor.sort !== sort || cursorValueIsBroken)
+		(!cursor || cursor.column !== stage || cursor.sort !== sort || !cursorFitsItsPhase(cursor))
 	) {
 		return validationError({ cursor: 'Start this column again.' });
 	}
 
-	// Only a real date filter needs the organization's calendar, so an unfiltered board still costs one
-	// database round trip.
+	// A date filter and the Task order both need the organization's calendar: "last month" and "overdue" are
+	// questions about the contractor's days, not UTC's. The settings row is held in process, so this is
+	// usually no round trip at all.
 	let range: { from: string | null; to: string | null } = { from: null, to: null };
-	if (date !== 'all') {
+	let today: string | null = null;
+	if (date !== 'all' || sort === 'attention') {
 		const formatting = await organizationFormatting(check.auth.organization.id);
 		// A timezone that could not be read is not a reason to answer with the wrong days.
 		if (!formatting.ok) return databaseError();
-		range = resolveDateRange(date, formatting.formatting.timezone, {
-			from: parsed.data.from,
-			to: parsed.data.to
-		});
+		const { timezone } = formatting.formatting;
+		if (date !== 'all') {
+			range = resolveDateRange(date, timezone, { from: parsed.data.from, to: parsed.data.to });
+		}
+		if (sort === 'attention') today = calendarDay(new Date(), timezone);
 	}
 
 	// One extra row answers "is there more" without a second count query.
@@ -134,11 +138,20 @@ export const GET: RequestHandler = async (event) => {
 		created_to: range.to ?? undefined,
 		cursor_sort_key: cursor ? sortColumn(cursor.sort) : undefined,
 		cursor_phase: cursor?.phase ?? undefined,
-		cursor_timestamp: cursor && cursor.sort !== 'value' ? cursor.value : undefined,
-		// Money crosses the wire as text so the cursor stays exact, and goes back to the database as the
-		// number the column actually holds.
+		// Each order's marker goes back as the type its column holds. Money crosses the wire as text so the
+		// cursor stays exact. The Task order's middle phase pages by time in the column; its other two by day.
+		cursor_timestamp:
+			cursor && (cursor.sort === 'stage' || cursor.sort === 'created' || isAttentionTime(cursor))
+				? cursor.value
+				: undefined,
 		cursor_value: cursor && cursor.sort === 'value' ? Number(cursor.value) : undefined,
-		cursor_id: cursor?.id ?? undefined
+		cursor_date:
+			cursor &&
+			(cursor.sort === 'close' || (cursor.sort === 'attention' && !isAttentionTime(cursor)))
+				? cursor.value || undefined
+				: undefined,
+		cursor_id: cursor?.id ?? undefined,
+		board_today: today ?? undefined
 	});
 	if (error) {
 		// The one refusal a well-formed request can meet: a custom stage that was switched off after this
@@ -163,7 +176,6 @@ export const GET: RequestHandler = async (event) => {
 		outcome: row.outcome,
 		created_at: row.created_at,
 		expected_close_on: row.expected_close_on,
-		next_follow_up_on: row.next_follow_up_on,
 		// Present only for a member who may see money. Absent, not null, for everyone else.
 		...(canViewValue ? { estimated_value: row.estimated_value } : {}),
 		request: row.request_id ? { id: row.request_id, status: row.request_status } : null,
@@ -226,23 +238,78 @@ export const GET: RequestHandler = async (event) => {
 	}));
 
 	const last = page.at(-1);
-	// Which half of a value sort the next page continues from is read off the last card: a card with no
-	// estimate can only have come from the unestimated half, which always comes last.
 	const nextCursor =
-		hasMore && last
-			? encodeBoardCursor({
-					column: stage,
-					sort,
-					phase: sort === 'value' && last.estimated_value === null ? 2 : 1,
-					value:
-						sort === 'value'
-							? (last.estimated_value?.toString() ?? '')
-							: sort === 'created'
-								? last.created_at
-								: last.stage_entered_at,
-					id: last.id
-				})
-			: null;
+		hasMore && last ? encodeBoardCursor(cursorAfter(stage, sort, last, today)) : null;
 
 	return json({ stage, opportunities, next_cursor: nextCursor }, { headers: PRIVATE_READ_HEADERS });
 };
+
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+// A marker whose value is not the kind its phase pages by would reach the database as a type error. Only a
+// hand-edited URL gets here, so it is simply started again.
+function cursorFitsItsPhase(cursor: BoardCursor) {
+	switch (cursor.sort) {
+		case 'attention':
+			return cursor.phase === 2
+				? !Number.isNaN(Date.parse(cursor.value))
+				: ISO_DAY.test(cursor.value);
+		case 'value':
+			return cursor.phase !== 3 && (cursor.phase === 2 || Number.isFinite(Number(cursor.value)));
+		case 'close':
+			return cursor.phase !== 3 && (cursor.phase === 2 || ISO_DAY.test(cursor.value));
+		case 'stage':
+		case 'created':
+			return cursor.phase === 1 && !Number.isNaN(Date.parse(cursor.value));
+	}
+}
+
+// The Task order's middle phase, cards with no dated Task, pages by when they arrived in the column.
+function isAttentionTime(cursor: BoardCursor) {
+	return cursor.sort === 'attention' && cursor.phase === 2;
+}
+
+// Which phase the next page continues from is read off the last card, because every phase holds only one kind
+// of card: an unestimated card can only be from the value sort's second half, a card with no dated Task only
+// from the Task order's middle.
+function cursorAfter(
+	column: string,
+	sort: BoardSort,
+	last: BoardPageRow,
+	today: string | null
+): BoardCursor {
+	switch (sort) {
+		case 'attention': {
+			const due = last.next_task_due_on;
+			if (due === null)
+				return { column, sort, phase: 2, value: last.stage_entered_at, id: last.id };
+			return {
+				column,
+				sort,
+				phase: today !== null && due > today ? 3 : 1,
+				value: due,
+				id: last.id
+			};
+		}
+		case 'value':
+			return {
+				column,
+				sort,
+				phase: last.estimated_value === null ? 2 : 1,
+				value: last.estimated_value?.toString() ?? '',
+				id: last.id
+			};
+		case 'close':
+			return {
+				column,
+				sort,
+				phase: last.expected_close_on === null ? 2 : 1,
+				value: last.expected_close_on ?? '',
+				id: last.id
+			};
+		case 'created':
+			return { column, sort, phase: 1, value: last.created_at, id: last.id };
+		case 'stage':
+			return { column, sort, phase: 1, value: last.stage_entered_at, id: last.id };
+	}
+}

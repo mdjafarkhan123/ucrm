@@ -23,8 +23,6 @@
 	import { clientDetailKey, fetchClient } from '$lib/clients/api';
 	import { activityKey } from '$lib/collaboration/api';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
-	import bellIcon from '@tabler/icons/outline/bell.svg?raw';
-	import alertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 	import userCircleIcon from '@tabler/icons/outline/user-circle.svg?raw';
 	import checklistIcon from '@tabler/icons/outline/checklist.svg?raw';
 	import mailOffIcon from '@tabler/icons/outline/mail-off.svg?raw';
@@ -139,7 +137,6 @@
 	// Absent when this member may not see money, null when nobody has estimated the work. Neither one is
 	// a zero, so neither one prints.
 	const amount = $derived(formatting ? formatMoney(opportunity.estimated_value, formatting) : null);
-	const chase = $derived(formatting ? followUp(opportunity.next_follow_up_on, formatting) : null);
 	// The earliest-due open Task, in the database's own priority order — the card takes it as given and
 	// computes nothing. Completion and reopening only happen from the Brief, so this line is read-only.
 	const taskDue = $derived(
@@ -302,21 +299,9 @@
 					class="opportunity-card__task-due"
 					class:opportunity-card__task-due--overdue={taskDue.overdue}
 				>
-					{taskDue.overdue ? 'Overdue' : taskDue.label}
+					{taskDue.overdue ? 'Overdue' : taskDue.dueToday ? 'Today' : taskDue.label}
 				</span>
 			{/if}
-		</span>
-	{/if}
-	{#if chase}
-		<span
-			class={`opportunity-card__chase${chase.overdue ? ' opportunity-card__chase--overdue' : ''}`}
-		>
-			<span class="opportunity-card__icon" aria-hidden="true">
-				{@html chase.overdue ? alertIcon : bellIcon}
-			</span>
-			{#if chase.overdue}<span class="opportunity-card__overdue">Overdue</span>{/if}
-			<span class="opportunity-card__spoken">{chase.description}</span>
-			<span aria-hidden="true">{chase.label}</span>
 		</span>
 	{/if}
 </div>
@@ -558,24 +543,6 @@
 		color: var(--color-critical--onSurface);
 		font-size: var(--typography--fontSize-small);
 		font-weight: 600;
-	}
-	// The chase line repeats what the icon and the word say, so red is never the only thing carrying it.
-	.opportunity-card__chase {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-
-		&--overdue {
-			color: var(--color-critical--onSurface);
-			font-weight: 600;
-		}
-	}
-	.opportunity-card__overdue {
-		text-transform: uppercase;
-		font-size: var(--typography--fontSize-smaller);
-		letter-spacing: 0.04em;
 	}
 	.opportunity-card__spoken {
 		position: absolute;

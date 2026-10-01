@@ -10,6 +10,7 @@
 		BOARD_SORTS,
 		BOARD_SORT_LABELS,
 		directionLabel,
+		sortHasDirection,
 		type BoardDatePreset,
 		type BoardFilters,
 		type BoardSort
@@ -105,19 +106,25 @@
 				class="board-controls__select"
 				value={filters.sort}
 				options={sortOptions}
-				onchange={(value) => update({ sort: value as BoardSort })}
+				onchange={(value) =>
+					// The nearest close date is the useful first look, so that sort starts soonest first.
+					update(
+						value === 'close' ? { sort: 'close', direction: 'asc' } : { sort: value as BoardSort }
+					)}
 			/>
 		</span>
 
-		<button
-			type="button"
-			class="board-controls__direction"
-			aria-label={arrowLabel}
-			title={arrowLabel}
-			onclick={() => update({ direction: filters.direction === 'desc' ? 'asc' : 'desc' })}
-		>
-			<span aria-hidden="true">{@html arrow}</span>
-		</button>
+		{#if sortHasDirection(filters.sort)}
+			<button
+				type="button"
+				class="board-controls__direction"
+				aria-label={arrowLabel}
+				title={arrowLabel}
+				onclick={() => update({ direction: filters.direction === 'desc' ? 'asc' : 'desc' })}
+			>
+				<span aria-hidden="true">{@html arrow}</span>
+			</button>
+		{/if}
 
 		<span class="board-controls__pill board-controls__pill--labelled">
 			<label class="board-controls__label" for="pipeline-owner">Salesperson</label>

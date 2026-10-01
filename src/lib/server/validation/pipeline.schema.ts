@@ -55,7 +55,7 @@ export const boardQuerySchema = withDateRules(
 		stage: z.union([z.enum(BOARD_COLUMN_KEYS), z.string().uuid().toLowerCase()]),
 		cursor: z.string().min(3).max(200).optional(),
 		limit: z.coerce.number().int().min(1).max(BOARD_PAGE_SIZE_MAX).default(BOARD_PAGE_SIZE_DEFAULT),
-		sort: z.enum(BOARD_SORTS).default('stage'),
+		sort: z.enum(BOARD_SORTS).default('attention'),
 		direction: z.enum(BOARD_DIRECTIONS).default('desc'),
 		...boardFilterShape
 	})
@@ -105,7 +105,7 @@ export const assignOpportunityOwnerSchema = z.object({
 	owner_user_id: z.string().uuid().nullable()
 });
 
-// The Brief's three remaining editable fields, one schema each, following the same `null` clears it
+// The Brief's two remaining editable fields, one schema each, following the same `null` clears it
 // shape as ownership. Money mirrors the database's own `>= 0` constraint so a negative amount is a field
 // error here rather than a raw check-violation from the RPC; the RPC still enforces it either way for a
 // caller who bypasses this route.
@@ -120,10 +120,6 @@ export const updateOpportunityValueSchema = z.object({
 
 export const updateOpportunityExpectedCloseSchema = z.object({
 	expected_close_on: isoDay.nullable()
-});
-
-export const updateOpportunityNextFollowUpSchema = z.object({
-	next_follow_up_on: isoDay.nullable()
 });
 
 // A Brief Task: a required title, and three optional details. Creating and editing send the same shape,

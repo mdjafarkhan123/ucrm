@@ -1,10 +1,18 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET } from './+server';
 import { requireOrganizationPermission, hasPermission } from '$lib/server/access/permission';
 
 vi.mock('$lib/server/access/permission', () => ({
 	requireOrganizationPermission: vi.fn(),
 	hasPermission: vi.fn()
+}));
+
+// The Task order asks what day it is for the contractor, so every test reads a fixed calendar.
+vi.mock('$lib/server/requests/timezone', () => ({
+	organizationFormatting: vi.fn().mockResolvedValue({
+		ok: true,
+		formatting: { timezone: 'UTC', currency_code: 'USD', locale: 'en-US' }
+	})
 }));
 
 const mockedRequire = vi.mocked(requireOrganizationPermission);
@@ -43,7 +51,7 @@ function boardRow(overrides: Record<string, unknown> = {}) {
 		owner_avatar_url: null,
 		estimated_value: null,
 		expected_close_on: null,
-		next_follow_up_on: null,
+		next_task_due_on: null,
 		task_id: null,
 		task_title: null,
 		task_due_on: null,
@@ -250,7 +258,7 @@ describe('the collapsed Assessment column', () => {
 			assessmentCard('opp-c', 'assessment_completed', '2026-08-20T00:00:00.000Z')
 		];
 
-		const first = await GET(readEvent(page, 'stage=assessment&limit=2'));
+		const first = await GET(readEvent(page, 'stage=assessment&sort=stage&limit=2'));
 		const firstBody = await first.json();
 
 		expect(firstBody.opportunities).toHaveLength(2);
@@ -258,7 +266,7 @@ describe('the collapsed Assessment column', () => {
 
 		const second = readEvent(
 			[assessmentCard('opp-c', 'assessment_completed', '2026-08-20T00:00:00.000Z')],
-			`stage=assessment&limit=2&cursor=${encodeURIComponent(firstBody.next_cursor)}`
+			`stage=assessment&sort=stage&limit=2&cursor=${encodeURIComponent(firstBody.next_cursor)}`
 		);
 		const secondResponse = await GET(second);
 
@@ -307,7 +315,7 @@ describe('a page marker only works where it was cut', () => {
 	it('accepts its own marker', async () => {
 		const event = readEvent(
 			[],
-			'stage=assessment&cursor=assessment:stage:1:2026-08-21T00:00:00.000Z|opp-b'
+			'stage=assessment&sort=stage&cursor=assessment:stage:1:2026-08-21T00:00:00.000Z|opp-b'
 		);
 		expect((await GET(event)).status).toBe(200);
 		expect(rpcOf(event)).toHaveBeenCalled();
@@ -346,7 +354,10 @@ describe('a custom follow-up column', () => {
 
 	it('pages with a marker cut from that same stage and refuses one from another', async () => {
 		const own = await GET(
-			readEvent([], `stage=${stageId}&cursor=${stageId}:stage:1:2026-08-21T00:00:00.000Z|opp-b`)
+			readEvent(
+				[],
+				`stage=${stageId}&sort=stage&cursor=${stageId}:stage:1:2026-08-21T00:00:00.000Z|opp-b`
+			)
 		);
 		expect(own.status).toBe(200);
 
@@ -373,5 +384,117 @@ describe('a custom follow-up column', () => {
 
 		expect(response.status).toBe(422);
 		expect(rpcOf(event)).not.toHaveBeenCalled();
+	});
+});
+
+describe('the Task order', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.useFakeTimers({ toFake: ['Date'] });
+		vi.setSystemTime(new Date('2026-09-10T12:00:00.000Z'));
+		mockedRequire.mockResolvedValue(context);
+		mockedHasPermission.mockReturnValue(true);
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('is the order an untouched board asks for, and it brings today along', async () => {
+		const event = readEvent([]);
+		expect((await GET(event)).status).toBe(200);
+		expect(rpcOf(event)).toHaveBeenCalledWith(
+			'pipeline_board_page',
+			expect.objectContaining({ sort_key: 'attention', board_today: '2026-09-10' })
+		);
+	});
+
+	// Each phase holds one kind of card, so the last card says which phase the next page continues.
+	it.each([
+		['an overdue Task', '2026-09-01', 'new_request:attention:1:2026-09-01|opp-2'],
+		['a Task due today', '2026-09-10', 'new_request:attention:1:2026-09-10|opp-2'],
+		['no dated Task', null, 'new_request:attention:2:2026-08-10T00:00:00.000Z|opp-2'],
+		['a Task due later', '2026-09-30', 'new_request:attention:3:2026-09-30|opp-2']
+	])('marks the page after %s', async (_name, due, cursor) => {
+		const rows = [
+			boardRow({ id: 'opp-2', next_task_due_on: due }),
+			boardRow({ id: 'opp-3', next_task_due_on: due })
+		];
+		const body = await (await GET(readEvent(rows, 'stage=new_request&limit=1'))).json();
+		expect(body.next_cursor).toBe(cursor);
+	});
+
+	it('sends a day back as a day and a time back as a time', async () => {
+		const byDay = readEvent(
+			[],
+			'stage=new_request&cursor=new_request:attention:3:2026-09-30|opp-2'
+		);
+		await GET(byDay);
+		expect(rpcOf(byDay)).toHaveBeenCalledWith(
+			'pipeline_board_page',
+			expect.objectContaining({
+				cursor_phase: 3,
+				cursor_date: '2026-09-30',
+				cursor_timestamp: undefined
+			})
+		);
+
+		const byTime = readEvent(
+			[],
+			'stage=new_request&cursor=new_request:attention:2:2026-08-10T00:00:00.000Z|opp-2'
+		);
+		await GET(byTime);
+		expect(rpcOf(byTime)).toHaveBeenCalledWith(
+			'pipeline_board_page',
+			expect.objectContaining({
+				cursor_phase: 2,
+				cursor_timestamp: '2026-08-10T00:00:00.000Z',
+				cursor_date: undefined
+			})
+		);
+	});
+
+	it('refuses a marker whose value is not the kind its phase pages by', async () => {
+		const event = readEvent([], 'stage=new_request&cursor=new_request:attention:1:soon|opp-2');
+		expect((await GET(event)).status).toBe(422);
+		expect(rpcOf(event)).not.toHaveBeenCalled();
+	});
+});
+
+describe('the expected close order', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockedRequire.mockResolvedValue(context);
+		mockedHasPermission.mockReturnValue(true);
+	});
+
+	it('puts cards with no date after the dated ones', async () => {
+		const dated = await GET(
+			readEvent(
+				[boardRow({ id: 'opp-2', expected_close_on: '2026-10-05' }), boardRow({ id: 'opp-3' })],
+				'stage=new_request&sort=close&direction=asc&limit=1'
+			)
+		);
+		expect((await dated.json()).next_cursor).toBe('new_request:close:1:2026-10-05|opp-2');
+
+		const undated = await GET(
+			readEvent(
+				[boardRow({ id: 'opp-2' }), boardRow({ id: 'opp-3' })],
+				'stage=new_request&sort=close&direction=asc&limit=1'
+			)
+		);
+		expect((await undated.json()).next_cursor).toBe('new_request:close:2:|opp-2');
+	});
+
+	it('pages a dated card by its day', async () => {
+		const event = readEvent(
+			[],
+			'stage=new_request&sort=close&direction=asc&cursor=new_request:close:1:2026-10-05|opp-2'
+		);
+		await GET(event);
+		expect(rpcOf(event)).toHaveBeenCalledWith(
+			'pipeline_board_page',
+			expect.objectContaining({ sort_key: 'expected_close_on', cursor_date: '2026-10-05' })
+		);
 	});
 });

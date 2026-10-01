@@ -6,7 +6,9 @@
 // quietly answers about a different set of cards than it is showing. So they live here, and the server module
 // reads them from here.
 
-export const BOARD_SORTS = ['stage', 'created', 'value'] as const;
+// `attention` is the Task order: overdue Task, due today, no Task, then a Task due later. It is a work queue,
+// so it has no direction.
+export const BOARD_SORTS = ['attention', 'stage', 'created', 'value', 'close'] as const;
 export type BoardSort = (typeof BOARD_SORTS)[number];
 
 export const BOARD_DIRECTIONS = ['asc', 'desc'] as const;
@@ -37,20 +39,27 @@ export type BoardFilters = {
 	to?: string;
 };
 
-// What an untouched board asks for: newest stage entry first, everybody, all time. Kept in one place so the
+// What an untouched board asks for: the Task order, everybody, all time. Kept in one place so the
 // URL can leave out anything still at its default and stay readable.
 export const DEFAULT_BOARD_FILTERS: BoardFilters = {
-	sort: 'stage',
+	sort: 'attention',
 	direction: 'desc',
 	owner: 'all',
 	date: 'all'
 };
 
 export const BOARD_SORT_LABELS: Record<BoardSort, string> = {
+	attention: 'Next Task',
 	stage: 'Time in stage',
 	created: 'Created date',
-	value: 'Value'
+	value: 'Value',
+	close: 'Expected close'
 };
+
+// Whether the arrow beside the sort means anything. The Task order is a fixed queue.
+export function sortHasDirection(sort: BoardSort) {
+	return sort !== 'attention';
+}
 
 export const BOARD_DATE_LABELS: Record<BoardDatePreset, string> = {
 	all: 'All',
@@ -67,6 +76,7 @@ export const BOARD_DATE_LABELS: Record<BoardDatePreset, string> = {
 // and "highest first" means nothing about a date, so the button says the right thing for the sort it is next to.
 export function directionLabel(sort: BoardSort, direction: BoardDirection) {
 	if (sort === 'value') return direction === 'desc' ? 'Highest first' : 'Lowest first';
+	if (sort === 'close') return direction === 'desc' ? 'Latest first' : 'Soonest first';
 	return direction === 'desc' ? 'Newest first' : 'Oldest first';
 }
 

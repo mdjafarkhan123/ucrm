@@ -60,7 +60,6 @@ const card: OpportunityCard = {
 	property: null,
 	owner: null,
 	expected_close_on: null,
-	next_follow_up_on: null,
 	task: null,
 	assessment: null
 };
