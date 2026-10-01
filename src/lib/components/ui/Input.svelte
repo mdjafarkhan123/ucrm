@@ -45,6 +45,7 @@
 <div
 	class={`input input--${size} ${className}`}
 	class:input--has-value={hasValue}
+	class:input--labeled={Boolean(label) && size !== 'small'}
 	class:input--invalid={invalid}
 	class:input--disabled={disabled}
 >
@@ -120,8 +121,9 @@
 			font-size: var(--typography--fontSize-small);
 			transform: none;
 		}
-		&:focus-within input,
-		&--has-value input {
+		// Room for the lifted label only exists where a label is shown; a field without one keeps its height.
+		&--labeled:focus-within input,
+		&--labeled.input--has-value input {
 			padding-top: calc(var(--space-base) + var(--space-smaller));
 			padding-bottom: var(--space-small);
 		}
