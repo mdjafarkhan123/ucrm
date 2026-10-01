@@ -2,13 +2,11 @@
 	import { resolve } from '$app/paths';
 	import Button from '$lib/components/ui/Button.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
+	import PackagePrice from '$lib/components/packages/PackagePrice.svelte';
 	import PackageDetails from '$lib/components/packages/PackageDetails.svelte';
-	import { formatUsd } from '$lib/jafar/packages';
 	import {
-		offerHeadline,
 		offeredInterval,
 		offersBoth,
-		priceParts,
 		yearlySavingPercent,
 		type BillingInterval,
 		type PublicPackage
@@ -26,9 +24,7 @@
 	// Starts from the link's billing choice; the visitor can switch it.
 	let wanted = $derived<BillingInterval>(billing);
 	const interval = $derived(pkg ? offeredInterval(pkg, wanted) : 'month');
-	const price = $derived(pkg ? priceParts(pkg, interval) : null);
 	const saving = $derived(pkg ? yearlySavingPercent(pkg) : null);
-	const offer = $derived(pkg ? pkg.offers[interval] : null);
 	const applyHref = $derived(
 		pkg
 			? `${resolve('/get-started')}?package=${encodeURIComponent(pkg.slug)}&billing=${interval}`
@@ -42,7 +38,7 @@
 			<span class="package-page__brand-mark">U</span> UpliftContractor
 		</header>
 
-		{#if pkg && price}
+		{#if pkg}
 			<section class="package-page__hero">
 				<div>
 					<p class="package-page__eyebrow">Package</p>
@@ -60,18 +56,7 @@
 							]}
 						/>
 					{/if}
-					{#if offer}
-						<p class="package-page__price">
-							<em class="package-page__offer-name">{offerHeadline(offer)}</em>
-							<strong>{formatUsd(offer.intro_price_usd_cents)}</strong>
-							<span>Then {price.amount} {price.per}</span>
-						</p>
-					{:else}
-						<p class="package-page__price">
-							<strong>{price.amount}</strong>
-							<span>{price.per}</span>
-						</p>
-					{/if}
+					<PackagePrice {pkg} {interval} size="hero" />
 					<Button href={preview ? undefined : applyHref} disabled={preview} fullWidth
 						>Apply for {pkg.name}</Button
 					>
@@ -174,33 +159,6 @@
 			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-base);
 			background: var(--color-surface--background);
-		}
-
-		&__offer-name {
-			width: fit-content;
-			padding: var(--space-smallest) var(--space-small);
-			border-radius: var(--radius-small);
-			color: var(--color-success--onSurface);
-			background: var(--color-success--surface);
-			font-size: var(--typography--fontSize-small);
-			font-style: normal;
-			font-weight: 700;
-		}
-
-		&__price {
-			display: grid;
-			gap: var(--space-smaller);
-			margin: 0;
-
-			strong {
-				color: var(--color-heading);
-				font-size: var(--typography--fontSize-jumbo);
-				line-height: 1;
-			}
-
-			span {
-				color: var(--color-text--secondary);
-			}
 		}
 
 		&__footer {

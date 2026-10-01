@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatUsd } from '$lib/jafar/packages';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import sparklesIcon from '@tabler/icons/outline/sparkles.svg?raw';
@@ -12,7 +13,7 @@
 		offerHeadline,
 		offerPriceSentence,
 		priceSentence,
-		yearlySavingPercent,
+		yearlySaving,
 		type BillingInterval,
 		type PublicPackage
 	} from '$lib/packages/public-package';
@@ -24,7 +25,7 @@
 
 	const core = $derived(pkg.capabilities.filter((capability) => capability.core));
 	const extras = $derived(pkg.capabilities.filter((capability) => !capability.core));
-	const saving = $derived(yearlySavingPercent(pkg));
+	const saving = $derived(yearlySaving(pkg));
 	const hasMonthlyReset = $derived(pkg.allowances.some((allowance) => allowance.resets_monthly));
 	const prices = $derived(
 		(['month', 'year'] as const).filter((option) =>
@@ -111,7 +112,13 @@
 				<li class:package-details__price--chosen={option === interval}>
 					<span>{option === 'month' ? 'Monthly' : 'Yearly'}</span>
 					<strong>{priceSentence(pkg, option)}</strong>
-					{#if option === 'year' && saving}<em>Save {saving}% compared with monthly</em>{/if}
+					{#if option === 'year' && saving}
+						<em
+							>Save {formatUsd(saving.savedCents)} ({saving.percent}%) against twelve monthly
+							payments —
+							{formatUsd(saving.perMonthCents)} a month</em
+						>
+					{/if}
 					{#if offer}
 						<p class="package-details__offer">
 							<b>{offerHeadline(offer)}</b>
