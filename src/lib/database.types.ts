@@ -22189,6 +22189,10 @@ export type Database = {
 					value_total: number;
 				}[];
 			};
+			pipeline_undo_placement: {
+				Args: { target_opportunity_id: string; undone_to_custom_stage_id: string };
+				Returns: Json;
+			};
 			pipeline_undo_move: {
 				Args: {
 					restore_new_request?: boolean;

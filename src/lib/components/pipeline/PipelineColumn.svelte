@@ -27,10 +27,10 @@
 		fetchBoardColumn,
 		placeOpportunity,
 		undoOpportunityMove,
+		undoOpportunityPlacement,
 		DragWriteError,
 		NEEDS_FUTURE_TASK,
 		type BoardColumnPage,
-		type DragResult,
 		type OpportunityCard as Card
 	} from '$lib/pipeline/api';
 	import type { MoveTarget } from '$lib/pipeline/moves';
@@ -349,10 +349,8 @@
 
 	// Places a card in a custom stage, or back in its real stage with null. Shared by a drop and by the
 	// card's own menu, so both lock the board, save, and report in exactly the same way. The card stays
-	// where it is until the server has answered and the board has re-read. A placement changes nothing
-	// about the Request or Quote, so its Undo is simply the placement it replaced.
-	async function performPlace(card: Card, customStageId: string | null, undoable = true) {
-		const previous = card.custom_stage_id;
+	// where it is until the server has answered and the board has re-read.
+	async function performPlace(card: Card, customStageId: string | null) {
 		const destination = customStageId
 			? customStages.find((candidate) => candidate.id === customStageId)?.name
 			: isAnyBoardStage(card.stage)
@@ -365,7 +363,7 @@
 			await invalidatePipeline(queryClient);
 			toast.dismiss(loadingToastId);
 			const title = destination ? `Moved to ${destination}.` : 'Change saved.';
-			if (undoable && result.applied) {
+			if (result.applied) {
 				toast.show({
 					variant: 'success',
 					title,
@@ -373,7 +371,7 @@
 					action: {
 						label: 'Undo',
 						onSelect: () =>
-							void performPlace({ ...card, custom_stage_id: customStageId }, previous, false)
+							void performUndo(card, () => undoOpportunityPlacement(card.id, customStageId))
 					}
 				});
 			} else {
@@ -446,7 +444,11 @@
 					variant: 'success',
 					title,
 					duration: UNDO_TOAST_MS,
-					action: { label: 'Undo', onSelect: () => void performUndo(card, { ...result, undo }) }
+					action: {
+						label: 'Undo',
+						onSelect: () =>
+							void performUndo(card, () => undoOpportunityMove(card.id, { ...result, undo }))
+					}
 				});
 			} else {
 				toast.success(
@@ -471,16 +473,17 @@
 		}
 	}
 
-	// Takes back the move the toast was about. The server undoes it only while it is still the last thing
-	// that happened to the card, and puts the assessment, the Request, and the card's clocks back together.
+	// Takes back the move the toast was about: a real move or a custom-stage placement, each through its own
+	// request. The server undoes it only while it is still the last thing that happened to the card, and
+	// puts the card's clocks back with it — and, for a real move, the assessment and the Request.
 	async function performUndo(
 		card: Card,
-		move: Pick<DragResult, 'from_stage' | 'to_stage'> & { undo: NonNullable<DragResult['undo']> }
+		undo: () => Promise<{ stage: OpportunityStage; custom_stage_id: string | null }>
 	) {
 		onDragBusyChange(true);
 		const loadingToastId = toast.loading('Undoing…');
 		try {
-			const result = await undoOpportunityMove(card.id, move);
+			const result = await undo();
 			await invalidatePipeline(queryClient);
 			toast.dismiss(loadingToastId);
 			const home =

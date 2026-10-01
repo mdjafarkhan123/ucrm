@@ -742,6 +742,28 @@ export async function placeOpportunity(
 	return result;
 }
 
+// Takes back a placement the board just made. `customStageId` names it: where the card was put, or `null`
+// when it was taken out of a custom stage. The server puts the card back with the time it had already
+// spent there, and refuses once anything else has happened to the card.
+export async function undoOpportunityPlacement(
+	opportunityId: string,
+	customStageId: string | null
+): Promise<{ id: string; stage: OpportunityStage; custom_stage_id: string | null }> {
+	const response = await fetch(`/api/pipeline/opportunities/${opportunityId}/placement/undo`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ custom_stage_id: customStageId })
+	});
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) {
+		throw new DragWriteError(
+			result.field_errors?.form ?? result.error ?? 'That move could not be undone.',
+			result.field_errors ?? {}
+		);
+	}
+	return result;
+}
+
 // What kind of dialog a drop needs before it can run, if any -- re-exported here so a component importing
 // the Pipeline API does not also need to reach into `./transitions` directly.
 export type { DragActionKind };

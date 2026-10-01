@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
 	dragOpportunity: vi.fn(),
 	placeOpportunity: vi.fn(),
 	undoOpportunityMove: vi.fn(),
+	undoOpportunityPlacement: vi.fn(),
 	invalidatePipeline: vi.fn(),
 	toast: {
 		loading: vi.fn(() => 41),
@@ -49,6 +50,7 @@ vi.mock('$lib/pipeline/api', async (importOriginal) => ({
 	dragOpportunity: mocks.dragOpportunity,
 	placeOpportunity: mocks.placeOpportunity,
 	undoOpportunityMove: mocks.undoOpportunityMove,
+	undoOpportunityPlacement: mocks.undoOpportunityPlacement,
 	invalidatePipeline: mocks.invalidatePipeline
 }));
 
@@ -398,6 +400,11 @@ describe('PipelineColumn Move menu', () => {
 
 	it('places the card in a custom stage, and its Undo puts it back where it was', async () => {
 		mocks.placeOpportunity.mockResolvedValue({ applied: true });
+		mocks.undoOpportunityPlacement.mockResolvedValue({
+			id: card.id,
+			stage: 'new_request',
+			custom_stage_id: null
+		});
 		renderColumn('new_request');
 
 		await choose('Waiting on customer');
@@ -412,8 +419,9 @@ describe('PipelineColumn Move menu', () => {
 		mocks.toast.show.mock.calls[0][0].action.onSelect();
 
 		await vi.waitFor(() =>
-			expect(mocks.toast.success).toHaveBeenCalledWith('Moved to New requests.')
+			expect(mocks.toast.success).toHaveBeenCalledWith('Moved back to New requests.')
 		);
-		expect(mocks.placeOpportunity).toHaveBeenLastCalledWith(card.id, null);
+		expect(mocks.undoOpportunityPlacement).toHaveBeenCalledWith(card.id, waitingOnCustomer.id);
+		expect(mocks.placeOpportunity).toHaveBeenCalledTimes(1);
 	});
 });
