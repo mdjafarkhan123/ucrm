@@ -185,6 +185,18 @@ export type OutcomeRow = {
 	outcome_at: string;
 	client: { id: string; display_name: string; company_name: string | null } | null;
 	estimated_value?: number | null;
+	// What closed: a Request, a Quote, or a Job booked with neither.
+	source: 'request' | 'quote' | 'job';
+	quote: { id: string; quote_number: number | null } | null;
+	// Lost rows only. `reason` and `note` are the team's own classification and may be set afterwards;
+	// `customer_declined` says the customer turned the quote down themselves, and `customer_message` is
+	// what they said when they did.
+	lost?: {
+		reason: LostReason | null;
+		note: string | null;
+		customer_declined: boolean;
+		customer_message: string | null;
+	};
 };
 
 export type OutcomePage = {
@@ -195,6 +207,8 @@ export type OutcomePage = {
 	// Whether Total and Client are even offerable as sorts, asked once rather than guessed from a row.
 	can_view_value: boolean;
 	can_view_clients: boolean;
+	// Whether this member may reopen a Lost record or set its reason.
+	can_edit: boolean;
 };
 
 export async function fetchOutcomes(
@@ -512,6 +526,27 @@ export function markOpportunityLost(
 			note: input.note
 		})
 	}).then((response) => outcomeWriteResult(response, 'That opportunity could not be marked lost.'));
+}
+
+// Gives a record that is already Lost its reason, or changes it. Saving the same answer twice changes
+// nothing, so there is no idempotency key to carry.
+export async function setLostReason(
+	opportunityId: string,
+	input: { reason: LostReason | null; note: string | null }
+): Promise<{ event_id: string; reason: LostReason | null; note: string | null }> {
+	const response = await fetch(`/api/pipeline/opportunities/${opportunityId}/lost-reason`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ reason: input.reason, note: input.note })
+	});
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) {
+		throw new OutcomeWriteError(
+			result.error ?? 'That reason could not be saved.',
+			result.field_errors ?? {}
+		);
+	}
+	return result;
 }
 
 // Restores a Lost card: its only entry point is a Lost row's Reopen action in the Sales Outcomes report.

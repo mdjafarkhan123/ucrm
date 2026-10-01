@@ -9,22 +9,25 @@ a staff reason
 ## Steps
 
 - [x] Research: how Lost, archive, decline, value, and Tasks work today
-- [x] Write the database change (`supabase/migrations/20261002130000_lost_and_abandoned_quotes.sql`)
-- [ ] Apply it and regenerate `src/lib/database.types.ts`
-- [ ] Server: outcomes list returns reason, note, and the customer's message; new lost-reason route
-- [ ] Board: "Mark as lost" on Awaiting response and Changes requested quote cards
-- [ ] Quote page: "Mark as declined" asks what the customer said (optional)
-- [ ] Sales Outcomes: Lost rows show the reason and the customer's message; "Add reason"; Reopen for quotes
-- [ ] Tests, then browser proof on Raad LTD
+- [x] Database change written, applied, and proven with a rolled-back test of every rule
+- [x] Server: outcomes list returns reason, note, and the customer's message; new lost-reason route
+- [x] Board: "Mark as lost" on Awaiting response and Changes requested quote cards
+- [x] Quote page: "Mark as declined" asks what the customer said (optional)
+- [x] Sales Outcomes: Lost rows show the reason and the customer's message; "Add reason"; Reopen for quotes
+- [x] Unit tests pass; `npm run check` clean
+- [ ] Browser proof on Raad LTD, then close the part (roadmap line, NOW.md, plan wording)
 
 ## Next
 
-Apply the migration with `supabase db push --linked` (dry-run first), then work down the steps.
+Prove in the browser as the contractor owner on Raad LTD: mark an Awaiting response card Lost from its
+menu and find it under Lost with its value; archive a never-sent Draft from its Quote page and confirm the
+Lost count does not move; mark a sent quote declined with a message, then add a reason to it in Sales
+Outcomes. Then finish the part per the Memory skill.
 
 ## Outside actions
 
 - Database migration `20261002130000` — check: `supabase migration list --linked` shows it on the remote
-  side — pending
+  side — done
 
 ## Notes
 

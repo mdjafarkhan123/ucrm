@@ -409,12 +409,27 @@
 		void runLifecycle('Quote marked as awaiting response', () => publishQuote(quoteId, revision));
 	}
 
-	function answer(decision: 'approved' | 'declined') {
+	function answer(decision: 'approved' | 'declined', note: string | null = null) {
 		const revision = saved?.version?.status === 'draft' ? saved.version.revision : undefined;
-		void runLifecycle(
+		return runLifecycle(
 			decision === 'approved' ? 'Quote marked as approved' : 'Quote marked as declined',
-			() => recordQuoteDecision(quoteId, { decision, expectedRevision: revision })
+			() => recordQuoteDecision(quoteId, { decision, note, expectedRevision: revision })
 		);
+	}
+
+	// A decline is the one answer that closes the sale as Lost, so it asks what the customer said. Their
+	// words are optional and are kept beside the Lost record in Sales Outcomes.
+	let declining = $state(false);
+	let declineMessage = $state('');
+	// The saved note is either left empty or long enough to mean something.
+	const declineMessageTooShort = $derived(
+		declineMessage.trim().length > 0 && declineMessage.trim().length < 3
+	);
+
+	async function confirmDecline() {
+		if (declineMessageTooShort) return;
+		await answer('declined', declineMessage.trim() || null);
+		declining = false;
 	}
 
 	let quoteEmailOpen = $state(false);
@@ -577,7 +592,7 @@
 			return {
 				label: 'Mark as approved',
 				loading: lifecycleSaving,
-				onclick: () => answer('approved')
+				onclick: () => void answer('approved')
 			};
 		return undefined;
 	});
@@ -629,14 +644,17 @@
 				label: 'Mark as approved',
 				icon: checkIcon,
 				disabled: lifecycleSaving,
-				onSelect: () => answer('approved')
+				onSelect: () => void answer('approved')
 			});
 		if (answerable && saved.quote.status !== 'declined')
 			items.push({
 				label: 'Mark as declined',
 				icon: xIcon,
 				disabled: lifecycleSaving,
-				onSelect: () => answer('declined')
+				onSelect: () => {
+					declineMessage = '';
+					declining = true;
+				}
 			});
 		if (answerable)
 			items.push({
@@ -1264,6 +1282,30 @@
 					rows={3}
 					maxlength={500}
 					bind:value={archiveReason}
+				/>
+			</ConfirmDialog>
+		{/if}
+
+		{#if declining}
+			<ConfirmDialog
+				open
+				title="Mark this quote as declined?"
+				confirmLabel="Mark as declined"
+				loading={lifecycleSaving}
+				confirmDisabled={declineMessageTooShort}
+				onConfirm={confirmDecline}
+				onClose={() => (declining = false)}
+			>
+				<p>
+					The quote leaves the Pipeline and is counted as Lost in Sales Outcomes, where your team
+					can add a reason.
+				</p>
+				<Textarea
+					id="quote-decline-message"
+					label="What did the customer say? (optional)"
+					rows={3}
+					maxlength={1000}
+					bind:value={declineMessage}
 				/>
 			</ConfirmDialog>
 		{/if}

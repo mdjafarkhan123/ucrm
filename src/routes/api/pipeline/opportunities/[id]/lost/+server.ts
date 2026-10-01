@@ -6,8 +6,10 @@ import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { markOpportunityLostSchema } from '$lib/server/validation/pipeline.schema';
 import { outcomeWriteError } from '$lib/server/pipeline/outcomes';
 
-// Closes the card: archives its Request and completes its open Tasks, atomically, inside
-// `pipeline_mark_opportunity_lost`. Same-key retries return the first result untouched rather than
+// Closes the card, atomically, inside `pipeline_mark_opportunity_lost`. A Request card archives its Request
+// and completes its open Tasks; a sent Quote's card archives the Quote, removes its Tasks, and keeps the
+// total the customer last saw. A draft that was never sent is refused -- there is nothing to lose, and
+// archiving it from the Quote is "Abandoned before sending". Same-key retries return the first result untouched rather than
 // erroring, so a doubled click or a retried request after a dropped response costs nothing.
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'pipeline.edit');

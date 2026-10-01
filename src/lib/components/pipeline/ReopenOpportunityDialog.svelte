@@ -14,11 +14,14 @@
 	let {
 		open,
 		opportunityId,
+		subject = 'request',
 		onSaved,
 		onClose
 	}: {
 		open: boolean;
 		opportunityId: string;
+		// What the Lost record stands for, so the notice says what really comes back.
+		subject?: 'request' | 'quote';
 		onSaved: (result: OutcomeCommandResult) => void;
 		onClose: () => void;
 	} = $props();
@@ -62,8 +65,14 @@
 <Dialog {open} title="Reopen opportunity" onClose={saving ? () => {} : onClose}>
 	<div class="reopen-dialog">
 		<p class="reopen-dialog__notice">
-			This restores the request to the board and reopens the tasks that closing it completed
-			automatically. Tasks someone finished by hand stay completed.
+			{#if subject === 'quote'}
+				This puts the quote back where it stood before it was lost and returns its card to the
+				board. A customer's decline is cleared; it stays in the quote's history. Tasks removed when
+				it was lost do not come back.
+			{:else}
+				This restores the request to the board and reopens the tasks that closing it completed
+				automatically. Tasks someone finished by hand stay completed.
+			{/if}
 		</p>
 
 		<Textarea

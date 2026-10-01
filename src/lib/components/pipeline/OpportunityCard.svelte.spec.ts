@@ -6,7 +6,10 @@ import type { OpportunityCard as OpportunityCardData } from '$lib/pipeline/api';
 
 vi.mock('@tanstack/svelte-query', async (importOriginal) => ({
 	...(await importOriginal<typeof import('@tanstack/svelte-query')>()),
-	useQueryClient: () => ({ prefetchQuery: vi.fn() })
+	useQueryClient: () => ({ prefetchQuery: vi.fn() }),
+	// An editable card mounts the owner control, which reads the team list. Nothing here is about owners.
+	createQuery: () => ({ data: undefined, isPending: true, isError: false }),
+	createMutation: () => ({ mutate: vi.fn(), isPending: false })
 }));
 
 const card: OpportunityCardData = {
@@ -98,5 +101,41 @@ describe('OpportunityCard delivery failure', () => {
 		});
 
 		await expect.element(page.getByText('Delivery failed')).not.toBeInTheDocument();
+	});
+});
+
+describe('OpportunityCard Mark as lost', () => {
+	const quoteCard = (stage: OpportunityCardData['stage'], status: string): OpportunityCardData => ({
+		...card,
+		stage,
+		request: null,
+		quote: { id: 'quote-1', status, delivery_failure: null }
+	});
+
+	function renderCard(opportunity: OpportunityCardData) {
+		render(OpportunityCard, {
+			props: { opportunity, formatting: null, canEdit: true, onOpen: vi.fn() }
+		});
+	}
+
+	// A quote the customer has seen can be lost; the dialog says what happens to the quote, not a request.
+	it('offers it on a sent quote and says the quote will be archived', async () => {
+		renderCard(quoteCard('quote_awaiting_response', 'awaiting_response'));
+
+		await page.getByRole('button', { name: 'More actions for Kitchen remodel' }).click();
+		await page.getByRole('menuitem', { name: 'Mark as lost' }).click();
+
+		await expect
+			.element(page.getByText(/This quote will leave the board and be archived/))
+			.toBeVisible();
+	});
+
+	// A draft nobody received is not lost. With no custom stages either, the card has no menu at all.
+	it('does not offer it on a draft quote', async () => {
+		renderCard(quoteCard('quote_draft', 'draft'));
+
+		await expect
+			.element(page.getByRole('button', { name: 'More actions for Kitchen remodel' }))
+			.not.toBeInTheDocument();
 	});
 });

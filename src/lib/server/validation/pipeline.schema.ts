@@ -223,6 +223,26 @@ export const markOpportunityLostSchema = z
 		path: ['note']
 	});
 
+// Giving a Lost record its reason afterwards -- the only way a customer's decline ever gets one. Both
+// fields may be cleared; "Other" still needs its note.
+export const setLostReasonSchema = z
+	.object({
+		reason: z
+			.enum(LOST_REASON_VALUES)
+			.nullish()
+			.transform((value) => value ?? null),
+		note: z
+			.string()
+			.trim()
+			.max(1000, 'That note is too long.')
+			.nullish()
+			.transform((value) => value || null)
+	})
+	.refine((value) => value.reason !== 'other' || Boolean(value.note), {
+		message: 'Add a short note for "Other".',
+		path: ['note']
+	});
+
 export const reopenOpportunitySchema = z.object({
 	idempotency_key: idempotencyKeySchema,
 	reopen_explanation: z

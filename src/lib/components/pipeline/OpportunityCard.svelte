@@ -16,6 +16,7 @@
 		type CustomStage
 	} from '$lib/pipeline/stages';
 	import { clientDetailKey, fetchClient } from '$lib/clients/api';
+	import { activityKey } from '$lib/collaboration/api';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
 	import bellIcon from '@tabler/icons/outline/bell.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
@@ -64,10 +65,14 @@
 
 	const queryClient = useQueryClient();
 	let lostDialogOpen = $state(false);
-	// Quote-backed Lost is automatic off the Quote's own Decline/archive (5A) and never goes through this
-	// dialog's RPC, which refuses a quote-backed opportunity outright -- so the menu that would only ever
-	// fail is not offered at all, rather than shown greyed out the way Jobber does it for a Draft quote.
-	const canMarkLost = $derived(opportunity.quote === null);
+	// A Request card, or a quote the customer has seen. A Draft is not offered it, the way Jobber greys it
+	// out: a quote nobody received is not lost, and archiving it from the Quote is "Abandoned before
+	// sending". The real stage is what counts, so a card sitting in a custom follow-up column still has it.
+	const canMarkLost = $derived(
+		opportunity.quote === null ||
+			opportunity.stage === 'quote_awaiting_response' ||
+			opportunity.stage === 'quote_changes_requested'
+	);
 	// The same moves a drag allows, for anyone not using a pointer: into any other custom stage on this
 	// card's side of the Request/Quote line, and back to the real stage it never stopped being in.
 	const section = $derived(stageSection(opportunity.stage));
@@ -302,9 +307,17 @@
 	<MarkOpportunityLostDialog
 		open={lostDialogOpen}
 		opportunityId={opportunity.id}
+		subject={opportunity.quote ? 'quote' : 'request'}
 		onSaved={() => {
 			lostDialogOpen = false;
 			invalidatePipeline(queryClient);
+			// Marking a quote's card Lost archived the quote and wrote a line in its history.
+			if (opportunity.quote) {
+				void queryClient.invalidateQueries({ queryKey: ['quotes'] });
+				void queryClient.invalidateQueries({
+					queryKey: activityKey('quote', opportunity.quote.id)
+				});
+			}
 			onLost?.(opportunity.id);
 		}}
 		onClose={() => (lostDialogOpen = false)}

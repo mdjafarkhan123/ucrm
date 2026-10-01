@@ -18,12 +18,16 @@
 		type DataTableSort
 	} from '$lib/components/data-display/DataTable.svelte';
 	import ReopenOpportunityDialog from '$lib/components/pipeline/ReopenOpportunityDialog.svelte';
+	import MarkOpportunityLostDialog from '$lib/components/pipeline/MarkOpportunityLostDialog.svelte';
+	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
 	import {
 		outcomesListKey,
 		fetchOutcomes,
 		outcomeTilesKey,
 		fetchOutcomeTiles,
 		invalidatePipeline,
+		LOST_REASONS,
 		type OutcomeRow
 	} from '$lib/pipeline/api';
 	import { formatMoney } from '$lib/pipeline/money';
@@ -116,6 +120,7 @@
 	const firstPage = $derived(outcomesQuery.data?.pages[0]);
 	const canViewValue = $derived(firstPage?.can_view_value ?? false);
 	const canViewClients = $derived(firstPage?.can_view_clients ?? false);
+	const canEdit = $derived(firstPage?.can_edit ?? false);
 	const rows = $derived(outcomesQuery.data?.pages.flatMap((p) => p.outcomes) ?? []);
 	const hasAnyFilter = $derived(
 		applied.date !== 'all' || Boolean(applied.from) || Boolean(applied.to)
@@ -129,6 +134,7 @@
 			{ key: 'created', label: 'Created At', sortable: true },
 			{ key: 'outcome_at', label: applied.type === 'lost' ? 'Lost At' : 'Won At', sortable: true }
 		];
+		if (applied.type === 'lost') base.push({ key: 'reason', label: 'Reason' });
 		if (canViewValue) base.push({ key: 'total', label: 'Total', align: 'end', sortable: true });
 		return base;
 	});
@@ -143,7 +149,8 @@
 		},
 		lost: {
 			title: 'Nothing lost yet',
-			description: 'A Request or Quote appears here once it is marked as lost.'
+			description:
+				'A Request or Quote appears here once it is marked as lost, or once the customer declines the Quote.'
 		},
 		direct_job: {
 			title: 'No direct jobs yet',
@@ -168,11 +175,34 @@
 		return formatMoney(value, formatting) ?? '—';
 	}
 
-	// A Reopen dialog operates on one row at a time; the id says which, null means closed.
-	let reopeningId = $state<string | null>(null);
+	const REASON_LABELS: Record<string, string> = Object.fromEntries(
+		LOST_REASONS.map((reason) => [reason.value, reason.label])
+	);
+	function reasonLabel(row: OutcomeRow) {
+		return row.lost?.reason ? (REASON_LABELS[row.lost.reason] ?? row.lost.reason) : null;
+	}
+
+	// Reopen and the reason dialog each operate on one row at a time; null means closed.
+	let reopening = $state<OutcomeRow | null>(null);
+	let classifying = $state<OutcomeRow | null>(null);
 	function onReopened() {
-		reopeningId = null;
+		// Reopening a Lost quote restored the quote itself, so its own pages are stale too.
+		if (reopening?.quote) void queryClient.invalidateQueries({ queryKey: ['quotes'] });
+		reopening = null;
 		invalidatePipeline(queryClient);
+	}
+	function onClassified() {
+		classifying = null;
+		invalidatePipeline(queryClient);
+	}
+	function lostActions(row: OutcomeRow) {
+		return [
+			{
+				label: row.lost?.reason || row.lost?.note ? 'Change reason' : 'Add reason',
+				onSelect: () => (classifying = row)
+			},
+			{ label: 'Reopen', onSelect: () => (reopening = row) }
+		];
 	}
 </script>
 
@@ -271,10 +301,8 @@
 					: EMPTY_COPY[applied.type].description}
 			/>
 		{:else}
-			{#snippet reopenAction(item: OutcomeRow)}
-				<Button variant="secondary" size="small" onclick={() => (reopeningId = item.id)}>
-					Reopen
-				</Button>
+			{#snippet lostRowActions(item: OutcomeRow)}
+				<DropdownMenu items={lostActions(item)} triggerLabel={`Actions for ${item.title}`} />
 			{/snippet}
 			<DataTable
 				{columns}
@@ -283,13 +311,41 @@
 				caption="Sales Outcomes"
 				{sort}
 				onSortChange={handleSortChange}
-				rowActions={applied.type === 'lost' ? reopenAction : undefined}
+				rowActions={applied.type === 'lost' && canEdit ? lostRowActions : undefined}
 			>
 				{#snippet row(item: OutcomeRow)}
-					<th scope="row">{item.title}</th>
+					<th scope="row">
+						{item.title}
+						{#if item.quote}
+							<a
+								class="outcomes-source"
+								href={resolve('/(app)/quotes/[id=uuid]', { id: item.quote.id })}
+							>
+								Quote{item.quote.quote_number ? ` #${item.quote.quote_number}` : ''}
+							</a>
+						{/if}
+					</th>
 					<td>{clientName(item)}</td>
 					<td>{formatDate(item.created_at)}</td>
 					<td>{formatDate(item.outcome_at)}</td>
+					{#if applied.type === 'lost'}
+						<td class="outcomes-reason">
+							{#if item.lost?.customer_declined}
+								<Badge status="warning" size="small">Customer declined</Badge>
+							{/if}
+							{#if reasonLabel(item)}
+								<span class="outcomes-reason__label">{reasonLabel(item)}</span>
+							{:else if !item.lost?.customer_declined}
+								<span class="outcomes-reason__none">No reason given</span>
+							{/if}
+							{#if item.lost?.customer_message}
+								<span class="outcomes-reason__quoted">“{item.lost.customer_message}”</span>
+							{/if}
+							{#if item.lost?.note}
+								<span class="outcomes-reason__note">{item.lost.note}</span>
+							{/if}
+						</td>
+					{/if}
 					{#if canViewValue}
 						<td class="align-end">{money(item.estimated_value)}</td>
 					{/if}
@@ -306,12 +362,27 @@
 	{/if}
 </PageContainer>
 
-{#if reopeningId}
+{#if reopening}
 	<ReopenOpportunityDialog
-		open={Boolean(reopeningId)}
-		opportunityId={reopeningId}
+		open={Boolean(reopening)}
+		opportunityId={reopening.id}
+		subject={reopening.quote ? 'quote' : 'request'}
 		onSaved={onReopened}
-		onClose={() => (reopeningId = null)}
+		onClose={() => (reopening = null)}
+	/>
+{/if}
+
+{#if classifying}
+	<MarkOpportunityLostDialog
+		open={Boolean(classifying)}
+		opportunityId={classifying.id}
+		existing={{
+			reason: classifying.lost?.reason ?? null,
+			note: classifying.lost?.note ?? null,
+			customerMessage: classifying.lost?.customer_message ?? null
+		}}
+		onSaved={onClassified}
+		onClose={() => (classifying = null)}
 	/>
 {/if}
 
@@ -327,6 +398,47 @@
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-smaller);
+		}
+	}
+	.outcomes-source {
+		display: block;
+		margin-top: var(--space-smallest);
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 400;
+		text-decoration: none;
+
+		&:hover {
+			color: var(--color-interactive);
+			text-decoration: underline;
+		}
+	}
+	.outcomes-reason {
+		max-width: 22rem;
+		white-space: normal;
+
+		&__label,
+		&__none,
+		&__quoted,
+		&__note {
+			display: block;
+		}
+		&__label {
+			margin-top: var(--space-smallest);
+		}
+		&__none {
+			color: var(--color-text--secondary);
+		}
+		&__quoted,
+		&__note {
+			margin-top: var(--space-smallest);
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			line-height: var(--typography--lineHeight-large);
+			overflow-wrap: anywhere;
+		}
+		&__quoted {
+			font-style: italic;
 		}
 	}
 	.outcomes-toolbar__label {

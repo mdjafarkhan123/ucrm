@@ -27,6 +27,13 @@ function outcomeRow(overrides: Record<string, unknown> = {}) {
 		client_display_name: 'Ada Lovelace',
 		client_company_name: null,
 		estimated_value: null,
+		source_kind: 'request',
+		quote_id: null,
+		quote_number: null,
+		lost_reason: null,
+		lost_note: null,
+		customer_declined: false,
+		customer_message: null,
 		...overrides
 	};
 }
@@ -59,7 +66,9 @@ describe('sales outcomes report', () => {
 	});
 
 	it('refuses sorting by total without pipeline.view_value', async () => {
-		mockedHasPermission.mockImplementation((_access, permission) => permission !== 'pipeline.view_value');
+		mockedHasPermission.mockImplementation(
+			(_access, permission) => permission !== 'pipeline.view_value'
+		);
 
 		const response = await GET(
 			event('http://localhost/api/pipeline/outcomes?type=lost&sort=total')
@@ -68,7 +77,9 @@ describe('sales outcomes report', () => {
 	});
 
 	it('refuses sorting by client without customers.view', async () => {
-		mockedHasPermission.mockImplementation((_access, permission) => permission !== 'customers.view');
+		mockedHasPermission.mockImplementation(
+			(_access, permission) => permission !== 'customers.view'
+		);
 
 		const response = await GET(
 			event('http://localhost/api/pipeline/outcomes?type=lost&sort=client')
@@ -111,9 +122,14 @@ describe('sales outcomes report', () => {
 
 	it('reports the last row of a full page as the next cursor', async () => {
 		const rows = Array.from({ length: 26 }, (_, index) =>
-			outcomeRow({ id: `opp-${index}`, outcome_at: `2026-08-${String(index + 1).padStart(2, '0')}T00:00:00.000Z` })
+			outcomeRow({
+				id: `opp-${index}`,
+				outcome_at: `2026-08-${String(index + 1).padStart(2, '0')}T00:00:00.000Z`
+			})
 		);
-		const response = await GET(event('http://localhost/api/pipeline/outcomes?type=lost&limit=25', rows));
+		const response = await GET(
+			event('http://localhost/api/pipeline/outcomes?type=lost&limit=25', rows)
+		);
 		const body = await response.json();
 
 		expect(body.outcomes).toHaveLength(25);
@@ -134,6 +150,43 @@ describe('sales outcomes report', () => {
 			'pipeline_outcome_page',
 			expect.objectContaining({ outcome_type: 'direct_job' })
 		);
+	});
+
+	it('says why a quote was lost and what the customer said when they declined it', async () => {
+		const response = await GET(
+			event('http://localhost/api/pipeline/outcomes?type=lost', [
+				outcomeRow({
+					source_kind: 'quote',
+					quote_id: 'quote-1',
+					quote_number: 44,
+					lost_reason: 'price_too_high',
+					lost_note: 'Wanted it under two thousand',
+					customer_declined: true,
+					customer_message: 'Too much for us right now'
+				})
+			])
+		);
+		const body = await response.json();
+
+		expect(body.outcomes[0].source).toBe('quote');
+		expect(body.outcomes[0].quote).toEqual({ id: 'quote-1', quote_number: 44 });
+		expect(body.outcomes[0].lost).toEqual({
+			reason: 'price_too_high',
+			note: 'Wanted it under two thousand',
+			customer_declined: true,
+			customer_message: 'Too much for us right now'
+		});
+		expect(body.can_edit).toBe(true);
+	});
+
+	it('carries no lost details on a Won row', async () => {
+		const response = await GET(
+			event('http://localhost/api/pipeline/outcomes?type=won', [outcomeRow({ outcome: 'won' })])
+		);
+		const body = await response.json();
+
+		expect(body.outcomes[0].lost).toBeUndefined();
+		expect(body.outcomes[0].quote).toBeNull();
 	});
 
 	it('has no next cursor on the last page', async () => {

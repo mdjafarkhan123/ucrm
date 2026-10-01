@@ -18,6 +18,13 @@ type OutcomePageRow = {
 	client_display_name: string | null;
 	client_company_name: string | null;
 	estimated_value: number | null;
+	source_kind: 'request' | 'quote' | 'job';
+	quote_id: string | null;
+	quote_number: number | null;
+	lost_reason: string | null;
+	lost_note: string | null;
+	customer_declined: boolean;
+	customer_message: string | null;
 };
 
 // The Sales Outcomes report: one closed outcome type at a time, paged and sorted through
@@ -101,6 +108,20 @@ export const GET: RequestHandler = async (event) => {
 		created_at: row.created_at,
 		outcome_at: row.outcome_at,
 		...(canViewValue ? { estimated_value: row.estimated_value } : {}),
+		source: row.source_kind,
+		quote: row.quote_id === null ? null : { id: row.quote_id, quote_number: row.quote_number },
+		// Why it was lost. `customer_declined` separates a customer's own "no" from the team giving up on
+		// it, and carries what they said; the reason is always the team's own classification.
+		...(type === 'lost'
+			? {
+					lost: {
+						reason: row.lost_reason,
+						note: row.lost_note,
+						customer_declined: row.customer_declined,
+						customer_message: row.customer_message
+					}
+				}
+			: {}),
 		client:
 			row.client_display_name === null
 				? null
@@ -141,7 +162,9 @@ export const GET: RequestHandler = async (event) => {
 			// The report asks once, here, whether Total and Client are even offerable as sorts, rather than
 			// every render guessing from whether a row happens to carry money or a name.
 			can_view_value: canViewValue,
-			can_view_clients: canViewClients
+			can_view_clients: canViewClients,
+			// Reopening and giving a Lost record its reason are writes; a read-only member is not offered them.
+			can_edit: hasPermission(check.access, 'pipeline.edit')
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

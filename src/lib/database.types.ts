@@ -9108,6 +9108,8 @@ export type Database = {
 			opportunity_outcome_events: {
 				Row: {
 					actor_user_id: string | null;
+					classified_at: string | null;
+					classified_by: string | null;
 					created_at: string;
 					event_type: string;
 					id: string;
@@ -9124,6 +9126,8 @@ export type Database = {
 				};
 				Insert: {
 					actor_user_id?: string | null;
+					classified_at?: string | null;
+					classified_by?: string | null;
 					created_at?: string;
 					event_type: string;
 					id?: string;
@@ -9140,6 +9144,8 @@ export type Database = {
 				};
 				Update: {
 					actor_user_id?: string | null;
+					classified_at?: string | null;
+					classified_by?: string | null;
 					created_at?: string;
 					event_type?: string;
 					id?: string;
@@ -21918,10 +21924,17 @@ export type Database = {
 					client_display_name: string;
 					client_id: string;
 					created_at: string;
+					customer_declined: boolean;
+					customer_message: string;
 					estimated_value: number;
 					id: string;
+					lost_note: string;
+					lost_reason: string;
 					outcome: string;
 					outcome_at: string;
+					quote_id: string;
+					quote_number: number;
+					source_kind: string;
 					title: string;
 				}[];
 			};
@@ -21948,6 +21961,10 @@ export type Database = {
 					reopen_explanation: string;
 					target_opportunity_id: string;
 				};
+				Returns: Json;
+			};
+			pipeline_set_lost_reason: {
+				Args: { note?: string; reason?: string; target_opportunity_id: string };
 				Returns: Json;
 			};
 			pipeline_set_task_completed: {

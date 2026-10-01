@@ -112,4 +112,33 @@ describe('MarkOpportunityLostDialog', () => {
 		await expect.element(page.getByRole('button', { name: 'Mark as lost' })).not.toBeDisabled();
 		expect(onClose).not.toHaveBeenCalled();
 	});
+
+	// A record that is already Lost: the same form only saves its reason, beside what the customer said.
+	it('saves a reason on a customer decline without marking anything lost again', async () => {
+		mockFetch({ body: { event_id: 'event-1', reason: 'price_too_high', note: null }, status: 200 });
+		const onSaved = vi.fn();
+		render(MarkOpportunityLostDialog, {
+			props: {
+				open: true,
+				opportunityId,
+				existing: { reason: null, note: null, customerMessage: 'Too much for us right now' },
+				onSaved,
+				onClose: vi.fn()
+			}
+		});
+
+		await expect.element(page.getByText('Too much for us right now')).toBeVisible();
+
+		await page.getByLabelText('Reason (optional)').click();
+		await page.getByRole('option', { name: 'Price too high', exact: true }).click();
+		await page.getByRole('button', { name: 'Save reason' }).click();
+
+		expect(globalThis.fetch).toHaveBeenCalledWith(
+			`/api/pipeline/opportunities/${opportunityId}/lost-reason`,
+			expect.objectContaining({ method: 'PATCH' })
+		);
+		const [, init] = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+		expect(JSON.parse(init.body as string)).toEqual({ reason: 'price_too_high', note: null });
+		await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
+	});
 });
