@@ -9,23 +9,24 @@ the column counts and totals agree
 
 - [x] Performance design: no new index; search filters the open cards the board already reads
 - [x] Database change written and trial-run with 5,000 pretend open cards, then rolled back
-- [ ] Apply the database change for real
-- [ ] API routes and filter vocabulary take `q` (search) and `source` (lead source)
-- [ ] Search box and Lead source pill in the control bar; lead source chip on the card
-- [ ] New request / New quote buttons in the page header
+- [x] Apply the database change for real
+- [x] API routes and filter vocabulary take `q` (search) and `source` (lead source)
+- [x] Search box and Lead source pill in the control bar; lead source chip on the card
+- [x] New request / New quote buttons in the page header (New quote only for people who may make quotes)
+- [ ] Lead source ignores case and lists the sources clients really carry (`20261003090000`)
 - [ ] Tests, `npm run check`, browser check of the done-check
 - [ ] Merge to `main`, performance verification note, close the part
 
 ## Next
 
-Apply `supabase/migrations/20261002233000_pipeline_search_and_lead_source.sql` from the worktree with
-`npx supabase db push --linked` (the worktree links `supabase/.temp`, `.env`, and `node_modules` from the
-main folder). Then build the routes and the board controls.
+Apply `20261003090000` with `npx supabase db push --linked` from the worktree, then add
+`/api/pipeline/lead-sources` and load it in the Lead source pill on hover. Then browser check on port 5180.
 
 ## Outside actions
 
-- Apply migration `20261002233000` to the remote database — check: `supabase migration list --linked` shows
-  remote `20261002233000`, and `pipeline_board_page` has a `search_like` argument — pending
+- Migration `20261002233000` — applied (remote ledger shows it)
+- Migration `20261003090000` — check: `supabase migration list --linked` shows remote `20261003090000`, and
+  `public.pipeline_lead_sources` exists — pending
 
 ## Notes
 
@@ -33,6 +34,8 @@ main folder). Then build the routes and the board controls.
 - The other session took `20261002220000` for Support Messenger; this part's file is `20261002233000`.
 - The new functions still answer calls that name only the old arguments, so the database change is safe to
   apply before the code reaches `main`.
+- Lead sources are free text: test data has "Referral", "referral", "Google", "staff". Tidying them
+  everywhere (Marketing groups match exactly too) is outside this part — defer it.
 - Requests have no number in UCRM, so search covers the Quote number only. Tell Jafar.
 - Trial timing at 5,000 open cards in one organization (2,000 in one column): a search that matches
   nothing took about 140 ms per column and 72 ms for the counts. It grows with open cards, so about
