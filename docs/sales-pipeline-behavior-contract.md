@@ -171,7 +171,8 @@ communication, conversion, protected-stage movement, and closing work are never 
   or a deliberate external mark-sent action establishes Awaiting response. An immediate send failure leaves
   the Quote in Draft. A later delivery failure does not rewrite the historical send, but remains visibly failed
   and alerts the responsible team member. External mark-sent records the actor, time, channel, and optional
-  note.
+  note. The channels offered are In person, Phone call, Text message, My own email, Printed or posted copy,
+  and Other.
 - Every card offers the same allowed destinations through a non-drag Move/next-action control. An unavailable
   destination says the exact reason and genuine next step; the generic “That card could not be moved” message
   is only a last-resort technical failure.
