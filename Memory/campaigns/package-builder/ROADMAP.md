@@ -13,4 +13,5 @@ Build stages, approved by Jafar 2026-09-29:
 | 2 Builder | Drafts, publishing, archive and restore | Done 2026-09-30 (P6, P7) | — |
 | 3 Customers | Package changes, public cards, activation, introductory offers | Done 2026-09-30 (P8a–P11b) | — |
 | 4 Sellable extras | Each extra verified before it can be sold | Done 2026-10-01 (P12–P14); advanced reports and missed-call text-back stay unsellable until built | — |
-| P15 Final check | Every feasibility-review scenario on a fresh local database, speed checks, documents updated, plan marked built. The Jafar panel's final audit checks the new package rules, not the replaced ones | Not started | Waits for P3–P14; done when all scenarios pass and Jafar publishes his two real packages |
+| P15 Final check | Every feasibility-review scenario on a fresh local database, speed checks, documents updated, plan marked built. The Jafar panel's final audit checks the new package rules, not the replaced ones | Waits on Jafar's two steps, now done inside P16 M6 and M9 | Waits for P3–P14; done when all scenarios pass and Jafar publishes his two real packages |
+| P16 Jafar's hands-on tour | Jafar clicks through every workflow himself, milestone by milestone, with time skips (approved 2026-10-01) | Not started | P15 checks | Every milestone done; real packages published; Jaaroweb back on Test package |

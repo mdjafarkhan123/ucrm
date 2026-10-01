@@ -5,9 +5,9 @@
 
 **Completed:** Stages 1–4, 2026-10-01. Automations is sellable.
 
-**Next part:** P15 final check — all checks done (see `parts/P15.md`); ends when Jafar moves Jaaroweb back and publishes his two real packages.
+**Next part:** P16 hands-on tour (`parts/P16.md`), starting at Milestone 1. P15's last two steps happen inside it (M6, M9).
 
-**Waiting on Jafar:** Move Jaaroweb back to Test package ($249/month) and publish his two real packages; Claude cannot type his password.
+**Waiting on Jafar:** Nothing before M1. Claude never types his password; he clicks every step.
 
 **Blockers:** None. Password-protected billing actions are Jafar's list in `billingStepUpActions` (2026-09-30).
 
