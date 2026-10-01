@@ -4,9 +4,9 @@
 7–10-business-day delivery, approve launch, receive training, and contact Uplift throughout.
 **Plan:** `docs/client-onboarding-delivery-behavior-contract.md`
 
-**In progress:** none
+**In progress:** D4a chats + topics (`parts/D4a-chats-topics.md`)
 
-**Next part:** D4 attachments + topics (`stages/D-support.md`). D5 and D6 can also move now. B3 onward
+**Next part:** D4b attachments after D4a (`stages/D-support.md`). D5 and D6 can also move now. B3 onward
 waits for A2, and A2 waits for package-builder P16. A1, B1, B2, D1, D2, and D3 done 2026-10-01.
 
 **Blockers:** none. Build order approved 2026-10-01.
