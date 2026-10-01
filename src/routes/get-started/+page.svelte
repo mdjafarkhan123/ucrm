@@ -101,6 +101,14 @@
 			data.packages.some((pkg) => pkg.yearly_price_usd_cents !== null)
 	);
 
+	// The time zone starts as the visitor's own, which is wrong when someone fills this in for a business
+	// elsewhere — and activation uses it to date the first paid period. Keep it when the chosen country
+	// uses it; take the country's zone when it has only one; otherwise empty it so the visitor picks.
+	function matchTimeZoneToCountry(countryTimeZones: string[]) {
+		if (countryTimeZones.length === 0 || countryTimeZones.includes(form.time_zone)) return;
+		form.time_zone = countryTimeZones.length === 1 ? countryTimeZones[0] : '';
+	}
+
 	onMount(() => {
 		try {
 			form.time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -427,6 +435,7 @@
 								<LocationPicker
 									id="city_country"
 									bind:value={form.city_country}
+									oncountrychange={matchTimeZoneToCountry}
 									invalid={Boolean(fieldErrors.city_country)}
 									errorMessage={fieldErrors.city_country}
 									required

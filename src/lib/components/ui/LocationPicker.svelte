@@ -13,13 +13,16 @@
 		id,
 		invalid = false,
 		errorMessage = '',
-		required = false
+		required = false,
+		oncountrychange
 	}: {
 		value?: string;
 		id: string;
 		invalid?: boolean;
 		errorMessage?: string;
 		required?: boolean;
+		/** Called with the chosen country's time zones (IANA names), so a form can keep its time zone in step. */
+		oncountrychange?: (timeZones: string[]) => void;
 	} = $props();
 
 	const countries = Country.getAllCountries().sort((a, b) => a.name.localeCompare(b.name));
@@ -107,6 +110,7 @@
 		value = country?.name ?? '';
 		countryOpen = false;
 		cityOpen = false;
+		oncountrychange?.((country?.timezones ?? []).map((zone) => zone.zoneName));
 	}
 
 	function chooseCity(nextValue: string) {

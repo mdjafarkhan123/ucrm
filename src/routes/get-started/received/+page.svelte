@@ -26,8 +26,8 @@
 			icon: creditCardIcon,
 			tone: 'info',
 			eyebrow: 'Waiting for payment',
-			title: 'Your payment link is in your inbox',
-			text: "Pay using the secure link we emailed you. If you've already paid, we're checking it has reached us. You don't need to send proof."
+			title: "We're waiting for your payment",
+			text: "Pay using the secure payment link we send you by email. If you've already paid, we're checking it has reached us. You don't need to send proof."
 		},
 		setting_up: {
 			icon: settingsIcon,
@@ -78,8 +78,8 @@
 
 <main class="received">
 	<section class="received__card" aria-labelledby="received-title">
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -- bundled Tabler icon -->
 		<div class="received__mark received__mark--{current.tone}" aria-hidden="true">
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -- bundled Tabler icon -->
 			{@html current.icon}
 		</div>
 		<div class="received__eyebrow">{current.eyebrow}</div>

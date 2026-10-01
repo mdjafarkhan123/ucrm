@@ -1490,7 +1490,7 @@
 								<label
 									><span>How it was paid</span><input
 										bind:value={paymentForm.method}
-										placeholder="Bank transfer, card, PayPal…"
+										placeholder="Payoneer"
 										required
 										maxlength="80"
 									/></label
