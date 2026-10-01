@@ -14,7 +14,7 @@ import {
 } from '$lib/pipeline/stages';
 import { resolveDateRange, type BoardDateRange } from '$lib/server/pipeline/board';
 import { organizationFormatting, type OrganizationFormatting } from '$lib/server/requests/timezone';
-import { pipelinePresentation } from '$lib/server/pipeline/presentation';
+import { pipelinePresentation, type PipelinePresentation } from '$lib/server/pipeline/presentation';
 import { enabledCustomStages } from '$lib/server/pipeline/stages';
 
 // Both groups' columns, in the fixed order their headings need to add up in. Request stages first, matching
@@ -94,7 +94,7 @@ export const GET: RequestHandler = async (event) => {
 			return databaseError();
 		return summary(
 			formattingLookup.formatting,
-			presentationLookup.presentation.detailed_assessment_stages,
+			presentationLookup.presentation,
 			stagesLookup.stages,
 			counted.data,
 			canViewValue,
@@ -120,7 +120,7 @@ export const GET: RequestHandler = async (event) => {
 	if (counted.error) return databaseError();
 	return summary(
 		formattingLookup.formatting,
-		presentationLookup.presentation.detailed_assessment_stages,
+		presentationLookup.presentation,
 		stagesLookup.stages,
 		counted.data,
 		canViewValue,
@@ -130,7 +130,7 @@ export const GET: RequestHandler = async (event) => {
 
 function summary(
 	formatting: OrganizationFormatting,
-	detailedAssessmentStages: boolean,
+	presentation: PipelinePresentation,
 	customStages: CustomStage[],
 	rows: unknown,
 	canViewValue: boolean,
@@ -214,7 +214,9 @@ function summary(
 			can_edit: canEdit,
 			// Which board to draw: false is the five-column default with one Assessment column, true is the
 			// seven-column detailed view. Presentation only — the counts above are the same either way.
-			detailed_assessment_stages: detailedAssessmentStages,
+			detailed_assessment_stages: presentation.detailed_assessment_stages,
+			// Days without real progress before each built-in stage's cards warn. Custom stages carry their own.
+			inactivity_days: presentation.inactivity_days,
 			// The organization's custom follow-up columns, in saved order. Each names its section and the
 			// protected stage it sits after; the board places them from that.
 			custom_stages: customStages,

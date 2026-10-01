@@ -4,6 +4,7 @@ import { requireOrganizationPermission, hasPermission } from '$lib/server/access
 import { organizationFormatting } from '$lib/server/requests/timezone';
 import { pipelinePresentation } from '$lib/server/pipeline/presentation';
 import { enabledCustomStages } from '$lib/server/pipeline/stages';
+import { DEFAULT_INACTIVITY_DAYS } from '$lib/pipeline/freshness';
 
 vi.mock('$lib/server/access/permission', () => ({
 	requireOrganizationPermission: vi.fn(),
@@ -19,14 +20,16 @@ const waiting = {
 	section: 'quote',
 	name: 'Waiting on customer',
 	after_stage: 'quote_awaiting_response',
-	requires_future_task: false
+	requires_future_task: false,
+	inactivity_days: 2
 };
 const empty = {
 	id: '7b0c8f2e-0000-4000-8000-000000000002',
 	section: 'request',
 	name: 'Call back',
 	after_stage: 'new_request',
-	requires_future_task: false
+	requires_future_task: false,
+	inactivity_days: 2
 };
 
 function summaryEvent(rows: unknown[]) {
@@ -60,7 +63,7 @@ describe('board summary with custom follow-up columns', () => {
 		} as never);
 		vi.mocked(pipelinePresentation).mockResolvedValue({
 			ok: true,
-			presentation: { detailed_assessment_stages: false }
+			presentation: { detailed_assessment_stages: false, inactivity_days: DEFAULT_INACTIVITY_DAYS }
 		} as never);
 		vi.mocked(enabledCustomStages).mockResolvedValue({
 			ok: true,

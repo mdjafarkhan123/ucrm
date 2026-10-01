@@ -36,9 +36,12 @@
 		placeCustomStages,
 		protectedNamesInSection,
 		sectionColumns,
+		stagesInColumn,
+		type AnyBoardStage,
 		type BoardSection,
 		type CustomStage
 	} from '$lib/pipeline/stages';
+	import { DEFAULT_INACTIVITY_DAYS, INACTIVITY_DAYS_MAX } from '$lib/pipeline/freshness';
 	import layoutKanbanIcon from '@tabler/icons/outline/layout-kanban.svg?raw';
 
 	const queryClient = useQueryClient();
@@ -55,6 +58,9 @@
 	// What the server last confirmed, as the exact list a save would send — the form is changed when what
 	// it would send now is different.
 	let savedStages = $state('[]');
+	// The built-in stages' warning days as the form holds them; null is a box left empty.
+	let builtInDays = $state<Record<AnyBoardStage, number | null>>({ ...DEFAULT_INACTIVITY_DAYS });
+	let savedBuiltInDays = $state('');
 	let saving = $state(false);
 	let errorMessage = $state('');
 	// Naming problems the server found that this page did not, by row.
@@ -76,6 +82,8 @@
 		savedDetailed = pipeline.detailed_assessment_stages;
 		stages = pipeline.stages.map((stage) => ({ ...stage, key: stage.id }));
 		savedStages = JSON.stringify(payloadFor(stages));
+		builtInDays = { ...pipeline.inactivity_days };
+		savedBuiltInDays = JSON.stringify(builtInDays);
 		serverErrors = {};
 		attempted = false;
 	}
@@ -105,7 +113,8 @@
 								section: column.stage.section,
 								name: column.stage.name.trim(),
 								after_stage: column.stage.after_stage,
-								requires_future_task: column.stage.requires_future_task
+								requires_future_task: column.stage.requires_future_task,
+								inactivity_days: column.stage.inactivity_days
 							}
 						]
 					: []
@@ -145,12 +154,40 @@
 	});
 	const rowErrors = $derived({ ...serverErrors, ...nameProblems });
 
+	// A days box must hold a whole number from 1 to the limit. Built-in rows are marked by their column's
+	// name, custom rows by their key; the collapsed Assessment row speaks for its three stages.
+	function daysProblem(value: number | null): string | null {
+		if (value === null) return 'Enter a number of days.';
+		if (!Number.isInteger(value) || value < 1 || value > INACTIVITY_DAYS_MAX)
+			return `Use a whole number from 1 to ${INACTIVITY_DAYS_MAX}.`;
+		return null;
+	}
+	const daysErrors = $derived.by(() => {
+		const problems: Record<string, string> = {};
+		for (const section of BOARD_SECTIONS) {
+			for (const column of columns[section]) {
+				if (column.kind === 'protected') {
+					const problem = stagesInColumn(column.key)
+						.map((stage) => daysProblem(builtInDays[stage]))
+						.find(Boolean);
+					if (problem) problems[column.key] = problem;
+				} else {
+					const problem = daysProblem(column.stage.inactivity_days);
+					if (problem) problems[column.stage.key] = problem;
+				}
+			}
+		}
+		return problems;
+	});
+
 	const atLimit = $derived(stages.length >= CUSTOM_STAGE_LIMIT);
 
 	const dirty = $derived(
 		detailed !== null &&
 			savedDetailed !== null &&
-			(detailed !== savedDetailed || JSON.stringify(payloadFor(stages)) !== savedStages)
+			(detailed !== savedDetailed ||
+				JSON.stringify(payloadFor(stages)) !== savedStages ||
+				JSON.stringify(builtInDays) !== savedBuiltInDays)
 	);
 
 	function addStage(section: BoardSection) {
@@ -160,7 +197,16 @@
 		if (!last || atLimit) return key;
 		stages = [
 			...stages,
-			{ key, id: null, section, name: '', after_stage: last, requires_future_task: false }
+			{
+				key,
+				id: null,
+				section,
+				name: '',
+				after_stage: last,
+				requires_future_task: false,
+				// A new stage starts with the days of the built-in stage it follows.
+				inactivity_days: builtInDays[last]
+			}
 		];
 		return key;
 	}
@@ -173,6 +219,18 @@
 	function requireTask(key: string, required: boolean) {
 		stages = stages.map((stage) =>
 			stage.key === key ? { ...stage, requires_future_task: required } : stage
+		);
+	}
+
+	function setBuiltInDays(covered: readonly AnyBoardStage[], value: number | null) {
+		const next = { ...builtInDays };
+		for (const stage of covered) next[stage] = value;
+		builtInDays = next;
+	}
+
+	function setStageDays(key: string, value: number | null) {
+		stages = stages.map((stage) =>
+			stage.key === key ? { ...stage, inactivity_days: value } : stage
 		);
 	}
 
@@ -189,7 +247,12 @@
 	function savedStage(stage: DraftStage): CustomStage | null {
 		if (stage.id === null) return null;
 		const saved = query.data?.pipeline.stages.find((other) => other.id === stage.id);
-		return { ...stage, id: stage.id, name: stage.name.trim() || (saved?.name ?? 'this stage') };
+		return {
+			...stage,
+			id: stage.id,
+			name: stage.name.trim() || (saved?.name ?? 'this stage'),
+			inactivity_days: stage.inactivity_days ?? saved?.inactivity_days ?? 1
+		};
 	}
 
 	const removingStage = $derived.by(() => {
@@ -287,12 +350,17 @@
 			errorMessage = 'Fix the stage names marked below, then save again.';
 			return;
 		}
+		if (Object.keys(daysErrors).length > 0) {
+			errorMessage = 'Fix the warning days marked below, then save again.';
+			return;
+		}
 
 		saving = true;
 		const keys = payloadKeys(stages);
 		const result = await savePipelineSettings({
 			expected_revision: query.data.pipeline.revision,
 			detailed_assessment_stages: detailed,
+			inactivity_days: builtInDays,
 			stages: payloadFor(stages)
 		}).catch((error: SettingsWriteError) => {
 			// The server names a row by its place in the list it was sent ("stages.2.name"); anything it
@@ -390,6 +458,10 @@
 							{canEdit}
 							canAdd={!atLimit}
 							errors={rowErrors}
+							days={builtInDays}
+							daysErrors={attempted ? daysErrors : {}}
+							onBuiltInDays={setBuiltInDays}
+							onStageDays={setStageDays}
 							onAdd={() => addStage(section)}
 							onRename={renameStage}
 							onRequireTask={requireTask}
@@ -406,7 +478,9 @@
 					Built-in stages follow real work — a request coming in, an assessment being booked, a quote
 					being sent — so they cannot be renamed, moved, or removed. Removing one of your own stages asks
 					where its cards go first. Switch on “On hold stage” for a column like “Waiting till spring”:
-					cards there stay open and are never counted as lost.
+					cards there stay open and are never counted as lost. “Warn after” is how many days a card in
+					that stage can go without real progress — a customer reply, a booked visit, a quote sent, or
+					a finished task — before it is marked as needing attention.
 				</p>
 
 				<SectionBlock

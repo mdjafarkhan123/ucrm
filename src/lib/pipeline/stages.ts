@@ -148,6 +148,8 @@ export type CustomStage = {
 	after_stage: AnyBoardStage;
 	// An on-hold stage: a card may only be moved in while it has an open Task due after today.
 	requires_future_task: boolean;
+	// Days without real progress before a card here shows the inactivity warning.
+	inactivity_days: number;
 };
 
 // Where a custom stage sits: its section, and the protected stage it follows. Settings works with stages

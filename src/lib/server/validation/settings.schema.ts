@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { INACTIVITY_DAYS_MAX } from '$lib/pipeline/freshness';
 import {
 	BOARD_SECTIONS,
 	BOARD_SECTION_LABELS,
@@ -147,6 +148,14 @@ export const brandingSchema = z.object({
 
 export type BrandingInput = z.infer<typeof brandingSchema>;
 
+// Days without real progress before a card in a stage shows the inactivity warning. The database repeats
+// this range.
+const inactivityDaysSchema = z
+	.number({ message: 'Enter a number of days.' })
+	.int('Use whole days.')
+	.min(1, 'Use at least 1 day.')
+	.max(INACTIVITY_DAYS_MAX, `Use ${INACTIVITY_DAYS_MAX} days or fewer.`);
+
 // Settings → Pipeline: the Assessment toggle and the organization's whole list of custom stages, saved
 // together. The list is every enabled stage in board order; an entry without an id is a new one. The
 // database repeats the limit and the same-name rule, because it is the one that sees two people saving at
@@ -162,7 +171,8 @@ const customStageSchema = z
 			.max(CUSTOM_STAGE_NAME_MAX, `Keep the name under ${CUSTOM_STAGE_NAME_MAX} characters.`),
 		after_stage: z.enum([...BOARD_STAGES, ...QUOTE_BOARD_STAGES]),
 		// On hold: cards need an open Task due after today to be moved in.
-		requires_future_task: z.boolean().default(false)
+		requires_future_task: z.boolean().default(false),
+		inactivity_days: inactivityDaysSchema
 	})
 	.refine((stage) => SECTION_STAGES[stage.section].includes(stage.after_stage), {
 		message: 'That stage cannot sit there.',
@@ -173,6 +183,16 @@ export const pipelineSettingsSchema = z
 	.object({
 		expected_revision: expectedRevision,
 		detailed_assessment_stages: z.boolean(),
+		// Each built-in stage's warning days, all seven.
+		inactivity_days: z.object({
+			new_request: inactivityDaysSchema,
+			assessment_unscheduled: inactivityDaysSchema,
+			assessment_scheduled: inactivityDaysSchema,
+			assessment_completed: inactivityDaysSchema,
+			quote_draft: inactivityDaysSchema,
+			quote_awaiting_response: inactivityDaysSchema,
+			quote_changes_requested: inactivityDaysSchema
+		}),
 		stages: z
 			.array(customStageSchema)
 			.max(CUSTOM_STAGE_LIMIT, `A pipeline can have up to ${CUSTOM_STAGE_LIMIT} custom stages.`)

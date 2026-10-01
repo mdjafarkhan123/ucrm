@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/svelte-query';
 import type { CustomerDeclineReason } from '$lib/quotes/customer-decline';
 import type { BoardColumnKey, CustomStage, OpportunityOutcome, OpportunityStage } from './stages';
 import type { BoardFormatting } from './money';
+import type { InactivityDays } from './freshness';
 import { boardFilterKey, boardFilterParams, type BoardFilters } from './filters';
 import {
 	outcomeFilterKey,
@@ -84,6 +85,8 @@ export type BoardSummary = BoardFormatting & {
 	// way. It rides on the summary because that is the query the board already holds and already refreshes,
 	// so saving the setting changes the board without a reload.
 	detailed_assessment_stages: boolean;
+	// Days without real progress before each built-in stage's cards warn, as the owner set them.
+	inactivity_days: InactivityDays;
 	// The custom follow-up columns an owner or administrator added in Settings, in saved order.
 	custom_stages: CustomStage[];
 	// Each custom column's heading, by stage id. A card placed in a custom stage is counted here and not

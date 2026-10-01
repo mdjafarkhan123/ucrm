@@ -10,7 +10,7 @@ export async function enabledCustomStages(
 ): Promise<{ ok: true; stages: CustomStage[] } | { ok: false; stages: null }> {
 	const { data, error } = await supabase
 		.from('pipeline_custom_stages')
-		.select('id, section, name, after_stage, requires_future_task')
+		.select('id, section, name, after_stage, requires_future_task, inactivity_days')
 		.eq('organization_id', organizationId)
 		.is('disabled_at', null)
 		.order('position')

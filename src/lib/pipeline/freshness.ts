@@ -6,9 +6,15 @@
 //   (docs/sales-pipeline-behavior-contract.md, § First-release board).
 //
 // The clock is the browser's. Both are elapsed time, not calendar dates, so the organization's timezone does
-// not come into it.
+// not come into them — only an on-hold card's Task date is a calendar date, read against the organization's
+// today.
 
-import type { OpportunityStage } from './stages';
+import {
+	isAnyBoardStage,
+	type AnyBoardStage,
+	type CustomStage,
+	type OpportunityStage
+} from './stages';
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
@@ -48,9 +54,14 @@ export function stageAge(enteredAt: string, now: number = Date.now()): StageAge 
 	};
 }
 
-// How many days without progress each protected stage allows before the warning. A card sitting in a custom
-// stage is judged by its real stage until owners can set their own days (part C3).
-export const INACTIVITY_DAYS: Record<Exclude<OpportunityStage, 'request_closed'>, number> = {
+// How many days without progress each built-in stage allows before the warning: the plan's defaults, which
+// an owner changes in Settings → Pipeline. A custom stage carries its own days.
+export type InactivityDays = Record<AnyBoardStage, number>;
+
+// The range an owner may set, in whole days. The database checks the same.
+export const INACTIVITY_DAYS_MAX = 365;
+
+export const DEFAULT_INACTIVITY_DAYS: InactivityDays = {
 	new_request: 1,
 	assessment_unscheduled: 2,
 	assessment_scheduled: 2,
@@ -60,6 +71,14 @@ export const INACTIVITY_DAYS: Record<Exclude<OpportunityStage, 'request_closed'>
 	quote_changes_requested: 2
 };
 
+// What the board knows that a card does not: the owner's days, the custom stages, and today's date in the
+// organization's calendar (`YYYY-MM-DD`), which an on-hold card's Task date is measured against.
+export type InactivityRules = {
+	days: InactivityDays;
+	customStages: readonly CustomStage[];
+	today: string;
+};
+
 export type Inactivity = {
 	/** Whole days since the last real progress. */
 	days: number;
@@ -67,15 +86,37 @@ export type Inactivity = {
 	label: string;
 };
 
-// Null while the card is within its stage's days, or when it is not on the board at all.
+type InactivityCard = {
+	stage: OpportunityStage;
+	custom_stage_id: string | null;
+	progress_at: string;
+	// The card's earliest open Task.
+	task: { due_on: string | null } | null;
+};
+
+// Null while the card is within its stage's days, while it waits on hold for its Task to fall due, while
+// the board's rules have not arrived, or when it is not on the board at all.
 export function inactivity(
-	stage: OpportunityStage,
-	progressAt: string,
+	card: InactivityCard,
+	rules: InactivityRules | null,
 	now: number = Date.now()
 ): Inactivity | null {
-	if (stage === 'request_closed') return null;
-	const elapsed = elapsedSince(progressAt, now);
-	if (elapsed < INACTIVITY_DAYS[stage] * DAY) return null;
+	if (!rules || !isAnyBoardStage(card.stage)) return null;
+
+	// A card whose custom stage has just been switched off is judged by its real stage until the board
+	// catches up.
+	const custom = card.custom_stage_id
+		? rules.customStages.find((stage) => stage.id === card.custom_stage_id)
+		: undefined;
+
+	// On hold: quiet until the Task somebody promised to come back with falls due. From that day it counts
+	// like any other card, from its last real progress.
+	const dueOn = card.task?.due_on;
+	if (custom?.requires_future_task && dueOn && dueOn > rules.today) return null;
+
+	const allowed = custom?.inactivity_days ?? rules.days[card.stage];
+	const elapsed = elapsedSince(card.progress_at, now);
+	if (elapsed < allowed * DAY) return null;
 
 	const days = Math.floor(elapsed / DAY);
 	return { days, label: `No progress for ${days} ${days === 1 ? 'day' : 'days'}` };

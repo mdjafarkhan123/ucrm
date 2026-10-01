@@ -70,14 +70,16 @@ const waitingOnCustomer: CustomStage = {
 	section: 'request',
 	name: 'Waiting on customer',
 	after_stage: 'new_request',
-	requires_future_task: false
+	requires_future_task: false,
+	inactivity_days: 2
 };
 const quoteFollowUp: CustomStage = {
 	id: '7b0c8f2e-0000-4000-8000-000000000002',
 	section: 'quote',
 	name: 'Chasing a decision',
 	after_stage: 'quote_awaiting_response',
-	requires_future_task: false
+	requires_future_task: false,
+	inactivity_days: 2
 };
 
 function renderColumn(stage: AnyBoardStage | BoardColumn) {

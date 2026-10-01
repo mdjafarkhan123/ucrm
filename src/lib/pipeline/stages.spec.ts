@@ -11,12 +11,20 @@ import {
 	type SectionColumn
 } from './stages';
 import { pipelineSettingsSchema } from '$lib/server/validation/settings.schema';
+import { DEFAULT_INACTIVITY_DAYS } from './freshness';
 
 const stage = (
 	id: string,
 	section: CustomStage['section'],
 	after_stage: CustomStage['after_stage']
-): CustomStage => ({ id, section, name: id, after_stage, requires_future_task: false });
+): CustomStage => ({
+	id,
+	section,
+	name: id,
+	after_stage,
+	requires_future_task: false,
+	inactivity_days: 2
+});
 
 const names = (columns: SectionColumn[]) =>
 	columns.map((column) => (column.kind === 'protected' ? column.key : column.stage.name));
@@ -99,13 +107,15 @@ describe('pipelineSettingsSchema', () => {
 	const settings = (stages: unknown[]) => ({
 		expected_revision: 1,
 		detailed_assessment_stages: false,
+		inactivity_days: DEFAULT_INACTIVITY_DAYS,
 		stages
 	});
 	const fresh = (name: string, section = 'quote', after_stage = 'quote_draft') => ({
 		id: null,
 		section,
 		name,
-		after_stage
+		after_stage,
+		inactivity_days: 2
 	});
 
 	it('accepts the same name once in each section', () => {
@@ -158,11 +168,43 @@ describe('custom stage placement vocabulary', () => {
 			section: 'quote' as const,
 			name: 'Waiting on customer',
 			after_stage: 'quote_awaiting_response' as const,
-			requires_future_task: false
+			requires_future_task: false,
+			inactivity_days: 5
 		};
 		expect(boardColumnRequestKey({ kind: 'protected', key: 'assessment' })).toBe('assessment');
 		expect(boardColumnRequestKey({ kind: 'custom', stage })).toBe(stage.id);
 		expect(isCustomStageId(stage.id)).toBe(true);
 		expect(isCustomStageId('quote_draft')).toBe(false);
+	});
+});
+
+describe('pipelineSettingsSchema warning days', () => {
+	const base = {
+		expected_revision: 1,
+		detailed_assessment_stages: false,
+		inactivity_days: DEFAULT_INACTIVITY_DAYS,
+		stages: []
+	};
+
+	it('accepts whole days from 1 to 365', () => {
+		expect(pipelineSettingsSchema.safeParse(base).success).toBe(true);
+		const longest = { ...DEFAULT_INACTIVITY_DAYS, quote_awaiting_response: 365 };
+		expect(pipelineSettingsSchema.safeParse({ ...base, inactivity_days: longest }).success).toBe(
+			true
+		);
+	});
+
+	it('refuses zero, fractions, and a missing stage', () => {
+		for (const bad of [0, 1.5, 366]) {
+			const days = { ...DEFAULT_INACTIVITY_DAYS, new_request: bad };
+			expect(pipelineSettingsSchema.safeParse({ ...base, inactivity_days: days }).success).toBe(
+				false
+			);
+		}
+		const { quote_draft: _omitted, ...missing } = DEFAULT_INACTIVITY_DAYS;
+		void _omitted;
+		expect(pipelineSettingsSchema.safeParse({ ...base, inactivity_days: missing }).success).toBe(
+			false
+		);
 	});
 });

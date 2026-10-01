@@ -31,7 +31,7 @@ export const GET: RequestHandler = async (event) => {
 		event.locals.supabase
 			.from('organization_settings')
 			.select(
-				'pipeline_detailed_assessment_stages, pipeline_revision, pipeline_updated_by, pipeline_updated_at'
+				'pipeline_detailed_assessment_stages, pipeline_inactivity_days, pipeline_revision, pipeline_updated_by, pipeline_updated_at'
 			)
 			.eq('organization_id', check.auth.organization.id)
 			.maybeSingle(),
@@ -57,6 +57,8 @@ export const GET: RequestHandler = async (event) => {
 			permissions: { view: true, edit: hasPermission(check.access, 'settings.business.edit') },
 			pipeline: {
 				detailed_assessment_stages: data.pipeline_detailed_assessment_stages,
+				// Each built-in stage's warning days. The database keeps exactly the seven stages in it.
+				inactivity_days: data.pipeline_inactivity_days,
 				// Every enabled custom stage, in board order. The form saves the whole list back.
 				stages: stagesLookup.stages,
 				revision: data.pipeline_revision,
@@ -102,7 +104,8 @@ export const PATCH: RequestHandler = async (event) => {
 		target_organization_id: organizationId,
 		expected_revision: parsed.data.expected_revision,
 		new_detailed_assessment_stages: parsed.data.detailed_assessment_stages,
-		new_stages: parsed.data.stages
+		new_stages: parsed.data.stages,
+		new_inactivity_days: parsed.data.inactivity_days
 	});
 
 	if (error) return settingsWriteError(error);

@@ -11030,6 +11030,7 @@ export type Database = {
 					payment_settings_updated_by: string | null;
 					phone: string | null;
 					pipeline_detailed_assessment_stages: boolean;
+					pipeline_inactivity_days: Json;
 					pipeline_revision: number;
 					pipeline_updated_at: string | null;
 					pipeline_updated_by: string | null;
@@ -11113,6 +11114,7 @@ export type Database = {
 					payment_settings_updated_by?: string | null;
 					phone?: string | null;
 					pipeline_detailed_assessment_stages?: boolean;
+					pipeline_inactivity_days?: Json;
 					pipeline_revision?: number;
 					pipeline_updated_at?: string | null;
 					pipeline_updated_by?: string | null;
@@ -11196,6 +11198,7 @@ export type Database = {
 					payment_settings_updated_by?: string | null;
 					phone?: string | null;
 					pipeline_detailed_assessment_stages?: boolean;
+					pipeline_inactivity_days?: Json;
 					pipeline_revision?: number;
 					pipeline_updated_at?: string | null;
 					pipeline_updated_by?: string | null;
@@ -12210,6 +12213,7 @@ export type Database = {
 					created_by: string | null;
 					disabled_at: string | null;
 					id: string;
+					inactivity_days: number;
 					name: string;
 					organization_id: string;
 					position: number;
@@ -12223,6 +12227,7 @@ export type Database = {
 					created_by?: string | null;
 					disabled_at?: string | null;
 					id?: string;
+					inactivity_days?: number;
 					name: string;
 					organization_id: string;
 					position: number;
@@ -12236,6 +12241,7 @@ export type Database = {
 					created_by?: string | null;
 					disabled_at?: string | null;
 					id?: string;
+					inactivity_days?: number;
 					name?: string;
 					organization_id?: string;
 					position?: number;
@@ -21852,6 +21858,7 @@ export type Database = {
 					owner_avatar_url: string;
 					owner_full_name: string;
 					owner_user_id: string;
+					progress_at: string;
 					property_address_line1: string;
 					property_city: string;
 					property_id: string;
@@ -21861,7 +21868,6 @@ export type Database = {
 					quote_delivery_failed_at: string;
 					quote_delivery_failed_email: string;
 					quote_delivery_failure: string;
-					progress_at: string;
 					quote_id: string;
 					quote_status: string;
 					request_id: string;
@@ -23883,6 +23889,7 @@ export type Database = {
 				Args: {
 					expected_revision: number;
 					new_detailed_assessment_stages: boolean;
+					new_inactivity_days: Json;
 					new_stages: Json;
 					target_organization_id: string;
 				};

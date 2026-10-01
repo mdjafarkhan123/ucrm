@@ -54,6 +54,7 @@
 	import { activityKey } from '$lib/collaboration/api';
 	import type { QuoteSendChoice } from '$lib/quotes/send';
 	import type { BoardFilters } from '$lib/pipeline/filters';
+	import type { InactivityRules } from '$lib/pipeline/freshness';
 
 	// One column owns one query. A busy stage can keep loading its next page without making the other
 	// three fetch again, and the header count comes from the board summary rather than from this query,
@@ -66,6 +67,7 @@
 		formatting,
 		canEdit,
 		customStages = [],
+		inactivityRules = null,
 		onOpen,
 		onLost,
 		dragging,
@@ -84,6 +86,8 @@
 		canEdit: boolean;
 		// Every custom follow-up stage on the board, so a card's menu can offer the ones in its section.
 		customStages?: readonly CustomStage[];
+		// What a card's inactivity warning is measured against. Null until the board summary answers.
+		inactivityRules?: InactivityRules | null;
 		onOpen: (card: Card) => void;
 		onLost?: (opportunityId: string) => void;
 		// The card currently being dragged, board-wide, or null between gestures: its real stage, and the
@@ -584,6 +588,7 @@
 							{canEdit}
 							showStageBadge={stage === ASSESSMENT_GROUP || customStage !== null}
 							{customStages}
+							{inactivityRules}
 							onPlace={dragBusy ? undefined : (customStageId) => performPlace(card, customStageId)}
 							onOpen={() => onOpen(card)}
 							{onLost}

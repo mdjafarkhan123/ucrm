@@ -13,7 +13,7 @@
 	import OpportunityDetailsSection from './OpportunityDetailsSection.svelte';
 	import OpportunityTasksSection from './OpportunityTasksSection.svelte';
 	import OpportunityNotesSection from './OpportunityNotesSection.svelte';
-	import { inactivity, stageAge } from '$lib/pipeline/freshness';
+	import { inactivity, stageAge, type InactivityRules } from '$lib/pipeline/freshness';
 	import type { BoardFormatting } from '$lib/pipeline/money';
 	import type { OpportunityCard } from '$lib/pipeline/api';
 	import { ALL_STAGE_LABELS, isAnyBoardStage } from '$lib/pipeline/stages';
@@ -28,12 +28,15 @@
 	let {
 		opportunity,
 		formatting,
+		inactivityRules = null,
 		canEdit,
 		onClose,
 		onUpdate
 	}: {
 		opportunity: OpportunityCard | null;
 		formatting: BoardFormatting | null;
+		// The board's own warning rules, so the Brief and the card never disagree.
+		inactivityRules?: InactivityRules | null;
 		// Whether this member may assign, reassign or clear the owner and edit value/dates. Read-only
 		// otherwise — same permission the card's owner control gates on.
 		canEdit: boolean;
@@ -44,9 +47,7 @@
 	} = $props();
 
 	const age = $derived(opportunity ? stageAge(opportunity.stage_entered_at) : null);
-	const quiet = $derived(
-		opportunity ? inactivity(opportunity.stage, opportunity.progress_at) : null
-	);
+	const quiet = $derived(opportunity ? inactivity(opportunity, inactivityRules) : null);
 	const stageLabel = $derived(
 		opportunity && isAnyBoardStage(opportunity.stage) ? ALL_STAGE_LABELS[opportunity.stage] : null
 	);

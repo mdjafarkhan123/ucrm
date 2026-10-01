@@ -6,7 +6,7 @@
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import OpportunityOwnerField from './OpportunityOwnerField.svelte';
 	import MarkOpportunityLostDialog from './MarkOpportunityLostDialog.svelte';
-	import { inactivity, stageAge } from '$lib/pipeline/freshness';
+	import { inactivity, stageAge, type InactivityRules } from '$lib/pipeline/freshness';
 	import { appointment, followUp, formatMoney, type BoardFormatting } from '$lib/pipeline/money';
 	import {
 		fetchLostReasons,
@@ -40,6 +40,7 @@
 		canEdit,
 		showStageBadge = false,
 		customStages = [],
+		inactivityRules = null,
 		onPlace,
 		onOpen,
 		onLost
@@ -57,6 +58,8 @@
 		showStageBadge?: boolean;
 		// The organization's custom follow-up stages. The menu offers the ones in this card's own section.
 		customStages?: readonly CustomStage[];
+		// The owner's days and the organization's today. No warning shows until the board has them.
+		inactivityRules?: InactivityRules | null;
 		// Places the card in a custom stage, or back in its real stage with null. The column owns the
 		// write, so the menu and a drop save, lock the board, and report in exactly the same way.
 		onPlace?: (customStageId: string | null) => void;
@@ -108,8 +111,8 @@
 			: [])
 	]);
 	const age = $derived(stageAge(opportunity.stage_entered_at));
-	// Judged by the real stage even when the card sits in a custom one, until owners set their own days.
-	const quiet = $derived(inactivity(opportunity.stage, opportunity.progress_at));
+	// A card in a custom stage is judged by that stage's own days; an on-hold one waits for its Task.
+	const quiet = $derived(inactivity(opportunity, inactivityRules));
 	// The card's real state, read off its real stage -- never a second stored value. "Unscheduled" is
 	// worded as a plain state name rather than an instruction, the same register the other two use.
 	const stageBadge = $derived.by(() => {

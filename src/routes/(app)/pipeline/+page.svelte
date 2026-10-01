@@ -26,6 +26,8 @@
 		readBoardFilters,
 		type BoardFilters
 	} from '$lib/pipeline/filters';
+	import type { InactivityRules } from '$lib/pipeline/freshness';
+	import { todayInOrganization } from '$lib/pipeline/money';
 	import {
 		BOARD_STAGES,
 		QUOTE_BOARD_STAGES,
@@ -153,6 +155,17 @@
 	// straight after the stage it was saved behind. They ride on the summary too, so adding or moving one
 	// in Settings redraws the board the same way the toggle does.
 	const customStages = $derived(summaryQuery.data?.custom_stages ?? []);
+	// What every card's inactivity warning is measured against: the owner's days and today's date where the
+	// business is. Null until the summary arrives, and no card warns before then.
+	const inactivityRules = $derived<InactivityRules | null>(
+		summaryQuery.data && formatting
+			? {
+					days: summaryQuery.data.inactivity_days,
+					customStages,
+					today: todayInOrganization(formatting)
+				}
+			: null
+	);
 	const requestColumns = $derived<BoardColumn[]>(
 		sectionColumns('request', detailedAssessmentStages, customStages)
 	);
@@ -342,6 +355,7 @@
 									{formatting}
 									{canEdit}
 									{customStages}
+									{inactivityRules}
 									onOpen={(card) => (selected = card)}
 									onLost={closeSelectedIfLost}
 									{dragging}
@@ -373,6 +387,7 @@
 									{formatting}
 									{canEdit}
 									{customStages}
+									{inactivityRules}
 									onOpen={(card) => (selected = card)}
 									onLost={closeSelectedIfLost}
 									{dragging}
@@ -415,6 +430,7 @@
 <OpportunityBriefDrawer
 	opportunity={selected}
 	{formatting}
+	{inactivityRules}
 	{canEdit}
 	onClose={() => (selected = null)}
 	onUpdate={updateSelected}
