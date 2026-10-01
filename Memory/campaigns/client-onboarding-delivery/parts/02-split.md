@@ -20,19 +20,17 @@ Already built and matching plan §1: `/get-started` form, Jafar's confirm-paymen
 4-item `GettingStartedCard` is replaced by the setup card. Imports tools exist and are reused. Package
 editions store managed services (website, Google) as free text, so the wizard needs fixed service ticks.
 
-Draft (shown 2026-10-01):
-- **A Groundwork:** A1 check purchase/payment journey against plan, fix gaps · A2 fixed service ticks on
-  package editions (waits package-builder P16)
-- **B Setup wizard:** B1 welcome + task list + "Your business" with autosave/resume (riskiest: answer-storage
-  ADR) · B2 package decides sections, shared answers once · B3 services/area + brand/photos · B4 website/domain +
-  Google Profile · B5 calls/texting + protected documents · B6 reviews, CRM defaults, marketing, imports link ·
-  B7 check and send to Uplift
-- **C Uplift review:** C1 Jafar's client list + client view · C2 accept/ask/return a section · C3 Ready for
-  Uplift + blockers + 7–10 day range + facts fill CRM settings · C4 reminder emails
-- **D Support Messenger** (can run beside B): D1 chat + Jafar Support Inbox, live, unread, who-sees-what ·
-  D2 attachments, topics, email fallback, resolve/reopen, Jafar starts chats · D3 "Ask Uplift" from a section
-- **E Delivery:** E1 project status timeline + provider-wait badges · E2 preview, one correction round, versioned
-  launch approval · E3 launch checks, training, handover pack · E4 full 14-journey test + security check
+Sizing rule (Jafar, 2026-10-01): each part small enough that a session reads one plan subsection and a few
+files, so context stays light. Revised draft (shown 2026-10-01), ~34 parts:
+- **A:** A1 check buy/pay journey · A2 package service ticks (waits package-builder P16)
+- **B wizard:** B1 welcome + task list + business basics with autosave (answer-storage ADR) · B2 rest of
+  §3.1 · B3 package decides sections · B4 §3.2 · B5 §3.3 · B6 §3.4 · B7 §3.5 · B8 §3.6 call routing · B9 §3.6
+  texting facts + protected uploads · B10 §3.7 · B11 §3.8 · B12 §3.9 · B13 §3.10 check and send
+- **C review:** C1 client list · C2 client page with sections · C3 accept/ask/return + help tasks · C4 Ready for
+  Uplift + countdown · C5 facts fill CRM settings · C6 reminders
+- **D chat** (beside B, Jafar did not object): D1 button + thread + Support Inbox · D2 live + unread · D3
+  who-sees-what · D4 attachments + topics · D5 email fallback, resolve/reopen, Jafar starts · D6 Ask Uplift
+- **E delivery:** E1 timeline · E2 provider badges · E3 preview + correction · E4 launch approval · E5 launch
+  checks · E6 training + handover · E7 14 journeys · E8 security sweep
 
-Question to Jafar, word for word: "Is any piece too big or too small, and is the order right? In particular:
-should the Support chat (D) be built before the setup wizard instead of beside it?"
+Question to Jafar, word for word: "Is this smaller split OK to save as the build plan?"
