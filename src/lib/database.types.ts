@@ -11300,6 +11300,108 @@ export type Database = {
 					}
 				];
 			};
+			organization_setup: {
+				Row: {
+					created_at: string;
+					organization_id: string;
+					updated_at: string;
+					welcome_seen_at: string | null;
+					welcome_seen_by: string | null;
+				};
+				Insert: {
+					created_at?: string;
+					organization_id: string;
+					updated_at?: string;
+					welcome_seen_at?: string | null;
+					welcome_seen_by?: string | null;
+				};
+				Update: {
+					created_at?: string;
+					organization_id?: string;
+					updated_at?: string;
+					welcome_seen_at?: string | null;
+					welcome_seen_by?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: true;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_setup_answers: {
+				Row: {
+					availability: string;
+					created_at: string;
+					fact_key: string;
+					note: string | null;
+					organization_id: string;
+					updated_at: string;
+					updated_by: string | null;
+					value: Json | null;
+				};
+				Insert: {
+					availability: string;
+					created_at?: string;
+					fact_key: string;
+					note?: string | null;
+					organization_id: string;
+					updated_at?: string;
+					updated_by?: string | null;
+					value?: Json | null;
+				};
+				Update: {
+					availability?: string;
+					created_at?: string;
+					fact_key?: string;
+					note?: string | null;
+					organization_id?: string;
+					updated_at?: string;
+					updated_by?: string | null;
+					value?: Json | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_answers_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_setup_sections: {
+				Row: {
+					completed_at: string;
+					completed_by: string | null;
+					organization_id: string;
+					section_key: string;
+				};
+				Insert: {
+					completed_at?: string;
+					completed_by?: string | null;
+					organization_id: string;
+					section_key: string;
+				};
+				Update: {
+					completed_at?: string;
+					completed_by?: string | null;
+					organization_id?: string;
+					section_key?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_sections_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_tax_rates: {
 				Row: {
 					created_at: string;
@@ -21381,6 +21483,10 @@ export type Database = {
 				Args: { actor_email: string; target_application_id: string };
 				Returns: undefined;
 			};
+			mark_organization_setup_welcome_seen: {
+				Args: { target_organization_id: string };
+				Returns: Json;
+			};
 			mark_quote_sent_externally: {
 				Args: {
 					expected_revision: number;
@@ -23852,6 +23958,10 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			save_organization_setup_answers: {
+				Args: { new_answers: Json; target_organization_id: string };
+				Returns: Json;
+			};
 			save_package_draft: {
 				Args: {
 					actor_owner_email: string;
@@ -24303,6 +24413,14 @@ export type Database = {
 					expected_revision: number;
 					new_terms: string;
 					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			set_organization_setup_section_done: {
+				Args: {
+					is_done: boolean;
+					target_organization_id: string;
+					target_section_key: string;
 				};
 				Returns: Json;
 			};

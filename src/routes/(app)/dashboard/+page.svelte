@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
-	import GettingStartedCard from '$lib/components/dashboard/GettingStartedCard.svelte';
+	import SetupCard from '$lib/components/dashboard/SetupCard.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import type { PageProps } from './$types';
@@ -11,6 +11,10 @@
 	// business" flashed a false warning and zero counts on every cold visit.
 	let { data: shell }: PageProps = $props();
 	const hasOrganization = $derived(Boolean(shell.organization));
+	// Client setup is the owner's or an administrator's job, so nobody else is asked about it.
+	const runsSetup = $derived(
+		shell.organization?.role === 'owner' || shell.organization?.role === 'admin'
+	);
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -64,7 +68,6 @@
 		mutationFn: submitMutation,
 		onSuccess: () => {
 			void queryClient.invalidateQueries({ queryKey: ['crm', 'overview'] });
-			void queryClient.invalidateQueries({ queryKey: ['onboarding', 'checklist'] });
 		}
 	}));
 
@@ -230,7 +233,7 @@
 		<main class="content">
 			<PageHeader title="Dashboard" description="Your workspace at a glance." />
 			{#if hasOrganization}
-				<GettingStartedCard onAddClient={() => openForm('customer')} />
+				{#if runsSetup}<SetupCard userId={shell.user?.id ?? null} />{/if}
 			{:else}
 				<section class="notice">
 					<strong>Your account is signed in, but it is not connected to an organization yet.</strong
