@@ -8,7 +8,10 @@ entitlements, organization lifecycle controls, or privileged operational tools.
 
 The newest approved A-Z behavior is recorded in `docs/jafar-completion-contract.md`. Supporting
 owner boundaries and source traceability remain in `docs/jafar-organization-management-mission.md`.
-The paid onboarding rules remain in `docs/jafar-onboarding-implementation-contract.md` and ADR 0001.
+The complete client setup and delivery journey is in
+`docs/client-onboarding-delivery-behavior-contract.md`. Paid-prospect provisioning safety remains in
+`docs/jafar-onboarding-implementation-contract.md` and ADR 0001; package agreements and the offsite billing
+ledger are owned by `docs/package-builder-behavior-contract.md` and ADR 0003.
 Where this older audit contains an open decision or recommendation resolved by those approved
 documents, the newer approved document wins.
 

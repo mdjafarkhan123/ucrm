@@ -2,8 +2,12 @@
 
 ## Status
 
-Approved. This document describes the approved behavior to build. It is not a
-database migration, API, or production-screen change.
+Approved provisioning foundation. The client setup, delivery, launch, training, and support journey was
+expanded and approved in `docs/client-onboarding-delivery-behavior-contract.md` on 2026-10-01. That newer
+contract wins wherever this document describes a smaller onboarding checklist or an earlier commercial model.
+Package editions, agreements, and the billing ledger are owned by
+`docs/package-builder-behavior-contract.md` and ADR 0003. The idempotent paid-prospect provisioning and
+password-setup safety rules below remain in force.
 
 ## Purpose and scope
 
