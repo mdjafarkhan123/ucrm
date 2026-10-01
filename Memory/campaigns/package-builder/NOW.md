@@ -5,9 +5,9 @@
 
 **Completed:** Stages 1–4, 2026-10-01. Automations is sellable.
 
-**Next part:** P15 final check; it ends when Jafar publishes his two real packages.
+**Next part:** P15 final check — all checks done (see `parts/P15.md`); ends when Jafar moves Jaaroweb back and publishes his two real packages.
 
-**Waiting on Jafar:** Nothing. Jafar authorized whatever P15 needs (2026-10-01), including putting Jaaroweb back on its package: it is still on Starter Check from the P8b test, and the Billing tab asks for his `/jafar` password (in CLAUDE.md).
+**Waiting on Jafar:** Move Jaaroweb back to Test package ($249/month) and publish his two real packages; Claude cannot type his password.
 
 **Blockers:** None. Password-protected billing actions are Jafar's list in `billingStepUpActions` (2026-09-30).
 
