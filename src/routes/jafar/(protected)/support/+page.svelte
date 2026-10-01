@@ -59,7 +59,10 @@
 
 	// An unread conversation becomes read once it is open on a tab Jafar is looking at, up to its newest
 	// message. Each newer message is marked once.
-	let pageVisible = $state(true);
+	// A tab opened in the background has not been seen yet.
+	let pageVisible = $state(
+		typeof document === 'undefined' || document.visibilityState === 'visible'
+	);
 	let markedThrough: string | null = null;
 	$effect(() => {
 		const detail = thread.data;

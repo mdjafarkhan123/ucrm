@@ -56,7 +56,10 @@
 	);
 
 	// Seen means the panel is open on a tab the person is looking at. Each newer message is marked once.
-	let pageVisible = $state(true);
+	// A tab opened in the background has not been seen yet.
+	let pageVisible = $state(
+		typeof document === 'undefined' || document.visibilityState === 'visible'
+	);
 	let markedThrough: string | null = null;
 	$effect(() => {
 		const threadId = thread?.thread_id;
