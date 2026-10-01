@@ -6,7 +6,7 @@
 
 **In progress:** none
 
-**Next part:** A1 Buy/pay check (`stages/A-groundwork.md`). B1 and D1 can also start now; A2 waits for
-package-builder P16.
+**Next part:** B1 (`stages/B-wizard.md`). D1 can also start now; A2 waits for package-builder P16.
+A1 done 2026-10-01.
 
 **Blockers:** none. Build order approved 2026-10-01.
