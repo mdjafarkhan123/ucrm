@@ -250,7 +250,7 @@ select throws_ok(
   '42501', null, 'an admin from another organization cannot read org A''s grouped column'
 );
 
--- 7. save_pipeline_presentation ----------------------------------------------------------------------------
+-- 7. save_pipeline_settings (the Assessment toggle half) ---------------------------------------------------
 
 select set_config('request.jwt.claim.sub', 'c3000000-0000-0000-0000-000000000001', true);
 
@@ -261,7 +261,7 @@ select is(
 );
 
 select is(
-  (public.save_pipeline_presentation('c4000000-0000-0000-0000-000000000001', 1, true)) ->> 'status',
+  (public.save_pipeline_settings('c4000000-0000-0000-0000-000000000001', 1, true, '[]'::jsonb)) ->> 'status',
   'saved', 'an admin can turn the detailed stages on'
 );
 select is(
@@ -282,7 +282,7 @@ select is(
 
 -- A stale save is answered as data, not an error, so the page can name the other editor.
 select is(
-  (public.save_pipeline_presentation('c4000000-0000-0000-0000-000000000001', 1, false)) ->> 'status',
+  (public.save_pipeline_settings('c4000000-0000-0000-0000-000000000001', 1, false, '[]'::jsonb)) ->> 'status',
   'stale', 'a save carrying the old revision is refused as stale'
 );
 select is(
@@ -301,7 +301,7 @@ select is(
 -- A member without settings.business.edit cannot change how the whole organization sees its board.
 select set_config('request.jwt.claim.sub', 'c3000000-0000-0000-0000-000000000003', true);
 select throws_ok(
-  $$select public.save_pipeline_presentation('c4000000-0000-0000-0000-000000000001', 2, false)$$,
+  $$select public.save_pipeline_settings('c4000000-0000-0000-0000-000000000001', 2, false, '[]'::jsonb)$$,
   '42501', null, 'a field member cannot change the organization''s board presentation'
 );
 
