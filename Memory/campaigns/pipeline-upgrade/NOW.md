@@ -7,9 +7,10 @@ first paying client.
 
 **In progress:**
 
-- No build work yet. Revision 3 is approved.
+- 3 Plan: build split — 27 draft parts in seven stages shown to Jafar 2026-10-01; note `parts/3-build-split.md`.
 
-**Next part:** 3 Plan: build split — design thin, verifiable, risk-first build parts and bring the part list to
-Jafar for approval.
+**Next part:** 3 Plan: build split — apply Jafar's answers to the draft stage files, then write the stages into
+`ROADMAP.md`. First build part after approval: A1 Add custom stages in Settings.
 
-**Blockers:** None for planning. No code starts until Jafar approves the build split.
+**Blockers:** Waiting for Jafar's answers on part sizes, order, and push alerts. No code starts until he approves
+the build split.
