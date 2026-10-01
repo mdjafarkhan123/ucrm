@@ -19,8 +19,22 @@ export const supportMessageSchema = z.object({
 	client_message_id: z.string().uuid('Send the message again.')
 });
 
+// A member's message: in their own conversation, or in another one they can see (D3).
+export const supportMemberMessageSchema = supportMessageSchema.extend({
+	thread_id: z.string().uuid().optional()
+});
+
 export const supportThreadQuerySchema = z.object({
 	limit: z.coerce.number().int().min(1).max(SUPPORT_MAX_LOADED).default(SUPPORT_PAGE_SIZE)
+});
+
+export const supportMemberThreadQuerySchema = supportThreadQuerySchema.extend({
+	thread_id: z.string().uuid().optional()
+});
+
+// Adding a teammate to a conversation (D3).
+export const supportPersonSchema = z.object({
+	user_id: z.string().uuid('Choose a teammate.')
 });
 
 export const supportSettingsSchema = z.object({

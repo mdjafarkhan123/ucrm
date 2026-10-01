@@ -12,12 +12,14 @@
 	import sendIcon from '@tabler/icons/outline/arrow-up.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 
-	// One conversation between a contractor's team member and Uplift: the messages and the box to write the
-	// next one. The contractor's messenger and Jafar's Support Inbox both show it — only `viewer` differs,
-	// which decides whose messages sit on the right.
+	// One conversation between a contractor's team and Uplift: the messages and the box to write the next
+	// one. The contractor's messenger and Jafar's Support Inbox both show it. `viewer` decides whose messages
+	// sit on the right: Uplift's for Jafar; for a member, only their own (`viewerUserId`), since teammates
+	// may write in the same conversation (D3). Grey system lines record who was added or removed.
 	let {
 		messages,
 		viewer,
+		viewerUserId = null,
 		loading = false,
 		failed = false,
 		onRetry,
@@ -34,6 +36,8 @@
 		/** Oldest first. */
 		messages: SupportMessage[];
 		viewer: Extract<SupportSenderKind, 'member' | 'uplift'>;
+		/** The signed-in member, so their own messages are told apart from a teammate's. */
+		viewerUserId?: string | null;
 		loading?: boolean;
 		failed?: boolean;
 		onRetry?: () => void;
@@ -76,7 +80,13 @@
 
 	type Row =
 		| { kind: 'day'; key: string; label: string }
+		| { kind: 'system'; key: string; message: SupportMessage }
 		| { kind: 'message'; key: string; message: SupportMessage; mine: boolean };
+
+	function isMine(message: SupportMessage) {
+		if (viewer === 'uplift') return message.sender_kind === 'uplift';
+		return message.sender_kind === 'member' && message.sender_user_id === viewerUserId;
+	}
 
 	const rows = $derived.by(() => {
 		const result: Row[] = [];
@@ -87,19 +97,18 @@
 				result.push({ kind: 'day', key: `day-${message.id}`, label: day });
 				previousDay = day;
 			}
-			result.push({
-				kind: 'message',
-				key: message.id,
-				message,
-				mine: message.sender_kind === viewer
-			});
+			if (message.sender_kind === 'system') {
+				result.push({ kind: 'system', key: message.id, message });
+				continue;
+			}
+			result.push({ kind: 'message', key: message.id, message, mine: isMine(message) });
 		}
 		return result;
 	});
 
 	// The contractor sees the team name and the real person behind it; Jafar sees the team member's name.
 	function senderLabel(message: SupportMessage) {
-		if (message.sender_kind === viewer) return 'You';
+		if (isMine(message)) return 'You';
 		if (message.sender_kind === 'uplift') return `Uplift Support · ${message.sender_name}`;
 		return message.sender_name;
 	}
@@ -251,6 +260,13 @@
 			{#each rows as row (row.key)}
 				{#if row.kind === 'day'}
 					<p class="support-conversation__day"><span>{row.label}</span></p>
+				{:else if row.kind === 'system'}
+					<p class="support-conversation__system">
+						{row.message.body}
+						<time datetime={row.message.created_at} title={exactTime(row.message.created_at)}
+							>{clockTime(row.message.created_at)}</time
+						>
+					</p>
 				{:else}
 					<div
 						class="support-conversation__message"
@@ -392,6 +408,20 @@
 				height: var(--border-base);
 				background: var(--color-border);
 				content: '';
+			}
+		}
+
+		&__system {
+			margin: 0;
+			align-self: center;
+			max-width: 90%;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			line-height: var(--typography--lineHeight-base);
+			text-align: center;
+
+			time {
+				margin-left: var(--space-smaller);
 			}
 		}
 

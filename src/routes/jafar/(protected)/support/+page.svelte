@@ -9,13 +9,17 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import SupportConversation from '$lib/components/support/SupportConversation.svelte';
 	import SupportSettingsDialog from '$lib/components/support/SupportSettingsDialog.svelte';
+	import SupportPeople from '$lib/components/support/SupportPeople.svelte';
 	import { relativeTime } from '$lib/collaboration/format';
 	import { urlParam } from '$lib/url-param.svelte';
 	import {
 		SUPPORT_MAX_LOADED,
 		SUPPORT_PAGE_SIZE,
+		changeSupportInboxPeople,
 		fetchSupportInbox,
+		fetchSupportInboxPeople,
 		fetchSupportInboxThread,
+		jafarSupportPeopleKey,
 		jafarSupportInboxKey,
 		jafarSupportInboxPageKey,
 		jafarSupportKey,
@@ -42,6 +46,31 @@
 	let inboxLimit = $state(SUPPORT_PAGE_SIZE);
 	let threadLimit = $state(SUPPORT_PAGE_SIZE);
 	let settingsOpen = $state(false);
+	// The People panel (D3): who is in the open conversation, and adding or removing a teammate.
+	let showPeople = $state(false);
+
+	const people = createQuery(() => ({
+		queryKey: jafarSupportPeopleKey(selectedId),
+		queryFn: () => fetchSupportInboxPeople(selectedId as string),
+		enabled: showPeople && selectedId !== null
+	}));
+
+	function warmPeople() {
+		if (!selectedId) return;
+		const threadId = selectedId;
+		void queryClient.prefetchQuery({
+			queryKey: jafarSupportPeopleKey(threadId),
+			queryFn: () => fetchSupportInboxPeople(threadId),
+			staleTime: 10_000
+		});
+	}
+
+	async function changePeople(userId: string, adding: boolean) {
+		if (!selectedId) return;
+		await changeSupportInboxPeople(selectedId, userId, adding);
+		// The grey line is a new message in the conversation; the list changed too.
+		await queryClient.invalidateQueries({ queryKey: jafarSupportThreadKey(selectedId) });
+	}
 
 	// New messages arrive live: the /jafar layout listens for them and refreshes these queries (D2).
 	const inbox = createQuery(() => ({
@@ -101,6 +130,7 @@
 
 	function openThread(threadId: string) {
 		threadLimit = SUPPORT_PAGE_SIZE;
+		showPeople = false;
 		selected.set(threadId);
 	}
 
@@ -273,29 +303,47 @@
 						<Button
 							variant="tertiary"
 							size="small"
+							onhover={warmPeople}
+							onclick={() => (showPeople = !showPeople)}
+							>{showPeople ? 'Conversation' : 'People'}</Button
+						>
+						<Button
+							variant="tertiary"
+							size="small"
 							href={`/jafar/organizations/${current.organization.id}`}>Open organization</Button
 						>
 					{/if}
 				</header>
-				<SupportConversation
-					viewer="uplift"
-					conversationKey={selectedId}
-					messages={thread.data?.thread.id === selectedId ? thread.data.messages : []}
-					loading={thread.isPending || thread.data?.thread.id !== selectedId}
-					hasEarlier={(thread.data?.has_earlier ?? false) && threadLimit < SUPPORT_MAX_LOADED}
-					loadingEarlier={thread.isPlaceholderData}
-					onLoadEarlier={() =>
-						(threadLimit = Math.min(threadLimit + SUPPORT_PAGE_SIZE, SUPPORT_MAX_LOADED))}
-					onSend={reply}
-					placeholder="Write a reply…"
-					blockedReason={needsName ? 'Add your name in Support settings before replying.' : ''}
-				>
-					{#snippet footnote()}
-						{settings?.responder_name
-							? `Clients see this as Uplift Support · ${settings.responder_name}.`
-							: ''}
-					{/snippet}
-				</SupportConversation>
+				{#if showPeople}
+					<SupportPeople
+						people={people.data}
+						loading={people.isPending}
+						failed={people.isError}
+						onRetry={() => void people.refetch()}
+						onChange={changePeople}
+					/>
+				{/if}
+				<div class="support-inbox__conversation-body" hidden={showPeople}>
+					<SupportConversation
+						viewer="uplift"
+						conversationKey={selectedId}
+						messages={thread.data?.thread.id === selectedId ? thread.data.messages : []}
+						loading={thread.isPending || thread.data?.thread.id !== selectedId}
+						hasEarlier={(thread.data?.has_earlier ?? false) && threadLimit < SUPPORT_MAX_LOADED}
+						loadingEarlier={thread.isPlaceholderData}
+						onLoadEarlier={() =>
+							(threadLimit = Math.min(threadLimit + SUPPORT_PAGE_SIZE, SUPPORT_MAX_LOADED))}
+						onSend={reply}
+						placeholder="Write a reply…"
+						blockedReason={needsName ? 'Add your name in Support settings before replying.' : ''}
+					>
+						{#snippet footnote()}
+							{settings?.responder_name
+								? `Clients see this as Uplift Support · ${settings.responder_name}.`
+								: ''}
+						{/snippet}
+					</SupportConversation>
+				</div>
 			{/if}
 		</section>
 	</div>
@@ -491,6 +539,17 @@
 			flex-direction: column;
 			min-width: 0;
 			min-height: 0;
+		}
+
+		&__conversation-body {
+			display: flex;
+			flex: 1;
+			flex-direction: column;
+			min-height: 0;
+
+			&[hidden] {
+				display: none;
+			}
 		}
 
 		&__conversation-header {

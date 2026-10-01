@@ -10,6 +10,8 @@ export type SupportSenderKind = 'member' | 'uplift' | 'system' | 'ai';
 export type SupportMessage = {
 	id: string;
 	sender_kind: SupportSenderKind;
+	/** The team member who wrote it. Null for Uplift, system lines, and a member whose account is gone. */
+	sender_user_id: string | null;
 	sender_name: string;
 	body: string;
 	created_at: string;
@@ -23,6 +25,45 @@ export type SupportThread = {
 	has_earlier: boolean;
 	/** Uplift's own words for its hours and usual reply time. Empty when Uplift has not written one. */
 	availability_note: string;
+	/** Whose conversation it is. Null for the member's own. */
+	started_by_name: string | null;
+	/** Other conversations in the organization the member may see (D3). Counted only with their own. */
+	team_thread_count: number;
+};
+
+// Who sees what (D3, Zendesk's "My / CC'd / Organization requests"): a member sees the conversation they
+// started and ones they were added to; owners and admins see every conversation in their organization.
+
+/** A conversation other than the member's own: someone else's they were added to or administer. */
+export type SupportTeamThread = {
+	id: string;
+	started_by_name: string;
+	last_message_at: string;
+	last_message_preview: string;
+	last_message_sender_kind: SupportSenderKind;
+	/** Something arrived since the member last looked. Shown as a dot; never counted in the badge. */
+	unread: boolean;
+	/** The member was added to it, rather than seeing it as an owner or admin. */
+	added: boolean;
+};
+
+export type SupportTeamThreads = { threads: SupportTeamThread[] };
+
+export type SupportPerson = {
+	user_id: string;
+	name: string;
+	/** Started the conversation. Always in it, never removable. */
+	started: boolean;
+	/** Still an active member of the team. */
+	active: boolean;
+};
+
+export type SupportPeople = {
+	people: SupportPerson[];
+	/** Active teammates not in the conversation yet. */
+	addable: { user_id: string; name: string }[];
+	/** The viewer may add and remove people: the starter, an owner or admin, or Uplift. */
+	can_manage: boolean;
 };
 
 export const SUPPORT_MESSAGE_MAX_LENGTH = 4000;
@@ -37,6 +78,60 @@ export const supportThreadPageKey = (userId: string | null, limit: number) =>
 	[...supportThreadKey(userId), limit] as const;
 
 export const supportUnreadKey = (userId: string | null) => ['support', 'unread', userId] as const;
+
+/** Someone else's conversation, by id. Shares the user's prefix so a ping refreshes it with their own. */
+export const supportTeamThreadKey = (userId: string | null, threadId: string) =>
+	[...supportThreadKey(userId), 'team', threadId] as const;
+export const supportTeamThreadPageKey = (userId: string | null, threadId: string, limit: number) =>
+	[...supportTeamThreadKey(userId, threadId), limit] as const;
+export const supportTeamThreadsKey = (userId: string | null) =>
+	[...supportThreadKey(userId), 'team-list'] as const;
+export const supportPeopleKey = (userId: string | null, threadId: string | null) =>
+	[...supportThreadKey(userId), 'people', threadId] as const;
+
+export async function fetchSupportTeamThread(
+	threadId: string,
+	limit: number
+): Promise<SupportThread> {
+	const response = await fetch(`/api/support/thread?thread_id=${threadId}&limit=${limit}`);
+	if (!response.ok) throw httpError(response, 'This conversation could not be loaded.');
+	return response.json();
+}
+
+export async function fetchSupportTeamThreads(): Promise<SupportTeamThreads> {
+	const response = await fetch('/api/support/threads');
+	if (!response.ok) throw httpError(response, 'Team conversations could not be loaded.');
+	return response.json();
+}
+
+export async function fetchSupportPeople(threadId: string): Promise<SupportPeople> {
+	const response = await fetch(`/api/support/threads/${threadId}/people`);
+	if (!response.ok)
+		throw httpError(response, 'The people in this conversation could not be loaded.');
+	return response.json();
+}
+
+// Adding posts the teammate; removing names them in the path. `base` is the conversation's people route.
+async function changePeople(base: string, userId: string, adding: boolean): Promise<void> {
+	const response = await fetch(
+		adding ? base : `${base}/${userId}`,
+		adding
+			? {
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify({ user_id: userId })
+				}
+			: { method: 'DELETE' }
+	);
+	if (!response.ok)
+		throw await failure(
+			response,
+			adding ? 'That teammate could not be added.' : 'That teammate could not be removed.'
+		);
+}
+
+export const changeSupportPeople = (threadId: string, userId: string, adding: boolean) =>
+	changePeople(`/api/support/threads/${threadId}/people`, userId, adding);
 
 export async function fetchSupportUnread(): Promise<SupportUnread> {
 	const response = await fetch('/api/support/unread');
@@ -69,9 +164,11 @@ async function failure(response: Response, fallback: string) {
 	return httpError(response, fieldMessage ?? body?.error ?? fallback);
 }
 
+/** Without `thread_id`, the member writes in their own conversation. */
 export async function sendSupportMessage(input: {
 	body: string;
 	client_message_id: string;
+	thread_id?: string;
 }): Promise<SupportMessage> {
 	const response = await fetch('/api/support/messages', {
 		method: 'POST',
@@ -169,6 +266,19 @@ export async function replyToSupportThread(
 	if (!response.ok) throw await failure(response, 'Your reply could not be sent.');
 	return response.json();
 }
+
+export const jafarSupportPeopleKey = (threadId: string | null) =>
+	[...jafarSupportThreadKey(threadId), 'people'] as const;
+
+export async function fetchSupportInboxPeople(threadId: string): Promise<SupportPeople> {
+	const response = await fetch(`/api/jafar/support/threads/${threadId}/people`);
+	if (!response.ok)
+		throw httpError(response, 'The people in this conversation could not be loaded.');
+	return response.json();
+}
+
+export const changeSupportInboxPeople = (threadId: string, userId: string, adding: boolean) =>
+	changePeople(`/api/jafar/support/threads/${threadId}/people`, userId, adding);
 
 export async function saveSupportSettings(input: SupportSettings): Promise<SupportSettings> {
 	const response = await fetch('/api/jafar/support/settings', {

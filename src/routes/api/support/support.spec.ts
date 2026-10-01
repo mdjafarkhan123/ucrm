@@ -3,6 +3,8 @@ import { GET as getThread } from './thread/+server';
 import { POST as postMessage } from './messages/+server';
 import { GET as getUnread } from './unread/+server';
 import { POST as postRead } from './thread/read/+server';
+import { POST as addPerson } from './threads/[threadId]/people/+server';
+import { DELETE as removePerson } from './threads/[threadId]/people/[userId]/+server';
 import { getOrganizationContext } from '$lib/server/auth/organization';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 
@@ -18,6 +20,8 @@ const mockedContext = vi.mocked(getOrganizationContext);
 const mockedRateLimit = vi.mocked(checkRateLimit);
 
 const CLIENT_MESSAGE_ID = '123e4567-e89b-12d3-a456-426614174000';
+const THREAD_ID = '223e4567-e89b-12d3-a456-426614174000';
+const TEAMMATE_ID = '423e4567-e89b-12d3-a456-426614174000';
 
 type MessageRow = {
 	id: string;
@@ -30,7 +34,9 @@ type MessageRow = {
 // The three reads a thread makes: the member's thread, the availability line, and the messages (newest
 // first, as the database returns them).
 function supabase(options: {
-	thread?: { id: string } | null;
+	thread?: { id: string; started_by_user_id?: string | null } | null;
+	teamCount?: number;
+	profiles?: { id: string; full_name: string }[];
 	note?: string;
 	messages?: MessageRow[];
 	rpcError?: { code: string; message: string } | null;
@@ -39,13 +45,17 @@ function supabase(options: {
 	const rows: Record<string, unknown> = {
 		support_threads: options.thread ?? null,
 		platform_support_settings: { availability_note: options.note ?? '' },
-		support_messages: options.messages ?? []
+		support_messages: options.messages ?? [],
+		profiles: options.profiles ?? []
 	};
 	const from = vi.fn((table: string) => {
 		const result = { data: rows[table], error: null };
 		const chain = {
 			select: () => chain,
 			eq: () => chain,
+			in: () => Promise.resolve(result),
+			// The "Team chats" count is the only read that ends on this filter.
+			or: () => Promise.resolve({ count: options.teamCount ?? 0, error: null }),
 			order: () => chain,
 			limit: (count: number) => {
 				limit(count);
@@ -75,10 +85,11 @@ function supabase(options: {
 
 function event(
 	client: ReturnType<typeof supabase>,
-	options: { body?: unknown; query?: string } = {}
+	options: { body?: unknown; query?: string; params?: Record<string, string> } = {}
 ) {
 	return {
 		locals: { supabase: client },
+		params: options.params ?? {},
 		url: new URL(`http://localhost/api/support/thread${options.query ?? ''}`),
 		request: new Request('http://localhost/api/support/messages', {
 			method: 'POST',
@@ -129,7 +140,9 @@ describe('GET /api/support/thread', () => {
 			thread_id: null,
 			messages: [],
 			has_earlier: false,
-			availability_note: 'Mon–Fri. We reply within a day.'
+			availability_note: 'Mon–Fri. We reply within a day.',
+			started_by_name: null,
+			team_thread_count: 0
 		});
 		expect(client.from).not.toHaveBeenCalledWith('support_messages');
 	});
@@ -156,6 +169,36 @@ describe('GET /api/support/thread', () => {
 		expect(client.limit).toHaveBeenCalledWith(3);
 		expect(body.messages.map((row: MessageRow) => row.id)).toEqual(['2', '3']);
 		expect(body.has_earlier).toBe(true);
+	});
+
+	it('counts the team conversations the member may also see', async () => {
+		const client = supabase({
+			thread: { id: 'thread-1', started_by_user_id: 'user-1' },
+			teamCount: 3
+		});
+		const body = await (await getThread(event(client))).json();
+		expect(body.team_thread_count).toBe(3);
+		expect(body.started_by_name).toBeNull();
+	});
+
+	it('opens a teammate’s conversation the member can see, named after its starter', async () => {
+		const client = supabase({
+			thread: { id: THREAD_ID, started_by_user_id: 'user-2' },
+			profiles: [{ id: 'user-2', full_name: 'Maria Lopez' }],
+			messages: [message('1')]
+		});
+		const response = await getThread(event(client, { query: `?thread_id=${THREAD_ID}` }));
+		const body = await response.json();
+		expect(response.status).toBe(200);
+		expect(body.thread_id).toBe(THREAD_ID);
+		expect(body.started_by_name).toBe('Maria Lopez');
+	});
+
+	it('answers 404 for a conversation row level security hides', async () => {
+		const client = supabase({ thread: null });
+		const response = await getThread(event(client, { query: `?thread_id=${THREAD_ID}` }));
+		expect(response.status).toBe(404);
+		expect(client.from).not.toHaveBeenCalledWith('support_messages');
 	});
 
 	it('rejects a page size beyond the ceiling', async () => {
@@ -233,6 +276,30 @@ describe('POST /api/support/messages', () => {
 		expect(client.rpc).not.toHaveBeenCalled();
 	});
 
+	it('writes into a teammate’s conversation when one is named', async () => {
+		const client = supabase({});
+		await postMessage(
+			event(client, {
+				body: { body: 'Hello', client_message_id: CLIENT_MESSAGE_ID, thread_id: THREAD_ID }
+			})
+		);
+		expect(client.rpc).toHaveBeenCalledWith(
+			'send_support_message',
+			expect.objectContaining({ target_thread_id: THREAD_ID })
+		);
+	});
+
+	it('refuses a conversation the member cannot see', async () => {
+		const client = supabase({ rpcError: { code: '42501', message: 'no' } });
+		const response = await postMessage(
+			event(client, {
+				body: { body: 'Hello', client_message_id: CLIENT_MESSAGE_ID, thread_id: THREAD_ID }
+			})
+		);
+		expect(response.status).toBe(403);
+		expect((await response.json()).error).toBe('That conversation is not one you can write in.');
+	});
+
 	it('reports the database’s refusal of a non-member as no access', async () => {
 		const client = supabase({ rpcError: { code: '42501', message: 'no' } });
 		const response = await postMessage(
@@ -262,7 +329,6 @@ describe('GET /api/support/unread', () => {
 });
 
 describe('POST /api/support/thread/read', () => {
-	const THREAD_ID = '323e4567-e89b-12d3-a456-426614174000';
 	const READ_THROUGH = '2026-10-01T10:00:00.123456+00:00';
 
 	it('refuses someone with no active organization', async () => {
@@ -304,5 +370,64 @@ describe('POST /api/support/thread/read', () => {
 			event(client, { body: { thread_id: THREAD_ID, read_through: READ_THROUGH } })
 		);
 		expect(response.status).toBe(403);
+	});
+});
+
+describe('adding and removing teammates', () => {
+	it('refuses someone with no active organization', async () => {
+		mockedContext.mockResolvedValue(null);
+		const client = supabase({});
+		const response = await addPerson(
+			event(client, { body: { user_id: TEAMMATE_ID }, params: { threadId: THREAD_ID } })
+		);
+		expect(response.status).toBe(401);
+		expect(client.rpc).not.toHaveBeenCalled();
+	});
+
+	it('rejects a teammate that is not an id before the database', async () => {
+		const client = supabase({});
+		const response = await addPerson(
+			event(client, { body: { user_id: 'maria' }, params: { threadId: THREAD_ID } })
+		);
+		expect(response.status).toBe(422);
+		expect(client.rpc).not.toHaveBeenCalled();
+	});
+
+	it('adds a teammate through the database rule', async () => {
+		const client = supabase({});
+		client.rpc.mockResolvedValue({ data: true, error: null });
+		const response = await addPerson(
+			event(client, { body: { user_id: TEAMMATE_ID }, params: { threadId: THREAD_ID } })
+		);
+		expect(response.status).toBe(200);
+		expect(client.rpc).toHaveBeenCalledWith('set_support_thread_participant', {
+			target_thread_id: THREAD_ID,
+			target_user_id: TEAMMATE_ID,
+			adding: true
+		});
+	});
+
+	it('passes on the database’s refusal of someone who may not change the list', async () => {
+		const client = supabase({
+			rpcError: { code: '42501', message: 'Only the person who started this conversation…' }
+		});
+		const response = await addPerson(
+			event(client, { body: { user_id: TEAMMATE_ID }, params: { threadId: THREAD_ID } })
+		);
+		expect(response.status).toBe(403);
+	});
+
+	it('removes a teammate named in the path', async () => {
+		const client = supabase({});
+		client.rpc.mockResolvedValue({ data: true, error: null });
+		const response = await removePerson(
+			event(client, { params: { threadId: THREAD_ID, userId: TEAMMATE_ID } })
+		);
+		expect(response.status).toBe(200);
+		expect(client.rpc).toHaveBeenCalledWith('set_support_thread_participant', {
+			target_thread_id: THREAD_ID,
+			target_user_id: TEAMMATE_ID,
+			adding: false
+		});
 	});
 });

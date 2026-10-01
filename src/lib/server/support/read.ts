@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import type { SupportMessage, SupportSenderKind } from '$lib/support/api';
 
-const MESSAGE_SELECT = 'id, sender_kind, sender_name, body, created_at';
+const MESSAGE_SELECT = 'id, sender_kind, sender_user_id, sender_name, body, created_at';
 
 // The latest `limit` messages of one thread, returned oldest first. One extra row is asked for so the
 // caller knows whether earlier messages exist without counting the whole thread.

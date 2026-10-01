@@ -2,10 +2,11 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { NO_STORE_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import { requireSupportMember, supportSendLimited } from '$lib/server/support/access';
-import { supportMessageSchema } from '$lib/server/validation/support.schema';
+import { supportMemberMessageSchema } from '$lib/server/validation/support.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 
-// A team member writes to Uplift. The first message creates their thread.
+// A team member writes to Uplift: in their own conversation (the first message creates it), or with
+// `thread_id` in another one they can see (D3).
 export const POST: RequestHandler = async (event) => {
 	const check = await requireSupportMember(event);
 	if ('response' in check) return check.response;
@@ -20,18 +21,24 @@ export const POST: RequestHandler = async (event) => {
 		return validationError({ form: 'Request body must be valid JSON.' });
 	}
 
-	const parsed = supportMessageSchema.safeParse(body);
+	const parsed = supportMemberMessageSchema.safeParse(body);
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
 	const { data, error } = await event.locals.supabase.rpc('send_support_message', {
 		target_organization_id: check.auth.organization.id,
 		message_body: parsed.data.body,
-		message_client_id: parsed.data.client_message_id
+		message_client_id: parsed.data.client_message_id,
+		target_thread_id: parsed.data.thread_id
 	});
 	if (error) {
 		if (error.code === '42501')
 			return json(
-				{ error: 'Only an active team member can message Uplift.', reason: 'permission_denied' },
+				{
+					error: parsed.data.thread_id
+						? 'That conversation is not one you can write in.'
+						: 'Only an active team member can message Uplift.',
+					reason: 'permission_denied'
+				},
 				{ status: 403 }
 			);
 		if (error.code === '23514')

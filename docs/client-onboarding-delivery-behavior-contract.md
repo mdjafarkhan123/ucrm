@@ -296,7 +296,11 @@ attachments, screen/section context, email fallback after a delayed unread messa
 start a conversation. Messages use **Uplift Support** plus the actual responder's name.
 
 Every active team member may contact support. Owners/admins may see organization-wide threads; another member sees
-their own threads and ones they were explicitly added to. The `/jafar` Support Inbox is separate from the tenant's
+their own threads and ones they were explicitly added to (Zendesk's "My / CC'd / Organization requests"). Owners/admins
+may also write in a teammate's thread under their own name. The thread's starter, an owner/admin, or Uplift may add or
+remove teammates, and each change leaves a visible line in the thread. The unread badge counts only a member's own and
+added threads; other team threads show a "new" dot in a Team chats list reached from the member's own thread (Jafar,
+2026-10-01). The `/jafar` Support Inbox is separate from the tenant's
 customer Conversations inbox. Support Messenger is a core package service and does not consume Website Chat
 allowances.
 

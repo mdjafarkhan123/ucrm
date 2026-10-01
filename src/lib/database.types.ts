@@ -15059,6 +15059,42 @@ export type Database = {
 					}
 				];
 			};
+			support_thread_participants: {
+				Row: {
+					created_at: string;
+					organization_id: string;
+					thread_id: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					organization_id: string;
+					thread_id: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					organization_id?: string;
+					thread_id?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'support_thread_participants_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'support_thread_participants_thread_id_fkey';
+						columns: ['thread_id'];
+						isOneToOne: false;
+						referencedRelation: 'support_threads';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			support_thread_reads: {
 				Row: {
 					created_at: string;
@@ -21454,6 +21490,10 @@ export type Database = {
 				Args: { supplied_token_hash: string; target_quote_id: string };
 				Returns: Json;
 			};
+			issue_support_realtime_grant: {
+				Args: { target_owner_session_id: string };
+				Returns: string;
+			};
 			job_checklists_list: {
 				Args: { target_job_id: string; target_organization_id: string };
 				Returns: Json;
@@ -21516,10 +21556,6 @@ export type Database = {
 			labor_cost_total_minor: {
 				Args: { cost_per_hour_minor: number; minutes: number };
 				Returns: number;
-			};
-			issue_support_realtime_grant: {
-				Args: { target_owner_session_id: string };
-				Returns: string;
 			};
 			list_communication_outbound_attachments: {
 				Args: { target_delivery_intent_id: string };
@@ -22142,8 +22178,12 @@ export type Database = {
 					cursor_timestamp?: string;
 					cursor_value?: number;
 					filter_owner_user_id?: string;
+					lead_source_filter?: string;
 					owner_filter?: string;
 					page_limit?: number;
+					search_digits?: string;
+					search_like?: string;
+					search_number?: number;
 					sort_direction?: string;
 					sort_key?: string;
 					target_organization_id: string;
@@ -22155,6 +22195,7 @@ export type Database = {
 					client_company_name: string;
 					client_display_name: string;
 					client_id: string;
+					client_lead_source: string;
 					created_at: string;
 					custom_stage_id: string;
 					estimated_value: number;
@@ -22382,7 +22423,11 @@ export type Database = {
 					created_from?: string;
 					created_to?: string;
 					filter_owner_user_id?: string;
+					lead_source_filter?: string;
 					owner_filter?: string;
+					search_digits?: string;
+					search_like?: string;
+					search_number?: number;
 					target_organization_id: string;
 				};
 				Returns: {
@@ -24355,6 +24400,7 @@ export type Database = {
 					message_body: string;
 					message_client_id: string;
 					target_organization_id: string;
+					target_thread_id?: string;
 				};
 				Returns: Json;
 			};
@@ -24773,6 +24819,22 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			set_support_thread_participant: {
+				Args: {
+					adding: boolean;
+					target_thread_id: string;
+					target_user_id: string;
+				};
+				Returns: boolean;
+			};
+			set_support_thread_participant_by_uplift: {
+				Args: {
+					adding: boolean;
+					target_thread_id: string;
+					target_user_id: string;
+				};
+				Returns: boolean;
+			};
 			settle_team_invitation_identity_cleanup: {
 				Args: { target_invitation_id: string; target_lease_nonce: string };
 				Returns: {
@@ -24910,6 +24972,14 @@ export type Database = {
 				Returns: Json;
 			};
 			support_inbox_unread_count: { Args: never; Returns: number };
+			support_thread_people: {
+				Args: { target_thread_id: string };
+				Returns: Json;
+			};
+			support_thread_people_for_uplift: {
+				Args: { target_thread_id: string };
+				Returns: Json;
+			};
 			support_unread_count: {
 				Args: { target_organization_id: string };
 				Returns: number;
