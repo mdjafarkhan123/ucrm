@@ -83,12 +83,18 @@
 							<InfoTip label={`What ${allowance.label} means`} title={allowance.label}>
 								<p>{help.what}</p>
 								<dl class="package-allowances__help">
-									<dt>What is counted</dt>
-									<dd>{help.counts}</dd>
-									<dt>When the limit is reached</dt>
-									<dd>{help.atLimit}</dd>
-									<dt>Example</dt>
-									<dd>{help.example}</dd>
+									<div class="package-allowances__help-item package-allowances__help-item--counted">
+										<dt>What is counted</dt>
+										<dd>{help.counts}</dd>
+									</div>
+									<div class="package-allowances__help-item package-allowances__help-item--limit">
+										<dt>When the limit is reached</dt>
+										<dd>{help.atLimit}</dd>
+									</div>
+									<div class="package-allowances__help-item package-allowances__help-item--example">
+										<dt>Example</dt>
+										<dd>{help.example}</dd>
+									</div>
 								</dl>
 							</InfoTip>
 						{/if}
@@ -189,6 +195,46 @@
 			display: grid;
 			gap: var(--space-small);
 			margin: 0;
+		}
+
+		// Each part of the explanation has its own colour, so a glance tells them apart.
+		&__help-item {
+			display: grid;
+			gap: var(--space-smallest);
+			padding: var(--space-small) var(--space-base);
+			border-left: 3px solid var(--help-accent);
+			border-radius: var(--radius-small);
+			background: var(--help-surface);
+
+			dt {
+				color: var(--help-text);
+				font-size: var(--typography--fontSize-smaller);
+				font-weight: 700;
+				letter-spacing: var(--typography--letterSpacing-loose);
+				text-transform: uppercase;
+			}
+
+			dd {
+				color: var(--color-text);
+			}
+
+			&--counted {
+				--help-accent: var(--color-informative);
+				--help-surface: var(--color-informative--surface);
+				--help-text: var(--color-informative--onSurface);
+			}
+
+			&--limit {
+				--help-accent: var(--color-warning);
+				--help-surface: var(--color-warning--surface);
+				--help-text: var(--color-warning--onSurface);
+			}
+
+			&--example {
+				--help-accent: var(--color-success);
+				--help-surface: var(--color-success--surface);
+				--help-text: var(--color-success--onSurface);
+			}
 		}
 
 		&__hint,

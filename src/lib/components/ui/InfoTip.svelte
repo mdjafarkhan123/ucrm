@@ -32,14 +32,14 @@
 		padding: 0;
 		border: 0;
 		border-radius: var(--radius-circle);
-		color: var(--color-interactive--subtle);
-		background: transparent;
+		color: var(--color-informative--onSurface);
+		background: var(--color-informative--surface);
 		cursor: pointer;
-		transition: background var(--timing-quick) ease-out;
+		transition: filter var(--timing-quick) ease-out;
 	}
 
 	:global(.info-tip__trigger:hover) {
-		background: var(--color-surface--hover);
+		filter: brightness(0.95);
 	}
 
 	:global(.info-tip__trigger:focus-visible) {
@@ -60,6 +60,7 @@
 		padding: var(--space-base) var(--space-large);
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-large);
+		border-top: 3px solid var(--color-informative);
 		background: var(--color-surface);
 		box-shadow: var(--shadow-base);
 	}
