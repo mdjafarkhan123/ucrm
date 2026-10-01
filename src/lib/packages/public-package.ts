@@ -73,12 +73,28 @@ export function priceSentence(pkg: PublicPackage, interval: BillingInterval) {
 	return `${amount} ${per}`;
 }
 
+/**
+ * What paying yearly saves against twelve monthly payments, in dollars, whole percent, and the monthly
+ * equivalent of the yearly price. Null when the package is not offered both ways or yearly is no cheaper,
+ * so a discount is never invented.
+ */
+export function yearlySaving(pkg: PublicPackage) {
+	if (!offersBoth(pkg) || !pkg.monthly_price_usd_cents) return null;
+	const twelveMonthsCents = pkg.monthly_price_usd_cents * 12;
+	const savedCents = twelveMonthsCents - pkg.yearly_price_usd_cents!;
+	const percent = Math.round((savedCents / twelveMonthsCents) * 100);
+	if (savedCents <= 0 || percent < 1) return null;
+	return {
+		twelveMonthsCents,
+		savedCents,
+		percent,
+		perMonthCents: Math.round(pkg.yearly_price_usd_cents! / 12)
+	};
+}
+
 /** Whole-percent saving of yearly over twelve monthly payments, rounded as the builder shows it; null when none. */
 export function yearlySavingPercent(pkg: PublicPackage) {
-	if (!offersBoth(pkg) || !pkg.monthly_price_usd_cents) return null;
-	const saving = 1 - pkg.yearly_price_usd_cents! / (pkg.monthly_price_usd_cents * 12);
-	const percent = Math.round(saving * 100);
-	return percent >= 1 ? percent : null;
+	return yearlySaving(pkg)?.percent ?? null;
 }
 
 const UNIT_NAMES: Record<string, [string, string]> = {
