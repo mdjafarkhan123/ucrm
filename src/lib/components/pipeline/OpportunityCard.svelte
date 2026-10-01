@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { useQueryClient } from '@tanstack/svelte-query';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import StageAgeChip from './StageAgeChip.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
@@ -14,12 +16,9 @@
 		lostReasonsKey,
 		type OpportunityCard
 	} from '$lib/pipeline/api';
-	import {
-		ALL_STAGE_LABELS,
-		isAnyBoardStage,
-		stageSection,
-		type CustomStage
-	} from '$lib/pipeline/stages';
+	import { BOARD_SECTIONS, BOARD_SECTION_LABELS, type CustomStage } from '$lib/pipeline/stages';
+	import { moveDestinations, type MoveDestination, type MoveTarget } from '$lib/pipeline/moves';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { clientDetailKey, fetchClient } from '$lib/clients/api';
 	import { activityKey } from '$lib/collaboration/api';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
@@ -27,13 +26,17 @@
 	import checklistIcon from '@tabler/icons/outline/checklist.svg?raw';
 	import mailOffIcon from '@tabler/icons/outline/mail-off.svg?raw';
 	import hourglassIcon from '@tabler/icons/outline/hourglass-low.svg?raw';
+	import moveIcon from '@tabler/icons/outline/arrow-move-right.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
+	import clockPauseIcon from '@tabler/icons/outline/clock-pause.svg?raw';
 
 	// One card on the board. Opening it is a full-size button stretched behind everything else, so the
 	// keyboard and a screen reader still reach the whole card as one target — the owner control and the
-	// `...` menu are the only other interactive pieces, both raised above that button rather than nested
-	// inside it, since a button cannot contain another button. The card itself is the drag target (Jobber
+	// Move button, and the `...` menu are the only other interactive pieces, all raised above that button
+	// rather than nested inside it, since a button cannot contain another button. The card itself is the drag target (Jobber
 	// has no visible handle) — `PipelineColumn` is what actually turns it into one; a `pointerdown` on the
-	// owner control or the menu stops there so neither ever starts a drag by itself.
+	// owner control or a menu stops there so none of them ever starts a drag by itself.
 	let {
 		opportunity,
 		formatting,
@@ -41,7 +44,8 @@
 		showStageBadge = false,
 		customStages = [],
 		inactivityRules = null,
-		onPlace,
+		onMove,
+		moveBusy = false,
 		onOpen,
 		onLost
 	}: {
@@ -56,13 +60,15 @@
 		// column, whose heading just says "Assessment", and every custom follow-up column, where the card
 		// is still really a Draft or a New request underneath.
 		showStageBadge?: boolean;
-		// The organization's custom follow-up stages. The menu offers the ones in this card's own section.
+		// The organization's custom follow-up stages, listed in the Move menu beside the real stages.
 		customStages?: readonly CustomStage[];
 		// The owner's days and the organization's today. No warning shows until the board has them.
 		inactivityRules?: InactivityRules | null;
-		// Places the card in a custom stage, or back in its real stage with null. The column owns the
-		// write, so the menu and a drop save, lock the board, and report in exactly the same way.
-		onPlace?: (customStageId: string | null) => void;
+		// Asks for the card to go somewhere, without dragging. The column owns every move, so the Move menu
+		// and a drop open the same dialogs, save, lock the board, and report in exactly the same way.
+		onMove?: (target: MoveTarget) => void;
+		// True while another move is being confirmed or saved; the Move button waits its turn.
+		moveBusy?: boolean;
 		onOpen: () => void;
 		// Told after a successful Mark as lost, so the page can close this card's Brief if it happens to
 		// be open behind it — the card leaves the board on its own via the query invalidation below, but
@@ -71,6 +77,7 @@
 	} = $props();
 
 	const queryClient = useQueryClient();
+	const toast = getToastManager();
 	let lostDialogOpen = $state(false);
 	// A Request card, or a quote the customer has seen. A Draft is not offered it, the way Jobber greys it
 	// out: a quote nobody received is not lost, and archiving it from the Quote is "Abandoned before
@@ -80,27 +87,71 @@
 			opportunity.stage === 'quote_awaiting_response' ||
 			opportunity.stage === 'quote_changes_requested'
 	);
-	// The same moves a drag allows, for anyone not using a pointer: into any other custom stage on this
-	// card's side of the Request/Quote line, and back to the real stage it never stopped being in.
-	const section = $derived(stageSection(opportunity.stage));
-	const menuItems = $derived([
-		...(onPlace && opportunity.custom_stage_id && isAnyBoardStage(opportunity.stage)
-			? [
-					{
-						label: `Move back to ${ALL_STAGE_LABELS[opportunity.stage]}`,
-						onSelect: () => onPlace(null)
-					}
-				]
-			: []),
-		...(onPlace
-			? customStages
-					.filter((stage) => stage.section === section && stage.id !== opportunity.custom_stage_id)
-					.map((stage) => ({
-						label: `Move to ${stage.name}`,
-						onSelect: () => onPlace(stage.id)
-					}))
-			: []),
-		...(canMarkLost
+	// The Move button: every stage on the board, for anyone not dragging. The stage the card is in is
+	// ticked, the ones it can go to simply go, and the ones it cannot stay selectable so that choosing one
+	// says exactly why and what to do instead — a disabled row could never explain itself.
+	const destinations = $derived(onMove ? moveDestinations(opportunity, customStages) : []);
+	const moveGroups = $derived(
+		BOARD_SECTIONS.map((section) => ({
+			heading: BOARD_SECTION_LABELS[section],
+			items: destinations
+				.filter((destination) => destination.section === section)
+				.map((destination) => ({
+					key: destination.key,
+					label: destination.label,
+					muted: destination.state !== 'available',
+					trailingIcon:
+						destination.state === 'current'
+							? checkIcon
+							: destination.state === 'blocked'
+								? lockIcon
+								: destination.onHold
+									? clockPauseIcon
+									: undefined,
+					note:
+						destination.state === 'current'
+							? 'this card is here'
+							: destination.state === 'blocked'
+								? 'not available, choose it to see why'
+								: destination.onHold
+									? 'on hold stage'
+									: undefined,
+					onSelect: () => chooseDestination(destination)
+				}))
+		})).filter((group) => group.items.length > 0)
+	);
+
+	function chooseDestination(destination: MoveDestination) {
+		if (destination.state === 'available') {
+			onMove?.(destination.target);
+			return;
+		}
+		if (destination.state === 'current') {
+			toast.info(`This card is already in ${destination.label}.`);
+			return;
+		}
+		const nextStep = destination.nextStep;
+		const recordId =
+			nextStep?.record === 'request' ? opportunity.request?.id : opportunity.quote?.id;
+		toast.show({
+			variant: 'warning',
+			title: `This card can’t move to ${destination.label}.`,
+			message: destination.reason,
+			duration: 10_000,
+			action:
+				nextStep && recordId
+					? { label: nextStep.label, onSelect: () => openRecord(nextStep.record, recordId) }
+					: undefined
+		});
+	}
+
+	function openRecord(record: 'request' | 'quote', id: string) {
+		if (record === 'request') void goto(resolve('/(app)/requests/[id=uuid]', { id }));
+		else void goto(resolve('/(app)/quotes/[id=uuid]', { id }));
+	}
+
+	const menuItems = $derived(
+		canMarkLost
 			? [
 					{
 						label: 'Mark as lost',
@@ -108,8 +159,8 @@
 						onSelect: () => (lostDialogOpen = true)
 					}
 				]
-			: [])
-	]);
+			: []
+	);
 	const age = $derived(stageAge(opportunity.stage_entered_at));
 	// A card in a custom stage is judged by that stage's own days; an on-hold one waits for its Task.
 	const quiet = $derived(inactivity(opportunity, inactivityRules));
@@ -183,6 +234,7 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div
 	class="opportunity-card"
+	data-opportunity-id={opportunity.id}
 	class:opportunity-card--inactive={quiet !== null}
 	class:opportunity-card--draggable={canEdit}
 >
@@ -211,15 +263,29 @@
 
 	<span class="opportunity-card__header">
 		<span class="opportunity-card__title">{opportunity.title}</span>
-		{#if canEdit && menuItems.length > 0}
+		{#if canEdit && (moveGroups.length > 0 || menuItems.length > 0)}
 			<span
 				class="opportunity-card__menu"
 				role="presentation"
 				onpointerdown={(event) => event.stopPropagation()}
-				onpointerenter={warmLostReasons}
-				onfocusin={warmLostReasons}
 			>
-				<DropdownMenu items={menuItems} triggerLabel={`More actions for ${opportunity.title}`} />
+				{#if moveGroups.length > 0}
+					<DropdownMenu
+						groups={moveGroups}
+						wide
+						triggerIcon={moveIcon}
+						triggerLabel={`Move ${opportunity.title}`}
+						disabled={moveBusy}
+					/>
+				{/if}
+				{#if menuItems.length > 0}
+					<span role="presentation" onpointerenter={warmLostReasons} onfocusin={warmLostReasons}>
+						<DropdownMenu
+							items={menuItems}
+							triggerLabel={`More actions for ${opportunity.title}`}
+						/>
+					</span>
+				{/if}
 			</span>
 		{/if}
 	</span>
@@ -427,6 +493,7 @@
 	.opportunity-card__menu {
 		position: relative;
 		z-index: 2;
+		display: inline-flex;
 		flex: 0 0 auto;
 		margin: -6px -6px 0 0;
 	}

@@ -617,6 +617,8 @@ export type DragResult = {
 	to_stage: OpportunityStage;
 	// Only the conversion drop answers with one, so the toast can name the quote it just created.
 	quote?: { quote_id: string; quote_number: number; applied: boolean };
+	// Present when this move is one the board may offer a short Undo for.
+	undo?: { restore_new_request: boolean };
 };
 
 export class DragWriteError extends Error {
@@ -676,12 +678,39 @@ export async function dragOpportunity(
 	});
 	const result = await response.json().catch(() => ({}));
 	if (!response.ok) {
+		// A refusal written for a person arrives as the form's own error; the generic line is only for a
+		// failure nobody can explain.
 		throw new DragWriteError(
-			result.error ?? 'That card could not be moved.',
+			result.field_errors?.form ?? result.error ?? 'That card could not be moved.',
 			result.field_errors ?? {}
 		);
 	}
 	return result as DragResult;
+}
+
+// Takes back a move the board has just made, while it is still the last thing that happened to the card.
+// The refusal carries the database's own sentence.
+export async function undoOpportunityMove(
+	opportunityId: string,
+	move: Pick<DragResult, 'from_stage' | 'to_stage'> & { undo: NonNullable<DragResult['undo']> }
+): Promise<{ id: string; stage: OpportunityStage; custom_stage_id: string | null }> {
+	const response = await fetch(`/api/pipeline/opportunities/${opportunityId}/move/undo`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			from_stage: move.from_stage,
+			to_stage: move.to_stage,
+			restore_new_request: move.undo.restore_new_request
+		})
+	});
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) {
+		throw new DragWriteError(
+			result.field_errors?.form ?? result.error ?? 'That move could not be undone.',
+			result.field_errors ?? {}
+		);
+	}
+	return result;
 }
 
 // Placing a card in a custom follow-up stage, or back in its real stage with `null`. Nothing about the

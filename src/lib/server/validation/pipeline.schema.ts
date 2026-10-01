@@ -93,6 +93,14 @@ export const dragOpportunitySchema = z
 		{ message: 'End time must be after the start time.', path: ['ends_at'] }
 	);
 
+// Undoing a move the board just made. The caller names the move; the database decides whether it is one
+// of the reversible ones and still the last thing that happened to the card.
+export const undoMoveSchema = z.object({
+	from_stage: z.enum(OPPORTUNITY_STAGES),
+	to_stage: z.enum(OPPORTUNITY_STAGES),
+	restore_new_request: z.boolean().default(false)
+});
+
 // Placing a card in a custom follow-up stage. `null` puts it back in its real stage. Whether the stage is
 // switched on and belongs to the card's own section is the database's answer, with its own words.
 export const placeOpportunitySchema = z.object({
