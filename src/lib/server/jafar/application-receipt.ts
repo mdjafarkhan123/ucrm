@@ -33,6 +33,8 @@ type SendApplicationReceiptParams = {
 	applicationId: string;
 	recipientEmail: string;
 	paymentInstructions: string;
+	/** The applicant's own status page, so they can check progress without asking (behavior contract §1). */
+	statusUrl: string;
 };
 
 /**
@@ -70,7 +72,11 @@ export async function sendApplicationReceipt(
 		payment_instructions: params.paymentInstructions
 	};
 	const subject = renderTemplate(templateResult.data.subject_published ?? '', values);
-	const body = renderTemplate(templateResult.data.body_published, values);
+	// The status link is added after Jafar's wording rather than left to the template, so editing the
+	// template can never drop the only way back to the status page.
+	const templateBody = renderTemplate(templateResult.data.body_published, values);
+	const body = `${templateBody}<p><a href="${encodeURI(params.statusUrl)}">Check where your application stands</a></p>`;
+	const textBody = `${htmlToPlainText(templateBody)}\n\nCheck where your application stands: ${params.statusUrl}`;
 
 	await enqueueEmailDelivery(client, {
 		templateKey: 'application_receipt',
@@ -79,6 +85,6 @@ export async function sendApplicationReceipt(
 		recipientEmail: params.recipientEmail,
 		subject,
 		htmlContent: body,
-		textContent: htmlToPlainText(body)
+		textContent: textBody
 	});
 }

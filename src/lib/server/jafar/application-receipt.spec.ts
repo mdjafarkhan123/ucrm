@@ -50,7 +50,8 @@ function clientWith(
 const baseParams = {
 	applicationId: 'app-1',
 	recipientEmail: 'jordan@ridgeway.example',
-	paymentInstructions: 'Pay via bank transfer within 5 days.'
+	paymentInstructions: 'Pay via bank transfer within 5 days.',
+	statusUrl: 'https://app.example/get-started/received?app=app-1'
 };
 
 describe('sendApplicationReceipt', () => {
@@ -71,8 +72,10 @@ describe('sendApplicationReceipt', () => {
 				idempotencyKey: 'application:app-1:receipt',
 				recipientEmail: 'jordan@ridgeway.example',
 				subject: 'Thanks for applying, Growth at $49/mo',
-				htmlContent: '<p>Payment: Pay via bank transfer within 5 days.</p>',
-				textContent: 'Payment: Pay via bank transfer within 5 days.'
+				htmlContent:
+					'<p>Payment: Pay via bank transfer within 5 days.</p><p><a href="https://app.example/get-started/received?app=app-1">Check where your application stands</a></p>',
+				textContent:
+					'Payment: Pay via bank transfer within 5 days.\n\nCheck where your application stands: https://app.example/get-started/received?app=app-1'
 			})
 		);
 	});

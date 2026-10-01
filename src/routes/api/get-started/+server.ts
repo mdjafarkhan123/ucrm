@@ -126,7 +126,8 @@ export const POST: RequestHandler = async (event) => {
 				await sendApplicationReceipt(client, {
 					applicationId,
 					recipientEmail: data.main_contact_email,
-					paymentInstructions: settings.payment_instructions ?? ''
+					paymentInstructions: settings.payment_instructions ?? '',
+					statusUrl: `${event.url.origin}/get-started/received?app=${applicationId}`
 				});
 			} catch (receiptError) {
 				console.error('Could not send the application receipt email.', receiptError);

@@ -164,7 +164,8 @@ describe('public onboarding application submission API boundary', () => {
 			expect.objectContaining({
 				applicationId: 'app-42',
 				recipientEmail: 'jordan@ridgeway.example',
-				paymentInstructions: 'Pay via bank transfer.'
+				paymentInstructions: 'Pay via bank transfer.',
+				statusUrl: 'http://localhost/get-started/received?app=app-42'
 			})
 		);
 	});
