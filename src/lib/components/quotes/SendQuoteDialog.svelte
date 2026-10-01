@@ -24,11 +24,14 @@
 	let {
 		open,
 		quoteId,
+		showViewQuote = true,
 		onSend,
 		onClose
 	}: {
 		open: boolean;
 		quoteId: string;
+		/** Off on the Quote page itself, where the quote is already in view. */
+		showViewQuote?: boolean;
 		/** Performs the send. `expectedRevision` is the draft this window showed. */
 		onSend: (choice: QuoteSendChoice, expectedRevision: number) => Promise<void>;
 		onClose: () => void;
@@ -36,8 +39,8 @@
 
 	const uid = $props.id();
 
-	// The dialog is the reveal: it mounts only once a card has been dropped, so this is when the quote
-	// loads. A copy the Quote page already cached shows at once and is re-read behind it.
+	// The dialog is the reveal: it mounts only once a card has been dropped or the Quote page's send is
+	// pressed, so this is when the quote loads. A cached copy shows at once and is re-read behind it.
 	const quoteQuery = createQuery(() => ({
 		queryKey: quoteDetailKey(quoteId),
 		queryFn: () => fetchQuote(quoteId)
@@ -222,14 +225,16 @@
 		{/if}
 
 		<footer class="send-quote__actions">
-			<Button
-				variant="tertiary"
-				variation="subtle"
-				href={resolve('/(app)/quotes/[id=uuid]', { id: quoteId })}
-				disabled={sending}
-			>
-				View quote
-			</Button>
+			{#if showViewQuote}
+				<Button
+					variant="tertiary"
+					variation="subtle"
+					href={resolve('/(app)/quotes/[id=uuid]', { id: quoteId })}
+					disabled={sending}
+				>
+					View quote
+				</Button>
+			{/if}
 			<div class="send-quote__actions-main">
 				<Button variant="secondary" variation="subtle" disabled={sending} onclick={close}>
 					Cancel

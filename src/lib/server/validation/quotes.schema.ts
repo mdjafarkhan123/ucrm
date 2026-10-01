@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { QUOTE_EXTERNAL_SEND_CHANNEL_VALUES, QUOTE_SEND_NOTE_MAX } from '$lib/quotes/send';
 
 // Money crosses this boundary as whole minor units — cents, never dollars, never a float. The ceilings
 // mirror the database's own checks so a bad number is a field error on the form instead of a raw
@@ -374,6 +375,29 @@ export const bulkArchiveQuotesSchema = z.object({
 // body at all: the quote itself says which version it is cloning.
 export const publishQuoteSchema = z.object({
 	expected_revision: expectedRevision
+});
+
+// How a Draft quote reaches the customer, chosen in the send window on the board or the Quote page.
+// `expected_revision` is the draft the person reviewed there, so a quote somebody edited meanwhile is
+// refused rather than sent.
+export const quoteSendChoiceSchema = z.discriminatedUnion('method', [
+	z.object({ method: z.literal('email'), expected_revision: z.number().int().min(0) }),
+	z.object({
+		method: z.literal('external'),
+		expected_revision: z.number().int().min(0),
+		channel: z.enum(QUOTE_EXTERNAL_SEND_CHANNEL_VALUES, 'Choose how the quote was sent.'),
+		note: z
+			.string()
+			.trim()
+			.max(QUOTE_SEND_NOTE_MAX, `Keep the note to ${QUOTE_SEND_NOTE_MAX} characters or fewer.`)
+			.nullish()
+	})
+]);
+
+// The Quote page's send. The key makes a retried email the same email; the external path ignores it.
+export const sendDraftQuoteSchema = z.strictObject({
+	idempotency_key: z.string().uuid('Start a new send and try again.'),
+	send: quoteSendChoiceSchema
 });
 
 export const quoteEmailSchema = z.strictObject({

@@ -24,6 +24,8 @@
 	import QuoteDepositCard from '$lib/components/quotes/QuoteDepositCard.svelte';
 	import QuoteClientViewBlock from '$lib/components/quotes/QuoteClientViewBlock.svelte';
 	import QuoteEmailDialog from '$lib/components/quotes/QuoteEmailDialog.svelte';
+	import SendQuoteDialog from '$lib/components/quotes/SendQuoteDialog.svelte';
+	import type { QuoteSendChoice } from '$lib/quotes/send';
 	import QuoteAutomationCard from '$lib/components/quotes/QuoteAutomationCard.svelte';
 	import { AUTOMATION_JOURNEY_READY } from '$lib/automation/journey';
 	import AddSectionControl from '$lib/components/work/AddSectionControl.svelte';
@@ -45,7 +47,7 @@
 	import {
 		fetchQuote,
 		issueQuoteAccessLink,
-		publishQuote,
+		sendDraftQuote,
 		recordQuoteDecision,
 		reviseQuote,
 		quoteCountsKey,
@@ -402,11 +404,33 @@
 		}).format(totalMinor / 100);
 	});
 
+	// Leaving Draft opens the same send window as dropping the card on Awaiting response: email it, or
+	// say how it already went out. One key per opening, so a retried email is the same email.
+	let sendingWith = $state<{ idempotencyKey: string } | null>(null);
+
 	async function send() {
+		// The window reads the draft it sends, so any file still being attached must land first.
 		await pendingFileSync;
-		if (!saved?.version) return;
-		const revision = saved.version.revision;
-		void runLifecycle('Quote marked as awaiting response', () => publishQuote(quoteId, revision));
+		if (!sendable) return;
+		sendingWith = { idempotencyKey: crypto.randomUUID() };
+	}
+
+	// The window stays open until this succeeds; a refusal is thrown back for it to show.
+	async function confirmSend(choice: QuoteSendChoice, expectedRevision: number) {
+		if (!sendingWith) return;
+		try {
+			await sendDraftQuote(quoteId, choice, expectedRevision, sendingWith.idempotencyKey);
+		} catch (error) {
+			// A response can be lost after the server commits; re-read so the page never lies about it.
+			await refreshQuote().catch(() => undefined);
+			throw error;
+		}
+		sendingWith = null;
+		await refreshQuote();
+		toast.success(
+			choice.method === 'email' ? 'Quote emailed to the customer.' : 'Quote marked as sent.',
+			'Now awaiting response.'
+		);
 	}
 
 	function answer(decision: 'approved' | 'declined', note: string | null = null) {
@@ -585,8 +609,7 @@
 		if (sendable)
 			return {
 				label: 'Mark as awaiting response',
-				loading: lifecycleSaving,
-				onclick: () => send()
+				onclick: () => void send()
 			};
 		if (answerable && saved.quote.status !== 'draft')
 			return {
@@ -638,7 +661,11 @@
 		if (!saved) return [];
 		const items = [];
 		if (sendable && primaryAction?.label !== 'Mark as awaiting response')
-			items.push({ label: 'Mark as awaiting response', icon: sendIcon, onSelect: () => send() });
+			items.push({
+				label: 'Mark as awaiting response',
+				icon: sendIcon,
+				onSelect: () => void send()
+			});
 		if (answerable && saved.quote.status !== 'approved')
 			items.push({
 				label: 'Mark as approved',
@@ -1249,6 +1276,16 @@
 				saving={lifecycleSaving}
 				onClose={() => (collectingSignature = false)}
 				onCollect={collectSignature}
+			/>
+		{/if}
+
+		{#if sendingWith}
+			<SendQuoteDialog
+				open
+				{quoteId}
+				showViewQuote={false}
+				onSend={confirmSend}
+				onClose={() => (sendingWith = null)}
 			/>
 		{/if}
 

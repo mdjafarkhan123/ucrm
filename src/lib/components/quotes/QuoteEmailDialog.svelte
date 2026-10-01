@@ -41,21 +41,20 @@
 			onClose();
 		} catch (exception) {
 			const failure = exception as QuoteWriteError;
-			error =
-				failure.fieldErrors?.form ?? failure.message ?? 'The quote email could not be queued.';
+			error = failure.fieldErrors?.form ?? failure.message ?? 'The quote email could not be sent.';
 		} finally {
 			queueing = false;
 		}
 	}
 </script>
 
-<Dialog {open} title="Preview quote email" size="default" onClose={close}>
+<Dialog {open} title="Email this quote" size="default" onClose={close}>
 	<div class="quote-email">
 		<QuoteEmailPreview {recipient} {organizationName} />
 
 		<p class="quote-email__notice">
-			UCRM checks the quote, recipient, sender, and allowance again before queueing. Delivery is
-			still disabled, so a queued email will not be sent yet.
+			UCRM checks the quote, recipient, and sender again, then sends it. If the email does not reach
+			the customer, this quote will say so.
 		</p>
 		{#if error}<p class="quote-email__error" role="alert">{error}</p>{/if}
 		{#if !recipient}
@@ -70,7 +69,7 @@
 				variant="primary"
 				onclick={() => void queue()}
 				disabled={!recipient}
-				loading={queueing}>Queue email</Button
+				loading={queueing}>Send email</Button
 			>
 		</footer>
 	</div>

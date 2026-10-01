@@ -1,5 +1,6 @@
 import type { StoredQuoteStatus } from './statuses';
 import { fetchFiles } from '$lib/files/api';
+import type { QuoteSendChoice } from './send';
 
 export type PricingCategory = 'product' | 'service';
 
@@ -605,25 +606,18 @@ async function patchQuote<T = QuoteCommandResult>(
 	return readOrThrow<T>(response, fallback);
 }
 
-/** What publishing hands back. `already_published` is true when the click landed on a version that exists. */
-export type QuotePublishResult = {
-	quote_id: string;
-	quote_version_id: string;
-	version_number: number;
-	sent_at: string | null;
-	status: StoredQuoteStatus;
-	already_published: boolean;
-};
-
-export async function publishQuote(
+/** A Draft leaves Draft from its own page the same two ways as from the board: emailed, or recorded as sent. */
+export async function sendDraftQuote(
 	quoteId: string,
-	expectedRevision: number
-): Promise<QuotePublishResult> {
+	choice: QuoteSendChoice,
+	expectedRevision: number,
+	idempotencyKey: string
+): Promise<{ id: string; method: QuoteSendChoice['method'] }> {
 	return postQuote(
 		quoteId,
-		'publish',
-		{ expected_revision: expectedRevision },
-		'This quote could not be sent.'
+		'send',
+		{ idempotency_key: idempotencyKey, send: { ...choice, expected_revision: expectedRevision } },
+		'The quote could not be sent. It is still a draft.'
 	);
 }
 
