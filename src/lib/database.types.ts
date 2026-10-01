@@ -9176,6 +9176,13 @@ export type Database = {
 						referencedColumns: ['id'];
 					},
 					{
+						foreignKeyName: 'opportunity_outcome_events_reason_fkey';
+						columns: ['organization_id', 'reason'];
+						isOneToOne: false;
+						referencedRelation: 'pipeline_lost_reasons';
+						referencedColumns: ['organization_id', 'key'];
+					},
+					{
 						foreignKeyName: 'opportunity_outcome_events_restores_fk';
 						columns: ['organization_id', 'restores_event_id'];
 						isOneToOne: false;
@@ -12236,6 +12243,50 @@ export type Database = {
 				Relationships: [
 					{
 						foreignKeyName: 'pipeline_custom_stages_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			pipeline_lost_reasons: {
+				Row: {
+					created_at: string;
+					created_by: string | null;
+					is_built_in: boolean;
+					key: string;
+					label: string;
+					organization_id: string;
+					position: number;
+					retired_at: string | null;
+					retired_by: string | null;
+				};
+				Insert: {
+					created_at?: string;
+					created_by?: string | null;
+					is_built_in?: boolean;
+					key: string;
+					label: string;
+					organization_id: string;
+					position: number;
+					retired_at?: string | null;
+					retired_by?: string | null;
+				};
+				Update: {
+					created_at?: string;
+					created_by?: string | null;
+					is_built_in?: boolean;
+					key?: string;
+					label?: string;
+					organization_id?: string;
+					position?: number;
+					retired_at?: string | null;
+					retired_by?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'pipeline_lost_reasons_organization_id_fkey';
 						columns: ['organization_id'];
 						isOneToOne: false;
 						referencedRelation: 'organizations';
@@ -21756,6 +21807,10 @@ export type Database = {
 				Args: { p_claim_token: string; p_work_item_id: string };
 				Returns: string;
 			};
+			pipeline_add_lost_reason: {
+				Args: { new_label: string; target_organization_id: string };
+				Returns: Json;
+			};
 			pipeline_board_page: {
 				Args: {
 					created_from?: string;
@@ -21965,6 +22020,14 @@ export type Database = {
 			};
 			pipeline_set_lost_reason: {
 				Args: { note?: string; reason?: string; target_opportunity_id: string };
+				Returns: Json;
+			};
+			pipeline_set_lost_reason_retired: {
+				Args: {
+					retired: boolean;
+					target_key: string;
+					target_organization_id: string;
+				};
 				Returns: Json;
 			};
 			pipeline_set_task_completed: {
