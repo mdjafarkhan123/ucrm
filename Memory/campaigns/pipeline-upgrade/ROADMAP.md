@@ -1,6 +1,7 @@
 # Pipeline upgrade — roadmap
 
-Evidence: `docs/research/pipeline-gap-audit-2026-10-01.md`. Build parts are added after part 3.
+Evidence: `docs/research/pipeline-gap-audit-2026-10-01.md` and
+`docs/research/pipeline-independent-source-check-2026-10-01.md`. Build parts are added after part 3.
 
 | Part | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- |

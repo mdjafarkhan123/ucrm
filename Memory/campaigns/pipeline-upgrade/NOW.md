@@ -11,4 +11,5 @@ first paying client.
 
 **Next part:** 2 Plan: details — settles what the round 1 answers unlock.
 
-**Blockers:** Jafar's answers to round 1 (Q1–Q11). Planning only: no code until the build split is approved.
+**Blockers:** Jafar's answers to the corrected round 1 in `parts/1-plan-round-1.md`. Planning only: no code
+until the build split is approved. Independent evidence: `docs/research/pipeline-independent-source-check-2026-10-01.md`.
