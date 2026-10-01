@@ -11,7 +11,7 @@ plan subsection and a few files, so a session's context stays light. Each stage'
 | Stage | Delivers | State | Parts |
 | --- | --- | --- | --- |
 | A Groundwork | Buy/pay journey checked; packages say which managed services they include | In progress — A1 done | `stages/A-groundwork.md` |
-| B Setup wizard | Every setup section, autosaved, shown by package, ending in Send to Uplift | In progress — B1 done | `stages/B-wizard.md` |
+| B Setup wizard | Every setup section, autosaved, shown by package, ending in Send to Uplift | In progress — B1, B2 done | `stages/B-wizard.md` |
 | C Uplift review | Jafar reviews, returns, and accepts setup; Ready for Uplift starts the countdown | Not started | `stages/C-review.md` |
 | D Support chat | Chat with Uplift everywhere, with Jafar's Support Inbox (built alongside B) | Not started | `stages/D-support.md` |
 | E Delivery | Status timeline, preview, launch approval, training, handover, final proof | Not started | `stages/E-delivery.md` |

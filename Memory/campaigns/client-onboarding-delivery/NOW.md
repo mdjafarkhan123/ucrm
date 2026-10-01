@@ -6,8 +6,8 @@
 
 **In progress:** none
 
-**Next part:** B2 (`stages/B-wizard.md`) — add its questions to the "Your business" section in
-`src/lib/setup/catalogue.ts`. D1 can also start now (and should add the chat to the welcome's help line);
-A2 waits for package-builder P16. A1 and B1 done 2026-10-01.
+**Next part:** D1 (`stages/D-support.md`) — it should also add the chat to the welcome's help line. The
+rest of stage B (B3 onward) waits for A2, and A2 waits for package-builder P16. A1, B1, and B2 done
+2026-10-01.
 
 **Blockers:** none. Build order approved 2026-10-01.
