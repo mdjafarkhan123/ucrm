@@ -26,6 +26,7 @@
 		type BusinessProfile,
 		type SettingsBusiness
 	} from '$lib/settings/api';
+	import { TRADES } from '$lib/settings/trades';
 	import buildingIcon from '@tabler/icons/outline/building-store.svg?raw';
 
 	const queryClient = useQueryClient();
@@ -34,20 +35,6 @@
 		queryKey: settingsBusinessKey,
 		queryFn: fetchSettingsBusiness
 	}));
-
-	const TRADES = [
-		'General contractor',
-		'Plumbing',
-		'Electrical',
-		'HVAC',
-		'Landscaping',
-		'Roofing',
-		'Painting',
-		'Cleaning',
-		'Pest control',
-		'Handyman',
-		'Other'
-	];
 
 	const COUNTRIES = Country.getAllCountries()
 		.map((country) => ({ value: country.isoCode, label: country.name }))
