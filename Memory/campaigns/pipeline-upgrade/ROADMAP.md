@@ -14,7 +14,7 @@ Evidence: `docs/research/pipeline-gap-audit-2026-10-01.md` and
 | A Custom follow-up stages | Owner-made columns, moving cards among them, safe switch-off, On hold | Done 2026-10-01 | — |
 | B Honest outcomes | Request-to-Job Won, Direct job, real send on drop, failed delivery, Lost quotes, Lost reasons, customer Decline | Done 2026-10-01 | — |
 | C What needs attention today | Tasks as the only follow-up, Task-first order, inactivity warning with owner-set days, customer replies as progress, quiet On hold | Done 2026-10-01 | — |
-| D Move, find, and work at volume | Move button, search, lead source, saved filters, table, phone view, bulk tools | In progress — D1 done | `stages/D-move-find-volume.md` |
+| D Move, find, and work at volume | Move button, search, lead source, saved filters, table, phone view, bulk tools | In progress — D1, D2 done | `stages/D-move-find-volume.md` |
 | E The Opportunity Brief | Tasks on the Schedule, Task alerts, Notes with photos and mentions, Email/Text/Call | Not started | `stages/E-brief.md` |
 | F Sales reports | Loss reasons, Direct jobs, days to win, funnel, source, time in stage | Not started | `stages/F-reports.md` |
 | G Final proof | Speed at volume, full walk-through with every role, Jafar's tour | Not started | `stages/G-final-proof.md` |
