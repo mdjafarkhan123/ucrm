@@ -3,6 +3,11 @@
 	import SignaturePad from '$lib/components/ui/SignaturePad.svelte';
 	import Lightbox, { type LightboxItem } from '$lib/components/ui/Lightbox.svelte';
 	import { emptySignature, signatureIsGiven, type SignatureValue } from '$lib/signatures/signature';
+	import {
+		CUSTOMER_DECLINE_REASONS,
+		CUSTOMER_DECLINE_REASON_LABELS,
+		type CustomerDeclineReason
+	} from '$lib/quotes/customer-decline';
 	import type { CustomerQuoteDocument, CustomerQuoteLine } from '$lib/quotes/customer-document';
 	import type { Snippet } from 'svelte';
 	import buildingIcon from '@tabler/icons/outline/building-store.svg?raw';
@@ -35,12 +40,14 @@
 		decisions?: 'hidden' | 'inert' | 'live';
 		/**
 		 * Sends the customer's answer. It throws with a sentence to show them when the answer could not
-		 * be recorded — usually because the quote moved on while the page was open.
+		 * be recorded — usually because the quote moved on while the page was open. `reason` is only ever
+		 * given with a decline, and only when they picked one.
 		 */
 		onDecide?: (
-			outcome: 'approved' | 'changes_requested',
+			outcome: 'approved' | 'changes_requested' | 'declined',
 			note: string,
-			signature: SignatureValue | null
+			signature: SignatureValue | null,
+			reason: CustomerDeclineReason | null
 		) => Promise<void>;
 		/** Where a file on this document is served from, which differs for a customer and for staff. */
 		fileHref: (attachmentId: string, size?: 'thumb') => string;
@@ -125,10 +132,14 @@
 	);
 
 	// Answering is two presses, not one. Approving a quote is agreeing to spend money, and asking for
-	// changes without saying what to change tells the office nothing — so both open a short step where
-	// the customer can see what they are about to do and back out of it.
-	type DecisionStep = 'idle' | 'approved' | 'changes_requested' | 'sent';
+	// changes without saying what to change tells the office nothing — so each answer opens a short step
+	// where the customer can see what they are about to do and back out of it. Declining is the quiet third
+	// choice (Housecall Pro): it asks why, and takes no for an answer to that too.
+	type DecisionStep = 'idle' | 'approved' | 'changes_requested' | 'declined' | 'sent';
 	let step = $state<DecisionStep>('idle');
+	let declineReason = $state<CustomerDeclineReason | null>(null);
+	// Which answer was sent, so the thank-you line fits it. A "no" is not thanked as if it were a "yes".
+	let sentOutcome = $state<'approved' | 'changes_requested' | 'declined' | null>(null);
 	let message = $state('');
 	let sending = $state(false);
 	let problem = $state('');
@@ -152,7 +163,7 @@
 			: decisions === 'live' && (answerable || step === 'sent')
 	);
 
-	function openStep(next: 'approved' | 'changes_requested') {
+	function openStep(next: 'approved' | 'changes_requested' | 'declined') {
 		step = next;
 		problem = '';
 	}
@@ -162,6 +173,7 @@
 		message = '';
 		problem = '';
 		signature = emptySignature();
+		declineReason = null;
 	}
 
 	async function confirmStep() {
@@ -189,11 +201,18 @@
 		sending = true;
 		problem = '';
 		try {
-			await onDecide(outcome, message.trim(), signed ? signature : null);
+			await onDecide(
+				outcome,
+				message.trim(),
+				signed ? signature : null,
+				outcome === 'declined' ? declineReason : null
+			);
 			signedName = signed ? signature.name.trim() : '';
+			sentOutcome = outcome;
 			step = 'sent';
 			message = '';
 			signature = emptySignature();
+			declineReason = null;
 		} catch (error) {
 			problem =
 				error instanceof Error ? error.message : 'That could not be sent. Please try again.';
@@ -533,7 +552,9 @@
 						<div class="customer-quote__decisions">
 							{#if step === 'sent'}
 								<p class="customer-quote__decision-done">
-									Thanks — {doc.business.name ?? 'the company'} has your answer.
+									{sentOutcome === 'declined'
+										? `Thanks for letting ${doc.business.name ?? 'the company'} know.`
+										: `Thanks — ${doc.business.name ?? 'the company'} has your answer.`}
 								</p>
 								{#if signedName}
 									<p class="customer-quote__decision-note">Signed by {signedName}.</p>
@@ -551,6 +572,12 @@
 									disabled={decisions === 'inert'}
 									onclick={() => openStep('changes_requested')}>Request changes</button
 								>
+								<button
+									class="customer-quote__decision customer-quote__decision--quiet"
+									type="button"
+									disabled={decisions === 'inert'}
+									onclick={() => openStep('declined')}>Decline</button
+								>
 								{#if decisions === 'inert'}
 									<p class="customer-quote__decision-note">
 										Only your client can use these buttons.
@@ -560,8 +587,26 @@
 								<p class="customer-quote__decision-question">
 									{step === 'approved'
 										? 'Happy to go ahead with this quote?'
-										: 'What would you like changed?'}
+										: step === 'declined'
+											? 'Mind telling us why?'
+											: 'What would you like changed?'}
 								</p>
+								{#if step === 'declined'}
+									<fieldset class="customer-quote__decision-reasons" disabled={sending}>
+										<legend>Pick one if you like — it's optional</legend>
+										{#each CUSTOMER_DECLINE_REASONS as reason (reason)}
+											<label class="customer-quote__decision-reason">
+												<input
+													type="radio"
+													name="customer-quote-decline-reason"
+													value={reason}
+													bind:group={declineReason}
+												/>
+												<span>{CUSTOMER_DECLINE_REASON_LABELS[reason]}</span>
+											</label>
+										{/each}
+									</fieldset>
+								{/if}
 								{#if step === 'approved'}
 									<div class="customer-quote__decision-signature">
 										<SignaturePad
@@ -572,7 +617,13 @@
 									</div>
 								{/if}
 								<label class="customer-quote__decision-field">
-									<span>{step === 'approved' ? 'Add a message (optional)' : 'Your message'}</span>
+									<span
+										>{step === 'changes_requested'
+											? 'Your message'
+											: step === 'declined'
+												? 'Anything else? (optional)'
+												: 'Add a message (optional)'}</span
+									>
 									<textarea
 										bind:value={message}
 										rows="3"
@@ -580,7 +631,9 @@
 										disabled={sending}
 										placeholder={step === 'approved'
 											? 'Anything you want them to know'
-											: 'For example: can you split this into two visits?'}></textarea>
+											: step === 'declined'
+												? 'Anything that would help them next time'
+												: 'For example: can you split this into two visits?'}></textarea>
 								</label>
 								{#if problem}
 									<p class="customer-quote__decision-problem" role="alert">{problem}</p>
@@ -594,7 +647,9 @@
 										? 'Sending…'
 										: step === 'approved'
 											? 'Yes, approve it'
-											: 'Send this to them'}</button
+											: step === 'declined'
+												? 'Decline quote'
+												: 'Send this to them'}</button
 								>
 								<button
 									class="customer-quote__decision customer-quote__decision--secondary"
@@ -1080,6 +1135,25 @@
 		}
 	}
 
+	// The third, quieter way out: a "no" is offered, not advertised (Housecall Pro).
+	.customer-quote__decision--quiet {
+		padding: var(--space-small);
+		background: transparent;
+		color: var(--color-text--secondary);
+		font-weight: 500;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+
+		&:hover:not(:disabled) {
+			color: var(--color-text);
+		}
+
+		&:disabled {
+			background: transparent;
+			color: var(--color-disabled);
+		}
+	}
+
 	// On a phone the document keeps its shape and loses its margins: the paper is the screen.
 	@media (max-width: 640px) {
 		.customer-quote__grid {
@@ -1124,6 +1198,48 @@
 
 		:global(.signature-pad__canvas) {
 			height: 120px;
+		}
+	}
+
+	.customer-quote__decision-reasons {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smaller);
+		margin: 0;
+		padding: 0;
+		border: 0;
+
+		legend {
+			margin-bottom: var(--space-smaller);
+			padding: 0;
+			font-size: var(--typography--fontSize-small);
+			color: var(--color-text--secondary);
+		}
+	}
+
+	// Each choice is a whole row to tap, not a dot to aim at.
+	.customer-quote__decision-reason {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		padding: var(--space-small) var(--space-base);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-base);
+		color: var(--color-text);
+		cursor: pointer;
+
+		input {
+			margin: 0;
+			accent-color: var(--color-interactive);
+		}
+
+		&:has(input:checked) {
+			border-color: var(--color-interactive);
+			background: var(--color-surface--hover);
+		}
+
+		&:has(input:focus-visible) {
+			box-shadow: var(--shadow-focus);
 		}
 	}
 

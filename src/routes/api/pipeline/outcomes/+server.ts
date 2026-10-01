@@ -25,6 +25,7 @@ type OutcomePageRow = {
 	lost_note: string | null;
 	customer_declined: boolean;
 	customer_message: string | null;
+	customer_reason: string | null;
 };
 
 // The Sales Outcomes report: one closed outcome type at a time, paged and sorted through
@@ -136,7 +137,9 @@ export const GET: RequestHandler = async (event) => {
 						reason: row.lost_reason,
 						note: row.lost_note,
 						customer_declined: row.customer_declined,
-						customer_message: row.customer_message
+						customer_message: row.customer_message,
+						// What the customer picked when they declined online, kept apart from `reason`.
+						customer_reason: row.customer_reason
 					}
 				}
 			: {}),

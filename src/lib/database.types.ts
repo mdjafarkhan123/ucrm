@@ -13469,6 +13469,7 @@ export type Database = {
 				Row: {
 					actor_kind: string;
 					actor_user_id: string | null;
+					customer_reason: string | null;
 					decided_at: string;
 					evidence: Json;
 					id: string;
@@ -13484,6 +13485,7 @@ export type Database = {
 				Insert: {
 					actor_kind: string;
 					actor_user_id?: string | null;
+					customer_reason?: string | null;
 					decided_at?: string;
 					evidence?: Json;
 					id?: string;
@@ -13499,6 +13501,7 @@ export type Database = {
 				Update: {
 					actor_kind?: string;
 					actor_user_id?: string | null;
+					customer_reason?: string | null;
 					decided_at?: string;
 					evidence?: Json;
 					id?: string;
@@ -21981,6 +21984,7 @@ export type Database = {
 					created_at: string;
 					customer_declined: boolean;
 					customer_message: string;
+					customer_reason: string;
 					estimated_value: number;
 					id: string;
 					lost_note: string;
@@ -24516,6 +24520,7 @@ export type Database = {
 			submit_quote_customer_decision: {
 				Args: {
 					customer_note?: string;
+					customer_reason?: string;
 					new_outcome: string;
 					signature_byte_size?: number;
 					signature_method?: string;

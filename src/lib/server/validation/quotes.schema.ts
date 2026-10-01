@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CUSTOMER_DECLINE_REASONS } from '$lib/quotes/customer-decline';
 import { QUOTE_EXTERNAL_SEND_CHANNEL_VALUES, QUOTE_SEND_NOTE_MAX } from '$lib/quotes/send';
 
 // Money crosses this boundary as whole minor units — cents, never dollars, never a float. The ceilings
@@ -607,6 +608,15 @@ export const quoteCustomerChangeRequestSchema = z.strictObject({
 		.trim()
 		.min(3, 'Tell them what you would like changed.')
 		.max(1000, 'That message is too long.')
+});
+
+// "No thanks." Both the pick and the message are optional — Housecall Pro asks, it does not demand, and a
+// customer made to explain themselves is a customer who closes the tab instead.
+export const quoteCustomerDeclineSchema = z.strictObject({
+	reason: z
+		.enum(CUSTOMER_DECLINE_REASONS, { message: 'That is not one of the reasons on offer.' })
+		.optional(),
+	note: z.string().trim().max(1000, 'That message is too long.').optional()
 });
 
 // Turning an approved quote into a job. The key and fingerprint are the same shape every other conversion

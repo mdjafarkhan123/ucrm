@@ -15,9 +15,9 @@ import {
 	storeSignatureImage
 } from '$lib/server/quotes/signatures';
 
-// The customer's side of the wire. Approving and asking for changes are the same journey with a
+// The customer's side of the wire. Approving, asking for changes and declining are the same journey with a
 // different word on the button, so they share this handler and differ only in the body they accept and
-// the outcome they send - two route files that drifted apart would be two ways to answer a quote.
+// the outcome they send - route files that drifted apart would be several ways to answer a quote.
 //
 // Nothing here trusts the caller for anything but the token and a message. Which quote, which version
 // and whether an answer is even allowed are all decided inside the database command.
@@ -32,14 +32,14 @@ const UNAVAILABLE = 'This quote is no longer available. Ask the company for an u
 const DECISION_LIMIT = { windowSeconds: 300, maxAttempts: 8 };
 const DECISION_TOKEN_LIMIT = { windowSeconds: 300, maxAttempts: 5 };
 
-type DecisionOutcome = 'approved' | 'changes_requested';
+type DecisionOutcome = 'approved' | 'changes_requested' | 'declined';
 
 type CustomerSignature = { name: string; method: 'typed' | 'drawn'; image?: string };
 
 export async function handleCustomerDecision(
 	event: RequestEvent<{ token: string }>,
 	outcome: DecisionOutcome,
-	schema: ZodType<{ note?: string; signature?: CustomerSignature }>
+	schema: ZodType<{ note?: string; signature?: CustomerSignature; reason?: string }>
 ) {
 	const noStore = { 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' };
 
@@ -134,6 +134,7 @@ export async function handleCustomerDecision(
 		// Left out entirely rather than sent as null, so the command's own default is what decides what
 		// "no message" means.
 		...(parsed.data.note ? { customer_note: parsed.data.note } : {}),
+		...(parsed.data.reason ? { customer_reason: parsed.data.reason } : {}),
 		supplied_evidence: customerDecisionEvidence(
 			address,
 			event.request.headers.get('user-agent') ?? null

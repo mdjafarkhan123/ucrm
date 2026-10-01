@@ -12,6 +12,7 @@ vi.mock('$lib/server/db/owner-supabase', () => ({
 
 const { POST: approve } = await import('./approve/+server');
 const { POST: requestChanges } = await import('./changes/+server');
+const { POST: decline } = await import('./decline/+server');
 const { POST: recordView } = await import('./view/+server');
 
 const token = 'b'.repeat(43);
@@ -178,6 +179,40 @@ describe('a customer asking for changes', () => {
 		const [, args] = commandCall() ?? [];
 		expect(args.new_outcome).toBe('changes_requested');
 		expect(args.customer_note).toBe('Can you split the deck into two stages?');
+	});
+});
+
+describe('a customer declining', () => {
+	it('needs neither a reason nor a message', async () => {
+		const response = await decline(event(token, {}));
+		expect(response.status).toBe(200);
+
+		const [, args] = commandCall() ?? [];
+		expect(args.new_outcome).toBe('declined');
+		expect(args).not.toHaveProperty('customer_reason');
+		expect(args).not.toHaveProperty('customer_note');
+	});
+
+	it('sends their pick and their message as their own words', async () => {
+		await decline(
+			event(token, { reason: 'too_expensive', note: '  Found it cheaper elsewhere  ' })
+		);
+
+		const [, args] = commandCall() ?? [];
+		expect(args.customer_reason).toBe('too_expensive');
+		expect(args.customer_note).toBe('Found it cheaper elsewhere');
+	});
+
+	it('refuses a reason that is not on offer', async () => {
+		const response = await decline(event(token, { reason: 'price_too_high' }));
+		expect(response.status).toBe(422);
+		expect(commandCall()).toBeUndefined();
+	});
+
+	it('refuses a signature, because nobody signs a no', async () => {
+		const response = await decline(event(token, { signature: { name: 'A', method: 'typed' } }));
+		expect(response.status).toBe(422);
+		expect(commandCall()).toBeUndefined();
 	});
 });
 

@@ -47,6 +47,7 @@
 		type OutcomeDatePreset,
 		type OutcomeSort
 	} from '$lib/pipeline/outcomes';
+	import { CUSTOMER_DECLINE_REASON_LABELS } from '$lib/quotes/customer-decline';
 	import trophyIcon from '@tabler/icons/outline/trophy.svg?raw';
 
 	const queryClient = useQueryClient();
@@ -360,6 +361,11 @@
 							{:else if !item.lost?.customer_declined}
 								<span class="outcomes-reason__none">No reason given</span>
 							{/if}
+							{#if item.lost?.customer_reason}
+								<span class="outcomes-reason__customer">
+									They said: {CUSTOMER_DECLINE_REASON_LABELS[item.lost.customer_reason]}
+								</span>
+							{/if}
 							{#if item.lost?.customer_message}
 								<span class="outcomes-reason__quoted">“{item.lost.customer_message}”</span>
 							{/if}
@@ -441,6 +447,7 @@
 
 		&__label,
 		&__none,
+		&__customer,
 		&__quoted,
 		&__note {
 			display: block;
@@ -451,6 +458,7 @@
 		&__none {
 			color: var(--color-text--secondary);
 		}
+		&__customer,
 		&__quoted,
 		&__note {
 			margin-top: var(--space-smallest);

@@ -6,6 +6,7 @@
 	import OtherWaysToPay from '$lib/components/payments/OtherWaysToPay.svelte';
 	import { hasAnyPayByAppMethod } from '$lib/payments/pay-by-app';
 	import type { SignatureValue } from '$lib/signatures/signature';
+	import type { CustomerDeclineReason } from '$lib/quotes/customer-decline';
 	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
 	import testPipeIcon from '@tabler/icons/outline/test-pipe.svg?raw';
@@ -43,32 +44,38 @@
 
 	// Sending the answer. On success the page is reloaded so the status chip, the dates and the buttons
 	// all come back from the server telling the same story — the document is the truth, not this tab.
+	const DECISION_PATHS = {
+		approved: 'approve',
+		changes_requested: 'changes',
+		declined: 'decline'
+	} as const;
+
 	async function decide(
-		outcome: 'approved' | 'changes_requested',
+		outcome: keyof typeof DECISION_PATHS,
 		note: string,
-		signature: SignatureValue | null
+		signature: SignatureValue | null,
+		reason: CustomerDeclineReason | null
 	) {
-		const response = await fetch(
-			`/api/public/quotes/${token}/${outcome === 'approved' ? 'approve' : 'changes'}`,
-			{
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({
-					...(note ? { note } : {}),
-					// Only ever sent with an approval, and only when they actually signed. A drawing goes
-					// as a PNG data URL; a typed name goes as the name and nothing else.
-					...(signature
-						? {
-								signature: {
-									name: signature.name.trim(),
-									method: signature.method,
-									...(signature.image ? { image: signature.image } : {})
-								}
+		const response = await fetch(`/api/public/quotes/${token}/${DECISION_PATHS[outcome]}`, {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({
+				...(note ? { note } : {}),
+				// Only ever sent with a decline, and only when they picked one.
+				...(reason ? { reason } : {}),
+				// Only ever sent with an approval, and only when they actually signed. A drawing goes
+				// as a PNG data URL; a typed name goes as the name and nothing else.
+				...(signature
+					? {
+							signature: {
+								name: signature.name.trim(),
+								method: signature.method,
+								...(signature.image ? { image: signature.image } : {})
 							}
-						: {})
-				})
-			}
-		);
+						}
+					: {})
+			})
+		});
 
 		if (!response.ok) {
 			const body = await response.json().catch(() => ({}));

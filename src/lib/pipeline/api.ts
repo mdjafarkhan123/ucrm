@@ -1,4 +1,5 @@
 import type { QueryClient } from '@tanstack/svelte-query';
+import type { CustomerDeclineReason } from '$lib/quotes/customer-decline';
 import type { BoardColumnKey, CustomStage, OpportunityOutcome, OpportunityStage } from './stages';
 import type { BoardFormatting } from './money';
 import { boardFilterKey, boardFilterParams, type BoardFilters } from './filters';
@@ -196,6 +197,8 @@ export type OutcomeRow = {
 		note: string | null;
 		customer_declined: boolean;
 		customer_message: string | null;
+		// What they picked when they declined from their quote link; null for a decline staff recorded.
+		customer_reason: CustomerDeclineReason | null;
 	};
 	// Won rows only. A Won quote nobody has made a Job from can still be reopened; anything else is final.
 	won?: { reopenable: boolean };
