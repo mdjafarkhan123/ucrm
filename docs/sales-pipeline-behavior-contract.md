@@ -1,8 +1,7 @@
 # Sales Pipeline behavior contract
 
-Status: Approved 2026-08-18. Revised 2026-08-24 for the unified board and stage customization model. Revision 3
-in planning since 2026-10-01 (`pipeline-upgrade` campaign); the body below stays the approved behavior until
-Jafar approves that revision.
+Status: Revision 3 approved by Jafar on 2026-10-01. Earlier approvals: 2026-08-18, then the unified board and
+stage-customization revision on 2026-08-24.
 Owner: Sales Pipeline campaign
 
 ## Purpose
@@ -83,7 +82,10 @@ Day-to-day priority comes from the next open Task: overdue first, due today next
 future Tasks. A separate inactivity warning uses an owner-configurable number of days for each stage. Expected
 close date remains optional and is an alternate sort, not the default work queue. The protected-stage defaults
 are New requests after 1 day, each Assessment state after 2 days, Draft after 2 days, Awaiting response after 5
-days, and Changes requested after 2 days.
+days, and Changes requested after 2 days. The inactivity clock resets only for genuine progress: a customer
+reply, a successful or externally confirmed send, an explicitly logged call outcome, Task completion,
+assessment scheduling/completion, Quote revision/send, or another protected domain action. Ownership, value,
+and date edits; internal Notes; Task creation or reassignment; and manual custom-stage movement do not reset it.
 
 Revision 3 adds section-bound custom follow-up stages under these rules:
 
@@ -108,24 +110,30 @@ Revision 3 adds section-bound custom follow-up stages under these rules:
 Money on cards and columns, ownership, and the filter and sort bar arrive with their own parts. Nothing shows a
 placeholder value: a board without money shows no money rather than `$0.00`.
 
-The board supports search, lead-source display/filtering, personal saved filters, administrator-shared saved
-filters, and an alternate table view. Mobile defaults to a compact list. Lead source is a wider field-service
-pattern rather than documented current Jobber Pipeline parity. Safe bulk tools cover only ownership, Tasks,
-and custom follow-up placement; customer communication, conversion, protected-stage movement, and closing
-work are never silent bulk side effects.
+The board search covers client/contact name, title, Request or Quote number, service address, phone, and email.
+It does not search Notes, file contents, or custom fields at launch. The board also supports lead-source
+display/filtering, personal saved filters, administrator-shared saved filters, and an alternate table view.
+Mobile defaults to a compact list. Lead source is a wider field-service pattern rather than documented current
+Jobber Pipeline parity. Safe bulk tools cover only ownership, Tasks, and custom follow-up placement; customer
+communication, conversion, protected-stage movement, and closing work are never silent bulk side effects.
 
 ## Outcomes
 
 - Outcome is separate from stage: `open`, `won`, or `lost`.
 - Won and Lost are not active-board columns.
+- Archiving a never-sent Draft Quote removes it from the board as **Abandoned before sending**, retains its
+  audit history, and creates no fake Lost event. It is excluded from Lost-reason and per-Quote win-rate math.
 - Won is automatic when a Quote is approved or a Job is created. Staff do not manually mark a Request Won.
 - A Request converted directly to a Job becomes Won once, and a Direct job appears as a separately labelled Won
   result. A Job made from an already-Won Quote never adds a duplicate result.
 - Declining one Quote does not mark other Quotes in the same commercial thread Lost.
-- Marking Lost is deliberate and archives the backing Request or Quote. A reason remains optional. Owners and
-  administrators manage the reason list, initially: Price too high, Chose another contractor, No response,
-  Project postponed, Work was not a fit, Duplicate or test request, and Other. Removing a reason retires it
-  from future choices without rewriting old reports. A note is optional except that Other requires one.
+- A customer-declined sent Quote becomes Lost. The customer may leave an optional message, which is preserved;
+  staff may then classify its internal Lost reason without forcing the customer to choose one.
+- Outside a customer's explicit decline, manually marking Lost is deliberate and archives the backing Request
+  or Quote. A reason remains optional. Owners and administrators manage the reason list, initially: Price too
+  high, Chose another contractor, No response, Project postponed, Work was not a fit, Duplicate or test request,
+  and Other. Removing a reason retires it from future choices without rewriting old reports. A note is optional
+  except that Other requires one.
 - Reopening Lost is a deliberate UCRM addition because Jobber does not document that path. It requires a
   short explanation, restores the backing record and its prior valid open position, and records a new
   immutable outcome event.
@@ -139,7 +147,10 @@ work are never silent bulk side effects.
   its created-date cohort and show still-Open work separately instead of misclassifying it. Request-to-Quote,
   Request-to-Won, and per-Quote win rates remain distinct. Direct jobs are shown separately and never inflate
   conversion percentages. Days to win shows both median and average; an absent duration or value remains
-  missing rather than becoming a fake zero.
+  missing rather than becoming a fake zero. Won value is frozen from the accepted Quote total, or from the Job
+  total when a direct Request or Direct job becomes Won. Lost value is frozen from the last sent Quote total,
+  or from the Opportunity value recorded on a Request when it becomes Lost. Later document edits never rewrite
+  an earlier outcome value; missing values are labelled **Unvalued**.
 
 ## Movement and automation
 
@@ -179,7 +190,9 @@ work are never silent bulk side effects.
   board's scroll, filters, or selected position.
 - A Task is an internal follow-up item, not a Job, Visit, or Event. The Brief form has a required title and
   optional instructions, one owner, and one due date. Dated Tasks appear on the assignee's Schedule, and a new
-  assignment or reassignment notifies that teammate once without notifying the customer.
+  assignment or reassignment to someone else creates one in-app alert. Email and mobile/browser push follow
+  that teammate's notification preferences. Self-assignment creates no alert, and the customer is never
+  notified.
 - Each Opportunity may have at most five open and five completed Tasks. The card shows one open Task: the
   earliest due one, breaking equal due dates by creation order; when none are due, it shows the oldest open
   Task. An overdue Task is visibly overdue. Completion and reopening happen from the Brief, not the card.
@@ -193,7 +206,10 @@ work are never silent bulk side effects.
   a mention notifies the tagged teammate.
 - Quick actions expose Email, Text, and Call only when the Client has the required contact detail and the team
   member may use that channel. Messaging still obeys Communications consent, opt-out, allowance, and delivery
-  rules; a quick action is not a second sending system.
+  rules; a quick action is not a second sending system. Email and Text open the existing Communications
+  composer, and multiple eligible contact details open a chooser. Call opens the device dialler and offers an
+  optional return Note; opening the dialler never pretends that a call connected or records an automatic call
+  outcome.
 - `pipeline.view` permits reading Brief Tasks and Notes. `pipeline.edit` is required to create, edit,
   complete, reopen, move, or delete them. Opportunity ownership does not grant extra mutation authority.
 - Brief Notes are authorized by `pipeline.edit` through a Pipeline-scoped path, separate from the generic
@@ -231,10 +247,12 @@ loading is adopted only after a live usability prototype and measured-load check
 
 ## Still unclear
 
-Revision 3 (`pipeline-upgrade`). Round 1 was approved by Jafar on 2026-10-01 after the independent source check.
-Rounds 1 and 2 were approved by Jafar on 2026-10-01. The final detail round must settle:
+None for revision 3. Jafar approved the corrected foundation, detail rules, and final industry-backed edge
+cases on 2026-10-01.
 
-- How a never-sent Draft Quote leaves the board without falsely becoming a lost sale, and how customer-declined
-  Quotes collect an internal Lost reason.
-- The exact events that reset inactivity and the value snapshot used by outcome reports.
-- Search scope, contact quick-action fallbacks, and assignment-notification channels.
+## Not doing
+
+The items explicitly outside revision 3 are listed under **Boundaries**. They include multiple independent
+pipelines, custom-stage automations, administrator-built approval gates, AI summaries, weighted-probability
+forecasting, note pinning, repeating Tasks, and an embedded Opportunity timeline. These may be reconsidered by
+a later approved plan; the revision 3 build does not silently include them.
