@@ -7,18 +7,18 @@
 ## Steps
 
 - [x] Speed design: one list across every stage needs its own sort-ready indexes (50 ms → 3.7 ms at 5,000 cards)
-- [ ] Apply migration `20261003120000_pipeline_table_view.sql` (adds scope `'all'` + six indexes)
-- [ ] Route accepts `stage=all`; table component with sortable headers, Load more, row opens Brief
-- [ ] Board/Table switch kept outside the saved-filter controls (`view` in URL, last choice remembered)
+- [x] Apply migration `20261003120000_pipeline_table_view.sql` (adds scope `'all'` + six indexes)
+- [x] Route accepts `stage=all`; table component with sortable headers, Load more, row opens Brief
+- [x] Board/Table switch kept outside the saved-filter controls (`view` in URL, last choice remembered)
 - [ ] Checks, browser check, merge, close
 
 ## Next
 
-Apply the migration with `npx supabase db push --linked` (dry run first).
+Browser check on `/pipeline`: switch Board ↔ Table keeps filters; header sort; Load more; a row opens the Brief. Then merge-free close (work is on `main`).
 
 ## Outside actions
 
-- Migration `20261003120000` — check: `supabase_migrations.schema_migrations` has version `20261003120000` and index `opportunities_board_all_task_idx` exists — pending
+- Migration `20261003120000` — check: `supabase_migrations.schema_migrations` has version `20261003120000` and index `opportunities_board_all_task_idx` exists — done 2026-10-02
 
 ## Notes
 

@@ -13,6 +13,8 @@
 	import OpportunityBriefDrawer from '$lib/components/pipeline/OpportunityBriefDrawer.svelte';
 	import BoardControls from '$lib/components/pipeline/BoardControls.svelte';
 	import OutcomeTile from '$lib/components/pipeline/OutcomeTile.svelte';
+	import PipelineTable from '$lib/components/pipeline/PipelineTable.svelte';
+	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import {
 		boardCountsKey,
 		fetchBoardSummary,
@@ -25,7 +27,10 @@
 		filtersAreComplete,
 		filtersAreDefault,
 		readBoardFilters,
-		type BoardFilters
+		readBoardView,
+		tableSortChange,
+		type BoardFilters,
+		type BoardView
 	} from '$lib/pipeline/filters';
 	import type { InactivityRules } from '$lib/pipeline/freshness';
 	import { todayInOrganization } from '$lib/pipeline/money';
@@ -90,8 +95,38 @@
 			: { ...urlFilters, date: 'all', from: undefined, to: undefined }
 	);
 
+	// Board or Table. The URL says which when it says anything, so a refresh and a shared link keep it;
+	// otherwise the view this person last chose on this device, the way Pipedrive and HubSpot remember it.
+	const VIEW_STORAGE_KEY = 'pipeline-view';
+	let rememberedView = $state<BoardView>(readRememberedView());
+	const view = $derived<BoardView>(readBoardView(page.url.searchParams) ?? rememberedView);
+
+	function readRememberedView(): BoardView {
+		try {
+			return localStorage.getItem(VIEW_STORAGE_KEY) === 'table' ? 'table' : 'board';
+		} catch {
+			return 'board';
+		}
+	}
+
+	function setView(next: BoardView) {
+		rememberedView = next;
+		try {
+			localStorage.setItem(VIEW_STORAGE_KEY, next);
+		} catch {
+			// Private windows and blocked storage still switch; they just will not remember it.
+		}
+		goToBoard(applied, next);
+	}
+
 	function setFilters(next: BoardFilters, options?: { replace?: boolean }) {
+		goToBoard(next, view, options);
+	}
+
+	// The filters and the view travel together in the URL, so changing one never drops the other.
+	function goToBoard(next: BoardFilters, nextView: BoardView, options?: { replace?: boolean }) {
 		const params = boardFilterParams(next);
+		if (nextView === 'table') params.set('view', 'table');
 		const query = params.toString();
 		// Each change is its own history entry, so Back steps through the filters the way it steps through
 		// pages. Typing a search is the exception: it replaces the entry, so Back leaves the search rather
@@ -343,76 +378,100 @@
 					resultCount={summaryQuery.data?.result_count ?? null}
 					{canViewValue}
 					onChange={setFilters}
-				/>
+				>
+					{#snippet leading()}
+						<SegmentedControl
+							name="pipeline-view"
+							value={view}
+							options={[
+								{ value: 'board', label: 'Board' },
+								{ value: 'table', label: 'Table' }
+							]}
+							onchange={(value) => setView(value as BoardView)}
+						/>
+					{/snippet}
+				</BoardControls>
 
-				<!-- One journey, left to right: both groups scroll together as a single board rather than each
+				{#if view === 'table'}
+					<PipelineTable
+						filters={applied}
+						{formatting}
+						{canViewValue}
+						{customStages}
+						{inactivityRules}
+						onOpen={(card) => (selected = card)}
+						onSortChange={(sort) => setFilters(tableSortChange(urlFilters, sort))}
+					/>
+				{:else}
+					<!-- One journey, left to right: both groups scroll together as a single board rather than each
 				     wrapping its own columns onto a second row -- Requests and Quotes keep a useful fixed column
 				     width and the board grows sideways instead of compressing five (or seven) columns to fit. -->
-				<div class="pipeline__board" bind:this={boardViewport} onscroll={handleBoardScroll}>
-					<SectionBlock title="Requests" icon={inboxIcon} class="pipeline__group">
-						{#snippet actions()}
-							<span class="pipeline__total">
-								{requestsTotal ?? '—'}
-								<span class="pipeline__total-label">open</span>
-							</span>
-						{/snippet}
+					<div class="pipeline__board" bind:this={boardViewport} onscroll={handleBoardScroll}>
+						<SectionBlock title="Requests" icon={inboxIcon} class="pipeline__group">
+							{#snippet actions()}
+								<span class="pipeline__total">
+									{requestsTotal ?? '—'}
+									<span class="pipeline__total-label">open</span>
+								</span>
+							{/snippet}
 
-						<div class="pipeline__columns">
-							{#each requestColumns as column (boardColumnId(column))}
-								<PipelineColumn
-									{column}
-									count={countFor(column)}
-									valueTotal={valueTotalFor(column)}
-									filters={applied}
-									{formatting}
-									{canEdit}
-									{customStages}
-									{inactivityRules}
-									onOpen={(card) => (selected = card)}
-									onLost={closeSelectedIfLost}
-									{dragging}
-									onDraggingChange={(next) => (dragging = next)}
-									{dragBusy}
-									onDragBusyChange={(busy) => (dragBusy = busy)}
-								/>
-							{/each}
-						</div>
-					</SectionBlock>
+							<div class="pipeline__columns">
+								{#each requestColumns as column (boardColumnId(column))}
+									<PipelineColumn
+										{column}
+										count={countFor(column)}
+										valueTotal={valueTotalFor(column)}
+										filters={applied}
+										{formatting}
+										{canEdit}
+										{customStages}
+										{inactivityRules}
+										onOpen={(card) => (selected = card)}
+										onLost={closeSelectedIfLost}
+										{dragging}
+										onDraggingChange={(next) => (dragging = next)}
+										{dragBusy}
+										onDragBusyChange={(busy) => (dragBusy = busy)}
+									/>
+								{/each}
+							</div>
+						</SectionBlock>
 
-					<!-- The subtle boundary the contract calls for: two bordered, titled groups sitting side by
+						<!-- The subtle boundary the contract calls for: two bordered, titled groups sitting side by
 					     side already read as separate journeys without a second decorative element. -->
-					<SectionBlock title="Quotes" icon={fileInvoiceIcon} class="pipeline__group">
-						{#snippet actions()}
-							<span class="pipeline__total">
-								{quotesTotal ?? '—'}
-								<span class="pipeline__total-label">open</span>
-							</span>
-						{/snippet}
+						<SectionBlock title="Quotes" icon={fileInvoiceIcon} class="pipeline__group">
+							{#snippet actions()}
+								<span class="pipeline__total">
+									{quotesTotal ?? '—'}
+									<span class="pipeline__total-label">open</span>
+								</span>
+							{/snippet}
 
-						<div class="pipeline__columns">
-							{#each quoteColumns as column (boardColumnId(column))}
-								<PipelineColumn
-									{column}
-									count={countFor(column)}
-									valueTotal={valueTotalFor(column)}
-									filters={applied}
-									{formatting}
-									{canEdit}
-									{customStages}
-									{inactivityRules}
-									onOpen={(card) => (selected = card)}
-									onLost={closeSelectedIfLost}
-									{dragging}
-									onDraggingChange={(next) => (dragging = next)}
-									{dragBusy}
-									onDragBusyChange={(busy) => (dragBusy = busy)}
-								/>
-							{/each}
-						</div>
-					</SectionBlock>
-				</div>
+							<div class="pipeline__columns">
+								{#each quoteColumns as column (boardColumnId(column))}
+									<PipelineColumn
+										{column}
+										count={countFor(column)}
+										valueTotal={valueTotalFor(column)}
+										filters={applied}
+										{formatting}
+										{canEdit}
+										{customStages}
+										{inactivityRules}
+										onOpen={(card) => (selected = card)}
+										onLost={closeSelectedIfLost}
+										{dragging}
+										onDraggingChange={(next) => (dragging = next)}
+										{dragBusy}
+										onDragBusyChange={(busy) => (dragBusy = busy)}
+									/>
+								{/each}
+							</div>
+						</SectionBlock>
+					</div>
+				{/if}
 
-				{#if pinnedScrollbarVisible}
+				{#if pinnedScrollbarVisible && view === 'board'}
 					<div
 						class="pipeline__pinned-scrollbar-spacer"
 						style={`height: calc(${pinnedBarHeight}px + var(--space-base))`}
@@ -424,7 +483,7 @@
 	</PageContainer>
 </div>
 
-{#if pinnedScrollbarVisible}
+{#if pinnedScrollbarVisible && view === 'board'}
 	<!-- A pointer/trackpad convenience only -- `.pipeline__board` itself already carries the real
 	     scrollable content and remains reachable by wheel, trackpad, and its own (visually hidden)
 	     scrollbar, so this mirror is hidden from assistive tech rather than offered as a second way in. -->

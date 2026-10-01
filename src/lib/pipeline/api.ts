@@ -115,6 +115,10 @@ export const pipelineKey = ['pipeline'] as const;
 // `column` is a protected column's key, or a custom stage's column id from `boardColumnId`.
 export const boardColumnKey = (column: string, filters: BoardFilters) =>
 	['pipeline', 'board', column, boardFilterKey(filters)] as const;
+// The Table view's one list. Its own key rather than a column's, so loading more rows in the table never
+// disturbs a column's pages, and the same filters still split the cache exactly as the columns do.
+export const boardTableKey = (filters: BoardFilters) =>
+	['pipeline', 'table', boardFilterKey(filters)] as const;
 export const boardCountsKey = (filters: BoardFilters) =>
 	['pipeline', 'summary', boardFilterKey(filters)] as const;
 // One Opportunity's Brief Tasks. Still under the `['pipeline']` family so `invalidatePipeline` reaches it
@@ -145,7 +149,8 @@ async function readError(response: Response, fallback: string) {
 	return failure;
 }
 
-// `stage` is a protected column's name or a custom stage's id — `boardColumnRequestKey` gives either.
+// `stage` is a protected column's name or a custom stage's id — `boardColumnRequestKey` gives either — or
+// `TABLE_SCOPE` for every card at once.
 export async function fetchBoardColumn(
 	stage: string,
 	filters: BoardFilters,

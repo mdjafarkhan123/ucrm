@@ -7,7 +7,9 @@ import {
 	filtersFromSavedQuery,
 	savedFilterQuery,
 	readBoardFilters,
-	searchTerm
+	readBoardView,
+	searchTerm,
+	tableSortChange
 } from './filters';
 
 describe('the board search term', () => {
@@ -86,5 +88,44 @@ describe('what a saved filter keeps', () => {
 		expect(filters.from).toBe('2026-01-01');
 		expect(filters.to).toBe('2026-03-31');
 		expect(savedFilterQuery(filters)).toBe('date=custom&from=2026-01-01&to=2026-03-31');
+	});
+});
+
+describe('the Board / Table switch', () => {
+	it('reads the view from the URL, and nothing when the URL does not say', () => {
+		expect(readBoardView(new URLSearchParams('view=table'))).toBe('table');
+		expect(readBoardView(new URLSearchParams('view=board'))).toBe('board');
+		expect(readBoardView(new URLSearchParams('view=chart'))).toBeNull();
+		expect(readBoardView(new URLSearchParams(''))).toBeNull();
+	});
+
+	it('is never one of the filters, so switching keeps them and a saved filter never stores it', () => {
+		const params = new URLSearchParams('view=table&owner=unassigned&source=Google');
+		const filters = readBoardFilters(params);
+		expect(filters).toEqual({ ...DEFAULT_BOARD_FILTERS, owner: 'unassigned', source: 'Google' });
+		expect(boardFilterParams(filters).has('view')).toBe(false);
+		expect(savedFilterQuery(filters)).not.toContain('view');
+	});
+});
+
+describe('sorting the table by its headers', () => {
+	it('turns the order round when the same header is clicked again', () => {
+		const filters = { ...DEFAULT_BOARD_FILTERS, sort: 'created' as const };
+		expect(tableSortChange(filters, 'created').direction).toBe('asc');
+	});
+
+	it('leaves the Task order alone, which has no direction', () => {
+		expect(tableSortChange(DEFAULT_BOARD_FILTERS, 'attention')).toEqual(DEFAULT_BOARD_FILTERS);
+	});
+
+	it('starts a fresh header the way the Sort by control does, soonest close first', () => {
+		expect(tableSortChange(DEFAULT_BOARD_FILTERS, 'close')).toMatchObject({
+			sort: 'close',
+			direction: 'asc'
+		});
+		expect(tableSortChange(DEFAULT_BOARD_FILTERS, 'value')).toMatchObject({
+			sort: 'value',
+			direction: 'desc'
+		});
 	});
 });

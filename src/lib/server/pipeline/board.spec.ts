@@ -50,6 +50,17 @@ describe('board cursor', () => {
 		expect(readBoardCursor(encodeBoardCursor(cursor))?.column).toBe('assessment');
 	});
 
+	it('pages the Table view, whose list is every column at once', () => {
+		const cursor = {
+			column: 'all',
+			sort: 'created' as const,
+			phase: 1 as const,
+			value: '2026-08-19T04:00:00.000Z',
+			id: '9c3f5a0e-1111-4222-8333-444455556666'
+		};
+		expect(readBoardCursor(encodeBoardCursor(cursor))).toEqual(cursor);
+	});
+
 	it('refuses anything it did not write', () => {
 		expect(readBoardCursor(null)).toBeNull();
 		expect(readBoardCursor('')).toBeNull();

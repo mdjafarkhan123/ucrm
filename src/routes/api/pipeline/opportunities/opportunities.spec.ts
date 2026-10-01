@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET } from './+server';
+import { encodeBoardCursor } from '$lib/server/pipeline/board';
 import { requireOrganizationPermission, hasPermission } from '$lib/server/access/permission';
 
 vi.mock('$lib/server/access/permission', () => ({
@@ -177,6 +178,34 @@ describe('board column quote pointer', () => {
 // protected stages. From this route's side the important thing is that it is one page in one order, not
 // three lists stitched together: the cards come back interleaved across sub-states and the cursor it hands
 // out continues that single walk.
+describe('the Table view', () => {
+	it('asks the database for every card at once, through the same function', async () => {
+		const event = readEvent([], 'stage=all&sort=created');
+		const response = await GET(event);
+
+		expect(response.status).toBe(200);
+		expect(rpcOf(event)).toHaveBeenCalledWith(
+			'pipeline_board_page',
+			expect.objectContaining({ target_stage: 'all', sort_key: 'created_at' })
+		);
+	});
+
+	it('refuses a marker cut from one column when paging the whole table', async () => {
+		const cursor = encodeBoardCursor({
+			column: 'new_request',
+			sort: 'created',
+			phase: 1,
+			value: '2026-08-19T04:00:00.000Z',
+			id: '9c3f5a0e-1111-4222-8333-444455556666'
+		});
+		const event = readEvent([], `stage=all&sort=created&cursor=${encodeURIComponent(cursor)}`);
+		const response = await GET(event);
+
+		expect(response.status).toBe(422);
+		expect(rpcOf(event)).not.toHaveBeenCalled();
+	});
+});
+
 describe('the collapsed Assessment column', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();

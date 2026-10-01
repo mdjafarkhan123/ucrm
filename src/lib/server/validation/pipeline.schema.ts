@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BOARD_COLUMN_KEYS, OPPORTUNITY_STAGES } from '$lib/pipeline/stages';
+import { BOARD_COLUMN_KEYS, OPPORTUNITY_STAGES, TABLE_SCOPE } from '$lib/pipeline/stages';
 import { BOARD_DATE_PRESETS, BOARD_DIRECTIONS, BOARD_SORTS } from '$lib/server/pipeline/board';
 import {
 	BOARD_LEAD_SOURCE_MAX,
@@ -66,7 +66,12 @@ function withDateRules<Schema extends z.ZodType<DateRangeInput>>(schema: Schema)
 // database checks that an id is a stage this organization really has switched on.
 export const boardQuerySchema = withDateRules(
 	z.object({
-		stage: z.union([z.enum(BOARD_COLUMN_KEYS), z.string().uuid().toLowerCase()]),
+		// A column, or the whole board at once for the Table view.
+		stage: z.union([
+			z.literal(TABLE_SCOPE),
+			z.enum(BOARD_COLUMN_KEYS),
+			z.string().uuid().toLowerCase()
+		]),
 		cursor: z.string().min(3).max(200).optional(),
 		limit: z.coerce.number().int().min(1).max(BOARD_PAGE_SIZE_MAX).default(BOARD_PAGE_SIZE_DEFAULT),
 		sort: z.enum(BOARD_SORTS).default('attention'),
