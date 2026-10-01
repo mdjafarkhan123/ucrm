@@ -91,7 +91,7 @@
 		{
 			icon: lifebuoyIcon,
 			title: 'Stuck on something?',
-			body: 'Choose “I need Uplift’s help” on a question and carry on. Uplift picks it up from there.'
+			body: 'Choose “I need Uplift’s help” on a question and carry on, or ask us anything with Chat with Uplift in the bottom corner of every screen.'
 		}
 	];
 

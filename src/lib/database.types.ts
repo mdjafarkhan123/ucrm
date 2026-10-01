@@ -13269,6 +13269,30 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			platform_support_settings: {
+				Row: {
+					availability_note: string;
+					created_at: string;
+					id: boolean;
+					responder_name: string;
+					updated_at: string;
+				};
+				Insert: {
+					availability_note?: string;
+					created_at?: string;
+					id?: boolean;
+					responder_name?: string;
+					updated_at?: string;
+				};
+				Update: {
+					availability_note?: string;
+					created_at?: string;
+					id?: boolean;
+					responder_name?: string;
+					updated_at?: string;
+				};
+				Relationships: [];
+			};
 			profiles: {
 				Row: {
 					avatar_url: string | null;
@@ -14949,6 +14973,101 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'organization_members';
 						referencedColumns: ['organization_id', 'user_id'];
+					}
+				];
+			};
+			support_messages: {
+				Row: {
+					body: string;
+					client_message_id: string;
+					created_at: string;
+					id: string;
+					organization_id: string;
+					sender_kind: string;
+					sender_name: string;
+					sender_owner_email: string | null;
+					sender_user_id: string | null;
+					thread_id: string;
+				};
+				Insert: {
+					body: string;
+					client_message_id: string;
+					created_at?: string;
+					id?: string;
+					organization_id: string;
+					sender_kind: string;
+					sender_name: string;
+					sender_owner_email?: string | null;
+					sender_user_id?: string | null;
+					thread_id: string;
+				};
+				Update: {
+					body?: string;
+					client_message_id?: string;
+					created_at?: string;
+					id?: string;
+					organization_id?: string;
+					sender_kind?: string;
+					sender_name?: string;
+					sender_owner_email?: string | null;
+					sender_user_id?: string | null;
+					thread_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'support_messages_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'support_messages_thread_id_fkey';
+						columns: ['thread_id'];
+						isOneToOne: false;
+						referencedRelation: 'support_threads';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			support_threads: {
+				Row: {
+					created_at: string;
+					id: string;
+					last_message_at: string;
+					last_message_preview: string;
+					last_message_sender_kind: string;
+					organization_id: string;
+					started_by_user_id: string | null;
+					updated_at: string;
+				};
+				Insert: {
+					created_at?: string;
+					id?: string;
+					last_message_at?: string;
+					last_message_preview?: string;
+					last_message_sender_kind?: string;
+					organization_id: string;
+					started_by_user_id?: string | null;
+					updated_at?: string;
+				};
+				Update: {
+					created_at?: string;
+					id?: string;
+					last_message_at?: string;
+					last_message_preview?: string;
+					last_message_sender_kind?: string;
+					organization_id?: string;
+					started_by_user_id?: string | null;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'support_threads_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
 					}
 				];
 			};
@@ -22189,16 +22308,19 @@ export type Database = {
 					value_total: number;
 				}[];
 			};
-			pipeline_undo_placement: {
-				Args: { target_opportunity_id: string; undone_to_custom_stage_id: string };
-				Returns: Json;
-			};
 			pipeline_undo_move: {
 				Args: {
 					restore_new_request?: boolean;
 					target_opportunity_id: string;
 					undone_from_stage: string;
 					undone_to_stage: string;
+				};
+				Returns: Json;
+			};
+			pipeline_undo_placement: {
+				Args: {
+					target_opportunity_id: string;
+					undone_to_custom_stage_id: string;
 				};
 				Returns: Json;
 			};
@@ -23313,6 +23435,15 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			reply_to_support_thread: {
+				Args: {
+					actor_email: string;
+					message_body: string;
+					message_client_id: string;
+					target_thread_id: string;
+				};
+				Returns: Json;
+			};
 			request_automation_worker_wake: { Args: never; Returns: undefined };
 			request_client_import_worker_wake: { Args: never; Returns: undefined };
 			request_communication_email_outbox_wake: {
@@ -24135,6 +24266,14 @@ export type Database = {
 					p_wait_days: number;
 				};
 				Returns: string;
+			};
+			send_support_message: {
+				Args: {
+					message_body: string;
+					message_client_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
 			};
 			set_automation_recipe_lifecycle_state: {
 				Args: {

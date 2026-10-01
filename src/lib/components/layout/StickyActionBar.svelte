@@ -14,6 +14,17 @@
 	// The bar floats over the page, so the page has to end this much earlier or the bar covers its last
 	// block. Measured rather than guessed, because the buttons stack on a narrow screen.
 	let barHeight = $state(0);
+
+	// The Chat with Uplift button lives in the same bottom-right corner. While this bar is on screen it
+	// tells the page how much room it takes, so the button rises above it rather than covering Save.
+	$effect(() => {
+		const root = document.documentElement;
+		root.style.setProperty(
+			'--support-launcher-clearance',
+			`calc(${barHeight}px + var(--space-small))`
+		);
+		return () => root.style.removeProperty('--support-launcher-clearance');
+	});
 </script>
 
 <div

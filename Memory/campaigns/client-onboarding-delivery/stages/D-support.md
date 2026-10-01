@@ -4,7 +4,7 @@ Before D1, run the `performance-review` design branch: live updates grow with si
 
 | Part | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- |
-| D1 Chat + inbox | §7 Chat with Uplift button, one thread, `/jafar` Support Inbox, Uplift Support + responder name | — | Contractor sends, Jafar replies, both see it; customer inbox unaffected | Not started |
+| D1 Chat + inbox | §7 Chat with Uplift button, one thread, `/jafar` Support Inbox, Uplift Support + responder name | — | Contractor sends, Jafar replies, both see it; customer inbox unaffected | In progress — built, browser check left (`parts/D1-chat-inbox.md`) |
 | D2 Live + unread | Real-time delivery when open, unread badges | D1 | Reply appears without refresh; badge clears on read | Not started |
 | D3 Who sees what | Owners/admins see all org threads; others see own and added ones | D1 | Field member cannot see the owner's thread | Not started |
 | D4 Attachments + topics | Attachments and Setup/Website/Google/CRM/Billing/Other topics | D1 | A photo attaches and opens; topic filter works | Not started |
