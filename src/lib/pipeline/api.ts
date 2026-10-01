@@ -192,6 +192,91 @@ export async function fetchLeadSources(): Promise<string[]> {
 	return body.lead_sources;
 }
 
+// A saved filter: a name for one set of the board's controls. `shared` ones are the team's; `can_edit` says
+// whether this person may rename, update, or delete it.
+export type SavedFilter = {
+	id: string;
+	name: string;
+	query: string;
+	shared: boolean;
+	can_edit: boolean;
+};
+
+export type SavedFilterList = { filters: SavedFilter[]; can_share: boolean };
+
+// Outside the `['pipeline']` family on purpose: every card move refreshes that whole family, and moving a
+// card changes nobody's saved filters.
+export const savedFiltersKey = ['pipeline-saved-filters'] as const;
+
+export async function fetchSavedFilters(): Promise<SavedFilterList> {
+	const response = await fetch('/api/pipeline/saved-filters');
+	if (!response.ok) throw await readError(response, 'Your saved filters could not be loaded.');
+	return response.json();
+}
+
+export class SavedFilterWriteError extends Error {
+	fieldErrors: Record<string, string>;
+
+	constructor(message: string, fieldErrors: Record<string, string>) {
+		super(message);
+		this.name = 'SavedFilterWriteError';
+		this.fieldErrors = fieldErrors;
+	}
+}
+
+async function savedFilterWrite(response: Response, fallback: string): Promise<SavedFilter> {
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) {
+		const fields = (result.field_errors ?? {}) as Record<string, string>;
+		throw new SavedFilterWriteError(
+			fields.name ?? fields.form ?? fields.filters ?? result.error ?? fallback,
+			fields
+		);
+	}
+	return result.filter as SavedFilter;
+}
+
+// The controls go as the board holds them; the server writes the address. The search box never goes.
+function savedFilterControls(filters: BoardFilters) {
+	const { q: _search, ...controls } = filters;
+	return controls;
+}
+
+export function createSavedFilter(input: {
+	name: string;
+	shared: boolean;
+	filters: BoardFilters;
+}): Promise<SavedFilter> {
+	return fetch('/api/pipeline/saved-filters', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			name: input.name,
+			shared: input.shared,
+			filters: savedFilterControls(input.filters)
+		})
+	}).then((response) => savedFilterWrite(response, 'That filter could not be saved.'));
+}
+
+export function updateSavedFilter(
+	id: string,
+	change: { name?: string; filters?: BoardFilters }
+): Promise<SavedFilter> {
+	return fetch(`/api/pipeline/saved-filters/${id}`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			name: change.name,
+			filters: change.filters ? savedFilterControls(change.filters) : undefined
+		})
+	}).then((response) => savedFilterWrite(response, 'That filter could not be changed.'));
+}
+
+export async function deleteSavedFilter(id: string): Promise<void> {
+	const response = await fetch(`/api/pipeline/saved-filters/${id}`, { method: 'DELETE' });
+	if (!response.ok) throw await readError(response, 'That filter could not be deleted.');
+}
+
 export async function fetchOutcomeTiles(): Promise<OutcomeTiles> {
 	const response = await fetch('/api/pipeline/outcomes/summary');
 	if (!response.ok) throw await readError(response, 'The outcome totals could not be loaded.');
