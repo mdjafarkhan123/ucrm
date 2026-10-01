@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
+	import { MediaQuery } from 'svelte/reactivity';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -15,6 +16,7 @@
 	import OutcomeTile from '$lib/components/pipeline/OutcomeTile.svelte';
 	import PipelineTable from '$lib/components/pipeline/PipelineTable.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
 	import {
 		boardCountsKey,
 		fetchBoardSummary,
@@ -35,6 +37,7 @@
 	import type { InactivityRules } from '$lib/pipeline/freshness';
 	import { todayInOrganization } from '$lib/pipeline/money';
 	import {
+		BOARD_COLUMN_LABELS,
 		BOARD_STAGES,
 		QUOTE_BOARD_STAGES,
 		boardColumnId,
@@ -235,6 +238,33 @@
 	const requestsTotal = $derived(sectionTotal('request', BOARD_STAGES));
 	const quotesTotal = $derived(sectionTotal('quote', QUOTE_BOARD_STAGES));
 
+	// On a phone the board does not shrink to fit: one stage shows at a time, picked from a list, and a card
+	// moves with its Move button because dragging is never required there. The same width the page already
+	// treats as "narrow" for its Won/Lost tiles. Desktop keeps its Board and Table.
+	const phone = new MediaQuery('max-width: 639px');
+	let phoneColumnId = $state<string | null>(null);
+	const phoneChoices = $derived([
+		...requestColumns.map((column) => ({ column, group: 'Requests' })),
+		...quoteColumns.map((column) => ({ column, group: 'Quotes' }))
+	]);
+	const phoneColumn = $derived(
+		(
+			phoneChoices.find((choice) => boardColumnId(choice.column) === phoneColumnId) ??
+			phoneChoices[0]
+		)?.column
+	);
+	const phoneOptions = $derived(
+		phoneChoices.map(({ column, group }) => {
+			const name =
+				column.kind === 'protected' ? BOARD_COLUMN_LABELS[column.key] : column.stage.name;
+			const n = countFor(column);
+			return {
+				value: boardColumnId(column),
+				label: `${group} · ${name}${n === undefined ? '' : ` (${n})`}`
+			};
+		})
+	);
+
 	// An empty board and a filter that matched nothing are different answers and must not look the same:
 	// only a genuinely empty board gets the new-account message. A filtered board with no matches keeps its
 	// columns and its controls, so the person can see what they asked for and change it.
@@ -381,19 +411,52 @@
 					onChange={setFilters}
 				>
 					{#snippet leading()}
-						<SegmentedControl
-							name="pipeline-view"
-							value={view}
-							options={[
-								{ value: 'board', label: 'Board' },
-								{ value: 'table', label: 'Table' }
-							]}
-							onchange={(value) => setView(value as BoardView)}
-						/>
+						{#if !phone.current}
+							<SegmentedControl
+								name="pipeline-view"
+								value={view}
+								options={[
+									{ value: 'board', label: 'Board' },
+									{ value: 'table', label: 'Table' }
+								]}
+								onchange={(value) => setView(value as BoardView)}
+							/>
+						{/if}
 					{/snippet}
 				</BoardControls>
 
-				{#if view === 'table'}
+				{#if phone.current}
+					<div class="pipeline__phone">
+						<Select
+							id="pipeline-phone-stage"
+							ariaLabel="Stage"
+							options={phoneOptions}
+							value={phoneColumn ? boardColumnId(phoneColumn) : ''}
+							onchange={(value) => (phoneColumnId = value)}
+						/>
+						{#if phoneColumn}
+							{#key boardColumnId(phoneColumn)}
+								<PipelineColumn
+									column={phoneColumn}
+									count={countFor(phoneColumn)}
+									valueTotal={valueTotalFor(phoneColumn)}
+									filters={applied}
+									{formatting}
+									{canEdit}
+									{customStages}
+									{inactivityRules}
+									onOpen={(card) => (selected = card)}
+									onLost={closeSelectedIfLost}
+									dragging={null}
+									onDraggingChange={() => {}}
+									{dragBusy}
+									onDragBusyChange={(busy) => (dragBusy = busy)}
+									dragEnabled={false}
+								/>
+							{/key}
+						{/if}
+					</div>
+				{:else if view === 'table'}
 					<PipelineTable
 						filters={applied}
 						{formatting}
@@ -521,6 +584,11 @@
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 220px));
 		gap: var(--space-base);
+	}
+	.pipeline__phone {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-small);
 	}
 	.pipeline__create {
 		display: flex;

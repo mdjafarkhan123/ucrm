@@ -77,7 +77,8 @@
 		dragging,
 		onDraggingChange,
 		dragBusy,
-		onDragBusyChange
+		onDragBusyChange,
+		dragEnabled = true
 	}: {
 		// A protected column, or a custom follow-up stage an owner or administrator added in Settings.
 		column: BoardColumn;
@@ -106,6 +107,8 @@
 		// saving, every zone stays still so the same source-of-truth card cannot start a second gesture.
 		dragBusy: boolean;
 		onDragBusyChange: (busy: boolean) => void;
+		// Off on a phone, where a card moves with its Move button instead of being dragged.
+		dragEnabled?: boolean;
 	} = $props();
 
 	const queryClient = useQueryClient();
@@ -668,7 +671,7 @@
 				use:dndzone={{
 					items,
 					flipDurationMs: 150,
-					dragDisabled: !canEdit || pendingCard !== null || dragBusy,
+					dragDisabled: !dragEnabled || !canEdit || pendingCard !== null || dragBusy,
 					dropFromOthersDisabled: dropRefused
 				}}
 				onconsider={handleConsider}
