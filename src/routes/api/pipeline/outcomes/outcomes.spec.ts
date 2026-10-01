@@ -120,6 +120,22 @@ describe('sales outcomes report', () => {
 		expect(body.next_cursor).toContain('opp-24');
 	});
 
+	it('lists Direct jobs as their own type', async () => {
+		const request = event('http://localhost/api/pipeline/outcomes?type=direct_job', [
+			outcomeRow({ outcome: 'won', title: 'Gutter clean' })
+		]);
+		const response = await GET(request);
+		const body = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(body.type).toBe('direct_job');
+		expect(body.outcomes[0].title).toBe('Gutter clean');
+		expect(request.locals.supabase.rpc).toHaveBeenCalledWith(
+			'pipeline_outcome_page',
+			expect.objectContaining({ outcome_type: 'direct_job' })
+		);
+	});
+
 	it('has no next cursor on the last page', async () => {
 		const response = await GET(
 			event('http://localhost/api/pipeline/outcomes?type=lost', [outcomeRow()])

@@ -37,6 +37,7 @@
 		outcomeFilterParams,
 		outcomeFiltersAreComplete,
 		type OutcomeFilters,
+		type OutcomeType,
 		type OutcomeDatePreset,
 		type OutcomeSort
 	} from '$lib/pipeline/outcomes';
@@ -126,11 +127,29 @@
 			{ key: 'title', label: 'Title', sortable: true },
 			{ key: 'client', label: 'Client', sortable: canViewClients },
 			{ key: 'created', label: 'Created At', sortable: true },
-			{ key: 'outcome_at', label: applied.type === 'won' ? 'Won At' : 'Lost At', sortable: true }
+			{ key: 'outcome_at', label: applied.type === 'lost' ? 'Lost At' : 'Won At', sortable: true }
 		];
 		if (canViewValue) base.push({ key: 'total', label: 'Total', align: 'end', sortable: true });
 		return base;
 	});
+
+	// What an empty list says, per type. A Direct job has no Request or Quote, so it is described by what
+	// creates it rather than by a card closing.
+	const EMPTY_COPY: Record<OutcomeType, { title: string; description: string }> = {
+		won: {
+			title: 'Nothing won yet',
+			description:
+				'A Quote appears here once it is approved, and a Request once it is converted to a Job.'
+		},
+		lost: {
+			title: 'Nothing lost yet',
+			description: 'A Request or Quote appears here once it is marked as lost.'
+		},
+		direct_job: {
+			title: 'No direct jobs yet',
+			description: 'A Job appears here when it is created without a Request or Quote.'
+		}
+	};
 
 	function clientName(row: OutcomeRow) {
 		return row.client?.display_name ?? 'Client removed';
@@ -160,7 +179,10 @@
 <svelte:head><title>Sales Outcomes · Pipeline</title></svelte:head>
 
 <PageContainer variant="fill">
-	<PageHeader title="Sales Outcomes" description="Every Opportunity that has closed, won or lost.">
+	<PageHeader
+		title="Sales Outcomes"
+		description="Every Opportunity that has closed, won or lost, and every Job booked without one."
+	>
 		{#snippet actions()}
 			<Button variant="secondary" href={resolve('/(app)/pipeline')}>Back to Pipeline</Button>
 		{/snippet}
@@ -190,7 +212,7 @@
 					id="outcomes-type"
 					value={applied.type}
 					options={OUTCOME_TYPES.map((type) => ({ value: type, label: OUTCOME_TYPE_LABELS[type] }))}
-					onchange={(value) => setFilters({ ...urlFilters, type: value as 'won' | 'lost' })}
+					onchange={(value) => setFilters({ ...urlFilters, type: value as OutcomeType })}
 				/>
 			</span>
 			<span class="outcomes-toolbar__field">
@@ -243,16 +265,10 @@
 		{:else if rows.length === 0}
 			<EmptyState
 				icon={trophyIcon}
-				title={hasAnyFilter
-					? 'No matching results'
-					: applied.type === 'won'
-						? 'Nothing won yet'
-						: 'Nothing lost yet'}
+				title={hasAnyFilter ? 'No matching results' : EMPTY_COPY[applied.type].title}
 				description={hasAnyFilter
 					? 'Try a different date range.'
-					: applied.type === 'won'
-						? 'Automatic Won arrives once Quotes and Jobs are part of the pipeline.'
-						: 'A Request appears here once it is marked as lost.'}
+					: EMPTY_COPY[applied.type].description}
 			/>
 		{:else}
 			{#snippet reopenAction(item: OutcomeRow)}

@@ -513,12 +513,17 @@ export const FINANCIAL_LEDGERS: readonly Ledger[] = [
 	{
 		file: 'sales_outcomes.csv',
 		description:
-			'Pipeline opportunities Won or Lost in the period. estimated_value is a sales estimate, never financial revenue.',
+			'Pipeline opportunities Won or Lost in the period, and Direct jobs (source_kind direct_job: a job created with no request or quote, counted apart from Won). estimated_value is a sales estimate, never financial revenue.',
 		primaryKey: 'opportunity_id',
 		allowed: (access) => hasPermission(access, 'pipeline.view'),
 		restricted: { permission: 'pipeline.view_value', columns: ['estimated_value_minor'] },
 		tally: (row, totals) => {
-			if (row.outcome === 'won' && row.estimated_value_minor != null) {
+			// A Direct job row is `won` too, but the summary's won_value is deals only.
+			if (
+				row.outcome === 'won' &&
+				row.source_kind !== 'direct_job' &&
+				row.estimated_value_minor != null
+			) {
 				totals.won_estimated_value =
 					(totals.won_estimated_value ?? 0n) + BigInt(String(row.estimated_value_minor));
 			}
@@ -541,6 +546,7 @@ export const FINANCIAL_LEDGERS: readonly Ledger[] = [
 			'source_kind',
 			'request_id',
 			'quote_id',
+			'job_id',
 			'quote_number',
 			'title',
 			'client_id',

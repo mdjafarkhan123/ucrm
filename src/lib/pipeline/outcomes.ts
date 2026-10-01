@@ -2,6 +2,9 @@
 // the same split `$lib/pipeline/filters` draws for the board. Won and Lost are never mixed on one page, so
 // `type` is not optional the way the board's owner filter is.
 //
+// A Direct job is a Job made with no Request or Quote behind it. It is booked work, so it is counted here,
+// but it was never a deal on the board, so it is its own type rather than part of Won.
+//
 // The date preset vocabulary is the board's own (`BOARD_DATE_PRESETS`): it is a generic "which days" list,
 // not board-specific knowledge, and the report applies it to Outcome date instead of Created date.
 
@@ -10,12 +13,13 @@ import { BOARD_DATE_PRESETS, BOARD_DATE_LABELS, type BoardDatePreset } from '$li
 export { BOARD_DATE_PRESETS as OUTCOME_DATE_PRESETS, BOARD_DATE_LABELS as OUTCOME_DATE_LABELS };
 export type OutcomeDatePreset = BoardDatePreset;
 
-export const OUTCOME_TYPES = ['won', 'lost'] as const;
+export const OUTCOME_TYPES = ['won', 'lost', 'direct_job'] as const;
 export type OutcomeType = (typeof OUTCOME_TYPES)[number];
 
 export const OUTCOME_TYPE_LABELS: Record<OutcomeType, string> = {
 	won: 'Won',
-	lost: 'Lost'
+	lost: 'Lost',
+	direct_job: 'Direct job'
 };
 
 export const OUTCOME_SORTS = ['title', 'client', 'created', 'outcome_at', 'total'] as const;

@@ -214,6 +214,8 @@ async function readPipeline({ supabase, organizationId, clientId }: Scope): Prom
 		.select('id, title, stage, outcome, created_at')
 		.eq('client_id', clientId)
 		.eq('organization_id', organizationId)
+		// A Direct job was never a deal; it is already listed under Jobs.
+		.is('job_id', null)
 		.order('created_at', { ascending: false })
 		.limit(FETCH_LIMIT);
 	return error ? { ok: false } : page(data ?? []);

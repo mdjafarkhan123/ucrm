@@ -12,7 +12,11 @@ import { salesOutcomesReportQuerySchema } from '$lib/server/validation/financial
 // The database already returns these as null without pipeline.view_value; the route drops the keys so a
 // reader without the permission never sees a value-shaped column at all, let alone a zero.
 const VALUE_ROW_KEYS = ['estimated_value_minor'] as const;
-const VALUE_SUMMARY_KEYS = ['won_value_minor', 'lost_value_minor'] as const;
+const VALUE_SUMMARY_KEYS = [
+	'won_value_minor',
+	'lost_value_minor',
+	'direct_job_value_minor'
+] as const;
 
 type SalesOutcomeRow = {
 	opportunity_id: string;
@@ -20,9 +24,11 @@ type SalesOutcomeRow = {
 	outcome_at: string;
 	outcome_on: string;
 	created_on: string;
-	source_kind: 'request' | 'quote';
+	// A Direct job is a Job made with no Request or Quote: `outcome` is won, and only `job_id` is set.
+	source_kind: 'request' | 'quote' | 'direct_job';
 	request_id: string | null;
 	quote_id: string | null;
+	job_id: string | null;
 	quote_number: number | null;
 	title: string;
 	client_id: string;
@@ -41,6 +47,10 @@ type SalesOutcomesSummary = {
 	lost_unvalued_count: number;
 	won_value_minor: number | null;
 	lost_value_minor: number | null;
+	// Counted apart: a Direct job is in neither Won nor Lost.
+	direct_job_count: number;
+	direct_job_unvalued_count: number;
+	direct_job_value_minor: number | null;
 };
 
 function withoutKeys<T extends object>(record: T, keys: readonly (keyof T)[]) {

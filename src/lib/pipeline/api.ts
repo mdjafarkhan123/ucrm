@@ -2,7 +2,12 @@ import type { QueryClient } from '@tanstack/svelte-query';
 import type { BoardColumnKey, CustomStage, OpportunityOutcome, OpportunityStage } from './stages';
 import type { BoardFormatting } from './money';
 import { boardFilterKey, boardFilterParams, type BoardFilters } from './filters';
-import { outcomeFilterKey, outcomeFilterParams, type OutcomeFilters } from './outcomes';
+import {
+	outcomeFilterKey,
+	outcomeFilterParams,
+	type OutcomeFilters,
+	type OutcomeType
+} from './outcomes';
 import type { DragActionKind } from './transitions';
 
 export type OpportunityCard = {
@@ -167,7 +172,7 @@ export async function fetchOutcomeTiles(): Promise<OutcomeTiles> {
 }
 
 // One row of the Sales Outcomes report -- Title, Client, Created At, Outcome date and Total, matching
-// Jobber's own report columns. `estimated_value` is absent, not zero, for a member without
+// Jobber's own report columns. A Direct job row is `won`; the page's `type` says which list it is in. `estimated_value` is absent, not zero, for a member without
 // `pipeline.view_value`.
 export type OutcomeRow = {
 	id: string;
@@ -180,7 +185,7 @@ export type OutcomeRow = {
 };
 
 export type OutcomePage = {
-	type: 'won' | 'lost';
+	type: OutcomeType;
 	outcomes: OutcomeRow[];
 	// Null means this was the last page. Keyset paginated, the same as every other Pipeline list.
 	next_cursor: string | null;

@@ -8969,10 +8969,12 @@ export type Database = {
 					estimated_value: number | null;
 					expected_close_on: string | null;
 					id: string;
+					job_id: string | null;
 					next_follow_up_on: string | null;
 					organization_id: string;
 					outcome: string;
 					outcome_at: string | null;
+					outcome_kind: string | null;
 					owner_user_id: string | null;
 					property_id: string | null;
 					quote_id: string | null;
@@ -8991,10 +8993,12 @@ export type Database = {
 					estimated_value?: number | null;
 					expected_close_on?: string | null;
 					id?: string;
+					job_id?: string | null;
 					next_follow_up_on?: string | null;
 					organization_id: string;
 					outcome?: string;
 					outcome_at?: string | null;
+					outcome_kind?: string | null;
 					owner_user_id?: string | null;
 					property_id?: string | null;
 					quote_id?: string | null;
@@ -9013,10 +9017,12 @@ export type Database = {
 					estimated_value?: number | null;
 					expected_close_on?: string | null;
 					id?: string;
+					job_id?: string | null;
 					next_follow_up_on?: string | null;
 					organization_id?: string;
 					outcome?: string;
 					outcome_at?: string | null;
+					outcome_kind?: string | null;
 					owner_user_id?: string | null;
 					property_id?: string | null;
 					quote_id?: string | null;
@@ -20620,6 +20626,7 @@ export type Database = {
 					created_on: string;
 					currency_code: string;
 					estimated_value_minor: number;
+					job_id: string;
 					lost_reason: string;
 					opportunity_id: string;
 					outcome: string;
@@ -20640,6 +20647,9 @@ export type Database = {
 					target_organization_id: string;
 				};
 				Returns: {
+					direct_job_count: number;
+					direct_job_unvalued_count: number;
+					direct_job_value_minor: number;
 					lost_count: number;
 					lost_unvalued_count: number;
 					lost_value_minor: number;

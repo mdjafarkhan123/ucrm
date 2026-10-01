@@ -40,7 +40,10 @@ const summary = {
 	won_unvalued_count: 0,
 	lost_unvalued_count: 1,
 	won_value_minor: 27500,
-	lost_value_minor: 0
+	lost_value_minor: 0,
+	direct_job_count: 2,
+	direct_job_unvalued_count: 1,
+	direct_job_value_minor: 12000
 };
 
 function event(url: string, rows: unknown[] = [], error: unknown = null) {
@@ -156,7 +159,34 @@ describe('financial sales-outcomes report', () => {
 			won_count: 1,
 			lost_count: 1,
 			won_unvalued_count: 0,
-			lost_unvalued_count: 1
+			lost_unvalued_count: 1,
+			direct_job_count: 2,
+			direct_job_unvalued_count: 1
+		});
+	});
+
+	it('names a Direct job by its job and reports its totals apart from Won', async () => {
+		const directJob = {
+			...row(),
+			source_kind: 'direct_job',
+			request_id: null,
+			quote_id: null,
+			quote_number: null,
+			job_id: '00000000-0000-4000-8000-000000000006'
+		};
+		const response = await GET(event(`${base}?from=2026-09-01&to=2026-10-01`, [directJob]));
+		const body = await response.json();
+		expect(response.status).toBe(200);
+		expect(body.outcomes[0]).toMatchObject({
+			outcome: 'won',
+			source_kind: 'direct_job',
+			job_id: '00000000-0000-4000-8000-000000000006'
+		});
+		expect(body.summary).toMatchObject({
+			won_count: 1,
+			won_value_minor: 27500,
+			direct_job_count: 2,
+			direct_job_value_minor: 12000
 		});
 	});
 

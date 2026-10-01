@@ -171,6 +171,27 @@ const outcomes: Row[] = [
 		estimated_value_minor: 99900,
 		lost_reason: 'Price',
 		outcome_event_id: 'ev-2'
+	},
+	// A Direct job is a won row, but never part of the summary's won_value.
+	{
+		opportunity_id: 'op-3',
+		outcome: 'won',
+		outcome_at: '2026-08-07T10:00:00Z',
+		outcome_on: '2026-08-07',
+		created_on: '2026-08-07',
+		source_kind: 'direct_job',
+		request_id: null,
+		quote_id: null,
+		job_id: 'j-1',
+		quote_number: null,
+		title: 'Gutter clean',
+		client_id: 'cl-1',
+		client_display_name: 'Acme',
+		client_company_name: null,
+		currency_code: 'BDT',
+		estimated_value_minor: 40000,
+		lost_reason: null,
+		outcome_event_id: 'ev-3'
 	}
 ];
 
@@ -256,7 +277,10 @@ const summaries: Record<string, Row> = {
 		won_unvalued_count: 0,
 		lost_unvalued_count: 0,
 		won_value_minor: 250000,
-		lost_value_minor: 99900
+		lost_value_minor: 99900,
+		direct_job_count: 1,
+		direct_job_unvalued_count: 0,
+		direct_job_value_minor: 40000
 	},
 	financial_opening_balances_summary: {
 		receivable_total_minor: 10000,
@@ -397,7 +421,7 @@ describe('writeFinancialExport', () => {
 		);
 		expect(manifestRows['invoices_sales.csv']).toBe(1203);
 		expect(manifestRows['refunds_reversals.csv']).toBe(1);
-		expect(manifestRows['sales_outcomes.csv']).toBe(2);
+		expect(manifestRows['sales_outcomes.csv']).toBe(3);
 		expect(manifestRows['opening_balances.csv']).toBe(2);
 		expect(manifest.omitted_files).toEqual([]);
 
