@@ -14,7 +14,10 @@
 			message={toast.message}
 			loading={toast.loading}
 			dismissible={!toast.loading}
+			action={toast.action}
 			onDismiss={() => manager.dismiss(toast.id)}
+			onPause={() => manager.pause(toast.id)}
+			onResume={() => manager.resume(toast.id)}
 		/>
 	{/each}
 </div>

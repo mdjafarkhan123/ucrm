@@ -58,6 +58,10 @@ export const POST: RequestHandler = async (event) => {
 	// with a transition the gate now permits, not that the move should be refused a second time.
 	if (!action) return databaseError();
 
+	// Set for the moves the board may offer a short Undo for. `restore_new_request` says this move is what
+	// turned the Request from New into Unscheduled, so the Undo knows to turn it back.
+	let undo: { restore_new_request: boolean } | null = null;
+
 	if (action === 'assessment_require' || action === 'assessment_schedule') {
 		if (action === 'assessment_schedule' && (!parsed.data.starts_at || !parsed.data.ends_at)) {
 			return validationError({ starts_at: 'Pick a start and end time for the assessment.' });
@@ -67,7 +71,7 @@ export const POST: RequestHandler = async (event) => {
 		// sequence. Booking (or turning on) an assessment for a brand new request is what moves it out of
 		// "new", mirroring the assessment panel's own side effect; the guard means this is a no-op update
 		// when the request has already left "new", not a race with the upsert above it.
-		const [{ error: upsertError }, { error: statusError }] = await Promise.all([
+		const [{ error: upsertError }, { data: renewed, error: statusError }] = await Promise.all([
 			supabase.from('assessments').upsert(
 				{
 					organization_id: gate.organization_id,
@@ -83,8 +87,10 @@ export const POST: RequestHandler = async (event) => {
 				.eq('organization_id', gate.organization_id)
 				.eq('id', gate.request_id)
 				.eq('status', 'new')
+				.select('id')
 		]);
 		if (upsertError || statusError) return databaseError();
+		undo = { restore_new_request: fromStage === 'new_request' && (renewed ?? []).length > 0 };
 	} else if (action === 'assessment_complete') {
 		const { data: assessment, error: completeError } = await supabase
 			.from('assessments')
@@ -103,6 +109,7 @@ export const POST: RequestHandler = async (event) => {
 			.eq('id', gate.request_id)
 			.in('status', ['new', 'unscheduled']);
 		if (statusError) return databaseError();
+		undo = { restore_new_request: false };
 	} else if (action === 'quote_convert') {
 		if (!parsed.data.idempotency_key) {
 			return validationError({ form: 'Start this conversion again.' });
@@ -170,7 +177,12 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	return json(
-		{ id: event.params.id, from_stage: fromStage, to_stage: parsed.data.to_stage },
+		{
+			id: event.params.id,
+			from_stage: fromStage,
+			to_stage: parsed.data.to_stage,
+			...(undo ? { undo } : {})
+		},
 		{
 			headers: NO_STORE_HEADERS
 		}

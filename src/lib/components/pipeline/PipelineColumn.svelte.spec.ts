@@ -9,12 +9,15 @@ import type { AnyBoardStage, BoardColumn, CustomStage } from '$lib/pipeline/stag
 const mocks = vi.hoisted(() => ({
 	dragOpportunity: vi.fn(),
 	placeOpportunity: vi.fn(),
+	undoOpportunityMove: vi.fn(),
 	invalidatePipeline: vi.fn(),
 	toast: {
 		loading: vi.fn(() => 41),
 		dismiss: vi.fn(),
 		success: vi.fn(),
-		error: vi.fn()
+		error: vi.fn(),
+		info: vi.fn(),
+		show: vi.fn()
 	},
 	query: {
 		data: { pages: [{ opportunities: [], next_cursor: null }] },
@@ -31,6 +34,8 @@ vi.mock('@tanstack/svelte-query', async (importOriginal) => ({
 	createInfiniteQuery: () => mocks.query,
 	// The Task dialog's team list, when an on-hold stage asks for a follow-up task.
 	createQuery: () => ({ data: [] }),
+	// The card's owner control, drawn once a column has a real card in it.
+	createMutation: () => ({ mutate: vi.fn(), isPending: false }),
 	useQueryClient: () => ({})
 }));
 
@@ -43,6 +48,7 @@ vi.mock('$lib/pipeline/api', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/pipeline/api')>()),
 	dragOpportunity: mocks.dragOpportunity,
 	placeOpportunity: mocks.placeOpportunity,
+	undoOpportunityMove: mocks.undoOpportunityMove,
 	invalidatePipeline: mocks.invalidatePipeline
 }));
 
@@ -176,7 +182,9 @@ describe('PipelineColumn drop confirmation', () => {
 
 		finalize(zone, { ...card, custom_stage_id: waitingOnCustomer.id });
 
-		await vi.waitFor(() => expect(mocks.toast.success).toHaveBeenCalledWith('Change saved.'));
+		await vi.waitFor(() =>
+			expect(mocks.toast.success).toHaveBeenCalledWith('Moved to Assessment completed.', undefined)
+		);
 		expect(mocks.dragOpportunity).toHaveBeenCalledWith(card.id, {
 			toStage: 'assessment_completed',
 			startsAt: undefined,
@@ -276,7 +284,9 @@ describe('PipelineColumn drop confirmation', () => {
 		expect(mocks.toast.success).not.toHaveBeenCalled();
 
 		finishRefresh();
-		await vi.waitFor(() => expect(mocks.toast.success).toHaveBeenCalledWith('Change saved.'));
+		await vi.waitFor(() =>
+			expect(mocks.toast.success).toHaveBeenCalledWith('Moved to Assessment completed.', undefined)
+		);
 		expect(mocks.toast.dismiss).toHaveBeenCalledWith(41);
 		expect(onDragBusyChange).toHaveBeenLastCalledWith(false);
 	});
@@ -297,5 +307,113 @@ describe('PipelineColumn drop confirmation', () => {
 		expect(mocks.toast.dismiss).toHaveBeenCalledWith(41);
 		expect(mocks.toast.success).not.toHaveBeenCalled();
 		expect(onDragBusyChange).toHaveBeenLastCalledWith(false);
+	});
+});
+
+describe('PipelineColumn Move menu', () => {
+	const newRequest: OpportunityCard = {
+		...card,
+		stage: 'new_request',
+		request: { id: 'request-1', status: 'new' }
+	};
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mocks.invalidatePipeline.mockResolvedValue(undefined);
+		mocks.query.data = { pages: [{ opportunities: [newRequest] as never[], next_cursor: null }] };
+		return () => {
+			mocks.query.data = { pages: [{ opportunities: [], next_cursor: null }] };
+		};
+	});
+
+	async function choose(destination: string | RegExp) {
+		await page.getByRole('button', { name: 'Move Kitchen remodel' }).click();
+		await page.getByRole('menuitem', { name: destination }).click();
+	}
+
+	it('moves the card without dragging, and its Undo takes exactly that move back', async () => {
+		const moved = {
+			id: card.id,
+			from_stage: 'new_request',
+			to_stage: 'assessment_unscheduled',
+			undo: { restore_new_request: true }
+		};
+		mocks.dragOpportunity.mockResolvedValue(moved);
+		mocks.undoOpportunityMove.mockResolvedValue({
+			id: card.id,
+			stage: 'new_request',
+			custom_stage_id: null
+		});
+		renderColumn('new_request');
+
+		await choose('Assessment unscheduled');
+
+		await vi.waitFor(() =>
+			expect(mocks.toast.show).toHaveBeenCalledWith(
+				expect.objectContaining({
+					title: 'Moved to Assessment unscheduled.',
+					action: expect.objectContaining({ label: 'Undo' })
+				})
+			)
+		);
+		expect(mocks.dragOpportunity).toHaveBeenCalledWith(card.id, {
+			toStage: 'assessment_unscheduled',
+			startsAt: undefined,
+			endsAt: undefined
+		});
+
+		mocks.toast.show.mock.calls[0][0].action.onSelect();
+
+		await vi.waitFor(() =>
+			expect(mocks.toast.success).toHaveBeenCalledWith('Moved back to New requests.')
+		);
+		expect(mocks.undoOpportunityMove).toHaveBeenCalledWith(card.id, moved);
+	});
+
+	it('opens the schedule dialog for Assessment scheduled, and saves nothing until it is confirmed', async () => {
+		const { onDragBusyChange } = renderColumn('new_request');
+
+		await choose('Assessment scheduled');
+
+		await expect.element(page.getByText('Schedule the assessment - Kitchen remodel')).toBeVisible();
+		expect(mocks.dragOpportunity).not.toHaveBeenCalled();
+		expect(onDragBusyChange).toHaveBeenCalledWith(true);
+	});
+
+	it('says exactly why a blocked destination is blocked, without asking the server', async () => {
+		renderColumn('new_request');
+
+		await choose(/Assessment completed/);
+
+		expect(mocks.toast.show).toHaveBeenCalledWith(
+			expect.objectContaining({
+				variant: 'warning',
+				title: 'This card can’t move to Assessment completed.',
+				message: expect.stringContaining('no assessment to complete yet')
+			})
+		);
+		expect(mocks.dragOpportunity).not.toHaveBeenCalled();
+		expect(mocks.toast.loading).not.toHaveBeenCalled();
+	});
+
+	it('places the card in a custom stage, and its Undo puts it back where it was', async () => {
+		mocks.placeOpportunity.mockResolvedValue({ applied: true });
+		renderColumn('new_request');
+
+		await choose('Waiting on customer');
+
+		await vi.waitFor(() =>
+			expect(mocks.toast.show).toHaveBeenCalledWith(
+				expect.objectContaining({ title: 'Moved to Waiting on customer.' })
+			)
+		);
+		expect(mocks.placeOpportunity).toHaveBeenCalledWith(card.id, waitingOnCustomer.id);
+
+		mocks.toast.show.mock.calls[0][0].action.onSelect();
+
+		await vi.waitFor(() =>
+			expect(mocks.toast.success).toHaveBeenCalledWith('Moved to New requests.')
+		);
+		expect(mocks.placeOpportunity).toHaveBeenLastCalledWith(card.id, null);
 	});
 });

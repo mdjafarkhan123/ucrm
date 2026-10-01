@@ -143,7 +143,7 @@ describe('drag an opportunity', () => {
 		const rpc = vi.fn().mockResolvedValue({ data: gateResult(), error: null });
 		const from = fromQueue([
 			{ data: null, error: null },
-			{ data: null, error: null }
+			{ data: [{ id: requestId }], error: null }
 		]);
 
 		const response = await POST(event({ to_stage: 'assessment_unscheduled' }, { rpc, from }));
@@ -151,11 +151,25 @@ describe('drag an opportunity', () => {
 		expect(from).toHaveBeenNthCalledWith(1, 'assessments');
 		expect(from).toHaveBeenNthCalledWith(2, 'requests');
 		expect(response.status).toBe(200);
+		// The Request really was New, so the Undo is told to turn it back.
 		expect(await response.json()).toEqual({
 			id: opportunityId,
 			from_stage: 'new_request',
-			to_stage: 'assessment_unscheduled'
+			to_stage: 'assessment_unscheduled',
+			undo: { restore_new_request: true }
 		});
+	});
+
+	it('offers an Undo that leaves the status alone when the Request was not New', async () => {
+		const rpc = vi.fn().mockResolvedValue({ data: gateResult(), error: null });
+		const from = fromQueue([
+			{ data: null, error: null },
+			{ data: [], error: null }
+		]);
+
+		const response = await POST(event({ to_stage: 'assessment_unscheduled' }, { rpc, from }));
+
+		expect((await response.json()).undo).toEqual({ restore_new_request: false });
 	});
 
 	it('requires a start and end time before scheduling an assessment', async () => {

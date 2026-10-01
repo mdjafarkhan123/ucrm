@@ -9,6 +9,7 @@
 	import { createInfiniteQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { dndzone, TRIGGERS, type DndEvent } from 'svelte-dnd-action';
 	import { flip } from 'svelte/animate';
+	import { tick } from 'svelte';
 	import OpportunityCard from './OpportunityCard.svelte';
 	import ScheduleAssessmentDialog from './ScheduleAssessmentDialog.svelte';
 	import AssessmentEntryChoiceDialog from './AssessmentEntryChoiceDialog.svelte';
@@ -25,11 +26,14 @@
 		invalidatePipeline,
 		fetchBoardColumn,
 		placeOpportunity,
+		undoOpportunityMove,
 		DragWriteError,
 		NEEDS_FUTURE_TASK,
 		type BoardColumnPage,
+		type DragResult,
 		type OpportunityCard as Card
 	} from '$lib/pipeline/api';
+	import type { MoveTarget } from '$lib/pipeline/moves';
 	import {
 		ALL_STAGE_LABELS,
 		ASSESSMENT_GROUP,
@@ -84,7 +88,7 @@
 		filters: BoardFilters;
 		formatting: BoardFormatting | null;
 		canEdit: boolean;
-		// Every custom follow-up stage on the board, so a card's menu can offer the ones in its section.
+		// Every custom follow-up stage on the board, so a card's Move menu can list them.
 		customStages?: readonly CustomStage[];
 		// What a card's inactivity warning is measured against. Null until the board summary answers.
 		inactivityRules?: InactivityRules | null;
@@ -150,19 +154,23 @@
 		items = cards;
 	});
 
+	// How long a toast offering Undo stays up. Long enough to notice a slip and reach the button; the
+	// countdown also stops while the toast is hovered or focused.
+	const UNDO_TOAST_MS = 8000;
+
 	// The one card mid-schedule-dialog, or null the rest of the time. The card stays in its query-confirmed
 	// source column while this tracks which record the dialog is deciding the fate of. `pendingCardTarget`
-	// is the real stage the dialog will actually commit to -- usually just `stage`, except when the
-	// schedule dialog was reached through the collapsed group's own choice dialog below, where `stage` is
-	// the logical `assessment` key and the real target is `assessment_scheduled`.
+	// is the real stage the dialog will actually commit to: the column a card was dropped on, the stage
+	// picked in a card's Move menu, or `assessment_scheduled` when the schedule dialog was reached through
+	// the collapsed group's own choice dialog below.
 	let pendingCard = $state<Card | null>(null);
 	let pendingCardTarget = $state<AnyBoardStage | null>(null);
 	// A New request dropped on the collapsed Assessment column: which real sub-state it enters is not
 	// implied by the drop alone, so this holds the card while the two-choice dialog decides.
 	let pendingChoice = $state<Card | null>(null);
-	// A card dropped on Draft, naming the client and the request before the irreversible conversion runs.
+	// A card headed for Draft, naming the client and the request before the irreversible conversion runs.
 	let pendingConvert = $state<Card | null>(null);
-	// A Draft quote dropped on Awaiting response. The send window is open for it; the card moves only once
+	// A Draft quote headed for Awaiting response. The send window is open for it; the card moves only once
 	// the quote has really been emailed or deliberately marked as sent some other way. The key is minted
 	// once per drop, so a retried email after a dropped response is recognised as the same send.
 	let pendingSend = $state<{ card: Card; quoteId: string; idempotencyKey: string } | null>(null);
@@ -275,39 +283,59 @@
 			return;
 		}
 
-		const action = dragActionFor(fromStage, stage);
-		// `dropRefused` already keeps a disallowed target from accepting the drop in the first place; this
-		// is only a second, never-trust-the-client-copy check. If it ever disagrees, undo the visual move
-		// rather than ask the server to perform an action this column does not recognise.
-		if (!action) {
-			return;
-		}
+		// `dropRefused` already keeps a disallowed target from accepting the drop in the first place, and
+		// `beginStageMove` checks again before anything is asked of the server.
+		await beginStageMove(dropped, stage);
+	}
+
+	// A card asked to enter a real stage, by a drop or from its Move menu. Each stage's own action decides
+	// what happens first: the send window, the schedule dialog, the conversion confirmation, or nothing.
+	// Measured from the card's real stage -- the same action whether the card sat in that stage's own
+	// column or in a custom stage. Once it succeeds the real stage changes, and the database lets go of
+	// the custom placement by itself.
+	async function beginStageMove(card: Card, toStage: AnyBoardStage) {
+		const action = dragActionFor(card.stage, toStage);
+		// Never trust the client copy: a move the table does not know is not asked of the server.
+		if (!action) return;
 
 		if (action === 'quote_publish') {
-			if (!dropped.quote) return;
-			pendingSend = {
-				card: dropped,
-				quoteId: dropped.quote.id,
-				idempotencyKey: crypto.randomUUID()
-			};
+			if (!card.quote) return;
+			pendingSend = { card, quoteId: card.quote.id, idempotencyKey: crypto.randomUUID() };
 			onDragBusyChange(true);
 			return;
 		}
 
 		if (DRAG_ACTIONS_NEEDING_INPUT.includes(action)) {
-			pendingCard = dropped;
-			pendingCardTarget = stage;
+			pendingCard = card;
+			pendingCardTarget = toStage;
 			onDragBusyChange(true);
 			return;
 		}
 
 		if (DRAG_ACTIONS_NEEDING_CONFIRMATION.includes(action)) {
-			pendingConvert = dropped;
+			pendingConvert = card;
 			onDragBusyChange(true);
 			return;
 		}
 
-		await performMove(dropped, stage);
+		await performMove(card, toStage);
+	}
+
+	// The card's Move menu. It names a real stage outright, so even on the collapsed board there is no
+	// "which Assessment state" question to ask.
+	function moveFromMenu(card: Card, target: MoveTarget) {
+		if (dragBusy) return;
+		if (target.kind === 'stage') return beginStageMove(card, target.stage);
+		return performPlace(card, target.kind === 'custom' ? target.customStageId : null);
+	}
+
+	// After a move the card is redrawn in another column, which would leave a keyboard user's focus
+	// nowhere. Put it back on the card wherever it now is; a card that left the board has nothing to find.
+	async function focusCard(cardId: string) {
+		await tick();
+		document
+			.querySelector<HTMLElement>(`[data-opportunity-id="${cardId}"] .opportunity-card__open`)
+			?.focus();
 	}
 
 	function belongsHereOnceUnplaced(card: Card) {
@@ -317,8 +345,10 @@
 
 	// Places a card in a custom stage, or back in its real stage with null. Shared by a drop and by the
 	// card's own menu, so both lock the board, save, and report in exactly the same way. The card stays
-	// where it is until the server has answered and the board has re-read.
-	async function performPlace(card: Card, customStageId: string | null) {
+	// where it is until the server has answered and the board has re-read. A placement changes nothing
+	// about the Request or Quote, so its Undo is simply the placement it replaced.
+	async function performPlace(card: Card, customStageId: string | null, undoable = true) {
+		const previous = card.custom_stage_id;
 		const destination = customStageId
 			? customStages.find((candidate) => candidate.id === customStageId)?.name
 			: isAnyBoardStage(card.stage)
@@ -327,10 +357,25 @@
 		onDragBusyChange(true);
 		const loadingToastId = toast.loading('Saving change…');
 		try {
-			await placeOpportunity(card.id, customStageId);
+			const result = await placeOpportunity(card.id, customStageId);
 			await invalidatePipeline(queryClient);
 			toast.dismiss(loadingToastId);
-			toast.success(destination ? `Moved to ${destination}.` : 'Change saved.');
+			const title = destination ? `Moved to ${destination}.` : 'Change saved.';
+			if (undoable && result.applied) {
+				toast.show({
+					variant: 'success',
+					title,
+					duration: UNDO_TOAST_MS,
+					action: {
+						label: 'Undo',
+						onSelect: () =>
+							void performPlace({ ...card, custom_stage_id: customStageId }, previous, false)
+					}
+				});
+			} else {
+				toast.success(title);
+			}
+			void focusCard(card.id);
 		} catch (error) {
 			items = cards;
 			// An on-hold stage wants a follow-up Task first. That is something the person can fix right here,
@@ -388,11 +433,23 @@
 			// the card remains in its original column and the loading toast stays visible.
 			await invalidatePipeline(queryClient);
 			toast.dismiss(loadingToastId);
-			toast.success(
-				result.quote
-					? `Change saved. Quote #${result.quote.quote_number} created.`
-					: 'Change saved.'
-			);
+			const title = `Moved to ${ALL_STAGE_LABELS[toStage]}.`;
+			const undo = result.undo;
+			if (undo) {
+				// A reversible move: the server said so, and will check again when Undo is pressed.
+				toast.show({
+					variant: 'success',
+					title,
+					duration: UNDO_TOAST_MS,
+					action: { label: 'Undo', onSelect: () => void performUndo(card, { ...result, undo }) }
+				});
+			} else {
+				toast.success(
+					title,
+					result.quote ? `Quote #${result.quote.quote_number} created.` : undefined
+				);
+			}
+			void focusCard(card.id);
 		} catch (error) {
 			items = cards;
 			// A response can be lost after the server commits. Re-read truth before reporting the failure so
@@ -404,6 +461,35 @@
 				error instanceof Error ? error.message : undefined
 			);
 			if (rethrow) throw error;
+		} finally {
+			onDragBusyChange(false);
+		}
+	}
+
+	// Takes back the move the toast was about. The server undoes it only while it is still the last thing
+	// that happened to the card, and puts the assessment, the Request, and the card's clocks back together.
+	async function performUndo(
+		card: Card,
+		move: Pick<DragResult, 'from_stage' | 'to_stage'> & { undo: NonNullable<DragResult['undo']> }
+	) {
+		onDragBusyChange(true);
+		const loadingToastId = toast.loading('Undoing…');
+		try {
+			const result = await undoOpportunityMove(card.id, move);
+			await invalidatePipeline(queryClient);
+			toast.dismiss(loadingToastId);
+			const home =
+				customStages.find((candidate) => candidate.id === result.custom_stage_id)?.name ??
+				(isAnyBoardStage(result.stage) ? ALL_STAGE_LABELS[result.stage] : null);
+			toast.success(home ? `Moved back to ${home}.` : 'Move undone.');
+			void focusCard(card.id);
+		} catch (error) {
+			await invalidatePipeline(queryClient).catch(() => undefined);
+			toast.dismiss(loadingToastId);
+			toast.error(
+				'That move could not be undone.',
+				error instanceof Error ? error.message : undefined
+			);
 		} finally {
 			onDragBusyChange(false);
 		}
@@ -456,12 +542,10 @@
 	async function confirmConvert() {
 		if (!pendingConvert) return;
 		try {
-			// `pendingConvert` is only ever set from the non-group branch of `handleFinalize`, where `stage`
-			// has already been narrowed away from the logical `assessment` key -- TypeScript cannot see that
-			// narrowing across this separate function, but it holds by construction.
+			// Converting only ever leads to Draft, whichever column or menu asked for it.
 			await performMove(
 				pendingConvert,
-				stage as AnyBoardStage,
+				'quote_draft',
 				undefined,
 				undefined,
 				true,
@@ -589,7 +673,8 @@
 							showStageBadge={stage === ASSESSMENT_GROUP || customStage !== null}
 							{customStages}
 							{inactivityRules}
-							onPlace={dragBusy ? undefined : (customStageId) => performPlace(card, customStageId)}
+							onMove={(target) => void moveFromMenu(card, target)}
+							moveBusy={dragBusy}
 							onOpen={() => onOpen(card)}
 							{onLost}
 						/>

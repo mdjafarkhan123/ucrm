@@ -12,7 +12,10 @@
 		message,
 		loading = false,
 		dismissible = true,
-		onDismiss
+		action,
+		onDismiss,
+		onPause,
+		onResume
 	}: {
 		open?: boolean;
 		variant?: 'success' | 'error' | 'warning' | 'info';
@@ -20,7 +23,12 @@
 		message?: string;
 		loading?: boolean;
 		dismissible?: boolean;
+		// One follow-up the person can take, such as Undo. Choosing it closes the toast.
+		action?: { label: string; onSelect: () => void };
 		onDismiss?: () => void;
+		// Hovering or focusing the toast holds it open, so its action can be reached in time.
+		onPause?: () => void;
+		onResume?: () => void;
 	} = $props();
 
 	const variantIcon = $derived(
@@ -39,6 +47,10 @@
 		class={`toast toast--${variant}`}
 		role={variant === 'error' ? 'alert' : 'status'}
 		aria-busy={loading}
+		onmouseenter={onPause}
+		onmouseleave={onResume}
+		onfocusin={onPause}
+		onfocusout={onResume}
 	>
 		{#if loading}
 			<span class="toast__spinner" aria-hidden="true"></span>
@@ -48,6 +60,19 @@
 		<div class="toast__content">
 			<strong>{title}</strong>
 			{#if message}<p>{message}</p>{/if}
+			{#if action}
+				<button
+					class="toast__action"
+					type="button"
+					onclick={() => {
+						open = false;
+						onDismiss?.();
+						action.onSelect();
+					}}
+				>
+					{action.label}
+				</button>
+			{/if}
 		</div>
 		{#if dismissible}
 			<button
@@ -128,6 +153,25 @@
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 			line-height: var(--typography--lineHeight-tighter);
+		}
+		&__action {
+			margin-top: var(--space-small);
+			padding: var(--space-smaller) var(--space-small);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-small);
+			color: var(--color-heading);
+			background: var(--color-surface);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			cursor: pointer;
+			transition: background-color var(--timing-quick);
+		}
+		&__action:hover {
+			background: var(--color-surface--hover);
+		}
+		&__action:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
 		}
 		&__dismiss {
 			display: grid;
