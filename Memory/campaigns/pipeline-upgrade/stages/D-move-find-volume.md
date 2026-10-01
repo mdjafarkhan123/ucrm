@@ -1,6 +1,6 @@
 # Pipeline upgrade — stage D: move, find, and work at volume
 
-DRAFT — waiting for Jafar's approval of the build split (see `parts/3-build-split.md`). Plan § First-release
+Approved by Jafar 2026-10-01. Plan § First-release
 board (search, lead source, saved filters, table, bulk tools), § Movement and automation, § Platform; audit
 items A5, B1, B7, B8, C5. D2, D4, and D6 are scale-sensitive — run the `performance-review` design branch first.
 

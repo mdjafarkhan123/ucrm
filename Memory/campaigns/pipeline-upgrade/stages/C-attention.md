@@ -1,6 +1,6 @@
 # Pipeline upgrade — stage C: what needs attention today
 
-DRAFT — waiting for Jafar's approval of the build split (see `parts/3-build-split.md`). Plan § First-release
+Approved by Jafar 2026-10-01. Plan § First-release
 board (priority order, inactivity warning) and § Ownership and visibility; audit items A3, C2, C3.
 
 | Part | Delivers | Waits for | Done when | State |

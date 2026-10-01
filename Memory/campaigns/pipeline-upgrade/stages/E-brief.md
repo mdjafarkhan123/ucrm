@@ -1,6 +1,6 @@
 # Pipeline upgrade — stage E: the Opportunity Brief
 
-DRAFT — waiting for Jafar's approval of the build split (see `parts/3-build-split.md`). Plan § Opportunity
+Approved by Jafar 2026-10-01. Plan § Opportunity
 Brief actions; audit items B3, B4, B5, B6 and section D.
 
 | Part | Delivers | Waits for | Done when | State |
@@ -10,6 +10,6 @@ Brief actions; audit items B3, B4, B5, B6 and section D.
 | E3 Notes with photos and mentions | A Brief Note can carry files and photos and mention a teammate, who is alerted | E2 | A photo added to a Brief Note also shows on the Request's own Notes; a mentioned teammate gets an alert that opens the card | Not started |
 | E4 Email, Text, and Call buttons | The buttons open the existing composer or the phone's dialler; several contact details open a chooser; Call offers an optional return Note; a button shows only when the detail and permission exist | — | Email opens the composer addressed to the client; a client with no phone shows no Text or Call; returning from Call offers a Note and records no automatic outcome | Not started |
 
-Limit found while splitting: UCRM has no phone or browser push system and no per-person notification
-preferences yet. E2 builds the in-app alert and the email; push waits on Jafar's answer in
-`parts/3-build-split.md`.
+Push alerts and per-person notification settings are not in this campaign (Jafar, 2026-10-01): E2 and E3 send
+the in-app alert and the email only. The rest waits in
+`Memory/deferred/push-alerts-and-per-person-notification-settings.md`.

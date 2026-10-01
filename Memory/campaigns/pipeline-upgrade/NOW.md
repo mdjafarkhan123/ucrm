@@ -7,10 +7,10 @@ first paying client.
 
 **In progress:**
 
-- 3 Plan: build split — 27 draft parts in seven stages shown to Jafar 2026-10-01; note `parts/3-build-split.md`.
+- Nothing claimed. The build split (27 parts, stages A–G) was approved 2026-10-01.
 
-**Next part:** 3 Plan: build split — apply Jafar's answers to the draft stage files, then write the stages into
-`ROADMAP.md`. First build part after approval: A1 Add custom stages in Settings.
+**Next part:** A1 Add custom stages in Settings — `stages/A-custom-stages.md`. It changes the board's read path,
+so run the `performance-review` design branch first. B1 (`stages/B-honest-outcomes.md`) may be built by a second
+session at the same time.
 
-**Blockers:** Waiting for Jafar's answers on part sizes, order, and push alerts. No code starts until he approves
-the build split.
+**Blockers:** None.

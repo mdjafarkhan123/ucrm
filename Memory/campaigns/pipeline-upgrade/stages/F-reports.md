@@ -1,6 +1,6 @@
 # Pipeline upgrade — stage F: sales reports
 
-DRAFT — waiting for Jafar's approval of the build split (see `parts/3-build-split.md`). Plan § Outcomes,
+Approved by Jafar 2026-10-01. Plan § Outcomes,
 "Sales reporting includes…". F2 reads history across many records — run the `performance-review` design
 branch first.
 

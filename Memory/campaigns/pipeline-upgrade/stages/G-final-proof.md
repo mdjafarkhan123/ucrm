@@ -1,6 +1,6 @@
 # Pipeline upgrade — stage G: final proof
 
-DRAFT — waiting for Jafar's approval of the build split (see `parts/3-build-split.md`). Checks the whole plan
+Approved by Jafar 2026-10-01. Checks the whole plan
 `docs/sales-pipeline-behavior-contract.md` after stages A–F.
 
 | Part | Delivers | Waits for | Done when | State |

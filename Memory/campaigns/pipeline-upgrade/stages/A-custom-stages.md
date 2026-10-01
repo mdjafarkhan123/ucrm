@@ -1,6 +1,6 @@
 # Pipeline upgrade — stage A: custom follow-up stages
 
-DRAFT — waiting for Jafar's approval of the build split (see `parts/3-build-split.md`). Plan § First-release
+Approved by Jafar 2026-10-01. Plan § First-release
 board, "Revision 3 adds section-bound custom follow-up stages". Riskiest stage: it changes how a card's column
 is decided, which every later board part builds on. A1 and A2 change the board's read path — run the
 `performance-review` design branch first.
