@@ -4,7 +4,7 @@
 7–10-business-day delivery, approve launch, receive training, and contact Uplift throughout.
 **Plan:** `docs/client-onboarding-delivery-behavior-contract.md`
 
-**In progress:** none
+**In progress:** 2 — draft shown to Jafar; see `parts/02-split.md`
 
 **Next part:** 2 Split the build — map dependencies and propose thin, testable implementation parts for Jafar's
 approval before changing product code.
