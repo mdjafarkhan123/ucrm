@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import { NO_STORE_HEADERS, databaseError, notFound, validationError } from '$lib/server/api/errors';
 
 const JOB_NOT_FOUND = 'That client or property could not be found.';
+const REQUEST_ALREADY_CONVERTED = 'This request has already been converted.';
 
 type DatabaseError = { code?: string; message?: string };
 
@@ -18,7 +19,10 @@ export function createJobError(error: DatabaseError) {
 		return json(
 			{
 				error: error.message ?? 'That job was already started with different details.',
-				reason: 'already_started'
+				// The same code covers a request somebody else converted first; the form sends the person back
+				// to that request instead of to a job of theirs that never started.
+				reason:
+					error.message === REQUEST_ALREADY_CONVERTED ? 'already_converted' : 'already_started'
 			},
 			{ status: 409, headers: NO_STORE_HEADERS }
 		);

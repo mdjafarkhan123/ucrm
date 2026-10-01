@@ -1,4 +1,5 @@
 import type { ClientListItem } from '$lib/clients/api';
+import type { RequestPricingLine } from '$lib/quotes/api';
 
 // The bridge between Schedule's compact "new Job" form and the full New Job page. When someone building a
 // job from empty calendar space presses More Options, whatever they have typed so far is staged here and the
@@ -23,6 +24,9 @@ export type JobCreateSeed = {
 	property_id: string;
 	title: string;
 	first_visit: JobFirstVisitSeed | null;
+	/** Set by "Convert to job" on a request: the request this job comes from, and the work already priced
+	 *  on it. Saving the job is what converts the request, so the client stays the request's client. */
+	request?: { id: string; title: string; lines: RequestPricingLine[] } | null;
 };
 
 let pending: JobCreateSeed | null = null;

@@ -7,9 +7,10 @@ first paying client.
 
 **In progress:**
 
-- Nothing claimed. Stage A finished 2026-10-01: custom stages exist, cards move in and out of them, a stage
-  can be removed with its cards sent somewhere first, and any custom stage can be switched to on hold.
+- Nothing claimed. Stage A finished 2026-10-01. B1 finished 2026-10-01: "Convert to job" on a Request opens
+  the New Job form filled in, and saving it marks the Request Converted and its card Won with the Job total
+  (no priced lines = Won but Unvalued).
 
-**Next part:** B1 — `stages/B-honest-outcomes.md`.
+**Next part:** B2 — `stages/B-honest-outcomes.md`. B3 and B5 wait for nothing and may also start.
 
 **Blockers:** None.

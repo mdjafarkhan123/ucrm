@@ -381,6 +381,43 @@ describe('create job API', () => {
 		await expect(response.json()).resolves.toMatchObject({ job_number: 9 });
 	});
 
+	// --- Converting a request straight to a job (Pipeline B1) --------------------------------------------
+
+	const sourceRequestId = '00000000-0000-4000-8000-000000000094';
+
+	it('names the source request only when the job is being converted from one', async () => {
+		const rpc = vi
+			.fn()
+			.mockResolvedValue({ data: { applied: true, job_id: 'job-1' }, error: null });
+
+		await POST(createEvent(validBody, rpc));
+		expect(rpc.mock.calls[0][1]).not.toHaveProperty('source_request_id');
+
+		await POST(createEvent({ ...validBody, request_id: sourceRequestId }, rpc));
+		expect(rpc.mock.calls[1][1]).toMatchObject({ source_request_id: sourceRequestId });
+	});
+
+	it('refuses a source request that is not an id before reaching the database', async () => {
+		const rpc = vi.fn();
+
+		const response = await POST(createEvent({ ...validBody, request_id: 'request-7' }, rpc));
+
+		expect(response.status).toBe(422);
+		expect(rpc).not.toHaveBeenCalled();
+	});
+
+	it('says a request somebody else converted first is already converted, not a replay', async () => {
+		const rpc = vi.fn().mockResolvedValue({
+			data: null,
+			error: { code: 'P0409', message: 'This request has already been converted.' }
+		});
+
+		const response = await POST(createEvent({ ...validBody, request_id: sourceRequestId }, rpc));
+
+		expect(response.status).toBe(409);
+		await expect(response.json()).resolves.toMatchObject({ reason: 'already_converted' });
+	});
+
 	// --- Recurring and as-needed jobs (Part 10) ---------------------------------------------------------
 
 	const weeklyRule = {

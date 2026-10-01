@@ -139,6 +139,8 @@ export type RequestDetail = {
 		access_notes: string | null;
 	} | null;
 	assessment: RequestAssessment | null;
+	/** The job or quote a converted request became. Null while it is live, or when the reader may not see it. */
+	converted_to: { kind: 'job' | 'quote'; id: string; number: number } | null;
 	email: string | null;
 	phone: string | null;
 };

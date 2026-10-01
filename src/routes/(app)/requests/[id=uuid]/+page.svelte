@@ -294,10 +294,22 @@
 			.join(', ');
 	});
 
-	// Whatever moves this request forward next. Converting to a quote or a job is not built yet, so it is
-	// offered honestly rather than hidden — the office can see where the request is heading.
+	// Whatever moves this request forward next. A converted request has only one place left to go: the job
+	// or quote it became.
 	const primaryAction = $derived.by(() => {
 		if (!saved) return undefined;
+		if (saved.stored_status === 'converted' && saved.converted_to) {
+			const target = saved.converted_to;
+			return target.kind === 'job'
+				? {
+						label: `View Job #${target.number}`,
+						href: resolve('/(app)/jobs/[id=uuid]', { id: target.id })
+					}
+				: {
+						label: `View Quote #${target.number}`,
+						href: resolve('/(app)/quotes/[id=uuid]', { id: target.id })
+					};
+		}
 		if (saved.stored_status === 'archived' || saved.stored_status === 'converted') return undefined;
 		if (!saved.assessment)
 			return {
@@ -340,10 +352,13 @@
 			onSelect: () => void convertToQuote()
 		},
 		{
+			// Jobber's way: this opens the ordinary new-job form filled in from the request. Nothing about
+			// the request changes until that job is saved.
 			label: 'Convert to job',
 			icon: briefcaseIcon,
-			disabled: true,
-			onSelect: () => {}
+			disabled: !canConvert || convertSaving,
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- the path is resolved; only the query is appended.
+			onSelect: () => void goto(`${resolve('/(app)/jobs/new')}?request=${requestId}`)
 		}
 	]);
 

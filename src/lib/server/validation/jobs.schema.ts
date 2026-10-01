@@ -424,6 +424,13 @@ export const createJobSchema = z
 	.object({
 		client_id: z.string().uuid('Choose a client to continue.'),
 		property_id: z.string().uuid('Choose the property this job is at.'),
+		// Set when the form was opened by "Convert to job" on a request. Saving then also marks that request
+		// Converted and its Pipeline card Won, in the same transaction as the job.
+		request_id: z
+			.string()
+			.uuid('Open the request and convert it again.')
+			.nullish()
+			.transform((value) => value ?? null),
 		title: z
 			.string()
 			.trim()

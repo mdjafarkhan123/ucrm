@@ -40,10 +40,15 @@ export const GET: RequestHandler = async (event) => {
 	if (!row) return notFound(NOT_FOUND);
 
 	const assessment = embeddedOne(row.assessment);
+	// A converted request says where it went. Only one of the two can exist, and each is read under its own
+	// row security, so a person who may not see jobs or quotes simply gets no link.
+	const converted = row.status === 'converted';
 	const [
 		{ data: assignees, error: assigneesError },
 		{ data: contactMethods, error: contactMethodsError },
-		timezone
+		timezone,
+		{ data: convertedJob },
+		{ data: convertedQuote }
 	] = await Promise.all([
 		assessment
 			? supabase
@@ -58,9 +63,31 @@ export const GET: RequestHandler = async (event) => {
 			.eq('organization_id', organizationId)
 			.eq('client_id', row.client_id)
 			.eq('is_primary', true),
-		organizationTimezone(organizationId)
+		organizationTimezone(organizationId),
+		converted
+			? supabase
+					.from('jobs')
+					.select('id, job_number')
+					.eq('organization_id', organizationId)
+					.eq('request_id', row.id)
+					.maybeSingle()
+			: Promise.resolve({ data: null }),
+		converted
+			? supabase
+					.from('quotes')
+					.select('id, quote_number')
+					.eq('organization_id', organizationId)
+					.eq('request_id', row.id)
+					.maybeSingle()
+			: Promise.resolve({ data: null })
 	]);
 	if (assigneesError || contactMethodsError) return databaseError();
+
+	const convertedTo = convertedJob
+		? { kind: 'job' as const, id: convertedJob.id, number: convertedJob.job_number }
+		: convertedQuote
+			? { kind: 'quote' as const, id: convertedQuote.id, number: convertedQuote.quote_number }
+			: null;
 
 	return json(
 		{
@@ -72,6 +99,7 @@ export const GET: RequestHandler = async (event) => {
 					? { ...assessment, assignee_ids: (assignees ?? []).map((row) => row.user_id) }
 					: null,
 				stored_status: row.status,
+				converted_to: convertedTo,
 				status: deriveRequestStatus(row.status, assessment, timezone),
 				timezone,
 				email: (contactMethods ?? []).find((method) => method.kind === 'email')?.value ?? null,

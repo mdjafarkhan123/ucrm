@@ -12,6 +12,12 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Banner from '$lib/components/ui/Banner.svelte';
+	import { resolve } from '$app/paths';
+	import { requestDetailKey, requestCountsKey } from '$lib/requests/api';
+	import { requestPricingKey } from '$lib/quotes/api';
+	import { activityKey } from '$lib/collaboration/api';
+	import { invalidatePipeline } from '$lib/pipeline/api';
 	import { fetchClient, clientDetailKey, type ClientListItem } from '$lib/clients/api';
 	import type { JobCreateSeed } from '$lib/jobs/createDraft';
 	import {
@@ -35,16 +41,21 @@
 		locale = 'en-US',
 		seed = null
 	}: {
-		onSaved: (job: { id: string; number: number }) => void;
+		onSaved: (job: { id: string; number: number; fromRequest: boolean }) => void;
 		onCancel: () => void;
 		currencyCode?: string;
 		locale?: string;
-		/** A draft handed over from Schedule's compact create form via More Options: the client, property,
-		 * title and first visit the person already chose, so the full form opens filled instead of blank. */
+		/** A draft handed over from Schedule's compact create form via More Options, or from "Convert to job"
+		 * on a request: the client, property, title and work the person already chose, so the full form opens
+		 * filled instead of blank. */
 		seed?: JobCreateSeed | null;
 	} = $props();
 
 	const queryClient = useQueryClient();
+
+	// "Convert to job" on a request, the way Jobber does it: this same form, filled in from the request.
+	// Nothing about the request changes until the job saves — that one save converts it.
+	const sourceRequest = untrack(() => seed?.request ?? null);
 
 	type FormState = {
 		title: string;
@@ -138,7 +149,9 @@
 			quantity: line.quantity,
 			unit_price_minor: line.unit_price_minor,
 			unit_cost_minor: line.unit_cost_minor,
-			is_taxable: line.is_taxable ?? true
+			is_taxable: line.is_taxable ?? true,
+			// Only a photo already on the source request's lines survives; the command drops any other.
+			...(sourceRequest ? { image_file_id: line.image_file_id ?? null } : {})
 		}));
 	}
 
@@ -153,6 +166,19 @@
 			hash = Math.imul(hash, 0x01000193);
 		}
 		return `v1:${(hash >>> 0).toString(16)}`;
+	}
+
+	// The request is now Converted and its Pipeline card Won, so everything that showed it as live work —
+	// the request itself, its list and counts, its history, the board and the Won tile — is out of date.
+	async function refreshSourceRequest(requestId: string) {
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: requestDetailKey(requestId) }),
+			queryClient.invalidateQueries({ queryKey: requestPricingKey(requestId) }),
+			queryClient.invalidateQueries({ queryKey: ['requests', 'list'] }),
+			queryClient.invalidateQueries({ queryKey: requestCountsKey }),
+			queryClient.invalidateQueries({ queryKey: activityKey('request', requestId) }),
+			invalidatePipeline(queryClient)
+		]);
 	}
 
 	async function submit() {
@@ -191,6 +217,7 @@
 		const core = {
 			client_id: form.client_id,
 			property_id: form.property_id,
+			...(sourceRequest ? { request_id: sourceRequest.id } : {}),
 			title: form.title.trim(),
 			// Jobber's create form carries no job-level instructions — each visit carries its own — so the
 			// command's optional job instructions go in as nothing here.
@@ -217,12 +244,21 @@
 			});
 			await queryClient.invalidateQueries({ queryKey: ['jobs', 'list'] });
 			await queryClient.invalidateQueries({ queryKey: jobCountsKey });
+			if (sourceRequest) await refreshSourceRequest(sourceRequest.id);
 			baseline = snapshot(form);
-			onSaved({ id: result.job_id, number: result.job_number });
+			onSaved({
+				id: result.job_id,
+				number: result.job_number,
+				fromRequest: Boolean(sourceRequest)
+			});
 		} catch (caught) {
 			const writeError = caught as JobWriteError;
 			fieldErrors = writeError.fieldErrors ?? {};
 			formError = fieldErrors.form || writeError.message || 'That job could not be saved.';
+			// Somebody converted the request while this form was open; what the request page shows is stale.
+			if (sourceRequest && writeError.reason === 'already_converted') {
+				void refreshSourceRequest(sourceRequest.id);
+			}
 		} finally {
 			saving = false;
 		}
@@ -238,6 +274,22 @@
 >
 	<RecordFormLayout title="New Job" icon={toolsIcon} bind:this={layout} error={formError}>
 		{#snippet main()}
+			{#if sourceRequest}
+				<Banner type="notice">
+					You are turning the request “{sourceRequest.title}” into a job. The request is marked
+					Converted when you save.
+					{#snippet action()}
+						<a
+							class="job-form__source-link"
+							href={resolve('/(app)/requests/[id=uuid]', { id: sourceRequest.id })}
+							target="_blank"
+							rel="noopener"
+						>
+							View request
+						</a>
+					{/snippet}
+				</Banner>
+			{/if}
 			<PrimaryInfoCard
 				id="job-primary"
 				icon={toolsIcon}
@@ -247,15 +299,25 @@
 				titleError={fieldErrors.title ?? ''}
 			>
 				{#snippet client()}
-					<ClientPicker
-						id="job-client"
-						bind:value={form.client_id}
-						required
-						initialClient={seed?.client ?? null}
-						invalid={Boolean(fieldErrors.client_id)}
-						errorMessage={fieldErrors.client_id ?? ''}
-						onSelect={chooseClient}
-					/>
+					{#if sourceRequest}
+						<!-- The job stays with the request's client, so there is nobody else to pick. -->
+						<Input
+							id="job-client"
+							label="Client"
+							readonly
+							value={selectedClient?.display_name ?? ''}
+						/>
+					{:else}
+						<ClientPicker
+							id="job-client"
+							bind:value={form.client_id}
+							required
+							initialClient={seed?.client ?? null}
+							invalid={Boolean(fieldErrors.client_id)}
+							errorMessage={fieldErrors.client_id ?? ''}
+							onSelect={chooseClient}
+						/>
+					{/if}
 					{#if selectedClient && (selectedClient.additional_property_count > 0 || choosingProperty)}
 						{#if choosingProperty}
 							<div class="job-form__property">
@@ -291,6 +353,7 @@
 			</PrimaryInfoCard>
 
 			<ProductsAndServicesBlock
+				lines={sourceRequest?.lines ?? []}
 				alwaysEditing
 				editable
 				{currencyCode}
@@ -352,6 +415,22 @@
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 			line-height: 1.45;
+		}
+
+		&__source-link {
+			color: var(--color-interactive);
+			font-weight: 600;
+			text-decoration: none;
+
+			&:hover {
+				color: var(--color-interactive--hover);
+				text-decoration: underline;
+			}
+			&:focus-visible {
+				outline: none;
+				border-radius: var(--radius-small);
+				box-shadow: var(--shadow-focus);
+			}
 		}
 
 		&__change-property {

@@ -192,7 +192,7 @@ export const GET: RequestHandler = async (event) => {
 	);
 };
 
-// Creating a one-off job directly, without a quote. The whole thing — the job, its scope, its 1-20 visits
+// Creating a job directly, without a quote — from scratch, or from a request. The whole thing — the job, its scope, its 1-20 visits
 // and each visit's people — is written in one transaction by `create_job_with_visits`, so a failure
 // anywhere leaves nothing half-made. The command checks `jobs.create` itself (and answers the same way for
 // a client or property in another organization), so the route only proves membership. A doubled click sends
@@ -229,7 +229,10 @@ export const POST: RequestHandler = async (event) => {
 		// generates them; an as-needed job sends neither.
 		new_job_type: input.job_type,
 		new_is_as_needed: input.is_as_needed,
-		new_recurrence: input.recurrence
+		new_recurrence: input.recurrence,
+		// Present only for "Convert to job" on a request: the same command then marks the request Converted
+		// and its Pipeline card Won with this job's total.
+		...(input.request_id ? { source_request_id: input.request_id } : {})
 	});
 
 	if (error) return createJobError(error);

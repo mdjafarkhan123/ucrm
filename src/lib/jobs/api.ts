@@ -193,6 +193,8 @@ export async function previewJobRecurrence(
 export type CreateJobPayload = {
 	client_id: string;
 	property_id: string;
+	/** The request this job is being converted from, when the form was opened by "Convert to job". */
+	request_id?: string | null;
 	title: string;
 	instructions: string | null;
 	invoice_on_close: boolean;

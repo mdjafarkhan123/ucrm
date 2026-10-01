@@ -8003,6 +8003,7 @@ export type Database = {
 					quote_id: string | null;
 					quote_version_id: string | null;
 					reopened_at: string | null;
+					request_id: string | null;
 					revision: number;
 					status: string;
 					subtotal_minor: number;
@@ -8045,6 +8046,7 @@ export type Database = {
 					quote_id?: string | null;
 					quote_version_id?: string | null;
 					reopened_at?: string | null;
+					request_id?: string | null;
 					revision?: number;
 					status?: string;
 					subtotal_minor?: number;
@@ -8087,6 +8089,7 @@ export type Database = {
 					quote_id?: string | null;
 					quote_version_id?: string | null;
 					reopened_at?: string | null;
+					request_id?: string | null;
 					revision?: number;
 					status?: string;
 					subtotal_minor?: number;
@@ -8126,6 +8129,20 @@ export type Database = {
 						columns: ['organization_id', 'quote_id'];
 						isOneToOne: false;
 						referencedRelation: 'quotes';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'jobs_request_organization_fk';
+						columns: ['organization_id', 'request_id'];
+						isOneToOne: false;
+						referencedRelation: 'request_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'jobs_request_organization_fk';
+						columns: ['organization_id', 'request_id'];
+						isOneToOne: false;
+						referencedRelation: 'requests';
 						referencedColumns: ['organization_id', 'id'];
 					},
 					{
@@ -18663,6 +18680,7 @@ export type Database = {
 					new_request_hash: string;
 					new_title: string;
 					scope_lines: Json;
+					source_request_id?: string;
 					target_client_id: string;
 					target_organization_id: string;
 					target_property_id: string;

@@ -52,6 +52,11 @@ field records never collapse into one state machine.
   cannot receive new work. Active Jobs block Client archive and Property removal.
 - A direct Job has no `quote_id`. A converted Job keeps its Quote id and approved version id permanently. At most
   one Job per Quote, enforced by a partial unique index, mirroring the one-Quote-per-Request rule.
+- A Request can be converted straight to a Job, skipping the Quote, the way Jobber does it: **Convert to job** on
+  the Request opens the ordinary New Job form filled in from the Request, and saving that Job is what marks the
+  Request Converted. Such a Job keeps its `request_id` permanently and never a `quote_id`; at most one Job per
+  Request; it stays with the Request's Client; the Request's priced lines and their photos are offered as the
+  starting scope. Sales Pipeline records the resulting Won outcome (see `sales-pipeline-behavior-contract.md`).
 - Conversion **copies**, never references, the accepted version's selected lines into Job-owned rows. Later Job
   edits never touch Quote history, and later Quote history can never rewrite Job scope. The Quote becomes terminal
   `converted` in the same transaction.
