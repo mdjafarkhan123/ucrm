@@ -9,6 +9,7 @@
 	import RouteSkeleton from '$lib/components/layout/RouteSkeleton.svelte';
 	import AccountGraceBanner from '$lib/components/layout/AccountGraceBanner.svelte';
 	import PausedAccountScreen from '$lib/components/layout/PausedAccountScreen.svelte';
+	import SupportMessenger from '$lib/components/support/SupportMessenger.svelte';
 	import {
 		communicationsAccessKey,
 		fetchCommunicationsAccess,
@@ -234,6 +235,11 @@
 			<PageContainer variant="fill"><RouteSkeleton /></PageContainer>
 		{/if}
 		<div class="route-content" hidden={slowNavigation}>{@render children()}</div>
+		<!-- Inside the shell so it lines up with the content column. Only for someone with an organization:
+		     without one there is no team to write on behalf of. -->
+		{#if data.organization}
+			<SupportMessenger userId={data.user.id} />
+		{/if}
 	</AppShell>
 {/if}
 

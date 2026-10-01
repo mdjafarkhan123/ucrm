@@ -16,6 +16,7 @@
 		jafarProspectsKey,
 		jafarSettingsKey
 	} from '$lib/jafar/query-keys';
+	import { jafarSupportInboxKey } from '$lib/support/api';
 	let { children } = $props();
 	const queryClient = useQueryClient();
 
@@ -60,6 +61,9 @@
 		}
 		if (pathname === '/jafar/settings') {
 			return hasCachedData(jafarSettingsKey);
+		}
+		if (pathname === '/jafar/support') {
+			return hasCachedData(jafarSupportInboxKey);
 		}
 		if (pathname === '/jafar/notifications') {
 			return hasCachedData(notificationsKey);
