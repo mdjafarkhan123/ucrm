@@ -7,10 +7,11 @@ first paying client.
 
 **In progress:**
 
-- Nothing claimed. A1 and A2 finished 2026-10-01: custom stages exist and cards move in and out of them.
+- Nothing claimed. A1, A2, and A3 finished 2026-10-01: custom stages exist, cards move in and out of them,
+  and a stage can be removed with its cards sent somewhere first.
 
-**Next part:** A3 Switch a stage off safely — `stages/A-custom-stages.md`, including its carried notes.
-A4 (On hold) can go before or after A3; it opens with a question for Jafar written in that file. B1
+**Next part:** A4 On hold — `stages/A-custom-stages.md`, including its carried notes. It opens with a
+question for Jafar written in that file. B1
 (`stages/B-honest-outcomes.md`) may be built by a second session at the same time.
 
 **Blockers:** None.

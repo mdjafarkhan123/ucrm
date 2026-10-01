@@ -32,7 +32,8 @@
 		onAdd,
 		onRename,
 		onMove,
-		onRemove
+		onRemove,
+		onRemoveIntent
 	}: {
 		columns: SectionColumn<DraftStage>[];
 		canEdit: boolean;
@@ -44,7 +45,12 @@
 		onAdd: () => string;
 		onRename: (key: string, name: string) => void;
 		onMove: (index: number, by: -1 | 1) => void;
+		// A stage never saved is simply dropped from the form. A saved one is on the board, so the page asks
+		// first — and where its cards go.
 		onRemove: (key: string) => void;
+		// The pointer or the keyboard has reached a saved stage's remove button: time to find out how many
+		// cards it holds, before the click.
+		onRemoveIntent: (stageId: string) => void;
 	} = $props();
 
 	let list = $state<HTMLOListElement>();
@@ -107,18 +113,18 @@
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								{@html arrowDownIcon}
 							</button>
-							<!-- Only a stage that has never been saved can be taken away here. -->
-							{#if stage.id === null}
-								<button
-									type="button"
-									class="stage-list__icon-button stage-list__icon-button--danger"
-									aria-label={`Remove ${label}`}
-									onclick={() => onRemove(stage.key)}
-								>
-									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-									{@html trashIcon}
-								</button>
-							{/if}
+							<button
+								type="button"
+								class="stage-list__icon-button stage-list__icon-button--danger"
+								aria-label={`Remove ${label}`}
+								aria-haspopup={stage.id === null ? undefined : 'dialog'}
+								onpointerenter={() => stage.id && onRemoveIntent(stage.id)}
+								onfocus={() => stage.id && onRemoveIntent(stage.id)}
+								onclick={() => onRemove(stage.key)}
+							>
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+								{@html trashIcon}
+							</button>
 						</div>
 					{:else}
 						<span class="stage-list__name">{stage.name}</span>

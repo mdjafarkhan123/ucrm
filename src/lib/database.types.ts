@@ -19024,6 +19024,16 @@ export type Database = {
 				};
 				Returns: boolean;
 			};
+			disable_pipeline_custom_stage: {
+				Args: {
+					expected_revision: number;
+					move_cards_to_built_in?: boolean;
+					move_cards_to_stage_id?: string;
+					target_organization_id: string;
+					target_stage_id: string;
+				};
+				Returns: Json;
+			};
 			dismiss_job_invoice_reminder: {
 				Args: { target_organization_id: string; target_reminder_id: string };
 				Returns: Json;
@@ -21778,6 +21788,10 @@ export type Database = {
 					title: string;
 					updated_at: string;
 				}[];
+			};
+			pipeline_custom_stage_card_count: {
+				Args: { target_organization_id: string; target_stage_id: string };
+				Returns: number;
 			};
 			pipeline_delete_opportunity_note: {
 				Args: {

@@ -222,6 +222,60 @@ export function savePipelineSettings(
 	return saveSection('/api/settings/pipeline', body);
 }
 
+// How many cards a custom stage holds. Asked when somebody reaches for the stage's remove button, never
+// with the page.
+export const pipelineStageCardCountKey = (stageId: string) =>
+	['settings', 'pipeline', 'stage-cards', stageId] as const;
+
+export async function fetchPipelineStageCardCount(
+	stageId: string
+): Promise<{ card_count: number }> {
+	const response = await fetch(`/api/settings/pipeline/stages/${stageId}`);
+	if (!response.ok) throw httpError(response, 'This stage could not be checked.');
+	return response.json();
+}
+
+// Where a switched-off stage's cards go: another custom stage's id, 'built_in' for each card's own
+// built-in stage, or null when the stage is empty and nobody needed asking.
+export type StageCardDestination = string | null;
+
+export type DisableStageResult =
+	| { status: 'disabled'; pipeline_revision: number; moved_count: number }
+	// Cards arrived in the stage after the dialog counted it, so the question has to be asked after all.
+	| { needsDestination: true; card_count: number }
+	| SettingsSaveConflict;
+
+export async function disablePipelineStage(
+	stageId: string,
+	body: { expected_revision: number; destination: StageCardDestination }
+): Promise<DisableStageResult> {
+	const response = await fetch(`/api/settings/pipeline/stages/${stageId}/disable`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(body)
+	});
+	const result = await response.json().catch(() => ({}));
+	if (response.status === 409 && result.reason === 'needs_destination') {
+		return { needsDestination: true, card_count: result.card_count ?? 0 };
+	}
+	if (response.status === 409) {
+		return {
+			conflict: true,
+			editor_name: result.editor_name ?? null,
+			edited_at: result.edited_at ?? null
+		};
+	}
+	if (!response.ok) {
+		const error = httpError(
+			response,
+			result.field_errors?.form ?? result.error ?? 'That stage could not be removed.'
+		) as SettingsWriteError;
+		error.fieldErrors = result.field_errors ?? {};
+		throw error;
+	}
+	return result;
+}
+
 // Settings → Contact matching. Its own read and its own revision, like Pipeline: HighLevel's Contact
 // deduplication preference — which contact wins when a website chat or form's phone and email belong to two
 // different clients.

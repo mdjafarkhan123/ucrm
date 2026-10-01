@@ -198,6 +198,22 @@ export const pipelineSettingsSchema = z
 
 export type PipelineSettingsInput = z.infer<typeof pipelineSettingsSchema>;
 
+// Switching a custom stage off. `destination` is where its cards go: another custom stage's id, the word
+// below for "back to each card's own built-in stage", or null when the person was never asked — which the
+// database accepts only for a stage holding no cards.
+export const BUILT_IN_DESTINATION = 'built_in';
+
+export const disablePipelineStageSchema = z.object({
+	expected_revision: expectedRevision,
+	destination: z
+		.union([z.literal(BUILT_IN_DESTINATION), z.string().uuid()], {
+			message: 'Choose where these cards go.'
+		})
+		.nullable()
+});
+
+export type DisablePipelineStageInput = z.infer<typeof disablePipelineStageSchema>;
+
 // Which contact decides when a website chat or form's phone and email belong to two different clients.
 export const contactMatchPrioritySchema = z.object({
 	expected_revision: expectedRevision,

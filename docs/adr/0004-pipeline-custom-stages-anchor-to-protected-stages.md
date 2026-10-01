@@ -49,6 +49,14 @@ are drawn as one column.
 9. **History is one table.** `opportunity_stage_events` gains `from_custom_stage_id` and
    `to_custom_stage_id`; a custom move is a row whose `from_stage` and `to_stage` are equal.
 
+10. **Switching a stage off is one command that also moves its cards** (part A3).
+    `disable_pipeline_custom_stage` sets `disabled_at` and never deletes the row, so every earlier move
+    still reads the stage's name, and the name becomes free for a new stage. A stage holding cards is
+    refused with `needs_destination` unless the caller names another custom stage of the same section or
+    asks for each card's own built-in stage; the cards move in one statement, each writing its own history
+    row. It is not part of `save_pipeline_settings`, so unsaved edits in the Settings form survive it. This
+    follows HubSpot and Pipedrive, which both ask where a stage's deals go before removing it.
+
 ## Consequences
 
 - Reordering in Settings while the board is collapsed re-anchors that section's stages to the columns
@@ -59,5 +67,8 @@ are drawn as one column.
   to 25 more at the stage limit.
 - Anything that reads `opportunity_stage_events` for time in stage must treat a row with equal stages as
   a custom move, not a stage change.
-- Switching a stage off (A3) must take the stage row `for update`: `pipeline_place_opportunity` holds it
+- Switching a stage off takes the stage row `for update`: `pipeline_place_opportunity` holds it
   `for share`, so the two cannot interleave.
+- Switching off moves every card in one transaction, about half a millisecond a card: 20,000 cards took
+  about ten seconds in rehearsal, past the eight-second limit on a signed-in request, where it fails whole
+  and nothing moves. A stage that large would need the move done in batches first.

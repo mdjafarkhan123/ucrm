@@ -14,11 +14,14 @@
 	import PipelineStageList, {
 		type DraftStage
 	} from '$lib/components/settings/PipelineStageList.svelte';
+	import PipelineStageRemoveDialog from '$lib/components/settings/PipelineStageRemoveDialog.svelte';
 	import {
 		fetchSettingsPipeline,
 		settingsPipelineKey,
 		savePipelineSettings,
 		isSaveConflict,
+		fetchPipelineStageCardCount,
+		pipelineStageCardCountKey,
 		type SettingsPipeline,
 		type SettingsWriteError
 	} from '$lib/settings/api';
@@ -32,7 +35,8 @@
 		placeCustomStages,
 		protectedNamesInSection,
 		sectionColumns,
-		type BoardSection
+		type BoardSection,
+		type CustomStage
 	} from '$lib/pipeline/stages';
 	import layoutKanbanIcon from '@tabler/icons/outline/layout-kanban.svg?raw';
 
@@ -166,8 +170,81 @@
 		stages = [...stages.filter((stage) => stage.section !== section), ...placed];
 	}
 
+	// The saved stage whose removal is being confirmed, by its row.
+	let removingKey = $state<string | null>(null);
+
+	// A saved stage as the dialog names it: by what the form calls it now, or by its saved name while the
+	// name box is empty.
+	function savedStage(stage: DraftStage): CustomStage | null {
+		if (stage.id === null) return null;
+		const saved = query.data?.pipeline.stages.find((other) => other.id === stage.id);
+		return { ...stage, id: stage.id, name: stage.name.trim() || (saved?.name ?? 'this stage') };
+	}
+
+	const removingStage = $derived.by(() => {
+		const stage = stages.find((other) => other.key === removingKey);
+		return stage ? savedStage(stage) : null;
+	});
+	// Where the removed stage's cards may go: the other saved stages of its section.
+	const removeDestinations = $derived(
+		removingStage
+			? stages.flatMap((stage) => {
+					const saved = savedStage(stage);
+					return saved && saved.id !== removingStage.id && saved.section === removingStage.section
+						? [saved]
+						: [];
+				})
+			: []
+	);
+
 	function removeStage(key: string) {
-		stages = stages.filter((stage) => stage.key !== key);
+		const stage = stages.find((other) => other.key === key);
+		if (!stage) return;
+		// Never saved, so it is on nobody's board: it just leaves the form.
+		if (stage.id === null) stages = stages.filter((other) => other.key !== key);
+		else removingKey = key;
+	}
+
+	function warmStageCardCount(stageId: string) {
+		void queryClient.prefetchQuery({
+			queryKey: pipelineStageCardCountKey(stageId),
+			queryFn: () => fetchPipelineStageCardCount(stageId)
+		});
+	}
+
+	// The stage is already off the board by the time this runs. Only that stage leaves the form — anything
+	// else the person was in the middle of changing stays exactly as they left it, still unsaved.
+	async function stageRemoved(result: {
+		stage: CustomStage;
+		revision: number;
+		movedCount: number;
+		destinationName: string | null;
+	}) {
+		removingKey = null;
+		const remaining = (query.data?.pipeline.stages ?? []).filter(
+			(stage) => stage.id !== result.stage.id
+		);
+		queryClient.setQueryData<SettingsPipeline>(settingsPipelineKey, (current) =>
+			current
+				? {
+						...current,
+						pipeline: { ...current.pipeline, stages: remaining, revision: result.revision }
+					}
+				: current
+		);
+		stages = stages.filter((stage) => stage.id !== result.stage.id);
+		savedStages = JSON.stringify(
+			payloadFor(remaining.map((stage) => ({ ...stage, key: stage.id })))
+		);
+
+		const moved =
+			result.movedCount === 0
+				? ''
+				: ` ${result.movedCount === 1 ? '1 card' : `${result.movedCount} cards`} moved to ${
+						result.destinationName ? `“${result.destinationName}”` : 'the built-in stages'
+					}.`;
+		toast.success(`“${result.stage.name}” removed.${moved}`);
+		await invalidatePipeline(queryClient);
 	}
 
 	beforeNavigate((navigation) => {
@@ -306,6 +383,7 @@
 							onRename={renameStage}
 							onMove={(index, by) => moveStage(section, index, by)}
 							onRemove={removeStage}
+							onRemoveIntent={warmStageCardCount}
 						/>
 					</SectionBlock>
 				{/each}
@@ -314,7 +392,8 @@
 					{stages.length} of {CUSTOM_STAGE_LIMIT} custom stages used.
 					{#if atLimit}You have reached the limit, so no more can be added.{/if}
 					Built-in stages follow real work — a request coming in, an assessment being booked, a quote
-					being sent — so they cannot be renamed, moved, or removed.
+					being sent — so they cannot be renamed, moved, or removed. Removing one of your own stages asks
+					where its cards go first.
 				</p>
 			{/if}
 		{/snippet}
@@ -330,6 +409,14 @@
 			{/if}
 		{/snippet}
 	</RecordFormLayout>
+
+	<PipelineStageRemoveDialog
+		stage={removingStage}
+		destinations={removeDestinations}
+		revision={query.data.pipeline.revision}
+		onClose={() => (removingKey = null)}
+		onRemoved={stageRemoved}
+	/>
 {/if}
 
 <style lang="scss">
