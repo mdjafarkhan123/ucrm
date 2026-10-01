@@ -7,9 +7,9 @@ first paying client.
 
 **In progress:**
 
-- 1 Plan: round 1 choices — `parts/1-plan-round-1.md`
+- none
 
-**Next part:** 2 Plan: details — settles what the round 1 answers unlock.
+**Next part:** 2 Plan: details — settle the rules unlocked by Jafar's approved round 1.
 
-**Blockers:** Jafar's answers to the corrected round 1 in `parts/1-plan-round-1.md`. Planning only: no code
-until the build split is approved. Independent evidence: `docs/research/pipeline-independent-source-check-2026-10-01.md`.
+**Blockers:** none. Planning only: no code until the build split is approved. Independent evidence:
+`docs/research/pipeline-independent-source-check-2026-10-01.md`.

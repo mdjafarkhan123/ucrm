@@ -11,17 +11,22 @@ The Pipeline helps contractors see and advance open commercial work from Request
 view, not a replacement status machine and not an operational Job board.
 
 Industry evidence and deliberate differences are recorded in
-`docs/research/contractor-crm-sales-pipeline-comparison.md`.
+`docs/research/contractor-crm-sales-pipeline-comparison.md` and the independent source check in
+`docs/research/pipeline-independent-source-check-2026-10-01.md`.
 
 ## Opportunity identity
 
 Jobber's current behavior is the reference. Where the earlier UCRM opportunity model disagreed with it, Jobber
 wins.
 
-- Opportunities are only ever generated from real work. Staff never create one by hand, and there is no
-  standalone Opportunity.
+- Opportunities are only ever generated from real work. Staff never create one by hand.
 - Every Request automatically has exactly one Opportunity, created with the Request.
 - Every Quote will automatically have exactly one Opportunity, created with the Quote in Part 5.
+- A Job created without a Request or Quote creates one closed-only **Direct job** Opportunity. It never appears
+  on the active board; it exists so Sales Outcomes counts genuinely booked work without inventing a Request or
+  Quote. It is reported separately and excluded from Request/Quote conversion percentages.
+- Converting a Request directly to a Job marks that Request's Opportunity Won. Creating a Job from a Quote that
+  is already Won does not create a second win.
 - **One Opportunity does not continue from Request to Quote.** A Request shows as a Request card. When it
   converts, that card leaves the Request stages, and the resulting Quote appears as its own card in Draft.
   The two are separate cards for the same underlying commercial thread, exactly as Jobber shows it.
@@ -73,11 +78,12 @@ write. A valid drop shows persistent saving feedback, keeps the card in its conf
 after the server action and board refresh succeed. Part 1 ships without dragging, because only one group
 exists, and cards must not look draggable until the behavior is real.
 
-Stage age is measured from `stage_entered_at`, and follows Jobber's freshness rule: green under one hour,
-neutral from one to 24 hours, red after 24 hours.
+Elapsed time in the stage remains visible as neutral context, but age alone does not turn every card red.
+Day-to-day priority comes from the next open Task: overdue first, due today next, no next Task after that, then
+future Tasks. A separate inactivity warning uses an owner-configurable number of days for each stage. Expected
+close date remains optional and is an alternate sort, not the default work queue.
 
-Arbitrary custom stages are not part of this release. A later release may add section-bound custom follow-up
-stages under these rules:
+Revision 3 adds section-bound custom follow-up stages under these rules:
 
 - A custom stage belongs to either Requests or Quotes and cannot cross the conversion boundary.
 - Protected stages cannot be renamed, reordered, hidden, disabled, or deleted.
@@ -87,23 +93,31 @@ stages under these rules:
 - Disabling or removing a populated custom stage requires a destination in the same section and explicit bulk
   reassignment. Automation dependencies must be resolved first, and historical stage events retain their
   original identity and label.
+- Manual movement among custom stages in the same section is allowed in either direction. Protected stages
+  remain action-gated, and a real Request, Assessment, or Quote action always wins over custom placement.
+- One protected contractor pipeline is the launch model. Multiple independent pipelines, custom-stage
+  automations, and administrator-built approval gates are not part of revision 3.
 
 Money on cards and columns, ownership, and the filter and sort bar arrive with their own parts. Nothing shows a
 placeholder value: a board without money shows no money rather than `$0.00`.
 
-Lead source appears inconsistently across Jobber's own screens and documentation, so it is not a first-release
-requirement.
+The board supports search, lead-source display/filtering, saved filters, and an alternate table view. Lead
+source is a wider field-service pattern rather than documented current Jobber Pipeline parity. Safe bulk tools
+cover ownership, Tasks, and custom follow-up placement; customer communication, conversion, and closing work
+are never silent bulk side effects.
 
 ## Outcomes
 
 - Outcome is separate from stage: `open`, `won`, or `lost`.
 - Won and Lost are not active-board columns.
 - Won is automatic when a Quote is approved or a Job is created. Staff do not manually mark a Request Won.
+- A Request converted directly to a Job becomes Won once, and a Direct job appears as a separately labelled Won
+  result. A Job made from an already-Won Quote never adds a duplicate result.
 - Declining one Quote does not mark other Quotes in the same commercial thread Lost.
-- Marking Lost is deliberate and archives the backing Request or Quote. A reason is optional, matching
-  Jobber. When supplied, it is one of: Price too high, Chose another contractor, No response, Project
-  postponed, Work was not a fit, Duplicate or test request, or Other. A note is optional except that Other
-  requires one.
+- Marking Lost is deliberate and archives the backing Request or Quote. A reason remains optional. Owners and
+  administrators manage the reason list, initially: Price too high, Chose another contractor, No response,
+  Project postponed, Work was not a fit, Duplicate or test request, and Other. Removing a reason retires it
+  from future choices without rewriting old reports. A note is optional except that Other requires one.
 - Reopening Lost is a deliberate UCRM addition because Jobber does not document that path. It requires a
   short explanation, restores the backing record and its prior valid open position, and records a new
   immutable outcome event.
@@ -112,6 +126,9 @@ requirement.
 - Closed Opportunities leave the active board and appear in the Won/Lost tiles and Sales Outcomes report.
   Reopening removes an Opportunity from the current Lost totals and results while preserving its Lost and
   Reopened events in immutable history.
+- Sales reporting includes loss-reason breakdown, Request-to-Quote and Quote-to-Win conversion, source
+  conversion, days to win, and time in stage. Direct jobs are shown separately and never inflate conversion
+  percentages.
 
 ## Movement and automation
 
@@ -124,11 +141,18 @@ requirement.
 - Real Request, Assessment, and Quote activity may advance the card automatically.
 - Automation never moves a card backward or overwrites later human progress.
 - Repeated writes and provider/browser retries cannot duplicate transitions or history.
+- Moving a Draft Quote to Awaiting response opens the real review surface: send by an available customer
+  channel, deliberately mark it sent outside UCRM, view the Quote, or cancel. The card does not move until the
+  chosen action succeeds; a drop alone never claims the customer received anything.
+- Every card offers the same allowed destinations through a non-drag Move/next-action control. An unavailable
+  destination says the exact reason and genuine next step; the generic “That card could not be moved” message
+  is only a last-resort technical failure.
 
 ## Ownership and visibility
 
 - An Opportunity may have one owner or remain unassigned.
-- Opportunity details may include value, expected close date, and next follow-up.
+- Opportunity details may include value and expected close date. Tasks are the only next-follow-up truth.
+- Existing next-follow-up dates are migrated into open Tasks before the duplicate field is removed.
 - Stage age is calculated from transition history using the organization's timezone where a calendar boundary
   matters.
 - `sales.pipeline` package entitlement and Pipeline permissions are enforced on the server and through RLS-backed
@@ -138,9 +162,9 @@ requirement.
 
 - Selecting a card opens its Opportunity Brief without moving the user away from the board or losing the
   board's scroll, filters, or selected position.
-- A Task is an internal follow-up item, not a Job, Visit, or Event. The first Brief form has a required title
-  and optional instructions, one owner, and one due date. Repeating tasks, timed scheduling, reminders, and
-  the Schedule UI arrive with the Schedule domain, but the Task foundation must remain reusable there.
+- A Task is an internal follow-up item, not a Job, Visit, or Event. The Brief form has a required title and
+  optional instructions, one owner, and one due date. Dated Tasks appear on the assignee's Schedule, and a new
+  assignment notifies that teammate without notifying the customer.
 - Each Opportunity may have at most five open and five completed Tasks. The card shows one open Task: the
   earliest due one, breaking equal due dates by creation order; when none are due, it shows the oldest open
   Task. An overdue Task is visibly overdue. Completion and reopening happen from the Brief, not the card.
@@ -149,8 +173,12 @@ requirement.
   not carry Tasks into the Job. Reopening a Lost Request reopens only the Tasks that its matching Lost event
   completed automatically; Tasks a person completed remain completed. Parts 4 and 5 implement these
   transitions when those domain actions exist.
-- Notes save immediately from the Brief and belong to either its backing Request or the Client, never to a
-  second Pipeline-only copy. Staff may create, view, edit, and delete them in the first release.
+- Notes save immediately from the Brief and belong to either its backing Request/Quote or the Client, never to
+  a second Pipeline-only copy. Staff may create, view, edit, delete, attach Files/photos, and mention a teammate;
+  a mention notifies the tagged teammate.
+- Quick actions expose Email, Text, and Call only when the Client has the required contact detail and the team
+  member may use that channel. Messaging still obeys Communications consent, opt-out, allowance, and delivery
+  rules; a quick action is not a second sending system.
 - `pipeline.view` permits reading Brief Tasks and Notes. `pipeline.edit` is required to create, edit,
   complete, reopen, move, or delete them. Opportunity ownership does not grant extra mutation authority.
 - Brief Notes are authorized by `pipeline.edit` through a Pipeline-scoped path, separate from the generic
@@ -163,42 +191,37 @@ requirement.
 
 ## Platform
 
-The Pipeline is a desktop web experience. A separate mobile app will be built later and carries its own
-requirements, so this campaign has no mobile UI and no mobile acceptance checks. Jobber's own app has no
-pipeline either.
+The Pipeline website works on phones before a native app exists. Mobile shows a focused stage or compact list
+instead of shrinking the desktop board, and uses tap-based Move/next-action controls so dragging is never
+required. A future native app may share these business rules but has its own interface requirements.
 
 The page owns vertical scrolling and the board owns one horizontal scroll for its fixed-width columns. Each
-column offers an accessible `Load more` control for its next page; automatic loading may enhance that later.
+column offers an accessible `Load more` control for its next page. Independent lane scrolling or automatic
+loading is adopted only after a live usability prototype and measured-load check prove it better.
 
 ## Boundaries
 
 - Jobs, Visits, Invoices, and Payments do not continue through the sales Pipeline.
-- A Job relationship only makes Won terminal; the Jobs campaign owns Job creation and behavior.
+- Jobs do not become active-board cards. The Jobs campaign owns Job creation and behavior; Pipeline only records
+  the resulting Won outcome, including a separately labelled closed-only Direct job.
 - Quote pricing, approval, versioning, signature, and conversion belong to Quotes.
 - Conversations belong to Communications; Pipeline may show linked context after that domain exists.
-- Custom stages, AI summaries, automations, forecasting, the embedded activity timeline, note attachments,
-  note mentions, note pinning, repeating Tasks, Task notifications, and Task Schedule UI are outside the
-  first release.
+- AI summaries and weighted-probability forecasting remain optional post-launch work. Pipeline value and
+  Expected close date remain available without pretending a win probability is known.
+- Multiple independent pipelines, custom-stage automations, administrator-built approval gates, note pinning,
+  repeating Tasks, and the embedded Opportunity timeline are outside revision 3. Immutable stage/outcome
+  history remains required for reporting even though that history is not yet rendered in the Brief.
 - The board never creates work. Any global create control on the page belongs to Requests or Quotes, not to
   the Pipeline.
 
 ## Still unclear
 
-Revision 3 (`pipeline-upgrade`). Evidence for every item: `docs/research/pipeline-gap-audit-2026-10-01.md`.
-Round 1, asked 2026-10-01:
+Revision 3 (`pipeline-upgrade`). Round 1 was approved by Jafar on 2026-10-01 after the independent source check.
+Round 2 must settle:
 
-- Q1 Campaign goal: Jobber parity, the problems fixed, and proven extras, all before the first paying client?
-- Q2 The Jobber-parity list (audit A1, A2, A4, A5, B1–B8) adopted under Jafar's "match the leaders" rule?
-- Q3 Small extras: Text and Call beside Email; a notification when given a task; an optional reason when a
-  quote is declined?
-- Q4 Stale cards: Jobber's fixed 24 hours, or Pipedrive's per-column days counted from the last activity?
-- Q5 Assessment: keep the folded column and its switch, or always show Jobber's seven columns?
-- Q6 Lost reasons: fixed list, or an owner-editable list starting from today's seven?
-- Q7 "Next follow-up" and "Expected close date": which stay, and does the board sort by close date?
-- Q8 Long columns: page scroll with Load more, or each column scrolls and loads more by itself?
-- Q9 Phone: add a phone layout to the web app (reverses "desktop only")?
-- Q10 Reports: add lost-reason breakdown, conversion rates, and days to win?
-- Q11 AI card summary: now or after launch?
-
-Later rounds hold the details these answers unlock: custom-column rules, the request-to-job flow, stale-card
-alerts, lead-source choice, and the build split.
+- Custom-stage creation, disabling/removal, On hold behavior, maximum count, and inactivity defaults.
+- Send-or-mark-sent success/failure rules and its audit wording.
+- Exact inactivity reset events, thresholds, and Task-priority ties.
+- Task assignment notifications, Schedule behavior, contact quick actions, and channel fallbacks.
+- Cohort and value rules for conversion/time reports, especially Direct jobs and multiple Quotes.
+- Saved filters, table/mobile presentation, bulk-action limits, and the long-column prototype gate.

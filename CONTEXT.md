@@ -5,6 +5,19 @@
 - **Task** — An internal follow-up or coordination item assigned to a team member, optionally due on a date.
   It is not customer work, a service appointment, or a calendar-blocking Event. _Avoid_: Job, Visit, or Event.
 
+## Sales pipeline
+
+- **Opportunity** — The sales-tracking record generated from one real Request or Quote. A Direct job may create
+  a closed-only Opportunity for honest Sales Outcomes, but staff never create an Opportunity by hand. Open
+  Opportunities appear on the Pipeline; closed ones appear only in outcomes and reporting. _Avoid_: Deal when
+  referring to this record.
+- **Direct job** — A Job created without a Request or Quote. It never appears on the active Pipeline, but creates
+  one separately labelled Closed Won result. It is excluded from Request/Quote conversion percentages.
+- **Protected stage** — A Pipeline position whose meaning is established by a real Request, Assessment, or Quote
+  fact. Entering it requires the matching domain action; it cannot be renamed or removed.
+- **Custom follow-up stage** — An owner-configured Pipeline position used only to organize follow-up inside the
+  Request or Quote section. It never replaces source-record status, and a later protected-stage event overrides it.
+
 ## Commercial documents
 
 - **Price book** — The organization's reusable Product and Service line-item templates. Adding an item copies
