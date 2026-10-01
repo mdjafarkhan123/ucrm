@@ -180,10 +180,10 @@
 										<span>{section.description}</span>
 									</span>
 									<Badge status={status.badge} size="small">{status.label}</Badge>
-									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-									<span class="setup__task-chevron" aria-hidden="true"
-										>{@html chevronRightIcon}</span
-									>
+									<span class="setup__task-chevron" aria-hidden="true">
+										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+										{@html chevronRightIcon}
+									</span>
 								</a>
 							</li>
 						{/each}
@@ -256,6 +256,8 @@
 			display: grid;
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 			gap: var(--space-base) var(--space-large);
+			margin: 0;
+			padding: 0;
 			list-style: none;
 		}
 
@@ -304,6 +306,8 @@
 		&__tasks {
 			display: flex;
 			flex-direction: column;
+			margin: 0;
+			padding: 0;
 			list-style: none;
 
 			li + li {
@@ -318,15 +322,11 @@
 			padding: var(--space-slim) var(--space-small);
 			border-radius: var(--radius-base);
 			color: inherit;
+			text-decoration: none;
 			transition: background var(--timing-quick) ease;
 
 			&:hover {
 				background: var(--color-surface--hover);
-			}
-
-			&:focus-visible {
-				outline: 2px solid var(--color-focus);
-				outline-offset: 2px;
 			}
 		}
 

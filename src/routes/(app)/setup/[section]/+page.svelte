@@ -62,6 +62,8 @@
 	let markedDone = $state(false);
 	let saveState = $state<'idle' | 'saving' | 'saved' | 'failed'>('idle');
 	let finishing = $state(false);
+	// Bookkeeping for autosave, never drawn, so a plain Set is right.
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	const touched = new Set<string>();
 
 	$effect(() => {
@@ -375,6 +377,12 @@
 		// PageHeader carries its own bottom margin; the column gap already spaces what follows.
 		:global(.page-header) {
 			margin-bottom: 0;
+		}
+
+		// A fieldset refuses to shrink below its widest child by default, which pushes long answers off
+		// the side of a phone.
+		:global(fieldset) {
+			min-width: 0;
 		}
 
 		&__save {

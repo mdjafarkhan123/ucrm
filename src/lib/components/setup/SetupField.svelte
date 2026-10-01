@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
-	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
+	import RadioGroup from '$lib/components/ui/RadioGroup.svelte';
 	import type { SetupAvailability, SetupFact } from '$lib/setup/catalogue';
 
 	// One setup question. It only shows and collects: the page owns saving, so every question on a section
@@ -68,11 +68,10 @@
 
 <div class="setup-field" id={`${id}-field`}>
 	{#if fact.canDefer}
-		<SegmentedControl
+		<RadioGroup
 			label={fact.label}
 			options={AVAILABILITY_OPTIONS}
 			value={availability}
-			size="small"
 			onchange={chooseAvailability}
 		/>
 	{/if}
@@ -80,7 +79,7 @@
 	{#if availability !== 'have'}
 		<Input
 			id={`${id}-note`}
-			label="Anything Uplift should know? (optional)"
+			label="Note for Uplift (optional)"
 			bind:value={note}
 			maxlength={500}
 			oninput={onedit}
