@@ -7,11 +7,7 @@ first paying client.
 
 **In progress:** Stage A and B1–B5 finished 2026-10-01.
 
-**Next part:** B7, then B6 — `stages/B-honest-outcomes.md`.
-
-**Open question for Jafar (from B5), word for word:** "Today a customer cannot press Decline on the online
-quote link — like Jobber, the link only offers Approve and Request changes, so a decline is recorded by your
-team with 'Mark as declined'. Is that what you want, or should the customer's own quote page also get a
-Decline button with a message box?" His answer decides the plan's § Outcomes wording on declines.
+**Next part:** B7, then B6, then B8 (customer Decline button, approved 2026-10-01) —
+`stages/B-honest-outcomes.md`.
 
 **Blockers:** None.

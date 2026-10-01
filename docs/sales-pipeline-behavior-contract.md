@@ -131,6 +131,12 @@ communication, conversion, protected-stage movement, and closing work are never 
 - Declining one Quote does not mark other Quotes in the same commercial thread Lost.
 - A customer-declined sent Quote becomes Lost. The customer may leave an optional message, which is preserved;
   staff may then classify its internal Lost reason without forcing the customer to choose one.
+- The customer's online quote offers Decline as a quieter choice beside Approve and Request changes (Housecall
+  Pro; a frequent Jobber user request — Jafar, 2026-10-01). Declining asks "Mind telling us why?" with an
+  optional pick — Too expensive, Went with someone else, No longer doing the work, Other — and an optional
+  message. Their answer is kept as the customer's own words, separate from the staff Lost reason. The card
+  becomes Lost as Customer declined and the quote's owner, or the office if none, gets an alert. Staff can
+  still record a decline given by phone with "Mark as declined".
 - Outside a customer's explicit decline, manually marking Lost is deliberate and archives the backing Request
   or Quote. A reason remains optional. Owners and administrators manage the reason list, initially: Price too
   high, Chose another contractor, No response, Project postponed, Work was not a fit, Duplicate or test request,
