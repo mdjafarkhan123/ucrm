@@ -803,7 +803,7 @@
 								{#if form!.yearly_price_usd_cents !== null}
 									<MoneyInput
 										id="package-yearly-price"
-										label="Price per year"
+										label="Charged once a year"
 										bind:value={
 											() => form!.yearly_price_usd_cents ?? 0,
 											(cents) => (form!.yearly_price_usd_cents = cents)
@@ -811,19 +811,39 @@
 										invalid={Boolean(fieldErrors.yearly_price_usd_cents)}
 										errorMessage={fieldErrors.yearly_price_usd_cents}
 									/>
+									<MoneyInput
+										id="package-yearly-per-month"
+										label="Same as per month"
+										bind:value={
+											() => Math.round((form!.yearly_price_usd_cents ?? 0) / 12),
+											(cents) => {
+												// Clicking in and out must not turn a total that is not a whole number of months into one.
+												if (cents !== Math.round((form!.yearly_price_usd_cents ?? 0) / 12)) {
+													form!.yearly_price_usd_cents = cents * 12;
+												}
+											}
+										}
+									/>
+									<p class="package-builder__hint">
+										Two views of one price: type either, the other follows. Only the yearly total is
+										saved and charged.
+									</p>
 								{/if}
 							</div>
 						</div>
 						{#if yearlySaving}
 							<p
 								class="package-builder__hint"
-								class:package-builder__hint--warning={yearlySaving.amount < 0}
+								class:package-builder__hint--warning={yearlySaving.amount < 0 ||
+									yearlySaving.percent > 40}
 							>
-								{yearlySaving.amount > 0
-									? `Yearly saves the customer ${formatUsd(yearlySaving.amount)} (${yearlySaving.percent}%) compared with 12 monthly payments.`
-									: yearlySaving.amount < 0
-										? `Yearly costs ${formatUsd(-yearlySaving.amount)} more than 12 monthly payments.`
-										: 'Yearly costs the same as 12 monthly payments.'}
+								{yearlySaving.percent > 40
+									? `That is a ${yearlySaving.percent}% saving — yearly works out to ${formatUsd(Math.round((form!.yearly_price_usd_cents ?? 0) / 12))} a month. Is the yearly price right?`
+									: yearlySaving.amount > 0
+										? `Yearly saves the customer ${formatUsd(yearlySaving.amount)} (${yearlySaving.percent}%) compared with 12 monthly payments.`
+										: yearlySaving.amount < 0
+											? `Yearly costs ${formatUsd(-yearlySaving.amount)} more than 12 monthly payments.`
+											: 'Yearly costs the same as 12 monthly payments.'}
 							</p>
 						{/if}
 						{#if form!.monthly_price_usd_cents === null && form!.yearly_price_usd_cents === null}
