@@ -4,7 +4,7 @@ import { render } from 'vitest-browser-svelte';
 import PipelineColumn from './PipelineColumn.svelte';
 import { DEFAULT_BOARD_FILTERS } from '$lib/pipeline/filters';
 import type { OpportunityCard } from '$lib/pipeline/api';
-import type { AnyBoardStage } from '$lib/pipeline/stages';
+import type { AnyBoardStage, BoardColumn } from '$lib/pipeline/stages';
 
 const mocks = vi.hoisted(() => ({
 	dragOpportunity: vi.fn(),
@@ -60,11 +60,11 @@ const card: OpportunityCard = {
 	assessment: null
 };
 
-function renderColumn(stage: AnyBoardStage) {
+function renderColumn(stage: AnyBoardStage | BoardColumn) {
 	const onDragBusyChange = vi.fn();
 	const screen = render(PipelineColumn, {
 		props: {
-			stage,
+			column: typeof stage === 'string' ? { kind: 'protected', key: stage } : stage,
 			count: 0,
 			valueTotal: null,
 			filters: DEFAULT_BOARD_FILTERS,
@@ -102,6 +102,24 @@ describe('PipelineColumn drop confirmation', () => {
 			to_stage: 'assessment_completed'
 		});
 		mocks.invalidatePipeline.mockResolvedValue(undefined);
+	});
+
+	it('draws a custom stage as an empty column that takes no drop', async () => {
+		const { zone } = renderColumn({
+			kind: 'custom',
+			stage: {
+				id: '7b0c8f2e-0000-4000-8000-000000000001',
+				section: 'request',
+				name: 'Waiting on customer',
+				after_stage: 'new_request'
+			}
+		});
+
+		finalize(zone);
+
+		await expect.element(page.getByRole('heading', { name: 'Waiting on customer' })).toBeVisible();
+		await expect.element(page.getByText('Nothing here.')).toBeVisible();
+		expect(mocks.dragOpportunity).not.toHaveBeenCalled();
 	});
 
 	it('restores a refused backward drop without calling the server or showing a toast', async () => {

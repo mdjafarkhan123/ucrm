@@ -11,13 +11,29 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
+	import PipelineStageList, {
+		type DraftStage
+	} from '$lib/components/settings/PipelineStageList.svelte';
 	import {
 		fetchSettingsPipeline,
 		settingsPipelineKey,
 		savePipelineSettings,
-		isSaveConflict
+		isSaveConflict,
+		type SettingsPipeline,
+		type SettingsWriteError
 	} from '$lib/settings/api';
 	import { invalidatePipeline } from '$lib/pipeline/api';
+	import {
+		BOARD_SECTIONS,
+		BOARD_SECTION_LABELS,
+		CUSTOM_STAGE_LIMIT,
+		SECTION_STAGES,
+		moveColumn,
+		placeCustomStages,
+		protectedNamesInSection,
+		sectionColumns,
+		type BoardSection
+	} from '$lib/pipeline/stages';
 	import layoutKanbanIcon from '@tabler/icons/outline/layout-kanban.svg?raw';
 
 	const queryClient = useQueryClient();
@@ -29,8 +45,17 @@
 
 	let detailed = $state<boolean | null>(null);
 	let savedDetailed = $state<boolean | null>(null);
+	// Every custom stage the form is holding, saved or not. Its order inside a section is the board's.
+	let stages = $state<DraftStage[]>([]);
+	// What the server last confirmed, as the exact list a save would send — the form is changed when what
+	// it would send now is different.
+	let savedStages = $state('[]');
 	let saving = $state(false);
 	let errorMessage = $state('');
+	// Naming problems the server found that this page did not, by row.
+	let serverErrors = $state<Record<string, string>>({});
+	// A blank name is only called a mistake once the person tries to save it.
+	let attempted = $state(false);
 	let conflict = $state<{ editor_name: string | null; edited_at: string | null } | null>(null);
 	let layout = $state<RecordFormLayout>();
 
@@ -41,17 +66,109 @@
 			: errorMessage
 	);
 
+	function seed(pipeline: SettingsPipeline['pipeline']) {
+		detailed = pipeline.detailed_assessment_stages;
+		savedDetailed = pipeline.detailed_assessment_stages;
+		stages = pipeline.stages.map((stage) => ({ ...stage, key: stage.id }));
+		savedStages = JSON.stringify(payloadFor(stages));
+		serverErrors = {};
+		attempted = false;
+	}
+
 	$effect(() => {
 		const pipeline = query.data?.pipeline;
 		if (!pipeline) return;
 		untrack(() => {
-			if (detailed !== null) return;
-			detailed = pipeline.detailed_assessment_stages;
-			savedDetailed = pipeline.detailed_assessment_stages;
+			if (detailed === null) seed(pipeline);
 		});
 	});
 
-	const dirty = $derived(detailed !== null && savedDetailed !== null && detailed !== savedDetailed);
+	// Each section's rows in board order: built-in stages locked in place, custom ones between them.
+	const columns = $derived({
+		request: sectionColumns('request', detailed ?? false, stages),
+		quote: sectionColumns('quote', detailed ?? false, stages)
+	});
+
+	// The list a save sends: every custom stage, Requests then Quotes, in the order the board will show.
+	function payloadFor(list: DraftStage[]) {
+		return BOARD_SECTIONS.flatMap((section) =>
+			sectionColumns(section, false, list).flatMap((column) =>
+				column.kind === 'custom'
+					? [
+							{
+								id: column.stage.id,
+								section: column.stage.section,
+								name: column.stage.name.trim(),
+								after_stage: column.stage.after_stage
+							}
+						]
+					: []
+			)
+		);
+	}
+	// The same rows in the same order, so a problem the server reports by position finds its row here.
+	function payloadKeys(list: DraftStage[]) {
+		return BOARD_SECTIONS.flatMap((section) =>
+			sectionColumns(section, false, list).flatMap((column) =>
+				column.kind === 'custom' ? [column.stage.key] : []
+			)
+		);
+	}
+
+	// A name is wrong when it is blank, or when its section already has a stage called that — built in or
+	// custom. The second of two matching rows is the one that is marked.
+	const nameProblems = $derived.by(() => {
+		const problems: Record<string, string> = {};
+		const taken: Record<BoardSection, Set<string>> = {
+			request: new Set(protectedNamesInSection('request').map((name) => name.toLowerCase())),
+			quote: new Set(protectedNamesInSection('quote').map((name) => name.toLowerCase()))
+		};
+		for (const stage of stages) {
+			const name = stage.name.trim();
+			if (name === '') {
+				if (attempted) problems[stage.key] = 'Give this stage a name.';
+				continue;
+			}
+			if (taken[stage.section].has(name.toLowerCase())) {
+				problems[stage.key] =
+					`${BOARD_SECTION_LABELS[stage.section]} already has a stage called “${name}”.`;
+			}
+			taken[stage.section].add(name.toLowerCase());
+		}
+		return problems;
+	});
+	const rowErrors = $derived({ ...serverErrors, ...nameProblems });
+
+	const atLimit = $derived(stages.length >= CUSTOM_STAGE_LIMIT);
+
+	const dirty = $derived(
+		detailed !== null &&
+			savedDetailed !== null &&
+			(detailed !== savedDetailed || JSON.stringify(payloadFor(stages)) !== savedStages)
+	);
+
+	function addStage(section: BoardSection) {
+		const key = crypto.randomUUID();
+		// A new stage starts at the end of its section. It can be moved from there.
+		const last = SECTION_STAGES[section].at(-1);
+		if (!last || atLimit) return key;
+		stages = [...stages, { key, id: null, section, name: '', after_stage: last }];
+		return key;
+	}
+
+	function renameStage(key: string, name: string) {
+		stages = stages.map((stage) => (stage.key === key ? { ...stage, name } : stage));
+		if (serverErrors[key]) serverErrors = { ...serverErrors, [key]: '' };
+	}
+
+	function moveStage(section: BoardSection, index: number, by: -1 | 1) {
+		const placed = placeCustomStages(moveColumn(columns[section], index, by));
+		stages = [...stages.filter((stage) => stage.section !== section), ...placed];
+	}
+
+	function removeStage(key: string) {
+		stages = stages.filter((stage) => stage.key !== key);
+	}
 
 	beforeNavigate((navigation) => {
 		if (!dirty) return;
@@ -67,22 +184,44 @@
 	});
 
 	function cancel() {
-		detailed = savedDetailed;
+		if (query.data) seed(query.data.pipeline);
 		conflict = null;
 		errorMessage = '';
 	}
 
 	async function save() {
 		if (!query.data || detailed === null) return;
-		saving = true;
 		errorMessage = '';
 		conflict = null;
+		serverErrors = {};
+		attempted = true;
+		if (Object.keys(nameProblems).length > 0) {
+			errorMessage = 'Fix the stage names marked below, then save again.';
+			return;
+		}
 
+		saving = true;
+		const keys = payloadKeys(stages);
 		const result = await savePipelineSettings({
 			expected_revision: query.data.pipeline.revision,
-			detailed_assessment_stages: detailed
-		}).catch((error: Error) => {
-			errorMessage = error.message;
+			detailed_assessment_stages: detailed,
+			stages: payloadFor(stages)
+		}).catch((error: SettingsWriteError) => {
+			// The server names a row by its place in the list it was sent ("stages.2.name"); anything it
+			// says about the save as a whole goes to the banner.
+			const fields = error.fieldErrors ?? {};
+			const byRow: Record<string, string> = {};
+			for (const [field, message] of Object.entries(fields)) {
+				const key = keys[Number(/^stages\.(\d+)\./.exec(field)?.[1] ?? -1)];
+				if (key) byRow[key] = message;
+			}
+			serverErrors = byRow;
+			errorMessage =
+				fields.form ??
+				fields.stages ??
+				(Object.keys(byRow).length > 0
+					? 'Fix the stage names marked below, then save again.'
+					: error.message);
 			return null;
 		});
 		if (!result) {
@@ -95,10 +234,12 @@
 			return;
 		}
 
-		savedDetailed = detailed;
+		// A new stage only gets its real identity from the server, so the form is reloaded from what was
+		// actually saved rather than trusted as it stands.
+		const fresh = await query.refetch();
+		if (fresh.data) seed(fresh.data.pipeline);
 		saving = false;
 		toast.success('Pipeline settings saved.');
-		await queryClient.invalidateQueries({ queryKey: settingsPipelineKey });
 		await invalidatePipeline(queryClient);
 	}
 </script>
@@ -146,6 +287,35 @@
 						onchange={(checked) => (detailed = checked)}
 					/>
 				</SectionBlock>
+
+				{#each BOARD_SECTIONS as section (section)}
+					<SectionBlock
+						title={section === 'request' ? 'Request stages' : 'Quote stages'}
+						hint={section === 'request'
+							? 'The columns a request moves through. Add your own follow-up stages between the built-in ones.'
+							: 'The columns a quote moves through. Add your own follow-up stages between the built-in ones.'}
+						form
+						level={3}
+					>
+						<PipelineStageList
+							columns={columns[section]}
+							{canEdit}
+							canAdd={!atLimit}
+							errors={rowErrors}
+							onAdd={() => addStage(section)}
+							onRename={renameStage}
+							onMove={(index, by) => moveStage(section, index, by)}
+							onRemove={removeStage}
+						/>
+					</SectionBlock>
+				{/each}
+
+				<p class="pipeline-settings__limit">
+					{stages.length} of {CUSTOM_STAGE_LIMIT} custom stages used.
+					{#if atLimit}You have reached the limit, so no more can be added.{/if}
+					Built-in stages follow real work — a request coming in, an assessment being booked, a quote
+					being sent — so they cannot be renamed, moved, or removed.
+				</p>
 			{/if}
 		{/snippet}
 
@@ -170,6 +340,11 @@
 			border-radius: var(--radius-base);
 			color: var(--color-text--secondary);
 			background: var(--color-surface--background);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__limit {
+			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 		}
 	}

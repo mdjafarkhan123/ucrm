@@ -12117,6 +12117,53 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			pipeline_custom_stages: {
+				Row: {
+					after_stage: string;
+					created_at: string;
+					created_by: string | null;
+					disabled_at: string | null;
+					id: string;
+					name: string;
+					organization_id: string;
+					position: number;
+					section: string;
+					updated_at: string;
+				};
+				Insert: {
+					after_stage: string;
+					created_at?: string;
+					created_by?: string | null;
+					disabled_at?: string | null;
+					id?: string;
+					name: string;
+					organization_id: string;
+					position: number;
+					section: string;
+					updated_at?: string;
+				};
+				Update: {
+					after_stage?: string;
+					created_at?: string;
+					created_by?: string | null;
+					disabled_at?: string | null;
+					id?: string;
+					name?: string;
+					organization_id?: string;
+					position?: number;
+					section?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'pipeline_custom_stages_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			platform_audit_events: {
 				Row: {
 					actor_owner_email: string;
@@ -23636,10 +23683,11 @@ export type Database = {
 				};
 				Returns: Json;
 			};
-			save_pipeline_presentation: {
+			save_pipeline_settings: {
 				Args: {
 					expected_revision: number;
 					new_detailed_assessment_stages: boolean;
+					new_stages: Json;
 					target_organization_id: string;
 				};
 				Returns: Json;

@@ -9,11 +9,13 @@ import {
 	ASSESSMENT_GROUP_STAGES,
 	BOARD_STAGES,
 	QUOTE_BOARD_STAGES,
-	type AnyBoardStage
+	type AnyBoardStage,
+	type CustomStage
 } from '$lib/pipeline/stages';
 import { resolveDateRange, type BoardDateRange } from '$lib/server/pipeline/board';
 import { organizationFormatting, type OrganizationFormatting } from '$lib/server/requests/timezone';
 import { pipelinePresentation } from '$lib/server/pipeline/presentation';
+import { enabledCustomStages } from '$lib/server/pipeline/stages';
 
 // Both groups' columns, in the fixed order their headings need to add up in. Request stages first, matching
 // the board's own left-to-right group order.
@@ -64,6 +66,11 @@ export const GET: RequestHandler = async (event) => {
 	// shape together, so the board never has to be told twice or reloaded by hand.
 	const presentationRead = pipelinePresentation(check.auth.organization.id);
 
+	// The custom columns ride along for the same reason: adding, renaming, or moving a stage in Settings
+	// refreshes this one query and the board redraws. No card can sit in a custom stage yet, so there is
+	// nothing to count for them here.
+	const stagesRead = enabledCustomStages(event.locals.supabase, check.auth.organization.id);
+
 	const countBetween = (range: BoardDateRange) =>
 		event.locals.supabase.rpc('pipeline_stage_counts', {
 			target_organization_id: check.auth.organization.id,
@@ -77,28 +84,32 @@ export const GET: RequestHandler = async (event) => {
 	// run one after the other. Without one — which is how the board opens — they are independent, so they
 	// go together and the board never waits for a calendar it is not using.
 	if (date === 'all') {
-		const [formattingLookup, presentationLookup, counted] = await Promise.all([
+		const [formattingLookup, presentationLookup, stagesLookup, counted] = await Promise.all([
 			formattingRead,
 			presentationRead,
+			stagesRead,
 			countBetween({ from: null, to: null })
 		]);
-		if (!formattingLookup.ok || !presentationLookup.ok || counted.error) return databaseError();
+		if (!formattingLookup.ok || !presentationLookup.ok || !stagesLookup.ok || counted.error)
+			return databaseError();
 		return summary(
 			formattingLookup.formatting,
 			presentationLookup.presentation.detailed_assessment_stages,
+			stagesLookup.stages,
 			counted.data,
 			canViewValue,
 			canEdit
 		);
 	}
 
-	const [formattingLookup, presentationLookup] = await Promise.all([
+	const [formattingLookup, presentationLookup, stagesLookup] = await Promise.all([
 		formattingRead,
-		presentationRead
+		presentationRead,
+		stagesRead
 	]);
 	// A settings row that could not be read is a failure, not a reason to quietly show the wrong currency,
 	// the wrong calendar day, or the wrong board.
-	if (!formattingLookup.ok || !presentationLookup.ok) return databaseError();
+	if (!formattingLookup.ok || !presentationLookup.ok || !stagesLookup.ok) return databaseError();
 
 	const counted = await countBetween(
 		resolveDateRange(date, formattingLookup.formatting.timezone, {
@@ -110,6 +121,7 @@ export const GET: RequestHandler = async (event) => {
 	return summary(
 		formattingLookup.formatting,
 		presentationLookup.presentation.detailed_assessment_stages,
+		stagesLookup.stages,
 		counted.data,
 		canViewValue,
 		canEdit
@@ -119,6 +131,7 @@ export const GET: RequestHandler = async (event) => {
 function summary(
 	formatting: OrganizationFormatting,
 	detailedAssessmentStages: boolean,
+	customStages: CustomStage[],
 	rows: unknown,
 	canViewValue: boolean,
 	canEdit: boolean
@@ -181,6 +194,9 @@ function summary(
 			// Which board to draw: false is the five-column default with one Assessment column, true is the
 			// seven-column detailed view. Presentation only — the counts above are the same either way.
 			detailed_assessment_stages: detailedAssessmentStages,
+			// The organization's custom follow-up columns, in saved order. Each names its section and the
+			// protected stage it sits after; the board places them from that.
+			custom_stages: customStages,
 			// Money and dates are written the organization's way, not the browser's.
 			currency_code: formatting.currency_code,
 			locale: formatting.locale,

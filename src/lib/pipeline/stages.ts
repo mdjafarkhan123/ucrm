@@ -120,3 +120,117 @@ export const REQUEST_COLUMNS_DETAILED: readonly BoardColumnKey[] = [
 	...ASSESSMENT_GROUP_STAGES
 ];
 export const QUOTE_COLUMNS: readonly BoardColumnKey[] = QUOTE_BOARD_STAGES;
+
+// Custom follow-up stages. An owner or administrator adds these in Settings → Pipeline; each belongs to
+// one section for life and is stored with the protected stage it sits after, so the protected stages keep
+// their own order and a section's first stage always stays first.
+export const BOARD_SECTIONS = ['request', 'quote'] as const;
+export type BoardSection = (typeof BOARD_SECTIONS)[number];
+
+export const BOARD_SECTION_LABELS: Record<BoardSection, string> = {
+	request: 'Requests',
+	quote: 'Quotes'
+};
+
+// Jobber's documented ceiling for one pipeline.
+export const CUSTOM_STAGE_LIMIT = 25;
+export const CUSTOM_STAGE_NAME_MAX = 40;
+
+export const SECTION_STAGES: Record<BoardSection, readonly AnyBoardStage[]> = {
+	request: BOARD_STAGES,
+	quote: QUOTE_BOARD_STAGES
+};
+
+export type CustomStage = {
+	id: string;
+	section: BoardSection;
+	name: string;
+	after_stage: AnyBoardStage;
+};
+
+// Where a custom stage sits: its section, and the protected stage it follows. Settings works with stages
+// that have no id yet, so the ordering below asks for nothing more than this.
+type PlacedStage = Pick<CustomStage, 'section' | 'after_stage'>;
+
+// One column on the board, or one row in the Settings list: a protected column, or a custom stage.
+export type SectionColumn<T extends PlacedStage = CustomStage> =
+	{ kind: 'protected'; key: BoardColumnKey } | { kind: 'custom'; stage: T };
+export type BoardColumn = SectionColumn<CustomStage>;
+
+export function boardColumnId(column: BoardColumn): string {
+	return column.kind === 'protected' ? column.key : `custom-${column.stage.id}`;
+}
+
+function protectedColumns(section: BoardSection, detailed: boolean): readonly BoardColumnKey[] {
+	if (section === 'quote') return QUOTE_COLUMNS;
+	return detailed ? REQUEST_COLUMNS_DETAILED : REQUEST_COLUMNS_COLLAPSED;
+}
+
+// A section's columns, left to right. `customStages` arrives in its saved order; each stage is drawn
+// straight after the protected column that holds the stage it follows. On the collapsed board that means
+// a stage saved after any of the three assessment stages follows the one Assessment column.
+export function sectionColumns<T extends PlacedStage>(
+	section: BoardSection,
+	detailed: boolean,
+	customStages: readonly T[]
+): SectionColumn<T>[] {
+	const columns: SectionColumn<T>[] = [];
+	for (const key of protectedColumns(section, detailed)) {
+		columns.push({ kind: 'protected', key });
+		for (const anchor of stagesInColumn(key)) {
+			for (const stage of customStages) {
+				if (stage.section === section && stage.after_stage === anchor) {
+					columns.push({ kind: 'custom', stage });
+				}
+			}
+		}
+	}
+	return columns;
+}
+
+// The reverse of `sectionColumns`, for Settings after a row has been moved: every custom stage takes the
+// protected column above it as the stage it follows. The collapsed Assessment column stands for its last
+// stage, which is where a stage placed after "Assessment" sits on the detailed board too.
+export function placeCustomStages<T extends PlacedStage>(
+	columns: readonly SectionColumn<T>[]
+): T[] {
+	const placed: T[] = [];
+	let anchor: AnyBoardStage | null = null;
+	for (const column of columns) {
+		if (column.kind === 'protected') {
+			anchor = stagesInColumn(column.key).at(-1) ?? null;
+		} else if (anchor) {
+			placed.push({ ...column.stage, after_stage: anchor });
+		}
+	}
+	return placed;
+}
+
+// Whether the row at `index` may move one place up or down. Only custom rows move, and never above the
+// section's first stage.
+export function canMoveColumn<T extends PlacedStage>(
+	columns: readonly SectionColumn<T>[],
+	index: number,
+	by: -1 | 1
+): boolean {
+	const target = index + by;
+	return columns[index]?.kind === 'custom' && target >= 1 && target < columns.length;
+}
+
+export function moveColumn<T extends PlacedStage>(
+	columns: readonly SectionColumn<T>[],
+	index: number,
+	by: -1 | 1
+): SectionColumn<T>[] {
+	if (!canMoveColumn(columns, index, by)) return [...columns];
+	const next = [...columns];
+	[next[index], next[index + by]] = [next[index + by], next[index]];
+	return next;
+}
+
+// A custom stage may not borrow the name of a column already in its section — two "Draft" columns side by
+// side cannot be told apart.
+export function protectedNamesInSection(section: BoardSection): string[] {
+	const names = SECTION_STAGES[section].map((stage) => ALL_STAGE_LABELS[stage]);
+	return section === 'request' ? [...names, BOARD_COLUMN_LABELS[ASSESSMENT_GROUP]] : names;
+}

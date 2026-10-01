@@ -29,9 +29,9 @@
 	import {
 		BOARD_STAGES,
 		QUOTE_BOARD_STAGES,
-		REQUEST_COLUMNS_COLLAPSED,
-		REQUEST_COLUMNS_DETAILED,
-		QUOTE_COLUMNS,
+		boardColumnId,
+		sectionColumns,
+		type BoardColumn,
 		type OpportunityStage
 	} from '$lib/pipeline/stages';
 	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
@@ -151,9 +151,21 @@
 	// or the seven-column detailed view. Presentation only -- rides on the same summary query the board
 	// already holds, so saving the Settings toggle changes the board without a reload.
 	const detailedAssessmentStages = $derived(summaryQuery.data?.detailed_assessment_stages ?? false);
-	const requestColumns = $derived(
-		detailedAssessmentStages ? REQUEST_COLUMNS_DETAILED : REQUEST_COLUMNS_COLLAPSED
+	// The organization's custom follow-up stages sit among the protected columns of their own section, each
+	// straight after the stage it was saved behind. They ride on the summary too, so adding or moving one
+	// in Settings redraws the board the same way the toggle does.
+	const customStages = $derived(summaryQuery.data?.custom_stages ?? []);
+	const requestColumns = $derived<BoardColumn[]>(
+		sectionColumns('request', detailedAssessmentStages, customStages)
 	);
+	const quoteColumns = $derived<BoardColumn[]>(
+		sectionColumns('quote', detailedAssessmentStages, customStages)
+	);
+	// No card can be in a custom stage yet, so its heading is a true zero and it carries no money.
+	const countFor = (column: BoardColumn) =>
+		column.kind === 'protected' ? counts?.[column.key] : counts ? 0 : undefined;
+	const valueTotalFor = (column: BoardColumn) =>
+		column.kind === 'protected' ? valueTotals?.[column.key] : undefined;
 
 	// An empty board and a filter that matched nothing are different answers and must not look the same:
 	// only a genuinely empty board gets the new-account message. A filtered board with no matches keeps its
@@ -306,11 +318,11 @@
 						{/snippet}
 
 						<div class="pipeline__columns">
-							{#each requestColumns as stage (stage)}
+							{#each requestColumns as column (boardColumnId(column))}
 								<PipelineColumn
-									{stage}
-									count={counts?.[stage]}
-									valueTotal={valueTotals?.[stage]}
+									{column}
+									count={countFor(column)}
+									valueTotal={valueTotalFor(column)}
 									filters={applied}
 									{formatting}
 									{canEdit}
@@ -336,11 +348,11 @@
 						{/snippet}
 
 						<div class="pipeline__columns">
-							{#each QUOTE_COLUMNS as stage (stage)}
+							{#each quoteColumns as column (boardColumnId(column))}
 								<PipelineColumn
-									{stage}
-									count={counts?.[stage]}
-									valueTotal={valueTotals?.[stage]}
+									{column}
+									count={countFor(column)}
+									valueTotal={valueTotalFor(column)}
 									filters={applied}
 									{formatting}
 									{canEdit}

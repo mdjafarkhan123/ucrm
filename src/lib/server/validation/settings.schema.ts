@@ -1,4 +1,14 @@
 import { z } from 'zod';
+import {
+	BOARD_SECTIONS,
+	BOARD_SECTION_LABELS,
+	BOARD_STAGES,
+	CUSTOM_STAGE_LIMIT,
+	CUSTOM_STAGE_NAME_MAX,
+	QUOTE_BOARD_STAGES,
+	SECTION_STAGES,
+	protectedNamesInSection
+} from '$lib/pipeline/stages';
 
 // Business Profile, Branding, and Business Hours are three pages that save on their own. Each sends only
 // its own fields and its own revision, so a tab left open on one of them cannot undo another's save.
@@ -137,15 +147,56 @@ export const brandingSchema = z.object({
 
 export type BrandingInput = z.infer<typeof brandingSchema>;
 
-// The Pipeline board's one presentation choice: whether Assessment shows as a single column or as its
-// three protected stages. It changes nothing about how work moves — only how many columns a contractor
-// looks at — so a boolean is the whole shape.
-export const pipelinePresentationSchema = z.object({
-	expected_revision: expectedRevision,
-	detailed_assessment_stages: z.boolean()
-});
+// Settings → Pipeline: the Assessment toggle and the organization's whole list of custom stages, saved
+// together. The list is every enabled stage in board order; an entry without an id is a new one. The
+// database repeats the limit and the same-name rule, because it is the one that sees two people saving at
+// once — this copy exists to name the exact row that is wrong.
+const customStageSchema = z
+	.object({
+		id: z.string().uuid().nullable(),
+		section: z.enum(BOARD_SECTIONS),
+		name: z
+			.string()
+			.trim()
+			.min(1, 'Give this stage a name.')
+			.max(CUSTOM_STAGE_NAME_MAX, `Keep the name under ${CUSTOM_STAGE_NAME_MAX} characters.`),
+		after_stage: z.enum([...BOARD_STAGES, ...QUOTE_BOARD_STAGES])
+	})
+	.refine((stage) => SECTION_STAGES[stage.section].includes(stage.after_stage), {
+		message: 'That stage cannot sit there.',
+		path: ['after_stage']
+	});
 
-export type PipelinePresentationInput = z.infer<typeof pipelinePresentationSchema>;
+export const pipelineSettingsSchema = z
+	.object({
+		expected_revision: expectedRevision,
+		detailed_assessment_stages: z.boolean(),
+		stages: z
+			.array(customStageSchema)
+			.max(CUSTOM_STAGE_LIMIT, `A pipeline can have up to ${CUSTOM_STAGE_LIMIT} custom stages.`)
+	})
+	.superRefine((settings, context) => {
+		const taken = new Map<string, Set<string>>(
+			BOARD_SECTIONS.map((section) => [
+				section,
+				new Set(protectedNamesInSection(section).map((name) => name.toLowerCase()))
+			])
+		);
+		settings.stages.forEach((stage, index) => {
+			const names = taken.get(stage.section);
+			const name = stage.name.toLowerCase();
+			if (names?.has(name)) {
+				context.addIssue({
+					code: 'custom',
+					message: `${BOARD_SECTION_LABELS[stage.section]} already has a stage called “${stage.name}”.`,
+					path: ['stages', index, 'name']
+				});
+			}
+			names?.add(name);
+		});
+	});
+
+export type PipelineSettingsInput = z.infer<typeof pipelineSettingsSchema>;
 
 // Which contact decides when a website chat or form's phone and email belong to two different clients.
 export const contactMatchPrioritySchema = z.object({

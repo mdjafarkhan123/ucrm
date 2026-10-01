@@ -4,6 +4,7 @@ import { httpError } from '$lib/http-error';
 // names the section that actually collided.
 
 import type { CatalogItem, PricingCategory } from '$lib/quotes/api';
+import type { CustomStage } from '$lib/pipeline/stages';
 import { finishFileUpload, startFileUpload } from '$lib/files/api';
 import { uploadAttachmentFile } from '$lib/collaboration/api';
 
@@ -195,6 +196,7 @@ export type SettingsPipeline = {
 	permissions: { view: boolean; edit: boolean };
 	pipeline: {
 		detailed_assessment_stages: boolean;
+		stages: CustomStage[];
 		revision: number;
 		last_editor: SettingsEditor;
 	};

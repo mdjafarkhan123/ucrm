@@ -1,5 +1,5 @@
 import type { QueryClient } from '@tanstack/svelte-query';
-import type { BoardColumnKey, OpportunityOutcome, OpportunityStage } from './stages';
+import type { BoardColumnKey, CustomStage, OpportunityOutcome, OpportunityStage } from './stages';
 import type { BoardFormatting } from './money';
 import { boardFilterKey, boardFilterParams, type BoardFilters } from './filters';
 import { outcomeFilterKey, outcomeFilterParams, type OutcomeFilters } from './outcomes';
@@ -68,6 +68,8 @@ export type BoardSummary = BoardFormatting & {
 	// way. It rides on the summary because that is the query the board already holds and already refreshes,
 	// so saving the setting changes the board without a reload.
 	detailed_assessment_stages: boolean;
+	// The custom follow-up columns an owner or administrator added in Settings, in saved order.
+	custom_stages: CustomStage[];
 };
 
 // One family, so anything that changes commercial work can clear the whole board with `['pipeline']`
@@ -78,8 +80,9 @@ export type BoardSummary = BoardFormatting & {
 // about the same set of cards, and a key that ignored the filters would hand a filtered board the cached
 // answer to an unfiltered question — cards for one salesperson under a count of everybody's.
 export const pipelineKey = ['pipeline'] as const;
-export const boardColumnKey = (stage: BoardColumnKey, filters: BoardFilters) =>
-	['pipeline', 'board', stage, boardFilterKey(filters)] as const;
+// `column` is a protected column's key, or a custom stage's column id from `boardColumnId`.
+export const boardColumnKey = (column: string, filters: BoardFilters) =>
+	['pipeline', 'board', column, boardFilterKey(filters)] as const;
 export const boardCountsKey = (filters: BoardFilters) =>
 	['pipeline', 'summary', boardFilterKey(filters)] as const;
 // One Opportunity's Brief Tasks. Still under the `['pipeline']` family so `invalidatePipeline` reaches it

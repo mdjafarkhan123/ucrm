@@ -10,13 +10,15 @@ import {
 } from '$lib/server/api/errors';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { isStale, settingsWriteError, staleSettingsResponse } from '$lib/server/settings/errors';
-import { pipelinePresentationSchema } from '$lib/server/validation/settings.schema';
+import { pipelineSettingsSchema } from '$lib/server/validation/settings.schema';
+import { enabledCustomStages } from '$lib/server/pipeline/stages';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 
 const SAVE_LIMIT = { windowSeconds: 60, maxAttempts: 20 };
 
 // Settings → Pipeline. Its own read and its own revision, kept apart from the three Business Profile
 // sections: turning the detailed board on must never collide with somebody editing the company address.
+// The Assessment toggle and the custom stages share that one revision and are saved together.
 //
 // The board itself does not read this route. It gets the preference from the Pipeline summary query,
 // which it already holds and already refreshes; this route exists for the Settings form, which needs the
@@ -25,15 +27,18 @@ export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'settings.business.view');
 	if ('response' in check) return check.response;
 
-	const { data, error } = await event.locals.supabase
-		.from('organization_settings')
-		.select(
-			'pipeline_detailed_assessment_stages, pipeline_revision, pipeline_updated_by, pipeline_updated_at'
-		)
-		.eq('organization_id', check.auth.organization.id)
-		.maybeSingle();
+	const [{ data, error }, stagesLookup] = await Promise.all([
+		event.locals.supabase
+			.from('organization_settings')
+			.select(
+				'pipeline_detailed_assessment_stages, pipeline_revision, pipeline_updated_by, pipeline_updated_at'
+			)
+			.eq('organization_id', check.auth.organization.id)
+			.maybeSingle(),
+		enabledCustomStages(event.locals.supabase, check.auth.organization.id)
+	]);
 
-	if (error) return databaseError();
+	if (error || !stagesLookup.ok) return databaseError();
 	if (!data) return notFound('These business settings could not be found.');
 
 	// Who saved last, by name. One extra read only once somebody has actually saved.
@@ -52,6 +57,8 @@ export const GET: RequestHandler = async (event) => {
 			permissions: { view: true, edit: hasPermission(check.access, 'settings.business.edit') },
 			pipeline: {
 				detailed_assessment_stages: data.pipeline_detailed_assessment_stages,
+				// Every enabled custom stage, in board order. The form saves the whole list back.
+				stages: stagesLookup.stages,
 				revision: data.pipeline_revision,
 				last_editor: data.pipeline_updated_by
 					? { name: editorName, at: data.pipeline_updated_at }
@@ -88,13 +95,14 @@ export const PATCH: RequestHandler = async (event) => {
 		return validationError({ form: 'Request body must be valid JSON.' });
 	}
 
-	const parsed = pipelinePresentationSchema.safeParse(body);
+	const parsed = pipelineSettingsSchema.safeParse(body);
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
-	const { data, error } = await event.locals.supabase.rpc('save_pipeline_presentation', {
+	const { data, error } = await event.locals.supabase.rpc('save_pipeline_settings', {
 		target_organization_id: organizationId,
 		expected_revision: parsed.data.expected_revision,
-		new_detailed_assessment_stages: parsed.data.detailed_assessment_stages
+		new_detailed_assessment_stages: parsed.data.detailed_assessment_stages,
+		new_stages: parsed.data.stages
 	});
 
 	if (error) return settingsWriteError(error);

@@ -7,10 +7,10 @@ first paying client.
 
 **In progress:**
 
-- Nothing claimed. The build split (27 parts, stages A–G) was approved 2026-10-01.
+- Nothing claimed. A1 (custom stages in Settings, shown as empty columns) finished 2026-10-01.
 
-**Next part:** A1 Add custom stages in Settings — `stages/A-custom-stages.md`. It changes the board's read path,
-so run the `performance-review` design branch first. B1 (`stages/B-honest-outcomes.md`) may be built by a second
-session at the same time.
+**Next part:** A2 Move cards in and out — `stages/A-custom-stages.md`, including its "Carried from A1" notes.
+It changes the board's card read path, so run the `performance-review` design branch first. B1
+(`stages/B-honest-outcomes.md`) may be built by a second session at the same time.
 
 **Blockers:** None.

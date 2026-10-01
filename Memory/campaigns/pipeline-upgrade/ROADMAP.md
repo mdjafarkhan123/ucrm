@@ -11,7 +11,7 @@ Evidence: `docs/research/pipeline-gap-audit-2026-10-01.md` and
 
 | Stage | Delivers | State | Parts |
 | --- | --- | --- | --- |
-| A Custom follow-up stages | Owner-made columns, moving cards among them, safe switch-off, On hold | Not started | `stages/A-custom-stages.md` |
+| A Custom follow-up stages | Owner-made columns, moving cards among them, safe switch-off, On hold | In progress — A1 done 2026-10-01 | `stages/A-custom-stages.md` |
 | B Honest outcomes | Request-to-Job Won, Direct job, real send on drop, failed delivery, Lost quotes, Lost reasons | Not started — may run alongside A | `stages/B-honest-outcomes.md` |
 | C What needs attention today | Tasks as the only follow-up, Task-first order, inactivity warning per stage | Not started | `stages/C-attention.md` |
 | D Move, find, and work at volume | Move button, search, lead source, saved filters, table, phone view, bulk tools | Not started | `stages/D-move-find-volume.md` |

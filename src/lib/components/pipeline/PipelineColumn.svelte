@@ -27,9 +27,10 @@
 	import {
 		ASSESSMENT_GROUP,
 		BOARD_COLUMN_LABELS,
+		boardColumnId,
 		stagesInColumn,
 		type AnyBoardStage,
-		type BoardColumnKey,
+		type BoardColumn,
 		type OpportunityStage
 	} from '$lib/pipeline/stages';
 	import {
@@ -45,7 +46,7 @@
 	// three fetch again, and the header count comes from the board summary rather than from this query,
 	// so paging never re-counts the board.
 	let {
-		stage,
+		column,
 		count,
 		valueTotal,
 		filters,
@@ -58,7 +59,8 @@
 		dragBusy,
 		onDragBusyChange
 	}: {
-		stage: BoardColumnKey;
+		// A protected column, or a custom follow-up stage an owner or administrator added in Settings.
+		column: BoardColumn;
 		count: number | undefined;
 		// Undefined while the summary is still answering or this member may not see money; null when nobody
 		// has estimated anything in this column, which is not zero and never prints as $0.00.
@@ -82,12 +84,24 @@
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 
+	// The protected column this is, or null for a custom stage. Nothing can put a card in a custom stage
+	// yet -- moving cards in and out is the next part of this work -- so a custom column is drawn empty
+	// without asking the server for cards, takes no drops, and starts no drags.
+	const stage = $derived(column.kind === 'protected' ? column.key : null);
+	const columnId = $derived(boardColumnId(column));
+	const label = $derived(
+		column.kind === 'protected' ? BOARD_COLUMN_LABELS[column.key] : column.stage.name
+	);
+
 	const query = createInfiniteQuery(() => ({
 		// The filters are in the key, so changing a control asks a new question rather than reusing the
 		// answer to the old one, and paging restarts from the top of the new order on its own.
-		queryKey: boardColumnKey(stage, filters),
-		queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
-			fetchBoardColumn(stage, filters, pageParam),
+		queryKey: boardColumnKey(columnId, filters),
+		queryFn: ({ pageParam }: { pageParam: string | undefined }) => {
+			if (stage === null) throw new Error('A custom stage has no cards to load.');
+			return fetchBoardColumn(stage, filters, pageParam);
+		},
+		enabled: stage !== null,
 		initialPageParam: undefined as string | undefined,
 		getNextPageParam: (page: BoardColumnPage) => page.next_cursor ?? undefined,
 		// Cards only move when a Request or Assessment moves, and both of those invalidate this key
@@ -97,7 +111,7 @@
 	}));
 
 	const cards = $derived(query.data?.pages.flatMap((page) => page.opportunities) ?? []);
-	const headingId = $derived(`pipeline-column-${stage}`);
+	const headingId = $derived(`pipeline-column-${columnId}`);
 	// Only when there is real money in the column and somewhere to write it in this organization's currency.
 	// Nothing estimated means nothing shown, never a zero.
 	const total = $derived(
@@ -137,6 +151,7 @@
 	// mentions (backward, cross-group, or otherwise not a real domain command).
 	const dropRefused = $derived.by(() => {
 		if (draggingFromStage === null) return false;
+		if (stage === null) return true;
 		// Widened from `AnyBoardStage[]` to `OpportunityStage[]` -- a superset, so every real comparison
 		// below still only ever matches a genuine board stage.
 		const inThisColumn: readonly OpportunityStage[] = stagesInColumn(stage);
@@ -173,7 +188,7 @@
 			(item) => item.id === event.detail.info.id && item.stage !== stage
 		);
 		items = cards;
-		if (!dropped) return;
+		if (!dropped || stage === null) return;
 
 		const fromStage = dropped.stage;
 
@@ -332,7 +347,7 @@
 <section class="pipeline-column" aria-labelledby={headingId}>
 	<header class="pipeline-column__header">
 		<div class="pipeline-column__heading">
-			<h3 id={headingId}>{BOARD_COLUMN_LABELS[stage]}</h3>
+			<h3 id={headingId}>{label}</h3>
 			{#if count !== undefined}
 				<span class="pipeline-column__count">{count}</span>
 			{/if}
@@ -342,13 +357,13 @@
 		{/if}
 	</header>
 
-	{#if query.isPending}
+	{#if stage !== null && query.isPending}
 		<div class="pipeline-column__cards">
 			{#each { length: 3 }, index (index)}
 				<LoadingSkeleton variant="card" label="Loading opportunities" />
 			{/each}
 		</div>
-	{:else if query.isError}
+	{:else if stage !== null && query.isError}
 		<div class="pipeline-column__cards">
 			<p class="pipeline-column__message pipeline-column__message--error">
 				This column could not be loaded.
@@ -366,7 +381,7 @@
 				use:dndzone={{
 					items,
 					flipDurationMs: 150,
-					dragDisabled: !canEdit || pendingCard !== null || dragBusy,
+					dragDisabled: !canEdit || stage === null || pendingCard !== null || dragBusy,
 					dropFromOthersDisabled: dropRefused
 				}}
 				onconsider={handleConsider}
