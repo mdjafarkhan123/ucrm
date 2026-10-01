@@ -18,6 +18,9 @@ Carried from stage A (design in `docs/adr/0004-pipeline-custom-stages-anchor-to-
   directly with its id (no screen offers it). A frozen Won, Lost, or Direct job value should not be editable.
 - B1 and B2's database rules (Request-to-Job Won, Direct job) were proven on the live database and in the
   browser only; they need pgTAP files too.
+- From C1, for G1: in the Task order the collapsed Assessment column sorts its cards after reading them
+  (single columns read straight from an index). Measure it at volume. The `next_task_due_on` trigger also
+  needs a pgTAP file.
 - Raad LTD's test data: one enabled custom stage, "Waiting on customer" (Quotes, after Awaiting response),
   switched to on hold and holding one card with a Task due 2026-10-15; two switched-off stages remain from
   A3's check.

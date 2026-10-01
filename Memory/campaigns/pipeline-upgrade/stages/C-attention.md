@@ -5,14 +5,14 @@ board (priority order, inactivity warning) and § Ownership and visibility; audi
 
 | Part | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- |
-| C1 Tasks are the only follow-up | Existing next-follow-up dates become open Tasks and the duplicate field goes; the default board order is overdue Task, due today, no Task, future Task; Expected close is an alternate sort | — | A card that had a follow-up date now shows a Task on that date; "Next follow-up" appears nowhere; in one column the default order is overdue, due today, no Task, future | Not started |
+| C1 Tasks are the only follow-up | Existing next-follow-up dates become open Tasks and the duplicate field goes; the default board order is overdue Task, due today, no Task, future Task; Expected close is an alternate sort | — | A card that had a follow-up date now shows a Task on that date; "Next follow-up" appears nowhere; in one column the default order is overdue, due today, no Task, future | Done 2026-10-01 |
 | C2 Inactivity warning replaces the red 24-hour rule | Time in stage shows as plain context; a warning appears after the default days for that stage; the clock resets only for real progress on the Request, Assessment, Quote, or a completed Task | B3 | A New request untouched for two days shows the warning; completing its Task clears it; changing its value, owner, or adding a Note does not | Not started |
 | C3 Replies, calls, own day counts, and On hold | A customer reply or a logged call outcome resets the clock; the owner sets the warning days for each stage; an on-hold card stays quiet until its Task is due | C2, A4 | A customer's email reply clears a warning; the owner sets Awaiting response to 3 days and the board follows; an on-hold card shows no warning until its Task date arrives | Not started |
-
-Trap for C1: an Opportunity may already hold five open Tasks, so the move from follow-up date to Task needs a
-rule for that case before any data is changed.
 
 Carried from stage A: an on-hold stage is a custom stage with `requires_future_task` on. The plan says its
 inactivity warning pauses only until the card's future Task becomes due; the part that builds the warning
 owns that. The warning needs its own progress clock — `stage_entered_at` restarts on every custom move
 (ADR 0004, point 8).
+
+From C1: each card keeps `next_task_due_on` (its earliest open Task date, kept by a trigger on `tasks`);
+C3's "quiet until its Task is due" can read it.
