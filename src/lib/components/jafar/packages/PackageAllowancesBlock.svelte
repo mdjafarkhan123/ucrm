@@ -1,7 +1,9 @@
 <script lang="ts">
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
+	import InfoTip from '$lib/components/ui/InfoTip.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
+	import { ALLOWANCE_HELP } from '$lib/jafar/allowance-help';
 	import {
 		allowanceApplies,
 		type AllowanceReference,
@@ -74,7 +76,23 @@
 			{@const value = valueOf(allowance.key)}
 			<li class="package-allowances__row" id={`package-allowance-${allowance.key}`}>
 				<div class="package-allowances__copy">
-					<span class="package-allowances__label">{allowance.label}</span>
+					<span class="package-allowances__label">
+						{allowance.label}
+						{#if ALLOWANCE_HELP[allowance.key]}
+							{@const help = ALLOWANCE_HELP[allowance.key]}
+							<InfoTip label={`What ${allowance.label} means`} title={allowance.label}>
+								<p>{help.what}</p>
+								<dl class="package-allowances__help">
+									<dt>What is counted</dt>
+									<dd>{help.counts}</dd>
+									<dt>When the limit is reached</dt>
+									<dd>{help.atLimit}</dd>
+									<dt>Example</dt>
+									<dd>{help.example}</dd>
+								</dl>
+							</InfoTip>
+						{/if}
+					</span>
 					<span class="package-allowances__hint">{counting(allowance)}</span>
 				</div>
 				<div class="package-allowances__controls">
@@ -160,8 +178,17 @@
 		}
 
 		&__label {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-smaller);
 			color: var(--color-heading);
 			font-weight: 600;
+		}
+
+		&__help {
+			display: grid;
+			gap: var(--space-small);
+			margin: 0;
 		}
 
 		&__hint,
