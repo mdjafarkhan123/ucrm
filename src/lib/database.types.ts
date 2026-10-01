@@ -8976,6 +8976,7 @@ export type Database = {
 					outcome_at: string | null;
 					outcome_kind: string | null;
 					owner_user_id: string | null;
+					progress_at: string;
 					property_id: string | null;
 					quote_id: string | null;
 					request_id: string | null;
@@ -9000,6 +9001,7 @@ export type Database = {
 					outcome_at?: string | null;
 					outcome_kind?: string | null;
 					owner_user_id?: string | null;
+					progress_at?: string;
 					property_id?: string | null;
 					quote_id?: string | null;
 					request_id?: string | null;
@@ -9024,6 +9026,7 @@ export type Database = {
 					outcome_at?: string | null;
 					outcome_kind?: string | null;
 					owner_user_id?: string | null;
+					progress_at?: string;
 					property_id?: string | null;
 					quote_id?: string | null;
 					request_id?: string | null;
@@ -21858,6 +21861,7 @@ export type Database = {
 					quote_delivery_failed_at: string;
 					quote_delivery_failed_email: string;
 					quote_delivery_failure: string;
+					progress_at: string;
 					quote_id: string;
 					quote_status: string;
 					request_id: string;

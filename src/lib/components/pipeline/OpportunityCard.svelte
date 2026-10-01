@@ -6,7 +6,7 @@
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import OpportunityOwnerField from './OpportunityOwnerField.svelte';
 	import MarkOpportunityLostDialog from './MarkOpportunityLostDialog.svelte';
-	import { stageAge } from '$lib/pipeline/freshness';
+	import { inactivity, stageAge } from '$lib/pipeline/freshness';
 	import { appointment, followUp, formatMoney, type BoardFormatting } from '$lib/pipeline/money';
 	import {
 		fetchLostReasons,
@@ -26,6 +26,7 @@
 	import userCircleIcon from '@tabler/icons/outline/user-circle.svg?raw';
 	import checklistIcon from '@tabler/icons/outline/checklist.svg?raw';
 	import mailOffIcon from '@tabler/icons/outline/mail-off.svg?raw';
+	import hourglassIcon from '@tabler/icons/outline/hourglass-low.svg?raw';
 
 	// One card on the board. Opening it is a full-size button stretched behind everything else, so the
 	// keyboard and a screen reader still reach the whole card as one target — the owner control and the
@@ -107,6 +108,8 @@
 			: [])
 	]);
 	const age = $derived(stageAge(opportunity.stage_entered_at));
+	// Judged by the real stage even when the card sits in a custom one, until owners set their own days.
+	const quiet = $derived(inactivity(opportunity.stage, opportunity.progress_at));
 	// The card's real state, read off its real stage -- never a second stored value. "Unscheduled" is
 	// worded as a plain state name rather than an instruction, the same register the other two use.
 	const stageBadge = $derived.by(() => {
@@ -176,7 +179,8 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div
-	class={`opportunity-card opportunity-card--${age.freshness}`}
+	class="opportunity-card"
+	class:opportunity-card--inactive={quiet !== null}
 	class:opportunity-card--draggable={canEdit}
 >
 	<!-- A real `<button>` would work for click and keyboard alike, but svelte-dnd-action's drag-start
@@ -236,6 +240,12 @@
 			Delivery failed
 		</span>
 	{/if}
+	{#if quiet}
+		<span class="opportunity-card__inactive">
+			<span class="opportunity-card__icon" aria-hidden="true">{@html hourglassIcon}</span>
+			{quiet.label}
+		</span>
+	{/if}
 	{#if amount}
 		<span class="opportunity-card__amount">{amount}</span>
 	{/if}
@@ -287,7 +297,7 @@
 					</span>
 				</span>
 			{/if}
-			<StageAgeChip label={age.label} freshness={age.freshness} description={age.description} />
+			<StageAgeChip label={age.label} description={age.description} />
 		</span>
 	</span>
 	{#if opportunity.task}
@@ -389,14 +399,8 @@
 			box-shadow: var(--shadow-focus);
 		}
 	}
-	// The edge repeats what the age chip says, for the glance across a full column.
-	.opportunity-card--fresh {
-		--card-edge: var(--color-success);
-	}
-	.opportunity-card--steady {
-		--card-edge: var(--color-border);
-	}
-	.opportunity-card--stale {
+	// The edge repeats the inactivity line, for the glance across a full column. Age alone never colours it.
+	.opportunity-card--inactive {
 		--card-edge: var(--color-critical);
 	}
 	.opportunity-card__header {
@@ -536,7 +540,8 @@
 		}
 	}
 	// The words carry it; the colour and the icon only repeat them.
-	.opportunity-card__delivery-failed {
+	.opportunity-card__delivery-failed,
+	.opportunity-card__inactive {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;

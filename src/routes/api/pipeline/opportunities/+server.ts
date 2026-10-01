@@ -54,6 +54,7 @@ type BoardPageRow = {
 	quote_delivery_failed_at: string | null;
 	quote_delivery_failed_email: string | null;
 	quote_delivery_failure: QuoteDeliveryFailureReason | null;
+	progress_at: string;
 };
 
 // One board column at a time. Each column asks for its own page, so a busy stage can keep loading
@@ -173,6 +174,7 @@ export const GET: RequestHandler = async (event) => {
 		// `stage` above is the real one either way.
 		custom_stage_id: row.custom_stage_id,
 		stage_entered_at: row.stage_entered_at,
+		progress_at: row.progress_at,
 		outcome: row.outcome,
 		created_at: row.created_at,
 		expected_close_on: row.expected_close_on,

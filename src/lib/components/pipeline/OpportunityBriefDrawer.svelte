@@ -8,11 +8,12 @@
 	import StageAgeChip from './StageAgeChip.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
 	import OpportunityNextActionSection from './OpportunityNextActionSection.svelte';
 	import OpportunityDetailsSection from './OpportunityDetailsSection.svelte';
 	import OpportunityTasksSection from './OpportunityTasksSection.svelte';
 	import OpportunityNotesSection from './OpportunityNotesSection.svelte';
-	import { stageAge } from '$lib/pipeline/freshness';
+	import { inactivity, stageAge } from '$lib/pipeline/freshness';
 	import type { BoardFormatting } from '$lib/pipeline/money';
 	import type { OpportunityCard } from '$lib/pipeline/api';
 	import { ALL_STAGE_LABELS, isAnyBoardStage } from '$lib/pipeline/stages';
@@ -43,6 +44,9 @@
 	} = $props();
 
 	const age = $derived(opportunity ? stageAge(opportunity.stage_entered_at) : null);
+	const quiet = $derived(
+		opportunity ? inactivity(opportunity.stage, opportunity.progress_at) : null
+	);
 	const stageLabel = $derived(
 		opportunity && isAnyBoardStage(opportunity.stage) ? ALL_STAGE_LABELS[opportunity.stage] : null
 	);
@@ -90,7 +94,10 @@
 		<div class="brief__status">
 			{#if stageLabel}<span class="brief__stage">{stageLabel}</span>{/if}
 			{#if age}
-				<StageAgeChip label={age.label} freshness={age.freshness} description={age.description} />
+				<StageAgeChip label={age.label} description={age.description} />
+			{/if}
+			{#if quiet}
+				<Badge status="critical" size="small">{quiet.label}</Badge>
 			{/if}
 		</div>
 
@@ -136,7 +143,12 @@
 				onConverted={onClose}
 			/>
 			<OpportunityDetailsSection {opportunity} {formatting} {canEdit} {onUpdate} />
-			<OpportunityTasksSection opportunityId={opportunity.id} {formatting} {canEdit} />
+			<OpportunityTasksSection
+				opportunityId={opportunity.id}
+				{formatting}
+				{canEdit}
+				onCompleted={() => onUpdate({ progress_at: new Date().toISOString() })}
+			/>
 			<OpportunityNotesSection
 				opportunityId={opportunity.id}
 				hasClient={opportunity.client !== null}

@@ -24,11 +24,15 @@
 	let {
 		opportunityId,
 		formatting,
-		canEdit
+		canEdit,
+		onCompleted
 	}: {
 		opportunityId: string;
 		formatting: BoardFormatting | null;
 		canEdit: boolean;
+		// Completing a Task is real progress. The Brief holds its own copy of the card, so it is told here
+		// rather than waiting for the board, which refetches on its own.
+		onCompleted?: () => void;
 	} = $props();
 
 	const queryClient = useQueryClient();
@@ -84,6 +88,7 @@
 			setTaskCompletion(input.task.id, input.completed),
 		onSuccess: (_result, input) => {
 			invalidatePipeline(queryClient);
+			if (input.completed) onCompleted?.();
 			toast.success(input.completed ? 'Task completed' : 'Task reopened');
 		},
 		onError: (error: Error) => toast.error('Could not update the task', error.message)

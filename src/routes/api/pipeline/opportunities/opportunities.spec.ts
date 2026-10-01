@@ -33,6 +33,7 @@ function boardRow(overrides: Record<string, unknown> = {}) {
 		title: 'Rewire the panel',
 		stage: 'new_request',
 		stage_entered_at: '2026-08-10T00:00:00.000Z',
+		progress_at: '2026-08-10T00:00:00.000Z',
 		outcome: 'open',
 		created_at: '2026-08-10T00:00:00.000Z',
 		request_id: 'req-1',

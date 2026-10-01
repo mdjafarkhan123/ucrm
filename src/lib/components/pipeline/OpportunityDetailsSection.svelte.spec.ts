@@ -16,6 +16,7 @@ const opportunity: OpportunityCard = {
 	stage: 'new_request',
 	custom_stage_id: null,
 	stage_entered_at: '2026-08-10T00:00:00.000Z',
+	progress_at: '2026-08-10T00:00:00.000Z',
 	outcome: 'open',
 	created_at: '2026-08-10T00:00:00.000Z',
 	request: { id: 'req-1', status: 'new' },

@@ -18,6 +18,7 @@ const card: OpportunityCardData = {
 	stage: 'assessment_unscheduled',
 	custom_stage_id: null,
 	stage_entered_at: '2026-08-23T00:00:00.000Z',
+	progress_at: '2026-08-23T00:00:00.000Z',
 	outcome: 'open',
 	created_at: '2026-08-23T00:00:00.000Z',
 	request: { id: 'request-1', status: 'assessment_unscheduled' },

@@ -1,11 +1,14 @@
-// How long a card has sat where it is, and how worried to look about it. Jobber's rule, kept in one
-// place so the card, the chip, and the drawer can never disagree: fresh under an hour, steady up to a
-// day, stale after that.
+// Two clocks on every card, kept in one place so the card and the Brief can never disagree.
 //
-// The clock is the browser's. Nothing here crosses a calendar boundary, so the organization's timezone
-// does not come into it — this is elapsed time, not a date.
+// - Time in the column (`stage_entered_at`) is plain context. It never turns a card red by itself.
+// - The inactivity warning counts from the card's last real progress (`progress_at`) and appears once that
+//   is older than its stage's number of days — Pipedrive's "rotting" deal, with the plan's defaults
+//   (docs/sales-pipeline-behavior-contract.md, § First-release board).
+//
+// The clock is the browser's. Both are elapsed time, not calendar dates, so the organization's timezone does
+// not come into it.
 
-export type Freshness = 'fresh' | 'steady' | 'stale';
+import type { OpportunityStage } from './stages';
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
@@ -13,25 +16,27 @@ const DAY = 24 * HOUR;
 export type StageAge = {
 	/** The short chip label: `0h`, `7h`, `21d`. */
 	label: string;
-	freshness: Freshness;
-	/** Said in full, for screen readers and the drawer. */
+	/** Said in full, for screen readers and the Brief. */
 	description: string;
 };
 
+function elapsedSince(timestamp: string, now: number): number {
+	const at = Date.parse(timestamp);
+	// An unparseable or future timestamp reads as brand new rather than as a huge negative age.
+	return Number.isNaN(at) ? 0 : Math.max(0, now - at);
+}
+
 export function stageAge(enteredAt: string, now: number = Date.now()): StageAge {
-	const entered = Date.parse(enteredAt);
-	// An unparseable or future timestamp should read as brand new rather than as a huge negative age.
-	const elapsed = Number.isNaN(entered) ? 0 : Math.max(0, now - entered);
+	const elapsed = elapsedSince(enteredAt, now);
 
 	if (elapsed < HOUR) {
-		return { label: '0h', freshness: 'fresh', description: 'In this stage for less than an hour' };
+		return { label: '0h', description: 'In this stage for less than an hour' };
 	}
 
 	if (elapsed < DAY) {
 		const hours = Math.floor(elapsed / HOUR);
 		return {
 			label: `${hours}h`,
-			freshness: 'steady',
 			description: `In this stage for ${hours} ${hours === 1 ? 'hour' : 'hours'}`
 		};
 	}
@@ -39,7 +44,39 @@ export function stageAge(enteredAt: string, now: number = Date.now()): StageAge 
 	const days = Math.floor(elapsed / DAY);
 	return {
 		label: `${days}d`,
-		freshness: 'stale',
 		description: `In this stage for ${days} ${days === 1 ? 'day' : 'days'}`
 	};
+}
+
+// How many days without progress each protected stage allows before the warning. A card sitting in a custom
+// stage is judged by its real stage until owners can set their own days (part C3).
+export const INACTIVITY_DAYS: Record<Exclude<OpportunityStage, 'request_closed'>, number> = {
+	new_request: 1,
+	assessment_unscheduled: 2,
+	assessment_scheduled: 2,
+	assessment_completed: 2,
+	quote_draft: 2,
+	quote_awaiting_response: 5,
+	quote_changes_requested: 2
+};
+
+export type Inactivity = {
+	/** Whole days since the last real progress. */
+	days: number;
+	/** `No progress for 3 days`. */
+	label: string;
+};
+
+// Null while the card is within its stage's days, or when it is not on the board at all.
+export function inactivity(
+	stage: OpportunityStage,
+	progressAt: string,
+	now: number = Date.now()
+): Inactivity | null {
+	if (stage === 'request_closed') return null;
+	const elapsed = elapsedSince(progressAt, now);
+	if (elapsed < INACTIVITY_DAYS[stage] * DAY) return null;
+
+	const days = Math.floor(elapsed / DAY);
+	return { days, label: `No progress for ${days} ${days === 1 ? 'day' : 'days'}` };
 }

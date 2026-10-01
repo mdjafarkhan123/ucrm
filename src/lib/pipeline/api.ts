@@ -22,6 +22,9 @@ export type OpportunityCard = {
 	// When the card arrived in the column it is drawn in. The column shows its age from here, never from
 	// created_at.
 	stage_entered_at: string;
+	// When the card last made real progress. The inactivity warning counts from here; a move between
+	// custom stages does not restart it.
+	progress_at: string;
 	outcome: OpportunityOutcome;
 	created_at: string;
 	// Exactly one of `request`/`quote` is set -- the same single-source rule the database enforces on
