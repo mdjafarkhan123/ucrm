@@ -131,7 +131,8 @@
 		// Each change is its own history entry, so Back steps through the filters the way it steps through
 		// pages. Typing a search is the exception: it replaces the entry, so Back leaves the search rather
 		// than un-typing it a pause at a time. Focus stays where it was, and the board does not jump to the top.
-		void goto(`${page.url.pathname}${query ? `?${query}` : ''}`, {
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- the path comes from resolve(); only the query string is added.
+		void goto(`${resolve('/(app)/pipeline')}${query ? `?${query}` : ''}`, {
 			keepFocus: true,
 			noScroll: true,
 			replaceState: options?.replace ?? false
