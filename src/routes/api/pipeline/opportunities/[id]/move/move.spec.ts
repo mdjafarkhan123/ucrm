@@ -1,12 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from './+server';
-import { requireOrganizationPermission } from '$lib/server/access/permission';
+import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
+import { sendDraftQuoteByEmail } from '$lib/server/quotes/send';
 
 vi.mock('$lib/server/access/permission', () => ({
-	requireOrganizationPermission: vi.fn()
+	requireOrganizationPermission: vi.fn(),
+	hasPermission: vi.fn()
 }));
+vi.mock('$lib/server/quotes/send', () => ({ sendDraftQuoteByEmail: vi.fn() }));
 
 const mockedRequire = vi.mocked(requireOrganizationPermission);
+const mockedHasPermission = vi.mocked(hasPermission);
+const mockedSendEmail = vi.mocked(sendDraftQuoteByEmail);
 const opportunityId = '00000000-0000-4000-8000-000000000051';
 const organizationId = '00000000-0000-4000-8000-000000000052';
 const requestId = '00000000-0000-4000-8000-000000000053';
@@ -74,6 +79,8 @@ describe('drag an opportunity', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mockedRequire.mockResolvedValue(context);
+		mockedHasPermission.mockReturnValue(true);
+		mockedSendEmail.mockResolvedValue(null);
 	});
 
 	it('needs pipeline.edit', async () => {
@@ -215,54 +222,161 @@ describe('drag an opportunity', () => {
 		expect(response.status).toBe(404);
 	});
 
-	it('sends the current draft when a quote is dragged onto Awaiting response', async () => {
-		const rpc = vi.fn();
-		rpc.mockResolvedValueOnce({
+	function quoteGate() {
+		return {
 			data: gateResult({ request_id: null, quote_id: quoteId, from_stage: 'quote_draft' }),
 			error: null
-		});
-		rpc.mockResolvedValueOnce({
-			data: { quote_id: quoteId, status: 'awaiting_response' },
-			error: null
-		});
-		const from = fromQueue([{ data: { revision: 3 }, error: null }]);
+		};
+	}
 
-		const response = await POST(event({ to_stage: 'quote_awaiting_response' }, { rpc, from }));
+	it('will not move a Draft quote to Awaiting response on the drop alone', async () => {
+		const rpc = vi.fn().mockResolvedValueOnce(quoteGate());
 
-		expect(rpc).toHaveBeenNthCalledWith(2, 'publish_quote', {
-			target_quote_id: quoteId,
-			expected_revision: 3
+		const response = await POST(event({ to_stage: 'quote_awaiting_response' }, { rpc }));
+
+		expect(response.status).toBe(422);
+		expect(rpc).toHaveBeenCalledTimes(1);
+		expect(mockedSendEmail).not.toHaveBeenCalled();
+	});
+
+	it('emails the reviewed draft when the send window chooses email', async () => {
+		const rpc = vi.fn().mockResolvedValueOnce(quoteGate());
+
+		const response = await POST(
+			event(
+				{
+					to_stage: 'quote_awaiting_response',
+					idempotency_key: idempotencyKey,
+					send: { method: 'email', expected_revision: 3 }
+				},
+				{ rpc }
+			)
+		);
+
+		expect(mockedSendEmail).toHaveBeenCalledWith({
+			organizationId,
+			actorUserId: 'user-1',
+			quoteId,
+			expectedRevision: 3,
+			idempotencyKey
 		});
+		expect(rpc).toHaveBeenCalledTimes(1);
 		expect(response.status).toBe(200);
 	});
 
-	it('answers not-found when the quote has no draft to send', async () => {
-		const rpc = vi.fn().mockResolvedValueOnce({
-			data: gateResult({ request_id: null, quote_id: quoteId, from_stage: 'quote_draft' }),
-			error: null
-		});
-		const from = fromQueue([{ data: null, error: null }]);
+	it('will not email without a key the send can be retried with', async () => {
+		const rpc = vi.fn().mockResolvedValueOnce(quoteGate());
 
-		const response = await POST(event({ to_stage: 'quote_awaiting_response' }, { rpc, from }));
-
-		expect(response.status).toBe(404);
-	});
-
-	it('turns a publish_quote refusal into a form error', async () => {
-		const rpc = vi.fn();
-		rpc.mockResolvedValueOnce({
-			data: gateResult({ request_id: null, quote_id: quoteId, from_stage: 'quote_draft' }),
-			error: null
-		});
-		rpc.mockResolvedValueOnce({
-			data: null,
-			error: { code: '23514', message: 'Only a draft quote can be sent.' }
-		});
-		const from = fromQueue([{ data: { revision: 1 }, error: null }]);
-
-		const response = await POST(event({ to_stage: 'quote_awaiting_response' }, { rpc, from }));
+		const response = await POST(
+			event(
+				{ to_stage: 'quote_awaiting_response', send: { method: 'email', expected_revision: 3 } },
+				{ rpc }
+			)
+		);
 
 		expect(response.status).toBe(422);
+		expect(mockedSendEmail).not.toHaveBeenCalled();
+	});
+
+	it('hands back the email refusal and leaves the card where it is', async () => {
+		const rpc = vi.fn().mockResolvedValueOnce(quoteGate());
+		mockedSendEmail.mockResolvedValue(new Response(null, { status: 422 }));
+
+		const response = await POST(
+			event(
+				{
+					to_stage: 'quote_awaiting_response',
+					idempotency_key: idempotencyKey,
+					send: { method: 'email', expected_revision: 3 }
+				},
+				{ rpc }
+			)
+		);
+
+		expect(response.status).toBe(422);
+	});
+
+	it('records a quote the person sent themselves, with its channel and note', async () => {
+		const rpc = vi.fn();
+		rpc.mockResolvedValueOnce(quoteGate());
+		rpc.mockResolvedValueOnce({ data: { quote_id: quoteId }, error: null });
+
+		const response = await POST(
+			event(
+				{
+					to_stage: 'quote_awaiting_response',
+					send: {
+						method: 'external',
+						expected_revision: 2,
+						channel: 'in_person',
+						note: '  Handed over at the site visit  '
+					}
+				},
+				{ rpc }
+			)
+		);
+
+		expect(rpc).toHaveBeenNthCalledWith(2, 'mark_quote_sent_externally', {
+			target_quote_id: quoteId,
+			expected_revision: 2,
+			send_channel: 'in_person',
+			send_note: 'Handed over at the site visit'
+		});
+		expect(mockedSendEmail).not.toHaveBeenCalled();
+		expect(response.status).toBe(200);
+	});
+
+	it('rejects a channel outside the known list', async () => {
+		const response = await POST(
+			event({
+				to_stage: 'quote_awaiting_response',
+				send: { method: 'external', expected_revision: 2, channel: 'carrier_pigeon' }
+			})
+		);
+
+		expect(response.status).toBe(422);
+	});
+
+	it('turns a refusal to mark the quote sent into a form error', async () => {
+		const rpc = vi.fn();
+		rpc.mockResolvedValueOnce(quoteGate());
+		rpc.mockResolvedValueOnce({
+			data: null,
+			error: { code: '23514', message: 'Add at least one line before sending this quote.' }
+		});
+
+		const response = await POST(
+			event(
+				{
+					to_stage: 'quote_awaiting_response',
+					send: { method: 'external', expected_revision: 1, channel: 'phone' }
+				},
+				{ rpc }
+			)
+		);
+
+		expect(response.status).toBe(422);
+		expect((await response.json()).field_errors.form).toBe(
+			'Add at least one line before sending this quote.'
+		);
+	});
+
+	it('says so when the person may move cards but not send quotes', async () => {
+		const rpc = vi.fn().mockResolvedValueOnce(quoteGate());
+		mockedHasPermission.mockReturnValue(false);
+
+		const response = await POST(
+			event(
+				{
+					to_stage: 'quote_awaiting_response',
+					send: { method: 'external', expected_revision: 1, channel: 'phone' }
+				},
+				{ rpc }
+			)
+		);
+
+		expect(response.status).toBe(403);
+		expect(rpc).toHaveBeenCalledTimes(1);
 	});
 
 	it('converts a request dragged onto Draft, with a fingerprint of its own', async () => {

@@ -1,12 +1,20 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireOrganizationPermission } from '$lib/server/access/permission';
+import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
 import { NO_STORE_HEADERS, databaseError, notFound, validationError } from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { dragOpportunitySchema } from '$lib/server/validation/pipeline.schema';
 import type { OpportunityStage } from '$lib/pipeline/stages';
 import { dragActionFor } from '$lib/pipeline/transitions';
 import { convertRequestError, quoteWriteError } from '$lib/server/quotes/errors';
+import { sendDraftQuoteByEmail } from '$lib/server/quotes/send';
+
+function sendNotAllowed(message: string) {
+	return json(
+		{ error: message, reason: 'permission_denied' },
+		{ status: 403, headers: NO_STORE_HEADERS }
+	);
+}
 
 const NOT_FOUND = 'That opportunity could not be found.';
 
@@ -124,21 +132,41 @@ export const POST: RequestHandler = async (event) => {
 			{ headers: NO_STORE_HEADERS }
 		);
 	} else {
-		const { data: draftVersion, error: draftError } = await supabase
-			.from('quote_versions')
-			.select('revision')
-			.eq('organization_id', gate.organization_id)
-			.eq('quote_id', gate.quote_id)
-			.eq('status', 'draft')
-			.maybeSingle();
-		if (draftError) return databaseError();
-		if (!draftVersion) return notFound('That quote has no draft to send.');
+		// Draft -> Awaiting response. A drop alone never claims the customer received anything: the board's
+		// send window says how the quote is going out, and the card moves only because that really happened.
+		// Moving cards and sending quotes are separate permissions, so both are answered here in words rather
+		// than left to the command's "not found".
+		const send = parsed.data.send;
+		if (!send) return validationError({ form: 'Choose how this quote is being sent.' });
+		if (!hasPermission(check.access, 'quotes.send')) {
+			return sendNotAllowed('You do not have permission to send quotes.');
+		}
 
-		const { error: publishError } = await supabase.rpc('publish_quote', {
-			target_quote_id: gate.quote_id,
-			expected_revision: draftVersion.revision
-		});
-		if (publishError) return quoteWriteError(publishError);
+		if (send.method === 'email') {
+			if (!parsed.data.idempotency_key) {
+				return validationError({ form: 'Start this send again.' });
+			}
+			// The email also opens a customer conversation, so it needs that permission as well.
+			if (!hasPermission(check.access, 'conversations.send')) {
+				return sendNotAllowed('You do not have permission to email customers.');
+			}
+			const refusal = await sendDraftQuoteByEmail({
+				organizationId: gate.organization_id,
+				actorUserId: check.auth.user.id,
+				quoteId: gate.quote_id,
+				expectedRevision: send.expected_revision,
+				idempotencyKey: parsed.data.idempotency_key
+			});
+			if (refusal) return refusal;
+		} else {
+			const { error: sentError } = await supabase.rpc('mark_quote_sent_externally', {
+				target_quote_id: gate.quote_id,
+				expected_revision: send.expected_revision,
+				send_channel: send.channel,
+				send_note: send.note ?? undefined
+			});
+			if (sentError) return quoteWriteError(sentError);
+		}
 	}
 
 	return json(

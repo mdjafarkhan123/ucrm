@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { BOARD_COLUMN_KEYS, OPPORTUNITY_STAGES } from '$lib/pipeline/stages';
 import { BOARD_DATE_PRESETS, BOARD_DIRECTIONS, BOARD_SORTS } from '$lib/server/pipeline/board';
 import { OUTCOME_SORTS, OUTCOME_TYPES } from '$lib/pipeline/outcomes';
+import { QUOTE_EXTERNAL_SEND_CHANNEL_VALUES, QUOTE_SEND_NOTE_MAX } from '$lib/quotes/send';
 
 // Nothing here validates a create. Opportunities are only ever made by the Request trigger, and later by
 // the Quote one, so the board has no write path of its own to validate.
@@ -77,7 +78,28 @@ export const dragOpportunitySchema = z
 		ends_at: z.iso.datetime({ offset: true }).nullish(),
 		// Only the conversion drop needs one, and the route insists on it there. A retry of the same drag
 		// carries the same key, so a doubled request gets the first quote back instead of a second one.
-		idempotency_key: z.string().uuid('Start a new action and try again.').optional()
+		idempotency_key: z.string().uuid('Start a new action and try again.').optional(),
+		// Only the Draft -> Awaiting response drop needs one, and the route insists on it there: a drop
+		// alone never claims the customer received anything. `expected_revision` is the draft the person
+		// reviewed in the send window, so a quote somebody edited meanwhile is refused rather than sent.
+		send: z
+			.discriminatedUnion('method', [
+				z.object({ method: z.literal('email'), expected_revision: z.number().int().min(0) }),
+				z.object({
+					method: z.literal('external'),
+					expected_revision: z.number().int().min(0),
+					channel: z.enum(QUOTE_EXTERNAL_SEND_CHANNEL_VALUES, 'Choose how the quote was sent.'),
+					note: z
+						.string()
+						.trim()
+						.max(
+							QUOTE_SEND_NOTE_MAX,
+							`Keep the note to ${QUOTE_SEND_NOTE_MAX} characters or fewer.`
+						)
+						.nullish()
+				})
+			])
+			.optional()
 	})
 	.refine((value) => (value.starts_at == null) === (value.ends_at == null), {
 		message: 'Set both a start and an end time, or leave them both out.',

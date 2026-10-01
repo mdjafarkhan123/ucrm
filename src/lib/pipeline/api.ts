@@ -9,6 +9,7 @@ import {
 	type OutcomeType
 } from './outcomes';
 import type { DragActionKind } from './transitions';
+import type { QuoteSendChoice } from '$lib/quotes/send';
 
 export type OpportunityCard = {
 	id: string;
@@ -562,8 +563,10 @@ export async function dragOpportunity(
 		toStage: OpportunityStage;
 		startsAt?: string;
 		endsAt?: string;
-		/** Required for the Draft conversion drop. Keep it stable across a retry of the same drag. */
+		/** Required for the Draft conversion drop and an emailed quote. Keep it stable across a retry. */
 		idempotencyKey?: string;
+		/** Required for Draft -> Awaiting response: how the quote is going out, and the draft reviewed. */
+		send?: QuoteSendChoice & { expectedRevision: number };
 	}
 ): Promise<DragResult> {
 	const response = await fetch(`/api/pipeline/opportunities/${opportunityId}/move`, {
@@ -573,7 +576,20 @@ export async function dragOpportunity(
 			to_stage: input.toStage,
 			starts_at: input.startsAt ?? null,
 			ends_at: input.endsAt ?? null,
-			...(input.idempotencyKey ? { idempotency_key: input.idempotencyKey } : {})
+			...(input.idempotencyKey ? { idempotency_key: input.idempotencyKey } : {}),
+			...(input.send
+				? {
+						send:
+							input.send.method === 'email'
+								? { method: 'email', expected_revision: input.send.expectedRevision }
+								: {
+										method: 'external',
+										expected_revision: input.send.expectedRevision,
+										channel: input.send.channel,
+										note: input.send.note
+									}
+					}
+				: {})
 		})
 	});
 	const result = await response.json().catch(() => ({}));

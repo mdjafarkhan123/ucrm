@@ -1,5 +1,5 @@
 <script lang="ts">
-	import EmailSenderLabel from '$lib/components/communications/EmailSenderLabel.svelte';
+	import QuoteEmailPreview from './QuoteEmailPreview.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import { queueQuoteEmail, type QuoteDetail, type QuoteWriteError } from '$lib/quotes/api';
@@ -51,30 +51,7 @@
 
 <Dialog {open} title="Preview quote email" size="default" onClose={close}>
 	<div class="quote-email">
-		<dl class="quote-email__details">
-			<div>
-				<dt>To</dt>
-				<dd>{recipient ?? 'No active customer email address'}</dd>
-			</div>
-			<div>
-				<dt>From</dt>
-				<dd><EmailSenderLabel kind="business" /></dd>
-			</div>
-			<div>
-				<dt>Subject</dt>
-				<dd>Your quote from {organizationName}</dd>
-			</div>
-		</dl>
-
-		<div class="quote-email__message">
-			<p>Your quote is ready to review.</p>
-			<span class="quote-email__link" aria-label="View your quote button preview"
-				>View your quote</span
-			>
-			<p class="quote-email__fallback">
-				A secure fallback link is included in the delivered email.
-			</p>
-		</div>
+		<QuoteEmailPreview {recipient} {organizationName} />
 
 		<p class="quote-email__notice">
 			UCRM checks the quote, recipient, sender, and allowance again before queueing. Delivery is
@@ -106,59 +83,9 @@
 		gap: var(--space-base);
 	}
 
-	:global(.quote-email__details) {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-small);
-	}
-
-	:global(.quote-email__details div) {
-		display: grid;
-		grid-template-columns: 72px minmax(0, 1fr);
-		gap: var(--space-small);
-	}
-
-	:global(.quote-email__details dt) {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
-
-	:global(.quote-email__details dd) {
-		min-width: 0;
-		color: var(--color-heading);
-		font-weight: 600;
-		overflow-wrap: anywhere;
-	}
-
-	:global(.quote-email__message) {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: var(--space-base);
-		padding: var(--space-base);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		color: var(--color-text);
-	}
-
-	:global(.quote-email__link) {
-		display: inline-flex;
-		align-items: center;
-		min-height: 40px;
-		padding: 0 var(--space-base);
-		border-radius: var(--radius-base);
-		color: var(--color-surface);
-		background: var(--color-interactive);
-		font-weight: 600;
-	}
-
-	:global(.quote-email__fallback),
 	:global(.quote-email__notice) {
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
-	}
-
-	:global(.quote-email__notice) {
 		padding: var(--space-slim) var(--space-base);
 		border-radius: var(--radius-base);
 		background: var(--color-informative--surface);

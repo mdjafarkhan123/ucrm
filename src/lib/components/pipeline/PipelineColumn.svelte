@@ -14,6 +14,7 @@
 	import AssessmentEntryChoiceDialog from './AssessmentEntryChoiceDialog.svelte';
 	import ConvertToQuoteDialog from './ConvertToQuoteDialog.svelte';
 	import TaskDialog from './TaskDialog.svelte';
+	import SendQuoteDialog from '$lib/components/quotes/SendQuoteDialog.svelte';
 	import clockPauseIcon from '@tabler/icons/outline/clock-pause.svg?raw';
 	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
@@ -50,6 +51,8 @@
 		DRAG_ACTIONS_NEEDING_CONFIRMATION
 	} from '$lib/pipeline/transitions';
 	import { formatMoney, type BoardFormatting } from '$lib/pipeline/money';
+	import { activityKey } from '$lib/collaboration/api';
+	import type { QuoteSendChoice } from '$lib/quotes/send';
 	import type { BoardFilters } from '$lib/pipeline/filters';
 
 	// One column owns one query. A busy stage can keep loading its next page without making the other
@@ -155,6 +158,10 @@
 	let pendingChoice = $state<Card | null>(null);
 	// A card dropped on Draft, naming the client and the request before the irreversible conversion runs.
 	let pendingConvert = $state<Card | null>(null);
+	// A Draft quote dropped on Awaiting response. The send window is open for it; the card moves only once
+	// the quote has really been emailed or deliberately marked as sent some other way. The key is minted
+	// once per drop, so a retried email after a dropped response is recognised as the same send.
+	let pendingSend = $state<{ card: Card; quoteId: string; idempotencyKey: string } | null>(null);
 	// A card an on-hold stage refused for having no follow-up Task with a future date. The Task dialog is
 	// open for it; saving the Task finishes the move into that stage.
 	let pendingHold = $state<{ card: Card; stage: CustomStage } | null>(null);
@@ -269,6 +276,17 @@
 		// is only a second, never-trust-the-client-copy check. If it ever disagrees, undo the visual move
 		// rather than ask the server to perform an action this column does not recognise.
 		if (!action) {
+			return;
+		}
+
+		if (action === 'quote_publish') {
+			if (!dropped.quote) return;
+			pendingSend = {
+				card: dropped,
+				quoteId: dropped.quote.id,
+				idempotencyKey: crypto.randomUUID()
+			};
+			onDragBusyChange(true);
 			return;
 		}
 
@@ -458,6 +476,43 @@
 		onDragBusyChange(false);
 	}
 
+	// The send window's own write. The window stays open, and the board locked behind it, until this
+	// succeeds; a refusal is thrown back for the window to show, with the quote still a Draft.
+	async function confirmSend(choice: QuoteSendChoice, expectedRevision: number) {
+		if (!pendingSend) return;
+		const { card, quoteId, idempotencyKey } = pendingSend;
+		try {
+			await dragOpportunity(card.id, {
+				toStage: 'quote_awaiting_response',
+				idempotencyKey,
+				send: { ...choice, expectedRevision }
+			});
+		} catch (error) {
+			// A response can be lost after the server commits. Re-read truth so the card never lies about
+			// where the server ultimately left it.
+			await invalidatePipeline(queryClient).catch(() => undefined);
+			throw error;
+		}
+		// The quote itself changed, not only the card: its page, the Quotes list and counts, and its history.
+		await Promise.all([
+			invalidatePipeline(queryClient),
+			queryClient.invalidateQueries({ queryKey: ['quotes'] }),
+			queryClient.invalidateQueries({ queryKey: activityKey('quote', quoteId) })
+		]);
+		pendingSend = null;
+		onDragBusyChange(false);
+		toast.success(
+			choice.method === 'email' ? 'Quote emailed to the customer.' : 'Quote marked as sent.',
+			'Moved to Awaiting response.'
+		);
+	}
+
+	function cancelSend() {
+		pendingSend = null;
+		items = cards;
+		onDragBusyChange(false);
+	}
+
 	const convertClientName = $derived(
 		pendingConvert?.client?.company_name?.trim() ||
 			pendingConvert?.client?.display_name ||
@@ -577,6 +632,15 @@
 			timezone={formatting?.timezone}
 			onSaved={finishHold}
 			onClose={cancelHold}
+		/>
+	{/if}
+
+	{#if pendingSend}
+		<SendQuoteDialog
+			open={true}
+			quoteId={pendingSend.quoteId}
+			onSend={confirmSend}
+			onClose={cancelSend}
 		/>
 	{/if}
 

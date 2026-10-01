@@ -21298,6 +21298,15 @@ export type Database = {
 				Args: { actor_email: string; target_application_id: string };
 				Returns: undefined;
 			};
+			mark_quote_sent_externally: {
+				Args: {
+					expected_revision: number;
+					send_channel: string;
+					send_note?: string;
+					target_quote_id: string;
+				};
+				Returns: Json;
+			};
 			mark_team_invitation_auth_attempt_started: {
 				Args: { target_attempt_nonce: string; target_invitation_id: string };
 				Returns: {
@@ -23856,6 +23865,20 @@ export type Database = {
 			};
 			schedule_calendar_context: {
 				Args: { target_organization_id: string };
+				Returns: Json;
+			};
+			send_draft_quote_email: {
+				Args: {
+					expected_revision: number;
+					target_actor_user_id: string;
+					target_billing_quote_token_hash?: string;
+					target_billing_quote_url?: string;
+					target_logical_send_key: string;
+					target_organization_id: string;
+					target_quote_id: string;
+					target_quote_token_hash: string;
+					target_quote_url: string;
+				};
 				Returns: Json;
 			};
 			send_review_reminder: {

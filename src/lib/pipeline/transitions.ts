@@ -1,7 +1,8 @@
 import type { OpportunityStage } from './stages';
 
-// What a successful drop onto a stage actually does. `assessment_schedule` is the only one that needs the
-// staff member to supply anything -- a start and end time -- before it can run; the rest complete on drop.
+// What a successful drop onto a stage actually does. Two need the staff member to supply something
+// before they can run: `assessment_schedule` a start and end time, and `quote_publish` how the quote is
+// reaching the customer -- emailed now, or already sent some other way. The rest complete on drop.
 export type DragActionKind =
 	| 'assessment_require'
 	| 'assessment_schedule'
@@ -9,7 +10,10 @@ export type DragActionKind =
 	| 'quote_convert'
 	| 'quote_publish';
 
-export const DRAG_ACTIONS_NEEDING_INPUT: readonly DragActionKind[] = ['assessment_schedule'];
+export const DRAG_ACTIONS_NEEDING_INPUT: readonly DragActionKind[] = [
+	'assessment_schedule',
+	'quote_publish'
+];
 
 // Moves that cannot be taken back and so are never performed on the drop alone. Converting creates a
 // Quote and leaves the Request `converted`, which is terminal — there is no Undo to offer afterwards, so
