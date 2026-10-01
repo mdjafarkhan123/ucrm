@@ -175,6 +175,24 @@ export function boardFilterParams(filters: BoardFilters): URLSearchParams {
 	return params;
 }
 
+// What a saved filter keeps: every control except the search box, as one stable string. A filter is a
+// standing view ("my Google leads, oldest first"), not a one-off lookup, so a search typed on top of it
+// still leaves the board on that filter. Empty means the controls are all at their defaults — nothing to save.
+export const SAVED_FILTER_NAME_MAX = 60;
+
+export function savedFilterQuery(filters: BoardFilters): string {
+	const params = boardFilterParams({ ...filters, q: undefined });
+	params.sort();
+	return params.toString();
+}
+
+// The board as a saved filter would leave it: that filter's controls, the search box cleared.
+export function filtersFromSavedQuery(query: string): BoardFilters {
+	const filters = readBoardFilters(new URLSearchParams(query));
+	delete filters.q;
+	return filters;
+}
+
 // The same filters as one stable string, for the query keys. Sorted, so two identical filter sets that were
 // built in a different order are still the same cache entry.
 export function boardFilterKey(filters: BoardFilters): string {

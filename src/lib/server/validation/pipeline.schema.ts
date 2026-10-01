@@ -1,7 +1,12 @@
 import { z } from 'zod';
 import { BOARD_COLUMN_KEYS, OPPORTUNITY_STAGES } from '$lib/pipeline/stages';
 import { BOARD_DATE_PRESETS, BOARD_DIRECTIONS, BOARD_SORTS } from '$lib/server/pipeline/board';
-import { BOARD_LEAD_SOURCE_MAX, BOARD_SEARCH_MAX, BOARD_SEARCH_MIN } from '$lib/pipeline/filters';
+import {
+	BOARD_LEAD_SOURCE_MAX,
+	BOARD_SEARCH_MAX,
+	BOARD_SEARCH_MIN,
+	SAVED_FILTER_NAME_MAX
+} from '$lib/pipeline/filters';
 import { OUTCOME_SORTS, OUTCOME_TYPES } from '$lib/pipeline/outcomes';
 import { quoteSendChoiceSchema } from '$lib/server/validation/quotes.schema';
 
@@ -264,3 +269,45 @@ export const addLostReasonSchema = z.object({
 });
 
 export const setLostReasonRetiredSchema = z.object({ retired: z.boolean() });
+
+// Saved filters. The controls arrive as the board holds them and are turned into the saved address here,
+// so a filter can only ever hold what the board itself would put in its URL. Never the search box.
+const savedFilterName = z
+	.string()
+	.transform((value) => value.trim().replace(/\s+/g, ' '))
+	.pipe(
+		z
+			.string()
+			.min(1, 'Give the filter a name.')
+			.max(SAVED_FILTER_NAME_MAX, `Keep the name under ${SAVED_FILTER_NAME_MAX} characters.`)
+	);
+
+export const savedFilterControlsSchema = withDateRules(
+	z.object({
+		sort: z.enum(BOARD_SORTS).default('attention'),
+		direction: z.enum(BOARD_DIRECTIONS).default('desc'),
+		owner: boardFilterShape.owner,
+		date: boardFilterShape.date,
+		from: boardFilterShape.from,
+		to: boardFilterShape.to,
+		source: boardFilterShape.source
+	})
+);
+
+export const createSavedFilterSchema = z.object({
+	name: savedFilterName,
+	// Shared with the whole team. Only owners and administrators may ask for it.
+	shared: z.boolean().default(false),
+	filters: savedFilterControlsSchema
+});
+
+export const updateSavedFilterSchema = z
+	.object({
+		name: savedFilterName.optional(),
+		// Replaces what the filter shows with the board's current controls.
+		filters: savedFilterControlsSchema.optional()
+	})
+	.refine((body) => body.name !== undefined || body.filters !== undefined, {
+		message: 'Nothing to change.',
+		path: ['form']
+	});

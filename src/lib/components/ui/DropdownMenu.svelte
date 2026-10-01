@@ -23,6 +23,7 @@
 	let {
 		items = [],
 		groups = [],
+		footer = [],
 		wide = false,
 		triggerLabel = 'Open menu',
 		triggerIcon = dotsIcon,
@@ -35,6 +36,8 @@
 		items?: MenuItem[];
 		// Items under a heading each, drawn after `items`. For a menu long enough to need signposts.
 		groups?: MenuGroup[];
+		// Actions drawn last, below a divider and without a heading: the things to do with the list above.
+		footer?: MenuItem[];
 		// Room for longer labels than a short action list needs.
 		wide?: boolean;
 		triggerLabel?: string;
@@ -100,6 +103,13 @@
 					{/each}
 				</DropdownMenuPrimitive.Group>
 			{/each}
+			{#if footer.length > 0}
+				<DropdownMenuPrimitive.Group class="dropdown-menu__group">
+					{#each footer as item (item.key ?? item.label)}
+						{@render menuItem(item)}
+					{/each}
+				</DropdownMenuPrimitive.Group>
+			{/if}
 		</DropdownMenuPrimitive.Content>
 	</DropdownMenuPrimitive.Portal>
 </DropdownMenuPrimitive.Root>

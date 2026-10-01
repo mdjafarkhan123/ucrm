@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+	DEFAULT_BOARD_FILTERS,
 	boardFilterKey,
 	boardFilterParams,
 	filtersAreDefault,
+	filtersFromSavedQuery,
+	savedFilterQuery,
 	readBoardFilters,
 	searchTerm
 } from './filters';
@@ -53,5 +56,35 @@ describe('search and lead source in the URL', () => {
 		const sourced = readBoardFilters(new URLSearchParams('source=Referral'));
 		expect(boardFilterKey(searched)).not.toBe(boardFilterKey(plain));
 		expect(boardFilterKey(sourced)).not.toBe(boardFilterKey(searched));
+	});
+});
+
+describe('what a saved filter keeps', () => {
+	it('keeps every control but the search box, in a stable order', () => {
+		const query = savedFilterQuery({
+			sort: 'value',
+			direction: 'asc',
+			owner: 'unassigned',
+			date: 'last_30_days',
+			source: 'Google',
+			q: 'Ada'
+		});
+		expect(query).toBe('date=last_30_days&direction=asc&owner=unassigned&sort=value&source=Google');
+	});
+
+	it('is empty for an untouched board, so there is nothing to save', () => {
+		expect(savedFilterQuery({ ...DEFAULT_BOARD_FILTERS, q: 'Ada' })).toBe('');
+	});
+
+	it('puts the board back as saved, with the search box cleared', () => {
+		const filters = filtersFromSavedQuery('owner=unassigned&source=Google&q=Ada');
+		expect(filters).toEqual({ ...DEFAULT_BOARD_FILTERS, owner: 'unassigned', source: 'Google' });
+	});
+
+	it('reads a saved custom range back with both ends', () => {
+		const filters = filtersFromSavedQuery('date=custom&from=2026-01-01&to=2026-03-31');
+		expect(filters.from).toBe('2026-01-01');
+		expect(filters.to).toBe('2026-03-31');
+		expect(savedFilterQuery(filters)).toBe('date=custom&from=2026-01-01&to=2026-03-31');
 	});
 });

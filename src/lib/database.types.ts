@@ -12411,6 +12411,47 @@ export type Database = {
 					}
 				];
 			};
+			pipeline_saved_filters: {
+				Row: {
+					created_at: string;
+					created_by: string | null;
+					id: string;
+					name: string;
+					organization_id: string;
+					query: string;
+					updated_at: string;
+					user_id: string | null;
+				};
+				Insert: {
+					created_at?: string;
+					created_by?: string | null;
+					id?: string;
+					name: string;
+					organization_id: string;
+					query: string;
+					updated_at?: string;
+					user_id?: string | null;
+				};
+				Update: {
+					created_at?: string;
+					created_by?: string | null;
+					id?: string;
+					name?: string;
+					organization_id?: string;
+					query?: string;
+					updated_at?: string;
+					user_id?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'pipeline_saved_filters_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			platform_audit_events: {
 				Row: {
 					actor_owner_email: string;

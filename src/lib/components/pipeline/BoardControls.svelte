@@ -5,6 +5,7 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
+	import SavedFiltersMenu from './SavedFiltersMenu.svelte';
 	import { LEAD_SOURCES } from '$lib/clients/lead-sources';
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 	import { fetchLeadSources, leadSourcesKey } from '$lib/pipeline/api';
@@ -145,6 +146,31 @@
 		return `${value.year}-${String(value.month).padStart(2, '0')}-${String(value.day).padStart(2, '0')}`;
 	}
 
+	// What a saved filter would remember, in words, for the Save dialog. Only the controls that differ from
+	// an untouched board are named; the search box is never part of a saved filter.
+	const savedSummary = $derived.by(() => {
+		const parts: string[] = [];
+		if (filters.owner !== 'all') {
+			parts.push(
+				`Salesperson: ${ownerOptions.find((option) => option.value === filters.owner)?.label ?? 'a former teammate'}`
+			);
+		}
+		if (filters.source) parts.push(`Lead source: ${selectedSource || filters.source}`);
+		if (filters.date === 'custom') {
+			parts.push(`Created: ${filters.from ?? 'any time'} to ${filters.to ?? 'today'}`);
+		} else if (filters.date !== 'all') {
+			parts.push(`Created: ${BOARD_DATE_LABELS[filters.date]}`);
+		}
+		if (filters.sort !== 'attention' || filters.direction !== 'desc') {
+			parts.push(
+				`Sort: ${BOARD_SORT_LABELS[filters.sort]}${sortHasDirection(filters.sort) ? `, ${directionLabel(filters.sort, filters.direction).toLowerCase()}` : ''}`
+			);
+		}
+		return parts.length
+			? `This filter remembers ${parts.join(' · ')}.`
+			: 'This filter remembers the board as it is now.';
+	});
+
 	function update(change: Partial<BoardFilters>) {
 		onChange({ ...filters, ...change });
 	}
@@ -170,6 +196,8 @@
 			placeholder="Search cards"
 			ariaLabel="Search cards by client, title, quote number, address, phone, or email"
 		/>
+
+		<SavedFiltersMenu {filters} summary={savedSummary} onApply={(next) => onChange(next)} />
 
 		<span class="board-controls__pill board-controls__pill--labelled">
 			<label class="board-controls__label" for="pipeline-sort">Sort by</label>
