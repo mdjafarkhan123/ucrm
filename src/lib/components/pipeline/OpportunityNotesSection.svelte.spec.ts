@@ -12,7 +12,8 @@ vi.mock('$lib/components/ui/ToastManager.svelte', async (importOriginal) => ({
 	getToastManager: () => ({ success: vi.fn(), error: vi.fn() })
 }));
 
-// The Brief's Notes block: immediate-save, both Request and Client targets, gated by pipeline.edit.
+// The Brief's Notes block: immediate-save, the card's Request or Quote and its Client as targets, gated by
+// pipeline.edit.
 
 function noteFixture(overrides: Record<string, unknown> = {}) {
 	return {
@@ -32,14 +33,17 @@ function noteFixture(overrides: Record<string, unknown> = {}) {
 	};
 }
 
-function renderSection(props: { canEdit?: boolean; hasClient?: boolean } = {}) {
+function renderSection(
+	props: { canEdit?: boolean; hasClient?: boolean; quoteCard?: boolean } = {}
+) {
 	const queryClient = createQueryClient();
 	return render(
 		OpportunityNotesSection,
 		{
 			props: {
 				opportunityId: 'opp-1',
-				requestId: 'request-1',
+				requestId: props.quoteCard ? null : 'request-1',
+				quoteId: props.quoteCard ? 'quote-1' : null,
 				clientId: (props.hasClient ?? true) ? 'client-1' : null,
 				canEdit: props.canEdit ?? true
 			}
@@ -135,6 +139,25 @@ describe('OpportunityNotesSection', () => {
 			file_ids: [],
 			mention_user_ids: []
 		});
+	});
+
+	it('writes a new note onto the Quote on a Quote card', async () => {
+		mockFetch({ notes: [] });
+		renderSection({ quoteCard: true });
+
+		await page.getByRole('button', { name: 'Add a note' }).click();
+		await expect.element(page.getByText('Quote', { exact: true })).toBeVisible();
+		expect(page.getByText('Request', { exact: true }).elements()).toHaveLength(0);
+		await page.getByLabelText('Add a note').fill('Quote note');
+		await page.getByRole('button', { name: 'Add note' }).click();
+
+		await expect
+			.poll(() =>
+				vi.mocked(globalThis.fetch).mock.calls.some(([, init]) => init?.method === 'POST')
+			)
+			.toBe(true);
+		const call = vi.mocked(globalThis.fetch).mock.calls.find(([, init]) => init?.method === 'POST');
+		expect(JSON.parse(call?.[1]?.body as string).entity_type).toBe('quote');
 	});
 
 	it('sends a picked @mention with the note', async () => {

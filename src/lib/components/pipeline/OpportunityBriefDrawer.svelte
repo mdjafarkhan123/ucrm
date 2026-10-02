@@ -153,6 +153,7 @@
 			<OpportunityNotesSection
 				opportunityId={opportunity.id}
 				requestId={opportunity.request?.id ?? null}
+				quoteId={opportunity.quote?.id ?? null}
 				clientId={opportunity.client?.id ?? null}
 				{currentUserId}
 				{canEdit}

@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import { databaseError, notFound } from '$lib/server/api/errors';
 
 // A Brief Note as the Pipeline-scoped RPCs answer it: one note plus the single link that put it on this
-// opportunity's Request or Client. The generic collaboration `Note` carries an array of links because one
+// opportunity's Request, Quote or Client. The generic collaboration `Note` carries an array of links because one
 // note can appear on more than one page; from the Brief a note only ever has the one link that matters here.
 export type PipelineNoteRow = {
 	id: string;
@@ -13,7 +13,7 @@ export type PipelineNoteRow = {
 	edited_at: string | null;
 	created_at: string;
 	updated_at: string;
-	entity_type: 'request' | 'client';
+	entity_type: 'request' | 'quote' | 'client';
 	entity_id: string;
 	files: PipelineNoteFile[];
 	mention_user_ids: string[];

@@ -23,7 +23,8 @@
 		opportunityNoteFileUrl,
 		opportunityNotesKey,
 		updateOpportunityNote,
-		type PipelineNote
+		type PipelineNote,
+		type PipelineNoteTarget
 	} from '$lib/pipeline/api';
 	import { mentionsStillIn, type PickedMention } from '$lib/pipeline/mentions';
 	import {
@@ -44,16 +45,20 @@
 	// composer or edit row instead of leaking it onto the next card.
 	//
 	// A Note can carry photos and files and @mention teammates (E3). Its files are uploaded against the
-	// card's Request, or its Client when there is none -- the database accepts either for a Note on this card.
+	// card's own Request or Quote, or its Client when there is neither -- the database accepts any of them for
+	// a Note on this card. A Quote card writes new Notes onto the Quote; the Notes of the Request it came from
+	// still show here, labelled "Request" (E3b).
 	let {
 		opportunityId,
 		requestId,
+		quoteId,
 		clientId,
 		currentUserId,
 		canEdit
 	}: {
 		opportunityId: string;
 		requestId: string | null;
+		quoteId: string | null;
 		clientId: string | null;
 		currentUserId?: string;
 		canEdit: boolean;
@@ -62,8 +67,19 @@
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 
-	const uploadOrigin = $derived<{ type: 'request' | 'client'; id: string | null }>(
-		requestId ? { type: 'request', id: requestId } : { type: 'client', id: clientId }
+	const TARGET_LABELS: Record<PipelineNoteTarget, string> = {
+		request: 'Request',
+		quote: 'Quote',
+		client: 'Client'
+	};
+
+	// The card's own record: its Quote once it has one, else its Request. Null on a card with neither.
+	const backing = $derived<{ type: 'request' | 'quote'; id: string } | null>(
+		quoteId ? { type: 'quote', id: quoteId } : requestId ? { type: 'request', id: requestId } : null
+	);
+
+	const uploadOrigin = $derived<{ type: PipelineNoteTarget; id: string | null }>(
+		backing ?? { type: 'client', id: clientId }
 	);
 
 	// A freshly attached file is checked for viruses after the Note saves; until it is, the list is asked
@@ -121,17 +137,20 @@
 	let newBody = $state('');
 	let newPicked = $state<PickedMention[]>([]);
 	let newItems = $state<NoteAttachItem[]>([]);
-	let newTarget = $state<'request' | 'client'>('request');
+	let chosenTarget = $state<PipelineNoteTarget | null>(null);
 	const showComposer = $derived(canEdit && (composerOpen || notes.length > 0));
 	const newUploading = $derived(isUploading(newItems));
 
 	const targetOptions = $derived(
-		clientId
-			? [
-					{ value: 'request', label: 'Request' },
-					{ value: 'client', label: 'Client' }
-				]
-			: [{ value: 'request', label: 'Request' }]
+		[backing?.type, clientId ? 'client' : undefined]
+			.filter((value): value is PipelineNoteTarget => Boolean(value))
+			.map((value) => ({ value, label: TARGET_LABELS[value] }))
+	);
+	// What the person picked, while it is still offered; otherwise the card's own record first.
+	const newTarget = $derived<PipelineNoteTarget>(
+		chosenTarget && targetOptions.some((option) => option.value === chosenTarget)
+			? chosenTarget
+			: (targetOptions[0]?.value ?? 'client')
 	);
 
 	const createMutationState = createMutation(() => ({
@@ -274,7 +293,8 @@
 					label="Target"
 					size="small"
 					options={targetOptions}
-					bind:value={newTarget}
+					value={newTarget}
+					onchange={(value) => (chosenTarget = value as PipelineNoteTarget)}
 				/>
 			{/if}
 			<MentionTextarea
@@ -311,7 +331,7 @@
 	{:else if notes.length === 0 && !showComposer}
 		<EmptyState
 			title="No notes yet"
-			description="Notes you add here also show on the Request and Client."
+			description={`Notes you add here also show on the ${backing ? TARGET_LABELS[backing.type] : 'Client'}${backing && clientId ? ' and Client' : ''}.`}
 			icon={canEdit ? pencilPlusIcon : notesIcon}
 			iconLabel={canEdit ? 'Add a note' : undefined}
 			onIconClick={canEdit ? () => (composerOpen = true) : undefined}
@@ -329,7 +349,7 @@
 							suffix={note.edited_at ? 'edited' : undefined}
 						/>
 						<div class="brief-notes__item-actions">
-							<Badge size="small">{note.entity_type === 'client' ? 'Client' : 'Request'}</Badge>
+							<Badge size="small">{TARGET_LABELS[note.entity_type]}</Badge>
 							{#if canEdit}
 								<DropdownMenu items={menuItems(note)} triggerLabel="Note actions" />
 							{/if}

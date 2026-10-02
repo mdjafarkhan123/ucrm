@@ -26,6 +26,7 @@
 
 <script lang="ts">
 	import { uploadAttachmentFile } from '$lib/collaboration/api';
+	import type { PipelineNoteTarget } from '$lib/pipeline/api';
 	import { finishFileUpload, startFileUpload } from '$lib/files/api';
 	import { FILE_PICKER_ACCEPT, MAX_FILE_SIZE_BYTES, allowedTypeFor } from '$lib/files/allowlist';
 	import paperclipIcon from '@tabler/icons/outline/paperclip.svg?raw';
@@ -45,8 +46,8 @@
 	}: {
 		id: string;
 		items?: NoteAttachItem[];
-		/** The Request or Client the Note is going on; a Note's file can only land on this card's own. */
-		originType: 'request' | 'client';
+		/** The Request, Quote or Client the Note is going on; a Note's file can only land on this card's own. */
+		originType: PipelineNoteTarget;
 		originId: string | null;
 		disabled?: boolean;
 	} = $props();

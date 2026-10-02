@@ -200,12 +200,12 @@ export const taskCompletionSchema = z.object({
 	completed: z.boolean()
 });
 
-// A Brief Note only ever targets the card's own Request or Client, never a Property -- the generic Notes
-// surface's wider `linkedEntityTypeSchema` would let a caller ask for a target this Opportunity has no id
-// for.
-export const pipelineNoteEntityTypeSchema = z.enum(['request', 'client']);
+// A Brief Note only ever targets the card's own Request or Quote, or its Client, never a Property -- the
+// generic Notes surface's wider `linkedEntityTypeSchema` would let a caller ask for a target this Opportunity
+// has no id for. Which of Request and Quote the card has, the database decides.
+export const pipelineNoteEntityTypeSchema = z.enum(['request', 'quote', 'client']);
 
-// Which of the card's two targets a new Note goes on, and its text. Editing sends only the body -- the
+// Which of the card's targets a new Note goes on, and its text. Editing sends only the body -- the
 // target is fixed at creation, the same way the generic Notes surface treats it.
 // A Note's photos and files, in order, and the teammates it mentions. Each is the whole list; on an edit,
 // leaving one out keeps what the Note already has. Which files and people are allowed only the database knows.

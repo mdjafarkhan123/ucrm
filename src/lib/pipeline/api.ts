@@ -516,8 +516,11 @@ export async function deleteTask(taskId: string): Promise<{ id: string; opportun
 
 // --- Brief Notes -------------------------------------------------------------------------------------------
 
+/** Where a Brief Note sits: the card's Request or Quote, or its Client. */
+export type PipelineNoteTarget = 'request' | 'quote' | 'client';
+
 // One Note as the Pipeline-scoped route answers it: the note plus the single link that put it on this
-// opportunity's Request or Client. Authorized by pipeline.edit even for a Client target -- the generic
+// opportunity's Request, Quote or Client. A Quote card also lists the Notes of the Request it came from. Authorized by pipeline.edit even for a Client target -- the generic
 // `$lib/collaboration/api` Notes calls stay on their own customers.edit/property.manage contract and are
 // not used here.
 export type PipelineNote = {
@@ -529,7 +532,7 @@ export type PipelineNote = {
 	edited_at: string | null;
 	created_at: string;
 	updated_at: string;
-	entity_type: 'request' | 'client';
+	entity_type: PipelineNoteTarget;
 	entity_id: string;
 	/** Photos and files on the Note, in order. A pending one is still being checked. */
 	files: NoteFile[];
@@ -596,7 +599,7 @@ export async function fetchOpportunityNotes(opportunityId: string): Promise<Pipe
 export function createOpportunityNote(
 	opportunityId: string,
 	input: {
-		entityType: 'request' | 'client';
+		entityType: PipelineNoteTarget;
 		body: string;
 		fileIds?: string[];
 		mentionUserIds?: string[];
@@ -973,7 +976,7 @@ export type { DragActionKind };
 export function deleteOpportunityNote(
 	opportunityId: string,
 	noteId: string,
-	entityType: 'request' | 'client'
+	entityType: PipelineNoteTarget
 ): Promise<{ unlinked: boolean; note_deleted: boolean }> {
 	return fetch(`/api/pipeline/opportunities/${opportunityId}/notes/${noteId}`, {
 		method: 'DELETE',

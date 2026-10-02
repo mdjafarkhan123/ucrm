@@ -34,12 +34,16 @@ export const POST: RequestHandler = async (event) => {
 	//
 	// A Note's file from the Pipeline Brief is the Brief's own edit, so it follows pipeline.edit -- someone may
 	// write Brief Notes without editing clients. It can only ever land on a Note of that card (the database
-	// checks the card's Request or Client when the Note is saved), never straight onto the record.
+	// checks the card's Request, Quote or Client when the Note is saved), never straight onto the record.
 	const isBriefNoteFile =
 		parsed.data.origin_role === 'note_file' &&
-		(parsed.data.origin_type === 'request' || parsed.data.origin_type === 'client');
+		(parsed.data.origin_type === 'request' ||
+			parsed.data.origin_type === 'quote' ||
+			parsed.data.origin_type === 'client');
 	if (parsed.data.origin_role === 'note_file' && !isBriefNoteFile) {
-		return validationError({ origin_type: 'A note file belongs to a Request or a Client.' });
+		return validationError({
+			origin_type: 'A note file belongs to a Request, a Quote or a Client.'
+		});
 	}
 	const libraryAccess = isBriefNoteFile
 		? await requireOrganizationPermission(event, 'pipeline.edit')
