@@ -7,6 +7,9 @@
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import AuthorMeta from '$lib/components/collaboration/AuthorMeta.svelte';
+	import NoteBody from '$lib/components/collaboration/NoteBody.svelte';
+	import NoteFiles from '$lib/components/collaboration/NoteFiles.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		fetchNotes,
 		fetchProfiles,
@@ -14,8 +17,10 @@
 		profilesKey,
 		type EntityType,
 		type Note,
-		type NoteChange
+		type NoteChange,
+		type NoteFile
 	} from '$lib/collaboration/api';
+	import { downloadFile, fileImageUrl } from '$lib/files/api';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import pencilPlusIcon from '@tabler/icons/outline/pencil-plus.svg?raw';
 	import pinIcon from '@tabler/icons/outline/pin.svg?raw';
@@ -47,29 +52,57 @@
 		onChange: (next: NoteChange[]) => void;
 	} = $props();
 
+	const toast = getToastManager();
+
+	// A photo added from the Pipeline Brief is still being virus-checked for a moment; until it is, the list
+	// is asked again every few seconds so it appears on its own.
 	const notesQuery = createQuery<Note[]>(() => ({
 		queryKey: notesKey(entityType, entityId),
-		queryFn: () => fetchNotes(entityType, entityId)
+		queryFn: () => fetchNotes(entityType, entityId),
+		refetchInterval: (query: { state: { data?: Note[] } }) =>
+			query.state.data?.some((note) =>
+				note.files.some((file) => file.processing_state === 'pending')
+			)
+				? 4000
+				: false
 	}));
 	const notes = $derived(notesQuery.data ?? []);
 	const canManageNote = (note: Note) =>
 		canManage && (canManageTeam || Boolean(currentUserId && note.created_by === currentUserId));
 
-	const authorIds = $derived([
+	// Authors and the people each Note mentions, so both can be named.
+	const profileIds = $derived([
 		...new Set(
 			notes
-				.flatMap((note) => [note.created_by, note.edited_by])
+				.flatMap((note) => [note.created_by, note.edited_by, ...note.mention_user_ids])
 				.filter((id): id is string => Boolean(id))
 		)
 	]);
 	const profilesQuery = createQuery(() => ({
-		queryKey: profilesKey(authorIds),
-		queryFn: () => fetchProfiles(authorIds),
-		enabled: authorIds.length > 0
+		queryKey: profilesKey(profileIds),
+		queryFn: () => fetchProfiles(profileIds),
+		enabled: profileIds.length > 0
 	}));
 	const profileById = $derived(
 		new Map((profilesQuery.data ?? []).map((profile) => [profile.id, profile]))
 	);
+
+	function mentionNames(note: Note) {
+		return note.mention_user_ids
+			.map((id) => profileById.get(id)?.full_name)
+			.filter((name): name is string => Boolean(name));
+	}
+
+	async function downloadNoteFile(file: NoteFile) {
+		try {
+			await downloadFile(file.id);
+		} catch (error) {
+			toast.error(
+				'Could not download the file',
+				error instanceof Error ? error.message : undefined
+			);
+		}
+	}
 
 	// --- Staged changes ---------------------------------------------------------------------------------
 
@@ -284,7 +317,12 @@
 							</div>
 						</div>
 					{:else}
-						<p class="notes-panel__body">{body}</p>
+						<NoteBody {body} mentionNames={mentionNames(note)} />
+						<NoteFiles
+							files={note.files}
+							imageSrc={(file, size) => fileImageUrl(file.id, size)}
+							onDownload={downloadNoteFile}
+						/>
 						{#if removed}
 							<p class="notes-panel__muted">Will be deleted when you save.</p>
 						{/if}
@@ -349,7 +387,7 @@
 				border-style: dashed;
 				opacity: 0.6;
 
-				.notes-panel__body {
+				:global(.note-body) {
 					text-decoration: line-through;
 				}
 			}

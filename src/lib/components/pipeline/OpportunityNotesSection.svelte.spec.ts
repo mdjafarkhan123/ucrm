@@ -26,6 +26,8 @@ function noteFixture(overrides: Record<string, unknown> = {}) {
 		updated_at: '2026-08-10T00:00:00.000Z',
 		entity_type: 'request',
 		entity_id: 'request-1',
+		files: [],
+		mention_user_ids: [],
 		...overrides
 	};
 }
@@ -37,7 +39,8 @@ function renderSection(props: { canEdit?: boolean; hasClient?: boolean } = {}) {
 		{
 			props: {
 				opportunityId: 'opp-1',
-				hasClient: props.hasClient ?? true,
+				requestId: 'request-1',
+				clientId: (props.hasClient ?? true) ? 'client-1' : null,
 				canEdit: props.canEdit ?? true
 			}
 		},
@@ -50,6 +53,16 @@ const originalFetch = globalThis.fetch;
 function mockFetch(notesBody: { notes: unknown[] }) {
 	globalThis.fetch = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
 		const url = String(input);
+		if (url.endsWith('/api/pipeline/teammates')) {
+			return Promise.resolve(
+				new Response(
+					JSON.stringify({
+						members: [{ id: 'user-2', full_name: 'Sam Lee', avatar_url: null }]
+					}),
+					{ status: 200 }
+				)
+			);
+		}
 		if (url.endsWith('/notes') && (!init || init.method === undefined)) {
 			return Promise.resolve(new Response(JSON.stringify(notesBody), { status: 200 }));
 		}
@@ -118,8 +131,53 @@ describe('OpportunityNotesSection', () => {
 		const call = vi.mocked(globalThis.fetch).mock.calls.find(([, init]) => init?.method === 'POST');
 		expect(JSON.parse(call?.[1]?.body as string)).toEqual({
 			entity_type: 'request',
-			body: 'New note body'
+			body: 'New note body',
+			file_ids: [],
+			mention_user_ids: []
 		});
+	});
+
+	it('sends a picked @mention with the note', async () => {
+		mockFetch({ notes: [] });
+		renderSection();
+
+		await page.getByRole('button', { name: 'Add a note' }).click();
+		const box = page.getByLabelText('Add a note');
+		await box.fill('Please call @Sa');
+		await page.getByRole('option', { name: 'Sam Lee' }).click();
+		await expect.element(box).toHaveValue('Please call @Sam Lee ');
+		await page.getByRole('button', { name: 'Add note' }).click();
+
+		await expect
+			.poll(() =>
+				vi.mocked(globalThis.fetch).mock.calls.some(([, init]) => init?.method === 'POST')
+			)
+			.toBe(true);
+		const call = vi.mocked(globalThis.fetch).mock.calls.find(([, init]) => init?.method === 'POST');
+		expect(JSON.parse(call?.[1]?.body as string).mention_user_ids).toEqual(['user-2']);
+	});
+
+	it("shows a note's photo through the card", async () => {
+		mockFetch({
+			notes: [
+				noteFixture({
+					files: [
+						{
+							id: 'file-1',
+							display_name: 'roof.jpg',
+							mime_type: 'image/jpeg',
+							kind: 'image',
+							size_bytes: 1000,
+							has_thumbnail: true,
+							processing_state: 'available'
+						}
+					]
+				})
+			]
+		});
+		renderSection();
+
+		await expect.element(page.getByRole('button', { name: 'Open roof.jpg' })).toBeVisible();
 	});
 
 	it('deletes a note through the confirm dialog', async () => {

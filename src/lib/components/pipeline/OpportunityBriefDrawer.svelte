@@ -152,7 +152,8 @@
 			/>
 			<OpportunityNotesSection
 				opportunityId={opportunity.id}
-				hasClient={opportunity.client !== null}
+				requestId={opportunity.request?.id ?? null}
+				clientId={opportunity.client?.id ?? null}
 				{currentUserId}
 				{canEdit}
 			/>

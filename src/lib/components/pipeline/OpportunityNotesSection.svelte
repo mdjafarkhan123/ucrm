@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
@@ -8,16 +7,26 @@
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import AuthorMeta from '$lib/components/collaboration/AuthorMeta.svelte';
+	import NoteBody from '$lib/components/collaboration/NoteBody.svelte';
+	import NoteFiles from '$lib/components/collaboration/NoteFiles.svelte';
+	import MentionTextarea from './MentionTextarea.svelte';
+	import NoteAttachInput, {
+		attachedFileIds,
+		isUploading,
+		type NoteAttachItem
+	} from './NoteAttachInput.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		createOpportunityNote,
 		deleteOpportunityNote,
 		fetchOpportunityNotes,
+		opportunityNoteFileUrl,
 		opportunityNotesKey,
 		updateOpportunityNote,
 		type PipelineNote
 	} from '$lib/pipeline/api';
-	import { fetchProfiles, profilesKey } from '$lib/collaboration/api';
+	import { mentionsStillIn, type PickedMention } from '$lib/pipeline/mentions';
+	import { fetchProfiles, profilesKey, type NoteFile } from '$lib/collaboration/api';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import pencilPlusIcon from '@tabler/icons/outline/pencil-plus.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
@@ -28,14 +37,19 @@
 	// `$lib/server/pipeline/notes.ts` and the `pipeline_*_opportunity_note` database functions. Keyed by
 	// `opportunity.id` in the parent, same as `OpportunityTasksSection`, so switching cards resets any open
 	// composer or edit row instead of leaking it onto the next card.
+	//
+	// A Note can carry photos and files and @mention teammates (E3). Its files are uploaded against the
+	// card's Request, or its Client when there is none -- the database accepts either for a Note on this card.
 	let {
 		opportunityId,
-		hasClient,
+		requestId,
+		clientId,
 		currentUserId,
 		canEdit
 	}: {
 		opportunityId: string;
-		hasClient: boolean;
+		requestId: string | null;
+		clientId: string | null;
 		currentUserId?: string;
 		canEdit: boolean;
 	} = $props();
@@ -43,27 +57,54 @@
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 
+	const uploadOrigin = $derived<{ type: 'request' | 'client'; id: string | null }>(
+		requestId ? { type: 'request', id: requestId } : { type: 'client', id: clientId }
+	);
+
+	// A freshly attached file is checked for viruses after the Note saves; until it is, the list is asked
+	// again every few seconds so the photo appears on its own.
 	const notesQuery = createQuery(() => ({
 		queryKey: opportunityNotesKey(opportunityId),
-		queryFn: () => fetchOpportunityNotes(opportunityId)
+		queryFn: () => fetchOpportunityNotes(opportunityId),
+		refetchInterval: (query: { state: { data?: PipelineNote[] } }) =>
+			query.state.data?.some((note) =>
+				note.files.some((file) => file.processing_state === 'pending')
+			)
+				? 4000
+				: false
 	}));
 	const notes = $derived(notesQuery.data ?? []);
 
-	const authorIds = $derived([
+	// Authors and the people each Note mentions, so both can be named.
+	const profileIds = $derived([
 		...new Set(
 			notes
-				.flatMap((note) => [note.created_by, note.edited_by])
+				.flatMap((note) => [note.created_by, note.edited_by, ...note.mention_user_ids])
 				.filter((id): id is string => Boolean(id))
 		)
 	]);
 	const profilesQuery = createQuery(() => ({
-		queryKey: profilesKey(authorIds),
-		queryFn: () => fetchProfiles(authorIds),
-		enabled: authorIds.length > 0
+		queryKey: profilesKey(profileIds),
+		queryFn: () => fetchProfiles(profileIds),
+		enabled: profileIds.length > 0
 	}));
 	const profileById = $derived(
 		new Map((profilesQuery.data ?? []).map((profile) => [profile.id, profile]))
 	);
+
+	function mentionNames(note: PipelineNote) {
+		return note.mention_user_ids
+			.map((id) => profileById.get(id)?.full_name)
+			.filter((name): name is string => Boolean(name));
+	}
+
+	function noteFileSrc(file: NoteFile, size: 'thumb' | 'full') {
+		return opportunityNoteFileUrl(opportunityId, file.id, size);
+	}
+
+	function downloadNoteFile(file: NoteFile) {
+		window.location.href = opportunityNoteFileUrl(opportunityId, file.id, 'download');
+	}
 
 	function invalidateNotes() {
 		return queryClient.invalidateQueries({ queryKey: opportunityNotesKey(opportunityId) });
@@ -73,11 +114,14 @@
 
 	let composerOpen = $state(false);
 	let newBody = $state('');
+	let newPicked = $state<PickedMention[]>([]);
+	let newItems = $state<NoteAttachItem[]>([]);
 	let newTarget = $state<'request' | 'client'>('request');
 	const showComposer = $derived(canEdit && (composerOpen || notes.length > 0));
+	const newUploading = $derived(isUploading(newItems));
 
 	const targetOptions = $derived(
-		hasClient
+		clientId
 			? [
 					{ value: 'request', label: 'Request' },
 					{ value: 'client', label: 'Client' }
@@ -86,11 +130,20 @@
 	);
 
 	const createMutationState = createMutation(() => ({
-		mutationFn: () =>
-			createOpportunityNote(opportunityId, { entityType: newTarget, body: newBody.trim() }),
+		mutationFn: () => {
+			const body = newBody.trim();
+			return createOpportunityNote(opportunityId, {
+				entityType: newTarget,
+				body,
+				fileIds: attachedFileIds(newItems),
+				mentionUserIds: mentionsStillIn(body, newPicked)
+			});
+		},
 		onSuccess: () => {
 			invalidateNotes();
 			newBody = '';
+			newPicked = [];
+			newItems = [];
 			composerOpen = false;
 			toast.success('Note added');
 		},
@@ -98,7 +151,7 @@
 	}));
 
 	function addNote() {
-		if (!newBody.trim()) return;
+		if (!newBody.trim() || newUploading) return;
 		createMutationState.mutate();
 	}
 
@@ -106,15 +159,47 @@
 
 	let editingId = $state<string | null>(null);
 	let editBody = $state('');
+	let editPicked = $state<PickedMention[]>([]);
+	let editItems = $state<NoteAttachItem[]>([]);
+	const editUploading = $derived(isUploading(editItems));
 
 	function startEdit(note: PipelineNote) {
 		editingId = note.id;
 		editBody = note.body;
+		editPicked = note.mention_user_ids.map((id) => ({
+			id,
+			name: profileById.get(id)?.full_name ?? ''
+		}));
+		editItems = note.files.map((file) => ({
+			key: file.id,
+			name: file.display_name,
+			status: 'saved',
+			progress: 1,
+			fileId: file.id,
+			error: ''
+		}));
+	}
+
+	// Who the edited text still names. A mention whose name could not be looked up is kept as it was, so a
+	// slow profile lookup never silently drops someone.
+	function editMentionIds(body: string) {
+		const unnamed = editPicked.filter((mention) => !mention.name).map((mention) => mention.id);
+		return [...new Set([...mentionsStillIn(body, editPicked), ...unnamed])];
+	}
+
+	function sameList(a: string[], b: string[]) {
+		return a.length === b.length && a.every((value, index) => value === b[index]);
 	}
 
 	const updateMutationState = createMutation(() => ({
-		mutationFn: (note: PipelineNote) =>
-			updateOpportunityNote(opportunityId, note.id, { body: editBody.trim() }),
+		mutationFn: (note: PipelineNote) => {
+			const body = editBody.trim();
+			return updateOpportunityNote(opportunityId, note.id, {
+				body,
+				fileIds: attachedFileIds(editItems),
+				mentionUserIds: editMentionIds(body)
+			});
+		},
 		onSuccess: () => {
 			invalidateNotes();
 			editingId = null;
@@ -125,7 +210,15 @@
 
 	function applyEdit(note: PipelineNote) {
 		const body = editBody.trim();
-		if (!body || body === note.body) {
+		if (!body || editUploading) return;
+		const unchanged =
+			body === note.body &&
+			sameList(
+				attachedFileIds(editItems),
+				note.files.map((file) => file.id)
+			) &&
+			sameList([...editMentionIds(body)].sort(), [...note.mention_user_ids].sort());
+		if (unchanged) {
 			editingId = null;
 			return;
 		}
@@ -179,20 +272,28 @@
 					bind:value={newTarget}
 				/>
 			{/if}
-			<Textarea
+			<MentionTextarea
 				id={`opportunity-note-composer-${opportunityId}`}
-				label="Add a note"
+				label="Add a note — type @ to mention a teammate"
 				bind:value={newBody}
+				bind:picked={newPicked}
 				maxlength={4000}
 				rows={3}
 			/>
 			<div class="brief-notes__composer-actions">
+				<NoteAttachInput
+					id={`opportunity-note-attach-${opportunityId}`}
+					bind:items={newItems}
+					originType={uploadOrigin.type}
+					originId={uploadOrigin.id}
+					disabled={createMutationState.isPending}
+				/>
 				<Button
 					size="small"
-					disabled={!newBody.trim() || createMutationState.isPending}
+					disabled={!newBody.trim() || newUploading || createMutationState.isPending}
 					onclick={addNote}
 				>
-					Add note
+					{newUploading ? 'Uploading…' : 'Add note'}
 				</Button>
 			</div>
 		</div>
@@ -232,11 +333,19 @@
 
 					{#if editingId === note.id}
 						<div class="brief-notes__edit">
-							<Textarea
+							<MentionTextarea
 								id={`opportunity-note-edit-${note.id}`}
 								bind:value={editBody}
+								bind:picked={editPicked}
 								maxlength={4000}
 								rows={3}
+							/>
+							<NoteAttachInput
+								id={`opportunity-note-edit-attach-${note.id}`}
+								bind:items={editItems}
+								originType={uploadOrigin.type}
+								originId={uploadOrigin.id}
+								disabled={updateMutationState.isPending}
 							/>
 							<div class="brief-notes__edit-actions">
 								<Button
@@ -249,15 +358,16 @@
 								</Button>
 								<Button
 									size="small"
-									disabled={!editBody.trim() || updateMutationState.isPending}
+									disabled={!editBody.trim() || editUploading || updateMutationState.isPending}
 									onclick={() => applyEdit(note)}
 								>
-									Done
+									{editUploading ? 'Uploading…' : 'Done'}
 								</Button>
 							</div>
 						</div>
 					{:else}
-						<p class="brief-notes__body">{note.body}</p>
+						<NoteBody body={note.body} mentionNames={mentionNames(note)} />
+						<NoteFiles files={note.files} imageSrc={noteFileSrc} onDownload={downloadNoteFile} />
 					{/if}
 				</li>
 			{/each}
@@ -312,7 +422,15 @@
 
 		&__composer-actions {
 			display: flex;
-			justify-content: flex-end;
+			flex-wrap: wrap;
+			align-items: flex-start;
+			justify-content: space-between;
+			gap: var(--space-small);
+
+			> :global(.note-attach) {
+				flex: 1 1 200px;
+				min-width: 0;
+			}
 		}
 
 		&__state {
@@ -353,15 +471,6 @@
 			flex: 0 0 auto;
 			align-items: center;
 			gap: var(--space-smaller);
-		}
-
-		&__body {
-			margin-top: var(--space-small);
-			color: var(--color-text);
-			font-size: var(--typography--fontSize-base);
-			line-height: var(--typography--lineHeight-large);
-			white-space: pre-wrap;
-			overflow-wrap: anywhere;
 		}
 
 		&__edit {
