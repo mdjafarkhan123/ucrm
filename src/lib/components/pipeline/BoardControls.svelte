@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { untrack, type Snippet } from 'svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { CalendarDate } from '@internationalized/date';
 	import Select from '$lib/components/ui/Select.svelte';
@@ -31,7 +31,8 @@
 		filters,
 		resultCount,
 		canViewValue,
-		onChange
+		onChange,
+		leading
 	}: {
 		filters: BoardFilters;
 		/** Null until the summary has answered. */
@@ -42,6 +43,8 @@
 		// `replace` asks the page not to add a history entry: typing a search is one visit to the board,
 		// not one per pause between letters.
 		onChange: (next: BoardFilters, options?: { replace?: boolean }) => void;
+		// The Board / Table switch, first in the row. It belongs to the page, not to these controls.
+		leading?: Snippet;
 	} = $props();
 
 	// The search box holds what is being typed; the URL holds what the board is searching for. `sent` is the
@@ -189,6 +192,8 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div class="board-controls">
 	<div class="board-controls__row">
+		{@render leading?.()}
+
 		<SearchInput
 			id="pipeline-search"
 			class="board-controls__search"

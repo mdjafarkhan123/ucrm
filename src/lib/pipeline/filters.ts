@@ -200,3 +200,26 @@ export function boardFilterKey(filters: BoardFilters): string {
 	params.sort();
 	return params.toString();
 }
+
+// Board or Table: how the same cards are drawn, never which cards. It lives in the URL beside the filters so
+// a refresh and a shared link keep it, but it is not one of them — `boardFilterParams` leaves it out, so a
+// saved filter never carries it and switching never asks the server a new question.
+export const BOARD_VIEWS = ['board', 'table'] as const;
+export type BoardView = (typeof BOARD_VIEWS)[number];
+
+// Null when the URL does not say, so the page can fall back to the view this person last chose.
+export function readBoardView(params: URLSearchParams): BoardView | null {
+	const raw = params.get('view');
+	return raw && (BOARD_VIEWS as readonly string[]).includes(raw) ? (raw as BoardView) : null;
+}
+
+// Each header the table can sort by is one of the board's own orders, so a click and the Sort by control
+// always describe the same order. The Task order is a work queue with no direction; any other header
+// clicked again turns round, and one clicked fresh starts the way the Sort by control would.
+export function tableSortChange(filters: BoardFilters, sort: BoardSort): BoardFilters {
+	if (sort === filters.sort) {
+		if (!sortHasDirection(sort)) return filters;
+		return { ...filters, direction: filters.direction === 'desc' ? 'asc' : 'desc' };
+	}
+	return sort === 'close' ? { ...filters, sort, direction: 'asc' } : { ...filters, sort };
+}

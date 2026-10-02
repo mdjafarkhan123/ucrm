@@ -11,6 +11,7 @@ import {
 	type OutcomeType
 } from './outcomes';
 import type { DragActionKind } from './transitions';
+import type { BulkCardResult } from './bulk';
 import type { QuoteDeliveryFailure, QuoteSendChoice } from '$lib/quotes/send';
 
 export type OpportunityCard = {
@@ -115,6 +116,10 @@ export const pipelineKey = ['pipeline'] as const;
 // `column` is a protected column's key, or a custom stage's column id from `boardColumnId`.
 export const boardColumnKey = (column: string, filters: BoardFilters) =>
 	['pipeline', 'board', column, boardFilterKey(filters)] as const;
+// The Table view's one list. Its own key rather than a column's, so loading more rows in the table never
+// disturbs a column's pages, and the same filters still split the cache exactly as the columns do.
+export const boardTableKey = (filters: BoardFilters) =>
+	['pipeline', 'table', boardFilterKey(filters)] as const;
 export const boardCountsKey = (filters: BoardFilters) =>
 	['pipeline', 'summary', boardFilterKey(filters)] as const;
 // One Opportunity's Brief Tasks. Still under the `['pipeline']` family so `invalidatePipeline` reaches it
@@ -145,7 +150,8 @@ async function readError(response: Response, fallback: string) {
 	return failure;
 }
 
-// `stage` is a protected column's name or a custom stage's id — `boardColumnRequestKey` gives either.
+// `stage` is a protected column's name or a custom stage's id — `boardColumnRequestKey` gives either — or
+// `TABLE_SCOPE` for every card at once.
 export async function fetchBoardColumn(
 	stage: string,
 	filters: BoardFilters,
@@ -843,6 +849,34 @@ export async function placeOpportunity(
 		);
 	}
 	return result;
+}
+
+export type BulkChange =
+	| { action: 'owner'; owner_user_id: string | null }
+	| { action: 'task'; task: TaskInput }
+	| { action: 'place'; custom_stage_id: string };
+
+// One bulk change over the Table's selected cards. A refusal of the whole request (too many cards, no
+// permission) throws; a refusal of single cards comes back in the results, beside the cards that changed.
+// Thrown as a TaskWriteError so the Task dialog can show it the way it shows a single Task's refusal.
+export async function bulkUpdateOpportunities(
+	opportunityIds: readonly string[],
+	change: BulkChange
+): Promise<BulkCardResult[]> {
+	const response = await fetch('/api/pipeline/opportunities/bulk', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ ...change, opportunity_ids: opportunityIds })
+	});
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) {
+		const fieldErrors: Record<string, string> = result.field_errors ?? {};
+		throw new TaskWriteError(
+			fieldErrors.form ?? result.error ?? 'Those cards could not be changed.',
+			fieldErrors
+		);
+	}
+	return result.results;
 }
 
 // Takes back a placement the board just made. `customStageId` names it: where the card was put, or `null`

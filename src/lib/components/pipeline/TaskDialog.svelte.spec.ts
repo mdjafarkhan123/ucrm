@@ -172,4 +172,33 @@ describe('TaskDialog', () => {
 			.element(page.getByText('That person cannot be given work on the sales pipeline.'))
 			.toBeVisible();
 	});
+
+	it('hands a bulk Task to its caller instead of writing it to one card', async () => {
+		mockFetch({ body: task, status: 201 });
+		const submit = vi.fn().mockResolvedValue(undefined);
+		const onSaved = vi.fn();
+		render(
+			TaskDialog,
+			{ props: { open: true, submit, bulkCount: 3, onSaved, onClose: vi.fn() } },
+			{ wrapper: QueryClientProvider, wrapperProps: { client: createQueryClient() } }
+		);
+
+		await expect.element(page.getByText('Add a task to 3 cards')).toBeVisible();
+		await page.getByRole('textbox', { name: 'Title' }).fill('Call back');
+		await page.getByRole('button', { name: 'Add task' }).click();
+
+		await vi.waitFor(() =>
+			expect(submit).toHaveBeenCalledWith({
+				title: 'Call back',
+				instructions: null,
+				assignee_user_id: null,
+				due_on: null
+			})
+		);
+		expect(onSaved).not.toHaveBeenCalled();
+		expect(globalThis.fetch).not.toHaveBeenCalledWith(
+			expect.stringContaining('/tasks'),
+			expect.anything()
+		);
+	});
 });

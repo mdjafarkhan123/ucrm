@@ -23,15 +23,18 @@
 	// caller only has to fold the result into its own cache.
 	let {
 		open,
-		opportunityId,
+		opportunityId = '',
 		task = null,
+		submit,
+		bulkCount = 0,
 		futureDueFor = null,
 		timezone,
 		onSaved,
 		onClose
 	}: {
 		open: boolean;
-		opportunityId: string;
+		/** The one Opportunity the Task is for. Not needed when `submit` writes it instead. */
+		opportunityId?: string;
 		/** The Task being edited, or null to create a new one. */
 		task?: Task | null;
 		/** The on-hold stage a card is waiting to enter. Set, the due date becomes required and has to be
@@ -39,7 +42,13 @@
 		futureDueFor?: string | null;
 		/** The organization's timezone, which decides what "today" is for that rule. */
 		timezone?: string;
-		onSaved: (task: Task) => void;
+		/** Writes the new Task somewhere other than one Opportunity — the Table's bulk tools give every
+		 *  selected card its own copy. The caller reports the result and closes the dialog; a thrown
+		 *  refusal shows here, the same as a single Task's. */
+		submit?: (input: TaskInput) => Promise<void>;
+		/** How many cards `submit` is writing to, for the title. */
+		bulkCount?: number;
+		onSaved?: (task: Task) => void;
 		onClose: () => void;
 	} = $props();
 
@@ -117,11 +126,15 @@
 			due_on: toDay(draft.due_on)
 		};
 		try {
+			if (submit) {
+				await submit(input);
+				return;
+			}
 			const saved = task
 				? await updateTask(task.id, input)
 				: await createTask(opportunityId, input);
 			toast.success(task ? 'Task saved' : 'Task added');
-			onSaved(saved);
+			onSaved?.(saved);
 		} catch (thrown) {
 			if (thrown instanceof TaskWriteError) {
 				fieldErrors = thrown.fieldErrors;
@@ -140,7 +153,13 @@
 
 <Dialog
 	{open}
-	title={futureDueFor !== null ? 'Add a follow-up task' : isEdit ? 'Edit task' : 'New task'}
+	title={futureDueFor !== null
+		? 'Add a follow-up task'
+		: isEdit
+			? 'Edit task'
+			: submit
+				? `Add a task to ${bulkCount} ${bulkCount === 1 ? 'card' : 'cards'}`
+				: 'New task'}
 	onClose={saving ? () => {} : onClose}
 >
 	<div class="task-dialog">
@@ -148,6 +167,12 @@
 			<p class="task-dialog__reason">
 				Cards in “{futureDueFor}” need a task with a future due date, so nobody forgets to come back
 				to them. Add one and the card will move.
+			</p>
+		{/if}
+		{#if submit}
+			<p class="task-dialog__reason">
+				Each card gets its own copy of this task, so it can be finished on one card without the
+				others.
 			</p>
 		{/if}
 		<Input

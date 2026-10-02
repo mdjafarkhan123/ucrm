@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BOARD_COLUMN_KEYS, OPPORTUNITY_STAGES } from '$lib/pipeline/stages';
+import { BOARD_COLUMN_KEYS, OPPORTUNITY_STAGES, TABLE_SCOPE } from '$lib/pipeline/stages';
 import { BOARD_DATE_PRESETS, BOARD_DIRECTIONS, BOARD_SORTS } from '$lib/server/pipeline/board';
 import {
 	BOARD_LEAD_SOURCE_MAX,
@@ -8,6 +8,7 @@ import {
 	SAVED_FILTER_NAME_MAX
 } from '$lib/pipeline/filters';
 import { OUTCOME_SORTS, OUTCOME_TYPES } from '$lib/pipeline/outcomes';
+import { BULK_CARD_LIMIT } from '$lib/pipeline/bulk';
 import { quoteSendChoiceSchema } from '$lib/server/validation/quotes.schema';
 
 // Nothing here validates a create. Opportunities are only ever made by the Request trigger, and later by
@@ -66,7 +67,12 @@ function withDateRules<Schema extends z.ZodType<DateRangeInput>>(schema: Schema)
 // database checks that an id is a stage this organization really has switched on.
 export const boardQuerySchema = withDateRules(
 	z.object({
-		stage: z.union([z.enum(BOARD_COLUMN_KEYS), z.string().uuid().toLowerCase()]),
+		// A column, or the whole board at once for the Table view.
+		stage: z.union([
+			z.literal(TABLE_SCOPE),
+			z.enum(BOARD_COLUMN_KEYS),
+			z.string().uuid().toLowerCase()
+		]),
 		cursor: z.string().min(3).max(200).optional(),
 		limit: z.coerce.number().int().min(1).max(BOARD_PAGE_SIZE_MAX).default(BOARD_PAGE_SIZE_DEFAULT),
 		sort: z.enum(BOARD_SORTS).default('attention'),
@@ -168,6 +174,26 @@ export const taskInputSchema = z.object({
 		.transform((value) => value ?? null),
 	due_on: isoDay.nullish().transform((value) => value ?? null)
 });
+
+// The Table's bulk tools: the only three changes the plan allows in bulk, each carrying exactly what its
+// single-card route takes.
+const bulkCardIds = z
+	.array(z.string().uuid())
+	.min(1, 'Pick at least one card.')
+	.max(BULK_CARD_LIMIT, `Change ${BULK_CARD_LIMIT} cards or fewer at a time.`);
+export const pipelineBulkSchema = z.discriminatedUnion('action', [
+	z.object({
+		action: z.literal('owner'),
+		opportunity_ids: bulkCardIds,
+		owner_user_id: z.string().uuid().nullable()
+	}),
+	z.object({ action: z.literal('task'), opportunity_ids: bulkCardIds, task: taskInputSchema }),
+	z.object({
+		action: z.literal('place'),
+		opportunity_ids: bulkCardIds,
+		custom_stage_id: z.string().uuid()
+	})
+]);
 
 // Completing and reopening are the same request with the flag turned around.
 export const taskCompletionSchema = z.object({

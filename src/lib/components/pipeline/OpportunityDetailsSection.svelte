@@ -146,7 +146,9 @@
 				{#if canEdit}
 					<OpportunityOwnerField
 						opportunityId={opportunity.id}
-						ownerName={opportunity.owner?.full_name ?? 'Unassigned'}
+						ownerName={opportunity.owner
+							? (opportunity.owner.full_name ?? 'Former teammate')
+							: 'Unassigned'}
 						{canEdit}
 						triggerClass="brief__owner-trigger"
 						align="end"
@@ -160,7 +162,7 @@
 									src={opportunity.owner.avatar_url}
 									size="small"
 								/>
-								{opportunity.owner.full_name ?? 'No longer on the team'}
+								{opportunity.owner.full_name ?? 'Former teammate'}
 							{:else}
 								<span class="brief__blank">Unassigned</span>
 							{/if}
@@ -174,7 +176,7 @@
 							src={opportunity.owner.avatar_url}
 							size="small"
 						/>
-						{opportunity.owner.full_name ?? 'No longer on the team'}
+						{opportunity.owner.full_name ?? 'Former teammate'}
 					</span>
 				{:else}
 					<span class="brief__blank">Unassigned</span>

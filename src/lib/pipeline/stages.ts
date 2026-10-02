@@ -66,6 +66,10 @@ export const BOARD_COLUMN_KEYS = [
 	ASSESSMENT_GROUP
 ] as const satisfies readonly BoardColumnKey[];
 
+// The Table view's scope: every card the board draws, in one list. Asked for in place of a column, so the
+// table pages through the same route, filters and orders as the columns do.
+export const TABLE_SCOPE = 'all';
+
 export function isBoardColumnKey(value: string): value is BoardColumnKey {
 	return (BOARD_COLUMN_KEYS as readonly string[]).includes(value);
 }

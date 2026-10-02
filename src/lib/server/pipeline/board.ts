@@ -7,7 +7,7 @@ import {
 	type BoardDirection,
 	type BoardDatePreset
 } from '$lib/pipeline/filters';
-import { isBoardColumnKey, isCustomStageId } from '$lib/pipeline/stages';
+import { TABLE_SCOPE, isBoardColumnKey, isCustomStageId } from '$lib/pipeline/stages';
 
 // The board's controls, translated from what a URL can carry into what the database read expects.
 //
@@ -87,7 +87,7 @@ export function recordFilters(
 // one and 2 is those that do not, which always come after. In the Task order, 1 is a Task due today or
 // earlier, 2 is no dated Task, and 3 is a Task due later.
 export type BoardCursor = {
-	// A protected column's name, or a custom stage's id.
+	// A protected column's name, a custom stage's id, or the Table view's whole-board scope.
 	column: string;
 	sort: BoardSort;
 	phase: 1 | 2 | 3;
@@ -115,7 +115,7 @@ export function readBoardCursor(raw: string | null | undefined): BoardCursor | n
 	if (firstColon < 1 || secondColon < 0 || thirdColon < 0) return null;
 
 	const column = head.slice(0, firstColon);
-	if (!isBoardColumnKey(column) && !isCustomStageId(column)) return null;
+	if (column !== TABLE_SCOPE && !isBoardColumnKey(column) && !isCustomStageId(column)) return null;
 	const sort = head.slice(firstColon + 1, secondColon) as BoardSort;
 	if (!(BOARD_SORTS as readonly string[]).includes(sort)) return null;
 	const phase = Number(head.slice(secondColon + 1, thirdColon));
