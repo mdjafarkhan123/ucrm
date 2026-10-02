@@ -8,29 +8,25 @@
 
 - [x] Database: each role's access checked live (rolled back); cards off the board refuse Brief changes;
       every Pipeline pgTAP file passes locally, three of them new.
-- [x] Owner on desktop and on a phone: whole Pipeline, Brief, Sales Outcomes, Settings → Pipeline.
-- [x] Office: board, Brief edits, Task, move, Table, outcomes; Settings → Pipeline read-only.
-- [x] Fixed: teammate lists offered field and finance; Board/Table switch had no screen-reader name;
-      Enter saved the Brief's estimated value twice.
-- [x] Sales on desktop: board, Brief edits, Task, call, note, move and Undo, Table, outcomes; Settings →
-      Pipeline read-only.
-- [x] Admin on desktop: board, outcomes, and a Settings → Pipeline change saved and put back.
-- [x] Field sees no Pipeline. Fixed: Settings showed members without the Pipeline its card and stages.
-- [x] Finance sees no Pipeline, in the sidebar, by address, or in Settings.
+- [x] Every role checked in the browser: owner (desktop and phone), office, sales, admin; field and
+      finance see no Pipeline. Problems found on the way were fixed.
 - [x] Jafar's answers built (2026-10-02): a Won card finishes its open Tasks and a reopened win brings
       them back; the Schedule's Task card has a tick box; the Conversion counting rules are in the plan.
 - [x] Seen in the browser as owner (2026-10-02): Settings → Pipeline boxes lock while Save runs and refuse
       typing; a Task ticks off from the Schedule, stays done after a refresh, and reopens. Both put back.
-- [ ] Jafar's own tour, including dragging a card with a real mouse (forward works, backward is refused).
+- [x] Jafar's tour, round 1 (2026-10-02), all built: filters are hug-width chips (`ui/FilterChip.svelte`);
+      a refused drop says why in a centred "Got it" box; the board slides when a card nears an edge
+      (`$lib/pipeline/edge-scroll.ts`); the chat button and topic chips are pills, not ovals.
+- [ ] Jafar's own tour, round 2: he must try with a real mouse the wider edge-sliding, a refused drop's
+      centred box, and picking and clearing a filter chip; then the rest of the tour.
 
 ## Next
 
-Only Jafar's tour is left; fix whatever he reports, then close the part and the campaign. For any browser
-check, Jafar types each password himself (the assistant never does), and the extension lives in Brave.
-Its fake mouse drag does not register a drop. After a page reload, click by element ref, not by old
-screenshot coordinates. For a phone width, `resize_window` narrows Chrome to 524.
-Screenshots and whole tabs often freeze — read the page with `get_page_text` or `javascript_tool`, or open
-a fresh tab.
+Wait for Jafar's round-2 tour result; fix what he reports, then close the part and the campaign. For any
+browser check, Jafar types each password himself (the assistant never does); the extension lives in Brave.
+Its fake mouse drag does not register a drop. When Brave is behind another window the tab stops drawing
+and in-page changes look stuck (the address changes, the screen does not): judge a state by reloading its
+address. After a reload, click by element ref, not old screenshot coordinates.
 
 ## Notes
 
