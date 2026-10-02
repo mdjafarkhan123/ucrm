@@ -27,20 +27,14 @@ never does); the assistant signs out and fills the next email. Its fake mouse
 drag does not register a drop. For a phone width, `resize_window` narrows Chrome to 524. Screenshots and
 whole tabs often freeze — read the page with `get_page_text` or `javascript_tool`, or open a fresh tab.
 
-## Outside actions
-
-- Migration `20261006130000` pushed to the live database and applied by hand to the local Docker
-  database — check: `/api/pipeline/teammates` answers for a member with only `pipeline.view` — done.
-
 ## Notes
 
 - pgTAP runs against the local Docker database with
   `docker exec -i supabase_db_ucrm psql -U postgres -At -q < <file>`. Do not reset that database: it holds
   G1's big fake company. Its migration ledger stops before `20261006100000`; later files were applied by hand.
-- Test data left on Raad LTD: one "No answer" call on a "Pay-by-app verification (copy)" card; a Task "G2
-  check: ring back about the quote" due 2026-10-20 on the other copy; "RLS fix check (owner)" sits in Assessment unscheduled, was marked Lost and reopened twice,
-  carries a photo note, a sales note, a Busy call, a $490 value, the office teammate as Salesperson, and
-  two done Tasks.
+- Test data left on Raad LTD: a "No answer" call and a Task due 2026-10-20 on the two "Pay-by-app
+  verification (copy)" cards; "RLS fix check (owner)" sits in Assessment unscheduled with notes, a Busy
+  call, a $490 value, the office teammate as Salesperson, and two done Tasks.
 - Photos on Notes stay "Still being checked" here: the local file checker is unhealthy.
 - Waiting on Jafar: "When a Quote is approved (Won), any follow-up Task still open on its card stays open
   forever on the Schedule, and nobody can tick it off because the card's Brief no longer opens. Should
