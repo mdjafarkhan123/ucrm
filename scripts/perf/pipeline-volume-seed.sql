@@ -543,6 +543,46 @@ select perf_seed.seed_org('Volume Contracting', 'perf-volume', 10, 12);
 select perf_seed.seed_org('Midsize Renovations', 'perf-midsize', 1, 6);
 select perf_seed.seed_org('Filler Contractor ' || n, 'perf-filler-' || n, 1, 3) from generate_series(1, 8) as n;
 
+-- The last member of each organization has "see every client" taken away, so the clients they may see are
+-- the ones they hold a visit on. One visit on every twelfth job gives them a crew member's history: about
+-- 400 clients in the big organization.
+set local session_replication_role = replica;
+
+with restricted as (
+  select
+    organization.id as organization_id,
+    perf_seed.uid(organization.id, 'user', (
+      select count(*) from public.organization_members as membership
+      where membership.organization_id = organization.id
+    )) as user_id
+  from public.organizations as organization
+  where organization.slug like 'perf-%'
+),
+picked as (
+  select
+    job.organization_id,
+    job.id as job_id,
+    restricted.user_id,
+    perf_seed.uid(job.organization_id, 'visit',
+      row_number() over (partition by job.organization_id order by job.id)) as visit_id,
+    job.created_at
+  from public.jobs as job
+  join restricted on restricted.organization_id = job.organization_id
+  where perf_seed.pick(('x' || substr(md5(job.id::text), 1, 8))::bit(32)::int::bigint, 77, 12) = 0
+),
+visits as (
+  insert into public.job_visits (id, organization_id, job_id, position, visit_date, title, source,
+    created_at, updated_at)
+  select visit_id, organization_id, job_id, 0, (created_at + interval '3 days')::date, 'Site visit',
+    'manual', created_at, created_at
+  from picked
+)
+insert into public.job_visit_assignments (organization_id, visit_id, user_id, job_id, created_at)
+select organization_id, visit_id, user_id, job_id, created_at
+from picked;
+
+set local session_replication_role = origin;
+
 commit;
 
 analyze;
