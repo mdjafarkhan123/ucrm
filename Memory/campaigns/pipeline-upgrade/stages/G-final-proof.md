@@ -24,5 +24,11 @@ Carried from stage A (design in `docs/adr/0004-pipeline-custom-stages-anchor-to-
 - Raad LTD's test data: one enabled custom stage, "Waiting on customer" (Quotes, after Awaiting response),
   switched to on hold and holding one card with a Task due 2026-10-15; two switched-off stages remain from
   A3's check.
+- From F2 (Conversion tab on `/pipeline/outcomes?view=conversion`, `pipeline_conversion_report`): measured at
+  12,000 cards and 60,000 stage events — one month 21 ms, All time 400–600 ms, straight-line growth; G1 should
+  re-measure with real Requests and Quotes, since the rehearsal cards had neither. For G2: the phone view, and a
+  member without money or without every-client access, were not checked in the browser. Waiting on Jafar:
+  approve adding F2's counting rules to the plan (rates divide closed work only; a Request and its Quote count
+  once; archived-without-Lost counts as not won).
 - From D2/D4/D6, for G1: search is about 140 ms per column at 5,000 open cards (rethink near 20,000); the
   Table 15–30 ms. Bulk changes take about 10 ms per card for owner and 3 ms for Tasks (50-card cap).

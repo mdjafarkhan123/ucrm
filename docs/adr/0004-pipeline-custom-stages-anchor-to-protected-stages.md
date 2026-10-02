@@ -77,6 +77,8 @@ are drawn as one column.
   to 25 more at the stage limit.
 - Anything that reads `opportunity_stage_events` for time in stage must treat a row with equal stages as
   a custom move, not a stage change.
+- An Undo writes its stage event with `is_undo` set (stage F2). Time in stage drops that event and the one
+  just before it, the move that was taken back; anything else that reads the history should do the same.
 - Switching a stage off takes the stage row `for update`: `pipeline_place_opportunity` holds it
   `for share`, so the two cannot interleave.
 - Switching off moves every card in one transaction, about half a millisecond a card: 20,000 cards took

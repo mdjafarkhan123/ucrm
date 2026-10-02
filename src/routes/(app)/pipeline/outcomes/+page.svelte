@@ -17,7 +17,10 @@
 		type DataTableColumn,
 		type DataTableSort
 	} from '$lib/components/data-display/DataTable.svelte';
+	import Tabs from '$lib/components/ui/Tabs.svelte';
+	import TabPanel from '$lib/components/ui/TabPanel.svelte';
 	import OutcomesReportSummary from '$lib/components/pipeline/OutcomesReportSummary.svelte';
+	import ConversionReport from '$lib/components/pipeline/ConversionReport.svelte';
 	import ReopenOpportunityDialog from '$lib/components/pipeline/ReopenOpportunityDialog.svelte';
 	import MarkOpportunityLostDialog from '$lib/components/pipeline/MarkOpportunityLostDialog.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
@@ -29,6 +32,8 @@
 		fetchOutcomeTiles,
 		outcomesReportKey,
 		fetchOutcomesReport,
+		conversionReportKey,
+		fetchConversionReport,
 		invalidatePipeline,
 		fetchLostReasons,
 		lostReasonLabel,
@@ -64,8 +69,20 @@
 			: { ...urlFilters, date: 'all', from: undefined, to: undefined }
 	);
 
-	function setFilters(next: OutcomeFilters) {
+	// Two views of the same closed work. Results lists what closed in the period; Conversion follows what
+	// came in during the period. The open view is in the URL beside the filters, for the same reason.
+	type OutcomesView = 'results' | 'conversion';
+	const view = $derived<OutcomesView>(
+		page.url.searchParams.get('view') === 'conversion' ? 'conversion' : 'results'
+	);
+	const VIEW_TABS = [
+		{ value: 'results', label: 'Results' },
+		{ value: 'conversion', label: 'Conversion', onhover: warmConversion }
+	];
+
+	function setFilters(next: OutcomeFilters, nextView: OutcomesView = view) {
 		const params = outcomeFilterParams(next);
+		if (nextView === 'conversion') params.set('view', nextView);
 		const query = params.toString();
 		void goto(`${page.url.pathname}${query ? `?${query}` : ''}`, {
 			keepFocus: true,
@@ -115,6 +132,22 @@
 		queryFn: () => fetchOutcomesReport(applied),
 		staleTime: 30_000
 	}));
+
+	// Conversion is behind its tab, so it does not load with the page: hovering the tab warms it, and
+	// opening the tab turns the query on.
+	const conversionQuery = createQuery(() => ({
+		queryKey: conversionReportKey(applied),
+		queryFn: () => fetchConversionReport(applied),
+		staleTime: 30_000,
+		enabled: view === 'conversion'
+	}));
+	function warmConversion() {
+		void queryClient.prefetchQuery({
+			queryKey: conversionReportKey(applied),
+			queryFn: () => fetchConversionReport(applied),
+			staleTime: 30_000
+		});
+	}
 
 	// Shares the board's own tiles query -- only its currency/locale/timezone answer is needed here, so a
 	// visit that already warmed the tiles cache from the board pays nothing for it.
@@ -260,148 +293,187 @@
 			retry={() => outcomesQuery.refetch()}
 		/>
 	{:else}
-		<div class="outcomes-toolbar">
-			<span class="outcomes-toolbar__field">
-				<label class="outcomes-toolbar__label" for="outcomes-type">Type</label>
-				<Select
-					id="outcomes-type"
-					value={applied.type}
-					options={OUTCOME_TYPES.map((type) => ({ value: type, label: OUTCOME_TYPE_LABELS[type] }))}
-					onchange={(value) => setFilters({ ...urlFilters, type: value as OutcomeType })}
-				/>
-			</span>
-			<span class="outcomes-toolbar__field">
-				<label class="outcomes-toolbar__label" for="outcomes-date">Date</label>
-				<Select
-					id="outcomes-date"
-					value={applied.date}
-					options={OUTCOME_DATE_PRESETS.map((preset) => ({
-						value: preset,
-						label: OUTCOME_DATE_LABELS[preset]
-					}))}
-					onchange={(value) => changeDate(value as OutcomeDatePreset)}
-				/>
-			</span>
-			{#if applied.date === 'custom'}
-				<CalendarPicker
-					id="outcomes-date-from"
-					label="From"
-					value={toCalendarDate(applied.from)}
-					maxValue={toCalendarDate(applied.to)}
-					onchange={(value) => setFilters({ ...urlFilters, from: toDay(value) })}
-				/>
-				<CalendarPicker
-					id="outcomes-date-to"
-					label="To"
-					value={toCalendarDate(applied.to)}
-					minValue={toCalendarDate(applied.from)}
-					onchange={(value) => setFilters({ ...urlFilters, to: toDay(value) })}
-				/>
-			{/if}
-			{#if hasAnyFilter}
-				<Button
-					variant="tertiary"
-					size="small"
-					onclick={() =>
-						setFilters({
-							...urlFilters,
-							date: DEFAULT_OUTCOME_FILTERS.date,
-							from: undefined,
-							to: undefined
-						})}
-				>
-					Clear filters
-				</Button>
-			{/if}
-		</div>
-
-		{#if reportQuery.data}
-			<OutcomesReportSummary report={reportQuery.data} />
-		{/if}
-
-		{#if outcomesQuery.isPending}
-			<LoadingSkeleton variant="table" label="Loading Sales Outcomes" rows={5} />
-		{:else if rows.length === 0}
-			<EmptyState
-				icon={trophyIcon}
-				title={hasAnyFilter ? 'No matching results' : EMPTY_COPY[applied.type].title}
-				description={hasAnyFilter
-					? 'Try a different date range.'
-					: EMPTY_COPY[applied.type].description}
-			/>
-		{:else}
-			{#snippet lostRowActions(item: OutcomeRow)}
-				<DropdownMenu items={lostActions(item)} triggerLabel={`Actions for ${item.title}`} />
-			{/snippet}
-			{#snippet wonRowActions(item: OutcomeRow)}
-				<DropdownMenu items={wonActions(item)} triggerLabel={`Actions for ${item.title}`} />
-			{/snippet}
-			<DataTable
-				{columns}
-				items={rows}
-				rowId={(row) => row.id}
-				caption="Sales Outcomes"
-				{sort}
-				onSortChange={handleSortChange}
-				rowActions={!canEdit
-					? undefined
-					: applied.type === 'lost'
-						? lostRowActions
-						: applied.type === 'won'
-							? wonRowActions
-							: undefined}
-			>
-				{#snippet row(item: OutcomeRow)}
-					<th scope="row">
-						{item.title}
-						{#if item.quote}
-							<a
-								class="outcomes-source"
-								href={resolve('/(app)/quotes/[id=uuid]', { id: item.quote.id })}
-							>
-								Quote{item.quote.quote_number ? ` #${item.quote.quote_number}` : ''}
-							</a>
-						{/if}
-					</th>
-					<td>{clientName(item)}</td>
-					<td>{formatDate(item.created_at)}</td>
-					<td>{formatDate(item.outcome_at)}</td>
-					{#if applied.type === 'lost'}
-						<td class="outcomes-reason">
-							{#if item.lost?.customer_declined}
-								<Badge status="warning" size="small">Customer declined</Badge>
-							{/if}
-							{#if reasonLabel(item)}
-								<span class="outcomes-reason__label">{reasonLabel(item)}</span>
-							{:else if !item.lost?.customer_declined}
-								<span class="outcomes-reason__none">No reason given</span>
-							{/if}
-							{#if item.lost?.customer_reason}
-								<span class="outcomes-reason__customer">
-									They said: {CUSTOMER_DECLINE_REASON_LABELS[item.lost.customer_reason]}
-								</span>
-							{/if}
-							{#if item.lost?.customer_message}
-								<span class="outcomes-reason__quoted">“{item.lost.customer_message}”</span>
-							{/if}
-							{#if item.lost?.note}
-								<span class="outcomes-reason__note">{item.lost.note}</span>
-							{/if}
-						</td>
-					{/if}
-					{#if canViewValue}
-						<td class="align-end">{money(item.estimated_value)}</td>
-					{/if}
-				{/snippet}
-				{#snippet footer()}
-					<ListLoadMore
-						hasNextPage={outcomesQuery.hasNextPage}
-						isFetchingNextPage={outcomesQuery.isFetchingNextPage}
-						onLoadMore={() => outcomesQuery.fetchNextPage()}
+		{#snippet toolbar()}
+			<div class="outcomes-toolbar">
+				{#if view === 'results'}
+					<span class="outcomes-toolbar__field">
+						<label class="outcomes-toolbar__label" for="outcomes-type">Type</label>
+						<Select
+							id="outcomes-type"
+							value={applied.type}
+							options={OUTCOME_TYPES.map((type) => ({
+								value: type,
+								label: OUTCOME_TYPE_LABELS[type]
+							}))}
+							onchange={(value) => setFilters({ ...urlFilters, type: value as OutcomeType })}
+						/>
+					</span>
+				{/if}
+				<span class="outcomes-toolbar__field">
+					<label class="outcomes-toolbar__label" for="outcomes-date">
+						{view === 'conversion' ? 'Created' : 'Date'}
+					</label>
+					<Select
+						id="outcomes-date"
+						value={applied.date}
+						options={OUTCOME_DATE_PRESETS.map((preset) => ({
+							value: preset,
+							label: OUTCOME_DATE_LABELS[preset]
+						}))}
+						onchange={(value) => changeDate(value as OutcomeDatePreset)}
 					/>
-				{/snippet}
-			</DataTable>
-		{/if}
+				</span>
+				{#if applied.date === 'custom'}
+					<CalendarPicker
+						id="outcomes-date-from"
+						label="From"
+						value={toCalendarDate(applied.from)}
+						maxValue={toCalendarDate(applied.to)}
+						onchange={(value) => setFilters({ ...urlFilters, from: toDay(value) })}
+					/>
+					<CalendarPicker
+						id="outcomes-date-to"
+						label="To"
+						value={toCalendarDate(applied.to)}
+						minValue={toCalendarDate(applied.from)}
+						onchange={(value) => setFilters({ ...urlFilters, to: toDay(value) })}
+					/>
+				{/if}
+				{#if hasAnyFilter}
+					<Button
+						variant="tertiary"
+						size="small"
+						onclick={() =>
+							setFilters({
+								...urlFilters,
+								date: DEFAULT_OUTCOME_FILTERS.date,
+								from: undefined,
+								to: undefined
+							})}
+					>
+						Clear filters
+					</Button>
+				{/if}
+			</div>
+		{/snippet}
+
+		<Tabs
+			tabs={VIEW_TABS}
+			value={view}
+			label="Sales Outcomes views"
+			onChange={(next) => setFilters(urlFilters, next as OutcomesView)}
+		>
+			<TabPanel value="results">
+				<div class="outcomes-panel">
+					{@render toolbar()}
+
+					{#if reportQuery.data}
+						<OutcomesReportSummary report={reportQuery.data} />
+					{/if}
+
+					{#if outcomesQuery.isPending}
+						<LoadingSkeleton variant="table" label="Loading Sales Outcomes" rows={5} />
+					{:else if rows.length === 0}
+						<EmptyState
+							icon={trophyIcon}
+							title={hasAnyFilter ? 'No matching results' : EMPTY_COPY[applied.type].title}
+							description={hasAnyFilter
+								? 'Try a different date range.'
+								: EMPTY_COPY[applied.type].description}
+						/>
+					{:else}
+						{#snippet lostRowActions(item: OutcomeRow)}
+							<DropdownMenu items={lostActions(item)} triggerLabel={`Actions for ${item.title}`} />
+						{/snippet}
+						{#snippet wonRowActions(item: OutcomeRow)}
+							<DropdownMenu items={wonActions(item)} triggerLabel={`Actions for ${item.title}`} />
+						{/snippet}
+						<DataTable
+							{columns}
+							items={rows}
+							rowId={(row) => row.id}
+							caption="Sales Outcomes"
+							{sort}
+							onSortChange={handleSortChange}
+							rowActions={!canEdit
+								? undefined
+								: applied.type === 'lost'
+									? lostRowActions
+									: applied.type === 'won'
+										? wonRowActions
+										: undefined}
+						>
+							{#snippet row(item: OutcomeRow)}
+								<th scope="row">
+									{item.title}
+									{#if item.quote}
+										<a
+											class="outcomes-source"
+											href={resolve('/(app)/quotes/[id=uuid]', { id: item.quote.id })}
+										>
+											Quote{item.quote.quote_number ? ` #${item.quote.quote_number}` : ''}
+										</a>
+									{/if}
+								</th>
+								<td>{clientName(item)}</td>
+								<td>{formatDate(item.created_at)}</td>
+								<td>{formatDate(item.outcome_at)}</td>
+								{#if applied.type === 'lost'}
+									<td class="outcomes-reason">
+										{#if item.lost?.customer_declined}
+											<Badge status="warning" size="small">Customer declined</Badge>
+										{/if}
+										{#if reasonLabel(item)}
+											<span class="outcomes-reason__label">{reasonLabel(item)}</span>
+										{:else if !item.lost?.customer_declined}
+											<span class="outcomes-reason__none">No reason given</span>
+										{/if}
+										{#if item.lost?.customer_reason}
+											<span class="outcomes-reason__customer">
+												They said: {CUSTOMER_DECLINE_REASON_LABELS[item.lost.customer_reason]}
+											</span>
+										{/if}
+										{#if item.lost?.customer_message}
+											<span class="outcomes-reason__quoted">“{item.lost.customer_message}”</span>
+										{/if}
+										{#if item.lost?.note}
+											<span class="outcomes-reason__note">{item.lost.note}</span>
+										{/if}
+									</td>
+								{/if}
+								{#if canViewValue}
+									<td class="align-end">{money(item.estimated_value)}</td>
+								{/if}
+							{/snippet}
+							{#snippet footer()}
+								<ListLoadMore
+									hasNextPage={outcomesQuery.hasNextPage}
+									isFetchingNextPage={outcomesQuery.isFetchingNextPage}
+									onLoadMore={() => outcomesQuery.fetchNextPage()}
+								/>
+							{/snippet}
+						</DataTable>
+					{/if}
+				</div>
+			</TabPanel>
+			<TabPanel value="conversion">
+				<div class="outcomes-panel">
+					{@render toolbar()}
+
+					{#if conversionQuery.isPending}
+						<LoadingSkeleton variant="card" label="Loading conversion numbers" />
+					{:else if conversionQuery.isError}
+						<ErrorState
+							title="The conversion numbers could not be loaded"
+							description="Something went wrong on our side. Try again."
+							retry={() => conversionQuery.refetch()}
+						/>
+					{:else}
+						<ConversionReport report={conversionQuery.data} />
+					{/if}
+				</div>
+			</TabPanel>
+		</Tabs>
 	{/if}
 </PageContainer>
 
@@ -435,13 +507,18 @@
 		flex-wrap: wrap;
 		align-items: end;
 		gap: var(--space-base);
-		margin: var(--space-large) 0;
+		margin-bottom: var(--space-base);
 
 		&__field {
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-smaller);
 		}
+	}
+	// TabPanel stacks its children with a large gap; the toolbar and its content keep their own rhythm.
+	.outcomes-panel {
+		display: flex;
+		flex-direction: column;
 	}
 	.outcomes-source {
 		display: block;

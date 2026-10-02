@@ -3,6 +3,7 @@ import type { QueryClient } from '@tanstack/svelte-query';
 import type { CustomerDeclineReason } from '$lib/quotes/customer-decline';
 import type { BoardColumnKey, CustomStage, OpportunityOutcome, OpportunityStage } from './stages';
 import type { BoardFormatting } from './money';
+import type { QuoteCounts, RequestCounts, StageTime, WorkCounts } from './conversion';
 import type { InactivityDays } from './freshness';
 import { boardFilterKey, boardFilterParams, type BoardFilters } from './filters';
 import {
@@ -144,6 +145,16 @@ export const leadSourcesKey = ['pipeline', 'lead-sources'] as const;
 // The headline numbers depend only on the date window, so changing the list's type or sort never refetches them.
 export const outcomesReportKey = (filters: OutcomeFilters) =>
 	['pipeline', 'outcomes', 'report', filters.date, filters.from ?? '', filters.to ?? ''] as const;
+// Follows the date window only, like the outcome numbers, but reads it against created date.
+export const conversionReportKey = (filters: OutcomeFilters) =>
+	[
+		'pipeline',
+		'outcomes',
+		'conversion',
+		filters.date,
+		filters.from ?? '',
+		filters.to ?? ''
+	] as const;
 export const outcomesListKey = (filters: OutcomeFilters) =>
 	['pipeline', 'outcomes', 'list', outcomeFilterKey(filters)] as const;
 
@@ -339,6 +350,35 @@ export async function fetchOutcomesReport(filters: OutcomeFilters): Promise<Outc
 	const query = params.toString();
 	const response = await fetch(`/api/pipeline/outcomes/report${query ? `?${query}` : ''}`);
 	if (!response.ok) throw await readError(response, 'The outcome numbers could not be loaded.');
+	return response.json();
+}
+
+// What became of the work created in a period. Raw counts: `$lib/pipeline/conversion` divides the rates.
+export type ConversionSource = WorkCounts & {
+	/** Null for clients with no lead source recorded. */
+	lead_source: string | null;
+	/** Absent when this member may not see money. Null when nothing won carries a value. */
+	won_value?: number | null;
+};
+
+export type ConversionReport = {
+	requests: RequestCounts;
+	quotes: QuoteCounts;
+	/** Empty, with `can_view_sources` false, for a member who may not see every client. */
+	sources: ConversionSource[];
+	stages: StageTime[];
+	can_view_sources: boolean;
+	can_view_value: boolean;
+} & BoardFormatting;
+
+export async function fetchConversionReport(filters: OutcomeFilters): Promise<ConversionReport> {
+	const params = new URLSearchParams();
+	if (filters.date !== 'all') params.set('date', filters.date);
+	if (filters.from) params.set('from', filters.from);
+	if (filters.to) params.set('to', filters.to);
+	const query = params.toString();
+	const response = await fetch(`/api/pipeline/outcomes/conversion${query ? `?${query}` : ''}`);
+	if (!response.ok) throw await readError(response, 'The conversion numbers could not be loaded.');
 	return response.json();
 }
 
