@@ -23,8 +23,8 @@
 ## Next
 
 Chrome is signed in as the owner at `http://localhost:5173/pipeline`. The other roles are next — Jafar signs
-each one in himself; the assistant does not type passwords into the browser. The assistant's fake mouse
-drag does not register a drop, so real dragging is Jafar's to try. For a phone width, `resize_window` on a
+each one in himself; the assistant does not type passwords into the browser, and its fake mouse drag
+does not register a drop. For a phone width, `resize_window` on a
 fresh tab narrows Chrome to 524; a screenshot after a scroll can stall — retake it.
 
 ## Outside actions
