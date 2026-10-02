@@ -14,6 +14,7 @@
 		fetchNotes,
 		fetchProfiles,
 		notesKey,
+		pendingFileRefetchMs,
 		profilesKey,
 		type EntityType,
 		type Note,
@@ -59,11 +60,11 @@
 	const notesQuery = createQuery<Note[]>(() => ({
 		queryKey: notesKey(entityType, entityId),
 		queryFn: () => fetchNotes(entityType, entityId),
-		refetchInterval: (query: { state: { data?: Note[] } }) =>
+		refetchInterval: (query: { state: { data?: Note[]; dataUpdateCount: number } }) =>
 			query.state.data?.some((note) =>
 				note.files.some((file) => file.processing_state === 'pending')
 			)
-				? 4000
+				? pendingFileRefetchMs(query.state.dataUpdateCount)
 				: false
 	}));
 	const notes = $derived(notesQuery.data ?? []);

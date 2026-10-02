@@ -26,7 +26,12 @@
 		type PipelineNote
 	} from '$lib/pipeline/api';
 	import { mentionsStillIn, type PickedMention } from '$lib/pipeline/mentions';
-	import { fetchProfiles, profilesKey, type NoteFile } from '$lib/collaboration/api';
+	import {
+		fetchProfiles,
+		pendingFileRefetchMs,
+		profilesKey,
+		type NoteFile
+	} from '$lib/collaboration/api';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import pencilPlusIcon from '@tabler/icons/outline/pencil-plus.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
@@ -66,11 +71,11 @@
 	const notesQuery = createQuery(() => ({
 		queryKey: opportunityNotesKey(opportunityId),
 		queryFn: () => fetchOpportunityNotes(opportunityId),
-		refetchInterval: (query: { state: { data?: PipelineNote[] } }) =>
+		refetchInterval: (query: { state: { data?: PipelineNote[]; dataUpdateCount: number } }) =>
 			query.state.data?.some((note) =>
 				note.files.some((file) => file.processing_state === 'pending')
 			)
-				? 4000
+				? pendingFileRefetchMs(query.state.dataUpdateCount)
 				: false
 	}));
 	const notes = $derived(notesQuery.data ?? []);

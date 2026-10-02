@@ -40,6 +40,12 @@ export type Note = Tables<'notes'> & {
 	mention_user_ids: string[];
 };
 
+/** How often a Notes list asks again while one of its files is still being checked: every few seconds
+ *  for about the first minute, then once a minute, so a check that is stuck never polls hard forever. */
+export function pendingFileRefetchMs(updateCount: number) {
+	return updateCount < 15 ? 4_000 : 60_000;
+}
+
 /** A photo or file on a Note. A pending one is still being checked and cannot be opened yet. */
 export type NoteFile = {
 	id: string;
