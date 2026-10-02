@@ -6,19 +6,12 @@
 
 ## Steps
 
-- [x] Each role's access checked on the live database (rolled back): owner, admin, office, sales use the
-      Pipeline and its money; field and finance are refused.
-- [x] Cards that left the board refuse Brief changes.
-- [x] Every Pipeline pgTAP file passes locally, including three new ones: custom stages (move, on hold,
-      switch off), Request-to-Job Won and Direct job, the `next_task_due_on` trigger.
-- [x] Owner on desktop: board, search, filters, Table and sorting, bulk tools, Brief, Move menu, mark Lost
-      and reopen, on-hold move and Undo, send-quote window (cancelled), Conversion tab, Settings → Pipeline.
-- [x] Fixed: owner, Task-owner, and Salesperson lists offered field and finance teammates the database
-      refused; the Board/Table switch had no screen-reader name.
-- [x] Owner on a phone: everything in the desktop line that applies, plus stage picker, add Task, log call,
-      Notes with a photo.
-- [x] Office walk-through: board, Brief edits, Task, move, Table, outcomes; Settings → Pipeline read-only.
-- [x] Fixed: Enter saved the Brief's estimated value twice; its box now takes the cursor when opened.
+- [x] Database: each role's access checked live (rolled back); cards off the board refuse Brief changes;
+      every Pipeline pgTAP file passes locally, three of them new.
+- [x] Owner on desktop and on a phone: whole Pipeline, Brief, Sales Outcomes, Settings → Pipeline.
+- [x] Office: board, Brief edits, Task, move, Table, outcomes; Settings → Pipeline read-only.
+- [x] Fixed: teammate lists offered field and finance; Board/Table switch had no screen-reader name;
+      Enter saved the Brief's estimated value twice.
 - [ ] Sales, admin walk-through in the browser; field and finance see no Pipeline.
 - [ ] Jafar's own tour, including dragging a card with a real mouse (forward works, backward is refused).
 
