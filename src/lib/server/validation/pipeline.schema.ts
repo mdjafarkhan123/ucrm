@@ -310,6 +310,16 @@ export const outcomePageQuerySchema = withDateRules(
 	})
 );
 
+// The Sales Outcomes headline numbers: the same outcome-date controls as the list, with no type, sort or
+// page because the answer covers every outcome type at once.
+export const outcomeReportQuerySchema = withDateRules(
+	z.object({
+		date: z.enum(BOARD_DATE_PRESETS).default('all'),
+		from: isoDay.optional(),
+		to: isoDay.optional()
+	})
+);
+
 // Settings -> Pipeline -> Lost reasons.
 export const addLostReasonSchema = z.object({
 	label: z

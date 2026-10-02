@@ -141,6 +141,9 @@ export const opportunityCallsKey = (opportunityId: string) =>
 export const outcomeTilesKey = ['pipeline', 'outcomes', 'tiles'] as const;
 // Under the pipeline key, so anything that refreshes the board refreshes the list of sources too.
 export const leadSourcesKey = ['pipeline', 'lead-sources'] as const;
+// The headline numbers depend only on the date window, so changing the list's type or sort never refetches them.
+export const outcomesReportKey = (filters: OutcomeFilters) =>
+	['pipeline', 'outcomes', 'report', filters.date, filters.from ?? '', filters.to ?? ''] as const;
 export const outcomesListKey = (filters: OutcomeFilters) =>
 	['pipeline', 'outcomes', 'list', outcomeFilterKey(filters)] as const;
 
@@ -305,6 +308,37 @@ export async function deleteSavedFilter(id: string): Promise<void> {
 export async function fetchOutcomeTiles(): Promise<OutcomeTiles> {
 	const response = await fetch('/api/pipeline/outcomes/summary');
 	if (!response.ok) throw await readError(response, 'The outcome totals could not be loaded.');
+	return response.json();
+}
+
+export type OutcomesReportGroup = {
+	count: number;
+	/** Counted but carrying no value; shown as "Unvalued", never as zero. */
+	unvalued_count: number;
+	/** Absent when this member may not see money. Null when nothing in the group has a value. */
+	value_total?: number | null;
+};
+
+// The Sales Outcomes headline numbers. A Direct job is its own group, never inside Won.
+export type OutcomesReport = {
+	won: OutcomesReportGroup;
+	lost: OutcomesReportGroup;
+	direct_job: OutcomesReportGroup;
+	/** Over Won deals only. Median and average are null when nothing was won. */
+	days_to_win: { count: number; median: number | null; average: number | null };
+	/** Adds up to the Lost count. `reason` is null for "No reason given". */
+	lost_reasons: { reason: string | null; label: string; count: number }[];
+	can_view_value: boolean;
+} & BoardFormatting;
+
+export async function fetchOutcomesReport(filters: OutcomeFilters): Promise<OutcomesReport> {
+	const params = new URLSearchParams();
+	if (filters.date !== 'all') params.set('date', filters.date);
+	if (filters.from) params.set('from', filters.from);
+	if (filters.to) params.set('to', filters.to);
+	const query = params.toString();
+	const response = await fetch(`/api/pipeline/outcomes/report${query ? `?${query}` : ''}`);
+	if (!response.ok) throw await readError(response, 'The outcome numbers could not be loaded.');
 	return response.json();
 }
 

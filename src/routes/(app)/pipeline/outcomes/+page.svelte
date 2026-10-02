@@ -17,6 +17,7 @@
 		type DataTableColumn,
 		type DataTableSort
 	} from '$lib/components/data-display/DataTable.svelte';
+	import OutcomesReportSummary from '$lib/components/pipeline/OutcomesReportSummary.svelte';
 	import ReopenOpportunityDialog from '$lib/components/pipeline/ReopenOpportunityDialog.svelte';
 	import MarkOpportunityLostDialog from '$lib/components/pipeline/MarkOpportunityLostDialog.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
@@ -26,6 +27,8 @@
 		fetchOutcomes,
 		outcomeTilesKey,
 		fetchOutcomeTiles,
+		outcomesReportKey,
+		fetchOutcomesReport,
 		invalidatePipeline,
 		fetchLostReasons,
 		lostReasonLabel,
@@ -103,6 +106,14 @@
 			fetchOutcomes(applied, pageParam),
 		initialPageParam: undefined as string | undefined,
 		getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined
+	}));
+
+	// The headline numbers follow the date window only; the list's type and sort never refetch them. Under
+	// the pipeline key, so any Pipeline write refreshes them with the list.
+	const reportQuery = createQuery(() => ({
+		queryKey: outcomesReportKey(applied),
+		queryFn: () => fetchOutcomesReport(applied),
+		staleTime: 30_000
 	}));
 
 	// Shares the board's own tiles query -- only its currency/locale/timezone answer is needed here, so a
@@ -303,6 +314,10 @@
 				</Button>
 			{/if}
 		</div>
+
+		{#if reportQuery.data}
+			<OutcomesReportSummary report={reportQuery.data} />
+		{/if}
 
 		{#if outcomesQuery.isPending}
 			<LoadingSkeleton variant="table" label="Loading Sales Outcomes" rows={5} />
