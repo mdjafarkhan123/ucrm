@@ -5,8 +5,8 @@
 
 **In progress:**
 
-- Part 4 — `parts/4-crm-access-isolation.md`; settle CRM-native owner access, multiple site assignment, and access changes
+- Part 3B — `parts/3b-first-launch.md`; settle review, corrections, approval, and launch states
 
-**Next part:** Part 3B — settle the first-site launch check and recorded contractor approval, then Part 5 forms and Astro connection
+**Next part:** Resume Part 4 — `parts/4-crm-access-isolation.md`, then Part 5 forms and Astro connection
 
-**Blockers:** Part 4 waits for the setup/access choices and integration into `main`; the Part 3B launch-approver choice is settled.
+**Blockers:** Integration into `main` waits for the pipeline session's write claim. Part 4 still has setup/access choices; the Part 3B launch-approver choice is settled.

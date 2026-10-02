@@ -63,6 +63,12 @@ The first live release has a separate launch gate: Uplift checks the completed s
 
 The owner sees durable progress: **Queued → Checking content → Building website → Testing preview → Making live → Live**. A publish failure shows the failed stage, a useful explanation, time, and **Retry publish**. The owner may leave and return without losing the job status. Only one release may be made live for a website at a time. Until all checks pass and the new release is promoted, the last successful public website remains unchanged.
 
+### First launch with Uplift
+
+The first site's initial launch is part of Uplift's existing client onboarding review. Every site assigned later uses the same site check and approval rules without reopening the whole organization's onboarding journey. Uplift prepares a fixed version of each new site and checks its mobile presentation, domain and security readiness, native form delivery into the correct CRM organization, and the other purchased services covered by the onboarding launch check when applicable. The contractor sees a private preview of the exact version being proposed. A request for factual corrections sends the site back to Uplift; after changes, Uplift checks and presents a new version. An approval of an older version never authorizes a changed one.
+
+The contractor's named final approver explicitly approves that version for launch. The record includes the approver, approved version, and time, as required by the onboarding plan. Approval does not give that person CMS editing or publishing rights. Uplift makes the approved first version live only after its checks pass. A new site assigned to the same organization repeats this process independently. Later ordinary content publishing follows the owner's direct publish flow above.
+
 ## Version history and recovery
 
 Version history separates successful published releases from failed attempts. Each successful release shows its number, publication time, actor, changed pages or items, and deployment result. An earlier release provides **Preview version**, **Compare with current draft**, and **Restore as draft**.
@@ -94,7 +100,7 @@ After the structured CMS works reliably, Uplift intends to expand it toward an E
 - Which setup milestones and next actions should the owner see before Uplift assigns the first site?
 - May CRM teammates see read-only Website status, or is the entire area owner-only?
 - What should the Website area show when the organization's package does not include a managed website?
-- What are the exact first-launch states for a requested revision or withdrawn approval before a site goes live?
+- How does a named final approver who is not a CRM user securely review and approve the first site without entering the owner-only editor? How is an approval withdrawn before the site goes live?
 - What should happen to an open editor when ownership changes, a site is unassigned, or the CRM session ends?
 - How will native Astro form fields map to published CRM intake definitions and a shared submission receiver, including validation, failed or duplicate submissions, and source attribution? The sites are planned as static builds, so this must not assume a separate Astro server for every site.
 - What CMS operations, auditing, backup, and recovery controls does Uplift need behind the client experience?
