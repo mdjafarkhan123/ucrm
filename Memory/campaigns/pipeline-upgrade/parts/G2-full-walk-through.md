@@ -12,7 +12,11 @@
       close, new or edited Tasks, and Brief Notes. Finishing or deleting a leftover Task and logging a call
       stay allowed. Test: `supabase/tests/database/pipeline_closed_cards_refuse_changes.sql`.
 - [x] Every existing Pipeline pgTAP file passes again (four were out of date).
-- [ ] Owner walk-through in the browser, phone then desktop (started: phone board, Move menu, Brief open).
+- [x] Owner on a phone: board, stage picker, Move menu with reasons, Brief, add Task, log call and "Try again
+      tomorrow", Won/Lost report and Conversion tab. Fixed: Task rows showed the tick box's helper words and
+      a stray indent.
+- [ ] Owner on a phone, still to try: Notes with a photo, on-hold move, mark Lost and reopen, search, filters.
+- [ ] Owner on desktop: not started. The Chrome window would not widen past phone size; Jafar must widen it.
 - [ ] Office, sales, admin walk-through in the browser; field and finance see no Pipeline.
 - [ ] New pgTAP files: custom stages (move, switch off, on hold), Request-to-Job Won, Direct job, the
       `next_task_due_on` trigger.
@@ -20,8 +24,9 @@
 
 ## Next
 
-Carry on the owner walk-through at `http://localhost:5173/pipeline` (Chrome is signed in as the owner,
-phone-sized window). Then the other roles: Jafar signs each one in himself — the assistant does not type
+Carry on the owner's phone checks at `http://localhost:5173/pipeline` (Chrome is signed in as the owner,
+phone-sized window), then desktop once the window is widened. One "No answer" call logged during testing
+stays on "Pay-by-app verification (copy)"; calls cannot be deleted. Then the other roles: Jafar signs each one in himself — the assistant does not type
 passwords into the browser.
 
 ## Outside actions
