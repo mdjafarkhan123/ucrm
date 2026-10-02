@@ -19,6 +19,6 @@ Review the proposed site-level states below against the plan's first-launch sect
 
 ## Notes
 
-The current onboarding contract already requires Uplift's cross-service prelaunch check, an organized preview, one factual-correction round, and an explicit final approval recording approved version, approver, and time. It does not yet define the approval interface or identity check for a named approver who lacks a CRM user account. The Website area uses the contractor's CRM login and has no separate CMS login.
+The current onboarding contract already requires Uplift's cross-service prelaunch check, an organized preview, one factual-correction round, and an explicit final approval recording approved version, approver, and time. It does not yet define the approval interface or identity check for a named approver who lacks a CRM user account. The Website area uses the contractor's CRM login and has no separate CMS login. `docs/research/uplift-crm-website-area-patterns-2026-10-02.md` records the first-party account-free reviewer pattern.
 
 Proposed per-site states: **Uplift preparing → Uplift checking → Ready for review → Changes requested → Approved, preparing launch → Live**. A site added after the first delivery uses these states without reopening organization onboarding. If approval is withdrawn before promotion, stop launch and return to review; after a site is live, a new decision cannot silently undo a live release. Check any removal or rollback with Uplift.

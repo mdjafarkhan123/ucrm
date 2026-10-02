@@ -14,6 +14,8 @@ Housecall Pro describes an agency-built website journey with customer review and
 
 Uplift's chosen rule is a site-specific first-launch gate: Uplift checks the site and records the contractor's approval before it goes live. The current owner then publishes ordinary content changes directly. A newly assigned second site has its own launch gate.
 
+For a named approver without a CRM account, an account-free review is a proven pattern: Dropbox Sign emails a specific recipient a review-and-sign link without requiring an account, and offers optional signer verification. [Dropbox Sign account-free signing](https://help.dropbox.com/share/do-signers-need-a-dropbox-sign-account), [signer authentication](https://help.dropbox.com/security/dropbox-sign-signer-authentication). This is an analogy for a narrow, read-only approval action, not a recommendation to add electronic signatures or a second CMS login. Uplift still needs to choose how it verifies the named approver and records the exact reviewed site version.
+
 ## Site-designed forms
 
 Astro supports custom HTML forms backed by server actions or API endpoints, with server validation. [Astro actions](https://docs.astro.build/en/guides/actions/), [forms with API endpoints](https://docs.astro.build/en/recipes/build-forms-api/). On-demand endpoints need a server adapter even when public pages remain static. [Astro on-demand rendering](https://docs.astro.build/en/guides/on-demand-rendering/). This supports forms designed for each Uplift-managed site that submit to CRM intake through a trusted server path, without adding a CMS form builder.
