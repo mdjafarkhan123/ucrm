@@ -9,4 +9,4 @@
 
 **Next part:** Resume Part 4 — `parts/4-crm-access-isolation.md`, then Part 5 forms and Astro connection
 
-**Blockers:** Integration into `main` waits for the pipeline session's write claim. Part 4 still has setup/access choices; the Part 3B launch-approver choice is settled.
+**Blockers:** Part 3B still needs a clear approval path for a named approver without a CRM account and withdrawal behavior. Part 4 still needs setup/access choices.

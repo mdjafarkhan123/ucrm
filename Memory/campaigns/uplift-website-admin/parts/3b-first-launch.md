@@ -1,7 +1,7 @@
 # Part 3B — first launch
 
 **Campaign:** `uplift-website-admin` · **Plan:** `docs/plans/uplift-website-admin.md` § Preview and publishing
-**Code:** worktree `.claude/worktrees/cms-planning-update`, branch `cms-planning-update`
+**Code:** `main`
 **Done when:** First-launch states and revision path are approved.
 
 ## Steps
@@ -15,7 +15,7 @@
 
 ## Next
 
-Review the proposed site-level states below against the plan's first-launch section. Decide withdrawal and how a named non-owner approver can review and approve without entering the owner-only editor. Integrate the branch into `main` when its write claim is free.
+Review the proposed site-level states below against the plan's first-launch section. Decide withdrawal and how a named non-owner approver can review and approve without entering the owner-only editor.
 
 ## Notes
 

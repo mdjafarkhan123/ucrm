@@ -1,7 +1,7 @@
 # Part 4 — CRM access and isolation
 
 **Campaign:** `uplift-website-admin` · **Plan:** `docs/plans/uplift-website-admin.md` § Product boundary
-**Code:** worktree `.claude/worktrees/cms-planning-update`, branch `cms-planning-update`; integrate plan and Memory into `main` before closing
+**Code:** `main`
 **Done when:** The access contract and failure behavior are approved.
 
 ## Steps
@@ -16,7 +16,7 @@
 
 ## Next
 
-Integrate this branch into `main` now that the pipeline claim is released. Then settle the three owner-visible setup/access questions below and record them in `docs/plans/uplift-website-admin.md` before closing Part 4.
+Settle the three owner-visible setup/access questions below and record them in `docs/plans/uplift-website-admin.md` before closing Part 4.
 
 ## Notes
 
