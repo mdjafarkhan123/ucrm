@@ -7,8 +7,12 @@
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import SavedFiltersMenu from './SavedFiltersMenu.svelte';
 	import { LEAD_SOURCES } from '$lib/clients/lead-sources';
-	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
-	import { fetchLeadSources, leadSourcesKey } from '$lib/pipeline/api';
+	import {
+		fetchLeadSources,
+		fetchMentionableTeammates,
+		leadSourcesKey,
+		mentionableTeammatesKey
+	} from '$lib/pipeline/api';
 	import {
 		BOARD_DATE_LABELS,
 		BOARD_DATE_PRESETS,
@@ -73,12 +77,13 @@
 		return () => clearTimeout(handle);
 	});
 
-	// The team only matters once someone opens the Salesperson list, but it is a small, long-lived list and
+	// Only teammates who may hold Pipeline work are listed -- nobody else can own a card. The team only
+	// matters once someone opens the Salesperson list, but it is a small, long-lived list and
 	// the board almost always has an owner filter used against it, so it loads with the bar rather than
 	// making the first open wait.
 	const teamQuery = createQuery(() => ({
-		queryKey: assignableTeamKey,
-		queryFn: fetchAssignableTeam,
+		queryKey: mentionableTeammatesKey,
+		queryFn: fetchMentionableTeammates,
 		staleTime: 300_000
 	}));
 

@@ -3,8 +3,12 @@
 	import type { Snippet } from 'svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
-	import { assignOpportunityOwner, invalidatePipeline } from '$lib/pipeline/api';
-	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
+	import {
+		assignOpportunityOwner,
+		fetchMentionableTeammates,
+		invalidatePipeline,
+		mentionableTeammatesKey
+	} from '$lib/pipeline/api';
 
 	// The one place the owner-assign menu is built: team list, mutation, and the eligible-member items.
 	// The card and the Brief show it differently — an icon-only avatar versus an avatar-and-name row — so
@@ -37,11 +41,12 @@
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 
+	// Only teammates who may hold Pipeline work, so the menu never offers someone the database would refuse.
 	// The Salesperson filter loads this same list as soon as the board renders, so an editor opening this
 	// menu almost always finds it already warm.
 	const teamQuery = createQuery(() => ({
-		queryKey: assignableTeamKey,
-		queryFn: fetchAssignableTeam,
+		queryKey: mentionableTeammatesKey,
+		queryFn: fetchMentionableTeammates,
 		staleTime: 300_000,
 		enabled: canEdit
 	}));

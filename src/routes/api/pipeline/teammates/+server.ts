@@ -3,11 +3,12 @@ import type { RequestHandler } from './$types';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
 
-// Who can be @mentioned in a Brief Note: active teammates who may see the Pipeline, so a mention never
-// sends someone a link they cannot open (Pipedrive and HubSpot only offer people with access). Named the
-// way the Task owner list names them -- their name, else their sign-in email.
+// Who a card or Task can be given to, who the Salesperson filter lists, and who can be @mentioned in a
+// Brief Note: active teammates who may see the Pipeline, so nobody is offered who would be refused or sent
+// a link they cannot open (Pipedrive and HubSpot only offer people with access). Named by their name, else
+// their sign-in email. Anyone who can see the board may read it, because the filter is theirs too.
 export const GET: RequestHandler = async (event) => {
-	const check = await requireOrganizationPermission(event, 'pipeline.edit');
+	const check = await requireOrganizationPermission(event, 'pipeline.view');
 	if ('response' in check) return check.response;
 
 	const { data, error } = await event.locals.supabase.rpc('pipeline_mentionable_teammates', {

@@ -58,7 +58,7 @@ const originalFetch = globalThis.fetch;
 function mockFetch(taskResponse: { body: unknown; status: number }) {
 	globalThis.fetch = vi.fn((input: RequestInfo | URL) => {
 		const url = String(input);
-		if (url.includes('/team/assignable')) {
+		if (url.includes('/pipeline/teammates')) {
 			return Promise.resolve(new Response(JSON.stringify({ members: [] }), { status: 200 }));
 		}
 		return Promise.resolve(

@@ -633,7 +633,8 @@ export function opportunityNoteFileUrl(
 	return base;
 }
 
-// Teammates who can be @mentioned in a Brief Note: active, and able to see the Pipeline.
+// Teammates who can hold Pipeline work: active, and able to see the Pipeline. The owner and Task-owner
+// menus, the Salesperson filter, and the Brief Note @mention list all offer exactly these people.
 export type MentionableTeammate = {
 	id: string;
 	full_name: string | null;

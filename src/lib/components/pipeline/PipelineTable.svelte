@@ -19,14 +19,15 @@
 		boardTableKey,
 		bulkUpdateOpportunities,
 		fetchBoardColumn,
+		fetchMentionableTeammates,
 		invalidatePipeline,
+		mentionableTeammatesKey,
 		type BulkChange,
 		type TaskInput,
 		type BoardColumnPage,
 		type OpportunityCard as Card
 	} from '$lib/pipeline/api';
 	import { BULK_CARD_LIMIT, cardCount, summarizeBulk } from '$lib/pipeline/bulk';
-	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 	import {
 		BOARD_SORTS,
 		boardFilterKey,
@@ -99,8 +100,8 @@
 
 	// The Salesperson filter has already loaded this list, so the owner menu opens on it warm.
 	const teamQuery = createQuery(() => ({
-		queryKey: assignableTeamKey,
-		queryFn: fetchAssignableTeam,
+		queryKey: mentionableTeammatesKey,
+		queryFn: fetchMentionableTeammates,
 		staleTime: 300_000,
 		enabled: canEdit
 	}));

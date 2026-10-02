@@ -11,12 +11,13 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		createTask,
+		fetchMentionableTeammates,
+		mentionableTeammatesKey,
 		updateTask,
 		TaskWriteError,
 		type Task,
 		type TaskInput
 	} from '$lib/pipeline/api';
-	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 
 	// Creates or edits one Brief Task. Owns the write itself, the same way `PropertyDialog` does for a
 	// client's property: there is no page draft to stage into here, so Save writes straight away and the
@@ -102,8 +103,8 @@
 	// The Salesperson filter loads this same list as soon as the board renders, so this almost always
 	// finds it already warm.
 	const teamQuery = createQuery(() => ({
-		queryKey: assignableTeamKey,
-		queryFn: fetchAssignableTeam,
+		queryKey: mentionableTeammatesKey,
+		queryFn: fetchMentionableTeammates,
 		staleTime: 300_000
 	}));
 	const teamOptions = $derived([
