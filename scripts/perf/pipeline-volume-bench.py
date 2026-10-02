@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Time Pipeline reads as a signed-in member. usage: bench.py <org: vol|mid> <who: owner|restricted> [filter]"""
+"""Time every Pipeline read as a signed-in member of a fake company built by pipeline-volume-seed.sql.
+
+LOCAL REBUILD ONLY. usage: pipeline-volume-bench.py <vol|mid> <owner|restricted> [text a case name must contain]
+Results: docs/sales-pipeline-performance-verification.md
+"""
 import subprocess, sys, re, statistics, hashlib, uuid
 
 def md5uuid(s): return str(uuid.UUID(hashlib.md5(s.encode()).hexdigest()))

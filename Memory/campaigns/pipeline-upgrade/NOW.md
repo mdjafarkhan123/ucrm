@@ -5,9 +5,12 @@ and proven extras from Pipedrive, HubSpot, and Housecall Pro are added where the
 first paying client.
 **Plan:** `docs/sales-pipeline-behavior-contract.md` (revision 3 approved 2026-10-01)
 
-**In progress:** Stages A, B, and C finished 2026-10-01; stage D, its three fixes, stage E, and stage F (Sales Outcomes numbers and the Conversion tab) finished 2026-10-02.
+**In progress:** Stages A–F finished by 2026-10-02. G1 (speed at volume) finished 2026-10-02: numbers in
+`docs/sales-pipeline-performance-verification.md`.
 
-**Next part:** G1, speed at volume — paused part-way, continue from `parts/G1-speed-at-volume.md`; `stages/G-final-proof.md` also carries the open notes from stages A–F. Stage E's file stays until its carried notes
-(move history screen, bulk Task alert) are homed.
+**Next part:** G2, full walk-through — every plan rule checked with each role login on desktop and phone, then
+Jafar's own browser tour. Its line and the open notes carried from stages A–G1 are in
+`stages/G-final-proof.md`. Stage E's file stays until its carried notes (move history screen, bulk Task
+alert) are homed.
 
 **Blockers:** None.

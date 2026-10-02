@@ -18,4 +18,4 @@ Evidence: `docs/research/pipeline-gap-audit-2026-10-01.md` and
 | D fixes | Date picker crash on the dev server, nameless teammates shown as former, silent refused drag | Done 2026-10-02 | — |
 | E The Opportunity Brief | Tasks on the Schedule, Task alerts, Notes with photos and mentions, Email/Text/Call | Done 2026-10-02 (file kept for carried notes) | `stages/E-brief.md` |
 | F Sales reports | Loss reasons, Direct jobs, days to win, funnel, source, time in stage | Done 2026-10-02 | — |
-| G Final proof | Speed at volume, full walk-through with every role, Jafar's tour | Not started | `stages/G-final-proof.md` |
+| G Final proof | Speed at volume, full walk-through with every role, Jafar's tour | G1 done 2026-10-02; G2 not started | `stages/G-final-proof.md` |
