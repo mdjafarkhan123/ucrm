@@ -123,10 +123,16 @@ function blockedStage(
 	};
 }
 
-function blockedSection(cardSection: BoardSection): string {
+export function blockedSection(cardSection: BoardSection): string {
 	return cardSection === 'request'
 		? 'This is still a request, so it can only go into a Requests stage. It can go here once it becomes a quote.'
 		: 'This is a quote, so it can only go into a Quotes stage.';
+}
+
+// Why a card dropped on a real stage's column cannot go there, in the Move menu's own words, so a refused
+// drag says what the Move button would have said. `to` is one stage the column stands for.
+export function blockedStageReason(from: AnyBoardStage, to: AnyBoardStage): string {
+	return blockedStage(from, to).reason;
 }
 
 // Every destination for one card, in the board's own left-to-right order: each section's real stages,

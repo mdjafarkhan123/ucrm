@@ -159,7 +159,7 @@ describe('PipelineColumn drop confirmation', () => {
 		await vi.waitFor(() =>
 			expect(mocks.toast.error).toHaveBeenCalledWith(
 				'That card cannot go into Chasing a decision.',
-				'This is a request, so it can only go into a Requests stage. Convert it to a quote first.'
+				'This is still a request, so it can only go into a Requests stage. It can go here once it becomes a quote.'
 			)
 		);
 		expect(mocks.placeOpportunity).not.toHaveBeenCalled();
@@ -236,14 +236,34 @@ describe('PipelineColumn drop confirmation', () => {
 		expect(onDragBusyChange).toHaveBeenLastCalledWith(false);
 	});
 
-	it('restores a refused backward drop without calling the server or showing a toast', async () => {
+	it("restores a refused backward drop and says why, in the Move menu's words, without asking the server", async () => {
 		const { zone } = renderColumn('new_request');
 
 		finalize(zone);
 
 		await expect.element(page.getByText('Nothing here.')).toBeVisible();
+		await vi.waitFor(() =>
+			expect(mocks.toast.error).toHaveBeenCalledWith(
+				'That card cannot go into New requests.',
+				'This request already has an assessment. To bring it back to New requests, remove the assessment on the request.'
+			)
+		);
 		expect(mocks.dragOpportunity).not.toHaveBeenCalled();
 		expect(mocks.toast.loading).not.toHaveBeenCalled();
+	});
+
+	it('refuses a request card dropped on a Quotes column, and says why', async () => {
+		const { zone } = renderColumn('quote_awaiting_response');
+
+		finalize(zone);
+
+		await vi.waitFor(() =>
+			expect(mocks.toast.error).toHaveBeenCalledWith(
+				'That card cannot go into Awaiting response.',
+				'There is no quote to send yet. Move this card to Draft first to create the quote.'
+			)
+		);
+		expect(mocks.dragOpportunity).not.toHaveBeenCalled();
 	});
 
 	it('waits for Schedule confirmation before showing saving feedback or calling the server', async () => {

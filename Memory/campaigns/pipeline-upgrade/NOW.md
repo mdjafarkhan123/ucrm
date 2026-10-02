@@ -5,8 +5,8 @@ and proven extras from Pipedrive, HubSpot, and Housecall Pro are added where the
 first paying client.
 **Plan:** `docs/sales-pipeline-behavior-contract.md` (revision 3 approved 2026-10-01)
 
-**In progress:** Stages A, B, and C finished 2026-10-01; stage D finished 2026-10-02.
+**In progress:** Stages A, B, and C finished 2026-10-01; stage D and its three fixes finished 2026-10-02.
 
-**Next part:** DF3 refused drag says why — `stages/D-fixes.md` (Jafar, 2026-10-02: fix DF1–DF3 before E1; DF1, DF2 done).
+**Next part:** E1 Tasks on the Schedule — `stages/E-brief.md`.
 
 **Blockers:** None.

@@ -33,7 +33,7 @@
 		type BoardColumnPage,
 		type OpportunityCard as Card
 	} from '$lib/pipeline/api';
-	import type { MoveTarget } from '$lib/pipeline/moves';
+	import { blockedSection, blockedStageReason, type MoveTarget } from '$lib/pipeline/moves';
 	import {
 		ALL_STAGE_LABELS,
 		ASSESSMENT_GROUP,
@@ -191,19 +191,20 @@
 		return card.custom_stage_id === null && realStages.includes(card.stage);
 	}
 
-	// Whether a card currently being dragged out of a different column may land here at all.
+	// Whether a card currently being dragged out of a different column would be refused here. The column
+	// fades while it is, so the answer shows before the card is let go -- but every column still takes the
+	// drop and answers in `handleFinalize`, handing the card straight back with the Move menu's own reason,
+	// which a zone that silently refused the drop could never say.
 	//
-	// A custom stage takes every drop and answers in `handleFinalize`: a card from the wrong side of the
-	// Request/Quote line is handed straight back with the reason, which a zone that silently refused the
-	// drop could never say.
-	//
-	// A protected column allows two things. A card whose real stage is already here -- the drag started
-	// in this very column, or the card is coming home from a custom stage. And a card whose real stage the
-	// transition table can advance to a stage this column represents. `true` -- refuse the drop -- for
-	// everything else, including any move the table simply never mentions (backward, cross-group, or
-	// otherwise not a real domain command).
+	// A custom stage refuses a card from the other side of the Request/Quote line. A protected column
+	// allows two things. A card whose real stage is already here -- the drag started in this very column,
+	// or the card is coming home from a custom stage. And a card whose real stage the transition table can
+	// advance to a stage this column represents. Everything else is refused, including any move the table
+	// simply never mentions (backward, cross-group, or otherwise not a real domain command).
 	const dropRefused = $derived.by(() => {
-		if (dragging === null || stage === null) return false;
+		if (dragging === null) return false;
+		if (customStage) return stageSection(dragging.stage) !== customStage.section;
+		if (stage === null) return false;
 		const realStages: readonly OpportunityStage[] = stagesInColumn(stage);
 		if (realStages.includes(dragging.stage)) return false;
 		return !allowedDragTargets(dragging.stage).some((target) => realStages.includes(target));
@@ -212,7 +213,9 @@
 	function handleConsider(event: CustomEvent<DndEvent<Card>>) {
 		items = event.detail.items;
 		if (event.detail.info.trigger === TRIGGERS.DRAG_STARTED) {
-			const dragged = event.detail.items.find((item) => item.id === event.detail.info.id);
+			// From the query's own cards: by now the library has swapped the dragged item in `items` for its
+			// shadow copy, which carries a placeholder id, so it cannot be found there.
+			const dragged = cards.find((item) => item.id === event.detail.info.id);
 			if (dragged) {
 				onDraggingChange({ stage: dragged.stage, customStageId: dragged.custom_stage_id });
 			}
@@ -247,12 +250,7 @@
 		if (customStage) {
 			const cardSection = stageSection(dropped.stage);
 			if (cardSection !== customStage.section) {
-				toast.error(
-					`That card cannot go into ${customStage.name}.`,
-					cardSection === 'request'
-						? 'This is a request, so it can only go into a Requests stage. Convert it to a quote first.'
-						: 'This is a quote, so it can only go into a Quotes stage.'
-				);
+				if (cardSection) refuseDrop(blockedSection(cardSection));
 				return;
 			}
 			await performPlace(dropped, customStage.id);
@@ -272,23 +270,34 @@
 		// action whether the card was dragged out of that stage's own column or out of a custom stage. Once
 		// it succeeds the real stage changes, and the database lets go of the custom placement by itself.
 		const fromStage = dropped.stage;
+		if (!isAnyBoardStage(fromStage)) return;
 
 		// The collapsed Assessment column has no single real stage of its own -- only a New request drop
 		// has an approved way in, and even that is ambiguous (unscheduled or scheduled) until the person
-		// answers the choice dialog. Every other card that lands here started inside the group already
-		// (a same-column reorder `dropRefused` already lets through) and has no drag-based advancement:
-		// that is the Brief's next action, not a drop.
+		// answers the choice dialog. A card already inside the group never reaches here (it belongs here),
+		// so anything else is a quote, which cannot go back: its reason is the same for all three states.
 		if (stage === ASSESSMENT_GROUP) {
 			if (fromStage === 'new_request') {
 				pendingChoice = dropped;
 				onDragBusyChange(true);
+			} else {
+				refuseDrop(blockedStageReason(fromStage, 'assessment_unscheduled'));
 			}
 			return;
 		}
 
-		// `dropRefused` already keeps a disallowed target from accepting the drop in the first place, and
+		// A move the transition table does not know goes back with the reason the Move menu gives for it.
 		// `beginStageMove` checks again before anything is asked of the server.
+		if (!dragActionFor(fromStage, stage)) {
+			refuseDrop(blockedStageReason(fromStage, stage));
+			return;
+		}
 		await beginStageMove(dropped, stage);
+	}
+
+	// The card is already back in its own column (`items = cards` above); this only says why.
+	function refuseDrop(reason: string) {
+		toast.error(`That card cannot go into ${label}.`, reason);
 	}
 
 	// A card asked to enter a real stage, by a drop or from its Move menu. Each stage's own action decides
@@ -621,7 +630,11 @@
 	);
 </script>
 
-<section class="pipeline-column" aria-labelledby={headingId}>
+<section
+	class="pipeline-column"
+	class:pipeline-column--refuses={dropRefused}
+	aria-labelledby={headingId}
+>
 	<header class="pipeline-column__header">
 		<div class="pipeline-column__heading">
 			<h3 id={headingId}>
@@ -671,8 +684,7 @@
 				use:dndzone={{
 					items,
 					flipDurationMs: 150,
-					dragDisabled: !dragEnabled || !canEdit || pendingCard !== null || dragBusy,
-					dropFromOthersDisabled: dropRefused
+					dragDisabled: !dragEnabled || !canEdit || pendingCard !== null || dragBusy
 				}}
 				onconsider={handleConsider}
 				onfinalize={handleFinalize}
@@ -765,6 +777,11 @@
 		gap: var(--space-base);
 		min-width: 0;
 		padding: var(--space-base) var(--space-slim);
+	}
+	// A column the dragged card cannot go into. It still takes the drop, to say why; this says so first.
+	.pipeline-column--refuses {
+		opacity: 0.45;
+		transition: opacity 120ms ease;
 	}
 	.pipeline-column__header {
 		display: flex;
