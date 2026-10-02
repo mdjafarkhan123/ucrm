@@ -1,11 +1,7 @@
-# Uplift CMS planning handoff
+# Archived CMS planning transfer bundle
 
-This folder is a copy bundle. The original files remain in the CMS project.
+This folder is the original transfer bundle from the earlier separate-CMS project. It is kept as historical source material and is no longer the working plan.
 
-Copy the `Memory/campaigns/uplift-website-admin/` folder, `docs/plans/uplift-website-admin.md`, and all files under `docs/research/` into the same paths in the UCRM project.
+The current CRM-native plan is [`docs/plans/uplift-website-admin.md`](../docs/plans/uplift-website-admin.md). Its campaign notes are in [`Memory/campaigns/uplift-website-admin/`](../Memory/campaigns/uplift-website-admin/). Current research covers named site selection, first-launch approval, and site-designed Astro forms in [`docs/research/uplift-crm-website-area-patterns-2026-10-02.md`](../docs/research/uplift-crm-website-area-patterns-2026-10-02.md).
 
-Do not overwrite UCRM's `Memory/INDEX.md`. Add the one campaign row in `Memory/INDEX-row.md` to that existing file instead.
-
-After copying, ask Codex: `Read the transferred Uplift CMS campaign memory and continue uplift-website-admin. The CMS has no separate login; only the CRM organization owner may enter it.`
-
-The CRM-to-CMS handoff research contains links that currently point to the separate UCRM project. After copying it into UCRM, ask Codex to update those local links before relying on them.
+Do not copy this bundle over those files; it retains earlier one-site and separate-session assumptions.
