@@ -1,7 +1,8 @@
 # Sales Pipeline behavior contract
 
 Status: Revision 3 approved by Jafar on 2026-10-01. Earlier approvals: 2026-08-18, then the unified board and
-stage-customization revision on 2026-08-24.
+stage-customization revision on 2026-08-24. Amended by Jafar on 2026-10-02: the conversion counting rules,
+Won finishing open Tasks, and ticking a Task off from the Schedule.
 Owner: Sales Pipeline campaign
 
 ## Purpose
@@ -160,6 +161,11 @@ communication, conversion, protected-stage movement, and closing work are never 
   total when a direct Request or Direct job becomes Won. Lost value is frozen from the last sent Quote total,
   or from the Opportunity value recorded on a Request when it becomes Lost. Later document edits never rewrite
   an earlier outcome value; missing values are labelled **Unvalued**.
+- Conversion rates count work, not cards (Jafar, 2026-10-02). A Request and the Quote made from it are one
+  piece of work and count once: Won if either was won, still Open if either is on the board, otherwise Lost
+  if either was lost. Every rate divides by closed work only, so work still Open is never counted as lost.
+  Work archived without being marked Lost is closed and counts as not won. A Draft Quote archived before
+  anyone saw it is not a result, and a Direct job never enters a rate.
 
 ## Movement and automation
 
@@ -209,9 +215,13 @@ communication, conversion, protected-stage movement, and closing work are never 
 - Each Opportunity may have at most five open and five completed Tasks. The card shows one open Task: the
   earliest due one, breaking equal due dates by creation order; when none are due, it shows the oldest open
   Task. An overdue Task is visibly overdue. Completion and reopening happen from the Brief, not the card.
+  A dated Task can also be ticked off or reopened from its box on the Schedule, with the same effect
+  (Jobber's calendar does the same); a finished Task on a card that has left the board cannot be reopened.
 - Task lifecycle follows Jobber: converting a Request to a Quote transfers its Tasks to the Quote; marking a
   Request Lost completes its Tasks; marking a Quote Lost or archiving its source removes its Tasks; Won does
-  not carry Tasks into the Job. Reopening a Lost Request reopens only the Tasks that its matching Lost event
+  not carry Tasks into the Job: it completes the Tasks still open, so none is left on the Schedule or open
+  where no screen shows it (Jafar, 2026-10-02; Jobber leaves this unstated). Reopening a Won Quote reopens
+  only the Tasks that win completed. Reopening a Lost Request reopens only the Tasks that its matching Lost event
   completed automatically; Tasks a person completed remain completed. Parts 4 and 5 implement these
   transitions when those domain actions exist.
 - Notes save immediately from the Brief and belong to either its backing Request/Quote or the Client, never to

@@ -87,6 +87,7 @@ describe('taskToItem', () => {
 		completed_at: null,
 		assignee_user_id: 'user-sales',
 		opportunity_open: true,
+		can_complete: true,
 		request_id: 'req-1',
 		quote_id: null,
 		client_name: 'Dana Reed',

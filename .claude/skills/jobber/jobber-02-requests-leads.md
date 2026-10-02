@@ -425,7 +425,8 @@ Pipeline-specific Tasks and Notes. It documents the smaller Brief Task form: req
 instructions, one owner, and one due date. Every Pipeline user may create, edit, complete, reopen, or delete;
 the actions are internal and send no client communication. Each Opportunity has at most five open and five
 completed Tasks. The card shows the earliest-due open Task, breaking ties by creation order; with no due dates,
-it shows the oldest open Task. Dated Tasks also appear on the assignee's Schedule.
+it shows the oldest open Task. Dated Tasks also appear on the assignee's Schedule, and completing one from
+the calendar has the same effect as completing it from the Brief (article re-read 2026-10-02).
 
 The same article documents Task lifecycle: Request-to-Quote transfers Tasks; Lost Request completes them;
 Lost Quote or archive permanently deletes them; Won does not carry them into the Job. Brief Notes default to

@@ -262,7 +262,9 @@ export const GET: RequestHandler = async (event) => {
 	const events = eventRows.slice(0, SCHEDULE_VISIT_LIMIT);
 
 	// A Task belongs to one card and a card to one client, narrowed the same way as the embeds above. A member
-	// who may not see the client gets the Task without the name.
+	// who may not see the client gets the Task without the name. Ticking one off is a Pipeline change, so the
+	// card offers it only to a member who may edit the Pipeline; the completion route checks again.
+	const canCompleteTasks = hasPermission(check.access, 'pipeline.edit');
 	const tasks = taskRows.slice(0, SCHEDULE_VISIT_LIMIT).map((row) => {
 		const opportunity = one(row.opportunity);
 		const client = opportunity ? one(opportunity.client) : null;
@@ -274,6 +276,7 @@ export const GET: RequestHandler = async (event) => {
 			completed_at: row.status === 'completed' ? row.completed_at : null,
 			assignee_user_id: row.assignee_user_id,
 			opportunity_open: opportunity?.outcome === 'open',
+			can_complete: canCompleteTasks,
 			request_id: opportunity?.request_id ?? null,
 			quote_id: opportunity?.quote_id ?? null,
 			client_name: client?.display_name ?? null,

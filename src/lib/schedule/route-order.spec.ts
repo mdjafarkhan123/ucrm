@@ -108,6 +108,7 @@ describe('routeStops', () => {
 			completed_at: null,
 			assignee_user_id: null,
 			opportunity_open: true,
+			can_complete: true,
 			request_id: null,
 			quote_id: null,
 			client_name: null,

@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import { invalidatePipeline, setTaskCompletion } from '$lib/pipeline/api';
 	import { visitDerivedStatus } from '$lib/schedule/status';
 	import { assignmentLabel } from '$lib/schedule/labels';
 	import type { CardDensity } from '$lib/schedule/layout';
@@ -11,9 +14,13 @@
 	// One Pipeline Task on its assignee's day (Pipeline E1).
 	//
 	// It mirrors the other cards' shape so a day reads as one calendar, but the Pipeline owns it: the card is a
-	// link, never a drag handle, and it opens the card's Brief on the Pipeline, where the Task is edited and
-	// ticked off. A Task has a day and no time, so it only ever sits in Anytime. Its marker is an empty or
-	// ticked box and its tag says "Task", so colour alone never carries the difference.
+	// link, never a drag handle, and it opens the card's Brief on the Pipeline, where the Task is edited. A
+	// Task has a day and no time, so it only ever sits in Anytime. Its marker is an empty or ticked box and its
+	// tag says "Task", so colour alone never carries the difference.
+	//
+	// The box is the one thing the calendar does to a Task: ticking it here is the same as ticking it in the
+	// Brief (Jobber's calendar does the same). The title is the link and stretches over the whole card, with
+	// the box sitting above it, so the card stays one click target without a button inside a link.
 
 	let {
 		task,
@@ -47,6 +54,25 @@
 		return `${resolve('/(app)/pipeline')}?brief=${task.opportunity_id}`;
 	});
 
+	// Whoever may edit the Pipeline may tick a Task off. Unticking starts the work again, which a card that
+	// has left the board refuses, so a finished Task on a closed card keeps a plain marker.
+	const canToggle = $derived(task.can_complete && (!done || task.opportunity_open));
+	const toggleLabel = $derived(done ? `Reopen "${titleLabel}"` : `Mark "${titleLabel}" complete`);
+
+	const queryClient = useQueryClient();
+	const toast = getToastManager();
+
+	// A Task write can change which Task its card shows on the board, so this clears the Pipeline's caches
+	// along with the calendar window, the same as the Brief's own tick.
+	const completionMutation = createMutation(() => ({
+		mutationFn: (completed: boolean) => setTaskCompletion(task.id, completed),
+		onSuccess: (_result, completed) => {
+			invalidatePipeline(queryClient);
+			toast.success(completed ? 'Task completed' : 'Task reopened');
+		},
+		onError: (error: Error) => toast.error('Could not update the task', error.message)
+	}));
+
 	const summary = $derived(
 		[
 			'Task',
@@ -62,30 +88,36 @@
 
 <!-- The href is built with resolve() above; only the Brief's query string is added to it. -->
 <!-- eslint-disable svelte/no-at-html-tags, svelte/no-navigation-without-resolve -->
-<a
-	{href}
+<div
 	class="task-card task-card--{density}"
 	class:task-card--done={done}
 	class:task-card--overdue={overdue}
-	aria-label={summary}
+	class:task-card--saving={completionMutation.isPending}
 	title={summary}
 >
 	<span class="task-card__accent" aria-hidden="true"></span>
 
-	{#if density === 'micro'}
-		<span class="task-card__line">
+	<span class="task-card__line">
+		{#if canToggle}
+			<button
+				type="button"
+				class="task-card__tick"
+				aria-label={toggleLabel}
+				aria-pressed={done}
+				disabled={completionMutation.isPending}
+				onclick={() => completionMutation.mutate(!done)}
+			>
+				{@html done ? squareCheckIcon : squareIcon}
+			</button>
+		{:else}
 			<span class="task-card__marker" aria-hidden="true">
 				{@html done ? squareCheckIcon : squareIcon}
 			</span>
-			<span class="task-card__title">{titleLabel}</span>
-		</span>
-	{:else}
-		<span class="task-card__line">
-			<span class="task-card__marker" aria-hidden="true">
-				{@html done ? squareCheckIcon : squareIcon}
-			</span>
-			<span class="task-card__title">{titleLabel}</span>
-		</span>
+		{/if}
+		<a {href} class="task-card__title" aria-label={summary}>{titleLabel}</a>
+	</span>
+
+	{#if density !== 'micro'}
 		{#if clientLabel}
 			<span class="task-card__client">{clientLabel}</span>
 		{/if}
@@ -101,7 +133,7 @@
 			</span>
 		{/if}
 	{/if}
-</a>
+</div>
 
 <!-- eslint-enable svelte/no-at-html-tags, svelte/no-navigation-without-resolve -->
 
@@ -121,7 +153,6 @@
 		border-radius: var(--radius-small);
 		background-color: var(--color-surface);
 		color: var(--color-text);
-		text-decoration: none;
 		transition:
 			background-color var(--timing-quick) ease,
 			box-shadow var(--timing-quick) ease;
@@ -129,10 +160,14 @@
 		&:hover {
 			background-color: var(--color-surface--hover);
 		}
-		&:focus-visible {
-			outline: none;
+		// The link fills the card, so its focus ring is drawn on the card.
+		&:has(.task-card__title:focus-visible) {
 			box-shadow: var(--shadow-focus);
 		}
+	}
+
+	.task-card--saving {
+		opacity: 0.6;
 	}
 
 	.task-card__accent {
@@ -169,7 +204,8 @@
 		min-width: 0;
 	}
 
-	.task-card__marker {
+	.task-card__marker,
+	.task-card__tick {
 		display: inline-flex;
 		flex-shrink: 0;
 		color: var(--color-task);
@@ -180,6 +216,33 @@
 		}
 	}
 
+	// Sits above the stretched link. Its padding makes the box easier to hit, and the matching negative
+	// margin keeps the title exactly where the plain marker leaves it.
+	.task-card__tick {
+		position: relative;
+		z-index: 1;
+		margin: calc(-1 * var(--space-smaller));
+		padding: var(--space-smaller);
+		border: 0;
+		border-radius: var(--radius-small);
+		background: none;
+		cursor: pointer;
+		transition:
+			background-color var(--timing-quick) ease,
+			box-shadow var(--timing-quick) ease;
+
+		&:hover:not(:disabled) {
+			background-color: var(--color-task--surface);
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+		&:disabled {
+			cursor: default;
+		}
+	}
+
 	.task-card__title {
 		flex: 1 1 auto;
 		min-width: 0;
@@ -187,9 +250,20 @@
 		font-size: var(--typography--fontSize-small);
 		font-weight: 700;
 		line-height: var(--typography--lineHeight-tighter);
+		text-decoration: none;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+
+		&:focus-visible {
+			outline: none;
+		}
+		// Stretches the link over the whole card, so anywhere but the box opens the Task's card.
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+		}
 	}
 
 	.task-card__client,

@@ -17,16 +17,19 @@
 - [x] Admin on desktop: board, outcomes, and a Settings → Pipeline change saved and put back.
 - [x] Field sees no Pipeline. Fixed: Settings showed members without the Pipeline its card and stages.
 - [x] Finance sees no Pipeline, in the sidebar, by address, or in Settings.
-- [ ] As owner or admin, confirm Settings → Pipeline boxes lock while Save runs (built, not yet seen in
-      the browser).
+- [x] Jafar's answers built (2026-10-02): a Won card finishes its open Tasks and a reopened win brings
+      them back; the Schedule's Task card has a tick box; the Conversion counting rules are in the plan.
+- [ ] In the browser, as owner or admin: Settings → Pipeline boxes lock while Save runs, and a Task ticks
+      off from the Schedule (both built and tested, neither yet seen in the real app).
 - [ ] Jafar's own tour, including dragging a card with a real mouse (forward works, backward is refused).
 
 ## Next
 
-Every role is checked. Chrome sits on the sign-in page with the owner email typed, for Jafar's tour. Jafar
-types each password himself (the assistant never does). Its fake mouse
-drag does not register a drop. For a phone width, `resize_window` narrows Chrome to 524. Screenshots and
-whole tabs often freeze — read the page with `get_page_text` or `javascript_tool`, or open a fresh tab.
+Nothing waits on an answer. The two browser checks above need Chrome's Claude extension, which was not
+connected on 2026-10-02; then Jafar's tour. Jafar types each password himself (the assistant never does).
+Its fake mouse drag does not register a drop. For a phone width, `resize_window` narrows Chrome to 524.
+Screenshots and whole tabs often freeze — read the page with `get_page_text` or `javascript_tool`, or open
+a fresh tab.
 
 ## Notes
 
@@ -37,8 +40,4 @@ whole tabs often freeze — read the page with `get_page_text` or `javascript_to
   verification (copy)" cards; "RLS fix check (owner)" sits in Assessment unscheduled with notes, a Busy
   call, a $490 value, the office teammate as Salesperson, and two done Tasks.
 - Photos on Notes stay "Still being checked" here: the local file checker is unhealthy.
-- Waiting on Jafar: "When a Quote is approved (Won), any follow-up Task still open on its card stays open
-  forever on the Schedule, and nobody can tick it off because the card's Brief no longer opens. Should
-  winning a card finish its open Tasks automatically, the same way losing a Request already does
-  (recommended), or should the Schedule get its own tick-off button?"
-- Waiting on Jafar (from F2): approve adding the Conversion tab's counting rules to the plan.
+- Database change `20261006140000` (Won finishes open Tasks) is on the remote and the local Docker database.

@@ -138,8 +138,9 @@ export type ScheduleEvent = {
 	all_day: boolean;
 };
 
-// A Pipeline Task with a due day (Pipeline E1). The Pipeline owns it; the Schedule only shows it on its
-// assignee's day and links to the card's Brief. A Task has a day but no time, so it always sits in Anytime.
+// A Pipeline Task with a due day (Pipeline E1). The Pipeline owns it; the Schedule shows it on its assignee's
+// day, links to the card's Brief, and can tick it off. A Task has a day but no time, so it always sits in
+// Anytime.
 export type ScheduleTask = {
 	id: string;
 	opportunity_id: string;
@@ -151,6 +152,8 @@ export type ScheduleTask = {
 	assignee_user_id: string | null;
 	/** False once the card is won, lost or closed: it has left the board, so its Brief cannot open there. */
 	opportunity_open: boolean;
+	/** True for a member who may edit the Pipeline, and so may tick this Task off from the calendar. */
+	can_complete: boolean;
 	request_id: string | null;
 	quote_id: string | null;
 	/** Null when this member may not see the client. */
