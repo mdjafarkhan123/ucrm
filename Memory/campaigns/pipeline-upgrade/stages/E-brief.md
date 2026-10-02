@@ -9,7 +9,7 @@ Brief actions; audit items B3, B4, B5, B6 and section D.
 | E2 Task alerts | Assigning or reassigning a Task to someone else sends them one in-app alert and an email; assigning to yourself sends nothing; the customer is never told | — | The office login assigns a Task to the sales login, who gets one alert and one email; a self-assigned Task sends none | Done 2026-10-02 |
 | E3 Notes with photos and mentions | A Brief Note can carry files and photos and mention a teammate, who is alerted | E2 | A photo added to a Brief Note also shows on the Request's own Notes; a mentioned teammate gets an alert that opens the card | Done 2026-10-02 |
 | E3b Notes on Quote cards | A Quote card's Brief writes Notes and photos onto its Quote or Client, and still shows the Notes of the Request the Quote came from | — | On a Quote-sourced card, a Note with a photo saves and shows on that Quote and in the Brief | Done 2026-10-02 |
-| E4 Email, Text, and Call buttons | The buttons open the existing composer or the phone's dialler; several contact details open a chooser; Call offers an optional return Note; a button shows only when the detail and permission exist; a call can be logged, and a logged call restarts the card's progress clock | — | Email opens the composer addressed to the client; a client with no phone shows no Text or Call; returning from Call offers a Note and records no automatic outcome; logging a call clears the card's inactivity warning | Not started |
+| E4 Email, Text, and Call buttons | Quick buttons on the Brief; a person logs a call with one of five outcomes | — | Email opens the client's composer; no phone shows no Text or Call; only Connected and Left voicemail clear the inactivity warning | Done 2026-10-02 |
 
 Push alerts and per-person notification settings are not in this campaign (Jafar, 2026-10-01): E2 and E3 send
 the in-app alert and the email only. The rest waits in
@@ -23,10 +23,9 @@ Carried from stage A: the Brief shows only the real stage, not which custom stag
 screen shows a card's move history yet; whichever part draws it must read stage names without filtering
 on `disabled_at`, so a switched-off stage still shows its name.
 
-Carried from stage C (Jafar, 2026-10-01): no call log exists yet, so "a logged call outcome is progress" moved
-here. Before building it, ask Jafar how a call is logged — he was offered a "Log call" button with outcomes
-(HubSpot/Pipedrive) and chose to decide with E4. Each card's progress clock is `progress_at`; the customer-reply
-trigger in migration `20261002190000` is the pattern for restarting it. A card's task dates: `next_task_due_on`.
+From E4: `progress_at` is restarted by `pipeline_log_opportunity_call` (migration `20261004130000`). Calls show on
+the Brief only, not yet on the Client record. Email and Text go to the client's primary address or number; the
+composer has no recipient picker. Tapping Call on a desktop was not tried, so check it on a phone.
 
 Carried from D6 (bulk tools): a bulk Task given to someone else must send them one combined alert and email
 ("5 new Tasks"), not one per card. Bulk Tasks are created by `pipeline_bulk_update` (migration `20261003140000`).

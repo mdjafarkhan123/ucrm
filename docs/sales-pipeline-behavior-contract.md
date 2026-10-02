@@ -83,7 +83,8 @@ future Tasks. A separate inactivity warning uses an owner-configurable number of
 close date remains optional and is an alternate sort, not the default work queue. The protected-stage defaults
 are New requests after 1 day, each Assessment state after 2 days, Draft after 2 days, Awaiting response after 5
 days, and Changes requested after 2 days. The inactivity clock resets only for genuine progress: a customer
-reply, a successful or externally confirmed send, an explicitly logged call outcome, Task completion,
+reply, a successful or externally confirmed send, a logged call that reached the customer (Connected or Left
+voicemail), Task completion,
 assessment scheduling/completion, Quote revision/send, or another protected domain action. Ownership, value,
 and date edits; internal Notes; Task creation or reassignment; and manual custom-stage movement do not reset it.
 
@@ -219,9 +220,15 @@ communication, conversion, protected-stage movement, and closing work are never 
 - Quick actions expose Email, Text, and Call only when the Client has the required contact detail and the team
   member may use that channel. Messaging still obeys Communications consent, opt-out, allowance, and delivery
   rules; a quick action is not a second sending system. Email and Text open the existing Communications
-  composer, and multiple eligible contact details open a chooser. Call opens the device dialler and offers an
-  optional return Note; opening the dialler never pretends that a call connected or records an automatic call
-  outcome.
+  composer, which writes to the Client's primary address or number. Call opens the device dialler, and several
+  phone numbers open a chooser. Opening the dialler never pretends that a call connected or records an
+  automatic call outcome.
+- Calls are logged by a person (Jafar, 2026-10-02, after comparing HubSpot, Pipedrive, GoHighLevel, Jobber and
+  Housecall Pro). Tapping Call, or "Log call", opens a bar asking how it went, with five outcomes and no default:
+  Connected, Left voicemail, No answer, Busy, Wrong number, plus an optional note. Only Connected and Left
+  voicemail restart the inactivity clock, because only they reached the customer; the other three are kept in
+  the card's call history without restarting it. After No answer or Busy the bar offers a one-tap "Try again
+  tomorrow" Task for the caller. The history shows on the Brief; the Client record does not show it yet.
 - `pipeline.view` permits reading Brief Tasks and Notes. `pipeline.edit` is required to create, edit,
   complete, reopen, move, or delete them. Opportunity ownership does not grant extra mutation authority.
 - Brief Notes are authorized by `pipeline.edit` through a Pipeline-scoped path, separate from the generic
