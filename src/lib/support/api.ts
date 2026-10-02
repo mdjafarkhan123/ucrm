@@ -7,6 +7,28 @@ import { httpError } from '$lib/http-error';
 /** `system` and `ai` are reserved for later senders; nothing writes them yet. */
 export type SupportSenderKind = 'member' | 'uplift' | 'system' | 'ai';
 
+// Each question is its own chat with one topic (D4a; Intercom's messenger, a Zendesk-style "type" field).
+// Picking one is optional: a chat starts as Other.
+export const SUPPORT_TOPICS = [
+	{ value: 'setup', label: 'Setup' },
+	{ value: 'website', label: 'Website' },
+	{ value: 'google_profile', label: 'Google Profile' },
+	{ value: 'crm', label: 'CRM' },
+	{ value: 'billing', label: 'Billing' },
+	{ value: 'other', label: 'Other' }
+] as const;
+
+export type SupportTopic = (typeof SUPPORT_TOPICS)[number]['value'];
+
+export const SUPPORT_TOPIC_VALUES = SUPPORT_TOPICS.map((topic) => topic.value) as [
+	SupportTopic,
+	...SupportTopic[]
+];
+
+export function supportTopicLabel(topic: SupportTopic): string {
+	return SUPPORT_TOPICS.find((item) => item.value === topic)?.label ?? 'Other';
+}
+
 export type SupportMessage = {
 	id: string;
 	sender_kind: SupportSenderKind;
@@ -18,36 +40,45 @@ export type SupportMessage = {
 };
 
 export type SupportThread = {
-	/** Null until the first message is sent. */
-	thread_id: string | null;
+	thread_id: string;
+	topic: SupportTopic;
+	/** The viewer may change the topic: the chat's starter, or an owner or admin. */
+	can_change_topic: boolean;
 	/** Oldest first. */
 	messages: SupportMessage[];
 	has_earlier: boolean;
 	/** Uplift's own words for its hours and usual reply time. Empty when Uplift has not written one. */
 	availability_note: string;
-	/** Whose conversation it is. Null for the member's own. */
+	/** Whose chat it is. Null for the member's own. */
 	started_by_name: string | null;
-	/** Other conversations in the organization the member may see (D3). Counted only with their own. */
-	team_thread_count: number;
 };
 
-// Who sees what (D3, Zendesk's "My / CC'd / Organization requests"): a member sees the conversation they
-// started and ones they were added to; owners and admins see every conversation in their organization.
+// Who sees what (D3, Zendesk's "My / CC'd / Organization requests"): a member sees the chats they started
+// and ones they were added to; owners and admins see every chat in their organization.
 
-/** A conversation other than the member's own: someone else's they were added to or administer. */
-export type SupportTeamThread = {
+/** One row in the messenger's chat lists. */
+export type SupportChatRow = {
 	id: string;
+	topic: SupportTopic;
+	/** Who started it. For the member's own chats this is their own name. */
 	started_by_name: string;
 	last_message_at: string;
 	last_message_preview: string;
 	last_message_sender_kind: SupportSenderKind;
-	/** Something arrived since the member last looked. Shown as a dot; never counted in the badge. */
+	/** Something arrived since the member last looked. */
 	unread: boolean;
 	/** The member was added to it, rather than seeing it as an owner or admin. */
 	added: boolean;
 };
 
-export type SupportTeamThreads = { threads: SupportTeamThread[] };
+export type SupportChats = {
+	/** The member's own chats, newest first. */
+	mine: SupportChatRow[];
+	/** Someone else's chats the member may see: added to, or every one for an owner or admin. */
+	team: SupportChatRow[];
+	/** Uplift's own words for its hours and usual reply time. Empty when Uplift has not written one. */
+	availability_note: string;
+};
 
 export type SupportPerson = {
 	user_id: string;
@@ -72,35 +103,28 @@ export const SUPPORT_MAX_LOADED = 500;
 
 export type SupportUnread = { unread: number };
 
-// The user id is part of the key: the query client outlives sign-out, and a thread belongs to one person.
-export const supportThreadKey = (userId: string | null) => ['support', 'thread', userId] as const;
-export const supportThreadPageKey = (userId: string | null, limit: number) =>
-	[...supportThreadKey(userId), limit] as const;
+// The user id is part of the key: the query client outlives sign-out, and chats belong to one person.
+// Every chat, list and people panel sits under this prefix, so one live ping refreshes them all.
+export const supportKey = (userId: string | null) => ['support', 'chats', userId] as const;
+export const supportChatsKey = (userId: string | null) => [...supportKey(userId), 'list'] as const;
+export const supportThreadKey = (userId: string | null, threadId: string) =>
+	[...supportKey(userId), 'thread', threadId] as const;
+export const supportThreadPageKey = (userId: string | null, threadId: string, limit: number) =>
+	[...supportThreadKey(userId, threadId), limit] as const;
+export const supportPeopleKey = (userId: string | null, threadId: string | null) =>
+	[...supportKey(userId), 'people', threadId] as const;
 
 export const supportUnreadKey = (userId: string | null) => ['support', 'unread', userId] as const;
 
-/** Someone else's conversation, by id. Shares the user's prefix so a ping refreshes it with their own. */
-export const supportTeamThreadKey = (userId: string | null, threadId: string) =>
-	[...supportThreadKey(userId), 'team', threadId] as const;
-export const supportTeamThreadPageKey = (userId: string | null, threadId: string, limit: number) =>
-	[...supportTeamThreadKey(userId, threadId), limit] as const;
-export const supportTeamThreadsKey = (userId: string | null) =>
-	[...supportThreadKey(userId), 'team-list'] as const;
-export const supportPeopleKey = (userId: string | null, threadId: string | null) =>
-	[...supportThreadKey(userId), 'people', threadId] as const;
-
-export async function fetchSupportTeamThread(
-	threadId: string,
-	limit: number
-): Promise<SupportThread> {
+export async function fetchSupportThread(threadId: string, limit: number): Promise<SupportThread> {
 	const response = await fetch(`/api/support/thread?thread_id=${threadId}&limit=${limit}`);
 	if (!response.ok) throw httpError(response, 'This conversation could not be loaded.');
 	return response.json();
 }
 
-export async function fetchSupportTeamThreads(): Promise<SupportTeamThreads> {
+export async function fetchSupportChats(): Promise<SupportChats> {
 	const response = await fetch('/api/support/threads');
-	if (!response.ok) throw httpError(response, 'Team conversations could not be loaded.');
+	if (!response.ok) throw httpError(response, 'Your chats could not be loaded.');
 	return response.json();
 }
 
@@ -139,7 +163,7 @@ export async function fetchSupportUnread(): Promise<SupportUnread> {
 	return response.json();
 }
 
-/** The member's screen showed their conversation up to `readThrough`, the newest message's time. */
+/** The member's screen showed a chat up to `readThrough`, the newest message's time. */
 export async function markSupportThreadRead(threadId: string, readThrough: string) {
 	const response = await fetch('/api/support/thread/read', {
 		method: 'POST',
@@ -147,12 +171,6 @@ export async function markSupportThreadRead(threadId: string, readThrough: strin
 		body: JSON.stringify({ thread_id: threadId, read_through: readThrough })
 	});
 	if (!response.ok) throw await failure(response, 'The conversation could not be marked as read.');
-}
-
-export async function fetchSupportThread(limit: number): Promise<SupportThread> {
-	const response = await fetch(`/api/support/thread?limit=${limit}`);
-	if (!response.ok) throw httpError(response, 'Your conversation could not be loaded.');
-	return response.json();
 }
 
 async function failure(response: Response, fallback: string) {
@@ -164,11 +182,38 @@ async function failure(response: Response, fallback: string) {
 	return httpError(response, fieldMessage ?? body?.error ?? fallback);
 }
 
-/** Without `thread_id`, the member writes in their own conversation. */
+/** Starts a new chat with its first message. The same message id on a retry returns the same chat. */
+export async function startSupportThread(input: {
+	topic: SupportTopic;
+	body: string;
+	client_message_id: string;
+}): Promise<SupportMessage & { thread_id: string }> {
+	const response = await fetch('/api/support/threads', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	if (!response.ok) throw await failure(response, 'Your message could not be sent.');
+	return response.json();
+}
+
+// The topic routes answer `changed: false` when the chat already had that topic.
+async function changeTopic(url: string, topic: SupportTopic): Promise<void> {
+	const response = await fetch(url, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ topic })
+	});
+	if (!response.ok) throw await failure(response, 'The topic could not be changed.');
+}
+
+export const changeSupportTopic = (threadId: string, topic: SupportTopic) =>
+	changeTopic(`/api/support/threads/${threadId}`, topic);
+
 export async function sendSupportMessage(input: {
 	body: string;
 	client_message_id: string;
-	thread_id?: string;
+	thread_id: string;
 }): Promise<SupportMessage> {
 	const response = await fetch('/api/support/messages', {
 		method: 'POST',
@@ -183,6 +228,7 @@ export async function sendSupportMessage(input: {
 
 export type SupportInboxThread = {
 	id: string;
+	topic: SupportTopic;
 	organization: { id: string; name: string };
 	member_name: string;
 	last_message_at: string;
@@ -209,16 +255,21 @@ export type SupportInboxThreadDetail = {
 
 export const jafarSupportKey = ['jafar', 'support'] as const;
 export const jafarSupportInboxKey = ['jafar', 'support', 'inbox'] as const;
-export const jafarSupportInboxPageKey = (limit: number) =>
-	[...jafarSupportInboxKey, limit] as const;
+export const jafarSupportInboxPageKey = (limit: number, topic: SupportTopic | null) =>
+	[...jafarSupportInboxKey, limit, topic] as const;
 export const jafarSupportUnreadKey = ['jafar', 'support', 'unread'] as const;
 export const jafarSupportThreadKey = (threadId: string | null) =>
 	['jafar', 'support', 'thread', threadId] as const;
 export const jafarSupportThreadPageKey = (threadId: string | null, limit: number) =>
 	[...jafarSupportThreadKey(threadId), limit] as const;
 
-export async function fetchSupportInbox(limit: number): Promise<SupportInbox> {
-	const response = await fetch(`/api/jafar/support/threads?limit=${limit}`);
+export async function fetchSupportInbox(
+	limit: number,
+	topic: SupportTopic | null
+): Promise<SupportInbox> {
+	const params = new URLSearchParams({ limit: String(limit) });
+	if (topic) params.set('topic', topic);
+	const response = await fetch(`/api/jafar/support/threads?${params}`);
 	if (!response.ok) throw httpError(response, 'The Support Inbox could not be loaded.');
 	return response.json();
 }
@@ -276,6 +327,9 @@ export async function fetchSupportInboxPeople(threadId: string): Promise<Support
 		throw httpError(response, 'The people in this conversation could not be loaded.');
 	return response.json();
 }
+
+export const changeSupportInboxTopic = (threadId: string, topic: SupportTopic) =>
+	changeTopic(`/api/jafar/support/threads/${threadId}`, topic);
 
 export const changeSupportInboxPeople = (threadId: string, userId: string, adding: boolean) =>
 	changePeople(`/api/jafar/support/threads/${threadId}/people`, userId, adding);

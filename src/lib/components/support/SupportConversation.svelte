@@ -391,6 +391,7 @@
 			flex: 1;
 			flex-direction: column;
 			justify-content: center;
+			gap: var(--space-base);
 		}
 
 		&__day {

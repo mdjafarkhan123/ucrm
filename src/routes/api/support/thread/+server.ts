@@ -3,14 +3,14 @@ import type { RequestHandler } from './$types';
 import { PRIVATE_READ_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import { requireSupportMember } from '$lib/server/support/access';
 import { readSupportMessages } from '$lib/server/support/read';
-import { FORMER_MEMBER, countTeamThreads, teammateNames } from '$lib/server/support/team';
+import { FORMER_MEMBER, teammateNames } from '$lib/server/support/team';
 import { supportMemberThreadQuerySchema } from '$lib/server/validation/support.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
-import type { SupportThread } from '$lib/support/api';
+import type { SupportThread, SupportTopic } from '$lib/support/api';
 
-// The signed-in member's own conversation with Uplift, or — with `thread_id` — another conversation in
-// their organization that row level security lets them see (D3: one they were added to, or any one for an
-// owner or admin). The explicit filters say the same as the policy so the reads use their indexes.
+// One chat with Uplift that row level security lets the member see: their own, one they were added to, or
+// any one in their organization for an owner or admin (D3). The organization filter says the same as the
+// policy so the read uses its index.
 export const GET: RequestHandler = async (event) => {
 	const check = await requireSupportMember(event);
 	if ('response' in check) return check.response;
@@ -22,31 +22,26 @@ export const GET: RequestHandler = async (event) => {
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
 	const supabase = event.locals.supabase;
-	const organizationId = check.auth.organization.id;
 	const userId = check.auth.user.id;
-	const requested = parsed.data.thread_id;
 
-	const threadRead = supabase
-		.from('support_threads')
-		.select('id, started_by_user_id')
-		.eq('organization_id', organizationId);
-	const [threadResult, settingsResult, teamCount] = await Promise.all([
-		requested
-			? threadRead.eq('id', requested).maybeSingle()
-			: threadRead.eq('started_by_user_id', userId).maybeSingle(),
+	const [threadResult, settingsResult, page] = await Promise.all([
+		supabase
+			.from('support_threads')
+			.select('id, topic, started_by_user_id')
+			.eq('organization_id', check.auth.organization.id)
+			.eq('id', parsed.data.thread_id)
+			.maybeSingle(),
 		supabase.from('platform_support_settings').select('availability_note').maybeSingle(),
-		// The "Team chats" link sits on the member's own conversation only.
-		requested ? Promise.resolve(0) : countTeamThreads(supabase, organizationId, userId)
+		readSupportMessages(supabase, parsed.data.thread_id, parsed.data.limit)
 	]);
-	if (threadResult.error || settingsResult.error || teamCount === null) return databaseError();
+	if (threadResult.error || settingsResult.error || !page) return databaseError();
 
 	const row = threadResult.data;
-	// Another member's conversation that is not visible reads exactly like one that does not exist.
-	if (requested && !row)
-		return json({ error: 'That conversation could not be found.' }, { status: 404 });
+	// A chat that is not visible reads exactly like one that does not exist.
+	if (!row) return json({ error: 'That conversation could not be found.' }, { status: 404 });
 
 	let started_by_name: string | null = null;
-	if (row && row.started_by_user_id !== userId) {
+	if (row.started_by_user_id !== userId) {
 		try {
 			const names = await teammateNames(
 				supabase,
@@ -59,19 +54,17 @@ export const GET: RequestHandler = async (event) => {
 		}
 	}
 
-	const base = {
+	const thread: SupportThread = {
+		thread_id: row.id,
+		topic: row.topic as SupportTopic,
+		// The same rule as public.set_support_thread_topic, which decides for real.
+		can_change_topic:
+			row.started_by_user_id === userId ||
+			check.auth.organization.role === 'owner' ||
+			check.auth.organization.role === 'admin',
+		...page,
 		availability_note: settingsResult.data?.availability_note ?? '',
-		started_by_name,
-		team_thread_count: teamCount
+		started_by_name
 	};
-	if (!row) {
-		const empty: SupportThread = { thread_id: null, messages: [], has_earlier: false, ...base };
-		return json(empty, { headers: PRIVATE_READ_HEADERS });
-	}
-
-	const page = await readSupportMessages(supabase, row.id, parsed.data.limit);
-	if (!page) return databaseError();
-
-	const thread: SupportThread = { thread_id: row.id, ...page, ...base };
 	return json(thread, { headers: PRIVATE_READ_HEADERS });
 };

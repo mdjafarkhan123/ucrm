@@ -5,7 +5,7 @@ import { getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import {
-	peopleChangeFailure,
+	supportChangeFailure,
 	peopleReadFailure,
 	readPeopleChange
 } from '$lib/server/support/people';
@@ -36,6 +36,6 @@ export const POST: RequestHandler = async (event) => {
 		'set_support_thread_participant_by_uplift',
 		{ target_thread_id: change.threadId, target_user_id: change.userId, adding: true }
 	);
-	if (error) return peopleChangeFailure(error);
+	if (error) return supportChangeFailure(error);
 	return json({ changed: data });
 };

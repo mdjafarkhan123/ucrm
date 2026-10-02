@@ -226,8 +226,8 @@ later material changes are tracked rather than silently rewriting history.
 
 After submission, Jafar reviews by section. He may accept it, ask a contextual question, return only that section,
 mark an access/provider task pending, or accept the project as Ready for Uplift. The contractor answers in the
-returned section and never repeats the whole wizard. **Ask Uplift** from any section opens the same support
-conversation with that section attached as context.
+returned section and never repeats the whole wizard. **Ask Uplift** from any section starts a new support
+chat about that section, with the section attached as context.
 
 Keep the client's original answer, any later answer, and the final accepted value. Accepted facts may then seed or
 update matching CRM settings. Repeating a safe provisioning/configuration operation must not duplicate records or
@@ -291,9 +291,14 @@ commercial-warning or suspended-access screens where support is needed. It is re
 is available and asynchronous otherwise; office hours and expected reply time are honest. The interface does not
 promise “Live chat.”
 
-Threads have Setup, Website, Google Profile, CRM, Billing, or Other context. The messenger supports unread badges,
-attachments, screen/section context, email fallback after a delayed unread message, resolve, and reopen. Jafar may
-start a conversation. Messages use **Uplift Support** plus the actual responder's name.
+Each new question is its own chat (Intercom's messenger model; Jafar, 2026-10-02). The messenger lists the
+member's past chats, newest first, with a **New message** button; someone with no chats yet goes straight to
+writing one. Each chat has one topic — Setup, Website, Google Profile, CRM, Billing, or Other. Picking a topic is
+optional and it starts as Other; the chat's starter, an owner/admin, or Uplift may change it, and each change leaves
+a visible line in the chat. Jafar's Support Inbox filters by topic. The messenger supports unread badges,
+attachments (photos and documents, up to 5 files and 20 MB per message; program files refused; photos show in the
+chat, other files download), screen/section context, email fallback after a delayed unread message, resolve, and
+reopen. Jafar may start a conversation. Messages use **Uplift Support** plus the actual responder's name.
 
 Every active team member may contact support. Owners/admins may see organization-wide threads; another member sees
 their own threads and ones they were explicitly added to (Zendesk's "My / CC'd / Organization requests"). Owners/admins

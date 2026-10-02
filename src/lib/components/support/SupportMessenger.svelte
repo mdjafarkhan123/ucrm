@@ -3,6 +3,9 @@
 	import { createQuery, keepPreviousData, useQueryClient } from '@tanstack/svelte-query';
 	import SupportConversation from './SupportConversation.svelte';
 	import SupportPeople from './SupportPeople.svelte';
+	import SupportTopicMenu from './SupportTopicMenu.svelte';
+	import SupportTopicPicker from './SupportTopicPicker.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import { relativeTime } from '$lib/collaboration/format';
@@ -10,21 +13,24 @@
 		SUPPORT_MAX_LOADED,
 		SUPPORT_PAGE_SIZE,
 		changeSupportPeople,
+		changeSupportTopic,
+		fetchSupportChats,
 		fetchSupportPeople,
-		fetchSupportTeamThread,
-		fetchSupportTeamThreads,
 		fetchSupportThread,
 		fetchSupportUnread,
 		markSupportThreadRead,
 		sendSupportMessage,
+		startSupportThread,
+		supportChatsKey,
+		supportKey,
 		supportPeopleKey,
-		supportTeamThreadKey,
-		supportTeamThreadPageKey,
-		supportTeamThreadsKey,
 		supportThreadKey,
 		supportThreadPageKey,
+		supportTopicLabel,
 		supportUnreadKey,
-		type SupportThread
+		type SupportChatRow,
+		type SupportThread,
+		type SupportTopic
 	} from '$lib/support/api';
 	import { listenForSupportActivity } from '$lib/support/live';
 	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
@@ -32,55 +38,59 @@
 	import backIcon from '@tabler/icons/outline/arrow-left.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import chevronIcon from '@tabler/icons/outline/chevron-right.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 
 	// The Uplift Support Messenger: a "Chat with Uplift" button in the bottom-right corner of every signed-in
-	// screen, opening the person's own conversation with Uplift (plan §7; Intercom / Help Scout messenger
-	// model). It is contractor-to-Uplift only and shares nothing with the customer inbox.
+	// screen (plan §7). It is contractor-to-Uplift only and shares nothing with the customer inbox.
 	//
-	// Closed, it loads only the unread count for the button's badge: the conversation starts loading when the
+	// Intercom's messenger model (D4a): each question is its own chat with a topic. Opening the messenger lists
+	// the person's chats, newest first, with a New message button; someone with no chats yet goes straight to
+	// writing one. Closed, it loads only the unread count for the badge: the list starts loading when the
 	// pointer or keyboard reaches the button, and is cached so reopening is instant. Uplift's replies arrive
 	// live (D2): a ping refreshes the badge, and whatever is open too.
 	//
-	// Who sees what (D3, Zendesk's "My / CC'd / Organization requests"): the person's own conversation opens
-	// first. When they may see others — ones they were added to, or every one for an owner or admin — a
-	// "Team chats" link opens that list. Each conversation's People panel shows, and for its starter, an owner
-	// or an admin changes, who is in it.
+	// Who sees what (D3, Zendesk's "My / CC'd / Organization requests"): when the person may see others' chats
+	// — ones they were added to, or every one for an owner or admin — a "Team chats" link opens that list.
+	// Each chat's People panel shows, and for its starter, an owner or an admin changes, who is in it.
 	let { userId }: { userId: string } = $props();
 
-	type Screen = { kind: 'own' } | { kind: 'team' } | { kind: 'thread'; id: string };
+	type Screen =
+		| { kind: 'home' }
+		| { kind: 'new' }
+		| { kind: 'team' }
+		| { kind: 'thread'; id: string; from: 'home' | 'team' };
 
 	const queryClient = useQueryClient();
 	let open = $state(false);
-	let screen = $state<Screen>({ kind: 'own' });
+	let screen = $state<Screen>({ kind: 'home' });
 	let showPeople = $state(false);
 	let limit = $state(SUPPORT_PAGE_SIZE);
+	let newTopic = $state<SupportTopic>('other');
+	let startingChat = $state(false);
 	let launcherEl = $state<HTMLButtonElement | null>(null);
 	let conversation = $state<ReturnType<typeof SupportConversation> | null>(null);
 
-	const teamThreadId = $derived(screen.kind === 'thread' ? screen.id : null);
+	const threadId = $derived(screen.kind === 'thread' ? screen.id : null);
 
-	const ownQuery = createQuery(() => ({
-		queryKey: supportThreadPageKey(userId, limit),
-		queryFn: () => fetchSupportThread(limit),
-		enabled: open && screen.kind === 'own',
+	const chatsQuery = createQuery(() => ({
+		queryKey: supportChatsKey(userId),
+		queryFn: fetchSupportChats,
+		enabled: open
+	}));
+	const chats = $derived(chatsQuery.data);
+	const noChatsYet = $derived(chats !== undefined && chats.mine.length === 0);
+	// Someone with no chats of their own writes straight away, unless there are team chats to look at.
+	const composing = $derived(
+		screen.kind === 'new' || (screen.kind === 'home' && noChatsYet && chats?.team.length === 0)
+	);
+
+	const threadQuery = createQuery(() => ({
+		queryKey: supportThreadPageKey(userId, threadId ?? '', limit),
+		queryFn: () => fetchSupportThread(threadId ?? '', limit),
+		enabled: open && threadId !== null,
 		placeholderData: keepPreviousData
 	}));
-
-	const teamListQuery = createQuery(() => ({
-		queryKey: supportTeamThreadsKey(userId),
-		queryFn: fetchSupportTeamThreads,
-		enabled: open && screen.kind === 'team'
-	}));
-
-	const teamThreadQuery = createQuery(() => ({
-		queryKey: supportTeamThreadPageKey(userId, teamThreadId ?? '', limit),
-		queryFn: () => fetchSupportTeamThread(teamThreadId ?? '', limit),
-		enabled: open && teamThreadId !== null,
-		placeholderData: keepPreviousData
-	}));
-
-	const query = $derived(screen.kind === 'thread' ? teamThreadQuery : ownQuery);
-	const thread = $derived(screen.kind === 'team' ? undefined : query.data);
+	const thread = $derived(threadId !== null ? threadQuery.data : undefined);
 	const shownThreadId = $derived(thread?.thread_id ?? null);
 
 	const peopleQuery = createQuery(() => ({
@@ -95,43 +105,35 @@
 	}));
 	const unread = $derived(unreadQuery.data?.unread ?? 0);
 
-	// Every conversation, list and people panel sits under the person's thread key, so one ping refreshes
-	// what is open and only marks the rest stale.
+	// Every chat, list and people panel sits under the person's key, so one ping refreshes what is open and
+	// only marks the rest stale.
 	$effect(() =>
 		listenForSupportActivity(`support-user:${userId}`, () => {
 			void queryClient.invalidateQueries({ queryKey: supportUnreadKey(userId) });
-			void queryClient.invalidateQueries({ queryKey: supportThreadKey(userId) });
+			void queryClient.invalidateQueries({ queryKey: supportKey(userId) });
 		})
 	);
 
-	// Seen means the panel is open on a tab the person is looking at. Each newer message is marked once.
+	// Seen means the chat is open on a tab the person is looking at. Each newer message is marked once.
 	// A tab opened in the background has not been seen yet.
 	let pageVisible = $state(
 		typeof document === 'undefined' || document.visibilityState === 'visible'
 	);
 	let markedThrough: string | null = null;
 	$effect(() => {
-		const threadId = shownThreadId;
+		const id = shownThreadId;
 		const newest = thread?.messages.at(-1);
-		const key = threadId && newest ? `${threadId}:${newest.created_at}` : null;
-		if (
-			!open ||
-			!pageVisible ||
-			showPeople ||
-			!key ||
-			!threadId ||
-			!newest ||
-			key === markedThrough
-		)
+		const key = id && newest ? `${id}:${newest.created_at}` : null;
+		if (!open || !pageVisible || showPeople || !key || !id || !newest || key === markedThrough)
 			return;
 		// Your own message already counts as read up to itself.
 		if (newest.sender_user_id === userId) return;
 		markedThrough = key;
-		markSupportThreadRead(threadId, newest.created_at)
+		markSupportThreadRead(id, newest.created_at)
 			.then(() => {
 				void queryClient.invalidateQueries({ queryKey: supportUnreadKey(userId) });
 				void queryClient.invalidateQueries({
-					queryKey: supportTeamThreadsKey(userId),
+					queryKey: supportChatsKey(userId),
 					refetchType: 'none'
 				});
 			})
@@ -143,24 +145,16 @@
 
 	function warm() {
 		void queryClient.prefetchQuery({
-			queryKey: supportThreadPageKey(userId, limit),
-			queryFn: () => fetchSupportThread(limit),
+			queryKey: supportChatsKey(userId),
+			queryFn: fetchSupportChats,
 			staleTime: 30_000
 		});
 	}
 
-	function warmTeamList() {
+	function warmThread(id: string) {
 		void queryClient.prefetchQuery({
-			queryKey: supportTeamThreadsKey(userId),
-			queryFn: fetchSupportTeamThreads,
-			staleTime: 30_000
-		});
-	}
-
-	function warmTeamThread(id: string) {
-		void queryClient.prefetchQuery({
-			queryKey: supportTeamThreadPageKey(userId, id, SUPPORT_PAGE_SIZE),
-			queryFn: () => fetchSupportTeamThread(id, SUPPORT_PAGE_SIZE),
+			queryKey: supportThreadPageKey(userId, id, SUPPORT_PAGE_SIZE),
+			queryFn: () => fetchSupportThread(id, SUPPORT_PAGE_SIZE),
 			staleTime: 30_000
 		});
 	}
@@ -179,9 +173,14 @@
 		screen = next;
 		showPeople = false;
 		limit = SUPPORT_PAGE_SIZE;
-		if (next.kind === 'team') return;
+		if (next.kind === 'new') newTopic = 'other';
+		if (next.kind === 'home' || next.kind === 'team') return;
 		await tick();
 		conversation?.focusComposer();
+	}
+
+	function back() {
+		void go(screen.kind === 'thread' && screen.from === 'team' ? { kind: 'team' } : { kind: 'home' });
 	}
 
 	async function openPanel() {
@@ -192,8 +191,9 @@
 
 	async function closePanel() {
 		open = false;
-		screen = { kind: 'own' };
+		screen = { kind: 'home' };
 		showPeople = false;
+		newTopic = 'other';
 		await tick();
 		launcherEl?.focus();
 	}
@@ -204,41 +204,80 @@
 		void closePanel();
 	}
 
+	// The first message makes the chat, which then opens with that message already in it. Send stays off
+	// until it is saved, so a second message can never start a second chat.
+	async function startChat(input: { body: string; client_message_id: string }) {
+		startingChat = true;
+		try {
+			const topic = newTopic;
+			const message = await startSupportThread({ ...input, topic });
+			const seeded: SupportThread = {
+				thread_id: message.thread_id,
+				topic,
+				can_change_topic: true,
+				messages: [message],
+				has_earlier: false,
+				availability_note: chats?.availability_note ?? '',
+				started_by_name: null
+			};
+			queryClient.setQueryData(
+				supportThreadPageKey(userId, message.thread_id, SUPPORT_PAGE_SIZE),
+				seeded
+			);
+			void queryClient.invalidateQueries({ queryKey: supportChatsKey(userId) });
+			await go({ kind: 'thread', id: message.thread_id, from: 'home' });
+		} finally {
+			startingChat = false;
+		}
+	}
+
 	async function send(input: { body: string; client_message_id: string }) {
-		const target = teamThreadId;
-		const message = await sendSupportMessage(target ? { ...input, thread_id: target } : input);
-		// Every loaded page of this conversation gains the stored message, so it shows at once.
-		const key = target ? supportTeamThreadKey(userId, target) : supportThreadKey(userId);
-		queryClient.setQueriesData<SupportThread>({ queryKey: key }, (current) =>
-			!current?.messages || current.messages.some((existing) => existing.id === message.id)
-				? current
-				: { ...current, messages: [...current.messages, message] }
+		const target = threadId;
+		if (!target) return startChat(input);
+		const message = await sendSupportMessage({ ...input, thread_id: target });
+		// Every loaded page of this chat gains the stored message, so it shows at once.
+		queryClient.setQueriesData<SupportThread>(
+			{ queryKey: supportThreadKey(userId, target) },
+			(current) =>
+				!current?.messages || current.messages.some((existing) => existing.id === message.id)
+					? current
+					: { ...current, messages: [...current.messages, message] }
 		);
-		if (target)
-			void queryClient.invalidateQueries({
-				queryKey: supportTeamThreadsKey(userId),
-				refetchType: 'none'
-			});
+		void queryClient.invalidateQueries({
+			queryKey: supportChatsKey(userId),
+			refetchType: 'none'
+		});
 	}
 
 	async function changePeople(personId: string, adding: boolean) {
 		if (!shownThreadId) return;
 		await changeSupportPeople(shownThreadId, personId, adding);
 		// The grey line is a new message, and the list changed: refresh both.
-		await queryClient.invalidateQueries({ queryKey: supportThreadKey(userId) });
+		await queryClient.invalidateQueries({ queryKey: supportKey(userId) });
+	}
+
+	async function changeTopic(topic: SupportTopic) {
+		if (!shownThreadId) return;
+		await changeSupportTopic(shownThreadId, topic);
+		// The grey line is a new message, and both lists show the topic.
+		await queryClient.invalidateQueries({ queryKey: supportKey(userId) });
+	}
+
+	function preview(item: SupportChatRow) {
+		return `${item.last_message_sender_kind === 'uplift' ? 'Uplift: ' : ''}${item.last_message_preview}`;
 	}
 
 	const unreadLabel = $derived(unread > 99 ? '99+' : String(unread));
-	const availability = $derived(
-		ownQuery.data?.availability_note ?? thread?.availability_note ?? ''
-	);
-	const teamCount = $derived(ownQuery.data?.team_thread_count ?? 0);
+	const availability = $derived(chats?.availability_note ?? thread?.availability_note ?? '');
+	const teamCount = $derived(chats?.team.length ?? 0);
 	const title = $derived(
 		screen.kind === 'team'
 			? 'Team chats'
-			: screen.kind === 'thread'
-				? `${thread?.started_by_name ?? 'Team member'}'s conversation`
-				: 'Uplift Support'
+			: screen.kind === 'thread' && thread?.started_by_name
+				? `${thread.started_by_name}'s chat`
+				: composing && screen.kind === 'new'
+					? 'New message'
+					: 'Uplift Support'
 	);
 </script>
 
@@ -247,6 +286,39 @@
 />
 
 <!-- eslint-disable svelte/no-at-html-tags -->
+{#snippet chatRow(item: SupportChatRow, from: 'home' | 'team')}
+	<li>
+		<button
+			class="support-messenger__row"
+			type="button"
+			onpointerenter={() => warmThread(item.id)}
+			onfocus={() => warmThread(item.id)}
+			onclick={() => void go({ kind: 'thread', id: item.id, from })}
+		>
+			<span class="support-messenger__row-top">
+				{#if from === 'team'}
+					<strong>{item.started_by_name}</strong>
+					<span class="support-messenger__topic">{supportTopicLabel(item.topic)}</span>
+				{:else}
+					<strong>{supportTopicLabel(item.topic)}</strong>
+				{/if}
+				<time datetime={item.last_message_at}>{relativeTime(item.last_message_at)}</time>
+			</span>
+			<span class="support-messenger__row-bottom">
+				<span class="support-messenger__preview">{preview(item)}</span>
+				{#if item.unread}
+					<span class="support-messenger__dot"
+						><span class="support-messenger__sr">New messages</span></span
+					>
+				{/if}
+			</span>
+			{#if item.added}
+				<span class="support-messenger__added">You were added</span>
+			{/if}
+		</button>
+	</li>
+{/snippet}
+
 {#if open}
 	<!-- Escape closes the panel from anywhere inside it. -->
 	<div
@@ -258,39 +330,50 @@
 		onkeydown={handleKeydown}
 	>
 		<header class="support-messenger__header">
-			{#if screen.kind === 'own'}
+			{#if screen.kind === 'home'}
 				<span class="support-messenger__mark" aria-hidden="true">{@html messageIcon}</span>
 			{:else}
 				<button
 					class="support-messenger__icon-button"
 					type="button"
-					aria-label={screen.kind === 'thread' ? 'Back to team chats' : 'Back to your conversation'}
+					aria-label={screen.kind === 'thread' && screen.from === 'team'
+						? 'Back to team chats'
+						: 'Back to your chats'}
 					title="Back"
-					onclick={() => void go(screen.kind === 'thread' ? { kind: 'team' } : { kind: 'own' })}
+					onclick={back}
 				>
 					<span aria-hidden="true">{@html backIcon}</span>
 				</button>
 			{/if}
 			<div class="support-messenger__heading">
 				<h2 id="support-messenger-title">{title}</h2>
-				<p>
-					{#if screen.kind === 'team'}
-						Conversations with Uplift you can see
-					{:else if screen.kind === 'thread'}
-						With Uplift Support
-					{:else}
-						{availability || 'We reply here as soon as we can.'}
-					{/if}
-				</p>
+				{#if screen.kind === 'thread' && thread}
+					<div class="support-messenger__subline">
+						<SupportTopicMenu
+							topic={thread.topic}
+							canChange={thread.can_change_topic}
+							onChange={changeTopic}
+						/>
+						{#if thread.started_by_name}<span>With Uplift Support</span>{/if}
+					</div>
+				{:else}
+					<p>
+						{#if screen.kind === 'team'}
+							Chats with Uplift you can see
+						{:else}
+							{availability || 'We reply here as soon as we can.'}
+						{/if}
+					</p>
+				{/if}
 			</div>
-			{#if screen.kind !== 'team' && shownThreadId}
+			{#if screen.kind === 'thread' && shownThreadId}
 				<button
 					class="support-messenger__icon-button"
 					class:support-messenger__icon-button--active={showPeople}
 					type="button"
-					aria-label="People in this conversation"
+					aria-label="People in this chat"
 					aria-pressed={showPeople}
-					title="People in this conversation"
+					title="People in this chat"
 					onpointerenter={warmPeople}
 					onfocus={warmPeople}
 					onclick={() => (showPeople = !showPeople)}
@@ -309,12 +392,10 @@
 			</button>
 		</header>
 
-		{#if screen.kind === 'own' && teamCount > 0}
+		{#if screen.kind === 'home' && teamCount > 0}
 			<button
 				class="support-messenger__team-link"
 				type="button"
-				onpointerenter={warmTeamList}
-				onfocus={warmTeamList}
 				onclick={() => void go({ kind: 'team' })}
 			>
 				<span aria-hidden="true">{@html usersIcon}</span>
@@ -323,55 +404,7 @@
 			</button>
 		{/if}
 
-		{#if screen.kind === 'team'}
-			<div class="support-messenger__list">
-				{#if teamListQuery.isPending}
-					<LoadingSkeleton variant="text" rows={4} label="Loading team chats" />
-				{:else if teamListQuery.isError}
-					<ErrorState
-						description="Team chats could not be loaded."
-						retry={() => void teamListQuery.refetch()}
-					/>
-				{:else if teamListQuery.data.threads.length === 0}
-					<p class="support-messenger__list-empty">No team chats to show.</p>
-				{:else}
-					<ul>
-						{#each teamListQuery.data.threads as item (item.id)}
-							<li>
-								<button
-									class="support-messenger__row"
-									type="button"
-									onpointerenter={() => warmTeamThread(item.id)}
-									onfocus={() => warmTeamThread(item.id)}
-									onclick={() => void go({ kind: 'thread', id: item.id })}
-								>
-									<span class="support-messenger__row-top">
-										<strong>{item.started_by_name}</strong>
-										<time datetime={item.last_message_at}>{relativeTime(item.last_message_at)}</time
-										>
-									</span>
-									<span class="support-messenger__row-bottom">
-										<span class="support-messenger__preview">
-											{item.last_message_sender_kind === 'uplift'
-												? 'Uplift: '
-												: ''}{item.last_message_preview}
-										</span>
-										{#if item.unread}
-											<span class="support-messenger__dot"
-												><span class="support-messenger__sr">New messages</span></span
-											>
-										{/if}
-									</span>
-									{#if item.added}
-										<span class="support-messenger__added">You were added</span>
-									{/if}
-								</button>
-							</li>
-						{/each}
-					</ul>
-				{/if}
-			</div>
-		{:else}
+		{#if composing || screen.kind === 'thread'}
 			{#if showPeople}
 				<SupportPeople
 					people={peopleQuery.data}
@@ -387,31 +420,70 @@
 					bind:this={conversation}
 					viewer="member"
 					viewerUserId={userId}
-					conversationKey={teamThreadId ?? 'own'}
+					conversationKey={threadId ?? 'new'}
 					messages={thread?.messages ?? []}
-					loading={query.isPending}
-					failed={query.isError && !thread}
-					onRetry={() => void query.refetch()}
+					loading={threadId !== null && threadQuery.isPending}
+					failed={threadId !== null && threadQuery.isError && !thread}
+					onRetry={() => void threadQuery.refetch()}
 					hasEarlier={(thread?.has_earlier ?? false) && limit < SUPPORT_MAX_LOADED}
-					loadingEarlier={query.isPlaceholderData}
+					loadingEarlier={threadQuery.isPlaceholderData}
 					onLoadEarlier={() => (limit = Math.min(limit + SUPPORT_PAGE_SIZE, SUPPORT_MAX_LOADED))}
 					onSend={send}
-					placeholder="Write to Uplift…"
+					blockedReason={startingChat ? 'Starting your chat…' : ''}
+					placeholder={threadId ? 'Write to Uplift…' : 'Ask Uplift a question…'}
 				>
 					{#snippet empty()}
 						<div class="support-messenger__welcome">
 							<strong>How can we help?</strong>
 							<p>
-								Ask about your setup, website, Google profile, the CRM or billing. Your message goes
-								to the Uplift team — never to your customers.
+								Each question gets its own chat. Your message goes to the Uplift team — never to
+								your customers.
 							</p>
 						</div>
+						<SupportTopicPicker bind:value={newTopic} disabled={startingChat} />
 					{/snippet}
 					{#snippet footnote()}
 						Please never send passwords here.
 					{/snippet}
 				</SupportConversation>
 			</div>
+		{:else}
+			<div class="support-messenger__list">
+				{#if chatsQuery.isPending}
+					<LoadingSkeleton variant="text" rows={4} label="Loading your chats" />
+				{:else if chatsQuery.isError}
+					<ErrorState
+						description="Your chats could not be loaded."
+						retry={() => void chatsQuery.refetch()}
+					/>
+				{:else if screen.kind === 'team'}
+					{#if chatsQuery.data.team.length === 0}
+						<p class="support-messenger__list-empty">No team chats to show.</p>
+					{:else}
+						<ul>
+							{#each chatsQuery.data.team as item (item.id)}
+								{@render chatRow(item, 'team')}
+							{/each}
+						</ul>
+					{/if}
+				{:else if chatsQuery.data.mine.length === 0}
+					<p class="support-messenger__list-empty">You have not written to Uplift yet.</p>
+				{:else}
+					<ul>
+						{#each chatsQuery.data.mine as item (item.id)}
+							{@render chatRow(item, 'home')}
+						{/each}
+					</ul>
+				{/if}
+			</div>
+			{#if screen.kind === 'home'}
+				<div class="support-messenger__new">
+					<Button variant="primary" fullWidth onclick={() => void go({ kind: 'new' })}>
+						<span class="support-messenger__new-icon" aria-hidden="true">{@html plusIcon}</span>
+						New message
+					</Button>
+				</div>
+			{/if}
 		{/if}
 	</div>
 {:else}
@@ -706,8 +778,6 @@
 	}
 
 	.support-messenger__row-top {
-		justify-content: space-between;
-
 		strong {
 			overflow: hidden;
 			color: var(--color-heading);
@@ -719,6 +789,7 @@
 
 		time {
 			flex: none;
+			margin-left: auto;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 		}
@@ -754,6 +825,44 @@
 	.support-messenger__added {
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-smaller);
+	}
+
+	.support-messenger__subline {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		min-width: 0;
+		margin-top: var(--space-smallest);
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+	}
+
+	// A team chat's topic beside the person's name, the same pill as a chat header's.
+	.support-messenger__topic {
+		flex: none;
+		padding: 3px var(--space-small);
+		border-radius: var(--radius-circle);
+		color: var(--color-heading);
+		background: var(--color-inactive--surface);
+		font-size: var(--typography--fontSize-smaller);
+		font-weight: 600;
+		line-height: 1;
+	}
+
+	// "New message" stays at the foot of the list, however long it grows.
+	.support-messenger__new {
+		flex: none;
+		padding: var(--space-slim) var(--space-base);
+		border-top: var(--border-base) solid var(--color-border);
+	}
+
+	.support-messenger__new-icon {
+		display: inline-flex;
+
+		:global(svg) {
+			width: 18px;
+			height: 18px;
+		}
 	}
 
 	.support-messenger__welcome {

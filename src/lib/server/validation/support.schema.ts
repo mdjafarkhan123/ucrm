@@ -2,8 +2,13 @@ import { z } from 'zod';
 import {
 	SUPPORT_MAX_LOADED,
 	SUPPORT_MESSAGE_MAX_LENGTH,
-	SUPPORT_PAGE_SIZE
+	SUPPORT_PAGE_SIZE,
+	SUPPORT_TOPIC_VALUES
 } from '$lib/support/api';
+
+const supportTopicField = z.enum(SUPPORT_TOPIC_VALUES, {
+	error: 'Choose one of the listed topics.'
+});
 
 // One message, from either side. The id is chosen by the sender's browser so a retry after a dropped
 // connection can never post the same message twice.
@@ -19,17 +24,29 @@ export const supportMessageSchema = z.object({
 	client_message_id: z.string().uuid('Send the message again.')
 });
 
-// A member's message: in their own conversation, or in another one they can see (D3).
+// A member's message in a chat they can see.
 export const supportMemberMessageSchema = supportMessageSchema.extend({
-	thread_id: z.string().uuid().optional()
+	thread_id: z.string().uuid()
 });
+
+// A new chat and its first message (D4a). The topic is optional and starts as Other.
+export const supportStartThreadSchema = supportMessageSchema.extend({
+	topic: supportTopicField.default('other')
+});
+
+export const supportTopicSchema = z.object({ topic: supportTopicField });
 
 export const supportThreadQuerySchema = z.object({
 	limit: z.coerce.number().int().min(1).max(SUPPORT_MAX_LOADED).default(SUPPORT_PAGE_SIZE)
 });
 
 export const supportMemberThreadQuerySchema = supportThreadQuerySchema.extend({
-	thread_id: z.string().uuid().optional()
+	thread_id: z.string().uuid()
+});
+
+// The Support Inbox, optionally narrowed to one topic.
+export const supportInboxQuerySchema = supportThreadQuerySchema.extend({
+	topic: supportTopicField.optional()
 });
 
 // Adding a teammate to a conversation (D3).
