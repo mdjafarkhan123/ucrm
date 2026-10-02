@@ -385,6 +385,7 @@
 							<ul class="support-conversation__files">
 								{#each row.files as file (file.id)}
 									<li>
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- fileUrls already resolves the path; only the query is appended. -->
 										<a
 											class="support-conversation__file"
 											href={fileUrls.download(file)}
@@ -404,6 +405,7 @@
 												>{@html downloadIcon}</span
 											>
 										</a>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
 									</li>
 								{/each}
 							</ul>

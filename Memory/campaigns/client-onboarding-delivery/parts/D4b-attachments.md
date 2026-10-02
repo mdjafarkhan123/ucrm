@@ -12,17 +12,15 @@
       (`SupportConversation.svelte`; `ConversationAttachments.svelte` extended with `presign`, `maxFiles`,
       `triggerFirst`, `onReadyChange`, `add()`)
 - [x] `npm run check` 0 errors; chat tests pass, including new `attachments.spec.ts` on both sides
-- [ ] Database refusals checked by hand: wrong prefix, renamed program file, 6 files, over 20 MB
-- [ ] `svelte-autofixer` on `SupportConversation.svelte` and `ConversationAttachments.svelte`
+- [x] Database refusals checked by hand: wrong prefix, renamed program file, 6 files, over 20 MB
+- [x] `svelte-autofixer` on `SupportConversation.svelte` and `ConversationAttachments.svelte`
 - [ ] Browser run, member side and `/jafar` Support Inbox: send a photo and a PDF each way; photo opens big
       and steps with arrows; PDF downloads; files-only message shows "Sent a file" in the chat lists
 
 ## Next
 
-Run the remaining database refusal checks with `execute_sql` against
-`private.check_support_attachments` (the "ok", "no extension" and "empty" cases already passed), then the
-autofixer, then the browser run. In the browser, watch two things: the big photo view must sit above the
-messenger panel, and pressing Escape in it must close only the photo, not the messenger too.
+Browser run. Watch two things: the big photo view must sit above the messenger panel, and pressing Escape
+in it must close only the photo, not the messenger too.
 
 ## Outside actions
 

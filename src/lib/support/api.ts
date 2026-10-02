@@ -1,3 +1,4 @@
+import { resolve } from '$app/paths';
 import { httpError } from '$lib/http-error';
 
 // The Uplift Support Messenger: a team member writes to Uplift, Uplift answers from the /jafar Support Inbox.
@@ -262,18 +263,20 @@ export type SupportFileUrls = {
 	download: (attachment: SupportAttachment) => string;
 };
 
-function fileUrls(base: string): SupportFileUrls {
+function fileUrls(fileUrl: (id: string) => string): SupportFileUrls {
 	return {
 		view: (attachment, size) =>
 			size === 'thumb' && attachment.has_thumbnail
-				? `${base}/${attachment.id}?size=thumb`
-				: `${base}/${attachment.id}`,
-		download: (attachment) => `${base}/${attachment.id}?download=1`
+				? `${fileUrl(attachment.id)}?size=thumb`
+				: fileUrl(attachment.id),
+		download: (attachment) => `${fileUrl(attachment.id)}?download=1`
 	};
 }
 
-export const supportFileUrls = fileUrls('/api/support/attachments');
-export const jafarSupportFileUrls = fileUrls('/api/jafar/support/attachments');
+export const supportFileUrls = fileUrls((id) => resolve('/api/support/attachments/[id]', { id }));
+export const jafarSupportFileUrls = fileUrls((id) =>
+	resolve('/api/jafar/support/attachments/[id]', { id })
+);
 
 /** Starts a new chat with its first message. The same message id on a retry returns the same chat. */
 export async function startSupportThread(
