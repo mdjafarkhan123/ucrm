@@ -9193,6 +9193,51 @@ export type Database = {
 					}
 				];
 			};
+			opportunity_call_logs: {
+				Row: {
+					created_at: string;
+					id: string;
+					logged_by: string | null;
+					note: string | null;
+					opportunity_id: string;
+					organization_id: string;
+					outcome: string;
+				};
+				Insert: {
+					created_at?: string;
+					id?: string;
+					logged_by?: string | null;
+					note?: string | null;
+					opportunity_id: string;
+					organization_id: string;
+					outcome: string;
+				};
+				Update: {
+					created_at?: string;
+					id?: string;
+					logged_by?: string | null;
+					note?: string | null;
+					opportunity_id?: string;
+					organization_id?: string;
+					outcome?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'opportunity_call_logs_opportunity_organization_fk';
+						columns: ['organization_id', 'opportunity_id'];
+						isOneToOne: false;
+						referencedRelation: 'opportunities';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'opportunity_call_logs_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			opportunity_outcome_events: {
 				Row: {
 					actor_user_id: string | null;
@@ -22447,6 +22492,22 @@ export type Database = {
 				Returns: {
 					lead_source: string;
 					open_count: number;
+				}[];
+			};
+			pipeline_log_opportunity_call: {
+				Args: {
+					new_note?: string;
+					new_outcome: string;
+					target_opportunity_id: string;
+				};
+				Returns: {
+					created_at: string;
+					id: string;
+					logged_by: string;
+					note: string;
+					opportunity_id: string;
+					outcome: string;
+					restarted_progress: boolean;
 				}[];
 			};
 			pipeline_mark_opportunity_lost: {

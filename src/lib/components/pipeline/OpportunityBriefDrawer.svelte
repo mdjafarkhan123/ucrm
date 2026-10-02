@@ -13,6 +13,8 @@
 	import OpportunityDetailsSection from './OpportunityDetailsSection.svelte';
 	import OpportunityTasksSection from './OpportunityTasksSection.svelte';
 	import OpportunityNotesSection from './OpportunityNotesSection.svelte';
+	import OpportunityContactActions from './OpportunityContactActions.svelte';
+	import OpportunityCallsSection from './OpportunityCallsSection.svelte';
 	import { inactivity, stageAge, type InactivityRules } from '$lib/pipeline/freshness';
 	import type { BoardFormatting } from '$lib/pipeline/money';
 	import type { OpportunityCard } from '$lib/pipeline/api';
@@ -30,6 +32,7 @@
 		formatting,
 		inactivityRules = null,
 		canEdit,
+		canMessage = false,
 		onClose,
 		onUpdate
 	}: {
@@ -40,6 +43,8 @@
 		// Whether this member may assign, reassign or clear the owner and edit value/dates. Read-only
 		// otherwise — same permission the card's owner control gates on.
 		canEdit: boolean;
+		// Whether Email and Text belong on this card: the inbox is in the plan and this member may send in it.
+		canMessage?: boolean;
 		onClose: () => void;
 		// Patches the caller's own held copy of the open card after a successful field edit — the board
 		// behind the drawer refetches itself, but this snapshot does not.
@@ -83,6 +88,11 @@
 	}));
 
 	const currentUserId = $derived(page.data.user?.id as string | undefined);
+
+	// Which card has the "How did the call go?" bar open. Tapping Call opens it; closing it puts it away, and
+	// so does opening another card, because the bar belongs to the card it was opened on. Nothing is recorded
+	// by this.
+	let logOpenFor = $state<string | null>(null);
 </script>
 
 <SidePanel
@@ -131,6 +141,15 @@
 				phone={clientQuery.data?.phone ?? null}
 				email={clientQuery.data?.email ?? null}
 			/>
+			{#if opportunity.client && clientQuery.data}
+				<OpportunityContactActions
+					clientId={opportunity.client.id}
+					{clientName}
+					contacts={clientQuery.data.contact_methods}
+					{canMessage}
+					onCall={() => (logOpenFor = opportunity.id)}
+				/>
+			{/if}
 		{/if}
 
 		<!-- Keyed by id so switching cards remounts this section — a mid-edit row resets by starting fresh
@@ -149,6 +168,19 @@
 				{formatting}
 				{canEdit}
 				onCompleted={() => onUpdate({ progress_at: new Date().toISOString() })}
+			/>
+			<OpportunityCallsSection
+				opportunityId={opportunity.id}
+				{clientName}
+				{formatting}
+				{canEdit}
+				bind:logOpen={
+					() => logOpenFor === opportunity.id, (open) => (logOpenFor = open ? opportunity.id : null)
+				}
+				{currentUserId}
+				onLogged={(restartedProgress) => {
+					if (restartedProgress) onUpdate({ progress_at: new Date().toISOString() });
+				}}
 			/>
 			<OpportunityNotesSection
 				opportunityId={opportunity.id}

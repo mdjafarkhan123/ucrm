@@ -224,6 +224,7 @@
 	const customCounts = $derived(summaryQuery.data?.custom_counts ?? {});
 	const canViewValue = $derived(summaryQuery.data?.can_view_value ?? false);
 	const canEdit = $derived(summaryQuery.data?.can_edit ?? false);
+	const canMessage = $derived(summaryQuery.data?.can_message ?? false);
 	const canCreateQuote = $derived(summaryQuery.data?.can_create_quote ?? false);
 	// Absent from the payload entirely for a member without money, so there is nothing to guard against here.
 	const valueTotals = $derived(summaryQuery.data?.value_totals ?? null);
@@ -606,6 +607,7 @@
 	{formatting}
 	{inactivityRules}
 	{canEdit}
+	{canMessage}
 	onClose={() => (selected = null)}
 	onUpdate={updateSelected}
 />

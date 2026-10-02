@@ -14,6 +14,7 @@ import {
 import type { DragActionKind } from './transitions';
 import type { BulkCardResult } from './bulk';
 import type { QuoteDeliveryFailure, QuoteSendChoice } from '$lib/quotes/send';
+import type { CallLog, CallOutcome } from './calls';
 
 export type OpportunityCard = {
 	id: string;
@@ -88,6 +89,8 @@ export type BoardSummary = BoardFormatting & {
 	can_view_value: boolean;
 	// Whether this member may assign, reassign, or clear a card's owner.
 	can_edit: boolean;
+	// Whether this member may use the Brief's Email and Text buttons (the inbox is in the plan and they may send).
+	can_message: boolean;
 	// Whether this member may start a quote, which decides if the New quote button shows.
 	can_create_quote: boolean;
 	// Which board this organization shows: false is the five-column default with one Assessment column,
@@ -128,6 +131,10 @@ export const boardCountsKey = (filters: BoardFilters) =>
 // money, or owner, so there is no reason to re-fetch the board behind the Brief for it.
 export const opportunityTasksKey = (opportunityId: string) =>
 	['pipeline', 'tasks', opportunityId] as const;
+// One Opportunity's logged calls. A call write never moves a card, so only this key and the card's own
+// progress need refreshing -- but it sits under the pipeline family so `invalidatePipeline` reaches it too.
+export const opportunityCallsKey = (opportunityId: string) =>
+	['pipeline', 'calls', opportunityId] as const;
 // The board's Won/Lost tiles and the Sales Outcomes report both stay under the `['pipeline']` family, so
 // the `invalidatePipeline` call every Lost/Reopen write already makes reaches them too -- neither needs a
 // write path of its own to invalidate.
@@ -983,4 +990,26 @@ export function deleteOpportunityNote(
 		headers: { 'content-type': 'application/json' },
 		body: JSON.stringify({ entity_type: entityType })
 	}).then((response) => noteWriteResult(response, 'That note could not be removed.'));
+}
+
+// Logged calls. Reading is open to anyone who can see the pipeline; logging needs pipeline.edit.
+export async function fetchOpportunityCalls(opportunityId: string): Promise<CallLog[]> {
+	const response = await fetch(`/api/pipeline/opportunities/${opportunityId}/calls`);
+	if (!response.ok) throw await readError(response, 'The calls could not be loaded.');
+	return (await response.json()).calls as CallLog[];
+}
+
+export type LoggedCall = CallLog & { restarted_progress: boolean };
+
+export async function logCall(
+	opportunityId: string,
+	input: { outcome: CallOutcome; note: string | null }
+): Promise<LoggedCall> {
+	const response = await fetch(`/api/pipeline/opportunities/${opportunityId}/calls`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	if (!response.ok) throw await readError(response, 'That call could not be logged.');
+	return (await response.json()) as LoggedCall;
 }

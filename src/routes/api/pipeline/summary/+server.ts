@@ -57,6 +57,11 @@ export const GET: RequestHandler = async (event) => {
 	const { owner, date } = parsed.data;
 	const canViewValue = hasPermission(check.access, 'pipeline.view_value');
 	const canEdit = hasPermission(check.access, 'pipeline.edit');
+	// Email and Text on a card open the shared inbox, so they need both the plan's inbox and the right to send
+	// in it -- the same two checks the inbox applies to its own composer.
+	const canMessage =
+		check.access.features['communications.inbox'] === true &&
+		hasPermission(check.access, 'conversations.send');
 	const canCreateQuote = hasPermission(check.access, 'quotes.create');
 
 	// The organization's own way of writing money and dates is needed either way — for the currency the
@@ -104,7 +109,8 @@ export const GET: RequestHandler = async (event) => {
 			counted.data,
 			canViewValue,
 			canEdit,
-			canCreateQuote
+			canCreateQuote,
+			canMessage
 		);
 	}
 
@@ -131,7 +137,8 @@ export const GET: RequestHandler = async (event) => {
 		counted.data,
 		canViewValue,
 		canEdit,
-		canCreateQuote
+		canCreateQuote,
+		canMessage
 	);
 };
 
@@ -142,7 +149,8 @@ function summary(
 	rows: unknown,
 	canViewValue: boolean,
 	canEdit: boolean,
-	canCreateQuote: boolean
+	canCreateQuote: boolean,
+	canMessage: boolean
 ): Response {
 	const counts = Object.fromEntries(ALL_BOARD_STAGES.map((stage) => [stage, 0])) as Record<
 		AnyBoardStage,
@@ -220,6 +228,8 @@ function summary(
 			// Whether this member may assign, reassign, or clear a card's owner. The board asks once, here,
 			// rather than every card guessing from whether it happens to have an owner already.
 			can_edit: canEdit,
+			// Whether the Brief's Email and Text buttons belong on a card.
+			can_message: canMessage,
 			// Whether the New quote button belongs in the header. Anyone in the organization may start a request.
 			can_create_quote: canCreateQuote,
 			// Which board to draw: false is the five-column default with one Assessment column, true is the

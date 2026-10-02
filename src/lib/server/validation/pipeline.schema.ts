@@ -9,6 +9,7 @@ import {
 } from '$lib/pipeline/filters';
 import { OUTCOME_SORTS, OUTCOME_TYPES } from '$lib/pipeline/outcomes';
 import { BULK_CARD_LIMIT } from '$lib/pipeline/bulk';
+import { CALL_OUTCOMES } from '$lib/pipeline/calls';
 import { quoteSendChoiceSchema } from '$lib/server/validation/quotes.schema';
 
 // Nothing here validates a create. Opportunities are only ever made by the Request trigger, and later by
@@ -194,6 +195,18 @@ export const pipelineBulkSchema = z.discriminatedUnion('action', [
 		custom_stage_id: z.string().uuid()
 	})
 ]);
+
+// Logging a call: which of the five outcomes the person chose, and an optional note. There is no default
+// outcome on purpose -- a call is never recorded as connected unless a person said so.
+export const callLogInputSchema = z.object({
+	outcome: z.enum(CALL_OUTCOMES, { message: 'Choose what happened on the call.' }),
+	note: z
+		.string()
+		.trim()
+		.max(2000, 'That note is too long. Keep it under 2,000 characters.')
+		.nullish()
+		.transform((value) => value || null)
+});
 
 // Completing and reopening are the same request with the flag turned around.
 export const taskCompletionSchema = z.object({

@@ -55,7 +55,7 @@ describe('board summary with custom follow-up columns', () => {
 		vi.clearAllMocks();
 		vi.mocked(requireOrganizationPermission).mockResolvedValue({
 			auth: { user: { id: 'user-1' }, organization: { id: organizationId } },
-			access: {}
+			access: { features: { 'communications.inbox': true } }
 		} as never);
 		vi.mocked(organizationFormatting).mockResolvedValue({
 			ok: true,
@@ -109,5 +109,29 @@ describe('board summary with custom follow-up columns', () => {
 				lead_source_filter: 'Referral'
 			})
 		);
+	});
+	// Email and Text on a card open the shared inbox, so a member needs the inbox in the plan and the right
+	// to send in it.
+	async function canMessage(features: Record<string, boolean>, canSend: boolean) {
+		vi.mocked(requireOrganizationPermission).mockResolvedValue({
+			auth: { user: { id: 'user-1' }, organization: { id: organizationId } },
+			access: { features }
+		} as never);
+		vi.mocked(hasPermission).mockImplementation(
+			(_access, key) => key === 'conversations.send' && canSend
+		);
+		return (await (await GET(summaryEvent(rows))).json()).can_message;
+	}
+
+	it('offers Email and Text with the inbox in the plan and the right to send', async () => {
+		expect(await canMessage({ 'communications.inbox': true }, true)).toBe(true);
+	});
+
+	it('withholds Email and Text without the right to send', async () => {
+		expect(await canMessage({ 'communications.inbox': true }, false)).toBe(false);
+	});
+
+	it('withholds Email and Text when the plan has no shared inbox', async () => {
+		expect(await canMessage({}, true)).toBe(false);
 	});
 });
