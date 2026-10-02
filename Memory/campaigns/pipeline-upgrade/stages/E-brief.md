@@ -22,3 +22,6 @@ Carried from stage C (Jafar, 2026-10-01): no call log exists yet, so "a logged c
 here. Before building it, ask Jafar how a call is logged — he was offered a "Log call" button with outcomes
 (HubSpot/Pipedrive) and chose to decide with E4. Each card's progress clock is `progress_at`; the customer-reply
 trigger in migration `20261002190000` is the pattern for restarting it. A card's task dates: `next_task_due_on`.
+
+Carried from D6 (bulk tools): a bulk Task given to someone else must send them one combined alert and email
+("5 new Tasks"), not one per card. Bulk Tasks are created by `pipeline_bulk_update` (migration `20261003140000`).
