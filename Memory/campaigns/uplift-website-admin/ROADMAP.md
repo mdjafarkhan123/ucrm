@@ -2,7 +2,7 @@
 
 | Part                              | Delivers                                                                           | Waits for | Done when                                                | State           |
 | --------------------------------- | ---------------------------------------------------------------------------------- | --------- | -------------------------------------------------------- | --------------- |
-| 1 Plan: Website boundary and entry | CRM Website area, CRM-owned login, and owner-only editing                          | —         | Jafar approves the product and access boundary           | Done 2026-10-02 |
+| 1 Plan: Website boundary and entry | CRM Website area, CRM-owned login, and owner-controlled teammate access            | —         | Jafar approves the product and access boundary           | Done 2026-10-02 |
 | 2 Plan: editing experience        | Content model, available fields, images, autosave, validation, and ease of use     | 1         | The editing experience and template rules are approved   | Done 2026-10-02 |
 | 3 Plan: preview and releases      | Secure preview, later content publishing, failures, history, and rollback          | 2         | The later-release lifecycle is approved                  | Done 2026-10-02 |
 | 3B Plan: first launch             | Uplift's site check and recorded contractor launch approval                        | 3         | First-launch states and revision path are approved       | In progress     |

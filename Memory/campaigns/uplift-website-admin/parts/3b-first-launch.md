@@ -15,7 +15,7 @@
 
 ## Next
 
-Review the proposed site-level states below against the plan's first-launch section. Decide withdrawal and how a named non-owner approver can review and approve without entering the owner-only editor.
+Review the proposed site-level states below against the plan's first-launch section. Decide withdrawal and how a named non-owner approver can review and approve without entering the website editor.
 
 ## Notes
 
