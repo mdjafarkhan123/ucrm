@@ -10,7 +10,12 @@ import {
 	type RouteStop
 } from '$lib/schedule/route-order';
 import type { ScheduleVisit } from '$lib/schedule/api';
-import type { AssessmentItem, EventItem, VisitItem } from '$lib/schedule/items';
+import {
+	taskToItem,
+	type AssessmentItem,
+	type EventItem,
+	type VisitItem
+} from '$lib/schedule/items';
 
 const TODAY = '2026-09-03';
 
@@ -92,6 +97,23 @@ describe('routeStops', () => {
 	it('keeps Visits and Assessments but never Events', () => {
 		const stops = routeStops([visit({ id: 'v' }), assessment({ id: 'a' }), event('e')]);
 		expect(stops.map((s) => s.id)).toEqual(['v', 'a']);
+	});
+
+	it('never routes a Pipeline Task, which has no place to drive to', () => {
+		const task = taskToItem({
+			id: 't',
+			opportunity_id: 'o',
+			title: 'Call back',
+			due_on: TODAY,
+			completed_at: null,
+			assignee_user_id: null,
+			opportunity_open: true,
+			request_id: null,
+			quote_id: null,
+			client_name: null,
+			client_company_name: null
+		});
+		expect(routeStops([visit({ id: 'v' }), task]).map((s) => s.id)).toEqual(['v']);
 	});
 
 	it('drops an item with no date, which has no day to be routed on', () => {

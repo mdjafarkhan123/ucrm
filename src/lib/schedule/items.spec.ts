@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assessmentToItem, visitToItem } from '$lib/schedule/items';
+import { assessmentToItem, taskToItem, visitToItem } from '$lib/schedule/items';
 import type { ScheduleAssessment, ScheduleVisit } from '$lib/schedule/api';
 
 // Asia/Dhaka is UTC+6 with no daylight saving, so the expected wall-clock values are stable to assert.
@@ -56,7 +56,11 @@ describe('assessmentToItem', () => {
 		// Anytime is stored as midnight-to-end-of-day in the booking clock; here the instant is the evening
 		// before in UTC, which is the next day in Dhaka.
 		const item = assessmentToItem(
-			assessment({ starts_at: '2026-09-03T18:00:00Z', ends_at: '2026-09-04T17:59:00Z', all_day: true }),
+			assessment({
+				starts_at: '2026-09-03T18:00:00Z',
+				ends_at: '2026-09-04T17:59:00Z',
+				all_day: true
+			}),
 			DHAKA
 		);
 		expect(item.visit_date).toBe('2026-09-04');
@@ -71,5 +75,36 @@ describe('assessmentToItem', () => {
 		expect(item.client_name).toBe('Dana Reed');
 		expect(item.property_address_line1).toBe('4 Elm Street');
 		expect(item.request_id).toBe('req-1');
+	});
+});
+
+describe('taskToItem', () => {
+	const task = {
+		id: 't-1',
+		opportunity_id: 'o-1',
+		title: 'Call back about the roof',
+		due_on: '2026-10-09',
+		completed_at: null,
+		assignee_user_id: 'user-sales',
+		opportunity_open: true,
+		request_id: 'req-1',
+		quote_id: null,
+		client_name: 'Dana Reed',
+		client_company_name: null
+	};
+
+	it('places a Task on its due day with no clock, so it lands in Anytime', () => {
+		const item = taskToItem(task);
+		expect(item).toMatchObject({
+			kind: 'task',
+			visit_date: '2026-10-09',
+			start_time: null,
+			end_time: null,
+			assignee_ids: ['user-sales']
+		});
+	});
+
+	it('groups an unassigned Task as unassigned', () => {
+		expect(taskToItem({ ...task, assignee_user_id: null }).assignee_ids).toEqual([]);
 	});
 });

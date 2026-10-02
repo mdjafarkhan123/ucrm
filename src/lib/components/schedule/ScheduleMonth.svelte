@@ -3,6 +3,7 @@
 	import VisitCard from '$lib/components/schedule/VisitCard.svelte';
 	import AssessmentCard from '$lib/components/schedule/AssessmentCard.svelte';
 	import EventCard from '$lib/components/schedule/EventCard.svelte';
+	import TaskCard from '$lib/components/schedule/TaskCard.svelte';
 	import { bucketVisitsByDay, orderDayVisits } from '$lib/schedule/grouping';
 	import { formatCalendarDay } from '$lib/schedule/labels';
 	import { eachDayInWindow, type ScheduleWindow } from '$lib/schedule/filters';
@@ -192,6 +193,8 @@
 											selected={item.id === selectedItemId}
 											onselect={onselectassessment}
 										/>
+									{:else if item.kind === 'task'}
+										<TaskCard task={item} density="micro" {today} {employeesById} />
 									{:else}
 										<EventCard
 											event={item}
@@ -249,6 +252,8 @@
 							selected={item.id === selectedItemId}
 							onselect={selectAssessmentFromList}
 						/>
+					{:else if item.kind === 'task'}
+						<TaskCard task={item} density="compact" {today} {employeesById} />
 					{:else}
 						<EventCard
 							event={item}

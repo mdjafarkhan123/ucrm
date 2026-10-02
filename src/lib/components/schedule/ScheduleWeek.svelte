@@ -4,6 +4,7 @@
 	import VisitCard from '$lib/components/schedule/VisitCard.svelte';
 	import AssessmentCard from '$lib/components/schedule/AssessmentCard.svelte';
 	import EventCard from '$lib/components/schedule/EventCard.svelte';
+	import TaskCard from '$lib/components/schedule/TaskCard.svelte';
 	import { bucketVisitsByDay } from '$lib/schedule/grouping';
 	import {
 		itemCountLabel,
@@ -436,7 +437,8 @@
 			target.closest('.week__pickup') ||
 			target.closest('.week__resize') ||
 			target.closest('.assessment-card') ||
-			target.closest('.event-card')
+			target.closest('.event-card') ||
+			target.closest('.task-card')
 		)
 			return;
 		const element = columnEls[index];
@@ -481,7 +483,8 @@
 		if (
 			target.closest('.week__pickup') ||
 			target.closest('.assessment-card') ||
-			target.closest('.event-card')
+			target.closest('.event-card') ||
+			target.closest('.task-card')
 		)
 			return;
 		oncreate?.(draftAnytime(day));
@@ -588,6 +591,8 @@
 								selected={item.id === selectedItemId}
 								onselect={onselectassessment}
 							/>
+						{:else if item.kind === 'task'}
+							<TaskCard task={item} density="compact" {today} {employeesById} />
 						{:else}
 							<EventCard
 								event={item}
@@ -685,7 +690,7 @@
 								onselect={onselectassessment}
 							/>
 						</div>
-					{:else}
+					{:else if block.item.kind === 'event'}
 						<!-- A Schedule-owned event on the time axis: no pickup, no resize; its click opens the
 						     event's own popover. -->
 						<div

@@ -22,6 +22,8 @@
 		fetchBoardSummary,
 		outcomeTilesKey,
 		fetchOutcomeTiles,
+		fetchOpportunityCard,
+		opportunityCardKey,
 		type OpportunityCard as Card
 	} from '$lib/pipeline/api';
 	import {
@@ -47,6 +49,7 @@
 		type BoardSection,
 		type OpportunityStage
 	} from '$lib/pipeline/stages';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
 	import fileInvoiceIcon from '@tabler/icons/outline/file-invoice.svg?raw';
 
@@ -141,6 +144,31 @@
 			replaceState: options?.replace ?? false
 		});
 	}
+
+	// A link can open one card's Brief straight away: `?brief=<id>`, which is where a Task on the Schedule
+	// leads. The card is read on its own, because it may sit in a column that has not loaded it, or be hidden
+	// by the board's filters. Once it opens, the parameter leaves the URL, so closing the Brief stays closed
+	// and Back does not reopen it. A card that has left the board says so instead of opening nothing.
+	const toast = getToastManager();
+	const briefId = $derived(page.url.searchParams.get('brief'));
+	const briefQuery = createQuery(() => ({
+		queryKey: opportunityCardKey(briefId ?? ''),
+		queryFn: () => fetchOpportunityCard(briefId as string),
+		enabled: Boolean(briefId),
+		retry: false
+	}));
+
+	$effect(() => {
+		if (!briefId) return;
+		const card = briefQuery.data;
+		if (card && card.id === briefId) {
+			selected = card;
+			goToBoard(urlFilters, view, { replace: true });
+		} else if (briefQuery.isError) {
+			toast.error(briefQuery.error.message);
+			goToBoard(urlFilters, view, { replace: true });
+		}
+	});
 
 	const summaryQuery = createQuery(() => ({
 		queryKey: boardCountsKey(applied),

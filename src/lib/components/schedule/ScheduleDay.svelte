@@ -5,6 +5,7 @@
 	import VisitCard from '$lib/components/schedule/VisitCard.svelte';
 	import AssessmentCard from '$lib/components/schedule/AssessmentCard.svelte';
 	import EventCard from '$lib/components/schedule/EventCard.svelte';
+	import TaskCard from '$lib/components/schedule/TaskCard.svelte';
 	import {
 		itemCountLabel,
 		type AssessmentItem,
@@ -503,7 +504,8 @@
 			target.closest('.day__pickup') ||
 			target.closest('.day__resize') ||
 			target.closest('.assessment-card') ||
-			target.closest('.event-card')
+			target.closest('.event-card') ||
+			target.closest('.task-card')
 		)
 			return;
 
@@ -545,7 +547,8 @@
 		if (
 			target.closest('.day__pickup') ||
 			target.closest('.assessment-card') ||
-			target.closest('.event-card')
+			target.closest('.event-card') ||
+			target.closest('.task-card')
 		)
 			return;
 		oncreate?.(draftAnytime(day));
@@ -646,6 +649,14 @@
 								selected={item.id === selectedItemId}
 								onselect={onselectassessment}
 							/>
+						{:else if item.kind === 'task'}
+							<TaskCard
+								task={item}
+								density="compact"
+								{today}
+								{employeesById}
+								showAssignment={false}
+							/>
 						{:else}
 							<EventCard
 								event={item}
@@ -733,7 +744,7 @@
 									onselect={onselectassessment}
 								/>
 							</div>
-						{:else}
+						{:else if block.item.kind === 'event'}
 							<!-- A Schedule-owned event on the time axis: no pickup, no resize; its click opens the
 							     event's own popover. -->
 							<div

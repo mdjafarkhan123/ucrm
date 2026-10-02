@@ -1,4 +1,9 @@
-import type { ScheduleAssessment, ScheduleEvent, ScheduleVisit } from '$lib/schedule/api';
+import type {
+	ScheduleAssessment,
+	ScheduleEvent,
+	ScheduleTask,
+	ScheduleVisit
+} from '$lib/schedule/api';
 import { calendarDay, clockMinutesInZone } from '$lib/time/calendar-day';
 
 // The calendar draws more than visits from Version 1.1 on: it also shows Request-owned assessments and
@@ -64,7 +69,19 @@ export type EventItem = {
 	assignee_ids: string[];
 };
 
-export type ScheduleItem = VisitItem | AssessmentItem | EventItem;
+/** A Pipeline Task on its assignee's day (Pipeline E1). It has a day and no time, so the shared maths always
+ * place it in Anytime; it has at most one assignee, so it groups under that person or Unassigned. The calendar
+ * never moves or edits it -- the card's Brief owns that. */
+export type TaskItem = Omit<ScheduleTask, 'due_on' | 'assignee_user_id'> & {
+	kind: 'task';
+	visit_date: string;
+	start_time: null;
+	end_time: null;
+	all_day: false;
+	assignee_ids: string[];
+};
+
+export type ScheduleItem = VisitItem | AssessmentItem | EventItem | TaskItem;
 
 // The per-day and per-row totals count every calendar item -- visits, assessments and events alike -- so the
 // label stays kind-neutral. Calling a whole-team event or an assessment a "visit" is a small lie, and on the
@@ -92,6 +109,19 @@ export function eventToItem(event: ScheduleEvent): EventItem {
 		all_day: event.all_day,
 		completed_at: null,
 		assignee_ids: []
+	};
+}
+
+export function taskToItem(task: ScheduleTask): TaskItem {
+	const { due_on, assignee_user_id, ...rest } = task;
+	return {
+		...rest,
+		kind: 'task',
+		visit_date: due_on,
+		start_time: null,
+		end_time: null,
+		all_day: false,
+		assignee_ids: assignee_user_id ? [assignee_user_id] : []
 	};
 }
 

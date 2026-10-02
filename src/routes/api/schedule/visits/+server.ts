@@ -1,7 +1,11 @@
 import { json } from '@sveltejs/kit';
 import type { QueryData } from '@supabase/supabase-js';
 import type { RequestHandler } from './$types';
-import { permissionScope, requireOrganizationPermission } from '$lib/server/access/permission';
+import {
+	hasPermission,
+	permissionScope,
+	requireOrganizationPermission
+} from '$lib/server/access/permission';
 import { PRIVATE_READ_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import {
@@ -35,6 +39,23 @@ const one = <Row>(value: Row | Row[] | null): Row | null =>
 
 const DAY_MS = 86_400_000;
 
+type Embedded<Row> = Row | Row[] | null;
+type TaskRow = {
+	id: string;
+	opportunity_id: string;
+	title: string;
+	due_on: string | null;
+	status: string;
+	completed_at: string | null;
+	assignee_user_id: string | null;
+	opportunity: Embedded<{
+		outcome: string;
+		request_id: string | null;
+		quote_id: string | null;
+		client: Embedded<{ display_name: string; company_name: string | null }>;
+	}>;
+};
+
 // Each select is spelled out whole rather than assembled from an interpolated string: supabase-js parses the
 // select at the type level, and a `${...}` in the middle of one collapses the parse to an error type, taking
 // every field's type with it.
@@ -61,6 +82,13 @@ const ASSESSMENT_EMBEDS = `request:requests(title, status, client_id, property_i
 	   property:properties(label, address_line1, city, state_region, postal_code,
 	     latitude, longitude, geocode_status))` as const;
 const ASSESSMENT_SELECT = `${ASSESSMENT_FIELDS}, ${ASSESSMENT_EMBEDS}` as const;
+
+// A Pipeline Task carries only a day, so it needs no instant padding. Its card's client name and record ids
+// come along so the calendar can say whose follow-up it is, and link a card that has left the board to the
+// Request or Quote behind it.
+const TASK_SELECT = `id, opportunity_id, title, due_on, status, completed_at, assignee_user_id,
+	 opportunity:opportunities(outcome, request_id, quote_id,
+	   client:clients(display_name, company_name))` as const;
 
 export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'jobs.view');
@@ -130,13 +158,35 @@ export const GET: RequestHandler = async (event) => {
 
 	if (eventError) return databaseError();
 
+	// Dated Pipeline Tasks (Pipeline E1). They are the Pipeline's, not the Schedule's, so only a member who may
+	// read the Pipeline gets them -- and that check also says no when the plan has no Pipeline. A member whose
+	// Schedule is narrowed to their own work sees only the Tasks assigned to them, the same way they see only
+	// their own visits; RLS would let them read the team's Tasks, so this narrowing is the route's.
+	let taskRows: TaskRow[] = [];
+	if (hasPermission(check.access, 'pipeline.view')) {
+		let taskQuery = event.locals.supabase
+			.from('tasks')
+			.select(TASK_SELECT)
+			.eq('organization_id', organizationId)
+			.gte('due_on', from)
+			.lte('due_on', to);
+		if (assignedOnly) taskQuery = taskQuery.eq('assignee_user_id', check.auth.user.id);
+		const { data: taskData, error: taskError } = await taskQuery
+			.order('due_on', { ascending: true })
+			.order('created_at', { ascending: true })
+			.limit(SCHEDULE_VISIT_LIMIT + 1);
+		if (taskError) return databaseError();
+		taskRows = (taskData ?? []) as TaskRow[];
+	}
+
 	const rows = (data ?? []) as VisitRow[];
 	const assessmentRows = (assessmentData ?? []) as AssessmentRow[];
 	const eventRows = eventData ?? [];
 	const truncated =
 		rows.length > SCHEDULE_VISIT_LIMIT ||
 		assessmentRows.length > SCHEDULE_VISIT_LIMIT ||
-		eventRows.length > SCHEDULE_VISIT_LIMIT;
+		eventRows.length > SCHEDULE_VISIT_LIMIT ||
+		taskRows.length > SCHEDULE_VISIT_LIMIT;
 
 	// A visit belongs to one job, a job to one client and one property, so PostgREST answers each embed with
 	// an object. The generated types cannot see that through the composite (organization_id, job_id) key and
@@ -211,6 +261,26 @@ export const GET: RequestHandler = async (event) => {
 	// through, capped by the same window limit as visits and assessments.
 	const events = eventRows.slice(0, SCHEDULE_VISIT_LIMIT);
 
+	// A Task belongs to one card and a card to one client, narrowed the same way as the embeds above. A member
+	// who may not see the client gets the Task without the name.
+	const tasks = taskRows.slice(0, SCHEDULE_VISIT_LIMIT).map((row) => {
+		const opportunity = one(row.opportunity);
+		const client = opportunity ? one(opportunity.client) : null;
+		return {
+			id: row.id,
+			opportunity_id: row.opportunity_id,
+			title: row.title,
+			due_on: row.due_on as string,
+			completed_at: row.status === 'completed' ? row.completed_at : null,
+			assignee_user_id: row.assignee_user_id,
+			opportunity_open: opportunity?.outcome === 'open',
+			request_id: opportunity?.request_id ?? null,
+			quote_id: opportunity?.quote_id ?? null,
+			client_name: client?.display_name ?? null,
+			client_company_name: client?.company_name ?? null
+		};
+	});
+
 	return json(
 		{
 			from,
@@ -218,6 +288,7 @@ export const GET: RequestHandler = async (event) => {
 			visits,
 			assessments,
 			events,
+			tasks,
 			// Whose calendar this is. The page uses it to drop the controls that can only come back empty for
 			// an assigned-scope member -- the team filter, the Unassigned lane, everyone else's lanes -- and
 			// to call the page My Schedule, the way Jobber does for field crew.

@@ -13,14 +13,17 @@ import { clockMinutes } from '$lib/schedule/layout';
 // before, between or after the anchors. Whatever the dispatcher saves, the anchor subsequence always reads in
 // chronological order; the saved order only ever records where the Anytime stops sit around them.
 
-/** A place on the route: a Visit or an Assessment. Events are excluded upstream, so they never appear here. */
+/** A place on the route: a Visit or an Assessment. Events and Tasks are excluded upstream, so they never
+ * appear here. */
 export type RouteStop = VisitItem | AssessmentItem;
 
-// Only Visits and Assessments with a date can be routed. Events have no location, and an undated item has no
+// Only Visits and Assessments with a date can be routed. Events and Pipeline Tasks have no place to drive
+// to, and an undated item has no
 // day to be routed on -- the window read never returns one, but the guard keeps this honest if it ever does.
 export function routeStops(items: ScheduleItem[]): RouteStop[] {
 	return items.filter(
-		(item): item is RouteStop => item.kind !== 'event' && item.visit_date !== null
+		(item): item is RouteStop =>
+			(item.kind === 'visit' || item.kind === 'assessment') && item.visit_date !== null
 	);
 }
 

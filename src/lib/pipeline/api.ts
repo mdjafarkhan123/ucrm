@@ -168,6 +168,17 @@ export async function fetchBoardColumn(
 	return response.json();
 }
 
+// One card by its id, for a Brief opened from a link (a Task on the Schedule). Under the pipeline key, so every
+// Pipeline write that refreshes the board refreshes this too.
+export const opportunityCardKey = (opportunityId: string) =>
+	['pipeline', 'card', opportunityId] as const;
+
+export async function fetchOpportunityCard(opportunityId: string): Promise<OpportunityCard> {
+	const response = await fetch(`/api/pipeline/opportunities/${encodeURIComponent(opportunityId)}`);
+	if (!response.ok) throw await readError(response, 'That card could not be opened.');
+	return response.json();
+}
+
 export async function fetchBoardSummary(filters: BoardFilters): Promise<BoardSummary> {
 	// The summary takes the same filters minus the ordering: a total does not care what order the cards
 	// are in, and the route refuses to be asked for one.
@@ -349,8 +360,15 @@ export async function fetchOutcomes(
 // Requests and Assessments decide where cards sit, so their writes move the board too. Every one of them
 // calls this rather than guessing which column changed — the stage is derived in the database, and the
 // browser cannot know the answer before it re-reads.
+//
+// The Schedule's window shows dated Tasks (Pipeline E1), and almost every Pipeline write can add, move, finish
+// or remove one -- a Brief edit, a bulk Task, Lost, reopen. So the Schedule's days are marked stale here too,
+// rather than at each of those writes. A Schedule nobody is looking at only refetches when it is next opened.
 export function invalidatePipeline(queryClient: QueryClient) {
-	return queryClient.invalidateQueries({ queryKey: pipelineKey });
+	return Promise.all([
+		queryClient.invalidateQueries({ queryKey: pipelineKey }),
+		queryClient.invalidateQueries({ queryKey: ['schedule', 'window'] })
+	]).then(() => undefined);
 }
 
 // One PATCH to one opportunity field route, sharing the fetch/error shape every Brief field edit needs.

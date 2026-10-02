@@ -92,6 +92,7 @@
 	import {
 		assessmentToItem,
 		eventToItem,
+		taskToItem,
 		visitToItem,
 		type AssessmentItem,
 		type EventItem,
@@ -270,7 +271,9 @@
 		// Events are Schedule's own plain org-day rows -- no instant, no timezone conversion -- so they merge
 		// straight in and need none of the assessment placement below.
 		const events = (windowQuery.data?.events ?? []).map(eventToItem);
-		if (!zone || !win) return [...visits, ...events];
+		// Pipeline Tasks (E1) are plain org days too. They are the Pipeline's; the calendar only shows them.
+		const tasks = (windowQuery.data?.tasks ?? []).map(taskToItem);
+		if (!zone || !win) return [...visits, ...events, ...tasks];
 		// The window read over-fetches assessments a day past each edge, because their instants are bounded in
 		// UTC while the window is a range of org-timezone days. Now that each one has been placed on its real
 		// day, the ones that fell outside the window are trimmed -- otherwise the Day board, which buckets by
@@ -281,7 +284,7 @@
 				(item) =>
 					item.visit_date !== null && item.visit_date >= win.from && item.visit_date <= win.to
 			);
-		return [...visits, ...assessments, ...events];
+		return [...visits, ...assessments, ...events, ...tasks];
 	});
 
 	const visibleItems = $derived(
@@ -1326,9 +1329,9 @@
 					{:else}
 						{#if windowQuery.data?.truncated}
 							<p class="schedule-page__notice" role="status">
-								This window holds more than {windowQuery.data.limit} visits, assessments, or events, so
-								only the first {windowQuery.data.limit} of each are shown. Pick a shorter range to see
-								all of them.
+								This window holds more than {windowQuery.data.limit} visits, assessments, events, or Tasks,
+								so only the first {windowQuery.data.limit} of each are shown. Pick a shorter range to
+								see all of them.
 							</p>
 						{/if}
 

@@ -138,6 +138,26 @@ export type ScheduleEvent = {
 	all_day: boolean;
 };
 
+// A Pipeline Task with a due day (Pipeline E1). The Pipeline owns it; the Schedule only shows it on its
+// assignee's day and links to the card's Brief. A Task has a day but no time, so it always sits in Anytime.
+export type ScheduleTask = {
+	id: string;
+	opportunity_id: string;
+	title: string;
+	/** Org-timezone day, a plain date. */
+	due_on: string;
+	/** Set only while the Task is completed. */
+	completed_at: string | null;
+	assignee_user_id: string | null;
+	/** False once the card is won, lost or closed: it has left the board, so its Brief cannot open there. */
+	opportunity_open: boolean;
+	request_id: string | null;
+	quote_id: string | null;
+	/** Null when this member may not see the client. */
+	client_name: string | null;
+	client_company_name: string | null;
+};
+
 export type ScheduleWindowPage = {
 	from: string;
 	to: string;
@@ -146,6 +166,8 @@ export type ScheduleWindowPage = {
 	assessments: ScheduleAssessment[];
 	/** The window's Schedule-owned events, plain org-day rows. */
 	events: ScheduleEvent[];
+	/** The window's dated Pipeline Tasks. Absent for a member who may not read the Pipeline. */
+	tasks?: ScheduleTask[];
 	/** The window holds more work than one read returns. */
 	truncated: boolean;
 	limit: number;
