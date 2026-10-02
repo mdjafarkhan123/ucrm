@@ -37,7 +37,7 @@ select is(
 select is(
   has_function_privilege(
     'anon',
-    'public.create_job_with_visits(uuid, uuid, uuid, text, text, boolean, jsonb, jsonb, text, text, text, boolean, jsonb)',
+    'public.create_job_with_visits(uuid, uuid, uuid, text, text, boolean, jsonb, jsonb, text, text, text, boolean, jsonb, uuid)',
     'execute'
   ),
   false, 'signed-out callers cannot create a job'
@@ -45,7 +45,7 @@ select is(
 select is(
   has_function_privilege(
     'authenticated',
-    'public.create_job_with_visits(uuid, uuid, uuid, text, text, boolean, jsonb, jsonb, text, text, text, boolean, jsonb)',
+    'public.create_job_with_visits(uuid, uuid, uuid, text, text, boolean, jsonb, jsonb, text, text, text, boolean, jsonb, uuid)',
     'execute'
   ),
   true, 'members reach the create command'
