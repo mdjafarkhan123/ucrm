@@ -106,6 +106,26 @@ describe('buildAlertEmail', () => {
 		expect(email.htmlContent).not.toContain('<Jamie>');
 		expect(email.textContent).toContain('Open it in your CRM: https://app.test/requests/r');
 	});
+
+	it('tells a Task assignee why they got it, not that they were chosen for inquiries', () => {
+		const email = buildAlertEmail(
+			claimed('a', {
+				kind: 'pipeline.task_assigned',
+				subject_type: 'opportunity',
+				title: 'Sara gave you a Task: Call back'
+			}),
+			'https://app.test/pipeline?brief=o1'
+		);
+		expect(email.textContent).toContain('a teammate at Raad & Sons gave you a Task');
+		expect(email.textContent).not.toContain('website inquiries');
+	});
+});
+
+describe('teamNotificationHref for Tasks', () => {
+	it("opens one Task's card Brief, and a bulk Task's board", () => {
+		expect(teamNotificationHref(undefined, 'opportunity', 'o1')).toBe('/pipeline?brief=o1');
+		expect(teamNotificationHref(undefined, 'task_batch', 't1')).toBe('/pipeline');
+	});
 });
 
 describe('drainTeamAlertEmails', () => {

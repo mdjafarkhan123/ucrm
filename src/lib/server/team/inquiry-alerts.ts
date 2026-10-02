@@ -84,7 +84,10 @@ function escapeHtml(value: string) {
 
 export function buildAlertEmail(alert: ClaimedAlertEmail, link: string | null): AlertEmail {
 	const lines = [alert.title, alert.body ?? ''].filter(Boolean);
-	const footer = `You get these alerts because ${alert.organization_name} chose you for new website inquiries.`;
+	const footer =
+		alert.kind === 'pipeline.task_assigned'
+			? `You get this because a teammate at ${alert.organization_name} gave you a Task.`
+			: `You get these alerts because ${alert.organization_name} chose you for new website inquiries.`;
 	const html = [
 		`<p><strong>${escapeHtml(alert.title)}</strong></p>`,
 		alert.body ? `<p>${escapeHtml(alert.body)}</p>` : '',

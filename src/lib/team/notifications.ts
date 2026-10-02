@@ -17,7 +17,8 @@ export type TeamNotificationKind =
 	| 'quote.deposit_disputed'
 	| 'review.private_feedback'
 	| 'quote.delivery_failed'
-	| 'quote.customer_declined';
+	| 'quote.customer_declined'
+	| 'pipeline.task_assigned';
 
 export type TeamNotification = {
 	id: string;
@@ -52,6 +53,10 @@ export function teamNotificationHref(
 	if (subjectType === 'invoice') return `/invoices/${subjectId}`;
 	if (subjectType === 'quote') return `/quotes/${subjectId}`;
 	if (subjectType === 'review_feedback') return '/reviews?tab=feedback';
+	// A Task alert opens its card's Brief; a bulk Task sits on several cards, so it opens the board.
+	if (subjectType === 'opportunity')
+		return `/pipeline?${new URLSearchParams({ brief: subjectId }).toString()}`;
+	if (subjectType === 'task_batch') return '/pipeline';
 	if (subjectType === 'website_chat_session') {
 		const key = link?.client_id ?? `webchat:${subjectId}`;
 		return `/communications?${new URLSearchParams({ client: key }).toString()}`;
