@@ -16,16 +16,14 @@
 
 ## Next
 
-Settle the remaining setup and teammate-permission questions below and record them in `docs/plans/uplift-website-admin.md` before closing Part 4.
+Wait for Jafar's answers below, then record the approved access contract in `docs/plans/uplift-website-admin.md`.
 
 ## Notes
 
-This work is now inside UCRM. Superseded handoff research remains in `docs/research/uplift-cms-crm-owner-handoff-2026-10-02.md`; current patterns are in `docs/research/uplift-crm-website-area-patterns-2026-10-02.md`. The CRM allows one organization per user and one owner per organization, re-queries active membership, and atomically demotes the old owner during ownership transfer. It has no site-assignment model yet.
+The approved onboarding contract §5 already names eleven delivery states, including **Building your system**, **Ready for your review**, and **Approved — preparing launch**. The package plan separates a managed website service from CRM access. The CRM has one active owner per organization and no site-assignment model yet. Current research: `docs/research/uplift-crm-website-area-patterns-2026-10-02.md`.
 
-Questions waiting for Jafar:
+## Questions waiting for Jafar
 
-- **Q14 — Setup progress:** Which milestones are truthful and useful before a site is assigned? Recommendation: show the existing onboarding delivery stages, the next action, and a support link; do not imply a site is ready just because the organization exists.
-- **Package boundary:** The approved package plan distinguishes a managed website service from CRM access. Decide the Website area's state for an organization whose package does not include a website; setup progress applies only when the service is included.
-- **Q15 — Teammate permissions:** Jafar decided the owner has access by default and controls teammate access. Decide the exact view, edit, and publish choices, including whether a teammate can see setup/site status without edit permission.
-Settled for Part 3B: Jafar approved that the named final approver may approve first launch even when they are not the CRM owner; this grants no editing or publishing access. The plan records the approver, version, and time.
-Settled publishing boundary: Jafar already hosts Git-based Astro sites on Cloudflare. Publishing from CRM must update Uplift's private Git source and use that existing build/deploy path; contractors have no Git or source-file access. `docs/plans/uplift-website-admin.md` records this choice. Part 7 must confirm exact preview, branch, deployment-status, and rollback mechanics against the actual site.
+1. **What should the Website area show while Uplift builds a purchased site?** I recommend the site’s current step using the already approved delivery stages, the next action the contractor can take, any named blocker, and a link to ask Uplift. It should never say a site is ready before Uplift assigns one. Choices: Show real progress and next action (recommended); Show only a coming-soon message; Hide Website until assignment.
+2. **What should a CRM customer see if their package has no managed website?** I recommend a simple Website page saying the service is not included, with a Contact Uplift action. It should show no editor or fake setup progress. Choices: Show explanation + contact Uplift (recommended); Hide Website entirely; Show upgrade button.
+3. **Which website access can the CRM owner give teammates?** I recommend three choices per teammate: View (site and progress), Edit (draft content and preview), and Publish (make later changes live). Edit includes View; Publish includes Edit. The owner keeps full access. A first launch still needs its separate named approver. Choices: View, Edit, Publish (recommended); Edit and Publish only; One all-access permission.
