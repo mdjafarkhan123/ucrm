@@ -529,7 +529,8 @@
 		min-height: 44px;
 		padding: 0 var(--space-base) 0 var(--space-slim);
 		border: 0;
-		border-radius: var(--radius-circle);
+		// A pill, not an ellipse: the circle radius is a percentage, which turns a wide button into an egg.
+		border-radius: var(--radius-larger);
 		color: var(--color-surface);
 		font: inherit;
 		font-size: var(--typography--fontSize-base);
@@ -841,7 +842,7 @@
 	.support-messenger__topic {
 		flex: none;
 		padding: 3px var(--space-small);
-		border-radius: var(--radius-circle);
+		border-radius: var(--radius-large);
 		color: var(--color-heading);
 		background: var(--color-inactive--surface);
 		font-size: var(--typography--fontSize-smaller);

@@ -70,7 +70,7 @@
 		min-height: 22px;
 		padding: 0 var(--space-small);
 		border: 0;
-		border-radius: var(--radius-circle);
+		border-radius: var(--radius-large);
 		color: var(--color-heading);
 		background: var(--color-inactive--surface);
 		font: inherit;

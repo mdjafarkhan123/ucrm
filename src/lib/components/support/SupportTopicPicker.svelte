@@ -70,7 +70,7 @@
 			min-height: 32px;
 			padding: 0 var(--space-slim);
 			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-circle);
+			border-radius: var(--radius-large);
 			color: var(--color-text);
 			background: var(--color-surface);
 			font-size: var(--typography--fontSize-small);
