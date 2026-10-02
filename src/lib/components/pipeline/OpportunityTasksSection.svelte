@@ -144,6 +144,7 @@
 						<Checkbox
 							id={`task-${task.id}-complete`}
 							label={`Mark "${task.title}" complete`}
+							hideLabel
 							checked={false}
 							disabled={!canEdit || completionMutation.isPending}
 							onchange={() => completionMutation.mutate({ task, completed: true })}
@@ -180,6 +181,7 @@
 						<Checkbox
 							id={`task-${task.id}-complete`}
 							label={`Reopen "${task.title}"`}
+							hideLabel
 							checked={true}
 							disabled={!canEdit || completionMutation.isPending}
 							onchange={() => completionMutation.mutate({ task, completed: false })}
@@ -281,6 +283,9 @@
 	.tasks__list {
 		display: flex;
 		flex-direction: column;
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
 	.tasks__row {
 		display: flex;

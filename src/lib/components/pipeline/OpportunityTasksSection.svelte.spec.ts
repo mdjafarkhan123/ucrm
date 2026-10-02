@@ -100,9 +100,13 @@ describe('OpportunityTasksSection', () => {
 		mockFetch({ open: [taskFixture()], completed: [] });
 		renderSection();
 
-		// The native input is visually hidden behind the custom `.checkbox__box`, so the click lands on the
-		// visible label text -- a real click there toggles the associated input the same way.
-		await page.getByText('Mark "Call Colin" complete', { exact: true }).click();
+		// The native input and its label are both kept off screen (the row's title is the visible name), so
+		// the click lands on the custom `.checkbox__box` -- a real click there toggles the input the same way.
+		await expect
+			.element(page.getByRole('checkbox', { name: 'Mark "Call Colin" complete' }))
+			.toBeInTheDocument();
+		const box = document.querySelector<HTMLElement>('.tasks__row .checkbox__box');
+		await page.elementLocator(box!).click();
 
 		expect(globalThis.fetch).toHaveBeenCalledWith(
 			'/api/pipeline/tasks/task-1/completion',
