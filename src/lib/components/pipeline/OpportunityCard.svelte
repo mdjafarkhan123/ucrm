@@ -205,7 +205,10 @@
 			day: 'numeric'
 		})
 	);
-	const ownerName = $derived(opportunity.owner?.full_name ?? 'Unassigned');
+	// An owner without a name is someone who left the team; a teammate who never typed one arrives as email.
+	const ownerName = $derived(
+		opportunity.owner ? (opportunity.owner.full_name ?? 'Former teammate') : 'Unassigned'
+	);
 
 	// "Mark as lost" asks for a reason from the organization's list; warming it as the menu is reached
 	// means the dialog opens with its choices already there.
