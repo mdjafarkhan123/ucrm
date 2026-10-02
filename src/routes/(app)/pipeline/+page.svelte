@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
+	import { untrack } from 'svelte';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -158,16 +159,25 @@
 		retry: false
 	}));
 
+	// Each link is handled once. The URL only loses the parameter after navigation settles, and the toast and
+	// the selection are state this effect would otherwise read back, so without the guard and `untrack` it
+	// would open the card or raise the message again on every re-run until then.
+	let handledBriefId: string | null = null;
 	$effect(() => {
-		if (!briefId) return;
-		const card = briefQuery.data;
-		if (card && card.id === briefId) {
-			selected = card;
-			goToBoard(urlFilters, view, { replace: true });
-		} else if (briefQuery.isError) {
-			toast.error(briefQuery.error.message);
-			goToBoard(urlFilters, view, { replace: true });
+		if (!briefId) {
+			handledBriefId = null;
+			return;
 		}
+		if (briefId === handledBriefId) return;
+		const card = briefQuery.data;
+		const failure = briefQuery.isError ? briefQuery.error : null;
+		if (!(card && card.id === briefId) && !failure) return;
+		handledBriefId = briefId;
+		untrack(() => {
+			if (failure) toast.error(failure.message);
+			else selected = card ?? null;
+			goToBoard(urlFilters, view, { replace: true });
+		});
 	});
 
 	const summaryQuery = createQuery(() => ({
