@@ -7,24 +7,24 @@
 ## Steps
 
 - [x] Plan §4 and §7 updated on the branch (Jafar approved 2026-10-02)
-- [x] Migration written: `supabase/migrations/20261003120000_support_chats_and_topics.sql` — NOT applied
+- [x] Migration written: `supabase/migrations/20261003180000_support_chats_and_topics.sql` (renumbered: main's pipeline work took 120000)
 - [x] Member API + messenger written: chat list, New message with topic chips, topic menu in header
 - [x] `/jafar` inbox written: topic on rows, topic filter (`?topic=`), topic menu
-- [ ] Type check passes (last run: one error, fixed but not re-run)
-- [ ] Update `src/routes/api/support/support.spec.ts` and `src/routes/api/jafar/support/support.spec.ts` for the new routes (POST /api/support/threads starts a chat; messages need `thread_id`; PATCH topic)
+- [x] Type check passes (0 errors, 2026-10-02)
+- [x] Both support specs updated; 76 tests pass
 - [ ] Apply migration, regenerate `src/lib/database.types.ts`, browser check both sides
 - [ ] Merge branch into `main`, then mark D4a done
 
 ## Next
 
-In the worktree, run `NODE_OPTIONS=--max-old-space-size=8192 npx svelte-check --threshold error` (plain
-`npm run check` runs out of memory). Then fix the two spec files, then `npm run test:unit` on them.
+Main is merged into the branch. Apply the migration (`npx --no-install supabase db push --linked` from the
+worktree), regenerate `src/lib/database.types.ts`, browser check both sides, then merge the branch into `main`.
 
 ## Outside actions
 
-- Apply the migration with `supabase db push --linked` from the worktree, only right before merging — the old
-  code on `main` cannot start a new chat once it is applied. Check: `supabase migration list --linked` shows
-  `20261003120000` — pending.
+- Apply the migration from the worktree, only right before merging — the old code on `main` cannot start a
+  new chat once it is applied. Check: `npx --no-install supabase migration list --linked` shows
+  `20261003180000` — pending until pushed.
 
 ## Notes
 
