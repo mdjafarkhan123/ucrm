@@ -12,15 +12,17 @@
 - [x] Office: board, Brief edits, Task, move, Table, outcomes; Settings → Pipeline read-only.
 - [x] Fixed: teammate lists offered field and finance; Board/Table switch had no screen-reader name;
       Enter saved the Brief's estimated value twice.
-- [ ] Sales, admin walk-through in the browser; field and finance see no Pipeline.
+- [x] Sales on desktop: board, Brief edits, Task, call, note, move and Undo, Table, outcomes; Settings →
+      Pipeline read-only.
+- [ ] Admin walk-through in the browser; field and finance see no Pipeline.
 - [ ] Jafar's own tour, including dragging a card with a real mouse (forward works, backward is refused).
 
 ## Next
 
-Chrome sits on the sign-in page with the sales email typed. Jafar types each password himself (the assistant
-never does); the assistant signs out and fills the next email: sales, admin, field, finance. Its fake mouse
+Chrome sits on the sign-in page with the admin email typed. Jafar types each password himself (the assistant
+never does); the assistant signs out and fills the next email: admin, field, finance. Its fake mouse
 drag does not register a drop. For a phone width, `resize_window` narrows Chrome to 524. Screenshots and
-whole tabs sometimes freeze in Chrome — retake, or open a fresh tab.
+whole tabs often freeze — read the page with `get_page_text` or `javascript_tool`, or open a fresh tab.
 
 ## Outside actions
 
@@ -33,9 +35,9 @@ whole tabs sometimes freeze in Chrome — retake, or open a fresh tab.
   `docker exec -i supabase_db_ucrm psql -U postgres -At -q < <file>`. Do not reset that database: it holds
   G1's big fake company. Its migration ledger stops before `20261006100000`; later files were applied by hand.
 - Test data left on Raad LTD: one "No answer" call on a "Pay-by-app verification (copy)" card; a Task "G2
-  check: ring back about the quote" due 2026-10-20 on the other copy; "RLS fix check (owner)" was marked
-  Lost and reopened twice, carries a photo note, a $475 value, the office teammate as Salesperson, and a
-  done Task.
+  check: ring back about the quote" due 2026-10-20 on the other copy; "RLS fix check (owner)" sits in Assessment unscheduled, was marked Lost and reopened twice,
+  carries a photo note, a sales note, a Busy call, a $490 value, the office teammate as Salesperson, and
+  two done Tasks.
 - Photos on Notes stay "Still being checked" here: the local file checker is unhealthy.
 - Waiting on Jafar: "When a Quote is approved (Won), any follow-up Task still open on its card stays open
   forever on the Schedule, and nobody can tick it off because the card's Brief no longer opens. Should
