@@ -17,15 +17,17 @@
       refused; the Board/Table switch had no screen-reader name.
 - [x] Owner on a phone: everything in the desktop line that applies, plus stage picker, add Task, log call,
       Notes with a photo.
-- [ ] Office, sales, admin walk-through in the browser; field and finance see no Pipeline.
+- [x] Office walk-through: board, Brief edits, Task, move, Table, outcomes; Settings → Pipeline read-only.
+- [x] Fixed: Enter saved the Brief's estimated value twice; its box now takes the cursor when opened.
+- [ ] Sales, admin walk-through in the browser; field and finance see no Pipeline.
 - [ ] Jafar's own tour, including dragging a card with a real mouse (forward works, backward is refused).
 
 ## Next
 
-Chrome is signed in as the owner at `http://localhost:5173/pipeline`. The other roles are next — Jafar signs
-each one in himself; the assistant does not type passwords into the browser, and its fake mouse drag
-does not register a drop. For a phone width, `resize_window` on a
-fresh tab narrows Chrome to 524; a screenshot after a scroll can stall — retake it.
+Chrome sits on the sign-in page with the sales email typed. Jafar types each password himself (the assistant
+never does); the assistant signs out and fills the next email: sales, admin, field, finance. Its fake mouse
+drag does not register a drop. For a phone width, `resize_window` narrows Chrome to 524. Screenshots and
+whole tabs sometimes freeze in Chrome — retake, or open a fresh tab.
 
 ## Outside actions
 
@@ -39,7 +41,8 @@ fresh tab narrows Chrome to 524; a screenshot after a scroll can stall — retak
   G1's big fake company. Its migration ledger stops before `20261006100000`; later files were applied by hand.
 - Test data left on Raad LTD: one "No answer" call on a "Pay-by-app verification (copy)" card; a Task "G2
   check: ring back about the quote" due 2026-10-20 on the other copy; "RLS fix check (owner)" was marked
-  Lost and reopened twice and carries a note "G2 phone check: note with a photo".
+  Lost and reopened twice, carries a photo note, a $475 value, the office teammate as Salesperson, and a
+  done Task.
 - Photos on Notes stay "Still being checked" here: the local file checker is unhealthy.
 - Waiting on Jafar: "When a Quote is approved (Won), any follow-up Task still open on its card stays open
   forever on the Schedule, and nobody can tick it off because the card's Brief no longer opens. Should
