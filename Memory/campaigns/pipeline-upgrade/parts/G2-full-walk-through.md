@@ -14,13 +14,14 @@
       Enter saved the Brief's estimated value twice.
 - [x] Sales on desktop: board, Brief edits, Task, call, note, move and Undo, Table, outcomes; Settings →
       Pipeline read-only.
-- [ ] Admin walk-through in the browser; field and finance see no Pipeline.
+- [x] Admin on desktop: board, outcomes, and a Settings → Pipeline change saved and put back.
+- [ ] Field and finance see no Pipeline.
 - [ ] Jafar's own tour, including dragging a card with a real mouse (forward works, backward is refused).
 
 ## Next
 
-Chrome sits on the sign-in page with the admin email typed. Jafar types each password himself (the assistant
-never does); the assistant signs out and fills the next email: admin, field, finance. Its fake mouse
+Chrome sits on the sign-in page with the field email typed. Jafar types each password himself (the assistant
+never does); the assistant signs out and fills the next email: field, finance. Its fake mouse
 drag does not register a drop. For a phone width, `resize_window` narrows Chrome to 524. Screenshots and
 whole tabs often freeze — read the page with `get_page_text` or `javascript_tool`, or open a fresh tab.
 
