@@ -26,6 +26,3 @@ Carried from stage A (design in `docs/adr/0004-pipeline-custom-stages-anchor-to-
   A3's check.
 - From D2/D4/D6, for G1: search is about 140 ms per column at 5,000 open cards (rethink near 20,000); the
   Table 15–30 ms. Bulk changes take about 10 ms per card for owner and 3 ms for Tasks (50-card cap).
-- Found in D6's browser check: three teammates with no name (the office, sales, and finance test logins) show
-  as "Former teammate" on cards and the Table, because the board reads a missing name as "has left". Fix before
-  G3's walk-through. Also open from D1: a refused *drag* snaps back without saying why.
