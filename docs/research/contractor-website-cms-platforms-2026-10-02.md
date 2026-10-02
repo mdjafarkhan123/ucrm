@@ -7,6 +7,12 @@
 - For a client's root domain (`example.com`), the domain must be a Cloudflare zone **in the same account as the Pages project** and its registrar nameservers must point to Cloudflare. A subdomain can instead use a CNAME at another DNS provider. The client can remain the registered domain owner while granting operational DNS access; nameserver delegation is distinct from transferring registration. [Pages custom domains](https://developers.cloudflare.com/pages/configuration/custom-domains/), [Cloudflare full DNS setup](https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/).
 - Cloudflare Pages does not create preview URLs for PRs from forked repositories. It also currently cannot move a Git-integrated Pages project to Direct Upload or change its linked repository without creating a new project. Those details affect CMS choice and ownership transfer. [GitHub integration](https://developers.cloudflare.com/pages/configuration/git-integration/github-integration/), [known issues](https://developers.cloudflare.com/pages/platform/known-issues/).
 
+## Managed-site client access pattern
+
+Wix Studio lets an agency give a client a **content-only mode**: the client changes text and images but cannot change the design. Webflow similarly separates content editing from structural and code changes, and its publishing right can be granted separately. This supports a useful middle ground for Uplift: a genuine Website area and, if sold, a narrow content editor; there is no need to expose a full page builder merely to give a contractor control. [Wix Studio client access](https://support.wix.com/en/article/wix-studio-inviting-a-client-to-join-a-site), [Webflow content editor](https://help.webflow.com/hc/en-us/articles/33961251014931-Edit-site-content-as-a-content-editor).
+
+Wix also distinguishes the site owner from collaborators, and the owner can transfer ownership. That distinction matters for Uplift's sales wording: contractor ownership of the domain and supplied content should be stated separately from access to the managed source and hosting. [Wix roles and ownership](https://support.wix.com/en/article/roles-permissions-overview).
+
 ## Existing editors against the stated ownership rule
 
 | Option | Documented model | Fit with CRM-only access and no contractor Git access |
