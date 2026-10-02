@@ -36,12 +36,6 @@ npm run test          # unit + Playwright
 `npx prettier --check <paths>` instead. Its CLI cannot match a glob containing `(app)` — pass those file
 paths out in full.
 
-**Database migrations.** `supabase/migrations/` holds a four-file baseline that rebuilds the live database exactly, and the remote
-ledger reads the same four files. Add each new change as one new timestamped file, then apply it with `supabase db push --linked`
-(check first with `--dry-run`). A rebuilt database needs real Vault URLs and secrets before email-send paths work. The pgTAP files in
-`supabase/tests/database/` run with `supabase test db` on a fresh rebuild; some are stale, so a failure in an area you did not touch is
-not automatically your regression.
-
 ---
 
 ## Skills
@@ -101,7 +95,7 @@ before changing files (`--mode read` for research). Release after safe integrati
 - Jafar is a non-technical 15-year-old project owner. Talk with him with real senario context using everyday plain english, no jargon.
 - Never guesswork, no overengineering. Think / research critically and deeply considering all edge cases.
 - For any feature / workflow / behavior / mechanism / planning / question / decision / choice or to fix any problem, first research how mature products/leading industries handle it or solve it. Discuss choices with Jafar, use the `grilling` or `grill-me` skill when needed. Use the best proven pattern/robust one and established engineering convention that fits. Do not create a custom solution when an established/robust one fits. If valid approaches have meaningful trade-offs, compare them and recommend the best fit before building. Tell Jafar which industry method you followed.
-- **Frontend design.** Designs must be beautiful, professional, and modern like Notion, Vercel, Linear
+- **Frontend design.** Designs must be Premium, beautiful, professional, and modern.
 - **Svelte 5 only.** No Svelte 4 syntax anywhere.
 - SCSS + BEM for all styling. Tabler icons for all icons.
 - Component styles live inside the component's own `<style lang="scss">` block. Never import component styles through `app.scss`. `app.scss` contains only the global baseline, no per-component import is needed. SCSS variables and mixins are available in every component automatically via Vite `additionalData` — no import needed.

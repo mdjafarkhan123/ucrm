@@ -5,7 +5,7 @@ This file is the single source of project instructions for Claude Code and Codex
 ## Project
 
 - **Owner:** Jafar is the CRM/app owner.
-- **Product:** A CRM for contractors, targeting up to 40,000 users in Europe, the US, Canada, Australia, and the UK (not Asia). Capacity claims require measured evidence. The first paying client must receive the complete, fully built application—not a partial product before launch. Build a robust, production grade, industry top level app with all the ui/ux, features before launch. Right now its under development with all fake data and fake Organization.
+- **Product:** A CRM for contractors, targeting up to 40,000 users in Europe, the US, Canada, Australia, and the UK (not Asia). Capacity claims require measured evidence. The first paying client must receive the complete, fully built application—not a partial product before launch. Build a robust, production grade, industry top level app with all the ui/ux, features before launch. Right now its under development with all fake data and Organization
 - **Core workflow:** Lead → Request → Quote → Job → Invoice → Payment, following Jobber's CRM model.
 - **Frontend:** SvelteKit + Svelte 5 runes + TanStack Query (client state)
 - **Current development:** The SvelteKit app runs locally through a Cloudflare Tunnel and uses managed remote Supabase plus Cloudflare R2.
@@ -35,12 +35,6 @@ npm run test          # unit + Playwright
 `npm run lint` currently fails on Prettier drift in files nobody touched, so check your own work with
 `npx prettier --check <paths>` instead. Its CLI cannot match a glob containing `(app)` — pass those file
 paths out in full.
-
-**Database migrations.** `supabase/migrations/` holds a four-file baseline that rebuilds the live database exactly, and the remote
-ledger reads the same four files. Add each new change as one new timestamped file, then apply it with `supabase db push --linked`
-(check first with `--dry-run`). A rebuilt database needs real Vault URLs and secrets before email-send paths work. The pgTAP files in
-`supabase/tests/database/` run with `supabase test db` on a fresh rebuild; some are stale, so a failure in an area you did not touch is
-not automatically your regression.
 
 ---
 
@@ -106,7 +100,7 @@ before changing files (`--mode read` for research). Release after safe integrati
 - SCSS + BEM for all styling. Tabler icons for all icons.
 - Component styles live inside the component's own `<style lang="scss">` block. Never import component styles through `app.scss`. `app.scss` contains only the global baseline, no per-component import is needed. SCSS variables and mixins are available in every component automatically via Vite `additionalData` — no import needed.
 - **No duplicated UI.** Before designing or creating any part, check `src/lib/components`. Reuse or extend an existing component when its structure and behavior are the same.
-- **TanStack Query owns server state.** The `src/routes/(app)/+layout.svelte` shell is SSR. All page content under `src/routes/(app)/` is CSR only. Never block navigation on data loading. Render the shell immediately, show cached data or skeletons, and revalidate in the background. Move between pages with links — `href` on `Button`, or an `<a>` — so SvelteKit fetches the page on hover, and add every routinely used route to the warm list in `src/routes/(app)/+layout.svelte`, dropping entries whose routes go away. `resolve()` wants the full route id including the group, e.g. `'/(app)/clients/[id]'`. **Content the user has to reveal — a tab panel, an accordion, a dialog's contents — does not load with the page. Its query stays off until the control is hovered, prefetches then, and shows a skeleton if the click still beats it.** Cache the result so reopening is instant. After any mutation or external event, invalidate all affected caches. No ad-hoc caching systems.
+- **TanStack Query owns server state.** The `src/routes/(app)/+layout.svelte` shell is SSR. All page content under `src/routes/(app)/` is CSR only. Never block navigation on data loading. Render the shell immediately, show cached data or skeletons, and revalidate in the background. Move between pages with links — `href` on `Button`, or an `<a>` — so SvelteKit fetches the page on hover, and keep the warm list in `src/routes/(app)/+layout.svelte` to the sidebar's daily pages and their record pages (Jafar, 2026-09-28: it costs crews mobile data), dropping entries whose routes go away. `resolve()` wants the full route id including the group, e.g. `'/(app)/clients/[id]'`. **Content the user has to reveal — a tab panel, an accordion, a dialog's contents — does not load with the page. Its query stays off until the control is hovered, prefetches then, and shows a skeleton if the click still beats it.** Cache the result so reopening is instant. After any mutation or external event, invalidate all affected caches. No ad-hoc caching systems.
 - Server secrets stay server-side
 - All writes go through `/api/*` routes. Every `POST` and `PATCH` validates with Zod before database access.
 - **Performance — proportional evidence:** Follow `performance-review`'s invocation gate and two-stage completion contract. Never claim user or traffic capacity beyond the workload its evidence actually supports.
