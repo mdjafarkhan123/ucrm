@@ -7,6 +7,6 @@ first paying client.
 
 **In progress:** Stages A, B, and C finished 2026-10-01; stage D finished 2026-10-02.
 
-**Next part:** DF1 date picker crash — `stages/D-fixes.md` (Jafar, 2026-10-02: fix DF1–DF3 before E1).
+**Next part:** DF2 nameless teammates — `stages/D-fixes.md` (Jafar, 2026-10-02: fix DF1–DF3 before E1; DF1 done).
 
 **Blockers:** None.

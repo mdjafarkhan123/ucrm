@@ -5,6 +5,10 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 export default defineConfig({
+	// Agent worktrees symlink this folder's node_modules, so the default cache (node_modules/.vite) is shared:
+	// a worktree's dev server or test run would re-bundle libraries under a running server and the page
+	// would load two copies of Svelte. A cache inside each checkout keeps every server on its own.
+	cacheDir: '.vite',
 	server: {
 		// The `local-crm` Cloudflare tunnel forwards app.upliftcontractor.com to this dev server, so
 		// Turnstile sees a hostname its widget allows and emailed links carry a real domain. Vite

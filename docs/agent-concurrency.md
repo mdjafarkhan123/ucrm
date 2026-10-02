@@ -33,7 +33,9 @@ One writer may work in the main folder on `main`. Simultaneous code writers use 
 worktrees and branches, each with its own reservation. The user has authorized this exception for
 concurrent work; it does not create a second product. Keep the main folder as the final application.
 Git worktrees isolate files, but they do not isolate remote Supabase, R2, external providers, ports, or
-local databases. Reserve those resources explicitly and coordinate destructive or irreversible actions.
+local databases. A worktree's `node_modules` is a link to the main folder's; Vite keeps its library cache
+in each checkout's own ignored `.vite/` (`cacheDir` in `vite.config.ts`) so a worktree's dev server or
+test run cannot break the main dev server. Keep it that way. Reserve those resources explicitly and coordinate destructive or irreversible actions.
 
 Only one integrator brings completed changes into `main` at a time. The integrator checks all affected
 changes together, resolves conflicts, verifies the combined result, and commits the completed work.
