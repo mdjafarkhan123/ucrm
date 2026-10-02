@@ -25,6 +25,7 @@ This work is now inside UCRM. Superseded handoff research remains in `docs/resea
 Questions waiting for Jafar:
 
 - **Q14 — Setup progress:** Which milestones are truthful and useful before a site is assigned? Recommendation: show the existing onboarding delivery stages, the next action, and a support link; do not imply a site is ready just because the organization exists.
+- **Package boundary:** The approved package plan distinguishes a managed website service from CRM access. Decide the Website area's state for an organization whose package does not include a website; setup progress applies only when the service is included.
 - **Q15 — Visibility:** May teammates see read-only setup/site status, or should the whole Website area be owner-only? Recommendation: owner-only for V1 to keep private drafts and launch approval clear.
 - **Q16 — Ownership or assignment changes:** Recommendation: deny the former owner or unassigned site on the next request; stop saves and publishing, preserve recoverable drafts, and show a plain access-changed screen.
 - **Q17 — Wrong or guessed site address:** Recommendation: show **Website unavailable** without revealing another organization's site or status.

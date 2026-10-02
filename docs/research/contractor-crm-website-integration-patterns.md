@@ -80,7 +80,7 @@ The Website entry point should show the business outcome and the safe actions a 
 1. **Overview:** live URL, site status, last successful publish, unpublished changes, and clear setup or problem notices.
 2. **Content:** controlled fields for approved pages and sections, services, service areas, business details, calls to action, images, reviews, and work gallery.
 3. **Preview and publish:** private preview, publish status, last live version, version history, and safe restore.
-4. **Leads and bookings:** choose which CRM-owned request or booking experience each call-to-action uses; show recent website-created requests and bookings without building a second lead inbox.
+4. **Enquiries:** show recent requests created by the site's native enquiry forms without building a second lead inbox. The site's form design belongs to Uplift; its submissions enter the CRM. Configurable booking flows are a later, separate decision.
 5. **Domain status:** connected hostname, ownership/registrar note, DNS verification state, and guided connection. Advanced DNS and mail records should not become an unrestricted client editor in the first release.
 6. **Performance later:** visitors, requests, bookings, conversion rate, and attributable revenue after the event data is reliable.
 

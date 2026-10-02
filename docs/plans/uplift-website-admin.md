@@ -4,7 +4,7 @@
 
 ## Summary
 
-This project adds a **Website** area inside the existing contractor CRM. The contractor uses the same CRM login. Only the current organization owner can edit or publish. Uplift assigns managed websites to the organization; until then, the Website area shows setup progress. If several sites are assigned, the owner chooses one from a list of site names.
+This project adds a **Website** area inside the existing contractor CRM. The contractor uses the same CRM login. Only the current organization owner can edit or publish. Uplift assigns managed websites to the organization; while an included website is being prepared but not yet assigned, the Website area shows setup progress. If several sites are assigned, the owner chooses one from a list of site names.
 
 The owner edits approved business content without accessing code, hosting, DNS, secrets, or another client's information. Draft changes do not alter the public website until published. Uplift checks the first site release and records the contractor's launch approval before making it live. After launch, the owner may publish ordinary content changes directly. The first implementation will prove the journey with one real Uplift-managed Astro site while the account and access rules support several assigned sites from the start.
 
@@ -19,7 +19,7 @@ The Website area shows only sites currently assigned to that organization. Each 
 ## CMS user journey
 
 1. The contractor signs in to the existing CRM.
-2. The CRM shows the owner the **Website** area. Before any site is assigned, it shows setup progress and the next step without an empty editor.
+2. The CRM shows the owner the **Website** area. If a website is included but none has been assigned yet, it shows truthful setup progress and the next step without an empty editor.
 3. When Uplift assigns sites, the owner sees their names and chooses one. Every editing, preview, and publishing screen stays scoped to that site.
 4. The owner edits only the structured text, images, services, business details, and settings allowed by its design.
 5. Changes are saved as drafts and previewed on that site's real design without changing the public website.
@@ -57,7 +57,7 @@ Only one browser session may edit the same independently saved content record at
 
 **Preview draft** opens the current saved draft in the selected website's real design. It supports desktop and mobile views inside the Website area and an **Open in new tab** action. Preview is protected by short-lived, site-specific authorization, clearly says **Draft preview — not live**, shows when the draft was last saved, and cannot be indexed by search engines. The public domain reads only the last successful published release, never the working draft.
 
-The first live release has a separate launch gate: Uplift checks the completed site and records the contractor's launch approval before publication. Once the site is live, the current organization owner may publish ordinary content changes directly, without an Uplift approval queue. **Publish changes** summarizes the affected pages and items and asks for confirmation. Publishing freezes the current draft into a fixed release candidate; edits made after publishing starts remain in the working draft and do not silently enter that release. A new site assigned later to the same organization goes through its own first-launch gate.
+The first live release has a separate launch gate: Uplift checks the completed site and records the contractor's launch approval for the exact version before publication. If that version changes, the changed version needs its own check and approval. Once the site is live, the current organization owner may publish ordinary content changes directly, without an Uplift approval queue. **Publish changes** summarizes the affected pages and items and asks for confirmation. Publishing freezes the current draft into a fixed release candidate; edits made after publishing starts remain in the working draft and do not silently enter that release. A new site assigned later to the same organization goes through its own first-launch gate.
 
 The owner sees durable progress: **Queued → Checking content → Building website → Testing preview → Making live → Live**. A publish failure shows the failed stage, a useful explanation, time, and **Retry publish**. The owner may leave and return without losing the job status. Only one release may be made live for a website at a time. Until all checks pass and the new release is promoted, the last successful public website remains unchanged.
 
@@ -90,6 +90,7 @@ After the structured CMS works reliably, Uplift intends to expand it toward an E
 ## Still unclear
 
 - Which setup milestones and next actions should the owner see before Uplift assigns the first site?
+- What should the Website area show when the organization's package does not include a managed website?
 - How does Uplift perform and record its initial site check and the contractor's launch approval, including a requested revision or withdrawn approval? The existing client onboarding plan already allows a named final approver who may differ from the CRM owner; decide whether that person may approve the website launch too.
 - What should happen to an open editor when ownership changes, a site is unassigned, or the CRM session ends?
 - How will native Astro forms map a site's designed questions into the existing CRM intake contract, including failed or duplicate submissions?
@@ -113,3 +114,4 @@ After the structured CMS works reliably, Uplift intends to expand it toward an E
 - Preview and release patterns: `docs/research/uplift-cms-preview-release-patterns-2026-10-02.md`.
 - CRM-native Website area, launch, and native forms: `docs/research/uplift-crm-website-area-patterns-2026-10-02.md`.
 - Existing onboarding progress and final-approver rules: `docs/client-onboarding-delivery-behavior-contract.md` §§ 2, 5–6.
+- Existing package distinction between managed website service and CRM access: `docs/package-builder-behavior-contract.md` § Product behavior.
