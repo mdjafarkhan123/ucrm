@@ -26,6 +26,14 @@ const SAVE_LIMIT = { windowSeconds: 60, maxAttempts: 20 };
 export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'settings.business.view');
 	if ('response' in check) return check.response;
+	// Field and finance members hold `settings.business.view` for the business profile. Without the
+	// Pipeline itself they have no use for its settings, so this page is refused like the board is.
+	if (!hasPermission(check.access, 'pipeline.view')) {
+		return json(
+			{ error: 'You do not have access to do that.', reason: 'permission_denied' },
+			{ status: 403, headers: NO_STORE_HEADERS }
+		);
+	}
 
 	const [{ data, error }, stagesLookup] = await Promise.all([
 		event.locals.supabase

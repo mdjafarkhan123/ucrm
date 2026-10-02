@@ -122,12 +122,14 @@
 								? undefined
 								: { label: 'Not set', tone: 'inactive' }}
 						/>
-						<SettingsDestinationCard
-							href={resolve('/settings/pipeline')}
-							icon={layoutKanbanIcon}
-							title="Pipeline"
-							description="How the Pipeline board groups the Assessment stages."
-						/>
+						{#if home.permissions.pipeline_view}
+							<SettingsDestinationCard
+								href={resolve('/settings/pipeline')}
+								icon={layoutKanbanIcon}
+								title="Pipeline"
+								description="How the Pipeline board groups the Assessment stages."
+							/>
+						{/if}
 						<SettingsDestinationCard
 							href={resolve('/settings/contact-matching')}
 							icon={usersGroupIcon}

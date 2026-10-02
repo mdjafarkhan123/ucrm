@@ -27,6 +27,7 @@ export type SettingsHome = {
 		quotes_manage: boolean;
 		invoices_manage: boolean;
 		payments_manage: boolean;
+		pipeline_view: boolean;
 		automations_view: boolean;
 	};
 	readiness: {

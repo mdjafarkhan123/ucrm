@@ -11,6 +11,8 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
+	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
+	import type { HttpError } from '$lib/http-error';
 	import PipelineStageList, {
 		type DraftStage
 	} from '$lib/components/settings/PipelineStageList.svelte';
@@ -50,6 +52,9 @@
 		queryKey: settingsPipelineKey,
 		queryFn: fetchSettingsPipeline
 	}));
+
+	// A member without the Pipeline itself is refused its settings too.
+	const forbidden = $derived((query.error as HttpError | null)?.status === 403);
 
 	let detailed = $state<boolean | null>(null);
 	let savedDetailed = $state<boolean | null>(null);
@@ -402,10 +407,15 @@
 
 <svelte:head><title>Pipeline · Settings · Contractor CRM</title></svelte:head>
 
-{#if query.isPending || detailed === null}
-	<LoadingSkeleton variant="card" rows={2} />
+{#if forbidden}
+	<EmptyState
+		title="You do not have access to Pipeline settings"
+		description="Ask an owner or admin to give you pipeline access."
+	/>
 {:else if query.isError}
 	<ErrorState description="Pipeline settings could not be loaded." retry={() => query.refetch()} />
+{:else if query.isPending || detailed === null}
+	<LoadingSkeleton variant="card" rows={2} />
 {:else}
 	{@const canEdit = query.data.permissions.edit}
 	{@const editor = query.data.pipeline.last_editor}
@@ -425,52 +435,56 @@
 
 			{#if detailed !== null}
 				{@const d = detailed}
-				<SectionBlock
-					title="Assessment column"
-					hint="How the board groups the three assessment stages for everyone in this organization."
-					form
-					level={3}
-				>
-					<Toggle
-						id="pipeline-detailed-toggle"
-						label="Show assessment stages as separate columns"
-						description={d
-							? 'The board shows Unscheduled, Scheduled, and Completed as three columns.'
-							: 'The board shows one Assessment column, with each card’s state on the card itself.'}
-						checked={d}
-						disabled={!canEdit}
-						labelSide="start"
-						onchange={(checked) => (detailed = checked)}
-					/>
-				</SectionBlock>
-
-				{#each BOARD_SECTIONS as section (section)}
+				<!-- Locked while a save is on its way: the form is reloaded from what was saved, which would
+				     otherwise wipe anything typed in the meantime. -->
+				<fieldset class="pipeline-settings__fields" disabled={saving}>
 					<SectionBlock
-						title={section === 'request' ? 'Request stages' : 'Quote stages'}
-						hint={section === 'request'
-							? 'The columns a request moves through. Add your own follow-up stages between the built-in ones.'
-							: 'The columns a quote moves through. Add your own follow-up stages between the built-in ones.'}
+						title="Assessment column"
+						hint="How the board groups the three assessment stages for everyone in this organization."
 						form
 						level={3}
 					>
-						<PipelineStageList
-							columns={columns[section]}
-							{canEdit}
-							canAdd={!atLimit}
-							errors={rowErrors}
-							days={builtInDays}
-							daysErrors={attempted ? daysErrors : {}}
-							onBuiltInDays={setBuiltInDays}
-							onStageDays={setStageDays}
-							onAdd={() => addStage(section)}
-							onRename={renameStage}
-							onRequireTask={requireTask}
-							onMove={(index, by) => moveStage(section, index, by)}
-							onRemove={removeStage}
-							onRemoveIntent={warmStageCardCount}
+						<Toggle
+							id="pipeline-detailed-toggle"
+							label="Show assessment stages as separate columns"
+							description={d
+								? 'The board shows Unscheduled, Scheduled, and Completed as three columns.'
+								: 'The board shows one Assessment column, with each card’s state on the card itself.'}
+							checked={d}
+							disabled={!canEdit}
+							labelSide="start"
+							onchange={(checked) => (detailed = checked)}
 						/>
 					</SectionBlock>
-				{/each}
+
+					{#each BOARD_SECTIONS as section (section)}
+						<SectionBlock
+							title={section === 'request' ? 'Request stages' : 'Quote stages'}
+							hint={section === 'request'
+								? 'The columns a request moves through. Add your own follow-up stages between the built-in ones.'
+								: 'The columns a quote moves through. Add your own follow-up stages between the built-in ones.'}
+							form
+							level={3}
+						>
+							<PipelineStageList
+								columns={columns[section]}
+								{canEdit}
+								canAdd={!atLimit}
+								errors={rowErrors}
+								days={builtInDays}
+								daysErrors={attempted ? daysErrors : {}}
+								onBuiltInDays={setBuiltInDays}
+								onStageDays={setStageDays}
+								onAdd={() => addStage(section)}
+								onRename={renameStage}
+								onRequireTask={requireTask}
+								onMove={(index, by) => moveStage(section, index, by)}
+								onRemove={removeStage}
+								onRemoveIntent={warmStageCardCount}
+							/>
+						</SectionBlock>
+					{/each}
+				</fieldset>
 
 				<p class="pipeline-settings__limit">
 					{stages.length} of {CUSTOM_STAGE_LIMIT} custom stages used.
@@ -524,6 +538,11 @@
 			color: var(--color-text--secondary);
 			background: var(--color-surface--background);
 			font-size: var(--typography--fontSize-small);
+		}
+
+		// Only there to lock the form; the sections inside lay out as if it were not.
+		&__fields {
+			display: contents;
 		}
 
 		&__limit {

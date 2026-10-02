@@ -96,6 +96,8 @@ export const GET: RequestHandler = async (event) => {
 				quotes_manage: hasPermission(check.access, 'settings.quotes.manage'),
 				invoices_manage: hasPermission(check.access, 'settings.invoices.manage'),
 				payments_manage: hasPermission(check.access, 'settings.payments.manage'),
+				// The Pipeline card goes with the Pipeline: no board, no settings for it.
+				pipeline_view: hasPermission(check.access, 'pipeline.view'),
 				// Whether Automation would show for this member — plan includes it and they may view it. In 6B
 				// the card is still held back by a journey-ready flag on the client, so this alone never
 				// reveals it; it wires the gate so publishing the feature in 6D turns the card on.

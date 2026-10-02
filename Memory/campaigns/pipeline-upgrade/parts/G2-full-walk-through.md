@@ -15,13 +15,15 @@
 - [x] Sales on desktop: board, Brief edits, Task, call, note, move and Undo, Table, outcomes; Settings →
       Pipeline read-only.
 - [x] Admin on desktop: board, outcomes, and a Settings → Pipeline change saved and put back.
-- [ ] Field and finance see no Pipeline.
+- [x] Field sees no Pipeline. Fixed: Settings showed members without the Pipeline its card and stages.
+- [ ] Finance sees no Pipeline. As owner or admin, confirm Settings → Pipeline boxes lock while Save runs
+      (built, not yet seen in the browser).
 - [ ] Jafar's own tour, including dragging a card with a real mouse (forward works, backward is refused).
 
 ## Next
 
-Chrome sits on the sign-in page with the field email typed. Jafar types each password himself (the assistant
-never does); the assistant signs out and fills the next email: field, finance. Its fake mouse
+Chrome sits on the sign-in page with the finance email typed. Jafar types each password himself (the assistant
+never does); the assistant signs out and fills the next email. Its fake mouse
 drag does not register a drop. For a phone width, `resize_window` narrows Chrome to 524. Screenshots and
 whole tabs often freeze — read the page with `get_page_text` or `javascript_tool`, or open a fresh tab.
 

@@ -390,6 +390,7 @@ describe('the settings home', () => {
 			forms_manage: false,
 			invoices_manage: false,
 			payments_manage: false,
+			pipeline_view: false,
 			reviews_manage: false
 		});
 	});
