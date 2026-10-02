@@ -12,19 +12,22 @@
 - [x] `/jafar` inbox written: topic on rows, topic filter (`?topic=`), topic menu
 - [x] Type check passes (0 errors, 2026-10-02)
 - [x] Both support specs updated; 76 tests pass
-- [ ] Apply migration, regenerate `src/lib/database.types.ts`, browser check both sides
+- [x] Migration `20261003180000` APPLIED to the live database 2026-10-02; types regenerated
+- [x] Browser check, member side: two chats, two topics, topic change + grey line, chat list
+- [ ] Browser check, `/jafar` side: needs Jafar signed in on the `/jafar` login (I do not type passwords) — topic on rows, topic filter, topic menu
 - [ ] Merge branch into `main`, then mark D4a done
 
 ## Next
 
-Main is merged into the branch. Apply the migration (`npx --no-install supabase db push --linked` from the
-worktree), regenerate `src/lib/database.types.ts`, browser check both sides, then merge the branch into `main`.
+Main is merged into the branch; dev server for it runs on port 5174 (`npx vite dev --port 5174` in the
+worktree). Check `/jafar/support` there once Jafar is signed in, then merge the branch into `main`. The two
+`D4a check:` chats in Raad's data are test messages.
 
 ## Outside actions
 
-- Apply the migration from the worktree, only right before merging — the old code on `main` cannot start a
-  new chat once it is applied. Check: `npx --no-install supabase migration list --linked` shows
-  `20261003180000` — pending until pushed.
+- Migration applied 2026-10-02 (check: `npx --no-install supabase migration list --linked` shows
+  `20261003180000` on the remote side). The old code on `main` cannot start a new chat until the branch is
+  merged, so merge soon.
 
 ## Notes
 
