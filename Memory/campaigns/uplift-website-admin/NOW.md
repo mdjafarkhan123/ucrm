@@ -9,4 +9,4 @@
 
 **Next part:** Part 3B — settle the first-site launch check and recorded contractor approval, then Part 5 forms and Astro connection
 
-**Blockers:** Part 4 waits for Jafar's setup/access choices and integration into `main`. Part 3B waits for the launch-approver choice.
+**Blockers:** Part 4 waits for the setup/access choices and integration into `main`; the Part 3B launch-approver choice is settled.
