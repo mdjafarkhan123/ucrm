@@ -453,6 +453,7 @@
 						{#if !phone.current}
 							<SegmentedControl
 								name="pipeline-view"
+								ariaLabel="Pipeline view"
 								value={view}
 								options={[
 									{ value: 'board', label: 'Board' },

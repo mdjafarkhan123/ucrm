@@ -15,6 +15,7 @@
 		value = $bindable(''),
 		options,
 		label = '',
+		ariaLabel,
 		name,
 		size = 'base',
 		fullWidth = false,
@@ -25,6 +26,8 @@
 		options: Option[];
 		/** Small uppercase caption above the control. */
 		label?: string;
+		/** Spoken name for the group when there is no visible caption. */
+		ariaLabel?: string;
 		name?: string;
 		size?: 'small' | 'base';
 		fullWidth?: boolean;
@@ -85,6 +88,7 @@
 		class:segmented__track--disabled={disabled}
 		role="radiogroup"
 		aria-labelledby={labelId}
+		aria-label={labelId ? undefined : ariaLabel}
 	>
 		{#if thumb.visible}
 			<span

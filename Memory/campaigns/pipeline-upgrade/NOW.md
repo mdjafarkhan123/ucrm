@@ -8,9 +8,10 @@ first paying client.
 **In progress:** Stages A–F finished by 2026-10-02. G1 (speed at volume) finished 2026-10-02: numbers in
 `docs/sales-pipeline-performance-verification.md`.
 
-**Next part:** G2, full walk-through — every plan rule checked with each role login on desktop and phone, then
-Jafar's own browser tour. Its line and the open notes carried from stages A–G1 are in
+**Next part:** G2, full walk-through — paused part-way; its note is `parts/G2-full-walk-through.md`. The
+owner's desktop checks and the missing database tests are done. Open notes carried from stages A–G1 are in
 `stages/G-final-proof.md`. Stage E's file stays until its carried notes (move history screen, bulk Task
 alert) are homed.
 
-**Blockers:** None.
+**Blockers:** Waits for Jafar — sign in each other role, narrow the Chrome window for the phone checks,
+answer the two questions in the part note, then his own tour.

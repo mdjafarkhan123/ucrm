@@ -6,19 +6,14 @@ Approved by Jafar 2026-10-01. Checks the whole plan
 | Part | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- |
 | G1 Speed at volume | The board, search, table, and reports measured with a large fake organization, and anything slow fixed (`performance-review` verification branch) | A–F | The measured numbers are written down with the volume they were taken at, and no capacity claim goes beyond them | Done 2026-10-02 — `docs/sales-pipeline-performance-verification.md` |
-| G2 Full walk-through | Every plan rule checked with each role login on desktop and phone, then Jafar's own browser tour | G1 | Every rule in the plan is ticked or has a fix; Jafar finishes the tour with no open problem | Not started |
+| G2 Full walk-through | Every plan rule checked with each role login on desktop and phone, then Jafar's own browser tour | G1 | Every rule in the plan is ticked or has a fix; Jafar finishes the tour with no open problem | Paused — waits for Jafar: role sign-ins, phone-width window, his tour (`parts/G2-full-walk-through.md`) |
 
 Carried from stage A (design in `docs/adr/0004-pipeline-custom-stages-anchor-to-protected-stages.md`):
 
-- The database rules for moving cards among custom stages (A2), switching a stage off (A3), and on-hold
-  stages (A4) were proven on the live database in rolled-back runs only. G1 or G2 should add pgTAP files
-  for them, and run the pgTAP edit in `pipeline_unified_board_and_presentation_setting.sql` on a fresh
-  rebuild — it has never been run there.
+- The custom-stage, on-hold, switch-off, Request-to-Job Won, Direct job, and `next_task_due_on` rules now
+  have pgTAP files (G2, 2026-10-02), and every Pipeline pgTAP file passes on the local Docker database.
 - Found in B2, for G2: the value, owner, Task, and Note commands do not refuse a closed record when called
   directly with its id (no screen offers it). A frozen Won, Lost, or Direct job value should not be editable.
-- B1 and B2's database rules (Request-to-Job Won, Direct job) were proven on the live database and in the
-  browser only; they need pgTAP files too.
-- From C1: the `next_task_due_on` trigger needs a pgTAP file.
 - Raad LTD's test data: one enabled custom stage, "Waiting on customer" (Quotes, after Awaiting response),
   switched to on hold and holding one card with a Task due 2026-10-15; two switched-off stages remain from
   A3's check.
