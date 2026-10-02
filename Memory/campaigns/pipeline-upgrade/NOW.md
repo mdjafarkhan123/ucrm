@@ -13,5 +13,5 @@ owner's desktop and phone checks and the missing database tests are done. Open n
 `stages/G-final-proof.md`. Stage E's file stays until its carried notes (move history screen, bulk Task
 alert) are homed.
 
-**Blockers:** Waits for Jafar's own tour. His two questions are answered and built (2026-10-02); two
-browser checks in the part note need Chrome's Claude extension connected.
+**Blockers:** Waits only for Jafar's own tour. Every other G2 check is done, including the two browser
+checks (2026-10-02).

@@ -19,15 +19,16 @@
 - [x] Finance sees no Pipeline, in the sidebar, by address, or in Settings.
 - [x] Jafar's answers built (2026-10-02): a Won card finishes its open Tasks and a reopened win brings
       them back; the Schedule's Task card has a tick box; the Conversion counting rules are in the plan.
-- [ ] In the browser, as owner or admin: Settings → Pipeline boxes lock while Save runs, and a Task ticks
-      off from the Schedule (both built and tested, neither yet seen in the real app).
+- [x] Seen in the browser as owner (2026-10-02): Settings → Pipeline boxes lock while Save runs and refuse
+      typing; a Task ticks off from the Schedule, stays done after a refresh, and reopens. Both put back.
 - [ ] Jafar's own tour, including dragging a card with a real mouse (forward works, backward is refused).
 
 ## Next
 
-Nothing waits on an answer. The two browser checks above need Chrome's Claude extension, which was not
-connected on 2026-10-02; then Jafar's tour. Jafar types each password himself (the assistant never does).
-Its fake mouse drag does not register a drop. For a phone width, `resize_window` narrows Chrome to 524.
+Only Jafar's tour is left; fix whatever he reports, then close the part and the campaign. For any browser
+check, Jafar types each password himself (the assistant never does), and the extension lives in Brave.
+Its fake mouse drag does not register a drop. After a page reload, click by element ref, not by old
+screenshot coordinates. For a phone width, `resize_window` narrows Chrome to 524.
 Screenshots and whole tabs often freeze — read the page with `get_page_text` or `javascript_tool`, or open
 a fresh tab.
 
