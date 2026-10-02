@@ -207,13 +207,26 @@ export const pipelineNoteEntityTypeSchema = z.enum(['request', 'client']);
 
 // Which of the card's two targets a new Note goes on, and its text. Editing sends only the body -- the
 // target is fixed at creation, the same way the generic Notes surface treats it.
+// A Note's photos and files, in order, and the teammates it mentions. Each is the whole list; on an edit,
+// leaving one out keeps what the Note already has. Which files and people are allowed only the database knows.
+const pipelineNoteFileIdsSchema = z
+	.array(z.uuid())
+	.max(10, 'A note can hold up to 10 photos and files.');
+const pipelineNoteMentionIdsSchema = z
+	.array(z.uuid())
+	.max(10, 'A note can mention up to 10 teammates.');
+
 export const pipelineNoteCreateSchema = z.object({
 	entity_type: pipelineNoteEntityTypeSchema,
-	body: z.string().trim().min(1, 'Write a note before saving.').max(4000)
+	body: z.string().trim().min(1, 'Write a note before saving.').max(4000),
+	file_ids: pipelineNoteFileIdsSchema.default([]),
+	mention_user_ids: pipelineNoteMentionIdsSchema.default([])
 });
 
 export const pipelineNoteUpdateSchema = z.object({
-	body: z.string().trim().min(1, 'Write a note before saving.').max(4000)
+	body: z.string().trim().min(1, 'Write a note before saving.').max(4000),
+	file_ids: pipelineNoteFileIdsSchema.optional(),
+	mention_user_ids: pipelineNoteMentionIdsSchema.optional()
 });
 
 // A lost reason is a key from the organization's own list (Settings -> Pipeline). Which keys that list

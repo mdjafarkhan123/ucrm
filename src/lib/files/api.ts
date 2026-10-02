@@ -251,7 +251,7 @@ export type FileUploadTarget = {
 	originId?: string | null;
 	folderId?: string | null;
 	/** The file_links role the upload will be linked to its record with. Defaults to a plain 'attachment'. */
-	originRole?: 'attachment' | 'line_photo' | 'logo' | 'campaign_image' | 'item_photo';
+	originRole?: 'attachment' | 'line_photo' | 'logo' | 'campaign_image' | 'item_photo' | 'note_file';
 };
 
 export type StartedUpload = { file: { id: string }; upload_url: string };

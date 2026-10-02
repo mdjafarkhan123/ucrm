@@ -141,7 +141,9 @@ describe('opportunity note create', () => {
 		expect(rpc).toHaveBeenCalledWith('pipeline_create_opportunity_note', {
 			target_opportunity_id: opportunityId,
 			target_entity_type: 'client',
-			new_body: 'Client-targeted note'
+			new_body: 'Client-targeted note',
+			new_file_ids: [],
+			new_mention_user_ids: []
 		});
 		expect(response.status).toBe(201);
 		const created = (await response.json()).note;

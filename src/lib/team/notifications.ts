@@ -18,7 +18,8 @@ export type TeamNotificationKind =
 	| 'review.private_feedback'
 	| 'quote.delivery_failed'
 	| 'quote.customer_declined'
-	| 'pipeline.task_assigned';
+	| 'pipeline.task_assigned'
+	| 'pipeline.note_mention';
 
 export type TeamNotification = {
 	id: string;

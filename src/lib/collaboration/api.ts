@@ -32,7 +32,24 @@ function entityQuery(entityType: EntityType, entityId: string) {
 
 // --- Notes -----------------------------------------------------------------------------------------------
 
-export type Note = Tables<'notes'> & { links: Tables<'note_links'>[] };
+export type Note = Tables<'notes'> & {
+	links: Tables<'note_links'>[];
+	/** Photos and files the Note carries, in order (Pipeline E3). */
+	files: NoteFile[];
+	/** Teammates the Note mentions; its text keeps the plain "@Name". */
+	mention_user_ids: string[];
+};
+
+/** A photo or file on a Note. A pending one is still being checked and cannot be opened yet. */
+export type NoteFile = {
+	id: string;
+	display_name: string;
+	mime_type: string;
+	kind: string;
+	size_bytes: number;
+	has_thumbnail: boolean;
+	processing_state: string;
+};
 
 /**
  * One staged note change. A detail page collects these while the office works and writes them only when its

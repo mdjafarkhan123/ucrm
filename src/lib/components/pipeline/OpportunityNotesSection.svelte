@@ -114,7 +114,7 @@
 
 	const updateMutationState = createMutation(() => ({
 		mutationFn: (note: PipelineNote) =>
-			updateOpportunityNote(opportunityId, note.id, editBody.trim()),
+			updateOpportunityNote(opportunityId, note.id, { body: editBody.trim() }),
 		onSuccess: () => {
 			invalidateNotes();
 			editingId = null;

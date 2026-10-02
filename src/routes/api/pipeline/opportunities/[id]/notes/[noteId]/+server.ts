@@ -34,7 +34,10 @@ export const PATCH: RequestHandler = async (event) => {
 	const { data, error } = await event.locals.supabase.rpc('pipeline_update_opportunity_note', {
 		target_note_id: event.params.noteId,
 		target_opportunity_id: event.params.id,
-		new_body: parsed.data.body
+		new_body: parsed.data.body,
+		// Left out means "keep what the Note has"; the generated client omits an `undefined` argument.
+		new_file_ids: parsed.data.file_ids,
+		new_mention_user_ids: parsed.data.mention_user_ids
 	});
 
 	if (error) return pipelineNoteWriteError(error);

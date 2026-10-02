@@ -8873,6 +8873,55 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			note_files: {
+				Row: {
+					created_at: string;
+					created_by: string | null;
+					file_id: string;
+					note_id: string;
+					organization_id: string;
+					position: number;
+				};
+				Insert: {
+					created_at?: string;
+					created_by?: string | null;
+					file_id: string;
+					note_id: string;
+					organization_id: string;
+					position: number;
+				};
+				Update: {
+					created_at?: string;
+					created_by?: string | null;
+					file_id?: string;
+					note_id?: string;
+					organization_id?: string;
+					position?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'note_files_file_fk';
+						columns: ['organization_id', 'file_id'];
+						isOneToOne: false;
+						referencedRelation: 'files';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'note_files_note_fk';
+						columns: ['organization_id', 'note_id'];
+						isOneToOne: false;
+						referencedRelation: 'notes';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'note_files_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			note_links: {
 				Row: {
 					created_at: string;
@@ -8908,6 +8957,42 @@ export type Database = {
 					},
 					{
 						foreignKeyName: 'note_links_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			note_mentions: {
+				Row: {
+					created_at: string;
+					note_id: string;
+					organization_id: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					note_id: string;
+					organization_id: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					note_id?: string;
+					organization_id?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'note_mentions_note_fk';
+						columns: ['organization_id', 'note_id'];
+						isOneToOne: false;
+						referencedRelation: 'notes';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'note_mentions_organization_id_fkey';
 						columns: ['organization_id'];
 						isOneToOne: false;
 						referencedRelation: 'organizations';
@@ -22288,6 +22373,8 @@ export type Database = {
 			pipeline_create_opportunity_note: {
 				Args: {
 					new_body: string;
+					new_file_ids?: string[];
+					new_mention_user_ids?: string[];
 					target_entity_type: string;
 					target_opportunity_id: string;
 				};
@@ -22299,7 +22386,9 @@ export type Database = {
 					edited_by: string;
 					entity_id: string;
 					entity_type: string;
+					files: Json;
 					id: string;
+					mention_user_ids: string[];
 					pinned: boolean;
 					updated_at: string;
 				}[];
@@ -22370,6 +22459,65 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			pipeline_mentionable_teammates: {
+				Args: { target_organization_id: string };
+				Returns: {
+					avatar_url: string;
+					full_name: string;
+					user_id: string;
+				}[];
+			};
+			pipeline_opportunity_card: {
+				Args: { target_opportunity_id: string };
+				Returns: {
+					assessment_ends_at: string;
+					assessment_starts_at: string;
+					client_company_name: string;
+					client_display_name: string;
+					client_id: string;
+					client_lead_source: string;
+					created_at: string;
+					custom_stage_id: string;
+					estimated_value: number;
+					expected_close_on: string;
+					id: string;
+					next_task_due_on: string;
+					outcome: string;
+					owner_avatar_url: string;
+					owner_full_name: string;
+					owner_user_id: string;
+					progress_at: string;
+					property_address_line1: string;
+					property_city: string;
+					property_id: string;
+					property_label: string;
+					property_postal_code: string;
+					property_state_region: string;
+					quote_delivery_failed_at: string;
+					quote_delivery_failed_email: string;
+					quote_delivery_failure: string;
+					quote_id: string;
+					quote_status: string;
+					request_id: string;
+					request_status: string;
+					stage: string;
+					stage_entered_at: string;
+					task_due_on: string;
+					task_id: string;
+					task_title: string;
+					title: string;
+				}[];
+			};
+			pipeline_opportunity_note_file: {
+				Args: { target_file_id: string; target_opportunity_id: string };
+				Returns: {
+					display_name: string;
+					mime_type: string;
+					object_key: string;
+					processing_state: string;
+					thumbnail_object_key: string;
+				}[];
+			};
 			pipeline_opportunity_notes: {
 				Args: { target_opportunity_id: string };
 				Returns: {
@@ -22380,7 +22528,9 @@ export type Database = {
 					edited_by: string;
 					entity_id: string;
 					entity_type: string;
+					files: Json;
 					id: string;
+					mention_user_ids: string[];
 					pinned: boolean;
 					updated_at: string;
 				}[];
@@ -22530,6 +22680,8 @@ export type Database = {
 			pipeline_update_opportunity_note: {
 				Args: {
 					new_body: string;
+					new_file_ids?: string[];
+					new_mention_user_ids?: string[];
 					target_note_id: string;
 					target_opportunity_id: string;
 				};
@@ -22541,7 +22693,9 @@ export type Database = {
 					edited_by: string;
 					entity_id: string;
 					entity_type: string;
+					files: Json;
 					id: string;
+					mention_user_ids: string[];
 					pinned: boolean;
 					updated_at: string;
 				}[];

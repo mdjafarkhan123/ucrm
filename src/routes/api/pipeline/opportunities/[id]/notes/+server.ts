@@ -45,7 +45,9 @@ export const POST: RequestHandler = async (event) => {
 	const { data, error } = await event.locals.supabase.rpc('pipeline_create_opportunity_note', {
 		target_opportunity_id: event.params.id,
 		target_entity_type: parsed.data.entity_type,
-		new_body: parsed.data.body
+		new_body: parsed.data.body,
+		new_file_ids: parsed.data.file_ids,
+		new_mention_user_ids: parsed.data.mention_user_ids
 	});
 
 	if (error) return pipelineNoteWriteError(error);

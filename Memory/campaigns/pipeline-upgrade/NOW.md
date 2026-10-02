@@ -7,6 +7,6 @@ first paying client.
 
 **In progress:** Stages A, B, and C finished 2026-10-01; stage D, its three fixes, E1, and E2 finished 2026-10-02.
 
-**Next part:** E3 Notes with photos and mentions — `stages/E-brief.md`.
+**Next part:** E3 Notes with photos and mentions (paused mid-part) — `parts/E3.md`.
 
 **Blockers:** None.

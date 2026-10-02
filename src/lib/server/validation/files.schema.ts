@@ -27,7 +27,8 @@ export const fileOriginRoleSchema = z.enum([
 	'line_photo',
 	'logo',
 	'campaign_image',
-	'item_photo'
+	'item_photo',
+	'note_file'
 ]);
 
 // Shape only. Whether this file type is actually allowed is `checkUploadClaim`'s answer, so the allowlist

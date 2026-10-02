@@ -1,3 +1,4 @@
+import type { NoteFile } from '$lib/collaboration/api';
 import type { QueryClient } from '@tanstack/svelte-query';
 import type { CustomerDeclineReason } from '$lib/quotes/customer-decline';
 import type { BoardColumnKey, CustomStage, OpportunityOutcome, OpportunityStage } from './stages';
@@ -530,7 +531,39 @@ export type PipelineNote = {
 	updated_at: string;
 	entity_type: 'request' | 'client';
 	entity_id: string;
+	/** Photos and files on the Note, in order. A pending one is still being checked. */
+	files: NoteFile[];
+	/** Teammates the Note mentions; its text keeps the plain "@Name". */
+	mention_user_ids: string[];
 };
+
+/** Where the Brief shows a Note's photo, or hands over its file: through the card, under pipeline.view. */
+export function opportunityNoteFileUrl(
+	opportunityId: string,
+	fileId: string,
+	mode: 'thumb' | 'full' | 'download'
+) {
+	const base = `/api/pipeline/opportunities/${opportunityId}/notes/files/${fileId}`;
+	if (mode === 'thumb') return `${base}?size=thumb`;
+	if (mode === 'download') return `${base}?download=1`;
+	return base;
+}
+
+// Teammates who can be @mentioned in a Brief Note: active, and able to see the Pipeline.
+export type MentionableTeammate = {
+	id: string;
+	full_name: string | null;
+	avatar_url: string | null;
+};
+
+export const mentionableTeammatesKey = ['pipeline', 'teammates'] as const;
+
+export async function fetchMentionableTeammates(): Promise<MentionableTeammate[]> {
+	const response = await fetch('/api/pipeline/teammates');
+	if (!response.ok) throw await readError(response, 'Your team could not be loaded.');
+	const { members } = (await response.json()) as { members: MentionableTeammate[] };
+	return members;
+}
 
 // Its own key, not nested under a Task-style opportunity family entry: a Note never changes a card's
 // stage, money, owner, or open Task, so nothing here ever needs `invalidatePipeline`.
@@ -562,12 +595,22 @@ export async function fetchOpportunityNotes(opportunityId: string): Promise<Pipe
 
 export function createOpportunityNote(
 	opportunityId: string,
-	input: { entityType: 'request' | 'client'; body: string }
+	input: {
+		entityType: 'request' | 'client';
+		body: string;
+		fileIds?: string[];
+		mentionUserIds?: string[];
+	}
 ): Promise<PipelineNote> {
 	return fetch(`/api/pipeline/opportunities/${opportunityId}/notes`, {
 		method: 'POST',
 		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify({ entity_type: input.entityType, body: input.body })
+		body: JSON.stringify({
+			entity_type: input.entityType,
+			body: input.body,
+			file_ids: input.fileIds ?? [],
+			mention_user_ids: input.mentionUserIds ?? []
+		})
 	}).then((response) =>
 		noteWriteResult<{ note: PipelineNote }>(response, 'That note could not be created.').then(
 			(result) => result.note
@@ -578,12 +621,16 @@ export function createOpportunityNote(
 export function updateOpportunityNote(
 	opportunityId: string,
 	noteId: string,
-	body: string
+	input: { body: string; fileIds?: string[]; mentionUserIds?: string[] }
 ): Promise<PipelineNote> {
 	return fetch(`/api/pipeline/opportunities/${opportunityId}/notes/${noteId}`, {
 		method: 'PATCH',
 		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify({ body })
+		body: JSON.stringify({
+			body: input.body,
+			file_ids: input.fileIds,
+			mention_user_ids: input.mentionUserIds
+		})
 	}).then((response) =>
 		noteWriteResult<{ note: PipelineNote }>(response, 'That note could not be saved.').then(
 			(result) => result.note

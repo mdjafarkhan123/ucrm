@@ -31,9 +31,21 @@ export const POST: RequestHandler = async (event) => {
 	// A record-scoped upload is the record's own edit, not the library's -- the same principle
 	// /api/files/links already applies to attaching an existing File. files.manage still opens every origin,
 	// including the library itself, which has no record to check against.
-	const libraryAccess = await requireOrganizationPermission(event, 'files.manage');
+	//
+	// A Note's file from the Pipeline Brief is the Brief's own edit, so it follows pipeline.edit -- someone may
+	// write Brief Notes without editing clients. It can only ever land on a Note of that card (the database
+	// checks the card's Request or Client when the Note is saved), never straight onto the record.
+	const isBriefNoteFile =
+		parsed.data.origin_role === 'note_file' &&
+		(parsed.data.origin_type === 'request' || parsed.data.origin_type === 'client');
+	if (parsed.data.origin_role === 'note_file' && !isBriefNoteFile) {
+		return validationError({ origin_type: 'A note file belongs to a Request or a Client.' });
+	}
+	const libraryAccess = isBriefNoteFile
+		? await requireOrganizationPermission(event, 'pipeline.edit')
+		: await requireOrganizationPermission(event, 'files.manage');
 	const access =
-		'auth' in libraryAccess || parsed.data.origin_type === 'file_manager'
+		'auth' in libraryAccess || parsed.data.origin_type === 'file_manager' || isBriefNoteFile
 			? libraryAccess
 			: await requireLinkedEntityAccess(
 					event,

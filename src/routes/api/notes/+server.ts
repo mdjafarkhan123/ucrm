@@ -9,6 +9,7 @@ import { databaseError, validationError } from '$lib/server/api/errors';
 import { noteCreateSchema } from '$lib/server/validation/collaboration.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import type { Tables } from '$lib/database.types';
+import type { NoteFile } from '$lib/collaboration/api';
 
 export const POST: RequestHandler = async (event) => {
 	let body: unknown;
@@ -73,7 +74,10 @@ export const POST: RequestHandler = async (event) => {
 		created_at: link_created_at
 	};
 
-	return json({ note: { ...note, links: [link] } }, { status: 201 });
+	return json(
+		{ note: { ...note, links: [link], files: [], mention_user_ids: [] } },
+		{ status: 201 }
+	);
 };
 
 export const GET: RequestHandler = async (event) => {
@@ -93,17 +97,63 @@ export const GET: RequestHandler = async (event) => {
 	const noteIds = [...new Set((links ?? []).map((link) => link.note_id))];
 	if (noteIds.length === 0) return json({ notes: [] });
 
-	const [{ data: notes, error: notesError }, { data: allLinks, error: allLinksError }] =
-		await Promise.all([
-			event.locals.supabase
-				.from('notes')
-				.select('*')
-				.in('id', noteIds)
-				.order('pinned', { ascending: false })
-				.order('created_at', { ascending: false }),
-			event.locals.supabase.from('note_links').select('*').in('note_id', noteIds)
+	const [
+		{ data: notes, error: notesError },
+		{ data: allLinks, error: allLinksError },
+		{ data: held, error: heldError },
+		{ data: mentions, error: mentionsError }
+	] = await Promise.all([
+		event.locals.supabase
+			.from('notes')
+			.select('*')
+			.in('id', noteIds)
+			.order('pinned', { ascending: false })
+			.order('created_at', { ascending: false }),
+		event.locals.supabase.from('note_links').select('*').in('note_id', noteIds),
+		event.locals.supabase
+			.from('note_files')
+			.select('note_id, file_id, position')
+			.in('note_id', noteIds)
+			.order('position'),
+		event.locals.supabase.from('note_mentions').select('note_id, user_id').in('note_id', noteIds)
+	]);
+	if (notesError || allLinksError || heldError || mentionsError) return databaseError();
+
+	// A Note's photos and files (Pipeline E3). The files policy only returns what this reader may see -- a
+	// checked File on a record they can open, or their own upload still being checked -- so anything else
+	// simply does not appear.
+	const heldFileIds = [...new Set((held ?? []).map((entry) => entry.file_id))];
+	const { data: heldFiles, error: heldFilesError } = heldFileIds.length
+		? await event.locals.supabase
+				.from('files')
+				.select(
+					'id, display_name, mime_type, kind, size_bytes, thumbnail_object_key, processing_state'
+				)
+				.in('id', heldFileIds)
+				.is('trashed_at', null)
+				.in('processing_state', ['pending', 'available'])
+		: { data: [], error: null };
+	if (heldFilesError) return databaseError();
+
+	const fileById = new Map(
+		(heldFiles ?? []).map(({ thumbnail_object_key, ...file }) => [
+			file.id,
+			{ ...file, has_thumbnail: thumbnail_object_key !== null }
+		])
+	);
+	const filesByNote = new Map<string, NoteFile[]>();
+	for (const entry of held ?? []) {
+		const file = fileById.get(entry.file_id);
+		if (!file) continue;
+		filesByNote.set(entry.note_id, [...(filesByNote.get(entry.note_id) ?? []), file as NoteFile]);
+	}
+	const mentionsByNote = new Map<string, string[]>();
+	for (const mention of mentions ?? []) {
+		mentionsByNote.set(mention.note_id, [
+			...(mentionsByNote.get(mention.note_id) ?? []),
+			mention.user_id
 		]);
-	if (notesError || allLinksError) return databaseError();
+	}
 
 	const linksByNote = new Map<string, Tables<'note_links'>[]>();
 	for (const link of allLinks ?? []) {
@@ -113,6 +163,11 @@ export const GET: RequestHandler = async (event) => {
 	}
 
 	return json({
-		notes: (notes ?? []).map((note) => ({ ...note, links: linksByNote.get(note.id) ?? [] }))
+		notes: (notes ?? []).map((note) => ({
+			...note,
+			links: linksByNote.get(note.id) ?? [],
+			files: filesByNote.get(note.id) ?? [],
+			mention_user_ids: mentionsByNote.get(note.id) ?? []
+		}))
 	});
 };
