@@ -245,7 +245,8 @@ describe('POST /api/support/messages', () => {
 			target_organization_id: 'org-1',
 			target_thread_id: THREAD_ID,
 			message_body: 'Hello',
-			message_client_id: CLIENT_MESSAGE_ID
+			message_client_id: CLIENT_MESSAGE_ID,
+			message_attachments: []
 		});
 		expect(mockedRateLimit).toHaveBeenCalledWith(
 			client,
@@ -332,7 +333,8 @@ describe('POST /api/support/threads', () => {
 			target_organization_id: 'org-1',
 			thread_topic: 'other',
 			message_body: 'Hello',
-			message_client_id: CLIENT_MESSAGE_ID
+			message_client_id: CLIENT_MESSAGE_ID,
+			message_attachments: []
 		});
 		expect(mockedRateLimit).toHaveBeenCalledWith(
 			client,

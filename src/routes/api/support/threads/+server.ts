@@ -7,6 +7,7 @@ import {
 	validationError
 } from '$lib/server/api/errors';
 import { requireSupportMember, supportSendLimited } from '$lib/server/support/access';
+import { readMemberAttachments } from '$lib/server/support/attachments';
 import { readChats } from '$lib/server/support/team';
 import { supportStartThreadSchema } from '$lib/server/validation/support.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
@@ -52,11 +53,15 @@ export const POST: RequestHandler = async (event) => {
 	const parsed = supportStartThreadSchema.safeParse(body);
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
+	const files = await readMemberAttachments(check.auth.organization.id, parsed.data.attachments);
+	if ('response' in files) return files.response;
+
 	const { data, error } = await event.locals.supabase.rpc('start_support_thread', {
 		target_organization_id: check.auth.organization.id,
 		thread_topic: parsed.data.topic,
 		message_body: parsed.data.body,
-		message_client_id: parsed.data.client_message_id
+		message_client_id: parsed.data.client_message_id,
+		message_attachments: files.attachments
 	});
 	if (error) {
 		if (error.code === '42501')

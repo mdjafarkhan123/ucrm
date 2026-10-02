@@ -29,14 +29,67 @@ export function supportTopicLabel(topic: SupportTopic): string {
 	return SUPPORT_TOPICS.find((item) => item.value === topic)?.label ?? 'Other';
 }
 
+// Files in a chat (D4b): up to 5 files and 20 MB per message, from either side. Photos show in the chat;
+// every other file downloads. Program files are refused, by the same list the customer inbox uses.
+export const SUPPORT_MAX_ATTACHMENTS = 5;
+export const SUPPORT_ATTACHMENT_TOTAL_BYTES = 20 * 1024 * 1024;
+
+// The picture formats every browser can draw. Anything else — an iPhone HEIC, an SVG — is a file to
+// download, never something shown from our own address.
+const SUPPORT_PHOTO_MIME_TYPES = new Set([
+	'image/jpeg',
+	'image/png',
+	'image/gif',
+	'image/webp',
+	'image/avif'
+]);
+
+export function isSupportPhoto(mimeType: string): boolean {
+	return SUPPORT_PHOTO_MIME_TYPES.has(mimeType.toLowerCase());
+}
+
+/** A file stored with a message. */
+export type SupportAttachment = {
+	id: string;
+	file_name: string;
+	mime_type: string;
+	byte_size: number;
+	/** The browser made a small copy of the photo when it was attached. */
+	has_thumbnail: boolean;
+};
+
+/** A file already uploaded to storage, named by the message that will carry it. */
+export type SupportAttachmentUpload = {
+	object_key: string;
+	file_name: string;
+	mime_type: string;
+	has_thumbnail?: boolean;
+};
+
+export type SupportUploadTicket = {
+	upload_url: string;
+	object_key: string;
+	/** Where a photo's small copy goes. Null for a file that is not a photo. */
+	thumbnail_upload_url: string | null;
+};
+
+/** What a chat box hands over to be sent: words, files, or both. */
+export type SupportOutgoingMessage = {
+	body: string;
+	client_message_id: string;
+	attachments: SupportAttachmentUpload[];
+};
+
 export type SupportMessage = {
 	id: string;
 	sender_kind: SupportSenderKind;
 	/** The team member who wrote it. Null for Uplift, system lines, and a member whose account is gone. */
 	sender_user_id: string | null;
 	sender_name: string;
+	/** Empty when the message is files alone. */
 	body: string;
 	created_at: string;
+	attachments: SupportAttachment[];
 };
 
 export type SupportThread = {
@@ -182,12 +235,50 @@ async function failure(response: Response, fallback: string) {
 	return httpError(response, fieldMessage ?? body?.error ?? fallback);
 }
 
+type UploadClaim = { fileName: string; mimeType: string; sizeBytes: number };
+
+async function requestUploadTicket(url: string, file: UploadClaim): Promise<SupportUploadTicket> {
+	const response = await fetch(url, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			file_name: file.fileName,
+			mime_type: file.mimeType,
+			size_bytes: file.sizeBytes
+		})
+	});
+	if (!response.ok) throw await failure(response, 'That file could not be uploaded.');
+	return response.json();
+}
+
+/** Asks for somewhere to upload a file the member is about to send. */
+export const presignSupportAttachment = (file: UploadClaim) =>
+	requestUploadTicket('/api/support/attachments/presign-upload', file);
+
+/** Where a chat's files are read from: a member's own routes, or Jafar's. */
+export type SupportFileUrls = {
+	/** A photo, shown on the page. `thumb` is the small copy when one exists. */
+	view: (attachment: SupportAttachment, size: 'thumb' | 'full') => string;
+	download: (attachment: SupportAttachment) => string;
+};
+
+function fileUrls(base: string): SupportFileUrls {
+	return {
+		view: (attachment, size) =>
+			size === 'thumb' && attachment.has_thumbnail
+				? `${base}/${attachment.id}?size=thumb`
+				: `${base}/${attachment.id}`,
+		download: (attachment) => `${base}/${attachment.id}?download=1`
+	};
+}
+
+export const supportFileUrls = fileUrls('/api/support/attachments');
+export const jafarSupportFileUrls = fileUrls('/api/jafar/support/attachments');
+
 /** Starts a new chat with its first message. The same message id on a retry returns the same chat. */
-export async function startSupportThread(input: {
-	topic: SupportTopic;
-	body: string;
-	client_message_id: string;
-}): Promise<SupportMessage & { thread_id: string }> {
+export async function startSupportThread(
+	input: SupportOutgoingMessage & { topic: SupportTopic }
+): Promise<SupportMessage & { thread_id: string }> {
 	const response = await fetch('/api/support/threads', {
 		method: 'POST',
 		headers: { 'content-type': 'application/json' },
@@ -210,11 +301,9 @@ async function changeTopic(url: string, topic: SupportTopic): Promise<void> {
 export const changeSupportTopic = (threadId: string, topic: SupportTopic) =>
 	changeTopic(`/api/support/threads/${threadId}`, topic);
 
-export async function sendSupportMessage(input: {
-	body: string;
-	client_message_id: string;
-	thread_id: string;
-}): Promise<SupportMessage> {
+export async function sendSupportMessage(
+	input: SupportOutgoingMessage & { thread_id: string }
+): Promise<SupportMessage> {
 	const response = await fetch('/api/support/messages', {
 		method: 'POST',
 		headers: { 'content-type': 'application/json' },
@@ -305,9 +394,13 @@ export async function fetchSupportOwnerTopic(): Promise<string> {
 	return (await response.json()).topic;
 }
 
+/** Asks for somewhere to upload a file Uplift is about to send into this chat. */
+export const presignSupportReplyAttachment = (threadId: string, file: UploadClaim) =>
+	requestUploadTicket(`/api/jafar/support/threads/${threadId}/attachments/presign-upload`, file);
+
 export async function replyToSupportThread(
 	threadId: string,
-	input: { body: string; client_message_id: string }
+	input: SupportOutgoingMessage
 ): Promise<SupportMessage> {
 	const response = await fetch(`/api/jafar/support/threads/${threadId}/messages`, {
 		method: 'POST',

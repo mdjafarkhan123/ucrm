@@ -185,7 +185,8 @@ describe('Support Inbox API boundary', () => {
 			target_thread_id: THREAD_ID,
 			actor_email: 'owner@example.com',
 			message_body: 'On it.',
-			message_client_id: CLIENT_MESSAGE_ID
+			message_client_id: CLIENT_MESSAGE_ID,
+			message_attachments: []
 		});
 	});
 

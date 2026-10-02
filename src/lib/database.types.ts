@@ -9332,6 +9332,7 @@ export type Database = {
 					from_stage: string | null;
 					from_stage_entered_at: string | null;
 					id: string;
+					is_undo: boolean;
 					occurred_at: string;
 					opportunity_id: string;
 					organization_id: string;
@@ -9345,6 +9346,7 @@ export type Database = {
 					from_stage?: string | null;
 					from_stage_entered_at?: string | null;
 					id?: string;
+					is_undo?: boolean;
 					occurred_at?: string;
 					opportunity_id: string;
 					organization_id: string;
@@ -9358,6 +9360,7 @@ export type Database = {
 					from_stage?: string | null;
 					from_stage_entered_at?: string | null;
 					id?: string;
+					is_undo?: boolean;
 					occurred_at?: string;
 					opportunity_id?: string;
 					organization_id?: string;
@@ -15176,8 +15179,73 @@ export type Database = {
 					}
 				];
 			};
+			support_message_attachments: {
+				Row: {
+					byte_size: number;
+					created_at: string;
+					file_name: string;
+					has_thumbnail: boolean;
+					id: string;
+					message_id: string;
+					mime_type: string;
+					object_key: string;
+					organization_id: string;
+					position: number;
+					thread_id: string;
+				};
+				Insert: {
+					byte_size: number;
+					created_at?: string;
+					file_name: string;
+					has_thumbnail?: boolean;
+					id?: string;
+					message_id: string;
+					mime_type: string;
+					object_key: string;
+					organization_id: string;
+					position: number;
+					thread_id: string;
+				};
+				Update: {
+					byte_size?: number;
+					created_at?: string;
+					file_name?: string;
+					has_thumbnail?: boolean;
+					id?: string;
+					message_id?: string;
+					mime_type?: string;
+					object_key?: string;
+					organization_id?: string;
+					position?: number;
+					thread_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'support_message_attachments_message_id_fkey';
+						columns: ['message_id'];
+						isOneToOne: false;
+						referencedRelation: 'support_messages';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'support_message_attachments_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'support_message_attachments_thread_id_fkey';
+						columns: ['thread_id'];
+						isOneToOne: false;
+						referencedRelation: 'support_threads';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			support_messages: {
 				Row: {
+					attachment_count: number;
 					body: string;
 					client_message_id: string;
 					created_at: string;
@@ -15190,6 +15258,7 @@ export type Database = {
 					thread_id: string;
 				};
 				Insert: {
+					attachment_count?: number;
 					body: string;
 					client_message_id: string;
 					created_at?: string;
@@ -15202,6 +15271,7 @@ export type Database = {
 					thread_id: string;
 				};
 				Update: {
+					attachment_count?: number;
 					body?: string;
 					client_message_id?: string;
 					created_at?: string;
@@ -22415,6 +22485,14 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			pipeline_conversion_report: {
+				Args: {
+					report_from?: string;
+					report_to?: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			pipeline_create_opportunity_note: {
 				Args: {
 					new_body: string;
@@ -22643,6 +22721,14 @@ export type Database = {
 					outcome_key: string;
 					value_total: number;
 				}[];
+			};
+			pipeline_outcomes_report: {
+				Args: {
+					report_from?: string;
+					report_to?: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
 			};
 			pipeline_place_opportunity: {
 				Args: { target_custom_stage_id: string; target_opportunity_id: string };
@@ -23838,6 +23924,7 @@ export type Database = {
 			reply_to_support_thread: {
 				Args: {
 					actor_email: string;
+					message_attachments?: Json;
 					message_body: string;
 					message_client_id: string;
 					target_thread_id: string;
@@ -24669,6 +24756,7 @@ export type Database = {
 			};
 			send_support_message: {
 				Args: {
+					message_attachments?: Json;
 					message_body: string;
 					message_client_id: string;
 					target_organization_id: string;
@@ -25171,6 +25259,7 @@ export type Database = {
 			};
 			start_support_thread: {
 				Args: {
+					message_attachments?: Json;
 					message_body: string;
 					message_client_id: string;
 					target_organization_id: string;

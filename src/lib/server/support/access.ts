@@ -31,3 +31,22 @@ export async function supportSendLimited(
 		return databaseError();
 	}
 }
+
+// Picking files asks for one upload link each: a few per message, far fewer than this in ordinary use.
+const SUPPORT_UPLOAD_LIMIT = { windowSeconds: 300, maxAttempts: 40 };
+
+/** Null when the upload may go ahead. */
+export async function supportUploadLimited(
+	event: RequestEvent,
+	userId: string
+): Promise<Response | null> {
+	try {
+		const limit = await checkRateLimit(event.locals.supabase, {
+			bucketKey: `support-upload:${userId}`,
+			...SUPPORT_UPLOAD_LIMIT
+		});
+		return limit.allowed ? null : rateLimitedResponse(limit.retryAfterSeconds);
+	} catch {
+		return databaseError();
+	}
+}

@@ -1,5 +1,8 @@
 import { z } from 'zod';
+import { isDangerousAttachmentName } from '$lib/communications/attachment-limits';
 import {
+	SUPPORT_ATTACHMENT_TOTAL_BYTES,
+	SUPPORT_MAX_ATTACHMENTS,
 	SUPPORT_MAX_LOADED,
 	SUPPORT_MESSAGE_MAX_LENGTH,
 	SUPPORT_PAGE_SIZE,
@@ -10,29 +13,70 @@ const supportTopicField = z.enum(SUPPORT_TOPIC_VALUES, {
 	error: 'Choose one of the listed topics.'
 });
 
-// One message, from either side. The id is chosen by the sender's browser so a retry after a dropped
-// connection can never post the same message twice.
-export const supportMessageSchema = z.object({
+// A file's name as its sender gave it. Program files are refused, by the customer inbox's own list.
+const supportFileName = z
+	.string()
+	.trim()
+	.min(1, 'Choose a file.')
+	.max(255, 'That file name is too long.')
+	.refine((name) => !isDangerousAttachmentName(name), {
+		message: 'That file type is not allowed.'
+	});
+
+const supportMimeType = z.string().trim().min(1).max(127);
+
+// Asking for somewhere to upload one file, before the message that carries it is sent.
+export const supportAttachmentPresignSchema = z.object({
+	file_name: supportFileName,
+	mime_type: supportMimeType,
+	size_bytes: z
+		.number()
+		.int()
+		.positive('That file is empty.')
+		.max(SUPPORT_ATTACHMENT_TOTAL_BYTES, 'Files must be 20 MB or smaller.')
+});
+
+// A file already uploaded. Its size is never taken from the browser: the route measures it in storage.
+const supportAttachmentSchema = z.object({
+	object_key: z.string().min(1).max(1024),
+	file_name: supportFileName,
+	mime_type: supportMimeType,
+	has_thumbnail: z.boolean().default(false)
+});
+
+const supportMessageFields = z.object({
 	body: z
 		.string()
 		.trim()
-		.min(1, 'Write a message first.')
 		.max(
 			SUPPORT_MESSAGE_MAX_LENGTH,
 			`Keep a message under ${SUPPORT_MESSAGE_MAX_LENGTH} characters.`
 		),
-	client_message_id: z.string().uuid('Send the message again.')
+	client_message_id: z.string().uuid('Send the message again.'),
+	attachments: z
+		.array(supportAttachmentSchema)
+		.max(SUPPORT_MAX_ATTACHMENTS, `Attach at most ${SUPPORT_MAX_ATTACHMENTS} files to one message.`)
+		.default([])
 });
+
+// A message is words, files, or both — never neither.
+const hasContent = (message: { body: string; attachments: unknown[] }) =>
+	message.body.length > 0 || message.attachments.length > 0;
+const NEEDS_CONTENT = { path: ['body'], message: 'Write a message or attach a file first.' };
+
+// One message, from either side. The id is chosen by the sender's browser so a retry after a dropped
+// connection can never post the same message twice.
+export const supportMessageSchema = supportMessageFields.refine(hasContent, NEEDS_CONTENT);
 
 // A member's message in a chat they can see.
-export const supportMemberMessageSchema = supportMessageSchema.extend({
-	thread_id: z.string().uuid()
-});
+export const supportMemberMessageSchema = supportMessageFields
+	.extend({ thread_id: z.string().uuid() })
+	.refine(hasContent, NEEDS_CONTENT);
 
 // A new chat and its first message (D4a). The topic is optional and starts as Other.
-export const supportStartThreadSchema = supportMessageSchema.extend({
-	topic: supportTopicField.default('other')
-});
+export const supportStartThreadSchema = supportMessageFields
+	.extend({ topic: supportTopicField.default('other') })
+	.refine(hasContent, NEEDS_CONTENT);
 
 export const supportTopicSchema = z.object({ topic: supportTopicField });
 

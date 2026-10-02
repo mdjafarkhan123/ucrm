@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { uploadAttachmentFile } from '$lib/collaboration/api';
+	import { createImageThumbnail } from '$lib/collaboration/image-thumbnail';
 	import { formatFileSize } from '$lib/collaboration/format';
 	import { iconForMimeType } from '$lib/collaboration/file-icons';
 	import {
@@ -25,25 +26,47 @@
 	// SMS instead of forking a second component (Rule 8) -- only the caps, prefix-channel and labels change.
 	// Any common file type is accepted: a picture goes as real MMS when the sender/destination allow it,
 	// otherwise the text carries a secure link instead, so there is no client-side mime whitelist for SMS.
+	//
+	// Chat with Uplift reuses it too (onboarding D4b), on both sides: `presign` swaps in that chat's own
+	// upload route and `maxFiles` its cap. When the route also hands back somewhere for a photo's small copy,
+	// one is made here and uploaded beside the original.
 	let {
 		disabled = false,
 		variant = 'email',
-		onUploadingChange
+		presign,
+		maxFiles,
+		triggerFirst = false,
+		onUploadingChange,
+		onReadyChange
 	}: {
 		disabled?: boolean;
 		variant?: 'email' | 'sms';
+		/** Asks a different route for the upload link. Left out, the customer inbox's own is used. */
+		presign?: (file: { fileName: string; mimeType: string; sizeBytes: number }) => Promise<{
+			upload_url: string;
+			object_key: string;
+			thumbnail_upload_url?: string | null;
+		}>;
+		/** How many files one message may carry, when it differs from the variant's own cap. */
+		maxFiles?: number;
+		/** Keeps the paperclip in front of the files, so it does not move as they are added. */
+		triggerFirst?: boolean;
 		onUploadingChange?: (uploading: boolean) => void;
+		/** How many files have finished uploading and would go with a send. */
+		onReadyChange?: (count: number) => void;
 	} = $props();
 
 	const isSms = $derived(variant === 'sms');
 	const maxAttachments = $derived(
-		isSms ? MAX_SMS_ATTACHMENTS_PER_MESSAGE : MAX_OUTBOUND_ATTACHMENTS
+		maxFiles ?? (isSms ? MAX_SMS_ATTACHMENTS_PER_MESSAGE : MAX_OUTBOUND_ATTACHMENTS)
 	);
 	const maxTotalBytes = OUTBOUND_ATTACHMENT_TOTAL_SIZE_BYTES;
 	const tooManyMessage = $derived(
-		isSms
-			? 'Attach at most one file to a text message.'
-			: `Attach at most ${MAX_OUTBOUND_ATTACHMENTS} files to one email.`
+		maxFiles
+			? `Attach at most ${maxFiles} files to one message.`
+			: isSms
+				? 'Attach at most one file to a text message.'
+				: `Attach at most ${MAX_OUTBOUND_ATTACHMENTS} files to one email.`
 	);
 	const tooLargeMessage = $derived(
 		isSms
@@ -59,6 +82,7 @@
 		progress: number;
 		error: string;
 		objectKey: string | null;
+		hasThumbnail: boolean;
 	};
 
 	let items = $state<Item[]>([]);
@@ -76,18 +100,26 @@
 		untrack(() => onUploadingChange?.(uploading));
 	});
 
+	const readyCount = $derived(items.filter((item) => item.status === 'done').length);
+	$effect(() => {
+		const count = readyCount;
+		untrack(() => onReadyChange?.(count));
+	});
+
 	function patch(key: string, changes: Partial<Item>) {
 		items = items.map((item) => (item.key === key ? { ...item, ...changes } : item));
 	}
 
 	async function uploadOne(key: string, file: File) {
 		try {
-			const presigned = await presignOutboundAttachment({
+			const claim = {
 				fileName: file.name,
 				mimeType: file.type || 'application/octet-stream',
-				sizeBytes: file.size,
-				channel: isSms ? 'sms' : 'email'
-			});
+				sizeBytes: file.size
+			};
+			const presigned: Awaited<ReturnType<NonNullable<typeof presign>>> = presign
+				? await presign(claim)
+				: await presignOutboundAttachment({ ...claim, channel: isSms ? 'sms' : 'email' });
 			let shownPercent = -1;
 			await uploadAttachmentFile(presigned.upload_url, file, (fraction) => {
 				const percent = Math.round(fraction * 100);
@@ -95,14 +127,31 @@
 				shownPercent = percent;
 				patch(key, { progress: fraction });
 			});
-			patch(key, { status: 'done', objectKey: presigned.object_key, progress: 1 });
+			// The small copy is a nicety: a photo the browser cannot shrink, or a copy that fails to upload,
+			// still sends, and is shown from the original instead.
+			let hasThumbnail = false;
+			if (presigned.thumbnail_upload_url) {
+				const thumbnail = await createImageThumbnail(file);
+				if (thumbnail) {
+					hasThumbnail = await uploadAttachmentFile(presigned.thumbnail_upload_url, thumbnail).then(
+						() => true,
+						() => false
+					);
+				}
+			}
+			patch(key, { status: 'done', objectKey: presigned.object_key, progress: 1, hasThumbnail });
 		} catch (error) {
 			const message = error instanceof Error ? error.message : 'That file could not be uploaded.';
 			patch(key, { status: 'error', error: message });
 		}
 	}
 
-	function addFiles(fileList: FileList | null) {
+	/** Attaches files that did not come from the picker — pasted into the message box, say. */
+	export function add(files: File[]) {
+		addFiles(files);
+	}
+
+	function addFiles(fileList: FileList | File[] | null) {
 		// The reset has to come after reading the files: Chrome hands back a live FileList tied to the
 		// input, so clearing `.value` first empties this same reference before it can be read.
 		if (!fileList || disabled) {
@@ -131,7 +180,15 @@
 				continue;
 			}
 			const key = `${file.name}-${file.size}-${Date.now()}-${Math.random()}`;
-			items.push({ key, file, status: 'uploading', progress: 0, error: '', objectKey: null });
+			items.push({
+				key,
+				file,
+				status: 'uploading',
+				progress: 0,
+				error: '',
+				objectKey: null,
+				hasThumbnail: false
+			});
 			void uploadOne(key, file);
 		}
 		if (fileInputEl) fileInputEl.value = '';
@@ -142,7 +199,7 @@
 	}
 
 	/** The resolved payload the send routes accept -- only files that finished uploading. */
-	export function getAttachments(): OutboundAttachmentPayload[] {
+	export function getAttachments(): (OutboundAttachmentPayload & { has_thumbnail?: boolean })[] {
 		return items
 			.filter(
 				(item): item is Item & { objectKey: string } =>
@@ -151,7 +208,8 @@
 			.map((item) => ({
 				object_key: item.objectKey,
 				file_name: item.file.name,
-				mime_type: item.file.type || 'application/octet-stream'
+				mime_type: item.file.type || 'application/octet-stream',
+				...(item.hasThumbnail ? { has_thumbnail: true } : {})
 			}));
 	}
 
@@ -210,6 +268,7 @@
 	<button
 		type="button"
 		class="conversation-attachments__trigger"
+		class:conversation-attachments__trigger--first={triggerFirst}
 		aria-label={triggerLabel}
 		title={triggerLabel}
 		{disabled}
@@ -272,6 +331,10 @@
 			&:disabled {
 				color: var(--color-disabled);
 				cursor: not-allowed;
+			}
+
+			&--first {
+				order: -1;
 			}
 		}
 

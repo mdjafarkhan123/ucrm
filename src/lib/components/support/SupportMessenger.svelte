@@ -19,9 +19,11 @@
 		fetchSupportThread,
 		fetchSupportUnread,
 		markSupportThreadRead,
+		presignSupportAttachment,
 		sendSupportMessage,
 		startSupportThread,
 		supportChatsKey,
+		supportFileUrls,
 		supportKey,
 		supportPeopleKey,
 		supportThreadKey,
@@ -29,6 +31,7 @@
 		supportTopicLabel,
 		supportUnreadKey,
 		type SupportChatRow,
+		type SupportOutgoingMessage,
 		type SupportThread,
 		type SupportTopic
 	} from '$lib/support/api';
@@ -180,7 +183,9 @@
 	}
 
 	function back() {
-		void go(screen.kind === 'thread' && screen.from === 'team' ? { kind: 'team' } : { kind: 'home' });
+		void go(
+			screen.kind === 'thread' && screen.from === 'team' ? { kind: 'team' } : { kind: 'home' }
+		);
 	}
 
 	async function openPanel() {
@@ -206,7 +211,7 @@
 
 	// The first message makes the chat, which then opens with that message already in it. Send stays off
 	// until it is saved, so a second message can never start a second chat.
-	async function startChat(input: { body: string; client_message_id: string }) {
+	async function startChat(input: SupportOutgoingMessage) {
 		startingChat = true;
 		try {
 			const topic = newTopic;
@@ -231,7 +236,7 @@
 		}
 	}
 
-	async function send(input: { body: string; client_message_id: string }) {
+	async function send(input: SupportOutgoingMessage) {
 		const target = threadId;
 		if (!target) return startChat(input);
 		const message = await sendSupportMessage({ ...input, thread_id: target });
@@ -429,6 +434,8 @@
 					loadingEarlier={threadQuery.isPlaceholderData}
 					onLoadEarlier={() => (limit = Math.min(limit + SUPPORT_PAGE_SIZE, SUPPORT_MAX_LOADED))}
 					onSend={send}
+					presignAttachment={presignSupportAttachment}
+					fileUrls={supportFileUrls}
 					blockedReason={startingChat ? 'Starting your chat…' : ''}
 					placeholder={threadId ? 'Write to Uplift…' : 'Ask Uplift a question…'}
 				>

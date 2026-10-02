@@ -23,6 +23,7 @@
 		fetchSupportInbox,
 		fetchSupportInboxPeople,
 		fetchSupportInboxThread,
+		jafarSupportFileUrls,
 		jafarSupportPeopleKey,
 		jafarSupportInboxKey,
 		jafarSupportInboxPageKey,
@@ -30,10 +31,12 @@
 		jafarSupportThreadKey,
 		jafarSupportThreadPageKey,
 		markSupportInboxThreadRead,
+		presignSupportReplyAttachment,
 		replyToSupportThread,
 		supportTopicLabel,
 		type SupportInbox,
 		type SupportInboxThreadDetail,
+		type SupportOutgoingMessage,
 		type SupportSettings,
 		type SupportTopic
 	} from '$lib/support/api';
@@ -51,9 +54,8 @@
 	// The topic filter (D4a) lives there too.
 	const topicParam = urlParam('topic', '');
 	const topicFilter = $derived(
-		(SUPPORT_TOPICS.find((item) => item.value === topicParam.current)?.value ?? null) as
-			| SupportTopic
-			| null
+		(SUPPORT_TOPICS.find((item) => item.value === topicParam.current)?.value ??
+			null) as SupportTopic | null
 	);
 	const topicOptions = [
 		{ value: '', label: 'All topics' },
@@ -158,7 +160,7 @@
 		selected.set(threadId);
 	}
 
-	async function reply(input: { body: string; client_message_id: string }) {
+	async function reply(input: SupportOutgoingMessage) {
 		if (!selectedId) return;
 		const threadId = selectedId;
 		const message = await replyToSupportThread(threadId, input);
@@ -381,6 +383,8 @@
 						onLoadEarlier={() =>
 							(threadLimit = Math.min(threadLimit + SUPPORT_PAGE_SIZE, SUPPORT_MAX_LOADED))}
 						onSend={reply}
+						presignAttachment={(file) => presignSupportReplyAttachment(selectedId ?? '', file)}
+						fileUrls={jafarSupportFileUrls}
 						placeholder="Write a reply…"
 						blockedReason={needsName ? 'Add your name in Support settings before replying.' : ''}
 					>

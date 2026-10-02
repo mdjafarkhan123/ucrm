@@ -128,6 +128,13 @@ export function buildOutboundSmsAttachmentObjectKey(
 	return `${organizationId}/outbound-sms-attachments/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
 }
 
+// A file sent in a Chat with Uplift, by the contractor's team or by Uplift. Always under the contractor's
+// own `<org>/support-attachments/` prefix, whoever uploaded it: private.check_support_attachments accepts
+// only this prefix, so a key issued for one organization cannot ride on another's message.
+export function buildSupportAttachmentObjectKey(organizationId: string, fileName: string): string {
+	return `${organizationId}/support-attachments/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
+}
+
 // A stranger's photo on a public form gets its own `<org>/public-form-submissions/<form>/` prefix --
 // submit_form_response checks every photo key against exactly this prefix before it trusts one, matching
 // every other upload's isolation.

@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { NO_STORE_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import { requireSupportMember, supportSendLimited } from '$lib/server/support/access';
+import { readMemberAttachments } from '$lib/server/support/attachments';
 import { supportMemberMessageSchema } from '$lib/server/validation/support.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 
@@ -23,11 +24,15 @@ export const POST: RequestHandler = async (event) => {
 	const parsed = supportMemberMessageSchema.safeParse(body);
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
+	const files = await readMemberAttachments(check.auth.organization.id, parsed.data.attachments);
+	if ('response' in files) return files.response;
+
 	const { data, error } = await event.locals.supabase.rpc('send_support_message', {
 		target_organization_id: check.auth.organization.id,
 		target_thread_id: parsed.data.thread_id,
 		message_body: parsed.data.body,
-		message_client_id: parsed.data.client_message_id
+		message_client_id: parsed.data.client_message_id,
+		message_attachments: files.attachments
 	});
 	if (error) {
 		if (error.code === '42501')
