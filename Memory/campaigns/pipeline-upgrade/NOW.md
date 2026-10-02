@@ -7,7 +7,7 @@ first paying client.
 
 **In progress:** Stages A, B, and C finished 2026-10-01; stage D, its three fixes, stage E, and stage F (Sales Outcomes numbers and the Conversion tab) finished 2026-10-02.
 
-**Next part:** G1, speed at volume — `stages/G-final-proof.md`, which also carries the open notes from stages A–F. Stage E's file stays until its carried notes
+**Next part:** G1, speed at volume — paused part-way, continue from `parts/G1-speed-at-volume.md`; `stages/G-final-proof.md` also carries the open notes from stages A–F. Stage E's file stays until its carried notes
 (move history screen, bulk Task alert) are homed.
 
 **Blockers:** None.
