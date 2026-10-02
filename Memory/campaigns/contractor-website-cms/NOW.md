@@ -5,8 +5,8 @@
 
 **In progress:**
 
-- Planning part 1 — `parts/1-editing-publishing-rights.md`; primary-source research is recorded and Jafar's first decision round is pending.
+- Planning part 1 — `parts/1-editing-publishing-rights.md`; Jafar is deciding whether self-editing belongs in the first customer offer. If it does, its boundary is content and prepared-section visibility.
 
 **Next part:** Planning part 2 — settle team permissions, domain and service-end behavior, then check technical feasibility.
 
-**Blockers:** Jafar's answers to the first decision round are needed before the editing and publishing behavior can be finalized. No implementation or infrastructure change is approved.
+**Blockers:** Jafar's decision on the first customer promise is needed before the Website area and publishing behavior can be finalized. No implementation or infrastructure change is approved.
