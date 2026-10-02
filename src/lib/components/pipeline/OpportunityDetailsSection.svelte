@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { CalendarDate } from '@internationalized/date';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
@@ -86,12 +87,16 @@
 		valueDraft = opportunity.estimated_value != null ? String(opportunity.estimated_value) : '';
 		valueError = '';
 		editingField = 'value';
+		// The pencil that had focus is gone once the box replaces it, so the box takes focus itself — typing
+		// starts straight away, and clicking away is then a blur that saves.
+		void tick().then(() => document.getElementById('brief-value-input')?.focus());
 	}
 
 	// Blur commits, matching the rest of the app's click-away-to-save inline editors. Escape reverts
 	// without saving, same as any other cancel.
+	// A save in flight disables the box, which blurs it — that blur must not send the same value again.
 	function commitValue() {
-		if (editingField !== 'value') return;
+		if (editingField !== 'value' || valueMutation.isPending) return;
 		const trimmed = valueDraft.trim();
 		if (trimmed === '') {
 			valueMutation.mutate(null);

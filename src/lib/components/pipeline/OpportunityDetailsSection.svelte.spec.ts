@@ -94,6 +94,24 @@ describe('OpportunityDetailsSection value edit', () => {
 		await expect.element(page.getByText('$4,200')).toBeVisible();
 	});
 
+	it('puts the cursor in the box when the pencil opens it, and Enter saves exactly once', async () => {
+		mockFetch({ body: { id: 'opp-1', estimated_value: 450 }, status: 200 });
+		const { onUpdate } = renderSection();
+
+		await page.getByRole('button', { name: 'Edit estimated value' }).click();
+		const input = page.getByRole('textbox', { name: 'Estimated value' });
+		await expect.element(input).toHaveFocus();
+		await userEvent.keyboard('450{Enter}');
+
+		// Saving disables the box, which blurs it; that blur must not send the value a second time.
+		await expect.element(page.getByRole('button', { name: 'Edit estimated value' })).toBeVisible();
+		const valueCalls = vi
+			.mocked(globalThis.fetch)
+			.mock.calls.filter(([url]) => url === '/api/pipeline/opportunities/opp-1/value');
+		expect(valueCalls).toHaveLength(1);
+		expect(onUpdate).toHaveBeenCalledTimes(1);
+	});
+
 	it('reverts without saving on Escape', async () => {
 		mockFetch({ body: {}, status: 200 });
 		const { onUpdate } = renderSection();
