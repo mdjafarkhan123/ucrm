@@ -93,7 +93,7 @@ After the structured CMS works reliably, Uplift intends to expand it toward an E
 - What should the Website area show when the organization's package does not include a managed website?
 - How does Uplift perform and record its initial site check and the contractor's launch approval, including a requested revision or withdrawn approval? The existing client onboarding plan already allows a named final approver who may differ from the CRM owner; decide whether that person may approve the website launch too.
 - What should happen to an open editor when ownership changes, a site is unassigned, or the CRM session ends?
-- How will native Astro forms map a site's designed questions into the existing CRM intake contract, including failed or duplicate submissions?
+- How will native Astro form fields map to published CRM intake definitions and a shared submission receiver, including validation, failed or duplicate submissions, and source attribution? The sites are planned as static builds, so this must not assume a separate Astro server for every site.
 - What CMS operations, auditing, backup, and recovery controls does Uplift need behind the client experience?
 - Which storage, database, deployment, backup, and monitoring services best fit the approved CMS behavior?
 
