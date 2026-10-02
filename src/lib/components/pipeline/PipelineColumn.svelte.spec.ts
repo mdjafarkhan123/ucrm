@@ -156,12 +156,19 @@ describe('PipelineColumn drop confirmation', () => {
 
 		finalize(zone);
 
-		await vi.waitFor(() =>
-			expect(mocks.toast.error).toHaveBeenCalledWith(
-				'That card cannot go into Chasing a decision.',
-				'This is still a request, so it can only go into a Requests stage. It can go here once it becomes a quote.'
+		// Said in the middle of the screen and kept there, not in a corner message that fades.
+		await expect.element(page.getByRole('alertdialog')).toBeVisible();
+		await expect
+			.element(page.getByText("That card can't go into Chasing a decision"))
+			.toBeVisible();
+		await expect
+			.element(
+				page.getByText(
+					'This is still a request, so it can only go into a Requests stage. It can go here once it becomes a quote.'
+				)
 			)
-		);
+			.toBeVisible();
+		expect(mocks.toast.error).not.toHaveBeenCalled();
 		expect(mocks.placeOpportunity).not.toHaveBeenCalled();
 		expect(mocks.toast.loading).not.toHaveBeenCalled();
 	});
@@ -242,12 +249,17 @@ describe('PipelineColumn drop confirmation', () => {
 		finalize(zone);
 
 		await expect.element(page.getByText('Nothing here.')).toBeVisible();
-		await vi.waitFor(() =>
-			expect(mocks.toast.error).toHaveBeenCalledWith(
-				'That card cannot go into New requests.',
-				'This request already has an assessment. To bring it back to New requests, remove the assessment on the request.'
+		// Said in the middle of the screen and kept there, not in a corner message that fades.
+		await expect.element(page.getByRole('alertdialog')).toBeVisible();
+		await expect.element(page.getByText("That card can't go into New requests")).toBeVisible();
+		await expect
+			.element(
+				page.getByText(
+					'This request already has an assessment. To bring it back to New requests, remove the assessment on the request.'
+				)
 			)
-		);
+			.toBeVisible();
+		expect(mocks.toast.error).not.toHaveBeenCalled();
 		expect(mocks.dragOpportunity).not.toHaveBeenCalled();
 		expect(mocks.toast.loading).not.toHaveBeenCalled();
 	});
@@ -257,12 +269,17 @@ describe('PipelineColumn drop confirmation', () => {
 
 		finalize(zone);
 
-		await vi.waitFor(() =>
-			expect(mocks.toast.error).toHaveBeenCalledWith(
-				'That card cannot go into Awaiting response.',
-				'There is no quote to send yet. Move this card to Draft first to create the quote.'
+		// Said in the middle of the screen and kept there, not in a corner message that fades.
+		await expect.element(page.getByRole('alertdialog')).toBeVisible();
+		await expect.element(page.getByText("That card can't go into Awaiting response")).toBeVisible();
+		await expect
+			.element(
+				page.getByText(
+					'There is no quote to send yet. Move this card to Draft first to create the quote.'
+				)
 			)
-		);
+			.toBeVisible();
+		expect(mocks.toast.error).not.toHaveBeenCalled();
 		expect(mocks.dragOpportunity).not.toHaveBeenCalled();
 	});
 

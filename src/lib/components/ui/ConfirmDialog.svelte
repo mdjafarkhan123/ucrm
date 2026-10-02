@@ -22,7 +22,8 @@
 		icon?: string;
 		tone?: 'default' | 'critical' | 'success';
 		confirmLabel?: string;
-		cancelLabel?: string;
+		/** Null for a notice that only needs acknowledging: one button, no second choice. */
+		cancelLabel?: string | null;
 		destructive?: boolean;
 		loading?: boolean;
 		confirmDisabled?: boolean;
@@ -50,17 +51,19 @@
 				{@render children()}
 			</div>
 			<div class="confirm-dialog__actions">
-				<AlertDialog.Cancel>
-					{#snippet child({ props })}
-						<Button
-							{...props}
-							type="button"
-							variant="secondary"
-							variation="subtle"
-							disabled={loading}>{cancelLabel}</Button
-						>
-					{/snippet}
-				</AlertDialog.Cancel>
+				{#if cancelLabel !== null}
+					<AlertDialog.Cancel>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								type="button"
+								variant="secondary"
+								variation="subtle"
+								disabled={loading}>{cancelLabel}</Button
+							>
+						{/snippet}
+					</AlertDialog.Cancel>
+				{/if}
 				<Button
 					type="button"
 					variation={destructive ? 'destructive' : 'work'}

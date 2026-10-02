@@ -89,3 +89,19 @@
 | Hover item       | --color-surface-hover background, heading text               |
 | Active/open item | --color-surface-active background, heading text              |
 | Disabled item    | --color-disabled text, not-allowed cursor, no pointer events |
+
+## Filter chip (toolbar filters)
+
+A filter that sits in a toolbar row beside a search box uses `ui/FilterChip.svelte`, never a full-width
+`Select` in a hand-made pill. It follows the Stripe and Linear pattern:
+
+- The chip is only as wide as its own words. Its open list is as wide as its longest option.
+- Resting (the value that means "not filtering"): the filter's name and a chevron, border
+  `--color-border--interactive`, background `--color-surface`.
+- Filtering: name in secondary text, value in semibold, border `--color-interactive`, background
+  `--color-surface--active`, and a cross in place of the chevron that puts the filter back to rest.
+- A control that always has an answer (a sort order) leaves `restValue` out: it shows its value and never
+  highlights.
+- Height 44px, radius `--radius-base`, so it lines up with `SearchInput` and `SegmentedControl`.
+
+A filter panel that drops open under a list's search box still uses `FilterBar` + `FilterField`.

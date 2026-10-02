@@ -15,6 +15,8 @@
 	import AssessmentEntryChoiceDialog from './AssessmentEntryChoiceDialog.svelte';
 	import ConvertToQuoteDialog from './ConvertToQuoteDialog.svelte';
 	import TaskDialog from './TaskDialog.svelte';
+	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
+	import handStopIcon from '@tabler/icons/outline/hand-stop.svg?raw';
 	import SendQuoteDialog from '$lib/components/quotes/SendQuoteDialog.svelte';
 	import clockPauseIcon from '@tabler/icons/outline/clock-pause.svg?raw';
 	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
@@ -296,8 +298,11 @@
 	}
 
 	// The card is already back in its own column (`items = cards` above); this only says why.
+	// Said in the middle of the screen and left there until it is acknowledged: a corner message that fades
+	// by itself is easy to miss when the eyes are still on the card that just jumped back.
+	let refusal = $state<string | null>(null);
 	function refuseDrop(reason: string) {
-		toast.error(`That card cannot go into ${label}.`, reason);
+		refusal = reason;
 	}
 
 	// A card asked to enter a real stage, by a drop or from its Move menu. Each stage's own action decides
@@ -767,6 +772,20 @@
 			onConfirm={confirmConvert}
 			onClose={cancelConvert}
 		/>
+	{/if}
+
+	{#if refusal}
+		<ConfirmDialog
+			open={true}
+			title={`That card can't go into ${label}`}
+			icon={handStopIcon}
+			confirmLabel="Got it"
+			cancelLabel={null}
+			onConfirm={() => (refusal = null)}
+			onClose={() => (refusal = null)}
+		>
+			<p>{refusal}</p>
+		</ConfirmDialog>
 	{/if}
 </section>
 

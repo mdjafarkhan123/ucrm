@@ -2,7 +2,7 @@
 	import { untrack, type Snippet } from 'svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { CalendarDate } from '@internationalized/date';
-	import Select from '$lib/components/ui/Select.svelte';
+	import FilterChip from '$lib/components/ui/FilterChip.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import SavedFiltersMenu from './SavedFiltersMenu.svelte';
@@ -209,20 +209,17 @@
 
 		<SavedFiltersMenu {filters} summary={savedSummary} onApply={(next) => onChange(next)} />
 
-		<span class="board-controls__pill board-controls__pill--labelled">
-			<label class="board-controls__label" for="pipeline-sort">Sort by</label>
-			<Select
-				id="pipeline-sort"
-				class="board-controls__select"
-				value={filters.sort}
-				options={sortOptions}
-				onchange={(value) =>
-					// The nearest close date is the useful first look, so that sort starts soonest first.
-					update(
-						value === 'close' ? { sort: 'close', direction: 'asc' } : { sort: value as BoardSort }
-					)}
-			/>
-		</span>
+		<FilterChip
+			id="pipeline-sort"
+			label="Sort"
+			value={filters.sort}
+			options={sortOptions}
+			onchange={(value) =>
+				// The nearest close date is the useful first look, so that sort starts soonest first.
+				update(
+					value === 'close' ? { sort: 'close', direction: 'asc' } : { sort: value as BoardSort }
+				)}
+		/>
 
 		{#if sortHasDirection(filters.sort)}
 			<button
@@ -236,45 +233,40 @@
 			</button>
 		{/if}
 
-		<span class="board-controls__pill board-controls__pill--labelled">
-			<label class="board-controls__label" for="pipeline-owner">Salesperson</label>
-			<Select
-				id="pipeline-owner"
-				class="board-controls__select"
-				value={filters.owner}
-				options={ownerOptions}
-				onchange={(value) => update({ owner: value })}
-			/>
-		</span>
+		<FilterChip
+			id="pipeline-owner"
+			label="Salesperson"
+			value={filters.owner}
+			options={ownerOptions}
+			restValue="all"
+			onchange={(value) => update({ owner: value })}
+		/>
 
+		<!-- The source list has to be opened, so it loads when the chip is pointed at or focused. -->
 		<span
-			class="board-controls__pill board-controls__pill--labelled"
+			class="board-controls__lazy"
 			role="presentation"
 			onpointerenter={() => (wantSources = true)}
 			onfocusin={() => (wantSources = true)}
 		>
-			<label class="board-controls__label" for="pipeline-source">Lead source</label>
-			<Select
+			<FilterChip
 				id="pipeline-source"
-				class="board-controls__select"
+				label="Lead source"
 				value={selectedSource}
 				options={sourceOptions}
+				restValue=""
 				onchange={(value) => update({ source: value || undefined })}
 			/>
 		</span>
 
-		<!-- Jobber tells this pill apart with a calendar icon alone. Ours says the word, because the two
-		pills beside it say theirs, and three pills reading "All" tell nobody which is which. -->
-		<span class="board-controls__pill board-controls__pill--labelled">
-			<label class="board-controls__label" for="pipeline-date">Created</label>
-			<Select
-				id="pipeline-date"
-				class="board-controls__select"
-				value={filters.date}
-				options={dateOptions}
-				onchange={(value) => changeDate(value as BoardDatePreset)}
-			/>
-		</span>
+		<FilterChip
+			id="pipeline-date"
+			label="Created"
+			value={filters.date}
+			options={dateOptions}
+			restValue="all"
+			onchange={(value) => changeDate(value as BoardDatePreset)}
+		/>
 
 		<p class="board-controls__count" aria-live="polite">
 			{#if resultCount !== null}
@@ -337,35 +329,9 @@
 	.board-controls__row--range :global(.calendar-picker) {
 		width: 200px;
 	}
-	// Each control reads as one pill holding a fixed word and the value that answers it, the way the board
-	// reference draws them.
-	.board-controls__pill {
+	.board-controls__lazy {
 		display: inline-flex;
-		align-items: center;
-		border-radius: var(--radius-large);
-		background: var(--color-inactive--surface);
-
-		&--labelled {
-			padding-left: var(--space-base);
-		}
-	}
-	.board-controls__label {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 400;
-		white-space: nowrap;
-	}
-	// The select inside a pill drops its own box and borrows the pill's, so the two do not draw two shapes.
-	.board-controls__pill :global(.board-controls__select .select__trigger) {
-		padding: 0 var(--space-slim);
-		border: none;
-		border-radius: var(--radius-large);
-		background: transparent;
-	}
-	// A real width, because the dropdown sizes itself to its trigger: left to shrink-wrap inside the pill,
-	// the trigger goes narrow and the open list truncates every option to a letter and an ellipsis.
-	.board-controls__pill :global(.board-controls__select) {
-		width: 176px;
+		min-width: 0;
 	}
 	.board-controls__direction {
 		display: inline-flex;

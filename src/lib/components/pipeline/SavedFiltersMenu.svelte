@@ -163,7 +163,7 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <span
-	class="saved-filters"
+	class={['saved-filters', (matched || edited) && 'saved-filters--on']}
 	role="presentation"
 	onpointerenter={() => (wanted = true)}
 	onfocusin={() => (wanted = true)}
@@ -179,7 +179,7 @@
 		{#snippet trigger()}
 			<span class="saved-filters__icon" aria-hidden="true">{@html bookmarkIcon}</span>
 			<span class="saved-filters__label">Saved</span>
-			<span class="saved-filters__value">{buttonLabel}</span>
+			{#if matched || edited}<span class="saved-filters__value">{buttonLabel}</span>{/if}
 			{#if edited}<span class="saved-filters__edited">Changed</span>{/if}
 			<span class="saved-filters__chevron" aria-hidden="true">{@html chevronIcon}</span>
 		{/snippet}
@@ -205,18 +205,19 @@
 	.saved-filters {
 		display: inline-flex;
 	}
-	// Drawn as one more pill in the row: a fixed word and the value that answers it.
+	// Drawn as one more chip in the row, the same shape as `FilterChip`: its name alone while no saved
+	// filter is in use, the name and the filter once one is.
 	.saved-filters :global(.saved-filters__trigger) {
 		display: inline-flex;
 		align-items: center;
-		gap: var(--space-smaller);
+		gap: var(--space-small);
 		min-height: 44px;
 		max-width: 280px;
-		padding: 0 var(--space-small) 0 var(--space-base);
-		border: none;
-		border-radius: var(--radius-large);
+		padding: 0 var(--space-slim);
+		border: var(--border-base) solid var(--color-border--interactive);
+		border-radius: var(--radius-base);
 		color: var(--color-heading);
-		background: var(--color-inactive--surface);
+		background: var(--color-surface);
 		font: inherit;
 		font-size: var(--typography--fontSize-base);
 		cursor: pointer;
@@ -241,11 +242,15 @@
 			height: 16px;
 		}
 	}
-	.saved-filters__label {
+	.saved-filters--on :global(.saved-filters__trigger) {
+		border-color: var(--color-interactive);
+		background: var(--color-surface--active);
+	}
+	.saved-filters--on .saved-filters__label {
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
 	}
 	.saved-filters__value {
+		font-weight: 600;
 		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;

@@ -37,6 +37,7 @@
 		type BoardFilters,
 		type BoardView
 	} from '$lib/pipeline/filters';
+	import { createEdgeScroll } from '$lib/pipeline/edge-scroll';
 	import type { InactivityRules } from '$lib/pipeline/freshness';
 	import { todayInOrganization } from '$lib/pipeline/money';
 	import {
@@ -352,6 +353,41 @@
 	// columns to overflow).
 	$effect(() => {
 		if (pinnedTrack && boardViewport) pinnedTrack.scrollLeft = boardViewport.scrollLeft;
+	});
+
+	// While a card is in the air the board slides sideways when the card nears either edge, so a stage that
+	// is off screen can be reached without letting go. Timed by the clock rather than by the frame, so it
+	// moves at the same pace on every screen.
+	$effect(() => {
+		if (!dragging || !boardViewport) return;
+		const viewport = boardViewport;
+		const edge = createEdgeScroll();
+		let pointerX: number | null = null;
+		let last = performance.now();
+		let frame = 0;
+
+		const follow = (event: MouseEvent | TouchEvent) => {
+			pointerX = 'touches' in event ? (event.touches[0]?.clientX ?? pointerX) : event.clientX;
+		};
+		const step = (now: number) => {
+			const elapsed = Math.min(now - last, 50);
+			last = now;
+			if (pointerX !== null) {
+				const box = viewport.getBoundingClientRect();
+				const speed = edge.speed(pointerX, box.left, box.right);
+				if (speed !== 0) viewport.scrollLeft += (speed * elapsed) / 1000;
+			}
+			frame = requestAnimationFrame(step);
+		};
+
+		window.addEventListener('mousemove', follow, { passive: true });
+		window.addEventListener('touchmove', follow, { passive: true });
+		frame = requestAnimationFrame(step);
+		return () => {
+			window.removeEventListener('mousemove', follow);
+			window.removeEventListener('touchmove', follow);
+			cancelAnimationFrame(frame);
+		};
 	});
 
 	// Both scrollbars move the same one position; each handler only ever answers the gesture that started

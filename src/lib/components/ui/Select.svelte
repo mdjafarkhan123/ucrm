@@ -21,6 +21,8 @@
 		name,
 		class: className = '',
 		contentClass = '',
+		prefix,
+		fitOptions = false,
 		onchange
 	}: {
 		value?: string;
@@ -35,6 +37,10 @@
 		class?: string;
 		/** Extra class for the floating options list, e.g. to out-rank a popover this Select is nested in. */
 		contentClass?: string;
+		/** A fixed word drawn inside the trigger ahead of the value, e.g. a filter's name. */
+		prefix?: string;
+		/** The open list is as wide as its longest option (never narrower than the trigger) instead of matching the trigger. */
+		fitOptions?: boolean;
 		onchange?: (value: string) => void;
 	} = $props();
 
@@ -74,14 +80,16 @@
 			aria-label={label ? undefined : ariaLabel}
 			aria-labelledby={labelId}
 		>
+			{#if prefix}<span class="select__prefix">{prefix}</span>{/if}
 			<span class="select__value">{selectedLabel}</span>
 			<span class="select__chevron" aria-hidden="true">{@html chevronDownIcon}</span>
 		</SelectPrimitive.Trigger>
 
 		<SelectPrimitive.Portal>
 			<SelectPrimitive.Content
-				class={['select__content', contentClass]}
+				class={['select__content', fitOptions && 'select__content--fit', contentClass]}
 				data-elevation="elevated"
+				align="start"
 				sideOffset={4}
 				collisionPadding={8}
 			>
@@ -168,6 +176,12 @@
 			cursor: not-allowed;
 		}
 
+		:global(.select__prefix) {
+			flex: 0 0 auto;
+			color: var(--color-text--secondary);
+			white-space: nowrap;
+		}
+
 		:global(.select__value) {
 			min-width: 0;
 			overflow: hidden;
@@ -206,6 +220,13 @@
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
 		box-shadow: var(--shadow-base);
+	}
+
+	// A trigger that hugs its value is narrower than its longest option, so the list sizes itself instead.
+	:global(.select__content.select__content--fit) {
+		width: max-content;
+		min-width: max(var(--bits-floating-anchor-width), calc(var(--space-extravagant) * 2.5));
+		max-width: min(calc(var(--space-extravagant) * 5), var(--bits-floating-available-width));
 	}
 
 	:global(.select__viewport) {
