@@ -15,12 +15,16 @@
 
 ## Next
 
-Review the proposed site-level states below against the plan's first-launch section. Decide withdrawal and how a named non-owner approver can review and approve without entering the website editor.
+Wait for Jafar's answers to the three questions below. Then settle the site-level states, record the approved flow in the plan, and reconcile the onboarding contract.
+
+## Questions waiting for Jafar
+
+1. **How should a named approver without a CRM account approve a site?** I recommend a private email review link, followed by a one-time code sent to that same address before they approve or request changes. The link shows only the fixed website preview and the decision buttons; it never opens the editor. Choices: Private link + email code (recommended); Require a CRM account; Uplift records approval manually.
+2. **What if the approver changes their mind after approving but before the site goes live?** I recommend a Withdraw approval action in the same review view. It immediately stops the launch. Uplift must present a fixed version for approval again before going live. Choices: Allow withdrawal until live (recommended); Contact Uplift to withdraw; Approval cannot be withdrawn.
+3. **After the site is live, should the same approval page offer a way to take it down?** I recommend it should show that the approved version is live and direct the approver to Uplift for a takedown or correction. Taking down a live site needs a separate confirmed action because customers may already be using it. Choices: Contact Uplift after launch (recommended); Approver can take site down; Owner can take site down.
 
 ## Notes
 
-The current onboarding contract already requires Uplift's cross-service prelaunch check, an organized preview, one factual-correction round, and an explicit final approval recording approved version, approver, and time. It does not yet define the approval interface or identity check for a named approver who lacks a CRM user account. The Website area uses the contractor's CRM login and has no separate CMS login. `docs/research/uplift-crm-website-area-patterns-2026-10-02.md` records the first-party account-free reviewer pattern.
+The onboarding contract requires Uplift's cross-service check, an organized preview, one factual-correction round, and explicit approval with version, approver, and time. Its setup catalogue collects `business.approver_name` and `business.approver_email`. The CRM has no separate CMS login. Account-free review is researched in `docs/research/uplift-crm-website-area-patterns-2026-10-02.md`.
 
-Proposed per-site states: **Uplift preparing → Uplift checking → Ready for review → Changes requested → Approved, preparing launch → Live**. A site added after the first delivery uses these states without reopening organization onboarding. If approval is withdrawn before promotion, stop launch and return to review; after a site is live, a new decision cannot silently undo a live release. Check any removal or rollback with Uplift.
-
-Recommended review path: a nominated approver with a CRM account gets a read-only approval view; a nominee without one receives a narrowly scoped email review link with an additional email check. Neither route opens the owner editor. Both approval and request-for-changes actions refer to the exact fixed version, and the approval record retains its identity evidence. This is a proposal for Jafar to review, not yet approved.
+Proposed per-site states: **Uplift preparing → Uplift checking → Ready for review → Changes requested → Approved, preparing launch → Live**. Later assigned sites repeat these without reopening organization onboarding. These states and the review path remain proposals until Jafar answers.
