@@ -334,8 +334,9 @@ select is(
 
 -- Five-open-task limit is respected on reopen, atomically -------------------------------------------------
 
--- R1 is open again with zero open tasks. Lose it a second time (a fresh cycle), then let a Task be created
--- while it is closed -- the write path does not block that today -- so the coming reopen has to refuse.
+-- R1 is open again with zero open tasks. Lose it a second time (a fresh cycle), then put an open Task on it
+-- while it is closed, so the coming reopen has to refuse. The Brief's own command refuses a closed card
+-- (20261006110000), so the Task is written as the table's owner: the reopen guard is the last line of defence.
 select is(
   (public.pipeline_mark_opportunity_lost(
     (select id from public.opportunities where request_id = '74000000-0000-0000-0000-000000000001'),
@@ -344,10 +345,12 @@ select is(
   'true', 'R1 can be lost again for a second cycle'
 );
 
-select (public.pipeline_create_opportunity_task(
-  (select id from public.opportunities where request_id = '74000000-0000-0000-0000-000000000001'),
-  'Opened while the card was closed'
-));
+set local role postgres;
+insert into public.tasks (organization_id, opportunity_id, title)
+select organization_id, id, 'Opened while the card was closed'
+from public.opportunities
+where request_id = '74000000-0000-0000-0000-000000000001';
+set local role authenticated;
 
 select throws_ok(
   format(

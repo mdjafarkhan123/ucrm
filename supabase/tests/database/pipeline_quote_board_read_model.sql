@@ -63,37 +63,37 @@ select set_config('request.jwt.claim.sub', 'ac000000-0000-0000-0000-000000000001
 --    request_id/request_status null -- the mirror image of what a Request-backed card already carries. ----
 
 select is(
-  (select quote_status from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'quote_draft') where quote_id = 'b1000000-0000-0000-0000-000000000001'),
+  (select quote_status from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'quote_draft', board_today => current_date) where quote_id = 'b1000000-0000-0000-0000-000000000001'),
   'draft', 'Q1 reads back in the Draft column with its own status'
 );
 select is(
-  (select request_id from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'quote_draft') where quote_id = 'b1000000-0000-0000-0000-000000000001'),
+  (select request_id from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'quote_draft', board_today => current_date) where quote_id = 'b1000000-0000-0000-0000-000000000001'),
   null, 'a quote-backed card carries no request pointer'
 );
 select is(
-  (select estimated_value from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'quote_draft') where quote_id = 'b1000000-0000-0000-0000-000000000001'),
+  (select estimated_value from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'quote_draft', board_today => current_date) where quote_id = 'b1000000-0000-0000-0000-000000000001'),
   4200::numeric, 'a member with pipeline.view_value still sees the estimate on a quote-backed card'
 );
 select is(
-  (select quote_status from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'quote_awaiting_response') where quote_id = 'b1000000-0000-0000-0000-000000000002'),
+  (select quote_status from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'quote_awaiting_response', board_today => current_date) where quote_id = 'b1000000-0000-0000-0000-000000000002'),
   'awaiting_response', 'Q2 reads back in the Awaiting response column'
 );
 select is(
-  (select quote_status from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'quote_changes_requested') where quote_id = 'b1000000-0000-0000-0000-000000000003'),
+  (select quote_status from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'quote_changes_requested', board_today => current_date) where quote_id = 'b1000000-0000-0000-0000-000000000003'),
   'changes_requested', 'Q3 reads back in the Changes requested column'
 );
 
 -- 2. Request side is unbroken and carries no quote pointer -----------------------------------------------
 
 select is(
-  (select quote_id from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'new_request') where request_id = 'b0000000-0000-0000-0000-000000000001'),
+  (select quote_id from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'new_request', board_today => current_date) where request_id = 'b0000000-0000-0000-0000-000000000001'),
   null, 'a request-backed card still carries no quote pointer'
 );
 
 -- 3. request_closed remains off the board -------------------------------------------------------------------
 
 select throws_ok(
-  $$select * from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'request_closed')$$,
+  $$select * from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'request_closed', board_today => current_date)$$,
   '22023', null, 'request_closed is parking, not a column -- still refused'
 );
 
@@ -101,7 +101,7 @@ select throws_ok(
 
 select set_config('request.jwt.claim.sub', 'ac000000-0000-0000-0000-000000000002', true);
 select throws_ok(
-  $$select * from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'quote_draft')$$,
+  $$select * from public.pipeline_board_page('ad000000-0000-0000-0000-000000000001', 'quote_draft', board_today => current_date)$$,
   '42501', null, 'an admin from another organization cannot read org A''s Quotes column'
 );
 select throws_ok(

@@ -188,9 +188,10 @@ select is(
 
 update public.quotes set status = 'archived', previous_status = 'draft', archived_at = now() where id = '84000000-0000-0000-0000-000000000003';
 
+-- Abandoned before sending (20261002130000): nobody lost anything, so the card leaves the board with no outcome.
 select is(
-  (select outcome from public.opportunities where quote_id = '84000000-0000-0000-0000-000000000003'),
-  'lost', 'archiving a still-open draft quote loses its opportunity, with no Pipeline-specific RPC involved'
+  (select stage || '/' || outcome from public.opportunities where quote_id = '84000000-0000-0000-0000-000000000003'),
+  'request_closed/open', 'archiving a never-sent draft quote takes its card off the board without a Lost outcome'
 );
 
 -- Restoring it back to draft reopens, the same as Revise/reopen does.
@@ -198,7 +199,7 @@ update public.quotes set status = 'draft', previous_status = null, archived_at =
 
 select is(
   (select outcome from public.opportunities where quote_id = '84000000-0000-0000-0000-000000000003'),
-  'open', 'restoring an abandoned draft quote reopens its opportunity'
+  'open', 'restoring an abandoned draft quote leaves its opportunity open'
 );
 
 -- 7. Archiving and restoring an already-Won quote never touches outcome --------------------------------------

@@ -85,12 +85,12 @@ select set_config('request.jwt.claim.sub', 'c3000000-0000-0000-0000-000000000001
 
 select is(
   (select count(distinct stage)::integer
-     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50)),
+     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50, board_today => current_date)),
   3, 'the grouped column spans all three assessment sub-states'
 );
 select is(
   (select count(*)::integer
-     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50)),
+     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50, board_today => current_date)),
   9, 'and returns every open assessment card exactly once'
 );
 
@@ -98,19 +98,19 @@ select is(
 -- rather than pass on a fixture that never had it.
 select is(
   (select count(*)::integer
-     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50)
+     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50, board_today => current_date)
      where stage = 'assessment_unscheduled'),
   3, 'three unscheduled cards are in the group'
 );
 select is(
   (select count(*)::integer
-     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50)
+     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50, board_today => current_date)
      where stage = 'assessment_scheduled'),
   3, 'three scheduled cards are in the group'
 );
 select is(
   (select count(*)::integer
-     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50)
+     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50, board_today => current_date)
      where stage = 'assessment_completed'),
   3, 'three completed cards are in the group'
 );
@@ -119,19 +119,19 @@ select is(
 
 select isnt(
   (select assessment_starts_at
-     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50)
+     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50, board_today => current_date)
      where stage = 'assessment_scheduled' limit 1),
   null, 'a scheduled card carries its appointment start, not just a Request status'
 );
 select isnt(
   (select assessment_ends_at
-     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50)
+     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50, board_today => current_date)
      where stage = 'assessment_scheduled' limit 1),
   null, 'and its appointment end'
 );
 select is(
   (select assessment_starts_at
-     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50)
+     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50, board_today => current_date)
      where stage = 'assessment_unscheduled' limit 1),
   null, 'an unscheduled card has no appointment'
 );
@@ -139,19 +139,20 @@ select is(
 -- The join to assessments must not fan a card out. assessments.request_id is unique, so one row per card.
 select is(
   (select count(*)::integer
-     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50)),
+     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50, board_today => current_date)),
   (select count(distinct id)::integer
-     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50)),
+     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50, board_today => current_date)),
   'the assessment join never duplicates a card'
 );
 
 -- 3. One globally correct order across the three sub-states ------------------------------------------------
 
+-- The board's default order is by next Task now, so the time order is asked for by name.
 -- The function returns rows already ordered; array_agg without an ORDER BY preserves that arrival order,
 -- so this compares the function's own emitted order against the correct one.
 select is(
   (select array_agg(id)
-     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50)),
+     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', 50, 'stage_entered_at', 'desc')),
   (select array_agg(id order by stage_entered_at desc, id desc)
      from public.opportunities
      where organization_id = 'c4000000-0000-0000-0000-000000000001'
@@ -223,22 +224,22 @@ select ok(
 -- 5. The logical column is the only grouping that exists ---------------------------------------------------
 
 select throws_ok(
-  $$select * from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessments')$$,
+  $$select * from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessments', board_today => current_date)$$,
   '22023', null, 'a near-miss column name is refused, not guessed at'
 );
 select throws_ok(
-  $$select * from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'quote_draft,quote_awaiting_response')$$,
+  $$select * from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'quote_draft,quote_awaiting_response', board_today => current_date)$$,
   '22023', null, 'a caller cannot invent its own multi-stage grouping'
 );
 select throws_ok(
-  $$select * from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'request_closed')$$,
+  $$select * from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'request_closed', board_today => current_date)$$,
   '22023', null, 'request_closed is still parking, not a column'
 );
 
 -- The seven real stages still answer individually, which is the detailed view the toggle turns on.
 select is(
   (select count(*)::integer
-     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment_scheduled', 50)),
+     from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment_scheduled', 50, board_today => current_date)),
   3, 'the detailed view still reads one assessment stage on its own'
 );
 
@@ -246,7 +247,7 @@ select is(
 
 select set_config('request.jwt.claim.sub', 'c3000000-0000-0000-0000-000000000002', true);
 select throws_ok(
-  $$select * from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment')$$,
+  $$select * from public.pipeline_board_page('c4000000-0000-0000-0000-000000000001', 'assessment', board_today => current_date)$$,
   '42501', null, 'an admin from another organization cannot read org A''s grouped column'
 );
 
@@ -261,7 +262,9 @@ select is(
 );
 
 select is(
-  (public.save_pipeline_settings('c4000000-0000-0000-0000-000000000001', 1, true, '[]'::jsonb)) ->> 'status',
+  (public.save_pipeline_settings('c4000000-0000-0000-0000-000000000001', 1, true, '[]'::jsonb,
+     (select pipeline_inactivity_days from public.organization_settings
+        where organization_id = 'c4000000-0000-0000-0000-000000000001'))) ->> 'status',
   'saved', 'an admin can turn the detailed stages on'
 );
 select is(
@@ -282,7 +285,9 @@ select is(
 
 -- A stale save is answered as data, not an error, so the page can name the other editor.
 select is(
-  (public.save_pipeline_settings('c4000000-0000-0000-0000-000000000001', 1, false, '[]'::jsonb)) ->> 'status',
+  (public.save_pipeline_settings('c4000000-0000-0000-0000-000000000001', 1, false, '[]'::jsonb,
+     (select pipeline_inactivity_days from public.organization_settings
+        where organization_id = 'c4000000-0000-0000-0000-000000000001'))) ->> 'status',
   'stale', 'a save carrying the old revision is refused as stale'
 );
 select is(
@@ -301,7 +306,9 @@ select is(
 -- A member without settings.business.edit cannot change how the whole organization sees its board.
 select set_config('request.jwt.claim.sub', 'c3000000-0000-0000-0000-000000000003', true);
 select throws_ok(
-  $$select public.save_pipeline_settings('c4000000-0000-0000-0000-000000000001', 2, false, '[]'::jsonb)$$,
+  $$select public.save_pipeline_settings('c4000000-0000-0000-0000-000000000001', 2, false, '[]'::jsonb,
+     (select pipeline_inactivity_days from public.organization_settings
+        where organization_id = 'c4000000-0000-0000-0000-000000000001'))$$,
   '42501', null, 'a field member cannot change the organization''s board presentation'
 );
 

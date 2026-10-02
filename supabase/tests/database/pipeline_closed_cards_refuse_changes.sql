@@ -5,7 +5,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(19);
+select plan(21);
 
 -- Fixtures ------------------------------------------------------------------------------------------------
 
@@ -37,9 +37,10 @@ select
   '92300000-0000-0000-0000-000000000001',
   'G2 Request R' || n,
   'new'
-from generate_series(1, 2) as n;
+from generate_series(1, 3) as n;
 
--- Card 1 stays open; card 2 is marked Lost by the real command below.
+-- Card 1 stays open; card 2 is marked Lost by the real command below; card 3's Request is converted, which
+-- takes its card off the board without an outcome.
 delete from public.opportunities where organization_id = '92100000-0000-0000-0000-000000000001';
 
 insert into public.opportunities (organization_id, client_id, property_id, request_id, title, estimated_value)
@@ -113,21 +114,21 @@ select throws_ok(
   $$select * from public.pipeline_update_opportunity_details(
       target_opportunity_id => (select id from g2_cards where n = 2),
       set_value => true, new_estimated_value => 1)$$,
-  '23514', 'This card is closed, so it can no longer be changed here.',
+  '23514', 'This card has left the board, so it can no longer be changed here.',
   'a Lost card''s frozen value cannot be rewritten'
 );
 select throws_ok(
   $$select * from public.pipeline_update_opportunity_details(
       target_opportunity_id => (select id from g2_cards where n = 2),
       set_owner => true, new_owner_user_id => '92000000-0000-0000-0000-000000000001')$$,
-  '23514', 'This card is closed, so it can no longer be changed here.',
+  '23514', 'This card has left the board, so it can no longer be changed here.',
   'a Lost card cannot be given to another owner'
 );
 select throws_ok(
   $$select * from public.pipeline_update_opportunity_details(
       target_opportunity_id => (select id from g2_cards where n = 2),
       set_expected_close => true, new_expected_close_on => '2027-01-01')$$,
-  '23514', 'This card is closed, so it can no longer be changed here.',
+  '23514', 'This card has left the board, so it can no longer be changed here.',
   'a Lost card''s expected close cannot be changed'
 );
 set local role postgres;
@@ -141,17 +142,17 @@ set local role authenticated;
 
 select throws_ok(
   $$select * from public.pipeline_create_opportunity_task((select id from g2_cards where n = 2), 'New work')$$,
-  '23514', 'This card is closed, so it can no longer be changed here.',
+  '23514', 'This card has left the board, so it can no longer be changed here.',
   'a Lost card takes no new Task'
 );
 select throws_ok(
   $$select * from public.pipeline_update_opportunity_task((select id from g2_made where kind = 'done_task'), 'Renamed')$$,
-  '23514', 'This card is closed, so it can no longer be changed here.',
+  '23514', 'This card has left the board, so it can no longer be changed here.',
   'a Task on a Lost card cannot be edited'
 );
 select throws_ok(
   $$select * from public.pipeline_set_task_completed((select id from g2_made where kind = 'done_task'), false)$$,
-  '23514', 'This card is closed, so it can no longer be changed here.',
+  '23514', 'This card has left the board, so it can no longer be changed here.',
   'a finished Task on a Lost card cannot be started again'
 );
 select lives_ok(
@@ -179,19 +180,19 @@ select is(
 
 select throws_ok(
   $$select * from public.pipeline_create_opportunity_note((select id from g2_cards where n = 2), 'request', 'Late note')$$,
-  '23514', 'This card is closed, so it can no longer be changed here.',
+  '23514', 'This card has left the board, so it can no longer be changed here.',
   'a Lost card takes no new Note from the Brief'
 );
 select throws_ok(
   $$select * from public.pipeline_update_opportunity_note(
       (select id from g2_made where kind = 'note'), (select id from g2_cards where n = 2), 'Rewritten')$$,
-  '23514', 'This card is closed, so it can no longer be changed here.',
+  '23514', 'This card has left the board, so it can no longer be changed here.',
   'a Note on a Lost card cannot be edited from the Brief'
 );
 select throws_ok(
   $$select * from public.pipeline_delete_opportunity_note(
       (select id from g2_made where kind = 'note'), (select id from g2_cards where n = 2), 'request')$$,
-  '23514', 'This card is closed, so it can no longer be changed here.',
+  '23514', 'This card has left the board, so it can no longer be changed here.',
   'a Note on a Lost card cannot be deleted from the Brief'
 );
 
@@ -200,6 +201,22 @@ select throws_ok(
 select lives_ok(
   $$select * from public.pipeline_log_opportunity_call((select id from g2_cards where n = 2), 'connected', null)$$,
   'a call can still be logged against a Lost card'
+);
+
+-- 6. A card that left the board without an outcome is refused too ------------------------------------------------
+
+set local role postgres;
+update public.requests set status = 'converted' where id = '92400000-0000-0000-0000-000000000003';
+select is(
+  (select stage || '/' || outcome from public.opportunities where id = (select id from g2_cards where n = 3)),
+  'request_closed/open', 'a converted Request''s card is off the board and has no outcome'
+);
+set local role authenticated;
+
+select throws_ok(
+  $$select * from public.pipeline_create_opportunity_task((select id from g2_cards where n = 3), 'Dangling')$$,
+  '23514', 'This card has left the board, so it can no longer be changed here.',
+  'a card that left the board without an outcome takes no new Task'
 );
 
 select * from finish();
