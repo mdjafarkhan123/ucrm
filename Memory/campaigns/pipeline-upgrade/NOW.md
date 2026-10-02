@@ -9,9 +9,9 @@ first paying client.
 `docs/sales-pipeline-performance-verification.md`.
 
 **Next part:** G2, full walk-through — paused part-way; its note is `parts/G2-full-walk-through.md`. The
-owner's desktop checks and the missing database tests are done. Open notes carried from stages A–G1 are in
+owner's desktop and phone checks and the missing database tests are done. Open notes carried from stages A–G1 are in
 `stages/G-final-proof.md`. Stage E's file stays until its carried notes (move history screen, bulk Task
 alert) are homed.
 
-**Blockers:** Waits for Jafar — sign in each other role, narrow the Chrome window for the phone checks,
-answer the two questions in the part note, then his own tour.
+**Blockers:** Waits for Jafar — sign in each other role, answer the two questions in the part note, then
+his own tour.

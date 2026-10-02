@@ -11,22 +11,21 @@
 - [x] Cards that left the board refuse Brief changes.
 - [x] Every Pipeline pgTAP file passes locally, including three new ones: custom stages (move, on hold,
       switch off), Request-to-Job Won and Direct job, the `next_task_due_on` trigger.
-- [x] Owner on a phone: board, stage picker, Move menu, Brief, add Task, log call, Won/Lost report,
-      Conversion tab.
 - [x] Owner on desktop: board, search, filters, Table and sorting, bulk tools, Brief, Move menu, mark Lost
       and reopen, on-hold move and Undo, send-quote window (cancelled), Conversion tab, Settings → Pipeline.
 - [x] Fixed: owner, Task-owner, and Salesperson lists offered field and finance teammates the database
       refused; the Board/Table switch had no screen-reader name.
-- [ ] Owner on a phone, layout only: Notes with a photo, on-hold move, mark Lost and reopen, search, filters.
+- [x] Owner on a phone: everything in the desktop line that applies, plus stage picker, add Task, log call,
+      Notes with a photo.
 - [ ] Office, sales, admin walk-through in the browser; field and finance see no Pipeline.
 - [ ] Jafar's own tour, including dragging a card with a real mouse (forward works, backward is refused).
 
 ## Next
 
-Chrome is signed in as the owner at `http://localhost:5173/pipeline`, stuck at desktop width: Jafar drags
-the window narrow for the phone checks. Then the other roles — Jafar signs each one in himself; the
-assistant does not type passwords into the browser. The assistant's fake mouse drag does not register a
-drop, so real dragging is Jafar's to try.
+Chrome is signed in as the owner at `http://localhost:5173/pipeline`. The other roles are next — Jafar signs
+each one in himself; the assistant does not type passwords into the browser. The assistant's fake mouse
+drag does not register a drop, so real dragging is Jafar's to try. For a phone width, `resize_window` on a
+fresh tab narrows Chrome to 524; a screenshot after a scroll can stall — retake it.
 
 ## Outside actions
 
@@ -40,8 +39,8 @@ drop, so real dragging is Jafar's to try.
   G1's big fake company. Its migration ledger stops before `20261006100000`; later files were applied by hand.
 - Test data left on Raad LTD: one "No answer" call on a "Pay-by-app verification (copy)" card; a Task "G2
   check: ring back about the quote" due 2026-10-20 on the other copy; "RLS fix check (owner)" was marked
-  Lost and reopened.
-- Photos on Notes stay "Still being checked" on this machine: the local file checker reports unhealthy.
+  Lost and reopened twice and carries a note "G2 phone check: note with a photo".
+- Photos on Notes stay "Still being checked" here: the local file checker is unhealthy.
 - Waiting on Jafar: "When a Quote is approved (Won), any follow-up Task still open on its card stays open
   forever on the Schedule, and nobody can tick it off because the card's Brief no longer opens. Should
   winning a card finish its open Tasks automatically, the same way losing a Request already does
