@@ -461,6 +461,7 @@
 						filters={applied}
 						{formatting}
 						{canViewValue}
+						{canEdit}
 						{customStages}
 						{inactivityRules}
 						onOpen={(card) => (selected = card)}

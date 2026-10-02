@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createInfiniteQuery } from '@tanstack/svelte-query';
+	import { createInfiniteQuery, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import DataTable, {
 		type DataTableColumn,
 		type DataTableSort
@@ -10,15 +10,26 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import StageAgeChip from './StageAgeChip.svelte';
+	import TaskDialog from './TaskDialog.svelte';
 	import {
 		boardTableKey,
+		bulkUpdateOpportunities,
 		fetchBoardColumn,
+		invalidatePipeline,
+		type BulkChange,
+		type TaskInput,
 		type BoardColumnPage,
 		type OpportunityCard as Card
 	} from '$lib/pipeline/api';
+	import { BULK_CARD_LIMIT, cardCount, summarizeBulk } from '$lib/pipeline/bulk';
+	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 	import {
 		BOARD_SORTS,
+		boardFilterKey,
 		sortHasDirection,
 		type BoardFilters,
 		type BoardSort
@@ -34,11 +45,15 @@
 
 	// The board's cards as one list (Pipedrive's list view, HubSpot's table view): the same search, filters
 	// and order, read through the same route, one row per card. Read only — a row opens the same Brief a
-	// card does, and moving work stays with the Brief and the board.
+	// card does, and moving work stays with the Brief and the board. The one thing the table adds is bulk
+	// work: tick several rows to change their owner, give each a Task, or place them in a custom stage —
+	// nothing that talks to a customer, converts, closes, or moves a protected stage (plan § First-release
+	// board).
 	let {
 		filters,
 		formatting,
 		canViewValue,
+		canEdit = false,
 		customStages = [],
 		inactivityRules = null,
 		onOpen,
@@ -49,6 +64,8 @@
 		formatting: BoardFormatting | null;
 		// The Value column is absent, not empty, for a member who may not see money.
 		canViewValue: boolean;
+		// Whether this member may change cards, which decides if rows can be ticked at all.
+		canEdit?: boolean;
 		customStages?: readonly CustomStage[];
 		inactivityRules?: InactivityRules | null;
 		onOpen: (card: Card) => void;
@@ -66,6 +83,99 @@
 	}));
 
 	const rows = $derived(query.data?.pages.flatMap((page) => page.opportunities) ?? []);
+
+	// A new search, filter, or order is a new list, so whatever was ticked in the old one is let go rather
+	// than acted on out of sight.
+	let selectedIds = $derived.by(() => {
+		boardFilterKey(filters);
+		return new Set<string>();
+	});
+	const tooMany = $derived(selectedIds.size > BULK_CARD_LIMIT);
+
+	const queryClient = useQueryClient();
+	const toast = getToastManager();
+	let working = $state(false);
+	let taskOpen = $state(false);
+
+	// The Salesperson filter has already loaded this list, so the owner menu opens on it warm.
+	const teamQuery = createQuery(() => ({
+		queryKey: assignableTeamKey,
+		queryFn: fetchAssignableTeam,
+		staleTime: 300_000,
+		enabled: canEdit
+	}));
+
+	// Runs one bulk change over the ticked cards and says what happened in one toast. Cards that were refused
+	// stay ticked, so the next step — say, adding the follow-up Task an on-hold stage asked for — is one click.
+	async function applyBulk(change: BulkChange, doneLabel: string) {
+		const ids = [...selectedIds];
+		working = true;
+		try {
+			const summary = summarizeBulk(await bulkUpdateOpportunities(ids, change));
+			void invalidatePipeline(queryClient);
+			selectedIds = new Set(summary.refusedIds);
+			const changed = summary.done + summary.unchanged;
+			if (summary.refusedIds.length === 0) {
+				toast.success(`${cardCount(changed)} ${doneLabel}`);
+			} else {
+				const why = summary.reasons
+					.map(({ reason, count }) => `${cardCount(count)}: ${reason}`)
+					.join(' ');
+				toast.warning(
+					changed > 0
+						? `${cardCount(changed)} ${doneLabel}, ${summary.refusedIds.length} not changed`
+						: `${summary.refusedIds.length === 1 ? 'That card was' : 'Those cards were'} not changed`,
+					`${why} The ones not changed are still ticked.`
+				);
+			}
+		} finally {
+			working = false;
+		}
+	}
+
+	async function bulkOwner(ownerId: string | null, name: string) {
+		try {
+			await applyBulk({ action: 'owner', owner_user_id: ownerId }, `given to ${name}`);
+		} catch (thrown) {
+			toast.error('Could not change the owner', (thrown as Error).message);
+		}
+	}
+	async function bulkPlace(stageId: string, name: string) {
+		try {
+			await applyBulk({ action: 'place', custom_stage_id: stageId }, `moved to ${name}`);
+		} catch (thrown) {
+			toast.error('Could not move the cards', (thrown as Error).message);
+		}
+	}
+	// A refusal of the whole request throws back into the dialog, which shows it under the form.
+	async function bulkTask(task: TaskInput) {
+		await applyBulk({ action: 'task', task }, 'given the task');
+		taskOpen = false;
+	}
+
+	const ownerItems = $derived([
+		{ label: 'Unassigned', onSelect: () => void bulkOwner(null, 'nobody') },
+		...(teamQuery.data ?? []).map((member) => {
+			const name = member.full_name ?? 'Unnamed teammate';
+			return { label: name, onSelect: () => void bulkOwner(member.id, name) };
+		})
+	]);
+	// Requests and Quotes each have their own follow-up stages, and a card only fits its own section's, so
+	// the menu keeps them apart rather than offering one list that half the cards will refuse.
+	const stageGroups = $derived(
+		(['request', 'quote'] as const)
+			.map((section) => ({
+				heading: section === 'request' ? 'Requests' : 'Quotes',
+				items: customStages
+					.filter((stage) => stage.section === section)
+					.map((stage) => ({
+						label: stage.name,
+						note: stage.requires_future_task ? 'Needs a future task' : undefined,
+						onSelect: () => void bulkPlace(stage.id, stage.name)
+					}))
+			}))
+			.filter((group) => group.items.length > 0)
+	);
 
 	// A header sorts only when it is one of the board's own orders; every other column reads in that order.
 	const columns = $derived<DataTableColumn[]>([
@@ -145,10 +255,58 @@
 		description="Change the search or the filters to see more of the pipeline."
 	/>
 {:else}
+	{#if canEdit && selectedIds.size > 0}
+		<div class="pipeline-table__bulk" role="region" aria-label="Change the ticked cards">
+			<span class="pipeline-table__bulk-count">{selectedIds.size} selected</span>
+			{#if tooMany}
+				<span class="pipeline-table__bulk-note">
+					Tick {BULK_CARD_LIMIT} or fewer to change them together.
+				</span>
+			{:else}
+				<DropdownMenu
+					items={ownerItems}
+					align="start"
+					disabled={working}
+					triggerClass="pipeline-table__bulk-trigger"
+					triggerLabel={`Change the owner of ${cardCount(selectedIds.size)}`}
+				>
+					{#snippet trigger()}Change owner{/snippet}
+				</DropdownMenu>
+				<Button
+					variant="secondary"
+					size="small"
+					disabled={working}
+					onclick={() => (taskOpen = true)}>Add task</Button
+				>
+				{#if stageGroups.length > 0}
+					<DropdownMenu
+						groups={stageGroups}
+						align="start"
+						disabled={working}
+						triggerClass="pipeline-table__bulk-trigger"
+						triggerLabel={`Move ${cardCount(selectedIds.size)} to a follow-up stage`}
+					>
+						{#snippet trigger()}Move to stage{/snippet}
+					</DropdownMenu>
+				{/if}
+			{/if}
+			<Button
+				variant="tertiary"
+				variation="subtle"
+				size="small"
+				class="pipeline-table__bulk-clear"
+				disabled={working}
+				onclick={() => (selectedIds = new Set())}>Clear</Button
+			>
+		</div>
+	{/if}
 	<DataTable
 		{columns}
 		items={rows}
 		rowId={(card) => card.id}
+		selectable={canEdit}
+		bind:selectedIds
+		rowLabel={(card) => `Select ${card.title}`}
 		caption="Pipeline"
 		onRowActivate={onOpen}
 		{sort}
@@ -234,7 +392,66 @@
 	</DataTable>
 {/if}
 
+{#if taskOpen}
+	<TaskDialog
+		open
+		submit={bulkTask}
+		bulkCount={selectedIds.size}
+		timezone={formatting?.timezone}
+		onClose={() => (taskOpen = false)}
+	/>
+{/if}
+
 <style lang="scss">
+	.pipeline-table__bulk {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-small);
+		margin-bottom: var(--space-base);
+		padding: var(--space-small) var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface);
+	}
+	.pipeline-table__bulk-count {
+		margin-right: var(--space-small);
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+	.pipeline-table__bulk-note {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+	}
+	.pipeline-table__bulk :global(.pipeline-table__bulk-clear) {
+		margin-left: auto;
+	}
+	.pipeline-table__bulk :global(.pipeline-table__bulk-trigger) {
+		display: inline-flex;
+		align-items: center;
+		min-height: 36px;
+		padding: 0 var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		color: var(--color-heading);
+		background: var(--color-surface);
+		font: inherit;
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		cursor: pointer;
+
+		&:hover {
+			background: var(--color-surface--hover);
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+		&:disabled {
+			cursor: not-allowed;
+			opacity: 0.6;
+		}
+	}
 	.pipeline-table__open {
 		display: block;
 		padding: 0;

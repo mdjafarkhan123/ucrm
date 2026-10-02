@@ -22269,6 +22269,19 @@ export type Database = {
 					title: string;
 				}[];
 			};
+			pipeline_bulk_update: {
+				Args: {
+					bulk_action: string;
+					new_assignee_user_id?: string;
+					new_due_on?: string;
+					new_instructions?: string;
+					new_owner_user_id?: string;
+					new_title?: string;
+					target_custom_stage_id?: string;
+					target_opportunity_ids: string[];
+				};
+				Returns: Json;
+			};
 			pipeline_create_opportunity_note: {
 				Args: {
 					new_body: string;

@@ -8,6 +8,7 @@ import {
 	SAVED_FILTER_NAME_MAX
 } from '$lib/pipeline/filters';
 import { OUTCOME_SORTS, OUTCOME_TYPES } from '$lib/pipeline/outcomes';
+import { BULK_CARD_LIMIT } from '$lib/pipeline/bulk';
 import { quoteSendChoiceSchema } from '$lib/server/validation/quotes.schema';
 
 // Nothing here validates a create. Opportunities are only ever made by the Request trigger, and later by
@@ -173,6 +174,26 @@ export const taskInputSchema = z.object({
 		.transform((value) => value ?? null),
 	due_on: isoDay.nullish().transform((value) => value ?? null)
 });
+
+// The Table's bulk tools: the only three changes the plan allows in bulk, each carrying exactly what its
+// single-card route takes.
+const bulkCardIds = z
+	.array(z.string().uuid())
+	.min(1, 'Pick at least one card.')
+	.max(BULK_CARD_LIMIT, `Change ${BULK_CARD_LIMIT} cards or fewer at a time.`);
+export const pipelineBulkSchema = z.discriminatedUnion('action', [
+	z.object({
+		action: z.literal('owner'),
+		opportunity_ids: bulkCardIds,
+		owner_user_id: z.string().uuid().nullable()
+	}),
+	z.object({ action: z.literal('task'), opportunity_ids: bulkCardIds, task: taskInputSchema }),
+	z.object({
+		action: z.literal('place'),
+		opportunity_ids: bulkCardIds,
+		custom_stage_id: z.string().uuid()
+	})
+]);
 
 // Completing and reopening are the same request with the flag turned around.
 export const taskCompletionSchema = z.object({
