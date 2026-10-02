@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET as getThread } from './thread/+server';
 import { POST as postMessage } from './messages/+server';
+import { GET as getChats, POST as startChat } from './threads/+server';
+import { PATCH as changeTopic } from './threads/[threadId]/+server';
 import { GET as getUnread } from './unread/+server';
 import { POST as postRead } from './thread/read/+server';
 import { POST as addPerson } from './threads/[threadId]/people/+server';
@@ -31,11 +33,10 @@ type MessageRow = {
 	created_at: string;
 };
 
-// The three reads a thread makes: the member's thread, the availability line, and the messages (newest
-// first, as the database returns them).
+// The three reads a chat makes: the chat itself, the availability line, and the messages (newest first, as
+// the database returns them).
 function supabase(options: {
-	thread?: { id: string; started_by_user_id?: string | null } | null;
-	teamCount?: number;
+	thread?: { id: string; topic?: string; started_by_user_id?: string | null } | null;
 	profiles?: { id: string; full_name: string }[];
 	note?: string;
 	messages?: MessageRow[];
@@ -54,8 +55,6 @@ function supabase(options: {
 			select: () => chain,
 			eq: () => chain,
 			in: () => Promise.resolve(result),
-			// The "Team chats" count is the only read that ends on this filter.
-			or: () => Promise.resolve({ count: options.teamCount ?? 0, error: null }),
 			order: () => chain,
 			limit: (count: number) => {
 				limit(count);
@@ -120,39 +119,51 @@ beforeEach(() => {
 });
 
 describe('GET /api/support/thread', () => {
+	const open = (client: ReturnType<typeof supabase>, extra = '') =>
+		getThread(event(client, { query: `?thread_id=${THREAD_ID}${extra}` }));
+
 	it('refuses someone with no active organization', async () => {
 		mockedContext.mockResolvedValue(null);
 		const client = supabase({});
-		const response = await getThread(event(client));
+		const response = await open(client);
 		expect(response.status).toBe(401);
 		expect(client.from).not.toHaveBeenCalled();
 	});
 
 	it('answers any active team member, whatever their role', async () => {
-		const response = await getThread(event(supabase({})));
+		const response = await open(supabase({ thread: { id: THREAD_ID, topic: 'other' } }));
 		expect(response.status).toBe(200);
 	});
 
-	it('returns an empty conversation, with the availability line, before the first message', async () => {
-		const client = supabase({ note: 'Mon–Fri. We reply within a day.' });
+	it('names the chat the member asks for, and rejects a request that names none', async () => {
+		const client = supabase({});
 		const response = await getThread(event(client));
-		expect(await response.json()).toEqual({
-			thread_id: null,
+		expect(response.status).toBe(422);
+		expect(client.from).not.toHaveBeenCalled();
+	});
+
+	it('returns the chat’s topic and the availability line', async () => {
+		const client = supabase({
+			thread: { id: THREAD_ID, topic: 'billing', started_by_user_id: 'user-1' },
+			note: 'Mon–Fri. We reply within a day.'
+		});
+		const body = await (await open(client)).json();
+		expect(body).toMatchObject({
+			thread_id: THREAD_ID,
+			topic: 'billing',
 			messages: [],
 			has_earlier: false,
 			availability_note: 'Mon–Fri. We reply within a day.',
-			started_by_name: null,
-			team_thread_count: 0
+			started_by_name: null
 		});
-		expect(client.from).not.toHaveBeenCalledWith('support_messages');
 	});
 
 	it('returns messages oldest first and never caches them publicly', async () => {
 		const client = supabase({
-			thread: { id: 'thread-1' },
+			thread: { id: THREAD_ID, topic: 'other' },
 			messages: [message('3', 'uplift'), message('2'), message('1')]
 		});
-		const response = await getThread(event(client));
+		const response = await open(client);
 		const body = await response.json();
 		expect(body.messages.map((row: MessageRow) => row.id)).toEqual(['1', '2', '3']);
 		expect(body.has_earlier).toBe(false);
@@ -161,33 +172,38 @@ describe('GET /api/support/thread', () => {
 
 	it('reads one row past the page to say whether earlier messages exist', async () => {
 		const client = supabase({
-			thread: { id: 'thread-1' },
+			thread: { id: THREAD_ID, topic: 'other' },
 			messages: [message('3'), message('2'), message('1')]
 		});
-		const response = await getThread(event(client, { query: '?limit=2' }));
+		const response = await open(client, '&limit=2');
 		const body = await response.json();
 		expect(client.limit).toHaveBeenCalledWith(3);
 		expect(body.messages.map((row: MessageRow) => row.id)).toEqual(['2', '3']);
 		expect(body.has_earlier).toBe(true);
 	});
 
-	it('counts the team conversations the member may also see', async () => {
+	it.each([
+		['the person who started it', 'field', 'user-1', true],
+		['an owner', 'owner', 'user-2', true],
+		['an admin', 'admin', 'user-2', true],
+		['someone else on the team', 'field', 'user-2', false]
+	])('lets %s change the topic: %s', async (_name, role, starter, allowed) => {
+		mockedContext.mockResolvedValue(member(role));
 		const client = supabase({
-			thread: { id: 'thread-1', started_by_user_id: 'user-1' },
-			teamCount: 3
+			thread: { id: THREAD_ID, topic: 'other', started_by_user_id: starter },
+			profiles: [{ id: 'user-2', full_name: 'Maria Lopez' }]
 		});
-		const body = await (await getThread(event(client))).json();
-		expect(body.team_thread_count).toBe(3);
-		expect(body.started_by_name).toBeNull();
+		const body = await (await open(client)).json();
+		expect(body.can_change_topic).toBe(allowed);
 	});
 
 	it('opens a teammate’s conversation the member can see, named after its starter', async () => {
 		const client = supabase({
-			thread: { id: THREAD_ID, started_by_user_id: 'user-2' },
+			thread: { id: THREAD_ID, topic: 'website', started_by_user_id: 'user-2' },
 			profiles: [{ id: 'user-2', full_name: 'Maria Lopez' }],
 			messages: [message('1')]
 		});
-		const response = await getThread(event(client, { query: `?thread_id=${THREAD_ID}` }));
+		const response = await open(client);
 		const body = await response.json();
 		expect(response.status).toBe(200);
 		expect(body.thread_id).toBe(THREAD_ID);
@@ -195,37 +211,39 @@ describe('GET /api/support/thread', () => {
 	});
 
 	it('answers 404 for a conversation row level security hides', async () => {
-		const client = supabase({ thread: null });
-		const response = await getThread(event(client, { query: `?thread_id=${THREAD_ID}` }));
+		const response = await open(supabase({ thread: null }));
 		expect(response.status).toBe(404);
-		expect(client.from).not.toHaveBeenCalledWith('support_messages');
 	});
 
 	it('rejects a page size beyond the ceiling', async () => {
-		const response = await getThread(event(supabase({}), { query: '?limit=5000' }));
+		const response = await open(supabase({}), '&limit=5000');
 		expect(response.status).toBe(422);
 	});
 });
 
 describe('POST /api/support/messages', () => {
+	const reply = (text: string, extra: Record<string, unknown> = {}) => ({
+		body: text,
+		client_message_id: CLIENT_MESSAGE_ID,
+		thread_id: THREAD_ID,
+		...extra
+	});
+
 	it('refuses someone with no active organization', async () => {
 		mockedContext.mockResolvedValue(null);
 		const client = supabase({});
-		const response = await postMessage(
-			event(client, { body: { body: 'Hello', client_message_id: CLIENT_MESSAGE_ID } })
-		);
+		const response = await postMessage(event(client, { body: reply('Hello') }));
 		expect(response.status).toBe(401);
 		expect(client.rpc).not.toHaveBeenCalled();
 	});
 
-	it('sends the trimmed message for the caller’s own organization', async () => {
+	it('sends the trimmed message into the named chat for the caller’s own organization', async () => {
 		const client = supabase({});
-		const response = await postMessage(
-			event(client, { body: { body: '  Hello  ', client_message_id: CLIENT_MESSAGE_ID } })
-		);
+		const response = await postMessage(event(client, { body: reply('  Hello  ') }));
 		expect(response.status).toBe(201);
 		expect(client.rpc).toHaveBeenCalledWith('send_support_message', {
 			target_organization_id: 'org-1',
+			target_thread_id: THREAD_ID,
 			message_body: 'Hello',
 			message_client_id: CLIENT_MESSAGE_ID
 		});
@@ -237,15 +255,7 @@ describe('POST /api/support/messages', () => {
 
 	it('ignores an organization named in the body', async () => {
 		const client = supabase({});
-		await postMessage(
-			event(client, {
-				body: {
-					body: 'Hello',
-					client_message_id: CLIENT_MESSAGE_ID,
-					target_organization_id: 'org-2'
-				}
-			})
-		);
+		await postMessage(event(client, { body: reply('Hello', { target_organization_id: 'org-2' }) }));
 		expect(client.rpc).toHaveBeenCalledWith(
 			'send_support_message',
 			expect.objectContaining({ target_organization_id: 'org-1' })
@@ -253,12 +263,10 @@ describe('POST /api/support/messages', () => {
 	});
 
 	it.each([
-		['an empty message', { body: '   ', client_message_id: CLIENT_MESSAGE_ID }],
-		[
-			'a message that is too long',
-			{ body: 'a'.repeat(4001), client_message_id: CLIENT_MESSAGE_ID }
-		],
-		['a message with no identifier', { body: 'Hello' }]
+		['an empty message', reply('   ')],
+		['a message that is too long', reply('a'.repeat(4001))],
+		['a message with no identifier', { body: 'Hello', thread_id: THREAD_ID }],
+		['a message that names no chat', { body: 'Hello', client_message_id: CLIENT_MESSAGE_ID }]
 	])('rejects %s before the database', async (_name, body) => {
 		const client = supabase({});
 		const response = await postMessage(event(client, { body }));
@@ -269,20 +277,14 @@ describe('POST /api/support/messages', () => {
 	it('stops a flood of messages', async () => {
 		mockedRateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 30 });
 		const client = supabase({});
-		const response = await postMessage(
-			event(client, { body: { body: 'Hello', client_message_id: CLIENT_MESSAGE_ID } })
-		);
+		const response = await postMessage(event(client, { body: reply('Hello') }));
 		expect(response.status).toBe(429);
 		expect(client.rpc).not.toHaveBeenCalled();
 	});
 
-	it('writes into a teammate’s conversation when one is named', async () => {
+	it('writes into the chat that is named', async () => {
 		const client = supabase({});
-		await postMessage(
-			event(client, {
-				body: { body: 'Hello', client_message_id: CLIENT_MESSAGE_ID, thread_id: THREAD_ID }
-			})
-		);
+		await postMessage(event(client, { body: reply('Hello') }));
 		expect(client.rpc).toHaveBeenCalledWith(
 			'send_support_message',
 			expect.objectContaining({ target_thread_id: THREAD_ID })
@@ -291,20 +293,123 @@ describe('POST /api/support/messages', () => {
 
 	it('refuses a conversation the member cannot see', async () => {
 		const client = supabase({ rpcError: { code: '42501', message: 'no' } });
-		const response = await postMessage(
-			event(client, {
-				body: { body: 'Hello', client_message_id: CLIENT_MESSAGE_ID, thread_id: THREAD_ID }
-			})
-		);
+		const response = await postMessage(event(client, { body: reply('Hello') }));
 		expect(response.status).toBe(403);
 		expect((await response.json()).error).toBe('That conversation is not one you can write in.');
+	});
+});
+
+describe('GET /api/support/threads', () => {
+	it('refuses someone with no active organization', async () => {
+		mockedContext.mockResolvedValue(null);
+		const client = supabase({});
+		expect((await getChats(event(client))).status).toBe(401);
+		expect(client.from).not.toHaveBeenCalled();
+	});
+});
+
+describe('POST /api/support/threads', () => {
+	const start = (extra: Record<string, unknown> = {}) => ({
+		body: 'Hello',
+		client_message_id: CLIENT_MESSAGE_ID,
+		...extra
+	});
+
+	it('refuses someone with no active organization', async () => {
+		mockedContext.mockResolvedValue(null);
+		const client = supabase({});
+		expect((await startChat(event(client, { body: start() }))).status).toBe(401);
+		expect(client.rpc).not.toHaveBeenCalled();
+	});
+
+	it('starts a chat in the caller’s own organization, topic Other when none is chosen', async () => {
+		const client = supabase({});
+		const response = await startChat(
+			event(client, { body: start({ target_organization_id: 'org-2' }) })
+		);
+		expect(response.status).toBe(201);
+		expect(client.rpc).toHaveBeenCalledWith('start_support_thread', {
+			target_organization_id: 'org-1',
+			thread_topic: 'other',
+			message_body: 'Hello',
+			message_client_id: CLIENT_MESSAGE_ID
+		});
+		expect(mockedRateLimit).toHaveBeenCalledWith(
+			client,
+			expect.objectContaining({ bucketKey: 'support-send:user-1' })
+		);
+	});
+
+	it('starts a chat on the topic the member picked', async () => {
+		const client = supabase({});
+		await startChat(event(client, { body: start({ topic: 'google_profile' }) }));
+		expect(client.rpc).toHaveBeenCalledWith(
+			'start_support_thread',
+			expect.objectContaining({ thread_topic: 'google_profile' })
+		);
+	});
+
+	it.each([
+		['an empty message', start({ body: '   ' })],
+		['a topic that is not listed', start({ topic: 'gossip' })],
+		['a message with no identifier', { body: 'Hello' }]
+	])('rejects %s before the database', async (_name, body) => {
+		const client = supabase({});
+		expect((await startChat(event(client, { body }))).status).toBe(422);
+		expect(client.rpc).not.toHaveBeenCalled();
+	});
+
+	it('stops a flood of new chats', async () => {
+		mockedRateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 30 });
+		const client = supabase({});
+		expect((await startChat(event(client, { body: start() }))).status).toBe(429);
+		expect(client.rpc).not.toHaveBeenCalled();
 	});
 
 	it('reports the database’s refusal of a non-member as no access', async () => {
 		const client = supabase({ rpcError: { code: '42501', message: 'no' } });
-		const response = await postMessage(
-			event(client, { body: { body: 'Hello', client_message_id: CLIENT_MESSAGE_ID } })
-		);
+		const response = await startChat(event(client, { body: start() }));
+		expect(response.status).toBe(403);
+	});
+});
+
+describe('PATCH /api/support/threads/[threadId]', () => {
+	const params = { threadId: THREAD_ID };
+
+	it('refuses someone with no active organization', async () => {
+		mockedContext.mockResolvedValue(null);
+		const client = supabase({});
+		expect((await changeTopic(event(client, { body: { topic: 'crm' }, params }))).status).toBe(401);
+		expect(client.rpc).not.toHaveBeenCalled();
+	});
+
+	it('changes the topic through the database rule', async () => {
+		const client = supabase({});
+		client.rpc.mockResolvedValue({ data: true, error: null });
+		const response = await changeTopic(event(client, { body: { topic: 'crm' }, params }));
+		expect(response.status).toBe(200);
+		expect(await response.json()).toEqual({ changed: true });
+		expect(client.rpc).toHaveBeenCalledWith('set_support_thread_topic', {
+			target_thread_id: THREAD_ID,
+			new_topic: 'crm'
+		});
+	});
+
+	it.each([
+		['a topic that is not listed', { topic: 'gossip' }, THREAD_ID, 422],
+		['a chat that is not an id', { topic: 'crm' }, 'chat-1', 404]
+	])('rejects %s before the database', async (_name, body, threadId, status) => {
+		const client = supabase({});
+		const response = await changeTopic(event(client, { body, params: { threadId } }));
+		expect(response.status).toBe(status);
+		expect(client.rpc).not.toHaveBeenCalled();
+	});
+
+	it('passes on the database’s refusal of someone who may not change it', async () => {
+		const client = supabase({
+			rpcError: { code: '42501', message: 'Only the person who started this chat…' }
+		});
+		const response = await changeTopic(event(client, { body: { topic: 'crm' }, params }));
 		expect(response.status).toBe(403);
 	});
 });

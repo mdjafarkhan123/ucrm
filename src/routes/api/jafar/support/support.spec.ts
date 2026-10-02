@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET as getInbox } from './threads/+server';
-import { GET as getThread } from './threads/[threadId]/+server';
+import { GET as getThread, PATCH as patchTopic } from './threads/[threadId]/+server';
 import { POST as postReply } from './threads/[threadId]/messages/+server';
 import { PATCH as patchSettings } from './settings/+server';
 import { GET as getUnread } from './unread/+server';
@@ -20,6 +20,7 @@ const CLIENT_MESSAGE_ID = '223e4567-e89b-12d3-a456-426614174000';
 
 const threadRow = (id: string, senderKind = 'member', upliftLastReadAt: string | null = null) => ({
 	id,
+	topic: 'billing',
 	started_by_user_id: 'user-1',
 	last_message_at: '2026-10-01T10:00:00Z',
 	uplift_last_read_at: upliftLastReadAt,
@@ -37,6 +38,7 @@ function client(options: {
 }) {
 	const upsert = vi.fn().mockResolvedValue({ error: null });
 	const insert = vi.fn().mockResolvedValue({ error: null });
+	const eqCalls: unknown[][] = [];
 	const rpc = vi
 		.fn()
 		.mockResolvedValue(
@@ -59,7 +61,10 @@ function client(options: {
 				: (options.settings ?? { responder_name: '', availability_note: '' });
 		const chain = {
 			select: () => chain,
-			eq: () => chain,
+			eq: (...args: unknown[]) => {
+				eqCalls.push(args);
+				return chain;
+			},
 			order: () => chain,
 			in: () => Promise.resolve({ data: list, error: null }),
 			limit: () => Promise.resolve({ data: list, error: null }),
@@ -69,7 +74,7 @@ function client(options: {
 		};
 		return chain;
 	});
-	return { from, rpc, upsert, insert };
+	return { from, rpc, upsert, insert, eqCalls };
 }
 
 function event(options: { body?: unknown; threadId?: string; query?: string } = {}) {
@@ -98,6 +103,7 @@ describe('Support Inbox API boundary', () => {
 	it.each([
 		['the inbox', () => getInbox(event())],
 		['a conversation', () => getThread(event())],
+		['a topic change', () => patchTopic(event({ body: { topic: 'crm' } }))],
 		[
 			'a reply',
 			() => postReply(event({ body: { body: 'Hi', client_message_id: CLIENT_MESSAGE_ID } }))
@@ -128,11 +134,31 @@ describe('Support Inbox API boundary', () => {
 		expect(body.threads[0]).toMatchObject({
 			id: 'thread-1',
 			organization: { id: 'org-1', name: 'Bright Spark Electrical' },
+			topic: 'billing',
 			member_name: 'Sam Lee',
 			last_message_sender_kind: 'member'
 		});
 		expect(body.has_more).toBe(false);
 		expect(body.settings.responder_name).toBe('Jafar');
+	});
+
+	it('narrows the inbox to one topic when asked', async () => {
+		const value = use(client({ threads: [threadRow('thread-1')] }));
+		const response = await getInbox(event({ query: '?topic=billing' }));
+		expect(response.status).toBe(200);
+		expect(value.eqCalls).toContainEqual(['topic', 'billing']);
+	});
+
+	it('shows every topic when none is asked for', async () => {
+		const value = use(client({ threads: [threadRow('thread-1')] }));
+		await getInbox(event());
+		expect(value.eqCalls).not.toContainEqual(['topic', expect.anything()]);
+	});
+
+	it('rejects a topic that is not listed, before the database', async () => {
+		const response = await getInbox(event({ query: '?topic=gossip' }));
+		expect(response.status).toBe(422);
+		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
 	it('answers 404 for a conversation that does not exist', async () => {
@@ -184,6 +210,26 @@ describe('Support Inbox API boundary', () => {
 			event({ body: { body: '  ', client_message_id: CLIENT_MESSAGE_ID } })
 		);
 		expect(response.status).toBe(422);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it('changes a chat’s topic as Uplift', async () => {
+		const value = use(client({}));
+		value.rpc.mockResolvedValue({ data: true, error: null });
+		const response = await patchTopic(event({ body: { topic: 'crm' } }));
+		expect(response.status).toBe(200);
+		expect(await response.json()).toEqual({ changed: true });
+		expect(value.rpc).toHaveBeenCalledWith('set_support_thread_topic_by_uplift', {
+			target_thread_id: THREAD_ID,
+			new_topic: 'crm'
+		});
+	});
+
+	it('rejects a topic that is not listed, or a chat that is not an id, before the database', async () => {
+		expect((await patchTopic(event({ body: { topic: 'gossip' } }))).status).toBe(422);
+		expect((await patchTopic(event({ body: { topic: 'crm' }, threadId: 'nope' }))).status).toBe(
+			404
+		);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
