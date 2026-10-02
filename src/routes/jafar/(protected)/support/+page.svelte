@@ -217,7 +217,9 @@
 			<header class="support-inbox__list-header">
 				<h2>Conversations</h2>
 				{#if waitingCount > 0}
-					<Badge status="warning" size="small">{waitingCount} waiting for you</Badge>
+					<Badge status="warning" size="small" class="support-inbox__waiting"
+						>{waitingCount} waiting</Badge
+					>
 				{/if}
 				<Select
 					id="support-inbox-topic"
@@ -459,6 +461,7 @@
 			align-items: center;
 			justify-content: space-between;
 			gap: var(--space-small);
+			flex-wrap: wrap;
 			min-height: 56px;
 			padding: var(--space-small) var(--space-base);
 			border-bottom: var(--border-base) solid var(--color-border);
@@ -469,10 +472,15 @@
 				font-size: var(--typography--fontSize-large);
 			}
 
-			// The topic filter sits at the end of the row, after the "waiting" badge.
-			:global(.support-inbox__topic-filter) {
-				width: 148px;
+			// Title and count share the top line; the topic filter runs full width beneath them.
+			:global(.support-inbox__waiting) {
+				flex: none;
 				margin-left: auto;
+				white-space: nowrap;
+			}
+
+			:global(.support-inbox__topic-filter) {
+				flex: 1 0 100%;
 			}
 		}
 
