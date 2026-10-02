@@ -24884,20 +24884,20 @@ export type Database = {
 				};
 				Returns: boolean;
 			};
-			set_support_thread_topic: {
-				Args: { new_topic: string; target_thread_id: string };
-				Returns: boolean;
-			};
-			set_support_thread_topic_by_uplift: {
-				Args: { new_topic: string; target_thread_id: string };
-				Returns: boolean;
-			};
 			set_support_thread_participant_by_uplift: {
 				Args: {
 					adding: boolean;
 					target_thread_id: string;
 					target_user_id: string;
 				};
+				Returns: boolean;
+			};
+			set_support_thread_topic: {
+				Args: { new_topic: string; target_thread_id: string };
+				Returns: boolean;
+			};
+			set_support_thread_topic_by_uplift: {
+				Args: { new_topic: string; target_thread_id: string };
 				Returns: boolean;
 			};
 			settle_team_invitation_identity_cleanup: {
@@ -24951,6 +24951,15 @@ export type Database = {
 					p_enrollment_id: string;
 					p_idempotency_key: string;
 					p_organization_id: string;
+				};
+				Returns: Json;
+			};
+			start_support_thread: {
+				Args: {
+					message_body: string;
+					message_client_id: string;
+					target_organization_id: string;
+					thread_topic: string;
 				};
 				Returns: Json;
 			};
@@ -25033,15 +25042,6 @@ export type Database = {
 					supplied_questions: Json;
 					supplied_rating: number;
 					supplied_token_hash: string;
-				};
-				Returns: Json;
-			};
-			start_support_thread: {
-				Args: {
-					message_body: string;
-					message_client_id: string;
-					target_organization_id: string;
-					thread_topic: string;
 				};
 				Returns: Json;
 			};
