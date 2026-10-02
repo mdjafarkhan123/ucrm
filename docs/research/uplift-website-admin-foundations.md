@@ -3,6 +3,8 @@
 Research date: 2026-09-30
 Scope: a first-pass foundation for client domain onboarding, portal access, subscription offboarding, and Astro website publishing. This note separates provider facts from product recommendations. It is not yet a final architecture or implementation plan.
 
+**Historical scope:** Its account-creation and one-site sequence predates the CRM-native Website-area decision. Use [`uplift-website-admin.md`](../plans/uplift-website-admin.md) for the current owner access, multiple-site assignment, and launch rules.
+
 ## The whole lifecycle in one picture
 
 **Recommended lifecycle:**

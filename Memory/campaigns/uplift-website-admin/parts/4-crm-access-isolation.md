@@ -29,3 +29,4 @@ Questions waiting for Jafar:
 - **Q16 — Ownership or assignment changes:** Recommendation: deny the former owner or unassigned site on the next request; stop saves and publishing, preserve recoverable drafts, and show a plain access-changed screen.
 - **Q17 — Wrong or guessed site address:** Recommendation: show **Website unavailable** without revealing another organization's site or status.
 - **Q18 — Logout:** Use the CRM's existing session behavior. Its current sign-out is global across devices; changing that is a separate CRM-wide decision, not a CMS-specific login flow.
+- **Part 3B overlap:** `docs/client-onboarding-delivery-behavior-contract.md` § 6 already records a named final approver, approved version, approver, and time. Ask whether that person may approve the website's first launch when they are not the CRM owner; editing and later publishing remain owner-only.

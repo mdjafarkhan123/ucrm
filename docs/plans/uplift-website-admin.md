@@ -14,6 +14,8 @@ This is controlled content management for websites built and managed by Uplift. 
 
 The CRM remains the owner of authentication, contractor accounts, organizations, roles, leads, requests, jobs, quotes, invoices, payments, and conversations. Its Website area uses the current CRM session and checks the current active owner role. Website content, media, drafts, previews, releases, publishing, and rollback history belong to the website subsystem behind that area. Uplift's assignment records determine which sites the organization may open. Every website action must enforce both the organization and selected site on the server; a site ID or address supplied by the browser is never proof of access.
 
+The Website area shows only sites currently assigned to that organization. Each site keeps its own draft, preview, publishing state, and history; switching sites does not carry edits or approvals across. The server checks current ownership and assignment again before saving, previewing, publishing, restoring, or reading private site material. A guessed or formerly assigned site address does not reveal another contractor's site or its status.
+
 ## CMS user journey
 
 1. The contractor signs in to the existing CRM.
@@ -88,7 +90,7 @@ After the structured CMS works reliably, Uplift intends to expand it toward an E
 ## Still unclear
 
 - Which setup milestones and next actions should the owner see before Uplift assigns the first site?
-- How does Uplift perform and record its initial site check and the contractor's launch approval, including a requested revision or withdrawn approval?
+- How does Uplift perform and record its initial site check and the contractor's launch approval, including a requested revision or withdrawn approval? The existing client onboarding plan already allows a named final approver who may differ from the CRM owner; decide whether that person may approve the website launch too.
 - What should happen to an open editor when ownership changes, a site is unassigned, or the CRM session ends?
 - How will native Astro forms map a site's designed questions into the existing CRM intake contract, including failed or duplicate submissions?
 - What CMS operations, auditing, backup, and recovery controls does Uplift need behind the client experience?
@@ -110,3 +112,4 @@ After the structured CMS works reliably, Uplift intends to expand it toward an E
 - Structured editing patterns: `docs/research/uplift-cms-structured-editing-patterns-2026-10-02.md`.
 - Preview and release patterns: `docs/research/uplift-cms-preview-release-patterns-2026-10-02.md`.
 - CRM-native Website area, launch, and native forms: `docs/research/uplift-crm-website-area-patterns-2026-10-02.md`.
+- Existing onboarding progress and final-approver rules: `docs/client-onboarding-delivery-behavior-contract.md` §§ 2, 5–6.
