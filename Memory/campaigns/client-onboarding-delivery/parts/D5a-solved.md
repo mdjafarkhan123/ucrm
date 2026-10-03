@@ -16,17 +16,16 @@ chosen member.
       pane (`SupportStartChat.svelte`, `?new=pick` or `?new=<org id>`), Message this business on the org page,
       Solved tag and "Write again to reopen" in the messenger
 - [x] `npm run check` 0 errors, lint clean, existing chat tests pass
-- [ ] `svelte-autofixer` on `SupportStartChat.svelte` (with its style block stripped — SCSS confuses it)
-- [ ] Tests: status route, Uplift start route (refuses a non-member, retry makes no second chat), members
+- [x] `svelte-autofixer` on `SupportStartChat.svelte` (with its style block stripped — SCSS confuses it)
+- [x] Tests: status route, Uplift start route (refuses a non-member, retry makes no second chat), members
       route, inbox status filter
-- [ ] Database checks with `execute_sql`: writing in a solved chat reopens it; same client id → one chat
+- [x] Database checks with `execute_sql`: writing in a solved chat reopens it; same client id → one chat
 - [ ] Browser run: mark solved → contractor sees Solved → contractor writes → open again in inbox; New chat
       from inbox and from org page reaches the chosen member; phone width
 
 ## Next
 
-Run the autofixer on `SupportStartChat.svelte`, then write the tests above beside
-`src/routes/api/jafar/support/support.spec.ts`. Not yet seen in a browser at all.
+Browser run (last step). Not yet seen in a browser at all.
 
 ## Outside actions
 

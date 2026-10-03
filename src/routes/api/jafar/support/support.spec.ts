@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { GET as getInbox } from './threads/+server';
+import { GET as getInbox, POST as startChat } from './threads/+server';
+import { PATCH as patchStatus } from './threads/[threadId]/status/+server';
+import { GET as getMembers } from './organizations/[organizationId]/members/+server';
 import { GET as getThread, PATCH as patchTopic } from './threads/[threadId]/+server';
 import { POST as postReply } from './threads/[threadId]/messages/+server';
 import { PATCH as patchSettings } from './settings/+server';
@@ -17,6 +19,8 @@ const mockedClient = vi.mocked(getOwnerSupabaseClient);
 
 const THREAD_ID = '123e4567-e89b-12d3-a456-426614174000';
 const CLIENT_MESSAGE_ID = '223e4567-e89b-12d3-a456-426614174000';
+const ORG_ID = '323e4567-e89b-12d3-a456-426614174000';
+const MEMBER_ID = '423e4567-e89b-12d3-a456-426614174000';
 
 const threadRow = (id: string, senderKind = 'member', upliftLastReadAt: string | null = null) => ({
 	id,
@@ -77,9 +81,14 @@ function client(options: {
 	return { from, rpc, upsert, insert, eqCalls };
 }
 
-function event(options: { body?: unknown; threadId?: string; query?: string } = {}) {
+function event(
+	options: { body?: unknown; threadId?: string; organizationId?: string; query?: string } = {}
+) {
 	return {
-		params: { threadId: options.threadId ?? THREAD_ID },
+		params: {
+			threadId: options.threadId ?? THREAD_ID,
+			organizationId: options.organizationId ?? ORG_ID
+		},
 		url: new URL(`http://localhost/api/jafar/support/threads${options.query ?? ''}`),
 		request: new Request('http://localhost/api/jafar/support', {
 			method: 'POST',
@@ -114,7 +123,23 @@ describe('Support Inbox API boundary', () => {
 		],
 		['the unread count', () => getUnread(event())],
 		['a live channel', () => postRealtime(event())],
-		['a read mark', () => postRead(event({ body: { read_through: '2026-10-01T10:00:00Z' } }))]
+		['a read mark', () => postRead(event({ body: { read_through: '2026-10-01T10:00:00Z' } }))],
+		['a solved mark', () => patchStatus(event({ body: { status: 'solved' } }))],
+		[
+			'a chat Uplift starts',
+			() =>
+				startChat(
+					event({
+						body: {
+							organization_id: ORG_ID,
+							user_id: MEMBER_ID,
+							body: 'Hi',
+							client_message_id: CLIENT_MESSAGE_ID
+						}
+					})
+				)
+		],
+		["a business's team", () => getMembers(event())]
 	])('refuses %s without the platform owner session', async (_name, call) => {
 		mockedOwnerSession.mockResolvedValue(null);
 		const response = await call();
@@ -315,6 +340,194 @@ describe('Support Inbox unread and live updates', () => {
 	it('rejects a read mark with no valid time, before the database', async () => {
 		const response = await postRead(event({ body: { read_through: 'now' } }));
 		expect(response.status).toBe(422);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+});
+
+describe('Solved chats and the open/solved inbox filter (D5a)', () => {
+	it('shows open chats by default', async () => {
+		const value = use(client({ threads: [threadRow('thread-1')] }));
+		await getInbox(event());
+		expect(value.eqCalls).toContainEqual(['status', 'open']);
+	});
+
+	it('shows solved chats when asked, and every chat for "all"', async () => {
+		const solved = use(client({ threads: [] }));
+		await getInbox(event({ query: '?status=solved' }));
+		expect(solved.eqCalls).toContainEqual(['status', 'solved']);
+
+		const all = use(client({ threads: [] }));
+		await getInbox(event({ query: '?status=all' }));
+		expect(all.eqCalls).not.toContainEqual(['status', expect.anything()]);
+	});
+
+	it('rejects a status that is not listed, before the database', async () => {
+		const response = await getInbox(event({ query: '?status=archived' }));
+		expect(response.status).toBe(422);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it('marks a chat solved as Uplift', async () => {
+		const value = use(client({}));
+		value.rpc.mockResolvedValue({ data: true, error: null });
+		const response = await patchStatus(event({ body: { status: 'solved' } }));
+		expect(response.status).toBe(200);
+		expect(await response.json()).toEqual({ changed: true });
+		expect(value.rpc).toHaveBeenCalledWith('set_support_thread_status_by_uplift', {
+			target_thread_id: THREAD_ID,
+			new_status: 'solved'
+		});
+	});
+
+	it('answers 404 when the chat is gone', async () => {
+		const value = use(client({}));
+		value.rpc.mockResolvedValue({ data: null, error: { code: 'P0002', message: 'gone' } });
+		const response = await patchStatus(event({ body: { status: 'open' } }));
+		expect(response.status).toBe(404);
+	});
+
+	it('rejects an unknown status, or a chat that is not an id, before the database', async () => {
+		expect((await patchStatus(event({ body: { status: 'closed' } }))).status).toBe(422);
+		expect((await patchStatus(event({ body: { status: 'open' }, threadId: 'nope' }))).status).toBe(
+			404
+		);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+});
+
+describe('Uplift starts a chat (D5a)', () => {
+	const startBody = {
+		organization_id: ORG_ID,
+		user_id: MEMBER_ID,
+		body: ' Your website draft is ready. ',
+		client_message_id: CLIENT_MESSAGE_ID
+	};
+
+	it('starts the chat for the chosen member, as the signed-in owner', async () => {
+		const value = use(client({}));
+		value.rpc.mockResolvedValue({ data: { id: 'message-1', thread_id: 'thread-9' }, error: null });
+		const response = await startChat(event({ body: { ...startBody, sender_name: 'Somebody' } }));
+		expect(response.status).toBe(201);
+		expect(await response.json()).toEqual({ id: 'message-1', thread_id: 'thread-9' });
+		expect(value.rpc).toHaveBeenCalledWith('start_support_thread_by_uplift', {
+			target_organization_id: ORG_ID,
+			target_user_id: MEMBER_ID,
+			thread_topic: 'other',
+			actor_email: 'owner@example.com',
+			message_body: 'Your website draft is ready.',
+			message_client_id: CLIENT_MESSAGE_ID,
+			message_attachments: []
+		});
+	});
+
+	it('passes the client message id through, so a retry reaches the same chat', async () => {
+		const value = use(client({}));
+		value.rpc.mockResolvedValue({ data: { id: 'message-1', thread_id: 'thread-9' }, error: null });
+		await startChat(event({ body: startBody }));
+		await startChat(event({ body: startBody }));
+		const ids = value.rpc.mock.calls.map(
+			(call) => (call[1] as { message_client_id: string }).message_client_id
+		);
+		expect(ids).toEqual([CLIENT_MESSAGE_ID, CLIENT_MESSAGE_ID]);
+	});
+
+	it('passes on the database’s sentence when the person is not on that team', async () => {
+		const value = use(client({}));
+		value.rpc.mockResolvedValue({
+			data: null,
+			error: { code: '23514', message: "Choose someone who is on this business's team." }
+		});
+		const response = await startChat(event({ body: startBody }));
+		expect(response.status).toBe(422);
+		expect((await response.json()).error).toContain('on this business');
+	});
+
+	it('rejects a chat with no business, no person or nothing to say, before the database', async () => {
+		for (const body of [
+			{ ...startBody, organization_id: 'nope' },
+			{ ...startBody, user_id: undefined },
+			{ ...startBody, body: '  ' }
+		]) {
+			expect((await startChat(event({ body }))).status).toBe(422);
+		}
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it("refuses a file from another business's folder", async () => {
+		const response = await startChat(
+			event({
+				body: {
+					...startBody,
+					attachments: [
+						{
+							object_key: `other-org/support-attachments/${CLIENT_MESSAGE_ID}.png`,
+							file_name: 'photo.png',
+							mime_type: 'image/png'
+						}
+					]
+				}
+			})
+		);
+		expect(response.status).toBe(422);
+		expect((await response.json()).error).toBe('That file does not belong to this conversation.');
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+});
+
+describe("A business's team for a new chat (D5a)", () => {
+	function teamClient(organization: unknown, members: { user_id: string; role: string }[]) {
+		const eqCalls: unknown[][] = [];
+		const from = vi.fn((table: string) => {
+			const chain = {
+				select: () => chain,
+				eq: (...args: unknown[]) => {
+					eqCalls.push([table, ...args]);
+					return chain;
+				},
+				maybeSingle: () => Promise.resolve({ data: organization, error: null }),
+				limit: () => Promise.resolve({ data: members, error: null }),
+				in: () =>
+					Promise.resolve({
+						data: [
+							{ id: 'u-owner', full_name: 'Olivia Owner' },
+							{ id: 'u-admin', full_name: 'Adam Admin' },
+							{ id: 'u-b', full_name: 'Bea Field' },
+							{ id: 'u-a', full_name: 'Al Field' }
+						],
+						error: null
+					})
+			};
+			return chain;
+		});
+		mockedClient.mockReturnValue({ from } as never);
+		return { from, eqCalls };
+	}
+
+	it('lists active members, owner first, then admins, then everyone by name', async () => {
+		const value = teamClient({ id: ORG_ID, name: 'Raad LTD' }, [
+			{ user_id: 'u-b', role: 'technician' },
+			{ user_id: 'u-admin', role: 'admin' },
+			{ user_id: 'u-a', role: 'technician' },
+			{ user_id: 'u-owner', role: 'owner' }
+		]);
+		const body = await (await getMembers(event())).json();
+		expect(body.organization).toEqual({ id: ORG_ID, name: 'Raad LTD' });
+		expect(body.members.map((member: { name: string }) => member.name)).toEqual([
+			'Olivia Owner',
+			'Adam Admin',
+			'Al Field',
+			'Bea Field'
+		]);
+		expect(value.eqCalls).toContainEqual(['organization_members', 'status', 'active']);
+	});
+
+	it('answers 404 for a business that does not exist', async () => {
+		teamClient(null, []);
+		expect((await getMembers(event())).status).toBe(404);
+	});
+
+	it('answers 404 for an id that is not an id, without asking the database', async () => {
+		expect((await getMembers(event({ organizationId: 'nope' }))).status).toBe(404);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 });
