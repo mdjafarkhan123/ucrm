@@ -7,12 +7,15 @@
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Toggle from '$lib/components/ui/Toggle.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import {
 		fetchSetupSection,
 		fetchSetupSummary,
 		markSetupWelcomeSeen,
+		setSetupReminderEmails,
 		setupSectionKey,
 		setupSummaryKey,
 		type SetupSummary
@@ -114,6 +117,28 @@
 		});
 	}
 
+	// Reminder emails are each person's own choice. The switch moves at once and goes back if the save fails.
+	const toast = getToastManager();
+	let savingReminders = $state(false);
+	async function changeReminderEmails(emailsOn: boolean) {
+		const key = setupSummaryKey(userId);
+		const setOn = (on: boolean) =>
+			queryClient.setQueryData<SetupSummary>(key, (current) =>
+				current ? { ...current, reminder_emails_on: on } : current
+			);
+		setOn(emailsOn);
+		savingReminders = true;
+		try {
+			await setSetupReminderEmails(emailsOn);
+			toast.success(emailsOn ? 'Reminder emails are on.' : 'Reminder emails are off.');
+		} catch (error) {
+			setOn(!emailsOn);
+			toast.error('Could not change reminder emails', (error as Error).message);
+		} finally {
+			savingReminders = false;
+		}
+	}
+
 	const forbidden = $derived((query.error as HttpError | null)?.status === 403);
 </script>
 
@@ -191,6 +216,20 @@
 				</SectionBlock>
 			{/snippet}
 
+			{#snippet reminders()}
+				<section id="reminder-emails" class="setup__reminders" aria-label="Reminder emails">
+					<Toggle
+						id="setup-reminder-emails"
+						label="Email me reminders"
+						description="If setup sits untouched, we email you after a day, 3 days and a week with the next task. They stop once setup is sent to Uplift."
+						labelSide="start"
+						checked={summary.reminder_emails_on}
+						disabled={savingReminders}
+						onchange={changeReminderEmails}
+					/>
+				</section>
+			{/snippet}
+
 			{#if firstVisit}
 				<section class="setup__welcome" aria-labelledby="setup-welcome-heading">
 					<h2 id="setup-welcome-heading">Welcome — here is how setup works</h2>
@@ -208,11 +247,13 @@
 					</div>
 				</section>
 				{@render tasks()}
+				{@render reminders()}
 			{:else}
 				{@render tasks()}
 				<SectionBlock title="How setup works">
 					{@render howItWorks()}
 				</SectionBlock>
+				{@render reminders()}
 			{/if}
 		{/if}
 	</div>
@@ -297,6 +338,14 @@
 			}
 		}
 
+		&__reminders {
+			padding: var(--space-base) var(--space-large);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-base);
+			background: var(--color-surface);
+			scroll-margin-top: var(--space-large);
+		}
+
 		&__count {
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
@@ -366,7 +415,8 @@
 				grid-template-columns: 1fr;
 			}
 
-			&__welcome {
+			&__welcome,
+			&__reminders {
 				padding: var(--space-base);
 			}
 

@@ -6,6 +6,7 @@ import { env } from '$env/dynamic/private';
 import { runMonitoredEmailWake } from '$lib/server/communications/email-worker';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { emailDatabaseRaisedOwnerAlerts } from '$lib/server/jafar/owner-alerts';
+import { sendDueSetupReminderEmails } from '$lib/server/setup/reminder-emails';
 import { sendDueSupportUnseenReplyEmails } from '$lib/server/support/unseen-reply-emails';
 
 function authorized(request: Request) {
@@ -50,6 +51,13 @@ export const POST: RequestHandler = async ({ request }) => {
 			await sendDueSupportUnseenReplyEmails(getOwnerSupabaseClient(), { origin });
 		} catch (error) {
 			console.error('Could not email unseen support replies.', error);
+		}
+
+		// Setup untouched for about 24 hours, 3 days or 7 days (onboarding C6). Same lease, same best effort.
+		try {
+			await sendDueSetupReminderEmails(getOwnerSupabaseClient(), { origin });
+		} catch (error) {
+			console.error('Could not send setup reminder emails.', error);
 		}
 	}
 

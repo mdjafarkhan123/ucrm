@@ -66,3 +66,5 @@ export const setupAnswersSchema = z
 export type SetupAnswersInput = z.infer<typeof setupAnswersSchema>;
 
 export const setupSectionDoneSchema = z.object({ done: z.boolean() });
+
+export const setupReminderEmailsSchema = z.object({ emails_on: z.boolean() }).strict();

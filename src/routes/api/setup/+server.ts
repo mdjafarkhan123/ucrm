@@ -10,8 +10,21 @@ export const GET: RequestHandler = async (event) => {
 	const check = await requireSetupReader(event);
 	if ('response' in check) return check.response;
 
-	const state = await readSetupState(event.locals.supabase, check.auth.organization.id);
-	if (!state) return databaseError();
+	const organizationId = check.auth.organization.id;
+	const [state, optOut] = await Promise.all([
+		readSetupState(event.locals.supabase, organizationId),
+		// The signed-in person's own choice about reminder emails; each person reads only their own row.
+		event.locals.supabase
+			.from('organization_setup_reminder_opt_outs')
+			.select('user_id')
+			.eq('organization_id', organizationId)
+			.eq('user_id', check.auth.user.id)
+			.maybeSingle()
+	]);
+	if (!state || optOut.error) return databaseError();
 
-	return json(setupSummary(state), { headers: PRIVATE_READ_HEADERS });
+	return json(
+		{ ...setupSummary(state), reminder_emails_on: optOut.data === null },
+		{ headers: PRIVATE_READ_HEADERS }
+	);
 };

@@ -17,6 +17,8 @@ export type SetupSummary = {
 	progress: { done: number; total: number };
 	next: { key: string; title: string; status: SetupSectionStatus } | null;
 	delivery: { state: 'collecting' };
+	/** Whether the signed-in person gets setup reminder emails. */
+	reminder_emails_on: boolean;
 };
 
 export type SetupSectionData = {
@@ -56,6 +58,15 @@ export async function fetchSetupSection(section: string): Promise<SetupSectionDa
 export async function markSetupWelcomeSeen(): Promise<void> {
 	const response = await fetch('/api/setup/welcome', { method: 'POST' });
 	if (!response.ok) throw httpError(response, 'Setup could not be updated.');
+}
+
+export async function setSetupReminderEmails(emailsOn: boolean): Promise<void> {
+	const response = await fetch('/api/setup/reminders', {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ emails_on: emailsOn })
+	});
+	if (!response.ok) throw httpError(response, 'Your reminder choice could not be saved.');
 }
 
 export type SetupWriteFailure = Error & { status: number; fieldErrors: Record<string, string> };

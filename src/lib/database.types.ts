@@ -11512,6 +11512,73 @@ export type Database = {
 					}
 				];
 			};
+			organization_setup_reminder_opt_outs: {
+				Row: {
+					created_at: string;
+					organization_id: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					organization_id: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					organization_id?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_reminder_opt_outs_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_setup_reminders: {
+				Row: {
+					created_at: string;
+					last_activity_at: string;
+					last_sent_at: string | null;
+					next_due_at: string | null;
+					organization_id: string;
+					paused_at: string | null;
+					reminders_sent: number;
+					updated_at: string;
+				};
+				Insert: {
+					created_at?: string;
+					last_activity_at: string;
+					last_sent_at?: string | null;
+					next_due_at?: string | null;
+					organization_id: string;
+					paused_at?: string | null;
+					reminders_sent?: number;
+					updated_at?: string;
+				};
+				Update: {
+					created_at?: string;
+					last_activity_at?: string;
+					last_sent_at?: string | null;
+					next_due_at?: string | null;
+					organization_id?: string;
+					paused_at?: string | null;
+					reminders_sent?: number;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_reminders_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: true;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_setup_sections: {
 				Row: {
 					completed_at: string;
@@ -19802,6 +19869,10 @@ export type Database = {
 				Returns: undefined;
 			};
 			dispatch_form_submission_worker_wake: { Args: never; Returns: undefined };
+			due_organization_setup_reminders: {
+				Args: { batch_size: number };
+				Returns: Json;
+			};
 			due_support_unseen_reply_emails: {
 				Args: { batch_size: number };
 				Returns: Json;
@@ -23546,6 +23617,15 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			record_organization_setup_reminder: {
+				Args: {
+					look_again_at?: string;
+					outcome: string;
+					seen_last_activity_at: string;
+					target_organization_id: string;
+				};
+				Returns: undefined;
+			};
 			record_quote_decision: {
 				Args: {
 					decision_note?: string;
@@ -25068,6 +25148,10 @@ export type Database = {
 					target_organization_id: string;
 					target_user_id: string;
 				};
+				Returns: Json;
+			};
+			set_my_setup_reminder_emails: {
+				Args: { emails_on: boolean; target_organization_id: string };
 				Returns: Json;
 			};
 			set_organization_automation_authority: {
