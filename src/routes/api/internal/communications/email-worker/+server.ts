@@ -6,6 +6,7 @@ import { env } from '$env/dynamic/private';
 import { runMonitoredEmailWake } from '$lib/server/communications/email-worker';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { emailDatabaseRaisedOwnerAlerts } from '$lib/server/jafar/owner-alerts';
+import { sendDueSupportUnseenReplyEmails } from '$lib/server/support/unseen-reply-emails';
 
 function authorized(request: Request) {
 	const token = request.headers.get('authorization')?.match(/^Bearer (.+)$/i)?.[1];
@@ -39,6 +40,17 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 	} catch (error) {
 		console.error('Could not email database-raised owner alerts.', error);
+	}
+
+	// Support replies unseen for 3 minutes (onboarding D5b). Only a wake that held the lease sends them, so two
+	// overlapping wakes never work the same reminders. Best effort: it never fails the drain's result.
+	const origin = env.APP_URL?.trim();
+	if (result.outcome !== 'already_running' && origin) {
+		try {
+			await sendDueSupportUnseenReplyEmails(getOwnerSupabaseClient(), { origin });
+		} catch (error) {
+			console.error('Could not email unseen support replies.', error);
+		}
 	}
 
 	return json(result, { headers: { 'cache-control': 'no-store' } });

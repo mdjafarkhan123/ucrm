@@ -15424,6 +15424,54 @@ export type Database = {
 					}
 				];
 			};
+			support_unseen_reply_reminders: {
+				Row: {
+					created_at: string;
+					due_at: string;
+					emailed_at: string | null;
+					first_unseen_at: string;
+					id: string;
+					organization_id: string;
+					recipient_user_id: string | null;
+					thread_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					due_at: string;
+					emailed_at?: string | null;
+					first_unseen_at: string;
+					id?: string;
+					organization_id: string;
+					recipient_user_id?: string | null;
+					thread_id: string;
+				};
+				Update: {
+					created_at?: string;
+					due_at?: string;
+					emailed_at?: string | null;
+					first_unseen_at?: string;
+					id?: string;
+					organization_id?: string;
+					recipient_user_id?: string | null;
+					thread_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'support_unseen_reply_reminders_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'support_unseen_reply_reminders_thread_id_fkey';
+						columns: ['thread_id'];
+						isOneToOne: false;
+						referencedRelation: 'support_threads';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			tag_assignments: {
 				Row: {
 					created_at: string;
@@ -19751,6 +19799,10 @@ export type Database = {
 				Returns: undefined;
 			};
 			dispatch_form_submission_worker_wake: { Args: never; Returns: undefined };
+			due_support_unseen_reply_emails: {
+				Args: { batch_size: number };
+				Returns: Json;
+			};
 			duplicate_automation_recipe: {
 				Args: {
 					p_actor_user_id: string;
@@ -21984,6 +22036,10 @@ export type Database = {
 			};
 			mark_support_thread_read_by_uplift: {
 				Args: { read_through: string; target_thread_id: string };
+				Returns: undefined;
+			};
+			mark_support_unseen_reply_emailed: {
+				Args: { reminder_first_unseen_at: string; reminder_id: string };
 				Returns: undefined;
 			};
 			mark_team_invitation_auth_attempt_started: {
