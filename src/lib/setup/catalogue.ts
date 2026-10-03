@@ -60,7 +60,15 @@ export type SetupFact = SetupFactRules & {
 	canDefer?: boolean;
 	/** The app copies this answer into CRM settings or provider registration, so it can never be deleted. */
 	builtIn: boolean;
+	/** Asked only when every condition holds (plan §2.1 "show only if"). */
+	showIf?: SetupCondition[];
 };
+
+/**
+ * One "show only if" condition: an earlier answer is one of `values`, or the client's package includes a
+ * service. A client's own catalogue has no service conditions left — see {@link catalogueForServices}.
+ */
+export type SetupCondition = { factKey: string; values: string[] } | { serviceKey: string };
 
 export type SetupGroup = { title: string; hint: string; facts: SetupFact[] };
 
@@ -171,6 +179,7 @@ type CatalogueItemRow = {
 	kind: SetupQuestionKind | null;
 	options: { value: string; label: string }[] | null;
 	max_length: number | null;
+	show_if?: ({ fact_key: string; values: string[] } | { service_key: string })[] | null;
 };
 
 export type SetupCatalogueRow = {
@@ -225,7 +234,8 @@ export function buildSetupCatalogue(row: SetupCatalogueRow): SetupCatalogue {
 				...(item.hint ? { hint: item.hint } : {}),
 				required: item.required,
 				...(item.can_defer ? { canDefer: true } : {}),
-				builtIn: item.built_in
+				builtIn: item.built_in,
+				...(item.show_if?.length ? { showIf: item.show_if.map(condition) } : {})
 			});
 		}
 		return {
@@ -243,20 +253,103 @@ export function buildSetupCatalogue(row: SetupCatalogueRow): SetupCatalogue {
 	};
 }
 
+function condition(row: NonNullable<CatalogueItemRow['show_if']>[number]): SetupCondition {
+	return 'service_key' in row
+		? { serviceKey: row.service_key }
+		: { factKey: row.fact_key, values: row.values };
+}
+
 /**
  * The stages one client is asked: those shown to everyone, and those whose service the client's package
- * includes (plan §2.1). Everything a client reads or saves goes through this.
+ * includes (plan §2.1). A question that asks for a service the package lacks is left out too, and the
+ * service conditions of the rest are settled, so only conditions on earlier answers remain. Everything a
+ * client reads or saves goes through this.
  */
 export function catalogueForServices(
 	catalogue: SetupCatalogue,
 	serviceKeys: ReadonlySet<string>
 ): SetupCatalogue {
+	const included = (condition: SetupCondition) =>
+		!('serviceKey' in condition) || serviceKeys.has(condition.serviceKey);
 	return {
 		...catalogue,
-		sections: catalogue.sections.filter(
-			(section) => section.serviceKey === null || serviceKeys.has(section.serviceKey)
-		)
+		sections: catalogue.sections
+			.filter((section) => section.serviceKey === null || serviceKeys.has(section.serviceKey))
+			.map((section) => ({
+				...section,
+				groups: section.groups
+					.map((group) => ({
+						...group,
+						facts: group.facts
+							.filter((fact) => !fact.showIf || fact.showIf.every(included))
+							.map((fact) => {
+								if (!fact.showIf) return fact;
+								const settled: SetupFact = {
+									...fact,
+									showIf: fact.showIf.filter((condition) => 'factKey' in condition)
+								};
+								if (!settled.showIf?.length) delete settled.showIf;
+								return settled;
+							})
+					}))
+					.filter((group) => group.facts.length > 0)
+			}))
+			.filter((section) => section.groups.length > 0)
 	};
+}
+
+/** Whether an answer is one of the values a condition names. A list answer matches when any item does. */
+function answerMatches(answer: SetupAnswer | undefined, values: readonly string[]): boolean {
+	if (answer?.availability !== 'have' || answer.value === null) return false;
+	return values.includes(answer.value);
+}
+
+/**
+ * The questions a client is asked, given their answers so far: walks `facts` in setup order, so a question
+ * whose earlier question is hidden is hidden too. "I don't have this yet" and "I need Uplift's help" match
+ * no condition. `shownBefore` names questions outside `facts` already known to be asked, whose answers are
+ * in `answers` — how one section's page judges conditions on an earlier section.
+ */
+export function shownFacts(
+	facts: readonly SetupFact[],
+	answers: SetupAnswers,
+	shownBefore: ReadonlySet<string> = new Set()
+): Set<string> {
+	const shown = new Set(shownBefore);
+	for (const fact of facts) {
+		const asked = (fact.showIf ?? []).every(
+			(condition) =>
+				'factKey' in condition &&
+				shown.has(condition.factKey) &&
+				answerMatches(answers[condition.factKey], condition.values)
+		);
+		if (asked) shown.add(fact.key);
+	}
+	return shown;
+}
+
+/** Every question across the catalogue this client is asked now. */
+export function shownCatalogueFacts(catalogue: SetupCatalogue, answers: SetupAnswers): Set<string> {
+	return shownFacts(catalogue.sections.flatMap(sectionFacts), answers);
+}
+
+/**
+ * The earlier-section questions a section's conditions depend on that are asked now, with their answers —
+ * what the section's page needs to show and hide its questions as the client types.
+ */
+export function earlierAnswersFor(
+	section: SetupSection,
+	catalogue: SetupCatalogue,
+	answers: SetupAnswers
+): SetupAnswers {
+	const own = new Set(sectionFacts(section).map((fact) => fact.key));
+	const shown = shownCatalogueFacts(catalogue, answers);
+	const earlier: SetupAnswers = {};
+	for (const fact of sectionFacts(section))
+		for (const condition of fact.showIf ?? [])
+			if ('factKey' in condition && !own.has(condition.factKey) && shown.has(condition.factKey))
+				earlier[condition.factKey] = answers[condition.factKey];
+	return earlier;
 }
 
 export function catalogueFacts(catalogue: SetupCatalogue): Map<string, SetupFact> {
@@ -348,9 +441,18 @@ export function setupValueError(fact: SetupFact, raw: string): string | null {
 
 export type SetupSectionStatus = 'not_started' | 'in_progress' | 'done';
 
-/** Required facts that still have no answer of any kind. "Not yet" and "need help" are answers. */
-export function missingRequiredFacts(section: SetupSection, answers: SetupAnswers): SetupFact[] {
-	return sectionFacts(section).filter((fact) => fact.required && !answers[fact.key]);
+/**
+ * Required facts that are asked and still have no answer of any kind. "Not yet" and "need help" are
+ * answers; a hidden question is never required.
+ */
+export function missingRequiredFacts(
+	section: SetupSection,
+	answers: SetupAnswers,
+	shown: ReadonlySet<string>
+): SetupFact[] {
+	return sectionFacts(section).filter(
+		(fact) => fact.required && shown.has(fact.key) && !answers[fact.key]
+	);
 }
 
 // Done is the administrator's own word for it (GOV.UK task list), but it only holds while every required
@@ -358,9 +460,10 @@ export function missingRequiredFacts(section: SetupSection, answers: SetupAnswer
 export function sectionStatus(
 	section: SetupSection,
 	answers: SetupAnswers,
-	markedDone: boolean
+	markedDone: boolean,
+	shown: ReadonlySet<string>
 ): SetupSectionStatus {
-	if (markedDone && missingRequiredFacts(section, answers).length === 0) return 'done';
-	const anyAnswer = sectionFacts(section).some((fact) => answers[fact.key]);
+	if (markedDone && missingRequiredFacts(section, answers, shown).length === 0) return 'done';
+	const anyAnswer = sectionFacts(section).some((fact) => shown.has(fact.key) && answers[fact.key]);
 	return anyAnswer || markedDone ? 'in_progress' : 'not_started';
 }

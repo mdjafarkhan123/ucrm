@@ -21,10 +21,12 @@ import { countryCurrency } from '$lib/settings/countries';
 import { setupHoursFromBusinessHours } from '$lib/setup/hours';
 import {
 	catalogueSection,
+	earlierAnswersFor,
 	missingRequiredFacts,
 	sectionFacts,
 	sectionStatus,
 	setupValueError,
+	shownCatalogueFacts,
 	type SetupAnswers
 } from '$lib/setup/catalogue';
 
@@ -104,8 +106,15 @@ export const GET: RequestHandler = async (event) => {
 			key: section.key,
 			section,
 			answers,
+			// Earlier sections' answers this section's "show only if" rules read, for questions asked now.
+			earlier_answers: earlierAnswersFor(section, catalogue, state.answers),
 			suggestions,
-			status: sectionStatus(section, state.answers, markedDone)
+			status: sectionStatus(
+				section,
+				state.answers,
+				markedDone,
+				shownCatalogueFacts(catalogue, state.answers)
+			)
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);
@@ -140,7 +149,11 @@ export const PATCH: RequestHandler = async (event) => {
 		const state = await readSetupState(event.locals.supabase, organizationId);
 		if (!state) return databaseError();
 
-		const missing = missingRequiredFacts(section, state.answers);
+		const missing = missingRequiredFacts(
+			section,
+			state.answers,
+			shownCatalogueFacts(catalogue, state.answers)
+		);
 		if (missing.length > 0)
 			return validationError(
 				Object.fromEntries(missing.map((fact) => [fact.key, 'This one still needs an answer.']))

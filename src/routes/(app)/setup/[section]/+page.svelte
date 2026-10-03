@@ -28,6 +28,7 @@
 		sectionFacts,
 		sectionStatus,
 		setupValueError,
+		shownFacts,
 		type SetupFact,
 		type SetupAnswer,
 		type SetupAnswers,
@@ -115,6 +116,22 @@
 		return value ? { availability: 'have', value, note: null } : undefined;
 	}
 
+	// "Show only if" (A5b): which questions are asked, judged against what is on screen now, so a question
+	// appears the moment the answer it depends on is picked. Conditions on an earlier section read that
+	// section's saved answers, which the server sends along.
+	const earlier = $derived(query.data?.earlier_answers ?? {});
+	function shownWith(answers: SetupAnswers) {
+		return section
+			? shownFacts(sectionFacts(section), { ...earlier, ...answers }, new Set(Object.keys(earlier)))
+			: new Set<string>();
+	}
+	const shown = $derived.by(() => {
+		if (!section || !fields) return new Set<string>();
+		const onScreen: SetupAnswers = {};
+		for (const fact of sectionFacts(section)) onScreen[fact.key] = draftAnswer(fact.key);
+		return shownWith(onScreen);
+	});
+
 	function sameAnswer(a: SetupAnswer | undefined, b: SetupAnswer | undefined) {
 		return a?.availability === b?.availability && a?.value === b?.value && a?.note === b?.note;
 	}
@@ -199,7 +216,11 @@
 						if (!current || !section) return current;
 						const answers = { ...current.answers, ...sending };
 						for (const key of Object.keys(sending)) if (!sending[key]) delete answers[key];
-						return { ...current, answers, status: sectionStatus(section, answers, markedDone) };
+						return {
+							...current,
+							answers,
+							status: sectionStatus(section, answers, markedDone, shownWith(answers))
+						};
 					}
 				);
 				void queryClient.invalidateQueries({ queryKey: setupSummaryKey(userId) });
@@ -232,7 +253,9 @@
 
 	const unanswered = $derived(
 		section && fields
-			? sectionFacts(section).filter((fact) => fact.required && !draftAnswer(fact.key))
+			? sectionFacts(section).filter(
+					(fact) => fact.required && shown.has(fact.key) && !draftAnswer(fact.key)
+				)
 			: []
 	);
 
@@ -243,12 +266,18 @@
 		// Pressing this is the person confirming everything on the page, suggestions included.
 		await flush({ everything: true });
 
-		const missing = sectionFacts(section).filter((fact) => fact.required && !saved[fact.key]);
+		// A question an answer hid is never required, and a message it still carries is not in the way.
+		const asked = shownWith(saved);
+		const missing = sectionFacts(section).filter(
+			(fact) => fact.required && asked.has(fact.key) && !saved[fact.key]
+		);
 		for (const fact of missing)
 			errors[fact.key] ??= fact.canDefer
 				? 'Enter this, or tell us you don’t have it yet.'
 				: 'This one still needs an answer.';
-		const firstProblem = sectionFacts(section).find((fact) => errors[fact.key]);
+		const firstProblem = sectionFacts(section).find(
+			(fact) => asked.has(fact.key) && errors[fact.key]
+		);
 		if (firstProblem || saveState === 'failed') {
 			finishing = false;
 			await tick();
@@ -292,7 +321,10 @@
 	function syncDoneState() {
 		queryClient.setQueryData<SetupSectionData>(setupSectionKey(userId, sectionKey), (current) =>
 			current && section
-				? { ...current, status: sectionStatus(section, current.answers, markedDone) }
+				? {
+						...current,
+						status: sectionStatus(section, current.answers, markedDone, shownWith(current.answers))
+					}
 				: current
 		);
 		void queryClient.invalidateQueries({ queryKey: setupSummaryKey(userId) });
@@ -370,20 +402,23 @@
 			{/if}
 
 			{#each section.groups as group, index (`${index}-${group.title}`)}
-				<SectionBlock title={group.title} hint={group.hint} form level={2}>
-					{#each group.facts as fact (fact.key)}
-						<SetupField
-							{fact}
-							bind:value={form[fact.key].value}
-							bind:availability={form[fact.key].availability}
-							bind:note={form[fact.key].note}
-							error={errors[fact.key] ?? ''}
-							suggested={suggested[fact.key] ?? false}
-							onedit={() => edited(fact.key)}
-							oncommit={() => committed(fact.key)}
-						/>
-					{/each}
-				</SectionBlock>
+				{@const asked = group.facts.filter((fact) => shown.has(fact.key))}
+				{#if asked.length > 0}
+					<SectionBlock title={group.title} hint={group.hint} form level={2}>
+						{#each asked as fact (fact.key)}
+							<SetupField
+								{fact}
+								bind:value={form[fact.key].value}
+								bind:availability={form[fact.key].availability}
+								bind:note={form[fact.key].note}
+								error={errors[fact.key] ?? ''}
+								suggested={suggested[fact.key] ?? false}
+								onedit={() => edited(fact.key)}
+								oncommit={() => committed(fact.key)}
+							/>
+						{/each}
+					</SectionBlock>
+				{/if}
 			{/each}
 
 			<footer class="setup-section__footer">

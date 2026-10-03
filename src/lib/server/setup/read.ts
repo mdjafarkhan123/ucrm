@@ -3,6 +3,7 @@ import type { Database } from '$lib/database.types';
 import {
 	sectionFacts,
 	sectionStatus,
+	shownCatalogueFacts,
 	type SetupAnswers,
 	type SetupAvailability,
 	type SetupCatalogue
@@ -62,13 +63,15 @@ export async function readSetupState(
 }
 
 export function setupSummary(state: SetupState, catalogue: SetupCatalogue) {
+	// Only the questions this client is asked now count; one an earlier answer hides is neither total nor answered.
+	const shown = shownCatalogueFacts(catalogue, state.answers);
 	const sections = catalogue.sections.map((section) => {
-		const facts = sectionFacts(section);
+		const facts = sectionFacts(section).filter((fact) => shown.has(fact.key));
 		return {
 			key: section.key,
 			title: section.title,
 			description: section.description,
-			status: sectionStatus(section, state.answers, state.doneSections.has(section.key)),
+			status: sectionStatus(section, state.answers, state.doneSections.has(section.key), shown),
 			answered: facts.filter((fact) => state.answers[fact.key]).length,
 			total: facts.length
 		};

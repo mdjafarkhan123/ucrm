@@ -31,6 +31,8 @@ export type SetupSectionData = {
 	/** The section's questions as the published setup version asks them now. */
 	section: SetupSection;
 	answers: SetupAnswers;
+	/** Earlier sections' answers this section's "show only if" rules read, for questions asked now. */
+	earlier_answers: SetupAnswers;
 	/** What the CRM already knows, offered for questions nobody has answered yet. */
 	suggestions: Record<string, string>;
 	status: SetupSectionStatus;

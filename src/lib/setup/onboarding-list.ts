@@ -55,8 +55,9 @@ export type OnboardingListPage = {
 };
 
 /**
- * The task list as the database needs it: each section's service, facts and which of them are required. The
- * database keeps, for each client, only the sections their package includes.
+ * The task list as the database needs it: each section's service, facts, which of them are required, and the
+ * "show only if" rules of its conditional facts in order. The database keeps, for each client, only the
+ * sections their package includes and the facts their answers and package leave asked.
  */
 export function onboardingCatalogue(catalogue: SetupCatalogue) {
 	return catalogue.sections.map((section) => {
@@ -65,7 +66,21 @@ export function onboardingCatalogue(catalogue: SetupCatalogue) {
 			key: section.key,
 			service_key: section.serviceKey,
 			facts: facts.map((fact) => fact.key),
-			required: facts.filter((fact) => fact.required).map((fact) => fact.key)
+			required: facts.filter((fact) => fact.required).map((fact) => fact.key),
+			rules: facts.flatMap((fact) =>
+				fact.showIf
+					? [
+							{
+								fact_key: fact.key,
+								show_if: fact.showIf.map((condition) =>
+									'serviceKey' in condition
+										? { service_key: condition.serviceKey }
+										: { fact_key: condition.factKey, values: condition.values }
+								)
+							}
+						]
+					: []
+			)
 		};
 	});
 }

@@ -171,27 +171,35 @@ describe('setupValueError', () => {
 });
 
 describe('section status', () => {
+	// No question in these tests has a rule, so every one is asked.
+	const everyQuestion = new Set(sectionFacts(business).map((fact) => fact.key));
+
 	it('is not started until something is answered', () => {
-		expect(sectionStatus(business, {}, false)).toBe('not_started');
+		expect(sectionStatus(business, {}, false, everyQuestion)).toBe('not_started');
 	});
 
 	it('is in progress once anything is answered', () => {
-		expect(sectionStatus(business, { 'business.public_name': have('Bright Spark') }, false)).toBe(
-			'in_progress'
-		);
+		expect(
+			sectionStatus(
+				business,
+				{ 'business.public_name': have('Bright Spark') },
+				false,
+				everyQuestion
+			)
+		).toBe('in_progress');
 	});
 
 	it('is done only when marked done and every required fact has an answer', () => {
 		const answers = allRequiredAnswered();
-		expect(sectionStatus(business, answers, false)).toBe('in_progress');
-		expect(sectionStatus(business, answers, true)).toBe('done');
+		expect(sectionStatus(business, answers, false, everyQuestion)).toBe('in_progress');
+		expect(sectionStatus(business, answers, true, everyQuestion)).toBe('done');
 	});
 
 	it('reopens by itself when a required answer is cleared after being marked done', () => {
 		const answers = allRequiredAnswered();
 		delete answers['business.contact_name'];
-		expect(sectionStatus(business, answers, true)).toBe('in_progress');
-		expect(missingRequiredFacts(business, answers).map((fact) => fact.key)).toEqual([
+		expect(sectionStatus(business, answers, true, everyQuestion)).toBe('in_progress');
+		expect(missingRequiredFacts(business, answers, everyQuestion).map((fact) => fact.key)).toEqual([
 			'business.contact_name'
 		]);
 	});
@@ -200,8 +208,8 @@ describe('section status', () => {
 		const answers = allRequiredAnswered();
 		answers['business.public_phone'] = { availability: 'need_help', value: null, note: null };
 		answers['business.public_email'] = { availability: 'not_yet', value: null, note: 'Soon' };
-		expect(missingRequiredFacts(business, answers)).toEqual([]);
-		expect(sectionStatus(business, answers, true)).toBe('done');
+		expect(missingRequiredFacts(business, answers, everyQuestion)).toEqual([]);
+		expect(sectionStatus(business, answers, true, everyQuestion)).toBe('done');
 	});
 });
 
