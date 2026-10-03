@@ -105,7 +105,7 @@
 	function rowErrors(errors: Record<string, string>) {
 		const byRow: Record<string, string> = {};
 		for (const [path, message] of Object.entries(errors)) {
-			const match = /^items\.(\d+)\.(label|hint|kind|options|show_if)/.exec(path);
+			const match = /^items\.(\d+)\.(label|hint|kind|options|max_choices|show_if)/.exec(path);
 			const row = match ? items[Number(match[1])] : undefined;
 			if (row) byRow[`${row.rowId}.${match![2]}`] ??= message;
 		}

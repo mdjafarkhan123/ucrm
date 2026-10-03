@@ -90,6 +90,14 @@
 		item.options.push({ rowId: `new-choice-${newChoices}`, value: null, label: '' });
 	}
 
+	/** Adds a choice and puts the cursor in it, so the next one can be typed straight away. */
+	async function addAndFocusChoice(item: DraftItem) {
+		addChoice(item);
+		const id = `setup-item-${item.rowId}-choice-new-choice-${newChoices}`;
+		await tick();
+		list?.querySelector<HTMLInputElement>(`#${CSS.escape(id)}`)?.focus();
+	}
+
 	/** Opens a newly added row and puts the cursor in its first box. */
 	export async function openNew(rowId: string) {
 		openRow = rowId;
@@ -290,7 +298,7 @@
 											size="small"
 											variant="secondary"
 											disabled={item.options.length >= 50}
-											onclick={() => addChoice(item)}
+											onclick={() => addAndFocusChoice(item)}
 											><span class="setup-questions__button-icon" aria-hidden="true"
 												>{@html plusIcon}</span
 											>Add choice</Button
