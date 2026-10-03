@@ -19,7 +19,9 @@ Waiting on Jafar. Ask him to: start a draft on `/jafar/setup`, Edit questions on
 question he wants clients asked, save, publish; then log in as the contractor owner (CLAUDE.md logins) and
 answer it on `/setup/business`. Website-only proof needs a stage with a question tied to Website plus a client
 whose package edition includes Website (none on dev yet). While there, he can also give one question a "Show this question: Only when…" rule and watch it appear on
-`/setup/business` only after the matching answer (A5b's live look). Then close A5.
+`/setup/business` only after the matching answer (A5b's live look). A5d's client boxes (tick several with Other,
+money, distance, time, colours…) also get their first live look here: check the money sign lines up and does not
+cover the label. Then close A5.
 Do NOT publish test questions yourself — keys are never reused.
 
 ## Notes
