@@ -81,10 +81,11 @@
 			? chosenUserId
 			: (members[0]?.user_id ?? '')
 	);
+	// The role beside each name tells apart members who have not added their name yet.
 	const memberOptions = $derived(
 		members.map((member) => ({
 			value: member.user_id,
-			label: member.role === 'owner' ? `${member.name} (owner)` : member.name
+			label: `${member.name} · ${member.role.charAt(0).toUpperCase()}${member.role.slice(1)}`
 		}))
 	);
 	let topic = $state<SupportTopic>('other');

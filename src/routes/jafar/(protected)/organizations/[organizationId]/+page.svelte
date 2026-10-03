@@ -306,9 +306,16 @@
 						· Development scenario: {organizationDetailScenarioLabel(preview.scenario)}{/if}
 				</p>
 			</div>
-			<a class="organization-detail__back-link" href={resolve('/jafar/organizations')}
-				>Back to directory</a
-			>
+			<div class="organization-detail__header-actions">
+				{#if !preview && organizationId}
+					<Button variant="secondary" href={`${resolve('/jafar/support')}?new=${organizationId}`}
+						>Message this business</Button
+					>
+				{/if}
+				<a class="organization-detail__back-link" href={resolve('/jafar/organizations')}
+					>Back to directory</a
+				>
+			</div>
 		</header>
 
 		{#if preview}
@@ -464,8 +471,14 @@
 	.organization-detail__header-actions {
 		display: flex;
 		flex: none;
+		flex-wrap: wrap;
 		align-items: center;
 		gap: var(--space-base);
+
+		// Each action keeps its label on one line; on a phone they wrap as whole buttons instead.
+		> :global(*) {
+			white-space: nowrap;
+		}
 	}
 
 	.organization-detail__header {
