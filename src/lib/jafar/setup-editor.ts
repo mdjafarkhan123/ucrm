@@ -138,6 +138,12 @@ export function stageAudience(serviceKey: string | null, services: SetupEditor['
 	return `Only clients with ${name}`;
 }
 
+/** {@link stageAudience} mid-sentence: only the leading word is lowered, so a service keeps its own name. */
+const audienceInSentence = (serviceKey: string | null, services: SetupEditor['services']) => {
+	const audience = stageAudience(serviceKey, services);
+	return audience[0].toLowerCase() + audience.slice(1);
+};
+
 /**
  * What publishing changes for clients, line by line, for the publish review. Compares stages by key, so a
  * renamed stage reads as renamed rather than as one removed and one added.
@@ -153,9 +159,7 @@ export function publishChanges(
 	for (const stage of draft) {
 		const old = before.get(stage.key);
 		if (!old) {
-			lines.push(
-				`Adds "${stage.title}" (${stageAudience(stage.service_key, services).toLowerCase()})`
-			);
+			lines.push(`Adds "${stage.title}" (${audienceInSentence(stage.service_key, services)})`);
 			continue;
 		}
 		if (old.title !== stage.title) lines.push(`Renames "${old.title}" to "${stage.title}"`);
@@ -163,7 +167,7 @@ export function publishChanges(
 			lines.push(`Rewords the description of "${stage.title}"`);
 		if (old.service_key !== stage.service_key)
 			lines.push(
-				`"${stage.title}" now shows to ${stageAudience(stage.service_key, services).toLowerCase()}`
+				`"${stage.title}" now shows to ${audienceInSentence(stage.service_key, services)}`
 			);
 	}
 	for (const stage of published)

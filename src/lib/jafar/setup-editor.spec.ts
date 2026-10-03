@@ -66,7 +66,7 @@ describe('setup stage editor', () => {
 		const renamed = { ...business, title: 'About you' };
 		const limited = { ...website, service_key: null };
 		expect(publishChanges([business], [website, renamed], services)).toEqual([
-			'Adds "Website" (only clients with premium website)',
+			'Adds "Website" (only clients with Premium website)',
 			'Renames "Your business" to "About you"'
 		]);
 		expect(publishChanges([business, website], [business], services)).toEqual([
