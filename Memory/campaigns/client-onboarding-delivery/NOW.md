@@ -6,7 +6,8 @@
 
 **In progress:** nothing claimed. Stage D, C1 and C6 (setup reminder emails) done 2026-10-03.
 
-**Next part:** none can move now. C2 onward waits for B13; B3 onward waits for A2, and A2 waits for
-package-builder P16 (Jafar's browser tour).
+**Next part:** A2 (service ticks). Jafar, 2026-10-03: treat package-builder P16 as passed and keep building;
+fix anything his tour finds later. Start from the package builder's existing "Included services" (plan
+`docs/package-builder-behavior-contract.md` §Included services; `src/lib/jafar/packages.ts`). C2 onward waits for B13.
 
-**Blockers:** package-builder P16 (Jafar's browser tour) must finish before A2. Build order approved 2026-10-01.
+**Blockers:** none. Build order approved 2026-10-01.
