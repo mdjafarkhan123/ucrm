@@ -86,6 +86,27 @@ answer that creates an Uplift task. Only genuinely essential facts prevent Ready
 The package edition decides which tasks appear. A contractor is never questioned about a feature they did not
 buy. Common identity facts are collected once and reused in every purchased branch.
 
+### 2.1 Jafar writes the setup (Jafar, 2026-10-03)
+
+- **Services.** Jafar keeps one list of the services Uplift sells — Website, Google Business Profile, Calls &
+  texting, Reviews, Marketing, and any he adds later. Each package edition ticks the services it includes, with
+  its own customer-facing wording, frozen with the edition. Packages may include fewer services, or services the
+  marketing site does not list.
+- **Stages.** The wizard is a list of stages. Jafar adds, renames, reorders, and removes stages. Each stage shows
+  either to every client or only when the client's package includes one chosen service. Setup never waits for a
+  software feature to be finished: a stage shows whenever its service is sold.
+- **Questions.** Inside a stage Jafar adds, rewords, reorders, and removes questions, choosing the answer type
+  (short text, long text, pick one, yes/no, phone, email, date, photo or file), whether it is required, whether
+  **I don't have this yet** and **I need Uplift's help** apply, a help line, and an optional "show only if an
+  earlier answer is …" rule.
+- **Built-in questions.** Questions the app copies into CRM settings or provider registration — such as business
+  name, public phone, hours, time zone, currency, country, and texting-registration facts — can be reworded and
+  moved, never deleted or given a different answer type. A question clients have answered never changes answer
+  type; Jafar adds a new one instead. A removed question is hidden; clients' answers to it are kept.
+- **Draft and publish.** Jafar edits a draft and publishes it. Clients see only published questions. Clients still
+  filling in setup see a published change at once. Clients who already sent setup to Uplift are not reopened;
+  Jafar asks in Support chat or returns a section.
+
 ## 3. Setup tasks and exact information
 
 ### 3.1 Your business — required once
@@ -131,8 +152,9 @@ restriction.
 
 The domain branch is **I own one**, **someone else controls it**, **I need a new one**, or **not sure**. For an
 existing domain, collect the name, registrar/provider, owner email, current website, and whether business email
-depends on it. For a new domain, collect two or three preferences; Uplift checks availability and obtains client
-approval rather than promising a name.
+depends on it. Uplift never sells or owns domains (Jafar, 2026-10-03): a contractor without one is told to buy it
+in their own name and then enter it. Uplift moves the domain's DNS to Uplift's Cloudflare account and hosts the
+Uplift-built website there.
 
 Collect the primary call to action, public contact details, form-notification recipients, business origin,
 service process, evidence-backed differentiators, guarantees, licences/insurance statements, existing content

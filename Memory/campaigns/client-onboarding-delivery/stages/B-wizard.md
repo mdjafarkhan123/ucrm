@@ -1,13 +1,15 @@
 # Client onboarding and delivery — stage B: Setup wizard
 
 B1 records the answer-storage approach (draft, submitted snapshot, accepted value) in an ADR. Each later part
-adds one plan subsection to the same task list.
+adds one plan subsection to the same task list. Since plan §2.1 (2026-10-03) B4–B12 build only that stage's
+built-in questions and special controls (uploads, domain branches, phone choices); the rest are starter
+questions Jafar can edit.
 
 | Part | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- |
 | B1 Welcome + basics | §2 welcome, task list, dashboard setup card replacing `GettingStartedCard`, business basics with autosave and have/don't have/need help | — | Owner fills half on a laptop, signs in on a phone, continues; CRM menu works throughout | Done 2026-10-01 — storage is ADR 0005; questions live in `src/lib/setup/catalogue.ts` |
 | B2 Your business | Rest of §3.1: address, hours and exceptions, country, language, time zone and currency confirmation | B1 | Hours with a holiday exception save and reload correctly | Done 2026-10-01 — hours and holiday dates are stored as JSON (`src/lib/setup/hours.ts`); §3.1 opening date and licences left for B7, which is the part that needs them |
-| B3 Package sections | Package ticks decide which sections show; shared facts asked once | A2, B1 | Edition without Website shows no website section; business phone asked once | Not started |
+| B3 Package sections | Package services decide which stages show (now mostly delivered by A4); shared facts asked once; check and close | A4, B1 | Edition without Website shows no website section; business phone asked once | Not started |
 | B4 Services + area | §3.2 | B3 | Services, areas, and exclusions save and resume | Not started |
 | B5 Brand + photos | §3.3 uploads with ownership confirmation | B3 | Logo and photos upload; "no logo" never blocks | Not started |
 | B6 Website + domain | §3.4, four domain branches, no password asked | B3 | Each branch asks only its own questions | Not started |

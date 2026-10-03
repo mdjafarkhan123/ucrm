@@ -29,7 +29,7 @@ Jafar builds named packages by selecting working CRM capabilities and setting us
 
 ## Included services
 
-- Each included service records the customer-facing name and description that belongs in the package, such as a premium functional website, on-site SEO, or Google Business Profile optimization and management. These promises are versioned with the package edition.
+- Each included service is picked from Jafar's service list (client onboarding plan §2.1), which decides which setup stages the client sees, and records the customer-facing name and description that belongs in the package, such as a premium functional website, on-site SEO, or Google Business Profile optimization and management. These promises are versioned with the package edition.
 - The package builder records what is included, not how Uplift produces or operates it. Website technology, hosting, DNS, internal fulfillment steps, and handover operations are outside this campaign.
 - On-site SEO copy makes no ranking guarantee. The contractor remains the owner of their Google Business Profile; Uplift management does not change that ownership.
 - Review requests ask eligible customers for honest feedback without requesting a specific star rating or hiding the public-review option after negative feedback. Private feedback may be offered separately. When a contractor turns on review routing, lower ratings see the private form first, and that form always keeps a visible link to post a Google review (Jafar, 2026-09-30). Public copy must not promise “5-star reviews only.”
