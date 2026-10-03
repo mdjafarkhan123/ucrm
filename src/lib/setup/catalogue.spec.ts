@@ -10,8 +10,11 @@ import {
 	sectionStatus,
 	setupValueError,
 	shownFacts,
+	storedSetupValue,
 	type SetupAnswers,
-	type SetupFact
+	type SetupCatalogueRow,
+	type SetupFact,
+	type SetupQuestionKind
 } from './catalogue';
 
 const SETUP_SECTIONS = SETUP_CATALOGUE_1.sections;
@@ -255,6 +258,113 @@ describe('stages each client sees (A4)', () => {
 		expect(keys([])).toEqual(['business']);
 		expect(keys(['reviews'])).toEqual(['business']);
 		expect(keys(['website', 'reviews'])).toEqual(['business', 'website']);
+	});
+});
+
+describe('more answer types (A5d)', () => {
+	const question = (
+		kind: SetupQuestionKind,
+		extra: Partial<SetupCatalogueRow['stages'][number]['items'][number]> = {}
+	) => ({
+		type: 'question' as const,
+		fact_key: `extra.${kind}`,
+		label: kind,
+		hint: null,
+		built_in: false,
+		required: false,
+		can_defer: false,
+		kind,
+		options: null,
+		max_length: null,
+		...extra
+	});
+	const choices = [
+		{ value: 'cash', label: 'Cash' },
+		{ value: 'card', label: 'Card' }
+	];
+	const facts = catalogueFacts(
+		buildSetupCatalogue({
+			version_id: 'v',
+			stages: [
+				{
+					key: 'extra',
+					title: 'Extra',
+					description: '',
+					service_key: null,
+					items: [
+						question('multi_choice', { options: choices, allow_other: true, max_choices: 2 }),
+						{
+							...question('choice', { options: choices, allow_other: true }),
+							fact_key: 'extra.pick'
+						},
+						question('yes_no_unsure'),
+						question('url'),
+						question('money'),
+						question('colours')
+					]
+				}
+			]
+		})
+	);
+
+	it('carries tick-several’s "Other" and "up to N" to the page', () => {
+		expect(facts.get('extra.multi_choice')).toMatchObject({
+			kind: 'multi_choice',
+			allowOther: true,
+			maxChoices: 2
+		});
+		expect(setupValueError(facts.get('extra.multi_choice')!, '["cash","Cheque"]')).toBeNull();
+		expect(setupValueError(facts.get('extra.multi_choice')!, '["cash","card","Cheque"]')).toBe(
+			'Tick up to 2.'
+		);
+	});
+
+	it('asks pick-one with "Other" as the built-in trade question asks it', () => {
+		const pick = facts.get('extra.pick')!;
+		expect(pick.kind).toBe('choice_other');
+		expect(pick.options?.at(-1)).toEqual({ value: 'Other', label: 'Other' });
+		expect(setupValueError(pick, 'card')).toBeNull();
+		expect(setupValueError(pick, 'Bank transfer')).toBeNull();
+		expect(setupValueError(pick, 'x'.repeat(101))).not.toBeNull();
+	});
+
+	it('asks yes/no/not sure as three radio choices', () => {
+		const fact = facts.get('extra.yes_no_unsure')!;
+		expect(fact).toMatchObject({ kind: 'choice', layout: 'radio' });
+		expect(setupValueError(fact, 'not_sure')).toBeNull();
+		expect(setupValueError(fact, 'maybe')).not.toBeNull();
+	});
+
+	it('stores structured answers as JSON, and a web link with its https://', () => {
+		expect(storedSetupValue(facts.get('extra.multi_choice')!, '["card"]')).toEqual(['card']);
+		expect(storedSetupValue(facts.get('extra.url')!, 'example.com')).toBe('https://example.com');
+		expect(
+			storedSetupValue(facts.get('extra.money')!, '{"amount":"10.00","currency":"EUR"}')
+		).toEqual({
+			amount: '10.00',
+			currency: 'EUR'
+		});
+		expect(storedSetupValue(facts.get('extra.colours')!, '["#abcdef"]')).toEqual(['#ABCDEF']);
+	});
+
+	it('matches a "show only if" rule when any ticked choice does', () => {
+		const rule: SetupFact[] = [
+			facts.get('extra.multi_choice')!,
+			{
+				key: 'extra.card_fees',
+				label: 'Card fees',
+				kind: 'text',
+				required: true,
+				builtIn: false,
+				showIf: [{ factKey: 'extra.multi_choice', values: ['card'] }]
+			}
+		];
+		expect(
+			shownFacts(rule, { 'extra.multi_choice': have('["cash","card"]') }).has('extra.card_fees')
+		).toBe(true);
+		expect(
+			shownFacts(rule, { 'extra.multi_choice': have('["cash"]') }).has('extra.card_fees')
+		).toBe(false);
 	});
 });
 

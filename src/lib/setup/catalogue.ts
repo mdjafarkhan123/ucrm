@@ -6,6 +6,19 @@
 
 import { COMMON_CURRENCIES } from '$lib/settings/currencies';
 import { TRADES } from '$lib/settings/trades';
+import {
+	OTHER_MAX_LENGTH,
+	SETUP_DISTANCE_UNITS,
+	SETUP_DURATION_UNITS,
+	parseSetupChoices,
+	parseSetupColours,
+	parseSetupMeasure,
+	parseSetupMoney,
+	parseSetupNumber,
+	parseSetupPercentage,
+	parseSetupUrl,
+	setupChoiceList
+} from '$lib/setup/answer-values';
 import { parseSetupHours, parseSetupHoursExceptions } from '$lib/setup/hours';
 
 export type SetupAvailability = 'have' | 'not_yet' | 'need_help';
@@ -26,17 +39,39 @@ export type SetupFactKind =
 	/** Dated days that differ from the normal week. Saved as JSON. */
 	| 'hours_exceptions'
 	/** A calendar day, saved as YYYY-MM-DD. */
-	| 'date';
+	| 'date'
+	// The kinds below are saved as described in `$lib/setup/answer-values`.
+	/** Tick several. */
+	| 'multi_choice'
+	/** A web address. */
+	| 'url'
+	| 'number'
+	| 'money'
+	| 'percentage'
+	| 'distance'
+	/** A length of time. */
+	| 'duration'
+	/** Brand colours as codes like #1A73E8. */
+	| 'colours';
 
 /** The answer types Jafar can give a question that is not built in (plan §2.1). */
 export const SETUP_QUESTION_KINDS = [
 	'text',
 	'longtext',
 	'choice',
+	'multi_choice',
 	'yes_no',
+	'yes_no_unsure',
 	'phone',
 	'email',
-	'date'
+	'date',
+	'url',
+	'number',
+	'money',
+	'percentage',
+	'distance',
+	'duration',
+	'colours'
 ] as const;
 export type SetupQuestionKind = (typeof SETUP_QUESTION_KINDS)[number];
 
@@ -49,6 +84,10 @@ type SetupFactRules = {
 	layout?: 'radio';
 	/** `choice_other`: the label of the box that appears when "Other" is picked. */
 	otherLabel?: string;
+	/** `multi_choice`: also offers "Other" with a box for the client's own words. */
+	allowOther?: boolean;
+	/** `multi_choice`: the most choices a client may tick. */
+	maxChoices?: number;
 };
 
 export type SetupFact = SetupFactRules & {
@@ -178,6 +217,8 @@ type CatalogueItemRow = {
 	can_defer: boolean;
 	kind: SetupQuestionKind | null;
 	options: { value: string; label: string }[] | null;
+	allow_other?: boolean;
+	max_choices?: number | null;
 	max_length: number | null;
 	show_if?: ({ fact_key: string; values: string[] } | { service_key: string })[] | null;
 };
@@ -199,6 +240,29 @@ function factRules(item: CatalogueItemRow): SetupFactRules | null {
 	// Yes/no is a two-choice question shown as radio buttons, saved as "yes" or "no".
 	if (item.kind === 'yes_no')
 		return { kind: 'choice', layout: 'radio', options: YES_NO('Yes', 'No') };
+	if (item.kind === 'yes_no_unsure')
+		return {
+			kind: 'choice',
+			layout: 'radio',
+			options: [...YES_NO('Yes', 'No'), { value: 'not_sure', label: 'Not sure' }]
+		};
+	// A pick-one question with "Other" works as the built-in trade question does: the client's own words are
+	// saved in place of a choice.
+	if (item.kind === 'choice' && item.allow_other)
+		return {
+			kind: 'choice_other',
+			// The page shows the box for the client's words while this last choice is picked.
+			options: [...(item.options ?? []), { value: 'Other', label: 'Other' }],
+			otherLabel: 'Tell us which',
+			maxLength: OTHER_MAX_LENGTH
+		};
+	if (item.kind === 'multi_choice')
+		return {
+			kind: 'multi_choice',
+			options: item.options ?? [],
+			...(item.allow_other ? { allowOther: true } : {}),
+			...(item.max_choices ? { maxChoices: item.max_choices } : {})
+		};
 	return {
 		kind: item.kind,
 		...(item.max_length ? { maxLength: item.max_length } : {}),
@@ -298,10 +362,11 @@ export function catalogueForServices(
 	};
 }
 
-/** Whether an answer is one of the values a condition names. A list answer matches when any item does. */
+/** Whether an answer is one of the values a condition names. A tick-several answer matches when any tick does. */
 function answerMatches(answer: SetupAnswer | undefined, values: readonly string[]): boolean {
 	if (answer?.availability !== 'have' || answer.value === null) return false;
-	return values.includes(answer.value);
+	const list = setupChoiceList(answer.value);
+	return list ? list.some((value) => values.includes(value)) : values.includes(answer.value);
 }
 
 /**
@@ -404,7 +469,35 @@ function isCalendarDate(value: string): boolean {
 export function storedSetupValue(fact: SetupFact, value: string): unknown {
 	if (fact.kind === 'hours') return parseSetupHours(value).value;
 	if (fact.kind === 'hours_exceptions') return parseSetupHoursExceptions(value).value;
-	return value;
+	return parsedValue(fact, value)?.value ?? value;
+}
+
+/** The A5d kinds' own parse of a value, or undefined for a kind checked another way. */
+function parsedValue(fact: SetupFact, value: string) {
+	switch (fact.kind) {
+		case 'multi_choice':
+			return parseSetupChoices(value, {
+				options: fact.options ?? [],
+				allowOther: fact.allowOther ?? false,
+				maxChoices: fact.maxChoices
+			});
+		case 'url':
+			return parseSetupUrl(value);
+		case 'number':
+			return parseSetupNumber(value);
+		case 'percentage':
+			return parseSetupPercentage(value);
+		case 'money':
+			return parseSetupMoney(value);
+		case 'distance':
+			return parseSetupMeasure(value, SETUP_DISTANCE_UNITS, 'distance');
+		case 'duration':
+			return parseSetupMeasure(value, SETUP_DURATION_UNITS, 'time');
+		case 'colours':
+			return parseSetupColours(value);
+		default:
+			return undefined;
+	}
 }
 
 /** Why a typed value cannot be saved, in words for the person typing it — or null when it can. */
@@ -432,6 +525,15 @@ export function setupValueError(fact: SetupFact, raw: string): string | null {
 			return parseSetupHours(value).error;
 		case 'hours_exceptions':
 			return parseSetupHoursExceptions(value).error;
+		case 'multi_choice':
+		case 'url':
+		case 'number':
+		case 'percentage':
+		case 'money':
+		case 'distance':
+		case 'duration':
+		case 'colours':
+			return parsedValue(fact, value)?.error ?? null;
 		default:
 			if (fact.maxLength && value.length > fact.maxLength)
 				return `Keep this under ${fact.maxLength} characters.`;
