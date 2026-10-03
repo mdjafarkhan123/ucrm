@@ -15281,6 +15281,7 @@ export type Database = {
 			};
 			setup_items: {
 				Row: {
+					allow_other: boolean;
 					built_in: boolean;
 					can_defer: boolean;
 					fact_key: string | null;
@@ -15289,14 +15290,17 @@ export type Database = {
 					item_type: string;
 					kind: string | null;
 					label: string;
+					max_choices: number | null;
 					max_length: number | null;
 					options: Json | null;
 					position: number;
 					required: boolean;
+					show_if: Json | null;
 					stage_key: string;
 					version_id: string;
 				};
 				Insert: {
+					allow_other?: boolean;
 					built_in?: boolean;
 					can_defer?: boolean;
 					fact_key?: string | null;
@@ -15305,14 +15309,17 @@ export type Database = {
 					item_type: string;
 					kind?: string | null;
 					label: string;
+					max_choices?: number | null;
 					max_length?: number | null;
 					options?: Json | null;
 					position: number;
 					required?: boolean;
+					show_if?: Json | null;
 					stage_key: string;
 					version_id: string;
 				};
 				Update: {
+					allow_other?: boolean;
 					built_in?: boolean;
 					can_defer?: boolean;
 					fact_key?: string | null;
@@ -15321,10 +15328,12 @@ export type Database = {
 					item_type?: string;
 					kind?: string | null;
 					label?: string;
+					max_choices?: number | null;
 					max_length?: number | null;
 					options?: Json | null;
 					position?: number;
 					required?: boolean;
+					show_if?: Json | null;
 					stage_key?: string;
 					version_id?: string;
 				};
@@ -25641,6 +25650,15 @@ export type Database = {
 					p_sent: boolean;
 				};
 				Returns: string;
+			};
+			setup_hidden_fact_keys: {
+				Args: {
+					client_fact_keys: string[];
+					client_service_keys: string[];
+					setup_catalogue: Json;
+					target_organization_id: string;
+				};
+				Returns: string[];
 			};
 			setup_organization_service_keys: {
 				Args: { target_organization_id: string };

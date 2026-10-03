@@ -16,7 +16,7 @@ answer column of `docs/client-onboarding-setup-content-blueprint.md`
 
 ## Steps
 
-- [ ] Migration `20261009090000_setup_more_answer_types` applied to dev. Outcome check: `select 1 from
+- [x] Migration `20261009090000_setup_more_answer_types` applied to dev. Outcome check: `select 1 from
   supabase_migrations.schema_migrations where version = '20261009090000'` and column
   `setup_items.allow_other` exists
 - [ ] Catalogue rules + validation + unit tests
