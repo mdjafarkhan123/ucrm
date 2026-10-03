@@ -22689,6 +22689,16 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_save_setup_draft_stage_items: {
+				Args: {
+					actor_owner_email: string;
+					loaded_revision: number;
+					new_items: Json;
+					target_stage_key: string;
+					target_version_id: string;
+				};
+				Returns: Json;
+			};
 			owner_save_setup_draft_stages: {
 				Args: {
 					actor_owner_email: string;

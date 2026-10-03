@@ -86,6 +86,42 @@ describe('setup catalogue', () => {
 		});
 	});
 
+	it('asks yes/no as two radio choices and a date as a date', () => {
+		const custom = buildSetupCatalogue({
+			version_id: 'v',
+			stages: [
+				{
+					key: 'extra',
+					title: 'Extra',
+					description: '',
+					service_key: null,
+					items: (['yes_no', 'date'] as const).map((kind) => ({
+						type: 'question' as const,
+						fact_key: `extra.${kind}`,
+						label: kind,
+						hint: null,
+						built_in: false,
+						required: false,
+						can_defer: false,
+						kind,
+						options: null,
+						max_length: null
+					}))
+				}
+			]
+		});
+		const facts = catalogueFacts(custom);
+		const yesNo = facts.get('extra.yes_no')!;
+		expect(yesNo).toMatchObject({ kind: 'choice', layout: 'radio' });
+		expect(setupValueError(yesNo, 'yes')).toBeNull();
+		expect(setupValueError(yesNo, 'maybe')).not.toBeNull();
+		const date = facts.get('extra.date')!;
+		expect(date.kind).toBe('date');
+		expect(setupValueError(date, '2026-02-28')).toBeNull();
+		expect(setupValueError(date, '2026-02-30')).not.toBeNull();
+		expect(setupValueError(date, '28/02/2026')).not.toBeNull();
+	});
+
 	it('never asks for a password or provider credential', () => {
 		for (const fact of SETUP_FACTS.values())
 			expect(`${fact.key} ${fact.label}`.toLowerCase()).not.toMatch(/password|secret|token/);

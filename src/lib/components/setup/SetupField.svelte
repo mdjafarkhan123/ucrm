@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { parseDate, type CalendarDate } from '@internationalized/date';
+	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import RadioGroup from '$lib/components/ui/RadioGroup.svelte';
@@ -69,6 +71,21 @@
 	// Hours and dated exceptions are editors with a heading of their own rather than one labelled box.
 	const isEditor = $derived(fact.kind === 'hours' || fact.kind === 'hours_exceptions');
 
+	// A date answer is kept as YYYY-MM-DD; anything else (an old answer of another shape) shows as empty.
+	const dateValue = $derived.by(() => {
+		if (fact.kind !== 'date' || !value) return undefined;
+		try {
+			return parseDate(value);
+		} catch {
+			return undefined;
+		}
+	});
+
+	function chooseDate(next: CalendarDate | undefined) {
+		value = next?.toString() ?? '';
+		oncommit();
+	}
+
 	function chooseAvailability(next: string) {
 		availability = next as SetupAvailability;
 		oncommit();
@@ -120,6 +137,15 @@
 			bind:value
 			required={fact.required}
 			onchange={oncommit}
+		/>
+	{:else if fact.kind === 'date'}
+		<CalendarPicker
+			{id}
+			label={fact.label}
+			value={dateValue}
+			required={fact.required && !fact.canDefer}
+			invalid={Boolean(error)}
+			onchange={chooseDate}
 		/>
 	{:else if fact.kind === 'timezone'}
 		<TimezonePicker {id} bind:value required={fact.required} onchange={oncommit} />

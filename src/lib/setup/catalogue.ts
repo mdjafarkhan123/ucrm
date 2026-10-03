@@ -24,7 +24,21 @@ export type SetupFactKind =
 	/** The normal week. Saved as JSON — see `$lib/setup/hours`. */
 	| 'hours'
 	/** Dated days that differ from the normal week. Saved as JSON. */
-	| 'hours_exceptions';
+	| 'hours_exceptions'
+	/** A calendar day, saved as YYYY-MM-DD. */
+	| 'date';
+
+/** The answer types Jafar can give a question that is not built in (plan §2.1). */
+export const SETUP_QUESTION_KINDS = [
+	'text',
+	'longtext',
+	'choice',
+	'yes_no',
+	'phone',
+	'email',
+	'date'
+] as const;
+export type SetupQuestionKind = (typeof SETUP_QUESTION_KINDS)[number];
 
 /** What a question's answer may be. A built-in question takes these from `BUILT_IN_FACTS`, never the database. */
 type SetupFactRules = {
@@ -154,7 +168,7 @@ type CatalogueItemRow = {
 	built_in: boolean;
 	required: boolean;
 	can_defer: boolean;
-	kind: SetupFactKind | null;
+	kind: SetupQuestionKind | null;
 	options: { value: string; label: string }[] | null;
 	max_length: number | null;
 };
@@ -173,6 +187,9 @@ export type SetupCatalogueRow = {
 function factRules(item: CatalogueItemRow): SetupFactRules | null {
 	if (item.built_in) return item.fact_key ? (BUILT_IN_FACTS[item.fact_key] ?? null) : null;
 	if (!item.kind) return null;
+	// Yes/no is a two-choice question shown as radio buttons, saved as "yes" or "no".
+	if (item.kind === 'yes_no')
+		return { kind: 'choice', layout: 'radio', options: YES_NO('Yes', 'No') };
 	return {
 		kind: item.kind,
 		...(item.max_length ? { maxLength: item.max_length } : {}),
@@ -281,6 +298,12 @@ function isTimeZone(value: string): boolean {
 	}
 }
 
+function isCalendarDate(value: string): boolean {
+	if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+	const date = new Date(`${value}T00:00:00Z`);
+	return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value);
+}
+
 /**
  * What the database keeps for an answer that has already passed `setupValueError`. Most answers are the
  * text itself; hours and dated exceptions are kept as real JSON so nothing downstream has to parse text.
@@ -310,6 +333,8 @@ export function setupValueError(fact: SetupFact, raw: string): string | null {
 			return /^[A-Z]{2}$/.test(value) ? null : 'Choose a country from the list.';
 		case 'timezone':
 			return isTimeZone(value) ? null : 'Choose a time zone from the list.';
+		case 'date':
+			return isCalendarDate(value) ? null : 'Choose a date from the calendar.';
 		case 'hours':
 			return parseSetupHours(value).error;
 		case 'hours_exceptions':

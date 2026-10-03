@@ -12,12 +12,10 @@ export async function readJsonBody(event: RequestEvent) {
 	}
 }
 
-export function invalidSetupDraft(error: z.ZodError) {
+export function invalidSetupDraft(error: z.ZodError, list: 'stages' | 'items' = 'stages') {
 	const fieldErrors = setupEditorFieldErrors(error);
-	return json(
-		{ error: fieldErrors.stages ?? 'Please review the stages.', field_errors: fieldErrors },
-		{ status: 422 }
-	);
+	const fallback = list === 'stages' ? 'Please review the stages.' : 'Please review the questions.';
+	return json({ error: fieldErrors[list] ?? fallback, field_errors: fieldErrors }, { status: 422 });
 }
 
 /**

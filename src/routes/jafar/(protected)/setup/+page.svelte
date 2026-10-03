@@ -380,7 +380,7 @@
 				{#snippet main()}
 					<p class="setup-editor__lead">
 						Editing draft version {editor.draft?.version_number}. Clients see none of this until you
-						publish. Questions inside each stage are edited separately.
+						publish. Save your stage changes, then use Edit questions to change what a stage asks.
 					</p>
 					<SectionBlock title="Stages" form>
 						{#snippet actions()}

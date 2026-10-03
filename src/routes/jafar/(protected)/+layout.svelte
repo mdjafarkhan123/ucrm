@@ -87,7 +87,7 @@
 		if (pathname === '/jafar/onboarding') {
 			return hasCachedData(jafarOnboardingKey);
 		}
-		if (pathname === '/jafar/setup') {
+		if (pathname === '/jafar/setup' || pathname.startsWith('/jafar/setup/')) {
 			return hasCachedData(jafarSetupEditorKey);
 		}
 		if (pathname.startsWith('/jafar/packages/')) {

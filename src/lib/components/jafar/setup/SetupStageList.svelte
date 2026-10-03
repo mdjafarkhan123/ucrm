@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
+	import { resolve } from '$app/paths';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
@@ -9,6 +10,7 @@
 	import arrowDownIcon from '@tabler/icons/outline/arrow-down.svg?raw';
 	import arrowUpIcon from '@tabler/icons/outline/arrow-up.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
+	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 
 	// Client onboarding A4 (plan §2.1): the setup stages in the order clients see them. While a draft is open
@@ -130,6 +132,18 @@
 							No questions yet — clients won't see this stage until it has one
 						</span>
 					{/if}
+					{#if canEdit}
+						{#if stage.key === null}
+							<span class="setup-stages__count">Save the draft to add questions</span>
+						{:else}
+							<a
+								class="setup-stages__link"
+								href={resolve('/jafar/(protected)/setup/[stage]', { stage: stage.key })}
+								><span class="setup-stages__meta-icon" aria-hidden="true">{@html pencilIcon}</span
+								>Edit questions</a
+							>
+						{/if}
+					{/if}
 				</div>
 			</div>
 
@@ -246,6 +260,25 @@
 		&__count,
 		&__lock {
 			color: var(--color-text--secondary);
+		}
+
+		&__link {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-smallest);
+			border-radius: var(--radius-small);
+			color: var(--color-interactive);
+			font-weight: 600;
+			text-decoration: none;
+
+			&:hover {
+				text-decoration: underline;
+			}
+
+			&:focus-visible {
+				outline: none;
+				box-shadow: var(--shadow-focus);
+			}
 		}
 
 		&__lock,
