@@ -4,12 +4,11 @@
 7–10-business-day delivery, approve launch, receive training, and contact Uplift throughout.
 **Plan:** `docs/client-onboarding-delivery-behavior-contract.md`
 
-**In progress:** A4 nearly done — see `parts/A4-stage-editor.md`. A3 done 2026-10-03 — ADR 0006.
+**In progress:** A5 question editor. A4 done 2026-10-03 (Jafar accepted; its client-side proof is in A5's
+done-check). A3 done — ADR 0006.
 
-**Next part:** A4 stage editor in Jafar's panel: create a draft from the published version, add/rename/
-reorder/remove stages, tie a stage to a service, publish (ADR 0006 §Consequences). The wizard must then hide
-a stage whose `service_key` the client's edition's `included_services` lacks — the setup routes and
-`owner_client_onboarding_list` both need that per-client filter. Then A5.
+**Next part:** A5 question editor in `/jafar/setup` — see `stages/A-groundwork.md`. Do NOT publish test
+stages or questions on dev; stage keys are never reused.
 C2 onward waits for B13.
 
 **Blockers:** none. Build order approved 2026-10-01.
