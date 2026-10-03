@@ -7,7 +7,7 @@ blueprint `docs/client-onboarding-setup-content-blueprint.md` "Conditional" rows
 
 ## Steps
 
-- [ ] Migration: `setup_items.show_if`, catalogue output, save + publish checks, onboarding list counts only shown questions
+- [x] Migration: `setup_items.show_if`, catalogue output, save + publish checks, onboarding list counts only shown questions — applied to dev (`20261008100000`, fix `20261008101000`); proved in an undone test
 - [ ] Catalogue code: rules on facts, package rules resolved per client, shown-questions pass, progress uses it
 - [ ] Client wizard hides and reveals questions live
 - [ ] Editor: "Show this question" control per question
@@ -15,13 +15,9 @@ blueprint `docs/client-onboarding-setup-content-blueprint.md` "Conditional" rows
 
 ## Next
 
-Migration `supabase/migrations/20261008100000_setup_show_if.sql` written (uncommitted until applied); dry-run it
-in a rolled-back transaction, then apply it to dev.
-
-## Outside actions
-
-- Apply migration `20261008100000_setup_show_if` to dev — check: `select version from
-  supabase_migrations.schema_migrations where version = '20261008100000'` and column `setup_items.show_if` exists — pending
+Step 2, catalogue code in `src/lib/setup/catalogue.ts`: `showIf` on `SetupFact`, package conditions resolved in
+`catalogueForServices`, a shown-questions pass, and `sectionStatus`/`missingRequiredFacts`/`setupSummary` plus
+`onboardingCatalogue` (`rules`) using it.
 
 ## Notes
 
@@ -34,3 +30,4 @@ Design (SurveyJS `visibleIf` / Jotform show-hide pattern), decided 2026-10-03 fr
 - In the save, a new source in the same list is named by `item` (1-based index); a new pick-one's choices
   must be saved before they can be used in a rule.
 - Stage reorder that puts a source after its dependant is caught at publish with a named message.
+- Jafar has his own draft (version 2) open on dev; tests must not leave changes in it.
