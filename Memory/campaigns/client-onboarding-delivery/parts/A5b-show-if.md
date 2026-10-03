@@ -15,7 +15,13 @@ blueprint `docs/client-onboarding-setup-content-blueprint.md` "Conditional" rows
 
 ## Next
 
-Write the migration (step 1).
+Migration `supabase/migrations/20261008100000_setup_show_if.sql` written (uncommitted until applied); dry-run it
+in a rolled-back transaction, then apply it to dev.
+
+## Outside actions
+
+- Apply migration `20261008100000_setup_show_if` to dev — check: `select version from
+  supabase_migrations.schema_migrations where version = '20261008100000'` and column `setup_items.show_if` exists — pending
 
 ## Notes
 
