@@ -13,12 +13,16 @@ its DNS into Uplift's Cloudflare and hosts its prebuilt Astro site there (git â†
 asks whether they already own a domain and, if so, the details needed for the move; if not, it tells them
 to buy one.
 
-**Questions waiting for Jafar (word for word):**
-1. Will every client always get all 6 services, or will you sell packages that leave some out?
-2. Missed-call text-back isn't finished, so the builder won't let it be ticked yet. Until then, should the
-   phone setup questions show for everyone, or stay hidden?
-3. "Questions should be flexible so me Jafar can write / tweak questions right?" Choose: a question editor
-   in the Jafar panel, or Claude edits them on request.
+**Jafar's answers 2026-10-03:** (1) Packages vary: smaller ones, and ones with services not on the website â€”
+"its all what I write into the package". (2) Onboarding never waits for a feature to be finished; phone setup
+shows whenever the package sells it. (3) He wants to add, remove and edit setup stages and their questions
+himself, and asked how much flexibility he should get.
 
-**Next:** apply the answers, then build the ticks in `src/lib/jafar/packages.ts`, the draft schema, the
-builder page, and a migration that freezes them with the edition.
+**Proposal sent, waiting for approval:** Jafar keeps a service list, and each package picks services from it.
+Each setup stage shows for everyone or for one service. He has a stage and question editor with draft and
+publish. Built-in questions (they feed CRM settings or provider registration) can be reworded and moved, not
+deleted or retyped (the HubSpot default-property pattern). An answered question's type is never changed.
+Removed questions hide; answers are kept. If approved, this revises ADR 0005 decision 3 and the plan, and
+adds editor parts before B3.
+
+**Next:** record Jafar's decision in the plan and ADR, re-split stage A/B, then build.
