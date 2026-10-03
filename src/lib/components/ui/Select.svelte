@@ -129,7 +129,8 @@
 
 		.select__label {
 			position: absolute;
-			z-index: var(--elevation-base);
+			// One above the focused trigger, which lifts itself to show its focus ring and would otherwise cover this.
+			z-index: calc(var(--elevation-base) + 1);
 			top: 0;
 			left: var(--space-slim);
 			max-width: calc(100% - var(--space-large));
