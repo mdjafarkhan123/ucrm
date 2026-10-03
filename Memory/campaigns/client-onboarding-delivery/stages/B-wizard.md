@@ -8,13 +8,18 @@ questions Jafar can edit.
 The complete starter content was approved in B3a. B4–B12 implement that list rather than inventing questions
 during implementation.
 
+The blueprint needs answer types the editor lacks and forbids flattening them into text boxes, so Jafar
+approved (2026-10-03, "the safe way") building A5b–A5f first. B3b and B4–B12 then load each stage into a
+draft Jafar publishes.
+
 | Part | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- |
 | B1 Welcome + basics | §2 welcome, task list, dashboard setup card replacing `GettingStartedCard`, business basics with autosave and have/don't have/need help | — | Owner fills half on a laptop, signs in on a phone, continues; CRM menu works throughout | Done 2026-10-01 — storage is ADR 0005; questions live in `src/lib/setup/catalogue.ts` |
 | B2 Your business | Rest of §3.1: address, hours and exceptions, country, language, time zone and currency confirmation | B1 | Hours with a holiday exception save and reload correctly | Done 2026-10-01 — hours and holiday dates are stored as JSON (`src/lib/setup/hours.ts`); §3.1 opening date and licences left for B7, which is the part that needs them |
 | B3 Package sections | Package services decide which stages show (now mostly delivered by A4); shared facts asked once; check and close | A4, B1 | Edition without Website shows no website section; business phone asked once | Done 2026-10-03 — nothing new to build: every setup read filters by package (A4) and a question can sit in only one place per version (A3). Proved in an undone database test (Website package → Raad sees website, Jaaroweb nothing) plus unit tests; Jafar's own check rides with A5's |
 | B3a Complete starter content | Every prebuilt stage/question, type, required/defer rule, condition, service dependency, and special control | B3 | Jafar approves one complete contractor setup blueprint backed by research | Done 2026-10-03 — `docs/client-onboarding-setup-content-blueprint.md` approved |
-| B4 Services + area | §3.2 | B3a | Services, areas, and exclusions save and resume | Not started |
+| B3b Rebuild Your business | Blueprint stage 1 replaces today's 25 questions; existing answers kept | A5b, A5e | Legal name shows only when different; old test answers still show | Not started |
+| B4 Services + area | §3.2 | B3a, A5b–A5f | Services, areas, and exclusions save and resume | Not started |
 | B5 Brand + photos | §3.3 uploads with ownership confirmation | B3a | Logo and photos upload; "no logo" never blocks | Not started |
 | B6 Website + domain | §3.4, four domain branches, no password asked | B3a | Each branch asks only its own questions | Not started |
 | B7 Google Profile | §3.5 | B3a | Contractor stays owner; no Google password field exists | Not started |
