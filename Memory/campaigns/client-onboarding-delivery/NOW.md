@@ -9,4 +9,4 @@
 **Next part:** none can move now. C2 onward waits for B13; B3 onward waits for A2, and A2 waits for
 package-builder P16 (Jafar's browser tour).
 
-**Blockers:** none. Build order approved 2026-10-01.
+**Blockers:** package-builder P16 (Jafar's browser tour) must finish before A2. Build order approved 2026-10-01.
