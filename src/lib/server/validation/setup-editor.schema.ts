@@ -111,7 +111,7 @@ function builtInRuleProblem(factKey: string, values: string[]): string | null {
 			? null
 			: 'Choose countries from the list.';
 	if (rules.kind !== 'choice' && rules.kind !== 'choice_other')
-		return 'Only a pick-one, yes/no or country question can decide whether this is shown.';
+		return 'Only a question with choices, or country, can decide whether this is shown.';
 	const allowed = new Set(rules.options?.map((option) => option.value));
 	return values.every((value) => allowed.has(value)) ? null : 'Choose answers from the list.';
 }
@@ -145,6 +145,9 @@ const questionSchema = z
 			)
 			.max(50, 'A question can offer up to 50 choices.')
 			.nullable(),
+		// Client onboarding A5d: pick one and tick several may add "Other"; tick several may cap its ticks.
+		allow_other: z.boolean().optional().default(false),
+		max_choices: z.number().int().min(1, 'Allow at least one tick.').nullish(),
 		// Null, or left out, asks the question always.
 		show_if: z
 			.array(conditionSchema)
@@ -162,8 +165,21 @@ const questionSchema = z
 		});
 		if (question.fact_key === null && question.kind === null)
 			context.addIssue({ code: 'custom', path: ['kind'], message: 'Choose an answer type.' });
-		if (question.kind !== 'choice') return;
+		if (!isChoiceKind(question.kind)) return;
 		const labels = (question.options ?? []).map((option) => option.label.toLowerCase());
+		if (question.allow_other && labels.includes('other'))
+			context.addIssue({
+				code: 'custom',
+				path: ['options'],
+				message: 'Remove the "Other" choice. "Add Other" already gives clients one.'
+			});
+		const most = labels.length + (question.allow_other ? 1 : 0);
+		if (question.kind === 'multi_choice' && question.max_choices && question.max_choices > most)
+			context.addIssue({
+				code: 'custom',
+				path: ['max_choices'],
+				message: `There are only ${most} choices to tick.`
+			});
 		if (labels.length < 2)
 			context.addIssue({
 				code: 'custom',
@@ -179,8 +195,14 @@ const questionSchema = z
 	})
 	.transform((question) => ({
 		...question,
-		options: question.kind === 'choice' ? choiceValues(question.options ?? []) : null
+		options: isChoiceKind(question.kind) ? choiceValues(question.options ?? []) : null,
+		allow_other: isChoiceKind(question.kind) && question.allow_other,
+		max_choices: question.kind === 'multi_choice' ? (question.max_choices ?? null) : null
 	}));
+
+function isChoiceKind(kind: string | null) {
+	return kind === 'choice' || kind === 'multi_choice';
+}
 
 /**
  * Each choice's stored value. A choice keeps the value it was saved with, so answers already given still match

@@ -16,14 +16,19 @@ answer column of `docs/client-onboarding-setup-content-blueprint.md`
 
 ## Steps
 
-- [x] Migration `20261009090000_setup_more_answer_types` applied to dev. Outcome check: `select 1 from
-  supabase_migrations.schema_migrations where version = '20261009090000'` and column
-  `setup_items.allow_other` exists
-- [ ] Catalogue rules + validation + unit tests
-- [ ] Client wizard fields
-- [ ] Editor: type picker, Other toggle, up-to-N, show-if sources
-- [ ] svelte-check, unit tests, browser check, commit
+- [x] Migration `20261009090000_setup_more_answer_types` applied to dev; rules proven in SQL (rolled back)
+- [x] Rules + tests: `src/lib/setup/answer-values.ts`, `catalogue.ts`, editor Zod schema, `setup-editor.ts`
+- [x] Client fields: `SetupChoicesField`, `SetupAmountField` (number, %, money, distance, time; keeps typed
+  text; decimal comma), `SetupColoursField`, wired in `SetupField`; section GET sends `country`, `currency`
+- [x] Editor: new types in the picker, "Add Other" switch, "Most ticks allowed"
+- [x] svelte-check 0 errors; setup unit tests green; committed
+- [ ] Browser check — never done, nothing seen on screen yet
 
 ## Next
 
-Apply the migration (check its outcome first), then the catalogue rules in `src/lib/setup/catalogue.ts`.
+Browser check on dev without publishing (keys are never reused): open `/jafar/setup`, edit a stage in the
+existing draft, add one question of each new type (tick several with Other and a limit of 2), save, reload,
+check each saves; then discard those test questions (remove them and save). Look hard at
+`SetupAmountField`: the currency sign sits over the box; check it lines up and does not cover the label. The
+client-side fields can only be seen after a publish, so their live look joins A5's hands-on publish with
+Jafar. Then close A5d (mark Done in `stages/A-groundwork.md`, delete this note, point NOW.md at A5c).

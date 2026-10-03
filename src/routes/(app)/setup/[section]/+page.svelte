@@ -120,6 +120,13 @@
 	// appears the moment the answer it depends on is picked. Conditions on an earlier section read that
 	// section's saved answers, which the server sends along.
 	const earlier = $derived(query.data?.earlier_answers ?? {});
+
+	const COUNTRY = 'business.country';
+	const CURRENCY = 'business.currency';
+
+	// Amount answers (A5d) follow the country and currency picked on this page, or else as already known.
+	const currency = $derived(fields?.[CURRENCY]?.value || query.data?.currency || null);
+	const country = $derived(fields?.[COUNTRY]?.value || query.data?.country || null);
 	function shownWith(answers: SetupAnswers) {
 		return section
 			? shownFacts(sectionFacts(section), { ...earlier, ...answers }, new Set(Object.keys(earlier)))
@@ -155,9 +162,6 @@
 		clearTimeout(timer);
 		void flush();
 	}
-
-	const COUNTRY = 'business.country';
-	const CURRENCY = 'business.currency';
 
 	// Picking a country offers that country's currency, as a suggestion like any other: it is shown, not
 	// saved, until the person keeps it. An answer they already gave or touched is left alone.
@@ -413,6 +417,8 @@
 								bind:note={form[fact.key].note}
 								error={errors[fact.key] ?? ''}
 								suggested={suggested[fact.key] ?? false}
+								{currency}
+								{country}
 								onedit={() => edited(fact.key)}
 								oncommit={() => committed(fact.key)}
 							/>

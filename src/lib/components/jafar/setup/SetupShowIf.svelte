@@ -15,9 +15,9 @@
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
 
 	// Client onboarding A5b (plan §2.1): "Show this question: Always / Only when…", the way SurveyJS and Jotform
-	// show or hide a question from an earlier answer. Every rule must hold. A rule names an earlier pick-one,
-	// yes/no or built-in choice question and the answers that reveal this one, or a service the client's
-	// package must include. The database checks the rules again when the stage is saved and published.
+	// show or hide a question from an earlier answer. Every rule must hold. A rule names an earlier question with
+	// choices, or a built-in choice, and the answers that reveal this one (any tick of a tick-several answer
+	// counts), or a service the client's package must include. The database checks the rules again when the stage is saved and published.
 	let {
 		conditions = $bindable(),
 		sources,
@@ -171,8 +171,8 @@
 					{:else if condition.type === 'answer' && condition.source}
 						<p class="setup-show-if__warning">
 							<span class="setup-show-if__icon" aria-hidden="true">{@html alertIcon}</span>
-							The question this rule used is no longer above this one, or no longer pick-one or yes/no.
-							Choose another, or move it back up.
+							The question this rule used is no longer above this one, or no longer offers choices. Choose
+							another, or move it back up.
 						</p>
 					{/if}
 				</li>

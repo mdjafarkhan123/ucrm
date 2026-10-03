@@ -109,6 +109,14 @@ export const GET: RequestHandler = async (event) => {
 			// Earlier sections' answers this section's "show only if" rules read, for questions asked now.
 			earlier_answers: earlierAnswersFor(section, catalogue, state.answers),
 			suggestions,
+			// For amount answers (A5d): money is given in the business's currency, and the country suggests
+			// miles or kilometres.
+			country: country ?? null,
+			currency:
+				state.answers['business.currency']?.value ??
+				known['business.currency'] ??
+				settings?.currency_code ??
+				null,
 			status: sectionStatus(
 				section,
 				state.answers,

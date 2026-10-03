@@ -23,6 +23,8 @@ const item = (fields: Partial<SetupEditorItem>): SetupEditorItem => ({
 	can_defer: false,
 	kind: null,
 	options: null,
+	allow_other: false,
+	max_choices: null,
 	show_if: null,
 	...fields
 });
@@ -154,6 +156,8 @@ describe('setup question editor', () => {
 				can_defer: false,
 				kind: null,
 				options: null,
+				allow_other: false,
+				max_choices: null,
 				show_if: null
 			},
 			{
@@ -169,6 +173,8 @@ describe('setup question editor', () => {
 					{ value: 'more', label: 'More' },
 					{ value: null, label: 'Lots' }
 				],
+				allow_other: false,
+				max_choices: null,
 				show_if: null
 			}
 		]);
@@ -242,5 +248,45 @@ describe('setup question editor', () => {
 			],
 			newChoices: true
 		});
+	});
+});
+
+describe('more answer types (A5d)', () => {
+	const choices = [
+		{ value: 'cash', label: 'Cash' },
+		{ value: 'card', label: 'Card' }
+	];
+
+	it('sends "Other" and "up to N" only for the choice types they belong to', () => {
+		const [ticks, link] = itemsPayload(
+			draftItems([
+				item({
+					fact_key: 'a.pay',
+					kind: 'multi_choice',
+					options: choices,
+					allow_other: true,
+					max_choices: 2
+				}),
+				item({ fact_key: 'a.site', kind: 'url', allow_other: true, max_choices: 2 })
+			])
+		);
+		expect(ticks).toMatchObject({ options: choices, allow_other: true, max_choices: 2 });
+		expect(link).toMatchObject({ options: null, allow_other: false, max_choices: null });
+	});
+
+	it('lets a rule depend on a tick-several or yes/no/not sure question', () => {
+		const items = draftItems([
+			item({ fact_key: 'a.pay', label: 'Pay', kind: 'multi_choice', options: choices }),
+			item({ fact_key: 'a.data', label: 'Data', kind: 'yes_no_unsure' }),
+			item({ fact_key: 'a.site', label: 'Site', kind: 'url' }),
+			item({ fact_key: 'a.next', label: 'Next', kind: 'text' })
+		]);
+		const sources = showIfSources([], items, 3);
+		expect(sources.map((source) => source.id)).toEqual(['a.pay', 'a.data']);
+		expect(sources[1].options).toEqual([
+			{ value: 'yes', label: 'Yes' },
+			{ value: 'no', label: 'No' },
+			{ value: 'not_sure', label: 'Not sure' }
+		]);
 	});
 });

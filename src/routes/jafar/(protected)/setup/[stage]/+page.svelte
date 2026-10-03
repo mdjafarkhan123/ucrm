@@ -126,6 +126,8 @@
 			can_defer: false,
 			kind: type === 'question' ? 'text' : null,
 			options: [],
+			allow_other: false,
+			max_choices: null,
 			show_if: []
 		});
 		void questionList?.openNew(rowId);

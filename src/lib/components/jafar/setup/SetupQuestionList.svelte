@@ -9,6 +9,7 @@
 	import { SETUP_QUESTION_KINDS } from '$lib/setup/catalogue';
 	import {
 		SETUP_QUESTION_KIND_LABELS,
+		isChoiceKind,
 		showIfSources,
 		type DraftItem,
 		type SetupEditor,
@@ -78,7 +79,7 @@
 
 	function setKind(item: DraftItem, value: string) {
 		item.kind = value as DraftItem['kind'];
-		if (item.kind === 'choice' && item.options.length === 0) {
+		if (isChoiceKind(item.kind) && item.options.length === 0) {
 			addChoice(item);
 			addChoice(item);
 		}
@@ -259,7 +260,7 @@
 								{/if}
 							</div>
 
-							{#if item.kind === 'choice'}
+							{#if isChoiceKind(item.kind)}
 								<fieldset class="setup-questions__choices">
 									<legend>Choices</legend>
 									{#each item.options as option, choiceIndex (option.rowId)}
@@ -295,6 +296,36 @@
 											>Add choice</Button
 										>
 									</div>
+									<Toggle
+										id={`setup-item-${item.rowId}-other`}
+										label="Add “Other”"
+										description="Clients can pick “Other” and type their own answer."
+										bind:checked={item.allow_other}
+									/>
+									{#if item.kind === 'multi_choice'}
+										<div class="setup-questions__most">
+											<Input
+												id={`setup-item-${item.rowId}-most`}
+												label="Most ticks allowed (optional)"
+												type="number"
+												inputmode="numeric"
+												min={1}
+												max={item.options.length + (item.allow_other ? 1 : 0)}
+												bind:value={
+													() => item.max_choices,
+													(value) => (item.max_choices = typeof value === 'number' ? value : null)
+												}
+												invalid={Boolean(errors[`${item.rowId}.max_choices`])}
+												errorMessage={errors[`${item.rowId}.max_choices`] ?? ''}
+											/>
+											{#if !errors[`${item.rowId}.max_choices`]}
+												<p class="setup-questions__hint">
+													Leave empty to let clients tick as many as apply. For “Choose up to
+													three”, enter 3.
+												</p>
+											{/if}
+										</div>
+									{/if}
 								</fieldset>
 							{/if}
 						{/if}
@@ -507,6 +538,13 @@
 			> :global(:first-child) {
 				flex: 1 1 auto;
 			}
+		}
+
+		&__most {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smaller);
+			max-width: 32rem;
 		}
 
 		&__switches {

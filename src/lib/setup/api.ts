@@ -35,6 +35,9 @@ export type SetupSectionData = {
 	earlier_answers: SetupAnswers;
 	/** What the CRM already knows, offered for questions nobody has answered yet. */
 	suggestions: Record<string, string>;
+	/** The business's country and currency as known now, for amount answers. */
+	country: string | null;
+	currency: string | null;
 	status: SetupSectionStatus;
 };
 

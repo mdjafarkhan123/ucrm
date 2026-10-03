@@ -17,6 +17,10 @@ export type SetupEditorItem = {
 	/** Null for a heading or a built-in question, whose answer type lives in code. */
 	kind: SetupQuestionKind | null;
 	options: SetupChoice[] | null;
+	/** Pick one and tick several: also offer "Other" with a box for the client's own words. */
+	allow_other: boolean;
+	/** Tick several: the most ticks a client may give; null allows any number. */
+	max_choices: number | null;
 	/** "Show only if": every condition must hold. Null asks the question always. */
 	show_if: SetupShowIfCondition[] | null;
 };
@@ -151,6 +155,8 @@ export type DraftItem = {
 	kind: SetupQuestionKind | null;
 	/** `value` is null until a new choice is saved. */
 	options: { rowId: string; value: string | null; label: string }[];
+	allow_other: boolean;
+	max_choices: number | null;
 	/** Empty asks the question always. */
 	show_if: DraftCondition[];
 };
@@ -203,8 +209,15 @@ export function draftItems(items: SetupEditorItem[]): DraftItem[] {
 		can_defer: item.can_defer,
 		kind: item.kind,
 		options: (item.options ?? []).map((option) => ({ rowId: option.value, ...option })),
+		allow_other: item.allow_other,
+		max_choices: item.max_choices,
 		show_if: draftConditions(item.show_if)
 	}));
+}
+
+/** Pick one and tick several: the answer types Jafar writes the choices for. */
+export function isChoiceKind(kind: SetupQuestionKind | null) {
+	return kind === 'choice' || kind === 'multi_choice';
 }
 
 /** What the save sends: the stage's headings and questions in order. */
@@ -221,17 +234,19 @@ export function itemsPayload(items: DraftItem[]) {
 					can_defer: item.can_defer,
 					kind: item.built_in ? null : item.kind,
 					options:
-						!item.built_in && item.kind === 'choice'
+						!item.built_in && isChoiceKind(item.kind)
 							? item.options.map((option) => ({ value: option.value, label: option.label.trim() }))
 							: null,
+					allow_other: !item.built_in && isChoiceKind(item.kind) && item.allow_other,
+					max_choices: !item.built_in && item.kind === 'multi_choice' ? item.max_choices : null,
 					show_if: conditionsPayload(item.show_if, items)
 				}
 	);
 }
 
 /**
- * A question a "show only if" rule can depend on: a pick-one or yes/no question, or a built-in choice such as
- * country. `options` are the answers it can be matched against; `newChoices` says some are unsaved and so not
+ * A question a "show only if" rule can depend on: one with choices (pick one, tick several, yes/no, yes/no/not
+ * sure), or a built-in choice such as country. A tick-several answer matches when any tick does. `options` are the answers it can be matched against; `newChoices` says some are unsaved and so not
  * listed yet.
  */
 export type ShowIfSource = {
@@ -261,15 +276,16 @@ function showIfSource(
 			return { ...source, options: rules.options };
 		return null;
 	}
-	if (item.kind === 'yes_no')
+	if (item.kind === 'yes_no' || item.kind === 'yes_no_unsure')
 		return {
 			...source,
 			options: [
 				{ value: 'yes', label: 'Yes' },
-				{ value: 'no', label: 'No' }
+				{ value: 'no', label: 'No' },
+				...(item.kind === 'yes_no_unsure' ? [{ value: 'not_sure', label: 'Not sure' }] : [])
 			]
 		};
-	if (item.kind !== 'choice') return null;
+	if (!isChoiceKind(item.kind)) return null;
 	const options = item.options ?? [];
 	return {
 		...source,
@@ -310,10 +326,19 @@ export const SETUP_QUESTION_KIND_LABELS: Record<SetupQuestionKind, string> = {
 	text: 'Short answer',
 	longtext: 'Paragraph',
 	choice: 'Pick one',
+	multi_choice: 'Tick several',
 	yes_no: 'Yes or no',
+	yes_no_unsure: 'Yes, no or not sure',
 	phone: 'Phone number',
 	email: 'Email address',
-	date: 'Date'
+	date: 'Date',
+	url: 'Web link',
+	number: 'Number',
+	money: 'Amount of money',
+	percentage: 'Percentage',
+	distance: 'Distance',
+	duration: 'Length of time',
+	colours: 'Colours'
 };
 
 export const fetchSetupEditor = () => send('/api/jafar/setup', 'GET');

@@ -126,4 +126,50 @@ describe('saveSetupStageItemsSchema', () => {
 			expect(ruled([{ fact_key: 'business.trade', values: ['Plumbing'] }]).error).toBeUndefined();
 		});
 	});
+
+	it('keeps "Other" and "up to N" only on the choice types they belong to (A5d)', () => {
+		const parsed = saveSetupStageItemsSchema.parse({
+			...draft,
+			items: [
+				{ ...question, kind: 'multi_choice', allow_other: true, max_choices: 4 },
+				{
+					...question,
+					label: 'Site',
+					kind: 'url',
+					options: null,
+					allow_other: true,
+					max_choices: 2
+				}
+			]
+		});
+		expect(parsed.items[0]).toMatchObject({
+			kind: 'multi_choice',
+			allow_other: true,
+			max_choices: 4
+		});
+		expect(parsed.items[0]).toHaveProperty('options.length', 3);
+		expect(parsed.items[1]).toMatchObject({ allow_other: false, max_choices: null, options: null });
+	});
+
+	it('refuses more ticks than there are choices, and a typed "Other" beside "Add Other" (A5d)', () => {
+		const tooMany = saveSetupStageItemsSchema.safeParse({
+			...draft,
+			items: [{ ...question, kind: 'multi_choice', max_choices: 4 }]
+		});
+		expect(tooMany.error?.issues[0]).toMatchObject({ path: ['items', 0, 'max_choices'] });
+		const twoOthers = saveSetupStageItemsSchema.safeParse({
+			...draft,
+			items: [
+				{
+					...question,
+					allow_other: true,
+					options: [
+						{ value: null, label: 'Cash' },
+						{ value: null, label: 'Other' }
+					]
+				}
+			]
+		});
+		expect(twoOthers.error?.issues[0]).toMatchObject({ path: ['items', 0, 'options'] });
+	});
 });

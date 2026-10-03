@@ -8,6 +8,9 @@
 	import TimezonePicker from '$lib/components/ui/TimezonePicker.svelte';
 	import SetupHoursField from '$lib/components/setup/SetupHoursField.svelte';
 	import SetupHoursExceptions from '$lib/components/setup/SetupHoursExceptions.svelte';
+	import SetupAmountField from '$lib/components/setup/SetupAmountField.svelte';
+	import SetupChoicesField from '$lib/components/setup/SetupChoicesField.svelte';
+	import SetupColoursField from '$lib/components/setup/SetupColoursField.svelte';
 	import { COUNTRIES } from '$lib/settings/countries';
 	import type { SetupAvailability, SetupFact } from '$lib/setup/catalogue';
 
@@ -21,6 +24,8 @@
 		note = $bindable(''),
 		error = '',
 		suggested = false,
+		currency = null,
+		country = null,
 		onedit,
 		oncommit
 	}: {
@@ -31,16 +36,32 @@
 		error?: string;
 		/** The value was filled in from what is already known and nobody has confirmed it yet. */
 		suggested?: boolean;
+		/** The business's currency, for an amount of money. */
+		currency?: string | null;
+		/** The business's country, which suggests miles or kilometres. */
+		country?: string | null;
 		onedit: () => void;
 		oncommit: () => void;
 	} = $props();
 
 	const id = $derived(`setup-${fact.key.replace(/\./g, '-')}`);
 	const inputType = $derived(
-		fact.kind === 'email' ? 'email' : fact.kind === 'phone' ? 'tel' : 'text'
+		fact.kind === 'email'
+			? 'email'
+			: fact.kind === 'phone'
+				? 'tel'
+				: fact.kind === 'url'
+					? 'url'
+					: 'text'
 	);
 	const autocomplete = $derived(
-		fact.kind === 'email' ? 'email' : fact.kind === 'phone' ? 'tel' : 'off'
+		fact.kind === 'email'
+			? 'email'
+			: fact.kind === 'phone'
+				? 'tel'
+				: fact.kind === 'url'
+					? 'url'
+					: 'off'
 	);
 
 	const AVAILABILITY_OPTIONS = [
@@ -126,6 +147,40 @@
 		{:else}
 			<SetupHoursExceptions {id} bind:value onchange={onedit} />
 		{/if}
+	{:else if fact.kind === 'multi_choice'}
+		<SetupChoicesField
+			{id}
+			label={fact.label}
+			options={fact.options ?? []}
+			allowOther={fact.allowOther}
+			maxChoices={fact.maxChoices}
+			bind:value
+			invalid={Boolean(error)}
+			{onedit}
+			{oncommit}
+		/>
+	{:else if fact.kind === 'number' || fact.kind === 'percentage' || fact.kind === 'money' || fact.kind === 'distance' || fact.kind === 'duration'}
+		<SetupAmountField
+			{id}
+			label={fact.label}
+			kind={fact.kind}
+			bind:value
+			{currency}
+			{country}
+			required={fact.required && !fact.canDefer}
+			invalid={Boolean(error)}
+			{onedit}
+			{oncommit}
+		/>
+	{:else if fact.kind === 'colours'}
+		<SetupColoursField
+			{id}
+			label={fact.label}
+			bind:value
+			invalid={Boolean(error)}
+			{onedit}
+			{oncommit}
+		/>
 	{:else if fact.kind === 'choice' && fact.layout === 'radio'}
 		<RadioGroup label={fact.label} options={fact.options ?? []} {value} onchange={choose} />
 	{:else if fact.kind === 'country'}
@@ -193,8 +248,9 @@
 			{id}
 			label={fact.canDefer ? undefined : fact.label}
 			aria-label={fact.canDefer ? fact.label : undefined}
-			placeholder={fact.canDefer ? fact.label : undefined}
+			placeholder={fact.canDefer ? fact.label : fact.kind === 'url' ? 'example.com' : undefined}
 			type={inputType}
+			inputmode={fact.kind === 'url' ? 'url' : undefined}
 			{autocomplete}
 			bind:value
 			required={fact.required && !fact.canDefer}
