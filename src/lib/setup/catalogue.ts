@@ -181,8 +181,8 @@ function factRules(item: CatalogueItemRow): SetupFactRules | null {
 }
 
 /**
- * The published version as sections of grouped questions. A heading starts a group; questions before the
- * first heading form an untitled one. A built-in question this code does not know is left out rather than
+ * The published version as sections of grouped questions, for every client. A heading starts a group;
+ * questions before the first heading form an untitled one. A built-in question this code does not know is left out rather than
  * asked with no rules — it can only appear if the database is ahead of the app.
  */
 export function buildSetupCatalogue(row: SetupCatalogueRow): SetupCatalogue {
@@ -219,7 +219,27 @@ export function buildSetupCatalogue(row: SetupCatalogueRow): SetupCatalogue {
 			groups: groups.filter((group) => group.facts.length > 0)
 		};
 	});
-	return { versionId: row.version_id, sections };
+	// A stage Jafar has added but not yet given a question asks nothing, so no client sees it.
+	return {
+		versionId: row.version_id,
+		sections: sections.filter((section) => section.groups.length > 0)
+	};
+}
+
+/**
+ * The stages one client is asked: those shown to everyone, and those whose service the client's package
+ * includes (plan §2.1). Everything a client reads or saves goes through this.
+ */
+export function catalogueForServices(
+	catalogue: SetupCatalogue,
+	serviceKeys: ReadonlySet<string>
+): SetupCatalogue {
+	return {
+		...catalogue,
+		sections: catalogue.sections.filter(
+			(section) => section.serviceKey === null || serviceKeys.has(section.serviceKey)
+		)
+	};
 }
 
 export function catalogueFacts(catalogue: SetupCatalogue): Map<string, SetupFact> {

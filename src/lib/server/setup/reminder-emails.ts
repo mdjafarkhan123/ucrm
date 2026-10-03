@@ -1,8 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import { enqueueEmailDelivery } from '$lib/server/events/dispatcher';
-import { readSetupCatalogue } from '$lib/server/setup/catalogue';
+import { readSetupCatalogue, readSetupServiceKeys } from '$lib/server/setup/catalogue';
 import { readSetupState, setupSummary } from '$lib/server/setup/read';
+import { catalogueForServices } from '$lib/setup/catalogue';
 
 // Setup reminder emails (C6, plan §5; Intercom's and Customer.io's inactivity-triggered onboarding nudges). When
 // a paid client's setup has sat untouched for about 24 hours, 3 days and 7 days, its owners and administrators
@@ -165,9 +166,12 @@ export async function sendDueSetupReminderEmails(
 
 	let sent = 0;
 	for (const reminder of due) {
-		const state = await readSetupState(client, reminder.organization_id);
-		if (!state) continue;
-		const summary = setupSummary(state, catalogue);
+		const [state, serviceKeys] = await Promise.all([
+			readSetupState(client, reminder.organization_id),
+			readSetupServiceKeys(client, reminder.organization_id)
+		]);
+		if (!state || !serviceKeys) continue;
+		const summary = setupSummary(state, catalogueForServices(catalogue, serviceKeys));
 		const next =
 			summary.next && summary.sections.find((section) => section.key === summary.next?.key);
 

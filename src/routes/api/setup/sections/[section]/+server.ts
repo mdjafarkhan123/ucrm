@@ -13,7 +13,7 @@ import {
 	setupWriteError,
 	setupWriteLimited
 } from '$lib/server/setup/access';
-import { readSetupCatalogue } from '$lib/server/setup/catalogue';
+import { readOrganizationSetupCatalogue } from '$lib/server/setup/catalogue';
 import { readSetupState } from '$lib/server/setup/read';
 import { setupSectionDoneSchema } from '$lib/server/validation/setup.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
@@ -37,7 +37,7 @@ export const GET: RequestHandler = async (event) => {
 
 	const organizationId = check.auth.organization.id;
 	const [catalogue, state, settingsResult, hoursResult, profileResult] = await Promise.all([
-		readSetupCatalogue(event.locals.supabase),
+		readOrganizationSetupCatalogue(event.locals.supabase, organizationId),
 		readSetupState(event.locals.supabase, organizationId),
 		event.locals.supabase
 			.from('organization_settings')
@@ -117,12 +117,12 @@ export const PATCH: RequestHandler = async (event) => {
 	const check = await requireSetupEditor(event);
 	if ('response' in check) return check.response;
 
-	const catalogue = await readSetupCatalogue(event.locals.supabase);
+	const organizationId = check.auth.organization.id;
+	const catalogue = await readOrganizationSetupCatalogue(event.locals.supabase, organizationId);
 	if (!catalogue) return databaseError();
 	const section = catalogueSection(catalogue, event.params.section);
 	if (!section) return notFound('That setup section could not be found.');
 
-	const organizationId = check.auth.organization.id;
 	const limited = await setupWriteLimited(event, organizationId);
 	if (limited) return limited;
 

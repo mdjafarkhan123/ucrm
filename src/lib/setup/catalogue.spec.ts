@@ -4,6 +4,7 @@ import {
 	BUILT_IN_FACTS,
 	buildSetupCatalogue,
 	catalogueFacts,
+	catalogueForServices,
 	missingRequiredFacts,
 	sectionFacts,
 	sectionStatus,
@@ -165,5 +166,48 @@ describe('section status', () => {
 		answers['business.public_email'] = { availability: 'not_yet', value: null, note: 'Soon' };
 		expect(missingRequiredFacts(business, answers)).toEqual([]);
 		expect(sectionStatus(business, answers, true)).toBe('done');
+	});
+});
+
+describe('stages each client sees (A4)', () => {
+	const websiteQuestion = {
+		type: 'question' as const,
+		fact_key: 'website.domain',
+		label: 'Your domain',
+		hint: null,
+		built_in: false,
+		required: true,
+		can_defer: true,
+		kind: 'text' as const,
+		options: null,
+		max_length: 200
+	};
+	const version = {
+		...SETUP_VERSION_1,
+		stages: [
+			...SETUP_VERSION_1.stages,
+			{
+				key: 'website',
+				title: 'Website',
+				description: '',
+				service_key: 'website',
+				items: [websiteQuestion]
+			},
+			{ key: 'marketing', title: 'Marketing', description: '', service_key: 'marketing', items: [] }
+		]
+	};
+
+	it('leaves out a stage that has no questions yet', () => {
+		const keys = buildSetupCatalogue(version).sections.map((section) => section.key);
+		expect(keys).toEqual(['business', 'website']);
+	});
+
+	it('shows a service stage only to a package that includes the service', () => {
+		const catalogue = buildSetupCatalogue(version);
+		const keys = (services: string[]) =>
+			catalogueForServices(catalogue, new Set(services)).sections.map((section) => section.key);
+		expect(keys([])).toEqual(['business']);
+		expect(keys(['reviews'])).toEqual(['business']);
+		expect(keys(['website', 'reviews'])).toEqual(['business', 'website']);
 	});
 });

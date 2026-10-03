@@ -54,6 +54,8 @@ function client(overrides: Partial<OnboardingClient> = {}): OnboardingClient {
 		payment_reversed: false,
 		welcome_seen: true,
 		sections_done: 0,
+		sections_total: 1,
+		facts_total: 24,
 		facts_answered: 3,
 		help_count: 0,
 		unread_support: 0,
@@ -140,7 +142,6 @@ describe('client onboarding list GET', () => {
 			cursor_account_created_at: '2026-10-01T10:00:00Z',
 			cursor_id: 'org-1'
 		});
-		expect(first.setup_size.sections).toBe(SETUP_CATALOGUE_1.sections.length);
 	});
 
 	it('reports a database failure without leaking it', async () => {

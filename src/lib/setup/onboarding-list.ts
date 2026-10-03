@@ -25,7 +25,10 @@ export type OnboardingClient = {
 	payment_reversed: boolean;
 	welcome_seen: boolean;
 	sections_done: number;
+	/** The tasks and questions this client is asked: everyone's, plus those of their package's services. */
+	sections_total: number;
 	facts_answered: number;
+	facts_total: number;
 	help_count: number;
 	unread_support: number;
 	next_section_key: string | null;
@@ -49,27 +52,22 @@ export type OnboardingListPage = {
 	clients: OnboardingClient[];
 	next_cursor: string | null;
 	totals: OnboardingTotals;
-	/** How many tasks and questions setup has today, so a row reads "2 of 5". */
-	setup_size: { sections: number; facts: number };
 };
 
-/** The task list as the database needs it: each section's facts and which of them are required. */
+/**
+ * The task list as the database needs it: each section's service, facts and which of them are required. The
+ * database keeps, for each client, only the sections their package includes.
+ */
 export function onboardingCatalogue(catalogue: SetupCatalogue) {
 	return catalogue.sections.map((section) => {
 		const facts = sectionFacts(section);
 		return {
 			key: section.key,
+			service_key: section.serviceKey,
 			facts: facts.map((fact) => fact.key),
 			required: facts.filter((fact) => fact.required).map((fact) => fact.key)
 		};
 	});
-}
-
-export function onboardingSetupSize(catalogue: SetupCatalogue) {
-	return {
-		sections: catalogue.sections.length,
-		facts: catalogue.sections.reduce((total, section) => total + sectionFacts(section).length, 0)
-	};
 }
 
 function plural(count: number, one: string, many: string) {

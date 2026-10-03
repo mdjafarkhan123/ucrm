@@ -66,7 +66,6 @@
 	const totals = $derived(
 		pages[0]?.totals ?? { all: 0, uplift: 0, client: 0, quiet: 0, matching: 0 }
 	);
-	const setupSize = $derived(pages[0]?.setup_size ?? { sections: 0, facts: 0 });
 	const filtersApplied = $derived(Boolean(searchInput || waitingFilter));
 
 	const filterOptions = $derived([
@@ -210,7 +209,7 @@
 		>
 			{#snippet row(client: OnboardingClient)}
 				{@const stage = onboardingStage(client)}
-				{@const progress = percent(client.facts_answered, setupSize.facts)}
+				{@const progress = percent(client.facts_answered, client.facts_total)}
 				<th scope="row">
 					<div class="onboarding-list__cell">
 						<a class="onboarding-list__name" href={clientHref(client)}>{client.name}</a>
@@ -239,8 +238,8 @@
 							<span style:width={`${progress}%`}></span>
 						</div>
 						<span class="onboarding-list__sub">
-							{client.sections_done} of {setupSize.sections}
-							{setupSize.sections === 1 ? 'task' : 'tasks'} done · {client.facts_answered} of {setupSize.facts}
+							{client.sections_done} of {client.sections_total}
+							{client.sections_total === 1 ? 'task' : 'tasks'} done · {client.facts_answered} of {client.facts_total}
 							answers
 						</span>
 					</div>

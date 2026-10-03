@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { NO_STORE_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
-import { readSetupCatalogue } from '$lib/server/setup/catalogue';
+import { readOrganizationSetupCatalogue } from '$lib/server/setup/catalogue';
 import { requireSetupEditor, setupWriteError, setupWriteLimited } from '$lib/server/setup/access';
 import { setupAnswersSchema } from '$lib/server/validation/setup.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
@@ -24,8 +24,9 @@ export const PATCH: RequestHandler = async (event) => {
 		return validationError({ form: 'Request body must be valid JSON.' });
 	}
 
-	// Checked against the version published now, so a question Jafar just removed is refused.
-	const catalogue = await readSetupCatalogue(event.locals.supabase);
+	// Checked against the version published now, as this client sees it, so a question Jafar just removed or
+	// one from a stage outside their package is refused.
+	const catalogue = await readOrganizationSetupCatalogue(event.locals.supabase, organizationId);
 	if (!catalogue) return databaseError();
 
 	const parsed = setupAnswersSchema(catalogueFacts(catalogue)).safeParse(body);

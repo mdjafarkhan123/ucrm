@@ -115,6 +115,7 @@
 				{ label: 'Prospects', href: '/jafar/prospects', icon: 'users' },
 				{ label: 'Organizations', href: '/jafar/organizations', icon: 'building' },
 				{ label: 'Onboarding', href: '/jafar/onboarding', icon: 'rocket' },
+				{ label: 'Client setup', href: '/jafar/setup', icon: 'listCheck' },
 				{ label: 'Support', href: '/jafar/support', icon: 'messages', count: supportUnread },
 				{ label: 'Packages', href: '/jafar/packages', icon: 'package' },
 				{ label: 'Operations', href: '/jafar/operations', icon: 'alertTriangle' },

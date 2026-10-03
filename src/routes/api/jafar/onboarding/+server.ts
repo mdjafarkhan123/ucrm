@@ -8,7 +8,6 @@ import { readSetupCatalogue } from '$lib/server/setup/catalogue';
 import { clientOnboardingListQuerySchema } from '$lib/server/validation/client-onboarding-list.schema';
 import {
 	onboardingCatalogue,
-	onboardingSetupSize,
 	type OnboardingClient,
 	type OnboardingListPage,
 	type OnboardingTotals
@@ -81,8 +80,7 @@ export const GET: RequestHandler = async (event) => {
 				catalogue.sections.find((section) => section.key === row.next_section_key)?.title ?? null
 		})),
 		next_cursor: result.next_cursor ? encodeCursor(result.next_cursor) : null,
-		totals: result.totals,
-		setup_size: onboardingSetupSize(catalogue)
+		totals: result.totals
 	};
 	return json(page, { headers: { 'cache-control': 'private, no-cache' } });
 };

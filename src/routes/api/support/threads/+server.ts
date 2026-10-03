@@ -7,7 +7,7 @@ import {
 	validationError
 } from '$lib/server/api/errors';
 import { requireSupportMember, supportSendLimited } from '$lib/server/support/access';
-import { readSetupCatalogue } from '$lib/server/setup/catalogue';
+import { readOrganizationSetupCatalogue } from '$lib/server/setup/catalogue';
 import { readMemberAttachments } from '$lib/server/support/attachments';
 import { readChats } from '$lib/server/support/team';
 import { supportStartThreadSchema } from '$lib/server/validation/support.schema';
@@ -56,7 +56,10 @@ export const POST: RequestHandler = async (event) => {
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
 	if (parsed.data.context_section) {
-		const catalogue = await readSetupCatalogue(event.locals.supabase);
+		const catalogue = await readOrganizationSetupCatalogue(
+			event.locals.supabase,
+			check.auth.organization.id
+		);
 		if (!catalogue) return databaseError();
 		if (!catalogueSection(catalogue, parsed.data.context_section))
 			return validationError({ context_section: 'That setup section is not recognised.' });

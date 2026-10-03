@@ -14,6 +14,7 @@ vi.mock('$lib/server/setup/catalogue', async () => {
 	return {
 		...actual,
 		readSetupCatalogue: vi.fn(async () => SETUP_CATALOGUE_1),
+		readOrganizationSetupCatalogue: vi.fn(async () => SETUP_CATALOGUE_1),
 		readSetupSectionTitles: vi.fn(
 			async () => new Map(SETUP_CATALOGUE_1.sections.map((section) => [section.key, section.title]))
 		)

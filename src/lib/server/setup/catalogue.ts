@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import {
 	buildSetupCatalogue,
+	catalogueForServices,
 	type SetupCatalogue,
 	type SetupCatalogueRow
 } from '$lib/setup/catalogue';
@@ -17,6 +18,37 @@ export async function readSetupCatalogue(
 		return null;
 	}
 	return buildSetupCatalogue(data as unknown as SetupCatalogueRow);
+}
+
+/** The services of the organization's current package, which decide the stages it is asked. */
+export async function readSetupServiceKeys(
+	supabase: SupabaseClient<Database>,
+	organizationId: string
+): Promise<Set<string> | null> {
+	const { data, error } = await supabase.rpc('setup_organization_service_keys', {
+		target_organization_id: organizationId
+	});
+	if (error) {
+		console.error('Could not read the organization package services.', error);
+		return null;
+	}
+	return new Set(data ?? []);
+}
+
+/**
+ * The published version as one organization sees it: only the stages its package includes. Setup reads and
+ * saves use this, so a client can never see, answer or finish a stage outside their package.
+ */
+export async function readOrganizationSetupCatalogue(
+	supabase: SupabaseClient<Database>,
+	organizationId: string
+): Promise<SetupCatalogue | null> {
+	const [catalogue, serviceKeys] = await Promise.all([
+		readSetupCatalogue(supabase),
+		readSetupServiceKeys(supabase, organizationId)
+	]);
+	if (!catalogue || !serviceKeys) return null;
+	return catalogueForServices(catalogue, serviceKeys);
 }
 
 /** Each stage's title by key, for things that name a stage — a support chat asked from one, say. */

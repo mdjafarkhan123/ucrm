@@ -15,6 +15,7 @@
 		jafarPackageKey,
 		jafarPackagesKey,
 		jafarProspectsKey,
+		jafarSetupEditorKey,
 		jafarSettingsKey
 	} from '$lib/jafar/query-keys';
 	import {
@@ -85,6 +86,9 @@
 		}
 		if (pathname === '/jafar/onboarding') {
 			return hasCachedData(jafarOnboardingKey);
+		}
+		if (pathname === '/jafar/setup') {
+			return hasCachedData(jafarSetupEditorKey);
 		}
 		if (pathname.startsWith('/jafar/packages/')) {
 			return hasCachedData(jafarPackageKey(pathname.slice('/jafar/packages/'.length)));

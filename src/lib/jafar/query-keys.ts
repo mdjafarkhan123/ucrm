@@ -150,3 +150,4 @@ export const jafarOrganizationExceptionsKey = (organizationId: string | undefine
 export const jafarOnboardingKey = ['jafar', 'onboarding'] as const;
 export const jafarOnboardingListKey = (search: string, waitingOn: string) =>
 	[...jafarOnboardingKey, search, waitingOn] as const;
+export const jafarSetupEditorKey = ['jafar', 'setup-editor'] as const;

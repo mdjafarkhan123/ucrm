@@ -15386,9 +15386,11 @@ export type Database = {
 					id: string;
 					published_at: string | null;
 					published_by_email: string | null;
+					revision: number;
 					status: string;
 					superseded_at: string | null;
 					updated_at: string;
+					updated_by_email: string | null;
 					version_number: number;
 				};
 				Insert: {
@@ -15396,9 +15398,11 @@ export type Database = {
 					id?: string;
 					published_at?: string | null;
 					published_by_email?: string | null;
+					revision?: number;
 					status: string;
 					superseded_at?: string | null;
 					updated_at?: string;
+					updated_by_email?: string | null;
 					version_number: number;
 				};
 				Update: {
@@ -15406,9 +15410,11 @@ export type Database = {
 					id?: string;
 					published_at?: string | null;
 					published_by_email?: string | null;
+					revision?: number;
 					status?: string;
 					superseded_at?: string | null;
 					updated_at?: string;
+					updated_by_email?: string | null;
 					version_number?: number;
 				};
 				Relationships: [];
@@ -22618,6 +22624,10 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_discard_setup_draft: {
+				Args: { loaded_revision: number; target_version_id: string };
+				Returns: Json;
+			};
 			owner_email_is_available: {
 				Args: { candidate_email: string };
 				Returns: boolean;
@@ -22671,6 +22681,28 @@ export type Database = {
 			};
 			owner_package_offers: { Args: never; Returns: Json };
 			owner_package_services: { Args: never; Returns: Json };
+			owner_publish_setup_draft: {
+				Args: {
+					actor_owner_email: string;
+					loaded_revision: number;
+					target_version_id: string;
+				};
+				Returns: Json;
+			};
+			owner_save_setup_draft_stages: {
+				Args: {
+					actor_owner_email: string;
+					loaded_revision: number;
+					new_stages: Json;
+					target_version_id: string;
+				};
+				Returns: Json;
+			};
+			owner_setup_editor: { Args: never; Returns: Json };
+			owner_start_setup_draft: {
+				Args: { actor_owner_email: string };
+				Returns: Json;
+			};
 			pause_automation_enrollment: {
 				Args: {
 					p_actor_user_id: string;
@@ -25599,6 +25631,10 @@ export type Database = {
 					p_sent: boolean;
 				};
 				Returns: string;
+			};
+			setup_organization_service_keys: {
+				Args: { target_organization_id: string };
+				Returns: string[];
 			};
 			setup_published_catalogue: { Args: never; Returns: Json };
 			skip_automation_enrollment_step: {
