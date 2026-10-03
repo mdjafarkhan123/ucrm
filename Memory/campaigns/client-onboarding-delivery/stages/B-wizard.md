@@ -28,4 +28,4 @@ draft Jafar publishes.
 | B10 Reviews | §3.7 | B3a | No sentiment-based hiding of the Google option | Not started |
 | B11 CRM defaults | §3.8 scenario questions; link to existing imports | B3a | Skipping imports never blocks | Not started |
 | B12 Marketing | §3.9 drafts only | B3a | Nothing can send from setup | Not started |
-| B13 Check and send | §3.10 summary, confirmations with wording version, frozen snapshot | B4–B12 | Send to Uplift freezes answers; a later edit shows as a tracked change | Not started |
+| B13 Check and send | §3.10 summary, confirmations with wording version, frozen snapshot; the snapshot leaves out answers to questions now hidden by a show-if rule (they stay stored) | B4–B12 | Send to Uplift freezes answers; a later edit shows as a tracked change | Not started |
