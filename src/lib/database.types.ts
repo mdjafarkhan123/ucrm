@@ -22369,6 +22369,17 @@ export type Database = {
 				Args: { target_organization_id: string; target_rate_id: string };
 				Returns: number;
 			};
+			owner_client_onboarding_list: {
+				Args: {
+					cursor_account_created_at?: string;
+					cursor_id?: string;
+					page_size?: number;
+					search_term?: string;
+					setup_catalogue: Json;
+					waiting_filter?: string;
+				};
+				Returns: Json;
+			};
 			owner_email_is_available: {
 				Args: { candidate_email: string };
 				Returns: boolean;

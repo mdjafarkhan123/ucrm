@@ -8,6 +8,7 @@
 		jafarEmailHealthKey,
 		jafarEmailTemplatesKey,
 		jafarMessageTemplatesKey,
+		jafarOnboardingKey,
 		jafarOperationsKey,
 		jafarOrganizationKey,
 		jafarOrganizationsKey,
@@ -34,10 +35,13 @@
 	}));
 
 	// Support Inbox activity arrives live on this session's own secret channel (D2). Each ping refreshes the
-	// count, and the inbox and open conversation when they are on screen. If the channel cannot be issued,
-	// the same refresh runs every 30 seconds instead.
+	// count, and the inbox and open conversation when they are on screen, and the onboarding list's unread
+	// column. If the channel cannot be issued, the same refresh runs every 30 seconds instead.
 	$effect(() => {
-		const refresh = () => void queryClient.invalidateQueries({ queryKey: jafarSupportKey });
+		const refresh = () => {
+			void queryClient.invalidateQueries({ queryKey: jafarSupportKey });
+			void queryClient.invalidateQueries({ queryKey: jafarOnboardingKey });
+		};
 		let stop: (() => void) | null = null;
 		let fallback: ReturnType<typeof setInterval> | null = null;
 		let cancelled = false;
@@ -78,6 +82,9 @@
 		}
 		if (pathname === '/jafar/organizations') {
 			return hasCachedData(jafarOrganizationsKey);
+		}
+		if (pathname === '/jafar/onboarding') {
+			return hasCachedData(jafarOnboardingKey);
 		}
 		if (pathname.startsWith('/jafar/packages/')) {
 			return hasCachedData(jafarPackageKey(pathname.slice('/jafar/packages/'.length)));

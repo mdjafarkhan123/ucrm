@@ -1,0 +1,140 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { GET } from './+server';
+import { getOwnerSession } from '$lib/server/auth/owner';
+import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { SETUP_SECTIONS } from '$lib/setup/catalogue';
+import { onboardingNextActionLabel, type OnboardingClient } from '$lib/setup/onboarding-list';
+
+vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
+vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
+
+const mockedOwnerSession = vi.mocked(getOwnerSession);
+const mockedClient = vi.mocked(getOwnerSupabaseClient);
+
+function event(url = 'http://localhost/api/jafar/onboarding') {
+	return { url: new URL(url), params: {}, cookies: {} } as Parameters<typeof GET>[0];
+}
+
+function listResult(overrides: Record<string, unknown> = {}) {
+	return {
+		clients: [],
+		next_cursor: null,
+		totals: { all: 0, uplift: 0, client: 0, quiet: 0, matching: 0 },
+		...overrides
+	};
+}
+
+function mockRpc(data: unknown, error: unknown = null) {
+	const rpc = vi.fn().mockResolvedValue({ data, error });
+	mockedClient.mockReturnValue({ rpc } as unknown as ReturnType<typeof getOwnerSupabaseClient>);
+	return rpc;
+}
+
+function client(overrides: Partial<OnboardingClient> = {}): OnboardingClient {
+	return {
+		id: 'org-1',
+		name: 'Raad LTD',
+		lifecycle_status: 'active',
+		package_name: 'Starter',
+		account_created_at: '2026-10-01T10:00:00Z',
+		payment_reversed: false,
+		welcome_seen: true,
+		sections_done: 0,
+		facts_answered: 3,
+		help_count: 0,
+		unread_support: 0,
+		next_section_key: 'business',
+		waiting_on: 'client',
+		next_action: 'finish_section',
+		last_activity_at: '2026-10-01T10:00:00Z',
+		quiet: false,
+		...overrides
+	};
+}
+
+describe('client onboarding list GET', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockedOwnerSession.mockResolvedValue({ email: 'owner@example.com', sessionId: 'session-id' });
+	});
+
+	it('rejects callers without the separate owner session', async () => {
+		mockedOwnerSession.mockResolvedValue(null);
+
+		const response = await GET(event());
+
+		expect(response.status).toBe(401);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it('rejects an unknown filter before reaching the database', async () => {
+		const response = await GET(event('http://localhost/api/jafar/onboarding?waiting_on=everyone'));
+
+		expect(response.status).toBe(422);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it('rejects a cursor it did not issue', async () => {
+		const response = await GET(event('http://localhost/api/jafar/onboarding?cursor=not-a-cursor'));
+
+		expect(response.status).toBe(422);
+	});
+
+	it("counts against today's task list and passes the filter through", async () => {
+		const rpc = mockRpc(listResult());
+
+		const response = await GET(
+			event('http://localhost/api/jafar/onboarding?waiting_on=quiet&search=%20raad%20')
+		);
+
+		expect(response.status).toBe(200);
+		const [name, args] = rpc.mock.calls[0];
+		expect(name).toBe('owner_client_onboarding_list');
+		expect(args.waiting_filter).toBe('quiet');
+		expect(args.search_term).toBe('raad');
+		expect(args.setup_catalogue.map((section: { key: string }) => section.key)).toEqual(
+			SETUP_SECTIONS.map((section) => section.key)
+		);
+		const business = args.setup_catalogue[0];
+		expect(business.required).toContain('business.public_name');
+		expect(business.required).not.toContain('business.legal_name');
+		expect(business.facts).toContain('business.legal_name');
+	});
+
+	it('hands back an opaque cursor that round-trips into the next page', async () => {
+		const rpc = mockRpc(
+			listResult({ next_cursor: { account_created_at: '2026-10-01T10:00:00Z', id: 'org-1' } })
+		);
+
+		const first = await (await GET(event())).json();
+		await GET(event(`http://localhost/api/jafar/onboarding?cursor=${first.next_cursor}`));
+
+		expect(rpc.mock.calls[1][1]).toMatchObject({
+			cursor_account_created_at: '2026-10-01T10:00:00Z',
+			cursor_id: 'org-1'
+		});
+		expect(first.setup_size.sections).toBe(SETUP_SECTIONS.length);
+	});
+
+	it('reports a database failure without leaking it', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		mockRpc(null, { message: 'boom' });
+
+		const response = await GET(event());
+
+		expect(response.status).toBe(500);
+		expect((await response.json()).error).toBe('The client list could not be loaded.');
+	});
+});
+
+describe('next step wording', () => {
+	it('names the section to finish and counts what Uplift owes', () => {
+		expect(onboardingNextActionLabel(client())).toBe('Finish Your business');
+		expect(
+			onboardingNextActionLabel(client({ next_action: 'reply_to_support', unread_support: 1 }))
+		).toBe('Reply to 1 support chat');
+		expect(
+			onboardingNextActionLabel(client({ next_action: 'help_with_answers', help_count: 2 }))
+		).toBe('Help with 2 answers');
+	});
+});

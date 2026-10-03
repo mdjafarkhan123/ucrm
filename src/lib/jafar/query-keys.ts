@@ -147,3 +147,6 @@ export const jafarPackageChangePreviewKey = (
 	] as const;
 export const jafarOrganizationExceptionsKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'exceptions'] as const;
+export const jafarOnboardingKey = ['jafar', 'onboarding'] as const;
+export const jafarOnboardingListKey = (search: string, waitingOn: string) =>
+	[...jafarOnboardingKey, search, waitingOn] as const;

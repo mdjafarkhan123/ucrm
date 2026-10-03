@@ -23,6 +23,7 @@
 	import usersGroupIcon from '@tabler/icons/outline/users-group.svg?raw';
 	import chartBarIcon from '@tabler/icons/outline/chart-bar.svg?raw';
 	import filesIcon from '@tabler/icons/outline/files.svg?raw';
+	import rocketIcon from '@tabler/icons/outline/rocket.svg?raw';
 	import collapseIcon from '@tabler/icons/outline/layout-sidebar-left-collapse.svg?raw';
 	import expandIcon from '@tabler/icons/outline/layout-sidebar-left-expand.svg?raw';
 
@@ -77,7 +78,8 @@
 		trendingUp: trendingUpIcon,
 		usersGroup: usersGroupIcon,
 		chartBar: chartBarIcon,
-		files: filesIcon
+		files: filesIcon,
+		rocket: rocketIcon
 	};
 
 	const allItems = $derived(groups.flatMap((group) => group.items));
