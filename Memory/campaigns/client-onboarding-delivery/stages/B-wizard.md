@@ -5,6 +5,9 @@ adds one plan subsection to the same task list. Since plan §2.1 (2026-10-03) B4
 built-in questions and special controls (uploads, domain branches, phone choices); the rest are starter
 questions Jafar can edit.
 
+Jafar is writing all stages and questions himself (2026-10-03, see NOW.md); B4–B12 start from his list,
+not from questions Claude drafts.
+
 | Part | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- |
 | B1 Welcome + basics | §2 welcome, task list, dashboard setup card replacing `GettingStartedCard`, business basics with autosave and have/don't have/need help | — | Owner fills half on a laptop, signs in on a phone, continues; CRM menu works throughout | Done 2026-10-01 — storage is ADR 0005; questions live in `src/lib/setup/catalogue.ts` |
