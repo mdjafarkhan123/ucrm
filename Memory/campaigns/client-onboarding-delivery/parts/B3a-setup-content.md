@@ -8,13 +8,13 @@
 
 - [x] Inventory the approved common and package-specific setup requirements
 - [x] Draft every stage, question, type, required/defer rule, condition, and special-control need
-- [ ] Integrate primary-source research and remove unnecessary or unsafe questions
-- [ ] Grill Jafar on the remaining product choices and revise the blueprint
+- [x] Integrate primary-source research and remove unnecessary or unsafe questions
+- [ ] Grill Jafar on the remaining product choices and revise the blueprint (round 1 approved)
 - [ ] Record approval and prepare the coding handoff
 
 ## Next
 
-Wait for Jafar's answers to Q1–Q5 below, revise `docs/client-onboarding-setup-content-blueprint.md`, then work
+Wait for Jafar's answers to Q6–Q11 below, revise `docs/client-onboarding-setup-content-blueprint.md`, then work
 the next decision frontier. This part writes content and planning only; Claude will implement the later B parts.
 
 ## Notes
@@ -23,15 +23,21 @@ Jafar wants a complete prebuilt setup he can edit, not an empty editor. The draf
 real contractors: shared facts once, service stages only when purchased, essential blockers only, and no
 provider passwords.
 
+Approved by Jafar 2026-10-03: all recommendations from Q1–Q5 — universal setup with trade-aware examples;
+English launch delivery; owned email/SMS marketing only; starter wordmark/colour/stock imagery for Website
+clients without assets; recommended CRM defaults that clients confirm/change.
+
 Questions waiting for Jafar:
 
-1. Should launch use one strong setup for every contractor trade, or separate trade packs? Recommendation:
-   universal core with trade-specific examples now; add packs after evidence from real clients.
-2. Will Uplift deliver websites and campaigns only in English at launch, or in several languages?
-   Recommendation: English delivery first; record the preferred language and scope translation separately.
-3. Does Marketing include paid ads, or referral/returning-customer email and SMS only? Recommendation: owned
-   email/SMS first; paid ads need a separate service and setup.
-4. What does Uplift include when a Website client has no logo or usable photos? Recommendation: a simple
-   starter wordmark/colour system and approved stock imagery, not a full brand identity or photo shoot.
-5. Should CRM setup begin with recommended defaults for the client to confirm/change, or blank choices?
-   Recommendation: proven defaults with clear confirmation, so setup is shorter and safer.
+6. What should an uncustomised new enquiry become? Recommendation: a Request for review, never an automatically
+   booked Job; the contractor then chooses assessment, quote, or direct work.
+7. Which quote/invoice defaults should Uplift recommend? Recommendation: quote valid 30 days, customer approval
+   required, no assumed deposit, residential due on receipt, commercial Net 30, and no tax assumption.
+8. Which automatic messages should start enabled? Recommendation: approved operational email presets only after
+   sender verification; SMS, reviews, and marketing stay off until their separate readiness/approval gates.
+9. Who owns starter branding? Recommendation: client owns the delivered wordmark/colour files; licensed stock
+   images may be used only within their licence and are not transferred as owned photography.
+10. If Marketing is included without Calls & texting, should SMS appear? Recommendation: no; offer email only
+    until Calls & texting is added and its sender is ready.
+11. What happens when customers mainly use a non-English language? Recommendation: create a scope-review task;
+    Ready for Uplift waits until the contractor accepts English delivery or adds separately scoped translation.

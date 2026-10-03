@@ -1,6 +1,6 @@
 # Client onboarding — prebuilt setup content
 
-**Status:** Draft for Jafar's review
+**Status:** Planning — first decision round approved by Jafar on 2026-10-03
 **Parent contract:** `docs/client-onboarding-delivery-behavior-contract.md` §§ 2–3
 **Research:** `docs/research/client-onboarding-setup-content-2026-10-03.md`
 
@@ -13,6 +13,20 @@ service is in the client's package.
 
 This is an intake brief, not a test. It asks for plain facts and examples; Uplift turns them into settings,
 copy, campaigns, and provider submissions. Only facts that genuinely block safe work are required.
+
+## Approved product boundaries (Jafar, 2026-10-03)
+
+- Launch uses one strong universal contractor setup. Examples adapt to the selected trade—General contractor,
+  Plumbing, Electrical, HVAC, Landscaping, Roofing, Painting, Cleaning, Pest control, Handyman, or Other—but
+  separate trade packs wait for evidence from real clients.
+- Uplift delivers English websites and campaign content at launch. The setup records the customers' preferred
+  language; translation or another delivery language is separately scoped.
+- Marketing means owned referral and returning-customer email/SMS campaigns. Paid advertising is a separate
+  future service, not hidden inside this setup or package promise.
+- A Website client without usable branding receives a simple starter wordmark/colour system and approved stock
+  imagery. This does not promise a full custom brand identity or photo shoot.
+- CRM choices begin with proven recommended defaults for the client to confirm or change. A default that could
+  send, publish, charge, import, or make a legal/tax claim stays off until its own explicit approval.
 
 ## Reading the catalogue
 
@@ -39,6 +53,8 @@ Global rules:
    not ordinary setup attachments.
 6. A client may submit with optional items missing. Help/deferred answers remain named follow-ups and do not
    pretend the underlying fact was supplied.
+7. The universal question set stays the same across trades, while examples and help text use the selected
+   trade's everyday language.
 
 ## Stage 1 — Your business
 
@@ -74,7 +90,7 @@ Global rules:
 | Do customers visit this address? | Yes/no | Required. A showroom, shop, or office counts; a home used only as a base does not. |
 | May this address be shown publicly? | Yes/no | Conditional on customers visiting; required. |
 | Which country is the business registered in? | Pick one | Required; controls local provider and compliance questions. |
-| What language should customers see? | Pick one | Required; allow another language as free text. |
+| Which language do most customers use? | Pick one + Other | Required. Uplift delivers English content at launch; another delivery language is separately agreed. |
 | Which time zone should schedules and reminders use? | Pick one | Required; suggest from the address but require confirmation. |
 | Which currency do you charge in? | Pick one | Required; suggest from country but require confirmation. |
 
@@ -132,7 +148,7 @@ website, Google profile, and campaigns.
 
 | Question | Answer | Rule / help |
 | --- | --- | --- |
-| Do you already have a logo? | Pick one | Required: upload it, someone else has it, need Uplift's help, or no logo. |
+| Do you already have a logo? | Pick one | Required: upload it, someone else has it, need Uplift's help, or no logo. A Website client without one receives the approved starter wordmark/colour route. |
 | Upload the best logo files you have. | File/photo | Conditional on upload; required · can defer. Prefer SVG/PDF/PNG; include light/dark versions when available. |
 | Who currently has the logo files? | Short text | Conditional on someone else; required · can defer. |
 | Which colours are already part of the brand? | Structured colours | Optional; allow colour picker and codes when known. |
@@ -169,6 +185,10 @@ website, Google profile, and campaigns.
 
 **Shown to:** everyone. **Outcome:** useful defaults that match the contractor's real day, without asking them
 to understand CRM terminology.
+
+Each supported choice opens with Uplift's recommended answer already explained, and the client confirms or
+changes it. This shortens setup but never pre-approves sending, publishing, importing, charging, or tax/legal
+claims.
 
 ### From enquiry to booked work
 
@@ -407,6 +427,9 @@ six months); this is a protection, not another setup burden.
 
 **Shown to:** packages with **Marketing campaigns**. **Outcome:** one truthful campaign brief; onboarding may
 create a draft but can never send it.
+
+This launch service covers referral and returning-customer email/SMS campaigns only. Paid search, social ads,
+ad accounts, pixels, media budgets, and ad-platform billing are outside this setup and require a future service.
 
 | Question | Answer | Rule / help |
 | --- | --- | --- |
