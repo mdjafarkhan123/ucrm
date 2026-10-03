@@ -2,7 +2,7 @@
 
 | Part | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- |
-| C1 Client list | §8 list of paid clients with setup progress and state | B1 | Jafar sees each client's progress and next action | Not started |
+| C1 Client list | §8 list of paid clients with setup progress and state | B1 | Jafar sees each client's progress and next action | Done 2026-10-03 — `/jafar/onboarding`; a paid client is one with a succeeded provision; blockers, provider waits and build target columns arrive with C4/E1/E2 |
 | C2 Client page | §8 client page with submitted sections, original beside accepted values | C1, B13 | Jafar reads a submitted client's answers by section | Not started |
 | C3 Review a section | §4 accept, ask, return one section; help-needed becomes an Uplift task | C2 | Returned section links the client straight to it; other sections stay accepted | Not started |
 | C4 Ready for Uplift | §4–5 blocker list, Ready action, 7–10 business-day range shown to client | C3 | Ready refused while a named blocker remains; client sees start date and range | Not started |
