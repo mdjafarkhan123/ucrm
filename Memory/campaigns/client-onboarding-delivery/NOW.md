@@ -4,7 +4,7 @@
 7–10-business-day delivery, approve launch, receive training, and contact Uplift throughout.
 **Plan:** `docs/client-onboarding-delivery-behavior-contract.md`
 
-**In progress:** A5 question editor. A4 done 2026-10-03 (Jafar accepted; its client-side proof is in A5's
+**In progress:** A5 question editor — built and committed; waits for Jafar's hands-on publish (part note). A4 done 2026-10-03 (Jafar accepted; its client-side proof is in A5's
 done-check). A3 done — ADR 0006.
 
 **Next part:** A5 question editor in `/jafar/setup` — see `stages/A-groundwork.md`. Do NOT publish test

@@ -7,21 +7,19 @@ offers no Delete; a stage tied to Website shows only to a client whose package i
 
 ## Steps
 
-- [x] Migration `supabase/migrations/20261008090000_setup_question_editor.sql` written (yes/no + date types, answered-question index, editor `answered` list, `owner_save_setup_draft_stage_items`, publish re-checks answer type)
-- [ ] Apply it to dev
-- [ ] Catalogue: `yes_no` → radio Yes/No choice, `date` → CalendarPicker in `SetupField`; date validation
-- [ ] API `PATCH /api/jafar/setup/draft/stages/[stage]` + Zod (option values made from labels)
-- [ ] Page `/jafar/setup/[stage]` question list (Google Forms/Tally-style cards); "Edit questions" link on each saved stage; publish review lists question changes
-- [ ] Unit tests, svelte-check, browser check, commit
-- [ ] Client-side proof (see Done when) — publish only a real question Jafar wants; stage and question keys are never reused
+- [x] Migration `20261008090000_setup_question_editor` applied to dev; rules proven in SQL (rolled back)
+- [x] Yes/no (radio) and date (calendar) answers in the client wizard; date validation
+- [x] API `PATCH /api/jafar/setup/draft/stages/[stage]` + Zod; page `/jafar/setup/[stage]`; "Edit questions" link; publish review lists question changes
+- [x] Unit tests (full suite green), svelte-check 0 errors, browser-checked (add pick-one question, empty-choice error, save, review wording, discard), committed
+- [ ] Jafar's hands-on proof of the done-check (needs a real publish)
 
 ## Next
 
-Apply the migration to dev (outside action below), then the catalogue step.
-
-## Outside actions
-
-- Apply migration `20261008090000_setup_question_editor` to dev — check: `select 1 from pg_proc where proname = 'owner_save_setup_draft_stage_items'` — pending
+Waiting on Jafar. Ask him to: start a draft on `/jafar/setup`, Edit questions on "Your business", add a real
+question he wants clients asked, save, publish; then log in as the contractor owner (CLAUDE.md logins) and
+answer it on `/setup/business`. Website-only proof needs a stage with a question tied to Website plus a client
+whose package edition includes Website (none on dev yet). Then close A5; A5b (show-if) is next.
+Do NOT publish test questions yourself — keys are never reused.
 
 ## Notes
 
