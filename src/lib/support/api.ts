@@ -109,6 +109,8 @@ export type SupportThread = {
 	/** Whose chat it is. Null for the member's own. */
 	started_by_name: string | null;
 	status: SupportStatus;
+	/** The setup section the chat was asked from (D6), in words. Null for an ordinary chat. */
+	context_label: string | null;
 };
 
 // Who sees what (D3, Zendesk's "My / CC'd / Organization requests"): a member sees the chats they started
@@ -285,7 +287,7 @@ export const jafarSupportFileUrls = fileUrls((id) =>
 
 /** Starts a new chat with its first message. The same message id on a retry returns the same chat. */
 export async function startSupportThread(
-	input: SupportOutgoingMessage & { topic: SupportTopic }
+	input: SupportOutgoingMessage & { topic: SupportTopic; context_section?: string }
 ): Promise<SupportMessage & { thread_id: string }> {
 	const response = await fetch('/api/support/threads', {
 		method: 'POST',
@@ -337,6 +339,8 @@ export type SupportInboxThread = {
 	status: SupportStatus;
 	/** Uplift sent the first message, to `member_name`. */
 	opened_by_uplift: boolean;
+	/** The setup section the member asked from (D6), in words. Null for an ordinary chat. */
+	context_label: string | null;
 };
 
 /** Which chats the Support Inbox lists: open ones unless filtered. */

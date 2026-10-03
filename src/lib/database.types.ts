@@ -15370,6 +15370,7 @@ export type Database = {
 			};
 			support_threads: {
 				Row: {
+					context_section: string | null;
 					created_at: string;
 					id: string;
 					last_message_at: string;
@@ -15385,6 +15386,7 @@ export type Database = {
 					uplift_last_read_at: string | null;
 				};
 				Insert: {
+					context_section?: string | null;
 					created_at?: string;
 					id?: string;
 					last_message_at?: string;
@@ -15400,6 +15402,7 @@ export type Database = {
 					uplift_last_read_at?: string | null;
 				};
 				Update: {
+					context_section?: string | null;
 					created_at?: string;
 					id?: string;
 					last_message_at?: string;
@@ -25332,6 +25335,7 @@ export type Database = {
 					message_body: string;
 					message_client_id: string;
 					target_organization_id: string;
+					thread_context_section?: string;
 					thread_topic: string;
 				};
 				Returns: Json;

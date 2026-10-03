@@ -6,6 +6,7 @@ import { readSupportMessages } from '$lib/server/support/read';
 import { FORMER_MEMBER, teammateNames } from '$lib/server/support/team';
 import { supportMemberThreadQuerySchema } from '$lib/server/validation/support.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
+import { setupSectionLabel } from '$lib/setup/catalogue';
 import type { SupportStatus, SupportThread, SupportTopic } from '$lib/support/api';
 
 // One chat with Uplift that row level security lets the member see: their own, one they were added to, or
@@ -27,7 +28,7 @@ export const GET: RequestHandler = async (event) => {
 	const [threadResult, settingsResult, page] = await Promise.all([
 		supabase
 			.from('support_threads')
-			.select('id, topic, started_by_user_id, status')
+			.select('id, topic, started_by_user_id, status, context_section')
 			.eq('organization_id', check.auth.organization.id)
 			.eq('id', parsed.data.thread_id)
 			.maybeSingle(),
@@ -66,7 +67,8 @@ export const GET: RequestHandler = async (event) => {
 		...page,
 		availability_note: settingsResult.data?.availability_note ?? '',
 		started_by_name,
-		status: row.status as SupportStatus
+		status: row.status as SupportStatus,
+		context_label: setupSectionLabel(row.context_section)
 	};
 	return json(thread, { headers: PRIVATE_READ_HEADERS });
 };

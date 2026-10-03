@@ -44,6 +44,8 @@
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import chevronIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import sectionIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
+	import type { SupportAskContext } from '$lib/support/ask';
 
 	// The Uplift Support Messenger: a "Chat with Uplift" button in the bottom-right corner of every signed-in
 	// screen (plan §7). It is contractor-to-Uplift only and shares nothing with the customer inbox.
@@ -57,6 +59,10 @@
 	// Who sees what (D3, Zendesk's "My / CC'd / Organization requests"): when the person may see others' chats
 	// — ones they were added to, or every one for an owner or admin — a "Team chats" link opens that list.
 	// Each chat's People panel shows, and for its starter, an owner or an admin changes, who is in it.
+	//
+	// Ask Uplift (D6; Intercom's and Zendesk's "conversation started on" page): a setup section opens a new
+	// message here through `ask`, with that section attached. The topic starts as Setup and the person may take
+	// the section off before sending; the chat then keeps it, and Uplift sees which section it came from.
 	let { userId }: { userId: string } = $props();
 
 	type Screen =
@@ -71,6 +77,7 @@
 	let showPeople = $state(false);
 	let limit = $state(SUPPORT_PAGE_SIZE);
 	let newTopic = $state<SupportTopic>('other');
+	let newContext = $state<SupportAskContext | null>(null);
 	let startingChat = $state(false);
 	let launcherEl = $state<HTMLButtonElement | null>(null);
 	let conversation = $state<ReturnType<typeof SupportConversation> | null>(null);
@@ -190,11 +197,12 @@
 		});
 	}
 
-	async function go(next: Screen) {
+	async function go(next: Screen, context: SupportAskContext | null = null) {
 		screen = next;
 		showPeople = false;
 		limit = SUPPORT_PAGE_SIZE;
-		if (next.kind === 'new') newTopic = 'other';
+		newContext = context;
+		if (next.kind === 'new') newTopic = context ? 'setup' : 'other';
 		if (next.kind === 'home' || next.kind === 'team') return;
 		await tick();
 		conversation?.focusComposer();
@@ -212,11 +220,18 @@
 		conversation?.focusComposer();
 	}
 
+	/** Opens a new message about one setup section, with that section attached (D6). */
+	export function ask(context: SupportAskContext) {
+		open = true;
+		void go({ kind: 'new' }, context);
+	}
+
 	async function closePanel() {
 		open = false;
 		screen = { kind: 'home' };
 		showPeople = false;
 		newTopic = 'other';
+		newContext = null;
 		await tick();
 		launcherEl?.focus();
 	}
@@ -233,7 +248,12 @@
 		startingChat = true;
 		try {
 			const topic = newTopic;
-			const message = await startSupportThread({ ...input, topic });
+			const context = newContext;
+			const message = await startSupportThread({
+				...input,
+				topic,
+				context_section: context?.section
+			});
 			const seeded: SupportThread = {
 				thread_id: message.thread_id,
 				topic,
@@ -242,7 +262,8 @@
 				has_earlier: false,
 				availability_note: chats?.availability_note ?? '',
 				started_by_name: null,
-				status: 'open'
+				status: 'open',
+				context_label: context?.title ?? null
 			};
 			queryClient.setQueryData(
 				supportThreadPageKey(userId, message.thread_id, SUPPORT_PAGE_SIZE),
@@ -381,6 +402,11 @@
 							canChange={thread.can_change_topic}
 							onChange={changeTopic}
 						/>
+						{#if thread.context_label}
+							<span class="support-messenger__context-label" title="Asked from this setup section"
+								>{thread.context_label}</span
+							>
+						{/if}
 						{#if thread.status === 'solved'}
 							<span class="support-messenger__solved">Solved</span>
 						{/if}
@@ -476,6 +502,27 @@
 								your customers.
 							</p>
 						</div>
+						{#if newContext}
+							<div class="support-messenger__context">
+								<span class="support-messenger__context-icon" aria-hidden="true"
+									>{@html sectionIcon}</span
+								>
+								<span class="support-messenger__context-text">
+									<span>Asking about this setup section</span>
+									<strong>{newContext.title}</strong>
+								</span>
+								<button
+									class="support-messenger__icon-button"
+									type="button"
+									aria-label={`Don’t attach ${newContext.title}`}
+									title="Remove"
+									disabled={startingChat}
+									onclick={() => (newContext = null)}
+								>
+									<span aria-hidden="true">{@html closeIcon}</span>
+								</button>
+							</div>
+						{/if}
 						<SupportTopicPicker bind:value={newTopic} disabled={startingChat} />
 					{/snippet}
 					{#snippet footnote()}
@@ -896,6 +943,57 @@
 		font-size: var(--typography--fontSize-smaller);
 		font-weight: 600;
 		line-height: 1;
+	}
+
+	// The setup section a chat was asked from (D6), after its topic. Long titles shorten rather than wrap.
+	.support-messenger__context-label {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+
+		&::before {
+			content: '· ';
+		}
+	}
+
+	// The section attached to a new message, which the person may take off before sending.
+	.support-messenger__context {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		padding: var(--space-small) var(--space-small) var(--space-small) var(--space-slim);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface);
+	}
+
+	.support-messenger__context-icon {
+		display: inline-flex;
+		flex: none;
+		color: var(--color-interactive);
+
+		:global(svg) {
+			width: 20px;
+			height: 20px;
+		}
+	}
+
+	.support-messenger__context-text {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+
+		strong {
+			overflow: hidden;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
 	}
 
 	// "New message" stays at the foot of the list, however long it grows.

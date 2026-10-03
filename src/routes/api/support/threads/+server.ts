@@ -61,7 +61,8 @@ export const POST: RequestHandler = async (event) => {
 		thread_topic: parsed.data.topic,
 		message_body: parsed.data.body,
 		message_client_id: parsed.data.client_message_id,
-		message_attachments: files.attachments
+		message_attachments: files.attachments,
+		thread_context_section: parsed.data.context_section
 	});
 	if (error) {
 		if (error.code === '42501')

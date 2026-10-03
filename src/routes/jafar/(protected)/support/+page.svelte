@@ -450,6 +450,11 @@
 							<p>
 								<span>{current.member_name}</span>
 								<SupportTopicMenu topic={current.topic} canChange onChange={changeTopic} />
+								{#if current.context_label}
+									<span class="support-inbox__context"
+										>Asked from setup: {current.context_label}</span
+									>
+								{/if}
 							</p>
 						{:else}
 							<LoadingSkeleton variant="heading" label="Loading conversation" />
@@ -702,6 +707,15 @@
 			font-size: var(--typography--fontSize-smaller);
 			font-weight: 600;
 			line-height: 1;
+		}
+
+		// Ask Uplift (D6): the setup section the member was on when they asked.
+		&__context {
+			min-width: 0;
+			overflow: hidden;
+			color: var(--color-text--secondary);
+			text-overflow: ellipsis;
+			white-space: nowrap;
 		}
 
 		&__thread-solved {

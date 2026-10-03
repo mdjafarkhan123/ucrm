@@ -10,6 +10,7 @@
 	import AccountGraceBanner from '$lib/components/layout/AccountGraceBanner.svelte';
 	import PausedAccountScreen from '$lib/components/layout/PausedAccountScreen.svelte';
 	import SupportMessenger from '$lib/components/support/SupportMessenger.svelte';
+	import { setSupportAsk } from '$lib/support/ask';
 	import {
 		communicationsAccessKey,
 		fetchCommunicationsAccess,
@@ -18,6 +19,10 @@
 	import type { LayoutData } from './$types';
 
 	let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props();
+
+	// Ask Uplift (D6): a setup section opens the messenger on a new message with that section attached.
+	let messenger = $state<ReturnType<typeof SupportMessenger> | null>(null);
+	setSupportAsk((context) => messenger?.ask(context));
 
 	// A paused organization sees only the paused screen, so nothing below asks the server anything: every
 	// answer would be a refusal, and the menu it feeds is not on screen.
@@ -241,7 +246,7 @@
 		<!-- Inside the shell so it lines up with the content column. Only for someone with an organization:
 		     without one there is no team to write on behalf of. -->
 		{#if data.organization}
-			<SupportMessenger userId={data.user.id} />
+			<SupportMessenger bind:this={messenger} userId={data.user.id} />
 		{/if}
 	</AppShell>
 {/if}

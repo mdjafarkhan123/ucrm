@@ -367,9 +367,21 @@ describe('POST /api/support/threads', () => {
 		);
 	});
 
+	it('keeps the setup section an Ask Uplift chat was started from', async () => {
+		const client = supabase({});
+		await startChat(
+			event(client, { body: start({ topic: 'setup', context_section: 'business' }) })
+		);
+		expect(client.rpc).toHaveBeenCalledWith(
+			'start_support_thread',
+			expect.objectContaining({ thread_topic: 'setup', thread_context_section: 'business' })
+		);
+	});
+
 	it.each([
 		['an empty message', start({ body: '   ' })],
 		['a topic that is not listed', start({ topic: 'gossip' })],
+		['a setup section that does not exist', start({ context_section: 'secret_plans' })],
 		['a message with no identifier', { body: 'Hello' }]
 	])('rejects %s before the database', async (_name, body) => {
 		const client = supabase({});

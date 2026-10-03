@@ -321,6 +321,15 @@ export function setupSection(key: string): SetupSection | undefined {
 	return SETUP_SECTIONS.find((section) => section.key === key);
 }
 
+/**
+ * What a support chat asked from a setup section (D6) is about, in words. A section since removed from the
+ * task list still reads as setup rather than as nothing.
+ */
+export function setupSectionLabel(key: string | null): string | null {
+	if (!key) return null;
+	return setupSection(key)?.title ?? 'Setup';
+}
+
 export function sectionFacts(section: SetupSection): SetupFact[] {
 	return section.groups.flatMap((group) => group.facts);
 }

@@ -35,6 +35,8 @@
 		type SetupAvailability
 	} from '$lib/setup/catalogue';
 	import { countryCurrency } from '$lib/settings/countries';
+	import { getSupportAsk } from '$lib/support/ask';
+	import askIcon from '@tabler/icons/outline/message-question.svg?raw';
 	import type { HttpError } from '$lib/http-error';
 	import type { PageProps } from './$types';
 
@@ -45,6 +47,8 @@
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
+	// Ask Uplift (D6): a new support chat about this section, with the section attached.
+	const askUplift = getSupportAsk();
 	const query = createQuery(() => ({
 		queryKey: setupSectionKey(userId, sectionKey),
 		queryFn: () => fetchSetupSection(sectionKey),
@@ -343,6 +347,15 @@
 						role="status"
 						aria-live="polite">{SAVE_TEXT[saveState]}</span
 					>
+					<Button
+						variant="secondary"
+						size="small"
+						onclick={() => askUplift({ section: section.key, title: section.title })}
+					>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						<span class="setup-section__ask-icon" aria-hidden="true">{@html askIcon}</span>
+						Ask Uplift
+					</Button>
 				{/snippet}
 			</PageHeader>
 
@@ -416,6 +429,15 @@
 
 			&--failed {
 				color: var(--color-critical--onSurface);
+			}
+		}
+
+		&__ask-icon {
+			display: inline-flex;
+
+			:global(svg) {
+				width: 18px;
+				height: 18px;
 			}
 		}
 
