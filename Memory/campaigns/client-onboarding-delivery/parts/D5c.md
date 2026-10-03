@@ -19,6 +19,7 @@ Unit tests and type check pass. Next: database check (suspend a test business in
 ## Outside actions
 
 - Apply migration — check: `list_migrations` shows version `20261006170000` — done
+- Browser run pauses Raad LTD (`18f0d717-904e-48d8-bd99-9df7e3844cda`) — check: its `lifecycle_status` is back to `active` afterwards — pending
 
 ## Notes
 
