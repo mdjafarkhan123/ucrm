@@ -1,6 +1,6 @@
 # Client onboarding — prebuilt setup content
 
-**Status:** Planning — first decision round approved by Jafar on 2026-10-03
+**Status:** Approved by Jafar on 2026-10-03
 **Parent contract:** `docs/client-onboarding-delivery-behavior-contract.md` §§ 2–3
 **Research:** `docs/research/client-onboarding-setup-content-2026-10-03.md`
 
