@@ -223,7 +223,8 @@
 				messages: [message],
 				has_earlier: false,
 				availability_note: chats?.availability_note ?? '',
-				started_by_name: null
+				started_by_name: null,
+				status: 'open'
 			};
 			queryClient.setQueryData(
 				supportThreadPageKey(userId, message.thread_id, SUPPORT_PAGE_SIZE),
@@ -307,6 +308,9 @@
 				{:else}
 					<strong>{supportTopicLabel(item.topic)}</strong>
 				{/if}
+				{#if item.status === 'solved'}
+					<span class="support-messenger__solved">Solved</span>
+				{/if}
 				<time datetime={item.last_message_at}>{relativeTime(item.last_message_at)}</time>
 			</span>
 			<span class="support-messenger__row-bottom">
@@ -359,6 +363,9 @@
 							canChange={thread.can_change_topic}
 							onChange={changeTopic}
 						/>
+						{#if thread.status === 'solved'}
+							<span class="support-messenger__solved">Solved</span>
+						{/if}
 						{#if thread.started_by_name}<span>With Uplift Support</span>{/if}
 					</div>
 				{:else}
@@ -437,7 +444,11 @@
 					presignAttachment={presignSupportAttachment}
 					fileUrls={supportFileUrls}
 					blockedReason={startingChat ? 'Starting your chat…' : ''}
-					placeholder={threadId ? 'Write to Uplift…' : 'Ask Uplift a question…'}
+					placeholder={!threadId
+						? 'Ask Uplift a question…'
+						: thread?.status === 'solved'
+							? 'Write again to reopen this chat…'
+							: 'Write to Uplift…'}
 				>
 					{#snippet empty()}
 						<div class="support-messenger__welcome">
@@ -852,6 +863,18 @@
 		border-radius: var(--radius-large);
 		color: var(--color-heading);
 		background: var(--color-inactive--surface);
+		font-size: var(--typography--fontSize-smaller);
+		font-weight: 600;
+		line-height: 1;
+	}
+
+	// Uplift marked the chat solved (D5a). The same pill, in green; writing again reopens it.
+	.support-messenger__solved {
+		flex: none;
+		padding: 3px var(--space-small);
+		border-radius: var(--radius-large);
+		color: var(--color-success--onSurface);
+		background: var(--color-success--surface);
 		font-size: var(--typography--fontSize-smaller);
 		font-weight: 600;
 		line-height: 1;

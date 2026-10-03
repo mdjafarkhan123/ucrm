@@ -80,6 +80,20 @@ export const supportStartThreadSchema = supportMessageFields
 
 export const supportTopicSchema = z.object({ topic: supportTopicField });
 
+// Uplift starts a chat with one active team member of a business (D5a).
+export const supportUpliftStartThreadSchema = supportMessageFields
+	.extend({
+		organization_id: z.string().uuid('Choose a business.'),
+		user_id: z.string().uuid('Choose who to write to.'),
+		topic: supportTopicField.default('other')
+	})
+	.refine(hasContent, NEEDS_CONTENT);
+
+// Uplift marks a chat Solved, or reopens it (D5a).
+export const supportStatusSchema = z.object({
+	status: z.enum(['open', 'solved'], { error: 'Choose open or solved.' })
+});
+
 export const supportThreadQuerySchema = z.object({
 	limit: z.coerce.number().int().min(1).max(SUPPORT_MAX_LOADED).default(SUPPORT_PAGE_SIZE)
 });
@@ -88,9 +102,10 @@ export const supportMemberThreadQuerySchema = supportThreadQuerySchema.extend({
 	thread_id: z.string().uuid()
 });
 
-// The Support Inbox, optionally narrowed to one topic.
+// The Support Inbox, optionally narrowed to one topic. Open chats unless asked otherwise.
 export const supportInboxQuerySchema = supportThreadQuerySchema.extend({
-	topic: supportTopicField.optional()
+	topic: supportTopicField.optional(),
+	status: z.enum(['open', 'solved', 'all']).default('open')
 });
 
 // Adding a teammate to a conversation (D3).

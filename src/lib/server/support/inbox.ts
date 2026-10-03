@@ -1,7 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import type {
+	SupportInboxStatusFilter,
 	SupportInboxThread,
+	SupportStatus,
 	SupportSenderKind,
 	SupportSettings,
 	SupportTopic
@@ -11,7 +13,7 @@ import type {
 // owner's session. Nothing here is reachable from a contractor's request.
 
 const THREAD_SELECT =
-	'id, topic, started_by_user_id, last_message_at, last_message_preview, last_message_sender_kind, uplift_last_read_at, organizations(id, name)';
+	'id, topic, started_by_user_id, last_message_at, last_message_preview, last_message_sender_kind, uplift_last_read_at, status, opened_by, organizations(id, name)';
 
 type ThreadRow = {
 	id: string;
@@ -21,6 +23,8 @@ type ThreadRow = {
 	last_message_preview: string;
 	last_message_sender_kind: string;
 	uplift_last_read_at: string | null;
+	status: string;
+	opened_by: string;
 	organizations: { id: string; name: string } | { id: string; name: string }[] | null;
 };
 
@@ -51,21 +55,26 @@ function toInboxThread(row: ThreadRow, names: Map<string, string>): SupportInbox
 		unread:
 			row.last_message_sender_kind === 'member' &&
 			(row.uplift_last_read_at === null ||
-				Date.parse(row.last_message_at) > Date.parse(row.uplift_last_read_at))
+				Date.parse(row.last_message_at) > Date.parse(row.uplift_last_read_at)),
+		status: row.status as SupportStatus,
+		opened_by_uplift: row.opened_by === 'uplift'
 	};
 }
 
 /**
- * Every organization's chats, newest activity first, optionally only one topic's (read on
- * support_threads_inbox_topic_idx). One extra row tells the caller whether more exist.
+ * Every organization's chats, newest activity first, open ones unless asked otherwise, optionally only one
+ * topic's. Each filter has its own index (support_threads_inbox_status_idx, …_inbox_topic_status_idx,
+ * …_inbox_topic_idx, …_inbox_idx). One extra row tells the caller whether more exist.
  */
 export async function readSupportInbox(
 	client: SupabaseClient<Database>,
 	limit: number,
-	topic: SupportTopic | undefined
+	topic: SupportTopic | undefined,
+	status: SupportInboxStatusFilter
 ) {
 	let query = client.from('support_threads').select(THREAD_SELECT);
 	if (topic) query = query.eq('topic', topic);
+	if (status !== 'all') query = query.eq('status', status);
 	const { data, error } = await query
 		.order('last_message_at', { ascending: false })
 		.order('id', { ascending: false })

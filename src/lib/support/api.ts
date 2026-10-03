@@ -30,6 +30,9 @@ export function supportTopicLabel(topic: SupportTopic): string {
 	return SUPPORT_TOPICS.find((item) => item.value === topic)?.label ?? 'Other';
 }
 
+// Only Uplift marks a chat Solved; anyone writing in it reopens it (D5a; Intercom's and Zendesk's model).
+export type SupportStatus = 'open' | 'solved';
+
 // Files in a chat (D4b): up to 5 files and 20 MB per message, from either side. Photos show in the chat;
 // every other file downloads. Program files are refused, by the same list the customer inbox uses.
 export const SUPPORT_MAX_ATTACHMENTS = 5;
@@ -105,6 +108,7 @@ export type SupportThread = {
 	availability_note: string;
 	/** Whose chat it is. Null for the member's own. */
 	started_by_name: string | null;
+	status: SupportStatus;
 };
 
 // Who sees what (D3, Zendesk's "My / CC'd / Organization requests"): a member sees the chats they started
@@ -123,6 +127,7 @@ export type SupportChatRow = {
 	unread: boolean;
 	/** The member was added to it, rather than seeing it as an owner or admin. */
 	added: boolean;
+	status: SupportStatus;
 };
 
 export type SupportChats = {
@@ -329,7 +334,13 @@ export type SupportInboxThread = {
 	last_message_sender_kind: SupportSenderKind;
 	/** The contractor wrote after Uplift last opened the conversation. */
 	unread: boolean;
+	status: SupportStatus;
+	/** Uplift sent the first message, to `member_name`. */
+	opened_by_uplift: boolean;
 };
+
+/** Which chats the Support Inbox lists: open ones unless filtered. */
+export type SupportInboxStatusFilter = SupportStatus | 'all';
 
 export type SupportSettings = { responder_name: string; availability_note: string };
 
@@ -347,8 +358,11 @@ export type SupportInboxThreadDetail = {
 
 export const jafarSupportKey = ['jafar', 'support'] as const;
 export const jafarSupportInboxKey = ['jafar', 'support', 'inbox'] as const;
-export const jafarSupportInboxPageKey = (limit: number, topic: SupportTopic | null) =>
-	[...jafarSupportInboxKey, limit, topic] as const;
+export const jafarSupportInboxPageKey = (
+	limit: number,
+	topic: SupportTopic | null,
+	status: SupportInboxStatusFilter
+) => [...jafarSupportInboxKey, limit, topic, status] as const;
 export const jafarSupportUnreadKey = ['jafar', 'support', 'unread'] as const;
 export const jafarSupportThreadKey = (threadId: string | null) =>
 	['jafar', 'support', 'thread', threadId] as const;
@@ -357,9 +371,10 @@ export const jafarSupportThreadPageKey = (threadId: string | null, limit: number
 
 export async function fetchSupportInbox(
 	limit: number,
-	topic: SupportTopic | null
+	topic: SupportTopic | null,
+	status: SupportInboxStatusFilter
 ): Promise<SupportInbox> {
-	const params = new URLSearchParams({ limit: String(limit) });
+	const params = new URLSearchParams({ limit: String(limit), status });
 	if (topic) params.set('topic', topic);
 	const response = await fetch(`/api/jafar/support/threads?${params}`);
 	if (!response.ok) throw httpError(response, 'The Support Inbox could not be loaded.');
@@ -426,6 +441,59 @@ export async function fetchSupportInboxPeople(threadId: string): Promise<Support
 
 export const changeSupportInboxTopic = (threadId: string, topic: SupportTopic) =>
 	changeTopic(`/api/jafar/support/threads/${threadId}`, topic);
+
+// The status route answers `changed: false` when the chat already had that status.
+export async function changeSupportInboxStatus(threadId: string, status: SupportStatus) {
+	const response = await fetch(`/api/jafar/support/threads/${threadId}/status`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ status })
+	});
+	if (!response.ok)
+		throw await failure(
+			response,
+			status === 'solved'
+				? 'The chat could not be marked solved.'
+				: 'The chat could not be reopened.'
+		);
+}
+
+/** A business's active team, owner first: who Uplift may start a chat with. */
+export type SupportRecipient = { user_id: string; name: string; role: string };
+
+export const jafarSupportRecipientsKey = (organizationId: string | null) =>
+	[...jafarSupportKey, 'recipients', organizationId] as const;
+
+export type SupportRecipients = {
+	organization: { id: string; name: string };
+	members: SupportRecipient[];
+};
+
+export async function fetchSupportRecipients(organizationId: string): Promise<SupportRecipients> {
+	const response = await fetch(`/api/jafar/support/organizations/${organizationId}/members`);
+	if (!response.ok) throw httpError(response, "This business's team could not be loaded.");
+	return response.json();
+}
+
+/** Asks for somewhere to upload a file for a chat Uplift is about to start with this business. */
+export const presignSupportStartAttachment = (organizationId: string, file: UploadClaim) =>
+	requestUploadTicket(
+		`/api/jafar/support/organizations/${organizationId}/attachments/presign-upload`,
+		file
+	);
+
+/** Uplift starts a chat with one team member. Returns the first message, which names the new chat. */
+export async function startSupportInboxThread(
+	input: SupportOutgoingMessage & { organization_id: string; user_id: string; topic: SupportTopic }
+): Promise<SupportMessage & { thread_id: string }> {
+	const response = await fetch('/api/jafar/support/threads', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	if (!response.ok) throw await failure(response, 'Your message could not be sent.');
+	return response.json();
+}
 
 export const changeSupportInboxPeople = (threadId: string, userId: string, adding: boolean) =>
 	changePeople(`/api/jafar/support/threads/${threadId}/people`, userId, adding);

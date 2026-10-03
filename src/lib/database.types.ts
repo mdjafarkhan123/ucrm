@@ -15375,8 +15375,11 @@ export type Database = {
 					last_message_at: string;
 					last_message_preview: string;
 					last_message_sender_kind: string;
+					opened_by: string;
 					organization_id: string;
+					solved_at: string | null;
 					started_by_user_id: string | null;
+					status: string;
 					topic: string;
 					updated_at: string;
 					uplift_last_read_at: string | null;
@@ -15387,8 +15390,11 @@ export type Database = {
 					last_message_at?: string;
 					last_message_preview?: string;
 					last_message_sender_kind?: string;
+					opened_by?: string;
 					organization_id: string;
+					solved_at?: string | null;
 					started_by_user_id?: string | null;
+					status?: string;
 					topic?: string;
 					updated_at?: string;
 					uplift_last_read_at?: string | null;
@@ -15399,8 +15405,11 @@ export type Database = {
 					last_message_at?: string;
 					last_message_preview?: string;
 					last_message_sender_kind?: string;
+					opened_by?: string;
 					organization_id?: string;
+					solved_at?: string | null;
 					started_by_user_id?: string | null;
+					status?: string;
 					topic?: string;
 					updated_at?: string;
 					uplift_last_read_at?: string | null;
@@ -25195,6 +25204,10 @@ export type Database = {
 				};
 				Returns: boolean;
 			};
+			set_support_thread_status_by_uplift: {
+				Args: { new_status: string; target_thread_id: string };
+				Returns: boolean;
+			};
 			set_support_thread_topic: {
 				Args: { new_topic: string; target_thread_id: string };
 				Returns: boolean;
@@ -25263,6 +25276,18 @@ export type Database = {
 					message_body: string;
 					message_client_id: string;
 					target_organization_id: string;
+					thread_topic: string;
+				};
+				Returns: Json;
+			};
+			start_support_thread_by_uplift: {
+				Args: {
+					actor_email: string;
+					message_attachments?: Json;
+					message_body: string;
+					message_client_id: string;
+					target_organization_id: string;
+					target_user_id: string;
 					thread_topic: string;
 				};
 				Returns: Json;

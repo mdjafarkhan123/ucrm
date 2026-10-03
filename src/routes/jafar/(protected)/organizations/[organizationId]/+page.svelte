@@ -193,9 +193,17 @@
 				<LoadingSkeleton variant="heading" label="Loading organization name" />
 				<LoadingSkeleton variant="text" label="Loading organization summary" />
 			</div>
-			<a class="organization-detail__back-link" href={resolve('/jafar/organizations')}
-				>Back to directory</a
-			>
+			<div class="organization-detail__header-actions">
+				{#if !preview && organizationId}
+					<!-- D5a: Uplift starts a chat with this business, choosing which team member it is for. -->
+					<Button variant="secondary" href={`${resolve('/jafar/support')}?new=${organizationId}`}
+						>Message this business</Button
+					>
+				{/if}
+				<a class="organization-detail__back-link" href={resolve('/jafar/organizations')}
+					>Back to directory</a
+				>
+			</div>
 		</header>
 
 		<section class="organization-detail__section" aria-labelledby="loading-overview-title">
@@ -453,6 +461,13 @@
 		width: 16px;
 		height: 16px;
 	}
+	.organization-detail__header-actions {
+		display: flex;
+		flex: none;
+		align-items: center;
+		gap: var(--space-base);
+	}
+
 	.organization-detail__header {
 		position: relative;
 		display: flex;

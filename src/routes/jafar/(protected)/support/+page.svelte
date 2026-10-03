@@ -10,6 +10,7 @@
 	import SupportConversation from '$lib/components/support/SupportConversation.svelte';
 	import SupportSettingsDialog from '$lib/components/support/SupportSettingsDialog.svelte';
 	import SupportPeople from '$lib/components/support/SupportPeople.svelte';
+	import SupportStartChat from '$lib/components/support/SupportStartChat.svelte';
 	import SupportTopicMenu from '$lib/components/support/SupportTopicMenu.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import { relativeTime } from '$lib/collaboration/format';
@@ -19,6 +20,7 @@
 		SUPPORT_PAGE_SIZE,
 		SUPPORT_TOPICS,
 		changeSupportInboxPeople,
+		changeSupportInboxStatus,
 		changeSupportInboxTopic,
 		fetchSupportInbox,
 		fetchSupportInboxPeople,
@@ -35,6 +37,7 @@
 		replyToSupportThread,
 		supportTopicLabel,
 		type SupportInbox,
+		type SupportInboxStatusFilter,
 		type SupportInboxThreadDetail,
 		type SupportOutgoingMessage,
 		type SupportSettings,
@@ -43,6 +46,7 @@
 	import messagesIcon from '@tabler/icons/outline/messages.svg?raw';
 	import arrowLeftIcon from '@tabler/icons/outline/arrow-left.svg?raw';
 	import settingsIcon from '@tabler/icons/outline/settings.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 
 	// The Support Inbox: every contractor team member's conversation with Uplift (plan §7). It is the
 	// platform's own inbox and never shows, or shows in, a contractor's customer inbox.
@@ -56,6 +60,25 @@
 	const topicFilter = $derived(
 		(SUPPORT_TOPICS.find((item) => item.value === topicParam.current)?.value ??
 			null) as SupportTopic | null
+	);
+	// Open chats unless filtered (D5a): only Uplift marks one Solved, and writing in it reopens it.
+	const statusParam = urlParam('status', 'open');
+	const statusFilter = $derived(
+		(['open', 'solved', 'all'].includes(statusParam.current)
+			? statusParam.current
+			: 'open') as SupportInboxStatusFilter
+	);
+	const statusOptions = [
+		{ value: 'open', label: 'Open' },
+		{ value: 'solved', label: 'Solved' },
+		{ value: 'all', label: 'All chats' }
+	];
+	// Starting a chat (D5a): `new=pick` chooses the business here; `new=<organization id>` arrives from the
+	// business's own page with it chosen.
+	const newParam = urlParam('new', '');
+	const startingNew = $derived(newParam.current !== '');
+	const newOrganizationId = $derived(
+		/^[0-9a-f-]{36}$/i.test(newParam.current) ? newParam.current : null
 	);
 	const topicOptions = [
 		{ value: '', label: 'All topics' },
@@ -100,8 +123,8 @@
 
 	// New messages arrive live: the /jafar layout listens for them and refreshes these queries (D2).
 	const inbox = createQuery(() => ({
-		queryKey: jafarSupportInboxPageKey(inboxLimit, topicFilter),
-		queryFn: () => fetchSupportInbox(inboxLimit, topicFilter),
+		queryKey: jafarSupportInboxPageKey(inboxLimit, topicFilter, statusFilter),
+		queryFn: () => fetchSupportInbox(inboxLimit, topicFilter, statusFilter),
 		placeholderData: keepPreviousData
 	}));
 
@@ -157,7 +180,32 @@
 	function openThread(threadId: string) {
 		threadLimit = SUPPORT_PAGE_SIZE;
 		showPeople = false;
+		newParam.set('');
 		selected.set(threadId);
+	}
+
+	function startNew() {
+		showPeople = false;
+		selected.set('');
+		newParam.set('pick');
+	}
+
+	async function started(threadId: string) {
+		await queryClient.invalidateQueries({ queryKey: jafarSupportKey });
+		openThread(threadId);
+	}
+
+	let changingStatus = $state(false);
+	async function changeStatus(next: 'open' | 'solved') {
+		if (!selectedId || changingStatus) return;
+		changingStatus = true;
+		try {
+			await changeSupportInboxStatus(selectedId, next);
+			// The grey line is a new message, and the chat moves between the Open and Solved lists.
+			await queryClient.invalidateQueries({ queryKey: jafarSupportKey });
+		} finally {
+			changingStatus = false;
+		}
 	}
 
 	async function reply(input: SupportOutgoingMessage) {
@@ -196,6 +244,10 @@
 		description="Messages contractors send from Chat with Uplift. Their customers never see these."
 	>
 		{#snippet actions()}
+			<Button onclick={startNew}>
+				<span class="support-inbox__button-icon" aria-hidden="true">{@html plusIcon}</span>
+				New chat
+			</Button>
 			<Button variant="secondary" disabled={!settings} onclick={() => (settingsOpen = true)}>
 				<span class="support-inbox__button-icon" aria-hidden="true">{@html settingsIcon}</span>
 				Support settings
@@ -212,7 +264,10 @@
 		</Banner>
 	{/if}
 
-	<div class="support-inbox__frame" class:support-inbox__frame--thread-open={selectedId !== null}>
+	<div
+		class="support-inbox__frame"
+		class:support-inbox__frame--thread-open={selectedId !== null || startingNew}
+	>
 		<section class="support-inbox__list" aria-label="Conversations">
 			<header class="support-inbox__list-header">
 				<h2>Conversations</h2>
@@ -221,17 +276,30 @@
 						>{waitingCount} waiting</Badge
 					>
 				{/if}
-				<Select
-					id="support-inbox-topic"
-					ariaLabel="Filter by topic"
-					class="support-inbox__topic-filter"
-					value={topicFilter ?? ''}
-					options={topicOptions}
-					onchange={(value) => {
-						inboxLimit = SUPPORT_PAGE_SIZE;
-						topicParam.set(value);
-					}}
-				/>
+				<div class="support-inbox__filters">
+					<Select
+						id="support-inbox-status"
+						ariaLabel="Filter by status"
+						class="support-inbox__filter"
+						value={statusFilter}
+						options={statusOptions}
+						onchange={(value) => {
+							inboxLimit = SUPPORT_PAGE_SIZE;
+							statusParam.set(value);
+						}}
+					/>
+					<Select
+						id="support-inbox-topic"
+						ariaLabel="Filter by topic"
+						class="support-inbox__filter"
+						value={topicFilter ?? ''}
+						options={topicOptions}
+						onchange={(value) => {
+							inboxLimit = SUPPORT_PAGE_SIZE;
+							topicParam.set(value);
+						}}
+					/>
+				</div>
 			</header>
 
 			{#if inbox.isPending}
@@ -244,8 +312,20 @@
 			{:else if threads.length === 0 && topicFilter}
 				<EmptyState
 					icon={messagesIcon}
-					title={`No ${supportTopicLabel(topicFilter)} chats`}
+					title={`No ${statusFilter === 'all' ? '' : `${statusFilter} `}${supportTopicLabel(topicFilter)} chats`}
 					description="Choose All topics to see every conversation."
+				/>
+			{:else if threads.length === 0 && statusFilter === 'open'}
+				<EmptyState
+					icon={messagesIcon}
+					title="Nothing open"
+					description="Every chat is solved. Choose Solved or All chats to look back."
+				/>
+			{:else if threads.length === 0 && statusFilter === 'solved'}
+				<EmptyState
+					icon={messagesIcon}
+					title="No solved chats yet"
+					description="Chats you mark solved appear here."
 				/>
 			{:else if threads.length === 0}
 				<EmptyState
@@ -278,6 +358,9 @@
 								<span class="support-inbox__thread-member">
 									<span>{item.member_name}</span>
 									<span class="support-inbox__thread-topic">{supportTopicLabel(item.topic)}</span>
+									{#if item.status === 'solved'}
+										<span class="support-inbox__thread-solved">Solved</span>
+									{/if}
 								</span>
 								<span class="support-inbox__thread-bottom">
 									<span class="support-inbox__thread-preview"
@@ -308,7 +391,29 @@
 		</section>
 
 		<section class="support-inbox__conversation" aria-label="Open conversation">
-			{#if selectedId === null}
+			{#if startingNew && selectedId === null}
+				<header class="support-inbox__conversation-header">
+					<button
+						class="support-inbox__back"
+						type="button"
+						aria-label="Back to conversations"
+						onclick={() => newParam.set('')}
+					>
+						<span aria-hidden="true">{@html arrowLeftIcon}</span>
+					</button>
+					<div class="support-inbox__conversation-title"><h2>New chat</h2></div>
+					<Button variant="tertiary" size="small" onclick={() => newParam.set('')}>Cancel</Button>
+				</header>
+				<SupportStartChat
+					organizationId={newOrganizationId}
+					onOrganizationChange={(id) => newParam.set(id ?? 'pick')}
+					onStarted={(threadId) => void started(threadId)}
+					blockedReason={needsName ? 'Add your name in Support settings before writing.' : ''}
+					footnoteText={settings?.responder_name
+						? `Clients see this as Uplift Support · ${settings.responder_name}.`
+						: ''}
+				/>
+			{:else if selectedId === null}
 				<EmptyState
 					icon={messagesIcon}
 					title="Choose a conversation"
@@ -351,6 +456,21 @@
 						{/if}
 					</div>
 					{#if current}
+						{#if current.status === 'solved'}
+							<Button
+								variant="secondary"
+								size="small"
+								loading={changingStatus}
+								onclick={() => void changeStatus('open')}>Reopen</Button
+							>
+						{:else}
+							<Button
+								variant="secondary"
+								size="small"
+								loading={changingStatus}
+								onclick={() => void changeStatus('solved')}>Mark solved</Button
+							>
+						{/if}
 						<Button
 							variant="tertiary"
 							size="small"
@@ -472,15 +592,23 @@
 				font-size: var(--typography--fontSize-large);
 			}
 
-			// Title and count share the top line; the topic filter runs full width beneath them.
+			// Title and count share the top line; the filters run beneath them.
 			:global(.support-inbox__waiting) {
 				flex: none;
 				margin-left: auto;
 				white-space: nowrap;
 			}
+		}
 
-			:global(.support-inbox__topic-filter) {
-				flex: 1 0 100%;
+		// The status and topic filters share the line beneath the title, half each.
+		&__filters {
+			display: flex;
+			flex: 1 0 100%;
+			gap: var(--space-small);
+
+			:global(.support-inbox__filter) {
+				flex: 1 1 0;
+				min-width: 0;
 			}
 		}
 
@@ -571,6 +699,17 @@
 			border-radius: var(--radius-circle);
 			color: var(--color-heading);
 			background: var(--color-inactive--surface);
+			font-size: var(--typography--fontSize-smaller);
+			font-weight: 600;
+			line-height: 1;
+		}
+
+		&__thread-solved {
+			flex: none;
+			padding: 3px var(--space-small);
+			border-radius: var(--radius-circle);
+			color: var(--color-success--onSurface);
+			background: var(--color-success--surface);
 			font-size: var(--typography--fontSize-smaller);
 			font-weight: 600;
 			line-height: 1;

@@ -4,9 +4,10 @@
 7–10-business-day delivery, approve launch, receive training, and contact Uplift throughout.
 **Plan:** `docs/client-onboarding-delivery-behavior-contract.md`
 
-**In progress:** nothing claimed. D4b attachments done 2026-10-03.
+**In progress:** D5a Solved + Jafar starts a chat, paused 2026-10-03 — built, tests and browser run left.
+See `parts/D5a-solved.md`.
 
-**Next part:** D5 follow-up or D6 Ask Uplift — both can move now (see `stages/D-support.md`). B3 onward
-waits for A2, and A2 waits for package-builder P16. A1, B1, B2, D1–D4b done.
+**Next part:** finish D5a, then D5c (chat on the paused screen) and D5b (reply emails); D6 can also move.
+B3 onward waits for A2, and A2 waits for package-builder P16.
 
 **Blockers:** none. Build order approved 2026-10-01.

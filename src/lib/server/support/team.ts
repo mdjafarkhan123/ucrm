@@ -1,6 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
-import type { SupportChatRow, SupportSenderKind, SupportTopic } from '$lib/support/api';
+import type {
+	SupportChatRow,
+	SupportSenderKind,
+	SupportStatus,
+	SupportTopic
+} from '$lib/support/api';
 
 // The chats a member sees in the messenger: their own (D4a: one per question), and someone else's they were
 // added to or, for owners and admins, administer (D3). Row level security decides which rows come back;
@@ -10,7 +15,7 @@ const MAX_OWN_CHATS = 100;
 const MAX_TEAM_CHATS = 200;
 
 const CHAT_SELECT =
-	'id, topic, started_by_user_id, last_message_at, last_message_preview, last_message_sender_kind';
+	'id, topic, started_by_user_id, last_message_at, last_message_preview, last_message_sender_kind, status';
 
 type ChatRow = {
 	id: string;
@@ -19,6 +24,7 @@ type ChatRow = {
 	last_message_at: string;
 	last_message_preview: string;
 	last_message_sender_kind: string;
+	status: string;
 };
 
 /** A member's name as their teammates see it. Someone no longer on the team is not readable here. */
@@ -93,13 +99,15 @@ export async function readChats(
 		return {
 			id: row.id,
 			topic: row.topic as SupportTopic,
-			started_by_name: (row.started_by_user_id && names.get(row.started_by_user_id)) || FORMER_MEMBER,
+			started_by_name:
+				(row.started_by_user_id && names.get(row.started_by_user_id)) || FORMER_MEMBER,
 			last_message_at: row.last_message_at,
 			last_message_preview: row.last_message_preview,
 			last_message_sender_kind: row.last_message_sender_kind as SupportSenderKind,
 			// The member's own message moves their mark, and system lines never move the latest time.
 			unread: !mark || Date.parse(row.last_message_at) > Date.parse(mark),
-			added: addedIds.has(row.id)
+			added: addedIds.has(row.id),
+			status: row.status as SupportStatus
 		};
 	};
 	return { mine: own.data.map(toRow), team: others.data.map(toRow) };

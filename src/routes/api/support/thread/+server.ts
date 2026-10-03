@@ -6,7 +6,7 @@ import { readSupportMessages } from '$lib/server/support/read';
 import { FORMER_MEMBER, teammateNames } from '$lib/server/support/team';
 import { supportMemberThreadQuerySchema } from '$lib/server/validation/support.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
-import type { SupportThread, SupportTopic } from '$lib/support/api';
+import type { SupportStatus, SupportThread, SupportTopic } from '$lib/support/api';
 
 // One chat with Uplift that row level security lets the member see: their own, one they were added to, or
 // any one in their organization for an owner or admin (D3). The organization filter says the same as the
@@ -27,7 +27,7 @@ export const GET: RequestHandler = async (event) => {
 	const [threadResult, settingsResult, page] = await Promise.all([
 		supabase
 			.from('support_threads')
-			.select('id, topic, started_by_user_id')
+			.select('id, topic, started_by_user_id, status')
 			.eq('organization_id', check.auth.organization.id)
 			.eq('id', parsed.data.thread_id)
 			.maybeSingle(),
@@ -64,7 +64,8 @@ export const GET: RequestHandler = async (event) => {
 			check.auth.organization.role === 'admin',
 		...page,
 		availability_note: settingsResult.data?.availability_note ?? '',
-		started_by_name
+		started_by_name,
+		status: row.status as SupportStatus
 	};
 	return json(thread, { headers: PRIVATE_READ_HEADERS });
 };

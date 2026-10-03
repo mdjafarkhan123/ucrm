@@ -7,19 +7,30 @@ chosen member.
 
 ## Steps
 
-- [ ] Database change `20261006160000_support_solved_and_uplift_starts` applied, types regenerated
-- [ ] Server: status route, Uplift start route, inbox status filter, status in member reads
-- [ ] Screens: Solved/Reopen in Support Inbox, status filter, Solved mark in messenger list, New chat +
-      Message this business, Chat with Uplift on the paused screen
-- [ ] Checks, tests, browser run both sides
+- [x] Database change `20261006160000_support_solved_and_uplift_starts` applied (recorded under its file
+      version), types regenerated
+- [x] Server: `PATCH /api/jafar/support/threads/[threadId]/status`, `POST /api/jafar/support/threads`
+      (Uplift starts), `GET …/support/organizations/[organizationId]/members`, its `attachments/presign-upload`;
+      inbox `status` filter (open by default); `status` in member reads
+- [x] Screens written: inbox status filter, Solved tag in rows, Mark solved / Reopen, New chat button and
+      pane (`SupportStartChat.svelte`, `?new=pick` or `?new=<org id>`), Message this business on the org page,
+      Solved tag and "Write again to reopen" in the messenger
+- [x] `npm run check` 0 errors, lint clean, existing chat tests pass
+- [ ] `svelte-autofixer` on `SupportStartChat.svelte` (with its style block stripped — SCSS confuses it)
+- [ ] Tests: status route, Uplift start route (refuses a non-member, retry makes no second chat), members
+      route, inbox status filter
+- [ ] Database checks with `execute_sql`: writing in a solved chat reopens it; same client id → one chat
+- [ ] Browser run: mark solved → contractor sees Solved → contractor writes → open again in inbox; New chat
+      from inbox and from org page reaches the chosen member; phone width
 
 ## Next
 
-Apply the migration through Supabase MCP `apply_migration` (the CLI cannot reach the database from here).
+Run the autofixer on `SupportStartChat.svelte`, then write the tests above beside
+`src/routes/api/jafar/support/support.spec.ts`. Not yet seen in a browser at all.
 
 ## Outside actions
 
-- Apply migration `20261006160000_support_solved_and_uplift_starts` — check: `select version from
+- Apply migration `20261006160000_support_solved_and_uplift_starts` — done 2026-10-03; check: `select version from
   supabase_migrations.schema_migrations where version like '20261006160000%'` or column
   `support_threads.status` exists
 
