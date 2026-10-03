@@ -4,9 +4,10 @@
 7–10-business-day delivery, approve launch, receive training, and contact Uplift throughout.
 **Plan:** `docs/client-onboarding-delivery-behavior-contract.md`
 
-**In progress:** nothing claimed. D5a (Solved, Jafar starts a chat) done 2026-10-03.
+**In progress:** nothing claimed. D5c (chat on the paused screen) done 2026-10-03. Jafar to confirm: a
+closed business (not just paused or pending closure) gets no chat; if yes, add that line to plan §7.
 
-**Next part:** D5c (chat on the paused screen), then D5b (reply emails); D6 can also move.
+**Next part:** D5b (reply emails); D6 can also move.
 B3 onward waits for A2, and A2 waits for package-builder P16.
 
 **Blockers:** none. Build order approved 2026-10-01.
