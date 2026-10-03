@@ -44,6 +44,12 @@
 	const editor = $derived(editorQuery.data);
 	const stage = $derived(editor?.draft?.stages.find((candidate) => candidate.key === stageKey));
 	const answered = $derived(new Set(editor?.answered ?? []));
+	// What a "show only if" rule here can depend on from before this stage, as last saved.
+	const earlierStages = $derived.by(() => {
+		const stages = editor?.draft?.stages ?? [];
+		const index = stages.findIndex((candidate) => candidate.key === stageKey);
+		return index === -1 ? [] : stages.slice(0, index);
+	});
 
 	let items = $state<DraftItem[]>([]);
 	let loaded = $state<{ versionId: string; revision: number; items: DraftItem[] } | null>(null);
@@ -99,7 +105,7 @@
 	function rowErrors(errors: Record<string, string>) {
 		const byRow: Record<string, string> = {};
 		for (const [path, message] of Object.entries(errors)) {
-			const match = /^items\.(\d+)\.(label|hint|kind|options)/.exec(path);
+			const match = /^items\.(\d+)\.(label|hint|kind|options|show_if)/.exec(path);
 			const row = match ? items[Number(match[1])] : undefined;
 			if (row) byRow[`${row.rowId}.${match![2]}`] ??= message;
 		}
@@ -119,7 +125,8 @@
 			required: false,
 			can_defer: false,
 			kind: type === 'question' ? 'text' : null,
-			options: []
+			options: [],
+			show_if: []
 		});
 		void questionList?.openNew(rowId);
 	}
@@ -257,7 +264,14 @@
 							>
 						</div>
 					{/snippet}
-					<SetupQuestionList bind:this={questionList} bind:items {answered} errors={fieldErrors} />
+					<SetupQuestionList
+						bind:this={questionList}
+						bind:items
+						{answered}
+						{earlierStages}
+						services={editor.services}
+						errors={fieldErrors}
+					/>
 				</SectionBlock>
 			{/snippet}
 

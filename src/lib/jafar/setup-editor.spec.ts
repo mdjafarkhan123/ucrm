@@ -6,6 +6,7 @@ import {
 	sameItems,
 	publishChanges,
 	sameStages,
+	showIfSources,
 	stageAudience,
 	stagesPayload,
 	type SetupEditorItem,
@@ -22,6 +23,7 @@ const item = (fields: Partial<SetupEditorItem>): SetupEditorItem => ({
 	can_defer: false,
 	kind: null,
 	options: null,
+	show_if: null,
 	...fields
 });
 
@@ -151,7 +153,8 @@ describe('setup question editor', () => {
 				required: false,
 				can_defer: false,
 				kind: null,
-				options: null
+				options: null,
+				show_if: null
 			},
 			{
 				type: 'question',
@@ -165,7 +168,8 @@ describe('setup question editor', () => {
 					{ value: 'one', label: 'Just me' },
 					{ value: 'more', label: 'More' },
 					{ value: null, label: 'Lots' }
-				]
+				],
+				show_if: null
 			}
 		]);
 	});
@@ -183,5 +187,60 @@ describe('setup question editor', () => {
 		expect(sameItems(padded, saved)).toBe(true);
 		padded[1].required = false;
 		expect(sameItems(padded, saved)).toBe(false);
+	});
+
+	it('names a rule source above it by position until that source has a key', () => {
+		const rows = draftItems([
+			choice,
+			item({ fact_key: 'business.vans', label: 'Vans', kind: 'text' })
+		]);
+		rows.splice(1, 0, { ...draftItems([choice])[0], rowId: 'new-1', fact_key: null });
+		rows[2].show_if = [
+			{ rowId: 'a', type: 'answer', source: 'business.size', values: ['more'] },
+			{ rowId: 'b', type: 'answer', source: 'new-1', values: ['one'] },
+			{ rowId: 'c', type: 'service', service_key: 'website' }
+		];
+		expect(itemsPayload(rows)[2]).toMatchObject({
+			show_if: [
+				{ fact_key: 'business.size', values: ['more'] },
+				{ item: 2, values: ['one'] },
+				{ service_key: 'website' }
+			]
+		});
+		const [saved] = draftItems([item({ ...choice, show_if: [{ service_key: 'website' }] })]);
+		expect(saved.show_if).toEqual([
+			{ rowId: 'condition-0', type: 'service', service_key: 'website' }
+		]);
+	});
+
+	it('offers as rule sources only earlier pick-one, yes/no and built-in choice questions', () => {
+		const country = item({ fact_key: 'business.country', label: 'Country', built_in: true });
+		const earlier: SetupEditorStage = { ...business, items: [heading, builtIn, country, choice] };
+		const rows = draftItems([
+			item({ fact_key: 'website.has_site', label: 'Have a site?', kind: 'yes_no' }),
+			item({ fact_key: 'website.notes', label: 'Notes', kind: 'text' }),
+			item({ fact_key: 'website.domain', label: 'Domain', kind: 'text' })
+		]);
+		rows[0].options = [];
+		const sources = showIfSources([earlier], rows, 2);
+		expect(sources.map((source) => [source.id, source.stageTitle])).toEqual([
+			['business.country', 'Your business'],
+			['business.size', 'Your business'],
+			['website.has_site', null]
+		]);
+		expect(sources[0].options).toBe('country');
+		expect(sources[2].options).toEqual([
+			{ value: 'yes', label: 'Yes' },
+			{ value: 'no', label: 'No' }
+		]);
+		const unsaved = draftItems([choice]);
+		unsaved[0].options.push({ rowId: 'n', value: null, label: 'Lots' });
+		expect(showIfSources([], [...unsaved, ...rows], 1)[0]).toMatchObject({
+			options: [
+				{ value: 'one', label: 'Just me' },
+				{ value: 'more', label: 'More' }
+			],
+			newChoices: true
+		});
 	});
 });

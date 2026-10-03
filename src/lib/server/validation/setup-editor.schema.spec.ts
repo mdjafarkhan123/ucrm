@@ -85,4 +85,45 @@ describe('saveSetupStageItemsSchema', () => {
 			}).success
 		).toBe(false);
 	});
+
+	describe('show-only-if rules (A5b)', () => {
+		const ruled = (show_if: unknown) =>
+			saveSetupStageItemsSchema.safeParse({
+				...draft,
+				items: [question, { ...question, label: 'Vans', kind: 'text', options: null, show_if }]
+			});
+
+		it('accepts an earlier answer, a question above by position, or a service', () => {
+			const parsed = ruled([
+				{ fact_key: 'business.type', values: ['company'] },
+				{ item: 1, values: ['more'] },
+				{ service_key: 'website' },
+				{ fact_key: 'business.country', values: ['GB', 'IE'] }
+			]);
+			expect(parsed.error).toBeUndefined();
+			expect(ruled([]).data?.items[1]).toMatchObject({ show_if: null });
+		});
+
+		it('explains a rule that is not finished', () => {
+			expect(ruled([{ fact_key: 'business.type', values: [] }]).error?.issues[0]).toMatchObject({
+				path: ['items', 1, 'show_if', 0],
+				message: 'Tick at least one answer for each rule.'
+			});
+			expect(ruled([{ fact_key: '', values: ['x'] }]).error?.issues[0].message).toBe(
+				'Choose a question for each rule.'
+			);
+			expect(ruled([{ service_key: '' }]).error?.issues[0].message).toBe(
+				'Choose a service for each rule.'
+			);
+			expect(ruled([{ fact_key: 'business.type', item: 1, values: ['x'] }]).success).toBe(false);
+			expect(ruled(Array(6).fill({ service_key: 'website' })).success).toBe(false);
+		});
+
+		it('checks rules on built-in questions against the choices in code', () => {
+			expect(ruled([{ fact_key: 'business.public_name', values: ['x'] }]).success).toBe(false);
+			expect(ruled([{ fact_key: 'business.type', values: ['plc'] }]).success).toBe(false);
+			expect(ruled([{ fact_key: 'business.country', values: ['gb'] }]).success).toBe(false);
+			expect(ruled([{ fact_key: 'business.trade', values: ['Plumbing'] }]).error).toBeUndefined();
+		});
+	});
 });

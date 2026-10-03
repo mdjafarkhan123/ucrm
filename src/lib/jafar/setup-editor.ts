@@ -2,7 +2,7 @@
 // edited as a draft and published; clients see only the published version, each limited to the stages their
 // package includes.
 
-import type { SetupQuestionKind } from '$lib/setup/catalogue';
+import { BUILT_IN_FACTS, type SetupQuestionKind } from '$lib/setup/catalogue';
 
 export type SetupChoice = { value: string; label: string };
 
@@ -17,7 +17,12 @@ export type SetupEditorItem = {
 	/** Null for a heading or a built-in question, whose answer type lives in code. */
 	kind: SetupQuestionKind | null;
 	options: SetupChoice[] | null;
+	/** "Show only if": every condition must hold. Null asks the question always. */
+	show_if: SetupShowIfCondition[] | null;
 };
+
+/** One stored "show only if" condition (plan §2.1): an earlier answer is one of `values`, or the package includes a service. */
+export type SetupShowIfCondition = { fact_key: string; values: string[] } | { service_key: string };
 
 export type SetupEditorStage = {
 	key: string;
@@ -146,7 +151,45 @@ export type DraftItem = {
 	kind: SetupQuestionKind | null;
 	/** `value` is null until a new choice is saved. */
 	options: { rowId: string; value: string | null; label: string }[];
+	/** Empty asks the question always. */
+	show_if: DraftCondition[];
 };
+
+/**
+ * A "show only if" condition as the form holds it. `source` is the earlier question's key, or the row id of a
+ * question above it in this stage that has no key yet; null until one is chosen.
+ */
+export type DraftCondition =
+	| { rowId: string; type: 'answer'; source: string | null; values: string[] }
+	| { rowId: string; type: 'service'; service_key: string | null };
+
+function draftConditions(conditions: SetupShowIfCondition[] | null): DraftCondition[] {
+	return (conditions ?? []).map((condition, index) =>
+		'service_key' in condition
+			? { rowId: `condition-${index}`, type: 'service', service_key: condition.service_key }
+			: {
+					rowId: `condition-${index}`,
+					type: 'answer',
+					source: condition.fact_key,
+					values: [...condition.values]
+				}
+	);
+}
+
+/**
+ * What the save sends for one question's conditions. A question above it in this stage that has no key yet is
+ * named by its 1-based position, which the database turns into the key it makes on the same save.
+ */
+function conditionsPayload(conditions: DraftCondition[], items: DraftItem[]) {
+	if (conditions.length === 0) return null;
+	return conditions.map((condition) => {
+		if (condition.type === 'service') return { service_key: condition.service_key ?? '' };
+		const index = items.findIndex((item) => item.rowId === condition.source);
+		if (index !== -1 && items[index].fact_key === null)
+			return { item: index + 1, values: condition.values };
+		return { fact_key: condition.source ?? '', values: condition.values };
+	});
+}
 
 export function draftItems(items: SetupEditorItem[]): DraftItem[] {
 	return items.map((item, index) => ({
@@ -159,7 +202,8 @@ export function draftItems(items: SetupEditorItem[]): DraftItem[] {
 		required: item.required,
 		can_defer: item.can_defer,
 		kind: item.kind,
-		options: (item.options ?? []).map((option) => ({ rowId: option.value, ...option }))
+		options: (item.options ?? []).map((option) => ({ rowId: option.value, ...option })),
+		show_if: draftConditions(item.show_if)
 	}));
 }
 
@@ -179,9 +223,83 @@ export function itemsPayload(items: DraftItem[]) {
 					options:
 						!item.built_in && item.kind === 'choice'
 							? item.options.map((option) => ({ value: option.value, label: option.label.trim() }))
-							: null
+							: null,
+					show_if: conditionsPayload(item.show_if, items)
 				}
 	);
+}
+
+/**
+ * A question a "show only if" rule can depend on: a pick-one or yes/no question, or a built-in choice such as
+ * country. `options` are the answers it can be matched against; `newChoices` says some are unsaved and so not
+ * listed yet.
+ */
+export type ShowIfSource = {
+	id: string;
+	label: string;
+	/** The stage it is in, when that is an earlier stage. */
+	stageTitle: string | null;
+	options: SetupChoice[] | 'country';
+	newChoices: boolean;
+};
+
+type SourceItem = Pick<SetupEditorItem, 'type' | 'fact_key' | 'built_in' | 'kind' | 'label'> & {
+	options: { value: string | null; label: string }[] | null;
+};
+
+function showIfSource(
+	item: SourceItem,
+	id: string,
+	stageTitle: string | null
+): ShowIfSource | null {
+	if (item.type !== 'question') return null;
+	const source = { id, label: item.label.trim() || 'New question', stageTitle, newChoices: false };
+	if (item.built_in) {
+		const rules = item.fact_key ? BUILT_IN_FACTS[item.fact_key] : undefined;
+		if (rules?.kind === 'country') return { ...source, options: 'country' };
+		if ((rules?.kind === 'choice' || rules?.kind === 'choice_other') && rules.options)
+			return { ...source, options: rules.options };
+		return null;
+	}
+	if (item.kind === 'yes_no')
+		return {
+			...source,
+			options: [
+				{ value: 'yes', label: 'Yes' },
+				{ value: 'no', label: 'No' }
+			]
+		};
+	if (item.kind !== 'choice') return null;
+	const options = item.options ?? [];
+	return {
+		...source,
+		options: options.flatMap((option) =>
+			option.value ? [{ value: option.value, label: option.label.trim() || option.value }] : []
+		),
+		newChoices: options.some((option) => option.value === null)
+	};
+}
+
+/**
+ * What the question at `index` of this stage can depend on: questions in earlier stages, as last saved, then
+ * those above it here, as they stand in the form.
+ */
+export function showIfSources(
+	earlierStages: SetupEditorStage[],
+	items: DraftItem[],
+	index: number
+): ShowIfSource[] {
+	const earlier = earlierStages.flatMap((stage) =>
+		stage.items.flatMap((item) => {
+			const source = item.fact_key ? showIfSource(item, item.fact_key, stage.title) : null;
+			return source ? [source] : [];
+		})
+	);
+	const above = items.slice(0, index).flatMap((item) => {
+		const source = showIfSource(item, item.rowId, null);
+		return source ? [source] : [];
+	});
+	return [...earlier, ...above];
 }
 
 export function sameItems(a: DraftItem[], b: DraftItem[]) {

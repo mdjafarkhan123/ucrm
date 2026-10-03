@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SETUP_QUESTION_KINDS } from '$lib/setup/catalogue';
+import { BUILT_IN_FACTS, SETUP_QUESTION_KINDS } from '$lib/setup/catalogue';
 
 // Client onboarding A4: Jafar's setup stage editor (plan §2.1, ADR 0006). The limits mirror the database
 // checks on setup_stages, so a bad value is explained here rather than refused there.
@@ -63,16 +63,64 @@ const headingSchema = z.object({
 });
 
 const OPTION_VALUE = /^[a-z0-9_]{1,60}$/;
+const FACT_KEY = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/;
+const SERVICE_KEY = /^[a-z][a-z0-9_]{1,59}$/;
+
+// Client onboarding A5b: one "show only if" condition. An earlier answer is named by its key, or by `item`, the
+// 1-based position of a question above it in this save that has no key yet; or the package includes a service.
+// The shape mirrors private.setup_show_if_shape_ok, which checks it again.
+const conditionSchema = z
+	.object({
+		fact_key: z.string().optional(),
+		item: z.number().int().positive().optional(),
+		values: z
+			.array(z.string().min(1).max(120))
+			.max(60, 'A rule can match up to 60 answers.')
+			.optional(),
+		service_key: z.string().optional()
+	})
+	.strict()
+	.superRefine((condition, context) => {
+		if (condition.service_key !== undefined) {
+			if (condition.fact_key !== undefined || condition.item !== undefined || condition.values)
+				context.addIssue({ code: 'custom', message: 'This rule is not valid.' });
+			else if (!SERVICE_KEY.test(condition.service_key))
+				context.addIssue({ code: 'custom', message: 'Choose a service for each rule.' });
+			return;
+		}
+		if ((condition.fact_key === undefined) === (condition.item === undefined))
+			context.addIssue({ code: 'custom', message: 'This rule is not valid.' });
+		else if (
+			condition.fact_key !== undefined &&
+			(!FACT_KEY.test(condition.fact_key) || condition.fact_key.length > 80)
+		)
+			context.addIssue({ code: 'custom', message: 'Choose a question for each rule.' });
+		else if (!condition.values?.length)
+			context.addIssue({ code: 'custom', message: 'Tick at least one answer for each rule.' });
+	});
+
+/**
+ * A rule on a built-in question: its answer type and choices live in code (ADR 0006), so the database cannot
+ * check them and this does. Null when the rule is fine.
+ */
+function builtInRuleProblem(factKey: string, values: string[]): string | null {
+	const rules = BUILT_IN_FACTS[factKey];
+	if (!rules) return null;
+	if (rules.kind === 'country')
+		return values.every((value) => /^[A-Z]{2}$/.test(value))
+			? null
+			: 'Choose countries from the list.';
+	if (rules.kind !== 'choice' && rules.kind !== 'choice_other')
+		return 'Only a pick-one, yes/no or country question can decide whether this is shown.';
+	const allowed = new Set(rules.options?.map((option) => option.value));
+	return values.every((value) => allowed.has(value)) ? null : 'Choose answers from the list.';
+}
 
 const questionSchema = z
 	.object({
 		type: z.literal('question'),
 		// Null for a question added in this draft; the database makes its key from the stage and wording.
-		fact_key: z
-			.string()
-			.regex(/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/)
-			.max(80)
-			.nullable(),
+		fact_key: z.string().regex(FACT_KEY).max(80).nullable(),
 		label: z
 			.string()
 			.trim()
@@ -96,9 +144,22 @@ const questionSchema = z
 				})
 			)
 			.max(50, 'A question can offer up to 50 choices.')
-			.nullable()
+			.nullable(),
+		// Null, or left out, asks the question always.
+		show_if: z
+			.array(conditionSchema)
+			.max(5, 'A question can have up to 5 rules.')
+			.nullish()
+			.transform((value) => (value?.length ? value : null))
 	})
 	.superRefine((question, context) => {
+		question.show_if?.forEach((condition, index) => {
+			const problem =
+				condition.fact_key && condition.values
+					? builtInRuleProblem(condition.fact_key, condition.values)
+					: null;
+			if (problem) context.addIssue({ code: 'custom', path: ['show_if', index], message: problem });
+		});
 		if (question.fact_key === null && question.kind === null)
 			context.addIssue({ code: 'custom', path: ['kind'], message: 'Choose an answer type.' });
 		if (question.kind !== 'choice') return;

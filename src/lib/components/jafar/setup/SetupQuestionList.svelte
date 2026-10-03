@@ -5,11 +5,19 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
+	import SetupShowIf from '$lib/components/jafar/setup/SetupShowIf.svelte';
 	import { SETUP_QUESTION_KINDS } from '$lib/setup/catalogue';
-	import { SETUP_QUESTION_KIND_LABELS, type DraftItem } from '$lib/jafar/setup-editor';
+	import {
+		SETUP_QUESTION_KIND_LABELS,
+		showIfSources,
+		type DraftItem,
+		type SetupEditor,
+		type SetupEditorStage
+	} from '$lib/jafar/setup-editor';
 	import arrowDownIcon from '@tabler/icons/outline/arrow-down.svg?raw';
 	import arrowUpIcon from '@tabler/icons/outline/arrow-up.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
+	import gitBranchIcon from '@tabler/icons/outline/git-branch.svg?raw';
 	import headingIcon from '@tabler/icons/outline/heading.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
@@ -23,11 +31,16 @@
 	let {
 		items = $bindable(),
 		answered,
+		earlierStages,
+		services,
 		errors = {}
 	}: {
 		items: DraftItem[];
 		/** Questions clients have answered, by key. */
 		answered: ReadonlySet<string>;
+		/** The stages before this one, as saved, for "show only if" rules. */
+		earlierStages: SetupEditorStage[];
+		services: SetupEditor['services'];
 		/** What is wrong with a row's field, keyed `<rowId>.<field>`. */
 		errors?: Record<string, string>;
 	} = $props();
@@ -85,8 +98,9 @@
 
 	/** Opens the first row with a problem so its message is on screen. */
 	export function openFirstError() {
-		const rowId = Object.keys(errors)[0]?.split('.')[0];
-		if (rowId) openRow = rowId;
+		// A saved question's row id is its key, which has dots of its own; the field is after the last one.
+		const key = Object.keys(errors)[0];
+		if (key) openRow = key.slice(0, key.lastIndexOf('.'));
 	}
 </script>
 
@@ -130,6 +144,13 @@
 								{#if !item.built_in}<span>{kindName(item)}</span>{/if}
 								{#if item.required}<Badge status="informative" size="small">Required</Badge>{/if}
 								{#if item.can_defer}<span>Can be skipped for now</span>{/if}
+								{#if item.show_if.length}
+									<span class="setup-questions__lock">
+										<span class="setup-questions__meta-icon" aria-hidden="true"
+											>{@html gitBranchIcon}</span
+										>Shown only when its rules match
+									</span>
+								{/if}
 								{#if item.built_in}
 									<span class="setup-questions__lock">
 										<span class="setup-questions__meta-icon" aria-hidden="true"
@@ -277,6 +298,14 @@
 								</fieldset>
 							{/if}
 						{/if}
+
+						<SetupShowIf
+							bind:conditions={item.show_if}
+							sources={showIfSources(earlierStages, items, index)}
+							{services}
+							idPrefix={`setup-item-${item.rowId}`}
+							error={errors[`${item.rowId}.show_if`] ?? ''}
+						/>
 
 						<div class="setup-questions__switches">
 							<Toggle

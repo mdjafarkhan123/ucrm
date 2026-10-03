@@ -9,7 +9,9 @@ import {
 	sectionFacts,
 	sectionStatus,
 	setupValueError,
-	type SetupAnswers
+	shownFacts,
+	type SetupAnswers,
+	type SetupFact
 } from './catalogue';
 
 const SETUP_SECTIONS = SETUP_CATALOGUE_1.sections;
@@ -253,5 +255,91 @@ describe('stages each client sees (A4)', () => {
 		expect(keys([])).toEqual(['business']);
 		expect(keys(['reviews'])).toEqual(['business']);
 		expect(keys(['website', 'reviews'])).toEqual(['business', 'website']);
+	});
+});
+
+describe('show-only-if rules (A5b)', () => {
+	const fact = (key: string, showIf?: SetupFact['showIf']): SetupFact => ({
+		key,
+		label: key,
+		kind: 'choice',
+		required: true,
+		builtIn: false,
+		...(showIf ? { showIf } : {})
+	});
+	const facts = [
+		fact('website.has_site'),
+		fact('website.domain', [{ factKey: 'website.has_site', values: ['yes'] }]),
+		fact('website.host', [{ factKey: 'website.domain', values: ['own'] }])
+	];
+
+	it('asks a question only once an earlier answer matches, and hides its dependants with it', () => {
+		expect([...shownFacts(facts, {})]).toEqual(['website.has_site']);
+		const answers: SetupAnswers = {
+			'website.has_site': have('yes'),
+			'website.domain': have('own')
+		};
+		expect([...shownFacts(facts, answers)]).toEqual([
+			'website.has_site',
+			'website.domain',
+			'website.host'
+		]);
+		answers['website.has_site'] = have('no');
+		expect([...shownFacts(facts, answers)]).toEqual(['website.has_site']);
+	});
+
+	it('treats "need help" and "not yet" as no match', () => {
+		const answers: SetupAnswers = {
+			'website.has_site': { availability: 'need_help', value: null, note: null }
+		};
+		expect(shownFacts(facts, answers).has('website.domain')).toBe(false);
+	});
+
+	it('judges a rule on an earlier section from the questions known to be asked', () => {
+		const later = [fact('website.domain', [{ factKey: 'business.type', values: ['company'] }])];
+		const answers = { 'business.type': have('company') };
+		expect(shownFacts(later, answers).has('website.domain')).toBe(false);
+		expect(shownFacts(later, answers, new Set(['business.type'])).has('website.domain')).toBe(true);
+	});
+
+	it('settles service rules per package and never counts a hidden required question', () => {
+		const version = {
+			...SETUP_VERSION_1,
+			stages: [
+				{
+					key: 'extras',
+					title: 'Extras',
+					description: '',
+					service_key: null,
+					items: [
+						{
+							type: 'question' as const,
+							fact_key: 'extras.reviews_link',
+							label: 'Review link',
+							hint: null,
+							built_in: false,
+							required: true,
+							can_defer: false,
+							kind: 'yes_no' as const,
+							options: null,
+							max_length: null,
+							show_if: [
+								{ service_key: 'reviews' },
+								{ fact_key: 'business.type', values: ['company'] }
+							]
+						}
+					]
+				}
+			]
+		};
+		const catalogue = buildSetupCatalogue(version);
+		expect(catalogueForServices(catalogue, new Set()).sections).toEqual([]);
+		const [extras] = catalogueForServices(catalogue, new Set(['reviews'])).sections;
+		expect(sectionFacts(extras)[0].showIf).toEqual([
+			{ factKey: 'business.type', values: ['company'] }
+		]);
+		const shown = shownFacts(sectionFacts(extras), {});
+		expect(missingRequiredFacts(extras, {}, shown)).toEqual([]);
+		expect(sectionStatus(extras, {}, true, shown)).toBe('done');
 	});
 });
