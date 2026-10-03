@@ -309,7 +309,8 @@ read only in the chat, and no further email is sent for that chat until they ope
 see the chat are not emailed. The same rule emails Jafar when a member's message has gone unseen in the Support Inbox
 for 3 minutes. Jafar starts a chat from **Message this business** on an organization's page or **New chat** in the
 Support Inbox, choosing the team member (the owner by default) and a topic. The paused-account screen keeps
-Chat with Uplift.
+Chat with Uplift for every team member while the business is paused or pending closure; a closed business no
+longer has it (Jafar, 2026-10-03).
 
 Every active team member may contact support. Owners/admins may see organization-wide threads; another member sees
 their own threads and ones they were explicitly added to (Zendesk's "My / CC'd / Organization requests"). Owners/admins
