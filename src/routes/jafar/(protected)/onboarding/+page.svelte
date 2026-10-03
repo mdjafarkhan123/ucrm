@@ -219,6 +219,10 @@
 								new Date(client.account_created_at)
 							)}
 						</span>
+						<!-- On a phone the table's later columns sit off screen, so whose move it is comes along here. -->
+						<span class="onboarding-list__phone-next">
+							{onboardingWaitingOnLabel[client.waiting_on]}: {onboardingNextActionLabel(client)}
+						</span>
 					</div>
 				</th>
 				<td><Badge status={stage.tone} size="small">{stage.label}</Badge></td>
@@ -374,11 +378,11 @@
 	}
 
 	.onboarding-list__bar {
-		height: 6px;
+		// Half the height of the radius-small token, so the bar and its fill are pills, not ellipses.
+		height: 8px;
 		overflow: hidden;
-		border-radius: var(--radius-circle);
-		background: var(--color-surface--background--subtle);
-		box-shadow: inset 0 0 0 var(--border-base) var(--color-border);
+		border-radius: var(--radius-small);
+		background: var(--color-border);
 
 		span {
 			display: block;
@@ -430,6 +434,19 @@
 			outline: none;
 			border-radius: var(--radius-small);
 			box-shadow: var(--shadow-focus);
+		}
+	}
+
+	.onboarding-list__phone-next {
+		display: none;
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 400;
+	}
+
+	@media (max-width: 639px) {
+		.onboarding-list__phone-next {
+			display: block;
 		}
 	}
 
