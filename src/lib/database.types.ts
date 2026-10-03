@@ -12103,6 +12103,39 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			package_services: {
+				Row: {
+					archived_at: string | null;
+					created_at: string;
+					description: string;
+					name: string;
+					service_key: string;
+					sort_order: number;
+					updated_at: string;
+					updated_by_email: string | null;
+				};
+				Insert: {
+					archived_at?: string | null;
+					created_at?: string;
+					description?: string;
+					name: string;
+					service_key: string;
+					sort_order: number;
+					updated_at?: string;
+					updated_by_email?: string | null;
+				};
+				Update: {
+					archived_at?: string | null;
+					created_at?: string;
+					description?: string;
+					name?: string;
+					service_key?: string;
+					sort_order?: number;
+					updated_at?: string;
+					updated_by_email?: string | null;
+				};
+				Relationships: [];
+			};
 			packages: {
 				Row: {
 					archived_at: string | null;
@@ -22503,6 +22536,7 @@ export type Database = {
 				Returns: Json;
 			};
 			owner_package_offers: { Args: never; Returns: Json };
+			owner_package_services: { Args: never; Returns: Json };
 			pause_automation_enrollment: {
 				Args: {
 					p_actor_user_id: string;
@@ -24791,6 +24825,15 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			save_package_service: {
+				Args: {
+					actor_owner_email: string;
+					service_description: string;
+					service_name: string;
+					target_service_key: string;
+				};
+				Returns: Json;
+			};
 			save_pipeline_settings: {
 				Args: {
 					expected_revision: number;
@@ -25272,6 +25315,14 @@ export type Database = {
 			};
 			set_package_offer_archived: {
 				Args: { actor_owner_email: string; archived: boolean; offer_id: string };
+				Returns: Json;
+			};
+			set_package_service_archived: {
+				Args: {
+					actor_owner_email: string;
+					archived: boolean;
+					target_service_key: string;
+				};
 				Returns: Json;
 			};
 			set_package_visibility: {

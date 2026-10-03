@@ -17,7 +17,7 @@ const terms = {
 	name: 'Growth',
 	promise: 'Never miss a lead',
 	highlights: ['Premium functional website'],
-	included_services: [{ name: 'On-site SEO', description: '' }],
+	included_services: [{ service_key: 'website', name: 'On-site SEO', description: '' }],
 	exclusions: '',
 	monthly_price_usd_cents: 24900,
 	yearly_price_usd_cents: null,

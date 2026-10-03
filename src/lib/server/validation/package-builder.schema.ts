@@ -30,6 +30,10 @@ const priceSchema = z
 	.max(100_000_000, 'Enter a price under $1,000,000.')
 	.nullable();
 
+const serviceKeySchema = z
+	.string({ error: 'Pick a service from your list.' })
+	.regex(/^[a-z][a-z0-9_]{1,59}$/, 'Pick a service from your list.');
+
 const capabilityKeySchema = z.string().regex(/^[a-z][a-z0-9_.-]{1,79}$/);
 
 const allowanceSchema = z
@@ -67,6 +71,7 @@ export const packageDraftTermsSchema = z.object({
 	included_services: z
 		.array(
 			z.object({
+				service_key: serviceKeySchema,
 				name: z
 					.string()
 					.trim()
@@ -75,7 +80,12 @@ export const packageDraftTermsSchema = z.object({
 				description: z.string().trim().max(300, 'Keep the description under 300 characters.')
 			})
 		)
-		.max(12, 'Keep to 12 services or fewer.'),
+		.max(12, 'Keep to 12 services or fewer.')
+		.refine(
+			(services) =>
+				new Set(services.map((service) => service.service_key)).size === services.length,
+			'Each service can be included once.'
+		),
 	exclusions: z.string().trim().max(2000, 'Keep this under 2,000 characters.'),
 	monthly_price_usd_cents: priceSchema,
 	yearly_price_usd_cents: priceSchema,
@@ -242,4 +252,32 @@ export const packageOfferActionSchema = z.discriminatedUnion('action', [
 	}),
 	z.object({ action: z.literal('archive') }),
 	z.object({ action: z.literal('restore') })
+]);
+
+// Client onboarding A2: Jafar's list of the services Uplift sells (plan §2.1). A new service has no key
+// yet; the database makes one from its name.
+const serviceNameSchema = z
+	.string()
+	.trim()
+	.min(2, 'Enter a service name of at least 2 characters.')
+	.max(80, 'Keep the service name under 80 characters.');
+const serviceDescriptionSchema = z
+	.string()
+	.trim()
+	.max(300, 'Keep the description under 300 characters.');
+
+export const createPackageServiceSchema = z.object({
+	name: serviceNameSchema,
+	description: serviceDescriptionSchema
+});
+
+export const changePackageServiceSchema = z.discriminatedUnion('action', [
+	z.object({
+		action: z.literal('update'),
+		key: serviceKeySchema,
+		name: serviceNameSchema,
+		description: serviceDescriptionSchema
+	}),
+	z.object({ action: z.literal('archive'), key: serviceKeySchema }),
+	z.object({ action: z.literal('restore'), key: serviceKeySchema })
 ]);

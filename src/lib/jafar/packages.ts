@@ -52,7 +52,16 @@ export type CatalogEvent = {
 
 export type PublishProblem = { code: string; key: string | null; message: string };
 
-export type IncludedService = { name: string; description: string };
+export type IncludedService = { service_key: string; name: string; description: string };
+
+/** One service on Jafar's list (client onboarding plan §2.1). Packages tick it; setup stages show by it. */
+export type PackageService = {
+	key: string;
+	name: string;
+	description: string;
+	archived_at: string | null;
+	package_count: number;
+};
 export type EditionAllowance = { key: string; state: AllowanceState; value: number | null };
 
 export type EditionTerms = {
@@ -106,6 +115,7 @@ export type PackageBuilder = {
 	history: CatalogEvent[];
 	capabilities: CapabilityReference[];
 	allowances: AllowanceReference[];
+	services: PackageService[];
 };
 
 /** The whole draft as the builder edits it and the save command receives it. */
@@ -206,6 +216,22 @@ export function publishPackageDraft(
 	);
 }
 
+export async function createPackageService(input: { name: string; description: string }) {
+	return (await send<{ services: PackageService[] }>('/api/jafar/package-services', 'POST', input))
+		.services;
+}
+
+export type PackageServiceChange =
+	| { action: 'update'; key: string; name: string; description: string }
+	| { action: 'archive'; key: string }
+	| { action: 'restore'; key: string };
+
+export async function changePackageService(command: PackageServiceChange) {
+	return (
+		await send<{ services: PackageService[] }>('/api/jafar/package-services', 'PATCH', command)
+	).services;
+}
+
 export type CatalogAction =
 	| { action: 'set_visibility'; visibility: 'public' | 'private' }
 	| { action: 'move'; direction: 'up' | 'down' }
@@ -285,6 +311,8 @@ export function formFromTerms(terms: EditionTerms, slug: string): DraftForm {
 		promise: terms.promise ?? '',
 		highlights: [...terms.highlights],
 		included_services: terms.included_services.map((service) => ({
+			// Services written before the service list have no key; the builder asks Jafar to pick one.
+			service_key: service.service_key ?? '',
 			name: service.name,
 			description: service.description ?? ''
 		})),

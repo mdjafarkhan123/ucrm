@@ -25,6 +25,8 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import PackageAllowancesBlock from '$lib/components/jafar/packages/PackageAllowancesBlock.svelte';
+	import PackageServiceListDialog from '$lib/components/jafar/packages/PackageServiceListDialog.svelte';
+	import PackageServicesBlock from '$lib/components/jafar/packages/PackageServicesBlock.svelte';
 	import PackageCapabilitiesBlock from '$lib/components/jafar/packages/PackageCapabilitiesBlock.svelte';
 	import PackageDraftConflictDialog from '$lib/components/jafar/packages/PackageDraftConflictDialog.svelte';
 	import PackageHistory from '$lib/components/jafar/packages/PackageHistory.svelte';
@@ -50,6 +52,7 @@
 		type DraftForm,
 		type EditionTerms,
 		type PackageBuilder,
+		type PackageService,
 		type PublishProblem
 	} from '$lib/jafar/packages';
 
@@ -83,6 +86,15 @@
 	let publishProblems = $state<PublishProblem[]>([]);
 	let archiveOpen = $state(false);
 	let catalogPending = $state<CatalogAction['action'] | null>(null);
+	let serviceListOpen = $state(false);
+
+	// The list is shared by every package, so every cached builder and the catalog refresh behind it.
+	function servicesChanged(services: PackageService[]) {
+		queryClient.setQueryData<PackageBuilder>(jafarPackageKey(packageId), (current) =>
+			current ? { ...current, services } : current
+		);
+		void queryClient.invalidateQueries({ queryKey: jafarPackagesKey });
+	}
 
 	/** The draft exactly as it would be saved: core features always in, one allowance row per allowance. */
 	function normalize(draft: DraftForm, reference: PackageBuilder): DraftForm {
@@ -880,41 +892,12 @@
 						</PackageListRows>
 					</SectionBlock>
 
-					<SectionBlock
-						title="Included services"
-						form
-						hint="Work Uplift delivers as part of the package, like a premium website or Google Business Profile management. Do not promise rankings or 5-star reviews."
-					>
-						<PackageListRows
-							bind:items={form!.included_services}
-							itemName="service"
-							addLabel="Add service"
-							max={12}
-							emptyText="No services included. The package is app access only."
-							create={() => ({ name: '', description: '' })}
-						>
-							{#snippet row(index)}
-								<Input
-									id={`package-service-name-${index}`}
-									size="small"
-									label="Service"
-									maxlength={80}
-									bind:value={form!.included_services[index].name}
-									invalid={Boolean(fieldErrors[`included_services.${index}.name`])}
-									errorMessage={fieldErrors[`included_services.${index}.name`]}
-								/>
-								<Textarea
-									id={`package-service-description-${index}`}
-									label="What the customer gets"
-									rows={2}
-									maxlength={300}
-									bind:value={form!.included_services[index].description}
-									invalid={Boolean(fieldErrors[`included_services.${index}.description`])}
-									errorMessage={fieldErrors[`included_services.${index}.description`]}
-								/>
-							{/snippet}
-						</PackageListRows>
-					</SectionBlock>
+					<PackageServicesBlock
+						services={builder.services}
+						bind:selected={form!.included_services}
+						errors={fieldErrors}
+						onEditList={() => (serviceListOpen = true)}
+					/>
 
 					<PackageCapabilitiesBlock
 						capabilities={builder.capabilities}
@@ -976,6 +959,15 @@
 		onKeepMine={() => conflict && void save(conflict.revision)}
 		onUseSaved={useSaved}
 		onClose={() => (conflict = null)}
+	/>
+{/if}
+
+{#if builder}
+	<PackageServiceListDialog
+		open={serviceListOpen}
+		services={builder.services}
+		onClose={() => (serviceListOpen = false)}
+		onChanged={servicesChanged}
 	/>
 {/if}
 
