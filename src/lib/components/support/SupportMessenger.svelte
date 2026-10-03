@@ -36,7 +36,8 @@
 		type SupportTopic
 	} from '$lib/support/api';
 	import { listenForSupportActivity } from '$lib/support/live';
-	import { urlParam } from '$lib/url-param.svelte';
+	import { afterNavigate, replaceState } from '$app/navigation';
+	import { page } from '$app/state';
 	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
 	import closeIcon from '@tabler/icons/outline/x.svg?raw';
 	import backIcon from '@tabler/icons/outline/arrow-left.svg?raw';
@@ -149,11 +150,15 @@
 
 	// An unseen-reply email's Open chat link (D5b) arrives as ?support_chat=<id>: open that chat, then take the
 	// id out of the address so a refresh does not open it again.
-	const linkedChat = urlParam('support_chat', '');
-	$effect(() => {
-		const id = linkedChat.current;
+	afterNavigate(({ to }) => {
+		const id = to?.url.searchParams.get('support_chat');
 		if (!id) return;
-		linkedChat.set('');
+		// The live address with one parameter removed, not a route id.
+		const url = new URL(location.href);
+		url.searchParams.delete('support_chat');
+		// On a fresh load SvelteKit runs this just before its router is ready, and replaceState would throw.
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
+		void tick().then(() => replaceState(url, page.state));
 		if (!/^[0-9a-f-]{36}$/i.test(id)) return;
 		open = true;
 		void go({ kind: 'thread', id, from: 'home' });
