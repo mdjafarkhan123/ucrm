@@ -45,6 +45,7 @@ export const GET: RequestHandler = async (event) => {
 		try {
 			const names = await teammateNames(
 				supabase,
+				check.auth.organization.id,
 				row.started_by_user_id ? [row.started_by_user_id] : []
 			);
 			started_by_name =

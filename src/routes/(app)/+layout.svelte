@@ -211,6 +211,9 @@
 
 {#if standing?.state === 'paused'}
 	<PausedAccountScreen {standing} />
+	{#if data.supportOpen}
+		<SupportMessenger userId={data.user.id} />
+	{/if}
 {:else}
 	<AppShell
 		organizationName={data.organization?.name}

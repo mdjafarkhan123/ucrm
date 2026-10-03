@@ -7,10 +7,18 @@ import { GET as getUnread } from './unread/+server';
 import { POST as postRead } from './thread/read/+server';
 import { POST as addPerson } from './threads/[threadId]/people/+server';
 import { DELETE as removePerson } from './threads/[threadId]/people/[userId]/+server';
-import { getOrganizationContext } from '$lib/server/auth/organization';
+import { requireSupportMember } from '$lib/server/support/access';
+import { unauthorized } from '$lib/server/api/errors';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 
-vi.mock('$lib/server/auth/organization', () => ({ getOrganizationContext: vi.fn() }));
+// Who counts as a support member is the database's answer (support_member_context, tested in
+// access.spec.ts); these tests start from that answer.
+vi.mock('$lib/server/support/access', async () => {
+	const actual = await vi.importActual<typeof import('$lib/server/support/access')>(
+		'$lib/server/support/access'
+	);
+	return { ...actual, requireSupportMember: vi.fn() };
+});
 vi.mock('$lib/server/security/rate-limit', async () => {
 	const actual = await vi.importActual<typeof import('$lib/server/security/rate-limit')>(
 		'$lib/server/security/rate-limit'
@@ -18,7 +26,13 @@ vi.mock('$lib/server/security/rate-limit', async () => {
 	return { ...actual, checkRateLimit: vi.fn() };
 });
 
-const mockedContext = vi.mocked(getOrganizationContext);
+const mockedAccess = vi.mocked(requireSupportMember);
+const mockedContext = {
+	mockResolvedValue: (context: unknown) =>
+		mockedAccess.mockResolvedValue(
+			context ? { auth: context as never } : { response: unauthorized() }
+		)
+};
 const mockedRateLimit = vi.mocked(checkRateLimit);
 
 const CLIENT_MESSAGE_ID = '123e4567-e89b-12d3-a456-426614174000';
@@ -64,20 +78,22 @@ function supabase(options: {
 		};
 		return chain;
 	});
-	const rpc = vi.fn().mockResolvedValue(
-		options.rpcError
-			? { data: null, error: options.rpcError }
-			: {
-					data: {
-						id: 'message-1',
-						thread_id: 'thread-1',
-						sender_kind: 'member',
-						sender_name: 'Sam Lee',
-						body: 'Hello',
-						created_at: '2026-10-01T10:00:00Z'
-					},
-					error: null
-				}
+	const rpc = vi.fn(async (name: string): Promise<{ data: unknown; error: unknown }> =>
+		name === 'support_teammate_names'
+			? { data: options.profiles ?? [], error: null }
+			: options.rpcError
+				? { data: null, error: options.rpcError }
+				: {
+						data: {
+							id: 'message-1',
+							thread_id: 'thread-1',
+							sender_kind: 'member',
+							sender_name: 'Sam Lee',
+							body: 'Hello',
+							created_at: '2026-10-01T10:00:00Z'
+						},
+						error: null
+					}
 	);
 	return { from, rpc, limit };
 }

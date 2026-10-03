@@ -1,15 +1,25 @@
 import type { RequestEvent } from '@sveltejs/kit';
-import { getOrganizationContext, type OrganizationContext } from '$lib/server/auth/organization';
+import type { OrganizationContext } from '$lib/server/auth/organization';
+import { isContractorRole } from '$lib/server/access/contractor';
 import { databaseError, unauthorized } from '$lib/server/api/errors';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 
 // Every active team member may contact Uplift, whatever their role or the organization's package: support
-// is a core service (plan §7), so there is no permission key and no feature gate to ask about.
+// is a core service (plan §7), so there is no permission key and no feature gate to ask about. It stays
+// open while the business is paused (D5c), which the usual organization context cannot see, so the
+// database answers through public.support_member_context instead.
 export async function requireSupportMember(
 	event: RequestEvent
 ): Promise<{ auth: OrganizationContext } | { response: Response }> {
-	const auth = await getOrganizationContext(event);
-	return auth ? { auth } : { response: unauthorized() };
+	const user = await event.locals.getUser();
+	if (!user) return { response: unauthorized() };
+
+	const { data, error } = await event.locals.supabase.rpc('support_member_context');
+	if (error) return { response: databaseError() };
+	const organization = data as OrganizationContext['organization'] | null;
+	if (!organization || !isContractorRole(organization.role)) return { response: unauthorized() };
+
+	return { auth: { user, organization } };
 }
 
 // A person typing to support sends a handful of messages a minute at most. Counted per person, so one

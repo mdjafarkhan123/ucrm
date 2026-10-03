@@ -3,7 +3,8 @@ import { POST as postMessage } from './messages/+server';
 import { POST as startChat } from './threads/+server';
 import { POST as presign } from './attachments/presign-upload/+server';
 import { GET as getFile } from './attachments/[id]/+server';
-import { getOrganizationContext } from '$lib/server/auth/organization';
+import { requireSupportMember } from '$lib/server/support/access';
+import { unauthorized } from '$lib/server/api/errors';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 import {
 	createPresignedDownloadUrl,
@@ -12,7 +13,14 @@ import {
 	headObject
 } from '$lib/server/storage/r2';
 
-vi.mock('$lib/server/auth/organization', () => ({ getOrganizationContext: vi.fn() }));
+// Who counts as a support member is the database's answer (support_member_context, tested in
+// access.spec.ts); these tests start from that answer.
+vi.mock('$lib/server/support/access', async () => {
+	const actual = await vi.importActual<typeof import('$lib/server/support/access')>(
+		'$lib/server/support/access'
+	);
+	return { ...actual, requireSupportMember: vi.fn() };
+});
 vi.mock('$lib/server/security/rate-limit', async () => {
 	const actual = await vi.importActual<typeof import('$lib/server/security/rate-limit')>(
 		'$lib/server/security/rate-limit'
@@ -31,7 +39,13 @@ vi.mock('$lib/server/storage/r2', async () => {
 	};
 });
 
-const mockedContext = vi.mocked(getOrganizationContext);
+const mockedAccess = vi.mocked(requireSupportMember);
+const mockedContext = {
+	mockResolvedValue: (context: unknown) =>
+		mockedAccess.mockResolvedValue(
+			context ? { auth: context as never } : { response: unauthorized() }
+		)
+};
 const mockedRateLimit = vi.mocked(checkRateLimit);
 const mockedHead = vi.mocked(headObject);
 const mockedUploadUrl = vi.mocked(createPresignedUploadUrl);

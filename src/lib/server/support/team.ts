@@ -27,10 +27,20 @@ type ChatRow = {
 	status: string;
 };
 
-/** A member's name as their teammates see it. Someone no longer on the team is not readable here. */
-export async function teammateNames(client: SupabaseClient<Database>, ids: string[]) {
+/**
+ * A member's name as their teammates see it. Someone permanently removed is not readable here. Asked
+ * through the database rather than `profiles`, whose policy a paused business's team cannot pass (D5c).
+ */
+export async function teammateNames(
+	client: SupabaseClient<Database>,
+	organizationId: string,
+	ids: string[]
+) {
 	if (ids.length === 0) return new Map<string, string>();
-	const { data, error } = await client.from('profiles').select('id, full_name').in('id', ids);
+	const { data, error } = await client.rpc('support_teammate_names', {
+		target_organization_id: organizationId,
+		target_user_ids: ids
+	});
 	if (error) throw error;
 	return new Map(
 		data.flatMap((profile) => (profile.full_name ? [[profile.id, profile.full_name] as const] : []))
@@ -87,7 +97,7 @@ export async function readChats(
 						'thread_id',
 						others.data.map((row) => row.id)
 					),
-		teammateNames(client, starters)
+		teammateNames(client, organizationId, starters)
 	]);
 	if (marks.error) throw marks.error;
 	if (added.error) throw added.error;

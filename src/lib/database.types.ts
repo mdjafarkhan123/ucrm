@@ -25375,6 +25375,14 @@ export type Database = {
 				Returns: Json;
 			};
 			support_inbox_unread_count: { Args: never; Returns: number };
+			support_member_context: { Args: never; Returns: Json };
+			support_teammate_names: {
+				Args: { target_organization_id: string; target_user_ids: string[] };
+				Returns: {
+					full_name: string;
+					id: string;
+				}[];
+			};
 			support_thread_people: {
 				Args: { target_thread_id: string };
 				Returns: Json;

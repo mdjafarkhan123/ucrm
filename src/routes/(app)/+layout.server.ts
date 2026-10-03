@@ -17,7 +17,17 @@ export const load: LayoutServerLoad = async (event) => {
 	]);
 	if (standingResult.error) console.error('Could not read account standing.', standingResult.error);
 	const standing = (standingResult.data ?? null) as AccountStanding | null;
-	if (!context) return { user, organization: null, logoUrl: null, standing };
+	if (!context) {
+		// The paused screen keeps Chat with Uplift (D5c), except for a closed business, which support no
+		// longer serves; the database says which.
+		let supportOpen = false;
+		if (standing?.state === 'paused') {
+			const { data, error } = await event.locals.supabase.rpc('support_member_context');
+			if (error) console.error('Could not check support for a paused account.', error);
+			supportOpen = Boolean(data);
+		}
+		return { user, organization: null, logoUrl: null, standing, supportOpen };
+	}
 
 	const [settingsResult, profileResult] = await Promise.all([
 		event.locals.supabase
@@ -37,6 +47,7 @@ export const load: LayoutServerLoad = async (event) => {
 			email: user.email ?? null,
 			role: context.organization.role
 		},
-		standing
+		standing,
+		supportOpen: true
 	};
 };

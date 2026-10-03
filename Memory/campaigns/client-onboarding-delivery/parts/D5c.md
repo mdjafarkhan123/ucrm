@@ -7,18 +7,18 @@
 ## Steps
 
 - [x] Migration `supabase/migrations/20261006170000_support_while_paused.sql`: support-only member/admin checks that allow suspended and pending-closure businesses (not closed), `support_member_context()`, `support_teammate_names()`
-- [ ] Apply the migration; regenerate `src/lib/database.types.ts`
-- [ ] `requireSupportMember` (`src/lib/server/support/access.ts`) uses `support_member_context`; `teammateNames` uses `support_teammate_names`
-- [ ] Show `SupportMessenger` on `PausedAccountScreen` (`src/routes/(app)/+layout.svelte`)
+- [x] Apply the migration; regenerate `src/lib/database.types.ts`
+- [x] `requireSupportMember` (`src/lib/server/support/access.ts`) uses `support_member_context`; `teammateNames` uses `support_teammate_names`
+- [x] Show `SupportMessenger` on `PausedAccountScreen` (`src/routes/(app)/+layout.svelte`)
 - [ ] Tests (support.spec.ts) + database check with a suspended test business; browser run
 
 ## Next
 
-Apply the migration, then the server and layout changes above.
+Unit tests and type check pass. Next: database check (suspend a test business inside a rolled-back transaction, call the support functions as its member), then browser run on the paused screen.
 
 ## Outside actions
 
-- Apply migration — check: `list_migrations` shows version `20261006170000` — pending
+- Apply migration — check: `list_migrations` shows version `20261006170000` — done
 
 ## Notes
 
