@@ -300,6 +300,17 @@ attachments (photos and documents, up to 5 files and 20 MB per message; program 
 chat, other files download), screen/section context, email fallback after a delayed unread message, resolve, and
 reopen. Jafar may start a conversation. Messages use **Uplift Support** plus the actual responder's name.
 
+Follow-up (Jafar, 2026-10-03; Intercom's and Zendesk's patterns). Only Uplift marks a chat **Solved**; it stays in
+the member's list, marked Solved and readable, and anyone writing in it reopens it. Uplift may also reopen it. Each
+change leaves a visible line in the chat, and the Support Inbox shows open chats unless filtered to Solved. When an
+Uplift reply has gone unseen for 3 minutes (Intercom's default), the chat's starter and added teammates who have not
+read it get one email with the unseen replies, a note of any files, and an **Open chat** button; it says replies are
+read only in the chat, and no further email is sent for that chat until they open it. Owners and admins who merely can
+see the chat are not emailed. The same rule emails Jafar when a member's message has gone unseen in the Support Inbox
+for 3 minutes. Jafar starts a chat from **Message this business** on an organization's page or **New chat** in the
+Support Inbox, choosing the team member (the owner by default) and a topic. The paused-account screen keeps
+Chat with Uplift.
+
 Every active team member may contact support. Owners/admins may see organization-wide threads; another member sees
 their own threads and ones they were explicitly added to (Zendesk's "My / CC'd / Organization requests"). Owners/admins
 may also write in a teammate's thread under their own name. The thread's starter, an owner/admin, or Uplift may add or
