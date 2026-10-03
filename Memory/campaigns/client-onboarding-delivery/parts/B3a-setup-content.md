@@ -9,13 +9,13 @@
 - [x] Inventory the approved common and package-specific setup requirements
 - [x] Draft every stage, question, type, required/defer rule, condition, and special-control need
 - [x] Integrate primary-source research and remove unnecessary or unsafe questions
-- [ ] Grill Jafar on the remaining product choices and revise the blueprint (round 1 approved)
+- [x] Grill Jafar on the remaining product choices and revise the blueprint (rounds 1 and 2 approved)
 - [ ] Record approval and prepare the coding handoff
 
 ## Next
 
-Wait for Jafar's answers to Q6–Q11 below, revise `docs/client-onboarding-setup-content-blueprint.md`, then work
-the next decision frontier. This part writes content and planning only; Claude will implement the later B parts.
+Ask Jafar for final approval of `docs/client-onboarding-setup-content-blueprint.md`. If approved, mark the
+blueprint approved, close B3a, and prepare the coding handoff. Claude will implement the later B parts.
 
 ## Notes
 
@@ -27,17 +27,11 @@ Approved by Jafar 2026-10-03: all recommendations from Q1–Q5 — universal set
 English launch delivery; owned email/SMS marketing only; starter wordmark/colour/stock imagery for Website
 clients without assets; recommended CRM defaults that clients confirm/change.
 
-Questions waiting for Jafar:
+Approved by Jafar 2026-10-03: all recommendations from Q6–Q11 — Request-first enquiries; 30-day/approval/no
+deposit/residential due-on-receipt/commercial Net-30/no-tax money defaults; only approved operational email
+presets after sender verification; client-owned starter wordmark/colour files with licensed stock imagery;
+email-only Marketing without a ready Calls and texting service; non-English work waits for an English-delivery
+acceptance or separately scoped translation.
 
-6. What should an uncustomised new enquiry become? Recommendation: a Request for review, never an automatically
-   booked Job; the contractor then chooses assessment, quote, or direct work.
-7. Which quote/invoice defaults should Uplift recommend? Recommendation: quote valid 30 days, customer approval
-   required, no assumed deposit, residential due on receipt, commercial Net 30, and no tax assumption.
-8. Which automatic messages should start enabled? Recommendation: approved operational email presets only after
-   sender verification; SMS, reviews, and marketing stay off until their separate readiness/approval gates.
-9. Who owns starter branding? Recommendation: client owns the delivered wordmark/colour files; licensed stock
-   images may be used only within their licence and are not transferred as owned photography.
-10. If Marketing is included without Calls & texting, should SMS appear? Recommendation: no; offer email only
-    until Calls & texting is added and its sender is ready.
-11. What happens when customers mainly use a non-English language? Recommendation: create a scope-review task;
-    Ready for Uplift waits until the contractor accepts English delivery or adds separately scoped translation.
+Question waiting for Jafar: Do you approve the complete prebuilt setup question blueprint as the final content
+plan for Claude to implement?

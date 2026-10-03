@@ -27,6 +27,18 @@ copy, campaigns, and provider submissions. Only facts that genuinely block safe 
   imagery. This does not promise a full custom brand identity or photo shoot.
 - CRM choices begin with proven recommended defaults for the client to confirm or change. A default that could
   send, publish, charge, import, or make a legal/tax claim stays off until its own explicit approval.
+- A new enquiry starts as a Request for review, never an automatically booked Job. The contractor then chooses
+  whether it needs an assessment, quote, or direct work.
+- Starting money recommendations are: 30-day quote validity, customer approval required, no assumed deposit,
+  residential invoices due on receipt, commercial invoices Net 30, and no tax assumption until confirmed.
+- Only approved operational email presets may start after sender verification. SMS, review requests, and
+  marketing remain off until their own readiness and approval gates pass.
+- The client owns the delivered starter wordmark and colour files. Stock imagery remains subject to its licence
+  and is never represented as client-owned photography.
+- A Marketing package without Calls and texting offers email campaigns only. SMS appears only after Calls and
+  texting is included and its sender is ready.
+- A mainly non-English audience creates a scope-review task. Ready for Uplift waits until the contractor accepts
+  English delivery or separately adds translation.
 
 ## Reading the catalogue
 
@@ -90,7 +102,7 @@ Global rules:
 | Do customers visit this address? | Yes/no | Required. A showroom, shop, or office counts; a home used only as a base does not. |
 | May this address be shown publicly? | Yes/no | Conditional on customers visiting; required. |
 | Which country is the business registered in? | Pick one | Required; controls local provider and compliance questions. |
-| Which language do most customers use? | Pick one + Other | Required. Uplift delivers English content at launch; another delivery language is separately agreed. |
+| Which language do most customers use? | Pick one + Other | Required. A mainly non-English answer creates a scope review; Ready for Uplift waits for accepted English delivery or separately scoped translation. |
 | Which time zone should schedules and reminders use? | Pick one | Required; suggest from the address but require confirmation. |
 | Which currency do you charge in? | Pick one | Required; suggest from country but require confirmation. |
 
@@ -163,7 +175,7 @@ website, Google profile, and campaigns.
 | Which real photos can Uplift use? | Multi-choice | Required: completed work, before/after, team, vehicles, premises/showroom, equipment, none yet. |
 | Upload photos and add a short factual caption. | Repeatable photo + caption | Required · can defer when any photo type selected. Preserve original quality. |
 | Do any photos identify a customer, child, home address, licence plate, or private location? | Yes/no per photo | Required for affected photos. |
-| Do you have permission to publish every uploaded photo? | Yes/no | Required; No creates a follow-up and prevents publishing that file. |
+| Do you have permission to publish every uploaded photo? | Yes/no | Required; No creates a follow-up and prevents publishing that file. Stock imagery remains licensed rather than client-owned. |
 | Are there existing brochures, price sheets, brand guides, or website files to use? | Files | Optional. |
 | Share up to three websites or brands you like, and say what you like. | Repeatable URL + note | Optional; inspiration never grants permission to copy. |
 
@@ -190,11 +202,20 @@ Each supported choice opens with Uplift's recommended answer already explained, 
 changes it. This shortens setup but never pre-approves sending, publishing, importing, charging, or tax/legal
 claims.
 
+Recommended starting values:
+
+- a new enquiry becomes a Request for review, then the contractor chooses assessment, quote, or direct work;
+- quotes remain valid for 30 days and require customer approval;
+- no deposit or tax treatment is assumed;
+- residential invoices are due on receipt and commercial invoices are Net 30; and
+- only the operational email presets named below may be prepared for activation after sender verification and
+  the contractor's final preview.
+
 ### From enquiry to booked work
 
 | Question | Answer | Rule / help |
 | --- | --- | --- |
-| What normally happens after a new customer contacts you? | Pick one | Required: visit before quote, quote from details/photos, book work directly, or it varies. |
+| What normally happens after a new customer contacts you? | Pick one | Required: review the Request first (recommended), visit before quote, quote from details/photos, book work directly, or it varies. Direct booking is never silently assumed. |
 | Which enquiries need an on-site assessment before a quote? | Long text | Conditional unless all work is booked directly; optional. |
 | Who should receive new enquiries first? | Structured people | Required; choose existing team members or main contact. |
 | Who normally owns a new enquiry until it is booked or closed? | Pick one | Required; one default person/team, editable later. |
@@ -207,10 +228,10 @@ claims.
 
 | Question | Answer | Rule / help |
 | --- | --- | --- |
-| How long should a quote remain valid by default? | Number of days | Required. |
-| Is customer approval/signature required before work is booked? | Yes/no | Required. |
+| How long should a quote remain valid by default? | Number of days | Required; recommend 30 days. |
+| Is customer approval/signature required before work is booked? | Yes/no | Required; recommend Yes. |
 | Do you normally take a deposit? | Pick one | Required: never, always, or only for some work. |
-| What is the normal deposit rule? | Percentage/money + note | Conditional unless Never; required · can defer. |
+| What is the normal deposit rule? | Percentage/money + note | Conditional unless Never; required · can defer. Default is no assumed deposit. |
 | Add the standard quote terms customers should see. | Long text/file | Required · can defer; Uplift may format supplied wording but does not invent legal terms. |
 | What days and times can work normally be scheduled? | Structured weekly availability | Required; may differ from public contact hours. |
 | How much notice is normally needed before a job? | Pick one + Other | Optional. |
@@ -223,8 +244,8 @@ claims.
 
 | Question | Answer | Rule / help |
 | --- | --- | --- |
-| When are invoices normally due? | Pick one + Other | Required: on receipt, before work, on completion, or number of days. |
-| How is tax normally handled? | Pick one | Required · can defer: tax included, added, not registered/not charged, varies, or need help. |
+| When are invoices normally due? | Pick one + Other | Required: on receipt, before work, on completion, or number of days. Recommend due on receipt for residential and Net 30 for commercial clients. |
+| How is tax normally handled? | Pick one | Required · can defer: tax included, added, not registered/not charged, varies, or need help. No tax answer is assumed. |
 | Add the tax name and registration number shown on documents. | Structured text | Conditional when tax is charged; required · can defer. Country wording is localised. |
 | Which customer payment methods should invoices mention? | Reuse + confirmation | Required; reuse Stage 3 and allow correction. |
 | Add payment instructions customers should receive. | Long text | Required · can defer; never collect the contractor's banking password. |
@@ -237,6 +258,17 @@ claims.
 | Who needs CRM access at launch? | Repeatable people | Optional during setup; name, work email, role, and broad responsibility. Invitations are reviewed separately. |
 | Who should receive urgent enquiry or schedule alerts? | Choose people | Optional; only people already named. |
 | Is there anything Uplift should know about how office and field staff divide work? | Long text | Optional. |
+
+### Recommended customer messages
+
+| Question | Answer | Rule / help |
+| --- | --- | --- |
+| Prepare the recommended quote follow-up emails? | Yes/no | Required; recommend Yes. Two editable emails at day 3 and day 7 after successful quote delivery, stopping when the customer responds or the quote is no longer awaiting a response. Activation waits for sender verification and a final preview. |
+| Prepare the website enquiry quick reply? | Yes/no | Conditional on Premium website; required; recommend Yes. If nobody replies within five minutes, send the approved acknowledgement. SMS is unavailable until Calls and texting is included, registered, consented, and separately approved; otherwise use verified email. |
+| Who approves these messages before activation? | Reuse/structured person | Required when either preset is prepared; default to the final approver. |
+
+No other customer-facing automation is enabled merely because setup was submitted. Review requests and
+marketing retain their own preview and activation gates.
 
 ## Stage 5 — Move your existing data
 
@@ -409,9 +441,9 @@ review gating or incentives.
 | Which Google Business Profile should receive reviews? | Reuse/URL | Required · can defer; reuse Stage 7 when available, otherwise paste the official review link. |
 | Which business name and logo should appear? | Reuse + confirmation | Required; reuse Stages 1 and 3. |
 | Who should receive private feedback alerts? | Structured people | Required. |
-| Which channels may ask for a review? | Multi-choice | Required: email, SMS, or both; unavailable/unlawful channels are disabled. |
-| When should the first request be sent? | Pick one | Required: after a completed visit, after the job is closed, after full payment, or after a supported manual approval. |
-| How many reminders should follow? | Pick one | Required: none, one, or two; use a safe recommended default and hard cap. |
+| Which channel should ask for a review? | Pick one | Required: SMS (recommended when ready) or email; a channel must have a ready sender. Marketing without Calls and texting never exposes SMS. |
+| When should the first request be sent? | Pick one | Required; recommend when a job's work is completed, at the next allowed sending time. Alternatives are completed visit, full payment, or supported manual approval. |
+| How many reminders should follow? | Pick one | Required; recommend two gentle reminders, three and five days after the first message. The approved Review settings safety limits still apply. |
 | What sending hours should apply? | Reuse + confirmation | Required; recipient-local quiet hours still override the choice. |
 | What tone should the request use? | Pick one + note | Optional: warm, concise, formal, or use Uplift's recommended copy. |
 | Do you want to include eligible past customers? | Yes/no/not sure | Required. |
@@ -420,8 +452,8 @@ review gating or incentives.
 | Confirm that no reward, discount, prize, or pressure is offered for a review. | Confirmation | Required. |
 
 The later campaign preview shows the exact messages, timing, stop rules, and recipients before activation.
-The system also suppresses duplicate requests to the same customer for a safe fixed period (starting default:
-six months); this is a protection, not another setup burden.
+The system suppresses automatic repeat requests to the same customer for six months. Recurring jobs stay off
+until the contractor chooses an every-N-completed-visits rule. These are protections, not extra setup burdens.
 
 ## Stage 11 — Marketing campaigns
 
@@ -443,7 +475,7 @@ ad accounts, pixels, media budgets, and ad-platform billing are outside this set
 | Is there an offer? | Yes/no | Required. |
 | Describe the offer exactly. | Long text | Conditional on Yes; required: value, eligibility, exclusions, expiry, and redemption method. |
 | How much work can the business actually take? | Structured capacity | Required; date range, jobs/leads, and any stop point. |
-| Which channel should be drafted? | Pick one | Required: email, SMS, or both when available and lawful. |
+| Which channel should be drafted? | Pick one | Required: email, or SMS/both only when Calls and texting is included, its sender is ready, and the audience evidence supports it. Otherwise the stage offers email only. |
 | When should it run? | Date/time window | Required · can defer. Recipient-local quiet hours still apply. |
 | Should there be a follow-up? | Pick one | Required: none or one supported follow-up; stop after reply, booking, opt-out, or failure. |
 | Which business name/address or sender identity must appear? | Reuse + confirmation | Required. |
