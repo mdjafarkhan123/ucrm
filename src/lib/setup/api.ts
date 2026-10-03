@@ -1,5 +1,10 @@
 import { httpError } from '$lib/http-error';
-import type { SetupAnswers, SetupAvailability, SetupSectionStatus } from '$lib/setup/catalogue';
+import type {
+	SetupAnswers,
+	SetupAvailability,
+	SetupSection,
+	SetupSectionStatus
+} from '$lib/setup/catalogue';
 
 // Client setup reads and writes. The wizard autosaves each answer on its own, so there is no revision to
 // carry and no Save button to press (docs/adr/0005-client-setup-answers-draft-snapshot-accepted.md).
@@ -23,6 +28,8 @@ export type SetupSummary = {
 
 export type SetupSectionData = {
 	key: string;
+	/** The section's questions as the published setup version asks them now. */
+	section: SetupSection;
 	answers: SetupAnswers;
 	/** What the CRM already knows, offered for questions nobody has answered yet. */
 	suggestions: Record<string, string>;

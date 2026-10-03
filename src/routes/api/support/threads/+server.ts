@@ -7,10 +7,12 @@ import {
 	validationError
 } from '$lib/server/api/errors';
 import { requireSupportMember, supportSendLimited } from '$lib/server/support/access';
+import { readSetupCatalogue } from '$lib/server/setup/catalogue';
 import { readMemberAttachments } from '$lib/server/support/attachments';
 import { readChats } from '$lib/server/support/team';
 import { supportStartThreadSchema } from '$lib/server/validation/support.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
+import { catalogueSection } from '$lib/setup/catalogue';
 import type { SupportChats } from '$lib/support/api';
 
 // The messenger's chat lists: the member's own chats, and someone else's they may see (D3, D4a).
@@ -52,6 +54,13 @@ export const POST: RequestHandler = async (event) => {
 
 	const parsed = supportStartThreadSchema.safeParse(body);
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
+
+	if (parsed.data.context_section) {
+		const catalogue = await readSetupCatalogue(event.locals.supabase);
+		if (!catalogue) return databaseError();
+		if (!catalogueSection(catalogue, parsed.data.context_section))
+			return validationError({ context_section: 'That setup section is not recognised.' });
+	}
 
 	const files = await readMemberAttachments(check.auth.organization.id, parsed.data.attachments);
 	if ('response' in files) return files.response;

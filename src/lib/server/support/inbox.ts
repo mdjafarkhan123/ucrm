@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
-import { setupSectionLabel } from '$lib/setup/catalogue';
+import { readSetupSectionTitles, setupSectionLabel } from '$lib/server/setup/catalogue';
 import type {
 	SupportInboxStatusFilter,
 	SupportInboxThread,
@@ -42,7 +42,11 @@ async function memberNames(client: SupabaseClient<Database>, rows: ThreadRow[]) 
 	);
 }
 
-function toInboxThread(row: ThreadRow, names: Map<string, string>): SupportInboxThread | null {
+function toInboxThread(
+	row: ThreadRow,
+	names: Map<string, string>,
+	sectionTitles: Map<string, string>
+): SupportInboxThread | null {
 	const organization = Array.isArray(row.organizations) ? row.organizations[0] : row.organizations;
 	if (!organization) return null;
 	return {
@@ -60,7 +64,7 @@ function toInboxThread(row: ThreadRow, names: Map<string, string>): SupportInbox
 				Date.parse(row.last_message_at) > Date.parse(row.uplift_last_read_at)),
 		status: row.status as SupportStatus,
 		opened_by_uplift: row.opened_by === 'uplift',
-		context_label: setupSectionLabel(row.context_section)
+		context_label: setupSectionLabel(sectionTitles, row.context_section)
 	};
 }
 
@@ -85,9 +89,12 @@ export async function readSupportInbox(
 	if (error) throw error;
 
 	const rows = (data as ThreadRow[]).slice(0, limit);
-	const names = await memberNames(client, rows);
+	const [names, sectionTitles] = await Promise.all([
+		memberNames(client, rows),
+		readSetupSectionTitles(client)
+	]);
 	return {
-		threads: rows.flatMap((row) => toInboxThread(row, names) ?? []),
+		threads: rows.flatMap((row) => toInboxThread(row, names, sectionTitles) ?? []),
 		has_more: data.length > limit
 	};
 }
@@ -102,7 +109,11 @@ export async function readSupportInboxThread(client: SupabaseClient<Database>, t
 	if (!data) return null;
 
 	const row = data as ThreadRow;
-	return toInboxThread(row, await memberNames(client, [row]));
+	const [names, sectionTitles] = await Promise.all([
+		memberNames(client, [row]),
+		readSetupSectionTitles(client)
+	]);
+	return toInboxThread(row, names, sectionTitles);
 }
 
 export async function readSupportSettings(

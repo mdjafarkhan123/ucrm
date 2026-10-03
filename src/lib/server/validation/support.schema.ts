@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { isDangerousAttachmentName } from '$lib/communications/attachment-limits';
-import { setupSection } from '$lib/setup/catalogue';
 import {
 	SUPPORT_ATTACHMENT_TOTAL_BYTES,
 	SUPPORT_MAX_ATTACHMENTS,
@@ -75,15 +74,14 @@ export const supportMemberMessageSchema = supportMessageFields
 	.refine(hasContent, NEEDS_CONTENT);
 
 // A new chat and its first message (D4a). The topic is optional and starts as Other. A chat asked from a
-// setup section (D6) names that section, which must be one the setup task list has.
+// setup section (D6) names that section; the route checks it is one the published setup version has.
 export const supportStartThreadSchema = supportMessageFields
 	.extend({
 		topic: supportTopicField.default('other'),
 		context_section: z
 			.string()
-			.refine((key) => setupSection(key) !== undefined, {
-				message: 'That setup section is not recognised.'
-			})
+			.max(40)
+			.regex(/^[a-z][a-z0-9_]*$/, 'That setup section is not recognised.')
 			.optional()
 	})
 	.refine(hasContent, NEEDS_CONTENT);

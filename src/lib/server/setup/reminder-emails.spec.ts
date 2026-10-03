@@ -1,6 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const enqueueEmailDelivery = vi.fn();
+vi.mock('$lib/server/setup/catalogue', async () => {
+	const actual = await vi.importActual<typeof import('$lib/server/setup/catalogue')>(
+		'$lib/server/setup/catalogue'
+	);
+	const { SETUP_CATALOGUE_1 } = await import('$lib/setup/catalogue.fixture');
+	return {
+		...actual,
+		readSetupCatalogue: vi.fn(async () => SETUP_CATALOGUE_1),
+		readSetupSectionTitles: vi.fn(
+			async () => new Map(SETUP_CATALOGUE_1.sections.map((section) => [section.key, section.title]))
+		)
+	};
+});
+
 vi.mock('$lib/server/events/dispatcher', () => ({
 	enqueueEmailDelivery: (...args: unknown[]) => enqueueEmailDelivery(...args)
 }));

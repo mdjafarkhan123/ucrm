@@ -6,6 +6,20 @@ import { GET as getSection, PATCH as patchSection } from './sections/[section]/+
 import { requireOrganizationAdmin } from '$lib/server/access/permission';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 
+vi.mock('$lib/server/setup/catalogue', async () => {
+	const actual = await vi.importActual<typeof import('$lib/server/setup/catalogue')>(
+		'$lib/server/setup/catalogue'
+	);
+	const { SETUP_CATALOGUE_1 } = await import('$lib/setup/catalogue.fixture');
+	return {
+		...actual,
+		readSetupCatalogue: vi.fn(async () => SETUP_CATALOGUE_1),
+		readSetupSectionTitles: vi.fn(
+			async () => new Map(SETUP_CATALOGUE_1.sections.map((section) => [section.key, section.title]))
+		)
+	};
+});
+
 vi.mock('$lib/server/access/permission', async () => {
 	const actual = await vi.importActual<typeof import('$lib/server/access/permission')>(
 		'$lib/server/access/permission'
@@ -425,6 +439,19 @@ describe('GET /api/setup/sections/[section]', () => {
 		const hours = JSON.parse(suggestions['business.hours']);
 		expect(hours.days[1]).toEqual({ open: true, all_day: false, periods: [['08:00', '16:30']] });
 		expect(hours.days[0].open).toBe(false);
+	});
+
+	it('sends the section’s questions as the published setup version asks them', async () => {
+		const body = await (await getSection(event(supabase({})))).json();
+
+		expect(body.section.title).toBe('Your business');
+		expect(body.section.groups[0].title).toBe('Business identity');
+		expect(body.section.groups[0].facts[0]).toMatchObject({
+			key: 'business.public_name',
+			kind: 'text',
+			required: true,
+			builtIn: true
+		});
 	});
 
 	it('answers 404 for a section that does not exist', async () => {

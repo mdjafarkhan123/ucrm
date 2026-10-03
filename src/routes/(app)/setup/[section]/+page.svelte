@@ -25,11 +25,10 @@
 		type SetupWriteFailure
 	} from '$lib/setup/api';
 	import {
-		SETUP_FACTS,
 		sectionFacts,
 		sectionStatus,
-		setupSection,
 		setupValueError,
+		type SetupFact,
 		type SetupAnswer,
 		type SetupAnswers,
 		type SetupAvailability
@@ -43,7 +42,6 @@
 	let { data: shell }: PageProps = $props();
 	const userId = $derived(shell.user?.id ?? null);
 	const sectionKey = $derived(page.params.section ?? '');
-	const section = $derived(setupSection(sectionKey));
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -51,9 +49,13 @@
 	const askUplift = getSupportAsk();
 	const query = createQuery(() => ({
 		queryKey: setupSectionKey(userId, sectionKey),
-		queryFn: () => fetchSetupSection(sectionKey),
-		enabled: Boolean(section)
+		queryFn: () => fetchSetupSection(sectionKey)
 	}));
+	// The questions come with the answers, as the published setup version asks them now.
+	const section = $derived(query.data?.section);
+	const factsByKey = $derived<Record<string, SetupFact>>(
+		Object.fromEntries(section ? sectionFacts(section).map((fact) => [fact.key, fact]) : [])
+	);
 
 	type Field = { value: string; availability: SetupAvailability; note: string };
 
@@ -161,7 +163,7 @@
 		const writes: SetupAnswerWrite[] = [];
 		const sending: Record<string, SetupAnswer | undefined> = {};
 		for (const key of keys) {
-			const fact = SETUP_FACTS.get(key);
+			const fact = factsByKey[key];
 			if (!fact) continue;
 			const draft = draftAnswer(key);
 			if (sameAnswer(draft, saved[key])) continue;
@@ -205,7 +207,7 @@
 			.catch((error: SetupWriteFailure) => {
 				saveState = 'failed';
 				for (const [key, message] of Object.entries(error.fieldErrors ?? {}))
-					if (SETUP_FACTS.has(key)) errors[key] = message;
+					if (factsByKey[key]) errors[key] = message;
 			})
 			.finally(() => {
 				inFlight = null;
@@ -266,7 +268,7 @@
 		} catch (error) {
 			const failure = error as SetupWriteFailure;
 			for (const [key, message] of Object.entries(failure.fieldErrors ?? {}))
-				if (SETUP_FACTS.has(key)) errors[key] = message;
+				if (factsByKey[key]) errors[key] = message;
 			toast.error('Could not mark as done', failure.message);
 		} finally {
 			finishing = false;
@@ -303,10 +305,12 @@
 		failed: 'Couldn’t save — check your connection. We’ll try again when you change something.'
 	};
 
-	const forbidden = $derived((query.error as HttpError | null)?.status === 403);
+	const errorStatus = $derived((query.error as HttpError | null)?.status);
 </script>
 
-<svelte:head><title>{section?.title ?? 'Setup'} · Setup · Contractor CRM</title></svelte:head>
+<svelte:head
+	><title>{section ? `${section.title} · Setup` : 'Setup'} · Contractor CRM</title></svelte:head
+>
 
 <PageContainer variant="fill">
 	<div class="setup-section">
@@ -314,7 +318,7 @@
 			items={[{ label: 'Setup', href: resolve('/(app)/setup') }, { label: section?.title ?? '' }]}
 		/>
 
-		{#if !section}
+		{#if errorStatus === 404}
 			<ErrorState
 				title="That part of setup doesn’t exist"
 				description="Go back to your setup tasks to pick one."
@@ -324,7 +328,7 @@
 				{/snippet}
 			</ErrorState>
 		{:else if query.isError}
-			{#if forbidden}
+			{#if errorStatus === 403}
 				<ErrorState
 					title="Setup is handled by your account owner"
 					description="Only an owner or administrator fills in setup. The rest of the CRM is ready for you to use."
@@ -335,7 +339,7 @@
 					retry={() => query.refetch()}
 				/>
 			{/if}
-		{:else if !fields}
+		{:else if !fields || !section}
 			<LoadingSkeleton variant="card" rows={4} />
 		{:else}
 			{@const form = fields}
@@ -365,7 +369,7 @@
 				</Banner>
 			{/if}
 
-			{#each section.groups as group (group.title)}
+			{#each section.groups as group, index (`${index}-${group.title}`)}
 				<SectionBlock title={group.title} hint={group.hint} form level={2}>
 					{#each group.facts as fact (fact.key)}
 						<SetupField

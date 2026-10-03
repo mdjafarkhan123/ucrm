@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { SETUP_CATALOGUE_1, SETUP_VERSION_1 } from './catalogue.fixture';
 import {
-	SETUP_FACTS,
-	SETUP_SECTIONS,
+	BUILT_IN_FACTS,
+	buildSetupCatalogue,
+	catalogueFacts,
 	missingRequiredFacts,
 	sectionFacts,
 	sectionStatus,
@@ -9,6 +11,8 @@ import {
 	type SetupAnswers
 } from './catalogue';
 
+const SETUP_SECTIONS = SETUP_CATALOGUE_1.sections;
+const SETUP_FACTS = catalogueFacts(SETUP_CATALOGUE_1);
 const business = SETUP_SECTIONS.find((section) => section.key === 'business')!;
 const have = (value: string) => ({ availability: 'have' as const, value, note: null });
 
@@ -30,6 +34,55 @@ describe('setup catalogue', () => {
 	it('uses keys the database accepts', () => {
 		for (const key of SETUP_FACTS.keys())
 			expect(key).toMatch(/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/);
+	});
+
+	it('knows the answer rules of every built-in question', () => {
+		for (const fact of SETUP_FACTS.values())
+			if (fact.builtIn) expect(BUILT_IN_FACTS[fact.key]).toBeDefined();
+	});
+
+	it('groups questions under the heading before them, as the old cards did', () => {
+		expect(business.groups.map((group) => group.title)).toEqual([
+			'Business identity',
+			'Who Uplift talks to',
+			'How customers reach you',
+			'Where you’re based',
+			'Language, time and money',
+			'Opening hours'
+		]);
+		expect(business.groups[0].facts.map((fact) => fact.key)).toEqual([
+			'business.public_name',
+			'business.legal_name',
+			'business.trade',
+			'business.type'
+		]);
+	});
+
+	it('takes a built-in question’s answer type from the app, never the database', () => {
+		const tampered = structuredClone(SETUP_VERSION_1);
+		const currency = tampered.stages[0].items.find(
+			(item) => item.fact_key === 'business.currency'
+		)!;
+		currency.kind = 'text';
+		const fact = catalogueFacts(buildSetupCatalogue(tampered)).get('business.currency')!;
+		expect(fact.kind).toBe('choice');
+		expect(fact.options?.some((option) => option.value === 'GBP')).toBe(true);
+	});
+
+	it('leaves out a built-in question the app has no rules for', () => {
+		const ahead = structuredClone(SETUP_VERSION_1);
+		ahead.stages[0].items.push({ ...ahead.stages[0].items[1], fact_key: 'business.unknown' });
+		const facts = catalogueFacts(buildSetupCatalogue(ahead));
+		expect(facts.has('business.unknown')).toBe(false);
+		expect(facts.size).toBe(SETUP_FACTS.size);
+	});
+
+	it('uses a custom question’s own answer type', () => {
+		expect(SETUP_FACTS.get('business.hours_seasonal')).toMatchObject({
+			kind: 'longtext',
+			maxLength: 500,
+			builtIn: false
+		});
 	});
 
 	it('never asks for a password or provider credential', () => {

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import { enqueueEmailDelivery } from '$lib/server/events/dispatcher';
+import { readSetupCatalogue } from '$lib/server/setup/catalogue';
 import { readSetupState, setupSummary } from '$lib/server/setup/read';
 
 // Setup reminder emails (C6, plan §5; Intercom's and Customer.io's inactivity-triggered onboarding nudges). When
@@ -156,12 +157,17 @@ export async function sendDueSetupReminderEmails(
 	});
 	if (error) throw error;
 	const due = (data ?? []) as unknown as DueSetupReminder[];
+	if (due.length === 0) return 0;
+
+	// One read for the whole batch: every reminder counts against the setup version published now.
+	const catalogue = await readSetupCatalogue(client);
+	if (!catalogue) throw new Error('The published setup version could not be read.');
 
 	let sent = 0;
 	for (const reminder of due) {
 		const state = await readSetupState(client, reminder.organization_id);
 		if (!state) continue;
-		const summary = setupSummary(state);
+		const summary = setupSummary(state, catalogue);
 		const next =
 			summary.next && summary.sections.find((section) => section.key === summary.next?.key);
 

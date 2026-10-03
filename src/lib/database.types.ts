@@ -15279,6 +15279,140 @@ export type Database = {
 					}
 				];
 			};
+			setup_items: {
+				Row: {
+					built_in: boolean;
+					can_defer: boolean;
+					fact_key: string | null;
+					hint: string | null;
+					id: string;
+					item_type: string;
+					kind: string | null;
+					label: string;
+					max_length: number | null;
+					options: Json | null;
+					position: number;
+					required: boolean;
+					stage_key: string;
+					version_id: string;
+				};
+				Insert: {
+					built_in?: boolean;
+					can_defer?: boolean;
+					fact_key?: string | null;
+					hint?: string | null;
+					id?: string;
+					item_type: string;
+					kind?: string | null;
+					label: string;
+					max_length?: number | null;
+					options?: Json | null;
+					position: number;
+					required?: boolean;
+					stage_key: string;
+					version_id: string;
+				};
+				Update: {
+					built_in?: boolean;
+					can_defer?: boolean;
+					fact_key?: string | null;
+					hint?: string | null;
+					id?: string;
+					item_type?: string;
+					kind?: string | null;
+					label?: string;
+					max_length?: number | null;
+					options?: Json | null;
+					position?: number;
+					required?: boolean;
+					stage_key?: string;
+					version_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'setup_items_version_id_stage_key_fkey';
+						columns: ['version_id', 'stage_key'];
+						isOneToOne: false;
+						referencedRelation: 'setup_stages';
+						referencedColumns: ['version_id', 'stage_key'];
+					}
+				];
+			};
+			setup_stages: {
+				Row: {
+					description: string;
+					position: number;
+					service_key: string | null;
+					stage_key: string;
+					title: string;
+					version_id: string;
+				};
+				Insert: {
+					description?: string;
+					position: number;
+					service_key?: string | null;
+					stage_key: string;
+					title: string;
+					version_id: string;
+				};
+				Update: {
+					description?: string;
+					position?: number;
+					service_key?: string | null;
+					stage_key?: string;
+					title?: string;
+					version_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'setup_stages_service_key_fkey';
+						columns: ['service_key'];
+						isOneToOne: false;
+						referencedRelation: 'package_services';
+						referencedColumns: ['service_key'];
+					},
+					{
+						foreignKeyName: 'setup_stages_version_id_fkey';
+						columns: ['version_id'];
+						isOneToOne: false;
+						referencedRelation: 'setup_versions';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			setup_versions: {
+				Row: {
+					created_at: string;
+					id: string;
+					published_at: string | null;
+					published_by_email: string | null;
+					status: string;
+					superseded_at: string | null;
+					updated_at: string;
+					version_number: number;
+				};
+				Insert: {
+					created_at?: string;
+					id?: string;
+					published_at?: string | null;
+					published_by_email?: string | null;
+					status: string;
+					superseded_at?: string | null;
+					updated_at?: string;
+					version_number: number;
+				};
+				Update: {
+					created_at?: string;
+					id?: string;
+					published_at?: string | null;
+					published_by_email?: string | null;
+					status?: string;
+					superseded_at?: string | null;
+					updated_at?: string;
+					version_number?: number;
+				};
+				Relationships: [];
+			};
 			support_message_attachments: {
 				Row: {
 					byte_size: number;
@@ -25466,6 +25600,7 @@ export type Database = {
 				};
 				Returns: string;
 			};
+			setup_published_catalogue: { Args: never; Returns: Json };
 			skip_automation_enrollment_step: {
 				Args: {
 					p_actor_user_id: string;

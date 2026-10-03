@@ -2,8 +2,22 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET } from './+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { SETUP_SECTIONS } from '$lib/setup/catalogue';
+import { SETUP_CATALOGUE_1 } from '$lib/setup/catalogue.fixture';
 import { onboardingNextActionLabel, type OnboardingClient } from '$lib/setup/onboarding-list';
+
+vi.mock('$lib/server/setup/catalogue', async () => {
+	const actual = await vi.importActual<typeof import('$lib/server/setup/catalogue')>(
+		'$lib/server/setup/catalogue'
+	);
+	const { SETUP_CATALOGUE_1 } = await import('$lib/setup/catalogue.fixture');
+	return {
+		...actual,
+		readSetupCatalogue: vi.fn(async () => SETUP_CATALOGUE_1),
+		readSetupSectionTitles: vi.fn(
+			async () => new Map(SETUP_CATALOGUE_1.sections.map((section) => [section.key, section.title]))
+		)
+	};
+});
 
 vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
@@ -44,6 +58,7 @@ function client(overrides: Partial<OnboardingClient> = {}): OnboardingClient {
 		help_count: 0,
 		unread_support: 0,
 		next_section_key: 'business',
+		next_section_title: 'Your business',
 		waiting_on: 'client',
 		next_action: 'finish_section',
 		last_activity_at: '2026-10-01T10:00:00Z',
@@ -93,12 +108,24 @@ describe('client onboarding list GET', () => {
 		expect(args.waiting_filter).toBe('quiet');
 		expect(args.search_term).toBe('raad');
 		expect(args.setup_catalogue.map((section: { key: string }) => section.key)).toEqual(
-			SETUP_SECTIONS.map((section) => section.key)
+			SETUP_CATALOGUE_1.sections.map((section) => section.key)
 		);
 		const business = args.setup_catalogue[0];
 		expect(business.required).toContain('business.public_name');
 		expect(business.required).not.toContain('business.legal_name');
 		expect(business.facts).toContain('business.legal_name');
+	});
+
+	it('names the next section as the published setup version titles it', async () => {
+		const { next_section_title: _, ...row } = client();
+		mockRpc(listResult({ clients: [row, { ...row, id: 'org-2', next_section_key: null }] }));
+
+		const page = await (await GET(event())).json();
+
+		expect(page.clients.map((entry: OnboardingClient) => entry.next_section_title)).toEqual([
+			'Your business',
+			null
+		]);
 	});
 
 	it('hands back an opaque cursor that round-trips into the next page', async () => {
@@ -113,7 +140,7 @@ describe('client onboarding list GET', () => {
 			cursor_account_created_at: '2026-10-01T10:00:00Z',
 			cursor_id: 'org-1'
 		});
-		expect(first.setup_size.sections).toBe(SETUP_SECTIONS.length);
+		expect(first.setup_size.sections).toBe(SETUP_CATALOGUE_1.sections.length);
 	});
 
 	it('reports a database failure without leaking it', async () => {

@@ -4,6 +4,7 @@ import type { Json } from '$lib/database.types';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { readSetupCatalogue } from '$lib/server/setup/catalogue';
 import { clientOnboardingListQuerySchema } from '$lib/server/validation/client-onboarding-list.schema';
 import {
 	onboardingCatalogue,
@@ -32,7 +33,7 @@ function decodeCursor(value: string): ListCursor | null {
 }
 
 // Jafar's list of paid clients and how far each is through setup (client onboarding C1, plan §8). The
-// task list lives in code, so it travels with the request and the database counts against today's version.
+// published setup version travels with the request, so the database counts against the questions asked now.
 export const GET: RequestHandler = async (event) => {
 	if (!(await getOwnerSession(event))) return ownerUnauthorized();
 
@@ -51,8 +52,12 @@ export const GET: RequestHandler = async (event) => {
 		if (!cursor) return json({ error: 'The page cursor is invalid.' }, { status: 422 });
 	}
 
-	const { data, error } = await getOwnerSupabaseClient().rpc('owner_client_onboarding_list', {
-		setup_catalogue: onboardingCatalogue() as Json,
+	const client = getOwnerSupabaseClient();
+	const catalogue = await readSetupCatalogue(client);
+	if (!catalogue) return json({ error: 'The client list could not be loaded.' }, { status: 500 });
+
+	const { data, error } = await client.rpc('owner_client_onboarding_list', {
+		setup_catalogue: onboardingCatalogue(catalogue) as Json,
 		search_term: parsed.data.search || undefined,
 		waiting_filter: parsed.data.waiting_on,
 		cursor_account_created_at: cursor?.account_created_at,
@@ -65,15 +70,19 @@ export const GET: RequestHandler = async (event) => {
 	}
 
 	const result = data as {
-		clients: OnboardingClient[];
+		clients: Omit<OnboardingClient, 'next_section_title'>[];
 		next_cursor: ListCursor | null;
 		totals: OnboardingTotals;
 	};
 	const page: OnboardingListPage = {
-		clients: result.clients,
+		clients: result.clients.map((row) => ({
+			...row,
+			next_section_title:
+				catalogue.sections.find((section) => section.key === row.next_section_key)?.title ?? null
+		})),
 		next_cursor: result.next_cursor ? encodeCursor(result.next_cursor) : null,
 		totals: result.totals,
-		setup_size: onboardingSetupSize()
+		setup_size: onboardingSetupSize(catalogue)
 	};
 	return json(page, { headers: { 'cache-control': 'private, no-cache' } });
 };

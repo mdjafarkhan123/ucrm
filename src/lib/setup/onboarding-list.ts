@@ -1,4 +1,4 @@
-import { SETUP_SECTIONS, sectionFacts, setupSection } from '$lib/setup/catalogue';
+import { sectionFacts, type SetupCatalogue } from '$lib/setup/catalogue';
 
 // Jafar's list of paid clients going through setup (client onboarding C1, plan §8). The database works out
 // each client's progress and whose move it is (supabase/migrations/20261006200000_client_onboarding_list.sql);
@@ -29,6 +29,8 @@ export type OnboardingClient = {
 	help_count: number;
 	unread_support: number;
 	next_section_key: string | null;
+	/** The next section's title in the published setup version, added by the route. */
+	next_section_title: string | null;
 	waiting_on: OnboardingWaitingOn;
 	next_action: OnboardingNextAction;
 	last_activity_at: string;
@@ -52,8 +54,8 @@ export type OnboardingListPage = {
 };
 
 /** The task list as the database needs it: each section's facts and which of them are required. */
-export function onboardingCatalogue() {
-	return SETUP_SECTIONS.map((section) => {
+export function onboardingCatalogue(catalogue: SetupCatalogue) {
+	return catalogue.sections.map((section) => {
 		const facts = sectionFacts(section);
 		return {
 			key: section.key,
@@ -63,10 +65,10 @@ export function onboardingCatalogue() {
 	});
 }
 
-export function onboardingSetupSize() {
+export function onboardingSetupSize(catalogue: SetupCatalogue) {
 	return {
-		sections: SETUP_SECTIONS.length,
-		facts: SETUP_SECTIONS.reduce((total, section) => total + sectionFacts(section).length, 0)
+		sections: catalogue.sections.length,
+		facts: catalogue.sections.reduce((total, section) => total + sectionFacts(section).length, 0)
 	};
 }
 
@@ -84,7 +86,7 @@ export function onboardingNextActionLabel(client: OnboardingClient): string {
 		case 'start_setup':
 			return 'Sign in and start setup';
 		case 'finish_section':
-			return `Finish ${setupSection(client.next_section_key ?? '')?.title ?? 'setup'}`;
+			return `Finish ${client.next_section_title ?? 'setup'}`;
 		case 'send_to_uplift':
 			return 'Check answers and send to Uplift';
 		case 'account_paused':

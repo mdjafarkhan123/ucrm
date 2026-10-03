@@ -6,6 +6,8 @@ Accepted 2026-10-01, with client onboarding part B1. Follows the approved
 [client onboarding and delivery plan](../client-onboarding-delivery-behavior-contract.md) §2, §3.10, §4 and
 §9, and GOV.UK's [Complete multiple tasks](https://design-system.service.gov.uk/patterns/complete-multiple-tasks/)
 and [Check answers](https://design-system.service.gov.uk/patterns/check-answers/) patterns.
+Decision 3 is revised by [ADR 0006](0006-setup-questions-live-in-published-versions.md): the questions now
+live in published database versions.
 
 ## Context
 
@@ -29,7 +31,7 @@ many purchased services reuse it, and the package decides which sections appear.
 2. **Answers are keyed by fact, not by screen.** `fact_key` (for example `business.public_phone`) is the
    identity. Sections are a presentation grouping, so a shared fact has one row and every branch that needs
    it reads the same one.
-3. **The fact list lives in code.** `src/lib/setup/catalogue.ts` names every fact, its section, kind,
+3. **The fact list lives in code.** *(Revised by ADR 0006.)* `src/lib/setup/catalogue.ts` names every fact, its section, kind,
    whether it is required, and whether "I don't have this yet" and "I need Uplift's help" apply. The server
    validates each save against it with Zod; the database checks only shape and size. Adding a question is a
    code change, not a migration.

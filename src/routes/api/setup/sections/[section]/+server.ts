@@ -13,32 +13,31 @@ import {
 	setupWriteError,
 	setupWriteLimited
 } from '$lib/server/setup/access';
+import { readSetupCatalogue } from '$lib/server/setup/catalogue';
 import { readSetupState } from '$lib/server/setup/read';
 import { setupSectionDoneSchema } from '$lib/server/validation/setup.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { countryCurrency } from '$lib/settings/countries';
 import { setupHoursFromBusinessHours } from '$lib/setup/hours';
 import {
+	catalogueSection,
 	missingRequiredFacts,
 	sectionFacts,
 	sectionStatus,
-	setupSection,
 	setupValueError,
 	type SetupAnswers
 } from '$lib/setup/catalogue';
 
-// One section's saved answers, plus what the CRM already knows that could answer a question nobody has
+// One section's questions as published now and its saved answers, plus what the CRM already knows that could answer a question nobody has
 // answered yet. A suggestion is only shown in the field; it becomes an answer when the administrator
 // keeps it.
 export const GET: RequestHandler = async (event) => {
 	const check = await requireSetupReader(event);
 	if ('response' in check) return check.response;
 
-	const section = setupSection(event.params.section);
-	if (!section) return notFound('That setup section could not be found.');
-
 	const organizationId = check.auth.organization.id;
-	const [state, settingsResult, hoursResult, profileResult] = await Promise.all([
+	const [catalogue, state, settingsResult, hoursResult, profileResult] = await Promise.all([
+		readSetupCatalogue(event.locals.supabase),
 		readSetupState(event.locals.supabase, organizationId),
 		event.locals.supabase
 			.from('organization_settings')
@@ -57,7 +56,9 @@ export const GET: RequestHandler = async (event) => {
 			.eq('id', check.auth.user.id)
 			.maybeSingle()
 	]);
-	if (!state || settingsResult.error || hoursResult.error) return databaseError();
+	if (!catalogue || !state || settingsResult.error || hoursResult.error) return databaseError();
+	const section = catalogueSection(catalogue, event.params.section);
+	if (!section) return notFound('That setup section could not be found.');
 
 	const settings = settingsResult.data;
 	const country = state.answers['business.country']?.value ?? settings?.country_code;
@@ -101,6 +102,7 @@ export const GET: RequestHandler = async (event) => {
 	return json(
 		{
 			key: section.key,
+			section,
 			answers,
 			suggestions,
 			status: sectionStatus(section, state.answers, markedDone)
@@ -115,7 +117,9 @@ export const PATCH: RequestHandler = async (event) => {
 	const check = await requireSetupEditor(event);
 	if ('response' in check) return check.response;
 
-	const section = setupSection(event.params.section);
+	const catalogue = await readSetupCatalogue(event.locals.supabase);
+	if (!catalogue) return databaseError();
+	const section = catalogueSection(catalogue, event.params.section);
 	if (!section) return notFound('That setup section could not be found.');
 
 	const organizationId = check.auth.organization.id;

@@ -11,6 +11,20 @@ import { POST as postRead } from './threads/[threadId]/read/+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 
+vi.mock('$lib/server/setup/catalogue', async () => {
+	const actual = await vi.importActual<typeof import('$lib/server/setup/catalogue')>(
+		'$lib/server/setup/catalogue'
+	);
+	const { SETUP_CATALOGUE_1 } = await import('$lib/setup/catalogue.fixture');
+	return {
+		...actual,
+		readSetupCatalogue: vi.fn(async () => SETUP_CATALOGUE_1),
+		readSetupSectionTitles: vi.fn(
+			async () => new Map(SETUP_CATALOGUE_1.sections.map((section) => [section.key, section.title]))
+		)
+	};
+});
+
 vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
 

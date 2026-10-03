@@ -1,12 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import {
-	SETUP_FACTS,
-	SETUP_SECTIONS,
 	sectionFacts,
 	sectionStatus,
 	type SetupAnswers,
-	type SetupAvailability
+	type SetupAvailability,
+	type SetupCatalogue
 } from '$lib/setup/catalogue';
 
 export type SetupState = {
@@ -40,8 +39,8 @@ export async function readSetupState(
 
 	const answers: SetupAnswers = {};
 	for (const row of answersResult.data) {
-		// A fact dropped from the catalogue keeps its row but is no longer part of setup.
-		if (!SETUP_FACTS.has(row.fact_key)) continue;
+		// An answer to a question since removed stays stored, but nothing reads it: every reader looks
+		// answers up by the published version's own facts.
 		answers[row.fact_key] = {
 			availability: row.availability as SetupAvailability,
 			// Hours and dated exceptions are stored as JSON; the page works with every answer as text.
@@ -62,8 +61,8 @@ export async function readSetupState(
 	};
 }
 
-export function setupSummary(state: SetupState) {
-	const sections = SETUP_SECTIONS.map((section) => {
+export function setupSummary(state: SetupState, catalogue: SetupCatalogue) {
+	const sections = catalogue.sections.map((section) => {
 		const facts = sectionFacts(section);
 		return {
 			key: section.key,
