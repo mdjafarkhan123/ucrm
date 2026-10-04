@@ -259,6 +259,13 @@ mark an access/provider task pending, or accept the project as Ready for Uplift.
 returned section and never repeats the whole wizard. **Ask Uplift** from any section starts a new support
 chat about that section, with the section attached as context.
 
+A return carries a note and, optionally, the questions to change; the client sees those questions highlighted and
+the note at the top of the section (Jafar, 2026-10-04; Content Snare's approve / send back with a reason). A return
+emails the client's owners and administrators with a link straight to that section, shows a banner on the setup
+page, and restarts the setup reminders, worded for that section. Every other section keeps its state: the client
+sees "Accepted by Uplift", "With Uplift" or "Uplift needs changes" on each task, and changing an accepted section
+puts it back for review on the next send.
+
 Keep the client's original answer, any later answer, and the final accepted value. Accepted facts may then seed or
 update matching CRM settings. Repeating a safe provisioning/configuration operation must not duplicate records or
 messages. Material owner changes are visible in history.

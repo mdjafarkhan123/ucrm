@@ -110,6 +110,11 @@
 	}));
 
 	const remindersOn = $derived(!view?.reminders?.paused_at);
+	// Sent setup stops reminders until Uplift sends a task back on the newest send; then they run again (C3b).
+	const withUplift = $derived(
+		Boolean(view?.sends.length) &&
+			!Object.values(view?.reviews ?? {}).some((entry) => entry.state === 'returned')
+	);
 
 	// C3 (plan §4): Accept or Send back one task of the newest send. The page holds the send number it showed,
 	// so a decision on answers Jafar has not seen is refused and the newest send is loaded instead.
@@ -264,7 +269,7 @@
 			icon={bellIcon}
 			hint="Emails after about 24 hours, 3 days and 7 days without setup activity, each linking to the next task."
 		>
-			{#if view.sends.length > 0 && remindersOn}
+			{#if withUplift && remindersOn}
 				<!-- Sent setup stops them by itself, so there is nothing to switch. -->
 				<p class="client-setup__muted">
 					{clientSetupRemindersText(view.reminders, true, formatDateTime)}
@@ -273,11 +278,7 @@
 				<Toggle
 					id="client-setup-reminders"
 					label="Send setup reminder emails"
-					description={clientSetupRemindersText(
-						view.reminders,
-						view.sends.length > 0,
-						formatDateTime
-					)}
+					description={clientSetupRemindersText(view.reminders, withUplift, formatDateTime)}
 					checked={remindersOn}
 					disabled={reminders.isPending}
 					onchange={(on) => reminders.mutate(!on)}

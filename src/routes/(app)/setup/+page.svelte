@@ -144,10 +144,13 @@
 		label: string;
 		badge: 'inactive' | 'informative' | 'success';
 	} {
-		if (summary.delivery.state === 'sent')
+		if (summary.delivery.state === 'sent') {
+			// C3b: a task Uplift sent back is changed before the setup goes again.
+			if (summary.next?.returned) return { label: 'Waiting for your changes', badge: 'inactive' };
 			return summary.sections.some((section) => section.review?.changed)
 				? { label: 'Changes to send', badge: 'informative' }
 				: { label: 'Sent to Uplift', badge: 'success' };
+		}
 		return summary.progress.done === summary.progress.total
 			? { label: 'Ready to send', badge: 'informative' }
 			: { label: 'Cannot send yet', badge: 'inactive' };

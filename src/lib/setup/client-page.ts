@@ -59,7 +59,7 @@ export type ClientSetupView = {
 	reminders: ClientSetupReminders | null;
 };
 
-/** The reminders' state in words, for the Setup tab. */
+/** The reminders' state in words, for the Setup tab. `sent`: setup is with Uplift, nothing sent back. */
 export function clientSetupRemindersText(
 	reminders: ClientSetupReminders,
 	sent: boolean,
