@@ -90,6 +90,13 @@
 		return item.fact_key !== null && answered.has(item.fact_key);
 	}
 
+	/** The list a pick names when it is no longer one it can pick from — moved below it, or retyped. */
+	function strayPickList(item: DraftItem, sources: { id: string }[]) {
+		if (!item.pick_from || sources.some((source) => source.id === item.pick_from)) return null;
+		const here = items.find((each) => each.rowId === item.pick_from);
+		return here?.label.trim() || 'Its list';
+	}
+
 	const pickNumber = (item: DraftItem, field: 'min_choices' | 'max_choices') => ({
 		get: () => item[field],
 		set: (value: unknown) => (item[field] = typeof value === 'number' ? value : null)
@@ -428,6 +435,7 @@
 								{@const sources = pickSources(earlierStages, items, index)}
 								{@const fewest = pickNumber(item, 'min_choices')}
 								{@const most = pickNumber(item, 'max_choices')}
+								{@const stray = strayPickList(item, sources)}
 								<fieldset class="setup-questions__choices">
 									<legend>Clients pick from</legend>
 									{#if sources.length === 0 && !item.pick_from}
@@ -454,6 +462,11 @@
 											{#if errors[`${item.rowId}.pick_from`]}
 												<p class="setup-questions__error" role="alert">
 													{errors[`${item.rowId}.pick_from`]}
+												</p>
+											{:else if stray}
+												<p class="setup-questions__error">
+													“{stray}” is no longer an add-another list above this question. Move this
+													question back below it, or choose another list.
 												</p>
 											{:else if pickLocked(item)}
 												<p class="setup-questions__hint">
