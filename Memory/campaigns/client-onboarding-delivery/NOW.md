@@ -4,7 +4,7 @@
 7–10-business-day delivery, approve launch, receive training, and contact Uplift throughout.
 **Plan:** `docs/client-onboarding-delivery-behavior-contract.md`
 
-**In progress:** A5 is built and still waits for Jafar's hands-on publish (part note). A5d done 2026-10-04.
+**In progress:** A5 is built and still waits for Jafar's hands-on publish (part note). A5c built and committed; unit tests and a browser check remain (part note).
 
 **Next part:** A5c, then A5e, A5f (`stages/A-groundwork.md`), then B3b and B4–B12 load the approved
 blueprint `docs/client-onboarding-setup-content-blueprint.md` into drafts. Order approved by Jafar 2026-10-03.
