@@ -12,7 +12,7 @@ import {
 } from './catalogue';
 import { followUpSuggestions } from './follow-ups';
 import { setupAnswersSchema } from '../server/validation/setup.schema';
-import { missingRequiredFacts, setupAnswerShortfall } from './catalogue';
+import { missingRequiredFacts, setupAnswerShortfall, shownCatalogueFacts } from './catalogue';
 
 // B3b–B12 load the approved starter content (docs/client-onboarding-setup-content-blueprint.md) into the setup
 // draft through private.setup_load_starter_stage. The database cannot check a "show only if" rule against a
@@ -64,7 +64,7 @@ const have = (value: string) => ({ availability: 'have' as const, value, note: n
 
 describe('starter setup content', () => {
 	it('loads every stage built so far', () => {
-		expect(stages.map((stage) => stage.key)).toEqual(['business', 'services', 'brand']);
+		expect(stages.map((stage) => stage.key)).toEqual(['business', 'services', 'brand', 'website']);
 	});
 
 	it('leaves no question out for want of answer rules', () => {
@@ -414,6 +414,189 @@ describe('starter setup content', () => {
 			expect(parsed.error?.issues.map((issue) => issue.message)).toEqual([
 				'This is too long to save. Shorten some entries or remove a few.'
 			]);
+		});
+	});
+
+	describe('Website and domain', () => {
+		const website = starter.sections.find((section) => section.key === 'website')!;
+		const shown = (answers: SetupAnswers) => shownCatalogueFacts(starter, answers);
+		const situation = (value: string) => shown({ 'domain.situation': have(value) });
+		const branchOnly = {
+			own: ['domain.owner_email'],
+			someone_else: ['domain.controller', 'domain.controller_can_help'],
+			buy: ['domain.wishlist'],
+			unsure: ['domain.unsure_notes']
+		};
+		const existingDomain = [
+			'domain.name',
+			'domain.registrar',
+			'domain.renewal_by',
+			'domain.dns_by',
+			'domain.email_uses',
+			'domain.other_uses'
+		];
+
+		it('is shown only to a package with the website', () => {
+			expect(website.serviceKey).toBe('website');
+		});
+
+		it('asks each domain branch only its own questions', () => {
+			const all = Object.values(branchOnly).flat();
+			for (const [branch, own] of Object.entries(branchOnly)) {
+				const asked = situation(branch);
+				for (const key of all) expect(asked.has(key), `${branch}: ${key}`).toBe(own.includes(key));
+				const hasDomain = branch === 'own' || branch === 'someone_else';
+				for (const key of existingDomain)
+					expect(asked.has(key), `${branch}: ${key}`).toBe(hasDomain);
+			}
+		});
+
+		it('never asks for a password', () => {
+			for (const fact of sectionFacts(website)) {
+				expect(fact.key).not.toMatch(/password/);
+				for (const field of fact.listFields ?? []) expect(field.key).not.toMatch(/password/);
+				expect(fact.label).not.toMatch(/password/i);
+			}
+		});
+
+		it('asks the email company and the extra uses only after their answer', () => {
+			const base = { 'domain.situation': have('own') };
+			for (const value of ['yes', 'not_sure'])
+				expect(
+					shown({ ...base, 'domain.email_uses': have(value) }).has('domain.email_provider')
+				).toBe(true);
+			expect(shown({ ...base, 'domain.email_uses': have('no') }).has('domain.email_provider')).toBe(
+				false
+			);
+			expect(
+				shown({ ...base, 'domain.other_uses': have('yes') }).has('domain.other_uses_list')
+			).toBe(true);
+			expect(
+				shown({ ...base, 'domain.other_uses': have('not_sure') }).has('domain.other_uses_list')
+			).toBe(false);
+		});
+
+		it('confirms the phone, email and reasons given earlier instead of asking again', () => {
+			for (const [key, source] of [
+				['website.phone', 'business.public_phone'],
+				['website.email', 'business.public_email'],
+				['website.reasons', 'proof.reasons']
+			])
+				expect(facts.get(key)!.reuseFrom, key).toBe(source);
+		});
+
+		it('picks different featured services and places only when the promoted ones are not right', () => {
+			const lists: SetupAnswers = {
+				'services.offered': have(
+					'[{"id":"s1","values":{"name":"Boiler repair","season":"all_year"}}]'
+				),
+				'area.places': have('[{"id":"a1","values":{"name":"Leeds"}}]')
+			};
+			const same = shown({ ...lists, 'website.featured_same': have('yes') });
+			const different = shown({ ...lists, 'website.featured_same': have('no') });
+			for (const key of ['website.featured_services', 'website.featured_places']) {
+				expect(same.has(key), key).toBe(false);
+				expect(different.has(key), key).toBe(true);
+			}
+		});
+
+		it('saves a full answer and shows it again when the client comes back', () => {
+			const earlier: SetupAnswers = {
+				'business.public_phone': have('+44 113 496 0000'),
+				'business.public_email': have('hello@raadplumbing.co.uk'),
+				'services.offered': have(
+					'[{"id":"s1","values":{"name":"Boiler repair","season":"all_year"}}]'
+				),
+				'area.places': have('[{"id":"a1","values":{"name":"Leeds"}}]'),
+				'proof.reasons': have('[{"id":"r1","values":{"reason":"We reply within 2 hours"}}]')
+			};
+			const sent: Record<string, string> = {
+				'domain.situation': 'someone_else',
+				'domain.name': 'raadplumbing.co.uk',
+				'domain.registrar': '123 Reg',
+				'domain.controller': JSON.stringify([
+					{
+						id: 'c1',
+						values: { name: 'Sam Webb', company: 'Webb Design', email: 'sam@webb.example' }
+					}
+				]),
+				'domain.controller_can_help': 'yes',
+				'domain.renewal_by': JSON.stringify([{ id: 'r1', values: { name: 'Webb Design' } }]),
+				'domain.dns_by': JSON.stringify([{ id: 'd1', values: { name: '123 Reg' } }]),
+				'domain.email_uses': 'yes',
+				'domain.email_provider': 'Microsoft 365',
+				'domain.other_uses': 'yes',
+				'domain.other_uses_list': JSON.stringify([
+					{ id: 'o1', values: { what: 'Booking page', url: 'book.raadplumbing.co.uk' } }
+				]),
+				'website.live_now': 'yes',
+				'website.live_url': 'raadplumbing.co.uk',
+				'website.host': 'Wix',
+				'website.main_action': 'quote',
+				'website.second_action': 'call',
+				'website.form_recipients': JSON.stringify([
+					{ id: 'f1', values: { name: 'Office', email: 'office@raadplumbing.co.uk' } }
+				]),
+				'website.phone': JSON.stringify({ same_as: 'business.public_phone' }),
+				'website.email': 'enquiries@raadplumbing.co.uk',
+				'website.featured_same': 'no',
+				'website.featured_services': JSON.stringify(['s1']),
+				'website.featured_places': JSON.stringify(['a1']),
+				'website.reasons': JSON.stringify({ same_as: 'proof.reasons' }),
+				'website.show_proof': 'yes',
+				'website.process': JSON.stringify(
+					['You call', 'We visit and measure', 'Written quote in 2 days', 'Work booked'].map(
+						(step, n) => ({ id: `p${n}`, values: { step } })
+					)
+				),
+				'website.keep_any': 'no',
+				'website.extra_pages': JSON.stringify(['about', 'projects', 'Boiler grants'])
+			};
+			const parsed = setupAnswersSchema(facts, earlier).safeParse({
+				answers: Object.entries(sent).map(([fact_key, value]) => ({
+					fact_key,
+					availability: 'have',
+					value,
+					note: null
+				}))
+			});
+			expect(parsed.error?.issues ?? []).toEqual([]);
+
+			const resumed: SetupAnswers = { ...earlier };
+			for (const answer of parsed.data!.answers) {
+				const stored = answer.value;
+				resumed[answer.fact_key] = have(
+					typeof stored === 'string' ? stored : JSON.stringify(stored)
+				);
+			}
+			expect(JSON.parse(resumed['domain.controller']!.value!)[0].values.company).toBe(
+				'Webb Design'
+			);
+			expect(missingRequiredFacts(website, resumed, shown(resumed))).toEqual([]);
+			for (const fact of sectionFacts(website))
+				expect(setupAnswerShortfall(fact, resumed), fact.key).toBeNull();
+		});
+
+		it('lets a client who has to buy a domain send the setup with only the website basics', () => {
+			const answers: SetupAnswers = {
+				'business.public_phone': have('+44 113 496 0000'),
+				'business.public_email': have('hello@raadplumbing.co.uk'),
+				'proof.reasons': have('[{"id":"r1","values":{"reason":"Local for 20 years"}}]'),
+				'domain.situation': have('buy'),
+				'website.live_now': have('no'),
+				'website.main_action': have('call'),
+				'website.form_recipients': have(
+					'[{"id":"f1","values":{"name":"Me","email":"me@example.com"}}]'
+				),
+				'website.phone': have('{"same_as":"business.public_phone"}'),
+				'website.email': have('{"same_as":"business.public_email"}'),
+				'website.featured_same': have('yes'),
+				'website.reasons': have('{"same_as":"proof.reasons"}'),
+				'website.show_proof': have('yes'),
+				'website.process': { availability: 'not_yet', value: null, note: null },
+				'website.keep_any': have('no')
+			};
+			expect(missingRequiredFacts(website, answers, shown(answers))).toEqual([]);
 		});
 	});
 });

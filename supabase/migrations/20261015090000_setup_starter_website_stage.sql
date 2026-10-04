@@ -1,0 +1,223 @@
+-- Client onboarding B6: the approved starter content's stage 6, "Website and domain"
+-- (docs/client-onboarding-setup-content-blueprint.md), loaded into the setup draft for Jafar to review and
+-- publish. Nothing a client sees changes until he publishes it. The stage is new, so no answer is affected, and
+-- it is shown only to a client whose package includes the Premium website service.
+--
+-- The domain question has four branches — I own one, someone else controls it, I need to buy one, I'm not sure —
+-- and each asks only its own questions (plan §3.4). No password is ever asked: Uplift works through invitations
+-- and DNS instructions, and a client without a domain buys it in their own name.
+--
+-- Facts given in earlier stages are confirmed, not typed again: the public phone and email are reused, and the
+-- services and places to feature are the ones already promoted unless the client says otherwise. A reuse
+-- cannot show back an ordered pick, so that confirmation is a yes/no with a fresh pick only on No.
+
+select private.setup_load_starter_stage(
+	'website',
+	'Website and domain',
+	'Your web address and what your new website should do — so Uplift can build it, and later launch it on your domain.',
+	'website',
+	$items$[
+		{"type": "heading", "label": "Your domain",
+			"hint": "Your web address, like yourbusiness.com. It always belongs to you. Uplift never asks for a password."},
+		{"type": "question", "fact_key": "domain.situation", "kind": "choice", "required": true,
+			"label": "Do you already have a domain name?",
+			"options": [
+				{"value": "own", "label": "Yes, I own one"},
+				{"value": "someone_else", "label": "Yes, but someone else controls it"},
+				{"value": "buy", "label": "No, I need to buy one"},
+				{"value": "unsure", "label": "I’m not sure"}
+			]},
+		{"type": "question", "fact_key": "domain.name", "kind": "text", "max_length": 253, "required": true,
+			"can_defer": true,
+			"label": "What is the domain name?",
+			"hint": "For example raadplumbing.co.uk — no need for www.",
+			"show_if": [{"fact_key": "domain.situation", "values": ["own", "someone_else"]}]},
+		{"type": "question", "fact_key": "domain.registrar", "kind": "text", "max_length": 120,
+			"label": "Which company is the domain registered with?",
+			"hint": "Optional. For example GoDaddy, Namecheap, 123 Reg or IONOS. Leave it blank if you don’t know.",
+			"show_if": [{"fact_key": "domain.situation", "values": ["own", "someone_else"]}]},
+		{"type": "question", "fact_key": "domain.owner_email", "kind": "email", "required": true, "can_defer": true,
+			"label": "Which email address is the domain account in?",
+			"hint": "The email you sign in to the domain company with. Never send the password — Uplift won’t ask for it.",
+			"show_if": [{"fact_key": "domain.situation", "values": ["own"]}]},
+		{"type": "question", "fact_key": "domain.controller", "kind": "list", "max_rows": 1, "required": true,
+			"can_defer": true,
+			"label": "Who controls the domain today?",
+			"hint": "For example your old web designer or IT company. The domain still belongs to your business.",
+			"show_if": [{"fact_key": "domain.situation", "values": ["someone_else"]}],
+			"list_fields": [
+				{"key": "name", "label": "Name", "kind": "text", "required": true},
+				{"key": "company", "label": "Company", "kind": "text", "required": false},
+				{"key": "email", "label": "Email", "kind": "email", "required": false},
+				{"key": "phone", "label": "Phone", "kind": "phone", "required": false}
+			]},
+		{"type": "question", "fact_key": "domain.controller_can_help", "kind": "yes_no_unsure", "required": true,
+			"label": "Can they give you access, or make changes with Uplift?",
+			"hint": "Uplift may need them to add an invitation or change a setting. They never share a password.",
+			"show_if": [{"fact_key": "domain.situation", "values": ["someone_else"]}]},
+		{"type": "question", "fact_key": "domain.renewal_by", "kind": "list", "max_rows": 1, "required": true,
+			"can_defer": true,
+			"label": "Who renews and pays for the domain?",
+			"hint": "If it isn’t renewed, your website and email stop. You stay the owner whoever pays.",
+			"show_if": [{"fact_key": "domain.situation", "values": ["own", "someone_else"]}],
+			"list_fields": [
+				{"key": "name", "label": "Person or company", "kind": "text", "required": true},
+				{"key": "email", "label": "Email", "kind": "email", "required": false}
+			]},
+		{"type": "question", "fact_key": "domain.dns_by", "kind": "list", "max_rows": 1, "required": true,
+			"can_defer": true,
+			"label": "Who looks after the domain’s settings (its DNS) today?",
+			"hint": "Often the same company the domain is registered with, or whoever built your website.",
+			"show_if": [{"fact_key": "domain.situation", "values": ["own", "someone_else"]}],
+			"list_fields": [
+				{"key": "name", "label": "Person or company", "kind": "text", "required": true},
+				{"key": "email", "label": "Email", "kind": "email", "required": false}
+			]},
+		{"type": "question", "fact_key": "domain.email_uses", "kind": "yes_no_unsure", "required": true,
+			"label": "Does your business email use this domain?",
+			"hint": "For example you@yourbusiness.com. Uplift needs to know so your email keeps working.",
+			"show_if": [{"fact_key": "domain.situation", "values": ["own", "someone_else"]}]},
+		{"type": "question", "fact_key": "domain.email_provider", "kind": "text", "max_length": 120,
+			"required": true, "can_defer": true,
+			"label": "Which company provides that email?",
+			"hint": "For example Google Workspace, Microsoft 365 or your domain company.",
+			"show_if": [{"fact_key": "domain.email_uses", "values": ["yes", "not_sure"]}]},
+		{"type": "question", "fact_key": "domain.other_uses", "kind": "yes_no_unsure", "required": true,
+			"label": "Does the domain run anything else that must keep working?",
+			"hint": "For example a booking page, customer portal, shop, or a sub-address like portal.yourbusiness.com.",
+			"show_if": [{"fact_key": "domain.situation", "values": ["own", "someone_else"]}]},
+		{"type": "question", "fact_key": "domain.other_uses_list", "kind": "list", "max_rows": 10, "required": true,
+			"can_defer": true,
+			"label": "Add each one.",
+			"show_if": [{"fact_key": "domain.other_uses", "values": ["yes"]}],
+			"list_fields": [
+				{"key": "what", "label": "What it is", "kind": "text", "required": true},
+				{"key": "url", "label": "Its web address, if it has one", "kind": "url", "required": false}
+			]},
+		{"type": "question", "fact_key": "domain.wishlist", "kind": "list", "max_rows": 3,
+			"label": "Which domain names would you like?",
+			"hint": "Optional, up to 3. Uplift checks which are free; you buy it in your own business’s name, so it is always yours.",
+			"show_if": [{"fact_key": "domain.situation", "values": ["buy"]}],
+			"list_fields": [
+				{"key": "name", "label": "Domain name", "kind": "text", "required": true}
+			]},
+		{"type": "question", "fact_key": "domain.unsure_notes", "kind": "longtext", "max_length": 1000,
+			"label": "Tell us anything you know about it.",
+			"hint": "Optional. Who built your last website, an old invoice, an email address you use — anything helps Uplift find out.",
+			"show_if": [{"fact_key": "domain.situation", "values": ["unsure"]}]},
+		{"type": "question", "fact_key": "website.live_now", "kind": "yes_no_unsure", "required": true,
+			"label": "Do you have a website live now?",
+			"hint": "Any website, even a simple one or a page on a website builder."},
+		{"type": "question", "fact_key": "website.live_url", "kind": "url", "required": true, "can_defer": true,
+			"label": "What is its web address?",
+			"show_if": [{"fact_key": "website.live_now", "values": ["yes"]}]},
+		{"type": "question", "fact_key": "website.host", "kind": "text", "max_length": 120,
+			"label": "Who hosts it?",
+			"hint": "Optional. For example Wix, Squarespace, WordPress or your web designer.",
+			"show_if": [{"fact_key": "website.live_now", "values": ["yes"]}]},
+
+		{"type": "heading", "label": "What your website should do",
+			"hint": "Plain answers are enough. Uplift writes the website’s wording and shows it to you before anything goes live."},
+		{"type": "question", "fact_key": "website.main_action", "kind": "choice", "allow_other": true,
+			"required": true,
+			"label": "What is the one thing a visitor should do?",
+			"hint": "This becomes the main button on every page.",
+			"options": [
+				{"value": "call", "label": "Call us"},
+				{"value": "quote", "label": "Ask for a quote"},
+				{"value": "assessment", "label": "Book a visit or assessment"},
+				{"value": "message", "label": "Send a message"}
+			]},
+		{"type": "question", "fact_key": "website.second_action", "kind": "choice",
+			"label": "Which second option should visitors still have?",
+			"hint": "Optional.",
+			"options": [
+				{"value": "call", "label": "Call us"},
+				{"value": "quote", "label": "Ask for a quote"},
+				{"value": "assessment", "label": "Book a visit or assessment"},
+				{"value": "message", "label": "Send a message"},
+				{"value": "none", "label": "No second option"}
+			]},
+		{"type": "question", "fact_key": "website.form_recipients", "kind": "list", "max_rows": 5, "required": true,
+			"label": "Who should be told when someone fills in the website form?",
+			"hint": "Usually you or your office. Every enquiry also lands in your CRM.",
+			"list_fields": [
+				{"key": "name", "label": "Name", "kind": "text", "required": true},
+				{"key": "email", "label": "Email", "kind": "email", "required": true}
+			]},
+		{"type": "question", "fact_key": "website.phone", "kind": "reuse", "reuse_from": "business.public_phone",
+			"required": true,
+			"label": "Which phone number should the website show?"},
+		{"type": "question", "fact_key": "website.email", "kind": "reuse", "reuse_from": "business.public_email",
+			"required": true,
+			"label": "Which email address should the website show?"},
+		{"type": "question", "fact_key": "website.featured_same", "kind": "yes_no", "required": true,
+			"label": "Should the website lead with the services and places you chose to promote first?",
+			"hint": "The ones you put at the top in Services and service area."},
+		{"type": "question", "fact_key": "website.featured_services", "kind": "pick", "pick_from": "services.offered",
+			"max_choices": 5, "ordered": true, "required": true,
+			"label": "Which services should the website lead with?",
+			"hint": "Up to 5, most important first.",
+			"show_if": [{"fact_key": "website.featured_same", "values": ["no"]}]},
+		{"type": "question", "fact_key": "website.featured_places", "kind": "pick", "pick_from": "area.places",
+			"max_choices": 5, "ordered": true, "required": true,
+			"label": "Which places should the website lead with?",
+			"hint": "Up to 5, most important first.",
+			"show_if": [{"fact_key": "website.featured_same", "values": ["no"]}]},
+		{"type": "question", "fact_key": "website.reasons", "kind": "reuse", "reuse_from": "proof.reasons",
+			"required": true,
+			"label": "Which reasons to choose you should the website give?",
+			"hint": "Only facts you can back up. Use a different list here to leave any out."},
+		{"type": "question", "fact_key": "website.show_proof", "kind": "yes_no", "required": true,
+			"label": "May the website show the guarantees, licences, memberships, insurance and financing you gave earlier?",
+			"hint": "Uplift shows only what you entered, in your words."},
+		{"type": "question", "fact_key": "website.proof_leave_out", "kind": "longtext", "max_length": 1000,
+			"required": true,
+			"label": "What should the website leave out?",
+			"show_if": [{"fact_key": "website.show_proof", "values": ["no"]}]},
+		{"type": "question", "fact_key": "website.story", "kind": "longtext", "max_length": 2000,
+			"label": "How did the business begin?",
+			"hint": "Optional. Rough notes are fine — who started it, when, and why."},
+		{"type": "question", "fact_key": "website.process", "kind": "list", "max_rows": 10, "required": true,
+			"can_defer": true,
+			"label": "What happens from a customer’s first call to the finished job?",
+			"hint": "3 to 7 short steps, in order. For example: you call · we visit and measure · written quote within 2 days · work booked · tidy finish and walk-round.",
+			"list_fields": [
+				{"key": "step", "label": "Step", "kind": "text", "required": true}
+			]},
+		{"type": "question", "fact_key": "website.keep_any", "kind": "yes_no", "required": true,
+			"label": "Is there wording, a page or a legal notice from your old website that must be kept?",
+			"hint": "For example a page that brings in lots of customers from Google, or a required notice."},
+		{"type": "question", "fact_key": "website.keep_items", "kind": "list", "max_rows": 10,
+			"label": "Add each thing to keep.",
+			"hint": "Optional — a link, a file or just a note is enough.",
+			"show_if": [{"fact_key": "website.keep_any", "values": ["yes"]}],
+			"list_fields": [
+				{"key": "note", "label": "What to keep, and why", "kind": "text", "required": true},
+				{"key": "url", "label": "Link", "kind": "url", "required": false},
+				{"key": "file", "label": "File", "kind": "file", "required": false, "file_kinds": ["document", "photo"]}
+			]},
+		{"type": "question", "fact_key": "website.extra_pages", "kind": "multi_choice", "allow_other": true,
+			"label": "Which extra pages do you need?",
+			"hint": "Optional. Uplift already plans your home page, a page for each main service, and a contact page.",
+			"options": [
+				{"value": "about", "label": "About us"},
+				{"value": "projects", "label": "Gallery or past projects"},
+				{"value": "financing", "label": "Financing"},
+				{"value": "careers", "label": "Jobs with us"},
+				{"value": "emergency", "label": "Emergency service"},
+				{"value": "locations", "label": "A page for each area you cover"},
+				{"value": "policies", "label": "Policies, such as terms or warranty"}
+			]},
+		{"type": "question", "fact_key": "website.legal_wording", "kind": "longtext", "max_length": 2000,
+			"label": "Is there legal or regulated wording the website must show?",
+			"hint": "Optional. For example a licence statement or a financing notice. Uplift never makes up regulated wording."},
+		{"type": "question", "fact_key": "website.legal_files", "kind": "file", "file_kinds": ["document"],
+			"max_files": 5,
+			"label": "Upload that wording if it is in a document.",
+			"hint": "Optional."},
+		{"type": "question", "fact_key": "website.accessibility", "kind": "longtext", "max_length": 1000,
+			"label": "Any reading, accessibility or language needs for your customers?",
+			"hint": "Optional. For example larger text or very plain wording. Websites are written in English; another language is arranged separately."}
+	]$items$::jsonb
+);
