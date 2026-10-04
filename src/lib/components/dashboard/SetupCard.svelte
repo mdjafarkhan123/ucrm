@@ -49,15 +49,21 @@
 		<div class="setup-card__next">
 			{#if summary.next}
 				<div class="setup-card__text">
-					<span class="setup-card__label">Next</span>
+					<span class="setup-card__label"
+						>{summary.next.returned ? 'Uplift needs changes' : 'Next'}</span
+					>
 					<strong>{summary.next.title}</strong>
 				</div>
 				<Button size="small" href={resolve('/(app)/setup/[section]', { section: summary.next.key })}
-					>{summary.next.key === SETUP_CHECK_KEY
-						? 'Check and send'
-						: summary.next.status === 'not_started'
-							? 'Start'
-							: 'Continue'}</Button
+					>{summary.next.returned
+						? 'Make the change'
+						: summary.next.key === SETUP_CHECK_KEY
+							? summary.returned_count > 0
+								? 'Send your changes'
+								: 'Check and send'
+							: summary.next.status === 'not_started'
+								? 'Start'
+								: 'Continue'}</Button
 				>
 			{:else}
 				<div class="setup-card__text">
@@ -69,7 +75,12 @@
 
 		<p class="setup-card__status">
 			<span class="setup-card__label">Delivery</span>
-			{#if summary.delivery.state === 'sent'}
+			{#if summary.returned_count > 0}
+				Uplift sent back {summary.returned_count === 1
+					? 'one task'
+					: `${summary.returned_count} tasks`}. Change what Uplift asked for and send your setup
+				again; everything else stays as you sent it.
+			{:else if summary.delivery.state === 'sent'}
 				Sent to Uplift on {new Date(summary.delivery.submitted_at).toLocaleDateString(undefined, {
 					dateStyle: 'long'
 				})}. Uplift is checking it; your 7–10 business-day build starts once Uplift has accepted it.

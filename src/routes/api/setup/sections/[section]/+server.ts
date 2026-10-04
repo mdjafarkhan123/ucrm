@@ -14,6 +14,7 @@ import {
 	setupWriteLimited
 } from '$lib/server/setup/access';
 import { readOrganizationSetupCatalogue } from '$lib/server/setup/catalogue';
+import { readClientSetupReviews } from '$lib/server/setup/client-review';
 import { readSetupState } from '$lib/server/setup/read';
 import { setupSectionDoneSchema } from '$lib/server/validation/setup.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
@@ -108,6 +109,15 @@ export const GET: RequestHandler = async (event) => {
 		if (value && !setupValueError(fact, value)) suggestions[fact.key] = value;
 	}
 
+	// C3b: what Uplift said about this section on the newest send.
+	let reviews;
+	try {
+		reviews = await readClientSetupReviews(event.locals.supabase, organizationId, state, catalogue);
+	} catch (error) {
+		console.error('Could not read the setup review.', error);
+		return databaseError();
+	}
+
 	const markedDone = state.doneSections.has(section.key);
 	return json(
 		{
@@ -130,7 +140,8 @@ export const GET: RequestHandler = async (event) => {
 				state.answers,
 				markedDone,
 				shownCatalogueFacts(catalogue, state.answers)
-			)
+			),
+			review: reviews[section.key] ?? null
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

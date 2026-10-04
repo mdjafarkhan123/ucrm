@@ -6,6 +6,7 @@
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -24,6 +25,7 @@
 	} from '$lib/setup/api';
 	import type { SetupSectionStatus } from '$lib/setup/catalogue';
 	import { SETUP_CHECK_DESCRIPTION, SETUP_CHECK_KEY, SETUP_CHECK_TITLE } from '$lib/setup/check';
+	import { setupClientReviewBadge } from '$lib/setup/review';
 	import type { HttpError } from '$lib/http-error';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 	import toolsIcon from '@tabler/icons/outline/tools.svg?raw';
@@ -110,6 +112,14 @@
 		done: { label: 'Done', badge: 'success' }
 	};
 
+	// C3b: once sent, a finished task shows where it stands with Uplift; one reopened shows its own status.
+	function taskStatus(section: SetupSummary['sections'][number]) {
+		return (
+			(section.status === 'done' ? setupClientReviewBadge(section.review) : null) ??
+			STATUS[section.status]
+		);
+	}
+
 	// The section's answers start loading when the pointer or keyboard reaches its row, so the form is
 	// already there on the click.
 	function warmSection(key: string) {
@@ -134,7 +144,10 @@
 		label: string;
 		badge: 'inactive' | 'informative' | 'success';
 	} {
-		if (summary.delivery.state === 'sent') return { label: 'Sent to Uplift', badge: 'success' };
+		if (summary.delivery.state === 'sent')
+			return summary.sections.some((section) => section.review?.changed)
+				? { label: 'Changes to send', badge: 'informative' }
+				: { label: 'Sent to Uplift', badge: 'success' };
 		return summary.progress.done === summary.progress.total
 			? { label: 'Ready to send', badge: 'informative' }
 			: { label: 'Cannot send yet', badge: 'inactive' };
@@ -206,6 +219,40 @@
 				</ul>
 			{/snippet}
 
+			{#snippet returned()}
+				{#if summary.returned_count > 0}
+					{@const count = summary.returned_count}
+					<Banner type="warning">
+						{#if summary.next?.returned}
+							Uplift looked over your setup and sent back {count === 1
+								? 'one task'
+								: `${count} tasks`}. Change the highlighted answers, then send your setup again.
+							Everything else stays as you sent it.
+						{:else}
+							You have changed what Uplift asked for. Send your setup again so Uplift can look.
+						{/if}
+						{#snippet action()}
+							{#if summary.next?.returned}
+								<Button
+									size="small"
+									variant="secondary"
+									href={resolve('/(app)/setup/[section]', { section: summary.next.key })}
+									onhover={() => summary.next && warmSection(summary.next.key)}
+									>Open {summary.next.title}</Button
+								>
+							{:else}
+								<Button
+									size="small"
+									variant="secondary"
+									href={resolve('/(app)/setup/check-and-send')}
+									onhover={warmCheck}>Send your changes</Button
+								>
+							{/if}
+						{/snippet}
+					</Banner>
+				{/if}
+			{/snippet}
+
 			{#snippet tasks()}
 				<SectionBlock title="Your setup tasks" hint="Do them in any order, a little at a time.">
 					{#snippet actions()}
@@ -215,7 +262,7 @@
 					{/snippet}
 					<ul class="setup__tasks">
 						{#each summary.sections as section (section.key)}
-							{@const status = STATUS[section.status]}
+							{@const status = taskStatus(section)}
 							<li>
 								<a
 									class="setup__task"
@@ -264,7 +311,7 @@
 					<Toggle
 						id="setup-reminder-emails"
 						label="Email me reminders"
-						description="If setup sits untouched, we email you after a day, 3 days and a week with the next task. They stop once setup is sent to Uplift."
+						description="If setup sits untouched, we email you after a day, 3 days and a week with the next task. They stop once setup is sent to Uplift, and start again if Uplift sends a task back."
 						labelSide="start"
 						checked={summary.reminder_emails_on}
 						disabled={savingReminders}
@@ -289,9 +336,11 @@
 						>
 					</div>
 				</section>
+				{@render returned()}
 				{@render tasks()}
 				{@render reminders()}
 			{:else}
+				{@render returned()}
 				{@render tasks()}
 				<SectionBlock title="How setup works">
 					{@render howItWorks()}

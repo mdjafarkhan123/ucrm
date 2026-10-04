@@ -11,6 +11,7 @@ import {
 	type SetupCatalogue
 } from '$lib/setup/catalogue';
 import { SETUP_CHECK_KEY, SETUP_CHECK_TITLE } from '$lib/setup/check';
+import type { SetupClientReview } from '$lib/setup/review';
 
 /** B13: the newest Send to Uplift, without its answers. */
 export type SetupSent = { number: number; submitted_at: string; submitted_by_name: string };
@@ -90,7 +91,15 @@ export async function readSetupState(
 	};
 }
 
-export function setupSummary(state: SetupState, catalogue: SetupCatalogue) {
+/**
+ * The task list's figures. `reviews` is Uplift's review of each sent section
+ * (`$lib/server/setup/client-review`); empty before the first send.
+ */
+export function setupSummary(
+	state: SetupState,
+	catalogue: SetupCatalogue,
+	reviews: Record<string, SetupClientReview> = {}
+) {
 	// Only the questions this client is asked now count; one an earlier answer hides is neither total nor answered.
 	const shown = shownCatalogueFacts(catalogue, state.answers);
 	const sections = catalogue.sections.map((section) => {
@@ -101,25 +110,35 @@ export function setupSummary(state: SetupState, catalogue: SetupCatalogue) {
 			description: section.description,
 			status: sectionStatus(section, state.answers, state.doneSections.has(section.key), shown),
 			answered: facts.filter((fact) => setupAnswerGiven(fact, state.answers)).length,
-			total: facts.length
+			total: facts.length,
+			review: reviews[section.key] ?? null
 		};
 	});
 	const done = sections.filter((section) => section.status === 'done').length;
 	const unfinished = sections.find((section) => section.status !== 'done');
+	// C3b: a section Uplift sent back is the client's to change, then to send again.
+	const returned = sections.filter((section) => section.review?.state === 'returned');
+	const toChange = returned.find((section) => !section.review?.changed);
+	const check = { key: SETUP_CHECK_KEY, title: SETUP_CHECK_TITLE, status: 'not_started' as const };
 	// B13: with every task done, Check and send is next until setup has been sent.
 	const next = unfinished
-		? { key: unfinished.key, title: unfinished.title, status: unfinished.status }
-		: state.sent
-			? null
-			: { key: SETUP_CHECK_KEY, title: SETUP_CHECK_TITLE, status: 'not_started' as const };
+		? { key: unfinished.key, title: unfinished.title, status: unfinished.status, returned: false }
+		: toChange
+			? { key: toChange.key, title: toChange.title, status: toChange.status, returned: true }
+			: returned.length > 0 || !state.sent
+				? { ...check, returned: false }
+				: null;
 
 	return {
 		welcome_seen: state.welcomeSeen,
 		sections,
 		progress: { done, total: sections.length },
-		// The next useful thing to do. Null once setup has been sent and every task is still done.
+		// The next useful thing to do. Null once setup has been sent, every task is still done and nothing is
+		// waiting on the client's changes.
 		next,
-		// Uplift's review and the delivery stages arrive with later parts.
+		// Sections Uplift sent back on the newest send.
+		returned_count: returned.length,
+		// The delivery stages arrive with later parts.
 		delivery: state.sent
 			? { state: 'sent' as const, ...state.sent }
 			: { state: 'collecting' as const }

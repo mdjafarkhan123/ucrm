@@ -9,6 +9,7 @@
 	import Lightbox, { type LightboxItem } from '$lib/components/ui/Lightbox.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
@@ -116,6 +117,7 @@
 		| { decision: 'accepted'; section_key: string }
 		| { decision: 'returned'; section_key: string; note: string; question_keys: string[] };
 
+	const toast = getToastManager();
 	let reviewError = $state<{ section: string; message: string } | null>(null);
 	let returning = $state<{ key: string; title: string } | null>(null);
 
@@ -137,12 +139,21 @@
 					'Your decision could not be saved. Try again.';
 				throw new Error(message);
 			}
+			return (await response.json()) as { emailed?: boolean };
 		},
 		onMutate: () => {
 			reviewError = null;
 		},
-		onSuccess: (_data, input) => {
-			if (input.decision === 'returned') returning = null;
+		onSuccess: (data, input) => {
+			if (input.decision !== 'returned') return;
+			returning = null;
+			// C3b: the client is emailed about a return. The decision stands without it; sending back again
+			// with the same note queues only what is missing.
+			if (data.emailed === false)
+				toast.error(
+					'Sent back, but the email did not go',
+					'The client sees it on their setup page. Save it again under “Change what you asked” to retry the email.'
+				);
 		},
 		onError: (error, input) => {
 			reviewError = { section: input.section_key, message: error.message };

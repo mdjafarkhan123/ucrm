@@ -23,9 +23,13 @@ vi.mock('$lib/server/events/dispatcher', () => ({
 type Summary = {
 	sections: { key: string; title: string; description: string }[];
 	progress: { done: number; total: number };
-	next: { key: string } | null;
+	next: { key: string; title?: string; status?: string; returned?: boolean } | null;
+	returned_count: number;
 };
 let summary: Summary;
+vi.mock('$lib/server/setup/client-review', () => ({
+	readClientSetupReviews: vi.fn(async () => ({}))
+}));
 vi.mock('$lib/server/setup/read', () => ({
 	readSetupState: vi.fn(async () => ({})),
 	setupSummary: () => summary
@@ -90,7 +94,8 @@ beforeEach(() => {
 	summary = {
 		sections: [{ key: 'business', title: 'Your business', description: '' }, SERVICES],
 		progress: { done: 1, total: 6 },
-		next: { key: 'services' }
+		next: { key: 'services' },
+		returned_count: 0
 	};
 });
 
@@ -120,6 +125,14 @@ describe('buildSetupReminderEmail', () => {
 			expect(email.htmlContent).toContain(`href="${ORIGIN}/setup#reminder-emails"`);
 			expect(email.textContent).toContain(`${ORIGIN}/setup#reminder-emails`);
 		}
+	});
+
+	it('asks for the change to a section Uplift sent back', () => {
+		const email = buildSetupReminderEmail({ ...base, step: 1, kind: 'returned' });
+		expect(email.subject).toBe('Uplift needs a change to Services and service area');
+		expect(email.textContent).toContain('needs a change to “Services and service area”');
+		expect(email.textContent).not.toContain('tasks are done');
+		expect(email.textContent).toContain(`Open the task: ${ORIGIN}/setup/services`);
 	});
 
 	it('says the third reminder is the last', () => {
@@ -166,6 +179,30 @@ describe('sendDueSetupReminderEmails', () => {
 		expect(await sendDueSetupReminderEmails(db, { origin: ORIGIN })).toBe(1);
 		const [, email] = enqueueEmailDelivery.mock.calls[0];
 		expect(JSON.stringify(email)).toContain(`${ORIGIN}/setup/check-and-send`);
+	});
+
+	it('points at a section Uplift sent back, worded for it', async () => {
+		summary.next = { key: 'services', title: SERVICES.title, status: 'done', returned: true };
+		summary.returned_count = 1;
+		const db = client([due()]);
+		expect(await sendDueSetupReminderEmails(db, { origin: ORIGIN })).toBe(1);
+		const [, email] = enqueueEmailDelivery.mock.calls[0];
+		expect(email.subject).toBe('Uplift needs a change to Services and service area');
+		expect(email.textContent).toContain(`${ORIGIN}/setup/services`);
+	});
+
+	it('asks to send the changes once every sent-back section is changed', async () => {
+		summary.next = {
+			key: 'check-and-send',
+			title: 'Check and send to Uplift',
+			status: 'not_started'
+		};
+		summary.returned_count = 1;
+		const db = client([due()]);
+		await sendDueSetupReminderEmails(db, { origin: ORIGIN });
+		const [, email] = enqueueEmailDelivery.mock.calls[0];
+		expect(email.subject).toBe('Send your setup changes to Uplift');
+		expect(email.textContent).toContain(`Send your changes: ${ORIGIN}/setup/check-and-send`);
 	});
 
 	it('waits while a support message of theirs is with Uplift', async () => {

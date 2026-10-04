@@ -67,6 +67,7 @@ function client(overrides: Partial<OnboardingClient> = {}): OnboardingClient {
 		next_section_title: 'Your business',
 		sent_number: null,
 		sent_at: null,
+		returned_count: 0,
 		waiting_on: 'client',
 		next_action: 'finish_section',
 		last_activity_at: '2026-10-01T10:00:00Z',

@@ -1,5 +1,6 @@
 import { httpError } from '$lib/http-error';
 import type { SetupCheck, SetupConfirmation } from '$lib/setup/check';
+import type { SetupClientReview } from '$lib/setup/review';
 import type {
 	SetupAnswers,
 	SetupAvailability,
@@ -19,9 +20,14 @@ export type SetupSummary = {
 		status: SetupSectionStatus;
 		answered: number;
 		total: number;
+		/** C3b: Uplift's review of this section on the newest send; null before it was sent. */
+		review: SetupClientReview | null;
 	}[];
 	progress: { done: number; total: number };
-	next: { key: string; title: string; status: SetupSectionStatus } | null;
+	/** `returned`: a section Uplift sent back, to change. */
+	next: { key: string; title: string; status: SetupSectionStatus; returned: boolean } | null;
+	/** Sections Uplift sent back on the newest send. */
+	returned_count: number;
 	delivery:
 		| { state: 'collecting' }
 		| { state: 'sent'; number: number; submitted_at: string; submitted_by_name: string };
@@ -42,6 +48,8 @@ export type SetupSectionData = {
 	country: string | null;
 	currency: string | null;
 	status: SetupSectionStatus;
+	/** C3b: Uplift's review of this section on the newest send; null before it was sent. */
+	review: SetupClientReview | null;
 };
 
 export type SetupAnswerWrite = {

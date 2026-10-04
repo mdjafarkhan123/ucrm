@@ -19,6 +19,7 @@
 	import { PROTECTED_FILE_KINDS } from '$lib/setup/files';
 	import type { SetupAvailability, SetupFact } from '$lib/setup/catalogue';
 	import { setupReuseSource, setupReuseValue } from '$lib/setup/reuse';
+	import flagIcon from '@tabler/icons/outline/flag.svg?raw';
 
 	// One setup question. It only shows and collects: the page owns saving, so every question on a section
 	// autosaves the same way. `onedit` fires while the person is still typing (the page waits a moment before
@@ -36,6 +37,7 @@
 		fileTarget,
 		pickRows = [],
 		reuse = null,
+		flagged = false,
 		onedit,
 		oncommit
 	}: {
@@ -61,6 +63,8 @@
 		 * Null asks the question as a plain one: nothing to reuse yet, or not a reuse.
 		 */
 		reuse?: { lines: string[]; where: string; href: string } | null;
+		/** C3b: Uplift sent this task back and asked for this question to change. */
+		flagged?: boolean;
 		onedit: () => void;
 		oncommit: () => void;
 	} = $props();
@@ -326,7 +330,14 @@
 	{/if}
 {/snippet}
 
-<div class="setup-field" id={`${id}-field`}>
+<div class="setup-field" class:setup-field--flagged={flagged} id={`${id}-field`}>
+	{#if flagged}
+		<span class="setup-field__flag">
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			<span class="setup-field__flag-icon" aria-hidden="true">{@html flagIcon}</span>
+			Uplift asked you to change this
+		</span>
+	{/if}
 	{#if fact.canDefer}
 		<RadioGroup
 			label={fact.label}
@@ -389,6 +400,31 @@
 		min-width: 0;
 		// Room above the field when "Mark as done" scrolls an unanswered question into view.
 		scroll-margin-top: var(--space-largest);
+
+		// C3b: the same warning tint Jafar's page gives a question he sent back.
+		&--flagged {
+			padding: var(--space-base);
+			border-radius: var(--radius-base);
+			background: var(--color-warning--surface);
+		}
+
+		&__flag {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-smaller);
+			color: var(--color-warning--onSurface);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+		}
+
+		&__flag-icon {
+			display: inline-flex;
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
 
 		&__heading {
 			display: flex;

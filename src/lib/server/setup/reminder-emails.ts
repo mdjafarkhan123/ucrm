@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import { enqueueEmailDelivery } from '$lib/server/events/dispatcher';
 import { readSetupCatalogue, readSetupServiceKeys } from '$lib/server/setup/catalogue';
+import { readClientSetupReviews } from '$lib/server/setup/client-review';
 import { readSetupState, setupSummary } from '$lib/server/setup/read';
 import { catalogueForServices } from '$lib/setup/catalogue';
 import { SETUP_CHECK_DESCRIPTION, SETUP_CHECK_KEY, SETUP_CHECK_TITLE } from '$lib/setup/check';
@@ -11,7 +12,7 @@ import { SETUP_CHECK_DESCRIPTION, SETUP_CHECK_KEY, SETUP_CHECK_TITLE } from '$li
 // get an email pointing at the next unfinished task. Any setup activity restarts the clock. The database
 // decides when a reminder is due, keeps it to the business's daytime, and stops it for a paused account; this
 // checks setup is still unfinished, writes the email and queues it through the durable outbox. Runs on the
-// email worker's once-a-minute wake.
+// email worker's once-a-minute wake. C3b: a section Uplift sends back restarts them, worded for that section.
 
 const BATCH = 20;
 
@@ -51,9 +52,16 @@ function greetingName(name: string | null) {
 	return first && !first.includes('@') ? first : 'there';
 }
 
+/**
+ * What a reminder asks for: an unfinished task, a section Uplift sent back (`returned`, C3b), or sending the
+ * changes made to sent-back sections (`send_changes`).
+ */
+export type ReminderKind = 'task' | 'returned' | 'send_changes';
+
 /** One reminder email. `step` is 1, 2 or 3; the third says it is the last. */
 export function buildSetupReminderEmail(input: {
 	step: number;
+	kind?: ReminderKind;
 	recipientName: string | null;
 	organizationName: string;
 	task: ReminderTask;
@@ -61,33 +69,77 @@ export function buildSetupReminderEmail(input: {
 	origin: string;
 }): Email {
 	const { step, organizationName, task, progress, origin } = input;
+	const kind = input.kind ?? 'task';
+	const name = greetingName(input.recipientName);
 	const taskUrl = `${origin}/setup/${encodeURIComponent(task.key)}`;
 	const settingsUrl = `${origin}/setup#reminder-emails`;
 
-	const subject =
-		step === 1
-			? `Next step for ${organizationName}: ${task.title}`
-			: step === 2
-				? `Pick up your Uplift setup where you left off`
-				: `Last reminder: finish your setup so Uplift can start building`;
+	if (kind !== 'task') {
+		const asked =
+			kind === 'returned'
+				? `Uplift looked over the setup you sent for ${organizationName} and needs a change to “${task.title}”.`
+				: `you changed what Uplift asked about in the setup for ${organizationName}. Send the changes so Uplift can look again.`;
+		return reminderEmail({
+			subject:
+				step === 3
+					? `Last reminder: Uplift is waiting on a change to your setup`
+					: kind === 'returned'
+						? `Uplift needs a change to ${task.title}`
+						: `Send your setup changes to Uplift`,
+			paragraphs: [
+				step === 1 ? `Hi ${name}, ${asked}` : `Hi ${name}, a reminder: ${asked}`,
+				kind === 'returned'
+					? `Everything else you sent stays as it is — only this task needs another look. Uplift's note and the questions to change are on the task.`
+					: `Everything else you sent stays as it is.`,
+				`Uplift carries on with your system as soon as this is sorted.`
+			],
+			task,
+			taskUrl,
+			settingsUrl,
+			button: kind === 'returned' ? 'Open the task' : 'Send your changes'
+		});
+	}
 
 	const opening =
 		step === 1
-			? `Hi ${greetingName(input.recipientName)}, your Uplift setup for ${organizationName} is waiting for you.`
+			? `Hi ${name}, your Uplift setup for ${organizationName} is waiting for you.`
 			: step === 2
-				? `Hi ${greetingName(input.recipientName)}, it has been a few days since anyone worked on the Uplift setup for ${organizationName}.`
-				: `Hi ${greetingName(input.recipientName)}, the Uplift setup for ${organizationName} has been quiet for a week. This is our last reminder.`;
+				? `Hi ${name}, it has been a few days since anyone worked on the Uplift setup for ${organizationName}.`
+				: `Hi ${name}, the Uplift setup for ${organizationName} has been quiet for a week. This is our last reminder.`;
 
 	const progressLine =
 		progress.done === 0
 			? `No tasks are done yet — the first one takes a few minutes.`
 			: `${progress.done} of ${progress.total} tasks are done.`;
 
-	const paragraphs = [
-		opening,
-		progressLine,
-		`Uplift starts building your system once you send your setup to us, so the sooner it is finished, the sooner you are live. Every answer saves on its own, so you can do a little at a time.`
-	];
+	return reminderEmail({
+		subject:
+			step === 1
+				? `Next step for ${organizationName}: ${task.title}`
+				: step === 2
+					? `Pick up your Uplift setup where you left off`
+					: `Last reminder: finish your setup so Uplift can start building`,
+		paragraphs: [
+			opening,
+			progressLine,
+			`Uplift starts building your system once you send your setup to us, so the sooner it is finished, the sooner you are live. Every answer saves on its own, so you can do a little at a time.`
+		],
+		task,
+		taskUrl,
+		settingsUrl,
+		button: 'Continue setup'
+	});
+}
+
+function reminderEmail(input: {
+	subject: string;
+	paragraphs: string[];
+	task: ReminderTask;
+	taskUrl: string;
+	settingsUrl: string;
+	button: string;
+}): Email {
+	const { subject, paragraphs, task, taskUrl, settingsUrl, button } = input;
 	const footer = [
 		`Stuck on a question? Choose "I need Uplift's help" on it and carry on, or ask us with Chat with Uplift on any screen.`,
 		`Don't want these reminders? Turn them off on your setup page: ${settingsUrl}`
@@ -96,7 +148,7 @@ export function buildSetupReminderEmail(input: {
 	const htmlContent = [
 		...paragraphs.map((line) => `<p>${escapeHtml(line)}</p>`),
 		`<div style="margin:16px 0;padding:12px 16px;border-left:3px solid #d1d5db;background:#f9fafb"><p style="margin:0 0 4px;font-weight:600;color:#111827">Next: ${escapeHtml(task.title)}</p><p style="margin:0;color:#374151">${escapeHtml(task.description)}</p></div>`,
-		`<p style="margin:20px 0"><a href="${escapeHtml(taskUrl)}" style="display:inline-block;padding:10px 20px;border-radius:6px;background:#111827;color:#ffffff;text-decoration:none;font-weight:600">Continue setup</a></p>`,
+		`<p style="margin:20px 0"><a href="${escapeHtml(taskUrl)}" style="display:inline-block;padding:10px 20px;border-radius:6px;background:#111827;color:#ffffff;text-decoration:none;font-weight:600">${escapeHtml(button)}</a></p>`,
 		`<p style="color:#6b7280;font-size:13px">${escapeHtml(footer[0])}</p>`,
 		`<p style="color:#6b7280;font-size:13px">Don't want these reminders? <a href="${escapeHtml(settingsUrl)}" style="color:#6b7280">Turn them off on your setup page</a>.</p>`
 	].join('\n');
@@ -104,7 +156,7 @@ export function buildSetupReminderEmail(input: {
 	const textContent = [
 		...paragraphs,
 		`Next: ${task.title}\n${task.description}`,
-		`Continue setup: ${taskUrl}`,
+		`${button}: ${taskUrl}`,
 		...footer
 	].join('\n\n');
 
@@ -172,7 +224,25 @@ export async function sendDueSetupReminderEmails(
 			readSetupServiceKeys(client, reminder.organization_id)
 		]);
 		if (!state || !serviceKeys) continue;
-		const summary = setupSummary(state, catalogueForServices(catalogue, serviceKeys));
+		const clientCatalogue = catalogueForServices(catalogue, serviceKeys);
+		let reviews;
+		try {
+			reviews = await readClientSetupReviews(
+				client,
+				reminder.organization_id,
+				state,
+				clientCatalogue
+			);
+		} catch (error) {
+			console.error('Could not read the setup review for a reminder.', error);
+			continue;
+		}
+		const summary = setupSummary(state, clientCatalogue, reviews);
+		const kind: ReminderKind = summary.next?.returned
+			? 'returned'
+			: summary.next?.key === SETUP_CHECK_KEY && summary.returned_count > 0
+				? 'send_changes'
+				: 'task';
 		// B13: with every task done, the next step is Check and send, until setup has been sent.
 		const next =
 			summary.next?.key === SETUP_CHECK_KEY
@@ -199,6 +269,7 @@ export async function sendDueSetupReminderEmails(
 				recipientEmail: recipient.email,
 				...buildSetupReminderEmail({
 					step,
+					kind,
 					recipientName: recipient.name,
 					organizationName: reminder.organization_name,
 					task: next,

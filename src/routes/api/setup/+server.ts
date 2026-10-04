@@ -3,10 +3,11 @@ import type { RequestHandler } from './$types';
 import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
 import { requireSetupReader } from '$lib/server/setup/access';
 import { readOrganizationSetupCatalogue } from '$lib/server/setup/catalogue';
+import { readClientSetupReviews } from '$lib/server/setup/client-review';
 import { readSetupState, setupSummary } from '$lib/server/setup/read';
 
-// The task list and the dashboard's setup card: every section's status, overall progress, and the next
-// useful thing to do. Owners and administrators only.
+// The task list and the dashboard's setup card: every section's status and Uplift's review of it, overall
+// progress, and the next useful thing to do. Owners and administrators only.
 export const GET: RequestHandler = async (event) => {
 	const check = await requireSetupReader(event);
 	if ('response' in check) return check.response;
@@ -25,8 +26,16 @@ export const GET: RequestHandler = async (event) => {
 	]);
 	if (!catalogue || !state || optOut.error) return databaseError();
 
+	let reviews;
+	try {
+		reviews = await readClientSetupReviews(event.locals.supabase, organizationId, state, catalogue);
+	} catch (error) {
+		console.error('Could not read the setup review.', error);
+		return databaseError();
+	}
+
 	return json(
-		{ ...setupSummary(state, catalogue), reminder_emails_on: optOut.data === null },
+		{ ...setupSummary(state, catalogue, reviews), reminder_emails_on: optOut.data === null },
 		{ headers: PRIVATE_READ_HEADERS }
 	);
 };

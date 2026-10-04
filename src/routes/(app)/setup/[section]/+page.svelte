@@ -441,6 +441,14 @@
 	};
 
 	const errorStatus = $derived((query.error as HttpError | null)?.status);
+
+	// C3b: what Uplift said about this task on the newest send. A returned task's questions to change are
+	// highlighted until the client sends again.
+	const review = $derived(query.data?.review ?? null);
+	const flagged = $derived(new Set(review?.state === 'returned' ? review.question_keys : []));
+	const reviewedOn = (at: string | null) =>
+		at ? new Date(at).toLocaleDateString(undefined, { dateStyle: 'long' }) : '';
+	const fieldHref = (key: string) => `#setup-${key.replace(/\./g, '-')}-field`;
 </script>
 
 <svelte:head
@@ -498,7 +506,44 @@
 				{/snippet}
 			</PageHeader>
 
-			{#if markedDone}
+			{#if review?.state === 'returned'}
+				{@const toChange = sectionFacts(section).filter(
+					(fact) => flagged.has(fact.key) && shown.has(fact.key)
+				)}
+				<section aria-labelledby="setup-returned-heading">
+					<Banner type="warning">
+						<h2 id="setup-returned-heading" class="setup-section__returned-title">
+							Uplift needs changes to this task
+						</h2>
+						<p class="setup-section__returned-note">{review.note}</p>
+						{#if toChange.length > 0}
+							<p class="setup-section__returned-label">
+								{toChange.length === 1 ? 'Question to change' : 'Questions to change'}
+							</p>
+							<ul class="setup-section__returned-list">
+								{#each toChange as fact (fact.key)}
+									<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- an in-page anchor -->
+									<li><a href={fieldHref(fact.key)}>{fact.label}</a></li>
+								{/each}
+							</ul>
+						{/if}
+						<p class="setup-section__returned-after">
+							Sent back on {reviewedOn(review.reviewed_at)}. When you have made the change, send
+							your setup again from Check and send. Not sure what Uplift means? Use Ask Uplift.
+						</p>
+					</Banner>
+				</section>
+			{:else if review?.state === 'accepted'}
+				<Banner type="success">
+					Accepted by Uplift on {reviewedOn(review.reviewed_at)}. If you change an answer here,
+					Uplift looks at this task again the next time you send your setup.
+				</Banner>
+			{:else if review?.state === 'with_uplift'}
+				<Banner type="notice">
+					Uplift has this task and is looking it over. Changes you make here reach Uplift when you
+					send your setup again.
+				</Banner>
+			{:else if markedDone}
 				<Banner type="success">
 					This section is marked as done. You can still change any answer — it saves the same way.
 				</Banner>
@@ -521,6 +566,7 @@
 								{userId}
 								pickRows={fact.kind === 'pick' ? pickRows(fact) : undefined}
 								reuse={reuseOf(fact)}
+								flagged={flagged.has(fact.key)}
 								onedit={() => edited(fact.key)}
 								oncommit={() => committed(fact.key)}
 							/>
@@ -530,7 +576,10 @@
 			{/each}
 
 			<footer class="setup-section__footer">
-				{#if markedDone}
+				{#if markedDone && review?.state === 'returned'}
+					<Button href={checkHref}>Go to Check and send</Button>
+					<Button variant="tertiary" href={tasksHref}>Back to setup tasks</Button>
+				{:else if markedDone}
 					<Button href={backHref}>{backLabel}</Button>
 					<Button variant="tertiary" onclick={reopen} loading={finishing}>Mark as not done</Button>
 				{:else}
@@ -596,6 +645,44 @@
 			gap: var(--space-small);
 			padding-top: var(--space-base);
 			border-top: var(--border-base) solid var(--color-border);
+		}
+
+		&__returned-title {
+			color: inherit;
+			font-size: var(--typography--fontSize-base);
+			font-weight: 700;
+		}
+
+		&__returned-note {
+			margin-top: var(--space-smaller);
+			color: var(--color-text);
+			white-space: pre-line;
+			overflow-wrap: anywhere;
+		}
+
+		&__returned-label {
+			margin-top: var(--space-small);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+		}
+
+		&__returned-list {
+			margin: var(--space-smallest) 0 0;
+			padding-left: var(--space-large);
+
+			a {
+				color: inherit;
+				text-decoration: underline;
+
+				&:hover {
+					color: var(--color-heading);
+				}
+			}
+		}
+
+		&__returned-after {
+			margin-top: var(--space-small);
+			font-size: var(--typography--fontSize-small);
 		}
 
 		&__remaining {
