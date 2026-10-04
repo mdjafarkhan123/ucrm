@@ -15,7 +15,7 @@ offers no Delete; a stage tied to Website shows only to a client whose package i
 
 ## Next
 
-Waiting on Jafar. Ask him to: start a draft on `/jafar/setup`, Edit questions on "Your business", add a real
+Waiting on Jafar. Draft version 2 on dev already holds B3b's new "Your business" stage, so his publish is the real one: as the contractor owner, Raad's old legal name, hours and address should show again with the new yes/no answers suggested. Ask him to: open the draft on `/jafar/setup`, Edit questions on "Your business", add a real
 question he wants clients asked, save, publish; then log in as the contractor owner (CLAUDE.md logins) and
 answer it on `/setup/business`. Website-only proof needs a stage with a question tied to Website plus a client
 whose package edition includes Website (none on dev yet). While there, he can also give one question a "Show this question: Only when…" rule and watch it appear on
