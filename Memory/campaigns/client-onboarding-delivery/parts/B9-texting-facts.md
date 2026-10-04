@@ -16,6 +16,10 @@
 
 Plan the protected-document build (storage, access, audit, deletion date) against the existing setup upload path.
 
+## Outside actions
+
+- Apply migration `20261018090000_setup_protected_documents` to dev — check: `select 1 from supabase_migrations.schema_migrations where version = '20261018090000'` — pending
+
 ## Notes
 
 Fact: setup files today are ordinary File library Files (role `setup_answer`); anyone with `files.view` can
