@@ -7,7 +7,8 @@ blueprint `docs/client-onboarding-setup-content-blueprint.md` "Structured" rows
 
 ## Steps
 
-- [ ] Migration: new question type "list" with its boxes and row limit; carried through catalogue, draft copy, stage save; file boxes link their Files like file answers
+- [ ] Migration `20261009110000_setup_list_answers` written; apply to dev. Outcome check: `select 1 from
+  supabase_migrations.schema_migrations where version = '20261009110000'` and column `setup_items.list_fields` exists
 - [ ] Answer rules + tests (`$lib/setup/answer-values` or own module), catalogue kind `list`
 - [ ] Editor: list question with boxes (name, type, required, choices), row limit, starters
 - [ ] Client wizard: rows as numbered cards, Add another / Remove (MOJ "Add another" pattern); 1-row limit shows a plain form
@@ -15,7 +16,7 @@ blueprint `docs/client-onboarding-setup-content-blueprint.md` "Structured" rows
 
 ## Next
 
-Write the migration (copy the latest versions of the functions from `20261009100000_setup_file_answers.sql`).
+Run the outcome check, then apply the migration if it has not landed; regenerate database types.
 
 ## Notes
 
