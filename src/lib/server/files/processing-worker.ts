@@ -74,19 +74,19 @@ function rpcError(action: string, error: { message: string } | null) {
 	return new Error(`${action}: ${error?.message ?? 'The database returned no result.'}`);
 }
 
-async function defaultReadObject(objectKey: string): Promise<ReadableStream<Uint8Array>> {
+export async function defaultReadObject(objectKey: string): Promise<ReadableStream<Uint8Array>> {
 	const { body } = await getObjectStream(objectKey);
 	return body as ReadableStream<Uint8Array>;
 }
 
-async function defaultMeasureObject(objectKey: string): Promise<number> {
+export async function defaultMeasureObject(objectKey: string): Promise<number> {
 	const { contentLength } = await headObject(objectKey);
 	if (typeof contentLength !== 'number')
 		throw new Error('Storage did not report a size for that object.');
 	return contentLength;
 }
 
-type PassOutcome = {
+export type PassOutcome = {
 	verdict: ContentVerdict;
 	scan: ScanResult | null;
 	checksum: string;
@@ -97,12 +97,14 @@ type PassOutcome = {
 
 // Reads the object once. The scan session is opened before the first chunk so a scanner that is already
 // unreachable costs nothing, and it is aborted the moment the content check fails -- there is no point
-// scanning bytes we have already decided to refuse.
-async function inspect(
-	file: ClaimedFile,
+// scanning bytes we have already decided to refuse. Client onboarding B9a's protected setup documents pass
+// through here too, without a preview: nothing ever shows them in a page.
+export async function inspect(
+	file: Pick<ClaimedFile, 'display_name' | 'size_bytes'>,
 	actualSize: number,
 	stream: ReadableStream<Uint8Array>,
-	startScan: () => Promise<ScanSession>
+	startScan: () => Promise<ScanSession>,
+	{ preview = true }: { preview?: boolean } = {}
 ): Promise<PassOutcome> {
 	const hash = createHash('sha256');
 	const sample: number[] = [];
@@ -111,7 +113,7 @@ async function inspect(
 
 	// Decided before the first byte arrives, from the size storage reports, so the collected chunks can
 	// never grow past the cap even if the object is not what it claimed to be.
-	const collecting = wantsThumbnail(file.display_name, actualSize);
+	const collecting = preview && wantsThumbnail(file.display_name, actualSize);
 	const collected: Uint8Array[] = [];
 
 	try {

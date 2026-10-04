@@ -13,6 +13,12 @@ import {
 export const SETUP_FILE_KINDS = ['photo', 'document', 'audio'] as const;
 export type SetupFileKind = (typeof SETUP_FILE_KINDS)[number];
 
+/**
+ * B9a: a protected file question takes the papers a provider asks for — a scan or PDF, or a photo of one.
+ * Never audio. Mirrors nothing in the database, which leaves a protected question's kinds unset.
+ */
+export const PROTECTED_FILE_KINDS: SetupFileKind[] = ['document', 'photo'];
+
 /** How many files a question may take. Mirrors setup_items_max_files_check. */
 export const SETUP_MAX_FILES_CHOICES = [1, 5, 10, 20] as const;
 

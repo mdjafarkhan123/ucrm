@@ -57,6 +57,13 @@ export function buildFileObjectKey(organizationId: string, fileName: string): st
 	return `${organizationId}/files/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
 }
 
+// Client onboarding B9a: a protected setup document — a phone bill, a tax letter. Its own
+// `<org>/setup-protected/` prefix, which the database checks, keeps it apart from every File and every other
+// upload, so nothing that walks those prefixes can reach it.
+export function buildProtectedDocumentObjectKey(organizationId: string, fileName: string): string {
+	return `${organizationId}/setup-protected/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
+}
+
 // The small copy lives beside its original and is always a JPEG. Deriving the key rather than generating a
 // new one keeps the pair together, so the org/entity prefix check that guards attachment creation covers
 // both, and deleting the row can find the preview without storing a second lookup.

@@ -19,7 +19,7 @@ import {
 	parseSetupUrl,
 	setupChoiceList
 } from '$lib/setup/answer-values';
-import { parseSetupFileIds, type SetupFileKind } from '$lib/setup/files';
+import { PROTECTED_FILE_KINDS, parseSetupFileIds, type SetupFileKind } from '$lib/setup/files';
 import { parseSetupHours, parseSetupHoursExceptions } from '$lib/setup/hours';
 import { parseSetupList, setupListRows, type SetupListField } from '$lib/setup/lists';
 import { keptSetupPickIds, parseSetupPick, setupPickIds, setupPickMinimum } from '$lib/setup/picks';
@@ -59,6 +59,11 @@ export type SetupFactKind =
 	| 'colours'
 	/** Photos or files: the File Manager ids, as described in `$lib/setup/files`. */
 	| 'file'
+	/**
+	 * B9a: sensitive provider documents, such as a phone bill. Saved like `file`, but the ids are protected
+	 * documents (`$lib/server/setup/protected-documents`), which only the owner and Jafar can open.
+	 */
+	| 'protected_file'
 	/** Add-another rows of named boxes, as described in `$lib/setup/lists`. */
 	| 'list'
 	/** Rows picked from an earlier list, as described in `$lib/setup/picks`. */
@@ -285,7 +290,8 @@ type CatalogueItemRow = {
 	built_in: boolean;
 	required: boolean;
 	can_defer: boolean;
-	kind: SetupQuestionKind | null;
+	// B9b adds 'protected_file' to the editor's kinds; until then only starter content can use it.
+	kind: SetupQuestionKind | 'protected_file' | null;
 	options: { value: string; label: string }[] | null;
 	allow_other?: boolean;
 	max_choices?: number | null;
@@ -343,6 +349,12 @@ function factRules(item: CatalogueItemRow): SetupFactRules | null {
 		};
 	if (item.kind === 'file')
 		return { kind: 'file', fileKinds: item.file_kinds ?? ['photo'], maxFiles: item.max_files ?? 1 };
+	if (item.kind === 'protected_file')
+		return {
+			kind: 'protected_file',
+			fileKinds: PROTECTED_FILE_KINDS,
+			maxFiles: item.max_files ?? 1
+		};
 	if (item.kind === 'list')
 		return {
 			kind: 'list',
@@ -470,7 +482,11 @@ function linkReuses(sections: SetupSection[]) {
 			group.facts = group.facts.flatMap((fact) => {
 				if (!fact.reuseFrom) return [fact];
 				const source = sources.get(fact.reuseFrom);
-				if (!source || source.fact.reuseFrom || ['file', 'pick'].includes(source.fact.kind)) {
+				if (
+					!source ||
+					source.fact.reuseFrom ||
+					['file', 'protected_file', 'pick'].includes(source.fact.kind)
+				) {
 					console.error(`Setup question ${fact.key} reuses a question it cannot; skipped.`);
 					return [];
 				}
@@ -698,6 +714,7 @@ function parsedValue(fact: SetupFact, value: string) {
 		case 'colours':
 			return parseSetupColours(value);
 		case 'file':
+		case 'protected_file':
 			return parseSetupFileIds(value, fact.maxFiles ?? 1);
 		case 'list':
 			return parseSetupList(
@@ -795,6 +812,7 @@ export function setupValueError(
 		case 'duration':
 		case 'colours':
 		case 'file':
+		case 'protected_file':
 		case 'list':
 			return parsedValue(fact, value)?.error ?? null;
 		case 'pick':

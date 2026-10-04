@@ -15296,9 +15296,13 @@ export type Database = {
 					max_files: number | null;
 					max_length: number | null;
 					max_rows: number | null;
+					min_choices: number | null;
 					options: Json | null;
+					ordered: boolean;
+					pick_from: string | null;
 					position: number;
 					required: boolean;
+					reuse_from: string | null;
 					show_if: Json | null;
 					stage_key: string;
 					version_id: string;
@@ -15319,9 +15323,13 @@ export type Database = {
 					max_files?: number | null;
 					max_length?: number | null;
 					max_rows?: number | null;
+					min_choices?: number | null;
 					options?: Json | null;
+					ordered?: boolean;
+					pick_from?: string | null;
 					position: number;
 					required?: boolean;
+					reuse_from?: string | null;
 					show_if?: Json | null;
 					stage_key: string;
 					version_id: string;
@@ -15342,9 +15350,13 @@ export type Database = {
 					max_files?: number | null;
 					max_length?: number | null;
 					max_rows?: number | null;
+					min_choices?: number | null;
 					options?: Json | null;
+					ordered?: boolean;
+					pick_from?: string | null;
 					position?: number;
 					required?: boolean;
+					reuse_from?: string | null;
 					show_if?: Json | null;
 					stage_key?: string;
 					version_id?: string;
@@ -15356,6 +15368,121 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'setup_stages';
 						referencedColumns: ['version_id', 'stage_key'];
+					}
+				];
+			};
+			setup_protected_document_events: {
+				Row: {
+					action: string;
+					actor_label: string;
+					actor_owner_email: string | null;
+					actor_user_id: string | null;
+					created_at: string;
+					document_id: string;
+					id: number;
+				};
+				Insert: {
+					action: string;
+					actor_label: string;
+					actor_owner_email?: string | null;
+					actor_user_id?: string | null;
+					created_at?: string;
+					document_id: string;
+					id?: never;
+				};
+				Update: {
+					action?: string;
+					actor_label?: string;
+					actor_owner_email?: string | null;
+					actor_user_id?: string | null;
+					created_at?: string;
+					document_id?: string;
+					id?: never;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'setup_protected_document_events_document_id_fkey';
+						columns: ['document_id'];
+						isOneToOne: false;
+						referencedRelation: 'setup_protected_documents';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			setup_protected_documents: {
+				Row: {
+					checksum_sha256: string | null;
+					claim_token: string | null;
+					claimed_at: string | null;
+					created_at: string;
+					delete_after: string | null;
+					deleted_at: string | null;
+					display_name: string;
+					fact_key: string;
+					held_at: string | null;
+					id: string;
+					mime_type: string;
+					object_key: string | null;
+					organization_id: string;
+					problem: string | null;
+					processing_attempts: number;
+					scanned_at: string | null;
+					size_bytes: number;
+					state: string;
+					upload_completed_at: string | null;
+					uploaded_by: string | null;
+				};
+				Insert: {
+					checksum_sha256?: string | null;
+					claim_token?: string | null;
+					claimed_at?: string | null;
+					created_at?: string;
+					delete_after?: string | null;
+					deleted_at?: string | null;
+					display_name: string;
+					fact_key: string;
+					held_at?: string | null;
+					id?: string;
+					mime_type: string;
+					object_key?: string | null;
+					organization_id: string;
+					problem?: string | null;
+					processing_attempts?: number;
+					scanned_at?: string | null;
+					size_bytes: number;
+					state?: string;
+					upload_completed_at?: string | null;
+					uploaded_by?: string | null;
+				};
+				Update: {
+					checksum_sha256?: string | null;
+					claim_token?: string | null;
+					claimed_at?: string | null;
+					created_at?: string;
+					delete_after?: string | null;
+					deleted_at?: string | null;
+					display_name?: string;
+					fact_key?: string;
+					held_at?: string | null;
+					id?: string;
+					mime_type?: string;
+					object_key?: string | null;
+					organization_id?: string;
+					problem?: string | null;
+					processing_attempts?: number;
+					scanned_at?: string | null;
+					size_bytes?: number;
+					state?: string;
+					upload_completed_at?: string | null;
+					uploaded_by?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'setup_protected_documents_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
 					}
 				];
 			};
@@ -17772,6 +17899,37 @@ export type Database = {
 					style: string;
 				}[];
 			};
+			claim_setup_protected_documents: {
+				Args: { batch_size?: number };
+				Returns: {
+					checksum_sha256: string | null;
+					claim_token: string | null;
+					claimed_at: string | null;
+					created_at: string;
+					delete_after: string | null;
+					deleted_at: string | null;
+					display_name: string;
+					fact_key: string;
+					held_at: string | null;
+					id: string;
+					mime_type: string;
+					object_key: string | null;
+					organization_id: string;
+					problem: string | null;
+					processing_attempts: number;
+					scanned_at: string | null;
+					size_bytes: number;
+					state: string;
+					upload_completed_at: string | null;
+					uploaded_by: string | null;
+				}[];
+				SetofOptions: {
+					from: '*';
+					to: 'setup_protected_documents';
+					isOneToOne: false;
+					isSetofReturn: true;
+				};
+			};
 			claim_team_invitation: {
 				Args: {
 					target_email: string;
@@ -19311,6 +19469,42 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			complete_setup_protected_document: {
+				Args: {
+					target_actor_label: string;
+					target_document_id: string;
+					target_organization_id: string;
+					target_uploaded_by: string;
+				};
+				Returns: {
+					checksum_sha256: string | null;
+					claim_token: string | null;
+					claimed_at: string | null;
+					created_at: string;
+					delete_after: string | null;
+					deleted_at: string | null;
+					display_name: string;
+					fact_key: string;
+					held_at: string | null;
+					id: string;
+					mime_type: string;
+					object_key: string | null;
+					organization_id: string;
+					problem: string | null;
+					processing_attempts: number;
+					scanned_at: string | null;
+					size_bytes: number;
+					state: string;
+					upload_completed_at: string | null;
+					uploaded_by: string | null;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'setup_protected_documents';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			confirm_onboarding_application_payment: {
 				Args: {
 					actor_email: string;
@@ -19970,6 +20164,19 @@ export type Database = {
 			};
 			delete_property: { Args: { p_property_id: string }; Returns: undefined };
 			delete_quote: { Args: { target_quote_id: string }; Returns: Json };
+			delete_setup_protected_document: {
+				Args: {
+					target_action: string;
+					target_actor_label: string;
+					target_actor_owner_email: string;
+					target_actor_user_id: string;
+					target_document_id: string;
+					target_organization_id: string;
+				};
+				Returns: {
+					object_key: string;
+				}[];
+			};
 			describe_file: {
 				Args: {
 					set_caption: boolean;
@@ -21739,6 +21946,18 @@ export type Database = {
 					user_id: string;
 				}[];
 			};
+			finish_setup_protected_document_check: {
+				Args: {
+					target_checksum_sha256: string;
+					target_claim_token: string;
+					target_document_id: string;
+					target_problem?: string;
+					target_ready: boolean;
+				};
+				Returns: {
+					object_key: string;
+				}[];
+			};
 			freeze_quote_version: {
 				Args: { expected_revision: number; target_quote_id: string };
 				Returns: Json;
@@ -22591,6 +22810,20 @@ export type Database = {
 			open_quote_deposit_stripe_checkout: {
 				Args: { supplied_token_hash: string };
 				Returns: Json;
+			};
+			open_setup_protected_document: {
+				Args: {
+					target_actor_label: string;
+					target_actor_owner_email: string;
+					target_actor_user_id: string;
+					target_document_id: string;
+					target_organization_id: string;
+				};
+				Returns: {
+					display_name: string;
+					mime_type: string;
+					object_key: string;
+				}[];
 			};
 			organization_access_snapshot: {
 				Args: {
@@ -24013,6 +24246,45 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			register_setup_protected_document: {
+				Args: {
+					target_display_name: string;
+					target_fact_key: string;
+					target_mime_type: string;
+					target_object_key: string;
+					target_organization_id: string;
+					target_size_bytes: number;
+					target_uploaded_by: string;
+				};
+				Returns: {
+					checksum_sha256: string | null;
+					claim_token: string | null;
+					claimed_at: string | null;
+					created_at: string;
+					delete_after: string | null;
+					deleted_at: string | null;
+					display_name: string;
+					fact_key: string;
+					held_at: string | null;
+					id: string;
+					mime_type: string;
+					object_key: string | null;
+					organization_id: string;
+					problem: string | null;
+					processing_attempts: number;
+					scanned_at: string | null;
+					size_bytes: number;
+					state: string;
+					upload_completed_at: string | null;
+					uploaded_by: string | null;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'setup_protected_documents';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			release_communication_worker_lease: {
 				Args: { p_lease_token: string; p_worker_name: string };
 				Returns: boolean;
@@ -24064,6 +24336,10 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			release_setup_protected_document_claim: {
+				Args: { target_claim_token: string; target_document_id: string };
+				Returns: undefined;
 			};
 			release_team_invitation_reconciliation: {
 				Args: {
@@ -25124,6 +25400,41 @@ export type Database = {
 				Args: { target_organization_id: string };
 				Returns: Json;
 			};
+			schedule_setup_protected_document_deletion: {
+				Args: {
+					target_actor_owner_email: string;
+					target_document_id: string;
+					target_organization_id: string;
+				};
+				Returns: {
+					checksum_sha256: string | null;
+					claim_token: string | null;
+					claimed_at: string | null;
+					created_at: string;
+					delete_after: string | null;
+					deleted_at: string | null;
+					display_name: string;
+					fact_key: string;
+					held_at: string | null;
+					id: string;
+					mime_type: string;
+					object_key: string | null;
+					organization_id: string;
+					problem: string | null;
+					processing_attempts: number;
+					scanned_at: string | null;
+					size_bytes: number;
+					state: string;
+					upload_completed_at: string | null;
+					uploaded_by: string | null;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'setup_protected_documents';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			send_draft_quote_email: {
 				Args: {
 					expected_revision: number;
@@ -25822,6 +26133,12 @@ export type Database = {
 			sweep_communication_email_reputation: {
 				Args: { batch_size?: number };
 				Returns: number;
+			};
+			sweep_setup_protected_documents: {
+				Args: { batch_size?: number };
+				Returns: {
+					object_key: string;
+				}[];
 			};
 			sweep_team_invitation_reservations: {
 				Args: { stale_after?: string };

@@ -8,6 +8,10 @@ import {
 	sweepExpiredTrash
 } from '$lib/server/files/processing-worker';
 import { sweepExpiredOrganizationExports } from '$lib/server/files/organization-export';
+import {
+	runProtectedDocumentChecks,
+	sweepProtectedDocuments
+} from '$lib/server/setup/protected-documents-worker';
 
 // A burst of uploads can leave more than one batch waiting; loop until a claim comes back empty so it
 // drains in one tick instead of ten. Bounded because each file is a whole object read and scan, and this
@@ -53,10 +57,14 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (result.deferred === result.claimed) break;
 	}
 
+	// Client onboarding B9a: protected setup documents. Few, and checked one batch a tick.
+	const protectedChecks = await runProtectedDocumentChecks();
+
 	// Cheap when there is nothing to collect: one indexed delete/update that usually matches no rows.
 	const sweep = await sweepAbandonedFileUploads();
 	const trashSweep = await sweepExpiredTrash();
 	const exportSweep = await sweepExpiredOrganizationExports();
+	const protectedSweep = await sweepProtectedDocuments();
 
 	return json(
 		{
@@ -69,7 +77,10 @@ export const POST: RequestHandler = async ({ request }) => {
 			thumbnails,
 			abandoned: sweep.removed,
 			purged: trashSweep.purged,
-			exportsPurged: exportSweep.purged
+			exportsPurged: exportSweep.purged,
+			protectedChecked: protectedChecks.claimed,
+			protectedRefused: protectedChecks.refused,
+			protectedDeleted: protectedSweep.deleted
 		},
 		{ headers: { 'cache-control': 'no-store' } }
 	);

@@ -107,6 +107,16 @@ export const setupFileUploadSchema = z
 const FILE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // The files a photo or file answer holds, for the page to show: up to 20, the most one answer holds.
+// B9a: starting an upload to a protected file question. A protected question is never a list box.
+export const protectedDocumentUploadSchema = z
+	.object({
+		fact_key: z.string().max(80),
+		file_name: z.string().trim().min(1).max(255),
+		mime_type: z.string().trim().max(127),
+		size_bytes: z.number().int().positive()
+	})
+	.strict();
+
 export const setupFileIdsSchema = z
 	.string()
 	.transform((value) => value.split(',').filter(Boolean))

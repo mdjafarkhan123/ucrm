@@ -5,6 +5,7 @@ import { readOrganizationSetupCatalogue } from '$lib/server/setup/catalogue';
 import { readSetupState } from '$lib/server/setup/read';
 import { requireSetupEditor, setupWriteError, setupWriteLimited } from '$lib/server/setup/access';
 import { unusableSetupFile } from '$lib/server/setup/files';
+import { unusableProtectedDocument } from '$lib/server/setup/protected-documents';
 import { setupAnswersSchema, type SetupAnswersInput } from '$lib/server/validation/setup.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { catalogueFacts, type SetupAnswers, type SetupFact } from '$lib/setup/catalogue';
@@ -70,7 +71,7 @@ export const PATCH: RequestHandler = async (event) => {
 	];
 
 	// A photo or file answer may only hold this organization's own setup uploads that are still usable.
-	// A5e: the same goes for the file boxes in a list's rows.
+	// A5e: the same goes for the file boxes in a list's rows; B9a: and for a protected file answer.
 	for (const answer of answers) {
 		const fact = facts.get(answer.fact_key);
 		if (!Array.isArray(answer.value)) continue;
@@ -80,10 +81,14 @@ export const PATCH: RequestHandler = async (event) => {
 				: fact?.kind === 'list'
 					? setupListFileIds(answer.value as SetupListRow[], fact.listFields ?? [])
 					: [];
-		if (ids.length === 0) continue;
+		const protectedIds = fact?.kind === 'protected_file' ? (answer.value as string[]) : [];
+		if (ids.length === 0 && protectedIds.length === 0) continue;
 		let unusable: string | null;
 		try {
-			unusable = await unusableSetupFile(organizationId, ids);
+			// B9a: a protected file answer holds only this question's own protected documents.
+			unusable = protectedIds.length
+				? await unusableProtectedDocument(organizationId, answer.fact_key, protectedIds)
+				: await unusableSetupFile(organizationId, ids);
 		} catch (error) {
 			console.error('Could not check setup answer files.', error);
 			return databaseError();

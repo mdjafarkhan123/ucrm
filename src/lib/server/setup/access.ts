@@ -13,6 +13,19 @@ export function requireSetupEditor(event: RequestEvent) {
 	return requireOrganizationAdmin(event, 'settings.business.edit');
 }
 
+/**
+ * B9a: a protected setup document (a phone bill, a tax letter) opens only for the business owner — not for an
+ * administrator, though an administrator may upload one (Jafar, 2026-10-04).
+ */
+export function protectedDocumentOwnerOnly(check: { auth: { organization: { role: string } } }) {
+	return check.auth.organization.role === 'owner'
+		? null
+		: json(
+				{ error: 'Only the business owner can open this file.', reason: 'owner_only' },
+				{ status: 403 }
+			);
+}
+
 // Autosave sends a request for every field somebody finishes, so the ceiling is well above the 20 a minute
 // that an ordinary settings Save gets. It is still one shared counter per organization.
 const SETUP_WRITE_LIMIT = { windowSeconds: 60, maxAttempts: 120 };
