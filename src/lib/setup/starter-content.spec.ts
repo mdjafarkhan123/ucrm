@@ -64,7 +64,13 @@ const have = (value: string) => ({ availability: 'have' as const, value, note: n
 
 describe('starter setup content', () => {
 	it('loads every stage built so far', () => {
-		expect(stages.map((stage) => stage.key)).toEqual(['business', 'services', 'brand', 'website']);
+		expect(stages.map((stage) => stage.key)).toEqual([
+			'business',
+			'services',
+			'brand',
+			'website',
+			'google'
+		]);
 	});
 
 	it('leaves no question out for want of answer rules', () => {
@@ -597,6 +603,153 @@ describe('starter setup content', () => {
 				'website.keep_any': have('no')
 			};
 			expect(missingRequiredFacts(website, answers, shown(answers))).toEqual([]);
+		});
+	});
+	describe('Google Business Profile', () => {
+		const google = starter.sections.find((section) => section.key === 'google')!;
+		const shown = (answers: SetupAnswers) => shownCatalogueFacts(starter, answers);
+		const situation = (value: string) => shown({ 'gbp.situation': have(value) });
+
+		it('is shown only to a package with Google Business Profile management', () => {
+			expect(google.serviceKey).toBe('google_profile');
+		});
+
+		it('asks each starting answer only its own questions', () => {
+			const branchOnly: Record<string, string[]> = {
+				own: ['gbp.link', 'gbp.manager_by'],
+				someone_else: ['gbp.link', 'gbp.controller', 'gbp.manager_by'],
+				need_new: ['gbp.owner_account'],
+				unsure: ['gbp.link']
+			};
+			const all = new Set(Object.values(branchOnly).flat());
+			for (const [branch, own] of Object.entries(branchOnly)) {
+				const asked = situation(branch);
+				for (const key of all) expect(asked.has(key), `${branch}: ${key}`).toBe(own.includes(key));
+			}
+		});
+
+		it('never asks for a password', () => {
+			for (const fact of sectionFacts(google)) {
+				expect(fact.key).not.toMatch(/password/);
+				for (const field of fact.listFields ?? []) expect(field.key).not.toMatch(/password/);
+				expect(fact.label).not.toMatch(/password/i);
+			}
+		});
+
+		it('confirms the name, phone, opening date and areas given earlier instead of asking again', () => {
+			for (const [key, source] of [
+				['gbp.public_name', 'business.public_name'],
+				['gbp.phone', 'business.public_phone'],
+				['gbp.opening_date', 'business.started_on'],
+				['gbp.service_areas', 'area.places']
+			])
+				expect(facts.get(key)!.reuseFrom, key).toBe(source);
+		});
+
+		it('asks for service areas only when the client goes to customers', () => {
+			const model = (value: string) =>
+				shown({ 'gbp.business_model': have(value) }).has('gbp.service_areas');
+			expect(model('storefront')).toBe(false);
+			expect(model('service_area')).toBe(true);
+			expect(model('both')).toBe(true);
+		});
+
+		it('asks for other hours, another address and past details only after their answer', () => {
+			expect(shown({ 'gbp.hours_same': have('no') }).has('gbp.hours')).toBe(true);
+			expect(shown({ 'gbp.hours_same': have('yes') }).has('gbp.hours')).toBe(false);
+			expect(shown({ 'gbp.verify_same': have('no') }).has('gbp.verify_address')).toBe(true);
+			expect(shown({ 'gbp.verify_same': have('yes') }).has('gbp.verify_address')).toBe(false);
+			for (const [question, follow] of [
+				['gbp.history', 'gbp.history_details'],
+				['gbp.duplicates', 'gbp.duplicate_list']
+			]) {
+				expect(shown({ [question]: have('yes') }).has(follow), follow).toBe(true);
+				expect(shown({ [question]: have('not_sure') }).has(follow), follow).toBe(true);
+				expect(shown({ [question]: have('no') }).has(follow), follow).toBe(false);
+			}
+		});
+
+		it('asks about photos only when the client shared some', () => {
+			expect(shown({ 'photos.have': have('yes') }).has('gbp.photos_ok')).toBe(true);
+			expect(shown({ 'photos.have': have('no') }).has('gbp.photos_ok')).toBe(false);
+		});
+
+		it('saves a full answer and shows it again when the client comes back', () => {
+			const earlier: SetupAnswers = {
+				'business.public_name': have('Raad Plumbing'),
+				'business.public_phone': have('+44 113 496 0000'),
+				'business.started_on': have('2012-04-01'),
+				'area.places': have('[{"id":"a1","values":{"name":"Leeds"}}]'),
+				'photos.have': have('yes')
+			};
+			const sent: Record<string, string> = {
+				'gbp.situation': 'someone_else',
+				'gbp.link': 'https://maps.app.goo.gl/abc123',
+				'gbp.controller': JSON.stringify([
+					{ id: 'c1', values: { name: 'Sam Webb', company: 'Webb Marketing' } }
+				]),
+				'gbp.business_model': 'service_area',
+				'gbp.public_name': JSON.stringify({ same_as: 'business.public_name' }),
+				'gbp.other_names': 'Boiler servicing',
+				'gbp.phone': JSON.stringify({ same_as: 'business.public_phone' }),
+				'gbp.hours_same': 'no',
+				'gbp.hours': 'Mon–Fri 8am–6pm, Sat 9am–1pm',
+				'gbp.website': 'raadplumbing.co.uk',
+				'gbp.opening_date': JSON.stringify({ same_as: 'business.started_on' }),
+				'gbp.service_areas': JSON.stringify({ same_as: 'area.places' }),
+				'gbp.photos_ok': 'yes',
+				'gbp.verify_same': 'no',
+				'gbp.verify_address': JSON.stringify([
+					{ id: 'v1', values: { line1: '4 Mill Lane', city: 'Leeds', postal_code: 'LS1 4AB' } }
+				]),
+				'gbp.history': 'yes',
+				'gbp.history_details': 'Suspended in 2022 after a move; reinstated.',
+				'gbp.duplicates': 'not_sure',
+				'gbp.duplicate_list': JSON.stringify([
+					{ id: 'd1', values: { note: 'Old listing under the old shop name' } }
+				]),
+				'gbp.manager_by': 'controller'
+			};
+			const parsed = setupAnswersSchema(facts, earlier).safeParse({
+				answers: Object.entries(sent).map(([fact_key, value]) => ({
+					fact_key,
+					availability: 'have',
+					value,
+					note: null
+				}))
+			});
+			expect(parsed.error?.issues ?? []).toEqual([]);
+
+			const resumed: SetupAnswers = { ...earlier };
+			for (const answer of parsed.data!.answers) {
+				const stored = answer.value;
+				resumed[answer.fact_key] = have(
+					typeof stored === 'string' ? stored : JSON.stringify(stored)
+				);
+			}
+			expect(JSON.parse(resumed['gbp.verify_address']!.value!)[0].values.postal_code).toBe(
+				'LS1 4AB'
+			);
+			expect(missingRequiredFacts(google, resumed, shown(resumed))).toEqual([]);
+			for (const fact of sectionFacts(google))
+				expect(setupAnswerShortfall(fact, resumed), fact.key).toBeNull();
+		});
+
+		it('lets a client who needs a new profile send the setup without its Google account yet', () => {
+			const answers: SetupAnswers = {
+				'business.public_name': have('Raad Plumbing'),
+				'business.public_phone': have('+44 113 496 0000'),
+				'gbp.situation': have('need_new'),
+				'gbp.owner_account': { availability: 'not_yet', value: null, note: null },
+				'gbp.business_model': have('storefront'),
+				'gbp.public_name': have('{"same_as":"business.public_name"}'),
+				'gbp.phone': have('{"same_as":"business.public_phone"}'),
+				'gbp.hours_same': have('yes'),
+				'gbp.verify_same': have('yes'),
+				'gbp.history': have('no'),
+				'gbp.duplicates': have('no')
+			};
+			expect(missingRequiredFacts(google, answers, shown(answers))).toEqual([]);
 		});
 	});
 });
