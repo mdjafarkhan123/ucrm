@@ -23,3 +23,7 @@
 ## Next
 
 Write the migration.
+
+## Outside actions
+
+- Dev migration 20261026090000 — check: `npx supabase migration list --linked` shows it remote
