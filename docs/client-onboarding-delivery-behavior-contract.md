@@ -266,6 +266,11 @@ page, and restarts the setup reminders, worded for that section. Every other sec
 sees "Accepted by Uplift", "With Uplift" or "Uplift needs changes" on each task, and changing an accepted section
 puts it back for review on the next send.
 
+Each **I need Uplift's help** answer is an item on Uplift's to-do; it closes only when Jafar records the answer
+Uplift found, in the same kind of box the client had (a written note for photos, files and lists). A section can be
+accepted while its items are open. The client's own "need help" is kept, and the client sees Uplift's answer under
+the question as "Uplift filled this in" (Jafar, 2026-10-04).
+
 Keep the client's original answer, any later answer, and the final accepted value. Accepted facts may then seed or
 update matching CRM settings. Repeating a safe provisioning/configuration operation must not duplicate records or
 messages. Material owner changes are visible in history.
