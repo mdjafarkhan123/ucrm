@@ -12,6 +12,7 @@
 	import SetupChoicesField from '$lib/components/setup/SetupChoicesField.svelte';
 	import SetupColoursField from '$lib/components/setup/SetupColoursField.svelte';
 	import SetupFilesField from '$lib/components/setup/SetupFilesField.svelte';
+	import SetupListField from '$lib/components/setup/SetupListField.svelte';
 	import { COUNTRIES } from '$lib/settings/countries';
 	import type { SetupAvailability, SetupFact } from '$lib/setup/catalogue';
 
@@ -28,6 +29,7 @@
 		currency = null,
 		country = null,
 		userId = null,
+		fileTarget,
 		onedit,
 		oncommit
 	}: {
@@ -44,6 +46,8 @@
 		country?: string | null;
 		/** Who is signed in, for a photo or file answer's cached file list. */
 		userId?: string | null;
+		/** A5e: a box in a list's row uploads its file to the list question and that box. */
+		fileTarget?: { factKey: string; fieldKey: string };
 		onedit: () => void;
 		oncommit: () => void;
 	} = $props();
@@ -176,10 +180,26 @@
 			{onedit}
 			{oncommit}
 		/>
+	{:else if fact.kind === 'list'}
+		<SetupListField
+			{id}
+			factKey={fact.key}
+			label={fact.label}
+			fields={fact.listFields ?? []}
+			maxRows={fact.maxRows ?? 1}
+			bind:value
+			{error}
+			{currency}
+			{country}
+			{userId}
+			{onedit}
+			{oncommit}
+		/>
 	{:else if fact.kind === 'file'}
 		<SetupFilesField
 			{id}
-			factKey={fact.key}
+			factKey={fileTarget?.factKey ?? fact.key}
+			fieldKey={fileTarget?.fieldKey}
 			label={fact.label}
 			kinds={fact.fileKinds ?? ['photo']}
 			maxFiles={fact.maxFiles ?? 1}
@@ -277,7 +297,7 @@
 		/>
 	{/if}
 
-	{#if error}
+	{#if error && fact.kind !== 'list'}
 		<p class="setup-field__error" role="alert">{error}</p>
 	{:else if suggested && availability === 'have'}
 		<p class="setup-field__hint">Filled in for you — change it if it isn’t right.</p>

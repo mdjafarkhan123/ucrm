@@ -21,6 +21,7 @@ import {
 } from '$lib/setup/answer-values';
 import { parseSetupFileIds, type SetupFileKind } from '$lib/setup/files';
 import { parseSetupHours, parseSetupHoursExceptions } from '$lib/setup/hours';
+import { parseSetupList, type SetupListField } from '$lib/setup/lists';
 
 export type SetupAvailability = 'have' | 'not_yet' | 'need_help';
 
@@ -55,7 +56,9 @@ export type SetupFactKind =
 	/** Brand colours as codes like #1A73E8. */
 	| 'colours'
 	/** Photos or files: the File Manager ids, as described in `$lib/setup/files`. */
-	| 'file';
+	| 'file'
+	/** Add-another rows of named boxes, as described in `$lib/setup/lists`. */
+	| 'list';
 
 /** The answer types Jafar can give a question that is not built in (plan §2.1). */
 export const SETUP_QUESTION_KINDS = [
@@ -75,7 +78,8 @@ export const SETUP_QUESTION_KINDS = [
 	'distance',
 	'duration',
 	'colours',
-	'file'
+	'file',
+	'list'
 ] as const;
 export type SetupQuestionKind = (typeof SETUP_QUESTION_KINDS)[number];
 
@@ -96,6 +100,10 @@ type SetupFactRules = {
 	fileKinds?: SetupFileKind[];
 	/** `file`: the most files one answer may hold. */
 	maxFiles?: number;
+	/** `list`: the boxes each row holds. */
+	listFields?: SetupListField[];
+	/** `list`: the most rows; 1 is a plain form. */
+	maxRows?: number;
 };
 
 export type SetupFact = SetupFactRules & {
@@ -214,6 +222,9 @@ export const BUILT_IN_FACTS: Record<string, SetupFactRules> = {
 	'business.hours_exceptions': { kind: 'hours_exceptions' }
 };
 
+/** One box of a list question, as the database keeps it. */
+type ListFieldRow = Omit<SetupListField, 'fileKinds'> & { file_kinds?: SetupFileKind[] };
+
 /** One item of `public.setup_published_catalogue()`. */
 type CatalogueItemRow = {
 	type: 'heading' | 'question';
@@ -229,6 +240,8 @@ type CatalogueItemRow = {
 	max_choices?: number | null;
 	file_kinds?: SetupFileKind[] | null;
 	max_files?: number | null;
+	list_fields?: ListFieldRow[] | null;
+	max_rows?: number | null;
 	max_length: number | null;
 	show_if?: ({ fact_key: string; values: string[] } | { service_key: string })[] | null;
 };
@@ -275,6 +288,15 @@ function factRules(item: CatalogueItemRow): SetupFactRules | null {
 		};
 	if (item.kind === 'file')
 		return { kind: 'file', fileKinds: item.file_kinds ?? ['photo'], maxFiles: item.max_files ?? 1 };
+	if (item.kind === 'list')
+		return {
+			kind: 'list',
+			listFields: (item.list_fields ?? []).map(({ file_kinds, ...field }) => ({
+				...field,
+				...(file_kinds ? { fileKinds: file_kinds } : {})
+			})),
+			maxRows: item.max_rows ?? 1
+		};
 	return {
 		kind: item.kind,
 		...(item.max_length ? { maxLength: item.max_length } : {}),
@@ -509,9 +531,50 @@ function parsedValue(fact: SetupFact, value: string) {
 			return parseSetupColours(value);
 		case 'file':
 			return parseSetupFileIds(value, fact.maxFiles ?? 1);
+		case 'list':
+			return parseSetupList(
+				value,
+				{ fields: fact.listFields ?? [], maxRows: fact.maxRows ?? 1 },
+				listCellValue
+			);
 		default:
 			return undefined;
 	}
+}
+
+/**
+ * One box of a list question as a question of its own, so the page shows it and this module checks it exactly
+ * as a question of that type. `key` names it on the page; a file box holds one file.
+ */
+export function setupListFieldFact(field: SetupListField, key = field.key): SetupFact {
+	const base = { key, label: field.label, required: field.required, builtIn: false };
+	switch (field.kind) {
+		case 'yes_no':
+			return { ...base, kind: 'choice', layout: 'radio', options: YES_NO('Yes', 'No') };
+		case 'choice':
+			return { ...base, kind: 'choice', options: field.options ?? [] };
+		case 'file':
+			return { ...base, kind: 'file', fileKinds: field.fileKinds ?? ['photo'], maxFiles: 1 };
+		case 'text':
+			return { ...base, kind: 'text', maxLength: 200 };
+		case 'longtext':
+			return { ...base, kind: 'longtext', maxLength: 2000 };
+		default:
+			return { ...base, kind: field.kind };
+	}
+}
+
+/** A list box's value, checked exactly as a question of its type is. A file box's value is the one id. */
+function listCellValue(field: SetupListField, text: string) {
+	if (field.kind === 'file') {
+		const ids = parseSetupFileIds(JSON.stringify([text]), 1);
+		return ids.error === null ? { value: ids.value[0], error: null } : ids;
+	}
+	const fact = setupListFieldFact(field);
+	const error = setupValueError(fact, text);
+	return error === null
+		? { value: storedSetupValue(fact, text), error: null }
+		: { value: null, error };
 }
 
 /** Why a typed value cannot be saved, in words for the person typing it — or null when it can. */
@@ -548,6 +611,7 @@ export function setupValueError(fact: SetupFact, raw: string): string | null {
 		case 'duration':
 		case 'colours':
 		case 'file':
+		case 'list':
 			return parsedValue(fact, value)?.error ?? null;
 		default:
 			if (fact.maxLength && value.length > fact.maxLength)

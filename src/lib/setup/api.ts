@@ -147,13 +147,16 @@ export const setupFileHref = (id: string) => `/api/setup/files/${encodeURICompon
  */
 export async function startSetupFileUpload(
 	factKey: string,
-	file: File
+	file: File,
+	/** A5e: the file box of a list question. */
+	fieldKey?: string
 ): Promise<{ file_id: string; mime_type: string; upload_url: string }> {
 	const response = await fetch('/api/setup/files', {
 		method: 'POST',
 		headers: { 'content-type': 'application/json' },
 		body: JSON.stringify({
 			fact_key: factKey,
+			...(fieldKey ? { field_key: fieldKey } : {}),
 			file_name: file.name,
 			mime_type: file.type,
 			size_bytes: file.size

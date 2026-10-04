@@ -34,6 +34,7 @@
 	let {
 		id,
 		factKey,
+		fieldKey,
 		label,
 		kinds,
 		maxFiles,
@@ -44,6 +45,8 @@
 	}: {
 		id: string;
 		factKey: string;
+		/** A5e: the file box of a list question, when this sits in one of its rows. */
+		fieldKey?: string;
 		label: string;
 		kinds: SetupFileKind[];
 		maxFiles: number;
@@ -134,7 +137,7 @@
 
 	async function upload(key: string, file: File) {
 		try {
-			const started = await startSetupFileUpload(factKey, file);
+			const started = await startSetupFileUpload(factKey, file, fieldKey);
 			let shown = -1;
 			// The signed upload names one type for each kind of file; a slice carries the bytes under it.
 			await uploadAttachmentFile(

@@ -9,14 +9,14 @@ blueprint `docs/client-onboarding-setup-content-blueprint.md` "Structured" rows
 
 - [x] Migration `20261009110000_setup_list_answers` applied to dev; rules spot-checked in SQL; types updated. Outcome check: `select 1 from
   supabase_migrations.schema_migrations where version = '20261009110000'` and column `setup_items.list_fields` exists
-- [ ] Answer rules + tests (`$lib/setup/answer-values` or own module), catalogue kind `list`
+- [x] Answer rules + tests (`$lib/setup/lists.ts`), catalogue kind `list`, file check on save, uploads into a file box
 - [ ] Editor: list question with boxes (name, type, required, choices), row limit, starters
-- [ ] Client wizard: rows as numbered cards, Add another / Remove (MOJ "Add another" pattern); 1-row limit shows a plain form
+- [x] Client wizard: `SetupListField.svelte` — numbered cards, Add another / Remove; 1-row limit shows a plain form (not yet seen in a browser)
 - [ ] Checks, browser check in the editor, commit
 
 ## Next
 
-Write `src/lib/setup/lists.ts` (row rules) with tests, then the catalogue kind `list`.
+Editor: `src/lib/jafar/setup-editor.ts` (svelte-check error at the kind labels), Zod `setup-editor.schema.ts` (list_fields, max_rows, box keys like choiceValues), `SetupQuestionList.svelte` box editor + starters from `SETUP_LIST_STARTERS`.
 
 ## Notes
 

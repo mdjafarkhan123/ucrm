@@ -7,6 +7,7 @@ import { unusableSetupFile } from '$lib/server/setup/files';
 import { setupAnswersSchema } from '$lib/server/validation/setup.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { catalogueFacts } from '$lib/setup/catalogue';
+import { setupListFileIds, type SetupListRow } from '$lib/setup/lists';
 
 // Autosave. Each answer is a draft the administrator can keep changing; nothing saved here is treated as
 // a final, attested answer (ADR 0005).
@@ -35,11 +36,20 @@ export const PATCH: RequestHandler = async (event) => {
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
 	// A photo or file answer may only hold this organization's own setup uploads that are still usable.
+	// A5e: the same goes for the file boxes in a list's rows.
 	for (const answer of parsed.data.answers) {
-		if (facts.get(answer.fact_key)?.kind !== 'file' || !Array.isArray(answer.value)) continue;
+		const fact = facts.get(answer.fact_key);
+		if (!Array.isArray(answer.value)) continue;
+		const ids =
+			fact?.kind === 'file'
+				? (answer.value as string[])
+				: fact?.kind === 'list'
+					? setupListFileIds(answer.value as SetupListRow[], fact.listFields ?? [])
+					: [];
+		if (ids.length === 0) continue;
 		let unusable: string | null;
 		try {
-			unusable = await unusableSetupFile(organizationId, answer.value as string[]);
+			unusable = await unusableSetupFile(organizationId, ids);
 		} catch (error) {
 			console.error('Could not check setup answer files.', error);
 			return databaseError();

@@ -75,6 +75,11 @@ export const setupReminderEmailsSchema = z.object({ emails_on: z.boolean() }).st
 export const setupFileUploadSchema = z
 	.object({
 		fact_key: z.string().max(80),
+		// A5e: the file box of a list question; left out for a photo or file question.
+		field_key: z
+			.string()
+			.regex(/^[a-z][a-z0-9_]{0,39}$/)
+			.optional(),
 		file_name: z.string().trim().min(1).max(255),
 		// Browsers report some files with no type at all; the route stores the type the name says.
 		mime_type: z.string().trim().max(127),

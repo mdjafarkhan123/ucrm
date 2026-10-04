@@ -67,11 +67,18 @@ export const POST: RequestHandler = async (event) => {
 	// The question as this client is asked it now, so a removed question or one outside their package takes nothing.
 	const catalogue = await readOrganizationSetupCatalogue(event.locals.supabase, organizationId);
 	if (!catalogue) return databaseError();
+	// A5e: or a list question's file box, named by `field_key`.
 	const fact = catalogueFacts(catalogue).get(parsed.data.fact_key);
-	if (!fact || fact.kind !== 'file')
-		return validationError({ fact_key: 'This question does not take files.' });
+	const kinds =
+		fact?.kind === 'file' && !parsed.data.field_key
+			? fact.fileKinds
+			: fact?.kind === 'list'
+				? fact.listFields?.find(
+						(field) => field.key === parsed.data.field_key && field.kind === 'file'
+					)?.fileKinds
+				: undefined;
+	if (!kinds?.length) return validationError({ fact_key: 'This question does not take files.' });
 
-	const kinds = fact.fileKinds ?? [];
 	const type = setupFileType(parsed.data.file_name, kinds);
 	if (!type)
 		return validationError({
