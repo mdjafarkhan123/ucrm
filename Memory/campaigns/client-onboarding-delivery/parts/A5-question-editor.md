@@ -25,7 +25,9 @@ cover the label. A5c's live look too: add a "Photo or file" question, upload a p
 "Checking for viruses…" turn ready within about a minute, then open it from the organization's setup in Jafar's panel.
 A5f's live look too: add an add-another list (Service starter) and below it a "Pick from an earlier list" question
 (3 to 5, in order); as the client, add services, tick some, reorder with the arrows, then remove a service and
-see it drop out of the pick. Then close A5.
+see it drop out of the pick. A5g's live look too: add a "Use an earlier answer" question reusing the public phone;
+as the client, see the phone shown back, pick "Yes, use this", then "Use a different one here" and type another.
+Then close A5.
 Do NOT publish test questions yourself — keys are never reused.
 
 ## Notes

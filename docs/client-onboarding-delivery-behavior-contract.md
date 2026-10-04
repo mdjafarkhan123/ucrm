@@ -99,6 +99,10 @@ buy. Common identity facts are collected once and reused in every purchased bran
   (short text, long text, pick one, yes/no, phone, email, date, photo or file), whether it is required, whether
   **I don't have this yet** and **I need Uplift's help** apply, a help line, and an optional "show only if an
   earlier answer is …" rule.
+- **Reused answers.** A question can show back an answer the client already gave, such as the public phone.
+  The client picks **Yes, use this** — kept as the same answer, so a later change to it carries through — or
+  **Use a different one here**, kept for that question only. A client with nothing to reuse yet is simply asked.
+  (Jafar, 2026-10-04.)
 - **Built-in questions.** Questions the app copies into CRM settings or provider registration — such as business
   name, public phone, hours, time zone, currency, country, and texting-registration facts — can be reworded and
   moved, never deleted or given a different answer type. A question clients have answered never changes answer
