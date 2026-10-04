@@ -62,7 +62,8 @@ export async function recordSectionReview(
 		target_section_key: input.section_key,
 		seen_number: input.send,
 		new_decision: input.decision,
-		return_note: input.decision === 'returned' ? input.note : null,
+		// The database ignores the note of an acceptance.
+		return_note: input.decision === 'returned' ? input.note : '',
 		return_question_keys: questionKeys,
 		actor_email: actorEmail
 	});

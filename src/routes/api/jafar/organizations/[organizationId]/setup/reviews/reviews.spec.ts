@@ -77,7 +77,7 @@ describe('setup section review POST', () => {
 			target_section_key: 'business',
 			seen_number: 1,
 			new_decision: 'accepted',
-			return_note: null,
+			return_note: '',
 			return_question_keys: [],
 			actor_email: 'owner@example.com'
 		});

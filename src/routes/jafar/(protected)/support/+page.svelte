@@ -80,6 +80,15 @@
 	const newOrganizationId = $derived(
 		/^[0-9a-f-]{36}$/i.test(newParam.current) ? newParam.current : null
 	);
+	// C3: "Ask a question" on a client's Setup tab names the task the chat is about. The key is checked by the
+	// server; the title is only shown.
+	const sectionParam = urlParam('section', '');
+	const aboutParam = urlParam('about', '');
+	const startContext = $derived(
+		/^[a-z][a-z0-9_]{0,39}$/.test(sectionParam.current)
+			? { section: sectionParam.current, title: aboutParam.current.slice(0, 80) || 'Setup' }
+			: null
+	);
 	const topicOptions = [
 		{ value: '', label: 'All topics' },
 		...SUPPORT_TOPICS.map((item) => ({ value: item.value, label: item.label }))
@@ -181,13 +190,20 @@
 		threadLimit = SUPPORT_PAGE_SIZE;
 		showPeople = false;
 		newParam.set('');
+		clearStartContext();
 		selected.set(threadId);
+	}
+
+	function clearStartContext() {
+		sectionParam.set('');
+		aboutParam.set('');
 	}
 
 	function startNew() {
 		showPeople = false;
 		selected.set('');
 		newParam.set('pick');
+		clearStartContext();
 	}
 
 	async function started(threadId: string) {
@@ -397,16 +413,31 @@
 						class="support-inbox__back"
 						type="button"
 						aria-label="Back to conversations"
-						onclick={() => newParam.set('')}
+						onclick={() => {
+							newParam.set('');
+							clearStartContext();
+						}}
 					>
 						<span aria-hidden="true">{@html arrowLeftIcon}</span>
 					</button>
 					<div class="support-inbox__conversation-title"><h2>New chat</h2></div>
-					<Button variant="tertiary" size="small" onclick={() => newParam.set('')}>Cancel</Button>
+					<Button
+						variant="tertiary"
+						size="small"
+						onclick={() => {
+							newParam.set('');
+							clearStartContext();
+						}}>Cancel</Button
+					>
 				</header>
 				<SupportStartChat
 					organizationId={newOrganizationId}
-					onOrganizationChange={(id) => newParam.set(id ?? 'pick')}
+					onOrganizationChange={(id) => {
+						// The task belongs to the business it came from.
+						clearStartContext();
+						newParam.set(id ?? 'pick');
+					}}
+					context={startContext}
 					onStarted={(threadId) => void started(threadId)}
 					blockedReason={needsName ? 'Add your name in Support settings before writing.' : ''}
 					footnoteText={settings?.responder_name

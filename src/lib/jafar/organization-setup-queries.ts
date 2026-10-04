@@ -67,3 +67,7 @@ export function prefetchOrganizationSetup(queryClient: QueryClient, organization
 	void queryClient.prefetchQuery(organizationSetupQuery(organizationId, null));
 	void queryClient.prefetchQuery(organizationProtectedDocumentsQuery(organizationId));
 }
+
+/** C3: where Jafar's Accept and Send back on one section go (POST). */
+export const organizationSetupReviewsUrl = (organizationId: string) =>
+	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/reviews`;

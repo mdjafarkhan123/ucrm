@@ -488,7 +488,12 @@ export const presignSupportStartAttachment = (organizationId: string, file: Uplo
 
 /** Uplift starts a chat with one team member. Returns the first message, which names the new chat. */
 export async function startSupportInboxThread(
-	input: SupportOutgoingMessage & { organization_id: string; user_id: string; topic: SupportTopic }
+	input: SupportOutgoingMessage & {
+		organization_id: string;
+		user_id: string;
+		topic: SupportTopic;
+		context_section?: string;
+	}
 ): Promise<SupportMessage & { thread_id: string }> {
 	const response = await fetch('/api/jafar/support/threads', {
 		method: 'POST',

@@ -9,11 +9,14 @@
 		items,
 		audience,
 		changedLabel = 'Changed',
+		flagged,
 		extra
 	}: {
 		items: SetupCheckItem[];
 		audience: 'client' | 'uplift';
 		changedLabel?: string;
+		/** Questions Uplift sent back to change (C3), highlighted. */
+		flagged?: ReadonlySet<string>;
 		/** More under an answer: Jafar's page shows the files a photo or file answer holds. */
 		extra?: Snippet<[SetupCheckItem]>;
 	} = $props();
@@ -41,9 +44,15 @@
 
 <dl class="setup-answers">
 	{#each items as item (item.key)}
-		<div class="setup-answers__row" class:setup-answers__row--changed={item.changed}>
+		{@const isFlagged = flagged?.has(item.key) ?? false}
+		<div
+			class="setup-answers__row"
+			class:setup-answers__row--changed={item.changed && !isFlagged}
+			class:setup-answers__row--flagged={isFlagged}
+		>
 			<dt>
 				{item.label}
+				{#if isFlagged}<Badge status="warning" size="small">Sent back</Badge>{/if}
 				{#if item.changed}<Badge status="informative" size="small">{changedLabel}</Badge>{/if}
 			</dt>
 			<dd>
@@ -114,6 +123,11 @@
 				border-radius: var(--radius-base);
 				background: var(--color-surface--background);
 			}
+
+			&--flagged {
+				border-radius: var(--radius-base);
+				background: var(--color-warning--surface);
+			}
 		}
 	}
 
@@ -122,6 +136,12 @@
 			grid-template-columns: 1fr;
 			gap: var(--space-smallest);
 			padding-inline: 0;
+		}
+
+		// A tinted row keeps its text off the tint's edge.
+		.setup-answers__row--changed,
+		.setup-answers__row--flagged {
+			padding-inline: var(--space-small);
 		}
 	}
 </style>

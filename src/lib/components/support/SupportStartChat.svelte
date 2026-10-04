@@ -28,7 +28,8 @@
 		onOrganizationChange,
 		onStarted,
 		blockedReason = '',
-		footnoteText = ''
+		footnoteText = '',
+		context = null
 	}: {
 		/** The business, when it is already known (from its page, or once picked here). */
 		organizationId: string | null;
@@ -38,6 +39,8 @@
 		blockedReason?: string;
 		/** The line under the box: how clients see Uplift's name. */
 		footnoteText?: string;
+		/** C3: the setup task the chat is about, from "Ask a question" on a client's Setup tab. */
+		context?: { section: string; title: string } | null;
 	} = $props();
 
 	type DirectoryRow = { id: string; name: string; member_count: number };
@@ -88,7 +91,8 @@
 			label: `${member.name} · ${member.role.charAt(0).toUpperCase()}${member.role.slice(1)}`
 		}))
 	);
-	let topic = $state<SupportTopic>('other');
+	// svelte-ignore state_referenced_locally
+	let topic = $state<SupportTopic>(context ? 'setup' : 'other');
 
 	async function start(input: SupportOutgoingMessage) {
 		if (!organizationId || !userId) throw new Error('Choose who to write to.');
@@ -96,7 +100,8 @@
 			...input,
 			organization_id: organizationId,
 			user_id: userId,
-			topic
+			topic,
+			...(context ? { context_section: context.section } : {})
 		});
 		onStarted(message.thread_id);
 	}
@@ -200,6 +205,9 @@
 				<div class="support-start-chat__intro">
 					<strong>Start a chat</strong>
 					<p>It appears in their Chat with Uplift, as if they had asked you.</p>
+					{#if context}
+						<p class="support-start-chat__about">About their setup task “{context.title}”</p>
+					{/if}
 				</div>
 				<SupportTopicPicker bind:value={topic} />
 			{/snippet}
@@ -338,6 +346,11 @@
 				margin: var(--space-smaller) 0 0;
 				color: var(--color-text--secondary);
 			}
+		}
+
+		&__about {
+			color: var(--color-heading);
+			font-weight: 600;
 		}
 	}
 </style>

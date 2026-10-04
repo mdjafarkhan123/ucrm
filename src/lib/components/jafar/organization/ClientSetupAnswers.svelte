@@ -14,14 +14,17 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import SetupAnswerList from '$lib/components/setup/SetupAnswerList.svelte';
+	import SetupReturnDialog from './SetupReturnDialog.svelte';
 	import { iconForMimeType } from '$lib/collaboration/file-icons';
 	import {
 		organizationSetupQuery,
-		organizationSetupRemindersUrl
+		organizationSetupRemindersUrl,
+		organizationSetupReviewsUrl
 	} from '$lib/jafar/organization-setup-queries';
 	import { jafarOrganizationKey } from '$lib/jafar/query-keys';
 	import { SETUP_CHECK_STATUS } from '$lib/setup/check';
 	import { clientSetupRemindersText, type ClientSetupFile } from '$lib/setup/client-page';
+	import { SETUP_REVIEW_STATE, type SetupSectionReview } from '$lib/setup/review';
 	import { formatDateTime } from './format';
 
 	// Client onboarding C2 (plan §8): the setup a client sent to Uplift, read back by task the way they saw it
@@ -106,6 +109,64 @@
 	}));
 
 	const remindersOn = $derived(!view?.reminders?.paused_at);
+
+	// C3 (plan §4): Accept or Send back one task of the newest send. The page holds the send number it showed,
+	// so a decision on answers Jafar has not seen is refused and the newest send is loaded instead.
+	type ReviewInput =
+		| { decision: 'accepted'; section_key: string }
+		| { decision: 'returned'; section_key: string; note: string; question_keys: string[] };
+
+	let reviewError = $state<{ section: string; message: string } | null>(null);
+	let returning = $state<{ key: string; title: string } | null>(null);
+
+	const review = createMutation(() => ({
+		mutationFn: async (input: ReviewInput) => {
+			const response = await fetch(organizationSetupReviewsUrl(organizationId), {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ ...input, send: send?.number })
+			});
+			if (!response.ok) {
+				const result = (await response.json().catch(() => ({}))) as {
+					error?: string;
+					field_errors?: Record<string, string>;
+				};
+				const message =
+					Object.values(result.field_errors ?? {})[0] ??
+					result.error ??
+					'Your decision could not be saved. Try again.';
+				throw new Error(message);
+			}
+		},
+		onMutate: () => {
+			reviewError = null;
+		},
+		onSuccess: (_data, input) => {
+			if (input.decision === 'returned') returning = null;
+		},
+		onError: (error, input) => {
+			reviewError = { section: input.section_key, message: error.message };
+		},
+		onSettled: () => {
+			// The decision shows on this tab, and is in the Activity tab's history.
+			void queryClient.invalidateQueries({ queryKey: jafarOrganizationKey(organizationId) });
+		}
+	}));
+
+	const askHref = (sectionKey: string, title: string) =>
+		`/jafar/support?${new URLSearchParams({ new: organizationId, section: sectionKey, about: title })}`;
+
+	function reviewedLine(entry: SetupSectionReview): string {
+		const decision = entry.decision;
+		if (!decision) return '';
+		const when = formatDateTime(decision.reviewed_at);
+		if (entry.state === 'accepted') return `Accepted by ${decision.reviewed_by_email} on ${when}.`;
+		if (entry.state === 'changed')
+			return `You accepted send ${decision.submission_number}; the client has changed this task since.`;
+		if (entry.state === 'resent')
+			return `You sent it back on ${when}; the client has sent it again.`;
+		return '';
+	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -220,15 +281,66 @@
 	{#if send}
 		{#each send.sections as section (section.key)}
 			{@const status = SETUP_CHECK_STATUS[section.status]}
+			{@const entry = view.reviews?.[section.key] ?? null}
+			{@const returned = entry?.state === 'returned' ? entry.decision : null}
+			{@const deciding = review.isPending && review.variables?.section_key === section.key}
 			<SectionBlock title={section.title}>
 				<div class="client-setup__status">
 					<Badge status={status.badge} size="small">{status.label}</Badge>
+					{#if entry}
+						{@const label = SETUP_REVIEW_STATE[entry.state]}
+						<Badge status={label.badge} size="small">{label.label}</Badge>
+					{/if}
 				</div>
+				{#if entry}
+					<div class="client-setup__review">
+						{#if returned}
+							<div class="client-setup__returned">
+								<p class="client-setup__muted">
+									Sent back by {returned.reviewed_by_email} on {formatDateTime(
+										returned.reviewed_at
+									)}
+								</p>
+								<p>“{returned.note}”</p>
+							</div>
+						{:else if reviewedLine(entry)}
+							<p class="client-setup__muted">{reviewedLine(entry)}</p>
+						{/if}
+						<div class="client-setup__review-actions">
+							{#if entry.state !== 'accepted'}
+								<Button
+									size="small"
+									variant={returned ? 'secondary' : 'primary'}
+									loading={deciding && review.variables?.decision === 'accepted'}
+									disabled={review.isPending}
+									onclick={() => review.mutate({ decision: 'accepted', section_key: section.key })}
+									>{returned ? 'Accept instead' : 'Accept'}</Button
+								>
+							{/if}
+							<Button
+								size="small"
+								variant="secondary"
+								disabled={review.isPending}
+								onclick={() => {
+									reviewError = null;
+									returning = { key: section.key, title: section.title };
+								}}>{returned ? 'Change what you asked' : 'Send back'}</Button
+							>
+							<Button size="small" variant="tertiary" href={askHref(section.key, section.title)}
+								>Ask a question</Button
+							>
+						</div>
+					</div>
+					{#if reviewError?.section === section.key && !returning}
+						<p class="client-setup__error" role="alert">{reviewError.message}</p>
+					{/if}
+				{/if}
 				{#if section.items.length > 0}
 					<SetupAnswerList
 						items={section.items}
 						audience="uplift"
 						changedLabel={`Changed since send ${send.compared_with}`}
+						flagged={returned ? new Set(returned.question_keys) : undefined}
 					>
 						{#snippet extra(item)}
 							{@const files = send.files[item.key] ?? []}
@@ -300,6 +412,23 @@
 	{/if}
 {/if}
 
+{#if returning && send}
+	{@const target = send.sections.find((section) => section.key === returning?.key)}
+	{@const earlier = view?.reviews?.[returning.key]}
+	{@const before = earlier?.state === 'returned' ? earlier.decision : null}
+	<SetupReturnDialog
+		sectionTitle={returning.title}
+		items={target?.items ?? []}
+		initialNote={before?.note ?? ''}
+		initialKeys={before?.question_keys ?? []}
+		pending={review.isPending}
+		error={reviewError?.section === returning.key ? reviewError.message : ''}
+		onSubmit={(input) =>
+			returning && review.mutate({ decision: 'returned', section_key: returning.key, ...input })}
+		onClose={() => (returning = null)}
+	/>
+{/if}
+
 <Lightbox
 	open={lightboxOpen}
 	items={lightboxItems}
@@ -353,6 +482,45 @@
 
 		&__status {
 			display: flex;
+			flex-wrap: wrap;
+			gap: var(--space-small);
+		}
+
+		&__review {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-small) var(--space-base);
+
+			> p {
+				margin: 0;
+			}
+		}
+
+		&__returned {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smallest);
+			min-width: 0;
+			max-width: 60ch;
+			padding: var(--space-small) var(--space-base);
+			border-left: 3px solid var(--color-warning);
+			border-radius: var(--radius-base);
+			background: var(--color-warning--surface);
+
+			p {
+				margin: 0;
+				overflow-wrap: anywhere;
+				white-space: pre-line;
+			}
+		}
+
+		&__review-actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: var(--space-small);
+			margin-left: auto;
 		}
 
 		&__files {

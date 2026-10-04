@@ -2,6 +2,8 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
+import { readSetupCatalogue } from '$lib/server/setup/catalogue';
+import { catalogueSection } from '$lib/setup/catalogue';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import {
 	SupportAttachmentError,
@@ -61,6 +63,17 @@ export const POST: RequestHandler = async (event) => {
 		);
 	}
 
+	// C3: a section must be one the published setup has, as the client's own Ask Uplift checks it.
+	if (parsed.data.context_section) {
+		const catalogue = await readSetupCatalogue(getOwnerSupabaseClient());
+		if (!catalogue) {
+			console.error('Could not read the setup catalogue for a support chat.');
+			return json({ error: 'Your message could not be sent.' }, { status: 500 });
+		}
+		if (!catalogueSection(catalogue, parsed.data.context_section))
+			return json({ error: 'That setup section is not recognised.' }, { status: 422 });
+	}
+
 	let attachments: ResolvedSupportAttachment[];
 	try {
 		attachments = await resolveSupportAttachments(
@@ -81,7 +94,8 @@ export const POST: RequestHandler = async (event) => {
 		actor_email: session.email,
 		message_body: parsed.data.body,
 		message_client_id: parsed.data.client_message_id,
-		message_attachments: attachments
+		message_attachments: attachments,
+		thread_context_section: parsed.data.context_section
 	});
 	if (error) {
 		// The function's own sentences are written for Jafar: the missing responder name, who to write to.

@@ -434,6 +434,24 @@ describe('Uplift starts a chat (D5a)', () => {
 		});
 	});
 
+	it('attaches the setup task a question from the Setup tab is about (C3), and refuses an unknown one', async () => {
+		const value = use(client({}));
+		value.rpc.mockResolvedValue({ data: { id: 'message-1', thread_id: 'thread-9' }, error: null });
+		const response = await startChat(
+			event({ body: { ...startBody, topic: 'setup', context_section: 'business' } })
+		);
+		expect(response.status).toBe(201);
+		expect(value.rpc).toHaveBeenCalledWith(
+			'start_support_thread_by_uplift',
+			expect.objectContaining({ thread_topic: 'setup', thread_context_section: 'business' })
+		);
+
+		value.rpc.mockClear();
+		const unknown = await startChat(event({ body: { ...startBody, context_section: 'nowhere' } }));
+		expect(unknown.status).toBe(422);
+		expect(value.rpc).not.toHaveBeenCalled();
+	});
+
 	it('passes the client message id through, so a retry reaches the same chat', async () => {
 		const value = use(client({}));
 		value.rpc.mockResolvedValue({ data: { id: 'message-1', thread_id: 'thread-9' }, error: null });

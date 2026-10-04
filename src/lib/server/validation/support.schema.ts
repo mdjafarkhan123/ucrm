@@ -93,7 +93,13 @@ export const supportUpliftStartThreadSchema = supportMessageFields
 	.extend({
 		organization_id: z.string().uuid('Choose a business.'),
 		user_id: z.string().uuid('Choose who to write to.'),
-		topic: supportTopicField.default('other')
+		topic: supportTopicField.default('other'),
+		// C3: "Ask a question" on a setup section of the client's page attaches that section.
+		context_section: z
+			.string()
+			.max(40)
+			.regex(/^[a-z][a-z0-9_]*$/, 'That setup section is not recognised.')
+			.optional()
 	})
 	.refine(hasContent, NEEDS_CONTENT);
 
