@@ -18,7 +18,7 @@ Plan the protected-document build (storage, access, audit, deletion date) agains
 
 ## Outside actions
 
-- Apply migration `20261018090000_setup_protected_documents` to dev — check: `select 1 from supabase_migrations.schema_migrations where version = '20261018090000'` — pending
+- Apply migration `20261018090000_setup_protected_documents` to dev — check: `select 1 from supabase_migrations.schema_migrations where version = '20261018090000'` — done 2026-10-04 (db push)
 
 ## Notes
 
