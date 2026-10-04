@@ -87,6 +87,11 @@ export const GET: RequestHandler = async (event) => {
 			? settings.currency_code
 			: countryCurrency(country),
 		'business.hours': hours ? JSON.stringify(hours) : null,
+		// Work is usually booked in during the hours customers can reach the business, so those start it.
+		'crm.work_hours':
+			(state.answers['business.hours']?.availability === 'have'
+				? state.answers['business.hours'].value
+				: null) ?? (hours ? JSON.stringify(hours) : null),
 		...followUpSuggestions(state.answers, settings?.hours_mode)
 	};
 

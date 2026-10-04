@@ -78,7 +78,9 @@ describe('starter setup content', () => {
 			'google',
 			'calls',
 			'texting',
-			'reviews'
+			'reviews',
+			'crm',
+			'import'
 		]);
 	});
 
@@ -89,6 +91,13 @@ describe('starter setup content', () => {
 		expect(facts.size).toBe(questions.length);
 		for (const item of questions)
 			if (item.built_in) expect(BUILT_IN_FACTS[item.fact_key!], item.fact_key!).toBeDefined();
+	});
+
+	it('keeps every text limit within what the database allows', () => {
+		for (const stage of stages)
+			for (const item of stage.items)
+				if (item.max_length !== null)
+					expect(item.max_length, item.fact_key!).toBeLessThanOrEqual(2000);
 	});
 
 	it('only reuses questions that are always asked, as the database requires', () => {
@@ -1276,6 +1285,189 @@ describe('starter setup content', () => {
 			expect(
 				missingRequiredFacts(section, answers, shownFacts(sectionFacts(section), answers))
 			).toEqual([]);
+		});
+	});
+
+	describe('How your CRM should work', () => {
+		const crm = starter.sections.find((section) => section.key === 'crm')!;
+		const shown = (answers: SetupAnswers) => shownCatalogueFacts(starter, answers);
+		const forPackage = (...services: string[]) =>
+			catalogueFacts(catalogueForServices(starter, new Set(services)));
+
+		it('is shown to everyone, with the working hours built in', () => {
+			expect(crm.serviceKey).toBeNull();
+			expect(facts.get('crm.work_hours')).toMatchObject({ kind: 'hours', builtIn: true });
+		});
+
+		it('confirms enquiry recipients and payment methods from earlier stages, or asks them here', () => {
+			const website = forPackage('website');
+			expect(website.get('crm.enquiry_recipients')!.reuseFrom).toBe('website.form_recipients');
+			expect(website.get('crm.payment_methods')!.reuseFrom).toBe('proof.payment_methods');
+			const alone = forPackage();
+			expect(alone.get('crm.enquiry_recipients')!.reuseFrom).toBeUndefined();
+			expect(alone.get('crm.enquiry_recipients')!.kind).toBe('list');
+		});
+
+		it('never books work for the client and assumes no tax', () => {
+			const path = facts.get('crm.enquiry_path')!;
+			expect(path.options!.find((option) => option.label.includes('recommended'))!.value).toBe(
+				'review'
+			);
+			expect(facts.get('crm.tax')!.options!.map((option) => option.value)).not.toContain(
+				'recommended'
+			);
+			expect(facts.get('crm.tax')!.canDefer).toBe(true);
+		});
+
+		it('asks the deposit rule only when a deposit is taken, and its amount by how it is worked out', () => {
+			const never = shown({ 'crm.deposit': have('never') });
+			for (const key of ['crm.deposit_type', 'crm.deposit_percentage', 'crm.deposit_note'])
+				expect(never.has(key), key).toBe(false);
+			const some = shown({
+				'crm.deposit': have('some'),
+				'crm.deposit_type': have('percentage')
+			});
+			expect(some.has('crm.deposit_percentage')).toBe(true);
+			expect(some.has('crm.deposit_amount')).toBe(false);
+			expect(some.has('crm.deposit_note')).toBe(true);
+			expect(shown({ 'crm.deposit': have('always') }).has('crm.deposit_note')).toBe(false);
+		});
+
+		it('asks tax numbers only when tax is charged', () => {
+			expect(shown({ 'crm.tax': have('not_registered') }).has('crm.tax_numbers')).toBe(false);
+			expect(shown({ 'crm.tax': have('added') }).has('crm.tax_numbers')).toBe(true);
+		});
+
+		it('offers the website quick reply only to a package with a website', () => {
+			expect(forPackage().has('crm.quick_reply')).toBe(false);
+			expect(forPackage('website').has('crm.quick_reply')).toBe(true);
+		});
+
+		it('accepts a weekly timetable for the working hours', () => {
+			const week = JSON.stringify({
+				mode: 'weekly',
+				days: [0, 1, 2, 3, 4, 5, 6].map((day) => ({
+					open: day > 0 && day < 6,
+					all_day: false,
+					periods: day > 0 && day < 6 ? [['08:00', '17:00']] : []
+				}))
+			});
+			expect(
+				setupAnswerShortfall(facts.get('crm.work_hours')!, { 'crm.work_hours': have(week) })
+			).toBeNull();
+		});
+
+		it('saves a full answer and shows it again when the client comes back', () => {
+			const earlier: SetupAnswers = {
+				'proof.payment_methods': have('["card","bank_transfer"]')
+			};
+			const sent: Record<string, string> = {
+				'crm.enquiry_path': 'review',
+				'crm.assessment_when': 'Anything bigger than one room.',
+				'crm.enquiry_recipients': JSON.stringify([
+					{ id: 'r1', values: { name: 'Sam Raad', email: 'sam@raadplumbing.example' } }
+				]),
+				'crm.enquiry_owner': 'someone_else',
+				'crm.enquiry_owner_person': JSON.stringify([{ id: 'o1', values: { name: 'Ali' } }]),
+				'crm.quote_needs': JSON.stringify(['address', 'photos']),
+				'crm.reply_target': '1_hour',
+				'crm.teams': 'separate',
+				'crm.team_units': JSON.stringify([
+					{ id: 't1', values: { name: 'Heating', handles: 'Boilers' } }
+				]),
+				'crm.quote_valid_days': '30',
+				'crm.quote_approval': 'yes',
+				'crm.deposit': 'some',
+				'crm.deposit_type': 'fixed',
+				'crm.deposit_amount': JSON.stringify({ amount: '250', currency: 'GBP' }),
+				'crm.deposit_note': 'Jobs where materials are ordered.',
+				'crm.quote_terms': 'Prices include labour and materials.',
+				'crm.work_hours': JSON.stringify({ mode: 'appointment_only' }),
+				'crm.notice': 'next_day',
+				'crm.travel_buffer': JSON.stringify({ amount: 30, unit: 'minutes' }),
+				'crm.visit_types': JSON.stringify([
+					{
+						id: 'v1',
+						values: {
+							name: 'Estimate visit',
+							length: '1 hour',
+							arrival: '2_hours',
+							purpose: 'assessment'
+						}
+					}
+				]),
+				'crm.pricing': 'mix',
+				'crm.price_list': 'yes',
+				'crm.invoice_due': 'days',
+				'crm.invoice_due_days': '14',
+				'crm.tax': 'added',
+				'crm.tax_numbers': JSON.stringify([
+					{ id: 'x1', values: { name: 'VAT', number: 'GB123456789' } }
+				]),
+				'crm.payment_methods': JSON.stringify({ same_as: 'proof.payment_methods' }),
+				'crm.payment_instructions': 'Bank transfer to the account on the invoice.',
+				'crm.team_members': JSON.stringify([
+					{ id: 'm1', values: { name: 'Ali', email: 'ali@raadplumbing.example', role: 'field' } }
+				]),
+				'crm.alert_people': JSON.stringify(['m1']),
+				'crm.quote_followups': 'yes',
+				'crm.message_approver': 'final_approver'
+			};
+			const parsed = setupAnswersSchema(facts, earlier).safeParse({
+				answers: Object.entries(sent).map(([fact_key, value]) => ({
+					fact_key,
+					availability: 'have',
+					value,
+					note: null
+				}))
+			});
+			expect(parsed.error?.issues ?? []).toEqual([]);
+
+			const resumed: SetupAnswers = { ...earlier };
+			for (const answer of parsed.data!.answers) {
+				const stored = answer.value;
+				resumed[answer.fact_key] = have(
+					typeof stored === 'string' ? stored : JSON.stringify(stored)
+				);
+			}
+			expect(missingRequiredFacts(crm, resumed, shown(resumed))).toEqual([]);
+			for (const fact of sectionFacts(crm))
+				expect(setupAnswerShortfall(fact, resumed), fact.key).toBeNull();
+		});
+	});
+
+	describe('Move your existing data', () => {
+		const imports = starter.sections.find((section) => section.key === 'import')!;
+		const shownHere = (answers: SetupAnswers) => shownFacts(sectionFacts(imports), answers);
+
+		it('is shown to everyone, and starting fresh asks nothing more', () => {
+			expect(imports.serviceKey).toBeNull();
+			const fresh: SetupAnswers = { 'import.wanted': have('no') };
+			expect([...shownHere(fresh)]).toEqual(['import.wanted']);
+			expect(missingRequiredFacts(imports, fresh, shownHere(fresh))).toEqual([]);
+		});
+
+		it('keeps the files protected and lets them wait', () => {
+			expect(facts.get('import.files')).toMatchObject({ kind: 'protected_file', canDefer: true });
+		});
+
+		it('asks who approves the preview, and to confirm nothing is sent, before anything comes in', () => {
+			const yes = shownHere({ 'import.wanted': have('yes') });
+			for (const key of [
+				'import.source',
+				'import.what',
+				'import.files',
+				'import.approver',
+				'import.nothing_sent'
+			])
+				expect(yes.has(key), key).toBe(true);
+			expect(yes.has('import.approver_person')).toBe(false);
+			expect(
+				shownHere({ 'import.wanted': have('yes'), 'import.approver': have('someone_else') }).has(
+					'import.approver_person'
+				)
+			).toBe(true);
+			expect(facts.get('import.nothing_sent')!.required).toBe(true);
 		});
 	});
 });

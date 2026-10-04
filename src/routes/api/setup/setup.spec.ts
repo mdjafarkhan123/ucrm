@@ -445,6 +445,70 @@ describe('GET /api/setup/sections/[section]', () => {
 		expect(hours.days[0].open).toBe(false);
 	});
 
+	it('starts the working hours from the customer-facing hours, the client’s own answer first', async () => {
+		const crmCatalogue = buildSetupCatalogue({
+			version_id: 'b11',
+			stages: [
+				{
+					key: 'crm',
+					title: 'How your CRM should work',
+					description: '',
+					service_key: null,
+					items: [
+						{
+							type: 'question',
+							fact_key: 'crm.work_hours',
+							label: 'When can work normally be booked in?',
+							hint: null,
+							built_in: true,
+							required: true,
+							can_defer: false,
+							kind: null,
+							options: null,
+							max_length: null
+						}
+					]
+				}
+			]
+		});
+		vi.mocked(readOrganizationSetupCatalogue).mockResolvedValue(crmCatalogue);
+		const settingsHours = {
+			settings: { trade: null, phone: null, hours_mode: 'weekly' },
+			hours: [
+				{
+					weekday: 2,
+					period_index: 0,
+					is_open: true,
+					is_open_24h: false,
+					opens_at: '07:00:00',
+					closes_at: '15:00:00'
+				}
+			]
+		};
+
+		const fromSettings = await (
+			await getSection(event(supabase(settingsHours), undefined, 'crm'))
+		).json();
+		expect(JSON.parse(fromSettings.suggestions['crm.work_hours']).days[2].periods).toEqual([
+			['07:00', '15:00']
+		]);
+
+		const fromAnswer = await (
+			await getSection(
+				event(
+					supabase({
+						...settingsHours,
+						answers: [have('business.hours', JSON.stringify(WEEKDAYS_NINE_TO_FIVE))]
+					}),
+					undefined,
+					'crm'
+				)
+			)
+		).json();
+		expect(JSON.parse(fromAnswer.suggestions['crm.work_hours'])).toEqual(WEEKDAYS_NINE_TO_FIVE);
+		vi.mocked(readOrganizationSetupCatalogue).mockResolvedValue(SETUP_CATALOGUE_1);
+	});
+
 	it('sends the section’s questions as the published setup version asks them', async () => {
 		const body = await (await getSection(event(supabase({})))).json();
 

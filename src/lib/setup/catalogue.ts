@@ -276,7 +276,9 @@ export const BUILT_IN_FACTS: Record<string, SetupFactRules> = {
 		]
 	},
 	'business.hours': { kind: 'hours' },
-	'business.hours_exceptions': { kind: 'hours_exceptions' }
+	'business.hours_exceptions': { kind: 'hours_exceptions' },
+	// B11: when work can be booked in, which may differ from the customer-facing hours it starts from.
+	'crm.work_hours': { kind: 'hours' }
 };
 
 /** One box of a list question, as the database keeps it. */
