@@ -27,6 +27,7 @@
 	import {
 		sectionFacts,
 		sectionStatus,
+		setupAnswerShortfall,
 		setupValueError,
 		shownFacts,
 		type SetupFact,
@@ -35,6 +36,8 @@
 		type SetupAvailability
 	} from '$lib/setup/catalogue';
 	import { countryCurrency } from '$lib/settings/countries';
+	import { setupListRows } from '$lib/setup/lists';
+	import { keptSetupPickIds, setupPickIds } from '$lib/setup/picks';
 	import { getSupportAsk } from '$lib/support/ask';
 	import askIcon from '@tabler/icons/outline/message-question.svg?raw';
 	import type { HttpError } from '$lib/http-error';
@@ -112,8 +115,32 @@
 		if (!field) return undefined;
 		if (field.availability !== 'have')
 			return { availability: field.availability, value: null, note: field.note.trim() || null };
-		const value = field.value.trim();
+		const fact = factsByKey[key];
+		// A pick (A5f) leaves out rows its list no longer holds, as the server does.
+		const value =
+			fact?.kind === 'pick'
+				? pickValue(keptSetupPickIds(setupPickIds(field.value), pickRows(fact)))
+				: field.value.trim();
 		return value ? { availability: 'have', value, note: null } : undefined;
+	}
+
+	const pickValue = (ids: string[]) => (ids.length ? JSON.stringify(ids) : '');
+
+	// A pick's list rows as they stand now: on this page as typed, or as saved in an earlier section.
+	function pickRows(fact: SetupFact) {
+		const key = fact.pickFrom ?? '';
+		const field = fields?.[key];
+		if (field) return field.availability === 'have' ? setupListRows(field.value) : [];
+		return setupListRows(earlier[key]?.value);
+	}
+
+	// Every answer a pick's rules may read: earlier sections' and this page's as they stand.
+	function answersNow(): SetupAnswers {
+		const now: SetupAnswers = { ...earlier };
+		if (section && fields)
+			for (const fact of sectionFacts(section))
+				if (fact.kind === 'list') now[fact.key] = draftAnswer(fact.key);
+		return now;
 	}
 
 	// "Show only if" (A5b): which questions are asked, judged against what is on screen now, so a question
@@ -188,7 +215,7 @@
 			if (!fact) continue;
 			const draft = draftAnswer(key);
 			if (sameAnswer(draft, saved[key])) continue;
-			const problem = draft?.value ? setupValueError(fact, draft.value) : null;
+			const problem = draft?.value ? setupValueError(fact, draft.value, answersNow()) : null;
 			if (problem) {
 				errors[key] = problem;
 				continue;
@@ -275,6 +302,11 @@
 		const missing = sectionFacts(section).filter(
 			(fact) => fact.required && asked.has(fact.key) && !saved[fact.key]
 		);
+		const now = { ...earlier, ...saved };
+		for (const fact of sectionFacts(section)) {
+			const shortfall = asked.has(fact.key) ? setupAnswerShortfall(fact, now) : null;
+			if (shortfall) errors[fact.key] ??= shortfall;
+		}
 		for (const fact of missing)
 			errors[fact.key] ??= fact.canDefer
 				? 'Enter this, or tell us you don’t have it yet.'
@@ -420,6 +452,7 @@
 								{currency}
 								{country}
 								{userId}
+								pickRows={fact.kind === 'pick' ? pickRows(fact) : undefined}
 								onedit={() => edited(fact.key)}
 								oncommit={() => committed(fact.key)}
 							/>

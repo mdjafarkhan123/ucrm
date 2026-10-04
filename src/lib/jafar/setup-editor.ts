@@ -438,7 +438,8 @@ export const SETUP_QUESTION_KIND_LABELS: Record<SetupQuestionKind, string> = {
 	duration: 'Length of time',
 	colours: 'Colours',
 	file: 'Photo or file',
-	list: 'Add-another list'
+	list: 'Add-another list',
+	pick: 'Pick from an earlier list'
 };
 
 export const fetchSetupEditor = () => send('/api/jafar/setup', 'GET');

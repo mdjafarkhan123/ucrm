@@ -25,6 +25,7 @@ import {
 	missingRequiredFacts,
 	sectionFacts,
 	sectionStatus,
+	setupAnswerShortfall,
 	setupValueError,
 	shownCatalogueFacts,
 	type SetupAnswers
@@ -157,15 +158,16 @@ export const PATCH: RequestHandler = async (event) => {
 		const state = await readSetupState(event.locals.supabase, organizationId);
 		if (!state) return databaseError();
 
-		const missing = missingRequiredFacts(
-			section,
-			state.answers,
-			shownCatalogueFacts(catalogue, state.answers)
-		);
-		if (missing.length > 0)
-			return validationError(
-				Object.fromEntries(missing.map((fact) => [fact.key, 'This one still needs an answer.']))
-			);
+		const shown = shownCatalogueFacts(catalogue, state.answers);
+		const problems: Record<string, string> = {};
+		for (const fact of missingRequiredFacts(section, state.answers, shown))
+			problems[fact.key] = 'This one still needs an answer.';
+		// A5f: a pick with too few picks.
+		for (const fact of sectionFacts(section)) {
+			const shortfall = shown.has(fact.key) ? setupAnswerShortfall(fact, state.answers) : null;
+			if (shortfall) problems[fact.key] = shortfall;
+		}
+		if (Object.keys(problems).length > 0) return validationError(problems);
 	}
 
 	const { data, error } = await event.locals.supabase.rpc('set_organization_setup_section_done', {

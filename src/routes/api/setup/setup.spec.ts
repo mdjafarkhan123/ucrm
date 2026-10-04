@@ -5,6 +5,9 @@ import { POST as postWelcome } from './welcome/+server';
 import { GET as getSection, PATCH as patchSection } from './sections/[section]/+server';
 import { requireOrganizationAdmin } from '$lib/server/access/permission';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
+import { readOrganizationSetupCatalogue } from '$lib/server/setup/catalogue';
+import { buildSetupCatalogue } from '$lib/setup/catalogue';
+import { SETUP_CATALOGUE_1 } from '$lib/setup/catalogue.fixture';
 
 vi.mock('$lib/server/setup/catalogue', async () => {
 	const actual = await vi.importActual<typeof import('$lib/server/setup/catalogue')>(
@@ -506,5 +509,171 @@ describe('POST /api/setup/welcome', () => {
 		expect(client.rpc).toHaveBeenCalledWith('mark_organization_setup_welcome_seen', {
 			target_organization_id: ORGANIZATION_ID
 		});
+	});
+});
+
+describe('picks from an earlier list (A5f)', () => {
+	// A services list and a pick of the top ones on the same page.
+	const pickCatalogue = buildSetupCatalogue({
+		version_id: 'v-pick',
+		stages: [
+			{
+				key: 'services',
+				title: 'Services',
+				description: '',
+				service_key: null,
+				items: [
+					{
+						type: 'question',
+						fact_key: 'services.offered',
+						label: 'Add every service you offer',
+						hint: null,
+						built_in: false,
+						required: true,
+						can_defer: false,
+						kind: 'list',
+						options: null,
+						list_fields: [{ key: 'name', label: 'Service name', kind: 'text', required: true }],
+						max_rows: 20,
+						max_length: null
+					},
+					{
+						type: 'question',
+						fact_key: 'services.promote',
+						label: 'Which should Uplift promote first?',
+						hint: null,
+						built_in: false,
+						required: true,
+						can_defer: false,
+						kind: 'pick',
+						options: null,
+						pick_from: 'services.offered',
+						min_choices: 2,
+						max_choices: 3,
+						ordered: true,
+						max_length: null
+					}
+				]
+			}
+		]
+	});
+	const listRows = (...ids: string[]) =>
+		ids.map((id) => ({ id, values: { name: `Service ${id}` } }));
+	const usePickCatalogue = () =>
+		vi.mocked(readOrganizationSetupCatalogue).mockResolvedValueOnce(pickCatalogue);
+
+	it('drops a removed service from the saved pick, keeping the order', async () => {
+		usePickCatalogue();
+		const client = supabase({
+			answers: [
+				{
+					fact_key: 'services.offered',
+					availability: 'have',
+					value: listRows('a', 'b', 'c'),
+					note: null
+				},
+				{ fact_key: 'services.promote', availability: 'have', value: ['c', 'b', 'a'], note: null }
+			]
+		});
+		const response = await patchAnswers(
+			event(client, {
+				answers: [
+					{
+						fact_key: 'services.offered',
+						availability: 'have',
+						value: JSON.stringify(listRows('a', 'c'))
+					}
+				]
+			})
+		);
+		expect(response.status).toBe(200);
+		const [, pick] = client.rpc.mock.calls[0][1].new_answers;
+		expect(pick).toEqual({
+			fact_key: 'services.promote',
+			availability: 'have',
+			value: ['c', 'a'],
+			note: null
+		});
+	});
+
+	it('clears the pick when its list is emptied', async () => {
+		usePickCatalogue();
+		const client = supabase({
+			answers: [
+				{ fact_key: 'services.offered', availability: 'have', value: listRows('a'), note: null },
+				{ fact_key: 'services.promote', availability: 'have', value: ['a'], note: null }
+			]
+		});
+		await patchAnswers(
+			event(client, { answers: [{ fact_key: 'services.offered', availability: null }] })
+		);
+		expect(client.rpc.mock.calls[0][1].new_answers[1]).toMatchObject({
+			fact_key: 'services.promote',
+			availability: null
+		});
+	});
+
+	it('refuses a pick of a row the list does not hold', async () => {
+		usePickCatalogue();
+		const client = supabase({
+			answers: [
+				{
+					fact_key: 'services.offered',
+					availability: 'have',
+					value: listRows('a', 'b'),
+					note: null
+				}
+			]
+		});
+		const response = await patchAnswers(
+			event(client, {
+				answers: [
+					{ fact_key: 'services.promote', availability: 'have', value: JSON.stringify(['a', 'z']) }
+				]
+			})
+		);
+		expect(response.status).toBe(422);
+		expect(client.rpc).not.toHaveBeenCalled();
+	});
+
+	it('saves a pick and its new list together', async () => {
+		usePickCatalogue();
+		const client = supabase({});
+		const response = await patchAnswers(
+			event(client, {
+				answers: [
+					{
+						fact_key: 'services.offered',
+						availability: 'have',
+						value: JSON.stringify(listRows('a', 'b'))
+					},
+					{ fact_key: 'services.promote', availability: 'have', value: JSON.stringify(['b']) }
+				]
+			})
+		);
+		expect(response.status).toBe(200);
+		expect(client.rpc.mock.calls[0][1].new_answers[1].value).toEqual(['b']);
+	});
+
+	it('will not mark the section done with fewer picks than asked', async () => {
+		vi.mocked(readOrganizationSetupCatalogue).mockResolvedValue(pickCatalogue);
+		const client = supabase({
+			answers: [
+				{
+					fact_key: 'services.offered',
+					availability: 'have',
+					value: listRows('a', 'b', 'c'),
+					note: null
+				},
+				{ fact_key: 'services.promote', availability: 'have', value: ['b'], note: null }
+			]
+		});
+		const response = await patchSection(event(client, { done: true }, 'services'));
+		vi.mocked(readOrganizationSetupCatalogue).mockResolvedValue(SETUP_CATALOGUE_1);
+		expect(response.status).toBe(422);
+		expect((await response.json()).field_errors).toEqual({
+			'services.promote': 'Pick at least 2.'
+		});
+		expect(client.rpc).not.toHaveBeenCalled();
 	});
 });

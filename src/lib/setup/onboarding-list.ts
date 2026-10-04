@@ -75,7 +75,9 @@ export function onboardingCatalogue(catalogue: SetupCatalogue) {
 								show_if: fact.showIf.map((condition) =>
 									'serviceKey' in condition
 										? { service_key: condition.serviceKey }
-										: { fact_key: condition.factKey, values: condition.values }
+										: 'hasRows' in condition
+											? { fact_key: condition.factKey, has_rows: true }
+											: { fact_key: condition.factKey, values: condition.values }
 								)
 							}
 						]

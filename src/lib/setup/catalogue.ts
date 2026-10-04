@@ -21,7 +21,8 @@ import {
 } from '$lib/setup/answer-values';
 import { parseSetupFileIds, type SetupFileKind } from '$lib/setup/files';
 import { parseSetupHours, parseSetupHoursExceptions } from '$lib/setup/hours';
-import { parseSetupList, type SetupListField } from '$lib/setup/lists';
+import { parseSetupList, setupListRows, type SetupListField } from '$lib/setup/lists';
+import { keptSetupPickIds, parseSetupPick, setupPickIds, setupPickMinimum } from '$lib/setup/picks';
 
 export type SetupAvailability = 'have' | 'not_yet' | 'need_help';
 
@@ -58,7 +59,9 @@ export type SetupFactKind =
 	/** Photos or files: the File Manager ids, as described in `$lib/setup/files`. */
 	| 'file'
 	/** Add-another rows of named boxes, as described in `$lib/setup/lists`. */
-	| 'list';
+	| 'list'
+	/** Rows picked from an earlier list, as described in `$lib/setup/picks`. */
+	| 'pick';
 
 /** The answer types Jafar can give a question that is not built in (plan §2.1). */
 export const SETUP_QUESTION_KINDS = [
@@ -79,7 +82,8 @@ export const SETUP_QUESTION_KINDS = [
 	'duration',
 	'colours',
 	'file',
-	'list'
+	'list',
+	'pick'
 ] as const;
 export type SetupQuestionKind = (typeof SETUP_QUESTION_KINDS)[number];
 
@@ -94,8 +98,18 @@ type SetupFactRules = {
 	otherLabel?: string;
 	/** `multi_choice`: also offers "Other" with a box for the client's own words. */
 	allowOther?: boolean;
-	/** `multi_choice`: the most choices a client may tick. */
+	/** `multi_choice` and `pick`: the most choices a client may tick. */
 	maxChoices?: number;
+	/** `pick`: the earlier list question whose rows the client picks from. */
+	pickFrom?: string;
+	/** `pick`: the fewest rows to pick, or every row when the list holds fewer. */
+	minChoices?: number;
+	/** `pick`: the client puts the picked rows in order, most important first. */
+	ordered?: boolean;
+	/** `pick`: the box of the list's rows that names each one — its first. Filled in from the list. */
+	pickNameKey?: string;
+	/** `pick`: the list question's own wording, for "Add some to … first". Filled in from the list. */
+	pickListLabel?: string;
 	/** `file`: the kinds of file accepted. */
 	fileKinds?: SetupFileKind[];
 	/** `file`: the most files one answer may hold. */
@@ -121,9 +135,13 @@ export type SetupFact = SetupFactRules & {
 
 /**
  * One "show only if" condition: an earlier answer is one of `values`, or the client's package includes a
- * service. A client's own catalogue has no service conditions left — see {@link catalogueForServices}.
+ * service. A client's own catalogue has no service conditions left — see {@link catalogueForServices}. A pick
+ * question also carries `hasRows` on its list (A5f): it is asked only once that list holds a row.
  */
-export type SetupCondition = { factKey: string; values: string[] } | { serviceKey: string };
+export type SetupCondition =
+	| { factKey: string; values: string[] }
+	| { factKey: string; hasRows: true }
+	| { serviceKey: string };
 
 export type SetupGroup = { title: string; hint: string; facts: SetupFact[] };
 
@@ -242,6 +260,9 @@ type CatalogueItemRow = {
 	max_files?: number | null;
 	list_fields?: ListFieldRow[] | null;
 	max_rows?: number | null;
+	pick_from?: string | null;
+	min_choices?: number | null;
+	ordered?: boolean;
 	max_length: number | null;
 	show_if?: ({ fact_key: string; values: string[] } | { service_key: string })[] | null;
 };
@@ -297,6 +318,16 @@ function factRules(item: CatalogueItemRow): SetupFactRules | null {
 			})),
 			maxRows: item.max_rows ?? 1
 		};
+	if (item.kind === 'pick')
+		return item.pick_from
+			? {
+					kind: 'pick',
+					pickFrom: item.pick_from,
+					...(item.min_choices ? { minChoices: item.min_choices } : {}),
+					...(item.max_choices ? { maxChoices: item.max_choices } : {}),
+					...(item.ordered ? { ordered: true } : {})
+				}
+			: null;
 	return {
 		kind: item.kind,
 		...(item.max_length ? { maxLength: item.max_length } : {}),
@@ -344,11 +375,45 @@ export function buildSetupCatalogue(row: SetupCatalogueRow): SetupCatalogue {
 			groups: groups.filter((group) => group.facts.length > 0)
 		};
 	});
+	linkPicks(sections);
 	// A stage Jafar has added but not yet given a question asks nothing, so no client sees it.
 	return {
 		versionId: row.version_id,
 		sections: sections.filter((section) => section.groups.length > 0)
 	};
+}
+
+/**
+ * Gives each pick what it needs from its list: the box that names a row, the list's wording, and the rule
+ * that it is asked only once the list holds a row. A pick whose list this version no longer has is left out;
+ * the database refuses to publish one, so it can only happen if the database is ahead of the app.
+ */
+function linkPicks(sections: SetupSection[]) {
+	const lists = new Map(
+		sections.flatMap((section) =>
+			sectionFacts(section).flatMap((fact) =>
+				fact.kind === 'list' ? [[fact.key, fact] as const] : []
+			)
+		)
+	);
+	for (const section of sections)
+		for (const group of section.groups)
+			group.facts = group.facts.flatMap((fact) => {
+				if (fact.kind !== 'pick') return [fact];
+				const list = fact.pickFrom ? lists.get(fact.pickFrom) : undefined;
+				if (!list) {
+					console.error(`Setup question ${fact.key} picks from a list that is not asked; skipped.`);
+					return [];
+				}
+				return [
+					{
+						...fact,
+						pickNameKey: list.listFields?.[0]?.key,
+						pickListLabel: list.label,
+						showIf: [{ factKey: list.key, hasRows: true as const }, ...(fact.showIf ?? [])]
+					}
+				];
+			});
 }
 
 function condition(row: NonNullable<CatalogueItemRow['show_if']>[number]): SetupCondition {
@@ -396,11 +461,20 @@ export function catalogueForServices(
 	};
 }
 
-/** Whether an answer is one of the values a condition names. A tick-several answer matches when any tick does. */
-function answerMatches(answer: SetupAnswer | undefined, values: readonly string[]): boolean {
+/**
+ * Whether an answer meets a condition: it is one of the values the condition names — a tick-several answer
+ * when any tick is — or, for a pick's list, it holds at least one row.
+ */
+function answerMatches(
+	answer: SetupAnswer | undefined,
+	condition: { values: readonly string[] } | { hasRows: true }
+): boolean {
 	if (answer?.availability !== 'have' || answer.value === null) return false;
+	if ('hasRows' in condition) return setupListRows(answer.value).length > 0;
 	const list = setupChoiceList(answer.value);
-	return list ? list.some((value) => values.includes(value)) : values.includes(answer.value);
+	return list
+		? list.some((value) => condition.values.includes(value))
+		: condition.values.includes(answer.value);
 }
 
 /**
@@ -420,7 +494,7 @@ export function shownFacts(
 			(condition) =>
 				'factKey' in condition &&
 				shown.has(condition.factKey) &&
-				answerMatches(answers[condition.factKey], condition.values)
+				answerMatches(answers[condition.factKey], condition)
 		);
 		if (asked) shown.add(fact.key);
 	}
@@ -503,6 +577,7 @@ function isCalendarDate(value: string): boolean {
 export function storedSetupValue(fact: SetupFact, value: string): unknown {
 	if (fact.kind === 'hours') return parseSetupHours(value).value;
 	if (fact.kind === 'hours_exceptions') return parseSetupHoursExceptions(value).value;
+	if (fact.kind === 'pick') return setupPickIds(value);
 	return parsedValue(fact, value)?.value ?? value;
 }
 
@@ -577,8 +652,15 @@ function listCellValue(field: SetupListField, text: string) {
 		: { value: null, error };
 }
 
-/** Why a typed value cannot be saved, in words for the person typing it — or null when it can. */
-export function setupValueError(fact: SetupFact, raw: string): string | null {
+/**
+ * Why a typed value cannot be saved, in words for the person typing it — or null when it can. A pick is
+ * checked against its list's answer in `answers`.
+ */
+export function setupValueError(
+	fact: SetupFact,
+	raw: string,
+	answers: SetupAnswers = {}
+): string | null {
 	const value = raw.trim();
 	if (!value) return null;
 	switch (fact.kind) {
@@ -613,6 +695,8 @@ export function setupValueError(fact: SetupFact, raw: string): string | null {
 		case 'file':
 		case 'list':
 			return parsedValue(fact, value)?.error ?? null;
+		case 'pick':
+			return parseSetupPick(value, setupListRows(answers[fact.pickFrom ?? '']?.value), fact).error;
 		default:
 			if (fact.maxLength && value.length > fact.maxLength)
 				return `Keep this under ${fact.maxLength} characters.`;
@@ -621,6 +705,19 @@ export function setupValueError(fact: SetupFact, raw: string): string | null {
 }
 
 export type SetupSectionStatus = 'not_started' | 'in_progress' | 'done';
+
+/**
+ * What a saved answer still lacks before its section can be marked done, in words — or null. Only a pick has
+ * this: it saves as the client ticks, but needs Jafar's fewest picks, or every row when the list holds fewer.
+ */
+export function setupAnswerShortfall(fact: SetupFact, answers: SetupAnswers): string | null {
+	const answer = answers[fact.key];
+	if (fact.kind !== 'pick' || answer?.availability !== 'have') return null;
+	const rows = setupListRows(answers[fact.pickFrom ?? '']?.value);
+	const picked = keptSetupPickIds(setupPickIds(answer.value), rows).length;
+	const least = setupPickMinimum(fact, rows.length);
+	return picked < least ? `Pick at least ${least}.` : null;
+}
 
 /**
  * Required facts that are asked and still have no answer of any kind. "Not yet" and "need help" are

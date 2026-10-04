@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { setupValueError, storedSetupValue, type SetupFact } from '$lib/setup/catalogue';
+import {
+	setupValueError,
+	storedSetupValue,
+	type SetupAnswers,
+	type SetupFact
+} from '$lib/setup/catalogue';
 
 // One autosave: one or more facts from the setup wizard. The published setup version decides what a fact
 // may hold, so the same rule that the page shows beside the field is the one that refuses the save here.
@@ -18,10 +23,19 @@ const answerSchema = z.object({
 		.transform((value) => value?.trim() || null)
 });
 
-export const setupAnswersSchema = (facts: Map<string, SetupFact>) =>
+/**
+ * `saved` is what the organization has already saved. A pick (A5f) is checked against its list as this same
+ * save leaves it, so a list and a pick of it can arrive together.
+ */
+export const setupAnswersSchema = (facts: Map<string, SetupFact>, saved: SetupAnswers = {}) =>
 	z
 		.object({ answers: z.array(answerSchema).min(1).max(50) })
 		.superRefine((input, context) => {
+			const after: SetupAnswers = { ...saved };
+			for (const answer of input.answers)
+				after[answer.fact_key] = answer.availability
+					? { availability: answer.availability, value: answer.value, note: null }
+					: undefined;
 			const seen = new Set<string>();
 			for (const answer of input.answers) {
 				// Errors are keyed by the fact, so the page can put each one under its own field.
@@ -45,7 +59,7 @@ export const setupAnswersSchema = (facts: Map<string, SetupFact>) =>
 					issue('Enter an answer.');
 					continue;
 				}
-				const error = setupValueError(fact, answer.value);
+				const error = setupValueError(fact, answer.value, after);
 				if (error) issue(error);
 			}
 		})

@@ -13,6 +13,8 @@
 	import SetupColoursField from '$lib/components/setup/SetupColoursField.svelte';
 	import SetupFilesField from '$lib/components/setup/SetupFilesField.svelte';
 	import SetupListField from '$lib/components/setup/SetupListField.svelte';
+	import SetupPickField from '$lib/components/setup/SetupPickField.svelte';
+	import type { SetupListRow } from '$lib/setup/lists';
 	import { COUNTRIES } from '$lib/settings/countries';
 	import type { SetupAvailability, SetupFact } from '$lib/setup/catalogue';
 
@@ -30,6 +32,7 @@
 		country = null,
 		userId = null,
 		fileTarget,
+		pickRows = [],
 		onedit,
 		oncommit
 	}: {
@@ -48,6 +51,8 @@
 		userId?: string | null;
 		/** A5e: a box in a list's row uploads its file to the list question and that box. */
 		fileTarget?: { factKey: string; fieldKey: string };
+		/** A5f: a pick's list rows as they stand now. */
+		pickRows?: SetupListRow[];
 		onedit: () => void;
 		oncommit: () => void;
 	} = $props();
@@ -193,6 +198,19 @@
 			{country}
 			{userId}
 			{onedit}
+			{oncommit}
+		/>
+	{:else if fact.kind === 'pick'}
+		<SetupPickField
+			{id}
+			label={fact.label}
+			rows={pickRows}
+			nameKey={fact.pickNameKey}
+			minChoices={fact.minChoices}
+			maxChoices={fact.maxChoices}
+			ordered={fact.ordered}
+			bind:value
+			invalid={Boolean(error)}
 			{oncommit}
 		/>
 	{:else if fact.kind === 'file'}
