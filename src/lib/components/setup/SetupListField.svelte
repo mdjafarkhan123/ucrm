@@ -118,7 +118,7 @@
 		requestAnimationFrame(() =>
 			document
 				.getElementById(`${id}-${rowId}`)
-				?.querySelector<HTMLElement>('input, textarea, button')
+				?.querySelector<HTMLElement>('.setup-list__boxes :is(input, textarea, button)')
 				?.focus()
 		);
 	}
