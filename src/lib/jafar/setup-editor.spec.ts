@@ -7,6 +7,7 @@ import {
 	publishChanges,
 	sameStages,
 	pickSources,
+	reuseSources,
 	showIfSources,
 	stageAudience,
 	stagesPayload,
@@ -173,6 +174,7 @@ describe('setup question editor', () => {
 				pick_from: null,
 				min_choices: null,
 				ordered: false,
+				reuse_from: null,
 				show_if: null
 			},
 			{
@@ -197,6 +199,7 @@ describe('setup question editor', () => {
 				pick_from: null,
 				min_choices: null,
 				ordered: false,
+				reuse_from: null,
 				show_if: null
 			}
 		]);
@@ -373,5 +376,55 @@ describe('pick from an earlier list (A5f)', () => {
 			min_choices: null,
 			ordered: false
 		});
+	});
+});
+
+describe('use an earlier answer (A5g)', () => {
+	it('names a question above it by position until that question has a key', () => {
+		const items = draftItems([item({ label: 'Phone', kind: 'phone' })]);
+		const [reuse] = draftItems([item({ label: 'Website phone', kind: 'reuse' })]);
+		reuse.reuse_from = items[0].rowId;
+		expect(itemsPayload([...items, reuse])[1]).toMatchObject({
+			kind: 'reuse',
+			reuse_from: { item: 1 }
+		});
+		reuse.kind = 'text';
+		expect(itemsPayload([...items, reuse])[1]).toMatchObject({ reuse_from: null });
+	});
+
+	it('offers questions whose answer can be shown back and is always asked', () => {
+		const earlier: SetupEditorStage = {
+			key: 'business',
+			title: 'Your business',
+			description: '',
+			service_key: null,
+			items: [
+				item({ fact_key: 'business.public_phone', label: 'Public phone', built_in: true }),
+				item({ fact_key: 'business.logo', label: 'Logo', kind: 'file' }),
+				item({
+					fact_key: 'business.vat',
+					label: 'VAT number',
+					kind: 'text',
+					show_if: [{ fact_key: 'business.country', values: ['GB'] }]
+				}),
+				item({
+					fact_key: 'business.site',
+					label: 'Website address',
+					kind: 'url',
+					show_if: [{ service_key: 'website' }]
+				})
+			]
+		};
+		const items = draftItems([
+			item({ type: 'heading', label: 'Contact' }),
+			item({ fact_key: 'website.email', label: 'Email', kind: 'email' }),
+			item({ fact_key: 'website.top', label: 'Top', kind: 'pick' }),
+			item({ fact_key: 'website.phone', label: 'Phone', kind: 'reuse' })
+		]);
+		expect(reuseSources([earlier], items, 3)).toEqual([
+			{ id: 'business.public_phone', label: 'Public phone', stageTitle: 'Your business' },
+			{ id: 'business.site', label: 'Website address', stageTitle: 'Your business' },
+			{ id: 'website.email', label: 'Email', stageTitle: null }
+		]);
 	});
 });

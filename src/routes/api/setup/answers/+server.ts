@@ -10,6 +10,7 @@ import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { catalogueFacts, type SetupAnswers, type SetupFact } from '$lib/setup/catalogue';
 import { setupListFileIds, type SetupListRow } from '$lib/setup/lists';
 import { keptSetupPickIds, setupPickIds } from '$lib/setup/picks';
+import { setupReuseSource } from '$lib/setup/reuse';
 
 // Autosave. Each answer is a draft the administrator can keep changing; nothing saved here is treated as
 // a final, attested answer (ADR 0005).
@@ -36,8 +37,10 @@ export const PATCH: RequestHandler = async (event) => {
 	const facts = catalogueFacts(catalogue);
 
 	// A5f: a pick is checked against its list as saved, and a list's save tidies the picks made from it, so
-	// both need the organization's saved answers. Other saves skip the read.
+	// both need the organization's saved answers. A5g: so do a reuse's "Yes, use this" and a save of the
+	// answer it means. Other saves skip the read.
 	const picks = [...facts.values()].filter((fact) => fact.kind === 'pick');
+	const reuses = [...facts.values()].filter((fact) => fact.reuseFrom);
 	const sentKeys = new Set(
 		(Array.isArray((body as { answers?: unknown })?.answers)
 			? ((body as { answers: unknown[] }).answers as { fact_key?: unknown }[])
@@ -45,7 +48,10 @@ export const PATCH: RequestHandler = async (event) => {
 		).map((answer) => answer?.fact_key)
 	);
 	let saved: SetupAnswers = {};
-	if (picks.some((pick) => sentKeys.has(pick.key) || sentKeys.has(pick.pickFrom))) {
+	if (
+		picks.some((pick) => sentKeys.has(pick.key) || sentKeys.has(pick.pickFrom)) ||
+		reuses.some((reuse) => sentKeys.has(reuse.key) || sentKeys.has(reuse.reuseFrom))
+	) {
 		const state = await readSetupState(event.locals.supabase, organizationId);
 		if (!state) return databaseError();
 		saved = state.answers;
@@ -53,10 +59,14 @@ export const PATCH: RequestHandler = async (event) => {
 
 	const parsed = setupAnswersSchema(facts, saved).safeParse(body);
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
-	// One save holds at most 50 answers; a pick left untidied only names a row nobody reads any more.
+	// One save holds at most 50 answers; a pick left untidied only names a row nobody reads any more, and a
+	// "Yes, use this" left behind counts as unanswered (setupAnswerGiven).
 	const answers = [
 		...parsed.data.answers,
-		...prunedPicks(picks, parsed.data.answers, saved).slice(0, 50 - parsed.data.answers.length)
+		...[
+			...prunedPicks(picks, parsed.data.answers, saved),
+			...clearedReuses(reuses, parsed.data.answers, saved)
+		].slice(0, 50 - parsed.data.answers.length)
 	];
 
 	// A photo or file answer may only hold this organization's own setup uploads that are still usable.
@@ -121,5 +131,25 @@ function prunedPicks(
 				note: null
 			}
 		];
+	});
+}
+
+/**
+ * A5g: when a save leaves an earlier answer not given — cleared, "not yet" or "need help" — every saved
+ * "Yes, use this" of it is cleared too, so the client is asked again rather than shown a confirmation of
+ * nothing. A reuse sent in the same save was already checked against the new answer.
+ */
+function clearedReuses(
+	reuses: SetupFact[],
+	writes: AnswerWrite[],
+	saved: SetupAnswers
+): AnswerWrite[] {
+	const sent = new Map(writes.map((write) => [write.fact_key, write]));
+	return reuses.flatMap((reuse): AnswerWrite[] => {
+		const source = sent.get(reuse.reuseFrom ?? '');
+		const answer = saved[reuse.key];
+		if (!source || source.availability === 'have' || sent.has(reuse.key)) return [];
+		if (answer?.availability !== 'have' || setupReuseSource(answer.value) === null) return [];
+		return [{ fact_key: reuse.key, availability: null, value: null, note: null }];
 	});
 }

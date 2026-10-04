@@ -41,6 +41,8 @@ export type SetupEditorItem = {
 	min_choices: number | null;
 	/** Pick from an earlier list: the client puts the picks in order. */
 	ordered: boolean;
+	/** Use an earlier answer: that question's key. Null for every other type. */
+	reuse_from?: string | null;
 	/** "Show only if": every condition must hold. Null asks the question always. */
 	show_if: SetupShowIfCondition[] | null;
 };
@@ -195,6 +197,11 @@ export type DraftItem = {
 	pick_from: string | null;
 	min_choices: number | null;
 	ordered: boolean;
+	/**
+	 * Use an earlier answer: the earlier question's key, or the row id of a question above it in this stage that
+	 * has no key yet; null until one is chosen.
+	 */
+	reuse_from: string | null;
 	/** Empty asks the question always. */
 	show_if: DraftCondition[];
 };
@@ -299,6 +306,7 @@ export function draftItems(items: SetupEditorItem[]): DraftItem[] {
 		pick_from: item.pick_from ?? null,
 		min_choices: item.min_choices ?? null,
 		ordered: item.kind === 'pick' ? item.ordered : NEW_PICK_QUESTION.ordered,
+		reuse_from: item.reuse_from ?? null,
 		show_if: draftConditions(item.show_if)
 	}));
 }
@@ -306,12 +314,15 @@ export function draftItems(items: SetupEditorItem[]): DraftItem[] {
 /** A question just given the pick type asks clients to order their picks until Jafar changes it. */
 export const NEW_PICK_QUESTION = { ordered: true };
 
-/** What the save sends for the list a pick chooses from: as for a rule, a list above with no key yet goes by position. */
-function pickFromPayload(item: DraftItem, items: DraftItem[]) {
-	if (!item.pick_from) return null;
-	const index = items.findIndex((each) => each.rowId === item.pick_from);
+/**
+ * What the save sends for the earlier question a pick or a reuse names: as for a rule, one above with no key
+ * yet goes by position.
+ */
+function earlierQuestionPayload(source: string | null, items: DraftItem[]) {
+	if (!source) return null;
+	const index = items.findIndex((each) => each.rowId === source);
 	if (index !== -1 && items[index].fact_key === null) return { item: index + 1 };
-	return { fact_key: item.pick_from };
+	return { fact_key: source };
 }
 
 /** What a question just given the photo or file type accepts until Jafar changes it. */
@@ -349,9 +360,16 @@ export function itemsPayload(items: DraftItem[]) {
 					list_fields:
 						!item.built_in && item.kind === 'list' ? item.list_fields.map(listFieldPayload) : null,
 					max_rows: !item.built_in && item.kind === 'list' ? item.max_rows : null,
-					pick_from: !item.built_in && item.kind === 'pick' ? pickFromPayload(item, items) : null,
+					pick_from:
+						!item.built_in && item.kind === 'pick'
+							? earlierQuestionPayload(item.pick_from, items)
+							: null,
 					min_choices: !item.built_in && item.kind === 'pick' ? item.min_choices : null,
 					ordered: !item.built_in && item.kind === 'pick' && item.ordered,
+					reuse_from:
+						!item.built_in && item.kind === 'reuse'
+							? earlierQuestionPayload(item.reuse_from, items)
+							: null,
 					show_if: conditionsPayload(item.show_if, items)
 				}
 	);
@@ -478,6 +496,53 @@ export function pickSources(
 	return [...earlier, ...above];
 }
 
+/** An earlier question a reuse can show back to confirm. */
+export type ReuseSource = { id: string; label: string; stageTitle: string | null };
+
+/**
+ * Whether a question's answer can be shown back to confirm (A5g): built in, or any type but photo or file, pick
+ * or reuse; and always asked, since a "show only if" on an earlier answer could hide it. A rule on a service is
+ * fine — a client without that service is asked the reuse as a plain question.
+ */
+function reusable(
+	item: Pick<SetupEditorItem, 'type' | 'built_in' | 'kind'>,
+	answerRule: boolean
+): boolean {
+	if (item.type !== 'question' || answerRule) return false;
+	return item.built_in || !['file', 'pick', 'reuse', null].includes(item.kind);
+}
+
+/**
+ * The questions the question at `index` of this stage can reuse: those in earlier stages, as last saved, then
+ * those above it here, as they stand in the form.
+ */
+export function reuseSources(
+	earlierStages: SetupEditorStage[],
+	items: DraftItem[],
+	index: number
+): ReuseSource[] {
+	const earlier = earlierStages.flatMap((stage) =>
+		stage.items.flatMap((item) =>
+			item.fact_key &&
+			reusable(
+				item,
+				(item.show_if ?? []).some((condition) => 'fact_key' in condition)
+			)
+				? [{ id: item.fact_key, label: item.label, stageTitle: stage.title }]
+				: []
+		)
+	);
+	const above = items.slice(0, index).flatMap((item) =>
+		reusable(
+			item,
+			item.show_if.some((condition) => condition.type === 'answer')
+		)
+			? [{ id: item.rowId, label: item.label.trim() || 'New question', stageTitle: null }]
+			: []
+	);
+	return [...earlier, ...above];
+}
+
 export function sameItems(a: DraftItem[], b: DraftItem[]) {
 	return JSON.stringify(itemsPayload(a)) === JSON.stringify(itemsPayload(b));
 }
@@ -501,7 +566,8 @@ export const SETUP_QUESTION_KIND_LABELS: Record<SetupQuestionKind, string> = {
 	colours: 'Colours',
 	file: 'Photo or file',
 	list: 'Add-another list',
-	pick: 'Pick from an earlier list'
+	pick: 'Pick from an earlier list',
+	reuse: 'Use an earlier answer'
 };
 
 export const fetchSetupEditor = () => send('/api/jafar/setup', 'GET');

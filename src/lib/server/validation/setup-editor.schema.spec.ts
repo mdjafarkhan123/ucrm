@@ -372,3 +372,44 @@ describe('pick from an earlier list (A5f)', () => {
 		});
 	});
 });
+
+describe('use an earlier answer (A5g)', () => {
+	const reuse = {
+		type: 'question',
+		fact_key: null,
+		label: 'Which phone should the website show?',
+		hint: null,
+		required: true,
+		can_defer: false,
+		kind: 'reuse',
+		options: null,
+		reuse_from: { fact_key: 'business.public_phone' }
+	};
+
+	it('keeps the question it reuses', () => {
+		const parsed = saveSetupStageItemsSchema.parse({ ...draft, items: [reuse] });
+		expect(parsed.items[0]).toMatchObject({
+			kind: 'reuse',
+			reuse_from: { fact_key: 'business.public_phone' }
+		});
+	});
+
+	it('needs a question to reuse', () => {
+		const result = saveSetupStageItemsSchema.safeParse({
+			...draft,
+			items: [{ ...reuse, reuse_from: null }]
+		});
+		expect(result.error?.issues[0]).toMatchObject({
+			path: ['items', 0, 'reuse_from'],
+			message: 'Choose the question whose answer clients confirm.'
+		});
+	});
+
+	it('drops the question from a question of another type', () => {
+		const parsed = saveSetupStageItemsSchema.parse({
+			...draft,
+			items: [{ ...reuse, kind: 'phone' }]
+		});
+		expect(parsed.items[0]).toMatchObject({ reuse_from: null });
+	});
+});

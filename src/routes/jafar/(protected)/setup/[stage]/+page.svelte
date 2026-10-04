@@ -110,7 +110,7 @@
 		const byRow: Record<string, string> = {};
 		for (const [path, message] of Object.entries(errors)) {
 			const match =
-				/^items\.(\d+)\.(label|hint|kind|options|max_choices|file_kinds|max_files|list_fields|max_rows|pick_from|min_choices|show_if)/.exec(
+				/^items\.(\d+)\.(label|hint|kind|options|max_choices|file_kinds|max_files|list_fields|max_rows|pick_from|min_choices|reuse_from|show_if)/.exec(
 					path
 				);
 			const row = match ? items[Number(match[1])] : undefined;
@@ -142,6 +142,7 @@
 			pick_from: null,
 			min_choices: null,
 			ordered: NEW_PICK_QUESTION.ordered,
+			reuse_from: null,
 			show_if: []
 		});
 		void questionList?.openNew(rowId);

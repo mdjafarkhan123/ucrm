@@ -3,6 +3,7 @@ import type { Database } from '$lib/database.types';
 import {
 	sectionFacts,
 	sectionStatus,
+	setupAnswerGiven,
 	shownCatalogueFacts,
 	type SetupAnswers,
 	type SetupAvailability,
@@ -72,7 +73,7 @@ export function setupSummary(state: SetupState, catalogue: SetupCatalogue) {
 			title: section.title,
 			description: section.description,
 			status: sectionStatus(section, state.answers, state.doneSections.has(section.key), shown),
-			answered: facts.filter((fact) => state.answers[fact.key]).length,
+			answered: facts.filter((fact) => setupAnswerGiven(fact, state.answers)).length,
 			total: facts.length
 		};
 	});

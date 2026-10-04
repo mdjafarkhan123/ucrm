@@ -677,3 +677,146 @@ describe('picks from an earlier list (A5f)', () => {
 		expect(client.rpc).not.toHaveBeenCalled();
 	});
 });
+
+describe('reuse and confirm an earlier answer (A5g)', () => {
+	// The public phone, then "Which phone should the website show?" reusing it.
+	const reuseCatalogue = buildSetupCatalogue({
+		version_id: 'v-reuse',
+		stages: [
+			{
+				key: 'business',
+				title: 'Your business',
+				description: '',
+				service_key: null,
+				items: [
+					{
+						type: 'question',
+						fact_key: 'business.public_phone',
+						label: 'Public phone',
+						hint: null,
+						built_in: true,
+						required: true,
+						can_defer: true,
+						kind: null,
+						options: null,
+						max_length: null
+					},
+					{
+						type: 'question',
+						fact_key: 'business.website_phone',
+						label: 'Which phone should the website show?',
+						hint: null,
+						built_in: false,
+						required: true,
+						can_defer: false,
+						kind: 'reuse',
+						options: null,
+						reuse_from: 'business.public_phone',
+						max_length: null
+					}
+				]
+			}
+		]
+	});
+	const useReuseCatalogue = () =>
+		vi.mocked(readOrganizationSetupCatalogue).mockResolvedValueOnce(reuseCatalogue);
+	const phone = {
+		fact_key: 'business.public_phone',
+		availability: 'have',
+		value: '01632 960123',
+		note: null
+	};
+	const same = JSON.stringify({ same_as: 'business.public_phone' });
+
+	it('stores "Yes, use this" as the earlier answer it means, not a second copy', async () => {
+		useReuseCatalogue();
+		const client = supabase({ answers: [phone] });
+		const response = await patchAnswers(
+			event(client, {
+				answers: [{ fact_key: 'business.website_phone', availability: 'have', value: same }]
+			})
+		);
+		expect(response.status).toBe(200);
+		expect(client.rpc.mock.calls[0][1].new_answers).toEqual([
+			{
+				fact_key: 'business.website_phone',
+				availability: 'have',
+				value: { same_as: 'business.public_phone' },
+				note: null
+			}
+		]);
+	});
+
+	it('refuses "Yes, use this" while the earlier answer is not given', async () => {
+		useReuseCatalogue();
+		const client = supabase({ answers: [] });
+		const response = await patchAnswers(
+			event(client, {
+				answers: [{ fact_key: 'business.website_phone', availability: 'have', value: same }]
+			})
+		);
+		expect(response.status).toBe(422);
+		expect(client.rpc).not.toHaveBeenCalled();
+	});
+
+	it('keeps a different answer for this question only', async () => {
+		useReuseCatalogue();
+		const client = supabase({ answers: [phone] });
+		await patchAnswers(
+			event(client, {
+				answers: [
+					{ fact_key: 'business.website_phone', availability: 'have', value: '01632 960999' }
+				]
+			})
+		);
+		expect(client.rpc.mock.calls[0][1].new_answers).toEqual([
+			{
+				fact_key: 'business.website_phone',
+				availability: 'have',
+				value: '01632 960999',
+				note: null
+			}
+		]);
+	});
+
+	it('clears "Yes, use this" when the earlier answer becomes "I don\'t have this yet"', async () => {
+		useReuseCatalogue();
+		const client = supabase({
+			answers: [
+				phone,
+				{
+					fact_key: 'business.website_phone',
+					availability: 'have',
+					value: { same_as: 'business.public_phone' },
+					note: null
+				}
+			]
+		});
+		await patchAnswers(
+			event(client, { answers: [{ fact_key: 'business.public_phone', availability: 'not_yet' }] })
+		);
+		expect(client.rpc.mock.calls[0][1].new_answers[1]).toMatchObject({
+			fact_key: 'business.website_phone',
+			availability: null
+		});
+	});
+
+	it('leaves a different answer alone when the earlier answer changes', async () => {
+		useReuseCatalogue();
+		const client = supabase({
+			answers: [
+				phone,
+				{
+					fact_key: 'business.website_phone',
+					availability: 'have',
+					value: '01632 960999',
+					note: null
+				}
+			]
+		});
+		await patchAnswers(
+			event(client, { answers: [{ fact_key: 'business.public_phone', availability: null }] })
+		);
+		expect(client.rpc.mock.calls[0][1].new_answers).toHaveLength(1);
+	});
+});

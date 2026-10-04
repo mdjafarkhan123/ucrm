@@ -19,6 +19,7 @@
 		SETUP_QUESTION_KIND_LABELS,
 		isChoiceKind,
 		pickSources,
+		reuseSources,
 		showIfSources,
 		type DraftItem,
 		type SetupEditor,
@@ -85,8 +86,8 @@
 		return new Set(item.list_fields.flatMap((field) => (field.key ? [field.key] : [])));
 	}
 
-	/** A pick clients have answered keeps its list: their answers name that list's entries. */
-	function pickLocked(item: DraftItem) {
+	/** A pick or reuse clients have answered keeps its list or question: their answers name it. */
+	function sourceLocked(item: DraftItem) {
 		return item.fact_key !== null && answered.has(item.fact_key);
 	}
 
@@ -95,6 +96,13 @@
 		if (!item.pick_from || sources.some((source) => source.id === item.pick_from)) return null;
 		const here = items.find((each) => each.rowId === item.pick_from);
 		return here?.label.trim() || 'Its list';
+	}
+
+	/** A5g: the question a reuse names when it can no longer reuse it — moved below it, or given a rule. */
+	function strayReuse(item: DraftItem, sources: { id: string }[]) {
+		if (!item.reuse_from || sources.some((source) => source.id === item.reuse_from)) return null;
+		const here = items.find((each) => each.rowId === item.reuse_from);
+		return here?.label.trim() || 'Its question';
 	}
 
 	const pickNumber = (item: DraftItem, field: 'min_choices' | 'max_choices') => ({
@@ -456,7 +464,7 @@
 														: source.label
 												}))}
 												value={item.pick_from ?? ''}
-												disabled={pickLocked(item)}
+												disabled={sourceLocked(item)}
 												onchange={(value: string) => (item.pick_from = value || null)}
 											/>
 											{#if errors[`${item.rowId}.pick_from`]}
@@ -468,7 +476,7 @@
 													“{stray}” is no longer an add-another list above this question. Move this
 													question back below it, or choose another list.
 												</p>
-											{:else if pickLocked(item)}
+											{:else if sourceLocked(item)}
 												<p class="setup-questions__hint">
 													Clients have answered this, so it keeps its list.
 												</p>
@@ -514,6 +522,56 @@
 										description="Their picks show numbered, with buttons to move each one up or down."
 										bind:checked={item.ordered}
 									/>
+								</fieldset>
+							{/if}
+
+							{#if item.kind === 'reuse'}
+								{@const sources = reuseSources(earlierStages, items, index)}
+								{@const stray = strayReuse(item, sources)}
+								<fieldset class="setup-questions__choices">
+									<legend>Clients confirm their answer to</legend>
+									{#if sources.length === 0 && !item.reuse_from}
+										<p class="setup-questions__hint">
+											There's no question above this one whose answer can be shown back. Add one
+											first — for example a phone number — then choose it here.
+										</p>
+									{:else}
+										<div class="setup-questions__most">
+											<Select
+												id={`setup-item-${item.rowId}-reuse-from`}
+												label="Earlier question"
+												placeholder="Choose a question"
+												options={sources.map((source) => ({
+													value: source.id,
+													label: source.stageTitle
+														? `${source.label} (${source.stageTitle})`
+														: source.label
+												}))}
+												value={item.reuse_from ?? ''}
+												disabled={sourceLocked(item)}
+												onchange={(value: string) => (item.reuse_from = value || null)}
+											/>
+											{#if errors[`${item.rowId}.reuse_from`]}
+												<p class="setup-questions__error" role="alert">
+													{errors[`${item.rowId}.reuse_from`]}
+												</p>
+											{:else if stray}
+												<p class="setup-questions__error">
+													“{stray}” can no longer be reused here: it must sit above this question
+													and be asked of everyone. Move it back, or choose another question.
+												</p>
+											{:else if sourceLocked(item)}
+												<p class="setup-questions__hint">
+													Clients have answered this, so it keeps its question.
+												</p>
+											{:else}
+												<p class="setup-questions__hint">
+													Clients see what they told you there and pick “Yes, use this” or “Use a
+													different one here”. A client who hasn't answered it is simply asked.
+												</p>
+											{/if}
+										</div>
+									{/if}
 								</fieldset>
 							{/if}
 						{/if}

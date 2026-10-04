@@ -27,6 +27,7 @@
 	import {
 		sectionFacts,
 		sectionStatus,
+		setupAnswerGiven,
 		setupAnswerShortfall,
 		setupValueError,
 		shownFacts,
@@ -38,6 +39,8 @@
 	import { countryCurrency } from '$lib/settings/countries';
 	import { setupListRows } from '$lib/setup/lists';
 	import { keptSetupPickIds, setupPickIds } from '$lib/setup/picks';
+	import { setupReuseSource } from '$lib/setup/reuse';
+	import { setupAnswerLines } from '$lib/setup/answer-lines';
 	import { getSupportAsk } from '$lib/support/ask';
 	import askIcon from '@tabler/icons/outline/message-question.svg?raw';
 	import type { HttpError } from '$lib/http-error';
@@ -95,8 +98,13 @@
 						(fact.kind === 'timezone'
 							? Intl.DateTimeFormat().resolvedOptions().timeZone
 							: undefined));
+				// A5g: a "Yes, use this" of an answer this client is no longer asked shows as unanswered.
+				const stale =
+					answer?.availability === 'have' &&
+					setupReuseSource(answer.value) !== null &&
+					!fact.reuseFrom;
 				next[fact.key] = {
-					value: answer?.value ?? suggestion ?? '',
+					value: stale ? '' : (answer?.value ?? suggestion ?? ''),
 					availability: answer?.availability ?? 'have',
 					note: answer?.note ?? ''
 				};
@@ -134,13 +142,45 @@
 		return setupListRows(earlier[key]?.value);
 	}
 
-	// Every answer a pick's rules may read: earlier sections' and this page's as they stand.
+	// Every answer a pick's or a reuse's rules may read: earlier sections' and this page's as they stand.
 	function answersNow(): SetupAnswers {
 		const now: SetupAnswers = { ...earlier };
 		if (section && fields)
-			for (const fact of sectionFacts(section))
-				if (fact.kind === 'list') now[fact.key] = draftAnswer(fact.key);
+			for (const fact of sectionFacts(section)) now[fact.key] = draftAnswer(fact.key);
 		return now;
+	}
+
+	// A5g: the earlier answer a reuse shows to confirm — on this page as typed, or as saved in an earlier
+	// section — or null when there is none to show, and the question is asked as a plain one.
+	function reuseOf(fact: SetupFact) {
+		const key = fact.reuseFrom;
+		if (!key || !section) return null;
+		const here = Boolean(fields?.[key]);
+		const answer = here ? draftAnswer(key) : earlier[key];
+		if (answer?.availability !== 'have' || !answer.value) return null;
+		const lines = setupAnswerLines(fact, answer.value).filter(Boolean);
+		if (lines.length === 0) return null;
+		return {
+			lines,
+			where: here
+				? `You told us above, in “${fact.reuseLabel}”`
+				: `You told us in ${fact.reuseSection?.title ?? 'an earlier section'}`,
+			href: here
+				? `#setup-${key.replace(/\./g, '-')}-field`
+				: resolve('/(app)/setup/[section]', { section: fact.reuseSection?.key ?? '' })
+		};
+	}
+
+	// A5g: when an answer on this page stops being given, a "Yes, use this" of it is cleared with it — the
+	// server does the same — so the client is asked again rather than shown a confirmation of nothing.
+	function clearReusesOf(key: string) {
+		if (!section || !fields || draftAnswer(key)?.availability === 'have') return;
+		for (const fact of sectionFacts(section)) {
+			const field = fields[fact.key];
+			if (fact.reuseFrom !== key || !setupReuseSource(field?.value)) continue;
+			field.value = '';
+			touched.add(fact.key);
+		}
 	}
 
 	// "Show only if" (A5b): which questions are asked, judged against what is on screen now, so a question
@@ -176,6 +216,7 @@
 	// Typing waits for a pause before saving, so a name is one save rather than one per letter.
 	function edited(key: string) {
 		touched.add(key);
+		clearReusesOf(key);
 		suggested[key] = false;
 		if (errors[key]) delete errors[key];
 		clearTimeout(timer);
@@ -184,6 +225,7 @@
 
 	function committed(key: string) {
 		touched.add(key);
+		clearReusesOf(key);
 		suggested[key] = false;
 		if (key === COUNTRY) suggestCurrency();
 		clearTimeout(timer);
@@ -250,11 +292,21 @@
 						return {
 							...current,
 							answers,
-							status: sectionStatus(section, answers, markedDone, shownWith(answers))
+							status: sectionStatus(
+								section,
+								{ ...earlier, ...answers },
+								markedDone,
+								shownWith(answers)
+							)
 						};
 					}
 				);
 				void queryClient.invalidateQueries({ queryKey: setupSummaryKey(userId) });
+				// A later section may show these answers back to confirm (A5g), or ask a question because of them.
+				void queryClient.invalidateQueries({
+					queryKey: ['setup', 'section', userId],
+					predicate: (cached) => cached.queryKey[3] !== sectionKey
+				});
 			})
 			.catch((error: SetupWriteFailure) => {
 				saveState = 'failed';
@@ -299,10 +351,10 @@
 
 		// A question an answer hid is never required, and a message it still carries is not in the way.
 		const asked = shownWith(saved);
-		const missing = sectionFacts(section).filter(
-			(fact) => fact.required && asked.has(fact.key) && !saved[fact.key]
-		);
 		const now = { ...earlier, ...saved };
+		const missing = sectionFacts(section).filter(
+			(fact) => fact.required && asked.has(fact.key) && !setupAnswerGiven(fact, now)
+		);
 		for (const fact of sectionFacts(section)) {
 			const shortfall = asked.has(fact.key) ? setupAnswerShortfall(fact, now) : null;
 			if (shortfall) errors[fact.key] ??= shortfall;
@@ -359,7 +411,12 @@
 			current && section
 				? {
 						...current,
-						status: sectionStatus(section, current.answers, markedDone, shownWith(current.answers))
+						status: sectionStatus(
+							section,
+							{ ...earlier, ...current.answers },
+							markedDone,
+							shownWith(current.answers)
+						)
 					}
 				: current
 		);
@@ -453,6 +510,7 @@
 								{country}
 								{userId}
 								pickRows={fact.kind === 'pick' ? pickRows(fact) : undefined}
+								reuse={reuseOf(fact)}
 								onedit={() => edited(fact.key)}
 								oncommit={() => committed(fact.key)}
 							/>

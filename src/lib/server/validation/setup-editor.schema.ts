@@ -189,6 +189,14 @@ const questionSchema = z
 			.nullish(),
 		min_choices: z.number().int().nullish(),
 		ordered: z.boolean().optional().default(false),
+		// Client onboarding A5g: the earlier question a reuse shows to confirm, named the same two ways.
+		reuse_from: z
+			.object({
+				fact_key: z.string().regex(FACT_KEY).max(80).optional(),
+				item: z.number().int().positive().optional()
+			})
+			.strict()
+			.nullish(),
 		// Null, or left out, asks the question always.
 		show_if: z
 			.array(conditionSchema)
@@ -224,6 +232,16 @@ const questionSchema = z
 		}
 		if (question.kind === 'list') listProblems(question, context);
 		if (question.kind === 'pick') pickProblems(question, context);
+		const reuse = question.reuse_from;
+		if (
+			question.kind === 'reuse' &&
+			(!reuse || (reuse.fact_key === undefined) === (reuse.item === undefined))
+		)
+			context.addIssue({
+				code: 'custom',
+				path: ['reuse_from'],
+				message: 'Choose the question whose answer clients confirm.'
+			});
 		if (!isChoiceKind(question.kind)) return;
 		const labels = (question.options ?? []).map((option) => option.label.toLowerCase());
 		if (question.allow_other && labels.includes('other'))
@@ -269,7 +287,8 @@ const questionSchema = z
 		max_rows: question.kind === 'list' ? (question.max_rows ?? null) : null,
 		pick_from: question.kind === 'pick' ? (question.pick_from ?? null) : null,
 		min_choices: question.kind === 'pick' ? (question.min_choices ?? null) : null,
-		ordered: question.kind === 'pick' && question.ordered
+		ordered: question.kind === 'pick' && question.ordered,
+		reuse_from: question.kind === 'reuse' ? (question.reuse_from ?? null) : null
 	}));
 
 /** The most a pick can ask for: as many rows as the longest list allows. */

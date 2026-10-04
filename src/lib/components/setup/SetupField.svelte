@@ -17,6 +17,7 @@
 	import type { SetupListRow } from '$lib/setup/lists';
 	import { COUNTRIES } from '$lib/settings/countries';
 	import type { SetupAvailability, SetupFact } from '$lib/setup/catalogue';
+	import { setupReuseSource, setupReuseValue } from '$lib/setup/reuse';
 
 	// One setup question. It only shows and collects: the page owns saving, so every question on a section
 	// autosaves the same way. `onedit` fires while the person is still typing (the page waits a moment before
@@ -33,6 +34,7 @@
 		userId = null,
 		fileTarget,
 		pickRows = [],
+		reuse = null,
 		onedit,
 		oncommit
 	}: {
@@ -53,6 +55,11 @@
 		fileTarget?: { factKey: string; fieldKey: string };
 		/** A5f: a pick's list rows as they stand now. */
 		pickRows?: SetupListRow[];
+		/**
+		 * A5g: the earlier answer this question reuses, in words, with where it was given and a link back to it.
+		 * Null asks the question as a plain one: nothing to reuse yet, or not a reuse.
+		 */
+		reuse?: { lines: string[]; where: string; href: string } | null;
 		onedit: () => void;
 		oncommit: () => void;
 	} = $props();
@@ -120,11 +127,190 @@
 		oncommit();
 	}
 
+	// A5g: "Yes, use this" is the answer itself; "Use a different one here" opens the question's own box.
+	let pickedDifferent = $state(false);
+	const reuseChoice = $derived(
+		setupReuseSource(value) ? 'same' : value || pickedDifferent ? 'different' : ''
+	);
+	const REUSE_OPTIONS = [
+		{ value: 'same', label: 'Yes, use this' },
+		{ value: 'different', label: 'Use a different one here' }
+	];
+
+	function chooseReuse(next: string) {
+		pickedDifferent = next === 'different';
+		value = next === 'same' && fact.reuseFrom ? setupReuseValue(fact.reuseFrom) : '';
+		oncommit();
+	}
+
+	// The question's own box keeps its wording, unless it sits under "Use a different one here".
+	const label = $derived(reuse ? 'Your answer for this' : fact.label);
+
 	function chooseAvailability(next: string) {
 		availability = next as SetupAvailability;
 		oncommit();
 	}
 </script>
+
+{#snippet control()}
+	{#if isEditor}
+		<div class="setup-field__heading">
+			<span class="setup-field__label">{label}</span>
+			{#if fact.hint}<p class="setup-field__hint">{fact.hint}</p>{/if}
+		</div>
+		{#if fact.kind === 'hours'}
+			<SetupHoursField {id} bind:value onchange={onedit} />
+		{:else}
+			<SetupHoursExceptions {id} bind:value onchange={onedit} />
+		{/if}
+	{:else if fact.kind === 'multi_choice'}
+		<SetupChoicesField
+			{id}
+			{label}
+			options={fact.options ?? []}
+			allowOther={fact.allowOther}
+			maxChoices={fact.maxChoices}
+			bind:value
+			invalid={Boolean(error)}
+			{onedit}
+			{oncommit}
+		/>
+	{:else if fact.kind === 'number' || fact.kind === 'percentage' || fact.kind === 'money' || fact.kind === 'distance' || fact.kind === 'duration'}
+		<SetupAmountField
+			{id}
+			{label}
+			kind={fact.kind}
+			bind:value
+			{currency}
+			{country}
+			required={fact.required && !fact.canDefer}
+			invalid={Boolean(error)}
+			{onedit}
+			{oncommit}
+		/>
+	{:else if fact.kind === 'list'}
+		<SetupListField
+			{id}
+			factKey={fact.key}
+			{label}
+			fields={fact.listFields ?? []}
+			maxRows={fact.maxRows ?? 1}
+			bind:value
+			{error}
+			{currency}
+			{country}
+			{userId}
+			{onedit}
+			{oncommit}
+		/>
+	{:else if fact.kind === 'pick'}
+		<SetupPickField
+			{id}
+			{label}
+			rows={pickRows}
+			nameKey={fact.pickNameKey}
+			minChoices={fact.minChoices}
+			maxChoices={fact.maxChoices}
+			ordered={fact.ordered}
+			bind:value
+			invalid={Boolean(error)}
+			{oncommit}
+		/>
+	{:else if fact.kind === 'file'}
+		<SetupFilesField
+			{id}
+			factKey={fileTarget?.factKey ?? fact.key}
+			fieldKey={fileTarget?.fieldKey}
+			{label}
+			kinds={fact.fileKinds ?? ['photo']}
+			maxFiles={fact.maxFiles ?? 1}
+			{userId}
+			bind:value
+			invalid={Boolean(error)}
+			{oncommit}
+		/>
+	{:else if fact.kind === 'colours'}
+		<SetupColoursField {id} {label} bind:value invalid={Boolean(error)} {onedit} {oncommit} />
+	{:else if fact.kind === 'choice' && fact.layout === 'radio'}
+		<RadioGroup {label} options={fact.options ?? []} {value} onchange={choose} />
+	{:else if fact.kind === 'country'}
+		<Select
+			{id}
+			{label}
+			placeholder="Choose your country"
+			options={COUNTRIES}
+			bind:value
+			required={fact.required}
+			onchange={oncommit}
+		/>
+	{:else if fact.kind === 'date'}
+		<CalendarPicker
+			{id}
+			{label}
+			value={dateValue}
+			required={fact.required && !fact.canDefer}
+			invalid={Boolean(error)}
+			onchange={chooseDate}
+		/>
+	{:else if fact.kind === 'timezone'}
+		<TimezonePicker {id} bind:value required={fact.required} onchange={oncommit} />
+	{:else if fact.kind === 'longtext'}
+		<Textarea
+			{id}
+			{label}
+			bind:value
+			maxlength={fact.maxLength}
+			oninput={onedit}
+			onblur={oncommit}
+		/>
+	{:else if fact.kind === 'choice'}
+		<Select
+			{id}
+			{label}
+			placeholder="Choose one"
+			options={fact.options ?? []}
+			bind:value
+			required={fact.required}
+			onchange={oncommit}
+		/>
+	{:else if fact.kind === 'choice_other'}
+		<Select
+			{id}
+			{label}
+			placeholder="Choose one"
+			options={fact.options ?? []}
+			value={listChoice}
+			required={fact.required}
+			onchange={choose}
+		/>
+		{#if listChoice === OTHER}
+			<Input
+				id={`${id}-other`}
+				label={fact.otherLabel ?? 'Tell us which'}
+				value={otherText}
+				maxlength={fact.maxLength}
+				oninput={typeOther}
+				onblur={oncommit}
+			/>
+		{/if}
+	{:else}
+		<Input
+			{id}
+			label={fact.canDefer ? undefined : label}
+			aria-label={fact.canDefer ? label : undefined}
+			placeholder={fact.canDefer ? label : fact.kind === 'url' ? 'example.com' : undefined}
+			type={inputType}
+			inputmode={fact.kind === 'url' ? 'url' : undefined}
+			{autocomplete}
+			bind:value
+			required={fact.required && !fact.canDefer}
+			maxlength={fact.maxLength}
+			invalid={Boolean(error)}
+			oninput={onedit}
+			onblur={oncommit}
+		/>
+	{/if}
+{/snippet}
 
 <div class="setup-field" id={`${id}-field`}>
 	{#if fact.canDefer}
@@ -150,169 +336,26 @@
 				? 'Uplift will pick this up and get in touch — you can carry on with the rest.'
 				: 'No problem. You can come back and add it whenever you have it.'}
 		</p>
-	{:else if isEditor}
-		<div class="setup-field__heading">
-			<span class="setup-field__label">{fact.label}</span>
-			{#if fact.hint}<p class="setup-field__hint">{fact.hint}</p>{/if}
+	{:else if reuse}
+		<div class="setup-field__reuse">
+			<span class="setup-field__reuse-where">{reuse.where}</span>
+			{#each reuse.lines as line, index (index)}
+				<span class="setup-field__reuse-line">{line}</span>
+			{/each}
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- the page passes a resolve()d path or an in-page anchor -->
+			<a class="setup-field__reuse-change" href={reuse.href}>Change</a>
 		</div>
-		{#if fact.kind === 'hours'}
-			<SetupHoursField {id} bind:value onchange={onedit} />
-		{:else}
-			<SetupHoursExceptions {id} bind:value onchange={onedit} />
-		{/if}
-	{:else if fact.kind === 'multi_choice'}
-		<SetupChoicesField
-			{id}
-			label={fact.label}
-			options={fact.options ?? []}
-			allowOther={fact.allowOther}
-			maxChoices={fact.maxChoices}
-			bind:value
-			invalid={Boolean(error)}
-			{onedit}
-			{oncommit}
+		<RadioGroup
+			label={fact.canDefer ? 'Use this answer?' : fact.label}
+			options={REUSE_OPTIONS}
+			value={reuseChoice}
+			onchange={chooseReuse}
 		/>
-	{:else if fact.kind === 'number' || fact.kind === 'percentage' || fact.kind === 'money' || fact.kind === 'distance' || fact.kind === 'duration'}
-		<SetupAmountField
-			{id}
-			label={fact.label}
-			kind={fact.kind}
-			bind:value
-			{currency}
-			{country}
-			required={fact.required && !fact.canDefer}
-			invalid={Boolean(error)}
-			{onedit}
-			{oncommit}
-		/>
-	{:else if fact.kind === 'list'}
-		<SetupListField
-			{id}
-			factKey={fact.key}
-			label={fact.label}
-			fields={fact.listFields ?? []}
-			maxRows={fact.maxRows ?? 1}
-			bind:value
-			{error}
-			{currency}
-			{country}
-			{userId}
-			{onedit}
-			{oncommit}
-		/>
-	{:else if fact.kind === 'pick'}
-		<SetupPickField
-			{id}
-			label={fact.label}
-			rows={pickRows}
-			nameKey={fact.pickNameKey}
-			minChoices={fact.minChoices}
-			maxChoices={fact.maxChoices}
-			ordered={fact.ordered}
-			bind:value
-			invalid={Boolean(error)}
-			{oncommit}
-		/>
-	{:else if fact.kind === 'file'}
-		<SetupFilesField
-			{id}
-			factKey={fileTarget?.factKey ?? fact.key}
-			fieldKey={fileTarget?.fieldKey}
-			label={fact.label}
-			kinds={fact.fileKinds ?? ['photo']}
-			maxFiles={fact.maxFiles ?? 1}
-			{userId}
-			bind:value
-			invalid={Boolean(error)}
-			{oncommit}
-		/>
-	{:else if fact.kind === 'colours'}
-		<SetupColoursField
-			{id}
-			label={fact.label}
-			bind:value
-			invalid={Boolean(error)}
-			{onedit}
-			{oncommit}
-		/>
-	{:else if fact.kind === 'choice' && fact.layout === 'radio'}
-		<RadioGroup label={fact.label} options={fact.options ?? []} {value} onchange={choose} />
-	{:else if fact.kind === 'country'}
-		<Select
-			{id}
-			label={fact.label}
-			placeholder="Choose your country"
-			options={COUNTRIES}
-			bind:value
-			required={fact.required}
-			onchange={oncommit}
-		/>
-	{:else if fact.kind === 'date'}
-		<CalendarPicker
-			{id}
-			label={fact.label}
-			value={dateValue}
-			required={fact.required && !fact.canDefer}
-			invalid={Boolean(error)}
-			onchange={chooseDate}
-		/>
-	{:else if fact.kind === 'timezone'}
-		<TimezonePicker {id} bind:value required={fact.required} onchange={oncommit} />
-	{:else if fact.kind === 'longtext'}
-		<Textarea
-			{id}
-			label={fact.label}
-			bind:value
-			maxlength={fact.maxLength}
-			oninput={onedit}
-			onblur={oncommit}
-		/>
-	{:else if fact.kind === 'choice'}
-		<Select
-			{id}
-			label={fact.label}
-			placeholder="Choose one"
-			options={fact.options ?? []}
-			bind:value
-			required={fact.required}
-			onchange={oncommit}
-		/>
-	{:else if fact.kind === 'choice_other'}
-		<Select
-			{id}
-			label={fact.label}
-			placeholder="Choose one"
-			options={fact.options ?? []}
-			value={listChoice}
-			required={fact.required}
-			onchange={choose}
-		/>
-		{#if listChoice === OTHER}
-			<Input
-				id={`${id}-other`}
-				label={fact.otherLabel ?? 'Tell us which'}
-				value={otherText}
-				maxlength={fact.maxLength}
-				oninput={typeOther}
-				onblur={oncommit}
-			/>
+		{#if reuseChoice === 'different'}
+			{@render control()}
 		{/if}
 	{:else}
-		<Input
-			{id}
-			label={fact.canDefer ? undefined : fact.label}
-			aria-label={fact.canDefer ? fact.label : undefined}
-			placeholder={fact.canDefer ? fact.label : fact.kind === 'url' ? 'example.com' : undefined}
-			type={inputType}
-			inputmode={fact.kind === 'url' ? 'url' : undefined}
-			{autocomplete}
-			bind:value
-			required={fact.required && !fact.canDefer}
-			maxlength={fact.maxLength}
-			invalid={Boolean(error)}
-			oninput={onedit}
-			onblur={oncommit}
-		/>
+		{@render control()}
 	{/if}
 
 	{#if error && fact.kind !== 'list'}
@@ -357,6 +400,36 @@
 
 		&__error {
 			color: var(--color-critical--onSurface);
+			font-weight: 600;
+		}
+
+		&__reuse {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smallest);
+			padding: var(--space-small) var(--space-base);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background);
+		}
+
+		&__reuse-where {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__reuse-line {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+			overflow-wrap: anywhere;
+		}
+
+		&__reuse-change {
+			align-self: flex-start;
+			margin-top: var(--space-smallest);
+			color: var(--color-interactive);
+			font-size: var(--typography--fontSize-small);
 			font-weight: 600;
 		}
 	}

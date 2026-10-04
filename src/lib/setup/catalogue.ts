@@ -23,6 +23,7 @@ import { parseSetupFileIds, type SetupFileKind } from '$lib/setup/files';
 import { parseSetupHours, parseSetupHoursExceptions } from '$lib/setup/hours';
 import { parseSetupList, setupListRows, type SetupListField } from '$lib/setup/lists';
 import { keptSetupPickIds, parseSetupPick, setupPickIds, setupPickMinimum } from '$lib/setup/picks';
+import { setupReuseSource } from '$lib/setup/reuse';
 
 export type SetupAvailability = 'have' | 'not_yet' | 'need_help';
 
@@ -83,7 +84,8 @@ export const SETUP_QUESTION_KINDS = [
 	'colours',
 	'file',
 	'list',
-	'pick'
+	'pick',
+	'reuse'
 ] as const;
 export type SetupQuestionKind = (typeof SETUP_QUESTION_KINDS)[number];
 
@@ -118,6 +120,14 @@ type SetupFactRules = {
 	listFields?: SetupListField[];
 	/** `list`: the most rows; 1 is a plain form. */
 	maxRows?: number;
+	/**
+	 * A5g: the earlier question whose answer this one shows to confirm. Its answer rules are that question's,
+	 * for an answer different from it. Left off for a client who is not asked that question.
+	 */
+	reuseFrom?: string;
+	/** A5g: the earlier question's wording and section, for "You told us in …" and its Change link. */
+	reuseLabel?: string;
+	reuseSection?: { key: string; title: string };
 };
 
 export type SetupFact = SetupFactRules & {
@@ -263,6 +273,7 @@ type CatalogueItemRow = {
 	pick_from?: string | null;
 	min_choices?: number | null;
 	ordered?: boolean;
+	reuse_from?: string | null;
 	max_length: number | null;
 	show_if?: ({ fact_key: string; values: string[] } | { service_key: string })[] | null;
 };
@@ -328,6 +339,9 @@ function factRules(item: CatalogueItemRow): SetupFactRules | null {
 					...(item.ordered ? { ordered: true } : {})
 				}
 			: null;
+	// A5g: the earlier question's rules replace these once the whole version is read — see linkReuses.
+	if (item.kind === 'reuse')
+		return item.reuse_from ? { kind: 'text', reuseFrom: item.reuse_from } : null;
 	return {
 		kind: item.kind,
 		...(item.max_length ? { maxLength: item.max_length } : {}),
@@ -376,6 +390,7 @@ export function buildSetupCatalogue(row: SetupCatalogueRow): SetupCatalogue {
 		};
 	});
 	linkPicks(sections);
+	linkReuses(sections);
 	// A stage Jafar has added but not yet given a question asks nothing, so no client sees it.
 	return {
 		versionId: row.version_id,
@@ -416,6 +431,45 @@ function linkPicks(sections: SetupSection[]) {
 			});
 }
 
+/**
+ * Gives each reuse its earlier question's answer rules, wording and section. A reuse whose question this version
+ * no longer has, or whose answer cannot be shown back, is left out; the database refuses to publish one, so it
+ * can only happen if the database is ahead of the app.
+ */
+function linkReuses(sections: SetupSection[]) {
+	const sources = new Map(
+		sections.flatMap((section) =>
+			sectionFacts(section).map((fact) => [fact.key, { fact, section }] as const)
+		)
+	);
+	for (const section of sections)
+		for (const group of section.groups)
+			group.facts = group.facts.flatMap((fact) => {
+				if (!fact.reuseFrom) return [fact];
+				const source = sources.get(fact.reuseFrom);
+				if (!source || source.fact.reuseFrom || ['file', 'pick'].includes(source.fact.kind)) {
+					console.error(`Setup question ${fact.key} reuses a question it cannot; skipped.`);
+					return [];
+				}
+				const { key, label, hint, required, canDefer, builtIn, showIf, ...rules } = source.fact;
+				return [
+					{
+						...rules,
+						key: fact.key,
+						label: fact.label,
+						...(fact.hint ? { hint: fact.hint } : {}),
+						required: fact.required,
+						...(fact.canDefer ? { canDefer: true } : {}),
+						builtIn: false,
+						...(fact.showIf ? { showIf: fact.showIf } : {}),
+						reuseFrom: source.fact.key,
+						reuseLabel: source.fact.label,
+						reuseSection: { key: source.section.key, title: source.section.title }
+					}
+				];
+			});
+}
+
 function condition(row: NonNullable<CatalogueItemRow['show_if']>[number]): SetupCondition {
 	return 'service_key' in row
 		? { serviceKey: row.service_key }
@@ -434,7 +488,7 @@ export function catalogueForServices(
 ): SetupCatalogue {
 	const included = (condition: SetupCondition) =>
 		!('serviceKey' in condition) || serviceKeys.has(condition.serviceKey);
-	return {
+	const client = {
 		...catalogue,
 		sections: catalogue.sections
 			.filter((section) => section.serviceKey === null || serviceKeys.has(section.serviceKey))
@@ -459,6 +513,16 @@ export function catalogueForServices(
 			}))
 			.filter((section) => section.groups.length > 0)
 	};
+	// A5g: a reuse of a question this client is not asked is asked afresh, as a question of that type.
+	const asked = catalogueFacts(client);
+	for (const section of client.sections)
+		for (const group of section.groups)
+			group.facts = group.facts.map((fact) => {
+				if (!fact.reuseFrom || asked.has(fact.reuseFrom)) return fact;
+				const { reuseFrom, reuseLabel, reuseSection, ...plain } = fact;
+				return plain;
+			});
+	return client;
 }
 
 /**
@@ -518,10 +582,14 @@ export function earlierAnswersFor(
 	const own = new Set(sectionFacts(section).map((fact) => fact.key));
 	const shown = shownCatalogueFacts(catalogue, answers);
 	const earlier: SetupAnswers = {};
-	for (const fact of sectionFacts(section))
+	for (const fact of sectionFacts(section)) {
 		for (const condition of fact.showIf ?? [])
 			if ('factKey' in condition && !own.has(condition.factKey) && shown.has(condition.factKey))
 				earlier[condition.factKey] = answers[condition.factKey];
+		// A5g: the earlier answer a reuse shows to confirm.
+		if (fact.reuseFrom && !own.has(fact.reuseFrom) && shown.has(fact.reuseFrom))
+			earlier[fact.reuseFrom] = answers[fact.reuseFrom];
+	}
 	return earlier;
 }
 
@@ -575,6 +643,8 @@ function isCalendarDate(value: string): boolean {
  * text itself; hours and dated exceptions are kept as real JSON so nothing downstream has to parse text.
  */
 export function storedSetupValue(fact: SetupFact, value: string): unknown {
+	const same = fact.reuseFrom ? setupReuseSource(value) : null;
+	if (same) return { same_as: same };
 	if (fact.kind === 'hours') return parseSetupHours(value).value;
 	if (fact.kind === 'hours_exceptions') return parseSetupHoursExceptions(value).value;
 	if (fact.kind === 'pick') return setupPickIds(value);
@@ -663,6 +733,15 @@ export function setupValueError(
 ): string | null {
 	const value = raw.trim();
 	if (!value) return null;
+	// A5g: "Yes, use this" holds only while the earlier answer it means is given.
+	const same = setupReuseSource(value);
+	if (same !== null) {
+		if (same !== fact.reuseFrom)
+			return 'This answer could not be read. Reload the page and try again.';
+		return answers[same]?.availability === 'have'
+			? null
+			: `Answer “${fact.reuseLabel}” first, or use a different one here.`;
+	}
 	switch (fact.kind) {
 		case 'email':
 			if (value.length > 254 || !EMAIL_PATTERN.test(value))
@@ -720,6 +799,17 @@ export function setupAnswerShortfall(fact: SetupFact, answers: SetupAnswers): st
 }
 
 /**
+ * Whether a question has an answer of any kind. A5g: "Yes, use this" counts only while the earlier answer it
+ * means is given — and is asked of this client.
+ */
+export function setupAnswerGiven(fact: SetupFact, answers: SetupAnswers): boolean {
+	const answer = answers[fact.key];
+	if (!answer) return false;
+	const same = answer.availability === 'have' ? setupReuseSource(answer.value) : null;
+	return same === null || (same === fact.reuseFrom && answers[same]?.availability === 'have');
+}
+
+/**
  * Required facts that are asked and still have no answer of any kind. "Not yet" and "need help" are
  * answers; a hidden question is never required.
  */
@@ -729,7 +819,7 @@ export function missingRequiredFacts(
 	shown: ReadonlySet<string>
 ): SetupFact[] {
 	return sectionFacts(section).filter(
-		(fact) => fact.required && shown.has(fact.key) && !answers[fact.key]
+		(fact) => fact.required && shown.has(fact.key) && !setupAnswerGiven(fact, answers)
 	);
 }
 
@@ -742,6 +832,8 @@ export function sectionStatus(
 	shown: ReadonlySet<string>
 ): SetupSectionStatus {
 	if (markedDone && missingRequiredFacts(section, answers, shown).length === 0) return 'done';
-	const anyAnswer = sectionFacts(section).some((fact) => shown.has(fact.key) && answers[fact.key]);
+	const anyAnswer = sectionFacts(section).some(
+		(fact) => shown.has(fact.key) && setupAnswerGiven(fact, answers)
+	);
 	return anyAnswer || markedDone ? 'in_progress' : 'not_started';
 }
