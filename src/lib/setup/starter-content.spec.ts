@@ -61,8 +61,8 @@ const facts = catalogueFacts(starter);
 const have = (value: string) => ({ availability: 'have' as const, value, note: null });
 
 describe('starter setup content', () => {
-	it('loads the Your business stage', () => {
-		expect(stages.map((stage) => stage.key)).toContain('business');
+	it('loads every stage built so far', () => {
+		expect(stages.map((stage) => stage.key)).toEqual(['business', 'services']);
 	});
 
 	it('leaves no question out for want of answer rules', () => {
@@ -154,6 +154,77 @@ describe('starter setup content', () => {
 			const asked = shown({ ...old, ...suggested });
 			for (const key of ['business.legal_name', 'business.approver_name', 'business.hours'])
 				expect(asked.has(key), key).toBe(true);
+		});
+	});
+
+	describe('Services and service area', () => {
+		const services = starter.sections.find((section) => section.key === 'services')!;
+		const shown = (answers: SetupAnswers) => shownFacts(sectionFacts(services), answers);
+		const withServices: SetupAnswers = {
+			'services.offered': have(
+				'[{"id":"a1","values":{"name":"Boiler repair","season":"all_year"}}]'
+			)
+		};
+
+		it('is shown to everyone', () => {
+			expect(services.serviceKey).toBeNull();
+		});
+
+		it('picks services and places from the lists the client filled in, by name', () => {
+			for (const [key, list] of [
+				['services.promoted', 'services.offered'],
+				['services.urgent_services', 'services.offered'],
+				['area.promoted', 'area.places']
+			]) {
+				const fact = facts.get(key)!;
+				expect(fact.kind, key).toBe('pick');
+				expect(fact.pickFrom, key).toBe(list);
+				expect(fact.pickNameKey, key).toBe('name');
+			}
+			expect(facts.get('services.promoted')).toMatchObject({
+				minChoices: 3,
+				maxChoices: 5,
+				ordered: true
+			});
+		});
+
+		it('confirms the town from Your business instead of asking it again', () => {
+			const city = facts.get('area.base_city')!;
+			expect(city.reuseFrom).toBe('business.address_city');
+			expect(city.reuseSection?.key).toBe('business');
+		});
+
+		it('asks each follow-up only after its yes', () => {
+			for (const [gate, followUp] of [
+				['services.urgent', 'services.urgent_services'],
+				['services.credentials_needed', 'services.credentials'],
+				['services.public_prices', 'services.prices'],
+				['area.other_locations', 'area.locations']
+			]) {
+				expect(shown({ ...withServices, [gate]: have('no') }).has(followUp), followUp).toBe(false);
+				expect(shown({ ...withServices, [gate]: have('yes') }).has(followUp), followUp).toBe(true);
+			}
+		});
+
+		it('asks for the furthest distance or the longest travel time only when that sets the limit', () => {
+			const byPlaces = shown({ 'area.limit_type': have('places') });
+			const byDistance = shown({ 'area.limit_type': have('distance') });
+			const byTime = shown({ 'area.limit_type': have('travel_time') });
+			expect(byPlaces.has('area.max_distance') || byPlaces.has('area.max_travel_time')).toBe(false);
+			expect(byDistance.has('area.max_distance')).toBe(true);
+			expect(byDistance.has('area.max_travel_time')).toBe(false);
+			expect(byTime.has('area.max_travel_time')).toBe(true);
+			expect(byTime.has('area.max_distance')).toBe(false);
+			for (const answers of [byPlaces, byDistance, byTime])
+				expect(answers.has('area.places')).toBe(true);
+		});
+
+		it('lets a client without their service area yet still send the setup', () => {
+			expect(facts.get('area.places')!.canDefer).toBe(true);
+			const deferred = shown({
+				'area.places': { availability: 'not_yet', value: null, note: null }
+			});
+			expect(deferred.has('area.promoted')).toBe(false);
 		});
 	});
 });
