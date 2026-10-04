@@ -11608,6 +11608,66 @@ export type Database = {
 					}
 				];
 			};
+			organization_setup_submissions: {
+				Row: {
+					answers: Json;
+					confirmations: Json;
+					confirmations_version: string;
+					id: string;
+					organization_id: string;
+					service_keys: string[];
+					setup_version_id: string;
+					submission_number: number;
+					submitted_at: string;
+					submitted_by: string | null;
+					submitted_by_email: string;
+					submitted_by_name: string;
+				};
+				Insert: {
+					answers: Json;
+					confirmations: Json;
+					confirmations_version: string;
+					id?: string;
+					organization_id: string;
+					service_keys: string[];
+					setup_version_id: string;
+					submission_number: number;
+					submitted_at?: string;
+					submitted_by?: string | null;
+					submitted_by_email: string;
+					submitted_by_name: string;
+				};
+				Update: {
+					answers?: Json;
+					confirmations?: Json;
+					confirmations_version?: string;
+					id?: string;
+					organization_id?: string;
+					service_keys?: string[];
+					setup_version_id?: string;
+					submission_number?: number;
+					submitted_at?: string;
+					submitted_by?: string | null;
+					submitted_by_email?: string;
+					submitted_by_name?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_submissions_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_setup_submissions_setup_version_id_fkey';
+						columns: ['setup_version_id'];
+						isOneToOne: false;
+						referencedRelation: 'setup_versions';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_tax_rates: {
 				Row: {
 					created_at: string;
@@ -26078,6 +26138,18 @@ export type Database = {
 					target_trade: string;
 				};
 				Returns: string;
+			};
+			submit_organization_setup: {
+				Args: {
+					fact_keys: string[];
+					new_confirmations: Json;
+					new_confirmations_version: string;
+					package_service_keys: string[];
+					previous_number: number;
+					target_organization_id: string;
+					target_version_id: string;
+				};
+				Returns: Json;
 			};
 			submit_quote_customer_decision: {
 				Args: {

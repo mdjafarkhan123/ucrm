@@ -12,15 +12,18 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import {
+		fetchSetupCheck,
 		fetchSetupSection,
 		fetchSetupSummary,
 		markSetupWelcomeSeen,
 		setSetupReminderEmails,
+		setupCheckKey,
 		setupSectionKey,
 		setupSummaryKey,
 		type SetupSummary
 	} from '$lib/setup/api';
 	import type { SetupSectionStatus } from '$lib/setup/catalogue';
+	import { SETUP_CHECK_DESCRIPTION, SETUP_CHECK_KEY, SETUP_CHECK_TITLE } from '$lib/setup/check';
 	import type { HttpError } from '$lib/http-error';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 	import toolsIcon from '@tabler/icons/outline/tools.svg?raw';
@@ -110,11 +113,31 @@
 	// The section's answers start loading when the pointer or keyboard reaches its row, so the form is
 	// already there on the click.
 	function warmSection(key: string) {
+		if (key === SETUP_CHECK_KEY) return warmCheck();
 		void queryClient.prefetchQuery({
 			queryKey: setupSectionKey(userId, key),
 			queryFn: () => fetchSetupSection(key),
 			staleTime: 30_000
 		});
+	}
+
+	function warmCheck() {
+		void queryClient.prefetchQuery({
+			queryKey: setupCheckKey(userId),
+			queryFn: fetchSetupCheck,
+			staleTime: 30_000
+		});
+	}
+
+	// B13: the last row, which the system writes — GOV.UK's "Cannot start yet" until every task is done.
+	function checkStatus(summary: SetupSummary): {
+		label: string;
+		badge: 'inactive' | 'informative' | 'success';
+	} {
+		if (summary.delivery.state === 'sent') return { label: 'Sent to Uplift', badge: 'success' };
+		return summary.progress.done === summary.progress.total
+			? { label: 'Ready to send', badge: 'informative' }
+			: { label: 'Cannot send yet', badge: 'inactive' };
 	}
 
 	// Reminder emails are each person's own choice. The switch moves at once and goes back if the save fails.
@@ -212,6 +235,26 @@
 								</a>
 							</li>
 						{/each}
+						<li>
+							<a
+								class="setup__task"
+								href={resolve('/(app)/setup/check-and-send')}
+								onpointerenter={warmCheck}
+								onfocus={warmCheck}
+							>
+								<span class="setup__task-copy">
+									<strong>{SETUP_CHECK_TITLE}</strong>
+									<span>{SETUP_CHECK_DESCRIPTION}</span>
+								</span>
+								<Badge status={checkStatus(summary).badge} size="small"
+									>{checkStatus(summary).label}</Badge
+								>
+								<span class="setup__task-chevron" aria-hidden="true">
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+									{@html chevronRightIcon}
+								</span>
+							</a>
+						</li>
 					</ul>
 				</SectionBlock>
 			{/snippet}

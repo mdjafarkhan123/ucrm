@@ -4,6 +4,7 @@ import { enqueueEmailDelivery } from '$lib/server/events/dispatcher';
 import { readSetupCatalogue, readSetupServiceKeys } from '$lib/server/setup/catalogue';
 import { readSetupState, setupSummary } from '$lib/server/setup/read';
 import { catalogueForServices } from '$lib/setup/catalogue';
+import { SETUP_CHECK_DESCRIPTION, SETUP_CHECK_KEY, SETUP_CHECK_TITLE } from '$lib/setup/check';
 
 // Setup reminder emails (C6, plan §5; Intercom's and Customer.io's inactivity-triggered onboarding nudges). When
 // a paid client's setup has sat untouched for about 24 hours, 3 days and 7 days, its owners and administrators
@@ -172,11 +173,13 @@ export async function sendDueSetupReminderEmails(
 		]);
 		if (!state || !serviceKeys) continue;
 		const summary = setupSummary(state, catalogueForServices(catalogue, serviceKeys));
+		// B13: with every task done, the next step is Check and send, until setup has been sent.
 		const next =
-			summary.next && summary.sections.find((section) => section.key === summary.next?.key);
+			summary.next?.key === SETUP_CHECK_KEY
+				? { key: SETUP_CHECK_KEY, title: SETUP_CHECK_TITLE, description: SETUP_CHECK_DESCRIPTION }
+				: summary.next && summary.sections.find((section) => section.key === summary.next?.key);
 
-		// Nothing left for the client to do. Sending to Uplift (B13) needs every task done, so this also
-		// covers a client who has already sent their setup.
+		// Nothing left for the client to do: setup has been sent.
 		if (!next) {
 			await record(client, reminder, 'finished');
 			continue;

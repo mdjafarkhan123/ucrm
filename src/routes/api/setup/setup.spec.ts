@@ -53,7 +53,7 @@ type HoursRow = {
 	closes_at: string | null;
 };
 
-// The three setup tables plus the two reads a section makes for suggestions. Every read is a chain ending
+// The setup tables, the newest send, plus the two reads a section makes for suggestions. Every read is a chain ending
 // in either `maybeSingle()` or an awaited `eq()`.
 function supabase(options: {
 	setup?: { welcome_seen_at: string | null } | null;
@@ -70,13 +70,17 @@ function supabase(options: {
 		organization_setup_sections: (options.sections ?? []).map((section_key) => ({ section_key })),
 		organization_settings: options.settings ?? { trade: null, phone: null },
 		organization_business_hours: options.hours ?? [],
-		profiles: { full_name: options.profileName ?? null }
+		profiles: { full_name: options.profileName ?? null },
+		// B13: nothing sent to Uplift yet.
+		organization_setup_submissions: null
 	};
 	const from = vi.fn((table: string) => {
 		const result = { data: rows[table], error: null };
 		const chain = {
 			select: () => chain,
 			eq: () => chain,
+			order: () => chain,
+			limit: () => chain,
 			maybeSingle: () => Promise.resolve(result),
 			then: (resolve: (value: typeof result) => unknown) => Promise.resolve(result).then(resolve)
 		};

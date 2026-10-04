@@ -4,6 +4,7 @@
 	import { resolve } from '$app/paths';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { fetchSetupSummary, setupSummaryKey } from '$lib/setup/api';
+	import { SETUP_CHECK_KEY } from '$lib/setup/check';
 
 	// The dashboard's setup card for owners and administrators: how far setup has got, the next useful
 	// thing to do, and where delivery stands. It never gates anything — the CRM around it is complete and
@@ -52,19 +53,30 @@
 					<strong>{summary.next.title}</strong>
 				</div>
 				<Button size="small" href={resolve('/(app)/setup/[section]', { section: summary.next.key })}
-					>{summary.next.status === 'not_started' ? 'Start' : 'Continue'}</Button
+					>{summary.next.key === SETUP_CHECK_KEY
+						? 'Check and send'
+						: summary.next.status === 'not_started'
+							? 'Start'
+							: 'Continue'}</Button
 				>
 			{:else}
 				<div class="setup-card__text">
 					<span class="setup-card__label">Next</span>
-					<strong>Every task so far is done</strong>
+					<strong>Every task is done and sent</strong>
 				</div>
 			{/if}
 		</div>
 
 		<p class="setup-card__status">
 			<span class="setup-card__label">Delivery</span>
-			Not sent to Uplift yet. Your 7–10 business-day build starts once Uplift has accepted your setup.
+			{#if summary.delivery.state === 'sent'}
+				Sent to Uplift on {new Date(summary.delivery.submitted_at).toLocaleDateString(undefined, {
+					dateStyle: 'long'
+				})}. Uplift is checking it; your 7–10 business-day build starts once Uplift has accepted it.
+			{:else}
+				Not sent to Uplift yet. Your 7–10 business-day build starts once Uplift has accepted your
+				setup.
+			{/if}
 			<a href={resolve('/(app)/setup')}>See all setup tasks</a>
 		</p>
 	</section>

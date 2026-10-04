@@ -85,6 +85,15 @@ export type SetupAnswersInput = z.infer<ReturnType<typeof setupAnswersSchema>>;
 
 export const setupSectionDoneSchema = z.object({ done: z.boolean() });
 
+// Client onboarding B13: Send to Uplift. `previous_number` is the newest send the page showed (0 for none), so a
+// double press or a send from another device first adds nothing.
+export const setupSendSchema = z
+	.object({
+		confirmed: z.array(z.string().max(40)).max(20),
+		previous_number: z.number().int().min(0).max(100_000)
+	})
+	.strict();
+
 export const setupReminderEmailsSchema = z.object({ emails_on: z.boolean() }).strict();
 
 // Client onboarding A5c: one file a client is about to add to a photo or file answer. Shape only — whether the

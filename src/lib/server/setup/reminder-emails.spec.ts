@@ -156,6 +156,18 @@ describe('sendDueSetupReminderEmails', () => {
 		expect(recorded(db)).toEqual([expect.objectContaining({ outcome: 'finished' })]);
 	});
 
+	it('points at Check and send once every task is done but setup is not sent', async () => {
+		summary.next = {
+			key: 'check-and-send',
+			title: 'Check and send to Uplift',
+			status: 'not_started'
+		};
+		const db = client([due()]);
+		expect(await sendDueSetupReminderEmails(db, { origin: ORIGIN })).toBe(1);
+		const [, email] = enqueueEmailDelivery.mock.calls[0];
+		expect(JSON.stringify(email)).toContain(`${ORIGIN}/setup/check-and-send`);
+	});
+
 	it('waits while a support message of theirs is with Uplift', async () => {
 		const db = client([due({ support_waiting: true })]);
 		await sendDueSetupReminderEmails(db, { origin: ORIGIN });

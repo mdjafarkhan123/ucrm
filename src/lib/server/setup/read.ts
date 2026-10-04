@@ -5,24 +5,48 @@ import {
 	sectionStatus,
 	setupAnswerGiven,
 	shownCatalogueFacts,
+	type SetupAnswer,
 	type SetupAnswers,
 	type SetupAvailability,
 	type SetupCatalogue
 } from '$lib/setup/catalogue';
+import { SETUP_CHECK_KEY, SETUP_CHECK_TITLE } from '$lib/setup/check';
+
+/** B13: the newest Send to Uplift, without its answers. */
+export type SetupSent = { number: number; submitted_at: string; submitted_by_name: string };
 
 export type SetupState = {
 	welcomeSeen: boolean;
 	answers: SetupAnswers;
 	doneSections: Set<string>;
+	sent: SetupSent | null;
 };
 
-// Everything the wizard has saved for one organization: at most one row per fact and per section, so
-// three small reads keyed by the organization.
+/** A stored answer as the page works with it: hours, lists and the like are JSON, read as text. */
+export function setupAnswerFromRow(row: {
+	availability: string;
+	value: unknown;
+	note: string | null;
+}): SetupAnswer {
+	return {
+		availability: row.availability as SetupAvailability,
+		value:
+			typeof row.value === 'string'
+				? row.value
+				: row.value == null
+					? null
+					: JSON.stringify(row.value),
+		note: row.note
+	};
+}
+
+// Everything the wizard has saved for one organization: at most one row per fact and per section, and the
+// newest send, so four small reads keyed by the organization.
 export async function readSetupState(
 	supabase: SupabaseClient<Database>,
 	organizationId: string
 ): Promise<SetupState | null> {
-	const [setupResult, answersResult, sectionsResult] = await Promise.all([
+	const [setupResult, answersResult, sectionsResult, sentResult] = await Promise.all([
 		supabase
 			.from('organization_setup')
 			.select('welcome_seen_at')
@@ -35,31 +59,34 @@ export async function readSetupState(
 		supabase
 			.from('organization_setup_sections')
 			.select('section_key')
+			.eq('organization_id', organizationId),
+		supabase
+			.from('organization_setup_submissions')
+			.select('submission_number, submitted_at, submitted_by_name')
 			.eq('organization_id', organizationId)
+			.order('submission_number', { ascending: false })
+			.limit(1)
+			.maybeSingle()
 	]);
-	if (setupResult.error || answersResult.error || sectionsResult.error) return null;
+	if (setupResult.error || answersResult.error || sectionsResult.error || sentResult.error)
+		return null;
 
 	const answers: SetupAnswers = {};
-	for (const row of answersResult.data) {
-		// An answer to a question since removed stays stored, but nothing reads it: every reader looks
-		// answers up by the published version's own facts.
-		answers[row.fact_key] = {
-			availability: row.availability as SetupAvailability,
-			// Hours and dated exceptions are stored as JSON; the page works with every answer as text.
-			value:
-				typeof row.value === 'string'
-					? row.value
-					: row.value === null
-						? null
-						: JSON.stringify(row.value),
-			note: row.note
-		};
-	}
+	// An answer to a question since removed stays stored, but nothing reads it: every reader looks answers up by
+	// the published version's own facts.
+	for (const row of answersResult.data) answers[row.fact_key] = setupAnswerFromRow(row);
 
 	return {
 		welcomeSeen: setupResult.data?.welcome_seen_at != null,
 		answers,
-		doneSections: new Set(sectionsResult.data.map((row) => row.section_key))
+		doneSections: new Set(sectionsResult.data.map((row) => row.section_key)),
+		sent: sentResult.data
+			? {
+					number: sentResult.data.submission_number,
+					submitted_at: sentResult.data.submitted_at,
+					submitted_by_name: sentResult.data.submitted_by_name
+				}
+			: null
 	};
 }
 
@@ -78,16 +105,23 @@ export function setupSummary(state: SetupState, catalogue: SetupCatalogue) {
 		};
 	});
 	const done = sections.filter((section) => section.status === 'done').length;
-	const next = sections.find((section) => section.status !== 'done') ?? null;
+	const unfinished = sections.find((section) => section.status !== 'done');
+	// B13: with every task done, Check and send is next until setup has been sent.
+	const next = unfinished
+		? { key: unfinished.key, title: unfinished.title, status: unfinished.status }
+		: state.sent
+			? null
+			: { key: SETUP_CHECK_KEY, title: SETUP_CHECK_TITLE, status: 'not_started' as const };
 
 	return {
 		welcome_seen: state.welcomeSeen,
 		sections,
 		progress: { done, total: sections.length },
-		// The next useful thing to do. Null once every task is done.
-		next: next ? { key: next.key, title: next.title, status: next.status } : null,
-		// Sending to Uplift and the delivery stages arrive with later parts; until then this is the one
-		// honest state setup can be in.
-		delivery: { state: 'collecting' as const }
+		// The next useful thing to do. Null once setup has been sent and every task is still done.
+		next,
+		// Uplift's review and the delivery stages arrive with later parts.
+		delivery: state.sent
+			? { state: 'sent' as const, ...state.sent }
+			: { state: 'collecting' as const }
 	};
 }

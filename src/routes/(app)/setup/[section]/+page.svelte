@@ -18,6 +18,7 @@
 		fetchSetupSection,
 		saveSetupAnswers,
 		setSetupSectionDone,
+		setupCheckKey,
 		setupSectionKey,
 		setupSummaryKey,
 		type SetupAnswerWrite,
@@ -49,6 +50,12 @@
 	let { data: shell }: PageProps = $props();
 	const userId = $derived(shell.user?.id ?? null);
 	const sectionKey = $derived(page.params.section ?? '');
+	// B13: opened from Check and send's Edit link, the page goes back there, as GOV.UK's Change links do.
+	const fromCheck = $derived(page.url.searchParams.get('from') === 'check');
+	const checkHref: string = resolve('/(app)/setup/check-and-send');
+	const tasksHref: string = resolve('/(app)/setup');
+	const backHref = $derived(fromCheck ? checkHref : tasksHref);
+	const backLabel = $derived(fromCheck ? 'Back to Check and send' : 'Back to setup tasks');
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -302,6 +309,7 @@
 					}
 				);
 				void queryClient.invalidateQueries({ queryKey: setupSummaryKey(userId) });
+				void queryClient.invalidateQueries({ queryKey: setupCheckKey(userId) });
 				// A later section may show these answers back to confirm (A5g), or ask a question because of them.
 				void queryClient.invalidateQueries({
 					queryKey: ['setup', 'section', userId],
@@ -381,7 +389,8 @@
 			markedDone = true;
 			syncDoneState();
 			toast.success(`${section.title} is marked as done.`);
-			await goto(resolve('/(app)/setup'));
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- backHref is one of two resolve() paths.
+			await goto(backHref);
 		} catch (error) {
 			const failure = error as SetupWriteFailure;
 			for (const [key, message] of Object.entries(failure.fieldErrors ?? {}))
@@ -421,6 +430,7 @@
 				: current
 		);
 		void queryClient.invalidateQueries({ queryKey: setupSummaryKey(userId) });
+		void queryClient.invalidateQueries({ queryKey: setupCheckKey(userId) });
 	}
 
 	const SAVE_TEXT = {
@@ -521,11 +531,12 @@
 
 			<footer class="setup-section__footer">
 				{#if markedDone}
-					<Button href={resolve('/(app)/setup')}>Back to setup tasks</Button>
+					<Button href={backHref}>{backLabel}</Button>
 					<Button variant="tertiary" onclick={reopen} loading={finishing}>Mark as not done</Button>
 				{:else}
 					<Button onclick={markDone} loading={finishing}>Mark as done</Button>
-					<Button variant="tertiary" href={resolve('/(app)/setup')}>Save and come back later</Button
+					<Button variant="tertiary" href={backHref}
+						>{fromCheck ? 'Back to Check and send' : 'Save and come back later'}</Button
 					>
 					{#if unanswered.length > 0}
 						<span class="setup-section__remaining"

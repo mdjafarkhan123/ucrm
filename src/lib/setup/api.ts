@@ -1,4 +1,5 @@
 import { httpError } from '$lib/http-error';
+import type { SetupCheck, SetupConfirmation } from '$lib/setup/check';
 import type {
 	SetupAnswers,
 	SetupAvailability,
@@ -21,7 +22,9 @@ export type SetupSummary = {
 	}[];
 	progress: { done: number; total: number };
 	next: { key: string; title: string; status: SetupSectionStatus } | null;
-	delivery: { state: 'collecting' };
+	delivery:
+		| { state: 'collecting' }
+		| { state: 'sent'; number: number; submitted_at: string; submitted_by_name: string };
 	/** Whether the signed-in person gets setup reminder emails. */
 	reminder_emails_on: boolean;
 };
@@ -115,6 +118,34 @@ export async function setSetupSectionDone(section: string, done: boolean): Promi
 		body: JSON.stringify({ done })
 	});
 	if (!response.ok) throw await writeFailure(response, 'This section could not be updated.');
+}
+
+/** B13: Check and send to Uplift — every task read back, the confirmations, and the newest send. */
+export type SetupCheckData = SetupCheck & {
+	confirmations: SetupConfirmation[];
+	sent: { number: number; submitted_at: string; submitted_by_name: string } | null;
+};
+
+export const setupCheckKey = (userId: string | null) => ['setup', 'check', userId] as const;
+
+export async function fetchSetupCheck(): Promise<SetupCheckData> {
+	const response = await fetch('/api/setup/check');
+	if (!response.ok) throw httpError(response, 'Your answers could not be loaded.');
+	return response.json();
+}
+
+/** Sends setup to Uplift. `previousNumber` is the newest send the page showed, 0 for none. */
+export async function sendSetupToUplift(
+	confirmed: string[],
+	previousNumber: number
+): Promise<{ submission_number: number; submitted_at: string }> {
+	const response = await fetch('/api/setup/check', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ confirmed, previous_number: previousNumber })
+	});
+	if (!response.ok) throw await writeFailure(response, 'Your setup could not be sent.');
+	return response.json();
 }
 
 /** One file of a photo or file answer (client onboarding A5c). Mirrors `$lib/server/setup/files`. */
