@@ -80,7 +80,8 @@ describe('starter setup content', () => {
 			'texting',
 			'reviews',
 			'crm',
-			'import'
+			'import',
+			'marketing'
 		]);
 	});
 
@@ -1468,6 +1469,177 @@ describe('starter setup content', () => {
 				)
 			).toBe(true);
 			expect(facts.get('import.nothing_sent')!.required).toBe(true);
+		});
+	});
+	describe('Marketing campaigns', () => {
+		const marketing = starter.sections.find((section) => section.key === 'marketing')!;
+		const forPackage = (...services: string[]) => {
+			const catalogue = catalogueForServices(starter, new Set(services));
+			return {
+				facts: catalogueFacts(catalogue),
+				section: catalogue.sections.find((section) => section.key === 'marketing')!
+			};
+		};
+		const shown = (answers: SetupAnswers) => shownCatalogueFacts(starter, answers);
+
+		it('is shown only to a package with Marketing campaigns', () => {
+			expect(marketing.serviceKey).toBe('marketing');
+			expect(forPackage('website').section).toBeUndefined();
+		});
+
+		it('offers texts only to a package with Calls and texting, and asks text permission only for texts', () => {
+			expect(forPackage('marketing').facts.has('marketing.channel')).toBe(false);
+			expect(forPackage('marketing').facts.has('marketing.text_permission')).toBe(false);
+			const texting = forPackage('marketing', 'calls_texting').facts;
+			expect(texting.has('marketing.channel')).toBe(true);
+			const withTexting = catalogueForServices(starter, new Set(['marketing', 'calls_texting']));
+			const asked = (channel: string) =>
+				shownCatalogueFacts(withTexting, { 'marketing.channel': have(channel) }).has(
+					'marketing.text_permission'
+				);
+			expect(asked('email')).toBe(false);
+			for (const channel of ['text', 'both']) expect(asked(channel), channel).toBe(true);
+		});
+
+		it('picks services and places from Services and service area, and confirms earlier facts', () => {
+			expect(facts.get('marketing.services')).toMatchObject({
+				kind: 'pick',
+				pickFrom: 'services.offered',
+				required: true
+			});
+			expect(facts.get('marketing.places')).toMatchObject({
+				kind: 'pick',
+				pickFrom: 'area.places'
+			});
+			expect(facts.get('marketing.places')!.required).toBe(false);
+			const website = forPackage('marketing', 'website').facts;
+			expect(website.get('marketing.sender_name')!.reuseFrom).toBe('business.public_name');
+			expect(website.get('marketing.reply_people')!.reuseFrom).toBe('website.form_recipients');
+			const alone = forPackage('marketing').facts;
+			expect(alone.get('marketing.reply_people')!.reuseFrom).toBeUndefined();
+			expect(alone.get('marketing.reply_people')!.kind).toBe('list');
+		});
+
+		it('never asks about paid advertising, and keeps contact lists protected', () => {
+			const wording = sectionFacts(marketing)
+				.flatMap((fact) => [
+					fact.label,
+					fact.hint ?? '',
+					...(fact.options ?? []).map((o) => o.label)
+				])
+				.join(' ')
+				.toLowerCase();
+			for (const word of ['ad account', 'ad budget', 'facebook ads', 'google ads', 'pixel'])
+				expect(wording).not.toContain(word);
+			for (const key of ['marketing.list', 'marketing.opt_out_list', 'marketing.permission_proof'])
+				expect(facts.get(key)!.kind, key).toBe('protected_file');
+		});
+
+		it('asks each follow-up only after the answer that needs it', () => {
+			const rules: [string, string, string, string][] = [
+				['marketing.list', 'marketing.sources', '["upload"]', '["crm"]'],
+				['marketing.opt_out_list', 'marketing.has_opt_out_list', 'yes', 'no'],
+				['marketing.offer', 'marketing.has_offer', 'yes', 'no'],
+				['marketing.action_link', 'marketing.action', 'website_page', 'request']
+			];
+			for (const [key, source, on, off] of rules) {
+				expect(shown({ [source]: have(on) }).has(key), key).toBe(true);
+				expect(shown({ [source]: have(off) }).has(key), key).toBe(false);
+			}
+		});
+
+		it('only ever makes a draft', () => {
+			expect(facts.get('marketing.draft_only')).toMatchObject({ kind: 'choice', required: true });
+		});
+
+		it('saves a full answer and shows it again when the client comes back', () => {
+			const earlier: SetupAnswers = {
+				'business.public_name': have('Raad Plumbing'),
+				'services.offered': have(
+					'[{"id":"s1","values":{"name":"Boiler service","season":"all_year"}}]'
+				),
+				'area.places': have('[{"id":"a1","values":{"name":"Leeds"}}]'),
+				'website.form_recipients': have(
+					'[{"id":"r1","values":{"name":"Sam Raad","email":"sam@raadplumbing.example"}}]'
+				)
+			};
+			const sent: Record<string, string> = {
+				'marketing.goal': 'repeat_work',
+				'marketing.services': JSON.stringify(['s1']),
+				'marketing.places': JSON.stringify(['a1']),
+				'marketing.audience': 'past_customers',
+				'marketing.audience_note': 'Everyone with a boiler service over a year ago.',
+				'marketing.exclusions': JSON.stringify(['complaint', 'booked']),
+				'marketing.sources': JSON.stringify(['crm', 'upload']),
+				'marketing.list': JSON.stringify(['00000000-0000-4000-8000-000000000005']),
+				'marketing.email_permission': 'customer_could_refuse',
+				'marketing.permission_story': 'Our quote form says we send a few offers a year.',
+				'marketing.has_opt_out_list': 'yes',
+				'marketing.opt_out_list': JSON.stringify(['00000000-0000-4000-8000-000000000006']),
+				'marketing.has_offer': 'yes',
+				'marketing.offer': '10% off a boiler service booked before 31 March, one per home.',
+				'marketing.capacity': '20',
+				'marketing.channel': 'both',
+				'marketing.text_permission': 'said_yes_texts',
+				'marketing.start_date': '2027-02-01',
+				'marketing.follow_up': 'one',
+				'marketing.sender_name': JSON.stringify({ same_as: 'business.public_name' }),
+				'marketing.reply_people': JSON.stringify({ same_as: 'website.form_recipients' }),
+				'marketing.action': 'request',
+				'marketing.tone': 'friendly',
+				'marketing.draft_only': 'yes'
+			};
+			const parsed = setupAnswersSchema(facts, earlier).safeParse({
+				answers: Object.entries(sent).map(([fact_key, value]) => ({
+					fact_key,
+					availability: 'have',
+					value,
+					note: null
+				}))
+			});
+			expect(parsed.error?.issues ?? []).toEqual([]);
+
+			const resumed: SetupAnswers = { ...earlier };
+			for (const answer of parsed.data!.answers) {
+				const stored = answer.value;
+				resumed[answer.fact_key] = have(
+					typeof stored === 'string' ? stored : JSON.stringify(stored)
+				);
+			}
+			expect(missingRequiredFacts(marketing, resumed, shown(resumed))).toEqual([]);
+			for (const fact of sectionFacts(marketing))
+				expect(setupAnswerShortfall(fact, resumed), fact.key).toBeNull();
+		});
+
+		it('lets a client without their permission facts yet still send the setup', () => {
+			const { facts: own, section } = forPackage('marketing');
+			const later = { availability: 'not_yet' as const, value: null, note: null };
+			const answers: SetupAnswers = {
+				'business.public_name': have('Raad Plumbing'),
+				'services.offered': have('[{"id":"s1","values":{"name":"Boiler service"}}]'),
+				'marketing.goal': have('referrals'),
+				'marketing.services': have('["s1"]'),
+				'marketing.audience': have('past_customers'),
+				'marketing.exclusions': have('["nobody_else"]'),
+				'marketing.sources': have('["crm"]'),
+				'marketing.email_permission': later,
+				'marketing.permission_story': later,
+				'marketing.has_opt_out_list': have('no'),
+				'marketing.has_offer': have('no'),
+				'marketing.capacity': have('10'),
+				'marketing.start_date': later,
+				'marketing.follow_up': have('none'),
+				'marketing.sender_name': have('{"same_as":"business.public_name"}'),
+				'marketing.reply_people': have(
+					'[{"id":"r1","values":{"name":"Sam","email":"sam@example.com"}}]'
+				),
+				'marketing.action': have('call'),
+				'marketing.draft_only': have('yes')
+			};
+			expect(own.has('marketing.channel')).toBe(false);
+			expect(
+				missingRequiredFacts(section, answers, shownFacts(sectionFacts(section), answers))
+			).toEqual([]);
 		});
 	});
 });
