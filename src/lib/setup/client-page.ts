@@ -3,6 +3,7 @@
 // `$lib/server/setup/client-page.ts`; the types live here so the page can read them.
 
 import type { SetupCheckSection, SetupConfirmation } from '$lib/setup/check';
+import type { SetupSectionReview } from '$lib/setup/review';
 
 /** One file of a photo or file answer. Mirrors `SetupFileInfo` in `$lib/server/setup/files`. */
 export type ClientSetupFile = {
@@ -50,6 +51,8 @@ export type ClientSetupView = {
 	sends: ClientSetupSend[];
 	/** The send asked for, or the newest; null before the first. */
 	send: ClientSetupSendView | null;
+	/** Uplift's review of each section of the newest send, by section (C3); null while an earlier send is shown. */
+	reviews: Record<string, SetupSectionReview> | null;
 	/** Answers the client has changed since the newest send and not sent yet. */
 	unsent_changes: number;
 	/** Null for a business that has no reminder timer (not provisioned as a paid client). */

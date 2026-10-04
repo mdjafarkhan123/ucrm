@@ -8,11 +8,18 @@ import {
 	buildSetupCatalogue,
 	catalogueFacts,
 	catalogueForServices,
+	sectionFacts,
 	type SetupAnswers,
+	type SetupCatalogue,
 	type SetupCatalogueRow
 } from '$lib/setup/catalogue';
 import { buildSetupCheck, type SetupConfirmation } from '$lib/setup/check';
 import type { ClientSetupSendView, ClientSetupView } from '$lib/setup/client-page';
+import {
+	setupSectionReview,
+	type SetupReviewDecision,
+	type SetupSectionReview
+} from '$lib/setup/review';
 import { setupFileIds } from '$lib/setup/files';
 import { setupReuseSource } from '$lib/setup/reuse';
 import { readSetupCatalogue, readSetupServiceKeys } from '$lib/server/setup/catalogue';
@@ -54,12 +61,15 @@ async function readSubmission(supabase: Client, organizationId: string, number: 
 	return data as SubmissionRow | null;
 }
 
-/** One send read back by task, its "Changed" marks against the send before it. */
+/**
+ * One send read back by task, its "Changed" marks against the send before it. Also gives the catalogue and
+ * answers it was read with, for the review of the newest send.
+ */
 async function readSendView(
 	supabase: Client,
 	organizationId: string,
 	row: SubmissionRow
-): Promise<ClientSetupSendView> {
+): Promise<{ view: ClientSetupSendView; catalogue: SetupCatalogue; answers: SetupAnswers }> {
 	const [catalogueResult, previous] = await Promise.all([
 		supabase.rpc('owner_setup_version_catalogue', { target_version_id: row.setup_version_id }),
 		row.submission_number > 1
@@ -103,7 +113,7 @@ async function readSendView(
 	const files: ClientSetupSendView['files'] = {};
 	for (const [key, ids] of fileIds) files[key] = ids.flatMap((id) => found.get(id) ?? []);
 
-	return {
+	const view: ClientSetupSendView = {
 		number: row.submission_number,
 		submitted_at: row.submitted_at,
 		submitted_by_name: row.submitted_by_name,
@@ -116,6 +126,58 @@ async function readSendView(
 		files,
 		protected_questions: protectedQuestions
 	};
+	return { view, catalogue, answers };
+}
+
+/**
+ * Uplift's decision on each section of the newest send (C3), keyed by section. An acceptance made on an
+ * earlier send holds only while that section's answers are unchanged, so those sends are read too — one read.
+ */
+export async function readSectionReviews(
+	supabase: Client,
+	organizationId: string,
+	newest: { number: number; answers: SetupAnswers; catalogue: SetupCatalogue }
+): Promise<Record<string, SetupSectionReview>> {
+	const { data, error } = await supabase
+		.from('organization_setup_section_reviews')
+		.select(
+			'section_key, decision, submission_number, note, question_keys, reviewed_by_email, reviewed_at'
+		)
+		.eq('organization_id', organizationId);
+	if (error) throw error;
+	const decisions = new Map(
+		(data as SetupReviewDecision[]).map((decision) => [decision.section_key, decision])
+	);
+
+	const earlier = [
+		...new Set(
+			[...decisions.values()]
+				.filter((d) => d.decision === 'accepted' && d.submission_number !== newest.number)
+				.map((d) => d.submission_number)
+		)
+	];
+	const earlierAnswers = new Map<number, SetupAnswers>();
+	if (earlier.length > 0) {
+		const result = await supabase
+			.from('organization_setup_submissions')
+			.select('submission_number, answers')
+			.eq('organization_id', organizationId)
+			.in('submission_number', earlier);
+		if (result.error) throw result.error;
+		for (const row of result.data)
+			earlierAnswers.set(row.submission_number, snapshotAnswers(row.answers));
+	}
+
+	const reviews: Record<string, SetupSectionReview> = {};
+	for (const section of newest.catalogue.sections)
+		reviews[section.key] = setupSectionReview({
+			decision: decisions.get(section.key) ?? null,
+			newestNumber: newest.number,
+			newestAnswers: newest.answers,
+			factKeys: sectionFacts(section).map((fact) => fact.key),
+			answersOf: (number) => earlierAnswers.get(number)
+		});
+	return reviews;
 }
 
 /** Answers changed since the newest send, as the client's own Check and send page counts them. */
@@ -169,6 +231,7 @@ export async function readClientSetupView(
 	if (sendNumber !== null && !sends.some((send) => send.number === sendNumber)) return null;
 
 	let send: ClientSetupSendView | null = null;
+	let reviews: Record<string, SetupSectionReview> | null = null;
 	let unsent = 0;
 	if (wanted !== null && newestNumber !== null) {
 		const [row, newest] = await Promise.all([
@@ -176,11 +239,20 @@ export async function readClientSetupView(
 			wanted === newestNumber ? null : readSubmission(supabase, organizationId, newestNumber)
 		]);
 		if (!row) return null;
-		[send, unsent] = await Promise.all([
+		const [read, changes] = await Promise.all([
 			readSendView(supabase, organizationId, row),
 			unsentChanges(supabase, organizationId, newest ?? row)
 		]);
+		send = read.view;
+		unsent = changes;
+		// Decisions are made on the newest send only, so an earlier one is shown without them.
+		if (wanted === newestNumber)
+			reviews = await readSectionReviews(supabase, organizationId, {
+				number: wanted,
+				answers: read.answers,
+				catalogue: read.catalogue
+			});
 	}
 
-	return { sends, send, unsent_changes: unsent, reminders: remindersResult.data };
+	return { sends, send, reviews, unsent_changes: unsent, reminders: remindersResult.data };
 }

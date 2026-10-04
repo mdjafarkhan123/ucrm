@@ -31,16 +31,23 @@ function submission(number: number, answers: Record<string, unknown>) {
 }
 
 /** A stand-in for the service-role client: each table answers from `rows`, filtered by `eq`. */
-function fakeSupabase(rows: { submissions: ReturnType<typeof submission>[]; reminders: unknown }) {
+function fakeSupabase(rows: {
+	submissions: ReturnType<typeof submission>[];
+	reminders: unknown;
+	reviews?: unknown[];
+}) {
 	const rpc = vi.fn(async () => ({ data: SETUP_VERSION_1, error: null }));
 	const from = (table: string) => {
 		const filters: Record<string, unknown> = {};
 		const result = () => {
 			if (table === 'organization_setup_reminders') return rows.reminders;
+			if (table === 'organization_setup_section_reviews') return rows.reviews ?? [];
 			return rows.submissions
 				.filter((row) =>
 					'submission_number' in filters
-						? row.submission_number === filters.submission_number
+						? Array.isArray(filters.submission_number)
+							? filters.submission_number.includes(row.submission_number)
+							: row.submission_number === filters.submission_number
 						: true
 				)
 				.sort((a, b) => b.submission_number - a.submission_number);
@@ -50,6 +57,10 @@ function fakeSupabase(rows: { submissions: ReturnType<typeof submission>[]; remi
 			order: () => builder,
 			eq: (column: string, value: unknown) => {
 				filters[column] = value;
+				return builder;
+			},
+			in: (column: string, values: unknown[]) => {
+				filters[column] = values;
 				return builder;
 			},
 			maybeSingle: async () => {
@@ -85,7 +96,13 @@ describe('readClientSetupView', () => {
 	it('shows reminders and no send before the client has sent anything', async () => {
 		const { client } = fakeSupabase({ submissions: [], reminders: REMINDERS });
 		const view = await readClientSetupView(client, ORG, null);
-		expect(view).toEqual({ sends: [], send: null, unsent_changes: 0, reminders: REMINDERS });
+		expect(view).toEqual({
+			sends: [],
+			send: null,
+			reviews: null,
+			unsent_changes: 0,
+			reminders: REMINDERS
+		});
 	});
 
 	it('reads the newest send against its own version and marks what changed since the one before', async () => {
@@ -143,7 +160,72 @@ describe('readClientSetupView', () => {
 		expect(first?.send?.number).toBe(1);
 		expect(first?.send?.sections[0].items[0]).toMatchObject({ lines: ['Acme Roofing'] });
 		expect(first?.reminders).toBeNull();
+		// Decisions are made on the newest send only.
+		expect(first?.reviews).toBeNull();
 
 		expect(await readClientSetupView(client, ORG, 7)).toBeNull();
+	});
+
+	describe('Uplift’s review of each section (C3)', () => {
+		const decision = (number: number, kind: 'accepted' | 'returned') => ({
+			section_key: 'business',
+			decision: kind,
+			submission_number: number,
+			note: kind === 'returned' ? 'Use your trading name.' : null,
+			question_keys: kind === 'returned' ? ['business.public_name'] : [],
+			reviewed_by_email: 'jafar@example.com',
+			reviewed_at: '2026-10-05T10:00:00Z'
+		});
+		const twoSends = (second: string) => [
+			submission(1, { 'business.public_name': have('Acme Roofing') }),
+			submission(2, { 'business.public_name': have(second) })
+		];
+
+		it('starts every section as to review', async () => {
+			const { client } = fakeSupabase({ submissions: twoSends('Acme Roofing'), reminders: null });
+			const view = await readClientSetupView(client, ORG, null);
+			expect(view?.reviews?.business).toEqual({ state: 'to_review', decision: null });
+		});
+
+		it('keeps an earlier acceptance while the section is unchanged', async () => {
+			const { client } = fakeSupabase({
+				submissions: twoSends('Acme Roofing'),
+				reminders: null,
+				reviews: [decision(1, 'accepted')]
+			});
+			const view = await readClientSetupView(client, ORG, null);
+			expect(view?.reviews?.business.state).toBe('accepted');
+		});
+
+		it('puts an accepted section back for review once the client sends a change to it', async () => {
+			const { client } = fakeSupabase({
+				submissions: twoSends('Acme Roofing Ltd'),
+				reminders: null,
+				reviews: [decision(1, 'accepted')]
+			});
+			const view = await readClientSetupView(client, ORG, null);
+			expect(view?.reviews?.business.state).toBe('changed');
+		});
+
+		it('waits on the client after a return, and on Uplift again once they send', async () => {
+			const returnedNow = fakeSupabase({
+				submissions: twoSends('Acme Roofing'),
+				reminders: null,
+				reviews: [decision(2, 'returned')]
+			});
+			const now = await readClientSetupView(returnedNow.client, ORG, null);
+			expect(now?.reviews?.business).toMatchObject({
+				state: 'returned',
+				decision: { note: 'Use your trading name.', question_keys: ['business.public_name'] }
+			});
+
+			const returnedBefore = fakeSupabase({
+				submissions: twoSends('Acme Roofing Ltd'),
+				reminders: null,
+				reviews: [decision(1, 'returned')]
+			});
+			const later = await readClientSetupView(returnedBefore.client, ORG, null);
+			expect(later?.reviews?.business.state).toBe('resent');
+		});
 	});
 });

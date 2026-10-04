@@ -11579,6 +11579,54 @@ export type Database = {
 					}
 				];
 			};
+			organization_setup_section_reviews: {
+				Row: {
+					decision: string;
+					note: string | null;
+					organization_id: string;
+					question_keys: string[];
+					reviewed_at: string;
+					reviewed_by_email: string;
+					section_key: string;
+					submission_number: number;
+				};
+				Insert: {
+					decision: string;
+					note?: string | null;
+					organization_id: string;
+					question_keys?: string[];
+					reviewed_at?: string;
+					reviewed_by_email: string;
+					section_key: string;
+					submission_number: number;
+				};
+				Update: {
+					decision?: string;
+					note?: string | null;
+					organization_id?: string;
+					question_keys?: string[];
+					reviewed_at?: string;
+					reviewed_by_email?: string;
+					section_key?: string;
+					submission_number?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_section_re_organization_id_submission_n_fkey';
+						columns: ['organization_id', 'submission_number'];
+						isOneToOne: false;
+						referencedRelation: 'organization_setup_submissions';
+						referencedColumns: ['organization_id', 'submission_number'];
+					},
+					{
+						foreignKeyName: 'organization_setup_section_reviews_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_setup_sections: {
 				Row: {
 					completed_at: string;
@@ -23003,6 +23051,18 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_review_setup_section: {
+				Args: {
+					actor_email: string;
+					new_decision: string;
+					return_note: string;
+					return_question_keys: string[];
+					seen_number: number;
+					target_organization_id: string;
+					target_section_key: string;
+				};
+				Returns: Json;
+			};
 			owner_save_setup_draft_stage_items: {
 				Args: {
 					actor_owner_email: string;
@@ -26088,6 +26148,7 @@ export type Database = {
 					message_client_id: string;
 					target_organization_id: string;
 					target_user_id: string;
+					thread_context_section?: string;
 					thread_topic: string;
 				};
 				Returns: Json;

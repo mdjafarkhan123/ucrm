@@ -14,16 +14,16 @@
 
 ## Steps
 
-- [ ] Migration: `organization_setup_section_reviews` (one row per section: accepted/returned, the send it judged, note, questions, who/when), `owner_review_setup_section` (newest send only, audit event, a return restarts reminders), `start_support_thread_by_uplift` takes a section
-- [ ] `$lib/setup/review.ts` review state per section (accepted stays only while the section's answers match the accepted send) + tests
-- [ ] Setup tab view + POST `/api/jafar/organizations/[id]/setup/reviews`
+- [x] Migration: `organization_setup_section_reviews` (one row per section: accepted/returned, the send it judged, note, questions, who/when), `owner_review_setup_section` (newest send only, audit event, a return restarts reminders), `start_support_thread_by_uplift` takes a section
+- [x] `$lib/setup/review.ts` review state per section (accepted stays only while the section's answers match the accepted send) + tests
+- [x] Setup tab view + POST `/api/jafar/organizations/[id]/setup/reviews`
 - [ ] Setup tab: badge, Accept, Return dialog, Ask a question link; support start chat carries the section
 - [ ] Tests, check, browser check on Raad LTD
 
 ## Next
 
-Write the migration.
+Setup tab UI in `ClientSetupAnswers.svelte`: per-section badge from `view.reviews`, Accept, Return dialog (note + question ticks), Ask a question link to `/jafar/support?new=<org>&section=<key>` (support page + `SupportStartChat` + schema/route pass `context_section`).
 
 ## Outside actions
 
-- Dev migration 20261026090000 — check: `npx supabase migration list --linked` shows it remote
+- Dev migration 20261026090000 — check: `npx supabase migration list --linked` shows it remote — done 2026-10-04

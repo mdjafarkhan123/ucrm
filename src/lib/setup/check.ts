@@ -142,7 +142,8 @@ export type SetupCheck = {
 	can_send: boolean;
 };
 
-const sameAnswer = (a: SetupAnswer | undefined, b: SetupAnswer | undefined) =>
+/** Two stored answers are the same: same choice, value and note. */
+export const sameAnswer = (a: SetupAnswer | undefined, b: SetupAnswer | undefined) =>
 	(a?.availability ?? null) === (b?.availability ?? null) &&
 	(a?.value ?? null) === (b?.value ?? null) &&
 	(a?.note ?? null) === (b?.note ?? null);
