@@ -192,6 +192,12 @@ const YES_NO = (yes: string, no: string) => [
 // their answer is, so their rules live here rather than in the version he edits.
 export const BUILT_IN_FACTS: Record<string, SetupFactRules> = {
 	'business.public_name': { kind: 'text', maxLength: 120 },
+	// Whether the legal name below applies: a texting registration needs the one the business is registered under.
+	'business.legal_name_differs': {
+		kind: 'choice',
+		layout: 'radio',
+		options: YES_NO('Yes, it is different', 'No, it is the same')
+	},
 	'business.legal_name': { kind: 'text', maxLength: 160 },
 	'business.trade': {
 		kind: 'choice_other',
@@ -202,9 +208,10 @@ export const BUILT_IN_FACTS: Record<string, SetupFactRules> = {
 	'business.type': {
 		kind: 'choice',
 		options: [
-			{ value: 'sole_trader', label: 'Sole trader / self-employed' },
+			{ value: 'sole_trader', label: 'Sole trader / sole proprietor' },
 			{ value: 'partnership', label: 'Partnership' },
 			{ value: 'company', label: 'Limited company, LLC or corporation' },
+			{ value: 'nonprofit', label: 'Nonprofit or charity' },
 			{ value: 'other', label: 'Something else' },
 			{ value: 'unsure', label: "I'm not sure" }
 		]
@@ -212,6 +219,12 @@ export const BUILT_IN_FACTS: Record<string, SetupFactRules> = {
 	'business.contact_name': { kind: 'text', maxLength: 120 },
 	'business.contact_email': { kind: 'email' },
 	'business.contact_phone': { kind: 'phone' },
+	// Who confirms the finished system before launch (B13): this person, or the approver named next.
+	'business.contact_is_approver': {
+		kind: 'choice',
+		layout: 'radio',
+		options: YES_NO('Yes', 'No, someone else does')
+	},
 	'business.approver_name': { kind: 'text', maxLength: 120 },
 	'business.approver_email': { kind: 'email' },
 	'business.public_phone': { kind: 'phone' },
@@ -245,6 +258,16 @@ export const BUILT_IN_FACTS: Record<string, SetupFactRules> = {
 			value: currency.code,
 			label: `${currency.code} — ${currency.label}`
 		}))
+	},
+	// How the hours below are read: no weekly hours is not "closed" for a business open around the clock.
+	'business.availability': {
+		kind: 'choice',
+		layout: 'radio',
+		options: [
+			{ value: 'set_hours', label: 'At set opening hours' },
+			{ value: 'always', label: '24 hours a day, 7 days a week' },
+			{ value: 'appointment_only', label: 'By appointment only' }
+		]
 	},
 	'business.hours': { kind: 'hours' },
 	'business.hours_exceptions': { kind: 'hours_exceptions' }

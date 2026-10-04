@@ -18,6 +18,7 @@ import { readSetupState } from '$lib/server/setup/read';
 import { setupSectionDoneSchema } from '$lib/server/validation/setup.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { countryCurrency } from '$lib/settings/countries';
+import { followUpSuggestions } from '$lib/setup/follow-ups';
 import { setupHoursFromBusinessHours } from '$lib/setup/hours';
 import {
 	catalogueSection,
@@ -85,7 +86,8 @@ export const GET: RequestHandler = async (event) => {
 		'business.currency': settings?.currency_confirmed_at
 			? settings.currency_code
 			: countryCurrency(country),
-		'business.hours': hours ? JSON.stringify(hours) : null
+		'business.hours': hours ? JSON.stringify(hours) : null,
+		...followUpSuggestions(state.answers, settings?.hours_mode)
 	};
 
 	const answers: SetupAnswers = {};
