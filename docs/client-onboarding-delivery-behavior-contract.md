@@ -248,6 +248,10 @@ and separate confirmations that:
 Record approver, time, wording/version, and answer snapshot. **Send to Uplift** freezes the submitted brief;
 later material changes are tracked rather than silently rewriting history.
 
+**Send to Uplift** is available once every task is done (GOV.UK task list). After a send the client may still
+change answers; each change shows as **Changed** against the newest send, and **Send changes to Uplift** keeps a
+new frozen copy with fresh confirmations, leaving earlier copies untouched. (Jafar, 2026-10-04.)
+
 ## 4. Uplift review and Ready for Uplift
 
 After submission, Jafar reviews by section. He may accept it, ask a contextual question, return only that section,

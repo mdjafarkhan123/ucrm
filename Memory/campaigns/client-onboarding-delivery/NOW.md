@@ -8,7 +8,8 @@
 
 **Also waiting on Jafar's publish:** B9c's login check (part note `parts/B9-texting-facts.md`); the stage itself is built.
 
-**Next part:** B13 Check and send (`stages/B-wizard.md`, plan §3.10, blueprint stage 12). Unlike B3b–B12 it is code, not loaded content: the system builds the summary.
-Do NOT publish test stages or questions on dev; stage keys are never reused. C2 onward waits for B13.
+**Next part:** C2 Client page (`stages/C-review.md`, plan §8): Jafar reads a submitted client's answers by
+section, from `organization_setup_submissions` (B13; Raad LTD has one dev send). Do NOT publish test stages or
+questions on dev; stage keys are never reused.
 
-**Blockers:** none for B13. Text limits max 2000. A reused question must point to one with no "show only if" rule (the database refuses otherwise).
+**Blockers:** none for C2. Text limits max 2000. A reused question must point to one with no "show only if" rule (the database refuses otherwise).
