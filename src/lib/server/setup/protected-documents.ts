@@ -220,6 +220,74 @@ export async function scheduleProtectedDocumentDeletion(
 	return json({ delete_after: data.delete_after }, { headers: { 'cache-control': 'no-store' } });
 }
 
+/** One of a client's protected documents as Jafar's client page lists it (B9b). */
+export type ProtectedDocumentListing = {
+	id: string;
+	/** The question it was uploaded to, in the published setup's words; its key when no longer asked. */
+	question: string;
+	name: string;
+	size_bytes: number;
+	state: 'uploading' | 'checking' | 'ready' | 'refused' | 'deleted';
+	problem: string | null;
+	uploaded_at: string | null;
+	delete_after: string | null;
+	deleted_at: string | null;
+	/** Whether the question's saved answer holds it now. One it does not is waiting to be cleared away. */
+	in_answer: boolean;
+};
+
+/** The most documents the list shows: a client has a few, one per provider paper. */
+const LIST_LIMIT = 100;
+
+/**
+ * Every protected document one client has uploaded, newest first, deleted ones included so their history can
+ * still be read. `questionLabels` names each question by key.
+ */
+export async function listProtectedDocuments(
+	organizationId: string,
+	questionLabels: ReadonlyMap<string, string>
+): Promise<ProtectedDocumentListing[]> {
+	const client = getOwnerSupabaseClient();
+	const { data: rows, error } = await client
+		.from('setup_protected_documents')
+		.select(
+			'id, fact_key, display_name, size_bytes, state, problem, upload_completed_at, delete_after, deleted_at'
+		)
+		.eq('organization_id', organizationId)
+		.order('created_at', { ascending: false })
+		.order('id')
+		.limit(LIST_LIMIT);
+	if (error) throw error;
+
+	const factKeys = [...new Set(rows.map((row) => row.fact_key))];
+	const held = new Set<string>();
+	if (factKeys.length) {
+		const { data: answers, error: answersError } = await client
+			.from('organization_setup_answers')
+			.select('value')
+			.eq('organization_id', organizationId)
+			.eq('availability', 'have')
+			.in('fact_key', factKeys);
+		if (answersError) throw answersError;
+		for (const answer of answers)
+			if (Array.isArray(answer.value))
+				for (const id of answer.value) if (typeof id === 'string') held.add(id);
+	}
+
+	return rows.map((row) => ({
+		id: row.id,
+		question: questionLabels.get(row.fact_key) ?? row.fact_key,
+		name: row.display_name,
+		size_bytes: row.size_bytes,
+		state: row.state as ProtectedDocumentListing['state'],
+		problem: row.problem,
+		uploaded_at: row.upload_completed_at,
+		delete_after: row.delete_after,
+		deleted_at: row.deleted_at,
+		in_answer: held.has(row.id)
+	}));
+}
+
 /** A document's history, oldest first. Null when it is not this organization's. */
 export async function readProtectedDocumentHistory(
 	organizationId: string,

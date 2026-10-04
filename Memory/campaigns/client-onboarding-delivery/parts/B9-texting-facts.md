@@ -8,13 +8,13 @@
 
 - [x] B9a store: migration `20261018090000` (on dev), pgTAP test, `src/lib/server/setup/protected-documents*.ts`, routes under `src/routes/api/setup/protected-documents/` and `api/jafar/organizations/[organizationId]/setup/protected-documents/`, answer-save check, worker tick
 - [x] Editor: "Protected document" type; migration `20261019090000` (on dev) keeps its file limit and refuses reusing it
-- [ ] Setup page field (reuse `SetupFilesField` look): start → upload → `/complete` → save answer; remove or clearing the answer calls DELETE; poll the list; open/history only when `can_open`
-- [ ] Jafar's client page: a list route for him, plus open, delete, "provider step finished" and history
+- [x] Setup page field: `SetupFilesField` `secure` mode, `ProtectedDocumentHistory` popover
+- [x] Jafar's client page: new Setup tab (`SetupWorkspace.svelte`) on the organization page; list route `api/jafar/organizations/[organizationId]/setup/protected-documents`
 - [ ] Browser check with owner and admin logins
 
 ## Next
 
-Start the setup page field step above: find the setup page's file field (`SetupFilesField`) and add a protected variant.
+Browser check: on dev, add a protected question to a stage of the draft is NOT allowed (never publish test questions). Instead check with a question loaded by B9c, or test the field through a harness; see Notes.
 
 ## Notes
 
@@ -22,7 +22,7 @@ Testing: `supabase test db --linked` cannot reach pgTAP on dev, and local Docker
 migration's section 2 onward plus `supabase/tests/database/setup_protected_documents.sql` inside one
 rolled-back transaction with `docker exec -i supabase_db_ucrm psql -U postgres -At -q`.
 Migrations go to dev with `npx supabase db push` (the Supabase MCP needed re-sign-in).
-Answer saves never delete documents; only the remove route does.
+Answer saves never delete documents; only the remove route does. A file left out of an answer (client chose "not yet") stays until Jafar deletes it or its 90 days run; his Setup tab marks it "Not in an answer".
 
 Jafar's decisions (2026-10-04, after comparing with GoHighLevel's port-in and A2P flow):
 1. Only the owner and Jafar can open a protected document; an admin can upload it and sees "received"; never in the File library.

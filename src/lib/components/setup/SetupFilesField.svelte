@@ -2,14 +2,21 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Lightbox, { type LightboxItem } from '$lib/components/ui/Lightbox.svelte';
+	import ProtectedDocumentHistory from '$lib/components/setup/ProtectedDocumentHistory.svelte';
 	import { uploadAttachmentFile } from '$lib/collaboration/api';
 	import { iconForMimeType } from '$lib/collaboration/file-icons';
 	import { MAX_FILE_SIZE_BYTES } from '$lib/files/allowlist';
 	import { finishFileUpload, formatFileSize } from '$lib/files/api';
 	import {
+		fetchProtectedDocuments,
 		fetchSetupFiles,
+		finishProtectedDocumentUpload,
+		protectedDocumentHref,
+		protectedDocumentsKey,
+		removeProtectedDocument,
 		setupFileHref,
 		setupFilesKey,
+		startProtectedDocumentUpload,
 		startSetupFileUpload,
 		type SetupFileInfo
 	} from '$lib/setup/api';
@@ -24,6 +31,7 @@
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import cloudUploadIcon from '@tabler/icons/outline/cloud-upload.svg?raw';
 	import loaderIcon from '@tabler/icons/outline/loader-2.svg?raw';
+	import shieldLockIcon from '@tabler/icons/outline/shield-lock.svg?raw';
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
 
 	// A photo or file setup answer (client onboarding A5c), laid out like a Google Forms file question: what
@@ -31,6 +39,10 @@
 	// is picked (on a phone the picker offers the camera too) through the File Manager's handshake, then joins
 	// the answer, which the page saves like any other. The virus check finishes on its own; until it has, the
 	// file says it is being checked. Removing a file takes it out of the answer and leaves it in the File library.
+	//
+	// B9b: a `secure` question holds protected documents instead — a phone bill, a tax letter. They upload to
+	// their own store, never the File library, and have no preview. Only the business owner gets a link to open
+	// one, and its history; anyone else doing setup sees that it was received. Removing one deletes it for good.
 	let {
 		id,
 		factKey,
@@ -41,6 +53,7 @@
 		userId,
 		value = $bindable(''),
 		invalid = false,
+		secure = false,
 		oncommit
 	}: {
 		id: string;
@@ -54,6 +67,8 @@
 		/** The answer: the files' ids as JSON text, or empty. */
 		value?: string;
 		invalid?: boolean;
+		/** B9b: protected documents, not File library files. */
+		secure?: boolean;
 		oncommit: () => void;
 	} = $props();
 
@@ -64,6 +79,7 @@
 	let dragging = $state(false);
 	let lightboxOpen = $state(false);
 	let lightboxIndex = $state(0);
+	let removeError = $state('');
 
 	const ids = $derived(setupFileIds(value));
 	const inFlight = $derived(uploads.filter((upload) => !upload.error).length);
@@ -71,19 +87,42 @@
 	const phrase = $derived(setupFileKindsPhrase(kinds));
 	const onlyPhotos = $derived(kinds.length === 1 && kinds[0] === 'photo');
 
+	type Listed = { files: SetupFileInfo[]; canOpen: boolean };
+
+	// A protected document reads as a file with no preview; one whose upload never finished is still checking.
+	async function fetchListed(): Promise<Listed> {
+		if (!secure) return { files: await fetchSetupFiles(ids), canOpen: true };
+		const { documents, can_open } = await fetchProtectedDocuments(ids);
+		return {
+			canOpen: can_open,
+			files: documents.map((document) => ({
+				id: document.id,
+				name: document.name,
+				mime_type: '',
+				size_bytes: document.size_bytes,
+				state: document.state === 'uploading' ? 'checking' : document.state,
+				thumb_url: null,
+				problem: document.problem
+			}))
+		};
+	}
+
 	const files = createQuery(() => ({
-		queryKey: setupFilesKey(userId, ids),
-		queryFn: () => fetchSetupFiles(ids),
+		queryKey: secure ? protectedDocumentsKey(userId, ids) : setupFilesKey(userId, ids),
+		queryFn: fetchListed,
 		enabled: ids.length > 0,
 		// The previous list stays on screen while the new one loads, so adding a file never blanks the others.
-		placeholderData: (previous: SetupFileInfo[] | undefined) => previous,
+		placeholderData: (previous: Listed | undefined) => previous,
 		// Checked again every few seconds while a file is still going through the virus check (about a
 		// minute), and within the hour the signed previews last otherwise.
 		refetchInterval: (query) =>
-			query.state.data?.some((file) => file.state === 'checking') ? 4000 : 30 * 60 * 1000
+			query.state.data?.files.some((file) => file.state === 'checking') ? 4000 : 30 * 60 * 1000
 	}));
 
-	const byId = $derived(new Map((files.data ?? []).map((file) => [file.id, file])));
+	const byId = $derived(new Map((files.data?.files ?? []).map((file) => [file.id, file])));
+	const canOpen = $derived(files.data?.canOpen ?? false);
+	const fileHref = (fileId: string) =>
+		secure ? protectedDocumentHref(fileId) : setupFileHref(fileId);
 	const photos = $derived(
 		ids
 			.map((fileId) => byId.get(fileId))
@@ -103,8 +142,17 @@
 		oncommit();
 	}
 
-	function remove(fileId: string) {
-		writeIds(ids.filter((existing) => existing !== fileId));
+	async function remove(fileId: string) {
+		removeError = '';
+		if (secure && byId.get(fileId)?.state !== 'removed') {
+			try {
+				await removeProtectedDocument(fileId);
+			} catch (error) {
+				removeError = error instanceof Error ? error.message : 'That file could not be removed.';
+				return;
+			}
+		}
+		writeIds(setupFileIds(value).filter((existing) => existing !== fileId));
 	}
 
 	function patch(key: string, changes: Partial<Upload>) {
@@ -137,7 +185,12 @@
 
 	async function upload(key: string, file: File) {
 		try {
-			const started = await startSetupFileUpload(factKey, file, fieldKey);
+			const started = secure
+				? await startProtectedDocumentUpload(factKey, file).then((reserved) => ({
+						...reserved,
+						file_id: reserved.document_id
+					}))
+				: await startSetupFileUpload(factKey, file, fieldKey);
 			let shown = -1;
 			// The signed upload names one type for each kind of file; a slice carries the bytes under it.
 			await uploadAttachmentFile(
@@ -150,7 +203,7 @@
 					patch(key, { progress: fraction });
 				}
 			);
-			await finishFileUpload(started.file_id);
+			await (secure ? finishProtectedDocumentUpload : finishFileUpload)(started.file_id);
 			uploads = uploads.filter((upload) => upload.key !== key);
 			// Read now, at the end, so files finishing together each add to what the others left.
 			writeIds([...setupFileIds(value), started.file_id]);
@@ -176,8 +229,14 @@
 
 	function status(file: SetupFileInfo | undefined) {
 		if (!file || file.state === 'checking') return 'Checking for viruses…';
-		if (file.state === 'ready') return formatFileSize(file.size_bytes);
-		if (file.state === 'removed') return 'Removed from your files. Remove it here too.';
+		if (file.state === 'ready')
+			return secure && !canOpen
+				? `Received · ${formatFileSize(file.size_bytes)}`
+				: formatFileSize(file.size_bytes);
+		if (file.state === 'removed')
+			return secure
+				? 'Deleted. Remove it here too.'
+				: 'Removed from your files. Remove it here too.';
 		return `${file.problem ?? 'This file could not be accepted.'} Remove it and try another.`;
 	}
 </script>
@@ -189,6 +248,13 @@
 		{maxFiles === 1 ? 'One file' : `Up to ${maxFiles} files`} · {setupFileFormats(kinds)} · up to 100
 		MB each
 	</p>
+	{#if secure}
+		<p class="setup-files__private">
+			<span class="setup-files__private-icon" aria-hidden="true">{@html shieldLockIcon}</span>
+			Kept private. Only the business owner and Uplift can open {maxFiles === 1 ? 'it' : 'them'},
+			and every opening is recorded.
+		</p>
+	{/if}
 
 	<!-- Dropping is a shortcut for the Add button beside it, which stays the way in for keyboards and phones. -->
 	<div
@@ -234,17 +300,23 @@
 									? alertTriangleIcon
 									: !file || file.state === 'checking'
 										? loaderIcon
-										: iconForMimeType(file.mime_type)}
+										: secure
+											? shieldLockIcon
+											: iconForMimeType(file.mime_type)}
 							</span>
 						{/if}
 						<span class="setup-files__text">
-							{#if file?.state === 'ready'}
+							{#if file?.state === 'ready' && (!secure || canOpen)}
+								<!-- eslint-disable svelte/no-navigation-without-resolve -- a download route, not a page -->
 								<a
 									class="setup-files__name"
-									href={setupFileHref(fileId)}
-									target="_blank"
+									href={fileHref(fileId)}
+									target={secure ? undefined : '_blank'}
+									data-sveltekit-preload-data={secure ? 'off' : undefined}
+									data-sveltekit-reload={secure ? true : undefined}
 									rel="noopener noreferrer">{file.name}</a
 								>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							{:else}
 								<span class="setup-files__name">{file?.name ?? 'Your file'}</span>
 							{/if}
@@ -252,10 +324,17 @@
 								>{status(file)}</span
 							>
 						</span>
+						{#if secure && canOpen && file && file.state !== 'checking'}
+							<ProtectedDocumentHistory
+								url={`${protectedDocumentHref(fileId)}/history`}
+								queryKey={['setup', 'protected-document-history', userId, fileId]}
+								name={file.name}
+							/>
+						{/if}
 						<button
 							type="button"
 							class="setup-files__remove"
-							aria-label={`Remove ${file?.name ?? 'this file'}`}
+							aria-label={`${secure ? 'Delete' : 'Remove'} ${file?.name ?? 'this file'}`}
 							onclick={() => remove(fileId)}
 						>
 							{@html xIcon}
@@ -296,6 +375,9 @@
 					</li>
 				{/each}
 			</ul>
+		{/if}
+		{#if removeError}
+			<p class="setup-files__error" role="alert">{removeError}</p>
 		{/if}
 
 		<input
@@ -519,6 +601,33 @@
 				width: 18px;
 				height: 18px;
 			}
+		}
+
+		&__private {
+			display: flex;
+			align-items: flex-start;
+			gap: var(--space-smaller);
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__private-icon {
+			display: inline-grid;
+			flex: 0 0 auto;
+			place-items: center;
+			color: var(--color-icon--secondary);
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+
+		&__error {
+			margin: 0;
+			color: var(--color-critical--onSurface);
+			font-size: var(--typography--fontSize-small);
 		}
 
 		&__progress {

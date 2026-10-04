@@ -169,3 +169,95 @@ export async function startSetupFileUpload(
 	}
 	return response.json();
 }
+
+/**
+ * One protected document of a setup answer (client onboarding B9b): a phone bill, a tax letter. Mirrors
+ * `$lib/server/setup/protected-documents`. It has no preview: only the business owner can open it, by download.
+ */
+export type ProtectedDocumentInfo = {
+	id: string;
+	name: string;
+	size_bytes: number;
+	/** `removed`: deleted, or not one of this question's documents. */
+	state: 'uploading' | 'checking' | 'ready' | 'refused' | 'removed';
+	problem: string | null;
+	uploaded_at: string | null;
+	delete_after: string | null;
+};
+
+export type ProtectedDocumentEvent = {
+	action:
+		| 'uploaded'
+		| 'refused'
+		| 'opened'
+		| 'removed'
+		| 'deletion_scheduled'
+		| 'deleted_by_uplift'
+		| 'expired';
+	who: string;
+	at: string;
+};
+
+export const protectedDocumentsKey = (userId: string | null, ids: readonly string[]) =>
+	['setup', 'protected-documents', userId, ...ids] as const;
+
+/** The documents, and whether the person asking may open them — the business owner only. */
+export async function fetchProtectedDocuments(
+	ids: readonly string[]
+): Promise<{ documents: ProtectedDocumentInfo[]; can_open: boolean }> {
+	const response = await fetch(
+		`/api/setup/protected-documents?ids=${ids.map(encodeURIComponent).join(',')}`
+	);
+	if (!response.ok) throw httpError(response, 'These files could not be loaded.');
+	return response.json();
+}
+
+/** Downloads one protected document; the opening is recorded in its history. */
+export const protectedDocumentHref = (id: string) =>
+	`/api/setup/protected-documents/${encodeURIComponent(id)}`;
+
+/** Reserves a protected document. The bytes then go to `upload_url` with exactly `mime_type`. */
+export async function startProtectedDocumentUpload(
+	factKey: string,
+	file: File
+): Promise<{ document_id: string; mime_type: string; upload_url: string }> {
+	const response = await fetch('/api/setup/protected-documents', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			fact_key: factKey,
+			file_name: file.name,
+			mime_type: file.type,
+			size_bytes: file.size
+		})
+	});
+	if (!response.ok) {
+		const failure = await writeFailure(response, 'That file could not be uploaded.');
+		throw new Error(Object.values(failure.fieldErrors)[0] ?? failure.message);
+	}
+	return response.json();
+}
+
+/** Reports the bytes arrived, which hands the document to the virus check. */
+export async function finishProtectedDocumentUpload(id: string): Promise<void> {
+	const response = await fetch(`${protectedDocumentHref(id)}/complete`, { method: 'POST' });
+	if (!response.ok) {
+		const failure = await writeFailure(response, 'That upload could not be finished.');
+		throw new Error(Object.values(failure.fieldErrors)[0] ?? failure.message);
+	}
+}
+
+/** Deletes a protected document for good. Its history stays. */
+export async function removeProtectedDocument(id: string): Promise<void> {
+	const response = await fetch(protectedDocumentHref(id), { method: 'DELETE' });
+	if (!response.ok) throw await writeFailure(response, 'That file could not be removed.');
+}
+
+/** A document's history, from the setup page's route or Jafar's. */
+export async function fetchProtectedDocumentHistory(
+	url: string
+): Promise<ProtectedDocumentEvent[]> {
+	const response = await fetch(url);
+	if (!response.ok) throw httpError(response, 'This history could not be loaded.');
+	return ((await response.json()) as { history: ProtectedDocumentEvent[] }).history;
+}

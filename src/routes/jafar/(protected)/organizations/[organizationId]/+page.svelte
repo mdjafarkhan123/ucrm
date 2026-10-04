@@ -22,6 +22,7 @@
 	import { prefetchOrganizationCommunications } from '$lib/jafar/organization-communications-queries';
 	import { prefetchOrganizationBilling } from '$lib/jafar/organization-billing-queries';
 	import { prefetchOrganizationExceptions } from '$lib/jafar/organization-exceptions-queries';
+	import { prefetchOrganizationSetup } from '$lib/jafar/organization-setup-queries';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowLeftIcon from '@tabler/icons/outline/arrow-left.svg?raw';
 	import shieldIcon from '@tabler/icons/outline/shield-check.svg?raw';
@@ -37,6 +38,7 @@
 	import AccessWorkspace from '$lib/components/jafar/organization/AccessWorkspace.svelte';
 	import CommunicationsWorkspace from '$lib/components/jafar/organization/CommunicationsWorkspace.svelte';
 	import TeamWorkspace from '$lib/components/jafar/organization/TeamWorkspace.svelte';
+	import SetupWorkspace from '$lib/components/jafar/organization/SetupWorkspace.svelte';
 	import ActivityWorkspace from '$lib/components/jafar/organization/ActivityWorkspace.svelte';
 	import BillingWorkspace from '$lib/components/jafar/organization/BillingWorkspace.svelte';
 
@@ -45,7 +47,7 @@
 	const preview = $derived(dev && scenario ? getOrganizationDetailPreview(scenario) : null);
 
 	const queryClient = useQueryClient();
-	// Billing, Access, and Communications have reads of their own, warmed on hover; the rest reuse the page's queries.
+	// Billing, Access, Communications and Setup have reads of their own, warmed on hover; the rest reuse the page's queries.
 	const organizationTabs: Tab[] = $derived([
 		{ value: 'overview', label: 'Overview' },
 		{
@@ -71,6 +73,13 @@
 			}
 		},
 		{ value: 'team', label: 'Team' },
+		{
+			value: 'setup',
+			label: 'Setup',
+			onhover: () => {
+				if (!preview && organizationId) prefetchOrganizationSetup(queryClient, organizationId);
+			}
+		},
 		{ value: 'activity', label: 'Activity' }
 	]);
 	const tabParam = urlParam('tab', 'overview');
@@ -369,6 +378,8 @@
 			<CommunicationsWorkspace {access} {preview} />
 
 			<TeamWorkspace {access} {preview} {teamQuery} />
+
+			<SetupWorkspace {organizationId} {preview} />
 
 			<ActivityWorkspace
 				{access}

@@ -16,6 +16,7 @@
 	import SetupPickField from '$lib/components/setup/SetupPickField.svelte';
 	import type { SetupListRow } from '$lib/setup/lists';
 	import { COUNTRIES } from '$lib/settings/countries';
+	import { PROTECTED_FILE_KINDS } from '$lib/setup/files';
 	import type { SetupAvailability, SetupFact } from '$lib/setup/catalogue';
 	import { setupReuseSource, setupReuseValue } from '$lib/setup/reuse';
 
@@ -227,6 +228,19 @@
 			{userId}
 			bind:value
 			invalid={Boolean(error)}
+			{oncommit}
+		/>
+	{:else if fact.kind === 'protected_file'}
+		<SetupFilesField
+			{id}
+			factKey={fact.key}
+			{label}
+			kinds={fact.fileKinds ?? PROTECTED_FILE_KINDS}
+			maxFiles={fact.maxFiles ?? 1}
+			{userId}
+			bind:value
+			invalid={Boolean(error)}
+			secure
 			{oncommit}
 		/>
 	{:else if fact.kind === 'colours'}
