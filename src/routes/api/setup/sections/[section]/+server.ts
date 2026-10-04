@@ -15,11 +15,13 @@ import {
 } from '$lib/server/setup/access';
 import { readOrganizationSetupCatalogue } from '$lib/server/setup/catalogue';
 import { readClientSetupReviews } from '$lib/server/setup/client-review';
+import { readSetupHelpAnswers } from '$lib/server/setup/help';
 import { readSetupState } from '$lib/server/setup/read';
 import { setupSectionDoneSchema } from '$lib/server/validation/setup.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { countryCurrency } from '$lib/settings/countries';
 import { followUpSuggestions } from '$lib/setup/follow-ups';
+import { applicableHelpAnswers } from '$lib/setup/help';
 import { setupHoursFromBusinessHours } from '$lib/setup/hours';
 import {
 	catalogueSection,
@@ -109,10 +111,21 @@ export const GET: RequestHandler = async (event) => {
 		if (value && !setupValueError(fact, value)) suggestions[fact.key] = value;
 	}
 
-	// C3b: what Uplift said about this section on the newest send.
+	// C3b: what Uplift said about this section on the newest send. C3c: what Uplift filled in for the questions
+	// here the client still has as "I need Uplift's help".
 	let reviews;
+	let helpAnswers;
 	try {
-		reviews = await readClientSetupReviews(event.locals.supabase, organizationId, state, catalogue);
+		const facts = new Map(sectionFacts(section).map((fact) => [fact.key, fact]));
+		const [readReviews, allHelp] = await Promise.all([
+			readClientSetupReviews(event.locals.supabase, organizationId, state, catalogue),
+			readSetupHelpAnswers(event.locals.supabase, organizationId, facts)
+		]);
+		reviews = readReviews;
+		helpAnswers = applicableHelpAnswers(
+			Object.fromEntries(Object.entries(allHelp).filter(([key]) => facts.has(key))),
+			state.answers
+		);
 	} catch (error) {
 		console.error('Could not read the setup review.', error);
 		return databaseError();
@@ -141,7 +154,8 @@ export const GET: RequestHandler = async (event) => {
 				markedDone,
 				shownCatalogueFacts(catalogue, state.answers)
 			),
-			review: reviews[section.key] ?? null
+			review: reviews[section.key] ?? null,
+			help_answers: helpAnswers
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

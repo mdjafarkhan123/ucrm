@@ -1,6 +1,7 @@
 import { httpError } from '$lib/http-error';
 import type { SetupCheck, SetupConfirmation } from '$lib/setup/check';
 import type { SetupClientReview } from '$lib/setup/review';
+import type { SetupHelpAnswer } from '$lib/setup/help';
 import type {
 	SetupAnswers,
 	SetupAvailability,
@@ -50,6 +51,8 @@ export type SetupSectionData = {
 	status: SetupSectionStatus;
 	/** C3b: Uplift's review of this section on the newest send; null before it was sent. */
 	review: SetupClientReview | null;
+	/** C3c: what Uplift filled in for questions here answered "I need Uplift's help", by question. */
+	help_answers: Record<string, SetupHelpAnswer>;
 };
 
 export type SetupAnswerWrite = {
@@ -132,6 +135,8 @@ export async function setSetupSectionDone(section: string, done: boolean): Promi
 export type SetupCheckData = SetupCheck & {
 	confirmations: SetupConfirmation[];
 	sent: { number: number; submitted_at: string; submitted_by_name: string } | null;
+	/** C3c: what Uplift filled in for questions answered "I need Uplift's help", by question. */
+	help_answers: Record<string, SetupHelpAnswer>;
 };
 
 export const setupCheckKey = (userId: string | null) => ['setup', 'check', userId] as const;

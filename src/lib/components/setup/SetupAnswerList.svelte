@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import type { SetupCheckItem } from '$lib/setup/check';
+	import type { SetupHelpAnswer } from '$lib/setup/help';
 
 	// One setup task's answers read back, question beside answer (GOV.UK "Summary list"). The client sees it on
 	// Check and send (B13) and Jafar on a client's Setup tab (C2); `audience` picks who the words speak to.
@@ -10,6 +11,7 @@
 		audience,
 		changedLabel = 'Changed',
 		flagged,
+		helpAnswers = {},
 		extra
 	}: {
 		items: SetupCheckItem[];
@@ -17,6 +19,8 @@
 		changedLabel?: string;
 		/** Questions Uplift sent back to change (C3), highlighted. */
 		flagged?: ReadonlySet<string>;
+		/** C3c: what Uplift filled in for questions answered "I need Uplift's help", by question. */
+		helpAnswers?: Readonly<Record<string, SetupHelpAnswer>>;
 		/** More under an answer: Jafar's page shows the files a photo or file answer holds. */
 		extra?: Snippet<[SetupCheckItem]>;
 	} = $props();
@@ -64,12 +68,24 @@
 						<span>{line}</span>
 					{/each}
 				{:else}
+					{@const help = item.state === 'need_help' ? helpAnswers[item.key] : undefined}
 					<span
 						class="setup-answers__muted"
 						class:setup-answers__missing={item.state === 'skipped' && item.required}
 						>{itemText(item)}</span
 					>
 					{#if item.note}<span>“{item.note}”</span>{/if}
+					{#if help}
+						<div class="setup-answers__help">
+							<span class="setup-answers__help-label">
+								{audience === 'client' ? 'Uplift filled this in' : 'Uplift’s answer'}
+							</span>
+							{#each help.lines as line, index (index)}
+								<span>{line}</span>
+							{/each}
+							{#if help.note}<span>{help.note}</span>{/if}
+						</div>
+					{/if}
 				{/if}
 				{@render extra?.(item)}
 			</dd>
@@ -90,6 +106,23 @@
 
 		&__missing {
 			color: var(--color-critical);
+			font-weight: 700;
+		}
+
+		&__help {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smallest);
+			margin-top: var(--space-smallest);
+			padding: var(--space-small) var(--space-base);
+			border-left: 3px solid var(--color-success);
+			border-radius: var(--radius-base);
+			background: var(--color-success--surface);
+		}
+
+		&__help-label {
+			color: var(--color-success--onSurface);
+			font-size: var(--typography--fontSize-small);
 			font-weight: 700;
 		}
 

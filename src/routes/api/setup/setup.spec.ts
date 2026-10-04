@@ -72,7 +72,9 @@ function supabase(options: {
 		organization_business_hours: options.hours ?? [],
 		profiles: { full_name: options.profileName ?? null },
 		// B13: nothing sent to Uplift yet.
-		organization_setup_submissions: null
+		organization_setup_submissions: null,
+		// C3c: nothing Uplift has answered.
+		organization_setup_help_answers: []
 	};
 	const from = vi.fn((table: string) => {
 		const result = { data: rows[table], error: null };

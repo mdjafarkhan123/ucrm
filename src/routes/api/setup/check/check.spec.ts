@@ -96,7 +96,10 @@ function supabase(options: { sentAnswers?: Record<string, unknown>; rpcData?: un
 	const chain = {
 		select: () => chain,
 		eq: () => chain,
-		single: () => Promise.resolve(result)
+		single: () => Promise.resolve(result),
+		// C3c: nothing Uplift has answered.
+		then: (resolve: (value: unknown) => unknown) =>
+			Promise.resolve({ data: [], error: null }).then(resolve)
 	};
 	return { from: vi.fn(() => chain), rpc };
 }

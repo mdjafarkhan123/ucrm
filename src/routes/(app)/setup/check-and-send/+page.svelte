@@ -207,7 +207,11 @@
 						{#if section.problem}<span class="setup-check__muted">{section.problem}</span>{/if}
 					</div>
 					{#if section.items.length > 0}
-						<SetupAnswerList items={section.items} audience="client" />
+						<SetupAnswerList
+							items={section.items}
+							audience="client"
+							helpAnswers={check?.help_answers}
+						/>
 					{/if}
 					{#if section.no_longer_asked.length > 0}
 						<p class="setup-check__muted">

@@ -14,6 +14,7 @@
 	import SetupFilesField from '$lib/components/setup/SetupFilesField.svelte';
 	import SetupListField from '$lib/components/setup/SetupListField.svelte';
 	import SetupPickField from '$lib/components/setup/SetupPickField.svelte';
+	import type { SetupHelpAnswer } from '$lib/setup/help';
 	import type { SetupListRow } from '$lib/setup/lists';
 	import { COUNTRIES } from '$lib/settings/countries';
 	import { PROTECTED_FILE_KINDS } from '$lib/setup/files';
@@ -38,6 +39,7 @@
 		pickRows = [],
 		reuse = null,
 		flagged = false,
+		helpAnswer = null,
 		onedit,
 		oncommit
 	}: {
@@ -65,6 +67,8 @@
 		reuse?: { lines: string[]; where: string; href: string } | null;
 		/** C3b: Uplift sent this task back and asked for this question to change. */
 		flagged?: boolean;
+		/** C3c: what Uplift filled in, shown while the client still has "I need Uplift's help". */
+		helpAnswer?: SetupHelpAnswer | null;
 		onedit: () => void;
 		oncommit: () => void;
 	} = $props();
@@ -356,11 +360,24 @@
 			oninput={onedit}
 			onblur={oncommit}
 		/>
-		<p class="setup-field__hint">
-			{availability === 'need_help'
-				? 'Uplift will pick this up and get in touch — you can carry on with the rest.'
-				: 'No problem. You can come back and add it whenever you have it.'}
-		</p>
+		{#if availability === 'need_help' && helpAnswer}
+			<div class="setup-field__help">
+				<span class="setup-field__help-label">Uplift filled this in</span>
+				{#each helpAnswer.lines as line, index (index)}
+					<span>{line}</span>
+				{/each}
+				{#if helpAnswer.note}<span>{helpAnswer.note}</span>{/if}
+				<span class="setup-field__hint">
+					Not right? Tell Uplift in Support, or pick “I have this” and give your own answer.
+				</span>
+			</div>
+		{:else}
+			<p class="setup-field__hint">
+				{availability === 'need_help'
+					? 'Uplift will pick this up and get in touch — you can carry on with the rest.'
+					: 'No problem. You can come back and add it whenever you have it.'}
+			</p>
+		{/if}
 	{:else if reuse}
 		<div class="setup-field__reuse">
 			<span class="setup-field__reuse-where">{reuse.where}</span>
@@ -451,6 +468,25 @@
 		&__error {
 			color: var(--color-critical--onSurface);
 			font-weight: 600;
+		}
+
+		&__help {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smallest);
+			padding: var(--space-small) var(--space-base);
+			border-left: 3px solid var(--color-success);
+			border-radius: var(--radius-base);
+			background: var(--color-success--surface);
+			color: var(--color-text);
+			overflow-wrap: anywhere;
+			white-space: pre-line;
+		}
+
+		&__help-label {
+			color: var(--color-success--onSurface);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 700;
 		}
 
 		&__reuse {

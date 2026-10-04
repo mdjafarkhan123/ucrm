@@ -48,6 +48,7 @@
 		'organization.setup_reminders_resumed': 'Setup reminders resumed',
 		'organization.setup_section_accepted': 'Setup task accepted',
 		'organization.setup_section_returned': 'Setup task sent back',
+		'organization.setup_help_answered': 'Uplift answered a help request',
 		'package.updated': 'Package changed',
 		'package.legacy_assigned': 'Legacy package assigned',
 		'feature_override.updated': 'Feature override changed',

@@ -7,6 +7,7 @@ import {
 } from '$lib/setup/catalogue';
 import { SETUP_ANSWER_MAX_BYTES, setupStoredBytes } from '$lib/setup/answer-values';
 import { SETUP_REVIEW_NOTE_MAX } from '$lib/setup/review';
+import { SETUP_HELP_NOTE_MAX } from '$lib/setup/help';
 
 // One autosave: one or more facts from the setup wizard. The published setup version decides what a fact
 // may hold, so the same rule that the page shows beside the field is the one that refuses the save here.
@@ -157,3 +158,25 @@ export const setupSectionReviewSchema = z.discriminatedUnion('decision', [
 		.strict()
 ]);
 export type SetupSectionReviewInput = z.infer<typeof setupSectionReviewSchema>;
+
+// Client onboarding C3c: Uplift's answer to a question the client asked help with, on the newest send. A value
+// for a question answered in the client's own box, a written note for photos, files and lists; the route checks
+// which, and the value itself against the question.
+export const setupHelpAnswerSchema = z
+	.object({
+		send: z.number().int().positive(),
+		fact_key: z.string().min(1).max(80),
+		value: z
+			.string()
+			.max(20_000, 'This is too long to save.')
+			.nullish()
+			.transform((value) => value?.trim() || null),
+		note: z
+			.string()
+			.trim()
+			.max(SETUP_HELP_NOTE_MAX, `Keep the note under ${SETUP_HELP_NOTE_MAX} characters.`)
+			.nullish()
+			.transform((value) => value || null)
+	})
+	.strict();
+export type SetupHelpAnswerInput = z.infer<typeof setupHelpAnswerSchema>;

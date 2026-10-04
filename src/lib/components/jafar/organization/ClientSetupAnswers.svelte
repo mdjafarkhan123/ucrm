@@ -3,6 +3,7 @@
 	import bellIcon from '@tabler/icons/outline/bell.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import clipboardIcon from '@tabler/icons/outline/clipboard-check.svg?raw';
+	import lifebuoyIcon from '@tabler/icons/outline/lifebuoy.svg?raw';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -15,9 +16,11 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import SetupAnswerList from '$lib/components/setup/SetupAnswerList.svelte';
+	import SetupHelpAnswerDialog from './SetupHelpAnswerDialog.svelte';
 	import SetupReturnDialog from './SetupReturnDialog.svelte';
 	import { iconForMimeType } from '$lib/collaboration/file-icons';
 	import {
+		organizationSetupHelpAnswersUrl,
 		organizationSetupQuery,
 		organizationSetupRemindersUrl,
 		organizationSetupReviewsUrl
@@ -25,6 +28,7 @@
 	import { jafarOrganizationKey } from '$lib/jafar/query-keys';
 	import { SETUP_CHECK_STATUS } from '$lib/setup/check';
 	import { clientSetupRemindersText, type ClientSetupFile } from '$lib/setup/client-page';
+	import type { SetupHelpAnswer, SetupHelpItem } from '$lib/setup/help';
 	import { SETUP_REVIEW_STATE, type SetupSectionReview } from '$lib/setup/review';
 	import { formatDateTime } from './format';
 
@@ -169,6 +173,52 @@
 		}
 	}));
 
+	// C3c (plan §4, §10 journey 4): Uplift's to-do — the questions the client asked help with on the newest send.
+	// An item closes only when Uplift's answer is recorded; a task can be accepted with items still open.
+	const help = $derived(view?.help ?? []);
+	const openHelp = $derived(help.filter((item) => !item.answer).length);
+	const helpAnswers = $derived(
+		Object.fromEntries(
+			help.flatMap((item) => (item.answer ? [[item.fact_key, item.answer] as const] : []))
+		) as Record<string, SetupHelpAnswer>
+	);
+	let answering = $state<SetupHelpItem | null>(null);
+	let helpError = $state('');
+
+	const helpAnswer = createMutation(() => ({
+		mutationFn: async (input: { fact_key: string; value: string | null; note: string | null }) => {
+			const response = await fetch(organizationSetupHelpAnswersUrl(organizationId), {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ ...input, send: send?.number })
+			});
+			if (!response.ok) {
+				const result = (await response.json().catch(() => ({}))) as {
+					error?: string;
+					field_errors?: Record<string, string>;
+				};
+				throw new Error(
+					Object.values(result.field_errors ?? {})[0] ??
+						result.error ??
+						'Uplift’s answer could not be saved. Try again.'
+				);
+			}
+		},
+		onMutate: () => {
+			helpError = '';
+		},
+		onSuccess: () => {
+			answering = null;
+		},
+		onError: (error) => {
+			helpError = error.message;
+		},
+		onSettled: () => {
+			// The answer shows on this tab, and is in the Activity tab's history.
+			void queryClient.invalidateQueries({ queryKey: jafarOrganizationKey(organizationId) });
+		}
+	}));
+
 	const askHref = (sectionKey: string, title: string) =>
 		`/jafar/support?${new URLSearchParams({ new: organizationId, section: sectionKey, about: title })}`;
 
@@ -263,6 +313,52 @@
 		{/if}
 	</SectionBlock>
 
+	{#if help.length > 0}
+		<SectionBlock
+			title="Uplift’s to-do"
+			icon={lifebuoyIcon}
+			hint="Questions the client asked Uplift’s help with. Each one closes when you add the answer Uplift found. You can accept a task while its items are still open."
+		>
+			{#snippet actions()}
+				<Badge status={openHelp > 0 ? 'warning' : 'success'} size="small"
+					>{openHelp > 0 ? `${openHelp} open` : 'All answered'}</Badge
+				>
+			{/snippet}
+			<ul class="client-setup__help">
+				{#each help as item (item.fact_key)}
+					<li class="client-setup__help-item">
+						<div class="client-setup__help-text">
+							<span class="client-setup__muted">{item.section_title}</span>
+							<span class="client-setup__help-question">{item.label}</span>
+							{#if item.client_note}
+								<span class="client-setup__muted">The client wrote: “{item.client_note}”</span>
+							{/if}
+							{#if item.answer}
+								<span class="client-setup__help-answer">
+									<span class="client-setup__help-tick" aria-hidden="true">{@html checkIcon}</span>
+									<span>
+										{[...item.answer.lines, item.answer.note ?? ''].filter(Boolean).join(' · ')}
+										<span class="client-setup__muted">
+											— {item.answer.recorded_by_email}, {formatDateTime(item.answer.recorded_at)}
+										</span>
+									</span>
+								</span>
+							{/if}
+						</div>
+						<Button
+							size="small"
+							variant={item.answer ? 'tertiary' : 'primary'}
+							onclick={() => {
+								helpError = '';
+								answering = item;
+							}}>{item.answer ? 'Change' : 'Add answer'}</Button
+						>
+					</li>
+				{/each}
+			</ul>
+		</SectionBlock>
+	{/if}
+
 	{#if view.reminders}
 		<SectionBlock
 			title="Setup reminders"
@@ -353,6 +449,7 @@
 						audience="uplift"
 						changedLabel={`Changed since send ${send.compared_with}`}
 						flagged={returned ? new Set(returned.question_keys) : undefined}
+						{helpAnswers}
 					>
 						{#snippet extra(item)}
 							{@const files = send.files[item.key] ?? []}
@@ -438,6 +535,18 @@
 		onSubmit={(input) =>
 			returning && review.mutate({ decision: 'returned', section_key: returning.key, ...input })}
 		onClose={() => (returning = null)}
+	/>
+{/if}
+
+{#if answering && view}
+	<SetupHelpAnswerDialog
+		item={answering}
+		country={view.help_units.country}
+		currency={view.help_units.currency}
+		pending={helpAnswer.isPending}
+		error={helpError}
+		onSubmit={(input) => answering && helpAnswer.mutate({ fact_key: answering.fact_key, ...input })}
+		onClose={() => (answering = null)}
 	/>
 {/if}
 
@@ -587,6 +696,65 @@
 				height: 18px;
 				color: var(--color-text--secondary);
 			}
+
+			:global(svg) {
+				width: 100%;
+				height: 100%;
+			}
+		}
+
+		&__help {
+			display: flex;
+			flex-direction: column;
+			margin: 0;
+			padding: 0;
+			list-style: none;
+		}
+
+		&__help-item {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: flex-start;
+			justify-content: space-between;
+			gap: var(--space-small) var(--space-base);
+			padding: var(--space-slim) 0;
+			border-top: var(--border-base) solid var(--color-border);
+
+			&:first-child {
+				border-top: 0;
+				padding-top: 0;
+			}
+		}
+
+		&__help-text {
+			display: flex;
+			flex: 1 1 280px;
+			flex-direction: column;
+			gap: var(--space-smallest);
+			min-width: 0;
+			overflow-wrap: anywhere;
+		}
+
+		&__help-question {
+			color: var(--color-heading);
+			font-weight: 700;
+		}
+
+		&__help-answer {
+			display: flex;
+			align-items: flex-start;
+			gap: var(--space-small);
+			color: var(--color-text);
+			white-space: pre-line;
+		}
+
+		&__help-tick {
+			display: inline-flex;
+			flex: none;
+			width: 18px;
+			height: 18px;
+			margin-top: 2px;
+			color: var(--color-success);
 
 			:global(svg) {
 				width: 100%;

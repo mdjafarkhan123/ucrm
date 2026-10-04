@@ -71,3 +71,7 @@ export function prefetchOrganizationSetup(queryClient: QueryClient, organization
 /** C3: where Jafar's Accept and Send back on one section go (POST). */
 export const organizationSetupReviewsUrl = (organizationId: string) =>
 	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/reviews`;
+
+/** C3c: where Jafar records Uplift's answer to a help request (POST). */
+export const organizationSetupHelpAnswersUrl = (organizationId: string) =>
+	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/help-answers`;

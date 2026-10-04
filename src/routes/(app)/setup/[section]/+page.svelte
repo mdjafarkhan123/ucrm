@@ -567,6 +567,7 @@
 								pickRows={fact.kind === 'pick' ? pickRows(fact) : undefined}
 								reuse={reuseOf(fact)}
 								flagged={flagged.has(fact.key)}
+								helpAnswer={query.data?.help_answers?.[fact.key] ?? null}
 								onedit={() => edited(fact.key)}
 								oncommit={() => committed(fact.key)}
 							/>

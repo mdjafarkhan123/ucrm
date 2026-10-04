@@ -11512,6 +11512,51 @@ export type Database = {
 					}
 				];
 			};
+			organization_setup_help_answers: {
+				Row: {
+					fact_key: string;
+					note: string | null;
+					organization_id: string;
+					recorded_at: string;
+					recorded_by_email: string;
+					submission_number: number;
+					value: Json | null;
+				};
+				Insert: {
+					fact_key: string;
+					note?: string | null;
+					organization_id: string;
+					recorded_at?: string;
+					recorded_by_email: string;
+					submission_number: number;
+					value?: Json | null;
+				};
+				Update: {
+					fact_key?: string;
+					note?: string | null;
+					organization_id?: string;
+					recorded_at?: string;
+					recorded_by_email?: string;
+					submission_number?: number;
+					value?: Json | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_help_answe_organization_id_submission_n_fkey';
+						columns: ['organization_id', 'submission_number'];
+						isOneToOne: false;
+						referencedRelation: 'organization_setup_submissions';
+						referencedColumns: ['organization_id', 'submission_number'];
+					},
+					{
+						foreignKeyName: 'organization_setup_help_answers_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_setup_reminder_opt_outs: {
 				Row: {
 					created_at: string;
@@ -22974,6 +23019,17 @@ export type Database = {
 			organization_tax_rate_property_count: {
 				Args: { target_organization_id: string; target_rate_id: string };
 				Returns: number;
+			};
+			owner_answer_setup_help: {
+				Args: {
+					actor_email: string;
+					new_note: string;
+					new_value: Json;
+					seen_number: number;
+					target_fact_key: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
 			};
 			owner_client_onboarding_list: {
 				Args: {

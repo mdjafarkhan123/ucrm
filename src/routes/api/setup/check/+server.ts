@@ -13,10 +13,12 @@ import {
 	setupWriteLimited
 } from '$lib/server/setup/access';
 import { readSetupCatalogue, readSetupServiceKeys } from '$lib/server/setup/catalogue';
+import { readSetupHelpAnswers } from '$lib/server/setup/help';
 import { readSetupState, setupAnswerFromRow } from '$lib/server/setup/read';
 import { setupSendSchema } from '$lib/server/validation/setup.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
-import { catalogueForServices, type SetupAnswers } from '$lib/setup/catalogue';
+import { catalogueFacts, catalogueForServices, type SetupAnswers } from '$lib/setup/catalogue';
+import { applicableHelpAnswers } from '$lib/setup/help';
 import {
 	SETUP_CONFIRMATIONS_VERSION,
 	buildSetupCheck,
@@ -65,14 +67,32 @@ export const GET: RequestHandler = async (event) => {
 	const check = await requireSetupReader(event);
 	if ('response' in check) return check.response;
 
-	const read = await readCheck(event, check.auth.organization.id);
+	const organizationId = check.auth.organization.id;
+	const read = await readCheck(event, organizationId);
 	if (!read) return databaseError();
+
+	// C3c: what Uplift filled in for the questions the client still has as "I need Uplift's help".
+	let helpAnswers;
+	try {
+		helpAnswers = applicableHelpAnswers(
+			await readSetupHelpAnswers(
+				event.locals.supabase,
+				organizationId,
+				catalogueFacts(read.catalogue)
+			),
+			read.state.answers
+		);
+	} catch (error) {
+		console.error('Could not read Uplift’s answers to setup help requests.', error);
+		return databaseError();
+	}
 
 	return json(
 		{
 			...read.check,
 			confirmations: read.confirmations,
-			sent: read.state.sent
+			sent: read.state.sent,
+			help_answers: helpAnswers
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

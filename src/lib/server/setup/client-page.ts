@@ -24,7 +24,9 @@ import { setupFileIds } from '$lib/setup/files';
 import { setupReuseSource } from '$lib/setup/reuse';
 import { readSetupCatalogue, readSetupServiceKeys } from '$lib/server/setup/catalogue';
 import { readSetupFiles } from '$lib/server/setup/files';
+import { readSetupHelpAnswers } from '$lib/server/setup/help';
 import { readSetupState, setupAnswerFromRow } from '$lib/server/setup/read';
+import { applicableHelpAnswers, setupHelpItems, type SetupHelpItem } from '$lib/setup/help';
 
 type Client = SupabaseClient<Database>;
 
@@ -232,6 +234,8 @@ export async function readClientSetupView(
 
 	let send: ClientSetupSendView | null = null;
 	let reviews: Record<string, SetupSectionReview> | null = null;
+	let help: SetupHelpItem[] | null = null;
+	let helpUnits: ClientSetupView['help_units'] = { country: null, currency: null };
 	let unsent = 0;
 	if (wanted !== null && newestNumber !== null) {
 		const [row, newest] = await Promise.all([
@@ -246,13 +250,33 @@ export async function readClientSetupView(
 		send = read.view;
 		unsent = changes;
 		// Decisions are made on the newest send only, so an earlier one is shown without them.
-		if (wanted === newestNumber)
-			reviews = await readSectionReviews(supabase, organizationId, {
-				number: wanted,
-				answers: read.answers,
-				catalogue: read.catalogue
-			});
+		if (wanted === newestNumber) {
+			const facts = catalogueFacts(read.catalogue);
+			const [readReviews, helpAnswers] = await Promise.all([
+				readSectionReviews(supabase, organizationId, {
+					number: wanted,
+					answers: read.answers,
+					catalogue: read.catalogue
+				}),
+				readSetupHelpAnswers(supabase, organizationId, facts)
+			]);
+			reviews = readReviews;
+			// C3c: Uplift's to-do — the help requests of this send, with any answer Uplift has recorded.
+			help = setupHelpItems(send.sections, facts, applicableHelpAnswers(helpAnswers, read.answers));
+			helpUnits = {
+				country: read.answers['business.country']?.value ?? null,
+				currency: read.answers['business.currency']?.value ?? null
+			};
+		}
 	}
 
-	return { sends, send, reviews, unsent_changes: unsent, reminders: remindersResult.data };
+	return {
+		sends,
+		send,
+		reviews,
+		help,
+		help_units: helpUnits,
+		unsent_changes: unsent,
+		reminders: remindersResult.data
+	};
 }

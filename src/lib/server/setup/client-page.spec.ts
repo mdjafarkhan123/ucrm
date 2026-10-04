@@ -35,6 +35,7 @@ function fakeSupabase(rows: {
 	submissions: ReturnType<typeof submission>[];
 	reminders: unknown;
 	reviews?: unknown[];
+	help?: unknown[];
 }) {
 	const rpc = vi.fn(async () => ({ data: SETUP_VERSION_1, error: null }));
 	const from = (table: string) => {
@@ -42,6 +43,7 @@ function fakeSupabase(rows: {
 		const result = () => {
 			if (table === 'organization_setup_reminders') return rows.reminders;
 			if (table === 'organization_setup_section_reviews') return rows.reviews ?? [];
+			if (table === 'organization_setup_help_answers') return rows.help ?? [];
 			return rows.submissions
 				.filter((row) =>
 					'submission_number' in filters
@@ -100,6 +102,8 @@ describe('readClientSetupView', () => {
 			sends: [],
 			send: null,
 			reviews: null,
+			help: null,
+			help_units: { country: null, currency: null },
 			unsent_changes: 0,
 			reminders: REMINDERS
 		});
@@ -226,6 +230,53 @@ describe('readClientSetupView', () => {
 			});
 			const later = await readClientSetupView(returnedBefore.client, ORG, null);
 			expect(later?.reviews?.business.state).toBe('resent');
+		});
+	});
+	describe('Uplift’s to-do (C3c)', () => {
+		const needHelp = (note: string | null) => ({ availability: 'need_help', value: null, note });
+		const send = submission(1, {
+			'business.public_name': have('Acme Roofing'),
+			'business.public_phone': needHelp('We need a number'),
+			'business.public_email': needHelp(null)
+		});
+
+		it('lists each help request, open ones first, with the answer Uplift recorded', async () => {
+			const { client } = fakeSupabase({
+				submissions: [send],
+				reminders: null,
+				help: [
+					{
+						fact_key: 'business.public_phone',
+						value: '+44 20 7946 0000',
+						note: null,
+						recorded_by_email: 'jafar@example.com',
+						recorded_at: '2026-10-05T10:00:00Z'
+					}
+				]
+			});
+			const view = await readClientSetupView(client, ORG, null);
+			expect(view?.help?.map((item) => [item.fact_key, item.answer?.lines ?? null])).toEqual([
+				['business.public_email', null],
+				['business.public_phone', ['+44 20 7946 0000']]
+			]);
+			expect(view?.help?.[1]).toMatchObject({ client_note: 'We need a number', form: 'box' });
+		});
+
+		it('ignores an answer to a question the client has since answered themselves', async () => {
+			const { client } = fakeSupabase({
+				submissions: [submission(1, { 'business.public_phone': have('+44 20 7946 1111') })],
+				reminders: null,
+				help: [
+					{
+						fact_key: 'business.public_phone',
+						value: '+44 20 7946 0000',
+						note: null,
+						recorded_by_email: 'jafar@example.com',
+						recorded_at: '2026-10-05T10:00:00Z'
+					}
+				]
+			});
+			expect((await readClientSetupView(client, ORG, null))?.help).toEqual([]);
 		});
 	});
 });
