@@ -6,7 +6,7 @@
 
 **In progress:** A5 is built and still waits for Jafar's hands-on publish (part note), which also gives A5b–A5g their live client-side look.
 
-**Next part:** B9 (`stages/B-wizard.md`; B8 done 2026-10-04), then B10–B12 load the approved
+**Next part:** B9a (`stages/B-wizard.md`; B9 split into B9a–c 2026-10-04, part note `parts/B9-texting-facts.md`), then B10–B12 load the approved
 blueprint `docs/client-onboarding-setup-content-blueprint.md` into the draft with `private.setup_load_starter_stage`, as B3b's migration does. Order approved by Jafar 2026-10-03.
 Do NOT publish test stages or questions on dev; stage keys are never reused. C2 onward waits for B13.
 
