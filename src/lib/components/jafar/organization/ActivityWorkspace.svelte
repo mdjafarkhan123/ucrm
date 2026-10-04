@@ -44,6 +44,10 @@
 
 	const HISTORY_EVENT_LABELS: Record<string, string> = {
 		'organization.lifecycle_changed': 'Status changed',
+		'organization.setup_reminders_paused': 'Setup reminders paused',
+		'organization.setup_reminders_resumed': 'Setup reminders resumed',
+		'organization.setup_section_accepted': 'Setup task accepted',
+		'organization.setup_section_returned': 'Setup task sent back',
 		'package.updated': 'Package changed',
 		'package.legacy_assigned': 'Legacy package assigned',
 		'feature_override.updated': 'Feature override changed',

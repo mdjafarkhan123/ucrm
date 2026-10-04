@@ -43,9 +43,9 @@ export const SETUP_REVIEW_STATE: Record<
 > = {
 	to_review: { label: 'To review', badge: 'informative' },
 	accepted: { label: 'Accepted', badge: 'success' },
-	changed: { label: 'Changed since you accepted it', badge: 'informative' },
-	returned: { label: 'Sent back — waiting on the client', badge: 'warning' },
-	resent: { label: 'Sent again after you sent it back', badge: 'informative' }
+	changed: { label: 'Changed since accepted', badge: 'informative' },
+	returned: { label: 'Sent back', badge: 'warning' },
+	resent: { label: 'Sent again', badge: 'informative' }
 };
 
 /** The same answers for every one of `factKeys` in both sends. A question missing from both counts as the same. */

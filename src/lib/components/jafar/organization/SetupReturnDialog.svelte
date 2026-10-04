@@ -70,8 +70,8 @@
 			maxlength={SETUP_REVIEW_NOTE_MAX}
 			required
 			bind:value={note}
-			invalid={Boolean(noteError)}
-			errorMessage={noteError}
+			invalid={Boolean(noteError) && !note.trim()}
+			errorMessage={note.trim() ? '' : noteError}
 		/>
 		{#if items.length > 0}
 			<fieldset class="return-dialog__questions">

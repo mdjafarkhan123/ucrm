@@ -1,29 +1,31 @@
-# C3a — Review a section, Jafar's side
+# C3b — Review a section, client's side (then C3c)
 
-**Campaign:** client-onboarding-delivery · **Plan:** `docs/client-onboarding-delivery-behavior-contract.md` § 4, § 8; ADR 0005 (accepted layer)
+**Campaign:** client-onboarding-delivery · **Plan:** `docs/client-onboarding-delivery-behavior-contract.md` § 4, § 5; ADR 0005 (accepted layer)
 **Code:** `main`
-**Done when:** Jafar accepts one section and returns another; both show on the Setup tab and in Activity
+**Done when:** Returned section links the client straight to it; other sections stay accepted
 
 ## Decisions (Jafar, 2026-10-04, all recommended; model: Content Snare approve / send back with reason)
 
 1. Return = a note plus ticked questions; the client sees those questions highlighted.
-2. Ask a question = a support chat with the owner, section attached (reuse `/jafar/support?new=<org>` start chat).
+2. Ask a question = a support chat with the section attached — built in C3a.
 3. Client sees "Accepted by Uplift"; changing an accepted section puts it back for review on the next send.
 4. Help requests: "Uplift's to-do"; a section can be accepted with them open; an item closes when Jafar records Uplift's answer (C3c).
-5. A return emails owners and admins straight to that section, banner on /setup, reminders restart (C3b).
+5. A return emails owners and admins straight to that section, banner on /setup, reminders restart.
+
+## What C3a left for this part
+
+- Review state per section: `readSectionReviews` in `src/lib/server/setup/client-page.ts`, rules in `src/lib/setup/review.ts`. The table is readable by the org's admins (RLS).
+- `SetupAnswerList` takes `flagged` (highlights "Sent back" questions) — reuse on the client's section page.
+- A return already restarts the reminder clock in the database, but `setupSummary` (`src/lib/server/setup/read.ts`) still says "nothing next" once sent, so a reminder records "finished". C3b must make a returned section the next task, and word the reminder for it.
+- Raad LTD's "Your business" is Accepted on send 1 (dev). Send it back again to test the client side.
 
 ## Steps
 
-- [x] Migration: `organization_setup_section_reviews` (one row per section: accepted/returned, the send it judged, note, questions, who/when), `owner_review_setup_section` (newest send only, audit event, a return restarts reminders), `start_support_thread_by_uplift` takes a section
-- [x] `$lib/setup/review.ts` review state per section (accepted stays only while the section's answers match the accepted send) + tests
-- [x] Setup tab view + POST `/api/jafar/organizations/[id]/setup/reviews`
-- [ ] Setup tab: badge, Accept, Return dialog, Ask a question link; support start chat carries the section
-- [ ] Tests, check, browser check on Raad LTD
+- [ ] Client task list + section page: Accepted / Uplift needs changes badges, banner on /setup, note and highlighted questions
+- [ ] Email to owners and admins on a return (outbox, idempotency key per review), linking to `/setup/<section>`
+- [ ] `setupSummary` next = first returned section; reminder wording; onboarding list shows waiting on client
+- [ ] Tests, browser check as the Raad owner
 
 ## Next
 
-Setup tab UI in `ClientSetupAnswers.svelte`: per-section badge from `view.reviews`, Accept, Return dialog (note + question ticks), Ask a question link to `/jafar/support?new=<org>&section=<key>` (support page + `SupportStartChat` + schema/route pass `context_section`).
-
-## Outside actions
-
-- Dev migration 20261026090000 — check: `npx supabase migration list --linked` shows it remote — done 2026-10-04
+Read `src/routes/(app)/setup/+page.svelte` and `[section]/+page.svelte` and the `/api/setup` read they use, then add the review state to it.
