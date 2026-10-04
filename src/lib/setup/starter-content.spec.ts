@@ -13,7 +13,12 @@ import {
 import { followUpSuggestions } from './follow-ups';
 import { COUNTRIES } from '../settings/countries';
 import { setupAnswersSchema } from '../server/validation/setup.schema';
-import { missingRequiredFacts, setupAnswerShortfall, shownCatalogueFacts } from './catalogue';
+import {
+	catalogueForServices,
+	missingRequiredFacts,
+	setupAnswerShortfall,
+	shownCatalogueFacts
+} from './catalogue';
 
 // B3b–B12 load the approved starter content (docs/client-onboarding-setup-content-blueprint.md) into the setup
 // draft through private.setup_load_starter_stage. The database cannot check a "show only if" rule against a
@@ -72,7 +77,8 @@ describe('starter setup content', () => {
 			'website',
 			'google',
 			'calls',
-			'texting'
+			'texting',
+			'reviews'
 		]);
 	});
 
@@ -83,6 +89,15 @@ describe('starter setup content', () => {
 		expect(facts.size).toBe(questions.length);
 		for (const item of questions)
 			if (item.built_in) expect(BUILT_IN_FACTS[item.fact_key!], item.fact_key!).toBeDefined();
+	});
+
+	it('only reuses questions that are always asked, as the database requires', () => {
+		const items = new Map(
+			stages.flatMap((stage) => stage.items.map((item) => [item.fact_key, item]))
+		);
+		for (const item of items.values())
+			if (item.kind === 'reuse')
+				expect(items.get(item.reuse_from!)?.show_if ?? null, item.fact_key!).toBeNull();
 	});
 
 	it('only shows a question for answers its earlier question can give', () => {
@@ -1134,6 +1149,133 @@ describe('starter setup content', () => {
 			expect(missingRequiredFacts(texting, resumed, shown(resumed))).toEqual([]);
 			for (const fact of sectionFacts(texting))
 				expect(setupAnswerShortfall(fact, resumed), fact.key).toBeNull();
+		});
+	});
+
+	describe('Review requests', () => {
+		const reviews = starter.sections.find((section) => section.key === 'reviews')!;
+		const forPackage = (...services: string[]) => {
+			const catalogue = catalogueForServices(starter, new Set(services));
+			return {
+				facts: catalogueFacts(catalogue),
+				section: catalogue.sections.find((section) => section.key === 'reviews')!
+			};
+		};
+		const shown = (answers: SetupAnswers) => shownCatalogueFacts(starter, answers);
+
+		it('is shown only to a package with Review requests', () => {
+			expect(reviews.serviceKey).toBe('reviews');
+			expect(forPackage('website').section).toBeUndefined();
+		});
+
+		it('offers texting only to a package with Calls and texting', () => {
+			expect(forPackage('reviews').facts.has('reviews.channel')).toBe(false);
+			expect(forPackage('reviews', 'calls_texting').facts.has('reviews.channel')).toBe(true);
+		});
+
+		it('confirms the name and sending times from earlier stages, or asks them here', () => {
+			const all = forPackage('reviews', 'google_profile', 'calls_texting').facts;
+			expect(all.get('reviews.send_hours')!.reuseFrom).toBe('texting.quiet_hours');
+			const alone = forPackage('reviews').facts;
+			expect(alone.get('reviews.send_hours')!.reuseFrom).toBeUndefined();
+			expect(alone.get('reviews.display_name')!.reuseFrom).toBe('business.public_name');
+		});
+
+		it('uses the CRM review settings’ own message styles', () => {
+			const tones = facts.get('reviews.tone')!.options!.map((option) => option.value);
+			for (const style of ['friendly', 'professional', 'short']) expect(tones).toContain(style);
+		});
+
+		it('never asks which customers to leave out, or offers a way to reward reviews', () => {
+			const wording = sectionFacts(reviews)
+				.flatMap((fact) => [fact.label, ...(fact.options ?? []).map((option) => option.label)])
+				.join(' ')
+				.toLowerCase();
+			for (const word of ['happy customers only', 'unhappy', 'low rating only', 'discount for'])
+				expect(wording).not.toContain(word);
+			expect(facts.get('reviews.same_for_everyone')!.required).toBe(true);
+			expect(facts.get('reviews.no_rewards')!.required).toBe(true);
+		});
+
+		it('asks for past customers, protected, only after a yes', () => {
+			for (const key of ['reviews.past_customer_list', 'reviews.past_customers_real']) {
+				expect(shown({ 'reviews.past_customers': have('yes') }).has(key), key).toBe(true);
+				for (const other of ['no', 'not_sure'])
+					expect(shown({ 'reviews.past_customers': have(other) }).has(key), key).toBe(false);
+			}
+			expect(facts.get('reviews.past_customer_list')).toMatchObject({
+				kind: 'protected_file',
+				canDefer: true
+			});
+		});
+
+		it('saves a full answer and shows it again when the client comes back', () => {
+			const earlier: SetupAnswers = {
+				'business.public_name': have('Raad Plumbing'),
+				'gbp.situation': have('own'),
+				'gbp.link': have('https://maps.app.goo.gl/abc123'),
+				'texting.quiet_hours': have('8_to_9')
+			};
+			const sent: Record<string, string> = {
+				'reviews.google_link': 'https://maps.app.goo.gl/abc123',
+				'reviews.display_name': JSON.stringify({ same_as: 'business.public_name' }),
+				'reviews.feedback_people': JSON.stringify([
+					{ id: 'f1', values: { name: 'Sam Raad', email: 'sam@raadplumbing.example' } }
+				]),
+				'reviews.channel': 'sms',
+				'reviews.first_send': 'job_completed',
+				'reviews.reminders': 'two',
+				'reviews.send_hours': JSON.stringify({ same_as: 'texting.quiet_hours' }),
+				'reviews.tone': 'friendly',
+				'reviews.tone_note': 'Sign off from Sam.',
+				'reviews.past_customers': 'yes',
+				'reviews.past_customer_list': JSON.stringify(['00000000-0000-4000-8000-000000000004']),
+				'reviews.past_customers_real': 'yes',
+				'reviews.same_for_everyone': 'yes',
+				'reviews.no_rewards': 'yes'
+			};
+			const parsed = setupAnswersSchema(facts, earlier).safeParse({
+				answers: Object.entries(sent).map(([fact_key, value]) => ({
+					fact_key,
+					availability: 'have',
+					value,
+					note: null
+				}))
+			});
+			expect(parsed.error?.issues ?? []).toEqual([]);
+
+			const resumed: SetupAnswers = { ...earlier };
+			for (const answer of parsed.data!.answers) {
+				const stored = answer.value;
+				resumed[answer.fact_key] = have(
+					typeof stored === 'string' ? stored : JSON.stringify(stored)
+				);
+			}
+			expect(missingRequiredFacts(reviews, resumed, shown(resumed))).toEqual([]);
+			for (const fact of sectionFacts(reviews))
+				expect(setupAnswerShortfall(fact, resumed), fact.key).toBeNull();
+		});
+
+		it('lets a client without a Google profile yet still send the setup', () => {
+			const { facts: own, section } = forPackage('reviews');
+			const answers: SetupAnswers = {
+				'business.public_name': have('Raad Plumbing'),
+				'reviews.google_link': { availability: 'not_yet', value: null, note: null },
+				'reviews.display_name': have('{"same_as":"business.public_name"}'),
+				'reviews.feedback_people': have(
+					'[{"id":"f1","values":{"name":"Sam","email":"sam@example.com"}}]'
+				),
+				'reviews.first_send': have('job_completed'),
+				'reviews.reminders': have('two'),
+				'reviews.send_hours': have('8_to_9'),
+				'reviews.past_customers': have('no'),
+				'reviews.same_for_everyone': have('yes'),
+				'reviews.no_rewards': have('yes')
+			};
+			expect(own.has('reviews.channel')).toBe(false);
+			expect(
+				missingRequiredFacts(section, answers, shownFacts(sectionFacts(section), answers))
+			).toEqual([]);
 		});
 	});
 });
