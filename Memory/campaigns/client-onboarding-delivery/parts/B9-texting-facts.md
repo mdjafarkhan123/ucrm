@@ -9,12 +9,13 @@
 - [x] Read blueprint, plan, B8 migration, setup file code (`src/lib/server/setup/files.ts`)
 - [x] Research: Twilio Port In API emails an e-sign transfer letter to the approver; carrier transfer PINs expire in 4–7 days (AT&T 4, Verizon/T-Mobile 7); Stripe keeps identity-document uploads non-downloadable
 - [x] Jafar answered the protected-document questions (below)
-- [ ] Build protected document kind (storage, access, audit, retention) per his answers
+- [x] B9a database: migration + `supabase/tests/database/setup_protected_documents.sql` (24/24)
+- [ ] B9a server: catalogue kind `protected_file`, `src/lib/server/setup/protected-documents.ts`, API routes, virus-check worker pass, answer-save check, unit tests
 - [ ] Write stage 9 migration with `private.setup_load_starter_stage`, test, apply to dev
 
 ## Next
 
-Plan the protected-document build (storage, access, audit, deletion date) against the existing setup upload path.
+Build the B9a server side (unchecked step above).
 
 ## Outside actions
 
@@ -24,6 +25,11 @@ Plan the protected-document build (storage, access, audit, deletion date) agains
 
 Fact: setup files today are ordinary File library Files (role `setup_answer`); anyone with `files.view` can
 browse them, so protected documents cannot reuse that path as is. Malware scanning (`src/lib/server/files/scanner.ts`) can be reused.
+
+Testing: `supabase test db --linked` cannot reach pgTAP on dev, and local Docker lacks setup tables. Run the
+migration's section 2 onward plus the test inside one rolled-back transaction:
+`docker exec -i supabase_db_ucrm psql -U postgres -At -q < combined.sql`.
+For B9b: removing a file or clearing the answer must call the remove route; answer saves never delete documents.
 
 Jafar's decisions (2026-10-04, after comparing with GoHighLevel's port-in and A2P flow):
 1. Only the owner and Jafar can open a protected document; an admin can upload it and sees "received"; never in the File library.
