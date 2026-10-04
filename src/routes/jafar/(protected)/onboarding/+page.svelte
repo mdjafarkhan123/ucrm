@@ -84,8 +84,15 @@
 		{ key: 'support', label: 'Support' }
 	];
 
+	// A client who has sent their setup opens on its Setup tab, where the answers are.
 	function clientHref(client: OnboardingClient) {
-		return resolve(`/jafar/organizations/${client.id}`);
+		const page = resolve(`/jafar/organizations/${client.id}`);
+		return client.sent_number ? `${page}?tab=setup` : page;
+	}
+
+	function openClient(client: OnboardingClient) {
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- clientHref() resolves the path; only the tab is added.
+		void goto(clientHref(client));
 	}
 
 	function percent(done: number, total: number) {
@@ -130,7 +137,7 @@
 		<KpiCard
 			label="Waiting on Uplift"
 			value={String(totals.uplift)}
-			note="Unread support or a help request"
+			note="Unread support, a help request or a setup to review"
 			icon={headsetIcon}
 			tone="critical"
 			variant="compact"
@@ -205,13 +212,14 @@
 			items={clientList}
 			rowId={(client) => client.id}
 			caption="Paid clients in onboarding"
-			onRowActivate={(client) => void goto(clientHref(client))}
+			onRowActivate={openClient}
 		>
 			{#snippet row(client: OnboardingClient)}
 				{@const stage = onboardingStage(client)}
 				{@const progress = percent(client.facts_answered, client.facts_total)}
 				<th scope="row">
 					<div class="onboarding-list__cell">
+						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- clientHref() resolves the path; only the tab is added. -->
 						<a class="onboarding-list__name" href={clientHref(client)}>{client.name}</a>
 						<span class="onboarding-list__sub">
 							{client.package_name ?? 'No package'} · paid {dayFormat.format(

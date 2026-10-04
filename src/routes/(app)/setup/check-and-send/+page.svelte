@@ -13,6 +13,7 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
+	import SetupAnswerList from '$lib/components/setup/SetupAnswerList.svelte';
 	import {
 		fetchSetupCheck,
 		fetchSetupSection,
@@ -22,7 +23,7 @@
 		setupSummaryKey,
 		type SetupWriteFailure
 	} from '$lib/setup/api';
-	import { SETUP_CHECK_TITLE, type SetupCheckItem, type SetupCheckStatus } from '$lib/setup/check';
+	import { SETUP_CHECK_STATUS, SETUP_CHECK_TITLE } from '$lib/setup/check';
 	import type { HttpError } from '$lib/http-error';
 	import type { PageProps } from './$types';
 
@@ -40,17 +41,6 @@
 		queryFn: fetchSetupCheck
 	}));
 	const check = $derived(query.data);
-
-	const STATUS: Record<
-		SetupCheckStatus,
-		{ label: string; badge: 'success' | 'warning' | 'critical' | 'inactive' | 'informative' }
-	> = {
-		unfinished: { label: 'Not finished', badge: 'critical' },
-		needs_help: { label: 'Needs help', badge: 'warning' },
-		waiting: { label: 'Waiting for item', badge: 'informative' },
-		optional_skipped: { label: 'Optional items skipped', badge: 'inactive' },
-		complete: { label: 'Complete', badge: 'success' }
-	};
 
 	const unfinished = $derived(
 		check?.sections.filter((section) => section.status === 'unfinished') ?? []
@@ -114,12 +104,6 @@
 			void queryClient.invalidateQueries({ queryKey: setupCheckKey(userId) });
 			void queryClient.invalidateQueries({ queryKey: setupSummaryKey(userId) });
 		}
-	}
-
-	function itemText(item: SetupCheckItem): string {
-		if (item.state === 'need_help') return 'You asked for Uplift’s help';
-		if (item.state === 'not_yet') return 'You don’t have this yet';
-		return 'Not answered';
 	}
 
 	const dateTime = (iso: string) =>
@@ -208,7 +192,7 @@
 			{/if}
 
 			{#each check.sections as section (section.key)}
-				{@const status = STATUS[section.status]}
+				{@const status = SETUP_CHECK_STATUS[section.status]}
 				<SectionBlock title={section.title}>
 					{#snippet actions()}
 						<Button
@@ -223,35 +207,7 @@
 						{#if section.problem}<span class="setup-check__muted">{section.problem}</span>{/if}
 					</div>
 					{#if section.items.length > 0}
-						<dl class="setup-check__answers">
-							{#each section.items as item (item.key)}
-								<div class="setup-check__row" class:setup-check__row--changed={item.changed}>
-									<dt>
-										{item.label}
-										{#if item.changed}<Badge status="informative" size="small">Changed</Badge>{/if}
-									</dt>
-									<dd>
-										{#if item.state === 'answered'}
-											{#if item.same_as}
-												<span class="setup-check__muted">Same as “{item.same_as}”</span>
-											{/if}
-											{#each item.lines as line, index (index)}
-												<span class="setup-check__line">{line}</span>
-											{/each}
-										{:else}
-											<span
-												class="setup-check__muted"
-												class:setup-check__missing={item.state === 'skipped' && item.required}
-												>{item.state === 'skipped' && item.required
-													? 'Still needs an answer'
-													: itemText(item)}</span
-											>
-											{#if item.note}<span class="setup-check__line">“{item.note}”</span>{/if}
-										{/if}
-									</dd>
-								</div>
-							{/each}
-						</dl>
+						<SetupAnswerList items={section.items} audience="client" />
 					{/if}
 					{#if section.no_longer_asked.length > 0}
 						<p class="setup-check__muted">
@@ -326,11 +282,6 @@
 			font-size: var(--typography--fontSize-small);
 		}
 
-		&__missing {
-			color: var(--color-critical);
-			font-weight: 700;
-		}
-
 		&__blockers {
 			margin: var(--space-small) 0 0;
 			padding-left: var(--space-large);
@@ -383,44 +334,6 @@
 			gap: var(--space-small);
 		}
 
-		&__answers {
-			display: flex;
-			flex-direction: column;
-			margin: 0;
-		}
-
-		&__row {
-			display: grid;
-			grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-			gap: var(--space-base);
-			padding: var(--space-slim) var(--space-small);
-			border-top: var(--border-base) solid var(--color-border);
-
-			dt {
-				display: flex;
-				flex-wrap: wrap;
-				align-items: center;
-				gap: var(--space-small);
-				color: var(--color-heading);
-				font-weight: 700;
-			}
-
-			dd {
-				display: flex;
-				flex-direction: column;
-				gap: var(--space-smallest);
-				margin: 0;
-				color: var(--color-text);
-				overflow-wrap: anywhere;
-				white-space: pre-line;
-			}
-
-			&--changed {
-				border-radius: var(--radius-base);
-				background: var(--color-surface--background);
-			}
-		}
-
 		&__confirm {
 			display: flex;
 			flex-direction: column;
@@ -437,14 +350,6 @@
 
 		&__end {
 			text-align: center;
-		}
-	}
-
-	@media (max-width: 767px) {
-		.setup-check__row {
-			grid-template-columns: 1fr;
-			gap: var(--space-smallest);
-			padding-inline: 0;
 		}
 	}
 </style>

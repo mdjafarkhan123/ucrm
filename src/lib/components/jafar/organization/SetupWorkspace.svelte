@@ -13,6 +13,7 @@
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import ClientSetupAnswers from './ClientSetupAnswers.svelte';
 	import ProtectedDocumentHistory from '$lib/components/setup/ProtectedDocumentHistory.svelte';
 	import { formatFileSize } from '$lib/files/api';
 	import type { OrganizationDetailPreview } from '$lib/jafar/organization-detail-preview';
@@ -31,7 +32,7 @@
 	// provider step — a phone bill to move their number, a tax letter for texting registration. Jafar opens one
 	// when he submits the step, marks the step finished so it is deleted 90 days later, or deletes it now
 	// (Jafar's decisions 1, 4 and 5, 2026-10-04). Every opening and deletion is recorded in its history, which
-	// the client's owner sees too. Stage C adds the client's setup answers to this tab.
+	// the client's owner sees too. C2 puts the client's setup answers and reminders above them.
 	let {
 		organizationId,
 		preview
@@ -149,6 +150,14 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <TabPanel value="setup">
+	{#if preview}
+		<EmptyState
+			title="Not sent to Uplift yet"
+			description="Sample organizations have no setup answers."
+		/>
+	{:else if organizationId}
+		<ClientSetupAnswers {organizationId} />
+	{/if}
 	<SectionBlock
 		title="Protected documents"
 		icon={shieldLockIcon}

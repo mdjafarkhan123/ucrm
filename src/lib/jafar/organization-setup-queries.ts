@@ -1,7 +1,11 @@
 import type { QueryClient } from '@tanstack/svelte-query';
-import { jafarOrganizationProtectedDocumentsKey } from '$lib/jafar/query-keys';
+import {
+	jafarOrganizationProtectedDocumentsKey,
+	jafarOrganizationSetupKey
+} from '$lib/jafar/query-keys';
+import type { ClientSetupView } from '$lib/setup/client-page';
 
-// Client onboarding B9b: the Setup tab's one read, shared by the tab and its hover prefetch so both use the same key.
+// The Setup tab's reads (client onboarding B9b, C2), shared by the tab and its hover prefetch so both use the same keys.
 
 /** One protected document as Jafar's list shows it. Mirrors `$lib/server/setup/protected-documents`. */
 export type ProtectedDocumentListing = {
@@ -38,6 +42,28 @@ export const organizationProtectedDocumentsQuery = (organizationId: string) => (
 	staleTime: 30_000
 });
 
+/** C2: the client's setup as sent to Uplift — send `send`, or the newest when null. */
+export const organizationSetupQuery = (organizationId: string, send: number | null) => ({
+	queryKey: jafarOrganizationSetupKey(organizationId, send),
+	queryFn: async (): Promise<ClientSetupView> => {
+		const response = await fetch(
+			`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup${send ? `?send=${send}` : ''}`
+		);
+		const result = (await response.json().catch(() => ({}))) as ClientSetupView & {
+			error?: string;
+		};
+		if (!response.ok) throw new Error(result.error ?? 'The client’s setup could not be loaded.');
+		return result;
+	},
+	// Photo previews are signed links that last about an hour.
+	staleTime: 30_000,
+	refetchInterval: 30 * 60 * 1000
+});
+
+export const organizationSetupRemindersUrl = (organizationId: string) =>
+	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/reminders`;
+
 export function prefetchOrganizationSetup(queryClient: QueryClient, organizationId: string) {
+	void queryClient.prefetchQuery(organizationSetupQuery(organizationId, null));
 	void queryClient.prefetchQuery(organizationProtectedDocumentsQuery(organizationId));
 }

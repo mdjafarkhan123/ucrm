@@ -9,6 +9,7 @@ export type OnboardingNextAction =
 	| 'start_setup'
 	| 'finish_section'
 	| 'send_to_uplift'
+	| 'review_setup'
 	| 'help_with_answers'
 	| 'reply_to_support'
 	| 'account_paused'
@@ -34,6 +35,9 @@ export type OnboardingClient = {
 	next_section_key: string | null;
 	/** The next section's title in the published setup version, added by the route. */
 	next_section_title: string | null;
+	/** C2: the newest Send to Uplift, if any. */
+	sent_number: number | null;
+	sent_at: string | null;
 	waiting_on: OnboardingWaitingOn;
 	next_action: OnboardingNextAction;
 	last_activity_at: string;
@@ -104,6 +108,10 @@ export function onboardingNextActionLabel(client: OnboardingClient): string {
 			return `Finish ${client.next_section_title ?? 'setup'}`;
 		case 'send_to_uplift':
 			return 'Check answers and send to Uplift';
+		case 'review_setup':
+			return client.sent_number && client.sent_number > 1
+				? 'Review their changed setup'
+				: 'Review their setup';
 		case 'account_paused':
 			return 'Account paused — nothing to do until it is resumed';
 		case 'payment_reversed':
@@ -118,6 +126,7 @@ export function onboardingStage(client: OnboardingClient): {
 } {
 	if (client.payment_reversed) return { label: 'Payment reversed', tone: 'critical' };
 	if (client.lifecycle_status !== 'active') return { label: 'Paused', tone: 'inactive' };
+	if (client.sent_number) return { label: 'Uplift is reviewing', tone: 'informative' };
 	if (!client.welcome_seen && client.facts_answered === 0)
 		return { label: 'Not started', tone: 'warning' };
 	return { label: 'Completing setup', tone: 'informative' };

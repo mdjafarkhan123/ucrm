@@ -3,7 +3,11 @@ import { GET } from './+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { SETUP_CATALOGUE_1 } from '$lib/setup/catalogue.fixture';
-import { onboardingNextActionLabel, type OnboardingClient } from '$lib/setup/onboarding-list';
+import {
+	onboardingNextActionLabel,
+	onboardingStage,
+	type OnboardingClient
+} from '$lib/setup/onboarding-list';
 
 vi.mock('$lib/server/setup/catalogue', async () => {
 	const actual = await vi.importActual<typeof import('$lib/server/setup/catalogue')>(
@@ -61,6 +65,8 @@ function client(overrides: Partial<OnboardingClient> = {}): OnboardingClient {
 		unread_support: 0,
 		next_section_key: 'business',
 		next_section_title: 'Your business',
+		sent_number: null,
+		sent_at: null,
 		waiting_on: 'client',
 		next_action: 'finish_section',
 		last_activity_at: '2026-10-01T10:00:00Z',
@@ -164,5 +170,14 @@ describe('next step wording', () => {
 		expect(
 			onboardingNextActionLabel(client({ next_action: 'help_with_answers', help_count: 2 }))
 		).toBe('Help with 2 answers');
+	});
+
+	it('puts a sent setup in Uplift’s hands and says when it was sent again', () => {
+		const sent = client({ next_action: 'review_setup', waiting_on: 'uplift', sent_number: 1 });
+		expect(onboardingNextActionLabel(sent)).toBe('Review their setup');
+		expect(onboardingStage(sent).label).toBe('Uplift is reviewing');
+		expect(onboardingNextActionLabel({ ...sent, sent_number: 2 })).toBe(
+			'Review their changed setup'
+		);
 	});
 });

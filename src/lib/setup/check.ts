@@ -111,6 +111,18 @@ export type SetupCheckItem = {
 export type SetupCheckStatus =
 	'unfinished' | 'needs_help' | 'waiting' | 'optional_skipped' | 'complete';
 
+/** Each status in words, with its badge colour. */
+export const SETUP_CHECK_STATUS: Record<
+	SetupCheckStatus,
+	{ label: string; badge: 'success' | 'warning' | 'critical' | 'inactive' | 'informative' }
+> = {
+	unfinished: { label: 'Not finished', badge: 'critical' },
+	needs_help: { label: 'Needs help', badge: 'warning' },
+	waiting: { label: 'Waiting for item', badge: 'informative' },
+	optional_skipped: { label: 'Optional items skipped', badge: 'inactive' },
+	complete: { label: 'Complete', badge: 'success' }
+};
+
 export type SetupCheckSection = {
 	key: string;
 	title: string;

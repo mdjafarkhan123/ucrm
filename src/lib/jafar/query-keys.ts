@@ -20,6 +20,11 @@ export const jafarOrganizationHistoryKey = (organizationId: string | undefined) 
 	[...jafarOrganizationKey(organizationId), 'history'] as const;
 export const jafarOrganizationProtectedDocumentsKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'protected-documents'] as const;
+/** C2: the client's setup as sent to Uplift; `send` null for the newest. */
+export const jafarOrganizationSetupKey = (
+	organizationId: string | undefined,
+	send: number | null
+) => [...jafarOrganizationKey(organizationId), 'setup', send] as const;
 export const jafarOrganizationAutomationAuthorityKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'automation-authority'] as const;
 export const jafarOrganizationEmailDomainsKey = (organizationId: string | undefined) =>

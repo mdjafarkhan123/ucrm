@@ -23022,7 +23022,19 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_set_setup_reminders_paused: {
+				Args: {
+					actor_email: string;
+					pause: boolean;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			owner_setup_editor: { Args: never; Returns: Json };
+			owner_setup_version_catalogue: {
+				Args: { target_version_id: string };
+				Returns: Json;
+			};
 			owner_start_setup_draft: {
 				Args: { actor_owner_email: string };
 				Returns: Json;
