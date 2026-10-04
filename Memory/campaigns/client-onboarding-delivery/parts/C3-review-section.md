@@ -21,11 +21,12 @@
 
 ## Steps
 
-- [ ] Client task list + section page: Accepted / Uplift needs changes badges, banner on /setup, note and highlighted questions
-- [ ] Email to owners and admins on a return (outbox, idempotency key per review), linking to `/setup/<section>`
-- [ ] `setupSummary` next = first returned section; reminder wording; onboarding list shows waiting on client
-- [ ] Tests, browser check as the Raad owner
+- [x] Client task list + section page: badges, banner on /setup, note and highlighted questions (also dashboard card)
+- [x] Email to owners and admins on a return (`src/lib/server/setup/return-email.ts`, key per decision time), linking to `/setup/<section>`
+- [x] `setupSummary` next = first returned section; reminder wording; onboarding list "fix_returned" (migration 20261027090000, pushed)
+- [x] Unit tests
+- [ ] Browser check as the Raad owner
 
 ## Next
 
-Read `src/routes/(app)/setup/+page.svelte` and `[section]/+page.svelte` and the `/api/setup` read they use, then add the review state to it.
+Browser check: as Jafar, send back Raad LTD's "Your business" (Setup tab of `/jafar/organizations/[id]`) ticking a question; then as the Raad owner check `/setup` banner and badge, the section's note and highlight, the dashboard card, and `/jafar/onboarding` shows "Waiting for their information". Then C3c.
