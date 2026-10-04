@@ -8,8 +8,7 @@
 
 **Also waiting on Jafar's publish:** B9c's login check (part note `parts/B9-texting-facts.md`); the stage itself is built.
 
-**Next part:** C3 Review a section (`stages/C-review.md`, plan §4): Jafar accepts, asks about, or returns one
-section; help-needed becomes an Uplift task. Builds on C2's Setup tab (`/jafar/organizations/[id]?tab=setup`,
+**Next part:** C3a Review — Jafar's side (`parts/C3-review-section.md`, plan §4), then C3b and C3c. Builds on C2's Setup tab (`/jafar/organizations/[id]?tab=setup`,
 Raad LTD has one dev send, no photos). Do NOT publish test stages or questions on dev; stage keys are never reused.
 
 **Blockers:** none for C2. Text limits max 2000. A reused question must point to one with no "show only if" rule (the database refuses otherwise).

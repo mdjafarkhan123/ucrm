@@ -1,21 +1,25 @@
-# C3 — Review a section
+# C3a — Review a section, Jafar's side
 
 **Campaign:** client-onboarding-delivery · **Plan:** `docs/client-onboarding-delivery-behavior-contract.md` § 4, § 8; ADR 0005 (accepted layer)
 **Code:** `main`
-**Done when:** Returned section links the client straight to it; other sections stay accepted
+**Done when:** Jafar accepts one section and returns another; both show on the Setup tab and in Activity
+
+## Decisions (Jafar, 2026-10-04, all recommended; model: Content Snare approve / send back with reason)
+
+1. Return = a note plus ticked questions; the client sees those questions highlighted.
+2. Ask a question = a support chat with the owner, section attached (reuse `/jafar/support?new=<org>` start chat).
+3. Client sees "Accepted by Uplift"; changing an accepted section puts it back for review on the next send.
+4. Help requests: "Uplift's to-do"; a section can be accepted with them open; an item closes when Jafar records Uplift's answer (C3c).
+5. A return emails owners and admins straight to that section, banner on /setup, reminders restart (C3b).
 
 ## Steps
 
-- [ ] Jafar answers round 1 (below)
-- [ ] Migration: accepted-value layer per section (points at the send it accepted), returns with note, Uplift to-do from help answers
-- [ ] API + Setup tab buttons; client side: returned banner, section note, email, reminders restart
-- [ ] Tests, browser check on Raad LTD
+- [ ] Migration: `organization_setup_section_reviews` (one row per section: accepted/returned, the send it judged, note, questions, who/when), `owner_review_setup_section` (newest send only, audit event, a return restarts reminders), `start_support_thread_by_uplift` takes a section
+- [ ] `$lib/setup/review.ts` review state per section (accepted stays only while the section's answers match the accepted send) + tests
+- [ ] Setup tab view + POST `/api/jafar/organizations/[id]/setup/reviews`
+- [ ] Setup tab: badge, Accept, Return dialog, Ask a question link; support start chat carries the section
+- [ ] Tests, check, browser check on Raad LTD
 
 ## Next
 
-Waiting for Jafar's answers to round 1, asked 2026-10-04 (model: Content Snare's approve / send-back-with-reason per item):
-Q1 Return the whole section with a note, or also tick the exact questions to fix? (recommended: tick)
-Q2 "Ask a question" — open a support chat with the owner, section attached? (recommended: yes, reuse chat)
-Q3 Client sees "Accepted by Uplift" per section; changing an accepted section after that puts it back for review on the next send? (recommended: yes)
-Q4 Help requests: an "Uplift's to-do" list; a section can be accepted with help items still open; an item closes when Jafar records the answer Uplift found, client's original kept? (recommended: yes)
-Q5 A return emails the owner and admins straight to that section, shows a banner on /setup, restarts reminders? (recommended: yes)
+Write the migration.
