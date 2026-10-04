@@ -1,4 +1,4 @@
-# B9c — Texting registration stage (B9a, B9b done 2026-10-04)
+# B9c — Texting registration stage (built 2026-10-04; waits for Jafar’s publish)
 
 **Campaign:** client-onboarding-delivery · **Plan:** `docs/client-onboarding-delivery-behavior-contract.md` §3.6, §9; blueprint stage 9 and "Porting or hosted-number access"
 **Code:** `main`
@@ -6,12 +6,14 @@
 
 ## Steps
 
-- [ ] Load blueprint stage 9 into the draft with `private.setup_load_starter_stage` (as B3b's migration does); the moving-number bill is a `protected_file` question; no PIN or signed-letter question
+- [x] Load blueprint stage 9 into the draft with `private.setup_load_starter_stage` (as B3b's migration does); the moving-number bill is a `protected_file` question; no PIN or signed-letter question
 - [ ] After Jafar's publish: setup page with the admin login shows "Received", no open link or History; owner login opens it and sees History; Jafar's organization page Setup tab lists it with Open, History, "Provider step finished", "Delete now"
 
 ## Next
 
-Read blueprint stage 9 and `supabase/migrations/20261017090000_setup_starter_calls_stage.sql`, then write the B9c migration.
+Stage 9 ("texting") and stage 8 with the bill (`calls.port_bill`) are in the dev draft (migration `20261020090000`).
+When Jafar has published, run the login check in Steps. Until then B10 can go ahead.
+Open question for Jafar (not blocking): stage 9 adds "When may automatic texts go out?" (8am–9pm recommended), which plan §3.6 asks for but the blueprint table leaves out.
 
 ## Notes
 

@@ -71,7 +71,8 @@ describe('starter setup content', () => {
 			'brand',
 			'website',
 			'google',
-			'calls'
+			'calls',
+			'texting'
 		]);
 	});
 
@@ -795,7 +796,12 @@ describe('starter setup content', () => {
 		});
 
 		it('asks for the phone company details only when the number moves', () => {
-			const port = ['calls.port_carrier', 'calls.port_account', 'calls.port_approver'];
+			const port = [
+				'calls.port_carrier',
+				'calls.port_account',
+				'calls.port_bill',
+				'calls.port_approver'
+			];
 			for (const how of ['forward', 'move', 'unsure']) {
 				const asked = shown({ 'calls.number_plan': have('keep'), 'calls.keep_how': have(how) });
 				for (const key of port) expect(asked.has(key), `${how}: ${key}`).toBe(how === 'move');
@@ -803,7 +809,8 @@ describe('starter setup content', () => {
 		});
 
 		it('never asks for a password, PIN or one-time code', () => {
-			for (const fact of sectionFacts(calls)) {
+			const texting = starter.sections.find((section) => section.key === 'texting')!;
+			for (const fact of [...sectionFacts(calls), ...sectionFacts(texting)]) {
 				const secret = /password|(^|[._])pin($|_)|otp|one_time/;
 				expect(fact.key).not.toMatch(secret);
 				for (const field of fact.listFields ?? []) expect(field.key).not.toMatch(secret);
@@ -840,6 +847,13 @@ describe('starter setup content', () => {
 			expect(shown({ 'calls.missed_text': have('no') }).has('calls.missed_text_words')).toBe(false);
 		});
 
+		it('takes the bill for moving a number only as a protected document', () => {
+			expect(facts.get('calls.port_bill')).toMatchObject({
+				kind: 'protected_file',
+				canDefer: true
+			});
+		});
+
 		it('takes the voicemail greeting only as a voice recording', () => {
 			expect(facts.get('calls.voicemail_recording')!.fileKinds).toEqual(['audio']);
 		});
@@ -864,6 +878,7 @@ describe('starter setup content', () => {
 						values: { name: 'Sam Raad', line1: '12 Main St', city: 'Oakland', postal_code: '94607' }
 					}
 				]),
+				'calls.port_bill': JSON.stringify(['00000000-0000-4000-8000-000000000001']),
 				'calls.port_approver': JSON.stringify([
 					{ id: 'b1', values: { name: 'Sam Raad', email: 'sam@example.com' } }
 				]),
@@ -940,6 +955,185 @@ describe('starter setup content', () => {
 				'calls.test_person': later
 			};
 			expect(missingRequiredFacts(calls, answers, shown(answers))).toEqual([]);
+		});
+	});
+
+	describe('Texting registration', () => {
+		const texting = starter.sections.find((section) => section.key === 'texting')!;
+		const shown = (answers: SetupAnswers) => shownCatalogueFacts(starter, answers);
+		const later = { availability: 'not_yet' as const, value: null, note: null };
+
+		it('is shown only to a package with Calls and texting, after the calls stage', () => {
+			expect(texting.serviceKey).toBe('calls_texting');
+			expect(stages.map((stage) => stage.key).indexOf('texting')).toBeGreaterThan(
+				stages.map((stage) => stage.key).indexOf('calls')
+			);
+		});
+
+		it('asks each follow-up only after its answer', () => {
+			for (const [gate, value, followUps] of [
+				['texting.details_match', 'no', ['texting.registered_details']],
+				[
+					'texting.has_registration_number',
+					'yes',
+					['texting.registration_number', 'texting.registration_document']
+				],
+				['texting.has_links', 'yes', ['texting.links']],
+				['texting.has_opt_out_list', 'yes', ['texting.opt_out_list']]
+			] as const) {
+				const other = value === 'yes' ? 'no' : 'yes';
+				for (const key of followUps) {
+					expect(shown({ [gate]: have(value) }).has(key), key).toBe(true);
+					expect(shown({ [gate]: have(other) }).has(key), key).toBe(false);
+				}
+			}
+			expect(
+				shown({ 'texting.has_registration_number': have('not_sure') }).has(
+					'texting.registration_number'
+				)
+			).toBe(false);
+		});
+
+		it('keeps registration papers and opt-out lists protected, and never requires the papers', () => {
+			expect(facts.get('texting.registration_document')).toMatchObject({
+				kind: 'protected_file',
+				required: false
+			});
+			expect(facts.get('texting.opt_out_list')!.kind).toBe('protected_file');
+		});
+
+		it('asks the monthly texts and consent ways the CRM texting registration uses', () => {
+			expect(facts.get('texting.monthly_volume')!.options!.map((o) => o.value)).toEqual([
+				'under_500',
+				'500_2000',
+				'2001_10000',
+				'over_10000'
+			]);
+			const method = facts
+				.get('texting.consent')!
+				.listFields!.find((field) => field.key === 'method')!;
+			for (const value of ['website_form', 'paper_form', 'verbal', 'text_initiated', 'other'])
+				expect(method.options!.map((o) => o.value)).toContain(value);
+		});
+
+		it('lets a sole trader with no number and no samples yet still send the setup', () => {
+			const answers: SetupAnswers = {
+				'texting.details_match': have('yes'),
+				'texting.has_registration_number': have('no'),
+				'texting.website': later,
+				'texting.representative': have(
+					'[{"id":"r1","values":{"first_name":"Sam","last_name":"Raad","title":"Owner","position":"owner","email":"sam@example.com","phone":"+447700900123"}}]'
+				),
+				'texting.representative_agrees': have('yes'),
+				'texting.message_kinds': have('["replies","appointments"]'),
+				'texting.recipients': have('["customers"]'),
+				'texting.monthly_volume': have('under_500'),
+				'texting.quiet_hours': have('8_to_9'),
+				'texting.has_links': have('no'),
+				'texting.samples': later,
+				'texting.consent': later,
+				'texting.no_bought_lists': have('yes'),
+				'texting.stop_help': have('yes'),
+				'texting.privacy_url': later,
+				'texting.terms_url': later,
+				'texting.has_opt_out_list': have('no')
+			};
+			expect(missingRequiredFacts(texting, answers, shown(answers))).toEqual([]);
+		});
+
+		it('saves a full answer and shows it again when the client comes back', () => {
+			const sent: Record<string, string> = {
+				'texting.details_match': 'no',
+				'texting.registered_details': JSON.stringify([
+					{
+						id: 'd1',
+						values: {
+							legal_name: 'Raad Plumbing LLC',
+							line1: '12 Main St',
+							city: 'Oakland',
+							postal_code: '94607'
+						}
+					}
+				]),
+				'texting.has_registration_number': 'yes',
+				'texting.registration_number': '12-3456789',
+				'texting.registration_document': JSON.stringify(['00000000-0000-4000-8000-000000000002']),
+				'texting.website': 'https://raadplumbing.example',
+				'texting.representative': JSON.stringify([
+					{
+						id: 'r1',
+						values: {
+							first_name: 'Sam',
+							last_name: 'Raad',
+							title: 'Owner',
+							position: 'owner',
+							email: 'sam@raadplumbing.example',
+							phone: '+1 415 555 0100'
+						}
+					}
+				]),
+				'texting.representative_agrees': 'yes',
+				'texting.message_kinds': JSON.stringify(['replies', 'appointments', 'marketing']),
+				'texting.recipients': JSON.stringify(['customers', 'Property managers we work with']),
+				'texting.monthly_volume': '500_2000',
+				'texting.quiet_hours': '8_to_9',
+				'texting.has_links': 'yes',
+				'texting.links': JSON.stringify([
+					{ id: 'l1', values: { value: 'raadplumbing.example' } },
+					{ id: 'l2', values: { value: '+1 415 555 0100' } }
+				]),
+				'texting.samples': JSON.stringify([
+					{
+						id: 's1',
+						values: {
+							message: 'Raad Plumbing: Hi Sam, Ali is on his way, about 2pm. Reply STOP to opt out.'
+						}
+					},
+					{
+						id: 's2',
+						values: {
+							message: 'Raad Plumbing: your quote is ready to view. Reply STOP to opt out.'
+						}
+					}
+				]),
+				'texting.consent': JSON.stringify([
+					{
+						id: 'c1',
+						values: {
+							method: 'website_form',
+							purpose: 'both',
+							wording: 'I agree to get texts about my job from Raad Plumbing. Reply STOP to stop.',
+							link: 'https://raadplumbing.example/contact'
+						}
+					}
+				]),
+				'texting.no_bought_lists': 'yes',
+				'texting.stop_help': 'yes',
+				'texting.privacy_url': 'https://raadplumbing.example/privacy',
+				'texting.terms_url': 'https://raadplumbing.example/texting-terms',
+				'texting.has_opt_out_list': 'yes',
+				'texting.opt_out_list': JSON.stringify(['00000000-0000-4000-8000-000000000003'])
+			};
+			const parsed = setupAnswersSchema(facts).safeParse({
+				answers: Object.entries(sent).map(([fact_key, value]) => ({
+					fact_key,
+					availability: 'have',
+					value,
+					note: null
+				}))
+			});
+			expect(parsed.error?.issues ?? []).toEqual([]);
+
+			const resumed: SetupAnswers = {};
+			for (const answer of parsed.data!.answers) {
+				const stored = answer.value;
+				resumed[answer.fact_key] = have(
+					typeof stored === 'string' ? stored : JSON.stringify(stored)
+				);
+			}
+			expect(missingRequiredFacts(texting, resumed, shown(resumed))).toEqual([]);
+			for (const fact of sectionFacts(texting))
+				expect(setupAnswerShortfall(fact, resumed), fact.key).toBeNull();
 		});
 	});
 });
